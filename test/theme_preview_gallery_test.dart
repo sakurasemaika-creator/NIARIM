@@ -29,17 +29,27 @@ void main() {
     });
   }
 
-  test('gallery contains each independent screen once, no folder/tab variants', () {
+  test('gallery contains 16 everyday screens, no tab variants or settings', () {
     final ids = themePreviewEntries.map((e) => e.id).toList();
+    const expected = [
+      'splash', 'projects', 'new', 'detail', 'canvas', 'timeline',
+      'export', 'complete', 'save', 'materials', 'community', 'work',
+      'post', 'author', 'mine', 'notifications',
+    ];
+    expect(ids, expected);
     expect(ids.toSet().length, ids.length);
-    expect(ids, containsAll([
-      'splash', 'projects', 'shared', 'trash', 'canvas', 'timeline', 'export',
-      'complete', 'community', 'settings', 'theme', 'widget_frame',
-    ]));
-    expect(ids, isNot(contains('folder')));
-    expect(ids, isNot(contains('works_tab')));
-    expect(ids, isNot(contains('bookmarks_tab')));
-    expect(ids, isNot(contains('popup')));
+    // Shared and Trash are existing Home tabs, not separate previews.
+    expect(ids, isNot(contains('shared')));
+    expect(ids, isNot(contains('trash')));
+    // Settings are still present in the application but excluded here.
+    for (final id in [
+      'settings', 'theme', 'performance', 'gestures', 'shortcuts', 'pen',
+      'bucket', 'workspace', 'pc_layout', 'transfer', 'widgets',
+      'widget_art', 'widget_frame', 'watermark', 'fonts', 'storage',
+      'premium', 'help', 'tips', 'autofill', 'sizes', 'license', 'privacy',
+    ]) {
+      expect(ids, isNot(contains(id)), reason: 'Excluded preview: $id');
+    }
   });
 
   testWidgets('swipe gallery renders adjacent pages, then closes', (tester) async {
@@ -80,19 +90,15 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('gallery reflects actual button, text and custom surface colors',
+  testWidgets('remaining previews follow active theme without settings page',
       (tester) async {
     SharedPreferences.setMockInitialValues({});
     final service = ThemeService();
     await service.init();
     final preset = AppThemePreset.defaultLight.copyWith(
-      textColor: const Color(0xFF112233),
+      accentColor: const Color(0xFF008B79),
       buttonTextColor: const Color(0xFF00CC11),
-      menuTextColor: const Color(0xFFCC11BB),
-      selectionTextColor: const Color(0xFF2255CC),
-      panelBgColor: const Color(0xFFEEBBCC),
-      menuBgColor: const Color(0xFFBBFFDD),
-      updateMarkColor: const Color(0xFF667788),
+      textColor: const Color(0xFF112233),
     );
     service.previewCurrent(preset);
     await tester.pumpWidget(ChangeNotifierProvider<ThemeService>.value(
@@ -107,44 +113,20 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    // Splash tiles and the app-logo foreground follow the explicit
-    // button text color, not the unrelated menu-background swatch.
+    // Splash still uses the user-selected foreground token.
     final logo = tester.widget<SvgPicture>(
-      find.byKey(const Key('themePreviewSplashAppLogo')),
-    );
+      find.byKey(const Key('themePreviewSplashAppLogo')));
     expect(logo.colorFilter,
       const ColorFilter.mode(Color(0xFF00CC11), BlendMode.srcIn));
 
-    // The theme sample must show raw user-set colors, not seed-scheme
-    // approximations (especially for the panel, menu and update mark).
-    final pager = tester.widget<PageView>(
-      find.byKey(const Key('themePreviewPager')));
-    final themeIndex = themePreviewEntries.indexWhere((e) => e.id == 'theme');
-    expect(themeIndex, greaterThan(0));
-    pager.controller!.jumpToPage(themeIndex);
+    // The next gallery page is Projects, not Shared/Trash or settings.
+    await tester.tap(find.byKey(const Key('themePreviewNext')));
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(
-      find.byKey(const Key('themePreviewTitle'))).data, 'テーマ・外観');
-
-    Future<void> checkSwatch(String label, Color expected) async {
-      final list = find.byType(Scrollable).last;
-      await tester.scrollUntilVisible(
-        find.text(label), 90, scrollable: list);
-      await tester.pumpAndSettle();
-      final containingCard = find.ancestor(
-        of: find.text(label), matching: find.byType(Card)).first;
-      final avatar = tester.widget<CircleAvatar>(
-        find.descendant(of: containingCard,
-          matching: find.byType(CircleAvatar)));
-      expect(avatar.backgroundColor, expected, reason: label);
-    }
-    await checkSwatch('本文文字色', const Color(0xFF112233));
-    await checkSwatch('ボタン内の文字色', const Color(0xFF00CC11));
-    await checkSwatch('メニューの文字色', const Color(0xFFCC11BB));
-    await checkSwatch('選択中の文字色', const Color(0xFF2255CC));
-    await checkSwatch('パネル背景', const Color(0xFFEEBBCC));
-    await checkSwatch('メニュー背景', const Color(0xFFBBFFDD));
-    await checkSwatch('更新マーク', const Color(0xFF667788));
+      find.byKey(const Key('themePreviewTitle'))).data, 'プロジェクト一覧');
+    expect(themePreviewEntries.length, 16);
+    expect(service.current.accentColor, const Color(0xFF008B79));
+    expect(find.byKey(const Key('themePreviewPager')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -179,7 +161,7 @@ void main() {
     expect(find.byKey(const Key('themePreviewOpen')), findsOneWidget);
     expect(find.byKey(const Key('themeInlinePreview')), findsOneWidget);
     // The miniature is real Flutter content, not a fixed picture.
-    expect(find.text('練習作品'), findsOneWidget);
+    expect(find.text('プロジェクトがありません'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     Future<void> saveCapture(String name) async {
@@ -204,6 +186,7 @@ void main() {
       tester.element(find.byKey(const Key('themeInlinePreview'))),
       listen: false,
     );
+    final captureDefaultTheme = themeService.current;
     final before = Theme.of(tester.element(
       find.byKey(const Key('themeInlinePreview')))).colorScheme.primary;
     themeService.previewCurrent(themeService.current.copyWith(
@@ -217,6 +200,12 @@ void main() {
     expect(tester.takeException(), isNull);
 
     await saveCapture('theme_settings_accent_changed.png');
+
+    // All-route screenshots use the default light theme. Reset the sample
+    // before gallery captures so comparisons reflect layout differences,
+    // rather than unrelated accent-color differences.
+    themeService.previewCurrent(captureDefaultTheme);
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('themePreviewOpen')));
     await tester.pumpAndSettle();
@@ -242,6 +231,61 @@ void main() {
     await tester.tap(find.byKey(const Key('themePreviewClose')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('themeInlinePreview')), findsOneWidget);
+  });
+
+  testWidgets('static gallery uses landscape paper and no scrollable mock data',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 760);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+    final service = ThemeService();
+    await service.init();
+    await tester.pumpWidget(ChangeNotifierProvider<ThemeService>.value(
+      value: service,
+      child: MaterialApp(
+        locale: const Locale('ja'),
+        supportedLocales: const [Locale('ja'), Locale('en')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        theme: service.themeData,
+        home: const ThemePreviewGalleryScreen(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final pages = tester.widget<PageView>(find.byKey(
+      const Key('themePreviewPager')));
+    Future<void> visit(String id) async {
+      final index = themePreviewEntries.indexWhere((e) => e.id == id);
+      expect(index, greaterThanOrEqualTo(0));
+      pages.controller!.jumpToPage(index);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: id);
+    }
+
+    await visit('new');
+    final mockList = tester.widget<ListView>(
+      find.byKey(const Key('themePreviewContentList')));
+    expect(mockList.physics, isA<NeverScrollableScrollPhysics>());
+    expect(find.byKey(const Key('themePreviewMockName')), findsOneWidget);
+    expect(find.byKey(const Key('themePreviewMockSizes')), findsOneWidget);
+
+    await visit('detail');
+    final detailPaper = tester.getSize(
+      find.byKey(const Key('themePreviewFakeProjectCanvas')));
+    expect(detailPaper.width / detailPaper.height, closeTo(16 / 9, 0.05));
+
+    await visit('canvas');
+    final canvasPaper = tester.getSize(
+      find.byKey(const Key('themePreviewCanvasPaper')));
+    expect(canvasPaper.width / canvasPaper.height, closeTo(16 / 9, 0.05));
+
+    await visit('timeline');
+    final timelinePaper = tester.getSize(
+      find.byKey(const Key('themePreviewTimelinePaper')));
+    expect(timelinePaper.width / timelinePaper.height, closeTo(16 / 9, 0.05));
+    expect(find.byKey(const Key('themePreviewTimelineTracks')),
+      findsOneWidget);
   });
 
   testWidgets('gallery works at narrow 320px portrait width', (tester) async {
