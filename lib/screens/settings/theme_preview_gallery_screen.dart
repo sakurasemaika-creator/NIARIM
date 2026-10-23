@@ -267,6 +267,8 @@ class _ThemeSampleScreen extends StatelessWidget {
     if (entry.layout == 'splash') return _splash(context, c);
     if (entry.layout == 'community') return _community(c);
     if (entry.layout == 'projects') return _projects(c);
+    if (entry.layout == 'author') return _author(c);
+    if (entry.layout == 'mine') return _myWorks(c);
     if (entry.layout == 'canvas') return _canvas(c);
     if (entry.layout == 'timeline') return _timeline(c);
     if (entry.layout == 'complete') return _complete(c);
@@ -278,6 +280,8 @@ class _ThemeSampleScreen extends StatelessWidget {
     final appTitle = switch (entry.id) {
       'detail' => t('all-route-audit', 'all-route-audit'),
       'work' => t('作品詳細', 'Work details'),
+      'post' => t('作品を投稿', 'Post artwork'),
+      'notifications' => t('フォロー通知', 'Follow notifications'),
       'widget_frame' => t('練習作品', 'Practice'),
       'projects' => t('プロジェクト一覧', 'Projects'),
       'save' => t('セーブスロット', 'Save slots'),
@@ -1187,30 +1191,64 @@ class _ThemeSampleScreen extends StatelessWidget {
     ],
   );
 
-  Widget _post(ColorScheme c) => _list([
-    _heading(t('作品を投稿', 'Post artwork')),
-    Container(height: 58, padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border.all(color: c.outlineVariant),
-        borderRadius: BorderRadius.circular(8)),
-      alignment: Alignment.centerLeft,
-      child: Text(t('作品タイトル', 'Artwork title'),
-        style: TextStyle(color: c.onSurfaceVariant))),
-    const SizedBox(height: 12),
-    Container(height: 105, padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border.all(color: c.outlineVariant),
-        borderRadius: BorderRadius.circular(8)),
-      alignment: Alignment.topLeft,
-      child: Text(t('説明を入力', 'Description'),
-        style: TextStyle(color: c.onSurfaceVariant))),
-    const SizedBox(height: 15),
-    _mockSettingRow(c, Icons.movie_outlined, t('投稿する動画', 'Video')),
-    _mockSettingRow(c, Icons.sell_outlined, t('タグ', 'Tags')),
-    _staticControl(c, t('作品広場に表示', 'Publish in community')),
-    const SizedBox(height: 20),
-    _cta(c, t('投稿する', 'Post'), icon: Icons.cloud_upload_outlined),
-  ]);
+  Widget _post(ColorScheme c) => ListView(
+    key: const Key('themePreviewContentList'),
+    physics: const NeverScrollableScrollPhysics(),
+    padding: const EdgeInsets.all(16),
+    children: [
+      InputDecorator(
+        decoration: InputDecoration(
+          labelText: t('作品タイトル', 'Artwork title'),
+          counterText: '0/100',
+          border: const OutlineInputBorder()),
+        child: const SizedBox(height: 20),
+      ),
+      const SizedBox(height: 20),
+      SizedBox(height: 43, child: OutlinedButton.icon(
+        onPressed: () {}, icon: const Icon(Icons.video_file_outlined),
+        label: Text(t('投稿する動画を選択', 'Select a video')),
+      )),
+      const SizedBox(height: 8),
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        value: false, onChanged: (_) {},
+        title: Text(t('ショート動画として投稿', 'Post as a short')),
+      ),
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        value: false, onChanged: (_) {},
+        title: Text(t('AI生成画像・動画を含む', 'Contains generative AI')),
+        subtitle: Text(t('AIで生成した画像・動画が含まれる場合はオンにしてください。',
+          'Enable if the content contains generative AI images or video.'),
+          style: const TextStyle(fontSize: 11)),
+      ),
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        value: true, onChanged: (_) {},
+        title: Text(t('NIARIM作品広場に公開する',
+          'Show in NIARIM community')),
+        subtitle: Text(t('作品広場で他のユーザーに公開されます。',
+          'Publish to other users in the community.'),
+          style: const TextStyle(fontSize: 11)),
+      ),
+      const SizedBox(height: 16),
+      Text(t('説明', 'Description'),
+        style: const TextStyle(fontSize: 12,
+          fontWeight: FontWeight.w700)),
+      const SizedBox(height: 8),
+      Container(height: 98, padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(5),
+          border: Border.all(color: c.outline)),
+        alignment: Alignment.topLeft,
+        child: Text(t('説明を入力', 'Add a description'),
+          style: TextStyle(color: c.onSurfaceVariant))),
+      const SizedBox(height: 12),
+      _mockSettingRow(c, Icons.sell_outlined, t('タグ', 'Tags')),
+      const SizedBox(height: 16),
+      _cta(c, t('投稿する', 'Post'), icon: Icons.cloud_upload_outlined),
+    ],
+  );
 
   Widget _theme(BuildContext context, ColorScheme c) {
     final preset = context.read<ThemeService>().current;
@@ -2101,11 +2139,24 @@ class _ThemeSampleScreen extends StatelessWidget {
     ],
   );
 
-  Widget _notifications(ColorScheme c) => _list([
-    _card(_row(Icons.person_add, t('新しいフォロワー', 'New follower'))),
-    _card(_row(Icons.notifications_outlined, t('お知らせ', 'Notification'))),
-  ]);
-
+  Widget _notifications(ColorScheme c) => ListView.separated(
+    key: const Key('themePreviewContentList'),
+    physics: const NeverScrollableScrollPhysics(),
+    itemCount: 4,
+    separatorBuilder: (_, _) => const Divider(height: 1),
+    itemBuilder: (_, i) => ListTile(
+      leading: CircleAvatar(
+        backgroundColor: c.primaryContainer,
+        child: Text(['さ', 'み', 'あ', 'な'][i],
+          style: TextStyle(color: c.onPrimaryContainer))),
+      title: Text(
+        t(['さくらさんがフォローしました', 'みらいさんがフォローしました',
+          'あおいさんがフォローしました', 'なつさんがフォローしました'][i],
+          ['Sakura followed you', 'Mirai followed you',
+           'Aoi followed you', 'Natsu followed you'][i])),
+      subtitle: Text('2026/10/23 10:0' + i.toString()),
+    ),
+  );
 
   Widget _save(ColorScheme c) => ListView(
     key: const Key('themePreviewContentList'),
@@ -2542,36 +2593,133 @@ class _ThemeSampleScreen extends StatelessWidget {
     ],
   );
 
-  Widget _author(ColorScheme c) => Column(children: [
-    SizedBox(height: 128, child: Column(
-      mainAxisAlignment: MainAxisAlignment.center, children: [
-        Icon(Icons.account_circle, size: 52, color: c.primary),
-        Text(t('作者の名前', 'Creator name'),
-          style: const TextStyle(fontWeight: FontWeight.bold)),
-      ])),
-    Padding(padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: _cta(c, t('フォローする', 'Follow'), icon: Icons.person_add_alt_1)),
-    const SizedBox(height: 12),
-    Expanded(child: GridView.count(crossAxisCount: 2, childAspectRatio: .9,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(12),
+  Widget _author(ColorScheme c) => Scaffold(
+    backgroundColor: c.surface,
+    appBar: AppBar(
+      title: Text(t('サンプル作者', 'Sample artist')),
+      actions: [
+        Icon(Icons.filter_alt_outlined, color: c.onSurface),
+        const SizedBox(width: 6),
+        Icon(Icons.arrow_drop_down, color: c.onSurface),
+        const SizedBox(width: 12),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(48),
+        child: Row(children: [
+          for (final name in [
+            t('作品', 'Works'), t('ブックマーク', 'Bookmarks'),
+          ])
+          Expanded(child: Container(
+            height: 47, alignment: Alignment.center,
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(
+                color: name == t('作品', 'Works')
+                  ? c.primary : Colors.transparent, width: 2))),
+            child: Text(name, style: TextStyle(
+              fontWeight: FontWeight.w700, fontSize: 13,
+              color: name == t('作品', 'Works')
+                  ? c.primary : c.onSurfaceVariant)))),
+        ]),
+      ),
+    ),
+    body: Column(children: [
+      Padding(padding: const EdgeInsets.all(16),
+        child: Row(children: [
+          CircleAvatar(radius: 24, backgroundColor: c.primaryContainer,
+            child: Text(t('さ', 'S'), style: TextStyle(
+              fontSize: 18, color: c.onPrimaryContainer))),
+          const SizedBox(width: 14),
+          Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(t('サンプル作者', 'Sample artist'),
+                style: const TextStyle(fontSize: 16,
+                  fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Wrap(spacing: 7, runSpacing: 2, children: [
+                Text(t('投稿 3件', '3 posts')),
+                Text(t('フォロー中 4', '4 following')),
+                Text(t('フォロワー 12', '12 followers')),
+              ].map((w) => DefaultTextStyle(
+                style: TextStyle(fontSize: 11,
+                  color: c.onSurfaceVariant), child: w)).toList()),
+            ],
+          )),
+        ])),
+      Padding(padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: SizedBox(width: double.infinity,
+          child: FilledButton.icon(onPressed: () {},
+            icon: const Icon(Icons.person_add_alt_1),
+            label: Text(t('フォローする', 'Follow'))))),
+      const SizedBox(height: 12),
+      Expanded(child: GridView.count(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(12),
+        crossAxisCount: 2, crossAxisSpacing: 10,
+        mainAxisSpacing: 10, childAspectRatio: .85,
+        children: [
+          _projectTile(c, t('作品 1', 'Work 1')),
+          _projectTile(c, t('作品 2', 'Work 2')),
+          _projectTile(c, t('作品 3', 'Work 3')),
+        ],
+      )),
+    ]),
+  );
+
+  Widget _myWorks(ColorScheme c) => Scaffold(
+    backgroundColor: c.surface,
+    appBar: AppBar(
+      title: Text(t('自分の投稿', 'My posts')),
+      actions: [
+        Icon(Icons.refresh, color: c.onSurface),
+        const SizedBox(width: 16),
+      ],
+    ),
+    body: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _projectTile(c, t('作品 1', 'Work 1')),
-        _projectTile(c, t('作品 2', 'Work 2')),
-        _projectTile(c, t('作品 3', 'Work 3')),
-      ])),
-  ]);
-
-  Widget _myWorks(ColorScheme c) => _list([
-    _heading(t('自分の投稿', 'My posts')),
-    _card(_row(Icons.upload_file, t('投稿した作品 1', 'Posted work 1'),
-      subtitle: t('公開中', 'Published'))),
-    _card(_row(Icons.upload_file, t('投稿した作品 2', 'Posted work 2'),
-      subtitle: t('公開中', 'Published'))),
-    const SizedBox(height: 18),
-    _cta(c, t('新しく投稿', 'Post new work'), icon: Icons.add),
-  ]);
-
+        Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Card(
+            elevation: 0, color: c.surfaceContainerLow,
+            child: Padding(padding: const EdgeInsets.all(14),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(children: [
+                    CircleAvatar(radius: 20,
+                      backgroundColor: c.primaryContainer,
+                      child: Icon(Icons.person_outline,
+                        color: c.onPrimaryContainer)),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(t('Googleアカウント未連携',
+                      'Google account not connected'),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      maxLines: 1, overflow: TextOverflow.ellipsis)),
+                  ]),
+                  const SizedBox(height: 12),
+                  Wrap(spacing: 8, runSpacing: 8, children: [
+                    FilledButton.icon(onPressed: () {},
+                      icon: const Icon(Icons.video_call_outlined),
+                      label: Text(t('作品を投稿', 'Post artwork'))),
+                    OutlinedButton.icon(onPressed: () {},
+                      icon: const Icon(Icons.account_circle_outlined),
+                      label: Text(t('Googleアカウント', 'Google account'))),
+                  ]),
+                ]),
+            ),
+          ),
+        ),
+        Expanded(child: Center(child: Column(
+          mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.video_library_outlined, size: 48,
+              color: c.onSurfaceVariant),
+            const SizedBox(height: 12),
+            Text(t('投稿した作品がありません', 'No posted artwork'),
+              style: TextStyle(color: c.onSurfaceVariant)),
+          ],
+        ))),
+      ],
+    ),
+  );
 
   Widget _shared(ColorScheme c) => Column(children: [
     Container(height: 45, padding: const EdgeInsets.symmetric(horizontal: 13),
