@@ -598,75 +598,84 @@ class _ThemeSampleScreen extends StatelessWidget {
     backgroundColor: c.surface,
     body: SafeArea(child: Column(children: [
       SizedBox(height: 43, child: Row(children: [
-        const SizedBox(width: 4),
+        const SizedBox(width: 8),
         _mockTool(c, Icons.undo),
         _mockTool(c, Icons.redo),
         const Spacer(),
-        _mockTool(c, Icons.settings_outlined),
+        _mockTool(c, Icons.settings),
         _mockTool(c, Icons.home_outlined),
-        _mockTool(c, Icons.aspect_ratio_outlined),
-        const SizedBox(width: 6),
-      ])),
-      // Production canvas has a large centered paper over the workspace
-      // surface. No raster engine or project frames are initialized here.
-      Expanded(child: LayoutBuilder(builder: (_, bounds) {
-        final width = bounds.maxWidth;
-        final side = (width - 10).clamp(1.0, bounds.maxHeight);
-        return Container(
-          color: c.surfaceContainerHigh,
-          child: Center(child: SizedBox(width: side, height: side,
-            child: _fakePaper(c))),
-        );
-      })),
-      SizedBox(height: 25, child: Row(children: [
+        _mockTool(c, Icons.movie_filter_outlined),
         const SizedBox(width: 8),
-        Text('●  0%', style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+      ])),
+      // No project instance, image decoding, or raster engine. The real
+      // initial canvas shows a landscape paper and collapsed brush settings.
+      Expanded(child: Container(
+        key: const Key('themePreviewCanvasViewport'),
+        color: c.surfaceContainerHigh,
+        child: LayoutBuilder(builder: (_, bounds) {
+          final paperWidth = bounds.maxWidth;
+          return Center(child: SizedBox(
+            key: const Key('themePreviewCanvasPaper'),
+            width: paperWidth,
+            height: (paperWidth * 9 / 16).clamp(1.0, bounds.maxHeight),
+            child: const ColoredBox(color: Colors.white),
+          ));
+        }),
+      )),
+      SizedBox(height: 32, child: Row(children: [
+        const SizedBox(width: 12),
+        Icon(Icons.circle, size: 7, color: c.onSurfaceVariant),
+        const SizedBox(width: 4),
+        Text('5', style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+        const SizedBox(width: 8),
+        Icon(Icons.opacity, size: 12, color: c.onSurfaceVariant),
+        const SizedBox(width: 4),
+        Text('100%', style: TextStyle(fontSize: 10,
+          color: c.onSurfaceVariant)),
         const Spacer(),
-        Text('2D', style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
-        const Icon(Icons.keyboard_arrow_down, size: 16),
+        Text(t('詳細', 'Details'), style: TextStyle(
+          fontSize: 10, color: c.onSurfaceVariant)),
+        const Icon(Icons.keyboard_arrow_down, size: 17),
         const SizedBox(width: 8),
       ])),
-      SizedBox(height: 40, child: Row(children: [
-        const SizedBox(width: 8),
-        _mockTool(c, Icons.brush, active: true),
-        const SizedBox(width: 5),
-        Expanded(child: _mockSlider(c, position: .45)),
-        Text('12', style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
-        const SizedBox(width: 10),
-      ])),
-      SizedBox(height: 40, child: Row(children: [
-        const SizedBox(width: 8),
-        _mockTool(c, Icons.opacity),
-        const SizedBox(width: 5),
-        Expanded(child: _mockSlider(c, position: .85)),
-        Text('85%', style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
-        const SizedBox(width: 10),
-      ])),
-      SizedBox(height: 48, child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+      SizedBox(height: 25, child: Center(child:
+        Icon(Icons.keyboard_arrow_down, size: 19, color: c.onSurfaceVariant))),
+      SizedBox(height: 50, child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _mockTool(c, Icons.brush, active: true),
           _mockTool(c, Icons.auto_fix_off),
           _mockTool(c, Icons.format_color_fill),
           _mockTool(c, Icons.colorize),
+          _mockTool(c, Icons.pan_tool),
           _mockTool(c, Icons.select_all),
-          _mockTool(c, Icons.pan_tool_outlined),
+          _mockTool(c, Icons.text_fields),
+          _mockTool(c, Icons.category),
+          Container(height: 25, width: 25,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.black,
+              border: Border.all(color: c.outlineVariant, width: 2))),
+          _mockTool(c, Icons.tune),
           _mockTool(c, Icons.layers_outlined),
-          _mockTool(c, Icons.palette_outlined),
         ])),
-      Container(height: 51, padding: const EdgeInsets.symmetric(horizontal: 9),
-        decoration: BoxDecoration(border: Border(top: BorderSide(
-          color: c.outlineVariant))),
+      SizedBox(height: 22, child: Center(child:
+        Icon(Icons.keyboard_arrow_down, size: 19, color: c.onSurfaceVariant))),
+      Container(height: 58, padding: const EdgeInsets.symmetric(horizontal: 8),
+        color: c.surfaceContainerLow,
         child: Row(children: [
-          ...List.generate(5, (i) => Container(
-            width: 45, margin: const EdgeInsets.fromLTRB(1, 5, 3, 5),
-            color: Colors.white,
-            child: DecoratedBox(decoration: BoxDecoration(
-              border: Border.all(color: i == 0 ? c.primary : c.outlineVariant,
-                width: i == 0 ? 2 : 1)))),
-          ),
+          ...List.generate(4, (i) => Container(
+            width: 49, margin: const EdgeInsets.fromLTRB(1, 5, 0, 5),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: i == 0 ? c.primary : c.outlineVariant,
+                width: i == 0 ? 2 : 1)),
+          )),
           const Spacer(),
-          _mockTool(c, Icons.play_arrow_outlined),
+          _mockTool(c, Icons.movie_filter_outlined),
+          _mockTool(c, Icons.chevron_right),
         ])),
     ])),
   );
@@ -674,25 +683,37 @@ class _ThemeSampleScreen extends StatelessWidget {
   Widget _timeline(ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
     body: SafeArea(child: Column(children: [
-      SizedBox(height: 44, child: Row(children: [
+      SizedBox(height: 56, child: Row(children: [
         _mockTool(c, Icons.arrow_back),
-        Expanded(child: Text(t('練習作品', 'Practice'), maxLines: 1,
-          overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12,
-          fontWeight: FontWeight.w600))),
+        _mockTool(c, Icons.palette_outlined),
+        Expanded(child: Text('all-route-audit',
+          maxLines: 1, overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold))),
         _mockTool(c, Icons.home_outlined),
         _mockTool(c, Icons.undo),
         _mockTool(c, Icons.redo),
         _mockTool(c, Icons.more_vert),
         _mockTool(c, Icons.help_outline),
       ])),
-      Expanded(flex: 7, child: Column(children: [
-        AspectRatio(aspectRatio: 16 / 9, child: _fakePaper(c)),
-        const Spacer(),
-        const SizedBox(height: 8),
-      ])),
-      Padding(padding: const EdgeInsets.symmetric(horizontal: 15),
-        child: _mockSlider(c, position: .05, height: 26)),
-      SizedBox(height: 46, child: Row(
+      Padding(padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: ClipRRect(borderRadius: BorderRadius.circular(3),
+          child: AspectRatio(
+            key: const Key('themePreviewTimelinePaper'),
+            aspectRatio: 16 / 9,
+            child: Container(color: Colors.white,
+              alignment: Alignment.topRight,
+              child: Padding(padding: const EdgeInsets.all(10),
+                child: Icon(Icons.fullscreen, size: 16,
+                  color: c.onSurfaceVariant)),
+            ),
+          ))),
+      Container(height: 25, alignment: Alignment.center,
+        child: Container(width: 38, height: 4,
+          decoration: BoxDecoration(color: c.outlineVariant,
+            borderRadius: BorderRadius.circular(4)))),
+      Padding(padding: const EdgeInsets.symmetric(horizontal: 18),
+        child: _mockSlider(c, position: .08, height: 43)),
+      SizedBox(height: 68, child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _mockTool(c, Icons.skip_previous),
@@ -702,38 +723,76 @@ class _ThemeSampleScreen extends StatelessWidget {
           _mockTool(c, Icons.skip_next),
           _mockTool(c, Icons.repeat),
         ])),
-      Container(height: 2, color: c.outlineVariant),
+      Container(height: 1, color: c.outlineVariant),
       SizedBox(height: 40, child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _mockTool(c, Icons.access_time_outlined),
+          _mockTool(c, Icons.add_circle_outline),
+          _mockTool(c, Icons.video_collection_outlined),
           _mockTool(c, Icons.movie_outlined),
-          _mockTool(c, Icons.image_outlined),
-          _mockTool(c, Icons.music_note_outlined),
-          _mockTool(c, Icons.text_fields),
+          _mockTool(c, Icons.camera_outlined),
+          _mockTool(c, Icons.push_pin_outlined),
           _mockTool(c, Icons.layers_outlined),
-          _mockTool(c, Icons.file_copy_outlined),
+          _mockTool(c, Icons.note_add_outlined),
         ])),
-      Container(height: 33, color: c.surfaceContainerHigh,
+      Container(height: 40, padding: const EdgeInsets.symmetric(horizontal: 8),
+        color: c.surfaceContainerLow, child: Row(children: [
+          Text(t('選択', 'Select'), style: TextStyle(fontSize: 11,
+            color: c.primary)),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: c.primary, borderRadius: BorderRadius.circular(28)),
+            child: Row(children: [
+              Icon(Icons.check, size: 12, color: c.onPrimary),
+              const SizedBox(width: 5),
+              Text('Scene1', style: TextStyle(fontSize: 11,
+                color: c.onPrimary, fontWeight: FontWeight.bold)),
+            ])),
+          const SizedBox(width: 12),
+          _mockTool(c, Icons.more_vert),
+          _mockTool(c, Icons.add),
+        ])),
+      Container(
+        key: const Key('themePreviewTimelineTracks'),
+        height: 44, color: c.surface,
         child: Row(children: [
-          Container(width: 98, alignment: Alignment.center,
-            color: c.primary, child: Text('Scene1',
-              style: TextStyle(fontSize: 12, color: c.onPrimary))),
-          Expanded(child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(6, (i) => Text('${i + 1}',
-              style: const TextStyle(fontSize: 10))))),
+          SizedBox(width: 105, child: Row(children: [
+            _mockTool(c, Icons.movie_filter_outlined),
+            Text(t('フレーム', 'Frames'), style: const TextStyle(fontSize: 10)),
+          ])),
+          const Spacer(),
+          Text(t('選択', 'Select'), style: TextStyle(
+            fontSize: 10, color: c.primary)),
+          const SizedBox(width: 18),
+          ...List.generate(4, (i) => Container(
+            width: 36, height: 38,
+            margin: const EdgeInsets.symmetric(horizontal: 1),
+            alignment: Alignment.bottomLeft,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(
+                color: i == 0 ? c.primary : c.outlineVariant,
+                width: i == 0 ? 2 : 1),
+              borderRadius: BorderRadius.circular(3)),
+            child: Text((i + 1).toString(), style: const TextStyle(fontSize: 8)),
+          )),
         ])),
-      Expanded(flex: 5, child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _timelineTrack(c, t('描画フレーム', 'Draw frames')),
-          _timelineTrack(c, t('画像', 'Images')),
-          _timelineTrack(c, t('動画', 'Video')),
-          _timelineTrack(c, t('テキスト', 'Text')),
+      Container(height: 32, color: c.surfaceContainerLow,
+        child: Row(children: [
+          _mockTool(c, Icons.movie_filter_outlined),
+          Expanded(child: Text(t('エンドカードトラック', 'End-card track'),
+            style: const TextStyle(fontSize: 9))),
+          Text('NIARIM', style: TextStyle(fontSize: 9,
+            color: c.onSurfaceVariant)),
+          const SizedBox(width: 18),
+          Icon(Icons.delete, size: 13, color: c.primary),
+          const SizedBox(width: 70),
         ])),
+      const Expanded(child: SizedBox.shrink()),
     ])),
   );
-
 
   Widget _timelineTrack(ColorScheme c, String label) => SizedBox(
     height: 41, child: Row(children: [
