@@ -342,7 +342,7 @@ class ProjectListWidget extends StatelessWidget {
           if (folder.isFavorite)
             Icon(
               Icons.star,
-              color: ThemeService.activeColorScheme.tertiary,
+              color: Theme.of(context).colorScheme.primary,
               size: 18,
             ),
           if (!isSelectionMode && onPickProject == null)
@@ -653,7 +653,7 @@ class ProjectListWidget extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.star,
-                  color: ThemeService.activeColorScheme.tertiary,
+                  color: Theme.of(context).colorScheme.primary,
                   size: 14,
                 ),
               ),
