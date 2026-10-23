@@ -268,6 +268,7 @@ class _ThemeSampleScreen extends StatelessWidget {
   Widget _heading(String value) => Padding(padding: const EdgeInsets.symmetric(vertical: 12),
     child: Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)));
   Widget _list(List<Widget> children) => ListView(
+    key: const Key('themePreviewContentList'),
     physics: const NeverScrollableScrollPhysics(),
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10), children: children);
   Widget _cta(ColorScheme c, String label, {IconData icon = Icons.check}) =>
