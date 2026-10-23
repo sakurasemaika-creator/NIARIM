@@ -131,7 +131,10 @@ void main() {
       // assertion only, jump the internal scroll position programmatically;
       // the rendered screen remains top-aligned and noninteractive.
       final scrollable = tester.state<ScrollableState>(
-        find.byType(Scrollable).last);
+        find.descendant(
+          of: find.byKey(const Key('themePreviewContentList')),
+          matching: find.byType(Scrollable),
+        ).first);
       for (var attempt = 0;
            attempt < 30 && find.text(label).evaluate().isEmpty;
            attempt++) {
