@@ -422,12 +422,12 @@ class _ThemeSampleScreen extends StatelessWidget {
 
   Widget _mockSettingRow(ColorScheme c, IconData icon, String title,
       {String? subtitle}) =>
-    Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
+    Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: c.surfaceContainerLow,
         borderRadius: BorderRadius.circular(13),
-        color: c.surfaceContainerLow),
-      child: ListTile(
+        child: ListTile(
         dense: true,
         leading: Icon(icon, color: c.primary, size: 22),
         title: Text(title, style: const TextStyle(
@@ -435,6 +435,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         subtitle: subtitle == null ? null : Text(subtitle,
           style: TextStyle(color: c.onSurfaceVariant, fontSize: 10)),
         trailing: Icon(Icons.chevron_right, size: 18, color: c.onSurfaceVariant),
+        ),
       ),
     );
 
@@ -1085,18 +1086,18 @@ class _ThemeSampleScreen extends StatelessWidget {
             (t('4本指以上のタップ', 'Four-finger tap'), t('何もしない', 'No action')),
             (t('2本指スワイプ左右', 'Two-finger swipe'), t('ツール切り替え', 'Tool change')),
             (t('長押し', 'Long press'), t('スポイト', 'Eyedropper')),
-          ].map((e) => Container(
-            margin: const EdgeInsets.only(bottom: 7),
-            decoration: BoxDecoration(
+          ].map((e) => Padding(
+            padding: const EdgeInsets.only(bottom: 7),
+            child: Material(
               color: c.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(10)),
-            child: ListTile(dense: true,
+              borderRadius: BorderRadius.circular(10),
+              child: ListTile(dense: true,
               title: Text(e.$1, style: const TextStyle(fontSize: 12,
                 fontWeight: FontWeight.w600)),
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                 Text(e.$2, style: TextStyle(fontSize: 10, color: c.primary)),
                 const SizedBox(width: 6), const Icon(Icons.chevron_right, size: 15),
-              ])))),
+              ]))))),
           const SizedBox(height: 12),
           _mockSection(c, t('長押しスポイト', 'Long press eyedropper'), [
             _staticControl(c, t('長押しでスポイトを起動', 'Eyedropper on hold'),
@@ -1316,8 +1317,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       t('設定', 'Settings'), t('素材', 'Materials'),
       t('ブラシ', 'Brushes'), t('自動塗り設定', 'Autofill'),
       t('テーマ', 'Themes'), t('パネル・ツールバーの設定', 'Tool layout'),
-    ].map((e) => Container(
-      margin: const EdgeInsets.symmetric(vertical: 2),
+    ].map((e) => Material(
       color: c.surfaceContainerLow,
       child: ListTile(dense: true,
         title: Text(e, style: const TextStyle(fontSize: 12)),
