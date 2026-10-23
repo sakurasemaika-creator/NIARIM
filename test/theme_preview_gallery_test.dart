@@ -294,6 +294,13 @@ void main() {
     expect(detailLoop.right, lessThan(detailTotal.left));
     expect(detailCurrent.top, greaterThan(detailImage.bottom));
     expect(detailCurrent.bottom, lessThanOrEqualTo(detailSeek.top));
+    // The first and last timestamps stay anchored at the content edges.
+    // The two middle controls use the centers of equal-width quarter cells.
+    final detailWidth = tester.getSize(
+      find.byKey(const Key('themePreviewDetailSeekBar'))).width;
+    final contentLeft = detailCurrent.left;
+    expect(detailCount.center.dx, closeTo(contentLeft + detailWidth * .375, 7));
+    expect(detailLoop.center.dx, closeTo(contentLeft + detailWidth * .625, 7));
 
     await visit('canvas');
     final canvasPaper = tester.getSize(
@@ -311,6 +318,13 @@ void main() {
           .colorScheme.surfaceContainerHighest);
     expect(canvasViewport.color, canvasScaffold.backgroundColor);
     expect(canvasStrip.color, Colors.transparent);
+    final timelineSwitch = find.byKey(
+      const Key('themePreviewCanvasTimelineButton'));
+    expect(timelineSwitch, findsOneWidget);
+    expect(find.descendant(of: timelineSwitch,
+      matching: find.byIcon(Icons.movie_filter_outlined)), findsOneWidget);
+    expect(find.descendant(of: timelineSwitch,
+      matching: find.byIcon(Icons.arrow_forward)), findsOneWidget);
 
     await visit('timeline');
     final timelinePaper = tester.getSize(
@@ -327,6 +341,10 @@ void main() {
         lessThan(tester.getTopLeft(
           find.byKey(const Key('themePreviewClose'))).dy),
         reason: 'Material $i must appear above gallery navigation');
+      final label = tester.widget<Text>(
+        find.descendant(of: kind, matching: find.byType(Text)).first);
+      expect(label.style?.fontFamily, 'Kuramubon',
+        reason: 'Material track label $i must use Kuramubon');
     }
     expect(find.byKey(const Key('themePreviewLoopButton')), findsOneWidget);
     expect(find.byKey(const Key('themePreviewFrameCounter')), findsOneWidget);
@@ -348,6 +366,29 @@ void main() {
     expect(currentRect.center.dy, greaterThan(handle.dy + 10));
     expect(totalRect.center.dy, greaterThan(handle.dy + 10));
     expect(find.byIcon(Icons.repeat), findsOneWidget);
+
+    await visit('export');
+    for (final label in ['プリセット', '標準', '高画質', 'カスタム',
+      '形式', 'MP4', 'GIF', '透過WebM', 'AVI']) {
+      final text = tester.widget<Text>(find.text(label));
+      expect(text.style?.fontFamily, 'Kuramubon',
+        reason: 'Export field $label must use Kuramubon');
+    }
+
+    await visit('community');
+    final communityAuthors = tester.widgetList<Text>(
+      find.text('サンプル作者')).toList();
+    expect(communityAuthors, isNotEmpty);
+    for (final name in communityAuthors) {
+      expect(name.style?.fontFamily, 'Kuramubon');
+    }
+    await visit('author');
+    final authorLabels = tester.widgetList<Text>(
+      find.text('サンプル作者')).toList();
+    expect(authorLabels, isNotEmpty);
+    for (final name in authorLabels) {
+      expect(name.style?.fontFamily, 'Kuramubon');
+    }
   });
 
   testWidgets('gallery works at narrow 320px portrait width', (tester) async {
