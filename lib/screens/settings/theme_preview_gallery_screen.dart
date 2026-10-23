@@ -492,11 +492,10 @@ class _ThemeSampleScreen extends StatelessWidget {
     backgroundColor: c.surface,
     appBar: AppBar(
       automaticallyImplyLeading: false,
-      leading: Icon(Icons.arrow_back, color: c.onSurface),
+      leading: Icon(Icons.menu, color: c.onSurface),
       titleSpacing: 0,
       title: Row(children: [
-        Icon(Icons.menu, size: 20, color: c.onSurface),
-        const SizedBox(width: 14),
+
         Flexible(child: Text(t('更新日時', 'Modified'),
           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
           maxLines: 1, overflow: TextOverflow.ellipsis)),
@@ -519,10 +518,11 @@ class _ThemeSampleScreen extends StatelessWidget {
           ]) Expanded(child: Column(children: [
             Expanded(child: Center(child: Text(tab, style: TextStyle(
               fontSize: 13, fontWeight: FontWeight.bold,
+              fontFamily: 'Kuramubon',
               color: tab == t('プロジェクト', 'Projects')
-                ? c.onSurface : c.onSurfaceVariant)))),
+                ? c.primary : c.onSurfaceVariant)))),
             Container(height: 2, color: tab == t('プロジェクト', 'Projects')
-                ? c.onSurface : Colors.transparent),
+                ? c.primary : Colors.transparent),
           ])),
         ])),
       ),
@@ -537,7 +537,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               color: c.surfaceContainerLow,
               borderRadius: BorderRadius.circular(24)),
             child: Text(t('お気に入り', 'Favorites'),
-              style: const TextStyle(fontSize: 11,
+              style: const TextStyle(fontFamily: 'Kuramubon', fontSize: 11,
                 fontWeight: FontWeight.w700)),
           ),
         )),
@@ -559,13 +559,23 @@ class _ThemeSampleScreen extends StatelessWidget {
           ],
         ))),
       ]),
+      Positioned(left: 13, bottom: 20,
+        child: Container(
+          key: const Key('themePreviewHomeBackFab'),
+          width: 56, height: 56,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(shape: BoxShape.circle),
+          child: DecoratedBox(decoration: BoxDecoration(
+            color: c.primary, shape: BoxShape.circle),
+            child: const SizedBox(width: 56, height: 56,
+              child: Icon(Icons.arrow_back, color: Colors.white)))),
+      ),
       Positioned(right: 13, bottom: 20,
         child: Container(
           width: 58, height: 58,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: c.primary, shape: BoxShape.circle,
-            border: Border.all(color: c.onSurface, width: 3)),
+            color: c.primary, shape: BoxShape.circle),
           child: Icon(Icons.add, color: c.onPrimary, size: 27))),
     ]),
   );
@@ -590,7 +600,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       SizedBox(height: 57, child: Row(children: [
         const SizedBox(width: 14),
         Expanded(child: Text(t('作品広場', 'Community'),
-          style: const TextStyle(
+          style: const TextStyle(fontFamily: 'Kuramubon',
             fontSize: 20, fontWeight: FontWeight.w800))),
         Stack(clipBehavior: Clip.none, children: [
           Icon(Icons.notifications_none, size: 25, color: c.onSurface),
@@ -972,9 +982,11 @@ class _ThemeSampleScreen extends StatelessWidget {
       Center(child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
         child: Material(
-          elevation: 5,
+          elevation: 0,
           color: c.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(28),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide.none),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
             child: Column(mainAxisSize: MainAxisSize.min,
@@ -982,7 +994,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               children: [
                 Text(t('書き出し完了', 'Export complete'),
                   style: const TextStyle(fontSize: 21,
-                    fontWeight: FontWeight.w700)),
+                    fontFamily: 'Kuramubon', fontWeight: FontWeight.w700)),
                 const SizedBox(height: 18),
                 Text(t('48フレームを書き出しました', '48 frames exported'),
                   style: const TextStyle(fontSize: 14)),
@@ -999,7 +1011,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                   Flexible(child: Text(t('プロジェクト一覧へ',
                     'Back to projects'), style: TextStyle(
-                      fontSize: 12, color: c.primary))),
+                      fontSize: 12, fontFamily: 'Kuramubon', color: c.primary))),
                   const SizedBox(width: 14),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -1007,7 +1019,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                     decoration: BoxDecoration(color: c.primary,
                       borderRadius: BorderRadius.circular(24)),
                     child: Text(t('共有', 'Share'),
-                      style: TextStyle(color: c.onPrimary))),
+                      style: TextStyle(fontFamily: 'Kuramubon', color: c.onPrimary))),
                 ]),
               ]),
           ),
