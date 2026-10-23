@@ -216,8 +216,12 @@ void main() {
     final deletes = byTooltip(l10n.saveTreeSlotDeleteTooltip);
     await tester.tap(deletes.first);
     await settle();
-    final deleteDialog = find.widgetWithText(AlertDialog, l10n.commonDelete);
+    // タイトルと確定ボタンの両方が「削除」なので、widgetWithText は
+    // 同じ AlertDialog を2度返す。型で一意に取得する。
+    final deleteDialog = find.byType(AlertDialog);
     expect(deleteDialog, findsOneWidget);
+    expect(find.descendant(of: deleteDialog,
+      matching: find.text(l10n.commonDelete)), findsNWidgets(2));
     expect(find.descendant(of: deleteDialog,
       matching: find.textContaining(comment)), findsOneWidget);
     expect(saveService.getNodes(project.id).single.id, node.id);
