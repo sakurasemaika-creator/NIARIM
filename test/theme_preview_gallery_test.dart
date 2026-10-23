@@ -274,11 +274,43 @@ void main() {
     final detailPaper = tester.getSize(
       find.byKey(const Key('themePreviewFakeProjectCanvas')));
     expect(detailPaper.width / detailPaper.height, closeTo(16 / 9, 0.05));
+    expect(find.text('0.1s'), findsOneWidget);
+    expect(find.text('2/12'), findsOneWidget);
+    expect(find.text('1.0s'), findsOneWidget);
+    final detailCurrent = tester.getRect(
+      find.byKey(const Key('themePreviewDetailCurrentSeconds')));
+    final detailTotal = tester.getRect(
+      find.byKey(const Key('themePreviewDetailTotalSeconds')));
+    final detailCount = tester.getRect(
+      find.byKey(const Key('themePreviewDetailFrameCounter')));
+    final detailLoop = tester.getRect(
+      find.byKey(const Key('themePreviewDetailLoopButton')));
+    final detailSeek = tester.getRect(
+      find.byKey(const Key('themePreviewDetailSeekBar')));
+    final detailImage = tester.getRect(
+      find.byKey(const Key('themePreviewFakeProjectCanvas')));
+    expect(detailCurrent.left, lessThan(detailCount.left));
+    expect(detailCount.right, lessThan(detailLoop.left));
+    expect(detailLoop.right, lessThan(detailTotal.left));
+    expect(detailCurrent.top, greaterThan(detailImage.bottom));
+    expect(detailCurrent.bottom, lessThanOrEqualTo(detailSeek.top));
 
     await visit('canvas');
     final canvasPaper = tester.getSize(
       find.byKey(const Key('themePreviewCanvasPaper')));
     expect(canvasPaper.width / canvasPaper.height, closeTo(16 / 9, 0.05));
+    final canvasScaffold = tester.widget<Scaffold>(
+      find.byKey(const Key('themePreviewCanvasScaffold')));
+    final canvasViewport = tester.widget<Container>(
+      find.byKey(const Key('themePreviewCanvasViewport')));
+    final canvasStrip = tester.widget<Container>(
+      find.byKey(const Key('themePreviewCanvasFrameStrip')));
+    expect(canvasScaffold.backgroundColor,
+      Theme.of(tester.element(
+        find.byKey(const Key('themePreviewCanvasScaffold'))))
+          .colorScheme.surfaceContainerHighest);
+    expect(canvasViewport.color, canvasScaffold.backgroundColor);
+    expect(canvasStrip.color, Colors.transparent);
 
     await visit('timeline');
     final timelinePaper = tester.getSize(
