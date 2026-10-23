@@ -2720,12 +2720,17 @@ class _ThemeSampleScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
               Wrap(spacing: 7, runSpacing: 2, children: [
-                Text(t('投稿 3件', '3 posts')),
-                Text(t('フォロー中 4', '4 following')),
-                Text(t('フォロワー 12', '12 followers')),
-              ].map((w) => DefaultTextStyle(
-                style: TextStyle(fontSize: 11,
-                  color: c.onSurfaceVariant), child: w)).toList()),
+                for (final label in [
+                  t('投稿 3件', '3 posts'),
+                  t('フォロー中 4', '4 following'),
+                  t('フォロワー 12', '12 followers'),
+                ])
+                  Text(label, style: TextStyle(
+                    fontSize: 11,
+                    fontFamily: 'HakkouMincho',
+                    fontFamilyFallback: const ['NotoSerifJP'],
+                    color: c.onSurfaceVariant)),
+              ]),
             ],
           )),
         ])),
