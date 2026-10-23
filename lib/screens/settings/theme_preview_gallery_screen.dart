@@ -1510,39 +1510,104 @@ class _ThemeSampleScreen extends StatelessWidget {
     _cta(c, t('プランを見る', 'View plans')),
   ]);
 
-  Widget _storage(ColorScheme c) => _list([
-    _heading(t('NIARIMの使用量', 'NIARIM storage')),
-    const SizedBox(height: 8),
-    Row(children: [
-      SizedBox(width: 120, height: 120,
-        child: Stack(alignment: Alignment.center, children: [
-          SizedBox(width: 120, height: 120,
-            child: CircularProgressIndicator(value: .32, strokeWidth: 23,
-              color: c.primary, backgroundColor: c.surfaceContainerHigh)),
-          Text('380 MB', style: TextStyle(fontSize: 12,
-            color: c.onSurface)),
-        ])),
-      const SizedBox(width: 16),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(t('プロジェクトデータ', 'Project data'),
-            style: const TextStyle(fontSize: 12)),
-          const Text('320 MB', style: TextStyle(fontSize: 11)),
-          const SizedBox(height: 8),
-          Text(t('キャッシュ', 'Cache'),
-            style: const TextStyle(fontSize: 12)),
-          const Text('60 MB', style: TextStyle(fontSize: 11)),
-        ])),
-    ]),
-    const SizedBox(height: 24),
-    _heading(t('容量を減らす', 'Free up space')),
-    ...[
-      (Icons.cleaning_services_outlined, t('キャッシュを削除', 'Clear cache')),
-      (Icons.delete_sweep_outlined, t('変更履歴を一時削除', 'Clear history cache')),
-      (Icons.folder_outlined, t('プロジェクトを整理する', 'Organize projects')),
-      (Icons.warning_amber_outlined, t('全データを削除', 'Delete all data')),
-    ].map((e) => _mockSettingRow(c, e.$1, e.$2)),
-  ]);
+  Widget _storage(ColorScheme c) {
+    Widget action(IconData icon, String title, {
+      String? subtitle, bool warning = false, bool inactive = false,
+    }) {
+      final ink = warning ? c.error : inactive
+          ? c.onSurfaceVariant.withValues(alpha: .45) : c.primary;
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Material(
+          color: c.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14, vertical: 12),
+            child: Row(children: [
+              Icon(icon, color: ink, size: 22),
+              const SizedBox(width: 15),
+              Expanded(child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: inactive ? ink : c.onSurface)),
+                  if (subtitle != null) Text(subtitle,
+                    style: TextStyle(fontSize: 11,
+                      color: c.onSurfaceVariant)),
+                ])),
+              if (!inactive) Icon(Icons.chevron_right, color: ink),
+            ]),
+          ),
+        ),
+      );
+    }
+    return ListView(
+      key: const Key('themePreviewContentList'),
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text(t('NIARIMの内訳', 'NIARIM breakdown'),
+          style: const TextStyle(fontWeight: FontWeight.w700)),
+        const SizedBox(height: 8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              key: const Key('themePreviewStoragePie'),
+              width: 120, height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: SweepGradient(
+                  colors: [c.primary, c.tertiary, c.tertiary],
+                  stops: const [0.0, .003, 1.0]),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final item in [
+                  (c.primary, t('プロジェクトデータ', 'Project data'), '1.2KB'),
+                  (c.tertiary, t('キャッシュ', 'Cache'), '769.5KB'),
+                ]) Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: Row(children: [
+                    Container(width: 10, height: 10,
+                      decoration: BoxDecoration(
+                        color: item.$1, shape: BoxShape.circle)),
+                    const SizedBox(width: 6),
+                    Expanded(child: Text(item.$2,
+                      style: const TextStyle(fontSize: 12))),
+                    Text(item.$3, style: const TextStyle(
+                      fontSize: 11, fontWeight: FontWeight.w700)),
+                  ]),
+                ),
+              ],
+            )),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Text(t('整理する', 'Clean up'),
+          style: const TextStyle(fontWeight: FontWeight.w700)),
+        const SizedBox(height: 8),
+        action(Icons.cleaning_services_outlined,
+          t('キャッシュを削除', 'Clear cache'), subtitle: '769.5KB'),
+        action(Icons.image_not_supported_outlined,
+          t('未使用素材を一括削除', 'Remove unused media')),
+        action(Icons.delete_sweep_outlined,
+          t('ゴミ箱を空にする', 'Empty trash'), subtitle: '0B',
+          inactive: true),
+        action(Icons.folder_open_outlined,
+          t('プロジェクトを整理する', 'Organize projects')),
+        const Divider(height: 24),
+        action(Icons.warning_amber_outlined,
+          t('全データを削除（初期化）', 'Delete all data'),
+          warning: true),
+      ],
+    );
+  }
 
   Widget _watermark(ColorScheme c) => Column(children: [
     const SizedBox(height: 12),
