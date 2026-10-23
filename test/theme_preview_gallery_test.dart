@@ -12,6 +12,7 @@ import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/theme_preview_gallery_screen.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
 import 'package:niarim/screens/settings/theme_settings_screen.dart';
 import 'helpers/load_app_fonts.dart';
 
@@ -274,11 +275,91 @@ void main() {
     final detailPaper = tester.getSize(
       find.byKey(const Key('themePreviewFakeProjectCanvas')));
     expect(detailPaper.width / detailPaper.height, closeTo(16 / 9, 0.05));
+    expect(find.text('0.1s'), findsOneWidget);
+    expect(find.text('2/12'), findsOneWidget);
+    expect(find.text('1.0s'), findsOneWidget);
+    final detailCurrent = tester.getRect(
+      find.byKey(const Key('themePreviewDetailCurrentSeconds')));
+    final detailTotal = tester.getRect(
+      find.byKey(const Key('themePreviewDetailTotalSeconds')));
+    final detailCount = tester.getRect(
+      find.byKey(const Key('themePreviewDetailFrameCounter')));
+    final detailLoop = tester.getRect(
+      find.byKey(const Key('themePreviewDetailLoopButton')));
+    final detailSeek = tester.getRect(
+      find.byKey(const Key('themePreviewDetailSeekBar')));
+    final detailImage = tester.getRect(
+      find.byKey(const Key('themePreviewFakeProjectCanvas')));
+    expect(detailCurrent.left, lessThan(detailCount.left));
+    expect(detailCount.right, lessThan(detailLoop.left));
+    expect(detailLoop.right, lessThan(detailTotal.left));
+    expect(detailCurrent.top, greaterThan(detailImage.bottom));
+    expect(detailCurrent.bottom, lessThanOrEqualTo(detailSeek.top));
+    // Seconds retain their edge positions; all three intervening gaps
+    // between the four items must be equal (not equal-sized cells).
+    final gap1 = detailCount.left - detailCurrent.right;
+    final gap2 = detailLoop.left - detailCount.right;
+    final gap3 = detailTotal.left - detailLoop.right;
+    expect(gap2, closeTo(gap1, 2));
+    expect(gap3, closeTo(gap1, 2));
 
     await visit('canvas');
     final canvasPaper = tester.getSize(
       find.byKey(const Key('themePreviewCanvasPaper')));
     expect(canvasPaper.width / canvasPaper.height, closeTo(16 / 9, 0.05));
+    final canvasScaffold = tester.widget<Scaffold>(
+      find.byKey(const Key('themePreviewCanvasScaffold')));
+    final canvasViewport = tester.widget<Container>(
+      find.byKey(const Key('themePreviewCanvasViewport')));
+    final canvasStrip = tester.widget<Container>(
+      find.byKey(const Key('themePreviewCanvasFrameStrip')));
+    expect(canvasScaffold.backgroundColor,
+      Theme.of(tester.element(
+        find.byKey(const Key('themePreviewCanvasScaffold'))))
+          .colorScheme.surfaceContainerHighest);
+    expect(canvasViewport.color, canvasScaffold.backgroundColor);
+    expect(canvasStrip.color, Colors.transparent);
+    // Background remains clear, but text and icons keep their actual
+    // eight-direction glyph outlines, including non-tool status controls.
+    final undoIcon = tester.widget<Icon>(find.byIcon(Icons.undo));
+    expect(undoIcon.shadows, hasLength(8));
+    final brushMock = tester.widget<Container>(find.byWidgetPredicate(
+      (widget) => widget is Container &&
+          widget.child is Icon &&
+          (widget.child as Icon).icon == Icons.brush,
+    ));
+    final selectedBrush = brushMock.child! as Icon;
+    expect(selectedBrush.color,
+      Theme.of(tester.element(
+        find.byKey(const Key('themePreviewCanvasScaffold'))))
+        .colorScheme.primary);
+    expect((brushMock.decoration! as BoxDecoration).color,
+      Colors.transparent,
+      reason: 'Canvas selected tool colors its icon, not an opaque tile');
+    expect(selectedBrush.shadows, hasLength(8));
+    final opacityLabel = tester.widget<Text>(find.text('100%'));
+    expect(opacityLabel.style?.shadows, hasLength(8));
+    final gripIcons = tester.widgetList<Icon>(
+      find.byIcon(Icons.keyboard_arrow_down)).toList();
+    expect(gripIcons.length, greaterThanOrEqualTo(2));
+    expect(gripIcons.every((icon) => icon.shadows?.length == 8), isTrue);
+    final canvasSwatch = tester.widget<Container>(
+      find.byKey(const Key('themePreviewCanvasColorSwatch')));
+    final swatchDecoration = canvasSwatch.decoration! as BoxDecoration;
+    final colorScheme = Theme.of(tester.element(
+      find.byKey(const Key('themePreviewCanvasScaffold')))).colorScheme;
+    expect((swatchDecoration.border! as Border).top.color,
+      CanvasIconButton.outlineColor(Colors.black, colorScheme));
+    final timelineSwitch = find.byKey(
+      const Key('themePreviewCanvasTimelineButton'));
+    expect(timelineSwitch, findsOneWidget);
+    expect(find.descendant(of: timelineSwitch,
+      matching: find.byIcon(Icons.movie_filter_outlined)), findsOneWidget);
+    expect(find.descendant(of: timelineSwitch,
+      matching: find.byIcon(Icons.arrow_forward)), findsOneWidget);
+    final timelineArrow = tester.widget<Icon>(find.descendant(
+      of: timelineSwitch, matching: find.byIcon(Icons.arrow_forward)));
+    expect(timelineArrow.shadows, hasLength(8));
 
     await visit('timeline');
     final timelinePaper = tester.getSize(
@@ -295,6 +376,10 @@ void main() {
         lessThan(tester.getTopLeft(
           find.byKey(const Key('themePreviewClose'))).dy),
         reason: 'Material $i must appear above gallery navigation');
+      final label = tester.widget<Text>(
+        find.descendant(of: kind, matching: find.byType(Text)).first);
+      expect(label.style?.fontFamily, 'Kuramubon',
+        reason: 'Material track label $i must use Kuramubon');
     }
     expect(find.byKey(const Key('themePreviewLoopButton')), findsOneWidget);
     expect(find.byKey(const Key('themePreviewFrameCounter')), findsOneWidget);
@@ -316,6 +401,29 @@ void main() {
     expect(currentRect.center.dy, greaterThan(handle.dy + 10));
     expect(totalRect.center.dy, greaterThan(handle.dy + 10));
     expect(find.byIcon(Icons.repeat), findsOneWidget);
+
+    await visit('export');
+    for (final label in ['プリセット', '標準', '高画質', 'カスタム',
+      '形式', 'MP4', 'GIF', '透過WebM', 'AVI']) {
+      final text = tester.widget<Text>(find.text(label));
+      expect(text.style?.fontFamily, 'Kuramubon',
+        reason: 'Export field $label must use Kuramubon');
+    }
+
+    await visit('community');
+    final communityAuthors = tester.widgetList<Text>(
+      find.text('サンプル作者')).toList();
+    expect(communityAuthors, isNotEmpty);
+    for (final name in communityAuthors) {
+      expect(name.style?.fontFamily, 'Kuramubon');
+    }
+    await visit('author');
+    final authorLabels = tester.widgetList<Text>(
+      find.text('サンプル作者')).toList();
+    expect(authorLabels, isNotEmpty);
+    for (final name in authorLabels) {
+      expect(name.style?.fontFamily, 'Kuramubon');
+    }
   });
 
   testWidgets('gallery works at narrow 320px portrait width', (tester) async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../services/theme_service.dart';
+import '../../../utils/color_contrast.dart';
 
 /// キャンバスモード内の常設ボタン共通スタイル：
 /// 背景は一切持たせず、キャンバス上にアイコンだけが浮かんでいる状態にした
@@ -8,10 +9,10 @@ import '../../../services/theme_service.dart';
 /// IconButtonのデフォルト背景・円形ボーダーのようにアイコンの周囲を
 /// 大きな円で囲う方式は、マークの形に沿わず視認性が悪い。
 ///
-/// 縁取りは、アイコンを縁取り色で8方向へわずかにずらして重ねることで、
-/// 輪郭そのものに沿ったアウトラインを疑似的に作っている。色は白・黒に
-/// 固定せず、ユーザーが選んだテーマ・外観と連動させる
-/// （アイコン＝テーマの文字色、縁取り＝テーマのメニュー背景色）。
+/// 縁取りは、アイコンを縁取り色で8方向へわずかにずらして重ねる。
+/// アイコン本体はユーザー設定のテーマ色のままとし、縁取りは現在の
+/// ColorScheme.surface / onSurface のうち本体との明暗差が大きい色を使う。
+/// 白や黒への固定はせず、背景なしのデザインも維持する。
 class CanvasIconButton extends StatelessWidget {
   final IconData? icon;
   // Material Iconsに適切なグリフがないツール（消しゴム等）や、
@@ -58,6 +59,24 @@ class CanvasIconButton extends StatelessWidget {
     for (final o in _offsets) Shadow(color: color, offset: o, blurRadius: 0),
   ];
 
+  /// Readable on either light or dark artwork: draw an opaque outline
+  /// chosen from the currently selected theme (never a hard-coded UI color).
+  /// The foreground itself remains exactly the user-configured theme color.
+  static Color outlineColor(Color foreground, ColorScheme scheme) {
+    final surface = scheme.surface;
+    final ink = scheme.onSurface;
+    return contrastRatio(foreground, surface) >=
+            contrastRatio(foreground, ink)
+        ? surface
+        : ink;
+  }
+
+  /// Shared by free-floating text, indicators and handles as well as icons.
+  static List<Shadow> foregroundShadows(
+    Color foreground,
+    ColorScheme scheme,
+  ) => outlineShadows(outlineColor(foreground, scheme));
+
   /// アイコン本体＋縁取りを描く。
   Widget _renderIcon(Color iconColor, Color outlineColor) {
     if (iconBuilder != null) {
@@ -85,8 +104,10 @@ class CanvasIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final menuBg = context.watch<ThemeService>().current.menuBgColor;
+    // Subscribe so changing the appearance preset repaints the outline.
+    context.watch<ThemeService>();
     final iconColor = selected ? scheme.primary : scheme.onSurface;
+    final outline = outlineColor(iconColor, scheme);
     return Tooltip(
       message: tooltip,
       triggerMode: longPressTooltip
@@ -102,7 +123,7 @@ class CanvasIconButton extends StatelessWidget {
           child: SizedBox(
             width: iconSize,
             height: iconSize,
-            child: _renderIcon(iconColor, menuBg.withValues(alpha: 0.75)),
+            child: _renderIcon(iconColor, outline),
           ),
         ),
       ),

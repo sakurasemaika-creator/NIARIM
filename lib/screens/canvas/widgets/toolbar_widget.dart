@@ -163,7 +163,14 @@ class ToolbarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsService>();
-    final outlineColor = context.watch<ThemeService>().current.menuBgColor;
+    context.watch<ThemeService>();
+    final colorScheme = Theme.of(context).colorScheme;
+    // A contrasting opaque theme-token ring also keeps the color swatch
+    // recognizable if the drawing happens to match its current color.
+    final outlineColor = CanvasIconButton.outlineColor(
+      currentColor,
+      colorScheme,
+    );
     final spacer = vertical
         ? const SizedBox(height: 4)
         : const SizedBox(width: 4);
@@ -208,6 +215,10 @@ class ToolbarWidget extends StatelessWidget {
                   Icons.block,
                   color: ThemeService.activeColorScheme.error,
                   size: 20,
+                  shadows: CanvasIconButton.foregroundShadows(
+                    Theme.of(context).colorScheme.error,
+                    Theme.of(context).colorScheme,
+                  ),
                 ),
               ),
           ],
@@ -261,7 +272,13 @@ class ToolbarWidget extends StatelessWidget {
           selected: currentTool == DrawingTool.ruler,
         ),
       ),
-      const HelpButton(),
+      HelpButton(
+        iconColor: colorScheme.onSurface,
+        iconShadows: CanvasIconButton.foregroundShadows(
+          colorScheme.onSurface,
+          colorScheme,
+        ),
+      ),
     ];
 
     return Container(

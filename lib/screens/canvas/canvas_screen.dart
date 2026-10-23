@@ -1647,8 +1647,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 ? Icons.keyboard_arrow_down
                                 : Icons.keyboard_arrow_up,
                             size: 22,
-                            color: ThemeService.activeColorScheme.onSurface
-                                .withValues(alpha: 0.70),
+                            color: Theme.of(context).colorScheme.onSurface,
+                            shadows: CanvasIconButton.foregroundShadows(
+                              Theme.of(context).colorScheme.onSurface,
+                              Theme.of(context).colorScheme,
+                            ),
                           ),
                         ),
                       ),
@@ -1684,9 +1687,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             size: 22,
                             // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
                             // ToolbarWidgetの色連動と同じ方針）。
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.7),
+                            color: Theme.of(context).colorScheme.onSurface,
+                            shadows: CanvasIconButton.foregroundShadows(
+                              Theme.of(context).colorScheme.onSurface,
+                              Theme.of(context).colorScheme,
+                            ),
                           ),
                         ),
                       ),
@@ -2929,7 +2934,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
             const SizedBox(width: 8),
             Text(
               l10n.canvasLassoEnclosedLabel,
-              style: const TextStyle(fontSize: 12),
+              style: TextStyle(
+                fontSize: 12,
+                shadows: CanvasIconButton.foregroundShadows(
+                  Theme.of(context).colorScheme.onSurface,
+                  Theme.of(context).colorScheme,
+                ),
+              ),
             ),
             Switch(
               value: _lassoFillEnclosedMode,
@@ -2957,6 +2968,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context).colorScheme.primary,
+                  shadows: CanvasIconButton.foregroundShadows(
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme,
+                  ),
                 ),
               ),
             ),
@@ -2980,11 +2995,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onPressed: _confirmBackToProjectList,
             tooltip: l10n.timelineBackToProjectListTooltip,
           ),
-          // Primary mode switch comes last: settings, home, timeline.
-          _topBarIconButton(
-            context,
-            Icons.movie_filter_outlined,
-            iconSize: 19,
+          // Direction cue beside the timeline symbol, sharing one hit target.
+          // CanvasIconButton keeps both glyphs transparent and theme-colored.
+          CanvasIconButton(
+            key: const Key('canvasTimelineModeButton'),
+            iconSize: 35,
+            iconBuilder: (color) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.movie_filter_outlined, size: 19, color: color),
+                const SizedBox(width: 2),
+                Icon(Icons.arrow_forward, size: 14, color: color),
+              ],
+            ),
             onPressed: () => _runAutomationBlockedAction(
               () => context.go('/timeline/${widget.projectId}'),
             ),

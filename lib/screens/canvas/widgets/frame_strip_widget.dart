@@ -11,6 +11,7 @@ import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
 import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/frame_preview_background.dart';
+import 'canvas_icon_button.dart';
 
 class FrameStripWidget extends StatefulWidget {
   final int currentFrame;
@@ -544,7 +545,11 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                     key: const ValueKey('frameStripTimelineButton'),
                     tooltip: l10n.frameStripTimelineModeLabel,
                     onPressed: widget.onTimelineTap,
-                    icon: const Icon(Icons.movie_filter_outlined),
+                    icon: Icon(
+                      Icons.movie_filter_outlined,
+                      shadows: CanvasIconButton.foregroundShadows(
+                        scheme.onSurfaceVariant, scheme),
+                    ),
                     iconSize: 21,
                     style: IconButton.styleFrom(
                       fixedSize: const Size(42, 42),
@@ -567,6 +572,8 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                         key: const ValueKey('frameStripTimelineArrow'),
                         size: 16,
                         color: scheme.onSurface,
+                        shadows: CanvasIconButton.foregroundShadows(
+                          scheme.onSurface, scheme),
                       ),
                     ),
                   ),

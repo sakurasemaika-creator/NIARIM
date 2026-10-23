@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/theme_service.dart';
+import '../../config/font_fallback.dart';
+import '../canvas/widgets/canvas_icon_button.dart';
 import '../../utils/color_contrast.dart';
 
 /// Lightweight preview of main creation and community screens only.
@@ -386,15 +388,27 @@ class _ThemeSampleScreen extends StatelessWidget {
           )),
         ]));
 
-  Widget _mockTool(ColorScheme c, IconData icon, {bool active = false}) =>
-    Container(
+  // Other previews use normal Material icons. Canvas previews use the
+  // same outlined glyphs as the REAL transparent CanvasIconButton.
+  Widget _mockTool(ColorScheme c, IconData icon,
+      {bool active = false, bool canvasOutline = false}) {
+    // CanvasIconButton marks selection by recoloring the GLYPH, not by
+    // placing an opaque tile behind it. Other mock controls retain their
+    // existing selected-container styling.
+    final foreground = active
+        ? (canvasOutline ? c.primary : c.onPrimaryContainer)
+        : c.onSurface;
+    return Container(
       constraints: const BoxConstraints(minWidth: 28, minHeight: 32),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: active ? c.primaryContainer : Colors.transparent,
+        color: active && !canvasOutline
+            ? c.primaryContainer : Colors.transparent,
         borderRadius: BorderRadius.circular(6)),
-      child: Icon(icon, size: 18,
-        color: active ? c.onPrimaryContainer : c.onSurface));
+      child: Icon(icon, size: 18, color: foreground,
+        shadows: canvasOutline
+          ? CanvasIconButton.foregroundShadows(foreground, c) : null));
+  }
 
   Widget _fakePaper(ColorScheme c, {double? height}) =>
     Container(height: height, color: Colors.white);
@@ -714,6 +728,8 @@ class _ThemeSampleScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         Text(t('サンプル作者', 'Sample artist'),
                           style: TextStyle(fontSize: 10,
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
                             color: c.onSurfaceVariant)),
                         const Spacer(),
                         Row(children: [
@@ -755,23 +771,36 @@ class _ThemeSampleScreen extends StatelessWidget {
   );
 
   Widget _canvas(ColorScheme c) => Scaffold(
-    backgroundColor: c.surface,
+    key: const Key('themePreviewCanvasScaffold'),
+    // Match the real canvas outer area. Bars have transparent backgrounds.
+    backgroundColor: c.surfaceContainerHighest,
     body: SafeArea(child: Column(children: [
       SizedBox(height: 43, child: Row(children: [
         const SizedBox(width: 8),
-        _mockTool(c, Icons.undo),
-        _mockTool(c, Icons.redo),
+        _mockTool(c, Icons.undo, canvasOutline: true),
+        _mockTool(c, Icons.redo, canvasOutline: true),
         const Spacer(),
-        _mockTool(c, Icons.settings),
-        _mockTool(c, Icons.home_outlined),
-        _mockTool(c, Icons.movie_filter_outlined),
+        _mockTool(c, Icons.settings, canvasOutline: true),
+        _mockTool(c, Icons.home_outlined, canvasOutline: true),
+        // Direction cue for the same timeline switch used in CanvasScreen.
+        SizedBox(
+          key: const Key('themePreviewCanvasTimelineButton'),
+          width: 36, height: 32,
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(Icons.movie_filter_outlined, size: 19, color: c.onSurface,
+              shadows: CanvasIconButton.foregroundShadows(c.onSurface, c)),
+            const SizedBox(width: 2),
+            Icon(Icons.arrow_forward, size: 13, color: c.onSurface,
+              shadows: CanvasIconButton.foregroundShadows(c.onSurface, c)),
+          ]),
+        ),
         const SizedBox(width: 8),
       ])),
       // No project instance, image decoding, or raster engine. The real
       // initial canvas shows a landscape paper and collapsed brush settings.
       Expanded(child: Container(
         key: const Key('themePreviewCanvasViewport'),
-        color: c.surfaceContainerHigh,
+        color: c.surfaceContainerHighest,
         child: LayoutBuilder(builder: (_, bounds) {
           final paperWidth = bounds.maxWidth;
           return Center(child: SizedBox(
@@ -784,45 +813,59 @@ class _ThemeSampleScreen extends StatelessWidget {
       )),
       SizedBox(height: 32, child: Row(children: [
         const SizedBox(width: 12),
-        Icon(Icons.circle, size: 7, color: c.onSurfaceVariant),
+        Icon(Icons.circle, size: 7, color: c.onSurfaceVariant,
+          shadows: CanvasIconButton.foregroundShadows(c.onSurfaceVariant, c)),
         const SizedBox(width: 4),
-        Text('5', style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+        Text('5', style: TextStyle(fontSize: 10, color: c.onSurfaceVariant,
+          shadows: CanvasIconButton.foregroundShadows(c.onSurfaceVariant, c))),
         const SizedBox(width: 8),
-        Icon(Icons.opacity, size: 12, color: c.onSurfaceVariant),
+        Icon(Icons.opacity, size: 12, color: c.onSurfaceVariant,
+          shadows: CanvasIconButton.foregroundShadows(c.onSurfaceVariant, c)),
         const SizedBox(width: 4),
         Text('100%', style: TextStyle(fontSize: 10,
-          color: c.onSurfaceVariant)),
+          color: c.onSurfaceVariant,
+          shadows: CanvasIconButton.foregroundShadows(c.onSurfaceVariant, c))),
         const Spacer(),
         Text(t('詳細', 'Details'), style: TextStyle(
-          fontSize: 10, color: c.onSurfaceVariant)),
-        const Icon(Icons.keyboard_arrow_down, size: 17),
+          fontSize: 10, color: c.onSurfaceVariant,
+          shadows: CanvasIconButton.foregroundShadows(c.onSurfaceVariant, c))),
+        Icon(Icons.keyboard_arrow_down, size: 17, color: c.onSurfaceVariant,
+          shadows: CanvasIconButton.foregroundShadows(c.onSurfaceVariant, c)),
         const SizedBox(width: 8),
       ])),
       SizedBox(height: 25, child: Center(child:
-        Icon(Icons.keyboard_arrow_down, size: 19, color: c.onSurfaceVariant))),
+        Icon(Icons.keyboard_arrow_down, size: 19, color: c.onSurfaceVariant,
+          shadows: CanvasIconButton.foregroundShadows(c.onSurfaceVariant, c)))),
       SizedBox(height: 50, child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _mockTool(c, Icons.brush, active: true),
-          _mockTool(c, Icons.auto_fix_off),
-          _mockTool(c, Icons.format_color_fill),
-          _mockTool(c, Icons.colorize),
-          _mockTool(c, Icons.pan_tool),
-          _mockTool(c, Icons.select_all),
-          _mockTool(c, Icons.text_fields),
-          _mockTool(c, Icons.category),
-          Container(height: 25, width: 25,
+          _mockTool(c, Icons.brush, active: true, canvasOutline: true),
+          _mockTool(c, Icons.auto_fix_off, canvasOutline: true),
+          _mockTool(c, Icons.format_color_fill, canvasOutline: true),
+          _mockTool(c, Icons.colorize, canvasOutline: true),
+          _mockTool(c, Icons.pan_tool, canvasOutline: true),
+          _mockTool(c, Icons.select_all, canvasOutline: true),
+          _mockTool(c, Icons.text_fields, canvasOutline: true),
+          _mockTool(c, Icons.category, canvasOutline: true),
+          Container(
+            key: const Key('themePreviewCanvasColorSwatch'),
+            height: 25, width: 25,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.black,
-              border: Border.all(color: c.outlineVariant, width: 2))),
-          _mockTool(c, Icons.tune),
-          _mockTool(c, Icons.layers_outlined),
+              border: Border.all(
+                color: CanvasIconButton.outlineColor(Colors.black, c),
+                width: 2))),
+          _mockTool(c, Icons.tune, canvasOutline: true),
+          _mockTool(c, Icons.layers_outlined, canvasOutline: true),
         ])),
       SizedBox(height: 22, child: Center(child:
-        Icon(Icons.keyboard_arrow_down, size: 19, color: c.onSurfaceVariant))),
-      Container(height: 58, padding: const EdgeInsets.symmetric(horizontal: 8),
-        color: c.surfaceContainerLow,
+        Icon(Icons.keyboard_arrow_down, size: 19, color: c.onSurfaceVariant,
+          shadows: CanvasIconButton.foregroundShadows(c.onSurfaceVariant, c)))),
+      Container(
+        key: const Key('themePreviewCanvasFrameStrip'),
+        height: 58, padding: const EdgeInsets.symmetric(horizontal: 8),
+        color: Colors.transparent,
         child: Row(children: [
           ...List.generate(4, (i) => Container(
             width: 49, margin: const EdgeInsets.fromLTRB(1, 5, 0, 5),
@@ -834,8 +877,8 @@ class _ThemeSampleScreen extends StatelessWidget {
                 width: i == 0 ? 2 : 1)),
           )),
           const Spacer(),
-          _mockTool(c, Icons.movie_filter_outlined),
-          _mockTool(c, Icons.chevron_right),
+          _mockTool(c, Icons.movie_filter_outlined, canvasOutline: true),
+          _mockTool(c, Icons.chevron_right, canvasOutline: true),
         ])),
     ])),
   );
@@ -1007,7 +1050,9 @@ class _ThemeSampleScreen extends StatelessWidget {
         const SizedBox(width: 3),
         Expanded(child: Text(label, maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 8, color: c.onSurface))),
+          style: TextStyle(fontSize: 8, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            color: c.onSurface))),
       ])),
       Expanded(child: Container(
         margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
@@ -1192,7 +1237,36 @@ class _ThemeSampleScreen extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 10),
-      _mockSlider(c, position: .11, height: 28),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: SizedBox(
+          height: 34,
+          // Match the real player: the time labels stay at the two edges
+          // and the three intervening horizontal gaps are equal.
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('0.1s',
+                key: const Key('themePreviewDetailCurrentSeconds'),
+                style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)),
+              Text('2/12',
+                key: const Key('themePreviewDetailFrameCounter'),
+                style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)),
+              SizedBox(
+                key: const Key('themePreviewDetailLoopButton'),
+                width: 34, height: 34,
+                child: Icon(Icons.repeat, color: c.primary, size: 20)),
+              Text('1.0s',
+                key: const Key('themePreviewDetailTotalSeconds'),
+                style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)),
+            ],
+          ),
+        ),
+      ),
+      KeyedSubtree(
+        key: const Key('themePreviewDetailSeekBar'),
+        child: _mockSlider(c, position: .11, height: 28),
+      ),
       Container(
         height: 60,
         decoration: BoxDecoration(
@@ -1257,23 +1331,33 @@ class _ThemeSampleScreen extends StatelessWidget {
     padding: const EdgeInsets.all(16),
     children: [
       Text(t('プリセット', 'Preset'),
-        style: const TextStyle(fontWeight: FontWeight.bold)),
+        style: const TextStyle(fontWeight: FontWeight.bold,
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback)),
       const SizedBox(height: 8),
       SizedBox(width: double.infinity, child: SegmentedButton<String>(
         segments: [
           ButtonSegment<String>(
-            value: 'standard', label: Text(t('標準', 'Standard'))),
+            value: 'standard', label: Text(t('標準', 'Standard'),
+              style: const TextStyle(fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback))),
           ButtonSegment<String>(
-            value: 'high', label: Text(t('高画質', 'High quality'))),
+            value: 'high', label: Text(t('高画質', 'High quality'),
+              style: const TextStyle(fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback))),
           ButtonSegment<String>(
-            value: 'custom', label: Text(t('カスタム', 'Custom'))),
+            value: 'custom', label: Text(t('カスタム', 'Custom'),
+              style: const TextStyle(fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback))),
         ],
         selected: const {'standard'}, onSelectionChanged: (_) {},
         showSelectedIcon: true,
       )),
       const SizedBox(height: 24),
       Text(t('形式', 'Format'),
-        style: const TextStyle(fontWeight: FontWeight.bold)),
+        style: const TextStyle(fontWeight: FontWeight.bold,
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback)),
       const SizedBox(height: 8),
       for (final option in [
         ('MP4', t('汎用動画形式', 'Universal video format')),
@@ -1293,10 +1377,14 @@ class _ThemeSampleScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(option.value.$1, style: const TextStyle(
-                fontSize: 14, fontWeight: FontWeight.w700)),
+                fontSize: 14, fontWeight: FontWeight.w700,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback)),
               const SizedBox(height: 3),
               Text(option.value.$2, style: TextStyle(
-                fontSize: 11, color: c.onSurfaceVariant)),
+                fontSize: 11, color: c.onSurfaceVariant,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback)),
             ],
           )),
         ])),
@@ -2748,7 +2836,9 @@ class _ThemeSampleScreen extends StatelessWidget {
               const SizedBox(height: 9),
               Text(t('サンプル作者', 'Sample artist'),
                 style: TextStyle(
-                  fontSize: 10, color: c.onSurfaceVariant)),
+                  fontSize: 10, color: c.onSurfaceVariant,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback)),
               const Spacer(),
               Row(children: [
                 Icon(Icons.play_arrow, size: 11,
@@ -2770,7 +2860,9 @@ class _ThemeSampleScreen extends StatelessWidget {
   Widget _author(ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
     appBar: AppBar(
-      title: Text(t('サンプル作者', 'Sample artist')),
+      title: Text(t('サンプル作者', 'Sample artist'),
+        style: const TextStyle(fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback)),
       actions: [
         Icon(Icons.filter_alt_outlined, color: c.onSurface),
         const SizedBox(width: 6),
@@ -2808,7 +2900,9 @@ class _ThemeSampleScreen extends StatelessWidget {
             children: [
               Text(t('サンプル作者', 'Sample artist'),
                 style: const TextStyle(fontSize: 16,
-                  fontWeight: FontWeight.bold)),
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback)),
               const SizedBox(height: 4),
               Wrap(spacing: 7, runSpacing: 2, children: [
                 for (final label in [

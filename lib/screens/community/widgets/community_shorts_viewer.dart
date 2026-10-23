@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../config/font_fallback.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -360,6 +361,9 @@ class _ShortsPage extends StatelessWidget {
                                           color: scheme.primary,
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
+                                          fontFamily: 'Kuramubon',
+                                          fontFamilyFallback:
+                                              kHeadingFontFallback,
                                         ),
                                       ),
                                       Text(

@@ -202,5 +202,48 @@ void main() {
       savedAtText: savedAtText,
       comment: comment,
     );
+
+    // 読み込みのキャンセルでは、プロジェクトもセーブデータも変更しない。
+    await tester.tap(find.descendant(
+      of: find.widgetWithText(AlertDialog, l10n.saveTreeRestoreAction),
+      matching: find.widgetWithText(TextButton, l10n.commonCancel),
+    ));
+    await settle();
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(saveService.getNodes(project.id).single.id, node.id);
+
+    // ゴミ箱も即時削除ではなく、名前入りの確認ダイアログを表示する。
+    final deletes = byTooltip(l10n.saveTreeSlotDeleteTooltip);
+    await tester.tap(deletes.first);
+    await settle();
+    // タイトルと確定ボタンの両方が「削除」なので、widgetWithText は
+    // 同じ AlertDialog を2度返す。型で一意に取得する。
+    final deleteDialog = find.byType(AlertDialog);
+    expect(deleteDialog, findsOneWidget);
+    expect(find.descendant(of: deleteDialog,
+      matching: find.text(l10n.commonDelete)), findsNWidgets(2));
+    expect(find.descendant(of: deleteDialog,
+      matching: find.textContaining(comment)), findsOneWidget);
+    expect(saveService.getNodes(project.id).single.id, node.id);
+    await tester.tap(find.descendant(
+      of: deleteDialog,
+      matching: find.widgetWithText(TextButton, l10n.commonCancel),
+    ));
+    await settle();
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(saveService.getNodes(project.id).single.id, node.id);
+
+    // 空スロットの書き込みも、保存ダイアログで確定を求める。
+    // キャンセルすればスロットにセーブデータは作られない。
+    await tester.tap(writes.at(1));
+    await settle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, l10n.commonSave), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
+    await settle();
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(saveService.getNodes(project.id), hasLength(1));
+    expect(saveService.getNodes(project.id).single.id, node.id);
   }, timeout: const Timeout(Duration(seconds: 120)));
 }

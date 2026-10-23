@@ -224,6 +224,49 @@ void main() {
       try {
         appRouter.go(entry.route);
         await settleRoute();
+        if (entry.name == '03_project_detail') {
+          // Actual project data: 12 frames at 12fps. Keep playback status
+          // between preview and seek bar and check its real loop toggle.
+          expect(find.text('0.0s'), findsOneWidget);
+          expect(find.text('1/12'), findsOneWidget);
+          expect(find.text('1.0s'), findsOneWidget);
+          final current = tester.getRect(
+            find.byKey(const Key('projectDetailCurrentSeconds')));
+          final counter = tester.getRect(
+            find.byKey(const Key('projectDetailFrameCounter')));
+          final loop = tester.getRect(
+            find.byKey(const Key('projectDetailLoopButton')));
+          final total = tester.getRect(
+            find.byKey(const Key('projectDetailTotalSeconds')));
+          expect(current.right, lessThan(counter.left));
+          expect(counter.right, lessThan(loop.left));
+          expect(loop.right, lessThan(total.left));
+          // Gaps remain equal while current/total seconds stay at the
+          // outside edges. The loop icon gets no special fixed offset.
+          final gap1 = counter.left - current.right;
+          final gap2 = loop.left - counter.right;
+          final gap3 = total.left - loop.right;
+          expect(gap2, closeTo(gap1, 2));
+          expect(gap3, closeTo(gap1, 2));
+          final loopButton = find.byKey(const Key('projectDetailLoopButton'));
+          final activeIcon = tester.widget<Icon>(
+            find.descendant(of: loopButton, matching: find.byIcon(Icons.repeat)));
+          await tester.tap(loopButton);
+          await settleRoute();
+          final inactiveIcon = tester.widget<Icon>(
+            find.descendant(of: loopButton, matching: find.byIcon(Icons.repeat)));
+          expect(inactiveIcon.color, isNot(activeIcon.color));
+          await tester.tap(loopButton);
+          await settleRoute();
+        }
+        if (entry.name == '04_canvas') {
+          final switchButton = find.byKey(const Key('canvasTimelineModeButton'));
+          expect(switchButton, findsOneWidget);
+          expect(find.descendant(of: switchButton,
+            matching: find.byIcon(Icons.movie_filter_outlined)), findsWidgets);
+          expect(find.descendant(of: switchButton,
+            matching: find.byIcon(Icons.arrow_forward)), findsWidgets);
+        }
         await capture(entry.name);
       } catch (e) {
         failures.add('${entry.name}: navigation failed: $e');

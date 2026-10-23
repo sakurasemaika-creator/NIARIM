@@ -25,6 +25,11 @@ on:
       - 'lib/l10n/**'
       - 'test/theme_contrast_rescue_test.dart'
       - 'test/theme_preview_gallery_test.dart'
+      - 'test/canvas_bar_transparency_test.dart'
+      - 'lib/screens/canvas/widgets/canvas_icon_button.dart'
+      - 'lib/screens/canvas/widgets/brush_size_slider.dart'
+      - 'lib/screens/canvas/canvas_screen.dart'
+      - 'lib/screens/canvas/widgets/frame_strip_widget.dart'
       - 'test/home_entry_navigation_test.dart'
       - 'test/timeline_no_overflow_test.dart'
       - 'test/theme_accent_contrast_test.dart'
@@ -56,6 +61,7 @@ jobs:
         run: |
           flutter test test/theme_contrast_rescue_test.dart --reporter expanded
           flutter test test/theme_preview_gallery_test.dart --reporter expanded
+          flutter test test/canvas_bar_transparency_test.dart --reporter expanded
           flutter test test/home_entry_navigation_test.dart --reporter expanded
           flutter test test/timeline_no_overflow_test.dart --reporter expanded
           flutter test test/theme_accent_contrast_test.dart --reporter expanded

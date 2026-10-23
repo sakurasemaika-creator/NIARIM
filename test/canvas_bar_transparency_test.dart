@@ -21,6 +21,8 @@ import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart'
     show kCanvasOutsideColor;
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
+import 'package:niarim/screens/canvas/widgets/brush_size_slider.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
@@ -130,6 +132,53 @@ void main() {
       Colors.transparent,
       reason: 'ツールバーへ背景色を塗らないこと（Scaffold側の色を透かす）',
     );
+    // The actual free-floating toolbar and brush status must be outlined.
+    final floatingIcon = tester.widget<Icon>(find.descendant(
+      of: find.byType(CanvasIconButton).first,
+      matching: find.byType(Icon)).first);
+    expect(floatingIcon.shadows, hasLength(8));
+
+    // The help icon is a shared widget, but in the transparent canvas
+    // toolbar it also needs an outline rather than an unstyled Material icon.
+    final help = tester.widget<Icon>(find.descendant(
+      of: find.byType(ToolbarWidget),
+      matching: find.byIcon(Icons.help_outline),
+    ).first);
+    expect(help.shadows, hasLength(8));
+
+    final colorSwatchContainer = tester.widget<Container>(
+      find.descendant(
+        of: find.byKey(const ValueKey('canvasColorSwatch')),
+        matching: find.byType(Container),
+      ).first,
+    );
+    final swatchDecoration =
+        colorSwatchContainer.decoration! as BoxDecoration;
+    final swatchScheme = Theme.of(tester.element(
+      find.byType(ToolbarWidget))).colorScheme;
+    expect((swatchDecoration.border! as Border).top.color,
+      CanvasIconButton.outlineColor(swatchDecoration.color!, swatchScheme));
+
+    final brush = find.byType(BrushSizeSlider);
+    expect(brush, findsOneWidget);
+    final brushText = tester.widget<Text>(find.descendant(
+      of: brush, matching: find.byType(Text)).first);
+    expect(brushText.style?.shadows, hasLength(8));
+    final brushIcon = tester.widget<Icon>(find.descendant(
+      of: brush, matching: find.byType(Icon)).first);
+    expect(brushIcon.shadows, hasLength(8));
+    expect(tester.widgetList<Icon>(find.byIcon(Icons.keyboard_arrow_down))
+        .any((icon) => icon.shadows?.length == 8), isTrue);
+  });
+
+  test('outline contrast follows the theme, not a fixed UI color', () {
+    final scheme = ColorScheme.fromSeed(seedColor: const Color(0xFF336699));
+    expect(CanvasIconButton.outlineColor(scheme.onSurface, scheme),
+        scheme.surface);
+    expect(CanvasIconButton.outlineColor(scheme.surface, scheme),
+        scheme.onSurface);
+    expect(CanvasIconButton.foregroundShadows(scheme.onSurface, scheme),
+        hasLength(8));
   });
 
   test('バー類のソースへ不透明な背景色が入り込んでいない', () {

@@ -379,6 +379,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                                 fontSize: 14,
                                 color: scheme.primary,
                                 fontWeight: FontWeight.w600,
+                                fontFamily: 'Kuramubon',
+                                fontFamilyFallback: kHeadingFontFallback,
                               ),
                             ),
                           ),
