@@ -773,7 +773,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       // initial canvas shows a landscape paper and collapsed brush settings.
       Expanded(child: Container(
         key: const Key('themePreviewCanvasViewport'),
-        color: c.surfaceContainerHigh,
+        color: c.surfaceContainerHighest,
         child: LayoutBuilder(builder: (_, bounds) {
           final paperWidth = bounds.maxWidth;
           return Center(child: SizedBox(
