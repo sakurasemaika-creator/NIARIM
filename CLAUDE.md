@@ -1047,6 +1047,15 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   黒になり、同じ画面の他の差し色（下線・アイコン・他のボタン）と揃って
   いなかったので差し色へ戻した。作品広場（`community_screen.dart`の
   ダイアログのボタン、`community_work_card.dart`の文字）にはまだ残っている。
+  その代わり、差し色は**「塗り」と「背景の上の文字・アイコン」で別の色**に
+  なっている（ユーザー指定の案A）：テーマ・外観の「アクセントの文字・アイコン
+  色」（`AppThemePreset.accentTextColor`、未指定なら差し色と同じ）。背景の
+  上に差し色で文字・アイコンを描くときは`AccentTextTheme.of(context)`
+  （`lib/config/accent_text_theme.dart`）を使い、`colorScheme.primary`は
+  下線・FAB・塗りのボタン・進捗表示などの塗りにだけ使うこと。文字・枠・
+  浮きのボタン、タブの文字、SnackBarの操作ボタンはテーマで既にこの色。
+  `colorScheme.primary`を文字・アイコンへ直接使っている箇所はまだ約90か所
+  （59ファイル）残っている（明るい差し色では読めない）。
 - **ホーム画面ウィジェットのPendingIntentは`requestCode`を必ず変えること**：
   `NiarimWidgetProviders.kt`の3種のウィジェット（作品／作品をつくる／
   作品広場）は同じ`MainActivity`を起動するIntentを使うため、
