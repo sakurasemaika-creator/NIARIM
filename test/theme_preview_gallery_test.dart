@@ -323,6 +323,20 @@ void main() {
     // eight-direction glyph outlines, including non-tool status controls.
     final undoIcon = tester.widget<Icon>(find.byIcon(Icons.undo));
     expect(undoIcon.shadows, hasLength(8));
+    final brushMock = tester.widget<Container>(find.byWidgetPredicate(
+      (widget) => widget is Container &&
+          widget.child is Icon &&
+          (widget.child as Icon).icon == Icons.brush,
+    ));
+    final selectedBrush = brushMock.child! as Icon;
+    expect(selectedBrush.color,
+      Theme.of(tester.element(
+        find.byKey(const Key('themePreviewCanvasScaffold'))))
+        .colorScheme.primary);
+    expect((brushMock.decoration! as BoxDecoration).color,
+      Colors.transparent,
+      reason: 'Canvas selected tool colors its icon, not an opaque tile');
+    expect(selectedBrush.shadows, hasLength(8));
     final opacityLabel = tester.widget<Text>(find.text('100%'));
     expect(opacityLabel.style?.shadows, hasLength(8));
     final gripIcons = tester.widgetList<Icon>(
