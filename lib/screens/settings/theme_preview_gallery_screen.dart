@@ -775,112 +775,150 @@ class _ThemeSampleScreen extends StatelessWidget {
 
 
 
-  Widget _form(ColorScheme c) => _list([
-    Container(
-      decoration: BoxDecoration(border: Border.all(color: c.outline),
-        borderRadius: BorderRadius.circular(4)),
-      padding: const EdgeInsets.fromLTRB(12, 7, 12, 9),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(t('プロジェクト名', 'Project name'),
-          style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
-        const SizedBox(height: 3),
-        Text(t('新規プロジェクト', 'New project'),
-          style: const TextStyle(fontSize: 13)),
+  Widget _form(ColorScheme c) => ListView(
+    key: const Key('themePreviewContentList'),
+    physics: const NeverScrollableScrollPhysics(),
+    padding: const EdgeInsets.all(16),
+    children: [
+      InputDecorator(
+        key: const Key('themePreviewMockName'),
+        isEmpty: false,
+        decoration: InputDecoration(
+          labelText: t('プロジェクト名', 'Project name'),
+          border: const OutlineInputBorder(),
+        ),
+        child: Text(t('新規プロジェクト', 'New project')),
+      ),
+      const SizedBox(height: 24),
+      const Text('FPS', style: TextStyle(fontWeight: FontWeight.bold)),
+      const SizedBox(height: 8),
+      Wrap(spacing: 8, children: [
+        for (final n in [8, 12, 24])
+          ChoiceChip(label: Text('$n'), selected: n == 12,
+            onSelected: (_) {}),
       ]),
-    ),
-    const SizedBox(height: 22),
-    const Text('FPS', style: TextStyle(fontWeight: FontWeight.bold)),
-    const SizedBox(height: 8),
-    Wrap(spacing: 8, children: [
-      _mockChip(c, '8'), _mockChip(c, '12', active: true),
-      _mockChip(c, '24'),
-    ]),
-    const SizedBox(height: 22),
-    Row(children: [
-      Expanded(child: Text(t('サイズ', 'Canvas size'),
-        style: const TextStyle(fontWeight: FontWeight.bold))),
-      Icon(Icons.tune, size: 18, color: c.primary),
-      const SizedBox(width: 6),
-      Text(t('サイズ設定', 'Size settings'),
-        style: TextStyle(fontSize: 12, color: c.primary)),
-    ]),
-    const SizedBox(height: 8),
-    ...[
-      'Full HD (16:9) 1920×1080',
-      'HD (16:9) 1280×720',
-      'SNS (1:1) 1080×1080',
-      '縦型 (9:16) 1080×1920',
-      '縦型 (4:5) 1080×1350',
-    ].asMap().entries.map((e) => Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-        decoration: BoxDecoration(
-          color: e.key == 0 ? c.primary : c.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(22)),
-        child: Text('${e.key == 0 ? '✓ ' : ''}${e.value}',
-          maxLines: 1, overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 12,
-            color: e.key == 0 ? c.onPrimary : c.onSurface)),
-      )),
-    ),
-    Align(alignment: Alignment.centerLeft,
-      child: _mockChip(c, t('カスタム', 'Custom'))),
-    const SizedBox(height: 16),
-    Container(height: 64, margin: const EdgeInsets.symmetric(horizontal: 65),
-      alignment: Alignment.center, decoration: BoxDecoration(
-        color: c.surfaceContainerHigh, border: Border.all(color: c.outlineVariant)),
-      child: const Text('1920 × 1080', style: TextStyle(fontSize: 10))),
-    const SizedBox(height: 18),
-    _mockSettingRow(c, Icons.palette_outlined, t('背景色', 'Background')),
-    _mockSettingRow(c, Icons.auto_awesome, t('自動塗り', 'Auto fill')),
-    const SizedBox(height: 12),
-    _cta(c, t('作成', 'Create'), icon: Icons.add),
-  ]);
-
-  Widget _detail(ColorScheme c) => _list([
-    AspectRatio(aspectRatio: 16 / 9, child: _fakePaper(c)),
-    const SizedBox(height: 10),
-    _mockSlider(c, position: .07, height: 28),
-    Container(
-      height: 54,
-      decoration: BoxDecoration(color: c.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(28)),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      const SizedBox(height: 24),
+      Row(children: [
+        Expanded(child: Text(t('サイズ', 'Canvas size'),
+          style: const TextStyle(fontWeight: FontWeight.bold))),
+        TextButton.icon(
+          onPressed: () {},
+          icon: const Icon(Icons.tune, size: 18),
+          label: Text(t('サイズ設定', 'Size settings')),
+        ),
+      ]),
+      const SizedBox(height: 8),
+      LayoutBuilder(builder: (context, box) => Wrap(
+        key: const Key('themePreviewMockSizes'),
+        spacing: 8, runSpacing: 8,
         children: [
-          _mockTool(c, Icons.skip_previous),
-          _mockTool(c, Icons.fast_rewind),
-          Container(width: 36, height: 36,
-            decoration: BoxDecoration(color: c.primary, shape: BoxShape.circle),
-            child: Icon(Icons.play_arrow, color: c.onPrimary)),
-          _mockTool(c, Icons.fast_forward),
-          _mockTool(c, Icons.skip_next),
-        ])),
-    const SizedBox(height: 16),
-    _cta(c, t('編集開始', 'Start editing'), icon: Icons.edit),
-    const SizedBox(height: 16),
-    Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-      _mockTool(c, Icons.folder_outlined),
-      _mockTool(c, Icons.sell_outlined),
-      _mockTool(c, Icons.star_border),
-      _mockTool(c, Icons.ios_share),
-    ]),
-    Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-      Text(t('フォルダ', 'Folder'), style: const TextStyle(fontSize: 11)),
-      Text(t('タグ', 'Tags'), style: const TextStyle(fontSize: 11)),
-      Text(t('お気に入り', 'Favorite'), style: const TextStyle(fontSize: 11)),
-      Text(t('共有', 'Share'), style: const TextStyle(fontSize: 11)),
-    ]),
-    const SizedBox(height: 16),
-    _heading(t('プロジェクト情報', 'Project information')),
-    _card(Column(children: [
-      _row(Icons.speed, 'FPS', subtitle: '12'),
-      _row(Icons.aspect_ratio, t('描画領域', 'Canvas'), subtitle: '320×180'),
-      _row(Icons.movie_filter, t('総フレーム数', 'Frames'), subtitle: '12'),
-    ])),
-  ]);
+          for (final item in [
+            (t('Full HD (16:9・YouTube等横動画向け)', 'Full HD (16:9 landscape)'), '1920×1080'),
+            (t('HD (16:9・軽量版)', 'HD (16:9)'), '1280×720'),
+            (t('1:1 スクエア (Twitter/Instagram投稿向け)', 'Square (1:1)'), '1080×1080'),
+            (t('9:16 縦型 (YouTubeショートリール・ストーリーズ向け)', 'Vertical (9:16)'), '1080×1920'),
+            (t('4:5 縦長 (Instagramフィード投稿向け)', 'Portrait (4:5)'), '1080×1350'),
+            (t('4:3 (アナログ放送比率)', '4:3 aspect ratio'), '1440×1080'),
+          ].asMap().entries)
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: box.maxWidth),
+              child: ChoiceChip(
+                label: Text(item.value.$1 + ' (' + item.value.$2 + ')',
+                  maxLines: 2, overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center),
+                selected: item.key == 0,
+                onSelected: (_) {},
+              ),
+            ),
+          ChoiceChip(label: Text(t('カスタム', 'Custom')),
+            selected: false, onSelected: (_) {}),
+        ],
+      )),
+      const SizedBox(height: 12),
+      Center(child: Container(width: 160, height: 90,
+        color: c.surfaceContainerHigh,
+        alignment: Alignment.center,
+        child: Text('1920×1080',
+          style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)))),
+      const SizedBox(height: 24),
+      _mockSettingRow(c, Icons.palette_outlined, t('背景色', 'Background')),
+      _mockSettingRow(c, Icons.auto_awesome, t('自動塗り', 'Auto fill')),
+      const SizedBox(height: 16),
+      _cta(c, t('作成', 'Create'), icon: Icons.add),
+    ],
+  );
 
+  Widget _detail(ColorScheme c) => ListView(
+    physics: const NeverScrollableScrollPhysics(),
+    padding: const EdgeInsets.all(16),
+    children: [
+      ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: AspectRatio(
+          key: const Key('themePreviewFakeProjectCanvas'),
+          aspectRatio: 16 / 9,
+          child: _fakePaper(c),
+        ),
+      ),
+      const SizedBox(height: 10),
+      _mockSlider(c, position: .11, height: 28),
+      Container(
+        height: 60,
+        decoration: BoxDecoration(
+          color: c.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(30)),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _mockTool(c, Icons.skip_previous),
+            _mockTool(c, Icons.fast_rewind),
+            Container(width: 48, height: 48,
+              decoration: BoxDecoration(color: c.primary, shape: BoxShape.circle),
+              child: Icon(Icons.play_arrow, color: c.onPrimary, size: 30)),
+            _mockTool(c, Icons.fast_forward),
+            _mockTool(c, Icons.skip_next),
+          ])),
+      const SizedBox(height: 16),
+      _cta(c, t('編集開始', 'Start editing'), icon: Icons.edit),
+      const SizedBox(height: 24),
+      Row(children: [
+        for (final item in [
+          (Icons.folder_outlined, t('フォルダ', 'Folder')),
+          (Icons.sell_outlined, t('タグ', 'Tags')),
+          (Icons.star_border, t('お気に入り\n未登録', 'Favorite\nNot added')),
+          (Icons.ios_share, t('共有', 'Share')),
+        ])
+          Expanded(child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Icon(item.$1, size: 24, color: c.onSurfaceVariant),
+            const SizedBox(height: 5),
+            Text(item.$2, textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 10)),
+          ])),
+      ]),
+      const SizedBox(height: 26),
+      Text(t('プロジェクト情報', 'Project information'),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 12),
+      Card(child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(children: [
+          for (final item in [
+            ('FPS', '12'),
+            (t('書き出しサイズ', 'Export size'), '320×180'),
+            (t('総フレーム数', 'Total frames'), '12'),
+            (t('制作時間', 'Editing time'), '0時間0分'),
+            (t('最終保存', 'Last saved'), '2026/10/23 10:00'),
+            (t('容量', 'Size'), '0B'),
+          ])
+            Padding(padding: const EdgeInsets.symmetric(vertical: 5),
+              child: Row(children: [
+                Text(item.$1, style: TextStyle(fontSize: 11,
+                  color: c.onSurfaceVariant)),
+                const Spacer(),
+                Text(item.$2, style: const TextStyle(fontSize: 11)),
+              ])),
+        ]))),
+    ],
+  );
 
   Widget _export(ColorScheme c) => _list([
     _heading(t('プリセット', 'Presets')),
