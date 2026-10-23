@@ -841,7 +841,9 @@ class _ThemeSampleScreen extends StatelessWidget {
           _mockTool(c, Icons.select_all, canvasOutline: true),
           _mockTool(c, Icons.text_fields, canvasOutline: true),
           _mockTool(c, Icons.category, canvasOutline: true),
-          Container(height: 25, width: 25,
+          Container(
+            key: const Key('themePreviewCanvasColorSwatch'),
+            height: 25, width: 25,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.black,
