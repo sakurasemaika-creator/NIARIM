@@ -29,19 +29,27 @@ void main() {
     });
   }
 
-  test('gallery contains each independent screen once, no folder/tab variants', () {
+  test('gallery contains 16 everyday screens, no tab variants or settings', () {
     final ids = themePreviewEntries.map((e) => e.id).toList();
+    const expected = [
+      'splash', 'projects', 'new', 'detail', 'canvas', 'timeline',
+      'export', 'complete', 'save', 'materials', 'community', 'work',
+      'post', 'author', 'mine', 'notifications',
+    ];
+    expect(ids, expected);
     expect(ids.toSet().length, ids.length);
-    expect(ids.length, 40);
-    expect(ids, isNot(contains('premium')));
-    expect(ids, containsAll([
-      'splash', 'projects', 'shared', 'trash', 'canvas', 'timeline', 'export',
-      'complete', 'community', 'settings', 'theme', 'widget_frame',
-    ]));
-    expect(ids, isNot(contains('folder')));
-    expect(ids, isNot(contains('works_tab')));
-    expect(ids, isNot(contains('bookmarks_tab')));
-    expect(ids, isNot(contains('popup')));
+    // Shared and Trash are existing Home tabs, not separate previews.
+    expect(ids, isNot(contains('shared')));
+    expect(ids, isNot(contains('trash')));
+    // Settings are still present in the application but excluded here.
+    for (final id in [
+      'settings', 'theme', 'performance', 'gestures', 'shortcuts', 'pen',
+      'bucket', 'workspace', 'pc_layout', 'transfer', 'widgets',
+      'widget_art', 'widget_frame', 'watermark', 'fonts', 'storage',
+      'premium', 'help', 'tips', 'autofill', 'sizes', 'license', 'privacy',
+    ]) {
+      expect(ids, isNot(contains(id)), reason: 'Excluded preview: $id');
+    }
   });
 
   testWidgets('swipe gallery renders adjacent pages, then closes', (tester) async {
@@ -82,19 +90,15 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('gallery reflects actual button, text and custom surface colors',
+  testWidgets('remaining previews follow active theme without settings page',
       (tester) async {
     SharedPreferences.setMockInitialValues({});
     final service = ThemeService();
     await service.init();
     final preset = AppThemePreset.defaultLight.copyWith(
-      textColor: const Color(0xFF112233),
+      accentColor: const Color(0xFF008B79),
       buttonTextColor: const Color(0xFF00CC11),
-      menuTextColor: const Color(0xFFCC11BB),
-      selectionTextColor: const Color(0xFF2255CC),
-      panelBgColor: const Color(0xFFEEBBCC),
-      menuBgColor: const Color(0xFFBBFFDD),
-      updateMarkColor: const Color(0xFF667788),
+      textColor: const Color(0xFF112233),
     );
     service.previewCurrent(preset);
     await tester.pumpWidget(ChangeNotifierProvider<ThemeService>.value(
@@ -109,70 +113,20 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    // Splash tiles and the app-logo foreground follow the explicit
-    // button text color, not the unrelated menu-background swatch.
+    // Splash still uses the user-selected foreground token.
     final logo = tester.widget<SvgPicture>(
-      find.byKey(const Key('themePreviewSplashAppLogo')),
-    );
+      find.byKey(const Key('themePreviewSplashAppLogo')));
     expect(logo.colorFilter,
       const ColorFilter.mode(Color(0xFF00CC11), BlendMode.srcIn));
 
-    // The theme sample must show raw user-set colors, not seed-scheme
-    // approximations (especially for the panel, menu and update mark).
-    final pager = tester.widget<PageView>(
-      find.byKey(const Key('themePreviewPager')));
-    final themeIndex = themePreviewEntries.indexWhere((e) => e.id == 'theme');
-    expect(themeIndex, greaterThan(0));
-    pager.controller!.jumpToPage(themeIndex);
+    // The next gallery page is Projects, not Shared/Trash or settings.
+    await tester.tap(find.byKey(const Key('themePreviewNext')));
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(
-      find.byKey(const Key('themePreviewTitle'))).data, 'テーマ・外観');
-
-    Future<void> checkSwatch(String label, Color expected) async {
-      // End users cannot scroll the preview content. For this color-token
-      // assertion only, jump the internal scroll position programmatically;
-      // the rendered screen remains top-aligned and noninteractive.
-      final scrollable = tester.state<ScrollableState>(
-        find.descendant(
-          of: find.byKey(const Key('themePreviewContentList')),
-          matching: find.byType(Scrollable),
-        ).first);
-      for (var attempt = 0;
-           attempt < 30 && find.text(label).evaluate().isEmpty;
-           attempt++) {
-        final position = scrollable.position;
-        final next = (position.pixels + 100)
-            .clamp(position.minScrollExtent, position.maxScrollExtent)
-            .toDouble();
-        if (next == position.pixels) break;
-        position.jumpTo(next);
-        await tester.pumpAndSettle();
-      }
-      expect(find.text(label), findsOneWidget);
-      // The production ThemeSettingsScreen uses a Material color tile with
-      // a circular swatch Container, not a Card/CircleAvatar. Match its
-      // actual read-only preview structure rather than an obsolete mock.
-      final tile = find.ancestor(
-        of: find.text(label), matching: find.byType(Material)).first;
-      final colorSample = find.descendant(
-        of: tile,
-        matching: find.byWidgetPredicate((widget) {
-          if (widget is! Container) return false;
-          final decoration = widget.decoration;
-          return decoration is BoxDecoration &&
-              decoration.shape == BoxShape.circle &&
-              decoration.color == expected;
-        }),
-      );
-      expect(colorSample, findsOneWidget, reason: label);
-    }
-    await checkSwatch('本文・通常の文字色', const Color(0xFF112233));
-    await checkSwatch('ボタン内の文字・アイコン色', const Color(0xFF00CC11));
-    await checkSwatch('メニュー・上部バーの文字色', const Color(0xFFCC11BB));
-    await checkSwatch('選択中の文字・アイコン色', const Color(0xFF2255CC));
-    await checkSwatch('パネル背景色', const Color(0xFFEEBBCC));
-    await checkSwatch('メニュー背景色', const Color(0xFFBBFFDD));
-    await checkSwatch('更新マーク色', const Color(0xFF667788));
+      find.byKey(const Key('themePreviewTitle'))).data, 'プロジェクト一覧');
+    expect(themePreviewEntries.length, 16);
+    expect(service.current.accentColor, const Color(0xFF008B79));
+    expect(find.byKey(const Key('themePreviewPager')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
