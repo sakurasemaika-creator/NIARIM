@@ -550,7 +550,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                 size: 31, color: c.primary)),
             const SizedBox(height: 13),
             Text(t('プロジェクトがありません', 'No projects'),
-              style: const TextStyle(
+              style: const TextStyle(fontFamily: 'Kuramubon',
                 fontWeight: FontWeight.w800, fontSize: 14)),
             const SizedBox(height: 6),
             Text(t('＋ボタンから新規作成', 'Create with the + button'),
@@ -567,8 +567,8 @@ class _ThemeSampleScreen extends StatelessWidget {
           decoration: const BoxDecoration(shape: BoxShape.circle),
           child: DecoratedBox(decoration: BoxDecoration(
             color: c.primary, shape: BoxShape.circle),
-            child: const SizedBox(width: 56, height: 56,
-              child: Icon(Icons.arrow_back, color: Colors.white)))),
+            child: SizedBox(width: 56, height: 56,
+              child: Icon(Icons.arrow_back, color: c.onPrimary)))),
       ),
       Positioned(right: 13, bottom: 20,
         child: Container(
@@ -980,24 +980,24 @@ class _ThemeSampleScreen extends StatelessWidget {
   Widget _previewMaterialTrack(ColorScheme c, IconData icon,
       String label, int index) => SizedBox(
     key: Key('themePreviewMaterialTrack$index'),
-    height: 29,
+    height: 18,
     child: Row(children: [
       SizedBox(width: 112, child: Row(children: [
         const SizedBox(width: 6),
-        Icon(icon, size: 13, color: c.onSurfaceVariant),
-        const SizedBox(width: 5),
+        Icon(icon, size: 11, color: c.onSurfaceVariant),
+        const SizedBox(width: 3),
         Expanded(child: Text(label, maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 9, color: c.onSurface))),
+          style: TextStyle(fontSize: 8, color: c.onSurface))),
       ])),
       Expanded(child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 3, horizontal: 2),
+        margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
         decoration: BoxDecoration(
           color: index.isEven ? c.primaryContainer : c.tertiaryContainer,
           borderRadius: BorderRadius.circular(3),
           border: Border.all(color: c.outlineVariant)),
         alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.only(left: 7),
+        padding: const EdgeInsets.only(left: 5),
         child: Text(index == 4 ? '♪ sample.wav'
           : index == 2 ? 'sample.png'
           : index == 3 ? 'sample.mp4'
