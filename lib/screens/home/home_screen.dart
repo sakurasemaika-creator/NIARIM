@@ -955,9 +955,14 @@ class _HomeTabBarState extends State<_HomeTabBar> {
     final currentIndex = widget.currentIndex;
     final controller = widget.controller;
     final scheme = Theme.of(context).colorScheme;
-    // Selection underline and selected tab text must follow the theme's
-    // actual accent color (including the red preset), never a black fallback.
-    final selectedColor = scheme.primary;
+    // Preserve the selected accent as the indicator itself (red stays red),
+    // but protect tab-label readability on extreme custom accents.
+    final background = opaqueOver(
+      Theme.of(context).scaffoldBackgroundColor,
+      Colors.black,
+    );
+    final selectedTextColor = contrastingForeground(background, scheme.primary);
+    final selectedIndicatorColor = scheme.primary;
     final textStyle = const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
@@ -989,7 +994,7 @@ class _HomeTabBarState extends State<_HomeTabBar> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: currentIndex == i ? selectedColor : Colors.transparent,
+                color: currentIndex == i ? selectedIndicatorColor : Colors.transparent,
                 width: 2,
               ),
             ),
@@ -1000,7 +1005,7 @@ class _HomeTabBarState extends State<_HomeTabBar> {
             softWrap: false,
             style: textStyle.copyWith(
               color: currentIndex == i
-                  ? selectedColor
+                  ? selectedTextColor
                   : scheme.onSurfaceVariant,
             ),
           ),
