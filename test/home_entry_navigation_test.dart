@@ -11,7 +11,6 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
-import 'package:niarim/utils/color_contrast.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:provider/provider.dart';
@@ -231,7 +230,7 @@ void main() {
   });
 
   testWidgets(
-    'home tabs and bookmark entry remain readable with light accents',
+    'home tabs and bookmark entry use the theme accent like the rest of Home',
     (tester) async {
       for (final theme in [
         AppThemePreset.defaultLight,
@@ -241,12 +240,12 @@ void main() {
         ),
       ]) {
         final l10n = await open(tester, theme: theme);
-        final background = opaqueOver(
-          Theme.of(
-            tester.element(find.byType(HomeScreen)),
-          ).scaffoldBackgroundColor,
-          Colors.black,
-        );
+        final accent = Theme.of(
+          tester.element(find.byType(HomeScreen)),
+        ).colorScheme.primary;
+        // 選ばれたタブの名前・作品広場へのボタンは、下線や他のボタンと同じ
+        // テーマの差し色（ユーザー指定。読みやすさのために黒や白へ自動で
+        // 差し替えない。読めない組み合わせは起動画面のリセットで戻せる）。
         for (final index in [0, 1, 2]) {
           await switchTab(tester, index);
           final labels = tester.widgetList<Text>(
@@ -256,8 +255,8 @@ void main() {
             ),
           );
           expect(
-            contrastRatio(background, labels.single.style!.color!),
-            greaterThanOrEqualTo(4.5),
+            labels.single.style!.color,
+            accent,
             reason: 'selected tab $index on ${theme.id}',
           );
         }
@@ -265,15 +264,8 @@ void main() {
           find.widgetWithText(OutlinedButton, l10n.communityScreenTitle),
         );
         final foreground =
-            action.style?.foregroundColor?.resolve({}) ??
-            Theme.of(
-              tester.element(find.byType(HomeScreen)),
-            ).colorScheme.primary;
-        expect(
-          contrastRatio(background, foreground),
-          greaterThanOrEqualTo(4.5),
-          reason: 'bookmark gallery action',
-        );
+            action.style?.foregroundColor?.resolve({}) ?? accent;
+        expect(foreground, accent, reason: 'bookmark gallery action');
         // 空のときのアイコンは作品一覧の空の表示と同じ色・同じ下地の円
         // （ユーザー指定。読みやすさのために黒や白へ自動で差し替えない）。
         final icon = tester.widget<Icon>(find.byIcon(Icons.bookmark_border));

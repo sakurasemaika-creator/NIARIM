@@ -4,7 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/theme_service.dart';
 import '../../config/font_fallback.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
-import '../../utils/color_contrast.dart';
 
 /// Lightweight preview of main creation and community screens only.
 /// Tab variants, settings/management pages, menus and floating panels are
@@ -537,7 +536,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               fontSize: 13, fontWeight: FontWeight.bold,
               fontFamily: 'Kuramubon',
               color: tab == t('プロジェクト', 'Projects')
-                ? contrastingForeground(opaqueOver(c.surface, Colors.black), c.primary)
+                ? c.primary
                 : c.onSurfaceVariant)))),
             Container(height: 2, color: tab == t('プロジェクト', 'Projects')
                 ? c.primary : Colors.transparent),

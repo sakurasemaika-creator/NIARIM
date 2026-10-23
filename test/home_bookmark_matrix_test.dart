@@ -390,20 +390,49 @@ void main() {
               Theme.of(home).scaffoldBackgroundColor,
               Colors.black,
             );
+            // 「再読み込み」「作品広場」のボタンは他のボタンと同じテーマの
+            // 差し色（ユーザー指定。読みやすさのために黒や白へ自動で差し
+            // 替えない）。右上の再読み込みのアイコンは文字の色のまま。
+            final accent = Theme.of(home).colorScheme.primary;
             for (final paragraph in tester.renderObjectList<RenderParagraph>(
-              find.descendant(of: buttons, matching: find.byType(RichText)),
+              find.descendant(
+                of: find.descendant(
+                  of: find.byType(HomeScreen),
+                  matching: find.byType(OutlinedButton),
+                ),
+                matching: find.byType(RichText),
+              ),
+            )) {
+              expect(
+                paragraph.text.style?.color,
+                accent,
+                reason: '$suffix rendered action foreground',
+              );
+            }
+            for (final paragraph in tester.renderObjectList<RenderParagraph>(
+              find.descendant(
+                of: find.descendant(
+                  of: find.byType(HomeScreen),
+                  matching: find.byWidgetPredicate(
+                    (w) =>
+                        w is IconButton &&
+                        (w.tooltip == l10n.communityRetry ||
+                            w.tooltip == l10n.communityReloadTooltip),
+                  ),
+                ),
+                matching: find.byType(RichText),
+              ),
             )) {
               final color = paragraph.text.style?.color;
-              if (color != null) {
-                expect(
-                  contrastRatio(
-                    actionBackground,
-                    opaqueOver(color, actionBackground),
-                  ),
-                  greaterThanOrEqualTo(4.5),
-                  reason: '$suffix rendered action foreground',
-                );
-              }
+              if (color == null) continue;
+              expect(
+                contrastRatio(
+                  actionBackground,
+                  opaqueOver(color, actionBackground),
+                ),
+                greaterThanOrEqualTo(4.5),
+                reason: '$suffix rendered refresh icon',
+              );
             }
             for (final button
                 in buttons

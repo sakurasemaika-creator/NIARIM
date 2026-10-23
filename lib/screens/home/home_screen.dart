@@ -1384,14 +1384,10 @@ class _HomeTabBarState extends State<_HomeTabBar> {
     final currentIndex = widget.currentIndex;
     final controller = widget.controller;
     final scheme = Theme.of(context).colorScheme;
-    final background = opaqueOver(
-      Theme.of(context).scaffoldBackgroundColor,
-      Colors.black,
-    );
-    // Preserve the selected accent as the indicator itself (red stays red),
-    // but protect tab-label readability on extreme custom accents.
-    final selectedTextColor = contrastingForeground(background, scheme.primary);
-    final selectedIndicatorColor = scheme.primary;
+    // 選ばれたタブは名前も下線もテーマの差し色（ユーザー指定。読みやすさの
+    // ために黒や白へ自動で差し替えない。読めない色の組み合わせは起動画面の
+    // リセットボタンで戻せる）。
+    final selectedColor = scheme.primary;
     final textStyle = const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
@@ -1428,9 +1424,7 @@ class _HomeTabBarState extends State<_HomeTabBar> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: currentIndex == i
-                    ? selectedIndicatorColor
-                    : Colors.transparent,
+                color: currentIndex == i ? selectedColor : Colors.transparent,
                 width: 2,
               ),
             ),
@@ -1441,7 +1435,7 @@ class _HomeTabBarState extends State<_HomeTabBar> {
             softWrap: false,
             style: textStyle.copyWith(
               color: currentIndex == i
-                  ? selectedTextColor
+                  ? selectedColor
                   : scheme.onSurfaceVariant,
             ),
           ),
@@ -2165,15 +2159,12 @@ class _BookmarkedTab extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final background = opaqueOver(theme.scaffoldBackgroundColor, Colors.black);
-    final foreground = contrastingForeground(background, scheme.primary);
-    final textForeground = contrastingForeground(
-      background,
-      opaqueOver(scheme.onSurface, background),
-    );
-    final bodyForeground = contrastingForeground(
-      background,
-      opaqueOver(scheme.onSurfaceVariant, background),
-    );
+    // 作品一覧の空の表示（EmptyStatePlaceholder）と同じテーマの色（ユーザー
+    // 指定。差し色を読みやすさのために黒や白へ自動で差し替えない）。ボタンは
+    // テーマの既定（差し色）のまま。
+    final foreground = scheme.primary;
+    final textForeground = scheme.onSurface;
+    final bodyForeground = scheme.onSurfaceVariant;
     final service = context.watch<CommunityService>();
     final works = service.bookmarkedWorksForViewer;
     final canReload =
@@ -2277,9 +2268,6 @@ class _BookmarkedTab extends StatelessWidget {
                     children: [
                       if (canReload && !loading)
                         OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: foreground,
-                          ),
                           onPressed: reload,
                           icon: const Icon(Icons.refresh),
                           label: Text(
@@ -2289,9 +2277,6 @@ class _BookmarkedTab extends StatelessWidget {
                           ),
                         ),
                       OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: foreground,
-                        ),
                         onPressed: () => context.push('/community'),
                         icon: const Icon(Icons.explore_outlined),
                         label: Text(l10n.communityScreenTitle),
