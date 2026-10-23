@@ -1387,7 +1387,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         Icon(Icons.copy_outlined, size: 20, color: c.onSurfaceVariant),
         const SizedBox(width: 10),
         Icon(Icons.delete_outline, size: 20, color: c.onSurfaceVariant),
-      ])),
+      ]))),
   ]);
 
   Widget _catalog(ColorScheme c) {
