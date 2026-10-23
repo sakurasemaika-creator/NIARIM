@@ -55,12 +55,17 @@
    テストでピクセル値と突き合わせるときは
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
-   `debugPrint`を使う）
-3. `flutter test`（ベースライン：2026-10-23、dev_branch `e086838`を
-   取り込んだ`ccr-f56ee68e-77ag7y`で**成功2169・スキップ17・失敗2**。
-   失敗はdev_branchでも落ちる`test/community_filter_dialog_contrast_test.dart`
-   と`test/popup_opaque_background_test.dart`で、通常タスクでは直さない
-   （以前の失敗4件〔`test/app_web_reference_*`3件・
+   `debugPrint`を使う。2026-10-23時点では、dev_branchの
+   `lib/screens/settings/theme_preview_gallery_screen.dart`に未使用の宣言・
+   文字列の連結の7件があり、dev_branch単体でも同じ。この7件は除いて数える）
+3. `flutter test`（ベースライン：2026-10-23、dev_branch `25723b3`を
+   取り込んだ`ccr-f56ee68e-77ag7y`の`4e3d4dd`で**成功2175・スキップ17・
+   失敗3**。失敗はdev_branchでも落ちる
+   `test/community_filter_dialog_contrast_test.dart`・
+   `test/popup_opaque_background_test.dart`と、dev_branchがキャンバスの
+   タイムラインのボタンを矢印つきの`iconBuilder`に変えたために落ちる
+   監査担当の`test/app_web_reference_export_exact_test.dart`で、通常タスク
+   では直さない（以前の失敗〔`test/app_web_reference_*`の他2件・
    `test/texture_filter_gold_palette_test.dart`〕は通るようになった）。
    スキップのうち3件は
    `test/google_auth_init_once_test.dart`で、
@@ -164,7 +169,10 @@
   押すと、画面を一度押すまでショートカットが効かなかった）。ホームの
   `onEditingComplete`・`onTapOutside`とキャンバスへの押下（マイクロタスクで
   遅らせる。入力欄自身のフォーカス解除が同じ押下の処理の後で動くため）でも
-  戻している。なおホームは、検索中と「プロジェクト」以外のタブでは
+  戻している。マウス・ペンでは**入力欄の隣のボタンも「欄の外」**になるので、
+  押した後も打ち続けるボタン（ホームの検索欄の「タグ／名前」の切り替え）は
+  押したら欄へフォーカスを戻すこと（戻さないと続けて打った文字がどこにも
+  入らず、Androidのペンでは押すたびにキーボードが閉じた）。なおホームは、検索中と「プロジェクト」以外のタブでは
   全選択・コピー等のショートカットを一切効かせない（検索で隠れた作品や
   見えていないタブの作品を操作しないため）。
   キーを押し続けたときの繰り返しは`ShortcutBinding.repeatableCommands`
@@ -741,6 +749,13 @@ onTap: ...)`だったために
   省略すると見分けられない言語がある）。収まるかは文字のボタンと同じ書式・
   文字の大きさの設定で測る。`home_display_matrix_test`が全幅・全言語で
   「全選択・全解除の文字が省略されていない」ことを見張る。
+- **ホームの表示サイズ（大・中・小）はどの幅でも列数を変えること**：
+  基準の幅（`maxCrossAxisExtent`）だけで列数を決めると、スマホの幅では
+  近い2つのサイズが同じ列数になり、選んでも何も変わらない（360pxで大と中、
+  390〜430pxで中と小が同じだった）。`ProjectListWidget.gridColumnsFor`が
+  小を基準に、中・大を少なくとも1列ずつ減らす（スマホは1・2・3列）。
+  カードにはメニュー（32px）と星が載るので、スマホで4列にはしない。
+  `test/project_grid_view_size_test.dart`が見張る。
 - **`SliverMultiBoxAdaptorElement`の「見えている子」は描画範囲ぶんだけ**：
   `ListView.builder`はcacheExtent（既定250px）ぶん先の子も**生成・レイアウト
   する**が、`debugVisitOnstageChildren`が返すのは**実際に描画される範囲の
@@ -848,6 +863,17 @@ onTap: ...)`だったために
   オーバーフローし、登録できるブラシが数件に限られていた。
   `test/bottom_sheet_scrollable_test.dart`がソースを走査して再発を防ぐ。
   「今は入りきる」は保証にならない（組み込みブラシは実際に後から増えた）。
+  この走査は`for (final … in …)`（分解する形も含む）と`...list.map(`を
+  見る。以前は前者しか見ておらず、`...folders.map(`で並べていた
+  「フォルダへ移動」のシート（プロジェクト詳細・キャンバス）の包み忘れを
+  見逃していた（30件で1417pxはみ出した）。
+- **作品の複製の名前・フォルダの行き先の一覧は共通の関数で作る**：複製の名前は
+  `lib/utils/duplicate_name.dart`の`duplicateProjectName`（複製先のフォルダに
+  同じ名前の複製があれば「(コピー 2)」…と番号を付ける。固定の
+  「(コピー)」だと2回貼り付けたとき同じ名前が並んだ）。「フォルダへ移動」の
+  行き先は`lib/utils/folder_tree.dart`の`folderTree`（親の下に子を名前順・
+  字下げ、動かすフォルダとその中は出さない。平らに並べると同じ名前の
+  フォルダを見分けられず、自分の中を選ぶと何も起きずに閉じた）。
 - **アプリ内の文言に絵文字を混ぜない（アイコンで表す）**：意味を表す記号は
   すべてMaterialアイコン（`Icon(Icons.xxx)`）を使う。絵文字は端末・OS
   バージョン・フォント設定で字形も色も変わり、同梱フォント

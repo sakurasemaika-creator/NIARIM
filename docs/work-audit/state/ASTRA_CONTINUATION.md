@@ -27,6 +27,8 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - ユーザー判断（2026-10-23）：選択中の操作バーの全選択・全解除は、省略されるときだけ2つともアイコンにする（App `7ee6139`）。証跡はASTRA_AUDIT_STATE.mdのA005節。
 - 4回目の取り込み（dev_branch `25723b3`、App `6028253`）：キャンバスの浮かぶ表示の縁取り・プロジェクト詳細の再生の表示等はdev_branchどおり。dev_branch単体で落ちる`text_scale_layout_test`（プロジェクト詳細の再生の表示が文字2倍で59pxはみ出す）だけを、数字を縮めて収める形で最小に直した。
 - A003の現在HEADでの再確認とユーザー指摘の空の表示3件の修正（App `63d6ee8`）。証跡・判断待ち・申し送りはASTRA_AUDIT_STATE.mdのA003節。Route状態はdev_branchのまま（A003 in_progress）。
+- A004の現在HEADでの再確認（A003の判断待ちの間に並行して実施）と、表示サイズの列数（スマホで大と中・中と小が同じ列数）・タグ検索の切り替えで入力が途切れる件の修正（App `4e3d4dd`）。詳細はASTRA_AUDIT_STATE.mdのA004節。Route状態はdev_branchのまま（A004 todo。current_idのA003を閉じた後にdoneへ）。
+- A005の現在HEADでの再確認（同じく並行して実施）と、複製の名前の番号（App `b1c32eb`）・「フォルダへ移動」のシートの階層と動かすフォルダの中の除外・詳細画面とキャンバスのシートのスクロール（App `765086a`）。詳細はASTRA_AUDIT_STATE.mdのA005節。Route状態はdev_branchのまま（A005 todo。A003を閉じた後、A004に続けてdoneへ）。
 
 ## 2026-10-22 中断前保存・再開の運用（ユーザー指示）
 
