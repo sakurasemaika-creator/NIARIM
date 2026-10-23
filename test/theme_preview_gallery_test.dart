@@ -221,6 +221,24 @@ void main() {
     await tester.tap(find.byKey(const Key('themePreviewOpen')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('themePreviewPager')), findsOneWidget);
+
+    // Capture each full-screen live Flutter gallery page for a human-readable
+    // visual PDF. These are real rendered frames reached through the preview
+    // button, not illustrations or the embedded miniature preview.
+    for (var i = 0; i < themePreviewEntries.length; i++) {
+      if (i > 0) {
+        await tester.tap(find.byKey(const Key('themePreviewNext')));
+        await tester.pumpAndSettle();
+      }
+      expect(tester.widget<Text>(
+        find.byKey(const Key('themePreviewTitle'))).data,
+        themePreviewEntries[i].ja);
+      await saveCapture(
+        'theme_gallery_${(i + 1).toString().padLeft(2, '0')}_${themePreviewEntries[i].id}.png',
+      );
+      expect(tester.takeException(), isNull);
+    }
+
     await tester.tap(find.byKey(const Key('themePreviewClose')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('themeInlinePreview')), findsOneWidget);
