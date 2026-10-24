@@ -59,8 +59,8 @@
    `lib/screens/settings/theme_preview_gallery_screen.dart`に未使用の宣言・
    文字列の連結の7件があり、dev_branch単体でも同じ。この7件は除いて数える）
 3. `flutter test`（ベースライン：2026-10-24、dev_branch `25723b3`を
-   取り込んだ`ccr-f56ee68e-77ag7y`の表示言語の初期値の修正（DISC001）の
-   時点で**成功2224・スキップ17・失敗2**。失敗はdev_branchでも落ちる
+   取り込んだ`ccr-f56ee68e-77ag7y`の図つきの使い方（DISC014）と
+   タイムラインのプレビューの操作の移動の時点で**成功2241・スキップ17・失敗2**。失敗はdev_branchでも落ちる
    `test/popup_opaque_background_test.dart`と、dev_branchがキャンバスの
    タイムラインのボタンを矢印つきの`iconBuilder`に変えたために落ちる
    監査担当の`test/app_web_reference_export_exact_test.dart`で、通常タスク
