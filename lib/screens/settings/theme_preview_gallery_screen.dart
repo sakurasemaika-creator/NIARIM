@@ -476,7 +476,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       const SizedBox(height: 10),
       SvgPicture.asset('assets/logo/title_logo.svg',
         width: 220, height: 220 * 690 / 3470,
-        colorFilter: ColorFilter.mode(ThemeService.activeAccentText, BlendMode.srcIn)),
+        colorFilter: ColorFilter.mode(c.primary, BlendMode.srcIn)),
     ]);
     final communityColors = splashGradientColors(
         c.secondary, c.secondaryContainer, foreground);

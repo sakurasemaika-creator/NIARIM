@@ -49,6 +49,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   bool _isSearching = false;
   String _searchQuery = '';
   final _searchController = TextEditingController();
+  final _bodyKey = GlobalKey();
   bool _tagSearchMode = false;
   VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
 
@@ -230,7 +231,12 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   void _openFloatingPreview(CommunityWork work) {
-    context.read<CommunityPreviewService>().show(work);
+    // 上部のバー（2段）とタブを覆わないよう、一覧の上端に出す。
+    final body = _bodyKey.currentContext?.findRenderObject() as RenderBox?;
+    context.read<CommunityPreviewService>().show(
+      work,
+      top: body?.localToGlobal(Offset.zero).dy,
+    );
   }
 
   void _openAuthorWorks(CommunityWork work) {
@@ -418,8 +424,11 @@ class _CommunityScreenState extends State<CommunityScreen>
                 onChanged: (v) => setState(() => _searchQuery = v),
               )
             : Text(l10n.communityScreenTitle),
+        // 画面名が途中で切れないよう、上部のツールバーは2段にする
+        // （1段目に戻る・画面名、2段目に操作のアイコン）。検索中は1段目が
+        // 検索欄と閉じるボタンになる。
         actions: [
-          if (_isSearching) ...[
+          if (_isSearching)
             IconButton(
               icon: const Icon(Icons.close),
               tooltip: l10n.commonClose,
@@ -430,53 +439,76 @@ class _CommunityScreenState extends State<CommunityScreen>
                 _searchController.clear();
               }),
             ),
-          ] else ...[
-            IconButton(
-              icon: Badge(
-                label: Text(
-                  '${communityService.unreadFollowNotificationCount}',
-                ),
-                isLabelVisible:
-                    communityService.unreadFollowNotificationCount > 0,
-                child: const Icon(Icons.notifications_outlined),
-              ),
-              tooltip: l10n.communityFollowNotificationsTooltip,
-              onPressed: () => Navigator.of(context).push(
-                adMockMaterialPageRoute<void>(
-                  builder: (_) => const CommunityFollowNotificationsScreen(),
-                ),
-              ),
-            ),
-            VideoTypeFilterButton(
-              value: _videoTypeFilter,
-              onChanged: (v) => setState(() => _videoTypeFilter = v),
-            ),
-            if (_videoTypeFilter == VideoTypeFilter.shortOnly)
-              IconButton(
-                icon: const Icon(Icons.view_carousel_outlined),
-                tooltip: l10n.communityShortsModeTooltip,
-                onPressed: () => _openShortsMode(allWorks),
-              ),
-            IconButton(
-              // Distinct from the video-type filter's funnel next to it.
-              key: const Key('communityContentFilterButton'),
-              icon: const Icon(Icons.visibility_off_outlined),
-              tooltip: l10n.communityContentFilterTitle,
-              onPressed: () => _showContentFilters(communityService),
-            ),
-            IconButton(
-              icon: const Icon(Icons.search),
-              tooltip: l10n.commonSearch,
-              onPressed: () => setState(() => _isSearching = true),
-            ),
-            const HelpButton(topic: '作品広場'),
-          ],
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(_isSearching ? 104 : 48),
+          preferredSize: Size.fromHeight(_isSearching ? 104 : 96),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (!_isSearching)
+                SizedBox(
+                  key: const Key('communityToolbarActions'),
+                  height: 48,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    // 狭い画面・大きな文字では横にスクロールして全部に届く。
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      reverse: true,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Badge(
+                              label: Text(
+                                '${communityService.unreadFollowNotificationCount}',
+                              ),
+                              isLabelVisible:
+                                  communityService
+                                      .unreadFollowNotificationCount >
+                                  0,
+                              child: const Icon(Icons.notifications_outlined),
+                            ),
+                            tooltip: l10n.communityFollowNotificationsTooltip,
+                            onPressed: () => Navigator.of(context).push(
+                              adMockMaterialPageRoute<void>(
+                                builder: (_) =>
+                                    const CommunityFollowNotificationsScreen(),
+                              ),
+                            ),
+                          ),
+                          VideoTypeFilterButton(
+                            value: _videoTypeFilter,
+                            onChanged: (v) =>
+                                setState(() => _videoTypeFilter = v),
+                          ),
+                          if (_videoTypeFilter == VideoTypeFilter.shortOnly)
+                            IconButton(
+                              icon: const Icon(Icons.view_carousel_outlined),
+                              tooltip: l10n.communityShortsModeTooltip,
+                              onPressed: () => _openShortsMode(allWorks),
+                            ),
+                          IconButton(
+                            // Distinct from the video-type filter's funnel next to it.
+                            key: const Key('communityContentFilterButton'),
+                            icon: const Icon(Icons.visibility_off_outlined),
+                            tooltip: l10n.communityContentFilterTitle,
+                            onPressed: () =>
+                                _showContentFilters(communityService),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.search),
+                            tooltip: l10n.commonSearch,
+                            onPressed: () =>
+                                setState(() => _isSearching = true),
+                          ),
+                          const HelpButton(topic: '作品広場'),
+                          const SizedBox(width: 4),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               if (_isSearching)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
@@ -539,6 +571,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       body: desktopCentered(
         context,
         TabBarView(
+          key: _bodyKey,
           controller: _tabController,
           children: [
             Builder(

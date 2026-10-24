@@ -6,6 +6,8 @@ import '../../../router.dart';
 import '../../../services/community_preview_service.dart';
 import '../../../services/community_service.dart';
 import '../../../widgets/ad_banner_mock_widget.dart';
+import '../../../config/accent_text_theme.dart';
+import '../../../utils/color_contrast.dart';
 import 'community_work_card.dart';
 
 /// ランキング・新着で作品カードをタップした際に表示するフローティング
@@ -84,6 +86,17 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
     const handleHitSize = 32.0;
     const handleIconSize = 16.0;
 
+    // 下部の操作バーとリサイズの取っ手は上部バー・メニューと同じ組み合わせ
+    // （メニュー背景色の上にメニューの文字色）。以前は下地と記号の両方が
+    // 本文の文字色で、どのテーマでも記号が下地に溶けていた。
+    final theme = Theme.of(context);
+    final barColor = opaqueOver(
+      theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+      theme.scaffoldBackgroundColor,
+    );
+    final barInk =
+        theme.appBarTheme.foregroundColor ?? theme.colorScheme.onSurface;
+
     return Positioned(
       left: position.dx.clamp(
         0,
@@ -142,8 +155,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                     ),
                     Container(
                       height: CommunityPreviewService.controlBarHeight,
-                      color: ThemeService.activeColorScheme.onSurface
-                          .withValues(alpha: 0.87),
+                      color: barColor,
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       // SpacerやExpandedを挟むと、この位置（高さ無制限の
                       // Column内、幅固定のContainer内）で極端なオーバー
@@ -180,9 +192,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                   ),
                                   icon: Icon(
                                     _isPlaying ? Icons.pause : Icons.play_arrow,
-                                    color: ThemeService
-                                        .activeColorScheme
-                                        .onSurface,
+                                    color: barInk,
                                   ),
                                   iconSize: 22,
                                   onPressed: () =>
@@ -201,12 +211,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                     minWidth: 36,
                                     minHeight: 36,
                                   ),
-                                  icon: Icon(
-                                    Icons.close,
-                                    color: ThemeService
-                                        .activeColorScheme
-                                        .onSurface,
-                                  ),
+                                  icon: Icon(Icons.close, color: barInk),
                                   iconSize: 20,
                                   onPressed: service.close,
                                 ),
@@ -220,8 +225,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                             padding: EdgeInsets.only(right: handleHitSize - 8),
                             child: TextButton(
                               style: TextButton.styleFrom(
-                                foregroundColor:
-                                    ThemeService.activeColorScheme.onSurface,
+                                foregroundColor: AccentTextTheme.of(context),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 10,
                                   vertical: 8,
@@ -265,22 +269,20 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                       availableWidth: screenSize.width,
                     );
                   },
-                  child: Container(
+                  // 当たり判定は幅32px・高さは下部のバーいっぱい。記号は
+                  // その真ん中に描き、バーの他のボタン・「詳細へ」と同じ
+                  // 高さにそろえる（以前は32px四方の右下へ寄せていて、
+                  // ウィンドウの右下にずれて見えた）。下地はバーそのもの。
+                  child: SizedBox(
+                    key: const Key('communityFloatingPreviewResizeHandle'),
                     width: handleHitSize,
-                    height: handleHitSize,
-                    alignment: Alignment.bottomRight,
-                    padding: EdgeInsets.all(4),
-                    // 見た目のアイコンは小さいままでも、コンテナ自体の
-                    // 当たり判定は広く取れるよう半透明の丸背景を敷く。
-                    decoration: BoxDecoration(
-                      color: ThemeService.activeColorScheme.onSurface
-                          .withValues(alpha: 0.45),
-                      borderRadius: BorderRadius.circular(handleHitSize / 2),
-                    ),
-                    child: Icon(
-                      Icons.open_in_full,
-                      size: handleIconSize,
-                      color: ThemeService.activeColorScheme.onSurface,
+                    height: CommunityPreviewService.controlBarHeight,
+                    child: Center(
+                      child: Icon(
+                        Icons.open_in_full,
+                        size: handleIconSize,
+                        color: barInk,
+                      ),
                     ),
                   ),
                 ),

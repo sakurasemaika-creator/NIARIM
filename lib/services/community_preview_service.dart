@@ -53,8 +53,14 @@ class CommunityPreviewService extends ChangeNotifier {
   /// ウィンドウ全体の大きさ（動画エリア＋コントロールバー）。
   Size get size => Size(_width, _width / playerAspect + controlBarHeight);
 
-  void show(CommunityWork work) {
+  /// 利用者がウィンドウを動かしたか。
+  bool _moved = false;
+
+  /// [work]を開く。[top]を渡すと、利用者がまだウィンドウを動かしていなければ
+  /// その高さに出す（開いた画面の上部のバーやタブを覆わないため）。
+  void show(CommunityWork work, {double? top}) {
     _work = work;
+    if (!_moved && top != null) _position = Offset(_position.dx, top);
     notifyListeners();
   }
 
@@ -65,6 +71,7 @@ class CommunityPreviewService extends ChangeNotifier {
 
   void updatePosition(Offset position) {
     _position = position;
+    _moved = true;
     notifyListeners();
   }
 

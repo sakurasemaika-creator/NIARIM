@@ -30,13 +30,14 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final failures = <String, String>{};
-    for (final preset in [
-      ...themes.presets,
-      AppThemePreset.defaultLight.copyWith(
-        accentColor: Colors.white,
-        selectionColor: Colors.black,
-      ),
-    ]) {
+    // 利用者が選んだ読めない組み合わせ（白い差し色に白抜きの文字）。
+    // スイッチの色は差し替えず、救済ボタンが出ることだけを見る。
+    final unreadable = AppThemePreset.defaultLight.copyWith(
+      accentColor: Colors.white,
+      selectionColor: Colors.black,
+    );
+    expect(isThemeAtLockoutRisk(unreadable), isTrue);
+    for (final preset in [...themes.presets, unreadable]) {
       await tester.runAsync(() => service.setHideGenerativeAiImageVideo(true));
       themes.previewCurrent(preset);
       await tester.pumpWidget(
@@ -106,9 +107,13 @@ void main() {
           contrastRatio(track, bg),
           contrastRatio(outline, bg),
         ].reduce((a, b) => a > b ? a : b);
-        if (contrastRatio(thumb, track) < 3 || boundary < 3) {
-          failures['${preset.id}/${preset.accentColor.toARGB32()}/$selected'] =
-              'thumb/track=${contrastRatio(thumb, track)} boundary=$boundary';
+        // つまみと通り道は、オンでは塗りのボタンの文字と差し色の組み合わせ
+        // （組み込みテーマの配色の決まりと同じAPCAのLc 60）。
+        final thumbLc = apcaContrast(thumb, track).abs();
+        if (preset != unreadable &&
+            (thumbLc < (selected ? 60 : 30) || boundary < 3)) {
+          failures['${preset.id}/$selected'] =
+              'thumb/track Lc=$thumbLc boundary=$boundary';
         }
         if (selected) {
           await tester.tap(control);
@@ -133,7 +138,7 @@ void main() {
       failures,
       isEmpty,
       reason:
-          'Thumb and control boundary must remain perceptible on the actual popup; selected and unselected are distinct saved states.',
+          'Thumb and control boundary must remain perceptible on the actual popup of every built-in theme; selected and unselected are distinct saved states.',
     );
     await tester.pumpWidget(const SizedBox.shrink());
   });

@@ -14,7 +14,6 @@ import '../../utils/line_break.dart';
 import '../../widgets/responsive.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/theme_rescue_button.dart';
-import '../../config/accent_text_theme.dart';
 import '../../utils/splash_gradient.dart';
 
 /// 起動画面。ロゴを中央に表示し、その上に「作品広場」（コミュニティ
@@ -194,10 +193,9 @@ class _SplashScreenState extends State<SplashScreen> {
           'assets/logo/title_logo.svg',
           width: titleWidth,
           height: titleHeight,
-          colorFilter: ColorFilter.mode(
-            AccentTextTheme.of(context),
-            BlendMode.srcIn,
-          ),
+          // アプリアイコン（モノグラムの下地）と同じ差し色にそろえる
+          // （ユーザー指定）。文字ではなくロゴの絵として扱う。
+          colorFilter: ColorFilter.mode(scheme.primary, BlendMode.srcIn),
         ),
       ],
     );

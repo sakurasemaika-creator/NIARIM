@@ -1002,13 +1002,15 @@ class ThemeService extends ChangeNotifier {
         ),
       ),
       // Flutter既定のツールチップは下地が90%の不透明度で、後ろの画面が
-      // 透ける。色と形は既定のまま、不透明にする。
+      // 透ける。下地は不透明な反転色（本文の文字色に近い色）、文字は
+      // パネル背景色で、どちらもテーマ・外観の色から作る。
       tooltipTheme: TooltipThemeData(
         decoration: BoxDecoration(
-          color: brightness == Brightness.dark
-              ? Colors.white
-              : Colors.grey.shade700,
+          color: scheme.inverseSurface,
           borderRadius: const BorderRadius.all(Radius.circular(4)),
+        ),
+        textStyle: textTheme.bodySmall?.copyWith(
+          color: scheme.onInverseSurface,
         ),
       ),
       chipTheme: ChipThemeData(
@@ -1033,15 +1035,17 @@ class ThemeService extends ChangeNotifier {
         ),
         checkColor: WidgetStatePropertyAll(preset.selectionTextColor),
       ),
+      // オンのスイッチは塗りの差し色の通り道に、塗りのボタンの文字色の
+      // つまみ（塗りのボタンと同じ組み合わせで、救済判定が見張っている）。
+      // 以前は差し色と半透明の差し色で、つまみが通り道に溶けて見えた。
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
           (states) =>
-              states.contains(WidgetState.selected) ? scheme.primary : null,
+              states.contains(WidgetState.selected) ? scheme.onPrimary : null,
         ),
         trackColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? scheme.primary.withValues(alpha: 0.5)
-              : null,
+          (states) =>
+              states.contains(WidgetState.selected) ? scheme.primary : null,
         ),
       ),
       // Selected labels/icons use a separate foreground *only* when their
