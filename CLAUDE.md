@@ -59,14 +59,14 @@
    `lib/screens/settings/theme_preview_gallery_screen.dart`に未使用の宣言・
    文字列の連結の7件があり、dev_branch単体でも同じ。この7件は除いて数える）
 3. `flutter test`（ベースライン：2026-10-24、dev_branch `25723b3`を
-   取り込んだ`ccr-f56ee68e-77ag7y`の`9df71be`で**成功2209・スキップ17・
-   失敗3**。失敗はdev_branchでも落ちる
-   `test/community_filter_dialog_contrast_test.dart`・
+   取り込んだ`ccr-f56ee68e-77ag7y`の表示言語の初期値の修正（DISC001）の
+   時点で**成功2224・スキップ17・失敗2**。失敗はdev_branchでも落ちる
    `test/popup_opaque_background_test.dart`と、dev_branchがキャンバスの
    タイムラインのボタンを矢印つきの`iconBuilder`に変えたために落ちる
    監査担当の`test/app_web_reference_export_exact_test.dart`で、通常タスク
    では直さない（以前の失敗〔`test/app_web_reference_*`の他2件・
-   `test/texture_filter_gold_palette_test.dart`〕は通るようになった）。
+   `test/texture_filter_gold_palette_test.dart`・
+   `test/community_filter_dialog_contrast_test.dart`〕は通るようになった）。
    スキップのうち3件は
    `test/google_auth_init_once_test.dart`で、
    `--dart-define=NIARIM_GOOGLE_CLIENT_ID=test`を付けたときだけ動く。
@@ -308,6 +308,16 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   遭遇したら、まずR8のusage.txt（GitHub ActionsのArtifactに残る）や
   ユーザーに取得してもらうAndroidの「バグレポート」機能でのログ確認を
   早い段階で検討すること。
+- **表示言語を選んでいないときは端末の言語で始まる（テストは日本語の端末）**：
+  `SettingsService.init`は保存された`language`が無ければ
+  `appLanguageCodeFor(端末の言語の並び)`（`lib/utils/app_locale.dart`）で
+  7言語のどれかに決める（優先順に最初に対応する言語、台湾・香港・マカオの
+  中国語は繁体字、どれも対応していなければ日本語。保存はしない）。以前は
+  端末の言語に関係なく日本語で始まっていた。flutter_testの端末は英語
+  （en_US）なので、`test/flutter_test_config.dart`が全テストを日本語の
+  端末（`SettingsService.deviceLocales`）として動かす。英語の端末を試す
+  テストはその中で`deviceLocales`を差し替え、`tearDown`で戻すこと
+  （`test/initial_language_test.dart`が実例）。
 - **保存済み設定は`prefs.getInt`等で読まず、`prefs.readInt`等で読むこと**：
   SharedPreferencesの`getInt`/`getBool`/`getDouble`/`getString`/
   `getStringList`は`as int?`でキャストするため、同じキーに別の型の値が

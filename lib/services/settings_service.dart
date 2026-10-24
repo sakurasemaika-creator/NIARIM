@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:ui' show Locale, PlatformDispatcher;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
@@ -8,9 +9,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/canvas_dock_panel.dart';
 import '../models/canvas_size_preset.dart';
 import '../models/toolbar_item.dart';
+import '../utils/app_locale.dart';
 import '../utils/tolerant_preferences.dart';
 
 class SettingsService extends ChangeNotifier {
+  /// 端末の言語の並び。表示言語を一度も選んでいないときは、ここから決める
+  /// （テストでは日本語の端末に差し替える。`test/flutter_test_config.dart`）。
+  @visibleForTesting
+  static List<Locale> Function() deviceLocales = () =>
+      PlatformDispatcher.instance.locales;
+
   int _defaultFps = 12;
   int _undoLimit = 50;
   int _trashAutoDeleteDays = 0;
@@ -554,7 +562,11 @@ class SettingsService extends ChangeNotifier {
     _defaultFps = prefs.readInt('default_fps') ?? 12;
     _undoLimit = prefs.readInt('undo_limit') ?? 50;
     _trashAutoDeleteDays = prefs.readInt('trash_auto_delete') ?? 0;
-    _language = prefs.readString('language') ?? 'ja';
+    // 選んだことが無ければ端末の言語に合わせる（保存はしない。選ぶまでは
+    // 端末の言語を変えるとそれに従う）。以前は端末の言語に関係なく日本語で
+    // 始まっていた。
+    _language =
+        prefs.readString('language') ?? appLanguageCodeFor(deviceLocales());
     _defaultDrawingAreaEnabled =
         prefs.readBool('default_drawing_area_enabled') ?? false;
     _defaultDrawingAreaScale =

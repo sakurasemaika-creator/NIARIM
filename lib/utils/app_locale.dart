@@ -20,18 +20,29 @@ Locale localeFromLanguageCode(String code) {
 /// 壊れた画面の代わりに出すエラー表示）から文言を引くために使う。
 /// 台湾・香港・マカオの中国語は、scriptCodeが無くても繁体字にする。
 AppLocalizations appLocalizationsFor(Locale? locale) {
-  if (locale == null) return lookupAppLocalizations(const Locale('ja'));
-  final traditional =
-      locale.languageCode == 'zh' &&
-      (locale.scriptCode == 'Hant' ||
-          const {'TW', 'HK', 'MO'}.contains(locale.countryCode));
-  if (traditional) {
-    return lookupAppLocalizations(
-      const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
-    );
-  }
-  final supported = AppLocalizations.supportedLocales.any(
-    (l) => l.languageCode == locale.languageCode,
+  return lookupAppLocalizations(
+    localeFromLanguageCode(appLanguageCodeFor([?locale])),
   );
-  return lookupAppLocalizations(Locale(supported ? locale.languageCode : 'ja'));
+}
+
+/// 端末の言語の並び（優先する順）から、対応する7言語のうち最初に当てはまる
+/// 言語のコード（`SettingsService.language`の値）を返す。どれにも当てはまら
+/// なければ日本語。中国語は繁体字（Hant、または文字の指定が無い台湾・香港・
+/// マカオ）なら'zh_Hant'、ほかは'zh'。
+String appLanguageCodeFor(Iterable<Locale> locales) {
+  for (final locale in locales) {
+    if (locale.languageCode == 'zh') {
+      final traditional = switch (locale.scriptCode) {
+        'Hant' => true,
+        'Hans' => false,
+        _ => const {'TW', 'HK', 'MO'}.contains(locale.countryCode),
+      };
+      return traditional ? 'zh_Hant' : 'zh';
+    }
+    final supported = AppLocalizations.supportedLocales.any(
+      (l) => l.languageCode == locale.languageCode,
+    );
+    if (supported) return locale.languageCode;
+  }
+  return 'ja';
 }
