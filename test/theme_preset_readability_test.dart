@@ -79,11 +79,9 @@ void main() {
         reason: why('メニューの文字'),
       );
 
-      // 塗りのボタン・選択中の文字は、ライトは白抜き、ダークはパネル背景色
-      // （ユーザー指定）。
-      final ink = dark ? preset.panelBgColor : Colors.white;
-      expect(preset.buttonTextColor, ink, reason: why('ボタンの文字'));
-      expect(preset.selectionTextColor, ink, reason: why('選択中の文字'));
+      // 塗りのボタン・選択中の文字は、ライト・ダークとも白抜き（ユーザー指定）。
+      expect(preset.buttonTextColor, Colors.white, reason: why('ボタンの文字'));
+      expect(preset.selectionTextColor, Colors.white, reason: why('選択中の文字'));
       // 塗りのボタン・起動画面の導線・選択中の行の文字。
       for (final (foreground, background, what) in [
         (preset.buttonTextColor, preset.accentColor, 'ボタンの文字'),
@@ -119,6 +117,19 @@ void main() {
           reason: why('更新マーク色と差し色（$type）'),
         );
       }
+    }
+  });
+
+  test('light and dark versions share the same accent fill', () async {
+    SharedPreferences.setMockInitialValues({});
+    final service = ThemeService();
+    addTearDown(service.dispose);
+    await service.init();
+    final byId = {for (final p in service.presets) p.id: p};
+    for (final light in byId.keys.where((id) => id.endsWith('_light'))) {
+      final dark = '${light.substring(0, light.length - 6)}_dark';
+      expect(byId[dark]!.accentColor, byId[light]!.accentColor, reason: dark);
+      expect(byId[dark]!.selectionColor, byId[light]!.selectionColor);
     }
   });
 

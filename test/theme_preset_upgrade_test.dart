@@ -12,20 +12,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  AppThemePreset previous(String id, {String? as, String? name}) {
-    final c = kPreviousBuiltInThemeColors[id]!.map(Color.new).toList();
+  /// 組み込みテーマ[id]の以前の[version]番目（0が最も古い）の配色。
+  AppThemePreset previous(
+    String id, {
+    String? as,
+    String? name,
+    int version = 0,
+  }) {
+    final c = kPreviousBuiltInThemeColors[id]![version];
     return AppThemePreset(
       id: as ?? id,
       name: name ?? id,
-      accentColor: c[0],
-      textColor: c[1],
-      buttonTextColor: c[2],
-      menuTextColor: c[3],
-      selectionTextColor: c[4],
-      panelBgColor: c[5],
-      menuBgColor: c[6],
-      selectionColor: c[7],
-      updateMarkColor: c[8],
+      accentColor: Color(c[0]!),
+      textColor: Color(c[1]!),
+      buttonTextColor: Color(c[2]!),
+      menuTextColor: Color(c[3]!),
+      selectionTextColor: Color(c[4]!),
+      panelBgColor: Color(c[5]!),
+      menuBgColor: Color(c[6]!),
+      selectionColor: Color(c[7]!),
+      updateMarkColor: Color(c[8]!),
+      accentTextColor: c[9] == null ? null : Color(c[9]!),
     );
   }
 
@@ -45,11 +52,49 @@ void main() {
 
   test('the table covers every built-in theme and they all changed', () {
     expect(kPreviousBuiltInThemeColors.keys.toSet(), latest.keys.toSet());
-    expect(kPreviousBuiltInThemeColors['orange_light']!.first, 0xFFFF8A3D);
+    expect(
+      kPreviousBuiltInThemeColors['orange_light']!.first.first,
+      0xFFFF8A3D,
+    );
     for (final id in latest.keys) {
-      expect(colours(previous(id)), isNot(colours(latest[id]!)), reason: id);
+      for (var v = 0; v < kPreviousBuiltInThemeColors[id]!.length; v++) {
+        expect(
+          colours(previous(id, version: v)),
+          isNot(colours(latest[id]!)),
+          reason: '$id v$v',
+        );
+      }
     }
   });
+
+  test(
+    'dark themes saved with the background-coloured button text move on',
+    () async {
+      // ダークの塗りのボタンの文字がパネル背景色だった版（e41ebee）。
+      final saved = previous('purple_dark', version: 1);
+      expect(saved.buttonTextColor, saved.panelBgColor);
+      expect(saved.accentTextColor, isNotNull);
+      SharedPreferences.setMockInitialValues({
+        'theme_presets': [jsonEncode(saved.toJson())],
+        'theme_current_json': jsonEncode(
+          previous(
+            'default_dark',
+            version: 1,
+            as: ThemeService.customCurrentId,
+            name: '取り込み',
+          ).toJson(),
+        ),
+      });
+      final service = ThemeService();
+      addTearDown(service.dispose);
+      await service.init();
+      final purple = service.presets.firstWhere((p) => p.id == 'purple_dark');
+      expect(colours(purple), colours(latest['purple_dark']!));
+      expect(purple.buttonTextColor, Colors.white);
+      expect(colours(service.current), colours(latest['default_dark']!));
+      expect(service.current.accentColor, const Color(0xFFFF5C7A));
+    },
+  );
 
   test('untouched built-in themes get the new colours', () async {
     final editedBlue = previous(

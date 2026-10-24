@@ -78,15 +78,15 @@ class ThemeService extends ChangeNotifier {
   // なるよう、リストの先頭に置く。
   //
   // 配色の決まり（APCAのLc、test/theme_preset_readability_test.dartが見張る）：
-  // - 塗りのボタン・選択中の文字は、ライトは白抜き、ダークはパネル背景色
-  //   （切り抜いたように見える）。差し色はその文字がLc 60以上で読める濃さ
-  //   （ライトは沈め、ダークは明るくした同じ色相）。ライトのグリーンは
-  //   エメラルドと、ライトブルーはくすみブルーと見分けがつくよう色相をずらした。
+  // - 塗りのボタン・選択中の文字はライト・ダークとも白抜き。差し色はその
+  //   文字がLc 60以上で読める濃さへ同じ色相のまま沈め、ライトとダークで
+  //   同じ色にする。グリーンはエメラルドと、ライトブルーはくすみブルーと
+  //   見分けがつくよう色相をずらした。
   // - アクセントの文字・アイコン色は、パネル背景・メニュー背景の上で
   //   ライトLc 75以上・ダークLc 70以上になる同じ色相の濃淡。
   // - 更新マーク色は背景の上でライトLc 50以上・ダークLc 60以上で、差し色と
   //   見分けがつく色（琥珀色が差し色に近い黄・橙は青緑、グリーンは朱色）。
-  // 配色を変えたら、以前の配色をprevious_theme_presets.dartへ移すこと
+  // 配色を変えたら、以前の配色を版としてprevious_theme_presets.dartへ足すこと
   // （手を加えていない保存済みのテーマを新しい配色にするため）。
   static const List<AppThemePreset> _builtInPresets = [
     AppThemePreset.defaultLight, // 赤（ライト・既定選択）
@@ -108,14 +108,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'orange_dark',
       name: 'オレンジ（ダーク）',
-      accentColor: Color(0xFFFE9656),
+      accentColor: Color(0xFFEB7826),
       textColor: Color(0xFFFAF0E6),
-      buttonTextColor: Color(0xFF1F160E),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFFAF0E6),
-      selectionTextColor: Color(0xFF1F160E),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF1F160E),
       menuBgColor: Color(0xFF2A1D12),
-      selectionColor: Color(0xFFFE9656),
+      selectionColor: Color(0xFFEB7826),
       updateMarkColor: Color(0xFF24CAAF),
       accentTextColor: Color(0xFFFFB68D),
     ),
@@ -136,14 +136,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'yellow_dark',
       name: 'イエロー（ダーク）',
-      accentColor: Color(0xFFDAAB39),
+      accentColor: Color(0xFFBF910C),
       textColor: Color(0xFFFAF6E6),
-      buttonTextColor: Color(0xFF1E1B0C),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFFAF6E6),
-      selectionTextColor: Color(0xFF1E1B0C),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF1E1B0C),
       menuBgColor: Color(0xFF292410),
-      selectionColor: Color(0xFFDAAB39),
+      selectionColor: Color(0xFFBF910C),
       updateMarkColor: Color(0xFF27CBB1),
       accentTextColor: Color(0xFFF0C152),
     ),
@@ -164,14 +164,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'green_dark',
       name: 'グリーン（ダーク）',
-      accentColor: Color(0xFF60C648),
+      accentColor: Color(0xFF46AD2B),
       textColor: Color(0xFFF1FAF5),
-      buttonTextColor: Color(0xFF101A15),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFF1FAF5),
-      selectionTextColor: Color(0xFF101A15),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF101A15),
       menuBgColor: Color(0xFF17251D),
-      selectionColor: Color(0xFF60C648),
+      selectionColor: Color(0xFF46AD2B),
       updateMarkColor: Color(0xFFFE9C7F),
       accentTextColor: Color(0xFF78DE61),
     ),
@@ -192,14 +192,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'blue_dark',
       name: 'ブルー（ダーク）',
-      accentColor: Color(0xFF65B6FF),
+      accentColor: Color(0xFF2F9DF5),
       textColor: Color(0xFFF2F6FA),
-      buttonTextColor: Color(0xFF11181F),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFF2F6FA),
-      selectionTextColor: Color(0xFF11181F),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF11181F),
       menuBgColor: Color(0xFF182430),
-      selectionColor: Color(0xFF65B6FF),
+      selectionColor: Color(0xFF2F9DF5),
       updateMarkColor: Color(0xFFFFB020),
       accentTextColor: Color(0xFF97CCFF),
     ),
@@ -221,14 +221,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'indigo_dark',
       name: '藍色（ダーク）',
-      accentColor: Color(0xFF9AACFE),
+      accentColor: Color(0xFF5C6BFF),
       textColor: Color(0xFFF0F1FA),
-      buttonTextColor: Color(0xFF14151F),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFF0F1FA),
-      selectionTextColor: Color(0xFF14151F),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF14151F),
       menuBgColor: Color(0xFF1C1E2D),
-      selectionColor: Color(0xFF9AACFE),
+      selectionColor: Color(0xFF5C6BFF),
       updateMarkColor: Color(0xFFFFB020),
       accentTextColor: Color(0xFFB6C4FE),
     ),
@@ -249,14 +249,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'purple_dark',
       name: 'パープル（ダーク）',
-      accentColor: Color(0xFFC99CFE),
+      accentColor: Color(0xFFB15CFF),
       textColor: Color(0xFFF6F1FA),
-      buttonTextColor: Color(0xFF19141F),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFF6F1FA),
-      selectionTextColor: Color(0xFF19141F),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF19141F),
       menuBgColor: Color(0xFF241C2D),
-      selectionColor: Color(0xFFC99CFE),
+      selectionColor: Color(0xFFB15CFF),
       updateMarkColor: Color(0xFFFFB020),
       accentTextColor: Color(0xFFD8B9FE),
     ),
@@ -278,14 +278,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'pink_dark',
       name: 'ピンク（ダーク）',
-      accentColor: Color(0xFFFE8CB9),
+      accentColor: Color(0xFFEB6CA1),
       textColor: Color(0xFFFAEEF3),
-      buttonTextColor: Color(0xFF1F1418),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFFAEEF3),
-      selectionTextColor: Color(0xFF1F1418),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF1F1418),
       menuBgColor: Color(0xFF2B1B22),
-      selectionColor: Color(0xFFFE8CB9),
+      selectionColor: Color(0xFFEB6CA1),
       updateMarkColor: Color(0xFFFFB020),
       accentTextColor: Color(0xFFFFB0CD),
     ),
@@ -306,14 +306,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'light_purple_dark',
       name: 'ライトパープル（ダーク）',
-      accentColor: Color(0xFFBCA6E5),
+      accentColor: Color(0xFFA48ECB),
       textColor: Color(0xFFF2EFF9),
-      buttonTextColor: Color(0xFF19171F),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFF2EFF9),
-      selectionTextColor: Color(0xFF19171F),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF19171F),
       menuBgColor: Color(0xFF211E2C),
-      selectionColor: Color(0xFFBCA6E5),
+      selectionColor: Color(0xFFA48ECB),
       updateMarkColor: Color(0xFFFFB020),
       accentTextColor: Color(0xFFD2BCFD),
     ),
@@ -334,14 +334,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'light_blue_dark',
       name: 'ライトブルー（ダーク）',
-      accentColor: Color(0xFF4FBEDF),
+      accentColor: Color(0xFF2EA4C4),
       textColor: Color(0xFFEDF5FB),
-      buttonTextColor: Color(0xFF141A1F),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFEDF5FB),
-      selectionTextColor: Color(0xFF141A1F),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF141A1F),
       menuBgColor: Color(0xFF1C2530),
-      selectionColor: Color(0xFF4FBEDF),
+      selectionColor: Color(0xFF2EA4C4),
       updateMarkColor: Color(0xFFFFB020),
       accentTextColor: Color(0xFF68D5F6),
     ),
@@ -362,14 +362,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'emerald_dark',
       name: 'エメラルドグリーン（ダーク）',
-      accentColor: Color(0xFF3AC68F),
+      accentColor: Color(0xFF01AC77),
       textColor: Color(0xFFE9FAF3),
-      buttonTextColor: Color(0xFF0D1815),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFE9FAF3),
-      selectionTextColor: Color(0xFF0D1815),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF0D1815),
       menuBgColor: Color(0xFF13221D),
-      selectionColor: Color(0xFF3AC68F),
+      selectionColor: Color(0xFF01AC77),
       updateMarkColor: Color(0xFFFFB020),
       accentTextColor: Color(0xFF57DDA5),
     ),
@@ -391,14 +391,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'dusty_pink_dark',
       name: 'くすみピンク（ダーク）',
-      accentColor: Color(0xFFD9A2A8),
+      accentColor: Color(0xFFC08A90),
       textColor: Color(0xFFF5ECED),
-      buttonTextColor: Color(0xFF1C1516),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFF5ECED),
-      selectionTextColor: Color(0xFF1C1516),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF1C1516),
       menuBgColor: Color(0xFF261C1E),
-      selectionColor: Color(0xFFD9A2A8),
+      selectionColor: Color(0xFFC08A90),
       updateMarkColor: Color(0xFFFFB020),
       accentTextColor: Color(0xFFF0B8BE),
     ),
@@ -419,14 +419,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'dusty_blue_dark',
       name: 'くすみブルー（ダーク）',
-      accentColor: Color(0xFF98B4CF),
+      accentColor: Color(0xFF809CB6),
       textColor: Color(0xFFEDF1F5),
-      buttonTextColor: Color(0xFF151A1E),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFEDF1F5),
-      selectionTextColor: Color(0xFF151A1E),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF151A1E),
       menuBgColor: Color(0xFF1C232B),
-      selectionColor: Color(0xFF98B4CF),
+      selectionColor: Color(0xFF809CB6),
       updateMarkColor: Color(0xFFFFB020),
       accentTextColor: Color(0xFFAECAE6),
     ),
@@ -447,14 +447,14 @@ class ThemeService extends ChangeNotifier {
     AppThemePreset(
       id: 'dusty_green_dark',
       name: 'くすみグリーン（ダーク）',
-      accentColor: Color(0xFF92BBA0),
+      accentColor: Color(0xFF79A187),
       textColor: Color(0xFFEEF4EF),
-      buttonTextColor: Color(0xFF151A16),
+      buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFEEF4EF),
-      selectionTextColor: Color(0xFF151A16),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF151A16),
       menuBgColor: Color(0xFF1D251F),
-      selectionColor: Color(0xFF92BBA0),
+      selectionColor: Color(0xFF79A187),
       updateMarkColor: Color(0xFFFFB020),
       accentTextColor: Color(0xFFA7D1B5),
     ),
@@ -530,29 +530,34 @@ class ThemeService extends ChangeNotifier {
     if (upgradedAny) await _persist();
   }
 
-  /// [preset]が組み込みテーマ[builtInId]の以前の配色のまま（アクセントの
-  /// 文字・アイコン色も未指定）なら、新しい配色にしたものを返す。
+  /// [preset]が組み込みテーマ[builtInId]の以前のどれかの版の配色のまま
+  /// （利用者が手を加えていない）なら、新しい配色にしたものを返す。
   /// ID・名前・お気に入りはそのまま。
   static AppThemePreset? _upgradedBuiltIn(
     AppThemePreset preset,
     String builtInId,
   ) {
-    final previous = kPreviousBuiltInThemeColors[builtInId];
-    if (previous == null || preset.accentTextColor != null) return null;
+    final versions = kPreviousBuiltInThemeColors[builtInId];
+    if (versions == null) return null;
     final colours = [
-      preset.accentColor,
-      preset.textColor,
-      preset.buttonTextColor,
-      preset.menuTextColor,
-      preset.selectionTextColor,
-      preset.panelBgColor,
-      preset.menuBgColor,
-      preset.selectionColor,
-      preset.updateMarkColor,
+      preset.accentColor.toARGB32(),
+      preset.textColor.toARGB32(),
+      preset.buttonTextColor.toARGB32(),
+      preset.menuTextColor.toARGB32(),
+      preset.selectionTextColor.toARGB32(),
+      preset.panelBgColor.toARGB32(),
+      preset.menuBgColor.toARGB32(),
+      preset.selectionColor.toARGB32(),
+      preset.updateMarkColor.toARGB32(),
+      preset.accentTextColor?.toARGB32(),
     ];
-    for (var i = 0; i < colours.length; i++) {
-      if (colours[i].toARGB32() != previous[i]) return null;
-    }
+    final untouched = versions.any((previous) {
+      for (var i = 0; i < colours.length; i++) {
+        if (colours[i] != previous[i]) return false;
+      }
+      return true;
+    });
+    if (!untouched) return null;
     return _builtInPresets
         .firstWhere((p) => p.id == builtInId)
         .copyWith(

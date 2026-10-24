@@ -90,14 +90,14 @@ class AppThemePreset {
     // 何色を指すか伝わる名前にするため、実際の差し色（珊瑚ピンク・虹7色で
     // いう「赤」）が分かる名前にしている。
     name: 'レッド（ダーク）',
-    accentColor: Color(0xFFFE8F9C),
+    accentColor: Color(0xFFFF5C7A),
     textColor: Color(0xFFF5F1F0),
-    buttonTextColor: Color(0xFF17161C),
+    buttonTextColor: Color(0xFFFFFFFF),
     menuTextColor: Color(0xFFF5F1F0),
-    selectionTextColor: Color(0xFF17161C),
+    selectionTextColor: Color(0xFFFFFFFF),
     panelBgColor: Color(0xFF17161C),
     menuBgColor: Color(0xFF201F27),
-    selectionColor: Color(0xFFFE8F9C),
+    selectionColor: Color(0xFFFF5C7A),
     updateMarkColor: Color(0xFFFFB020),
     accentTextColor: Color(0xFFFEB2B9),
   );

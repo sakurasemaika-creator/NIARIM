@@ -59,10 +59,8 @@
    `lib/screens/settings/theme_preview_gallery_screen.dart`に未使用の宣言・
    文字列の連結の7件があり、dev_branch単体でも同じ。この7件は除いて数える）
 3. `flutter test`（ベースライン：2026-10-24、dev_branch `25723b3`を
-   取り込んだ`ccr-f56ee68e-77ag7y`で**成功2201・スキップ17・失敗3**
-   〔`e41ebee`の全件が成功2200・スキップ17・失敗4で、うち
-   `test/project_grid_actions_test.dart`の星の1件を次のコミットで直した〕。
-   失敗はdev_branchでも落ちる
+   取り込んだ`ccr-f56ee68e-77ag7y`の`9df71be`で**成功2209・スキップ17・
+   失敗3**。失敗はdev_branchでも落ちる
    `test/community_filter_dialog_contrast_test.dart`・
    `test/popup_opaque_background_test.dart`と、dev_branchがキャンバスの
    タイムラインのボタンを矢印つきの`iconBuilder`に変えたために落ちる
@@ -1066,17 +1064,19 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   新しく文字・アイコンを差し色で描くときも`primary`を直接使わないこと。
   **組み込みテーマの配色の決まり**（ユーザー指定、2026-10-24。
   `test/theme_preset_readability_test.dart`が全28テーマをAPCAと色覚の模擬で
-  見張る）：塗りのボタン・選択中の文字は、ライトは白抜き、ダークはパネル
-  背景色（切り抜いたように見える）。差し色はその文字がLc 60以上で読める
-  濃さ（ライトは沈め、ダークは明るくした同じ色相。既定のライトの
-  `FF5C7A`はエンドカード・アイコンと揃えるため変えない）。アクセントの
+  見張る）：塗りのボタン・選択中の文字はライト・ダークとも白抜き
+  （ユーザー指定。ダークを背景色の文字にした版もあったが、比較画像を見て
+  白抜きに統一）。差し色はその文字がLc 60以上で読める濃さへ同じ色相のまま
+  沈め、ライトとダークで同じ色にする（既定の`FF5C7A`はエンドカード・
+  アイコンと揃えるため変えない）。アクセントの
   文字・アイコン色はパネル背景・メニュー背景の上でライトLc 75・ダーク
   Lc 70以上、更新マーク色はライトLc 50・ダークLc 60以上で差し色と見分けが
-  つく色。**組み込みテーマの色を変えたら、以前の色を
-  `lib/config/previous_theme_presets.dart`へ移すこと**：起動時に、保存済みの
-  一覧・現在の色のうち以前の色のまま（手を加えていない）ものだけを新しい
-  色にする（`ThemeService._upgradedBuiltIn`）。移さないと、すでに使っている
-  端末では一覧も現在の色も古いまま残る。
+  つく色。**組み込みテーマの色を変えたら、以前の色を版として
+  `lib/config/previous_theme_presets.dart`へ足すこと**（アクセントの文字・
+  アイコン色も含めて版ごとに残す）：起動時に、保存済みの一覧・現在の色のうち
+  以前のどれかの版のまま（手を加えていない）ものだけを新しい色にする
+  （`ThemeService._upgradedBuiltIn`）。足さないと、すでに使っている端末では
+  一覧も現在の色も古いまま残る。
   **テーマ・外観の色は1つ変えたらその役目のところだけが変わる**（ユーザー
   指定「差し色だけ設定変えたら差し色だけ変わるように」、2026-10-24）：
   `ColorScheme.fromSeed`は差し色から面（`surface`・`surfaceContainer*`）・線
