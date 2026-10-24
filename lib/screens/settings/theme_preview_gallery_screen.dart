@@ -5,6 +5,7 @@ import '../../services/theme_service.dart';
 import '../../config/accent_text_theme.dart';
 import '../../config/font_fallback.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
+import '../../utils/splash_gradient.dart';
 
 /// Lightweight preview of main creation and community screens only.
 /// Tab variants, settings/management pages, menus and floating panels are
@@ -477,12 +478,16 @@ class _ThemeSampleScreen extends StatelessWidget {
         width: 220, height: 220 * 690 / 3470,
         colorFilter: ColorFilter.mode(ThemeService.activeAccentText, BlendMode.srcIn)),
     ]);
+    final communityColors = splashGradientColors(
+        c.secondary, c.secondaryContainer, foreground);
+    final createColors = splashGradientColors(
+        c.primary, c.primaryContainer, foreground);
     final community = action(Icons.movie_filter_outlined,
       t('作品広場', 'Community'), t('投稿作品をみる', 'Browse works'),
-      c.secondary, c.secondaryContainer);
+      communityColors.first, communityColors.last);
     final create = action(Icons.brush_outlined,
       t('作品をつくる', 'Create artwork'), null,
-      c.primary, c.primaryContainer);
+      createColors.first, createColors.last);
     final landscape = MediaQuery.orientationOf(context) == Orientation.landscape;
     final arrangement = landscape
         ? Row(mainAxisSize: MainAxisSize.min, children: [

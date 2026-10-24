@@ -7,6 +7,7 @@ import 'home_widget_service.dart';
 import 'project_service.dart';
 import 'shortcut_widget_renderer.dart';
 import 'theme_service.dart';
+import '../utils/splash_gradient.dart';
 
 /// テーマ変更・作品選択変更・フレーム選択変更のいずれでも、ホーム画面
 /// ウィジェットの表示内容を実際に書き出し直すための共通処理。
@@ -113,8 +114,16 @@ List<Color> shortcutWidgetColors(
   }
   final scheme = ThemeService.activeColorScheme;
   return kind == HomeWidgetKind.plaza
-      ? [scheme.secondary, scheme.secondaryContainer]
-      : [scheme.primary, scheme.primaryContainer];
+      ? splashGradientColors(
+          scheme.secondary,
+          scheme.secondaryContainer,
+          scheme.onPrimary,
+        )
+      : splashGradientColors(
+          scheme.primary,
+          scheme.primaryContainer,
+          scheme.onPrimary,
+        );
 }
 
 /// ショートカットウィジェットのアイコン・文字の色。

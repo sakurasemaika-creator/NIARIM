@@ -15,6 +15,7 @@ import '../../widgets/responsive.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/theme_rescue_button.dart';
 import '../../config/accent_text_theme.dart';
+import '../../utils/splash_gradient.dart';
 
 /// 起動画面。ロゴを中央に表示し、その上に「作品広場」（コミュニティ
 /// 画面への導線。1行目に大きく「作品広場」、2行目にやや小さく
@@ -82,6 +83,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    final buttonInk = context.watch<ThemeService>().current.buttonTextColor;
     final isLandscape =
         MediaQuery.orientationOf(context) == Orientation.landscape;
 
@@ -118,7 +120,11 @@ class _SplashScreenState extends State<SplashScreen> {
       // secondaryはテーマ・外観設定の「選択色」（AppThemePreset.selectionColor）
       // を直接反映する。tertiaryはColorScheme.fromSeedによる自動算出値のため、
       // ユーザーが選んだ色との対応が分かりにくくなるのを避ける。
-      colors: [scheme.secondary, scheme.secondaryContainer],
+      colors: splashGradientColors(
+        scheme.secondary,
+        scheme.secondaryContainer,
+        buttonInk,
+      ),
       onTap: () => context.push('/community'),
     );
     final createButton = _SplashActionButton(
@@ -126,7 +132,11 @@ class _SplashScreenState extends State<SplashScreen> {
       label: createLabel,
       width: tileWidth,
       height: tileHeight,
-      colors: [scheme.primary, scheme.primaryContainer],
+      colors: splashGradientColors(
+        scheme.primary,
+        scheme.primaryContainer,
+        buttonInk,
+      ),
       // 作品広場と同じく起動画面を履歴へ残し、Android標準の戻る操作でも
       // 「作品をつくる」ホームからこの画面へ戻れるようにする。
       onTap: () => context.push('/home'),

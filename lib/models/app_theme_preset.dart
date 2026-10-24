@@ -90,15 +90,16 @@ class AppThemePreset {
     // 何色を指すか伝わる名前にするため、実際の差し色（珊瑚ピンク・虹7色で
     // いう「赤」）が分かる名前にしている。
     name: 'レッド（ダーク）',
-    accentColor: Color(0xFFFF5C7A),
+    accentColor: Color(0xFFFE8F9C),
     textColor: Color(0xFFF5F1F0),
-    buttonTextColor: Color(0xFFFFFFFF),
+    buttonTextColor: Color(0xFF17161C),
     menuTextColor: Color(0xFFF5F1F0),
-    selectionTextColor: Color(0xFFFFFFFF),
+    selectionTextColor: Color(0xFF17161C),
     panelBgColor: Color(0xFF17161C),
     menuBgColor: Color(0xFF201F27),
-    selectionColor: Color(0xFFFF5C7A),
+    selectionColor: Color(0xFFFE8F9C),
     updateMarkColor: Color(0xFFFFB020),
+    accentTextColor: Color(0xFFFEB2B9),
   );
 
   static const defaultLight = AppThemePreset(
@@ -112,7 +113,8 @@ class AppThemePreset {
     panelBgColor: Color(0xFFFAF7F5),
     menuBgColor: Color(0xFFFFFFFF),
     selectionColor: Color(0xFFFF5C7A),
-    updateMarkColor: Color(0xFFFFB020),
+    updateMarkColor: Color(0xFFCD8B07),
+    accentTextColor: Color(0xFFBC0F45),
   );
 
   Map<String, dynamic> toJson() => {

@@ -27,7 +27,9 @@ void main() {
 
   group('preset', () {
     test('saved themes without the colour follow the accent', () {
-      final json = AppThemePreset.defaultLight.toJson();
+      final json = AppThemePreset.defaultLight
+          .copyWith(accentTextColor: null)
+          .toJson();
       expect(json.containsKey('accentTextColor'), isFalse);
       final restored = AppThemePreset.fromJson(json);
       expect(restored.accentTextColor, isNull);
