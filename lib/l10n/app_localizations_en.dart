@@ -7820,6 +7820,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeWorksLoadFailed => 'Could not load your exported works';
 
   @override
+  String get homeProjectsLoadFailed => 'Could not load your projects';
+
+  @override
   String get newProjectCreating => 'Creating…';
 
   @override

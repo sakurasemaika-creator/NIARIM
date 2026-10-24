@@ -7,6 +7,7 @@ import '../../../services/community_preview_service.dart';
 import '../../../services/community_service.dart';
 import '../../../widgets/ad_banner_mock_widget.dart';
 import '../../../config/accent_text_theme.dart';
+import '../../../config/font_fallback.dart';
 import '../../../utils/color_contrast.dart';
 import 'community_work_card.dart';
 
@@ -67,7 +68,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
     final l10n = AppLocalizations.of(context)!;
     final screenSize = MediaQuery.sizeOf(context);
     final position = service.position;
-    final size = service.size;
+    final size = service.sizeFor(screenSize.width);
     // このプレビューはNavigatorの外側に常駐するため、通常のページ制約だけでは
     // 画面最上部の固定広告まで覆えてしまう。広告専用領域より下だけへ移動を
     // 制限し、ドラッグ中も広告と重ならないようにする。
@@ -96,6 +97,98 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
     );
     final barInk =
         theme.appBarTheme.foregroundColor ?? theme.colorScheme.onSurface;
+
+    // このウィジェットはMaterialApp.routerのbuilder層（Navigator/Overlayの
+    // 外側）に常駐するため、IconButtonへtooltip:を指定すると内部のTooltipが
+    // Overlay祖先を見つけられずビルド時に例外になる（「No Overlay widget
+    // found」）。そのためtooltipは付けず、Semanticsでラベルだけ提供する。
+    final closeButton = Semantics(
+      label: l10n.commonClose,
+      button: true,
+      child: IconButton(
+        padding: const EdgeInsets.all(6),
+        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+        icon: Icon(Icons.close, color: barInk),
+        iconSize: 20,
+        onPressed: service.close,
+      ),
+    );
+    final detailButton = TextButton(
+      style: TextButton.styleFrom(
+        foregroundColor: AccentTextTheme.of(context),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        minimumSize: Size.zero,
+      ),
+      onPressed: () {
+        final workId = work.id;
+        service.close();
+        appRouter.push('/community/work/$workId');
+      },
+      child: Text(
+        l10n.communityFloatingPreviewDetailButton,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      ),
+    );
+
+    // 画面の高さが動画エリアの最小（200）＋操作バーに足りないとき（分割画面・
+    // 小さなウィンドウ）は、規約を満たす大きさのプレーヤーを置けない。
+    // 操作が画面の外へ出ないよう、プレーヤーを出さずに操作バーだけ
+    // （閉じる・作品名・「詳細へ」）を出し、詳細画面で見てもらう。
+    if (screenSize.height - previewTopLimit < size.height) {
+      final barTop =
+          (screenSize.height - CommunityPreviewService.controlBarHeight).clamp(
+            previewTopLimit,
+            double.infinity,
+          );
+      return Positioned(
+        left: position.dx.clamp(
+          0,
+          (screenSize.width - size.width).clamp(0, double.infinity),
+        ),
+        top: position.dy.clamp(previewTopLimit, barTop),
+        child: SizedBox(
+          key: const Key('communityFloatingPreviewCompactBar'),
+          width: size.width,
+          height: CommunityPreviewService.controlBarHeight,
+          child: Material(
+            elevation: 10,
+            color: barColor,
+            borderRadius: BorderRadius.circular(12),
+            clipBehavior: Clip.antiAlias,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onPanUpdate: (details) {
+                service.updatePosition(service.position + details.delta);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  children: [
+                    closeButton,
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        work.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                          color: barInk,
+                        ),
+                      ),
+                    ),
+                    detailButton,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Positioned(
       left: position.dx.clamp(
@@ -128,8 +221,10 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                     // （YouTubeの埋め込みプレーヤーは、その上へ別の
                     // コンテンツを重ねたり隠したりすることが認められて
                     // いない）。操作ボタンはすべて下のバーへ置く。
-                    AspectRatio(
-                      aspectRatio: CommunityPreviewService.playerAspect,
+                    SizedBox(
+                      height:
+                          size.height -
+                          CommunityPreviewService.controlBarHeight,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -172,13 +267,8 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                               // サイズを維持しつつ、3ボタン構成が最小
                               // ウィンドウ幅（200）に収まるよう左右の余白
                               // だけを詰める。
-                              // このウィジェットはMaterialApp.routerの
-                              // builder層（Navigator/Overlayの外側）に常駐
-                              // するため、IconButtonへtooltip:を指定すると
-                              // 内部のTooltipがOverlay祖先を見つけられず
-                              // ビルド時に例外になる（「No Overlay widget
-                              // found」）。そのためtooltipは付けず、代わりに
-                              // Semanticsでラベルだけ提供する。
+                              // tooltipは付けずSemanticsでラベルを渡す
+                              // （上のcloseButtonの説明を参照）。
                               Semantics(
                                 label: _isPlaying
                                     ? l10n.communityFloatingPreviewPauseTooltip
@@ -202,20 +292,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                               // 再生ボタンと閉じるボタンの間は、誤タップ防止
                               // のためある程度の間隔を空ける。
                               const SizedBox(width: 16),
-                              Semantics(
-                                label: l10n.commonClose,
-                                button: true,
-                                child: IconButton(
-                                  padding: const EdgeInsets.all(6),
-                                  constraints: const BoxConstraints(
-                                    minWidth: 36,
-                                    minHeight: 36,
-                                  ),
-                                  icon: Icon(Icons.close, color: barInk),
-                                  iconSize: 20,
-                                  onPressed: service.close,
-                                ),
-                              ),
+                              closeButton,
                             ],
                           ),
                           // 右下角のリサイズハンドルと重なってタップを
@@ -223,28 +300,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                           // 余白を確保する。
                           Padding(
                             padding: EdgeInsets.only(right: handleHitSize - 8),
-                            child: TextButton(
-                              style: TextButton.styleFrom(
-                                foregroundColor: AccentTextTheme.of(context),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 8,
-                                ),
-                                minimumSize: Size.zero,
-                              ),
-                              onPressed: () {
-                                final workId = work.id;
-                                service.close();
-                                appRouter.push('/community/work/$workId');
-                              },
-                              child: Text(
-                                l10n.communityFloatingPreviewDetailButton,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+                            child: detailButton,
                           ),
                         ],
                       ),
@@ -265,7 +321,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                   // 最小サイズ（200×200）を割ることが構造的に起きない。
                   onPanUpdate: (details) {
                     service.updateWidth(
-                      service.width + details.delta.dx,
+                      size.width + details.delta.dx,
                       availableWidth: screenSize.width,
                     );
                   },

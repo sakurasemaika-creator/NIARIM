@@ -7596,6 +7596,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeWorksLoadFailed => '내보낸 작품 목록을 불러오지 못했습니다';
 
   @override
+  String get homeProjectsLoadFailed => '프로젝트를 불러오지 못했습니다';
+
+  @override
   String get newProjectCreating => '만드는 중…';
 
   @override

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 import '../models/community_work.dart';
 
@@ -47,11 +49,30 @@ class CommunityPreviewService extends ChangeNotifier {
   /// 最大幅。画面幅を超えないよう、呼び出し側でさらに絞る。
   static const double maxWidth = 640;
 
+  /// 埋め込みプレーヤーの最小の一辺（YouTubeの要件は200×200以上）。
+  static const double minPlayerSide = 200;
+
   /// 動画エリアの大きさ（この矩形の上には何も重ねてはいけない）。
-  Size get playerSize => Size(_width, _width / playerAspect);
+  Size get playerSize => playerSizeFor(double.infinity);
 
   /// ウィンドウ全体の大きさ（動画エリア＋コントロールバー）。
-  Size get size => Size(_width, _width / playerAspect + controlBarHeight);
+  Size get size => sizeFor(double.infinity);
+
+  /// 幅[availableWidth]の画面での動画エリア。画面が[minWidth]より狭い
+  /// 端末（幅320〜355の端末、表示サイズを大きくした端末）では画面の幅に
+  /// 合わせ、高さは[minPlayerSide]を保つ（16:9より少し縦長になり、動画は
+  /// 上下に余白を付けて収まる）。以前は最小幅のまま画面からはみ出し、
+  /// 「詳細へ」と拡大縮小の取っ手が画面の外に出ていた。
+  Size playerSizeFor(double availableWidth) {
+    final width = math.max(math.min(_width, availableWidth), minPlayerSide);
+    return Size(width, math.max(width / playerAspect, minPlayerSide));
+  }
+
+  /// 幅[availableWidth]の画面でのウィンドウ全体の大きさ。
+  Size sizeFor(double availableWidth) {
+    final player = playerSizeFor(availableWidth);
+    return Size(player.width, player.height + controlBarHeight);
+  }
 
   /// 利用者がウィンドウを動かしたか。
   bool _moved = false;
@@ -82,11 +103,11 @@ class CommunityPreviewService extends ChangeNotifier {
   void updateWidth(double width, {double? availableWidth}) {
     var upper = maxWidth;
     if (availableWidth != null && availableWidth < upper) {
-      // 画面が最小幅より狭い端末では、最小幅のほうを優先する
-      // （プレーヤーの最小サイズ要件は画面の都合では緩められない）。
-      upper = availableWidth < minWidth ? minWidth : availableWidth;
+      upper = math.max(availableWidth, minPlayerSide);
     }
-    _width = width.clamp(minWidth, upper);
+    // 画面が最小幅より狭い端末では画面の幅まで（高さは[playerSizeFor]が
+    // 最小の一辺を保つ）。
+    _width = width.clamp(math.min(minWidth, upper), upper);
     notifyListeners();
   }
 }

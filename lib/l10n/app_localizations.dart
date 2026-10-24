@@ -13817,6 +13817,12 @@ abstract class AppLocalizations {
   /// **'作品一覧を読み込めませんでした'**
   String get homeWorksLoadFailed;
 
+  /// No description provided for @homeProjectsLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトを読み込めませんでした'**
+  String get homeProjectsLoadFailed;
+
   /// No description provided for @newProjectCreating.
   ///
   /// In ja, this message translates to:

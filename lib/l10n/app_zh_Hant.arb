@@ -3162,6 +3162,7 @@
   "errorViewTitle": "顯示此部分時發生錯誤",
   "errorViewBody": "編輯中的資料已保留。請返回上一個畫面後再試一次。將以下內容告知開發者，有助於找出原因。",
   "homeWorksLoadFailed": "無法載入匯出的作品",
+  "homeProjectsLoadFailed": "無法載入專案",
   "newProjectCreating": "正在建立…",
   "newProjectCreateFailed": "無法儲存專案。請檢查儲存空間與儲存位置，然後再試一次。",
   "communityCreatorLabel": "作者"

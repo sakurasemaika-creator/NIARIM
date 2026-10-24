@@ -603,6 +603,17 @@ class _HomeScreenState extends State<HomeScreen>
                             // フォルダ内移動時のパンくずリスト。検索中は
                             // 全体から検索するため非表示にする。
                             if (!_isSearching) _buildBreadcrumb(),
+                            // 保存先を読めなかったときは、空の一覧に見えて
+                            // 作品が消えたと思わないよう知らせ、読み直せる
+                            // ようにする。
+                            if (context
+                                .watch<ProjectService>()
+                                .projectsLoadFailed)
+                              _ProjectsLoadFailureNotice(
+                                onRetry: () => context
+                                    .read<ProjectService>()
+                                    .retryLoadProjects(),
+                              ),
                             Expanded(
                               child: ProjectListWidget(
                                 // 開いているフォルダ・表示ごとにスクロール位置を
@@ -2442,6 +2453,42 @@ class _WorksTabState extends State<_WorksTab> {
           ),
         );
       },
+    );
+  }
+}
+
+class _ProjectsLoadFailureNotice extends StatelessWidget {
+  const _ProjectsLoadFailureNotice({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      key: const Key('homeProjectsLoadFailed'),
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      child: Material(
+        color: scheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
+          child: Row(
+            children: [
+              Icon(Icons.folder_off_outlined, color: scheme.onSurfaceVariant),
+              const SizedBox(width: 12),
+              Expanded(child: Text(l10n.homeProjectsLoadFailed)),
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh),
+                label: Text(l10n.communityRetry),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

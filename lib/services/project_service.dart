@@ -210,16 +210,41 @@ class ProjectService extends ChangeNotifier {
   /// プロジェクトがゴミ箱へ移動された日時（ゴミ箱一覧の削除日時表示用）
   DateTime? deletedAtOf(String projectId) => _trashDeletedAt[projectId];
 
+  /// 保存先のプロジェクトを読み込めなかったか（保存先が開けない・一覧を
+  /// 読めない）。1件ずつの破損は数えない（その作品だけ飛ばす）。
+  bool get projectsLoadFailed => _projectsLoadFailed;
+  bool _projectsLoadFailed = false;
+
   Future<void> init() async {
     try {
       await _loadTrashState();
       await _loadFolders();
       await _loadSharedFolders();
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+    await _loadProjectsFromDisk();
+  }
+
+  /// プロジェクトを読み込めなかったとき（[projectsLoadFailed]）に、保存先を
+  /// 読み直す。読み込み済み・ゴミ箱の作品は二重にしない。
+  Future<void> retryLoadProjects() => _loadProjectsFromDisk();
+
+  Future<void> _loadProjectsFromDisk() async {
+    try {
       final basePath = await NiaproSerializer.projectsBasePath();
       final baseDir = Directory(basePath);
-      if (!baseDir.existsSync()) return;
+      if (!baseDir.existsSync()) {
+        _projectsLoadFailed = false;
+        notifyListeners();
+        return;
+      }
+      final known = {
+        for (final p in [..._projects, ..._trash]) p.id,
+      };
       for (final dir in baseDir.listSync().whereType<Directory>()) {
         final projectId = dir.path.split(RegExp(r'[\\/]')).last;
+        if (known.contains(projectId)) continue;
         final niaproFile = File('${dir.path}/$projectId.niapro');
         if (!niaproFile.existsSync()) continue;
         try {
@@ -241,11 +266,15 @@ class ProjectService extends ChangeNotifier {
           // 破損ファイルはスキップ
         }
       }
-      notifyListeners();
+      _projectsLoadFailed = false;
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
-      // ストレージアクセス失敗時は空状態で起動
+      // 保存先を開けないときは読み込めた分（無ければ空）で続け、ホームで
+      // 読み込めなかったことを知らせて読み直せるようにする（黙って空に
+      // すると、作品が消えたように見えた）。
+      _projectsLoadFailed = true;
     }
+    notifyListeners();
   }
 
   // ─── ゴミ箱の状態永続化（ゴミ箱・自動削除設定） ─────────────────────────

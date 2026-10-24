@@ -3162,6 +3162,7 @@
   "errorViewTitle": "Une erreur s’est produite lors de l’affichage de cette partie",
   "errorViewBody": "Votre travail en cours est conservé. Revenez à l’écran précédent et réessayez. Nous envoyer le texte ci-dessous nous aidera à en trouver la cause.",
   "homeWorksLoadFailed": "Impossible de charger vos créations exportées",
+  "homeProjectsLoadFailed": "Impossible de charger vos projets",
   "newProjectCreating": "Création en cours…",
   "newProjectCreateFailed": "Impossible d’enregistrer le projet. Vérifiez l’espace de stockage et l’emplacement d’enregistrement, puis réessayez.",
   "communityCreatorLabel": "Créateur"

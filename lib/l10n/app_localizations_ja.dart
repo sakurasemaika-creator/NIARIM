@@ -7557,6 +7557,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeWorksLoadFailed => '作品一覧を読み込めませんでした';
 
   @override
+  String get homeProjectsLoadFailed => 'プロジェクトを読み込めませんでした';
+
+  @override
   String get newProjectCreating => '作成しています…';
 
   @override

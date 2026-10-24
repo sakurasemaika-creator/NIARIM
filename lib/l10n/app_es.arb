@@ -3162,6 +3162,7 @@
   "errorViewTitle": "Se produjo un error al mostrar esta parte",
   "errorViewBody": "Tu trabajo en curso se conserva. Vuelve a la pantalla anterior e inténtalo de nuevo. Si nos envías el texto de abajo, nos ayudarás a encontrar la causa.",
   "homeWorksLoadFailed": "No se pudieron cargar tus obras exportadas",
+  "homeProjectsLoadFailed": "No se pudieron cargar tus proyectos",
   "newProjectCreating": "Creando…",
   "newProjectCreateFailed": "No se pudo guardar el proyecto. Comprueba el espacio de almacenamiento y la ubicación de guardado e inténtalo de nuevo.",
   "communityCreatorLabel": "Creador"

@@ -7491,6 +7491,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeWorksLoadFailed => '无法加载导出的作品';
 
   @override
+  String get homeProjectsLoadFailed => '无法加载项目';
+
+  @override
   String get newProjectCreating => '正在创建…';
 
   @override
@@ -14986,6 +14989,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeWorksLoadFailed => '無法載入匯出的作品';
+
+  @override
+  String get homeProjectsLoadFailed => '無法載入專案';
 
   @override
   String get newProjectCreating => '正在建立…';

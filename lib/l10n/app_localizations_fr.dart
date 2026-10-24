@@ -7962,6 +7962,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible de charger vos créations exportées';
 
   @override
+  String get homeProjectsLoadFailed => 'Impossible de charger vos projets';
+
+  @override
   String get newProjectCreating => 'Création en cours…';
 
   @override
