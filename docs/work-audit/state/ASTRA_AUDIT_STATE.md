@@ -190,6 +190,15 @@ status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判
   | 読めない組み合わせのときのリセットボタン | 固定色（テーマを使わない唯一の例外、`theme_rescue_button.dart`） |
 
   残る自動の差し替え：無し。`contrastingForeground`は`color_contrast.dart`に定義が残るだけで、lib配下の画面からは呼んでいない（作品広場のカードが最後の1か所だった）。
+- 続けて「全面監査続けてください」でA003のDiscoveryを実操作で確かめた（App `205ad92`、Linux debug）：
+  - DISC013（修正）：幅320でプレビューが最小幅356のまま右へはみ出し「詳細へ」が切れ、取っ手が画面の外。高さが足りない画面では操作バーが切れて閉じられない。→画面の幅に合わせて高さ200を保つ（YouTubeの200×200は維持）、高さが足りないときは操作バーだけ（閉じる・作品名・「詳細へ」）。`community_preview_reachability_test`（7サイズ×文字3通り×7言語、修正前の表示で失敗）。実画面320×700・640×300→640×700で確認。
+  - DISC003（修正、一覧のerror→retryの残り）：保存先を読めない状態（`xdg-user-dir`を使えないPATHで起動して再現）で、プロジェクトタブがフォルダだけの空の一覧になり何も知らされない。→`projectsLoadFailed`・`retryLoadProjects`とプロジェクトタブの通知・再試行（`homeProjectsLoadFailed`、7言語）。作品一覧タブの「読み込めませんでした」・再試行は以前からのとおり。`home_export_list_failure_test`に追加。
+  - DISC004（確認）：同じ状態で新規作成→「プロジェクトを保存できませんでした…」を出して画面に留まり、キャンバスへ進まず、ホームにも出ない。
+  - DISC006（確認＋回帰テスト）：640×220で3つのタブの空の表示はスクロールで全部に届き例外なし。`home_empty_short_height_test`（7言語×文字1.0/2.0×3サイズ、スクロールを外すと107pxはみ出して失敗）。
+  - DISC012（確認）：640で「ブクマ済み」を選んで320へ縮める・「プロジェクト」へ戻しながら縮めても、選択中のタブ・画面名・本文・FABが一致。`home_bookmark_states_test`のresize系も成功。
+  - DISC010（確認）：2段のバーで画面名は切れない。2つのフィルターはホバー・長押しで「動画の種類を絞り込む」「表示フィルター」。ただし目のアイコンは何のためか分かりにくい（ユーザーから「目アイコンってなんですか？」）。2段目に文字を添える案をユーザーに確認する。
+  - DISC007・DISC008・DISC009・DISC011：専用のテスト（`home_scroll_continuity_test`・`home_bookmark_states_test`・`community_account_boundary*_test`・`community_work_card_layout_test`）がこのHEADで成功。DISC009は実際のGoogleログイン・バックエンドが無いため実画面では未確認（合成のHTTPのみ）。
+  - Discoveryのstatusはdev_branchの記録のまま（todo）。各行の「必要な検証」のうち、実バックエンド・実機・全条件の実画面が残るため、doneにはしない。
 - 申し送り：
   - A069：容量削減の画面は`_reload`に例外処理が無く、集計（`computeBreakdown`）が失敗すると読み込み中のまま止まる（Linuxでは一時フォルダ＝/tmp全体を数えるため実際に10秒以上止まった。Androidの一時フォルダはアプリ専用で小さいので製品で同じ遅さにはならない）。
   - 監査担当のテスト：`app_web_reference_export_exact_test`は、dev_branchがキャンバスのタイムラインのボタンを`iconBuilder`（矢印つき、Key `canvasTimelineModeButton`）に変えたため、`icon == Icons.movie_filter_outlined`で探せず失敗（dev_branch `25723b3`単体でも同じ）。
