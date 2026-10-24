@@ -58,9 +58,11 @@
    `debugPrint`を使う。2026-10-23時点では、dev_branchの
    `lib/screens/settings/theme_preview_gallery_screen.dart`に未使用の宣言・
    文字列の連結の7件があり、dev_branch単体でも同じ。この7件は除いて数える）
-3. `flutter test`（ベースライン：2026-10-23、dev_branch `25723b3`を
-   取り込んだ`ccr-f56ee68e-77ag7y`の`6571623`で**成功2190・スキップ17・
-   失敗3**。失敗はdev_branchでも落ちる
+3. `flutter test`（ベースライン：2026-10-24、dev_branch `25723b3`を
+   取り込んだ`ccr-f56ee68e-77ag7y`で**成功2201・スキップ17・失敗3**
+   〔`e41ebee`の全件が成功2200・スキップ17・失敗4で、うち
+   `test/project_grid_actions_test.dart`の星の1件を次のコミットで直した〕。
+   失敗はdev_branchでも落ちる
    `test/community_filter_dialog_contrast_test.dart`・
    `test/popup_opaque_background_test.dart`と、dev_branchがキャンバスの
    タイムラインのボタンを矢印つきの`iconBuilder`に変えたために落ちる

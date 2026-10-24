@@ -278,8 +278,13 @@ void main() {
       const Color(0xFFE53935),
       const Color(0xFF2867DA),
     ]) {
+      // 星は背景の上のアイコンなので「アクセントの文字・アイコン色」で描く。
+      // 既定のテーマはこの色を指定しているので、未指定（＝差し色に従う）にする。
       themeService.previewCurrent(
-        AppThemePreset.defaultLight.copyWith(accentColor: accent),
+        AppThemePreset.defaultLight.copyWith(
+          accentColor: accent,
+          accentTextColor: null,
+        ),
       );
       await tester.pumpAndSettle();
       // Check both the service's source-of-truth theme and actual widget tree.
