@@ -7,6 +7,7 @@ import '../../services/settings_service.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/reorder_index.dart';
+import '../../config/accent_text_theme.dart';
 
 /// 保存済みカスタムキャンバスサイズプリセットの一覧管理画面。
 /// ドラッグでの並べ替え・編集・複製・名前変更・削除ができる。
@@ -38,7 +39,7 @@ class CanvasSizePresetManageScreen extends StatelessWidget {
                         child: Icon(
                           Icons.aspect_ratio,
                           size: 40,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: AccentTextTheme.of(context),
                         ),
                       ),
                       const SizedBox(height: 20),

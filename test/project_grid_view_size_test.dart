@@ -6,7 +6,9 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
+import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 
 class _Items extends ProjectService {
@@ -147,6 +149,62 @@ void main() {
         before,
         reason: '$width',
       );
+    }
+  });
+
+  testWidgets('a folder without its own colour is the accent in every view', (
+    tester,
+  ) async {
+    // 一覧の行の先頭アイコンはテーマで「アクセントの文字・アイコン色」に
+    // なるので、詳細表示のフォルダだけ大・中・小と違う色になっていた。
+    final theme = ThemeService();
+    addTearDown(theme.dispose);
+    theme.previewCurrent(
+      AppThemePreset.defaultLight.copyWith(
+        accentTextColor: const Color(0xFF123456),
+      ),
+    );
+    final data = theme.themeData;
+    final service = _Items();
+    addTearDown(service.dispose);
+    for (final mode in [
+      ProjectViewMode.large,
+      ProjectViewMode.medium,
+      ProjectViewMode.small,
+      ProjectViewMode.detail,
+    ]) {
+      await tester.pumpWidget(
+        ChangeNotifierProvider<ProjectService>.value(
+          value: service,
+          child: MaterialApp(
+            theme: data,
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: ProjectListWidget(
+                viewMode: mode,
+                sortMode: ProjectSortMode.nameAsc,
+                isSelectionMode: false,
+                selectedIds: const {},
+                onLongPress: (_) {},
+                onSelectionChanged: (_) {},
+                currentFolderId: null,
+                onOpenFolder: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final icon = tester.widget<Icon>(
+        find.byWidgetPredicate(
+          (w) =>
+              w is Icon &&
+              (w.icon == Icons.folder || w.icon == Icons.folder_rounded),
+        ),
+      );
+      expect(icon.color, data.colorScheme.primary, reason: '$mode');
     }
   });
 }

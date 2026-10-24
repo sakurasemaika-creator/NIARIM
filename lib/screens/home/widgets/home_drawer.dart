@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../config/font_fallback.dart';
+import '../../../config/accent_text_theme.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key});
@@ -159,7 +160,7 @@ class HomeDrawer extends StatelessWidget {
           ListTile(
             leading: Icon(
               Icons.workspace_premium_outlined,
-              color: scheme.primary,
+              color: AccentTextTheme.of(context),
             ),
             title: Text(
               l10n.homeDrawerPremium,

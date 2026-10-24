@@ -28,6 +28,7 @@ import '../../utils/folder_tree.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../home/widgets/project_list_widget.dart'
     show showMaterialIncludeDialog, buildFontShareBundle;
+import '../../config/accent_text_theme.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
   final String projectId;
@@ -314,7 +315,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                           ? l10n.projectDetailFavoriteRegistered
                           : l10n.projectDetailFavoriteUnregistered,
                       iconColor: project.isFavorite
-                          ? Theme.of(context).colorScheme.primary
+                          ? AccentTextTheme.of(context)
                           : null,
                       onTap: () =>
                           projectService.toggleFavorite(widget.projectId),
@@ -767,7 +768,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 contentPadding: folderTreeTilePadding(depth),
                 leading: Icon(
                   Icons.folder,
-                  color: folder.color != null ? Color(folder.color!) : null,
+                  color: folder.color != null
+                      ? Color(folder.color!)
+                      : Theme.of(ctx).colorScheme.primary,
                 ),
                 title: Text(folder.name),
                 onTap: () {

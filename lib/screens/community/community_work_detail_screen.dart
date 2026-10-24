@@ -12,6 +12,7 @@ import 'community_author_works_screen.dart';
 import 'community_edit_feedback.dart';
 import 'widgets/community_work_card.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 /// 作品詳細画面（別ルート、`/community/work/:id`）。
 /// 横画面フローティングプレビューの「詳細へ」と縦画面の詳細情報アイコンは
@@ -377,7 +378,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 14,
-                                color: scheme.primary,
+                                color: AccentTextTheme.of(context),
                                 fontWeight: FontWeight.w600,
                                 fontFamily: 'Kuramubon',
                                 fontFamilyFallback: kHeadingFontFallback,
@@ -400,7 +401,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                             : Icons.person_add_alt_1,
                         color: communityService.isFavoriteAuthor(work.authorId)
                             ? scheme.onSurfaceVariant
-                            : scheme.primary,
+                            : AccentTextTheme.of(context),
                       ),
                       tooltip: communityService.isFavoriteAuthor(work.authorId)
                           ? l10n.communityFavoriteAuthorFollowing
@@ -562,13 +563,15 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   ),
                   icon: Icon(
                     Icons.repeat,
-                    color: isReposted ? scheme.primary : null,
+                    color: isReposted ? AccentTextTheme.of(context) : null,
                   ),
                   label: Text(
                     isReposted
                         ? l10n.communityRepostedButton
                         : l10n.communityRepostButton,
-                    style: TextStyle(color: isReposted ? scheme.primary : null),
+                    style: TextStyle(
+                      color: isReposted ? AccentTextTheme.of(context) : null,
+                    ),
                   ),
                   style: OutlinedButton.styleFrom(
                     side: isReposted ? BorderSide(color: scheme.primary) : null,
@@ -634,12 +637,16 @@ class _ProjectMetadataCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.animation_rounded, size: 18, color: scheme.primary),
+                Icon(
+                  Icons.animation_rounded,
+                  size: 18,
+                  color: AccentTextTheme.of(context),
+                ),
                 const SizedBox(width: 6),
                 Text(
                   'NIARIM',
                   style: TextStyle(
-                    color: scheme.primary,
+                    color: AccentTextTheme.of(context),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -792,7 +799,9 @@ class _NiarimVisibilitySwitch extends StatelessWidget {
             children: [
               Icon(
                 isPublished ? Icons.public : Icons.lock_outline,
-                color: isPublished ? scheme.primary : scheme.onSurfaceVariant,
+                color: isPublished
+                    ? AccentTextTheme.of(context)
+                    : scheme.onSurfaceVariant,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -855,7 +864,9 @@ class _AiImageVideoSwitch extends StatelessWidget {
             children: [
               Icon(
                 Icons.auto_awesome_outlined,
-                color: value ? scheme.primary : scheme.onSurfaceVariant,
+                color: value
+                    ? AccentTextTheme.of(context)
+                    : scheme.onSurfaceVariant,
               ),
               const SizedBox(width: 10),
               Expanded(

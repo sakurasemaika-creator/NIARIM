@@ -14,6 +14,7 @@ import '../../utils/line_break.dart';
 import '../../widgets/responsive.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/theme_rescue_button.dart';
+import '../../config/accent_text_theme.dart';
 
 /// 起動画面。ロゴを中央に表示し、その上に「作品広場」（コミュニティ
 /// 画面への導線。1行目に大きく「作品広場」、2行目にやや小さく
@@ -183,7 +184,10 @@ class _SplashScreenState extends State<SplashScreen> {
           'assets/logo/title_logo.svg',
           width: titleWidth,
           height: titleHeight,
-          colorFilter: ColorFilter.mode(scheme.primary, BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(
+            AccentTextTheme.of(context),
+            BlendMode.srcIn,
+          ),
         ),
       ],
     );

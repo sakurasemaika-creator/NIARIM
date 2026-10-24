@@ -44,6 +44,11 @@ class ThemeService extends ChangeNotifier {
     seedColor: const Color(0xFFFF5C7A),
   );
 
+  /// [activeColorScheme]と同じく、BuildContextの無い所（描画クラス等）から
+  /// 「アクセントの文字・アイコン色」を読むための値。themeDataを作るたびに
+  /// 更新する。
+  static Color activeAccentText = const Color(0xFFFF5C7A);
+
   /// 復旧確認ダイアログ専用。現在のテーマから独立している。
   /// プリセットの色をここで複製せず、正式なレッド（ライト）を利用する。
   static ThemeData get rescueThemeData =>
@@ -60,6 +65,8 @@ class ThemeService extends ChangeNotifier {
   ThemeData get themeData {
     final data = _buildTheme(_current);
     activeColorScheme = data.colorScheme;
+    activeAccentText =
+        data.extension<AccentTextTheme>()?.color ?? data.colorScheme.primary;
     return data;
   }
 
@@ -791,7 +798,8 @@ class ThemeService extends ChangeNotifier {
       // 優先されるため既存の明示指定箇所への影響はない。
       listTileTheme: ListTileThemeData(
         minVerticalPadding: 12,
-        iconColor: scheme.primary,
+        // 一覧の行の先頭アイコンは背景の上の差し色＝アクセントの文字・アイコン色。
+        iconColor: accentText,
         selectedColor: preset.selectionTextColor,
         selectedTileColor: selectionColor,
         shape: RoundedRectangleBorder(

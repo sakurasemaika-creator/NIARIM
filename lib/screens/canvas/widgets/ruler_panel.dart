@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/ruler.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
+import '../../../config/accent_text_theme.dart';
 
 class RulerPanel extends StatelessWidget {
   final Ruler? activeRuler;
@@ -213,16 +214,17 @@ class RulerPanel extends StatelessWidget {
   ) {
     final isActive = activeRuler?.type == type;
     final primary = Theme.of(context).colorScheme.primary;
+    final accentText = AccentTextTheme.of(context);
     return ListTile(
       dense: true,
-      leading: Icon(icon, size: 18, color: isActive ? primary : null),
+      leading: Icon(icon, size: 18, color: isActive ? accentText : null),
       title: Text(
         label,
         style: TextStyle(
           fontSize: 12,
           fontFamily: 'Kuramubon',
           fontFamilyFallback: kHeadingFontFallback,
-          color: isActive ? primary : null,
+          color: isActive ? accentText : null,
         ),
       ),
       selected: isActive,

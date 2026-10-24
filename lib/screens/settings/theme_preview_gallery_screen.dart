@@ -430,7 +430,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(13),
         child: ListTile(
         dense: true,
-        leading: Icon(icon, color: c.primary, size: 22),
+        leading: Icon(icon, color: ThemeService.activeAccentText, size: 22),
         title: Text(title, style: const TextStyle(
           fontSize: 13, fontWeight: FontWeight.w600)),
         subtitle: subtitle == null ? null : Text(subtitle,
@@ -475,7 +475,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       const SizedBox(height: 10),
       SvgPicture.asset('assets/logo/title_logo.svg',
         width: 220, height: 220 * 690 / 3470,
-        colorFilter: ColorFilter.mode(c.primary, BlendMode.srcIn)),
+        colorFilter: ColorFilter.mode(ThemeService.activeAccentText, BlendMode.srcIn)),
     ]);
     final community = action(Icons.movie_filter_outlined,
       t('作品広場', 'Community'), t('投稿作品をみる', 'Browse works'),
@@ -607,7 +607,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         Padding(padding: const EdgeInsets.all(9), child: Row(children: [
           Expanded(child: Text(title, maxLines: 1,
             style: const TextStyle(fontSize: 12))),
-          Icon(Icons.star_border, color: c.primary, size: 16),
+          Icon(Icons.star_border, color: ThemeService.activeAccentText, size: 16),
           const Icon(Icons.more_vert, size: 16),
         ])),
       ]));
@@ -655,7 +655,7 @@ class _ThemeSampleScreen extends StatelessWidget {
             Expanded(child: Center(child: Text(tab,
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800,
                 color: tab == t('新着', 'New')
-                  ? c.primary : c.onSurfaceVariant)))),
+                  ? ThemeService.activeAccentText : c.onSurfaceVariant)))),
             Container(width: 30, height: 3,
               decoration: BoxDecoration(
                 color: tab == t('新着', 'New')
@@ -917,7 +917,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               Positioned(bottom: 2, right: 4,
                 child: Icon(Icons.repeat,
                   key: const Key('themePreviewLoopButton'),
-                  size: 24, color: c.primary)),
+                  size: 24, color: ThemeService.activeAccentText)),
             ]),
           ))),
       // The resize grip has no time labels beside it.
@@ -974,7 +974,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       Container(height: 40, padding: const EdgeInsets.symmetric(horizontal: 8),
         color: c.surfaceContainerLow, child: Row(children: [
           Text(t('選択', 'Select'), style: TextStyle(fontSize: 11,
-            color: c.primary)),
+            color: ThemeService.activeAccentText)),
           const SizedBox(width: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -1136,7 +1136,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                   Flexible(child: Text(t('プロジェクト一覧へ',
                     'Back to projects'), style: TextStyle(
-                      fontSize: 12, fontFamily: 'Kuramubon', color: c.primary))),
+                      fontSize: 12, fontFamily: 'Kuramubon', color: ThemeService.activeAccentText))),
                   const SizedBox(width: 14),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -1256,7 +1256,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               SizedBox(
                 key: const Key('themePreviewDetailLoopButton'),
                 width: 34, height: 34,
-                child: Icon(Icons.repeat, color: c.primary, size: 20)),
+                child: Icon(Icons.repeat, color: ThemeService.activeAccentText, size: 20)),
               Text('1.0s',
                 key: const Key('themePreviewDetailTotalSeconds'),
                 style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)),
@@ -1370,7 +1370,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         SizedBox(height: 76, child: Row(children: [
           Icon(option.key == 0
             ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-            color: option.key == 0 ? c.primary : c.onSurfaceVariant,
+            color: option.key == 0 ? ThemeService.activeAccentText : c.onSurfaceVariant,
             size: 21),
           const SizedBox(width: 16),
           Expanded(child: Column(
@@ -1485,9 +1485,9 @@ class _ThemeSampleScreen extends StatelessWidget {
                         t('タップして全${themePreviewEntries.length}画面を見る',
                           'Tap to view ${themePreviewEntries.length} screens'),
                         style: TextStyle(fontSize: 12,
-                          fontWeight: FontWeight.w700, color: c.primary))),
+                          fontWeight: FontWeight.w700, color: ThemeService.activeAccentText))),
                       const SizedBox(width: 4),
-                      Icon(Icons.open_in_full, size: 17, color: c.primary),
+                      Icon(Icons.open_in_full, size: 17, color: ThemeService.activeAccentText),
                     ]),
                   ],
                 )),
@@ -1595,7 +1595,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  child: Icon(item.$1, color: c.primary, size: 22),
+                  child: Icon(item.$1, color: ThemeService.activeAccentText, size: 22),
                 ),
                 const SizedBox(width: 14),
                 Expanded(child: Column(
@@ -1675,7 +1675,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               ListTile(dense: true,
                 leading: Icon(e.key == 0
                   ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                  color: e.key == 0 ? c.primary : c.onSurfaceVariant),
+                  color: e.key == 0 ? ThemeService.activeAccentText : c.onSurfaceVariant),
                 title: Text(e.value, style: const TextStyle(fontSize: 12)),
                 subtitle: e.key == 0
                   ? Text(t('動作を軽くして快適に使う', 'Prioritize speed'),
@@ -1721,9 +1721,9 @@ class _ThemeSampleScreen extends StatelessWidget {
                   ListTile(
                     title: Text(item.value.$1),
                     trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                      Text(item.value.$2, style: TextStyle(color: c.primary)),
+                      Text(item.value.$2, style: TextStyle(color: ThemeService.activeAccentText)),
                       const SizedBox(width: 6),
-                      Icon(Icons.chevron_right, color: c.primary, size: 20),
+                      Icon(Icons.chevron_right, color: ThemeService.activeAccentText, size: 20),
                     ]),
                   ),
                 ],
@@ -1798,7 +1798,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               const SizedBox(width: 9),
               Expanded(child: Text(e.$2,
                 style: const TextStyle(fontSize: 11))),
-              Icon(Icons.delete_outline, size: 17, color: c.primary),
+              Icon(Icons.delete_outline, size: 17, color: ThemeService.activeAccentText),
             ]))),
         ]);
       case 'pen':
@@ -1845,7 +1845,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                   'Try drawing with these settings'),
                 style: TextStyle(fontSize: 10, color: c.onSurfaceVariant))),
               Text(t('クリア', 'Clear'),
-                style: TextStyle(fontSize: 11, color: c.primary)),
+                style: TextStyle(fontSize: 11, color: ThemeService.activeAccentText)),
             ]),
             const SizedBox(height: 6),
             Container(height: 118,
@@ -1866,8 +1866,8 @@ class _ThemeSampleScreen extends StatelessWidget {
                   title: Text(t('ボタン1', 'Button 1')),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                     Text(t('消しゴム切替', 'Eraser'),
-                      style: TextStyle(color: c.primary)),
-                    Icon(Icons.chevron_right, color: c.primary),
+                      style: TextStyle(color: ThemeService.activeAccentText)),
+                    Icon(Icons.chevron_right, color: ThemeService.activeAccentText),
                   ]),
                 ),
                 const Divider(height: 1),
@@ -1875,8 +1875,8 @@ class _ThemeSampleScreen extends StatelessWidget {
                   title: Text(t('ボタン2', 'Button 2')),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                     Text(t('スポイト', 'Eyedropper'),
-                      style: TextStyle(color: c.primary)),
-                    Icon(Icons.chevron_right, color: c.primary),
+                      style: TextStyle(color: ThemeService.activeAccentText)),
+                    Icon(Icons.chevron_right, color: ThemeService.activeAccentText),
                   ]),
                 ),
               ]),
@@ -1967,7 +1967,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                   horizontal: 10, vertical: 7),
                 child: Text(t('順序をリセット', 'Reset order'),
                   style: TextStyle(
-                    fontSize: 12, color: c.primary)))),
+                    fontSize: 12, color: ThemeService.activeAccentText)))),
           ]),
         ),
       ]);
@@ -2007,7 +2007,7 @@ class _ThemeSampleScreen extends StatelessWidget {
             Align(alignment: Alignment.centerRight,
               child: Padding(padding: const EdgeInsets.all(10),
                 child: Text(t('幅をリセット', 'Reset width'),
-                  style: TextStyle(color: c.primary)))),
+                  style: TextStyle(color: ThemeService.activeAccentText)))),
           ]),
         ),
       ],
@@ -2115,14 +2115,14 @@ class _ThemeSampleScreen extends StatelessWidget {
           ]) Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 1),
             child: SizedBox(height: 46, child: Row(children: [
-              Icon(Icons.check_box, size: 20, color: c.primary),
+              Icon(Icons.check_box, size: 20, color: ThemeService.activeAccentText),
               const SizedBox(width: 12),
               Icon(item.$1, color: c.onSurface, size: 18),
               const SizedBox(width: 12),
               Expanded(child: Text(item.$2,
                 style: const TextStyle(
                   fontSize: 13, fontWeight: FontWeight.w700))),
-              Icon(Icons.drag_handle, color: c.primary, size: 20),
+              Icon(Icons.drag_handle, color: ThemeService.activeAccentText, size: 20),
             ])),
           ),
         ]),
@@ -2240,7 +2240,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     const SizedBox(height: 12),
     Expanded(child: Center(child: Column(mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.wallpaper_outlined, size: 48, color: c.primary),
+        Icon(Icons.wallpaper_outlined, size: 48, color: ThemeService.activeAccentText),
         const SizedBox(height: 12),
         Text(t('登録されたウォーターマークがありません',
           'No saved watermarks'),
@@ -2269,7 +2269,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       color: c.surfaceContainerLow,
       child: ListTile(dense: true,
         title: Text(e, style: const TextStyle(fontSize: 12)),
-        trailing: Icon(Icons.check_box, color: c.primary, size: 20)))),
+        trailing: Icon(Icons.check_box, color: ThemeService.activeAccentText, size: 20)))),
     const SizedBox(height: 14),
     _heading(t('保存中のプロジェクト（任意）', 'Saved projects')),
     _mockSettingRow(c, Icons.check_box_outline_blank,
@@ -2306,9 +2306,9 @@ class _ThemeSampleScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           child: ListTile(
             leading: Icon(Icons.add_photo_alternate_outlined,
-              color: c.primary),
+              color: ThemeService.activeAccentText),
             title: Text(t('作品を選ぶ', 'Choose artwork')),
-            trailing: Icon(Icons.chevron_right, color: c.primary),
+            trailing: Icon(Icons.chevron_right, color: ThemeService.activeAccentText),
           )),
       ),
       Text(t('作品をつくるウィジェット', 'Create artwork widget'),
@@ -2325,7 +2325,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         ListTile(
           leading: Icon(title == t('アプリのテーマに合わせる', 'Follow app theme')
             ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-            color: c.primary),
+            color: ThemeService.activeAccentText),
           title: Text(title),
         ),
       const SizedBox(height: 18),
@@ -2337,7 +2337,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
       const SizedBox(height: 10),
       ListTile(
-        leading: Icon(Icons.radio_button_checked, color: c.primary),
+        leading: Icon(Icons.radio_button_checked, color: ThemeService.activeAccentText),
         title: Text(t('アプリのテーマに合わせる', 'Follow app theme'))),
       ListTile(
         leading: Icon(Icons.radio_button_unchecked, color: c.onSurfaceVariant),
@@ -2404,7 +2404,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                       style: TextStyle(color: c.onSurfaceVariant)),
                   ])),
                 const SizedBox(width: 4),
-                Icon(Icons.edit_note, color: c.primary),
+                Icon(Icons.edit_note, color: ThemeService.activeAccentText),
                 const SizedBox(width: 18),
                 Icon(Icons.book_outlined,
                   color: c.onSurfaceVariant.withValues(alpha: .6)),
@@ -2439,7 +2439,7 @@ class _ThemeSampleScreen extends StatelessWidget {
           CircleAvatar(
             radius: 38, backgroundColor: c.primary.withValues(alpha: .16),
             child: Icon(Icons.perm_media_outlined, size: 36,
-              color: c.primary)),
+              color: ThemeService.activeAccentText)),
           const SizedBox(height: 18),
           Text(t('素材がありません', 'No materials yet'),
             style: const TextStyle(fontWeight: FontWeight.w700)),
@@ -2465,7 +2465,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               t('読み込み', 'Import'),
             ]) Expanded(child: Center(child: Text(item,
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
-                color: c.primary)))),
+                color: ThemeService.activeAccentText)))),
           ]),
         ),
         Padding(padding: const EdgeInsets.all(12), child: Row(children: [
@@ -2479,7 +2479,7 @@ class _ThemeSampleScreen extends StatelessWidget {
             CircleAvatar(radius: 38,
               backgroundColor: c.primary.withValues(alpha: .16),
               child: Icon(Icons.font_download_outlined,
-                color: c.primary, size: 38)),
+                color: ThemeService.activeAccentText, size: 38)),
             const SizedBox(height: 18),
             Text(t('フォントがありません', 'No fonts'),
               style: const TextStyle(fontWeight: FontWeight.w700)),
@@ -2529,7 +2529,7 @@ class _ThemeSampleScreen extends StatelessWidget {
             : t('検索...', 'Search...')),
           const SizedBox(height: 12),
           if (isTips) Text(t('動画制作のコツ', 'Video production tips'),
-            style: TextStyle(fontWeight: FontWeight.w700, color: c.primary)),
+            style: TextStyle(fontWeight: FontWeight.w700, color: ThemeService.activeAccentText)),
           for (final title in titles)
             Padding(padding: const EdgeInsets.only(top: 5),
               child: Container(
@@ -2544,7 +2544,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                     backgroundColor: c.primary.withValues(alpha: .12),
                     child: Icon(isTips
                       ? Icons.lightbulb_outline : Icons.help_outline,
-                      size: 17, color: c.primary)),
+                      size: 17, color: ThemeService.activeAccentText)),
                   const SizedBox(width: 12),
                   Expanded(child: Text(title,
                     maxLines: 2, overflow: TextOverflow.ellipsis,
@@ -2596,7 +2596,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                         style: TextStyle(fontSize: 10,
                           color: c.onSurfaceVariant)),
                     ])),
-                  Icon(Icons.star_border, color: c.primary),
+                  Icon(Icons.star_border, color: ThemeService.activeAccentText),
                   const SizedBox(width: 14),
                   Icon(Icons.more_vert, color: c.onSurfaceVariant),
                 ]),
@@ -2716,10 +2716,10 @@ class _ThemeSampleScreen extends StatelessWidget {
         CircleAvatar(radius: 14,
           backgroundColor: c.primary.withValues(alpha: .18),
           child: Text(t('あ', 'A'),
-            style: TextStyle(color: c.primary))),
+            style: TextStyle(color: ThemeService.activeAccentText))),
         const SizedBox(width: 8),
         Text(t('あさかぜ工房', 'Asakaze Studio'),
-          style: TextStyle(color: c.primary, fontSize: 13)),
+          style: TextStyle(color: ThemeService.activeAccentText, fontSize: 13)),
       ]),
       const SizedBox(height: 18),
       Row(children: [
@@ -2754,7 +2754,7 @@ class _ThemeSampleScreen extends StatelessWidget {
           children: [
             Text('NIARIM', style: TextStyle(
               fontSize: 14, fontWeight: FontWeight.w800,
-              color: c.primary)),
+              color: ThemeService.activeAccentText)),
             const SizedBox(height: 8),
             Wrap(spacing: 13, runSpacing: 9,
               children: [
@@ -2781,7 +2781,7 @@ class _ThemeSampleScreen extends StatelessWidget {
             color: c.primary.withValues(alpha: .055),
             borderRadius: BorderRadius.circular(14)),
           child: Row(children: [
-            Icon(item.$1, color: c.primary),
+            Icon(item.$1, color: ThemeService.activeAccentText),
             const SizedBox(width: 9),
             Expanded(child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -2887,7 +2887,7 @@ class _ThemeSampleScreen extends StatelessWidget {
             child: Text(name, style: TextStyle(
               fontWeight: FontWeight.w700, fontSize: 13,
               color: name == t('作品', 'Works')
-                  ? c.primary : c.onSurfaceVariant)))),
+                  ? ThemeService.activeAccentText : c.onSurfaceVariant)))),
         ]),
       ),
     ),
@@ -3004,7 +3004,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(child: Text(t('更新日時順', 'Last updated'),
           style: const TextStyle(fontSize: 12))),
-        Icon(Icons.star_border, size: 19, color: c.primary),
+        Icon(Icons.star_border, size: 19, color: ThemeService.activeAccentText),
       ])),
     Expanded(child: GridView.count(
       physics: const NeverScrollableScrollPhysics(),
@@ -3027,7 +3027,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       ])),
     Expanded(child: Center(child: Column(mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.delete_outline, size: 44, color: c.primary),
+        Icon(Icons.delete_outline, size: 44, color: ThemeService.activeAccentText),
         const SizedBox(height: 12),
         Text(t('ゴミ箱は空です', 'Trash is empty'),
           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),

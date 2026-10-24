@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../screens/tips/tips_screen.dart' show allTipEntries;
 import '../config/font_fallback.dart';
 import 'ad_banner_mock_widget.dart';
+import '../config/accent_text_theme.dart';
 
 /// 処理中ダイアログ（フィルター適用／動画書き出し／GIF生成／
 /// 透過WebM生成／大量処理実行時に表示、プログレスバー下部に中型広告）。
@@ -142,7 +143,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
                           Icon(
                             Icons.lightbulb_outline,
                             size: 14,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: AccentTextTheme.of(context),
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -152,7 +153,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
                               fontWeight: FontWeight.bold,
                               fontFamily: 'Kuramubon',
                               fontFamilyFallback: kHeadingFontFallback,
-                              color: Theme.of(context).colorScheme.primary,
+                              color: AccentTextTheme.of(context),
                             ),
                           ),
                         ],

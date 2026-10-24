@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../config/accent_text_theme.dart';
 
 /// Tipsページの図解。実際の画面のスクリーンショット（ラスタ画像）を
 /// 埋め込むと、多言語×複数ページ分の画像アセットでアプリの容量が
@@ -68,9 +69,10 @@ class TipDiagram extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final accentText = AccentTextTheme.of(context);
     return CustomPaint(
       size: const Size(double.infinity, 96),
-      painter: _TipDiagramPainter(spec, scheme),
+      painter: _TipDiagramPainter(spec, scheme, accentText),
     );
   }
 }
@@ -78,7 +80,11 @@ class TipDiagram extends StatelessWidget {
 class _TipDiagramPainter extends CustomPainter {
   final TipDiagramSpec spec;
   final ColorScheme scheme;
-  _TipDiagramPainter(this.spec, this.scheme);
+
+  /// アイコンは背景の上の差し色＝アクセントの文字・アイコン色で描く
+  /// （塗りは差し色のまま）。
+  final Color accentText;
+  _TipDiagramPainter(this.spec, this.scheme, this.accentText);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -146,7 +152,8 @@ class _TipDiagramPainter extends CustomPainter {
       oldDelegate.spec.iconA != spec.iconA ||
       oldDelegate.spec.iconB != spec.iconB ||
       oldDelegate.spec.separator != spec.separator ||
-      oldDelegate.scheme != scheme;
+      oldDelegate.scheme != scheme ||
+      oldDelegate.accentText != accentText;
 
   // ── 共通パーツ ──────────────────────────────────────────────
   Paint get _fillPrimary => Paint()..color = scheme.primary;
@@ -255,13 +262,7 @@ class _TipDiagramPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.4 * s,
     );
-    _drawIcon(
-      canvas,
-      a,
-      Offset(leftX, cy),
-      size: r * 0.95,
-      color: scheme.primary,
-    );
+    _drawIcon(canvas, a, Offset(leftX, cy), size: r * 0.95, color: accentText);
     final rightFill = Paint()..color = scheme.tertiary.withValues(alpha: 0.25);
     final rightStroke = Paint()
       ..color = scheme.tertiary
@@ -321,13 +322,7 @@ class _TipDiagramPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.4 * s,
     );
-    _drawIcon(
-      canvas,
-      b,
-      Offset(rightX, cy),
-      size: r * 0.85,
-      color: scheme.primary,
-    );
+    _drawIcon(canvas, b, Offset(rightX, cy), size: r * 0.85, color: accentText);
   }
 
   // ── 各Tipの模式図（専用）────────────────────────────────────
@@ -454,7 +449,7 @@ class _TipDiagramPainter extends CustomPainter {
       Icons.brush,
       Offset(size.width * 0.42, size.height * 0.52),
       size: 34 * s,
-      color: scheme.primary,
+      color: accentText,
     );
     _star(
       canvas,
@@ -502,7 +497,7 @@ class _TipDiagramPainter extends CustomPainter {
         badge,
         Offset(size.width * 0.88, size.height * 0.16),
         size: 17 * s,
-        color: scheme.primary,
+        color: accentText,
       );
     }
   }
@@ -585,7 +580,7 @@ class _TipDiagramPainter extends CustomPainter {
       Icons.camera_alt,
       large.center,
       size: 22 * s,
-      color: scheme.primary,
+      color: accentText,
     );
   }
 
@@ -633,7 +628,7 @@ class _TipDiagramPainter extends CustomPainter {
             Icons.play_circle_outline,
             rect.center,
             size: 28 * s,
-            color: scheme.primary,
+            color: accentText,
           );
         default: // GIF：実際のGIFアイコン
           canvas.drawRRect(rr, _fillPrimaryFaint);
@@ -642,7 +637,7 @@ class _TipDiagramPainter extends CustomPainter {
             Icons.gif_box_outlined,
             rect.center,
             size: 28 * s,
-            color: scheme.primary,
+            color: accentText,
           );
       }
     }
@@ -671,7 +666,7 @@ class _TipDiagramPainter extends CustomPainter {
       false,
       _strokePrimary,
     );
-    _drawIcon(canvas, icon, screen.center, size: 20 * s, color: scheme.primary);
+    _drawIcon(canvas, icon, screen.center, size: 20 * s, color: accentText);
     canvas.drawCircle(
       Offset(size.width * 0.4, size.height * 0.16),
       12 * s,
@@ -697,7 +692,7 @@ class _TipDiagramPainter extends CustomPainter {
       Icons.touch_app,
       Offset(size.width * 0.5, size.height * 0.16),
       size: 16 * s,
-      color: scheme.primary,
+      color: accentText,
     );
   }
 
@@ -975,7 +970,7 @@ class _TipDiagramPainter extends CustomPainter {
       Icons.gesture,
       Offset(size.width * 0.8, size.height * 0.68),
       size: 26 * s,
-      color: scheme.primary,
+      color: accentText,
     );
   }
 
@@ -1053,7 +1048,7 @@ class _TipDiagramPainter extends CustomPainter {
         rect.center,
         size: 18 * s,
         color: i == 2
-            ? scheme.primary
+            ? accentText
             : scheme.onSurfaceVariant.withValues(alpha: 0.6),
       );
     }
@@ -1127,7 +1122,7 @@ class _TipDiagramPainter extends CustomPainter {
       Icons.brush,
       band.center,
       size: 24 * s,
-      color: scheme.primary,
+      color: accentText,
     );
   }
 
@@ -1224,7 +1219,7 @@ class _TipDiagramPainter extends CustomPainter {
       Icons.sync_alt,
       fileCenter,
       size: 20 * s,
-      color: scheme.primary,
+      color: accentText,
     );
   }
 
@@ -1273,7 +1268,7 @@ class _TipDiagramPainter extends CustomPainter {
           icons[i],
           Offset(cx, y - 20 * s),
           size: 23 * s,
-          color: scheme.primary,
+          color: accentText,
         );
         canvas.drawRRect(
           RRect.fromRectAndRadius(
@@ -1384,7 +1379,7 @@ class _TipDiagramPainter extends CustomPainter {
       Icons.swap_horiz,
       Offset(size.width / 2, size.height / 2),
       size: 26 * s,
-      color: scheme.primary,
+      color: accentText,
     );
   }
 
@@ -1393,7 +1388,7 @@ class _TipDiagramPainter extends CustomPainter {
   void _paintLineColorModes(Canvas canvas, Size size) {
     final s = size.height / 96;
     final labels = [
-      (Icons.border_color, scheme.primary), // 輪郭線：色トレス・線画馴染ませ
+      (Icons.border_color, accentText), // 輪郭線：色トレス・線画馴染ませ
       (
         Icons.gradient,
         scheme.onSurfaceVariant.withValues(alpha: 0.5),

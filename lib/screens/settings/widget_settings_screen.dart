@@ -11,6 +11,7 @@ import '../../services/theme_service.dart';
 import '../../widgets/responsive.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import 'widget_artwork_picker_screen.dart';
+import '../../config/accent_text_theme.dart';
 
 /// 背景色の選び方（テーマに合わせる／色を指定する）の2択。
 enum _ColorMode { theme, custom }
@@ -99,7 +100,10 @@ class WidgetSettingsScreen extends StatelessWidget {
           width: 44,
           height: 44,
           child: projectId == null
-              ? Icon(Icons.add_photo_alternate_outlined, color: scheme.primary)
+              ? Icon(
+                  Icons.add_photo_alternate_outlined,
+                  color: AccentTextTheme.of(context),
+                )
               : ClipRRect(
                   borderRadius: BorderRadius.circular(6),
                   child: ArtworkFrameThumbnail(

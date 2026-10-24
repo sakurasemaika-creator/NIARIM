@@ -10,6 +10,7 @@ import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
 import 'community_post_screen.dart';
+import '../../config/accent_text_theme.dart';
 
 /// Owner hub opened from the community square.
 ///
@@ -507,7 +508,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                             Icon(
                               Icons.video_library_outlined,
                               size: 56,
-                              color: scheme.primary.withValues(alpha: 0.55),
+                              color: AccentTextTheme.of(
+                                context,
+                              ).withValues(alpha: 0.55),
                             ),
                             const SizedBox(height: 12),
                             Text(

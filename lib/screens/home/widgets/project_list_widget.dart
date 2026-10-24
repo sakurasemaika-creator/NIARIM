@@ -639,7 +639,10 @@ class ProjectListWidget extends StatelessWidget {
   ) {
     final folder = entry.folder!;
     final isSelected = selectedIds.contains(folder.id);
-    final color = folder.color != null ? Color(folder.color!) : null;
+    // 色を決めていないフォルダは差し色（大・中・小の表示と同じ塗り）。
+    final color = folder.color != null
+        ? Color(folder.color!)
+        : Theme.of(context).colorScheme.primary;
     return _detailRow(
       context,
       entry,
@@ -1290,7 +1293,9 @@ class ProjectListWidget extends StatelessWidget {
                 contentPadding: folderTreeTilePadding(depth),
                 leading: Icon(
                   Icons.folder,
-                  color: folder.color != null ? Color(folder.color!) : null,
+                  color: folder.color != null
+                      ? Color(folder.color!)
+                      : Theme.of(ctx).colorScheme.primary,
                 ),
                 title: Text(folder.name),
                 trailing: IconButton(

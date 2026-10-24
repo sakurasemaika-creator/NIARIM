@@ -15,6 +15,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/labeled_slider.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 /// ウォーターマーク登録・管理画面（プレミアム限定）。
 /// 「設定項目：画像選択 / 文字入力 / …」のうち、画像・文字それぞれの
@@ -58,7 +59,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
                       child: Icon(
                         Icons.branding_watermark,
                         size: 44,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: AccentTextTheme.of(context),
                       ),
                     ),
                     const SizedBox(height: 20),

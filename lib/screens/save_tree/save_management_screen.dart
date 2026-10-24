@@ -20,6 +20,7 @@ import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'save_tree_screen.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 export 'save_tree_screen.dart' show SaveTreeEntryMode, parseSaveTreeEntryMode;
 
@@ -516,7 +517,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                 _SlotActionButton(
                   icon: Icons.edit_note,
                   tooltip: l10n.saveTreeSlotWriteTooltip,
-                  color: scheme.primary,
+                  color: AccentTextTheme.of(context),
                   onPressed: onWrite,
                 ),
                 _SlotActionButton(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import 'tip_diagrams.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 /// ヘルプ（機能の説明）とは別に、「こうすると便利」という活用方法を
 /// 紹介するTipsページ。ホーム画面のハンバーガーメニューから開く。
@@ -107,7 +108,7 @@ class _TipsScreenState extends State<TipsScreen> {
                                   Icon(
                                     category.icon,
                                     size: 18,
-                                    color: scheme.primary,
+                                    color: AccentTextTheme.of(context),
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
@@ -117,7 +118,7 @@ class _TipsScreenState extends State<TipsScreen> {
                                       fontWeight: FontWeight.bold,
                                       fontFamily: 'Kuramubon',
                                       fontFamilyFallback: kHeadingFontFallback,
-                                      color: scheme.primary,
+                                      color: AccentTextTheme.of(context),
                                     ),
                                   ),
                                 ],
@@ -909,7 +910,7 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                                   fontWeight: FontWeight.w700,
                                   fontFamily: 'Kuramubon',
                                   fontFamilyFallback: kHeadingFontFallback,
-                                  color: scheme.primary,
+                                  color: AccentTextTheme.of(context),
                                 ),
                               ),
                               const SizedBox(height: 10),

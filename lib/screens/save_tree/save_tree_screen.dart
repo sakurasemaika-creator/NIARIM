@@ -18,6 +18,7 @@ import '../../widgets/ad_banner_mock_widget.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
 /// 閾値。「容量が大きくなる場合はユーザーへ通知」するために使う。ツリー方式は
@@ -776,7 +777,7 @@ class _TreeView extends StatelessWidget {
               child: Icon(
                 Icons.account_tree_outlined,
                 size: 40,
-                color: scheme.primary,
+                color: AccentTextTheme.of(context),
               ),
             ),
             const SizedBox(height: 20),
@@ -875,9 +876,7 @@ class _TreeView extends StatelessWidget {
                 : Icon(
                     Icons.commit,
                     size: 20,
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : null,
+                    color: isSelected ? AccentTextTheme.of(context) : null,
                   ),
             title: Text(node.comment ?? l10n.saveTreeNodeDefaultTitle),
             subtitle: Text(_formatDate(node.savedAt)),

@@ -19,6 +19,7 @@ import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/layer_mask_editor.dart';
 import '../../canvas/widgets/color_picker_panel.dart';
+import '../../../config/accent_text_theme.dart';
 
 enum _Section { text, transform, mask, video }
 
@@ -636,7 +637,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
                     Icons.diamond,
                     size: 14,
                     color: k.frameIndex == frame
-                        ? scheme.primary
+                        ? AccentTextTheme.of(context)
                         : scheme.onSurfaceVariant,
                   ),
                   label: Text('F${k.frameIndex + 1}'),

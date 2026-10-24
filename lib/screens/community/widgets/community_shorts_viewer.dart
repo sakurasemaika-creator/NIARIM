@@ -13,6 +13,7 @@ import '../community_author_works_screen.dart';
 import 'community_work_card.dart' show communityThumbnailGradient;
 import '../community_edit_feedback.dart';
 import '../../../utils/tolerant_preferences.dart';
+import '../../../config/accent_text_theme.dart';
 
 enum CommunityShortsEndBehavior { loopCurrent, autoAdvance }
 
@@ -358,7 +359,7 @@ class _ShortsPage extends StatelessWidget {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                          color: scheme.primary,
+                                          color: AccentTextTheme.of(context),
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
                                           fontFamily: 'Kuramubon',
@@ -390,7 +391,9 @@ class _ShortsPage extends StatelessWidget {
                             : l10n.communityWorkDetailBookmarkAdd,
                         icon: Icon(
                           isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                          color: isBookmarked ? scheme.primary : null,
+                          color: isBookmarked
+                              ? AccentTextTheme.of(context)
+                              : null,
                         ),
                       ),
                       IconButton.filledTonal(
@@ -526,13 +529,17 @@ class _EndBehaviorMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        Icon(icon, size: 20, color: selected ? scheme.primary : null),
+        Icon(
+          icon,
+          size: 20,
+          color: selected ? AccentTextTheme.of(context) : null,
+        ),
         const SizedBox(width: 10),
         Expanded(child: Text(label)),
-        if (selected) Icon(Icons.check, size: 18, color: scheme.primary),
+        if (selected)
+          Icon(Icons.check, size: 18, color: AccentTextTheme.of(context)),
       ],
     );
   }

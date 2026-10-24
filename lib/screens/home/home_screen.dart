@@ -2604,7 +2604,7 @@ class _WorkListItem extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: scheme.primaryContainer,
-          child: Icon(_icon, color: scheme.primary),
+          child: Icon(_icon, color: AccentTextTheme.of(context)),
         ),
         title: Text(
           file.path.split('/').last,

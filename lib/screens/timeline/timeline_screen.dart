@@ -80,6 +80,7 @@ import '../../widgets/typing_aware_shortcuts.dart';
 import 'widgets/material_edit_panel.dart';
 import 'widgets/material_gizmo.dart';
 import 'widgets/stack_order_panel.dart';
+import '../../config/accent_text_theme.dart';
 
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image, text }
@@ -1603,7 +1604,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               key: const Key('timelinePreviewLoopButton'),
               icon: Icon(Icons.repeat,
                 color: _loopEnabled
-                  ? Theme.of(context).colorScheme.primary
+                  ? AccentTextTheme.of(context)
                   : Theme.of(context).colorScheme.onSurfaceVariant),
               tooltip: _loopEnabled
                   ? l10n.timelineLoopOnTooltip : l10n.timelineLoopOffTooltip,
@@ -2589,7 +2590,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: isMoving
-                                      ? Theme.of(context).colorScheme.primary
+                                      ? AccentTextTheme.of(context)
                                       : null,
                                 ),
                               ),
@@ -3399,9 +3400,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             style: TextStyle(
                                               fontSize: 9,
                                               color: isMoving
-                                                  ? Theme.of(
-                                                      context,
-                                                    ).colorScheme.primary
+                                                  ? AccentTextTheme.of(context)
                                                   : null,
                                             ),
                                           ),

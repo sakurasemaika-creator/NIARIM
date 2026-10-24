@@ -10,6 +10,7 @@ import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
 import '../../../config/font_fallback.dart';
+import '../../../config/accent_text_theme.dart';
 
 /// ペンツール長押し・上スワイプで表示されるサブツールタブUI
 /// ブラシ / トーン / スタンプ
@@ -170,7 +171,7 @@ class _BrushTab extends StatelessWidget {
           leading: Icon(
             Icons.brush,
             size: 16,
-            color: isSelected ? Theme.of(context).colorScheme.primary : null,
+            color: isSelected ? AccentTextTheme.of(context) : null,
           ),
           title: Text(
             brush.name,

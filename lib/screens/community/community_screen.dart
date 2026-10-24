@@ -18,6 +18,7 @@ import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/color_contrast.dart';
+import '../../config/accent_text_theme.dart';
 
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
@@ -325,17 +326,9 @@ class _CommunityScreenState extends State<CommunityScreen>
                 ),
               ),
               actions: [
+                // 文字ボタンの色はテーマの「アクセントの文字・アイコン色」
+                // （差し色を黒や白へ自動で差し替えない）。
                 TextButton(
-                  style: TextButton.styleFrom(
-                    foregroundColor: contrastingForeground(
-                      opaqueOver(
-                        Theme.of(context).dialogTheme.backgroundColor ??
-                            Theme.of(context).colorScheme.surfaceContainerHigh,
-                        Theme.of(context).scaffoldBackgroundColor,
-                      ),
-                      Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
                   onPressed: () => Navigator.pop(context),
                   child: Text(l10n.commonCancel),
                 ),
@@ -728,7 +721,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             Icon(
               Icons.person_add_alt_1,
               size: 64,
-              color: scheme.primary.withValues(alpha: 0.6),
+              color: AccentTextTheme.of(context).withValues(alpha: 0.6),
             ),
             const SizedBox(height: 16),
             Text(

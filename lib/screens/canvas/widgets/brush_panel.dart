@@ -20,6 +20,7 @@ import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
+import '../../../config/accent_text_theme.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -285,7 +286,7 @@ class _BrushPanelState extends State<BrushPanel> {
                               Icons.brush,
                               size: 16,
                               color: isSelected
-                                  ? Theme.of(context).colorScheme.primary
+                                  ? AccentTextTheme.of(context)
                                   : null,
                             ),
                             title: Text(

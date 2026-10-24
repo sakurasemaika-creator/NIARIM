@@ -43,6 +43,7 @@ import 'color_picker_panel.dart';
 import 'panel_close_bar.dart';
 import '../../../engine/premultiplied.dart';
 import '../../../engine/tone_curve.dart';
+import '../../../config/accent_text_theme.dart';
 
 enum FilterColorEyedropperTarget { inkPool, outline }
 
@@ -1068,7 +1069,7 @@ class _FilterPanelState extends State<FilterPanel> {
                     Icon(
                       Icons.highlight_alt,
                       size: 14,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: AccentTextTheme.of(context),
                     ),
                     const SizedBox(width: 4),
                     Expanded(
@@ -3326,7 +3327,7 @@ class _ToneCurveEditorState extends State<_ToneCurveEditor> {
                   points: points,
                   sourceRgba: widget.sourceRgba,
                   histogramChannel: widget.histogramChannel,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: AccentTextTheme.of(context),
                   gridColor: Theme.of(context).colorScheme.outlineVariant,
                 ),
               ),

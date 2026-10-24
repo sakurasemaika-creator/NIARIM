@@ -15,6 +15,7 @@ import '../../config/font_fallback.dart';
 import '../../utils/reorder_index.dart';
 import '../../widgets/theme_rescue_button.dart';
 import 'theme_preview_gallery_screen.dart';
+import '../../config/accent_text_theme.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
@@ -106,7 +107,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w700,
-                                        color: Theme.of(context).colorScheme.primary,
+                                        color: AccentTextTheme.of(context),
                                       ),
                                     ),
                                   ),
@@ -114,7 +115,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                                   Icon(
                                     Icons.open_in_full,
                                     size: 17,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: AccentTextTheme.of(context),
                                   ),
                                 ],
                               ),
@@ -341,9 +342,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                                   child: Icon(
                                     Icons.check,
                                     key: const Key('themePresetEditingCheck'),
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
+                                    color: AccentTextTheme.of(context),
                                     size: 16,
                                   ),
                                 ),

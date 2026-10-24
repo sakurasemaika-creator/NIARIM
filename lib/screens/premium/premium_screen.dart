@@ -6,6 +6,7 @@ import '../../services/premium_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 /// プレミアム画面。ユーザー作品そのものを除くUI色はColorSchemeへ集約する。
 class PremiumScreen extends StatelessWidget {
@@ -215,7 +216,10 @@ class PremiumScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.celebration_rounded, color: scheme.primary),
+                Icon(
+                  Icons.celebration_rounded,
+                  color: AccentTextTheme.of(context),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -366,7 +370,7 @@ class PremiumScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, size: 18, color: scheme.primary),
+          Icon(icon, size: 18, color: AccentTextTheme.of(context)),
           const SizedBox(height: 6),
           Text(
             label,
@@ -641,7 +645,7 @@ class PremiumScreen extends StatelessWidget {
                             Icon(
                               Icons.star_rounded,
                               size: 13,
-                              color: scheme.primary,
+                              color: AccentTextTheme.of(context),
                             ),
                             const SizedBox(width: 3),
                             Flexible(
@@ -679,7 +683,7 @@ class PremiumScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: scheme.primary,
+                            color: AccentTextTheme.of(context),
                           ),
                         ),
                       ),

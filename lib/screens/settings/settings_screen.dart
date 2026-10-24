@@ -9,6 +9,7 @@ import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -281,7 +282,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                     ),
                   ),
-                  child: Icon(icon, color: accent, size: 22),
+                  // 淡い下地は差し色、アイコンは背景の上の差し色＝アクセントの
+                  // 文字・アイコン色（明るい差し色でも読めるように）。
+                  child: Icon(
+                    icon,
+                    color: AccentTextTheme.of(context),
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(

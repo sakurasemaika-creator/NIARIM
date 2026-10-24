@@ -2,6 +2,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 class HelpScreen extends StatefulWidget {
   // 各画面のヘルプボタンから「この画面に関連する項目」を指定して開いた
@@ -677,7 +678,7 @@ class _HelpScreenState extends State<HelpScreen> {
                                 ),
                                 child: Icon(
                                   Icons.help_outline,
-                                  color: scheme.primary,
+                                  color: AccentTextTheme.of(context),
                                   size: 18,
                                 ),
                               ),
