@@ -650,6 +650,18 @@ kAllFirstUseTooltipKeys})`で全キーを表示済みにしておくこと（一
   決める吹き出し（`InfoIconTooltip`）は`RawDialogRoute`ではなく`PopupRoute`
   にする（`RawDialogRoute`は折りたたみ端末のヒンジで画面を分けて片側に
   置くため、もう片側のアイコンの吹き出しが切れる）。
+- **初回起動のホームでは使い方（`lib/widgets/app_tutorial.dart`の`AppTutorial`、
+  図つきの6ページ）が出る**：`first_launch`を保存していないテストでホームを
+  開くと、全画面のダイアログが上に積まれて後の操作を吸う。起動から通すテストは
+  `find.byKey(const Key('tutorialSkip'))`を押して閉じること（以前の一文の
+  ダイアログの「はじめる」は最後のページにしか無い）。スキップ・はじめる・
+  戻る操作のどれで閉じても`markFirstLaunchDone`する。設定の「使い方」・
+  ヘルプの先頭から見直せ、設定の「機能の説明をもう一度表示」が
+  `FirstUseTooltipService.resetAll`を呼ぶ。図はアプリの部品で描いた模式図で、
+  操作する場所の囲み（`_Marked`）は**相手の部品に付けて**描くこと（図の座標に
+  置くと、言語で文字の幅が変わったとき作成ボタン等から外れた）。ページや手順を
+  足したら`test/app_tutorial_test.dart`の7言語×4画面×文字2倍の巡回に通し、
+  文言を足したらサブセットフォントを作り直す。
 - **`Table`のセルは既定（`top`）だと自分の中身ぶんの高さしか持たない**：
   1つのセルが2行に折り返すと行だけが高くなり、他の列の
   `Container(color: ...)`は**行の下端まで届かず背景に白い帯が残る**
@@ -1476,6 +1488,15 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   `ConstrainedBox`で45%までに抑えてパネルを`Expanded`にしてある。
   プレビューは高さを使い切らない`Flexible(fit: loose)`なので、Flexの配分の
   ままだと余りが空白になりパネルが細い帯になった（実際に踏んだ）。
+- **タイムラインのプレビューの操作（フレーム数・ループ・全画面）は絵に重ねない
+  （ユーザー指定）**：`timeline_screen.dart`の`_buildPreviewBand`が、プレビュー
+  欄の中央に絵を置き、フレーム数を左下・ループを右下・全画面を右上の「欄の隅の
+  絵の外」に置く。縦長の絵は左右、横長の絵は上下に操作の場所を空ける（絵を
+  大きく出せる方）。プレビュー欄の高さの上限は、横長の絵が横幅いっぱいになる
+  高さに上下の段（`_previewControlSize`×2）を足したもの。プレビューに操作を
+  足すときも絵の上ではなくこの欄の隅へ置き、
+  `test/timeline_preview_controls_test.dart`（絵の形3×画面3×欄の高さ3と
+  全画面表示）に通すこと。
 - **`dart format lib test tool`は他セッションの未整形ファイルまで書き換える**：
   別セッションがGitHub API経由で未整形のまま入れたファイル
   （`brush_texture_selector.dart`等）があり、全体にかけると無関係なファイルが
