@@ -31,6 +31,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - A005の現在HEADでの再確認（同じく並行して実施）と、複製の名前の番号（App `b1c32eb`）・「フォルダへ移動」のシートの階層と動かすフォルダの中の除外・詳細画面とキャンバスのシートのスクロール（App `765086a`）。詳細はASTRA_AUDIT_STATE.mdのA005節。Route状態はdev_branchのまま（A005 todo。A003を閉じた後、A004に続けてdoneへ）。
 - A003のユーザーの判断（ホームのタブの選択中の文字・ブクマ済みのボタンを差し色に揃える）を反映（App `7e7b9d8`）。A003はdev_branchの残りのsubstepのためin_progressのまま。
 - テーマ・外観に「アクセントの文字・アイコン色」を追加（ユーザー指定の案A、App `3952684`）。`colorScheme.primary`を文字・アイコンへ直接使う約90か所は各画面のIDで`AccentTextTheme.of`へ移す。
+- 画面側の`colorScheme.primary`の文字・アイコン約120か所をアクセントの文字・アイコン色へ移した（ユーザー指示「今まとめて」、App `baebddf`）。組み込みテーマ28種の配色を作り直した（ライトは白抜き・ダークは背景色の文字、保存済みの未編集テーマは起動時に移行、App `e41ebee`）。詳細はASTRA_AUDIT_STATE.mdのA003節。Route状態はdev_branchのまま。
 
 ## 2026-10-22 中断前保存・再開の運用（ユーザー指示）
 
