@@ -198,6 +198,7 @@ status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判
   - DISC012（確認）：640で「ブクマ済み」を選んで320へ縮める・「プロジェクト」へ戻しながら縮めても、選択中のタブ・画面名・本文・FABが一致。`home_bookmark_states_test`のresize系も成功。
   - DISC010（確認）：2段のバーで画面名は切れない。2つのフィルターはホバー・長押しで「動画の種類を絞り込む」「表示フィルター」。ただし目のアイコンは何のためか分かりにくい（ユーザーから「目アイコンってなんですか？」）。2段目に文字を添える案をユーザーに確認する。
   - DISC007・DISC008・DISC009・DISC011：専用のテスト（`home_scroll_continuity_test`・`home_bookmark_states_test`・`community_account_boundary*_test`・`community_work_card_layout_test`）がこのHEADで成功。DISC009は実際のGoogleログイン・バックエンドが無いため実画面では未確認（合成のHTTPのみ）。
+  - DISC001（修正、A001から発見・Discoveryの先頭）：言語を保存していない新規インストールが端末の言語に関係なく日本語。→保存された言語が無ければ`appLanguageCodeFor(端末の言語)`（7言語、台湾・香港・マカオは繁体字、対応外は日本語＝起動に失敗した画面と同じ決まり）、保存はしない（App `0cfdfd5`）。`test/flutter_test_config.dart`で全テストを日本語の端末として動かす。実画面：新しい端末で`LANG=en_US`→英語、`zh_TW`→繁体字、`de_DE`→日本語。全件2224成功・17スキップ・2失敗（既知）。対応外の言語の既定（日本語か英語か）はユーザーに確認する。
   - Discoveryのstatusはdev_branchの記録のまま（todo）。各行の「必要な検証」のうち、実バックエンド・実機・全条件の実画面が残るため、doneにはしない。
 - 申し送り：
   - A069：容量削減の画面は`_reload`に例外処理が無く、集計（`computeBreakdown`）が失敗すると読み込み中のまま止まる（Linuxでは一時フォルダ＝/tmp全体を数えるため実際に10秒以上止まった。Androidの一時フォルダはアプリ専用で小さいので製品で同じ遅さにはならない）。
