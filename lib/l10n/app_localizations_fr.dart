@@ -538,6 +538,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeDrawerTips => 'Astuces';
 
   @override
+  String get homeDrawerTutorial => 'Mode d\'emploi';
+
+  @override
   String get homeDrawerPremium => 'Premium';
 
   @override
@@ -8095,13 +8098,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tutorialPage6Step3 =>
-      'Vous pouvez revoir ce guide à tout moment depuis « Mode d\'emploi » dans les Réglages.';
+      'Vous pouvez revoir ce guide à tout moment depuis « Mode d\'emploi » dans le menu en haut à gauche de l\'accueil.';
 
   @override
-  String get settingsTutorialTitle => 'Mode d\'emploi';
-
-  @override
-  String get settingsTutorialSubtitle => 'Revoir le guide de démarrage';
+  String get helpTutorialSubtitle => 'Revoir le guide de démarrage';
 
   @override
   String get settingsTipsResetTitle => 'Réafficher les explications';

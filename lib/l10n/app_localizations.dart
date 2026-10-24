@@ -1031,6 +1031,12 @@ abstract class AppLocalizations {
   /// **'活用Tips'**
   String get homeDrawerTips;
 
+  /// No description provided for @homeDrawerTutorial.
+  ///
+  /// In ja, this message translates to:
+  /// **'使い方'**
+  String get homeDrawerTutorial;
+
   /// No description provided for @homeDrawerPremium.
   ///
   /// In ja, this message translates to:
@@ -14042,20 +14048,14 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialPage6Step3.
   ///
   /// In ja, this message translates to:
-  /// **'この使い方は、「設定」の「使い方」からいつでも見直せます'**
+  /// **'この使い方は、ホームの左上のメニューの「使い方」からいつでも見直せます'**
   String get tutorialPage6Step3;
 
-  /// No description provided for @settingsTutorialTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'使い方'**
-  String get settingsTutorialTitle;
-
-  /// No description provided for @settingsTutorialSubtitle.
+  /// No description provided for @helpTutorialSubtitle.
   ///
   /// In ja, this message translates to:
   /// **'はじめに表示した使い方を、もう一度見ます'**
-  String get settingsTutorialSubtitle;
+  String get helpTutorialSubtitle;
 
   /// No description provided for @settingsTipsResetTitle.
   ///

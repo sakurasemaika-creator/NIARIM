@@ -259,8 +259,8 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   // 初回起動では使い方（図つきの数ページ）を出す。最後まで見ても、
-  // スキップしても、戻る操作で閉じても、次からは出さない（設定・ヘルプの
-  // 「使い方」から見直せる）。
+  // スキップしても、戻る操作で閉じても、次からは出さない（ホームのメニュー・
+  // ヘルプの「使い方」から見直せる）。
   Future<void> _checkFirstLaunch() async {
     final settings = context.read<SettingsService>();
     if (!settings.isFirstLaunch) return;

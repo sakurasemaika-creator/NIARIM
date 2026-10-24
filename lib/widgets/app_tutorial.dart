@@ -7,8 +7,8 @@ import '../config/accent_text_theme.dart';
 import '../config/font_fallback.dart';
 import '../l10n/app_localizations.dart';
 
-/// アプリの使い方（はじめのガイド）。初回起動のホームと、設定・ヘルプの
-/// 「使い方」から開く。図（アプリの画面を簡略化した絵に、操作する場所の
+/// アプリの使い方（はじめのガイド）。初回起動のホームと、ホームのメニュー・
+/// ヘルプの「使い方」から開く。図（アプリの画面を簡略化した絵に、操作する場所の
 /// 番号付きの印）と番号付きの手順のページを、スワイプか「次へ」でめくる。
 /// どのページからでも「スキップ」で閉じられる。
 ///
@@ -995,7 +995,7 @@ class _ExportFigure extends StatelessWidget {
   }
 }
 
-/// 6ページ目：？・はじめての説明・設定から見直す。
+/// 6ページ目：？・はじめての説明・ホームのメニューから見直す。
 class _HelpFigure extends StatelessWidget {
   const _HelpFigure();
 
@@ -1077,7 +1077,7 @@ class _HelpFigure extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.settings_outlined, size: 14, color: ink),
+                          Icon(Icons.menu, size: 14, color: ink),
                           const SizedBox(width: 4),
                           Icon(Icons.chevron_right, size: 12, color: ink),
                           const SizedBox(width: 4),
@@ -1089,7 +1089,7 @@ class _HelpFigure extends StatelessWidget {
                           const SizedBox(width: 6),
                           Flexible(
                             child: Text(
-                              l10n.settingsTutorialTitle,
+                              l10n.homeDrawerTutorial,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(

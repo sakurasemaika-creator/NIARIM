@@ -519,6 +519,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeDrawerTips => '활용 팁';
 
   @override
+  String get homeDrawerTutorial => '사용법';
+
+  @override
   String get homeDrawerPremium => 'Premium';
 
   @override
@@ -7714,13 +7717,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get tutorialPage6Step2 => '처음 쓰는 기능에서는 짧은 설명이 나옵니다.';
 
   @override
-  String get tutorialPage6Step3 => '이 사용법은 \'설정\'의 \'사용법\'에서 언제든지 다시 볼 수 있습니다.';
+  String get tutorialPage6Step3 =>
+      '이 사용법은 홈 화면 왼쪽 위 메뉴의 \'사용법\'에서 언제든지 다시 볼 수 있습니다.';
 
   @override
-  String get settingsTutorialTitle => '사용법';
-
-  @override
-  String get settingsTutorialSubtitle => '처음에 표시된 사용법을 다시 봅니다';
+  String get helpTutorialSubtitle => '처음에 표시된 사용법을 다시 봅니다';
 
   @override
   String get settingsTipsResetTitle => '기능 설명 다시 표시';

@@ -784,7 +784,7 @@ class _TutorialEntry extends StatelessWidget {
             ),
           ),
           subtitle: Text(
-            l10n.settingsTutorialSubtitle,
+            l10n.helpTutorialSubtitle,
             style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
           ),
           trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),

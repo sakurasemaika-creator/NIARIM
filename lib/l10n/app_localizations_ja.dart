@@ -518,6 +518,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeDrawerTips => '活用Tips';
 
   @override
+  String get homeDrawerTutorial => '使い方';
+
+  @override
   String get homeDrawerPremium => 'プレミアム';
 
   @override
@@ -7672,13 +7675,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tutorialPage6Step2 => 'はじめて使う機能では、短い説明が出ます';
 
   @override
-  String get tutorialPage6Step3 => 'この使い方は、「設定」の「使い方」からいつでも見直せます';
+  String get tutorialPage6Step3 => 'この使い方は、ホームの左上のメニューの「使い方」からいつでも見直せます';
 
   @override
-  String get settingsTutorialTitle => '使い方';
-
-  @override
-  String get settingsTutorialSubtitle => 'はじめに表示した使い方を、もう一度見ます';
+  String get helpTutorialSubtitle => 'はじめに表示した使い方を、もう一度見ます';
 
   @override
   String get settingsTipsResetTitle => '機能の説明をもう一度表示';

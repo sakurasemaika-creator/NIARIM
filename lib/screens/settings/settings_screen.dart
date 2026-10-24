@@ -5,7 +5,6 @@ import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
 import '../../services/first_use_tooltip_service.dart';
 import '../../services/premium_service.dart';
-import '../../widgets/app_tutorial.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
@@ -155,14 +154,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsFontSubtitle,
         keywords: 'フォント ttf otf font',
         onTap: () => context.push('/settings/fonts'),
-        accent: Theme.of(context).colorScheme.primary,
-      ),
-      (
-        icon: Icons.school_outlined,
-        title: l10n.settingsTutorialTitle,
-        subtitle: l10n.settingsTutorialSubtitle,
-        keywords: '使い方 チュートリアル はじめに 初回 案内 tutorial guide how to',
-        onTap: () => AppTutorial.show(context),
         accent: Theme.of(context).colorScheme.primary,
       ),
       (

@@ -539,6 +539,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeDrawerTips => 'Consejos';
 
   @override
+  String get homeDrawerTutorial => 'Cómo se usa';
+
+  @override
   String get homeDrawerPremium => 'Premium';
 
   @override
@@ -8076,13 +8079,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tutorialPage6Step3 =>
-      'Puedes volver a ver esta guía cuando quieras desde «Cómo se usa» en Ajustes.';
+      'Puedes volver a ver esta guía cuando quieras desde «Cómo se usa» en el menú de arriba a la izquierda de Inicio.';
 
   @override
-  String get settingsTutorialTitle => 'Cómo se usa';
-
-  @override
-  String get settingsTutorialSubtitle => 'Vuelve a ver la guía de inicio';
+  String get helpTutorialSubtitle => 'Vuelve a ver la guía de inicio';
 
   @override
   String get settingsTipsResetTitle => 'Volver a mostrar las explicaciones';

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../config/font_fallback.dart';
 import '../../../config/accent_text_theme.dart';
+import '../../../widgets/app_tutorial.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key});
@@ -127,6 +128,22 @@ class HomeDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               context.push('/settings');
+            },
+          ),
+          // 初回起動に出した使い方（図つきの数ページ）をもう一度見る。
+          ListTile(
+            key: const Key('homeDrawerTutorial'),
+            leading: const Icon(Icons.school_outlined),
+            title: Text(
+              l10n.homeDrawerTutorial,
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              AppTutorial.show(context);
             },
           ),
           ListTile(

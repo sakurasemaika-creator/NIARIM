@@ -531,6 +531,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeDrawerTips => 'Tips';
 
   @override
+  String get homeDrawerTutorial => 'How to use';
+
+  @override
   String get homeDrawerPremium => 'Premium';
 
   @override
@@ -7951,13 +7954,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutorialPage6Step3 =>
-      'You can view this guide again anytime from \"How to use\" in Settings.';
+      'You can view this guide again anytime from \"How to use\" in the menu at the top left of Home.';
 
   @override
-  String get settingsTutorialTitle => 'How to use';
-
-  @override
-  String get settingsTutorialSubtitle => 'See the getting-started guide again';
+  String get helpTutorialSubtitle => 'See the getting-started guide again';
 
   @override
   String get settingsTipsResetTitle => 'Show feature tips again';

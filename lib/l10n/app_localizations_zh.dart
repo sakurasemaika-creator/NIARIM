@@ -515,6 +515,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeDrawerTips => '使用技巧';
 
   @override
+  String get homeDrawerTutorial => '使用方法';
+
+  @override
   String get homeDrawerPremium => 'Premium';
 
   @override
@@ -7604,13 +7607,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tutorialPage6Step2 => '首次使用某项功能时会显示简短说明。';
 
   @override
-  String get tutorialPage6Step3 => '随时可以在“设置”的“使用方法”中再次查看本指南。';
+  String get tutorialPage6Step3 => '随时可以在主页左上角菜单的“使用方法”中再次查看本指南。';
 
   @override
-  String get settingsTutorialTitle => '使用方法';
-
-  @override
-  String get settingsTutorialSubtitle => '再次查看首次启动时的使用指南';
+  String get helpTutorialSubtitle => '再次查看首次启动时的使用指南';
 
   @override
   String get settingsTipsResetTitle => '重新显示功能说明';
@@ -8134,6 +8134,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeDrawerTips => '使用技巧';
+
+  @override
+  String get homeDrawerTutorial => '使用方法';
 
   @override
   String get homeDrawerPremium => 'Premium';
@@ -15226,13 +15229,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get tutorialPage6Step2 => '第一次使用某項功能時會顯示簡短說明。';
 
   @override
-  String get tutorialPage6Step3 => '隨時可以在「設定」的「使用方法」中再次查看本指南。';
+  String get tutorialPage6Step3 => '隨時可以在首頁左上角選單的「使用方法」中再次查看本指南。';
 
   @override
-  String get settingsTutorialTitle => '使用方法';
-
-  @override
-  String get settingsTutorialSubtitle => '再次查看初次啟動時的使用指南';
+  String get helpTutorialSubtitle => '再次查看初次啟動時的使用指南';
 
   @override
   String get settingsTipsResetTitle => '重新顯示功能說明';

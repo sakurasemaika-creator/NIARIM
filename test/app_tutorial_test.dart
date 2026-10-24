@@ -22,8 +22,9 @@ import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
 /// 使い方（図つきの数ページ）：初回起動で出て、スキップ・最後の
-/// 「はじめる」・戻る操作のどれで閉じても次からは出ない。設定・ヘルプから
-/// 見直せ、設定から機能の説明（吹き出し）をもう一度出せる。どの言語・
+/// 「はじめる」・戻る操作のどれで閉じても次からは出ない。ホームのメニュー
+/// （ヘルプ・活用Tipsの並び）とヘルプから見直せ、設定から機能の説明
+/// （吹き出し）をもう一度出せる。どの言語・
 /// 文字の大きさ・画面の形でも、ボタンが画面に収まり手順を読み切れる。
 void main() {
   final captureRoot = Platform.environment['NIARIM_TUTORIAL_CAPTURE'];
@@ -153,35 +154,62 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('settings reopen the guide and bring back the feature tips', (
+  testWidgets('the home menu reopens the guide next to Help and Tips', (
     tester,
   ) async {
+    await openApp(tester, firstLaunch: false);
+    tester
+        .state<ScaffoldState>(
+          find
+              .descendant(
+                of: find.byType(HomeScreen),
+                matching: find.byType(Scaffold),
+              )
+              .first,
+        )
+        .openDrawer();
+    await tester.pumpAndSettle();
+    final entry = find.byKey(const Key('homeDrawerTutorial'));
+    expect(entry, findsOneWidget);
+    expect(
+      find.descendant(of: entry, matching: find.text(ja.homeDrawerTutorial)),
+      findsOneWidget,
+    );
+    // ヘルプ・活用Tipsのすぐ上に並ぶ。
+    final help = tester.getRect(find.text(ja.homeDrawerHelp));
+    final tipsRow = tester.getRect(find.text(ja.homeDrawerTips));
+    expect(tester.getRect(entry).bottom, lessThanOrEqualTo(help.top + 1));
+    expect(help.bottom, lessThanOrEqualTo(tipsRow.top + 1));
+    await tester.tap(entry);
+    await tester.pumpAndSettle();
+    expect(find.byType(Drawer), findsNothing);
+    expect(find.byType(AppTutorial), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tutorialSkip')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppTutorial), findsNothing);
+    expect(find.byType(HomeScreen), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('settings bring back the feature tips', (tester) async {
     await openApp(tester, firstLaunch: false, route: '/settings');
     final tips = tester
         .element(find.byType(Scaffold).first)
         .read<FirstUseTooltipService>();
     expect(tips.hasSeen(kAllFirstUseTooltipKeys.first), isTrue);
+    // 使い方の入口はホームのメニューにあり、設定には置かない。
+    expect(find.text(ja.homeDrawerTutorial), findsNothing);
 
-    Future<void> tapEntry(String title) async {
-      final tile = find.text(title);
-      await tester.scrollUntilVisible(
-        tile,
-        200,
-        scrollable: find.byType(Scrollable).last,
-      );
-      await tester.ensureVisible(tile);
-      await tester.pumpAndSettle();
-      await tester.tap(tile);
-      await tester.pumpAndSettle();
-    }
-
-    await tapEntry(ja.settingsTutorialTitle);
-    expect(find.byType(AppTutorial), findsOneWidget);
-    await tester.tap(find.byKey(const Key('tutorialSkip')));
+    final tile = find.text(ja.settingsTipsResetTitle);
+    await tester.scrollUntilVisible(
+      tile,
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.ensureVisible(tile);
     await tester.pumpAndSettle();
-    expect(find.byType(AppTutorial), findsNothing);
-
-    await tapEntry(ja.settingsTipsResetTitle);
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pump();
     for (final key in kAllFirstUseTooltipKeys) {
