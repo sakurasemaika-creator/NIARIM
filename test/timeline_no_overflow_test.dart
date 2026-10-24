@@ -119,11 +119,25 @@ void main() {
           'Timeline must render without any Flutter layout/runtime exception at 320 logical px',
     );
     expect(find.text('timeline-overflow-probe'), findsOneWidget);
-    // The frame count and loop toggle remain within the picture.
+    // The frame count, loop toggle and fullscreen button sit in the corners
+    // of the preview band, outside the picture (user request).
     expect(find.byKey(const Key('timelinePreviewFrameCount')), findsOneWidget);
     expect(find.text('1/12'), findsOneWidget);
     final loop = find.byKey(const Key('timelinePreviewLoopButton'));
     expect(loop, findsOneWidget);
+    final picture = tester.getRect(
+      find.byKey(const Key('timelinePreviewPicture')),
+    );
+    for (final key in const [
+      'timelinePreviewFrameCount',
+      'timelinePreviewLoopButton',
+      'timelinePreviewFullscreenButton',
+    ]) {
+      final rect = tester.getRect(find.byKey(Key(key)));
+      expect(rect.overlaps(picture), isFalse, reason: '$key $rect $picture');
+      expect(rect.left, greaterThanOrEqualTo(0), reason: key);
+      expect(rect.right, lessThanOrEqualTo(320), reason: key);
+    }
     final handle = tester.getCenter(
       find.byKey(const Key('timelinePreviewResizeHandle')));
     final currentFinder = find.byKey(const Key('timelineCurrentSeconds'));
