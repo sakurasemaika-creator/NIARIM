@@ -1077,6 +1077,15 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   一覧・現在の色のうち以前の色のまま（手を加えていない）ものだけを新しい
   色にする（`ThemeService._upgradedBuiltIn`）。移さないと、すでに使っている
   端末では一覧も現在の色も古いまま残る。
+  **テーマ・外観の色は1つ変えたらその役目のところだけが変わる**（ユーザー
+  指定「差し色だけ設定変えたら差し色だけ変わるように」、2026-10-24）：
+  `ColorScheme.fromSeed`は差し色から面（`surface`・`surfaceContainer*`）・線
+  （`outline*`）・反転色・選択色の淡い色・3つ目の色（`tertiary`）まで作るので、
+  `_buildTheme`で面と線はパネル背景色と文字色、選択色の淡い色と`tertiary`は
+  選択色から作り直し、`surfaceTint`は透明にしてある。差し色から作ってよいのは
+  `primary`・`primaryContainer`・`primaryFixed*`・`inversePrimary`だけ
+  （`test/theme_accent_only_test.dart`）。`fromSeed`の別の色を新しく使うときは
+  どの設定から作るべきかを決めて、このテストの役目の一覧にも足すこと。
   起動画面の導線ボタンのグラデーションは`splashGradientColors`
   （`lib/utils/splash_gradient.dart`）で、ボタンの文字が読めなくなる手前
   （Lc 45）で淡い終点を止める（白抜きの文字が右下で溶けた）。ホーム画面の

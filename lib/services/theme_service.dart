@@ -707,11 +707,52 @@ class ThemeService extends ChangeNotifier {
       seedColor: preset.accentColor,
       brightness: brightness,
     );
+    // 差し色を変えたら差し色だけが変わるよう、fromSeedが差し色から作る
+    // ほかの色は、それぞれ対応する設定から作り直す。選択色の淡い色と
+    // 3つ目の色は選択色から（組み込みテーマは選択色＝差し色なので同じ値）、
+    // カード・入力欄・区切り線などの面と線はパネル背景色と文字色から。
+    final selectionSeedScheme = ColorScheme.fromSeed(
+      seedColor: preset.selectionColor,
+      brightness: brightness,
+    );
+    final surfaceInk = opaqueOver(preset.textColor, panelColor);
+    Color towardText(double t) => Color.lerp(panelColor, surfaceInk, t)!;
+    final light = brightness == Brightness.light;
     final scheme = seedScheme.copyWith(
       primary: accentColor,
       onPrimary: preset.buttonTextColor,
       secondary: selectionColor,
       onSecondary: preset.selectionTextColor,
+      secondaryContainer: selectionSeedScheme.secondaryContainer,
+      secondaryFixed: selectionSeedScheme.secondaryFixed,
+      secondaryFixedDim: selectionSeedScheme.secondaryFixedDim,
+      onSecondaryFixed: selectionSeedScheme.onSecondaryFixed,
+      onSecondaryFixedVariant: selectionSeedScheme.onSecondaryFixedVariant,
+      tertiary: selectionSeedScheme.tertiary,
+      onTertiary: selectionSeedScheme.onTertiary,
+      tertiaryContainer: selectionSeedScheme.tertiaryContainer,
+      onTertiaryContainer: selectionSeedScheme.onTertiaryContainer,
+      tertiaryFixed: selectionSeedScheme.tertiaryFixed,
+      tertiaryFixedDim: selectionSeedScheme.tertiaryFixedDim,
+      onTertiaryFixed: selectionSeedScheme.onTertiaryFixed,
+      onTertiaryFixedVariant: selectionSeedScheme.onTertiaryFixedVariant,
+      surface: panelColor,
+      surfaceDim: light ? towardText(0.1) : panelColor,
+      surfaceBright: light ? panelColor : towardText(0.2),
+      surfaceContainerLowest: light
+          ? Color.lerp(panelColor, Colors.white, 0.6)!
+          : Color.lerp(panelColor, Colors.black, 0.3)!,
+      surfaceContainerLow: towardText(light ? 0.025 : 0.04),
+      surfaceContainer: towardText(light ? 0.045 : 0.06),
+      surfaceContainerHigh: towardText(light ? 0.07 : 0.1),
+      surfaceContainerHighest: towardText(light ? 0.095 : 0.15),
+      outline: towardText(0.55),
+      outlineVariant: towardText(light ? 0.2 : 0.22),
+      inverseSurface: Color.lerp(surfaceInk, panelColor, 0.1),
+      onInverseSurface: panelColor,
+      // 浮いた面に差し色を薄く重ねるMaterial3の色。面が差し色で
+      // 色づかないよう使わない。
+      surfaceTint: Colors.transparent,
       // Material container shades are subtle surfaces, NOT primary
       // filled buttons. Text shown on them (e.g. creator avatar labels)
       // follows the normal text token, not the button foreground.
