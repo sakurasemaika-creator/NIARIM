@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import '../../widgets/app_tutorial.dart';
 
 class HelpScreen extends StatefulWidget {
   // 各画面のヘルプボタンから「この画面に関連する項目」を指定して開いた
@@ -599,6 +600,9 @@ class _HelpScreenState extends State<HelpScreen> {
     final l10n = AppLocalizations.of(context)!;
     final entries = _buildEntries(l10n);
     final filtered = _filtered(entries);
+    // 何も探していないときは、一覧の先頭から使い方（図つきの数ページ）を
+    // 開ける。
+    final showTutorial = _searchQuery.isEmpty && _topic == null;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.helpScreenTitle)),
       body: SafeArea(
@@ -637,10 +641,14 @@ class _HelpScreenState extends State<HelpScreen> {
                     )
                   : ListView.builder(
                       padding: const EdgeInsets.only(top: 4, bottom: 12),
-                      itemCount: filtered.length,
+                      itemCount: filtered.length + (showTutorial ? 1 : 0),
                       itemBuilder: (context, index) {
-                        final entry = filtered[index];
                         final scheme = Theme.of(context).colorScheme;
+                        if (showTutorial) {
+                          if (index == 0) return const _TutorialEntry();
+                          index--;
+                        }
+                        final entry = filtered[index];
                         // 各項目を独立したカードとして浮かせる。
                         return Padding(
                           padding: EdgeInsets.symmetric(
@@ -723,6 +731,63 @@ class _HelpScreenState extends State<HelpScreen> {
                     ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TutorialEntry extends StatelessWidget {
+  const _TutorialEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final accentText = AccentTextTheme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Material(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(14),
+        elevation: 1,
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+          alpha: 0.15,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          key: const Key('helpTutorialButton'),
+          onTap: () => AppTutorial.show(context),
+          leading: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  scheme.primary.withValues(alpha: 0.22),
+                  scheme.primary.withValues(alpha: 0.1),
+                ],
+              ),
+            ),
+            child: Icon(Icons.school_outlined, color: accentText, size: 18),
+          ),
+          title: Text(
+            l10n.helpTutorialButton,
+            style: const TextStyle(
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+            ),
+          ),
+          subtitle: Text(
+            l10n.settingsTutorialSubtitle,
+            style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+          ),
+          trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
         ),
       ),
     );

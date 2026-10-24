@@ -3730,5 +3730,48 @@
   "errorLogClear": "記録を消す",
   "newProjectCreating": "作成しています…",
   "newProjectCreateFailed": "プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。",
-  "communityCreatorLabel": "作者"
+  "communityCreatorLabel": "作者",
+  "tutorialSkip": "スキップ",
+  "tutorialNext": "次へ",
+  "tutorialPageIndicator": "{total}ページ中{current}ページ目",
+  "@tutorialPageIndicator": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "tutorialPage1Title": "NIARIMへようこそ",
+  "tutorialPage1Step1": "1枚の絵を「フレーム」に描きます",
+  "tutorialPage1Step2": "少しずつ動きを変えたフレームを並べます",
+  "tutorialPage1Step3": "続けて再生するとアニメーションになり、動画として書き出せます",
+  "tutorialPage2Title": "作品をつくる",
+  "tutorialPage2Step1": "ホームの右下の＋を押します",
+  "tutorialPage2Step2": "「新規プロジェクト」を選び、名前や大きさを決めて「作成」を押します",
+  "tutorialPage2Step3": "作った作品は「プロジェクト」に並びます。押して「編集開始」を選ぶと続きを描けます",
+  "tutorialPage3Title": "キャンバスで描く",
+  "tutorialPage3Step1": "下のツールバーで、ペン・消しゴム・塗りつぶしなどの道具を選びます",
+  "tutorialPage3Step2": "色の丸を押すと、描く色を変えられます",
+  "tutorialPage3Step3": "左上の矢印で、取り消し・やり直しができます",
+  "tutorialPage4Title": "フレームを足して動かす",
+  "tutorialPage4Step1": "下のフレーム一覧で、いま描いているフレームが分かります",
+  "tutorialPage4Step2": "＋で次のフレームを足し、少しずつ動かして描きます",
+  "tutorialPage4Step3": "右上の設定の「オニオンスキン」で、前のフレームを薄く重ねて見られます",
+  "tutorialPage5Title": "再生して書き出す",
+  "tutorialPage5Step1": "右上のタイムラインのボタンで、タイムラインを開きます",
+  "tutorialPage5Step2": "再生ボタンで、動きを確かめます",
+  "tutorialPage5Step3": "「書き出し」で、動画やGIFとして保存・共有できます",
+  "tutorialPage6Title": "困ったときは",
+  "tutorialPage6Step1": "画面右上の？で、その画面の説明を見られます",
+  "tutorialPage6Step2": "はじめて使う機能では、短い説明が出ます",
+  "tutorialPage6Step3": "この使い方は、「設定」の「使い方」からいつでも見直せます",
+  "settingsTutorialTitle": "使い方",
+  "settingsTutorialSubtitle": "はじめに表示した使い方を、もう一度見ます",
+  "settingsTipsResetTitle": "機能の説明をもう一度表示",
+  "settingsTipsResetSubtitle": "はじめて使う機能に出る短い説明を、次に使うときにもう一度出します",
+  "settingsTipsResetDone": "機能の説明を、次に使うときにもう一度表示します",
+  "helpTutorialButton": "使い方を見る"
 }

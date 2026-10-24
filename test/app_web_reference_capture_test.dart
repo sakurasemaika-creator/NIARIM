@@ -214,7 +214,7 @@ void main() {
     await tester.tap(createHome);
     await tester.pump(const Duration(milliseconds: 700));
     expectClean(tester, '作品をつくる→ホーム');
-    final firstLaunch = find.text('はじめる');
+    final firstLaunch = find.byKey(const Key('tutorialSkip'));
     if (firstLaunch.evaluate().isNotEmpty) {
       await tester.tap(firstLaunch);
       await tester.pump(const Duration(milliseconds: 700));

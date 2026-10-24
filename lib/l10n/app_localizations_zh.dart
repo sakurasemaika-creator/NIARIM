@@ -7522,6 +7522,107 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityCreatorLabel => '作者';
+
+  @override
+  String get tutorialSkip => '跳过';
+
+  @override
+  String get tutorialNext => '下一步';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return '第$current页，共$total页';
+  }
+
+  @override
+  String get tutorialPage1Title => '欢迎使用 NIARIM';
+
+  @override
+  String get tutorialPage1Step1 => '在“帧”上画一张图。';
+
+  @override
+  String get tutorialPage1Step2 => '继续添加帧，每次让画面稍微动一点。';
+
+  @override
+  String get tutorialPage1Step3 => '连续播放就成了动画，还可以导出为视频。';
+
+  @override
+  String get tutorialPage2Title => '创建项目';
+
+  @override
+  String get tutorialPage2Step1 => '在主页点击右下角的 +。';
+
+  @override
+  String get tutorialPage2Step2 => '选择“新建项目”，设置名称和尺寸后点击“创建”。';
+
+  @override
+  String get tutorialPage2Step3 => '创建的项目会显示在“项目”中。点击项目，再点击“开始编辑”即可继续绘制。';
+
+  @override
+  String get tutorialPage3Title => '在画布上绘画';
+
+  @override
+  String get tutorialPage3Step1 => '在下方的工具栏中选择画笔、橡皮擦、填充等工具。';
+
+  @override
+  String get tutorialPage3Step2 => '点击颜色圆圈即可更改绘画颜色。';
+
+  @override
+  String get tutorialPage3Step3 => '使用左上角的箭头撤销和重做。';
+
+  @override
+  String get tutorialPage4Title => '添加帧让画面动起来';
+
+  @override
+  String get tutorialPage4Step1 => '下方的帧列表会显示当前正在绘制的帧。';
+
+  @override
+  String get tutorialPage4Step2 => '点击 + 添加下一帧，稍微移动后再画。';
+
+  @override
+  String get tutorialPage4Step3 => '在右上角的设置中打开“洋葱皮”，即可看到半透明叠加的上一帧。';
+
+  @override
+  String get tutorialPage5Title => '播放并导出';
+
+  @override
+  String get tutorialPage5Step1 => '点击右上角的时间轴按钮打开时间轴。';
+
+  @override
+  String get tutorialPage5Step2 => '点击播放按钮确认动作。';
+
+  @override
+  String get tutorialPage5Step3 => '通过“导出”保存或分享为视频或 GIF。';
+
+  @override
+  String get tutorialPage6Title => '遇到问题时';
+
+  @override
+  String get tutorialPage6Step1 => '点击画面右上角的 ? 可查看该画面的说明。';
+
+  @override
+  String get tutorialPage6Step2 => '首次使用某项功能时会显示简短说明。';
+
+  @override
+  String get tutorialPage6Step3 => '随时可以在“设置”的“使用方法”中再次查看本指南。';
+
+  @override
+  String get settingsTutorialTitle => '使用方法';
+
+  @override
+  String get settingsTutorialSubtitle => '再次查看首次启动时的使用指南';
+
+  @override
+  String get settingsTipsResetTitle => '重新显示功能说明';
+
+  @override
+  String get settingsTipsResetSubtitle => '下次使用各功能时再次显示简短说明';
+
+  @override
+  String get settingsTipsResetDone => '下次使用各功能时将再次显示说明';
+
+  @override
+  String get helpTutorialButton => '查看使用方法';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -15043,4 +15144,105 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityCreatorLabel => '作者';
+
+  @override
+  String get tutorialSkip => '略過';
+
+  @override
+  String get tutorialNext => '下一步';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return '第$current頁，共$total頁';
+  }
+
+  @override
+  String get tutorialPage1Title => '歡迎使用 NIARIM';
+
+  @override
+  String get tutorialPage1Step1 => '在「畫格」上畫一張圖。';
+
+  @override
+  String get tutorialPage1Step2 => '繼續新增畫格，每次讓畫面稍微動一點。';
+
+  @override
+  String get tutorialPage1Step3 => '連續播放就成了動畫，還可以匯出為影片。';
+
+  @override
+  String get tutorialPage2Title => '建立專案';
+
+  @override
+  String get tutorialPage2Step1 => '在首頁點選右下角的 +。';
+
+  @override
+  String get tutorialPage2Step2 => '選擇「新增專案」，設定名稱和尺寸後點選「建立」。';
+
+  @override
+  String get tutorialPage2Step3 => '建立的專案會顯示在「專案」中。點選專案，再點選「開始編輯」即可繼續繪製。';
+
+  @override
+  String get tutorialPage3Title => '在畫布上繪畫';
+
+  @override
+  String get tutorialPage3Step1 => '在下方的工具列中選擇畫筆、橡皮擦、填色等工具。';
+
+  @override
+  String get tutorialPage3Step2 => '點選顏色圓圈即可變更繪畫顏色。';
+
+  @override
+  String get tutorialPage3Step3 => '使用左上角的箭頭復原和重做。';
+
+  @override
+  String get tutorialPage4Title => '新增畫格讓畫面動起來';
+
+  @override
+  String get tutorialPage4Step1 => '下方的畫格列表會顯示目前正在繪製的畫格。';
+
+  @override
+  String get tutorialPage4Step2 => '點選 + 新增下一個畫格，稍微移動後再畫。';
+
+  @override
+  String get tutorialPage4Step3 => '在右上角的設定中開啟「洋蔥皮」，即可看到半透明疊加的上一個畫格。';
+
+  @override
+  String get tutorialPage5Title => '播放並匯出';
+
+  @override
+  String get tutorialPage5Step1 => '點選右上角的時間軸按鈕開啟時間軸。';
+
+  @override
+  String get tutorialPage5Step2 => '點選播放按鈕確認動作。';
+
+  @override
+  String get tutorialPage5Step3 => '透過「匯出」儲存或分享為影片或 GIF。';
+
+  @override
+  String get tutorialPage6Title => '遇到問題時';
+
+  @override
+  String get tutorialPage6Step1 => '點選畫面右上角的 ? 可查看該畫面的說明。';
+
+  @override
+  String get tutorialPage6Step2 => '第一次使用某項功能時會顯示簡短說明。';
+
+  @override
+  String get tutorialPage6Step3 => '隨時可以在「設定」的「使用方法」中再次查看本指南。';
+
+  @override
+  String get settingsTutorialTitle => '使用方法';
+
+  @override
+  String get settingsTutorialSubtitle => '再次查看初次啟動時的使用指南';
+
+  @override
+  String get settingsTipsResetTitle => '重新顯示功能說明';
+
+  @override
+  String get settingsTipsResetSubtitle => '下次使用各功能時再次顯示簡短說明';
+
+  @override
+  String get settingsTipsResetDone => '下次使用各功能時將再次顯示說明';
+
+  @override
+  String get helpTutorialButton => '查看使用方法';
 }

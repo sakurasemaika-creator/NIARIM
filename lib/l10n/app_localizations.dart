@@ -13882,6 +13882,204 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'作者'**
   String get communityCreatorLabel;
+
+  /// No description provided for @tutorialSkip.
+  ///
+  /// In ja, this message translates to:
+  /// **'スキップ'**
+  String get tutorialSkip;
+
+  /// No description provided for @tutorialNext.
+  ///
+  /// In ja, this message translates to:
+  /// **'次へ'**
+  String get tutorialNext;
+
+  /// No description provided for @tutorialPageIndicator.
+  ///
+  /// In ja, this message translates to:
+  /// **'{total}ページ中{current}ページ目'**
+  String tutorialPageIndicator(int current, int total);
+
+  /// No description provided for @tutorialPage1Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMへようこそ'**
+  String get tutorialPage1Title;
+
+  /// No description provided for @tutorialPage1Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'1枚の絵を「フレーム」に描きます'**
+  String get tutorialPage1Step1;
+
+  /// No description provided for @tutorialPage1Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'少しずつ動きを変えたフレームを並べます'**
+  String get tutorialPage1Step2;
+
+  /// No description provided for @tutorialPage1Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'続けて再生するとアニメーションになり、動画として書き出せます'**
+  String get tutorialPage1Step3;
+
+  /// No description provided for @tutorialPage2Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品をつくる'**
+  String get tutorialPage2Title;
+
+  /// No description provided for @tutorialPage2Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホームの右下の＋を押します'**
+  String get tutorialPage2Step1;
+
+  /// No description provided for @tutorialPage2Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'「新規プロジェクト」を選び、名前や大きさを決めて「作成」を押します'**
+  String get tutorialPage2Step2;
+
+  /// No description provided for @tutorialPage2Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'作った作品は「プロジェクト」に並びます。押して「編集開始」を選ぶと続きを描けます'**
+  String get tutorialPage2Step3;
+
+  /// No description provided for @tutorialPage3Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスで描く'**
+  String get tutorialPage3Title;
+
+  /// No description provided for @tutorialPage3Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'下のツールバーで、ペン・消しゴム・塗りつぶしなどの道具を選びます'**
+  String get tutorialPage3Step1;
+
+  /// No description provided for @tutorialPage3Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'色の丸を押すと、描く色を変えられます'**
+  String get tutorialPage3Step2;
+
+  /// No description provided for @tutorialPage3Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'左上の矢印で、取り消し・やり直しができます'**
+  String get tutorialPage3Step3;
+
+  /// No description provided for @tutorialPage4Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームを足して動かす'**
+  String get tutorialPage4Title;
+
+  /// No description provided for @tutorialPage4Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'下のフレーム一覧で、いま描いているフレームが分かります'**
+  String get tutorialPage4Step1;
+
+  /// No description provided for @tutorialPage4Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'＋で次のフレームを足し、少しずつ動かして描きます'**
+  String get tutorialPage4Step2;
+
+  /// No description provided for @tutorialPage4Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'右上の設定の「オニオンスキン」で、前のフレームを薄く重ねて見られます'**
+  String get tutorialPage4Step3;
+
+  /// No description provided for @tutorialPage5Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生して書き出す'**
+  String get tutorialPage5Title;
+
+  /// No description provided for @tutorialPage5Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'右上のタイムラインのボタンで、タイムラインを開きます'**
+  String get tutorialPage5Step1;
+
+  /// No description provided for @tutorialPage5Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生ボタンで、動きを確かめます'**
+  String get tutorialPage5Step2;
+
+  /// No description provided for @tutorialPage5Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'「書き出し」で、動画やGIFとして保存・共有できます'**
+  String get tutorialPage5Step3;
+
+  /// No description provided for @tutorialPage6Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'困ったときは'**
+  String get tutorialPage6Title;
+
+  /// No description provided for @tutorialPage6Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'画面右上の？で、その画面の説明を見られます'**
+  String get tutorialPage6Step1;
+
+  /// No description provided for @tutorialPage6Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'はじめて使う機能では、短い説明が出ます'**
+  String get tutorialPage6Step2;
+
+  /// No description provided for @tutorialPage6Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'この使い方は、「設定」の「使い方」からいつでも見直せます'**
+  String get tutorialPage6Step3;
+
+  /// No description provided for @settingsTutorialTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'使い方'**
+  String get settingsTutorialTitle;
+
+  /// No description provided for @settingsTutorialSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'はじめに表示した使い方を、もう一度見ます'**
+  String get settingsTutorialSubtitle;
+
+  /// No description provided for @settingsTipsResetTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'機能の説明をもう一度表示'**
+  String get settingsTipsResetTitle;
+
+  /// No description provided for @settingsTipsResetSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'はじめて使う機能に出る短い説明を、次に使うときにもう一度出します'**
+  String get settingsTipsResetSubtitle;
+
+  /// No description provided for @settingsTipsResetDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'機能の説明を、次に使うときにもう一度表示します'**
+  String get settingsTipsResetDone;
+
+  /// No description provided for @helpTutorialButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'使い方を見る'**
+  String get helpTutorialButton;
 }
 
 class _AppLocalizationsDelegate

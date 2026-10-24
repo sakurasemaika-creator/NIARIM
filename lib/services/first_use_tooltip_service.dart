@@ -3,8 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/tolerant_preferences.dart';
 
 /// 初回使用時の吹き出し説明の表示済み管理。
-/// 各機能ごとに一意なキーで「表示済みかどうか」を永続化する。表示は一度のみ・
-/// 再表示なし（再確認はヘルプページから行う）。
+/// 各機能ごとに一意なキーで「表示済みかどうか」を永続化する。表示は一度のみで、
+/// 設定の「機能の説明をもう一度表示」（[resetAll]）で次に使うときにまた出す。
 class FirstUseTooltipService extends ChangeNotifier {
   static const _prefsKey = 'first_use_tooltips_seen';
   final Set<String> _seen = {};
@@ -41,7 +41,7 @@ class FirstUseTooltipService extends ChangeNotifier {
     super.dispose();
   }
 
-  /// デバッグ・テスト用：全ての表示済み状態をリセットする。
+  /// 全ての表示済み状態をリセットする（設定の「機能の説明をもう一度表示」）。
   Future<void> resetAll() async {
     _seen.clear();
     notifyListeners();

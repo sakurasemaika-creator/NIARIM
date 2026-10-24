@@ -44,6 +44,7 @@ import '../../widgets/typing_aware_shortcuts.dart';
 import '../community/community_error_text.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/duplicate_name.dart';
+import '../../widgets/app_tutorial.dart';
 
 /// ホームの一覧の下端に足す余白：画面下の左右に浮くFAB（56）とその下の
 /// 余白（16）、さらに端末のナビゲーションバーぶん（FABはその上に置かれる）。
@@ -257,19 +258,14 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  void _checkFirstLaunch() {
+  // 初回起動では使い方（図つきの数ページ）を出す。最後まで見ても、
+  // スキップしても、戻る操作で閉じても、次からは出さない（設定・ヘルプの
+  // 「使い方」から見直せる）。
+  Future<void> _checkFirstLaunch() async {
     final settings = context.read<SettingsService>();
     if (!settings.isFirstLaunch) return;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => _FirstLaunchDialog(
-        onDone: () {
-          Navigator.pop(ctx);
-          settings.markFirstLaunchDone();
-        },
-      ),
-    );
+    await AppTutorial.show(context);
+    await settings.markFirstLaunchDone();
   }
 
   // 現在の並び替えが名前基準かどうか（項目自体はProjectSortMode
@@ -2872,40 +2868,3 @@ class _WorkPreviewState extends State<_WorkPreview> {
 enum ProjectViewMode { large, medium, small, detail }
 
 enum ProjectSortMode { nameAsc, nameDesc, updatedAsc, updatedDesc }
-
-// ─── 初回起動ポップアップ ─────────────────────────────────────────────────
-// 初回起動時は「手描きアニメーションを制作できます」の
-// ポップアップのみを表示する（複数ページのチュートリアルは表示しない）。
-
-class _FirstLaunchDialog extends StatelessWidget {
-  final VoidCallback onDone;
-  const _FirstLaunchDialog({required this.onDone});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return AlertDialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      constraints: const BoxConstraints(minWidth: 280, maxWidth: 560),
-      scrollable: true,
-      content: Text(l10n.homeFirstLaunchMessage),
-      actions: [
-        // 「はじめる」ボタンの文字はくらむぼんの太字（ボタンの書体）。
-        FilledButton(
-          onPressed: onDone,
-          style: FilledButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-          ),
-          child: Text(
-            l10n.homeFirstLaunchStart,
-            style: const TextStyle(
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}

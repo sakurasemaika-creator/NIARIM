@@ -7854,4 +7854,122 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityCreatorLabel => 'Creator';
+
+  @override
+  String get tutorialSkip => 'Skip';
+
+  @override
+  String get tutorialNext => 'Next';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return 'Page $current of $total';
+  }
+
+  @override
+  String get tutorialPage1Title => 'Welcome to NIARIM';
+
+  @override
+  String get tutorialPage1Step1 => 'Draw a picture on a \"frame\".';
+
+  @override
+  String get tutorialPage1Step2 =>
+      'Add more frames, moving things a little each time.';
+
+  @override
+  String get tutorialPage1Step3 =>
+      'Play them in a row to make an animation, then export it as a video.';
+
+  @override
+  String get tutorialPage2Title => 'Create a project';
+
+  @override
+  String get tutorialPage2Step1 => 'On Home, tap + in the bottom-right corner.';
+
+  @override
+  String get tutorialPage2Step2 =>
+      'Choose \"New Project\", set the name and size, then tap \"Create\".';
+
+  @override
+  String get tutorialPage2Step3 =>
+      'Your projects appear under \"Projects\". Tap one, then \"Start editing\" to keep drawing.';
+
+  @override
+  String get tutorialPage3Title => 'Draw on the canvas';
+
+  @override
+  String get tutorialPage3Step1 =>
+      'Pick a tool such as the pen, eraser or fill from the toolbar at the bottom.';
+
+  @override
+  String get tutorialPage3Step2 =>
+      'Tap the color circle to change the drawing color.';
+
+  @override
+  String get tutorialPage3Step3 =>
+      'Use the arrows at the top left to undo and redo.';
+
+  @override
+  String get tutorialPage4Title => 'Add frames to animate';
+
+  @override
+  String get tutorialPage4Step1 =>
+      'The frame list at the bottom shows which frame you are drawing on.';
+
+  @override
+  String get tutorialPage4Step2 =>
+      'Tap + to add the next frame and draw it moved a little.';
+
+  @override
+  String get tutorialPage4Step3 =>
+      'Turn on \"Onion Skin\" in the settings at the top right to see the previous frame faintly underneath.';
+
+  @override
+  String get tutorialPage5Title => 'Play and export';
+
+  @override
+  String get tutorialPage5Step1 =>
+      'Open the timeline with the timeline button at the top right.';
+
+  @override
+  String get tutorialPage5Step2 => 'Tap Play to check the motion.';
+
+  @override
+  String get tutorialPage5Step3 =>
+      'Use \"Export\" to save or share it as a video or GIF.';
+
+  @override
+  String get tutorialPage6Title => 'If you get stuck';
+
+  @override
+  String get tutorialPage6Step1 =>
+      'Tap ? at the top right of a screen to read about that screen.';
+
+  @override
+  String get tutorialPage6Step2 =>
+      'A short tip appears the first time you use a feature.';
+
+  @override
+  String get tutorialPage6Step3 =>
+      'You can view this guide again anytime from \"How to use\" in Settings.';
+
+  @override
+  String get settingsTutorialTitle => 'How to use';
+
+  @override
+  String get settingsTutorialSubtitle => 'See the getting-started guide again';
+
+  @override
+  String get settingsTipsResetTitle => 'Show feature tips again';
+
+  @override
+  String get settingsTipsResetSubtitle =>
+      'Show the short tip for each feature again the next time you use it';
+
+  @override
+  String get settingsTipsResetDone =>
+      'Feature tips will show again the next time you use each feature';
+
+  @override
+  String get helpTutorialButton => 'View the guide';
 }

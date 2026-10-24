@@ -129,7 +129,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
     expectNoFlutterException(tester, '作品をつくる→ホーム');
 
-    final firstLaunch = find.text('はじめる');
+    final firstLaunch = find.byKey(const Key('tutorialSkip'));
     if (firstLaunch.evaluate().isNotEmpty) {
       await capture(tester, '02_first_launch_dialog');
       await tester.tap(firstLaunch);

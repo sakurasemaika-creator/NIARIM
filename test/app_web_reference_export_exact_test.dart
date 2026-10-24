@@ -143,7 +143,7 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.brush_outlined));
     await tester.pump(const Duration(milliseconds: 650));
-    final firstLaunch = find.text('はじめる');
+    final firstLaunch = find.byKey(const Key('tutorialSkip'));
     if (firstLaunch.evaluate().isNotEmpty) {
       await tester.tap(firstLaunch);
       await tester.pump(const Duration(milliseconds: 500));

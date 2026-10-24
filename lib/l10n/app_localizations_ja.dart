@@ -7590,4 +7590,105 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityCreatorLabel => '作者';
+
+  @override
+  String get tutorialSkip => 'スキップ';
+
+  @override
+  String get tutorialNext => '次へ';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return '$totalページ中$currentページ目';
+  }
+
+  @override
+  String get tutorialPage1Title => 'NIARIMへようこそ';
+
+  @override
+  String get tutorialPage1Step1 => '1枚の絵を「フレーム」に描きます';
+
+  @override
+  String get tutorialPage1Step2 => '少しずつ動きを変えたフレームを並べます';
+
+  @override
+  String get tutorialPage1Step3 => '続けて再生するとアニメーションになり、動画として書き出せます';
+
+  @override
+  String get tutorialPage2Title => '作品をつくる';
+
+  @override
+  String get tutorialPage2Step1 => 'ホームの右下の＋を押します';
+
+  @override
+  String get tutorialPage2Step2 => '「新規プロジェクト」を選び、名前や大きさを決めて「作成」を押します';
+
+  @override
+  String get tutorialPage2Step3 => '作った作品は「プロジェクト」に並びます。押して「編集開始」を選ぶと続きを描けます';
+
+  @override
+  String get tutorialPage3Title => 'キャンバスで描く';
+
+  @override
+  String get tutorialPage3Step1 => '下のツールバーで、ペン・消しゴム・塗りつぶしなどの道具を選びます';
+
+  @override
+  String get tutorialPage3Step2 => '色の丸を押すと、描く色を変えられます';
+
+  @override
+  String get tutorialPage3Step3 => '左上の矢印で、取り消し・やり直しができます';
+
+  @override
+  String get tutorialPage4Title => 'フレームを足して動かす';
+
+  @override
+  String get tutorialPage4Step1 => '下のフレーム一覧で、いま描いているフレームが分かります';
+
+  @override
+  String get tutorialPage4Step2 => '＋で次のフレームを足し、少しずつ動かして描きます';
+
+  @override
+  String get tutorialPage4Step3 => '右上の設定の「オニオンスキン」で、前のフレームを薄く重ねて見られます';
+
+  @override
+  String get tutorialPage5Title => '再生して書き出す';
+
+  @override
+  String get tutorialPage5Step1 => '右上のタイムラインのボタンで、タイムラインを開きます';
+
+  @override
+  String get tutorialPage5Step2 => '再生ボタンで、動きを確かめます';
+
+  @override
+  String get tutorialPage5Step3 => '「書き出し」で、動画やGIFとして保存・共有できます';
+
+  @override
+  String get tutorialPage6Title => '困ったときは';
+
+  @override
+  String get tutorialPage6Step1 => '画面右上の？で、その画面の説明を見られます';
+
+  @override
+  String get tutorialPage6Step2 => 'はじめて使う機能では、短い説明が出ます';
+
+  @override
+  String get tutorialPage6Step3 => 'この使い方は、「設定」の「使い方」からいつでも見直せます';
+
+  @override
+  String get settingsTutorialTitle => '使い方';
+
+  @override
+  String get settingsTutorialSubtitle => 'はじめに表示した使い方を、もう一度見ます';
+
+  @override
+  String get settingsTipsResetTitle => '機能の説明をもう一度表示';
+
+  @override
+  String get settingsTipsResetSubtitle => 'はじめて使う機能に出る短い説明を、次に使うときにもう一度出します';
+
+  @override
+  String get settingsTipsResetDone => '機能の説明を、次に使うときにもう一度表示します';
+
+  @override
+  String get helpTutorialButton => '使い方を見る';
 }

@@ -7629,4 +7629,109 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityCreatorLabel => '작성자';
+
+  @override
+  String get tutorialSkip => '건너뛰기';
+
+  @override
+  String get tutorialNext => '다음';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return '$total쪽 중 $current쪽';
+  }
+
+  @override
+  String get tutorialPage1Title => 'NIARIM에 오신 것을 환영합니다';
+
+  @override
+  String get tutorialPage1Step1 => '그림 한 장을 \'프레임\'에 그립니다.';
+
+  @override
+  String get tutorialPage1Step2 => '조금씩 움직임을 바꾼 프레임을 이어 붙입니다.';
+
+  @override
+  String get tutorialPage1Step3 => '이어서 재생하면 애니메이션이 되고, 동영상으로 내보낼 수 있습니다.';
+
+  @override
+  String get tutorialPage2Title => '작품 만들기';
+
+  @override
+  String get tutorialPage2Step1 => '홈 화면 오른쪽 아래의 +를 누릅니다.';
+
+  @override
+  String get tutorialPage2Step2 =>
+      '\'새 프로젝트\'를 고르고 이름과 크기를 정한 뒤 \'만들기\'를 누릅니다.';
+
+  @override
+  String get tutorialPage2Step3 =>
+      '만든 작품은 \'프로젝트\'에 표시됩니다. 작품을 누르고 \'편집 시작\'을 누르면 이어서 그릴 수 있습니다.';
+
+  @override
+  String get tutorialPage3Title => '캔버스에 그리기';
+
+  @override
+  String get tutorialPage3Step1 => '아래 도구 모음에서 펜·지우개·채우기 등의 도구를 고릅니다.';
+
+  @override
+  String get tutorialPage3Step2 => '색 동그라미를 누르면 그리는 색을 바꿀 수 있습니다.';
+
+  @override
+  String get tutorialPage3Step3 => '왼쪽 위의 화살표로 실행 취소와 다시 실행을 할 수 있습니다.';
+
+  @override
+  String get tutorialPage4Title => '프레임을 추가해 움직이기';
+
+  @override
+  String get tutorialPage4Step1 => '아래 프레임 목록에서 지금 그리고 있는 프레임을 알 수 있습니다.';
+
+  @override
+  String get tutorialPage4Step2 => '+로 다음 프레임을 추가하고 조금씩 움직여 그립니다.';
+
+  @override
+  String get tutorialPage4Step3 =>
+      '오른쪽 위 설정의 \'어니언 스킨\'을 켜면 이전 프레임이 흐리게 겹쳐 보입니다.';
+
+  @override
+  String get tutorialPage5Title => '재생하고 내보내기';
+
+  @override
+  String get tutorialPage5Step1 => '오른쪽 위의 타임라인 버튼으로 타임라인을 엽니다.';
+
+  @override
+  String get tutorialPage5Step2 => '재생 버튼으로 움직임을 확인합니다.';
+
+  @override
+  String get tutorialPage5Step3 => '\'내보내기\'로 동영상이나 GIF로 저장하거나 공유할 수 있습니다.';
+
+  @override
+  String get tutorialPage6Title => '막힐 때는';
+
+  @override
+  String get tutorialPage6Step1 => '화면 오른쪽 위의 ?를 누르면 그 화면의 설명을 볼 수 있습니다.';
+
+  @override
+  String get tutorialPage6Step2 => '처음 쓰는 기능에서는 짧은 설명이 나옵니다.';
+
+  @override
+  String get tutorialPage6Step3 => '이 사용법은 \'설정\'의 \'사용법\'에서 언제든지 다시 볼 수 있습니다.';
+
+  @override
+  String get settingsTutorialTitle => '사용법';
+
+  @override
+  String get settingsTutorialSubtitle => '처음에 표시된 사용법을 다시 봅니다';
+
+  @override
+  String get settingsTipsResetTitle => '기능 설명 다시 표시';
+
+  @override
+  String get settingsTipsResetSubtitle =>
+      '기능마다 처음에 나오는 짧은 설명을 다음에 쓸 때 다시 표시합니다';
+
+  @override
+  String get settingsTipsResetDone => '다음에 쓸 때 기능 설명이 다시 표시됩니다';
+
+  @override
+  String get helpTutorialButton => '사용법 보기';
 }

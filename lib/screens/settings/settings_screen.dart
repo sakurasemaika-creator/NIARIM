@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
+import '../../services/first_use_tooltip_service.dart';
 import '../../services/premium_service.dart';
+import '../../widgets/app_tutorial.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
@@ -35,6 +37,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  // はじめて使う機能の説明（吹き出し）を、次に使うときにもう一度出す。
+  Future<void> _resetFeatureTips() async {
+    final l10n = AppLocalizations.of(context)!;
+    await context.read<FirstUseTooltipService>().resetAll();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.settingsTipsResetDone)));
   }
 
   @override
@@ -143,6 +155,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsFontSubtitle,
         keywords: 'フォント ttf otf font',
         onTap: () => context.push('/settings/fonts'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.school_outlined,
+        title: l10n.settingsTutorialTitle,
+        subtitle: l10n.settingsTutorialSubtitle,
+        keywords: '使い方 チュートリアル はじめに 初回 案内 tutorial guide how to',
+        onTap: () => AppTutorial.show(context),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.lightbulb_outline,
+        title: l10n.settingsTipsResetTitle,
+        subtitle: l10n.settingsTipsResetSubtitle,
+        keywords: '説明 吹き出し ヒント もう一度 再表示 リセット tips hint reset',
+        onTap: _resetFeatureTips,
         accent: Theme.of(context).colorScheme.primary,
       ),
       (

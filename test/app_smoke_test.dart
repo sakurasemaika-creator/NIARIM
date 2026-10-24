@@ -166,7 +166,7 @@ void main() {
     expect(find.byType(Scaffold), findsWidgets);
     expectAdSlotFollowsPremium(tester, 'ホーム画面の最上部の横長広告モック');
 
-    final firstLaunchDialogButton = find.text('はじめる');
+    final firstLaunchDialogButton = find.byKey(const Key('tutorialSkip'));
     if (firstLaunchDialogButton.evaluate().isNotEmpty) {
       await tester.tap(firstLaunchDialogButton);
       await tester.pump(const Duration(milliseconds: 300));
@@ -1888,7 +1888,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'ホーム画面への遷移で例外');
 
-    final firstLaunchDialogButton = find.text('はじめる');
+    final firstLaunchDialogButton = find.byKey(const Key('tutorialSkip'));
     if (firstLaunchDialogButton.evaluate().isNotEmpty) {
       await tester.tap(firstLaunchDialogButton);
       await tester.pump(const Duration(milliseconds: 300));

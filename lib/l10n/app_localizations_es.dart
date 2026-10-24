@@ -7977,4 +7977,124 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityCreatorLabel => 'Creador';
+
+  @override
+  String get tutorialSkip => 'Omitir';
+
+  @override
+  String get tutorialNext => 'Siguiente';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return 'Página $current de $total';
+  }
+
+  @override
+  String get tutorialPage1Title => 'Te damos la bienvenida a NIARIM';
+
+  @override
+  String get tutorialPage1Step1 => 'Dibuja una imagen en un «fotograma».';
+
+  @override
+  String get tutorialPage1Step2 =>
+      'Añade más fotogramas moviendo un poco el dibujo cada vez.';
+
+  @override
+  String get tutorialPage1Step3 =>
+      'Al reproducirlos seguidos se convierten en una animación que puedes exportar como vídeo.';
+
+  @override
+  String get tutorialPage2Title => 'Crea un proyecto';
+
+  @override
+  String get tutorialPage2Step1 =>
+      'En Inicio, toca + en la esquina inferior derecha.';
+
+  @override
+  String get tutorialPage2Step2 =>
+      'Elige «Nuevo proyecto», indica el nombre y el tamaño y toca «Crear».';
+
+  @override
+  String get tutorialPage2Step3 =>
+      'Tus proyectos aparecen en «Proyectos». Toca uno y luego «Empezar a editar» para seguir dibujando.';
+
+  @override
+  String get tutorialPage3Title => 'Dibuja en el lienzo';
+
+  @override
+  String get tutorialPage3Step1 =>
+      'Elige una herramienta, como el lápiz, la goma o el relleno, en la barra inferior.';
+
+  @override
+  String get tutorialPage3Step2 =>
+      'Toca el círculo de color para cambiar el color de dibujo.';
+
+  @override
+  String get tutorialPage3Step3 =>
+      'Usa las flechas de arriba a la izquierda para deshacer y rehacer.';
+
+  @override
+  String get tutorialPage4Title => 'Añade fotogramas para animar';
+
+  @override
+  String get tutorialPage4Step1 =>
+      'La lista de fotogramas de abajo muestra en qué fotograma estás dibujando.';
+
+  @override
+  String get tutorialPage4Step2 =>
+      'Toca + para añadir el siguiente fotograma y dibújalo un poco desplazado.';
+
+  @override
+  String get tutorialPage4Step3 =>
+      'Activa «Papel cebolla» en los ajustes de arriba a la derecha para ver el fotograma anterior en transparencia.';
+
+  @override
+  String get tutorialPage5Title => 'Reproduce y exporta';
+
+  @override
+  String get tutorialPage5Step1 =>
+      'Abre la línea de tiempo con su botón de arriba a la derecha.';
+
+  @override
+  String get tutorialPage5Step2 =>
+      'Toca Reproducir para comprobar el movimiento.';
+
+  @override
+  String get tutorialPage5Step3 =>
+      'Con «Exportar» puedes guardarla o compartirla como vídeo o GIF.';
+
+  @override
+  String get tutorialPage6Title => 'Si necesitas ayuda';
+
+  @override
+  String get tutorialPage6Step1 =>
+      'Toca ? arriba a la derecha para ver la ayuda de esa pantalla.';
+
+  @override
+  String get tutorialPage6Step2 =>
+      'La primera vez que uses una función aparecerá una breve explicación.';
+
+  @override
+  String get tutorialPage6Step3 =>
+      'Puedes volver a ver esta guía cuando quieras desde «Cómo se usa» en Ajustes.';
+
+  @override
+  String get settingsTutorialTitle => 'Cómo se usa';
+
+  @override
+  String get settingsTutorialSubtitle => 'Vuelve a ver la guía de inicio';
+
+  @override
+  String get settingsTipsResetTitle => 'Volver a mostrar las explicaciones';
+
+  @override
+  String get settingsTipsResetSubtitle =>
+      'Muestra de nuevo la breve explicación de cada función la próxima vez que la uses';
+
+  @override
+  String get settingsTipsResetDone =>
+      'Las explicaciones volverán a aparecer la próxima vez que uses cada función';
+
+  @override
+  String get helpTutorialButton => 'Ver la guía';
 }

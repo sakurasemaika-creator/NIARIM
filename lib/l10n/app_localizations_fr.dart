@@ -7996,4 +7996,124 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityCreatorLabel => 'Créateur';
+
+  @override
+  String get tutorialSkip => 'Passer';
+
+  @override
+  String get tutorialNext => 'Suivant';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return 'Page $current sur $total';
+  }
+
+  @override
+  String get tutorialPage1Title => 'Bienvenue dans NIARIM';
+
+  @override
+  String get tutorialPage1Step1 => 'Dessinez sur une « image ».';
+
+  @override
+  String get tutorialPage1Step2 =>
+      'Ajoutez d\'autres images en déplaçant un peu le dessin à chaque fois.';
+
+  @override
+  String get tutorialPage1Step3 =>
+      'Lues à la suite, elles forment une animation que vous pouvez exporter en vidéo.';
+
+  @override
+  String get tutorialPage2Title => 'Créez un projet';
+
+  @override
+  String get tutorialPage2Step1 =>
+      'Sur l\'écran d\'accueil, touchez + en bas à droite.';
+
+  @override
+  String get tutorialPage2Step2 =>
+      'Choisissez « Nouveau projet », réglez le nom et la taille, puis touchez « Créer ».';
+
+  @override
+  String get tutorialPage2Step3 =>
+      'Vos projets s\'affichent dans « Projets ». Touchez-en un, puis « Commencer l\'édition » pour continuer à dessiner.';
+
+  @override
+  String get tutorialPage3Title => 'Dessinez sur le canevas';
+
+  @override
+  String get tutorialPage3Step1 =>
+      'Choisissez un outil (stylo, gomme, remplissage…) dans la barre d\'outils du bas.';
+
+  @override
+  String get tutorialPage3Step2 =>
+      'Touchez le cercle de couleur pour changer la couleur du dessin.';
+
+  @override
+  String get tutorialPage3Step3 =>
+      'Les flèches en haut à gauche permettent d\'annuler et de rétablir.';
+
+  @override
+  String get tutorialPage4Title => 'Ajoutez des images pour animer';
+
+  @override
+  String get tutorialPage4Step1 =>
+      'La liste des images en bas indique l\'image sur laquelle vous dessinez.';
+
+  @override
+  String get tutorialPage4Step2 =>
+      'Touchez + pour ajouter l\'image suivante et dessinez-la un peu déplacée.';
+
+  @override
+  String get tutorialPage4Step3 =>
+      'Activez « Papier calque » dans les réglages en haut à droite pour voir l\'image précédente en transparence.';
+
+  @override
+  String get tutorialPage5Title => 'Lisez et exportez';
+
+  @override
+  String get tutorialPage5Step1 =>
+      'Ouvrez la timeline avec son bouton en haut à droite.';
+
+  @override
+  String get tutorialPage5Step2 =>
+      'Touchez Lecture pour vérifier le mouvement.';
+
+  @override
+  String get tutorialPage5Step3 =>
+      'Avec « Exporter », enregistrez-la ou partagez-la en vidéo ou en GIF.';
+
+  @override
+  String get tutorialPage6Title => 'En cas de besoin';
+
+  @override
+  String get tutorialPage6Step1 =>
+      'Touchez ? en haut à droite d\'un écran pour lire son aide.';
+
+  @override
+  String get tutorialPage6Step2 =>
+      'Une courte explication s\'affiche la première fois que vous utilisez une fonction.';
+
+  @override
+  String get tutorialPage6Step3 =>
+      'Vous pouvez revoir ce guide à tout moment depuis « Mode d\'emploi » dans les Réglages.';
+
+  @override
+  String get settingsTutorialTitle => 'Mode d\'emploi';
+
+  @override
+  String get settingsTutorialSubtitle => 'Revoir le guide de démarrage';
+
+  @override
+  String get settingsTipsResetTitle => 'Réafficher les explications';
+
+  @override
+  String get settingsTipsResetSubtitle =>
+      'Réaffiche la courte explication de chaque fonction lors de sa prochaine utilisation';
+
+  @override
+  String get settingsTipsResetDone =>
+      'Les explications réapparaîtront lors de la prochaine utilisation de chaque fonction';
+
+  @override
+  String get helpTutorialButton => 'Voir le guide';
 }
