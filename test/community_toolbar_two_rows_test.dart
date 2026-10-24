@@ -97,6 +97,24 @@ void main() {
             final search = tester.getRect(find.byIcon(Icons.search));
             expect(search.left, greaterThanOrEqualTo(0), reason: why);
             expect(search.right, lessThanOrEqualTo(width), reason: why);
+            // 表示フィルターは表示の調整のつまみ（目のアイコンは何のボタンか
+            // 分かりにくく、自分の投稿では「非公開」の印でもある）。
+            expect(
+              find.descendant(
+                of: find.byKey(const Key('communityContentFilterButton')),
+                matching: find.byIcon(Icons.tune),
+              ),
+              findsOneWidget,
+              reason: why,
+            );
+            expect(
+              find.descendant(
+                of: actions,
+                matching: find.byIcon(Icons.visibility_off_outlined),
+              ),
+              findsNothing,
+              reason: why,
+            );
           }
         }
       }

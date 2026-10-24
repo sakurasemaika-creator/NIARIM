@@ -14,7 +14,7 @@ Locale localeFromLanguageCode(String code) {
   return Locale(code);
 }
 
-/// [locale]に最も近い対応言語の文言を返す。対応していない言語なら日本語。
+/// [locale]に最も近い対応言語の文言を返す。対応していない言語なら英語。
 ///
 /// `AppLocalizations.of(context)`が使えない場所（MaterialAppの外側や、
 /// 壊れた画面の代わりに出すエラー表示）から文言を引くために使う。
@@ -27,8 +27,9 @@ AppLocalizations appLocalizationsFor(Locale? locale) {
 
 /// 端末の言語の並び（優先する順）から、対応する7言語のうち最初に当てはまる
 /// 言語のコード（`SettingsService.language`の値）を返す。どれにも当てはまら
-/// なければ日本語。中国語は繁体字（Hant、または文字の指定が無い台湾・香港・
-/// マカオ）なら'zh_Hant'、ほかは'zh'。
+/// なければ英語（ユーザー指定。ドイツ語・ポルトガル語等の端末で日本語より
+/// 読める人が多い）。中国語は繁体字（Hant、または文字の指定が無い台湾・
+/// 香港・マカオ）なら'zh_Hant'、ほかは'zh'。
 String appLanguageCodeFor(Iterable<Locale> locales) {
   for (final locale in locales) {
     if (locale.languageCode == 'zh') {
@@ -44,5 +45,5 @@ String appLanguageCodeFor(Iterable<Locale> locales) {
     );
     if (supported) return locale.languageCode;
   }
-  return 'ja';
+  return 'en';
 }

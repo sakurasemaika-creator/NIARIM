@@ -491,7 +491,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                           IconButton(
                             // Distinct from the video-type filter's funnel next to it.
                             key: const Key('communityContentFilterButton'),
-                            icon: const Icon(Icons.visibility_off_outlined),
+                            // 目のアイコンは「何のボタンか分かりにくい」
+                            // （ユーザー指摘）うえ、自分の投稿では「非公開」の
+                            // 印でもあるので、表示の調整を表すつまみにする。
+                            icon: const Icon(Icons.tune),
                             tooltip: l10n.communityContentFilterTitle,
                             onPressed: () =>
                                 _showContentFilters(communityService),

@@ -41,9 +41,10 @@ void main() {
       ]: 'zh',
       // 対応していない言語は飛ばし、次に優先する言語を使う。
       [Locale('de', 'DE'), Locale('fr', 'FR')]: 'fr',
-      // どれも対応していなければ日本語。
-      [Locale('de', 'DE')]: 'ja',
-      []: 'ja',
+      // どれも対応していなければ英語（ユーザー指定）。
+      [Locale('de', 'DE')]: 'en',
+      [Locale('pt', 'BR')]: 'en',
+      []: 'en',
     };
     for (final MapEntry(key: locales, value: code) in cases.entries) {
       expect(appLanguageCodeFor(locales), code, reason: '$locales');

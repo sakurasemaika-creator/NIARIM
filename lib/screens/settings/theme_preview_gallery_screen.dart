@@ -643,7 +643,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         Text(t('総合', 'All'), style: const TextStyle(fontSize: 12)),
         Icon(Icons.arrow_drop_down, color: c.onSurface, size: 19),
         const SizedBox(width: 16),
-        Icon(Icons.visibility_off_outlined, color: c.onSurface, size: 23),
+        Icon(Icons.tune, color: c.onSurface, size: 23),
         const SizedBox(width: 18),
         Icon(Icons.search, color: c.onSurface, size: 23),
         const SizedBox(width: 16),

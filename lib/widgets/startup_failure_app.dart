@@ -38,6 +38,10 @@ class StartupFailureApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: _defaultTheme(),
       locale: code == null ? null : localeFromLanguageCode(code),
+      // 設定を読む前に失敗したときは、アプリ本体と同じ決まりで端末の
+      // 言語から選ぶ（台湾・香港の中国語は繁体字、対応外は英語）。
+      localeListResolutionCallback: (locales, _) =>
+          localeFromLanguageCode(appLanguageCodeFor(locales ?? const [])),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,
