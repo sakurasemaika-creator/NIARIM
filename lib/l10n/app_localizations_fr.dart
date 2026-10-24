@@ -7965,6 +7965,29 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeProjectsLoadFailed => 'Impossible de charger vos projets';
 
   @override
+  String get settingsErrorLogTitle => 'Journal des erreurs';
+
+  @override
+  String get settingsErrorLogSubtitle =>
+      'Consultez et copiez les erreurs de l’application pour les joindre à un signalement';
+
+  @override
+  String get errorLogHint =>
+      'Affiche jusqu’à 20 erreurs depuis l’ouverture de l’application, des plus récentes aux plus anciennes. Les adresses e-mail et les informations de connexion sont masquées.';
+
+  @override
+  String get errorLogEmpty => 'Aucune erreur enregistrée';
+
+  @override
+  String get errorLogCopyAll => 'Tout copier';
+
+  @override
+  String get errorLogCopied => 'Journal des erreurs copié';
+
+  @override
+  String get errorLogClear => 'Effacer le journal';
+
+  @override
   String get newProjectCreating => 'Création en cours…';
 
   @override

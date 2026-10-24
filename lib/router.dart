@@ -27,6 +27,7 @@ import 'screens/materials/material_list_screen.dart';
 import 'screens/settings/font_settings_screen.dart';
 import 'screens/settings/license_screen.dart';
 import 'screens/settings/privacy_policy_screen.dart';
+import 'screens/settings/error_log_screen.dart';
 import 'screens/settings/storage_screen.dart';
 import 'widgets/ad_banner_mock_widget.dart';
 import 'screens/settings/widget_settings_screen.dart';
@@ -199,6 +200,11 @@ final appRouter = GoRouter(
       path: '/settings/fonts',
       builder: (context, state) =>
           const AdMockPageFrame(child: FontSettingsScreen()),
+    ),
+    GoRoute(
+      path: '/settings/error-log',
+      builder: (context, state) =>
+          const AdMockPageFrame(child: ErrorLogScreen()),
     ),
     GoRoute(
       path: '/settings/license',

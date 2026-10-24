@@ -145,6 +145,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         onTap: () => context.push('/settings/fonts'),
         accent: Theme.of(context).colorScheme.primary,
       ),
+      (
+        icon: Icons.bug_report_outlined,
+        title: l10n.settingsErrorLogTitle,
+        subtitle: l10n.settingsErrorLogSubtitle,
+        keywords: 'エラー 不具合 報告 ログ コピー error log bug report copy',
+        onTap: () => context.push('/settings/error-log'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
     ];
     final filtered = _query.isEmpty
         ? entries

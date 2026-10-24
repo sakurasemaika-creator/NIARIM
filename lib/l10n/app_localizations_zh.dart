@@ -7494,6 +7494,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeProjectsLoadFailed => '无法加载项目';
 
   @override
+  String get settingsErrorLogTitle => '错误记录';
+
+  @override
+  String get settingsErrorLogSubtitle => '报告问题时，可以查看并复制应用中发生的错误';
+
+  @override
+  String get errorLogHint => '按从新到旧的顺序显示打开应用后发生的最多20条错误。电子邮件地址和登录信息已隐藏。';
+
+  @override
+  String get errorLogEmpty => '没有记录到错误';
+
+  @override
+  String get errorLogCopyAll => '全部复制';
+
+  @override
+  String get errorLogCopied => '已复制错误记录';
+
+  @override
+  String get errorLogClear => '清除记录';
+
+  @override
   String get newProjectCreating => '正在创建…';
 
   @override
@@ -14992,6 +15013,27 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeProjectsLoadFailed => '無法載入專案';
+
+  @override
+  String get settingsErrorLogTitle => '錯誤記錄';
+
+  @override
+  String get settingsErrorLogSubtitle => '回報問題時，可以查看並複製應用程式中發生的錯誤';
+
+  @override
+  String get errorLogHint => '依新到舊的順序顯示開啟應用程式後發生的最多20筆錯誤。電子郵件地址與登入資訊已隱藏。';
+
+  @override
+  String get errorLogEmpty => '沒有記錄到錯誤';
+
+  @override
+  String get errorLogCopyAll => '全部複製';
+
+  @override
+  String get errorLogCopied => '已複製錯誤記錄';
+
+  @override
+  String get errorLogClear => '清除記錄';
 
   @override
   String get newProjectCreating => '正在建立…';

@@ -13823,6 +13823,48 @@ abstract class AppLocalizations {
   /// **'プロジェクトを読み込めませんでした'**
   String get homeProjectsLoadFailed;
 
+  /// No description provided for @settingsErrorLogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラーの記録'**
+  String get settingsErrorLogTitle;
+
+  /// No description provided for @settingsErrorLogSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'不具合を知らせるときに、アプリで起きたエラーを確認してコピーできます'**
+  String get settingsErrorLogSubtitle;
+
+  /// No description provided for @errorLogHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'このアプリを閉じるまでに起きたエラーを、新しい順に最大20件表示します。メールアドレスやログインの情報は伏せてあります。'**
+  String get errorLogHint;
+
+  /// No description provided for @errorLogEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラーは記録されていません'**
+  String get errorLogEmpty;
+
+  /// No description provided for @errorLogCopyAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべてコピー'**
+  String get errorLogCopyAll;
+
+  /// No description provided for @errorLogCopied.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラーの記録をコピーしました'**
+  String get errorLogCopied;
+
+  /// No description provided for @errorLogClear.
+  ///
+  /// In ja, this message translates to:
+  /// **'記録を消す'**
+  String get errorLogClear;
+
   /// No description provided for @newProjectCreating.
   ///
   /// In ja, this message translates to:

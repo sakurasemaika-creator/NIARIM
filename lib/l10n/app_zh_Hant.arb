@@ -3163,6 +3163,13 @@
   "errorViewBody": "編輯中的資料已保留。請返回上一個畫面後再試一次。將以下內容告知開發者，有助於找出原因。",
   "homeWorksLoadFailed": "無法載入匯出的作品",
   "homeProjectsLoadFailed": "無法載入專案",
+  "settingsErrorLogTitle": "錯誤記錄",
+  "settingsErrorLogSubtitle": "回報問題時，可以查看並複製應用程式中發生的錯誤",
+  "errorLogHint": "依新到舊的順序顯示開啟應用程式後發生的最多20筆錯誤。電子郵件地址與登入資訊已隱藏。",
+  "errorLogEmpty": "沒有記錄到錯誤",
+  "errorLogCopyAll": "全部複製",
+  "errorLogCopied": "已複製錯誤記錄",
+  "errorLogClear": "清除記錄",
   "newProjectCreating": "正在建立…",
   "newProjectCreateFailed": "無法儲存專案。請檢查儲存空間與儲存位置，然後再試一次。",
   "communityCreatorLabel": "作者"

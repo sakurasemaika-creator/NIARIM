@@ -3170,6 +3170,13 @@
   "errorViewBody": "Your work in progress is kept. Go back to the previous screen and try again. Sending us the text below helps us find the cause.",
   "homeWorksLoadFailed": "Could not load your exported works",
   "homeProjectsLoadFailed": "Could not load your projects",
+  "settingsErrorLogTitle": "Error log",
+  "settingsErrorLogSubtitle": "View and copy errors from the app to include when reporting a problem",
+  "errorLogHint": "Shows up to 20 errors since the app was opened, newest first. Email addresses and sign-in details are hidden.",
+  "errorLogEmpty": "No errors have been recorded",
+  "errorLogCopyAll": "Copy all",
+  "errorLogCopied": "Error log copied",
+  "errorLogClear": "Clear log",
   "newProjectCreating": "Creating…",
   "newProjectCreateFailed": "Could not save the project. Check your storage space and save location, then try again.",
   "communityCreatorLabel": "Creator"

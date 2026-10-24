@@ -7599,6 +7599,28 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeProjectsLoadFailed => '프로젝트를 불러오지 못했습니다';
 
   @override
+  String get settingsErrorLogTitle => '오류 기록';
+
+  @override
+  String get settingsErrorLogSubtitle => '문제를 알릴 때 앱에서 발생한 오류를 확인하고 복사할 수 있습니다';
+
+  @override
+  String get errorLogHint =>
+      '앱을 연 뒤 발생한 오류를 최신순으로 최대 20건 표시합니다. 이메일 주소와 로그인 정보는 가려져 있습니다.';
+
+  @override
+  String get errorLogEmpty => '기록된 오류가 없습니다';
+
+  @override
+  String get errorLogCopyAll => '모두 복사';
+
+  @override
+  String get errorLogCopied => '오류 기록을 복사했습니다';
+
+  @override
+  String get errorLogClear => '기록 지우기';
+
+  @override
   String get newProjectCreating => '만드는 중…';
 
   @override

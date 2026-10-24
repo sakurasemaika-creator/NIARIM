@@ -3163,6 +3163,13 @@
   "errorViewBody": "Votre travail en cours est conservé. Revenez à l’écran précédent et réessayez. Nous envoyer le texte ci-dessous nous aidera à en trouver la cause.",
   "homeWorksLoadFailed": "Impossible de charger vos créations exportées",
   "homeProjectsLoadFailed": "Impossible de charger vos projets",
+  "settingsErrorLogTitle": "Journal des erreurs",
+  "settingsErrorLogSubtitle": "Consultez et copiez les erreurs de l’application pour les joindre à un signalement",
+  "errorLogHint": "Affiche jusqu’à 20 erreurs depuis l’ouverture de l’application, des plus récentes aux plus anciennes. Les adresses e-mail et les informations de connexion sont masquées.",
+  "errorLogEmpty": "Aucune erreur enregistrée",
+  "errorLogCopyAll": "Tout copier",
+  "errorLogCopied": "Journal des erreurs copié",
+  "errorLogClear": "Effacer le journal",
   "newProjectCreating": "Création en cours…",
   "newProjectCreateFailed": "Impossible d’enregistrer le projet. Vérifiez l’espace de stockage et l’emplacement d’enregistrement, puis réessayez.",
   "communityCreatorLabel": "Créateur"

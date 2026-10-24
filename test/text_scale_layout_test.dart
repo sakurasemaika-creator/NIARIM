@@ -119,6 +119,7 @@ void main() {
       '/settings/fonts',
       '/settings/license',
       '/settings/privacy-policy',
+      '/settings/error-log',
       '/help',
       '/tips',
       '/premium',

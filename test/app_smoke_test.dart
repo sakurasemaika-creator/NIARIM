@@ -2130,6 +2130,7 @@ void main() {
       '/settings/fonts',
       '/settings/license',
       '/settings/privacy-policy',
+      '/settings/error-log',
       '/storage',
     ]);
   }, timeout: const Timeout(Duration(seconds: 90)));

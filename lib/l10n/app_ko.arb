@@ -3163,6 +3163,13 @@
   "errorViewBody": "작업 중인 데이터는 보존되어 있습니다. 이전 화면으로 돌아가 다시 시도해 주세요. 아래 내용을 개발자에게 알려 주시면 원인을 찾는 데 도움이 됩니다.",
   "homeWorksLoadFailed": "내보낸 작품 목록을 불러오지 못했습니다",
   "homeProjectsLoadFailed": "프로젝트를 불러오지 못했습니다",
+  "settingsErrorLogTitle": "오류 기록",
+  "settingsErrorLogSubtitle": "문제를 알릴 때 앱에서 발생한 오류를 확인하고 복사할 수 있습니다",
+  "errorLogHint": "앱을 연 뒤 발생한 오류를 최신순으로 최대 20건 표시합니다. 이메일 주소와 로그인 정보는 가려져 있습니다.",
+  "errorLogEmpty": "기록된 오류가 없습니다",
+  "errorLogCopyAll": "모두 복사",
+  "errorLogCopied": "오류 기록을 복사했습니다",
+  "errorLogClear": "기록 지우기",
   "newProjectCreating": "만드는 중…",
   "newProjectCreateFailed": "프로젝트를 저장하지 못했습니다. 저장 공간과 저장 위치를 확인한 후 다시 시도해 주세요.",
   "communityCreatorLabel": "작성자"

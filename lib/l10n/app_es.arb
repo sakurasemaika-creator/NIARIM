@@ -3163,6 +3163,13 @@
   "errorViewBody": "Tu trabajo en curso se conserva. Vuelve a la pantalla anterior e inténtalo de nuevo. Si nos envías el texto de abajo, nos ayudarás a encontrar la causa.",
   "homeWorksLoadFailed": "No se pudieron cargar tus obras exportadas",
   "homeProjectsLoadFailed": "No se pudieron cargar tus proyectos",
+  "settingsErrorLogTitle": "Registro de errores",
+  "settingsErrorLogSubtitle": "Consulta y copia los errores de la app para incluirlos al informar de un problema",
+  "errorLogHint": "Muestra hasta 20 errores desde que se abrió la app, del más reciente al más antiguo. Las direcciones de correo y los datos de inicio de sesión se ocultan.",
+  "errorLogEmpty": "No se ha registrado ningún error",
+  "errorLogCopyAll": "Copiar todo",
+  "errorLogCopied": "Registro de errores copiado",
+  "errorLogClear": "Borrar registro",
   "newProjectCreating": "Creando…",
   "newProjectCreateFailed": "No se pudo guardar el proyecto. Comprueba el espacio de almacenamiento y la ubicación de guardado e inténtalo de nuevo.",
   "communityCreatorLabel": "Creador"

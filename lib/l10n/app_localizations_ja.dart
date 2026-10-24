@@ -7560,6 +7560,28 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeProjectsLoadFailed => 'プロジェクトを読み込めませんでした';
 
   @override
+  String get settingsErrorLogTitle => 'エラーの記録';
+
+  @override
+  String get settingsErrorLogSubtitle => '不具合を知らせるときに、アプリで起きたエラーを確認してコピーできます';
+
+  @override
+  String get errorLogHint =>
+      'このアプリを閉じるまでに起きたエラーを、新しい順に最大20件表示します。メールアドレスやログインの情報は伏せてあります。';
+
+  @override
+  String get errorLogEmpty => 'エラーは記録されていません';
+
+  @override
+  String get errorLogCopyAll => 'すべてコピー';
+
+  @override
+  String get errorLogCopied => 'エラーの記録をコピーしました';
+
+  @override
+  String get errorLogClear => '記録を消す';
+
+  @override
   String get newProjectCreating => '作成しています…';
 
   @override

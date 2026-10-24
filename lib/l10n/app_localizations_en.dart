@@ -7823,6 +7823,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeProjectsLoadFailed => 'Could not load your projects';
 
   @override
+  String get settingsErrorLogTitle => 'Error log';
+
+  @override
+  String get settingsErrorLogSubtitle =>
+      'View and copy errors from the app to include when reporting a problem';
+
+  @override
+  String get errorLogHint =>
+      'Shows up to 20 errors since the app was opened, newest first. Email addresses and sign-in details are hidden.';
+
+  @override
+  String get errorLogEmpty => 'No errors have been recorded';
+
+  @override
+  String get errorLogCopyAll => 'Copy all';
+
+  @override
+  String get errorLogCopied => 'Error log copied';
+
+  @override
+  String get errorLogClear => 'Clear log';
+
+  @override
   String get newProjectCreating => 'Creating…';
 
   @override

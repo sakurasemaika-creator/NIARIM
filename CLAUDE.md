@@ -319,6 +319,14 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   端末（`SettingsService.deviceLocales`）として動かす。英語の端末を試す
   テストはその中で`deviceLocales`を差し替え、`tearDown`で戻すこと
   （`test/initial_language_test.dart`が実例）。
+- **アプリで起きたエラーは設定の「エラーの記録」で見てコピーできる**
+  （`/settings/error-log`、`lib/screens/settings/error_log_screen.dart`）：
+  `AppErrorReporter.recentErrors`（新しい順に最大20件、先頭に時刻）を出す。
+  アプリを閉じるまでの分だけで保存はしない（エラーの中から設定を書くと
+  失敗の連鎖が起きうるうえ、設定の引き継ぎに混ざるため）。記録する前に
+  `maskPersonalDetails`でメールアドレス・IDトークン・Bearer・URLの
+  `token=`/`key=`等を伏せる。新しく例外の文にログインの情報が入る処理を
+  書くときは、伏せ方の規則に足すこと（`test/error_log_screen_test.dart`）。
 - **保存済み設定は`prefs.getInt`等で読まず、`prefs.readInt`等で読むこと**：
   SharedPreferencesの`getInt`/`getBool`/`getDouble`/`getString`/
   `getStringList`は`as int?`でキャストするため、同じキーに別の型の値が

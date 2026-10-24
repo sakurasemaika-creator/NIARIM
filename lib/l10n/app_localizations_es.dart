@@ -7946,6 +7946,29 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeProjectsLoadFailed => 'No se pudieron cargar tus proyectos';
 
   @override
+  String get settingsErrorLogTitle => 'Registro de errores';
+
+  @override
+  String get settingsErrorLogSubtitle =>
+      'Consulta y copia los errores de la app para incluirlos al informar de un problema';
+
+  @override
+  String get errorLogHint =>
+      'Muestra hasta 20 errores desde que se abrió la app, del más reciente al más antiguo. Las direcciones de correo y los datos de inicio de sesión se ocultan.';
+
+  @override
+  String get errorLogEmpty => 'No se ha registrado ningún error';
+
+  @override
+  String get errorLogCopyAll => 'Copiar todo';
+
+  @override
+  String get errorLogCopied => 'Registro de errores copiado';
+
+  @override
+  String get errorLogClear => 'Borrar registro';
+
+  @override
   String get newProjectCreating => 'Creando…';
 
   @override

@@ -3721,6 +3721,13 @@
   "errorViewBody": "作業中のデータは保持されています。前の画面へ戻ってからもう一度お試しください。以下の内容を開発元へお知らせいただけると原因の特定に役立ちます。",
   "homeWorksLoadFailed": "作品一覧を読み込めませんでした",
   "homeProjectsLoadFailed": "プロジェクトを読み込めませんでした",
+  "settingsErrorLogTitle": "エラーの記録",
+  "settingsErrorLogSubtitle": "不具合を知らせるときに、アプリで起きたエラーを確認してコピーできます",
+  "errorLogHint": "このアプリを閉じるまでに起きたエラーを、新しい順に最大20件表示します。メールアドレスやログインの情報は伏せてあります。",
+  "errorLogEmpty": "エラーは記録されていません",
+  "errorLogCopyAll": "すべてコピー",
+  "errorLogCopied": "エラーの記録をコピーしました",
+  "errorLogClear": "記録を消す",
   "newProjectCreating": "作成しています…",
   "newProjectCreateFailed": "プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。",
   "communityCreatorLabel": "作者"
