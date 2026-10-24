@@ -4,11 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
+import 'package:niarim/screens/community/widgets/video_type_filter.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/widgets/help_button.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -87,8 +89,72 @@ void main() {
             greaterThanOrEqualTo(tester.getRect(title).bottom),
             reason: why,
           );
+          // 通知とヘルプは、画面名を切らずに並べられるときは1段目の右側
+          // （ユーザー指定）。並べられないとき（長い画面名・狭い画面・大きな
+          // 文字）だけ2段目。
+          final row2 = tester.getRect(actions);
+          final bell = tester.getRect(
+            find.byKey(const Key('communityNotificationsButton')),
+          );
+          final help = tester.getRect(find.byType(HelpButton));
+          if (scale == 1.0 &&
+              width >= 360 &&
+              const {'ja', 'ko', 'zh'}.contains(locale.languageCode)) {
+            expect(bell.bottom, lessThanOrEqualTo(row2.top), reason: why);
+            expect(help.bottom, lessThanOrEqualTo(row2.top), reason: why);
+          }
+          // タブ名は切れない（入りきらないときは横にスクロールする）。
+          for (final element
+              in find
+                  .descendant(
+                    of: find.byKey(const Key('communityTabBar')),
+                    matching: find.byType(RichText),
+                    skipOffstage: false,
+                  )
+                  .evaluate()) {
+            final tab = element.renderObject! as RenderParagraph;
+            expect(
+              tab.size.width,
+              greaterThanOrEqualTo(
+                tab.getMaxIntrinsicWidth(double.infinity) - 0.5,
+              ),
+              reason: '$why: tab "${tab.text.toPlainText()}" cut',
+            );
+          }
+          // 2段目は左に検索窓、右にフィルター（ユーザー指定）。検索窓は左端から
+          // 動画の種類のボタンのすぐ手前まで（空白を残さない）。
+          final field = find.byKey(const Key('communitySearchField'));
+          final tune = tester.getRect(
+            find.byKey(const Key('communityContentFilterButton')),
+          );
+          final videoType = tester.getRect(find.byType(VideoTypeFilterButton));
+          if (field.evaluate().isNotEmpty) {
+            final box = tester.getRect(field);
+            expect(box.width, greaterThanOrEqualTo(140), reason: why);
+            expect(box.left, lessThan(12), reason: why);
+            expect(videoType.left - box.right, lessThan(12), reason: why);
+            expect(tune.left, greaterThan(videoType.left), reason: why);
+            if (bell.bottom <= row2.top) {
+              expect(width - tune.right, lessThan(12), reason: why);
+            }
+          } else {
+            // 検索窓を置く幅が無いときは、左端の虫眼鏡のボタン。
+            final button = tester.getRect(
+              find.byKey(const Key('communitySearchButton')),
+            );
+            expect(button.left, lessThan(12), reason: why);
+            expect(
+              button.right,
+              lessThanOrEqualTo(videoType.left),
+              reason: why,
+            );
+          }
           // 文字の大きさが既定のうちは全部が画面内に収まる。
           if (scale == 1.0) {
+            for (final rect in [bell, help]) {
+              expect(rect.left, greaterThanOrEqualTo(0), reason: why);
+              expect(rect.right, lessThanOrEqualTo(width), reason: why);
+            }
             for (final key in [const Key('communityContentFilterButton')]) {
               final rect = tester.getRect(find.byKey(key));
               expect(rect.left, greaterThanOrEqualTo(0), reason: why);

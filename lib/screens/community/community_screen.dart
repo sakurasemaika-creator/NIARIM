@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
@@ -49,6 +51,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   bool _isSearching = false;
   String _searchQuery = '';
   final _searchController = TextEditingController();
+  final _searchFocus = FocusNode();
   final _bodyKey = GlobalKey();
   bool _tagSearchMode = false;
   VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
@@ -58,6 +61,12 @@ class _CommunityScreenState extends State<CommunityScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this)
       ..addListener(_onTabChanged);
+    // 検索窓を押したら検索の種類（作品名・投稿者名／タグ）を選べるようにする。
+    _searchFocus.addListener(() {
+      if (_searchFocus.hasFocus && !_isSearching) {
+        setState(() => _isSearching = true);
+      }
+    });
     final initialTag = widget.initialTagFilter;
     if (initialTag != null && initialTag.isNotEmpty) {
       _isSearching = true;
@@ -160,7 +169,81 @@ class _CommunityScreenState extends State<CommunityScreen>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _searchFocus.dispose();
     super.dispose();
+  }
+
+  static const double _toolbarIconWidth = 48;
+  static const double _minSearchFieldWidth = 140;
+
+  void _closeSearch() {
+    _searchFocus.unfocus();
+    setState(() {
+      _isSearching = false;
+      _tagSearchMode = false;
+      _searchQuery = '';
+      _searchController.clear();
+    });
+  }
+
+  /// 戻るボタンと[title]と、残り[width]の中で画面名が切れずに収まるか。
+  static bool _titleFitsBeside(
+    BuildContext context,
+    String title,
+    double width,
+  ) {
+    final theme = Theme.of(context);
+    final painter = TextPainter(
+      text: TextSpan(
+        text: title,
+        style: theme.appBarTheme.titleTextStyle ?? theme.textTheme.titleLarge,
+      ),
+      textScaler: MediaQuery.textScalerOf(context),
+      textDirection: Directionality.of(context),
+      maxLines: 1,
+    )..layout();
+    final fits = painter.width + kToolbarHeight + 32 + 4 <= width;
+    painter.dispose();
+    return fits;
+  }
+
+  /// [labels]のタブを[width]に等分して並べたとき、どのタブ名も切れないか。
+  static bool _tabsFitEqually(
+    BuildContext context,
+    List<String> labels,
+    double width,
+  ) {
+    final theme = Theme.of(context);
+    final style = theme.tabBarTheme.labelStyle ?? theme.textTheme.titleSmall;
+    var widest = 0.0;
+    for (final label in labels) {
+      final painter = TextPainter(
+        text: TextSpan(text: label, style: style),
+        textScaler: MediaQuery.textScalerOf(context),
+        textDirection: Directionality.of(context),
+        maxLines: 1,
+      )..layout();
+      widest = math.max(widest, painter.width);
+      painter.dispose();
+    }
+    // タブの左右の余白（16ずつ）を含めて、等分の幅に入るか。
+    return widest + 32 <= width / labels.length;
+  }
+
+  /// 動画の種類のボタン（漏斗・種類の名前・▼）の幅。
+  static double _videoFilterWidth(BuildContext context, String label) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: DefaultTextStyle.of(context).style.copyWith(fontSize: 12),
+      ),
+      textScaler: MediaQuery.textScalerOf(context),
+      textDirection: Directionality.of(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width + 48 + 8;
+    painter.dispose();
+    return width;
   }
 
   List<CommunityWork> _applySearch(List<CommunityWork> works) {
@@ -409,111 +492,186 @@ class _CommunityScreenState extends State<CommunityScreen>
     final communityService = context.watch<CommunityService>();
     final allWorks = communityService.discoverableWorks;
     final bookmarkedIds = communityService.bookmarkedIds;
+    final unread = communityService.unreadFollowNotificationCount;
+    final notificationsButton = IconButton(
+      key: const Key('communityNotificationsButton'),
+      icon: Badge(
+        label: Text('$unread'),
+        isLabelVisible: unread > 0,
+        child: const Icon(Icons.notifications_outlined),
+      ),
+      tooltip: l10n.communityFollowNotificationsTooltip,
+      onPressed: () => Navigator.of(context).push(
+        adMockMaterialPageRoute<void>(
+          builder: (_) => const CommunityFollowNotificationsScreen(),
+        ),
+      ),
+    );
+    const helpButton = HelpButton(topic: '作品広場');
+    final filterButtons = <Widget>[
+      VideoTypeFilterButton(
+        value: _videoTypeFilter,
+        onChanged: (v) => setState(() => _videoTypeFilter = v),
+      ),
+      if (_videoTypeFilter == VideoTypeFilter.shortOnly)
+        IconButton(
+          icon: const Icon(Icons.view_carousel_outlined),
+          tooltip: l10n.communityShortsModeTooltip,
+          onPressed: () => _openShortsMode(allWorks),
+        ),
+      IconButton(
+        // Distinct from the video-type filter's funnel next to it.
+        key: const Key('communityContentFilterButton'),
+        // 目のアイコンは「何のボタンか分かりにくい」（ユーザー指摘）うえ、
+        // 自分の投稿では「非公開」の印でもあるので、表示の調整を表すつまみ。
+        icon: const Icon(Icons.tune),
+        tooltip: l10n.communityContentFilterTitle,
+        onPressed: () => _showContentFilters(communityService),
+      ),
+    ];
+    // 上部のバー（ユーザー指定）：1段目は戻る・画面名と、右側に通知とヘルプ。
+    // 2段目は左に虫眼鏡の付いた検索窓（残りの幅いっぱい）、右にフィルター2つ。
+    // 画面名が長い言語・狭い画面・大きな文字で通知とヘルプを並べると画面名が
+    // 切れるときは、2段目の右端へ回す（画面名を途中で切らない、ユーザー指定）。
+    // 2段目に検索窓を置く幅が無いときは虫眼鏡のボタンにして、押すと2段目が
+    // 検索窓になる。
+    final textScaler = MediaQuery.textScalerOf(context);
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final iconsBesideTitle = _titleFitsBeside(
+      context,
+      l10n.communityScreenTitle,
+      screenWidth - _toolbarIconWidth * 2,
+    );
+    final rowHeight = math.max(48.0, textScaler.scale(16) + 32);
+    final searchModeHeight =
+        12.0 + math.max(44.0, textScaler.scale(14) * 1.4 + 24);
+    final fixedWidth =
+        _toolbarIconWidth *
+            (filterButtons.length - 1 + (iconsBesideTitle ? 0 : 2)) +
+        _videoFilterWidth(context, _videoTypeFilter.label(l10n)) +
+        16;
+    final inlineSearch = screenWidth - fixedWidth >= _minSearchFieldWidth;
+    final tabLabels = [
+      l10n.communityTabNew,
+      l10n.communityTabRanking,
+      l10n.communityTabFavoriteAuthors,
+    ];
+    final tabsFit = _tabsFitEqually(context, tabLabels, screenWidth);
+
+    Widget searchField({required bool autofocus}) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+      child: TextField(
+        key: const Key('communitySearchField'),
+        controller: _searchController,
+        focusNode: _searchFocus,
+        autofocus: autofocus,
+        textInputAction: TextInputAction.search,
+        textAlignVertical: TextAlignVertical.center,
+        decoration: InputDecoration(
+          isDense: true,
+          filled: true,
+          fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+          hintText: _tagSearchMode
+              ? l10n.communityTagSearchHint
+              : l10n.communitySearchHint,
+          hintMaxLines: 1,
+          prefixIcon: Icon(
+            _tagSearchMode ? Icons.sell_outlined : Icons.search,
+            size: 20,
+          ),
+          suffixIcon: _isSearching
+              ? IconButton(
+                  key: const Key('communitySearchClose'),
+                  icon: const Icon(Icons.close, size: 20),
+                  tooltip: l10n.commonClose,
+                  onPressed: _closeSearch,
+                )
+              : null,
+          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        onChanged: (v) => setState(() {
+          _searchQuery = v;
+          _isSearching = true;
+        }),
+      ),
+    );
+
+    final Widget toolbarRow;
+    if (inlineSearch) {
+      toolbarRow = Row(
+        children: [
+          const SizedBox(width: 4),
+          Expanded(child: searchField(autofocus: false)),
+          ...filterButtons,
+          if (!iconsBesideTitle) ...[notificationsButton, helpButton],
+          const SizedBox(width: 4),
+        ],
+      );
+    } else if (_isSearching) {
+      toolbarRow = Row(
+        children: [
+          const SizedBox(width: 4),
+          Expanded(child: searchField(autofocus: true)),
+          const SizedBox(width: 4),
+        ],
+      );
+    } else {
+      toolbarRow = Row(
+        children: [
+          const SizedBox(width: 4),
+          IconButton(
+            key: const Key('communitySearchButton'),
+            icon: const Icon(Icons.search),
+            tooltip: l10n.commonSearch,
+            onPressed: () => setState(() => _isSearching = true),
+          ),
+          Expanded(
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              // 狭い画面・大きな文字では横にスクロールして全部に届く。
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                reverse: true,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ...filterButtons,
+                    if (!iconsBesideTitle) ...[notificationsButton, helpButton],
+                    const SizedBox(width: 4),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: _tagSearchMode
-                      ? l10n.communityTagSearchHint
-                      : l10n.communitySearchHint,
-                  border: InputBorder.none,
-                ),
-                onChanged: (v) => setState(() => _searchQuery = v),
-              )
-            : Text(l10n.communityScreenTitle),
-        // 画面名が途中で切れないよう、上部のツールバーは2段にする
-        // （1段目に戻る・画面名、2段目に操作のアイコン）。検索中は1段目が
-        // 検索欄と閉じるボタンになる。
+        title: Text(l10n.communityScreenTitle),
         actions: [
-          if (_isSearching)
-            IconButton(
-              icon: const Icon(Icons.close),
-              tooltip: l10n.commonClose,
-              onPressed: () => setState(() {
-                _isSearching = false;
-                _tagSearchMode = false;
-                _searchQuery = '';
-                _searchController.clear();
-              }),
-            ),
+          if (iconsBesideTitle) ...[notificationsButton, helpButton],
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(_isSearching ? 104 : 96),
+          preferredSize: Size.fromHeight(
+            rowHeight + (_isSearching ? searchModeHeight : 0) + 48,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (!_isSearching)
-                SizedBox(
-                  key: const Key('communityToolbarActions'),
-                  height: 48,
-                  child: Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    // 狭い画面・大きな文字では横にスクロールして全部に届く。
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      reverse: true,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Badge(
-                              label: Text(
-                                '${communityService.unreadFollowNotificationCount}',
-                              ),
-                              isLabelVisible:
-                                  communityService
-                                      .unreadFollowNotificationCount >
-                                  0,
-                              child: const Icon(Icons.notifications_outlined),
-                            ),
-                            tooltip: l10n.communityFollowNotificationsTooltip,
-                            onPressed: () => Navigator.of(context).push(
-                              adMockMaterialPageRoute<void>(
-                                builder: (_) =>
-                                    const CommunityFollowNotificationsScreen(),
-                              ),
-                            ),
-                          ),
-                          VideoTypeFilterButton(
-                            value: _videoTypeFilter,
-                            onChanged: (v) =>
-                                setState(() => _videoTypeFilter = v),
-                          ),
-                          if (_videoTypeFilter == VideoTypeFilter.shortOnly)
-                            IconButton(
-                              icon: const Icon(Icons.view_carousel_outlined),
-                              tooltip: l10n.communityShortsModeTooltip,
-                              onPressed: () => _openShortsMode(allWorks),
-                            ),
-                          IconButton(
-                            // Distinct from the video-type filter's funnel next to it.
-                            key: const Key('communityContentFilterButton'),
-                            // 目のアイコンは「何のボタンか分かりにくい」
-                            // （ユーザー指摘）うえ、自分の投稿では「非公開」の
-                            // 印でもあるので、表示の調整を表すつまみにする。
-                            icon: const Icon(Icons.tune),
-                            tooltip: l10n.communityContentFilterTitle,
-                            onPressed: () =>
-                                _showContentFilters(communityService),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.search),
-                            tooltip: l10n.commonSearch,
-                            onPressed: () =>
-                                setState(() => _isSearching = true),
-                          ),
-                          const HelpButton(topic: '作品広場'),
-                          const SizedBox(width: 4),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+              SizedBox(
+                key: const Key('communityToolbarActions'),
+                height: rowHeight,
+                child: toolbarRow,
+              ),
               if (_isSearching)
-                Padding(
+                Container(
+                  height: searchModeHeight,
                   padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
                   child: SizedBox(
                     width: double.infinity,
@@ -548,17 +706,21 @@ class _CommunityScreenState extends State<CommunityScreen>
                           _searchQuery = '';
                           _searchController.clear();
                         });
+                        // 切り替えた後も続けて打てるよう、検索窓へ戻す。
+                        _searchFocus.requestFocus();
                       },
                     ),
                   ),
                 ),
+              // タブ名が等分の幅に入りきらないとき（フランス語の320px等）は、
+              // 名前の幅のまま横にスクロールする（以前は「Classeme」の
+              // ように途中で切れていた）。
               TabBar(
+                key: const Key('communityTabBar'),
                 controller: _tabController,
-                tabs: [
-                  Tab(text: l10n.communityTabNew),
-                  Tab(text: l10n.communityTabRanking),
-                  Tab(text: l10n.communityTabFavoriteAuthors),
-                ],
+                isScrollable: !tabsFit,
+                tabAlignment: tabsFit ? null : TabAlignment.start,
+                tabs: [for (final label in tabLabels) Tab(text: label)],
               ),
             ],
           ),
