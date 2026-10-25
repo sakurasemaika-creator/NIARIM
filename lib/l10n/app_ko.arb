@@ -3210,5 +3210,6 @@
   "homeMoveToTrashFolderContents": "폴더 안의 {contents}도 함께 이동합니다.",
   "homeTrashFolderPermanentDeleteBody": "「{name}」을(를) 완전히 삭제합니다. 이 작업은 되돌릴 수 없습니다.",
   "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{비어 있음} other{폴더 {folders}개}}} other{프로젝트 {projects}개{folders, plural, =0{} other{, 폴더 {folders}개}}}}",
-  "homeTrashFolderPermanentDeleteContents": "폴더 안의 {contents}도 함께 삭제합니다."
+  "homeTrashFolderPermanentDeleteContents": "폴더 안의 {contents}도 함께 삭제합니다.",
+  "folderColorName": "{color, select, pink{분홍} orange{주황} yellow{노랑} green{초록} blue{파랑} purple{보라} gray{회색} other{기본 색}}"
 }

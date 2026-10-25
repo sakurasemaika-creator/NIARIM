@@ -14110,6 +14110,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'フォルダの中の{contents}も一緒に削除します。'**
   String homeTrashFolderPermanentDeleteContents(String contents);
+
+  /// No description provided for @folderColorName.
+  ///
+  /// In ja, this message translates to:
+  /// **'{color, select, pink{ピンク} orange{オレンジ} yellow{黄} green{緑} blue{青} purple{紫} gray{グレー} other{既定の色}}'**
+  String folderColorName(String color);
 }
 
 class _AppLocalizationsDelegate

@@ -7778,4 +7778,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String homeTrashFolderPermanentDeleteContents(String contents) {
     return '폴더 안의 $contents도 함께 삭제합니다.';
   }
+
+  @override
+  String folderColorName(String color) {
+    String _temp0 = intl.Intl.selectLogic(color, {
+      'pink': '분홍',
+      'orange': '주황',
+      'yellow': '노랑',
+      'green': '초록',
+      'blue': '파랑',
+      'purple': '보라',
+      'gray': '회색',
+      'other': '기본 색',
+    });
+    return '$_temp0';
+  }
 }

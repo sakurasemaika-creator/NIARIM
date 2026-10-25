@@ -8025,4 +8025,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String homeTrashFolderPermanentDeleteContents(String contents) {
     return 'The $contents inside will be deleted too.';
   }
+
+  @override
+  String folderColorName(String color) {
+    String _temp0 = intl.Intl.selectLogic(color, {
+      'pink': 'Pink',
+      'orange': 'Orange',
+      'yellow': 'Yellow',
+      'green': 'Green',
+      'blue': 'Blue',
+      'purple': 'Purple',
+      'gray': 'Gray',
+      'other': 'Default color',
+    });
+    return '$_temp0';
+  }
 }

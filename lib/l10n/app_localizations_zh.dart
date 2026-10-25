@@ -7666,6 +7666,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String homeTrashFolderPermanentDeleteContents(String contents) {
     return '文件夹中的$contents也将一并删除。';
   }
+
+  @override
+  String folderColorName(String color) {
+    String _temp0 = intl.Intl.selectLogic(color, {
+      'pink': '粉色',
+      'orange': '橙色',
+      'yellow': '黄色',
+      'green': '绿色',
+      'blue': '蓝色',
+      'purple': '紫色',
+      'gray': '灰色',
+      'other': '默认颜色',
+    });
+    return '$_temp0';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -15330,5 +15345,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String homeTrashFolderPermanentDeleteContents(String contents) {
     return '資料夾中的$contents也會一併刪除。';
+  }
+
+  @override
+  String folderColorName(String color) {
+    String _temp0 = intl.Intl.selectLogic(color, {
+      'pink': '粉紅色',
+      'orange': '橘色',
+      'yellow': '黃色',
+      'green': '綠色',
+      'blue': '藍色',
+      'purple': '紫色',
+      'gray': '灰色',
+      'other': '預設顏色',
+    });
+    return '$_temp0';
   }
 }

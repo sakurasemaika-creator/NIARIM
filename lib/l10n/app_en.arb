@@ -3217,5 +3217,6 @@
   "homeMoveToTrashFolderContents": "The {contents} inside will be moved too.",
   "homeTrashFolderPermanentDeleteBody": "\"{name}\" will be permanently deleted. This cannot be undone.",
   "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{Empty} =1{1 folder} other{{folders} folders}}} =1{1 project{folders, plural, =0{} =1{ and 1 folder} other{ and {folders} folders}}} other{{projects} projects{folders, plural, =0{} =1{ and 1 folder} other{ and {folders} folders}}}}",
-  "homeTrashFolderPermanentDeleteContents": "The {contents} inside will be deleted too."
+  "homeTrashFolderPermanentDeleteContents": "The {contents} inside will be deleted too.",
+  "folderColorName": "{color, select, pink{Pink} orange{Orange} yellow{Yellow} green{Green} blue{Blue} purple{Purple} gray{Gray} other{Default color}}"
 }

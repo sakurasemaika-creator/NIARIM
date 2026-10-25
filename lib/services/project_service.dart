@@ -2980,15 +2980,44 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
+  /// 同じ階層（[parentFolderId]の直下）で使われていない名前。同じ名前の
+  /// フォルダがあれば「名前 (2)」「名前 (3)」…と番号を付ける（ユーザー指定。
+  /// 同じ名前が並ぶと、色でしか見分けられず、移動先の一覧やパンくずでも
+  /// 区別できなかった）。[exceptId]のフォルダ自身は数えない（名前の変更）。
+  String uniqueFolderName(
+    String name, {
+    required String? parentFolderId,
+    String? exceptId,
+  }) {
+    final taken = {
+      for (final f in _folders)
+        if (f.parentFolderId == parentFolderId && f.id != exceptId) f.name,
+    };
+    if (!taken.contains(name)) return name;
+    // 「名前 (3)」が使われていれば「名前 (4)」から探す（「名前 (3) (2)」に
+    // しない）。
+    final match = RegExp(r'^(.*) \((\d+)\)$').firstMatch(name);
+    final base = match?.group(1) ?? name;
+    for (
+      var number = (int.tryParse(match?.group(2) ?? '') ?? 1) + 1;
+      ;
+      number++
+    ) {
+      final numbered = '$base ($number)';
+      if (!taken.contains(numbered)) return numbered;
+    }
+  }
+
   /// [parentFolderId]を指定すると、そのフォルダの子フォルダとして作成する
-  /// （「フォルダは複数階層に対応」）。nullはルート直下。
+  /// （「フォルダは複数階層に対応」）。nullはルート直下。同じ階層に同じ名前の
+  /// フォルダがあれば番号を付ける（[uniqueFolderName]）。
   Future<ProjectFolder> createFolder(
     String name, {
     String? parentFolderId,
   }) async {
     final folder = ProjectFolder(
       id: _nextId('folder'),
-      name: name,
+      name: uniqueFolderName(name, parentFolderId: parentFolderId),
       parentFolderId: parentFolderId,
     );
     _folders.add(folder);
@@ -2997,10 +3026,17 @@ class ProjectService extends ChangeNotifier {
     return folder;
   }
 
+  /// 同じ階層に同じ名前のフォルダがあれば番号を付ける（[uniqueFolderName]）。
   Future<void> renameFolder(String folderId, String name) async {
     final idx = _folders.indexWhere((f) => f.id == folderId);
     if (idx < 0) return;
-    _folders[idx] = _folders[idx].copyWith(name: name);
+    _folders[idx] = _folders[idx].copyWith(
+      name: uniqueFolderName(
+        name,
+        parentFolderId: _folders[idx].parentFolderId,
+        exceptId: folderId,
+      ),
+    );
     await _persistFolders();
     notifyListeners();
   }

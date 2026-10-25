@@ -1365,20 +1365,34 @@ class ProjectListWidget extends StatelessWidget {
   }
 
   // フォルダ名変更・色変更・削除（フォルダ管理）
+  // 色と読み上げの名前（folderColorNameの選択肢）。
   static const _folderColors = [
-    0xFFFF5C7A,
-    0xFFFFB020,
-    0xFFFFE066,
-    0xFF3DDC97,
-    0xFF3AA6FF,
-    0xFFB15CFF,
-    0xFF9E9E9E,
+    (0xFFFF5C7A, 'pink'),
+    (0xFFFFB020, 'orange'),
+    (0xFFFFE066, 'yellow'),
+    (0xFF3DDC97, 'green'),
+    (0xFF3AA6FF, 'blue'),
+    (0xFFB15CFF, 'purple'),
+    (0xFF9E9E9E, 'gray'),
   ];
 
   void _showEditFolderDialog(BuildContext context, ProjectFolder folder) {
     final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: folder.name);
     int? selectedColor = folder.color;
+    // 空白だけの名前にはしない（Enterでも同じ）。閉じる途中にもう一度
+    // 押されても二度保存しない。
+    void save(BuildContext ctx) {
+      final name = controller.text.trim();
+      if (name.isEmpty || !(ModalRoute.of(ctx)?.isCurrent ?? false)) return;
+      final service = context.read<ProjectService>();
+      if (name != folder.name) service.renameFolder(folder.id, name);
+      if (selectedColor != folder.color) {
+        service.setFolderColor(folder.id, selectedColor);
+      }
+      Navigator.pop(ctx);
+    }
+
     showDialog(
       context: context,
       builder: (ctx) => DisposeOnUnmount(
@@ -1397,6 +1411,9 @@ class ProjectListWidget extends StatelessWidget {
                     labelText: l10n.folderNameLabel,
                     border: const OutlineInputBorder(),
                   ),
+                  // 空白だけの名前では保存できないことを、ボタンの状態で示す。
+                  onChanged: (_) => setS(() {}),
+                  onSubmitted: (_) => save(ctx),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -1405,23 +1422,22 @@ class ProjectListWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
                   children: [
                     _colorDot(
                       ctx,
                       null,
+                      l10n.folderColorName('default'),
                       selectedColor,
                       (v) => setS(() => selectedColor = v),
                     ),
-                    ..._folderColors.map(
-                      (c) => _colorDot(
+                    for (final (c, name) in _folderColors)
+                      _colorDot(
                         ctx,
                         c,
+                        l10n.folderColorName(name),
                         selectedColor,
                         (v) => setS(() => selectedColor = v),
                       ),
-                    ),
                   ],
                 ),
               ],
@@ -1432,18 +1448,9 @@ class ProjectListWidget extends StatelessWidget {
                 child: Text(l10n.commonCancel),
               ),
               FilledButton(
-                onPressed: () {
-                  final service = context.read<ProjectService>();
-                  // 空白だけの名前にはしない。
-                  final name = controller.text.trim();
-                  if (name.isNotEmpty && name != folder.name) {
-                    service.renameFolder(folder.id, name);
-                  }
-                  if (selectedColor != folder.color) {
-                    service.setFolderColor(folder.id, selectedColor);
-                  }
-                  Navigator.pop(ctx);
-                },
+                onPressed: controller.text.trim().isEmpty
+                    ? null
+                    : () => save(ctx),
                 child: Text(l10n.commonSave),
               ),
             ],
@@ -1456,27 +1463,44 @@ class ProjectListWidget extends StatelessWidget {
   Widget _colorDot(
     BuildContext context,
     int? color,
+    String label,
     int? selected,
     ValueChanged<int?> onTap,
   ) {
     final isSelected = color == selected;
     final scheme = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: () => onTap(color),
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: color != null ? Color(color) : Colors.transparent,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isSelected ? scheme.primary : scheme.outlineVariant,
-            width: isSelected ? 3 : 1,
+    // 見た目は32pxの丸、押せる所は指で押しやすい48px四方。読み上げでは
+    // 色の名前と選んでいるかを伝える。
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      inMutuallyExclusiveGroup: true,
+      label: label,
+      excludeSemantics: true,
+      child: InkResponse(
+        key: ValueKey('folderColor_${color ?? 'default'}'),
+        onTap: () => onTap(color),
+        radius: 24,
+        child: SizedBox.square(
+          dimension: 48,
+          child: Center(
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: color != null ? Color(color) : Colors.transparent,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? scheme.primary : scheme.outlineVariant,
+                  width: isSelected ? 3 : 1,
+                ),
+              ),
+              child: color == null
+                  ? Icon(Icons.block, size: 16, color: scheme.onSurfaceVariant)
+                  : null,
+            ),
           ),
         ),
-        child: color == null
-            ? Icon(Icons.block, size: 16, color: scheme.onSurfaceVariant)
-            : null,
       ),
     );
   }

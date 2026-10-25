@@ -3816,5 +3816,13 @@
         "type": "String"
       }
     }
+  },
+  "folderColorName": "{color, select, pink{ピンク} orange{オレンジ} yellow{黄} green{緑} blue{青} purple{紫} gray{グレー} other{既定の色}}",
+  "@folderColorName": {
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
   }
 }

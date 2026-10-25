@@ -7733,4 +7733,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String homeTrashFolderPermanentDeleteContents(String contents) {
     return 'フォルダの中の$contentsも一緒に削除します。';
   }
+
+  @override
+  String folderColorName(String color) {
+    String _temp0 = intl.Intl.selectLogic(color, {
+      'pink': 'ピンク',
+      'orange': 'オレンジ',
+      'yellow': '黄',
+      'green': '緑',
+      'blue': '青',
+      'purple': '紫',
+      'gray': 'グレー',
+      'other': '既定の色',
+    });
+    return '$_temp0';
+  }
 }

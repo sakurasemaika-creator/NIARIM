@@ -274,6 +274,30 @@ void main() {
       expect(folderOf(third)['孫の作品'], t.grandchild.id);
     });
 
+    test('a new or renamed folder gets a number when the name is taken '
+        'at its level', () async {
+      final service = ProjectService();
+      await service.init();
+      final t = await tree(service);
+      expect((await service.createFolder('親')).name, '親 (2)');
+      expect((await service.createFolder('親')).name, '親 (3)');
+      // ほかの階層の同じ名前は数えない。
+      expect(
+        (await service.createFolder('孫', parentFolderId: t.parent.id)).name,
+        '孫',
+      );
+      expect(
+        (await service.createFolder('子', parentFolderId: t.parent.id)).name,
+        '子 (2)',
+      );
+      // 名前の変更：自分自身は数えない。
+      await service.renameFolder(t.parent.id, '親');
+      expect(service.folders.firstWhere((f) => f.id == t.parent.id).name, '親');
+      final other = service.folders.firstWhere((f) => f.name == '親 (2)');
+      await service.renameFolder(other.id, '親 (3)');
+      expect(service.folders.firstWhere((f) => f.id == other.id).name, '親 (4)');
+    });
+
     test('a folder copy copies the folders and works inside', () async {
       final service = ProjectService();
       await service.init();
@@ -498,6 +522,54 @@ void main() {
       await settleIo(tester);
       await settleIo(tester);
       expect(service.folders.where((f) => f.name == '親 (コピー 2)'), hasLength(1));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the folder edit dialog: named colours big enough to press, '
+        'no blank names, Enter saves', (tester) async {
+      final service = await boot(tester);
+      await openFolderMenu(tester, '親');
+      await tester.tap(find.text('名前・色を編集').last);
+      await settle(tester);
+      final green = find.byKey(const ValueKey('folderColor_${0xFF3DDC97}'));
+      final size = tester.getSize(green);
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
+      expect(
+        tester.getSemantics(green),
+        isSemantics(label: '緑', isButton: true, isSelected: false),
+      );
+      expect(
+        tester.getSemantics(find.byKey(const ValueKey('folderColor_default'))),
+        isSemantics(label: '既定の色', isButton: true, isSelected: true),
+      );
+      await tester.tap(green);
+      await settle(tester);
+      expect(
+        tester.getSemantics(green),
+        isSemantics(label: '緑', isSelected: true),
+      );
+      // 空白だけの名前では保存できない。
+      final field = find.byType(TextField).last;
+      await tester.enterText(field, '   ');
+      await settle(tester);
+      final save = find.widgetWithText(FilledButton, '保存');
+      expect(tester.widget<FilledButton>(save).onPressed, isNull);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await settle(tester);
+      expect(find.byType(AlertDialog), findsOneWidget);
+      // Enterで名前と色を保存する。
+      await tester.enterText(field, '  背景  ');
+      await settle(tester);
+      expect(tester.widget<FilledButton>(save).onPressed, isNotNull);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await settleIo(tester);
+      expect(find.byType(AlertDialog), findsNothing);
+      final folder = service.folders.firstWhere(
+        (f) => f.id == service.folders.firstWhere((f) => f.name == '背景').id,
+      );
+      expect(folder.color, 0xFF3DDC97);
+      expect(card('背景'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

@@ -3210,5 +3210,6 @@
   "homeMoveToTrashFolderContents": "También se moverá el contenido de las carpetas: {contents}.",
   "homeTrashFolderPermanentDeleteBody": "\"{name}\" se eliminará de forma permanente. Esta acción no se puede deshacer.",
   "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{Vacía} =1{1 carpeta} other{{folders} carpetas}}} =1{1 proyecto{folders, plural, =0{} =1{ y 1 carpeta} other{ y {folders} carpetas}}} other{{projects} proyectos{folders, plural, =0{} =1{ y 1 carpeta} other{ y {folders} carpetas}}}}",
-  "homeTrashFolderPermanentDeleteContents": "También se eliminará el contenido de la carpeta: {contents}."
+  "homeTrashFolderPermanentDeleteContents": "También se eliminará el contenido de la carpeta: {contents}.",
+  "folderColorName": "{color, select, pink{Rosa} orange{Naranja} yellow{Amarillo} green{Verde} blue{Azul} purple{Morado} gray{Gris} other{Color predeterminado}}"
 }
