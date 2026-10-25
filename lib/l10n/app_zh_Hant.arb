@@ -125,8 +125,7 @@
     }
   },
   "homeMoveToTrashSkipFavorites": "{count}項我的最愛不會移動（取消我的最愛後即可移動）。",
-  "homeMoveToTrashSkipFolders": "{count}個資料夾不會移動（資料夾無法移至垃圾桶）。",
-  "homeMoveToTrashNothing": "沒有可移至垃圾桶的作品（我的最愛與資料夾不會移動）。",
+  "homeMoveToTrashNothing": "沒有可移至垃圾桶的項目（我的最愛不會移動）。",
   "homeMovedToTrashSnackbar": "已將{count}項移至垃圾桶",
   "homeUndoAction": "復原",
   "homeCutSnackbar": "已剪下{count}項。開啟目標位置後，點按右上角的貼上。",
@@ -136,7 +135,6 @@
   "homePasteSkippedMissing": "有{count}項因原作品已不存在（已移至垃圾桶或已刪除）而無法貼上。",
   "homePasteFailed": "部分項目未能貼上，請再試一次。",
   "homeCutPendingHint": "已剪下（等待貼上）",
-  "homeCopyFoldersUnsupported": "資料夾無法複製（請只選擇作品）",
   "projectDuplicateName": "{name}（副本）",
   "projectDuplicateNameNumbered": "{name}（副本 {number}）",
   "commonPaste": "貼上",
@@ -3205,5 +3203,12 @@
   "settingsTipsResetTitle": "重新顯示功能說明",
   "settingsTipsResetSubtitle": "下次使用各功能時再次顯示簡短說明",
   "settingsTipsResetDone": "下次使用各功能時將再次顯示說明",
-  "helpTutorialButton": "查看使用方法"
+  "helpTutorialButton": "查看使用方法",
+  "projectListTrashFolderConfirmTitle": "要將資料夾移至垃圾桶嗎？",
+  "projectListTrashFolderConfirmBody": "「{name}」將移至垃圾桶。可以從垃圾桶整個復原該資料夾。",
+  "homeFolderMovedToTrashSnackbar": "已將「{name}」移至垃圾桶",
+  "homeMoveToTrashFolderContents": "資料夾中的{contents}也會一併移動。",
+  "homeTrashFolderPermanentDeleteBody": "將永久刪除「{name}」。此操作無法復原。",
+  "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{空} other{{folders}個資料夾}}} other{{projects}個專案{folders, plural, =0{} other{和{folders}個資料夾}}}}",
+  "homeTrashFolderPermanentDeleteContents": "資料夾中的{contents}也會一併刪除。"
 }

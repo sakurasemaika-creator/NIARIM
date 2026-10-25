@@ -384,13 +384,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String homeMoveToTrashSkipFolders(int count) {
-    return '$count folder(s) will stay (folders can’t be moved to the trash).';
-  }
-
-  @override
   String get homeMoveToTrashNothing =>
-      'Nothing to move to the trash (favorites and folders are not moved).';
+      'Nothing to move to the trash (favorites are not moved).';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -431,10 +426,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeCutPendingHint => 'Cut, waiting to be pasted';
-
-  @override
-  String get homeCopyFoldersUnsupported =>
-      'Folders can’t be copied (select only works)';
 
   @override
   String projectDuplicateName(String name) {
@@ -7972,4 +7963,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTutorialButton => 'View the guide';
+
+  @override
+  String get projectListTrashFolderConfirmTitle =>
+      'Move the folder to the trash?';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '\"$name\" will be moved to the trash. You can restore the whole folder from the trash.';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return 'Moved \"$name\" to the trash';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return 'The $contents inside will be moved too.';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '\"$name\" will be permanently deleted. This cannot be undone.';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: ' and $folders folders',
+      one: ' and 1 folder',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: ' and $folders folders',
+      one: ' and 1 folder',
+      zero: '',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '$folders folders',
+      one: '1 folder',
+      zero: 'Empty',
+    );
+    String _temp3 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '$projects projects$_temp0',
+      one: '1 project$_temp1',
+      zero: '$_temp2',
+    );
+    return '$_temp3';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return 'The $contents inside will be deleted too.';
+  }
 }

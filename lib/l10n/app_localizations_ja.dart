@@ -373,13 +373,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String homeMoveToTrashSkipFolders(int count) {
-    return 'フォルダ$count件は移動しません（フォルダはゴミ箱へ移せません）。';
-  }
-
-  @override
-  String get homeMoveToTrashNothing =>
-      'ゴミ箱へ移動できる作品がありません（お気に入りの作品とフォルダは移動しません）。';
+  String get homeMoveToTrashNothing => 'ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -419,9 +413,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeCutPendingHint => '切り取り中（貼り付けを待っています）';
-
-  @override
-  String get homeCopyFoldersUnsupported => 'フォルダはコピーできません（作品だけを選んでください）';
 
   @override
   String projectDuplicateName(String name) {
@@ -7691,4 +7682,55 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpTutorialButton => '使い方を見る';
+
+  @override
+  String get projectListTrashFolderConfirmTitle => 'フォルダをゴミ箱へ移動しますか？';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '「$name」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return '「$name」をゴミ箱へ移動しました';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return 'フォルダの中の$contentsも一緒に移動します。';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '「$name」を完全に削除します。元に戻すことはできません。';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '・フォルダ$folders件',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: 'フォルダ$folders件',
+      zero: '中身なし',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: 'プロジェクト$projects件$_temp0',
+      zero: '$_temp1',
+    );
+    return '$_temp2';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return 'フォルダの中の$contentsも一緒に削除します。';
+  }
 }

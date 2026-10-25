@@ -374,13 +374,8 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String homeMoveToTrashSkipFolders(int count) {
-    return '폴더 $count개는 이동하지 않습니다(폴더는 휴지통으로 옮길 수 없습니다).';
-  }
-
-  @override
   String get homeMoveToTrashNothing =>
-      '휴지통으로 이동할 작품이 없습니다(즐겨찾기한 작품과 폴더는 이동하지 않습니다).';
+      '휴지통으로 이동할 항목이 없습니다(즐겨찾기한 항목은 이동하지 않습니다).';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -420,9 +415,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeCutPendingHint => '잘라냄(붙여넣기 대기 중)';
-
-  @override
-  String get homeCopyFoldersUnsupported => '폴더는 복사할 수 없습니다(작품만 선택하세요)';
 
   @override
   String projectDuplicateName(String name) {
@@ -7735,4 +7727,55 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpTutorialButton => '사용법 보기';
+
+  @override
+  String get projectListTrashFolderConfirmTitle => '폴더를 휴지통으로 이동하시겠습니까?';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '「$name」을(를) 휴지통으로 이동합니다. 휴지통에서 폴더째 복원할 수 있습니다.';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return '「$name」을(를) 휴지통으로 이동했습니다';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return '폴더 안의 $contents도 함께 이동합니다.';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '「$name」을(를) 완전히 삭제합니다. 이 작업은 되돌릴 수 없습니다.';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: ', 폴더 $folders개',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '폴더 $folders개',
+      zero: '비어 있음',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '프로젝트 $projects개$_temp0',
+      zero: '$_temp1',
+    );
+    return '$_temp2';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return '폴더 안의 $contents도 함께 삭제합니다.';
+  }
 }

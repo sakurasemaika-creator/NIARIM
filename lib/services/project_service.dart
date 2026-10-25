@@ -86,12 +86,55 @@ class ProjectFolder {
   );
 }
 
+/// ゴミ箱へ移したフォルダ。中のフォルダ（下の階層を含む）と作品も一緒に
+/// ゴミ箱へ移り、ゴミ箱の一覧にはこのフォルダ1件として出る。元に戻すと
+/// 中身もすべて元の階層のまま戻る。
+class TrashedFolder {
+  final ProjectFolder folder;
+
+  /// 中のフォルダ（下の階層を含む）。親子のつながりはそのまま持つ。
+  final List<ProjectFolder> subfolders;
+
+  /// フォルダと一緒にゴミ箱へ移した作品。
+  final List<String> projectIds;
+  final DateTime deletedAt;
+
+  const TrashedFolder({
+    required this.folder,
+    required this.subfolders,
+    required this.projectIds,
+    required this.deletedAt,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'folder': folder.toJson(),
+    'subfolders': [for (final f in subfolders) f.toJson()],
+    'projectIds': projectIds,
+    'deletedAt': deletedAt.toIso8601String(),
+  };
+
+  factory TrashedFolder.fromJson(Map<String, dynamic> json) => TrashedFolder(
+    folder: ProjectFolder.fromJson(json['folder'] as Map<String, dynamic>),
+    subfolders: [
+      for (final f in json['subfolders'] as List<dynamic>? ?? const [])
+        ProjectFolder.fromJson(f as Map<String, dynamic>),
+    ],
+    projectIds: [
+      for (final id in json['projectIds'] as List<dynamic>? ?? const [])
+        id as String,
+    ],
+    deletedAt:
+        DateTime.tryParse(json['deletedAt'] as String? ?? '') ?? DateTime.now(),
+  );
+}
+
 const _folderSentinel = Object();
 
 class ProjectService extends ChangeNotifier {
   final List<Project> _projects = [];
   final List<Project> _trash = [];
   final List<ProjectFolder> _folders = [];
+  final List<TrashedFolder> _trashedFolders = [];
   // ID採番用カウンター。DateTime.now().millisecondsSinceEpoch単独だと、
   // 同一ミリ秒内に連続生成した場合にIDが衝突しうるため併用する。
   int _idCounter = 0;
@@ -205,6 +248,19 @@ class ProjectService extends ChangeNotifier {
   List<Project> get shared =>
       List.unmodifiable(_projects.where((p) => p.isSharedImport));
   List<ProjectFolder> get folders => List.unmodifiable(_folders);
+
+  /// ゴミ箱へ移したフォルダ（中身ごと）。
+  List<TrashedFolder> get trashedFolders => List.unmodifiable(_trashedFolders);
+
+  /// フォルダと一緒にゴミ箱へ移した作品なら、そのフォルダ。
+  TrashedFolder? trashedFolderOf(String projectId) => _trashedFolders
+      .where((t) => t.projectIds.contains(projectId))
+      .firstOrNull;
+
+  /// ゴミ箱の作品のうち、フォルダと一緒に移したもの以外（ゴミ箱の一覧に
+  /// 1件ずつ出す作品）。
+  List<Project> get looseTrash =>
+      List.unmodifiable(_trash.where((p) => trashedFolderOf(p.id) == null));
   List<Project> get favorites => _projects.where((p) => p.isFavorite).toList();
 
   /// プロジェクトがゴミ箱へ移動された日時（ゴミ箱一覧の削除日時表示用）
@@ -219,6 +275,7 @@ class ProjectService extends ChangeNotifier {
     try {
       await _loadTrashState();
       await _loadFolders();
+      await _loadTrashedFolders();
       await _loadSharedFolders();
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
@@ -316,6 +373,14 @@ class ProjectService extends ChangeNotifier {
   Future<void> sweepExpiredTrash(int days) async {
     if (days <= 0) return;
     final now = DateTime.now();
+    // フォルダは中の作品ごと消す。
+    final expiredFolders = [
+      for (final t in _trashedFolders)
+        if (now.difference(t.deletedAt).inDays >= days) t.folder.id,
+    ];
+    for (final id in expiredFolders) {
+      await permanentDeleteTrashedFolder(id);
+    }
     final expired = _trash
         .where((p) {
           final deletedAt = _trashDeletedAt[p.id];
@@ -2506,15 +2571,21 @@ class ProjectService extends ChangeNotifier {
   Future<void> deleteProject(String id) async {
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
-      final project = _projects.removeAt(idx);
-      _trash.add(project);
-      _scenes.remove(id);
-      _layerIdCounters.remove(id);
-      _layerHomes.remove(id);
-      _trashDeletedAt[id] = DateTime.now();
+      _moveProjectToTrash(idx, DateTime.now());
       await _persistTrashState();
       notifyListeners();
     }
+  }
+
+  /// [index]の作品をゴミ箱へ移す（保存と通知は呼び出し側）。
+  void _moveProjectToTrash(int index, DateTime when) {
+    final project = _projects.removeAt(index);
+    final id = project.id;
+    _trash.add(project);
+    _scenes.remove(id);
+    _layerIdCounters.remove(id);
+    _layerHomes.remove(id);
+    _trashDeletedAt[id] = when;
   }
 
   Future<void> restoreProject(String id) async {
@@ -2990,6 +3061,162 @@ class ProjectService extends ChangeNotifier {
     return false;
   }
 
+  /// [folderId]と、その中のフォルダ（下の階層を含む）のID。
+  Set<String> folderSubtreeIds(String folderId) {
+    final ids = <String>{folderId};
+    var grew = true;
+    while (grew) {
+      grew = false;
+      for (final f in _folders) {
+        final parent = f.parentFolderId;
+        if (parent != null && ids.contains(parent) && ids.add(f.id)) {
+          grew = true;
+        }
+      }
+    }
+    return ids;
+  }
+
+  /// フォルダの中の作品とフォルダの数（下の階層を含む。フォルダ自身は
+  /// 数えない）。
+  ({int projects, int folders}) folderContentCounts(String folderId) {
+    final ids = folderSubtreeIds(folderId);
+    return (
+      projects: _projects
+          .where((p) => !p.isSharedImport && ids.contains(p.folderId))
+          .length,
+      folders: ids.length - 1,
+    );
+  }
+
+  /// フォルダを中身（下の階層のフォルダ・作品）ごとゴミ箱へ移す。ゴミ箱から
+  /// [restoreTrashedFolder]でまとめて元に戻せる。
+  Future<TrashedFolder?> moveFolderToTrash(String folderId) async {
+    final top = _folders.where((f) => f.id == folderId).firstOrNull;
+    if (top == null) return null;
+    final ids = folderSubtreeIds(folderId);
+    final now = DateTime.now();
+    final projectIds = <String>[];
+    for (var i = _projects.length - 1; i >= 0; i--) {
+      final project = _projects[i];
+      if (project.isSharedImport || !ids.contains(project.folderId)) continue;
+      projectIds.insert(0, project.id);
+      _moveProjectToTrash(i, now);
+    }
+    final record = TrashedFolder(
+      folder: top,
+      subfolders: [
+        for (final f in _folders)
+          if (f.id != folderId && ids.contains(f.id)) f,
+      ],
+      projectIds: projectIds,
+      deletedAt: now,
+    );
+    _folders.removeWhere((f) => ids.contains(f.id));
+    _trashedFolders.add(record);
+    await _persistFolders();
+    await _persistTrashState();
+    await _persistTrashedFolders();
+    notifyListeners();
+    return record;
+  }
+
+  /// ゴミ箱のフォルダを中身ごと元の場所へ戻す。元の親のフォルダが無く
+  /// なっていれば一番上へ戻す。
+  Future<void> restoreTrashedFolder(String folderId) async {
+    final index = _trashedFolders.indexWhere((t) => t.folder.id == folderId);
+    if (index < 0) return;
+    final record = _trashedFolders.removeAt(index);
+    final parent = record.folder.parentFolderId;
+    _folders.add(
+      parent != null && !_folders.any((f) => f.id == parent)
+          ? record.folder.copyWith(parentFolderId: null)
+          : record.folder,
+    );
+    for (final f in record.subfolders) {
+      if (!_folders.any((g) => g.id == f.id)) _folders.add(f);
+    }
+    await _persistFolders();
+    await _persistTrashedFolders();
+    for (final id in record.projectIds) {
+      if (_trash.any((p) => p.id == id)) await restoreProject(id);
+    }
+    notifyListeners();
+  }
+
+  /// ゴミ箱のフォルダを中の作品ごと完全に削除する（元に戻せない）。
+  Future<void> permanentDeleteTrashedFolder(String folderId) async {
+    final index = _trashedFolders.indexWhere((t) => t.folder.id == folderId);
+    if (index < 0) return;
+    final record = _trashedFolders.removeAt(index);
+    await _persistTrashedFolders();
+    for (final id in record.projectIds) {
+      if (_trash.any((p) => p.id == id)) await permanentDelete(id);
+    }
+    notifyListeners();
+  }
+
+  /// ゴミ箱を空にする（フォルダも作品もすべて完全に削除する）。
+  Future<void> emptyTrash() async {
+    for (final t in List.of(_trashedFolders)) {
+      await permanentDeleteTrashedFolder(t.folder.id);
+    }
+    for (final project in List.of(_trash)) {
+      await permanentDelete(project.id);
+    }
+  }
+
+  /// フォルダを中身（下の階層のフォルダ・作品）ごと複製して
+  /// [targetParentId]（nullは一番上）に置く。いちばん上のフォルダだけ
+  /// [name]にし、中のフォルダ・作品は元の名前のまま。自分自身やその中へも
+  /// 複製できる（写すものを先に決めておくので、複製したものは写さない）。
+  /// フォルダが見つからなければnull。
+  Future<ProjectFolder?> duplicateFolder(
+    String folderId, {
+    String? targetParentId,
+    required String name,
+  }) async {
+    final top = _folders.where((f) => f.id == folderId).firstOrNull;
+    if (top == null) return null;
+    // 写すものを先に決めておく（複製したフォルダ・作品を数え直さない）。
+    final ids = folderSubtreeIds(folderId);
+    final projects = [
+      for (final p in _projects)
+        if (!p.isSharedImport && ids.contains(p.folderId)) p,
+    ];
+    final ordered = <ProjectFolder>[top];
+    for (var i = 0; i < ordered.length; i++) {
+      for (final f in _folders) {
+        if (f.parentFolderId == ordered[i].id && ids.contains(f.id)) {
+          ordered.add(f);
+        }
+      }
+    }
+    final copies = <String, String>{};
+    for (final f in ordered) {
+      final isTop = f.id == folderId;
+      final copy = ProjectFolder(
+        id: _nextId('folder'),
+        name: isTop ? name : f.name,
+        color: f.color,
+        parentFolderId: isTop ? targetParentId : copies[f.parentFolderId],
+      );
+      copies[f.id] = copy.id;
+      _folders.add(copy);
+    }
+    await _persistFolders();
+    notifyListeners();
+    for (final p in projects) {
+      await duplicateProject(
+        p.id,
+        targetFolderId: copies[p.folderId],
+        useTargetFolder: true,
+        name: p.name,
+      );
+    }
+    return _folders.firstWhere((f) => f.id == copies[folderId]);
+  }
+
   /// フォルダ削除時、直下のプロジェクト・子フォルダはルート（トップレベル）へ戻す
   /// （「フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを
   /// 表示する」。確認ダイアログ自体はUI側で表示し、本メソッドは確定後の処理）。
@@ -3110,6 +3337,38 @@ class ProjectService extends ChangeNotifier {
         );
     } catch (_) {
       // 読み込み失敗時はフォルダなしとして続行
+    }
+  }
+
+  static const _trashedFoldersPrefsKey = 'trashed_project_folders';
+
+  Future<void> _loadTrashedFolders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.readString(_trashedFoldersPrefsKey);
+      if (raw == null) return;
+      _trashedFolders
+        ..clear()
+        ..addAll([
+          for (final e in jsonDecode(raw) as List<dynamic>)
+            TrashedFolder.fromJson(e as Map<String, dynamic>),
+        ]);
+    } catch (error, stackTrace) {
+      // 読めなければゴミ箱のフォルダなしとして続ける（中の作品はゴミ箱に
+      // 1件ずつ出る）。
+      AppErrorReporter.record(error, stackTrace);
+    }
+  }
+
+  Future<void> _persistTrashedFolders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        _trashedFoldersPrefsKey,
+        jsonEncode([for (final t in _trashedFolders) t.toJson()]),
+      );
+    } catch (_) {
+      // 保存失敗時も続行（次回操作時に再試行される）
     }
   }
 

@@ -139,17 +139,24 @@ void main() {
     });
   }
 
-  testWidgets('bulk delete leaves favorites and folders, and can be undone', (
-    tester,
-  ) async {
+  testWidgets('bulk delete moves folders with their contents and can be '
+      'undone; favorites stay', (tester) async {
     final service = await boot(
       tester,
-      names: ['apple', 'banana'],
+      names: ['apple', 'banana', 'cherry'],
       extra: (service) async {
         await service.toggleFavorite(
           service.projects.firstWhere((p) => p.name == 'banana').id,
         );
-        await service.createFolder('フォルダ');
+        final folder = await service.createFolder('フォルダ');
+        final child = await service.createFolder(
+          '子',
+          parentFolderId: folder.id,
+        );
+        await service.moveToFolder(
+          service.projects.firstWhere((p) => p.name == 'cherry').id,
+          child.id,
+        );
       },
     );
     await tester.longPress(card('apple'));
@@ -159,18 +166,39 @@ void main() {
     await settle(tester);
     await tester.tap(find.byTooltip('ゴミ箱へ移動'));
     await settle(tester);
-    expect(find.text('1件をゴミ箱へ移動しますか？'), findsOneWidget);
+    expect(find.text('2件をゴミ箱へ移動しますか？'), findsOneWidget);
     expect(find.textContaining('お気に入りの1件は移動しません'), findsOneWidget);
-    expect(find.textContaining('フォルダ1件は移動しません'), findsOneWidget);
+    expect(find.text('フォルダの中のプロジェクト1件・フォルダ1件も一緒に移動します。'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, '移動'));
-    await settle(tester);
-    expect(service.projects.map((p) => p.name), ['banana']);
-    expect(service.folders.map((f) => f.name), ['フォルダ']);
-    expect(snackText(tester), '1件をゴミ箱へ移動しました');
-    await tester.tap(find.text('元に戻す'));
     await settleIo(tester);
-    expect(service.projects.map((p) => p.name).toSet(), {'apple', 'banana'});
-    // 戻した作品は中身ごと読み直され、一覧に出る。
+    expect(service.projects.map((p) => p.name), ['banana']);
+    expect(service.folders, isEmpty);
+    expect(service.trashedFolders.single.folder.name, 'フォルダ');
+    expect(snackText(tester), '2件をゴミ箱へ移動しました');
+    await tester.tap(find.text('元に戻す'));
+    // 戻した作品はファイルから読み直すので、読み終わるまで実時間で待つ。
+    for (
+      var i = 0;
+      i < 100 &&
+          (service.trash.isNotEmpty ||
+              service.projects.any((p) => service.scenesOf(p.id).isEmpty));
+      i++
+    ) {
+      await settleIo(tester);
+    }
+    expect(service.projects.map((p) => p.name).toSet(), {
+      'apple',
+      'banana',
+      'cherry',
+    });
+    expect(service.folders.map((f) => f.name).toSet(), {'フォルダ', '子'});
+    expect(service.trashedFolders, isEmpty);
+    expect(service.trash, isEmpty);
+    // 中の作品は元のフォルダへ戻り、中身ごと読み直される。
+    final child = service.folders.firstWhere((f) => f.name == '子');
+    final cherry = service.projects.firstWhere((p) => p.name == 'cherry');
+    expect(cherry.folderId, child.id);
+    expect(service.scenesOf(cherry.id), isNotEmpty);
     final apple = service.projects.firstWhere((p) => p.name == 'apple');
     expect(service.scenesOf(apple.id), isNotEmpty);
     expect(card('apple'), findsOneWidget);
@@ -191,7 +219,7 @@ void main() {
     await tester.tap(find.byTooltip('ゴミ箱へ移動'));
     await settle(tester);
     expect(find.byType(AlertDialog), findsNothing);
-    expect(snackText(tester), contains('ゴミ箱へ移動できる作品がありません'));
+    expect(snackText(tester), contains('ゴミ箱へ移動できるものがありません'));
     expect(service.projects, hasLength(1));
   });
 
@@ -607,21 +635,19 @@ void main() {
     });
   }
 
-  testWidgets('Ctrl+C with a folder selected keeps the clipboard', (
-    tester,
-  ) async {
-    await boot(
+  testWidgets('Ctrl+C copies a folder with its contents', (tester) async {
+    final service = await boot(
       tester,
       names: ['apple', 'banana'],
       extra: (service) async {
-        await service.createFolder('箱');
+        final box = await service.createFolder('箱');
+        await service.moveToFolder(
+          service.projects.firstWhere((p) => p.name == 'banana').id,
+          box.id,
+        );
       },
     );
     await tester.longPress(card('apple'));
-    await settle(tester);
-    await tester.tap(find.byTooltip('切り取り'));
-    await settle(tester);
-    await tester.longPress(card('banana'));
     await settle(tester);
     await tester.tap(card('箱'));
     await settle(tester);
@@ -629,10 +655,22 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
     await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
     await settle(tester);
-    expect(snackText(tester), contains('フォルダはコピーできません'));
-    // 選択も、前に切り取った作品もそのまま。
-    expect(find.text('2件選択中'), findsOneWidget);
-    expect(find.byTooltip('1件を貼り付け'), findsOneWidget);
+    expect(snackText(tester), contains('2件をコピーしました'));
+    await tester.tap(find.byTooltip('2件を貼り付け'));
+    await settleIo(tester);
+    await settleIo(tester);
+    expect(service.folders.map((f) => f.name).toSet(), {'箱', '箱 (コピー)'});
+    final copy = service.folders.firstWhere((f) => f.name == '箱 (コピー)');
+    expect(copy.parentFolderId, isNull);
+    final inside = service.projects.where((p) => p.folderId == copy.id);
+    expect(inside.map((p) => p.name), ['banana']);
+    expect(service.scenesOf(inside.single.id), isNotEmpty);
+    expect(card('apple (コピー)'), findsOneWidget);
+    // コピーは貼り付けた後も残る（もう一度貼ると番号が付く）。
+    await tester.tap(find.byTooltip('2件を貼り付け'));
+    await settleIo(tester);
+    await settleIo(tester);
+    expect(service.folders.where((f) => f.name == '箱 (コピー 2)'), hasLength(1));
   });
 
   testWidgets('Escape closes the drawer before ending selection', (

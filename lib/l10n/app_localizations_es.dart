@@ -390,13 +390,8 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String homeMoveToTrashSkipFolders(int count) {
-    return '$count carpeta(s) se quedarán (las carpetas no se pueden mover a la papelera).';
-  }
-
-  @override
   String get homeMoveToTrashNothing =>
-      'No hay nada que mover a la papelera (los favoritos y las carpetas no se mueven).';
+      'No hay nada que mover a la papelera (los favoritos no se mueven).';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -437,10 +432,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeCutPendingHint => 'Cortado, pendiente de pegar';
-
-  @override
-  String get homeCopyFoldersUnsupported =>
-      'Las carpetas no se pueden copiar (selecciona solo obras)';
 
   @override
   String projectDuplicateName(String name) {
@@ -8097,4 +8088,66 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpTutorialButton => 'Ver la guía';
+
+  @override
+  String get projectListTrashFolderConfirmTitle =>
+      '¿Mover la carpeta a la papelera?';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '\"$name\" se moverá a la papelera. Puedes restaurar la carpeta completa desde la papelera.';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return '\"$name\" movida a la papelera';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return 'También se moverá el contenido de las carpetas: $contents.';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '\"$name\" se eliminará de forma permanente. Esta acción no se puede deshacer.';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: ' y $folders carpetas',
+      one: ' y 1 carpeta',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: ' y $folders carpetas',
+      one: ' y 1 carpeta',
+      zero: '',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '$folders carpetas',
+      one: '1 carpeta',
+      zero: 'Vacía',
+    );
+    String _temp3 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '$projects proyectos$_temp0',
+      one: '1 proyecto$_temp1',
+      zero: '$_temp2',
+    );
+    return '$_temp3';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return 'También se eliminará el contenido de la carpeta: $contents.';
+  }
 }

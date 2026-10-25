@@ -125,8 +125,7 @@
     }
   },
   "homeMoveToTrashSkipFavorites": "즐겨찾기한 {count}개 항목은 이동하지 않습니다(즐겨찾기를 해제하면 이동할 수 있습니다).",
-  "homeMoveToTrashSkipFolders": "폴더 {count}개는 이동하지 않습니다(폴더는 휴지통으로 옮길 수 없습니다).",
-  "homeMoveToTrashNothing": "휴지통으로 이동할 작품이 없습니다(즐겨찾기한 작품과 폴더는 이동하지 않습니다).",
+  "homeMoveToTrashNothing": "휴지통으로 이동할 항목이 없습니다(즐겨찾기한 항목은 이동하지 않습니다).",
   "homeMovedToTrashSnackbar": "{count}개 항목을 휴지통으로 이동했습니다",
   "homeUndoAction": "실행 취소",
   "homeCutSnackbar": "{count}개 항목을 잘라냈습니다. 옮길 곳을 열고 오른쪽 위의 붙여넣기를 누르세요.",
@@ -136,7 +135,6 @@
   "homePasteSkippedMissing": "원본이 없어 {count}개 항목을 붙여넣지 못했습니다(휴지통으로 이동했거나 삭제됨).",
   "homePasteFailed": "일부 항목을 붙여넣지 못했습니다. 다시 시도해 주세요.",
   "homeCutPendingHint": "잘라냄(붙여넣기 대기 중)",
-  "homeCopyFoldersUnsupported": "폴더는 복사할 수 없습니다(작품만 선택하세요)",
   "projectDuplicateName": "{name} (사본)",
   "projectDuplicateNameNumbered": "{name} (사본 {number})",
   "commonPaste": "붙여넣기",
@@ -3205,5 +3203,12 @@
   "settingsTipsResetTitle": "기능 설명 다시 표시",
   "settingsTipsResetSubtitle": "기능마다 처음에 나오는 짧은 설명을 다음에 쓸 때 다시 표시합니다",
   "settingsTipsResetDone": "다음에 쓸 때 기능 설명이 다시 표시됩니다",
-  "helpTutorialButton": "사용법 보기"
+  "helpTutorialButton": "사용법 보기",
+  "projectListTrashFolderConfirmTitle": "폴더를 휴지통으로 이동하시겠습니까?",
+  "projectListTrashFolderConfirmBody": "「{name}」을(를) 휴지통으로 이동합니다. 휴지통에서 폴더째 복원할 수 있습니다.",
+  "homeFolderMovedToTrashSnackbar": "「{name}」을(를) 휴지통으로 이동했습니다",
+  "homeMoveToTrashFolderContents": "폴더 안의 {contents}도 함께 이동합니다.",
+  "homeTrashFolderPermanentDeleteBody": "「{name}」을(를) 완전히 삭제합니다. 이 작업은 되돌릴 수 없습니다.",
+  "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{비어 있음} other{폴더 {folders}개}}} other{프로젝트 {projects}개{folders, plural, =0{} other{, 폴더 {folders}개}}}}",
+  "homeTrashFolderPermanentDeleteContents": "폴더 안의 {contents}도 함께 삭제합니다."
 }

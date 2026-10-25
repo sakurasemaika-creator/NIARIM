@@ -785,16 +785,10 @@ abstract class AppLocalizations {
   /// **'お気に入りの{count}件は移動しません（お気に入りを外すと移動できます）。'**
   String homeMoveToTrashSkipFavorites(int count);
 
-  /// No description provided for @homeMoveToTrashSkipFolders.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォルダ{count}件は移動しません（フォルダはゴミ箱へ移せません）。'**
-  String homeMoveToTrashSkipFolders(int count);
-
   /// No description provided for @homeMoveToTrashNothing.
   ///
   /// In ja, this message translates to:
-  /// **'ゴミ箱へ移動できる作品がありません（お気に入りの作品とフォルダは移動しません）。'**
+  /// **'ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。'**
   String get homeMoveToTrashNothing;
 
   /// No description provided for @homeMovedToTrashSnackbar.
@@ -850,12 +844,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'切り取り中（貼り付けを待っています）'**
   String get homeCutPendingHint;
-
-  /// No description provided for @homeCopyFoldersUnsupported.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォルダはコピーできません（作品だけを選んでください）'**
-  String get homeCopyFoldersUnsupported;
 
   /// Name of a duplicated work.
   ///
@@ -14080,6 +14068,48 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'使い方を見る'**
   String get helpTutorialButton;
+
+  /// No description provided for @projectListTrashFolderConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダをゴミ箱へ移動しますか？'**
+  String get projectListTrashFolderConfirmTitle;
+
+  /// No description provided for @projectListTrashFolderConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。'**
+  String projectListTrashFolderConfirmBody(String name);
+
+  /// No description provided for @homeFolderMovedToTrashSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」をゴミ箱へ移動しました'**
+  String homeFolderMovedToTrashSnackbar(String name);
+
+  /// No description provided for @homeMoveToTrashFolderContents.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中の{contents}も一緒に移動します。'**
+  String homeMoveToTrashFolderContents(String contents);
+
+  /// No description provided for @homeTrashFolderPermanentDeleteBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を完全に削除します。元に戻すことはできません。'**
+  String homeTrashFolderPermanentDeleteBody(String name);
+
+  /// No description provided for @homeFolderContents.
+  ///
+  /// In ja, this message translates to:
+  /// **'{projects, plural, =0{{folders, plural, =0{中身なし} other{フォルダ{folders}件}}} other{プロジェクト{projects}件{folders, plural, =0{} other{・フォルダ{folders}件}}}}'**
+  String homeFolderContents(int projects, int folders);
+
+  /// No description provided for @homeTrashFolderPermanentDeleteContents.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中の{contents}も一緒に削除します。'**
+  String homeTrashFolderPermanentDeleteContents(String contents);
 }
 
 class _AppLocalizationsDelegate

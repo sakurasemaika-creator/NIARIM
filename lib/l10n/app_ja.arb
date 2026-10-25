@@ -193,15 +193,7 @@
       }
     }
   },
-  "homeMoveToTrashSkipFolders": "フォルダ{count}件は移動しません（フォルダはゴミ箱へ移せません）。",
-  "@homeMoveToTrashSkipFolders": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "homeMoveToTrashNothing": "ゴミ箱へ移動できる作品がありません（お気に入りの作品とフォルダは移動しません）。",
+  "homeMoveToTrashNothing": "ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。",
   "homeMovedToTrashSnackbar": "{count}件をゴミ箱へ移動しました",
   "@homeMovedToTrashSnackbar": {
     "placeholders": {
@@ -253,7 +245,6 @@
       }
     }
   },
-  "homeCopyFoldersUnsupported": "フォルダはコピーできません（作品だけを選んでください）",
   "projectDuplicateName": "{name} (コピー)",
   "@projectDuplicateName": {
     "description": "Name of a duplicated work.",
@@ -3773,5 +3764,57 @@
   "settingsTipsResetTitle": "機能の説明をもう一度表示",
   "settingsTipsResetSubtitle": "はじめて使う機能に出る短い説明を、次に使うときにもう一度出します",
   "settingsTipsResetDone": "機能の説明を、次に使うときにもう一度表示します",
-  "helpTutorialButton": "使い方を見る"
+  "helpTutorialButton": "使い方を見る",
+  "projectListTrashFolderConfirmTitle": "フォルダをゴミ箱へ移動しますか？",
+  "projectListTrashFolderConfirmBody": "「{name}」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。",
+  "@projectListTrashFolderConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeFolderMovedToTrashSnackbar": "「{name}」をゴミ箱へ移動しました",
+  "@homeFolderMovedToTrashSnackbar": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeMoveToTrashFolderContents": "フォルダの中の{contents}も一緒に移動します。",
+  "@homeMoveToTrashFolderContents": {
+    "placeholders": {
+      "contents": {
+        "type": "String"
+      }
+    }
+  },
+  "homeTrashFolderPermanentDeleteBody": "「{name}」を完全に削除します。元に戻すことはできません。",
+  "@homeTrashFolderPermanentDeleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{中身なし} other{フォルダ{folders}件}}} other{プロジェクト{projects}件{folders, plural, =0{} other{・フォルダ{folders}件}}}}",
+  "@homeFolderContents": {
+    "placeholders": {
+      "projects": {
+        "type": "int"
+      },
+      "folders": {
+        "type": "int"
+      }
+    }
+  },
+  "homeTrashFolderPermanentDeleteContents": "フォルダの中の{contents}も一緒に削除します。",
+  "@homeTrashFolderPermanentDeleteContents": {
+    "placeholders": {
+      "contents": {
+        "type": "String"
+      }
+    }
+  }
 }

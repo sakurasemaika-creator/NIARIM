@@ -371,12 +371,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String homeMoveToTrashSkipFolders(int count) {
-    return '$count个文件夹不会移动（文件夹无法移至回收站）。';
-  }
-
-  @override
-  String get homeMoveToTrashNothing => '没有可移至回收站的作品（收藏的作品和文件夹不会移动）。';
+  String get homeMoveToTrashNothing => '没有可移至回收站的项目（收藏的项目不会移动）。';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -416,9 +411,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeCutPendingHint => '已剪切（等待粘贴）';
-
-  @override
-  String get homeCopyFoldersUnsupported => '文件夹无法复制（请只选择作品）';
 
   @override
   String projectDuplicateName(String name) {
@@ -7623,6 +7615,57 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpTutorialButton => '查看使用方法';
+
+  @override
+  String get projectListTrashFolderConfirmTitle => '要将文件夹移至回收站吗？';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '「$name」将移至回收站。可以从回收站整体恢复该文件夹。';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return '已将「$name」移至回收站';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return '文件夹中的$contents也将一并移动。';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '将永久删除「$name」。此操作无法撤销。';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '和$folders个文件夹',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '$folders个文件夹',
+      zero: '空',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '$projects个项目$_temp0',
+      zero: '$_temp1',
+    );
+    return '$_temp2';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return '文件夹中的$contents也将一并删除。';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -7992,12 +8035,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String homeMoveToTrashSkipFolders(int count) {
-    return '$count個資料夾不會移動（資料夾無法移至垃圾桶）。';
-  }
-
-  @override
-  String get homeMoveToTrashNothing => '沒有可移至垃圾桶的作品（我的最愛與資料夾不會移動）。';
+  String get homeMoveToTrashNothing => '沒有可移至垃圾桶的項目（我的最愛不會移動）。';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -8037,9 +8075,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeCutPendingHint => '已剪下（等待貼上）';
-
-  @override
-  String get homeCopyFoldersUnsupported => '資料夾無法複製（請只選擇作品）';
 
   @override
   String projectDuplicateName(String name) {
@@ -15245,4 +15280,55 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpTutorialButton => '查看使用方法';
+
+  @override
+  String get projectListTrashFolderConfirmTitle => '要將資料夾移至垃圾桶嗎？';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '「$name」將移至垃圾桶。可以從垃圾桶整個復原該資料夾。';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return '已將「$name」移至垃圾桶';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return '資料夾中的$contents也會一併移動。';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '將永久刪除「$name」。此操作無法復原。';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '和$folders個資料夾',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '$folders個資料夾',
+      zero: '空',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '$projects個專案$_temp0',
+      zero: '$_temp1',
+    );
+    return '$_temp2';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return '資料夾中的$contents也會一併刪除。';
+  }
 }

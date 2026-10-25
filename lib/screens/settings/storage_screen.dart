@@ -383,9 +383,7 @@ class _StorageScreenState extends State<StorageScreen> {
     );
     if (!ok || !mounted) return;
     final ps = context.read<ProjectService>();
-    for (final project in List.of(ps.trash)) {
-      await ps.permanentDelete(project.id);
-    }
+    await ps.emptyTrash();
     if (!mounted) return;
     await _reload();
   }

@@ -125,8 +125,7 @@
     }
   },
   "homeMoveToTrashSkipFavorites": "{count} elemento(s) favorito(s) se quedarán (quítalos de favoritos para moverlos).",
-  "homeMoveToTrashSkipFolders": "{count} carpeta(s) se quedarán (las carpetas no se pueden mover a la papelera).",
-  "homeMoveToTrashNothing": "No hay nada que mover a la papelera (los favoritos y las carpetas no se mueven).",
+  "homeMoveToTrashNothing": "No hay nada que mover a la papelera (los favoritos no se mueven).",
   "homeMovedToTrashSnackbar": "{count} elemento(s) movido(s) a la papelera",
   "homeUndoAction": "Deshacer",
   "homeCutSnackbar": "{count} elemento(s) cortado(s). Abre el destino y toca Pegar arriba a la derecha.",
@@ -136,7 +135,6 @@
   "homePasteSkippedMissing": "No se pudieron pegar {count} elemento(s) porque el original ya no está (en la papelera o eliminado).",
   "homePasteFailed": "No se pudieron pegar algunos elementos. Inténtalo de nuevo.",
   "homeCutPendingHint": "Cortado, pendiente de pegar",
-  "homeCopyFoldersUnsupported": "Las carpetas no se pueden copiar (selecciona solo obras)",
   "projectDuplicateName": "{name} (copia)",
   "projectDuplicateNameNumbered": "{name} (copia {number})",
   "commonPaste": "Pegar",
@@ -3205,5 +3203,12 @@
   "settingsTipsResetTitle": "Volver a mostrar las explicaciones",
   "settingsTipsResetSubtitle": "Muestra de nuevo la breve explicación de cada función la próxima vez que la uses",
   "settingsTipsResetDone": "Las explicaciones volverán a aparecer la próxima vez que uses cada función",
-  "helpTutorialButton": "Ver la guía"
+  "helpTutorialButton": "Ver la guía",
+  "projectListTrashFolderConfirmTitle": "¿Mover la carpeta a la papelera?",
+  "projectListTrashFolderConfirmBody": "\"{name}\" se moverá a la papelera. Puedes restaurar la carpeta completa desde la papelera.",
+  "homeFolderMovedToTrashSnackbar": "\"{name}\" movida a la papelera",
+  "homeMoveToTrashFolderContents": "También se moverá el contenido de las carpetas: {contents}.",
+  "homeTrashFolderPermanentDeleteBody": "\"{name}\" se eliminará de forma permanente. Esta acción no se puede deshacer.",
+  "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{Vacía} =1{1 carpeta} other{{folders} carpetas}}} =1{1 proyecto{folders, plural, =0{} =1{ y 1 carpeta} other{ y {folders} carpetas}}} other{{projects} proyectos{folders, plural, =0{} =1{ y 1 carpeta} other{ y {folders} carpetas}}}}",
+  "homeTrashFolderPermanentDeleteContents": "También se eliminará el contenido de la carpeta: {contents}."
 }

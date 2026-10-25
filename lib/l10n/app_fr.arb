@@ -125,8 +125,7 @@
     }
   },
   "homeMoveToTrashSkipFavorites": "{count} élément(s) favori(s) resteront en place (retirez-les des favoris pour les déplacer).",
-  "homeMoveToTrashSkipFolders": "{count} dossier(s) resteront en place (les dossiers ne peuvent pas être mis à la corbeille).",
-  "homeMoveToTrashNothing": "Rien à mettre à la corbeille (les favoris et les dossiers ne sont pas déplacés).",
+  "homeMoveToTrashNothing": "Rien à mettre à la corbeille (les favoris ne sont pas déplacés).",
   "homeMovedToTrashSnackbar": "{count} élément(s) mis à la corbeille",
   "homeUndoAction": "Annuler",
   "homeCutSnackbar": "{count} élément(s) coupé(s). Ouvrez la destination et touchez Coller en haut à droite.",
@@ -136,7 +135,6 @@
   "homePasteSkippedMissing": "{count} élément(s) n’ont pas pu être collés car l’original n’existe plus (corbeille ou supprimé).",
   "homePasteFailed": "Certains éléments n’ont pas pu être collés. Réessayez.",
   "homeCutPendingHint": "Coupé, en attente de collage",
-  "homeCopyFoldersUnsupported": "Les dossiers ne peuvent pas être copiés (sélectionnez seulement des œuvres)",
   "projectDuplicateName": "{name} (copie)",
   "projectDuplicateNameNumbered": "{name} (copie {number})",
   "commonPaste": "Coller",
@@ -3205,5 +3203,12 @@
   "settingsTipsResetTitle": "Réafficher les explications",
   "settingsTipsResetSubtitle": "Réaffiche la courte explication de chaque fonction lors de sa prochaine utilisation",
   "settingsTipsResetDone": "Les explications réapparaîtront lors de la prochaine utilisation de chaque fonction",
-  "helpTutorialButton": "Voir le guide"
+  "helpTutorialButton": "Voir le guide",
+  "projectListTrashFolderConfirmTitle": "Mettre le dossier à la corbeille ?",
+  "projectListTrashFolderConfirmBody": "« {name} » sera mis à la corbeille. Vous pourrez restaurer tout le dossier depuis la corbeille.",
+  "homeFolderMovedToTrashSnackbar": "« {name} » mis à la corbeille",
+  "homeMoveToTrashFolderContents": "Le contenu des dossiers sera aussi déplacé : {contents}.",
+  "homeTrashFolderPermanentDeleteBody": "« {name} » sera supprimé définitivement. Cette action est irréversible.",
+  "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{Vide} =1{1 dossier} other{{folders} dossiers}}} =1{1 projet{folders, plural, =0{} =1{ et 1 dossier} other{ et {folders} dossiers}}} other{{projects} projets{folders, plural, =0{} =1{ et 1 dossier} other{ et {folders} dossiers}}}}",
+  "homeTrashFolderPermanentDeleteContents": "Son contenu sera aussi supprimé : {contents}."
 }

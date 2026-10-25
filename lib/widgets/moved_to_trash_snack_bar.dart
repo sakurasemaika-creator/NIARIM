@@ -13,22 +13,51 @@ void showMovedToTrashSnackBar(
   ScaffoldMessengerState messenger,
   AppLocalizations l10n,
   ProjectService service,
-  List<String> projectIds,
+  List<String> projectIds, {
+  List<String> folderIds = const [],
+}) {
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(
+          l10n.homeMovedToTrashSnackbar(projectIds.length + folderIds.length),
+        ),
+        persist: false,
+        duration: const Duration(seconds: 6),
+        action: SnackBarAction(
+          label: l10n.homeUndoAction,
+          onPressed: () async {
+            // フォルダを先に戻す（中の作品はフォルダと一緒に元の場所へ戻る）。
+            for (final id in folderIds) {
+              await service.restoreTrashedFolder(id);
+            }
+            for (final id in projectIds) {
+              await service.restoreProject(id);
+            }
+          },
+        ),
+      ),
+    );
+}
+
+/// フォルダを中身ごとゴミ箱へ移したことを伝え、その場で戻せるSnackBarを出す。
+void showFolderMovedToTrashSnackBar(
+  ScaffoldMessengerState messenger,
+  AppLocalizations l10n,
+  ProjectService service,
+  ProjectFolder folder,
 ) {
   messenger
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
-        content: Text(l10n.homeMovedToTrashSnackbar(projectIds.length)),
+        content: Text(l10n.homeFolderMovedToTrashSnackbar(folder.name)),
         persist: false,
         duration: const Duration(seconds: 6),
         action: SnackBarAction(
           label: l10n.homeUndoAction,
-          onPressed: () {
-            for (final id in projectIds) {
-              service.restoreProject(id);
-            }
-          },
+          onPressed: () => service.restoreTrashedFolder(folder.id),
         ),
       ),
     );

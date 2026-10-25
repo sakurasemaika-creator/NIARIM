@@ -389,13 +389,8 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String homeMoveToTrashSkipFolders(int count) {
-    return '$count dossier(s) resteront en place (les dossiers ne peuvent pas être mis à la corbeille).';
-  }
-
-  @override
   String get homeMoveToTrashNothing =>
-      'Rien à mettre à la corbeille (les favoris et les dossiers ne sont pas déplacés).';
+      'Rien à mettre à la corbeille (les favoris ne sont pas déplacés).';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -436,10 +431,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeCutPendingHint => 'Coupé, en attente de collage';
-
-  @override
-  String get homeCopyFoldersUnsupported =>
-      'Les dossiers ne peuvent pas être copiés (sélectionnez seulement des œuvres)';
 
   @override
   String projectDuplicateName(String name) {
@@ -8116,4 +8107,66 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpTutorialButton => 'Voir le guide';
+
+  @override
+  String get projectListTrashFolderConfirmTitle =>
+      'Mettre le dossier à la corbeille ?';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '« $name » sera mis à la corbeille. Vous pourrez restaurer tout le dossier depuis la corbeille.';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return '« $name » mis à la corbeille';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return 'Le contenu des dossiers sera aussi déplacé : $contents.';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '« $name » sera supprimé définitivement. Cette action est irréversible.';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: ' et $folders dossiers',
+      one: ' et 1 dossier',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: ' et $folders dossiers',
+      one: ' et 1 dossier',
+      zero: '',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '$folders dossiers',
+      one: '1 dossier',
+      zero: 'Vide',
+    );
+    String _temp3 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '$projects projets$_temp0',
+      one: '1 projet$_temp1',
+      zero: '$_temp2',
+    );
+    return '$_temp3';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return 'Son contenu sera aussi supprimé : $contents.';
+  }
 }

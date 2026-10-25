@@ -1010,6 +1010,7 @@ class ProjectListWidget extends StatelessWidget {
         value: 'edit',
         child: Text(l10n.projectListEditFolderAction),
       ),
+      PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
       PopupMenuItem(
         value: 'favorite',
         child: Text(
@@ -1019,10 +1020,11 @@ class ProjectListWidget extends StatelessWidget {
         ),
       ),
       PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
+      // 中身ごとゴミ箱へ移す（作品と同じ言葉にする）。
       PopupMenuItem(
         value: 'delete',
         child: Text(
-          l10n.commonDelete,
+          l10n.projectDetailTrashMenuItem,
           style: TextStyle(color: ThemeService.activeColorScheme.error),
         ),
       ),
@@ -1119,6 +1121,18 @@ class ProjectListWidget extends StatelessWidget {
         onOpenFolder(folder.id);
       case 'edit':
         _showEditFolderDialog(context, folder);
+      case 'duplicate':
+        // 同じ階層に、中身（フォルダ・作品）ごと複製する。
+        service.duplicateFolder(
+          folder.id,
+          targetParentId: folder.parentFolderId,
+          name: duplicateFolderName(
+            AppLocalizations.of(context)!,
+            folder.name,
+            parentId: folder.parentFolderId,
+            folders: service.folders,
+          ),
+        );
       case 'favorite':
         service.toggleFolderFavorite(folder.id);
       case 'move':
@@ -1128,22 +1142,41 @@ class ProjectListWidget extends StatelessWidget {
     }
   }
 
-  /// フォルダ削除時、中のプロジェクト・子フォルダをルートへ戻す旨を確認する
-  /// （フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを表示する）。
+  /// フォルダを中身（下の階層のフォルダ・作品）ごとゴミ箱へ移す前に、移る
+  /// 件数を伝えて確かめる。移した後はその場で元に戻せ、ゴミ箱からも
+  /// フォルダごと戻せる。
   void _confirmDeleteFolder(BuildContext context, ProjectFolder folder) {
     final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
     // お気に入り登録中は削除できない。
     if (folder.isFavorite) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+      );
       return;
     }
+    final service = context.read<ProjectService>();
+    final counts = service.folderContentCounts(folder.id);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.projectListDeleteFolderConfirmTitle),
-        content: Text(l10n.projectListDeleteFolderConfirmBody(folder.name)),
+        title: Text(l10n.projectListTrashFolderConfirmTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.projectListTrashFolderConfirmBody(folder.name)),
+            // 空のフォルダでは中身の行を出さない。
+            if (counts.projects + counts.folders > 0) ...[
+              const SizedBox(height: 8),
+              Text(
+                l10n.homeMoveToTrashFolderContents(
+                  l10n.homeFolderContents(counts.projects, counts.folders),
+                ),
+              ),
+            ],
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -1153,11 +1186,20 @@ class ProjectListWidget extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: ThemeService.activeColorScheme.error,
             ),
-            onPressed: () {
-              context.read<ProjectService>().deleteFolder(folder.id);
+            onPressed: () async {
+              // 閉じる途中にもう一度押されても二重に動かさない。
+              if (!(ModalRoute.of(ctx)?.isCurrent ?? false)) return;
               Navigator.pop(ctx);
+              if (await service.moveFolderToTrash(folder.id) != null) {
+                showFolderMovedToTrashSnackBar(
+                  messenger,
+                  l10n,
+                  service,
+                  folder,
+                );
+              }
             },
-            child: Text(l10n.commonDelete),
+            child: Text(l10n.commonMove),
           ),
         ],
       ),

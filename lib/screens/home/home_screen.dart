@@ -352,13 +352,6 @@ class _HomeScreenState extends State<HomeScreen>
     return true;
   }
 
-  /// 選択がプロジェクトだけか（フォルダが混ざっていればコピーできない）。
-  /// プロジェクト一覧は呼ぶたびに複製されるので、ID集合を1回だけ作る。
-  bool _selectionHasOnlyProjects() {
-    final ids = {for (final p in context.read<ProjectService>().projects) p.id};
-    return _selectedIds.every(ids.contains);
-  }
-
   void _leaveToSplash() {
     if (context.canPop()) {
       context.pop();
@@ -805,7 +798,6 @@ class _HomeScreenState extends State<HomeScreen>
   /// （仏語の「Tout sélectionner」「Tout désélectionner」がどちらも
   /// 「Tou…」になるように、省略すると見分けられない言語がある）。
   Widget _buildSelectionBar(AppLocalizations l10n) {
-    final onlyProjects = _selectionHasOnlyProjects();
     const labelPadding = 4.0;
     final selectAll = l10n.homeSelectionAllSelect;
     final deselectAll = l10n.homeSelectionAllDeselect;
@@ -940,14 +932,11 @@ class _HomeScreenState extends State<HomeScreen>
               onPressed: _cutSelected,
               tooltip: l10n.commonCut,
             ),
-            // フォルダの複製は未対応のため、選択にフォルダが1つでも
-            // 含まれる場合はコピーできない（理由をツールチップで示す）。
+            // フォルダは中身（フォルダ・作品）ごと複製する。
             IconButton(
               icon: const Icon(Icons.content_copy),
-              onPressed: onlyProjects ? _copySelected : null,
-              tooltip: onlyProjects
-                  ? l10n.commonCopy
-                  : l10n.homeCopyFoldersUnsupported,
+              onPressed: _copySelected,
+              tooltip: l10n.commonCopy,
             ),
             IconButton(
               icon: Icon(
@@ -978,12 +967,33 @@ class _HomeScreenState extends State<HomeScreen>
       for (final p in selected)
         if (!p.isFavorite) p.id,
     ];
-    final skippedFavorites = selected.length - targetIds.length;
-    final skippedFolders = service.folders
+    // フォルダは中身（下の階層のフォルダ・作品）ごとゴミ箱へ移す。
+    final selectedFolders = service.folders
         .where((f) => _selectedIds.contains(f.id))
+        .toList();
+    final folderIds = [
+      for (final f in selectedFolders)
+        if (!f.isFavorite) f.id,
+    ];
+    final skippedFavorites =
+        selected.length -
+        targetIds.length +
+        selectedFolders.length -
+        folderIds.length;
+    final inside = {
+      for (final id in folderIds) ...service.folderSubtreeIds(id),
+    };
+    final contentFolders = inside.difference(folderIds.toSet()).length;
+    final contentProjects = service.projects
+        .where(
+          (p) =>
+              !p.isSharedImport &&
+              inside.contains(p.folderId) &&
+              !targetIds.contains(p.id),
+        )
         .length;
     final messenger = ScaffoldMessenger.of(context);
-    if (targetIds.isEmpty) {
+    if (targetIds.isEmpty && folderIds.isEmpty) {
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(l10n.homeMoveToTrashNothing)));
@@ -997,14 +1007,20 @@ class _HomeScreenState extends State<HomeScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.homeMoveToTrashConfirm(targetIds.length)),
+            Text(
+              l10n.homeMoveToTrashConfirm(targetIds.length + folderIds.length),
+            ),
+            if (contentProjects + contentFolders > 0) ...[
+              const SizedBox(height: 8),
+              Text(
+                l10n.homeMoveToTrashFolderContents(
+                  l10n.homeFolderContents(contentProjects, contentFolders),
+                ),
+              ),
+            ],
             if (skippedFavorites > 0) ...[
               const SizedBox(height: 8),
               Text(l10n.homeMoveToTrashSkipFavorites(skippedFavorites)),
-            ],
-            if (skippedFolders > 0) ...[
-              const SizedBox(height: 8),
-              Text(l10n.homeMoveToTrashSkipFolders(skippedFolders)),
             ],
           ],
         ),
@@ -1017,15 +1033,34 @@ class _HomeScreenState extends State<HomeScreen>
             style: FilledButton.styleFrom(
               backgroundColor: ThemeService.activeColorScheme.error,
             ),
-            onPressed: () {
+            onPressed: () async {
               // 閉じる途中にもう一度押されても二重に動かさない。
               if (!(ModalRoute.of(ctx)?.isCurrent ?? false)) return;
               Navigator.pop(ctx);
-              for (final id in targetIds) {
-                service.deleteProject(id);
-              }
               _exitSelection();
-              showMovedToTrashSnackBar(messenger, l10n, service, targetIds);
+              // フォルダを先に移す（選んだ作品がそのフォルダの中なら、
+              // フォルダと一緒にゴミ箱へ入り、フォルダごと戻せる）。
+              final movedFolders = <String>[];
+              for (final id in folderIds) {
+                if (await service.moveFolderToTrash(id) != null) {
+                  movedFolders.add(id);
+                }
+              }
+              final live = {for (final p in service.projects) p.id};
+              final movedProjects = [
+                for (final id in targetIds)
+                  if (live.contains(id)) id,
+              ];
+              for (final id in movedProjects) {
+                await service.deleteProject(id);
+              }
+              showMovedToTrashSnackBar(
+                messenger,
+                l10n,
+                service,
+                movedProjects,
+                folderIds: movedFolders,
+              );
             },
             child: Text(l10n.commonMove),
           ),
@@ -1090,20 +1125,6 @@ class _HomeScreenState extends State<HomeScreen>
         case ShortcutCommand.copy:
           result[b.activator] = () {
             if (_selectedIds.isEmpty) return;
-            // ボタンと同じく、フォルダを含む選択はコピーしない（前の
-            // クリップボードも消さない）。
-            if (!_selectionHasOnlyProjects()) {
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      AppLocalizations.of(context)!.homeCopyFoldersUnsupported,
-                    ),
-                  ),
-                );
-              return;
-            }
             _copySelected();
           };
         case ShortcutCommand.cut:
@@ -1156,18 +1177,20 @@ class _HomeScreenState extends State<HomeScreen>
     _clipboardIsCut = false;
   });
 
-  /// 選択中のプロジェクトを内部クリップボードへコピーする。フォルダの
-  /// 複製は未対応のため、フォルダを含む選択ではボタン・ショートカットとも
-  /// 呼ばない。貼り付けのたびに複製するため、クリップボードは
-  /// 貼り付け後も保持したままにする。
+  /// 選択中のプロジェクト・フォルダを内部クリップボードへコピーする。
+  /// フォルダは貼り付けるときに中身（フォルダ・作品）ごと複製する。貼り付けの
+  /// たびに複製するため、クリップボードは貼り付け後も保持したままにする。
   void _copySelected() {
     final service = context.read<ProjectService>();
     final projectIds = service.projects.map((p) => p.id).toSet();
+    final folderIds = service.folders.map((f) => f.id).toSet();
     setState(() {
       _clipboardProjectIds
         ..clear()
         ..addAll(_selectedIds.where(projectIds.contains));
-      _clipboardFolderIds.clear();
+      _clipboardFolderIds
+        ..clear()
+        ..addAll(_selectedIds.where(folderIds.contains));
       _clipboardIsCut = false;
       _selectedIds.clear();
       _isSelectionMode = false;
@@ -1260,19 +1283,36 @@ class _HomeScreenState extends State<HomeScreen>
           missing++;
         }
       }
-      if (isCut) {
-        for (final id in _clipboardFolderIds.toList()) {
-          if (!liveFolders.contains(id)) {
-            missing++;
-            moved.add(id);
-            continue;
-          }
+      for (final id in _clipboardFolderIds.toList()) {
+        if (!liveFolders.contains(id)) {
+          missing++;
+          moved.add(id);
+          continue;
+        }
+        if (isCut) {
           if (target != null && service.isFolderWithin(target, id)) {
             intoSelf++;
             continue;
           }
           await service.moveFolderTo(id, target);
           moved.add(id);
+          pasted++;
+          continue;
+        }
+        final folder = service.folders.firstWhere((f) => f.id == id);
+        final copy = await service.duplicateFolder(
+          id,
+          targetParentId: target,
+          name: duplicateFolderName(
+            l10n,
+            folder.name,
+            parentId: target,
+            folders: service.folders,
+          ),
+        );
+        if (copy == null) {
+          missing++;
+        } else {
           pasted++;
         }
       }
@@ -1290,6 +1330,7 @@ class _HomeScreenState extends State<HomeScreen>
         _clipboardFolderIds.removeAll(moved);
       } else {
         _clipboardProjectIds.removeWhere((id) => !liveProjects.containsKey(id));
+        _clipboardFolderIds.removeWhere((id) => !liveFolders.contains(id));
       }
     });
     final lines = [
@@ -1316,32 +1357,60 @@ class _HomeScreenState extends State<HomeScreen>
       chain.insert(0, folder);
       current = folder.parentFolderId;
     }
+    final l10n = AppLocalizations.of(context)!;
+    // 押す所は指で押しやすい48px四方以上。深い階層でも今いるフォルダ
+    // （右端）が見えるよう、右端から並べる。
+    Widget crumb({
+      required VoidCallback onTap,
+      required Widget child,
+      required String label,
+      required bool current,
+    }) => Semantics(
+      button: true,
+      selected: current,
+      label: label,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Center(widthFactor: 1, child: child),
+          ),
+        ),
+      ),
+    );
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: SingleChildScrollView(
+        key: const Key('homeBreadcrumb'),
         scrollDirection: Axis.horizontal,
+        reverse: true,
         child: Row(
           children: [
-            InkWell(
+            crumb(
               onTap: () => setState(() => _currentFolderId = null),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4),
-                child: Icon(Icons.home, size: 18),
-              ),
+              label: l10n.homeTabProjects,
+              current: false,
+              child: const Icon(Icons.home, size: 20),
             ),
             for (final folder in chain) ...[
               const Icon(Icons.chevron_right, size: 16),
-              InkWell(
+              crumb(
                 onTap: () => setState(() => _currentFolderId = folder.id),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(
-                    folder.name,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                    ),
+                label: folder.name,
+                current: folder.id == _currentFolderId,
+                child: Text(
+                  folder.name,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: folder.id == _currentFolderId
+                        ? FontWeight.w700
+                        : null,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
               ),
@@ -1711,6 +1780,29 @@ List<Project> _sortProjects(List<Project> projects, ProjectSortMode mode) {
   return list;
 }
 
+/// ゴミ箱のフォルダの並び。名前順は作品と同じ比べ方、日時順はゴミ箱へ
+/// 移した日時。
+List<TrashedFolder> _sortTrashedFolders(
+  List<TrashedFolder> folders,
+  ProjectSortMode mode,
+) {
+  final list = List<TrashedFolder>.from(folders);
+  final keys = <String, NameSortKey>{};
+  NameSortKey key(TrashedFolder t) =>
+      keys[t.folder.id] ??= NameSortKey(t.folder.name);
+  switch (mode) {
+    case ProjectSortMode.nameAsc:
+      list.sort((a, b) => compareNameKeys(key(a), key(b)));
+    case ProjectSortMode.nameDesc:
+      list.sort((a, b) => compareNameKeys(key(b), key(a)));
+    case ProjectSortMode.updatedAsc:
+      list.sort((a, b) => a.deletedAt.compareTo(b.deletedAt));
+    case ProjectSortMode.updatedDesc:
+      list.sort((a, b) => b.deletedAt.compareTo(a.deletedAt));
+  }
+  return list;
+}
+
 class _SharedTab extends StatelessWidget {
   final ProjectSortMode sortMode;
   final bool showFavoritesOnly;
@@ -2055,31 +2147,36 @@ class _TrashTab extends StatelessWidget {
 
   const _TrashTab({required this.sortMode});
 
+  static String _date(DateTime d) =>
+      '${d.year}/${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}';
+
   @override
   Widget build(BuildContext context) {
-    final trash = _sortProjects(
-      context.watch<ProjectService>().trash,
-      sortMode,
-    );
+    final service = context.watch<ProjectService>();
+    // フォルダと一緒に移した作品はフォルダの中に出し、1件ずつは出さない
+    // （フォルダごとまとめて戻す・消す）。
+    final folders = _sortTrashedFolders(service.trashedFolders, sortMode);
+    final trash = _sortProjects(service.looseTrash, sortMode);
     final l10n = AppLocalizations.of(context)!;
-    if (trash.isEmpty) {
+    if (trash.isEmpty && folders.isEmpty) {
       return EmptyStatePlaceholder(
         icon: Icons.delete_outline,
         title: l10n.homeTrashEmpty,
       );
     }
     return ListView.builder(
-      itemCount: trash.length,
+      itemCount: folders.length + trash.length,
       itemBuilder: (context, index) {
-        final project = trash[index];
+        if (index < folders.length) {
+          return _TrashedFolderCard(record: folders[index]);
+        }
+        final project = trash[index - folders.length];
         final deletedAt = context.read<ProjectService>().deletedAtOf(
           project.id,
         );
         final deletedLabel = deletedAt == null
             ? ''
-            : l10n.homeTrashDeletedOn(
-                '${deletedAt.year}/${deletedAt.month.toString().padLeft(2, '0')}/${deletedAt.day.toString().padLeft(2, '0')}',
-              );
+            : l10n.homeTrashDeletedOn(_date(deletedAt));
         final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
         return Card(
           margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -2148,6 +2245,146 @@ class _TrashTab extends StatelessWidget {
             ),
             onPressed: () {
               context.read<ProjectService>().permanentDelete(id);
+              Navigator.pop(ctx);
+            },
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// ゴミ箱のフォルダ（中身ごと）。中の作品の名前を並べ、フォルダごと戻す・
+/// 完全に削除する。
+class _TrashedFolderCard extends StatelessWidget {
+  final TrashedFolder record;
+
+  const _TrashedFolderCard({required this.record});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<ProjectService>();
+    final folder = record.folder;
+    final inTrash = {for (final p in service.trash) p.id: p};
+    final projects = [for (final id in record.projectIds) ?inTrash[id]];
+    final contents = l10n.homeFolderContents(
+      projects.length,
+      record.subfolders.length,
+    );
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      key: ValueKey('trashedFolder_${folder.id}'),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      elevation: 1,
+      shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+        alpha: 0.15,
+      ),
+      color: scheme.surfaceContainerLow,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ListTile(
+            leading: SizedBox(
+              width: 48,
+              height: 48,
+              child: Icon(
+                Icons.folder,
+                size: 40,
+                // ホームの一覧と同じ色（フォルダの既定色は差し色の塗り）。
+                color: folder.color != null
+                    ? Color(folder.color!)
+                    : scheme.primary,
+              ),
+            ),
+            title: Text(
+              folder.name,
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
+            subtitle: Text(
+              '${l10n.homeTrashDeletedOn(_TrashTab._date(record.deletedAt))}'
+              ' · $contents',
+            ),
+          ),
+          if (projects.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+              child: Text(
+                projects.map((p) => p.name).join('、'),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
+            ),
+          OverflowBar(
+            alignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                key: ValueKey('trashedFolderRestore_${folder.id}'),
+                onPressed: () => service.restoreTrashedFolder(folder.id),
+                child: Text(l10n.commonRestore),
+              ),
+              TextButton(
+                key: ValueKey('trashedFolderDelete_${folder.id}'),
+                style: TextButton.styleFrom(
+                  foregroundColor: ThemeService.activeColorScheme.error,
+                ),
+                onPressed: () => _confirmPermanentDelete(
+                  context,
+                  projects.length,
+                  record.subfolders.length,
+                ),
+                child: Text(l10n.homePermanentDelete),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmPermanentDelete(
+    BuildContext context,
+    int projects,
+    int folders,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<ProjectService>();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.homePermanentDeleteConfirmTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.homeTrashFolderPermanentDeleteBody(record.folder.name)),
+            if (projects + folders > 0) ...[
+              const SizedBox(height: 8),
+              Text(
+                l10n.homeTrashFolderPermanentDeleteContents(
+                  l10n.homeFolderContents(projects, folders),
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeService.activeColorScheme.error,
+            ),
+            onPressed: () {
+              if (!(ModalRoute.of(ctx)?.isCurrent ?? false)) return;
+              service.permanentDeleteTrashedFolder(record.folder.id);
               Navigator.pop(ctx);
             },
             child: Text(l10n.commonDelete),
