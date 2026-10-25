@@ -930,6 +930,16 @@ onTap: ...)`だったために
   行き先は`lib/utils/folder_tree.dart`の`folderTree`（親の下に子を名前順・
   字下げ、動かすフォルダとその中は出さない。平らに並べると同じ名前の
   フォルダを見分けられず、自分の中を選ぶと何も起きずに閉じた）。
+- **フォルダのゴミ箱は中身ごと（ユーザー指定）**：フォルダをゴミ箱へ移すと
+  下の階層のフォルダ・作品も一緒に移り（`ProjectService.moveFolderToTrash`、
+  記録は`TrashedFolder`で保存キー`trashed_project_folders`）、ゴミ箱でフォルダを
+  戻すと中身もすべて元の場所へ戻る（`restoreTrashedFolder`。親のフォルダが
+  無ければ一番上へ）。`trash`はフォルダと一緒に移した作品も含むので、ゴミ箱の
+  一覧は`trashedFolders`と`looseTrash`（1件ずつ移した作品）で出し、空にするのは
+  `emptyTrash`。フォルダと一緒に移した作品を1件ずつ戻す・消すUIは作らないこと
+  （フォルダの記録と食い違う）。古い`deleteFolder`（中身を一番上へ出して
+  フォルダだけ消す）は画面からは使っていない。フォルダの複製は
+  `duplicateFolder`（中身ごと、名前は`duplicateFolderName`）。
 - **アプリ内の文言に絵文字を混ぜない（アイコンで表す）**：意味を表す記号は
   すべてMaterialアイコン（`Icon(Icons.xxx)`）を使う。絵文字は端末・OS
   バージョン・フォント設定で字形も色も変わり、同梱フォント
