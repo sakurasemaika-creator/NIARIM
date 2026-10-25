@@ -6,6 +6,8 @@ import '../../config/accent_text_theme.dart';
 import '../../config/font_fallback.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
 import '../../utils/splash_gradient.dart';
+import '../../utils/color_contrast.dart';
+import '../community/widgets/community_work_card.dart';
 
 /// Lightweight preview of main creation and community screens only.
 /// Tab variants, settings/management pages, menus and floating panels are
@@ -458,12 +460,17 @@ class _ThemeSampleScreen extends StatelessWidget {
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(icon, size: 60, color: foreground),
         const SizedBox(height: 10),
+        // 起動画面と同じく、ボタンの名前と補足はどちらも見出しの書体。
         Text(title, maxLines: 3, textAlign: TextAlign.center,
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
             color: foreground)),
         if (subtitle != null)
           Text(subtitle, textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, color: foreground)),
+            style: TextStyle(fontSize: 12, fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+              color: foreground)),
       ]),
     );
     final logo = Column(mainAxisSize: MainAxisSize.min, children: [
@@ -621,53 +628,12 @@ class _ThemeSampleScreen extends StatelessWidget {
   Widget _community(ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
     body: SafeArea(child: Column(children: [
-      SizedBox(height: 57, child: Row(children: [
-        const SizedBox(width: 14),
-        Expanded(child: Text(t('作品広場', 'Community'),
-          style: const TextStyle(fontFamily: 'Kuramubon',
-            fontSize: 20, fontWeight: FontWeight.w800))),
-        Stack(clipBehavior: Clip.none, children: [
-          Icon(Icons.notifications_none, size: 25, color: c.onSurface),
-          Positioned(right: -4, top: -8,
-            child: Container(width: 18, height: 18,
-              decoration: BoxDecoration(
-                color: c.error, shape: BoxShape.circle),
-              alignment: Alignment.center,
-              child: Text('4', style: TextStyle(
-                fontSize: 10, fontWeight: FontWeight.w700,
-                color: c.onError)))),
-        ]),
-        const SizedBox(width: 18),
-        Icon(Icons.filter_alt_outlined, color: c.onSurface, size: 23),
-        const SizedBox(width: 3),
-        Text(t('総合', 'All'), style: const TextStyle(fontSize: 12)),
-        Icon(Icons.arrow_drop_down, color: c.onSurface, size: 19),
-        const SizedBox(width: 16),
-        Icon(Icons.tune, color: c.onSurface, size: 23),
-        const SizedBox(width: 18),
-        Icon(Icons.search, color: c.onSurface, size: 23),
-        const SizedBox(width: 16),
-        Icon(Icons.help_outline, color: c.onSurface, size: 23),
-        const SizedBox(width: 12),
-      ])),
-      SizedBox(height: 44, child: Row(children: [
-        for (final tab in [
-          t('新着', 'New'),
-          t('ランキング', 'Ranking'),
-          t('フォロー中', 'Following'),
-        ])
-          Expanded(child: Column(children: [
-            Expanded(child: Center(child: Text(tab,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800,
-                color: tab == t('新着', 'New')
-                  ? ThemeService.activeAccentText : c.onSurfaceVariant)))),
-            Container(width: 30, height: 3,
-              decoration: BoxDecoration(
-                color: tab == t('新着', 'New')
-                  ? c.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(3))),
-          ])),
-      ])),
+      _MockCommunityHeader(
+        title: t('作品広場', 'Community'),
+        search: t('作品タイトル・投稿者名で検索', 'Search by title or username'),
+        filter: t('総合', 'All'),
+        tabs: [t('新着', 'New'), t('ランキング', 'Ranking'),
+          t('フォロー中', 'Following')]),
       Divider(height: 1, thickness: .5, color: c.outlineVariant),
       Expanded(child: Stack(children: [
         GridView.count(
@@ -683,44 +649,23 @@ class _ThemeSampleScreen extends StatelessWidget {
               t('雨上がりの約束', 'After the rain'),
               t('最後のメロディ', 'Last melody'),
             ][i % 4];
-            final accent = i.isEven
-              ? const Color(0xFFFF8BA7) : const Color(0xFFD0A875);
-            return Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: c.surface, borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: c.onSurface, width: 1)),
+            return _MockCommunityCardShell(
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(flex: 9, child: Stack(children: [
                     Positioned.fill(child: DecoratedBox(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [
-                          accent.withValues(alpha: .55), accent,
-                        ], begin: Alignment.topLeft,
+                        gradient: LinearGradient(
+                          colors: communityThumbnailGradient(c, i),
+                          begin: Alignment.topLeft,
                           end: Alignment.bottomRight)))),
-                    Center(child: Container(
-                      height: 40, width: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: c.onSurface.withValues(alpha: .9)),
-                      child: Icon(Icons.play_arrow,
-                        size: 25, color: c.surface))),
-                    Positioned(right: 5, top: 5,
-                      child: Container(
-                        width: 43, height: 43,
-                        decoration: BoxDecoration(
-                          color: c.onSurface.withValues(alpha: .9),
-                          shape: BoxShape.circle),
-                        child: Icon(Icons.bookmark_border,
-                          size: 25, color: c.surface))),
+                    const Center(child: _MockOverlayCircle(
+                      Icons.play_arrow_rounded, size: 40, iconSize: 28)),
+                    const Positioned(right: 5, top: 5,
+                      child: _MockOverlayCircle(
+                        Icons.bookmark_border, size: 43, iconSize: 25)),
                     Positioned(right: 5, bottom: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 2),
-                        color: c.onSurface.withValues(alpha: .85),
-                        child: Text(i.isEven ? '1:25' : '1:40',
-                          style: TextStyle(color: c.surface, fontSize: 9)))),
+                      child: _MockOverlayBadge(i.isEven ? '1:25' : '1:40')),
                   ])),
                   Expanded(flex: 12, child: Padding(
                     padding: const EdgeInsets.fromLTRB(10, 10, 8, 8),
@@ -729,8 +674,11 @@ class _ThemeSampleScreen extends StatelessWidget {
                       children: [
                         Text(label, maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800, fontSize: 13)),
+                          style: TextStyle(fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
+                            color: c.onSurface)),
                         const SizedBox(height: 12),
                         Text(t('サンプル作者', 'Sample artist'),
                           style: TextStyle(fontSize: 10,
@@ -761,8 +709,7 @@ class _ThemeSampleScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
               horizontal: 17, vertical: 14),
             decoration: BoxDecoration(
-              color: c.primary, borderRadius: BorderRadius.circular(36),
-              border: Border.all(color: c.onSurface, width: 3)),
+              color: c.primary, borderRadius: BorderRadius.circular(36)),
             child: Row(children: [
               Icon(Icons.video_library_outlined,
                 size: 22, color: c.onPrimary),
@@ -2695,17 +2642,14 @@ class _ThemeSampleScreen extends StatelessWidget {
       ClipRRect(borderRadius: BorderRadius.circular(16),
         child: AspectRatio(aspectRatio: 1.5,
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFFFFB9C8), Color(0xFFFF6485)],
+                colors: communityThumbnailGradient(c, 1),
                 begin: Alignment.topLeft, end: Alignment.bottomRight)),
             alignment: Alignment.center,
-            child: Container(
-              width: 48, height: 48,
-              decoration: BoxDecoration(shape: BoxShape.circle,
-                color: Colors.black.withValues(alpha: .58)),
-              child: const Icon(Icons.play_arrow, color: Colors.white,
-                size: 32)),
+            // 作品詳細の画面と同じ再生の印（本文の文字色を薄くしたもの）。
+            child: Icon(Icons.play_circle_fill_rounded,
+              color: c.onSurface.withValues(alpha: .7), size: 56),
           ))),
       SizedBox(height: 20, child: Center(child: Container(
         width: 40, height: 4,
@@ -2803,43 +2747,33 @@ class _ThemeSampleScreen extends StatelessWidget {
     ],
   );
 
-  Widget _mockCommunityCard(ColorScheme c, String title) => Container(
-    clipBehavior: Clip.antiAlias,
-    decoration: BoxDecoration(
-      color: c.surface,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: c.onSurface)),
+  Widget _mockCommunityCard(ColorScheme c, String title, {int index = 0}) =>
+      _MockCommunityCardShell(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(flex: 9, child: Stack(children: [
           Positioned.fill(child: DecoratedBox(
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [
-                c.primary.withValues(alpha: .28),
-                c.primary.withValues(alpha: .82),
-              ], begin: Alignment.topLeft, end: Alignment.bottomRight)))),
-          Center(child: CircleAvatar(radius: 23,
-            backgroundColor: c.onSurface.withValues(alpha: .82),
-            child: Icon(Icons.play_arrow, color: c.surface, size: 25))),
-          Positioned(top: 4, right: 4, child: CircleAvatar(radius: 22,
-            backgroundColor: c.onSurface.withValues(alpha: .82),
-            child: Icon(Icons.bookmark_border,
-              color: c.surface, size: 23))),
-          Positioned(bottom: 4, right: 4, child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 4, vertical: 2),
-            color: c.onSurface.withValues(alpha: .8),
-            child: Text('1:25', style: TextStyle(
-              fontSize: 9, color: c.surface)))),
+              gradient: LinearGradient(
+                colors: communityThumbnailGradient(c, index),
+                begin: Alignment.topLeft, end: Alignment.bottomRight)))),
+          const Center(child: _MockOverlayCircle(
+            Icons.play_arrow_rounded, size: 40, iconSize: 28)),
+          const Positioned(top: 4, right: 4, child: _MockOverlayCircle(
+            Icons.bookmark_border, size: 44, iconSize: 23)),
+          const Positioned(bottom: 4, right: 4,
+            child: _MockOverlayBadge('1:25')),
         ])),
         Expanded(flex: 12, child: Padding(
           padding: const EdgeInsets.all(9),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(
-                fontWeight: FontWeight.w700, fontSize: 12),
+              Text(title, style: TextStyle(fontSize: 12,
+                fontWeight: FontWeight.w600, fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+                color: c.onSurface),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 9),
               Text(t('サンプル作者', 'Sample artist'),
@@ -2940,8 +2874,10 @@ class _ThemeSampleScreen extends StatelessWidget {
         mainAxisSpacing: 10, childAspectRatio: .85,
         children: [
           _mockCommunityCard(c, t('雨上がりの約束', 'After the rain')),
-          _mockCommunityCard(c, t('夜明けの冒険', 'Dawn adventure')),
-          _mockCommunityCard(c, t('最後のメロディ', 'Last melody')),
+          _mockCommunityCard(c, t('夜明けの冒険', 'Dawn adventure'),
+            index: 1),
+          _mockCommunityCard(c, t('最後のメロディ', 'Last melody'),
+            index: 2),
         ],
       )),
     ]),
@@ -3071,4 +3007,146 @@ class _ThemeSampleScreen extends StatelessWidget {
 
 
 
+}
+
+/// 作品広場のカードのサムネイルの上の印・札と同じ組み合わせ（上部バーの
+/// 背景色をほぼ不透明に敷き、その上に上部バーの文字色）。
+(Color, Color) _mockOverlayColors(BuildContext context) {
+  final theme = Theme.of(context);
+  final card = theme.colorScheme.surface;
+  return (
+    opaqueOver(theme.appBarTheme.backgroundColor ?? card, card)
+        .withValues(alpha: 0.88),
+    theme.appBarTheme.foregroundColor ?? theme.colorScheme.onSurface,
+  );
+}
+
+class _MockOverlayCircle extends StatelessWidget {
+  final IconData icon;
+  final double size;
+  final double iconSize;
+  const _MockOverlayCircle(this.icon,
+    {required this.size, required this.iconSize});
+
+  @override
+  Widget build(BuildContext context) {
+    final (overlay, ink) = _mockOverlayColors(context);
+    return Container(width: size, height: size,
+      decoration: BoxDecoration(color: overlay, shape: BoxShape.circle),
+      child: Icon(icon, size: iconSize, color: ink));
+  }
+}
+
+class _MockOverlayBadge extends StatelessWidget {
+  final String label;
+  const _MockOverlayBadge(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    final (overlay, ink) = _mockOverlayColors(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(color: overlay,
+        borderRadius: BorderRadius.circular(5)),
+      child: Text(label, style: TextStyle(color: ink, fontSize: 10,
+        fontWeight: FontWeight.w600)));
+  }
+}
+
+/// 作品広場のカードの台紙（実際のカードと同じく、テーマのカードの色＝
+/// メニュー背景色の上に、枠を付けず少し浮かせる）。
+class _MockCommunityCardShell extends StatelessWidget {
+  final Widget child;
+  const _MockCommunityCardShell({required this.child});
+
+  @override
+  Widget build(BuildContext context) => Card(
+    margin: EdgeInsets.zero,
+    clipBehavior: Clip.antiAlias,
+    elevation: 1,
+    surfaceTintColor: Colors.transparent,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    child: child);
+}
+
+/// 作品広場の上部（実際の画面と同じ2段のバーとタブ）。上部バーの背景色・
+/// 文字色で、1段目に戻る・画面名・通知・ヘルプ、2段目の左に検索窓、右に
+/// 動画の種類と表示フィルター。
+class _MockCommunityHeader extends StatelessWidget {
+  final String title;
+  final String search;
+  final String filter;
+  final List<String> tabs;
+  const _MockCommunityHeader({required this.title, required this.search,
+    required this.filter, required this.tabs});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final c = theme.colorScheme;
+    final bar = theme.appBarTheme.backgroundColor ?? c.surface;
+    final ink = theme.appBarTheme.foregroundColor ?? c.onSurface;
+    return ColoredBox(color: bar, child: Column(children: [
+      SizedBox(height: 56, child: Row(children: [
+        SizedBox(width: 52, child: Icon(Icons.arrow_back, color: ink)),
+        Expanded(child: Text(title, maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            fontSize: 20, fontWeight: FontWeight.w800, color: ink))),
+        Stack(clipBehavior: Clip.none, children: [
+          Icon(Icons.notifications_none, size: 25, color: ink),
+          Positioned(right: -4, top: -8,
+            child: Container(width: 18, height: 18,
+              decoration: BoxDecoration(
+                color: c.error, shape: BoxShape.circle),
+              alignment: Alignment.center,
+              child: Text('4', style: TextStyle(
+                fontSize: 10, fontWeight: FontWeight.w700,
+                color: c.onError)))),
+        ]),
+        const SizedBox(width: 22),
+        Icon(Icons.help_outline, color: ink, size: 23),
+        const SizedBox(width: 14),
+      ])),
+      SizedBox(height: 48, child: Row(children: [
+        const SizedBox(width: 8),
+        Expanded(child: Container(height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(color: c.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(19)),
+          child: Row(children: [
+            Icon(Icons.search, size: 20, color: c.onSurfaceVariant),
+            const SizedBox(width: 8),
+            Expanded(child: Text(search, maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 12, color: c.onSurfaceVariant))),
+          ]))),
+        const SizedBox(width: 8),
+        Icon(Icons.filter_alt_outlined, color: ink, size: 21),
+        Text(filter, style: TextStyle(fontSize: 12, color: ink)),
+        Icon(Icons.arrow_drop_down, color: ink, size: 19),
+        const SizedBox(width: 10),
+        Icon(Icons.tune, color: ink, size: 23),
+        const SizedBox(width: 14),
+      ])),
+      SizedBox(height: 44, child: Row(children: [
+        for (final (i, tab) in tabs.indexed)
+          Expanded(child: Column(children: [
+            Expanded(child: Center(child: Text(tab,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+                color: i == 0
+                  ? AccentTextTheme.of(context)
+                  : theme.tabBarTheme.unselectedLabelColor ??
+                    c.onSurfaceVariant)))),
+            Container(width: 30, height: 3,
+              decoration: BoxDecoration(
+                color: i == 0 ? c.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(3))),
+          ])),
+      ])),
+    ]));
+  }
 }
