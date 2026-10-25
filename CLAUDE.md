@@ -58,9 +58,9 @@
    `debugPrint`を使う。2026-10-23時点では、dev_branchの
    `lib/screens/settings/theme_preview_gallery_screen.dart`に未使用の宣言・
    文字列の連結の7件があり、dev_branch単体でも同じ。この7件は除いて数える）
-3. `flutter test`（ベースライン：2026-10-24、dev_branch `25723b3`を
-   取り込んだ`ccr-f56ee68e-77ag7y`の図つきの使い方（DISC014）と
-   タイムラインのプレビューの操作の移動の時点で**成功2241・スキップ17・失敗2**。失敗はdev_branchでも落ちる
+3. `flutter test`（ベースライン：2026-10-25、dev_branch `25723b3`を
+   取り込んだ`ccr-f56ee68e-77ag7y`のフォルダを中身ごとゴミ箱へ（A006、
+   `313f300`）の時点で**成功2279・スキップ17・失敗2**。失敗はdev_branchでも落ちる
    `test/popup_opaque_background_test.dart`と、dev_branchがキャンバスの
    タイムラインのボタンを矢印つきの`iconBuilder`に変えたために落ちる
    監査担当の`test/app_web_reference_export_exact_test.dart`で、通常タスク
@@ -940,6 +940,8 @@ onTap: ...)`だったために
   （フォルダの記録と食い違う）。古い`deleteFolder`（中身を一番上へ出して
   フォルダだけ消す）は画面からは使っていない。フォルダの複製は
   `duplicateFolder`（中身ごと、名前は`duplicateFolderName`）。
+  フォルダの作成・名前の変更は、同じ階層に同じ名前があれば「名前 (2)」…と
+  番号を付ける（`uniqueFolderName`、ユーザー指定）。
 - **アプリ内の文言に絵文字を混ぜない（アイコンで表す）**：意味を表す記号は
   すべてMaterialアイコン（`Icon(Icons.xxx)`）を使う。絵文字は端末・OS
   バージョン・フォント設定で字形も色も変わり、同梱フォント
