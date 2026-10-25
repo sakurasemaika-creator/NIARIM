@@ -2185,42 +2185,37 @@ class _TrashTab extends StatelessWidget {
             alpha: 0.15,
           ),
           color: Theme.of(context).colorScheme.surfaceContainerLow,
-          child: ListTile(
-            leading: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Color(project.backgroundColor),
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            title: Text(
-              project.name,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            subtitle: Text(
-              deletedLabel.isEmpty ? meta : '$deletedLabel · $meta',
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextButton(
-                  onPressed: () =>
-                      context.read<ProjectService>().restoreProject(project.id),
-                  child: Text(l10n.commonRestore),
-                ),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    foregroundColor: ThemeService.activeColorScheme.error,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ListTile(
+                leading: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Color(project.backgroundColor),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  onPressed: () => _confirmPermanentDelete(context, project.id),
-                  child: Text(l10n.homePermanentDelete),
                 ),
-              ],
-            ),
+                title: Text(
+                  project.name,
+                  style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                ),
+                subtitle: Text(
+                  deletedLabel.isEmpty ? meta : '$deletedLabel · $meta',
+                ),
+              ),
+              _TrashActions(
+                restoreKey: ValueKey('trashedProjectRestore_${project.id}'),
+                deleteKey: ValueKey('trashedProjectDelete_${project.id}'),
+                onRestore: () =>
+                    context.read<ProjectService>().restoreProject(project.id),
+                onDelete: () => _confirmPermanentDelete(context, project.id),
+              ),
+            ],
           ),
         );
       },
@@ -2248,6 +2243,51 @@ class _TrashTab extends StatelessWidget {
               Navigator.pop(ctx);
             },
             child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// ゴミ箱のカードの「復元」「完全削除」。作品とフォルダのどちらのカードも、
+/// 名前の下の右端の同じ位置に置く（名前の右に並べると、作品とフォルダで
+/// 位置がずれ、長い名前や大きな文字では名前を押し縮めた）。
+class _TrashActions extends StatelessWidget {
+  final Key restoreKey;
+  final Key deleteKey;
+  final VoidCallback onRestore;
+  final VoidCallback onDelete;
+
+  const _TrashActions({
+    required this.restoreKey,
+    required this.deleteKey,
+    required this.onRestore,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 4),
+      child: OverflowBar(
+        alignment: MainAxisAlignment.end,
+        overflowAlignment: OverflowBarAlignment.end,
+        spacing: 8,
+        children: [
+          TextButton(
+            key: restoreKey,
+            onPressed: onRestore,
+            child: Text(l10n.commonRestore),
+          ),
+          TextButton(
+            key: deleteKey,
+            style: TextButton.styleFrom(
+              foregroundColor: ThemeService.activeColorScheme.error,
+            ),
+            onPressed: onDelete,
+            child: Text(l10n.homePermanentDelete),
           ),
         ],
       ),
@@ -2320,27 +2360,15 @@ class _TrashedFolderCard extends StatelessWidget {
                 style: TextStyle(color: scheme.onSurfaceVariant),
               ),
             ),
-          OverflowBar(
-            alignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                key: ValueKey('trashedFolderRestore_${folder.id}'),
-                onPressed: () => service.restoreTrashedFolder(folder.id),
-                child: Text(l10n.commonRestore),
-              ),
-              TextButton(
-                key: ValueKey('trashedFolderDelete_${folder.id}'),
-                style: TextButton.styleFrom(
-                  foregroundColor: ThemeService.activeColorScheme.error,
-                ),
-                onPressed: () => _confirmPermanentDelete(
-                  context,
-                  projects.length,
-                  record.subfolders.length,
-                ),
-                child: Text(l10n.homePermanentDelete),
-              ),
-            ],
+          _TrashActions(
+            restoreKey: ValueKey('trashedFolderRestore_${folder.id}'),
+            deleteKey: ValueKey('trashedFolderDelete_${folder.id}'),
+            onRestore: () => service.restoreTrashedFolder(folder.id),
+            onDelete: () => _confirmPermanentDelete(
+              context,
+              projects.length,
+              record.subfolders.length,
+            ),
           ),
         ],
       ),

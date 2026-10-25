@@ -14,6 +14,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -503,6 +504,65 @@ void main() {
       expect(service.trash.map((p) => p.name), ['上の作品']);
       expect(service.projects, isEmpty);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('restore and delete sit in the same place on work and '
+        'folder cards', (tester) async {
+      final service = await boot(tester);
+      late final String workId;
+      late final String folderId;
+      await tester.runAsync(() async {
+        workId = service.projects.firstWhere((p) => p.name == '上の作品').id;
+        await service.deleteProject(workId);
+        folderId = service.folders.firstWhere((f) => f.name == '親').id;
+        await service.moveFolderToTrash(folderId);
+      });
+      appRouter.push('/trash');
+      await settle(tester);
+      final settings = tester
+          .element(find.byType(Scaffold).last)
+          .read<SettingsService>();
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      // カードの右下の角から見た位置。
+      Offset fromCorner(Finder button) {
+        final card = tester.getRect(
+          find.ancestor(of: button, matching: find.byType(Card)).first,
+        );
+        return card.bottomRight - tester.getRect(button).bottomRight;
+      }
+
+      for (final code in ['ja', 'fr', 'ko']) {
+        await tester.runAsync(() => settings.setLanguage(code));
+        for (final size in const [
+          Size(320, 700),
+          Size(390, 844),
+          Size(800, 900),
+        ]) {
+          for (final scale in const [1.0, 2.0]) {
+            final where = '$code ${size.width.toInt()} x$scale';
+            tester.view.physicalSize = size;
+            tester.platformDispatcher.textScaleFactorTestValue = scale;
+            await settle(tester);
+            expect(tester.takeException(), isNull, reason: where);
+            for (final (work, folder) in [
+              (
+                find.byKey(ValueKey('trashedProjectRestore_$workId')),
+                find.byKey(ValueKey('trashedFolderRestore_$folderId')),
+              ),
+              (
+                find.byKey(ValueKey('trashedProjectDelete_$workId')),
+                find.byKey(ValueKey('trashedFolderDelete_$folderId')),
+              ),
+            ]) {
+              final a = fromCorner(work);
+              final b = fromCorner(folder);
+              expect((a - b).distance, lessThan(0.5), reason: '$where $a $b');
+              expect(a.dx, greaterThanOrEqualTo(0), reason: where);
+              expect(a.dy, greaterThanOrEqualTo(0), reason: where);
+            }
+          }
+        }
+      }
     });
 
     testWidgets('the folder menu copies a folder with its contents', (
