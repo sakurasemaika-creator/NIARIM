@@ -1,12 +1,15 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/canvas_size_preset.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/duplicate_name.dart';
 import '../../utils/reorder_index.dart';
+import '../../widgets/name_entry_dialog.dart';
 import '../../config/accent_text_theme.dart';
 
 /// 保存済みカスタムキャンバスサイズプリセットの一覧管理画面。
@@ -121,9 +124,12 @@ class _PresetTile extends StatelessWidget {
                   case 'rename':
                     _showRenameDialog(context, settings, preset);
                   case 'duplicate':
+                    // 名前は作品・フォルダの複製と同じ「(コピー)」「(コピー 2)」…
                     settings.duplicateCustomSizePreset(
                       preset.id,
-                      '${preset.name}${l10n.canvasSizePresetDuplicateSuffix}',
+                      numberedCopyName(l10n, preset.name, {
+                        for (final p in settings.customSizePresets) p.name,
+                      }),
                     );
                   case 'delete':
                     _confirmDelete(context, settings, preset);
@@ -166,35 +172,16 @@ class _PresetTile extends StatelessWidget {
     CanvasSizePreset preset,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    final nameCtrl = TextEditingController(text: preset.name);
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.commonRename),
-        content: TextField(
-          controller: nameCtrl,
-          autofocus: true,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameCtrl.text.isNotEmpty) {
-                settings.updateCustomSizePreset(preset.id, name: nameCtrl.text);
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonChange),
-          ),
-        ],
-      ),
-    ).then(
-      (_) => WidgetsBinding.instance.addPostFrameCallback(
-        (_) => nameCtrl.dispose(),
+      builder: (_) => NameEntryDialog(
+        title: l10n.commonRename,
+        labelText: l10n.newProjectSaveCustomSizeNameLabel,
+        initialName: preset.name,
+        confirmLabel: l10n.commonChange,
+        cancelLabel: l10n.commonCancel,
+        onSubmit: (name) =>
+            settings.updateCustomSizePreset(preset.id, name: name),
       ),
     );
   }
@@ -204,62 +191,9 @@ class _PresetTile extends StatelessWidget {
     SettingsService settings,
     CanvasSizePreset preset,
   ) {
-    final l10n = AppLocalizations.of(context)!;
-    final widthCtrl = TextEditingController(text: '${preset.width}');
-    final heightCtrl = TextEditingController(text: '${preset.height}');
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.canvasSizePresetEditDialogTitle),
-        content: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: widthCtrl,
-                autofocus: true,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: l10n.newProjectWidthLabel,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: heightCtrl,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: l10n.newProjectHeightLabel,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final w = int.tryParse(widthCtrl.text);
-              final h = int.tryParse(heightCtrl.text);
-              if (w != null && h != null && w > 0 && h > 0) {
-                settings.updateCustomSizePreset(preset.id, width: w, height: h);
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonChange),
-          ),
-        ],
-      ),
-    ).then(
-      (_) => WidgetsBinding.instance.addPostFrameCallback((_) {
-        widthCtrl.dispose();
-        heightCtrl.dispose();
-      }),
+      builder: (_) => _PresetSizeDialog(preset: preset, settings: settings),
     );
   }
 
@@ -270,5 +204,116 @@ class _PresetTile extends StatelessWidget {
   ) async {
     if (!await confirmDelete(context, itemName: preset.name)) return;
     settings.removeCustomSizePreset(preset.id);
+  }
+}
+
+/// 保存したサイズの幅・高さを変えるダイアログ。範囲外・空の欄があれば理由を
+/// 出して保存できない（以前は5000×5000のような上限を超えるサイズも保存でき、
+/// そのサイズで作品を作れた）。入力欄のコントローラーはこのダイアログが持ち、
+/// 閉じ終えてから破棄する。
+class _PresetSizeDialog extends StatefulWidget {
+  final CanvasSizePreset preset;
+  final SettingsService settings;
+
+  const _PresetSizeDialog({required this.preset, required this.settings});
+
+  @override
+  State<_PresetSizeDialog> createState() => _PresetSizeDialogState();
+}
+
+class _PresetSizeDialogState extends State<_PresetSizeDialog> {
+  late final _width = TextEditingController(text: '${widget.preset.width}');
+  late final _height = TextEditingController(text: '${widget.preset.height}');
+
+  static final _numberInput = <TextInputFormatter>[
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(4),
+  ];
+
+  @override
+  void dispose() {
+    _width.dispose();
+    _height.dispose();
+    super.dispose();
+  }
+
+  int? _valueOf(TextEditingController controller) {
+    final value = int.tryParse(controller.text);
+    if (value == null || value < kMinCanvasEdge || value > kMaxCanvasEdge) {
+      return null;
+    }
+    return value;
+  }
+
+  bool get _valid => _valueOf(_width) != null && _valueOf(_height) != null;
+
+  void _save() {
+    // 閉じる途中にもう一度押されても二度保存しない。
+    if (!_valid || !(ModalRoute.of(context)?.isCurrent ?? false)) return;
+    widget.settings.updateCustomSizePreset(
+      widget.preset.id,
+      width: _valueOf(_width),
+      height: _valueOf(_height),
+    );
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final error = l10n.newProjectNumberRangeError(
+      kMinCanvasEdge,
+      kMaxCanvasEdge,
+    );
+    InputDecoration decoration(String label, TextEditingController c) =>
+        InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+          errorText: _valueOf(c) == null ? error : null,
+          errorMaxLines: 3,
+        );
+    return AlertDialog(
+      title: Text(l10n.canvasSizePresetEditDialogTitle),
+      content: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: TextField(
+              key: const Key('presetWidthField'),
+              controller: _width,
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              inputFormatters: _numberInput,
+              textInputAction: TextInputAction.next,
+              decoration: decoration(l10n.newProjectWidthLabel, _width),
+              onChanged: (_) => setState(() {}),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              key: const Key('presetHeightField'),
+              controller: _height,
+              keyboardType: TextInputType.number,
+              inputFormatters: _numberInput,
+              textInputAction: TextInputAction.done,
+              decoration: decoration(l10n.newProjectHeightLabel, _height),
+              onChanged: (_) => setState(() {}),
+              onSubmitted: (_) => _save(),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          onPressed: _valid ? _save : null,
+          child: Text(l10n.commonChange),
+        ),
+      ],
+    );
   }
 }

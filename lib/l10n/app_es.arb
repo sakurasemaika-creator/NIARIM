@@ -936,7 +936,6 @@
   "canvasSizePresetEmpty": "Todavía no hay tamaños guardados",
   "canvasSizePresetEmptyHint": "Especifica un tamaño personalizado en la pantalla de nuevo proyecto y toca «Guardar este tamaño» para añadirlo",
   "canvasSizePresetEditDialogTitle": "Editar tamaño",
-  "canvasSizePresetDuplicateSuffix": "copia",
   "newProjectDurationLabel": "Duración (máx. {max})",
   "@newProjectDurationLabel": {
     "placeholders": {

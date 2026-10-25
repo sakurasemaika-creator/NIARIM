@@ -315,14 +315,17 @@ class SettingsService extends ChangeNotifier {
     );
   }
 
+  /// 幅・高さはキャンバスの範囲（[kMinCanvasEdge]〜[kMaxCanvasEdge]）に
+  /// 収めて保存する（範囲外のサイズを保存すると、そのサイズで上限を超えた
+  /// 作品を作れた）。
   Future<void> addCustomSizePreset(String name, int width, int height) async {
     _customSizePresets = [
       ..._customSizePresets,
       CanvasSizePreset(
         id: 'size_${DateTime.now().microsecondsSinceEpoch}',
         name: name,
-        width: width,
-        height: height,
+        width: clampCanvasEdge(width),
+        height: clampCanvasEdge(height),
       ),
     ];
     await _persistCustomSizePresets();
@@ -338,7 +341,11 @@ class SettingsService extends ChangeNotifier {
     _customSizePresets = _customSizePresets
         .map(
           (p) => p.id == id
-              ? p.copyWith(name: name, width: width, height: height)
+              ? p.copyWith(
+                  name: name,
+                  width: width == null ? null : clampCanvasEdge(width),
+                  height: height == null ? null : clampCanvasEdge(height),
+                )
               : p,
         )
         .toList();
@@ -630,7 +637,14 @@ class SettingsService extends ChangeNotifier {
       try {
         final decoded = jsonDecode(encoded);
         if (decoded is Map<String, dynamic>) {
-          _customSizePresets.add(CanvasSizePreset.fromJson(decoded));
+          // 以前の版で範囲外のサイズを保存できたので、読むときに収める。
+          final preset = CanvasSizePreset.fromJson(decoded);
+          _customSizePresets.add(
+            preset.copyWith(
+              width: clampCanvasEdge(preset.width),
+              height: clampCanvasEdge(preset.height),
+            ),
+          );
         }
       } on FormatException {
         // Keep the raw persisted entry untouched so recovery is non-destructive.

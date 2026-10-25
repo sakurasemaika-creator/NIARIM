@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/canvas_size_preset.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
@@ -41,6 +42,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   int _exportWidth = 1920;
   int _exportHeight = 1080;
   bool _customSize = false;
+  // 選んでいるサイズのチップ（組み込みは「builtin:種類」、保存したサイズは
+  // 「custom:ID」）。大きさで比べると、組み込みと同じ大きさで保存したサイズの
+  // チップも一緒に選ばれた表示になった。
+  String? _selectedPresetKey = 'builtin:fullHd';
   late final TextEditingController _customWidthController;
   late final TextEditingController _customHeightController;
   // 描画領域設定（ホーム画面設定の初期値を引き継ぎ）
@@ -175,9 +180,13 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     return '';
   }
 
-  void _selectPreset(int width, int height) {
+  void _selectPreset(int width, int height, String key) {
+    // 以前の版で範囲外のサイズを保存できたので、選んだときも範囲に収める。
+    width = clampCanvasEdge(width);
+    height = clampCanvasEdge(height);
     setState(() {
       _customSize = false;
+      _selectedPresetKey = key;
       _exportWidth = width;
       _exportHeight = height;
     });
@@ -206,15 +215,41 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
         : l10n.newProjectDurationM(m);
   }
 
-  // 上限はFull HD相当（長辺1920px）とする。
-  static const int _maxCustomEdge = 1920;
+  /// 選んでいる保存したサイズが「サイズ設定」で変わった・消えたときに追う。
+  /// 変わったらその大きさにし、消えたら今の大きさのままカスタムにする
+  /// （チップの表示と作る大きさを食い違わせない）。
+  void _followChosenPreset(SettingsService settings) {
+    final key = _selectedPresetKey;
+    if (_customSize || key == null || !key.startsWith('custom:')) return;
+    final chosen = settings.customSizePresets
+        .where((p) => key == 'custom:${p.id}')
+        .firstOrNull;
+    if (chosen != null &&
+        clampCanvasEdge(chosen.width) == _exportWidth &&
+        clampCanvasEdge(chosen.height) == _exportHeight) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _selectedPresetKey != key) return;
+      if (chosen != null) {
+        _selectPreset(chosen.width, chosen.height, key);
+      } else {
+        setState(() {
+          _customSize = true;
+          _selectedPresetKey = null;
+          _customWidthController.text = '$_exportWidth';
+          _customHeightController.text = '$_exportHeight';
+        });
+      }
+    });
+  }
 
   /// カスタムサイズをスライダー・テキスト欄両方から一元的に反映する。
   /// テキスト欄の表示もここで同期し、スライダー操作とテキスト直接入力の
   /// どちらでも比率プレビューへ即座に反映されるようにする。
   void _setCustomSize({int? width, int? height}) {
-    final w = (width ?? _exportWidth).clamp(64, _maxCustomEdge);
-    final h = (height ?? _exportHeight).clamp(64, _maxCustomEdge);
+    final w = (width ?? _exportWidth).clamp(kMinCanvasEdge, kMaxCanvasEdge);
+    final h = (height ?? _exportHeight).clamp(kMinCanvasEdge, kMaxCanvasEdge);
     setState(() {
       _exportWidth = w;
       _exportHeight = h;
@@ -229,8 +264,8 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     final w = int.tryParse(_customWidthController.text);
     final h = int.tryParse(_customHeightController.text);
     setState(() {
-      if (w != null) _exportWidth = w.clamp(64, _maxCustomEdge);
-      if (h != null) _exportHeight = h.clamp(64, _maxCustomEdge);
+      if (w != null) _exportWidth = w.clamp(kMinCanvasEdge, kMaxCanvasEdge);
+      if (h != null) _exportHeight = h.clamp(kMinCanvasEdge, kMaxCanvasEdge);
     });
   }
 
@@ -364,40 +399,43 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       );
                     }
 
+                    _followChosenPreset(settings);
                     return Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
                         ...sizePresets.map((preset) {
-                          final (w, h, _) = preset;
+                          final (w, h, kind) = preset;
                           final label = _presetLabel(l10n, w, h);
-                          final selected =
-                              !_customSize &&
-                              _exportWidth == w &&
-                              _exportHeight == h;
+                          final key = 'builtin:$kind';
                           return sizeChip(
                             text: '$label ($w×$h)',
-                            selected: selected,
-                            onSelected: () => _selectPreset(w, h),
+                            selected: !_customSize && _selectedPresetKey == key,
+                            onSelected: () => _selectPreset(w, h, key),
                           );
                         }),
                         ...settings.customSizePresets.map((preset) {
-                          final selected =
-                              !_customSize &&
-                              _exportWidth == preset.width &&
-                              _exportHeight == preset.height;
+                          final key = 'custom:${preset.id}';
                           return sizeChip(
                             text:
                                 '${preset.name} (${preset.width}×${preset.height})',
-                            selected: selected,
+                            selected: !_customSize && _selectedPresetKey == key,
                             onSelected: () =>
-                                _selectPreset(preset.width, preset.height),
+                                _selectPreset(preset.width, preset.height, key),
                           );
                         }),
                         ChoiceChip(
                           label: Text(l10n.newProjectCustomSize),
                           selected: _customSize,
-                          onSelected: (s) => setState(() => _customSize = s),
+                          onSelected: (s) => setState(() {
+                            _customSize = s;
+                            if (s) {
+                              // 欄とスライダーは今の大きさから始める。
+                              _selectedPresetKey = null;
+                              _customWidthController.text = '$_exportWidth';
+                              _customHeightController.text = '$_exportHeight';
+                            }
+                          }),
                         ),
                       ],
                     );
@@ -429,8 +467,8 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                           errorText: _rangeError(
                             l10n,
                             _customWidthController,
-                            64,
-                            _maxCustomEdge,
+                            kMinCanvasEdge,
+                            kMaxCanvasEdge,
                           ),
                           errorMaxLines: 3,
                         ),
@@ -454,8 +492,8 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                           errorText: _rangeError(
                             l10n,
                             _customHeightController,
-                            64,
-                            _maxCustomEdge,
+                            kMinCanvasEdge,
+                            kMaxCanvasEdge,
                           ),
                           errorMaxLines: 3,
                         ),
@@ -468,18 +506,22 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 const SizedBox(height: 12),
                 LabeledSlider(
                   label: l10n.newProjectWidthShort,
-                  min: 64,
-                  max: _maxCustomEdge.toDouble(),
-                  value: _exportWidth.clamp(64, _maxCustomEdge).toDouble(),
+                  min: kMinCanvasEdge.toDouble(),
+                  max: kMaxCanvasEdge.toDouble(),
+                  value: _exportWidth
+                      .clamp(kMinCanvasEdge, kMaxCanvasEdge)
+                      .toDouble(),
                   sliderLabel: '${_exportWidth}px',
                   valueText: '${_exportWidth}px',
                   onChanged: (v) => _setCustomSize(width: v.round()),
                 ),
                 LabeledSlider(
                   label: l10n.newProjectHeightShort,
-                  min: 64,
-                  max: _maxCustomEdge.toDouble(),
-                  value: _exportHeight.clamp(64, _maxCustomEdge).toDouble(),
+                  min: kMinCanvasEdge.toDouble(),
+                  max: kMaxCanvasEdge.toDouble(),
+                  value: _exportHeight
+                      .clamp(kMinCanvasEdge, kMaxCanvasEdge)
+                      .toDouble(),
                   sliderLabel: '${_exportHeight}px',
                   valueText: '${_exportHeight}px',
                   onChanged: (v) => _setCustomSize(height: v.round()),

@@ -5369,12 +5369,6 @@ abstract class AppLocalizations {
   /// **'サイズを編集'**
   String get canvasSizePresetEditDialogTitle;
 
-  /// No description provided for @canvasSizePresetDuplicateSuffix.
-  ///
-  /// In ja, this message translates to:
-  /// **'のコピー'**
-  String get canvasSizePresetDuplicateSuffix;
-
   /// No description provided for @newProjectDurationLabel.
   ///
   /// In ja, this message translates to:

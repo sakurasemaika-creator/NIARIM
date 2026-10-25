@@ -2999,9 +2999,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => 'Edit size';
 
   @override
-  String get canvasSizePresetDuplicateSuffix => 'copy';
-
-  @override
   String newProjectDurationLabel(String max) {
     return 'Length (max $max)';
   }

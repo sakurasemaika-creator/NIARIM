@@ -12,16 +12,10 @@ String duplicateProjectName(
   required String? folderId,
   required Iterable<Project> projects,
 }) {
-  final taken = {
+  return numberedCopyName(l10n, name, {
     for (final p in projects)
       if (p.folderId == folderId && !p.isSharedImport) p.name,
-  };
-  final plain = l10n.projectDuplicateName(name);
-  if (!taken.contains(plain)) return plain;
-  for (var number = 2; ; number++) {
-    final numbered = l10n.projectDuplicateNameNumbered(name, number);
-    if (!taken.contains(numbered)) return numbered;
-  }
+  });
 }
 
 /// 複製したフォルダの名前。複製先に同じ名前のフォルダが既にあれば番号を
@@ -32,10 +26,15 @@ String duplicateFolderName(
   required String? parentId,
   required Iterable<ProjectFolder> folders,
 }) {
-  final taken = {
+  return numberedCopyName(l10n, name, {
     for (final f in folders)
       if (f.parentFolderId == parentId) f.name,
-  };
+  });
+}
+
+/// 複製の名前（「名前 (コピー)」）。[taken]に同じ名前があれば
+/// 「名前 (コピー 2)」…と番号を付ける。
+String numberedCopyName(AppLocalizations l10n, String name, Set<String> taken) {
   final plain = l10n.projectDuplicateName(name);
   if (!taken.contains(plain)) return plain;
   for (var number = 2; ; number++) {

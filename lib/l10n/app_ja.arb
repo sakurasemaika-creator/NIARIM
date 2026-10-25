@@ -1263,7 +1263,6 @@
   "canvasSizePresetEmpty": "保存されたサイズはありません",
   "canvasSizePresetEmptyHint": "新規プロジェクト画面でカスタムサイズを指定し、「このサイズを保存する」から追加できます",
   "canvasSizePresetEditDialogTitle": "サイズを編集",
-  "canvasSizePresetDuplicateSuffix": "のコピー",
   "newProjectDurationLabel": "長さ（最大{max}）",
   "@newProjectDurationLabel": {
     "placeholders": {

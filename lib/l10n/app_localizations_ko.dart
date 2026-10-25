@@ -2904,9 +2904,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => '크기 편집';
 
   @override
-  String get canvasSizePresetDuplicateSuffix => '사본';
-
-  @override
   String newProjectDurationLabel(String max) {
     return '길이(최대 $max)';
   }

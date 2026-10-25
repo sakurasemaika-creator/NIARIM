@@ -936,7 +936,6 @@
   "canvasSizePresetEmpty": "尚无已保存的尺寸",
   "canvasSizePresetEmptyHint": "在新建项目画面指定自定义尺寸后，点击「保存此尺寸」即可添加",
   "canvasSizePresetEditDialogTitle": "编辑尺寸",
-  "canvasSizePresetDuplicateSuffix": "副本",
   "newProjectDurationLabel": "时长（最大{max}）",
   "@newProjectDurationLabel": {
     "placeholders": {

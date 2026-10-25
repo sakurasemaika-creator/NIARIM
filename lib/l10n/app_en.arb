@@ -936,7 +936,6 @@
   "canvasSizePresetEmpty": "No saved sizes yet",
   "canvasSizePresetEmptyHint": "Specify a custom size on the new project screen and tap \"Save this size\" to add one",
   "canvasSizePresetEditDialogTitle": "Edit size",
-  "canvasSizePresetDuplicateSuffix": "copy",
   "newProjectDurationLabel": "Length (max {max})",
   "@newProjectDurationLabel": {
     "placeholders": {

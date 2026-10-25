@@ -936,7 +936,6 @@
   "canvasSizePresetEmpty": "저장된 크기가 없습니다",
   "canvasSizePresetEmptyHint": "새 프로젝트 화면에서 사용자 지정 크기를 지정하고 「이 크기 저장하기」로 추가할 수 있습니다",
   "canvasSizePresetEditDialogTitle": "크기 편집",
-  "canvasSizePresetDuplicateSuffix": "사본",
   "newProjectDurationLabel": "길이(최대 {max})",
   "@newProjectDurationLabel": {
     "placeholders": {

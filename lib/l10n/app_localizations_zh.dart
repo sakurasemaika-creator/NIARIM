@@ -2878,9 +2878,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => '编辑尺寸';
 
   @override
-  String get canvasSizePresetDuplicateSuffix => '副本';
-
-  @override
   String newProjectDurationLabel(String max) {
     return '时长（最大$max）';
   }
@@ -10559,9 +10556,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasSizePresetEditDialogTitle => '編輯尺寸';
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => '副本';
 
   @override
   String newProjectDurationLabel(String max) {
