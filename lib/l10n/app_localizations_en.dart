@@ -8040,4 +8040,9 @@ class AppLocalizationsEn extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String newProjectNumberRangeError(int min, int max) {
+    return 'Enter a number from $min to $max';
+  }
 }

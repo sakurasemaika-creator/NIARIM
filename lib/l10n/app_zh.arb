@@ -3211,5 +3211,6 @@
   "homeTrashFolderPermanentDeleteBody": "将永久删除「{name}」。此操作无法撤销。",
   "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{空} other{{folders}个文件夹}}} other{{projects}个项目{folders, plural, =0{} other{和{folders}个文件夹}}}}",
   "homeTrashFolderPermanentDeleteContents": "文件夹中的{contents}也将一并删除。",
-  "folderColorName": "{color, select, pink{粉色} orange{橙色} yellow{黄色} green{绿色} blue{蓝色} purple{紫色} gray{灰色} other{默认颜色}}"
+  "folderColorName": "{color, select, pink{粉色} orange{橙色} yellow{黄色} green{绿色} blue{蓝色} purple{紫色} gray{灰色} other{默认颜色}}",
+  "newProjectNumberRangeError": "请输入{min}到{max}之间的数字"
 }

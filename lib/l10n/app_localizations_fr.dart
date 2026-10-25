@@ -8184,4 +8184,9 @@ class AppLocalizationsFr extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String newProjectNumberRangeError(int min, int max) {
+    return 'Saisissez un nombre entre $min et $max';
+  }
 }

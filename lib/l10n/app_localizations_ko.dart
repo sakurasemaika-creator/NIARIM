@@ -7793,4 +7793,9 @@ class AppLocalizationsKo extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String newProjectNumberRangeError(int min, int max) {
+    return '$min~$max 사이의 숫자를 입력하세요';
+  }
 }

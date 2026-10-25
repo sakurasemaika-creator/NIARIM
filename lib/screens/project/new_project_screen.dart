@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
@@ -9,6 +10,7 @@ import '../../services/settings_service.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/background_color_picker.dart';
 import '../../widgets/labeled_slider.dart';
+import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -50,6 +52,17 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   // 長さ（秒）の数字入力欄（スライダーだけでなく
   // 数字入力でも指定できるようにする）。
   late final TextEditingController _durationController;
+  // 数字の欄から出たら、実際に使う値（範囲に収めた値）を欄へ書き戻す。
+  // 書き戻さないと、5000と打った欄が1920で作られるのに5000のまま見えた。
+  final _widthFocus = FocusNode();
+  final _heightFocus = FocusNode();
+  final _durationFocus = FocusNode();
+
+  /// 数字の欄に打てるのは4桁までの数字だけ。
+  static final _numberInput = <TextInputFormatter>[
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(4),
+  ];
 
   // 30fpsは手描きアニメーションでは中割りの負担が大きく現実的でないため
   // 選択肢から除外している（基本設定画面のデフォルトFPS選択肢とも統一）。
@@ -87,6 +100,33 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     _customWidthController = TextEditingController(text: '$_exportWidth');
     _customHeightController = TextEditingController(text: '$_exportHeight');
     _durationController = TextEditingController(text: '$_durationSeconds');
+    for (final focus in [_widthFocus, _heightFocus, _durationFocus]) {
+      focus.addListener(() {
+        if (!focus.hasFocus) _commitNumberFields();
+      });
+    }
+  }
+
+  /// 数字の欄の表示を、実際に使う幅・高さ・長さにそろえる。
+  void _commitNumberFields() {
+    if (!mounted) return;
+    setState(() {
+      _customWidthController.text = '$_exportWidth';
+      _customHeightController.text = '$_exportHeight';
+      _durationController.text = '$_durationSeconds';
+    });
+  }
+
+  /// 欄の数字が[min]〜[max]に収まっていなければ、その旨の文。
+  String? _rangeError(
+    AppLocalizations l10n,
+    TextEditingController controller,
+    int min,
+    int max,
+  ) {
+    final value = int.tryParse(controller.text);
+    if (value != null && value >= min && value <= max) return null;
+    return l10n.newProjectNumberRangeError(min, max);
   }
 
   @override
@@ -106,6 +146,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     _customWidthController.dispose();
     _customHeightController.dispose();
     _durationController.dispose();
+    _widthFocus.dispose();
+    _heightFocus.dispose();
+    _durationFocus.dispose();
     super.dispose();
   }
 
@@ -180,61 +223,38 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     _customHeightController.text = '$h';
   }
 
+  /// 打った数字を範囲に収めて使う（数字が無ければ前の値のまま）。欄の
+  /// 表示は打ったままにして範囲の文を出し、欄から出たときにそろえる。
   void _applyCustomSize() {
     final w = int.tryParse(_customWidthController.text);
     final h = int.tryParse(_customHeightController.text);
-    if (w == null || h == null) return;
     setState(() {
-      _exportWidth = w.clamp(64, _maxCustomEdge);
-      _exportHeight = h.clamp(64, _maxCustomEdge);
+      if (w != null) _exportWidth = w.clamp(64, _maxCustomEdge);
+      if (h != null) _exportHeight = h.clamp(64, _maxCustomEdge);
     });
   }
 
   /// 現在のカスタムサイズに名前を付けて保存し、以降はサイズ一覧の
-  /// プリセットとして選択できるようにする。
+  /// プリセットとして選択できるようにする。空白だけの名前では保存しない。
   void _showSaveCustomSizeDialog() {
     final l10n = AppLocalizations.of(context)!;
-    final nameCtrl = TextEditingController();
+    final settings = context.read<SettingsService>();
+    final messenger = ScaffoldMessenger.of(context);
+    final width = _exportWidth;
+    final height = _exportHeight;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.newProjectSaveCustomSizeDialogTitle),
-        content: TextField(
-          controller: nameCtrl,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: l10n.newProjectSaveCustomSizeNameLabel,
-            border: const OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameCtrl.text.isNotEmpty) {
-                context.read<SettingsService>().addCustomSizePreset(
-                  nameCtrl.text,
-                  _exportWidth,
-                  _exportHeight,
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.newProjectSaveCustomSizeSavedSnackbar),
-                  ),
-                );
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonSave),
-          ),
-        ],
-      ),
-    ).then(
-      (_) => WidgetsBinding.instance.addPostFrameCallback(
-        (_) => nameCtrl.dispose(),
+      builder: (ctx) => NameEntryDialog(
+        title: l10n.newProjectSaveCustomSizeDialogTitle,
+        labelText: l10n.newProjectSaveCustomSizeNameLabel,
+        confirmLabel: l10n.commonSave,
+        cancelLabel: l10n.commonCancel,
+        onSubmit: (name) async {
+          await settings.addCustomSizePreset(name, width, height);
+          messenger.showSnackBar(
+            SnackBar(content: Text(l10n.newProjectSaveCustomSizeSavedSnackbar)),
+          );
+        },
       ),
     );
   }
@@ -286,7 +306,11 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     .toList(),
               ),
               const SizedBox(height: 24),
-              Row(
+              // 見出しと「サイズ設定」が1行に入らなければ、ボタンを次の行へ
+              // （Rowに並べていた頃は、英・西・仏語の大きな文字ではみ出した）。
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
                     l10n.newProjectSizeLabel,
@@ -296,7 +320,6 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
-                  const Spacer(),
                   TextButton.icon(
                     onPressed: () => Navigator.push(
                       context,
@@ -392,31 +415,52 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 ),
                 const SizedBox(height: 4),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: TextField(
                         controller: _customWidthController,
+                        focusNode: _widthFocus,
                         keyboardType: TextInputType.number,
+                        inputFormatters: _numberInput,
                         decoration: InputDecoration(
                           labelText: l10n.newProjectWidthLabel,
                           border: const OutlineInputBorder(),
+                          errorText: _rangeError(
+                            l10n,
+                            _customWidthController,
+                            64,
+                            _maxCustomEdge,
+                          ),
+                          errorMaxLines: 3,
                         ),
                         onChanged: (_) => _applyCustomSize(),
+                        onSubmitted: (_) => _commitNumberFields(),
                       ),
                     ),
                     const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      padding: EdgeInsets.fromLTRB(8, 16, 8, 0),
                       child: Text('×'),
                     ),
                     Expanded(
                       child: TextField(
                         controller: _customHeightController,
+                        focusNode: _heightFocus,
                         keyboardType: TextInputType.number,
+                        inputFormatters: _numberInput,
                         decoration: InputDecoration(
                           labelText: l10n.newProjectHeightLabel,
                           border: const OutlineInputBorder(),
+                          errorText: _rangeError(
+                            l10n,
+                            _customHeightController,
+                            64,
+                            _maxCustomEdge,
+                          ),
+                          errorMaxLines: 3,
                         ),
                         onChanged: (_) => _applyCustomSize(),
+                        onSubmitted: (_) => _commitNumberFields(),
                       ),
                     ),
                   ],
@@ -497,6 +541,12 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     });
                   }
                   final maxDurationText = _formatDuration(l10n, maxDuration);
+                  final durationError = _rangeError(
+                    l10n,
+                    _durationController,
+                    1,
+                    maxDuration,
+                  );
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -531,30 +581,45 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                             width: 88,
                             child: TextField(
                               controller: _durationController,
+                              focusNode: _durationFocus,
                               keyboardType: TextInputType.number,
+                              inputFormatters: _numberInput,
                               textAlign: TextAlign.center,
                               decoration: InputDecoration(
                                 isDense: true,
                                 suffixText: l10n.newProjectDurationUnit,
+                                // 欄が狭いので、範囲の文は欄の下の行に出す。
+                                error: durationError == null
+                                    ? null
+                                    : const SizedBox.shrink(),
                               ),
                               onChanged: (v) {
                                 final parsed = int.tryParse(v);
-                                if (parsed == null) return;
-                                setState(
-                                  () => _durationSeconds = parsed.clamp(
-                                    1,
-                                    maxDuration,
-                                  ),
-                                );
+                                setState(() {
+                                  if (parsed != null) {
+                                    _durationSeconds = parsed.clamp(
+                                      1,
+                                      maxDuration,
+                                    );
+                                  }
+                                });
                               },
-                              onSubmitted: (_) => setState(
-                                () => _durationController.text =
-                                    '$_durationSeconds',
-                              ),
+                              onSubmitted: (_) => _commitNumberFields(),
                             ),
                           ),
                         ],
                       ),
+                      if (durationError != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            durationError,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: 4),
                       SteppedSlider(
                         min: 1,
@@ -736,6 +801,8 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
 
   Future<void> _createProject() async {
     if (_creating) return;
+    // 作るのは欄に見えている値（範囲に収めた値）にそろえてから。
+    _commitNumberFields();
     setState(() {
       _creating = true;
       _creationFailed = false;
@@ -756,13 +823,16 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
         drawingAreaScale: _drawingAreaEnabled ? _drawingAreaScale : 1.0,
         enabledAutofillPresetIds: _enabledPresetIds,
       );
+      // 作れたら作成中のまま（押せない）にしておく。戻すと、キャンバスを
+      // 描く前に届いたダブルクリックの2回目で、もう1つ作品ができた。
       if (mounted) context.go('/canvas/${project.id}');
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (!mounted) return;
-      setState(() => _creationFailed = true);
-    } finally {
-      if (mounted) setState(() => _creating = false);
+      setState(() {
+        _creating = false;
+        _creationFailed = true;
+      });
     }
   }
 }

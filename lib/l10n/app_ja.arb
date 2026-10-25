@@ -3824,5 +3824,16 @@
         "type": "String"
       }
     }
+  },
+  "newProjectNumberRangeError": "{min}〜{max}の数字を入力してください",
+  "@newProjectNumberRangeError": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
   }
 }

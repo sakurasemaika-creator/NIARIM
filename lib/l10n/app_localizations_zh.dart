@@ -7681,6 +7681,11 @@ class AppLocalizationsZh extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String newProjectNumberRangeError(int min, int max) {
+    return '请输入$min到$max之间的数字';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -15360,5 +15365,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       'other': '預設顏色',
     });
     return '$_temp0';
+  }
+
+  @override
+  String newProjectNumberRangeError(int min, int max) {
+    return '請輸入$min到$max之間的數字';
   }
 }

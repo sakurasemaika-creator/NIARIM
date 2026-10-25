@@ -14116,6 +14116,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{color, select, pink{ピンク} orange{オレンジ} yellow{黄} green{緑} blue{青} purple{紫} gray{グレー} other{既定の色}}'**
   String folderColorName(String color);
+
+  /// No description provided for @newProjectNumberRangeError.
+  ///
+  /// In ja, this message translates to:
+  /// **'{min}〜{max}の数字を入力してください'**
+  String newProjectNumberRangeError(int min, int max);
 }
 
 class _AppLocalizationsDelegate

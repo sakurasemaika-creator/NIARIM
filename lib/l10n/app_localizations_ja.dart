@@ -7748,4 +7748,9 @@ class AppLocalizationsJa extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String newProjectNumberRangeError(int min, int max) {
+    return '$min〜$maxの数字を入力してください';
+  }
 }
