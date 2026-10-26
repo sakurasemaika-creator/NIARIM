@@ -267,3 +267,14 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - 維持するS9 layout: 狭幅で画面名と操作列を分離、自然幅tab、48px video filter、ranking sort chips折返し、検索modeのbounded label/角丸shape。以前の180画像smoke成功でも、実原本でStadium clipの文字欠けを発見し、actual renderer clip counterで1 FAIL→修正後1 PASS。これらは配色修正後の最新sourceで関連再確認が必要。
 - 次の具体操作: 現在HEADの正式色マッピングを表に記録→通常UIのcontrastingForeground/固定badge/preview/tooltipを正式tokenへ修正→設定色を反映するregressionと既存APCA/rescue回帰→実製品でテーマ変更/保存復元/PC-SP導線・原本目視→証跡をDrive保存/readback→検証済み差分を通常push。復旧専用ボタンの固定色・APCA閾値20/CVD/cacheを一般UIの配色補正へ流用しない。
 - Baseline2/628、A003 in_progress、DISC001–013 todo/cursorDISC001、Delta not_startedを維持。全面監査/最新HEAD Visual closureは未完了。
+
+### 2026-10-26 A003/S9 — 最新ソース取得・更新差分確認・環境停止checkpoint
+
+- ユーザーの全面監査再開・pull指示に従い、App `9fd84f36abd516a895aab2f15ce86f4dc14e13c9` / Web `74af216e1ae11345465326447abe97af262537a0` をfetchし、両local dev_branchをfast-forwardした。既存のfont差分は破棄していない。最新HEADのState/テーマ仕様/関連実装を確認し、以後の継続条件を [A003_S9_20261026_RESUME.md](A003_S9_20261026_RESUME.md) に記録した。
+- S9の保存済み最新WIPは [token-50 checkpoint](https://drive.google.com/file/d/1J-dHvefks5UDwJy8zrzOPbnzabijnHCY/view?usp=drivesdk)。926,107 bytes /61 entries、SHA256 `2beadd3077dd20ab43f6f282d0520a27a3663f1c80c321dc1d562f7ef5e4f740`。今回はmetadata name/MIME/size/parentとraw再取得SHA256/全CRC/MANIFEST全entry hashを再確認して復元した。保存済み50 real PASSは当時のS9 sourceに限定し、今回の9fd84f3に対するPASSへ昇格しない。重複する先行52/49件を加算しない。
+- 最新のテーマは9色項目・4種類の必須前景色を持つ。onPrimaryはbuttonTextColor、onSecondaryはselectionTextColor、AppBar/PopupはmenuTextColor、通常/淡色container文字はtextColor。旧WIPのonPrimary/onSecondary=menuBgColorという契約は廃止されたため、そのThemeService・モデル・APCA・翻訳・テストを一括上書きしない。救済は最新の厳密なAPCA絶対値10未満/CVD/cacheを保持する。
+- 新しいテーマプレビューは現在のコード・テストでは16画面。設計書の41画面記載と不一致があり、日英分岐による他言語表示も要確認。DISC014として新規機能/品質リスクを登録。現実装を一次事実とし、旧41画面を無条件に復元しない。見本データ画面を本番UIの実操作証拠へ代用しない。
+- DISC005継続: 最新Home/CardにはcontrastingForeground、Cardの固定白overlay、共通errorには固定neutral fallbackが残ることをsourceで確認。ユーザー方針との整合・正式tokenの役割を確認し、再現→修正→実操作→回帰が必要。source確認だけで機能/Visual PASSにしない。
+- pull/ZIP復元後、作業環境がunavailableとなり、実行toolは `exec-server transport disconnected` で失敗。SDK/native復旧とpreflightの開始要求は実行できておらず、今回の新規test/analyze/build/native/captureは未実施。未検証の製品差分をpushしない。新規ZIP生成/uploadはbackup-pending、既存の検証済みZIPは保持。
+- 次の1手: 作業環境の復旧後に両remoteを再fetch→このState/最新仕様を確認→保存済みtoken-50 ZIPをhash検証して必要部分だけ復元→最新9色の対応へS9差分を意味的統合。正式verifier/関連回帰/full analyze/native build後、実製品でTheme設定変更→Card/preview/menu→保存/再起動、header6状態×7言語×55条件と連続resize/keyboardを検証し原本目視。証跡保存/readback→検証済み製品を通常pushし、DISC013とA003残条件へ進む。
+- Baseline done2/628、A003 in_progress、DISC001–014 todo/cursorDISC001、Delta not_startedを維持。今回の環境停止はadvisor-pendingや製品合格を意味せず、全面監査/最新HEAD Visual closureは未完了。
