@@ -214,8 +214,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
             child: Text(
               l10n.commonCancel,
               style: TextStyle(
-                shadows: CanvasIconButton.foregroundShadows(
+                shadows: CanvasIconButton.actionShadows(
                   Theme.of(ctx).colorScheme.primary,
+                  Theme.of(ctx).dialogTheme.backgroundColor ??
+                      Theme.of(ctx).colorScheme.surface,
                   Theme.of(ctx).colorScheme,
                 ),
               ),
@@ -316,16 +318,18 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     icon: Icon(
                       Icons.tune,
                       size: 18,
-                      shadows: CanvasIconButton.foregroundShadows(
-                        Theme.of(context).colorScheme.primary,
-                        Theme.of(context).colorScheme,
-                      ),
+                      shadows: CanvasIconButton.actionShadows(
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).scaffoldBackgroundColor,
+                          Theme.of(context).colorScheme,
+                        ),
                     ),
                     label: Text(
                       l10n.newProjectSizePresetManageButton,
                       style: TextStyle(
-                        shadows: CanvasIconButton.foregroundShadows(
+                        shadows: CanvasIconButton.actionShadows(
                           Theme.of(context).colorScheme.primary,
+                          Theme.of(context).scaffoldBackgroundColor,
                           Theme.of(context).colorScheme,
                         ),
                       ),
@@ -472,16 +476,18 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     icon: Icon(
                       Icons.save_outlined,
                       size: 18,
-                      shadows: CanvasIconButton.foregroundShadows(
-                        Theme.of(context).colorScheme.primary,
-                        Theme.of(context).colorScheme,
-                      ),
+                      shadows: CanvasIconButton.actionShadows(
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).scaffoldBackgroundColor,
+                          Theme.of(context).colorScheme,
+                        ),
                     ),
                     label: Text(
                       l10n.newProjectSaveCustomSizeButton,
                       style: TextStyle(
-                        shadows: CanvasIconButton.foregroundShadows(
+                        shadows: CanvasIconButton.actionShadows(
                           Theme.of(context).colorScheme.primary,
+                          Theme.of(context).scaffoldBackgroundColor,
                           Theme.of(context).colorScheme,
                         ),
                       ),
@@ -707,10 +713,11 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 },
                 icon: Icon(
                   Icons.auto_fix_high_outlined,
-                  shadows: CanvasIconButton.foregroundShadows(
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme,
-                  ),
+                  shadows: CanvasIconButton.actionShadows(
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).scaffoldBackgroundColor,
+                          Theme.of(context).colorScheme,
+                        ),
                 ),
                 label: Text(
                   _enabledPresetIds == null
@@ -719,10 +726,11 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                           _enabledPresetIds!.length,
                         ),
                   style: TextStyle(
-                    shadows: CanvasIconButton.foregroundShadows(
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme,
-                    ),
+                    shadows: CanvasIconButton.actionShadows(
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).scaffoldBackgroundColor,
+                          Theme.of(context).colorScheme,
+                        ),
                   ),
                 ),
               ),
