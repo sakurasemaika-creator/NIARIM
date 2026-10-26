@@ -77,24 +77,45 @@ void main() {
     ).first;
     final scrollState = tester.state<ScrollableState>(scrollFinder);
     final position = scrollState.position;
-    final maxScroll = position.maxScrollExtent;
     final stride = (position.viewportDimension - 72).clamp(100.0, 2000.0);
-    final offsets = <double>[0];
-    while (offsets.last < maxScroll - 1) {
-      final next = (offsets.last + stride).clamp(0.0, maxScroll);
-      if (next - offsets.last < 1) break;
-      offsets.add(next);
-    }
     final allPageDir = Directory('build/theme-inline-preview')
       ..createSync(recursive: true);
-    for (var i = 0; i < offsets.length; i++) {
-      position.jumpTo(offsets[i]);
+    final l10nAtTop = AppLocalizations.of(
+      tester.element(find.byType(ThemeSettingsScreen)))!;
+    final lastButton = find.text(l10nAtTop.themeImportButton);
+    // The nested shrink-wrapped preset list can grow its scroll extent when
+    // new rows are laid out. Recompute maxScrollExtent AFTER every viewport;
+    // computing it once before scrolling silently truncates the gallery.
+    var nextOffset = 0.0;
+    var reachedBottom = false;
+    for (var i = 0; i < 36; i++) {
+      position.jumpTo(nextOffset.clamp(0.0, position.maxScrollExtent));
       await tester.pump(const Duration(milliseconds: 250));
       await tester.runAsync(() => _capture(
         rootKey,
         '${allPageDir.path}/theme_settings_full_${i.toString().padLeft(2, '0')}.png',
       ));
+      if (lastButton.evaluate().isNotEmpty) {
+        final rect = tester.getRect(lastButton);
+        if (rect.top >= 48 &&
+            rect.bottom <= tester.view.physicalSize.height /
+                tester.view.devicePixelRatio - 8) {
+          reachedBottom = true;
+          break;
+        }
+      }
+      final oldOffset = position.pixels;
+      nextOffset = (oldOffset + stride).clamp(0.0, position.maxScrollExtent);
+      if (nextOffset - oldOffset < 1) {
+        // Trigger further lazy layout before concluding we are at the end.
+        await tester.drag(scrollFinder, const Offset(0, -200));
+        await tester.pump(const Duration(milliseconds: 200));
+        nextOffset = position.pixels;
+      }
+      if (nextOffset - oldOffset < 1) break;
     }
+    expect(reachedBottom, isTrue,
+      reason: 'The complete theme screen must include the import button');
     // Continue the pre-existing editing/adoption test from its usual start.
     position.jumpTo(0);
     await tester.pump(const Duration(milliseconds: 250));
