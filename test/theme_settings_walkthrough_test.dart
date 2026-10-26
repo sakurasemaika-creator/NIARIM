@@ -42,6 +42,7 @@ void main() {
           providers: providers,
           child: Builder(
             builder: (themeContext) => MaterialApp(
+              debugShowCheckedModeBanner: false,
               theme: themeContext.watch<ThemeService>().themeData,
               locale: const Locale('ja'),
               localizationsDelegates: AppLocalizations.localizationsDelegates,
