@@ -10,6 +10,7 @@ on:
       - 'lib/widgets/theme_rescue_button.dart'
       - 'lib/screens/splash/splash_screen.dart'
       - 'lib/screens/settings/theme_settings_screen.dart'
+      - 'lib/widgets/background_color_picker.dart'
       - 'lib/screens/settings/theme_preview_gallery_screen.dart'
       - 'lib/services/theme_service.dart'
       - 'lib/models/app_theme_preset.dart'
@@ -40,6 +41,7 @@ on:
       - 'test/widget_settings_theme_foreground_test.dart'
       - 'test/theme_button_font_test.dart'
       - 'test/theme_settings_walkthrough_test.dart'
+      - 'test/background_color_picker_test.dart'
       - 'test/splash_layout_test.dart'
 
 jobs:
@@ -72,10 +74,11 @@ jobs:
           flutter test test/widget_settings_theme_foreground_test.dart --reporter expanded
           flutter test test/theme_button_font_test.dart --reporter expanded
           flutter test test/theme_settings_walkthrough_test.dart --reporter expanded
+          flutter test test/background_color_picker_test.dart --reporter expanded
           flutter test test/splash_layout_test.dart --reporter expanded
       - name: Theme and app static analysis
         run: flutter analyze lib test --no-fatal-infos --no-fatal-warnings
-      - name: Upload inline preview Flutter screenshot
+      - name: Upload inline preview and full-length theme settings screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
