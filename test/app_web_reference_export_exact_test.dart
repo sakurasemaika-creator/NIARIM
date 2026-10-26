@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/app.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
@@ -144,6 +145,29 @@ void main() {
 
     final timelineRoot = find.byType(TimelineScreen, skipOffstage: false);
     expect(timelineRoot, findsOneWidget);
+    await tester.pumpAndSettle();
+    final l10n = AppLocalizations.of(tester.element(timelineRoot))!;
+    await tester.tap(find.byKey(const Key('timelineAddMaterialMenu')));
+    await tester.pumpAndSettle();
+    for (final label in [
+      l10n.timelineAddTextTooltip,
+      l10n.timelineAddImageTooltip,
+      l10n.timelineAddVideoTooltip,
+      l10n.timelineAddAudioTooltip,
+    ]) {
+      expect(find.text(label), findsOneWidget);
+    }
+    await tester.tap(find.byKey(const Key('timelineAddWatermarkMenuItem')));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.timelineWatermarkNotRegisteredTitle), findsOneWidget);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byIcon(Icons.close),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
     final exportButton = find.descendant(
       of: timelineRoot,
       matching: find.byKey(
@@ -152,6 +176,12 @@ void main() {
       ),
     );
     expect(exportButton, findsOneWidget);
+    expect(
+      tester.getRect(exportButton).right,
+      lessThanOrEqualTo(320),
+      reason: 'Export must be visible without guessing a horizontal scroll',
+    );
+    expect(exportButton.hitTestable(), findsOneWidget);
     await tester.ensureVisible(exportButton);
     await tester.pumpAndSettle();
     expect(tester.getSize(exportButton).height, greaterThanOrEqualTo(48));

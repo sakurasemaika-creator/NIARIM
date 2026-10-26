@@ -1427,7 +1427,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      '将作品导出为通用MP4视频。免费版可导出的时长有上限（90秒），且会在视频结尾自动添加片尾卡（应用Logo）。 可在保留Alpha通道（背景透明部分）的情况下导出的视频格式。仅在支持的播放环境中才能透明播放。适合作为素材叠加到其他应用中使用。 导出为动图GIF。由于会自动循环播放，适合在社交媒体上轻松分享的场景。 如果更看重兼容性，也可以导出为AVI（Motion JPEG）。所采用的编码器在专利和授权方面较为安全，但不支持Alpha通道（透明），部分设备上应用内预览可能无法使用（此时仍可通过「分享」用外部播放器播放）。 免费会员的项目长度上限为90秒（付费会员为2小时）。如果新增或复制帧会超过上限，在点击按钮的瞬间就会显示提示对话框，因此实际上不会超过90秒。';
+      '将作品导出为通用MP4视频。免费版可导出的时长有上限（90秒），且会在视频结尾自动添加片尾卡（应用Logo）。 可在保留Alpha通道（背景透明部分）的情况下导出的视频格式。仅在支持的播放环境中才能透明播放。适合作为素材叠加到其他应用中使用。 导出为动图GIF。由于会自动循环播放，适合在社交媒体上轻松分享的场景。 如果更看重兼容性，也可以导出为AVI（Motion JPEG）。不支持Alpha通道（透明），部分设备上应用内预览可能无法使用（此时仍可通过「分享」用外部播放器播放）。 免费会员的项目长度上限为90秒（付费会员为2小时）。如果新增或复制帧会超过上限，在点击按钮的瞬间就会显示提示对话框，因此实际上不会超过90秒。';
 
   @override
   String get helpTransparentWebmTitle => '透明WebM';
@@ -1444,7 +1444,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpWatermarkEntryDesc =>
-      '可以在导出的视频・图片上加入自己签名或Logo作为水印的高级会员专属功能。可以调整位置、大小、不透明度。点击时间轴共通图层轨道上放置的水印，随时都能重新编辑其角度、大小、不透明度、显示范围（循环显示）——不仅是首次设置时，在项目中实际使用时也能随时细致调整。';
+      '可以在导出的视频・图片上加入自己签名或Logo作为水印的高级会员专属功能。可以调整位置、大小、不透明度。点击时间轴共通图层轨道上放置的水印，随时都能重新编辑其角度、大小、不透明度、显示范围（循环显示）——不仅是首次设置时，在项目中实际使用时也能随时细致调整。 添加水印时，请在时间轴的“添加素材”菜单中选择“＋水印”。';
 
   @override
   String get helpPremiumEntryTitle => 'Premium';
@@ -1681,7 +1681,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get helpExportScreenTitle => '导出画面';
 
   @override
-  String get helpExportScreenDesc => '导出视频、图片期间会显示进度，也可以中途取消。所需时间会因设备性能而异。';
+  String get helpExportScreenDesc =>
+      '在“预设”中选择“标准”“高画质”或“自定义”。选择“自定义”后，可以调整帧率（FPS）。导出视频、图片期间会显示进度，也可以中途取消。所需时间会因设备性能而异。';
 
   @override
   String get helpDrawingFilterTitle => '绘图滤镜';
@@ -8822,7 +8823,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpVideoExportDesc =>
-      '將作品匯出為通用MP4影片。免費版可匯出的長度有上限（90秒），且會在影片結尾自動加入片尾卡（應用程式Logo）。 可在保留Alpha色版（背景透明部分）的情況下匯出的影片格式。僅在支援的播放環境中才能透明播放。適合作為素材疊加到其他App中使用。 匯出為動畫GIF。由於會自動循環播放，適合在社群媒體上輕鬆分享的場景。 如果更重視相容性，也可以匯出為AVI（Motion JPEG）。所採用的編碼器在專利與授權方面較為安全，但不支援Alpha色版（透明），部分裝置上App內預覽可能無法使用（此時仍可透過「分享」用外部播放器播放）。 免費會員的專案長度上限為90秒（付費會員為2小時）。如果新增或複製影格會超過上限，在點擊按鈕的瞬間就會顯示提示對話框，因此實際上不會超過90秒。';
+      '將作品匯出為通用MP4影片。免費版可匯出的長度有上限（90秒），且會在影片結尾自動加入片尾卡（應用程式Logo）。 可在保留Alpha色版（背景透明部分）的情況下匯出的影片格式。僅在支援的播放環境中才能透明播放。適合作為素材疊加到其他App中使用。 匯出為動畫GIF。由於會自動循環播放，適合在社群媒體上輕鬆分享的場景。 如果更重視相容性，也可以匯出為AVI（Motion JPEG）。不支援Alpha色版（透明），部分裝置上App內預覽可能無法使用（此時仍可透過「分享」用外部播放器播放）。 免費會員的專案長度上限為90秒（付費會員為2小時）。如果新增或複製影格會超過上限，在點擊按鈕的瞬間就會顯示提示對話框，因此實際上不會超過90秒。';
 
   @override
   String get helpTransparentWebmTitle => '透明WebM';
@@ -8839,7 +8840,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpWatermarkEntryDesc =>
-      '可以在匯出的影片・圖片上加入自己簽名或Logo作為浮水印的進階會員專屬功能。可以調整位置、大小、不透明度。點擊時間軸共用圖層軌道上放置的浮水印，隨時都能重新編輯其角度、大小、不透明度、顯示範圍（循環顯示）——不僅是首次設定時，在專案中實際使用時也能隨時細緻調整。';
+      '可以在匯出的影片・圖片上加入自己簽名或Logo作為浮水印的進階會員專屬功能。可以調整位置、大小、不透明度。點擊時間軸共用圖層軌道上放置的浮水印，隨時都能重新編輯其角度、大小、不透明度、顯示範圍（循環顯示）——不僅是首次設定時，在專案中實際使用時也能隨時細緻調整。 新增浮水印時，請在時間軸的「新增素材」選單中選取「＋浮水印」。';
 
   @override
   String get helpPremiumEntryTitle => 'Premium';
@@ -9076,7 +9077,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get helpExportScreenTitle => '匯出畫面';
 
   @override
-  String get helpExportScreenDesc => '匯出影片、圖片期間會顯示進度，也可以中途取消。所需時間會依裝置效能而異。';
+  String get helpExportScreenDesc =>
+      '在「預設」中選取「標準」「高畫質」或「自訂」。選取「自訂」後，可以調整影格率（FPS）。匯出影片、圖片期間會顯示進度，也可以中途取消。所需時間會依裝置效能而異。';
 
   @override
   String get helpDrawingFilterTitle => '繪圖濾鏡';

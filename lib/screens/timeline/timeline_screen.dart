@@ -83,6 +83,8 @@ import 'widgets/stack_order_panel.dart';
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image, text }
 
+enum _TimelineToolbarAction { watermark }
+
 /// The colour of text clips on the timeline (amber, apart from the theme's
 /// colours that video, image and audio clips use).
 const Color _textClipColor = Color(0xFFE09A2C);
@@ -1913,6 +1915,114 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final canUseWatermark = context.watch<PremiumService>().isFeatureAvailable(
       PremiumFeature.watermark,
     );
+    final controls = <Widget>[
+      PopupMenuButton<Object>(
+        key: const Key('timelineAddMaterialMenu'),
+        icon: const Icon(Icons.add_circle_outline, size: 18),
+        tooltip: l10n.timelineAddMaterialTooltip,
+        onSelected: (action) {
+          if (action is _ClipTrackType) {
+            _addMaterialOfType(action);
+          } else if (action == _TimelineToolbarAction.watermark) {
+            // Recheck at selection, including changes while the menu is open.
+            if (context.read<PremiumService>().isFeatureAvailable(
+              PremiumFeature.watermark,
+            )) {
+              _showWatermarkPicker();
+            } else {
+              showPremiumBanner(context);
+            }
+          }
+        },
+        itemBuilder: (_) => [
+          for (final (type, icon, label) in [
+            (
+              _ClipTrackType.text,
+              Icons.text_fields,
+              l10n.timelineAddTextTooltip,
+            ),
+            (_ClipTrackType.image, Icons.image, l10n.timelineAddImageTooltip),
+            (
+              _ClipTrackType.video,
+              Icons.videocam,
+              l10n.timelineAddVideoTooltip,
+            ),
+            (
+              _ClipTrackType.audio,
+              Icons.audiotrack,
+              l10n.timelineAddAudioTooltip,
+            ),
+          ])
+            PopupMenuItem<Object>(
+              value: type,
+              child: Row(
+                children: [
+                  Icon(icon, size: 20),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: const TextStyle(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const PopupMenuDivider(),
+          PopupMenuItem<Object>(
+            key: const Key('timelineAddWatermarkMenuItem'),
+            value: _TimelineToolbarAction.watermark,
+            child: Row(
+              children: [
+                const Icon(Icons.branding_watermark, size: 20),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    l10n.timelineAddWatermarkTooltip,
+                    style: const TextStyle(
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
+                  ),
+                ),
+                if (!canUseWatermark) ...[
+                  const SizedBox(width: 8),
+                  const Icon(Icons.lock_outline, size: 16),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+      IconButton(
+        icon: const Icon(Icons.movie_filter, size: 18),
+        onPressed: _showEffectFilterDialog,
+        tooltip: l10n.timelineEffectFilterLabel,
+      ),
+      IconButton(
+        icon: const Icon(Icons.camera, size: 18),
+        onPressed: _addCameraKf,
+        tooltip: l10n.timelineAddCameraKfTooltip,
+      ),
+      IconButton(
+        icon: const Icon(Icons.push_pin_outlined, size: 18),
+        onPressed: _showAddMarkerDialog,
+        tooltip: l10n.timelineMarkerTrackLabel,
+      ),
+      IconButton(
+        icon: const Icon(Icons.layers_outlined, size: 18),
+        onPressed: _selectedSceneId == null
+            ? null
+            : () => setState(() {
+                _editingMaterialId = null;
+                _showStackOrder = true;
+              }),
+        tooltip: l10n.timelineStackOrderTitle,
+      ),
+    ];
     return Container(
       height: 49,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -1922,104 +2032,40 @@ class _TimelineScreenState extends State<TimelineScreen> {
           top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
         ),
       ),
-      // ボタンは7個（素材の追加は1つのメニュー）で、360px幅なら収まるが
-      // 320px幅級の小型端末では横に収まらない。収まるときは均等配置し、
-      // 収まらないときだけ横スクロールさせる。キャンバスモードの
-      // ツールバーも同じ方式。
-      child: LayoutBuilder(
-        builder: (context, constraints) => SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minWidth: constraints.maxWidth),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children:
-                  [
-                        // 素材（テキスト・画像・動画・音声）の追加は1つのボタンの
-                        // メニューにまとめる。種類ごとにボタンを並べると10個になり、
-                        // 420px幅でも書き出しボタンが画面外へ押し出された。
-                        PopupMenuButton<_ClipTrackType>(
-                          icon: const Icon(Icons.add_circle_outline, size: 18),
-                          tooltip: l10n.timelineAddMaterialTooltip,
-                          onSelected: _addMaterialOfType,
-                          itemBuilder: (_) => [
-                            for (final (type, icon, label) in [
-                              (
-                                _ClipTrackType.text,
-                                Icons.text_fields,
-                                l10n.timelineAddTextTooltip,
-                              ),
-                              (
-                                _ClipTrackType.image,
-                                Icons.image,
-                                l10n.timelineAddImageTooltip,
-                              ),
-                              (
-                                _ClipTrackType.video,
-                                Icons.videocam,
-                                l10n.timelineAddVideoTooltip,
-                              ),
-                              (
-                                _ClipTrackType.audio,
-                                Icons.audiotrack,
-                                l10n.timelineAddAudioTooltip,
-                              ),
-                            ])
-                              PopupMenuItem(
-                                value: type,
-                                child: Row(
-                                  children: [
-                                    Icon(icon, size: 20),
-                                    const SizedBox(width: 12),
-                                    Text(label),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                        // ウォーターマーク：無料会員はlockアイコン付き表示、タップで共通Premiumバナー
-                        _buildWatermarkButton(canUseWatermark),
-                        IconButton(
-                          icon: const Icon(Icons.movie_filter, size: 18),
-                          onPressed: () => _showEffectFilterDialog(),
-                          tooltip: l10n.timelineEffectFilterLabel,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.camera, size: 18),
-                          onPressed: _addCameraKf,
-                          tooltip: l10n.timelineAddCameraKfTooltip,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.push_pin_outlined, size: 18),
-                          onPressed: _showAddMarkerDialog,
-                          tooltip: l10n.timelineMarkerTrackLabel,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.layers_outlined, size: 18),
-                          onPressed: _selectedSceneId == null
-                              ? null
-                              : () => setState(() {
-                                  _editingMaterialId = null;
-                                  _showStackOrder = true;
-                                }),
-                          tooltip: l10n.timelineStackOrderTitle,
-                        ),
-                        IconButton(
-                          key: const Key('timelineExportButton'),
-                          icon: const Icon(Icons.upload_file, size: 18),
-                          onPressed: () =>
-                              context.push('/export/${widget.projectId}'),
-                          tooltip: l10n.transferExport,
-                        ),
-                      ]
-                      .map<Widget>(
-                        (control) =>
-                            SizedBox(width: 48, height: 48, child: control),
-                      )
-                      .toList(),
+      // Six targets fit at320px. Keep Export visible even when an unusually
+      // small viewport needs to scroll the less frequent editing controls.
+      child: Row(
+        children: [
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: controls
+                        .map(
+                          (control) =>
+                              SizedBox(width: 48, height: 48, child: control),
+                        )
+                        .toList(),
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: IconButton(
+              key: const Key('timelineExportButton'),
+              icon: const Icon(Icons.upload_file, size: 18),
+              onPressed: () => context.push('/export/${widget.projectId}'),
+              tooltip: l10n.transferExport,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2053,40 +2099,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
           type,
         );
     }
-  }
-
-  Widget _buildWatermarkButton(bool canUseWatermark) {
-    final l10n = AppLocalizations.of(context)!;
-    if (canUseWatermark) {
-      return IconButton(
-        icon: const Icon(Icons.branding_watermark, size: 18),
-        onPressed: _showWatermarkPicker,
-        tooltip: l10n.timelineAddWatermarkTooltip,
-      );
-    }
-    // 無料会員：lockアイコン付きで表示、タップで共通Premiumバナー
-    return GestureDetector(
-      onTap: () => showPremiumBanner(context),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.branding_watermark,
-              size: 18,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            SizedBox(width: 2),
-            Icon(
-              Icons.lock,
-              size: 12,
-              color: ThemeService.activeColorScheme.tertiary,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   /// 登録済みウォーターマーク一覧から選択して追加する（

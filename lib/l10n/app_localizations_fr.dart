@@ -1483,7 +1483,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'Exporte votre oeuvre au format video MP4 standard. La version gratuite a une limite de duree (90 secondes) et ajoute automatiquement une carte de fin (logo de l\'application) a la fin de la video. Un format vidéo qui peut être exporté en conservant le canal alpha (les parties transparentes du fond). La lecture transparente ne fonctionne que dans les environnements de lecture compatibles. Idéal pour superposer comme matériau dans d\'autres applications. Exporte au format GIF anime. Comme il boucle automatiquement, il convient bien au partage decontracte sur les reseaux sociaux. Si la compatibilité prime, vous pouvez aussi exporter au format AVI (Motion JPEG). Il utilise un codec choisi pour sa sécurité en matière de brevets et de licences, mais ne prend pas en charge le canal alpha (transparence), et l\'aperçu dans l\'application peut ne pas fonctionner sur tous les appareils (vous pouvez tout de même le lire via un lecteur externe depuis Partager). Les comptes gratuits sont limités à 90 secondes de durée de projet (les comptes Premium ont 2 heures). Si ajouter ou dupliquer des images vous ferait dépasser la limite, une alerte apparaît dès que vous appuyez sur le bouton, donc vous ne dépassez jamais réellement 90 secondes.';
+      'Exporte votre oeuvre au format video MP4 standard. La version gratuite a une limite de duree (90 secondes) et ajoute automatiquement une carte de fin (logo de l\'application) a la fin de la video. Un format vidéo qui peut être exporté en conservant le canal alpha (les parties transparentes du fond). La lecture transparente ne fonctionne que dans les environnements de lecture compatibles. Idéal pour superposer comme matériau dans d\'autres applications. Exporte au format GIF anime. Comme il boucle automatiquement, il convient bien au partage decontracte sur les reseaux sociaux. Si la compatibilité prime, vous pouvez aussi exporter au format AVI (Motion JPEG). Il ne prend pas en charge le canal alpha (transparence), et l\'aperçu dans l\'application peut ne pas fonctionner sur tous les appareils (vous pouvez tout de même le lire via un lecteur externe depuis Partager). Les comptes gratuits sont limités à 90 secondes de durée de projet (les comptes Premium ont 2 heures). Si ajouter ou dupliquer des images vous ferait dépasser la limite, une alerte apparaît dès que vous appuyez sur le bouton, donc vous ne dépassez jamais réellement 90 secondes.';
 
   @override
   String get helpTransparentWebmTitle => 'WebM transparent';
@@ -1500,7 +1500,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpWatermarkEntryDesc =>
-      'Une fonctionnalité réservée aux membres premium qui permet d\'ajouter votre propre signature ou logo en filigrane sur les vidéos et images exportées. Vous pouvez ajuster sa position, sa taille et son opacité. Touchez le filigrane placé sur la piste de calque commun de la timeline pour modifier à tout moment son angle, sa taille, son opacité et sa plage d\'affichage (bouclage) — pas seulement lors de son enregistrement, mais chaque fois que vous l\'utilisez dans un projet.';
+      'Une fonctionnalité réservée aux membres premium qui permet d\'ajouter votre propre signature ou logo en filigrane sur les vidéos et images exportées. Vous pouvez ajuster sa position, sa taille et son opacité. Touchez le filigrane placé sur la piste de calque commun de la timeline pour modifier à tout moment son angle, sa taille, son opacité et sa plage d\'affichage (bouclage) — pas seulement lors de son enregistrement, mais chaque fois que vous l\'utilisez dans un projet. Pour ajouter un filigrane, ouvrez « Ajouter un matériau » dans la timeline, puis choisissez « + Filigrane ».';
 
   @override
   String get helpPremiumEntryTitle => 'Premium';
@@ -1742,7 +1742,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'Affiche la progression pendant l\'export d\'une vidéo ou d\'une image, et permet d\'annuler en cours de route. Le temps nécessaire dépend des performances de l\'appareil.';
+      'Dans « Préréglage », choisissez « Standard », « Haute qualité » ou « Personnalisé ». Le mode « Personnalisé » permet de régler les images par seconde (FPS). Affiche la progression pendant l\'export d\'une vidéo ou d\'une image, et permet d\'annuler en cours de route. Le temps nécessaire dépend des performances de l\'appareil.';
 
   @override
   String get helpDrawingFilterTitle => 'Filtres de dessin';

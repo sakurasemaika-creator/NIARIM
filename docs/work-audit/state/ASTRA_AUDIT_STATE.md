@@ -450,3 +450,46 @@ Priority: (1) DISC017 currentA003 thumbnail/name: actualPNG200x113 hasalphaall0 
 KeepA003 ordinary/empty/large/Works/Bookmarks/errors, selection/folder/search/view/favorites andcontinuity remainingconditions. Afterpriorityrepairs continuefixedRoute, notnewclosureclaim. Save captures BEFORE review, thenrecordreview, so resetsneed download/view ratherthanre-operation. Source/code belongsGit; evidence/repro backups belong authorizedDrivefolder1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q. No repeatedpermissionrequests fornormalpush/save.
 
 Native04 Drive1aR8-fL1bf6-MOZ1i_15YsbBfcJi5s1hG/3,933,769B/SHA16b1e62fac8ca25b976453b7caa6f34a72515c08aa6e466741fb268613ea551f is metadata/rawSHA/CRC/allmanifestverified; includes15individuallyreviewedsource9b1 originals, completednormalbuild/CI2112 logs, registeredrisks, cachedreplay receipts andnewS12counter. This is scopedS11 evidence, notfinalfullauditVisualclosure.
+
+
+### 2026-10-27 S12 検証単位・リセット復元
+
+# A003 / S12 — 2026-10-27 再開正本
+
+## 進捗と一次事実
+
+Baseline done 2/628、current A003 in_progress。Discovery DISC001–027 は todo、cursor DISC001。Delta not_started。全面監査・最終Visual closureは未完了。locked BaselineのID/順序/definitionは変更していない。
+
+本単位の親HEADは App f9c756a73c65ae4e0a1597ca21cc4ccf7346942b / Web 40f4cf835064a586b2bbad35c4945c0fe615c7d3。再fetch済み、追加更新なし。S11製品修正9b1f43c3b016d19b1b0f6a6a3fdbb14ecd4a6c32のCI20workflow成功・fullsuite2112PASS/23skip/0FAILは既存証拠で引き継ぐ。S12とは別の結果であり、重複加算しない。
+
+## 検証したS12修正単位
+
+- Home: 透明PNGの背後に実作品backgroundColorを合成。project/folder名を画像から分離し、正式Card/Menu背景とMenuText前景のcaptionへ配置。長名は1行省略＋全名semantics/hover tooltip。caption長押しは親の選択操作へ届く。三点menuを48pxにし、文字倍率/太字を測定した最小高さでmenu・favorite・captionの重なりを防ぐ。選択/pickerではmenu枠を残さない。
+- Timeline: Exportを右端48pxに常時表示。他5controlは320pxで収まり、極端な小幅だけ横scroll。watermark追加をAddMaterialの5項目目へ集約し、選択時にもPremium gateを再評価。text/image/video/audio経路は保持。
+- Export: 同じenum値をmodels/export_preset.dartへ移し、旧export_screen.dartからreexportしてAPI互換を保持。全ラベルが収まる時は3分割、狭幅は3項目popup。文字を縮小せず、長いLatin単語の途中分断を避ける。選択前景は正式selectionTextColorを継承。
+- Help: 7言語でwatermark導線、standard/high/customとcustomFPSの説明を更新。特許/ライセンス上安全と断定する未裏付け表現を削除。法務適合そのものを合格にしたわけではない。
+
+UI固定黒白/自動neutralは追加していない。サムネイルbackgroundColorは作品内容の色。caption/menuはTheme.cardTheme.color・popupMenuTheme、favoriteはcolorScheme.primary、選択は既存selection role、Export popupは正式menu前景/背景を使う。既存9設定/4前景/APCA absLc<10救済/CVD/cache/保存形式/28presetを変更していない。
+
+## 保存済み検証
+
+- oct27-s12-responsive-related.jsonl: canonical fontで7file/33realPASS/0FAIL/28.684s。8透明thumbnail条件、formal caption前景/背景、長押し、48menu、favorite/selection/picker、実Timeline/AddMaterial/watermark/Export導線、textmaterial、Premium wiring、unused key、7ARB×2フォントcoverageを含む。
+- oct27-s12-export-preset-matrix.jsonl: 3realPASS/74.551s。24幅×7言語×標準/2倍×通常/OS太字×3選択×明暗＋28theme catalogの4620条件、70PNG、0failures。3選択callbackとEscape cancel、wide選択前景を確認。70部品原本の上部を等倍contact sheetsで全件確認し、Spanish custom/lightとFrench highQuality/darkの全原本も開いた。部品matrixを製品全画面の完了に置換しない。
+- S12 canonical native fixture build成功。production NiarimApp/router/providersを隔離された実10008 blank-frame projectで操作。native build時の全303製品Dart hashは復元後ソースと全件一致。実描画フレーム差/codec/性能の合格ではない。
+- FR/SP320/text2: Home透明thumbnail/caption/menu、Detail→Canvas→Timeline→Export、scroll前からExportを実tap、AddMaterial5項目、watermark未登録dialog、3preset選択、customFPS30→31、BackでTimeline復帰を操作・目視。
+- EN/PC1440/text1/formal paper設定: caption full-name hover、長押し選択、menuからfavorite追加、keyboardでOpen→Canvas→Timelineを操作・目視。作品背景は白、UIはnavy/sand/peach/burgundy等の9正式設定が反映。
+- full analyze cleanはリセット前に観測したが、そのrawlogは未uploadで消失。testのみのif braces修正を再適用。CIでformat/analyzeを追跡する。通常mainのS12 build、最新wide native Export原本、全A003表示条件は未完了。
+
+## 証拠と復元
+
+- Source/matrix/33tests/70PNG checkpoint: Drive [matrix-current](https://drive.google.com/file/d/139xlyIhjg2xHHOYEGiJZC4Be4k-IqmuN/view?usp=drivesdk)、5,642,906bytes、SHA256 35c12ba7d33654d475dde9daec50c19358cb3ccb19c7f4ecf207e886259a5a1e。metadata/rawSHA/CRC/全364manifestを再検証して復元。
+- Native最新保存済み: Drive [native10-captures](https://drive.google.com/file/d/1Ekn9Uv5argZXqByNmFYDQwhBhet0Z2xi/view?usp=drivesdk)、865,559bytes、SHA256 f808977e84571f5f2a764c00c8d0ad7729be474f5b8b9fdb8b745965f8462c43。metadata/rawSHA/CRC/全27manifestを再検証。23原本＋actions＋native source proofを保持。
+- 原本名訂正: s12-fr320-add-material-menu.pngは実際は演出filter sheet、s12-fr320-add-material-options.pngはExport画面。正しいAddMaterialはs12-fr320-add-material-actual.png。s12-en-pc1440-paper-home.pngは実際FR（LANG環境変数誤指定）、以降tooltip/selected/menu/favorite/canvas/timelineは正しいLANGUAGE=en。誤原本を成功の代用にしない。
+- 環境リセットで、後続projectgrid4620条件の追加test/source/log/report、wide Export最新原本、full-analyze-clean rawlogが失われた。正式coverageへ加算しない。復元済みの33tests・Export4620・native sourceは再実行不要。projectgrid追加matrixだけ必要時に再構成する。
+- ユーザー既存font 1,022,464bytes/SHA256 4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を復元・保持しcommit対象外。canonical font 4ff87a0965f1b0505e5a2c58424bc6ad3cff27e56a82f21c2fc9d6b0e3857ee2は検証時のみ。Git書込み/中断後に再確認。
+
+## 未完了と次の操作
+
+S12修正単位をexpected-parent/nonforceで通常pushし、remote HEAD/tree/path差分、実fetchを確認。CI追跡、publication receiptと最新source/State/証跡をDrive保存/readback。次にA003通常3件/大量120件・Works/Bookmarks loading/error/nonempty、folder/search/view/favorite/選択とtab往復の継続性を固定Routeに従って続ける。
+
+DISC017/021/022の優先修正済み部分をDiscovery doneへ昇格しない。DISC018 render/seek、019 quicklabel、020 Canvas targets、023 Timeline白作品counter、024 exportFPSと作品時間、025法務copy/実rights、026共有temp並列、027演出filter header等は残る。Android/DeX/touch/pen/SR/liveOAuth/backend/codec/performanceは未検証。正常main buildや全presetの製品実操作をテスト/存在確認で代用しない。上限前の一括保存を待たず、検証済み単位を先にGitへ確定する。

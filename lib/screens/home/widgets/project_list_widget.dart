@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart' hide MaterialType;
+import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -75,6 +76,39 @@ void showCreateFolderNameDialog(
       ],
     ),
   );
+}
+
+/// Preserve the normal thumbnail ratio while making room for the action rail
+/// and scaled caption, including the smallest grid tiles.
+class _ProjectGridDelegate extends SliverGridDelegateWithMaxCrossAxisExtent {
+  const _ProjectGridDelegate({
+    required double maxExtent,
+    required this.minHeight,
+  }) : super(
+         maxCrossAxisExtent: maxExtent,
+         crossAxisSpacing: 8,
+         mainAxisSpacing: 8,
+         childAspectRatio: 16 / 12,
+       );
+  final double minHeight;
+
+  @override
+  SliverGridLayout getLayout(SliverConstraints constraints) {
+    final usual = super.getLayout(constraints) as SliverGridRegularTileLayout;
+    if (usual.childMainAxisExtent >= minHeight) return usual;
+    return SliverGridRegularTileLayout(
+      crossAxisCount: usual.crossAxisCount,
+      mainAxisStride: minHeight + mainAxisSpacing,
+      crossAxisStride: usual.crossAxisStride,
+      childMainAxisExtent: minHeight,
+      childCrossAxisExtent: usual.childCrossAxisExtent,
+      reverseCrossAxis: usual.reverseCrossAxis,
+    );
+  }
+
+  @override
+  bool shouldRelayout(covariant _ProjectGridDelegate oldDelegate) =>
+      minHeight != oldDelegate.minHeight || super.shouldRelayout(oldDelegate);
 }
 
 /// フォルダ・プロジェクトを同一一覧内で扱うための表示用ラッパー
@@ -233,13 +267,28 @@ class ProjectListWidget extends StatelessWidget {
       ProjectViewMode.detail => double.infinity,
     };
 
+    final caption = TextPainter(
+      text: TextSpan(
+        text: 'Ag国한',
+        style: DefaultTextStyle.of(context).style
+            .merge(_captionStyle(context))
+            .copyWith(
+              fontWeight: MediaQuery.boldTextOf(context)
+                  ? FontWeight.bold
+                  : FontWeight.w600,
+            ),
+      ),
+      textScaler: MediaQuery.textScalerOf(context),
+      textDirection: Directionality.of(context),
+      locale: Localizations.localeOf(context),
+    )..layout();
+    final minimumHeight = 80 + caption.height + 8;
+    caption.dispose();
     return GridView.builder(
       padding: const EdgeInsets.all(8),
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: targetExtent,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 16 / 12,
+      gridDelegate: _ProjectGridDelegate(
+        maxExtent: targetExtent,
+        minHeight: minimumHeight,
       ),
       itemCount: sorted.length,
       itemBuilder: (context, index) => _gridCard(context, sorted[index]),
@@ -270,15 +319,48 @@ class ProjectListWidget extends StatelessWidget {
     );
     final path = project.thumbnailPath;
     if (path == null) return placeholder;
-    return Image.file(
-      File(path),
-      fit: BoxFit.cover,
-      cacheWidth: displayWidth == null
-          ? null
-          : (displayWidth * MediaQuery.devicePixelRatioOf(context)).round(),
-      errorBuilder: (context, error, stackTrace) => placeholder,
+    return ColoredBox(
+      color: Color(project.backgroundColor),
+      child: Image.file(
+        File(path),
+        fit: BoxFit.cover,
+        cacheWidth: displayWidth == null
+            ? null
+            : (displayWidth * MediaQuery.devicePixelRatioOf(context)).round(),
+        errorBuilder: (context, error, stackTrace) => placeholder,
+      ),
     );
   }
+
+  TextStyle _captionStyle(BuildContext context) => TextStyle(
+    fontSize: 12,
+    color:
+        Theme.of(context).popupMenuTheme.textStyle?.color ??
+        Theme.of(context).colorScheme.onSurface,
+    fontWeight: FontWeight.w600,
+    fontFamily: 'Kuramubon',
+    fontFamilyFallback: kHeadingFontFallback,
+  );
+
+  Widget _gridCaption(BuildContext context, String name) => ColoredBox(
+    color:
+        Theme.of(context).cardTheme.color ??
+        Theme.of(context).colorScheme.surfaceContainer,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: Tooltip(
+        message: name,
+        triggerMode: TooltipTriggerMode.manual,
+        excludeFromSemantics: true,
+        child: Text(
+          name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: _captionStyle(context),
+        ),
+      ),
+    ),
+  );
 
   Widget _detailTile(
     BuildContext context,
@@ -415,44 +497,6 @@ class ProjectListWidget extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     _thumbnail(context, project),
-                    // サムネイル下端に淡いグラデーションの帯を敷き、どんな絵柄の
-                    // 上でもプロジェクト名が読みやすくなるようにする。
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      height: 30,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              ThemeService.activeColorScheme.onSurface
-                                  .withValues(alpha: 0.55),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: 6,
-                      right: project.isFavorite ? 40 : 6,
-                      bottom: 4,
-                      child: Text(
-                        project.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: ThemeService.activeColorScheme.onSurface,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                        ),
-                      ),
-                    ),
                     _gridCardActions(
                       context,
                       menu: _projectMenu(context, project),
@@ -492,6 +536,7 @@ class ProjectListWidget extends StatelessWidget {
                   ],
                 ),
               ),
+              _gridCaption(context, project.name),
             ],
           ),
         ),
@@ -594,25 +639,7 @@ class ProjectListWidget extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      6,
-                      4,
-                      folder.isFavorite ? 40 : 6,
-                      6,
-                    ),
-                    child: Text(
-                      folder.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                  ),
+                  _gridCaption(context, folder.name),
                 ],
               ),
               _gridCardActions(
@@ -642,21 +669,19 @@ class ProjectListWidget extends StatelessWidget {
         children: [
           if (showMenu)
             Material(
-              color: scheme.surface.withValues(alpha: 0.9),
+              color: Theme.of(context).cardTheme.color ?? scheme.surface,
               shape: const CircleBorder(),
               clipBehavior: Clip.antiAlias,
-              child: SizedBox.square(dimension: 32, child: menu),
-            )
-          else if (!isSelectionMode)
-            const SizedBox.square(dimension: 32),
+              child: SizedBox.square(dimension: 48, child: menu),
+            ),
           if (isFavorite)
             Padding(
               // 選択中はメニューの空き枠を残さず、星をタイル右上へ寄せる。
-              padding: EdgeInsets.only(top: isSelectionMode ? 0 : 4),
+              padding: EdgeInsets.only(top: showMenu ? 4 : 0),
               child: Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: scheme.surface.withValues(alpha: 0.9),
+                  color: Theme.of(context).cardTheme.color ?? scheme.surface,
                   shape: BoxShape.circle,
                 ),
                 child: Builder(

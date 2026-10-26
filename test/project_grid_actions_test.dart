@@ -123,6 +123,13 @@ void main() {
         final l10n = AppLocalizations.of(tester.element(_card('Project')))!;
 
         for (final name in ['Project', 'Folder']) {
+          expect(tester.getSize(_menu(name)), const Size(48, 48));
+          final target = tester.getRect(_menu(name));
+          expect(tester.getRect(_card(name)).contains(target.topLeft), isTrue);
+          expect(
+            tester.getRect(_card(name)).contains(target.bottomRight),
+            isTrue,
+          );
           await tester.tap(_menu(name));
           await tester.pump(
             kDoubleTapTimeout + const Duration(milliseconds: 1),

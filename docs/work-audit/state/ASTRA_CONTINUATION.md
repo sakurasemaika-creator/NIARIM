@@ -40,7 +40,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S12 — S11公開/CI20成功/2112PASS/実FR-SPとEN-PC/通常build完了。DISC017透明thumbnail/名称とDISC021/022狭幅toolbar・Export配置の反例を修正へ
+current_substep: A003/S12 — thumbnail/48menu・固定Export・可変presetの検証単位。33tests/Export4620/native303hash一致を復元。push/CI/receipt後にA003残状態へ
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -60,7 +60,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: A003_S12_20261027_RESUME.mdを正本に、Native04/compiled2partcacheのreceiptを保存。DISC017の作品background保持/名称surfaceと独立target、DISC021の常時Export導線、DISC022の文字拡大preset配置を反例→fix→実操作→回帰→保存/pushで進める。S11完了済み同sourceの重い再実行は不要。
+next_action: A003_S12_20261027_RESUME.mdを正本に検証済みS12単位を通常push、HEAD/tree/実fetch、CIとreceipt保存。その後A003通常/大量/Works/Bookmarks/選択・folder/search/view/favorite継続性。保存済み33tests/Export4620/nativeを再実行しない。DISC001–027 todo、Delta未開始。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
