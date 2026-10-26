@@ -7,6 +7,7 @@ import '../../services/settings_service.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/reorder_index.dart';
+import '../canvas/widgets/canvas_icon_button.dart';
 
 /// 保存済みカスタムキャンバスサイズプリセットの一覧管理画面。
 /// ドラッグでの並べ替え・編集・複製・名前変更・削除ができる。
@@ -178,7 +179,15 @@ class _PresetTile extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
+            child: Text(
+              l10n.commonCancel,
+              style: TextStyle(
+                shadows: CanvasIconButton.foregroundShadows(
+                  Theme.of(ctx).colorScheme.primary,
+                  Theme.of(ctx).colorScheme,
+                ),
+              ),
+            ),
           ),
           FilledButton(
             onPressed: () {
@@ -239,7 +248,15 @@ class _PresetTile extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
+            child: Text(
+              l10n.commonCancel,
+              style: TextStyle(
+                shadows: CanvasIconButton.foregroundShadows(
+                  Theme.of(ctx).colorScheme.primary,
+                  Theme.of(ctx).colorScheme,
+                ),
+              ),
+            ),
           ),
           FilledButton(
             onPressed: () {
