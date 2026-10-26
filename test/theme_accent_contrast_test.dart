@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:niarim/utils/color_contrast.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -66,4 +67,33 @@ void main() {
       }
     },
   );
+
+  test('semantic error foreground stays readable on customized surfaces',
+      () async {
+    for (final background in [
+      const Color(0xFFAA2B35), // red surface hides default Material error
+      const Color(0xFFFFE47A), // pale yellow theme
+      const Color(0xFF17161C), // dark theme
+    ]) {
+      final preset = AppThemePreset.defaultLight.copyWith(
+        accentColor: const Color(0xFFFFE47A),
+        panelBgColor: background,
+        menuBgColor: background,
+        textColor: Colors.white,
+      );
+      SharedPreferences.setMockInitialValues({
+        'theme_current_json': jsonEncode(preset.toJson()),
+      });
+      final service = ThemeService();
+      await service.init();
+      final scheme = service.themeData.colorScheme;
+      expect(contrastRatio(scheme.error, background), greaterThanOrEqualTo(4.5),
+          reason: 'Error text must remain legible on the actual theme panel');
+      expect(scheme.primary, preset.accentColor,
+          reason: 'Do not rewrite the selected accent to fix errors');
+      expect(service.current.toJson(), preset.toJson(),
+          reason: 'Contrast protection must not change saved user colors');
+      service.dispose();
+    }
+  });
 }
