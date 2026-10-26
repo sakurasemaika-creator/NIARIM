@@ -106,4 +106,13 @@ void main() {
     );
     expect(resolved.fontFamilyFallback, isNotEmpty);
   });
+
+  test('outlined/text action buttons explicitly use the current accent', () {
+    final theme = ThemeService().themeData;
+    final accent = theme.colorScheme.primary;
+    expect(theme.outlinedButtonTheme.style?.foregroundColor
+        ?.resolve(<WidgetState>{}), accent);
+    expect(theme.textButtonTheme.style?.foregroundColor
+        ?.resolve(<WidgetState>{}), accent);
+  });
 }
