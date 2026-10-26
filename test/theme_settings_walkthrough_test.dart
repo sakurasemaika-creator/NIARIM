@@ -66,6 +66,39 @@ void main() {
       shot++;
     }
 
+    // Capture the ENTIRE vertically scrollable theme-and-appearance page,
+    // from the inline preview/color roles through every preset and the final
+    // import button. Each screenshot overlaps the previous by 72px so an
+    // external contact sheet can be stitched without missing any control.
+    // Keep this separate from the interaction walkthrough snapshots.
+    final scrollFinder = find.descendant(
+      of: find.byType(ThemeSettingsScreen),
+      matching: find.byType(Scrollable),
+    ).first;
+    final scrollState = tester.state<ScrollableState>(scrollFinder);
+    final position = scrollState.position;
+    final maxScroll = position.maxScrollExtent;
+    final stride = (position.viewportDimension - 72).clamp(100.0, 2000.0);
+    final offsets = <double>[0];
+    while (offsets.last < maxScroll - 1) {
+      final next = (offsets.last + stride).clamp(0.0, maxScroll);
+      if (next - offsets.last < 1) break;
+      offsets.add(next);
+    }
+    final allPageDir = Directory('build/theme-inline-preview')
+      ..createSync(recursive: true);
+    for (var i = 0; i < offsets.length; i++) {
+      position.jumpTo(offsets[i]);
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.runAsync(() => _capture(
+        rootKey,
+        '${allPageDir.path}/theme_settings_full_${i.toString().padLeft(2, '0')}.png',
+      ));
+    }
+    // Continue the pre-existing editing/adoption test from its usual start.
+    position.jumpTo(0);
+    await tester.pump(const Duration(milliseconds: 250));
+
     final context = tester.element(find.byType(ThemeSettingsScreen));
     final service = context.read<ThemeService>();
     final l10n = AppLocalizations.of(context)!;
