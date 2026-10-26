@@ -604,7 +604,18 @@ class ThemeService extends ChangeNotifier {
       seedColor: preset.accentColor,
       brightness: brightness,
     );
+    // Error labels are not a separate user-configurable color. Preserve
+    // Material's semantic error color when readable, but adapt it to the
+    // actual user-selected opaque panel and popup backgrounds otherwise.
+    final readableError = readableThemeError(
+      seedScheme.error,
+      panelColor,
+      popupColor,
+      preset.textColor,
+    );
     final scheme = seedScheme.copyWith(
+      error: readableError,
+      onError: contrastingForeground(readableError, seedScheme.onError),
       primary: accentColor,
       onPrimary: preset.buttonTextColor,
       secondary: selectionColor,
