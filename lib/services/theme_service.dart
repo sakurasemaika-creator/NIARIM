@@ -757,6 +757,7 @@ class ThemeService extends ChangeNotifier {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
+          foregroundColor: scheme.primary,
           minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
@@ -770,6 +771,7 @@ class ThemeService extends ChangeNotifier {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
+          foregroundColor: scheme.primary,
           minimumSize: const Size(48, 44),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
