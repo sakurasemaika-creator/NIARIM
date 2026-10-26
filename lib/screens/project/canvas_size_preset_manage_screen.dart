@@ -182,8 +182,10 @@ class _PresetTile extends StatelessWidget {
             child: Text(
               l10n.commonCancel,
               style: TextStyle(
-                shadows: CanvasIconButton.foregroundShadows(
+                shadows: CanvasIconButton.actionShadows(
                   Theme.of(ctx).colorScheme.primary,
+                  Theme.of(ctx).dialogTheme.backgroundColor ??
+                      Theme.of(ctx).colorScheme.surface,
                   Theme.of(ctx).colorScheme,
                 ),
               ),
@@ -251,8 +253,10 @@ class _PresetTile extends StatelessWidget {
             child: Text(
               l10n.commonCancel,
               style: TextStyle(
-                shadows: CanvasIconButton.foregroundShadows(
+                shadows: CanvasIconButton.actionShadows(
                   Theme.of(ctx).colorScheme.primary,
+                  Theme.of(ctx).dialogTheme.backgroundColor ??
+                      Theme.of(ctx).colorScheme.surface,
                   Theme.of(ctx).colorScheme,
                 ),
               ),
