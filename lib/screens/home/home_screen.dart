@@ -904,6 +904,8 @@ class _HomeScreenState extends State<HomeScreen>
   /// ホームアイコンでルートへ、各フォルダ名でその階層へ移動。
   Widget _buildBreadcrumb() {
     if (_currentFolderId == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     final folders = context.watch<ProjectService>().folders;
     final chain = <ProjectFolder>[];
     String? current = _currentFolderId;
@@ -919,26 +921,29 @@ class _HomeScreenState extends State<HomeScreen>
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            InkWell(
-              onTap: () => setState(() => _currentFolderId = null),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4),
-                child: Icon(Icons.home, size: 18),
-              ),
+            IconButton(
+              tooltip: l10n.projectListFolderRootOption,
+              onPressed: () => setState(() => _currentFolderId = null),
+              constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+              visualDensity: VisualDensity.standard,
+              icon: const Icon(Icons.home, size: 18),
             ),
             for (final folder in chain) ...[
               const Icon(Icons.chevron_right, size: 16),
-              InkWell(
-                onTap: () => setState(() => _currentFolderId = folder.id),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(
-                    folder.name,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                    ),
+              TextButton(
+                onPressed: () => setState(() => _currentFolderId = folder.id),
+                style: TextButton.styleFrom(
+                  foregroundColor: foreground,
+                  minimumSize: const Size(48, 48),
+                  visualDensity: VisualDensity.standard,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
+                child: Text(
+                  folder.name,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
               ),
