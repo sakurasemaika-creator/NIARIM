@@ -103,6 +103,41 @@ Color contrastingForeground(Color background, Color preferred) {
       : Colors.white;
 }
 
+/// Choose a visible semantic error foreground on the actual opaque theme
+/// panel and popup surfaces. Material's seeded error often remains a nearly
+/// fixed red regardless of the user's panel/menu customization. Prefer that
+/// semantic red when legible; otherwise use the user's chosen text token,
+/// and only then a neutral high-contrast fallback. Never rewrite their preset.
+Color readableThemeError(
+  Color materialError,
+  Color panelBackground,
+  Color popupBackground,
+  Color userTextColor,
+) {
+  final surfaces = [panelBackground, popupBackground];
+  double weakestContrast(Color candidate) => surfaces
+      .map((bg) => contrastRatio(candidate, bg))
+      .reduce(math.min);
+  final candidates = [
+    materialError,
+    userTextColor,
+    Colors.black,
+    Colors.white,
+  ];
+  if (materialError.a == 1 && weakestContrast(materialError) >= 4.5) {
+    return materialError;
+  }
+  // A custom foreground is preferred to an automatic neutral if it is
+  // readable across both contexts where Material error labels may appear.
+  if (userTextColor.a == 1 && weakestContrast(userTextColor) >= 4.5) {
+    return userTextColor;
+  }
+  return candidates
+      .where((c) => c.a == 1)
+      .reduce((a, b) =>
+          weakestContrast(a) >= weakestContrast(b) ? a : b);
+}
+
 /// Machado–Oliveira–Fernandes (2009) による線形sRGB色覚模擬行列。
 /// Severity 1.0 は二色覚に相当、0.6 は異常三色覚の例。個人差を示す診断ではない。
 /// https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html
