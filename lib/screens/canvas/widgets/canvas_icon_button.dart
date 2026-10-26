@@ -77,6 +77,23 @@ class CanvasIconButton extends StatelessWidget {
     ColorScheme scheme,
   ) => outlineShadows(outlineColor(foreground, scheme));
 
+  /// Ordinary action buttons sit on a known theme background, unlike the
+  /// tools floating over arbitrary canvas artwork. A permanent 1px dark
+  /// outline visually turns small Kuramubon accent labels burgundy even
+  /// though their actual fill is the chosen pink. Keep the true accent
+  /// appearance when it is already distinguishable; use the same theme-
+  /// derived outline only if the chosen colors nearly merge.
+  ///
+  /// This does not change the button's foreground or the saved theme colors.
+  static List<Shadow>? actionShadows(
+    Color foreground,
+    Color background,
+    ColorScheme scheme,
+  ) {
+    if (contrastRatio(foreground, background) >= 2.5) return null;
+    return foregroundShadows(foreground, scheme);
+  }
+
   /// アイコン本体＋縁取りを描く。
   Widget _renderIcon(Color iconColor, Color outlineColor) {
     if (iconBuilder != null) {
