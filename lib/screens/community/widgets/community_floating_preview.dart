@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
@@ -63,6 +62,10 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
       return const SizedBox.shrink();
     }
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final barColor = theme.cardTheme.color ?? theme.colorScheme.surface;
+    final controlColor =
+        theme.appBarTheme.foregroundColor ?? theme.colorScheme.onSurface;
     final screenSize = MediaQuery.sizeOf(context);
     final position = service.position;
     final size = service.size;
@@ -133,8 +136,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                             _isPlaying
                                 ? Icons.play_circle_fill_rounded
                                 : Icons.pause_circle_filled_rounded,
-                            color: ThemeService.activeColorScheme.onSurface
-                                .withValues(alpha: 0.70),
+                            color: controlColor,
                             size: 40,
                           ),
                         ),
@@ -142,8 +144,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                     ),
                     Container(
                       height: CommunityPreviewService.controlBarHeight,
-                      color: ThemeService.activeColorScheme.onSurface
-                          .withValues(alpha: 0.87),
+                      color: barColor,
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       // SpacerやExpandedを挟むと、この位置（高さ無制限の
                       // Column内、幅固定のContainer内）で極端なオーバー
@@ -180,9 +181,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                   ),
                                   icon: Icon(
                                     _isPlaying ? Icons.pause : Icons.play_arrow,
-                                    color: ThemeService
-                                        .activeColorScheme
-                                        .onSurface,
+                                    color: controlColor,
                                   ),
                                   iconSize: 22,
                                   onPressed: () =>
@@ -201,12 +200,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                     minWidth: 36,
                                     minHeight: 36,
                                   ),
-                                  icon: Icon(
-                                    Icons.close,
-                                    color: ThemeService
-                                        .activeColorScheme
-                                        .onSurface,
-                                  ),
+                                  icon: Icon(Icons.close, color: controlColor),
                                   iconSize: 20,
                                   onPressed: service.close,
                                 ),
@@ -220,8 +214,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                             padding: EdgeInsets.only(right: handleHitSize - 8),
                             child: TextButton(
                               style: TextButton.styleFrom(
-                                foregroundColor:
-                                    ThemeService.activeColorScheme.onSurface,
+                                foregroundColor: controlColor,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 10,
                                   vertical: 8,
@@ -273,14 +266,13 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                     // 見た目のアイコンは小さいままでも、コンテナ自体の
                     // 当たり判定は広く取れるよう半透明の丸背景を敷く。
                     decoration: BoxDecoration(
-                      color: ThemeService.activeColorScheme.onSurface
-                          .withValues(alpha: 0.45),
+                      color: barColor,
                       borderRadius: BorderRadius.circular(handleHitSize / 2),
                     ),
                     child: Icon(
                       Icons.open_in_full,
                       size: handleIconSize,
-                      color: ThemeService.activeColorScheme.onSurface,
+                      color: controlColor,
                     ),
                   ),
                 ),

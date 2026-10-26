@@ -2652,13 +2652,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeColorText => 'Couleur du texte courant';
 
   @override
-  String get themeColorButtonText => 'Couleur du texte et des icônes des boutons';
+  String get themeColorButtonText =>
+      'Couleur du texte et des icônes des boutons';
 
   @override
-  String get themeColorMenuText => 'Couleur du texte des menus et de la barre supérieure';
+  String get themeColorMenuText =>
+      'Couleur du texte des menus et de la barre supérieure';
 
   @override
-  String get themeColorSelectionText => 'Couleur du texte et des icônes sélectionnés';
+  String get themeColorSelectionText =>
+      'Couleur du texte et des icônes sélectionnés';
 
   @override
   String get themeColorPanelBg => 'Couleur de fond des panneaux';
@@ -2673,13 +2676,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeColorUpdateMark => 'Couleur de la marque de mise à jour';
 
   @override
-  String get themeUnreadableResetButton => 'Réinitialiser le thème';
-
-  @override
   String get themeResetConfirmTitle => 'Réinitialiser les couleurs du thème ?';
 
   @override
   String get themeResetConfirmAction => 'Réinitialiser';
+
+  @override
+  String get themeUnreadableResetButton => 'Réinitialiser le thème';
 
   @override
   String get themeUnreadableResetDone =>

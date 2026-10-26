@@ -2532,13 +2532,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeColorUpdateMark => '更新标记颜色';
 
   @override
-  String get themeUnreadableResetButton => '还原主题';
-
-  @override
   String get themeResetConfirmTitle => '要重置主题颜色吗？';
 
   @override
   String get themeResetConfirmAction => '重置';
+
+  @override
+  String get themeUnreadableResetButton => '还原主题';
 
   @override
   String get themeUnreadableResetDone => '已将主题还原为默认配色。';
@@ -9924,13 +9924,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get themeColorUpdateMark => '更新標記顏色';
 
   @override
-  String get themeUnreadableResetButton => '還原主題';
-
-  @override
   String get themeResetConfirmTitle => '要重設主題顏色嗎？';
 
   @override
   String get themeResetConfirmAction => '重設';
+
+  @override
+  String get themeUnreadableResetButton => '還原主題';
 
   @override
   String get themeUnreadableResetDone => '已將主題還原為預設配色。';

@@ -2546,13 +2546,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeColorUpdateMark => '更新マーク色';
 
   @override
-  String get themeUnreadableResetButton => 'テーマをもとに戻す';
-
-  @override
   String get themeResetConfirmTitle => 'テーマカラーをリセットしますか？';
 
   @override
   String get themeResetConfirmAction => 'リセット';
+
+  @override
+  String get themeUnreadableResetButton => 'テーマをもとに戻す';
 
   @override
   String get themeUnreadableResetDone => 'テーマを既定の配色に戻しました。';

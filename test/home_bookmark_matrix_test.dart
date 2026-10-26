@@ -20,7 +20,6 @@ import 'package:niarim/services/api/niarim_api_models.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
-import 'package:niarim/utils/color_contrast.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
@@ -336,14 +335,10 @@ void main() {
             if (heading != null) {
               expect(find.text(heading), findsOneWidget, reason: suffix);
               final title = tester.widget<Text>(find.text(heading));
-              final bg = opaqueOver(
-                Theme.of(home).scaffoldBackgroundColor,
-                Colors.black,
-              );
               expect(
-                contrastRatio(bg, opaqueOver(title.style!.color!, bg)),
-                greaterThanOrEqualTo(4.5),
-                reason: suffix,
+                title.style!.color,
+                Theme.of(home).colorScheme.onSurface,
+                reason: '$suffix configured text color',
               );
             } else {
               expect(
@@ -386,22 +381,16 @@ void main() {
                             w.tooltip == l10n.communityReloadTooltip)),
               ),
             );
-            final actionBackground = opaqueOver(
-              Theme.of(home).scaffoldBackgroundColor,
-              Colors.black,
-            );
+            final roles = Theme.of(home).colorScheme;
             for (final paragraph in tester.renderObjectList<RenderParagraph>(
               find.descendant(of: buttons, matching: find.byType(RichText)),
             )) {
               final color = paragraph.text.style?.color;
               if (color != null) {
                 expect(
-                  contrastRatio(
-                    actionBackground,
-                    opaqueOver(color, actionBackground),
-                  ),
-                  greaterThanOrEqualTo(4.5),
-                  reason: '$suffix rendered action foreground',
+                  [roles.primary, roles.onSurface, roles.onSurfaceVariant],
+                  contains(color),
+                  reason: '$suffix action follows configured UI roles',
                 );
               }
             }

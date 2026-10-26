@@ -2556,13 +2556,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeColorUpdateMark => '업데이트 표시 색상';
 
   @override
-  String get themeUnreadableResetButton => '테마 되돌리기';
-
-  @override
   String get themeResetConfirmTitle => '테마 색상을 초기화하시겠습니까?';
 
   @override
   String get themeResetConfirmAction => '초기화';
+
+  @override
+  String get themeUnreadableResetButton => '테마 되돌리기';
 
   @override
   String get themeUnreadableResetDone => '테마를 기본 색으로 되돌렸습니다.';

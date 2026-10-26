@@ -38,9 +38,8 @@ class ThemeService extends ChangeNotifier {
     return _rescueCachedResult;
   }
 
-
   static ColorScheme activeColorScheme = ColorScheme.fromSeed(
-    seedColor: const Color(0xFFFF5C7A),
+    seedColor: AppThemePreset.defaultLight.accentColor,
   );
 
   /// 復旧確認ダイアログ専用。現在のテーマから独立している。
@@ -618,8 +617,16 @@ class ThemeService extends ChangeNotifier {
       onError: contrastingForeground(readableError, seedScheme.onError),
       primary: accentColor,
       onPrimary: preset.buttonTextColor,
+      primaryContainer: Color.alphaBlend(
+        accentColor.withValues(alpha: 0.16),
+        popupColor,
+      ),
       secondary: selectionColor,
       onSecondary: preset.selectionTextColor,
+      secondaryContainer: Color.alphaBlend(
+        selectionColor.withValues(alpha: 0.16),
+        popupColor,
+      ),
       // Material container shades are subtle surfaces, NOT primary
       // filled buttons. Text shown on them (e.g. creator avatar labels)
       // follows the normal text token, not the button foreground.
@@ -712,6 +719,7 @@ class ThemeService extends ChangeNotifier {
       // Match text/icon foreground to the same menu token as the top bar.
       popupMenuTheme: PopupMenuThemeData(
         color: popupColor,
+        surfaceTintColor: popupColor,
         textStyle: textTheme.bodyMedium?.copyWith(color: menuForeground),
         iconColor: menuForeground,
       ),
@@ -735,15 +743,17 @@ class ThemeService extends ChangeNotifier {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),
-          textStyle: textTheme.labelLarge?.copyWith(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-            fontWeight: FontWeight.w700,
-          ) ?? const TextStyle(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle:
+              textTheme.labelLarge?.copyWith(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+                fontWeight: FontWeight.w700,
+              ) ??
+              const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+                fontWeight: FontWeight.w700,
+              ),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -856,10 +866,9 @@ class ThemeService extends ChangeNotifier {
       // Flutter既定のツールチップは下地が90%の不透明度で、後ろの画面が
       // 透ける。色と形は既定のまま、不透明にする。
       tooltipTheme: TooltipThemeData(
+        textStyle: textTheme.bodySmall?.copyWith(color: preset.menuTextColor),
         decoration: BoxDecoration(
-          color: brightness == Brightness.dark
-              ? Colors.white
-              : Colors.grey.shade700,
+          color: popupColor,
           borderRadius: const BorderRadius.all(Radius.circular(4)),
         ),
       ),
@@ -879,9 +888,8 @@ class ThemeService extends ChangeNotifier {
       // Flutter's normal themed fill (no forced contrast correction).
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith<Color?>(
-          (states) => states.contains(WidgetState.selected)
-              ? selectionColor
-              : null,
+          (states) =>
+              states.contains(WidgetState.selected) ? selectionColor : null,
         ),
         checkColor: WidgetStatePropertyAll(preset.selectionTextColor),
       ),
@@ -903,15 +911,18 @@ class ThemeService extends ChangeNotifier {
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.resolveWith<Color?>(
             (states) => states.contains(WidgetState.selected)
-                ? selectionColor : preset.menuBgColor,
+                ? selectionColor
+                : preset.menuBgColor,
           ),
           foregroundColor: WidgetStateProperty.resolveWith<Color?>(
             (states) => states.contains(WidgetState.selected)
-                ? preset.selectionTextColor : preset.textColor,
+                ? preset.selectionTextColor
+                : preset.textColor,
           ),
           iconColor: WidgetStateProperty.resolveWith<Color?>(
             (states) => states.contains(WidgetState.selected)
-                ? preset.selectionTextColor : preset.textColor,
+                ? preset.selectionTextColor
+                : preset.textColor,
           ),
         ),
       ),
@@ -920,13 +931,15 @@ class ThemeService extends ChangeNotifier {
         iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>(
           (states) => IconThemeData(
             color: states.contains(WidgetState.selected)
-                ? preset.selectionTextColor : preset.textColor,
+                ? preset.selectionTextColor
+                : preset.textColor,
           ),
         ),
         labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>(
           (states) => textTheme.labelMedium?.copyWith(
             color: states.contains(WidgetState.selected)
-                ? preset.selectionTextColor : preset.textColor,
+                ? preset.selectionTextColor
+                : preset.textColor,
           ),
         ),
       ),

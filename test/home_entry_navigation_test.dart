@@ -11,7 +11,6 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
-import 'package:niarim/utils/color_contrast.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:provider/provider.dart';
@@ -131,8 +130,73 @@ void main() {
     },
   );
 
-  testWidgets('home bottom FABs and drawer icon obey navigation layout',
-      (tester) async {
+  testWidgets('home drawer uses the configured menu surface and foreground', (
+    tester,
+  ) async {
+    final preset = AppThemePreset.defaultLight.copyWith(
+      textColor: const Color(0xFF16593A),
+      menuTextColor: const Color(0xFF17325A),
+      menuBgColor: const Color(0xFFFFE5B7),
+    );
+    final l10n = await open(
+      tester,
+      language: 'en',
+      pc: true,
+      size: const Size(1440, 900),
+      theme: preset,
+    );
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+    final drawer = find.byType(Drawer);
+    expect(tester.widget<Drawer>(drawer).backgroundColor, preset.menuBgColor);
+    final label = find.descendant(
+      of: drawer,
+      matching: find.text(l10n.homeDrawerSettings),
+    );
+    expect(
+      tester.renderObject<RenderParagraph>(label).text.style!.color,
+      preset.menuTextColor,
+    );
+    final icon = find.descendant(
+      of: drawer,
+      matching: find.byIcon(Icons.settings_outlined),
+    );
+    expect(IconTheme.of(tester.element(icon)).color, preset.menuTextColor);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('home selected tab outline uses its actual menu background', (
+    tester,
+  ) async {
+    const menu = Color(0xFFFFE5B7), ink = Color(0xFF17325A);
+    final preset = AppThemePreset.defaultLight.copyWith(
+      panelBgColor: const Color(0xFF16593A),
+      textColor: const Color(0xFFF0F0FF),
+      accentColor: menu,
+      menuBgColor: menu,
+      menuTextColor: ink,
+    );
+    final l10n = await open(
+      tester,
+      language: 'en',
+      pc: true,
+      size: const Size(1440, 900),
+      theme: preset,
+    );
+    final label = find.descendant(
+      of: find.byType(AppBar),
+      matching: find.text(l10n.homeTabProjects),
+    );
+    final style = tester.renderObject<RenderParagraph>(label).text.style!;
+    expect(style.color, menu);
+    expect(style.shadows, hasLength(8));
+    expect(style.shadows!.every((s) => s.color == ink), isTrue);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('home bottom FABs and drawer icon obey navigation layout', (
+    tester,
+  ) async {
     final l10n = await open(tester);
     final backFinder = find.byKey(const Key('homeBackToSplashFab'));
     expect(backFinder, findsOneWidget);
@@ -156,7 +220,8 @@ void main() {
     // The hamburger stays at the top left, the splash arrow is lower left.
     final drawerIcon = find.descendant(
       of: find.byType(AppBar).first,
-      matching: find.byIcon(Icons.menu));
+      matching: find.byIcon(Icons.menu),
+    );
     expect(drawerIcon, findsOneWidget);
     expect(tester.getCenter(drawerIcon).dy, lessThan(leftCenter.dy));
 
@@ -231,7 +296,7 @@ void main() {
   });
 
   testWidgets(
-    'home tabs and bookmark entry remain readable with light accents',
+    'home tabs and bookmark entry follow the configured accent without correction',
     (tester) async {
       for (final theme in [
         AppThemePreset.defaultLight,
@@ -241,12 +306,9 @@ void main() {
         ),
       ]) {
         final l10n = await open(tester, theme: theme);
-        final background = opaqueOver(
-          Theme.of(
-            tester.element(find.byType(HomeScreen)),
-          ).scaffoldBackgroundColor,
-          Colors.black,
-        );
+        final scheme = Theme.of(
+          tester.element(find.byType(HomeScreen)),
+        ).colorScheme;
         for (final index in [0, 1, 2]) {
           await switchTab(tester, index);
           final labels = tester.widgetList<Text>(
@@ -256,8 +318,8 @@ void main() {
             ),
           );
           expect(
-            contrastRatio(background, labels.single.style!.color!),
-            greaterThanOrEqualTo(4.5),
+            labels.single.style!.color,
+            scheme.primary,
             reason: 'selected tab $index on ${theme.id}',
           );
         }
@@ -269,17 +331,9 @@ void main() {
             Theme.of(
               tester.element(find.byType(HomeScreen)),
             ).colorScheme.primary;
-        expect(
-          contrastRatio(background, foreground),
-          greaterThanOrEqualTo(4.5),
-          reason: 'bookmark gallery action',
-        );
+        expect(foreground, scheme.primary, reason: 'bookmark gallery action');
         final icon = tester.widget<Icon>(find.byIcon(Icons.bookmark_border));
-        expect(
-          contrastRatio(background, opaqueOver(icon.color!, background)),
-          greaterThanOrEqualTo(3),
-          reason: 'bookmark empty-state icon',
-        );
+        expect(icon.color, scheme.primary, reason: 'bookmark empty-state icon');
       }
       await tester.pumpWidget(const SizedBox.shrink());
     },

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
 import '../../../config/font_fallback.dart';
-import '../../../utils/color_contrast.dart';
 
 String formatDurationLabel(int seconds) {
   final m = seconds ~/ 60;
@@ -56,25 +55,16 @@ class CommunityWorkCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final cardColor = opaqueOver(
-      theme.cardTheme.color ?? scheme.surfaceContainerLow,
-      opaqueOver(theme.scaffoldBackgroundColor, Colors.black),
-    );
-    final textColor = contrastingForeground(
-      cardColor,
-      opaqueOver(scheme.onSurface, cardColor),
-    );
-    final detailColor = contrastingForeground(
-      cardColor,
-      opaqueOver(scheme.onSurfaceVariant, cardColor),
-    );
+    final cardColor = theme.cardTheme.color ?? scheme.surfaceContainerLow;
+    final textColor = scheme.onSurface;
+    final detailColor = scheme.onSurfaceVariant;
     final author = work.authorName.trim().isEmpty
         ? l10n.communityCreatorLabel
         : work.authorName;
     final language = Localizations.localeOf(context).languageCode;
     final views = formatCompactCount(work.viewCount, language);
     final bookmarks = formatCompactCount(work.bookmarkCount, language);
-    const overlay = Color(0xB8000000);
+    final overlay = cardColor;
     Widget badge(
       String label, {
       IconData? icon,
@@ -92,7 +82,7 @@ class CommunityWorkCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null)
-              Icon(icon, size: iconOnly ? 18 : 12, color: Colors.white),
+              Icon(icon, size: iconOnly ? 18 : 12, color: textColor),
             if (!iconOnly) ...[
               if (icon != null) const SizedBox(width: 3),
               Flexible(
@@ -101,7 +91,7 @@ class CommunityWorkCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: textColor,
                     fontSize: fontSize,
                     fontWeight: FontWeight.w600,
                   ),
@@ -168,13 +158,13 @@ class CommunityWorkCard extends StatelessWidget {
                                   child: Container(
                                     width: 40,
                                     height: 40,
-                                    decoration: const BoxDecoration(
+                                    decoration: BoxDecoration(
                                       color: overlay,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.play_arrow_rounded,
-                                      color: Colors.white,
+                                      color: textColor,
                                       size: 28,
                                     ),
                                   ),
@@ -261,7 +251,7 @@ class CommunityWorkCard extends StatelessWidget {
                                       isBookmarked
                                           ? Icons.bookmark
                                           : Icons.bookmark_border,
-                                      color: Colors.white,
+                                      color: textColor,
                                     ),
                                   ),
                                 ),

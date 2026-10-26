@@ -278,3 +278,23 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - pull/ZIP復元後、作業環境がunavailableとなり、実行toolは `exec-server transport disconnected` で失敗。SDK/native復旧とpreflightの開始要求は実行できておらず、今回の新規test/analyze/build/native/captureは未実施。未検証の製品差分をpushしない。新規ZIP生成/uploadはbackup-pending、既存の検証済みZIPは保持。
 - 次の1手: 作業環境の復旧後に両remoteを再fetch→このState/最新仕様を確認→保存済みtoken-50 ZIPをhash検証して必要部分だけ復元→最新9色の対応へS9差分を意味的統合。正式verifier/関連回帰/full analyze/native build後、実製品でTheme設定変更→Card/preview/menu→保存/再起動、header6状態×7言語×55条件と連続resize/keyboardを検証し原本目視。証跡保存/readback→検証済み製品を通常pushし、DISC013とA003残条件へ進む。
 - Baseline done2/628、A003 in_progress、DISC001–014 todo/cursorDISC001、Delta not_startedを維持。今回の環境停止はadvisor-pendingや製品合格を意味せず、全面監査/最新HEAD Visual closureは未完了。
+
+### 2026-10-26 A003/S9 — 設定色・responsive優先修正の検証checkpoint
+
+- 開始/再fetch App15fe5ff（製品9fd84f3）/Web8d74e80。最新9色/4前景・28preset・厳密APCA10未満/CVD/cacheを保持してS9を意味的統合。固定neutralをHome/Card/preview/tooltipから正式roleへ変更。全callerのDISC005は未完了。
+- 最新HEAD counter5 non-success、KO search/tag2反例、Drawer/outline2反例、modal説明/保存label1反例を記録し、修正後の対象回帰/native再操作を確認。helper全文/大文字Saveは7言語×2viewport×2mode=28条件を追加検証。詳細/source影響はA003_S9_20261026_RESUME.md。
+- 最終関連28 PASS、最終modal3 PASS（28layout条件を含む）、最新analyze0、harness/通常Linux debug build成功。41/13/2等の先行回帰との重複合算なし。initial34中の旧FAB期待2件は最新Back FAB仕様へ更新して2 PASS。
+- Header6状態×7言語×55=2310 PNG/6 real PASS229.484s、Home6主要状態×7×55=2310 PNG/1 real PASS444.695s。modalだけの後続修正は他コードbyte一致/source-impact proofと新規modal test/nativeで検証。全4620枚の個別目視や全remote/大量状態を合格としない。
+- Native enPC非neutral9色でUIからmenu HEX変更→Card/preview/menu反映→process再起動で9値/3bookmarks保持。koPCtext2の検索/切替、frSP390→320text2のtab移動/heading/本文/Back FAB、modal全文scroll/Saveを原本で確認。placeholder toggleは実動画再生ではない。
+- 最新2matrix ZIPはDriveへ保存しmetadata/raw SHA256/CRC/MANIFEST一致。下表参照。native最終coreはこのcheckpointへ追記する。DelaGothic既存差分を保全し、検証はHEAD fontを使用、最終push後に元bytesを復旧する。
+
+| ZIP | bytes / entries | SHA256 |
+| --- | --- | --- |
+| [Header 2310](https://drive.google.com/file/d/1UPq6ciQdW2sx_Wpt3bdJ14LhVBC6AUMQ/view?usp=drivesdk) | 58,933,489 / 2,319 | `089c3792ffc6083888cb66dc3302518788c35c1667875ab8318ae7230b9181d9` |
+| [Home 2310](https://drive.google.com/file/d/1bswQ8JhaX9pUEHhDVbwg3WMhpx5C0PRH/view?usp=drivesdk) | 59,179,335 / 2,314 | `490c01d3f247d0199b9c798abb37b4e1eda49a023eb994a779c91c666b7a1efb` |
+| [Runtime core（最終dialog修正前）](https://drive.google.com/file/d/1b7BT7GW1V2hDkimWmoKYIjJjPEX1upN4/view?usp=drivesdk) | 3,572,247 / 121 | `4f3e91a364b870028240eb56d8a6eaa0d74947103209d2fd647d3e72ad938192` |
+
+- 次はS10/狭幅preview（DISC013）。FR320text2実原本で356px幅とoffscreen resize handleを確認。YouTube公式最小200×200/16:9推奨との違いを確認済み、幅/高さ適応・代替導線・48target/keyboardを実装/検証する。Home tab source46px等も確認し、実再生をplaceholderから推定しない。
+- Baseline2/628、A003 in_progress、DISC001–014 todo/cursorDISC001、Delta not_started。Android/DeX/touch/筆圧、live backend/OAuth、FFmpeg runtime codec、全Visual closureは未完了。
+
+- S9最終core保存/readback完了: [A003-S9-OCT26-final-core](https://drive.google.com/file/d/1h0nUV4MooTp7QId9njeGpW8L0g1whQKx/view?usp=drivesdk)、5,085,891 bytes /164 entries、SHA256 `49c80f61427947714b13d315f7d483e35ef37ff3b71a4cdd4184c2844dfa5604`。metadataとraw再取得hash/全CRC/MANIFEST全entry hash一致。全source/patch/hash、全反例/回帰/最新default buildログ、native原本/action/redacted runner、modal限定のsource-impact proof、2matrix参照、再開scriptを収録。ZIP内Stateはこの自己参照receipt追加前。Git Stateへreceiptを保持し、全面監査の完了にはしない。

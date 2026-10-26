@@ -8,172 +8,185 @@ class HomeDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final menuForeground =
+        theme.appBarTheme.foregroundColor ?? scheme.onSurface;
     final l10n = AppLocalizations.of(context)!;
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(20, 56, 20, 20),
-            decoration: BoxDecoration(color: scheme.primary),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: scheme.onPrimary.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
+      backgroundColor: theme.cardTheme.color ?? scheme.surface,
+      child: ListTileTheme(
+        data: theme.listTileTheme.copyWith(
+          iconColor: menuForeground,
+          textColor: menuForeground,
+          titleTextStyle: theme.listTileTheme.titleTextStyle?.copyWith(
+            color: menuForeground,
+          ),
+        ),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 56, 20, 20),
+              decoration: BoxDecoration(color: scheme.primary),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: scheme.onPrimary.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.movie_creation_outlined,
+                      color: scheme.onPrimary,
+                      size: 26,
+                    ),
                   ),
-                  child: Icon(
-                    Icons.movie_creation_outlined,
-                    color: scheme.onPrimary,
-                    size: 26,
+                  const SizedBox(height: 12),
+                  Text(
+                    'NIARIM',
+                    style: TextStyle(
+                      color: scheme.onPrimary,
+                      fontFamily: 'HakkouMincho',
+                      fontFamilyFallback: const ['NotoSerifJP'],
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.5,
+                      height: 1.5,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'NIARIM',
-                  style: TextStyle(
-                    color: scheme.onPrimary,
-                    fontFamily: 'HakkouMincho',
-                    fontFamilyFallback: const ['NotoSerifJP'],
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.5,
-                    height: 1.5,
+                  const SizedBox(height: 2),
+                  Text(
+                    l10n.homeDrawerAppTagline,
+                    style: TextStyle(color: scheme.onPrimary, fontSize: 12),
                   ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 4),
+            // メニュー項目名はくらむぼんで統一する。
+            ListTile(
+              leading: const Icon(Icons.share_outlined),
+              title: Text(
+                l10n.homeTabShared,
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  l10n.homeDrawerAppTagline,
-                  style: TextStyle(color: scheme.onPrimary, fontSize: 12),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/shared');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline),
+              title: Text(
+                l10n.homeTabTrash,
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-          // メニュー項目名はくらむぼんで統一する。
-          ListTile(
-            leading: const Icon(Icons.share_outlined),
-            title: Text(
-              l10n.homeTabShared,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
               ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/trash');
+              },
             ),
-            onTap: () {
-              Navigator.pop(context);
-              context.push('/shared');
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.delete_outline),
-            title: Text(
-              l10n.homeTabTrash,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.palette_outlined),
+              title: Text(
+                l10n.homeDrawerAutofillPreset,
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
               ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/autofill-presets');
+              },
             ),
-            onTap: () {
-              Navigator.pop(context);
-              context.push('/trash');
-            },
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.palette_outlined),
-            title: Text(
-              l10n.homeDrawerAutofillPreset,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+            ListTile(
+              leading: const Icon(Icons.cleaning_services_outlined),
+              title: Text(
+                l10n.homeDrawerStorage,
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
               ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/storage');
+              },
             ),
-            onTap: () {
-              Navigator.pop(context);
-              context.push('/autofill-presets');
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.cleaning_services_outlined),
-            title: Text(
-              l10n.homeDrawerStorage,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.settings_outlined),
+              title: Text(
+                l10n.homeDrawerSettings,
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
               ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/settings');
+              },
             ),
-            onTap: () {
-              Navigator.pop(context);
-              context.push('/storage');
-            },
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.settings_outlined),
-            title: Text(
-              l10n.homeDrawerSettings,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+            ListTile(
+              leading: const Icon(Icons.help_outline),
+              title: Text(
+                l10n.homeDrawerHelp,
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
               ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/help');
+              },
             ),
-            onTap: () {
-              Navigator.pop(context);
-              context.push('/settings');
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.help_outline),
-            title: Text(
-              l10n.homeDrawerHelp,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+            ListTile(
+              leading: const Icon(Icons.lightbulb_outline),
+              title: Text(
+                l10n.homeDrawerTips,
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
               ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/tips');
+              },
             ),
-            onTap: () {
-              Navigator.pop(context);
-              context.push('/help');
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.lightbulb_outline),
-            title: Text(
-              l10n.homeDrawerTips,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+            ListTile(
+              leading: Icon(
+                Icons.workspace_premium_outlined,
+                color: scheme.primary,
               ),
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              context.push('/tips');
-            },
-          ),
-          ListTile(
-            leading: Icon(
-              Icons.workspace_premium_outlined,
-              color: scheme.primary,
-            ),
-            title: Text(
-              l10n.homeDrawerPremium,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
+              title: Text(
+                l10n.homeDrawerPremium,
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
               ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/premium');
+              },
             ),
-            onTap: () {
-              Navigator.pop(context);
-              context.push('/premium');
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

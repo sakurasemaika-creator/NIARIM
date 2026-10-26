@@ -4712,16 +4712,25 @@ abstract class AppLocalizations {
   /// No description provided for @themeColorText.
   ///
   /// In ja, this message translates to:
-  /// **'文字色'**
+  /// **'本文・通常の文字色'**
   String get themeColorText;
-  
-  /// Button text and icon color.
+
+  /// No description provided for @themeColorButtonText.
+  ///
+  /// In ja, this message translates to:
+  /// **'ボタン内の文字・アイコン色'**
   String get themeColorButtonText;
 
-  /// Menu and app bar text and icon color.
+  /// No description provided for @themeColorMenuText.
+  ///
+  /// In ja, this message translates to:
+  /// **'メニュー・上部バーの文字色'**
   String get themeColorMenuText;
 
-  /// Text and icon color on selected surfaces.
+  /// No description provided for @themeColorSelectionText.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中の文字・アイコン色'**
   String get themeColorSelectionText;
 
   /// No description provided for @themeColorPanelBg.
@@ -4748,23 +4757,23 @@ abstract class AppLocalizations {
   /// **'更新マーク色'**
   String get themeColorUpdateMark;
 
-  /// 読めないテーマになったとき起動画面に出る固定色のリセットボタン
-  ///
-  /// In ja, this message translates to:
-  /// **'テーマをもとに戻す'**
-  String get themeUnreadableResetButton;
-  
-  /// テーマのリセット確認ダイアログ
+  /// テーマのリセット前に表示する確認ダイアログ
   ///
   /// In ja, this message translates to:
   /// **'テーマカラーをリセットしますか？'**
   String get themeResetConfirmTitle;
 
-  /// テーマのリセット確定操作
+  /// テーマのリセットを確定するボタン
   ///
   /// In ja, this message translates to:
   /// **'リセット'**
   String get themeResetConfirmAction;
+
+  /// 読めないテーマになったとき起動画面に出る固定色のリセットボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマをもとに戻す'**
+  String get themeUnreadableResetButton;
 
   /// テーマをリセットしたときの通知
   ///

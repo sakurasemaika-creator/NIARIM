@@ -260,10 +260,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         Text(label, style: TextStyle(color: c.onPrimary,
           fontFamily: 'Kuramubon', fontWeight: FontWeight.bold)),
       ]));
-  Widget _art(ColorScheme c, {double height = 150}) => Container(
-    height: height, color: c.surfaceContainerHigh,
-    alignment: Alignment.center,
-    child: Icon(Icons.movie_creation_outlined, size: 52, color: c.onSurfaceVariant));
+
 
   @override
   Widget build(BuildContext context) {
@@ -1074,25 +1071,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     ]),
   );
 
-  Widget _timelineTrack(ColorScheme c, String label) => SizedBox(
-    height: 41, child: Row(children: [
-      Container(width: 98, padding: const EdgeInsets.symmetric(horizontal: 6),
-        alignment: Alignment.centerLeft, color: c.surfaceContainerLow,
-        child: Text(label, style: const TextStyle(fontSize: 11),
-          overflow: TextOverflow.ellipsis)),
-      Expanded(child: Row(
-        children: List.generate(5, (i) => Expanded(
-          child: Container(
-            margin: const EdgeInsets.all(1),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: i == 0 ? c.primary : c.surfaceContainerHigh,
-              border: Border.all(color: c.outlineVariant)),
-            child: Text('${i + 1}', style: TextStyle(
-              fontSize: 10, color: i == 0 ? c.onPrimary : c.onSurfaceVariant)),
-          ))))),
-    ]),
-  );
+
 
   Widget _complete(ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
@@ -1199,7 +1178,7 @@ class _ThemeSampleScreen extends StatelessWidget {
             ConstrainedBox(
               constraints: BoxConstraints(maxWidth: box.maxWidth),
               child: ChoiceChip(
-                label: Text(item.value.$1 + ' (' + item.value.$2 + ')',
+                label: Text('${item.value.$1} (${item.value.$2})',
                   maxLines: 2, overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center),
                 selected: item.key == 0,
@@ -1617,32 +1596,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     ],
   );
 
-  Widget _staticControl(ColorScheme c, String label, {
-    String? detail, bool selected = true,
-  }) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    decoration: BoxDecoration(color: c.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(12)),
-    child: Row(children: [
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 12,
-            fontWeight: FontWeight.w600)),
-          if (detail != null) Text(detail, maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
-        ])),
-      Container(width: 30, height: 17,
-        padding: const EdgeInsets.all(2),
-        alignment: selected ? Alignment.centerRight : Alignment.centerLeft,
-        decoration: BoxDecoration(
-          color: selected ? c.primary : c.outlineVariant,
-          borderRadius: BorderRadius.circular(12)),
-        child: Container(width: 13, height: 13,
-          decoration: BoxDecoration(color: selected ? c.onPrimary : c.surface,
-            shape: BoxShape.circle))),
-    ]),
-  );
+
 
   Widget _staticChoiceRow(ColorScheme c, List<String> choices, {
       int active = 0}) => Row(children: [
@@ -2357,7 +2311,7 @@ class _ThemeSampleScreen extends StatelessWidget {
           'あおいさんがフォローしました', 'なつさんがフォローしました'][i],
           ['Sakura followed you', 'Mirai followed you',
            'Aoi followed you', 'Natsu followed you'][i])),
-      subtitle: Text('2026/10/23 10:0' + i.toString()),
+      subtitle: Text('2026/10/23 10:0$i'),
     ),
   );
 
@@ -2393,7 +2347,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(t('スロット', 'Slot') + ' ' + (i + 1).toString(),
+                    Text('${t('スロット', 'Slot')} ${i + 1}',
                       style: const TextStyle(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 4),
                     Text(t('保存データなし', 'No saved data'),

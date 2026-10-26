@@ -128,9 +128,11 @@ void main() {
           );
           expect(
             find.byType(FloatingActionButton),
-            findsNothing,
-            reason: 'delay=$delay',
+            findsOneWidget,
+            reason:
+                'Only the latest Home back-to-splash FAB remains; delay=$delay',
           );
+          expect(find.byKey(const Key('homeBackToSplashFab')), findsOneWidget);
           await tester.pumpWidget(const SizedBox.shrink());
           tester.platformDispatcher.clearTextScaleFactorTestValue();
         }

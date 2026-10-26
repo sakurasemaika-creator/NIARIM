@@ -36,6 +36,7 @@ import '../community/community_edit_feedback.dart';
 import '../community/community_error_text.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/color_contrast.dart';
+import '../canvas/widgets/canvas_icon_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -286,11 +287,15 @@ class _HomeScreenState extends State<HomeScreen>
             // ドロワー用ハンバーガーメニューのみとし、お気に入りは変更しない。
             automaticallyImplyLeading: false,
             leadingWidth: _isSearching ? 0 : 56,
-            leading: _isSearching ? null : IconButton(
-              icon: const Icon(Icons.menu),
-              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
-              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            ),
+            leading: _isSearching
+                ? null
+                : IconButton(
+                    icon: const Icon(Icons.menu),
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).openAppDrawerTooltip,
+                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  ),
             title: _currentTabIndex != 0
                 ? Text(
                     _currentTabIndex == 1
@@ -615,65 +620,67 @@ class _HomeScreenState extends State<HomeScreen>
           // プロジェクトタブ：新規プロジェクト／新規フォルダを選べるFAB。
           // 作品一覧タブ：新規プロジェクト作成の導線は不要なため、フォルダの
           // 新規作成のみをワンタップ・選択肢なしで直接行えるFABにする。
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
           floatingActionButton: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              FloatingActionButton(
-                key: const Key('homeBackToSplashFab'),
-                heroTag: 'home-back-to-splash',
-                tooltip: l10n.homeBackToSplashTooltip,
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                shape: const CircleBorder(side: BorderSide.none),
-                elevation: 0,
-                focusElevation: 0,
-                hoverElevation: 0,
-                highlightElevation: 0,
-                disabledElevation: 0,
-
-                onPressed: () => context.go('/'),
-                child: const Icon(Icons.arrow_back),
-              ),
-              if (_currentTabIndex == 0)
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 FloatingActionButton(
-                  heroTag: 'home-add-project',
+                  key: const Key('homeBackToSplashFab'),
+                  heroTag: 'home-back-to-splash',
+                  tooltip: l10n.homeBackToSplashTooltip,
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                shape: const CircleBorder(side: BorderSide.none),
-                elevation: 0,
-                focusElevation: 0,
-                hoverElevation: 0,
-                highlightElevation: 0,
-                disabledElevation: 0,
+                  shape: const CircleBorder(side: BorderSide.none),
+                  elevation: 0,
+                  focusElevation: 0,
+                  hoverElevation: 0,
+                  highlightElevation: 0,
+                  disabledElevation: 0,
 
-                  onPressed: () => _showAddChoiceSheet(context),
-                  child: const Icon(Icons.add),
-                )
-              else if (_currentTabIndex == 1)
-                FloatingActionButton(
-                  heroTag: 'home-add-work-folder',
-                  tooltip: l10n.homeAddSheetNewFolder,
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                shape: const CircleBorder(side: BorderSide.none),
-                elevation: 0,
-                focusElevation: 0,
-                hoverElevation: 0,
-                highlightElevation: 0,
-                disabledElevation: 0,
+                  onPressed: () => context.go('/'),
+                  child: const Icon(Icons.arrow_back),
+                ),
+                if (_currentTabIndex == 0)
+                  FloatingActionButton(
+                    heroTag: 'home-add-project',
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: const CircleBorder(side: BorderSide.none),
+                    elevation: 0,
+                    focusElevation: 0,
+                    hoverElevation: 0,
+                    highlightElevation: 0,
+                    disabledElevation: 0,
 
-                  onPressed: () => showCreateFolderNameDialog(
-                    context,
-                    (name) => context.read<WorkFolderService>().createFolder(name),
-                  ),
-                  child: const Icon(Icons.create_new_folder_outlined),
-                )
-              else
-                const SizedBox(width: 56),
-            ],
+                    onPressed: () => _showAddChoiceSheet(context),
+                    child: const Icon(Icons.add),
+                  )
+                else if (_currentTabIndex == 1)
+                  FloatingActionButton(
+                    heroTag: 'home-add-work-folder',
+                    tooltip: l10n.homeAddSheetNewFolder,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: const CircleBorder(side: BorderSide.none),
+                    elevation: 0,
+                    focusElevation: 0,
+                    hoverElevation: 0,
+                    highlightElevation: 0,
+                    disabledElevation: 0,
+
+                    onPressed: () => showCreateFolderNameDialog(
+                      context,
+                      (name) =>
+                          context.read<WorkFolderService>().createFolder(name),
+                    ),
+                    child: const Icon(Icons.create_new_folder_outlined),
+                  )
+                else
+                  const SizedBox(width: 56),
+              ],
             ),
           ),
         ),
@@ -980,12 +987,17 @@ class _HomeTabBarState extends State<_HomeTabBar> {
     final controller = widget.controller;
     final scheme = Theme.of(context).colorScheme;
     // Preserve the selected accent as the indicator itself (red stays red),
-    // but protect tab-label readability on extreme custom accents.
+    // and retain the exact configured foreground with a theme-derived outline.
     final background = opaqueOver(
-      Theme.of(context).scaffoldBackgroundColor,
-      Colors.black,
+      Theme.of(context).appBarTheme.backgroundColor ?? scheme.surface,
+      opaqueOver(Theme.of(context).scaffoldBackgroundColor, Colors.black),
     );
-    final selectedTextColor = contrastingForeground(background, scheme.primary);
+    final menuScheme = scheme.copyWith(
+      surface: background,
+      onSurface:
+          Theme.of(context).appBarTheme.foregroundColor ?? scheme.onSurface,
+    );
+    final selectedTextColor = scheme.primary;
     final selectedIndicatorColor = scheme.primary;
     final textStyle = const TextStyle(
       fontSize: 14,
@@ -999,6 +1011,7 @@ class _HomeTabBarState extends State<_HomeTabBar> {
         text: TextSpan(text: label, style: textStyle),
         textDirection: TextDirection.ltr,
         textScaler: MediaQuery.textScalerOf(context),
+        locale: Localizations.localeOf(context),
         maxLines: 1,
       )..layout();
       final width = tp.width + 32;
@@ -1018,7 +1031,9 @@ class _HomeTabBarState extends State<_HomeTabBar> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: currentIndex == i ? selectedIndicatorColor : Colors.transparent,
+                color: currentIndex == i
+                    ? selectedIndicatorColor
+                    : Colors.transparent,
                 width: 2,
               ),
             ),
@@ -1031,6 +1046,13 @@ class _HomeTabBarState extends State<_HomeTabBar> {
               color: currentIndex == i
                   ? selectedTextColor
                   : scheme.onSurfaceVariant,
+              shadows: currentIndex == i
+                  ? CanvasIconButton.actionShadows(
+                      selectedTextColor,
+                      background,
+                      menuScheme,
+                    )
+                  : null,
             ),
           ),
         ),
@@ -1765,15 +1787,9 @@ class _BookmarkedTab extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final background = opaqueOver(theme.scaffoldBackgroundColor, Colors.black);
-    final foreground = contrastingForeground(background, scheme.primary);
-    final textForeground = contrastingForeground(
-      background,
-      opaqueOver(scheme.onSurface, background),
-    );
-    final bodyForeground = contrastingForeground(
-      background,
-      opaqueOver(scheme.onSurfaceVariant, background),
-    );
+    final foreground = scheme.primary;
+    final textForeground = scheme.onSurface;
+    final bodyForeground = scheme.onSurfaceVariant;
     final service = context.watch<CommunityService>();
     final works = service.bookmarkedWorksForViewer;
     final canReload =

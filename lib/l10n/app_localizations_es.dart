@@ -2662,7 +2662,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get themeColorMenuText => 'Color del texto de menús y barra superior';
 
   @override
-  String get themeColorSelectionText => 'Color del texto y los iconos seleccionados';
+  String get themeColorSelectionText =>
+      'Color del texto y los iconos seleccionados';
 
   @override
   String get themeColorPanelBg => 'Color de fondo del panel';
@@ -2677,13 +2678,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get themeColorUpdateMark => 'Color de la marca de actualización';
 
   @override
-  String get themeUnreadableResetButton => 'Restablecer tema';
-
-  @override
   String get themeResetConfirmTitle => '¿Restablecer los colores del tema?';
 
   @override
   String get themeResetConfirmAction => 'Restablecer';
+
+  @override
+  String get themeUnreadableResetButton => 'Restablecer tema';
 
   @override
   String get themeUnreadableResetDone =>
