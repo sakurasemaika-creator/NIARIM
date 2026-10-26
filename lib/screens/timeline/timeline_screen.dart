@@ -1574,33 +1574,43 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ),
           // Keep live frame counter and loop toggle inside the picture.
           Positioned(
-            left: 8, bottom: 6,
-            child: IgnorePointer(child: ValueListenableBuilder<int>(
-              valueListenable: _currentFrameNotifier,
-              builder: (_, frame, _) => Text(
-                '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/$_totalFrames',
-                key: const Key('timelinePreviewFrameCount'),
-                style: TextStyle(
-                  fontSize: 11, fontWeight: FontWeight.w700,
-                  color: ThemeService.activeColorScheme.onSurface,
-                  shadows: [
-                    Shadow(color: ThemeService.activeColorScheme.surface,
-                      blurRadius: 4),
-                  ],
+            left: 8,
+            bottom: 6,
+            child: IgnorePointer(
+              child: ValueListenableBuilder<int>(
+                valueListenable: _currentFrameNotifier,
+                builder: (_, frame, _) => Text(
+                  '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/$_totalFrames',
+                  key: const Key('timelinePreviewFrameCount'),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: ThemeService.activeColorScheme.onSurface,
+                    shadows: [
+                      Shadow(
+                        color: ThemeService.activeColorScheme.surface,
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            )),
+            ),
           ),
           Positioned(
-            right: 5, bottom: 3,
+            right: 5,
+            bottom: 3,
             child: IconButton(
               key: const Key('timelinePreviewLoopButton'),
-              icon: Icon(Icons.repeat,
+              icon: Icon(
+                Icons.repeat,
                 color: _loopEnabled
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.onSurfaceVariant),
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               tooltip: _loopEnabled
-                  ? l10n.timelineLoopOnTooltip : l10n.timelineLoopOffTooltip,
+                  ? l10n.timelineLoopOnTooltip
+                  : l10n.timelineLoopOffTooltip,
               onPressed: () => setState(() => _loopEnabled = !_loopEnabled),
             ),
           ),
@@ -1718,37 +1728,46 @@ class _TimelineScreenState extends State<TimelineScreen> {
             // Resize grip only; transport time labels live beside skip buttons.
             SizedBox(
               height: 22,
-              child: Center(child: GestureDetector(
+              child: Center(
+                child: GestureDetector(
                   key: const Key('timelinePreviewResizeHandle'),
                   behavior: HitTestBehavior.opaque,
                   dragStartBehavior: DragStartBehavior.down,
                   onVerticalDragUpdate: (d) {
                     setState(() {
                       final current =
-                          (_previewHeightDragOverride ?? baseHeight) + d.delta.dy;
+                          (_previewHeightDragOverride ?? baseHeight) +
+                          d.delta.dy;
                       _previewHeightDragOverride = current.clamp(
-                        0.0, maxPreviewHeight,
+                        0.0,
+                        maxPreviewHeight,
                       );
                     });
                   },
                   onVerticalDragEnd: (_) {
                     final h = _previewHeightDragOverride;
                     if (h != null) {
-                      context.read<SettingsService>()
+                      context
+                          .read<SettingsService>()
                           .setTimelinePreviewHeightFraction(h / maxH);
                     }
                   },
                   child: SizedBox(
-                    width: 80, height: 22,
-                    child: Center(child: Container(
-                      width: 40, height: 5,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                        borderRadius: BorderRadius.circular(3),
+                    width: 80,
+                    height: 22,
+                    child: Center(
+                      child: Container(
+                        width: 40,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
                       ),
-                    )),
+                    ),
                   ),
-                )),
+                ),
+              ),
             ),
           ],
         );
@@ -1895,7 +1914,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       PremiumFeature.watermark,
     );
     return Container(
-      height: 40,
+      height: 49,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -1914,82 +1933,90 @@ class _TimelineScreenState extends State<TimelineScreen> {
             constraints: BoxConstraints(minWidth: constraints.maxWidth),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // 素材（テキスト・画像・動画・音声）の追加は1つのボタンの
-                // メニューにまとめる。種類ごとにボタンを並べると10個になり、
-                // 420px幅でも書き出しボタンが画面外へ押し出された。
-                PopupMenuButton<_ClipTrackType>(
-                  icon: const Icon(Icons.add_circle_outline, size: 18),
-                  tooltip: l10n.timelineAddMaterialTooltip,
-                  onSelected: _addMaterialOfType,
-                  itemBuilder: (_) => [
-                    for (final (type, icon, label) in [
-                      (
-                        _ClipTrackType.text,
-                        Icons.text_fields,
-                        l10n.timelineAddTextTooltip,
-                      ),
-                      (
-                        _ClipTrackType.image,
-                        Icons.image,
-                        l10n.timelineAddImageTooltip,
-                      ),
-                      (
-                        _ClipTrackType.video,
-                        Icons.videocam,
-                        l10n.timelineAddVideoTooltip,
-                      ),
-                      (
-                        _ClipTrackType.audio,
-                        Icons.audiotrack,
-                        l10n.timelineAddAudioTooltip,
-                      ),
-                    ])
-                      PopupMenuItem(
-                        value: type,
-                        child: Row(
-                          children: [
-                            Icon(icon, size: 20),
-                            const SizedBox(width: 12),
-                            Text(label),
+              children:
+                  [
+                        // 素材（テキスト・画像・動画・音声）の追加は1つのボタンの
+                        // メニューにまとめる。種類ごとにボタンを並べると10個になり、
+                        // 420px幅でも書き出しボタンが画面外へ押し出された。
+                        PopupMenuButton<_ClipTrackType>(
+                          icon: const Icon(Icons.add_circle_outline, size: 18),
+                          tooltip: l10n.timelineAddMaterialTooltip,
+                          onSelected: _addMaterialOfType,
+                          itemBuilder: (_) => [
+                            for (final (type, icon, label) in [
+                              (
+                                _ClipTrackType.text,
+                                Icons.text_fields,
+                                l10n.timelineAddTextTooltip,
+                              ),
+                              (
+                                _ClipTrackType.image,
+                                Icons.image,
+                                l10n.timelineAddImageTooltip,
+                              ),
+                              (
+                                _ClipTrackType.video,
+                                Icons.videocam,
+                                l10n.timelineAddVideoTooltip,
+                              ),
+                              (
+                                _ClipTrackType.audio,
+                                Icons.audiotrack,
+                                l10n.timelineAddAudioTooltip,
+                              ),
+                            ])
+                              PopupMenuItem(
+                                value: type,
+                                child: Row(
+                                  children: [
+                                    Icon(icon, size: 20),
+                                    const SizedBox(width: 12),
+                                    Text(label),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
-                      ),
-                  ],
-                ),
-                // ウォーターマーク：無料会員はlockアイコン付き表示、タップで共通Premiumバナー
-                _buildWatermarkButton(canUseWatermark),
-                IconButton(
-                  icon: const Icon(Icons.movie_filter, size: 18),
-                  onPressed: () => _showEffectFilterDialog(),
-                  tooltip: l10n.timelineEffectFilterLabel,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.camera, size: 18),
-                  onPressed: _addCameraKf,
-                  tooltip: l10n.timelineAddCameraKfTooltip,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.push_pin_outlined, size: 18),
-                  onPressed: _showAddMarkerDialog,
-                  tooltip: l10n.timelineMarkerTrackLabel,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.layers_outlined, size: 18),
-                  onPressed: _selectedSceneId == null
-                      ? null
-                      : () => setState(() {
-                          _editingMaterialId = null;
-                          _showStackOrder = true;
-                        }),
-                  tooltip: l10n.timelineStackOrderTitle,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.upload_file, size: 18),
-                  onPressed: () => context.push('/export/${widget.projectId}'),
-                  tooltip: l10n.transferExport,
-                ),
-              ],
+                        // ウォーターマーク：無料会員はlockアイコン付き表示、タップで共通Premiumバナー
+                        _buildWatermarkButton(canUseWatermark),
+                        IconButton(
+                          icon: const Icon(Icons.movie_filter, size: 18),
+                          onPressed: () => _showEffectFilterDialog(),
+                          tooltip: l10n.timelineEffectFilterLabel,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.camera, size: 18),
+                          onPressed: _addCameraKf,
+                          tooltip: l10n.timelineAddCameraKfTooltip,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.push_pin_outlined, size: 18),
+                          onPressed: _showAddMarkerDialog,
+                          tooltip: l10n.timelineMarkerTrackLabel,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.layers_outlined, size: 18),
+                          onPressed: _selectedSceneId == null
+                              ? null
+                              : () => setState(() {
+                                  _editingMaterialId = null;
+                                  _showStackOrder = true;
+                                }),
+                          tooltip: l10n.timelineStackOrderTitle,
+                        ),
+                        IconButton(
+                          key: const Key('timelineExportButton'),
+                          icon: const Icon(Icons.upload_file, size: 18),
+                          onPressed: () =>
+                              context.push('/export/${widget.projectId}'),
+                          tooltip: l10n.transferExport,
+                        ),
+                      ]
+                      .map<Widget>(
+                        (control) =>
+                            SizedBox(width: 48, height: 48, child: control),
+                      )
+                      .toList(),
             ),
           ),
         ),

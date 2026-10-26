@@ -40,7 +40,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S10 shared previewの幅/48target/focus/高速pointer修正を実操作と29testsで検証。DISC015 CI/016連続resize性能は未解決、S11へ
+current_substep: A003/S11 playback/Timeline/popup/l10n/format修正の保存・公開。検証済みsource/logをDriveから復元、失われたAFTER視覚証拠と未完了関連回帰はpending
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -60,7 +60,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: S10の保存/readback/通常push・head/tree/CI照合を完了し、A003_S10_20261026_RESUME.mdからS11関連popup/unused ARB/format、DISC016性能比較とA003残条件へ継続する。保存済み同source検証を理由なく再実行しない。
+next_action: A003_S11_20261026_RESUME.mdのCurrent continuationから、S11通常push/head/tree/readbackを確定し、未保存native AFTER/exportと未完了12file回帰・通常buildを完了。その後A003のcaption/一覧/continuity等の残条件へ。保存済み同sourceの完了testsを理由なく再実行しない。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
@@ -316,3 +316,49 @@ DISC016はLinux software Impellerの高速resize/GLframe同期。source layout�
 ### S10最終core backup — readback検証済み
 
 [2026-10-26 S10 final core](https://drive.google.com/file/d/1mjAztPx92Jblr1uYUJuFT17kA3z3QqgS/view?usp=drivesdk)。14,016,730 bytes /295 entries、SHA256 `98c2bbf3f131e5c38d5b0b5b7c74ed5600539fc8c3dd71406b150f53e22470b9`。metadata name/MIME/size/parent、raw再取得size/SHA256、全CRC/manifest各entry hash一致。最終23source hash、29PASS log/2247条件66原本＋11比較シート、native原本/入力履歴/redacted runner、失敗反例/CI log、State/再開手順、元user fontを保持。高速resizeGL遅延とCI4fail等の未解決を明記。ZIP内Stateは本readback receipt追記前で、追記はGit Stateへ保存する。
+
+### 2026-10-26 S10公開完了・S11開始
+
+# A003/S11 — 2026-10-26 CI/related quality follow-up (WIP)
+
+App dev_branch3b9acd833be242d91b01f9d1998a7647564aa155、Web673ce587da6cdd0376945acdec30d68665a2f5ccへS10を通常push済み。remotehead/tree/compare path/ancestor、localfetch/equaltree/indexを確認。S10 finalcore Drive1mjAztPx92Jblr1uYUJuFT17kA3z3QqgS14016730B295entries/SHA98c2bbf3f131e5c38d5b0b5b7c74ed5600539fc8c3dd71406b150f53e22470b9、canonical公開receipt Drive1CTC0RiwE5fo9dxE7ZX-jpNOYDk1Nfwtv15784B11entries/SHA4082982c05ffc08c35e36e877b422aca96aebf9f53ce8ef8aac311e7afab7701。両ZIPmetadata/rawsize/hash/CRC/manifest一致。S10の29PASS/2247条件66原本/実FR-SP/EN-PC検証を、理由なく復元・再実行しない。高速GLframe遅延はDISC016で未解決。
+
+S11 freshbefore: oct26-s11-popup-l10n-before.jsonl、4 real cases=2PASS/1FAIL/1ERROR、donefalse11.556s。popup pixelはgeneric surfaceContainerを期待する旧仮定、sourceは正式popupMenuTheme.colorを指定済み。実装の色を変更せず、testに実際の明示roleを使い、opaque検査には明示popup色とgeneric container双方を含めた。未使用2keyはユーザーが不要とした一括お気に入り操作の残骸。7ARBsから2keyだけを削除、全残キー/値が同一であることをJSON比較で証明しgen-l10n。Role binding/propagationを含むafter7 realPASS14.922s（件数はS10へ加算しない）。UI色や表示中の文言は変更していない。テーマ実装/9色契約は変更なし。
+
+次の1手: S11 WIPを外部保存→canonical fontでtext_scale_layout_test.dartとapp_web_reference_export_exact_test.dartの残るCI反例をfresh実行。ProjectDetailの4要素固定34pxrow/text2右59pxはsource確認、原因/修正/実nativeはこれから。exact-export testの既存24px Timeline overflow抑制もDISC015の調査範囲とし、抑制追加でgreen化しない。全体format32件はdry-runで照合してから必要な範囲を機械整形し、product意図/最新ユーザー変更を保持する。
+
+前在fontはoriginal1022464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を復元済み。Git操作でHEADassetへ戻る挙動があり、Git書込み後は必ずoriginal再照合/復元する。退避preexisting-assetsとDrive複数ZIPを保持、commitしない。今後canonical視覚検証では一時HEADfont4ff87a0965f1b0505e5a2c58424bc6ad3cff27e56a82f21c2fc9d6b0e3857ee2を使い、終了時originalへ戻す。S11 popup testsはFontLoaderを使わないtest描画であり、実UI再操作/字形確認の代替ではない。
+
+Baseline done2/628/A003in_progress、DISC001–016todo/cursor001、Deltanot_started、fullaudit/最新HEAD Visual closure未完了。Sourceformatterやtest成功を商用品質完了と扱わない。正常push/既定Drive保存は継続承認済み。No subagents。
+
+### S11 layout/export priority WIP — 2026-10-26
+
+Fresh canonical before oct26-s11-layout-export-before.jsonl:3 realcases1PASS/2ERROR18.388s。ProjectDetail textScale2は右59pxoverflow、exact-exportは旧単体icon getterを探すため複合iconBuilderのCanvasTimelineModeButtonを見つけない。testを現行key/実tapへ整合し、320pxから横scrollでexportへ到達するよう変更。旧24pxoverflowの黙認と420pxへの一時拡幅を削除して全例外を検出。直後の新counterはtoolbar export hit height39pxで1ERROR9.470s。
+
+製品WIP: ProjectPlaybackStatus widgetへ分離し、従来の4要素/3等間隔を保ちながら収まらない場合は現在/総秒とframe+loopの2行へ。Loopは48targetでtoggle semantics。Timeline toolbarはtop border1px+48px操作帯と各control48pxを確保、export key追加。色は既存Theme役割のまま。after oct26-s11-layout-export-after.jsonl5realPASS77.191s、含む再生値3/20→0.2s/2.0s/loopcallbackと7言語×24幅×文字1/2×normal/fullscreen親padding×5frame境界=3360case/0failure。元popup7PASSとは実行範囲を区別し単純合計しない。native/全状態/全体解析/通常build/公開は未完了、WIPを完成と扱わない。
+
+次: ここまでをDrive保存→production nativeで長い実projectのbefore/afterとloop/seek/play/fullscreen/短画面/keyboard、実Canvas→Timeline toolbar横scroll→Exportを確認。現在bundleはS10通常lib/main.dart。新nativeharnessを用意し、beforeは3b9acd8のProjectDetail/Timeline2filesを一時使用してbuild、finally必ずS11source+元fontへ戻す。修正前GUIを新sourceの証拠へ混ぜない。source/証拠hashと全体formatter30前後の残差、full analyze/defaultbuild、関連回帰を続ける。OS bold・fullscreen short-heightの反例確認も残る。初回誤pathのCLI2loaderrorsはoct26-s11-layout-export-invalid-path.jsonlへ隔離し、製品反例の件数へ数えない。
+
+### S11 Discovery追加
+
+actual10008-frame projectでHome白thumbnailに名称white textが重なり読みにくい反例をnative原本で確認、DISC017をtodo登録。palette反転/固定色ではなく正式なcaption surfaceとfont/target/長い名称を確認する。現在はbefore runner起動中、previewのlastframe/loop/seek/fullscreen beforeを先に確認する。
+
+### S11追加riskを登録（完了へ昇格しない）
+
+DISC018: ProjectDetailの_rendering中に最新seek要求が落ちる可能性。現nativeは全blankframesで絵の違いを検出できないためsource品質リスクとして登録し、異なる絵柄/遅延境界のcounterをA006/Discoveryで実施。DISC019: nativeFR320/text2の4列quick actionsでÉtiquettes語中改行等の読みやすさを登録。S11のCI/再生status修正だけでA006/実描画/これらの解決を申告しない。
+
+### 2026-10-27 S11 validated source preservation
+
+## Current continuation — 2026-10-27 (authoritative over historical notes below)
+
+- Baseline done2/628, current A003 in_progress. DISC001–019 todo/cursorDISC001, Delta not_started. No full-audit or latest-HEAD Visual closure claim.
+- Source is restored exactly from Drive1U1EGKOdKX4T095ku6V-IqY4RNZTjTaQO (4,830,664 bytes /256entries /SHA256 d00fcf77d4fbb3c36b519f070dfdc8dc8eb38bcdbab71785ce89b9754e8be1a8). Metadata, raw byte count/hash, ZIP CRC and all255 manifest hashes verified. Current remote parents re-fetched: App3b9acd833be242d91b01f9d1998a7647564aa155 /Web673ce587da6cdd0376945acdec30d68665a2f5cc.
+- Validated repair unit being published: responsive Project playback status with48px loop/toggle semantics, cached widest proportional-digit measurements to prevent statusheight changes during playback, adaptive fullscreen/short-height scrolling/Escape/back; Timeline49px toolbar including1px border and48px controls; exact-export test uses actual320px scroll/tap/current compositeicon key without overflow suppression; popup test respects explicit formal menu surface; only two unused bulk-favorite keys removed across7languages. All product colors remain formal theme roles; no fixed neutral/automatic recoloring.
+- Saved completed tests: layout/export5PASS77.191s; fullscreen/matrix5PASS74.642s; latest numeric continuity+OSbold/matrix/globaltextscale/exact-export6PASS60.417s (3360 matrix conditions). These overlap and must not be added. Community details actual horizontal/vertical productionRouter taps3PASS8.996s. Popup/l10n/role tests7PASS14.922s. Latest full analyzeNoissues5.1s.30format-only files are byte-identical to formatting their original HEAD with package languageVersion3.12, hashes verified after restore.
+- Fresh native BEFORE originals are saved: real10008 blank-frame/24fps/417s project, FR320/text2; oldloop34px and shortfullscreen image~42px. Native AFTER was operated and images opened twice before environment resets: first/last counter/time, loopoff/restartpause, stable transportheight,320x220 fullscreen. Those AFTER files/build receipts were created after the savedZIP and were lost; do not claim archived Visual closure. They must be recaptured and immediately uploaded.
+- The12-file related-final regression (save safety/tile/slot/tree/allroutes/timeline/popup/role/l10n) was interrupted by reset; at least36cases had passed but no done receipt survived. Its outcome is UNKNOWN; rerun this unfinished job, not completed unchanged matrices. Normal lib/main.dart build for this unit remains pending; native fixture AFTER builds had succeeded but their receipts were lost. CI for S10 was14success/1failure workflow; fullgates2104PASS/23skip/5FAIL (old4 plus obsolete source-string community-route assertion). Allgreen is not claimed.
+- Immediate next action: complete normal expected-parent push and remotehead/tree verification, save publication receipt; then recreate only runtime needed for unfinished native/export checks and related regression. Finish A003 thumbnail/selection/folder/Works/Bookmarks/continuity conditions, including DISC017 caption readability, DISC016 renderer delay and the remaining registered issues. DISC018 renderinglatest and DISC019 narrow labels are unclosed; this playback repair does not close them.
+- Environment resets reverted local workspace to initial Oct21 twice. Source and completed logs survive in verifiedDrive; no source reimplementation or broad history reconstruction is needed. Store binary/reproduction cache or capture+upload in the same meaningful step before longer work. Previous process IDs are dead; no current nativeapp/FlutterCLI/SDK is assumed.
+- Pinned runtime recovery: Flutter3.47.7/Dart3.13.5 archive https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.7-stable.tar.xz (NO extra /flutter path), SHA256 af7455f540df951184c7953fbe3cf884766e7541dacf8571f9f582db03dd6230. Restore187pub packages/223native packages using saved scripts. SDK bootstrap: directly run `dart pub --directory tools/flutter/packages/flutter_tools get --offline --enforce-lockfile` before app `flutter pub get --offline --enforce-lockfile`; otherwise SDK-internal get may wait online. Never run Flutter CLIs in parallel.
+- Original user font1,022,464B/SHA2564e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350 is preserved and EXCLUDED from commits. Canonical Gitfont SHA2564ff87a0965f1b0505e5a2c58424bc6ad3cff27e56a82f21c2fc9d6b0e3857ee2 is used only under a temporary guard. After interrupted commands/Git writes explicitly recheck/restore original; SIGINT may terminate before finally. No physical Android/DeX/touch/pen/SR/liveOAuth/backend/codec PASS.
+

@@ -470,7 +470,10 @@ class ProjectListWidget extends StatelessWidget {
                                 ? selectionColor
                                 : scheme.surface.withValues(alpha: 0.9),
                             shape: BoxShape.circle,
-                            border: Border.all(color: selectionColor, width: 1.5),
+                            border: Border.all(
+                              color: selectionColor,
+                              width: 1.5,
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: ThemeService.activeColorScheme.onSurface
@@ -576,7 +579,10 @@ class ProjectListWidget extends StatelessWidget {
                                     ? selectionColor
                                     : scheme.surface.withValues(alpha: 0.9),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: selectionColor, width: 1.5),
+                                border: Border.all(
+                                  color: selectionColor,
+                                  width: 1.5,
+                                ),
                               ),
                               child: Icon(
                                 isSelected ? Icons.check : null,

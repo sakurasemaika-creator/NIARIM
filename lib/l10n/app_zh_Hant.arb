@@ -21,8 +21,6 @@
   "homeAddSheetNewFolder": "新增資料夾",
   "homeSelectionAllSelect": "全選",
   "homeSelectionAllDeselect": "取消全選",
-  "homeSelectionAddFavorite": "加入收藏",
-  "homeSelectionRemoveFavorite": "取消收藏",
   "homeSelectionCount": "已選擇{count}項",
   "homeMoveToTrash": "移至垃圾桶",
   "homeMoveToTrashConfirm": "要將{count}項移至垃圾桶嗎？",

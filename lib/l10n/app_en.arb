@@ -21,8 +21,6 @@
   "homeAddSheetNewFolder": "New Folder",
   "homeSelectionAllSelect": "Select All",
   "homeSelectionAllDeselect": "Deselect All",
-  "homeSelectionAddFavorite": "Add to favorites",
-  "homeSelectionRemoveFavorite": "Remove from favorites",
   "homeSelectionCount": "{count} selected",
   "homeMoveToTrash": "Move to Trash",
   "homeMoveToTrashConfirm": "Move {count} item(s) to trash?",

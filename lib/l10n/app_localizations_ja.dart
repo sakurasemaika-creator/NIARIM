@@ -74,12 +74,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeSelectionAllDeselect => '全解除';
 
   @override
-  String get homeSelectionAddFavorite => 'お気に入りに登録';
-
-  @override
-  String get homeSelectionRemoveFavorite => 'お気に入りを解除';
-
-  @override
   String homeSelectionCount(int count) {
     return '$count件選択中';
   }

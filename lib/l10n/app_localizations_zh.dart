@@ -73,12 +73,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeSelectionAllDeselect => '取消全选';
 
   @override
-  String get homeSelectionAddFavorite => '加入收藏';
-
-  @override
-  String get homeSelectionRemoveFavorite => '取消收藏';
-
-  @override
   String homeSelectionCount(int count) {
     return '已选择$count项';
   }
@@ -7472,12 +7466,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeSelectionAllDeselect => '取消全選';
-
-  @override
-  String get homeSelectionAddFavorite => '加入收藏';
-
-  @override
-  String get homeSelectionRemoveFavorite => '取消收藏';
 
   @override
   String homeSelectionCount(int count) {

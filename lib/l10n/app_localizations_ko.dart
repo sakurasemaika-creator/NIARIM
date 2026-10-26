@@ -75,12 +75,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeSelectionAllDeselect => '전체 선택 해제';
 
   @override
-  String get homeSelectionAddFavorite => '즐겨찾기에 추가';
-
-  @override
-  String get homeSelectionRemoveFavorite => '즐겨찾기 해제';
-
-  @override
   String homeSelectionCount(int count) {
     return '$count개 선택됨';
   }

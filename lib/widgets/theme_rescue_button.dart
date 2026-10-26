@@ -133,26 +133,26 @@ class ThemeRescueButton extends StatelessWidget {
                             children: [
                               Text(
                                 l10n.themeUnreadableResetButton,
-                              style: TextStyle(
-                                foreground: Paint()
-                                  ..style = PaintingStyle.stroke
-                                  ..strokeWidth = 3.5
-                                  ..strokeJoin = StrokeJoin.round
-                                  ..color = const Color(0xFFFFFFFF),
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
+                                style: TextStyle(
+                                  foreground: Paint()
+                                    ..style = PaintingStyle.stroke
+                                    ..strokeWidth = 3.5
+                                    ..strokeJoin = StrokeJoin.round
+                                    ..color = const Color(0xFFFFFFFF),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            Text(
-                              l10n.themeUnreadableResetButton,
-                              style: const TextStyle(
-                                color: Color(0xFF000000),
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
+                              Text(
+                                l10n.themeUnreadableResetButton,
+                                style: const TextStyle(
+                                  color: Color(0xFF000000),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
                         ],
                       ],
                     ),

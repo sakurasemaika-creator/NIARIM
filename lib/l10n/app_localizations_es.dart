@@ -77,12 +77,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeSelectionAllDeselect => 'Deseleccionar todo';
 
   @override
-  String get homeSelectionAddFavorite => 'Añadir a favoritos';
-
-  @override
-  String get homeSelectionRemoveFavorite => 'Quitar de favoritos';
-
-  @override
   String homeSelectionCount(int count) {
     return '$count seleccionado(s)';
   }

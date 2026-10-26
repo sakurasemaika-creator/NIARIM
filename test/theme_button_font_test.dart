@@ -35,11 +35,16 @@ void main() {
     };
 
     for (final button in const [
-      'filledButtonTheme', 'elevatedButtonTheme',
-      'outlinedButtonTheme', 'textButtonTheme',
+      'filledButtonTheme',
+      'elevatedButtonTheme',
+      'outlinedButtonTheme',
+      'textButtonTheme',
     ]) {
-      expect(targets[button]?.fontFamily, 'Kuramubon',
-        reason: '$button must use the specified action-label font');
+      expect(
+        targets[button]?.fontFamily,
+        'Kuramubon',
+        reason: '$button must use the specified action-label font',
+      );
     }
 
     // SnackBarの本文書式も同じ罠を踏む（ボタンと同じくThemeData.fontFamilyを
@@ -110,9 +115,15 @@ void main() {
   test('outlined/text action buttons explicitly use the current accent', () {
     final theme = ThemeService().themeData;
     final accent = theme.colorScheme.primary;
-    expect(theme.outlinedButtonTheme.style?.foregroundColor
-        ?.resolve(<WidgetState>{}), accent);
-    expect(theme.textButtonTheme.style?.foregroundColor
-        ?.resolve(<WidgetState>{}), accent);
+    expect(
+      theme.outlinedButtonTheme.style?.foregroundColor?.resolve(
+        <WidgetState>{},
+      ),
+      accent,
+    );
+    expect(
+      theme.textButtonTheme.style?.foregroundColor?.resolve(<WidgetState>{}),
+      accent,
+    );
   });
 }

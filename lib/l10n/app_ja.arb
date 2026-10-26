@@ -21,8 +21,6 @@
   "homeAddSheetNewFolder": "新規フォルダ",
   "homeSelectionAllSelect": "全選択",
   "homeSelectionAllDeselect": "全解除",
-  "homeSelectionAddFavorite": "お気に入りに登録",
-  "homeSelectionRemoveFavorite": "お気に入りを解除",
   "homeSelectionCount": "{count}件選択中",
   "@homeSelectionCount": {
     "placeholders": {

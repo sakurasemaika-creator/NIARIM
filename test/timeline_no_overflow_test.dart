@@ -125,7 +125,8 @@ void main() {
     final loop = find.byKey(const Key('timelinePreviewLoopButton'));
     expect(loop, findsOneWidget);
     final handle = tester.getCenter(
-      find.byKey(const Key('timelinePreviewResizeHandle')));
+      find.byKey(const Key('timelinePreviewResizeHandle')),
+    );
     final currentFinder = find.byKey(const Key('timelineCurrentSeconds'));
     final totalFinder = find.byKey(const Key('timelineTotalSeconds'));
     final first = find.byIcon(Icons.skip_previous);
@@ -172,6 +173,5 @@ void main() {
       expectPlaybackPlacement();
       expect(tester.takeException(), isNull, reason: 'width $width');
     }
-
   }, timeout: const Timeout(Duration(seconds: 120)));
 }

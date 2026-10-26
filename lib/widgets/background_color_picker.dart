@@ -60,7 +60,9 @@ class BackgroundColorSwatchPicker extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(
                 color: isWhite
-                    ? (selected ? colors.onSurfaceVariant : colors.outlineVariant)
+                    ? (selected
+                          ? colors.onSurfaceVariant
+                          : colors.outlineVariant)
                     : (selected ? colors.primary : colors.outlineVariant),
                 width: selected ? (isWhite ? 2 : 3) : 1,
               ),

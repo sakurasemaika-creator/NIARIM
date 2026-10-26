@@ -126,7 +126,8 @@ void main() {
       expect(
         service.current.id,
         'only_custom',
-        reason: 'the first valid custom theme is selected when no current JSON is stored',
+        reason:
+            'the first valid custom theme is selected when no current JSON is stored',
       );
 
       service.applyPreset('missing-id');

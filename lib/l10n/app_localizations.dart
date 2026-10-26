@@ -233,18 +233,6 @@ abstract class AppLocalizations {
   /// **'全解除'**
   String get homeSelectionAllDeselect;
 
-  /// No description provided for @homeSelectionAddFavorite.
-  ///
-  /// In ja, this message translates to:
-  /// **'お気に入りに登録'**
-  String get homeSelectionAddFavorite;
-
-  /// No description provided for @homeSelectionRemoveFavorite.
-  ///
-  /// In ja, this message translates to:
-  /// **'お気に入りを解除'**
-  String get homeSelectionRemoveFavorite;
-
   /// No description provided for @homeSelectionCount.
   ///
   /// In ja, this message translates to:

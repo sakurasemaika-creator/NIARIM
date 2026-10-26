@@ -9,6 +9,7 @@ class AppThemePreset {
   final String name;
   final Color accentColor;
   final Color textColor;
+
   /// These are first-class user-defined foreground colors, never auto-corrected.
   final Color buttonTextColor;
   final Color menuTextColor;

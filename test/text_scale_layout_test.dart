@@ -128,6 +128,47 @@ void main() {
       appRouter.go(route);
       await tester.pump(const Duration(milliseconds: 400));
       await tester.pump(const Duration(milliseconds: 400));
+      if (route == '/project/$projectId') {
+        final fullscreen = find.byKey(
+          const Key('projectDetailFullscreenButton'),
+        );
+        expect(fullscreen, findsOneWidget);
+        await tester.tap(fullscreen);
+        await tester.pumpAndSettle();
+        for (final size in [
+          const Size(1080, 660),
+          const Size(960, 660),
+          const Size(960, 480),
+          const Size(1080, 2280),
+        ]) {
+          tester.view.physicalSize = size;
+          await tester.pumpAndSettle();
+          expect(
+            tester
+                .getSize(find.byKey(const Key('projectDetailFullscreenImage')))
+                .height,
+            greaterThanOrEqualTo(64),
+          );
+          final loop = find.byKey(const Key('projectDetailLoopButton'));
+          await tester.ensureVisible(loop);
+          await tester.pumpAndSettle();
+          expect(loop.hitTestable(), findsOneWidget);
+          final transport = find.byKey(
+            const Key('projectDetailFullscreenTransport'),
+          );
+          await tester.ensureVisible(transport);
+          await tester.pumpAndSettle();
+          expect(transport.hitTestable(), findsOneWidget);
+        }
+        final exit = find.byKey(const Key('projectDetailFullscreenExit'));
+        await tester.ensureVisible(exit);
+        await tester.tap(exit);
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const Key('projectDetailFullscreenImage')),
+          findsNothing,
+        );
+      }
     }
     // 後続テストへ影響しないようホームへ戻す。
     appRouter.go('/home');

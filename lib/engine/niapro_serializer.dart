@@ -594,9 +594,10 @@ class NiaproSerializer {
           imageRowNames: imageRowNames,
           videoRowNames: videoRowNames,
           audioRowNames: audioRowNames,
-          textRowNames: (sceneJson['textRowNames'] as List<dynamic>? ?? const [])
-              .map((e) => e as String?)
-              .toList(),
+          textRowNames:
+              (sceneJson['textRowNames'] as List<dynamic>? ?? const [])
+                  .map((e) => e as String?)
+                  .toList(),
           stack: SceneStack.fromJson(sceneJson['stack']),
         ),
       );

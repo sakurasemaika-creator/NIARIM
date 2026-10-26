@@ -18,6 +18,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/ad_banner_widget.dart';
 import 'package:niarim/screens/export/export_screen.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
+import 'helpers/load_app_fonts.dart';
 
 class _FakeFilePicker extends FilePicker {
   @override
@@ -59,40 +60,6 @@ void main() {
     if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
   });
 
-  Future<void> loadFonts() async {
-    final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-    final assets = manifest.listAssets();
-
-    Future<void> family(String name, String needle) async {
-      final matches = assets.where((a) => a.contains(needle)).toList();
-      if (matches.isEmpty) return;
-      final loader = FontLoader(name)..addFont(rootBundle.load(matches.first));
-      await loader.load();
-    }
-
-    Future<void> materialIcons() async {
-      final root = Platform.environment['FLUTTER_ROOT'];
-      if (root == null) return;
-      final file = File(
-        '$root/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
-      );
-      if (!file.existsSync()) return;
-      final data = ByteData.sublistView(
-        Uint8List.fromList(await file.readAsBytes()),
-      );
-      final loader = FontLoader('MaterialIcons')
-        ..addFont(Future<ByteData>.value(data));
-      await loader.load();
-    }
-
-    await Future.wait([
-      family('HakkouMincho', 'assets/fonts/HakkouMincho.ttf'),
-      family('Kuramubon', 'assets/fonts/Kuramubon.otf'),
-      family('NotoSerifJP', 'assets/fonts/NotoSerifJP.ttf'),
-      materialIcons(),
-    ]);
-  }
-
   Future<void> capture(WidgetTester tester) async {
     await tester.pump(const Duration(milliseconds: 250));
     expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
@@ -109,29 +76,13 @@ void main() {
     File('${dir.path}/webref_exact_07_export.png').writeAsBytesSync(bytes!);
   }
 
-  bool isKnownTimelineOverflow(Object? error) =>
-      error != null &&
-      error.toString().contains(
-        'RenderFlex overflowed by 24 pixels on the right',
-      );
-
-  void consumeOnlyKnownTimelineOverflow(WidgetTester tester, String phase) {
-    for (;;) {
-      final error = tester.takeException();
-      if (error == null) return;
-      if (!isKnownTimelineOverflow(error)) {
-        fail('$phase: $error');
-      }
-    }
-  }
-
   testWidgets('exact export via real timeline toolbar tap', (tester) async {
     tester.view.physicalSize = const Size(960, 1707);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.runAsync(loadFonts);
+    await loadAppFonts(tester);
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
       RepaintBoundary(
@@ -176,50 +127,45 @@ void main() {
     expect(canvas, findsOneWidget);
     final timelineModeButton = find.descendant(
       of: canvas,
-      matching: find.byWidgetPredicate(
-        (widget) =>
-            widget is CanvasIconButton &&
-            widget.icon == Icons.movie_filter_outlined,
-      ),
+      matching: find.byKey(const Key('canvasTimelineModeButton')),
     );
     expect(timelineModeButton, findsOneWidget);
+    expect(
+      tester.widget<CanvasIconButton>(timelineModeButton).onPressed,
+      isNotNull,
+    );
     await tester.tap(timelineModeButton);
     await tester.pump(const Duration(milliseconds: 700));
-    consumeOnlyKnownTimelineOverflow(tester, 'timeline');
-
-    // 320 logical pxでは7個の標準IconButtonが横幅を超える。操作だけ420pxへ
-    // 一時的に広げ、実際に表示されている本番の書き出しボタンをtapする。
-    // Exportへ遷移後は320pxへ戻して撮影する。
-    tester.view.physicalSize = const Size(1260, 1707);
-    await tester.pump(const Duration(milliseconds: 450));
-    for (;;) {
-      final error = tester.takeException();
-      if (error == null) break;
-      if (!isKnownTimelineOverflow(error)) fail('timeline resize: $error');
-    }
+    expect(
+      tester.takeException(),
+      isNull,
+      reason: 'timeline must render without overflow',
+    );
 
     final timelineRoot = find.byType(TimelineScreen, skipOffstage: false);
     expect(timelineRoot, findsOneWidget);
     final exportButton = find.descendant(
       of: timelineRoot,
-      matching: find.byWidgetPredicate(
-        (widget) =>
-            widget is IconButton &&
-            widget.icon is Icon &&
-            (widget.icon as Icon).icon == Icons.upload_file,
+      matching: find.byKey(
+        const Key('timelineExportButton'),
         skipOffstage: false,
       ),
     );
     expect(exportButton, findsOneWidget);
+    await tester.ensureVisible(exportButton);
+    await tester.pumpAndSettle();
+    expect(tester.getSize(exportButton).height, greaterThanOrEqualTo(48));
+    expect(exportButton.hitTestable(), findsOneWidget);
     final button = tester.widget<IconButton>(exportButton);
     expect(button.onPressed, isNotNull);
     await tester.tap(exportButton);
     await tester.pumpAndSettle(const Duration(milliseconds: 50));
 
-    final postTapError = tester.takeException();
-    if (postTapError != null && !isKnownTimelineOverflow(postTapError)) {
-      fail('export transition: $postTapError');
-    }
+    expect(
+      tester.takeException(),
+      isNull,
+      reason: 'export transition must not hide layout errors',
+    );
     expect(find.byType(ExportScreen), findsOneWidget);
 
     tester.view.physicalSize = const Size(960, 1707);

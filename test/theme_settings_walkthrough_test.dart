@@ -72,17 +72,20 @@ void main() {
     // import button. Each screenshot overlaps the previous by 72px so an
     // external contact sheet can be stitched without missing any control.
     // Keep this separate from the interaction walkthrough snapshots.
-    final scrollFinder = find.descendant(
-      of: find.byType(ThemeSettingsScreen),
-      matching: find.byType(Scrollable),
-    ).first;
+    final scrollFinder = find
+        .descendant(
+          of: find.byType(ThemeSettingsScreen),
+          matching: find.byType(Scrollable),
+        )
+        .first;
     final scrollState = tester.state<ScrollableState>(scrollFinder);
     final position = scrollState.position;
     final stride = (position.viewportDimension - 72).clamp(100.0, 2000.0);
     final allPageDir = Directory('build/theme-inline-preview')
       ..createSync(recursive: true);
     final l10nAtTop = AppLocalizations.of(
-      tester.element(find.byType(ThemeSettingsScreen)))!;
+      tester.element(find.byType(ThemeSettingsScreen)),
+    )!;
     final lastButton = find.text(l10nAtTop.themeImportButton);
     // The nested shrink-wrapped preset list can grow its scroll extent when
     // new rows are laid out. Recompute maxScrollExtent AFTER every viewport;
@@ -92,15 +95,18 @@ void main() {
     for (var i = 0; i < 36; i++) {
       position.jumpTo(nextOffset.clamp(0.0, position.maxScrollExtent));
       await tester.pump(const Duration(milliseconds: 250));
-      await tester.runAsync(() => _capture(
-        rootKey,
-        '${allPageDir.path}/theme_settings_full_${i.toString().padLeft(2, '0')}.png',
-      ));
+      await tester.runAsync(
+        () => _capture(
+          rootKey,
+          '${allPageDir.path}/theme_settings_full_${i.toString().padLeft(2, '0')}.png',
+        ),
+      );
       if (lastButton.evaluate().isNotEmpty) {
         final rect = tester.getRect(lastButton);
         if (rect.top >= 48 &&
-            rect.bottom <= tester.view.physicalSize.height /
-                tester.view.devicePixelRatio - 8) {
+            rect.bottom <=
+                tester.view.physicalSize.height / tester.view.devicePixelRatio -
+                    8) {
           reachedBottom = true;
           break;
         }
@@ -115,8 +121,11 @@ void main() {
       }
       if (nextOffset - oldOffset < 1) break;
     }
-    expect(reachedBottom, isTrue,
-      reason: 'The complete theme screen must include the import button');
+    expect(
+      reachedBottom,
+      isTrue,
+      reason: 'The complete theme screen must include the import button',
+    );
     // Continue the pre-existing editing/adoption test from its usual start.
     position.jumpTo(0);
     await tester.pump(const Duration(milliseconds: 250));

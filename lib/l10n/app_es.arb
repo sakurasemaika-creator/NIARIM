@@ -21,8 +21,6 @@
   "homeAddSheetNewFolder": "Nueva carpeta",
   "homeSelectionAllSelect": "Seleccionar todo",
   "homeSelectionAllDeselect": "Deseleccionar todo",
-  "homeSelectionAddFavorite": "Añadir a favoritos",
-  "homeSelectionRemoveFavorite": "Quitar de favoritos",
   "homeSelectionCount": "{count} seleccionado(s)",
   "homeMoveToTrash": "Mover a la papelera",
   "homeMoveToTrashConfirm": "¿Mover {count} elemento(s) a la papelera?",

@@ -38,7 +38,9 @@ void main() {
     'snack bar': theme.snackBarTheme.backgroundColor,
     'card (colour picker dialog)': theme.cardTheme.color,
     'tooltip': (theme.tooltipTheme.decoration as BoxDecoration?)?.color,
-    'popup menu (surfaceContainer)': theme.colorScheme.surfaceContainer,
+    'popup menu':
+        theme.popupMenuTheme.color ?? theme.colorScheme.surfaceContainer,
+    'generic surfaceContainer': theme.colorScheme.surfaceContainer,
     'dropdown (canvasColor)': theme.canvasColor,
     'first-use bubble (primary)': theme.colorScheme.primary,
   };
@@ -207,7 +209,7 @@ void main() {
     rect = tester.getRect(find.byType(PopupMenuItem<void>));
     expectColour(
       await colourAt(Offset(rect.left + 4, rect.center.dy)),
-      theme.colorScheme.surfaceContainer,
+      theme.popupMenuTheme.color ?? theme.colorScheme.surfaceContainer,
       'popup menu',
     );
     Navigator.of(context).pop();

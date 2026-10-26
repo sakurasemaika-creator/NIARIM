@@ -82,7 +82,9 @@ void main() {
               find.widgetWithText(TextButton, l10n.commonCancel),
             ]) {
               final rect = tester.getRect(button);
-              if (rect.height < 48 || rect.top < 0 || rect.bottom > size.height) {
+              if (rect.height < 48 ||
+                  rect.top < 0 ||
+                  rect.bottom > size.height) {
                 failures.add('$suffix action unreachable or undersized: $rect');
               }
             }

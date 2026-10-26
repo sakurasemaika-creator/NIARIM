@@ -65,17 +65,14 @@ class CanvasIconButton extends StatelessWidget {
   static Color outlineColor(Color foreground, ColorScheme scheme) {
     final surface = scheme.surface;
     final ink = scheme.onSurface;
-    return contrastRatio(foreground, surface) >=
-            contrastRatio(foreground, ink)
+    return contrastRatio(foreground, surface) >= contrastRatio(foreground, ink)
         ? surface
         : ink;
   }
 
   /// Shared by free-floating text, indicators and handles as well as icons.
-  static List<Shadow> foregroundShadows(
-    Color foreground,
-    ColorScheme scheme,
-  ) => outlineShadows(outlineColor(foreground, scheme));
+  static List<Shadow> foregroundShadows(Color foreground, ColorScheme scheme) =>
+      outlineShadows(outlineColor(foreground, scheme));
 
   /// Ordinary action buttons sit on a known theme background, unlike the
   /// tools floating over arbitrary canvas artwork. A permanent 1px dark
