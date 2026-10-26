@@ -14,6 +14,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import 'canvas_size_preset_manage_screen.dart';
+import '../canvas/widgets/canvas_icon_button.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/app_error_reporter.dart';
 
@@ -210,7 +211,15 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
+            child: Text(
+              l10n.commonCancel,
+              style: TextStyle(
+                shadows: CanvasIconButton.foregroundShadows(
+                  Theme.of(ctx).colorScheme.primary,
+                  Theme.of(ctx).colorScheme,
+                ),
+              ),
+            ),
           ),
           FilledButton(
             onPressed: () {
@@ -304,8 +313,23 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                         builder: (_) => const CanvasSizePresetManageScreen(),
                       ),
                     ),
-                    icon: const Icon(Icons.tune, size: 18),
-                    label: Text(l10n.newProjectSizePresetManageButton),
+                    icon: Icon(
+                      Icons.tune,
+                      size: 18,
+                      shadows: CanvasIconButton.foregroundShadows(
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(context).colorScheme,
+                      ),
+                    ),
+                    label: Text(
+                      l10n.newProjectSizePresetManageButton,
+                      style: TextStyle(
+                        shadows: CanvasIconButton.foregroundShadows(
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).colorScheme,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -445,8 +469,23 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   alignment: Alignment.centerLeft,
                   child: OutlinedButton.icon(
                     onPressed: _showSaveCustomSizeDialog,
-                    icon: const Icon(Icons.save_outlined, size: 18),
-                    label: Text(l10n.newProjectSaveCustomSizeButton),
+                    icon: Icon(
+                      Icons.save_outlined,
+                      size: 18,
+                      shadows: CanvasIconButton.foregroundShadows(
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(context).colorScheme,
+                      ),
+                    ),
+                    label: Text(
+                      l10n.newProjectSaveCustomSizeButton,
+                      style: TextStyle(
+                        shadows: CanvasIconButton.foregroundShadows(
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).colorScheme,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -666,13 +705,25 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     setState(() => _enabledPresetIds = result.ids);
                   }
                 },
-                icon: const Icon(Icons.auto_fix_high_outlined),
+                icon: Icon(
+                  Icons.auto_fix_high_outlined,
+                  shadows: CanvasIconButton.foregroundShadows(
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme,
+                  ),
+                ),
                 label: Text(
                   _enabledPresetIds == null
                       ? l10n.autofillPresetSelectionButton
                       : l10n.autofillPresetSelectionCountLabel(
                           _enabledPresetIds!.length,
                         ),
+                  style: TextStyle(
+                    shadows: CanvasIconButton.foregroundShadows(
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
