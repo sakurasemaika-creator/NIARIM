@@ -6098,6 +6098,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityFloatingPreviewPauseTooltip => '일시정지';
 
   @override
+  String get communityFloatingPreviewResizeTooltip => '미리보기 크기 조절';
+
+  @override
+  String get communityFloatingPreviewMoveHint =>
+      '드래그하거나 Alt + 방향키로 미리보기를 이동할 수 있습니다.';
+
+  @override
+  String get communityFloatingPreviewCompactHint => '이 작품은 상세 화면에서 볼 수 있습니다.';
+
+  @override
   String get communityReportDialogTitle => '작품 신고';
 
   @override

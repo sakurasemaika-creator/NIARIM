@@ -159,12 +159,7 @@ void main() {
         final root = find.byType(CommunityFloatingPreview);
         final bar = find.descendant(
           of: root,
-          matching: find.byWidgetPredicate(
-            (w) =>
-                w is Container &&
-                w.constraints?.minHeight ==
-                    CommunityPreviewService.controlBarHeight,
-          ),
+          matching: find.byKey(const Key('communityPreviewControls')),
         );
         expect(bar, findsOneWidget);
         final container = tester.widget<Container>(bar);

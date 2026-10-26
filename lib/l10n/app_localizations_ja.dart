@@ -6068,6 +6068,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityFloatingPreviewPauseTooltip => '一時停止';
 
   @override
+  String get communityFloatingPreviewResizeTooltip => 'プレビューのサイズを変更';
+
+  @override
+  String get communityFloatingPreviewMoveHint =>
+      'ドラッグで移動できます。Alt＋矢印キーでも移動できます。';
+
+  @override
+  String get communityFloatingPreviewCompactHint => 'この作品は詳細画面で確認できます。';
+
+  @override
   String get communityReportDialogTitle => '作品を通報';
 
   @override

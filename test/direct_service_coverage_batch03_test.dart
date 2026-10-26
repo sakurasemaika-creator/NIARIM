@@ -37,7 +37,11 @@ void main() {
       expect(service.width, 400);
       expect(
         service.size.height,
-        closeTo(400 / CommunityPreviewService.playerAspect + 44, 0.001),
+        closeTo(
+          400 / CommunityPreviewService.playerAspect +
+              CommunityPreviewService.controlBarHeight,
+          0.001,
+        ),
       );
 
       service.close();

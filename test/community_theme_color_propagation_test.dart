@@ -65,12 +65,7 @@ void main() {
         final root = find.byType(CommunityFloatingPreview);
         final bar = find.descendant(
           of: root,
-          matching: find.byWidgetPredicate(
-            (w) =>
-                w is Container &&
-                w.constraints?.minHeight ==
-                    CommunityPreviewService.controlBarHeight,
-          ),
+          matching: find.byKey(const Key('communityPreviewControls')),
         );
         expect(tester.widget<Container>(bar).color, preset.menuBgColor);
         for (final button in tester.widgetList<IconButton>(

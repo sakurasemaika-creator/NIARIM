@@ -40,7 +40,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S9 設定色・heading・検索/表示filter・Drawer優先修正検証済み、S10 previewへの移行準備
+current_substep: A003/S10 shared previewの幅/48target/focus/高速pointer修正を実操作と29testsで検証。DISC015 CI/016連続resize性能は未解決、S11へ
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -60,7 +60,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: S9の検証済みsource/State/evidenceを通常pushしてhead/tree/CI確認。S10/小幅previewの200x200 player領域・操作列/48target・drag/resize/keyboard・代替導線を修正/実操作/回帰し、A003残条件へ進む。A003_S9_20261026_RESUME.mdを参照。
+next_action: S10の保存/readback/通常push・head/tree/CI照合を完了し、A003_S10_20261026_RESUME.mdからS11関連popup/unused ARB/format、DISC016性能比較とA003残条件へ継続する。保存済み同source検証を理由なく再実行しない。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
@@ -250,3 +250,69 @@ lock後の追加監査対象は A105 等のBaseline IDではなく、docs/work-a
 - Baseline2/628、A003 in_progress、DISC001–014 todo/cursorDISC001、Delta not_started。Android/DeX/touch/筆圧、live backend/OAuth、FFmpeg runtime codec、全Visual closureは未完了。
 
 - S9最終core保存/readback完了: [A003-S9-OCT26-final-core](https://drive.google.com/file/d/1h0nUV4MooTp7QId9njeGpW8L0g1whQKx/view?usp=drivesdk)、5,085,891 bytes /164 entries、SHA256 `49c80f61427947714b13d315f7d483e35ef37ff3b71a4cdd4184c2844dfa5604`。metadataとraw再取得hash/全CRC/MANIFEST全entry hash一致。全source/patch/hash、全反例/回帰/最新default buildログ、native原本/action/redacted runner、modal限定のsource-impact proof、2matrix参照、再開scriptを収録。ZIP内Stateはこの自己参照receipt追加前。Git Stateへreceiptを保持し、全面監査の完了にはしない。
+
+### 2026-10-26 A003/S10 — S9公開完了・preview responsive継続（WIP）
+
+- S9修正をApp `8c6a6bab39c946c1a954808d15a9b051363191b2`（tree `9c9260d4c16a8da4f53da40145e577551519e2cd`、29 files）、Web Stateを `fba682f6e66b38a81e6e6a470eb80b03f3ae905c`（tree `53e6a9ff0f16a8b1e8f216dd00be15aa5aa9e242`、4 files）へ公開。fresh parent lease / nonforce update、remote HEAD/tree/compare path一致を確認。local tested commitはbackup branchに保持。CIは13件success・Save safety実行中の時点で記録し、全greenとは判定していない。
+- 前在user font（SHA256 `4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350`）をS9検証/公開後に復元済み。S10 canonical検証中のみHEAD font `4ff87a0965f1b0505e5a2c58424bc6ad3cff27e56a82f21c2fc9d6b0e3857ee2`へ一時切替。元ファイルはpreexisting-assetsと既存検証済みDrive ZIPへ保存済み。完了/中断前に必ず元のuser fontを戻し、commitへ含めない。
+- DISC013をA003/S10として継続。fresh counter `oct26-s10-preview-before.jsonl` はFrench320/text2でpanel幅356と4px内部overflowを再現（1 real test ERROR）。このcounterはuser fontのまま実行、寸法反例であり現HEAD font画像証拠ではない。
+- WIP: previewの幅適応/200px高下限、48px操作領域、詳細の別行、短画面fallback、visible位置からのdrag/resize、keyboard/tooltipを実装中。通常UIは正式menu background/menuText。新規3文言は7言語に追加。最初のafterでSemantics increased/decreasedValue不足のassertionを検出し修正。関連targeted runはPASSだが、matrix/native/関連回帰/full analyze/通常build未完了のため未検証WIPとして扱う。
+- 現在 `oct26-s10-preview-matrix01.jsonl` 実行中。次の1手: 正確なdone/失敗を確認→不具合修正→対応matrixとnative FR320/text2・200px resize・short viewport・keyboard/戻るを実操作→原本目視→回帰。再現環境と旧S9原本は既存最終coreから復元可能。動画本体はplaceholderのままで、実再生/外部接続/法的非侵害PASSではない。
+- Baseline done2/628・A003 in_progress、DISC001–014 todo/cursorDISC001、Delta not_started、全面監査・最新HEAD Visual closure未完了を維持。
+
+### 2026-10-26/S10 CIの再確認・DISC015登録
+
+S9公開後CIは14 workflow中13success、Save safety auditがfailure。full-gatesはfull analyze成功、globalformat32files、fulltest2101PASS/23skip/4FAIL。保存専用jobはserializerformatで停止し保存testを実行していない。4反例はProjectDetail文字2倍右59pxoverflow、exact exportのCanvas finder0、unused ARB homeSelectionAddFavorite/homeSelectionRemoveFavorite、popup pixel不一致。DISC015をtodoとして追加。原因/修正/実画面/回帰未完了のため全CIgreenとは扱わない。raw log oct26-s9-CI-full-gates.logを次checkpointへ保存。
+
+S10 final regression log oct26-s10-preview-final-regression.jsonlは28 real tests PASS /69.433s、うちmatrix2247条件/66PNG・0failure。実装/ARB/資産はmatrix freezeとhash一致。テストソースだけ6箇所のif bracesを静的解析に従い機械修正中、製品ソース変更ではない。全体analyzeとnative buildを実行し、次は実製品UI操作。
+
+### S10 latest-source invalidation after native input counter
+
+28PASS/69.433s・2247条件/66PNG・解析問題なし3.8sはnative focus修正前のsource結果。実FR320でresize click後End無反応、Tabで背後Backにfocusする反例を発見。初期focus/resize press-drag focus/再配置とplayer-fallback間の保持を修正中。実routeをmountしてから開くfocused testはPASS6.792s。native再build/同操作、最新sourceのmatrix/regression/analyze/defaultbuildは未完了。前結果を最新sourceの完了証拠へ流用しない。旧raw画像/失敗log/修正根拠はobservations.mdとcheckpointに保存。
+
+### 2026-10-26 A003/S10 優先修正の最終検証記録
+
+- 希望幅356（200–640）を保持し、実幅をviewport safe areaへ適応。動画領域は200px高以上、十分な幅では16:9。幅/高さが足りない場合は動画を作らず、詳細への案内とDetails/Closeを表示。操作部分は必要ならscroll可能。
+- 再生状態toggle（placeholderのみ）/Close/Details/resizeの48px以上target。locale/font/textScaleから測ったDetailsを必要に応じ別行へ配置。resize handleがDetailsを覆わない。bar/hint/iconは正式menu背景/menuTextを使用。
+- resizeクリック/横drag、左右/上下キー、Home/End、Alt+矢印の移動、Escape。開いた時のfocus、pointer resizeでのfocus、行組替えとplayer/fallback間のfocus保持、fallbackのfocused action表示。既存routeの外側でもhover tooltipを提供。
+- 高速pointer updateはlive service値へ積算。gesture開始時に現在の可視位置/幅へanchorし、過去の画面外希望値や同一frame内の古いbuild値で操作を上書きしない。
+- 3文言を7言語へ追加しgen-l10n。既存role testsのbar参照を安定keyへ変更、size testsを200px高下限/48px rowへ整合。通常仕様29も挙動/keyboard/実動画未接続を整合し、過去会話由来の未確認特許断定を削除。
+
+## 反例と検証
+- `oct26-s10-preview-before.jsonl`: FR320/text2で幅356/内部4px overflow、1 real test ERROR。この反例のみ前在user font、後の最終canonical検証はHEAD font。
+- 初回afterはSemantics increased/decreasedValue不足を検出し修正。KO等の旧S9反例をS10の反例として水増ししない。
+- nativeでentry focusが背後Backに残りEnd無反応を再現。以前のtestの直接requestFocusが実entry差を隠していたため、route mount後にopen→pointer dragでfocus→Home/End/Alt→short/tall反復→Escapeを検証するtestへ強化。初期Navigator生成前のautofocus試案の失敗logも保持。
+- `oct26-s10-rapid-drag-before.jsonl`: 20イベント/frameが移動Offset(2,1)（期待40,20）、幅+2（期待+40）へ落ちる、1 ERROR。afterは1 PASS/13.013s。短画面/keyboard afterは1 PASS/8.862s。これらは最終runと重複し、件数を加算しない。
+- **最終** `oct26-s10-preview-complete-final-regression.jsonl`: **29 real tests PASS /136.198s**。含む2247 matrix条件/66 original PNG/0 failures。7言語×24指定幅×希望幅200/356/640×文字1/2×light/dark、short/tiny幅35条件、全28preset×7言語196条件。PC/SP独自layoutを持たないshared widgetのgeometry/labels/正式色role検証であり、2247回の個別手動操作とは区別。
+- `matrix-source-final-complete.json` の23 product/test/ARB/font hashは最終検証と一致。古いmatrix-final/focus-finalは修正前の履歴。最終66原本のpreview cropを11 contact sheetsで全件目視し、代表全原本とnative原本を別途確認。captureだけのPASSではない。
+- `oct26-s10-complete-final-analyze.log`: No issues/7.1s。最終manual Linux debug build成功。通常entrypoint buildは別logで確認し、結果を後述receiptへ記録。
+
+## 実アプリ操作と判定
+合成HTTP/owner/dataを使うproduction app/router/providers/UIの隔離Linux runner。実YouTube/実OAuth/実backendではない。
+- FR/SP320×844/dark/text2: Home→Back→Splash→Plaza→作品。全操作可視、pause見た目toggle、resize click最小200/2行、Home/End/Alt移動、速いbody dragが指定44/200pxに追従、640×220 fallbackで説明とDetails/Close、実Details route→Back、Plaza→Splashでも位置/サイズを保持、resizeへfocus後Escapeで閉じる。最終原本は `s10-final-fr-*`。
+- EN/PC1440×900/9色を意図的に異ならせたpalette: menu peach/darkblueのpreview bar、body/card等と正式roleの区別、pause見た目toggle、handle drag/End最大640。Home Bookmarkedのown private作品も実際にopen。
+- forcedPC320のcold/settled Home/Bookmarksでは320px内にplayer/全controlが収まり、希望640→320（4s settle）→1440（4s settle）で640を復元。最終 `s10-pc320-settled-*` / `s10-pc1440-settled-*` 原本を確認。
+- cold/連続操作の最初のcard tapで即openを確認できない事例はDISC010へ保持。settled retryを初回成功と扱わない。
+- **高速連続native resizeは未解決**。759/760/641/640/560/559/430/320のsweepで旧GLframeのcropが残り、logは論理viewport320と旧frameのOpenGL待ち時間超過を示す。軽いHomeでも初回frame待ち時間超過があり、Community gridだけを原因と断定しない。DISC016に登録し、settled layoutの合格から性能/連続resizeの合格を推測しない。
+- 7言語と全28presetは自動matrix、直接nativeはFR/SPとEN/PCの条件差ケース。物理Android/DeX、touch/multi-touch/pen、screen reader全操作、外部modal focusの実操作、profile実機性能、実メディアは未完了。特にplaceholderのtoggleを実再生合格にしない。FFmpeg dlopen環境も未成立。
+- ガイド判定: 戻る/再生/閉じる/Details/一般resizeの主要価値は既存の一般UIと7言語tooltip/accessible名で到達するため、この優先修正に独立onboardingは追加しない。通常仕様は更新。製品全体のHelp/Tips/初心者導線とoptional keyboard発見性は後続の全件監査対象として維持。
+
+## CI / 新規Discovery
+S9公開 `8c6a6ba` の14 workflowsは13success/Save safety failure。full analyzeはsuccess、global format32files、full suite2101PASS/23skip/4FAIL（ProjectDetail文字2倍右59pxoverflow、exact-export Canvas finder0、unused ARB2key、popup pixel不一致）。保存専用jobはserializer formatで停止し保存test未実行。raw `oct26-s9-CI-full-gates.log`、run40279021471。DISC015をtodo追加し未解決。S10/全面監査allgreenとは記録しない。
+DISC016はLinux software Impellerの高速resize/GLframe同期。source layoutとrenderer/実機性能を分けて反例/比較/対策/回帰を継続する。
+
+## 保存・font・次の1手
+- GitHub通常dev_branch pushと既定Drive folderへのZIP保存は承認済み。force/reset/main/deploy/他人への連絡へ拡張しない。
+- 前在user fontは1022464B/SHA256 `4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350` をpreexisting-assetsと検証済みDrive ZIPへ保持。canonical検証はHEAD font2508848B/SHA256 `4ff87a0965f1b0505e5a2c58424bc6ad3cff27e56a82f21c2fc9d6b0e3857ee2`。最終build後に前在fontを復元し、その差分をcommitしない。
+- 先行layout WIP: Drive `1GIboUHCTSIQtlaoDfw9mGJJG9b73-pUI`、2129600B/106entries、SHA256 `44329f7e20abb5fb4ae7a9c321c513d729b8e53c522085e05e40e01d0dd7ffb0`。focus WIP: `1Vw6QjaqlVY6ohWusRxTj6KsutfWnkkJH`、10136947B/247entries、SHA256 `c2ed0c9c25e88bb24446a24a84070a96fdeaaddcfda8d0efe859947c5cc2ff8f`。双方metadata/raw SHA/CRC/manifest readback一致。現最終sourceより前のWIPである。
+- 現最終coreのupload/readbackと公開のreceiptは本資料末尾へ追加する。ZIP内Stateは自身のreadback receipt追加前となり、receipt追記はStateだけを変更する。
+- 次の1手: canonical source/State/evidenceを通常pushしてremote tree/HEAD/CIを記録。その後A003/S11としてDISC015の関連popup/unused2key・formatの反例を分類/修正し、DISC016のrenderer/profile比較、Home48px target/Card作者keyboard、残るA003状態/continuityへ進む。Discovery cursorを飛ばしてdoneにしない。
+- `source tools/niarim-env.sh`、Flutter3.47.7/Dart3.13.5、`--no-pub`、Flutter CLIの並列実行禁止。最後の通常build後のbundleはlib/main.dart。native fixtureはreproduction/home_audit_manual.dartを再buildしてからnative_console.pyを同一PTYで使う。既検証の29tests/2247条件はsource変更・失われた結果・未解決事項がない限り再実行しない。
+
+### 最終通常build / 前在fontの復元
+
+`oct26-s10-default-build.log`: 通常lib/main.dart Linux debug build成功。native app/console/Xvfbを停止し、前在user fontを1022464B/SHA256 `4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350`へ復元済み。Git commitから除外する。product source/test/ARBは最終29PASSのfreezeと同一、Git正本のfontは検証時HEAD assetのまま。
+
+### S10最終core backup — readback検証済み
+
+[2026-10-26 S10 final core](https://drive.google.com/file/d/1mjAztPx92Jblr1uYUJuFT17kA3z3QqgS/view?usp=drivesdk)。14,016,730 bytes /295 entries、SHA256 `98c2bbf3f131e5c38d5b0b5b7c74ed5600539fc8c3dd71406b150f53e22470b9`。metadata name/MIME/size/parent、raw再取得size/SHA256、全CRC/manifest各entry hash一致。最終23source hash、29PASS log/2247条件66原本＋11比較シート、native原本/入力履歴/redacted runner、失敗反例/CI log、State/再開手順、元user fontを保持。高速resizeGL遅延とCI4fail等の未解決を明記。ZIP内Stateは本readback receipt追記前で、追記はGit Stateへ保存する。

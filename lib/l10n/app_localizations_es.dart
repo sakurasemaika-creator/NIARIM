@@ -6377,6 +6377,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityFloatingPreviewPauseTooltip => 'Pausar';
 
   @override
+  String get communityFloatingPreviewResizeTooltip =>
+      'Cambiar el tamaño de la vista previa';
+
+  @override
+  String get communityFloatingPreviewMoveHint =>
+      'Arrastra para mover. También puedes usar Alt + las flechas.';
+
+  @override
+  String get communityFloatingPreviewCompactHint =>
+      'Abre Detalles para ver esta obra.';
+
+  @override
   String get communityReportDialogTitle => 'Denunciar esta obra';
 
   @override

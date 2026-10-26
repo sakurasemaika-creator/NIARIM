@@ -6275,6 +6275,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityFloatingPreviewPauseTooltip => 'Pause';
 
   @override
+  String get communityFloatingPreviewResizeTooltip => 'Resize preview';
+
+  @override
+  String get communityFloatingPreviewMoveHint =>
+      'Drag to move. Alt + arrow keys also move the preview.';
+
+  @override
+  String get communityFloatingPreviewCompactHint =>
+      'Open Details to view this work.';
+
+  @override
   String get communityReportDialogTitle => 'Report this work';
 
   @override

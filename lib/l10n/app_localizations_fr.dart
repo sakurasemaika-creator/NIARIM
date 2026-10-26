@@ -6390,6 +6390,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityFloatingPreviewPauseTooltip => 'Pause';
 
   @override
+  String get communityFloatingPreviewResizeTooltip => 'Redimensionner l’aperçu';
+
+  @override
+  String get communityFloatingPreviewMoveHint =>
+      'Faites glisser pour déplacer l’aperçu, ou utilisez Alt + les flèches.';
+
+  @override
+  String get communityFloatingPreviewCompactHint =>
+      'Ouvrez Détails pour voir cette œuvre.';
+
+  @override
   String get communityReportDialogTitle => 'Signaler cette œuvre';
 
   @override

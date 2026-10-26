@@ -26,13 +26,11 @@ void main() {
     }
   });
 
-  test('画面が最小幅より狭くても最小幅を優先する', () {
-    // プレーヤーの最小サイズ要件は画面の都合では緩められない。
-    // （狭い端末でははみ出すが、規約を割るよりはそちらを選ぶ）
+  test('320pxの画面では幅を収めて動画の高さ200pxを保つ', () {
     final s = CommunityPreviewService();
     s.updateWidth(1000, availableWidth: 320);
-    expect(s.width, CommunityPreviewService.minWidth);
-    expect(s.playerSize.height, greaterThanOrEqualTo(minPlayerSide));
+    expect(s.width, 320);
+    expect(s.playerSize.height, minPlayerSide);
   });
 
   test('画面幅より広くはならない', () {

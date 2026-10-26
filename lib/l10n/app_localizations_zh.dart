@@ -6023,6 +6023,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityFloatingPreviewPauseTooltip => '暂停';
 
   @override
+  String get communityFloatingPreviewResizeTooltip => '调整预览大小';
+
+  @override
+  String get communityFloatingPreviewMoveHint => '拖动可移动预览，也可以使用 Alt + 方向键。';
+
+  @override
+  String get communityFloatingPreviewCompactHint => '打开详情即可查看此作品。';
+
+  @override
   String get communityReportDialogTitle => '举报此作品';
 
   @override
@@ -13413,6 +13422,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityFloatingPreviewPauseTooltip => '暫停';
+
+  @override
+  String get communityFloatingPreviewResizeTooltip => '調整預覽大小';
+
+  @override
+  String get communityFloatingPreviewMoveHint => '拖曳可移動預覽，也可以使用 Alt + 方向鍵。';
+
+  @override
+  String get communityFloatingPreviewCompactHint => '開啟詳情即可查看此作品。';
 
   @override
   String get communityReportDialogTitle => '檢舉此作品';

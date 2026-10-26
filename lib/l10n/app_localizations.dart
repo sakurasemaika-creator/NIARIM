@@ -11129,6 +11129,24 @@ abstract class AppLocalizations {
   /// **'一時停止'**
   String get communityFloatingPreviewPauseTooltip;
 
+  /// No description provided for @communityFloatingPreviewResizeTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューのサイズを変更'**
+  String get communityFloatingPreviewResizeTooltip;
+
+  /// No description provided for @communityFloatingPreviewMoveHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドラッグで移動できます。Alt＋矢印キーでも移動できます。'**
+  String get communityFloatingPreviewMoveHint;
+
+  /// No description provided for @communityFloatingPreviewCompactHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品は詳細画面で確認できます。'**
+  String get communityFloatingPreviewCompactHint;
+
   /// No description provided for @communityReportDialogTitle.
   ///
   /// In ja, this message translates to:
