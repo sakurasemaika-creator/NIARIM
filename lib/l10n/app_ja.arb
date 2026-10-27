@@ -93,6 +93,8 @@
   "homeWorksEmpty": "書き出した作品がありません",
   "homeWorksEmptyHint": "キャンバスの書き出しから動画・GIFを作成すると\nここに表示されます",
   "homeWorkFolderEmpty": "このフォルダには書き出した作品がありません",
+  "homeDeleteFolderKeepContents": "「{name}」フォルダを削除します。中の項目は一覧に戻り、項目自体は削除されません。",
+  "@homeDeleteFolderKeepContents": {"placeholders": {"name": {"type": "String"}}},
   "homeShareOpenWith": "共有・写真アプリ等で開く",
   "homeWorkDeleteConfirmTitle": "{name}を削除しますか？",
   "@homeWorkDeleteConfirmTitle": {

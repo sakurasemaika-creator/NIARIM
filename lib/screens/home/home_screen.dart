@@ -1683,9 +1683,11 @@ class _FolderableList<T> extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (dctx) => AlertDialog(
+                    scrollable: true,
+                    insetPadding: const EdgeInsets.all(16),
                     title: Text(l10n.projectListDeleteFolderConfirmTitle),
                     content: Text(
-                      l10n.projectListDeleteFolderConfirmBody(folder.name),
+                      l10n.homeDeleteFolderKeepContents(folder.name),
                     ),
                     actions: [
                       TextButton(

@@ -48,6 +48,7 @@
   "homeWorksEmpty": "No exported works yet",
   "homeWorksEmptyHint": "Export a video or GIF from the canvas and it will appear here",
   "homeWorkFolderEmpty": "No exported works in this folder",
+  "homeDeleteFolderKeepContents": "\"{name}\" will be deleted. Its contents will return to the main list and will not be deleted.",
   "homeShareOpenWith": "Share / Open in Photos",
   "homeWorkDeleteConfirmTitle": "Delete {name}?",
   "homeWorkDeleteConfirmBody": "The exported file on this device will be deleted. This cannot be undone.",

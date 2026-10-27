@@ -314,4 +314,141 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+  testWidgets(
+    'deleting a Works folder explains exports and preserves its real GIF',
+    (tester) async {
+      final env = await open(tester);
+      await env.folders.moveFileToFolder('AUDIT_root.gif', 'audit-folder');
+      await tester.pumpAndSettle();
+      final exports = await tester.runAsync(ExportEngine.exportsDir);
+      final file = File('${exports!.path}/AUDIT_root.gif');
+      final originalBytes = file.readAsBytesSync();
+      await tester.longPress(find.text('AUDIT'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(env.l10n.commonDelete));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(env.l10n.projectListDeleteFolderConfirmBody('AUDIT')),
+        findsNothing,
+        reason: 'Exported works are files, not a nested Project hierarchy',
+      );
+      expect(
+        find.text(env.l10n.homeDeleteFolderKeepContents('AUDIT')),
+        findsOneWidget,
+      );
+      await tester.tap(find.text(env.l10n.commonCancel));
+      await tester.pumpAndSettle();
+      expect(env.folders.folders.single.name, 'AUDIT');
+      expect(env.folders.folderIdOf('AUDIT_root.gif'), 'audit-folder');
+      expect(file.readAsBytesSync(), originalBytes);
+      await tester.longPress(find.text('AUDIT'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(env.l10n.commonDelete));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(FilledButton, env.l10n.commonDelete),
+      );
+      await tester.pumpAndSettle();
+      expect(env.folders.folders, isEmpty);
+      expect(env.folders.folderIdOf('AUDIT_root.gif'), isNull);
+      expect(file.readAsBytesSync(), originalBytes);
+      expect(find.text('AUDIT_root.gif'), findsOneWidget);
+      final restored = WorkFolderService();
+      await restored.init();
+      expect(restored.folders, isEmpty);
+      expect(restored.folderIdOf('AUDIT_root.gif'), isNull);
+      restored.dispose();
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Works folder deletion retains usable copy and controls in every locale and width',
+    (tester) async {
+      const widths = <double>[
+        320,
+        360,
+        375,
+        390,
+        430,
+        480,
+        520,
+        559,
+        560,
+        600,
+        640,
+        641,
+        700,
+        759,
+        760,
+        834,
+        900,
+        1024,
+        1180,
+        1280,
+        1366,
+        1440,
+        1600,
+        1920,
+      ];
+      var profiles = 0;
+      for (final language in ['ja', 'en', 'zh', 'zh_Hant', 'ko', 'fr', 'es']) {
+        for (final pc in [false, true]) {
+          final env = await open(tester, language: language, pc: pc);
+          await tester.longPress(find.text('AUDIT'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text(env.l10n.commonDelete));
+          await tester.pumpAndSettle();
+          final body = find.text(
+            env.l10n.homeDeleteFolderKeepContents('AUDIT'),
+          );
+          expect(body, findsOneWidget);
+          expect(
+            find.text(env.l10n.projectListDeleteFolderConfirmBody('AUDIT')),
+            findsNothing,
+          );
+          for (final (width, height) in [
+            for (final width in widths) (width, pc ? 900.0 : 844.0),
+            (320.0, 220.0),
+          ]) {
+            tester.view.physicalSize = Size(width, height);
+            await tester.pumpAndSettle();
+            await tester.ensureVisible(body);
+            await tester.pumpAndSettle();
+            expect(
+              tester.renderObject<RenderParagraph>(body).didExceedMaxLines,
+              isFalse,
+            );
+            for (final button in [
+              find.widgetWithText(TextButton, env.l10n.commonCancel),
+              find.widgetWithText(FilledButton, env.l10n.commonDelete),
+            ]) {
+              await tester.ensureVisible(button);
+              await tester.pumpAndSettle();
+              final rect = tester.getRect(button);
+              expect(rect.width, greaterThanOrEqualTo(48));
+              expect(rect.height, greaterThanOrEqualTo(48));
+              expect(rect.left, greaterThanOrEqualTo(0));
+              expect(rect.right, lessThanOrEqualTo(width));
+              expect(rect.top, greaterThanOrEqualTo(0));
+              expect(rect.bottom, lessThanOrEqualTo(height));
+            }
+            expect(
+              tester.takeException(),
+              isNull,
+              reason: '$language/$pc/$width/$height',
+            );
+            profiles++;
+          }
+          await tester.tap(
+            find.widgetWithText(TextButton, env.l10n.commonCancel),
+          );
+          await tester.pumpAndSettle();
+          expect(env.folders.folders.single.name, 'AUDIT');
+          expect(tester.takeException(), isNull);
+        }
+      }
+      expect(profiles, 350);
+    },
+  );
 }

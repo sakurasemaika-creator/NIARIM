@@ -395,6 +395,12 @@ abstract class AppLocalizations {
   /// **'このフォルダには書き出した作品がありません'**
   String get homeWorkFolderEmpty;
 
+  /// No description provided for @homeDeleteFolderKeepContents.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」フォルダを削除します。中の項目は一覧に戻り、項目自体は削除されません。'**
+  String homeDeleteFolderKeepContents(String name);
+
   /// No description provided for @homeShareOpenWith.
   ///
   /// In ja, this message translates to:

@@ -175,6 +175,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeWorkFolderEmpty => 'No hay obras exportadas en esta carpeta';
 
   @override
+  String homeDeleteFolderKeepContents(String name) {
+    return 'Se eliminará \"$name\". Su contenido volverá a la lista principal y no se eliminará.';
+  }
+
+  @override
   String get homeShareOpenWith => 'Compartir / Abrir en Fotos';
 
   @override

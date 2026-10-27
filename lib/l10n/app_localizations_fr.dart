@@ -175,6 +175,11 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ce dossier ne contient aucune œuvre exportée';
 
   @override
+  String homeDeleteFolderKeepContents(String name) {
+    return '\"$name\" sera supprimé. Son contenu reviendra dans la liste principale et ne sera pas supprimé.';
+  }
+
+  @override
   String get homeShareOpenWith => 'Partager / Ouvrir dans Photos';
 
   @override

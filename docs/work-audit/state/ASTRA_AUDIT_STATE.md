@@ -960,3 +960,55 @@ native-review.json、zero-exports-after-proof.json、runtime-launches/native-act
 新DISC034: Works folderの削除確認がProject専用のProjects and subfoldersを再利用する。原本とsourceを登録、todo。S20のempty修正だけでdelete-copyをPASSにしない。次はA003/S21で正確な説明・実file保持・取消/削除・7言語/PCSP/short・Project階層契約を検証し修正する。
 
 先にこの検証済み単位を通常expected-parent/nonforce pushし、remoteHEAD/tree/paths/実fetch/index/source306、CI、compiled runtime cacheとDrive読戻しを保存する。Baseline/Discovery/Deltaのcursorは上記のまま。全条件が揃うまでA003/DISC032/033/006をdoneへしない。
+
+
+## A003/S21開始 — 2026-10-27
+
+S20 App37b51c68f3bfe325e554baff189f146735737bf2 /Web64770a4c9dfa548bc1faf46acb756933ed861f2cのremote/ref/tree/21App4Web paths/実fetch/index/source306一致を確認。S20compiledcache1Y5Z7aY3TZe8uzGk3LuFyEat-F4cvm9JC31610134B/SHAf044dbd8ca325cfc3f98c2953a09f7253d73be077b08c7977e603127448551ebはmetadata/rawSHA/CRC/all218(158delta60base)とdownloadkernel実再起動を目視。最終native1c6ACPGybUyKvmoCDS3gQAQpoq_vw1kaUもraw823manifestまで検証済み。公開/cachecore1H2EEJFTeJOshFWEEJ_SjDLPQRqfU3QFb11350419B/SHAfbfaa09bc39ba11464140b39536f4953b15d9c664fa181de4ad31440abdefd94はupload/metadata一致、raw未確認。S20CIはこの時点でApp5/14success、残るrunning/queuedとWebpolicy成功。
+
+DISC034fresh実GIF入りfolderのUI削除promptでProject/subfolders bodyを検出し1FAIL3s。共通部品はフラット1階層のみ、実Projectの階層管理dialogは別実装。そのためgeneric keep-contents本文homeDeleteFolderKeepContents(name)を7言語で追加し、共通flatfolder promptだけへ適用。長文/shortでも本文とCancel/Deleteへ到達できるscrollable/inset16。実GIFbyte保持・取消・削除後Root/設定再load、7言語×24幅PCSP＋short=350条件の最終2testsは実行中。元の1afterPASS2sはpositivecopy/matrix追加前で重複加算しない。関連回帰/analyze/main/S21native/公開はこれから。S20kernel/画像をS21AFTERへ流用しない。
+
+
+## A003/S21 最終検証済み単位 — 2026-10-28
+
+Baseline done2/628、A003 in_progress。DISC001–035 todo/cursor001、Delta37 not_started。今回の修正単位だけの検証であり、全面監査・最新HEADの最終Visual closureではない。
+
+## HEAD・前回単位・復元
+
+開始App37b51c68f3bfe325e554baff189f146735737bf2 /Web64770a4c9dfa548bc1faf46acb756933ed861f2cを再取得。これがS20公開source。S20のApp14CI全成功/Webpolicy成功を確認。SaveSafety run40517696566/full-gates job122235485310はformat744files0changed、analyzeNoissues23.8s、fullsuite2146PASS/23SKIP/0FAIL/21m17s。raw544376B/SHA256d1a1279ff3e5effe5c667ac4d6a0e46f5d92c0b007ee926fd5424cee67aa32c9を保持。S21sourceのfullsuiteへ流用しない。
+
+S21作業中に実行環境が初期化。Drive WIP1sALY9dDiYZGKS8Gb_Ah8Zd1uhuHXdOCZ12507743B/SHA5829ceca89b5474d064da7d5fb350ab1bbce80edbcfcf62a14dd9e4375b2ab86はmetadata/rawSHA/CRC/all844manifest一致。最新GitStateを優先し同じparent上のWIP差分を復元、16source/testはbyte同一、matched dataset142mtime/modeを復元。保存済み2tests350条件を再実行していない。失われた関連28rawだけを一度補完した。
+
+## DISC034：反例→修正
+
+実Works folderの削除確認がprojectListDeleteFolderConfirmBodyを共用し、Project/subfoldersを移動すると誤説明。fresh oct27-s21-delete-copy-before.log1FAIL/3sで、実GIFを入れたfolderの確認本文から旧文言を検出。
+
+_FolderableListは共有・書き出し作品向けの一階層部品なので、homeDeleteFolderKeepContents(name)を7ARB/7generatedへ追加。この部品の確認だけを「folderを削除し、中の項目は一覧へ戻して保持する」という正確な本文へ変更。通常Project階層管理の文言・処理は変更しない。scrollableとinset16で狭幅/文字拡大/short-heightでも本文とCancel/Deleteへ到達可能にした。UI色・font・theme role、preset、schema、依存、権限gateは変更無し。
+
+全旧ARB key/valueはJSON比較で同一。日本語のfolder削除／contents保持／一覧復帰の3要素を基準に、en/fr/es/zh/zh_Hant/koの否定・主体・結果を照合。実行するDeleteとCancelの意味は維持する。新規操作は導入せず、既存の破壊範囲を正しく説明する修正のため専用チュートリアルは不要。関連Help/Tipsの全面追随は未完了の既存Routeで扱う。新しいthird-party素材/font/dependency/dataflowは追加無し。
+
+## 最終検証とビルド環境の区別
+
+- 保存済みoct27-s21-final-delete.log：2実tests PASS/14s。実GIFをfolderへ移動→取消でfolder/map/file同一→確定でfolder/mapだけ削除しfileがRootに復帰→WorkFolderService再init。別testは7言語×PCSP×24幅=336＋short320x220の14=350条件。実dialogの正しい全文、scroll、Cancel/Delete各48target・全viewport内、overflow例外なしを検証。
+- oct28-s21-related-recovered.log：Project folder4＋short folder dialog7＋unused l10n1＋fontCoverage16=28PASS/9s。以前観測した同じ28のrawが失われたため一度補完。distinct合計30。初期after1PASS、S20の50等を重複加算しない。
+- 最終analyzeNoissues23.4s。通常mainとS21fixtureのLinux debug build成功、306production source hash不変。kernel b844416cb0853cbdc673f5954ee337620fe491c370409fb89310a89897905644。元ユーザーfont1022464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350はguard終了ごとに復元し、Gitから除外。
+- 最初の復旧後mainはnative linker exit1で詳細が無く、同source verbose retryは成功。続く起動ではGLib static_quark_type_flags assertionでUI前に終了。復元されたCMakeCacheがGLib/GObject/GIOの.aを保持していた。cache/CMakeFilesを診断用へ退避し再configure→.so選択→同source/kernelで実起動が成功した。SDK/vendor/product sourceへ回避patchは入れていない。再発防止は非repoのruntime復元helperへ適用。
+- 問題のcompiled WIP Drive10TfrTrkfnqiJhIJx9mrKNKKaLTVrxf_PはINVALID-DO-NOT-REPLAY-A003-S21-static-glib-2026-10-28.zipへrenameしmetadata確認。使用不可。corrected startup v2は1mYTRLt_c0GlXSa7TsDdnxeryhovc98P5/32785907B/SHA9044625789b7364d57a5d088ae74dcd7b3e0bf4ce09dbf4e0447c8bcf73155dc（182delta+59base=241）でmetadata確認、raw検証/最終reviewed cacheは次工程。旧invalidやS20binaryをS21AFTERへ流用しない。
+
+## 実操作・機能結果・目視・保存
+
+production App/router/providers、実隔離file/prefs、明示mockHTTPのLinuxnative。同一PTY61326からmouse/keyboard/scrollを操作し、capture完了後21原本をview_imageで開いた。
+
+1. ENPC1440/text1：実863B GIFを長押し移動sheetからAUDITへ移動。新keep-contents本文を確認。CancelとEscはfolder/GIFを保持し、Delete確定でfolderだけ消えGIFがRootへ戻る。process再起動後もGIFを保持。
+2. 実New folderでCOURT作成→同GIFを実移動→FRSP320/text2で再起動してCOURT1を確認。新French本文は844高で全文、220高ではscrollで全文を順に読め、両actionsへ到達。CancelでCOURT1を保持、再確認後DeleteでGIFが一覧へ戻る。
+3. 戻った実GIFをpreviewで開きCloseできる。process再起動後もfolder0/map空/file1。PC/SPの最終fileは863B/SHA61f6f61e8d33fbe97316d0e16d1cfa82157a77fede20f64cbdbcada4f566ee70で元と完全一致。削除対象は隔離監査folderだけで、ユーザー資産は操作しない。
+
+native-review.json、pc-after-delete-file-proof.json、sp-after-delete-restart-proof.json、native-actions/runtime-launches、21原本に追跡。実Android/DeX、touch/pen/SR、liveOAuth/backend、実codec/export、性能・最終全preset/全画面closureはこの単位でPASSにしない。従来のGL resize/ATK/FFmpeg警告も保持する。
+
+## 証跡・残る対象
+
+最終native/source ZIP：https://drive.google.com/file/d/1Q_DnvKiM04TsYfc882X6H1gUi6i-ERX4/view?usp=drivesdk /14231126B/SHA233211691f4810983f66eeed9ce0e2b3ee173dfb735ea9ea0df16245eef23030。metadata name/MIME/size/parent、rawSHA/CRC/all936manifest一致。ZIP内Stateはこの最終報告追記前。公開/CI/cache/readback receiptは次checkpointに保存する。
+
+DISC035を登録：実CardのShare/Deleteに対し、folder移動は長押しに隠れている。移動自体は実行済みだが、PC右click/ShiftF10/keyboardの同等性と初心者向け案内は未確立。A003/S22で実追試して修正する。DISC029には、FRSPtext2でAUDIT_keep.gifの末尾fだけ孤立する追加可読性観察を追記。全字可視だけで折返し品質も完成としない。
+
+次：この検証済み単位を通常expected-parent/nonforce push→remoteHEAD/tree/paths/実fetch/index/source306一致→CI・有効compiled cache・Drive読戻し。続けてA003/S22のCard移動導線とfilename折返しへ進む。Baseline/Discovery/Deltaの未完了を維持し、全面監査完了は宣言しない。

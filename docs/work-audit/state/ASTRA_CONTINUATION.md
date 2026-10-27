@@ -40,7 +40,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S20 — 空Works folder/0export時folder入口/共通empty中央配置の修正単位を50distinct tests・実native再訪まで確認、公開/CI/cache保存中。新DISC034は次のS21
+current_substep: A003/S21 — 一階層folder削除の正しい7言語説明・short scrollを30distinct tests/350条件・PCSP実GIF保持/再訪まで確認。公開/CI/cache保存中。次S22はDISC035移動の発見性とDISC029 filename折返し
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -60,7 +60,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: A003_S20_20261027_RESUME.mdの最終sourceをexpected-parent/nonforce push→remote/実fetch/source306→CI/cache/Drive保存し、A003/S21でDISC034削除確認文言と実file保持を検証・修正。Baseline2/628、DISC001–034/Delta37未完了。
+next_action: A003_S21_20261028_RESUME.mdの検証済みsourceをexpected-parent/nonforce push→remote/実fetch/source306→CI/有効cache/readback保存。INVALID10Tfr...を使わず、A003/S22でCard移動/入力同等性・filename折返しを追試。Baseline2/628/DISC001–035/Delta37未完了。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
@@ -398,3 +398,7 @@ Native04 Drive1aR8-fL1bf6-MOZ1i_15YsbBfcJi5s1hG/3,933,769B/SHA16b1e62fac8ca25b97
 ### 2026-10-27 S20検証済み単位
 
 最新の正本はA003_S20_20261027_RESUME.md。final33PASS/221s(350条件)+不変l10n/font17でdistinct50、analyzeNoissues12.8s/main/fixture成功/source306。actualENPC/FRSP/short220/最後のGIF Delete/entry/back/processrestartを目視。最終nativeZIP1c6ACPGybUyKvmoCDS3gQAQpoq_vw1kaU12466732B/SHAb6985de23c9c15ba6ca8571c1f6e21670455403175aa221f7a8ed307145e7ee5はmetadata/rawSHA/CRC/all823manifest一致。新DISC034はWorks folder削除promptのProject誤用でtodo。元font保護、全面監査未完了。
+
+### 2026-10-28 S21検証済み単位
+
+正本A003_S21_20261028_RESUME.md。2savedPASS14s/350profiles＋28recoveredPASS9s=distinct30、analyzeNoissues23.4s、dynamicGLib再configure後main/fixture成功/source306/実PCSP移動→Cancel/Esc→folderだけDelete→実GIFpreview→再起動/863B/hash/prefsを確認。最終native1Q_DnvKiM04TsYfc882X6H1gUi6i-ERX4はmetadata/rawSHA/CRC/all936manifest一致。S20全14CIと2146PASS23SKIP21m17sは旧37sourceの結果。S21公開/CI/cacheは次工程。新DISC035と既存DISC029追加観察を未完了登録。元font保護、最終全面Visualclosure未完了。

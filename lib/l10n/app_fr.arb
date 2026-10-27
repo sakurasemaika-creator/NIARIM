@@ -48,6 +48,7 @@
   "homeWorksEmpty": "Aucune œuvre exportée pour le moment",
   "homeWorksEmptyHint": "Exportez une vidéo ou un GIF depuis le canevas et il apparaîtra ici",
   "homeWorkFolderEmpty": "Ce dossier ne contient aucune œuvre exportée",
+  "homeDeleteFolderKeepContents": "\"{name}\" sera supprimé. Son contenu reviendra dans la liste principale et ne sera pas supprimé.",
   "homeShareOpenWith": "Partager / Ouvrir dans Photos",
   "homeWorkDeleteConfirmTitle": "Supprimer {name} ?",
   "homeWorkDeleteConfirmBody": "Le fichier exporté sur cet appareil sera supprimé. Cette action est irréversible.",
