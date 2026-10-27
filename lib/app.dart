@@ -12,6 +12,7 @@ import 'services/settings_service.dart';
 import 'services/theme_service.dart';
 import 'utils/app_locale.dart';
 import 'widgets/app_scroll_behavior.dart';
+import 'widgets/app_chip_theme.dart';
 
 class NiarimApp extends StatefulWidget {
   const NiarimApp({super.key});
@@ -106,13 +107,15 @@ class _NiarimAppState extends State<NiarimApp> {
       // プレビュー）は、ルーティングされる画面（child）の外側・
       // 画面遷移をまたいで常に生き続ける層にStackでかぶせることで、
       // 「他の画面を見ながら再生し続けられる」という要件を満たしている。
-      builder: (context, child) => Listener(
-        onPointerDown: (e) =>
-            context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
-        onPointerHover: (e) =>
-            context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
-        behavior: HitTestBehavior.translucent,
-        child: Stack(children: [child!, const CommunityFloatingPreview()]),
+      builder: (context, child) => AppChipTheme(
+        child: Listener(
+          onPointerDown: (e) =>
+              context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
+          onPointerHover: (e) =>
+              context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
+          behavior: HitTestBehavior.translucent,
+          child: Stack(children: [child!, const CommunityFloatingPreview()]),
+        ),
       ),
     );
   }

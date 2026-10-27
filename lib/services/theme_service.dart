@@ -875,9 +875,18 @@ class ThemeService extends ChangeNotifier {
       chipTheme: ChipThemeData(
         backgroundColor: preset.menuBgColor,
         selectedColor: selectionColor,
-        secondaryLabelStyle: textTheme.labelLarge?.copyWith(
-          color: preset.selectionTextColor,
+        // RawChip resolves a WidgetStateColor for every chip type. A static
+        // secondaryLabelStyle reaches ChoiceChip but misses Filter/InputChip.
+        labelStyle: textTheme.labelLarge?.copyWith(
+          color: WidgetStateColor.resolveWith((states) {
+            // RawChip applies the standard disabled opacity while painting.
+            if (states.contains(WidgetState.disabled)) return preset.textColor;
+            return states.contains(WidgetState.selected)
+                ? preset.selectionTextColor
+                : preset.menuTextColor;
+          }),
         ),
+        checkmarkColor: preset.selectionTextColor,
         // 完全な丸み（ピル型）：日本のアプリでよく使われる柔らかいタグ・
         // フィルターチップの形状。
         shape: const StadiumBorder(),
