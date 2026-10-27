@@ -219,6 +219,7 @@
   "folderManagementTitle": "Gestion des dossiers",
   "folderManagementCreateNew": "Nouveau",
   "folderManagementEmpty": "Aucun dossier pour le moment",
+  "folderCreateFailed": "Impossible de créer le dossier. Réessayez.",
   "folderNameLabel": "Nom du dossier",
   "folderMoveToTitle": "Déplacer vers un dossier",
   "folderNone": "Aucun dossier",

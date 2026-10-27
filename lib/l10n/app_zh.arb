@@ -219,6 +219,7 @@
   "folderManagementTitle": "文件夹管理",
   "folderManagementCreateNew": "新建",
   "folderManagementEmpty": "还没有文件夹",
+  "folderCreateFailed": "无法创建文件夹。请重试。",
   "folderNameLabel": "文件夹名称",
   "folderMoveToTitle": "移至文件夹",
   "folderNone": "无文件夹",

@@ -21,6 +21,7 @@ import '../home_screen.dart';
 import '../../../config/font_fallback.dart';
 import '../../../widgets/scrollable_sheet_body.dart';
 import '../../../widgets/empty_state_placeholder.dart';
+import '../../../utils/app_error_reporter.dart';
 
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
 /// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
@@ -30,52 +31,146 @@ void showCreateFolderNameDialog(
   BuildContext context,
   Future<void> Function(String name) onCreate,
 ) {
-  final l10n = AppLocalizations.of(context)!;
-  final controller = TextEditingController();
-  showDialog(
+  showDialog<void>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(l10n.projectListNewFolderTitle),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: l10n.folderNameLabel,
-              border: const OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 8),
-          // 同じ作品の複数話数・シリーズ物をまとめる使い方への気づきを促す
-          // ヒント（フォルダは複数階層に対応しているため実現可能）。
-          Text(
-            l10n.projectListFolderHint,
-            style: TextStyle(
-              fontSize: 11,
-              color: Theme.of(ctx).colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: Text(l10n.commonCancel),
-        ),
-        FilledButton(
-          onPressed: () async {
-            if (controller.text.trim().isEmpty) return;
-            await onCreate(controller.text.trim());
-            if (ctx.mounted) Navigator.pop(ctx);
-          },
-          child: Text(l10n.commonCreate),
-        ),
-      ],
-    ),
+    builder: (_) => _FolderNameDialog(onCreate: onCreate),
   );
+}
+
+class _FolderNameDialog extends StatefulWidget {
+  const _FolderNameDialog({required this.onCreate});
+  final Future<void> Function(String name) onCreate;
+  @override
+  State<_FolderNameDialog> createState() => _FolderNameDialogState();
+}
+
+class _FolderNameDialogState extends State<_FolderNameDialog> {
+  final _controller = TextEditingController();
+  bool _creating = false;
+  bool _failed = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _create() async {
+    final name = _controller.text.trim();
+    if (_creating || name.isEmpty) return;
+    setState(() {
+      _creating = true;
+      _failed = false;
+    });
+    try {
+      await widget.onCreate(name);
+      if (mounted) Navigator.pop(context);
+      // Keep submission disabled through the closing route animation.
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (mounted) {
+        setState(() {
+          _creating = false;
+          _failed = true;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final foreground =
+        theme.popupMenuTheme.textStyle?.color ?? theme.colorScheme.onSurface;
+    final heading =
+        (theme.dialogTheme.titleTextStyle ?? theme.textTheme.headlineSmall)
+            ?.copyWith(
+              color: foreground,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            );
+    return Dialog(
+      insetPadding: const EdgeInsets.all(16),
+      constraints: const BoxConstraints(maxWidth: 560),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: DefaultTextStyle.merge(
+          style: TextStyle(color: foreground),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Semantics(
+                namesRoute: true,
+                child: Text(l10n.projectListNewFolderTitle, style: heading),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _controller,
+                autofocus: true,
+                enabled: !_creating,
+                style: TextStyle(color: foreground),
+                onChanged: (_) => setState(() {
+                  _failed = false;
+                }),
+                decoration: InputDecoration(
+                  labelText: l10n.folderNameLabel,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.projectListFolderHint,
+                style: TextStyle(fontSize: 11, color: foreground),
+              ),
+              if (_failed) ...[
+                const SizedBox(height: 12),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(l10n.folderCreateFailed),
+                ),
+              ],
+              if (_creating) ...[
+                const SizedBox(height: 12),
+                Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      semanticsLabel: l10n.commonCreate,
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              OverflowBar(
+                alignment: MainAxisAlignment.end,
+                spacing: 8,
+                overflowSpacing: 8,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      if (ModalRoute.of(context)?.isCurrent ?? false) {
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Text(l10n.commonCancel),
+                  ),
+                  FilledButton(
+                    onPressed: _creating || _controller.text.trim().isEmpty
+                        ? null
+                        : _create,
+                    child: Text(l10n.commonCreate),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Preserve the normal thumbnail ratio while making room for the action rail

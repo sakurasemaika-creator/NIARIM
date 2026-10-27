@@ -645,6 +645,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get folderManagementEmpty => '아직 폴더가 없습니다';
 
   @override
+  String get folderCreateFailed => '폴더를 만들지 못했어요. 다시 시도해 주세요.';
+
+  @override
   String get folderNameLabel => '폴더 이름';
 
   @override

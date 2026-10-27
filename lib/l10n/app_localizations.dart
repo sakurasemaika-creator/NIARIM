@@ -1295,6 +1295,12 @@ abstract class AppLocalizations {
   /// **'フォルダはまだありません'**
   String get folderManagementEmpty;
 
+  /// No description provided for @folderCreateFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダを作成できませんでした。もう一度お試しください。'**
+  String get folderCreateFailed;
+
   /// No description provided for @folderNameLabel.
   ///
   /// In ja, this message translates to:

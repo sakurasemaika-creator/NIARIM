@@ -642,6 +642,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get folderManagementEmpty => 'フォルダはまだありません';
 
   @override
+  String get folderCreateFailed => 'フォルダを作成できませんでした。もう一度お試しください。';
+
+  @override
   String get folderNameLabel => 'フォルダ名';
 
   @override

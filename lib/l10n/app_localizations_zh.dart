@@ -638,6 +638,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get folderManagementEmpty => '还没有文件夹';
 
   @override
+  String get folderCreateFailed => '无法创建文件夹。请重试。';
+
+  @override
   String get folderNameLabel => '文件夹名称';
 
   @override
@@ -8032,6 +8035,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get folderManagementEmpty => '還沒有資料夾';
+
+  @override
+  String get folderCreateFailed => '無法建立資料夾。請重試。';
 
   @override
   String get folderNameLabel => '資料夾名稱';

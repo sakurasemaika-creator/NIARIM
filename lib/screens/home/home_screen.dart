@@ -632,6 +632,8 @@ class _HomeScreenState extends State<HomeScreen>
                 FloatingActionButton(
                   key: const Key('homeBackToSplashFab'),
                   heroTag: 'home-back-to-splash',
+                  mini: MediaQuery.sizeOf(context).height < 400,
+                  materialTapTargetSize: MaterialTapTargetSize.padded,
                   tooltip: l10n.homeBackToSplashTooltip,
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -648,6 +650,8 @@ class _HomeScreenState extends State<HomeScreen>
                 if (_currentTabIndex == 0)
                   FloatingActionButton(
                     heroTag: 'home-add-project',
+                    mini: MediaQuery.sizeOf(context).height < 400,
+                    materialTapTargetSize: MaterialTapTargetSize.padded,
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     shape: const CircleBorder(side: BorderSide.none),
@@ -663,6 +667,8 @@ class _HomeScreenState extends State<HomeScreen>
                 else if (_currentTabIndex == 1)
                   FloatingActionButton(
                     heroTag: 'home-add-work-folder',
+                    mini: MediaQuery.sizeOf(context).height < 400,
+                    materialTapTargetSize: MaterialTapTargetSize.padded,
                     tooltip: l10n.homeAddSheetNewFolder,
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -1528,15 +1534,23 @@ class _FolderableList<T> extends StatelessWidget {
     // 作品の行は表示されるぶんだけ作る。ListView(children:)だと、実際に
     // 描画されるのは画面内の行だけでも、全作品ぶんのカード（サムネイルの
     // Image.fileを含む）のウィジェットが毎buildで作られて捨てられる。
-    return ListView.builder(
-      itemCount: rootItems.length + (hasHeader ? 2 : 0),
-      itemBuilder: (context, index) {
-        if (hasHeader && index == 0) {
-          return _folderChips(context, countByFolder);
-        }
-        if (hasHeader && index == 1) return const Divider(height: 1);
-        return itemBuilder(context, rootItems[index - (hasHeader ? 2 : 0)]);
-      },
+    return LayoutBuilder(
+      builder: (context, constraints) => ListView.builder(
+        // Leave 48px for the action, 8px inner padding and 4px card margin.
+        padding: EdgeInsets.only(
+          bottom:
+              (constraints.maxHeight - 60).clamp(0.0, 88.0).toDouble() +
+              MediaQuery.paddingOf(context).bottom,
+        ),
+        itemCount: rootItems.length + (hasHeader ? 2 : 0),
+        itemBuilder: (context, index) {
+          if (hasHeader && index == 0) {
+            return _folderChips(context, countByFolder);
+          }
+          if (hasHeader && index == 1) return const Divider(height: 1);
+          return itemBuilder(context, rootItems[index - (hasHeader ? 2 : 0)]);
+        },
+      ),
     );
   }
 
@@ -2264,6 +2278,8 @@ class _WorkListItem extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
+        insetPadding: const EdgeInsets.all(16),
         title: Text(l10n.homeWorkDeleteConfirmTitle(file.path.split('/').last)),
         content: Text(l10n.homeWorkDeleteConfirmBody),
         actions: [
@@ -2344,9 +2360,11 @@ class _WorkPreviewState extends State<_WorkPreview> {
         ),
       );
     } else if (_failed) {
-      content = Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(l10n.homePreviewFailed),
+      content = Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(l10n.homePreviewFailed, textAlign: TextAlign.center),
+        ),
       );
     } else if (_controller != null && _controller!.value.isInitialized) {
       content = Center(
@@ -2363,12 +2381,14 @@ class _WorkPreviewState extends State<_WorkPreview> {
         ),
       );
     } else {
-      content = const Padding(
-        padding: EdgeInsets.all(24),
-        child: SizedBox(
-          width: 32,
-          height: 32,
-          child: CircularProgressIndicator(),
+      content = const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: SizedBox(
+            width: 32,
+            height: 32,
+            child: CircularProgressIndicator(),
+          ),
         ),
       );
     }

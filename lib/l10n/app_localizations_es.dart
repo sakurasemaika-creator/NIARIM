@@ -667,6 +667,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get folderManagementEmpty => 'Aún no hay carpetas';
 
   @override
+  String get folderCreateFailed =>
+      'No se pudo crear la carpeta. Inténtalo de nuevo.';
+
+  @override
   String get folderNameLabel => 'Nombre de la carpeta';
 
   @override

@@ -657,6 +657,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get folderManagementEmpty => 'No folders yet';
 
   @override
+  String get folderCreateFailed => 'Couldn’t create the folder. Try again.';
+
+  @override
   String get folderNameLabel => 'Folder Name';
 
   @override

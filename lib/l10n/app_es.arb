@@ -219,6 +219,7 @@
   "folderManagementTitle": "Gestión de carpetas",
   "folderManagementCreateNew": "Nueva",
   "folderManagementEmpty": "Aún no hay carpetas",
+  "folderCreateFailed": "No se pudo crear la carpeta. Inténtalo de nuevo.",
   "folderNameLabel": "Nombre de la carpeta",
   "folderMoveToTitle": "Mover a carpeta",
   "folderNone": "Sin carpeta",

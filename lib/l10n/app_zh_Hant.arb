@@ -219,6 +219,7 @@
   "folderManagementTitle": "資料夾管理",
   "folderManagementCreateNew": "新增",
   "folderManagementEmpty": "還沒有資料夾",
+  "folderCreateFailed": "無法建立資料夾。請重試。",
   "folderNameLabel": "資料夾名稱",
   "folderMoveToTitle": "移至資料夾",
   "folderNone": "無資料夾",

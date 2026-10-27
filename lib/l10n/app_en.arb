@@ -219,6 +219,7 @@
   "folderManagementTitle": "Folder Management",
   "folderManagementCreateNew": "New",
   "folderManagementEmpty": "No folders yet",
+  "folderCreateFailed": "Couldn’t create the folder. Try again.",
   "folderNameLabel": "Folder Name",
   "folderMoveToTitle": "Move to Folder",
   "folderNone": "No Folder",

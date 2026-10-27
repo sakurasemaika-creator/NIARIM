@@ -219,6 +219,7 @@
   "folderManagementTitle": "폴더 관리",
   "folderManagementCreateNew": "새로 만들기",
   "folderManagementEmpty": "아직 폴더가 없습니다",
+  "folderCreateFailed": "폴더를 만들지 못했어요. 다시 시도해 주세요.",
   "folderNameLabel": "폴더 이름",
   "folderMoveToTitle": "폴더로 이동",
   "folderNone": "폴더 없음",

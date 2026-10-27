@@ -665,6 +665,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get folderManagementEmpty => 'Aucun dossier pour le moment';
 
   @override
+  String get folderCreateFailed => 'Impossible de créer le dossier. Réessayez.';
+
+  @override
   String get folderNameLabel => 'Nom du dossier';
 
   @override

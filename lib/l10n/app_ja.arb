@@ -299,6 +299,7 @@
   "folderManagementTitle": "フォルダ管理",
   "folderManagementCreateNew": "新規作成",
   "folderManagementEmpty": "フォルダはまだありません",
+  "folderCreateFailed": "フォルダを作成できませんでした。もう一度お試しください。",
   "folderNameLabel": "フォルダ名",
   "folderMoveToTitle": "フォルダへ移動",
   "folderNone": "フォルダなし",
