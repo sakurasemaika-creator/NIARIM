@@ -631,3 +631,43 @@ DISC030: 実GIFpreviewの固定RowがFR320/text2で右352pxoverflow、Closeが�
 ## 次手
 
 S16 publication receiptのHEAD/tree/path/実fetchを先に照合し、公開済みなら再pushしない。最終native原本/306lib proof/analyze raw/normalmain/cacheを現在HEADで補完しDrive readbackを完了。A003のview/sort/selection/folder/search/keyboard/continuityと残matrixへ継続。DISC005/029/030は優先部分修正でありtodo維持。Baseline/Discovery/Deltaや全画面・全presetの最終Visual closureを完了扱いにしない。
+
+
+## A003 / S16 最終native・cache補完完了（全監査未完了）
+
+Baseline done2/628、A003 in_progress。DISC001–030 todo/cursor001、Delta37 not_started。全面監査・全画面/全presetの最終Visual closureは未完了。locked Baselineの定義と順序は維持。
+
+製品修正App76d06799d21f33435307047b302fe510d9e19525 / Web監査記録ebd82bdf30c175ed0311681070d8df71d75edbd2をexpected-parent/nonforceで公開し、HEAD/tree/parent/10/4paths/ahead1behind0/実fetch/index/localrefを検証済み。source306libはGitshow製品HEADと全SHA一致。元ユーザーfont1,022,464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を保持しcommit対象外。
+
+## 修正と保存済み検証
+
+DISC029: FR320/text2 Works3filesが全てAUD…になる実画面とRenderParagraph反例を再現。ExportedWorkCardに分け、名前全文が横に収まる時だけinline、他は全幅wrap行。metadata/preview/longpress移動/share/deleteの独立callback・48targets・keyboard・OSboldを保持。正式Card面/menuTextに結線しsurfaceContainerLowの迂回を除去。
+
+DISC030: 実GIFpreviewの固定Rowで共有がright352pxoverflow、Closeが画面外。ExportedWorkPreviewLayoutでbounded preview・OverflowBar・短画面scrollへ。GIFはcontain、videoはCenter/AspectRatioを維持。GIFdecode失敗に既存翻訳案内を追加。source3filesとtest3files、2新componentはA003/DISC029/030へ割当。保存schema、ユーザー資産、正式9色/4前景、APCA absLc<10/exact10除外、CVD/cache、28preset値を変えず、固定UI色/自動neutralを追加していない。
+
+- identity before1failed8.959s→after1PASS10.377s。preview before352pxoverflow11.350s→after1PASS9.757s、最終wholeHome/layout/Close1PASS9.555s。重複caseを加算しない。
+- Card matrix個別case1PASS:30palettes×7locale×11width×2scale=4620条件、30PNG、全文/前景/設定値不変。初回runの別action testのFocuscontext errorとは区別。corrected actions/OSbold11幅/220height/folder3PASS23.420s、Home identity＋BookmarkStates19PASS22.150s。
+- Preview matrix個別case1PASS70.181s:30palettes×7locale×3viewport×2scale=1260条件、Share/Close各1260実tap・48target・画面内到達・値不変、30PNG。TextButton.icon subclassのfinderミスを訂正した結果のみ使用。別FileImage widgetdecode試行はtimeoutしたためdecoderの合格根拠にせず、実nativeで確認。
+- 60component原本を全目視。Cardは上360pxの完全なcardを等倍5contact、Previewは全dialogを含む等倍5contact。古い上300cropはactionsを欠きfull-card証拠に使わない。Preview緑面はlayout用artwork stand-in、動画decodeの証明ではない。
+- 一度resetで失われた最終原本とrawを現在の製品HEADから補完。fullanalyze Noissues24.9s、通常mainbuildSUCCESS→fixturebuildSUCCESS（fixtureを最後にする）。306lib/current source proof・canonical/original font guardを保存。完了済み4620/1260matrixや全関連testを最初から再実行していない。
+- 製品HEADの5triggered CIすべてsuccess: WebRef40448999765、dashboard40448999756、ThemeRescue40448999729、policy40448999868、allroutes40448999962。S16のfullsuite新規trigger無し。S12の2116PASS/23SKIPをS16へ移さない。
+
+## 実操作と証拠
+
+S15のEN/PC1440 empty/Bookmark503→Retry→200空、Works実pull/IO阻害→復旧→Retryで元GIF再表示とSHA一致、FR320/text2 Bookmark503→3件/AI-hidden/loading15秒timeout→Retryの実操作は前Evidenceと保存coreを参照。初回通常splash3枚は合格証拠から除外。
+
+補完したFR320/text2実画面で、3つの完全なWorks名と正式peach/navy役割、実validGIFの拡大fit、invalidGIFの翻訳errorとShare/Close、高さ220でscroll→実Close→Homeを確認し原本を保存。元GIFを復旧してSHA一致。EN/PC1440/ordinaryではDriveからraw再取得したkernelをbundleへ適用し、新consoleから実再起動してWorksを目視。Linux software/mouse/forcedSPであり物理touch/Android/DeX/SRやliveOAuth/backend/codecの合格ではない。Linux share_plusはfile share非対応、実OS shareは未確認。
+
+## 永続化済み・次回復元
+
+すべて承認済みDrive folder1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q。metadata/rawSHA/CRC/allmanifest検証済み:
+
+- 最終native/core: https://drive.google.com/file/d/1Zu-ZM41ylBiph7gwJ5gL08H0Ih8i1oLe/view?usp=drivesdk /8462712B/SHA77147a277e470be3f0ec80e1f5dedf9389598e5668efd6f8176ba89704eba345。306lib build proof/analyze/mainbuild rawとFR最終5原本を含む。
+- 公開receipt: https://drive.google.com/file/d/1-9z80Eq2B9iAZgNqR5O91Sxu9wf6f8jx/view?usp=drivesdk /31095B/SHA4105469c3b4fc6884c537394a3996fc37e866d966b97e18a1a604e500e22e771。
+- S16 compiled delta: https://drive.google.com/file/d/1KymhU9lNk-2er3gOm8QSUkGZcd2HkMPj/view?usp=drivesdk /31595734B/SHAcb17597f83505d7bd0f8d993932108e08ccb54e81e22d5b0e3a2280d7ae94b85。59base+151delta=210manifest、kernel8b3e1ab5213c3ce094a4b296d720da12520cfc406040b43a0ccdcc1937e82e1d、marker確認と実readback再起動済み。SDK/pub/build無しで再生可能（native223復元とrelocateは必要）。portable root/scriptを同梱。
+
+cache展開順はS11part1（Drive1fnjRJnB5rMVHduIefcuuL_J0U902gIgG、SHA78b3aa5ec66e4d92f3b23a2af7abed9f1a2f48e5882f44a0c751f792ffef5770）→S14v2（Drive1h-7XkygflXABQGtx4NJrhspdPY2XSG-C、SHAf62ee7ec78c22a749eefee97625501626420cac8c23edd021d7567ba34e1be96）→S16delta。manifest全hash/modesを確認してnative223を復元、niarim-env.sh→native_console.pyへ。旧S14delta1DH2...はnormalmain kernelでfixtureに使わない。状態のみの後続HEADでは306libのsource同一性を照合し、不必要な再build/再testをしない。
+
+## 次手・未完了
+
+S16 sourceと最終native/cache補完は完了。最終readback再起動原本とreceiptは補完終了checkpointに保存する。次は既存DISC029のHome FABと一覧末尾actionの干渉、DISC030のloading spinner比率を確認（現在はsource上のリスクで未実測）。その後A003のview/sort/selection/folder/search/keyboard/continuityと残matrixへ。これらを無確認でPASSにせず、必要なら反例→fix→regression→native証拠を追加。DISC005/029/030等は優先部分修正済みでも全条件までtodo維持。全監査完了と宣言しない。
