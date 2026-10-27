@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -17,12 +18,24 @@ import 'helpers/load_app_fonts.dart';
 void main() {
   final boundary = GlobalKey();
   const name = 'AUDIT_1_animation_海と空_Animation_étude_动画_動畫_애니메이션.gif';
+  Finder titleFor(String filename) => find.byWidgetPredicate(
+    (widget) =>
+        widget is Text && (widget.semanticsLabel ?? widget.data) == filename,
+  );
+  RenderParagraph paragraphFor(WidgetTester tester, String filename) =>
+      tester.renderObject<RenderParagraph>(
+        find.descendant(
+          of: titleFor(filename),
+          matching: find.byType(RichText),
+        ),
+      );
   Widget host(
     ThemeService theme,
     Locale locale,
     double scale,
     void Function(String) action, {
     bool bold = false,
+    String exportName = name,
   }) => MaterialApp(
     theme: theme.themeData,
     locale: locale,
@@ -41,9 +54,10 @@ void main() {
           return ListView(
             children: [
               ExportedWorkCard(
-                name: name,
+                name: exportName,
                 metadata: '2026/10/27 12:34 ・ 863B',
                 icon: Icons.gif_box_outlined,
+                moveLabel: l10n.folderMoveToTitle,
                 shareLabel: l10n.homeShareOpenWith,
                 deleteLabel: l10n.commonDelete,
                 onOpen: () => action('open'),
@@ -57,6 +71,109 @@ void main() {
       ),
     ),
   );
+
+  testWidgets('move has a visible localized action and keyboard access', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final theme = ThemeService();
+    await theme.init();
+    addTearDown(theme.dispose);
+    await loadAppFonts(tester);
+    final actions = <String>[];
+    await tester.pumpWidget(host(theme, const Locale('fr'), 1, actions.add));
+    await tester.pumpAndSettle();
+    final context = tester.element(find.byType(ExportedWorkCard));
+    final l10n = AppLocalizations.of(context)!;
+    final move = find.byTooltip('${l10n.folderMoveToTitle}: $name');
+    expect(move, findsOneWidget);
+    expect(tester.getSize(move), const Size(48, 48));
+    await tester.tap(move);
+    await tester.pumpAndSettle();
+    expect(actions, ['move']);
+    Focus.of(tester.element(titleFor(name))).requestFocus();
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    expect(
+      Focus.of(
+        tester.element(find.byIcon(Icons.drive_file_move_outline)),
+      ).hasPrimaryFocus,
+      isTrue,
+    );
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(actions, ['move', 'move']);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('secondary mouse and context keys open the move picker', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final theme = ThemeService();
+    await theme.init();
+    addTearDown(theme.dispose);
+    await loadAppFonts(tester);
+    final actions = <String>[];
+    await tester.pumpWidget(host(theme, const Locale('en'), 1, actions.add));
+    await tester.pumpAndSettle();
+    final label = titleFor(name);
+    final pointer = await tester.startGesture(
+      tester.getCenter(label),
+      kind: ui.PointerDeviceKind.mouse,
+      buttons: kSecondaryMouseButton,
+    );
+    await pointer.up();
+    await tester.pumpAndSettle();
+    expect(actions, ['move']);
+    Focus.of(tester.element(label)).requestFocus();
+    await tester.pump();
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.f10);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.contextMenu);
+    await tester.pumpAndSettle();
+    expect(actions, ['move', 'move', 'move']);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('filename wraps at separators without splitting its extension', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final theme = ThemeService();
+    await theme.init();
+    addTearDown(theme.dispose);
+    await loadAppFonts(tester);
+    tester.view.physicalSize = const Size(320, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    const filename = 'AUDIT_keep.gif';
+    await tester.pumpWidget(
+      host(theme, const Locale('fr'), 2, (_) {}, exportName: filename),
+    );
+    await tester.pumpAndSettle();
+    final paragraph = paragraphFor(tester, filename);
+    final displayed = paragraph.text.toPlainText();
+    expect(displayed.replaceAll('\u200B', ''), filename);
+    expect(paragraph.didExceedMaxLines, isFalse);
+    expect(
+      paragraph.getBoxesForSelection(
+        TextSelection(
+          baseOffset: displayed.lastIndexOf('.'),
+          extentOffset: displayed.length,
+        ),
+      ),
+      hasLength(1),
+    );
+    final semantics = tester.ensureSemantics();
+    expect(tester.getSemantics(titleFor(filename)).label, contains(filename));
+    semantics.dispose();
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'export actions stay independent for mouse, long press and keyboard',
@@ -73,7 +190,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(host(theme, const Locale('fr'), 2, actions.add));
       await tester.pumpAndSettle();
-      final label = find.text(name);
+      final label = titleFor(name);
       await tester.tap(label);
       await tester.pumpAndSettle();
       await tester.longPress(label);
@@ -127,28 +244,36 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       for (final width in [
         320,
-        321,
+        360,
+        375,
         390,
+        430,
+        480,
+        520,
         559,
         560,
-        639,
+        600,
         640,
+        641,
+        700,
         759,
         760,
+        834,
+        900,
         1024,
+        1180,
+        1280,
+        1366,
         1440,
+        1600,
+        1920,
       ]) {
         tester.view.physicalSize = Size(width.toDouble(), 220);
         await tester.pumpWidget(
           host(theme, const Locale('fr'), 2, (_) {}, bold: true),
         );
         await tester.pumpAndSettle();
-        expect(
-          tester
-              .renderObject<RenderParagraph>(find.text(name))
-              .didExceedMaxLines,
-          isFalse,
-        );
+        expect(paragraphFor(tester, name).didExceedMaxLines, isFalse);
         final button = find.ancestor(
           of: find.byIcon(Icons.delete_outline),
           matching: find.byType(IconButton),
@@ -196,25 +321,40 @@ void main() {
         for (final locale in AppLocalizations.supportedLocales) {
           for (final width in [
             320,
-            321,
+            360,
+            375,
             390,
+            430,
+            480,
+            520,
             559,
             560,
-            639,
+            600,
             640,
+            641,
+            700,
             759,
             760,
+            834,
+            900,
             1024,
+            1180,
+            1280,
+            1366,
             1440,
+            1600,
+            1920,
           ]) {
             for (final scale in [1.0, 2.0]) {
               tester.view.physicalSize = Size(width.toDouble(), 844);
               await tester.pumpWidget(host(theme, locale, scale, (_) {}));
               await tester.pumpAndSettle();
-              final paragraph = tester.renderObject<RenderParagraph>(
-                find.text(name),
-              );
+              final paragraph = paragraphFor(tester, name);
               expect(paragraph.didExceedMaxLines, isFalse);
+              expect(
+                paragraph.text.toPlainText().replaceAll('\u200B', ''),
+                name,
+              );
               expect(paragraph.text.style?.color, preset.menuTextColor);
               final card = tester.widget<Card>(find.byType(Card));
               expect(card.color, theme.themeData.cardTheme.color);
@@ -262,7 +402,7 @@ void main() {
           }
         }
       }
-      expect(conditions, 4620);
+      expect(conditions, 10080);
       expect(jsonEncode(presets.map((p) => p.toJson()).toList()), original);
       if (capture != null) {
         File('$capture/manifest.json').writeAsStringSync(

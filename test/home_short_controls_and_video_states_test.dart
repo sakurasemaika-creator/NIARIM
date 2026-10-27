@@ -19,6 +19,7 @@ import 'package:video_player/video_player.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart'
     as platform;
 
+import 'helpers/exported_work_name.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
@@ -147,13 +148,13 @@ void main() {
           )
           .first;
       await tester.scrollUntilVisible(
-        find.text('AUDIT_0_animation.gif'),
+        findExportedWorkName('AUDIT_0_animation.gif'),
         150,
         scrollable: scroll,
       );
       await tester.pumpAndSettle();
       final card = find.ancestor(
-        of: find.text('AUDIT_0_animation.gif'),
+        of: findExportedWorkName('AUDIT_0_animation.gif'),
         matching: find.byType(ExportedWorkCard),
       );
       final button = find.descendant(
@@ -209,7 +210,7 @@ void main() {
         await fake.events.close();
       });
       final l10n = await open(tester, video: true);
-      await tester.tap(find.text('AUDIT_video.mp4'));
+      await tester.tap(findExportedWorkName('AUDIT_video.mp4'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
       expect(fake.createdUri, contains('AUDIT_video.mp4'));
@@ -253,7 +254,7 @@ void main() {
       await fake.events.close();
     });
     final l10n = await open(tester, video: true);
-    await tester.tap(find.text('AUDIT_video.mp4'));
+    await tester.tap(findExportedWorkName('AUDIT_video.mp4'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     fake.events.add(
@@ -343,7 +344,7 @@ void main() {
     });
     await tester.pump();
     for (var attempt = 0; attempt < 2; attempt++) {
-      final name = find.text('AUDIT_0_animation.gif');
+      final name = findExportedWorkName('AUDIT_0_animation.gif');
       await tester.ensureVisible(name);
       await tester.tap(name);
       await tester.pumpAndSettle();

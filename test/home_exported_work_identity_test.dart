@@ -13,6 +13,7 @@ import 'package:niarim/router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/exported_work_name.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
@@ -73,22 +74,25 @@ void main() {
     await tester.tap(tab);
     await tester.pumpAndSettle();
     for (final name in names) {
-      final label = find.text(name);
+      final label = findExportedWorkName(name);
       await tester.ensureVisible(label);
       await tester.pumpAndSettle();
-      final paragraph = tester.renderObject<RenderParagraph>(label);
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.descendant(of: label, matching: find.byType(RichText)),
+      );
       expect(
         paragraph.didExceedMaxLines,
         isFalse,
         reason: 'The distinguishing filename must be visible: $name',
       );
+      expect(paragraph.text.toPlainText().replaceAll('\u200B', ''), name);
       expect(paragraph.text.style?.color, palette.menuTextColor);
       final card = tester.widget<Card>(
         find.ancestor(of: label, matching: find.byType(Card)).first,
       );
       expect(card.color, palette.menuBgColor);
     }
-    final previewName = find.text(names.first);
+    final previewName = findExportedWorkName(names.first);
     await tester.ensureVisible(previewName);
     await tester.pumpAndSettle();
     await tester.tap(previewName);

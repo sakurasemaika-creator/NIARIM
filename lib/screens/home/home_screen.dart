@@ -2232,6 +2232,7 @@ class _WorkListItem extends StatelessWidget {
       name: file.path.split(RegExp(r'[\\/]')).last,
       metadata: '${_formatDate(stat.modified)} ・ ${_formatSize(stat.size)}',
       icon: _icon,
+      moveLabel: l10n.folderMoveToTitle,
       shareLabel: l10n.homeShareOpenWith,
       deleteLabel: l10n.commonDelete,
       onOpen: () => _openPreview(context),

@@ -17,6 +17,7 @@ import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/exported_work_name.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
@@ -108,6 +109,65 @@ void main() {
     );
     expect(find.text(env.l10n.homeWorkFolderEmpty), findsOneWidget);
   });
+
+  testWidgets(
+    'visible move preserves the real export through cancel, folders and revisit in seven locales',
+    (tester) async {
+      var profiles = 0;
+      for (final language in ['ja', 'en', 'fr', 'es', 'zh', 'zh_Hant', 'ko']) {
+        for (final pc in [false, true]) {
+          final env = await open(tester, language: language, pc: pc);
+          final exports = await tester.runAsync(ExportEngine.exportsDir);
+          final file = File('${exports!.path}/AUDIT_root.gif');
+          final original = file.readAsBytesSync();
+          final move = find.byTooltip(
+            '${env.l10n.folderMoveToTitle}: AUDIT_root.gif',
+          );
+          await tester.ensureVisible(move);
+          await tester.tap(move);
+          await tester.pumpAndSettle();
+          expect(
+            find.widgetWithText(ListTile, env.l10n.folderNone),
+            findsOneWidget,
+          );
+          expect(find.widgetWithText(ListTile, 'AUDIT'), findsOneWidget);
+          await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+          await tester.pumpAndSettle();
+          expect(env.folders.folderIdOf('AUDIT_root.gif'), isNull);
+          expect(file.readAsBytesSync(), original);
+
+          await tester.tap(move);
+          await tester.pumpAndSettle();
+          await tester.tap(find.widgetWithText(ListTile, 'AUDIT'));
+          await tester.pumpAndSettle();
+          expect(env.folders.folderIdOf('AUDIT_root.gif'), 'audit-folder');
+          expect(find.byType(ExportedWorkCard), findsNothing);
+          await tester.tap(find.text('AUDIT'));
+          await tester.pumpAndSettle();
+          expect(findExportedWorkName('AUDIT_root.gif'), findsOneWidget);
+          await tester.tap(move);
+          await tester.pumpAndSettle();
+          await tester.tap(find.widgetWithText(ListTile, env.l10n.folderNone));
+          await tester.pumpAndSettle();
+          expect(env.folders.folderIdOf('AUDIT_root.gif'), isNull);
+          expect(find.text(env.l10n.homeWorkFolderEmpty), findsOneWidget);
+          await tester.tap(find.byType(BackButton));
+          await tester.pumpAndSettle();
+          expect(findExportedWorkName('AUDIT_root.gif'), findsOneWidget);
+
+          final restored = WorkFolderService();
+          await restored.init();
+          expect(restored.folderIdOf('AUDIT_root.gif'), isNull);
+          expect(restored.folders.single.name, 'AUDIT');
+          restored.dispose();
+          expect(file.readAsBytesSync(), original);
+          expect(tester.takeException(), isNull, reason: '$language/$pc');
+          profiles++;
+        }
+      }
+      expect(profiles, 14);
+    },
+  );
 
   testWidgets(
     'a newly created folder remains reachable with zero exported files',
@@ -216,7 +276,7 @@ void main() {
       expect(find.text(env.l10n.homeWorkFolderEmpty), findsOneWidget);
       await env.folders.moveFileToFolder('AUDIT_root.gif', 'audit-folder');
       await tester.pumpAndSettle();
-      expect(find.text('AUDIT_root.gif'), findsOneWidget);
+      expect(findExportedWorkName('AUDIT_root.gif'), findsOneWidget);
       expect(find.text(env.l10n.homeWorkFolderEmpty), findsNothing);
       await tester.tap(find.byIcon(Icons.delete_outline));
       await tester.pumpAndSettle();
@@ -249,7 +309,7 @@ void main() {
     expect(find.text(env.l10n.homeWorksEmpty), findsNothing);
     await tester.tap(find.text('AUDIT'));
     await tester.pumpAndSettle();
-    expect(find.text('AUDIT_root.gif'), findsOneWidget);
+    expect(findExportedWorkName('AUDIT_root.gif'), findsOneWidget);
     expect(find.text(env.l10n.homeWorkFolderEmpty), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -352,7 +412,7 @@ void main() {
       expect(env.folders.folders, isEmpty);
       expect(env.folders.folderIdOf('AUDIT_root.gif'), isNull);
       expect(file.readAsBytesSync(), originalBytes);
-      expect(find.text('AUDIT_root.gif'), findsOneWidget);
+      expect(findExportedWorkName('AUDIT_root.gif'), findsOneWidget);
       final restored = WorkFolderService();
       await restored.init();
       expect(restored.folders, isEmpty);

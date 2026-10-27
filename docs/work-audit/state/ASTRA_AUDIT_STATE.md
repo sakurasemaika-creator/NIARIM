@@ -1012,3 +1012,12 @@ native-review.json、pc-after-delete-file-proof.json、sp-after-delete-restart-p
 DISC035を登録：実CardのShare/Deleteに対し、folder移動は長押しに隠れている。移動自体は実行済みだが、PC右click/ShiftF10/keyboardの同等性と初心者向け案内は未確立。A003/S22で実追試して修正する。DISC029には、FRSPtext2でAUDIT_keep.gifの末尾fだけ孤立する追加可読性観察を追記。全字可視だけで折返し品質も完成としない。
 
 次：この検証済み単位を通常expected-parent/nonforce push→remoteHEAD/tree/paths/実fetch/index/source306一致→CI・有効compiled cache・Drive読戻し。続けてA003/S22のCard移動導線とfilename折返しへ進む。Baseline/Discovery/Deltaの未完了を維持し、全面監査完了は宣言しない。
+
+
+## 2026-10-28 A003/S22 checkpoint — 移動発見性/filename
+
+正本詳細A003_S22_20261028_RESUME.md。開始App571de8f/Web666ff76一致。S21公開/14CI/fullsuite2148+23skip/原本/source306/cache読戻しはS21報告追記参照。S22 fresh3反例FAIL→3AFTER PASS、関連34PASS（2不存在path指定は次runで補完）。required24幅10080matrix実行中。DISC036をsource上の保存失敗riskとして登録しS23で追試。native/analyze/build/push/cacheは未完了。Card/menu正式theme結線維持、元font除外。全面監査未完了、Baseline2/628/A003、DISC001–036todo、Delta37not_started。
+
+S22追加確定：final23PASS151s＋関連28distinct=51、10080条件、30原本個別目視、full analyzeNoissues3.1s。2誤pathとcompile途中失敗はraw保持し解消。native/build/公開/cacheはpending。
+
+S22 native/build確定：main/fixture成功、source306不変/kernel0edd1538。ENPC1440text1とFRSP320text2/short220の30AFTER＋1BEFORE原本を個別目視。visibleMove/rightclick/TabEnter/focusedShiftF10/Menu、Cancel/longpress/実GIFfolder移動/coldrestart/NoFolder/Back/shortRoot操作を確認。863B/SHA61f6f...同一、finalfolderMOVE_AUDIT1/mapempty。unfocused negative2は別保存。詳細S22report/31native+30component originals+storageproofへ追跡。公開/CI/cacheはpending、全監査未完了。

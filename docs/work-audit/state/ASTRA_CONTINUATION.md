@@ -40,7 +40,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S21 — 一階層folder削除の正しい7言語説明・short scrollを30distinct tests/350条件・PCSP実GIF保持/再訪まで確認。公開/CI/cache保存中。次S22はDISC035移動の発見性とDISC029 filename折返し
+current_substep: A003/S22 — Card移動導線・filename自然折返し。fresh3反例→修正、51distinct PASS/10080条件/30原本目視/analyzeNoissues3.1s。main/fixtureとPCSP30AFTER実操作/原本目視・file/prefs保持を確認。公開/CI/cache保存中。DISC036保存失敗riskを登録
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -60,7 +60,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: A003_S21_20261028_RESUME.mdの検証済みsourceをexpected-parent/nonforce push→remote/実fetch/source306→CI/有効cache/readback保存。INVALID10Tfr...を使わず、A003/S22でCard移動/入力同等性・filename折返しを追試。Baseline2/628/DISC001–035/Delta37未完了。
+next_action: A003_S22_20261028_RESUME.mdの次の一手へ。最終native/source保存→expected-parent通常push/remote/実fetch/source306→CI/cache読戻し→S23保存失敗risk追試。Baseline2/628・DISC001–036・Delta37を維持。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
