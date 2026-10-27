@@ -47,6 +47,7 @@
   "homePermanentDeleteConfirmBody": "This cannot be undone.",
   "homeWorksEmpty": "No exported works yet",
   "homeWorksEmptyHint": "Export a video or GIF from the canvas and it will appear here",
+  "homeWorkFolderEmpty": "No exported works in this folder",
   "homeShareOpenWith": "Share / Open in Photos",
   "homeWorkDeleteConfirmTitle": "Delete {name}?",
   "homeWorkDeleteConfirmBody": "The exported file on this device will be deleted. This cannot be undone.",

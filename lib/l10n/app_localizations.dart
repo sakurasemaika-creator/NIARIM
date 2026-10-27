@@ -389,6 +389,12 @@ abstract class AppLocalizations {
   /// **'キャンバスの書き出しから動画・GIFを作成すると\nここに表示されます'**
   String get homeWorksEmptyHint;
 
+  /// No description provided for @homeWorkFolderEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダには書き出した作品がありません'**
+  String get homeWorkFolderEmpty;
+
   /// No description provided for @homeShareOpenWith.
   ///
   /// In ja, this message translates to:

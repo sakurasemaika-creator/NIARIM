@@ -47,6 +47,7 @@
   "homePermanentDeleteConfirmBody": "此操作無法復原。",
   "homeWorksEmpty": "還沒有匯出的作品",
   "homeWorksEmptyHint": "從畫布匯出影片或GIF後，\n將顯示在這裡",
+  "homeWorkFolderEmpty": "此資料夾中沒有匯出的作品",
   "homeShareOpenWith": "分享・用相片App等開啟",
   "homeWorkDeleteConfirmTitle": "要刪除{name}嗎？",
   "homeWorkDeleteConfirmBody": "裝置中的匯出檔案將被刪除，此操作無法復原。",

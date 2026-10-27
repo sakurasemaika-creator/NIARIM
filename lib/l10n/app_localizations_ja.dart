@@ -164,6 +164,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeWorksEmptyHint => 'キャンバスの書き出しから動画・GIFを作成すると\nここに表示されます';
 
   @override
+  String get homeWorkFolderEmpty => 'このフォルダには書き出した作品がありません';
+
+  @override
   String get homeShareOpenWith => '共有・写真アプリ等で開く';
 
   @override

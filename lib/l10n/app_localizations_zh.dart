@@ -163,6 +163,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeWorksEmptyHint => '从画布导出视频或GIF后，\n将显示在这里';
 
   @override
+  String get homeWorkFolderEmpty => '此文件夹中没有导出的作品';
+
+  @override
   String get homeShareOpenWith => '分享・用照片应用等打开';
 
   @override
@@ -7560,6 +7563,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeWorksEmptyHint => '從畫布匯出影片或GIF後，\n將顯示在這裡';
+
+  @override
+  String get homeWorkFolderEmpty => '此資料夾中沒有匯出的作品';
 
   @override
   String get homeShareOpenWith => '分享・用相片App等開啟';

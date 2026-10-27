@@ -170,6 +170,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Export a video or GIF from the canvas and it will appear here';
 
   @override
+  String get homeWorkFolderEmpty => 'No exported works in this folder';
+
+  @override
   String get homeShareOpenWith => 'Share / Open in Photos';
 
   @override

@@ -171,6 +171,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Exportez une vidéo ou un GIF depuis le canevas et il apparaîtra ici';
 
   @override
+  String get homeWorkFolderEmpty =>
+      'Ce dossier ne contient aucune œuvre exportée';
+
+  @override
   String get homeShareOpenWith => 'Partager / Ouvrir dans Photos';
 
   @override

@@ -47,6 +47,7 @@
   "homePermanentDeleteConfirmBody": "此操作无法撤销。",
   "homeWorksEmpty": "还没有导出的作品",
   "homeWorksEmptyHint": "从画布导出视频或GIF后，\n将显示在这里",
+  "homeWorkFolderEmpty": "此文件夹中没有导出的作品",
   "homeShareOpenWith": "分享・用照片应用等打开",
   "homeWorkDeleteConfirmTitle": "要删除{name}吗？",
   "homeWorkDeleteConfirmBody": "设备中的导出文件将被删除，此操作无法撤销。",

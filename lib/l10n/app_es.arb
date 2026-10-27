@@ -47,6 +47,7 @@
   "homePermanentDeleteConfirmBody": "Esta acción no se puede deshacer.",
   "homeWorksEmpty": "Aún no hay obras exportadas",
   "homeWorksEmptyHint": "Exporta un vídeo o GIF desde el lienzo y aparecerá aquí",
+  "homeWorkFolderEmpty": "No hay obras exportadas en esta carpeta",
   "homeShareOpenWith": "Compartir / Abrir en Fotos",
   "homeWorkDeleteConfirmTitle": "¿Eliminar {name}?",
   "homeWorkDeleteConfirmBody": "Se eliminará el archivo exportado de este dispositivo. Esta acción no se puede deshacer.",

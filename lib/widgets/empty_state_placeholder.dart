@@ -10,62 +10,67 @@ class EmptyStatePlaceholder extends StatelessWidget {
   final String title;
   final String? hint;
 
+  /// Whether this widget supplies its own scroll viewport. A sizing sliver
+  /// can own scrolling instead by setting this to false.
+  final bool scrollable;
+
   const EmptyStatePlaceholder({
     super.key,
     required this.icon,
     required this.title,
     this.hint,
+    this.scrollable = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final content = Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              color: scheme.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 40, color: scheme.primary),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: scheme.onSurface,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
+          ),
+          if (hint != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              hint!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
+            ),
+          ],
+        ],
+      ),
+    );
+    if (!scrollable) return content;
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(
             minHeight: constraints.hasBoundedHeight ? constraints.maxHeight : 0,
+            minWidth: constraints.hasBoundedWidth ? constraints.maxWidth : 0,
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    color: scheme.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, size: 40, color: scheme.primary),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: scheme.onSurface,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                ),
-                if (hint != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    hint!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: scheme.onSurfaceVariant,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
+          child: content,
         ),
       ),
     );

@@ -172,6 +172,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Exporta un vídeo o GIF desde el lienzo y aparecerá aquí';
 
   @override
+  String get homeWorkFolderEmpty => 'No hay obras exportadas en esta carpeta';
+
+  @override
   String get homeShareOpenWith => 'Compartir / Abrir en Fotos';
 
   @override

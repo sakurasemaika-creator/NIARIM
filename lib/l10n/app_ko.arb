@@ -47,6 +47,7 @@
   "homePermanentDeleteConfirmBody": "이 작업은 되돌릴 수 없습니다.",
   "homeWorksEmpty": "내보낸 작품이 없습니다",
   "homeWorksEmptyHint": "캔버스에서 동영상이나 GIF를 내보내면\n여기에 표시됩니다",
+  "homeWorkFolderEmpty": "이 폴더에는 내보낸 작품이 없어요",
   "homeShareOpenWith": "공유・사진 앱 등으로 열기",
   "homeWorkDeleteConfirmTitle": "{name}을(를) 삭제하시겠습니까?",
   "homeWorkDeleteConfirmBody": "기기에 저장된 내보내기 파일이 삭제됩니다. 되돌릴 수 없습니다.",

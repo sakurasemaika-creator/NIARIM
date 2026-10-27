@@ -1509,6 +1509,7 @@ class _FolderableList<T> extends StatelessWidget {
   final void Function(String id, String name) onRenameFolder;
   final void Function(String id) onDeleteFolder;
   final Widget Function(BuildContext, T) itemBuilder;
+  final Widget? emptyState;
 
   const _FolderableList({
     required this.allItems,
@@ -1518,6 +1519,7 @@ class _FolderableList<T> extends StatelessWidget {
     required this.onRenameFolder,
     required this.onDeleteFolder,
     required this.itemBuilder,
+    this.emptyState,
   });
 
   @override
@@ -1535,22 +1537,44 @@ class _FolderableList<T> extends StatelessWidget {
     // 描画されるのは画面内の行だけでも、全作品ぶんのカード（サムネイルの
     // Image.fileを含む）のウィジェットが毎buildで作られて捨てられる。
     return LayoutBuilder(
-      builder: (context, constraints) => ListView.builder(
-        // Leave 48px for the action, 8px inner padding and 4px card margin.
-        padding: EdgeInsets.only(
-          bottom:
-              (constraints.maxHeight - 60).clamp(0.0, 88.0).toDouble() +
-              MediaQuery.paddingOf(context).bottom,
-        ),
-        itemCount: rootItems.length + (hasHeader ? 2 : 0),
-        itemBuilder: (context, index) {
-          if (hasHeader && index == 0) {
-            return _folderChips(context, countByFolder);
-          }
-          if (hasHeader && index == 1) return const Divider(height: 1);
-          return itemBuilder(context, rootItems[index - (hasHeader ? 2 : 0)]);
-        },
-      ),
+      builder: (context, constraints) {
+        if (rootItems.isEmpty && emptyState != null) {
+          return CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              if (hasHeader) ...[
+                SliverToBoxAdapter(child: _folderChips(context, countByFolder)),
+                const SliverToBoxAdapter(child: Divider(height: 1)),
+              ],
+              SliverPadding(
+                padding: EdgeInsets.only(
+                  bottom: 88 + MediaQuery.paddingOf(context).bottom,
+                ),
+                sliver: SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: emptyState!,
+                ),
+              ),
+            ],
+          );
+        }
+        return ListView.builder(
+          // Leave 48px for the action, 8px inner padding and 4px card margin.
+          padding: EdgeInsets.only(
+            bottom:
+                (constraints.maxHeight - 60).clamp(0.0, 88.0).toDouble() +
+                MediaQuery.paddingOf(context).bottom,
+          ),
+          itemCount: rootItems.length + (hasHeader ? 2 : 0),
+          itemBuilder: (context, index) {
+            if (hasHeader && index == 0) {
+              return _folderChips(context, countByFolder);
+            }
+            if (hasHeader && index == 1) return const Divider(height: 1);
+            return itemBuilder(context, rootItems[index - (hasHeader ? 2 : 0)]);
+          },
+        );
+      },
     );
   }
 
@@ -2022,27 +2046,18 @@ class _WorksTabState extends State<_WorksTab> {
           return const Center(child: CircularProgressIndicator());
         }
         final files = snapshot.data!;
-        if (files.isEmpty) {
-          return RefreshIndicator(
-            onRefresh: _reload,
-            child: ListView(
-              children: [
-                SizedBox(
-                  height: 400,
-                  child: EmptyStatePlaceholder(
-                    icon: Icons.video_library_outlined,
-                    title: l10n.homeWorksEmpty,
-                    hint: l10n.homeWorksEmptyHint,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
         final workFolders = context.watch<WorkFolderService>();
         return RefreshIndicator(
           onRefresh: _reload,
           child: _FolderableList<File>(
+            emptyState: files.isEmpty
+                ? EmptyStatePlaceholder(
+                    icon: Icons.video_library_outlined,
+                    title: l10n.homeWorksEmpty,
+                    hint: l10n.homeWorksEmptyHint,
+                    scrollable: false,
+                  )
+                : null,
             allItems: files,
             folders: workFolders.folders,
             folderIdOf: (f) =>
@@ -2155,13 +2170,9 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
               )
               .toList();
           if (items.isEmpty) {
-            return Center(
-              child: Text(
-                l10n.folderManagementEmpty,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
+            return EmptyStatePlaceholder(
+              icon: Icons.folder_open_outlined,
+              title: l10n.homeWorkFolderEmpty,
             );
           }
           return ListView.builder(

@@ -165,6 +165,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeWorksEmptyHint => '캔버스에서 동영상이나 GIF를 내보내면\n여기에 표시됩니다';
 
   @override
+  String get homeWorkFolderEmpty => '이 폴더에는 내보낸 작품이 없어요';
+
+  @override
   String get homeShareOpenWith => '공유・사진 앱 등으로 열기';
 
   @override
