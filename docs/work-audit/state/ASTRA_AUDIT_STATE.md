@@ -756,3 +756,44 @@ Nativeはproduction UIと隔離実保存/実GIF decoder、Linuxsoftware mouse/ke
 S17のApp17triggered CIは直近16success、save fullgate継続中。Web policy success。S17 fullsuiteを未確定のまま合格扱いにせず、receiptへ最終結果を保存する。S12の2116PASS/23SKIPを最新S17/S18へ転用しない。
 
 次はS18の通常push/HEADtreepath/実fetch/compiled306同一性/CI/cache/最終原本readbackを確定し、A003の残導線へ戻る。既存DISC005のimplicit IconThemeとWorks folderchipは正式色/target/長名を実測し、A006との割当を照合する。DISC030の残全preset/実codec/他caller等までtodo維持。Baseline→Discovery→Delta→最新HEAD最終Visual closureを完了するまで全面監査完了としない。
+
+
+# A003 / S19 — 2026-10-27 通常アイコンの正式テーマ前景
+
+Baseline done2/628、A003 in_progress。DISC001–032 todo/cursor001、Delta37 not_started。全面監査と全画面/全presetの最新HEAD最終Visual closureは未完了。locked Baselineの定義/順序は不変。
+
+起点HEAD App ee9bd2d404aa22d85314b768621e56ab114a61b9 / Web a155bc3ce85e7bc1f79e50ccd418a20ae89e7e99。S18の5App CIおよびWeb policyは全successを再取得。S18 source/native/core/cacheの保存済み結果を無理由に再実行しない。
+
+## DISC005の反例と製品修正
+
+EN/PC1440 paper設定で、Home Worksのimplicitフォルダiconだけが正式normaltextのRGB22/58/95ではなくRGB33/30/23。ROI(27,122,42,137)内148pixelsとnative原本を確認。fresh RenderParagraph反例も設定FF163A5Fに対しMaterial既定black87(alpha.8667/0/0/0)で1FAIL。ThemeData.iconTheme未設定が原因。
+
+ThemeServiceの中央ThemeDataへiconTheme: IconThemeData(color: preset.textColor)を1行追加し、通常iconを正式normaltextへ結線。局所の色固定やHEX/黒白/自動neutralを追加しない。AppBar/menu/filled/textbutton/selected/disabled等の既存role overrideは保持。preset値/保存schema/28preset/9色4前景/APCA absLc<10/exact10除外/CVD/cache/依存/SDKを変えていない。
+
+## 保存済み・fresh検証
+
+- 新icon matrix1PASS15s: 30palettes(28formal+opaque/translucentcustom)×7locale×PC/SP2幅×2scale=840条件。通常Icon/AppBar/FilledButton/TextButtonの実RenderParagraph前景とpreset.toJson不変を確認。
+- Theme変更の8途中frameでimplicit iconの描画色が補間中onSurfaceへ追従する別1PASS。値・アニメーションを保持。
+- 実行環境resetで進行中7file回帰の完走結果を失った。S19WIPをrawSHA/CRC/all671manifest照合して復元し、次callで全抽出filehash一致まで確認。上記2件はsourcehash/raw付きで保存済みなので再実行せず引き継いだ。
+- 必要な関連50ケースをfreshに補完して全PASS32s。ThemeSurface/ContrastRescue/Accent/PresetAdopt/ButtonFont/ChipとHomeEntry6ケース。Chipの既存840条件も含む。distinct52=保存済みnew2+fresh関連50。旧中断run/重複は加算しない。
+- 旧7file runの最後のHome2310状態layout matrixは完走したと申告しない。今回の変更は色結線1行でgeometryを変えないため、その重複大規模layout再実行を除外した。最終全面Visual gateの代用品にもしない。
+- fullanalyze Noissues22.3s、通常main build成功→S19 fixture build成功。306lib SHA/fixture/hash/marker/fontguardと元font復旧を保存。compiled baseはee9bd2d上のdirtyS19、kernel c91cbf0375d45f70feb9bdf3507c0994a9506c101bc13cb8da65a7fe404efe73。公開後の306Gitshow一致は別receiptへ記録する。
+
+## 実操作・原本
+
+EN/PC1440 text1、FR/SP320 text2のproduction UIでWorksを開き、通常foldericonが正式normal前景へ変わり、他menu/card/buttonの役割が維持されることを6原本で目視。ENの同ROI内148pixelsが正しくRGB22/58/95へ変更。各modeで実folderentry→Back→Works復帰も確認。これは今回の色/導線の確認でありA006全folder操作の完了ではない。
+
+新DISC032: 実在する空Works folder内にNo folders yet/Aucun dossier pour le momentを表示する別の意味不一致を発見。_WorksFolderScreenのfiles.isEmptyがfolderManagementEmptyを再利用していた。作品0件とfolder不存在を区別する7言語/empty遷移/回帰/実画面を次の単位で修正する。今回のentry/back成功をcopy品質PASSに読み替えない。
+
+NativeはLinuxsoftware mouse/keyboard/forcedPC-SP、隔離実storage/明示mockHTTP。Android/DeX/physicaltouch/IME/SR/OSshare/codec/liveauth/backend/全性能は未確認。普通データはprojects3/Projectfolders0/Workfolders1。旧coreのXDGdata omissionというaudit fixture範囲訂正を維持。今回はbyte一致で復元できたが旧exportsのmtimeはmanifestになく抽出時刻となったため、一覧順序をproduct継続性の証拠に使わない。今後はcoreのFILE_METADATA.jsonとruntime manifestへdataset mtime/modeも保存し、Docs/config/dataを組で復元する。
+
+## 永続化
+
+承認済みDrive folder1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q。
+
+- S18最終core: Drive10znIotVFlPXfziy0f7UL9YZ3vU6mFJhk /9795057B/SHA63d049a6d544489e4412e8b09bed4f0a8800d569f6f95b03b9dbe3215056987b、metadata/rawSHA/CRC/allmanifest verified。S18compiledcache Drive100nZx0SXQb6ZKLoKWRGaujmcwvE0AQ7L /31624683B/SHA4b0baa35305516e456ad9b3eb817601f142e9bfe7a32ea6010d9cdd904fa81f6、157delta+59base全manifestと実readback再起動目視まで完了。
+- S19 WIP: https://drive.google.com/file/d/1BMRvFgTZLdyoZkcdJSSBOUaoX8ZTSPVS/view?usp=drivesdk /9813268B/SHAe79c1f00c2fc9867a985f28f6aec44b41914bdca3df1c9bd9c857cdd99168416、metadata/rawSHA/CRC/all671manifest verified。reset時にこれを復元した。
+- fresh関連50完了直後に自動保存: Drive179PEjMGxyF_Y9SXxrzRp6scl7OlZ86Fs /9823001B/SHA15cb1970eac79ded1c7be6c5d07f78f40f8e9605ea920733f28d6e01e88f972a、metadata確認済。build/raw/sourceproof: Drive1NqF7imQb0snSUSoymIGuClKQV4ev8BL2 /9872832B/SHAaa9dacb7a716bad634286eaf1066ac9a3ef533f236c7c2b9b91e633a0355a93a。最終原本/公開receipt/cacheへ結果を統合して保存する。
+- 復元はpinned Flutter3.47.7/187pub/223native/FFmpeg8.1.2、生成pluginリンク9件を現在package_configへ再結線。SDK/vendor/依存versionの修正ではない。元ユーザーfont1,022,464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を保持しcommit除外。
+
+次: S19 expected-parent/nonforce公開→HEAD/tree/path/実fetch/compiled306同一性→CI/cache/最終原本のDrive保存/readback。直後にDISC032空Works folderの意味不一致を修正/再操作/回帰。DISC005はimplicit normalicon優先修正だけで全caller/role closureとはしない。A003の残条件とBaseline→Discovery→Delta→最新HEAD最終Visualまで継続する。

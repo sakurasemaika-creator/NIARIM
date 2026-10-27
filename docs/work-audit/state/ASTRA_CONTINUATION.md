@@ -40,7 +40,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S18 — 実GIF/動画の縦長preview面積を修正。fresh7 tests/210matrix/analyze/main/fixture/nativeを確認、publication/cache確定へ
+current_substep: A003/S19 — implicit iconを中央Themeの正式normaltextへ結線。52tests/analyze/main/fixture/native6原本を確認、publication/cache確定へ。新DISC032を登録
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -60,7 +60,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: A003_S18_20261027_RESUME.mdと最新receiptでS18公開/CI/cacheを確定。S17 fullgateは結果確定まで未合格。次にA003残導線、DISC005 implicitIconThemeとfolderchipのA006割当/実測。保存済み工程を無理由に再実行しない。Baseline2/628、DISC001–031/Delta37未完了。
+next_action: A003_S19_20261027_RESUME.mdと最新receiptでS19公開/CI/cacheを確定。直後にDISC032の空Works folder誤案内を修正し7言語/実操作/回帰/証拠。A003残条件へ継続。保存済み工程を無理由に再実行せず、Baseline2/628、DISC001–032/Delta37未完了。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。

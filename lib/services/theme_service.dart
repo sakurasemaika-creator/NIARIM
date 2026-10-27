@@ -683,6 +683,7 @@ class ThemeService extends ChangeNotifier {
       fontFamily: 'HakkouMincho',
       textTheme: textTheme,
       primaryTextTheme: textTheme,
+      iconTheme: IconThemeData(color: preset.textColor),
       scaffoldBackgroundColor: preset.panelBgColor,
       // InkSparkle（Material Youの光るリップル）は「いかにも最新Android技術デモ」
       // 感が強く、GPU負荷も高いため、低スペック端末を考慮しつつ落ち着いた
