@@ -584,3 +584,50 @@ UIへ固定黒白/HEX/自動neutralは追加していない。正式9設定/4前
 この検証単位をexpected-parent/nonforceでpushし、HEAD/tree/path/実fetch/CIとpublication receiptを保存。S14 compiled deltaと最終証拠を保存/readback。次にA003のempty/Works失敗→復旧→retry、Bookmarked mock loading/error/retry/hidden、各view/sort/selectionと導線を実操作で継続する。
 
 DISC005はchip default label/checkの優先修正済み部分だけでdoneにしない。明示icon caller、他UI role/error neutral/全preset実画面等は残る。DISC001–028、Delta37、全A003条件、Android/DeX/touch/pen/SR/liveauth/backend/codec/performance等は未完了。テスト成功や色の設定値一致を全面監査完了へ置換しない。
+
+
+## A003 / S15–S16 2026-10-27 保存済み一覧・プレビュー優先修正とreset復元
+
+Baseline done2/628、A003 in_progress。Discovery DISC001–030 todo/cursor001、Delta37 not_started。全面監査・最新HEAD最終Visual closureは未完了。locked Baselineの定義・順序は不変。
+
+起点と再取得HEAD: App1c402fa6621b46e4a15205f90f6b8ac236062329 / Web0d4af24eee4b7423bea10900074218ac8bf2fb53。S14の6triggered CIは全success、fullsuite新規trigger無し。保存済みfullsuiteはS12の2116PASS/23SKIPでありS16の結果ではない。
+
+## S15 実操作
+
+- EN/PC1440/paper/隔離empty: project0/Works0、BookmarksのHTTP503失敗案内→実Retry→200空表示。空・失敗を区別。
+- 空Works表示後に検証用validGIFを隔離exportsへ追加→実pullで1件表示。exports directoryを退避して同pathをfileで塞ぐ→実pullで明示失敗/Retry。元directory復旧→実Retryで元GIFへ戻りSHA一致。ユーザー資産には触れていない。
+- FR/SP320/text2/ordinary: HTTP503→Retryで3Bookmarks、AI-filter全非表示ではsaved IDsを保持する説明とReload/WorkPlaza。25秒mockはclient15秒timeout→接続失敗→実Retryで3件復旧。spinnerを成功ロードと数えない。mock HTTP境界、実OAuth/backendの合格ではない。
+- 全native原本を個別目視。初回S15の3枚は通常日本語splashであり合格証拠から除外。
+
+## 発見・修正
+
+DISC029: FR320/text2 Works3filesが全てAUD…となり視覚識別不可、CardのsurfaceContainerLowが正式card面を迂回。ExportedWorkCardを抽出し、全filenameがicon/actions脇に収まる時だけinline、他は完全な名前を独立wrap行へ。metadata・preview・longpress移動・share/deleteの独立callbackと48targets、keyboardを保持。Card面とmenu foregroundは正式Themeから取り、固定色/neutral補正を追加しない。OSboldを幅測定へ反映。
+
+DISC030: 実GIFpreviewの固定RowがFR320/text2で右352pxoverflow、Closeが画面外。ExportedWorkPreviewLayoutでbounded preview、OverflowBar、短画面scrollを導入。画像はBoxFit.contain、videoはCenter/AspectRatioで縦横比を維持。GIFdecode失敗時の既存翻訳案内を追加。share/closeのcallback自体を変更しない。2新componentはA003とDISC029/030へ割当。Save形式/ユーザー資産/正式9色4前景/APCA absLc<10・exact10除外/CVD/cache/28preset値は変更しない。
+
+## 保存済み検証と目視
+
+- Identity before: 1failed test8.959s、didExceedMaxLines=true。wholeHome after1PASS10.377s。新preview counterはright352pxoverflowを再現11.350s、after1PASS9.757s、最終wholeHome/layout/close1PASS9.555s。重複caseを加算しない。
+- Card matrix case1PASS: 30palettes×7locales×11widths×2scales=4620条件、30PNG。名前全文/役割前景/48actions/値不変。初回同runのaction test自身のFocuscontext errorによりdonefalse、matrix個別PASSと区別。corrected action/OSbold11widths/220height/folder導線は別run3PASS23.420s。
+- Home identity＋BookmarkStatesは2files19PASS22.150s。上記identityを重複計上しない。Card matrix/19/3を合わせdistinct23ケース。
+- Preview matrix case1PASS70.181s:30palettes×7locales×3viewport×2scale=1260条件、Share/Close各1260実tap、48targetと画面内到達、値不変、30PNG。run全体は別のFileImage widgetdecode試行が未完了でfalse。finderをTextButton.icon subclassへ整合した最終matrix個別PASSのみ使用。
+- 60component原本は等倍contact各5枚で全目視。Cardは上360pxの完全なcard（名前・metadata・全icon）、Previewは中央dialog全体を含むcrop。最初の300px card cropはactionを欠きfull-card証拠に使わない。Previewのgreenはlayout用artwork stand-in、実動画decodeの合格ではない。
+- Card段階のfullanalyze Noissues8.0s、305lib native build成功、normal font guard原本復旧。証拠はDrive ZIP内。最終preview段階の全analyze Noissues4.9s/306lib native build/通常main build成功をリセット前に観測したが、最後のraw/proofの一部は外部保存前に失われたため最新gateの保存証拠としては未確定。
+
+## 実native観測とリセットによる残証拠
+
+保存済み: FR320/text2 Works afterで3つの完全なfilename・正式peach面/navy menu前景、GIFpreview beforeのoverflow、削除確認と取消、longpress移動sheet。Linux software mouse/forcedSPであり物理touchの合格ではない。
+
+外部保存前に観測した最終preview after、破損GIFの翻訳error、320×220でscroll→Close→Home、EN/PC1440 cache再起動の最後の原本・306lib proofは、継続メッセージ時の環境resetで失われた。観測を保存済み画像へ置換せず、これらだけを最新sourceから再取得する。widgetFileImage decode境界はtimeoutしたためdecoderのPASS根拠にしない。破損GIFの隔離原本は復旧してSHA一致を観測、実データに変更なし。Linux share_plusはfile share非対応で、実OS share/Android/DeX/device/codec等は未確認のまま。
+
+## 永続化とcache訂正
+
+- 完整復元core: https://drive.google.com/file/d/1GAenjB8QhYNLcoo-OaAUZ17VfEoVFNGt/view?usp=drivesdk /8407712B/SHA e3eaab960867baf5dbe5e34f5d5f2557e0ade06afc2c20a48316d1a6dd13a855。reset後metadata/rawSHA/CRC/allmanifest再確認、製品source6files・両Route・証拠を復元。完了matrix/テストを最初から再実行しない。
+- S16 tests01: Drive1Vg4hpfVtCQrgkrcPg7dA-ioidrpcM7GP /6928980B/SHA12f87ac1a2740912f6dc3c842aee0234188b1e269fcef54c50943d06446f0842。native01:1NZurgxGccIOIgcigS4TFxOJQkDP5dFdZ /6999361B/SHA27bde58b1e91ad30370bc90e821cc532ff95c964990ccafba068c99d7deab0ea。ともにraw/CRC/manifest verified receiptをcoreに保存。
+- 旧S14 compiled delta1DH2v8Noya9Ox5D3AqJv6syjTV5CXsQ3Zはraw整合でもnormal-main kernel4ef59dでfixtureに使えない。v2 Drive1h-7XkygflXABQGtx4NJrhspdPY2XSG-C /32792614B/SHAf62ee7ec78c22a749eefee97625501626420cac8c23edd021d7567ba34e1be96はfixture92d827、60base+522delta=582manifest、raw全delta整合と実readback kernel再起動を確認。S14用でありS16 afterを代用しない。
+- S16最終fixture kernel582d186e81ce1c853ec15a7e6e65728ee0946298d68039be68af8046e423f51aは観測のみ、外部cache保存前に失われた。cache再生成をpendingに残す。native_console起動とpackageにfixture marker拒否を導入した復元scriptを保持。
+- 元font1,022,464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を保持しcommit対象外。リセット後に戻ったcanonical snapshotからも元fileを復元。
+
+## 次手
+
+S16 publication receiptのHEAD/tree/path/実fetchを先に照合し、公開済みなら再pushしない。最終native原本/306lib proof/analyze raw/normalmain/cacheを現在HEADで補完しDrive readbackを完了。A003のview/sort/selection/folder/search/keyboard/continuityと残matrixへ継続。DISC005/029/030は優先部分修正でありtodo維持。Baseline/Discovery/Deltaや全画面・全presetの最終Visual closureを完了扱いにしない。

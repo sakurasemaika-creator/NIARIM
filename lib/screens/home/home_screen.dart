@@ -30,6 +30,8 @@ import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
+import 'widgets/exported_work_card.dart';
+import 'widgets/exported_work_preview_layout.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../community/community_edit_feedback.dart';
@@ -2198,58 +2200,18 @@ class _WorkListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stat = file.statSync();
-    final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      elevation: 1,
-      shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-        alpha: 0.15,
-      ),
-      color: scheme.surfaceContainerLow,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: scheme.primaryContainer,
-          child: Icon(_icon, color: scheme.primary),
-        ),
-        title: Text(
-          file.path.split('/').last,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-          ),
-        ),
-        subtitle: Text(
-          '${_formatDate(stat.modified)} ・ ${_formatSize(stat.size)}',
-          style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
-        ),
-        onTap: () => _openPreview(context),
-        onLongPress: () => _showMoveToFolderSheet(context),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 「写真アプリで開く」＝OSの共有シート経由（新規ネイティブ実装不要）。
-            IconButton(
-              icon: const Icon(Icons.ios_share, size: 20),
-              tooltip: l10n.homeShareOpenWith,
-              onPressed: () => SharePlus.instance.share(
-                ShareParams(files: [XFile(file.path)]),
-              ),
-            ),
-            IconButton(
-              icon: Icon(
-                Icons.delete_outline,
-                size: 20,
-                color: ThemeService.activeColorScheme.error,
-              ),
-              tooltip: l10n.commonDelete,
-              onPressed: () => _confirmDelete(context),
-            ),
-          ],
-        ),
-      ),
+    return ExportedWorkCard(
+      name: file.path.split(RegExp(r'[\\/]')).last,
+      metadata: '${_formatDate(stat.modified)} ・ ${_formatSize(stat.size)}',
+      icon: _icon,
+      shareLabel: l10n.homeShareOpenWith,
+      deleteLabel: l10n.commonDelete,
+      onOpen: () => _openPreview(context),
+      onMove: () => _showMoveToFolderSheet(context),
+      onShare: () =>
+          SharePlus.instance.share(ShareParams(files: [XFile(file.path)])),
+      onDelete: () => _confirmDelete(context),
     );
   }
 
@@ -2291,6 +2253,7 @@ class _WorkListItem extends StatelessWidget {
       context: context,
       builder: (ctx) => Dialog(
         insetPadding: const EdgeInsets.all(16),
+        constraints: const BoxConstraints(maxWidth: 720),
         child: _WorkPreview(file: file),
       ),
     );
@@ -2371,22 +2334,32 @@ class _WorkPreviewState extends State<_WorkPreview> {
     final l10n = AppLocalizations.of(context)!;
     Widget content;
     if (_isGif) {
-      content = Image.file(widget.file, fit: BoxFit.contain);
+      content = Image.file(
+        widget.file,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Center(
+          child: Text(l10n.homePreviewFailed, textAlign: TextAlign.center),
+        ),
+      );
     } else if (_failed) {
       content = Padding(
         padding: const EdgeInsets.all(24),
         child: Text(l10n.homePreviewFailed),
       );
     } else if (_controller != null && _controller!.value.isInitialized) {
-      content = AspectRatio(
-        aspectRatio: _controller!.value.aspectRatio,
-        child: GestureDetector(
-          onTap: () => setState(() {
-            _controller!.value.isPlaying
-                ? _controller!.pause()
-                : _controller!.play();
-          }),
-          child: VideoPlayer(_controller!),
+      content = Center(
+        child: AspectRatio(
+          aspectRatio: _controller!.value.aspectRatio,
+          child: GestureDetector(
+            onTap: () => setState(() {
+              _controller!.value.isPlaying
+                  ? _controller!.pause()
+                  : _controller!.play();
+            }),
+            child: VideoPlayer(_controller!),
+          ),
         ),
       );
     } else {
@@ -2399,31 +2372,14 @@ class _WorkPreviewState extends State<_WorkPreview> {
         ),
       );
     }
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(child: content),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton.icon(
-                icon: const Icon(Icons.ios_share, size: 18),
-                label: Text(l10n.homeShareOpenWith),
-                onPressed: () => SharePlus.instance.share(
-                  ShareParams(files: [XFile(widget.file.path)]),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(l10n.commonClose),
-              ),
-            ],
-          ),
-        ],
+    return ExportedWorkPreviewLayout(
+      content: content,
+      shareLabel: l10n.homeShareOpenWith,
+      closeLabel: l10n.commonClose,
+      onShare: () => SharePlus.instance.share(
+        ShareParams(files: [XFile(widget.file.path)]),
       ),
+      onClose: () => Navigator.pop(context),
     );
   }
 }
