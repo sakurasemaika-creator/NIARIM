@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/export_engine.dart';
@@ -267,6 +268,11 @@ void main() {
     final video = find.byType(VideoPlayer);
     final size = tester.getSize(video);
     expect(size.width / size.height, closeTo(9 / 16, .001));
+    expect(
+      size.width,
+      closeTo(264, .001),
+      reason: 'Portrait artwork should use the available width on a tall phone',
+    );
     expect(fake.calls, contains('play'));
     expect(fake.calls, contains('loop:true'));
     await tester.tap(video);
@@ -319,4 +325,43 @@ void main() {
       }
     },
   );
+
+  testWidgets('cached portrait GIF uses its dimensions on open and reopen', (
+    tester,
+  ) async {
+    final l10n = await open(tester);
+    final context = tester.element(find.byType(ExportedWorkCard).first);
+    await tester.runAsync(() async {
+      final dir = await ExportEngine.exportsDir();
+      final file = File('${dir.path}/AUDIT_0_animation.gif');
+      final image = img.Image(width: 90, height: 160);
+      img.fill(image, color: img.ColorRgb8(35, 107, 69));
+      await file.writeAsBytes(img.encodeGif(image));
+      final provider = FileImage(file);
+      await provider.evict();
+      await precacheImage(provider, context);
+    });
+    await tester.pump();
+    for (var attempt = 0; attempt < 2; attempt++) {
+      final name = find.text('AUDIT_0_animation.gif');
+      await tester.ensureVisible(name);
+      await tester.tap(name);
+      await tester.pumpAndSettle();
+      final image = find.descendant(
+        of: find.byType(ExportedWorkPreviewLayout),
+        matching: find.byType(Image),
+      );
+      final size = tester.getSize(image);
+      expect(size.width, closeTo(264, .001));
+      expect(size.height, closeTo(469.3333333333333, .001));
+      expect(tester.takeException(), isNull);
+      final close = find.text(l10n.commonClose);
+      await tester.ensureVisible(close);
+      await tester.pumpAndSettle();
+      await tester.tap(close);
+      await tester.pumpAndSettle();
+      expect(find.byType(ExportedWorkPreviewLayout), findsNothing);
+      expect(tester.takeException(), isNull);
+    }
+  });
 }

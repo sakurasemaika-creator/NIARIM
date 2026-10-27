@@ -11,6 +11,7 @@ class ExportedWorkPreviewLayout extends StatelessWidget {
     required this.closeLabel,
     required this.onShare,
     required this.onClose,
+    this.contentAspectRatio = 16 / 9,
   });
 
   final Widget content;
@@ -18,12 +19,16 @@ class ExportedWorkPreviewLayout extends StatelessWidget {
   final String closeLabel;
   final VoidCallback onShare;
   final VoidCallback onClose;
+  final double contentAspectRatio;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       final width = math.max(0.0, constraints.maxWidth - 24);
-      final height = math.min(width * 9 / 16, constraints.maxHeight * .6);
+      final ratio = contentAspectRatio.isFinite && contentAspectRatio > 0
+          ? contentAspectRatio
+          : 16 / 9;
+      final height = math.min(width / ratio, constraints.maxHeight * .6);
       final foreground =
           Theme.of(context).popupMenuTheme.textStyle?.color ??
           Theme.of(context).colorScheme.onSurface;
