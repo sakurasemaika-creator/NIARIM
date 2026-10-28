@@ -545,11 +545,16 @@ class _HomeScreenState extends State<HomeScreen>
                               FilterChip(
                                 label: Text(
                                   l10n.homeFavoritesOnly,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontFamily: 'Kuramubon',
                                     fontFamilyFallback: kHeadingFontFallback,
+                                    color: _showFavoritesOnly
+                                        ? Colors.white
+                                        : null,
                                   ),
                                 ),
+                                selectedColor: Theme.of(context).colorScheme.primary,
+                                checkmarkColor: Colors.white,
                                 selected: _showFavoritesOnly,
                                 onSelected: (v) =>
                                     setState(() => _showFavoritesOnly = v),
@@ -1211,11 +1216,14 @@ class _SharedScreenState extends State<SharedScreen> {
                 FilterChip(
                   label: Text(
                     l10n.homeFavoritesOnly,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Kuramubon',
                       fontFamilyFallback: kHeadingFontFallback,
+                      color: _showFavoritesOnly ? Colors.white : null,
                     ),
                   ),
+                  selectedColor: Theme.of(context).colorScheme.primary,
+                  checkmarkColor: Colors.white,
                   selected: _showFavoritesOnly,
                   onSelected: (v) => setState(() => _showFavoritesOnly = v),
                 ),
