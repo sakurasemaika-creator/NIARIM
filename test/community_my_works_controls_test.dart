@@ -32,6 +32,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => PremiumService()),
       ],
       child: MaterialApp(
+        locale: const Locale('ja'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const CommunityMyWorksScreen(),
