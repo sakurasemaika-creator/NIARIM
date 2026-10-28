@@ -239,6 +239,27 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  testWidgets('selected favorite filter has white label on the current accent', (
+    tester,
+  ) async {
+    final l10n = await open(tester);
+    final finder = find.widgetWithText(FilterChip, l10n.homeFavoritesOnly);
+    expect(finder, findsOneWidget);
+    await tester.tap(finder);
+    await tester.pumpAndSettle();
+    final chip = tester.widget<FilterChip>(finder);
+    final scheme = Theme.of(tester.element(finder)).colorScheme;
+    expect(chip.selected, isTrue);
+    expect(chip.selectedColor, scheme.primary);
+    expect((chip.label as Text).style?.color, Colors.white);
+    expect(chip.checkmarkColor, Colors.white);
+    await tester.tap(finder);
+    await tester.pumpAndSettle();
+    expect((tester.widget<FilterChip>(finder).label as Text).style?.color,
+        isNull, reason: 'Unselected chip follows ordinary theme text');
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('home selected tab outline uses its actual menu background', (
     tester,
   ) async {
