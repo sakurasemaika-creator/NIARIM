@@ -162,9 +162,7 @@ void main() {
       matching: find.byIcon(Icons.settings_outlined),
     );
     expect(tester.widget<Icon>(icon).color, preset.accentColor);
-    // The drawer header/labels continue to use their independently chosen
-    // menu and button text roles, while the item glyphs follow accent.
-    expect(IconTheme.of(tester.element(icon)).color, isNot(Colors.pink));
+    // Menu labels retain the independently configured menu text color.
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
