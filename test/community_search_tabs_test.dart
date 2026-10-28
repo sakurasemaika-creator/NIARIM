@@ -8,7 +8,7 @@ import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/settings_service.dart';
 
 void main() {
-  Widget app({String? initialTag}) {
+  Widget app({String? initialTag, Locale locale = const Locale('ja')}) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => CommunityService()),
@@ -16,6 +16,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => SettingsService()),
       ],
       child: MaterialApp(
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: CommunityScreen(initialTagFilter: initialTag),
@@ -52,5 +53,48 @@ void main() {
       tester.widget<TextField>(find.byType(TextField)).controller?.text,
       '',
     );
+  });
+  testWidgets('long localized plaza tabs align to the leading edge', (tester) async {
+    tester.view.physicalSize = const Size(320, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    for (final locale in [
+      const Locale('ja'),
+      const Locale('en'),
+      const Locale('fr'),
+      const Locale('es'),
+    ]) {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpWidget(app(locale: locale));
+      await tester.pumpAndSettle();
+      final localizations = AppLocalizations.of(
+        tester.element(find.byType(CommunityScreen)))!;
+      final bar = tester.widget<TabBar>(find.byType(TabBar));
+      if (bar.isScrollable) {
+        expect(bar.tabAlignment, TabAlignment.start,
+            reason: '$locale: scrolling tabs must start at the leading edge');
+      }
+      final first = find.descendant(
+        of: find.byType(TabBar),
+        matching: find.text(localizations.communityTabNew),
+      );
+      final rect = tester.getRect(first);
+      expect(rect.left, greaterThanOrEqualTo(0),
+          reason: '$locale: first label must be on screen');
+      expect(rect.right, lessThanOrEqualTo(320),
+          reason: '$locale: first label must not get clipped');
+      final initialBottom = tester.getRect(find.byType(TabBar)).bottom;
+      await tester.tap(find.byTooltip(localizations.commonSearch));
+      await tester.pumpAndSettle();
+      expect(find.byType(SegmentedButton<bool>), findsNothing);
+      expect(find.byKey(const Key('communitySearchModeToggle')),
+          findsOneWidget);
+      expect(tester.getRect(find.byType(TabBar)).bottom,
+          lessThanOrEqualTo(initialBottom + 1),
+          reason: '$locale: search must not add an entire mode-control row');
+      expect(tester.takeException(), isNull, reason: '$locale');
+    }
   });
 }
