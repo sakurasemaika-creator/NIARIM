@@ -161,7 +161,82 @@ void main() {
       of: drawer,
       matching: find.byIcon(Icons.settings_outlined),
     );
-    expect(IconTheme.of(tester.element(icon)).color, preset.menuTextColor);
+    expect(tester.widget<Icon>(icon).color, preset.accentColor);
+    // The drawer header/labels continue to use their independently chosen
+    // menu and button text roles, while the item glyphs follow accent.
+    expect(IconTheme.of(tester.element(icon)).color, isNot(Colors.pink));
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('drawer icons and selected tab follow live red/blue/purple accents', (
+    tester,
+  ) async {
+    final l10n = await open(
+      tester,
+      language: 'ja',
+      size: const Size(390, 844),
+    );
+    final service = tester.element(find.byType(HomeScreen))
+        .read<ThemeService>();
+    final presets = [
+      const Color(0xFFFF5C7A),
+      const Color(0xFF2C99F0),
+      const Color(0xFFDD00EE),
+    ];
+    for (final accent in presets) {
+      service.previewCurrent(
+        AppThemePreset.defaultLight.copyWith(accentColor: accent),
+      );
+      await tester.pumpAndSettle();
+
+      // The selected tab's glyph and its underline must use this very
+      // accent, not a cached copy of the default pink.
+      final tab = find.byKey(const ValueKey('home_tab_0'));
+      final tabTitle = find.descendant(
+        of: tab,
+        matching: find.text(l10n.homeTabProjects),
+      );
+      expect(tester.widget<Text>(tabTitle).style?.color, accent);
+      final border = tester.widget<Container>(
+        find.descendant(
+          of: tab,
+          matching: find.byType(Container),
+        ).first,
+      ).decoration as BoxDecoration;
+      expect(border.border!.bottom.color, accent);
+
+      final opener = find.byIcon(Icons.menu);
+      await tester.tap(opener);
+      await tester.pumpAndSettle();
+      final drawer = find.byType(Drawer);
+      expect(drawer, findsOneWidget);
+      final expectedIcons = [
+        Icons.share_outlined,
+        Icons.delete_outline,
+        Icons.palette_outlined,
+        Icons.cleaning_services_outlined,
+        Icons.settings_outlined,
+        Icons.help_outline,
+        Icons.lightbulb_outline,
+        Icons.workspace_premium_outlined,
+      ];
+      for (final glyph in expectedIcons) {
+        final found = find.descendant(of: drawer, matching: find.byIcon(glyph));
+        expect(found, findsOneWidget, reason: '$glyph for $accent');
+        expect(tester.widget<Icon>(found).color, accent);
+      }
+      final menuTitle = find.descendant(
+        of: drawer,
+        matching: find.text(l10n.homeDrawerSettings),
+      );
+      expect(
+        tester.renderObject<RenderParagraph>(menuTitle).text.style?.color,
+        service.current.menuTextColor,
+      );
+      Scaffold.of(tester.element(drawer)).closeDrawer();
+      await tester.pumpAndSettle();
+    }
+    expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
