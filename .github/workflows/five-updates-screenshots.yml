@@ -31,16 +31,16 @@ jobs:
           flutter test test/community_filter_dialog_layout_test.dart --reporter expanded
           flutter test test/community_header_quality_test.dart --reporter expanded
           flutter test test/community_mute_wording_l10n_test.dart --reporter expanded
-      - name: Capture five real Flutter changes
+      - name: Capture updated real Flutter screens and post flow
         env:
           NIARIM_FIVE_FIXES_CAPTURE: build/five-fixes
         run: flutter test test/five_fixes_screenshot_test.dart --reporter expanded
-      - name: Ensure all five captures exist
+      - name: Ensure all eight captures exist
         run: |
-          for name in 01_mute_words 02_mute_tags 03_selected_favorites_white 04_compact_tag_search 05_french_tab_alignment; do
+          for name in 01_mute_words 02_mute_tags 03_selected_favorites_white 04_compact_tag_search 05_french_tab_alignment 06_work_plaza_post_button 07_my_works_after_button 08_after_post_action; do
             test -s "build/five-fixes/${name}.png"
           done
-      - name: Upload five updated screenshots
+      - name: Upload updated screenshots and post-flow captures
         if: always()
         uses: actions/upload-artifact@v4
         with:
