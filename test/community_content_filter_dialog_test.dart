@@ -166,4 +166,34 @@ void main() {
     await tapVisible(tester, find.text(l10n.commonCancel));
     expect(tester.takeException(), isNull);
   });
+  testWidgets('My Works FAB is icon-only, borderless and long-press labeled', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final service = CommunityService();
+    await tester.pumpWidget(host(service));
+    await tester.pump();
+
+    final button = find.byKey(const Key('communityMyWorksButton'));
+    final fab = tester.widget<FloatingActionButton>(button);
+    final theme = Theme.of(tester.element(button));
+    expect(fab.child, isA<Icon>());
+    expect((fab.child! as Icon).icon, Icons.video_library_outlined);
+    expect(fab.tooltip, l10nOf(tester).communityMyWorksTitle);
+    expect(fab.backgroundColor, theme.colorScheme.primary);
+    expect(fab.foregroundColor, theme.colorScheme.onPrimary);
+    expect(fab.shape, isA<CircleBorder>());
+    expect((fab.shape! as CircleBorder).side, BorderSide.none);
+    expect(fab.elevation, 0);
+    expect(fab.focusElevation, 0);
+    expect(fab.hoverElevation, 0);
+    expect(fab.highlightElevation, 0);
+    final size = tester.getSize(button);
+    expect(size.width, size.height);
+
+    await tester.longPress(button);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text(l10nOf(tester).communityMyWorksTitle), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

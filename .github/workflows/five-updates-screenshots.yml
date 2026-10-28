@@ -7,6 +7,8 @@ on:
     paths:
       - '.github/workflows/five-updates-screenshots.yml'
       - 'test/five_fixes_screenshot_test.dart'
+      - 'lib/screens/community/community_screen.dart'
+      - 'test/community_content_filter_dialog_test.dart'
 
 jobs:
   capture:
@@ -23,7 +25,7 @@ jobs:
         run: flutter pub get
       - name: Generate localizations
         run: flutter gen-l10n
-      - name: Verify row-based mute filter editing, layout and wording
+      - name: Verify plaza controls, mute editing, layout and wording
         run: |
           flutter test test/community_content_filter_dialog_test.dart --reporter expanded
           flutter test test/community_filter_dialog_layout_test.dart --reporter expanded
