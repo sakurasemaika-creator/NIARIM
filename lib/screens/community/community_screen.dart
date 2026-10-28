@@ -285,29 +285,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SwitchTheme(
-                      data: SwitchTheme.of(context).copyWith(
-                        trackOutlineWidth: const WidgetStatePropertyAll(2),
-                      ),
-                      child: SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        activeTrackColor: activeTrack,
-                        activeThumbColor: scheme.onPrimary,
-                        thumbIcon: WidgetStatePropertyAll(
-                          Icon(
-                            Icons.circle_outlined,
-                            color: scheme.onSurface,
-                            size: 20,
-                          ),
-                        ),
-                        inactiveTrackColor: inactiveTrack,
-                        inactiveThumbColor: scheme.onSurfaceVariant,
-                        trackOutlineColor: WidgetStatePropertyAll(trackOutline),
-                        value: hideAi,
-                        onChanged: (v) => setDialogState(() => hideAi = v),
-                        title: Text(l10n.communityHideGenerativeAiImageVideo),
-                      ),
-                    ),
                     TextField(
                       key: const Key('communityMutedWordsField'),
                       controller: words,
@@ -341,6 +318,30 @@ class _CommunityScreenState extends State<CommunityScreen>
                             color: scheme.onSurfaceVariant,
                           ),
                         ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SwitchTheme(
+                      data: SwitchTheme.of(context).copyWith(
+                        trackOutlineWidth: const WidgetStatePropertyAll(2),
+                      ),
+                      child: SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        activeTrackColor: activeTrack,
+                        activeThumbColor: scheme.onPrimary,
+                        thumbIcon: WidgetStatePropertyAll(
+                          Icon(
+                            Icons.circle_outlined,
+                            color: scheme.onSurface,
+                            size: 20,
+                          ),
+                        ),
+                        inactiveTrackColor: inactiveTrack,
+                        inactiveThumbColor: scheme.onSurfaceVariant,
+                        trackOutlineColor: WidgetStatePropertyAll(trackOutline),
+                        value: hideAi,
+                        onChanged: (v) => setDialogState(() => hideAi = v),
+                        title: Text(l10n.communityHideGenerativeAiImageVideo),
                       ),
                     ),
                   ],
@@ -570,27 +571,6 @@ class _CommunityScreenState extends State<CommunityScreen>
         .map((label) => measure(label, labelStyle).height + 16)
         .fold<double>(48, (a, b) => a > b ? a : b);
     final searchHeight = (scaler.scale(24) + 16).clamp(56.0, double.infinity);
-    final modeLabels = [l10n.communitySearchHint, l10n.communityTagSearchHint];
-    final modeStyle = theme.textTheme.labelLarge!;
-    final verticalModes =
-        modeLabels.fold<double>(
-          0,
-          (sum, label) => sum + measure(label, modeStyle).width + 64,
-        ) >
-        width - 24;
-    final modeWidth = verticalModes ? width - 24 : (width - 24) / 2;
-    final modeRowHeight = modeLabels
-        .map(
-          (label) =>
-              measure(
-                label,
-                modeStyle,
-                maxWidth: (modeWidth - 64).clamp(1.0, double.infinity),
-              ).height +
-              24,
-        )
-        .fold<double>(48, (a, b) => a > b ? a : b);
-    final modesHeight = modeRowHeight * (verticalModes ? 2 : 1) + 12;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: barBackground,
@@ -602,16 +582,36 @@ class _CommunityScreenState extends State<CommunityScreen>
             ? searchHeight
             : (title.height + 16).clamp(kToolbarHeight, double.infinity),
         title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: _tagSearchMode
-                      ? l10n.communityTagSearchHint
-                      : l10n.communitySearchHint,
-                  border: InputBorder.none,
-                ),
-                onChanged: (v) => setState(() => _searchQuery = v),
+            ? Row(
+                children: [
+                  IconButton(
+                    key: const Key('communitySearchModeToggle'),
+                    icon: Icon(
+                      _tagSearchMode ? Icons.search : Icons.sell_outlined,
+                    ),
+                    tooltip: _tagSearchMode
+                        ? l10n.communitySearchHint
+                        : l10n.communityTagSearchHint,
+                    onPressed: () => setState(() {
+                      _tagSearchMode = !_tagSearchMode;
+                      _searchQuery = '';
+                      _searchController.clear();
+                    }),
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        hintText: _tagSearchMode
+                            ? l10n.communityTagSearchHint
+                            : l10n.communitySearchHint,
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (v) => setState(() => _searchQuery = v),
+                    ),
+                  ),
+                ],
               )
             : Text(
                 l10n.communityScreenTitle,
@@ -623,11 +623,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(
             tabHeight +
-                (_isSearching
-                    ? modesHeight
-                    : separateActions
-                    ? actionsHeight + 8
-                    : 0),
+                (separateActions && !_isSearching ? actionsHeight + 8 : 0),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -646,104 +642,14 @@ class _CommunityScreenState extends State<CommunityScreen>
                     ),
                   ),
                 ),
-              if (_isSearching)
-                SizedBox(
-                  height: modesHeight,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: SegmentedButton<bool>(
-                        style: ButtonStyle(
-                          textStyle: WidgetStatePropertyAll(modeStyle),
-                          padding: const WidgetStatePropertyAll(
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                          ),
-                          minimumSize: WidgetStatePropertyAll(
-                            Size(48, modeRowHeight),
-                          ),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          shape: WidgetStatePropertyAll(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          backgroundColor: WidgetStateProperty.resolveWith(
-                            (states) => states.contains(WidgetState.selected)
-                                ? opaqueOver(
-                                    scheme.secondary.withValues(alpha: 0.16),
-                                    barBackground,
-                                  )
-                                : barBackground,
-                          ),
-                          foregroundColor: WidgetStatePropertyAll(
-                            scheme.onSurface,
-                          ),
-                        ),
-                        direction: verticalModes
-                            ? Axis.vertical
-                            : Axis.horizontal,
-                        expandedInsets: EdgeInsets.zero,
-                        showSelectedIcon: false,
-                        segments: [
-                          ButtonSegment<bool>(
-                            value: false,
-                            // Keep the icon in the label: SegmentedButton.icon
-                            // scales its vertical padding to zero at textScale 2.
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.search, size: 18),
-                                const SizedBox(width: 8),
-                                SizedBox(
-                                  width: (modeWidth - 64).clamp(
-                                    1.0,
-                                    double.infinity,
-                                  ),
-                                  child: Text(l10n.communitySearchHint),
-                                ),
-                              ],
-                            ),
-                          ),
-                          ButtonSegment<bool>(
-                            value: true,
-                            // Keep the icon in the label: SegmentedButton.icon
-                            // scales its vertical padding to zero at textScale 2.
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.sell_outlined, size: 18),
-                                const SizedBox(width: 8),
-                                SizedBox(
-                                  width: (modeWidth - 64).clamp(
-                                    1.0,
-                                    double.infinity,
-                                  ),
-                                  child: Text(l10n.communityTagSearchHint),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        selected: {_tagSearchMode},
-                        onSelectionChanged: (selection) {
-                          final tagMode = selection.first;
-                          if (tagMode == _tagSearchMode) return;
-                          setState(() {
-                            _tagSearchMode = tagMode;
-                            _searchQuery = '';
-                            _searchController.clear();
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ),
               TabBar(
                 controller: _tabController,
                 isScrollable: scrollTabs,
+                // Long localized labels scroll from the leading edge;
+                // centering an over-wide TabBar shifts the first tab and
+                // makes the underline/text appear misaligned.
                 tabAlignment: scrollTabs
-                    ? TabAlignment.center
+                    ? TabAlignment.start
                     : TabAlignment.fill,
                 labelStyle: labelStyle,
                 unselectedLabelStyle: labelStyle,
