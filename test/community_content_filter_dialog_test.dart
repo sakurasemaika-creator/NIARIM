@@ -57,6 +57,13 @@ void main() {
 
     final words = find.byKey(const Key('communityMutedWordsField'));
     final tags = find.byKey(const Key('communityMutedTagsField'));
+    final aiSwitch = find.byType(SwitchListTile);
+    expect(aiSwitch, findsOneWidget);
+    // Register muted words and tags BEFORE the AI-exclusion switch.
+    expect(tester.getTopLeft(words).dy,
+        lessThan(tester.getTopLeft(tags).dy));
+    expect(tester.getTopLeft(tags).dy,
+        lessThan(tester.getTopLeft(aiSwitch).dy));
     expect(tester.widget<TextField>(words).controller!.text, '既存の語');
     expect(tester.widget<TextField>(tags).controller!.text, '既存タグ');
 
