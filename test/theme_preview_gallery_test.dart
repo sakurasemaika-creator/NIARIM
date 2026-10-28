@@ -183,6 +183,10 @@ void main() {
       tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data,
       'プロジェクト一覧',
     );
+    final selectedTab = tester.widget<Text>(find.text('プロジェクト'));
+    expect(selectedTab.style?.color, service.current.accentColor,
+        reason: 'The mock home tab must use the exact live accent,'
+            ' not auto-darkened text from a contrast fallback');
     expect(themePreviewEntries.length, 16);
     expect(service.current.accentColor, const Color(0xFF008B79));
     expect(find.byKey(const Key('themePreviewPager')), findsOneWidget);
