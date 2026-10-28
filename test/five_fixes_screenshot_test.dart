@@ -11,9 +11,11 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/community/community_screen.dart';
+import 'package:niarim/screens/community/community_my_works_screen.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
+import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -54,10 +56,13 @@ void main() {
     await themes.init();
     final community = CommunityService();
     final preview = CommunityPreviewService();
+    final auth = GoogleAuthService();
+    await auth.init();
     await tester.runAsync(() => community.contentFiltersReady);
     addTearDown(themes.dispose);
     addTearDown(community.dispose);
     addTearDown(preview.dispose);
+    addTearDown(auth.dispose);
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(390, 844);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -66,10 +71,14 @@ void main() {
     final root = GlobalKey();
     await tester.pumpWidget(RepaintBoundary(
       key: root,
-      child: quality.host(themes, community, preview,
-          locale: const Locale('ja'), scale: 1),
+      child: ChangeNotifierProvider.value(
+        value: auth,
+        child: quality.host(themes, community, preview,
+            locale: const Locale('ja'), scale: 1),
+      ),
     ));
     await tester.pumpAndSettle();
+    await capture(root, '06_work_plaza_post_button', tester);
     final l10n = AppLocalizations.of(
       tester.element(find.byType(CommunityScreen)))!;
     await tester.tap(find.byKey(const Key('communityContentFilterButton')));
@@ -96,6 +105,16 @@ void main() {
     // Cancel screenshot edits; the underlying service remains untouched.
     await tester.tap(find.text(l10n.commonCancel));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('communityMyWorksButton')));
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityMyWorksScreen), findsOneWidget);
+    expect(find.byKey(const Key('communityMyWorksPostButton')), findsOneWidget);
+    await capture(root, '07_my_works_after_button', tester);
+    await tester.tap(find.byKey(const Key('communityMyWorksPostButton')));
+    await tester.pumpAndSettle();
+    await capture(root, '08_after_post_action', tester);
+    Navigator.of(tester.element(find.byType(CommunityMyWorksScreen))).pop();
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip(l10n.commonSearch));
     await tester.pumpAndSettle();
     final switcher = find.byKey(const Key('communitySearchModeToggle'));
@@ -113,8 +132,11 @@ void main() {
     tester.view.physicalSize = const Size(320, 844);
     await tester.pumpWidget(RepaintBoundary(
       key: root,
-      child: quality.host(themes, community, preview,
-          locale: const Locale('fr'), scale: 1),
+      child: ChangeNotifierProvider.value(
+        value: auth,
+        child: quality.host(themes, community, preview,
+            locale: const Locale('fr'), scale: 1),
+      ),
     ));
     await tester.pumpAndSettle();
     final fr = AppLocalizations.of(
