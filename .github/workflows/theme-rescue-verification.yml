@@ -39,6 +39,7 @@ on:
       - 'test/accent_action_outline_test.dart'
       - 'test/project_grid_actions_test.dart'
       - 'test/theme_preset_adopt_test.dart'
+      - 'test/theme_original_builtin_palette_test.dart'
       - 'test/niatra_serializer_test.dart'
       - 'test/home_widget_shortcut_design_test.dart'
       - 'test/widget_settings_theme_foreground_test.dart'
@@ -74,6 +75,7 @@ jobs:
           flutter test test/accent_action_outline_test.dart --reporter expanded
           flutter test test/project_grid_actions_test.dart --reporter expanded
           flutter test test/theme_preset_adopt_test.dart --reporter expanded
+          flutter test test/theme_original_builtin_palette_test.dart --reporter expanded
           flutter test test/niatra_serializer_test.dart --reporter expanded
           flutter test test/home_widget_shortcut_design_test.dart --reporter expanded
           flutter test test/widget_settings_theme_foreground_test.dart --reporter expanded
