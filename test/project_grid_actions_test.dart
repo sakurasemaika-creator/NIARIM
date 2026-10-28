@@ -283,7 +283,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    for (final accent in [const Color(0xFFE53935), const Color(0xFF2867DA)]) {
+    for (final accent in [
+      const Color(0xFFE53935),
+      const Color(0xFF2867DA),
+      const Color(0xFFDD00EE),
+    ]) {
       themeService.previewCurrent(
         AppThemePreset.defaultLight.copyWith(accentColor: accent),
       );
