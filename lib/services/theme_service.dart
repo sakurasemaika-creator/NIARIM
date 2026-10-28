@@ -445,6 +445,8 @@ class ThemeService extends ChangeNotifier {
           final decoded = jsonDecode(encoded);
           if (decoded is Map<String, dynamic>) {
             _presets.add(AppThemePreset.fromJson(decoded));
+          } else {
+            storedDataIsValid = false;
           }
         } on FormatException {
           // Keep malformed persisted JSON untouched; skip it for this session.
