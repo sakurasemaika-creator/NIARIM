@@ -337,7 +337,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     final c = Theme.of(context).colorScheme;
     if (entry.layout == 'splash') return _splash(context, c);
     if (entry.layout == 'community') return _community(c);
-    if (entry.layout == 'projects') return _projects(c);
+    if (entry.layout == 'projects') return _projects(context, c);
     if (entry.layout == 'author') return _author(c);
     if (entry.layout == 'mine') return _myWorks(c);
     if (entry.layout == 'canvas') return _canvas(c);
@@ -412,7 +412,7 @@ class _ThemeSampleScreen extends StatelessWidget {
   Widget _body(BuildContext context, ColorScheme c) {
     switch (entry.layout) {
       case 'projects':
-        return _projects(c);
+        return _projects(context, c);
       case 'shared':
         return _shared(c);
       case 'trash':
@@ -738,7 +738,17 @@ class _ThemeSampleScreen extends StatelessWidget {
     );
   }
 
-  Widget _projects(ColorScheme c) => Scaffold(
+  Widget _projects(BuildContext context, ColorScheme c) {
+    final theme = Theme.of(context);
+    final tabBackground = opaqueOver(
+      theme.appBarTheme.backgroundColor ?? c.surface,
+      opaqueOver(theme.scaffoldBackgroundColor, Colors.black),
+    );
+    final tabScheme = c.copyWith(
+      surface: tabBackground,
+      onSurface: theme.appBarTheme.foregroundColor ?? c.onSurface,
+    );
+    return Scaffold(
     backgroundColor: c.surface,
     appBar: AppBar(
       automaticallyImplyLeading: false,
@@ -792,11 +802,15 @@ class _ThemeSampleScreen extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                               fontFamily: 'Kuramubon',
                               color: tab == t('プロジェクト', 'Projects')
-                                  ? contrastingForeground(
-                                      opaqueOver(c.surface, Colors.black),
-                                      c.primary,
-                                    )
+                                  ? c.primary
                                   : c.onSurfaceVariant,
+                              shadows: tab == t('プロジェクト', 'Projects')
+                                  ? CanvasIconButton.actionShadows(
+                                      c.primary,
+                                      tabBackground,
+                                      tabScheme,
+                                    )
+                                  : null,
                             ),
                           ),
                         ),
@@ -913,6 +927,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       ],
     ),
   );
+  }
 
   Widget _projectTile(ColorScheme c, String title) => Card(
     clipBehavior: Clip.antiAlias,
