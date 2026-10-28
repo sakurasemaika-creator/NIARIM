@@ -15,6 +15,7 @@ on:
       - 'lib/services/theme_service.dart'
       - 'lib/models/app_theme_preset.dart'
       - 'lib/screens/home/widgets/project_list_widget.dart'
+      - 'lib/screens/home/widgets/home_drawer.dart'
       - 'lib/services/home_widget_refresh.dart'
       - 'lib/services/home_widget_service.dart'
       - 'lib/screens/settings/widget_settings_screen.dart'
