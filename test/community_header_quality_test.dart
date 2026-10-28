@@ -116,6 +116,37 @@ void main() {
           failures.add('$tooltip target $rect');
         }
       }
+      final titleRect = tester.getRect(
+        find.descendant(
+          of: find.byType(AppBar),
+          matching: find.text(l10n.communityScreenTitle),
+        ),
+      );
+      final searchRow = tester.getRect(
+        find.byKey(const Key('communitySearchRow')),
+      );
+      final tabs = tester.getRect(find.byType(TabBar));
+      final notification = tester.getRect(
+        find.byTooltip(l10n.communityFollowNotificationsTooltip),
+      );
+      final videoFilter = tester.getRect(
+        find.byTooltip(l10n.communityVideoTypeFilterTooltip),
+      );
+      final contentFilter = tester.getRect(
+        find.byKey(const Key('communityContentFilterButton')),
+      );
+      if (titleRect.bottom > searchRow.top ||
+          notification.bottom > searchRow.top ||
+          videoFilter.top < searchRow.top ||
+          videoFilter.bottom > searchRow.bottom ||
+          contentFilter.top < searchRow.top ||
+          contentFilter.bottom > searchRow.bottom ||
+          searchRow.bottom > tabs.top + .01) {
+        failures.add(
+          'Header must keep title/actions, search/filters and tabs in '
+          'three separate rows.',
+        );
+      }
       expect(failures, isEmpty);
       await tester.pumpWidget(const SizedBox.shrink());
     },

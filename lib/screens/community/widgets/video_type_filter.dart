@@ -63,6 +63,8 @@ class VideoTypeFilterButton extends StatelessWidget {
                 child: Text(
                   value.label(l10n),
                   style: const TextStyle(fontSize: 12),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const Icon(Icons.arrow_drop_down, size: 18),

@@ -338,119 +338,161 @@ class _CommunityScreenState extends State<CommunityScreen>
       return size;
     }
 
-    final naturalTitle = measure(l10n.communityScreenTitle, titleStyle);
-    final title = measure(
+    final titleSize = measure(
       l10n.communityScreenTitle,
       titleStyle,
-      maxWidth: (width - 88).clamp(1.0, double.infinity),
+      maxWidth: (width - 168).clamp(1.0, double.infinity),
     );
-    final videoWidth =
-        (measure(
-                  _videoTypeFilter.label(l10n),
-                  theme.textTheme.bodyMedium!.copyWith(fontSize: 12),
-                ).width +
-                48)
-            .clamp(48.0, (width - 16).clamp(48.0, double.infinity));
-    final videoHeight =
-        (measure(
-                  _videoTypeFilter.label(l10n),
-                  theme.textTheme.bodyMedium!.copyWith(fontSize: 12),
-                  maxWidth: (videoWidth - 48).clamp(1.0, double.infinity),
-                ).height +
-                8)
-            .clamp(48.0, double.infinity);
-    final actions = <Widget>[
-      if (_isSearching) ...[
-        IconButton(
-          icon: const Icon(Icons.close),
-          tooltip: l10n.commonClose,
-          onPressed: () => setState(() {
-            _isSearching = false;
-            _tagSearchMode = false;
-            _searchQuery = '';
-            _searchController.clear();
-          }),
-        ),
-      ] else ...[
-        IconButton(
-          icon: Badge(
-            label: Text('${communityService.unreadFollowNotificationCount}'),
-            isLabelVisible: communityService.unreadFollowNotificationCount > 0,
-            child: const Icon(Icons.notifications_outlined),
-          ),
-          tooltip: l10n.communityFollowNotificationsTooltip,
-          onPressed: () => Navigator.of(context).push(
-            adMockMaterialPageRoute<void>(
-              builder: (_) => const CommunityFollowNotificationsScreen(),
-            ),
-          ),
-        ),
-        VideoTypeFilterButton(
-          value: _videoTypeFilter,
-          onChanged: (v) => setState(() => _videoTypeFilter = v),
-        ),
-        if (_videoTypeFilter == VideoTypeFilter.shortOnly)
-          IconButton(
-            icon: const Icon(Icons.view_carousel_outlined),
-            tooltip: l10n.communityShortsModeTooltip,
-            onPressed: () => _openShortsMode(allWorks),
-          ),
-        IconButton(
-          // Distinct from the video-type filter's funnel next to it.
-          key: const Key('communityContentFilterButton'),
-          icon: const Icon(Icons.visibility_off_outlined),
-          tooltip: l10n.communityContentFilterTitle,
-          onPressed: () => _showContentFilters(communityService),
-        ),
-        IconButton(
-          icon: const Icon(Icons.search),
-          tooltip: l10n.commonSearch,
-          onPressed: () => setState(() => _isSearching = true),
-        ),
-        const HelpButton(topic: '作品広場'),
-      ],
-    ];
-    final toolbarActions = <Widget>[
-      for (final action in actions)
-        SizedBox(
-          width: action is VideoTypeFilterButton ? videoWidth : 48,
-          height: action is VideoTypeFilterButton ? videoHeight : 48,
-          child: action,
-        ),
-    ];
-    final actionsWidth = toolbarActions.fold<double>(
-      0,
-      (sum, item) => sum + (item as SizedBox).width!,
-    );
-    final separateActions = naturalTitle.width + actionsWidth + 88 > width;
-    // Match Wrap's natural rows, keeping every action reachable without
-    // sacrificing the screen name to a row of icons.
-    var actionsHeight = 0.0;
-    var rowWidth = 0.0;
-    var rowHeight = 0.0;
-    for (final action in toolbarActions.cast<SizedBox>()) {
-      if (rowWidth > 0 && rowWidth + action.width! > width - 16) {
-        actionsHeight += rowHeight;
-        rowWidth = 0;
-        rowHeight = 0;
-      }
-      rowWidth += action.width!;
-      if (action.height! > rowHeight) rowHeight = action.height!;
-    }
-    actionsHeight += rowHeight;
+    final videoWidth = (measure(
+              _videoTypeFilter.label(l10n),
+              theme.textTheme.bodyMedium!.copyWith(fontSize: 12),
+            ).width +
+            48)
+        .clamp(48.0, 160.0);
     final labels = [
       l10n.communityTabNew,
       l10n.communityTabRanking,
       l10n.communityTabFavoriteAuthors,
     ];
-    final tabWidths = labels.map(
-      (label) => measure(label, labelStyle).width + 32,
-    );
+    final tabWidths =
+        labels.map((label) => measure(label, labelStyle).width + 32);
     final scrollTabs = tabWidths.fold<double>(0, (a, b) => a + b) > width;
     final tabHeight = labels
         .map((label) => measure(label, labelStyle).height + 16)
         .fold<double>(48, (a, b) => a > b ? a : b);
-    final searchHeight = (scaler.scale(24) + 16).clamp(56.0, double.infinity);
+    final searchFill =
+        theme.inputDecorationTheme.fillColor ?? scheme.surfaceContainerLow;
+
+    // Stable three-row mobile header: title/actions, search/filters, tabs.
+    // The search row never wraps its controls beneath the title.
+    final searchRow = Padding(
+      key: const Key('communitySearchRow'),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: SizedBox(
+        height: 48,
+        child: _isSearching
+            ? Material(
+                color: searchFill,
+                borderRadius: BorderRadius.circular(20),
+                child: Row(
+                  children: [
+                    IconButton(
+                      key: const Key('communitySearchModeToggle'),
+                      icon: Icon(
+                        _tagSearchMode
+                            ? Icons.search
+                            : Icons.sell_outlined,
+                      ),
+                      tooltip: _tagSearchMode
+                          ? l10n.communitySearchHint
+                          : l10n.communityTagSearchHint,
+                      onPressed: () => setState(() {
+                        _tagSearchMode = !_tagSearchMode;
+                        _searchQuery = '';
+                        _searchController.clear();
+                      }),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        autofocus: true,
+                        decoration: InputDecoration(
+                          hintText: _tagSearchMode
+                              ? l10n.communityTagSearchHint
+                              : l10n.communitySearchHint,
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 12,
+                          ),
+                        ),
+                        onChanged: (v) => setState(() => _searchQuery = v),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      tooltip: l10n.commonClose,
+                      onPressed: () => setState(() {
+                        _isSearching = false;
+                        _tagSearchMode = false;
+                        _searchQuery = '';
+                        _searchController.clear();
+                      }),
+                    ),
+                  ],
+                ),
+              )
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  final shortMode =
+                      _videoTypeFilter == VideoTypeFilter.shortOnly;
+                  final maxVideoWidth = (constraints.maxWidth -
+                          148 -
+                          (shortMode ? 48 : 0))
+                      .clamp(48.0, 160.0).toDouble();
+                  final filterWidth =
+                      videoWidth.clamp(48.0, maxVideoWidth).toDouble();
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: Material(
+                          color: searchFill,
+                          borderRadius: BorderRadius.circular(20),
+                          child: InkWell(
+                            key: const Key('communitySearchTrigger'),
+                            borderRadius: BorderRadius.circular(20),
+                            onTap: () =>
+                                setState(() => _isSearching = true),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.search),
+                                  tooltip: l10n.commonSearch,
+                                  onPressed: () =>
+                                      setState(() => _isSearching = true),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    l10n.communitySearchHint,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: filterWidth,
+                        height: 48,
+                        child: VideoTypeFilterButton(
+                          value: _videoTypeFilter,
+                          onChanged: (v) =>
+                              setState(() => _videoTypeFilter = v),
+                        ),
+                      ),
+                      IconButton(
+                        key: const Key('communityContentFilterButton'),
+                        icon: const Icon(Icons.tune),
+                        tooltip: l10n.communityContentFilterTitle,
+                        onPressed: () =>
+                            _showContentFilters(communityService),
+                      ),
+                      if (shortMode)
+                        IconButton(
+                          icon: const Icon(Icons.view_carousel_outlined),
+                          tooltip: l10n.communityShortsModeTooltip,
+                          onPressed: () => _openShortsMode(allWorks),
+                        ),
+                    ],
+                  );
+                },
+              ),
+      ),
+    );
     return Scaffold(
       appBar: AppBar(
         backgroundColor: barBackground,
@@ -458,76 +500,40 @@ class _CommunityScreenState extends State<CommunityScreen>
         titleTextStyle: titleStyle,
         iconTheme: IconThemeData(color: foreground),
         actionsIconTheme: IconThemeData(color: foreground),
-        toolbarHeight: _isSearching
-            ? searchHeight
-            : (title.height + 16).clamp(kToolbarHeight, double.infinity),
-        title: _isSearching
-            ? Row(
-                children: [
-                  IconButton(
-                    key: const Key('communitySearchModeToggle'),
-                    icon: Icon(
-                      _tagSearchMode ? Icons.search : Icons.sell_outlined,
-                    ),
-                    tooltip: _tagSearchMode
-                        ? l10n.communitySearchHint
-                        : l10n.communityTagSearchHint,
-                    onPressed: () => setState(() {
-                      _tagSearchMode = !_tagSearchMode;
-                      _searchQuery = '';
-                      _searchController.clear();
-                    }),
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      autofocus: true,
-                      decoration: InputDecoration(
-                        hintText: _tagSearchMode
-                            ? l10n.communityTagSearchHint
-                            : l10n.communitySearchHint,
-                        border: InputBorder.none,
-                      ),
-                      onChanged: (v) => setState(() => _searchQuery = v),
-                    ),
-                  ),
-                ],
-              )
-            : Text(
-                l10n.communityScreenTitle,
-                softWrap: true,
-                maxLines: 3,
-                overflow: TextOverflow.visible,
+        toolbarHeight:
+            (titleSize.height + 16).clamp(kToolbarHeight, double.infinity).toDouble(),
+        title: Text(
+          l10n.communityScreenTitle,
+          softWrap: true,
+          maxLines: 2,
+          overflow: TextOverflow.visible,
+        ),
+        actions: [
+          IconButton(
+            icon: Badge(
+              label: Text('${communityService.unreadFollowNotificationCount}'),
+              isLabelVisible:
+                  communityService.unreadFollowNotificationCount > 0,
+              child: const Icon(Icons.notifications_outlined),
+            ),
+            tooltip: l10n.communityFollowNotificationsTooltip,
+            onPressed: () => Navigator.of(context).push(
+              adMockMaterialPageRoute<void>(
+                builder: (_) => const CommunityFollowNotificationsScreen(),
               ),
-        actions: separateActions && !_isSearching ? null : toolbarActions,
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(
-            tabHeight +
-                (separateActions && !_isSearching ? actionsHeight + 8 : 0),
+            ),
           ),
+          const HelpButton(topic: '作品広場'),
+        ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(56 + tabHeight),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (separateActions && !_isSearching)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                  child: DefaultTextStyle.merge(
-                    style: TextStyle(color: foreground),
-                    child: IconTheme(
-                      data: IconThemeData(color: foreground),
-                      child: Wrap(
-                        alignment: WrapAlignment.end,
-                        children: toolbarActions,
-                      ),
-                    ),
-                  ),
-                ),
+              searchRow,
               TabBar(
                 controller: _tabController,
                 isScrollable: scrollTabs,
-                // Long localized labels scroll from the leading edge;
-                // centering an over-wide TabBar shifts the first tab and
-                // makes the underline/text appear misaligned.
                 tabAlignment: scrollTabs
                     ? TabAlignment.start
                     : TabAlignment.fill,

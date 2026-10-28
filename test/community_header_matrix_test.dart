@@ -228,6 +228,34 @@ void main() {
                 matching: find.byIcon(nextModeIcon)), findsOneWidget);
             }
             final bar = find.byType(AppBar);
+            final searchRowRect = tester.getRect(
+              find.byKey(const Key('communitySearchRow')),
+            );
+            final tabsRect = tester.getRect(find.byType(TabBar));
+            if (searchRowRect.bottom > tabsRect.top + .01) {
+              failures.add('Search row overlaps tabs: $searchRowRect / $tabsRect');
+            }
+            if (state != 'search' && state != 'tag-search') {
+              final titleRect = tester.getRect(
+                find.descendant(
+                  of: bar,
+                  matching: find.text(l10n.communityScreenTitle),
+                ),
+              );
+              final notificationRect = tester.getRect(
+                find.byTooltip(l10n.communityFollowNotificationsTooltip),
+              );
+              final filterRect = tester.getRect(
+                find.byKey(const Key('communityContentFilterButton')),
+              );
+              if (titleRect.bottom > searchRowRect.top ||
+                  notificationRect.bottom > searchRowRect.top ||
+                  filterRect.top < searchRowRect.top ||
+                  filterRect.bottom > searchRowRect.bottom) {
+                failures.add('Header rows regressed: $titleRect / '
+                    '$notificationRect / $searchRowRect / $filterRect');
+              }
+            }
             final theme = Theme.of(tester.element(bar));
             final labels = [
               l10n.communityTabNew,
