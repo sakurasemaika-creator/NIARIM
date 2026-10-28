@@ -163,7 +163,9 @@ void main() {
                 await tester.pumpAndSettle();
               }
               if (state == 'tag-search') {
-                await tester.tap(find.text(l10n.communityTagSearchHint).last);
+                await tester.tap(
+                  find.byKey(const Key('communitySearchModeToggle')),
+                );
                 await tester.pumpAndSettle();
               }
             } else if (state == 'portrait') {
@@ -216,14 +218,14 @@ void main() {
                   : 0,
             );
             if (state == 'search' || state == 'tag-search') {
-              expect(
-                tester
-                    .widget<SegmentedButton<bool>>(
-                      find.byType(SegmentedButton<bool>),
-                    )
-                    .selected,
-                {state == 'tag-search'},
-              );
+              final toggle = find.byKey(
+                const Key('communitySearchModeToggle'));
+              expect(toggle, findsOneWidget);
+              expect(find.byType(SegmentedButton<bool>), findsNothing);
+              final nextModeIcon = state == 'tag-search'
+                  ? Icons.search : Icons.sell_outlined;
+              expect(find.descendant(of: toggle,
+                matching: find.byIcon(nextModeIcon)), findsOneWidget);
             }
             final bar = find.byType(AppBar);
             final theme = Theme.of(tester.element(bar));
@@ -252,7 +254,12 @@ void main() {
               );
             }
             final tips = state == 'search' || state == 'tag-search'
-                ? [l10n.commonClose]
+                ? [
+                    l10n.commonClose,
+                    state == 'tag-search'
+                        ? l10n.communitySearchHint
+                        : l10n.communityTagSearchHint,
+                  ]
                 : [
                     l10n.communityFollowNotificationsTooltip,
                     l10n.communityVideoTypeFilterTooltip,
@@ -274,75 +281,17 @@ void main() {
               }
             }
             if (state == 'search' || state == 'tag-search') {
-              for (final label in [
-                l10n.communitySearchHint,
-                l10n.communityTagSearchHint,
-              ]) {
-                final f = find.descendant(
-                  of: find.byType(SegmentedButton<bool>),
-                  matching: find.text(label),
-                );
-                final p = tester.renderObject<RenderParagraph>(f);
-                if (p.didExceedMaxLines) failures.add('$label truncated');
-                final button = find
-                    .ancestor(of: f, matching: find.byType(TextButton))
-                    .first;
-                final bounds = tester.getRect(button);
-                final text = tester.getRect(f);
-                if (text.left < bounds.left + 4 ||
-                    text.right > bounds.right - 4 ||
-                    text.top < bounds.top ||
-                    text.bottom > bounds.bottom) {
-                  failures.add(
-                    '$label paints outside its mode button $text / $bounds',
-                  );
-                }
-                // didExceedMaxLines cannot detect a group border clipping
-                // otherwise fully laid-out text. Check the actual renderer's
-                // resolved inner clip, including every line of the label.
-                final group = find.descendant(
-                  of: find.byType(SegmentedButton<bool>),
-                  matching: find.byWidgetPredicate(
-                    (w) => w.runtimeType.toString().startsWith(
-                      '_SegmentedButtonRenderWidget',
-                    ),
-                  ),
-                );
-                final dynamic render = tester.renderObject(group);
-                final padding = render.tapTargetVerticalPadding as double;
-                final size = render.size as Size;
-                final clip = (render.enabledBorder as OutlinedBorder)
-                    .getInnerPath(
-                      Rect.fromLTWH(
-                        0,
-                        padding / 2,
-                        size.width,
-                        size.height - padding,
-                      ),
-                      textDirection: render.textDirection as TextDirection,
-                    );
-                final origin = (render as RenderBox).localToGlobal(Offset.zero);
-                final offset = p.localToGlobal(Offset.zero) - origin;
-                final boxes = p.getBoxesForSelection(
-                  TextSelection(
-                    baseOffset: 0,
-                    extentOffset: p.text.toPlainText().length,
-                  ),
-                );
-                for (final box in boxes) {
-                  final glyph = box.toRect().shift(offset).deflate(0.5);
-                  if ([
-                    glyph.topLeft,
-                    glyph.topRight,
-                    glyph.bottomLeft,
-                    glyph.bottomRight,
-                  ].any((point) => !clip.contains(point))) {
-                    failures.add(
-                      '$label clipped by mode group border glyph=$glyph clip=${clip.getBounds()} paragraph=${p.size} group=$size',
-                    );
-                    break;
-                  }
-                }
+              // Search and tag-search now share the SAME compact icon slot
+              // as Home. No full-width segmented button may push the tabs.
+              final toggle = find.byKey(
+                const Key('communitySearchModeToggle'));
+              final bounds = tester.getRect(toggle);
+              final textField = tester.getRect(find.byType(TextField).first);
+              if (bounds.width < 47.99 ||
+                  bounds.height < 47.99 ||
+                  bounds.right > textField.left + 1 ||
+                  bounds.left < 0) {
+                failures.add('Compact search switch overflow: $bounds / $textField');
               }
             }
             final selected = tester
