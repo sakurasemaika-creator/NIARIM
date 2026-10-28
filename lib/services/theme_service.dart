@@ -433,6 +433,10 @@ class ThemeService extends ChangeNotifier {
       for (final preset in _builtInPresets) preset.id: preset,
     };
     final raw = prefs.readStringList(_prefsPresetsKey);
+    // A corrupt saved entry must not be rewritten during initialization.
+    // Startup recovery tests require the original bytes to remain available
+    // for diagnostics and future recovery. Defer migration in that case.
+    var storedDataIsValid = true;
     if (raw == null || raw.isEmpty) {
       _presets.addAll(_builtInPresets);
     } else {
@@ -444,8 +448,10 @@ class ThemeService extends ChangeNotifier {
           }
         } on FormatException {
           // Keep malformed persisted JSON untouched; skip it for this session.
+          storedDataIsValid = false;
         } on TypeError {
           // Isolate structurally invalid presets instead of aborting startup.
+          storedDataIsValid = false;
         }
       }
       // 保存済みプリセット一覧に、組み込みプリセット（パステル・
@@ -485,6 +491,9 @@ class ThemeService extends ChangeNotifier {
         // Structurally invalid current theme must not abort app startup.
       }
     }
+    if (currentJson != null && restoredCurrent == null) {
+      storedDataIsValid = false;
+    }
     if (restoredCurrent != null) {
       // Only an explicitly selected built-in should follow the rollback.
       // A color-sampled/current-custom theme is a separate saved creation,
@@ -498,9 +507,10 @@ class ThemeService extends ChangeNotifier {
     } else if (_presets.isNotEmpty) {
       _current = _presets.first;
     }
-    if (shouldRestoreBuiltIns) {
-      // Persist before marking the migration, so a failed write can be
-      // retried without silently leaving the proposed right-side colors.
+    if (shouldRestoreBuiltIns && storedDataIsValid) {
+      // Persist before marking the migration. Never rewrite a malformed
+      // theme entry or current JSON on startup: a later recovery attempt
+      // still needs the original stored bytes.
       await _persist();
       await prefs.setBool(_originalBuiltInPaletteRestoreKey, true);
     }
