@@ -75,10 +75,10 @@ class ThemeService extends ChangeNotifier {
   // デフォルトで選択されるのはdefaultLight（見た目はライト基調）と
   // なるよう、リストの先頭に置く。
   //
-  // この28種は当初の配色（旧デザイン比較画像の左側）が正規値。
-  // 見直し案の右側の再配色を、ユーザーの承諾なくここへ反映しないこと。
-  // 全9色の値を test/built_in_theme_original_palette_test.dart で固定検証する。
-  // 保存済みのユーザー編集版は現行の永続化仕様どおり尊重する。
+  // 組み込み28種の元の配色を正規値として保持する。
+  // 比較用の代替配色を元の配色へ誤適用しないよう、全9色を
+  // test/built_in_theme_original_palette_test.dart で固定検証する。
+  // 保存済みの編集版は現行の永続化仕様どおり保持する。
   static const List<AppThemePreset> _builtInPresets = [
     AppThemePreset.defaultLight, // 赤（ライト・既定選択）
     AppThemePreset.defaultDark, // 赤（ダーク）
