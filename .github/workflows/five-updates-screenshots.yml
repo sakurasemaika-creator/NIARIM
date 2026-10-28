@@ -1,0 +1,42 @@
+name: Five Updated UI Screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/five-updates-screenshots.yml'
+      - 'test/five_fixes_screenshot_test.dart'
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Dependencies
+        run: flutter pub get
+      - name: Generate localizations
+        run: flutter gen-l10n
+      - name: Capture five real Flutter changes
+        env:
+          NIARIM_FIVE_FIXES_CAPTURE: build/five-fixes
+        run: flutter test test/five_fixes_screenshot_test.dart --reporter expanded
+      - name: Ensure all five captures exist
+        run: |
+          for name in 01_mute_words 02_mute_tags 03_selected_favorites_white 04_compact_tag_search 05_french_tab_alignment; do
+            test -s "build/five-fixes/${name}.png"
+          done
+      - name: Upload five updated screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: five-updates-real-flutter-screenshots
+          path: build/five-fixes/*.png
+          if-no-files-found: warn
+          retention-days: 14
