@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../config/font_fallback.dart';
+import '../../canvas/widgets/canvas_icon_button.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key});
@@ -12,12 +13,26 @@ class HomeDrawer extends StatelessWidget {
     final scheme = theme.colorScheme;
     final menuForeground =
         theme.appBarTheme.foregroundColor ?? scheme.onSurface;
+    final drawerBackground = theme.cardTheme.color ?? scheme.surface;
+    // Drawer icons follow the current Appearance accent, never a copied
+    // default-red swatch. Use a conditional theme-derived outline only when
+    // the accent is too close to the drawer surface.
+    final iconShadows = CanvasIconButton.actionShadows(
+      scheme.primary,
+      drawerBackground,
+      scheme,
+    );
+    Widget drawerIcon(IconData icon) => Icon(
+      icon,
+      color: scheme.primary,
+      shadows: iconShadows,
+    );
     final l10n = AppLocalizations.of(context)!;
     return Drawer(
-      backgroundColor: theme.cardTheme.color ?? scheme.surface,
+      backgroundColor: drawerBackground,
       child: ListTileTheme(
         data: theme.listTileTheme.copyWith(
-          iconColor: menuForeground,
+          iconColor: scheme.primary,
           textColor: menuForeground,
           titleTextStyle: theme.listTileTheme.titleTextStyle?.copyWith(
             color: menuForeground,
@@ -69,7 +84,7 @@ class HomeDrawer extends StatelessWidget {
             const SizedBox(height: 4),
             // メニュー項目名はくらむぼんで統一する。
             ListTile(
-              leading: const Icon(Icons.share_outlined),
+              leading: drawerIcon(Icons.share_outlined),
               title: Text(
                 l10n.homeTabShared,
                 style: const TextStyle(
@@ -83,7 +98,7 @@ class HomeDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete_outline),
+              leading: drawerIcon(Icons.delete_outline),
               title: Text(
                 l10n.homeTabTrash,
                 style: const TextStyle(
@@ -98,7 +113,7 @@ class HomeDrawer extends StatelessWidget {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(Icons.palette_outlined),
+              leading: drawerIcon(Icons.palette_outlined),
               title: Text(
                 l10n.homeDrawerAutofillPreset,
                 style: const TextStyle(
@@ -112,7 +127,7 @@ class HomeDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.cleaning_services_outlined),
+              leading: drawerIcon(Icons.cleaning_services_outlined),
               title: Text(
                 l10n.homeDrawerStorage,
                 style: const TextStyle(
@@ -127,7 +142,7 @@ class HomeDrawer extends StatelessWidget {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(Icons.settings_outlined),
+              leading: drawerIcon(Icons.settings_outlined),
               title: Text(
                 l10n.homeDrawerSettings,
                 style: const TextStyle(
@@ -141,7 +156,7 @@ class HomeDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.help_outline),
+              leading: drawerIcon(Icons.help_outline),
               title: Text(
                 l10n.homeDrawerHelp,
                 style: const TextStyle(
@@ -155,7 +170,7 @@ class HomeDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.lightbulb_outline),
+              leading: drawerIcon(Icons.lightbulb_outline),
               title: Text(
                 l10n.homeDrawerTips,
                 style: const TextStyle(
@@ -169,10 +184,7 @@ class HomeDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(
-                Icons.workspace_premium_outlined,
-                color: scheme.primary,
-              ),
+              leading: drawerIcon(Icons.workspace_premium_outlined),
               title: Text(
                 l10n.homeDrawerPremium,
                 style: const TextStyle(
