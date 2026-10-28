@@ -27,10 +27,11 @@ void main() {
     await tester.pumpWidget(app(initialTag: '手描き'));
     await tester.pumpAndSettle();
 
-    final segmented = tester.widget<SegmentedButton<bool>>(
-      find.byType(SegmentedButton<bool>),
-    );
-    expect(segmented.selected, {true});
+    final toggle = find.byKey(const Key('communitySearchModeToggle'));
+    expect(toggle, findsOneWidget);
+    expect(find.descendant(of: toggle, matching: find.byIcon(Icons.search)),
+        findsOneWidget, reason: 'Tag mode offers keyword search as next mode');
+    expect(find.byType(SegmentedButton<bool>), findsNothing);
 
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.controller?.text, '手描き');
@@ -40,16 +41,13 @@ void main() {
     await tester.pumpWidget(app(initialTag: '手描き'));
     await tester.pumpAndSettle();
 
-    var segmented = tester.widget<SegmentedButton<bool>>(
-      find.byType(SegmentedButton<bool>),
-    );
-    segmented.onSelectionChanged?.call({false});
-    await tester.pump();
-
-    segmented = tester.widget<SegmentedButton<bool>>(
-      find.byType(SegmentedButton<bool>),
-    );
-    expect(segmented.selected, {false});
+    final toggle = find.byKey(const Key('communitySearchModeToggle'));
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(find.descendant(
+      of: toggle, matching: find.byIcon(Icons.sell_outlined)),
+      findsOneWidget);
+    expect(find.byType(SegmentedButton<bool>), findsNothing);
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller?.text,
       '',
