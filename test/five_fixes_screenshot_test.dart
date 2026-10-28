@@ -83,8 +83,8 @@ void main() {
       tester.element(find.byType(CommunityScreen)))!;
     await tester.tap(find.byKey(const Key('communityContentFilterButton')));
     await tester.pumpAndSettle();
-    final words = find.byKey(const Key('communityMutedWordsEntry_0'));
-    final tags = find.byKey(const Key('communityMutedTagsEntry_0'));
+    final words = find.byKey(const Key('communityMutedWordsDisplay_0'));
+    final tags = find.byKey(const Key('communityMutedTagsDisplay_0'));
     expect(tester.getRect(words).top, lessThan(tester.getRect(tags).top));
     expect(tester.getRect(tags).top,
         lessThan(tester.getRect(find.byType(SwitchListTile)).top));

@@ -3290,7 +3290,7 @@
   "filterNoiseColor": "カラーノイズ",
   "filterNoiseSeed": "模様のシード値",
   "communityContentFilterTitle": "表示フィルター",
-  "communityHideGenerativeAiImageVideo": "「AI画像・AI動画使用」の作品を非表示",
+  "communityHideGenerativeAiImageVideo": "AIで生成した画像・動画を使用した作品を表示しない",
   "communityMutedWords": "ミュートタイトル登録",
   "communityMutedWordsHint": "作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。1件ずつ追加・編集できます。",
   "communityMutedTags": "ミュートタグ登録",
@@ -3304,6 +3304,29 @@
   "communityGoogleSignInNotConfigured": "Googleログインがまだ設定されていません",
   "communityGoogleAccountBusy": "Googleアカウントの別の操作を処理中です。完了してから、もう一度お試しください。",
   "communityMyWorksTitle": "自分の投稿",
+  "communityMyWorksViewAuthorPage": "自分の作品一覧ページを見る",
+  "communityMyWorksAccountRequired": "作品一覧を表示するにはGoogleアカウントに接続してください",
+  "communityMyWorksSettingsTitle": "作品の設定",
+  "communityMyWorksPublishInNiarim": "NIARIM内で公開する",
+  "communityMyWorksDeleteNiarim": "NIARIMからこの作品を削除",
+  "communityMyWorksDeleteConfirmTitle": "この作品を削除しますか？",
+  "communityMyWorksDeleteConfirmBody": "NIARIM内の作品を完全に削除します。YouTube上の動画は削除されません。この操作は取り消せません。",
+  "communityMyWorksOpenYoutubeStudio": "YouTube Studioで動画を管理する",
+  "communityMyWorksYoutubeStudioHelp": "YouTube側の公開状態や動画設定はYouTube Studioで管理します。NIARIM内の公開設定とは独立しています。",
+  "communityMyWorksYoutubeOpenFailed": "YouTube Studioを開けませんでした",
+  "communityMyWorksOperationFailed": "操作に失敗しました。{reason}",
+  "@communityMyWorksOperationFailed": {
+    "placeholders": {"reason": {"type": "String"}}
+  },
+  "communityMyWorksBulkPublish": "一括公開",
+  "communityMyWorksBulkHide": "一括非公開",
+  "communityMyWorksBulkResult": "完了: {success}件 / 失敗: {failed}件",
+  "@communityMyWorksBulkResult": {
+    "placeholders": {
+      "success": {"type": "int"},
+      "failed": {"type": "int"}
+    }
+  },
   "communityMyWorksAccountNotConnected": "Googleアカウント未接続",
   "communityMyWorksAddAccount": "Googleアカウントを追加",
   "communityMyWorksSwitchAccount": "Googleアカウントを切り替え・追加",

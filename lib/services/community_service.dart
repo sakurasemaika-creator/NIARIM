@@ -811,6 +811,29 @@ class CommunityService extends ChangeNotifier {
     return reply.toCommunityWork();
   }
 
+  /// Deletes only the poster's NIARIM entry. The YouTube video is deliberately
+  /// left untouched; removing it there requires a separate explicit action.
+  Future<void> deleteOwnWork(String workId) async {
+    final known = byId(workId);
+    if (known == null || !isOwnWork(known)) {
+      throw StateError('Only the poster can delete $workId');
+    }
+    final revision = _accountRevision;
+    final client = api;
+    if (client != null) {
+      await _awaitInAccount(client.deleteWork(workId), revision);
+    }
+    if (!_isCurrentAccount(revision)) {
+      throw const CommunityAccountChangedException();
+    }
+    _works.removeWhere((work) => work.id == workId);
+    _ownIds.remove(workId);
+    _latestIds.remove(workId);
+    _bookmarkWorkIds.remove(workId);
+    _bookmarkedIds.remove(workId);
+    notifyListeners();
+  }
+
   bool isBookmarked(String workId) => _bookmarkedIds.contains(workId);
 
   /// Bookmarks or un-bookmarks [workId]. Like the follow and repost toggles

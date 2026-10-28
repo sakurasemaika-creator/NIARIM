@@ -57,6 +57,8 @@ dependencies:
   # Dartチーム公式のHTTPクライアントで、ネイティブ依存を持たない
   # 純Dartパッケージのため他依存のようなAndroidビルド不整合のリスクが低い。
   http: ^1.2.2
+  # 各投稿のYouTube Studio編集画面を外部ブラウザーで開く。
+  url_launcher: ^6.3.3
   archive: ^3.4.9
   # ffmpeg_kit_flutter_min_gplは配布元(arthenica/ffmpeg-kit)が2025年に
   # アーカイブされ、Mavenリポジトリから成果物が失われビルド不能になったため、

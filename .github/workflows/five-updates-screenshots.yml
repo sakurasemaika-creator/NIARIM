@@ -8,6 +8,13 @@ on:
       - '.github/workflows/five-updates-screenshots.yml'
       - 'test/five_fixes_screenshot_test.dart'
       - 'lib/screens/community/community_screen.dart'
+      - 'lib/screens/community/community_my_works_screen.dart'
+      - 'lib/screens/community/community_work_settings_screen.dart'
+      - 'lib/services/community_service.dart'
+      - 'lib/l10n/**'
+      - 'pubspec.yaml'
+      - 'test/community_my_works_controls_test.dart'
+      - 'test/community_back_navigation_test.dart'
       - 'test/community_content_filter_dialog_test.dart'
 
 jobs:
@@ -31,6 +38,8 @@ jobs:
           flutter test test/community_filter_dialog_layout_test.dart --reporter expanded
           flutter test test/community_header_quality_test.dart --reporter expanded
           flutter test test/community_mute_wording_l10n_test.dart --reporter expanded
+          flutter test test/community_back_navigation_test.dart --reporter expanded
+          flutter test test/community_my_works_controls_test.dart --reporter expanded
       - name: Capture updated real Flutter screens and post flow
         env:
           NIARIM_FIVE_FIXES_CAPTURE: build/five-fixes
@@ -48,3 +57,11 @@ jobs:
           path: build/five-fixes/*.png
           if-no-files-found: warn
           retention-days: 14
+      - name: Upload resolved Flutter dependency lockfile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-resolved-pubspec-lock
+          path: pubspec.lock
+          if-no-files-found: ignore
+          retention-days: 2

@@ -63,23 +63,29 @@ void main() {
     await tester.pump();
     await openDialog(tester);
 
-    final words0 = find.byKey(const Key('communityMutedWordsEntry_0'));
-    final tags0 = find.byKey(const Key('communityMutedTagsEntry_0'));
-    expect(tester.widget<TextFormField>(words0).initialValue, '既存の語');
-    expect(tester.widget<TextFormField>(tags0).initialValue, '既存タグ');
+    final words0 = find.byKey(const Key('communityMutedWordsDisplay_0'));
+    final tags0 = find.byKey(const Key('communityMutedTagsDisplay_0'));
+    expect(find.descendant(of: words0, matching: find.text('既存の語')),
+        findsOneWidget);
+    expect(find.descendant(of: tags0, matching: find.text('既存タグ')),
+        findsOneWidget);
+    expect(find.byType(TextFormField), findsNothing);
     expect(tester.getTopLeft(words0).dy, lessThan(tester.getTopLeft(tags0).dy));
     expect(tester.getTopLeft(tags0).dy,
         lessThan(tester.getTopLeft(find.byType(SwitchListTile)).dy));
 
     await tapVisible(tester, find.byKey(const Key('communityMutedWordsEdit_0')));
-    await tester.enterText(words0, 'ネタバレ');
+    await tester.enterText(
+      find.byKey(const Key('communityMutedWordsEntry_0')), 'ネタバレ');
     await tapVisible(tester, find.byKey(const Key('communityMutedWordsAddButton')));
+    expect(find.byKey(const Key('communityMutedWordsDisplay_0')), findsOneWidget);
     await tester.enterText(
       find.byKey(const Key('communityMutedWordsEntry_1')),
       'ホラー',
     );
     await tapVisible(tester, find.byKey(const Key('communityMutedTagsEdit_0')));
-    await tester.enterText(tags0, '風景');
+    await tester.enterText(
+      find.byKey(const Key('communityMutedTagsEntry_0')), '風景');
     await tapVisible(tester, find.byKey(const Key('communityMutedTagsAddButton')));
     await tester.enterText(
       find.byKey(const Key('communityMutedTagsEntry_1')),
@@ -109,17 +115,12 @@ void main() {
     await openDialog(tester);
 
     await tapVisible(tester, find.byKey(const Key('communityMutedWordsDelete_1')));
-    expect(find.byKey(const Key('communityMutedWordsEntry_1')), findsNothing);
-    expect(
-      tester.widget<TextFormField>(
-        find.byKey(const Key('communityMutedWordsEntry_0')),
-      ).initialValue,
-      '残す',
-    );
+    expect(find.byKey(const Key('communityMutedWordsDisplay_1')), findsNothing);
+    expect(find.text('残す'), findsOneWidget);
     await tapVisible(tester, find.text(l10nOf(tester).commonCancel));
     expect(service.mutedWords, {'残す', '消す'});
     await openDialog(tester);
-    expect(find.byKey(const Key('communityMutedWordsEntry_1')), findsOneWidget);
+    expect(find.byKey(const Key('communityMutedWordsDisplay_1')), findsOneWidget);
     await tapVisible(tester, find.text(l10nOf(tester).commonCancel));
     expect(tester.takeException(), isNull);
   });
@@ -144,6 +145,40 @@ void main() {
     expect(service.mutedWords, isEmpty);
     expect(service.mutedTags, {'作画'});
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('pencil enables editing; tapping outside returns to plain text',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'community.mutedWords': ['初期値'],
+      'community.mutedTags': ['初期タグ'],
+    });
+    final service = CommunityService();
+    await tester.pumpWidget(host(service));
+    await tester.pump();
+    await openDialog(tester);
+    expect(find.byType(TextFormField), findsNothing);
+
+    await tapVisible(tester, find.byKey(const Key('communityMutedWordsEdit_0')));
+    final editor = find.byKey(const Key('communityMutedWordsEntry_0'));
+    expect(editor, findsOneWidget);
+    await tester.enterText(editor, '修正済み');
+    await tester.tap(find.text(l10nOf(tester).communityContentFilterTitle));
+    await tester.pumpAndSettle();
+    expect(editor, findsNothing);
+    expect(find.text('修正済み'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNothing);
+
+    await tapVisible(tester, find.byKey(const Key('communityMutedTagsEdit_0')));
+    await tester.enterText(
+      find.byKey(const Key('communityMutedTagsEntry_0')), '新しいタグ');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('communityMutedTagsEntry_0')), findsNothing);
+    expect(find.text('新しいタグ'), findsOneWidget);
+    await tapVisible(tester, find.text(l10nOf(tester).commonCancel));
+    expect(service.mutedWords, {'初期値'});
+    expect(service.mutedTags, {'初期タグ'});
   });
 
   testWidgets('localized section headings use the Kuramubon font', (

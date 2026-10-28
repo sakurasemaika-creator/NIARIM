@@ -9,7 +9,9 @@ import '../../services/google_auth_service.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
+import 'community_author_works_screen.dart';
 import 'community_post_screen.dart';
+import 'community_work_settings_screen.dart';
 
 /// Owner hub opened from the community square.
 ///
@@ -34,7 +36,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   bool _observingAccount = false;
   int _ownerLoadGeneration = 0;
   Map<String, String> _youtubePrivacyById = const <String, String>{};
-  final Set<String> _visibilityBusy = <String>{};
+  final Set<String> _selectedIds = <String>{};
+  bool _selectionMode = false;
+  bool _bulkBusy = false;
 
   @override
   void initState() {
@@ -58,7 +62,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     _ownerWorks = null;
     _youtubePrivacyById = const <String, String>{};
     _worksError = null;
-    _visibilityBusy.clear();
+    _selectedIds.clear();
+    _selectionMode = false;
     _loadingWorks = accountId != null;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _observedAccountId == accountId) _reloadOwnerWorks();
@@ -79,6 +84,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
         _youtubePrivacyById = const <String, String>{};
         _worksError = null;
         _loadingWorks = false;
+        _selectedIds.clear();
+        _selectionMode = false;
       });
       return;
     }
@@ -111,6 +118,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       setState(() {
         _ownerWorks = converted;
         _youtubePrivacyById = privacy;
+        final availableIds = converted.map((work) => work.id).toSet();
+        _selectedIds.removeWhere((id) => !availableIds.contains(id));
+        if (_selectedIds.isEmpty) _selectionMode = false;
       });
     } catch (error) {
       debugPrint('Own works could not be loaded: $error');
@@ -218,76 +228,115 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     await _reloadOwnerWorks();
   }
 
-  Future<void> _setAiImageVideoDisclosure(
-    CommunityWork work,
-    bool value,
-  ) async {
-    if (_visibilityBusy.contains(work.id)) return;
-    final community = context.read<CommunityService>();
-    final revision = community.accountRevision;
-    final l10n = AppLocalizations.of(context)!;
-    setState(() => _visibilityBusy.add(work.id));
-    try {
-      // The service applies the server's reply, so every browsing surface
-      // reflects it at once.
-      final next = await community.setAiImageVideoDisclosure(work.id, value);
-      if (!mounted || community.accountRevision != revision) return;
-      setState(() {
-        final works = _ownerWorks;
-        if (works == null) return;
-        final i = works.indexWhere((w) => w.id == next.id);
-        if (i >= 0) works[i] = next;
-      });
-    } on CommunityAccountChangedException {
+  void _openOwnAuthorPage(List<CommunityWork> works) {
+    final service = context.read<CommunityService>();
+    final authorId = service.currentUserId ??
+        (service.api == null ? kDummySelfAuthorId : null);
+    if (authorId == null) {
+      _showSnackBar(AppLocalizations.of(context)!.communityMyWorksAccountRequired);
       return;
-    } catch (error) {
-      debugPrint('AI image/video disclosure update failed: $error');
-      if (!mounted || community.accountRevision != revision) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.communityAiImageVideoUpdateFailed)),
-      );
-    } finally {
-      if (mounted && community.accountRevision == revision) {
-        setState(() => _visibilityBusy.remove(work.id));
-      }
     }
+    final account = context.read<GoogleAuthService>().account;
+    final name = works.isNotEmpty
+        ? works.first.authorName
+        : (account?.displayName ?? account?.email ??
+            AppLocalizations.of(context)!.communityMyWorksTitle);
+    Navigator.of(context).push(adMockMaterialPageRoute<void>(
+      builder: (_) => CommunityAuthorWorksScreen(
+        authorId: authorId,
+        authorName: name,
+      ),
+    ));
   }
 
-  Future<void> _setVisibility(CommunityWork work, bool published) async {
-    final l10n = AppLocalizations.of(context)!;
-    final youtubePrivacy = _youtubePrivacyById[work.id];
-    if (published && youtubePrivacy == 'deleted') {
-      _showSnackBar(l10n.communityMyWorksDeletedCannotPublish);
-      return;
-    }
+  void _toggleSelected(String workId) {
+    if (_bulkBusy) return;
+    setState(() {
+      _selectionMode = true;
+      if (!_selectedIds.add(workId)) _selectedIds.remove(workId);
+      if (_selectedIds.isEmpty) _selectionMode = false;
+    });
+  }
 
-    final community = context.read<CommunityService>();
-    final revision = community.accountRevision;
-    if (community.api == null || _visibilityBusy.contains(work.id)) return;
-    setState(() => _visibilityBusy.add(work.id));
-    try {
-      // The service applies the reply, so every surface follows at once.
-      final next = await community.setNiarimVisibility(work.id, published);
-      if (!mounted || community.accountRevision != revision) return;
-      setState(() {
-        final works = _ownerWorks;
-        if (works == null) return;
-        final i = works.indexWhere((w) => w.id == next.id);
-        if (i >= 0) works[i] = next;
-      });
-    } on CommunityAccountChangedException {
-      return;
-    } catch (error) {
-      debugPrint('Visibility update failed: $error');
-      if (!mounted || community.accountRevision != revision) return;
-      _showSnackBar(
-        l10n.communityVisibilityChangeFailed(communityErrorText(l10n, error)),
-      );
-    } finally {
-      if (mounted && community.accountRevision == revision) {
-        setState(() => _visibilityBusy.remove(work.id));
+  void _selectAll(List<CommunityWork> works) {
+    if (_bulkBusy) return;
+    setState(() {
+      _selectedIds.addAll(works.map((work) => work.id));
+      _selectionMode = _selectedIds.isNotEmpty;
+    });
+  }
+
+  void _clearSelection() {
+    if (_bulkBusy) return;
+    setState(() {
+      _selectedIds.clear();
+      _selectionMode = false;
+    });
+  }
+
+  Future<void> _openWorkSettings(CommunityWork work) async {
+    if (_bulkBusy) return;
+    final deleted = await Navigator.of(context).push<bool>(
+      adMockMaterialPageRoute<bool>(
+        builder: (_) => CommunityWorkSettingsScreen(
+          workId: work.id,
+          youtubePrivacyStatus: _youtubePrivacyById[work.id],
+        ),
+      ),
+    );
+    if (!mounted) return;
+    setState(() {
+      if (deleted == true) {
+        _ownerWorks?.removeWhere((item) => item.id == work.id);
+        _youtubePrivacyById = Map.of(_youtubePrivacyById)..remove(work.id);
+        _selectedIds.remove(work.id);
+        if (_selectedIds.isEmpty) _selectionMode = false;
+      }
+    });
+  }
+
+  /// Sequential, idempotent visibility updates: a partial failure remains
+  /// selected for retry. Never bulk-delete or bulk-update the AI declaration.
+  Future<void> _applyBulkVisibility(
+    List<CommunityWork> works,
+    bool published,
+  ) async {
+    if (_bulkBusy || _selectedIds.isEmpty) return;
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<CommunityService>();
+    final revision = service.accountRevision;
+    final targets = [
+      for (final work in works)
+        if (_selectedIds.contains(work.id)) work,
+    ];
+    setState(() => _bulkBusy = true);
+    var completed = 0;
+    var failed = 0;
+    for (final work in targets) {
+      if (!mounted || service.accountRevision != revision) break;
+      if (published && _youtubePrivacyById[work.id] == 'deleted') {
+        failed++;
+        continue;
+      }
+      try {
+        if (work.isNiarimPublished != published) {
+          await service.setNiarimVisibility(work.id, published);
+        }
+        completed++;
+        if (mounted) setState(() => _selectedIds.remove(work.id));
+      } on CommunityAccountChangedException {
+        break;
+      } catch (error) {
+        debugPrint('Bulk visibility failed for ${work.id}: $error');
+        failed++;
       }
     }
+    if (!mounted) return;
+    setState(() {
+      _bulkBusy = false;
+      if (_selectedIds.isEmpty) _selectionMode = false;
+    });
+    _showSnackBar(l10n.communityMyWorksBulkResult(completed, failed));
   }
 
   String _visibilityLabel(AppLocalizations l10n, CommunityWork work) {
@@ -347,7 +396,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.communityMyWorksTitle),
+        title: Text(_selectionMode
+            ? l10n.homeSelectionCount(_selectedIds.length)
+            : l10n.communityMyWorksTitle),
         actions: [
           IconButton(
             tooltip: l10n.communityReloadTooltip,
@@ -415,9 +466,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           FilledButton.icon(
                             key: const Key('communityMyWorksPostButton'),
@@ -425,6 +475,14 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                             icon: const Icon(Icons.video_call_outlined),
                             label: Text(l10n.communityPostButton),
                           ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            key: const Key('communityMyWorksViewAuthorPage'),
+                            onPressed: () => _openOwnAuthorPage(works),
+                            icon: const Icon(Icons.collections_outlined),
+                            label: Text(l10n.communityMyWorksViewAuthorPage),
+                          ),
+                          const SizedBox(height: 8),
                           OutlinedButton.icon(
                             key: const Key('communityMyWorksAccountButton'),
                             onPressed: _switchingAccount
@@ -456,11 +514,13 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
               child: Row(
                 children: [
-                  Text(
-                    l10n.communityAuthorWorksCount(works.length),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: scheme.onSurfaceVariant,
+                  Expanded(
+                    child: Text(
+                      l10n.communityAuthorWorksCount(works.length),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                   if (_loadingWorks) ...[
@@ -471,6 +531,22 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   ],
+                  IconButton(
+                    key: const Key('communityMyWorksSelectAll'),
+                    onPressed: works.isEmpty || _bulkBusy
+                        ? null
+                        : () => _selectAll(works),
+                    tooltip: l10n.homeSelectionAllSelect,
+                    icon: const Icon(Icons.select_all),
+                  ),
+                  IconButton(
+                    key: const Key('communityMyWorksClearSelection'),
+                    onPressed: _selectedIds.isEmpty || _bulkBusy
+                        ? null
+                        : _clearSelection,
+                    tooltip: l10n.homeSelectionAllDeselect,
+                    icon: const Icon(Icons.deselect),
+                  ),
                 ],
               ),
             ),
@@ -522,89 +598,73 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                       ),
                     )
                   : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                      padding: EdgeInsets.fromLTRB(
+                        16, 8, 16, _selectionMode ? 126 : 24,
+                      ),
                       itemCount: works.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final work = works[index];
-                        final busy = _visibilityBusy.contains(work.id);
                         final youtubePrivacy = _youtubePrivacyById[work.id];
                         final deleted = youtubePrivacy == 'deleted';
                         return Card(
                           clipBehavior: Clip.antiAlias,
                           child: ListTile(
-                            onTap: () => context
-                                .read<CommunityPreviewService>()
-                                .show(work),
-                            leading: CircleAvatar(
-                              backgroundColor:
-                                  work.isNiarimPublished && !deleted
-                                  ? scheme.primaryContainer
-                                  : scheme.surfaceContainerHighest,
-                              child: Icon(_visibilityIcon(work)),
-                            ),
+                            key: ValueKey('communityMyWorksRow-${work.id}'),
+                            onLongPress: () {
+                              if (!_selectionMode) {
+                                setState(() {
+                                  _selectionMode = true;
+                                  _selectedIds.add(work.id);
+                                });
+                              } else {
+                                _toggleSelected(work.id);
+                              }
+                            },
+                            onTap: () {
+                              if (_selectionMode) {
+                                _toggleSelected(work.id);
+                              } else {
+                                context.read<CommunityPreviewService>().show(work);
+                              }
+                            },
+                            selected: _selectedIds.contains(work.id),
+                            leading: _selectionMode
+                                ? Checkbox(
+                                    key: ValueKey('communityMyWorksSelect-${work.id}'),
+                                    value: _selectedIds.contains(work.id),
+                                    onChanged: _bulkBusy
+                                        ? null
+                                        : (_) => _toggleSelected(work.id),
+                                  )
+                                : CircleAvatar(
+                                    backgroundColor:
+                                        work.isNiarimPublished && !deleted
+                                        ? scheme.primaryContainer
+                                        : scheme.surfaceContainerHighest,
+                                    child: Icon(_visibilityIcon(work)),
+                                  ),
                             title: Text(
                               work.title.isEmpty ? work.id : work.title,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${_visibilityLabel(l10n, work)}  •  '
-                                  '${l10n.communityYoutubeVideoIdLabel(work.id)}',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                if (usingBackendOwnerList ||
-                                    communityService.api == null)
-                                  CheckboxListTile(
-                                    key: ValueKey(
-                                      'communityMyWorksAi-${work.id}',
-                                    ),
-                                    contentPadding: EdgeInsets.zero,
-                                    dense: true,
-                                    controlAffinity:
-                                        ListTileControlAffinity.leading,
-                                    value:
-                                        work.containsGenerativeAiImageOrVideo,
-                                    onChanged: busy
-                                        ? null
-                                        : (v) => _setAiImageVideoDisclosure(
-                                            work,
-                                            v ?? false,
-                                          ),
-                                    title: Text(
-                                      l10n.communityContainsGenerativeAiImageVideo,
-                                    ),
-                                  ),
-                              ],
+                            subtitle: Text(
+                              '${_visibilityLabel(l10n, work)}  •  '
+                              '${l10n.communityYoutubeVideoIdLabel(work.id)}',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            trailing: usingBackendOwnerList
-                                ? SizedBox(
-                                    width: 58,
-                                    child: busy
-                                        ? const Center(
-                                            child: SizedBox(
-                                              width: 18,
-                                              height: 18,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                              ),
-                                            ),
-                                          )
-                                        : Switch.adaptive(
-                                            value: work.isNiarimPublished,
-                                            onChanged:
-                                                deleted &&
-                                                    !work.isNiarimPublished
-                                                ? null
-                                                : (v) =>
-                                                      _setVisibility(work, v),
-                                          ),
-                                  )
-                                : null,
+                            trailing: _selectionMode
+                                ? null
+                                : IconButton(
+                                    key: ValueKey(
+                                      'communityMyWorksSettings-${work.id}',
+                                    ),
+                                    tooltip: l10n.communityMyWorksSettingsTitle,
+                                    onPressed: () => _openWorkSettings(work),
+                                    icon: const Icon(Icons.build_outlined),
+                                  ),
                           ),
                         );
                       },
@@ -613,6 +673,54 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
           ],
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: _selectionMode
+          ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 550),
+                child: Card(
+                  key: const Key('communityMyWorksBulkActions'),
+                  elevation: 6,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton.icon(
+                            key: const Key('communityMyWorksBulkPublish'),
+                            onPressed: _bulkBusy
+                                ? null
+                                : () => _applyBulkVisibility(works, true),
+                            icon: const Icon(Icons.public),
+                            label: Text(l10n.communityMyWorksBulkPublish),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            key: const Key('communityMyWorksBulkHide'),
+                            onPressed: _bulkBusy
+                                ? null
+                                : () => _applyBulkVisibility(works, false),
+                            icon: const Icon(Icons.visibility_off_outlined),
+                            label: Text(l10n.communityMyWorksBulkHide),
+                          ),
+                        ),
+                        if (_bulkBusy) ...[
+                          const SizedBox(width: 8),
+                          const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 }

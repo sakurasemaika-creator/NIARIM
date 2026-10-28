@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
@@ -495,6 +496,13 @@ class _CommunityScreenState extends State<CommunityScreen>
     );
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          key: const Key('communityBackToSplashButton'),
+          icon: const Icon(Icons.arrow_back),
+          tooltip: l10n.homeBackToSplashTooltip,
+          onPressed: () => context.go('/'),
+        ),
         backgroundColor: barBackground,
         foregroundColor: foreground,
         titleTextStyle: titleStyle,
@@ -830,8 +838,9 @@ class _CommunityScreenState extends State<CommunityScreen>
 
 
 class _MuteEntry {
-  _MuteEntry(this.value);
+  _MuteEntry(this.value, {this.editing = false});
   String value;
+  bool editing;
   final FocusNode focusNode = FocusNode();
 
   void dispose() => focusNode.dispose();
@@ -861,9 +870,20 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
   @override
   void initState() {
     super.initState();
-    _words = widget.initialWords.map(_MuteEntry.new).toList();
-    _tags = widget.initialTags.map(_MuteEntry.new).toList();
+    _words = widget.initialWords.map(_makeEntry).toList();
+    _tags = widget.initialTags.map(_makeEntry).toList();
     _hideAi = widget.initialHideAi;
+  }
+
+  _MuteEntry _makeEntry(String value, {bool editing = false}) {
+    final entry = _MuteEntry(value, editing: editing);
+    entry.focusNode.addListener(() {
+      if (!entry.focusNode.hasFocus && entry.editing && mounted &&
+          (_words.contains(entry) || _tags.contains(entry))) {
+        setState(() => entry.editing = false);
+      }
+    });
+    return entry;
   }
 
   @override
@@ -881,9 +901,21 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
   }
 
   void _add(List<_MuteEntry> entries) {
-    final entry = _MuteEntry('');
+    final entry = _makeEntry('', editing: true);
     setState(() => entries.add(entry));
     _focusAfterBuild(entry, entries);
+  }
+
+  void _edit(_MuteEntry entry, List<_MuteEntry> entries) {
+    setState(() => entry.editing = true);
+    _focusAfterBuild(entry, entries);
+  }
+
+  void _finishEditing(_MuteEntry entry) {
+    entry.focusNode.unfocus();
+    if (entry.editing && mounted) {
+      setState(() => entry.editing = false);
+    }
   }
 
   void _remove(List<_MuteEntry> entries, _MuteEntry entry) {
@@ -934,23 +966,37 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                 IconButton(
                   key: Key(keyPrefix + 'Edit_' + entries.indexOf(entry).toString()),
                   tooltip: l10n.commonEdit,
-                  onPressed: () => _focusAfterBuild(entry, entries),
+                  onPressed: () => _edit(entry, entries),
                   icon: const Icon(Icons.edit_outlined),
                 ),
                 Expanded(
-                  child: TextFormField(
-                    key: Key(keyPrefix + 'Entry_' + entries.indexOf(entry).toString()),
-                    initialValue: entry.value,
-                    focusNode: entry.focusNode,
-                    onChanged: (text) => entry.value = text,
-                    maxLines: 1,
-                    textInputAction: TextInputAction.done,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      hintText: title,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
+                  child: entry.editing
+                      ? TextFormField(
+                          key: Key(keyPrefix + 'Entry_' + entries.indexOf(entry).toString()),
+                          initialValue: entry.value,
+                          focusNode: entry.focusNode,
+                          onChanged: (text) => entry.value = text,
+                          onFieldSubmitted: (_) => _finishEditing(entry),
+                          onTapOutside: (_) => _finishEditing(entry),
+                          maxLines: 1,
+                          textInputAction: TextInputAction.done,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            hintText: title,
+                            border: const OutlineInputBorder(),
+                          ),
+                        )
+                      : Padding(
+                          key: Key(keyPrefix + 'Display_' + entries.indexOf(entry).toString()),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 12,
+                          ),
+                          child: Text(
+                            entry.value,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                 ),
                 IconButton(
                   key: Key(keyPrefix + 'Delete_' + entries.indexOf(entry).toString()),
