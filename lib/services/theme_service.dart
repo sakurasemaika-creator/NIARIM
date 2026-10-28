@@ -9,6 +9,14 @@ import '../utils/tolerant_preferences.dart';
 class ThemeService extends ChangeNotifier {
   static const _prefsPresetsKey = 'theme_presets';
 
+  // One-time rollback of the BUILT-IN palette to the original 28 examples
+  // (before the independent-foreground review). The source definitions
+  // already retain that original base palette; persisted built-in snapshots
+  // could nevertheless keep a later proposed revision indefinitely.
+  // Custom themes, their ordering, and the custom current theme are untouched.
+  static const _originalBuiltInPaletteRestoreKey =
+      'theme_original_builtin_palette_restored_v1';
+
   /// 現在の色そのもの（JSON）。テーマ一覧から配色だけ取り込んだ状態は
   /// どのプリセットとも一致しないため、IDだけでは復元できない。
   static const _prefsCurrentJsonKey = 'theme_current_json';
@@ -419,6 +427,11 @@ class ThemeService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
+    final shouldRestoreBuiltIns =
+        prefs.getBool(_originalBuiltInPaletteRestoreKey) != true;
+    final originalBuiltIns = {
+      for (final preset in _builtInPresets) preset.id: preset,
+    };
     final raw = prefs.readStringList(_prefsPresetsKey);
     if (raw == null || raw.isEmpty) {
       _presets.addAll(_builtInPresets);
@@ -444,6 +457,19 @@ class ThemeService extends ChangeNotifier {
       final missing = _builtInPresets.where((p) => !existingIds.contains(p.id));
       if (missing.isNotEmpty) _presets.addAll(missing);
     }
+    if (shouldRestoreBuiltIns) {
+      // The built-in ID denotes a shipped palette, even when an older
+      // revision was written to SharedPreferences. Restore its original
+      // colors in the same slot, while keeping the favorite flag and list
+      // order. User-created presets with independent IDs are never modified.
+      for (var i = 0; i < _presets.length; i++) {
+        final stored = _presets[i];
+        final original = originalBuiltIns[stored.id];
+        if (original != null) {
+          _presets[i] = original.copyWith(isFavorite: stored.isFavorite);
+        }
+      }
+    }
     // 現在の色は「一覧のどれか」とは限らないため、保存したJSONから復元する。
     final currentJson = prefs.readString(_prefsCurrentJsonKey);
     AppThemePreset? restoredCurrent;
@@ -460,9 +486,23 @@ class ThemeService extends ChangeNotifier {
       }
     }
     if (restoredCurrent != null) {
-      _current = restoredCurrent;
+      // Only an explicitly selected built-in should follow the rollback.
+      // A color-sampled/current-custom theme is a separate saved creation,
+      // so preserve all of its foreground tokens exactly.
+      final original = shouldRestoreBuiltIns
+          ? originalBuiltIns[restoredCurrent.id]
+          : null;
+      _current = original == null
+          ? restoredCurrent
+          : original.copyWith(isFavorite: restoredCurrent.isFavorite);
     } else if (_presets.isNotEmpty) {
       _current = _presets.first;
+    }
+    if (shouldRestoreBuiltIns) {
+      // Persist before marking the migration, so a failed write can be
+      // retried without silently leaving the proposed right-side colors.
+      await _persist();
+      await prefs.setBool(_originalBuiltInPaletteRestoreKey, true);
     }
   }
 
