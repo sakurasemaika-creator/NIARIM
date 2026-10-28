@@ -74,15 +74,23 @@ void main() {
       tester.element(find.byType(CommunityScreen)))!;
     await tester.tap(find.byKey(const Key('communityContentFilterButton')));
     await tester.pumpAndSettle();
-    final words = find.byKey(const Key('communityMutedWordsField'));
-    final tags = find.byKey(const Key('communityMutedTagsField'));
+    final words = find.byKey(const Key('communityMutedWordsEntry_0'));
+    final tags = find.byKey(const Key('communityMutedTagsEntry_0'));
     expect(tester.getRect(words).top, lessThan(tester.getRect(tags).top));
     expect(tester.getRect(tags).top,
         lessThan(tester.getRect(find.byType(SwitchListTile)).top));
-    await tester.enterText(words, 'ネタバレ、ホラー');
+    await tester.tap(find.byKey(const Key('communityMutedWordsAddButton')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('communityMutedWordsEntry_1')), 'ネタバレ');
     await tester.pumpAndSettle();
     await capture(root, '01_mute_words', tester);
-    await tester.enterText(tags, '#手描き、#作画');
+    await tester.ensureVisible(find.byKey(const Key('communityMutedTagsAddButton')));
+    await tester.tap(find.byKey(const Key('communityMutedTagsAddButton')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('communityMutedTagsEntry_1')), '手描き');
+    await tester.ensureVisible(find.byKey(const Key('communityMutedTagsEntry_1')));
     await tester.pumpAndSettle();
     await capture(root, '02_mute_tags', tester);
     // Cancel screenshot edits; the underlying service remains untouched.
