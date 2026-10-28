@@ -41,6 +41,11 @@ void main() {
       'language': language,
       'force_pc_mode': pc ? 1 : 0,
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      // These UI tests exercise an EXISTING user's custom theme, not the
+      // first-run migration which restores the original built-in palettes.
+      // Without this marker, ThemeService.init replaces an id=default_light
+      // custom theme before the UI under test is even built.
+      'theme_original_builtin_palette_restored_v1': true,
       if (theme != null) 'theme_current_json': jsonEncode(theme.toJson()),
     });
     final directory = Directory.systemTemp.createTempSync('home-entry-');
