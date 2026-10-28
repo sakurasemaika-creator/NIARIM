@@ -8,6 +8,8 @@ import 'package:niarim/screens/community/community_work_settings_screen.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/google_auth_service.dart';
+import 'package:niarim/services/premium_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,6 +28,8 @@ void main() {
         ChangeNotifierProvider.value(value: service),
         ChangeNotifierProvider.value(value: auth),
         ChangeNotifierProvider(create: (_) => CommunityPreviewService()),
+        ChangeNotifierProvider(create: (_) => SettingsService()),
+        ChangeNotifierProvider(create: (_) => PremiumService()),
       ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
