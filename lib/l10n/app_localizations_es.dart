@@ -7215,15 +7215,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityMutedWordsHint =>
-      'Oculta las obras cuyo título contiene este texto (no se comprueban los nombres de los creadores ni las etiquetas). Separa varias entradas con comas o saltos de línea.';
+      'Oculta las obras cuyos títulos contienen estas palabras (no se comprueban creadores ni etiquetas). Añade y edita cada palabra por separado.';
 
   @override
   String get communityMutedTags => 'Etiquetas silenciadas';
 
   @override
   String get communityMutedTagsHint =>
-      'Oculta las obras que tienen esta etiqueta en la Plaza de Obras (se ignora el # inicial). Separa varias entradas con comas o saltos de línea.';
+      'Oculta las obras con etiquetas coincidentes en la Plaza de Obras. Añade cada etiqueta por separado; no hace falta #.';
 
+  @override
+  String get communityMuteAddNew => 'Añadir nuevo';
   @override
   String get communityContainsGenerativeAiImageVideo =>
       'Contiene imágenes o vídeo de IA generativa';

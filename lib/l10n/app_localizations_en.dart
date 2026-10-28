@@ -7103,15 +7103,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityMutedWordsHint =>
-      'Hides works whose title contains this text (creator names and tags aren’t checked). Separate multiple entries with commas or new lines.';
+      'Hides works whose titles contain these words (not creator names or tags). Add and edit each word separately.';
 
   @override
   String get communityMutedTags => 'Muted tags';
 
   @override
   String get communityMutedTagsHint =>
-      'Hides works that have this tag in the Work Plaza (a leading # is ignored). Separate multiple entries with commas or new lines.';
+      'Hides works with matching Work Plaza tags. Add each tag separately; no # is needed.';
 
+  @override
+  String get communityMuteAddNew => 'Add new';
   @override
   String get communityContainsGenerativeAiImageVideo =>
       'Contains generative-AI images or video';

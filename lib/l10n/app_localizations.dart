@@ -12632,7 +12632,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityMutedWordsHint.
   ///
   /// In ja, this message translates to:
-  /// **'作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。カンマ・「、」・改行で区切って複数指定できます'**
+  /// **'作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。1件ずつ追加・編集できます。'**
   String get communityMutedWordsHint;
 
   /// No description provided for @communityMutedTags.
@@ -12644,8 +12644,14 @@ abstract class AppLocalizations {
   /// No description provided for @communityMutedTagsHint.
   ///
   /// In ja, this message translates to:
-  /// **'作品広場で作品に設定されたタグが一致すると非表示にします（先頭の#は無視されます）。カンマ・「、」・改行で区切って複数指定できます'**
+  /// **'作品広場で一致するタグの作品を非表示にします。タグを1件ずつ登録でき、#は不要です。'**
   String get communityMutedTagsHint;
+
+  /// No description provided for @communityMuteAddNew.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規追加'**
+  String get communityMuteAddNew;
 
   /// No description provided for @communityContainsGenerativeAiImageVideo.
   ///

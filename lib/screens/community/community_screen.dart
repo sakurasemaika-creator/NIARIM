@@ -6,7 +6,6 @@ import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../services/api/community_api.dart' show RankingPeriod;
 import '../../widgets/ad_banner_mock_widget.dart';
-import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'community_edit_feedback.dart';
@@ -244,139 +243,20 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   Future<void> _showContentFilters(CommunityService service) async {
-    // Pre-fill with the saved filters, not the empty ones before they load.
     await service.contentFiltersReady;
     if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-    // The dialog disposes these once it has really left the tree: its
-    // closing transition still reads them after showDialog returns.
-    final words = TextEditingController(text: service.mutedWords.join(', '));
-    final tags = TextEditingController(text: service.mutedTags.join(', '));
-    var hideAi = service.hideGenerativeAiImageVideo;
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final dialogBackground = opaqueOver(
-      theme.dialogTheme.backgroundColor ?? scheme.surfaceContainerHigh,
-      theme.scaffoldBackgroundColor,
-    );
-    final activeTrack = opaqueOver(
-      scheme.primary.withValues(alpha: 0.2),
-      dialogBackground,
-    );
-    final inactiveTrack = opaqueOver(
-      theme.scaffoldBackgroundColor,
-      dialogBackground,
-    );
-    final trackOutline = scheme.onSurface;
     final result = await showDialog<_ContentFilterInput>(
       context: context,
-      builder: (context) => DisposeOnUnmount(
-        controller: words,
-        builder: (context) => DisposeOnUnmount(
-          controller: tags,
-          builder: (context) => StatefulBuilder(
-            builder: (context, setDialogState) => AlertDialog(
-              insetPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 24,
-              ),
-              title: Text(l10n.communityContentFilterTitle),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      key: const Key('communityMutedWordsField'),
-                      controller: words,
-                      keyboardType: TextInputType.multiline,
-                      minLines: 1,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        labelText: l10n.communityMutedWords,
-                        helper: Text(
-                          l10n.communityMutedWordsHint,
-                          softWrap: true,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      key: const Key('communityMutedTagsField'),
-                      controller: tags,
-                      keyboardType: TextInputType.multiline,
-                      minLines: 1,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        labelText: l10n.communityMutedTags,
-                        helper: Text(
-                          l10n.communityMutedTagsHint,
-                          softWrap: true,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SwitchTheme(
-                      data: SwitchTheme.of(context).copyWith(
-                        trackOutlineWidth: const WidgetStatePropertyAll(2),
-                      ),
-                      child: SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        activeTrackColor: activeTrack,
-                        activeThumbColor: scheme.onPrimary,
-                        thumbIcon: WidgetStatePropertyAll(
-                          Icon(
-                            Icons.circle_outlined,
-                            color: scheme.onSurface,
-                            size: 20,
-                          ),
-                        ),
-                        inactiveTrackColor: inactiveTrack,
-                        inactiveThumbColor: scheme.onSurfaceVariant,
-                        trackOutlineColor: WidgetStatePropertyAll(trackOutline),
-                        value: hideAi,
-                        onChanged: (v) => setDialogState(() => hideAi = v),
-                        title: Text(l10n.communityHideGenerativeAiImageVideo),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  style: TextButton.styleFrom(minimumSize: const Size(64, 48)),
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(l10n.commonCancel),
-                ),
-                FilledButton(
-                  key: const Key('communityContentFilterSaveButton'),
-                  onPressed: () => Navigator.pop(
-                    context,
-                    _ContentFilterInput(
-                      hideAi: hideAi,
-                      words: words.text,
-                      tags: tags.text,
-                    ),
-                  ),
-                  child: Text(l10n.commonSave),
-                ),
-              ],
-            ),
-          ),
-        ),
+      builder: (_) => _ContentFilterDialog(
+        initialWords: service.mutedWords.toList(),
+        initialTags: service.mutedTags.toList(),
+        initialHideAi: service.hideGenerativeAiImageVideo,
       ),
     );
     if (result == null) return;
     await service.setHideGenerativeAiImageVideo(result.hideAi);
-    await service.setMutedWords(
-      CommunityService.parseFilterInput(result.words),
-    );
-    await service.setMutedTags(CommunityService.parseFilterInput(result.tags));
+    await service.setMutedWords(result.words);
+    await service.setMutedTags(result.tags);
   }
 
   void _openMyWorks() {
@@ -932,8 +812,225 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 }
 
-/// What the viewer entered in the display-filter dialog, read before the
-/// dialog's text controllers are disposed.
+
+class _MuteEntry {
+  _MuteEntry(this.value);
+  String value;
+  final FocusNode focusNode = FocusNode();
+
+  void dispose() => focusNode.dispose();
+}
+
+/// Edit the draft only. Save commits all fields; Cancel discards everything.
+class _ContentFilterDialog extends StatefulWidget {
+  const _ContentFilterDialog({
+    required this.initialWords,
+    required this.initialTags,
+    required this.initialHideAi,
+  });
+
+  final List<String> initialWords;
+  final List<String> initialTags;
+  final bool initialHideAi;
+
+  @override
+  State<_ContentFilterDialog> createState() => _ContentFilterDialogState();
+}
+
+class _ContentFilterDialogState extends State<_ContentFilterDialog> {
+  late final List<_MuteEntry> _words;
+  late final List<_MuteEntry> _tags;
+  late bool _hideAi;
+
+  @override
+  void initState() {
+    super.initState();
+    _words = widget.initialWords.map(_MuteEntry.new).toList();
+    _tags = widget.initialTags.map(_MuteEntry.new).toList();
+    _hideAi = widget.initialHideAi;
+  }
+
+  @override
+  void dispose() {
+    for (final entry in [..._words, ..._tags]) {
+      entry.dispose();
+    }
+    super.dispose();
+  }
+
+  void _focusAfterBuild(_MuteEntry entry, List<_MuteEntry> entries) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && entries.contains(entry)) entry.focusNode.requestFocus();
+    });
+  }
+
+  void _add(List<_MuteEntry> entries) {
+    final entry = _MuteEntry('');
+    setState(() => entries.add(entry));
+    _focusAfterBuild(entry, entries);
+  }
+
+  void _remove(List<_MuteEntry> entries, _MuteEntry entry) {
+    setState(() => entries.remove(entry));
+    // Let the removed TextFormField unmount before releasing its focus node.
+    WidgetsBinding.instance.addPostFrameCallback((_) => entry.dispose());
+  }
+
+  Widget _section({
+    required String title,
+    required String hint,
+    required String keyPrefix,
+    required List<_MuteEntry> entries,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          hint,
+          softWrap: true,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        TextButton.icon(
+          key: Key(keyPrefix + 'AddButton'),
+          onPressed: () => _add(entries),
+          icon: const Icon(Icons.add),
+          label: Text(l10n.communityMuteAddNew),
+        ),
+        for (final entry in entries)
+          Padding(
+            key: ObjectKey(entry),
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                IconButton(
+                  key: Key(keyPrefix + 'Edit_' + entries.indexOf(entry).toString()),
+                  tooltip: l10n.commonEdit,
+                  onPressed: () => _focusAfterBuild(entry, entries),
+                  icon: const Icon(Icons.edit_outlined),
+                ),
+                Expanded(
+                  child: TextFormField(
+                    key: Key(keyPrefix + 'Entry_' + entries.indexOf(entry).toString()),
+                    initialValue: entry.value,
+                    focusNode: entry.focusNode,
+                    onChanged: (text) => entry.value = text,
+                    maxLines: 1,
+                    textInputAction: TextInputAction.done,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: title,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  key: Key(keyPrefix + 'Delete_' + entries.indexOf(entry).toString()),
+                  tooltip: l10n.commonDelete,
+                  onPressed: () => _remove(entries, entry),
+                  icon: const Icon(Icons.delete_outline),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final background = opaqueOver(
+      theme.dialogTheme.backgroundColor ?? scheme.surfaceContainerHigh,
+      theme.scaffoldBackgroundColor,
+    );
+    return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      title: Text(l10n.communityContentFilterTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _section(
+              title: l10n.communityMutedWords,
+              hint: l10n.communityMutedWordsHint,
+              keyPrefix: 'communityMutedWords',
+              entries: _words,
+            ),
+            const SizedBox(height: 12),
+            _section(
+              title: l10n.communityMutedTags,
+              hint: l10n.communityMutedTagsHint,
+              keyPrefix: 'communityMutedTags',
+              entries: _tags,
+            ),
+            const SizedBox(height: 16),
+            SwitchTheme(
+              data: SwitchTheme.of(context).copyWith(
+                trackOutlineWidth: const WidgetStatePropertyAll(2),
+              ),
+              child: SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                activeTrackColor: opaqueOver(
+                  scheme.primary.withValues(alpha: 0.2),
+                  background,
+                ),
+                activeThumbColor: scheme.onPrimary,
+                thumbIcon: WidgetStatePropertyAll(
+                  Icon(Icons.circle_outlined, color: scheme.onSurface, size: 20),
+                ),
+                inactiveTrackColor: opaqueOver(
+                  theme.scaffoldBackgroundColor,
+                  background,
+                ),
+                inactiveThumbColor: scheme.onSurfaceVariant,
+                trackOutlineColor: WidgetStatePropertyAll(scheme.onSurface),
+                value: _hideAi,
+                onChanged: (value) => setState(() => _hideAi = value),
+                title: Text(l10n.communityHideGenerativeAiImageVideo),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          style: TextButton.styleFrom(minimumSize: const Size(64, 48)),
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          key: const Key('communityContentFilterSaveButton'),
+          onPressed: () => Navigator.pop(
+            context,
+            _ContentFilterInput(
+              hideAi: _hideAi,
+              words: _words.map((entry) => entry.value).toList(),
+              tags: _tags.map((entry) => entry.value).toList(),
+            ),
+          ),
+          child: Text(l10n.commonSave),
+        ),
+      ],
+    );
+  }
+}
+
 class _ContentFilterInput {
   const _ContentFilterInput({
     required this.hideAi,
@@ -942,6 +1039,6 @@ class _ContentFilterInput {
   });
 
   final bool hideAi;
-  final String words;
-  final String tags;
+  final List<String> words;
+  final List<String> tags;
 }

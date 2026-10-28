@@ -7228,15 +7228,17 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityMutedWordsHint =>
-      'Masque les œuvres dont le titre contient ce texte (les noms des créateurs et les tags ne sont pas pris en compte). Séparez plusieurs entrées par des virgules ou des retours à la ligne.';
+      'Masque les œuvres dont le titre contient ces mots (sans vérifier les auteurs ni les tags). Ajoutez et modifiez chaque mot séparément.';
 
   @override
   String get communityMutedTags => 'Tags masqués';
 
   @override
   String get communityMutedTagsHint =>
-      'Masque les œuvres qui portent ce tag sur la Place des œuvres (le # initial est ignoré). Séparez plusieurs entrées par des virgules ou des retours à la ligne.';
+      'Masque les œuvres portant ces tags sur la Place des œuvres. Ajoutez chaque tag séparément, sans #.';
 
+  @override
+  String get communityMuteAddNew => 'Ajouter';
   @override
   String get communityContainsGenerativeAiImageVideo =>
       'Contient des images ou vidéos générées par IA';

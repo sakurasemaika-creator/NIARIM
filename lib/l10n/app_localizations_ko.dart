@@ -6904,15 +6904,17 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityMutedWordsHint =>
-      '작품 제목에 이 문구가 포함된 작품을 표시하지 않습니다(투고자 이름・태그는 제외). 여러 개는 쉼표나 줄바꿈으로 구분해 입력하세요.';
+      '제목에 해당 단어가 포함된 작품을 숨깁니다(작성자 이름과 태그는 제외). 단어를 하나씩 추가하고 수정하세요.';
 
   @override
   String get communityMutedTags => '뮤트 태그';
 
   @override
   String get communityMutedTagsHint =>
-      '작품 광장에서 작품에 붙은 태그가 일치하는 작품을 표시하지 않습니다(앞의 #은 무시). 여러 개는 쉼표나 줄바꿈으로 구분해 입력하세요.';
+      '작품 광장에서 일치하는 태그가 있는 작품을 숨깁니다. 태그를 하나씩 추가하세요. #은 필요하지 않습니다.';
 
+  @override
+  String get communityMuteAddNew => '새로 추가';
   @override
   String get communityContainsGenerativeAiImageVideo => '생성형 AI 이미지·동영상 포함';
 

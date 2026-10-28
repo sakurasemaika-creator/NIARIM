@@ -9,41 +9,49 @@ import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// The plaza's display-filter dialog: it starts from the saved filters,
-/// splits what is typed the way the service documents (commas, 「、」 and new
-/// lines; a leading # on a tag is dropped), and closes without touching its
-/// text controllers after they are gone.
+/// Muted words and tags are managed as independent rows. Draft edits are
+/// persisted together on Save and discarded on Cancel.
 void main() {
-  Widget host(
-    CommunityService service, {
-    Locale locale = const Locale('ja'),
-  }) => MultiProvider(
-    providers: [
-      ChangeNotifierProvider<CommunityService>.value(value: service),
-      ChangeNotifierProvider<SettingsService>(create: (_) => SettingsService()),
-      ChangeNotifierProvider<PremiumService>(create: (_) => PremiumService()),
-      ChangeNotifierProvider<CommunityPreviewService>(
-        create: (_) => CommunityPreviewService(),
-      ),
-    ],
-    child: MaterialApp(
-      locale: locale,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: const CommunityScreen(),
-    ),
-  );
+  Widget host(CommunityService service, {Locale locale = const Locale('ja')}) =>
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<CommunityService>.value(value: service),
+          ChangeNotifierProvider<SettingsService>(
+            create: (_) => SettingsService(),
+          ),
+          ChangeNotifierProvider<PremiumService>(
+            create: (_) => PremiumService(),
+          ),
+          ChangeNotifierProvider<CommunityPreviewService>(
+            create: (_) => CommunityPreviewService(),
+          ),
+        ],
+        child: MaterialApp(
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const CommunityScreen(),
+        ),
+      );
 
   AppLocalizations l10nOf(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.byType(CommunityScreen)))!;
 
-  Future<void> openDialog(WidgetTester tester) async {
-    await tester.tap(find.byKey(const Key('communityContentFilterButton')));
+  Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+    await tester.ensureVisible(finder);
+    await tester.tap(finder);
     await tester.pumpAndSettle();
+  }
+
+  Future<void> openDialog(WidgetTester tester) async {
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityContentFilterButton')),
+    );
     expect(find.byType(AlertDialog), findsOneWidget);
   }
 
-  testWidgets('pre-fills the saved filters and parses every separator', (
+  testWidgets('pre-fills each row, edits with pencil and adds without commas', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({
@@ -55,50 +63,90 @@ void main() {
     await tester.pump();
     await openDialog(tester);
 
-    final words = find.byKey(const Key('communityMutedWordsField'));
-    final tags = find.byKey(const Key('communityMutedTagsField'));
-    final aiSwitch = find.byType(SwitchListTile);
-    expect(aiSwitch, findsOneWidget);
-    // Register muted words and tags BEFORE the AI-exclusion switch.
-    expect(tester.getTopLeft(words).dy,
-        lessThan(tester.getTopLeft(tags).dy));
-    expect(tester.getTopLeft(tags).dy,
-        lessThan(tester.getTopLeft(aiSwitch).dy));
-    expect(tester.widget<TextField>(words).controller!.text, '既存の語');
-    expect(tester.widget<TextField>(tags).controller!.text, '既存タグ');
+    final words0 = find.byKey(const Key('communityMutedWordsEntry_0'));
+    final tags0 = find.byKey(const Key('communityMutedTagsEntry_0'));
+    expect(tester.widget<TextFormField>(words0).initialValue, '既存の語');
+    expect(tester.widget<TextFormField>(tags0).initialValue, '既存タグ');
+    expect(tester.getTopLeft(words0).dy, lessThan(tester.getTopLeft(tags0).dy));
+    expect(tester.getTopLeft(tags0).dy,
+        lessThan(tester.getTopLeft(find.byType(SwitchListTile)).dy));
 
-    await tester.enterText(words, 'ネタバレ、ホラー\n予告, Spoiler，最終回');
-    await tester.enterText(tags, '#手描き、＃作画\n風景');
-    await tester.tap(find.byKey(const Key('communityContentFilterSaveButton')));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.byKey(const Key('communityMutedWordsEdit_0')));
+    await tester.enterText(words0, 'ネタバレ');
+    await tapVisible(tester, find.byKey(const Key('communityMutedWordsAddButton')));
+    await tester.enterText(
+      find.byKey(const Key('communityMutedWordsEntry_1')),
+      'ホラー',
+    );
+    await tapVisible(tester, find.byKey(const Key('communityMutedTagsEdit_0')));
+    await tester.enterText(tags0, '風景');
+    await tapVisible(tester, find.byKey(const Key('communityMutedTagsAddButton')));
+    await tester.enterText(
+      find.byKey(const Key('communityMutedTagsEntry_1')),
+      '手描き',
+    );
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityContentFilterSaveButton')),
+    );
 
     expect(find.byType(AlertDialog), findsNothing);
     expect(tester.takeException(), isNull);
-    expect(service.mutedWords, {'ネタバレ', 'ホラー', '予告', 'spoiler', '最終回'});
-    expect(service.mutedTags, {'手描き', '作画', '風景'});
+    expect(service.mutedWords, {'ネタバレ', 'ホラー'});
+    expect(service.mutedTags, {'風景', '手描き'});
   });
 
-  testWidgets('cancel keeps the saved filters', (tester) async {
+  testWidgets('trash removes one row; Cancel keeps the original settings', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
-      'community.mutedWords': ['既存の語'],
+      'community.mutedWords': ['残す', '消す'],
+      'community.mutedTags': ['タグ'],
     });
     final service = CommunityService();
     await tester.pumpWidget(host(service));
     await tester.pump();
     await openDialog(tester);
 
-    await tester.enterText(
-      find.byKey(const Key('communityMutedWordsField')),
-      '別の語',
+    await tapVisible(tester, find.byKey(const Key('communityMutedWordsDelete_1')));
+    expect(find.byKey(const Key('communityMutedWordsEntry_1')), findsNothing);
+    expect(
+      tester.widget<TextFormField>(
+        find.byKey(const Key('communityMutedWordsEntry_0')),
+      ).initialValue,
+      '残す',
     );
-    await tester.tap(find.text(l10nOf(tester).commonCancel));
-    await tester.pumpAndSettle();
-
+    await tapVisible(tester, find.text(l10nOf(tester).commonCancel));
+    expect(service.mutedWords, {'残す', '消す'});
+    await openDialog(tester);
+    expect(find.byKey(const Key('communityMutedWordsEntry_1')), findsOneWidget);
+    await tapVisible(tester, find.text(l10nOf(tester).commonCancel));
     expect(tester.takeException(), isNull);
-    expect(service.mutedWords, {'既存の語'});
   });
 
-  testWidgets('is localized: the buttons and labels follow the app language', (
+  testWidgets('blank additions do not save and tags need no #', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final service = CommunityService();
+    await tester.pumpWidget(host(service));
+    await tester.pump();
+    await openDialog(tester);
+
+    await tapVisible(tester, find.byKey(const Key('communityMutedWordsAddButton')));
+    await tapVisible(tester, find.byKey(const Key('communityMutedTagsAddButton')));
+    await tester.enterText(
+      find.byKey(const Key('communityMutedTagsEntry_0')),
+      '作画',
+    );
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityContentFilterSaveButton')),
+    );
+    expect(service.mutedWords, isEmpty);
+    expect(service.mutedTags, {'作画'});
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('localized section headings use the Kuramubon font', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -108,16 +156,14 @@ void main() {
     await openDialog(tester);
 
     final l10n = l10nOf(tester);
-    expect(l10n.localeName, 'en');
     expect(find.text(l10n.commonCancel), findsOneWidget);
     expect(find.text(l10n.commonSave), findsOneWidget);
-    expect(find.text(l10n.communityMutedWords), findsOneWidget);
-    expect(find.text(l10n.communityMutedTags), findsOneWidget);
+    for (final label in [l10n.communityMutedWords, l10n.communityMutedTags]) {
+      expect(tester.widget<Text>(find.text(label)).style?.fontFamily, 'Kuramubon');
+    }
+    expect(find.text(l10n.communityMuteAddNew), findsNWidgets(2));
     expect(find.textContaining('キャンセル'), findsNothing);
-    expect(find.textContaining('保存'), findsNothing);
-
-    await tester.tap(find.text(l10n.commonCancel));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text(l10n.commonCancel));
     expect(tester.takeException(), isNull);
   });
 }

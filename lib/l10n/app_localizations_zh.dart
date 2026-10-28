@@ -6819,16 +6819,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityMutedWords => '静音标题';
 
   @override
-  String get communityMutedWordsHint =>
-      '隐藏标题中包含这些文字的作品（不检查投稿者名称和标签）。多个条目可用逗号、顿号或换行分隔。';
+  String get communityMutedWordsHint => '隐藏标题中包含这些文字的作品（不检查作者名称和标签）。请逐条添加或编辑。';
 
   @override
   String get communityMutedTags => '静音标签';
 
   @override
-  String get communityMutedTagsHint =>
-      '隐藏在作品广场中带有这些标签的作品（开头的 # 会被忽略）。多个条目可用逗号、顿号或换行分隔。';
+  String get communityMutedTagsHint => '隐藏作品广场中标签匹配的作品。请逐条添加标签，无需输入 #。';
 
+  @override
+  String get communityMuteAddNew => '新增';
   @override
   String get communityContainsGenerativeAiImageVideo => '包含生成式 AI 图像或视频';
 
@@ -14226,16 +14226,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityMutedWords => '靜音標題';
 
   @override
-  String get communityMutedWordsHint =>
-      '隱藏標題中包含這些文字的作品（不檢查投稿者名稱和標籤）。多個項目可用逗號、頓號或換行分隔。';
+  String get communityMutedWordsHint => '隱藏標題中包含這些文字的作品（不檢查作者名稱和標籤）。請逐條新增或編輯。';
 
   @override
   String get communityMutedTags => '靜音標籤';
 
   @override
-  String get communityMutedTagsHint =>
-      '隱藏在作品廣場中帶有這些標籤的作品（開頭的 # 會被忽略）。多個項目可用逗號、頓號或換行分隔。';
+  String get communityMutedTagsHint => '隱藏作品廣場中標籤相符的作品。請逐條新增標籤，無需輸入 #。';
 
+  @override
+  String get communityMuteAddNew => '新增';
   @override
   String get communityContainsGenerativeAiImageVideo => '包含生成式 AI 圖像或影片';
 
