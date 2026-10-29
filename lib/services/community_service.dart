@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/community_follow_notification.dart';
+import 'community_milestone_store.dart';
 import '../models/community_repost.dart';
 import '../models/community_work.dart';
 import 'api/community_api.dart';
@@ -69,6 +69,10 @@ class CommunityService extends ChangeNotifier {
 
   CommunityService({this.api}) {
     contentFiltersReady = _loadContentFilters();
+    if (api == null) {
+      // No notifications about individual follows, even in demo mode.
+      loadMilestones();
+    }
   }
 
   /// Completes after persisted display filters have been restored.
@@ -363,15 +367,9 @@ class CommunityService extends ChangeNotifier {
   late final Map<String, Set<String>> _dummyFollowersByAuthor = api == null
       ? _buildDummyFollowersByAuthor(_works)
       : {};
-  // フォロー通知（Task#134継続：「フォローされたら通知が来るようにして
-  // ほしい」という要望を受けた実装）。バックエンド未実装かつ実際の
-  // マルチユーザー環境が無いため、新しいフォローをリアルタイムに検知
-  // することはできない（他のダミー作者は自律的に行動しない）。ここでは
-  // 「自分（kDummySelfAuthorId）を既にフォローしているダミー作者」を
-  // 過去に届いた通知として初期化時に生成し、アプリ内通知一覧
-  // （21.3節で推奨された方式）として表示する。詳細は22.6節参照。
-  late final List<CommunityFollowNotification> _followNotifications =
-      api == null ? _buildFollowNotifications() : [];
+  final CommunityMilestoneStore _milestoneStore = CommunityMilestoneStore();
+  List<CommunityMilestoneEvent> _milestoneEvents = [];
+  final Map<String, int> _followerCounts = {};
 
   @visibleForTesting
   void replaceWorksForTest(Iterable<CommunityWork> works) {
@@ -460,6 +458,8 @@ class CommunityService extends ChangeNotifier {
     if (_currentUserId == id) return;
     if (_currentUserId != null) forgetOwner();
     _currentUserId = id;
+    _milestoneEvents = [];
+    loadMilestones();
     notifyListeners();
   }
 
@@ -520,6 +520,9 @@ class CommunityService extends ChangeNotifier {
     }
     _pruneUnconfirmed();
     notifyListeners();
+    await _observeOwnMilestones(
+      ownWorks: [for (final id in _ownIds) if (byId(id) case final work?) work],
+    );
     final id = page.authorId;
     if (accountKey != null && id != null) {
       try {
@@ -696,6 +699,8 @@ class CommunityService extends ChangeNotifier {
   void forgetOwner() {
     _accountRevision++;
     _currentUserId = null;
+    _milestoneEvents = [];
+    _followerCounts.clear();
     _lastError = null;
     _isSocialLoading = false;
     _hasLoadedSocial = false;
@@ -1102,48 +1107,77 @@ class CommunityService extends ChangeNotifier {
       .firstOrNull;
 
   /// 作者のフォロワー数（公開するのは件数だけ）。
-  int followerCountOf(String authorId) => followerIdsOf(authorId).length;
+  int followerCountOf(String authorId) =>
+      _followerCounts[authorId] ?? (api == null ? followerIdsOf(authorId).length : 0);
 
-  // ─── フォロー通知（Task#134継続） ────────────────────────────────
+  /// A person's follower count is public, but individual followers are not.
+  List<CommunityMilestoneEvent> get milestoneNotifications =>
+      List.unmodifiable(_milestoneEvents);
 
-  /// 自分（kDummySelfAuthorId）宛てのフォロー通知一覧（新着順）。
-  List<CommunityFollowNotification> get followNotifications {
-    final list = [..._followNotifications]
-      ..sort((a, b) => b.followedAt.compareTo(a.followedAt));
-    return List.unmodifiable(list);
-  }
+  int get unreadMilestoneCount =>
+      _milestoneEvents.where((event) => !event.read).length;
 
-  /// 未読のフォロー通知数（コミュニティ画面の通知ベルのバッジに使う）。
-  int get unreadFollowNotificationCount =>
-      _followNotifications.where((n) => !n.isRead).length;
-
-  /// フォロー通知を全て既読にする（通知一覧画面を開いたタイミングで
-  /// 呼ぶ想定）。
-  void markAllFollowNotificationsRead() {
-    if (_followNotifications.every((n) => n.isRead)) return;
-    for (var i = 0; i < _followNotifications.length; i++) {
-      _followNotifications[i] = _followNotifications[i].copyWith(isRead: true);
-    }
+  Future<void> loadMilestones() async {
+    final account = _selfId;
+    if (account == null) return;
+    final items = await _milestoneStore.load(account);
+    if (_disposed || _selfId != account) return;
+    _milestoneEvents = items;
     notifyListeners();
   }
 
-  List<CommunityFollowNotification> _buildFollowNotifications() {
-    final random = Random(31);
-    final followerIds =
-        (_dummyFollowersByAuthor[kDummySelfAuthorId] ?? const <String>{})
-            .toList()
-          ..sort();
-    return [
-      for (final id in followerIds)
-        CommunityFollowNotification(
-          id: 'follow_$id',
-          followerId: id,
-          followerName: authorNameOf(id) ?? id,
-          followedAt: DateTime.now().subtract(
-            Duration(hours: random.nextInt(240)),
-          ),
-        ),
-    ];
+  Future<void> markMilestonesRead() async {
+    final account = _selfId;
+    if (account == null) return;
+    _milestoneEvents = await _milestoneStore.markAllRead(account);
+    if (!_disposed && _selfId == account) notifyListeners();
+  }
+
+  Future<void> _observeOwnMilestones({
+    int? followers,
+    Iterable<CommunityWork>? ownWorks,
+  }) async {
+    final account = _selfId;
+    if (account == null) return;
+    final snapshots = ownWorks == null
+        ? null
+        : <String, (String, int)>{
+            for (final work in ownWorks)
+              work.id: (work.title, work.bookmarkCount),
+          };
+    final events = await _milestoneStore.observe(
+      account,
+      followers: followers,
+      bookmarks: snapshots,
+    );
+    if (!_disposed && _selfId == account) {
+      _milestoneEvents = events;
+      notifyListeners();
+    }
+  }
+
+  /// Read only current aggregate counts from the server; prior counts live
+  /// on this device. First observation establishes a baseline.
+  Future<void> refreshFollowerCount(String authorId) async {
+    final client = api;
+    if (client == null) {
+      if (isOwnAuthor(authorId)) {
+        await _observeOwnMilestones(followers: followerIdsOf(authorId).length);
+      }
+      return;
+    }
+    final revision = _accountRevision;
+    try {
+      final count = await client.followerCount(authorId);
+      if (!_isCurrentAccount(revision)) return;
+      _followerCounts[authorId] = count;
+      notifyListeners();
+      if (isOwnAuthor(authorId)) {
+        await _observeOwnMilestones(followers: count);
+      }
+    } on NiarimApiException catch (error) {
+      if (_isCurrentAccount(revision)) _lastError = error;
+    }
   }
 
   /// フォロー中の作者タブに表示する一覧（新着順）。フォロー中の作者本人が
