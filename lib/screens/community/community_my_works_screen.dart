@@ -189,18 +189,26 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                 ],
               ],
             ),
+            actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: Text(l10n.commonCancel),
-              ),
-              FilledButton.icon(
-                key: const Key('communityGoogleSignInPromptConnect'),
-                onPressed: auth.isConfigured
-                    ? () => Navigator.pop(dialogContext, true)
-                    : null,
-                icon: const Icon(Icons.account_circle_outlined),
-                label: Text(l10n.communitySignInPromptConnect),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  FilledButton.icon(
+                    key: const Key('communityGoogleSignInPromptConnect'),
+                    onPressed: auth.isConfigured
+                        ? () => Navigator.pop(dialogContext, true)
+                        : null,
+                    icon: const Icon(Icons.account_circle_outlined),
+                    label: Text(l10n.communitySignInPromptConnect),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                    child: Text(l10n.commonCancel),
+                  ),
+                ],
               ),
             ],
           ),
