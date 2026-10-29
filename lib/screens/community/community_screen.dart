@@ -246,7 +246,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   Widget _savedSearchButton(AppLocalizations l10n) => PopupMenuButton<String>(
     key: const Key('communitySavedSearchMenu'),
     tooltip: l10n.communitySavedSearches,
-    icon: const Icon(Icons.bookmarks_outlined),
+    icon: const Icon(Icons.saved_search),
     itemBuilder: (_) => [
       PopupMenuItem(value: 'save', child: Text(l10n.communitySaveSearch)),
       for (var i = 0; i < _savedSearches.length; i++)
@@ -807,6 +807,12 @@ class _CommunityScreenState extends State<CommunityScreen>
                           ),
                         ),
                       ),
+                      IconButton(
+                        key: const Key('communityContentFilterButton'),
+                        icon: const Icon(Icons.tune),
+                        tooltip: l10n.communityContentFilterTitle,
+                        onPressed: () => _showContentFilters(communityService),
+                      ),
                       SizedBox(
                         width: filterWidth,
                         height: 48,
@@ -815,12 +821,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                           onChanged: (v) =>
                               setState(() => _videoTypeFilter = v),
                         ),
-                      ),
-                      IconButton(
-                        key: const Key('communityContentFilterButton'),
-                        icon: const Icon(Icons.tune),
-                        tooltip: l10n.communityContentFilterTitle,
-                        onPressed: () => _showContentFilters(communityService),
                       ),
                       _savedSearchButton(l10n),
                       if (shortMode)
