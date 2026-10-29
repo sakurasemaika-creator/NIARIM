@@ -158,10 +158,7 @@ void main() {
               locale.toLanguageTag().toLowerCase(),
             );
             if (state == 'search' || state == 'tag-search') {
-              if (find.byType(TextField).evaluate().isEmpty) {
-                await tester.tap(find.byTooltip(l10n.commonSearch));
-                await tester.pumpAndSettle();
-              }
+              expect(find.byKey(const Key('communitySearchInput')), findsOneWidget);
               if (state == 'tag-search') {
                 await tester.tap(
                   find.byKey(const Key('communitySearchModeToggle')),
@@ -169,33 +166,21 @@ void main() {
                 await tester.pumpAndSettle();
               }
             } else if (state == 'portrait') {
-              final portrait = find.byTooltip(l10n.communityShortsModeTooltip);
-              if (portrait.evaluate().isEmpty) {
-                await tester.tap(
-                  find.byTooltip(l10n.communityVideoTypeFilterTooltip),
-                );
-                await tester.pumpAndSettle();
-                await tester.tap(
-                  find.byWidgetPredicate(
-                    (w) =>
-                        w is CheckedPopupMenuItem<VideoTypeFilter> &&
-                        w.value == VideoTypeFilter.shortOnly,
-                  ),
-                );
-                await tester.pumpAndSettle();
-              }
-              expect(
-                tester
-                    .widget<VideoTypeFilterButton>(
-                      find.byType(VideoTypeFilterButton),
-                    )
-                    .value,
-                VideoTypeFilter.shortOnly,
+              await tester.tap(find.byKey(const Key('communitySortButton')));
+              await tester.pumpAndSettle();
+              final shortChoice = find.byWidgetPredicate(
+                (w) => w is PopupMenuItem<String> && w.value == 'type:1',
               );
+              await tester.tap(shortChoice);
+              await tester.pumpAndSettle();
+              await tester.tap(find.byKey(const Key('communitySortButton')));
+              await tester.pumpAndSettle();
               expect(
-                find.byTooltip(l10n.communityShortsModeTooltip),
+                find.text(l10n.communityShortsModeTooltip),
                 findsOneWidget,
               );
+              await tester.tapAt(const Offset(4, 4));
+              await tester.pumpAndSettle();
             } else if (state != 'new') {
               final label = state == 'ranking'
                   ? l10n.communityTabRanking
@@ -299,11 +284,11 @@ void main() {
                   ]
                 : [
                     l10n.communityFollowNotificationsTooltip,
-                    l10n.communityVideoTypeFilterTooltip,
+                    l10n.communitySortLabel,
+                    l10n.communityTileSize,
                     l10n.communityContentFilterTitle,
                     l10n.commonSearch,
                     l10n.layerPanelHelpTooltip,
-                    if (state == 'portrait') l10n.communityShortsModeTooltip,
                   ];
             for (final tip in tips) {
               final f = find.byTooltip(tip);
