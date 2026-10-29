@@ -27,24 +27,29 @@ class CommunityMilestoneEvent {
         isFollower: json['follower'] == true,
         count: (json['count'] as num?)?.toInt() ?? 0,
         workTitle: json['title'] as String?,
-        createdAt: DateTime.tryParse(json['date'] as String? ?? '') ??
+        createdAt:
+            DateTime.tryParse(json['date'] as String? ?? '') ??
             DateTime.fromMillisecondsSinceEpoch(0),
         read: json['read'] == true,
       );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'follower': isFollower,
-        'count': count,
-        'title': workTitle,
-        'date': createdAt.toIso8601String(),
-        'read': read,
-      };
+    'id': id,
+    'follower': isFollower,
+    'count': count,
+    'title': workTitle,
+    'date': createdAt.toIso8601String(),
+    'read': read,
+  };
 
   CommunityMilestoneEvent markedRead() => CommunityMilestoneEvent(
-        id: id, isFollower: isFollower, count: count,
-        createdAt: createdAt, workTitle: workTitle, read: true,
-      );
+    id: id,
+    isFollower: isFollower,
+    count: count,
+    createdAt: createdAt,
+    workTitle: workTitle,
+    read: true,
+  );
 }
 
 /// Only aggregate counts, last-seen counts and event history are stored.
@@ -66,7 +71,17 @@ class CommunityMilestoneStore {
   }
 
   static const thresholds = <int>[
-    10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000,
+    10,
+    50,
+    100,
+    500,
+    1000,
+    5000,
+    10000,
+    50000,
+    100000,
+    500000,
+    1000000,
   ];
   static const prefix = 'community.milestone.v1.';
 
@@ -85,9 +100,10 @@ class CommunityMilestoneStore {
   List<CommunityMilestoneEvent> _events(Map<String, dynamic> data) =>
       ((data['events'] as List?) ?? const [])
           .whereType<Map>()
-          .map((v) => CommunityMilestoneEvent.fromJson(
-                Map<String, dynamic>.from(v),
-              ))
+          .map(
+            (v) =>
+                CommunityMilestoneEvent.fromJson(Map<String, dynamic>.from(v)),
+          )
           .toList();
 
   Future<List<CommunityMilestoneEvent>> load(String accountId) async {
@@ -95,14 +111,15 @@ class CommunityMilestoneStore {
     return _events(_read(prefs, accountId));
   }
 
-  Future<List<CommunityMilestoneEvent>> markAllRead(String accountId) => _exclusive(() async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = _read(prefs, accountId);
-    final events = _events(data).map((e) => e.markedRead()).toList();
-    data['events'] = events.map((e) => e.toJson()).toList();
-    await prefs.setString(_key(accountId), jsonEncode(data));
-    return events;
-  });
+  Future<List<CommunityMilestoneEvent>> markAllRead(String accountId) =>
+      _exclusive(() async {
+        final prefs = await SharedPreferences.getInstance();
+        final data = _read(prefs, accountId);
+        final events = _events(data).map((e) => e.markedRead()).toList();
+        data['events'] = events.map((e) => e.toJson()).toList();
+        await prefs.setString(_key(accountId), jsonEncode(data));
+        return events;
+      });
 
   /// [bookmarks] maps work ids to (title, current bookmark count).
   /// Omitted values are left unchanged. This is account-scoped.
@@ -131,10 +148,15 @@ class CommunityMilestoneStore {
       if (before != null) {
         final crossed = greatestCrossed(before, followers);
         if (crossed != null) {
-          events.insert(0, CommunityMilestoneEvent(
-            id: 'followers-${DateTime.now().microsecondsSinceEpoch}-$crossed',
-            isFollower: true, count: crossed, createdAt: DateTime.now(),
-          ));
+          events.insert(
+            0,
+            CommunityMilestoneEvent(
+              id: 'followers-${DateTime.now().microsecondsSinceEpoch}-$crossed',
+              isFollower: true,
+              count: crossed,
+              createdAt: DateTime.now(),
+            ),
+          );
         }
       }
       data['followers'] = followers;
@@ -146,11 +168,16 @@ class CommunityMilestoneStore {
         if (before != null) {
           final crossed = greatestCrossed(before, current);
           if (crossed != null) {
-            events.insert(0, CommunityMilestoneEvent(
-              id: 'work-${entry.key}-${DateTime.now().microsecondsSinceEpoch}-$crossed',
-              isFollower: false, count: crossed,
-              workTitle: entry.value.$1, createdAt: DateTime.now(),
-            ));
+            events.insert(
+              0,
+              CommunityMilestoneEvent(
+                id: 'work-${entry.key}-${DateTime.now().microsecondsSinceEpoch}-$crossed',
+                isFollower: false,
+                count: crossed,
+                workTitle: entry.value.$1,
+                createdAt: DateTime.now(),
+              ),
+            );
           }
         }
         previousBookmarks[entry.key] = current;

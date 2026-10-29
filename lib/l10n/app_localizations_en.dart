@@ -7159,13 +7159,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityTagExactMatch =>
-      'Match tags exactly (off: partial match)';
+      'Exact match for search terms (off for partial match)';
 
   @override
-  String get communityMinimumViews => 'Min. views';
+  String get communityMinimumViews => 'Views';
 
   @override
-  String get communityMinimumBookmarks => 'Min. bookmarks';
+  String get communityMinimumBookmarks => 'Bookmarks';
 
   @override
   String get communityPostPeriodAll => 'Any time';
@@ -7885,4 +7885,78 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityCreatorLabel => 'Creator';
+
+  @override
+  String get communityThresholdAny => 'No condition';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '$count views or more';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '$count bookmarks or more';
+  }
+
+  @override
+  String get communityTileSize => 'Work tile size';
+
+  @override
+  String get communityMutedWordsEmpty => 'No muted keywords';
+
+  @override
+  String get communityMutedTagsEmpty => 'No muted tags';
+
+  @override
+  String get communityMuteShort => 'Mute';
+
+  @override
+  String get communityMuteConfirmTitle => 'Mute this user?';
+
+  @override
+  String get communityMuteConfirmBody => 'This user\'s works will be hidden.';
+
+  @override
+  String get communityMuteConfirmAction => 'Mute';
+
+  @override
+  String get communityUnmuteConfirmTitle => 'Unmute this user?';
+
+  @override
+  String get communityUnmuteConfirmAction => 'Unmute';
+
+  @override
+  String get communityMuteNo => 'No';
+
+  @override
+  String get communityMuteDone => 'User muted';
+
+  @override
+  String get communityUnmuteDone => 'User unmuted';
+
+  @override
+  String get communityMilestoneNotificationsTitle => 'Notifications';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return 'You reached $count followers';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '“$title” reached $count bookmarks';
+  }
+
+  @override
+  String get communitySearchHistory => 'Search history';
+
+  @override
+  String get communitySearchHistoryEmpty => 'No search history';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => 'Delete this saved search?';
+
+  @override
+  String get communitySortLabel => 'Sort';
 }

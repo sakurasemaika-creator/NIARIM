@@ -7271,13 +7271,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityTagExactMatch =>
-      'Coincidencia exacta de etiquetas (desactivado: parcial)';
+      'Coincidencia exacta (desactivar para parcial)';
 
   @override
-  String get communityMinimumViews => 'Visualizaciones mínimas';
+  String get communityMinimumViews => 'Vistas';
 
   @override
-  String get communityMinimumBookmarks => 'Guardados mínimos';
+  String get communityMinimumBookmarks => 'Marcadores';
 
   @override
   String get communityPostPeriodAll => 'Cualquier fecha';
@@ -8010,4 +8010,80 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityCreatorLabel => 'Creador';
+
+  @override
+  String get communityThresholdAny => 'Sin condición';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return 'Al menos $count vistas';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return 'Al menos $count marcadores';
+  }
+
+  @override
+  String get communityTileSize => 'Tamaño de las obras';
+
+  @override
+  String get communityMutedWordsEmpty => 'No hay palabras silenciadas';
+
+  @override
+  String get communityMutedTagsEmpty => 'No hay etiquetas silenciadas';
+
+  @override
+  String get communityMuteShort => 'Silenciar';
+
+  @override
+  String get communityMuteConfirmTitle => '¿Silenciar a este usuario?';
+
+  @override
+  String get communityMuteConfirmBody => 'Se ocultarán sus obras.';
+
+  @override
+  String get communityMuteConfirmAction => 'Silenciar';
+
+  @override
+  String get communityUnmuteConfirmTitle =>
+      '¿Dejar de silenciar a este usuario?';
+
+  @override
+  String get communityUnmuteConfirmAction => 'Activar';
+
+  @override
+  String get communityMuteNo => 'No';
+
+  @override
+  String get communityMuteDone => 'Usuario silenciado';
+
+  @override
+  String get communityUnmuteDone => 'Usuario reactivado';
+
+  @override
+  String get communityMilestoneNotificationsTitle => 'Notificaciones';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return 'Has alcanzado $count seguidores';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '«$title» alcanzó $count marcadores';
+  }
+
+  @override
+  String get communitySearchHistory => 'Historial de búsqueda';
+
+  @override
+  String get communitySearchHistoryEmpty => 'No hay historial';
+
+  @override
+  String get communityDeleteSavedSearchConfirm =>
+      '¿Eliminar esta búsqueda guardada?';
+
+  @override
+  String get communitySortLabel => 'Ordenar';
 }

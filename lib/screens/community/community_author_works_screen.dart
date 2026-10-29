@@ -24,9 +24,11 @@ Future<void> confirmCommunityAuthorMute(
   final approved = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: Text(mute
-          ? l10n.communityMuteConfirmTitle
-          : l10n.communityUnmuteConfirmTitle),
+      title: Text(
+        mute
+            ? l10n.communityMuteConfirmTitle
+            : l10n.communityUnmuteConfirmTitle,
+      ),
       content: mute ? Text(l10n.communityMuteConfirmBody) : null,
       actions: [
         TextButton(
@@ -35,9 +37,11 @@ Future<void> confirmCommunityAuthorMute(
         ),
         FilledButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: Text(mute
-              ? l10n.communityMuteConfirmAction
-              : l10n.communityUnmuteConfirmAction),
+          child: Text(
+            mute
+                ? l10n.communityMuteConfirmAction
+                : l10n.communityUnmuteConfirmAction,
+          ),
         ),
       ],
     ),
@@ -46,7 +50,9 @@ Future<void> confirmCommunityAuthorMute(
   await service.setAuthorMuted(authorId, mute);
   if (!context.mounted) return;
   ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(mute ? l10n.communityMuteDone : l10n.communityUnmuteDone)),
+    SnackBar(
+      content: Text(mute ? l10n.communityMuteDone : l10n.communityUnmuteDone),
+    ),
   );
 }
 
@@ -189,13 +195,15 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
               onPressed: () => _openShortsMode(filteredWorks, bookmarkedIds),
             ),
         ],
-        bottom: isSelf ? TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: l10n.communityAuthorTabWorks),
-            Tab(text: l10n.communityAuthorTabBookmarks),
-          ],
-        ) : null,
+        bottom: isSelf
+            ? TabBar(
+                controller: _tabController,
+                tabs: [
+                  Tab(text: l10n.communityAuthorTabWorks),
+                  Tab(text: l10n.communityAuthorTabBookmarks),
+                ],
+              )
+            : null,
       ),
       body: desktopCentered(
         context,
@@ -313,52 +321,56 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
             Expanded(
               child: isSelf
                   ? TabBarView(
-                controller: _tabController,
-                children: [
-                  // ─── 作品タブ ───────────────────────────────────
-                  SingleChildScrollView(
-                    child: filteredWorks.isEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Center(
-                              child: Text(
-                                l10n.communityNoWorksMessage,
-                                style: TextStyle(
-                                  color: scheme.onSurfaceVariant,
+                      controller: _tabController,
+                      children: [
+                        // ─── 作品タブ ───────────────────────────────────
+                        SingleChildScrollView(
+                          child: filteredWorks.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.all(32),
+                                  child: Center(
+                                    child: Text(
+                                      l10n.communityNoWorksMessage,
+                                      style: TextStyle(
+                                        color: scheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : CommunityWorkGrid(
+                                  works: filteredWorks,
+                                  bookmarkedIds: bookmarkedIds,
+                                  onTapWork: openWork,
+                                  onToggleBookmark: toggleBookmark,
                                 ),
-                              ),
-                            ),
-                          )
-                        : CommunityWorkGrid(
-                            works: filteredWorks,
-                            bookmarkedIds: bookmarkedIds,
-                            onTapWork: openWork,
-                            onToggleBookmark: toggleBookmark,
-                          ),
-                  ),
-                  // Private bookmarks are visible to their owner only.
-                  SingleChildScrollView(
-                    child: bookmarkedWorks.isEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Center(
-                              child: Text(l10n.communityBookmarksEmptyMessage),
-                            ),
-                          )
-                        : CommunityWorkGrid(
-                            works: bookmarkedWorks,
-                            bookmarkedIds: bookmarkedIds,
-                            onTapWork: openWork,
-                            onToggleBookmark: toggleBookmark,
-                          ),
-                  ),
-                ],
-              )
+                        ),
+                        // Private bookmarks are visible to their owner only.
+                        SingleChildScrollView(
+                          child: bookmarkedWorks.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.all(32),
+                                  child: Center(
+                                    child: Text(
+                                      l10n.communityBookmarksEmptyMessage,
+                                    ),
+                                  ),
+                                )
+                              : CommunityWorkGrid(
+                                  works: bookmarkedWorks,
+                                  bookmarkedIds: bookmarkedIds,
+                                  onTapWork: openWork,
+                                  onToggleBookmark: toggleBookmark,
+                                ),
+                        ),
+                      ],
+                    )
                   : SingleChildScrollView(
                       child: filteredWorks.isEmpty
                           ? Padding(
                               padding: const EdgeInsets.all(32),
-                              child: Center(child: Text(l10n.communityNoWorksMessage)),
+                              child: Center(
+                                child: Text(l10n.communityNoWorksMessage),
+                              ),
                             )
                           : CommunityWorkGrid(
                               works: filteredWorks,
@@ -366,7 +378,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                               onTapWork: openWork,
                               onToggleBookmark: toggleBookmark,
                             ),
-                  ),
+                    ),
             ),
           ],
         ),
@@ -374,4 +386,3 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     );
   }
 }
-

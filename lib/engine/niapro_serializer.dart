@@ -104,10 +104,7 @@ class NiaproSerializer {
     required List<Scene> scenes,
     required TileManager tileManager,
   }) {
-    // Queue before the first asynchronous directory lookup so invocation order
-    // is preserved even when explicit saves overlap background persistence.
-    final previous = _pendingSaves[project.id] ?? Future<void>.value();
-    final result = previous.then((_) async {
+    return _queueSave(project.id, () async {
       final dir = await _projectDir(project.id);
       final filePath = '${dir.path}/${project.id}.niapro';
       return File(filePath).existsSync()
@@ -120,19 +117,57 @@ class NiaproSerializer {
               clearDirty: true,
             );
     });
-    // A failed save is still reported to its caller, but must not poison the
-    // next save in the queue.
+  }
+
+  static Future<T> _queueSave<T>(String projectId, Future<T> Function() write) {
+    final previous = _pendingSaves[projectId] ?? Future<void>.value();
+    final result = previous.then((_) => write());
     final settled = result.then<void>(
       (_) {},
-      onError: (Object error, StackTrace stack) {},
+      onError: (Object _, StackTrace _) {},
     );
-    _pendingSaves[project.id] = settled;
+    _pendingSaves[projectId] = settled;
     return result.whenComplete(() {
-      if (identical(_pendingSaves[project.id], settled)) {
-        _pendingSaves.remove(project.id);
+      if (identical(_pendingSaves[projectId], settled)) {
+        _pendingSaves.remove(projectId);
       }
     });
   }
+
+  /// Change only folder membership, including for projects in the trash.
+  /// Keep every other manifest field and archive entry, including unknown ones.
+  /// Use the same queue and atomic replacement as regular project saves.
+  static Future<void> saveFolderMembership({
+    required String projectId,
+    required String? folderId,
+    bool shared = false,
+  }) => _queueSave(projectId, () async {
+    final dir = await _projectDir(projectId);
+    final path = '${dir.path}/$projectId.niapro';
+    final source = File(path);
+    ArchiveSecurity.validateFileSize(await source.length());
+    final archive = ArchiveSecurity.decodeZip(await source.readAsBytes());
+    final manifest = archive.findFile(_manifestFile);
+    if (manifest == null) {
+      throw const FormatException('Missing project manifest');
+    }
+    final json =
+        jsonDecode(utf8.decode(manifest.content as List<int>))
+            as Map<String, dynamic>;
+    if (json['id'] != projectId) {
+      throw const FormatException('Project ID mismatch');
+    }
+    json[shared ? 'sharedFolderId' : 'folderId'] = folderId;
+    _writeArchiveAtomically(path, (encoder) {
+      for (final entry in archive.files) {
+        encoder.addArchiveFile(
+          entry.name == _manifestFile
+              ? ArchiveFile(_manifestFile, 0, utf8.encode(jsonEncode(json)))
+              : entry,
+        );
+      }
+    });
+  });
 
   /// テスト・明示的な書き出し先向けに、通常の.niaproと同じ内容を指定パスへ保存する。
   /// path_providerを経由しないため、serializerの実round-tripを独立して検証できる。

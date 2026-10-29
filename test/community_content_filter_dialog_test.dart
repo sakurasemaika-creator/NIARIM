@@ -300,8 +300,14 @@ void main() {
       find.byKey(ValueKey('communityUnmuteAuthor-${work.authorId}')),
     );
     await tester.pumpAndSettle();
-    expect(find.text(l10nOf(tester).communityUnmuteConfirmTitle), findsOneWidget);
-    await tapVisible(tester, find.text(l10nOf(tester).communityUnmuteConfirmAction));
+    expect(
+      find.text(l10nOf(tester).communityUnmuteConfirmTitle),
+      findsOneWidget,
+    );
+    await tapVisible(
+      tester,
+      find.text(l10nOf(tester).communityUnmuteConfirmAction),
+    );
     await tester.pumpAndSettle();
     expect(service.isAuthorMuted(work.authorId), isFalse);
   });
@@ -346,25 +352,37 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('another creator has no bookmark tab, own page keeps bookmarks', (tester) async {
+  testWidgets('another creator has no bookmark tab, own page keeps bookmarks', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final service = CommunityService();
     final other = service.discoverableWorks.firstWhere(
       (work) => !service.isOwnWork(work),
     );
-    await tester.pumpWidget(host(service,
-      home: CommunityAuthorWorksScreen(authorId: other.authorId,
-          authorName: other.authorName),
-    ));
+    await tester.pumpWidget(
+      host(
+        service,
+        home: CommunityAuthorWorksScreen(
+          authorId: other.authorId,
+          authorName: other.authorName,
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(TabBar), findsNothing);
     expect(find.text('ブックマーク'), findsNothing);
 
     await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pumpWidget(host(service,
-      home: const CommunityAuthorWorksScreen(
-          authorId: kDummySelfAuthorId, authorName: '自分'),
-    ));
+    await tester.pumpWidget(
+      host(
+        service,
+        home: const CommunityAuthorWorksScreen(
+          authorId: kDummySelfAuthorId,
+          authorName: '自分',
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(TabBar), findsOneWidget);
   });
@@ -387,7 +405,10 @@ void main() {
       tester,
       find.text(l10n.communityMinimumViewsOption('100')).last,
     );
-    await tapVisible(tester, find.byKey(const Key('communityMinimumBookmarks')));
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityMinimumBookmarks')),
+    );
     await tapVisible(
       tester,
       find.text(l10n.communityMinimumBookmarksOption('50')).last,
@@ -420,8 +441,14 @@ void main() {
     await tester.pumpWidget(host(service));
     await tester.pumpAndSettle();
     final l10n = l10nOf(tester);
-    await tapVisible(tester, find.byKey(const Key('communitySavedSearchAccordion')));
-    await tapVisible(tester, find.byKey(const Key('communitySaveCurrentSearchButton')));
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communitySavedSearchAccordion')),
+    );
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communitySaveCurrentSearchButton')),
+    );
     await tester.enterText(
       find.byKey(const Key('communitySavedSearchName')),
       'お気に入りの条件',
@@ -438,54 +465,85 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('search history saves criteria, restores draft and confirms deletion', (tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final service = CommunityService();
-    await tester.pumpWidget(host(service));
-    await tester.pumpAndSettle();
-    final l10n = l10nOf(tester);
-    await tester.enterText(
-      find.byKey(const Key('communitySearchInput')), '夜明け',
-    );
-    await tapVisible(tester, find.byKey(const Key('communitySearchButton')));
-    await tapVisible(tester, find.byKey(const Key('communitySearchHistoryAccordion')));
-    expect(find.byKey(const Key('communitySearchHistory-0')), findsOneWidget);
-    await tapVisible(tester, find.byKey(const Key('communitySaveHistory-0')));
-    await tapVisible(tester, find.byKey(const Key('communitySavedSearchAccordion')));
-    expect(find.byKey(const Key('communitySavedSearch-0')), findsOneWidget);
-    await tester.enterText(find.byKey(const Key('communitySearchInput')), '別の語');
-    await tapVisible(tester, find.byKey(const Key('communitySavedSearch-0')));
-    expect(tester.widget<TextField>(
-      find.byKey(const Key('communitySearchInput')),
-    ).controller!.text, '夜明け');
-    await tapVisible(tester, find.byKey(const Key('communityDeleteSavedSearch-0')));
-    expect(find.text(l10n.communityDeleteSavedSearchConfirm), findsOneWidget);
-    await tapVisible(tester, find.text(l10n.commonCancel).last);
-    expect(find.byKey(const Key('communitySavedSearch-0')), findsOneWidget);
-    await tapVisible(tester, find.byKey(const Key('communityDeleteSavedSearch-0')));
-    await tapVisible(tester, find.text(l10n.commonDelete).last);
-    expect(find.byKey(const Key('communitySavedSearch-0')), findsNothing);
-    final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('community.searchHistory.v1.guest'), contains('夜明け'));
-  });
-
-  testWidgets('search history stores at most 10 recent searches per device account', (tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final service = CommunityService();
-    await tester.pumpWidget(host(service));
-    await tester.pumpAndSettle();
-    for (var n = 0; n < 12; n++) {
-      await tester.enterText(
-        find.byKey(const Key('communitySearchInput')), '検索' + n.toString());
-      await tester.tap(find.byKey(const Key('communitySearchButton')));
+  testWidgets(
+    'search history saves criteria, restores draft and confirms deletion',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final service = CommunityService();
+      await tester.pumpWidget(host(service));
       await tester.pumpAndSettle();
-    }
-    final prefs = await SharedPreferences.getInstance();
-    final value = prefs.getString('community.searchHistory.v1.guest')!;
-    expect('検索11', isIn(value));
-    expect('検索0', isNot(isIn(value)));
-    expect(RegExp('"query"').allMatches(value).length, 10);
-  });
+      final l10n = l10nOf(tester);
+      await tester.enterText(
+        find.byKey(const Key('communitySearchInput')),
+        '夜明け',
+      );
+      await tapVisible(tester, find.byKey(const Key('communitySearchButton')));
+      await tapVisible(
+        tester,
+        find.byKey(const Key('communitySearchHistoryAccordion')),
+      );
+      expect(find.byKey(const Key('communitySearchHistory-0')), findsOneWidget);
+      await tapVisible(tester, find.byKey(const Key('communitySaveHistory-0')));
+      await tapVisible(
+        tester,
+        find.byKey(const Key('communitySavedSearchAccordion')),
+      );
+      expect(find.byKey(const Key('communitySavedSearch-0')), findsOneWidget);
+      await tester.enterText(
+        find.byKey(const Key('communitySearchInput')),
+        '別の語',
+      );
+      await tapVisible(tester, find.byKey(const Key('communitySavedSearch-0')));
+      expect(
+        tester
+            .widget<TextField>(find.byKey(const Key('communitySearchInput')))
+            .controller!
+            .text,
+        '夜明け',
+      );
+      await tapVisible(
+        tester,
+        find.byKey(const Key('communityDeleteSavedSearch-0')),
+      );
+      expect(find.text(l10n.communityDeleteSavedSearchConfirm), findsOneWidget);
+      await tapVisible(tester, find.text(l10n.commonCancel).last);
+      expect(find.byKey(const Key('communitySavedSearch-0')), findsOneWidget);
+      await tapVisible(
+        tester,
+        find.byKey(const Key('communityDeleteSavedSearch-0')),
+      );
+      await tapVisible(tester, find.text(l10n.commonDelete).last);
+      expect(find.byKey(const Key('communitySavedSearch-0')), findsNothing);
+      final prefs = await SharedPreferences.getInstance();
+      expect(
+        prefs.getString('community.searchHistory.v1.guest'),
+        contains('夜明け'),
+      );
+    },
+  );
+
+  testWidgets(
+    'search history stores at most 10 recent searches per device account',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final service = CommunityService();
+      await tester.pumpWidget(host(service));
+      await tester.pumpAndSettle();
+      for (var n = 0; n < 12; n++) {
+        await tester.enterText(
+          find.byKey(const Key('communitySearchInput')),
+          '検索' + n.toString(),
+        );
+        await tester.tap(find.byKey(const Key('communitySearchButton')));
+        await tester.pumpAndSettle();
+      }
+      final prefs = await SharedPreferences.getInstance();
+      final value = prefs.getString('community.searchHistory.v1.guest')!;
+      expect('検索11', isIn(value));
+      expect('検索0', isNot(isIn(value)));
+      expect(RegExp('"query"').allMatches(value).length, 10);
+    },
+  );
 
   testWidgets('mute preferences survive a service recreation without login', (
     tester,

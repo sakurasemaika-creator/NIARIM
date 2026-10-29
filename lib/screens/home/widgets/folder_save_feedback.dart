@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../services/work_folder_service.dart';
+import '../../../utils/folder_persistence.dart';
 
 String folderSaveFailureText(AppLocalizations l10n, Object error) =>
-    error is WorkFolderSaveException && error.partiallySaved
+    error is FolderSaveException && error.partiallySaved
     ? l10n.folderChangesPartiallySaved
     : l10n.folderChangesSaveFailed;
 

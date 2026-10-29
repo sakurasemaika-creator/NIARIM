@@ -3,13 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'project_service.dart' show ProjectFolder;
 import '../utils/tolerant_preferences.dart';
+import '../utils/folder_persistence.dart';
 
 /// A rejected save, including whether an earlier write could not be rolled back.
-class WorkFolderSaveException implements Exception {
-  const WorkFolderSaveException({required this.partiallySaved, this.cause});
-
-  final bool partiallySaved;
-  final Object? cause;
+class WorkFolderSaveException extends FolderSaveException {
+  const WorkFolderSaveException({required super.partiallySaved, super.cause});
 
   @override
   String toString() =>

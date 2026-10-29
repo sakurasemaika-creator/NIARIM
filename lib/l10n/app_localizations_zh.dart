@@ -6870,13 +6870,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityDurationMaximum => '最长（分钟）';
 
   @override
-  String get communityTagExactMatch => '标签完全匹配（关闭为部分匹配）';
+  String get communityTagExactMatch => '搜索词完全匹配（关闭后部分匹配）';
 
   @override
-  String get communityMinimumViews => '最低播放量';
+  String get communityMinimumViews => '观看次数';
 
   @override
-  String get communityMinimumBookmarks => '最低收藏数';
+  String get communityMinimumBookmarks => '收藏数';
 
   @override
   String get communityPostPeriodAll => '全部时间';
@@ -7549,6 +7549,80 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityCreatorLabel => '作者';
+
+  @override
+  String get communityThresholdAny => '不限';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '至少 $count 次观看';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '至少 $count 个收藏';
+  }
+
+  @override
+  String get communityTileSize => '作品卡片大小';
+
+  @override
+  String get communityMutedWordsEmpty => '暂无屏蔽关键词';
+
+  @override
+  String get communityMutedTagsEmpty => '暂无屏蔽标签';
+
+  @override
+  String get communityMuteShort => '屏蔽';
+
+  @override
+  String get communityMuteConfirmTitle => '要屏蔽此用户吗？';
+
+  @override
+  String get communityMuteConfirmBody => '屏蔽后将不显示此用户的作品。';
+
+  @override
+  String get communityMuteConfirmAction => '屏蔽';
+
+  @override
+  String get communityUnmuteConfirmTitle => '要取消屏蔽此用户吗？';
+
+  @override
+  String get communityUnmuteConfirmAction => '取消屏蔽';
+
+  @override
+  String get communityMuteNo => '否';
+
+  @override
+  String get communityMuteDone => '已屏蔽此用户';
+
+  @override
+  String get communityUnmuteDone => '已取消屏蔽';
+
+  @override
+  String get communityMilestoneNotificationsTitle => '通知';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return '关注者达到 $count 人';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '作品《$title》的收藏达到 $count 个';
+  }
+
+  @override
+  String get communitySearchHistory => '搜索历史';
+
+  @override
+  String get communitySearchHistoryEmpty => '暂无搜索历史';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => '删除此保存的搜索条件？';
+
+  @override
+  String get communitySortLabel => '排序';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -14418,13 +14492,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityDurationMaximum => '最長（分鐘）';
 
   @override
-  String get communityTagExactMatch => '標籤完全符合（關閉為部分符合）';
+  String get communityTagExactMatch => '搜尋詞完全相符（關閉後部分相符）';
 
   @override
-  String get communityMinimumViews => '最低觀看次數';
+  String get communityMinimumViews => '觀看次數';
 
   @override
-  String get communityMinimumBookmarks => '最低收藏數';
+  String get communityMinimumBookmarks => '收藏數';
 
   @override
   String get communityPostPeriodAll => '所有時間';
@@ -15098,4 +15172,78 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityCreatorLabel => '作者';
+
+  @override
+  String get communityThresholdAny => '不限';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '至少 $count 次觀看';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '至少 $count 個收藏';
+  }
+
+  @override
+  String get communityTileSize => '作品卡片大小';
+
+  @override
+  String get communityMutedWordsEmpty => '目前沒有封鎖關鍵字';
+
+  @override
+  String get communityMutedTagsEmpty => '目前沒有封鎖標籤';
+
+  @override
+  String get communityMuteShort => '封鎖';
+
+  @override
+  String get communityMuteConfirmTitle => '要封鎖這位使用者嗎？';
+
+  @override
+  String get communityMuteConfirmBody => '封鎖後不再顯示此使用者的作品。';
+
+  @override
+  String get communityMuteConfirmAction => '封鎖';
+
+  @override
+  String get communityUnmuteConfirmTitle => '要解除封鎖這位使用者嗎？';
+
+  @override
+  String get communityUnmuteConfirmAction => '解除封鎖';
+
+  @override
+  String get communityMuteNo => '否';
+
+  @override
+  String get communityMuteDone => '已封鎖使用者';
+
+  @override
+  String get communityUnmuteDone => '已解除封鎖';
+
+  @override
+  String get communityMilestoneNotificationsTitle => '通知';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return '追蹤者達到 $count 人';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '作品《$title》的收藏達到 $count 個';
+  }
+
+  @override
+  String get communitySearchHistory => '搜尋紀錄';
+
+  @override
+  String get communitySearchHistoryEmpty => '尚無搜尋紀錄';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => '要刪除這個已儲存的搜尋條件嗎？';
+
+  @override
+  String get communitySortLabel => '排序';
 }

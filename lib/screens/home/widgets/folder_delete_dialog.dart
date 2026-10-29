@@ -9,9 +9,11 @@ class FolderDeleteDialog extends StatefulWidget {
     super.key,
     required this.folderName,
     required this.onDelete,
+    this.body,
   });
 
   final String folderName;
+  final String? body;
   final Future<void> Function() onDelete;
 
   @override
@@ -60,7 +62,10 @@ class _FolderDeleteDialogState extends State<FolderDeleteDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.homeDeleteFolderKeepContents(widget.folderName)),
+            Text(
+              widget.body ??
+                  l10n.homeDeleteFolderKeepContents(widget.folderName),
+            ),
             if (_error != null) ...[
               const SizedBox(height: 12),
               Semantics(
@@ -79,6 +84,7 @@ class _FolderDeleteDialogState extends State<FolderDeleteDialog> {
           FolderSaveButton(
             style: FilledButton.styleFrom(
               backgroundColor: theme.colorScheme.error,
+              foregroundColor: theme.colorScheme.onError,
             ),
             onPressed: _delete,
             label: l10n.commonDelete,

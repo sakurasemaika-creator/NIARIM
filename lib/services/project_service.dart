@@ -28,6 +28,7 @@ import '../models/timeline_row_kind.dart';
 import '../engine/undo_manager.dart';
 import '../utils/app_error_reporter.dart';
 import '../utils/tolerant_preferences.dart';
+import '../utils/folder_persistence.dart';
 
 class ProjectFolder {
   final String id;
@@ -2441,31 +2442,95 @@ class ProjectService extends ChangeNotifier {
     return project;
   }
 
-  /// 非同期保存（エラーはサイレントに無視）
-  void _saveAsync(String projectId) {
-    final project = _projects.where((p) => p.id == projectId).firstOrNull;
-    final scenes = _scenes[projectId];
-    final tm = _tileManagers[projectId];
-    if (project == null || scenes == null || tm == null) return;
-    NiaproSerializer.save(
-      project: project,
-      scenes: scenes,
-      tileManager: tm,
-    ).catchError((_) => File(''));
+  final Map<String, Future<void>> _projectSaves = {};
+  Future<void>? _folderOperations;
+  bool _folderDisposed = false;
+
+  Future<T> _queueProjectSave<T>(String id, Future<T> Function() write) {
+    final previous = _projectSaves[id];
+    final result = previous == null
+        ? Future<T>.sync(write)
+        : previous.then((_) => write());
+    final settled = result.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
+    );
+    _projectSaves[id] = settled;
+    return result.whenComplete(() {
+      if (identical(_projectSaves[id], settled)) _projectSaves.remove(id);
+    });
   }
 
-  /// 明示的保存（タイムライン・セーブツリーから呼び出す）
-  Future<void> saveProject(String projectId) async {
-    final project = _projects.where((p) => p.id == projectId).firstOrNull;
-    final scenes = _scenes[projectId];
-    final tm = _tileManagers[projectId];
-    if (project == null || scenes == null || tm == null) return;
-    await NiaproSerializer.save(
-      project: project,
-      scenes: scenes,
-      tileManager: tm,
+  Future<T> _queueFolder<T>(Future<T> Function() write) {
+    if (_folderDisposed) {
+      return Future.error(StateError('Project folders disposed'));
+    }
+    final result = _folderOperations == null
+        ? Future<T>.sync(write)
+        : _folderOperations!.then((_) => write());
+    _folderOperations = result.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
     );
+    return result;
   }
+
+  void _notifyFolders() {
+    if (!_folderDisposed) notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _folderDisposed = true;
+    _workTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Read the current model when the queued save starts. A background save
+  /// requested during a folder move must not overwrite its acknowledged result.
+  void _saveAsync(String projectId) {
+    saveProject(projectId).catchError((Object _, StackTrace _) {});
+  }
+
+  Future<void> saveProject(String projectId) =>
+      _queueProjectSave(projectId, () async {
+        final project = _projects.where((p) => p.id == projectId).firstOrNull;
+        final scenes = _scenes[projectId];
+        final tm = _tileManagers[projectId];
+        if (project == null || scenes == null || tm == null) return;
+        await NiaproSerializer.save(
+          project: project,
+          scenes: scenes,
+          tileManager: tm,
+        );
+      });
+
+  Future<void> _saveMembership(
+    String id,
+    String? folderId, {
+    bool shared = false,
+  }) => _queueProjectSave(id, () async {
+    final project = [
+      ..._projects,
+      ..._trash,
+    ].where((p) => p.id == id).firstOrNull;
+    if (project == null) return;
+    await NiaproSerializer.saveFolderMembership(
+      projectId: id,
+      folderId: folderId,
+      shared: shared,
+    );
+    // Merge only membership into the latest model; do not discard edits that
+    // arrived while I/O was pending, or resurrect a project moved to the trash.
+    for (final list in [_projects, _trash]) {
+      final i = list.indexWhere((p) => p.id == id);
+      if (i >= 0) {
+        list[i] = shared
+            ? list[i].copyWith(sharedFolderId: folderId)
+            : list[i].copyWith(folderId: folderId);
+      }
+    }
+  });
 
   Future<void> deleteProject(String id) async {
     final idx = _projects.indexWhere((p) => p.id == id);
@@ -2711,14 +2776,18 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
-  Future<void> moveToFolder(String projectId, String? folderId) async {
-    final idx = _projects.indexWhere((p) => p.id == projectId);
-    if (idx >= 0) {
-      _projects[idx] = _projects[idx].copyWith(folderId: folderId);
-      _saveAsync(projectId);
-      notifyListeners();
-    }
-  }
+  Future<void> moveToFolder(String projectId, String? folderId) =>
+      _queueFolder(() async {
+        if (folderId != null && !_folders.any((f) => f.id == folderId)) {
+          throw const FolderSaveException(partiallySaved: false);
+        }
+        try {
+          await _saveMembership(projectId, folderId);
+        } catch (error) {
+          throw FolderSaveException(partiallySaved: false, cause: error);
+        }
+        _notifyFolders();
+      });
 
   /// プロジェクトのタグ一覧を置き換える（詳細情報画面のタグ機能）。
   Future<void> setProjectTags(String projectId, List<String> tags) async {
@@ -2791,68 +2860,86 @@ class ProjectService extends ChangeNotifier {
 
   /// [parentFolderId]を指定すると、そのフォルダの子フォルダとして作成する
   /// （「フォルダは複数階層に対応」）。nullはルート直下。
-  Future<ProjectFolder> createFolder(
-    String name, {
-    String? parentFolderId,
+  Future<void> _commitFolders(
+    List<ProjectFolder> next, {
+    bool shared = false,
   }) async {
-    final folder = ProjectFolder(
-      id: _nextId('folder'),
-      name: name,
-      parentFolderId: parentFolderId,
+    await saveFolderPreference(
+      shared ? _sharedFoldersPrefsKey : _foldersPrefsKey,
+      jsonEncode(next.map((f) => f.toJson()).toList()),
     );
-    _folders.add(folder);
-    await _persistFolders();
-    notifyListeners();
-    return folder;
+    final target = shared ? _sharedFolders : _folders;
+    target
+      ..clear()
+      ..addAll(next);
+    _notifyFolders();
   }
 
-  Future<void> renameFolder(String folderId, String name) async {
-    final idx = _folders.indexWhere((f) => f.id == folderId);
-    if (idx < 0) return;
-    _folders[idx] = _folders[idx].copyWith(name: name);
-    await _persistFolders();
-    notifyListeners();
-  }
+  Future<ProjectFolder> createFolder(String name, {String? parentFolderId}) =>
+      _queueFolder(() async {
+        if (parentFolderId != null &&
+            !_folders.any((f) => f.id == parentFolderId)) {
+          throw const FolderSaveException(partiallySaved: false);
+        }
+        final folder = ProjectFolder(
+          id: _nextId('folder'),
+          name: name,
+          parentFolderId: parentFolderId,
+        );
+        await _commitFolders([..._folders, folder]);
+        return folder;
+      });
 
-  /// フォルダの色を変更する（フォルダ管理・色変更対応）。
-  /// colorにnullを渡すとデフォルト色（未設定）へ戻す。
-  Future<void> setFolderColor(String folderId, int? color) async {
-    final idx = _folders.indexWhere((f) => f.id == folderId);
-    if (idx < 0) return;
-    _folders[idx] = _folders[idx].copyWith(color: color);
-    await _persistFolders();
-    notifyListeners();
-  }
+  Future<void> editFolder(
+    String id, {
+    String? name,
+    Object? color = _folderSentinel,
+  }) => _queueFolder(() async {
+    final i = _folders.indexWhere((f) => f.id == id);
+    if (i < 0) return;
+    final next = [..._folders];
+    next[i] = next[i].copyWith(name: name, color: color);
+    await _commitFolders(next);
+  });
 
-  /// フォルダのお気に入り登録を切り替える（「フォルダもお気に入り登録可能」）。
-  Future<void> toggleFolderFavorite(String folderId) async {
-    final idx = _folders.indexWhere((f) => f.id == folderId);
-    if (idx < 0) return;
-    _folders[idx] = _folders[idx].copyWith(
-      isFavorite: !_folders[idx].isFavorite,
-    );
-    await _persistFolders();
-    notifyListeners();
-  }
+  Future<void> renameFolder(String folderId, String name) =>
+      editFolder(folderId, name: name);
+  Future<void> setFolderColor(String folderId, int? color) =>
+      editFolder(folderId, color: color);
 
-  /// フォルダを別のフォルダへ移動する（[newParentId]がnullならルート直下へ）。
-  /// 自分自身または自分の子孫フォルダへの移動は無視する（循環防止）。
-  Future<void> moveFolderTo(String folderId, String? newParentId) async {
-    if (folderId == newParentId) return;
-    if (newParentId != null && _isDescendantFolder(newParentId, folderId)) {
-      return;
-    }
-    final idx = _folders.indexWhere((f) => f.id == folderId);
-    if (idx < 0) return;
-    _folders[idx] = _folders[idx].copyWith(parentFolderId: newParentId);
-    await _persistFolders();
-    notifyListeners();
-  }
+  Future<void> toggleFolderFavorite(String folderId) => _queueFolder(() async {
+    final i = _folders.indexWhere((f) => f.id == folderId);
+    if (i < 0) return;
+    final next = [..._folders];
+    next[i] = next[i].copyWith(isFavorite: !next[i].isFavorite);
+    await _commitFolders(next);
+  });
+
+  Future<void> moveFolderTo(String folderId, String? newParentId) =>
+      _queueFolder(() async {
+        if (folderId == newParentId ||
+            (newParentId != null &&
+                _isDescendantFolder(newParentId, folderId))) {
+          return;
+        }
+        if (newParentId != null && !_folders.any((f) => f.id == newParentId)) {
+          throw const FolderSaveException(partiallySaved: false);
+        }
+        final i = _folders.indexWhere((f) => f.id == folderId);
+        if (i < 0) return;
+        final next = [..._folders];
+        next[i] = next[i].copyWith(parentFolderId: newParentId);
+        await _commitFolders(next);
+      });
 
   /// [candidateId]が[ancestorId]の子孫フォルダかどうかを判定する。
+  bool isFolderDescendantOf(String candidateId, String? ancestorId) =>
+      ancestorId != null && _isDescendantFolder(candidateId, ancestorId);
+
   bool _isDescendantFolder(String candidateId, String ancestorId) {
     String? current = candidateId;
-    while (current != null) {
+    final visited = <String>{};
+    while (current != null && visited.add(current)) {
       if (current == ancestorId) return true;
       current = _folders
           .where((f) => f.id == current)
@@ -2865,21 +2952,45 @@ class ProjectService extends ChangeNotifier {
   /// フォルダ削除時、直下のプロジェクト・子フォルダはルート（トップレベル）へ戻す
   /// （「フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを
   /// 表示する」。確認ダイアログ自体はUI側で表示し、本メソッドは確定後の処理）。
-  Future<void> deleteFolder(String folderId) async {
-    _folders.removeWhere((f) => f.id == folderId);
-    for (int i = 0; i < _projects.length; i++) {
-      if (_projects[i].folderId == folderId) {
-        _projects[i] = _projects[i].copyWith(folderId: null);
+  Future<void> deleteFolder(String folderId) =>
+      _deleteFolder(folderId, shared: false);
+
+  Future<void> _deleteFolder(
+    String folderId, {
+    required bool shared,
+  }) => _queueFolder(() async {
+    final folders = shared ? _sharedFolders : _folders;
+    if (!folders.any((f) => f.id == folderId)) return;
+    var moved = 0;
+    try {
+      final contents = [..._projects, ..._trash]
+          .where(
+            (p) => shared
+                ? p.isSharedImport && p.sharedFolderId == folderId
+                : p.folderId == folderId,
+          )
+          .toList();
+      // Keep the folder until every referenced project file acknowledges root.
+      // On partial failure the already moved projects remain safely at root;
+      // retry resumes the remaining contents, without rolling back drawings.
+      for (final p in contents) {
+        await _saveMembership(p.id, null, shared: shared);
+        moved++;
       }
+      final next = folders
+          .where((f) => f.id != folderId)
+          .map(
+            (f) => !shared && f.parentFolderId == folderId
+                ? f.copyWith(parentFolderId: null)
+                : f,
+          )
+          .toList();
+      await _commitFolders(next, shared: shared);
+    } catch (error) {
+      if (moved > 0) _notifyFolders();
+      throw FolderSaveException(partiallySaved: moved > 0, cause: error);
     }
-    for (int i = 0; i < _folders.length; i++) {
-      if (_folders[i].parentFolderId == folderId) {
-        _folders[i] = _folders[i].copyWith(parentFolderId: null);
-      }
-    }
-    await _persistFolders();
-    notifyListeners();
-  }
+  });
 
   // ─── 共有タブ用フォルダ（ホーム画面「共有」タブへのフォルダ新規追加機能） ──
   // プロジェクト一覧タブのフォルダ（_folders/folderId）とは独立した、共有
@@ -2890,46 +3001,40 @@ class ProjectService extends ChangeNotifier {
   final List<ProjectFolder> _sharedFolders = [];
   List<ProjectFolder> get sharedFolders => List.unmodifiable(_sharedFolders);
 
-  Future<ProjectFolder> createSharedFolder(String name) async {
-    final folder = ProjectFolder(id: _nextId('shared_folder'), name: name);
-    _sharedFolders.add(folder);
-    await _persistSharedFolders();
-    notifyListeners();
-    return folder;
-  }
+  Future<ProjectFolder> createSharedFolder(String name) =>
+      _queueFolder(() async {
+        final folder = ProjectFolder(id: _nextId('shared_folder'), name: name);
+        await _commitFolders([..._sharedFolders, folder], shared: true);
+        return folder;
+      });
 
-  Future<void> renameSharedFolder(String folderId, String name) async {
-    final idx = _sharedFolders.indexWhere((f) => f.id == folderId);
-    if (idx < 0) return;
-    _sharedFolders[idx] = _sharedFolders[idx].copyWith(name: name);
-    await _persistSharedFolders();
-    notifyListeners();
-  }
+  Future<void> renameSharedFolder(String folderId, String name) =>
+      _queueFolder(() async {
+        final i = _sharedFolders.indexWhere((f) => f.id == folderId);
+        if (i < 0) return;
+        final next = [..._sharedFolders];
+        next[i] = next[i].copyWith(name: name);
+        await _commitFolders(next, shared: true);
+      });
 
-  /// フォルダ削除時、直下の共有プロジェクトはルートへ戻す
-  /// （プロジェクト一覧タブのdeleteFolder()と同じ考え方）。
-  Future<void> deleteSharedFolder(String folderId) async {
-    _sharedFolders.removeWhere((f) => f.id == folderId);
-    for (int i = 0; i < _projects.length; i++) {
-      if (_projects[i].isSharedImport &&
-          _projects[i].sharedFolderId == folderId) {
-        _projects[i] = _projects[i].copyWith(sharedFolderId: null);
-        _saveAsync(_projects[i].id);
-      }
-    }
-    await _persistSharedFolders();
-    notifyListeners();
-  }
+  Future<void> deleteSharedFolder(String folderId) =>
+      _deleteFolder(folderId, shared: true);
 
-  Future<void> moveToSharedFolder(String projectId, String? folderId) async {
-    final idx = _projects.indexWhere(
-      (p) => p.id == projectId && p.isSharedImport,
-    );
-    if (idx < 0) return;
-    _projects[idx] = _projects[idx].copyWith(sharedFolderId: folderId);
-    _saveAsync(projectId);
-    notifyListeners();
-  }
+  Future<void> moveToSharedFolder(String projectId, String? folderId) =>
+      _queueFolder(() async {
+        if (!_projects.any((p) => p.id == projectId && p.isSharedImport)) {
+          return;
+        }
+        if (folderId != null && !_sharedFolders.any((f) => f.id == folderId)) {
+          throw const FolderSaveException(partiallySaved: false);
+        }
+        try {
+          await _saveMembership(projectId, folderId, shared: true);
+        } catch (error) {
+          throw FolderSaveException(partiallySaved: false, cause: error);
+        }
+        _notifyFolders();
+      });
 
   static const _sharedFoldersPrefsKey = 'shared_folders';
 
@@ -2946,18 +3051,6 @@ class ProjectService extends ChangeNotifier {
         );
     } catch (_) {
       // 読み込み失敗時はフォルダなしとして続行
-    }
-  }
-
-  Future<void> _persistSharedFolders() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-        _sharedFoldersPrefsKey,
-        jsonEncode(_sharedFolders.map((f) => f.toJson()).toList()),
-      );
-    } catch (_) {
-      // 保存失敗時も続行（次回操作時に再試行される）
     }
   }
 
@@ -2982,18 +3075,6 @@ class ProjectService extends ChangeNotifier {
         );
     } catch (_) {
       // 読み込み失敗時はフォルダなしとして続行
-    }
-  }
-
-  Future<void> _persistFolders() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-        _foldersPrefsKey,
-        jsonEncode(_folders.map((f) => f.toJson()).toList()),
-      );
-    } catch (_) {
-      // 保存失敗時も続行（次回操作時に再試行される）
     }
   }
 }

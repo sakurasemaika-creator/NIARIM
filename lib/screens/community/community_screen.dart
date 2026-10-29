@@ -26,6 +26,7 @@ import '../../utils/color_contrast.dart';
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
 enum _RankingSort { views, bookmarks }
+
 enum _PlazaSort { newest, views, bookmarks }
 
 enum _PostDateFilter { all, today, thisWeek, thisMonth, thisYear, custom }
@@ -33,7 +34,16 @@ enum _PostDateFilter { all, today, thisWeek, thisMonth, thisYear, custom }
 enum _DurationFilterMode { all, upTo, range }
 
 const _communityThresholdChoices = <int>[
-  0, 50, 100, 1000, 5000, 10000, 50000, 100000, 500000, 1000000,
+  0,
+  50,
+  100,
+  1000,
+  5000,
+  10000,
+  50000,
+  100000,
+  500000,
+  1000000,
 ];
 
 /// 作品広場画面。
@@ -115,7 +125,9 @@ class _CommunityScreenState extends State<CommunityScreen>
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getDouble(_tileWidthKey);
       if (saved != null && mounted) {
-        setState(() => _minimumTileWidth = saved.clamp(120.0, 240.0).toDouble());
+        setState(
+          () => _minimumTileWidth = saved.clamp(120.0, 240.0).toDouble(),
+        );
       }
     } catch (error) {
       debugPrint('Community tile width could not be restored: $error');
@@ -138,37 +150,53 @@ class _CommunityScreenState extends State<CommunityScreen>
     try {
       final prefs = await SharedPreferences.getInstance();
       List<Map<String, dynamic>> read(String key) {
-        final raw = prefs.getString(key + '.' + account) ??
+        final raw =
+            prefs.getString(key + '.' + account) ??
             (account == 'guest' && key == _savedSearchesKey
-                ? prefs.getString(key) : null);
+                ? prefs.getString(key)
+                : null);
         if (raw == null) return [];
         final decoded = jsonDecode(raw);
         if (decoded is! List) return [];
-        return decoded.whereType<Map>().take(10)
-            .map((item) => Map<String, dynamic>.from(item)).toList();
+        return decoded
+            .whereType<Map>()
+            .take(10)
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList();
       }
+
       final saved = read(_savedSearchesKey);
       final history = read(_historyKey);
       if (!mounted || account != _searchAccount) return;
       setState(() {
-        _savedSearches..clear()..addAll(saved);
-        _searchHistory..clear()..addAll(history);
+        _savedSearches
+          ..clear()
+          ..addAll(saved);
+        _searchHistory
+          ..clear()
+          ..addAll(history);
       });
     } catch (error) {
-      debugPrint('Community search data could not be loaded: ' + error.toString());
+      debugPrint(
+        'Community search data could not be loaded: ' + error.toString(),
+      );
     }
   }
 
   Future<void> _persistSavedSearches() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_savedSearchesKey + '.' + _searchAccount,
-        jsonEncode(_savedSearches));
+    await prefs.setString(
+      _savedSearchesKey + '.' + _searchAccount,
+      jsonEncode(_savedSearches),
+    );
   }
 
   Future<void> _persistSearchHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_historyKey + '.' + _searchAccount,
-        jsonEncode(_searchHistory));
+    await prefs.setString(
+      _historyKey + '.' + _searchAccount,
+      jsonEncode(_searchHistory),
+    );
   }
 
   Future<void> _runSearch() async {
@@ -182,10 +210,12 @@ class _CommunityScreenState extends State<CommunityScreen>
     final snapshot = _currentSearchSnapshot(query);
     setState(() {
       // A repeated identical query is moved to the top.
-      _searchHistory.removeWhere((x) =>
-          x['query'] == snapshot['query'] &&
-          x['tagMode'] == snapshot['tagMode'] &&
-          x['exactTag'] == snapshot['exactTag']);
+      _searchHistory.removeWhere(
+        (x) =>
+            x['query'] == snapshot['query'] &&
+            x['tagMode'] == snapshot['tagMode'] &&
+            x['exactTag'] == snapshot['exactTag'],
+      );
       _searchHistory.insert(0, snapshot);
       if (_searchHistory.length > 10) {
         _searchHistory.removeRange(10, _searchHistory.length);
@@ -197,8 +227,9 @@ class _CommunityScreenState extends State<CommunityScreen>
   Future<void> _saveSearchFromHistory(Map<String, dynamic> item) async {
     final l10n = AppLocalizations.of(context)!;
     if (_savedSearches.length >= 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.communitySavedSearchLimit)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.communitySavedSearchLimit)));
       return;
     }
     final snapshot = Map<String, dynamic>.from(item);
@@ -278,9 +309,13 @@ class _CommunityScreenState extends State<CommunityScreen>
       _maximumMinutes = choice('maximumMinutes', 9999);
       _minimumViews = choice('minimumViews', 999999999);
       _minimumBookmarks = choice('minimumBookmarks', 999999999);
-      if (!_communityThresholdChoices.contains(_minimumViews)) _minimumViews = 0;
-      if (!_communityThresholdChoices.contains(_minimumBookmarks)) _minimumBookmarks = 0;
-      _minimumTileWidth = ((saved['tileWidth'] as num?)?.toDouble() ?? 160).clamp(120, 240).toDouble();
+      if (!_communityThresholdChoices.contains(_minimumViews))
+        _minimumViews = 0;
+      if (!_communityThresholdChoices.contains(_minimumBookmarks))
+        _minimumBookmarks = 0;
+      _minimumTileWidth = ((saved['tileWidth'] as num?)?.toDouble() ?? 160)
+          .clamp(120, 240)
+          .toDouble();
     });
     _scrollCurrentTabToTop();
   }
@@ -472,12 +507,21 @@ class _CommunityScreenState extends State<CommunityScreen>
           .map((term) => term.replaceFirst(RegExp(r'^#'), ''))
           .where((term) => term.isNotEmpty)
           .toList();
-      return typeFiltered.where((work) => tokens.every(
-        (term) => work.tags.any((tag) {
-          final normalized = tag.toLowerCase().replaceFirst(RegExp(r'^#'), '');
-          return _tagExactMatch ? normalized == term : normalized.contains(term);
-        }),
-      )).toList();
+      return typeFiltered
+          .where(
+            (work) => tokens.every(
+              (term) => work.tags.any((tag) {
+                final normalized = tag.toLowerCase().replaceFirst(
+                  RegExp(r'^#'),
+                  '',
+                );
+                return _tagExactMatch
+                    ? normalized == term
+                    : normalized.contains(term);
+              }),
+            ),
+          )
+          .toList();
     }
     return typeFiltered.where((work) {
       final title = work.title.toLowerCase();
@@ -493,7 +537,9 @@ class _CommunityScreenState extends State<CommunityScreen>
     sorted.sort(switch (_plazaSort) {
       _PlazaSort.newest => (a, b) => b.postedAt.compareTo(a.postedAt),
       _PlazaSort.views => (a, b) => b.viewCount.compareTo(a.viewCount),
-      _PlazaSort.bookmarks => (a, b) => b.bookmarkCount.compareTo(a.bookmarkCount),
+      _PlazaSort.bookmarks => (a, b) => b.bookmarkCount.compareTo(
+        a.bookmarkCount,
+      ),
     });
     return _applySearch(sorted);
   }
@@ -737,22 +783,37 @@ class _CommunityScreenState extends State<CommunityScreen>
             if (entries.isEmpty)
               Padding(
                 padding: const EdgeInsets.all(12),
-                child: Text(saved
-                    ? l10n.communitySavedSearchEmpty
-                    : l10n.communitySearchHistoryEmpty),
+                child: Text(
+                  saved
+                      ? l10n.communitySavedSearchEmpty
+                      : l10n.communitySearchHistoryEmpty,
+                ),
               ),
             for (var index = 0; index < entries.length; index++)
               ListTile(
-                key: ValueKey((saved ? 'communitySavedSearch-' :
-                    'communitySearchHistory-') + index.toString()),
+                key: ValueKey(
+                  (saved
+                          ? 'communitySavedSearch-'
+                          : 'communitySearchHistory-') +
+                      index.toString(),
+                ),
                 dense: true,
-                title: Text(entries[index]['name'] as String? ?? '',
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                title: Text(
+                  entries[index]['name'] as String? ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 onTap: () => _restoreSavedSearch(entries[index]),
                 trailing: IconButton(
-                  key: ValueKey((saved ? 'communityDeleteSavedSearch-' :
-                      'communitySaveHistory-') + index.toString()),
-                  icon: Icon(saved ? Icons.delete_outline : Icons.save_outlined),
+                  key: ValueKey(
+                    (saved
+                            ? 'communityDeleteSavedSearch-'
+                            : 'communitySaveHistory-') +
+                        index.toString(),
+                  ),
+                  icon: Icon(
+                    saved ? Icons.delete_outline : Icons.save_outlined,
+                  ),
                   tooltip: saved ? l10n.commonDelete : l10n.communitySaveSearch,
                   onPressed: () {
                     if (saved) {
@@ -790,10 +851,12 @@ class _CommunityScreenState extends State<CommunityScreen>
                   children: [
                     IconButton(
                       key: const Key('communitySearchModeToggle'),
-                      icon: Icon(_tagSearchMode
-                          ? Icons.search : Icons.sell_outlined),
+                      icon: Icon(
+                        _tagSearchMode ? Icons.search : Icons.sell_outlined,
+                      ),
                       tooltip: _tagSearchMode
-                          ? l10n.communitySearchHint : l10n.communityTagSearchHint,
+                          ? l10n.communitySearchHint
+                          : l10n.communityTagSearchHint,
                       onPressed: () => setState(() {
                         _tagSearchMode = !_tagSearchMode;
                         _tagExactMatch = _tagSearchMode;
@@ -808,10 +871,13 @@ class _CommunityScreenState extends State<CommunityScreen>
                         controller: _searchController,
                         decoration: InputDecoration(
                           hintText: _tagSearchMode
-                              ? l10n.communityTagSearchHint : l10n.communitySearchHint,
+                              ? l10n.communityTagSearchHint
+                              : l10n.communitySearchHint,
                           border: InputBorder.none,
                           isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
                         ),
                         onChanged: (value) => _draftQuery = value,
                         onSubmitted: (_) => _runSearch(),
@@ -859,26 +925,35 @@ class _CommunityScreenState extends State<CommunityScreen>
                       return;
                     }
                     setState(() {
-                    if (value.startsWith('type:')) {
-                      final index = int.tryParse(value.substring(5)) ?? 0;
-                      _videoTypeFilter = VideoTypeFilter
-                          .values[index.clamp(0, VideoTypeFilter.values.length - 1)];
-                    } else {
-                      _plazaSort = switch (value) {
-                        'views' => _PlazaSort.views,
-                        'bookmarks' => _PlazaSort.bookmarks,
-                        _ => _PlazaSort.newest,
-                      };
-                    }
+                      if (value.startsWith('type:')) {
+                        final index = int.tryParse(value.substring(5)) ?? 0;
+                        _videoTypeFilter =
+                            VideoTypeFilter.values[index.clamp(
+                              0,
+                              VideoTypeFilter.values.length - 1,
+                            )];
+                      } else {
+                        _plazaSort = switch (value) {
+                          'views' => _PlazaSort.views,
+                          'bookmarks' => _PlazaSort.bookmarks,
+                          _ => _PlazaSort.newest,
+                        };
+                      }
                     });
                   },
                   itemBuilder: (_) => [
-                    PopupMenuItem(value: 'newest',
-                        child: Text(l10n.communityTabNew)),
-                    PopupMenuItem(value: 'views',
-                        child: Text(l10n.communityRankingSortViews)),
-                    PopupMenuItem(value: 'bookmarks',
-                        child: Text(l10n.communityRankingSortBookmarks)),
+                    PopupMenuItem(
+                      value: 'newest',
+                      child: Text(l10n.communityTabNew),
+                    ),
+                    PopupMenuItem(
+                      value: 'views',
+                      child: Text(l10n.communityRankingSortViews),
+                    ),
+                    PopupMenuItem(
+                      value: 'bookmarks',
+                      child: Text(l10n.communityRankingSortBookmarks),
+                    ),
                     const PopupMenuDivider(),
                     for (final type in VideoTypeFilter.values)
                       CheckedPopupMenuItem(
@@ -906,7 +981,9 @@ class _CommunityScreenState extends State<CommunityScreen>
                           title: Text(l10n.communityTileSize),
                           content: Slider(
                             key: const Key('communityTileSizeQuickSlider'),
-                            min: 120, max: 240, divisions: 6,
+                            min: 120,
+                            max: 240,
+                            divisions: 6,
                             value: size,
                             onChanged: (next) => update(() => size = next),
                           ),
@@ -916,7 +993,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                               child: Text(l10n.commonCancel),
                             ),
                             FilledButton(
-                              onPressed: () => Navigator.pop(dialogContext, size),
+                              onPressed: () =>
+                                  Navigator.pop(dialogContext, size),
                               child: Text(l10n.commonSave),
                             ),
                           ],
@@ -952,6 +1030,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         ),
       );
     }
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -979,8 +1058,7 @@ class _CommunityScreenState extends State<CommunityScreen>
           IconButton(
             icon: Badge(
               label: Text('${communityService.unreadMilestoneCount}'),
-              isLabelVisible:
-                  communityService.unreadMilestoneCount > 0,
+              isLabelVisible: communityService.unreadMilestoneCount > 0,
               child: const Icon(Icons.notifications_outlined),
             ),
             tooltip: l10n.communityFollowNotificationsTooltip,
@@ -1644,7 +1722,12 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                     trailing: IconButton(
                       key: ValueKey('communityUnmuteAuthor-$id'),
                       tooltip: l10n.communityUnmuteAuthor,
-                      onPressed: () => confirmCommunityAuthorMute(context, service, id, mute: false),
+                      onPressed: () => confirmCommunityAuthorMute(
+                        context,
+                        service,
+                        id,
+                        mute: false,
+                      ),
                       icon: const Icon(Icons.visibility_outlined),
                     ),
                   );
@@ -1800,25 +1883,37 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
             for (final filter in [0, 1]) ...[
               const SizedBox(height: 12),
               Text(
-                filter == 0 ? l10n.communityMinimumViews : l10n.communityMinimumBookmarks,
+                filter == 0
+                    ? l10n.communityMinimumViews
+                    : l10n.communityMinimumBookmarks,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
               DropdownButtonFormField<int>(
-                key: Key(filter == 0 ? 'communityMinimumViews' : 'communityMinimumBookmarks'),
+                key: Key(
+                  filter == 0
+                      ? 'communityMinimumViews'
+                      : 'communityMinimumBookmarks',
+                ),
                 initialValue: filter == 0 ? _minimumViews : _minimumBookmarks,
                 isExpanded: true,
                 items: [
                   for (final count in _communityThresholdChoices)
                     DropdownMenuItem(
                       value: count,
-                      child: Text(count == 0
-                          ? l10n.communityThresholdAny
-                          : filter == 0
-                            ? l10n.communityMinimumViewsOption(NumberFormat.decimalPattern().format(count))
-                            : l10n.communityMinimumBookmarksOption(NumberFormat.decimalPattern().format(count))),
+                      child: Text(
+                        count == 0
+                            ? l10n.communityThresholdAny
+                            : filter == 0
+                            ? l10n.communityMinimumViewsOption(
+                                NumberFormat.decimalPattern().format(count),
+                              )
+                            : l10n.communityMinimumBookmarksOption(
+                                NumberFormat.decimalPattern().format(count),
+                              ),
+                      ),
                     ),
                 ],
                 onChanged: (value) => setState(() {

@@ -19,10 +19,13 @@ import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
 import '../../../config/font_fallback.dart';
-import '../../../widgets/scrollable_sheet_body.dart';
 import '../../../widgets/empty_state_placeholder.dart';
 import '../../../utils/app_error_reporter.dart';
 import 'folder_save_feedback.dart';
+import 'folder_delete_dialog.dart';
+import 'work_folder_move_sheet.dart';
+import 'project_folder_edit_dialog.dart';
+import '../../../utils/folder_persistence.dart';
 
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
 /// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
@@ -159,7 +162,9 @@ class _FolderNameDialogState extends State<_FolderNameDialog> {
                   key: _errorKey,
                   liveRegion: true,
                   child: Text(
-                    widget.rename
+                    widget.rename ||
+                            (_error is FolderSaveException &&
+                                (_error as FolderSaveException).partiallySaved)
                         ? folderSaveFailureText(l10n, _error!)
                         : l10n.folderCreateFailed,
                   ),
@@ -335,6 +340,7 @@ class ProjectListWidget extends StatelessWidget {
     final projectService = context.watch<ProjectService>();
     final source = projects ?? projectService.projects;
     final allFolders = projectService.folders;
+    final folderIds = allFolders.map((f) => f.id).toSet();
     final rawQuery = searchQuery.trim().toLowerCase();
     // Accept both `tag` and `#tag` input in tag mode.
     final query = searchByTag && rawQuery.startsWith('#')
@@ -367,10 +373,20 @@ class ProjectListWidget extends StatelessWidget {
     } else {
       entries = [
         ...allFolders
-            .where((f) => f.parentFolderId == currentFolderId)
+            .where(
+              (f) =>
+                  (folderIds.contains(f.parentFolderId)
+                      ? f.parentFolderId
+                      : null) ==
+                  currentFolderId,
+            )
             .map((f) => _Entry.folder(f)),
         ...source
-            .where((p) => p.folderId == currentFolderId)
+            .where(
+              (p) =>
+                  (folderIds.contains(p.folderId) ? p.folderId : null) ==
+                  currentFolderId,
+            )
             .map((p) => _Entry.project(p)),
       ];
     }
@@ -996,11 +1012,11 @@ class ProjectListWidget extends StatelessWidget {
     service.deleteProject(project.id);
   }
 
-  void _handleFolderAction(
+  Future<void> _handleFolderAction(
     BuildContext context,
     String action,
     ProjectFolder folder,
-  ) {
+  ) async {
     final service = context.read<ProjectService>();
     switch (action) {
       case 'open':
@@ -1008,7 +1024,20 @@ class ProjectListWidget extends StatelessWidget {
       case 'edit':
         _showEditFolderDialog(context, folder);
       case 'favorite':
-        service.toggleFolderFavorite(folder.id);
+        try {
+          await service.toggleFolderFavorite(folder.id);
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  folderSaveFailureText(AppLocalizations.of(context)!, error),
+                ),
+              ),
+            );
+          }
+        }
       case 'move':
         _showMoveFolderToFolderDialog(context, folder);
       case 'delete':
@@ -1027,27 +1056,13 @@ class ProjectListWidget extends StatelessWidget {
       ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
-    showDialog(
+    final service = context.read<ProjectService>();
+    showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.projectListDeleteFolderConfirmTitle),
-        content: Text(l10n.projectListDeleteFolderConfirmBody(folder.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
-            onPressed: () {
-              context.read<ProjectService>().deleteFolder(folder.id);
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonDelete),
-          ),
-        ],
+      builder: (_) => FolderDeleteDialog(
+        folderName: folder.name,
+        body: l10n.projectListDeleteFolderConfirmBody(folder.name),
+        onDelete: () => service.deleteFolder(folder.id),
       ),
     );
   }
@@ -1125,12 +1140,17 @@ class ProjectListWidget extends StatelessWidget {
     _showFolderPickerSheet(
       context,
       excludeFolderId: null,
+      itemName: project.name,
       onSelect: (folderId) =>
           context.read<ProjectService>().moveToFolder(project.id, folderId),
       onCreateAndSelect: (name) async {
         final service = context.read<ProjectService>();
         final folder = await service.createFolder(name);
-        await service.moveToFolder(project.id, folder.id);
+        try {
+          await service.moveToFolder(project.id, folder.id);
+        } catch (error) {
+          throw FolderSaveException(partiallySaved: true, cause: error);
+        }
       },
     );
   }
@@ -1143,12 +1163,17 @@ class ProjectListWidget extends StatelessWidget {
       context,
       // 自分自身の直下へは移動できない（循環防止はサービス側でも二重にガードする）
       excludeFolderId: folder.id,
+      itemName: folder.name,
       onSelect: (folderId) =>
           context.read<ProjectService>().moveFolderTo(folder.id, folderId),
       onCreateAndSelect: (name) async {
         final service = context.read<ProjectService>();
         final newFolder = await service.createFolder(name);
-        await service.moveFolderTo(folder.id, newFolder.id);
+        try {
+          await service.moveFolderTo(folder.id, newFolder.id);
+        } catch (error) {
+          throw FolderSaveException(partiallySaved: true, cause: error);
+        }
       },
     );
   }
@@ -1156,181 +1181,39 @@ class ProjectListWidget extends StatelessWidget {
   void _showFolderPickerSheet(
     BuildContext context, {
     required String? excludeFolderId,
-    required ValueChanged<String?> onSelect,
+    required String itemName,
+    required Future<void> Function(String?) onSelect,
     required Future<void> Function(String name) onCreateAndSelect,
   }) {
-    final l10n = AppLocalizations.of(context)!;
-    final folders = context
-        .read<ProjectService>()
-        .folders
-        .where((f) => f.id != excludeFolderId)
+    final service = context.read<ProjectService>();
+    final folders = service.folders
+        .where(
+          (f) =>
+              f.id != excludeFolderId &&
+              !service.isFolderDescendantOf(f.id, excludeFolderId),
+        )
         .toList();
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => ScrollableSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                l10n.folderMoveToTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.folder_open),
-              title: Text(l10n.projectListFolderRootOption),
-              onTap: () {
-                onSelect(null);
-                Navigator.pop(ctx);
-              },
-            ),
-            ...folders.map(
-              (folder) => ListTile(
-                leading: Icon(
-                  Icons.folder,
-                  color: folder.color != null ? Color(folder.color!) : null,
-                ),
-                title: Text(folder.name),
-                trailing: IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 20),
-                  tooltip: l10n.projectListEditFolderTooltip,
-                  onPressed: () => _showEditFolderDialog(context, folder),
-                ),
-                onTap: () {
-                  onSelect(folder.id);
-                  Navigator.pop(ctx);
-                },
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.create_new_folder),
-              title: Text(l10n.projectListCreateFolderAction),
-              onTap: () {
-                Navigator.pop(ctx);
-                showCreateFolderNameDialog(context, onCreateAndSelect);
-              },
-            ),
-          ],
-        ),
+      builder: (_) => WorkFolderMoveSheet(
+        folders: folders,
+        filename: itemName,
+        rootLabel: AppLocalizations.of(context)!.projectListFolderRootOption,
+        onMove: onSelect,
+        onEdit: (folder) => _showEditFolderDialog(context, folder),
+        onCreate: () => showCreateFolderNameDialog(context, onCreateAndSelect),
       ),
     );
   }
-
-  // フォルダ名変更・色変更・削除（フォルダ管理）
-  static const _folderColors = [
-    0xFFFF5C7A,
-    0xFFFFB020,
-    0xFFFFE066,
-    0xFF3DDC97,
-    0xFF3AA6FF,
-    0xFFB15CFF,
-    0xFF9E9E9E,
-  ];
 
   void _showEditFolderDialog(BuildContext context, ProjectFolder folder) {
-    final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: folder.name);
-    int? selectedColor = folder.color;
-    showDialog(
+    final service = context.read<ProjectService>();
+    showDialog<void>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          title: Text(l10n.projectListEditFolderTooltip),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: controller,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: l10n.folderNameLabel,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                l10n.projectListFolderColorLabel,
-                style: const TextStyle(fontSize: 12),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _colorDot(
-                    ctx,
-                    null,
-                    selectedColor,
-                    (v) => setS(() => selectedColor = v),
-                  ),
-                  ..._folderColors.map(
-                    (c) => _colorDot(
-                      ctx,
-                      c,
-                      selectedColor,
-                      (v) => setS(() => selectedColor = v),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                final service = context.read<ProjectService>();
-                if (controller.text.isNotEmpty &&
-                    controller.text != folder.name) {
-                  service.renameFolder(folder.id, controller.text);
-                }
-                if (selectedColor != folder.color) {
-                  service.setFolderColor(folder.id, selectedColor);
-                }
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonSave),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _colorDot(
-    BuildContext context,
-    int? color,
-    int? selected,
-    ValueChanged<int?> onTap,
-  ) {
-    final isSelected = color == selected;
-    final scheme = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: () => onTap(color),
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: color != null ? Color(color) : Colors.transparent,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isSelected ? scheme.primary : scheme.outlineVariant,
-            width: isSelected ? 3 : 1,
-          ),
-        ),
-        child: color == null
-            ? Icon(Icons.block, size: 16, color: scheme.onSurfaceVariant)
-            : null,
+      builder: (_) => ProjectFolderEditDialog(
+        folder: folder,
+        onSave: (name, color) =>
+            service.editFolder(folder.id, name: name, color: color),
       ),
     );
   }

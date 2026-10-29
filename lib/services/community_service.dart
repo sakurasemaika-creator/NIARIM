@@ -522,7 +522,10 @@ class CommunityService extends ChangeNotifier {
     _pruneUnconfirmed();
     notifyListeners();
     await _observeOwnMilestones(
-      ownWorks: [for (final id in _ownIds) if (byId(id) case final work?) work],
+      ownWorks: [
+        for (final id in _ownIds)
+          if (byId(id) case final work?) work,
+      ],
     );
     final id = page.authorId;
     if (accountKey != null && id != null) {
@@ -1112,7 +1115,8 @@ class CommunityService extends ChangeNotifier {
 
   /// 作者のフォロワー数（公開するのは件数だけ）。
   int followerCountOf(String authorId) =>
-      _followerCounts[authorId] ?? (api == null ? followerIdsOf(authorId).length : 0);
+      _followerCounts[authorId] ??
+      (api == null ? followerIdsOf(authorId).length : 0);
 
   /// A person's follower count is public, but individual followers are not.
   List<CommunityMilestoneEvent> get milestoneNotifications =>

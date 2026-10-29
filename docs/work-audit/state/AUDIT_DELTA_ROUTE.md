@@ -123,6 +123,14 @@ status: `todo`。同HEAD差分。author worksのmute/解除、FF countsを操作
 
 status: `todo`。同HEAD差分。youtube_explode_dart/url_launcher等の固定された依存・URL遷移・platform条件・failure/cancelを確認。新capture workflowやfixtureの存在をproduction UI確認へ代用しない。全46upstream変更pathはS23証拠oct29-head-and-policy.jsonに保持。
 
+## D001.7 — 作品広場の常設検索・履歴・saved search・tile size追加差分
+
+status: `todo`。2026-10-29 App0c02171d、41a37bf以降の28path差分。常設full-width検索・明示Search・compact二段操作・完全/部分一致・space-separated tags、account-local履歴/saved search（各10件）・accordion・bookmark-save・削除確認、tile size保存・advanced thresholds・creator mute確認を全control/state/PC/SP/7言語/狭幅/再訪/restart/account切替で実操作。D001.3との重複は証拠を相互参照するが現追加分を未確認のまま消さない。
+
+## D001.8 — FF count一括取得・端末内milestone・owner-only bookmarks差分
+
+status: `todo`。同HEAD差分。public FF count pair一括request・owner-only following・identity/list/visibility endpoint削除、匿名device-local milestone historyとaccount分離、新community_milestone_store、bookmark owner-onlyと他author bookmark入口/API削除をinventoryしUI/backend契約・公開/本人/別account/匿名/late completion/error/retry/通知既読/保存互換を実操作。追加workflow/fixtureを実backend/PASSへ代用しない。28path manifestはS24 resume0c021-recovery.json、旧CI8失敗はs23-followup-full-gates-CI.logに保存し現在HEADで切り分ける。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。

@@ -215,7 +215,10 @@ void main() {
       find.descendant(of: switcher, matching: find.byIcon(Icons.search)),
       findsOneWidget,
     );
-    await tester.enterText(find.byKey(const Key('communitySearchInput')), '手描き');
+    await tester.enterText(
+      find.byKey(const Key('communitySearchInput')),
+      '手描き',
+    );
     await tester.tap(find.byKey(const Key('communitySearchButton')));
     await tester.pumpAndSettle();
     await capture(root, '04_compact_tag_search', tester);

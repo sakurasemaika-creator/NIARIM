@@ -40,7 +40,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S23 — 初回公開/cache raw replay完了。CI fixture3反例追随、173distinct/analyze0、2testのみのfollowup公開へ
+current_substep: A003/S24 — Project/shared prefs18反例と正常delete cold参照残存の1反例。DISC037追加、native再現/修正へ
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -60,7 +60,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: A003_S23_20261028_RESUME.md現在section。CI追随2test/trigger/Stateを通常pushしsource310/新CI確認。その後DISC036 Project/sharedをfresh検証。
+next_action: S24検証済み単位を通常pushしremote/tree/paths/source313確認→現runtime cacheをDrive保存→最新Community旧API8error/旧CI8failを修正。未完了全体はA003_S24_20261029_RESUME.md参照。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
@@ -477,3 +477,48 @@ publication/cache replay receiptsのDrive1QYyzyX25X3hKGFPcncuGqPJCkQrvS1kv/16466
 
 以下は段階別履歴。途中の未push/pendingは上記の現在状態を上書きしない。
 
+
+## A003/S24 fresh persistence counters / DISC037
+
+# A003 / S24 — Project/shared保存失敗と削除後cold reload（2026-10-29）
+
+基準App41a37bf78b58684b87609279979ded91d25953de /Webbbc38015582d4f727d387df8bfd39ea4a1c13fd4。S23修正・CI fixture追随は公開/remote/tree/parent/exactpaths/実fetch/index/source310確認済み。現在の製品sourceは変更していない。S23の173distinct/main+fixture/analyze0・39native+downloaded runtime replay1を復元目的で再実行しない。新CIはTheme/guard/dashboard/Webguard成功、SaveSafety40828552979の全suite確認は継続。
+
+## fresh BEFORE
+
+Project folder create/rename/color/favorite/reparent/deleteの6操作、Shared folder create/rename/deleteの3操作×prefs false/throw=18反例。全てcaller error無し/notify1、メモリは変更、cold prefs reloadは旧状態。18FAIL/0PASS、全outcomeをprefs-before-results.jsonへ保存。これはcontrolled platform storeのservice境界であり、native FS/UI PASSではない。
+
+別の健康な保存先で、実64×64/1frameのniaproを作成・folder所属を明示保存した後deleteFolderをawait。memoryはrootだがdisk/cold reloadに旧folderIdが残り、folder定義だけ消えた。900Bのファイル自体とprojectロードは保持。新しいDISC037として登録し、UI上で隠れる等の影響は未確認のまま区別する。初回19FAIL/0PASS/0s。初回はraw niaproをteardownで消していたためtraceを保持し、同1反例のみraw前後ZIP保存のため追加実行、18prefsやS23は再実行していない。
+
+Scope: DISC036関連Project/sharedのfalse success、DISC037の正常folder削除のcold参照整合性。Baseline2/628/currentA003、Discovery cursor001・DISC001–037 todo、Delta37not_startedを維持。sourceだけでUI不可視や実ユーザー被害は断定しない。
+
+## 次の具体的操作
+
+1. 現19反例とraw niapro/StateをDriveへ保存/readback。
+2. S23と同一source310/kernel0b5のキャッシュを使い、S24専用ordinary datasetを新規生成。S23datasetを変えず、実folder内project/thumbnailを先に表示し、exact backup後に親folderをUIで削除→root→停止/cold restart→所属とvisible project数を比較。原本・prefs/niapro hash・folder定義を保存。
+3. 全callerと非同期save queueをinventoryし、clone→永続化成功→publish、false/throw/rollback、Project niaproとprefs両保存の整合、取消/連打/部分保存/再試行を実装・再操作・regression。Project/shared move callerも対象にする。
+4. 最新remote取り込み・検証済み単位の通常push/CI/cache保存まで進める。全体の未完了をdoneにしない。
+
+## 再開用保存
+
+S23 receipt core Drive11JJcSBg4YexHGMsEetUdQsULRxAHoqN9/16513911B/SHAaf7f4d51795660f3a39d6d714ec55ed3171f0d9b97bb055b49c09661d1185b8eは全1254manifest/metadata/rawSHA/CRC確認済み。現compiled runtime Drive1jocv6x5260xNV69IFjfDA8ftdvFJ1C1S/31865317B/SHA787a4463d18a7785db012d64b6e59286e9374cd5d216a04da5f54d12d004dd4eは165delta+59base全224hash、actualdownloaded replay済み。source anchor261646eと現41aは全310Dart同一。再生だけならSDK/pub/rebuild不要。
+
+App停止、S23console10856/Xvfb85。保護font1022464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350をstageしない。CLIはguardでcanonical4ff87...を一時使用し必ず原本へ復元する。
+
+## 最新HEAD復帰（0c02171d）
+
+App0c02171d46b08d8ed297f158dc99e295ed8fcb67/Webbbc38015582d4f727d387df8bfd39ea4a1c13fd4を取得。監査authorityは41a37bfとbyte同一、保存済み19反例の6依存ファイルも同一（resume0c021-recovery.json）。19件を復元だけで再実行しない。追加28pathはD001.7/8へTODO登録、Baseline/Discovery/Deltaの完了数を増やさない。S24 nativeは削除前の観察しかなく未保存分を失ったため、最新sourceで新規build・専用datasetから再取得する。S23 cached0b5をlatest全Appとは扱わない。
+
+S23 followup SaveSafety40828552979はfull-gatesのみ失敗（2185 pass/23 skip/8 fail、format/analyze成功、他5job成功）。旧CI raw578736B/SHA1072185ab4f27c50d458f5e2b35204f54251605c55c6289876ac4bf97cb038a8を保存。内訳: visual-smoke icon曖昧1、account-boundary旧control finder2、tolerant prefs違反2pathで1、KO glyph2、filter dialog複数Switch1、Home favorites曖昧RenderObject1。現HEADで残るものを切り分け、assertionを弱めず実装/fixtureを修正する。全suite PASSとは記録しない。
+
+次の具体的操作: 現source生成bindingを維持し、normal mainとS24 fixtureをcanonical font guardでbuild。S24 native ordinaryでfolder内projectを事前表示→exact backupをDrive保存→UI削除→cold restartで実影響を取得する。product fixはまだない。
+
+S24最新0c021/native PC1440×900/enでDISC037の実影響を確認。Archive内A003001を事前表示・exact backup済み。favorite解除→Delete確認→直後root3projects→cold root2projects。全3niapro保持/同bytes、A003001だけ旧folderId。6original画像を個別目視。metadata/raw12manifest検証済みpre-delete ZIP: Drive1i1VQrP-52fFQIoEB7YPJjRS28Ba-uidw/118665B/SHA c822a47df9a721669ef7f61b112724487dd305845757fa517ce2566bdc558500。実機スマホ/外部backend/codec/全監査PASSへ昇格しない。次はProject/shared folder CRUD queue/prefs失敗とniapro所属変更を修正。
+
+S24 WIP: 18 prefs false/throw反例と健康な削除cold reload反例を修正後回帰し19PASS、既存project-folder8/WorkFolder16と合わせ43PASS。folder prefsは候補を先に保存しfalse/throwを返却、cache復元。Project/shared所属は同一serializer queue/atomic ZIP置換でmanifestのみ変更し他entry/unknown fieldsを保持、全参照project（trash含む）をroot保存後folder定義削除、部分失敗はfolderを残し再試行。背景saveはservice queue開始時の最新modelを読む。全caller await/error対応WIP、legacy孤立所属はUIでroot表示しraw参照は保持。新edit dialog/既存move/deleteの拡張はまだUI matrix/native AFTER未検証。最新HEAD由来full analyzerは22issue（旧test API欠落8・upstream lint等）で未PASS、詳細oct29-s24-wip-analyze.log。論理完了/push/全体doneにしない。次は追加race/partial/trash回帰→UI matrix→native AFTER→latest delta/CI失敗の切り分け。
+
+S24 AFTER: targeted analyzer9items0issue、追加transaction9PASS、新edit UI7locale×25sizes=175条件+既存Work failed1050条件/14実retry/short partialが4tests全PASS。main0c021 BEFOREと修正後fixture313Dart source/atomickernel dd14cb313a3f5b2c67d26950161a9ec8989cbc8ac125aa6f5ffb4b698d453454を記録。実native PC/enでlegacy old-stale dataがroot3件へ回復しniapro全bytes不変、healthy Delete→cold root3件を目視。旧niapro所属のみrootへ保存され他manifest/entryは不変。さらに実prefs.jsonをdirectoryにしてDeleteを失敗させ、folderは残り内容はroot、partial説明+同dialog再試行可能を目視、exactprefsをsameapp中に復元。retry/coldの最終画像をこれから判定。まだUI shared/SP/allcrud/native/perf/full-aggregateのclosureではない。
+
+S24保存更新: service43+transaction9+UI4+save-related27=83distinctが対象範囲でPASS（最初のcreate-dialog旧文言期待1FAILを実装修正して3PASS、assertionは保持）。追加edit matrix175とWork1050は別々の条件件数。native AFTER全画像を個別目視、ENPC削除/partial retry/cold/legacy回復、FRSP320×844/text2編集fail→同名色保持→320×220でerror wheel到達→復旧same-dialog retry成功、prefs実読戻しでS24 RETRY/pink/root保持。latest175UIもPASS。色selectionは正式surface/onSurface checkbadgeを追加し最終native目視をこれから行う。旧Drive17hXsmGpalGTmrShoS3UFfsaErfGt6Jf4はZIPがローカル/remoteとも途中で切れCRC不能、保存済み扱いにせずinvalid登録、fresh v2を作成する。前段WIP43ほかは全readback確認済み。次はlatest main+fixture build、selected badgeの実画像再確認→83結果/valid ZIP保存→単位push（全体/CI PASSとは言わない）→upstream CI8fail/新API旧test8errorの修正継続。
+
+S24公開前: 83distinct targeted/related PASS、edit175/Work1050条件PASS、対象analyze0/globalformat765files0change、最新main+fixture build成功。313source/current kernel e9646b867c26b1610fe296ef851da1a3b6e27561960a379034089a86a70bfe4a。FRSP320×844/text2の保存済み名色/selection checkをfinal kernelで目視、旧AFTER機能batch dd14との差分はcreate-error文言保持とcheckbadgeの2UI filesのみ（別hashで区別）。保存先faultは全解除。nativeAfterV2 Drive1K5Jy211p8K3-PmwqQTe3Bh2rINPbUjL_/18651782B/SHA631ea9af0cf4d2a4176f34a0c87a18284f7bc1d8b188d5ec08a168c1f13891fa、全1441manifest/rawCRC/metadata確認済み。invalid17hXは復元禁止。未解決: current Community旧API tests8compile error/旧CI8fail、native shared/全CRUD/全locale/pre-set/stateの最終closure、App残Baseline/Discovery/Delta/Web全体。通常pushはこの検証済み単位のみ、全面完了を宣言しない。次はpublication remote/tree/paths/source照合→runtime cache保存→Community CI repair。

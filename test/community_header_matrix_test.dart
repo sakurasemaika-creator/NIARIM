@@ -158,7 +158,10 @@ void main() {
               locale.toLanguageTag().toLowerCase(),
             );
             if (state == 'search' || state == 'tag-search') {
-              expect(find.byKey(const Key('communitySearchInput')), findsOneWidget);
+              expect(
+                find.byKey(const Key('communitySearchInput')),
+                findsOneWidget,
+              );
               if (state == 'tag-search') {
                 await tester.tap(
                   find.byKey(const Key('communitySearchModeToggle')),
@@ -287,7 +290,7 @@ void main() {
                     l10n.communitySortLabel,
                     l10n.communityTileSize,
                     l10n.communityContentFilterTitle,
-                                l10n.layerPanelHelpTooltip,
+                    l10n.layerPanelHelpTooltip,
                   ];
             for (final tip in tips) {
               final f = find.byTooltip(tip);

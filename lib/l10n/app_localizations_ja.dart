@@ -6923,13 +6923,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityDurationMaximum => '最長（分）';
 
   @override
-  String get communityTagExactMatch => 'タグを完全一致で検索する（オフなら部分一致）';
+  String get communityTagExactMatch => '検索語を完全一致で検索する（オフなら部分一致）';
 
   @override
-  String get communityMinimumViews => '最低再生回数';
+  String get communityMinimumViews => '再生回数';
 
   @override
-  String get communityMinimumBookmarks => '最低ブックマーク数';
+  String get communityMinimumBookmarks => 'ブックマーク数';
 
   @override
   String get communityPostPeriodAll => 'すべての期間';
@@ -6956,7 +6956,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityMutedAuthors => 'ミュートしたユーザー';
 
   @override
-  String get communityMutedAuthorsEmpty => 'ミュートしたユーザーはいません';
+  String get communityMutedAuthorsEmpty => 'ミュート中のユーザーはいません';
 
   @override
   String get communityMuteAuthor => 'このユーザーの作品をミュートする';
@@ -7620,4 +7620,78 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityCreatorLabel => '作者';
+
+  @override
+  String get communityThresholdAny => '条件なし';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '$count回再生以上';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '$count件以上';
+  }
+
+  @override
+  String get communityTileSize => '作品の表示サイズ';
+
+  @override
+  String get communityMutedWordsEmpty => 'ミュート中のキーワードはありません';
+
+  @override
+  String get communityMutedTagsEmpty => 'ミュート中のタグはありません';
+
+  @override
+  String get communityMuteShort => 'ミュート';
+
+  @override
+  String get communityMuteConfirmTitle => 'このユーザーをミュートしますか？';
+
+  @override
+  String get communityMuteConfirmBody => 'ミュートするとこのユーザーの作品は非表示になります。';
+
+  @override
+  String get communityMuteConfirmAction => 'ミュートする';
+
+  @override
+  String get communityUnmuteConfirmTitle => 'このユーザーのミュートを解除しますか？';
+
+  @override
+  String get communityUnmuteConfirmAction => '解除する';
+
+  @override
+  String get communityMuteNo => 'いいえ';
+
+  @override
+  String get communityMuteDone => 'このユーザーをミュートしました';
+
+  @override
+  String get communityUnmuteDone => 'このユーザーのミュートを解除しました';
+
+  @override
+  String get communityMilestoneNotificationsTitle => '通知';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return 'フォロワーが$count人に達しました';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '作品「$title」のブックマークが$count件に達しました';
+  }
+
+  @override
+  String get communitySearchHistory => '検索履歴';
+
+  @override
+  String get communitySearchHistoryEmpty => '検索履歴はありません';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => '保存した検索条件を削除しますか？';
+
+  @override
+  String get communitySortLabel => '並び替え';
 }

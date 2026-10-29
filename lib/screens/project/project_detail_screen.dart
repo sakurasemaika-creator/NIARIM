@@ -1,3 +1,4 @@
+import '../home/widgets/work_folder_move_sheet.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 
@@ -746,48 +747,15 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   void _showMoveToFolderDialog(BuildContext context, ProjectService service) {
-    final l10n = AppLocalizations.of(context)!;
-    final folders = service.folders;
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                l10n.folderMoveToTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.folder_open),
-              title: Text(l10n.folderNone),
-              onTap: () {
-                service.moveToFolder(widget.projectId, null);
-                Navigator.pop(ctx);
-              },
-            ),
-            ...folders.map(
-              (folder) => ListTile(
-                leading: Icon(
-                  Icons.folder,
-                  color: folder.color != null ? Color(folder.color!) : null,
-                ),
-                title: Text(folder.name),
-                onTap: () {
-                  service.moveToFolder(widget.projectId, folder.id);
-                  Navigator.pop(ctx);
-                },
-              ),
-            ),
-          ],
-        ),
+      builder: (_) => WorkFolderMoveSheet(
+        folders: service.folders,
+        filename: service.projects
+            .where((p) => p.id == widget.projectId)
+            .first
+            .name,
+        onMove: (id) => service.moveToFolder(widget.projectId, id),
       ),
     );
   }

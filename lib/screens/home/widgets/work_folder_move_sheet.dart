@@ -12,11 +12,17 @@ class WorkFolderMoveSheet extends StatefulWidget {
     required this.folders,
     required this.onMove,
     required this.filename,
+    this.onCreate,
+    this.onEdit,
+    this.rootLabel,
   });
 
   final List<ProjectFolder> folders;
   final Future<void> Function(String? folderId) onMove;
   final String filename;
+  final VoidCallback? onCreate;
+  final void Function(ProjectFolder folder)? onEdit;
+  final String? rootLabel;
 
   @override
   State<WorkFolderMoveSheet> createState() => _WorkFolderMoveSheetState();
@@ -91,7 +97,7 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
             ListTile(
               minTileHeight: 48,
               leading: leading(null, Icons.folder_off_outlined),
-              title: Text(l10n.folderNone),
+              title: Text(widget.rootLabel ?? l10n.folderNone),
               onTap: _saving ? null : () => _move(null),
             ),
             for (final folder in widget.folders)
@@ -99,7 +105,27 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
                 minTileHeight: 48,
                 leading: leading(folder.id, Icons.folder_outlined),
                 title: Text(folder.name),
+                trailing: widget.onEdit == null
+                    ? null
+                    : IconButton(
+                        tooltip: l10n.projectListEditFolderTooltip,
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: _saving
+                            ? null
+                            : () => widget.onEdit!(folder),
+                      ),
                 onTap: _saving ? null : () => _move(folder.id),
+              ),
+            if (widget.onCreate != null)
+              ListTile(
+                leading: const Icon(Icons.create_new_folder_outlined),
+                title: Text(l10n.projectListCreateFolderAction),
+                onTap: _saving
+                    ? null
+                    : () {
+                        closeFolderRoute(context);
+                        widget.onCreate!();
+                      },
               ),
           ],
         ),

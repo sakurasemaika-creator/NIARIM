@@ -6958,13 +6958,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityDurationMaximum => '최대 길이 (분)';
 
   @override
-  String get communityTagExactMatch => '태그 정확히 일치 (끄면 부분 일치)';
+  String get communityTagExactMatch => '검색어 완전 일치(끄면 부분 일치)';
 
   @override
-  String get communityMinimumViews => '최소 조회 수';
+  String get communityMinimumViews => '조회수';
 
   @override
-  String get communityMinimumBookmarks => '최소 북마크 수';
+  String get communityMinimumBookmarks => '북마크';
 
   @override
   String get communityPostPeriodAll => '전체 기간';
@@ -7657,4 +7657,78 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityCreatorLabel => '작성자';
+
+  @override
+  String get communityThresholdAny => '조건 없음';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '조회수 $count회 이상';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '북마크 $count개 이상';
+  }
+
+  @override
+  String get communityTileSize => '작품 타일 크기';
+
+  @override
+  String get communityMutedWordsEmpty => '뮤트한 키워드가 없습니다';
+
+  @override
+  String get communityMutedTagsEmpty => '뮤트한 태그가 없습니다';
+
+  @override
+  String get communityMuteShort => '뮤트';
+
+  @override
+  String get communityMuteConfirmTitle => '이 사용자를 뮤트할까요?';
+
+  @override
+  String get communityMuteConfirmBody => '이 사용자의 작품이 표시되지 않습니다.';
+
+  @override
+  String get communityMuteConfirmAction => '뮤트';
+
+  @override
+  String get communityUnmuteConfirmTitle => '이 사용자의 뮤트를 해제할까요?';
+
+  @override
+  String get communityUnmuteConfirmAction => '해제';
+
+  @override
+  String get communityMuteNo => '아니요';
+
+  @override
+  String get communityMuteDone => '사용자를 뮤트했습니다';
+
+  @override
+  String get communityUnmuteDone => '사용자 뮤트를 해제했습니다';
+
+  @override
+  String get communityMilestoneNotificationsTitle => '알림';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return '팔로워가 $count명에 도달했습니다';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '「$title」 작품의 북마크가 $count개에 도달했습니다';
+  }
+
+  @override
+  String get communitySearchHistory => '검색 기록';
+
+  @override
+  String get communitySearchHistoryEmpty => '검색 기록이 없습니다';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => '저장된 검색 조건을 삭제할까요?';
+
+  @override
+  String get communitySortLabel => '정렬';
 }

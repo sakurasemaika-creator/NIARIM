@@ -12740,19 +12740,19 @@ abstract class AppLocalizations {
   /// No description provided for @communityTagExactMatch.
   ///
   /// In ja, this message translates to:
-  /// **'タグを完全一致で検索する（オフなら部分一致）'**
+  /// **'検索語を完全一致で検索する（オフなら部分一致）'**
   String get communityTagExactMatch;
 
   /// No description provided for @communityMinimumViews.
   ///
   /// In ja, this message translates to:
-  /// **'最低再生回数'**
+  /// **'再生回数'**
   String get communityMinimumViews;
 
   /// No description provided for @communityMinimumBookmarks.
   ///
   /// In ja, this message translates to:
-  /// **'最低ブックマーク数'**
+  /// **'ブックマーク数'**
   String get communityMinimumBookmarks;
 
   /// No description provided for @communityPostPeriodAll.
@@ -12806,7 +12806,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityMutedAuthorsEmpty.
   ///
   /// In ja, this message translates to:
-  /// **'ミュートしたユーザーはいません'**
+  /// **'ミュート中のユーザーはいません'**
   String get communityMutedAuthorsEmpty;
 
   /// No description provided for @communityMuteAuthor.
@@ -13984,6 +13984,138 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'作者'**
   String get communityCreatorLabel;
+
+  /// No description provided for @communityThresholdAny.
+  ///
+  /// In ja, this message translates to:
+  /// **'条件なし'**
+  String get communityThresholdAny;
+
+  /// No description provided for @communityMinimumViewsOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}回再生以上'**
+  String communityMinimumViewsOption(String count);
+
+  /// No description provided for @communityMinimumBookmarksOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件以上'**
+  String communityMinimumBookmarksOption(String count);
+
+  /// No description provided for @communityTileSize.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の表示サイズ'**
+  String get communityTileSize;
+
+  /// No description provided for @communityMutedWordsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュート中のキーワードはありません'**
+  String get communityMutedWordsEmpty;
+
+  /// No description provided for @communityMutedTagsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュート中のタグはありません'**
+  String get communityMutedTagsEmpty;
+
+  /// No description provided for @communityMuteShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュート'**
+  String get communityMuteShort;
+
+  /// No description provided for @communityMuteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーをミュートしますか？'**
+  String get communityMuteConfirmTitle;
+
+  /// No description provided for @communityMuteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートするとこのユーザーの作品は非表示になります。'**
+  String get communityMuteConfirmBody;
+
+  /// No description provided for @communityMuteConfirmAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートする'**
+  String get communityMuteConfirmAction;
+
+  /// No description provided for @communityUnmuteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーのミュートを解除しますか？'**
+  String get communityUnmuteConfirmTitle;
+
+  /// No description provided for @communityUnmuteConfirmAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'解除する'**
+  String get communityUnmuteConfirmAction;
+
+  /// No description provided for @communityMuteNo.
+  ///
+  /// In ja, this message translates to:
+  /// **'いいえ'**
+  String get communityMuteNo;
+
+  /// No description provided for @communityMuteDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーをミュートしました'**
+  String get communityMuteDone;
+
+  /// No description provided for @communityUnmuteDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーのミュートを解除しました'**
+  String get communityUnmuteDone;
+
+  /// No description provided for @communityMilestoneNotificationsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知'**
+  String get communityMilestoneNotificationsTitle;
+
+  /// No description provided for @communityFollowerMilestone.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワーが{count}人に達しました'**
+  String communityFollowerMilestone(String count);
+
+  /// No description provided for @communityBookmarkMilestone.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品「{title}」のブックマークが{count}件に達しました'**
+  String communityBookmarkMilestone(String title, String count);
+
+  /// No description provided for @communitySearchHistory.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索履歴'**
+  String get communitySearchHistory;
+
+  /// No description provided for @communitySearchHistoryEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索履歴はありません'**
+  String get communitySearchHistoryEmpty;
+
+  /// No description provided for @communityDeleteSavedSearchConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存した検索条件を削除しますか？'**
+  String get communityDeleteSavedSearchConfirm;
+
+  /// No description provided for @communitySortLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'並び替え'**
+  String get communitySortLabel;
 }
 
 class _AppLocalizationsDelegate

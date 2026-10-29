@@ -33,6 +33,7 @@ import 'widgets/home_drawer.dart';
 import 'widgets/exported_work_card.dart';
 import 'widgets/exported_work_preview_layout.dart';
 import 'widgets/folder_delete_dialog.dart';
+import 'widgets/folder_save_feedback.dart';
 import 'widgets/work_folder_move_sheet.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
@@ -352,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen>
                         _clipboardProjectIds.length +
                             _clipboardFolderIds.length,
                       ),
-                      onPressed: _pasteClipboard,
+                      onPressed: _pasting ? null : _pasteClipboard,
                     ),
                   PopupMenuButton<ProjectViewMode>(
                     icon: const Icon(Icons.view_module),
@@ -896,35 +897,52 @@ class _HomeScreenState extends State<HomeScreen>
   /// nullはルート直下）へ貼り付ける。切り取りの場合は移動して
   /// クリップボードを空にし、コピーの場合は複製してクリップボードは
   /// 保持したままにする。
-  void _pasteClipboard() {
-    final l10n = AppLocalizations.of(context)!;
+  bool _pasting = false;
+  Future<void> _pasteClipboard() async {
+    if (_pasting) return;
+    setState(() => _pasting = true);
     final service = context.read<ProjectService>();
     final isCut = _clipboardIsCut;
-    for (final id in _clipboardProjectIds) {
+    try {
+      for (final id in _clipboardProjectIds.toList()) {
+        if (isCut) {
+          await service.moveToFolder(id, _currentFolderId);
+          _clipboardProjectIds.remove(id);
+        } else {
+          await service.duplicateProject(
+            id,
+            targetFolderId: _currentFolderId,
+            useTargetFolder: true,
+          );
+        }
+      }
       if (isCut) {
-        service.moveToFolder(id, _currentFolderId);
-      } else {
-        service.duplicateProject(
-          id,
-          targetFolderId: _currentFolderId,
-          useTargetFolder: true,
+        for (final id in _clipboardFolderIds.toList()) {
+          await service.moveFolderTo(id, _currentFolderId);
+          _clipboardFolderIds.remove(id);
+        }
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.homePasteSnackbar),
+          ),
         );
       }
-    }
-    if (isCut) {
-      for (final id in _clipboardFolderIds) {
-        service.moveFolderTo(id, _currentFolderId);
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              folderSaveFailureText(AppLocalizations.of(context)!, error),
+            ),
+          ),
+        );
       }
+    } finally {
+      if (mounted) setState(() => _pasting = false);
     }
-    if (isCut) {
-      setState(() {
-        _clipboardProjectIds.clear();
-        _clipboardFolderIds.clear();
-      });
-    }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.homePasteSnackbar)));
   }
 
   /// フォルダ階層のパンくずリスト。フォルダ内移動時に現在位置を表示する。
@@ -1373,7 +1391,12 @@ class _SharedTab extends StatelessWidget {
     return _FolderableList<Project>(
       allItems: shared,
       folders: context.watch<ProjectService>().sharedFolders,
-      folderIdOf: (p) => p.sharedFolderId,
+      folderIdOf: (p) =>
+          context.read<ProjectService>().sharedFolders.any(
+            (f) => f.id == p.sharedFolderId,
+          )
+          ? p.sharedFolderId
+          : null,
       onEnterFolder: (folderId, folderName, itemsInFolder) =>
           Navigator.of(context).push(
             adMockMaterialPageRoute(
@@ -1421,33 +1444,13 @@ class _SharedTab extends StatelessWidget {
   }
 
   void _showMoveToSharedFolderSheet(BuildContext context, Project project) {
-    final l10n = AppLocalizations.of(context)!;
     final service = context.read<ProjectService>();
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.folder_off_outlined),
-              title: Text(l10n.folderNone),
-              onTap: () {
-                service.moveToSharedFolder(project.id, null);
-                Navigator.pop(ctx);
-              },
-            ),
-            for (final f in service.sharedFolders)
-              ListTile(
-                leading: const Icon(Icons.folder_outlined),
-                title: Text(f.name),
-                onTap: () {
-                  service.moveToSharedFolder(project.id, f.id);
-                  Navigator.pop(ctx);
-                },
-              ),
-          ],
-        ),
+      builder: (_) => WorkFolderMoveSheet(
+        folders: service.sharedFolders,
+        filename: project.name,
+        onMove: (id) => service.moveToSharedFolder(project.id, id),
       ),
     );
   }

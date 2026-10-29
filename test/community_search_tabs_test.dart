@@ -61,18 +61,25 @@ void main() {
       '',
     );
   });
-  testWidgets('space-delimited tags must all match exactly by default', (tester) async {
+  testWidgets('space-delimited tags must all match exactly by default', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final works = buildDummyCommunityWorks();
-    final expected = works.where((work) =>
-        work.tags.contains('手描き') && work.tags.contains('オリジナル')).length;
+    final expected = works
+        .where(
+          (work) => work.tags.contains('手描き') && work.tags.contains('オリジナル'),
+        )
+        .length;
     expect(expected, greaterThan(0));
     await tester.pumpWidget(app(initialTag: '手描き オリジナル'));
     await tester.pumpAndSettle();
     expect(find.byType(CommunityWorkCard), findsNWidgets(expected));
   });
 
-  testWidgets('keyword search switches between partial and exact matches', (tester) async {
+  testWidgets('keyword search switches between partial and exact matches', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(app(initialTag: '手描き'));
     await tester.pumpAndSettle();
@@ -86,7 +93,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('communityTagExactMatch')));
     await tester.tap(find.byKey(const Key('communityTagExactMatch')));
-    await tester.ensureVisible(find.byKey(const Key('communityContentFilterSaveButton')));
+    await tester.ensureVisible(
+      find.byKey(const Key('communityContentFilterSaveButton')),
+    );
     await tester.tap(find.byKey(const Key('communityContentFilterSaveButton')));
     await tester.pumpAndSettle();
     expect(find.byType(CommunityWorkCard), findsNothing);

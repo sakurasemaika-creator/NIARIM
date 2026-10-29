@@ -29,7 +29,9 @@ class _CommunityFollowNotificationsScreenState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final notifications = context.watch<CommunityService>().milestoneNotifications;
+    final notifications = context
+        .watch<CommunityService>()
+        .milestoneNotifications;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.communityMilestoneNotificationsTitle)),
       body: desktopCentered(

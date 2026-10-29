@@ -14,6 +14,11 @@ on:
       - "lib/services/recorded_filter_apply_service.dart"
       - "lib/services/autosave_service.dart"
       - "test/project_save_safety_test.dart"
+      - "lib/utils/folder_persistence.dart"
+      - "lib/screens/home/widgets/project_folder_edit_dialog.dart"
+      - "test/project_folder_persistence_test.dart"
+      - "test/project_folder_transaction_test.dart"
+      - "test/project_folder_edit_ui_test.dart"
       - "lib/screens/home/home_screen.dart"
       - "lib/services/work_folder_service.dart"
       - "lib/screens/home/widgets/project_list_widget.dart"
@@ -185,7 +190,7 @@ jobs:
         run: |
           mkdir -p artifacts/save-safety
           set -o pipefail
-          flutter test --no-pub --reporter expanded test/project_save_safety_test.dart test/tile_manager_test.dart test/save_slot_overwrite_test.dart test/save_slot_confirmation_dialog_test.dart test/save_slot_action_buttons_test.dart test/save_tree_lazy_list_test.dart 2>&1 | tee artifacts/save-safety/green.log
+          flutter test --no-pub --reporter expanded test/project_save_safety_test.dart test/project_folder_persistence_test.dart test/project_folder_transaction_test.dart test/project_folder_edit_ui_test.dart test/tile_manager_test.dart test/save_slot_overwrite_test.dart test/save_slot_confirmation_dialog_test.dart test/save_slot_action_buttons_test.dart test/save_tree_lazy_list_test.dart 2>&1 | tee artifacts/save-safety/green.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
