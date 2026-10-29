@@ -3199,5 +3199,10 @@
   "communityUnmuteConfirmAction": "해제",
   "communityMuteNo": "아니요",
   "communityMuteDone": "사용자를 뮤트했습니다",
-  "communityUnmuteDone": "사용자 뮤트를 해제했습니다"
+  "communityUnmuteDone": "사용자 뮤트를 해제했습니다",
+  "communityMilestoneNotificationsTitle": "알림",
+  "communityFollowerMilestone": "팔로워가 {count}명에 도달했습니다",
+  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "communityBookmarkMilestone": "「{title}」 작품의 북마크가 {count}개에 도달했습니다",
+  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}}
 }

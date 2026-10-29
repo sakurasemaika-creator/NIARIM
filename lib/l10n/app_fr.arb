@@ -3199,5 +3199,10 @@
   "communityUnmuteConfirmAction": "Rétablir",
   "communityMuteNo": "Non",
   "communityMuteDone": "Utilisateur masqué",
-  "communityUnmuteDone": "Utilisateur rétabli"
+  "communityUnmuteDone": "Utilisateur rétabli",
+  "communityMilestoneNotificationsTitle": "Notifications",
+  "communityFollowerMilestone": "Vous avez atteint {count} abonnés",
+  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "communityBookmarkMilestone": "« {title} » a atteint {count} favoris",
+  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}}
 }

@@ -3199,5 +3199,10 @@
   "communityUnmuteConfirmAction": "Activar",
   "communityMuteNo": "No",
   "communityMuteDone": "Usuario silenciado",
-  "communityUnmuteDone": "Usuario reactivado"
+  "communityUnmuteDone": "Usuario reactivado",
+  "communityMilestoneNotificationsTitle": "Notificaciones",
+  "communityFollowerMilestone": "Has alcanzado {count} seguidores",
+  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "communityBookmarkMilestone": "«{title}» alcanzó {count} marcadores",
+  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}}
 }

@@ -3199,5 +3199,10 @@
   "communityUnmuteConfirmAction": "取消屏蔽",
   "communityMuteNo": "否",
   "communityMuteDone": "已屏蔽此用户",
-  "communityUnmuteDone": "已取消屏蔽"
+  "communityUnmuteDone": "已取消屏蔽",
+  "communityMilestoneNotificationsTitle": "通知",
+  "communityFollowerMilestone": "关注者达到 {count} 人",
+  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "communityBookmarkMilestone": "作品《{title}》的收藏达到 {count} 个",
+  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}}
 }

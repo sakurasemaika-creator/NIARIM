@@ -3206,5 +3206,10 @@
   "communityUnmuteConfirmAction": "Unmute",
   "communityMuteNo": "No",
   "communityMuteDone": "User muted",
-  "communityUnmuteDone": "User unmuted"
+  "communityUnmuteDone": "User unmuted",
+  "communityMilestoneNotificationsTitle": "Notifications",
+  "communityFollowerMilestone": "You reached {count} followers",
+  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "communityBookmarkMilestone": "“{title}” reached {count} bookmarks",
+  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}}
 }

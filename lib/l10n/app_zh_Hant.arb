@@ -3199,5 +3199,10 @@
   "communityUnmuteConfirmAction": "解除封鎖",
   "communityMuteNo": "否",
   "communityMuteDone": "已封鎖使用者",
-  "communityUnmuteDone": "已解除封鎖"
+  "communityUnmuteDone": "已解除封鎖",
+  "communityMilestoneNotificationsTitle": "通知",
+  "communityFollowerMilestone": "追蹤者達到 {count} 人",
+  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "communityBookmarkMilestone": "作品《{title}》的收藏達到 {count} 個",
+  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}}
 }
