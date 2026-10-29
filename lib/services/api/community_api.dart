@@ -88,13 +88,17 @@ class CommunityApi {
     return ApiFollowers.fromJson(json);
   }
 
-  /// Counts only; no follower or following identities are exposed.
-  Future<int> followerCount(String userId) async {
+  /// Public totals only. This API does not return any follower identities.
+  Future<({int followers, int following})> socialCounts(String userId) async {
     final json = await _client.getJson(
       '/users/${Uri.encodeComponent(userId)}/social-counts',
     );
-    final raw = json['followerCount'];
-    return raw is int ? raw : 0;
+    final followers = json['followerCount'];
+    final following = json['followingCount'];
+    return (
+      followers: followers is int ? followers : 0,
+      following: following is int ? following : 0,
+    );
   }
 
   Future<List<ApiUserRef>> following(
