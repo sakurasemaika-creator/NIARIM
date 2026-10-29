@@ -88,6 +88,15 @@ class CommunityApi {
     return ApiFollowers.fromJson(json);
   }
 
+  /// Counts only; no follower or following identities are exposed.
+  Future<int> followerCount(String userId) async {
+    final json = await _client.getJson(
+      '/users/${Uri.encodeComponent(userId)}/social-counts',
+    );
+    final raw = json['followerCount'];
+    return raw is int ? raw : 0;
+  }
+
   Future<List<ApiUserRef>> following(
     String userId, {
     bool asOwner = false,
@@ -221,14 +230,6 @@ class CommunityApi {
       body: {'public': public},
     );
     return json['bookmarksPublic'] == true;
-  }
-
-  Future<bool> setFollowersPublic(String userId, bool public) async {
-    final json = await _client.patchJson(
-      '/users/${Uri.encodeComponent(userId)}/follow-visibility',
-      body: {'public': public},
-    );
-    return json['followersPublic'] == true;
   }
 
   Future<void> reportWork({required String workId, required String reason}) =>
