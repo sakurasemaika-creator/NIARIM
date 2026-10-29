@@ -9,6 +9,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
+import 'package:niarim/models/community_work.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/screens/community/community_author_works_screen.dart';
