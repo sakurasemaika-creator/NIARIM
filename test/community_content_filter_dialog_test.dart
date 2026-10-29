@@ -327,7 +327,7 @@ void main() {
     await tester.tap(toggle);
     await tester.pumpAndSettle();
     expect(service.isAuthorMuted(authorWork.authorId), isFalse);
-    final l10n = l10nOf(tester);
+    final l10n = AppLocalizations.of(tester.element(toggle))!;
     expect(find.text(l10n.communityMuteConfirmTitle), findsOneWidget);
     await tester.tap(find.text(l10n.communityMuteNo));
     await tester.pumpAndSettle();
