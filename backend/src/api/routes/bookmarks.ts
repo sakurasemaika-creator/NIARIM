@@ -3,13 +3,11 @@ import {
   GetCommand,
   QueryCommand,
   TransactWriteCommand,
-  UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate, tryAuthenticate, getUser } from "../../lib/auth";
-import { badRequest, forbidden, notFound, ok } from "../../lib/response";
-import { parseJsonObject } from "../../lib/request";
+import { forbidden, notFound, ok } from "../../lib/response";
 import type { BookmarkItem, WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 import { toPublicWork } from "./_publicWork";
