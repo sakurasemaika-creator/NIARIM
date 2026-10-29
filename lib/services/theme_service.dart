@@ -919,6 +919,7 @@ class ThemeService extends ChangeNotifier {
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
+          side: BorderSide.none,
         ),
       ),
       // Flutter既定のツールチップは下地が90%の不透明度で、後ろの画面が

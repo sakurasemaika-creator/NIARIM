@@ -237,7 +237,7 @@ void main() {
         tester.renderObject<RenderParagraph>(menuTitle).text.style?.color,
         service.current.menuTextColor,
       );
-      Scaffold.of(tester.element(drawer)).closeDrawer();
+      Scaffold.of(tester.element(drawer)).closeEndDrawer();
       await tester.pumpAndSettle();
     }
     expect(tester.takeException(), isNull);
@@ -294,40 +294,45 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('home bottom FABs and drawer icon obey navigation layout', (
+  testWidgets('home back arrow, right drawer and scroll-to-top obey layout', (
     tester,
   ) async {
     final l10n = await open(tester);
-    final backFinder = find.byKey(const Key('homeBackToSplashFab'));
+    final backFinder = find.byKey(const Key('homeBackToSplashButton'));
+    final scrollFinder = find.byKey(const Key('homeScrollToTopFab'));
     expect(backFinder, findsOneWidget);
+    expect(scrollFinder, findsOneWidget);
     expect(find.text(l10n.homeFavoritesOnly), findsOneWidget);
     final fabs = find.byType(FloatingActionButton);
     expect(fabs, findsNWidgets(2));
-    final back = tester.widget<FloatingActionButton>(backFinder);
-    expect(back.elevation, 0);
-    expect(back.shape, isA<CircleBorder>());
-    expect((back.shape! as CircleBorder).side, BorderSide.none);
+    final scrollFab = tester.widget<FloatingActionButton>(scrollFinder);
+    expect(scrollFab.elevation, 0);
+    expect(scrollFab.shape, isA<CircleBorder>());
+    expect((scrollFab.shape! as CircleBorder).side, BorderSide.none);
     final add = tester.widget<FloatingActionButton>(fabs.last);
     expect(add.elevation, 0);
     expect(add.shape, isA<CircleBorder>());
     expect((add.shape! as CircleBorder).side, BorderSide.none);
-    final leftCenter = tester.getCenter(backFinder);
+    final leftCenter = tester.getCenter(scrollFinder);
     final rightCenter = tester.getCenter(fabs.last);
     expect(leftCenter.dx, lessThan(rightCenter.dx));
     expect((leftCenter.dy - rightCenter.dy).abs(), lessThan(2));
     expect(leftCenter.dx, lessThan(80));
     expect(rightCenter.dx, greaterThan(310));
-    // The hamburger stays at the top left, the splash arrow is lower left.
+    // The splash arrow is top-left; the menu is top-right of search.
     final drawerIcon = find.descendant(
       of: find.byType(AppBar).first,
       matching: find.byIcon(Icons.menu),
     );
     expect(drawerIcon, findsOneWidget);
+    expect(tester.getCenter(backFinder).dx, lessThan(60));
+    expect(tester.getCenter(drawerIcon).dx,
+        greaterThan(tester.getCenter(find.byIcon(Icons.search).first).dx));
     expect(tester.getCenter(drawerIcon).dy, lessThan(leftCenter.dy));
 
     await switchTab(tester, 2);
     expect(backFinder, findsOneWidget);
-    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -355,7 +360,7 @@ void main() {
                 )
                 .first,
           )
-          .openDrawer();
+          .openEndDrawer();
       await tester.pumpAndSettle();
       final item = find.descendant(
         of: find.byType(Drawer),
@@ -587,10 +592,10 @@ void main() {
                   )
                   .first,
             )
-            .openDrawer();
+            .openEndDrawer();
         await tester.pumpAndSettle();
         await capture(tester, 'drawer-$suffix');
-        Scaffold.of(tester.element(find.byType(Drawer))).closeDrawer();
+        Scaffold.of(tester.element(find.byType(Drawer))).closeEndDrawer();
         await tester.pumpAndSettle();
       }
     }

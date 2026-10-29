@@ -559,7 +559,7 @@ void main() {
     final scaffoldState = tester.state<ScaffoldState>(
       find.byType(Scaffold).first,
     );
-    scaffoldState.openDrawer();
+    scaffoldState.openEndDrawer();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
@@ -2098,7 +2098,7 @@ void main() {
     final scaffoldState = tester.state<ScaffoldState>(
       find.byType(Scaffold).first,
     );
-    scaffoldState.openDrawer();
+    scaffoldState.openEndDrawer();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'ドロワー表示で例外');

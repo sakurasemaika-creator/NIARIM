@@ -101,6 +101,7 @@ void main() {
         findsOneWidget);
     expect(find.byKey(const Key('communityWorkSettingsAiFlag')),
         findsOneWidget);
+    expect(find.byKey(const Key('communityWorkTagAdd')), findsOneWidget);
     expect(find.byKey(const Key('communityMyWorksBulkActions')), findsNothing);
 
     final before = work.containsGenerativeAiImageOrVideo;
@@ -124,6 +125,46 @@ void main() {
     expect(find.byType(CommunityWorkSettingsScreen), findsNothing);
     expect(service.byId(work.id), isNull);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('owner can add, edit, lock, unlock and remove work tags',
+      (tester) async {
+    final (service, _) = await setup(tester);
+    final work = service.worksByAuthor(
+      kDummySelfAuthorId, includeHidden: true,
+    ).first;
+    await tester.tap(find.byKey(ValueKey('communityMyWorksSettings-${work.id}')));
+    await tester.pumpAndSettle();
+    final add = find.byKey(const Key('communityWorkTagAdd'));
+    await tester.ensureVisible(add);
+    await tester.tap(add);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.byKey(const Key('communityWorkTagInput')), '追加テスト');
+    await tester.tap(find.byKey(const Key('communityWorkTagSave')));
+    await tester.pumpAndSettle();
+    expect(service.byId(work.id)!.tags, contains('追加テスト'));
+
+    await tester.tap(find.byKey(const Key('communityWorkTagEdit-追加テスト')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.byKey(const Key('communityWorkTagInput')), '編集済み');
+    await tester.tap(find.byKey(const Key('communityWorkTagSave')));
+    await tester.pumpAndSettle();
+    expect(service.byId(work.id)!.tags, contains('編集済み'));
+    expect(service.byId(work.id)!.tags, isNot(contains('追加テスト')));
+
+    await tester.tap(find.byKey(const Key('communityWorkTagLock-編集済み')));
+    await tester.pumpAndSettle();
+    expect(service.byId(work.id)!.lockedTags, contains('編集済み'));
+    expect(tester.widget<IconButton>(
+      find.byKey(const Key('communityWorkTagDelete-編集済み'))).onPressed, isNull);
+    await tester.tap(find.byKey(const Key('communityWorkTagLock-編集済み')));
+    await tester.pumpAndSettle();
+    expect(service.byId(work.id)!.lockedTags, isNot(contains('編集済み')));
+    await tester.tap(find.byKey(const Key('communityWorkTagDelete-編集済み')));
+    await tester.pumpAndSettle();
+    expect(service.byId(work.id)!.tags, isNot(contains('編集済み')));
   });
 
   testWidgets('my public works page button appears directly under Post',

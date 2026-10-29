@@ -29,6 +29,89 @@ class _CommunityWorkSettingsScreenState
     extends State<CommunityWorkSettingsScreen> {
   bool _busy = false;
 
+  Future<void> _editTag(CommunityWork work, {String? original}) async {
+    if (_busy) return;
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<CommunityService>();
+    var entered = original ?? '';
+    final tag = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(original == null
+            ? l10n.communityAddTagDialogTitle
+            : l10n.communityWorkEditTag),
+        content: TextFormField(
+          key: const Key('communityWorkTagInput'),
+          autofocus: true,
+          initialValue: entered,
+          maxLength: 30,
+          decoration: InputDecoration(hintText: l10n.communityAddTagDialogHint),
+          onChanged: (value) => entered = value,
+          onFieldSubmitted: (value) => Navigator.pop(dialogContext, value),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            key: const Key('communityWorkTagSave'),
+            onPressed: () => Navigator.pop(dialogContext, entered),
+            child: Text(l10n.commonSave),
+          ),
+        ],
+      ),
+    );
+    final next = tag?.trim();
+    if (!mounted || next == null || next.isEmpty || next == original) return;
+    if (service.byId(work.id)?.tags.contains(next) == true) return;
+    if (next.length > 30) return;
+    if (original == null &&
+        work.tags.length >= CommunityService.maxTagsPerWork) {
+      _showError(StateError(l10n.communityErrorTagLimitExceeded(
+          CommunityService.maxTagsPerWork)));
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      // The existing API implements add/remove as separate, conditional
+      // operations. Roll back the old tag if the replacement is rejected.
+      if (original != null && await service.removeTag(work.id, original) != true) {
+        _showError(service.lastError ?? StateError(l10n.communityWorkTagChangeFailed));
+        return;
+      }
+      final added = await service.addTag(work.id, next);
+      if (added != true) {
+        if (original != null) await service.addTag(work.id, original);
+        _showError(service.lastError ?? StateError(l10n.communityWorkTagChangeFailed));
+      }
+    } catch (error) {
+      if (mounted) _showError(error);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _changeTag(CommunityWork work, String tag,
+      {required bool remove}) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final service = context.read<CommunityService>();
+      final done = remove
+          ? await service.removeTag(work.id, tag)
+          : await service.toggleTagLock(work.id, tag);
+      if (done != true && mounted) {
+        _showError(service.lastError ??
+            StateError(AppLocalizations.of(context)!.communityWorkTagChangeFailed));
+      }
+    } catch (error) {
+      if (mounted) _showError(error);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   void _showError(Object error) {
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -200,6 +283,71 @@ class _CommunityWorkSettingsScreenState
                           controlAffinity: ListTileControlAffinity.leading,
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(l10n.communityWorkTagsTitle,
+                              style: Theme.of(context).textTheme.titleMedium),
+                          const SizedBox(height: 4),
+                          Text(l10n.communityWorkTagsHint,
+                              style: TextStyle(color: scheme.onSurfaceVariant,
+                                  fontSize: 12)),
+                          for (final tag in work.tags)
+                            Row(
+                              key: ValueKey('communityWorkTag-$tag'),
+                              children: [
+                                Expanded(child: Text(tag,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis)),
+                                IconButton(
+                                  key: ValueKey('communityWorkTagEdit-$tag'),
+                                  tooltip: l10n.commonEdit,
+                                  onPressed: ownWork && !_busy &&
+                                          !work.lockedTags.contains(tag)
+                                      ? () => _editTag(work, original: tag)
+                                      : null,
+                                  icon: const Icon(Icons.edit_outlined),
+                                ),
+                                IconButton(
+                                  key: ValueKey('communityWorkTagLock-$tag'),
+                                  tooltip: work.lockedTags.contains(tag)
+                                      ? l10n.communityTagUnlockTooltip
+                                      : l10n.communityTagLockTooltip,
+                                  onPressed: ownWork && !_busy
+                                      ? () => _changeTag(work, tag, remove: false)
+                                      : null,
+                                  icon: Icon(work.lockedTags.contains(tag)
+                                      ? Icons.lock
+                                      : Icons.lock_open_outlined),
+                                ),
+                                IconButton(
+                                  key: ValueKey('communityWorkTagDelete-$tag'),
+                                  tooltip: l10n.communityRemoveTagTooltip,
+                                  onPressed: ownWork && !_busy &&
+                                          !work.lockedTags.contains(tag)
+                                      ? () => _changeTag(work, tag, remove: true)
+                                      : null,
+                                  icon: const Icon(Icons.delete_outline),
+                                ),
+                              ],
+                            ),
+                          TextButton.icon(
+                            key: const Key('communityWorkTagAdd'),
+                            onPressed: ownWork && !_busy &&
+                                    work.tags.length < CommunityService.maxTagsPerWork
+                                ? () => _editTag(work)
+                                : null,
+                            icon: const Icon(Icons.add),
+                            label: Text(l10n.communityAddTagButton),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),

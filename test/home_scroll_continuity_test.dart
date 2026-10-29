@@ -111,7 +111,7 @@ void main() {
         final scaffold = tester.state<ScaffoldState>(
           find.byType(Scaffold).first,
         );
-        scaffold.openDrawer();
+        scaffold.openEndDrawer();
         await tester.pumpAndSettle();
         await tester.tap(
           find.descendant(of: find.byType(Drawer), matching: find.text('設定')),

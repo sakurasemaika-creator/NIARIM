@@ -128,11 +128,11 @@ void main() {
           );
           expect(
             find.byType(FloatingActionButton),
-            findsOneWidget,
+            findsNothing,
             reason:
-                'Only the latest Home back-to-splash FAB remains; delay=$delay',
+                'The project-only scroll-to-top FAB is hidden on bookmarks; delay=$delay',
           );
-          expect(find.byKey(const Key('homeBackToSplashFab')), findsOneWidget);
+          expect(find.byKey(const Key('homeBackToSplashButton')), findsOneWidget);
           await tester.pumpWidget(const SizedBox.shrink());
           tester.platformDispatcher.clearTextScaleFactorTestValue();
         }

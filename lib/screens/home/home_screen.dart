@@ -49,13 +49,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
-  // 作品広場画面と同様に、左上から起動画面へ戻れるようにするための
-  // Scaffoldキー。ホーム画面はhamburgerメニュー（HomeDrawer）を持つため
-  // AppBarのleadingが自動的にメニューアイコンで埋まっており、そのままでは
-  // 戻る矢印を追加できない。そのためleadingを「戻る矢印＋メニュー
-  // アイコン」の2つ並びに差し替え、メニューアイコン側はこのキー経由で
-  // Scaffold.openDrawer()を呼び出す（自動表示に頼らない）。
+  // The menu opens from the right; the launch-screen back arrow sits at the
+  // left of the fixed AppBar. The page-level project list has its own scroll.
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _projectScrollController = ScrollController();
   late TabController _tabController;
   ProjectViewMode _viewMode = ProjectViewMode.medium;
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
@@ -124,6 +121,7 @@ class _HomeScreenState extends State<HomeScreen>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _projectScrollController.dispose();
     _sharedFileSub?.cancel();
     super.dispose();
   }
@@ -285,19 +283,13 @@ class _HomeScreenState extends State<HomeScreen>
         child: Scaffold(
           key: _scaffoldKey,
           appBar: AppBar(
-            // 起動画面に戻るボタンは左下のFABへ移動する。左上は
-            // ドロワー用ハンバーガーメニューのみとし、お気に入りは変更しない。
             automaticallyImplyLeading: false,
-            leadingWidth: _isSearching ? 0 : 56,
-            leading: _isSearching
-                ? null
-                : IconButton(
-                    icon: const Icon(Icons.menu),
-                    tooltip: MaterialLocalizations.of(
-                      context,
-                    ).openAppDrawerTooltip,
-                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                  ),
+            leading: IconButton(
+              key: const Key('homeBackToSplashButton'),
+              icon: const Icon(Icons.arrow_back),
+              tooltip: l10n.homeBackToSplashTooltip,
+              onPressed: () => context.go('/'),
+            ),
             title: _currentTabIndex != 0
                 ? Text(
                     _currentTabIndex == 1
@@ -334,16 +326,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ],
                   )
-                // アプリ名の代わりに、現在の並び替え基準（名前／更新日時）を
-                // 常に表示するプルダウンと、昇順・降順をワンタップで切り替える
-                // 矢印ボタンを置く。並び替え状態が常に一目でわかるようにする
-                // ための変更。
-                : SortModeControl(
-                    sortByName: _sortByName,
-                    sortAscending: _sortAscending,
-                    onSortByNameChanged: _setSortByName,
-                    onToggleDirection: _toggleSortDirection,
-                  ),
+                : Text(l10n.homeTabProjects),
             actions: [
               if (_currentTabIndex == 0) ...[
                 // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
@@ -401,6 +384,12 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ],
               ],
+              IconButton(
+                key: const Key('homeMenuButton'),
+                icon: const Icon(Icons.menu),
+                tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+                onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+              ),
             ],
             // 標準のTabBarは項目名の文字数に関わらず均等4分割になるため、
             // 「プロジェクト」のように長い項目名が「共有」等の短い項目名と
@@ -421,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
           ),
-          drawer: const HomeDrawer(),
+          endDrawer: const HomeDrawer(),
           body: Column(
             children: [
               if (_isSelectionMode)
@@ -559,6 +548,18 @@ class _HomeScreenState extends State<HomeScreen>
                                 onSelected: (v) =>
                                     setState(() => _showFavoritesOnly = v),
                               ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: SortModeControl(
+                                    sortByName: _sortByName,
+                                    sortAscending: _sortAscending,
+                                    onSortByNameChanged: _setSortByName,
+                                    onToggleDirection: _toggleSortDirection,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -567,6 +568,7 @@ class _HomeScreenState extends State<HomeScreen>
                         if (!_isSearching) _buildBreadcrumb(),
                         Expanded(
                           child: ProjectListWidget(
+                            scrollController: _projectScrollController,
                             // Keep bounded browsing scopes rather than every typed query.
                             key: PageStorageKey((
                               'home-projects',
@@ -634,12 +636,13 @@ class _HomeScreenState extends State<HomeScreen>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                FloatingActionButton(
-                  key: const Key('homeBackToSplashFab'),
-                  heroTag: 'home-back-to-splash',
+                if (_currentTabIndex == 0)
+                  FloatingActionButton(
+                  key: const Key('homeScrollToTopFab'),
+                  heroTag: 'home-scroll-to-top',
                   mini: MediaQuery.sizeOf(context).height < 400,
                   materialTapTargetSize: MaterialTapTargetSize.padded,
-                  tooltip: l10n.homeBackToSplashTooltip,
+                  tooltip: l10n.communityScrollToTop,
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   shape: const CircleBorder(side: BorderSide.none),
@@ -649,9 +652,16 @@ class _HomeScreenState extends State<HomeScreen>
                   highlightElevation: 0,
                   disabledElevation: 0,
 
-                  onPressed: () => context.go('/'),
-                  child: const Icon(Icons.arrow_back),
-                ),
+                  onPressed: () {
+                    if (!_projectScrollController.hasClients) return;
+                    _projectScrollController.animateTo(0,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic);
+                  },
+                    child: const Icon(Icons.arrow_upward),
+                  )
+                else
+                  const SizedBox(width: 56),
                 if (_currentTabIndex == 0)
                   FloatingActionButton(
                     heroTag: 'home-add-project',

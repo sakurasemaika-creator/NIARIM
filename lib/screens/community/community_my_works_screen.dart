@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../config/font_fallback.dart';
 import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
@@ -142,7 +143,14 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ).showSnackBar(SnackBar(
+      content: Text(message),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide.none,
+      ),
+      elevation: 0,
+    ));
   }
 
   /// Why a Google sign-in step failed. A refusal because another account
@@ -511,6 +519,17 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
               ),
             ),
             Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Text(
+                l10n.communityMyWorksManagementHeading,
+                key: const Key('communityMyWorksManagementHeading'),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+            ),
+            Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
               child: Row(
                 children: [
@@ -679,9 +698,11 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 550),
-                child: Card(
+                child: Material(
                   key: const Key('communityMyWorksBulkActions'),
-                  elevation: 6,
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(18),
+                  color: scheme.surface,
                   child: Padding(
                     padding: const EdgeInsets.all(10),
                     child: Row(

@@ -239,6 +239,7 @@ class ProjectListWidget extends StatelessWidget {
   // 現在開いているフォルダ（nullはルート直下、フォルダ階層）
   final String? currentFolderId;
   final ValueChanged<String> onOpenFolder;
+  final ScrollController? scrollController;
   // 非nullの場合、作品タップ時の動作が「詳細画面（'/project/:id'）へ遷移」
   // ではなく「選んだ作品IDをこのコールバックへ渡すだけ」に変わる
   // （ホーム画面ウィジェットの作品選択フロー等、一覧を「選ぶ専用画面」として
@@ -264,6 +265,7 @@ class ProjectListWidget extends StatelessWidget {
     required this.onSelectionChanged,
     required this.currentFolderId,
     required this.onOpenFolder,
+    this.scrollController,
     this.projects,
     this.showFavoritesOnly = false,
     this.searchQuery = '',
@@ -347,6 +349,7 @@ class ProjectListWidget extends StatelessWidget {
 
     if (viewMode == ProjectViewMode.detail) {
       return ListView.builder(
+        controller: scrollController,
         itemCount: sorted.length,
         itemBuilder: (context, index) =>
             _detailTile(context, l10n, sorted[index]),
@@ -380,6 +383,7 @@ class ProjectListWidget extends StatelessWidget {
     final minimumHeight = 80 + caption.height + 8;
     caption.dispose();
     return GridView.builder(
+      controller: scrollController,
       padding: const EdgeInsets.all(8),
       gridDelegate: _ProjectGridDelegate(
         maxExtent: targetExtent,

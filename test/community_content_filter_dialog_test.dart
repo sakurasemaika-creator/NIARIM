@@ -181,6 +181,49 @@ void main() {
     expect(service.mutedTags, {'初期タグ'});
   });
 
+  testWidgets('tapping a mute word itself opens the editor', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'community.mutedWords': ['誤字'],
+    });
+    final service = CommunityService();
+    await tester.pumpWidget(host(service));
+    await tester.pump();
+    await openDialog(tester);
+    await tapVisible(
+        tester, find.byKey(const Key('communityMutedWordsDisplay_0')));
+    final editor = find.byKey(const Key('communityMutedWordsEntry_0'));
+    expect(editor, findsOneWidget);
+    await tester.enterText(editor, '修正した単語');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    expect(find.text('修正した単語'), findsOneWidget);
+    await tapVisible(tester,
+        find.byKey(const Key('communityContentFilterSaveButton')));
+    expect(service.mutedWords, {'修正した単語'});
+  });
+
+  testWidgets('mute authors hides their works without requesting login',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final service = CommunityService();
+    await tester.runAsync(() => service.contentFiltersReady);
+    final work = service.discoverableWorks.first;
+    await service.setAuthorMuted(work.authorId, true);
+    expect(service.isAuthorMuted(work.authorId), isTrue);
+    expect(service.discoverableWorks.any((w) => w.authorId == work.authorId),
+        isFalse);
+    await tester.pumpWidget(host(service));
+    await tester.pumpAndSettle();
+    await openDialog(tester);
+    await tapVisible(tester,
+        find.byKey(const Key('communityManageMutedAuthors')));
+    expect(find.byKey(ValueKey('communityMutedAuthor-${work.authorId}')),
+        findsOneWidget);
+    await tapVisible(tester,
+        find.byKey(ValueKey('communityUnmuteAuthor-${work.authorId}')));
+    expect(service.isAuthorMuted(work.authorId), isFalse);
+  });
+
   testWidgets('localized section headings use the Kuramubon font', (
     tester,
   ) async {

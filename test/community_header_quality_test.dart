@@ -135,16 +135,16 @@ void main() {
       final contentFilter = tester.getRect(
         find.byKey(const Key('communityContentFilterButton')),
       );
-      if (titleRect.bottom > searchRow.top ||
-          notification.bottom > searchRow.top ||
+      if (titleRect.bottom > tabs.top ||
+          notification.bottom > tabs.top ||
           videoFilter.top < searchRow.top ||
           videoFilter.bottom > searchRow.bottom ||
           contentFilter.top < searchRow.top ||
           contentFilter.bottom > searchRow.bottom ||
-          searchRow.bottom > tabs.top + .01) {
+          tabs.bottom > searchRow.top + .01) {
         failures.add(
-          'Header must keep title/actions, search/filters and tabs in '
-          'three separate rows.',
+          'Header keeps title/actions and tabs fixed, with page-level '
+          'search controls immediately below.',
         );
       }
       expect(failures, isEmpty);

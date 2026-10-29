@@ -202,13 +202,17 @@ class CommunityService extends ChangeNotifier {
   static const _hideAiImageVideoKey = 'community.hideGenerativeAiImageVideo';
   static const _mutedWordsKey = 'community.mutedWords';
   static const _mutedTagsKey = 'community.mutedTags';
+  static const _mutedAuthorsKey = 'community.mutedAuthors';
   bool _hideGenerativeAiImageVideo = false;
   final Set<String> _mutedWords = {};
   final Set<String> _mutedTags = {};
+  final Set<String> _mutedAuthorIds = {};
 
   bool get hideGenerativeAiImageVideo => _hideGenerativeAiImageVideo;
   Set<String> get mutedWords => Set.unmodifiable(_mutedWords);
   Set<String> get mutedTags => Set.unmodifiable(_mutedTags);
+  Set<String> get mutedAuthorIds => Set.unmodifiable(_mutedAuthorIds);
+  bool isAuthorMuted(String authorId) => _mutedAuthorIds.contains(authorId);
 
   /// Never completes with an error: unreadable settings fall back to
   /// showing everything, so the setters below, which wait for this, keep
@@ -232,6 +236,10 @@ class CommunityService extends ChangeNotifier {
               .map(_tagKey)
               .where((e) => e.isNotEmpty),
         );
+      _mutedAuthorIds
+        ..clear()
+        ..addAll((prefs.readStringList(_mutedAuthorsKey) ?? const [])
+            .where((id) => id.isNotEmpty));
     } catch (error) {
       debugPrint('Community content filters could not be restored: $error');
     }
@@ -284,7 +292,26 @@ class CommunityService extends ChangeNotifier {
     await prefs.setStringList(_mutedTagsKey, _mutedTags.toList()..sort());
   }
 
+  /// Viewer-only mute, independent of Google sign-in and of the backend block
+  /// endpoint. A muted author's works disappear from discovery/search without
+  /// sending a notification to that author.
+  Future<void> setAuthorMuted(String authorId, bool muted) async {
+    await contentFiltersReady;
+    if (_disposed || authorId.isEmpty) return;
+    if (muted) {
+      _mutedAuthorIds.add(authorId);
+    } else {
+      _mutedAuthorIds.remove(authorId);
+    }
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _mutedAuthorsKey, _mutedAuthorIds.toList()..sort(),
+    );
+  }
+
   bool _passesContentFilters(CommunityWork work) {
+    if (_mutedAuthorIds.contains(work.authorId)) return false;
     if (_hideGenerativeAiImageVideo && work.containsGenerativeAiImageOrVideo) {
       return false;
     }

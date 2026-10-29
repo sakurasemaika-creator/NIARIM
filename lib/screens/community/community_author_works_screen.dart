@@ -192,6 +192,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final communityService = context.watch<CommunityService>();
     final isSelf = communityService.isOwnAuthor(widget.authorId);
     final isFavorite = communityService.isFavoriteAuthor(widget.authorId);
+    final isMuted = communityService.isAuthorMuted(widget.authorId);
     final works = communityService.worksByAuthor(
       widget.authorId,
       includeHidden: isSelf,
@@ -409,6 +410,22 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                   onChanged: communityService.setSelfFollowersPublic,
                   title: l10n.communityFollowersPublicToggleTitle,
                   description: l10n.communityFollowersPublicToggleDesc,
+                ),
+              ),
+            if (!isSelf)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: OutlinedButton.icon(
+                  key: const Key('communityAuthorMuteToggle'),
+                  onPressed: () => communityService.setAuthorMuted(
+                    widget.authorId, !isMuted,
+                  ),
+                  icon: Icon(isMuted
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined),
+                  label: Text(isMuted
+                      ? l10n.communityUnmuteAuthor
+                      : l10n.communityMuteAuthor),
                 ),
               ),
             Expanded(

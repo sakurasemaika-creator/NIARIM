@@ -232,8 +232,8 @@ void main() {
               find.byKey(const Key('communitySearchRow')),
             );
             final tabsRect = tester.getRect(find.byType(TabBar));
-            if (searchRowRect.bottom > tabsRect.top + .01) {
-              failures.add('Search row overlaps tabs: $searchRowRect / $tabsRect');
+            if (tabsRect.bottom > searchRowRect.top + .01) {
+              failures.add('Page search overlaps fixed tabs: $searchRowRect / $tabsRect');
             }
             if (state != 'search' && state != 'tag-search') {
               final titleRect = tester.getRect(
@@ -248,8 +248,8 @@ void main() {
               final filterRect = tester.getRect(
                 find.byKey(const Key('communityContentFilterButton')),
               );
-              if (titleRect.bottom > searchRowRect.top ||
-                  notificationRect.bottom > searchRowRect.top ||
+              if (titleRect.bottom > tabsRect.top ||
+                  notificationRect.bottom > tabsRect.top ||
                   filterRect.top < searchRowRect.top ||
                   filterRect.bottom > searchRowRect.bottom) {
                 failures.add('Header rows regressed: $titleRect / '
