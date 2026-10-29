@@ -147,13 +147,8 @@ export async function getUserBookmarks(
   const caller = await tryAuthenticate(
     event.headers["authorization"] ?? event.headers["Authorization"],
   );
-  const isSelf = caller?.niarimUserId === targetUserId;
-
-  if (!isSelf) {
-    const targetUser = await getUser(targetUserId);
-    const isPublic = targetUser?.bookmarksPublic ?? bookmarksVisibilityDefault;
-    if (!isPublic)
-      forbidden("このユーザーはブックマーク一覧を公開していません");
+  if (caller?.niarimUserId !== targetUserId) {
+    forbidden("本人のブックマーク一覧のみ取得できます");
   }
 
   const result = await ddb.send(
@@ -182,30 +177,6 @@ export async function getUserBookmarks(
     .map(toPublicWork);
 
   return ok({ userId: targetUserId, works: publicWorks });
-}
-
-/** `PATCH /users/{id}/bookmarks-visibility`（8.5節）。本人のみ変更可。 */
-export async function updateBookmarksVisibility(
-  event: APIGatewayProxyEventV2,
-  targetUserId: string,
-) {
-  const auth = await authenticate(
-    event.headers["authorization"] ?? event.headers["Authorization"],
-  );
-  if (auth.niarimUserId !== targetUserId) forbidden("本人のみ変更できます");
-
-  const body = parseJsonObject(event.body, { allowEmpty: true });
-  if (typeof body.public !== "boolean")
-    badRequest("publicは真偽値で指定してください");
-  await ddb.send(
-    new UpdateCommand({
-      TableName: tableName(),
-      Key: Keys.user(targetUserId),
-      UpdateExpression: "SET bookmarksPublic = :v",
-      ExpressionAttributeValues: { ":v": body.public },
-    }),
-  );
-  return ok({ bookmarksPublic: body.public });
 }
 
 /**
