@@ -3,17 +3,14 @@ import {
   GetCommand,
   QueryCommand,
   TransactWriteCommand,
-  UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
-import { authenticate, tryAuthenticate, getUser } from "../../lib/auth";
+import { authenticate, getUser } from "../../lib/auth";
 import { badRequest, forbidden, ok } from "../../lib/response";
-import { parseJsonObject } from "../../lib/request";
 import type {
   FollowerRecordItem,
   FollowingRecordItem,
-  UserItem,
 } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 
@@ -139,58 +136,15 @@ export async function toggleFollow(
   return ok({ following: !isFollowing });
 }
 
-/**
- * `GET /users/{id}/followers`（22.5・22.7節）。一覧を開けるのは本人か、
- * 対象ユーザーが公開設定にした場合のみ。さらに22.7節の対応：各
- * フォロワー自身が自分のフォロー中/フォロワー一覧を非公開にしている
- * 場合、そのフォロワーだけは一覧から除外する（本人の意思を優先。
- * targetの公開設定を上書きしない）。
- */
-export async function getFollowers(
-  event: APIGatewayProxyEventV2,
+/** Public numerical counts only: never return follower or following identities. */
+export async function getSocialCounts(
+  _event: APIGatewayProxyEventV2,
   targetId: string,
 ) {
-  const caller = await tryAuthenticate(
-    event.headers["authorization"] ?? event.headers["Authorization"],
-  );
-  await ensureCanViewList(caller?.niarimUserId, targetId);
-
-  const result = await ddb.send(
-    new QueryCommand({
-      TableName: tableName(),
-      KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
-      ExpressionAttributeValues: {
-        ":pk": `USER#${targetId}`,
-        ":prefix": "FOLLOWER#",
-      },
-    }),
-  );
-  const records = (result.Items ?? []) as FollowerRecordItem[];
-
-  const followerUsers = await Promise.all(
-    records.map((r) =>
-      ddb.send(
-        new GetCommand({
-          TableName: tableName(),
-          Key: Keys.user(r.followerId),
-        }),
-      ),
-    ),
-  );
-  const visibleFollowers = followerUsers
-    .map((u) => u.Item as UserItem | undefined)
-    .filter((u): u is UserItem => u != null && u.followersPublic)
-    .map((u) => ({
-      niarimUserId: u.niarimUserId,
-      channelName: u.channelName,
-      channelAvatarUrl: u.channelAvatarUrl,
-    }));
-
+  const user = await getUser(targetId);
   return ok({
-    targetId,
-    totalCount: records.length, // 22.7節：数字は実数のまま公開する
-    visibleFollowers,
-    hiddenCount: records.length - visibleFollowers.length,
+    followerCount: user?.followerCount ?? 0,
+    followingCount: user?.followingCount ?? 0,
   });
 }
 
@@ -199,10 +153,12 @@ export async function getFollowing(
   event: APIGatewayProxyEventV2,
   followerId: string,
 ) {
-  const caller = await tryAuthenticate(
+  const auth = await authenticate(
     event.headers["authorization"] ?? event.headers["Authorization"],
   );
-  await ensureCanViewList(caller?.niarimUserId, followerId);
+  if (auth.niarimUserId !== followerId) {
+    forbidden("自分がフォロー中のデータのみ取得できます");
+  }
 
   const result = await ddb.send(
     new QueryCommand({
@@ -235,36 +191,3 @@ export async function getFollowing(
   return ok({ followerId, following });
 }
 
-async function ensureCanViewList(
-  callerId: string | undefined,
-  targetId: string,
-): Promise<void> {
-  if (callerId === targetId) return;
-  const target = await getUser(targetId);
-  if (!target?.followersPublic)
-    forbidden("このユーザーはフォロー中/フォロワー一覧を公開していません");
-}
-
-/** `PATCH /users/{id}/follow-visibility`（22.5節）。本人のみ変更可。 */
-export async function updateFollowVisibility(
-  event: APIGatewayProxyEventV2,
-  targetUserId: string,
-) {
-  const auth = await authenticate(
-    event.headers["authorization"] ?? event.headers["Authorization"],
-  );
-  if (auth.niarimUserId !== targetUserId) forbidden("本人のみ変更できます");
-
-  const body = parseJsonObject(event.body, { allowEmpty: true });
-  if (typeof body.public !== "boolean")
-    badRequest("publicは真偽値で指定してください");
-  await ddb.send(
-    new UpdateCommand({
-      TableName: tableName(),
-      Key: Keys.user(targetUserId),
-      UpdateExpression: "SET followersPublic = :v",
-      ExpressionAttributeValues: { ":v": body.public },
-    }),
-  );
-  return ok({ followersPublic: body.public });
-}
