@@ -31,6 +31,10 @@ enum _PostDateFilter { all, today, thisWeek, thisMonth, thisYear, custom }
 
 enum _DurationFilterMode { all, upTo, range }
 
+const _communityThresholdChoices = <int>[
+  0, 50, 100, 1000, 5000, 10000, 50000, 100000, 500000, 1000000,
+];
+
 /// 作品広場画面。
 ///
 /// 設定済みのCommunity backendから一覧を取得し、未設定時はdemo dataを使う。
@@ -50,6 +54,7 @@ class CommunityScreen extends StatefulWidget {
 class _CommunityScreenState extends State<CommunityScreen>
     with SingleTickerProviderStateMixin {
   static const _savedSearchesKey = 'community.savedSearches.v1';
+  static const _tileWidthKey = 'community.tileMinWidth.v1';
   final List<Map<String, dynamic>> _savedSearches = [];
   late final TabController _tabController;
   _RankingPeriod _period = _RankingPeriod.allTime;
@@ -76,6 +81,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   void initState() {
     super.initState();
     _loadSavedSearches();
+    _loadTileWidth();
     _tabController = TabController(length: 3, vsync: this)
       ..addListener(_onTabChanged);
     final initialTag = widget.initialTagFilter;
@@ -95,6 +101,18 @@ class _CommunityScreenState extends State<CommunityScreen>
       service.refreshFromBackend();
       _fetchRanking();
     });
+  }
+
+  Future<void> _loadTileWidth() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getDouble(_tileWidthKey);
+      if (saved != null && mounted) {
+        setState(() => _minimumTileWidth = saved.clamp(120.0, 240.0).toDouble());
+      }
+    } catch (error) {
+      debugPrint('Community tile width could not be restored: $error');
+    }
   }
 
   Future<void> _loadSavedSearches() async {
@@ -172,6 +190,8 @@ class _CommunityScreenState extends State<CommunityScreen>
       _maximumMinutes = choice('maximumMinutes', 9999);
       _minimumViews = choice('minimumViews', 999999999);
       _minimumBookmarks = choice('minimumBookmarks', 999999999);
+      if (!_communityThresholdChoices.contains(_minimumViews)) _minimumViews = 0;
+      if (!_communityThresholdChoices.contains(_minimumBookmarks)) _minimumBookmarks = 0;
       _minimumTileWidth = ((saved['tileWidth'] as num?)?.toDouble() ?? 160).clamp(120, 240).toDouble();
     });
     _scrollCurrentTabToTop();
@@ -554,6 +574,8 @@ class _CommunityScreenState extends State<CommunityScreen>
         _minimumBookmarks = result.minimumBookmarks;
         _minimumTileWidth = result.tileWidth;
       });
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble(_tileWidthKey, result.tileWidth);
     }
   }
 
@@ -1672,7 +1694,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                 initialValue: filter == 0 ? _minimumViews : _minimumBookmarks,
                 isExpanded: true,
                 items: [
-                  for (final count in const [0, 50, 100, 1000, 5000, 10000, 50000, 100000, 500000, 1000000])
+                  for (final count in _communityThresholdChoices)
                     DropdownMenuItem(
                       value: count,
                       child: Text(count == 0
