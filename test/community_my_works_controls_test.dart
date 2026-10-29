@@ -56,6 +56,8 @@ void main() {
     await tester.longPress(find.byKey(ValueKey('communityMyWorksRow-$firstId')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('communityMyWorksBulkActions')), findsOneWidget);
+    expect(tester.widget<Material>(
+      find.byKey(const Key('communityMyWorksBulkActions'))).elevation, 0);
     expect(find.byKey(ValueKey('communityMyWorksSelect-$firstId')),
         findsOneWidget);
     expect(find.byKey(ValueKey('communityMyWorksSettings-$firstId')),

@@ -700,7 +700,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                 constraints: const BoxConstraints(maxWidth: 550),
                 child: Material(
                   key: const Key('communityMyWorksBulkActions'),
-                  elevation: 4,
+                  elevation: 0,
                   borderRadius: BorderRadius.circular(18),
                   color: scheme.surface,
                   child: Padding(

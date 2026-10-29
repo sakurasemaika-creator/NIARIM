@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/community/community_screen.dart';
+import 'package:niarim/screens/community/community_author_works_screen.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/premium_service.dart';
@@ -12,7 +13,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Muted words and tags are managed as independent rows. Draft edits are
 /// persisted together on Save and discarded on Cancel.
 void main() {
-  Widget host(CommunityService service, {Locale locale = const Locale('ja')}) =>
+  Widget host(CommunityService service, {Locale locale = const Locale('ja'),
+      Widget? home}) =>
       MultiProvider(
         providers: [
           ChangeNotifierProvider<CommunityService>.value(value: service),
@@ -30,7 +32,7 @@ void main() {
           locale: locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const CommunityScreen(),
+          home: home ?? const CommunityScreen(),
         ),
       );
 
@@ -222,6 +224,31 @@ void main() {
     await tapVisible(tester,
         find.byKey(ValueKey('communityUnmuteAuthor-${work.authorId}')));
     expect(service.isAuthorMuted(work.authorId), isFalse);
+  });
+
+  testWidgets('author page mute switch works both ways', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final service = CommunityService();
+    await tester.runAsync(() => service.contentFiltersReady);
+    final authorWork = service.discoverableWorks.firstWhere(
+      (work) => !service.isOwnWork(work),
+    );
+    await tester.pumpWidget(host(service,
+      home: CommunityAuthorWorksScreen(
+        authorId: authorWork.authorId,
+        authorName: authorWork.authorName,
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final toggle = find.byKey(const Key('communityAuthorMuteToggle'));
+    expect(toggle, findsOneWidget);
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(service.isAuthorMuted(authorWork.authorId), isTrue);
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(service.isAuthorMuted(authorWork.authorId), isFalse);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('localized section headings use the Kuramubon font', (
