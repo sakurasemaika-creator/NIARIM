@@ -206,8 +206,7 @@ void main() {
     await tester.pumpAndSettle();
     Navigator.of(tester.element(find.byType(CommunityMyWorksScreen))).pop();
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip(l10n.commonSearch));
-    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('communitySearchInput')), findsOneWidget);
     final switcher = find.byKey(const Key('communitySearchModeToggle'));
     expect(tester.getSize(switcher).width, lessThan(60));
     await tester.tap(switcher);
@@ -216,7 +215,8 @@ void main() {
       find.descendant(of: switcher, matching: find.byIcon(Icons.search)),
       findsOneWidget,
     );
-    await tester.enterText(find.byType(TextField).first, '手描き');
+    await tester.enterText(find.byKey(const Key('communitySearchInput')), '手描き');
+    await tester.tap(find.byKey(const Key('communitySearchButton')));
     await tester.pumpAndSettle();
     await capture(root, '04_compact_tag_search', tester);
 
