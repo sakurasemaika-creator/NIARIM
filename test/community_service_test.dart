@@ -6,6 +6,8 @@ import 'package:niarim/services/community_service.dart';
 /// CommunityService（Task#157：NIARIM作品広場独自の公開/非公開設定）の
 /// 単体テスト。
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   test('作品はデフォルトで公開状態であり、discoverableWorksに含まれる', () {
     final service = CommunityService();
     final work = service.works.first;
