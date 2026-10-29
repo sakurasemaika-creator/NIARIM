@@ -414,6 +414,37 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('search history saves criteria, restores draft and confirms deletion', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final service = CommunityService();
+    await tester.pumpWidget(host(service));
+    await tester.pumpAndSettle();
+    final l10n = l10nOf(tester);
+    await tester.enterText(
+      find.byKey(const Key('communitySearchInput')), '夜明け',
+    );
+    await tapVisible(tester, find.byKey(const Key('communitySearchButton')));
+    await tapVisible(tester, find.byKey(const Key('communitySearchHistoryAccordion')));
+    expect(find.byKey(const Key('communitySearchHistory-0')), findsOneWidget);
+    await tapVisible(tester, find.byKey(const Key('communitySaveHistory-0')));
+    await tapVisible(tester, find.byKey(const Key('communitySavedSearchAccordion')));
+    expect(find.byKey(const Key('communitySavedSearch-0')), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('communitySearchInput')), '別の語');
+    await tapVisible(tester, find.byKey(const Key('communitySavedSearch-0')));
+    expect(tester.widget<TextField>(
+      find.byKey(const Key('communitySearchInput')),
+    ).controller!.text, '夜明け');
+    await tapVisible(tester, find.byKey(const Key('communityDeleteSavedSearch-0')));
+    expect(find.text(l10n.communityDeleteSavedSearchConfirm), findsOneWidget);
+    await tapVisible(tester, find.text(l10n.commonCancel).last);
+    expect(find.byKey(const Key('communitySavedSearch-0')), findsOneWidget);
+    await tapVisible(tester, find.byKey(const Key('communityDeleteSavedSearch-0')));
+    await tapVisible(tester, find.text(l10n.commonDelete).last);
+    expect(find.byKey(const Key('communitySavedSearch-0')), findsNothing);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('community.searchHistory.v1.guest'), contains('夜明け'));
+  });
+
   testWidgets('mute preferences survive a service recreation without login', (
     tester,
   ) async {
