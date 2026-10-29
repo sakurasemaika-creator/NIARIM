@@ -103,6 +103,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
       if (service.isBackendConnected) {
         service.refreshAuthorWorks(widget.authorId);
       }
+      service.refreshFollowerCount(widget.authorId);
     });
   }
 
