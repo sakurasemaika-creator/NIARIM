@@ -11,7 +11,9 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/community/community_screen.dart';
+import 'package:niarim/screens/community/community_author_works_screen.dart';
 import 'package:niarim/screens/community/community_my_works_screen.dart';
+import 'package:niarim/screens/community/community_work_settings_screen.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
@@ -110,6 +112,43 @@ void main() {
     expect(find.byType(CommunityMyWorksScreen), findsOneWidget);
     expect(find.byKey(const Key('communityMyWorksPostButton')), findsOneWidget);
     await capture(root, '07_my_works_after_button', tester);
+    // Owner management: the bulk action panel is present only while selected.
+    await tester.tap(find.byKey(const Key('communityMyWorksSelectAll')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('communityMyWorksBulkActions')), findsOneWidget);
+    await capture(root, '09_my_works_bulk_selection', tester);
+    await tester.tap(find.byKey(const Key('communityMyWorksClearSelection')));
+    await tester.pumpAndSettle();
+
+    // The wrench opens per-work settings; deletion always asks confirmation.
+    final firstWork = community.worksByAuthor(
+      kDummySelfAuthorId, includeHidden: true,
+    ).first;
+    final settingsButton = find.byKey(
+      ValueKey('communityMyWorksSettings-${firstWork.id}'),
+    );
+    await tester.ensureVisible(settingsButton);
+    await tester.tap(settingsButton);
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityWorkSettingsScreen), findsOneWidget);
+    await capture(root, '10_individual_work_settings', tester);
+    await tester.ensureVisible(find.byKey(const Key('communityWorkSettingsDelete')));
+    await tester.tap(find.byKey(const Key('communityWorkSettingsDelete')));
+    await tester.pumpAndSettle();
+    await capture(root, '11_individual_delete_confirmation', tester);
+    await tester.tap(find.text(l10n.commonCancel));
+    await tester.pumpAndSettle();
+    Navigator.of(tester.element(find.byType(CommunityWorkSettingsScreen))).pop();
+    await tester.pumpAndSettle();
+
+    // Direct access to the author's public-facing works list.
+    await tester.ensureVisible(find.byKey(const Key('communityMyWorksViewAuthorPage')));
+    await tester.tap(find.byKey(const Key('communityMyWorksViewAuthorPage')));
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityAuthorWorksScreen), findsOneWidget);
+    await capture(root, '12_my_public_works_page', tester);
+    Navigator.of(tester.element(find.byType(CommunityAuthorWorksScreen))).pop();
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('communityMyWorksPostButton')));
     await tester.pumpAndSettle();
     await capture(root, '08_after_post_action', tester);
