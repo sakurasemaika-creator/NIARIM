@@ -21,7 +21,6 @@ import {
   toggleBookmark,
   getUserBookmarks,
   getWorkBookmarkers,
-  updateBookmarksVisibility,
 } from "./routes/bookmarks";
 import { getUserReposts, toggleRepost } from "./routes/reposts";
 import {
@@ -96,9 +95,6 @@ const routes: Route[] = [
   route("POST", "/reports", (e) => createReport(e)),
   route("POST", "/blocks", (e) => createBlock(e)),
   route("POST", "/works/{id}/bookmark", (e, p) => toggleBookmark(e, p.id)),
-  route("PATCH", "/users/{id}/bookmarks-visibility", (e, p) =>
-    updateBookmarksVisibility(e, p.id),
-  ),
   route("POST", "/works/{id}/repost", (e, p) => toggleRepost(e, p.id)),
   route("POST", "/users/{id}/follow", (e, p) => toggleFollow(e, p.id)),
   route("GET", "/users/{id}/notifications", (e, p) =>
