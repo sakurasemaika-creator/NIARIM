@@ -13,6 +13,43 @@ import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
 import '../../config/font_fallback.dart';
 
+/// Confirm both mute and unmute; used by author profiles and muted-user lists.
+Future<void> confirmCommunityAuthorMute(
+  BuildContext context,
+  CommunityService service,
+  String authorId, {
+  required bool mute,
+}) async {
+  final l10n = AppLocalizations.of(context)!;
+  final approved = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(mute
+          ? l10n.communityMuteConfirmTitle
+          : l10n.communityUnmuteConfirmTitle),
+      content: mute ? Text(l10n.communityMuteConfirmBody) : null,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(l10n.communityMuteNo),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(mute
+              ? l10n.communityMuteConfirmAction
+              : l10n.communityUnmuteConfirmAction),
+        ),
+      ],
+    ),
+  );
+  if (approved != true || !context.mounted) return;
+  await service.setAuthorMuted(authorId, mute);
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(mute ? l10n.communityMuteDone : l10n.communityUnmuteDone)),
+  );
+}
+
 /// 特定の作者の投稿作品一覧（29_動画投稿・ランキング機能仕様.md 8.4節）＋
 /// その作者のブックマーク一覧（Task#145：ユーザー別ブックマーク一覧の
 /// 実現可否調査を受けた実装）。作品カードの作者名タップから遷移する。
@@ -235,10 +272,12 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                       key: const Key('communityAuthorMuteToggle'),
                       tooltip: isMuted
                           ? l10n.communityUnmuteAuthor
-                          : l10n.communityMuteAuthor,
-                      onPressed: () => communityService.setAuthorMuted(
+                          : l10n.communityMuteShort,
+                      onPressed: () => confirmCommunityAuthorMute(
+                        context,
+                        communityService,
                         widget.authorId,
-                        !isMuted,
+                        mute: !isMuted,
                       ),
                       icon: Icon(
                         isMuted
