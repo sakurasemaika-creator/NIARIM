@@ -3,6 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/community/community_screen.dart';
+import 'package:niarim/models/community_work.dart';
+import 'package:niarim/screens/community/widgets/community_work_card.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/settings_service.dart';
@@ -58,6 +61,36 @@ void main() {
       '',
     );
   });
+  testWidgets('space-delimited tags must all match exactly by default', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final works = buildDummyCommunityWorks();
+    final expected = works.where((work) =>
+        work.tags.contains('手描き') && work.tags.contains('オリジナル')).length;
+    expect(expected, greaterThan(0));
+    await tester.pumpWidget(app(initialTag: '手描き オリジナル'));
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityWorkCard), findsNWidgets(expected));
+  });
+
+  testWidgets('keyword search switches between partial and exact matches', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(app(initialTag: '手描き'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('communitySearchModeToggle')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '夜明け');
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityWorkCard), findsWidgets);
+    await tester.tap(find.byKey(const Key('communityContentFilterButton')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('communityTagExactMatch')));
+    await tester.tap(find.byKey(const Key('communityTagExactMatch')));
+    await tester.ensureVisible(find.byKey(const Key('communityContentFilterSaveButton')));
+    await tester.tap(find.byKey(const Key('communityContentFilterSaveButton')));
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityWorkCard), findsNothing);
+  });
+
   testWidgets('long localized plaza tabs align to the leading edge', (
     tester,
   ) async {
