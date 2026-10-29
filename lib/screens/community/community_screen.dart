@@ -619,7 +619,10 @@ class _CommunityScreenState extends State<CommunityScreen>
     // page content and naturally scrolls out of view above the work grid.
     Widget searchRowFor(int tab) => Padding(
       key: const Key('communitySearchRow'),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      // The work grid begins with 12px of its own top padding.  Give the
+      // search controls an equivalent visible gap *above* the row as well:
+      // 20px above vs 8px + the grid's 12px below.
+      padding: const EdgeInsets.fromLTRB(8, 20, 8, 8),
       child: SizedBox(
         height: 48,
         child: _isSearching
