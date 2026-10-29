@@ -240,6 +240,9 @@ class ProjectListWidget extends StatelessWidget {
   final String? currentFolderId;
   final ValueChanged<String> onOpenFolder;
   final ScrollController? scrollController;
+  /// Optional controls that scroll away with the project list rather than
+  /// remaining pinned above its viewport.
+  final Widget? header;
   // 非nullの場合、作品タップ時の動作が「詳細画面（'/project/:id'）へ遷移」
   // ではなく「選んだ作品IDをこのコールバックへ渡すだけ」に変わる
   // （ホーム画面ウィジェットの作品選択フロー等、一覧を「選ぶ専用画面」として
@@ -266,6 +269,7 @@ class ProjectListWidget extends StatelessWidget {
     required this.currentFolderId,
     required this.onOpenFolder,
     this.scrollController,
+    this.header,
     this.projects,
     this.showFavoritesOnly = false,
     this.searchQuery = '',
@@ -340,6 +344,22 @@ class ProjectListWidget extends StatelessWidget {
     final sorted = _sorted(entries);
 
     if (sorted.isEmpty) {
+      if (header != null) {
+        return CustomScrollView(
+          controller: scrollController,
+          slivers: [
+            SliverToBoxAdapter(child: header!),
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: EmptyStatePlaceholder(
+                icon: Icons.movie_creation_outlined,
+                title: l10n.projectListEmptyTitle,
+                hint: showEmptyCreateHint ? l10n.projectListEmptyHint : null,
+              ),
+            ),
+          ],
+        );
+      }
       return EmptyStatePlaceholder(
         icon: Icons.movie_creation_outlined,
         title: l10n.projectListEmptyTitle,
@@ -348,6 +368,19 @@ class ProjectListWidget extends StatelessWidget {
     }
 
     if (viewMode == ProjectViewMode.detail) {
+      if (header != null) {
+        return CustomScrollView(
+          controller: scrollController,
+          slivers: [
+            SliverToBoxAdapter(child: header!),
+            SliverList.builder(
+              itemCount: sorted.length,
+              itemBuilder: (context, index) =>
+                  _detailTile(context, l10n, sorted[index]),
+            ),
+          ],
+        );
+      }
       return ListView.builder(
         controller: scrollController,
         itemCount: sorted.length,
@@ -382,6 +415,25 @@ class ProjectListWidget extends StatelessWidget {
     )..layout();
     final minimumHeight = 80 + caption.height + 8;
     caption.dispose();
+    if (header != null) {
+      return CustomScrollView(
+        controller: scrollController,
+        slivers: [
+          SliverToBoxAdapter(child: header!),
+          SliverPadding(
+            padding: const EdgeInsets.all(8),
+            sliver: SliverGrid.builder(
+              gridDelegate: _ProjectGridDelegate(
+                maxExtent: targetExtent,
+                minHeight: minimumHeight,
+              ),
+              itemCount: sorted.length,
+              itemBuilder: (context, index) => _gridCard(context, sorted[index]),
+            ),
+          ),
+        ],
+      );
+    }
     return GridView.builder(
       controller: scrollController,
       padding: const EdgeInsets.all(8),

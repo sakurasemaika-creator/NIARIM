@@ -408,9 +408,9 @@ class _CommunityScreenState extends State<CommunityScreen>
     final searchFill =
         theme.inputDecorationTheme.fillColor ?? scheme.surfaceContainerLow;
 
-    // Search/filters stay fixed inside the page, beneath the compact two-row
-    // app header. They do not scroll with the work grid.
-    final searchRow = Padding(
+    // The header remains pinned; this row belongs to each tab's scrollable
+    // page content and naturally scrolls out of view above the work grid.
+    Widget searchRowFor(int tab) => Padding(
       key: const Key('communitySearchRow'),
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: SizedBox(
@@ -440,7 +440,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     Expanded(
                       child: TextField(
                         controller: _searchController,
-                        autofocus: true,
+                        autofocus: _tabController.index == tab,
                         decoration: InputDecoration(
                           hintText: _tagSearchMode
                               ? l10n.communityTagSearchHint
@@ -642,9 +642,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       ),
       body: desktopCentered(
         context,
-        Column(children: [
-          searchRow,
-          Expanded(child: TabBarView(
+        TabBarView(
           controller: _tabController,
           children: [
             Builder(
@@ -653,13 +651,18 @@ class _CommunityScreenState extends State<CommunityScreen>
                 if (works.isEmpty) {
                   return _pullToRefresh(
                     communityService,
-                    _scrollableContent(_buildSearchEmptyState(l10n), tab: 0),
+                    _scrollableContent(Column(children: [
+                      searchRowFor(0),
+                      _buildSearchEmptyState(l10n),
+                    ]), tab: 0),
                   );
                 }
                 return _pullToRefresh(
                   communityService,
                   _scrollableContent(
-                    CommunityWorkGrid(
+                    Column(children: [
+                      searchRowFor(0),
+                      CommunityWorkGrid(
                       works: works,
                       bookmarkedIds: bookmarkedIds,
                       onTapWork: _openFloatingPreview,
@@ -671,6 +674,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       onTapAuthor: _openAuthorWorks,
                       bottomPadding: 88,
                     ),
+                    ]),
                     tab: 0,
                   ),
                 );
@@ -682,6 +686,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    searchRowFor(1),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
                       child: Wrap(
@@ -794,19 +799,27 @@ class _CommunityScreenState extends State<CommunityScreen>
                 if (communityService.favoriteAuthorIds.isEmpty) {
                   return _pullToRefresh(
                     communityService,
-                    _scrollableContent(_buildNoFavoriteAuthorsState(l10n), tab: 2),
+                    _scrollableContent(Column(children: [
+                      searchRowFor(2),
+                      _buildNoFavoriteAuthorsState(l10n),
+                    ]), tab: 2),
                   );
                 }
                 if (works.isEmpty) {
                   return _pullToRefresh(
                     communityService,
-                    _scrollableContent(_buildSearchEmptyState(l10n), tab: 2),
+                    _scrollableContent(Column(children: [
+                      searchRowFor(2),
+                      _buildSearchEmptyState(l10n),
+                    ]), tab: 2),
                   );
                 }
                 return _pullToRefresh(
                   communityService,
                   _scrollableContent(
-                    CommunityWorkGrid(
+                    Column(children: [
+                      searchRowFor(2),
+                      CommunityWorkGrid(
                       works: works,
                       bookmarkedIds: bookmarkedIds,
                       onTapWork: _openFloatingPreview,
@@ -819,14 +832,14 @@ class _CommunityScreenState extends State<CommunityScreen>
                       repostedByNames: repostedByNames,
                       bottomPadding: 88,
                     ),
+                    ]),
                     tab: 2,
                   ),
                 );
               },
             ),
           ],
-          )),
-        ]),
+        ),
       ),
     );
   }

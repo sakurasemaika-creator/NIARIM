@@ -125,6 +125,14 @@ void main() {
       final searchRow = tester.getRect(
         find.byKey(const Key('communitySearchRow')),
       );
+      expect(
+        find.ancestor(
+          of: find.byKey(const Key('communitySearchRow')),
+          matching: find.byType(SingleChildScrollView),
+        ),
+        findsOneWidget,
+        reason: 'search and filters must scroll with the works',
+      );
       final tabs = tester.getRect(find.byType(TabBar));
       final notification = tester.getRect(
         find.byTooltip(l10n.communityFollowNotificationsTooltip),

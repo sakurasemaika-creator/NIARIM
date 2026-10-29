@@ -47,6 +47,7 @@ jobs:
           flutter test test/community_back_navigation_test.dart --reporter expanded
           flutter test test/community_my_works_controls_test.dart --reporter expanded
           flutter test test/home_entry_navigation_test.dart --plain-name 'home back arrow, right drawer and scroll-to-top obey layout' --reporter expanded
+          flutter test test/home_scroll_continuity_test.dart --reporter expanded
           NIARIM_AUDIT_SMOKE=1 flutter test test/community_header_matrix_test.dart --plain-name 'plaza header matrix: new' --reporter expanded
       - name: Capture updated real Flutter screens and post flow
         env:

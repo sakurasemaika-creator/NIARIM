@@ -522,9 +522,11 @@ class _HomeScreenState extends State<HomeScreen>
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    Column(
-                      children: [
-                        Padding(
+                    ProjectListWidget(
+                      scrollController: _projectScrollController,
+                      header: Column(
+                        children: [
+                          Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
                             vertical: 4,
@@ -563,12 +565,11 @@ class _HomeScreenState extends State<HomeScreen>
                             ],
                           ),
                         ),
-                        // フォルダ内移動時のパンくずリスト。検索中は
-                        // 全体から検索するため非表示にする。
-                        if (!_isSearching) _buildBreadcrumb(),
-                        Expanded(
-                          child: ProjectListWidget(
-                            scrollController: _projectScrollController,
+                          // フォルダ内移動時のパンくずリスト。検索中は
+                          // 全体から検索するため非表示にする。
+                          if (!_isSearching) _buildBreadcrumb(),
+                        ],
+                      ),
                             // Keep bounded browsing scopes rather than every typed query.
                             key: PageStorageKey((
                               'home-projects',
@@ -615,9 +616,6 @@ class _HomeScreenState extends State<HomeScreen>
                             currentFolderId: _currentFolderId,
                             onOpenFolder: (id) =>
                                 setState(() => _currentFolderId = id),
-                          ),
-                        ),
-                      ],
                     ),
                     const _WorksTab(key: PageStorageKey('home-works')),
                     const _BookmarkedTab(key: PageStorageKey('home-bookmarks')),
