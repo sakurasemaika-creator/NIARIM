@@ -185,6 +185,10 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('communityAuthorMuteToggle')), findsOneWidget);
+    // A prior explicit posting tap shows an account toast. Let it expire so
+    // this author-page screenshot cannot imply unsolicited sign-in notices.
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle();
     await capture(root, '13_other_creator_mute_button', tester);
     Navigator.of(tester.element(find.byType(CommunityAuthorWorksScreen))).pop();
     await tester.pumpAndSettle();

@@ -719,7 +719,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: OutlinedButton.icon(
+                          child: FilledButton.tonalIcon(
                             key: const Key('communityMyWorksBulkHide'),
                             onPressed: _bulkBusy
                                 ? null
