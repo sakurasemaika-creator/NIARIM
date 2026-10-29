@@ -101,7 +101,8 @@ void main() {
       }
       for (final tooltip in [
         l10n.communityFollowNotificationsTooltip,
-        l10n.communityVideoTypeFilterTooltip,
+        l10n.communitySortLabel,
+        l10n.communityTileSize,
         l10n.communityContentFilterTitle,
         l10n.commonSearch,
         l10n.layerPanelHelpTooltip,
@@ -137,16 +138,16 @@ void main() {
       final notification = tester.getRect(
         find.byTooltip(l10n.communityFollowNotificationsTooltip),
       );
-      final videoFilter = tester.getRect(
-        find.byTooltip(l10n.communityVideoTypeFilterTooltip),
+      final sortButton = tester.getRect(
+        find.byKey(const Key('communitySortButton')),
       );
       final contentFilter = tester.getRect(
         find.byKey(const Key('communityContentFilterButton')),
       );
       if (titleRect.bottom > tabs.top ||
           notification.bottom > tabs.top ||
-          videoFilter.top < searchRow.top ||
-          videoFilter.bottom > searchRow.bottom ||
+          sortButton.top < searchRow.top ||
+          sortButton.bottom > searchRow.bottom ||
           contentFilter.top < searchRow.top ||
           contentFilter.bottom > searchRow.bottom ||
           tabs.bottom > searchRow.top + .01) {
