@@ -445,6 +445,24 @@ void main() {
     expect(prefs.getString('community.searchHistory.v1.guest'), contains('夜明け'));
   });
 
+  testWidgets('search history stores at most 10 recent searches per device account', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final service = CommunityService();
+    await tester.pumpWidget(host(service));
+    await tester.pumpAndSettle();
+    for (var n = 0; n < 12; n++) {
+      await tester.enterText(
+        find.byKey(const Key('communitySearchInput')), '検索' + n.toString());
+      await tester.tap(find.byKey(const Key('communitySearchButton')));
+      await tester.pumpAndSettle();
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final value = prefs.getString('community.searchHistory.v1.guest')!;
+    expect('検索11', isIn(value));
+    expect('検索0', isNot(isIn(value)));
+    expect(RegExp('"query"').allMatches(value).length, 10);
+  });
+
   testWidgets('mute preferences survive a service recreation without login', (
     tester,
   ) async {
