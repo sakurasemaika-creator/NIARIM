@@ -79,7 +79,8 @@ void main() {
         findsOneWidget);
     expect(find.descendant(of: tags0, matching: find.text('既存タグ')),
         findsOneWidget);
-    expect(find.byType(TextFormField), findsNothing);
+    expect(find.byKey(const Key('communityMutedWordsEntry_0')), findsNothing);
+    expect(find.byKey(const Key('communityMutedTagsEntry_0')), findsNothing);
     expect(tester.getTopLeft(words0).dy, lessThan(tester.getTopLeft(tags0).dy));
     expect(tester.getTopLeft(tags0).dy,
         lessThan(tester.getTopLeft(find.byType(SwitchListTile).last).dy));
@@ -171,7 +172,8 @@ void main() {
     await tester.pump();
     await openDialog(tester);
     await expandMuteSections(tester);
-    expect(find.byType(TextFormField), findsNothing);
+    expect(find.byKey(const Key('communityMutedWordsEntry_0')), findsNothing);
+    expect(find.byKey(const Key('communityMutedTagsEntry_0')), findsNothing);
 
     await tapVisible(tester, find.byKey(const Key('communityMutedWordsEdit_0')));
     final editor = find.byKey(const Key('communityMutedWordsEntry_0'));
@@ -181,7 +183,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(editor, findsNothing);
     expect(find.text('修正済み'), findsOneWidget);
-    expect(find.byType(TextFormField), findsNothing);
+    expect(find.byKey(const Key('communityMutedWordsEntry_0')), findsNothing);
+    expect(find.byKey(const Key('communityMutedTagsEntry_0')), findsNothing);
 
     await tapVisible(tester, find.byKey(const Key('communityMutedTagsEdit_0')));
     await tester.enterText(
