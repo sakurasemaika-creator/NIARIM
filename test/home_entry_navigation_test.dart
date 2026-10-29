@@ -172,98 +172,110 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('drawer icons and selected tab follow live red/blue/purple accents', (
-    tester,
-  ) async {
-    final l10n = await open(
-      tester,
-      language: 'ja',
-      size: const Size(390, 844),
-    );
-    final service = tester.element(find.byType(HomeScreen))
-        .read<ThemeService>();
-    final presets = [
-      const Color(0xFFFF5C7A),
-      const Color(0xFF2C99F0),
-      const Color(0xFFDD00EE),
-    ];
-    for (final accent in presets) {
-      service.previewCurrent(
-        AppThemePreset.defaultLight.copyWith(accentColor: accent),
+  testWidgets(
+    'drawer icons and selected tab follow live red/blue/purple accents',
+    (tester) async {
+      final l10n = await open(
+        tester,
+        language: 'ja',
+        size: const Size(390, 844),
       );
-      await tester.pumpAndSettle();
-
-      // The selected tab's glyph and its underline must use this very
-      // accent, not a cached copy of the default pink.
-      final tab = find.byKey(const ValueKey('home_tab_0'));
-      final tabTitle = find.descendant(
-        of: tab,
-        matching: find.text(l10n.homeTabProjects),
-      );
-      expect(tester.widget<Text>(tabTitle).style?.color, accent);
-      final border = tester.widget<Container>(
-        find.descendant(
-          of: tab,
-          matching: find.byType(Container),
-        ).first,
-      ).decoration as BoxDecoration;
-      expect(border.border!.bottom.color, accent);
-
-      final opener = find.byIcon(Icons.menu);
-      await tester.tap(opener);
-      await tester.pumpAndSettle();
-      final drawer = find.byType(Drawer);
-      expect(drawer, findsOneWidget);
-      final expectedIcons = [
-        Icons.share_outlined,
-        Icons.delete_outline,
-        Icons.palette_outlined,
-        Icons.cleaning_services_outlined,
-        Icons.settings_outlined,
-        Icons.help_outline,
-        Icons.lightbulb_outline,
-        Icons.workspace_premium_outlined,
+      final service = tester
+          .element(find.byType(HomeScreen))
+          .read<ThemeService>();
+      final presets = [
+        const Color(0xFFFF5C7A),
+        const Color(0xFF2C99F0),
+        const Color(0xFFDD00EE),
       ];
-      for (final glyph in expectedIcons) {
-        final found = find.descendant(of: drawer, matching: find.byIcon(glyph));
-        expect(found, findsOneWidget, reason: '$glyph for $accent');
-        expect(tester.widget<Icon>(found).color, accent);
-      }
-      final menuTitle = find.descendant(
-        of: drawer,
-        matching: find.text(l10n.homeDrawerSettings),
-      );
-      expect(
-        tester.renderObject<RenderParagraph>(menuTitle).text.style?.color,
-        service.current.menuTextColor,
-      );
-      Scaffold.of(tester.element(drawer)).closeEndDrawer();
-      await tester.pumpAndSettle();
-    }
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
+      for (final accent in presets) {
+        service.previewCurrent(
+          AppThemePreset.defaultLight.copyWith(accentColor: accent),
+        );
+        await tester.pumpAndSettle();
 
-  testWidgets('selected favorite filter has white label on the current accent', (
-    tester,
-  ) async {
-    final l10n = await open(tester);
-    final finder = find.widgetWithText(FilterChip, l10n.homeFavoritesOnly);
-    expect(finder, findsOneWidget);
-    await tester.tap(finder);
-    await tester.pumpAndSettle();
-    final chip = tester.widget<FilterChip>(finder);
-    final scheme = Theme.of(tester.element(finder)).colorScheme;
-    expect(chip.selected, isTrue);
-    expect(chip.selectedColor, scheme.primary);
-    expect((chip.label as Text).style?.color, Colors.white);
-    expect(chip.checkmarkColor, Colors.white);
-    await tester.tap(finder);
-    await tester.pumpAndSettle();
-    expect((tester.widget<FilterChip>(finder).label as Text).style?.color,
-        isNull, reason: 'Unselected chip follows ordinary theme text');
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
+        // The selected tab's glyph and its underline must use this very
+        // accent, not a cached copy of the default pink.
+        final tab = find.byKey(const ValueKey('home_tab_0'));
+        final tabTitle = find.descendant(
+          of: tab,
+          matching: find.text(l10n.homeTabProjects),
+        );
+        expect(tester.widget<Text>(tabTitle).style?.color, accent);
+        final border =
+            tester
+                    .widget<Container>(
+                      find
+                          .descendant(of: tab, matching: find.byType(Container))
+                          .first,
+                    )
+                    .decoration
+                as BoxDecoration;
+        expect(border.border!.bottom.color, accent);
+
+        final opener = find.byIcon(Icons.menu);
+        await tester.tap(opener);
+        await tester.pumpAndSettle();
+        final drawer = find.byType(Drawer);
+        expect(drawer, findsOneWidget);
+        final expectedIcons = [
+          Icons.share_outlined,
+          Icons.delete_outline,
+          Icons.palette_outlined,
+          Icons.cleaning_services_outlined,
+          Icons.settings_outlined,
+          Icons.help_outline,
+          Icons.lightbulb_outline,
+          Icons.workspace_premium_outlined,
+        ];
+        for (final glyph in expectedIcons) {
+          final found = find.descendant(
+            of: drawer,
+            matching: find.byIcon(glyph),
+          );
+          expect(found, findsOneWidget, reason: '$glyph for $accent');
+          expect(tester.widget<Icon>(found).color, accent);
+        }
+        final menuTitle = find.descendant(
+          of: drawer,
+          matching: find.text(l10n.homeDrawerSettings),
+        );
+        expect(
+          tester.renderObject<RenderParagraph>(menuTitle).text.style?.color,
+          service.current.menuTextColor,
+        );
+        Scaffold.of(tester.element(drawer)).closeEndDrawer();
+        await tester.pumpAndSettle();
+      }
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  testWidgets(
+    'selected favorite filter has white label on the current accent',
+    (tester) async {
+      final l10n = await open(tester);
+      final finder = find.widgetWithText(FilterChip, l10n.homeFavoritesOnly);
+      expect(finder, findsOneWidget);
+      await tester.tap(finder);
+      await tester.pumpAndSettle();
+      final chip = tester.widget<FilterChip>(finder);
+      final scheme = Theme.of(tester.element(finder)).colorScheme;
+      expect(chip.selected, isTrue);
+      expect(chip.selectedColor, scheme.primary);
+      expect((chip.label as Text).style?.color, Colors.white);
+      expect(chip.checkmarkColor, Colors.white);
+      await tester.tap(finder);
+      await tester.pumpAndSettle();
+      expect(
+        (tester.widget<FilterChip>(finder).label as Text).style?.color,
+        isNull,
+        reason: 'Unselected chip follows ordinary theme text',
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   testWidgets('home selected tab outline uses its actual menu background', (
     tester,
@@ -284,7 +296,7 @@ void main() {
       theme: preset,
     );
     final label = find.descendant(
-      of: find.byType(AppBar),
+      of: find.byKey(const ValueKey('home_tab_0')),
       matching: find.text(l10n.homeTabProjects),
     );
     final style = tester.renderObject<RenderParagraph>(label).text.style!;
@@ -326,8 +338,10 @@ void main() {
     );
     expect(drawerIcon, findsOneWidget);
     expect(tester.getCenter(backFinder).dx, lessThan(60));
-    expect(tester.getCenter(drawerIcon).dx,
-        greaterThan(tester.getCenter(find.byIcon(Icons.search).first).dx));
+    expect(
+      tester.getCenter(drawerIcon).dx,
+      greaterThan(tester.getCenter(find.byIcon(Icons.search).first).dx),
+    );
     expect(tester.getCenter(drawerIcon).dy, lessThan(leftCenter.dy));
 
     await switchTab(tester, 2);

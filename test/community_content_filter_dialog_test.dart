@@ -13,28 +13,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Muted words and tags are managed as independent rows. Draft edits are
 /// persisted together on Save and discarded on Cancel.
 void main() {
-  Widget host(CommunityService service, {Locale locale = const Locale('ja'),
-      Widget? home}) =>
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<CommunityService>.value(value: service),
-          ChangeNotifierProvider<SettingsService>(
-            create: (_) => SettingsService(),
-          ),
-          ChangeNotifierProvider<PremiumService>(
-            create: (_) => PremiumService(),
-          ),
-          ChangeNotifierProvider<CommunityPreviewService>(
-            create: (_) => CommunityPreviewService(),
-          ),
-        ],
-        child: MaterialApp(
-          locale: locale,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: home ?? const CommunityScreen(),
-        ),
-      );
+  Widget host(
+    CommunityService service, {
+    Locale locale = const Locale('ja'),
+    Widget? home,
+  }) => MultiProvider(
+    providers: [
+      ChangeNotifierProvider<CommunityService>.value(value: service),
+      ChangeNotifierProvider<SettingsService>(create: (_) => SettingsService()),
+      ChangeNotifierProvider<PremiumService>(create: (_) => PremiumService()),
+      ChangeNotifierProvider<CommunityPreviewService>(
+        create: (_) => CommunityPreviewService(),
+      ),
+    ],
+    child: MaterialApp(
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: home ?? const CommunityScreen(),
+    ),
+  );
 
   AppLocalizations l10nOf(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.byType(CommunityScreen)))!;
@@ -54,10 +52,14 @@ void main() {
   }
 
   Future<void> expandMuteSections(WidgetTester tester) async {
-    await tapVisible(tester,
-        find.byKey(const Key('communityMutedWordsAccordion')));
-    await tapVisible(tester,
-        find.byKey(const Key('communityMutedTagsAccordion')));
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityMutedWordsAccordion')),
+    );
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityMutedTagsAccordion')),
+    );
   }
 
   testWidgets('pre-fills each row, edits with pencil and adds without commas', (
@@ -75,29 +77,51 @@ void main() {
 
     final words0 = find.byKey(const Key('communityMutedWordsDisplay_0'));
     final tags0 = find.byKey(const Key('communityMutedTagsDisplay_0'));
-    expect(find.descendant(of: words0, matching: find.text('既存の語')),
-        findsOneWidget);
-    expect(find.descendant(of: tags0, matching: find.text('既存タグ')),
-        findsOneWidget);
+    expect(
+      find.descendant(of: words0, matching: find.text('既存の語')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: tags0, matching: find.text('既存タグ')),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('communityMutedWordsEntry_0')), findsNothing);
     expect(find.byKey(const Key('communityMutedTagsEntry_0')), findsNothing);
     expect(tester.getTopLeft(words0).dy, lessThan(tester.getTopLeft(tags0).dy));
-    expect(tester.getTopLeft(tags0).dy,
-        lessThan(tester.getTopLeft(find.byType(SwitchListTile).last).dy));
+    expect(
+      tester.getTopLeft(tags0).dy,
+      lessThan(tester.getTopLeft(find.byType(SwitchListTile).last).dy),
+    );
 
-    await tapVisible(tester, find.byKey(const Key('communityMutedWordsEdit_0')));
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityMutedWordsEdit_0')),
+    );
     await tester.enterText(
-      find.byKey(const Key('communityMutedWordsEntry_0')), 'ネタバレ');
-    await tapVisible(tester, find.byKey(const Key('communityMutedWordsAddButton')));
-    expect(find.byKey(const Key('communityMutedWordsDisplay_0')), findsOneWidget);
+      find.byKey(const Key('communityMutedWordsEntry_0')),
+      'ネタバレ',
+    );
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityMutedWordsAddButton')),
+    );
+    expect(
+      find.byKey(const Key('communityMutedWordsDisplay_0')),
+      findsOneWidget,
+    );
     await tester.enterText(
       find.byKey(const Key('communityMutedWordsEntry_1')),
       'ホラー',
     );
     await tapVisible(tester, find.byKey(const Key('communityMutedTagsEdit_0')));
     await tester.enterText(
-      find.byKey(const Key('communityMutedTagsEntry_0')), '風景');
-    await tapVisible(tester, find.byKey(const Key('communityMutedTagsAddButton')));
+      find.byKey(const Key('communityMutedTagsEntry_0')),
+      '風景',
+    );
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityMutedTagsAddButton')),
+    );
     await tester.enterText(
       find.byKey(const Key('communityMutedTagsEntry_1')),
       '手描き',
@@ -126,14 +150,20 @@ void main() {
     await openDialog(tester);
     await expandMuteSections(tester);
 
-    await tapVisible(tester, find.byKey(const Key('communityMutedWordsDelete_1')));
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityMutedWordsDelete_1')),
+    );
     expect(find.byKey(const Key('communityMutedWordsDisplay_1')), findsNothing);
     expect(find.text('残す'), findsOneWidget);
     await tapVisible(tester, find.text(l10nOf(tester).commonCancel));
     expect(service.mutedWords, {'残す', '消す'});
     await openDialog(tester);
     await expandMuteSections(tester);
-    expect(find.byKey(const Key('communityMutedWordsDisplay_1')), findsOneWidget);
+    expect(
+      find.byKey(const Key('communityMutedWordsDisplay_1')),
+      findsOneWidget,
+    );
     await tapVisible(tester, find.text(l10nOf(tester).commonCancel));
     expect(tester.takeException(), isNull);
   });
@@ -146,8 +176,14 @@ void main() {
     await openDialog(tester);
     await expandMuteSections(tester);
 
-    await tapVisible(tester, find.byKey(const Key('communityMutedWordsAddButton')));
-    await tapVisible(tester, find.byKey(const Key('communityMutedTagsAddButton')));
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityMutedWordsAddButton')),
+    );
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityMutedTagsAddButton')),
+    );
     await tester.enterText(
       find.byKey(const Key('communityMutedTagsEntry_0')),
       '作画',
@@ -161,8 +197,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('pencil enables editing; tapping outside returns to plain text',
-      (tester) async {
+  testWidgets('pencil enables editing; tapping outside returns to plain text', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       'community.mutedWords': ['初期値'],
       'community.mutedTags': ['初期タグ'],
@@ -175,7 +212,10 @@ void main() {
     expect(find.byKey(const Key('communityMutedWordsEntry_0')), findsNothing);
     expect(find.byKey(const Key('communityMutedTagsEntry_0')), findsNothing);
 
-    await tapVisible(tester, find.byKey(const Key('communityMutedWordsEdit_0')));
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityMutedWordsEdit_0')),
+    );
     final editor = find.byKey(const Key('communityMutedWordsEntry_0'));
     expect(editor, findsOneWidget);
     await tester.enterText(editor, '修正済み');
@@ -188,7 +228,9 @@ void main() {
 
     await tapVisible(tester, find.byKey(const Key('communityMutedTagsEdit_0')));
     await tester.enterText(
-      find.byKey(const Key('communityMutedTagsEntry_0')), '新しいタグ');
+      find.byKey(const Key('communityMutedTagsEntry_0')),
+      '新しいタグ',
+    );
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('communityMutedTagsEntry_0')), findsNothing);
@@ -208,39 +250,54 @@ void main() {
     await openDialog(tester);
     await expandMuteSections(tester);
     await tapVisible(
-        tester, find.byKey(const Key('communityMutedWordsDisplay_0')));
+      tester,
+      find.byKey(const Key('communityMutedWordsDisplay_0')),
+    );
     final editor = find.byKey(const Key('communityMutedWordsEntry_0'));
     expect(editor, findsOneWidget);
     await tester.enterText(editor, '修正した単語');
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
     expect(find.text('修正した単語'), findsOneWidget);
-    await tapVisible(tester,
-        find.byKey(const Key('communityContentFilterSaveButton')));
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityContentFilterSaveButton')),
+    );
     expect(service.mutedWords, {'修正した単語'});
   });
 
-  testWidgets('mute authors hides their works without requesting login',
-      (tester) async {
+  testWidgets('mute authors hides their works without requesting login', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final service = CommunityService();
     await tester.runAsync(() => service.contentFiltersReady);
     final work = service.discoverableWorks.first;
     await service.setAuthorMuted(work.authorId, true);
     expect(service.isAuthorMuted(work.authorId), isTrue);
-    expect(service.discoverableWorks.any((w) => w.authorId == work.authorId),
-        isFalse);
+    expect(
+      service.discoverableWorks.any((w) => w.authorId == work.authorId),
+      isFalse,
+    );
     await tester.pumpWidget(host(service));
     await tester.pumpAndSettle();
     await openDialog(tester);
-    await tapVisible(tester,
-        find.byKey(const Key('communityMutedAuthorsAccordion')));
-    await tapVisible(tester,
-        find.byKey(const Key('communityManageMutedAuthors')));
-    expect(find.byKey(ValueKey('communityMutedAuthor-${work.authorId}')),
-        findsOneWidget);
-    await tapVisible(tester,
-        find.byKey(ValueKey('communityUnmuteAuthor-${work.authorId}')));
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityMutedAuthorsAccordion')),
+    );
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityManageMutedAuthors')),
+    );
+    expect(
+      find.byKey(ValueKey('communityMutedAuthor-${work.authorId}')),
+      findsOneWidget,
+    );
+    await tapVisible(
+      tester,
+      find.byKey(ValueKey('communityUnmuteAuthor-${work.authorId}')),
+    );
     expect(service.isAuthorMuted(work.authorId), isFalse);
   });
 
@@ -251,12 +308,15 @@ void main() {
     final authorWork = service.discoverableWorks.firstWhere(
       (work) => !service.isOwnWork(work),
     );
-    await tester.pumpWidget(host(service,
-      home: CommunityAuthorWorksScreen(
-        authorId: authorWork.authorId,
-        authorName: authorWork.authorName,
+    await tester.pumpWidget(
+      host(
+        service,
+        home: CommunityAuthorWorksScreen(
+          authorId: authorWork.authorId,
+          authorName: authorWork.authorName,
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
     final toggle = find.byKey(const Key('communityAuthorMuteToggle'));
     expect(toggle, findsOneWidget);
@@ -269,8 +329,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('duration, thresholds and exact tag conditions are editable',
-      (tester) async {
+  testWidgets('duration, thresholds and exact tag conditions are editable', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final service = CommunityService();
     await tester.pumpWidget(host(service));
@@ -282,22 +343,40 @@ void main() {
     expect(find.byKey(const Key('communityDurationSlider')), findsOneWidget);
     await tapVisible(tester, find.byKey(const Key('communityTagExactMatch')));
     await tapVisible(tester, find.byKey(const Key('communityMinimumViews')));
-    await tester.enterText(find.byKey(const Key('communityMinimumViews')), '100');
-    await tapVisible(tester, find.byKey(const Key('communityMinimumBookmarks')));
-    await tester.enterText(find.byKey(const Key('communityMinimumBookmarks')), '10');
-    await tapVisible(tester,
-        find.byKey(const Key('communityContentFilterSaveButton')));
+    await tester.enterText(
+      find.byKey(const Key('communityMinimumViews')),
+      '100',
+    );
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityMinimumBookmarks')),
+    );
+    await tester.enterText(
+      find.byKey(const Key('communityMinimumBookmarks')),
+      '10',
+    );
+    await tapVisible(
+      tester,
+      find.byKey(const Key('communityContentFilterSaveButton')),
+    );
     await openDialog(tester);
-    expect(tester.widget<SwitchListTile>(
-        find.byKey(const Key('communityTagExactMatch'))).value, isTrue);
+    expect(
+      tester
+          .widget<SwitchListTile>(
+            find.byKey(const Key('communityTagExactMatch')),
+          )
+          .value,
+      isTrue,
+    );
     await tapVisible(tester, find.byKey(const Key('communityDurationMode')));
     await tapVisible(tester, find.text(l10n.communityDurationRange).last);
     expect(find.byKey(const Key('communityDurationMinimum')), findsOneWidget);
     expect(find.byKey(const Key('communityDurationMaximum')), findsOneWidget);
   });
 
-  testWidgets('saved searches can be named, recalled and kept on device',
-      (tester) async {
+  testWidgets('saved searches can be named, recalled and kept on device', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final service = CommunityService();
     await tester.pumpWidget(host(service));
@@ -306,20 +385,22 @@ void main() {
     await tapVisible(tester, find.byKey(const Key('communitySavedSearchMenu')));
     await tapVisible(tester, find.text(l10n.communitySaveSearch));
     await tester.enterText(
-        find.byKey(const Key('communitySavedSearchName')), 'お気に入りの条件');
+      find.byKey(const Key('communitySavedSearchName')),
+      'お気に入りの条件',
+    );
     await tapVisible(tester, find.text(l10n.commonSave));
     await tester.pump(const Duration(milliseconds: 400));
     final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('community.savedSearches.v1'),
-        contains('お気に入りの条件'));
+    expect(prefs.getString('community.savedSearches.v1'), contains('お気に入りの条件'));
     await tapVisible(tester, find.byKey(const Key('communitySavedSearchMenu')));
     expect(find.text('お気に入りの条件'), findsOneWidget);
     await tapVisible(tester, find.text('お気に入りの条件'));
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('mute preferences survive a service recreation without login',
-      (tester) async {
+  testWidgets('mute preferences survive a service recreation without login', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final beforeLogin = CommunityService();
     await tester.runAsync(() => beforeLogin.contentFiltersReady);
@@ -347,7 +428,10 @@ void main() {
     expect(find.text(l10n.commonCancel), findsOneWidget);
     expect(find.text(l10n.commonSave), findsOneWidget);
     for (final label in [l10n.communityMutedWords, l10n.communityMutedTags]) {
-      expect(tester.widget<Text>(find.text(label)).style?.fontFamily, 'Kuramubon');
+      expect(
+        tester.widget<Text>(find.text(label)).style?.fontFamily,
+        'Kuramubon',
+      );
     }
     expect(find.text(l10n.communityMuteAddNew), findsNWidgets(2));
     expect(find.textContaining('キャンセル'), findsNothing);

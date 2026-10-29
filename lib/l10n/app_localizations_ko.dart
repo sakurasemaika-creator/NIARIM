@@ -656,6 +656,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get folderCreateFailed => '폴더를 만들지 못했어요. 다시 시도해 주세요.';
 
   @override
+  String get folderChangesSaveFailed => '폴더 변경 사항을 저장하지 못했어요. 다시 시도해 주세요.';
+
+  @override
+  String get folderChangesPartiallySaved =>
+      '일부 변경 사항만 저장됐어요. 목록을 확인하고 다시 시도해 주세요.';
+
+  @override
   String get folderNameLabel => '폴더 이름';
 
   @override
@@ -6169,33 +6176,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle => '팔로잉/팔로워 목록 공개하기';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      '켜면 다른 사용자가 이 페이지에서 회원님의 팔로잉 및 팔로워 목록을 볼 수 있습니다. 기본값은 비공개입니다.';
-
-  @override
-  String get communityFollowersListTitle => '팔로워';
-
-  @override
-  String get communityFollowersListEmpty => '팔로워가 없습니다';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '$count명이 더 있지만, 본인 설정에 따라 표시되지 않습니다';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return '팔로잉 $count명';
   }
-
-  @override
-  String get communityFollowingListTitle => '팔로잉';
-
-  @override
-  String get communityFollowingListEmpty => '팔로우한 사람이 없습니다';
 
   @override
   String get communityFollowNotificationsTooltip => '알림';
@@ -6915,6 +6898,123 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityMuteAddNew => '새로 추가';
+
+  @override
+  String get communityScrollToTop => '맨 위로';
+
+  @override
+  String get communityPostPeriodTitle => '게시 기간';
+
+  @override
+  String get communityDurationFilterTitle => '동영상 길이';
+
+  @override
+  String get communitySavedSearches => '저장한 검색';
+
+  @override
+  String get communitySignInPromptTitle => 'Google 계정으로 로그인';
+
+  @override
+  String get communitySignInPromptBody =>
+      '작품 게시와 관리, 팔로우, 북마크, 신고 기능을 사용하려면 Google 계정 연결이 필요합니다.';
+
+  @override
+  String get communitySignInPromptConnect => 'Google 계정 연결';
+
+  @override
+  String get communitySignInUnavailable => '이 개발 빌드에서는 Google 로그인이 설정되지 않았습니다.';
+
+  @override
+  String get communitySaveSearch => '현재 검색 저장';
+
+  @override
+  String get communitySavedSearchName => '검색 이름';
+
+  @override
+  String get communitySavedSearchLimit => '검색은 10개까지 저장할 수 있습니다';
+
+  @override
+  String get communitySavedSearchEmpty => '저장한 검색이 없습니다';
+
+  @override
+  String get communityManageSavedSearches => '저장한 검색 관리';
+
+  @override
+  String get communityDurationAny => '길이 제한 없음';
+
+  @override
+  String get communityDurationUpTo => 'N분 이하 (슬라이더)';
+
+  @override
+  String get communityDurationRange => 'N분 이상 N분 이하 (숫자 입력)';
+
+  @override
+  String get communityDurationMinutes => '분 이하';
+
+  @override
+  String get communityDurationMinimum => '최소 길이 (분)';
+
+  @override
+  String get communityDurationMaximum => '최대 길이 (분)';
+
+  @override
+  String get communityTagExactMatch => '태그 정확히 일치 (끄면 부분 일치)';
+
+  @override
+  String get communityMinimumViews => '최소 조회 수';
+
+  @override
+  String get communityMinimumBookmarks => '최소 북마크 수';
+
+  @override
+  String get communityPostPeriodAll => '전체 기간';
+
+  @override
+  String get communityPostPeriodToday => '오늘';
+
+  @override
+  String get communityPostPeriodWeek => '이번 주';
+
+  @override
+  String get communityPostPeriodMonth => '이번 달';
+
+  @override
+  String get communityPostPeriodYear => '올해';
+
+  @override
+  String get communityPostPeriodCustom => '날짜 범위 지정';
+
+  @override
+  String get communityPostPeriodChooseRange => '날짜 선택';
+
+  @override
+  String get communityMutedAuthors => '뮤트한 사용자';
+
+  @override
+  String get communityMutedAuthorsEmpty => '뮤트한 사용자가 없습니다';
+
+  @override
+  String get communityMuteAuthor => '이 사용자의 작품 뮤트';
+
+  @override
+  String get communityUnmuteAuthor => '이 사용자 뮤트 해제';
+
+  @override
+  String get communityMyWorksManagementHeading => '작품 관리';
+
+  @override
+  String get communityWorkTagsTitle => '작품 태그 관리';
+
+  @override
+  String get communityWorkTagsHint =>
+      '태그를 추가·수정·삭제할 수 있습니다. 잠그면 다른 사용자가 수정할 수 없습니다. 수정·삭제하려면 먼저 잠금을 해제하세요.';
+
+  @override
+  String get communityWorkEditTag => '태그 수정';
+
+  @override
+  String get communityWorkTagChangeFailed => '태그를 변경하지 못했습니다';
+
   @override
   String get communityContainsGenerativeAiImageVideo => '생성형 AI 이미지·동영상 포함';
 
@@ -6933,7 +7033,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityReloadTooltip => '새로고침';
 
   @override
-  String get communityGoogleSignInNotConfigured => 'Google 로그인이 아직 설정되지 않았습니다';
+  String get communityGoogleSignInNotConfigured => 'Google 계정이 연결되어 있지 않습니다';
 
   @override
   String get communityGoogleAccountBusy =>
@@ -6941,6 +7041,54 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityMyWorksTitle => '내 게시물';
+
+  @override
+  String get communityMyWorksViewAuthorPage => '내 작품 목록 페이지 보기';
+
+  @override
+  String get communityMyWorksAccountRequired => '작품 목록을 보려면 Google 계정을 연결하세요';
+
+  @override
+  String get communityMyWorksSettingsTitle => '작품 설정';
+
+  @override
+  String get communityMyWorksPublishInNiarim => 'NIARIM에 공개';
+
+  @override
+  String get communityMyWorksDeleteNiarim => 'NIARIM 작품 광장에서 이 작품 삭제';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => '이 작품을 삭제할까요?';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      'NIARIM에서 작품을 영구 삭제합니다. YouTube 동영상은 삭제되지 않습니다. 이 작업은 취소할 수 없습니다.';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio => 'YouTube Studio에서 동영상 관리';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'YouTube 공개 상태와 설정은 YouTube Studio에서 관리합니다. NIARIM 공개 설정과 별개입니다.';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed => 'YouTube Studio를 열 수 없습니다';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return '작업 실패: $reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => '선택 항목 일괄 공개';
+
+  @override
+  String get communityMyWorksBulkHide => '선택 항목 일괄 비공개';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return '완료: $success / 실패: $failed';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected => '연결된 Google 계정 없음';
@@ -6967,11 +7115,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String communitySignInFailed(String reason) {
     return 'Google 계정으로 로그인하지 못했습니다. $reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return '공개 상태를 변경하지 못했습니다. $reason';
   }
 
   @override

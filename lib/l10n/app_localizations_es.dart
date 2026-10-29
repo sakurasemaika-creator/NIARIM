@@ -679,6 +679,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo crear la carpeta. Inténtalo de nuevo.';
 
   @override
+  String get folderChangesSaveFailed =>
+      'No se pudieron guardar los cambios de la carpeta. Inténtalo de nuevo.';
+
+  @override
+  String get folderChangesPartiallySaved =>
+      'Solo se han guardado algunos cambios. Comprueba la lista e inténtalo de nuevo.';
+
+  @override
   String get folderNameLabel => 'Nombre de la carpeta';
 
   @override
@@ -6455,34 +6463,9 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle =>
-      'Hacer públicas las listas de seguidos/seguidores';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      'Si está activado, otros usuarios podrán ver sus listas de seguidos y seguidores desde esta página. Son privadas de forma predeterminada.';
-
-  @override
-  String get communityFollowersListTitle => 'Seguidores';
-
-  @override
-  String get communityFollowersListEmpty => 'Todavía no hay seguidores';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '$count más no se muestran, ocultos por su propia configuración de privacidad';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return 'Siguiendo a $count';
   }
-
-  @override
-  String get communityFollowingListTitle => 'Siguiendo';
-
-  @override
-  String get communityFollowingListEmpty => 'Todavía no sigue a nadie';
 
   @override
   String get communityFollowNotificationsTooltip => 'Notificaciones';
@@ -7226,6 +7209,125 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityMuteAddNew => 'Añadir nuevo';
+
+  @override
+  String get communityScrollToTop => 'Volver arriba';
+
+  @override
+  String get communityPostPeriodTitle => 'Fecha de publicación';
+
+  @override
+  String get communityDurationFilterTitle => 'Duración del vídeo';
+
+  @override
+  String get communitySavedSearches => 'Búsquedas guardadas';
+
+  @override
+  String get communitySignInPromptTitle => 'Iniciar sesión con Google';
+
+  @override
+  String get communitySignInPromptBody =>
+      'Necesitas vincular Google para publicar, gestionar obras, seguir autores, guardar y denunciar contenido.';
+
+  @override
+  String get communitySignInPromptConnect => 'Vincular cuenta Google';
+
+  @override
+  String get communitySignInUnavailable =>
+      'El inicio de sesión con Google no está configurado en esta versión de desarrollo.';
+
+  @override
+  String get communitySaveSearch => 'Guardar la búsqueda actual';
+
+  @override
+  String get communitySavedSearchName => 'Nombre de la búsqueda';
+
+  @override
+  String get communitySavedSearchLimit => 'Puedes guardar hasta 10 búsquedas';
+
+  @override
+  String get communitySavedSearchEmpty => 'No hay búsquedas guardadas';
+
+  @override
+  String get communityManageSavedSearches => 'Gestionar búsquedas guardadas';
+
+  @override
+  String get communityDurationAny => 'Cualquier duración';
+
+  @override
+  String get communityDurationUpTo => 'Hasta N minutos (control deslizante)';
+
+  @override
+  String get communityDurationRange => 'Entre N y N minutos (números)';
+
+  @override
+  String get communityDurationMinutes => 'minutos o menos';
+
+  @override
+  String get communityDurationMinimum => 'Mín. minutos';
+
+  @override
+  String get communityDurationMaximum => 'Máx. minutos';
+
+  @override
+  String get communityTagExactMatch =>
+      'Coincidencia exacta de etiquetas (desactivado: parcial)';
+
+  @override
+  String get communityMinimumViews => 'Visualizaciones mínimas';
+
+  @override
+  String get communityMinimumBookmarks => 'Guardados mínimos';
+
+  @override
+  String get communityPostPeriodAll => 'Cualquier fecha';
+
+  @override
+  String get communityPostPeriodToday => 'Hoy';
+
+  @override
+  String get communityPostPeriodWeek => 'Esta semana';
+
+  @override
+  String get communityPostPeriodMonth => 'Este mes';
+
+  @override
+  String get communityPostPeriodYear => 'Este año';
+
+  @override
+  String get communityPostPeriodCustom => 'Intervalo personalizado';
+
+  @override
+  String get communityPostPeriodChooseRange => 'Elegir fechas';
+
+  @override
+  String get communityMutedAuthors => 'Creadores silenciados';
+
+  @override
+  String get communityMutedAuthorsEmpty => 'No hay creadores silenciados';
+
+  @override
+  String get communityMuteAuthor => 'Silenciar las obras de este creador';
+
+  @override
+  String get communityUnmuteAuthor => 'Dejar de silenciar a este creador';
+
+  @override
+  String get communityMyWorksManagementHeading => 'Gestionar obras';
+
+  @override
+  String get communityWorkTagsTitle => 'Etiquetas de la obra';
+
+  @override
+  String get communityWorkTagsHint =>
+      'Añade, edita o elimina etiquetas. El bloqueo impide cambios de otras personas. Desbloquéala antes de editarla o eliminarla.';
+
+  @override
+  String get communityWorkEditTag => 'Editar etiqueta';
+
+  @override
+  String get communityWorkTagChangeFailed => 'No se pudo cambiar la etiqueta';
+
   @override
   String get communityContainsGenerativeAiImageVideo =>
       'Contiene imágenes o vídeo de IA generativa';
@@ -7246,7 +7348,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityGoogleSignInNotConfigured =>
-      'El inicio de sesión con Google aún no está configurado';
+      'No hay ninguna cuenta de Google vinculada';
 
   @override
   String get communityGoogleAccountBusy =>
@@ -7254,6 +7356,58 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityMyWorksTitle => 'Mis publicaciones';
+
+  @override
+  String get communityMyWorksViewAuthorPage => 'Ver mi página de obras';
+
+  @override
+  String get communityMyWorksAccountRequired =>
+      'Conecta tu cuenta de Google para ver tus obras';
+
+  @override
+  String get communityMyWorksSettingsTitle => 'Ajustes de la obra';
+
+  @override
+  String get communityMyWorksPublishInNiarim => 'Mostrar en NIARIM';
+
+  @override
+  String get communityMyWorksDeleteNiarim =>
+      'Eliminar esta obra de la Plaza de Obras de NIARIM';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => '¿Eliminar esta obra?';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      'La obra se eliminará permanentemente de NIARIM. El vídeo de YouTube se conservará. Esta acción no se puede deshacer.';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio =>
+      'Gestionar vídeo en YouTube Studio';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'Gestiona la visibilidad y los ajustes de YouTube desde YouTube Studio, de forma independiente de NIARIM.';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed =>
+      'No se pudo abrir YouTube Studio';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return 'Error de operación: $reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => 'Publicar selección';
+
+  @override
+  String get communityMyWorksBulkHide => 'Ocultar selección';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return 'Cambiadas: $success / Fallidas: $failed';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected =>
@@ -7282,11 +7436,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String communitySignInFailed(String reason) {
     return 'No se pudo iniciar sesión con tu cuenta de Google. $reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return 'No se pudo cambiar la visibilidad. $reason';
   }
 
   @override

@@ -132,7 +132,10 @@ void main() {
             reason:
                 'The project-only scroll-to-top FAB is hidden on bookmarks; delay=$delay',
           );
-          expect(find.byKey(const Key('homeBackToSplashButton')), findsOneWidget);
+          expect(
+            find.byKey(const Key('homeBackToSplashButton')),
+            findsOneWidget,
+          );
           await tester.pumpWidget(const SizedBox.shrink());
           tester.platformDispatcher.clearTextScaleFactorTestValue();
         }

@@ -43,8 +43,11 @@ void main() {
       for (final key in ['communityMutedWordsHint', 'communityMutedTagsHint']) {
         final hint = strings[key] as String;
         expect(hint, isNot(contains('改行')), reason: '$locale $key');
-        expect(hint.toLowerCase(), isNot(contains('comma-separated')),
-            reason: '$locale $key');
+        expect(
+          hint.toLowerCase(),
+          isNot(contains('comma-separated')),
+          reason: '$locale $key',
+        );
       }
     }
   });

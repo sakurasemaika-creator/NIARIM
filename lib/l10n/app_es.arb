@@ -222,6 +222,8 @@
   "folderManagementCreateNew": "Nueva",
   "folderManagementEmpty": "Aún no hay carpetas",
   "folderCreateFailed": "No se pudo crear la carpeta. Inténtalo de nuevo.",
+  "folderChangesSaveFailed": "No se pudieron guardar los cambios de la carpeta. Inténtalo de nuevo.",
+  "folderChangesPartiallySaved": "Solo se han guardado algunos cambios. Comprueba la lista e inténtalo de nuevo.",
   "folderNameLabel": "Nombre de la carpeta",
   "folderMoveToTitle": "Mover a carpeta",
   "folderNone": "Sin carpeta",
@@ -2664,18 +2666,6 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "Hacer públicas las listas de seguidos/seguidores",
-  "communityFollowersPublicToggleDesc": "Si está activado, otros usuarios podrán ver sus listas de seguidos y seguidores desde esta página. Son privadas de forma predeterminada.",
-  "communityFollowersListTitle": "Seguidores",
-  "communityFollowersListEmpty": "Todavía no hay seguidores",
-  "communityFollowersListHiddenNote": "{count} más no se muestran, ocultos por su propia configuración de privacidad",
-  "@communityFollowersListHiddenNote": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "communityAuthorFollowingCount": "Siguiendo a {count}",
   "@communityAuthorFollowingCount": {
     "placeholders": {
@@ -2684,8 +2674,6 @@
       }
     }
   },
-  "communityFollowingListTitle": "Siguiendo",
-  "communityFollowingListEmpty": "Todavía no sigue a nadie",
   "communityFollowNotificationsTooltip": "Notificaciones",
   "communityFollowNotificationsTitle": "Notificaciones de seguidores",
   "communityFollowNotificationsEmpty": "No hay notificaciones",
@@ -3035,7 +3023,6 @@
   "communityMyWorksLoadFailed": "No se pudieron cargar tus publicaciones. {reason}",
   "communityAccountSwitchFailed": "No se pudo cambiar de cuenta de Google. {reason}",
   "communitySignInFailed": "No se pudo iniciar sesión con tu cuenta de Google. {reason}",
-  "communityVisibilityChangeFailed": "No se pudo cambiar la visibilidad. {reason}",
   "communityMyWorksDeletedCannotPublish": "Un vídeo eliminado de YouTube no se puede volver a mostrar en la Plaza de Obras",
   "communityMyWorksStatusDeletedOnYoutube": "Eliminado de YouTube • No se puede volver a mostrar",
   "communityMyWorksStatusYoutubePrivate": "Visible en la Plaza de Obras • Oculto temporalmente porque el vídeo de YouTube es privado",

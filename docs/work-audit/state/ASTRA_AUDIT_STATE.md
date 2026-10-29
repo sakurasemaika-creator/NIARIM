@@ -1021,3 +1021,64 @@ DISC035を登録：実CardのShare/Deleteに対し、folder移動は長押しに
 S22追加確定：final23PASS151s＋関連28distinct=51、10080条件、30原本個別目視、full analyzeNoissues3.1s。2誤pathとcompile途中失敗はraw保持し解消。native/build/公開/cacheはpending。
 
 S22 native/build確定：main/fixture成功、source306不変/kernel0edd1538。ENPC1440text1とFRSP320text2/short220の30AFTER＋1BEFORE原本を個別目視。visibleMove/rightclick/TabEnter/focusedShiftF10/Menu、Cancel/longpress/実GIFfolder移動/coldrestart/NoFolder/Back/shortRoot操作を確認。863B/SHA61f6f...同一、finalfolderMOVE_AUDIT1/mapempty。unfocused negative2は別保存。詳細S22report/31native+30component originals+storageproofへ追跡。公開/CI/cacheはpending、全監査未完了。
+
+
+## 2026-10-28 A003/S23 — 保存失敗のfresh反例
+
+詳細A003_S23_20261028_RESUME.md、before-counterexamples.json。App1449ade/Web1cdbdbdのproduction WorkFolderServiceをcontrolled platformstoreのfalse/throwで実行し、CRUD4×2=8反例FAIL/0PASS。error無し/notify1なのにcold prefs reloadとUIメモリが食い違う。nativeFS・製品修正はpending。初回loading途中のprocess消失は結果不明として残し、元font復元後の未完了8件だけretry。S22を再実行せず公開/source306/cache220raw+actualrestart確認を維持。Baseline2/628/A003、DISC001–036todo、Delta37未完了。
+
+## 2026-10-29 S23 latest-HEAD復元・統合（未完了）
+
+# A003 / S23 — folder保存失敗・継続性（2026-10-29復元）
+
+現在の製品一次事実はApp9bce401016004d0634094e987e313a9aac6b3be5 / Web1cdbdbdbc09123e1cc47ca679167b7a59604e2fb。初回remote読出c6e479abの後、clone中に9bce4010へ更新された。旧App1449adee以後46pathの通常開発変更を保持し、保存済みS23 WIPを3way統合、conflict0。監査正本12fileは前回HEADと同一byteを確認した。D001.1–D001.6へ新差分をtodo登録。Baseline2/628、A003 in_progress、DISC001–036 todo/cursor001、top-level Delta37 not_startedを維持。
+
+## 保存されたBEFOREと復元
+
+WorkFolderService create/rename/delete/move×prefs false/throwの8反例は全て呼出元error無し・成功notify1、memory変更後cold prefs reloadで旧状態へ戻った。fresh BEFORE8FAIL0PASS/0sは既に保存済み。実nativeの隔離prefs JSONをdirectoryへ置換した失敗でもMoveが成功に見え、restore/restartで所属が戻る4原本を個別目視し保存済み。GIF863B/SHA61f6f61e8d33fbe97316d0e16d1cfa82157a77fede20f64cbdbcada4f566ee70保持。fault journal restored。実ユーザー資産は操作していない。
+
+Drive native-before-v2 1g8ZBg9tUzBrm3WwlchX4vr8AhqL03KtG/15056413B/SHA bd0eea2e68f6d93fef2aee8c4db833f830db781d93ca4c927d5aba9ef57dead6。Drive implementation-WIP 1BxcKKBIBPr6bm-V9aovzGtnc1mFb_ZXj/16247316B/SHA4d9bf39faee11ceaaee9f179be5eac754a93fe80eed3e6172fb2f4d764ccffce。2026-10-29 local maintenanceでscratch全消失後、後者raw SHA/CRC/全1126manifestを再検証して復元。保存済み16service PASSは旧source結果。WIP保存後のlazy queue・busy geometry・controls testsは未保存だったため会話から再構成し、現HEADで再検証する。失われたログを保存済み結果とはしない。
+
+
+次の正本: A003_S23_20261028_RESUME.md。現HEADでの全検証・native AFTER/publish/cacheはpending。
+
+## S23 scoped tests/build milestone
+
+106distinct targeted/related、failure1050/empty350/delete350/Home2310条件、analyze0/main+fixture成功。prod Dart310/kernelabd693b1。native AFTERはpending、console10856/Xvfb85 ENPC稼働・fault preparedのみ。次の正本A003_S23_20261028_RESUME.md。全体status不変。
+
+## S23 native AFTER closure for scoped persistence fix
+
+
+## 現在: S23限定修正の検証済み候補、公開/CI/cache保存へ
+
+App9bce401016004d0634094e987e313a9aac6b3be5 /Web1cdbdbdbc09123e1cc47ca679167b7a59604e2fbに統合した未push差分。106distinctのtargeted/related、failure1050/empty350/delete350/Home2310条件、full analyze0・main/fixture成功。prod Dart310/kernelabd693b15d3be687117fcc9e9db8f4d183a656c14cfee91f37545097aadea963、source前後同一。
+
+ENPC1440/text1とFRSP320/text2（844/220高）のnative AFTER37枚（PC15/SP22）を全て個別に開いて目視。各PC/SPでreal isolated prefs FS directory blocker→Move/rename/delete/createの4失敗とerror/input/state保持→Cancel/Escape→exact restore→同じMove sheetで再試行成功→process cold restartで所属保持→NoFolder→実create/rename/delete成功を確認。短画面ではerrorの冒頭/末尾とcontrolsへwheelで到達。1原本にはhover tooltipが写る事実を記録し、スクロール済みtitle全文同時表示とは主張しない。
+
+PC/SP fault journalは両方restored。実GIF863B/SHA61f6f61e8d33fbe97316d0e16d1cfa82157a77fede20f64cbdbcada4f566ee70不変。最終dataset legacy名emptyは1GIF・既存MOVE_AUDIT1folder・map{}・0projects。検証中に追加したfolderだけ削除し、既存folderを保持。App停止、console10856/Xvfb85稼働。部分削除failureはcontrolled platform storeのみで検証し、real FS blockerを部分保存のnative PASSとはしない。
+
+保存済みtests/build/PC backup: Drive1Sfd1ebO4zWjZVAn9qXSop1MptXKSh1wN/16574993B/SHA8b1f1648666efd2d0ca0ea4e903e6a844bed26d0d7f666c36bb5b22c1b5bbdb5、全1208manifest/rawSHA/CRC/metadata一致。PC native15+SP exact backup: Drive1-B5Cd1gGiggkbFG_FJD__ds0cnL4pDZo/16962597B/SHA789d0d0cb5bdcd8444e509ddcc2ad4cc6da196c72d8c1c1456b44bcf8c2e41b2、全1232manifest/raw/metadata一致。unuploaded PC-native-SP-backup（v1）はreviewにhistorical BEFORE4を誤算入したため無効、Driveへ送らずv2で分離した。
+
+次: 全native/source ZIPの保存/readback→remote HEAD再確認→expected-parent/nonforceで検証済みApp差分と両repo Stateを公開→remote tree/parent/exact paths/actualfetch/index/compiled source310の一致→CI・新compiled runtimeのraw download/replay・receipt保存。
+
+Baseline2/628・A003 in_progress、DISC001–036 todo/cursor001、top-level Delta37未着手・新差分D001.1–D001.6 todoを維持。Project/shared folderの保存失敗、stale/nonexistent destination ID、関連7言語全実機/全preset等のDISC036残条件は未完了。全面監査/latestHEAD Visual closureは完了していない。保護font4e885...をstageしない。
+
+以下は同unitの履歴であり、途中のpending記述は上記の現状を上書きしない。
+
+
+## S23 latest4999 integration gate
+
+## 最新統合: 4999e363・公開前の最終状態
+
+公開直前にremoteが66fff30b/4999e363へ更新。unused FF dialog/公開設定helpersの削除を完全保持してfast-forward統合（conflict0）。監査済みHome/WorkFolderService/modal codeは同一SHAで、全310 Dart中でnative37枚時点から変わったのはCommunityServiceの当該削除だけ。旧build proofはnative-build-source-9bce.jsonへ保存。
+
+upstream削除に未追随の3test fileが19解析errorを起こしたため、廃止済み公開設定テスト4件を退役、direct serviceの件数・名前対応を維持し、App全体の本人/他作者ページでFF件数が非操作TextでSwitch/list dialogを開かない検査へ更新。service/direct30PASS、UI smoke1PASS、既存upstream回帰9PASS（重複加算なし）。今回unit合計137distinct。full analyze0/2.7s、format758file0change。最新main/fixture build成功、prod Dart310同一SHA。現在kernel0b5def0b5dad531e628a29d51998da2f41742bbf90d6229a4661a6b50ac112d1からPC/SPでMove picker→Escapeを実操作し2原本を個別目視。合計native39は旧kernelの37枚＋最新再統合2枚と区別している。
+
+App/Webの親HEADは4999e3636b7b22596ccf3190af639781dac0aa8c /1cdbdbdbc09123e1cc47ca679167b7a59604e2fb。App停止、console10856/Xvfb85。prefs fault両方restored、legacy empty datasetは1GIF/1folder/map{}。GIF863B完全一致。保護font4e885...保持。
+
+native37/source旧base9bceのZIP: Drive1f-J55vpWu62iJeGx2J_eOb4aeAnAkaaP/17685923B/SHA1b14671c90cc8b0f7d5d152dc657c765a06a457b34f3633b6f30470cdfc865ff、metadata/raw/全1261manifest一致。これは4999統合前の正確な証拠であり、そのまま現全sourceの結果とはしない。
+
+次: 最新統合source/State保存→expected-parent/nonforce公開とremote/fetch/tree/source310照合→CI/current compiled runtimeの保存・raw読戻し・実downloadkernel再生→receipt保存。Baseline/Discovery/Delta statusは不変。全面監査/latestHEAD Visual closure未完了。
+
+以下は同unitの段階別履歴。
+

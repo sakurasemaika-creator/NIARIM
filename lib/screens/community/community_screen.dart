@@ -104,8 +104,12 @@ class _CommunityScreenState extends State<CommunityScreen>
       setState(() {
         _savedSearches
           ..clear()
-          ..addAll(decoded.whereType<Map>().take(10)
-              .map((entry) => Map<String, dynamic>.from(entry)));
+          ..addAll(
+            decoded
+                .whereType<Map>()
+                .take(10)
+                .map((entry) => Map<String, dynamic>.from(entry)),
+          );
       });
     } catch (error) {
       debugPrint('Saved community searches could not be restored: $error');
@@ -145,16 +149,21 @@ class _CommunityScreenState extends State<CommunityScreen>
       _isSearching = _searchQuery.isNotEmpty;
       _tagSearchMode = saved['tagMode'] == true;
       _tagExactMatch = saved['exactTag'] == true;
-      _videoTypeFilter = VideoTypeFilter.values[
-          choice('videoType', VideoTypeFilter.values.length - 1)];
-      _postDateFilter = _PostDateFilter.values[
-          choice('dateFilter', _PostDateFilter.values.length - 1)];
+      _videoTypeFilter = VideoTypeFilter
+          .values[choice('videoType', VideoTypeFilter.values.length - 1)];
+      _postDateFilter = _PostDateFilter
+          .values[choice('dateFilter', _PostDateFilter.values.length - 1)];
       _customPostDateRange = start == null || end == null || end.isBefore(start)
-          ? null : DateTimeRange(start: start, end: end);
-      _durationMode = _DurationFilterMode.values[
-          choice('durationMode', _DurationFilterMode.values.length - 1)];
+          ? null
+          : DateTimeRange(start: start, end: end);
+      _durationMode =
+          _DurationFilterMode.values[choice(
+            'durationMode',
+            _DurationFilterMode.values.length - 1,
+          )];
       _upToMinutes = ((saved['upToMinutes'] as num?)?.toDouble() ?? 5)
-          .clamp(1, 60).toDouble();
+          .clamp(1, 60)
+          .toDouble();
       _minimumMinutes = choice('minimumMinutes', 9999);
       _maximumMinutes = choice('maximumMinutes', 9999);
       _minimumViews = choice('minimumViews', 999999999);
@@ -166,9 +175,9 @@ class _CommunityScreenState extends State<CommunityScreen>
   Future<void> _saveCurrentSearch() async {
     final l10n = AppLocalizations.of(context)!;
     if (_savedSearches.length >= 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.communitySavedSearchLimit)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.communitySavedSearchLimit)));
       return;
     }
     final controller = TextEditingController(text: _searchQuery);
@@ -184,11 +193,15 @@ class _CommunityScreenState extends State<CommunityScreen>
           decoration: InputDecoration(labelText: l10n.communitySavedSearchName),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext),
-              child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.pop(
-                  dialogContext, controller.text.trim()),
-              child: Text(l10n.commonSave)),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.pop(dialogContext, controller.text.trim()),
+            child: Text(l10n.commonSave),
+          ),
         ],
       ),
     );
@@ -212,44 +225,62 @@ class _CommunityScreenState extends State<CommunityScreen>
     itemBuilder: (_) => [
       PopupMenuItem(value: 'save', child: Text(l10n.communitySaveSearch)),
       for (var i = 0; i < _savedSearches.length; i++)
-        PopupMenuItem(value: 'load:$i', child: Text(
-          _savedSearches[i]['name'] as String? ?? '...',
-          overflow: TextOverflow.ellipsis,
-        )),
+        PopupMenuItem(
+          value: 'load:$i',
+          child: Text(
+            _savedSearches[i]['name'] as String? ?? '...',
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       if (_savedSearches.isEmpty)
-        PopupMenuItem(enabled: false,
-            child: Text(l10n.communitySavedSearchEmpty)),
+        PopupMenuItem(
+          enabled: false,
+          child: Text(l10n.communitySavedSearchEmpty),
+        ),
       if (_savedSearches.isNotEmpty)
-        PopupMenuItem(value: 'manage',
-            child: Text(l10n.communityManageSavedSearches)),
+        PopupMenuItem(
+          value: 'manage',
+          child: Text(l10n.communityManageSavedSearches),
+        ),
     ],
     onSelected: (value) {
       if (value == 'save') {
         _saveCurrentSearch();
       } else if (value == 'manage') {
-        showDialog<void>(context: context, builder: (dialogContext) =>
-            StatefulBuilder(builder: (dialogContext, update) => AlertDialog(
+        showDialog<void>(
+          context: context,
+          builder: (dialogContext) => StatefulBuilder(
+            builder: (dialogContext, update) => AlertDialog(
               title: Text(l10n.communityManageSavedSearches),
-              content: SizedBox(width: 340, child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (var i = 0; i < _savedSearches.length; i++)
-                    ListTile(title: Text(_savedSearches[i]['name'] as String),
-                      trailing: IconButton(
-                        key: ValueKey('communityDeleteSavedSearch-$i'),
-                        tooltip: l10n.commonDelete,
-                        onPressed: () async {
-                          await _deleteSavedSearch(i);
-                          update(() {});
-                        },
-                        icon: const Icon(Icons.delete_outline),
+              content: SizedBox(
+                width: 340,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < _savedSearches.length; i++)
+                      ListTile(
+                        title: Text(_savedSearches[i]['name'] as String),
+                        trailing: IconButton(
+                          key: ValueKey('communityDeleteSavedSearch-$i'),
+                          tooltip: l10n.commonDelete,
+                          onPressed: () async {
+                            await _deleteSavedSearch(i);
+                            update(() {});
+                          },
+                          icon: const Icon(Icons.delete_outline),
+                        ),
                       ),
-                    ),
-                ],
-              )),
-              actions: [TextButton(onPressed: () => Navigator.pop(dialogContext),
-                  child: Text(l10n.commonClose))],
-            )),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(l10n.commonClose),
+                ),
+              ],
+            ),
+          ),
         );
       } else if (value.startsWith('load:')) {
         final i = int.tryParse(value.substring(5));
@@ -358,7 +389,8 @@ class _CommunityScreenState extends State<CommunityScreen>
       _PostDateFilter.all => null,
       _PostDateFilter.today => startToday,
       _PostDateFilter.thisWeek => startToday.subtract(
-          Duration(days: startToday.weekday - DateTime.monday)),
+        Duration(days: startToday.weekday - DateTime.monday),
+      ),
       _PostDateFilter.thisMonth => DateTime(today.year, today.month),
       _PostDateFilter.thisYear => DateTime(today.year),
       _PostDateFilter.custom => _customPostDateRange?.start,
@@ -367,30 +399,40 @@ class _CommunityScreenState extends State<CommunityScreen>
     final end = _postDateFilter == _PostDateFilter.custom
         ? _customPostDateRange?.end.add(const Duration(days: 1))
         : null;
-    return !postedAt.isBefore(start) &&
-        (end == null || postedAt.isBefore(end));
+    return !postedAt.isBefore(start) && (end == null || postedAt.isBefore(end));
   }
 
   List<CommunityWork> _applySearch(List<CommunityWork> works) {
-    final typeFiltered = _videoTypeFilter.apply(works)
+    final typeFiltered = _videoTypeFilter
+        .apply(works)
         .where((work) => _matchesPostDate(work.postedAt))
-        .where((work) => work.viewCount >= _minimumViews &&
-            work.bookmarkCount >= _minimumBookmarks)
-        .where((work) => switch (_durationMode) {
-          _DurationFilterMode.all => true,
-          _DurationFilterMode.upTo =>
+        .where(
+          (work) =>
+              work.viewCount >= _minimumViews &&
+              work.bookmarkCount >= _minimumBookmarks,
+        )
+        .where(
+          (work) => switch (_durationMode) {
+            _DurationFilterMode.all => true,
+            _DurationFilterMode.upTo =>
               work.durationSeconds <= (_upToMinutes * 60).round(),
-          _DurationFilterMode.range =>
+            _DurationFilterMode.range =>
               work.durationSeconds >= _minimumMinutes * 60 &&
-              work.durationSeconds <= _maximumMinutes * 60,
-        }).toList();
+                  work.durationSeconds <= _maximumMinutes * 60,
+          },
+        )
+        .toList();
     final query = _searchQuery.trim().toLowerCase();
     if (query.isEmpty) return typeFiltered;
     if (_tagSearchMode) {
       return typeFiltered
-          .where((w) => w.tags.any((t) => _tagExactMatch
-              ? t.toLowerCase() == query
-              : t.toLowerCase().contains(query)))
+          .where(
+            (w) => w.tags.any(
+              (t) => _tagExactMatch
+                  ? t.toLowerCase() == query
+                  : t.toLowerCase().contains(query),
+            ),
+          )
           .toList();
     }
     return typeFiltered
@@ -490,25 +532,29 @@ class _CommunityScreenState extends State<CommunityScreen>
     await service.setHideGenerativeAiImageVideo(result.hideAi);
     await service.setMutedWords(result.words);
     await service.setMutedTags(result.tags);
-    if (mounted) setState(() {
-      _postDateFilter = result.dateFilter;
-      _customPostDateRange = result.dateRange;
-      _tagExactMatch = result.exactTag;
-      _durationMode = result.durationMode;
-      _upToMinutes = result.upToMinutes;
-      _minimumMinutes = result.minimumMinutes;
-      _maximumMinutes = result.maximumMinutes;
-      _minimumViews = result.minimumViews;
-      _minimumBookmarks = result.minimumBookmarks;
-    });
+    if (mounted) {
+      setState(() {
+        _postDateFilter = result.dateFilter;
+        _customPostDateRange = result.dateRange;
+        _tagExactMatch = result.exactTag;
+        _durationMode = result.durationMode;
+        _upToMinutes = result.upToMinutes;
+        _minimumMinutes = result.minimumMinutes;
+        _maximumMinutes = result.maximumMinutes;
+        _minimumViews = result.minimumViews;
+        _minimumBookmarks = result.minimumBookmarks;
+      });
+    }
   }
 
   void _scrollCurrentTabToTop() {
     final controller = _tabScrollControllers[_tabController.index];
     if (!controller.hasClients) return;
-    controller.animateTo(0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic);
+    controller.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   void _openMyWorks() {
@@ -595,19 +641,21 @@ class _CommunityScreenState extends State<CommunityScreen>
       titleStyle,
       maxWidth: (width - 168).clamp(1.0, double.infinity),
     );
-    final videoWidth = (measure(
-              _videoTypeFilter.label(l10n),
-              theme.textTheme.bodyMedium!.copyWith(fontSize: 12),
-            ).width +
-            48)
-        .clamp(48.0, 160.0);
+    final videoWidth =
+        (measure(
+                  _videoTypeFilter.label(l10n),
+                  theme.textTheme.bodyMedium!.copyWith(fontSize: 12),
+                ).width +
+                48)
+            .clamp(48.0, 160.0);
     final labels = [
       l10n.communityTabNew,
       l10n.communityTabRanking,
       l10n.communityTabFavoriteAuthors,
     ];
-    final tabWidths =
-        labels.map((label) => measure(label, labelStyle).width + 32);
+    final tabWidths = labels.map(
+      (label) => measure(label, labelStyle).width + 32,
+    );
     final scrollTabs = tabWidths.fold<double>(0, (a, b) => a + b) > width;
     final tabHeight = labels
         .map((label) => measure(label, labelStyle).height + 16)
@@ -634,9 +682,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     IconButton(
                       key: const Key('communitySearchModeToggle'),
                       icon: Icon(
-                        _tagSearchMode
-                            ? Icons.search
-                            : Icons.sell_outlined,
+                        _tagSearchMode ? Icons.search : Icons.sell_outlined,
                       ),
                       tooltip: _tagSearchMode
                           ? l10n.communitySearchHint
@@ -689,12 +735,13 @@ class _CommunityScreenState extends State<CommunityScreen>
                 builder: (context, constraints) {
                   final shortMode =
                       _videoTypeFilter == VideoTypeFilter.shortOnly;
-                  final maxVideoWidth = (constraints.maxWidth -
-                          196 -
-                          (shortMode ? 48 : 0))
-                      .clamp(48.0, 160.0).toDouble();
-                  final filterWidth =
-                      videoWidth.clamp(48.0, maxVideoWidth).toDouble();
+                  final maxVideoWidth =
+                      (constraints.maxWidth - 196 - (shortMode ? 48 : 0))
+                          .clamp(48.0, 160.0)
+                          .toDouble();
+                  final filterWidth = videoWidth
+                      .clamp(48.0, maxVideoWidth)
+                      .toDouble();
                   return Row(
                     children: [
                       Expanded(
@@ -704,8 +751,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                           child: InkWell(
                             key: const Key('communitySearchTrigger'),
                             borderRadius: BorderRadius.circular(20),
-                            onTap: () =>
-                                setState(() => _isSearching = true),
+                            onTap: () => setState(() => _isSearching = true),
                             child: Row(
                               children: [
                                 IconButton(
@@ -740,8 +786,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                         key: const Key('communityContentFilterButton'),
                         icon: const Icon(Icons.tune),
                         tooltip: l10n.communityContentFilterTitle,
-                        onPressed: () =>
-                            _showContentFilters(communityService),
+                        onPressed: () => _showContentFilters(communityService),
                       ),
                       _savedSearchButton(l10n),
                       if (shortMode)
@@ -770,8 +815,9 @@ class _CommunityScreenState extends State<CommunityScreen>
         titleTextStyle: titleStyle,
         iconTheme: IconThemeData(color: foreground),
         actionsIconTheme: IconThemeData(color: foreground),
-        toolbarHeight:
-            (titleSize.height + 16).clamp(kToolbarHeight, double.infinity).toDouble(),
+        toolbarHeight: (titleSize.height + 16)
+            .clamp(kToolbarHeight, double.infinity)
+            .toDouble(),
         title: Text(
           l10n.communityScreenTitle,
           softWrap: true,
@@ -800,17 +846,14 @@ class _CommunityScreenState extends State<CommunityScreen>
           child: TabBar(
             controller: _tabController,
             isScrollable: scrollTabs,
-            tabAlignment: scrollTabs
-                ? TabAlignment.start
-                : TabAlignment.fill,
+            tabAlignment: scrollTabs ? TabAlignment.start : TabAlignment.fill,
             labelStyle: labelStyle,
             unselectedLabelStyle: labelStyle,
             labelColor: selected,
             unselectedLabelColor: unselected,
             indicatorColor: selected,
             tabs: [
-              for (final label in labels)
-                Tab(text: label, height: tabHeight),
+              for (final label in labels) Tab(text: label, height: tabHeight),
             ],
           ),
         ),
@@ -863,30 +906,37 @@ class _CommunityScreenState extends State<CommunityScreen>
                 if (works.isEmpty) {
                   return _pullToRefresh(
                     communityService,
-                    _scrollableContent(Column(children: [
-                      searchRowFor(0),
-                      _buildSearchEmptyState(l10n),
-                    ]), tab: 0),
+                    _scrollableContent(
+                      Column(
+                        children: [
+                          searchRowFor(0),
+                          _buildSearchEmptyState(l10n),
+                        ],
+                      ),
+                      tab: 0,
+                    ),
                   );
                 }
                 return _pullToRefresh(
                   communityService,
                   _scrollableContent(
-                    Column(children: [
-                      searchRowFor(0),
-                      CommunityWorkGrid(
-                      works: works,
-                      bookmarkedIds: bookmarkedIds,
-                      onTapWork: _openFloatingPreview,
-                      onToggleBookmark: (w) => reportFailedCommunityEdit(
-                        context,
-                        communityService,
-                        communityService.toggleBookmark(w.id),
-                      ),
-                      onTapAuthor: _openAuthorWorks,
-                      bottomPadding: 88,
+                    Column(
+                      children: [
+                        searchRowFor(0),
+                        CommunityWorkGrid(
+                          works: works,
+                          bookmarkedIds: bookmarkedIds,
+                          onTapWork: _openFloatingPreview,
+                          onToggleBookmark: (w) => reportFailedCommunityEdit(
+                            context,
+                            communityService,
+                            communityService.toggleBookmark(w.id),
+                          ),
+                          onTapAuthor: _openAuthorWorks,
+                          bottomPadding: 88,
+                        ),
+                      ],
                     ),
-                    ]),
                     tab: 0,
                   ),
                 );
@@ -1011,40 +1061,52 @@ class _CommunityScreenState extends State<CommunityScreen>
                 if (communityService.favoriteAuthorIds.isEmpty) {
                   return _pullToRefresh(
                     communityService,
-                    _scrollableContent(Column(children: [
-                      searchRowFor(2),
-                      _buildNoFavoriteAuthorsState(l10n),
-                    ]), tab: 2),
+                    _scrollableContent(
+                      Column(
+                        children: [
+                          searchRowFor(2),
+                          _buildNoFavoriteAuthorsState(l10n),
+                        ],
+                      ),
+                      tab: 2,
+                    ),
                   );
                 }
                 if (works.isEmpty) {
                   return _pullToRefresh(
                     communityService,
-                    _scrollableContent(Column(children: [
-                      searchRowFor(2),
-                      _buildSearchEmptyState(l10n),
-                    ]), tab: 2),
+                    _scrollableContent(
+                      Column(
+                        children: [
+                          searchRowFor(2),
+                          _buildSearchEmptyState(l10n),
+                        ],
+                      ),
+                      tab: 2,
+                    ),
                   );
                 }
                 return _pullToRefresh(
                   communityService,
                   _scrollableContent(
-                    Column(children: [
-                      searchRowFor(2),
-                      CommunityWorkGrid(
-                      works: works,
-                      bookmarkedIds: bookmarkedIds,
-                      onTapWork: _openFloatingPreview,
-                      onToggleBookmark: (w) => reportFailedCommunityEdit(
-                        context,
-                        communityService,
-                        communityService.toggleBookmark(w.id),
-                      ),
-                      onTapAuthor: _openAuthorWorks,
-                      repostedByNames: repostedByNames,
-                      bottomPadding: 88,
+                    Column(
+                      children: [
+                        searchRowFor(2),
+                        CommunityWorkGrid(
+                          works: works,
+                          bookmarkedIds: bookmarkedIds,
+                          onTapWork: _openFloatingPreview,
+                          onToggleBookmark: (w) => reportFailedCommunityEdit(
+                            context,
+                            communityService,
+                            communityService.toggleBookmark(w.id),
+                          ),
+                          onTapAuthor: _openAuthorWorks,
+                          repostedByNames: repostedByNames,
+                          bottomPadding: 88,
+                        ),
+                      ],
                     ),
-                    ]),
                     tab: 2,
                   ),
                 );
@@ -1131,7 +1193,6 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 }
 
-
 class _MuteEntry {
   _MuteEntry(this.value, {this.editing = false});
   String value;
@@ -1209,7 +1270,9 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
   _MuteEntry _makeEntry(String value, {bool editing = false}) {
     final entry = _MuteEntry(value, editing: editing);
     entry.focusNode.addListener(() {
-      if (!entry.focusNode.hasFocus && entry.editing && mounted &&
+      if (!entry.focusNode.hasFocus &&
+          entry.editing &&
+          mounted &&
           (_words.contains(entry) || _tags.contains(entry))) {
         setState(() => entry.editing = false);
       }
@@ -1269,12 +1332,12 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.only(bottom: 8),
       title: Text(
-          title,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-          ),
+        title,
+        style: theme.textTheme.titleSmall?.copyWith(
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback,
         ),
+      ),
       children: [
         const SizedBox(height: 6),
         Text(
@@ -1285,7 +1348,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
           ),
         ),
         TextButton.icon(
-          key: Key(keyPrefix + 'AddButton'),
+          key: Key('${keyPrefix}AddButton'),
           onPressed: () => _add(entries),
           icon: const Icon(Icons.add),
           label: Text(l10n.communityMuteAddNew),
@@ -1297,7 +1360,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
             child: Row(
               children: [
                 IconButton(
-                  key: Key(keyPrefix + 'Edit_' + entries.indexOf(entry).toString()),
+                  key: Key('${keyPrefix}Edit_${entries.indexOf(entry)}'),
                   tooltip: l10n.commonEdit,
                   onPressed: () => _edit(entry, entries),
                   icon: const Icon(Icons.edit_outlined),
@@ -1305,7 +1368,9 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                 Expanded(
                   child: entry.editing
                       ? TextFormField(
-                          key: Key(keyPrefix + 'Entry_' + entries.indexOf(entry).toString()),
+                          key: Key(
+                            '${keyPrefix}Entry_${entries.indexOf(entry)}',
+                          ),
                           initialValue: entry.value,
                           focusNode: entry.focusNode,
                           onChanged: (text) => entry.value = text,
@@ -1320,11 +1385,14 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                           ),
                         )
                       : InkWell(
-                          key: Key(keyPrefix + 'Display_' + entries.indexOf(entry).toString()),
+                          key: Key(
+                            '${keyPrefix}Display_${entries.indexOf(entry)}',
+                          ),
                           onTap: () => _edit(entry, entries),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 12,
+                              horizontal: 12,
+                              vertical: 12,
                             ),
                             child: Text(
                               entry.value,
@@ -1335,7 +1403,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                         ),
                 ),
                 IconButton(
-                  key: Key(keyPrefix + 'Delete_' + entries.indexOf(entry).toString()),
+                  key: Key('${keyPrefix}Delete_${entries.indexOf(entry)}'),
                   tooltip: l10n.commonDelete,
                   onPressed: () => _remove(entries, entry),
                   icon: const Icon(Icons.delete_outline),
@@ -1347,14 +1415,15 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
     );
   }
 
-  String _dateLabel(AppLocalizations l10n, _PostDateFilter date) => switch (date) {
-    _PostDateFilter.all => l10n.communityPostPeriodAll,
-    _PostDateFilter.today => l10n.communityPostPeriodToday,
-    _PostDateFilter.thisWeek => l10n.communityPostPeriodWeek,
-    _PostDateFilter.thisMonth => l10n.communityPostPeriodMonth,
-    _PostDateFilter.thisYear => l10n.communityPostPeriodYear,
-    _PostDateFilter.custom => l10n.communityPostPeriodCustom,
-  };
+  String _dateLabel(AppLocalizations l10n, _PostDateFilter date) =>
+      switch (date) {
+        _PostDateFilter.all => l10n.communityPostPeriodAll,
+        _PostDateFilter.today => l10n.communityPostPeriodToday,
+        _PostDateFilter.thisWeek => l10n.communityPostPeriodWeek,
+        _PostDateFilter.thisMonth => l10n.communityPostPeriodMonth,
+        _PostDateFilter.thisYear => l10n.communityPostPeriodYear,
+        _PostDateFilter.custom => l10n.communityPostPeriodCustom,
+      };
 
   Future<void> _chooseDateRange() async {
     final now = DateTime.now();
@@ -1381,10 +1450,13 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
         content: SizedBox(
           width: 420,
           child: Consumer<CommunityService>(
-            builder: (_, service, __) {
+            builder: (_, service, _) {
               final muted = service.mutedAuthorIds.toList()
-                ..sort((a, b) => (service.authorNameOf(a) ?? a)
-                    .compareTo(service.authorNameOf(b) ?? b));
+                ..sort(
+                  (a, b) => (service.authorNameOf(a) ?? a).compareTo(
+                    service.authorNameOf(b) ?? b,
+                  ),
+                );
               if (muted.isEmpty) return Text(l10n.communityMutedAuthorsEmpty);
               return ListView.builder(
                 shrinkWrap: true,
@@ -1397,11 +1469,14 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                     title: Text(name),
                     onTap: () {
                       Navigator.of(dialogContext).pop();
-                      Navigator.of(context).push(adMockMaterialPageRoute<void>(
-                        builder: (_) => CommunityAuthorWorksScreen(
-                          authorId: id, authorName: name,
+                      Navigator.of(context).push(
+                        adMockMaterialPageRoute<void>(
+                          builder: (_) => CommunityAuthorWorksScreen(
+                            authorId: id,
+                            authorName: name,
+                          ),
                         ),
-                      ));
+                      );
                     },
                     trailing: IconButton(
                       key: ValueKey('communityUnmuteAuthor-$id'),
@@ -1442,18 +1517,23 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.communityPostPeriodTitle,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                )),
+            Text(
+              l10n.communityPostPeriodTitle,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
             DropdownButtonFormField<_PostDateFilter>(
               key: const Key('communityPostDateFilter'),
               initialValue: _dateFilter,
               isExpanded: true,
               items: [
                 for (final date in _PostDateFilter.values)
-                  DropdownMenuItem(value: date, child: Text(_dateLabel(l10n, date))),
+                  DropdownMenuItem(
+                    value: date,
+                    child: Text(_dateLabel(l10n, date)),
+                  ),
               ],
               onChanged: (value) {
                 if (value == null) return;
@@ -1469,30 +1549,41 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                 key: const Key('communityPostDateChooseRange'),
                 onPressed: _chooseDateRange,
                 icon: const Icon(Icons.date_range_outlined),
-                label: Text(_dateRange == null
-                    ? l10n.communityPostPeriodChooseRange
-                    : '${MaterialLocalizations.of(context).formatShortDate(_dateRange!.start)} - ${MaterialLocalizations.of(context).formatShortDate(_dateRange!.end)}'),
+                label: Text(
+                  _dateRange == null
+                      ? l10n.communityPostPeriodChooseRange
+                      : '${MaterialLocalizations.of(context).formatShortDate(_dateRange!.start)} - ${MaterialLocalizations.of(context).formatShortDate(_dateRange!.end)}',
+                ),
               ),
             const SizedBox(height: 16),
-            Text(l10n.communityDurationFilterTitle,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                )),
+            Text(
+              l10n.communityDurationFilterTitle,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
             DropdownButtonFormField<_DurationFilterMode>(
               key: const Key('communityDurationMode'),
               initialValue: _durationMode,
               isExpanded: true,
               items: [
-                DropdownMenuItem(value: _DurationFilterMode.all,
-                    child: Text(l10n.communityDurationAny)),
-                DropdownMenuItem(value: _DurationFilterMode.upTo,
-                    child: Text(l10n.communityDurationUpTo)),
-                DropdownMenuItem(value: _DurationFilterMode.range,
-                    child: Text(l10n.communityDurationRange)),
+                DropdownMenuItem(
+                  value: _DurationFilterMode.all,
+                  child: Text(l10n.communityDurationAny),
+                ),
+                DropdownMenuItem(
+                  value: _DurationFilterMode.upTo,
+                  child: Text(l10n.communityDurationUpTo),
+                ),
+                DropdownMenuItem(
+                  value: _DurationFilterMode.range,
+                  child: Text(l10n.communityDurationRange),
+                ),
               ],
               onChanged: (value) => setState(
-                () => _durationMode = value ?? _DurationFilterMode.all),
+                () => _durationMode = value ?? _DurationFilterMode.all,
+              ),
             ),
             if (_durationMode == _DurationFilterMode.upTo) ...[
               Text('${_upToMinutes.round()} ${l10n.communityDurationMinutes}'),
@@ -1507,27 +1598,35 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               ),
             ],
             if (_durationMode == _DurationFilterMode.range)
-              Row(children: [
-                Expanded(child: TextFormField(
-                  key: const Key('communityDurationMinimum'),
-                  initialValue: '$_minimumMinutes',
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                      labelText: l10n.communityDurationMinimum),
-                  onChanged: (value) =>
-                      _minimumMinutes = (int.tryParse(value) ?? 0).clamp(0, 9999).toInt(),
-                )),
-                const SizedBox(width: 12),
-                Expanded(child: TextFormField(
-                  key: const Key('communityDurationMaximum'),
-                  initialValue: '$_maximumMinutes',
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                      labelText: l10n.communityDurationMaximum),
-                  onChanged: (value) =>
-                      _maximumMinutes = (int.tryParse(value) ?? 0).clamp(0, 9999).toInt(),
-                )),
-              ]),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      key: const Key('communityDurationMinimum'),
+                      initialValue: '$_minimumMinutes',
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: l10n.communityDurationMinimum,
+                      ),
+                      onChanged: (value) => _minimumMinutes =
+                          (int.tryParse(value) ?? 0).clamp(0, 9999).toInt(),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      key: const Key('communityDurationMaximum'),
+                      initialValue: '$_maximumMinutes',
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: l10n.communityDurationMaximum,
+                      ),
+                      onChanged: (value) => _maximumMinutes =
+                          (int.tryParse(value) ?? 0).clamp(0, 9999).toInt(),
+                    ),
+                  ),
+                ],
+              ),
             SwitchListTile(
               key: const Key('communityTagExactMatch'),
               contentPadding: EdgeInsets.zero,
@@ -1535,27 +1634,37 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               value: _exactTag,
               onChanged: (value) => setState(() => _exactTag = value),
             ),
-            Row(children: [
-              Expanded(child: TextFormField(
-                key: const Key('communityMinimumViews'),
-                initialValue: _minimumViews == 0 ? '' : '$_minimumViews',
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                    labelText: l10n.communityMinimumViews),
-                onChanged: (value) =>
-                    _minimumViews = (int.tryParse(value) ?? 0).clamp(0, 999999999).toInt(),
-              )),
-              const SizedBox(width: 12),
-              Expanded(child: TextFormField(
-                key: const Key('communityMinimumBookmarks'),
-                initialValue: _minimumBookmarks == 0 ? '' : '$_minimumBookmarks',
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                    labelText: l10n.communityMinimumBookmarks),
-                onChanged: (value) => _minimumBookmarks =
-                    (int.tryParse(value) ?? 0).clamp(0, 999999999).toInt(),
-              )),
-            ]),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    key: const Key('communityMinimumViews'),
+                    initialValue: _minimumViews == 0 ? '' : '$_minimumViews',
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: l10n.communityMinimumViews,
+                    ),
+                    onChanged: (value) => _minimumViews =
+                        (int.tryParse(value) ?? 0).clamp(0, 999999999).toInt(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    key: const Key('communityMinimumBookmarks'),
+                    initialValue: _minimumBookmarks == 0
+                        ? ''
+                        : '$_minimumBookmarks',
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: l10n.communityMinimumBookmarks,
+                    ),
+                    onChanged: (value) => _minimumBookmarks =
+                        (int.tryParse(value) ?? 0).clamp(0, 999999999).toInt(),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
             _section(
               title: l10n.communityMutedWords,
@@ -1574,38 +1683,51 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               key: const Key('communityMutedAuthorsAccordion'),
               tilePadding: EdgeInsets.zero,
               initiallyExpanded: false,
-              title: Text(l10n.communityMutedAuthors,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  )),
+              title: Text(
+                l10n.communityMutedAuthors,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
               children: [
-                Consumer<CommunityService>(builder: (_, service, __) {
-                  final ids = service.mutedAuthorIds.toList()..sort();
-                  if (ids.isEmpty) return Text(l10n.communityMutedAuthorsEmpty);
-                  return Column(children: [
-                    for (final id in ids)
-                      ListTile(
-                        key: ValueKey('communityMutedAuthorInline-$id'),
-                        title: Text(service.authorNameOf(id) ?? id),
-                        onTap: () {
-                          final navigator = Navigator.of(context);
-                          final name = service.authorNameOf(id) ?? id;
-                          navigator.pop();
-                          navigator.push(adMockMaterialPageRoute<void>(
-                            builder: (_) => CommunityAuthorWorksScreen(
-                                authorId: id, authorName: name),
-                          ));
-                        },
-                        trailing: IconButton(
-                          key: ValueKey('communityUnmuteAuthorInline-$id'),
-                          tooltip: l10n.communityUnmuteAuthor,
-                          onPressed: () => service.setAuthorMuted(id, false),
-                          icon: const Icon(Icons.visibility_outlined),
-                        ),
-                      ),
-                  ]);
-                }),
+                Consumer<CommunityService>(
+                  builder: (_, service, _) {
+                    final ids = service.mutedAuthorIds.toList()..sort();
+                    if (ids.isEmpty) {
+                      return Text(l10n.communityMutedAuthorsEmpty);
+                    }
+                    return Column(
+                      children: [
+                        for (final id in ids)
+                          ListTile(
+                            key: ValueKey('communityMutedAuthorInline-$id'),
+                            title: Text(service.authorNameOf(id) ?? id),
+                            onTap: () {
+                              final navigator = Navigator.of(context);
+                              final name = service.authorNameOf(id) ?? id;
+                              navigator.pop();
+                              navigator.push(
+                                adMockMaterialPageRoute<void>(
+                                  builder: (_) => CommunityAuthorWorksScreen(
+                                    authorId: id,
+                                    authorName: name,
+                                  ),
+                                ),
+                              );
+                            },
+                            trailing: IconButton(
+                              key: ValueKey('communityUnmuteAuthorInline-$id'),
+                              tooltip: l10n.communityUnmuteAuthor,
+                              onPressed: () =>
+                                  service.setAuthorMuted(id, false),
+                              icon: const Icon(Icons.visibility_outlined),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
                 TextButton.icon(
                   key: const Key('communityManageMutedAuthors'),
                   onPressed: _manageMutedAuthors,
@@ -1616,9 +1738,9 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
             ),
             const SizedBox(height: 16),
             SwitchTheme(
-              data: SwitchTheme.of(context).copyWith(
-                trackOutlineWidth: const WidgetStatePropertyAll(2),
-              ),
+              data: SwitchTheme.of(
+                context,
+              ).copyWith(trackOutlineWidth: const WidgetStatePropertyAll(2)),
               child: SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 activeTrackColor: opaqueOver(
@@ -1627,7 +1749,11 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                 ),
                 activeThumbColor: scheme.onPrimary,
                 thumbIcon: WidgetStatePropertyAll(
-                  Icon(Icons.circle_outlined, color: scheme.onSurface, size: 20),
+                  Icon(
+                    Icons.circle_outlined,
+                    color: scheme.onSurface,
+                    size: 20,
+                  ),
                 ),
                 inactiveTrackColor: opaqueOver(
                   theme.scaffoldBackgroundColor,
@@ -1657,8 +1783,10 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               hideAi: _hideAi,
               words: _words.map((entry) => entry.value).toList(),
               tags: _tags.map((entry) => entry.value).toList(),
-              dateFilter: _dateFilter == _PostDateFilter.custom && _dateRange == null
-                  ? _PostDateFilter.all : _dateFilter,
+              dateFilter:
+                  _dateFilter == _PostDateFilter.custom && _dateRange == null
+                  ? _PostDateFilter.all
+                  : _dateFilter,
               dateRange: _dateRange,
               exactTag: _exactTag,
               durationMode: _durationMode,

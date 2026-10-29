@@ -222,6 +222,8 @@
   "folderManagementCreateNew": "Nouveau",
   "folderManagementEmpty": "Aucun dossier pour le moment",
   "folderCreateFailed": "Impossible de créer le dossier. Réessayez.",
+  "folderChangesSaveFailed": "Impossible d’enregistrer les modifications du dossier. Réessayez.",
+  "folderChangesPartiallySaved": "Seule une partie des modifications a été enregistrée. Vérifiez la liste et réessayez.",
   "folderNameLabel": "Nom du dossier",
   "folderMoveToTitle": "Déplacer vers un dossier",
   "folderNone": "Aucun dossier",
@@ -2664,18 +2666,6 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "Rendre les listes d'abonnements/abonnés publiques",
-  "communityFollowersPublicToggleDesc": "Si activé, les autres utilisateurs pourront voir vos listes d'abonnements et d'abonnés depuis cette page. Privées par défaut.",
-  "communityFollowersListTitle": "Abonnés",
-  "communityFollowersListEmpty": "Aucun abonné pour le moment",
-  "communityFollowersListHiddenNote": "{count} de plus non affichés, masqués par leurs propres paramètres de confidentialité",
-  "@communityFollowersListHiddenNote": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "communityAuthorFollowingCount": "{count} abonnements",
   "@communityAuthorFollowingCount": {
     "placeholders": {
@@ -2684,8 +2674,6 @@
       }
     }
   },
-  "communityFollowingListTitle": "Abonnements",
-  "communityFollowingListEmpty": "Ne suit personne pour le moment",
   "communityFollowNotificationsTooltip": "Notifications",
   "communityFollowNotificationsTitle": "Notifications d'abonnement",
   "communityFollowNotificationsEmpty": "Aucune notification",
@@ -3035,7 +3023,6 @@
   "communityMyWorksLoadFailed": "Impossible de charger vos publications. {reason}",
   "communityAccountSwitchFailed": "Impossible de changer de compte Google. {reason}",
   "communitySignInFailed": "Impossible de se connecter avec votre compte Google. {reason}",
-  "communityVisibilityChangeFailed": "Impossible de modifier la visibilité. {reason}",
   "communityMyWorksDeletedCannotPublish": "Une vidéo supprimée de YouTube ne peut plus être rendue visible sur la Place des œuvres",
   "communityMyWorksStatusDeletedOnYoutube": "Supprimé de YouTube • Ne peut plus être rendu visible",
   "communityMyWorksStatusYoutubePrivate": "Visible sur la Place des œuvres • Masqué temporairement, car la vidéo YouTube est privée",

@@ -141,16 +141,16 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(
-      content: Text(message),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide.none,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: BorderSide.none,
+        ),
+        elevation: 0,
       ),
-      elevation: 0,
-    ));
+    );
   }
 
   /// Why a Google sign-in step failed. A refusal because another account
@@ -169,39 +169,43 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final l10n = AppLocalizations.of(context)!;
     final auth = context.read<GoogleAuthService>();
     return await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        key: const Key('communityGoogleSignInPrompt'),
-        title: Text(l10n.communitySignInPromptTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.communitySignInPromptBody),
-            if (!auth.isConfigured) ...[
-              const SizedBox(height: 12),
-              Text(l10n.communitySignInUnavailable,
-                  style: TextStyle(color:
-                      Theme.of(dialogContext).colorScheme.error)),
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            key: const Key('communityGoogleSignInPrompt'),
+            title: Text(l10n.communitySignInPromptTitle),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.communitySignInPromptBody),
+                if (!auth.isConfigured) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.communitySignInUnavailable,
+                    style: TextStyle(
+                      color: Theme.of(dialogContext).colorScheme.error,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton.icon(
+                key: const Key('communityGoogleSignInPromptConnect'),
+                onPressed: auth.isConfigured
+                    ? () => Navigator.pop(dialogContext, true)
+                    : null,
+                icon: const Icon(Icons.account_circle_outlined),
+                label: Text(l10n.communitySignInPromptConnect),
+              ),
             ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.commonCancel),
           ),
-          FilledButton.icon(
-            key: const Key('communityGoogleSignInPromptConnect'),
-            onPressed: auth.isConfigured
-                ? () => Navigator.pop(dialogContext, true)
-                : null,
-            icon: const Icon(Icons.account_circle_outlined),
-            label: Text(l10n.communitySignInPromptConnect),
-          ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 
   Future<void> _switchOrAddGoogleAccount() async {
@@ -275,23 +279,27 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
 
   void _openOwnAuthorPage(List<CommunityWork> works) {
     final service = context.read<CommunityService>();
-    final authorId = service.currentUserId ??
+    final authorId =
+        service.currentUserId ??
         (service.api == null ? kDummySelfAuthorId : null);
     if (authorId == null) {
-      _showSnackBar(AppLocalizations.of(context)!.communityMyWorksAccountRequired);
+      _showSnackBar(
+        AppLocalizations.of(context)!.communityMyWorksAccountRequired,
+      );
       return;
     }
     final account = context.read<GoogleAuthService>().account;
     final name = works.isNotEmpty
         ? works.first.authorName
-        : (account?.displayName ?? account?.email ??
-            AppLocalizations.of(context)!.communityMyWorksTitle);
-    Navigator.of(context).push(adMockMaterialPageRoute<void>(
-      builder: (_) => CommunityAuthorWorksScreen(
-        authorId: authorId,
-        authorName: name,
+        : (account?.displayName ??
+              account?.email ??
+              AppLocalizations.of(context)!.communityMyWorksTitle);
+    Navigator.of(context).push(
+      adMockMaterialPageRoute<void>(
+        builder: (_) =>
+            CommunityAuthorWorksScreen(authorId: authorId, authorName: name),
       ),
-    ));
+    );
   }
 
   void _toggleSelected(String workId) {
@@ -441,9 +449,11 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_selectionMode
-            ? l10n.homeSelectionCount(_selectedIds.length)
-            : l10n.communityMyWorksTitle),
+        title: Text(
+          _selectionMode
+              ? l10n.homeSelectionCount(_selectedIds.length)
+              : l10n.communityMyWorksTitle,
+        ),
         actions: [
           IconButton(
             tooltip: l10n.communityReloadTooltip,
@@ -655,7 +665,10 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                     )
                   : ListView.separated(
                       padding: EdgeInsets.fromLTRB(
-                        16, 8, 16, _selectionMode ? 126 : 24,
+                        16,
+                        8,
+                        16,
+                        _selectionMode ? 126 : 24,
                       ),
                       itemCount: works.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
@@ -681,13 +694,17 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                               if (_selectionMode) {
                                 _toggleSelected(work.id);
                               } else {
-                                context.read<CommunityPreviewService>().show(work);
+                                context.read<CommunityPreviewService>().show(
+                                  work,
+                                );
                               }
                             },
                             selected: _selectedIds.contains(work.id),
                             leading: _selectionMode
                                 ? Checkbox(
-                                    key: ValueKey('communityMyWorksSelect-${work.id}'),
+                                    key: ValueKey(
+                                      'communityMyWorksSelect-${work.id}',
+                                    ),
                                     value: _selectedIds.contains(work.id),
                                     onChanged: _bulkBusy
                                         ? null

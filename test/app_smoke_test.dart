@@ -13,6 +13,7 @@ import 'helpers/first_use_tooltips.dart';
 import 'helpers/project_storage.dart';
 
 import 'package:niarim/app.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/engine/undo_manager.dart' as engine;
@@ -2002,94 +2003,59 @@ void main() {
     expect(find.text('$initialUnread'), findsNothing);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets('投稿者別作品一覧画面：フォロー中/フォロワー一覧の公開設定トグルと'
-      '一覧表示ダイアログが動作する（Task#134継続）', (WidgetTester tester) async {
+  testWidgets('投稿者別作品一覧のFF件数は本人・他作者とも非操作テキストで表示する', (tester) async {
     setPhoneViewSize(tester);
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
       MultiProvider(providers: providers!, child: const NiarimApp()),
     );
     await tester.pump(const Duration(milliseconds: 500));
-
-    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-    expect(communityButtonFinder, findsOneWidget);
-    await tester.tap(communityButtonFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
-
-    final scaffoldContext = tester.element(find.byType(Scaffold).first);
-    final communityService = scaffoldContext.read<CommunityService>();
-    // 自分自身のフォロワー一覧の公開設定は既定で非公開のはず。
-    expect(communityService.selfFollowersPublic, isFalse);
-
-    Navigator.of(scaffoldContext).push(
-      MaterialPageRoute<void>(
-        builder: (_) => CommunityAuthorWorksScreen(
-          authorId: kDummySelfAuthorId,
-          authorName: communityService.authorNameOf(kDummySelfAuthorId)!,
+    await tester.tap(find.byIcon(Icons.movie_filter_outlined));
+    await tester.pumpAndSettle();
+    final context = tester.element(find.byType(Scaffold).first);
+    final community = context.read<CommunityService>();
+    final other = community.works
+        .firstWhere((w) => w.authorId != kDummySelfAuthorId)
+        .authorId;
+    for (final authorId in [kDummySelfAuthorId, other]) {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => CommunityAuthorWorksScreen(
+            authorId: authorId,
+            authorName: community.authorNameOf(authorId)!,
+          ),
         ),
-      ),
-    );
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: '自分の投稿者別作品一覧画面への遷移で例外');
-
-    // 本人ページでは、非公開のうちはフォロー中/フォロワー数がタップ
-    // できない（下線が付かない＝InkWellのonTapがnull）。
-    final followerTapFinder = find.byKey(
-      const Key('communityAuthorFollowerCountTap'),
-    );
-    final followingTapFinder = find.byKey(
-      const Key('communityAuthorFollowingCountTap'),
-    );
-    expect(followerTapFinder, findsOneWidget);
-    expect(followingTapFinder, findsOneWidget);
-
-    // 公開設定トグルをオンにする。
-    final toggleSwitchFinder = find.byType(Switch);
-    expect(
-      toggleSwitchFinder,
-      findsOneWidget,
-      reason: 'フォロー中/フォロワー一覧公開トグルが見つからない',
-    );
-    await tester.tap(toggleSwitchFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'フォロー中/フォロワー一覧公開トグル操作で例外');
-    expect(communityService.selfFollowersPublic, isTrue);
-
-    // フォロワー数をタップすると一覧ダイアログが開く。
-    await tester.tap(followerTapFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'フォロワー一覧ダイアログ表示で例外');
-    expect(find.byType(AlertDialog), findsOneWidget);
-
-    // ダイアログを閉じる。
-    await tester.tap(
-      find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.byIcon(Icons.close),
-      ),
-    );
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'フォロワー一覧ダイアログを閉じる操作で例外');
-    expect(find.byType(AlertDialog), findsNothing);
-
-    // フォロー中の数をタップすると一覧ダイアログが開く。
-    await tester.tap(followingTapFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'フォロー中一覧ダイアログ表示で例外');
-    expect(find.byType(AlertDialog), findsOneWidget);
-
-    await tester.tap(
-      find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.byIcon(Icons.close),
-      ),
-    );
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'フォロー中一覧ダイアログを閉じる操作で例外');
-    expect(find.byType(AlertDialog), findsNothing);
+      );
+      await tester.pumpAndSettle();
+      final screen = find.byType(CommunityAuthorWorksScreen);
+      final l10n = AppLocalizations.of(tester.element(screen))!;
+      final labels = [
+        l10n.communityAuthorFollowingCount(
+          community.followingCountOf(authorId),
+        ),
+        l10n.communityAuthorFollowerCount(community.followerCountOf(authorId)),
+      ];
+      expect(
+        find.descendant(of: screen, matching: find.byType(Switch)),
+        findsNothing,
+      );
+      for (final label in labels) {
+        final count = find.descendant(of: screen, matching: find.text(label));
+        expect(count, findsOneWidget);
+        expect(
+          find.ancestor(of: count, matching: find.byType(InkWell)),
+          findsNothing,
+        );
+        await tester.ensureVisible(count);
+        await tester.tap(count);
+        await tester.pumpAndSettle();
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(screen, findsOneWidget);
+      }
+      Navigator.of(tester.element(screen)).pop();
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('起動→ホーム→ドロワー→有料会員画面まで例外なく遷移できる', (WidgetTester tester) async {

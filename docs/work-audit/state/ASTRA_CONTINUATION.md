@@ -40,7 +40,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S22 — Card移動導線・filename自然折返し。fresh3反例→修正、51distinct PASS/10080条件/30原本目視/analyzeNoissues3.1s。main/fixtureとPCSP30AFTER実操作/原本目視・file/prefs保持を確認。公開/CI/cache保存中。DISC036保存失敗riskを登録
+current_substep: A003/S23 — 最新4999統合/137distinct/analyze0/39native（37+2）/main+fixture完了。公開/CI/cacheへ
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -60,7 +60,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: A003_S22_20261028_RESUME.mdの次の一手へ。最終native/source保存→expected-parent通常push/remote/実fetch/source306→CI/cache読戻し→S23保存失敗risk追試。Baseline2/628・DISC001–036・Delta37を維持。
+next_action: A003_S23_20261028_RESUME.mdの現在sectionへ。finalnative/source保存→expected-parent/nonforce App/Web公開→remote/fetch/source310→CI/runtime raw replay。全体A003を維持。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
@@ -402,3 +402,59 @@ Native04 Drive1aR8-fL1bf6-MOZ1i_15YsbBfcJi5s1hG/3,933,769B/SHA16b1e62fac8ca25b97
 ### 2026-10-28 S21検証済み単位
 
 正本A003_S21_20261028_RESUME.md。2savedPASS14s/350profiles＋28recoveredPASS9s=distinct30、analyzeNoissues23.4s、dynamicGLib再configure後main/fixture成功/source306/実PCSP移動→Cancel/Esc→folderだけDelete→実GIFpreview→再起動/863B/hash/prefsを確認。最終native1Q_DnvKiM04TsYfc882X6H1gUi6i-ERX4はmetadata/rawSHA/CRC/all936manifest一致。S20全14CIと2146PASS23SKIP21m17sは旧37sourceの結果。S21公開/CI/cacheは次工程。新DISC035と既存DISC029追加観察を未完了登録。元font保護、最終全面Visualclosure未完了。
+
+## 2026-10-29 S23 latest-HEAD復元・統合（未完了）
+
+# A003 / S23 — folder保存失敗・継続性（2026-10-29復元）
+
+現在の製品一次事実はApp9bce401016004d0634094e987e313a9aac6b3be5 / Web1cdbdbdbc09123e1cc47ca679167b7a59604e2fb。初回remote読出c6e479abの後、clone中に9bce4010へ更新された。旧App1449adee以後46pathの通常開発変更を保持し、保存済みS23 WIPを3way統合、conflict0。監査正本12fileは前回HEADと同一byteを確認した。D001.1–D001.6へ新差分をtodo登録。Baseline2/628、A003 in_progress、DISC001–036 todo/cursor001、top-level Delta37 not_startedを維持。
+
+## 保存されたBEFOREと復元
+
+WorkFolderService create/rename/delete/move×prefs false/throwの8反例は全て呼出元error無し・成功notify1、memory変更後cold prefs reloadで旧状態へ戻った。fresh BEFORE8FAIL0PASS/0sは既に保存済み。実nativeの隔離prefs JSONをdirectoryへ置換した失敗でもMoveが成功に見え、restore/restartで所属が戻る4原本を個別目視し保存済み。GIF863B/SHA61f6f61e8d33fbe97316d0e16d1cfa82157a77fede20f64cbdbcada4f566ee70保持。fault journal restored。実ユーザー資産は操作していない。
+
+Drive native-before-v2 1g8ZBg9tUzBrm3WwlchX4vr8AhqL03KtG/15056413B/SHA bd0eea2e68f6d93fef2aee8c4db833f830db781d93ca4c927d5aba9ef57dead6。Drive implementation-WIP 1BxcKKBIBPr6bm-V9aovzGtnc1mFb_ZXj/16247316B/SHA4d9bf39faee11ceaaee9f179be5eac754a93fe80eed3e6172fb2f4d764ccffce。2026-10-29 local maintenanceでscratch全消失後、後者raw SHA/CRC/全1126manifestを再検証して復元。保存済み16service PASSは旧source結果。WIP保存後のlazy queue・busy geometry・controls testsは未保存だったため会話から再構成し、現HEADで再検証する。失われたログを保存済み結果とはしない。
+
+
+次の正本: A003_S23_20261028_RESUME.md。現HEADでの全検証・native AFTER/publish/cacheはpending。
+
+## S23 scoped tests/build milestone
+
+106distinct targeted/related、failure1050/empty350/delete350/Home2310条件、analyze0/main+fixture成功。prod Dart310/kernelabd693b1。native AFTERはpending、console10856/Xvfb85 ENPC稼働・fault preparedのみ。次の正本A003_S23_20261028_RESUME.md。全体status不変。
+
+## S23 native AFTER closure for scoped persistence fix
+
+
+## 現在: S23限定修正の検証済み候補、公開/CI/cache保存へ
+
+App9bce401016004d0634094e987e313a9aac6b3be5 /Web1cdbdbdbc09123e1cc47ca679167b7a59604e2fbに統合した未push差分。106distinctのtargeted/related、failure1050/empty350/delete350/Home2310条件、full analyze0・main/fixture成功。prod Dart310/kernelabd693b15d3be687117fcc9e9db8f4d183a656c14cfee91f37545097aadea963、source前後同一。
+
+ENPC1440/text1とFRSP320/text2（844/220高）のnative AFTER37枚（PC15/SP22）を全て個別に開いて目視。各PC/SPでreal isolated prefs FS directory blocker→Move/rename/delete/createの4失敗とerror/input/state保持→Cancel/Escape→exact restore→同じMove sheetで再試行成功→process cold restartで所属保持→NoFolder→実create/rename/delete成功を確認。短画面ではerrorの冒頭/末尾とcontrolsへwheelで到達。1原本にはhover tooltipが写る事実を記録し、スクロール済みtitle全文同時表示とは主張しない。
+
+PC/SP fault journalは両方restored。実GIF863B/SHA61f6f61e8d33fbe97316d0e16d1cfa82157a77fede20f64cbdbcada4f566ee70不変。最終dataset legacy名emptyは1GIF・既存MOVE_AUDIT1folder・map{}・0projects。検証中に追加したfolderだけ削除し、既存folderを保持。App停止、console10856/Xvfb85稼働。部分削除failureはcontrolled platform storeのみで検証し、real FS blockerを部分保存のnative PASSとはしない。
+
+保存済みtests/build/PC backup: Drive1Sfd1ebO4zWjZVAn9qXSop1MptXKSh1wN/16574993B/SHA8b1f1648666efd2d0ca0ea4e903e6a844bed26d0d7f666c36bb5b22c1b5bbdb5、全1208manifest/rawSHA/CRC/metadata一致。PC native15+SP exact backup: Drive1-B5Cd1gGiggkbFG_FJD__ds0cnL4pDZo/16962597B/SHA789d0d0cb5bdcd8444e509ddcc2ad4cc6da196c72d8c1c1456b44bcf8c2e41b2、全1232manifest/raw/metadata一致。unuploaded PC-native-SP-backup（v1）はreviewにhistorical BEFORE4を誤算入したため無効、Driveへ送らずv2で分離した。
+
+次: 全native/source ZIPの保存/readback→remote HEAD再確認→expected-parent/nonforceで検証済みApp差分と両repo Stateを公開→remote tree/parent/exact paths/actualfetch/index/compiled source310の一致→CI・新compiled runtimeのraw download/replay・receipt保存。
+
+Baseline2/628・A003 in_progress、DISC001–036 todo/cursor001、top-level Delta37未着手・新差分D001.1–D001.6 todoを維持。Project/shared folderの保存失敗、stale/nonexistent destination ID、関連7言語全実機/全preset等のDISC036残条件は未完了。全面監査/latestHEAD Visual closureは完了していない。保護font4e885...をstageしない。
+
+以下は同unitの履歴であり、途中のpending記述は上記の現状を上書きしない。
+
+
+## S23 latest4999 integration gate
+
+## 最新統合: 4999e363・公開前の最終状態
+
+公開直前にremoteが66fff30b/4999e363へ更新。unused FF dialog/公開設定helpersの削除を完全保持してfast-forward統合（conflict0）。監査済みHome/WorkFolderService/modal codeは同一SHAで、全310 Dart中でnative37枚時点から変わったのはCommunityServiceの当該削除だけ。旧build proofはnative-build-source-9bce.jsonへ保存。
+
+upstream削除に未追随の3test fileが19解析errorを起こしたため、廃止済み公開設定テスト4件を退役、direct serviceの件数・名前対応を維持し、App全体の本人/他作者ページでFF件数が非操作TextでSwitch/list dialogを開かない検査へ更新。service/direct30PASS、UI smoke1PASS、既存upstream回帰9PASS（重複加算なし）。今回unit合計137distinct。full analyze0/2.7s、format758file0change。最新main/fixture build成功、prod Dart310同一SHA。現在kernel0b5def0b5dad531e628a29d51998da2f41742bbf90d6229a4661a6b50ac112d1からPC/SPでMove picker→Escapeを実操作し2原本を個別目視。合計native39は旧kernelの37枚＋最新再統合2枚と区別している。
+
+App/Webの親HEADは4999e3636b7b22596ccf3190af639781dac0aa8c /1cdbdbdbc09123e1cc47ca679167b7a59604e2fb。App停止、console10856/Xvfb85。prefs fault両方restored、legacy empty datasetは1GIF/1folder/map{}。GIF863B完全一致。保護font4e885...保持。
+
+native37/source旧base9bceのZIP: Drive1f-J55vpWu62iJeGx2J_eOb4aeAnAkaaP/17685923B/SHA1b14671c90cc8b0f7d5d152dc657c765a06a457b34f3633b6f30470cdfc865ff、metadata/raw/全1261manifest一致。これは4999統合前の正確な証拠であり、そのまま現全sourceの結果とはしない。
+
+次: 最新統合source/State保存→expected-parent/nonforce公開とremote/fetch/tree/source310照合→CI/current compiled runtimeの保存・raw読戻し・実downloadkernel再生→receipt保存。Baseline/Discovery/Delta statusは不変。全面監査/latestHEAD Visual closure未完了。
+
+以下は同unitの段階別履歴。
+

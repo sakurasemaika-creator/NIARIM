@@ -208,12 +208,20 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                               ),
                             ),
                             Text(
-                              l10n.communityAuthorFollowingCount(followingCount),
-                              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                              l10n.communityAuthorFollowingCount(
+                                followingCount,
+                              ),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: scheme.onSurfaceVariant,
+                              ),
                             ),
                             Text(
                               l10n.communityAuthorFollowerCount(followerCount),
-                              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: scheme.onSurfaceVariant,
+                              ),
                             ),
                           ],
                         ),
@@ -229,11 +237,14 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                           ? l10n.communityUnmuteAuthor
                           : l10n.communityMuteAuthor,
                       onPressed: () => communityService.setAuthorMuted(
-                        widget.authorId, !isMuted,
+                        widget.authorId,
+                        !isMuted,
                       ),
-                      icon: Icon(isMuted
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined),
+                      icon: Icon(
+                        isMuted
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
                     ),
                 ],
               ),
@@ -248,12 +259,16 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                     communityService,
                     communityService.toggleFavoriteAuthor(widget.authorId),
                   ),
-                  icon: Icon(isFavorite
-                      ? Icons.person_remove_alt_1
-                      : Icons.person_add_alt_1),
-                  label: Text(isFavorite
-                      ? l10n.communityFavoriteAuthorFollowing
-                      : l10n.communityFavoriteAuthorFollow),
+                  icon: Icon(
+                    isFavorite
+                        ? Icons.person_remove_alt_1
+                        : Icons.person_add_alt_1,
+                  ),
+                  label: Text(
+                    isFavorite
+                        ? l10n.communityFavoriteAuthorFollowing
+                        : l10n.communityFavoriteAuthorFollow,
+                  ),
                 ),
               ),
             Expanded(

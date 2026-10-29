@@ -94,7 +94,13 @@
   "homeWorksEmptyHint": "キャンバスの書き出しから動画・GIFを作成すると\nここに表示されます",
   "homeWorkFolderEmpty": "このフォルダには書き出した作品がありません",
   "homeDeleteFolderKeepContents": "「{name}」フォルダを削除します。中の項目は一覧に戻り、項目自体は削除されません。",
-  "@homeDeleteFolderKeepContents": {"placeholders": {"name": {"type": "String"}}},
+  "@homeDeleteFolderKeepContents": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "homeShareOpenWith": "共有・写真アプリ等で開く",
   "homeWorkDeleteConfirmTitle": "{name}を削除しますか？",
   "@homeWorkDeleteConfirmTitle": {
@@ -303,6 +309,8 @@
   "folderManagementCreateNew": "新規作成",
   "folderManagementEmpty": "フォルダはまだありません",
   "folderCreateFailed": "フォルダを作成できませんでした。もう一度お試しください。",
+  "folderChangesSaveFailed": "フォルダの変更を保存できませんでした。もう一度お試しください。",
+  "folderChangesPartiallySaved": "一部の変更だけが保存されました。一覧を確認して、もう一度お試しください。",
   "folderNameLabel": "フォルダ名",
   "folderMoveToTitle": "フォルダへ移動",
   "folderNone": "フォルダなし",
@@ -1008,9 +1016,13 @@
   "themeColorSelection": "選択色",
   "themeColorUpdateMark": "更新マーク色",
   "themeResetConfirmTitle": "テーマカラーをリセットしますか？",
-  "@themeResetConfirmTitle": {"description": "テーマのリセット前に表示する確認ダイアログ"},
+  "@themeResetConfirmTitle": {
+    "description": "テーマのリセット前に表示する確認ダイアログ"
+  },
   "themeResetConfirmAction": "リセット",
-  "@themeResetConfirmAction": {"description": "テーマのリセットを確定するボタン"},
+  "@themeResetConfirmAction": {
+    "description": "テーマのリセットを確定するボタン"
+  },
   "themeUnreadableResetButton": "テーマをもとに戻す",
   "@themeUnreadableResetButton": {
     "description": "読めないテーマになったとき起動画面に出る固定色のリセットボタン"
@@ -2985,18 +2997,6 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "フォロー中/フォロワー一覧を公開する",
-  "communityFollowersPublicToggleDesc": "オンにすると、他のユーザーがこのページからあなたのフォロー中/フォロワー一覧を見られるようになります。既定は非公開です。",
-  "communityFollowersListTitle": "フォロワー",
-  "communityFollowersListEmpty": "フォロワーがいません",
-  "communityFollowersListHiddenNote": "他に{count}人いますが、本人の設定により非表示です",
-  "@communityFollowersListHiddenNote": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "communityAuthorFollowingCount": "フォロー中{count}人",
   "@communityAuthorFollowingCount": {
     "placeholders": {
@@ -3005,8 +3005,6 @@
       }
     }
   },
-  "communityFollowingListTitle": "フォロー中",
-  "communityFollowingListEmpty": "誰もフォローしていません",
   "communityFollowNotificationsTooltip": "通知",
   "communityFollowNotificationsTitle": "フォロー通知",
   "communityFollowNotificationsEmpty": "通知はありません",
@@ -3354,15 +3352,23 @@
   "communityMyWorksYoutubeOpenFailed": "YouTube Studioを開けませんでした",
   "communityMyWorksOperationFailed": "操作に失敗しました。{reason}",
   "@communityMyWorksOperationFailed": {
-    "placeholders": {"reason": {"type": "String"}}
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
   },
   "communityMyWorksBulkPublish": "一括公開",
   "communityMyWorksBulkHide": "一括非公開",
   "communityMyWorksBulkResult": "完了: {success}件 / 失敗: {failed}件",
   "@communityMyWorksBulkResult": {
     "placeholders": {
-      "success": {"type": "int"},
-      "failed": {"type": "int"}
+      "success": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
     }
   },
   "communityMyWorksAccountNotConnected": "Googleアカウント未接続",
@@ -3387,14 +3393,6 @@
   },
   "communitySignInFailed": "Googleアカウントでログインできませんでした。{reason}",
   "@communitySignInFailed": {
-    "placeholders": {
-      "reason": {
-        "type": "String"
-      }
-    }
-  },
-  "communityVisibilityChangeFailed": "公開状態を変更できませんでした。{reason}",
-  "@communityVisibilityChangeFailed": {
     "placeholders": {
       "reason": {
         "type": "String"

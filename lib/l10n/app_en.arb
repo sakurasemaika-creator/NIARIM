@@ -222,6 +222,8 @@
   "folderManagementCreateNew": "New",
   "folderManagementEmpty": "No folders yet",
   "folderCreateFailed": "Couldn’t create the folder. Try again.",
+  "folderChangesSaveFailed": "Couldn’t save the folder changes. Try again.",
+  "folderChangesPartiallySaved": "Only some changes were saved. Check the list and try again.",
   "folderNameLabel": "Folder Name",
   "folderMoveToTitle": "Move to Folder",
   "folderNone": "No Folder",
@@ -2664,18 +2666,6 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "Make following/follower lists public",
-  "communityFollowersPublicToggleDesc": "When on, other users can see your following and follower lists from this page. Private by default.",
-  "communityFollowersListTitle": "Followers",
-  "communityFollowersListEmpty": "No followers yet",
-  "communityFollowersListHiddenNote": "{count} more not shown, hidden by their own privacy setting",
-  "@communityFollowersListHiddenNote": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "communityAuthorFollowingCount": "{count} following",
   "@communityAuthorFollowingCount": {
     "placeholders": {
@@ -2684,8 +2674,6 @@
       }
     }
   },
-  "communityFollowingListTitle": "Following",
-  "communityFollowingListEmpty": "Not following anyone yet",
   "communityFollowNotificationsTooltip": "Notifications",
   "communityFollowNotificationsTitle": "Follow notifications",
   "communityFollowNotificationsEmpty": "No notifications",
@@ -3042,7 +3030,6 @@
   "communityMyWorksLoadFailed": "Couldn’t load your posts. {reason}",
   "communityAccountSwitchFailed": "Couldn’t switch Google accounts. {reason}",
   "communitySignInFailed": "Couldn’t sign in with your Google account. {reason}",
-  "communityVisibilityChangeFailed": "Couldn’t change the visibility. {reason}",
   "communityMyWorksDeletedCannotPublish": "A video deleted from YouTube can’t be made visible in the Work Plaza again",
   "communityMyWorksStatusDeletedOnYoutube": "Deleted from YouTube • Can’t be made visible again",
   "communityMyWorksStatusYoutubePrivate": "Visible in the Work Plaza • Temporarily hidden because the YouTube video is private",

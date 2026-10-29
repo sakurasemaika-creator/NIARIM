@@ -749,184 +749,190 @@ class _ThemeSampleScreen extends StatelessWidget {
       onSurface: theme.appBarTheme.foregroundColor ?? c.onSurface,
     );
     return Scaffold(
-    backgroundColor: c.surface,
-    appBar: AppBar(
-      automaticallyImplyLeading: false,
-      leading: const Icon(Icons.menu),
-      titleSpacing: 0,
-      title: Row(
-        children: [
-          Flexible(
-            child: Text(
-              t('更新日時', 'Modified'),
-              style: const TextStyle(
-                fontSize: 16,
-                fontFamily: 'Kuramubon',
-                fontWeight: FontWeight.w500,
+      backgroundColor: c.surface,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: const Icon(Icons.menu),
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            Flexible(
+              child: Text(
+                t('更新日時', 'Modified'),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontFamily: 'Kuramubon',
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          const Icon(Icons.arrow_drop_down, size: 20),
-          const SizedBox(width: 6),
-          const Icon(Icons.arrow_downward, size: 20),
+            const Icon(Icons.arrow_drop_down, size: 20),
+            const SizedBox(width: 6),
+            const Icon(Icons.arrow_downward, size: 20),
+          ],
+        ),
+        actions: [
+          const Icon(Icons.grid_view, size: 21),
+          const SizedBox(width: 14),
+          const Icon(Icons.search, size: 22),
+          const SizedBox(width: 12),
         ],
-      ),
-      actions: [
-        const Icon(Icons.grid_view, size: 21),
-        const SizedBox(width: 14),
-        const Icon(Icons.search, size: 22),
-        const SizedBox(width: 12),
-      ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(45),
-        child: SizedBox(
-          height: 45,
-          child: Row(
-            children: [
-              for (final tab in [
-                t('プロジェクト', 'Projects'),
-                t('作品一覧', 'Works'),
-                t('ブクマ済み', 'Bookmarks'),
-              ])
-                Expanded(
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            tab,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Kuramubon',
-                              color: tab == t('プロジェクト', 'Projects')
-                                  ? c.primary
-                                  : c.onSurfaceVariant,
-                              shadows: tab == t('プロジェクト', 'Projects')
-                                  ? CanvasIconButton.actionShadows(
-                                      c.primary,
-                                      tabBackground,
-                                      tabScheme,
-                                    )
-                                  : null,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(45),
+          child: SizedBox(
+            height: 45,
+            child: Row(
+              children: [
+                for (final tab in [
+                  t('プロジェクト', 'Projects'),
+                  t('作品一覧', 'Works'),
+                  t('ブクマ済み', 'Bookmarks'),
+                ])
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              tab,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Kuramubon',
+                                color: tab == t('プロジェクト', 'Projects')
+                                    ? c.primary
+                                    : c.onSurfaceVariant,
+                                shadows: tab == t('プロジェクト', 'Projects')
+                                    ? CanvasIconButton.actionShadows(
+                                        c.primary,
+                                        tabBackground,
+                                        tabScheme,
+                                      )
+                                    : null,
+                              ),
                             ),
                           ),
                         ),
+                        Container(
+                          height: 2,
+                          color: tab == t('プロジェクト', 'Projects')
+                              ? c.primary
+                              : Colors.transparent,
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              Align(
+                alignment: Alignment.topLeft,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(7, 9, 7, 0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 13,
+                      vertical: 9,
+                    ),
+                    decoration: BoxDecoration(
+                      color: c.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Text(
+                      t('お気に入り', 'Favorites'),
+                      style: const TextStyle(
+                        fontFamily: 'Kuramubon',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
                       ),
-                      Container(
-                        height: 2,
-                        color: tab == t('プロジェクト', 'Projects')
-                            ? c.primary
-                            : Colors.transparent,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 36,
+                        backgroundColor: c.primary.withValues(alpha: .13),
+                        child: Icon(
+                          Icons.movie_creation_outlined,
+                          size: 31,
+                          color: c.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 13),
+                      Text(
+                        t('プロジェクトがありません', 'No projects'),
+                        style: const TextStyle(
+                          fontFamily: 'Kuramubon',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        t('＋ボタンから新規作成', 'Create with the + button'),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: c.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
                 ),
+              ),
             ],
           ),
-        ),
-      ),
-    ),
-    body: Stack(
-      children: [
-        Column(
-          children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(7, 9, 7, 0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 13,
-                    vertical: 9,
-                  ),
-                  decoration: BoxDecoration(
-                    color: c.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: Text(
-                    t('お気に入り', 'Favorites'),
-                    style: const TextStyle(
-                      fontFamily: 'Kuramubon',
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+          Positioned(
+            left: 13,
+            bottom: 20,
+            child: Container(
+              key: const Key('themePreviewHomeBackFab'),
+              width: 56,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(shape: BoxShape.circle),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: c.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: Icon(Icons.arrow_back, color: c.onPrimary),
                 ),
               ),
             ),
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircleAvatar(
-                      radius: 36,
-                      backgroundColor: c.primary.withValues(alpha: .13),
-                      child: Icon(
-                        Icons.movie_creation_outlined,
-                        size: 31,
-                        color: c.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 13),
-                    Text(
-                      t('プロジェクトがありません', 'No projects'),
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      t('＋ボタンから新規作成', 'Create with the + button'),
-                      style: TextStyle(fontSize: 11, color: c.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        Positioned(
-          left: 13,
-          bottom: 20,
-          child: Container(
-            key: const Key('themePreviewHomeBackFab'),
-            width: 56,
-            height: 56,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(shape: BoxShape.circle),
-            child: DecoratedBox(
+          ),
+          Positioned(
+            right: 13,
+            bottom: 20,
+            child: Container(
+              width: 58,
+              height: 58,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: c.primary,
                 shape: BoxShape.circle,
               ),
-              child: SizedBox(
-                width: 56,
-                height: 56,
-                child: Icon(Icons.arrow_back, color: c.onPrimary),
-              ),
+              child: Icon(Icons.add, color: c.onPrimary, size: 27),
             ),
           ),
-        ),
-        Positioned(
-          right: 13,
-          bottom: 20,
-          child: Container(
-            width: 58,
-            height: 58,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(color: c.primary, shape: BoxShape.circle),
-            child: Icon(Icons.add, color: c.onPrimary, size: 27),
-          ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
   }
 
   Widget _projectTile(ColorScheme c, String title) => Card(

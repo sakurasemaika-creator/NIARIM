@@ -20,30 +20,28 @@ void main() {
       routes: [
         GoRoute(
           path: '/',
-          builder: (_, _) => const Scaffold(
-            body: Center(child: Text('launch-route-marker')),
-          ),
+          builder: (_, _) =>
+              const Scaffold(body: Center(child: Text('launch-route-marker'))),
         ),
-        GoRoute(
-          path: '/community',
-          builder: (_, _) => const CommunityScreen(),
-        ),
+        GoRoute(path: '/community', builder: (_, _) => const CommunityScreen()),
       ],
     );
     addTearDown(router.dispose);
-    await tester.pumpWidget(MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: community),
-        ChangeNotifierProvider(create: (_) => SettingsService()),
-        ChangeNotifierProvider(create: (_) => PremiumService()),
-        ChangeNotifierProvider(create: (_) => CommunityPreviewService()),
-      ],
-      child: MaterialApp.router(
-        routerConfig: router,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: community),
+          ChangeNotifierProvider(create: (_) => SettingsService()),
+          ChangeNotifierProvider(create: (_) => PremiumService()),
+          ChangeNotifierProvider(create: (_) => CommunityPreviewService()),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
     final back = find.byKey(const Key('communityBackToSplashButton'));
     expect(back, findsOneWidget);

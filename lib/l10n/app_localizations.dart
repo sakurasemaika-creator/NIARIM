@@ -1313,6 +1313,18 @@ abstract class AppLocalizations {
   /// **'フォルダを作成できませんでした。もう一度お試しください。'**
   String get folderCreateFailed;
 
+  /// No description provided for @folderChangesSaveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの変更を保存できませんでした。もう一度お試しください。'**
+  String get folderChangesSaveFailed;
+
+  /// No description provided for @folderChangesPartiallySaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'一部の変更だけが保存されました。一覧を確認して、もう一度お試しください。'**
+  String get folderChangesPartiallySaved;
+
   /// No description provided for @folderNameLabel.
   ///
   /// In ja, this message translates to:
@@ -11249,53 +11261,11 @@ abstract class AppLocalizations {
   /// **'フォロワー{count}人'**
   String communityAuthorFollowerCount(int count);
 
-  /// No description provided for @communityFollowersPublicToggleTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォロー中/フォロワー一覧を公開する'**
-  String get communityFollowersPublicToggleTitle;
-
-  /// No description provided for @communityFollowersPublicToggleDesc.
-  ///
-  /// In ja, this message translates to:
-  /// **'オンにすると、他のユーザーがこのページからあなたのフォロー中/フォロワー一覧を見られるようになります。既定は非公開です。'**
-  String get communityFollowersPublicToggleDesc;
-
-  /// No description provided for @communityFollowersListTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォロワー'**
-  String get communityFollowersListTitle;
-
-  /// No description provided for @communityFollowersListEmpty.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォロワーがいません'**
-  String get communityFollowersListEmpty;
-
-  /// No description provided for @communityFollowersListHiddenNote.
-  ///
-  /// In ja, this message translates to:
-  /// **'他に{count}人いますが、本人の設定により非表示です'**
-  String communityFollowersListHiddenNote(int count);
-
   /// No description provided for @communityAuthorFollowingCount.
   ///
   /// In ja, this message translates to:
   /// **'フォロー中{count}人'**
   String communityAuthorFollowingCount(int count);
-
-  /// No description provided for @communityFollowingListTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォロー中'**
-  String get communityFollowingListTitle;
-
-  /// No description provided for @communityFollowingListEmpty.
-  ///
-  /// In ja, this message translates to:
-  /// **'誰もフォローしていません'**
-  String get communityFollowingListEmpty;
 
   /// No description provided for @communityFollowNotificationsTooltip.
   ///
@@ -12620,7 +12590,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityHideGenerativeAiImageVideo.
   ///
   /// In ja, this message translates to:
-  /// **'「AI画像・AI動画使用」の作品を非表示'**
+  /// **'AIで生成した画像・動画を使用した作品を表示しない'**
   String get communityHideGenerativeAiImageVideo;
 
   /// No description provided for @communityMutedWords.
@@ -12652,6 +12622,234 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'新規追加'**
   String get communityMuteAddNew;
+
+  /// No description provided for @communityScrollToTop.
+  ///
+  /// In ja, this message translates to:
+  /// **'最上部に戻る'**
+  String get communityScrollToTop;
+
+  /// No description provided for @communityPostPeriodTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿期間'**
+  String get communityPostPeriodTitle;
+
+  /// No description provided for @communityDurationFilterTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の長さ'**
+  String get communityDurationFilterTitle;
+
+  /// No description provided for @communitySavedSearches.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存した検索条件'**
+  String get communitySavedSearches;
+
+  /// No description provided for @communitySignInPromptTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントでログイン'**
+  String get communitySignInPromptTitle;
+
+  /// No description provided for @communitySignInPromptBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の投稿・管理、フォロー、ブックマーク、通報などの機能を利用するにはGoogleアカウントとの連携が必要です。'**
+  String get communitySignInPromptBody;
+
+  /// No description provided for @communitySignInPromptConnect.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントを連携'**
+  String get communitySignInPromptConnect;
+
+  /// No description provided for @communitySignInUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'この開発ビルドにはGoogleログイン設定がないため、連携を開始できません。'**
+  String get communitySignInUnavailable;
+
+  /// No description provided for @communitySaveSearch.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の検索条件を保存'**
+  String get communitySaveSearch;
+
+  /// No description provided for @communitySavedSearchName.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索条件の名前'**
+  String get communitySavedSearchName;
+
+  /// No description provided for @communitySavedSearchLimit.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存できる検索条件は10件までです'**
+  String get communitySavedSearchLimit;
+
+  /// No description provided for @communitySavedSearchEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存した検索条件はありません'**
+  String get communitySavedSearchEmpty;
+
+  /// No description provided for @communityManageSavedSearches.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存した検索条件を管理'**
+  String get communityManageSavedSearches;
+
+  /// No description provided for @communityDurationAny.
+  ///
+  /// In ja, this message translates to:
+  /// **'長さを指定しない'**
+  String get communityDurationAny;
+
+  /// No description provided for @communityDurationUpTo.
+  ///
+  /// In ja, this message translates to:
+  /// **'〇分以内（スライダー）'**
+  String get communityDurationUpTo;
+
+  /// No description provided for @communityDurationRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'〇分以上〇分以内（数値入力）'**
+  String get communityDurationRange;
+
+  /// No description provided for @communityDurationMinutes.
+  ///
+  /// In ja, this message translates to:
+  /// **'分以内'**
+  String get communityDurationMinutes;
+
+  /// No description provided for @communityDurationMinimum.
+  ///
+  /// In ja, this message translates to:
+  /// **'最短（分）'**
+  String get communityDurationMinimum;
+
+  /// No description provided for @communityDurationMaximum.
+  ///
+  /// In ja, this message translates to:
+  /// **'最長（分）'**
+  String get communityDurationMaximum;
+
+  /// No description provided for @communityTagExactMatch.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを完全一致で検索する（オフなら部分一致）'**
+  String get communityTagExactMatch;
+
+  /// No description provided for @communityMinimumViews.
+  ///
+  /// In ja, this message translates to:
+  /// **'最低再生回数'**
+  String get communityMinimumViews;
+
+  /// No description provided for @communityMinimumBookmarks.
+  ///
+  /// In ja, this message translates to:
+  /// **'最低ブックマーク数'**
+  String get communityMinimumBookmarks;
+
+  /// No description provided for @communityPostPeriodAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべての期間'**
+  String get communityPostPeriodAll;
+
+  /// No description provided for @communityPostPeriodToday.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日'**
+  String get communityPostPeriodToday;
+
+  /// No description provided for @communityPostPeriodWeek.
+  ///
+  /// In ja, this message translates to:
+  /// **'今週'**
+  String get communityPostPeriodWeek;
+
+  /// No description provided for @communityPostPeriodMonth.
+  ///
+  /// In ja, this message translates to:
+  /// **'今月'**
+  String get communityPostPeriodMonth;
+
+  /// No description provided for @communityPostPeriodYear.
+  ///
+  /// In ja, this message translates to:
+  /// **'今年'**
+  String get communityPostPeriodYear;
+
+  /// No description provided for @communityPostPeriodCustom.
+  ///
+  /// In ja, this message translates to:
+  /// **'日付期間を指定'**
+  String get communityPostPeriodCustom;
+
+  /// No description provided for @communityPostPeriodChooseRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'日付を選ぶ'**
+  String get communityPostPeriodChooseRange;
+
+  /// No description provided for @communityMutedAuthors.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートしたユーザー'**
+  String get communityMutedAuthors;
+
+  /// No description provided for @communityMutedAuthorsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートしたユーザーはいません'**
+  String get communityMutedAuthorsEmpty;
+
+  /// No description provided for @communityMuteAuthor.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーの作品をミュートする'**
+  String get communityMuteAuthor;
+
+  /// No description provided for @communityUnmuteAuthor.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーのミュートを解除する'**
+  String get communityUnmuteAuthor;
+
+  /// No description provided for @communityMyWorksManagementHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品管理'**
+  String get communityMyWorksManagementHeading;
+
+  /// No description provided for @communityWorkTagsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品のタグ管理'**
+  String get communityWorkTagsTitle;
+
+  /// No description provided for @communityWorkTagsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを追加・編集・削除できます。ロックすると他のユーザーは変更できません。ロックしたタグの編集・削除は先に解除してください。'**
+  String get communityWorkTagsHint;
+
+  /// No description provided for @communityWorkEditTag.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを編集'**
+  String get communityWorkEditTag;
+
+  /// No description provided for @communityWorkTagChangeFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを変更できませんでした'**
+  String get communityWorkTagChangeFailed;
 
   /// No description provided for @communityContainsGenerativeAiImageVideo.
   ///
@@ -12686,7 +12884,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityGoogleSignInNotConfigured.
   ///
   /// In ja, this message translates to:
-  /// **'Googleログインがまだ設定されていません'**
+  /// **'Googleアカウントが連携されていません'**
   String get communityGoogleSignInNotConfigured;
 
   /// No description provided for @communityGoogleAccountBusy.
@@ -12700,6 +12898,90 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'自分の投稿'**
   String get communityMyWorksTitle;
+
+  /// No description provided for @communityMyWorksViewAuthorPage.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分の作品一覧ページを見る'**
+  String get communityMyWorksViewAuthorPage;
+
+  /// No description provided for @communityMyWorksAccountRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品一覧を表示するにはGoogleアカウントに接続してください'**
+  String get communityMyWorksAccountRequired;
+
+  /// No description provided for @communityMyWorksSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の設定'**
+  String get communityMyWorksSettingsTitle;
+
+  /// No description provided for @communityMyWorksPublishInNiarim.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM内で公開する'**
+  String get communityMyWorksPublishInNiarim;
+
+  /// No description provided for @communityMyWorksDeleteNiarim.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM作品広場からこの作品を削除'**
+  String get communityMyWorksDeleteNiarim;
+
+  /// No description provided for @communityMyWorksDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品を削除しますか？'**
+  String get communityMyWorksDeleteConfirmTitle;
+
+  /// No description provided for @communityMyWorksDeleteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM内の作品を完全に削除します。YouTube上の動画は削除されません。この操作は取り消せません。'**
+  String get communityMyWorksDeleteConfirmBody;
+
+  /// No description provided for @communityMyWorksOpenYoutubeStudio.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube Studioで動画を管理する'**
+  String get communityMyWorksOpenYoutubeStudio;
+
+  /// No description provided for @communityMyWorksYoutubeStudioHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube側の公開状態や動画設定はYouTube Studioで管理します。NIARIM内の公開設定とは独立しています。'**
+  String get communityMyWorksYoutubeStudioHelp;
+
+  /// No description provided for @communityMyWorksYoutubeOpenFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube Studioを開けませんでした'**
+  String get communityMyWorksYoutubeOpenFailed;
+
+  /// No description provided for @communityMyWorksOperationFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作に失敗しました。{reason}'**
+  String communityMyWorksOperationFailed(String reason);
+
+  /// No description provided for @communityMyWorksBulkPublish.
+  ///
+  /// In ja, this message translates to:
+  /// **'一括公開'**
+  String get communityMyWorksBulkPublish;
+
+  /// No description provided for @communityMyWorksBulkHide.
+  ///
+  /// In ja, this message translates to:
+  /// **'一括非公開'**
+  String get communityMyWorksBulkHide;
+
+  /// No description provided for @communityMyWorksBulkResult.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了: {success}件 / 失敗: {failed}件'**
+  String communityMyWorksBulkResult(int success, int failed);
 
   /// No description provided for @communityMyWorksAccountNotConnected.
   ///
@@ -12742,12 +13024,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'Googleアカウントでログインできませんでした。{reason}'**
   String communitySignInFailed(String reason);
-
-  /// No description provided for @communityVisibilityChangeFailed.
-  ///
-  /// In ja, this message translates to:
-  /// **'公開状態を変更できませんでした。{reason}'**
-  String communityVisibilityChangeFailed(String reason);
 
   /// No description provided for @communityMyWorksDeletedCannotPublish.
   ///

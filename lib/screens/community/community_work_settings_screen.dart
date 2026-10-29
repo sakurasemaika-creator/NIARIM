@@ -37,9 +37,11 @@ class _CommunityWorkSettingsScreenState
     final tag = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(original == null
-            ? l10n.communityAddTagDialogTitle
-            : l10n.communityWorkEditTag),
+        title: Text(
+          original == null
+              ? l10n.communityAddTagDialogTitle
+              : l10n.communityWorkEditTag,
+        ),
         content: TextFormField(
           key: const Key('communityWorkTagInput'),
           autofocus: true,
@@ -68,22 +70,30 @@ class _CommunityWorkSettingsScreenState
     if (next.length > 30) return;
     if (original == null &&
         work.tags.length >= CommunityService.maxTagsPerWork) {
-      _showError(StateError(l10n.communityErrorTagLimitExceeded(
-          CommunityService.maxTagsPerWork)));
+      _showError(
+        StateError(
+          l10n.communityErrorTagLimitExceeded(CommunityService.maxTagsPerWork),
+        ),
+      );
       return;
     }
     setState(() => _busy = true);
     try {
       // The existing API implements add/remove as separate, conditional
       // operations. Roll back the old tag if the replacement is rejected.
-      if (original != null && await service.removeTag(work.id, original) != true) {
-        _showError(service.lastError ?? StateError(l10n.communityWorkTagChangeFailed));
+      if (original != null &&
+          await service.removeTag(work.id, original) != true) {
+        _showError(
+          service.lastError ?? StateError(l10n.communityWorkTagChangeFailed),
+        );
         return;
       }
       final added = await service.addTag(work.id, next);
       if (added != true) {
         if (original != null) await service.addTag(work.id, original);
-        _showError(service.lastError ?? StateError(l10n.communityWorkTagChangeFailed));
+        _showError(
+          service.lastError ?? StateError(l10n.communityWorkTagChangeFailed),
+        );
       }
     } catch (error) {
       if (mounted) _showError(error);
@@ -92,8 +102,11 @@ class _CommunityWorkSettingsScreenState
     }
   }
 
-  Future<void> _changeTag(CommunityWork work, String tag,
-      {required bool remove}) async {
+  Future<void> _changeTag(
+    CommunityWork work,
+    String tag, {
+    required bool remove,
+  }) async {
     if (_busy) return;
     setState(() => _busy = true);
     try {
@@ -102,8 +115,12 @@ class _CommunityWorkSettingsScreenState
           ? await service.removeTag(work.id, tag)
           : await service.toggleTagLock(work.id, tag);
       if (done != true && mounted) {
-        _showError(service.lastError ??
-            StateError(AppLocalizations.of(context)!.communityWorkTagChangeFailed));
+        _showError(
+          service.lastError ??
+              StateError(
+                AppLocalizations.of(context)!.communityWorkTagChangeFailed,
+              ),
+        );
       }
     } catch (error) {
       if (mounted) _showError(error);
@@ -114,11 +131,13 @@ class _CommunityWorkSettingsScreenState
 
   void _showError(Object error) {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(l10n.communityMyWorksOperationFailed(
-        communityErrorText(l10n, error),
-      )),
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          l10n.communityMyWorksOperationFailed(communityErrorText(l10n, error)),
+        ),
+      ),
+    );
   }
 
   Future<void> _changeVisibility(CommunityWork work, bool published) async {
@@ -133,7 +152,8 @@ class _CommunityWorkSettingsScreenState
     setState(() => _busy = true);
     try {
       await context.read<CommunityService>().setNiarimVisibility(
-        work.id, published,
+        work.id,
+        published,
       );
     } on CommunityAccountChangedException {
       // The owner changed while this request was in flight.
@@ -149,7 +169,8 @@ class _CommunityWorkSettingsScreenState
     setState(() => _busy = true);
     try {
       await context.read<CommunityService>().setAiImageVideoDisclosure(
-        work.id, value,
+        work.id,
+        value,
       );
     } on CommunityAccountChangedException {
       // Do not apply a result to a new account.
@@ -204,24 +225,25 @@ class _CommunityWorkSettingsScreenState
       'https://studio.youtube.com/video/${Uri.encodeComponent(videoId)}/edit',
     );
     try {
-      final opened = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!opened && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-            AppLocalizations.of(context)!.communityMyWorksYoutubeOpenFailed,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.communityMyWorksYoutubeOpenFailed,
+            ),
           ),
-        ));
+        );
       }
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-          AppLocalizations.of(context)!.communityMyWorksYoutubeOpenFailed,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.communityMyWorksYoutubeOpenFailed,
+          ),
         ),
-      ));
+      );
     }
   }
 
@@ -258,11 +280,11 @@ class _CommunityWorkSettingsScreenState
                         SwitchListTile(
                           key: const Key('communityWorkSettingsVisibility'),
                           title: Text(l10n.communityMyWorksPublishInNiarim),
-                          subtitle: Text(
-                            l10n.communityVisibilityCardTitle,
-                          ),
+                          subtitle: Text(l10n.communityVisibilityCardTitle),
                           value: work.isNiarimPublished,
-                          onChanged: !ownWork || _busy ||
+                          onChanged:
+                              !ownWork ||
+                                  _busy ||
                                   (cannotPublish && !work.isNiarimPublished)
                               ? null
                               : (value) => _changeVisibility(work, value),
@@ -292,12 +314,18 @@ class _CommunityWorkSettingsScreenState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(l10n.communityWorkTagsTitle,
-                              style: Theme.of(context).textTheme.titleMedium),
+                          Text(
+                            l10n.communityWorkTagsTitle,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
                           const SizedBox(height: 4),
-                          Text(l10n.communityWorkTagsHint,
-                              style: TextStyle(color: scheme.onSurfaceVariant,
-                                  fontSize: 12)),
+                          Text(
+                            l10n.communityWorkTagsHint,
+                            style: TextStyle(
+                              color: scheme.onSurfaceVariant,
+                              fontSize: 12,
+                            ),
+                          ),
                           for (final tag in work.tags)
                             Row(
                               key: ValueKey('communityWorkTag-$tag'),
@@ -305,22 +333,30 @@ class _CommunityWorkSettingsScreenState
                                 Expanded(
                                   child: InkWell(
                                     key: ValueKey('communityWorkTagText-$tag'),
-                                    onTap: ownWork && !_busy &&
+                                    onTap:
+                                        ownWork &&
+                                            !_busy &&
                                             !work.lockedTags.contains(tag)
                                         ? () => _editTag(work, original: tag)
                                         : null,
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      child: Text(tag,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      child: Text(
+                                        tag,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ),
                                 ),
                                 IconButton(
                                   key: ValueKey('communityWorkTagEdit-$tag'),
                                   tooltip: l10n.commonEdit,
-                                  onPressed: ownWork && !_busy &&
+                                  onPressed:
+                                      ownWork &&
+                                          !_busy &&
                                           !work.lockedTags.contains(tag)
                                       ? () => _editTag(work, original: tag)
                                       : null,
@@ -332,18 +368,24 @@ class _CommunityWorkSettingsScreenState
                                       ? l10n.communityTagUnlockTooltip
                                       : l10n.communityTagLockTooltip,
                                   onPressed: ownWork && !_busy
-                                      ? () => _changeTag(work, tag, remove: false)
+                                      ? () =>
+                                            _changeTag(work, tag, remove: false)
                                       : null,
-                                  icon: Icon(work.lockedTags.contains(tag)
-                                      ? Icons.lock
-                                      : Icons.lock_open_outlined),
+                                  icon: Icon(
+                                    work.lockedTags.contains(tag)
+                                        ? Icons.lock
+                                        : Icons.lock_open_outlined,
+                                  ),
                                 ),
                                 IconButton(
                                   key: ValueKey('communityWorkTagDelete-$tag'),
                                   tooltip: l10n.communityRemoveTagTooltip,
-                                  onPressed: ownWork && !_busy &&
+                                  onPressed:
+                                      ownWork &&
+                                          !_busy &&
                                           !work.lockedTags.contains(tag)
-                                      ? () => _changeTag(work, tag, remove: true)
+                                      ? () =>
+                                            _changeTag(work, tag, remove: true)
                                       : null,
                                   icon: const Icon(Icons.delete_outline),
                                 ),
@@ -351,8 +393,11 @@ class _CommunityWorkSettingsScreenState
                             ),
                           TextButton.icon(
                             key: const Key('communityWorkTagAdd'),
-                            onPressed: ownWork && !_busy &&
-                                    work.tags.length < CommunityService.maxTagsPerWork
+                            onPressed:
+                                ownWork &&
+                                    !_busy &&
+                                    work.tags.length <
+                                        CommunityService.maxTagsPerWork
                                 ? () => _editTag(work)
                                 : null,
                             icon: const Icon(Icons.add),

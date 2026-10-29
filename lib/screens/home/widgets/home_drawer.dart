@@ -22,11 +22,8 @@ class HomeDrawer extends StatelessWidget {
       drawerBackground,
       scheme,
     );
-    Widget drawerIcon(IconData icon) => Icon(
-      icon,
-      color: scheme.primary,
-      shadows: iconShadows,
-    );
+    Widget drawerIcon(IconData icon) =>
+        Icon(icon, color: scheme.primary, shadows: iconShadows);
     final l10n = AppLocalizations.of(context)!;
     return Drawer(
       backgroundColor: drawerBackground,

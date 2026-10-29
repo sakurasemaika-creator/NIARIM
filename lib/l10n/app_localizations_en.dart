@@ -668,6 +668,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get folderCreateFailed => 'Couldn’t create the folder. Try again.';
 
   @override
+  String get folderChangesSaveFailed =>
+      'Couldn’t save the folder changes. Try again.';
+
+  @override
+  String get folderChangesPartiallySaved =>
+      'Only some changes were saved. Check the list and try again.';
+
+  @override
   String get folderNameLabel => 'Folder Name';
 
   @override
@@ -6351,34 +6359,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle =>
-      'Make following/follower lists public';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      'When on, other users can see your following and follower lists from this page. Private by default.';
-
-  @override
-  String get communityFollowersListTitle => 'Followers';
-
-  @override
-  String get communityFollowersListEmpty => 'No followers yet';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '$count more not shown, hidden by their own privacy setting';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return '$count following';
   }
-
-  @override
-  String get communityFollowingListTitle => 'Following';
-
-  @override
-  String get communityFollowingListEmpty => 'Not following anyone yet';
 
   @override
   String get communityFollowNotificationsTooltip => 'Notifications';
@@ -7114,6 +7097,125 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityMuteAddNew => 'Add new';
+
+  @override
+  String get communityScrollToTop => 'Scroll to top';
+
+  @override
+  String get communityPostPeriodTitle => 'Date posted';
+
+  @override
+  String get communityDurationFilterTitle => 'Video duration';
+
+  @override
+  String get communitySavedSearches => 'Saved searches';
+
+  @override
+  String get communitySignInPromptTitle => 'Sign in with Google';
+
+  @override
+  String get communitySignInPromptBody =>
+      'A linked Google account is required to post and manage works, follow creators, bookmark works, and report content.';
+
+  @override
+  String get communitySignInPromptConnect => 'Connect Google account';
+
+  @override
+  String get communitySignInUnavailable =>
+      'Google sign-in is not configured in this development build.';
+
+  @override
+  String get communitySaveSearch => 'Save current search';
+
+  @override
+  String get communitySavedSearchName => 'Search name';
+
+  @override
+  String get communitySavedSearchLimit => 'You can save up to 10 searches';
+
+  @override
+  String get communitySavedSearchEmpty => 'No saved searches';
+
+  @override
+  String get communityManageSavedSearches => 'Manage saved searches';
+
+  @override
+  String get communityDurationAny => 'Any duration';
+
+  @override
+  String get communityDurationUpTo => 'Up to N minutes (slider)';
+
+  @override
+  String get communityDurationRange => 'Between N and N minutes (numbers)';
+
+  @override
+  String get communityDurationMinutes => 'minutes or less';
+
+  @override
+  String get communityDurationMinimum => 'Min. minutes';
+
+  @override
+  String get communityDurationMaximum => 'Max. minutes';
+
+  @override
+  String get communityTagExactMatch =>
+      'Match tags exactly (off: partial match)';
+
+  @override
+  String get communityMinimumViews => 'Min. views';
+
+  @override
+  String get communityMinimumBookmarks => 'Min. bookmarks';
+
+  @override
+  String get communityPostPeriodAll => 'Any time';
+
+  @override
+  String get communityPostPeriodToday => 'Today';
+
+  @override
+  String get communityPostPeriodWeek => 'This week';
+
+  @override
+  String get communityPostPeriodMonth => 'This month';
+
+  @override
+  String get communityPostPeriodYear => 'This year';
+
+  @override
+  String get communityPostPeriodCustom => 'Custom range';
+
+  @override
+  String get communityPostPeriodChooseRange => 'Select date range';
+
+  @override
+  String get communityMutedAuthors => 'Muted creators';
+
+  @override
+  String get communityMutedAuthorsEmpty => 'No muted creators';
+
+  @override
+  String get communityMuteAuthor => 'Mute this creator\'s works';
+
+  @override
+  String get communityUnmuteAuthor => 'Unmute this creator';
+
+  @override
+  String get communityMyWorksManagementHeading => 'Manage works';
+
+  @override
+  String get communityWorkTagsTitle => 'Work tags';
+
+  @override
+  String get communityWorkTagsHint =>
+      'Add, edit, or remove tags. Locking prevents others from changing a tag. Unlock before editing or removing it.';
+
+  @override
+  String get communityWorkEditTag => 'Edit tag';
+
+  @override
+  String get communityWorkTagChangeFailed => 'The tag could not be changed';
+
   @override
   String get communityContainsGenerativeAiImageVideo =>
       'Contains generative-AI images or video';
@@ -7134,7 +7236,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityGoogleSignInNotConfigured =>
-      'Google sign-in isn’t set up yet';
+      'No Google account is connected';
 
   @override
   String get communityGoogleAccountBusy =>
@@ -7142,6 +7244,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityMyWorksTitle => 'My posts';
+
+  @override
+  String get communityMyWorksViewAuthorPage => 'View my public works page';
+
+  @override
+  String get communityMyWorksAccountRequired =>
+      'Connect your Google account to view your works page';
+
+  @override
+  String get communityMyWorksSettingsTitle => 'Work settings';
+
+  @override
+  String get communityMyWorksPublishInNiarim => 'Make visible in NIARIM';
+
+  @override
+  String get communityMyWorksDeleteNiarim =>
+      'Delete this work from NIARIM Work Plaza';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => 'Delete this work?';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      'This permanently removes the work from NIARIM. The YouTube video will remain. This cannot be undone.';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio =>
+      'Manage video in YouTube Studio';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'Manage YouTube visibility and video settings in YouTube Studio. These are separate from NIARIM visibility.';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed =>
+      'Could not open YouTube Studio';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return 'Operation failed: $reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => 'Show selected';
+
+  @override
+  String get communityMyWorksBulkHide => 'Hide selected';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return 'Changed: $success / Failed: $failed';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected =>
@@ -7169,11 +7323,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String communitySignInFailed(String reason) {
     return 'Couldn’t sign in with your Google account. $reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return 'Couldn’t change the visibility. $reason';
   }
 
   @override

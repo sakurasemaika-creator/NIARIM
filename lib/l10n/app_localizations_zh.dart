@@ -649,6 +649,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get folderCreateFailed => '无法创建文件夹。请重试。';
 
   @override
+  String get folderChangesSaveFailed => '无法保存文件夹更改。请重试。';
+
+  @override
+  String get folderChangesPartiallySaved => '仅保存了部分更改。请检查列表后重试。';
+
+  @override
   String get folderNameLabel => '文件夹名称';
 
   @override
@@ -6092,33 +6098,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle => '公开关注/粉丝列表';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      '开启后，其他用户可以在此页面看到你的关注列表和粉丝列表。默认不公开。';
-
-  @override
-  String get communityFollowersListTitle => '粉丝';
-
-  @override
-  String get communityFollowersListEmpty => '暂无粉丝';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '另有$count人因本人隐私设置未显示';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return '关注$count人';
   }
-
-  @override
-  String get communityFollowingListTitle => '关注中';
-
-  @override
-  String get communityFollowingListEmpty => '暂未关注任何人';
 
   @override
   String get communityFollowNotificationsTooltip => '通知';
@@ -6829,6 +6811,121 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityMuteAddNew => '新增';
+
+  @override
+  String get communityScrollToTop => '返回顶部';
+
+  @override
+  String get communityPostPeriodTitle => '投稿日期';
+
+  @override
+  String get communityDurationFilterTitle => '视频时长';
+
+  @override
+  String get communitySavedSearches => '已保存的搜索';
+
+  @override
+  String get communitySignInPromptTitle => '使用 Google 账号登录';
+
+  @override
+  String get communitySignInPromptBody => '发布和管理作品、关注作者、收藏及举报内容需要关联 Google 账号。';
+
+  @override
+  String get communitySignInPromptConnect => '关联 Google 账号';
+
+  @override
+  String get communitySignInUnavailable => '此开发版本尚未配置 Google 登录。';
+
+  @override
+  String get communitySaveSearch => '保存当前搜索';
+
+  @override
+  String get communitySavedSearchName => '搜索名称';
+
+  @override
+  String get communitySavedSearchLimit => '最多保存10条搜索条件';
+
+  @override
+  String get communitySavedSearchEmpty => '暂无保存的搜索';
+
+  @override
+  String get communityManageSavedSearches => '管理保存的搜索';
+
+  @override
+  String get communityDurationAny => '不限时长';
+
+  @override
+  String get communityDurationUpTo => 'N分钟以内（滑块）';
+
+  @override
+  String get communityDurationRange => 'N至N分钟（数字输入）';
+
+  @override
+  String get communityDurationMinutes => '分钟以内';
+
+  @override
+  String get communityDurationMinimum => '最短（分钟）';
+
+  @override
+  String get communityDurationMaximum => '最长（分钟）';
+
+  @override
+  String get communityTagExactMatch => '标签完全匹配（关闭为部分匹配）';
+
+  @override
+  String get communityMinimumViews => '最低播放量';
+
+  @override
+  String get communityMinimumBookmarks => '最低收藏数';
+
+  @override
+  String get communityPostPeriodAll => '全部时间';
+
+  @override
+  String get communityPostPeriodToday => '今天';
+
+  @override
+  String get communityPostPeriodWeek => '本周';
+
+  @override
+  String get communityPostPeriodMonth => '本月';
+
+  @override
+  String get communityPostPeriodYear => '今年';
+
+  @override
+  String get communityPostPeriodCustom => '自定义日期';
+
+  @override
+  String get communityPostPeriodChooseRange => '选择日期范围';
+
+  @override
+  String get communityMutedAuthors => '已屏蔽的创作者';
+
+  @override
+  String get communityMutedAuthorsEmpty => '暂无已屏蔽的创作者';
+
+  @override
+  String get communityMuteAuthor => '屏蔽此用户的作品';
+
+  @override
+  String get communityUnmuteAuthor => '取消屏蔽此用户';
+
+  @override
+  String get communityMyWorksManagementHeading => '作品管理';
+
+  @override
+  String get communityWorkTagsTitle => '作品标签管理';
+
+  @override
+  String get communityWorkTagsHint => '可添加、编辑或删除标签。锁定后其他用户无法修改。编辑或删除前请先解锁。';
+
+  @override
+  String get communityWorkEditTag => '编辑标签';
+
+  @override
+  String get communityWorkTagChangeFailed => '无法更改标签';
+
   @override
   String get communityContainsGenerativeAiImageVideo => '包含生成式 AI 图像或视频';
 
@@ -6847,13 +6944,61 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityReloadTooltip => '刷新';
 
   @override
-  String get communityGoogleSignInNotConfigured => '尚未设置Google登录';
+  String get communityGoogleSignInNotConfigured => '尚未关联 Google 账号';
 
   @override
   String get communityGoogleAccountBusy => '正在处理其他Google账号操作，请完成后重试。';
 
   @override
   String get communityMyWorksTitle => '我的投稿';
+
+  @override
+  String get communityMyWorksViewAuthorPage => '查看我的作品列表页';
+
+  @override
+  String get communityMyWorksAccountRequired => '请连接 Google 账号后查看作品列表';
+
+  @override
+  String get communityMyWorksSettingsTitle => '作品设置';
+
+  @override
+  String get communityMyWorksPublishInNiarim => '在 NIARIM 中公开';
+
+  @override
+  String get communityMyWorksDeleteNiarim => '从 NIARIM 作品广场删除此作品';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => '要删除此作品吗？';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      '此作品将从 NIARIM 永久删除，YouTube 视频不会被删除。此操作无法撤销。';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio => '在 YouTube Studio 中管理视频';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'YouTube 的可见性和视频设置请在 YouTube Studio 中管理，与 NIARIM 设置相互独立。';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed => '无法打开 YouTube Studio';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return '操作失败：$reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => '批量公开';
+
+  @override
+  String get communityMyWorksBulkHide => '批量隐藏';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return '完成：$success / 失败：$failed';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected => '未连接Google账号';
@@ -6880,11 +7025,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String communitySignInFailed(String reason) {
     return '无法使用Google账号登录。$reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return '无法更改公开状态。$reason';
   }
 
   @override
@@ -8054,6 +8194,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get folderCreateFailed => '無法建立資料夾。請重試。';
+
+  @override
+  String get folderChangesSaveFailed => '無法儲存資料夾變更。請再試一次。';
+
+  @override
+  String get folderChangesPartiallySaved => '僅儲存了部分變更。請檢查清單後再試一次。';
 
   @override
   String get folderNameLabel => '資料夾名稱';
@@ -13499,33 +13645,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle => '公開追蹤中/粉絲清單';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      '開啟後，其他使用者可以在此頁面看到你的追蹤中清單和粉絲清單。預設不公開。';
-
-  @override
-  String get communityFollowersListTitle => '粉絲';
-
-  @override
-  String get communityFollowersListEmpty => '尚無粉絲';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '另有$count人因本人隱私設定未顯示';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return '追蹤中$count人';
   }
-
-  @override
-  String get communityFollowingListTitle => '追蹤中';
-
-  @override
-  String get communityFollowingListEmpty => '尚未追蹤任何人';
 
   @override
   String get communityFollowNotificationsTooltip => '通知';
@@ -14236,6 +14358,122 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityMuteAddNew => '新增';
+
+  @override
+  String get communityScrollToTop => '返回頂部';
+
+  @override
+  String get communityPostPeriodTitle => '投稿日期';
+
+  @override
+  String get communityDurationFilterTitle => '影片長度';
+
+  @override
+  String get communitySavedSearches => '已儲存的搜尋';
+
+  @override
+  String get communitySignInPromptTitle => '使用 Google 帳號登入';
+
+  @override
+  String get communitySignInPromptBody =>
+      '發布和管理作品、追蹤創作者、收藏及檢舉內容需要連結 Google 帳號。';
+
+  @override
+  String get communitySignInPromptConnect => '連結 Google 帳號';
+
+  @override
+  String get communitySignInUnavailable => '此開發版本尚未設定 Google 登入。';
+
+  @override
+  String get communitySaveSearch => '儲存目前搜尋';
+
+  @override
+  String get communitySavedSearchName => '搜尋名稱';
+
+  @override
+  String get communitySavedSearchLimit => '最多儲存10筆搜尋條件';
+
+  @override
+  String get communitySavedSearchEmpty => '沒有儲存的搜尋';
+
+  @override
+  String get communityManageSavedSearches => '管理儲存的搜尋';
+
+  @override
+  String get communityDurationAny => '不限長度';
+
+  @override
+  String get communityDurationUpTo => 'N分鐘以內（滑桿）';
+
+  @override
+  String get communityDurationRange => 'N至N分鐘（數字輸入）';
+
+  @override
+  String get communityDurationMinutes => '分鐘以內';
+
+  @override
+  String get communityDurationMinimum => '最短（分鐘）';
+
+  @override
+  String get communityDurationMaximum => '最長（分鐘）';
+
+  @override
+  String get communityTagExactMatch => '標籤完全符合（關閉為部分符合）';
+
+  @override
+  String get communityMinimumViews => '最低觀看次數';
+
+  @override
+  String get communityMinimumBookmarks => '最低收藏數';
+
+  @override
+  String get communityPostPeriodAll => '所有時間';
+
+  @override
+  String get communityPostPeriodToday => '今天';
+
+  @override
+  String get communityPostPeriodWeek => '本週';
+
+  @override
+  String get communityPostPeriodMonth => '本月';
+
+  @override
+  String get communityPostPeriodYear => '今年';
+
+  @override
+  String get communityPostPeriodCustom => '自訂日期';
+
+  @override
+  String get communityPostPeriodChooseRange => '選擇日期範圍';
+
+  @override
+  String get communityMutedAuthors => '已靜音的創作者';
+
+  @override
+  String get communityMutedAuthorsEmpty => '沒有已靜音的創作者';
+
+  @override
+  String get communityMuteAuthor => '將此使用者的作品靜音';
+
+  @override
+  String get communityUnmuteAuthor => '解除此使用者靜音';
+
+  @override
+  String get communityMyWorksManagementHeading => '作品管理';
+
+  @override
+  String get communityWorkTagsTitle => '作品標籤管理';
+
+  @override
+  String get communityWorkTagsHint => '可新增、編輯或刪除標籤。鎖定後其他使用者無法修改。編輯或刪除前請先解鎖。';
+
+  @override
+  String get communityWorkEditTag => '編輯標籤';
+
+  @override
+  String get communityWorkTagChangeFailed => '無法變更標籤';
+
   @override
   String get communityContainsGenerativeAiImageVideo => '包含生成式 AI 圖像或影片';
 
@@ -14254,13 +14492,61 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityReloadTooltip => '重新整理';
 
   @override
-  String get communityGoogleSignInNotConfigured => '尚未設定Google登入';
+  String get communityGoogleSignInNotConfigured => '尚未連結 Google 帳號';
 
   @override
   String get communityGoogleAccountBusy => '正在處理其他Google帳號操作，請完成後再試一次。';
 
   @override
   String get communityMyWorksTitle => '我的投稿';
+
+  @override
+  String get communityMyWorksViewAuthorPage => '查看我的作品列表頁';
+
+  @override
+  String get communityMyWorksAccountRequired => '請連結 Google 帳戶後查看作品列表';
+
+  @override
+  String get communityMyWorksSettingsTitle => '作品設定';
+
+  @override
+  String get communityMyWorksPublishInNiarim => '在 NIARIM 中公開';
+
+  @override
+  String get communityMyWorksDeleteNiarim => '從 NIARIM 作品廣場刪除此作品';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => '要刪除此作品嗎？';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      '此作品將從 NIARIM 永久刪除，YouTube 影片不會被刪除。此操作無法復原。';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio => '在 YouTube Studio 中管理影片';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'YouTube 的公開狀態與影片設定請在 YouTube Studio 中管理，與 NIARIM 設定相互獨立。';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed => '無法開啟 YouTube Studio';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return '操作失敗：$reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => '批次公開';
+
+  @override
+  String get communityMyWorksBulkHide => '批次隱藏';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return '完成：$success / 失敗：$failed';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected => '未連結Google帳號';
@@ -14287,11 +14573,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String communitySignInFailed(String reason) {
     return '無法使用Google帳號登入。$reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return '無法變更公開狀態。$reason';
   }
 
   @override

@@ -10,6 +10,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,6 +24,7 @@ void main() {
     tester,
   ) async {
     final palette = AppThemePreset.defaultLight.copyWith(
+      id: ThemeService.customCurrentId,
       textColor: const Color(0xFF163A5F),
       menuTextColor: const Color(0xFF153E6F),
       panelBgColor: const Color(0xFFF5DFAF),

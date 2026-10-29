@@ -32,6 +32,8 @@ import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
 import 'widgets/exported_work_card.dart';
 import 'widgets/exported_work_preview_layout.dart';
+import 'widgets/folder_delete_dialog.dart';
+import 'widgets/work_folder_move_sheet.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../community/community_edit_feedback.dart';
@@ -527,95 +529,97 @@ class _HomeScreenState extends State<HomeScreen>
                       header: Column(
                         children: [
                           Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          child: Row(
-                            children: [
-                              FilterChip(
-                                label: Text(
-                                  l10n.homeFavoritesOnly,
-                                  style: TextStyle(
-                                    fontFamily: 'Kuramubon',
-                                    fontFamilyFallback: kHeadingFontFallback,
-                                    color: _showFavoritesOnly
-                                        ? Colors.white
-                                        : null,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            child: Row(
+                              children: [
+                                FilterChip(
+                                  label: Text(
+                                    l10n.homeFavoritesOnly,
+                                    style: TextStyle(
+                                      fontFamily: 'Kuramubon',
+                                      fontFamilyFallback: kHeadingFontFallback,
+                                      color: _showFavoritesOnly
+                                          ? Colors.white
+                                          : null,
+                                    ),
+                                  ),
+                                  selectedColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                  checkmarkColor: Colors.white,
+                                  selected: _showFavoritesOnly,
+                                  onSelected: (v) =>
+                                      setState(() => _showFavoritesOnly = v),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: SortModeControl(
+                                      sortByName: _sortByName,
+                                      sortAscending: _sortAscending,
+                                      onSortByNameChanged: _setSortByName,
+                                      onToggleDirection: _toggleSortDirection,
+                                    ),
                                   ),
                                 ),
-                                selectedColor: Theme.of(context).colorScheme.primary,
-                                checkmarkColor: Colors.white,
-                                selected: _showFavoritesOnly,
-                                onSelected: (v) =>
-                                    setState(() => _showFavoritesOnly = v),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: SortModeControl(
-                                    sortByName: _sortByName,
-                                    sortAscending: _sortAscending,
-                                    onSortByNameChanged: _setSortByName,
-                                    onToggleDirection: _toggleSortDirection,
-                                  ),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
                           // フォルダ内移動時のパンくずリスト。検索中は
                           // 全体から検索するため非表示にする。
                           if (!_isSearching) _buildBreadcrumb(),
                         ],
                       ),
-                            // Keep bounded browsing scopes rather than every typed query.
-                            key: PageStorageKey((
-                              'home-projects',
-                              _viewMode,
-                              _currentFolderId,
-                              _showFavoritesOnly,
-                              _isSearching,
-                              _searchByTag,
-                            )),
-                            // 「共有」タブ（.niashareインポート由来）は別枠の
-                            // 一覧のため、プロジェクトタブには表示しない。
-                            projects: context
-                                .watch<ProjectService>()
-                                .projects
-                                .where((p) => !p.isSharedImport)
-                                .toList(),
-                            viewMode: _viewMode,
-                            sortMode: _sortMode,
-                            isSelectionMode: _isSelectionMode,
-                            selectedIds: _selectedIds,
-                            // 長押しモードへ入ると同時に、長押しした項目自体も
-                            // 選択状態にする（複数選択モードに入っただけで
-                            // 何も選ばれていない状態を避ける）。
-                            onLongPress: (id) => setState(() {
-                              _isSelectionMode = true;
-                              _selectedIds.add(id);
-                            }),
-                            onSelectionChanged: (id) => setState(() {
-                              if (_selectedIds.contains(id)) {
-                                _selectedIds.remove(id);
-                              } else {
-                                _selectedIds.add(id);
-                              }
-                              // 手動でのタップ操作によって選択が0件になった場合も、
-                              // 「全解除」ボタンを押した時と同様に複数選択モードを
-                              // 自動終了する。
-                              if (_selectedIds.isEmpty) {
-                                _isSelectionMode = false;
-                              }
-                            }),
-                            showFavoritesOnly: _showFavoritesOnly,
-                            searchQuery: _searchQuery,
-                            searchByTag: _searchByTag,
-                            currentFolderId: _currentFolderId,
-                            onOpenFolder: (id) =>
-                                setState(() => _currentFolderId = id),
+                      // Keep bounded browsing scopes rather than every typed query.
+                      key: PageStorageKey((
+                        'home-projects',
+                        _viewMode,
+                        _currentFolderId,
+                        _showFavoritesOnly,
+                        _isSearching,
+                        _searchByTag,
+                      )),
+                      // 「共有」タブ（.niashareインポート由来）は別枠の
+                      // 一覧のため、プロジェクトタブには表示しない。
+                      projects: context
+                          .watch<ProjectService>()
+                          .projects
+                          .where((p) => !p.isSharedImport)
+                          .toList(),
+                      viewMode: _viewMode,
+                      sortMode: _sortMode,
+                      isSelectionMode: _isSelectionMode,
+                      selectedIds: _selectedIds,
+                      // 長押しモードへ入ると同時に、長押しした項目自体も
+                      // 選択状態にする（複数選択モードに入っただけで
+                      // 何も選ばれていない状態を避ける）。
+                      onLongPress: (id) => setState(() {
+                        _isSelectionMode = true;
+                        _selectedIds.add(id);
+                      }),
+                      onSelectionChanged: (id) => setState(() {
+                        if (_selectedIds.contains(id)) {
+                          _selectedIds.remove(id);
+                        } else {
+                          _selectedIds.add(id);
+                        }
+                        // 手動でのタップ操作によって選択が0件になった場合も、
+                        // 「全解除」ボタンを押した時と同様に複数選択モードを
+                        // 自動終了する。
+                        if (_selectedIds.isEmpty) {
+                          _isSelectionMode = false;
+                        }
+                      }),
+                      showFavoritesOnly: _showFavoritesOnly,
+                      searchQuery: _searchQuery,
+                      searchByTag: _searchByTag,
+                      currentFolderId: _currentFolderId,
+                      onOpenFolder: (id) =>
+                          setState(() => _currentFolderId = id),
                     ),
                     const _WorksTab(key: PageStorageKey('home-works')),
                     const _BookmarkedTab(key: PageStorageKey('home-bookmarks')),
@@ -636,26 +640,28 @@ class _HomeScreenState extends State<HomeScreen>
               children: [
                 if (_currentTabIndex == 0)
                   FloatingActionButton(
-                  key: const Key('homeScrollToTopFab'),
-                  heroTag: 'home-scroll-to-top',
-                  mini: MediaQuery.sizeOf(context).height < 400,
-                  materialTapTargetSize: MaterialTapTargetSize.padded,
-                  tooltip: l10n.communityScrollToTop,
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  shape: const CircleBorder(side: BorderSide.none),
-                  elevation: 0,
-                  focusElevation: 0,
-                  hoverElevation: 0,
-                  highlightElevation: 0,
-                  disabledElevation: 0,
+                    key: const Key('homeScrollToTopFab'),
+                    heroTag: 'home-scroll-to-top',
+                    mini: MediaQuery.sizeOf(context).height < 400,
+                    materialTapTargetSize: MaterialTapTargetSize.padded,
+                    tooltip: l10n.communityScrollToTop,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: const CircleBorder(side: BorderSide.none),
+                    elevation: 0,
+                    focusElevation: 0,
+                    hoverElevation: 0,
+                    highlightElevation: 0,
+                    disabledElevation: 0,
 
-                  onPressed: () {
-                    if (!_projectScrollController.hasClients) return;
-                    _projectScrollController.animateTo(0,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOutCubic);
-                  },
+                    onPressed: () {
+                      if (!_projectScrollController.hasClients) return;
+                      _projectScrollController.animateTo(
+                        0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                      );
+                    },
                     child: const Icon(Icons.arrow_upward),
                   )
                 else
@@ -1522,8 +1528,8 @@ class _FolderableList<T> extends StatelessWidget {
   final String? Function(T) folderIdOf;
   final void Function(String folderId, String folderName, List<T> itemsInFolder)
   onEnterFolder;
-  final void Function(String id, String name) onRenameFolder;
-  final void Function(String id) onDeleteFolder;
+  final Future<void> Function(String id, String name) onRenameFolder;
+  final Future<void> Function(String id) onDeleteFolder;
   final Widget Function(BuildContext, T) itemBuilder;
   final Widget? emptyState;
 
@@ -1654,34 +1660,10 @@ class _FolderableList<T> extends StatelessWidget {
               title: Text(l10n.commonRename),
               onTap: () {
                 Navigator.pop(ctx);
-                final controller = TextEditingController(text: folder.name);
-                showDialog(
-                  context: context,
-                  builder: (dctx) => AlertDialog(
-                    title: Text(l10n.commonRename),
-                    content: TextField(
-                      controller: controller,
-                      autofocus: true,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(dctx),
-                        child: Text(l10n.commonCancel),
-                      ),
-                      FilledButton(
-                        onPressed: () {
-                          if (controller.text.trim().isNotEmpty) {
-                            onRenameFolder(folder.id, controller.text.trim());
-                          }
-                          Navigator.pop(dctx);
-                        },
-                        child: Text(l10n.commonChange),
-                      ),
-                    ],
-                  ),
+                showRenameFolderNameDialog(
+                  context,
+                  folder.name,
+                  (name) => onRenameFolder(folder.id, name),
                 );
               },
             ),
@@ -1698,29 +1680,9 @@ class _FolderableList<T> extends StatelessWidget {
                 Navigator.pop(ctx);
                 showDialog(
                   context: context,
-                  builder: (dctx) => AlertDialog(
-                    scrollable: true,
-                    insetPadding: const EdgeInsets.all(16),
-                    title: Text(l10n.projectListDeleteFolderConfirmTitle),
-                    content: Text(
-                      l10n.homeDeleteFolderKeepContents(folder.name),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(dctx),
-                        child: Text(l10n.commonCancel),
-                      ),
-                      FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: ThemeService.activeColorScheme.error,
-                        ),
-                        onPressed: () {
-                          onDeleteFolder(folder.id);
-                          Navigator.pop(dctx);
-                        },
-                        child: Text(l10n.commonDelete),
-                      ),
-                    ],
+                  builder: (_) => FolderDeleteDialog(
+                    folderName: folder.name,
+                    onDelete: () => onDeleteFolder(folder.id),
                   ),
                 );
               },
@@ -2260,34 +2222,14 @@ class _WorkListItem extends StatelessWidget {
   }
 
   void _showMoveToFolderSheet(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final service = context.read<WorkFolderService>();
     final fileName = file.path.split(RegExp(r'[\\/]')).last;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => ScrollableSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.folder_off_outlined),
-              title: Text(l10n.folderNone),
-              onTap: () {
-                service.moveFileToFolder(fileName, null);
-                Navigator.pop(ctx);
-              },
-            ),
-            for (final f in service.folders)
-              ListTile(
-                leading: const Icon(Icons.folder_outlined),
-                title: Text(f.name),
-                onTap: () {
-                  service.moveFileToFolder(fileName, f.id);
-                  Navigator.pop(ctx);
-                },
-              ),
-          ],
-        ),
+      builder: (_) => WorkFolderMoveSheet(
+        filename: fileName,
+        folders: service.folders,
+        onMove: (folderId) => service.moveFileToFolder(fileName, folderId),
       ),
     );
   }

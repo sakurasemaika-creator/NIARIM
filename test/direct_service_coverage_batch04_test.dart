@@ -9,7 +9,7 @@ void main() {
 
   group('CommunityService direct coverage', () {
     test(
-      'bookmark ordering tags locks visibility follow lists and notifications work',
+      'bookmark ordering tags locks visibility follow counts and notifications work',
       () {
         final service = CommunityService();
         final first = service.works.first;
@@ -69,23 +69,14 @@ void main() {
         service.toggleFavoriteAuthor(otherAuthor);
         expect(service.isFavoriteAuthor(otherAuthor), isFalse);
 
-        final publicAuthor = service.works
-            .map((w) => w.authorId)
-            .toSet()
-            .firstWhere(
-              service.isFollowersPublic,
-              orElse: () => kDummySelfAuthorId,
-            );
-        if (!service.isFollowersPublic(publicAuthor)) {
-          service.setSelfFollowersPublic(true);
-        }
-        final visibleIds = service.visibleFollowerIdsOf(publicAuthor);
-        final visibleNames = service.visibleFollowerNamesOf(publicAuthor);
-        expect(visibleNames.length, visibleIds.length);
-        for (var i = 0; i < visibleIds.length; i++) {
+        final followerIds = service.followerIdsOf(otherAuthor);
+        final followerNames = service.followerNamesOf(otherAuthor);
+        expect(service.followerCountOf(otherAuthor), beforeFollowerCount);
+        expect(followerNames.length, followerIds.length);
+        for (var i = 0; i < followerIds.length; i++) {
           expect(
-            visibleNames[i],
-            service.authorNameOf(visibleIds[i]) ?? visibleIds[i],
+            followerNames[i],
+            service.authorNameOf(followerIds[i]) ?? followerIds[i],
           );
         }
 

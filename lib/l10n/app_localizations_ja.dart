@@ -653,6 +653,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get folderCreateFailed => 'フォルダを作成できませんでした。もう一度お試しください。';
 
   @override
+  String get folderChangesSaveFailed => 'フォルダの変更を保存できませんでした。もう一度お試しください。';
+
+  @override
+  String get folderChangesPartiallySaved =>
+      '一部の変更だけが保存されました。一覧を確認して、もう一度お試しください。';
+
+  @override
   String get folderNameLabel => 'フォルダ名';
 
   @override
@@ -6137,33 +6144,9 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle => 'フォロー中/フォロワー一覧を公開する';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      'オンにすると、他のユーザーがこのページからあなたのフォロー中/フォロワー一覧を見られるようになります。既定は非公開です。';
-
-  @override
-  String get communityFollowersListTitle => 'フォロワー';
-
-  @override
-  String get communityFollowersListEmpty => 'フォロワーがいません';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '他に$count人いますが、本人の設定により非表示です';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return 'フォロー中$count人';
   }
-
-  @override
-  String get communityFollowingListTitle => 'フォロー中';
-
-  @override
-  String get communityFollowingListEmpty => '誰もフォローしていません';
 
   @override
   String get communityFollowNotificationsTooltip => '通知';
@@ -6861,7 +6844,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityContentFilterTitle => '表示フィルター';
 
   @override
-  String get communityHideGenerativeAiImageVideo => '「AI画像・AI動画使用」の作品を非表示';
+  String get communityHideGenerativeAiImageVideo => 'AIで生成した画像・動画を使用した作品を表示しない';
 
   @override
   String get communityMutedWords => 'ミュートタイトル登録';
@@ -6879,6 +6862,124 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityMuteAddNew => '新規追加';
+
+  @override
+  String get communityScrollToTop => '最上部に戻る';
+
+  @override
+  String get communityPostPeriodTitle => '投稿期間';
+
+  @override
+  String get communityDurationFilterTitle => '動画の長さ';
+
+  @override
+  String get communitySavedSearches => '保存した検索条件';
+
+  @override
+  String get communitySignInPromptTitle => 'Googleアカウントでログイン';
+
+  @override
+  String get communitySignInPromptBody =>
+      '作品の投稿・管理、フォロー、ブックマーク、通報などの機能を利用するにはGoogleアカウントとの連携が必要です。';
+
+  @override
+  String get communitySignInPromptConnect => 'Googleアカウントを連携';
+
+  @override
+  String get communitySignInUnavailable =>
+      'この開発ビルドにはGoogleログイン設定がないため、連携を開始できません。';
+
+  @override
+  String get communitySaveSearch => '現在の検索条件を保存';
+
+  @override
+  String get communitySavedSearchName => '検索条件の名前';
+
+  @override
+  String get communitySavedSearchLimit => '保存できる検索条件は10件までです';
+
+  @override
+  String get communitySavedSearchEmpty => '保存した検索条件はありません';
+
+  @override
+  String get communityManageSavedSearches => '保存した検索条件を管理';
+
+  @override
+  String get communityDurationAny => '長さを指定しない';
+
+  @override
+  String get communityDurationUpTo => '〇分以内（スライダー）';
+
+  @override
+  String get communityDurationRange => '〇分以上〇分以内（数値入力）';
+
+  @override
+  String get communityDurationMinutes => '分以内';
+
+  @override
+  String get communityDurationMinimum => '最短（分）';
+
+  @override
+  String get communityDurationMaximum => '最長（分）';
+
+  @override
+  String get communityTagExactMatch => 'タグを完全一致で検索する（オフなら部分一致）';
+
+  @override
+  String get communityMinimumViews => '最低再生回数';
+
+  @override
+  String get communityMinimumBookmarks => '最低ブックマーク数';
+
+  @override
+  String get communityPostPeriodAll => 'すべての期間';
+
+  @override
+  String get communityPostPeriodToday => '今日';
+
+  @override
+  String get communityPostPeriodWeek => '今週';
+
+  @override
+  String get communityPostPeriodMonth => '今月';
+
+  @override
+  String get communityPostPeriodYear => '今年';
+
+  @override
+  String get communityPostPeriodCustom => '日付期間を指定';
+
+  @override
+  String get communityPostPeriodChooseRange => '日付を選ぶ';
+
+  @override
+  String get communityMutedAuthors => 'ミュートしたユーザー';
+
+  @override
+  String get communityMutedAuthorsEmpty => 'ミュートしたユーザーはいません';
+
+  @override
+  String get communityMuteAuthor => 'このユーザーの作品をミュートする';
+
+  @override
+  String get communityUnmuteAuthor => 'このユーザーのミュートを解除する';
+
+  @override
+  String get communityMyWorksManagementHeading => '作品管理';
+
+  @override
+  String get communityWorkTagsTitle => '作品のタグ管理';
+
+  @override
+  String get communityWorkTagsHint =>
+      'タグを追加・編集・削除できます。ロックすると他のユーザーは変更できません。ロックしたタグの編集・削除は先に解除してください。';
+
+  @override
+  String get communityWorkEditTag => 'タグを編集';
+
+  @override
+  String get communityWorkTagChangeFailed => 'タグを変更できませんでした';
+
   @override
   String get communityContainsGenerativeAiImageVideo => 'AI画像・AI動画使用';
 
@@ -6897,7 +6998,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityReloadTooltip => '再読み込み';
 
   @override
-  String get communityGoogleSignInNotConfigured => 'Googleログインがまだ設定されていません';
+  String get communityGoogleSignInNotConfigured => 'Googleアカウントが連携されていません';
 
   @override
   String get communityGoogleAccountBusy =>
@@ -6905,6 +7006,55 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityMyWorksTitle => '自分の投稿';
+
+  @override
+  String get communityMyWorksViewAuthorPage => '自分の作品一覧ページを見る';
+
+  @override
+  String get communityMyWorksAccountRequired =>
+      '作品一覧を表示するにはGoogleアカウントに接続してください';
+
+  @override
+  String get communityMyWorksSettingsTitle => '作品の設定';
+
+  @override
+  String get communityMyWorksPublishInNiarim => 'NIARIM内で公開する';
+
+  @override
+  String get communityMyWorksDeleteNiarim => 'NIARIM作品広場からこの作品を削除';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => 'この作品を削除しますか？';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      'NIARIM内の作品を完全に削除します。YouTube上の動画は削除されません。この操作は取り消せません。';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio => 'YouTube Studioで動画を管理する';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'YouTube側の公開状態や動画設定はYouTube Studioで管理します。NIARIM内の公開設定とは独立しています。';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed => 'YouTube Studioを開けませんでした';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return '操作に失敗しました。$reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => '一括公開';
+
+  @override
+  String get communityMyWorksBulkHide => '一括非公開';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return '完了: $success件 / 失敗: $failed件';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected => 'Googleアカウント未接続';
@@ -6931,11 +7081,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String communitySignInFailed(String reason) {
     return 'Googleアカウントでログインできませんでした。$reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return '公開状態を変更できませんでした。$reason';
   }
 
   @override

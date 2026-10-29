@@ -238,8 +238,11 @@ class CommunityService extends ChangeNotifier {
         );
       _mutedAuthorIds
         ..clear()
-        ..addAll((prefs.readStringList(_mutedAuthorsKey) ?? const [])
-            .where((id) => id.isNotEmpty));
+        ..addAll(
+          (prefs.readStringList(_mutedAuthorsKey) ?? const []).where(
+            (id) => id.isNotEmpty,
+          ),
+        );
     } catch (error) {
       debugPrint('Community content filters could not be restored: $error');
     }
@@ -306,7 +309,8 @@ class CommunityService extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
-      _mutedAuthorsKey, _mutedAuthorIds.toList()..sort(),
+      _mutedAuthorsKey,
+      _mutedAuthorIds.toList()..sort(),
     );
   }
 

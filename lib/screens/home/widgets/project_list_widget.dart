@@ -22,6 +22,7 @@ import '../../../config/font_fallback.dart';
 import '../../../widgets/scrollable_sheet_body.dart';
 import '../../../widgets/empty_state_placeholder.dart';
 import '../../../utils/app_error_reporter.dart';
+import 'folder_save_feedback.dart';
 
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
 /// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
@@ -33,21 +34,38 @@ void showCreateFolderNameDialog(
 ) {
   showDialog<void>(
     context: context,
-    builder: (_) => _FolderNameDialog(onCreate: onCreate),
+    builder: (_) => _FolderNameDialog(onSave: onCreate),
   );
 }
 
 class _FolderNameDialog extends StatefulWidget {
-  const _FolderNameDialog({required this.onCreate});
-  final Future<void> Function(String name) onCreate;
+  const _FolderNameDialog({
+    required this.onSave,
+    this.initialName = '',
+    this.rename = false,
+  });
+  final Future<void> Function(String name) onSave;
+  final String initialName;
+  final bool rename;
   @override
   State<_FolderNameDialog> createState() => _FolderNameDialogState();
 }
 
 class _FolderNameDialogState extends State<_FolderNameDialog> {
-  final _controller = TextEditingController();
-  bool _creating = false;
-  bool _failed = false;
+  late final TextEditingController _controller;
+  final _errorKey = GlobalKey();
+  bool _saving = false;
+  Object? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialName);
+    _controller.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: widget.initialName.length,
+    );
+  }
 
   @override
   void dispose() {
@@ -55,23 +73,27 @@ class _FolderNameDialogState extends State<_FolderNameDialog> {
     super.dispose();
   }
 
-  Future<void> _create() async {
+  Future<void> _submit() async {
     final name = _controller.text.trim();
-    if (_creating || name.isEmpty) return;
+    if (_saving || name.isEmpty) return;
     setState(() {
-      _creating = true;
-      _failed = false;
+      _saving = true;
+      _error = null;
     });
     try {
-      await widget.onCreate(name);
-      if (mounted) Navigator.pop(context);
+      await widget.onSave(name);
+      if (mounted) closeFolderRoute(context);
       // Keep submission disabled through the closing route animation.
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (mounted) {
         setState(() {
-          _creating = false;
-          _failed = true;
+          _saving = false;
+          _error = error;
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final target = _errorKey.currentContext;
+          if (mounted && target != null) Scrollable.ensureVisible(target);
         });
       }
     }
@@ -103,43 +125,43 @@ class _FolderNameDialogState extends State<_FolderNameDialog> {
             children: [
               Semantics(
                 namesRoute: true,
-                child: Text(l10n.projectListNewFolderTitle, style: heading),
+                child: Text(
+                  widget.rename
+                      ? l10n.commonRename
+                      : l10n.projectListNewFolderTitle,
+                  style: heading,
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _controller,
                 autofocus: true,
-                enabled: !_creating,
+                enabled: !_saving,
                 style: TextStyle(color: foreground),
                 onChanged: (_) => setState(() {
-                  _failed = false;
+                  _error = null;
                 }),
                 decoration: InputDecoration(
                   labelText: l10n.folderNameLabel,
                   border: const OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.projectListFolderHint,
-                style: TextStyle(fontSize: 11, color: foreground),
-              ),
-              if (_failed) ...[
-                const SizedBox(height: 12),
-                Semantics(
-                  liveRegion: true,
-                  child: Text(l10n.folderCreateFailed),
+              if (!widget.rename) ...[
+                const SizedBox(height: 8),
+                Text(
+                  l10n.projectListFolderHint,
+                  style: TextStyle(fontSize: 11, color: foreground),
                 ),
               ],
-              if (_creating) ...[
+              if (_error != null) ...[
                 const SizedBox(height: 12),
-                Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      semanticsLabel: l10n.commonCreate,
-                    ),
+                Semantics(
+                  key: _errorKey,
+                  liveRegion: true,
+                  child: Text(
+                    widget.rename
+                        ? folderSaveFailureText(l10n, _error!)
+                        : l10n.folderCreateFailed,
                   ),
                 ),
               ],
@@ -157,11 +179,12 @@ class _FolderNameDialogState extends State<_FolderNameDialog> {
                     },
                     child: Text(l10n.commonCancel),
                   ),
-                  FilledButton(
-                    onPressed: _creating || _controller.text.trim().isEmpty
-                        ? null
-                        : _create,
-                    child: Text(l10n.commonCreate),
+                  FolderSaveButton(
+                    onPressed: _controller.text.trim().isEmpty ? null : _submit,
+                    label: widget.rename
+                        ? l10n.commonChange
+                        : l10n.commonCreate,
+                    saving: _saving,
                   ),
                 ],
               ),
@@ -171,6 +194,18 @@ class _FolderNameDialogState extends State<_FolderNameDialog> {
       ),
     );
   }
+}
+
+void showRenameFolderNameDialog(
+  BuildContext context,
+  String name,
+  Future<void> Function(String name) onRename,
+) {
+  showDialog<void>(
+    context: context,
+    builder: (_) =>
+        _FolderNameDialog(onSave: onRename, initialName: name, rename: true),
+  );
 }
 
 /// Preserve the normal thumbnail ratio while making room for the action rail
@@ -240,6 +275,7 @@ class ProjectListWidget extends StatelessWidget {
   final String? currentFolderId;
   final ValueChanged<String> onOpenFolder;
   final ScrollController? scrollController;
+
   /// Optional controls that scroll away with the project list rather than
   /// remaining pinned above its viewport.
   final Widget? header;
@@ -430,7 +466,8 @@ class ProjectListWidget extends StatelessWidget {
                 minHeight: minimumHeight,
               ),
               itemCount: sorted.length,
-              itemBuilder: (context, index) => _gridCard(context, sorted[index]),
+              itemBuilder: (context, index) =>
+                  _gridCard(context, sorted[index]),
             ),
           ),
         ],

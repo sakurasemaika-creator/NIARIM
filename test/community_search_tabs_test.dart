@@ -30,8 +30,11 @@ void main() {
 
     final toggle = find.byKey(const Key('communitySearchModeToggle'));
     expect(toggle, findsOneWidget);
-    expect(find.descendant(of: toggle, matching: find.byIcon(Icons.search)),
-        findsOneWidget, reason: 'Tag mode offers keyword search as next mode');
+    expect(
+      find.descendant(of: toggle, matching: find.byIcon(Icons.search)),
+      findsOneWidget,
+      reason: 'Tag mode offers keyword search as next mode',
+    );
     expect(find.byType(SegmentedButton<bool>), findsNothing);
 
     final field = tester.widget<TextField>(find.byType(TextField));
@@ -45,16 +48,19 @@ void main() {
     final toggle = find.byKey(const Key('communitySearchModeToggle'));
     await tester.tap(toggle);
     await tester.pumpAndSettle();
-    expect(find.descendant(
-      of: toggle, matching: find.byIcon(Icons.sell_outlined)),
-      findsOneWidget);
+    expect(
+      find.descendant(of: toggle, matching: find.byIcon(Icons.sell_outlined)),
+      findsOneWidget,
+    );
     expect(find.byType(SegmentedButton<bool>), findsNothing);
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller?.text,
       '',
     );
   });
-  testWidgets('long localized plaza tabs align to the leading edge', (tester) async {
+  testWidgets('long localized plaza tabs align to the leading edge', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(320, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -70,30 +76,44 @@ void main() {
       await tester.pumpWidget(app(locale: locale));
       await tester.pumpAndSettle();
       final localizations = AppLocalizations.of(
-        tester.element(find.byType(CommunityScreen)))!;
+        tester.element(find.byType(CommunityScreen)),
+      )!;
       final bar = tester.widget<TabBar>(find.byType(TabBar));
       if (bar.isScrollable) {
-        expect(bar.tabAlignment, TabAlignment.start,
-            reason: '$locale: scrolling tabs must start at the leading edge');
+        expect(
+          bar.tabAlignment,
+          TabAlignment.start,
+          reason: '$locale: scrolling tabs must start at the leading edge',
+        );
       }
       final first = find.descendant(
         of: find.byType(TabBar),
         matching: find.text(localizations.communityTabNew),
       );
       final rect = tester.getRect(first);
-      expect(rect.left, greaterThanOrEqualTo(0),
-          reason: '$locale: first label must be on screen');
-      expect(rect.right, lessThanOrEqualTo(320),
-          reason: '$locale: first label must not get clipped');
+      expect(
+        rect.left,
+        greaterThanOrEqualTo(0),
+        reason: '$locale: first label must be on screen',
+      );
+      expect(
+        rect.right,
+        lessThanOrEqualTo(320),
+        reason: '$locale: first label must not get clipped',
+      );
       final initialBottom = tester.getRect(find.byType(TabBar)).bottom;
       await tester.tap(find.byTooltip(localizations.commonSearch));
       await tester.pumpAndSettle();
       expect(find.byType(SegmentedButton<bool>), findsNothing);
-      expect(find.byKey(const Key('communitySearchModeToggle')),
-          findsOneWidget);
-      expect(tester.getRect(find.byType(TabBar)).bottom,
-          lessThanOrEqualTo(initialBottom + 1),
-          reason: '$locale: search must not add an entire mode-control row');
+      expect(
+        find.byKey(const Key('communitySearchModeToggle')),
+        findsOneWidget,
+      );
+      expect(
+        tester.getRect(find.byType(TabBar)).bottom,
+        lessThanOrEqualTo(initialBottom + 1),
+        reason: '$locale: search must not add an entire mode-control row',
+      );
       expect(tester.takeException(), isNull, reason: '$locale');
     }
   });

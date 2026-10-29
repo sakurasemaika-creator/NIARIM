@@ -218,14 +218,19 @@ void main() {
                   : 0,
             );
             if (state == 'search' || state == 'tag-search') {
-              final toggle = find.byKey(
-                const Key('communitySearchModeToggle'));
+              final toggle = find.byKey(const Key('communitySearchModeToggle'));
               expect(toggle, findsOneWidget);
               expect(find.byType(SegmentedButton<bool>), findsNothing);
               final nextModeIcon = state == 'tag-search'
-                  ? Icons.search : Icons.sell_outlined;
-              expect(find.descendant(of: toggle,
-                matching: find.byIcon(nextModeIcon)), findsOneWidget);
+                  ? Icons.search
+                  : Icons.sell_outlined;
+              expect(
+                find.descendant(
+                  of: toggle,
+                  matching: find.byIcon(nextModeIcon),
+                ),
+                findsOneWidget,
+              );
             }
             final bar = find.byType(AppBar);
             final searchRowRect = tester.getRect(
@@ -233,7 +238,9 @@ void main() {
             );
             final tabsRect = tester.getRect(find.byType(TabBar));
             if (tabsRect.bottom > searchRowRect.top + .01) {
-              failures.add('Page search overlaps fixed tabs: $searchRowRect / $tabsRect');
+              failures.add(
+                'Page search overlaps fixed tabs: $searchRowRect / $tabsRect',
+              );
             }
             if (state != 'search' && state != 'tag-search') {
               final titleRect = tester.getRect(
@@ -252,8 +259,10 @@ void main() {
                   notificationRect.bottom > tabsRect.top ||
                   filterRect.top < searchRowRect.top ||
                   filterRect.bottom > searchRowRect.bottom) {
-                failures.add('Header rows regressed: $titleRect / '
-                    '$notificationRect / $searchRowRect / $filterRect');
+                failures.add(
+                  'Header rows regressed: $titleRect / '
+                  '$notificationRect / $searchRowRect / $filterRect',
+                );
               }
             }
             final theme = Theme.of(tester.element(bar));
@@ -311,15 +320,16 @@ void main() {
             if (state == 'search' || state == 'tag-search') {
               // Search and tag-search now share the SAME compact icon slot
               // as Home. No full-width segmented button may push the tabs.
-              final toggle = find.byKey(
-                const Key('communitySearchModeToggle'));
+              final toggle = find.byKey(const Key('communitySearchModeToggle'));
               final bounds = tester.getRect(toggle);
               final textField = tester.getRect(find.byType(TextField).first);
               if (bounds.width < 47.99 ||
                   bounds.height < 47.99 ||
                   bounds.right > textField.left + 1 ||
                   bounds.left < 0) {
-                failures.add('Compact search switch overflow: $bounds / $textField');
+                failures.add(
+                  'Compact search switch overflow: $bounds / $textField',
+                );
               }
             }
             final selected = tester

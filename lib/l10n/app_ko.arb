@@ -222,6 +222,8 @@
   "folderManagementCreateNew": "새로 만들기",
   "folderManagementEmpty": "아직 폴더가 없습니다",
   "folderCreateFailed": "폴더를 만들지 못했어요. 다시 시도해 주세요.",
+  "folderChangesSaveFailed": "폴더 변경 사항을 저장하지 못했어요. 다시 시도해 주세요.",
+  "folderChangesPartiallySaved": "일부 변경 사항만 저장됐어요. 목록을 확인하고 다시 시도해 주세요.",
   "folderNameLabel": "폴더 이름",
   "folderMoveToTitle": "폴더로 이동",
   "folderNone": "폴더 없음",
@@ -2664,18 +2666,6 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "팔로잉/팔로워 목록 공개하기",
-  "communityFollowersPublicToggleDesc": "켜면 다른 사용자가 이 페이지에서 회원님의 팔로잉 및 팔로워 목록을 볼 수 있습니다. 기본값은 비공개입니다.",
-  "communityFollowersListTitle": "팔로워",
-  "communityFollowersListEmpty": "팔로워가 없습니다",
-  "communityFollowersListHiddenNote": "{count}명이 더 있지만, 본인 설정에 따라 표시되지 않습니다",
-  "@communityFollowersListHiddenNote": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "communityAuthorFollowingCount": "팔로잉 {count}명",
   "@communityAuthorFollowingCount": {
     "placeholders": {
@@ -2684,8 +2674,6 @@
       }
     }
   },
-  "communityFollowingListTitle": "팔로잉",
-  "communityFollowingListEmpty": "팔로우한 사람이 없습니다",
   "communityFollowNotificationsTooltip": "알림",
   "communityFollowNotificationsTitle": "팔로우 알림",
   "communityFollowNotificationsEmpty": "알림이 없습니다",
@@ -3035,7 +3023,6 @@
   "communityMyWorksLoadFailed": "내 게시물을 불러오지 못했습니다. {reason}",
   "communityAccountSwitchFailed": "Google 계정을 전환하지 못했습니다. {reason}",
   "communitySignInFailed": "Google 계정으로 로그인하지 못했습니다. {reason}",
-  "communityVisibilityChangeFailed": "공개 상태를 변경하지 못했습니다. {reason}",
   "communityMyWorksDeletedCannotPublish": "YouTube에서 삭제된 동영상은 작품 광장에 다시 공개할 수 없습니다",
   "communityMyWorksStatusDeletedOnYoutube": "YouTube에서 삭제됨 • 다시 공개할 수 없음",
   "communityMyWorksStatusYoutubePrivate": "작품 광장 공개 중 • YouTube 동영상이 비공개라 일시적으로 숨겨짐",

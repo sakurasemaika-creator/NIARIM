@@ -97,6 +97,32 @@ blockedは環境・実機・外部サービス等の実在制約だけに使用�
 - 新規対象をD002以降の子TODOへ割当。
 - unassigned target = 0。
 
+## D001.1 — Home navigation・scrolling追加差分
+
+status: `todo`。2026-10-29 App9bce4010、旧1449adeeからの追加。左上Back・右端drawer・scroll-to-top・filter header in-list scroll・空sliver・favorite表示をPC/SP/7言語/境界幅/検索・folder・scroll継続性で実操作し、旧Home証拠との差分回帰を行う。A003のcurrent scopeに影響する部分は同ID中でも優先確認する。
+
+## D001.2 — 28 built-in palette復元とcustom保持・live accent
+
+status: `todo`。同HEAD差分。28色値のone-time restore、invalid saved themesを上書きしないこと、custom保持、drawer icon/outline、Home tab・preview accent一致を実設定変更・再訪・restartで確認。以前のpalette結果は現HEADへ無条件継承しない。
+
+## D001.3 — 作品広場advanced filters・saved search・mute editing
+
+status: `todo`。同HEAD差分。数値filter、saved searches、mute word/tag追加・個別編集・collapse、AI除外、compact query/tag switch・clear、sign-in promptを各control・apply/cancel・persistence・PC/SP/7言語で実操作。各選択肢は実行時inventoryへ展開する。
+
+## D001.4 — Owner work management・settings新route
+
+status: `todo`。同HEAD差分。my works選択・bulk hide・公開状態・削除確認・owner tag management・community_work_settings_screen routeの全control/state、auth/owner境界・保存・失敗/retry・private/non-ownerを実UI/APIと照合。Help/Tips/Web追随も後続で確認する。
+
+## D001.5 — Creator mute・FF非操作表示
+
+status: `todo`。同HEAD差分。author worksのmute/解除、FF countsを操作しない表示へ変更した状態、visibility toggle削除、表示公開範囲・導線・説明の整合を実UI/backend contractで確認。法適合性はLEGAL_IP_STANDARDの別gateで判定し、この登録で保証しない。
+
+2026-10-29追加照合: 66fff30b/4999e363は未使用FF dialog/public state helpersを削除。旧test参照19errorはcurrent sourceへ追随修正しservice30/UI1を検証したが、D001.5全体の実backend/法適合性/全条件closureは未完了。
+
+## D001.6 — YouTube launcher依存固定・追加されたcapture flow
+
+status: `todo`。同HEAD差分。youtube_explode_dart/url_launcher等の固定された依存・URL遷移・platform条件・failure/cancelを確認。新capture workflowやfixtureの存在をproduction UI確認へ代用しない。全46upstream変更pathはS23証拠oct29-head-and-policy.jsonに保持。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。

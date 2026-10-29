@@ -222,6 +222,8 @@
   "folderManagementCreateNew": "新建",
   "folderManagementEmpty": "还没有文件夹",
   "folderCreateFailed": "无法创建文件夹。请重试。",
+  "folderChangesSaveFailed": "无法保存文件夹更改。请重试。",
+  "folderChangesPartiallySaved": "仅保存了部分更改。请检查列表后重试。",
   "folderNameLabel": "文件夹名称",
   "folderMoveToTitle": "移至文件夹",
   "folderNone": "无文件夹",
@@ -2664,18 +2666,6 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "公开关注/粉丝列表",
-  "communityFollowersPublicToggleDesc": "开启后，其他用户可以在此页面看到你的关注列表和粉丝列表。默认不公开。",
-  "communityFollowersListTitle": "粉丝",
-  "communityFollowersListEmpty": "暂无粉丝",
-  "communityFollowersListHiddenNote": "另有{count}人因本人隐私设置未显示",
-  "@communityFollowersListHiddenNote": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "communityAuthorFollowingCount": "关注{count}人",
   "@communityAuthorFollowingCount": {
     "placeholders": {
@@ -2684,8 +2674,6 @@
       }
     }
   },
-  "communityFollowingListTitle": "关注中",
-  "communityFollowingListEmpty": "暂未关注任何人",
   "communityFollowNotificationsTooltip": "通知",
   "communityFollowNotificationsTitle": "关注通知",
   "communityFollowNotificationsEmpty": "暂无通知",
@@ -3035,7 +3023,6 @@
   "communityMyWorksLoadFailed": "无法加载我的投稿。{reason}",
   "communityAccountSwitchFailed": "无法切换Google账号。{reason}",
   "communitySignInFailed": "无法使用Google账号登录。{reason}",
-  "communityVisibilityChangeFailed": "无法更改公开状态。{reason}",
   "communityMyWorksDeletedCannotPublish": "已从YouTube删除的视频无法在作品广场重新公开",
   "communityMyWorksStatusDeletedOnYoutube": "已从YouTube删除 • 无法重新公开",
   "communityMyWorksStatusYoutubePrivate": "在作品广场公开中 • 因YouTube视频设为私享，暂时隐藏",

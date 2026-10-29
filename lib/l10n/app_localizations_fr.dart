@@ -677,6 +677,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get folderCreateFailed => 'Impossible de créer le dossier. Réessayez.';
 
   @override
+  String get folderChangesSaveFailed =>
+      'Impossible d’enregistrer les modifications du dossier. Réessayez.';
+
+  @override
+  String get folderChangesPartiallySaved =>
+      'Seule une partie des modifications a été enregistrée. Vérifiez la liste et réessayez.';
+
+  @override
   String get folderNameLabel => 'Nom du dossier';
 
   @override
@@ -6467,34 +6475,9 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle =>
-      'Rendre les listes d\'abonnements/abonnés publiques';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      'Si activé, les autres utilisateurs pourront voir vos listes d\'abonnements et d\'abonnés depuis cette page. Privées par défaut.';
-
-  @override
-  String get communityFollowersListTitle => 'Abonnés';
-
-  @override
-  String get communityFollowersListEmpty => 'Aucun abonné pour le moment';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '$count de plus non affichés, masqués par leurs propres paramètres de confidentialité';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return '$count abonnements';
   }
-
-  @override
-  String get communityFollowingListTitle => 'Abonnements';
-
-  @override
-  String get communityFollowingListEmpty => 'Ne suit personne pour le moment';
 
   @override
   String get communityFollowNotificationsTooltip => 'Notifications';
@@ -7239,6 +7222,126 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityMuteAddNew => 'Ajouter';
+
+  @override
+  String get communityScrollToTop => 'Retour en haut';
+
+  @override
+  String get communityPostPeriodTitle => 'Date de publication';
+
+  @override
+  String get communityDurationFilterTitle => 'Durée de la vidéo';
+
+  @override
+  String get communitySavedSearches => 'Recherches enregistrées';
+
+  @override
+  String get communitySignInPromptTitle => 'Se connecter avec Google';
+
+  @override
+  String get communitySignInPromptBody =>
+      'Un compte Google lié est requis pour publier et gérer des œuvres, suivre des créateurs, enregistrer et signaler du contenu.';
+
+  @override
+  String get communitySignInPromptConnect => 'Associer un compte Google';
+
+  @override
+  String get communitySignInUnavailable =>
+      'La connexion Google n’est pas configurée pour cette version de développement.';
+
+  @override
+  String get communitySaveSearch => 'Enregistrer la recherche';
+
+  @override
+  String get communitySavedSearchName => 'Nom de la recherche';
+
+  @override
+  String get communitySavedSearchLimit => '10 recherches enregistrées maximum';
+
+  @override
+  String get communitySavedSearchEmpty => 'Aucune recherche enregistrée';
+
+  @override
+  String get communityManageSavedSearches =>
+      'Gérer les recherches enregistrées';
+
+  @override
+  String get communityDurationAny => 'Toutes les durées';
+
+  @override
+  String get communityDurationUpTo => 'Jusqu’à N minutes (curseur)';
+
+  @override
+  String get communityDurationRange => 'Entre N et N minutes (saisie)';
+
+  @override
+  String get communityDurationMinutes => 'minutes maximum';
+
+  @override
+  String get communityDurationMinimum => 'Minutes min.';
+
+  @override
+  String get communityDurationMaximum => 'Minutes max.';
+
+  @override
+  String get communityTagExactMatch =>
+      'Correspondance exacte des tags (sinon partielle)';
+
+  @override
+  String get communityMinimumViews => 'Vues minimales';
+
+  @override
+  String get communityMinimumBookmarks => 'Favoris minimaux';
+
+  @override
+  String get communityPostPeriodAll => 'Toutes les dates';
+
+  @override
+  String get communityPostPeriodToday => 'Aujourd\'hui';
+
+  @override
+  String get communityPostPeriodWeek => 'Cette semaine';
+
+  @override
+  String get communityPostPeriodMonth => 'Ce mois-ci';
+
+  @override
+  String get communityPostPeriodYear => 'Cette année';
+
+  @override
+  String get communityPostPeriodCustom => 'Période personnalisée';
+
+  @override
+  String get communityPostPeriodChooseRange => 'Choisir les dates';
+
+  @override
+  String get communityMutedAuthors => 'Créateurs masqués';
+
+  @override
+  String get communityMutedAuthorsEmpty => 'Aucun créateur masqué';
+
+  @override
+  String get communityMuteAuthor => 'Masquer les œuvres de ce créateur';
+
+  @override
+  String get communityUnmuteAuthor => 'Ne plus masquer ce créateur';
+
+  @override
+  String get communityMyWorksManagementHeading => 'Gérer les œuvres';
+
+  @override
+  String get communityWorkTagsTitle => 'Tags de l\'œuvre';
+
+  @override
+  String get communityWorkTagsHint =>
+      'Ajoutez, modifiez ou supprimez des tags. Le verrouillage empêche les autres de les modifier. Déverrouillez avant toute modification ou suppression.';
+
+  @override
+  String get communityWorkEditTag => 'Modifier le tag';
+
+  @override
+  String get communityWorkTagChangeFailed => 'Impossible de modifier le tag';
+
   @override
   String get communityContainsGenerativeAiImageVideo =>
       'Contient des images ou vidéos générées par IA';
@@ -7259,7 +7362,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityGoogleSignInNotConfigured =>
-      'La connexion avec Google n’est pas encore configurée';
+      'Aucun compte Google n’est associé';
 
   @override
   String get communityGoogleAccountBusy =>
@@ -7267,6 +7370,58 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityMyWorksTitle => 'Mes publications';
+
+  @override
+  String get communityMyWorksViewAuthorPage => 'Voir ma page de créations';
+
+  @override
+  String get communityMyWorksAccountRequired =>
+      'Connectez votre compte Google pour voir vos créations';
+
+  @override
+  String get communityMyWorksSettingsTitle => 'Paramètres de la création';
+
+  @override
+  String get communityMyWorksPublishInNiarim => 'Rendre visible dans NIARIM';
+
+  @override
+  String get communityMyWorksDeleteNiarim =>
+      'Supprimer cette œuvre de la Place des œuvres NIARIM';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => 'Supprimer cette création ?';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      'Cette création sera supprimée définitivement de NIARIM. La vidéo YouTube sera conservée. Cette action est irréversible.';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio =>
+      'Gérer la vidéo dans YouTube Studio';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'Gérez la visibilité et les réglages YouTube dans YouTube Studio, indépendamment de NIARIM.';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed =>
+      'Impossible d’ouvrir YouTube Studio';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return 'Échec de l’opération : $reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => 'Publier la sélection';
+
+  @override
+  String get communityMyWorksBulkHide => 'Masquer la sélection';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return 'Modifiées : $success / Échecs : $failed';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected =>
@@ -7295,11 +7450,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String communitySignInFailed(String reason) {
     return 'Impossible de se connecter avec votre compte Google. $reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return 'Impossible de modifier la visibilité. $reason';
   }
 
   @override
