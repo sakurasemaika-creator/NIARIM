@@ -26,6 +26,7 @@ import '../../utils/color_contrast.dart';
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
 enum _RankingSort { views, bookmarks }
+enum _PlazaSort { newest, views, bookmarks }
 
 enum _PostDateFilter { all, today, thisWeek, thisMonth, thisYear, custom }
 
@@ -54,14 +55,19 @@ class CommunityScreen extends StatefulWidget {
 class _CommunityScreenState extends State<CommunityScreen>
     with SingleTickerProviderStateMixin {
   static const _savedSearchesKey = 'community.savedSearches.v1';
+  static const _historyKey = 'community.searchHistory.v1';
   static const _tileWidthKey = 'community.tileMinWidth.v1';
   final List<Map<String, dynamic>> _savedSearches = [];
+  final List<Map<String, dynamic>> _searchHistory = [];
+  String _searchAccount = 'guest';
+  _PlazaSort _plazaSort = _PlazaSort.newest;
   late final TabController _tabController;
   _RankingPeriod _period = _RankingPeriod.allTime;
   _RankingSort _sort = _RankingSort.views;
   bool _sortAscending = false;
   bool _isSearching = false;
   String _searchQuery = '';
+  String _draftQuery = '';
   final _searchController = TextEditingController();
   bool _tagSearchMode = false;
   VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
@@ -90,6 +96,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       _tagSearchMode = true;
       _tagExactMatch = true;
       _searchQuery = initialTag;
+      _draftQuery = initialTag;
       _searchController.text = initialTag;
     }
     // With a backend, the plaza shows the server's latest works and the
@@ -115,36 +122,117 @@ class _CommunityScreenState extends State<CommunityScreen>
     }
   }
 
+  // History and saved criteria are device-local, scoped to an account.
+  void _useSearchAccount(String account) {
+    if (_searchAccount == account) return;
+    setState(() {
+      _searchAccount = account;
+      _savedSearches.clear();
+      _searchHistory.clear();
+    });
+    _loadSavedSearches();
+  }
+
   Future<void> _loadSavedSearches() async {
+    final account = _searchAccount;
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_savedSearchesKey);
-      if (raw == null) return;
-      final decoded = jsonDecode(raw);
-      if (decoded is! List || !mounted) return;
+      List<Map<String, dynamic>> read(String key) {
+        final raw = prefs.getString(key + '.' + account) ??
+            (account == 'guest' && key == _savedSearchesKey
+                ? prefs.getString(key) : null);
+        if (raw == null) return [];
+        final decoded = jsonDecode(raw);
+        if (decoded is! List) return [];
+        return decoded.whereType<Map>().take(10)
+            .map((item) => Map<String, dynamic>.from(item)).toList();
+      }
+      final saved = read(_savedSearchesKey);
+      final history = read(_historyKey);
+      if (!mounted || account != _searchAccount) return;
       setState(() {
-        _savedSearches
-          ..clear()
-          ..addAll(
-            decoded
-                .whereType<Map>()
-                .take(10)
-                .map((entry) => Map<String, dynamic>.from(entry)),
-          );
+        _savedSearches..clear()..addAll(saved);
+        _searchHistory..clear()..addAll(history);
       });
     } catch (error) {
-      debugPrint('Saved community searches could not be restored: $error');
+      debugPrint('Community search data could not be loaded: ' + error.toString());
     }
   }
 
   Future<void> _persistSavedSearches() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_savedSearchesKey, jsonEncode(_savedSearches));
+    await prefs.setString(_savedSearchesKey + '.' + _searchAccount,
+        jsonEncode(_savedSearches));
+  }
+
+  Future<void> _persistSearchHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_historyKey + '.' + _searchAccount,
+        jsonEncode(_searchHistory));
+  }
+
+  Future<void> _runSearch() async {
+    final query = _searchController.text.trim();
+    setState(() {
+      _searchQuery = query;
+      _draftQuery = query;
+      _isSearching = query.isNotEmpty;
+    });
+    if (query.isEmpty) return;
+    final snapshot = _currentSearchSnapshot(query);
+    setState(() {
+      // A repeated identical query is moved to the top.
+      _searchHistory.removeWhere((x) =>
+          x['query'] == snapshot['query'] &&
+          x['tagMode'] == snapshot['tagMode'] &&
+          x['exactTag'] == snapshot['exactTag']);
+      _searchHistory.insert(0, snapshot);
+      if (_searchHistory.length > 10) {
+        _searchHistory.removeRange(10, _searchHistory.length);
+      }
+    });
+    await _persistSearchHistory();
+  }
+
+  Future<void> _saveSearchFromHistory(Map<String, dynamic> item) async {
+    final l10n = AppLocalizations.of(context)!;
+    if (_savedSearches.length >= 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.communitySavedSearchLimit)));
+      return;
+    }
+    final snapshot = Map<String, dynamic>.from(item);
+    snapshot['name'] = snapshot['query'] as String? ?? '';
+    setState(() => _savedSearches.add(snapshot));
+    await _persistSavedSearches();
+  }
+
+  Future<void> _confirmDeleteSavedSearch(int index) async {
+    if (index < 0 || index >= _savedSearches.length) return;
+    final l10n = AppLocalizations.of(context)!;
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.communityDeleteSavedSearchConfirm),
+        content: Text(_savedSearches[index]['name'] as String? ?? ''),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (yes == true && mounted) await _deleteSavedSearch(index);
   }
 
   Map<String, dynamic> _currentSearchSnapshot(String name) => {
     'name': name,
-    'query': _searchQuery,
+    'query': _searchController.text.trim(),
     'tagMode': _tagSearchMode,
     'exactTag': _tagExactMatch,
     'videoType': _videoTypeFilter.index,
@@ -166,9 +254,9 @@ class _CommunityScreenState extends State<CommunityScreen>
     final start = DateTime.tryParse(saved['dateStart'] as String? ?? '');
     final end = DateTime.tryParse(saved['dateEnd'] as String? ?? '');
     setState(() {
-      _searchQuery = saved['query'] as String? ?? '';
-      _searchController.text = _searchQuery;
-      _isSearching = _searchQuery.isNotEmpty;
+      _draftQuery = saved['query'] as String? ?? '';
+      _searchController.text = _draftQuery;
+      _isSearching = _draftQuery.isNotEmpty;
       _tagSearchMode = saved['tagMode'] == true;
       _tagExactMatch = saved['exactTag'] == true;
       _videoTypeFilter = VideoTypeFilter
@@ -205,7 +293,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       ).showSnackBar(SnackBar(content: Text(l10n.communitySavedSearchLimit)));
       return;
     }
-    final controller = TextEditingController(text: _searchQuery);
+    final controller = TextEditingController(text: _searchController.text);
     final name = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -242,79 +330,6 @@ class _CommunityScreenState extends State<CommunityScreen>
     setState(() => _savedSearches.removeAt(index));
     await _persistSavedSearches();
   }
-
-  Widget _savedSearchButton(AppLocalizations l10n) => PopupMenuButton<String>(
-    key: const Key('communitySavedSearchMenu'),
-    tooltip: l10n.communitySavedSearches,
-    icon: const Icon(Icons.saved_search),
-    itemBuilder: (_) => [
-      PopupMenuItem(value: 'save', child: Text(l10n.communitySaveSearch)),
-      for (var i = 0; i < _savedSearches.length; i++)
-        PopupMenuItem(
-          value: 'load:$i',
-          child: Text(
-            _savedSearches[i]['name'] as String? ?? '...',
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      if (_savedSearches.isEmpty)
-        PopupMenuItem(
-          enabled: false,
-          child: Text(l10n.communitySavedSearchEmpty),
-        ),
-      if (_savedSearches.isNotEmpty)
-        PopupMenuItem(
-          value: 'manage',
-          child: Text(l10n.communityManageSavedSearches),
-        ),
-    ],
-    onSelected: (value) {
-      if (value == 'save') {
-        _saveCurrentSearch();
-      } else if (value == 'manage') {
-        showDialog<void>(
-          context: context,
-          builder: (dialogContext) => StatefulBuilder(
-            builder: (dialogContext, update) => AlertDialog(
-              title: Text(l10n.communityManageSavedSearches),
-              content: SizedBox(
-                width: 340,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (var i = 0; i < _savedSearches.length; i++)
-                      ListTile(
-                        title: Text(_savedSearches[i]['name'] as String),
-                        trailing: IconButton(
-                          key: ValueKey('communityDeleteSavedSearch-$i'),
-                          tooltip: l10n.commonDelete,
-                          onPressed: () async {
-                            await _deleteSavedSearch(i);
-                            update(() {});
-                          },
-                          icon: const Icon(Icons.delete_outline),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: Text(l10n.commonClose),
-                ),
-              ],
-            ),
-          ),
-        );
-      } else if (value.startsWith('load:')) {
-        final i = int.tryParse(value.substring(5));
-        if (i != null && i < _savedSearches.length) {
-          _restoreSavedSearch(_savedSearches[i]);
-        }
-      }
-    },
-  );
 
   /// The following tab shows the followed authors' works and reposts as
   /// the server has them now.
@@ -393,6 +408,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         _tagSearchMode = true;
         _tagExactMatch = true;
         _searchQuery = newTag;
+        _draftQuery = newTag;
         _searchController.text = newTag;
       });
     }
@@ -472,10 +488,15 @@ class _CommunityScreenState extends State<CommunityScreen>
     }).toList();
   }
 
-  List<CommunityWork> _newArrivals(List<CommunityWork> allWorks) =>
-      _applySearch(
-        [...allWorks]..sort((a, b) => b.postedAt.compareTo(a.postedAt)),
-      );
+  List<CommunityWork> _newArrivals(List<CommunityWork> allWorks) {
+    final sorted = [...allWorks];
+    sorted.sort(switch (_plazaSort) {
+      _PlazaSort.newest => (a, b) => b.postedAt.compareTo(a.postedAt),
+      _PlazaSort.views => (a, b) => b.viewCount.compareTo(a.viewCount),
+      _PlazaSort.bookmarks => (a, b) => b.bookmarkCount.compareTo(a.bookmarkCount),
+    });
+    return _applySearch(sorted);
+  }
 
   Duration? _periodWindow(_RankingPeriod period) => switch (period) {
     _RankingPeriod.allTime => null,
@@ -632,6 +653,12 @@ class _CommunityScreenState extends State<CommunityScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final communityService = context.watch<CommunityService>();
+    final currentAccount = communityService.currentUserId ?? 'guest';
+    if (_searchAccount != currentAccount) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _useSearchAccount(currentAccount);
+      });
+    }
     final allWorks = communityService.discoverableWorks;
     final bookmarkedIds = communityService.bookmarkedIds;
     final theme = Theme.of(context);
@@ -673,13 +700,6 @@ class _CommunityScreenState extends State<CommunityScreen>
       titleStyle,
       maxWidth: (width - 168).clamp(1.0, double.infinity),
     );
-    final videoWidth =
-        (measure(
-                  _videoTypeFilter.label(l10n),
-                  theme.textTheme.bodyMedium!.copyWith(fontSize: 12),
-                ).width +
-                48)
-            .clamp(48.0, 160.0);
     final labels = [
       l10n.communityTabNew,
       l10n.communityTabRanking,
@@ -694,147 +714,223 @@ class _CommunityScreenState extends State<CommunityScreen>
         .fold<double>(48, (a, b) => a > b ? a : b);
     final searchFill =
         theme.inputDecorationTheme.fillColor ?? scheme.surfaceContainerLow;
+    Widget searchRowFor(int tab) {
+      final headingStyle = theme.textTheme.titleSmall?.copyWith(
+        fontFamily: 'Kuramubon',
+        fontFamilyFallback: kHeadingFontFallback,
+      );
 
-    // The header remains pinned; this row belongs to each tab's scrollable
-    // page content and naturally scrolls out of view above the work grid.
-    Widget searchRowFor(int tab) => Padding(
-      key: const Key('communitySearchRow'),
-      // The work grid begins with 12px of its own top padding.  Give the
-      // search controls an equivalent visible gap *above* the row as well:
-      // 20px above vs 8px + the grid's 12px below.
-      padding: const EdgeInsets.fromLTRB(8, 20, 8, 8),
-      child: SizedBox(
-        height: 48,
-        child: _isSearching
-            ? Material(
-                color: searchFill,
-                borderRadius: BorderRadius.circular(20),
+      Widget accordion({
+        required String title,
+        required Key key,
+        required bool saved,
+      }) {
+        final entries = saved ? _savedSearches : _searchHistory;
+        return ExpansionTile(
+          key: key,
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: EdgeInsets.zero,
+          shape: const Border(),
+          collapsedShape: const Border(),
+          title: Text(title, style: headingStyle),
+          children: [
+            if (entries.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(saved
+                    ? l10n.communitySavedSearchEmpty
+                    : l10n.communitySearchHistoryEmpty),
+              ),
+            for (var index = 0; index < entries.length; index++)
+              ListTile(
+                key: ValueKey((saved ? 'communitySavedSearch-' :
+                    'communitySearchHistory-') + index.toString()),
+                dense: true,
+                title: Text(entries[index]['name'] as String? ?? '',
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                onTap: () => _restoreSavedSearch(entries[index]),
+                trailing: IconButton(
+                  key: ValueKey((saved ? 'communityDeleteSavedSearch-' :
+                      'communitySaveHistory-') + index.toString()),
+                  icon: Icon(saved ? Icons.delete_outline : Icons.save_outlined),
+                  tooltip: saved ? l10n.commonDelete : l10n.communitySaveSearch,
+                  onPressed: () {
+                    if (saved) {
+                      _confirmDeleteSavedSearch(index);
+                    } else {
+                      _saveSearchFromHistory(entries[index]);
+                    }
+                  },
+                ),
+              ),
+            if (saved)
+              TextButton.icon(
+                key: const Key('communitySaveCurrentSearchButton'),
+                onPressed: _saveCurrentSearch,
+                icon: const Icon(Icons.add),
+                label: Text(l10n.communitySaveSearch),
+              ),
+          ],
+        );
+      }
+
+      return Padding(
+        key: const Key('communitySearchRow'),
+        padding: const EdgeInsets.fromLTRB(8, 20, 8, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Material(
+              key: const Key('communitySearchTrigger'),
+              color: searchFill,
+              borderRadius: BorderRadius.circular(20),
+              child: SizedBox(
+                height: 48,
                 child: Row(
                   children: [
                     IconButton(
                       key: const Key('communitySearchModeToggle'),
-                      icon: Icon(
-                        _tagSearchMode ? Icons.search : Icons.sell_outlined,
-                      ),
+                      icon: Icon(_tagSearchMode
+                          ? Icons.search : Icons.sell_outlined),
                       tooltip: _tagSearchMode
-                          ? l10n.communitySearchHint
-                          : l10n.communityTagSearchHint,
+                          ? l10n.communitySearchHint : l10n.communityTagSearchHint,
                       onPressed: () => setState(() {
                         _tagSearchMode = !_tagSearchMode;
                         _tagExactMatch = _tagSearchMode;
                         _searchQuery = '';
+                        _draftQuery = '';
                         _searchController.clear();
                       }),
                     ),
                     Expanded(
                       child: TextField(
+                        key: const Key('communitySearchInput'),
                         controller: _searchController,
-                        autofocus: _tabController.index == tab,
                         decoration: InputDecoration(
                           hintText: _tagSearchMode
-                              ? l10n.communityTagSearchHint
-                              : l10n.communitySearchHint,
+                              ? l10n.communityTagSearchHint : l10n.communitySearchHint,
                           border: InputBorder.none,
                           isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 12,
-                          ),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        onChanged: (v) => setState(() => _searchQuery = v),
+                        onChanged: (value) => _draftQuery = value,
+                        onSubmitted: (_) => _runSearch(),
+                        textInputAction: TextInputAction.search,
                       ),
                     ),
                     IconButton(
-                      key: const Key('communityContentFilterButton'),
-                      icon: const Icon(Icons.tune),
-                      tooltip: l10n.communityContentFilterTitle,
-                      onPressed: () => _showContentFilters(communityService),
-                    ),
-                    _savedSearchButton(l10n),
-                    IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: const Icon(Icons.close, size: 20),
                       tooltip: l10n.commonClose,
                       onPressed: () => setState(() {
-                        _isSearching = false;
-                        _tagSearchMode = false;
-                        _tagExactMatch = false;
-                        _searchQuery = '';
                         _searchController.clear();
+                        _draftQuery = '';
+                        _searchQuery = '';
                       }),
                     ),
                   ],
                 ),
-              )
-            : LayoutBuilder(
-                builder: (context, constraints) {
-                  final shortMode =
-                      _videoTypeFilter == VideoTypeFilter.shortOnly;
-                  final maxVideoWidth =
-                      (constraints.maxWidth - 196 - (shortMode ? 48 : 0))
-                          .clamp(48.0, 160.0)
-                          .toDouble();
-                  final filterWidth = videoWidth
-                      .clamp(48.0, maxVideoWidth)
-                      .toDouble();
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: Material(
-                          color: searchFill,
-                          borderRadius: BorderRadius.circular(20),
-                          child: InkWell(
-                            key: const Key('communitySearchTrigger'),
-                            borderRadius: BorderRadius.circular(20),
-                            onTap: () => setState(() => _isSearching = true),
-                            child: Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.search),
-                                  tooltip: l10n.commonSearch,
-                                  onPressed: () =>
-                                      setState(() => _isSearching = true),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    l10n.communitySearchHint,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.bodySmall,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        key: const Key('communityContentFilterButton'),
-                        icon: const Icon(Icons.tune),
-                        tooltip: l10n.communityContentFilterTitle,
-                        onPressed: () => _showContentFilters(communityService),
-                      ),
-                      SizedBox(
-                        width: filterWidth,
-                        height: 48,
-                        child: VideoTypeFilterButton(
-                          value: _videoTypeFilter,
-                          onChanged: (v) =>
-                              setState(() => _videoTypeFilter = v),
-                        ),
-                      ),
-                      _savedSearchButton(l10n),
-                      if (shortMode)
-                        IconButton(
-                          icon: const Icon(Icons.view_carousel_outlined),
-                          tooltip: l10n.communityShortsModeTooltip,
-                          onPressed: () => _openShortsMode(allWorks),
-                        ),
-                    ],
-                  );
-                },
               ),
-      ),
-    );
+            ),
+            accordion(
+              title: l10n.communitySavedSearches,
+              key: const Key('communitySavedSearchAccordion'),
+              saved: true,
+            ),
+            accordion(
+              title: l10n.communitySearchHistory,
+              key: const Key('communitySearchHistoryAccordion'),
+              saved: false,
+            ),
+            Row(
+              children: [
+                IconButton(
+                  key: const Key('communityContentFilterButton'),
+                  icon: const Icon(Icons.tune),
+                  tooltip: l10n.communityContentFilterTitle,
+                  onPressed: () => _showContentFilters(communityService),
+                ),
+                PopupMenuButton<String>(
+                  key: const Key('communitySortButton'),
+                  tooltip: l10n.communitySortLabel,
+                  icon: const Icon(Icons.sort),
+                  onSelected: (value) => setState(() {
+                    if (value.startsWith('type:')) {
+                      final index = int.tryParse(value.substring(5)) ?? 0;
+                      _videoTypeFilter = VideoTypeFilter
+                          .values[index.clamp(0, VideoTypeFilter.values.length - 1)];
+                    } else {
+                      _plazaSort = switch (value) {
+                        'views' => _PlazaSort.views,
+                        'bookmarks' => _PlazaSort.bookmarks,
+                        _ => _PlazaSort.newest,
+                      };
+                    }
+                  }),
+                  itemBuilder: (_) => [
+                    PopupMenuItem(value: 'newest',
+                        child: Text(l10n.communityTabNew)),
+                    PopupMenuItem(value: 'views',
+                        child: Text(l10n.communityRankingSortViews)),
+                    PopupMenuItem(value: 'bookmarks',
+                        child: Text(l10n.communityRankingSortBookmarks)),
+                    const PopupMenuDivider(),
+                    for (final type in VideoTypeFilter.values)
+                      CheckedPopupMenuItem(
+                        value: 'type:' + type.index.toString(),
+                        checked: type == _videoTypeFilter,
+                        child: Text(type.label(l10n)),
+                      ),
+                  ],
+                ),
+                IconButton(
+                  key: const Key('communityTileSizeButton'),
+                  tooltip: l10n.communityTileSize,
+                  icon: const Icon(Icons.grid_view_rounded),
+                  onPressed: () async {
+                    var size = _minimumTileWidth;
+                    final chosen = await showDialog<double>(
+                      context: context,
+                      builder: (dialogContext) => StatefulBuilder(
+                        builder: (dialogContext, update) => AlertDialog(
+                          title: Text(l10n.communityTileSize),
+                          content: Slider(
+                            key: const Key('communityTileSizeQuickSlider'),
+                            min: 120, max: 240, divisions: 6,
+                            value: size,
+                            onChanged: (next) => update(() => size = next),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(dialogContext),
+                              child: Text(l10n.commonCancel),
+                            ),
+                            FilledButton(
+                              onPressed: () => Navigator.pop(dialogContext, size),
+                              child: Text(l10n.commonSave),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                    if (chosen != null && mounted) {
+                      setState(() => _minimumTileWidth = chosen);
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setDouble(_tileWidthKey, chosen);
+                    }
+                  },
+                ),
+                const Spacer(),
+                FilledButton(
+                  key: const Key('communitySearchButton'),
+                  onPressed: _runSearch,
+                  child: Text(l10n.commonSearch),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
