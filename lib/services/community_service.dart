@@ -359,12 +359,6 @@ class CommunityService extends ChangeNotifier {
   late final Map<String, Set<String>> _dummyFollowersByAuthor = api == null
       ? _buildDummyFollowersByAuthor(_works)
       : {};
-  // 各authorIdの「自分のフォロワー一覧を他ユーザーに公開するか」設定。
-  // ブックマーク一覧の公開設定（_bookmarksPublicByAuthor）と同じパターン。
-  // 既定は非公開、他のダミー作者は公開/非公開どちらの見た目も確認できる
-  // よう交互に割り当てている。
-  final Map<String, bool> _followersPublicByAuthor =
-      _buildDummyPublicVisibility();
   // フォロー通知（Task#134継続：「フォローされたら通知が来るようにして
   // ほしい」という要望を受けた実装）。バックエンド未実装かつ実際の
   // マルチユーザー環境が無いため、新しいフォローをリアルタイムに検知
@@ -1075,20 +1069,6 @@ class CommunityService extends ChangeNotifier {
   List<String> followerNamesOf(String authorId) =>
       followerIdsOf(authorId).map((id) => authorNameOf(id) ?? id).toList();
 
-  /// [authorId]のフォロワー一覧のうち、実際に画面へ表示してよい分だけを
-  /// 絞り込んだID一覧（Task#134継続：22.7節）。フォロワー自身が自分の
-  /// フォロー中/フォロワー一覧を非公開にしている場合、[authorId]側の
-  /// 一覧が公開設定であっても、その人物だけは表示しない（フォロワー
-  /// 本人の意思を優先する）。[followerCountOf]自体は非公開のフォロワーも
-  /// 含めた実数のまま変えない（「集計」と「表示」を分離する設計）。
-  List<String> visibleFollowerIdsOf(String authorId) =>
-      followerIdsOf(authorId).where(isFollowersPublic).toList();
-
-  /// [authorId]の表示可能なフォロワー名一覧（[visibleFollowerIdsOf]参照）。
-  List<String> visibleFollowerNamesOf(String authorId) => visibleFollowerIdsOf(
-    authorId,
-  ).map((id) => authorNameOf(id) ?? id).toList();
-
   /// [authorId]が誰をフォロー中かのID一覧。自分（kDummySelfAuthorId）に
   /// ついては実際にトグル操作した[_favoriteAuthorIds]をそのまま返す。
   /// 他のダミー作者については、フォロワー関係のダミーデータ
@@ -1117,28 +1097,8 @@ class CommunityService extends ChangeNotifier {
       .map((w) => w.authorName)
       .firstOrNull;
 
-  /// [authorId]のフォロワー数（数字のみ）。「誰がフォローしているか」の
-  /// 一覧は既定で非公開のまま（[isFollowersPublic]がfalseの間は数字のみ
-  /// 表示し、一覧は表示しない設計をUI側で徹底する。29_動画投稿・
-  /// ランキング機能仕様.md 22.4節・22.5節）。集計値の表示だけであれば
-  /// 特定個人を識別できずUGCリスクが小さいため、こちらは常に公開情報
-  /// として扱う。
+  /// 作者のフォロワー数（公開するのは件数だけ）。
   int followerCountOf(String authorId) => followerIdsOf(authorId).length;
-
-  /// [authorId]が自分のフォロワー一覧を他ユーザーに公開しているか。
-  /// 既定は非公開（Task#134継続：本人選択制で一覧を公開できる妥協案。
-  /// 22.5節参照）。
-  bool isFollowersPublic(String authorId) =>
-      _followersPublicByAuthor[authorId] ?? false;
-
-  /// 自分のフォロワー一覧の公開設定（ユーザー設定）。
-  bool get selfFollowersPublic => isFollowersPublic(kDummySelfAuthorId);
-
-  /// 自分のフォロワー一覧を公開するかどうかを変更する。
-  void setSelfFollowersPublic(bool value) {
-    _followersPublicByAuthor[kDummySelfAuthorId] = value;
-    notifyListeners();
-  }
 
   // ─── フォロー通知（Task#134継続） ────────────────────────────────
 
