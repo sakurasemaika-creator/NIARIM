@@ -11,6 +11,7 @@ import { badRequest, forbidden, ok } from "../../lib/response";
 import type {
   FollowerRecordItem,
   FollowingRecordItem,
+  UserItem,
 } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 
