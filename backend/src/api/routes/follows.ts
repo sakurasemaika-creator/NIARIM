@@ -1,5 +1,4 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import { randomUUID } from "node:crypto";
 import {
   GetCommand,
   QueryCommand,
@@ -11,24 +10,19 @@ import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate, tryAuthenticate, getUser } from "../../lib/auth";
 import { badRequest, forbidden, ok } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
-import { sendPushToUser } from "../../lib/push";
 import type {
   FollowerRecordItem,
   FollowingRecordItem,
-  FollowNotificationItem,
   UserItem,
 } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
-
-const NOTIFICATION_TTL_DAYS = 30; // 21.3節の推奨に合わせる
 
 /**
  * `POST /users/{id}/follow`（22.5節）。フォロー/解除の操作ごとに
  * `TransactWriteItems`で「被フォロー側記録（FollowerRecord）」
  * 「フォロー側記録（FollowingRecord、二重書き込みでO(1)クエリ可能に
  * する）」「両ユーザーのfollowerCount/followingCountカウンター」を
- * まとめて更新する。フォロー時のみ、対象ユーザー宛てのフォロー通知
- * （22.6節：アプリ内通知、方式A）を同じトランザクションで作成する。
+ * まとめて更新する。通知用の個別フォローイベントは保存しない。
  */
 export async function toggleFollow(
   event: APIGatewayProxyEventV2,
@@ -102,20 +96,6 @@ export async function toggleFollow(
         followedAt: now,
       };
 
-      const follower = await getUser(auth.niarimUserId);
-      const notifId = randomUUID();
-      const notification: FollowNotificationItem = {
-        itemType: TABLE_ITEM_TYPE.FollowNotification,
-        ...Keys.followNotification(targetId, now, notifId),
-        targetId,
-        fromUserId: auth.niarimUserId,
-        fromUserName: follower?.channelName ?? auth.niarimUserId,
-        read: false,
-        createdAt: now,
-        ttl:
-          Math.floor(Date.now() / 1000) + NOTIFICATION_TTL_DAYS * 24 * 60 * 60,
-      };
-
       await ddb.send(
         new TransactWriteCommand({
           TransactItems: [
@@ -143,20 +123,11 @@ export async function toggleFollow(
                 ExpressionAttributeValues: { ":plus": 1 },
               },
             },
-            { Put: { TableName: tableName(), Item: notification } },
           ],
         }),
       );
 
-      // 22.7節：アプリ内通知に加えて、実際のプッシュも送る。送信は
-      // best-effortで、失敗してもフォロー操作自体は成功扱いにする
-      // （push.ts側で例外を握り潰している）。FCMの鍵が未設定の環境では
-      // 何もしないため、鍵が揃うまでこのままデプロイできる。
-      await sendPushToUser(targetId, {
-        title: "NIARIM作品広場",
-        body: `${notification.fromUserName}さんにフォローされました`,
-        data: { type: "follow", fromUserId: auth.niarimUserId },
-      });
+
     }
   } catch (err) {
     if (err instanceof TransactionCanceledException) {
