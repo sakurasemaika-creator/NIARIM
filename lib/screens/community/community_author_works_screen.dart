@@ -190,13 +190,13 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
               onPressed: () => _openShortsMode(filteredWorks, bookmarkedIds),
             ),
         ],
-        bottom: TabBar(
+        bottom: isSelf ? TabBar(
           controller: _tabController,
           tabs: [
             Tab(text: l10n.communityAuthorTabWorks),
             Tab(text: l10n.communityAuthorTabBookmarks),
           ],
-        ),
+        ) : null,
       ),
       body: desktopCentered(
         context,
@@ -312,7 +312,8 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                 ),
               ),
             Expanded(
-              child: TabBarView(
+              child: isSelf
+                  ? TabBarView(
                 controller: _tabController,
                 children: [
                   // ─── 作品タブ ───────────────────────────────────
@@ -400,7 +401,19 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                     ),
                   ),
                 ],
-              ),
+              )
+                  : SingleChildScrollView(
+                      child: filteredWorks.isEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.all(32),
+                              child: Center(child: Text(l10n.communityNoWorksMessage)),
+                            )
+                          : CommunityWorkGrid(
+                              works: filteredWorks,
+                              bookmarkedIds: bookmarkedIds,
+                              onTapWork: openWork,
+                              onToggleBookmark: toggleBookmark,
+                            ),
             ),
           ],
         ),
