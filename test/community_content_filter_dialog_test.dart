@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/community_work.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/screens/community/community_author_works_screen.dart';
 import 'package:niarim/services/community_preview_service.dart';
