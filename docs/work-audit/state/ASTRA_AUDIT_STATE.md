@@ -1082,3 +1082,22 @@ native37/source旧base9bceのZIP: Drive1f-J55vpWu62iJeGx2J_eOb4aeAnAkaaP/1768592
 
 以下は同unitの段階別履歴。
 
+
+## S23 publication/cache receipts + CI fixture followup
+
+## 現在: 初回公開済み・CI追随修正の検証完了（次の公開へ）
+
+初回の修正はApp261646e164047f41fca24a9836636b846bfbac37（親4999e363/tree672ab44249a4e8dd25b8c8935fbeaf0178e0ff57/57paths）、Web9bd3e0ad5745042bf3cce06ea091ecad7c19fff6（親1cdbdbd/tree0531b90fe40362f5e93acb6d7df241f3bde9dab8/6State）へexpected-parent/nonforce公開済み。remote HEAD/tree/単一parent/正確な変更path/実fetch/localref/indexを確認。production Dart310 SHAはcompile時と一致、保護fontは除外。
+
+現compiled runtimeはDrive1jocv6x5260xNV69IFjfDA8ftdvFJ1C1S/31865317B/SHA787a4463d18a7785db012d64b6e59286e9374cd5d216a04da5f54d12d004dd4e。raw SHA/CRC/全165deltaと59base localhash=224manifestを確認。実downloadのbundle/kernel0b5def0b5dad531e628a29d51998da2f41742bbf90d6229a4661a6b50ac112d1を設置してENPCを再起動し、原本目視/GIF863B/map{}保持を確認。39native（本検証37+最新統合2）に加えDL再生原本1。App停止、console10856/Xvfb85。
+
+publication/cache replay receiptsのDrive1QYyzyX25X3hKGFPcncuGqPJCkQrvS1kv/16466653B/SHA9c5b86cc36c354de6f6b3e77d951962de730a083a31e24d60858cb26c2233419はmetadata/rawSHA/CRC/全1252manifestを確認。ZIP内rootのCLI running文言は、その後完了した同梱logで置き換わる。
+
+初回CIはpolicy/書式/解析/保存・community回帰等が成功。Theme Rescue40826563907では2件、Pinch/save restore40826564043のoperation smokeでは1件が失敗した。原因はbuilt-in palette移行によりテスト用変更色が標準へ戻るfixtureと、旧SegmentedButtonを前提にしたfinder。raw logsを全保存: theme76591B/SHA c47fd571bb7c135a33cf55d3a6750e390ca371409d2bb4f6b96ac2faaf6b4d13、operation39605B/SHAa95d765cfd640f102d061be054c2f0921b37fbd7df2a36515f6a824912fb3f97。旧fullgates123290860059は結果確認中であり、全成功としない。
+
+検査条件を維持したまま、test用paletteをformal customCurrentIdへ、tag検索検査を現在のcompact control/key・次mode icon・queryへ更新。Theme3PASS/0s、appsmoke全34PASS/51s、full analyze0/4.0s。先の137とappsmoke重複1を除いた合計173distinct。製品lib310は同一SHA。新たなruntime buildやnative37再撮影は不要。変更は2test＋SaveSafety trigger2path＋State。
+
+次: このCI追随修正・公開/runtime receiptsを同じ承認範囲で通常push→remote/fetch/source310の一致→新CIの確認とraw記録。続いてDISC036のProject/shared prefs failure・delete cold restartのfresh反例へ進む。現在はA003 in_progress・Baseline2/628、全Discovery/Delta未完了。全面監査/latestHEAD Visual closureは未完了。
+
+以下は段階別履歴。途中の未push/pendingは上記の現在状態を上書きしない。
+

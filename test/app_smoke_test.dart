@@ -1718,10 +1718,18 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'タグタップでの絞り込みで例外');
-    final tagModeFinder = find.byType(SegmentedButton<bool>);
+    final tagModeFinder = find.byKey(const Key('communitySearchModeToggle'));
     expect(tagModeFinder, findsOneWidget);
-    final tagMode = tester.widget<SegmentedButton<bool>>(tagModeFinder);
-    expect(tagMode.selected, contains(true), reason: 'タグ検索モードに切り替わっていない');
+    expect(find.byType(SegmentedButton<bool>), findsNothing);
+    expect(
+      find.descendant(of: tagModeFinder, matching: find.byIcon(Icons.search)),
+      findsOneWidget,
+      reason: 'Tag mode offers keyword search as the next mode',
+    );
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller!.text,
+      newTag,
+    );
     expect(
       find.byType(CommunityWorkCard),
       findsOneWidget,

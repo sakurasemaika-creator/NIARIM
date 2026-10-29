@@ -40,7 +40,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S23 — 最新4999統合/137distinct/analyze0/39native（37+2）/main+fixture完了。公開/CI/cacheへ
+current_substep: A003/S23 — 初回公開/cache raw replay完了。CI fixture3反例追随、173distinct/analyze0、2testのみのfollowup公開へ
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -60,7 +60,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: A003_S23_20261028_RESUME.mdの現在sectionへ。finalnative/source保存→expected-parent/nonforce App/Web公開→remote/fetch/source310→CI/runtime raw replay。全体A003を維持。
+next_action: A003_S23_20261028_RESUME.md現在section。CI追随2test/trigger/Stateを通常pushしsource310/新CI確認。その後DISC036 Project/sharedをfresh検証。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
@@ -457,4 +457,23 @@ native37/source旧base9bceのZIP: Drive1f-J55vpWu62iJeGx2J_eOb4aeAnAkaaP/1768592
 次: 最新統合source/State保存→expected-parent/nonforce公開とremote/fetch/tree/source310照合→CI/current compiled runtimeの保存・raw読戻し・実downloadkernel再生→receipt保存。Baseline/Discovery/Delta statusは不変。全面監査/latestHEAD Visual closure未完了。
 
 以下は同unitの段階別履歴。
+
+
+## S23 publication/cache receipts + CI fixture followup
+
+## 現在: 初回公開済み・CI追随修正の検証完了（次の公開へ）
+
+初回の修正はApp261646e164047f41fca24a9836636b846bfbac37（親4999e363/tree672ab44249a4e8dd25b8c8935fbeaf0178e0ff57/57paths）、Web9bd3e0ad5745042bf3cce06ea091ecad7c19fff6（親1cdbdbd/tree0531b90fe40362f5e93acb6d7df241f3bde9dab8/6State）へexpected-parent/nonforce公開済み。remote HEAD/tree/単一parent/正確な変更path/実fetch/localref/indexを確認。production Dart310 SHAはcompile時と一致、保護fontは除外。
+
+現compiled runtimeはDrive1jocv6x5260xNV69IFjfDA8ftdvFJ1C1S/31865317B/SHA787a4463d18a7785db012d64b6e59286e9374cd5d216a04da5f54d12d004dd4e。raw SHA/CRC/全165deltaと59base localhash=224manifestを確認。実downloadのbundle/kernel0b5def0b5dad531e628a29d51998da2f41742bbf90d6229a4661a6b50ac112d1を設置してENPCを再起動し、原本目視/GIF863B/map{}保持を確認。39native（本検証37+最新統合2）に加えDL再生原本1。App停止、console10856/Xvfb85。
+
+publication/cache replay receiptsのDrive1QYyzyX25X3hKGFPcncuGqPJCkQrvS1kv/16466653B/SHA9c5b86cc36c354de6f6b3e77d951962de730a083a31e24d60858cb26c2233419はmetadata/rawSHA/CRC/全1252manifestを確認。ZIP内rootのCLI running文言は、その後完了した同梱logで置き換わる。
+
+初回CIはpolicy/書式/解析/保存・community回帰等が成功。Theme Rescue40826563907では2件、Pinch/save restore40826564043のoperation smokeでは1件が失敗した。原因はbuilt-in palette移行によりテスト用変更色が標準へ戻るfixtureと、旧SegmentedButtonを前提にしたfinder。raw logsを全保存: theme76591B/SHA c47fd571bb7c135a33cf55d3a6750e390ca371409d2bb4f6b96ac2faaf6b4d13、operation39605B/SHAa95d765cfd640f102d061be054c2f0921b37fbd7df2a36515f6a824912fb3f97。旧fullgates123290860059は結果確認中であり、全成功としない。
+
+検査条件を維持したまま、test用paletteをformal customCurrentIdへ、tag検索検査を現在のcompact control/key・次mode icon・queryへ更新。Theme3PASS/0s、appsmoke全34PASS/51s、full analyze0/4.0s。先の137とappsmoke重複1を除いた合計173distinct。製品lib310は同一SHA。新たなruntime buildやnative37再撮影は不要。変更は2test＋SaveSafety trigger2path＋State。
+
+次: このCI追随修正・公開/runtime receiptsを同じ承認範囲で通常push→remote/fetch/source310の一致→新CIの確認とraw記録。続いてDISC036のProject/shared prefs failure・delete cold restartのfresh反例へ進む。現在はA003 in_progress・Baseline2/628、全Discovery/Delta未完了。全面監査/latestHEAD Visual closureは未完了。
+
+以下は段階別履歴。途中の未push/pendingは上記の現在状態を上書きしない。
 

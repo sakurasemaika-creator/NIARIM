@@ -23,6 +23,8 @@ on:
       - "test/work_folder_service_persistence_test.dart"
       - "test/home_work_folder_save_failure_test.dart"
       - "test/folder_save_controls_test.dart"
+      - "test/app_smoke_test.dart"
+      - "test/theme_accent_contrast_test.dart"
       - "test/helpers/controlled_preferences_store.dart"
       - "test/folder_name_dialog_short_test.dart"
       - "lib/screens/home/widgets/exported_work_card.dart"

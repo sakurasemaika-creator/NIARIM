@@ -44,10 +44,12 @@ void main() {
   test('extreme accents never overwrite chosen text and icon colors', () async {
     for (final preset in [
       AppThemePreset.defaultLight.copyWith(
+        id: ThemeService.customCurrentId,
         accentColor: const Color(0x20777777),
         selectionColor: const Color(0x80FFFFFF),
       ),
       AppThemePreset.defaultDark.copyWith(
+        id: ThemeService.customCurrentId,
         accentColor: Colors.white,
         selectionColor: Colors.black,
       ),
@@ -77,6 +79,7 @@ void main() {
         const Color(0xFF17161C), // dark theme
       ]) {
         final preset = AppThemePreset.defaultLight.copyWith(
+          id: ThemeService.customCurrentId,
           accentColor: const Color(0xFFFFE47A),
           panelBgColor: background,
           menuBgColor: background,
