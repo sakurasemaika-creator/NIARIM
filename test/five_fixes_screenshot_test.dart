@@ -86,6 +86,7 @@ void main() {
       tester.element(find.byType(CommunityScreen)))!;
     await tester.tap(find.byKey(const Key('communityContentFilterButton')));
     await tester.pumpAndSettle();
+    await capture(root, '00_advanced_content_filters', tester);
     final words = find.byKey(const Key('communityMutedWordsDisplay_0'));
     final tags = find.byKey(const Key('communityMutedTagsDisplay_0'));
     expect(tester.getRect(words).top, lessThan(tester.getRect(tags).top));
@@ -169,6 +170,24 @@ void main() {
     await tester.enterText(find.byType(TextField).first, '手描き');
     await tester.pumpAndSettle();
     await capture(root, '04_compact_tag_search', tester);
+
+    // The public author page exposes an explicit creator mute action.
+    final peerWork = community.discoverableWorks.firstWhere(
+      (work) => work.authorId != kDummySelfAuthorId,
+    );
+    Navigator.of(tester.element(find.byType(CommunityScreen))).push(
+      MaterialPageRoute<void>(
+        builder: (_) => CommunityAuthorWorksScreen(
+          authorId: peerWork.authorId,
+          authorName: peerWork.authorName,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('communityAuthorMuteToggle')), findsOneWidget);
+    await capture(root, '13_other_creator_mute_button', tester);
+    Navigator.of(tester.element(find.byType(CommunityAuthorWorksScreen))).pop();
+    await tester.pumpAndSettle();
 
     // New French render at a narrow smartphone viewport for tab alignment.
     await tester.pumpWidget(const SizedBox.shrink());

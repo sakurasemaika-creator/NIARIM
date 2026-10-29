@@ -350,7 +350,9 @@ class ProjectListWidget extends StatelessWidget {
           slivers: [
             SliverToBoxAdapter(child: header!),
             SliverFillRemaining(
-              hasScrollBody: false,
+              // The empty-state layout uses LayoutBuilder, which cannot
+              // provide intrinsic heights to the non-scrollable variant.
+              hasScrollBody: true,
               child: EmptyStatePlaceholder(
                 icon: Icons.movie_creation_outlined,
                 title: l10n.projectListEmptyTitle,
