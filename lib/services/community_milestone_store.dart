@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,6 +51,20 @@ class CommunityMilestoneEvent {
 /// The server does not need to remember a user's previous observed counts.
 /// First sample is a baseline, never a notification.
 class CommunityMilestoneStore {
+  Future<void> _pending = Future<void>.value();
+
+  Future<T> _exclusive<T>(Future<T> Function() operation) async {
+    final previous = _pending;
+    final done = Completer<void>();
+    _pending = done.future;
+    await previous;
+    try {
+      return await operation();
+    } finally {
+      done.complete();
+    }
+  }
+
   static const thresholds = <int>[
     10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000,
   ];
@@ -80,14 +95,14 @@ class CommunityMilestoneStore {
     return _events(_read(prefs, accountId));
   }
 
-  Future<List<CommunityMilestoneEvent>> markAllRead(String accountId) async {
+  Future<List<CommunityMilestoneEvent>> markAllRead(String accountId) => _exclusive(() async {
     final prefs = await SharedPreferences.getInstance();
     final data = _read(prefs, accountId);
     final events = _events(data).map((e) => e.markedRead()).toList();
     data['events'] = events.map((e) => e.toJson()).toList();
     await prefs.setString(_key(accountId), jsonEncode(data));
     return events;
-  }
+  });
 
   /// [bookmarks] maps work ids to (title, current bookmark count).
   /// Omitted values are left unchanged. This is account-scoped.
@@ -95,7 +110,7 @@ class CommunityMilestoneStore {
     String accountId, {
     int? followers,
     Map<String, (String, int)>? bookmarks,
-  }) async {
+  }) => _exclusive(() async {
     final prefs = await SharedPreferences.getInstance();
     final data = _read(prefs, accountId);
     final events = _events(data);
@@ -145,5 +160,5 @@ class CommunityMilestoneStore {
     data['events'] = events.take(50).map((e) => e.toJson()).toList();
     await prefs.setString(_key(accountId), jsonEncode(data));
     return events.take(50).toList();
-  }
+  });
 }
