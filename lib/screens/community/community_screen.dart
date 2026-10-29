@@ -853,7 +853,12 @@ class _CommunityScreenState extends State<CommunityScreen>
                   key: const Key('communitySortButton'),
                   tooltip: l10n.communitySortLabel,
                   icon: const Icon(Icons.sort),
-                  onSelected: (value) => setState(() {
+                  onSelected: (value) {
+                    if (value == 'shorts') {
+                      _openShortsMode(allWorks);
+                      return;
+                    }
+                    setState(() {
                     if (value.startsWith('type:')) {
                       final index = int.tryParse(value.substring(5)) ?? 0;
                       _videoTypeFilter = VideoTypeFilter
@@ -865,7 +870,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                         _ => _PlazaSort.newest,
                       };
                     }
-                  }),
+                    });
+                  },
                   itemBuilder: (_) => [
                     PopupMenuItem(value: 'newest',
                         child: Text(l10n.communityTabNew)),
@@ -879,6 +885,11 @@ class _CommunityScreenState extends State<CommunityScreen>
                         value: 'type:' + type.index.toString(),
                         checked: type == _videoTypeFilter,
                         child: Text(type.label(l10n)),
+                      ),
+                    if (_videoTypeFilter == VideoTypeFilter.shortOnly)
+                      PopupMenuItem(
+                        value: 'shorts',
+                        child: Text(l10n.communityShortsModeTooltip),
                       ),
                   ],
                 ),
