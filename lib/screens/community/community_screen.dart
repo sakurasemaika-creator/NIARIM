@@ -931,10 +931,20 @@ class _CommunityScreenState extends State<CommunityScreen>
                   },
                 ),
                 const Spacer(),
-                FilledButton(
-                  key: const Key('communitySearchButton'),
-                  onPressed: _runSearch,
-                  child: Text(l10n.commonSearch),
+                SizedBox(
+                  width: 92,
+                  height: 48,
+                  child: FilledButton(
+                    key: const Key('communitySearchButton'),
+                    onPressed: _runSearch,
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(l10n.commonSearch),
+                    ),
+                  ),
                 ),
               ],
             ),
