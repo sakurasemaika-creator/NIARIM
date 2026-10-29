@@ -20,6 +20,7 @@ on:
       - 'test/community_my_works_controls_test.dart'
       - 'test/community_back_navigation_test.dart'
       - 'test/community_content_filter_dialog_test.dart'
+      - 'test/community_filter_dialog_layout_test.dart'
       - 'test/community_search_tabs_test.dart'
       - 'test/community_milestone_store_test.dart'
       - 'test/community_service_test.dart'
