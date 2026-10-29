@@ -376,6 +376,7 @@ class CommunityWorkGrid extends StatelessWidget {
   /// 画面では、これが無いと**最終行のカードの下側がFABに永久に隠れる**
   /// （どれだけスクロールしても出てこない）。
   final double bottomPadding;
+  final double minTileWidth;
 
   const CommunityWorkGrid({
     super.key,
@@ -387,13 +388,14 @@ class CommunityWorkGrid extends StatelessWidget {
     this.rankNumbers,
     this.repostedByNames,
     this.bottomPadding = 12,
+    this.minTileWidth = 160,
   });
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       final scale = MediaQuery.textScalerOf(context).scale(13) / 13;
-      final minimumWidth = 160 * (scale < 1 ? 1 : scale);
+      final minimumWidth = minTileWidth * (scale < 1 ? 1 : scale);
       final columns = ((constraints.maxWidth - 24 + 10) / (minimumWidth + 10))
           .floor()
           .clamp(1, 6);
