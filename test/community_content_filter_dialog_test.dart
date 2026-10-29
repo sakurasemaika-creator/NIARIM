@@ -396,8 +396,8 @@ void main() {
     await tester.pumpWidget(host(service));
     await tester.pumpAndSettle();
     final l10n = l10nOf(tester);
-    await tapVisible(tester, find.byKey(const Key('communitySavedSearchMenu')));
-    await tapVisible(tester, find.text(l10n.communitySaveSearch));
+    await tapVisible(tester, find.byKey(const Key('communitySavedSearchAccordion')));
+    await tapVisible(tester, find.byKey(const Key('communitySaveCurrentSearchButton')));
     await tester.enterText(
       find.byKey(const Key('communitySavedSearchName')),
       'お気に入りの条件',
@@ -405,8 +405,10 @@ void main() {
     await tapVisible(tester, find.text(l10n.commonSave));
     await tester.pump(const Duration(milliseconds: 400));
     final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('community.savedSearches.v1'), contains('お気に入りの条件'));
-    await tapVisible(tester, find.byKey(const Key('communitySavedSearchMenu')));
+    expect(
+      prefs.getString('community.savedSearches.v1.guest'),
+      contains('お気に入りの条件'),
+    );
     expect(find.text('お気に入りの条件'), findsOneWidget);
     await tapVisible(tester, find.text('お気に入りの条件'));
     expect(tester.takeException(), isNull);
