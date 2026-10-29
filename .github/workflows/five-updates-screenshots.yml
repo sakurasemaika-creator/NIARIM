@@ -20,6 +20,7 @@ on:
       - 'test/community_my_works_controls_test.dart'
       - 'test/community_back_navigation_test.dart'
       - 'test/community_content_filter_dialog_test.dart'
+      - 'test/community_search_tabs_test.dart'
       - 'test/home_entry_navigation_test.dart'
       - 'test/community_header_matrix_test.dart'
 
@@ -41,6 +42,7 @@ jobs:
       - name: Verify plaza controls, mute editing, layout and wording
         run: |
           flutter test test/community_content_filter_dialog_test.dart --reporter expanded
+          flutter test test/community_search_tabs_test.dart --reporter expanded
           flutter test test/community_filter_dialog_layout_test.dart --reporter expanded
           flutter test test/community_header_quality_test.dart --reporter expanded
           flutter test test/community_mute_wording_l10n_test.dart --reporter expanded
