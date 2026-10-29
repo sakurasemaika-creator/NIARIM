@@ -861,9 +861,9 @@ class _CommunityScreenState extends State<CommunityScreen>
         actions: [
           IconButton(
             icon: Badge(
-              label: Text('${communityService.unreadFollowNotificationCount}'),
+              label: Text('${communityService.unreadMilestoneCount}'),
               isLabelVisible:
-                  communityService.unreadFollowNotificationCount > 0,
+                  communityService.unreadMilestoneCount > 0,
               child: const Icon(Icons.notifications_outlined),
             ),
             tooltip: l10n.communityFollowNotificationsTooltip,
