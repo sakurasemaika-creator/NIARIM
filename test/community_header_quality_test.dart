@@ -104,7 +104,6 @@ void main() {
         l10n.communitySortLabel,
         l10n.communityTileSize,
         l10n.communityContentFilterTitle,
-        l10n.commonSearch,
         l10n.layerPanelHelpTooltip,
       ]) {
         final finder = find.byTooltip(tooltip);
