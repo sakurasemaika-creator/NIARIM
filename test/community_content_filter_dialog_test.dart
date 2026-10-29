@@ -345,6 +345,29 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('another creator has no bookmark tab, own page keeps bookmarks', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final service = CommunityService();
+    final other = service.discoverableWorks.firstWhere(
+      (work) => !service.isOwnWork(work),
+    );
+    await tester.pumpWidget(host(service,
+      home: CommunityAuthorWorksScreen(authorId: other.authorId,
+          authorName: other.authorName),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.byType(TabBar), findsNothing);
+    expect(find.text('ブックマーク'), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpWidget(host(service,
+      home: const CommunityAuthorWorksScreen(
+          authorId: kDummySelfAuthorId, authorName: '自分'),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.byType(TabBar), findsOneWidget);
+  });
+
   testWidgets('duration, thresholds and exact tag conditions are editable', (
     tester,
   ) async {
