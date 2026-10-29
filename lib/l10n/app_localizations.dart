@@ -11273,23 +11273,11 @@ abstract class AppLocalizations {
   /// **'通知'**
   String get communityFollowNotificationsTooltip;
 
-  /// No description provided for @communityFollowNotificationsTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォロー通知'**
-  String get communityFollowNotificationsTitle;
-
   /// No description provided for @communityFollowNotificationsEmpty.
   ///
   /// In ja, this message translates to:
   /// **'通知はありません'**
   String get communityFollowNotificationsEmpty;
-
-  /// No description provided for @communityFollowNotificationBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'{name}さんにフォローされました'**
-  String communityFollowNotificationBody(String name);
 
   /// No description provided for @communityNoWorksMessage.
   ///
@@ -11350,24 +11338,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ブックマーク'**
   String get communityAuthorTabBookmarks;
-
-  /// No description provided for @communityBookmarksPublicToggleTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'ブックマーク一覧を公開する'**
-  String get communityBookmarksPublicToggleTitle;
-
-  /// No description provided for @communityBookmarksPublicToggleDesc.
-  ///
-  /// In ja, this message translates to:
-  /// **'オンにすると、他のユーザーがこのページからあなたのブックマーク一覧を見られるようになります。既定は非公開です。'**
-  String get communityBookmarksPublicToggleDesc;
-
-  /// No description provided for @communityBookmarksPrivateNotice.
-  ///
-  /// In ja, this message translates to:
-  /// **'このユーザーはブックマーク一覧を非公開にしています。'**
-  String get communityBookmarksPrivateNotice;
 
   /// No description provided for @communityBookmarksEmptyMessage.
   ///
@@ -12695,12 +12665,6 @@ abstract class AppLocalizations {
   /// **'保存した検索条件はありません'**
   String get communitySavedSearchEmpty;
 
-  /// No description provided for @communityManageSavedSearches.
-  ///
-  /// In ja, this message translates to:
-  /// **'保存した検索条件を管理'**
-  String get communityManageSavedSearches;
-
   /// No description provided for @communityDurationAny.
   ///
   /// In ja, this message translates to:
@@ -12808,12 +12772,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ミュート中のユーザーはいません'**
   String get communityMutedAuthorsEmpty;
-
-  /// No description provided for @communityMuteAuthor.
-  ///
-  /// In ja, this message translates to:
-  /// **'このユーザーの作品をミュートする'**
-  String get communityMuteAuthor;
 
   /// No description provided for @communityUnmuteAuthor.
   ///

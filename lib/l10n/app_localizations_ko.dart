@@ -6184,15 +6184,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityFollowNotificationsTooltip => '알림';
 
   @override
-  String get communityFollowNotificationsTitle => '팔로우 알림';
-
-  @override
   String get communityFollowNotificationsEmpty => '알림이 없습니다';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$name님이 회원님을 팔로우했습니다';
-  }
 
   @override
   String get communityNoWorksMessage => '작품이 없습니다';
@@ -6226,16 +6218,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityAuthorTabBookmarks => '북마크';
-
-  @override
-  String get communityBookmarksPublicToggleTitle => '북마크 목록 공개하기';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      '켜면 다른 사용자가 이 페이지에서 회원님의 북마크 목록을 볼 수 있습니다. 기본값은 비공개입니다.';
-
-  @override
-  String get communityBookmarksPrivateNotice => '이 사용자는 북마크 목록을 비공개로 설정했습니다.';
 
   @override
   String get communityBookmarksEmptyMessage => '북마크한 작품이 없습니다';
@@ -6937,9 +6919,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communitySavedSearchEmpty => '저장한 검색이 없습니다';
 
   @override
-  String get communityManageSavedSearches => '저장한 검색 관리';
-
-  @override
   String get communityDurationAny => '길이 제한 없음';
 
   @override
@@ -6992,9 +6971,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityMutedAuthorsEmpty => '뮤트한 사용자가 없습니다';
-
-  @override
-  String get communityMuteAuthor => '이 사용자의 작품 뮤트';
 
   @override
   String get communityUnmuteAuthor => '이 사용자 뮤트 해제';

@@ -67,6 +67,10 @@ APKが肥大化するため。加工手順は tool/build_fallback_fonts.py に�
   Noto Sans KR  : https://github.com/google/fonts/tree/main/ofl/notosanskr
   Noto Sans SC  : https://github.com/google/fonts/tree/main/ofl/notosanssc
 
+再生成元: google/fonts commit b68b528a75da7d9b73f3928899c07a23083a6633。
+Noto Serif KR / SC の同梱元OFL.txtには次の通知も記載されています:
+  Copyright 2012 Google Inc. All Rights Reserved.
+
 Copyright（Noto Serif KR / SC。フォントファイル内の記載のまま）:
   (c) 2017-2024 Adobe (http://www.adobe.com/).
 

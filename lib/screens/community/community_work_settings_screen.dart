@@ -10,7 +10,7 @@ import 'community_error_text.dart';
 
 /// Per-work owner settings. The YouTube editor is an external destination;
 /// NIARIM visibility and AI disclosure use the authenticated NIARIM API.
-class CommunityWorkSettingsScreen extends StatefulWidget {
+class CommunityWorkSettingsScreen extends StatelessWidget {
   const CommunityWorkSettingsScreen({
     super.key,
     required this.workId,
@@ -21,12 +21,66 @@ class CommunityWorkSettingsScreen extends StatefulWidget {
   final String? youtubePrivacyStatus;
 
   @override
-  State<CommunityWorkSettingsScreen> createState() =>
+  Widget build(BuildContext context) {
+    final service = context.watch<CommunityService>();
+    return _CommunityWorkSettingsBody(
+      key: ValueKey((workId, service.currentUserId, service.accountRevision)),
+      workId: workId,
+      youtubePrivacyStatus: youtubePrivacyStatus,
+    );
+  }
+}
+
+/// Pending controls and callbacks belong to exactly one account revision.
+/// Replacing this body disposes stale operations even after an A→B→A switch.
+class _CommunityWorkSettingsBody extends StatefulWidget {
+  const _CommunityWorkSettingsBody({
+    super.key,
+    required this.workId,
+    this.youtubePrivacyStatus,
+  });
+  final String workId;
+  final String? youtubePrivacyStatus;
+  @override
+  State<_CommunityWorkSettingsBody> createState() =>
       _CommunityWorkSettingsScreenState();
 }
 
 class _CommunityWorkSettingsScreenState
-    extends State<CommunityWorkSettingsScreen> {
+    extends State<_CommunityWorkSettingsBody> {
+  final _dialogs = <Route<dynamic>>{};
+
+  Future<T?> _showOwnerDialog<T>({
+    required BuildContext context,
+    required WidgetBuilder builder,
+  }) async {
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final route = DialogRoute<T>(
+      context: context,
+      builder: builder,
+      themes: InheritedTheme.capture(from: context, to: navigator.context),
+    );
+    _dialogs.add(route);
+    try {
+      return await navigator.push(route);
+    } finally {
+      _dialogs.remove(route);
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final route in _dialogs.toList()) {
+      final navigator = route.navigator;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (navigator != null && navigator.mounted && route.isActive) {
+          navigator.removeRoute(route);
+        }
+      });
+    }
+    super.dispose();
+  }
+
   bool _busy = false;
 
   Future<void> _editTag(CommunityWork work, {String? original}) async {
@@ -34,7 +88,7 @@ class _CommunityWorkSettingsScreenState
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<CommunityService>();
     var entered = original ?? '';
-    final tag = await showDialog<String>(
+    final tag = await _showOwnerDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(
@@ -88,7 +142,9 @@ class _CommunityWorkSettingsScreenState
         );
         return;
       }
+      if (!mounted) return;
       final added = await service.addTag(work.id, next);
+      if (!mounted) return;
       if (added != true) {
         if (original != null) await service.addTag(work.id, original);
         _showError(
@@ -130,6 +186,7 @@ class _CommunityWorkSettingsScreenState
   }
 
   void _showError(Object error) {
+    if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -184,7 +241,7 @@ class _CommunityWorkSettingsScreenState
   Future<void> _deleteWork(CommunityWork work) async {
     if (_busy) return;
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await _showOwnerDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.communityMyWorksDeleteConfirmTitle),

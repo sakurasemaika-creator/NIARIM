@@ -1,3 +1,4 @@
+import '../utils/tolerant_preferences.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -89,7 +90,7 @@ class CommunityMilestoneStore {
 
   Map<String, dynamic> _read(SharedPreferences prefs, String accountId) {
     try {
-      final raw = prefs.getString(_key(accountId));
+      final raw = prefs.readString(_key(accountId));
       if (raw == null) return {};
       return Map<String, dynamic>.from(jsonDecode(raw) as Map);
     } catch (_) {

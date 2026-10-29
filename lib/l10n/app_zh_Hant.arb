@@ -2674,16 +2674,7 @@
     }
   },
   "communityFollowNotificationsTooltip": "通知",
-  "communityFollowNotificationsTitle": "追蹤通知",
   "communityFollowNotificationsEmpty": "尚無通知",
-  "communityFollowNotificationBody": "{name}追蹤了你",
-  "@communityFollowNotificationBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "communityNoWorksMessage": "尚無作品",
   "communityFavoriteAuthorFollow": "追蹤",
   "communityFavoriteAuthorFollowing": "追蹤中",
@@ -2701,9 +2692,6 @@
   },
   "communityAuthorTabWorks": "作品",
   "communityAuthorTabBookmarks": "收藏",
-  "communityBookmarksPublicToggleTitle": "公開收藏清單",
-  "communityBookmarksPublicToggleDesc": "開啟後，其他使用者可以在此頁面看到你的收藏清單。預設不公開。",
-  "communityBookmarksPrivateNotice": "該使用者已將收藏清單設為不公開。",
   "communityBookmarksEmptyMessage": "尚無收藏的作品",
   "communityShortsBadge": "直向",
   "communityVideoTypeFilterTooltip": "依影片類型篩選",
@@ -2968,7 +2956,6 @@
   "communitySavedSearchName": "搜尋名稱",
   "communitySavedSearchLimit": "最多儲存10筆搜尋條件",
   "communitySavedSearchEmpty": "沒有儲存的搜尋",
-  "communityManageSavedSearches": "管理儲存的搜尋",
   "communityDurationAny": "不限長度",
   "communityDurationUpTo": "N分鐘以內（滑桿）",
   "communityDurationRange": "N至N分鐘（數字輸入）",
@@ -2987,7 +2974,6 @@
   "communityPostPeriodChooseRange": "選擇日期範圍",
   "communityMutedAuthors": "已靜音的創作者",
   "communityMutedAuthorsEmpty": "沒有已靜音的創作者",
-  "communityMuteAuthor": "將此使用者的作品靜音",
   "communityUnmuteAuthor": "解除此使用者靜音",
   "communityMyWorksManagementHeading": "作品管理",
   "communityWorkTagsTitle": "作品標籤管理",
@@ -3185,9 +3171,21 @@
   "communityCreatorLabel": "作者",
   "communityThresholdAny": "不限",
   "communityMinimumViewsOption": "至少 {count} 次觀看",
-  "@communityMinimumViewsOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityMinimumBookmarksOption": "至少 {count} 個收藏",
-  "@communityMinimumBookmarksOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityTileSize": "作品卡片大小",
   "communityMutedWordsEmpty": "目前沒有封鎖關鍵字",
   "communityMutedTagsEmpty": "目前沒有封鎖標籤",
@@ -3202,9 +3200,24 @@
   "communityUnmuteDone": "已解除封鎖",
   "communityMilestoneNotificationsTitle": "通知",
   "communityFollowerMilestone": "追蹤者達到 {count} 人",
-  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityBookmarkMilestone": "作品《{title}》的收藏達到 {count} 個",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communitySearchHistory": "搜尋紀錄",
   "communitySearchHistoryEmpty": "尚無搜尋紀錄",
   "communityDeleteSavedSearchConfirm": "要刪除這個已儲存的搜尋條件嗎？",

@@ -3006,16 +3006,7 @@
     }
   },
   "communityFollowNotificationsTooltip": "通知",
-  "communityFollowNotificationsTitle": "フォロー通知",
   "communityFollowNotificationsEmpty": "通知はありません",
-  "communityFollowNotificationBody": "{name}さんにフォローされました",
-  "@communityFollowNotificationBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "communityNoWorksMessage": "作品がありません",
   "communityFavoriteAuthorFollow": "フォロー",
   "communityFavoriteAuthorFollowing": "フォロー中",
@@ -3033,9 +3024,6 @@
   },
   "communityAuthorTabWorks": "作品",
   "communityAuthorTabBookmarks": "ブックマーク",
-  "communityBookmarksPublicToggleTitle": "ブックマーク一覧を公開する",
-  "communityBookmarksPublicToggleDesc": "オンにすると、他のユーザーがこのページからあなたのブックマーク一覧を見られるようになります。既定は非公開です。",
-  "communityBookmarksPrivateNotice": "このユーザーはブックマーク一覧を非公開にしています。",
   "communityBookmarksEmptyMessage": "ブックマークした作品がありません",
   "communityShortsBadge": "縦画面",
   "communityVideoTypeFilterTooltip": "動画の種類を絞り込む",
@@ -3306,7 +3294,6 @@
   "communitySavedSearchName": "検索条件の名前",
   "communitySavedSearchLimit": "保存できる検索条件は10件までです",
   "communitySavedSearchEmpty": "保存した検索条件はありません",
-  "communityManageSavedSearches": "保存した検索条件を管理",
   "communityDurationAny": "長さを指定しない",
   "communityDurationUpTo": "〇分以内（スライダー）",
   "communityDurationRange": "〇分以上〇分以内（数値入力）",
@@ -3325,7 +3312,6 @@
   "communityPostPeriodChooseRange": "日付を選ぶ",
   "communityMutedAuthors": "ミュートしたユーザー",
   "communityMutedAuthorsEmpty": "ミュート中のユーザーはいません",
-  "communityMuteAuthor": "このユーザーの作品をミュートする",
   "communityUnmuteAuthor": "このユーザーのミュートを解除する",
   "communityMyWorksManagementHeading": "作品管理",
   "communityWorkTagsTitle": "作品のタグ管理",
@@ -3659,9 +3645,21 @@
   "communityCreatorLabel": "作者",
   "communityThresholdAny": "条件なし",
   "communityMinimumViewsOption": "{count}回再生以上",
-  "@communityMinimumViewsOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityMinimumBookmarksOption": "{count}件以上",
-  "@communityMinimumBookmarksOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityTileSize": "作品の表示サイズ",
   "communityMutedWordsEmpty": "ミュート中のキーワードはありません",
   "communityMutedTagsEmpty": "ミュート中のタグはありません",
@@ -3676,9 +3674,24 @@
   "communityUnmuteDone": "このユーザーのミュートを解除しました",
   "communityMilestoneNotificationsTitle": "通知",
   "communityFollowerMilestone": "フォロワーが{count}人に達しました",
-  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityBookmarkMilestone": "作品「{title}」のブックマークが{count}件に達しました",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communitySearchHistory": "検索履歴",
   "communitySearchHistoryEmpty": "検索履歴はありません",
   "communityDeleteSavedSearchConfirm": "保存した検索条件を削除しますか？",

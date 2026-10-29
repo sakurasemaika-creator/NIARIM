@@ -6106,15 +6106,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityFollowNotificationsTooltip => '通知';
 
   @override
-  String get communityFollowNotificationsTitle => '关注通知';
-
-  @override
   String get communityFollowNotificationsEmpty => '暂无通知';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$name关注了你';
-  }
 
   @override
   String get communityNoWorksMessage => '暂无作品';
@@ -6148,16 +6140,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityAuthorTabBookmarks => '收藏';
-
-  @override
-  String get communityBookmarksPublicToggleTitle => '公开收藏列表';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      '开启后，其他用户可以在此页面看到你的收藏列表。默认不公开。';
-
-  @override
-  String get communityBookmarksPrivateNotice => '该用户已将收藏列表设为不公开。';
 
   @override
   String get communityBookmarksEmptyMessage => '暂无收藏的作品';
@@ -6849,9 +6831,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communitySavedSearchEmpty => '暂无保存的搜索';
 
   @override
-  String get communityManageSavedSearches => '管理保存的搜索';
-
-  @override
   String get communityDurationAny => '不限时长';
 
   @override
@@ -6904,9 +6883,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityMutedAuthorsEmpty => '暂无已屏蔽的创作者';
-
-  @override
-  String get communityMuteAuthor => '屏蔽此用户的作品';
 
   @override
   String get communityUnmuteAuthor => '取消屏蔽此用户';
@@ -13727,15 +13703,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityFollowNotificationsTooltip => '通知';
 
   @override
-  String get communityFollowNotificationsTitle => '追蹤通知';
-
-  @override
   String get communityFollowNotificationsEmpty => '尚無通知';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$name追蹤了你';
-  }
 
   @override
   String get communityNoWorksMessage => '尚無作品';
@@ -13769,16 +13737,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityAuthorTabBookmarks => '收藏';
-
-  @override
-  String get communityBookmarksPublicToggleTitle => '公開收藏清單';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      '開啟後，其他使用者可以在此頁面看到你的收藏清單。預設不公開。';
-
-  @override
-  String get communityBookmarksPrivateNotice => '該使用者已將收藏清單設為不公開。';
 
   @override
   String get communityBookmarksEmptyMessage => '尚無收藏的作品';
@@ -14471,9 +14429,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communitySavedSearchEmpty => '沒有儲存的搜尋';
 
   @override
-  String get communityManageSavedSearches => '管理儲存的搜尋';
-
-  @override
   String get communityDurationAny => '不限長度';
 
   @override
@@ -14526,9 +14481,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityMutedAuthorsEmpty => '沒有已靜音的創作者';
-
-  @override
-  String get communityMuteAuthor => '將此使用者的作品靜音';
 
   @override
   String get communityUnmuteAuthor => '解除此使用者靜音';

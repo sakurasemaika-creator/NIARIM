@@ -33,6 +33,7 @@ void main() {
       for (final preset in [
         ...themes.presets,
         AppThemePreset.defaultLight.copyWith(
+          id: ThemeService.customCurrentId,
           accentColor: Colors.white,
           selectionColor: Colors.black,
         ),
@@ -68,7 +69,16 @@ void main() {
         await tester.tap(find.byKey(const Key('communityContentFilterButton')));
         await tester.pumpAndSettle();
         for (final selected in [true, false]) {
-          final control = find.byType(Switch);
+          final l10n = AppLocalizations.of(
+            tester.element(find.byType(AlertDialog)),
+          )!;
+          final control = find.descendant(
+            of: find.widgetWithText(
+              SwitchListTile,
+              l10n.communityHideGenerativeAiImageVideo,
+            ),
+            matching: find.byType(Switch),
+          );
           final w = tester.widget<Switch>(control);
           expect(w.value, selected);
           final context = tester.element(control);
@@ -128,6 +138,8 @@ void main() {
                 'thumb/track=${contrastRatio(thumb, track)} boundary=$boundary';
           }
           if (selected) {
+            await tester.ensureVisible(control);
+            await tester.pumpAndSettle();
             await tester.tap(control);
             await tester.pumpAndSettle();
           }
@@ -139,7 +151,17 @@ void main() {
         expect(service.hideGenerativeAiImageVideo, isFalse);
         await tester.tap(find.byKey(const Key('communityContentFilterButton')));
         await tester.pumpAndSettle();
-        expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+        final reopenedL10n = AppLocalizations.of(
+          tester.element(find.byType(AlertDialog)),
+        )!;
+        final reopened = find.descendant(
+          of: find.widgetWithText(
+            SwitchListTile,
+            reopenedL10n.communityHideGenerativeAiImageVideo,
+          ),
+          matching: find.byType(Switch),
+        );
+        expect(tester.widget<Switch>(reopened).value, isFalse);
         final l10n = AppLocalizations.of(
           tester.element(find.byType(AlertDialog)),
         )!;

@@ -2675,16 +2675,7 @@
     }
   },
   "communityFollowNotificationsTooltip": "Notifications",
-  "communityFollowNotificationsTitle": "Follow notifications",
   "communityFollowNotificationsEmpty": "No notifications",
-  "communityFollowNotificationBody": "{name} followed you",
-  "@communityFollowNotificationBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "communityNoWorksMessage": "No works",
   "communityFavoriteAuthorFollow": "Follow",
   "communityFavoriteAuthorFollowing": "Following",
@@ -2702,9 +2693,6 @@
   },
   "communityAuthorTabWorks": "Works",
   "communityAuthorTabBookmarks": "Bookmarks",
-  "communityBookmarksPublicToggleTitle": "Make bookmarks list public",
-  "communityBookmarksPublicToggleDesc": "When on, other users can see your bookmark list from this page. Private by default.",
-  "communityBookmarksPrivateNotice": "This user has set their bookmark list to private.",
   "communityBookmarksEmptyMessage": "No bookmarked works",
   "communityShortsBadge": "Portrait",
   "communityVideoTypeFilterTooltip": "Filter by video type",
@@ -2975,7 +2963,6 @@
   "communitySavedSearchName": "Search name",
   "communitySavedSearchLimit": "You can save up to 10 searches",
   "communitySavedSearchEmpty": "No saved searches",
-  "communityManageSavedSearches": "Manage saved searches",
   "communityDurationAny": "Any duration",
   "communityDurationUpTo": "Up to N minutes (slider)",
   "communityDurationRange": "Between N and N minutes (numbers)",
@@ -2994,7 +2981,6 @@
   "communityPostPeriodChooseRange": "Select date range",
   "communityMutedAuthors": "Muted creators",
   "communityMutedAuthorsEmpty": "No muted creators",
-  "communityMuteAuthor": "Mute this creator's works",
   "communityUnmuteAuthor": "Unmute this creator",
   "communityMyWorksManagementHeading": "Manage works",
   "communityWorkTagsTitle": "Work tags",
@@ -3192,9 +3178,21 @@
   "communityCreatorLabel": "Creator",
   "communityThresholdAny": "No condition",
   "communityMinimumViewsOption": "{count} views or more",
-  "@communityMinimumViewsOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityMinimumBookmarksOption": "{count} bookmarks or more",
-  "@communityMinimumBookmarksOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityTileSize": "Work tile size",
   "communityMutedWordsEmpty": "No muted keywords",
   "communityMutedTagsEmpty": "No muted tags",
@@ -3209,9 +3207,24 @@
   "communityUnmuteDone": "User unmuted",
   "communityMilestoneNotificationsTitle": "Notifications",
   "communityFollowerMilestone": "You reached {count} followers",
-  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityBookmarkMilestone": "“{title}” reached {count} bookmarks",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communitySearchHistory": "Search history",
   "communitySearchHistoryEmpty": "No search history",
   "communityDeleteSavedSearchConfirm": "Delete this saved search?",

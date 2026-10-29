@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => SharedPreferences.setMockInitialValues({}));
 
   group('CommunityPreviewService direct coverage', () {
     test('show close position and size clamping notify and retain state', () {

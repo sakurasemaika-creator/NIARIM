@@ -6367,15 +6367,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityFollowNotificationsTooltip => 'Notifications';
 
   @override
-  String get communityFollowNotificationsTitle => 'Follow notifications';
-
-  @override
   String get communityFollowNotificationsEmpty => 'No notifications';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$name followed you';
-  }
 
   @override
   String get communityNoWorksMessage => 'No works';
@@ -6409,18 +6401,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityAuthorTabBookmarks => 'Bookmarks';
-
-  @override
-  String get communityBookmarksPublicToggleTitle =>
-      'Make bookmarks list public';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      'When on, other users can see your bookmark list from this page. Private by default.';
-
-  @override
-  String get communityBookmarksPrivateNotice =>
-      'This user has set their bookmark list to private.';
 
   @override
   String get communityBookmarksEmptyMessage => 'No bookmarked works';
@@ -7137,9 +7117,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communitySavedSearchEmpty => 'No saved searches';
 
   @override
-  String get communityManageSavedSearches => 'Manage saved searches';
-
-  @override
   String get communityDurationAny => 'Any duration';
 
   @override
@@ -7193,9 +7170,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityMutedAuthorsEmpty => 'No muted creators';
-
-  @override
-  String get communityMuteAuthor => 'Mute this creator\'s works';
 
   @override
   String get communityUnmuteAuthor => 'Unmute this creator';

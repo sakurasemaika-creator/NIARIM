@@ -2675,16 +2675,7 @@
     }
   },
   "communityFollowNotificationsTooltip": "Notifications",
-  "communityFollowNotificationsTitle": "Notifications d'abonnement",
   "communityFollowNotificationsEmpty": "Aucune notification",
-  "communityFollowNotificationBody": "{name} vous suit désormais",
-  "@communityFollowNotificationBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "communityNoWorksMessage": "Aucune œuvre",
   "communityFavoriteAuthorFollow": "Suivre",
   "communityFavoriteAuthorFollowing": "Abonné(e)",
@@ -2702,9 +2693,6 @@
   },
   "communityAuthorTabWorks": "Œuvres",
   "communityAuthorTabBookmarks": "Favoris",
-  "communityBookmarksPublicToggleTitle": "Rendre la liste de favoris publique",
-  "communityBookmarksPublicToggleDesc": "Si activé, les autres utilisateurs pourront voir votre liste de favoris depuis cette page. Privée par défaut.",
-  "communityBookmarksPrivateNotice": "Cet utilisateur a défini sa liste de favoris comme privée.",
   "communityBookmarksEmptyMessage": "Aucune œuvre en favoris",
   "communityShortsBadge": "Vertical",
   "communityVideoTypeFilterTooltip": "Filtrer par type de vidéo",
@@ -2968,7 +2956,6 @@
   "communitySavedSearchName": "Nom de la recherche",
   "communitySavedSearchLimit": "10 recherches enregistrées maximum",
   "communitySavedSearchEmpty": "Aucune recherche enregistrée",
-  "communityManageSavedSearches": "Gérer les recherches enregistrées",
   "communityDurationAny": "Toutes les durées",
   "communityDurationUpTo": "Jusqu’à N minutes (curseur)",
   "communityDurationRange": "Entre N et N minutes (saisie)",
@@ -2987,7 +2974,6 @@
   "communityPostPeriodChooseRange": "Choisir les dates",
   "communityMutedAuthors": "Créateurs masqués",
   "communityMutedAuthorsEmpty": "Aucun créateur masqué",
-  "communityMuteAuthor": "Masquer les œuvres de ce créateur",
   "communityUnmuteAuthor": "Ne plus masquer ce créateur",
   "communityMyWorksManagementHeading": "Gérer les œuvres",
   "communityWorkTagsTitle": "Tags de l'œuvre",
@@ -3185,9 +3171,21 @@
   "communityCreatorLabel": "Créateur",
   "communityThresholdAny": "Aucune condition",
   "communityMinimumViewsOption": "Au moins {count} vues",
-  "@communityMinimumViewsOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityMinimumBookmarksOption": "Au moins {count} favoris",
-  "@communityMinimumBookmarksOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityTileSize": "Taille des œuvres",
   "communityMutedWordsEmpty": "Aucun mot-clé masqué",
   "communityMutedTagsEmpty": "Aucun tag masqué",
@@ -3202,9 +3200,24 @@
   "communityUnmuteDone": "Utilisateur rétabli",
   "communityMilestoneNotificationsTitle": "Notifications",
   "communityFollowerMilestone": "Vous avez atteint {count} abonnés",
-  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityBookmarkMilestone": "« {title} » a atteint {count} favoris",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communitySearchHistory": "Historique de recherche",
   "communitySearchHistoryEmpty": "Aucun historique",
   "communityDeleteSavedSearchConfirm": "Supprimer cette recherche enregistrée ?",

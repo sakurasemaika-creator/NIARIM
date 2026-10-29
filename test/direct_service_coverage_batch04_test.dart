@@ -10,7 +10,8 @@ void main() {
   group('CommunityService direct coverage', () {
     test(
       'bookmark ordering tags locks visibility follow counts and notifications work',
-      () {
+      () async {
+        SharedPreferences.setMockInitialValues({});
         final service = CommunityService();
         final first = service.works.first;
         final second = service.works[1];
@@ -80,11 +81,11 @@ void main() {
           );
         }
 
-        final unread = service.unreadFollowNotificationCount;
+        final unread = service.unreadMilestoneCount;
         if (unread > 0) {
-          service.markAllFollowNotificationsRead();
-          expect(service.unreadFollowNotificationCount, 0);
-          expect(service.followNotifications.every((n) => n.isRead), isTrue);
+          await service.markMilestonesRead();
+          expect(service.unreadMilestoneCount, 0);
+          expect(service.milestoneNotifications.every((n) => n.read), isTrue);
         }
       },
     );

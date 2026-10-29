@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/project_storage.dart';
+import 'helpers/pump_real_async.dart';
 
 import 'package:niarim/app.dart';
 import 'package:niarim/l10n/app_localizations.dart';
@@ -29,6 +30,7 @@ import 'package:niarim/screens/community/community_author_works_screen.dart';
 import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
 import 'package:niarim/services/community_service.dart';
+import 'package:niarim/services/community_milestone_store.dart';
 import 'package:niarim/services/performance_service.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/project_service.dart';
@@ -1565,15 +1567,11 @@ void main() {
     // 検索を開いて、ダミーデータの投稿者名の一部（'sakura_draws'）で
     // 検索する。作品タイトルでは一致しない語のため、投稿者名検索が
     // 機能していることの確認になる。
-    final searchIconFinder = find.byIcon(Icons.search);
-    expect(searchIconFinder, findsOneWidget);
-    await tester.tap(searchIconFinder);
-    await tester.pump();
-
-    final searchFieldFinder = find.byType(TextField);
+    final searchFieldFinder = find.byKey(const Key('communitySearchInput'));
     expect(searchFieldFinder, findsOneWidget);
     await tester.enterText(searchFieldFinder, 'sakura_draws');
-    await tester.pump();
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: '投稿者名検索の絞り込みで例外');
 
     // 絞り込み後は全件表示より少なくなっているはず（該当作者の作品のみ）。
@@ -1584,12 +1582,16 @@ void main() {
     // 存在しない語で検索すると「該当なし」の空状態表示になる
     // （クラッシュせず、CommunityWorkCard＝作品カードが0件になること）。
     await tester.enterText(searchFieldFinder, 'このキーワードには絶対一致しない__zzz');
-    await tester.pump();
+    await tester.tap(find.byKey(const Key('communitySearchButton')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: '該当なし検索の表示で例外');
     expect(find.byIcon(Icons.search_off), findsOneWidget);
 
     // 検索を閉じると全件表示に戻る。
-    final closeIconFinder = find.byIcon(Icons.close);
+    final closeIconFinder = find.descendant(
+      of: find.byKey(const Key('communitySearchRow')),
+      matching: find.byIcon(Icons.close),
+    );
     expect(closeIconFinder, findsOneWidget);
     await tester.tap(closeIconFinder);
     await tester.pump();
@@ -1616,7 +1618,7 @@ void main() {
     // 縦画面モードボタンは「縦画面のみ」フィルターを選択したときにのみ
     // 表示される仕様のため、先に動画種類フィルターを「縦画面のみ」へ
     // 切り替える。
-    final videoTypeFilterFinder = find.byIcon(Icons.filter_alt_outlined);
+    final videoTypeFilterFinder = find.byKey(const Key('communitySortButton'));
     expect(videoTypeFilterFinder, findsOneWidget);
     await tester.tap(videoTypeFilterFinder);
     await tester.pumpAndSettle();
@@ -1639,7 +1641,11 @@ void main() {
     // ダミーデータは約35%がショート動画になるよう生成しているため、
     // 24件中で1件も無いことは考えにくいが、念のためボタン自体は必ず
     // 存在することを先に確認する。
-    final shortsButtonFinder = find.byIcon(Icons.view_carousel_outlined);
+    await tester.tap(videoTypeFilterFinder);
+    await tester.pumpAndSettle();
+    final shortsButtonFinder = find.byWidgetPredicate(
+      (w) => w is PopupMenuItem<String> && w.value == 'shorts',
+    );
     expect(shortsButtonFinder, findsOneWidget);
     await tester.tap(shortsButtonFinder);
     await tester.pump(const Duration(milliseconds: 300));
@@ -1659,7 +1665,10 @@ void main() {
     );
 
     // 閉じるボタンでコミュニティ画面へ戻れる。
-    final closeFinder = find.byIcon(Icons.close);
+    final closeFinder = find.descendant(
+      of: find.byType(CommunityShortsScreen),
+      matching: find.byIcon(Icons.close),
+    );
     expect(closeFinder, findsOneWidget);
     await tester.tap(closeFinder);
     await tester.pumpAndSettle();
@@ -1968,8 +1977,9 @@ void main() {
     expect(communityService.isRepostedBySelf(work.id), isFalse);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets('コミュニティ画面：フォロー通知ベルのバッジと通知一覧画面が動作する'
-      '（Task#134継続）', (WidgetTester tester) async {
+  testWidgets('コミュニティ画面：端末内件数milestoneのベル・一覧・既読が動作する', (
+    WidgetTester tester,
+  ) async {
     setPhoneViewSize(tester);
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
@@ -1987,8 +1997,16 @@ void main() {
     final communityService = tester
         .element(find.byType(Scaffold).first)
         .read<CommunityService>();
-    final initialUnread = communityService.unreadFollowNotificationCount;
-    expect(initialUnread, greaterThan(0), reason: 'ダミーデータ上、未読通知が最初からある想定');
+    expect(communityService.milestoneNotifications, isEmpty);
+    final store = CommunityMilestoneStore();
+    await tester.runAsync(() async {
+      await store.observe(kDummySelfAuthorId, followers: 9);
+      await store.observe(kDummySelfAuthorId, followers: 10);
+      await communityService.loadMilestones();
+    });
+    await tester.pumpAndSettle();
+    final initialUnread = communityService.unreadMilestoneCount;
+    expect(initialUnread, 1, reason: '9→10の匿名件数milestoneを1件保存');
 
     // 通知ベルのバッジに未読数が表示されているはず。
     expect(find.text('$initialUnread'), findsOneWidget);
@@ -1998,11 +2016,19 @@ void main() {
     await tester.tap(bellFinder);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'フォロー通知一覧画面への遷移で例外');
+    expect(tester.takeException(), isNull, reason: '件数milestone一覧画面への遷移で例外');
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
 
     // 画面を開いた時点で全て既読になり、リストにも通知本文が表示される。
-    expect(communityService.unreadFollowNotificationCount, 0);
-    expect(find.textContaining('さんにフォローされました'), findsWidgets);
+    expect(communityService.unreadMilestoneCount, 0);
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(Scaffold).last),
+    )!;
+    expect(find.text(l10n.communityFollowerMilestone('10')), findsOneWidget);
+    expect(
+      communityService.milestoneNotifications.every((n) => n.read),
+      isTrue,
+    );
 
     Navigator.of(tester.element(find.byType(Scaffold).last)).pop();
     await tester.pump(const Duration(milliseconds: 300));

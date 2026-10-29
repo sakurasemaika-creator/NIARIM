@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/screens/community/widgets/community_floating_preview.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
-import 'package:niarim/screens/community/widgets/video_type_filter.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -30,6 +29,7 @@ void main() {
       final work = community.discoverableWorks.first;
       for (final preset in [
         AppThemePreset.defaultLight.copyWith(
+          id: ThemeService.customCurrentId,
           textColor: const Color(0xFF16593A),
           menuTextColor: const Color(0xFF17325A),
           buttonTextColor: const Color(0xFFFFE3FC),
@@ -40,6 +40,7 @@ void main() {
           selectionColor: const Color(0xFFD65F31),
         ),
         AppThemePreset.defaultDark.copyWith(
+          id: ThemeService.customCurrentId,
           textColor: const Color(0xFFF1D596),
           menuTextColor: const Color(0xFFD7E8FE),
           buttonTextColor: const Color(0xFF17325A),
@@ -90,13 +91,22 @@ void main() {
           find.descendant(of: card, matching: find.byType(IconButton)).first,
         );
         expect((bookmark.icon as Icon).color, preset.textColor);
-        final videoFilter = find.byType(VideoTypeFilterButton);
+        // The floating preview can cover the plaza's expanded search header.
+        // Move it through its drag gesture before operating the underlying menu.
+        final drag = find.descendant(
+          of: root,
+          matching: find.byWidgetPredicate(
+            (widget) => widget is GestureDetector && widget.onPanUpdate != null,
+          ),
+        );
+        await tester.drag(drag, const Offset(600, 250));
+        await tester.pumpAndSettle();
+        final videoFilter = find.byKey(const Key('communitySortButton'));
+        expect(videoFilter.hitTestable(), findsOneWidget);
         await tester.tap(videoFilter);
         await tester.pumpAndSettle();
         final item = find.byWidgetPredicate(
-          (w) =>
-              w is CheckedPopupMenuItem<VideoTypeFilter> &&
-              w.value == VideoTypeFilter.all,
+          (w) => w is CheckedPopupMenuItem<String> && w.value == 'type:0',
         );
         final menu = find
             .ancestor(of: item, matching: find.byType(Material))

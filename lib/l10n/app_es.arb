@@ -2675,16 +2675,7 @@
     }
   },
   "communityFollowNotificationsTooltip": "Notificaciones",
-  "communityFollowNotificationsTitle": "Notificaciones de seguidores",
   "communityFollowNotificationsEmpty": "No hay notificaciones",
-  "communityFollowNotificationBody": "{name} te ha seguido",
-  "@communityFollowNotificationBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "communityNoWorksMessage": "No hay obras",
   "communityFavoriteAuthorFollow": "Seguir",
   "communityFavoriteAuthorFollowing": "Siguiendo",
@@ -2702,9 +2693,6 @@
   },
   "communityAuthorTabWorks": "Obras",
   "communityAuthorTabBookmarks": "Marcadores",
-  "communityBookmarksPublicToggleTitle": "Hacer pública la lista de marcadores",
-  "communityBookmarksPublicToggleDesc": "Si está activado, otros usuarios podrán ver su lista de marcadores desde esta página. Es privada de forma predeterminada.",
-  "communityBookmarksPrivateNotice": "Este usuario ha configurado su lista de marcadores como privada.",
   "communityBookmarksEmptyMessage": "No hay obras marcadas",
   "communityShortsBadge": "Vertical",
   "communityVideoTypeFilterTooltip": "Filtrar por tipo de vídeo",
@@ -2968,7 +2956,6 @@
   "communitySavedSearchName": "Nombre de la búsqueda",
   "communitySavedSearchLimit": "Puedes guardar hasta 10 búsquedas",
   "communitySavedSearchEmpty": "No hay búsquedas guardadas",
-  "communityManageSavedSearches": "Gestionar búsquedas guardadas",
   "communityDurationAny": "Cualquier duración",
   "communityDurationUpTo": "Hasta N minutos (control deslizante)",
   "communityDurationRange": "Entre N y N minutos (números)",
@@ -2987,7 +2974,6 @@
   "communityPostPeriodChooseRange": "Elegir fechas",
   "communityMutedAuthors": "Creadores silenciados",
   "communityMutedAuthorsEmpty": "No hay creadores silenciados",
-  "communityMuteAuthor": "Silenciar las obras de este creador",
   "communityUnmuteAuthor": "Dejar de silenciar a este creador",
   "communityMyWorksManagementHeading": "Gestionar obras",
   "communityWorkTagsTitle": "Etiquetas de la obra",
@@ -3185,9 +3171,21 @@
   "communityCreatorLabel": "Creador",
   "communityThresholdAny": "Sin condición",
   "communityMinimumViewsOption": "Al menos {count} vistas",
-  "@communityMinimumViewsOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityMinimumBookmarksOption": "Al menos {count} marcadores",
-  "@communityMinimumBookmarksOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityTileSize": "Tamaño de las obras",
   "communityMutedWordsEmpty": "No hay palabras silenciadas",
   "communityMutedTagsEmpty": "No hay etiquetas silenciadas",
@@ -3202,9 +3200,24 @@
   "communityUnmuteDone": "Usuario reactivado",
   "communityMilestoneNotificationsTitle": "Notificaciones",
   "communityFollowerMilestone": "Has alcanzado {count} seguidores",
-  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityBookmarkMilestone": "«{title}» alcanzó {count} marcadores",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communitySearchHistory": "Historial de búsqueda",
   "communitySearchHistoryEmpty": "No hay historial",
   "communityDeleteSavedSearchConfirm": "¿Eliminar esta búsqueda guardada?",

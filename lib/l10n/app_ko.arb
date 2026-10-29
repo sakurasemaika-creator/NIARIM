@@ -2675,16 +2675,7 @@
     }
   },
   "communityFollowNotificationsTooltip": "알림",
-  "communityFollowNotificationsTitle": "팔로우 알림",
   "communityFollowNotificationsEmpty": "알림이 없습니다",
-  "communityFollowNotificationBody": "{name}님이 회원님을 팔로우했습니다",
-  "@communityFollowNotificationBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "communityNoWorksMessage": "작품이 없습니다",
   "communityFavoriteAuthorFollow": "팔로우",
   "communityFavoriteAuthorFollowing": "팔로잉",
@@ -2702,9 +2693,6 @@
   },
   "communityAuthorTabWorks": "작품",
   "communityAuthorTabBookmarks": "북마크",
-  "communityBookmarksPublicToggleTitle": "북마크 목록 공개하기",
-  "communityBookmarksPublicToggleDesc": "켜면 다른 사용자가 이 페이지에서 회원님의 북마크 목록을 볼 수 있습니다. 기본값은 비공개입니다.",
-  "communityBookmarksPrivateNotice": "이 사용자는 북마크 목록을 비공개로 설정했습니다.",
   "communityBookmarksEmptyMessage": "북마크한 작품이 없습니다",
   "communityShortsBadge": "세로 화면",
   "communityVideoTypeFilterTooltip": "동영상 종류로 좁혀보기",
@@ -2968,7 +2956,6 @@
   "communitySavedSearchName": "검색 이름",
   "communitySavedSearchLimit": "검색은 10개까지 저장할 수 있습니다",
   "communitySavedSearchEmpty": "저장한 검색이 없습니다",
-  "communityManageSavedSearches": "저장한 검색 관리",
   "communityDurationAny": "길이 제한 없음",
   "communityDurationUpTo": "N분 이하 (슬라이더)",
   "communityDurationRange": "N분 이상 N분 이하 (숫자 입력)",
@@ -2987,7 +2974,6 @@
   "communityPostPeriodChooseRange": "날짜 선택",
   "communityMutedAuthors": "뮤트한 사용자",
   "communityMutedAuthorsEmpty": "뮤트한 사용자가 없습니다",
-  "communityMuteAuthor": "이 사용자의 작품 뮤트",
   "communityUnmuteAuthor": "이 사용자 뮤트 해제",
   "communityMyWorksManagementHeading": "작품 관리",
   "communityWorkTagsTitle": "작품 태그 관리",
@@ -3185,9 +3171,21 @@
   "communityCreatorLabel": "작성자",
   "communityThresholdAny": "조건 없음",
   "communityMinimumViewsOption": "조회수 {count}회 이상",
-  "@communityMinimumViewsOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityMinimumBookmarksOption": "북마크 {count}개 이상",
-  "@communityMinimumBookmarksOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityTileSize": "작품 타일 크기",
   "communityMutedWordsEmpty": "뮤트한 키워드가 없습니다",
   "communityMutedTagsEmpty": "뮤트한 태그가 없습니다",
@@ -3202,9 +3200,24 @@
   "communityUnmuteDone": "사용자 뮤트를 해제했습니다",
   "communityMilestoneNotificationsTitle": "알림",
   "communityFollowerMilestone": "팔로워가 {count}명에 도달했습니다",
-  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityBookmarkMilestone": "「{title}」 작품의 북마크가 {count}개에 도달했습니다",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communitySearchHistory": "검색 기록",
   "communitySearchHistoryEmpty": "검색 기록이 없습니다",
   "communityDeleteSavedSearchConfirm": "저장된 검색 조건을 삭제할까요?",

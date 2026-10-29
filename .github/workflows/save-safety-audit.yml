@@ -19,6 +19,9 @@ on:
       - "test/project_folder_persistence_test.dart"
       - "test/project_folder_transaction_test.dart"
       - "test/project_folder_edit_ui_test.dart"
+      - "test/community_milestone_account_boundary_test.dart"
+      - "lib/screens/community/community_work_settings_screen.dart"
+      - "lib/services/community_milestone_store.dart"
       - "lib/screens/home/home_screen.dart"
       - "lib/services/work_folder_service.dart"
       - "lib/screens/home/widgets/project_list_widget.dart"
@@ -267,7 +270,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          flutter test --no-pub --reporter expanded 2>&1 | tee artifacts/save-safety/full-test.log
+          flutter test --no-pub --reporter expanded --file-reporter json:artifacts/save-safety/full-test.jsonl 2>&1 | tee artifacts/save-safety/full-test.log
       - name: Export global canonical formatting for diagnosis
         if: always()
         run: |

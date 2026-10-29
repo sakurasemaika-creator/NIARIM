@@ -532,7 +532,7 @@ void main() {
       for (var n = 0; n < 12; n++) {
         await tester.enterText(
           find.byKey(const Key('communitySearchInput')),
-          '検索' + n.toString(),
+          '検索$n',
         );
         await tester.tap(find.byKey(const Key('communitySearchButton')));
         await tester.pumpAndSettle();

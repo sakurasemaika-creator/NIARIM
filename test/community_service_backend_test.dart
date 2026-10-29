@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +13,8 @@ import 'package:niarim/services/community_service.dart';
 /// 「デプロイ前でもアプリが一通り動く」ことと「デプロイ後は同じ画面が
 /// 実データで動く」ことの両立が要件なので、その両方を検証する。
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   const jsonHeaders = {'content-type': 'application/json; charset=utf-8'};
 
   Map<String, dynamic> work(String id, String title) => {

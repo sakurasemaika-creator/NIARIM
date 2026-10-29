@@ -522,10 +522,7 @@ class CommunityService extends ChangeNotifier {
     _pruneUnconfirmed();
     notifyListeners();
     await _observeOwnMilestones(
-      ownWorks: [
-        for (final id in _ownIds)
-          if (byId(id) case final work?) work,
-      ],
+      ownWorks: [for (final id in _ownIds) ?byId(id)],
     );
     final id = page.authorId;
     if (accountKey != null && id != null) {
@@ -1126,25 +1123,30 @@ class CommunityService extends ChangeNotifier {
       _milestoneEvents.where((event) => !event.read).length;
 
   Future<void> loadMilestones() async {
+    final revision = _accountRevision;
     final account = _selfId;
     if (account == null) return;
     final items = await _milestoneStore.load(account);
-    if (_disposed || _selfId != account) return;
+    if (!_isCurrentAccount(revision) || _selfId != account) return;
     _milestoneEvents = items;
     notifyListeners();
   }
 
   Future<void> markMilestonesRead() async {
+    final revision = _accountRevision;
     final account = _selfId;
     if (account == null) return;
-    _milestoneEvents = await _milestoneStore.markAllRead(account);
-    if (!_disposed && _selfId == account) notifyListeners();
+    final items = await _milestoneStore.markAllRead(account);
+    if (!_isCurrentAccount(revision) || _selfId != account) return;
+    _milestoneEvents = items;
+    notifyListeners();
   }
 
   Future<void> _observeOwnMilestones({
     int? followers,
     Iterable<CommunityWork>? ownWorks,
   }) async {
+    final revision = _accountRevision;
     final account = _selfId;
     if (account == null) return;
     final snapshots = ownWorks == null
@@ -1158,7 +1160,7 @@ class CommunityService extends ChangeNotifier {
       followers: followers,
       bookmarks: snapshots,
     );
-    if (!_disposed && _selfId == account) {
+    if (_isCurrentAccount(revision) && _selfId == account) {
       _milestoneEvents = events;
       notifyListeners();
     }

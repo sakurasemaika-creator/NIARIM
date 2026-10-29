@@ -2675,16 +2675,7 @@
     }
   },
   "communityFollowNotificationsTooltip": "通知",
-  "communityFollowNotificationsTitle": "关注通知",
   "communityFollowNotificationsEmpty": "暂无通知",
-  "communityFollowNotificationBody": "{name}关注了你",
-  "@communityFollowNotificationBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "communityNoWorksMessage": "暂无作品",
   "communityFavoriteAuthorFollow": "关注",
   "communityFavoriteAuthorFollowing": "已关注",
@@ -2702,9 +2693,6 @@
   },
   "communityAuthorTabWorks": "作品",
   "communityAuthorTabBookmarks": "收藏",
-  "communityBookmarksPublicToggleTitle": "公开收藏列表",
-  "communityBookmarksPublicToggleDesc": "开启后，其他用户可以在此页面看到你的收藏列表。默认不公开。",
-  "communityBookmarksPrivateNotice": "该用户已将收藏列表设为不公开。",
   "communityBookmarksEmptyMessage": "暂无收藏的作品",
   "communityShortsBadge": "竖屏",
   "communityVideoTypeFilterTooltip": "按视频类型筛选",
@@ -2968,7 +2956,6 @@
   "communitySavedSearchName": "搜索名称",
   "communitySavedSearchLimit": "最多保存10条搜索条件",
   "communitySavedSearchEmpty": "暂无保存的搜索",
-  "communityManageSavedSearches": "管理保存的搜索",
   "communityDurationAny": "不限时长",
   "communityDurationUpTo": "N分钟以内（滑块）",
   "communityDurationRange": "N至N分钟（数字输入）",
@@ -2987,7 +2974,6 @@
   "communityPostPeriodChooseRange": "选择日期范围",
   "communityMutedAuthors": "已屏蔽的创作者",
   "communityMutedAuthorsEmpty": "暂无已屏蔽的创作者",
-  "communityMuteAuthor": "屏蔽此用户的作品",
   "communityUnmuteAuthor": "取消屏蔽此用户",
   "communityMyWorksManagementHeading": "作品管理",
   "communityWorkTagsTitle": "作品标签管理",
@@ -3185,9 +3171,21 @@
   "communityCreatorLabel": "作者",
   "communityThresholdAny": "不限",
   "communityMinimumViewsOption": "至少 {count} 次观看",
-  "@communityMinimumViewsOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityMinimumBookmarksOption": "至少 {count} 个收藏",
-  "@communityMinimumBookmarksOption": {"placeholders": {"count": {"type": "String"}}},
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityTileSize": "作品卡片大小",
   "communityMutedWordsEmpty": "暂无屏蔽关键词",
   "communityMutedTagsEmpty": "暂无屏蔽标签",
@@ -3202,9 +3200,24 @@
   "communityUnmuteDone": "已取消屏蔽",
   "communityMilestoneNotificationsTitle": "通知",
   "communityFollowerMilestone": "关注者达到 {count} 人",
-  "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communityBookmarkMilestone": "作品《{title}》的收藏达到 {count} 个",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "communitySearchHistory": "搜索历史",
   "communitySearchHistoryEmpty": "暂无搜索历史",
   "communityDeleteSavedSearchConfirm": "删除此保存的搜索条件？",

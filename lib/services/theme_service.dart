@@ -428,7 +428,7 @@ class ThemeService extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final shouldRestoreBuiltIns =
-        prefs.getBool(_originalBuiltInPaletteRestoreKey) != true;
+        prefs.readBool(_originalBuiltInPaletteRestoreKey) != true;
     final originalBuiltIns = {
       for (final preset in _builtInPresets) preset.id: preset,
     };

@@ -6152,15 +6152,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityFollowNotificationsTooltip => '通知';
 
   @override
-  String get communityFollowNotificationsTitle => 'フォロー通知';
-
-  @override
   String get communityFollowNotificationsEmpty => '通知はありません';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$nameさんにフォローされました';
-  }
 
   @override
   String get communityNoWorksMessage => '作品がありません';
@@ -6194,16 +6186,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityAuthorTabBookmarks => 'ブックマーク';
-
-  @override
-  String get communityBookmarksPublicToggleTitle => 'ブックマーク一覧を公開する';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      'オンにすると、他のユーザーがこのページからあなたのブックマーク一覧を見られるようになります。既定は非公開です。';
-
-  @override
-  String get communityBookmarksPrivateNotice => 'このユーザーはブックマーク一覧を非公開にしています。';
 
   @override
   String get communityBookmarksEmptyMessage => 'ブックマークした作品がありません';
@@ -6902,9 +6884,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communitySavedSearchEmpty => '保存した検索条件はありません';
 
   @override
-  String get communityManageSavedSearches => '保存した検索条件を管理';
-
-  @override
   String get communityDurationAny => '長さを指定しない';
 
   @override
@@ -6957,9 +6936,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityMutedAuthorsEmpty => 'ミュート中のユーザーはいません';
-
-  @override
-  String get communityMuteAuthor => 'このユーザーの作品をミュートする';
 
   @override
   String get communityUnmuteAuthor => 'このユーザーのミュートを解除する';

@@ -6471,16 +6471,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityFollowNotificationsTooltip => 'Notificaciones';
 
   @override
-  String get communityFollowNotificationsTitle =>
-      'Notificaciones de seguidores';
-
-  @override
   String get communityFollowNotificationsEmpty => 'No hay notificaciones';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$name te ha seguido';
-  }
 
   @override
   String get communityNoWorksMessage => 'No hay obras';
@@ -6515,18 +6506,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityAuthorTabBookmarks => 'Marcadores';
-
-  @override
-  String get communityBookmarksPublicToggleTitle =>
-      'Hacer pública la lista de marcadores';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      'Si está activado, otros usuarios podrán ver su lista de marcadores desde esta página. Es privada de forma predeterminada.';
-
-  @override
-  String get communityBookmarksPrivateNotice =>
-      'Este usuario ha configurado su lista de marcadores como privada.';
 
   @override
   String get communityBookmarksEmptyMessage => 'No hay obras marcadas';
@@ -7249,9 +7228,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communitySavedSearchEmpty => 'No hay búsquedas guardadas';
 
   @override
-  String get communityManageSavedSearches => 'Gestionar búsquedas guardadas';
-
-  @override
   String get communityDurationAny => 'Cualquier duración';
 
   @override
@@ -7305,9 +7281,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityMutedAuthorsEmpty => 'No hay creadores silenciados';
-
-  @override
-  String get communityMuteAuthor => 'Silenciar las obras de este creador';
 
   @override
   String get communityUnmuteAuthor => 'Dejar de silenciar a este creador';

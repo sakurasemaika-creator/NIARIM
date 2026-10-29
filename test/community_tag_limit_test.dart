@@ -1,7 +1,10 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/services/community_service.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   test('ダミー作品でもタグは1作品10件まで', () {
     final service = CommunityService();
     final work = service.works.first;

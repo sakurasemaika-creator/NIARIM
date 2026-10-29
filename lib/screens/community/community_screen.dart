@@ -1,3 +1,4 @@
+import '../../utils/tolerant_preferences.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -75,7 +76,6 @@ class _CommunityScreenState extends State<CommunityScreen>
   _RankingPeriod _period = _RankingPeriod.allTime;
   _RankingSort _sort = _RankingSort.views;
   bool _sortAscending = false;
-  bool _isSearching = false;
   String _searchQuery = '';
   String _draftQuery = '';
   final _searchController = TextEditingController();
@@ -102,7 +102,6 @@ class _CommunityScreenState extends State<CommunityScreen>
       ..addListener(_onTabChanged);
     final initialTag = widget.initialTagFilter;
     if (initialTag != null && initialTag.isNotEmpty) {
-      _isSearching = true;
       _tagSearchMode = true;
       _tagExactMatch = true;
       _searchQuery = initialTag;
@@ -123,7 +122,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   Future<void> _loadTileWidth() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getDouble(_tileWidthKey);
+      final saved = prefs.readDouble(_tileWidthKey);
       if (saved != null && mounted) {
         setState(
           () => _minimumTileWidth = saved.clamp(120.0, 240.0).toDouble(),
@@ -151,9 +150,9 @@ class _CommunityScreenState extends State<CommunityScreen>
       final prefs = await SharedPreferences.getInstance();
       List<Map<String, dynamic>> read(String key) {
         final raw =
-            prefs.getString(key + '.' + account) ??
+            prefs.readString('$key.$account') ??
             (account == 'guest' && key == _savedSearchesKey
-                ? prefs.getString(key)
+                ? prefs.readString(key)
                 : null);
         if (raw == null) return [];
         final decoded = jsonDecode(raw);
@@ -177,16 +176,14 @@ class _CommunityScreenState extends State<CommunityScreen>
           ..addAll(history);
       });
     } catch (error) {
-      debugPrint(
-        'Community search data could not be loaded: ' + error.toString(),
-      );
+      debugPrint('Community search data could not be loaded: $error');
     }
   }
 
   Future<void> _persistSavedSearches() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-      _savedSearchesKey + '.' + _searchAccount,
+      '$_savedSearchesKey.$_searchAccount',
       jsonEncode(_savedSearches),
     );
   }
@@ -194,7 +191,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   Future<void> _persistSearchHistory() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-      _historyKey + '.' + _searchAccount,
+      '$_historyKey.$_searchAccount',
       jsonEncode(_searchHistory),
     );
   }
@@ -204,7 +201,6 @@ class _CommunityScreenState extends State<CommunityScreen>
     setState(() {
       _searchQuery = query;
       _draftQuery = query;
-      _isSearching = query.isNotEmpty;
     });
     if (query.isEmpty) return;
     final snapshot = _currentSearchSnapshot(query);
@@ -287,7 +283,6 @@ class _CommunityScreenState extends State<CommunityScreen>
     setState(() {
       _draftQuery = saved['query'] as String? ?? '';
       _searchController.text = _draftQuery;
-      _isSearching = _draftQuery.isNotEmpty;
       _tagSearchMode = saved['tagMode'] == true;
       _tagExactMatch = saved['exactTag'] == true;
       _videoTypeFilter = VideoTypeFilter
@@ -309,10 +304,12 @@ class _CommunityScreenState extends State<CommunityScreen>
       _maximumMinutes = choice('maximumMinutes', 9999);
       _minimumViews = choice('minimumViews', 999999999);
       _minimumBookmarks = choice('minimumBookmarks', 999999999);
-      if (!_communityThresholdChoices.contains(_minimumViews))
+      if (!_communityThresholdChoices.contains(_minimumViews)) {
         _minimumViews = 0;
-      if (!_communityThresholdChoices.contains(_minimumBookmarks))
+      }
+      if (!_communityThresholdChoices.contains(_minimumBookmarks)) {
         _minimumBookmarks = 0;
+      }
       _minimumTileWidth = ((saved['tileWidth'] as num?)?.toDouble() ?? 160)
           .clamp(120, 240)
           .toDouble();
@@ -439,7 +436,6 @@ class _CommunityScreenState extends State<CommunityScreen>
         newTag.isNotEmpty &&
         newTag != oldWidget.initialTagFilter) {
       setState(() {
-        _isSearching = true;
         _tagSearchMode = true;
         _tagExactMatch = true;
         _searchQuery = newTag;
@@ -957,7 +953,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     const PopupMenuDivider(),
                     for (final type in VideoTypeFilter.values)
                       CheckedPopupMenuItem(
-                        value: 'type:' + type.index.toString(),
+                        value: 'type:${type.index}',
                         checked: type == _videoTypeFilter,
                         child: Text(type.label(l10n)),
                       ),

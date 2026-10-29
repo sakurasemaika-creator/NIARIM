@@ -7,7 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/screens/community/community_screen.dart';
-import 'package:niarim/screens/community/widgets/video_type_filter.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/settings_service.dart';
