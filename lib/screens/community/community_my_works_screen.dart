@@ -721,6 +721,11 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                         Expanded(
                           child: FilledButton.tonalIcon(
                             key: const Key('communityMyWorksBulkHide'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: scheme.primaryContainer,
+                              foregroundColor: scheme.onPrimaryContainer,
+                              side: BorderSide.none,
+                            ),
                             onPressed: _bulkBusy
                                 ? null
                                 : () => _applyBulkVisibility(works, false),

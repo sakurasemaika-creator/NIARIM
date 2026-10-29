@@ -66,6 +66,12 @@ void main() {
         findsOneWidget);
     expect(find.byKey(const Key('communityMyWorksBulkHide')),
         findsOneWidget);
+    final hideFinder = find.byKey(const Key('communityMyWorksBulkHide'));
+    final hideButton = tester.widget<FilledButton>(hideFinder);
+    final scheme = Theme.of(tester.element(hideFinder)).colorScheme;
+    expect(hideButton.style!.foregroundColor!.resolve(<WidgetState>{}),
+        scheme.onPrimaryContainer);
+    expect(hideButton.style!.side!.resolve(<WidgetState>{}), BorderSide.none);
 
     await tester.tap(find.byKey(const Key('communityMyWorksSelectAll')));
     await tester.pumpAndSettle();
