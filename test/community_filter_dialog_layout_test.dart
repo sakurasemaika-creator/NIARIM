@@ -52,6 +52,9 @@ void main() {
             );
             await tester.pumpAndSettle();
             final l10n = AppLocalizations.of(screen)!;
+            await tester.ensureVisible(
+              find.byKey(const Key('communityContentFilterButton')),
+            );
             await tester.tap(
               find.byKey(const Key('communityContentFilterButton')),
             );
