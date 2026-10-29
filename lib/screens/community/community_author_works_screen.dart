@@ -414,6 +414,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                               onTapWork: openWork,
                               onToggleBookmark: toggleBookmark,
                             ),
+                  ),
             ),
           ],
         ),
