@@ -3204,5 +3204,9 @@
   "communityFollowerMilestone": "팔로워가 {count}명에 도달했습니다",
   "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
   "communityBookmarkMilestone": "「{title}」 작품의 북마크가 {count}개에 도달했습니다",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}}
+  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "communitySearchHistory": "검색 기록",
+  "communitySearchHistoryEmpty": "검색 기록이 없습니다",
+  "communityDeleteSavedSearchConfirm": "저장된 검색 조건을 삭제할까요?",
+  "communitySortLabel": "정렬"
 }

@@ -3204,5 +3204,9 @@
   "communityFollowerMilestone": "追蹤者達到 {count} 人",
   "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
   "communityBookmarkMilestone": "作品《{title}》的收藏達到 {count} 個",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}}
+  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "communitySearchHistory": "搜尋紀錄",
+  "communitySearchHistoryEmpty": "尚無搜尋紀錄",
+  "communityDeleteSavedSearchConfirm": "要刪除這個已儲存的搜尋條件嗎？",
+  "communitySortLabel": "排序"
 }

@@ -3204,5 +3204,9 @@
   "communityFollowerMilestone": "关注者达到 {count} 人",
   "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
   "communityBookmarkMilestone": "作品《{title}》的收藏达到 {count} 个",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}}
+  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "communitySearchHistory": "搜索历史",
+  "communitySearchHistoryEmpty": "暂无搜索历史",
+  "communityDeleteSavedSearchConfirm": "删除此保存的搜索条件？",
+  "communitySortLabel": "排序"
 }

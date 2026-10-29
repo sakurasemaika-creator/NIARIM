@@ -3211,5 +3211,9 @@
   "communityFollowerMilestone": "You reached {count} followers",
   "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
   "communityBookmarkMilestone": "“{title}” reached {count} bookmarks",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}}
+  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "communitySearchHistory": "Search history",
+  "communitySearchHistoryEmpty": "No search history",
+  "communityDeleteSavedSearchConfirm": "Delete this saved search?",
+  "communitySortLabel": "Sort"
 }

@@ -3204,5 +3204,9 @@
   "communityFollowerMilestone": "Vous avez atteint {count} abonnés",
   "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
   "communityBookmarkMilestone": "« {title} » a atteint {count} favoris",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}}
+  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "communitySearchHistory": "Historique de recherche",
+  "communitySearchHistoryEmpty": "Aucun historique",
+  "communityDeleteSavedSearchConfirm": "Supprimer cette recherche enregistrée ?",
+  "communitySortLabel": "Trier"
 }

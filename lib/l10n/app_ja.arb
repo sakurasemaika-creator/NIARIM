@@ -3678,5 +3678,9 @@
   "communityFollowerMilestone": "フォロワーが{count}人に達しました",
   "@communityFollowerMilestone": {"placeholders":{"count":{"type":"String"}}},
   "communityBookmarkMilestone": "作品「{title}」のブックマークが{count}件に達しました",
-  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}}
+  "@communityBookmarkMilestone": {"placeholders":{"title":{"type":"String"},"count":{"type":"String"}}},
+  "communitySearchHistory": "検索履歴",
+  "communitySearchHistoryEmpty": "検索履歴はありません",
+  "communityDeleteSavedSearchConfirm": "保存した検索条件を削除しますか？",
+  "communitySortLabel": "並び替え"
 }
