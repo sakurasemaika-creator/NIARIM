@@ -203,11 +203,6 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final filteredWorks = _videoTypeFilter.apply(works);
     final followerCount = communityService.followerCountOf(widget.authorId);
     final followingCount = communityService.followingCountOf(widget.authorId);
-    // 一覧（誰がフォロー中／フォロワーか）は本人選択制の公開設定に従う。
-    // 数字自体は常に公開だが、一覧を開けるのは本人自身か、本人が公開設定に
-    // した場合のみ（29_動画投稿・ランキング機能仕様.md 22.5節）。
-    final followersPublic = communityService.isFollowersPublic(widget.authorId);
-    final canViewFollowerList = isSelf || followersPublic;
     final bookmarkedIds = communityService.bookmarkedIds;
     final bookmarksPublic = communityService.isBookmarksPublic(widget.authorId);
     final bookmarkedWorks = (isSelf || bookmarksPublic)
@@ -294,77 +289,13 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                 color: scheme.onSurfaceVariant,
                               ),
                             ),
-                            // フォロー中／フォロワー一覧（誰が誰をフォローして
-                            // いるか）は本人選択制の公開設定に従う。数字自体は
-                            // 特定個人を識別できずUGCリスクが小さいため常に
-                            // 表示するが、一覧を開けるのは本人か、本人が公開
-                            // 設定にした場合のみ（29_動画投稿・ランキング機能
-                            // 仕様.md 22.4節・22.5節）。
-                            InkWell(
-                              key: const Key(
-                                'communityAuthorFollowingCountTap',
-                              ),
-                              onTap: canViewFollowerList
-                                  ? () => _showNameListDialog(
-                                      l10n.communityFollowingListTitle,
-                                      l10n.communityFollowingListEmpty,
-                                      communityService.followingNamesOf(
-                                        widget.authorId,
-                                      ),
-                                    )
-                                  : null,
-                              child: Text(
-                                l10n.communityAuthorFollowingCount(
-                                  followingCount,
-                                ),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: scheme.onSurfaceVariant,
-                                  decoration: canViewFollowerList
-                                      ? TextDecoration.underline
-                                      : null,
-                                ),
-                              ),
+                            Text(
+                              l10n.communityAuthorFollowingCount(followingCount),
+                              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
                             ),
-                            InkWell(
-                              key: const Key('communityAuthorFollowerCountTap'),
-                              onTap: canViewFollowerList
-                                  ? () {
-                                      // フォロワー自身がフォロー中/フォロワー
-                                      // 一覧を非公開にしている場合は、この
-                                      // authorId側が公開設定でもその人物
-                                      // だけは表示しない（Task#134継続：
-                                      // 22.7節）。
-                                      final visibleNames = communityService
-                                          .visibleFollowerNamesOf(
-                                            widget.authorId,
-                                          );
-                                      final hiddenCount =
-                                          followerCount - visibleNames.length;
-                                      _showNameListDialog(
-                                        l10n.communityFollowersListTitle,
-                                        l10n.communityFollowersListEmpty,
-                                        visibleNames,
-                                        footerNote: hiddenCount > 0
-                                            ? l10n.communityFollowersListHiddenNote(
-                                                hiddenCount,
-                                              )
-                                            : null,
-                                      );
-                                    }
-                                  : null,
-                              child: Text(
-                                l10n.communityAuthorFollowerCount(
-                                  followerCount,
-                                ),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: scheme.onSurfaceVariant,
-                                  decoration: canViewFollowerList
-                                      ? TextDecoration.underline
-                                      : null,
-                                ),
-                              ),
+                            Text(
+                              l10n.communityAuthorFollowerCount(followerCount),
+                              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
                             ),
                           ],
                         ),
@@ -389,18 +320,6 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                 ],
               ),
             ),
-            // 自分自身のフォロワー一覧を公開するかどうかの設定
-            // （Task#134継続：本人選択制の公開。22.5節）。
-            if (isSelf)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: _PublicVisibilityToggle(
-                  value: communityService.selfFollowersPublic,
-                  onChanged: communityService.setSelfFollowersPublic,
-                  title: l10n.communityFollowersPublicToggleTitle,
-                  description: l10n.communityFollowersPublicToggleDesc,
-                ),
-              ),
             if (!isSelf)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
