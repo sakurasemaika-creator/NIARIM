@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -61,7 +62,8 @@ class _CommunityScreenState extends State<CommunityScreen>
   VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
   _PostDateFilter _postDateFilter = _PostDateFilter.all;
   DateTimeRange? _customPostDateRange;
-  bool _tagExactMatch = false;
+  bool _tagExactMatch = true;
+  double _minimumTileWidth = 160;
   _DurationFilterMode _durationMode = _DurationFilterMode.all;
   double _upToMinutes = 5;
   int _minimumMinutes = 0;
@@ -80,6 +82,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     if (initialTag != null && initialTag.isNotEmpty) {
       _isSearching = true;
       _tagSearchMode = true;
+      _tagExactMatch = true;
       _searchQuery = initialTag;
       _searchController.text = initialTag;
     }
@@ -136,6 +139,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     'maximumMinutes': _maximumMinutes,
     'minimumViews': _minimumViews,
     'minimumBookmarks': _minimumBookmarks,
+    'tileWidth': _minimumTileWidth,
   };
 
   void _restoreSavedSearch(Map<String, dynamic> saved) {
@@ -168,6 +172,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       _maximumMinutes = choice('maximumMinutes', 9999);
       _minimumViews = choice('minimumViews', 999999999);
       _minimumBookmarks = choice('minimumBookmarks', 999999999);
+      _minimumTileWidth = ((saved['tileWidth'] as num?)?.toDouble() ?? 160).clamp(120, 240).toDouble();
     });
     _scrollCurrentTabToTop();
   }
@@ -366,6 +371,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       setState(() {
         _isSearching = true;
         _tagSearchMode = true;
+        _tagExactMatch = true;
         _searchQuery = newTag;
         _searchController.text = newTag;
       });
@@ -425,23 +431,25 @@ class _CommunityScreenState extends State<CommunityScreen>
     final query = _searchQuery.trim().toLowerCase();
     if (query.isEmpty) return typeFiltered;
     if (_tagSearchMode) {
-      return typeFiltered
-          .where(
-            (w) => w.tags.any(
-              (t) => _tagExactMatch
-                  ? t.toLowerCase() == query
-                  : t.toLowerCase().contains(query),
-            ),
-          )
+      final tokens = query
+          .split(RegExp(r'\s+'))
+          .map((term) => term.replaceFirst(RegExp(r'^#'), ''))
+          .where((term) => term.isNotEmpty)
           .toList();
+      return typeFiltered.where((work) => tokens.every(
+        (term) => work.tags.any((tag) {
+          final normalized = tag.toLowerCase().replaceFirst(RegExp(r'^#'), '');
+          return _tagExactMatch ? normalized == term : normalized.contains(term);
+        }),
+      )).toList();
     }
-    return typeFiltered
-        .where(
-          (w) =>
-              w.title.toLowerCase().contains(query) ||
-              w.authorName.toLowerCase().contains(query),
-        )
-        .toList();
+    return typeFiltered.where((work) {
+      final title = work.title.toLowerCase();
+      final author = work.authorName.toLowerCase();
+      return _tagExactMatch
+          ? title == query || author == query
+          : title.contains(query) || author.contains(query);
+    }).toList();
   }
 
   List<CommunityWork> _newArrivals(List<CommunityWork> allWorks) =>
@@ -526,6 +534,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         initialMaximumMinutes: _maximumMinutes,
         initialMinimumViews: _minimumViews,
         initialMinimumBookmarks: _minimumBookmarks,
+        initialTileWidth: _minimumTileWidth,
       ),
     );
     if (result == null) return;
@@ -543,6 +552,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         _maximumMinutes = result.maximumMinutes;
         _minimumViews = result.minimumViews;
         _minimumBookmarks = result.minimumBookmarks;
+        _minimumTileWidth = result.tileWidth;
       });
     }
   }
@@ -689,6 +699,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                           : l10n.communityTagSearchHint,
                       onPressed: () => setState(() {
                         _tagSearchMode = !_tagSearchMode;
+                        _tagExactMatch = _tagSearchMode;
                         _searchQuery = '';
                         _searchController.clear();
                       }),
@@ -724,6 +735,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       onPressed: () => setState(() {
                         _isSearching = false;
                         _tagSearchMode = false;
+                        _tagExactMatch = false;
                         _searchQuery = '';
                         _searchController.clear();
                       }),
@@ -924,6 +936,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       children: [
                         searchRowFor(0),
                         CommunityWorkGrid(
+                          minTileWidth: _minimumTileWidth,
                           works: works,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
@@ -1030,6 +1043,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                             ranked[i].id: i + 1,
                         };
                         return CommunityWorkGrid(
+                          minTileWidth: _minimumTileWidth,
                           works: ranked,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
@@ -1093,6 +1107,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       children: [
                         searchRowFor(2),
                         CommunityWorkGrid(
+                          minTileWidth: _minimumTileWidth,
                           works: works,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
@@ -1217,6 +1232,7 @@ class _ContentFilterDialog extends StatefulWidget {
     required this.initialMaximumMinutes,
     required this.initialMinimumViews,
     required this.initialMinimumBookmarks,
+    required this.initialTileWidth,
   });
 
   final List<String> initialWords;
@@ -1231,6 +1247,7 @@ class _ContentFilterDialog extends StatefulWidget {
   final int initialMaximumMinutes;
   final int initialMinimumViews;
   final int initialMinimumBookmarks;
+  final double initialTileWidth;
 
   @override
   State<_ContentFilterDialog> createState() => _ContentFilterDialogState();
@@ -1249,6 +1266,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
   late int _maximumMinutes;
   late int _minimumViews;
   late int _minimumBookmarks;
+  late double _tileWidth;
 
   @override
   void initState() {
@@ -1265,6 +1283,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
     _maximumMinutes = widget.initialMaximumMinutes;
     _minimumViews = widget.initialMinimumViews;
     _minimumBookmarks = widget.initialMinimumBookmarks;
+    _tileWidth = widget.initialTileWidth;
   }
 
   _MuteEntry _makeEntry(String value, {bool editing = false}) {
@@ -1323,6 +1342,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
     required String hint,
     required String keyPrefix,
     required List<_MuteEntry> entries,
+    required String emptyLabel,
   }) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
@@ -1330,6 +1350,8 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
       key: Key('${keyPrefix}Accordion'),
       initiallyExpanded: false,
       tilePadding: EdgeInsets.zero,
+      shape: const Border(),
+      collapsedShape: const Border(),
       childrenPadding: const EdgeInsets.only(bottom: 8),
       title: Text(
         title,
@@ -1353,6 +1375,8 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
           icon: const Icon(Icons.add),
           label: Text(l10n.communityMuteAddNew),
         ),
+        if (entries.isEmpty)
+          Padding(padding: const EdgeInsets.all(12), child: Text(emptyLabel)),
         for (final entry in entries)
           Padding(
             key: ObjectKey(entry),
@@ -1481,7 +1505,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                     trailing: IconButton(
                       key: ValueKey('communityUnmuteAuthor-$id'),
                       tooltip: l10n.communityUnmuteAuthor,
-                      onPressed: () => service.setAuthorMuted(id, false),
+                      onPressed: () => confirmCommunityAuthorMute(context, service, id, mute: false),
                       icon: const Icon(Icons.visibility_outlined),
                     ),
                   );
@@ -1634,36 +1658,55 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               value: _exactTag,
               onChanged: (value) => setState(() => _exactTag = value),
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    key: const Key('communityMinimumViews'),
-                    initialValue: _minimumViews == 0 ? '' : '$_minimumViews',
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: l10n.communityMinimumViews,
-                    ),
-                    onChanged: (value) => _minimumViews =
-                        (int.tryParse(value) ?? 0).clamp(0, 999999999).toInt(),
-                  ),
+            for (final filter in [0, 1]) ...[
+              const SizedBox(height: 12),
+              Text(
+                filter == 0 ? l10n.communityMinimumViews : l10n.communityMinimumBookmarks,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    key: const Key('communityMinimumBookmarks'),
-                    initialValue: _minimumBookmarks == 0
-                        ? ''
-                        : '$_minimumBookmarks',
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: l10n.communityMinimumBookmarks,
+              ),
+              DropdownButtonFormField<int>(
+                key: Key(filter == 0 ? 'communityMinimumViews' : 'communityMinimumBookmarks'),
+                initialValue: filter == 0 ? _minimumViews : _minimumBookmarks,
+                isExpanded: true,
+                items: [
+                  for (final count in const [0, 50, 100, 1000, 5000, 10000, 50000, 100000, 500000, 1000000])
+                    DropdownMenuItem(
+                      value: count,
+                      child: Text(count == 0
+                          ? l10n.communityThresholdAny
+                          : filter == 0
+                            ? l10n.communityMinimumViewsOption(NumberFormat.decimalPattern().format(count))
+                            : l10n.communityMinimumBookmarksOption(NumberFormat.decimalPattern().format(count))),
                     ),
-                    onChanged: (value) => _minimumBookmarks =
-                        (int.tryParse(value) ?? 0).clamp(0, 999999999).toInt(),
-                  ),
-                ),
-              ],
+                ],
+                onChanged: (value) => setState(() {
+                  if (filter == 0) {
+                    _minimumViews = value ?? 0;
+                  } else {
+                    _minimumBookmarks = value ?? 0;
+                  }
+                }),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Text(
+              l10n.communityTileSize,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
+            Slider(
+              key: const Key('communityTileSizeSlider'),
+              min: 120,
+              max: 240,
+              divisions: 6,
+              value: _tileWidth,
+              label: '${_tileWidth.round()} px',
+              onChanged: (value) => setState(() => _tileWidth = value),
             ),
             const SizedBox(height: 8),
             _section(
@@ -1671,6 +1714,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               hint: l10n.communityMutedWordsHint,
               keyPrefix: 'communityMutedWords',
               entries: _words,
+              emptyLabel: l10n.communityMutedWordsEmpty,
             ),
             const SizedBox(height: 12),
             _section(
@@ -1678,10 +1722,13 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               hint: l10n.communityMutedTagsHint,
               keyPrefix: 'communityMutedTags',
               entries: _tags,
+              emptyLabel: l10n.communityMutedTagsEmpty,
             ),
             ExpansionTile(
               key: const Key('communityMutedAuthorsAccordion'),
               tilePadding: EdgeInsets.zero,
+              shape: const Border(),
+              collapsedShape: const Border(),
               initiallyExpanded: false,
               title: Text(
                 l10n.communityMutedAuthors,
@@ -1795,6 +1842,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               maximumMinutes: _maximumMinutes,
               minimumViews: _minimumViews,
               minimumBookmarks: _minimumBookmarks,
+              tileWidth: _tileWidth,
             ),
           ),
           child: Text(l10n.commonSave),
@@ -1818,6 +1866,7 @@ class _ContentFilterInput {
     required this.maximumMinutes,
     required this.minimumViews,
     required this.minimumBookmarks,
+    required this.tileWidth,
   });
 
   final bool hideAi;
@@ -1832,4 +1881,5 @@ class _ContentFilterInput {
   final int maximumMinutes;
   final int minimumViews;
   final int minimumBookmarks;
+  final double tileWidth;
 }
