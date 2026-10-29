@@ -109,7 +109,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.byId(work.id)!.containsGenerativeAiImageOrVideo, !before);
 
-    await tester.ensureVisible(find.byKey(const Key('communityWorkSettingsDelete')));
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('communityWorkSettingsDelete')), 160,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.tap(find.byKey(const Key('communityWorkSettingsDelete')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('communityWorkSettingsConfirmDelete')),

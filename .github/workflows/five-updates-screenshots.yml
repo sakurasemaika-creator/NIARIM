@@ -9,13 +9,19 @@ on:
       - 'test/five_fixes_screenshot_test.dart'
       - 'lib/screens/community/community_screen.dart'
       - 'lib/screens/community/community_my_works_screen.dart'
+      - 'lib/screens/community/community_author_works_screen.dart'
       - 'lib/screens/community/community_work_settings_screen.dart'
+      - 'lib/screens/home/home_screen.dart'
+      - 'lib/screens/home/widgets/project_list_widget.dart'
       - 'lib/services/community_service.dart'
+      - 'lib/services/theme_service.dart'
       - 'lib/l10n/**'
       - 'pubspec.yaml'
       - 'test/community_my_works_controls_test.dart'
       - 'test/community_back_navigation_test.dart'
       - 'test/community_content_filter_dialog_test.dart'
+      - 'test/home_entry_navigation_test.dart'
+      - 'test/community_header_matrix_test.dart'
 
 jobs:
   capture:
@@ -40,6 +46,8 @@ jobs:
           flutter test test/community_mute_wording_l10n_test.dart --reporter expanded
           flutter test test/community_back_navigation_test.dart --reporter expanded
           flutter test test/community_my_works_controls_test.dart --reporter expanded
+          flutter test test/home_entry_navigation_test.dart --plain-name 'home back arrow, right drawer and scroll-to-top obey layout' --reporter expanded
+          NIARIM_AUDIT_SMOKE=1 flutter test test/community_header_matrix_test.dart --plain-name 'plaza header matrix: new' --reporter expanded
       - name: Capture updated real Flutter screens and post flow
         env:
           NIARIM_FIVE_FIXES_CAPTURE: build/five-fixes

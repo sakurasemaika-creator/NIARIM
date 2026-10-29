@@ -456,6 +456,12 @@ class _CommunityScreenState extends State<CommunityScreen>
                       ),
                     ),
                     IconButton(
+                      key: const Key('communityContentFilterButton'),
+                      icon: const Icon(Icons.tune),
+                      tooltip: l10n.communityContentFilterTitle,
+                      onPressed: () => _showContentFilters(communityService),
+                    ),
+                    IconButton(
                       icon: const Icon(Icons.close),
                       tooltip: l10n.commonClose,
                       onPressed: () => setState(() {

@@ -133,7 +133,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(CommunityWorkSettingsScreen), findsOneWidget);
     await capture(root, '10_individual_work_settings', tester);
-    await tester.ensureVisible(find.byKey(const Key('communityWorkSettingsDelete')));
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('communityWorkSettingsDelete')), 160,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.tap(find.byKey(const Key('communityWorkSettingsDelete')));
     await tester.pumpAndSettle();
     await capture(root, '11_individual_delete_confirmation', tester);
