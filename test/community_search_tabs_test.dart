@@ -79,6 +79,7 @@ void main() {
     await tester.tap(find.byKey(const Key('communitySearchModeToggle')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, '夜明け');
+    await tester.tap(find.byKey(const Key('communitySearchButton')));
     await tester.pumpAndSettle();
     expect(find.byType(CommunityWorkCard), findsWidgets);
     await tester.tap(find.byKey(const Key('communityContentFilterButton')));
@@ -135,7 +136,7 @@ void main() {
         reason: '$locale: first label must not get clipped',
       );
       final initialBottom = tester.getRect(find.byType(TabBar)).bottom;
-      await tester.tap(find.byTooltip(localizations.commonSearch));
+      expect(find.byKey(const Key('communitySearchButton')), findsOneWidget);
       await tester.pumpAndSettle();
       expect(find.byType(SegmentedButton<bool>), findsNothing);
       expect(
