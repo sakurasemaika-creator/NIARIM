@@ -370,6 +370,7 @@ class CommunityService extends ChangeNotifier {
   final CommunityMilestoneStore _milestoneStore = CommunityMilestoneStore();
   List<CommunityMilestoneEvent> _milestoneEvents = [];
   final Map<String, int> _followerCounts = {};
+  final Map<String, int> _followingCounts = {};
 
   @visibleForTesting
   void replaceWorksForTest(Iterable<CommunityWork> works) {
@@ -701,6 +702,7 @@ class CommunityService extends ChangeNotifier {
     _currentUserId = null;
     _milestoneEvents = [];
     _followerCounts.clear();
+    _followingCounts.clear();
     _lastError = null;
     _isSocialLoading = false;
     _hasLoadedSocial = false;
@@ -1098,7 +1100,9 @@ class CommunityService extends ChangeNotifier {
 
   /// [authorId]のフォロー中人数（数字のみ）。フォロワー数と同様、常に
   /// 公開情報として扱う（29_動画投稿・ランキング機能仕様.md 22.5節）。
-  int followingCountOf(String authorId) => followingIdsOf(authorId).length;
+  int followingCountOf(String authorId) =>
+      _followingCounts[authorId] ??
+      (api == null ? followingIdsOf(authorId).length : 0);
 
   /// 作者IDから表示名を引く（見つからなければnull）。
   String? authorNameOf(String authorId) => _works
@@ -1168,12 +1172,13 @@ class CommunityService extends ChangeNotifier {
     }
     final revision = _accountRevision;
     try {
-      final count = await client.followerCount(authorId);
+      final counts = await client.socialCounts(authorId);
       if (!_isCurrentAccount(revision)) return;
-      _followerCounts[authorId] = count;
+      _followerCounts[authorId] = counts.followers;
+      _followingCounts[authorId] = counts.following;
       notifyListeners();
       if (isOwnAuthor(authorId)) {
-        await _observeOwnMilestones(followers: count);
+        await _observeOwnMilestones(followers: counts.followers);
       }
     } on NiarimApiException catch (error) {
       if (_isCurrentAccount(revision)) _lastError = error;
