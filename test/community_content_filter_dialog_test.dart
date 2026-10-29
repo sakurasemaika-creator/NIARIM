@@ -298,6 +298,10 @@ void main() {
       tester,
       find.byKey(ValueKey('communityUnmuteAuthor-${work.authorId}')),
     );
+    await tester.pumpAndSettle();
+    expect(find.text(l10nOf(tester).communityUnmuteConfirmTitle), findsOneWidget);
+    await tapVisible(tester, find.text(l10nOf(tester).communityUnmuteConfirmAction));
+    await tester.pumpAndSettle();
     expect(service.isAuthorMuted(work.authorId), isFalse);
   });
 
@@ -322,8 +326,20 @@ void main() {
     expect(toggle, findsOneWidget);
     await tester.tap(toggle);
     await tester.pumpAndSettle();
+    expect(service.isAuthorMuted(authorWork.authorId), isFalse);
+    final l10n = l10nOf(tester);
+    expect(find.text(l10n.communityMuteConfirmTitle), findsOneWidget);
+    await tester.tap(find.text(l10n.communityMuteNo));
+    await tester.pumpAndSettle();
+    expect(service.isAuthorMuted(authorWork.authorId), isFalse);
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.communityMuteConfirmAction));
+    await tester.pumpAndSettle();
     expect(service.isAuthorMuted(authorWork.authorId), isTrue);
     await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.communityUnmuteConfirmAction));
     await tester.pumpAndSettle();
     expect(service.isAuthorMuted(authorWork.authorId), isFalse);
     expect(tester.takeException(), isNull);
@@ -343,18 +359,16 @@ void main() {
     expect(find.byKey(const Key('communityDurationSlider')), findsOneWidget);
     await tapVisible(tester, find.byKey(const Key('communityTagExactMatch')));
     await tapVisible(tester, find.byKey(const Key('communityMinimumViews')));
-    await tester.enterText(
-      find.byKey(const Key('communityMinimumViews')),
-      '100',
-    );
     await tapVisible(
       tester,
-      find.byKey(const Key('communityMinimumBookmarks')),
+      find.text(l10n.communityMinimumViewsOption('100')).last,
     );
-    await tester.enterText(
-      find.byKey(const Key('communityMinimumBookmarks')),
-      '10',
+    await tapVisible(tester, find.byKey(const Key('communityMinimumBookmarks')));
+    await tapVisible(
+      tester,
+      find.text(l10n.communityMinimumBookmarksOption('50')).last,
     );
+    expect(find.byKey(const Key('communityTileSizeSlider')), findsOneWidget);
     await tapVisible(
       tester,
       find.byKey(const Key('communityContentFilterSaveButton')),
@@ -366,7 +380,7 @@ void main() {
             find.byKey(const Key('communityTagExactMatch')),
           )
           .value,
-      isTrue,
+      isFalse,
     );
     await tapVisible(tester, find.byKey(const Key('communityDurationMode')));
     await tapVisible(tester, find.text(l10n.communityDurationRange).last);
