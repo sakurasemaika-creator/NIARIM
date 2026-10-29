@@ -56,6 +56,16 @@ void main() {
               find.byKey(const Key('communityContentFilterButton')),
             );
             await tester.pumpAndSettle();
+            await tester.ensureVisible(
+              find.byKey(const Key('communityMutedWordsAccordion')));
+            await tester.tap(
+              find.byKey(const Key('communityMutedWordsAccordion')));
+            await tester.pumpAndSettle();
+            await tester.ensureVisible(
+              find.byKey(const Key('communityMutedTagsAccordion')));
+            await tester.tap(
+              find.byKey(const Key('communityMutedTagsAccordion')));
+            await tester.pumpAndSettle();
             final suffix =
                 '${locale.toLanguageTag()}/$size/${pc ? 'pc' : 'sp'}';
             final save = find.byKey(

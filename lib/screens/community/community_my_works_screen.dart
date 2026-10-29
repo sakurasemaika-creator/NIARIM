@@ -163,11 +163,52 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       ? l10n.communityGoogleAccountBusy
       : communityErrorText(l10n, error);
 
+  /// A NIARIM-styled explanation before invoking the native Google account
+  /// chooser. Browsing the plaza or opening My Works never triggers this.
+  Future<bool> _confirmGoogleSignIn() async {
+    final l10n = AppLocalizations.of(context)!;
+    final auth = context.read<GoogleAuthService>();
+    return await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        key: const Key('communityGoogleSignInPrompt'),
+        title: Text(l10n.communitySignInPromptTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.communitySignInPromptBody),
+            if (!auth.isConfigured) ...[
+              const SizedBox(height: 12),
+              Text(l10n.communitySignInUnavailable,
+                  style: TextStyle(color:
+                      Theme.of(dialogContext).colorScheme.error)),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton.icon(
+            key: const Key('communityGoogleSignInPromptConnect'),
+            onPressed: auth.isConfigured
+                ? () => Navigator.pop(dialogContext, true)
+                : null,
+            icon: const Icon(Icons.account_circle_outlined),
+            label: Text(l10n.communitySignInPromptConnect),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
   Future<void> _switchOrAddGoogleAccount() async {
     final auth = context.read<GoogleAuthService>();
     final l10n = AppLocalizations.of(context)!;
     if (!auth.isConfigured) {
-      _showSnackBar(l10n.communityGoogleSignInNotConfigured);
+      await _confirmGoogleSignIn();
       return;
     }
     if (auth.authOperationInProgress) {
@@ -202,12 +243,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   Future<void> _handlePostTap() async {
     final auth = context.read<GoogleAuthService>();
     final l10n = AppLocalizations.of(context)!;
-    if (!auth.isConfigured) {
-      _showSnackBar(l10n.communityGoogleSignInNotConfigured);
-      return;
-    }
-
     if (!auth.isSignedIn) {
+      if (!await _confirmGoogleSignIn() || !mounted) return;
       if (auth.authOperationInProgress) {
         _showSnackBar(l10n.communityGoogleAccountBusy);
         return;

@@ -87,11 +87,17 @@ void main() {
     await tester.tap(find.byKey(const Key('communityContentFilterButton')));
     await tester.pumpAndSettle();
     await capture(root, '00_advanced_content_filters', tester);
+    await tester.ensureVisible(find.byKey(const Key('communityMutedWordsAccordion')));
+    await tester.tap(find.byKey(const Key('communityMutedWordsAccordion')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('communityMutedTagsAccordion')));
+    await tester.tap(find.byKey(const Key('communityMutedTagsAccordion')));
+    await tester.pumpAndSettle();
     final words = find.byKey(const Key('communityMutedWordsDisplay_0'));
     final tags = find.byKey(const Key('communityMutedTagsDisplay_0'));
     expect(tester.getRect(words).top, lessThan(tester.getRect(tags).top));
     expect(tester.getRect(tags).top,
-        lessThan(tester.getRect(find.byType(SwitchListTile)).top));
+        lessThan(tester.getRect(find.byType(SwitchListTile).last).top));
     await tester.tap(find.byKey(const Key('communityMutedWordsAddButton')));
     await tester.pumpAndSettle();
     await tester.enterText(
@@ -157,6 +163,9 @@ void main() {
     await tester.tap(find.byKey(const Key('communityMyWorksPostButton')));
     await tester.pumpAndSettle();
     await capture(root, '08_after_post_action', tester);
+    expect(find.byKey(const Key('communityGoogleSignInPrompt')), findsOneWidget);
+    await tester.tap(find.text(l10n.commonCancel));
+    await tester.pumpAndSettle();
     Navigator.of(tester.element(find.byType(CommunityMyWorksScreen))).pop();
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip(l10n.commonSearch));

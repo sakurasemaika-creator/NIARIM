@@ -302,9 +302,21 @@ class _CommunityWorkSettingsScreenState
                             Row(
                               key: ValueKey('communityWorkTag-$tag'),
                               children: [
-                                Expanded(child: Text(tag,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis)),
+                                Expanded(
+                                  child: InkWell(
+                                    key: ValueKey('communityWorkTagText-$tag'),
+                                    onTap: ownWork && !_busy &&
+                                            !work.lockedTags.contains(tag)
+                                        ? () => _editTag(work, original: tag)
+                                        : null,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      child: Text(tag,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis),
+                                    ),
+                                  ),
+                                ),
                                 IconButton(
                                   key: ValueKey('communityWorkTagEdit-$tag'),
                                   tooltip: l10n.commonEdit,

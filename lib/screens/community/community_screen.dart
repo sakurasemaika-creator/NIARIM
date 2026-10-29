@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
@@ -25,6 +28,8 @@ enum _RankingSort { views, bookmarks }
 
 enum _PostDateFilter { all, today, thisWeek, thisMonth, thisYear, custom }
 
+enum _DurationFilterMode { all, upTo, range }
+
 /// 作品広場画面。
 ///
 /// 設定済みのCommunity backendから一覧を取得し、未設定時はdemo dataを使う。
@@ -43,6 +48,8 @@ class CommunityScreen extends StatefulWidget {
 
 class _CommunityScreenState extends State<CommunityScreen>
     with SingleTickerProviderStateMixin {
+  static const _savedSearchesKey = 'community.savedSearches.v1';
+  final List<Map<String, dynamic>> _savedSearches = [];
   late final TabController _tabController;
   _RankingPeriod _period = _RankingPeriod.allTime;
   _RankingSort _sort = _RankingSort.views;
@@ -54,11 +61,19 @@ class _CommunityScreenState extends State<CommunityScreen>
   VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
   _PostDateFilter _postDateFilter = _PostDateFilter.all;
   DateTimeRange? _customPostDateRange;
+  bool _tagExactMatch = false;
+  _DurationFilterMode _durationMode = _DurationFilterMode.all;
+  double _upToMinutes = 5;
+  int _minimumMinutes = 0;
+  int _maximumMinutes = 10;
+  int _minimumViews = 0;
+  int _minimumBookmarks = 0;
   final _tabScrollControllers = List.generate(3, (_) => ScrollController());
 
   @override
   void initState() {
     super.initState();
+    _loadSavedSearches();
     _tabController = TabController(length: 3, vsync: this)
       ..addListener(_onTabChanged);
     final initialTag = widget.initialTagFilter;
@@ -78,6 +93,172 @@ class _CommunityScreenState extends State<CommunityScreen>
       _fetchRanking();
     });
   }
+
+  Future<void> _loadSavedSearches() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_savedSearchesKey);
+      if (raw == null) return;
+      final decoded = jsonDecode(raw);
+      if (decoded is! List || !mounted) return;
+      setState(() {
+        _savedSearches
+          ..clear()
+          ..addAll(decoded.whereType<Map>().take(10)
+              .map((entry) => Map<String, dynamic>.from(entry)));
+      });
+    } catch (error) {
+      debugPrint('Saved community searches could not be restored: $error');
+    }
+  }
+
+  Future<void> _persistSavedSearches() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_savedSearchesKey, jsonEncode(_savedSearches));
+  }
+
+  Map<String, dynamic> _currentSearchSnapshot(String name) => {
+    'name': name,
+    'query': _searchQuery,
+    'tagMode': _tagSearchMode,
+    'exactTag': _tagExactMatch,
+    'videoType': _videoTypeFilter.index,
+    'dateFilter': _postDateFilter.index,
+    'dateStart': _customPostDateRange?.start.toIso8601String(),
+    'dateEnd': _customPostDateRange?.end.toIso8601String(),
+    'durationMode': _durationMode.index,
+    'upToMinutes': _upToMinutes,
+    'minimumMinutes': _minimumMinutes,
+    'maximumMinutes': _maximumMinutes,
+    'minimumViews': _minimumViews,
+    'minimumBookmarks': _minimumBookmarks,
+  };
+
+  void _restoreSavedSearch(Map<String, dynamic> saved) {
+    int choice(String key, int max) =>
+        ((saved[key] as num?)?.toInt() ?? 0).clamp(0, max).toInt();
+    final start = DateTime.tryParse(saved['dateStart'] as String? ?? '');
+    final end = DateTime.tryParse(saved['dateEnd'] as String? ?? '');
+    setState(() {
+      _searchQuery = saved['query'] as String? ?? '';
+      _searchController.text = _searchQuery;
+      _isSearching = _searchQuery.isNotEmpty;
+      _tagSearchMode = saved['tagMode'] == true;
+      _tagExactMatch = saved['exactTag'] == true;
+      _videoTypeFilter = VideoTypeFilter.values[
+          choice('videoType', VideoTypeFilter.values.length - 1)];
+      _postDateFilter = _PostDateFilter.values[
+          choice('dateFilter', _PostDateFilter.values.length - 1)];
+      _customPostDateRange = start == null || end == null || end.isBefore(start)
+          ? null : DateTimeRange(start: start, end: end);
+      _durationMode = _DurationFilterMode.values[
+          choice('durationMode', _DurationFilterMode.values.length - 1)];
+      _upToMinutes = ((saved['upToMinutes'] as num?)?.toDouble() ?? 5)
+          .clamp(1, 60).toDouble();
+      _minimumMinutes = choice('minimumMinutes', 9999);
+      _maximumMinutes = choice('maximumMinutes', 9999);
+      _minimumViews = choice('minimumViews', 999999999);
+      _minimumBookmarks = choice('minimumBookmarks', 999999999);
+    });
+    _scrollCurrentTabToTop();
+  }
+
+  Future<void> _saveCurrentSearch() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (_savedSearches.length >= 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.communitySavedSearchLimit)),
+      );
+      return;
+    }
+    final controller = TextEditingController(text: _searchQuery);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.communitySaveSearch),
+        content: TextField(
+          key: const Key('communitySavedSearchName'),
+          controller: controller,
+          autofocus: true,
+          maxLength: 40,
+          decoration: InputDecoration(labelText: l10n.communitySavedSearchName),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext),
+              child: Text(l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(
+                  dialogContext, controller.text.trim()),
+              child: Text(l10n.commonSave)),
+        ],
+      ),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    controller.dispose();
+    if (!mounted || name == null || name.isEmpty) return;
+    setState(() => _savedSearches.add(_currentSearchSnapshot(name)));
+    await _persistSavedSearches();
+  }
+
+  Future<void> _deleteSavedSearch(int index) async {
+    if (index < 0 || index >= _savedSearches.length) return;
+    setState(() => _savedSearches.removeAt(index));
+    await _persistSavedSearches();
+  }
+
+  Widget _savedSearchButton(AppLocalizations l10n) => PopupMenuButton<String>(
+    key: const Key('communitySavedSearchMenu'),
+    tooltip: l10n.communitySavedSearches,
+    icon: const Icon(Icons.bookmarks_outlined),
+    itemBuilder: (_) => [
+      PopupMenuItem(value: 'save', child: Text(l10n.communitySaveSearch)),
+      for (var i = 0; i < _savedSearches.length; i++)
+        PopupMenuItem(value: 'load:$i', child: Text(
+          _savedSearches[i]['name'] as String? ?? '...',
+          overflow: TextOverflow.ellipsis,
+        )),
+      if (_savedSearches.isEmpty)
+        PopupMenuItem(enabled: false,
+            child: Text(l10n.communitySavedSearchEmpty)),
+      if (_savedSearches.isNotEmpty)
+        PopupMenuItem(value: 'manage',
+            child: Text(l10n.communityManageSavedSearches)),
+    ],
+    onSelected: (value) {
+      if (value == 'save') {
+        _saveCurrentSearch();
+      } else if (value == 'manage') {
+        showDialog<void>(context: context, builder: (dialogContext) =>
+            StatefulBuilder(builder: (dialogContext, update) => AlertDialog(
+              title: Text(l10n.communityManageSavedSearches),
+              content: SizedBox(width: 340, child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < _savedSearches.length; i++)
+                    ListTile(title: Text(_savedSearches[i]['name'] as String),
+                      trailing: IconButton(
+                        key: ValueKey('communityDeleteSavedSearch-$i'),
+                        tooltip: l10n.commonDelete,
+                        onPressed: () async {
+                          await _deleteSavedSearch(i);
+                          update(() {});
+                        },
+                        icon: const Icon(Icons.delete_outline),
+                      ),
+                    ),
+                ],
+              )),
+              actions: [TextButton(onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(l10n.commonClose))],
+            )),
+        );
+      } else if (value.startsWith('load:')) {
+        final i = int.tryParse(value.substring(5));
+        if (i != null && i < _savedSearches.length) {
+          _restoreSavedSearch(_savedSearches[i]);
+        }
+      }
+    },
+  );
 
   /// The following tab shows the followed authors' works and reposts as
   /// the server has them now.
@@ -192,12 +373,24 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   List<CommunityWork> _applySearch(List<CommunityWork> works) {
     final typeFiltered = _videoTypeFilter.apply(works)
-        .where((work) => _matchesPostDate(work.postedAt)).toList();
+        .where((work) => _matchesPostDate(work.postedAt))
+        .where((work) => work.viewCount >= _minimumViews &&
+            work.bookmarkCount >= _minimumBookmarks)
+        .where((work) => switch (_durationMode) {
+          _DurationFilterMode.all => true,
+          _DurationFilterMode.upTo =>
+              work.durationSeconds <= (_upToMinutes * 60).round(),
+          _DurationFilterMode.range =>
+              work.durationSeconds >= _minimumMinutes * 60 &&
+              work.durationSeconds <= _maximumMinutes * 60,
+        }).toList();
     final query = _searchQuery.trim().toLowerCase();
     if (query.isEmpty) return typeFiltered;
     if (_tagSearchMode) {
       return typeFiltered
-          .where((w) => w.tags.any((t) => t.toLowerCase().contains(query)))
+          .where((w) => w.tags.any((t) => _tagExactMatch
+              ? t.toLowerCase() == query
+              : t.toLowerCase().contains(query)))
           .toList();
     }
     return typeFiltered
@@ -284,6 +477,13 @@ class _CommunityScreenState extends State<CommunityScreen>
         initialHideAi: service.hideGenerativeAiImageVideo,
         initialDateFilter: _postDateFilter,
         initialDateRange: _customPostDateRange,
+        initialExactTag: _tagExactMatch,
+        initialDurationMode: _durationMode,
+        initialUpToMinutes: _upToMinutes,
+        initialMinimumMinutes: _minimumMinutes,
+        initialMaximumMinutes: _maximumMinutes,
+        initialMinimumViews: _minimumViews,
+        initialMinimumBookmarks: _minimumBookmarks,
       ),
     );
     if (result == null) return;
@@ -293,6 +493,13 @@ class _CommunityScreenState extends State<CommunityScreen>
     if (mounted) setState(() {
       _postDateFilter = result.dateFilter;
       _customPostDateRange = result.dateRange;
+      _tagExactMatch = result.exactTag;
+      _durationMode = result.durationMode;
+      _upToMinutes = result.upToMinutes;
+      _minimumMinutes = result.minimumMinutes;
+      _maximumMinutes = result.maximumMinutes;
+      _minimumViews = result.minimumViews;
+      _minimumBookmarks = result.minimumBookmarks;
     });
   }
 
@@ -412,7 +619,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     // page content and naturally scrolls out of view above the work grid.
     Widget searchRowFor(int tab) => Padding(
       key: const Key('communitySearchRow'),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: SizedBox(
         height: 48,
         child: _isSearching
@@ -461,6 +668,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       tooltip: l10n.communityContentFilterTitle,
                       onPressed: () => _showContentFilters(communityService),
                     ),
+                    _savedSearchButton(l10n),
                     IconButton(
                       icon: const Icon(Icons.close),
                       tooltip: l10n.commonClose,
@@ -479,7 +687,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   final shortMode =
                       _videoTypeFilter == VideoTypeFilter.shortOnly;
                   final maxVideoWidth = (constraints.maxWidth -
-                          148 -
+                          196 -
                           (shortMode ? 48 : 0))
                       .clamp(48.0, 160.0).toDouble();
                   final filterWidth =
@@ -532,6 +740,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                         onPressed: () =>
                             _showContentFilters(communityService),
                       ),
+                      _savedSearchButton(l10n),
                       if (shortMode)
                         IconButton(
                           icon: const Icon(Icons.view_carousel_outlined),
@@ -937,6 +1146,13 @@ class _ContentFilterDialog extends StatefulWidget {
     required this.initialHideAi,
     required this.initialDateFilter,
     required this.initialDateRange,
+    required this.initialExactTag,
+    required this.initialDurationMode,
+    required this.initialUpToMinutes,
+    required this.initialMinimumMinutes,
+    required this.initialMaximumMinutes,
+    required this.initialMinimumViews,
+    required this.initialMinimumBookmarks,
   });
 
   final List<String> initialWords;
@@ -944,6 +1160,13 @@ class _ContentFilterDialog extends StatefulWidget {
   final bool initialHideAi;
   final _PostDateFilter initialDateFilter;
   final DateTimeRange? initialDateRange;
+  final bool initialExactTag;
+  final _DurationFilterMode initialDurationMode;
+  final double initialUpToMinutes;
+  final int initialMinimumMinutes;
+  final int initialMaximumMinutes;
+  final int initialMinimumViews;
+  final int initialMinimumBookmarks;
 
   @override
   State<_ContentFilterDialog> createState() => _ContentFilterDialogState();
@@ -955,6 +1178,13 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
   late bool _hideAi;
   late _PostDateFilter _dateFilter;
   DateTimeRange? _dateRange;
+  late bool _exactTag;
+  late _DurationFilterMode _durationMode;
+  late double _upToMinutes;
+  late int _minimumMinutes;
+  late int _maximumMinutes;
+  late int _minimumViews;
+  late int _minimumBookmarks;
 
   @override
   void initState() {
@@ -964,6 +1194,13 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
     _hideAi = widget.initialHideAi;
     _dateFilter = widget.initialDateFilter;
     _dateRange = widget.initialDateRange;
+    _exactTag = widget.initialExactTag;
+    _durationMode = widget.initialDurationMode;
+    _upToMinutes = widget.initialUpToMinutes;
+    _minimumMinutes = widget.initialMinimumMinutes;
+    _maximumMinutes = widget.initialMaximumMinutes;
+    _minimumViews = widget.initialMinimumViews;
+    _minimumBookmarks = widget.initialMinimumBookmarks;
   }
 
   _MuteEntry _makeEntry(String value, {bool editing = false}) {
@@ -1023,17 +1260,19 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
   }) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
+    return ExpansionTile(
+      key: Key('${keyPrefix}Accordion'),
+      initiallyExpanded: false,
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.only(bottom: 8),
+      title: Text(
           title,
           style: theme.textTheme.titleSmall?.copyWith(
             fontFamily: 'Kuramubon',
             fontFamilyFallback: kHeadingFontFallback,
           ),
         ),
+      children: [
         const SizedBox(height: 6),
         Text(
           hint,
@@ -1232,6 +1471,89 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                     : '${MaterialLocalizations.of(context).formatShortDate(_dateRange!.start)} - ${MaterialLocalizations.of(context).formatShortDate(_dateRange!.end)}'),
               ),
             const SizedBox(height: 16),
+            Text(l10n.communityDurationFilterTitle,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                )),
+            DropdownButtonFormField<_DurationFilterMode>(
+              key: const Key('communityDurationMode'),
+              initialValue: _durationMode,
+              isExpanded: true,
+              items: [
+                DropdownMenuItem(value: _DurationFilterMode.all,
+                    child: Text(l10n.communityDurationAny)),
+                DropdownMenuItem(value: _DurationFilterMode.upTo,
+                    child: Text(l10n.communityDurationUpTo)),
+                DropdownMenuItem(value: _DurationFilterMode.range,
+                    child: Text(l10n.communityDurationRange)),
+              ],
+              onChanged: (value) => setState(
+                () => _durationMode = value ?? _DurationFilterMode.all),
+            ),
+            if (_durationMode == _DurationFilterMode.upTo) ...[
+              Text('${_upToMinutes.round()} ${l10n.communityDurationMinutes}'),
+              Slider(
+                key: const Key('communityDurationSlider'),
+                value: _upToMinutes,
+                min: 1,
+                max: 60,
+                divisions: 59,
+                label: '${_upToMinutes.round()}',
+                onChanged: (value) => setState(() => _upToMinutes = value),
+              ),
+            ],
+            if (_durationMode == _DurationFilterMode.range)
+              Row(children: [
+                Expanded(child: TextFormField(
+                  key: const Key('communityDurationMinimum'),
+                  initialValue: '$_minimumMinutes',
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                      labelText: l10n.communityDurationMinimum),
+                  onChanged: (value) =>
+                      _minimumMinutes = (int.tryParse(value) ?? 0).clamp(0, 9999).toInt(),
+                )),
+                const SizedBox(width: 12),
+                Expanded(child: TextFormField(
+                  key: const Key('communityDurationMaximum'),
+                  initialValue: '$_maximumMinutes',
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                      labelText: l10n.communityDurationMaximum),
+                  onChanged: (value) =>
+                      _maximumMinutes = (int.tryParse(value) ?? 0).clamp(0, 9999).toInt(),
+                )),
+              ]),
+            SwitchListTile(
+              key: const Key('communityTagExactMatch'),
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.communityTagExactMatch),
+              value: _exactTag,
+              onChanged: (value) => setState(() => _exactTag = value),
+            ),
+            Row(children: [
+              Expanded(child: TextFormField(
+                key: const Key('communityMinimumViews'),
+                initialValue: _minimumViews == 0 ? '' : '$_minimumViews',
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                    labelText: l10n.communityMinimumViews),
+                onChanged: (value) =>
+                    _minimumViews = (int.tryParse(value) ?? 0).clamp(0, 999999999).toInt(),
+              )),
+              const SizedBox(width: 12),
+              Expanded(child: TextFormField(
+                key: const Key('communityMinimumBookmarks'),
+                initialValue: _minimumBookmarks == 0 ? '' : '$_minimumBookmarks',
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                    labelText: l10n.communityMinimumBookmarks),
+                onChanged: (value) => _minimumBookmarks =
+                    (int.tryParse(value) ?? 0).clamp(0, 999999999).toInt(),
+              )),
+            ]),
+            const SizedBox(height: 8),
             _section(
               title: l10n.communityMutedWords,
               hint: l10n.communityMutedWordsHint,
@@ -1245,11 +1567,49 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               keyPrefix: 'communityMutedTags',
               entries: _tags,
             ),
-            OutlinedButton.icon(
-              key: const Key('communityManageMutedAuthors'),
-              onPressed: _manageMutedAuthors,
-              icon: const Icon(Icons.person_off_outlined),
-              label: Text(l10n.communityMutedAuthors),
+            ExpansionTile(
+              key: const Key('communityMutedAuthorsAccordion'),
+              tilePadding: EdgeInsets.zero,
+              initiallyExpanded: false,
+              title: Text(l10n.communityMutedAuthors,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  )),
+              children: [
+                Consumer<CommunityService>(builder: (_, service, __) {
+                  final ids = service.mutedAuthorIds.toList()..sort();
+                  if (ids.isEmpty) return Text(l10n.communityMutedAuthorsEmpty);
+                  return Column(children: [
+                    for (final id in ids)
+                      ListTile(
+                        key: ValueKey('communityMutedAuthorInline-$id'),
+                        title: Text(service.authorNameOf(id) ?? id),
+                        onTap: () {
+                          final navigator = Navigator.of(context);
+                          final name = service.authorNameOf(id) ?? id;
+                          navigator.pop();
+                          navigator.push(adMockMaterialPageRoute<void>(
+                            builder: (_) => CommunityAuthorWorksScreen(
+                                authorId: id, authorName: name),
+                          ));
+                        },
+                        trailing: IconButton(
+                          key: ValueKey('communityUnmuteAuthorInline-$id'),
+                          tooltip: l10n.communityUnmuteAuthor,
+                          onPressed: () => service.setAuthorMuted(id, false),
+                          icon: const Icon(Icons.visibility_outlined),
+                        ),
+                      ),
+                  ]);
+                }),
+                TextButton.icon(
+                  key: const Key('communityManageMutedAuthors'),
+                  onPressed: _manageMutedAuthors,
+                  icon: const Icon(Icons.person_off_outlined),
+                  label: Text(l10n.communityMutedAuthors),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             SwitchTheme(
@@ -1297,6 +1657,13 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               dateFilter: _dateFilter == _PostDateFilter.custom && _dateRange == null
                   ? _PostDateFilter.all : _dateFilter,
               dateRange: _dateRange,
+              exactTag: _exactTag,
+              durationMode: _durationMode,
+              upToMinutes: _upToMinutes,
+              minimumMinutes: _minimumMinutes,
+              maximumMinutes: _maximumMinutes,
+              minimumViews: _minimumViews,
+              minimumBookmarks: _minimumBookmarks,
             ),
           ),
           child: Text(l10n.commonSave),
@@ -1313,6 +1680,13 @@ class _ContentFilterInput {
     required this.tags,
     required this.dateFilter,
     required this.dateRange,
+    required this.exactTag,
+    required this.durationMode,
+    required this.upToMinutes,
+    required this.minimumMinutes,
+    required this.maximumMinutes,
+    required this.minimumViews,
+    required this.minimumBookmarks,
   });
 
   final bool hideAi;
@@ -1320,4 +1694,11 @@ class _ContentFilterInput {
   final List<String> tags;
   final _PostDateFilter dateFilter;
   final DateTimeRange? dateRange;
+  final bool exactTag;
+  final _DurationFilterMode durationMode;
+  final double upToMinutes;
+  final int minimumMinutes;
+  final int maximumMinutes;
+  final int minimumViews;
+  final int minimumBookmarks;
 }

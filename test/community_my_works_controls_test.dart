@@ -156,7 +156,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.byId(work.id)!.tags, contains('追加テスト'));
 
-    await tester.tap(find.byKey(const Key('communityWorkTagEdit-追加テスト')));
+    await tester.tap(find.byKey(const Key('communityWorkTagText-追加テスト')));
     await tester.pumpAndSettle();
     await tester.enterText(
         find.byKey(const Key('communityWorkTagInput')), '編集済み');

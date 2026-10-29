@@ -371,31 +371,20 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                       ],
                     ),
                   ),
-                  // 自分自身の投稿者ページではフォローボタンを表示しない
-                  // （Task#144：お気に入り作者機能）。
+                  // Keep the less-frequent mute action compact in the
+                  // profile row; following receives the full-width action.
                   if (!isSelf)
-                    OutlinedButton.icon(
-                      onPressed: () => reportFailedCommunityEdit(
-                        context,
-                        communityService,
-                        communityService.toggleFavoriteAuthor(widget.authorId),
+                    IconButton.outlined(
+                      key: const Key('communityAuthorMuteToggle'),
+                      tooltip: isMuted
+                          ? l10n.communityUnmuteAuthor
+                          : l10n.communityMuteAuthor,
+                      onPressed: () => communityService.setAuthorMuted(
+                        widget.authorId, !isMuted,
                       ),
-                      icon: Icon(
-                        isFavorite
-                            ? Icons.person_remove_alt_1
-                            : Icons.person_add_alt_1,
-                        size: 18,
-                      ),
-                      label: Text(
-                        isFavorite
-                            ? l10n.communityFavoriteAuthorFollowing
-                            : l10n.communityFavoriteAuthorFollow,
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: isFavorite
-                            ? scheme.onSurfaceVariant
-                            : scheme.primary,
-                      ),
+                      icon: Icon(isMuted
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined),
                     ),
                 ],
               ),
@@ -416,16 +405,18 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: OutlinedButton.icon(
-                  key: const Key('communityAuthorMuteToggle'),
-                  onPressed: () => communityService.setAuthorMuted(
-                    widget.authorId, !isMuted,
+                  key: const Key('communityAuthorFollowToggle'),
+                  onPressed: () => reportFailedCommunityEdit(
+                    context,
+                    communityService,
+                    communityService.toggleFavoriteAuthor(widget.authorId),
                   ),
-                  icon: Icon(isMuted
-                      ? Icons.visibility_outlined
-                      : Icons.visibility_off_outlined),
-                  label: Text(isMuted
-                      ? l10n.communityUnmuteAuthor
-                      : l10n.communityMuteAuthor),
+                  icon: Icon(isFavorite
+                      ? Icons.person_remove_alt_1
+                      : Icons.person_add_alt_1),
+                  label: Text(isFavorite
+                      ? l10n.communityFavoriteAuthorFollowing
+                      : l10n.communityFavoriteAuthorFollow),
                 ),
               ),
             Expanded(
