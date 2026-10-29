@@ -1376,25 +1376,23 @@ class _SharedTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var shared = context.watch<ProjectService>().shared;
+    final service = context.watch<ProjectService>();
+    final folders = service.sharedFolders;
+    var shared = service.shared;
     if (showFavoritesOnly) {
       shared = shared.where((p) => p.isFavorite).toList();
     }
     shared = _sortProjects(shared, sortMode);
     final l10n = AppLocalizations.of(context)!;
-    if (shared.isEmpty) {
-      return EmptyStatePlaceholder(
-        icon: Icons.share_outlined,
-        title: l10n.homeSharedEmpty,
-      );
-    }
     return _FolderableList<Project>(
       allItems: shared,
-      folders: context.watch<ProjectService>().sharedFolders,
-      folderIdOf: (p) =>
-          context.read<ProjectService>().sharedFolders.any(
-            (f) => f.id == p.sharedFolderId,
-          )
+      folders: folders,
+      emptyState: EmptyStatePlaceholder(
+        icon: Icons.share_outlined,
+        title: l10n.homeSharedEmpty,
+        scrollable: false,
+      ),
+      folderIdOf: (p) => folders.any((f) => f.id == p.sharedFolderId)
           ? p.sharedFolderId
           : null,
       onEnterFolder: (folderId, folderName, itemsInFolder) =>
@@ -1473,13 +1471,9 @@ class _SharedFolderScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(folderName)),
       body: items.isEmpty
-          ? Center(
-              child: Text(
-                l10n.folderManagementEmpty,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
+          ? EmptyStatePlaceholder(
+              icon: Icons.folder_open_outlined,
+              title: l10n.homeSharedFolderEmpty,
             )
           : ListView.builder(
               itemCount: items.length,
@@ -1604,48 +1598,67 @@ class _FolderableList<T> extends StatelessWidget {
   }
 
   Widget _folderChips(BuildContext context, Map<String, int> countByFolder) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: folders.map((f) {
-          final count = countByFolder[f.id] ?? 0;
-          return InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: () => onEnterFolder(
-              f.id,
-              f.name,
-              allItems.where((e) => folderIdOf(e) == f.id).toList(),
-            ),
-            onLongPress: () => _showFolderMenu(context, f),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outlineVariant,
+    return LayoutBuilder(
+      builder: (context, constraints) => Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: folders.map((f) {
+            final count = countByFolder[f.id] ?? 0;
+            return ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: (constraints.maxWidth - 24).clamp(
+                  0.0,
+                  double.infinity,
                 ),
-                borderRadius: BorderRadius.circular(10),
+                minHeight: 48,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.folder, size: 18),
-                  const SizedBox(width: 6),
-                  Text(f.name),
-                  const SizedBox(width: 4),
-                  Text(
-                    '($count)',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+              child: Semantics(
+                button: true,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () => onEnterFolder(
+                    f.id,
+                    f.name,
+                    allItems.where((e) => folderIdOf(e) == f.id).toList(),
+                  ),
+                  onLongPress: () => _showFolderMenu(context, f),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.folder, size: 18),
+                        const SizedBox(width: 6),
+                        Flexible(child: Text(f.name)),
+                        const SizedBox(width: 4),
+                        Text(
+                          '($count)',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

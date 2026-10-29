@@ -175,6 +175,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ce dossier ne contient aucune œuvre exportée';
 
   @override
+  String get homeSharedFolderEmpty =>
+      'Ce dossier ne contient aucun projet partagé';
+
+  @override
   String homeDeleteFolderKeepContents(String name) {
     return '\"$name\" sera supprimé. Son contenu reviendra dans la liste principale et ne sera pas supprimé.';
   }

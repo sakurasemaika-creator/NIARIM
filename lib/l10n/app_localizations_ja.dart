@@ -167,6 +167,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeWorkFolderEmpty => 'このフォルダには書き出した作品がありません';
 
   @override
+  String get homeSharedFolderEmpty => 'このフォルダには共有プロジェクトがありません';
+
+  @override
   String homeDeleteFolderKeepContents(String name) {
     return '「$name」フォルダを削除します。中の項目は一覧に戻り、項目自体は削除されません。';
   }

@@ -40,7 +40,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S24 — Project/shared prefs18反例と正常delete cold参照残存の1反例。DISC037追加、native再現/修正へ
+current_substep: A003/S25 — Shared空folder不可視 DISC038のnative反例→修正/再検証
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -60,7 +60,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: S24検証済み単位を通常pushしremote/tree/paths/source313確認→現runtime cacheをDrive保存→最新Community旧API8error/旧CI8failを修正。未完了全体はA003_S24_20261029_RESUME.md参照。
+next_action: S25 native77Ready保存/readback→検証済みunit通常push/source313→runtime保存/freshCI→DISC040 Shared/Trash画面名とsortの狭幅配置を修正・実再検証。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
@@ -544,3 +544,15 @@ KO native追加: kernel791e、320×844/text2でproduction Home folder Delete確�
 次: 最終l10n cleanup後のmain+CI fixtureをguard付きbuild、791eとの依存差分は7generated bindingsの未使用getter除去のみと4fonthead時刻で区別、latest-source原本を目視。current source/assets/Stateを検証済み単位で非force push、fresh CI全suiteを追跡。Baseline2/628/currentA003、DISC001–037todo、Delta37not_startedは維持。full-comprehensive/physical-device/live-auth/backend/codec/SR/performance/allpreset/state closureは未完了。
 
 S24 follow-up公開直前: unused binding cleanup後のnormal main/CI fixture build成功、latest kernel d0176b2a7c343fb4512e85d6ceac99d31864958295d23d98b7a108d4bbad8c19。old791e native機能batchとsource313中差分7generated l10n filesのみ、fixture同一、4fontはhead timestamp/checksumだけ（glyph関連table不変）。latest source KO320/text2 Home coldroot3、EN390owner設定/タグdialog3原本を個別目視、previous17+KO機能batchを最新kernel再撮影と偽らずdependency記録で継承。App停止/保存先faultなし。ciFinalRepairKo core Drive1E7bGtqmO1sFuiZUj1bn8NL_5khn8ACcW/23080440B/SHA9da5258db87a780af6169efba4ce933b18494467d5df0089f6fc0e8ff22ac58f、全1599manifest/rawCRC/meta検証済み。公開後はfresh CIとlatest runtime保存、A003追加CRUDを継続。
+
+S25（2026-10-30）: Shared画面の0共有project状態でfolderを作成・永続保存できるが表示されず開く/rename/delete不能をnative EN390×844で実証しDISC038登録。既存S24修正のfolder保存自体は成功、UIがshared.isEmptyで先に空画面を返すため。counter実原本/prefs/hashはaudit-evidence/A003-S25-current。最初のEnterは単にunfocus、Create button後の原本だけを有効反例とする。App7370585/Webc177c2e、full CI2234PASS/23SKIP/0FAIL/analyze0/format766変更0を確認済み。全監査はBaseline2/628/currentA003、Discovery001–038todo/cursor001、Delta37not_startedのまま。次はcoldPC追試→空folderUI修正/関連回帰/実再操作→証跡保存/通常push。
+
+S25 latest WIP: 空folder表示と共通folder chip全文折返し/48px target/semanticsを修正。widget3testsは一度PASSしたがlocale favorite Text tap warningが1件あったためFilterChip実tap+selected反転assertへ修正。新3+ProjectFolder/transaction/favorites計43PASS（関連file名を誤って指定したload failure1はproduct失敗ではなく未実行と区別）、正しいWorkUI/folder-empty/bottomsheet関連suite実行中（oct30-s25-work-related.log /session67069）。published native d017のEN320/FR320text2で長名overflow原本を個別目視、renameによるactualprefs保存を確認。DISC039既存352px反例、DISC040 Shared AppBar画面名がsortに覆われる実問題を登録（Trashは可能性として未確認）。コードfixはまだ未公開・native AFTER未取得。次はrelated結果→globalanalyze/format/main+S25fixturebuild→Shared native empty/long/failure/retry/CRUD/coldと保存→検証済み単位push。
+
+S25 final pre-native: DISC041の空Shared folder誤案内を7ARBs/generated bindings + EmptyStatePlaceholderへ修正し、semantic BEFORE1FAIL→Shared3+font coverage/license/unusedkey22PASS。S25内77distinct対象PASS（先の43は誤path load1を別記、正しいWork関連15PASS、22中Shared3は重複）。全体format767変更0、最新globalanalyze0。最終main+fixture build中、fixtureはexplicit /home,/shared,/trash初期routeだけを選べるようにした（locale画面検証のpreconditionであり、frontdoor導線PASSの代用にしない）。old cf0bの長名折返し/favorites-filter空/ENPCゼロprojectフォルダー可視を原本個別目視、FR320×220は全文をscrollで読むことを確認。old cf0bの保存失敗後retry永続化は境界状態不一致で無効化し、exactoriginalprefsへ復元済み。native controllerにowned fault install/restore・各action後のactualprefs hash/folder数・終了時exact cleanupを追加し、同じprocessから該当状態を再取得する。最新native未完了なのでpushせず、全体完了にも進めない。
+
+S25公開前の検証済み単位: Shared全0件でもfolder一覧を保ち、共通folder chipは幅を制約して全文を折返し/48px以上/semantics buttonを保持。空Shared folder内は「folder無し」でなく「shared project無し」と7localeで説明する。3有効widget反例（saved/create/long name）と誤案内1反例を記録（初回create setup未pumpやpageBack helper英語依存は有効反例と区別）。77distinct対象回帰、globalanalyze0、globalformat767変更0、normalmain/fixturebuild成功。l10n.yaml format:trueでSpanish生成物のformat driftを防止し、build前後313source全同一・postbuildformat0、stable kernel4e5e6c0be1a8c1eb9830ef430ed06faf40f74847ba0717530b937985e4ffce88を確認。
+
+最新native: 320×844/text2/7localeの空Shared folder説明7原本を個別目視（glyph/全文/見た目）。cf0b原本の長名折返し/favorites-filter空/320×220のscroll可読性はbody文言変更との依存を区別。4e5のENPCで同process内prefs fault→error/入力保持→exact復元→same dialog retry→実prefs2folders→rename→cold2→delete cancel保持→delete→cold1を実UI/実file hashの両方で確認。旧境界でのretry/rename/delete誤labelは明示無効化、成功へ集計していない。fault全解除、App停止、保護Dela4e原本未stage。native-review.json/native-empty-retry-review.json参照。
+
+S25の対象修正だけを通常pushする準備。DISC038/039/041の全closureをdoneにはせず、DISC040 Shared狭幅AppBarのtitle/sort問題は未修正で次に優先処理する。Shared actual niapro membership move/非空folder delete、他の全visible/state/preset/実機/SR/性能/法務等は未完了。Baseline2/628/currentA003、Discovery001–041todo/cursor001、Delta37not_startedを維持。次: final evidence/core readback→単位push/remote/tree/paths/source313→compiled runtime保存→freshCI追跡しDISC040へ。

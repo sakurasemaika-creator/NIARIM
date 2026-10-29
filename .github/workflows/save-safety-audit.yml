@@ -5,6 +5,7 @@ on:
   push:
     branches: [dev_branch]
     paths:
+      - "l10n.yaml"
       - ".github/workflows/save-safety-audit.yml"
       - "lib/engine/niapro_serializer.dart"
       - "lib/engine/tile_manager.dart"
@@ -19,6 +20,7 @@ on:
       - "test/project_folder_persistence_test.dart"
       - "test/project_folder_transaction_test.dart"
       - "test/project_folder_edit_ui_test.dart"
+      - "test/shared_empty_folder_widget_test.dart"
       - "test/community_milestone_account_boundary_test.dart"
       - "lib/screens/community/community_work_settings_screen.dart"
       - "lib/services/community_milestone_store.dart"
@@ -193,7 +195,7 @@ jobs:
         run: |
           mkdir -p artifacts/save-safety
           set -o pipefail
-          flutter test --no-pub --reporter expanded test/project_save_safety_test.dart test/project_folder_persistence_test.dart test/project_folder_transaction_test.dart test/project_folder_edit_ui_test.dart test/tile_manager_test.dart test/save_slot_overwrite_test.dart test/save_slot_confirmation_dialog_test.dart test/save_slot_action_buttons_test.dart test/save_tree_lazy_list_test.dart 2>&1 | tee artifacts/save-safety/green.log
+          flutter test --no-pub --reporter expanded test/project_save_safety_test.dart test/project_folder_persistence_test.dart test/project_folder_transaction_test.dart test/project_folder_edit_ui_test.dart test/shared_empty_folder_widget_test.dart test/tile_manager_test.dart test/save_slot_overwrite_test.dart test/save_slot_confirmation_dialog_test.dart test/save_slot_action_buttons_test.dart test/save_tree_lazy_list_test.dart 2>&1 | tee artifacts/save-safety/green.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -395,6 +395,12 @@ abstract class AppLocalizations {
   /// **'このフォルダには書き出した作品がありません'**
   String get homeWorkFolderEmpty;
 
+  /// No description provided for @homeSharedFolderEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダには共有プロジェクトがありません'**
+  String get homeSharedFolderEmpty;
+
   /// No description provided for @homeDeleteFolderKeepContents.
   ///
   /// In ja, this message translates to:

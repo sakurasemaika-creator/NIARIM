@@ -48,6 +48,7 @@
   "homeWorksEmpty": "Aún no hay obras exportadas",
   "homeWorksEmptyHint": "Exporta un vídeo o GIF desde el lienzo y aparecerá aquí",
   "homeWorkFolderEmpty": "No hay obras exportadas en esta carpeta",
+  "homeSharedFolderEmpty": "No hay proyectos compartidos en esta carpeta",
   "homeDeleteFolderKeepContents": "Se eliminará \"{name}\". Su contenido volverá a la lista principal y no se eliminará.",
   "homeShareOpenWith": "Compartir / Abrir en Fotos",
   "homeWorkDeleteConfirmTitle": "¿Eliminar {name}?",

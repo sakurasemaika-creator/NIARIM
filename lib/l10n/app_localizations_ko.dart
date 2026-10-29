@@ -168,6 +168,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeWorkFolderEmpty => '이 폴더에는 내보낸 작품이 없어요';
 
   @override
+  String get homeSharedFolderEmpty => '이 폴더에는 공유된 프로젝트가 없어요';
+
+  @override
   String homeDeleteFolderKeepContents(String name) {
     return '\"$name\" 폴더를 삭제해요. 안의 항목은 목록으로 돌아가며 삭제되지 않아요.';
   }

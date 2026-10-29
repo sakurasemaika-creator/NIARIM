@@ -166,6 +166,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeWorkFolderEmpty => '此文件夹中没有导出的作品';
 
   @override
+  String get homeSharedFolderEmpty => '此文件夹中没有共享项目';
+
+  @override
   String homeDeleteFolderKeepContents(String name) {
     return '将删除文件夹“$name”。其中的项目将返回主列表，不会被删除。';
   }
@@ -7761,6 +7764,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeWorkFolderEmpty => '此資料夾中沒有匯出的作品';
+
+  @override
+  String get homeSharedFolderEmpty => '此資料夾中沒有共享的專案';
 
   @override
   String homeDeleteFolderKeepContents(String name) {

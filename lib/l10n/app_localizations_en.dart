@@ -173,6 +173,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeWorkFolderEmpty => 'No exported works in this folder';
 
   @override
+  String get homeSharedFolderEmpty => 'No shared projects in this folder';
+
+  @override
   String homeDeleteFolderKeepContents(String name) {
     return '\"$name\" will be deleted. Its contents will return to the main list and will not be deleted.';
   }
