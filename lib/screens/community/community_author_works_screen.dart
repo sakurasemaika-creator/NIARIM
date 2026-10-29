@@ -160,8 +160,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final followerCount = communityService.followerCountOf(widget.authorId);
     final followingCount = communityService.followingCountOf(widget.authorId);
     final bookmarkedIds = communityService.bookmarkedIds;
-    final bookmarksPublic = communityService.isBookmarksPublic(widget.authorId);
-    final bookmarkedWorks = (isSelf || bookmarksPublic)
+    final bookmarkedWorks = isSelf
         ? communityService.bookmarkedWorksOf(widget.authorId)
         : const <CommunityWork>[];
 
@@ -337,68 +336,21 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                             onToggleBookmark: toggleBookmark,
                           ),
                   ),
-                  // ─── ブックマークタブ（Task#145） ───────────────────
+                  // Private bookmarks are visible to their owner only.
                   SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (isSelf)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                            child: _PublicVisibilityToggle(
-                              value: communityService.selfBookmarksPublic,
-                              onChanged:
-                                  communityService.setSelfBookmarksPublic,
-                              title: l10n.communityBookmarksPublicToggleTitle,
-                              description:
-                                  l10n.communityBookmarksPublicToggleDesc,
-                            ),
-                          ),
-                        if (!isSelf && !bookmarksPublic)
-                          Padding(
+                    child: bookmarkedWorks.isEmpty
+                        ? Padding(
                             padding: const EdgeInsets.all(32),
                             child: Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.lock_outline,
-                                    size: 40,
-                                    color: scheme.onSurfaceVariant,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    l10n.communityBookmarksPrivateNotice,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: scheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              child: Text(l10n.communityBookmarksEmptyMessage),
                             ),
                           )
-                        else if (bookmarkedWorks.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Center(
-                              child: Text(
-                                l10n.communityBookmarksEmptyMessage,
-                                style: TextStyle(
-                                  color: scheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          )
-                        else
-                          CommunityWorkGrid(
+                        : CommunityWorkGrid(
                             works: bookmarkedWorks,
                             bookmarkedIds: bookmarkedIds,
                             onTapWork: openWork,
                             onToggleBookmark: toggleBookmark,
                           ),
-                      ],
-                    ),
                   ),
                 ],
               )
@@ -423,75 +375,3 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   }
 }
 
-/// 自分のブックマーク一覧タブに表示する公開設定スイッチ（ユーザー設定）。
-/// Task#145の調査で推奨した「既定非公開」を、オンにすることで他ユーザーが
-/// この画面から閲覧できるようになる。
-/// ブックマーク一覧・フォロワー一覧など、「自分の関係性データを他ユーザーに
-/// 公開するか」の設定で共通して使う汎用トグル（Task#134継続：フォロワー
-/// 一覧の本人選択制公開に合わせて、ブックマーク専用だったウィジェットを
-/// 汎用化した）。
-class _PublicVisibilityToggle extends StatelessWidget {
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  final String title;
-  final String description;
-
-  const _PublicVisibilityToggle({
-    required this.value,
-    required this.onChanged,
-    required this.title,
-    required this.description,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => onChanged(!value),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                value ? Icons.public : Icons.lock_outline,
-                color: value ? scheme.primary : scheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Switch(value: value, onChanged: onChanged),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
