@@ -42,6 +42,24 @@ void main() {
 
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.controller?.text, '手描き');
+    await tester.tap(find.byKey(const Key('communityContentFilterButton')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<SwitchListTile>(
+        find.byKey(const Key('communityTagExactMatch')),
+      ).value,
+      isTrue,
+      reason: 'A tag chip must launch exact tag matches by default',
+    );
+    await tester.tap(find.byKey(const Key('communityTagExactMatch')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<SwitchListTile>(
+        find.byKey(const Key('communityTagExactMatch')),
+      ).value,
+      isFalse,
+      reason: 'The viewer may subsequently switch to partial matching',
+    );
   });
 
   testWidgets('キーワード/タグ検索を切り替えると古い検索語を持ち越さない', (tester) async {

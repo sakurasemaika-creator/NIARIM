@@ -104,7 +104,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     final initialTag = widget.initialTagFilter;
     if (initialTag != null && initialTag.isNotEmpty) {
       _tagSearchMode = true;
-      _tagExactMatch = false;
+      _tagExactMatch = true;
       _searchQuery = initialTag;
       _draftQuery = initialTag;
       _searchController.text = initialTag;
@@ -461,7 +461,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         newTag != oldWidget.initialTagFilter) {
       setState(() {
         _tagSearchMode = true;
-        _tagExactMatch = false;
+        _tagExactMatch = true;
         _searchQuery = newTag;
         _draftQuery = newTag;
         _searchController.text = newTag;
