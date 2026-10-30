@@ -12,6 +12,8 @@ import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../services/api/community_api.dart' show RankingPeriod;
+import '../../l10n/community_ranking_layout_labels.dart';
+import 'widgets/community_ranking_work_list.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
@@ -69,6 +71,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   static const _savedSearchesKey = 'community.savedSearches.v1';
   static const _historyKey = 'community.searchHistory.v1';
   static const _tileWidthKey = 'community.tileMinWidth.v1';
+  static const _rankingLayoutKey = 'community.rankingLayout.v1';
   final List<Map<String, dynamic>> _savedSearches = [];
   final List<Map<String, dynamic>> _searchHistory = [];
   String _searchAccount = 'guest';
@@ -86,6 +89,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   DateTimeRange? _customPostDateRange;
   bool _tagExactMatch = false;
   double _minimumTileWidth = 160;
+  CommunityRankingLayout _rankingLayout = CommunityRankingLayout.horizontal;
   _DurationFilterMode _durationMode = _DurationFilterMode.all;
   double _upToMinutes = 5;
   int _minimumMinutes = 0;
@@ -99,6 +103,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     super.initState();
     _loadSavedSearches();
     _loadTileWidth();
+    _loadRankingLayout();
     _tabController = TabController(length: 3, vsync: this)
       ..addListener(_onTabChanged);
     final initialTag = widget.initialTagFilter;
@@ -131,6 +136,32 @@ class _CommunityScreenState extends State<CommunityScreen>
       }
     } catch (error) {
       debugPrint('Community tile width could not be restored: $error');
+    }
+  }
+
+  Future<void> _loadRankingLayout() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_rankingLayoutKey);
+      if (!mounted || saved == null) return;
+      final layouts = CommunityRankingLayout.values.where(
+        (item) => item.name == saved,
+      );
+      if (layouts.isNotEmpty) {
+        setState(() => _rankingLayout = layouts.first);
+      }
+    } catch (error) {
+      debugPrint('Ranking layout could not be restored: $error');
+    }
+  }
+
+  Future<void> _setRankingLayout(CommunityRankingLayout value) async {
+    setState(() => _rankingLayout = value);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_rankingLayoutKey, value.name);
+    } catch (error) {
+      debugPrint('Ranking layout could not be saved: $error');
     }
   }
 
@@ -998,7 +1029,36 @@ class _CommunityScreenState extends State<CommunityScreen>
                       ),
                   ],
                 ),
-                IconButton(
+                if (tab == 1)
+                  PopupMenuButton<CommunityRankingLayout>(
+                    key: const Key('communityRankingLayoutButton'),
+                    tooltip: CommunityRankingLayoutLabels.of(context).title,
+                    icon: Icon(
+                      _rankingLayout == CommunityRankingLayout.horizontal
+                          ? Icons.view_agenda_outlined
+                          : Icons.view_stream_outlined,
+                    ),
+                    onSelected: _setRankingLayout,
+                    itemBuilder: (context) {
+                      final words = CommunityRankingLayoutLabels.of(context);
+                      return [
+                        CheckedPopupMenuItem(
+                          value: CommunityRankingLayout.horizontal,
+                          checked:
+                              _rankingLayout == CommunityRankingLayout.horizontal,
+                          child: Text(words.horizontal),
+                        ),
+                        CheckedPopupMenuItem(
+                          value: CommunityRankingLayout.largeThumbnail,
+                          checked: _rankingLayout ==
+                              CommunityRankingLayout.largeThumbnail,
+                          child: Text(words.largeThumbnail),
+                        ),
+                      ];
+                    },
+                  )
+                else
+                  IconButton(
                   key: const Key('communityTileSizeButton'),
                   tooltip: l10n.communityTileSize,
                   icon: const Icon(Icons.grid_view_rounded),
@@ -1293,12 +1353,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                       builder: (context) {
                         final ranked = _rankingWorks(allWorks);
                         if (ranked.isEmpty) return _buildSearchEmptyState(l10n);
-                        final rankNumbers = {
-                          for (int i = 0; i < ranked.length; i++)
-                            ranked[i].id: i + 1,
-                        };
-                        return CommunityWorkGrid(
-                          minTileWidth: _minimumTileWidth,
+                        return CommunityRankingWorkList(
+                          layout: _rankingLayout,
                           works: ranked,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
@@ -1308,7 +1364,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                             communityService.toggleBookmark(w.id),
                           ),
                           onTapAuthor: _openAuthorWorks,
-                          rankNumbers: rankNumbers,
                           bottomPadding: 88,
                         );
                       },
