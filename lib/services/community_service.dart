@@ -510,7 +510,9 @@ class CommunityService extends ChangeNotifier {
   /// filters allow.
   List<CommunityWork> get rankedWorks => [
     for (final id in _rankingIds)
-      if (byId(id) case final work?) work,
+      if (byId(id) case final work?
+          when work.isNiarimPublished && !work.isUnavailable)
+        work,
   ];
 
   void setCurrentUserId(String? id) {
@@ -917,15 +919,16 @@ class CommunityService extends ChangeNotifier {
     if (!_isCurrentAccount(revision)) {
       throw const CommunityAccountChangedException();
     }
-    // Keep only a redacted slot in views which must preserve old positions.
-    if (_rankingIds.contains(workId) || _bookmarkedIds.contains(workId)) {
+    // Personal bookmark history keeps a redacted entry; rankings omit this
+    // unavailable work immediately on this device and after the next fetch.
+    if (_bookmarkedIds.contains(workId)) {
       _upsert(CommunityWork.unavailable(workId));
     } else {
       _works.removeWhere((work) => work.id == workId);
     }
     _ownIds.remove(workId);
     _latestIds.remove(workId);
-    // The user's bookmark record and ranking slot intentionally remain.
+    // Keep bookmarked IDs so the user can still see/remove their old entry.
     // The backend tombstone prevents this deleted YouTube ID being republished.
     notifyListeners();
   }

@@ -119,8 +119,11 @@ export async function updateWork(
         }
       } else {
         removes.push(
-          // Keep previously earned ranking slots, but remove public
-          // discovery/author indexes. Ranking reads emit redacted cards.
+          "rankingScore",
+          "gsi1pk",
+          "gsi1sk",
+          "gsi2pk",
+          "gsi2sk",
           "gsi3pk",
           "gsi3sk",
           "gsi4pk",

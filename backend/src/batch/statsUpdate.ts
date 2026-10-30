@@ -220,8 +220,11 @@ async function updateWorkStats(
     }
   } else {
     removes.push(
-      // Retain historic ranking keys for placeholder slots. Latest
-      // discovery and author pages must still become inaccessible.
+      "rankingScore",
+      "gsi1pk",
+      "gsi1sk",
+      "gsi2pk",
+      "gsi2sk",
       "gsi3pk",
       "gsi3sk",
       "gsi4pk",
@@ -292,30 +295,13 @@ async function updateWorkStats(
 async function writeRankingSnapshots(topLists: TopLists): Promise<void> {
   const now = new Date();
   await Promise.all(
-    DELTA_RANKING_PERIODS.map(async (period) => {
-      const previous = await ddb.send(new GetCommand({
-        TableName: tableName(),
-        Key: Keys.rankingSnapshot(period),
-      }));
-      const old = previous.Item as RankingSnapshotItem | undefined;
-      const nextWindow = currentWindowId(period, now);
-      // An unavailable work must retain its previous rank for the remainder
-      // of the same ranking window. Never carry it into a different period.
-      const merged = [...topLists[period]];
-      if (old?.windowId === nextWindow) {
-        for (const entry of old.entries) {
-          if (!merged.some((current) => current.workId === entry.workId)) {
-            merged.push(entry);
-          }
-        }
-      }
-      merged.sort((a, b) => b.score - a.score || a.workId.localeCompare(b.workId));
+    DELTA_RANKING_PERIODS.map((period) => {
       const item: RankingSnapshotItem = {
         itemType: TABLE_ITEM_TYPE.RankingSnapshot,
         ...Keys.rankingSnapshot(period),
         period,
-        windowId: nextWindow,
-        entries: merged.slice(0, RANKING_TOP_LIMIT),
+        windowId: currentWindowId(period, now),
+        entries: topLists[period],
         computedAt: now.toISOString(),
       };
       return ddb.send(new PutCommand({ TableName: tableName(), Item: item }));

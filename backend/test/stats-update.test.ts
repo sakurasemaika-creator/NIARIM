@@ -86,6 +86,10 @@ describe("statistics batch data safety", () => {
     expect(input.ExpressionAttributeValues[":status"]).toBe("private");
     expect(input.UpdateExpression).not.toContain("isNiarimPublished =");
     for (const key of [
+      "gsi1pk",
+      "gsi1sk",
+      "gsi2pk",
+      "gsi2sk",
       "gsi3pk",
       "gsi3sk",
       "gsi4pk",
@@ -110,9 +114,6 @@ describe("statistics batch data safety", () => {
       send.mockImplementation(async (command) => {
         if (command instanceof ScanCommand) return { Items: [work] };
         if (command instanceof GetCommand) {
-          if (String(command.input.Key?.pk ?? "").startsWith("RANKINGSNAPSHOT#")) {
-            return {};
-          }
           expect(command.input.ConsistentRead).toBe(true);
           return {
             Item:
