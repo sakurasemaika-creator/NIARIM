@@ -1651,8 +1651,15 @@ class CommunityService extends ChangeNotifier {
         );
       }
     }
+    // All followed posts and reposts share ONE chronological stream.
+    // Tie-break by work ID for deterministic order across page fetches.
     final list = byWork.values.toList()
-      ..sort((a, b) => b.feedTime.compareTo(a.feedTime));
+      ..sort((a, b) {
+        final newestFirst = b.feedTime.compareTo(a.feedTime);
+        return newestFirst != 0
+            ? newestFirst
+            : a.work.id.compareTo(b.work.id);
+      });
     return list;
   }
 

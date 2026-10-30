@@ -298,5 +298,135 @@ void main() {
     expect(service.bookmarkedIds, isEmpty);
     expect(service.favoriteAuthorFeed, isEmpty);
     expect(service.isRepostedBySelf('favplain001'), isFalse);
+  });  test('フォロー中は投稿とリポストを同じ時系列で25件ずつ統合する', () async {
+    Map<String, dynamic> candidate(String id, String author, DateTime at) => {
+      'workId': id,
+      'authorId': author,
+      'channelName': author,
+      'title': id,
+      'postedAt': at.toUtc().toIso8601String(),
+      'youtubeUrl': 'https://youtube.com/watch?v=$id',
+      'thumbnailUrl': '',
+      'viewCount': 1,
+      'likeCount': 0,
+      'commentCount': 0,
+      'bookmarkCount': 0,
+      'repostCount': 0,
+      'isShort': false,
+      'tags': <String>[],
+      'lockedTags': <String>[],
+      'isNiarimPublished': true,
+    };
+    final baseline = DateTime.utc(2026, 10, 29, 12);
+    DateTime activityAt(int index, int offset) =>
+        baseline.subtract(Duration(minutes: index * 4 + offset));
+    final authors = ['alice', 'bob'];
+    final expected = <({String id, DateTime at})>[];
+    final posts = <String, List<Map<String, dynamic>>>{};
+    final reposts = <String, List<Map<String, dynamic>>>{};
+    for (var a = 0; a < authors.length; a++) {
+      final id = authors[a];
+      posts[id] = [];
+      reposts[id] = [];
+      for (var i = 0; i < 30; i++) {
+        final postId = '${id}_post_$i';
+        final repostId = '${id}_repost_$i';
+        final postTime = activityAt(i, a);
+        final repostTime = activityAt(i, a + 2);
+        posts[id]!.add(candidate(postId, id, postTime));
+        reposts[id]!.add({
+          'repostedAt': repostTime.toIso8601String(),
+          // Original upload is older; the repost time controls the feed.
+          'work': candidate(
+            repostId,
+            'third-party',
+            repostTime.subtract(const Duration(days: 5)),
+          ),
+        });
+        expected.add((id: postId, at: postTime));
+        expected.add((id: repostId, at: repostTime));
+      }
+    }
+    expected.sort((a, b) => b.at.compareTo(a.at));
+    final requests = <Uri>[];
+    final client = MockClient((request) async {
+      requests.add(request.url);
+      final path = request.url.path;
+      final segments = path.split('/').where((s) => s.isNotEmpty).toList();
+      Map<String, dynamic> page(List<Map<String, dynamic>> all, String key) {
+        final start = int.tryParse(request.url.queryParameters['cursor'] ?? '0') ?? 0;
+        final count = request.url.queryParameters['limit'] == null
+            ? all.length
+            : 25;
+        final end = (start + count).clamp(0, all.length);
+        return {
+          key: all.sublist(start, end),
+          if (end < all.length) 'nextCursor': '$end',
+        };
+      }
+      Map<String, dynamic> response;
+      if (path == '/me/works') {
+        response = {'authorId': 'self', 'works': <Object>[]};
+      } else if (path == '/users/self/bookmarks') {
+        response = {'works': <Object>[]};
+      } else if (path == '/users/self/following') {
+        response = {
+          'following': [
+            {'niarimUserId': 'alice', 'channelName': 'Alice'},
+            {'niarimUserId': 'bob', 'channelName': 'Bob'},
+          ],
+        };
+      } else if (segments.length == 3 && segments[0] == 'users') {
+        final author = segments[1];
+        if (segments[2] == 'works') {
+          response = page(posts[author] ?? [], 'works');
+        } else {
+          response = page(reposts[author] ?? [], 'reposts');
+        }
+      } else {
+        response = <String, dynamic>{};
+      }
+      return http.Response(jsonEncode(response), 200, headers: headers);
+    });
+    final service = CommunityService(
+      api: CommunityApi(NiarimApiClient(
+        baseUrl: 'https://example.invalid',
+        httpClient: client,
+        tokenProvider: () async => 'token',
+        maxGetRetries: 0,
+        retryBackoff: Duration.zero,
+      )),
+    );
+    addTearDown(service.dispose);
+    await service.loadOwnWorks();
+    expect(await service.loadSocial(), isTrue);
+
+    List<String> ids() => service.favoriteAuthorFeed.map((e) => e.work.id).toList();
+    expect(ids().take(25).toList(), expected.take(25).map((e) => e.id).toList());
+    expect(ids().take(25).where((id) => id.contains('_repost_')), isNotEmpty);
+    expect(ids().take(25).where((id) => id.contains('_post_')), isNotEmpty);
+    expect(service.hasMoreFollowing, isTrue);
+    expect(await service.loadMoreFollowingFeed(), isTrue);
+    expect(ids(), expected.map((e) => e.id).toList());
+    expect(service.hasMoreFollowing, isFalse);
+    final repost = service.favoriteAuthorFeed.firstWhere(
+      (entry) => entry.work.id == 'alice_repost_0',
+    );
+    expect(repost.repostedByAuthorName, 'Alice');
+    expect(repost.feedTime, activityAt(0, 2));
+    expect(
+      requests.where((uri) =>
+          uri.path == '/users/alice/works' &&
+          uri.queryParameters.containsKey('cursor')).length,
+      1,
+    );
+    expect(
+      requests.where((uri) =>
+          uri.path == '/users/alice/reposts' &&
+          uri.queryParameters.containsKey('cursor')).length,
+      1,
+    );
   });
+
+
 }

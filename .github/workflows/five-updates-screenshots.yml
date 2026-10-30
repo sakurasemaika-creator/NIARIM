@@ -63,6 +63,9 @@ jobs:
           flutter test test/community_milestone_store_test.dart --reporter expanded
           flutter test test/community_service_test.dart --reporter expanded
           flutter test test/community_service_backend_test.dart --reporter expanded
+          flutter test test/community_backend_social_sync_test.dart --reporter expanded
+          flutter test test/background_color_picker_test.dart --reporter expanded
+          flutter test test/project_playback_status_layout_test.dart --plain-name 'detail status hides seconds, retaining frame counter and loop' --reporter expanded
           flutter test test/community_filter_dialog_layout_test.dart --reporter expanded
           flutter test test/community_header_quality_test.dart --reporter expanded
           flutter test test/community_mute_wording_l10n_test.dart --reporter expanded

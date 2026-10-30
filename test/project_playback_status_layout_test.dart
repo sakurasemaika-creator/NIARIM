@@ -54,6 +54,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('detail status hides seconds, retaining frame counter and loop', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final theme = ThemeService();
+    await theme.init();
+    addTearDown(theme.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: theme.themeData,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: ProjectPlaybackStatus(
+            currentFrame: 3,
+            totalFrames: 120,
+            fps: 12,
+            loopPlayback: true,
+            onToggleLoop: () {},
+            showTimes: false,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('projectDetailCurrentSeconds')), findsNothing);
+    expect(find.byKey(const Key('projectDetailTotalSeconds')), findsNothing);
+    expect(find.byKey(const Key('projectDetailFrameCounter')), findsOneWidget);
+    expect(find.byKey(const Key('projectDetailLoopButton')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'playback status fits all widths, languages and large frame counts',
     (tester) async {
