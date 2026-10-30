@@ -709,36 +709,74 @@ class _CanvasScreenState extends State<CanvasScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                leading: Icon(
-                  _autofillCheckMode == AutofillCheckMode.normal
-                      ? Icons.visibility_outlined
-                      : _autofillCheckMode == AutofillCheckMode.partSeparation
-                      ? Icons.palette_outlined
-                      : Icons.contrast,
-                ),
-                title: Text(l10n.canvasAutofillCheckView),
-                trailing: DropdownButton<AutofillCheckMode>(
-                  value: _autofillCheckMode,
-                  underline: const SizedBox.shrink(),
-                  items: [
-                    DropdownMenuItem(
-                      value: AutofillCheckMode.normal,
-                      child: Text(l10n.canvasAutofillCheckNormal),
-                    ),
-                    DropdownMenuItem(
-                      value: AutofillCheckMode.partSeparation,
-                      child: Text(l10n.canvasAutofillCheckParts),
-                    ),
-                    DropdownMenuItem(
-                      value: AutofillCheckMode.silhouette,
-                      child: Text(l10n.canvasAutofillCheckSilhouette),
-                    ),
-                  ],
-                  onChanged: (mode) {
-                    if (mode != null) setState(() => _autofillCheckMode = mode);
-                  },
-                ),
+              // 選んだ表示がその場で見えるよう、この行だけ作り直す（メニューは
+              // キャンバスの画面とは別のルートなので、画面のsetStateでは
+              // 作り直されず、選ぶ前の表示のままだった）。
+              StatefulBuilder(
+                builder: (ctx, setMenuState) {
+                  final labels = {
+                    AutofillCheckMode.normal: l10n.canvasAutofillCheckNormal,
+                    AutofillCheckMode.partSeparation:
+                        l10n.canvasAutofillCheckParts,
+                    AutofillCheckMode.silhouette:
+                        l10n.canvasAutofillCheckSilhouette,
+                  };
+                  Widget dropdown({required bool expanded}) =>
+                      DropdownButton<AutofillCheckMode>(
+                        value: _autofillCheckMode,
+                        isExpanded: expanded,
+                        underline: const SizedBox.shrink(),
+                        items: [
+                          for (final entry in labels.entries)
+                            DropdownMenuItem(
+                              value: entry.key,
+                              child: Text(entry.value),
+                            ),
+                        ],
+                        onChanged: (mode) {
+                          if (mode == null) return;
+                          setState(() => _autofillCheckMode = mode);
+                          setMenuState(() {});
+                        },
+                      );
+                  return LayoutBuilder(
+                    builder: (ctx, constraints) {
+                      // 選択肢は、項目名の右に入るときだけ右に置き、入らない
+                      // ときは項目名の下の行に置く（長い言語・大きな文字で
+                      // 右に置くと、行の幅をすべて使って行が描けなかった）。
+                      final style = Theme.of(ctx).textTheme.titleMedium;
+                      final scaler = MediaQuery.textScalerOf(ctx);
+                      var widest = 0.0;
+                      for (final label in labels.values) {
+                        final painter = TextPainter(
+                          text: TextSpan(text: label, style: style),
+                          textDirection: Directionality.of(ctx),
+                          textScaler: scaler,
+                        )..layout();
+                        if (painter.width > widest) widest = painter.width;
+                        painter.dispose();
+                      }
+                      // 選択肢の幅（▼を含む）＋先頭のアイコン・余白・項目名に
+                      // 残したい最小の幅。
+                      final fitsBeside =
+                          widest + 32 + 56 + 32 + scaler.scale(96) <=
+                          constraints.maxWidth;
+                      return ListTile(
+                        leading: Icon(
+                          _autofillCheckMode == AutofillCheckMode.normal
+                              ? Icons.visibility_outlined
+                              : _autofillCheckMode ==
+                                    AutofillCheckMode.partSeparation
+                              ? Icons.palette_outlined
+                              : Icons.contrast,
+                        ),
+                        title: Text(l10n.canvasAutofillCheckView),
+                        subtitle: fitsBeside ? null : dropdown(expanded: true),
+                        trailing: fitsBeside ? dropdown(expanded: false) : null,
+                      );
+                    },
+                  );
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.auto_fix_high_outlined),

@@ -194,118 +194,124 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // 中身の高さに合わせ、画面に収まらないときだけ全体をスクロールする。
+    // 高さを420に固定していた頃は、スマホでスライダー3本が1本半ほどの
+    // 小さな枠の中でしか動かせず、下の行は横にはみ出していた。
+    final maxHeight = math.max(0.0, MediaQuery.sizeOf(context).height - 72);
     return Card(
       elevation: 8,
       child: SizedBox(
         width: 280,
-        height: 420,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PanelCenterCloseBar(onClose: widget.onClose),
-              Text(
-                l10n.canvasColorAdjustTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              Divider(),
-              Center(
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: ThemeService.activeColorScheme.onSurfaceVariant,
-                    borderRadius: BorderRadius.circular(4),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxHeight),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                PanelCenterCloseBar(onClose: widget.onClose),
+                Text(
+                  l10n.canvasColorAdjustTitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
                   ),
-                  child: _previewImage != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: RawImage(
-                            image: _previewImage,
-                            fit: BoxFit.contain,
-                          ),
-                        )
-                      : const Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _slider(
-                        l10n.filterColorAdjustSaturationLabel,
-                        _saturation,
-                        (v) {
-                          setState(() => _saturation = v);
-                          _updatePreview();
-                        },
-                      ),
-                      _slider(
-                        l10n.filterColorAdjustBrightnessLabel,
-                        _brightness,
-                        (v) {
-                          setState(() => _brightness = v);
-                          _updatePreview();
-                        },
-                      ),
-                      _slider(l10n.filterColorAdjustContrastLabel, _contrast, (
-                        v,
-                      ) {
-                        setState(() => _contrast = v);
+                Divider(),
+                Center(
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: ThemeService.activeColorScheme.onSurfaceVariant,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: _previewImage != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: RawImage(
+                              image: _previewImage,
+                              fit: BoxFit.contain,
+                            ),
+                          )
+                        : const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Column(
+                  children: [
+                    _slider(
+                      l10n.filterColorAdjustSaturationLabel,
+                      _saturation,
+                      (v) {
+                        setState(() => _saturation = v);
                         _updatePreview();
-                      }),
-                    ],
-                  ),
+                      },
+                    ),
+                    _slider(
+                      l10n.filterColorAdjustBrightnessLabel,
+                      _brightness,
+                      (v) {
+                        setState(() => _brightness = v);
+                        _updatePreview();
+                      },
+                    ),
+                    _slider(l10n.filterColorAdjustContrastLabel, _contrast, (
+                      v,
+                    ) {
+                      setState(() => _contrast = v);
+                      _updatePreview();
+                    }),
+                  ],
                 ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextButton(
-                    onPressed: widget.onClose,
-                    child: Text(l10n.commonCancel),
-                  ),
-                  FilledButton(
-                    onPressed: _applying || widget.layerId == null
-                        ? null
-                        : _apply,
-                    child: Text(l10n.filterApplyButton),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextButton(
-                    onPressed: () => _addToDrawFilter(context),
-                    child: Text(
-                      l10n.canvasColorAdjustAddToDrawFilter,
-                      style: const TextStyle(fontSize: 11),
+                Wrap(
+                  alignment: WrapAlignment.spaceEvenly,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: widget.onClose,
+                      child: Text(l10n.commonCancel),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () => _addToEffectFilter(context),
-                    child: Text(
-                      l10n.canvasColorAdjustAddToEffectFilter,
-                      style: const TextStyle(fontSize: 11),
+                    FilledButton(
+                      onPressed: _applying || widget.layerId == null
+                          ? null
+                          : _apply,
+                      child: Text(l10n.filterApplyButton),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+                // 2つの「追加する」は、幅が足りなければ上下に並べる（横に
+                // 並べたままだとスマホの幅で56pxはみ出した）。
+                Wrap(
+                  alignment: WrapAlignment.spaceEvenly,
+                  children: [
+                    TextButton(
+                      onPressed: () => _addToDrawFilter(context),
+                      child: Text(
+                        l10n.canvasColorAdjustAddToDrawFilter,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => _addToEffectFilter(context),
+                      child: Text(
+                        l10n.canvasColorAdjustAddToEffectFilter,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

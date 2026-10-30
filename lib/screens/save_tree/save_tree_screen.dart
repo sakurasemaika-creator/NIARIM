@@ -215,6 +215,7 @@ void _showTreeSaveDialog(
   final l10n = AppLocalizations.of(context)!;
   final commentController = TextEditingController();
   var saving = false;
+  String? failure;
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -245,6 +246,18 @@ void _showTreeSaveDialog(
                   hintText: l10n.saveTreeCommentHint,
                 ),
               ),
+              if (failure != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    failure!,
+                    key: const Key('saveTreeDialogFailure'),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(ctx).colorScheme.error,
+                    ),
+                  ),
+                ),
             ],
           ),
           actions: [
@@ -294,19 +307,13 @@ void _showTreeSaveDialog(
                         }
                       } catch (e, st) {
                         AppErrorReporter.record(e, st);
+                        // 開いたまま失敗を出す（閉じると打ったコメントが
+                        // 消え、もう一度試すには打ち直すしかなかった）。
                         if (ctx.mounted) {
-                          setDialogState(() => saving = false);
-                          Navigator.pop(ctx);
-                        }
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                l10n.saveTreeSaveFailedSnackbar('$e'),
-                              ),
-                              duration: const Duration(seconds: 6),
-                            ),
-                          );
+                          setDialogState(() {
+                            saving = false;
+                            failure = l10n.saveTreeSaveFailedSnackbar('$e');
+                          });
                         }
                       }
                     },
