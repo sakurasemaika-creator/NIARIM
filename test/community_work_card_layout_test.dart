@@ -176,7 +176,7 @@ void main() {
 
   testWidgets('thumbnail uses the right-side menu and a bookmark by counts',
       (tester) async {
-    const work = CommunityWork(
+    final work = CommunityWork(
       id: 'layout-sample',
       title: 'A sample',
       authorId: 'author',

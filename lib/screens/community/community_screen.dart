@@ -1048,35 +1048,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                       ),
                   ],
                 ),
-                if (tab == 1)
-                  PopupMenuButton<CommunityRankingLayout>(
-                    key: const Key('communityRankingLayoutButton'),
-                    tooltip: CommunityRankingLayoutLabels.of(context).title,
-                    icon: Icon(
-                      _rankingLayout == CommunityRankingLayout.horizontal
-                          ? Icons.view_agenda_outlined
-                          : Icons.view_stream_outlined,
-                    ),
-                    onSelected: _setRankingLayout,
-                    itemBuilder: (context) {
-                      final words = CommunityRankingLayoutLabels.of(context);
-                      return [
-                        CheckedPopupMenuItem(
-                          value: CommunityRankingLayout.horizontal,
-                          checked:
-                              _rankingLayout == CommunityRankingLayout.horizontal,
-                          child: Text(words.horizontal),
-                        ),
-                        CheckedPopupMenuItem(
-                          value: CommunityRankingLayout.largeThumbnail,
-                          checked: _rankingLayout ==
-                              CommunityRankingLayout.largeThumbnail,
-                          child: Text(words.largeThumbnail),
-                        ),
-                      ];
-                    },
-                  )
-                else
                   IconButton(
                   key: const Key('communityTileSizeButton'),
                   tooltip: l10n.communityTileSize,
@@ -1365,6 +1336,33 @@ class _CommunityScreenState extends State<CommunityScreen>
                               () => _sortAscending = !_sortAscending,
                             ),
                           ),
+                PopupMenuButton<CommunityRankingLayout>(
+                    key: const Key('communityRankingLayoutButton'),
+                    tooltip: CommunityRankingLayoutLabels.of(context).title,
+                    icon: Icon(
+                      _rankingLayout == CommunityRankingLayout.horizontal
+                          ? Icons.view_agenda_outlined
+                          : Icons.view_stream_outlined,
+                    ),
+                    onSelected: _setRankingLayout,
+                    itemBuilder: (context) {
+                      final words = CommunityRankingLayoutLabels.of(context);
+                      return [
+                        CheckedPopupMenuItem(
+                          value: CommunityRankingLayout.horizontal,
+                          checked:
+                              _rankingLayout == CommunityRankingLayout.horizontal,
+                          child: Text(words.horizontal),
+                        ),
+                        CheckedPopupMenuItem(
+                          value: CommunityRankingLayout.largeThumbnail,
+                          checked: _rankingLayout ==
+                              CommunityRankingLayout.largeThumbnail,
+                          child: Text(words.largeThumbnail),
+                        ),
+                      ];
+                    },
+                  )
                         ],
                       ),
                     ),
