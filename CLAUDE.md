@@ -749,6 +749,20 @@ onTap: ...)`だったために
   今の`duplicateProject`は素材（`Materials/`）とサムネイルを複製先のフォルダへ
   写し終えてから一覧に出し、`permanentDelete`は消す前に、共有している作品へ
   サムネイルを写す）。
+- **手動の保存（セーブスロット・セーブツリー）の一覧は`SaveTree/index.json`に
+  残す**：以前は一覧をメモリにしか持たず、保存のファイルは残るのに起動し直すと
+  どのスロットも「保存データなし」になった（A010の実操作で発見）。
+  `SaveTreeService`は保存・削除・方式の変更・退避からの復元のたびに一覧を書き
+  （`_persist`。同期の書き込み。非同期にするとテストの偽の時計の下で保存が
+  終わらない）、起動処理の`save_tree`の段で`init`が読む。一覧に無い保存の
+  ファイルは古い順に空きスロットへ戻し、余りは退避する。保存の一覧を変える
+  処理を足すときは`_persist`を呼ぶこと（`test/save_tree_persistence_test.dart`）。
+  「保存して戻る」は、最新の保存（`latestSaveOf`）が変わったときだけ一覧へ
+  移る（保存せずに戻ったらキャンバス・タイムラインに残る）。
+- **見つからない作品の画面は`ProjectNotFoundView`**
+  （`lib/widgets/project_not_found_view.dart`）：古いリンク・ゴミ箱へ移した後に
+  プロジェクト詳細・キャンバスを開くと、空の画面を出さずに一覧へ戻す道を出す。
+  作品IDを受け取る画面を新しく足すときもこれを使うこと。
 - **作品・フォルダの名前で並べる・探すときは`lib/utils/name_collation.dart`**：
   `String.compareTo`だと「作品10」が「作品2」より前、大文字が小文字より前、
   全角英字・半角カナが最後になる。並べるときは`NameSortKey`で名前ごとに
@@ -762,7 +776,7 @@ onTap: ...)`だったために
   SnackBarもその後ろで待ち続けて表示されない（ゴミ箱の「元に戻す」で
   踏んだ）。`persist: false`を付けること（ゴミ箱へ移した通知は
   `lib/widgets/moved_to_trash_snack_bar.dart`）。キャンバスの「不足素材」の
-  SnackBarにも同じ問題が残っている（A010で扱う）。
+  SnackBarも同じ理由で`persist: false`にしてある。
 - **名前を1つ入力するダイアログは`lib/widgets/name_entry_dialog.dart`の
   `NameEntryDialog`**：空白だけの名前を確定させない・前後の空白を除く・
   Enterで確定・二度押しで2回動かない・失敗したら開いたまま・確定中は閉じない、
