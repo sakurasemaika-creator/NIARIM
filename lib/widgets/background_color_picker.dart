@@ -49,42 +49,52 @@ class BackgroundColorSwatchPicker extends StatelessWidget {
         final selected = selectedColor == color;
         final isWhite = color == Colors.white;
         final isLight = isWhite || color == Colors.transparent;
+        // Fill the *entire* circle with the selected background.
+        // A theme-derived neutral outline sits outside the fill so
+        // transparent pixels never show the accent color underneath.
         return GestureDetector(
           key: ValueKey<Color>(color),
+          behavior: HitTestBehavior.opaque,
           onTap: () => onChanged(color),
-          child: Container(
-            width: 40,
-            height: 40,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isWhite
-                    ? (selected
-                          ? colors.onSurfaceVariant
-                          : colors.outlineVariant)
-                    : (selected ? colors.primary : colors.outlineVariant),
-                width: selected ? (isWhite ? 2 : 3) : 1,
-              ),
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // サイズを厳密に満たし、白い円の内側に背景色が
-                // 見える隙間を作らない。
-                Positioned.fill(
-                  child: color == Colors.transparent
-                      ? CustomPaint(painter: CheckerboardPainter())
-                      : ColoredBox(color: color),
+          child: SizedBox(
+            width: 46,
+            height: 46,
+            child: Center(
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: selected
+                      ? Border.all(color: colors.onSurfaceVariant, width: 2)
+                      : null,
                 ),
-                // 白だけはスウォッチ内部を白一色のまま見せる。
-                if (selected && !isWhite)
-                  Icon(
-                    Icons.check,
-                    size: 18,
-                    color: isLight ? Colors.black87 : Colors.white,
+                alignment: Alignment.center,
+                child: ClipOval(
+                  child: SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      alignment: Alignment.center,
+                      children: [
+                        if (color == Colors.transparent)
+                          CustomPaint(painter: CheckerboardPainter())
+                        else
+                          ColoredBox(color: color),
+                        if (selected && !isWhite)
+                          Center(
+                            child: Icon(
+                              Icons.check,
+                              size: 18,
+                              color: isLight ? Colors.black87 : Colors.white,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-              ],
+                ),
+              ),
             ),
           ),
         );
