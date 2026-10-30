@@ -48,7 +48,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     if (!_worksScrollController.hasClients ||
         _worksScrollController.position.extentAfter > 220 ||
         _loadingWorks ||
-        _loadingMoreOwnWorks) return;
+        _loadingMoreOwnWorks) {
+      return;
+    }
     final service = context.read<CommunityService>();
     if (service.api == null) {
       final total = service.worksByAuthor(kDummySelfAuthorId, includeHidden: true).length;
@@ -61,7 +63,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   }
 
   Future<void> _loadMoreOwnerWorks() async {
-    if (_loadingMoreOwnWorks) return;
+    if (_loadingMoreOwnWorks) {
+      return;
+    }
     final generation = _ownerLoadGeneration;
     final accountId = context.read<GoogleAuthService>().account?.id;
     setState(() => _loadingMoreOwnWorks = true);

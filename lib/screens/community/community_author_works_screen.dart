@@ -121,7 +121,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   void _onAuthorScroll() {
     if (!_authorWorksScroll.hasClients ||
         _authorWorksScroll.position.extentAfter > 220 ||
-        _loadingMoreWorks) return;
+        _loadingMoreWorks) {
+      return;
+    }
     final service = context.read<CommunityService>();
     if (service.api == null) {
       final count = _videoTypeFilter.apply(service.worksByAuthor(

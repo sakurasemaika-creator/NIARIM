@@ -395,7 +395,6 @@ class CommunityWorkCard extends StatelessWidget {
                                             : l10n.communityWorkDetailBookmarkAdd,
                                         constraints: const BoxConstraints.tightFor(
                                           width: 48, height: 48),
-                                        visualDensity: VisualDensity.compact,
                                         iconSize: 22,
                                         padding: EdgeInsets.zero,
                                         onPressed: onBookmarkToggle,
