@@ -35,6 +35,8 @@ class CommunityWork {
   // サムネイル画像の代わりに表示するプレースホルダーの配色を選ぶための
   // インデックス（実際のサムネイル取得はバックエンド実装後に対応）。
   final int thumbnailColorIndex;
+  /// Remote YouTube artwork; empty for dummy/local-only cards.
+  final String thumbnailUrl;
   // ユーザーが自由に追加・削除できるタグ（誰でも編集可能）。
   final List<String> tags;
   // tagsのうち、投稿者がロックして他ユーザーが削除できないようにした
@@ -61,6 +63,7 @@ class CommunityWork {
     required this.postedAt,
     required this.durationSeconds,
     required this.thumbnailColorIndex,
+    this.thumbnailUrl = '',
     this.projectFps = 0,
     this.projectFrameCount = 0,
     this.projectWorkSeconds = 0,
@@ -94,6 +97,7 @@ class CommunityWork {
   CommunityWork copyWith({
     List<String>? tags,
     Set<String>? lockedTags,
+    String? thumbnailUrl,
     bool? isNiarimPublished,
     bool? isUnavailable,
     bool? isShort,
@@ -116,6 +120,7 @@ class CommunityWork {
       postedAt: postedAt,
       durationSeconds: durationSeconds,
       thumbnailColorIndex: thumbnailColorIndex,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       projectFps: projectFps ?? this.projectFps,
       projectFrameCount: projectFrameCount ?? this.projectFrameCount,
       projectWorkSeconds: projectWorkSeconds ?? this.projectWorkSeconds,

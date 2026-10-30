@@ -177,8 +177,17 @@ class CommunityWorkCard extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              // Keep the thumbnail unobstructed. The whole card
-                              // remains the play/preview tap target.
+                              // Draw real YouTube artwork whenever the backend
+                              // supplies it. A theme-derived gradient remains
+                              // visible while loading or if the URL fails.
+                              child: work.thumbnailUrl.startsWith('https://')
+                                  ? Image.network(
+                                      work.thumbnailUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stack) =>
+                                          const SizedBox.shrink(),
+                                    )
+                                  : null,
                             ),
                           ),
                           if (!work.isNiarimPublished && !obscured)

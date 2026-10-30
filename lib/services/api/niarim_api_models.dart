@@ -111,6 +111,7 @@ class ApiWork {
     postedAt: postedAt,
     durationSeconds: _derivedDurationSeconds,
     thumbnailColorIndex: workId.hashCode.abs() % 6,
+    thumbnailUrl: thumbnailUrl,
     projectFps: projectFps,
     projectFrameCount: projectFrameCount,
     projectWorkSeconds: projectWorkSeconds,
