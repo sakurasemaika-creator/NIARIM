@@ -376,7 +376,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     ),
                   ),
                   // Keep the loop control directly beside Share.
-                  _buildLoopButton(),
+                  Expanded(child: _buildLoopButton()),
                 ],
               ),
               if (project.tags.isNotEmpty) ...[
@@ -593,21 +593,35 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   Widget _buildLoopButton() {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    // The loop is the fifth quick action: neutral when off, accent when on.
+    final label = l10n.timelineLoopOffTooltip.split('：').first;
+    final foreground = _loopPlayback ? scheme.primary : scheme.onSurfaceVariant;
     return Semantics(
       toggled: _loopPlayback,
-      child: IconButton(
+      button: true,
+      label: label,
+      child: InkWell(
         key: const Key('projectDetailLoopButton'),
-        tooltip: _loopPlayback
-            ? l10n.timelineLoopOnTooltip
-            : l10n.timelineLoopOffTooltip,
-        onPressed: () => setState(() => _loopPlayback = !_loopPlayback),
-        icon: Icon(
-          Icons.repeat,
-          color: _loopPlayback ? scheme.primary : scheme.onSurfaceVariant,
-          size: 22,
+        onTap: () => setState(() => _loopPlayback = !_loopPlayback),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.repeat, size: 24, color: foreground),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'HakkouMincho',
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
         ),
-        constraints: const BoxConstraints.tightFor(width: 44, height: 48),
-        visualDensity: VisualDensity.compact,
       ),
     );
   }

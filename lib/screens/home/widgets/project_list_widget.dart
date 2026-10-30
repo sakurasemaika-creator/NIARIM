@@ -512,7 +512,9 @@ class ProjectListWidget extends StatelessWidget {
     Project project, {
     double? displayWidth,
   }) {
-    final placeholder = Container(
+    final placeholder = ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+      child: Container(
       color: Color(project.backgroundColor),
       child: Center(
         child: Icon(
@@ -522,10 +524,13 @@ class ProjectListWidget extends StatelessWidget {
           ),
         ),
       ),
+      ),
     );
     final path = project.thumbnailPath;
     if (path == null) return placeholder;
-    return ColoredBox(
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+      child: ColoredBox(
       color: Color(project.backgroundColor),
       child: Image.file(
         File(path),
@@ -534,6 +539,7 @@ class ProjectListWidget extends StatelessWidget {
             ? null
             : (displayWidth * MediaQuery.devicePixelRatioOf(context)).round(),
         errorBuilder: (context, error, stackTrace) => placeholder,
+      ),
       ),
     );
   }
