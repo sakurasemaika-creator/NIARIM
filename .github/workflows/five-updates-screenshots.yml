@@ -64,7 +64,7 @@ jobs:
         run: flutter test test/five_fixes_screenshot_test.dart --reporter expanded
       - name: Ensure all fourteen captures exist
         run: |
-          for name in 00_advanced_content_filters 01_mute_words 02_mute_tags 03_selected_favorites_white 04_compact_tag_search 05_french_tab_alignment 06_work_plaza_post_button 07_my_works_after_button 08_after_post_action 09_my_works_bulk_selection 10_individual_work_settings 11_individual_delete_confirmation 12_my_public_works_page 13_other_creator_mute_button; do
+          for name in 00_advanced_content_filters 01_mute_words 02_mute_tags 03_selected_favorites_white 04_compact_tag_search 05_french_tab_alignment 06_work_plaza_post_button 07_my_works_after_button 08_after_post_action 09_my_works_bulk_selection 10_individual_work_settings 11_individual_delete_confirmation 12_my_public_works_page 13_other_creator_mute_button 14_search_history_expanded 15_saved_search_expanded; do
             test -s "build/five-fixes/${name}.png"
           done
       - name: Upload updated screenshots and post-flow captures
