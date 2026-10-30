@@ -413,7 +413,7 @@ void main() {
       (entry) => entry.work.id == 'alice_repost_0',
     );
     expect(repost.repostedByAuthorName, 'Alice');
-    expect(repost.feedTime, activityAt(0, 2));
+    expect(repost.feedTime.isAtSameMomentAs(activityAt(0, 2)), isTrue);
     expect(
       requests.where((uri) =>
           uri.path == '/users/alice/works' &&

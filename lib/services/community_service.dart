@@ -667,7 +667,7 @@ class CommunityService extends ChangeNotifier {
   /// 強制停止する設計だが、ダミーデータにはYouTube側状態の概念が無いため
   /// ここではNIARIM側設定のみを対象にする）。
   List<CommunityWork> get discoverableWorks =>
-      _works.where((w) => w.isNiarimPublished && !w.isUnavailable).toList();
+      _works.where(isDiscoverableForViewer).toList();
 
   /// Whether a work may appear in public discovery surfaces for the
   /// current viewer. Owner-only management screens intentionally bypass this.
@@ -688,7 +688,8 @@ class CommunityService extends ChangeNotifier {
     bool includeHidden = false,
   }) => _works
       .where(
-        (w) => w.authorId == authorId && (includeHidden || w.isNiarimPublished),
+        (w) => w.authorId == authorId &&
+            (includeHidden || isDiscoverableForViewer(w)),
       )
       .toList();
 
@@ -1634,7 +1635,7 @@ class CommunityService extends ChangeNotifier {
     for (final r in _reposts) {
       if (!_favoriteAuthorIds.contains(r.reposterId)) continue;
       final work = byId(r.workId);
-      if (work == null || !work.isNiarimPublished) {
+      if (work == null || !isDiscoverableForViewer(work)) {
         continue;
       }
       final existing = byWork[r.workId];
