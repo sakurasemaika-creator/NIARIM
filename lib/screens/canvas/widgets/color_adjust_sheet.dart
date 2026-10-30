@@ -273,42 +273,48 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                     }),
                   ],
                 ),
-                Wrap(
-                  alignment: WrapAlignment.spaceEvenly,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    TextButton(
-                      onPressed: widget.onClose,
-                      child: Text(l10n.commonCancel),
-                    ),
-                    FilledButton(
-                      onPressed: _applying || widget.layerId == null
-                          ? null
-                          : _apply,
-                      child: Text(l10n.filterApplyButton),
-                    ),
-                  ],
+                SizedBox(
+                  width: double.infinity,
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceEvenly,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: widget.onClose,
+                        child: Text(l10n.commonCancel),
+                      ),
+                      FilledButton(
+                        onPressed: _applying || widget.layerId == null
+                            ? null
+                            : _apply,
+                        child: Text(l10n.filterApplyButton),
+                      ),
+                    ],
+                  ),
                 ),
                 // 2つの「追加する」は、幅が足りなければ上下に並べる（横に
                 // 並べたままだとスマホの幅で56pxはみ出した）。
-                Wrap(
-                  alignment: WrapAlignment.spaceEvenly,
-                  children: [
-                    TextButton(
-                      onPressed: () => _addToDrawFilter(context),
-                      child: Text(
-                        l10n.canvasColorAdjustAddToDrawFilter,
-                        style: const TextStyle(fontSize: 11),
+                SizedBox(
+                  width: double.infinity,
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceEvenly,
+                    children: [
+                      TextButton(
+                        onPressed: () => _addToDrawFilter(context),
+                        child: Text(
+                          l10n.canvasColorAdjustAddToDrawFilter,
+                          style: const TextStyle(fontSize: 11),
+                        ),
                       ),
-                    ),
-                    TextButton(
-                      onPressed: () => _addToEffectFilter(context),
-                      child: Text(
-                        l10n.canvasColorAdjustAddToEffectFilter,
-                        style: const TextStyle(fontSize: 11),
+                      TextButton(
+                        onPressed: () => _addToEffectFilter(context),
+                        child: Text(
+                          l10n.canvasColorAdjustAddToEffectFilter,
+                          style: const TextStyle(fontSize: 11),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

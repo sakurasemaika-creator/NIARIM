@@ -9,6 +9,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
+import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -194,6 +195,17 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(menuSheet(), findsNothing);
       expect(canvasIsOnTop(tester), !covers);
+      if (label == '色調調整') {
+        // キャンセル・適用はパネルの幅に広げて並べる（左に寄らない）：
+        // 左右の余白が同じ。
+        final panel = tester.getRect(find.byType(ColorAdjustSheet));
+        final cancel = tester.getRect(find.widgetWithText(TextButton, 'キャンセル'));
+        final apply = tester.getRect(find.widgetWithText(FilledButton, '適用'));
+        expect(
+          (cancel.left - panel.left) - (panel.right - apply.right),
+          moreOrLessEquals(0, epsilon: 2),
+        );
+      }
       if (covers) {
         await tester.binding.handlePopRoute();
         await settle(tester, 4);

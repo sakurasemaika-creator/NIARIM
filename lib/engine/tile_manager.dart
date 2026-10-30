@@ -788,6 +788,8 @@ class TileManager {
 
   /// シリアライズデータから復元（読み込み用）
   void importAll(Map<String, Map<String, Uint8List>> data) {
+    // 前にあったレイヤーと読み込んだレイヤーの両方が「まとめて変わった」。
+    final changed = {..._tiles.keys, ...data.keys};
     _tiles.clear();
     _dirtyTiles.clear();
     _sharedTiles.clear();
@@ -803,5 +805,12 @@ class TileManager {
       }
     }
     _invalidateCacheAll();
+    // 開いているキャンバスに描き直させる（自動保存からの復元で、絵は戻って
+    // いるのに画面は前の絵のままだった）。
+    for (final layerId in changed) {
+      for (final listener in List.of(_layerContentListeners)) {
+        listener(layerId);
+      }
+    }
   }
 }

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/niapro_serializer.dart' show NiaproData;
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/engine/undo_manager.dart' as app_undo;
 import 'package:niarim/models/layer.dart';
@@ -279,5 +280,81 @@ void main() {
     s.undo.undo();
     await settle();
     expect(await centre(), [200, 40, 40], reason: 'back after Undo');
+  });
+
+  testWidgets('the canvas shows the picture an autosave brings back', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(_w * 3, _h * 3);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final s = await setUpProject(tester);
+    final providers = await tester.runAsync(buildAppProviders);
+    final boundary = GlobalKey();
+    final project = s.projects.projects.firstWhere((p) => p.id == s.projectId);
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ...providers!,
+          ChangeNotifierProvider<ProjectService>.value(value: s.projects),
+          ChangeNotifierProvider<app_undo.UndoManager>.value(value: s.undo),
+        ],
+        child: MaterialApp(
+          home: RepaintBoundary(
+            key: boundary,
+            child: CanvasArea(
+              project: project,
+              currentLayerId: s.layer.id,
+              currentTool: DrawingTool.pen,
+              currentFrame: 0,
+              sceneId: s.sceneId,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Future<void> settle() async {
+      for (var i = 0; i < 10; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+    }
+
+    Future<List<int>> centre() async {
+      final pixels = await tester.runAsync(() async {
+        final render =
+            boundary.currentContext!.findRenderObject()!
+                as RenderRepaintBoundary;
+        final image = await render.toImage();
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        final width = image.width;
+        final height = image.height;
+        image.dispose();
+        final i = ((height ~/ 2) * width + width ~/ 2) * 4;
+        return data!.buffer.asUint8List().sublist(i, i + 3);
+      });
+      return pixels!;
+    }
+
+    await settle();
+    expect(await centre(), [200, 40, 40], reason: 'the original layer');
+
+    // 自動保存の中身：同じ作品で、レイヤーの絵だけが違う。
+    final saved = TileManager(canvasWidth: _w, canvasHeight: _h)
+      ..replaceLayerPixels(s.key, solid(30, 60, 220));
+    s.projects.restoreFromAutosave(
+      s.projectId,
+      NiaproData(
+        project: project,
+        scenes: s.projects.scenesOf(s.projectId),
+        tileData: saved.exportAll(),
+      ),
+    );
+    await settle();
+    expect(await centre(), [30, 60, 220], reason: 'the restored picture');
   });
 }
