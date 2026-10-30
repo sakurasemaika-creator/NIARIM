@@ -666,8 +666,11 @@ class CommunityService extends ChangeNotifier {
   /// した作品を除外する。13章：YouTube側が非公開・削除の場合も表示を
   /// 強制停止する設計だが、ダミーデータにはYouTube側状態の概念が無いため
   /// ここではNIARIM側設定のみを対象にする）。
+  // Keep the raw discoverable slots, including muted works, so ranking
+  // positions do not shift when a viewer mutes an author or keyword.
+  // Individual feeds/author lists apply the viewer's filters separately.
   List<CommunityWork> get discoverableWorks =>
-      _works.where(isDiscoverableForViewer).toList();
+      _works.where((w) => w.isNiarimPublished && !w.isUnavailable).toList();
 
   /// Whether a work may appear in public discovery surfaces for the
   /// current viewer. Owner-only management screens intentionally bypass this.
