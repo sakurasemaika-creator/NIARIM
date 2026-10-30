@@ -58,13 +58,12 @@
    `debugPrint`を使う。以前はdev_branchの
    `lib/screens/settings/theme_preview_gallery_screen.dart`に7件あったが、
    2026-10-30にdev_branch `4751cbe`を取り込んだ時点で無くなり、例外なしの0件）
-3. `flutter test`（ベースライン：2026-10-30、dev_branch `997f4c2`を
-   取り込んだ`ccr-f56ee68e-77ag7y`（`97ec5ba`）で**成功2414・スキップ23・
-   失敗26**。うち23件はdev_branchだけでも落ちる（作品広場の各テスト
-   〔`community_*`の15件〕・`app_smoke_test`の作品広場4件・
+3. `flutter test`（ベースライン：2026-10-30、dev_branch `dc0df19`を
+   取り込んだ`ccr-f56ee68e-77ag7y`（`67f3560`）で**成功2435・スキップ23・
+   失敗26**。26件ともdev_branchだけでも落ちる（作品広場の各テスト
+   〔`community_*`の18件〕・`app_smoke_test`の作品広場4件・
    `home_bookmark_states_test`の2件・`l10n_unused_key_test`・
-   `startup_failure_recovery_test`）ので通常タスクでは直さない。残り3件は
-   取り込みが原因で、次のコミットで直した。
+   `startup_failure_recovery_test`）ので通常タスクでは直さない。
    スキップのうち3件は
    `test/google_auth_init_once_test.dart`で、
    `--dart-define=NIARIM_GOOGLE_CLIENT_ID=test`を付けたときだけ動く。
