@@ -1892,7 +1892,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                 },
               );
             },
-          )),
+          ))),
           ],
         ),
         actions: [
