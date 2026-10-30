@@ -17,6 +17,8 @@ import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/community_preview_service.dart';
+import 'package:niarim/services/theme_service.dart';
+import 'helpers/load_app_fonts.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -57,6 +59,10 @@ void main() {
   ]) {
     testWidgets('real Flutter playback state: ${status.name}', (tester) async {
       SharedPreferences.setMockInitialValues({});
+      final themes = ThemeService();
+      await themes.init();
+      addTearDown(themes.dispose);
+      await loadAppFonts(tester);
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(390, 844);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -92,10 +98,10 @@ void main() {
               locale: const Locale('ja'),
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
-              theme: ThemeData(useMaterial3: true),
+              theme: themes.themeData,
               home: Scaffold(
                 appBar: AppBar(title: const Text('作品広場')),
-                body: Stack(children: [
+                body: Stack(fit: StackFit.expand, children: [
                   CommunityWorkGrid(
                     works: [work],
                     bookmarkedIds: const {},
@@ -121,6 +127,10 @@ void main() {
 
   testWidgets('real Flutter card after control relocation', (tester) async {
     SharedPreferences.setMockInitialValues({});
+    final themes = ThemeService();
+    await themes.init();
+    addTearDown(themes.dispose);
+    await loadAppFonts(tester);
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(390, 844);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -137,7 +147,7 @@ void main() {
           locale: const Locale('ja'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          theme: ThemeData(useMaterial3: true),
+          theme: themes.themeData,
           home: Scaffold(
             appBar: AppBar(title: const Text('作品広場')),
             body: CommunityWorkGrid(
