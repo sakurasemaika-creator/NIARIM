@@ -109,6 +109,14 @@ void main() {
     expect(iconOf(writes), Icons.edit_note, reason: '書き込みはメモ＋ペンのアイコン');
     expect(iconOf(loads), Icons.menu_book_outlined, reason: '読み込みは開いたノートのアイコン');
     expect(iconOf(deletes), Icons.delete_outline, reason: '削除はゴミ箱のアイコン');
+    final scheme = Theme.of(tester.element(writes.first)).colorScheme;
+    Color? iconColor(Finder buttons) =>
+        (tester.widget<IconButton>(buttons.first).icon as Icon).color;
+    expect(iconColor(writes), scheme.onSurfaceVariant,
+        reason: '書き込みはテーマの中立色に変更する');
+    final disabled = Theme.of(tester.element(loads.first)).disabledColor;
+    expect(iconColor(loads), disabled, reason: '空スロットの読み込みは無効色');
+    expect(iconColor(deletes), disabled, reason: '空スロットの削除は無効色');
 
     final source = File(
       'lib/screens/save_tree/save_management_screen.dart',

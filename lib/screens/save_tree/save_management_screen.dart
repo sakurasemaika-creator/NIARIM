@@ -512,11 +512,12 @@ class _GameSaveSlotTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                // 書き込みはメモ＋ペン、読み込みは開いたノートを使う。
+                // 書き込み・読み込みはテーマの中立色、削除はアクセントの文字・アイコン色。
+                // 空スロットの読み込み・削除は共通の無効色になる。
                 _SlotActionButton(
                   icon: Icons.edit_note,
                   tooltip: l10n.saveTreeSlotWriteTooltip,
-                  color: AccentTextTheme.of(context),
+                  color: scheme.onSurfaceVariant,
                   onPressed: onWrite,
                 ),
                 _SlotActionButton(
@@ -528,7 +529,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                 _SlotActionButton(
                   icon: Icons.delete_outline,
                   tooltip: l10n.saveTreeSlotDeleteTooltip,
-                  color: scheme.error,
+                  color: AccentTextTheme.of(context),
                   onPressed: onDelete,
                 ),
               ],

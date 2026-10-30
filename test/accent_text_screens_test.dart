@@ -11,6 +11,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/settings/theme_preview_gallery_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/save_tree_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,7 +20,8 @@ import 'helpers/first_use_tooltips.dart';
 /// テーマ・外観の「アクセントの文字・アイコン色」は、背景の上に差し色で
 /// 描く文字・アイコンのすべてに効く。差し色とは別の色を選んだテーマで、
 /// 引き出しのアイコン、テーマの見本一覧（作品広場・プロジェクト一覧・
-/// プロジェクト詳細の模型）、プロジェクト詳細のループがその色で描かれ、
+/// プロジェクト詳細の模型）、プロジェクト詳細のループ、セーブスロットの
+/// 削除がその色で描かれ、
 /// 塗り（引き出しの見出し・タブの下線）は差し色のままであることを見張る。
 void main() {
   const accent = Color(0xFF2E6B5E);
@@ -160,5 +162,47 @@ void main() {
     await tester.tap(find.byKey(const Key('projectDetailLoopButton')));
     await tester.pump();
     expect(loopColor(), isNot(accentText));
+  });
+
+  testWidgets('the save slot delete icon uses it', (tester) async {
+    final service = await open(tester);
+    late final String id;
+    await tester.runAsync(() async {
+      final project = await service.createProject(
+        name: 'スロット',
+        backgroundColor: 0xFFFFFFFF,
+        fps: 2,
+        durationSeconds: 1,
+        exportWidth: 64,
+        exportHeight: 36,
+      );
+      id = project.id;
+      final saves = tester
+          .element(find.byType(HomeScreen))
+          .read<SaveTreeService>();
+      await saves.saveToSlot(
+        projectId: id,
+        slotIndex: 0,
+        project: project,
+        scenes: service.scenesOf(id),
+        tileManager: service.tileManagerOf(id),
+      );
+    });
+    appRouter.push('/save-tree/$id');
+    for (var i = 0; i < 6; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    final delete = find.byWidgetPredicate(
+      (w) => w is IconButton && w.tooltip == 'このスロットを削除',
+    );
+    expect(delete, findsWidgets);
+    // 保存のあるスロット1の削除はこの色、書き込みは中立色のまま。
+    expect(
+      (tester.widget<IconButton>(delete.first).icon as Icon).color,
+      accentText,
+    );
   });
 }

@@ -184,6 +184,17 @@ void main() {
       expect(tester.widget<IconButton>(loads.at(1)).onPressed, isNull);
       expect(tester.widget<IconButton>(deletes.first).onPressed, isNotNull);
       expect(tester.widget<IconButton>(deletes.at(1)).onPressed, isNull);
+      final colors = Theme.of(tester.element(writes.first)).colorScheme;
+      Color? iconColor(Finder f) =>
+          (tester.widget<IconButton>(f).icon as Icon).color;
+      expect(iconColor(writes.first), colors.onSurfaceVariant);
+      expect(iconColor(loads.first), colors.onSurfaceVariant);
+      expect(iconColor(deletes.first), colors.primary,
+          reason: 'ゴミ箱は元の書き込みアイコンのテーマ・アクセント色');
+      expect(iconColor(loads.at(1)),
+          Theme.of(tester.element(loads.at(1))).disabledColor);
+      expect(iconColor(deletes.at(1)),
+          Theme.of(tester.element(deletes.at(1))).disabledColor);
       await capture('${prefix}_01_project_detail_list');
 
       await tester.tap(writes.at(1));

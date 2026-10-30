@@ -111,6 +111,7 @@ class _SplashScreenState extends State<SplashScreen> {
     );
 
     final communityButton = _SplashActionButton(
+      key: const Key('splashCommunityActionButton'),
       icon: Icons.movie_filter_outlined,
       label: communityLabel,
       subLabel: communitySubLabel,
@@ -127,6 +128,7 @@ class _SplashScreenState extends State<SplashScreen> {
       onTap: () => context.push('/community'),
     );
     final createButton = _SplashActionButton(
+      key: const Key('splashCreateActionButton'),
       icon: Icons.brush_outlined,
       label: createLabel,
       width: tileWidth,
@@ -372,6 +374,7 @@ class _SplashActionButton extends StatefulWidget {
   final double height;
 
   const _SplashActionButton({
+    super.key,
     required this.icon,
     required this.label,
     this.subLabel,
@@ -394,6 +397,8 @@ class _SplashActionButton extends StatefulWidget {
   static const double _iconGap = 12;
   static const int _maxLines = 3;
 
+  // Both home-entry tiles explicitly use the bundled Kuramubon font,
+  // including the smaller community subtitle, not an inherited default.
   static TextStyle _labelStyle(Color color) => TextStyle(
     color: color,
     fontSize: 18,
