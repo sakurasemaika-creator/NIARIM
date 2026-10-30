@@ -207,16 +207,67 @@ class CommunityService extends ChangeNotifier {
   static const _mutedWordsKey = 'community.mutedWords';
   static const _mutedTagsKey = 'community.mutedTags';
   static const _mutedAuthorsKey = 'community.mutedAuthors';
+  static const _mutedWorksKey = 'community.mutedWorks.v1';
+  static const _alwaysVisibleWorksKey = 'community.alwaysVisibleWorks.v1';
   bool _hideGenerativeAiImageVideo = false;
   final Set<String> _mutedWords = {};
   final Set<String> _mutedTags = {};
   final Set<String> _mutedAuthorIds = {};
+  final Set<String> _mutedWorkIds = {};
+  final Set<String> _alwaysVisibleWorkIds = {};
+  final Set<String> _temporaryVisibleWorkIds = {};
 
   bool get hideGenerativeAiImageVideo => _hideGenerativeAiImageVideo;
   Set<String> get mutedWords => Set.unmodifiable(_mutedWords);
   Set<String> get mutedTags => Set.unmodifiable(_mutedTags);
   Set<String> get mutedAuthorIds => Set.unmodifiable(_mutedAuthorIds);
   bool isAuthorMuted(String authorId) => _mutedAuthorIds.contains(authorId);
+  bool isWorkExplicitlyMuted(String id) => _mutedWorkIds.contains(id);
+
+  /// Device-local view only. The server's ranking and publication remain intact.
+  bool isWorkMuted(CommunityWork work) {
+    if (_temporaryVisibleWorkIds.contains(work.id) ||
+        _alwaysVisibleWorkIds.contains(work.id)) return false;
+    return _mutedWorkIds.contains(work.id) || !_passesContentFilters(work);
+  }
+
+  Future<void> setWorkMuted(String id) async {
+    await contentFiltersReady;
+    if (_disposed || id.isEmpty) return;
+    _mutedWorkIds.add(id);
+    _alwaysVisibleWorkIds.remove(id);
+    _temporaryVisibleWorkIds.remove(id);
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_mutedWorksKey, _mutedWorkIds.toList()..sort());
+    await prefs.setStringList(
+      _alwaysVisibleWorksKey, _alwaysVisibleWorkIds.toList()..sort(),
+    );
+  }
+
+  Future<void> unmuteWork(String id, {required bool permanently}) async {
+    await contentFiltersReady;
+    if (_disposed || id.isEmpty) return;
+    if (permanently) {
+      _mutedWorkIds.remove(id);
+      _temporaryVisibleWorkIds.remove(id);
+      _alwaysVisibleWorkIds.add(id);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_mutedWorksKey, _mutedWorkIds.toList()..sort());
+      await prefs.setStringList(
+        _alwaysVisibleWorksKey, _alwaysVisibleWorkIds.toList()..sort(),
+      );
+    } else {
+      _temporaryVisibleWorkIds.add(id);
+    }
+    notifyListeners();
+  }
+
+  void clearTemporaryUnmutes() {
+    if (_temporaryVisibleWorkIds.isEmpty || _disposed) return;
+    _temporaryVisibleWorkIds.clear();
+    notifyListeners();
+  }
 
   /// Never completes with an error: unreadable settings fall back to
   /// showing everything, so the setters below, which wait for this, keep
@@ -247,6 +298,12 @@ class CommunityService extends ChangeNotifier {
             (id) => id.isNotEmpty,
           ),
         );
+      _mutedWorkIds
+        ..clear()
+        ..addAll(prefs.readStringList(_mutedWorksKey) ?? const []);
+      _alwaysVisibleWorkIds
+        ..clear()
+        ..addAll(prefs.readStringList(_alwaysVisibleWorksKey) ?? const []);
     } catch (error) {
       debugPrint('Community content filters could not be restored: $error');
     }
@@ -386,8 +443,7 @@ class CommunityService extends ChangeNotifier {
   /// Their own works remain visible even when hidden from other viewers.
   List<CommunityWork> get bookmarkedWorksForViewer => [
     for (final id in bookmarkedIdsNewestFirst)
-      if (byId(id) case final work?
-          when isOwnWork(work) || isDiscoverableForViewer(work))
+      if (byId(id) case final work? when work.isNiarimPublished || isOwnWork(work))
         work,
   ];
 
@@ -400,13 +456,13 @@ class CommunityService extends ChangeNotifier {
   /// 強制停止する設計だが、ダミーデータにはYouTube側状態の概念が無いため
   /// ここではNIARIM側設定のみを対象にする）。
   List<CommunityWork> get discoverableWorks => _works
-      .where((w) => w.isNiarimPublished && _passesContentFilters(w))
+      .where((w) => w.isNiarimPublished)
       .toList();
 
   /// Whether a work may appear in public discovery surfaces for the
   /// current viewer. Owner-only management screens intentionally bypass this.
   bool isDiscoverableForViewer(CommunityWork work) =>
-      work.isNiarimPublished && _passesContentFilters(work);
+      work.isNiarimPublished && !isWorkMuted(work);
 
   CommunityWork? byId(String workId) {
     final index = _indexOf(workId);
@@ -425,7 +481,7 @@ class CommunityService extends ChangeNotifier {
         (w) =>
             w.authorId == authorId &&
             (includeHidden ||
-                (w.isNiarimPublished && _passesContentFilters(w))),
+                w.isNiarimPublished),
       )
       .toList();
 
@@ -452,7 +508,7 @@ class CommunityService extends ChangeNotifier {
   /// filters allow.
   List<CommunityWork> get rankedWorks => [
     for (final id in _rankingIds)
-      if (byId(id) case final work? when isDiscoverableForViewer(work)) work,
+      if (byId(id) case final work? when work.isNiarimPublished) work,
   ];
 
   void setCurrentUserId(String? id) {
@@ -1207,9 +1263,7 @@ class CommunityService extends ChangeNotifier {
     for (final r in _reposts) {
       if (!_favoriteAuthorIds.contains(r.reposterId)) continue;
       final work = byId(r.workId);
-      if (work == null ||
-          !work.isNiarimPublished ||
-          !_passesContentFilters(work)) {
+      if (work == null || !work.isNiarimPublished) {
         continue;
       }
       final existing = byWork[r.workId];
@@ -1364,7 +1418,7 @@ class CommunityService extends ChangeNotifier {
         .where(
           (w) =>
               ids.contains(w.id) &&
-              ((isSelf && isOwnWork(w)) || isDiscoverableForViewer(w)),
+              ((isSelf && isOwnWork(w)) || w.isNiarimPublished),
         )
         .toList();
     list.sort((a, b) => b.postedAt.compareTo(a.postedAt));

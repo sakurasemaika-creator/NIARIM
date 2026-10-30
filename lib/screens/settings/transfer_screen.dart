@@ -10,6 +10,7 @@ import '../../engine/niapro_serializer.dart';
 import '../../engine/niatra_asset_bundle.dart';
 import '../../engine/niatra_serializer.dart';
 import '../../l10n/app_localizations.dart';
+import '../../l10n/community_plaza_labels.dart';
 import '../../models/material_asset.dart' show MaterialType;
 import '../../services/autofill_preset_service.dart';
 import '../../services/brush_service.dart';
@@ -40,6 +41,7 @@ class _TransferScreenState extends State<TransferScreen> {
   // 別途ローカライズする）。
   final Map<String, bool> _items = {
     '設定': true,
+    '端末保存データ': true,
     '素材': true,
     'ブラシ': true,
     'プリセット': true,
@@ -54,6 +56,7 @@ class _TransferScreenState extends State<TransferScreen> {
 
   String _itemLabel(AppLocalizations l10n, String key) => switch (key) {
     '設定' => l10n.transferItemSettings,
+    '端末保存データ' => CommunityPlazaLabels.of(context).localData,
     '素材' => l10n.transferItemMaterials,
     'ブラシ' => l10n.transferItemBrush,
     'プリセット' => l10n.transferItemPresets,
@@ -405,6 +408,8 @@ class _TransferScreenState extends State<TransferScreen> {
         palette: context.read<PaletteService>(),
         pixelArtPalette: context.read<PixelArtPaletteService>(),
       );
+      await NiatraSerializer.restoreLocalPreferences(data);
+      if (!mounted) return;
       // プロジェクトの復元はファイルI/Oを伴う非同期処理のため、他項目の
       // 同期的なapplyTo()とは別にawaitする。
       await NiatraSerializer.restoreProjects(

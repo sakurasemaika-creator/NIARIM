@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/app_theme_preset.dart';
 import '../models/autofill_preset.dart';
@@ -28,6 +29,17 @@ import 'niapro_serializer.dart' show NiaproSerializer;
 /// 形式：ZIPアーカイブ内に data.json 一枚のみを持つシンプル構成。
 class NiatraSerializer {
   static const _dataFile = 'data.json';
+
+  // Never migrate access credentials or device-installation identifiers.
+  static bool _portablePreference(String key) {
+    final lower = key.toLowerCase();
+    const sensitive = [
+      'token', 'oauth', 'secret', 'password', 'credential', 'session',
+      'cookie', 'api_key', 'private_key', 'google', 'login',
+      'device_id', 'installation_id', 'refresh', 'authorization',
+    ];
+    return !sensitive.any(lower.contains);
+  }
 
   /// 引き継ぎデータをZIPバイト列として書き出す（メモリ上でエンコードするため
   /// Web版でも動作する。旧実装はpath_providerでローカルファイルとして書き出
@@ -66,6 +78,20 @@ class NiatraSerializer {
         'twoFingerSwipe': settings.twoFingerSwipe.name,
         'longPress': settings.longPress.name,
       };
+    }
+
+    if (selectedItems['端末保存データ'] ?? false) {
+      final prefs = await SharedPreferences.getInstance();
+      final local = <String, dynamic>{};
+      for (final key in prefs.getKeys()) {
+        if (!_portablePreference(key)) continue;
+        final value = prefs.get(key);
+        if (value is String || value is bool ||
+            value is int || value is double || value is List<String>) {
+          local[key] = value;
+        }
+      }
+      data['localPreferences'] = local;
     }
 
     if (selectedItems['ブラシ'] ?? false) {
@@ -230,6 +256,29 @@ class NiatraSerializer {
       for (final pj in pixelArtPalettesJson) {
         final p = ColorPalette.fromJson(pj as Map<String, dynamic>);
         pixelArtPalette.addPalette(p.name, p.colors);
+      }
+    }
+  }
+
+  /// Restore selected local preferences; never overwrite authentication.
+  static Future<void> restoreLocalPreferences(NiatraData data) async {
+    final values = data.raw['localPreferences'];
+    if (values is! Map) return;
+    final prefs = await SharedPreferences.getInstance();
+    for (final entry in values.entries) {
+      final key = entry.key;
+      if (key is! String || !_portablePreference(key)) continue;
+      final value = entry.value;
+      if (value is String) {
+        await prefs.setString(key, value);
+      } else if (value is bool) {
+        await prefs.setBool(key, value);
+      } else if (value is int) {
+        await prefs.setInt(key, value);
+      } else if (value is double) {
+        await prefs.setDouble(key, value);
+      } else if (value is List && value.every((item) => item is String)) {
+        await prefs.setStringList(key, value.cast<String>());
       }
     }
   }
