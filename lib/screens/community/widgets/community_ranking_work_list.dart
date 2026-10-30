@@ -86,7 +86,7 @@ class CommunityRankBadge extends StatelessWidget {
     final (fill, ink) = switch (rank) {
       1 => (scheme.primaryContainer, scheme.onPrimaryContainer),
       2 => (scheme.secondaryContainer, scheme.onSecondaryContainer),
-      3 => (scheme.tertiaryContainer, scheme.onTertiaryContainer),
+      3 => (scheme.secondaryContainer, scheme.onSecondaryContainer),
       _ => (scheme.surface, scheme.onSurface),
     };
     final size = small ? 32.0 : 38.0;

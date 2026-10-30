@@ -96,7 +96,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   int _maximumMinutes = 10;
   int _minimumViews = 0;
   int _minimumBookmarks = 0;
-  final _tabScrollControllers = List.generate(3, (_) => ScrollController());
+  final _tabScrollControllers = List.generate(4, (_) => ScrollController());
 
   @override
   void initState() {
@@ -104,7 +104,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     _loadSavedSearches();
     _loadTileWidth();
     _loadRankingLayout();
-    _tabController = TabController(length: 3, vsync: this)
+    _tabController = TabController(length: 4, vsync: this)
       ..addListener(_onTabChanged);
     final initialTag = widget.initialTagFilter;
     if (initialTag != null && initialTag.isNotEmpty) {
@@ -113,6 +113,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       _searchQuery = initialTag;
       _draftQuery = initialTag;
       _searchController.text = initialTag;
+      _tabController.index = 3;
     }
     // With a backend, the plaza shows the server's latest works and the
     // selected ranking; without one, the bundled dummy works.
@@ -342,6 +343,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         _minimumBookmarks = 0;
       }
     });
+    _tabController.animateTo(3);
     _scrollCurrentTabToTop();
   }
 
@@ -496,6 +498,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         _searchQuery = newTag;
         _draftQuery = newTag;
         _searchController.text = newTag;
+        _tabController.index = 3;
       });
     }
   }
@@ -530,7 +533,10 @@ class _CommunityScreenState extends State<CommunityScreen>
     return !postedAt.isBefore(start) && (end == null || postedAt.isBefore(end));
   }
 
-  List<CommunityWork> _applySearch(List<CommunityWork> works) {
+  List<CommunityWork> _applySearch(
+    List<CommunityWork> works, {
+    bool includeQuery = false,
+  }) {
     final typeFiltered = _videoTypeFilter
         .apply(works)
         .where((work) => _matchesPostDate(work.postedAt))
@@ -551,7 +557,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         )
         .toList();
     final query = _searchQuery.trim().toLowerCase();
-    if (query.isEmpty) return typeFiltered;
+    if (!includeQuery || query.isEmpty) return typeFiltered;
     // Positive terms must all match; -term excludes; quoted phrases supported.
     final terms = RegExp(r'-?"[^"]+"|-?\S+')
         .allMatches(query)
@@ -605,14 +611,15 @@ class _CommunityScreenState extends State<CommunityScreen>
       // The server's ranking for the period, in its order, as the viewer's
       // filters allow. It ranks by views; the bookmark order is its own
       // all-time ranking, or the period's works re-sorted by bookmarks.
-      final ranked = [..._applySearch(service.rankedWorks)];
+      final ranked = [...service.rankedWorks];
       if (_sort == _RankingSort.bookmarks &&
           _period != _RankingPeriod.allTime) {
         ranked.sort((a, b) => b.bookmarkCount.compareTo(a.bookmarkCount));
       }
       return _sortAscending ? ranked.reversed.toList() : ranked;
     }
-    final filtered = _applySearch(allWorks.toList());
+    // Ranking is not subject to the search tab or local filter criteria.
+    final filtered = allWorks.toList();
     final window = _periodWindow(_period);
     final now = DateTime.now();
     double scoreOf(CommunityWork w) {
@@ -684,7 +691,6 @@ class _CommunityScreenState extends State<CommunityScreen>
       setState(() {
         _postDateFilter = result.dateFilter;
         _customPostDateRange = result.dateRange;
-        _tagExactMatch = result.exactTag;
         _durationMode = result.durationMode;
         _upToMinutes = result.upToMinutes;
         _minimumMinutes = result.minimumMinutes;
@@ -720,7 +726,8 @@ class _CommunityScreenState extends State<CommunityScreen>
     final base = switch (_tabController.index) {
       0 => _newArrivals(allWorks),
       1 => _rankingWorks(allWorks),
-      _ => _applySearch(context.read<CommunityService>().favoriteAuthorWorks),
+      2 => _applySearch(context.read<CommunityService>().favoriteAuthorWorks),
+      _ => _applySearch(allWorks, includeQuery: true),
     };
     if (base.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
@@ -802,6 +809,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       l10n.communityTabNew,
       l10n.communityTabRanking,
       l10n.communityTabFavoriteAuthors,
+      CommunityPlazaLabels.of(context).searchTab,
     ];
     final tabWidths = labels.map(
       (label) => measure(label, labelStyle).width + 32,
@@ -903,6 +911,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (tab == 3) ...[
             Material(
               key: const Key('communitySearchTrigger'),
               color: searchFill,
@@ -958,6 +967,15 @@ class _CommunityScreenState extends State<CommunityScreen>
                 ),
               ),
             ),
+            CheckboxListTile(
+              key: const Key('communitySearchExactMatch'),
+              value: _tagExactMatch,
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+              title: Text(CommunityPlazaLabels.of(context).exactTitle),
+              onChanged: (enabled) =>
+                  setState(() => _tagExactMatch = enabled ?? false),
+            ),
             accordion(
               title: l10n.communitySavedSearches,
               key: const Key('communitySavedSearchAccordion'),
@@ -968,6 +986,7 @@ class _CommunityScreenState extends State<CommunityScreen>
               key: const Key('communitySearchHistoryAccordion'),
               saved: false,
             ),
+            ],
             Row(
               children: [
                 IconButton(
@@ -1099,6 +1118,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   },
                 ),
                 const Spacer(),
+                if (tab == 3)
                 FilledButton(
                   key: const Key('communitySearchButton'),
                   onPressed: _runSearch,
@@ -1276,7 +1296,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    searchRowFor(1),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
                       child: Wrap(
@@ -1433,6 +1452,41 @@ class _CommunityScreenState extends State<CommunityScreen>
                       ],
                     ),
                     tab: 2,
+                  ),
+                );
+              },
+            ),
+            Builder(
+              builder: (context) {
+                final works = _applySearch(
+                  allWorks.toList(),
+                  includeQuery: true,
+                );
+                return _pullToRefresh(
+                  communityService,
+                  _scrollableContent(
+                    Column(
+                      children: [
+                        searchRowFor(3),
+                        if (works.isEmpty)
+                          _buildSearchEmptyState(l10n)
+                        else
+                          CommunityWorkGrid(
+                            minTileWidth: _minimumTileWidth,
+                            works: works,
+                            bookmarkedIds: bookmarkedIds,
+                            onTapWork: _openFloatingPreview,
+                            onToggleBookmark: (w) => reportFailedCommunityEdit(
+                              context,
+                              communityService,
+                              communityService.toggleBookmark(w.id),
+                            ),
+                            onTapAuthor: _openAuthorWorks,
+                            bottomPadding: 88,
+                          ),
+                      ],
+                    ),
+                    tab: 3,
                   ),
                 );
               },
@@ -1971,22 +2025,6 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                   ),
                 ],
               ),
-            SwitchListTile(
-              key: const Key('communityTagExactMatch'),
-              contentPadding: EdgeInsets.zero,
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(CommunityPlazaLabels.of(context).exactTitle),
-                  Text(
-                    CommunityPlazaLabels.of(context).partialHint,
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-              ),
-              value: _exactTag,
-              onChanged: (value) => setState(() => _exactTag = value),
-            ),
             for (final filter in [0, 1]) ...[
               const SizedBox(height: 12),
               Text(
