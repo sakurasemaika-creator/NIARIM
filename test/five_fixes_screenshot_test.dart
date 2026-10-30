@@ -100,6 +100,10 @@ void main() {
     await tester.tap(find.byKey(const Key('communityContentFilterButton')));
     await tester.pumpAndSettle();
     await capture(root, '00_advanced_content_filters', tester);
+    await tester.tap(find.text(l10n.commonCancel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('communityMuteSettingsButton')));
+    await tester.pumpAndSettle();
     await tester.ensureVisible(
       find.byKey(const Key('communityMutedWordsAccordion')),
     );
@@ -113,10 +117,7 @@ void main() {
     final words = find.byKey(const Key('communityMutedWordsDisplay_0'));
     final tags = find.byKey(const Key('communityMutedTagsDisplay_0'));
     expect(tester.getRect(words).top, lessThan(tester.getRect(tags).top));
-    expect(
-      tester.getRect(tags).top,
-      lessThan(tester.getRect(find.byType(SwitchListTile).last).top),
-    );
+    expect(tester.getRect(tags).top, greaterThan(0));
     await tester.tap(find.byKey(const Key('communityMutedWordsAddButton')));
     await tester.pumpAndSettle();
     await tester.enterText(

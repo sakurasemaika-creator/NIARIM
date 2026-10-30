@@ -91,10 +91,7 @@ void main() {
     expect(find.byKey(const Key('communityMutedWordsEntry_0')), findsNothing);
     expect(find.byKey(const Key('communityMutedTagsEntry_0')), findsNothing);
     expect(tester.getTopLeft(words0).dy, lessThan(tester.getTopLeft(tags0).dy));
-    expect(
-      tester.getTopLeft(tags0).dy,
-      greaterThanOrEqualTo(0),
-    );
+    expect(tester.getTopLeft(tags0).dy, greaterThanOrEqualTo(0));
 
     await tapVisible(
       tester,

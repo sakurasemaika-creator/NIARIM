@@ -20,6 +20,7 @@ import '../../services/palette_service.dart';
 import '../../services/pixel_art_palette_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
+import '../../services/community_service.dart';
 import '../../services/stamp_service.dart';
 import '../../services/theme_service.dart';
 import '../../services/tone_service.dart';
@@ -409,6 +410,8 @@ class _TransferScreenState extends State<TransferScreen> {
         pixelArtPalette: context.read<PixelArtPaletteService>(),
       );
       await NiatraSerializer.restoreLocalPreferences(data);
+      if (!mounted) return;
+      await context.read<CommunityService>().reloadLocalContentFilters();
       if (!mounted) return;
       // プロジェクトの復元はファイルI/Oを伴う非同期処理のため、他項目の
       // 同期的なapplyTo()とは別にawaitする。

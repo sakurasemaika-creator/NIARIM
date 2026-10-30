@@ -310,6 +310,9 @@ class CommunityService extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
+  /// Refresh in-memory rules after importing a portable device backup.
+  Future<void> reloadLocalContentFilters() => _loadContentFilters();
+
   Future<void> setHideGenerativeAiImageVideo(bool value) async {
     await contentFiltersReady;
     if (_disposed) return;

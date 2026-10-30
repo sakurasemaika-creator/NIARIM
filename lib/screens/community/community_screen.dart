@@ -609,6 +609,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   void _openAuthorWorks(CommunityWork work) {
+    context.read<CommunityService>().clearTemporaryUnmutes();
     Navigator.of(context).push(
       adMockMaterialPageRoute(
         builder: (_) => CommunityAuthorWorksScreen(
@@ -675,6 +676,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   void _openMyWorks() {
+    context.read<CommunityService>().clearTemporaryUnmutes();
     Navigator.of(context).push(
       adMockMaterialPageRoute<void>(
         builder: (_) => const CommunityMyWorksScreen(),
@@ -683,6 +685,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   void _openShortsMode(List<CommunityWork> allWorks) {
+    context.read<CommunityService>().clearTemporaryUnmutes();
     final base = switch (_tabController.index) {
       0 => _newArrivals(allWorks),
       1 => _rankingWorks(allWorks),
