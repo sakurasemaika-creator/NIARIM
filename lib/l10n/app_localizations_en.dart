@@ -8311,4 +8311,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String pcStatusFrame(int current, int total) {
     return 'Frame $current/$total';
   }
+
+  @override
+  String get pcMenuPlayback => 'Playback';
+
+  @override
+  String get pcPaneProgram => 'Program';
+
+  @override
+  String get pcPaneInspector => 'Inspector';
+
+  @override
+  String get pcLoopPlayback => 'Loop Playback';
+
+  @override
+  String get pcTimelineZoomIn => 'Zoom In Timeline';
+
+  @override
+  String get pcTimelineZoomOut => 'Zoom Out Timeline';
+
+  @override
+  String get pcBinEmpty => 'No materials yet';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count frames';
+  }
+
+  @override
+  String get pcInspectorHint =>
+      'Select a material on the timeline to adjust its position, size, opacity and more here.';
+
+  @override
+  String pcStatusFps(int fps) {
+    return '$fps fps';
+  }
 }

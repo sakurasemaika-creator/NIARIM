@@ -3315,5 +3315,15 @@
   "pcToolPropertyEmpty": "이 도구에는 설정이 없습니다",
   "pcLayerNew": "새 레이어",
   "pcModeCanvas": "캔버스",
-  "pcStatusFrame": "프레임 {current}/{total}"
+  "pcStatusFrame": "프레임 {current}/{total}",
+  "pcMenuPlayback": "재생",
+  "pcPaneProgram": "프로그램",
+  "pcPaneInspector": "인스펙터",
+  "pcLoopPlayback": "반복 재생",
+  "pcTimelineZoomIn": "타임라인 확대",
+  "pcTimelineZoomOut": "타임라인 축소",
+  "pcBinEmpty": "아직 소재가 없습니다",
+  "pcBinSceneFrames": "{count}프레임",
+  "pcInspectorHint": "타임라인에서 소재를 선택하면 여기에서 위치·크기·불투명도 등을 조정할 수 있습니다.",
+  "pcStatusFps": "{fps} fps"
 }

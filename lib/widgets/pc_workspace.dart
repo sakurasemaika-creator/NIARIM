@@ -957,6 +957,18 @@ class PcDockSplitter extends StatelessWidget {
       _PcSplitter(axis: Axis.horizontal, onDrag: onDrag, onDragEnd: onDragEnd);
 }
 
+/// 上下の区画の境目のつまみ（上下にドラッグして上の区画の高さを変える）。
+class PcRowSplitter extends StatelessWidget {
+  const PcRowSplitter({super.key, required this.onDrag, this.onDragEnd});
+
+  final ValueChanged<double> onDrag;
+  final VoidCallback? onDragEnd;
+
+  @override
+  Widget build(BuildContext context) =>
+      _PcSplitter(axis: Axis.vertical, onDrag: onDrag, onDragEnd: onDragEnd);
+}
+
 /// PC/DeXモードのツールパレットの中であることを伝える。キャンバスの上に
 /// 浮かぶボタン（`CanvasIconButton`）は、この中では選択中のツールを
 /// 淡い差し色の下地で示す。

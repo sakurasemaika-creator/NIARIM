@@ -8015,4 +8015,38 @@ class AppLocalizationsJa extends AppLocalizations {
   String pcStatusFrame(int current, int total) {
     return 'フレーム $current/$total';
   }
+
+  @override
+  String get pcMenuPlayback => '再生';
+
+  @override
+  String get pcPaneProgram => 'プログラム';
+
+  @override
+  String get pcPaneInspector => 'インスペクター';
+
+  @override
+  String get pcLoopPlayback => 'ループ再生';
+
+  @override
+  String get pcTimelineZoomIn => 'タイムラインを拡大';
+
+  @override
+  String get pcTimelineZoomOut => 'タイムラインを縮小';
+
+  @override
+  String get pcBinEmpty => '素材はまだありません';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$countフレーム';
+  }
+
+  @override
+  String get pcInspectorHint => 'タイムラインの素材を選ぶと、ここで位置・大きさ・不透明度などを調整できます。';
+
+  @override
+  String pcStatusFps(int fps) {
+    return '$fps fps';
+  }
 }

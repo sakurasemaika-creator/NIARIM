@@ -3962,5 +3962,31 @@
         "type": "int"
       }
     }
+  },
+  "pcMenuPlayback": "再生",
+  "pcPaneProgram": "プログラム",
+  "pcPaneInspector": "インスペクター",
+  "pcLoopPlayback": "ループ再生",
+  "pcTimelineZoomIn": "タイムラインを拡大",
+  "pcTimelineZoomOut": "タイムラインを縮小",
+  "pcBinEmpty": "素材はまだありません",
+  "pcBinSceneFrames": "{count}フレーム",
+  "@pcBinSceneFrames": {
+    "description": "PC/DeXモードのタイムライン：シーンの一覧のフレーム数",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pcInspectorHint": "タイムラインの素材を選ぶと、ここで位置・大きさ・不透明度などを調整できます。",
+  "pcStatusFps": "{fps} fps",
+  "@pcStatusFps": {
+    "description": "PC/DeXモードのタイムライン：ステータスバーのフレームレート",
+    "placeholders": {
+      "fps": {
+        "type": "int"
+      }
+    }
   }
 }

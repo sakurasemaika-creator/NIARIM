@@ -8058,4 +8058,39 @@ class AppLocalizationsKo extends AppLocalizations {
   String pcStatusFrame(int current, int total) {
     return '프레임 $current/$total';
   }
+
+  @override
+  String get pcMenuPlayback => '재생';
+
+  @override
+  String get pcPaneProgram => '프로그램';
+
+  @override
+  String get pcPaneInspector => '인스펙터';
+
+  @override
+  String get pcLoopPlayback => '반복 재생';
+
+  @override
+  String get pcTimelineZoomIn => '타임라인 확대';
+
+  @override
+  String get pcTimelineZoomOut => '타임라인 축소';
+
+  @override
+  String get pcBinEmpty => '아직 소재가 없습니다';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count프레임';
+  }
+
+  @override
+  String get pcInspectorHint =>
+      '타임라인에서 소재를 선택하면 여기에서 위치·크기·불투명도 등을 조정할 수 있습니다.';
+
+  @override
+  String pcStatusFps(int fps) {
+    return '$fps fps';
+  }
 }

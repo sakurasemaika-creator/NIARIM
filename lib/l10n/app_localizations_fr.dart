@@ -8458,4 +8458,39 @@ class AppLocalizationsFr extends AppLocalizations {
   String pcStatusFrame(int current, int total) {
     return 'Image $current/$total';
   }
+
+  @override
+  String get pcMenuPlayback => 'Lecture';
+
+  @override
+  String get pcPaneProgram => 'Programme';
+
+  @override
+  String get pcPaneInspector => 'Inspecteur';
+
+  @override
+  String get pcLoopPlayback => 'Lecture en boucle';
+
+  @override
+  String get pcTimelineZoomIn => 'Agrandir la chronologie';
+
+  @override
+  String get pcTimelineZoomOut => 'Réduire la chronologie';
+
+  @override
+  String get pcBinEmpty => 'Aucun matériau pour l’instant';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count images';
+  }
+
+  @override
+  String get pcInspectorHint =>
+      'Sélectionnez un matériau dans la chronologie pour régler ici sa position, sa taille, son opacité, etc.';
+
+  @override
+  String pcStatusFps(int fps) {
+    return '$fps i/s';
+  }
 }

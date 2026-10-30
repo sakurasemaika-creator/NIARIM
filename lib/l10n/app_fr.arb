@@ -3315,5 +3315,15 @@
   "pcToolPropertyEmpty": "Cet outil n’a pas de réglages",
   "pcLayerNew": "Nouveau calque",
   "pcModeCanvas": "Canevas",
-  "pcStatusFrame": "Image {current}/{total}"
+  "pcStatusFrame": "Image {current}/{total}",
+  "pcMenuPlayback": "Lecture",
+  "pcPaneProgram": "Programme",
+  "pcPaneInspector": "Inspecteur",
+  "pcLoopPlayback": "Lecture en boucle",
+  "pcTimelineZoomIn": "Agrandir la chronologie",
+  "pcTimelineZoomOut": "Réduire la chronologie",
+  "pcBinEmpty": "Aucun matériau pour l’instant",
+  "pcBinSceneFrames": "{count} images",
+  "pcInspectorHint": "Sélectionnez un matériau dans la chronologie pour régler ici sa position, sa taille, son opacité, etc.",
+  "pcStatusFps": "{fps} i/s"
 }

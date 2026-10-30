@@ -7941,6 +7941,40 @@ class AppLocalizationsZh extends AppLocalizations {
   String pcStatusFrame(int current, int total) {
     return '第 $current/$total 帧';
   }
+
+  @override
+  String get pcMenuPlayback => '播放';
+
+  @override
+  String get pcPaneProgram => '节目';
+
+  @override
+  String get pcPaneInspector => '检查器';
+
+  @override
+  String get pcLoopPlayback => '循环播放';
+
+  @override
+  String get pcTimelineZoomIn => '放大时间轴';
+
+  @override
+  String get pcTimelineZoomOut => '缩小时间轴';
+
+  @override
+  String get pcBinEmpty => '还没有素材';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count 帧';
+  }
+
+  @override
+  String get pcInspectorHint => '在时间轴上选择素材后，可在此调整位置、大小、不透明度等。';
+
+  @override
+  String pcStatusFps(int fps) {
+    return '$fps fps';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -15881,5 +15915,39 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String pcStatusFrame(int current, int total) {
     return '影格 $current/$total';
+  }
+
+  @override
+  String get pcMenuPlayback => '播放';
+
+  @override
+  String get pcPaneProgram => '節目';
+
+  @override
+  String get pcPaneInspector => '檢閱器';
+
+  @override
+  String get pcLoopPlayback => '循環播放';
+
+  @override
+  String get pcTimelineZoomIn => '放大時間軸';
+
+  @override
+  String get pcTimelineZoomOut => '縮小時間軸';
+
+  @override
+  String get pcBinEmpty => '還沒有素材';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count 影格';
+  }
+
+  @override
+  String get pcInspectorHint => '在時間軸上選擇素材後，可在此調整位置、大小、不透明度等。';
+
+  @override
+  String pcStatusFps(int fps) {
+    return '$fps fps';
   }
 }

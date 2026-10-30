@@ -14638,6 +14638,66 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'フレーム {current}/{total}'**
   String pcStatusFrame(int current, int total);
+
+  /// No description provided for @pcMenuPlayback.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生'**
+  String get pcMenuPlayback;
+
+  /// No description provided for @pcPaneProgram.
+  ///
+  /// In ja, this message translates to:
+  /// **'プログラム'**
+  String get pcPaneProgram;
+
+  /// No description provided for @pcPaneInspector.
+  ///
+  /// In ja, this message translates to:
+  /// **'インスペクター'**
+  String get pcPaneInspector;
+
+  /// No description provided for @pcLoopPlayback.
+  ///
+  /// In ja, this message translates to:
+  /// **'ループ再生'**
+  String get pcLoopPlayback;
+
+  /// No description provided for @pcTimelineZoomIn.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインを拡大'**
+  String get pcTimelineZoomIn;
+
+  /// No description provided for @pcTimelineZoomOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインを縮小'**
+  String get pcTimelineZoomOut;
+
+  /// No description provided for @pcBinEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材はまだありません'**
+  String get pcBinEmpty;
+
+  /// PC/DeXモードのタイムライン：シーンの一覧のフレーム数
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}フレーム'**
+  String pcBinSceneFrames(int count);
+
+  /// No description provided for @pcInspectorHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインの素材を選ぶと、ここで位置・大きさ・不透明度などを調整できます。'**
+  String get pcInspectorHint;
+
+  /// PC/DeXモードのタイムライン：ステータスバーのフレームレート
+  ///
+  /// In ja, this message translates to:
+  /// **'{fps} fps'**
+  String pcStatusFps(int fps);
 }
 
 class _AppLocalizationsDelegate

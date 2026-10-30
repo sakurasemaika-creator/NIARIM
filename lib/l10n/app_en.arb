@@ -3322,5 +3322,15 @@
   "pcToolPropertyEmpty": "This tool has no settings",
   "pcLayerNew": "New Layer",
   "pcModeCanvas": "Canvas",
-  "pcStatusFrame": "Frame {current}/{total}"
+  "pcStatusFrame": "Frame {current}/{total}",
+  "pcMenuPlayback": "Playback",
+  "pcPaneProgram": "Program",
+  "pcPaneInspector": "Inspector",
+  "pcLoopPlayback": "Loop Playback",
+  "pcTimelineZoomIn": "Zoom In Timeline",
+  "pcTimelineZoomOut": "Zoom Out Timeline",
+  "pcBinEmpty": "No materials yet",
+  "pcBinSceneFrames": "{count} frames",
+  "pcInspectorHint": "Select a material on the timeline to adjust its position, size, opacity and more here.",
+  "pcStatusFps": "{fps} fps"
 }

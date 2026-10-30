@@ -3315,5 +3315,15 @@
   "pcToolPropertyEmpty": "此工具沒有可調整的設定",
   "pcLayerNew": "新增圖層",
   "pcModeCanvas": "畫布",
-  "pcStatusFrame": "影格 {current}/{total}"
+  "pcStatusFrame": "影格 {current}/{total}",
+  "pcMenuPlayback": "播放",
+  "pcPaneProgram": "節目",
+  "pcPaneInspector": "檢閱器",
+  "pcLoopPlayback": "循環播放",
+  "pcTimelineZoomIn": "放大時間軸",
+  "pcTimelineZoomOut": "縮小時間軸",
+  "pcBinEmpty": "還沒有素材",
+  "pcBinSceneFrames": "{count} 影格",
+  "pcInspectorHint": "在時間軸上選擇素材後，可在此調整位置、大小、不透明度等。",
+  "pcStatusFps": "{fps} fps"
 }

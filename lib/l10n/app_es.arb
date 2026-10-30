@@ -3315,5 +3315,15 @@
   "pcToolPropertyEmpty": "Esta herramienta no tiene ajustes",
   "pcLayerNew": "Nueva capa",
   "pcModeCanvas": "Lienzo",
-  "pcStatusFrame": "Fotograma {current}/{total}"
+  "pcStatusFrame": "Fotograma {current}/{total}",
+  "pcMenuPlayback": "Reproducción",
+  "pcPaneProgram": "Programa",
+  "pcPaneInspector": "Inspector",
+  "pcLoopPlayback": "Reproducción en bucle",
+  "pcTimelineZoomIn": "Ampliar la línea de tiempo",
+  "pcTimelineZoomOut": "Reducir la línea de tiempo",
+  "pcBinEmpty": "Aún no hay materiales",
+  "pcBinSceneFrames": "{count} fotogramas",
+  "pcInspectorHint": "Selecciona un material en la línea de tiempo para ajustar aquí su posición, tamaño, opacidad y más.",
+  "pcStatusFps": "{fps} fps"
 }
