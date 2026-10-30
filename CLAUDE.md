@@ -759,6 +759,19 @@ onTap: ...)`だったために
   処理を足すときは`_persist`を呼ぶこと（`test/save_tree_persistence_test.dart`）。
   「保存して戻る」は、最新の保存（`latestSaveOf`）が変わったときだけ一覧へ
   移る（保存せずに戻ったらキャンバス・タイムラインに残る）。
+- **`TileManager.importAll`（自動保存からの復元）はレイヤーの内容の変更を
+  知らせる**：以前は知らせず、自動保存から戻した絵がデータには入っているのに
+  キャンバスには前の絵が出たままだった（強制終了→起動し直しの実操作で発見）。
+  タイルをまとめて入れ替える処理を新しく書くときも、
+  `addLayerContentListener`の聞き手へ知らせること（`layer_pixels_replace_test`）。
+  手動の保存のダイアログ（スロット・ツリー）は失敗しても閉じず、打った
+  コメントを残して失敗の文を中に出す（`save_dialog_failure_test`）。
+- **キャンバスの「設定/編集」メニューは全項目を`canvas_edit_menu_walkthrough_test`
+  が開いて撮る**（`build/canvas-edit-menu/`、仏語・文字2倍・320pxも）。
+  メニューは別のルートなので、メニューの中で値を選ぶ部品はキャンバスの
+  setStateでは作り直されない（`StatefulBuilder`で包む）。ListTileの
+  `trailing`に長い選択肢を置くと、長い言語・大きな文字で行が描けずメニュー
+  全体が出なくなるので、入らないときは項目名の下の行へ移すこと。
 - **見つからない作品の画面は`ProjectNotFoundView`**
   （`lib/widgets/project_not_found_view.dart`）：古いリンク・ゴミ箱へ移した後に
   プロジェクト詳細・キャンバスを開くと、空の画面を出さずに一覧へ戻す道を出す。
