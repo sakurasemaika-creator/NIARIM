@@ -223,6 +223,25 @@ void main() {
     await tester.pumpAndSettle();
     await capture(root, '04_compact_tag_search', tester);
 
+    // Capture the newly introduced search-history and saved-filter accordions.
+    final historyAccordion = find.byKey(
+      const Key('communitySearchHistoryAccordion'),
+    );
+    await tester.ensureVisible(historyAccordion);
+    await tester.tap(historyAccordion);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('communitySearchHistory-0')), findsOneWidget);
+    await capture(root, '14_search_history_expanded', tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('communitySaveHistory-0')));
+    await tester.tap(find.byKey(const ValueKey('communitySaveHistory-0')));
+    await tester.pumpAndSettle();
+    final savedAccordion = find.byKey(const Key('communitySavedSearchAccordion'));
+    await tester.ensureVisible(savedAccordion);
+    await tester.tap(savedAccordion);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('communitySavedSearch-0')), findsOneWidget);
+    await capture(root, '15_saved_search_expanded', tester);
+
     // The public author page exposes an explicit creator mute action.
     final peerWork = community.discoverableWorks.firstWhere(
       (work) => work.authorId != kDummySelfAuthorId,
