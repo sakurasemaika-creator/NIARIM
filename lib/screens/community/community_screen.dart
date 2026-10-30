@@ -765,7 +765,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     final titleSize = measure(
       l10n.communityScreenTitle,
       titleStyle,
-      maxWidth: (width - 168).clamp(1.0, double.infinity),
+      maxWidth: (width - 216).clamp(1.0, double.infinity),
     );
     final labels = [
       l10n.communityTabNew,
@@ -1068,7 +1068,10 @@ class _CommunityScreenState extends State<CommunityScreen>
           key: const Key('communityBackToSplashButton'),
           icon: const Icon(Icons.arrow_back),
           tooltip: l10n.homeBackToSplashTooltip,
-          onPressed: () => context.go('/'),
+          onPressed: () {
+            communityService.clearTemporaryUnmutes();
+            context.go('/');
+          },
         ),
         backgroundColor: barBackground,
         foregroundColor: foreground,
@@ -1081,7 +1084,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         title: Text(
           l10n.communityScreenTitle,
           softWrap: true,
-          maxLines: 2,
+          maxLines: 3,
           overflow: TextOverflow.visible,
         ),
         actions: [
