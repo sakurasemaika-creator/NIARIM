@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/app_localizations.dart';
+import '../../l10n/community_plaza_labels.dart';
 import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
@@ -83,7 +84,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
   _PostDateFilter _postDateFilter = _PostDateFilter.all;
   DateTimeRange? _customPostDateRange;
-  bool _tagExactMatch = true;
+  bool _tagExactMatch = false;
   double _minimumTileWidth = 160;
   _DurationFilterMode _durationMode = _DurationFilterMode.all;
   double _upToMinutes = 5;
@@ -103,7 +104,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     final initialTag = widget.initialTagFilter;
     if (initialTag != null && initialTag.isNotEmpty) {
       _tagSearchMode = true;
-      _tagExactMatch = true;
+      _tagExactMatch = false;
       _searchQuery = initialTag;
       _draftQuery = initialTag;
       _searchController.text = initialTag;
@@ -272,7 +273,6 @@ class _CommunityScreenState extends State<CommunityScreen>
     'maximumMinutes': _maximumMinutes,
     'minimumViews': _minimumViews,
     'minimumBookmarks': _minimumBookmarks,
-    'tileWidth': _minimumTileWidth,
   };
 
   void _restoreSavedSearch(Map<String, dynamic> saved) {
@@ -310,9 +310,6 @@ class _CommunityScreenState extends State<CommunityScreen>
       if (!_communityThresholdChoices.contains(_minimumBookmarks)) {
         _minimumBookmarks = 0;
       }
-      _minimumTileWidth = ((saved['tileWidth'] as num?)?.toDouble() ?? 160)
-          .clamp(120, 240)
-          .toDouble();
     });
     _scrollCurrentTabToTop();
   }
@@ -363,11 +360,37 @@ class _CommunityScreenState extends State<CommunityScreen>
     await _persistSavedSearches();
   }
 
+  Future<void> _confirmDeleteHistory(int index) async {
+    if (index < 0 || index >= _searchHistory.length) return;
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(CommunityPlazaLabels.of(dialogContext).deleteHistory),
+        content: Text(_searchHistory[index]['query'] as String? ?? ''),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(AppLocalizations.of(dialogContext)!.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(AppLocalizations.of(dialogContext)!.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (approved != true || !mounted || index >= _searchHistory.length) return;
+    setState(() => _searchHistory.removeAt(index));
+    await _persistSearchHistory();
+  }
+
   /// The following tab shows the followed authors' works and reposts as
   /// the server has them now.
   void _onTabChanged() {
-    if (_tabController.indexIsChanging || _tabController.index != 2) return;
+    if (_tabController.indexIsChanging) return;
     final service = context.read<CommunityService>();
+    service.clearTemporaryUnmutes();
+    if (_tabController.index != 2) return;
     if (service.isBackendConnected) service.refreshFollowingFeed();
   }
 
@@ -394,6 +417,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   /// (a poster's AI image/video declaration, tags, a work hidden) shows.
   Future<void> _refreshAll() async {
     final service = context.read<CommunityService>();
+    service.clearTemporaryUnmutes();
     if (!service.isBackendConnected) return;
     await Future.wait([
       service.refreshFromBackend(),
@@ -437,7 +461,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         newTag != oldWidget.initialTagFilter) {
       setState(() {
         _tagSearchMode = true;
-        _tagExactMatch = true;
+        _tagExactMatch = false;
         _searchQuery = newTag;
         _draftQuery = newTag;
         _searchController.text = newTag;
@@ -497,34 +521,30 @@ class _CommunityScreenState extends State<CommunityScreen>
         .toList();
     final query = _searchQuery.trim().toLowerCase();
     if (query.isEmpty) return typeFiltered;
-    if (_tagSearchMode) {
-      final tokens = query
-          .split(RegExp(r'\s+'))
-          .map((term) => term.replaceFirst(RegExp(r'^#'), ''))
-          .where((term) => term.isNotEmpty)
-          .toList();
-      return typeFiltered
-          .where(
-            (work) => tokens.every(
-              (term) => work.tags.any((tag) {
-                final normalized = tag.toLowerCase().replaceFirst(
-                  RegExp(r'^#'),
-                  '',
-                );
-                return _tagExactMatch
-                    ? normalized == term
-                    : normalized.contains(term);
-              }),
-            ),
-          )
-          .toList();
+    // Positive terms must all match; -term excludes; quoted phrases supported.
+    final terms = RegExp(r'-?"[^"]+"|-?\S+')
+        .allMatches(query)
+        .map((m) => m.group(0)!)
+        .toList();
+    bool matches(CommunityWork work, String raw) {
+      final term = raw.replaceAll('"', '').replaceFirst(RegExp(r'^#'), '');
+      if (term.isEmpty) return false;
+      final matchesTag = work.tags.any((tag) {
+        final tagName = tag.toLowerCase().replaceFirst(RegExp(r'^[#＃]'), '');
+        return _tagExactMatch ? tagName == term : tagName.contains(term);
+      });
+      if (_tagSearchMode) return matchesTag;
+      final title = work.title.toLowerCase();
+      return matchesTag ||
+          (_tagExactMatch ? title == term : title.contains(term));
     }
     return typeFiltered.where((work) {
-      final title = work.title.toLowerCase();
-      final author = work.authorName.toLowerCase();
-      return _tagExactMatch
-          ? title == query || author == query
-          : title.contains(query) || author.contains(query);
+      return terms.every((token) {
+        final negative = token.startsWith('-') && token.length > 1;
+        final word = negative ? token.substring(1) : token;
+        final found = matches(work, word);
+        return negative ? !found : found;
+      });
     }).toList();
   }
 
@@ -774,7 +794,14 @@ class _CommunityScreenState extends State<CommunityScreen>
           childrenPadding: EdgeInsets.zero,
           shape: const Border(),
           collapsedShape: const Border(),
-          title: Text(title, style: headingStyle),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(child: Text(title, style: headingStyle)),
+              const SizedBox(width: 6),
+              Text('(${entries.length}/10)', style: theme.textTheme.bodySmall),
+            ],
+          ),
           children: [
             if (entries.isEmpty)
               Padding(
@@ -800,24 +827,27 @@ class _CommunityScreenState extends State<CommunityScreen>
                   overflow: TextOverflow.ellipsis,
                 ),
                 onTap: () => _restoreSavedSearch(entries[index]),
-                trailing: IconButton(
-                  key: ValueKey(
-                    (saved
-                            ? 'communityDeleteSavedSearch-'
-                            : 'communitySaveHistory-') +
-                        index.toString(),
-                  ),
-                  icon: Icon(
-                    saved ? Icons.delete_outline : Icons.save_outlined,
-                  ),
-                  tooltip: saved ? l10n.commonDelete : l10n.communitySaveSearch,
-                  onPressed: () {
-                    if (saved) {
-                      _confirmDeleteSavedSearch(index);
-                    } else {
-                      _saveSearchFromHistory(entries[index]);
-                    }
-                  },
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!saved)
+                      IconButton(
+                        key: ValueKey('communitySaveHistory-$index'),
+                        icon: const Icon(Icons.save_outlined),
+                        tooltip: l10n.communitySaveSearch,
+                        onPressed: () => _saveSearchFromHistory(entries[index]),
+                      ),
+                    IconButton(
+                      key: ValueKey(saved
+                          ? 'communityDeleteSavedSearch-$index'
+                          : 'communityDeleteHistory-$index'),
+                      icon: const Icon(Icons.delete_outline),
+                      tooltip: l10n.commonDelete,
+                      onPressed: () => saved
+                          ? _confirmDeleteSavedSearch(index)
+                          : _confirmDeleteHistory(index),
+                    ),
+                  ],
                 ),
               ),
             if (saved)
@@ -855,7 +885,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                           : l10n.communityTagSearchHint,
                       onPressed: () => setState(() {
                         _tagSearchMode = !_tagSearchMode;
-                        _tagExactMatch = _tagSearchMode;
                         _searchQuery = '';
                         _draftQuery = '';
                         _searchController.clear();
@@ -964,6 +993,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       ),
                   ],
                 ),
+                const Spacer(),
                 IconButton(
                   key: const Key('communityTileSizeButton'),
                   tooltip: l10n.communityTileSize,
@@ -1004,7 +1034,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                     }
                   },
                 ),
-                const Spacer(),
                 SizedBox(
                   width: 92,
                   height: 48,
