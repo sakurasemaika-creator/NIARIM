@@ -38,7 +38,9 @@ void main() {
     final visible = service.discoverableWorks;
     expect(visible.map((w) => w.authorName), contains('禁止語作者'));
     expect(visible.any((w) => w.tags.contains('禁止語')), isTrue);
-    expect(visible.any((w) => w.title.contains('禁止語')), isFalse);
+    expect(visible.any((w) => w.title.contains('禁止語')), isTrue);
+    expect(service.isWorkMuted(visible.firstWhere((w) => w.title.contains('禁止語'))), isTrue);
+    expect(service.isWorkMuted(visible.firstWhere((w) => w.authorName == '禁止語作者')), isFalse);
   });
 
   test('mute tag filters exact work-plaza tag only', () async {
@@ -53,7 +55,8 @@ void main() {
     final visible = service.discoverableWorks;
     expect(visible.any((w) => w.title.startsWith('#手描き')), isTrue);
     expect(visible.any((w) => w.tags.contains('手描き風')), isTrue);
-    expect(visible.any((w) => w.tags.contains('手描き')), isFalse);
+    expect(visible.any((w) => w.tags.contains('手描き')), isTrue);
+    expect(service.isWorkMuted(visible.firstWhere((w) => w.tags.contains('手描き'))), isTrue);
   });
 
   test(
@@ -99,7 +102,8 @@ void main() {
 
     expect(service.mutedWords, {'blocked'});
     expect(service.mutedTags, {'safe-tag'});
-    expect(service.discoverableWorks.map((w) => w.title), ['keep me']);
+    expect(service.discoverableWorks, hasLength(3));
+    expect(service.discoverableWorks.where(service.isWorkMuted), hasLength(2));
   });
 
   test(
@@ -112,9 +116,9 @@ void main() {
         makeWork(title: 'mute this'),
       ]);
 
-      expect(service.worksByAuthor('author_x').map((w) => w.title), [
-        'visible',
-      ]);
+      expect(service.worksByAuthor('author_x').map((w) => w.title),
+        containsAll(['visible', 'mute this']));
+      expect(service.isWorkMuted(service.worksByAuthor('author_x').last), isTrue);
       expect(
         service
             .worksByAuthor('author_x', includeHidden: true)
@@ -156,7 +160,8 @@ void main() {
     await service.setHideGenerativeAiImageVideo(true);
     final visible = service.discoverableWorks;
     expect(visible.map((w) => w.title), contains('通常作品'));
-    expect(visible.map((w) => w.title), isNot(contains('AI使用作品')));
+    expect(visible.map((w) => w.title), contains('AI使用作品'));
+    expect(visible.where(service.isWorkMuted), hasLength(1));
   });
 
   test('typed mute entries split on ASCII/full-width commas, 、 and new '
@@ -169,6 +174,26 @@ void main() {
     ]);
   });
 
+
+  test('permanent and temporary work unmute are device-local', () async {
+    final s = CommunityService();
+    await s.contentFiltersReady;
+    final work = makeWork(title: 'blocked title');
+    s.replaceWorksForTest([work]);
+    await s.setMutedWords(['blocked']);
+    expect(s.isWorkMuted(work), isTrue);
+    await s.unmuteWork(work.id, permanently: false);
+    expect(s.isWorkMuted(work), isFalse);
+    s.clearTemporaryUnmutes();
+    expect(s.isWorkMuted(work), isTrue);
+    await s.unmuteWork(work.id, permanently: true);
+    expect(s.isWorkMuted(work), isFalse);
+    final restored = CommunityService();
+    await restored.contentFiltersReady;
+    expect(restored.isWorkMuted(work), isFalse);
+    await restored.setWorkMuted(work.id);
+    expect(restored.isWorkMuted(work), isTrue);
+  });
   test('a leading # never stops a tag from being muted', () async {
     final service = CommunityService();
     service.replaceWorksForTest([
@@ -178,6 +203,7 @@ void main() {
     ]);
     await service.setMutedTags(['＃作画']);
     expect(service.mutedTags, {'作画'});
-    expect(service.discoverableWorks.map((w) => w.title), ['other']);
+    expect(service.discoverableWorks, hasLength(3));
+    expect(service.discoverableWorks.where(service.isWorkMuted), hasLength(2));
   });
 }

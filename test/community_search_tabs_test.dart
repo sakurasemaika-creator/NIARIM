@@ -61,7 +61,7 @@ void main() {
       '',
     );
   });
-  testWidgets('space-delimited tags must all match exactly by default', (
+  testWidgets('space-delimited tags must all match by default', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});

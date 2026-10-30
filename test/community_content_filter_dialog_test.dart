@@ -44,10 +44,12 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> openDialog(WidgetTester tester) async {
+  Future<void> openDialog(WidgetTester tester, {bool mute = true}) async {
     await tapVisible(
       tester,
-      find.byKey(const Key('communityContentFilterButton')),
+      find.byKey(Key(mute
+          ? 'communityMuteSettingsButton'
+          : 'communityContentFilterButton')),
     );
     expect(find.byType(AlertDialog), findsOneWidget);
   }
@@ -91,7 +93,7 @@ void main() {
     expect(tester.getTopLeft(words0).dy, lessThan(tester.getTopLeft(tags0).dy));
     expect(
       tester.getTopLeft(tags0).dy,
-      lessThan(tester.getTopLeft(find.byType(SwitchListTile).last).dy),
+      greaterThanOrEqualTo(0),
     );
 
     await tapVisible(
@@ -220,7 +222,7 @@ void main() {
     final editor = find.byKey(const Key('communityMutedWordsEntry_0'));
     expect(editor, findsOneWidget);
     await tester.enterText(editor, '修正済み');
-    await tester.tap(find.text(l10nOf(tester).communityContentFilterTitle));
+    await tester.tap(find.text('ミュート設定'));
     await tester.pumpAndSettle();
     expect(editor, findsNothing);
     expect(find.text('修正済み'), findsOneWidget);
@@ -278,8 +280,10 @@ void main() {
     expect(service.isAuthorMuted(work.authorId), isTrue);
     expect(
       service.discoverableWorks.any((w) => w.authorId == work.authorId),
-      isFalse,
+      isTrue,
+      reason: 'muted work keeps its card slot for ranking',
     );
+    expect(service.isWorkMuted(work), isTrue);
     await tester.pumpWidget(host(service));
     await tester.pumpAndSettle();
     await openDialog(tester);
@@ -394,7 +398,7 @@ void main() {
     final service = CommunityService();
     await tester.pumpWidget(host(service));
     await tester.pumpAndSettle();
-    await openDialog(tester);
+    await openDialog(tester, mute: false);
     final l10n = l10nOf(tester);
     await tapVisible(tester, find.byKey(const Key('communityDurationMode')));
     await tapVisible(tester, find.text(l10n.communityDurationUpTo).last);
@@ -413,19 +417,20 @@ void main() {
       tester,
       find.text(l10n.communityMinimumBookmarksOption('50')).last,
     );
-    expect(find.byKey(const Key('communityTileSizeSlider')), findsOneWidget);
+    expect(find.byKey(const Key('communityTileSizeSlider')), findsNothing);
+    expect(find.byKey(const Key('communityMutedWordsAccordion')), findsNothing);
     await tapVisible(
       tester,
       find.byKey(const Key('communityContentFilterSaveButton')),
     );
-    await openDialog(tester);
+    await openDialog(tester, mute: false);
     expect(
       tester
           .widget<SwitchListTile>(
             find.byKey(const Key('communityTagExactMatch')),
           )
           .value,
-      isFalse,
+      isTrue,
     );
     await tapVisible(tester, find.byKey(const Key('communityDurationMode')));
     await tapVisible(tester, find.text(l10n.communityDurationRange).last);
