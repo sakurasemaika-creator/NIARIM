@@ -1,6 +1,9 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../l10n/community_plaza_labels.dart';
+import '../../../services/community_service.dart';
+import 'package:provider/provider.dart';
 import '../../../models/community_work.dart';
 import '../../../config/font_fallback.dart';
 
@@ -38,6 +41,8 @@ class CommunityWorkCard extends StatelessWidget {
   final VoidCallback? onAuthorTap;
   final int? rankNumber;
   final String? repostedByAuthorName;
+  final bool isMuted;
+  final VoidCallback? onMuteToggle;
 
   const CommunityWorkCard({
     super.key,
@@ -48,6 +53,8 @@ class CommunityWorkCard extends StatelessWidget {
     this.onAuthorTap,
     this.rankNumber,
     this.repostedByAuthorName,
+    this.isMuted = false,
+    this.onMuteToggle,
   });
 
   @override
@@ -126,7 +133,7 @@ class CommunityWorkCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
           ),
           child: InkWell(
-            onTap: onTap,
+            onTap: isMuted ? null : onTap,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,6 +148,20 @@ class CommunityWorkCard extends StatelessWidget {
                       );
                       return Stack(
                         children: [
+                          if (isMuted)
+                            Positioned.fill(
+                              child: ColoredBox(
+                                color: scheme.surfaceContainerHighest,
+                                child: Center(
+                                  child: Icon(
+                                    Icons.visibility_off_outlined,
+                                    size: 32,
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (!isMuted)
                           Positioned.fill(
                             child: DecoratedBox(
                               decoration: BoxDecoration(
@@ -172,7 +193,7 @@ class CommunityWorkCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          if (!work.isNiarimPublished)
+                          if (!work.isNiarimPublished && !isMuted)
                             Positioned(
                               left: 6,
                               top: 6,
@@ -198,6 +219,7 @@ class CommunityWorkCard extends StatelessWidget {
                                 child: badge('#$rankNumber', fontSize: 16),
                               ),
                             ),
+                          if (!isMuted)
                           Positioned(
                             right: 6,
                             bottom: 6,
@@ -210,7 +232,7 @@ class CommunityWorkCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          if (work.isShort)
+                          if (work.isShort && !isMuted)
                             Positioned(
                               left: 6,
                               bottom: 6,
@@ -221,6 +243,7 @@ class CommunityWorkCard extends StatelessWidget {
                                 child: badge(l10n.communityShortsBadge),
                               ),
                             ),
+                          if (!isMuted)
                           Positioned(
                             right: 4,
                             top: 4,
@@ -258,6 +281,31 @@ class CommunityWorkCard extends StatelessWidget {
                               ),
                             ),
                           ),
+                          if (onMuteToggle != null)
+                            Positioned(
+                              right: 4,
+                              top: isMuted ? 4 : 48,
+                              child: Material(
+                                color: overlay,
+                                shape: const CircleBorder(),
+                                child: PopupMenuButton<String>(
+                                  key: ValueKey('communityMuteMenu-${work.id}'),
+                                  tooltip: isMuted
+                                      ? CommunityPlazaLabels.of(context).unmuteWork
+                                      : CommunityPlazaLabels.of(context).muteWork,
+                                  icon: const Icon(Icons.more_vert),
+                                  onSelected: (_) => onMuteToggle!(),
+                                  itemBuilder: (_) => [
+                                    PopupMenuItem(
+                                      value: isMuted ? 'unmute' : 'mute',
+                                      child: Text(isMuted
+                                          ? CommunityPlazaLabels.of(context).unmuteWork
+                                          : CommunityPlazaLabels.of(context).muteWork),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                         ],
                       );
                     },
@@ -269,7 +317,7 @@ class CommunityWorkCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (repostedByAuthorName != null) ...[
+                      if (repostedByAuthorName != null && !isMuted) ...[
                         Row(
                           children: [
                             Icon(Icons.repeat, size: 12, color: detailColor),
@@ -293,7 +341,9 @@ class CommunityWorkCard extends StatelessWidget {
                         const SizedBox(height: 3),
                       ],
                       Text(
-                        work.title,
+                        isMuted
+                            ? CommunityPlazaLabels.of(context).mutedPlaceholder
+                            : work.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -304,7 +354,8 @@ class CommunityWorkCard extends StatelessWidget {
                           color: textColor,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      if (!isMuted) const SizedBox(height: 4),
+                      if (!isMuted)
                       Semantics(
                         button: onAuthorTap != null,
                         label: author,
@@ -335,7 +386,8 @@ class CommunityWorkCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      if (!isMuted) const SizedBox(height: 4),
+                      if (!isMuted)
                       Row(
                         children: [
                           Icon(
@@ -391,9 +443,38 @@ class CommunityWorkGrid extends StatelessWidget {
     this.minTileWidth = 160,
   });
 
+  Future<void> _toggleMute(BuildContext context, CommunityWork work) async {
+    final service = context.read<CommunityService>();
+    if (!service.isWorkMuted(work)) {
+      await service.setWorkMuted(work.id);
+      return;
+    }
+    final texts = CommunityPlazaLabels.of(context);
+    final permanent = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(texts.unmuteQuestion),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(texts.unmuteTemporary),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(texts.unmuteAlways),
+          ),
+        ],
+      ),
+    );
+    if (permanent != null) {
+      await service.unmuteWork(work.id, permanently: permanent);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
+      final service = context.watch<CommunityService>();
       final scale = MediaQuery.textScalerOf(context).scale(13) / 13;
       final minimumWidth = minTileWidth * (scale < 1 ? 1 : scale);
       final columns = ((constraints.maxWidth - 24 + 10) / (minimumWidth + 10))
@@ -421,6 +502,8 @@ class CommunityWorkGrid extends StatelessWidget {
                         : () => onTapAuthor!(work),
                     rankNumber: rankNumbers?[work.id],
                     repostedByAuthorName: repostedByNames?[work.id],
+                    isMuted: service.isWorkMuted(work),
+                    onMuteToggle: () => _toggleMute(context, work),
                   ),
                 ),
             ],
