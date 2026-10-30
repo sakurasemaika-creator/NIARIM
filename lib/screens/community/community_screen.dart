@@ -1095,24 +1095,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                   height: 48,
                   child: Row(
                     children: [
-                      IconButton(
-                        key: const Key('communitySearchModeToggle'),
-                        icon: Icon(
-                          _tagSearchMode ? Icons.search : Icons.sell_outlined,
-                        ),
-                        tooltip: _tagSearchMode
-                            ? l10n.communitySearchHint
-                            : l10n.communityTagSearchHint,
-                        onPressed: () {
-                          setState(() {
-                            _tagSearchMode = !_tagSearchMode;
-                            _searchQuery = '';
-                            _draftQuery = '';
-                            _searchController.clear();
-                          });
-                          _refreshSearchAfterSettingChange();
-                        },
-                      ),
                       Expanded(
                         child: TextField(
                           key: const Key('communitySearchInput'),
@@ -1272,7 +1254,90 @@ class _CommunityScreenState extends State<CommunityScreen>
                   },
                 ),
                 const Spacer(),
-                if (tab == 3)
+                if (tab == 3) ...[
+                  Tooltip(
+                    message:
+                        '${l10n.creativePanelSearchModeKeyword} / '
+                        '${l10n.creativePanelSearchModeTag}',
+                    triggerMode: TooltipTriggerMode.longPress,
+                    child: Material(
+                      color: _tagSearchMode
+                          ? scheme.secondaryContainer
+                          : scheme.surfaceContainerHigh,
+                      shape: StadiumBorder(
+                        side: BorderSide(color: scheme.outlineVariant),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        key: const Key('communitySearchModeToggle'),
+                        onTap: () {
+                          setState(() {
+                            _tagSearchMode = !_tagSearchMode;
+                            _searchQuery = '';
+                            _draftQuery = '';
+                            _searchController.clear();
+                          });
+                          _refreshSearchAfterSettingChange();
+                        },
+                        child: SizedBox(
+                          key: const Key('communitySearchModePill'),
+                          height: 40,
+                          width: MediaQuery.sizeOf(context).width < 540
+                              ? 44
+                              : 150,
+                          child: MediaQuery.sizeOf(context).width < 540
+                              ? Center(
+                                  child: Icon(
+                                    _tagSearchMode
+                                        ? Icons.sell_outlined
+                                        : Icons.search,
+                                    size: 22,
+                                    color: scheme.onSurface,
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      l10n.creativePanelSearchModeKeyword,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: !_tagSearchMode
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                        color: !_tagSearchMode
+                                            ? scheme.primary
+                                            : scheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                                      child: Text(
+                                        '|',
+                                        style: TextStyle(color: scheme.outline),
+                                      ),
+                                    ),
+                                    Text(
+                                      l10n.creativePanelSearchModeTag,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: _tagSearchMode
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                        color: _tagSearchMode
+                                            ? scheme.primary
+                                            : scheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
                   FilledButton(
                     key: const Key('communitySearchButton'),
                     onPressed: _runSearch,
@@ -1286,6 +1351,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       child: Text(l10n.commonSearch, maxLines: 1),
                     ),
                   ),
+                ],
               ],
             ),
           ],
