@@ -21,14 +21,12 @@ import {
   toggleBookmark,
   getUserBookmarks,
   getWorkBookmarkers,
-  updateBookmarksVisibility,
 } from "./routes/bookmarks";
 import { getUserReposts, toggleRepost } from "./routes/reposts";
 import {
   toggleFollow,
-  getFollowers,
   getFollowing,
-  updateFollowVisibility,
+  getSocialCounts,
 } from "./routes/follows";
 import {
   getNotifications,
@@ -81,7 +79,7 @@ const routes: Route[] = [
     getWorkBookmarkers(e, p.id),
   ),
   route("GET", "/users/{id}/bookmarks", (e, p) => getUserBookmarks(e, p.id)),
-  route("GET", "/users/{id}/followers", (e, p) => getFollowers(e, p.id)),
+  route("GET", "/users/{id}/social-counts", (e, p) => getSocialCounts(e, p.id)),
   route("GET", "/users/{id}/following", (e, p) => getFollowing(e, p.id)),
   route("GET", "/users/{id}/reposts", (e, p) => getUserReposts(e, p.id)),
 
@@ -97,14 +95,8 @@ const routes: Route[] = [
   route("POST", "/reports", (e) => createReport(e)),
   route("POST", "/blocks", (e) => createBlock(e)),
   route("POST", "/works/{id}/bookmark", (e, p) => toggleBookmark(e, p.id)),
-  route("PATCH", "/users/{id}/bookmarks-visibility", (e, p) =>
-    updateBookmarksVisibility(e, p.id),
-  ),
   route("POST", "/works/{id}/repost", (e, p) => toggleRepost(e, p.id)),
   route("POST", "/users/{id}/follow", (e, p) => toggleFollow(e, p.id)),
-  route("PATCH", "/users/{id}/follow-visibility", (e, p) =>
-    updateFollowVisibility(e, p.id),
-  ),
   route("GET", "/users/{id}/notifications", (e, p) =>
     getNotifications(e, p.id),
   ),

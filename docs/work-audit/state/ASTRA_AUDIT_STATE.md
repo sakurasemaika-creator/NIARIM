@@ -130,7 +130,7 @@ status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判
 3. 検索を開いても入力欄にフォーカスが無い・Escで閉じない・戻るでホームごと離れる→開いたら入力欄へ、Esc・戻る・左上の矢印は検索だけ閉じる。
 4. 検索欄でCtrl+Aを押すと、検索で隠れた作品まで122件すべて選択（画面全体の`CallbackShortcuts`が入力欄より先にキーを取る）→`TypingAwareShortcuts`（入力中は画面のショートカットを無視、ホーム・キャンバス・タイムライン）。Enter・欄外のクリックで入力を終えたら画面へフォーカスを戻す（戻さないとショートカットが以後効かない）。キャンバスは描き始めたら入力欄からフォーカスを戻す。キーの押し続けによる繰り返しは取り消し・やり直し・コマ送りだけ（Ctrl+V押し続けで作品が次々に複製された）。
 5. 戻る：作品一覧/ブクマ済みでも選択・検索が残る→プロジェクトタブを離れたら解除、上部の操作とショートカットはプロジェクトタブだけ。`go('/home')`で来たホーム（履歴1枚）で戻るとアプリが閉じる（go_router 13は`PopScope`を呼ばない）→`BackButtonListener`で受けて起動画面へ。引き出しを開いたまま戻ると裏で選択が解除され引き出しは残る→引き出しから閉じる。保存容量の画面から開いたホームで「起動画面へ戻る」矢印が前の画面へ戻る→常に起動画面。
-6. 初回案内が「はじめる」以外で閉じると表示済みにならず再起動のたびに出る→閉じ方に関わらず表示済み。案内そのものが1文だけで操作を学べない→DISC014（統合時にDISC003から番号を振り直し）。
+6. 初回案内が「はじめる」以外で閉じると表示済みにならず再起動のたびに出る→閉じ方に関わらず表示済み。案内そのものが1文だけで操作を学べない→DISC042（統合時にDISC003から番号を振り直し）。
 7. 初回の説明カード（`FirstUseTooltip`）：戻るで閉じず下の画面へ戻る・Escが効かない・背面のCtrl+Zが動く・同じタップで開いたダイアログが先に閉じる・Android 16の予測型「戻る」でアプリが閉じる（Overlayで重ねていたため）→専用のルートとして積む。画面とServiceの破棄後の記録で例外→破棄後は記録しない。
 8. PC（DeX）幅でもスマホの画面を引き伸ばしただけ→1000px以上は引き出しの中身を左に常設（上部バー・タブはその右）。
 9. その他：ツールチップ未設定（＋ボタン・表示サイズ）を追加、情報アイコンのタップ領域40px・読み上げ・吹き出しの幅/位置、空状態の表示を狭い高さでもスクロール、タブバーの高さを文字倍率で計測。
@@ -144,7 +144,7 @@ status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判
 
 ### 判定・申し送り
 
-- 機能 PASS / 挙動 PASS / 見た目 PASS / 継続性 PASS / 製品品質 PASS（初回案内の中身はDISC014で扱う）。
+- 機能 PASS / 挙動 PASS / 見た目 PASS / 継続性 PASS / 製品品質 PASS（初回案内の中身はDISC042で扱う）。
 - 未確認（環境なし）：Android実機の戻るジェスチャー（予測型を含む）・ソフトキーボードの確定キー・折りたたみ端末。ウィジェットテストで戻る処理（`handlePopRoute`）とNavigatorの`canPop`、ヒンジのある画面を確認済み。
 - 後続IDへの申し送り（既存IDで扱う）：
   - A004：黒い背景色のプロジェクトのカード名が読めない（カードの文字とグラデーションが同じ色）、詳細表示で透明な背景に市松模様が無い、表示サイズ・並び順のメニューに今の選択が出ない、ルートでフォルダが見えるか、簡体字で「お気に入り」と「ブックマーク」が同じ「收藏」、空の一覧の文言、表示サイズ・並び順の保存、仏語の並び替え表示が360〜375pxで「Mis à…」に省略、320pxで並び替えがアイコンだけになる時の読み上げ名。
@@ -199,9 +199,9 @@ status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判
   - DISC010（確認）：2段のバーで画面名は切れない。2つのフィルターはホバー・長押しで「動画の種類を絞り込む」「表示フィルター」。ただし目のアイコンは何のためか分かりにくい（ユーザーから「目アイコンってなんですか？」）。2段目に文字を添える案をユーザーに確認する。
   - DISC007・DISC008・DISC009・DISC011：専用のテスト（`home_scroll_continuity_test`・`home_bookmark_states_test`・`community_account_boundary*_test`・`community_work_card_layout_test`）がこのHEADで成功。DISC009は実際のGoogleログイン・バックエンドが無いため実画面では未確認（合成のHTTPのみ）。
   - DISC001（修正、A001から発見・Discoveryの先頭）：言語を保存していない新規インストールが端末の言語に関係なく日本語。→保存された言語が無ければ`appLanguageCodeFor(端末の言語)`（7言語、台湾・香港・マカオは繁体字、対応外は日本語＝起動に失敗した画面と同じ決まり）、保存はしない（App `0cfdfd5`）。`test/flutter_test_config.dart`で全テストを日本語の端末として動かす。実画面：新しい端末で`LANG=en_US`→英語、`zh_TW`→繁体字、`de_DE`→日本語。全件2224成功・17スキップ・2失敗（既知）。対応外の言語の既定（日本語か英語か）はユーザーに確認する。
-  - ユーザーの判断（2026-10-24）：対応外の言語は英語、目のアイコンは替える、DISC002は設定に足す、DISC014は図つきの数ページ＋読み直し。→対応外の言語は英語（起動に失敗した画面も同じ決まり、App `27c973b`）、表示フィルターは`Icons.tune`（同）、DISC002「エラーの記録」（設定、新しい順20件・すべてコピー・消す、時刻、メール・トークン等を伏せる、保存しない、App `eb62009`、実画面で実際のエラー2件の表示を確認）。DISC014は着手。
+  - ユーザーの判断（2026-10-24）：対応外の言語は英語、目のアイコンは替える、DISC002は設定に足す、DISC042は図つきの数ページ＋読み直し。→対応外の言語は英語（起動に失敗した画面も同じ決まり、App `27c973b`）、表示フィルターは`Icons.tune`（同）、DISC002「エラーの記録」（設定、新しい順20件・すべてコピー・消す、時刻、メール・トークン等を伏せる、保存しない、App `eb62009`、実画面で実際のエラー2件の表示を確認）。DISC042は着手。
   - 作品広場の上部のバー（ユーザー指定2回）：1段目に戻る・画面名・通知・ヘルプ、2段目の左に検索窓・右にフィルター。画面名が切れるときは通知・ヘルプを2段目へ、検索窓の幅が無いときは虫眼鏡のボタン。フランス語320pxのタブ名の切れも直した（App `8816dcf`、関連229件成功、実画面 日本語390・英語320・フランス語320）。
-  - DISC014（修正、ユーザーの判断「図つきの数ページ＋読み直し」）：初回の案内が一文だけで二度と見られず、機能の吹き出しも戻せなかった。→図つきの6ページの使い方（`AppTutorial`、スキップ・次へ・スワイプ・はじめる、読み上げのページ位置、スマホ全画面・PC枠・横長は左右配置、大きな文字はボタンを縦に積む）を初回起動に出し、ホームのメニューの「使い方」（ヘルプ・活用Tipsの並び。最初は設定に置いたが、ユーザーの質問「設定の中に使い方なんて項目ありましたっけ？」への回答で移した、App `7d857fa`）・ヘルプの先頭から見直せ、設定「機能の説明をもう一度表示」で吹き出しを戻す。7言語、韓国語・簡体字のサブセットフォントを作り直し（App `191421d`）。`app_tutorial_test`で7言語×4画面×文字1/2倍の全ページ、撮った120枚を目視、関連37件成功。実画面：新しい端末で6ページをめくって閉じる。
+  - DISC042（修正、ユーザーの判断「図つきの数ページ＋読み直し」）：初回の案内が一文だけで二度と見られず、機能の吹き出しも戻せなかった。→図つきの6ページの使い方（`AppTutorial`、スキップ・次へ・スワイプ・はじめる、読み上げのページ位置、スマホ全画面・PC枠・横長は左右配置、大きな文字はボタンを縦に積む）を初回起動に出し、ホームのメニューの「使い方」（ヘルプ・活用Tipsの並び。最初は設定に置いたが、ユーザーの質問「設定の中に使い方なんて項目ありましたっけ？」への回答で移した、App `7d857fa`）・ヘルプの先頭から見直せ、設定「機能の説明をもう一度表示」で吹き出しを戻す。7言語、韓国語・簡体字のサブセットフォントを作り直し（App `191421d`）。`app_tutorial_test`で7言語×4画面×文字1/2倍の全ページ、撮った120枚を目視、関連37件成功。実画面：新しい端末で6ページをめくって閉じる。
   - タイムラインのプレビューの操作（ユーザー指定、スクリーンショットの赤丸）：フレーム数・ループ・全画面を絵の上から、プレビュー欄の隅の絵の外（左下・右下・右上）へ。縦長の絵は左右、横長の絵は上下に空け、低い欄では全画面をループの左へ。全画面表示の中の「全画面にする」を消した（App `7f2fb37`、`timeline_preview_controls_test`の27通り＋全画面、実画面で9:16・16:9・全画面・低い欄・1280×800）。
   - DISC005（2026-10-25、A003の呼び出し元）：差し色の上はonPrimary＝ボタン内の文字色、選択色の上はonSecondary＝選択中の文字色に結線済みで、ホームの丸いボタン・メニューの見出し・使い方・選択の枠はこの役目（`accent_fill_roles_test`）。テーマ・外観の見本の作品広場・作品詳細・投稿者の作品が実際の画面と違う色・形（固定のピンク・黒地に白の印・枠つきカード・1段のバー）だったので実際の役目と形にそろえた（App `a9f9491`、`theme_preview_community_roles_test`で修正前3件失敗）。白い差し色のカスタムでは固定色の救済ボタンが出て色は書き換えない（実画面）。時間軸・キャンバス・レイヤーの選択色の呼び出し元は各IDで確認する。
   - DISC007（2026-10-25）：作品一覧・ブクマ済みのタブ往復とメニュー経由、フォルダの中と外・お気に入りで位置を共有しない（`home_scroll_continuity_related_test`、スマホ・PC、キーを外すと失敗）。実画面での大量データの往復は未。
@@ -543,3 +543,916 @@ status: dev_branchどおりtodo（Route状態は変えない）
 - 維持するS9 layout: 狭幅で画面名と操作列を分離、自然幅tab、48px video filter、ranking sort chips折返し、検索modeのbounded label/角丸shape。以前の180画像smoke成功でも、実原本でStadium clipの文字欠けを発見し、actual renderer clip counterで1 FAIL→修正後1 PASS。これらは配色修正後の最新sourceで関連再確認が必要。
 - 次の具体操作: 現在HEADの正式色マッピングを表に記録→通常UIのcontrastingForeground/固定badge/preview/tooltipを正式tokenへ修正→設定色を反映するregressionと既存APCA/rescue回帰→実製品でテーマ変更/保存復元/PC-SP導線・原本目視→証跡をDrive保存/readback→検証済み差分を通常push。復旧専用ボタンの固定色・APCA閾値20/CVD/cacheを一般UIの配色補正へ流用しない。
 - Baseline2/628、A003 in_progress、DISC001–013 todo/cursorDISC001、Delta not_startedを維持。全面監査/最新HEAD Visual closureは未完了。
+
+### 2026-10-26 A003/S9 — 最新ソース取得・更新差分確認・環境停止checkpoint
+
+- ユーザーの全面監査再開・pull指示に従い、App `9fd84f36abd516a895aab2f15ce86f4dc14e13c9` / Web `74af216e1ae11345465326447abe97af262537a0` をfetchし、両local dev_branchをfast-forwardした。既存のfont差分は破棄していない。最新HEADのState/テーマ仕様/関連実装を確認し、以後の継続条件を [A003_S9_20261026_RESUME.md](A003_S9_20261026_RESUME.md) に記録した。
+- S9の保存済み最新WIPは [token-50 checkpoint](https://drive.google.com/file/d/1J-dHvefks5UDwJy8zrzOPbnzabijnHCY/view?usp=drivesdk)。926,107 bytes /61 entries、SHA256 `2beadd3077dd20ab43f6f282d0520a27a3663f1c80c321dc1d562f7ef5e4f740`。今回はmetadata name/MIME/size/parentとraw再取得SHA256/全CRC/MANIFEST全entry hashを再確認して復元した。保存済み50 real PASSは当時のS9 sourceに限定し、今回の9fd84f3に対するPASSへ昇格しない。重複する先行52/49件を加算しない。
+- 最新のテーマは9色項目・4種類の必須前景色を持つ。onPrimaryはbuttonTextColor、onSecondaryはselectionTextColor、AppBar/PopupはmenuTextColor、通常/淡色container文字はtextColor。旧WIPのonPrimary/onSecondary=menuBgColorという契約は廃止されたため、そのThemeService・モデル・APCA・翻訳・テストを一括上書きしない。救済は最新の厳密なAPCA絶対値10未満/CVD/cacheを保持する。
+- 新しいテーマプレビューは現在のコード・テストでは16画面。設計書の41画面記載と不一致があり、日英分岐による他言語表示も要確認。DISC014として新規機能/品質リスクを登録。現実装を一次事実とし、旧41画面を無条件に復元しない。見本データ画面を本番UIの実操作証拠へ代用しない。
+- DISC005継続: 最新Home/CardにはcontrastingForeground、Cardの固定白overlay、共通errorには固定neutral fallbackが残ることをsourceで確認。ユーザー方針との整合・正式tokenの役割を確認し、再現→修正→実操作→回帰が必要。source確認だけで機能/Visual PASSにしない。
+- pull/ZIP復元後、作業環境がunavailableとなり、実行toolは `exec-server transport disconnected` で失敗。SDK/native復旧とpreflightの開始要求は実行できておらず、今回の新規test/analyze/build/native/captureは未実施。未検証の製品差分をpushしない。新規ZIP生成/uploadはbackup-pending、既存の検証済みZIPは保持。
+- 次の1手: 作業環境の復旧後に両remoteを再fetch→このState/最新仕様を確認→保存済みtoken-50 ZIPをhash検証して必要部分だけ復元→最新9色の対応へS9差分を意味的統合。正式verifier/関連回帰/full analyze/native build後、実製品でTheme設定変更→Card/preview/menu→保存/再起動、header6状態×7言語×55条件と連続resize/keyboardを検証し原本目視。証跡保存/readback→検証済み製品を通常pushし、DISC013とA003残条件へ進む。
+- Baseline done2/628、A003 in_progress、DISC001–014 todo/cursorDISC001、Delta not_startedを維持。今回の環境停止はadvisor-pendingや製品合格を意味せず、全面監査/最新HEAD Visual closureは未完了。
+
+### 2026-10-26 A003/S9 — 設定色・responsive優先修正の検証checkpoint
+
+- 開始/再fetch App15fe5ff（製品9fd84f3）/Web8d74e80。最新9色/4前景・28preset・厳密APCA10未満/CVD/cacheを保持してS9を意味的統合。固定neutralをHome/Card/preview/tooltipから正式roleへ変更。全callerのDISC005は未完了。
+- 最新HEAD counter5 non-success、KO search/tag2反例、Drawer/outline2反例、modal説明/保存label1反例を記録し、修正後の対象回帰/native再操作を確認。helper全文/大文字Saveは7言語×2viewport×2mode=28条件を追加検証。詳細/source影響はA003_S9_20261026_RESUME.md。
+- 最終関連28 PASS、最終modal3 PASS（28layout条件を含む）、最新analyze0、harness/通常Linux debug build成功。41/13/2等の先行回帰との重複合算なし。initial34中の旧FAB期待2件は最新Back FAB仕様へ更新して2 PASS。
+- Header6状態×7言語×55=2310 PNG/6 real PASS229.484s、Home6主要状態×7×55=2310 PNG/1 real PASS444.695s。modalだけの後続修正は他コードbyte一致/source-impact proofと新規modal test/nativeで検証。全4620枚の個別目視や全remote/大量状態を合格としない。
+- Native enPC非neutral9色でUIからmenu HEX変更→Card/preview/menu反映→process再起動で9値/3bookmarks保持。koPCtext2の検索/切替、frSP390→320text2のtab移動/heading/本文/Back FAB、modal全文scroll/Saveを原本で確認。placeholder toggleは実動画再生ではない。
+- 最新2matrix ZIPはDriveへ保存しmetadata/raw SHA256/CRC/MANIFEST一致。下表参照。native最終coreはこのcheckpointへ追記する。DelaGothic既存差分を保全し、検証はHEAD fontを使用、最終push後に元bytesを復旧する。
+
+| ZIP | bytes / entries | SHA256 |
+| --- | --- | --- |
+| [Header 2310](https://drive.google.com/file/d/1UPq6ciQdW2sx_Wpt3bdJ14LhVBC6AUMQ/view?usp=drivesdk) | 58,933,489 / 2,319 | `089c3792ffc6083888cb66dc3302518788c35c1667875ab8318ae7230b9181d9` |
+| [Home 2310](https://drive.google.com/file/d/1bswQ8JhaX9pUEHhDVbwg3WMhpx5C0PRH/view?usp=drivesdk) | 59,179,335 / 2,314 | `490c01d3f247d0199b9c798abb37b4e1eda49a023eb994a779c91c666b7a1efb` |
+| [Runtime core（最終dialog修正前）](https://drive.google.com/file/d/1b7BT7GW1V2hDkimWmoKYIjJjPEX1upN4/view?usp=drivesdk) | 3,572,247 / 121 | `4f3e91a364b870028240eb56d8a6eaa0d74947103209d2fd647d3e72ad938192` |
+
+- 次はS10/狭幅preview（DISC013）。FR320text2実原本で356px幅とoffscreen resize handleを確認。YouTube公式最小200×200/16:9推奨との違いを確認済み、幅/高さ適応・代替導線・48target/keyboardを実装/検証する。Home tab source46px等も確認し、実再生をplaceholderから推定しない。
+- Baseline2/628、A003 in_progress、DISC001–014 todo/cursorDISC001、Delta not_started。Android/DeX/touch/筆圧、live backend/OAuth、FFmpeg runtime codec、全Visual closureは未完了。
+
+- S9最終core保存/readback完了: [A003-S9-OCT26-final-core](https://drive.google.com/file/d/1h0nUV4MooTp7QId9njeGpW8L0g1whQKx/view?usp=drivesdk)、5,085,891 bytes /164 entries、SHA256 `49c80f61427947714b13d315f7d483e35ef37ff3b71a4cdd4184c2844dfa5604`。metadataとraw再取得hash/全CRC/MANIFEST全entry hash一致。全source/patch/hash、全反例/回帰/最新default buildログ、native原本/action/redacted runner、modal限定のsource-impact proof、2matrix参照、再開scriptを収録。ZIP内Stateはこの自己参照receipt追加前。Git Stateへreceiptを保持し、全面監査の完了にはしない。
+
+### 2026-10-26 A003/S10 — S9公開完了・preview responsive継続（WIP）
+
+- S9修正をApp `8c6a6bab39c946c1a954808d15a9b051363191b2`（tree `9c9260d4c16a8da4f53da40145e577551519e2cd`、29 files）、Web Stateを `fba682f6e66b38a81e6e6a470eb80b03f3ae905c`（tree `53e6a9ff0f16a8b1e8f216dd00be15aa5aa9e242`、4 files）へ公開。fresh parent lease / nonforce update、remote HEAD/tree/compare path一致を確認。local tested commitはbackup branchに保持。CIは13件success・Save safety実行中の時点で記録し、全greenとは判定していない。
+- 前在user font（SHA256 `4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350`）をS9検証/公開後に復元済み。S10 canonical検証中のみHEAD font `4ff87a0965f1b0505e5a2c58424bc6ad3cff27e56a82f21c2fc9d6b0e3857ee2`へ一時切替。元ファイルはpreexisting-assetsと既存検証済みDrive ZIPへ保存済み。完了/中断前に必ず元のuser fontを戻し、commitへ含めない。
+- DISC013をA003/S10として継続。fresh counter `oct26-s10-preview-before.jsonl` はFrench320/text2でpanel幅356と4px内部overflowを再現（1 real test ERROR）。このcounterはuser fontのまま実行、寸法反例であり現HEAD font画像証拠ではない。
+- WIP: previewの幅適応/200px高下限、48px操作領域、詳細の別行、短画面fallback、visible位置からのdrag/resize、keyboard/tooltipを実装中。通常UIは正式menu background/menuText。新規3文言は7言語に追加。最初のafterでSemantics increased/decreasedValue不足のassertionを検出し修正。関連targeted runはPASSだが、matrix/native/関連回帰/full analyze/通常build未完了のため未検証WIPとして扱う。
+- 現在 `oct26-s10-preview-matrix01.jsonl` 実行中。次の1手: 正確なdone/失敗を確認→不具合修正→対応matrixとnative FR320/text2・200px resize・short viewport・keyboard/戻るを実操作→原本目視→回帰。再現環境と旧S9原本は既存最終coreから復元可能。動画本体はplaceholderのままで、実再生/外部接続/法的非侵害PASSではない。
+- Baseline done2/628・A003 in_progress、DISC001–014 todo/cursorDISC001、Delta not_started、全面監査・最新HEAD Visual closure未完了を維持。
+
+### 2026-10-26/S10 CIの再確認・DISC015登録
+
+S9公開後CIは14 workflow中13success、Save safety auditがfailure。full-gatesはfull analyze成功、globalformat32files、fulltest2101PASS/23skip/4FAIL。保存専用jobはserializerformatで停止し保存testを実行していない。4反例はProjectDetail文字2倍右59pxoverflow、exact exportのCanvas finder0、unused ARB homeSelectionAddFavorite/homeSelectionRemoveFavorite、popup pixel不一致。DISC015をtodoとして追加。原因/修正/実画面/回帰未完了のため全CIgreenとは扱わない。raw log oct26-s9-CI-full-gates.logを次checkpointへ保存。
+
+S10 final regression log oct26-s10-preview-final-regression.jsonlは28 real tests PASS /69.433s、うちmatrix2247条件/66PNG・0failure。実装/ARB/資産はmatrix freezeとhash一致。テストソースだけ6箇所のif bracesを静的解析に従い機械修正中、製品ソース変更ではない。全体analyzeとnative buildを実行し、次は実製品UI操作。
+
+### S10 latest-source invalidation after native input counter
+
+28PASS/69.433s・2247条件/66PNG・解析問題なし3.8sはnative focus修正前のsource結果。実FR320でresize click後End無反応、Tabで背後Backにfocusする反例を発見。初期focus/resize press-drag focus/再配置とplayer-fallback間の保持を修正中。実routeをmountしてから開くfocused testはPASS6.792s。native再build/同操作、最新sourceのmatrix/regression/analyze/defaultbuildは未完了。前結果を最新sourceの完了証拠へ流用しない。旧raw画像/失敗log/修正根拠はobservations.mdとcheckpointに保存。
+
+### 2026-10-26 A003/S10 優先修正の最終検証記録
+
+# A003/S10 — 2026-10-26 shared preview priority fixes
+
+## 正本・位置
+App source base `8c6a6bab39c946c1a954808d15a9b051363191b2`、Web State base `fba682f6e66b38a81e6e6a470eb80b03f3ae905c`。再fetchで一致。最新9色/4前景、strict APCA absLc<10、CVD/cache、保存形式、現Home Back FAB/新16枚galleryを維持。通常のUI前景/背景をローカル黒白へ置換していない。
+
+Baseline done2/628・A003 in_progress、DISC001–016 todo/cursorDISC001、Delta not_started。S10は優先修正の検証単位であり、A003/Discovery/全面監査/最新HEAD Visual closureの完了ではない。
+
+## 修正
+- 希望幅356（200–640）を保持し、実幅をviewport safe areaへ適応。動画領域は200px高以上、十分な幅では16:9。幅/高さが足りない場合は動画を作らず、詳細への案内とDetails/Closeを表示。操作部分は必要ならscroll可能。
+- 再生状態toggle（placeholderのみ）/Close/Details/resizeの48px以上target。locale/font/textScaleから測ったDetailsを必要に応じ別行へ配置。resize handleがDetailsを覆わない。bar/hint/iconは正式menu背景/menuTextを使用。
+- resizeクリック/横drag、左右/上下キー、Home/End、Alt+矢印の移動、Escape。開いた時のfocus、pointer resizeでのfocus、行組替えとplayer/fallback間のfocus保持、fallbackのfocused action表示。既存routeの外側でもhover tooltipを提供。
+- 高速pointer updateはlive service値へ積算。gesture開始時に現在の可視位置/幅へanchorし、過去の画面外希望値や同一frame内の古いbuild値で操作を上書きしない。
+- 3文言を7言語へ追加しgen-l10n。既存role testsのbar参照を安定keyへ変更、size testsを200px高下限/48px rowへ整合。通常仕様29も挙動/keyboard/実動画未接続を整合し、過去会話由来の未確認特許断定を削除。
+
+## 反例と検証
+- `oct26-s10-preview-before.jsonl`: FR320/text2で幅356/内部4px overflow、1 real test ERROR。この反例のみ前在user font、後の最終canonical検証はHEAD font。
+- 初回afterはSemantics increased/decreasedValue不足を検出し修正。KO等の旧S9反例をS10の反例として水増ししない。
+- nativeでentry focusが背後Backに残りEnd無反応を再現。以前のtestの直接requestFocusが実entry差を隠していたため、route mount後にopen→pointer dragでfocus→Home/End/Alt→short/tall反復→Escapeを検証するtestへ強化。初期Navigator生成前のautofocus試案の失敗logも保持。
+- `oct26-s10-rapid-drag-before.jsonl`: 20イベント/frameが移動Offset(2,1)（期待40,20）、幅+2（期待+40）へ落ちる、1 ERROR。afterは1 PASS/13.013s。短画面/keyboard afterは1 PASS/8.862s。これらは最終runと重複し、件数を加算しない。
+- **最終** `oct26-s10-preview-complete-final-regression.jsonl`: **29 real tests PASS /136.198s**。含む2247 matrix条件/66 original PNG/0 failures。7言語×24指定幅×希望幅200/356/640×文字1/2×light/dark、short/tiny幅35条件、全28preset×7言語196条件。PC/SP独自layoutを持たないshared widgetのgeometry/labels/正式色role検証であり、2247回の個別手動操作とは区別。
+- `matrix-source-final-complete.json` の23 product/test/ARB/font hashは最終検証と一致。古いmatrix-final/focus-finalは修正前の履歴。最終66原本のpreview cropを11 contact sheetsで全件目視し、代表全原本とnative原本を別途確認。captureだけのPASSではない。
+- `oct26-s10-complete-final-analyze.log`: No issues/7.1s。最終manual Linux debug build成功。通常entrypoint buildは別logで確認し、結果を後述receiptへ記録。
+
+## 実アプリ操作と判定
+合成HTTP/owner/dataを使うproduction app/router/providers/UIの隔離Linux runner。実YouTube/実OAuth/実backendではない。
+- FR/SP320×844/dark/text2: Home→Back→Splash→Plaza→作品。全操作可視、pause見た目toggle、resize click最小200/2行、Home/End/Alt移動、速いbody dragが指定44/200pxに追従、640×220 fallbackで説明とDetails/Close、実Details route→Back、Plaza→Splashでも位置/サイズを保持、resizeへfocus後Escapeで閉じる。最終原本は `s10-final-fr-*`。
+- EN/PC1440×900/9色を意図的に異ならせたpalette: menu peach/darkblueのpreview bar、body/card等と正式roleの区別、pause見た目toggle、handle drag/End最大640。Home Bookmarkedのown private作品も実際にopen。
+- forcedPC320のcold/settled Home/Bookmarksでは320px内にplayer/全controlが収まり、希望640→320（4s settle）→1440（4s settle）で640を復元。最終 `s10-pc320-settled-*` / `s10-pc1440-settled-*` 原本を確認。
+- cold/連続操作の最初のcard tapで即openを確認できない事例はDISC010へ保持。settled retryを初回成功と扱わない。
+- **高速連続native resizeは未解決**。759/760/641/640/560/559/430/320のsweepで旧GLframeのcropが残り、logは論理viewport320と旧frameのOpenGL待ち時間超過を示す。軽いHomeでも初回frame待ち時間超過があり、Community gridだけを原因と断定しない。DISC016に登録し、settled layoutの合格から性能/連続resizeの合格を推測しない。
+- 7言語と全28presetは自動matrix、直接nativeはFR/SPとEN/PCの条件差ケース。物理Android/DeX、touch/multi-touch/pen、screen reader全操作、外部modal focusの実操作、profile実機性能、実メディアは未完了。特にplaceholderのtoggleを実再生合格にしない。FFmpeg dlopen環境も未成立。
+- ガイド判定: 戻る/再生/閉じる/Details/一般resizeの主要価値は既存の一般UIと7言語tooltip/accessible名で到達するため、この優先修正に独立onboardingは追加しない。通常仕様は更新。製品全体のHelp/Tips/初心者導線とoptional keyboard発見性は後続の全件監査対象として維持。
+
+## CI / 新規Discovery
+S9公開 `8c6a6ba` の14 workflowsは13success/Save safety failure。full analyzeはsuccess、global format32files、full suite2101PASS/23skip/4FAIL（ProjectDetail文字2倍右59pxoverflow、exact-export Canvas finder0、unused ARB2key、popup pixel不一致）。保存専用jobはserializer formatで停止し保存test未実行。raw `oct26-s9-CI-full-gates.log`、run40279021471。DISC015をtodo追加し未解決。S10/全面監査allgreenとは記録しない。
+DISC016はLinux software Impellerの高速resize/GLframe同期。source layoutとrenderer/実機性能を分けて反例/比較/対策/回帰を継続する。
+
+## 保存・font・次の1手
+- GitHub通常dev_branch pushと既定Drive folderへのZIP保存は承認済み。force/reset/main/deploy/他人への連絡へ拡張しない。
+- 前在user fontは1022464B/SHA256 `4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350` をpreexisting-assetsと検証済みDrive ZIPへ保持。canonical検証はHEAD font2508848B/SHA256 `4ff87a0965f1b0505e5a2c58424bc6ad3cff27e56a82f21c2fc9d6b0e3857ee2`。最終build後に前在fontを復元し、その差分をcommitしない。
+- 先行layout WIP: Drive `1GIboUHCTSIQtlaoDfw9mGJJG9b73-pUI`、2129600B/106entries、SHA256 `44329f7e20abb5fb4ae7a9c321c513d729b8e53c522085e05e40e01d0dd7ffb0`。focus WIP: `1Vw6QjaqlVY6ohWusRxTj6KsutfWnkkJH`、10136947B/247entries、SHA256 `c2ed0c9c25e88bb24446a24a84070a96fdeaaddcfda8d0efe859947c5cc2ff8f`。双方metadata/raw SHA/CRC/manifest readback一致。現最終sourceより前のWIPである。
+- 現最終coreのupload/readbackと公開のreceiptは本資料末尾へ追加する。ZIP内Stateは自身のreadback receipt追加前となり、receipt追記はStateだけを変更する。
+- 次の1手: canonical source/State/evidenceを通常pushしてremote tree/HEAD/CIを記録。その後A003/S11としてDISC015の関連popup/unused2key・formatの反例を分類/修正し、DISC016のrenderer/profile比較、Home48px target/Card作者keyboard、残るA003状態/continuityへ進む。Discovery cursorを飛ばしてdoneにしない。
+- `source tools/niarim-env.sh`、Flutter3.47.7/Dart3.13.5、`--no-pub`、Flutter CLIの並列実行禁止。最後の通常build後のbundleはlib/main.dart。native fixtureはreproduction/home_audit_manual.dartを再buildしてからnative_console.pyを同一PTYで使う。既検証の29tests/2247条件はsource変更・失われた結果・未解決事項がない限り再実行しない。
+
+### 最終通常build / 前在fontの復元
+
+`oct26-s10-default-build.log`: 通常lib/main.dart Linux debug build成功。native app/console/Xvfbを停止し、前在user fontを1022464B/SHA256 `4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350`へ復元済み。Git commitから除外する。product source/test/ARBは最終29PASSのfreezeと同一、Git正本のfontは検証時HEAD assetのまま。
+
+### S10最終core backup — readback検証済み
+
+[2026-10-26 S10 final core](https://drive.google.com/file/d/1mjAztPx92Jblr1uYUJuFT17kA3z3QqgS/view?usp=drivesdk)。14,016,730 bytes /295 entries、SHA256 `98c2bbf3f131e5c38d5b0b5b7c74ed5600539fc8c3dd71406b150f53e22470b9`。metadata name/MIME/size/parent、raw再取得size/SHA256、全CRC/manifest各entry hash一致。最終23source hash、29PASS log/2247条件66原本＋11比較シート、native原本/入力履歴/redacted runner、失敗反例/CI log、State/再開手順、元user fontを保持。高速resizeGL遅延とCI4fail等の未解決を明記。ZIP内Stateは本readback receipt追記前で、追記はGit Stateへ保存する。
+
+### 2026-10-26 S10公開完了・S11開始
+
+# A003/S11 — 2026-10-26 CI/related quality follow-up (WIP)
+
+App dev_branch3b9acd833be242d91b01f9d1998a7647564aa155、Web673ce587da6cdd0376945acdec30d68665a2f5ccへS10を通常push済み。remotehead/tree/compare path/ancestor、localfetch/equaltree/indexを確認。S10 finalcore Drive1mjAztPx92Jblr1uYUJuFT17kA3z3QqgS14016730B295entries/SHA98c2bbf3f131e5c38d5b0b5b7c74ed5600539fc8c3dd71406b150f53e22470b9、canonical公開receipt Drive1CTC0RiwE5fo9dxE7ZX-jpNOYDk1Nfwtv15784B11entries/SHA4082982c05ffc08c35e36e877b422aca96aebf9f53ce8ef8aac311e7afab7701。両ZIPmetadata/rawsize/hash/CRC/manifest一致。S10の29PASS/2247条件66原本/実FR-SP/EN-PC検証を、理由なく復元・再実行しない。高速GLframe遅延はDISC016で未解決。
+
+S11 freshbefore: oct26-s11-popup-l10n-before.jsonl、4 real cases=2PASS/1FAIL/1ERROR、donefalse11.556s。popup pixelはgeneric surfaceContainerを期待する旧仮定、sourceは正式popupMenuTheme.colorを指定済み。実装の色を変更せず、testに実際の明示roleを使い、opaque検査には明示popup色とgeneric container双方を含めた。未使用2keyはユーザーが不要とした一括お気に入り操作の残骸。7ARBsから2keyだけを削除、全残キー/値が同一であることをJSON比較で証明しgen-l10n。Role binding/propagationを含むafter7 realPASS14.922s（件数はS10へ加算しない）。UI色や表示中の文言は変更していない。テーマ実装/9色契約は変更なし。
+
+次の1手: S11 WIPを外部保存→canonical fontでtext_scale_layout_test.dartとapp_web_reference_export_exact_test.dartの残るCI反例をfresh実行。ProjectDetailの4要素固定34pxrow/text2右59pxはsource確認、原因/修正/実nativeはこれから。exact-export testの既存24px Timeline overflow抑制もDISC015の調査範囲とし、抑制追加でgreen化しない。全体format32件はdry-runで照合してから必要な範囲を機械整形し、product意図/最新ユーザー変更を保持する。
+
+前在fontはoriginal1022464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を復元済み。Git操作でHEADassetへ戻る挙動があり、Git書込み後は必ずoriginal再照合/復元する。退避preexisting-assetsとDrive複数ZIPを保持、commitしない。今後canonical視覚検証では一時HEADfont4ff87a0965f1b0505e5a2c58424bc6ad3cff27e56a82f21c2fc9d6b0e3857ee2を使い、終了時originalへ戻す。S11 popup testsはFontLoaderを使わないtest描画であり、実UI再操作/字形確認の代替ではない。
+
+Baseline done2/628/A003in_progress、DISC001–016todo/cursor001、Deltanot_started、fullaudit/最新HEAD Visual closure未完了。Sourceformatterやtest成功を商用品質完了と扱わない。正常push/既定Drive保存は継続承認済み。No subagents。
+
+### S11 layout/export priority WIP — 2026-10-26
+
+Fresh canonical before oct26-s11-layout-export-before.jsonl:3 realcases1PASS/2ERROR18.388s。ProjectDetail textScale2は右59pxoverflow、exact-exportは旧単体icon getterを探すため複合iconBuilderのCanvasTimelineModeButtonを見つけない。testを現行key/実tapへ整合し、320pxから横scrollでexportへ到達するよう変更。旧24pxoverflowの黙認と420pxへの一時拡幅を削除して全例外を検出。直後の新counterはtoolbar export hit height39pxで1ERROR9.470s。
+
+製品WIP: ProjectPlaybackStatus widgetへ分離し、従来の4要素/3等間隔を保ちながら収まらない場合は現在/総秒とframe+loopの2行へ。Loopは48targetでtoggle semantics。Timeline toolbarはtop border1px+48px操作帯と各control48pxを確保、export key追加。色は既存Theme役割のまま。after oct26-s11-layout-export-after.jsonl5realPASS77.191s、含む再生値3/20→0.2s/2.0s/loopcallbackと7言語×24幅×文字1/2×normal/fullscreen親padding×5frame境界=3360case/0failure。元popup7PASSとは実行範囲を区別し単純合計しない。native/全状態/全体解析/通常build/公開は未完了、WIPを完成と扱わない。
+
+次: ここまでをDrive保存→production nativeで長い実projectのbefore/afterとloop/seek/play/fullscreen/短画面/keyboard、実Canvas→Timeline toolbar横scroll→Exportを確認。現在bundleはS10通常lib/main.dart。新nativeharnessを用意し、beforeは3b9acd8のProjectDetail/Timeline2filesを一時使用してbuild、finally必ずS11source+元fontへ戻す。修正前GUIを新sourceの証拠へ混ぜない。source/証拠hashと全体formatter30前後の残差、full analyze/defaultbuild、関連回帰を続ける。OS bold・fullscreen short-heightの反例確認も残る。初回誤pathのCLI2loaderrorsはoct26-s11-layout-export-invalid-path.jsonlへ隔離し、製品反例の件数へ数えない。
+
+### S11 Discovery追加
+
+actual10008-frame projectでHome白thumbnailに名称white textが重なり読みにくい反例をnative原本で確認、DISC017をtodo登録。palette反転/固定色ではなく正式なcaption surfaceとfont/target/長い名称を確認する。現在はbefore runner起動中、previewのlastframe/loop/seek/fullscreen beforeを先に確認する。
+
+### S11追加riskを登録（完了へ昇格しない）
+
+DISC018: ProjectDetailの_rendering中に最新seek要求が落ちる可能性。現nativeは全blankframesで絵の違いを検出できないためsource品質リスクとして登録し、異なる絵柄/遅延境界のcounterをA006/Discoveryで実施。DISC019: nativeFR320/text2の4列quick actionsでÉtiquettes語中改行等の読みやすさを登録。S11のCI/再生status修正だけでA006/実描画/これらの解決を申告しない。
+
+### 2026-10-27 A003/S11 validated source / incomplete visual evidence
+
+## Current continuation — 2026-10-27 (authoritative over historical notes below)
+
+- Baseline done2/628, current A003 in_progress. DISC001–019 todo/cursorDISC001, Delta not_started. No full-audit or latest-HEAD Visual closure claim.
+- Source is restored exactly from Drive1U1EGKOdKX4T095ku6V-IqY4RNZTjTaQO (4,830,664 bytes /256entries /SHA256 d00fcf77d4fbb3c36b519f070dfdc8dc8eb38bcdbab71785ce89b9754e8be1a8). Metadata, raw byte count/hash, ZIP CRC and all255 manifest hashes verified. Current remote parents re-fetched: App3b9acd833be242d91b01f9d1998a7647564aa155 /Web673ce587da6cdd0376945acdec30d68665a2f5cc.
+- Validated repair unit being published: responsive Project playback status with48px loop/toggle semantics, cached widest proportional-digit measurements to prevent statusheight changes during playback, adaptive fullscreen/short-height scrolling/Escape/back; Timeline49px toolbar including1px border and48px controls; exact-export test uses actual320px scroll/tap/current compositeicon key without overflow suppression; popup test respects explicit formal menu surface; only two unused bulk-favorite keys removed across7languages. All product colors remain formal theme roles; no fixed neutral/automatic recoloring.
+- Saved completed tests: layout/export5PASS77.191s; fullscreen/matrix5PASS74.642s; latest numeric continuity+OSbold/matrix/globaltextscale/exact-export6PASS60.417s (3360 matrix conditions). These overlap and must not be added. Community details actual horizontal/vertical productionRouter taps3PASS8.996s. Popup/l10n/role tests7PASS14.922s. Latest full analyzeNoissues5.1s.30format-only files are byte-identical to formatting their original HEAD with package languageVersion3.12, hashes verified after restore.
+- Fresh native BEFORE originals are saved: real10008 blank-frame/24fps/417s project, FR320/text2; oldloop34px and shortfullscreen image~42px. Native AFTER was operated and images opened twice before environment resets: first/last counter/time, loopoff/restartpause, stable transportheight,320x220 fullscreen. Those AFTER files/build receipts were created after the savedZIP and were lost; do not claim archived Visual closure. They must be recaptured and immediately uploaded.
+- The12-file related-final regression (save safety/tile/slot/tree/allroutes/timeline/popup/role/l10n) was interrupted by reset; at least36cases had passed but no done receipt survived. Its outcome is UNKNOWN; rerun this unfinished job, not completed unchanged matrices. Normal lib/main.dart build for this unit remains pending; native fixture AFTER builds had succeeded but their receipts were lost. CI for S10 was14success/1failure workflow; fullgates2104PASS/23skip/5FAIL (old4 plus obsolete source-string community-route assertion). Allgreen is not claimed.
+- Immediate next action: complete normal expected-parent push and remotehead/tree verification, save publication receipt; then recreate only runtime needed for unfinished native/export checks and related regression. Finish A003 thumbnail/selection/folder/Works/Bookmarks/continuity conditions, including DISC017 caption readability, DISC016 renderer delay and the remaining registered issues. DISC018 renderinglatest and DISC019 narrow labels are unclosed; this playback repair does not close them.
+- Environment resets reverted local workspace to initial Oct21 twice. Source and completed logs survive in verifiedDrive; no source reimplementation or broad history reconstruction is needed. Store binary/reproduction cache or capture+upload in the same meaningful step before longer work. Previous process IDs are dead; no current nativeapp/FlutterCLI/SDK is assumed.
+- Pinned runtime recovery: Flutter3.47.7/Dart3.13.5 archive https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.7-stable.tar.xz (NO extra /flutter path), SHA256 af7455f540df951184c7953fbe3cf884766e7541dacf8571f9f582db03dd6230. Restore187pub packages/223native packages using saved scripts. SDK bootstrap: directly run `dart pub --directory tools/flutter/packages/flutter_tools get --offline --enforce-lockfile` before app `flutter pub get --offline --enforce-lockfile`; otherwise SDK-internal get may wait online. Never run Flutter CLIs in parallel.
+- Original user font1,022,464B/SHA2564e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350 is preserved and EXCLUDED from commits. Canonical Gitfont SHA2564ff87a0965f1b0505e5a2c58424bc6ad3cff27e56a82f21c2fc9d6b0e3857ee2 is used only under a temporary guard. After interrupted commands/Git writes explicitly recheck/restore original; SIGINT may terminate before finally. No physical Android/DeX/touch/pen/SR/liveOAuth/backend/codec PASS.
+
+
+### 2026-10-27 S11 completed unit / S12 quality risks
+
+# A003/S12 — 2026-10-27 current continuation
+
+Baseline done2/628/current A003 in_progress. DISC001–023 todo/cursorDISC001; Delta not_started. Full audit and latest-HEAD Visual closure remain incomplete. LockedBaseline IDs/order/definitions unchanged. Detail parentIDs inDISC018/019 corrected to A009 (A006 isfolder).
+
+## Completed S11 unit
+
+App9b1f43c3b016d19b1b0f6a6a3fdbb14ecd4a6c32 /Web3f5430648f503d94084a344dd9c50c8aaabf6c01 pushed nonforce, expectedparent/head/tree/comparepaths/ahead1behind0 and actualfetch/equalindex/tree/localrefverified. App57files include playback status responsive48target/cached proportional digit width/OSbold continuity, adaptivefullscreen/shortscroll/Escape, Timeline48targets+border, actualExport route test without overflow suppression, popup explicitrole test,2unusedbulkfavoritekeys removed7locales,30canonical-format-only files. Nofixed UIneutral colors.
+
+Latest9b1 CI20workflowsSUCCESS. SaveSafetyfullgates job121671993802: format727files0changes; analyzeNoissues24.6s; fullsuite2112PASS/23skip/0FAIL17m26s. Save-regressions/community-contracts/allroutes/persistence/pinch/theme etcsuccess. Saved rawlog s11-current-CI-full-gates.log and s11-ci-final.json. These replace the reset-interrupted local12file relatedjob; do not rerun unchanged completed tests. Earlier targeted6PASS60.417s includes3360geometry conditions andOSbold continuity; community actualRouter3PASS; popup/role7PASS are saved, overlappingruns not summed. Normal lib/main.dart Linux debug build oct27-s11-normal-build.log SUCCESS; canonicalfontguard restored original.
+
+Actual productionUI/isolatedsaved10008blankframe project (24fps/417s/320x180): FR/SP320/text2 first→last with stabletransportheight; loopoff atlast→play/restart→pause23/10008/0.9s; fullscreen320x220 usefulimage+allcontrols;320x160scroll reachestransport, Escape returns withframe/loop preserved. Detail editCTA→Canvas compositeTimelineglyph→Timeline actualhorizontaldrag→Export works. Alloriginals individuallyopened; exportcodec/file success NOT claimed. EN/forcedPC1440x900/text1/paperfixture sets all9formal settings (navy/sand/peach/burgundy/cream/blue), first/last417s/fullscreen/Escape verified; artwork stayswhite. No physicalAndroid/DeX/touch/pen/SR/liveOAuth/backend/codec/performancePASS.
+
+## Durable evidence and replay
+
+Original S11 source/tests/pre-nativeZIP1U1EGKOdKX4T095ku6V-IqY4RNZTjTaQO4,830,664B/SHAd00fcf77d4fbb3c36b519f070dfdc8dc8eb38bcdbab71785ce89b9754e8be1a8 verified. Publication receipt1fbdjasfK7QkLMGiytCBK6QBpYPNcHBCR9,683B/SHA36423056e77137239918cc71a995adda072ccd34ef14beb4e575ec768d8c5e89 verified. Native01 Drive1dfBfWWZl5ZkGQtcTmD9_CE_Hneo2Anvo3,529,835B/SHAba136cd6799bb2f5ffc305984ea464bf2d82111245aec3515227670957c2cfa5; Native02 Drive12ABfGdjJPZGl2L1E41gb4pZL0GmWMFTI3,582,729B/SHA5d00def8f530b88692a343dc074463543917c9965cc9b67029963311651a6458; Native03 Drive1_LrKeik0ZbyToV8XB6m-5U8hCytO7tnj3,806,429B/SHA29ead3fd1ac991f0eb8f480a79c7626c7b2a655eecb66a94e3f2a58bc2c1da74. Metadata/rawbytes/SHA/CRC/allmanifestverified for each. Native04 withPC/normalbuild/currentnotes is next.
+
+Compiled9b1 auditfixture replay is now saved in TWO independent validZIPs (connectorlimit100MiB; original110MBfile rejectedbeforewrite): part1 Drive1fnjRJnB5rMVHduIefcuuL_J0U902gIgG68,385,858B/SHA78b3aa5ec66e4d92f3b23a2af7abed9f1a2f48e5882f44a0c751f792ffef5770; part2 Drive1Lo6zm88M5dksm8u2xa0YXNJ1YU364a1_31,371,062B/SHA890cdd502ae6270bbb2d1fbacb0a3a60fc677186e737900ed2a6dfd91d52198f. Bothmetadata/rawSHA/CRCverified, all73globalmanifestfiles verified acrossparts. ExtractBOTH into root, restore recordedmodes, restore223nativepackages/relocate via saved scripts, run saved nativeconsole. Replay of thissource needs noFlutterSDK/rebuild. It is an auditfixture, not a releasebuild. Currentlocalbundle nowNORMAL lib/main.dart; usecachedfixture orrebuildharness beforeUIchecks. Nativeconsole48230/Xvfb83alive butappSTOPPED.
+
+Runtime rebuildscript ZIP1-S7KSwfKMk2qszV4f9TrPNlAyYpKd-D5/30,299B/SHA35bafc1d78de6edcaac6d90f75606b8e0be5230152e306f3cca0a4ef403f55ec metadata/rawCRCmanifestverified. `tools/restore_s11_runtime.py --build-fixture` restores pinnedSDK3.47.7/Dart3.13.5, pub/native/FFmpeg and builds onlyharness, without completedtestrepeats. InitializeSDKtooloffline packageconfig beforeapp pubget. NeverparallelFlutterCLIs. Originaluserfont1,022,464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350 preserved/excludedfromcommits; canonical4ff87a0965f1b0505e5a2c58424bc6ad3cff27e56a82f21c2fc9d6b0e3857ee2 onlyunder guard. Gitwrites/SIGINT canleavecanonical; recheckoriginalafterward.
+
+## Current S12 work and next action
+
+No S12 productcode fix yet. One uncommitted assertion was added to existing exactExport test to require Export visible beforehorizontal scrolling; fresh oct27-s12-export-visibility-before.jsonl FAIL1/32.088s: Export rect.right344>320. This is a valid newproductquality counter; HEAD9b1 CIstillgreen and does not contain thisnewassertion. Do notpushfailingtestalone.
+
+Priority: (1) DISC017 currentA003 thumbnail/name: actualPNG200x113 hasalphaall0 afterCanvas/autosave; Detailretainswhiteprojectbackground butHome showspeachCardthroughPNG. Composite actual project.backgroundColor behindtransparentthumbnail (functionalcontentcolor), add formalcaption surface/text, readable longnames and adequate independentmenu/selection/favorite targets without hardcodedUIblack/white. (2) DISC021 makeprimaryExport visible; review logicalgrouping ofAddWatermark withAddMaterial whilepreservingeveryaction andfree/Premiumgates; avoidmerelyhidingcontrols inhorizontal scroll. (3) DISC022 adapt3preset choices to actualtextwidth/scale/7languages; currentKuramubonfont is correct, do notreplaceitbecauseLatinlooksDela-derived. Thenrelatedtests/matrices, realbefore/after+regression+save/push. DISC020 Canvas32/33targets andDISC023 white-art Timelinecounter are registered risks, noPASS. DISC018 latest-render andDISC019 quicklabel wrap remainpending.
+
+KeepA003 ordinary/empty/large/Works/Bookmarks/errors, selection/folder/search/view/favorites andcontinuity remainingconditions. Afterpriorityrepairs continuefixedRoute, notnewclosureclaim. Save captures BEFORE review, thenrecordreview, so resetsneed download/view ratherthanre-operation. Source/code belongsGit; evidence/repro backups belong authorizedDrivefolder1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q. No repeatedpermissionrequests fornormalpush/save.
+
+Native04 Drive1aR8-fL1bf6-MOZ1i_15YsbBfcJi5s1hG/3,933,769B/SHA16b1e62fac8ca25b976453b7caa6f34a72515c08aa6e466741fb268613ea551f is metadata/rawSHA/CRC/allmanifestverified; includes15individuallyreviewedsource9b1 originals, completednormalbuild/CI2112 logs, registeredrisks, cachedreplay receipts andnewS12counter. This is scopedS11 evidence, notfinalfullauditVisualclosure.
+
+
+### 2026-10-27 S12 検証単位・リセット復元
+
+# A003 / S12 — 2026-10-27 再開正本
+
+## 進捗と一次事実
+
+Baseline done 2/628、current A003 in_progress。Discovery DISC001–027 は todo、cursor DISC001。Delta not_started。全面監査・最終Visual closureは未完了。locked BaselineのID/順序/definitionは変更していない。
+
+本単位の親HEADは App f9c756a73c65ae4e0a1597ca21cc4ccf7346942b / Web 40f4cf835064a586b2bbad35c4945c0fe615c7d3。再fetch済み、追加更新なし。S11製品修正9b1f43c3b016d19b1b0f6a6a3fdbb14ecd4a6c32のCI20workflow成功・fullsuite2112PASS/23skip/0FAILは既存証拠で引き継ぐ。S12とは別の結果であり、重複加算しない。
+
+## 検証したS12修正単位
+
+- Home: 透明PNGの背後に実作品backgroundColorを合成。project/folder名を画像から分離し、正式Card/Menu背景とMenuText前景のcaptionへ配置。長名は1行省略＋全名semantics/hover tooltip。caption長押しは親の選択操作へ届く。三点menuを48pxにし、文字倍率/太字を測定した最小高さでmenu・favorite・captionの重なりを防ぐ。選択/pickerではmenu枠を残さない。
+- Timeline: Exportを右端48pxに常時表示。他5controlは320pxで収まり、極端な小幅だけ横scroll。watermark追加をAddMaterialの5項目目へ集約し、選択時にもPremium gateを再評価。text/image/video/audio経路は保持。
+- Export: 同じenum値をmodels/export_preset.dartへ移し、旧export_screen.dartからreexportしてAPI互換を保持。全ラベルが収まる時は3分割、狭幅は3項目popup。文字を縮小せず、長いLatin単語の途中分断を避ける。選択前景は正式selectionTextColorを継承。
+- Help: 7言語でwatermark導線、standard/high/customとcustomFPSの説明を更新。特許/ライセンス上安全と断定する未裏付け表現を削除。法務適合そのものを合格にしたわけではない。
+
+UI固定黒白/自動neutralは追加していない。サムネイルbackgroundColorは作品内容の色。caption/menuはTheme.cardTheme.color・popupMenuTheme、favoriteはcolorScheme.primary、選択は既存selection role、Export popupは正式menu前景/背景を使う。既存9設定/4前景/APCA absLc<10救済/CVD/cache/保存形式/28presetを変更していない。
+
+## 保存済み検証
+
+- oct27-s12-responsive-related.jsonl: canonical fontで7file/33realPASS/0FAIL/28.684s。8透明thumbnail条件、formal caption前景/背景、長押し、48menu、favorite/selection/picker、実Timeline/AddMaterial/watermark/Export導線、textmaterial、Premium wiring、unused key、7ARB×2フォントcoverageを含む。
+- oct27-s12-export-preset-matrix.jsonl: 3realPASS/74.551s。24幅×7言語×標準/2倍×通常/OS太字×3選択×明暗＋28theme catalogの4620条件、70PNG、0failures。3選択callbackとEscape cancel、wide選択前景を確認。70部品原本の上部を等倍contact sheetsで全件確認し、Spanish custom/lightとFrench highQuality/darkの全原本も開いた。部品matrixを製品全画面の完了に置換しない。
+- S12 canonical native fixture build成功。production NiarimApp/router/providersを隔離された実10008 blank-frame projectで操作。native build時の全303製品Dart hashは復元後ソースと全件一致。実描画フレーム差/codec/性能の合格ではない。
+- FR/SP320/text2: Home透明thumbnail/caption/menu、Detail→Canvas→Timeline→Export、scroll前からExportを実tap、AddMaterial5項目、watermark未登録dialog、3preset選択、customFPS30→31、BackでTimeline復帰を操作・目視。
+- EN/PC1440/text1/formal paper設定: caption full-name hover、長押し選択、menuからfavorite追加、keyboardでOpen→Canvas→Timelineを操作・目視。作品背景は白、UIはnavy/sand/peach/burgundy等の9正式設定が反映。
+- full analyze cleanはリセット前に観測したが、そのrawlogは未uploadで消失。testのみのif braces修正を再適用。CIでformat/analyzeを追跡する。通常mainのS12 build、最新wide native Export原本、全A003表示条件は未完了。
+
+## 証拠と復元
+
+- Source/matrix/33tests/70PNG checkpoint: Drive [matrix-current](https://drive.google.com/file/d/139xlyIhjg2xHHOYEGiJZC4Be4k-IqmuN/view?usp=drivesdk)、5,642,906bytes、SHA256 35c12ba7d33654d475dde9daec50c19358cb3ccb19c7f4ecf207e886259a5a1e。metadata/rawSHA/CRC/全364manifestを再検証して復元。
+- Native最新保存済み: Drive [native10-captures](https://drive.google.com/file/d/1Ekn9Uv5argZXqByNmFYDQwhBhet0Z2xi/view?usp=drivesdk)、865,559bytes、SHA256 f808977e84571f5f2a764c00c8d0ad7729be474f5b8b9fdb8b745965f8462c43。metadata/rawSHA/CRC/全27manifestを再検証。23原本＋actions＋native source proofを保持。
+- 原本名訂正: s12-fr320-add-material-menu.pngは実際は演出filter sheet、s12-fr320-add-material-options.pngはExport画面。正しいAddMaterialはs12-fr320-add-material-actual.png。s12-en-pc1440-paper-home.pngは実際FR（LANG環境変数誤指定）、以降tooltip/selected/menu/favorite/canvas/timelineは正しいLANGUAGE=en。誤原本を成功の代用にしない。
+- 環境リセットで、後続projectgrid4620条件の追加test/source/log/report、wide Export最新原本、full-analyze-clean rawlogが失われた。正式coverageへ加算しない。復元済みの33tests・Export4620・native sourceは再実行不要。projectgrid追加matrixだけ必要時に再構成する。
+- ユーザー既存font 1,022,464bytes/SHA256 4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を復元・保持しcommit対象外。canonical font 4ff87a0965f1b0505e5a2c58424bc6ad3cff27e56a82f21c2fc9d6b0e3857ee2は検証時のみ。Git書込み/中断後に再確認。
+
+## 未完了と次の操作
+
+S12修正単位をexpected-parent/nonforceで通常pushし、remote HEAD/tree/path差分、実fetchを確認。CI追跡、publication receiptと最新source/State/証跡をDrive保存/readback。次にA003通常3件/大量120件・Works/Bookmarks loading/error/nonempty、folder/search/view/favorite/選択とtab往復の継続性を固定Routeに従って続ける。
+
+DISC017/021/022の優先修正済み部分をDiscovery doneへ昇格しない。DISC018 render/seek、019 quicklabel、020 Canvas targets、023 Timeline白作品counter、024 exportFPSと作品時間、025法務copy/実rights、026共有temp並列、027演出filter header等は残る。Android/DeX/touch/pen/SR/liveOAuth/backend/codec/performanceは未検証。正常main buildや全presetの製品実操作をテスト/存在確認で代用しない。上限前の一括保存を待たず、検証済み単位を先にGitへ確定する。
+
+
+### 2026-10-27 S13 ホーム実操作・breadcrumb検証単位
+
+# A003 / S13 — 2026-10-27 ホーム実操作と階層ナビゲーション
+
+Baseline done2/628、A003 in_progress。Discovery DISC001–028 todo/cursor001、Delta not_started。全面監査/最終Visual closureは未完了。locked Baselineは不変。
+
+## この検証単位
+
+親HEAD App d543f6a5790a18053643e40186925b417b851f77 / Web b763c15eb730d398a53e085cd47efa89a2458a4a。S12は16triggered workflowすべてSUCCESS。full-gates job121906960042: format731files0changes、fullanalyzeNoissues16.5s、2116PASS/23SKIP/0FAIL13m08s。s12-full-gates-CI.log511101charsとs12-ci-final.jsonを保存。S12通常main Linux debug buildも成功、ユーザー既存fontは復元/commit除外。
+
+本番NiarimApp/router/providersを使用し、隔離された実local storageに空/3/120project、2階層folder、tags/favorites、validGIF3filesを用意するharnessを作成。Communityは明示mockHTTP境界であり、実OAuth/実backend/外部投稿の合格ではない。S13native build前後の全303製品Dart SHAとfixtureを保存。
+
+- JA/SP390/text1: 3project（root2/folder内1）とroot/subfolderを表示。folderへ入り、Works3GIF→pull gesture→Bookmarked mock3cards→Projectsで元folderへ戻ることを実mouseで確認。全原本を個別目視。
+- JA/PC1440/text1/paper正式9色: 120projectと2folder、scroll→Bookmarked→Projectsで同位置保持。favorites12projects＋1folderへ絞り込み、tab往復後もfilter保持。作品名030で1project、tagseaで12favoriteprojectsを実入力し目視。search-030.pngは入力前の誤名、正しい結果はsearch-030-focused.png。初回入力配送不足をfocusbugと誤判定しない（sourceにはautofocus:true）。
+- JA/SP390: breadcrumb rootの実target26×18、rootlabel不足をDISC028へ登録。rootを48px IconButton＋既存7言語projectListFolderRootOption tooltipへ、各階層名をmin48px TextButtonへ変更。前景は正式onSurface、固定黒白/新色は追加しない。
+- 修正後fresh nativeでfolder→nested空folder、root hover tooltip「フォルダーなし（ルート）」、実rootclickで一覧に戻ることを確認。原本breadcrumb-after/nested-root-tooltip-after/root-return-afterを個別目視。
+
+## 検証結果
+
+- 新testのcanonical before: 1FAIL28.909s、root width26<48を実測。
+- 関連3file最初runは9realPASS＋新testのみharness error（donefalse292.523s）。関連9件にはPC/SP120件scroll保持、drawer全destination、正式色、385profiles/2310statesのHome matrixを含む。画像出力env無しのlayout checkでありnative/全原本完了ではない。
+- 新testはzh-Hantを保存値へ誤入力していたため、正規zh_Hant（locale.toString）へ修正。製品の不具合とはしない。新test単独canonical再実行は1realPASS17.052s、7言語×PC/SP×文字2倍=14conditions。実Localeも全件assert。関連9件の再実行は不要。
+- fullanalyzeNoissues35.3s、freshS13native build成功。source/native-after-breadcrumb-source.jsonで303filesの対応を保持。旧before proofも保持。元ユーザーfont SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を保持/commit除外。
+
+## 保存済み証拠
+
+全て承認済みNIARIM監査Drive folder配下。名前/MIME/size/parent、rawSHA/CRC/全manifestを確認したものだけverifiedとする。
+
+- ordinary02: Drive1Q_cPwA894SoraAZca-PlQdfeZAGQDzQF /904710bytes/SHA5d2f310c02f1f696a8d9838413a0b2e8f84bba17956068e4abc7ec0cf2a83982 verified。
+- breadcrumb WIP: Drive1sYJMq2d65d95uG5O8b4fz6Um1j9Gd0If /1122620bytes/SHA541e424a5ed33a3efb113d6454f91974a3fccd583aa6c1d73fc44a2d8609ffaa verified。
+- large01: Drive18NgAxaXMWJGJk6MPukRvSzR1WLZ3pqQm /1615558bytes/SHA16c50e9408c25e0bb8d26a483a4253f9a02399b470a98b89281948339f52bffb verified。
+- large02: Drive1Jyyb1VKOCoBBY8YFqUJgG8bw55qvLyPN /1731033bytes/SHA593f0b225a4ecdc3a34e8cbe858319dde8e99047499ecc5c1f60cbb062fa23b7 verified。
+- large03: Drive1JUyYz8xmkEkmMC5gZ-VUw6i1xn1URiYJ /1816071bytes/SHA333b36336677140a5e5db0e08b7380ff2955913d75cc19d2990fca4195b63e37 verified。
+- breadcrumb native AFTER01: Drive1PLm9KuKqQqG7DrIJMN2YxVOSWYFfjT_t /1865970bytes/SHAcba96dd63e90e962a01087782c7eb194fe892ac8e62214d687a5b98d20488743 upload済み、rawreadback次。
+- breadcrumb native AFTER02: Drive1Q6B573G7P5M4bhscc3WxEhndW4ctnIRu /1920383bytes/SHA0af5b3ce7afaf0157aa609e24db7cd41b9f332c23495371699111fbfca06f0f5 upload済み、metadata/rawreadback次。
+
+## 残作業と次の一手
+
+このbreadcrumb検証単位をexpected-parent/nonforceで通常push、HEAD/tree/path/実fetchとCI、publication receiptを保存。元fontはGit操作後も確認。
+
+次の独立単位はDISC005のHome Favorites FilterChip: paperで正式selectionText=creamに対しselectedlabel/checkがnavyの反例。ThemeServiceにはsecondaryLabelStyleだけが設定され、SDK FilterChipとのstate結線が未完了。正式4前景/9設定/APCA閾値/保存/CVD/cacheを保ち、固定色化せず修正・全caller/28preset regression・native前後を行う。
+
+A003のempty、通常/大量の全view/search/selection/folder/favorite条件、Works/Bookmarks loading/error/retry/hidden、PC/SP/7言語/theme/keyboardの残状態は未完了。DISC028の全input/device/language Visualを省略してdoneにしない。Android/DeX/touch/pen/SR/liveauth/backend/codec/performanceはPASSにしない。compiledS13汎用harness/cacheは未保存、次の長時間作業前に100MiB未満のpartsへ保存するとSDK/build再実行を減らせる。
+
+
+### 2026-10-27 S14 正式chip前景・テーマ変更途中の継続性
+
+# A003 / S14 — 2026-10-27 チップの正式前景とテーマ変更中の継続性
+
+Baseline done2/628、A003 in_progress。Discovery DISC001–028 todo/cursor001、Delta not_started。全面監査・全画面/全presetの最新HEAD Visual closureは未完了。locked Baselineは不変。
+
+親HEAD App e6c6a19a975f882e0f0e7acb9d6f7aba74e8b93b / Web 2d4e3f3302ab36e6bb2b7bd7f5e0267da6e41195。S13は5triggered CIすべてsuccess（policy/dashboard/theme rescue/allroutes/WebReference）。S13で新たなfullsuiteを実行したとはしない。最新の保存済みfullsuiteはS12 d543f6aの2116PASS/23SKIP/0FAIL、16workflow成功。
+
+## 反例と修正
+
+DISC005の具体caller: paper正式設定ではselectionText=creamだが、Home Favorites selected FilterChipの文字/checkが通常textのnavyで表示。canonical before1FAIL8.736sでもselectedFilterChipがselectionTextFFE7ACでなくnormaltext15623Aを描画することを確認。
+
+ThemeServiceの旧secondaryLabelStyleはChoiceChipへ届く一方、Filter/InputChipはMaterial container前景へfallbackしていた。chipTheme.labelStyle.colorをstateで結線し、通常→正式menuText、選択→正式selectionText、disabled→正式normaltext（SDKが描画時にdisabledopacity）へ対応。checkmarkも正式selectionText。一般containerのonSecondaryContainerはnormaltextのまま維持。
+
+static WidgetStateColorだけのprototypeでは、ThemeData/TextStyle.lerp中にstate情報が失われる反例も確認。animation counter1FAIL5.877s、Theme変更25ms後のselectedFilterChipが補間中menu前景になる。AppChipThemeを追加し、MaterialApp.builderのAnimatedTheme下で補間済みのonSecondary/menuText/onSurfaceからchipのstate色を再構成。ThemeのchipThemeだけをcopyWithして、入れ子のpreset preview Themeが自身の配色を保つようにした。テーマアニメーションは維持する。
+
+UIへ固定黒白/HEX/自動neutralは追加していない。正式9設定/4前景、APCA absLc<10（exact10除外）、CVD/cache、28preset値、保存schema、font設定/寸法を変更しない。test/隔離fixtureの色は正式設定へ渡す検証値であり製品の固定配色ではない。
+
+## 検証
+
+- canonical core5file40realPASS31.162s: callbackで選択/解除、2disabled状態、8途中frame×Filter/Choice/Input、既存ThemeSurface/ContrastRescue/Accent/PresetAdoptを含む。
+- 新たなnested preset preview1件もPASS。他の重複chip runを加算しない。
+- caller回帰3file6realPASS44.342s: CommunityFilterDialog2、WidgetSettingsForeground1、ThemeButtonFont3。最初の名前filter runはchip4件だけであり、この6件の代用にはしない。
+- matrix840条件: 28formal＋2opaque/transparent custom ×7言語×2文字倍率×2選択状態。Filter/Choice/Input/Plainの描画foreground、checkmark設定、preset.toJson不変を確認。60PNGを生成し、最終原本の上220pxを5等倍contact sheetsで全件目視。4chip全体が見え、文字/チェックのrole、clip/overlapを確認。汎用choice/input/plainは既存theme font、全featureのfont監査完了とはしない。
+- 全39Filter/Choice/Input callerをsource inventory化。独自の背景overrideは見つからず。3箇所にlabel内Icon等の明示color指定がある（Timeline/StackOrder/ColorPicker）。これらの個別iconや全39featureの実操作完了を宣言しない。
+- fullanalyzeNoissues21.6s。freshS14 productionUI harness Linux debug build成功、全304製品Dart/fixture/font SHAを保存。normal lib/main.dart Linux debug buildも成功。
+- JA/PC1440/large/paper同一正式9設定でHome Favoritesを実click: unselectedはmenu navy/peach、selectedはcream文字/checkとblue面。12favoriteprojects＋1folderへ絞り込み。AFTER2原本を個別目視し、S13 BEFORE navy文字と比較。作品内容の色は維持。
+
+## 保存と復元
+
+全証拠は承認済みDrive folder1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q。
+
+- S14 chip-role WIP: Drive1jfN0f36tDmOzX0_9WW9kQOlZDbmM-hTO /2563291bytes/SHA3d4048637f1e5f77be21e1246ade4c9032bafc6eb643c3639254fadd075baccb metadata/rawSHA/CRC/allmanifest verified。
+- S14 chip-frame WIP: Drive1yufpijTJMG0sAdZSjgUQvnorxo_ei0Iw /3186486bytes/SHAab5de5b9d9187da6fda649ba5632fbaa5d93ae35cc31d529180d2f3489d6f9dd verified。
+- S14 native AFTER01: Drive1PszVBfrSl4reU7EWmSrleQ3BWwWRK0lS /3374004bytes/SHA450bba467b679cb12685f2869d789933192174d95d601348e99c88cf201322a4 upload/metadata済み、raw readback次。
+- Sourceは小さな検証単位で通常pushする。元ユーザーfont1,022,464bytes/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350は保持しcommit対象外。
+- S13 compiled deltaはDrive1BcGrNiwzPF981_UnEeWyQye9FGFoSWq9 /32297698bytes/SHAe207e14adec2d441ff66c4a4e1aa73cba5ff267efc8c9fcc5ac407ac758f997b verified。既存S11part1の60bundlefiles＋delta378filesで438manifest。basepart1→delta展開、modes/hash、native223復元/relocate後はSDK/build無しでS13を再生できる。S14のafterbinaryではない。
+- S14 harness kernelはtools/runtime-s14-fixture-cacheへ退避。normalmain build後、他61bundlefilesが同一でkernelだけ違うことを確認し、元のfixture kernelを戻して62files全SHA一致を確認。harnessを再buildせず再開可能。最新S14 deltaの外部保存は次。
+
+## 次の一手・留保
+
+この検証単位をexpected-parent/nonforceでpushし、HEAD/tree/path/実fetch/CIとpublication receiptを保存。S14 compiled deltaと最終証拠を保存/readback。次にA003のempty/Works失敗→復旧→retry、Bookmarked mock loading/error/retry/hidden、各view/sort/selectionと導線を実操作で継続する。
+
+DISC005はchip default label/checkの優先修正済み部分だけでdoneにしない。明示icon caller、他UI role/error neutral/全preset実画面等は残る。DISC001–028、Delta37、全A003条件、Android/DeX/touch/pen/SR/liveauth/backend/codec/performance等は未完了。テスト成功や色の設定値一致を全面監査完了へ置換しない。
+
+
+## A003 / S15–S16 2026-10-27 保存済み一覧・プレビュー優先修正とreset復元
+
+Baseline done2/628、A003 in_progress。Discovery DISC001–030 todo/cursor001、Delta37 not_started。全面監査・最新HEAD最終Visual closureは未完了。locked Baselineの定義・順序は不変。
+
+起点と再取得HEAD: App1c402fa6621b46e4a15205f90f6b8ac236062329 / Web0d4af24eee4b7423bea10900074218ac8bf2fb53。S14の6triggered CIは全success、fullsuite新規trigger無し。保存済みfullsuiteはS12の2116PASS/23SKIPでありS16の結果ではない。
+
+## S15 実操作
+
+- EN/PC1440/paper/隔離empty: project0/Works0、BookmarksのHTTP503失敗案内→実Retry→200空表示。空・失敗を区別。
+- 空Works表示後に検証用validGIFを隔離exportsへ追加→実pullで1件表示。exports directoryを退避して同pathをfileで塞ぐ→実pullで明示失敗/Retry。元directory復旧→実Retryで元GIFへ戻りSHA一致。ユーザー資産には触れていない。
+- FR/SP320/text2/ordinary: HTTP503→Retryで3Bookmarks、AI-filter全非表示ではsaved IDsを保持する説明とReload/WorkPlaza。25秒mockはclient15秒timeout→接続失敗→実Retryで3件復旧。spinnerを成功ロードと数えない。mock HTTP境界、実OAuth/backendの合格ではない。
+- 全native原本を個別目視。初回S15の3枚は通常日本語splashであり合格証拠から除外。
+
+## 発見・修正
+
+DISC029: FR320/text2 Works3filesが全てAUD…となり視覚識別不可、CardのsurfaceContainerLowが正式card面を迂回。ExportedWorkCardを抽出し、全filenameがicon/actions脇に収まる時だけinline、他は完全な名前を独立wrap行へ。metadata・preview・longpress移動・share/deleteの独立callbackと48targets、keyboardを保持。Card面とmenu foregroundは正式Themeから取り、固定色/neutral補正を追加しない。OSboldを幅測定へ反映。
+
+DISC030: 実GIFpreviewの固定RowがFR320/text2で右352pxoverflow、Closeが画面外。ExportedWorkPreviewLayoutでbounded preview、OverflowBar、短画面scrollを導入。画像はBoxFit.contain、videoはCenter/AspectRatioで縦横比を維持。GIFdecode失敗時の既存翻訳案内を追加。share/closeのcallback自体を変更しない。2新componentはA003とDISC029/030へ割当。Save形式/ユーザー資産/正式9色4前景/APCA absLc<10・exact10除外/CVD/cache/28preset値は変更しない。
+
+## 保存済み検証と目視
+
+- Identity before: 1failed test8.959s、didExceedMaxLines=true。wholeHome after1PASS10.377s。新preview counterはright352pxoverflowを再現11.350s、after1PASS9.757s、最終wholeHome/layout/close1PASS9.555s。重複caseを加算しない。
+- Card matrix case1PASS: 30palettes×7locales×11widths×2scales=4620条件、30PNG。名前全文/役割前景/48actions/値不変。初回同runのaction test自身のFocuscontext errorによりdonefalse、matrix個別PASSと区別。corrected action/OSbold11widths/220height/folder導線は別run3PASS23.420s。
+- Home identity＋BookmarkStatesは2files19PASS22.150s。上記identityを重複計上しない。Card matrix/19/3を合わせdistinct23ケース。
+- Preview matrix case1PASS70.181s:30palettes×7locales×3viewport×2scale=1260条件、Share/Close各1260実tap、48targetと画面内到達、値不変、30PNG。run全体は別のFileImage widgetdecode試行が未完了でfalse。finderをTextButton.icon subclassへ整合した最終matrix個別PASSのみ使用。
+- 60component原本は等倍contact各5枚で全目視。Cardは上360pxの完全なcard（名前・metadata・全icon）、Previewは中央dialog全体を含むcrop。最初の300px card cropはactionを欠きfull-card証拠に使わない。Previewのgreenはlayout用artwork stand-in、実動画decodeの合格ではない。
+- Card段階のfullanalyze Noissues8.0s、305lib native build成功、normal font guard原本復旧。証拠はDrive ZIP内。最終preview段階の全analyze Noissues4.9s/306lib native build/通常main build成功をリセット前に観測したが、最後のraw/proofの一部は外部保存前に失われたため最新gateの保存証拠としては未確定。
+
+## 実native観測とリセットによる残証拠
+
+保存済み: FR320/text2 Works afterで3つの完全なfilename・正式peach面/navy menu前景、GIFpreview beforeのoverflow、削除確認と取消、longpress移動sheet。Linux software mouse/forcedSPであり物理touchの合格ではない。
+
+外部保存前に観測した最終preview after、破損GIFの翻訳error、320×220でscroll→Close→Home、EN/PC1440 cache再起動の最後の原本・306lib proofは、継続メッセージ時の環境resetで失われた。観測を保存済み画像へ置換せず、これらだけを最新sourceから再取得する。widgetFileImage decode境界はtimeoutしたためdecoderのPASS根拠にしない。破損GIFの隔離原本は復旧してSHA一致を観測、実データに変更なし。Linux share_plusはfile share非対応で、実OS share/Android/DeX/device/codec等は未確認のまま。
+
+## 永続化とcache訂正
+
+- 完整復元core: https://drive.google.com/file/d/1GAenjB8QhYNLcoo-OaAUZ17VfEoVFNGt/view?usp=drivesdk /8407712B/SHA e3eaab960867baf5dbe5e34f5d5f2557e0ade06afc2c20a48316d1a6dd13a855。reset後metadata/rawSHA/CRC/allmanifest再確認、製品source6files・両Route・証拠を復元。完了matrix/テストを最初から再実行しない。
+- S16 tests01: Drive1Vg4hpfVtCQrgkrcPg7dA-ioidrpcM7GP /6928980B/SHA12f87ac1a2740912f6dc3c842aee0234188b1e269fcef54c50943d06446f0842。native01:1NZurgxGccIOIgcigS4TFxOJQkDP5dFdZ /6999361B/SHA27bde58b1e91ad30370bc90e821cc532ff95c964990ccafba068c99d7deab0ea。ともにraw/CRC/manifest verified receiptをcoreに保存。
+- 旧S14 compiled delta1DH2v8Noya9Ox5D3AqJv6syjTV5CXsQ3Zはraw整合でもnormal-main kernel4ef59dでfixtureに使えない。v2 Drive1h-7XkygflXABQGtx4NJrhspdPY2XSG-C /32792614B/SHAf62ee7ec78c22a749eefee97625501626420cac8c23edd021d7567ba34e1be96はfixture92d827、60base+522delta=582manifest、raw全delta整合と実readback kernel再起動を確認。S14用でありS16 afterを代用しない。
+- S16最終fixture kernel582d186e81ce1c853ec15a7e6e65728ee0946298d68039be68af8046e423f51aは観測のみ、外部cache保存前に失われた。cache再生成をpendingに残す。native_console起動とpackageにfixture marker拒否を導入した復元scriptを保持。
+- 元font1,022,464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を保持しcommit対象外。リセット後に戻ったcanonical snapshotからも元fileを復元。
+
+## 次手
+
+S16 publication receiptのHEAD/tree/path/実fetchを先に照合し、公開済みなら再pushしない。最終native原本/306lib proof/analyze raw/normalmain/cacheを現在HEADで補完しDrive readbackを完了。A003のview/sort/selection/folder/search/keyboard/continuityと残matrixへ継続。DISC005/029/030は優先部分修正でありtodo維持。Baseline/Discovery/Deltaや全画面・全presetの最終Visual closureを完了扱いにしない。
+
+
+## A003 / S16 最終native・cache補完完了（全監査未完了）
+
+Baseline done2/628、A003 in_progress。DISC001–030 todo/cursor001、Delta37 not_started。全面監査・全画面/全presetの最終Visual closureは未完了。locked Baselineの定義と順序は維持。
+
+製品修正App76d06799d21f33435307047b302fe510d9e19525 / Web監査記録ebd82bdf30c175ed0311681070d8df71d75edbd2をexpected-parent/nonforceで公開し、HEAD/tree/parent/10/4paths/ahead1behind0/実fetch/index/localrefを検証済み。source306libはGitshow製品HEADと全SHA一致。元ユーザーfont1,022,464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を保持しcommit対象外。
+
+## 修正と保存済み検証
+
+DISC029: FR320/text2 Works3filesが全てAUD…になる実画面とRenderParagraph反例を再現。ExportedWorkCardに分け、名前全文が横に収まる時だけinline、他は全幅wrap行。metadata/preview/longpress移動/share/deleteの独立callback・48targets・keyboard・OSboldを保持。正式Card面/menuTextに結線しsurfaceContainerLowの迂回を除去。
+
+DISC030: 実GIFpreviewの固定Rowで共有がright352pxoverflow、Closeが画面外。ExportedWorkPreviewLayoutでbounded preview・OverflowBar・短画面scrollへ。GIFはcontain、videoはCenter/AspectRatioを維持。GIFdecode失敗に既存翻訳案内を追加。source3filesとtest3files、2新componentはA003/DISC029/030へ割当。保存schema、ユーザー資産、正式9色/4前景、APCA absLc<10/exact10除外、CVD/cache、28preset値を変えず、固定UI色/自動neutralを追加していない。
+
+- identity before1failed8.959s→after1PASS10.377s。preview before352pxoverflow11.350s→after1PASS9.757s、最終wholeHome/layout/Close1PASS9.555s。重複caseを加算しない。
+- Card matrix個別case1PASS:30palettes×7locale×11width×2scale=4620条件、30PNG、全文/前景/設定値不変。初回runの別action testのFocuscontext errorとは区別。corrected actions/OSbold11幅/220height/folder3PASS23.420s、Home identity＋BookmarkStates19PASS22.150s。
+- Preview matrix個別case1PASS70.181s:30palettes×7locale×3viewport×2scale=1260条件、Share/Close各1260実tap・48target・画面内到達・値不変、30PNG。TextButton.icon subclassのfinderミスを訂正した結果のみ使用。別FileImage widgetdecode試行はtimeoutしたためdecoderの合格根拠にせず、実nativeで確認。
+- 60component原本を全目視。Cardは上360pxの完全なcardを等倍5contact、Previewは全dialogを含む等倍5contact。古い上300cropはactionsを欠きfull-card証拠に使わない。Preview緑面はlayout用artwork stand-in、動画decodeの証明ではない。
+- 一度resetで失われた最終原本とrawを現在の製品HEADから補完。fullanalyze Noissues24.9s、通常mainbuildSUCCESS→fixturebuildSUCCESS（fixtureを最後にする）。306lib/current source proof・canonical/original font guardを保存。完了済み4620/1260matrixや全関連testを最初から再実行していない。
+- 製品HEADの5triggered CIすべてsuccess: WebRef40448999765、dashboard40448999756、ThemeRescue40448999729、policy40448999868、allroutes40448999962。S16のfullsuite新規trigger無し。S12の2116PASS/23SKIPをS16へ移さない。
+
+## 実操作と証拠
+
+S15のEN/PC1440 empty/Bookmark503→Retry→200空、Works実pull/IO阻害→復旧→Retryで元GIF再表示とSHA一致、FR320/text2 Bookmark503→3件/AI-hidden/loading15秒timeout→Retryの実操作は前Evidenceと保存coreを参照。初回通常splash3枚は合格証拠から除外。
+
+補完したFR320/text2実画面で、3つの完全なWorks名と正式peach/navy役割、実validGIFの拡大fit、invalidGIFの翻訳errorとShare/Close、高さ220でscroll→実Close→Homeを確認し原本を保存。元GIFを復旧してSHA一致。EN/PC1440/ordinaryではDriveからraw再取得したkernelをbundleへ適用し、新consoleから実再起動してWorksを目視。Linux software/mouse/forcedSPであり物理touch/Android/DeX/SRやliveOAuth/backend/codecの合格ではない。Linux share_plusはfile share非対応、実OS shareは未確認。
+
+## 永続化済み・次回復元
+
+すべて承認済みDrive folder1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q。metadata/rawSHA/CRC/allmanifest検証済み:
+
+- 最終native/core: https://drive.google.com/file/d/1Zu-ZM41ylBiph7gwJ5gL08H0Ih8i1oLe/view?usp=drivesdk /8462712B/SHA77147a277e470be3f0ec80e1f5dedf9389598e5668efd6f8176ba89704eba345。306lib build proof/analyze/mainbuild rawとFR最終5原本を含む。
+- 公開receipt: https://drive.google.com/file/d/1-9z80Eq2B9iAZgNqR5O91Sxu9wf6f8jx/view?usp=drivesdk /31095B/SHA4105469c3b4fc6884c537394a3996fc37e866d966b97e18a1a604e500e22e771。
+- S16 compiled delta: https://drive.google.com/file/d/1KymhU9lNk-2er3gOm8QSUkGZcd2HkMPj/view?usp=drivesdk /31595734B/SHAcb17597f83505d7bd0f8d993932108e08ccb54e81e22d5b0e3a2280d7ae94b85。59base+151delta=210manifest、kernel8b3e1ab5213c3ce094a4b296d720da12520cfc406040b43a0ccdcc1937e82e1d、marker確認と実readback再起動済み。SDK/pub/build無しで再生可能（native223復元とrelocateは必要）。portable root/scriptを同梱。
+
+cache展開順はS11part1（Drive1fnjRJnB5rMVHduIefcuuL_J0U902gIgG、SHA78b3aa5ec66e4d92f3b23a2af7abed9f1a2f48e5882f44a0c751f792ffef5770）→S14v2（Drive1h-7XkygflXABQGtx4NJrhspdPY2XSG-C、SHAf62ee7ec78c22a749eefee97625501626420cac8c23edd021d7567ba34e1be96）→S16delta。manifest全hash/modesを確認してnative223を復元、niarim-env.sh→native_console.pyへ。旧S14delta1DH2...はnormalmain kernelでfixtureに使わない。状態のみの後続HEADでは306libのsource同一性を照合し、不必要な再build/再testをしない。
+
+## 次手・未完了
+
+S16 sourceと最終native/cache補完は完了。最終readback再起動原本とreceiptは補完終了checkpointに保存する。次は既存DISC029のHome FABと一覧末尾actionの干渉、DISC030のloading spinner比率を確認（現在はsource上のリスクで未実測）。その後A003のview/sort/selection/folder/search/keyboard/continuityと残matrixへ。これらを無確認でPASSにせず、必要なら反例→fix→regression→native証拠を追加。DISC005/029/030等は優先部分修正済みでも全条件までtodo維持。全監査完了と宣言しない。
+
+
+## A003 / S17 短画面・作成/削除dialog・動画状態の優先修正
+
+Baseline done2/628、A003 in_progress。DISC001–031 todo/cursor001、Delta37 not_started。全面監査・全画面/全presetの最終Visual closureは未完了。locked Baselineの定義/順序は不変。
+
+親HEAD App725413e9d7e914f1adffc4b8104dfb393e39e7f2 / Web37db3b8380fa9854058a4dba35c7b39a66508334。再取得で一致。S16製品76d0679と306lib同一のState checkpointを起点とする。S16の44等をS17へ流用せず、下記fresh結果のみを数える。
+
+## 反例と修正
+
+- DISC029: FR/SP320x220/text2でWorks最終行のdeleteがHomeのnew-folder FABに隠れ、同位置を実clickすると新規フォルダが開く。fresh widget反例も削除確認0件。root3FABを高さ400未満だけmini化し、paddedで48px hit areaを明示。末尾余白はLayoutBuilderから最大88、48action＋8inner＋4marginを残す高さへ適応しsafeAreaも加算。途中版height-56ではhit上4pxがviewport外（98<102）の反例も追加検出、最終height-60で全48領域を確認。glyphの中心だけを合格根拠にしない。
+- 新DISC031: Native新folder dialogがtitle/Cancel/Createだけで名前欄を表示できない。widgetではIME/shortでbottom48pxoverflow。共通public helperを全体scrollするDialogとState controllerへ置換し、名前/hint/取消/作成すべてへ到達可能にした。controllerを正しくdispose、空欄/処理中は作成disabled、二重送信を防止。失敗は既存AppErrorReporterへ記録し、新7言語案内と入力保持でretry。pending中の離脱後に下のrouteをpopしないことも確認。親callback/保存schemaは維持。
+- 同じshort-height AlertDialog機構のsaved-work削除確認にもbottom40pxoverflowを検出。新IDを重複増殖せずDISC031の共通dialog確認へ統合し、scrollable/inset16でfilename/警告/取消/削除へ到達可能にした。
+- DISC030: bounded previewがCPIを32x32でなく216x100.5へ引き延ばす反例。loading/errorをCenter内へ置きsquareと案内/Closeを保持。portraitの比率/loop/play/pauseもproduction VideoPlayerController＋明示platform mockで確認。実codecの合格ではない。
+
+UI色は正式Themeの面/前景/ボタンに従い、固定黒白/HEX/自動neutralを追加していない。9色4前景/APCA absLc<10・exact10除外/CVD/cache/28preset値を変えず、無料機能の有料化や操作の削除なし。save形式/ユーザー資産は維持。
+
+## Fresh検証
+
+- 最終targeted7ケース全PASS（約10秒）: maxscroll末尾delete→確認/取消と全hitrect、PC/SP×220/399/400/844の8profileで48target/実folder entry/取消、動画loading32/error/Closeとportrait9:16/play/pause/loop、7locale×shortIME/通常14条件の名前入力/作成、失敗→名前保持→retry/duplicateguard、pending離脱/late完了。
+- BookmarkStates/unused ARB/font coverage35PASS（18秒）。新folderCreateFailed7言語を本文・見出し両stackで確認、未使用key無し。通常HomeFABと実WorksFolder導線2PASS。distinct44=7+35+2、旧6case/途中run/重複を加算しない。
+- 最初のJSON incomplete runは件数にしない。fake errorのmessage欠落はplatform契約に合わないtest errorとして訂正しSDK/vendorは無変更。Rect47.99999999999997比較はgetSizeのlogical48へ整合し、小さい実targetを許容していない。
+- 最新source fullanalyze Noissues2.7s、通常main build成功→S17 fixture build成功。306libとfixture SHA/元font復旧をnative-build-source.jsonへ保存。途中normal56版を最終60版の代用にせず再buildした。
+- video_player_platform_interface6.9.0を明示mock用devdependencyへ。lockはtransitive→directdevの分類だけ、全package version/source/hashは一致。新runtime package/SDK patchなし。
+
+## 実操作・原本
+
+Native FR320x220/text2で、末尾deleteを実click→filenameと警告をscrollして読む→取消、新folder名入力→実Create→WorkFolderServiceのXDGdata JSONとchip表示を確認。最初のx209 clickは左alignedCreateに届かなかったため入力済みbefore-create画像へrenameし、成功に数えない。
+
+FR320x844/text2のloading/errorは実production preview/controller/UIへ明示mock video platformを接続して操作し、square CPI/翻訳error/Share/Closeを個別目視。stand-in MP4/green artworkを実動画・codecの合格にしない。実GIF/native通常表示とmock境界を区別。mouse/keyboard/Linux software/forcedSPでありAndroid/DeX/物理touch/pen/SR/実IME/OS share/liveauth/backendは未確認。Nativeは隔離paid、widgetはfree既定を含み、既存機能到達性を下げない。
+
+監査fixtureのcore saverが過去にDocuments/configだけを保存し、resetでXDGdataを失ったため、S17現物はprojects3/Projectfolders0/Workfolders1。product保存不具合とは判定しない。今回のnativeはWorks/dialogの証拠に限定し、S13/S14の3/2階層を代用しない。core saverをdata込みへ修正。今後graph replayは対応したsealed Docs+dataを組で復元する。compiled cacheは以前からdata込み。原本とScope訂正をEvidenceへ保存。
+
+## 保存・継続
+
+承認済みDrive folder1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q。
+
+- 最終prepublish source/raw/native: https://drive.google.com/file/d/177b6bR3xSV2g29Ko3c9pHh-P95XwuUga/view?usp=drivesdk /10160365B/SHA9833f9983985509c797f3f9e8090cc42ad7c66de495bcea30e3e60ef2cc0aeb5（metadata済、raw読戻しはreceiptで確認）。
+- Native初期after01: Drive14qFsB6QQ7j7ZEb9GI8v7mdgxJzK14OIz/9900038B/SHA3f4821a347e3ef733b5c6ba9eb9a226c85c8d84785e8566823b020337a784ff3。途中WIP1SfnyxjKHfKl9cI1KZZiRDmsDVqlXBX9k/9844715B/SHAb36c4de40b634ee82cad3ec8528808e5e1ccbe853054ed1ca4d2b7114455f7bb。無理由に保存済み44testを再実行しない。
+- S16 source/cache/最終補完は前reportの永続化済みIDを保持。S17 AFTERへS16 kernelを代用しない。S17公開receiptでHEAD/tree/path/実fetch/306source一致を確認し、その後最新compiled cacheと最終原本を保存/readbackする。
+
+次: S17 publication/CI/cacheを確定し、既存DISC030のportraitの利用面積（現在90x160 mockが83.5x148.5に縮む）、DISC005のimplicit IconTheme結線を実測・優先対応。Works folder chipsはA006と既存Discoveryの割当を照合し、未登録品質リスクは登録する。親helperの他caller/実保存rollback・実機/全presetの残条件までDISC029/030/031はtodoを維持。Baseline→Discovery→Delta→最新HEAD Visual closureを完了するまで全面監査完了としない。
+
+
+# A003 / S18 — 2026-10-27 縦長作品のプレビュー面積
+
+Baseline done2/628、A003 in_progress。DISC001–031 todo/cursor001、Delta37 not_started。全面監査・全画面/全presetの最新HEAD Visual closureは未完了。locked Baselineの定義/順序は不変。
+
+親HEAD App1af732ab5c476201a87c8a18595b44c9014d311c / Web92dc143f5a47cbb1447bd395fbd579c8971751b6。S17はexpected-parent/nonforceで公開、remote HEAD/tree/parent/24 App+4 Web paths/実fetch/localref/index、compiled306libと公開source同一性まで確認済み。元ユーザーfont1,022,464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を保持・commit対象外。
+
+## DISC030の実証と修正
+
+S17のportrait mockだけでなく、実animatedGIF90x160もFR/SP320x844/text2で幅約83.5pxに縮むことを実操作/画像で確認。縦横比自体は保たれるが、横長16/9固定枠のためavailable264pxを使えない。fresh video counterも83.53125!=264の1FAIL。
+
+ExportedWorkPreviewLayoutへcontentAspectRatioを追加し、実ratioの自然な高さとavailable高さ上限からpaneを決める。metadata未取得/invalidは従来16/9、initializedvideoはcontrollerのratioを使う。GIFはImageと共通FileImage/cached streamの最初のframeから寸法を取得し、補助listenerを外しImageInfoのcloneをdisposeする。毎frameのsetState/個別再decodeを追加せず、animationの再生listenerはImageへ任せる。Dispose時もlistenerを解除。GIFerrorの既存翻訳案内/Share/Closeは維持。
+
+正式Theme配色、28preset値、9色/4前景、APCA absLc<10/exact10除外、CVD/cache、save形式、依存/SDK、sharecallbackを変更していない。固定UI色/neutralの追加無し。無料機能の有料化/機能削減無し。緑等は隔離fixtureの作品内容であり製品UI固定色ではない。
+
+## Fresh検証
+
+- Home4ケース全PASS: 末尾delete/取消と48hit、loading32/error/Close、portraitvideo幅264・比率9/16・loop/play/pause、PC/SP height220/399/400/844境界。S17結果を流用せず新sourceで実行。
+- 新aspect matrix1PASS: 7locale×3viewport(320x844/320x220/1440x900)×5ratio(9/16,1,16/9,4,.1)×2scale=210条件。Share/Close各210実tap、全48targetsとviewport内到達。invalidratio0/-1/NaN/infiniteのfallback4条件は別1PASS。
+- actualGIFをprecacheしたproductionHomeのopen→Close→reopen、pane264x469.33を別1PASSで確認。distinct7=4+2+1。初回matrixのtop15.999999999999986はtestの浮動小数比較であり実clipではない。edgeだけ1e-9を許容し、48target自体はgetSizeで検査、最終全matrix完走。旧6case/重複runを加算しない。
+- fullanalyze Noissues3.1s、通常main build成功→S18 fixture build成功。306libのSHAがbuild後も不変、fixturehash/marker/canonicalfontguard/元font復旧まで保存。compiled baseは親1af732a上のdirtyS18であり、公開後にSHA同一性を別検証して追記する。
+
+## 実画面とscope
+
+FR320x844/text2/paper、actualGIFはuncached表示から264x469.33へ拡大。Close後reopenでも同じ寸法、2frameの作品ROI差分bbox(57,58,175,151)と原本目視でanimation継続を確認。高さ220へresize→scroll→Share/Close可視→実CloseでWorksへ戻る。明示video mockportraitも同じ自然面積、実tapでpause/playログ、short220でClose。actualinvalidGIFは翻訳された失敗案内とShare/Close、実CloseでWorksへ戻る。意図的invalidfileは検証後Evidence fixturesへ移し既存validGIFを保持。
+
+初回のqueued clickはpreviewを開かずWorksのままだったため、画像をattempt-still-worksへrenameしてpreview AFTERから除外。最初の同frame2枚もanimation証明へ使わず、reopen後の実差分を使う。native-review.json/excluded-captures.jsonで範囲を追跡する。
+
+Nativeはproduction UIと隔離実保存/実GIF decoder、Linuxsoftware mouse/keyboard/forcedSP。videoはexplicitplatformmock/green artworkであり実MP4 codecの合格ではない。Android/DeX/physicaltouch/pen/実IME/SR/OSshare/liveauth/backend/性能全体は未確認。ordinaryはprojects3/Projectfolders0/Workfolders1であり、旧core backupのXDGdata omissionによるaudit fixtureの範囲訂正を維持しproductデータ消失とは判定しない。
+
+## 永続化・継続
+
+承認済みDrive folder1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q。
+
+- S17 publish-ready: Drive1ZxJz98moP4CTIo3gAfITRkLB7O_0RUaR /10404994B/SHA8a9efe0a53d06f6163d58d046fc7730a158a595640e570e1720958fc38aea358、metadata/rawSHA/CRC/all629manifest verified。
+- S17 publication receipt: https://drive.google.com/file/d/1QLdQv6vcEK0vd-Zd0So7WQksT-IObIyP/view?usp=drivesdk /80397B/SHA4aa528beeb14152e3ba9db67eece8a983486e7636775ba37d7e1b3394de77af4、metadata/rawSHA/CRC/allmanifest verified。
+- S17 compiled delta: Drive1W5us1uXgrcvckC5zZvsQkOIlRtEiCnnM /31619790B/SHA31b1ec2028c9eea2981c397c8674304fb03cc7db49ac6f93a8128ec2d0122e9f。158delta+59base=217manifest全hash/metadata/rawSHA/CRC、readbackkernelからENPC再起動目視まで完了。S11part1→S14v2→S17deltaでSDK/build無し再生（native223復元/relocate必要）。S18 AFTERへ代用しない。
+- S18 BEFORE: Drive1BYPWJqL3uZmsfePOVPgp7qAmfO3OuxnN /9124156B/SHA1324b0110c424a2cc5e9ca088b6209dde6cf1035d10673476a31a8c4325dc536 metadata済。S18 source-after WIP: Drive1xTMgJ0TBGGcrtcUGxox152j07c2LRHFf /9151936B/SHAb6c563ea0c519fbea5020832a42cb6d9cf9ebbffecb3aedd72a2c3cdd5c1327a、metadata/rawSHA/CRC/all628manifest verified。最終native/sourceは後続checkpointへ保存する。
+
+S17のApp17triggered CIは直近16success、save fullgate継続中。Web policy success。S17 fullsuiteを未確定のまま合格扱いにせず、receiptへ最終結果を保存する。S12の2116PASS/23SKIPを最新S17/S18へ転用しない。
+
+次はS18の通常push/HEADtreepath/実fetch/compiled306同一性/CI/cache/最終原本readbackを確定し、A003の残導線へ戻る。既存DISC005のimplicit IconThemeとWorks folderchipは正式色/target/長名を実測し、A006との割当を照合する。DISC030の残全preset/実codec/他caller等までtodo維持。Baseline→Discovery→Delta→最新HEAD最終Visual closureを完了するまで全面監査完了としない。
+
+
+# A003 / S19 — 2026-10-27 通常アイコンの正式テーマ前景
+
+Baseline done2/628、A003 in_progress。DISC001–032 todo/cursor001、Delta37 not_started。全面監査と全画面/全presetの最新HEAD最終Visual closureは未完了。locked Baselineの定義/順序は不変。
+
+起点HEAD App ee9bd2d404aa22d85314b768621e56ab114a61b9 / Web a155bc3ce85e7bc1f79e50ccd418a20ae89e7e99。S18の5App CIおよびWeb policyは全successを再取得。S18 source/native/core/cacheの保存済み結果を無理由に再実行しない。
+
+## DISC005の反例と製品修正
+
+EN/PC1440 paper設定で、Home Worksのimplicitフォルダiconだけが正式normaltextのRGB22/58/95ではなくRGB33/30/23。ROI(27,122,42,137)内148pixelsとnative原本を確認。fresh RenderParagraph反例も設定FF163A5Fに対しMaterial既定black87(alpha.8667/0/0/0)で1FAIL。ThemeData.iconTheme未設定が原因。
+
+ThemeServiceの中央ThemeDataへiconTheme: IconThemeData(color: preset.textColor)を1行追加し、通常iconを正式normaltextへ結線。局所の色固定やHEX/黒白/自動neutralを追加しない。AppBar/menu/filled/textbutton/selected/disabled等の既存role overrideは保持。preset値/保存schema/28preset/9色4前景/APCA absLc<10/exact10除外/CVD/cache/依存/SDKを変えていない。
+
+## 保存済み・fresh検証
+
+- 新icon matrix1PASS15s: 30palettes(28formal+opaque/translucentcustom)×7locale×PC/SP2幅×2scale=840条件。通常Icon/AppBar/FilledButton/TextButtonの実RenderParagraph前景とpreset.toJson不変を確認。
+- Theme変更の8途中frameでimplicit iconの描画色が補間中onSurfaceへ追従する別1PASS。値・アニメーションを保持。
+- 実行環境resetで進行中7file回帰の完走結果を失った。S19WIPをrawSHA/CRC/all671manifest照合して復元し、次callで全抽出filehash一致まで確認。上記2件はsourcehash/raw付きで保存済みなので再実行せず引き継いだ。
+- 必要な関連50ケースをfreshに補完して全PASS32s。ThemeSurface/ContrastRescue/Accent/PresetAdopt/ButtonFont/ChipとHomeEntry6ケース。Chipの既存840条件も含む。distinct52=保存済みnew2+fresh関連50。旧中断run/重複は加算しない。
+- 旧7file runの最後のHome2310状態layout matrixは完走したと申告しない。今回の変更は色結線1行でgeometryを変えないため、その重複大規模layout再実行を除外した。最終全面Visual gateの代用品にもしない。
+- fullanalyze Noissues22.3s、通常main build成功→S19 fixture build成功。306lib SHA/fixture/hash/marker/fontguardと元font復旧を保存。compiled baseはee9bd2d上のdirtyS19、kernel c91cbf0375d45f70feb9bdf3507c0994a9506c101bc13cb8da65a7fe404efe73。公開後の306Gitshow一致は別receiptへ記録する。
+
+## 実操作・原本
+
+EN/PC1440 text1、FR/SP320 text2のproduction UIでWorksを開き、通常foldericonが正式normal前景へ変わり、他menu/card/buttonの役割が維持されることを6原本で目視。ENの同ROI内148pixelsが正しくRGB22/58/95へ変更。各modeで実folderentry→Back→Works復帰も確認。これは今回の色/導線の確認でありA006全folder操作の完了ではない。
+
+新DISC032: 実在する空Works folder内にNo folders yet/Aucun dossier pour le momentを表示する別の意味不一致を発見。_WorksFolderScreenのfiles.isEmptyがfolderManagementEmptyを再利用していた。作品0件とfolder不存在を区別する7言語/empty遷移/回帰/実画面を次の単位で修正する。今回のentry/back成功をcopy品質PASSに読み替えない。
+
+NativeはLinuxsoftware mouse/keyboard/forcedPC-SP、隔離実storage/明示mockHTTP。Android/DeX/physicaltouch/IME/SR/OSshare/codec/liveauth/backend/全性能は未確認。普通データはprojects3/Projectfolders0/Workfolders1。旧coreのXDGdata omissionというaudit fixture範囲訂正を維持。今回はbyte一致で復元できたが旧exportsのmtimeはmanifestになく抽出時刻となったため、一覧順序をproduct継続性の証拠に使わない。今後はcoreのFILE_METADATA.jsonとruntime manifestへdataset mtime/modeも保存し、Docs/config/dataを組で復元する。
+
+## 永続化
+
+承認済みDrive folder1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q。
+
+- S18最終core: Drive10znIotVFlPXfziy0f7UL9YZ3vU6mFJhk /9795057B/SHA63d049a6d544489e4412e8b09bed4f0a8800d569f6f95b03b9dbe3215056987b、metadata/rawSHA/CRC/allmanifest verified。S18compiledcache Drive100nZx0SXQb6ZKLoKWRGaujmcwvE0AQ7L /31624683B/SHA4b0baa35305516e456ad9b3eb817601f142e9bfe7a32ea6010d9cdd904fa81f6、157delta+59base全manifestと実readback再起動目視まで完了。
+- S19 WIP: https://drive.google.com/file/d/1BMRvFgTZLdyoZkcdJSSBOUaoX8ZTSPVS/view?usp=drivesdk /9813268B/SHAe79c1f00c2fc9867a985f28f6aec44b41914bdca3df1c9bd9c857cdd99168416、metadata/rawSHA/CRC/all671manifest verified。reset時にこれを復元した。
+- fresh関連50完了直後に自動保存: Drive179PEjMGxyF_Y9SXxrzRp6scl7OlZ86Fs /9823001B/SHA15cb1970eac79ded1c7be6c5d07f78f40f8e9605ea920733f28d6e01e88f972a、metadata確認済。build/raw/sourceproof: Drive1NqF7imQb0snSUSoymIGuClKQV4ev8BL2 /9872832B/SHAaa9dacb7a716bad634286eaf1066ac9a3ef533f236c7c2b9b91e633a0355a93a。最終原本/公開receipt/cacheへ結果を統合して保存する。
+- 復元はpinned Flutter3.47.7/187pub/223native/FFmpeg8.1.2、生成pluginリンク9件を現在package_configへ再結線。SDK/vendor/依存versionの修正ではない。元ユーザーfont1,022,464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を保持しcommit除外。
+
+次: S19 expected-parent/nonforce公開→HEAD/tree/path/実fetch/compiled306同一性→CI/cache/最終原本のDrive保存/readback。直後にDISC032空Works folderの意味不一致を修正/再操作/回帰。DISC005はimplicit normalicon優先修正だけで全caller/role closureとはしない。A003の残条件とBaseline→Discovery→Delta→最新HEAD最終Visualまで継続する。
+
+
+# A003 / S20 — 2026-10-27 実行環境 unavailable 時の保存・再開
+
+Baseline done2/628、A003 in_progress。DISC001–033 todo/cursor001、Delta37 not_started。全面監査・最新HEAD最終Visual closureは未完了。
+
+直前の製品HEADはApp441710b9f26f1ee00a2499fb5324064850ccce8b / Web0cbe87af0e7990ebbcdcbeea4afc09f2ed0e3a2d。今回の保存commitは監査Stateだけを更新し、未検証S20製品sourceを公開しない。元ユーザーfontは保護対象のまま。
+
+## S19は完了済みの修正単位
+
+- 通常Iconを中央ThemeData.iconThemeから正式preset.textColorへ結線。固定UI色追加無し。52distinct tests、analyzeNoissues22.3s、normalmain/fixture build、ENPC/FRSP実pixelとfolderentry/back、公開HEAD/tree/parent/paths/実fetch/index/source306同一性を確認済み。
+- S19 App6CI全success、Webpolicy success。S19の新規fullsuiteはtrigger無し。S17の2134PASS/23SKIP/21m21sをS19のfullsuiteへ流用しない。
+- 最終native/source: https://drive.google.com/file/d/1R83sLvxkHbCXYqHhr0R6N7gM6FMjJZon/view?usp=drivesdk /10469210B/SHA2eab1e70d09895c1c73cbdce6484b1170fcb69c4949351c01b3ee8577d435f1f、metadata/rawSHA/CRC/all704manifest確認。
+- cache: https://drive.google.com/file/d/1xkJFvawbLnpRiWPu9NvdkHbGWnmp0Nea/view?usp=drivesdk /31626706B/SHA521905796753ecfcca84dd056fde18c561c7502bcc78fb89c41d361bfceee3ee。158delta+59base=217manifest、metadata/rawSHA/CRC、downloadkernelのENPC再起動目視まで完了。kernelc91cbf0375d45f70feb9bdf3507c0994a9506c101bc13cb8da65a7fe404efe73。compiledbaseはee9上dirtyS19、公開441との306一致は別証明。
+- cache展開はS11part1→S14v2→S19delta。included restore_runtime_metadata.pyでmode/datasetmtime、native223relocateを復元すればSDK/pub/build無しでS19 replay可能。S20 AFTERへ代用しない。
+- 公開/cacheclosure: https://drive.google.com/file/d/1VP8LV1Been-0-TRm-2TX8HCpx-gEwkxo/view?usp=drivesdk /10210913B/SHA51b5d07fd1e504756070d0e93f6f45c4e0e64d3552945b3413d191fa40976d8d。upload/metadata確認済み、rawはこの時点で未確認。
+
+## S20の実証と保存済みsource
+
+DISC032: _WorksFolderScreenのitems.isEmptyがfolderManagementEmptyを使い、実在する空の作品folderへNo folders yetと誤案内。DISC033: exports0のRoot分岐がfolderlistごと省略する。実UIでfolderを作成→backup済み最後のGIFを実Delete→prefs flutter.work_foldersにはfolder有/exports0なのにentry無しを確認。両方のfresh widget beforeは2FAIL。
+
+dataset名emptyにはS15のaudit-external-after-empty.gifが1件残っていた。最初のcontrol画像をs20-folder-created-with-one-export-control.pngへ正しくrenameし、0件反例へ流用しない。GIFをbyte/SHA/mtime付きでS20/fixturesへ保存してから実UI Deleteした。ユーザー資産ではない。0件反例とpersisted-folder proofをEvidenceへ保存。
+
+保存済みWIP: https://drive.google.com/file/d/1-FlCkljt1hicfNT04qfxqkbq1urzpUTl/view?usp=drivesdk /11596901B/SHA703b3eaea54a376025518458b288984176f47526f1cc0912cff12b7d8b6b8490。upload/metadata(name/MIME/size/parent)確認済み。raw再取得は未確認。
+
+before原本: https://drive.google.com/file/d/1vW8tEgJzAjKF2B2ZQn_7PZvhDOzfxU02/view?usp=drivesdk /10453075B/SHAbd4686f9ab90418bdad919d7cddbc17224645819ed8b23016273898720f29e2e。upload成功、metadata/raw未確認。
+
+WIPには次の製品sourceを含む: 7ARB+8generatedのhomeWorkFolderEmpty、Home _WorksFolderScreenの正しい空案内、Rootがfiles0でもWorkFolderServiceをwatchしてheaderを残す_FolderableList emptyState分岐、EmptyStatePlaceholder.scrollable=falseでsliver側へ1scrollを委譲する構成。通常defaulttrue callerのcontent/正式色は維持。保存schema/依存/SDK/正式9色4前景/APCA/CVD/cache/28preset値は無変更。
+
+## 最後の検証と未確定部分
+
+最初のcounter2after、拡大後5cases成功を観測。その後2casesを追加し、oct27-s20-folder-final.logの最終7PASS/14秒をtool readで観測した。28profiles(7locale×PCSP×normal/220/text2)、実move→実fileDelete→emptyfolder維持、allfilesfolder内はemptylibraryと誤案内しない、3folder短画面、rename/削除取消/削除を含む。旧2/5と重複加算しない。
+
+ただし最終7case rawと追加2case sourceを次のZIPへ保存するexecを開始しようとした時、exec-server transport disconnectedでprocess作成に失敗し、environment.statusもunavailableになった。これは接続/実行環境障害であり、承認レビュー拒否ではない。保存成功を推定しない。7PASSは観測済みであり、外部保全済みrawとしては未確定。復旧した環境にrawが残れば回収し、同じsourceなら再実行しない。原本/source同一性を確定できない場合に限り最終7caseを一度補完する。
+
+外部ZIPには追加前5case版testが入っている。消失を避けるため、追加2caseを下に正確な内容で保存する。7caseで合格した後の製品変更はscrollable propertyの説明comment2行だけで、動作変更はしていない。
+
+S20関連回帰/unusedARB/fontCoverage/fullanalyze/normalmain/fixturebuild/実UI AFTER/公開/CI/cacheはまだ未完了。S19の成功やS20 before原本をS20 AFTERの代用にしない。
+
+## 復旧後の具体的な次の一手
+
+1. 最新両dev_branchを取得。監査Stateだけを変更した今回checkpointの後でも製品sourceはS19の441と同一。source差分が新たにあれば現在A003への影響を照合する。
+2. S20WIPをrawSHA/CRC/全manifestで確認し、必ずstagingへ展開する。旧archive内のrepo Stateを現在HEADへ丸ごと上書きしない。最新StateとDISC033はGit正本を保持し、WIPのlib/testと必要な非repo evidence/tools/datasetsだけを意味的に復元する。Docs/config/dataは組で復元しFILE_METADATA.jsonのmtime/modeを適用する。downloadが途中で切れていた場合は不整合を採用せず、同一exec内でfullSHA確認・小さいfileへの展開まで行う。
+3. test/home_work_folder_empty_test.dartの最後のmain閉じbraceの前へ下記2casesを戻してdart format。可能なら元raw7caseを回収し、未確定だけを補完する。
+4. 関連home_short_controls_and_video_states/home_bookmark_states/home_export_list_failure/l10n_unused_key/font_coverageを実行して保存→fullanalyze→normalmain→S20fixture(306sourceproof/fontguard)を最後にbuild。完了結果は直後にDriveへ保存する。
+5. native0exportRootでpersistedfolderが見える、実create/rename/entry/back、FRSP/height220の正しい空案内、最後のfileDelete後と再訪を実操作/原本目視。既存empty datasetの長名はPCで確認し、SPのlong-name/48targetはA006/既存follow-upとも照合して新しいリスクを黙殺しない。
+6. 検証済みS20を通常push→HEAD/tree/path/実fetch/source同一性→CI/cache/Drive読戻し。全条件までDISC032/033はtodo維持。
+
+## 外部ZIP後に追加した2cases
+
+```dart
+testWidgets('multiple empty folders remain reachable in a compact library', (
+    tester,
+  ) async {
+    final env = await open(tester, height: 220, libraryHasFile: false, seedFolder: false);
+    for (var i = 1; i <= 3; i++) {
+      await env.folders.createFolder('AUDIT $i');
+    }
+    await tester.pumpAndSettle();
+    for (var i = 1; i <= 3; i++) {
+      final folder = find.text('AUDIT $i');
+      await tester.ensureVisible(folder);
+      await tester.pumpAndSettle();
+      await tester.tap(folder);
+      await tester.pumpAndSettle();
+      expect(find.text(env.l10n.homeWorkFolderEmpty), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+    }
+    expect(env.folders.folders, hasLength(3));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('empty-library folder rename and delete cancellation retain the correct state', (
+    tester,
+  ) async {
+    final env = await open(tester, libraryHasFile: false);
+    await tester.longPress(find.text('AUDIT'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(env.l10n.commonRename));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'RENAMED');
+    await tester.tap(find.text(env.l10n.commonChange));
+    await tester.pumpAndSettle();
+    expect(find.text('RENAMED'), findsOneWidget);
+    await tester.longPress(find.text('RENAMED'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(env.l10n.commonDelete));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(env.l10n.commonCancel));
+    await tester.pumpAndSettle();
+    expect(env.folders.folders.single.name, 'RENAMED');
+    expect(find.text('RENAMED'), findsOneWidget);
+    await tester.longPress(find.text('RENAMED'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(env.l10n.commonDelete));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, env.l10n.commonDelete));
+    await tester.pumpAndSettle();
+    expect(env.folders.folders, isEmpty);
+    expect(find.text('RENAMED'), findsNothing);
+    expect(find.text(env.l10n.homeWorksEmpty), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+```
+
+この保存は環境障害時の復旧checkpoint。商用品質PASS、S20完了、全面監査完了ではない。
+
+
+## A003/S20 2026-10-27 実行環境復旧・追加native反例
+
+最新両dev_branch App e8d1eb1d7b3b408b2432d0d1865aeeded9b6b13c /Web98c0548c1f04478da6ba6692b4aedf7077f03aa5へff-only追従。S20WIP1-FlCkljt1hicfNT04qfxqkbq1urzpUTlはraw11596901B/SHA703b3eaea54a376025518458b288984176f47526f1cc0912cff12b7d8b6b8490/CRC/all735manifest一致。最新GitStateを保ちlib/testとmatched dataset3領域/142mtime-modeを復元。preflight ok。S19完了済みを再実行していない。
+
+fresh関連41PASS20s、expanded7PASS181s(350profiles)を保存。expanded初回はfontをprofileごとに登録して8GiB/1OOMkillで中断、製品assertionではなくfixtureのload-once guardへ修正し完走した。distinct48は公開済みでないWIP sourceの結果。Drive1_XWbhHexebWA7bz3RsHZrVby7sl3mqU_11798765B/SHA78162ae37ee417c91eccae2f30ac3d4cfc0a4f073811e537902a5a1d494c0323はmetadata/rawSHA/CRC/all762manifest一致。targeted48ZIP1tgnDf7WAz3sWOzC1VNo18xO9ZkeMdspy11802409B/SHAb03132b7d07a5e6114b50c22cc6a9f83cf45e92151af92cdd1dd9ce3b492735eはupload/metadata一致、raw未確認。
+
+最初のanalyzeNoissues24.1s/main/fixture build成功306proof/kernel33d599930083a7d895fd59a005ae1b3c60f7a7767f879b0e0ccf6ffafd2da278。actual ENPC1440 root0exportsで既存folderを表示しentryしたが、案内は正しくてもアイコン/文章が左へ寄る反例を目視。元のSingleChildScrollViewはminHeightだけで内容幅へ縮む。fresh759px中心counter362.62564/期待379.5で1FAIL。DISC006に同種共通empty制約として追記し、bounded minWidthを追加。現在350profiles+関連Home3files/textscale全画面を再実行中。この最後の制約修正後のanalyze/main/fixture/native/push/CI/cacheは未完了。先の48PASS/旧kernelを最後のsourceの完了根拠へ流用しない。元fontを保護、固定UI色追加無し。全面監査/Visualclosure未完了。
+
+
+## A003/S20 最終検証済み修正単位 — 2026-10-27
+
+Baseline done2/628、A003 in_progress。DISC001–034 todo/cursor001、Delta37 not_started。今回の修正単位の検証であり、全面監査・最新HEAD最終Visual closureではない。
+
+## 再開と一次事実
+
+開始App e8d1eb1d7b3b408b2432d0d1865aeeded9b6b13c /Web98c0548c1f04478da6ba6692b4aedf7077f03aa5。両dev_branchへff-only追従、最新Policy/Standard/Route/Stateを照合。preflight ok。前回unavailableは接続障害であり承認拒否ではない。Drive WIP1-FlCkljt1hicfNT04qfxqkbq1urzpUTlはraw11596901B/SHA703b3eaea54a376025518458b288984176f47526f1cc0912cff12b7d8b6b8490/CRC/all735manifest一致。最新GitStateを保ちlib/testとmatched Documents/config/dataを復元、142mtime/modeをhash検証後復元。S19の完了済み52tests/native/build/pushを再実行していない。
+
+## 反例・原因・修正
+
+- DISC032: 実在する空Works folderでNo folders yetと誤案内。7ARB/7generatedへhomeWorkFolderEmptyを追加し、このfolderにexported作品が無いことを表す。既存全key/valueは不変。folder管理の空表示は変更しない。
+- DISC033: 全exports0でRootが早期empty returnし、保存済みfolder headerをbuildしない。常にWorkFolderServiceをwatchし、FolderableList内の単一CustomScrollView/sliverへfolder headerとempty案内を配置。exportsがfolder内にある場合はempty libraryと誤表示しない。
+- DISC006 follow-up: 新empty案内をnative ENPC1440で開くと、共通placeholderが内容幅へ縮んで左へ寄る。追加fresh759px counter中心362.62564/期待379.5で1FAIL。既存minHeightへbounded minWidthを追加。sliverがscrollを持つ場合だけscrollable=false、他callerは既存defaulttrueを維持する。
+
+UI色は正式themeのprimaryContainer/primary/onSurface/onSurfaceVariant。新しい固定UI色、schema、依存、権限gate、preset値の変更無し。元ユーザーfont1022464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350を保護しGitから除外。canonical Gitfont4ff87a0965f1b0505e5a2c58424bc6ad3cff27e56a82f21c2fc9d6b0e3857ee2はCLI guard内だけに使い、終了時復元を照合した。
+
+7言語の意味レビュー: ja「このフォルダには書き出した作品がありません」を基準に、en No exported works in this folder、fr Ce dossier ne contient aucune œuvre exportée、es No hay obras exportadas en esta carpeta、zh 此文件夹中没有导出的作品、zh_Hant 此資料夾中沒有匯出的作品、ko 이 폴더에는 내보낸 작품이 없어요。全て空の対象はこのfolderのexported作品、folder自体の不存在を意味しない。否定・対象・場所を逆翻訳で照合、既存homeのregisterを維持。fontCoverage/unused-keyは実行済み。
+
+チュートリアル判定: 新しい操作・routeを追加せず、既存folder操作の到達性と状態案内を復旧した変更。専用新規チュートリアルは不要。Help/Tipsの全面追随は既存Routeで未完了。新dependency/font/外部素材/外部dataflowは追加無し。法務/IP全面クリーンをこの単位で保証しない。
+
+## 最終検証（重複加算しない）
+
+- oct27-s20-final-centered.log: 33実tests PASS/221s。7新folder tests、Home短画面/video5、Bookmarks18、export failure/retry1、全画面文字1.3/2の2tests。folder profileは24width×PCSP×7locale=336(text2)＋short320x220の14=350条件。全profileで作成後のentry/正しい全文/中央位置/Backを検証。実GIF移動→実file削除、全件folder内、3folder、rename/削除取消/削除も含む。
+- oct27-s20-related.logの41PASS/20sから、影響を受けずsource/input不変のl10n unused1/fontCoverage16を保持。最終distinctは33+17=50。先の48や途中7/5/2を追加加算しない。
+- expanded初回はfontのprofile毎重複登録で8GiB/1OOMkillとなり中断。fixtureをengineごとのload-onceへ変更して完走。これは製品assertion FAILや製品memory-leakの立証ではない。中断logを保持。
+- 最終analyze Noissues12.8s、通常lib/main.dart Linux debug build成功、その後S20 fixture build成功。306production source hash不変、kernel64abd8db3c63900947a515a3ebe28aecedb62dcab2d95f853ac07ebae6fd60f5。旧33d599...はPRE-centerであり最終AFTERへ使わない。
+
+## 実操作・目視・継続性
+
+production App/router/providers、実隔離storage、明示mock HTTPのLinuxnativeを同一PTY35323からmouse/keyboard/scrollで操作。画像はcapture完了後view_imageで開き判定した。
+
+1. ENPC1440/text1: exports0でも保存済みfolderが見える→entryで正しい中央案内→Back。
+2. 実keyboardで長名をAUDITへrename、New folderからSECONDを作成、0exportsで即表示。削除CancelでSECOND維持、再確認後folder削除でSECONDだけ消える。確認本文の不整合は別途DISC034へFAIL登録した。
+3. FRSP320/text2: process再起動後AUDITを保持、Rootとfolder内の空理由を区別。320x220ではscrollで案内全体を順に読め、Back後folderへ到達。
+4. 保存済み863B audit GIFを実fixture入力として再配置（新export/codec成功ではない）。実UI最後のfile Delete→exports0/保持folder1→entry/back→process再起動でAUDIT0が残る。prefs/file proofを保存。
+
+native-review.json、zero-exports-after-proof.json、runtime-launches/native-actionsと原本30枚に追跡。初回Projects表示/seed settling/tooltip付きcontrolは期待したWorks AFTERへ数えない。knownDISC016の起動resizeGL timeoutとATK/FFmpeg警告を保持。実Android/DeX、touch/pen、SR、liveOAuth/backend、codec、性能、全preset・最終全画面Visualは未確認のまま。
+
+## 証跡と次の一手
+
+最終native/source ZIP: https://drive.google.com/file/d/1c6ACPGybUyKvmoCDS3gQAQpoq_vw1kaU/view?usp=drivesdk /12466732B/SHAb6985de23c9c15ba6ca8571c1f6e21670455403175aa221f7a8ed307145e7ee5。metadata name/MIME/size/parent、rawSHA/CRC/all823manifest一致。ZIP内Stateは最終報告追記前、公開receipt/CI/cacheは次のcheckpointへ保存する。
+
+新DISC034: Works folderの削除確認がProject専用のProjects and subfoldersを再利用する。原本とsourceを登録、todo。S20のempty修正だけでdelete-copyをPASSにしない。次はA003/S21で正確な説明・実file保持・取消/削除・7言語/PCSP/short・Project階層契約を検証し修正する。
+
+先にこの検証済み単位を通常expected-parent/nonforce pushし、remoteHEAD/tree/paths/実fetch/index/source306、CI、compiled runtime cacheとDrive読戻しを保存する。Baseline/Discovery/Deltaのcursorは上記のまま。全条件が揃うまでA003/DISC032/033/006をdoneへしない。
+
+
+## A003/S21開始 — 2026-10-27
+
+S20 App37b51c68f3bfe325e554baff189f146735737bf2 /Web64770a4c9dfa548bc1faf46acb756933ed861f2cのremote/ref/tree/21App4Web paths/実fetch/index/source306一致を確認。S20compiledcache1Y5Z7aY3TZe8uzGk3LuFyEat-F4cvm9JC31610134B/SHAf044dbd8ca325cfc3f98c2953a09f7253d73be077b08c7977e603127448551ebはmetadata/rawSHA/CRC/all218(158delta60base)とdownloadkernel実再起動を目視。最終native1c6ACPGybUyKvmoCDS3gQAQpoq_vw1kaUもraw823manifestまで検証済み。公開/cachecore1H2EEJFTeJOshFWEEJ_SjDLPQRqfU3QFb11350419B/SHAfbfaa09bc39ba11464140b39536f4953b15d9c664fa181de4ad31440abdefd94はupload/metadata一致、raw未確認。S20CIはこの時点でApp5/14success、残るrunning/queuedとWebpolicy成功。
+
+DISC034fresh実GIF入りfolderのUI削除promptでProject/subfolders bodyを検出し1FAIL3s。共通部品はフラット1階層のみ、実Projectの階層管理dialogは別実装。そのためgeneric keep-contents本文homeDeleteFolderKeepContents(name)を7言語で追加し、共通flatfolder promptだけへ適用。長文/shortでも本文とCancel/Deleteへ到達できるscrollable/inset16。実GIFbyte保持・取消・削除後Root/設定再load、7言語×24幅PCSP＋short=350条件の最終2testsは実行中。元の1afterPASS2sはpositivecopy/matrix追加前で重複加算しない。関連回帰/analyze/main/S21native/公開はこれから。S20kernel/画像をS21AFTERへ流用しない。
+
+
+## A003/S21 最終検証済み単位 — 2026-10-28
+
+Baseline done2/628、A003 in_progress。DISC001–035 todo/cursor001、Delta37 not_started。今回の修正単位だけの検証であり、全面監査・最新HEADの最終Visual closureではない。
+
+## HEAD・前回単位・復元
+
+開始App37b51c68f3bfe325e554baff189f146735737bf2 /Web64770a4c9dfa548bc1faf46acb756933ed861f2cを再取得。これがS20公開source。S20のApp14CI全成功/Webpolicy成功を確認。SaveSafety run40517696566/full-gates job122235485310はformat744files0changed、analyzeNoissues23.8s、fullsuite2146PASS/23SKIP/0FAIL/21m17s。raw544376B/SHA256d1a1279ff3e5effe5c667ac4d6a0e46f5d92c0b007ee926fd5424cee67aa32c9を保持。S21sourceのfullsuiteへ流用しない。
+
+S21作業中に実行環境が初期化。Drive WIP1sALY9dDiYZGKS8Gb_Ah8Zd1uhuHXdOCZ12507743B/SHA5829ceca89b5474d064da7d5fb350ab1bbce80edbcfcf62a14dd9e4375b2ab86はmetadata/rawSHA/CRC/all844manifest一致。最新GitStateを優先し同じparent上のWIP差分を復元、16source/testはbyte同一、matched dataset142mtime/modeを復元。保存済み2tests350条件を再実行していない。失われた関連28rawだけを一度補完した。
+
+## DISC034：反例→修正
+
+実Works folderの削除確認がprojectListDeleteFolderConfirmBodyを共用し、Project/subfoldersを移動すると誤説明。fresh oct27-s21-delete-copy-before.log1FAIL/3sで、実GIFを入れたfolderの確認本文から旧文言を検出。
+
+_FolderableListは共有・書き出し作品向けの一階層部品なので、homeDeleteFolderKeepContents(name)を7ARB/7generatedへ追加。この部品の確認だけを「folderを削除し、中の項目は一覧へ戻して保持する」という正確な本文へ変更。通常Project階層管理の文言・処理は変更しない。scrollableとinset16で狭幅/文字拡大/short-heightでも本文とCancel/Deleteへ到達可能にした。UI色・font・theme role、preset、schema、依存、権限gateは変更無し。
+
+全旧ARB key/valueはJSON比較で同一。日本語のfolder削除／contents保持／一覧復帰の3要素を基準に、en/fr/es/zh/zh_Hant/koの否定・主体・結果を照合。実行するDeleteとCancelの意味は維持する。新規操作は導入せず、既存の破壊範囲を正しく説明する修正のため専用チュートリアルは不要。関連Help/Tipsの全面追随は未完了の既存Routeで扱う。新しいthird-party素材/font/dependency/dataflowは追加無し。
+
+## 最終検証とビルド環境の区別
+
+- 保存済みoct27-s21-final-delete.log：2実tests PASS/14s。実GIFをfolderへ移動→取消でfolder/map/file同一→確定でfolder/mapだけ削除しfileがRootに復帰→WorkFolderService再init。別testは7言語×PCSP×24幅=336＋short320x220の14=350条件。実dialogの正しい全文、scroll、Cancel/Delete各48target・全viewport内、overflow例外なしを検証。
+- oct28-s21-related-recovered.log：Project folder4＋short folder dialog7＋unused l10n1＋fontCoverage16=28PASS/9s。以前観測した同じ28のrawが失われたため一度補完。distinct合計30。初期after1PASS、S20の50等を重複加算しない。
+- 最終analyzeNoissues23.4s。通常mainとS21fixtureのLinux debug build成功、306production source hash不変。kernel b844416cb0853cbdc673f5954ee337620fe491c370409fb89310a89897905644。元ユーザーfont1022464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350はguard終了ごとに復元し、Gitから除外。
+- 最初の復旧後mainはnative linker exit1で詳細が無く、同source verbose retryは成功。続く起動ではGLib static_quark_type_flags assertionでUI前に終了。復元されたCMakeCacheがGLib/GObject/GIOの.aを保持していた。cache/CMakeFilesを診断用へ退避し再configure→.so選択→同source/kernelで実起動が成功した。SDK/vendor/product sourceへ回避patchは入れていない。再発防止は非repoのruntime復元helperへ適用。
+- 問題のcompiled WIP Drive10TfrTrkfnqiJhIJx9mrKNKKaLTVrxf_PはINVALID-DO-NOT-REPLAY-A003-S21-static-glib-2026-10-28.zipへrenameしmetadata確認。使用不可。corrected startup v2は1mYTRLt_c0GlXSa7TsDdnxeryhovc98P5/32785907B/SHA9044625789b7364d57a5d088ae74dcd7b3e0bf4ce09dbf4e0447c8bcf73155dc（182delta+59base=241）でmetadata確認、raw検証/最終reviewed cacheは次工程。旧invalidやS20binaryをS21AFTERへ流用しない。
+
+## 実操作・機能結果・目視・保存
+
+production App/router/providers、実隔離file/prefs、明示mockHTTPのLinuxnative。同一PTY61326からmouse/keyboard/scrollを操作し、capture完了後21原本をview_imageで開いた。
+
+1. ENPC1440/text1：実863B GIFを長押し移動sheetからAUDITへ移動。新keep-contents本文を確認。CancelとEscはfolder/GIFを保持し、Delete確定でfolderだけ消えGIFがRootへ戻る。process再起動後もGIFを保持。
+2. 実New folderでCOURT作成→同GIFを実移動→FRSP320/text2で再起動してCOURT1を確認。新French本文は844高で全文、220高ではscrollで全文を順に読め、両actionsへ到達。CancelでCOURT1を保持、再確認後DeleteでGIFが一覧へ戻る。
+3. 戻った実GIFをpreviewで開きCloseできる。process再起動後もfolder0/map空/file1。PC/SPの最終fileは863B/SHA61f6f61e8d33fbe97316d0e16d1cfa82157a77fede20f64cbdbcada4f566ee70で元と完全一致。削除対象は隔離監査folderだけで、ユーザー資産は操作しない。
+
+native-review.json、pc-after-delete-file-proof.json、sp-after-delete-restart-proof.json、native-actions/runtime-launches、21原本に追跡。実Android/DeX、touch/pen/SR、liveOAuth/backend、実codec/export、性能・最終全preset/全画面closureはこの単位でPASSにしない。従来のGL resize/ATK/FFmpeg警告も保持する。
+
+## 証跡・残る対象
+
+最終native/source ZIP：https://drive.google.com/file/d/1Q_DnvKiM04TsYfc882X6H1gUi6i-ERX4/view?usp=drivesdk /14231126B/SHA233211691f4810983f66eeed9ce0e2b3ee173dfb735ea9ea0df16245eef23030。metadata name/MIME/size/parent、rawSHA/CRC/all936manifest一致。ZIP内Stateはこの最終報告追記前。公開/CI/cache/readback receiptは次checkpointに保存する。
+
+DISC035を登録：実CardのShare/Deleteに対し、folder移動は長押しに隠れている。移動自体は実行済みだが、PC右click/ShiftF10/keyboardの同等性と初心者向け案内は未確立。A003/S22で実追試して修正する。DISC029には、FRSPtext2でAUDIT_keep.gifの末尾fだけ孤立する追加可読性観察を追記。全字可視だけで折返し品質も完成としない。
+
+次：この検証済み単位を通常expected-parent/nonforce push→remoteHEAD/tree/paths/実fetch/index/source306一致→CI・有効compiled cache・Drive読戻し。続けてA003/S22のCard移動導線とfilename折返しへ進む。Baseline/Discovery/Deltaの未完了を維持し、全面監査完了は宣言しない。
+
+
+## 2026-10-28 A003/S22 checkpoint — 移動発見性/filename
+
+正本詳細A003_S22_20261028_RESUME.md。開始App571de8f/Web666ff76一致。S21公開/14CI/fullsuite2148+23skip/原本/source306/cache読戻しはS21報告追記参照。S22 fresh3反例FAIL→3AFTER PASS、関連34PASS（2不存在path指定は次runで補完）。required24幅10080matrix実行中。DISC036をsource上の保存失敗riskとして登録しS23で追試。native/analyze/build/push/cacheは未完了。Card/menu正式theme結線維持、元font除外。全面監査未完了、Baseline2/628/A003、DISC001–036todo、Delta37not_started。
+
+S22追加確定：final23PASS151s＋関連28distinct=51、10080条件、30原本個別目視、full analyzeNoissues3.1s。2誤pathとcompile途中失敗はraw保持し解消。native/build/公開/cacheはpending。
+
+S22 native/build確定：main/fixture成功、source306不変/kernel0edd1538。ENPC1440text1とFRSP320text2/short220の30AFTER＋1BEFORE原本を個別目視。visibleMove/rightclick/TabEnter/focusedShiftF10/Menu、Cancel/longpress/実GIFfolder移動/coldrestart/NoFolder/Back/shortRoot操作を確認。863B/SHA61f6f...同一、finalfolderMOVE_AUDIT1/mapempty。unfocused negative2は別保存。詳細S22report/31native+30component originals+storageproofへ追跡。公開/CI/cacheはpending、全監査未完了。
+
+
+## 2026-10-28 A003/S23 — 保存失敗のfresh反例
+
+詳細A003_S23_20261028_RESUME.md、before-counterexamples.json。App1449ade/Web1cdbdbdのproduction WorkFolderServiceをcontrolled platformstoreのfalse/throwで実行し、CRUD4×2=8反例FAIL/0PASS。error無し/notify1なのにcold prefs reloadとUIメモリが食い違う。nativeFS・製品修正はpending。初回loading途中のprocess消失は結果不明として残し、元font復元後の未完了8件だけretry。S22を再実行せず公開/source306/cache220raw+actualrestart確認を維持。Baseline2/628/A003、DISC001–036todo、Delta37未完了。
+
+## 2026-10-29 S23 latest-HEAD復元・統合（未完了）
+
+# A003 / S23 — folder保存失敗・継続性（2026-10-29復元）
+
+現在の製品一次事実はApp9bce401016004d0634094e987e313a9aac6b3be5 / Web1cdbdbdbc09123e1cc47ca679167b7a59604e2fb。初回remote読出c6e479abの後、clone中に9bce4010へ更新された。旧App1449adee以後46pathの通常開発変更を保持し、保存済みS23 WIPを3way統合、conflict0。監査正本12fileは前回HEADと同一byteを確認した。D001.1–D001.6へ新差分をtodo登録。Baseline2/628、A003 in_progress、DISC001–036 todo/cursor001、top-level Delta37 not_startedを維持。
+
+## 保存されたBEFOREと復元
+
+WorkFolderService create/rename/delete/move×prefs false/throwの8反例は全て呼出元error無し・成功notify1、memory変更後cold prefs reloadで旧状態へ戻った。fresh BEFORE8FAIL0PASS/0sは既に保存済み。実nativeの隔離prefs JSONをdirectoryへ置換した失敗でもMoveが成功に見え、restore/restartで所属が戻る4原本を個別目視し保存済み。GIF863B/SHA61f6f61e8d33fbe97316d0e16d1cfa82157a77fede20f64cbdbcada4f566ee70保持。fault journal restored。実ユーザー資産は操作していない。
+
+Drive native-before-v2 1g8ZBg9tUzBrm3WwlchX4vr8AhqL03KtG/15056413B/SHA bd0eea2e68f6d93fef2aee8c4db833f830db781d93ca4c927d5aba9ef57dead6。Drive implementation-WIP 1BxcKKBIBPr6bm-V9aovzGtnc1mFb_ZXj/16247316B/SHA4d9bf39faee11ceaaee9f179be5eac754a93fe80eed3e6172fb2f4d764ccffce。2026-10-29 local maintenanceでscratch全消失後、後者raw SHA/CRC/全1126manifestを再検証して復元。保存済み16service PASSは旧source結果。WIP保存後のlazy queue・busy geometry・controls testsは未保存だったため会話から再構成し、現HEADで再検証する。失われたログを保存済み結果とはしない。
+
+
+次の正本: A003_S23_20261028_RESUME.md。現HEADでの全検証・native AFTER/publish/cacheはpending。
+
+## S23 scoped tests/build milestone
+
+106distinct targeted/related、failure1050/empty350/delete350/Home2310条件、analyze0/main+fixture成功。prod Dart310/kernelabd693b1。native AFTERはpending、console10856/Xvfb85 ENPC稼働・fault preparedのみ。次の正本A003_S23_20261028_RESUME.md。全体status不変。
+
+## S23 native AFTER closure for scoped persistence fix
+
+
+## 現在: S23限定修正の検証済み候補、公開/CI/cache保存へ
+
+App9bce401016004d0634094e987e313a9aac6b3be5 /Web1cdbdbdbc09123e1cc47ca679167b7a59604e2fbに統合した未push差分。106distinctのtargeted/related、failure1050/empty350/delete350/Home2310条件、full analyze0・main/fixture成功。prod Dart310/kernelabd693b15d3be687117fcc9e9db8f4d183a656c14cfee91f37545097aadea963、source前後同一。
+
+ENPC1440/text1とFRSP320/text2（844/220高）のnative AFTER37枚（PC15/SP22）を全て個別に開いて目視。各PC/SPでreal isolated prefs FS directory blocker→Move/rename/delete/createの4失敗とerror/input/state保持→Cancel/Escape→exact restore→同じMove sheetで再試行成功→process cold restartで所属保持→NoFolder→実create/rename/delete成功を確認。短画面ではerrorの冒頭/末尾とcontrolsへwheelで到達。1原本にはhover tooltipが写る事実を記録し、スクロール済みtitle全文同時表示とは主張しない。
+
+PC/SP fault journalは両方restored。実GIF863B/SHA61f6f61e8d33fbe97316d0e16d1cfa82157a77fede20f64cbdbcada4f566ee70不変。最終dataset legacy名emptyは1GIF・既存MOVE_AUDIT1folder・map{}・0projects。検証中に追加したfolderだけ削除し、既存folderを保持。App停止、console10856/Xvfb85稼働。部分削除failureはcontrolled platform storeのみで検証し、real FS blockerを部分保存のnative PASSとはしない。
+
+保存済みtests/build/PC backup: Drive1Sfd1ebO4zWjZVAn9qXSop1MptXKSh1wN/16574993B/SHA8b1f1648666efd2d0ca0ea4e903e6a844bed26d0d7f666c36bb5b22c1b5bbdb5、全1208manifest/rawSHA/CRC/metadata一致。PC native15+SP exact backup: Drive1-B5Cd1gGiggkbFG_FJD__ds0cnL4pDZo/16962597B/SHA789d0d0cb5bdcd8444e509ddcc2ad4cc6da196c72d8c1c1456b44bcf8c2e41b2、全1232manifest/raw/metadata一致。unuploaded PC-native-SP-backup（v1）はreviewにhistorical BEFORE4を誤算入したため無効、Driveへ送らずv2で分離した。
+
+次: 全native/source ZIPの保存/readback→remote HEAD再確認→expected-parent/nonforceで検証済みApp差分と両repo Stateを公開→remote tree/parent/exact paths/actualfetch/index/compiled source310の一致→CI・新compiled runtimeのraw download/replay・receipt保存。
+
+Baseline2/628・A003 in_progress、DISC001–036 todo/cursor001、top-level Delta37未着手・新差分D001.1–D001.6 todoを維持。Project/shared folderの保存失敗、stale/nonexistent destination ID、関連7言語全実機/全preset等のDISC036残条件は未完了。全面監査/latestHEAD Visual closureは完了していない。保護font4e885...をstageしない。
+
+以下は同unitの履歴であり、途中のpending記述は上記の現状を上書きしない。
+
+
+## S23 latest4999 integration gate
+
+## 最新統合: 4999e363・公開前の最終状態
+
+公開直前にremoteが66fff30b/4999e363へ更新。unused FF dialog/公開設定helpersの削除を完全保持してfast-forward統合（conflict0）。監査済みHome/WorkFolderService/modal codeは同一SHAで、全310 Dart中でnative37枚時点から変わったのはCommunityServiceの当該削除だけ。旧build proofはnative-build-source-9bce.jsonへ保存。
+
+upstream削除に未追随の3test fileが19解析errorを起こしたため、廃止済み公開設定テスト4件を退役、direct serviceの件数・名前対応を維持し、App全体の本人/他作者ページでFF件数が非操作TextでSwitch/list dialogを開かない検査へ更新。service/direct30PASS、UI smoke1PASS、既存upstream回帰9PASS（重複加算なし）。今回unit合計137distinct。full analyze0/2.7s、format758file0change。最新main/fixture build成功、prod Dart310同一SHA。現在kernel0b5def0b5dad531e628a29d51998da2f41742bbf90d6229a4661a6b50ac112d1からPC/SPでMove picker→Escapeを実操作し2原本を個別目視。合計native39は旧kernelの37枚＋最新再統合2枚と区別している。
+
+App/Webの親HEADは4999e3636b7b22596ccf3190af639781dac0aa8c /1cdbdbdbc09123e1cc47ca679167b7a59604e2fb。App停止、console10856/Xvfb85。prefs fault両方restored、legacy empty datasetは1GIF/1folder/map{}。GIF863B完全一致。保護font4e885...保持。
+
+native37/source旧base9bceのZIP: Drive1f-J55vpWu62iJeGx2J_eOb4aeAnAkaaP/17685923B/SHA1b14671c90cc8b0f7d5d152dc657c765a06a457b34f3633b6f30470cdfc865ff、metadata/raw/全1261manifest一致。これは4999統合前の正確な証拠であり、そのまま現全sourceの結果とはしない。
+
+次: 最新統合source/State保存→expected-parent/nonforce公開とremote/fetch/tree/source310照合→CI/current compiled runtimeの保存・raw読戻し・実downloadkernel再生→receipt保存。Baseline/Discovery/Delta statusは不変。全面監査/latestHEAD Visual closure未完了。
+
+以下は同unitの段階別履歴。
+
+
+## S23 publication/cache receipts + CI fixture followup
+
+## 現在: 初回公開済み・CI追随修正の検証完了（次の公開へ）
+
+初回の修正はApp261646e164047f41fca24a9836636b846bfbac37（親4999e363/tree672ab44249a4e8dd25b8c8935fbeaf0178e0ff57/57paths）、Web9bd3e0ad5745042bf3cce06ea091ecad7c19fff6（親1cdbdbd/tree0531b90fe40362f5e93acb6d7df241f3bde9dab8/6State）へexpected-parent/nonforce公開済み。remote HEAD/tree/単一parent/正確な変更path/実fetch/localref/indexを確認。production Dart310 SHAはcompile時と一致、保護fontは除外。
+
+現compiled runtimeはDrive1jocv6x5260xNV69IFjfDA8ftdvFJ1C1S/31865317B/SHA787a4463d18a7785db012d64b6e59286e9374cd5d216a04da5f54d12d004dd4e。raw SHA/CRC/全165deltaと59base localhash=224manifestを確認。実downloadのbundle/kernel0b5def0b5dad531e628a29d51998da2f41742bbf90d6229a4661a6b50ac112d1を設置してENPCを再起動し、原本目視/GIF863B/map{}保持を確認。39native（本検証37+最新統合2）に加えDL再生原本1。App停止、console10856/Xvfb85。
+
+publication/cache replay receiptsのDrive1QYyzyX25X3hKGFPcncuGqPJCkQrvS1kv/16466653B/SHA9c5b86cc36c354de6f6b3e77d951962de730a083a31e24d60858cb26c2233419はmetadata/rawSHA/CRC/全1252manifestを確認。ZIP内rootのCLI running文言は、その後完了した同梱logで置き換わる。
+
+初回CIはpolicy/書式/解析/保存・community回帰等が成功。Theme Rescue40826563907では2件、Pinch/save restore40826564043のoperation smokeでは1件が失敗した。原因はbuilt-in palette移行によりテスト用変更色が標準へ戻るfixtureと、旧SegmentedButtonを前提にしたfinder。raw logsを全保存: theme76591B/SHA c47fd571bb7c135a33cf55d3a6750e390ca371409d2bb4f6b96ac2faaf6b4d13、operation39605B/SHAa95d765cfd640f102d061be054c2f0921b37fbd7df2a36515f6a824912fb3f97。旧fullgates123290860059は結果確認中であり、全成功としない。
+
+検査条件を維持したまま、test用paletteをformal customCurrentIdへ、tag検索検査を現在のcompact control/key・次mode icon・queryへ更新。Theme3PASS/0s、appsmoke全34PASS/51s、full analyze0/4.0s。先の137とappsmoke重複1を除いた合計173distinct。製品lib310は同一SHA。新たなruntime buildやnative37再撮影は不要。変更は2test＋SaveSafety trigger2path＋State。
+
+次: このCI追随修正・公開/runtime receiptsを同じ承認範囲で通常push→remote/fetch/source310の一致→新CIの確認とraw記録。続いてDISC036のProject/shared prefs failure・delete cold restartのfresh反例へ進む。現在はA003 in_progress・Baseline2/628、全Discovery/Delta未完了。全面監査/latestHEAD Visual closureは未完了。
+
+以下は段階別履歴。途中の未push/pendingは上記の現在状態を上書きしない。
+
+
+## A003/S24 fresh persistence counters / DISC037
+
+# A003 / S24 — Project/shared保存失敗と削除後cold reload（2026-10-29）
+
+基準App41a37bf78b58684b87609279979ded91d25953de /Webbbc38015582d4f727d387df8bfd39ea4a1c13fd4。S23修正・CI fixture追随は公開/remote/tree/parent/exactpaths/実fetch/index/source310確認済み。現在の製品sourceは変更していない。S23の173distinct/main+fixture/analyze0・39native+downloaded runtime replay1を復元目的で再実行しない。新CIはTheme/guard/dashboard/Webguard成功、SaveSafety40828552979の全suite確認は継続。
+
+## fresh BEFORE
+
+Project folder create/rename/color/favorite/reparent/deleteの6操作、Shared folder create/rename/deleteの3操作×prefs false/throw=18反例。全てcaller error無し/notify1、メモリは変更、cold prefs reloadは旧状態。18FAIL/0PASS、全outcomeをprefs-before-results.jsonへ保存。これはcontrolled platform storeのservice境界であり、native FS/UI PASSではない。
+
+別の健康な保存先で、実64×64/1frameのniaproを作成・folder所属を明示保存した後deleteFolderをawait。memoryはrootだがdisk/cold reloadに旧folderIdが残り、folder定義だけ消えた。900Bのファイル自体とprojectロードは保持。新しいDISC037として登録し、UI上で隠れる等の影響は未確認のまま区別する。初回19FAIL/0PASS/0s。初回はraw niaproをteardownで消していたためtraceを保持し、同1反例のみraw前後ZIP保存のため追加実行、18prefsやS23は再実行していない。
+
+Scope: DISC036関連Project/sharedのfalse success、DISC037の正常folder削除のcold参照整合性。Baseline2/628/currentA003、Discovery cursor001・DISC001–037 todo、Delta37not_startedを維持。sourceだけでUI不可視や実ユーザー被害は断定しない。
+
+## 次の具体的操作
+
+1. 現19反例とraw niapro/StateをDriveへ保存/readback。
+2. S23と同一source310/kernel0b5のキャッシュを使い、S24専用ordinary datasetを新規生成。S23datasetを変えず、実folder内project/thumbnailを先に表示し、exact backup後に親folderをUIで削除→root→停止/cold restart→所属とvisible project数を比較。原本・prefs/niapro hash・folder定義を保存。
+3. 全callerと非同期save queueをinventoryし、clone→永続化成功→publish、false/throw/rollback、Project niaproとprefs両保存の整合、取消/連打/部分保存/再試行を実装・再操作・regression。Project/shared move callerも対象にする。
+4. 最新remote取り込み・検証済み単位の通常push/CI/cache保存まで進める。全体の未完了をdoneにしない。
+
+## 再開用保存
+
+S23 receipt core Drive11JJcSBg4YexHGMsEetUdQsULRxAHoqN9/16513911B/SHAaf7f4d51795660f3a39d6d714ec55ed3171f0d9b97bb055b49c09661d1185b8eは全1254manifest/metadata/rawSHA/CRC確認済み。現compiled runtime Drive1jocv6x5260xNV69IFjfDA8ftdvFJ1C1S/31865317B/SHA787a4463d18a7785db012d64b6e59286e9374cd5d216a04da5f54d12d004dd4eは165delta+59base全224hash、actualdownloaded replay済み。source anchor261646eと現41aは全310Dart同一。再生だけならSDK/pub/rebuild不要。
+
+App停止、S23console10856/Xvfb85。保護font1022464B/SHA4e88513583b672a759fbb967dcaef291e46d52902a963e8140c441fd55b0f350をstageしない。CLIはguardでcanonical4ff87...を一時使用し必ず原本へ復元する。
+
+## 最新HEAD復帰（0c02171d）
+
+App0c02171d46b08d8ed297f158dc99e295ed8fcb67/Webbbc38015582d4f727d387df8bfd39ea4a1c13fd4を取得。監査authorityは41a37bfとbyte同一、保存済み19反例の6依存ファイルも同一（resume0c021-recovery.json）。19件を復元だけで再実行しない。追加28pathはD001.7/8へTODO登録、Baseline/Discovery/Deltaの完了数を増やさない。S24 nativeは削除前の観察しかなく未保存分を失ったため、最新sourceで新規build・専用datasetから再取得する。S23 cached0b5をlatest全Appとは扱わない。
+
+S23 followup SaveSafety40828552979はfull-gatesのみ失敗（2185 pass/23 skip/8 fail、format/analyze成功、他5job成功）。旧CI raw578736B/SHA1072185ab4f27c50d458f5e2b35204f54251605c55c6289876ac4bf97cb038a8を保存。内訳: visual-smoke icon曖昧1、account-boundary旧control finder2、tolerant prefs違反2pathで1、KO glyph2、filter dialog複数Switch1、Home favorites曖昧RenderObject1。現HEADで残るものを切り分け、assertionを弱めず実装/fixtureを修正する。全suite PASSとは記録しない。
+
+次の具体的操作: 現source生成bindingを維持し、normal mainとS24 fixtureをcanonical font guardでbuild。S24 native ordinaryでfolder内projectを事前表示→exact backupをDrive保存→UI削除→cold restartで実影響を取得する。product fixはまだない。
+
+S24最新0c021/native PC1440×900/enでDISC037の実影響を確認。Archive内A003001を事前表示・exact backup済み。favorite解除→Delete確認→直後root3projects→cold root2projects。全3niapro保持/同bytes、A003001だけ旧folderId。6original画像を個別目視。metadata/raw12manifest検証済みpre-delete ZIP: Drive1i1VQrP-52fFQIoEB7YPJjRS28Ba-uidw/118665B/SHA c822a47df9a721669ef7f61b112724487dd305845757fa517ce2566bdc558500。実機スマホ/外部backend/codec/全監査PASSへ昇格しない。次はProject/shared folder CRUD queue/prefs失敗とniapro所属変更を修正。
+
+S24 WIP: 18 prefs false/throw反例と健康な削除cold reload反例を修正後回帰し19PASS、既存project-folder8/WorkFolder16と合わせ43PASS。folder prefsは候補を先に保存しfalse/throwを返却、cache復元。Project/shared所属は同一serializer queue/atomic ZIP置換でmanifestのみ変更し他entry/unknown fieldsを保持、全参照project（trash含む）をroot保存後folder定義削除、部分失敗はfolderを残し再試行。背景saveはservice queue開始時の最新modelを読む。全caller await/error対応WIP、legacy孤立所属はUIでroot表示しraw参照は保持。新edit dialog/既存move/deleteの拡張はまだUI matrix/native AFTER未検証。最新HEAD由来full analyzerは22issue（旧test API欠落8・upstream lint等）で未PASS、詳細oct29-s24-wip-analyze.log。論理完了/push/全体doneにしない。次は追加race/partial/trash回帰→UI matrix→native AFTER→latest delta/CI失敗の切り分け。
+
+S24 AFTER: targeted analyzer9items0issue、追加transaction9PASS、新edit UI7locale×25sizes=175条件+既存Work failed1050条件/14実retry/short partialが4tests全PASS。main0c021 BEFOREと修正後fixture313Dart source/atomickernel dd14cb313a3f5b2c67d26950161a9ec8989cbc8ac125aa6f5ffb4b698d453454を記録。実native PC/enでlegacy old-stale dataがroot3件へ回復しniapro全bytes不変、healthy Delete→cold root3件を目視。旧niapro所属のみrootへ保存され他manifest/entryは不変。さらに実prefs.jsonをdirectoryにしてDeleteを失敗させ、folderは残り内容はroot、partial説明+同dialog再試行可能を目視、exactprefsをsameapp中に復元。retry/coldの最終画像をこれから判定。まだUI shared/SP/allcrud/native/perf/full-aggregateのclosureではない。
+
+S24保存更新: service43+transaction9+UI4+save-related27=83distinctが対象範囲でPASS（最初のcreate-dialog旧文言期待1FAILを実装修正して3PASS、assertionは保持）。追加edit matrix175とWork1050は別々の条件件数。native AFTER全画像を個別目視、ENPC削除/partial retry/cold/legacy回復、FRSP320×844/text2編集fail→同名色保持→320×220でerror wheel到達→復旧same-dialog retry成功、prefs実読戻しでS24 RETRY/pink/root保持。latest175UIもPASS。色selectionは正式surface/onSurface checkbadgeを追加し最終native目視をこれから行う。旧Drive17hXsmGpalGTmrShoS3UFfsaErfGt6Jf4はZIPがローカル/remoteとも途中で切れCRC不能、保存済み扱いにせずinvalid登録、fresh v2を作成する。前段WIP43ほかは全readback確認済み。次はlatest main+fixture build、selected badgeの実画像再確認→83結果/valid ZIP保存→単位push（全体/CI PASSとは言わない）→upstream CI8fail/新API旧test8errorの修正継続。
+
+S24公開前: 83distinct targeted/related PASS、edit175/Work1050条件PASS、対象analyze0/globalformat765files0change、最新main+fixture build成功。313source/current kernel e9646b867c26b1610fe296ef851da1a3b6e27561960a379034089a86a70bfe4a。FRSP320×844/text2の保存済み名色/selection checkをfinal kernelで目視、旧AFTER機能batch dd14との差分はcreate-error文言保持とcheckbadgeの2UI filesのみ（別hashで区別）。保存先faultは全解除。nativeAfterV2 Drive1K5Jy211p8K3-PmwqQTe3Bh2rINPbUjL_/18651782B/SHA631ea9af0cf4d2a4176f34a0c87a18284f7bc1d8b188d5ec08a168c1f13891fa、全1441manifest/rawCRC/metadata確認済み。invalid17hXは復元禁止。未解決: current Community旧API tests8compile error/旧CI8fail、native shared/全CRUD/全locale/pre-set/stateの最終closure、App残Baseline/Discovery/Delta/Web全体。通常pushはこの検証済み単位のみ、全面完了を宣言しない。次はpublication remote/tree/paths/source照合→runtime cache保存→Community CI repair。
+
+S24公開・復元完了: Appb6fc7f4a2dc47d2e07dd9703e88f98684a1037f9/Web2a84721303137cff7fb36244549259a511303770へexpected-parent/nonforce通常push。両remote refs/tree/単一parent/38App+5Web exactpaths、実gitfetch/index、compiled313sourceと現Git HEAD全一致、保護font4e未stageを確認。current runtime Drive18B_UFoUWMkMNUcrBTOqWJ9hxJWLiNkbC/31704764B/SHA8f14585a13a6aa6e63e0de886cd7a24e3e5cfffeb2d53996d1e993727b5465efは25delta+59base=84manifest/metadata/rawCRC/hashを確認し、実downloadファイルをinstallしてFRSP320×844/text2でcold root3件/保存済みS24 RETRYを再生・原本目視。SDK/pub/rebuildなし再開可（S11part1→S14v2→S24delta、native223 helperは必要）。検証済み工程を復元だけで再実行しない。S24 CI SaveSafety40896521989など追跡中、policyguard成功、Community旧API8errorと旧CI8failは未解決で修正を継続する。
+
+S24 CI追随WIP（未公開）: b6fc7f4aのsource単位は公開/313hash確認済み。新規Community旧API8compile errorをcurrent count/milestone fixturesへ追随し、2unused retired API wrapper削除、tolerant prefs、曖昧finder対象化を実装。fresh9file target実行90PASS/8FAIL（旧CIの8failとは別集合）。残: milestone_store typed read、endDrawer旧assert、offscreen AI switch操作、owner-settings ABA testのpending transport retry、App検索/short旧control、通知既読async境界。KO2glyph欠落は既存subset生成toolをcurrent7ARBsで再実行予定、google/fonts pinned b68b528a75da7d9b73f3928899c07a23083a6633の4font/OFL8files77125296B取得済み、provenance JSON保存。fontsのユーザー保護Delaは触らず4subsetだけ対象。次: fresh残8失敗を原因別修正→font生成/coverage/license→fullanalyze→CI follow-up公開。新WIPでfull PASSとはしない。
+
+S24 CI follow-up現WIP: current controlへの追随により初回9files98casesは90PASS/8FAIL、その後12files122casesは120PASS/2delete-modal fixture finder不足。deleteをscrollして出すよう直し、old sourceでdelete2を再追試し期待不一致2FAILを実証。旧modal before初回4FAILの内tag2のみ有効、delete2はsetup失敗と明確に区別する。AI/visibility busy2、tag2+delete2 modal、milestone mark-read new-account/private-title/dispose2の8固有反例を修正。latest owner+milestone11PASS（9owner/2service）。先の120PASSと合わせ122distinct対象が回帰済み。全source analyze初回はcurly2infoが残ったため修正、最新版analyze/main/CI native buildを開始中（oct29-s24-ci-candidate-*.log、session11823）。full suiteはこれからでPASSではない。
+
+4subsetを既存toolでcurrent2816 UI charsに再生成しKO「됐/빌」と新Chinese文字を補完、4font合計1088B減。Google/fonts pin b68b528a...、8source/OFL SHA/provenance、actual embedded copyrightを記録しGoogle2012 noticeを既存FONT_LICENSESへ追記。保護Dela1022464Bは変更/pushしない。fontsは25combinedのcoverage/licenseでPASS済み。owner設定はaccountID/revision keyed bodyでbusy/callbackを破棄し旧ownedDialogだけをremove、別routeを保持。milestone read/mark/observeはcacheへ代入前にrevision/identityを確認。新CI owner fixtureはproduction screen/ad route+明示mock HTTP/controlled account/pending responseでnative再操作する。real OAuth/backendのPASSにはしない。
+
+S24 follow-up native: current source313/kernel791e1b9d7af4fa9d83e30ff24c0e7e63b3ac0105cb338cba664f8bfdd8d944e1/main+fixture成功/analyze全体0。ENSP390×844のAI pending→ABA→新pending→旧replyでbusy維持→現reply反映、旧tag PRIVATE OLD DRAFT/削除確認がaccount切替で消えること、ENPC1440×900のvisibility同フローをproduction設定画面+ad route wrapperで実操作し17原本を個別目視。HTTP/ownerはfixture明示mockで実OAuth/backendは未確認。raw PC statusとUI action/owner command logを保存、全pending reply完了・App停止。native-ci-review.json参照。
+
+全suite実行中（session29731/oct29-s24-ci-full-test.log、開始時source313は変わっていない）。現時点で8FAIL: tag-limit/bookmark-orderのbinding/mock未初期化6、theme-propagationの旧VideoTypeFilterButton参照1、bottomsheet sourceguardが間接Scrollable wrapperを誤判定1。これら4testfilesのfixtureを追随中（追加50destination実scroll testでwrapperを裏付け、assertionの削除ではない）。未だ全suitePASSではない。current nativeWIP cacheは新しいCI/owner fixture用、公開b6fの安定Home cacheと区別する。
+
+S24 follow-up全suite初回完走: oct29-s24-ci-full-test.logは2221PASS/23SKIP/12FAIL（13m48s）。失敗はfixture binding/mock未初期化9、theme-propagation旧control1、間接Scrollable wrapper sourceguard1、未使用ARB7key1。修正後full-repair-targetは35PASS/1FAIL、残ったtheme previewの実重なりをactual pan操作して再実行1PASS。36distinct target（新50destination実scroll1を含む）は成功、全suiteを一度でPASSとは記録しない。7unused ARBキーを7localeから除去しbinding再生成、font toolを再実行（2816distinct chars不変、4font差分はhead timestamp/checksumのみ、glyph/cmap/outlines全table不変を実バイナリ比較）。final全analyze0/globalformat766files0change。
+
+KO native追加: kernel791e、320×844/text2でproduction Home folder Delete確認→実prefs.jsonをdirectory化→部分保存error「됐」欠字なし/全説明/取消再試行が読めることを原本目視→exactprefs復旧→同dialogretry→coldroot3projects+Subfolder保持を個別目視。3niapro保持、所属1fileのmanifest.folderIdだけroot、他manifest/全archiveentry不変をraw比較。fault全解除・App停止。公開b6f stable runtimeと未公開CIWIP runtimeを区別。17owner原本とKO原本をreview済み、fullsuite自動1950filesは未review補助証跡のみ。
+
+保存: owner17/core Drive1aLLZndiws9Qlfx5a9lJ5Dz3afLgGY8jk/21611584B/SHA3fdecd3305810aad9a64f5dbc632035bf560b54386c4623ea2384c050ec1249f、全1541manifest/rawCRC/meta確認。CIWIP compiled Drive1Cs07Q1id32sDDHAWMM-noA5sQxQOXKNh/33990563B/SHA7954cc233ba0d3306cbc686f68fbfbfd5586a81f5544be1e7c41cfa2d3f44601、38delta+53base=91全manifest/raw/meta、実downloaded KO Home replay済み。補助1950files Drive10CoZKqGg9RSmXgJ_NWZKviHZLyhNL6ak/56032685B/SHA255607edaa133f7672f4980f797beb3fce3695979eb97dc9af3e993e2eca5bf6、全hash/rawCRC/meta確認済みだがVisualclosureではない。
+
+次: 最終l10n cleanup後のmain+CI fixtureをguard付きbuild、791eとの依存差分は7generated bindingsの未使用getter除去のみと4fonthead時刻で区別、latest-source原本を目視。current source/assets/Stateを検証済み単位で非force push、fresh CI全suiteを追跡。Baseline2/628/currentA003、DISC001–037todo、Delta37not_startedは維持。full-comprehensive/physical-device/live-auth/backend/codec/SR/performance/allpreset/state closureは未完了。
+
+S24 follow-up公開直前: unused binding cleanup後のnormal main/CI fixture build成功、latest kernel d0176b2a7c343fb4512e85d6ceac99d31864958295d23d98b7a108d4bbad8c19。old791e native機能batchとsource313中差分7generated l10n filesのみ、fixture同一、4fontはhead timestamp/checksumだけ（glyph関連table不変）。latest source KO320/text2 Home coldroot3、EN390owner設定/タグdialog3原本を個別目視、previous17+KO機能batchを最新kernel再撮影と偽らずdependency記録で継承。App停止/保存先faultなし。ciFinalRepairKo core Drive1E7bGtqmO1sFuiZUj1bn8NL_5khn8ACcW/23080440B/SHA9da5258db87a780af6169efba4ce933b18494467d5df0089f6fc0e8ff22ac58f、全1599manifest/rawCRC/meta検証済み。公開後はfresh CIとlatest runtime保存、A003追加CRUDを継続。
+
+S25（2026-10-30）: Shared画面の0共有project状態でfolderを作成・永続保存できるが表示されず開く/rename/delete不能をnative EN390×844で実証しDISC038登録。既存S24修正のfolder保存自体は成功、UIがshared.isEmptyで先に空画面を返すため。counter実原本/prefs/hashはaudit-evidence/A003-S25-current。最初のEnterは単にunfocus、Create button後の原本だけを有効反例とする。App7370585/Webc177c2e、full CI2234PASS/23SKIP/0FAIL/analyze0/format766変更0を確認済み。全監査はBaseline2/628/currentA003、Discovery001–038todo/cursor001、Delta37not_startedのまま。次はcoldPC追試→空folderUI修正/関連回帰/実再操作→証跡保存/通常push。
+
+S25 latest WIP: 空folder表示と共通folder chip全文折返し/48px target/semanticsを修正。widget3testsは一度PASSしたがlocale favorite Text tap warningが1件あったためFilterChip実tap+selected反転assertへ修正。新3+ProjectFolder/transaction/favorites計43PASS（関連file名を誤って指定したload failure1はproduct失敗ではなく未実行と区別）、正しいWorkUI/folder-empty/bottomsheet関連suite実行中（oct30-s25-work-related.log /session67069）。published native d017のEN320/FR320text2で長名overflow原本を個別目視、renameによるactualprefs保存を確認。DISC039既存352px反例、DISC040 Shared AppBar画面名がsortに覆われる実問題を登録（Trashは可能性として未確認）。コードfixはまだ未公開・native AFTER未取得。次はrelated結果→globalanalyze/format/main+S25fixturebuild→Shared native empty/long/failure/retry/CRUD/coldと保存→検証済み単位push。
+
+S25 final pre-native: DISC041の空Shared folder誤案内を7ARBs/generated bindings + EmptyStatePlaceholderへ修正し、semantic BEFORE1FAIL→Shared3+font coverage/license/unusedkey22PASS。S25内77distinct対象PASS（先の43は誤path load1を別記、正しいWork関連15PASS、22中Shared3は重複）。全体format767変更0、最新globalanalyze0。最終main+fixture build中、fixtureはexplicit /home,/shared,/trash初期routeだけを選べるようにした（locale画面検証のpreconditionであり、frontdoor導線PASSの代用にしない）。old cf0bの長名折返し/favorites-filter空/ENPCゼロprojectフォルダー可視を原本個別目視、FR320×220は全文をscrollで読むことを確認。old cf0bの保存失敗後retry永続化は境界状態不一致で無効化し、exactoriginalprefsへ復元済み。native controllerにowned fault install/restore・各action後のactualprefs hash/folder数・終了時exact cleanupを追加し、同じprocessから該当状態を再取得する。最新native未完了なのでpushせず、全体完了にも進めない。
+
+S25公開前の検証済み単位: Shared全0件でもfolder一覧を保ち、共通folder chipは幅を制約して全文を折返し/48px以上/semantics buttonを保持。空Shared folder内は「folder無し」でなく「shared project無し」と7localeで説明する。3有効widget反例（saved/create/long name）と誤案内1反例を記録（初回create setup未pumpやpageBack helper英語依存は有効反例と区別）。77distinct対象回帰、globalanalyze0、globalformat767変更0、normalmain/fixturebuild成功。l10n.yaml format:trueでSpanish生成物のformat driftを防止し、build前後313source全同一・postbuildformat0、stable kernel4e5e6c0be1a8c1eb9830ef430ed06faf40f74847ba0717530b937985e4ffce88を確認。
+
+最新native: 320×844/text2/7localeの空Shared folder説明7原本を個別目視（glyph/全文/見た目）。cf0b原本の長名折返し/favorites-filter空/320×220のscroll可読性はbody文言変更との依存を区別。4e5のENPCで同process内prefs fault→error/入力保持→exact復元→same dialog retry→実prefs2folders→rename→cold2→delete cancel保持→delete→cold1を実UI/実file hashの両方で確認。旧境界でのretry/rename/delete誤labelは明示無効化、成功へ集計していない。fault全解除、App停止、保護Dela4e原本未stage。native-review.json/native-empty-retry-review.json参照。
+
+S25の対象修正だけを通常pushする準備。DISC038/039/041の全closureをdoneにはせず、DISC040 Shared狭幅AppBarのtitle/sort問題は未修正で次に優先処理する。Shared actual niapro membership move/非空folder delete、他の全visible/state/preset/実機/SR/性能/法務等は未完了。Baseline2/628/currentA003、Discovery001–041todo/cursor001、Delta37not_startedを維持。次: final evidence/core readback→単位push/remote/tree/paths/source313→compiled runtime保存→freshCI追跡しDISC040へ。

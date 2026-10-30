@@ -680,12 +680,13 @@ void main() {
     await tester.longPress(card('apple'));
     await settle(tester);
     final scaffold = tester.state<ScaffoldState>(find.byType(Scaffold).first);
-    scaffold.openDrawer();
+    // メニューは右から開く。
+    scaffold.openEndDrawer();
     await settle(tester);
-    expect(scaffold.isDrawerOpen, isTrue);
+    expect(scaffold.isEndDrawerOpen, isTrue);
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await settle(tester);
-    expect(scaffold.isDrawerOpen, isFalse);
+    expect(scaffold.isEndDrawerOpen, isFalse);
     expect(find.text('1件選択中'), findsOneWidget);
   });
 
@@ -773,12 +774,14 @@ void main() {
     expect(tester.widget<TextButton>(cancel).onPressed, isNull);
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await settle(tester);
-    expect(find.byType(NameEntryDialog), findsOneWidget);
+    expect(find.byType(Dialog), findsOneWidget);
+    // 失敗を伝え、打った名前は残る。
+    expect(find.text('シリーズ'), findsOneWidget);
     expect(tester.widget<FilledButton>(create).onPressed, isNotNull);
     await tester.tap(create);
     await settle(tester);
     expect(calls, 2);
-    expect(find.byType(NameEntryDialog), findsNothing);
+    expect(find.byType(Dialog), findsNothing);
     // ホームは閉じていない。
     expect(find.byType(ProjectListWidget), findsOneWidget);
   });

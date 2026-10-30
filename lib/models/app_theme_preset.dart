@@ -9,6 +9,7 @@ class AppThemePreset {
   final String name;
   final Color accentColor;
   final Color textColor;
+
   /// These are first-class user-defined foreground colors, never auto-corrected.
   final Color buttonTextColor;
   final Color menuTextColor;
@@ -99,7 +100,6 @@ class AppThemePreset {
     menuBgColor: Color(0xFF201F27),
     selectionColor: Color(0xFFFF5C7A),
     updateMarkColor: Color(0xFFFFB020),
-    accentTextColor: Color(0xFFFEB2B9),
   );
 
   static const defaultLight = AppThemePreset(
@@ -113,8 +113,7 @@ class AppThemePreset {
     panelBgColor: Color(0xFFFAF7F5),
     menuBgColor: Color(0xFFFFFFFF),
     selectionColor: Color(0xFFFF5C7A),
-    updateMarkColor: Color(0xFFCD8B07),
-    accentTextColor: Color(0xFFBC0F45),
+    updateMarkColor: Color(0xFFFFB020),
   );
 
   Map<String, dynamic> toJson() => {
@@ -129,8 +128,7 @@ class AppThemePreset {
     'menuBgColor': menuBgColor.toARGB32(),
     'selectionColor': selectionColor.toARGB32(),
     'updateMarkColor': updateMarkColor.toARGB32(),
-    if (accentTextColor != null)
-      'accentTextColor': accentTextColor!.toARGB32(),
+    if (accentTextColor != null) 'accentTextColor': accentTextColor!.toARGB32(),
     'isFavorite': isFavorite,
   };
 

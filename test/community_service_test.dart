@@ -1,10 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/models/community_work.dart';
 import 'package:niarim/services/community_service.dart';
 
 /// CommunityService（Task#157：NIARIM作品広場独自の公開/非公開設定）の
 /// 単体テスト。
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   test('作品はデフォルトで公開状態であり、discoverableWorksに含まれる', () {
     final service = CommunityService();
     final work = service.works.first;
@@ -185,18 +188,6 @@ void main() {
       );
     });
 
-    test('フォロワー一覧の公開設定は既定で非公開、setSelfFollowersPublicで変更できる', () {
-      final service = CommunityService();
-      expect(service.selfFollowersPublic, isFalse);
-      expect(service.isFollowersPublic(kDummySelfAuthorId), isFalse);
-
-      service.setSelfFollowersPublic(true);
-      expect(service.selfFollowersPublic, isTrue);
-
-      service.setSelfFollowersPublic(false);
-      expect(service.selfFollowersPublic, isFalse);
-    });
-
     test('followingIdsOfは自分の場合favoriteAuthorIdsと一致し、フォローすると増える', () {
       final service = CommunityService();
       expect(service.followingIdsOf(kDummySelfAuthorId), isEmpty);
@@ -224,54 +215,6 @@ void main() {
           );
         }
       }
-    });
-
-    test('visibleFollowerIdsOfは各フォロワー自身の公開設定がfalseの人物を除外する', () {
-      final service = CommunityService();
-      for (final authorId in service.works.map((w) => w.authorId).toSet()) {
-        final raw = service.followerIdsOf(authorId);
-        final visible = service.visibleFollowerIdsOf(authorId);
-        expect(visible.toSet(), raw.where(service.isFollowersPublic).toSet());
-      }
-    });
-
-    test('visibleFollowerIdsOfは自分の公開設定に従って自分自身の表示・非表示が切り替わる', () {
-      final service = CommunityService();
-      final authorId = service.works
-          .firstWhere((w) => w.authorId != kDummySelfAuthorId)
-          .authorId;
-      service.toggleFavoriteAuthor(authorId);
-
-      // 既定では自分のフォロー中/フォロワー一覧の公開はfalseなので、
-      // 実際のフォロワーとしては数えられるが一覧には現れない。
-      expect(service.followerIdsOf(authorId), contains(kDummySelfAuthorId));
-      expect(
-        service.visibleFollowerIdsOf(authorId),
-        isNot(contains(kDummySelfAuthorId)),
-      );
-
-      service.setSelfFollowersPublic(true);
-      expect(
-        service.visibleFollowerIdsOf(authorId),
-        contains(kDummySelfAuthorId),
-      );
-    });
-
-    test('followerCountOfは非公開のフォロワーも含めた実数のまま変わらない', () {
-      final service = CommunityService();
-      final authorId = service.works
-          .firstWhere((w) => w.authorId != kDummySelfAuthorId)
-          .authorId;
-      final before = service.followerCountOf(authorId);
-
-      service.toggleFavoriteAuthor(authorId);
-      // 自分の公開設定は既定でfalseのままでも、実数のfollowerCountOfには
-      // カウントされる（「集計」と「表示」を分離する設計）。
-      expect(service.followerCountOf(authorId), before + 1);
-      expect(
-        service.visibleFollowerIdsOf(authorId),
-        isNot(contains(kDummySelfAuthorId)),
-      );
     });
   });
 
@@ -421,46 +364,14 @@ void main() {
     });
   });
 
-  // Task#134継続：フォロー通知（「フォローされたら通知が来るように
-  // してほしい」という要望を受けた実装）。
-  group('フォロー通知', () {
-    test('followNotificationsは自分のフォロワー（ダミー）と件数が一致する', () {
+  // Count milestones do not identify individual followers.
+  group('匿名の件数通知', () {
+    test('初期画面は個別フォロワー通知を生成しない', () async {
+      SharedPreferences.setMockInitialValues({});
       final service = CommunityService();
-      expect(
-        service.followNotifications.length,
-        service.followerCountOf(kDummySelfAuthorId),
-      );
-    });
-
-    test('followNotificationsの通知元は自分のフォロワー一覧と一致する', () {
-      final service = CommunityService();
-      final notifiedIds = service.followNotifications
-          .map((n) => n.followerId)
-          .toSet();
-      expect(notifiedIds, service.followerIdsOf(kDummySelfAuthorId).toSet());
-    });
-
-    test('初期状態では未読数が通知件数と一致し、markAllFollowNotificationsReadで0になる', () {
-      final service = CommunityService();
-      final total = service.followNotifications.length;
-      expect(total, greaterThan(0), reason: 'ダミーデータ上、少なくとも1件はフォロワーがいる想定');
-      expect(service.unreadFollowNotificationCount, total);
-
-      service.markAllFollowNotificationsRead();
-      expect(service.unreadFollowNotificationCount, 0);
-      expect(service.followNotifications.every((n) => n.isRead), isTrue);
-    });
-
-    test('followNotificationsは新着順（followedAt降順）で返す', () {
-      final service = CommunityService();
-      final list = service.followNotifications;
-      for (var i = 0; i < list.length - 1; i++) {
-        expect(
-          list[i].followedAt.isAfter(list[i + 1].followedAt) ||
-              list[i].followedAt.isAtSameMomentAs(list[i + 1].followedAt),
-          isTrue,
-        );
-      }
+      await service.loadMilestones();
+      expect(service.milestoneNotifications, isEmpty);
+      expect(service.unreadMilestoneCount, 0);
     });
   });
 }

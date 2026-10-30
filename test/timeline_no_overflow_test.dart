@@ -139,7 +139,8 @@ void main() {
       expect(rect.right, lessThanOrEqualTo(320), reason: key);
     }
     final handle = tester.getCenter(
-      find.byKey(const Key('timelinePreviewResizeHandle')));
+      find.byKey(const Key('timelinePreviewResizeHandle')),
+    );
     final currentFinder = find.byKey(const Key('timelineCurrentSeconds'));
     final totalFinder = find.byKey(const Key('timelineTotalSeconds'));
     final first = find.byIcon(Icons.skip_previous);
@@ -186,6 +187,5 @@ void main() {
       expectPlaybackPlacement();
       expect(tester.takeException(), isNull, reason: 'width $width');
     }
-
   }, timeout: const Timeout(Duration(seconds: 120)));
 }

@@ -5,6 +5,7 @@ on:
   push:
     branches: [dev_branch]
     paths:
+      - "l10n.yaml"
       - ".github/workflows/save-safety-audit.yml"
       - "lib/engine/niapro_serializer.dart"
       - "lib/engine/tile_manager.dart"
@@ -14,6 +15,34 @@ on:
       - "lib/services/recorded_filter_apply_service.dart"
       - "lib/services/autosave_service.dart"
       - "test/project_save_safety_test.dart"
+      - "lib/utils/folder_persistence.dart"
+      - "lib/screens/home/widgets/project_folder_edit_dialog.dart"
+      - "test/project_folder_persistence_test.dart"
+      - "test/project_folder_transaction_test.dart"
+      - "test/project_folder_edit_ui_test.dart"
+      - "test/shared_empty_folder_widget_test.dart"
+      - "test/community_milestone_account_boundary_test.dart"
+      - "lib/screens/community/community_work_settings_screen.dart"
+      - "lib/services/community_milestone_store.dart"
+      - "lib/screens/home/home_screen.dart"
+      - "lib/services/work_folder_service.dart"
+      - "lib/screens/home/widgets/project_list_widget.dart"
+      - "lib/screens/home/widgets/folder_delete_dialog.dart"
+      - "lib/screens/home/widgets/folder_save_feedback.dart"
+      - "lib/screens/home/widgets/work_folder_move_sheet.dart"
+      - "test/work_folder_service_persistence_test.dart"
+      - "test/home_work_folder_save_failure_test.dart"
+      - "test/folder_save_controls_test.dart"
+      - "test/app_smoke_test.dart"
+      - "test/theme_accent_contrast_test.dart"
+      - "test/helpers/controlled_preferences_store.dart"
+      - "test/folder_name_dialog_short_test.dart"
+      - "lib/screens/home/widgets/exported_work_card.dart"
+      - "test/exported_work_card_test.dart"
+      - "test/home_work_folder_empty_test.dart"
+      - "test/home_exported_work_identity_test.dart"
+      - "test/home_short_controls_and_video_states_test.dart"
+      - "test/helpers/exported_work_name.dart"
       - "test/tile_manager_test.dart"
       - "test/save_slot_*test.dart"
       - "test/save_tree_*test.dart"
@@ -166,7 +195,7 @@ jobs:
         run: |
           mkdir -p artifacts/save-safety
           set -o pipefail
-          flutter test --no-pub --reporter expanded test/project_save_safety_test.dart test/tile_manager_test.dart test/save_slot_overwrite_test.dart test/save_slot_confirmation_dialog_test.dart test/save_slot_action_buttons_test.dart test/save_tree_lazy_list_test.dart 2>&1 | tee artifacts/save-safety/green.log
+          flutter test --no-pub --reporter expanded test/project_save_safety_test.dart test/project_folder_persistence_test.dart test/project_folder_transaction_test.dart test/project_folder_edit_ui_test.dart test/shared_empty_folder_widget_test.dart test/tile_manager_test.dart test/save_slot_overwrite_test.dart test/save_slot_confirmation_dialog_test.dart test/save_slot_action_buttons_test.dart test/save_tree_lazy_list_test.dart 2>&1 | tee artifacts/save-safety/green.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -243,7 +272,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          flutter test --no-pub --reporter expanded 2>&1 | tee artifacts/save-safety/full-test.log
+          flutter test --no-pub --reporter expanded --file-reporter json:artifacts/save-safety/full-test.jsonl 2>&1 | tee artifacts/save-safety/full-test.log
       - name: Export global canonical formatting for diagnosis
         if: always()
         run: |

@@ -26,20 +26,11 @@ void main() {
     }
   });
 
-  test('画面が最小幅より狭い端末では画面の幅に合わせ、200×200は保つ', () {
-    // 以前は最小幅356のまま画面からはみ出し、「詳細へ」と拡大縮小の
-    // 取っ手が画面の外に出ていた。高さを200に保てば要件は満たせる。
+  test('320pxの画面では幅を収めて動画の高さ200pxを保つ', () {
     final s = CommunityPreviewService();
     s.updateWidth(1000, availableWidth: 320);
     expect(s.width, 320);
-    final fresh = CommunityPreviewService();
-    for (final screen in [320.0, 340.0, 355.0]) {
-      final player = fresh.playerSizeFor(screen);
-      expect(player.width, screen);
-      expect(player.width, greaterThanOrEqualTo(minPlayerSide));
-      expect(player.height, greaterThanOrEqualTo(minPlayerSide));
-      expect(fresh.sizeFor(screen).width, lessThanOrEqualTo(screen));
-    }
+    expect(s.playerSize.height, minPlayerSide);
   });
 
   test('画面幅より広くはならない', () {

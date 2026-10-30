@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/services/community_service.dart';
 
@@ -6,6 +7,8 @@ import 'package:niarim/services/community_service.dart';
 /// 以前はcommunityService.worksの並び（ダミーデータの生成順）そのままで、
 /// たった今ブックマークした作品が一覧のどこに出るか分からなかった。
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   group('bookmarkedIdsNewestFirst', () {
     test('ブックマークが無いときは空', () {
       expect(CommunityService().bookmarkedIdsNewestFirst, isEmpty);

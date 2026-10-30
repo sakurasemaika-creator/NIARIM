@@ -173,6 +173,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeWorksEmptyHint => 'キャンバスの書き出しから動画・GIFを作成すると\nここに表示されます';
 
   @override
+  String get homeWorkFolderEmpty => 'このフォルダには書き出した作品がありません';
+
+  @override
+  String get homeSharedFolderEmpty => 'このフォルダには共有プロジェクトがありません';
+
+  @override
+  String homeDeleteFolderKeepContents(String name) {
+    return '「$name」フォルダを削除します。中の項目は一覧に戻り、項目自体は削除されません。';
+  }
+
+  @override
   String get homeShareOpenWith => '共有・写真アプリ等で開く';
 
   @override
@@ -706,6 +717,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get folderManagementEmpty => 'フォルダはまだありません';
+
+  @override
+  String get folderCreateFailed => 'フォルダを作成できませんでした。もう一度お試しください。';
+
+  @override
+  String get folderChangesSaveFailed => 'フォルダの変更を保存できませんでした。もう一度お試しください。';
+
+  @override
+  String get folderChangesPartiallySaved =>
+      '一部の変更だけが保存されました。一覧を確認して、もう一度お試しください。';
 
   @override
   String get folderNameLabel => 'フォルダ名';
@@ -1502,7 +1523,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      '作品を汎用的なMP4動画として書き出します。無料版は書き出せる長さに上限（90秒）があり、動画の最後にエンドカード（アプリロゴ）が自動で追加されます。 アルファチャンネル（背景の透明部分）を保持したまま書き出せる動画形式です。対応する再生環境でのみ透過再生されます。他のアプリの素材として重ねて使いたい場合などに向いています。 アニメーションGIFとして書き出します。自動でループ再生される形式のため、SNSへの投稿など気軽に共有したい場面に向いています。 互換性を重視したい場合はAVI（Motion JPEG）としても書き出せます。特許・ライセンス面で安全なコーデックを採用していますが、アルファチャンネル（透過）には対応せず、端末によってはアプリ内プレビューが利用できない場合があります（その場合も「共有」から外部プレイヤーで再生できます）。 無料会員はプロジェクトの長さに90秒までの上限があります（プレミアム会員は2時間）。フレーム追加・複製によって上限を超えそうな場合は、ボタンをタップした時点で注意ダイアログが表示され、実際に90秒を超えることはありません。';
+      '作品を汎用的なMP4動画として書き出します。無料版は書き出せる長さに上限（90秒）があり、動画の最後にエンドカード（アプリロゴ）が自動で追加されます。 アルファチャンネル（背景の透明部分）を保持したまま書き出せる動画形式です。対応する再生環境でのみ透過再生されます。他のアプリの素材として重ねて使いたい場合などに向いています。 アニメーションGIFとして書き出します。自動でループ再生される形式のため、SNSへの投稿など気軽に共有したい場面に向いています。 互換性を重視したい場合はAVI（Motion JPEG）としても書き出せます。アルファチャンネル（透過）には対応せず、端末によってはアプリ内プレビューが利用できない場合があります（その場合も「共有」から外部プレイヤーで再生できます）。 無料会員はプロジェクトの長さに90秒までの上限があります（プレミアム会員は2時間）。フレーム追加・複製によって上限を超えそうな場合は、ボタンをタップした時点で注意ダイアログが表示され、実際に90秒を超えることはありません。';
 
   @override
   String get helpTransparentWebmTitle => '透過WebM';
@@ -1512,14 +1533,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」の3タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォローされると画面右上のベルアイコンの通知一覧に届きます。自分のフォロー中/フォロワー一覧を全体公開するかどうかも設定でき（既定は非公開）、公開設定にしている他のユーザーの一覧も閲覧できます。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品はホーム画面の「ブクマ済み」タブにまとめて表示されるほか、投稿者別の作品一覧画面の「ブックマーク」タブでも確認できます。自分のブックマーク一覧はユーザー全体へ公開するかどうかを設定でき（既定は非公開）、公開設定にしている他のユーザーのブックマーク一覧も閲覧できます。不適切な作品は理由を添えて通報でき、送信後にはその投稿者をブロックするか選べます。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にするミュートタイトルと、作品広場で作品に設定されたタグだけを対象にするミュートタグ（先頭の#は無視されます）を、カンマ・「、」・改行で区切って登録できます。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。';
+      'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」の3タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォローされると画面右上のベルアイコンの通知一覧に届きます。自分のフォロー中/フォロワー一覧を全体公開するかどうかも設定でき（既定は非公開）、公開設定にしている他のユーザーの一覧も閲覧できます。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品はホーム画面の「ブクマ済み」タブにまとめて表示されるほか、投稿者別の作品一覧画面の「ブックマーク」タブでも確認できます。自分のブックマーク一覧はユーザー全体へ公開するかどうかを設定でき（既定は非公開）、公開設定にしている他のユーザーのブックマーク一覧も閲覧できます。不適切な作品は理由を添えて通報でき、送信後にはその投稿者をブロックするか選べます。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にするミュートタイトルと、作品広場で作品に設定されたタグだけを対象にするミュートタグを「新規追加」から1件ずつ登録し、ペンで編集、ゴミ箱で削除できます。カンマや#は不要です。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。';
 
   @override
   String get helpWatermarkEntryTitle => 'ウォーターマーク';
 
   @override
   String get helpWatermarkEntryDesc =>
-      '書き出した動画・画像に、自分の署名やロゴを透かしとして入れられるプレミアム限定機能です。位置・大きさ・不透明度を調整できます。タイムラインの共通レイヤートラックに配置したウォーターマークをタップすると、角度・大きさ・不透明度・表示範囲（ループ表示）をいつでも再編集できます。登録時だけでなく、実際にプロジェクト内で使うタイミングで細かく調整できます。';
+      '書き出した動画・画像に、自分の署名やロゴを透かしとして入れられるプレミアム限定機能です。位置・大きさ・不透明度を調整できます。タイムラインの共通レイヤートラックに配置したウォーターマークをタップすると、角度・大きさ・不透明度・表示範囲（ループ表示）をいつでも再編集できます。登録時だけでなく、実際にプロジェクト内で使うタイミングで細かく調整できます。 追加するには、タイムラインの「素材を追加」メニューから「＋ウォーターマーク」を選びます。';
 
   @override
   String get helpPremiumEntryTitle => 'プレミアム';
@@ -1757,7 +1778,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      '動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。';
+      '「プリセット」で「標準」「高画質」「カスタム」を選べます。「カスタム」ではFPSを調整できます。動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。';
 
   @override
   String get helpDrawingFilterTitle => '描画フィルター';
@@ -6166,6 +6187,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityFloatingPreviewPauseTooltip => '一時停止';
 
   @override
+  String get communityFloatingPreviewResizeTooltip => 'プレビューのサイズを変更';
+
+  @override
+  String get communityFloatingPreviewMoveHint =>
+      'ドラッグで移動できます。Alt＋矢印キーでも移動できます。';
+
+  @override
+  String get communityFloatingPreviewCompactHint => 'この作品は詳細画面で確認できます。';
+
+  @override
   String get communityReportDialogTitle => '作品を通報';
 
   @override
@@ -6220,47 +6251,15 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle => 'フォロー中/フォロワー一覧を公開する';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      'オンにすると、他のユーザーがこのページからあなたのフォロー中/フォロワー一覧を見られるようになります。既定は非公開です。';
-
-  @override
-  String get communityFollowersListTitle => 'フォロワー';
-
-  @override
-  String get communityFollowersListEmpty => 'フォロワーがいません';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '他に$count人いますが、本人の設定により非表示です';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return 'フォロー中$count人';
   }
 
   @override
-  String get communityFollowingListTitle => 'フォロー中';
-
-  @override
-  String get communityFollowingListEmpty => '誰もフォローしていません';
-
-  @override
   String get communityFollowNotificationsTooltip => '通知';
 
   @override
-  String get communityFollowNotificationsTitle => 'フォロー通知';
-
-  @override
   String get communityFollowNotificationsEmpty => '通知はありません';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$nameさんにフォローされました';
-  }
 
   @override
   String get communityNoWorksMessage => '作品がありません';
@@ -6294,16 +6293,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityAuthorTabBookmarks => 'ブックマーク';
-
-  @override
-  String get communityBookmarksPublicToggleTitle => 'ブックマーク一覧を公開する';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      'オンにすると、他のユーザーがこのページからあなたのブックマーク一覧を見られるようになります。既定は非公開です。';
-
-  @override
-  String get communityBookmarksPrivateNotice => 'このユーザーはブックマーク一覧を非公開にしています。';
 
   @override
   String get communityBookmarksEmptyMessage => 'ブックマークした作品がありません';
@@ -6944,21 +6933,135 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityContentFilterTitle => '表示フィルター';
 
   @override
-  String get communityHideGenerativeAiImageVideo => '「AI画像・AI動画使用」の作品を非表示';
+  String get communityHideGenerativeAiImageVideo => 'AIで生成した画像・動画を使用した作品を表示しない';
 
   @override
   String get communityMutedWords => 'ミュートタイトル登録';
 
   @override
   String get communityMutedWordsHint =>
-      '作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。カンマ・「、」・改行で区切って複数指定できます';
+      '作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。1件ずつ追加・編集できます。';
 
   @override
   String get communityMutedTags => 'ミュートタグ登録';
 
   @override
   String get communityMutedTagsHint =>
-      '作品広場で作品に設定されたタグが一致すると非表示にします（先頭の#は無視されます）。カンマ・「、」・改行で区切って複数指定できます';
+      '作品広場で一致するタグの作品を非表示にします。タグを1件ずつ登録でき、#は不要です。';
+
+  @override
+  String get communityMuteAddNew => '新規追加';
+
+  @override
+  String get communityScrollToTop => '最上部に戻る';
+
+  @override
+  String get communityPostPeriodTitle => '投稿期間';
+
+  @override
+  String get communityDurationFilterTitle => '動画の長さ';
+
+  @override
+  String get communitySavedSearches => '保存した検索条件';
+
+  @override
+  String get communitySignInPromptTitle => 'Googleアカウントでログイン';
+
+  @override
+  String get communitySignInPromptBody =>
+      '作品の投稿・管理、フォロー、ブックマーク、通報などの機能を利用するにはGoogleアカウントとの連携が必要です。';
+
+  @override
+  String get communitySignInPromptConnect => 'Googleアカウントを連携';
+
+  @override
+  String get communitySignInUnavailable =>
+      'この開発ビルドにはGoogleログイン設定がないため、連携を開始できません。';
+
+  @override
+  String get communitySaveSearch => '現在の検索条件を保存';
+
+  @override
+  String get communitySavedSearchName => '検索条件の名前';
+
+  @override
+  String get communitySavedSearchLimit => '保存できる検索条件は10件までです';
+
+  @override
+  String get communitySavedSearchEmpty => '保存した検索条件はありません';
+
+  @override
+  String get communityDurationAny => '長さを指定しない';
+
+  @override
+  String get communityDurationUpTo => '〇分以内（スライダー）';
+
+  @override
+  String get communityDurationRange => '〇分以上〇分以内（数値入力）';
+
+  @override
+  String get communityDurationMinutes => '分以内';
+
+  @override
+  String get communityDurationMinimum => '最短（分）';
+
+  @override
+  String get communityDurationMaximum => '最長（分）';
+
+  @override
+  String get communityTagExactMatch => '検索語を完全一致で検索する（オフなら部分一致）';
+
+  @override
+  String get communityMinimumViews => '再生回数';
+
+  @override
+  String get communityMinimumBookmarks => 'ブックマーク数';
+
+  @override
+  String get communityPostPeriodAll => 'すべての期間';
+
+  @override
+  String get communityPostPeriodToday => '今日';
+
+  @override
+  String get communityPostPeriodWeek => '今週';
+
+  @override
+  String get communityPostPeriodMonth => '今月';
+
+  @override
+  String get communityPostPeriodYear => '今年';
+
+  @override
+  String get communityPostPeriodCustom => '日付期間を指定';
+
+  @override
+  String get communityPostPeriodChooseRange => '日付を選ぶ';
+
+  @override
+  String get communityMutedAuthors => 'ミュートしたユーザー';
+
+  @override
+  String get communityMutedAuthorsEmpty => 'ミュート中のユーザーはいません';
+
+  @override
+  String get communityUnmuteAuthor => 'このユーザーのミュートを解除する';
+
+  @override
+  String get communityMyWorksManagementHeading => '作品管理';
+
+  @override
+  String get communityWorkTagsTitle => '作品のタグ管理';
+
+  @override
+  String get communityWorkTagsHint =>
+      'タグを追加・編集・削除できます。ロックすると他のユーザーは変更できません。ロックしたタグの編集・削除は先に解除してください。';
+
+  @override
+  String get communityWorkEditTag => 'タグを編集';
+
+  @override
+  String get communityWorkTagChangeFailed => 'タグを変更できませんでした';
 
   @override
   String get communityContainsGenerativeAiImageVideo => 'AI画像・AI動画使用';
@@ -6978,7 +7081,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityReloadTooltip => '再読み込み';
 
   @override
-  String get communityGoogleSignInNotConfigured => 'Googleログインがまだ設定されていません';
+  String get communityGoogleSignInNotConfigured => 'Googleアカウントが連携されていません';
 
   @override
   String get communityGoogleAccountBusy =>
@@ -6986,6 +7089,55 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityMyWorksTitle => '自分の投稿';
+
+  @override
+  String get communityMyWorksViewAuthorPage => '自分の作品一覧ページを見る';
+
+  @override
+  String get communityMyWorksAccountRequired =>
+      '作品一覧を表示するにはGoogleアカウントに接続してください';
+
+  @override
+  String get communityMyWorksSettingsTitle => '作品の設定';
+
+  @override
+  String get communityMyWorksPublishInNiarim => 'NIARIM内で公開する';
+
+  @override
+  String get communityMyWorksDeleteNiarim => 'NIARIM作品広場からこの作品を削除';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => 'この作品を削除しますか？';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      'NIARIM内の作品を完全に削除します。YouTube上の動画は削除されません。この操作は取り消せません。';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio => 'YouTube Studioで動画を管理する';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'YouTube側の公開状態や動画設定はYouTube Studioで管理します。NIARIM内の公開設定とは独立しています。';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed => 'YouTube Studioを開けませんでした';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return '操作に失敗しました。$reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => '一括公開';
+
+  @override
+  String get communityMyWorksBulkHide => '一括非公開';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return '完了: $success件 / 失敗: $failed件';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected => 'Googleアカウント未接続';
@@ -7012,11 +7164,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String communitySignInFailed(String reason) {
     return 'Googleアカウントでログインできませんでした。$reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return '公開状態を変更できませんでした。$reason';
   }
 
   @override
@@ -7732,22 +7879,81 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String folderColorName(String color) {
-    String _temp0 = intl.Intl.selectLogic(color, {
-      'pink': 'ピンク',
-      'orange': 'オレンジ',
-      'yellow': '黄',
-      'green': '緑',
-      'blue': '青',
-      'purple': '紫',
-      'gray': 'グレー',
-      'other': '既定の色',
-    });
-    return '$_temp0';
-  }
-
-  @override
   String newProjectNumberRangeError(int min, int max) {
     return '$min〜$maxの数字を入力してください';
   }
+
+  @override
+  String get communityThresholdAny => '条件なし';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '$count回再生以上';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '$count件以上';
+  }
+
+  @override
+  String get communityTileSize => '作品の表示サイズ';
+
+  @override
+  String get communityMutedWordsEmpty => 'ミュート中のキーワードはありません';
+
+  @override
+  String get communityMutedTagsEmpty => 'ミュート中のタグはありません';
+
+  @override
+  String get communityMuteShort => 'ミュート';
+
+  @override
+  String get communityMuteConfirmTitle => 'このユーザーをミュートしますか？';
+
+  @override
+  String get communityMuteConfirmBody => 'ミュートするとこのユーザーの作品は非表示になります。';
+
+  @override
+  String get communityMuteConfirmAction => 'ミュートする';
+
+  @override
+  String get communityUnmuteConfirmTitle => 'このユーザーのミュートを解除しますか？';
+
+  @override
+  String get communityUnmuteConfirmAction => '解除する';
+
+  @override
+  String get communityMuteNo => 'いいえ';
+
+  @override
+  String get communityMuteDone => 'このユーザーをミュートしました';
+
+  @override
+  String get communityUnmuteDone => 'このユーザーのミュートを解除しました';
+
+  @override
+  String get communityMilestoneNotificationsTitle => '通知';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return 'フォロワーが$count人に達しました';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '作品「$title」のブックマークが$count件に達しました';
+  }
+
+  @override
+  String get communitySearchHistory => '検索履歴';
+
+  @override
+  String get communitySearchHistoryEmpty => '検索履歴はありません';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => '保存した検索条件を削除しますか？';
+
+  @override
+  String get communitySortLabel => '並び替え';
 }

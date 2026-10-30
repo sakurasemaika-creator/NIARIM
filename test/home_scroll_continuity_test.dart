@@ -85,6 +85,14 @@ void main() {
         });
         await tester.pumpAndSettle();
         expect(service.projects.length, 120);
+        expect(
+          find.ancestor(
+            of: find.byType(FilterChip),
+            matching: find.byType(CustomScrollView),
+          ),
+          findsOneWidget,
+          reason: 'favorites filter must scroll away with the project list',
+        );
         final list = find
             .descendant(
               of: find.byType(ProjectListWidget),
@@ -97,6 +105,13 @@ void main() {
             tester.state<ScrollableState>(list).position.pixels;
         final before = position();
         expect(before, greaterThan(300));
+        await tester.tap(find.byKey(const Key('homeScrollToTopFab')));
+        await tester.pumpAndSettle();
+        expect(position(), closeTo(0, .1));
+        await tester.drag(list, const Offset(0, -1200));
+        await tester.pumpAndSettle();
+        final restoredBefore = position();
+        expect(restoredBefore, greaterThan(300));
         for (final index in [2, 0]) {
           final tab = find.byKey(ValueKey('home_tab_$index'));
           await tester.ensureVisible(tab);
@@ -105,13 +120,13 @@ void main() {
         }
         expect(
           position(),
-          closeTo(before, .1),
+          closeTo(restoredBefore, .1),
           reason: 'return to the same project list position',
         );
         final scaffold = tester.state<ScaffoldState>(
           find.byType(Scaffold).first,
         );
-        scaffold.openDrawer();
+        scaffold.openEndDrawer();
         await tester.pumpAndSettle();
         await tester.tap(
           find.descendant(of: find.byType(Drawer), matching: find.text('設定')),
@@ -121,7 +136,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(
           position(),
-          closeTo(before, .1),
+          closeTo(restoredBefore, .1),
           reason: 'drawer destination returns to the same list position',
         );
         expect(tester.takeException(), isNull);

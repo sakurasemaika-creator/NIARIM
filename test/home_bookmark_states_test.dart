@@ -126,23 +126,15 @@ void main() {
             findsOneWidget,
             reason: 'delay=$delay',
           );
-          // ブクマ済みのタブに出るFABは左下の「起動画面へ戻る」だけ
-          // （プロジェクト・作品一覧の追加ボタンが残らない）。
           expect(
             find.byType(FloatingActionButton),
-            findsOneWidget,
-            reason: 'delay=$delay',
-          );
-          expect(
-            find.byKey(const Key('homeBackToSplashFab')),
-            findsOneWidget,
-            reason: 'delay=$delay',
-          );
-          expect(find.byIcon(Icons.add), findsNothing, reason: 'delay=$delay');
-          expect(
-            find.byIcon(Icons.create_new_folder_outlined),
             findsNothing,
-            reason: 'delay=$delay',
+            reason:
+                'The project-only scroll-to-top FAB is hidden on bookmarks; delay=$delay',
+          );
+          expect(
+            find.byKey(const Key('homeBackToSplashButton')),
+            findsOneWidget,
           );
           await tester.pumpWidget(const SizedBox.shrink());
           tester.platformDispatcher.clearTextScaleFactorTestValue();

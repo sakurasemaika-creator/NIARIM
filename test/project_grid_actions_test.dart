@@ -123,6 +123,13 @@ void main() {
         final l10n = AppLocalizations.of(tester.element(_card('Project')))!;
 
         for (final name in ['Project', 'Folder']) {
+          expect(tester.getSize(_menu(name)), const Size(48, 48));
+          final target = tester.getRect(_menu(name));
+          expect(tester.getRect(_card(name)).contains(target.topLeft), isTrue);
+          expect(
+            tester.getRect(_card(name)).contains(target.bottomRight),
+            isTrue,
+          );
           await tester.tap(_menu(name));
           await tester.pump(
             kDoubleTapTimeout + const Duration(milliseconds: 1),
@@ -245,8 +252,9 @@ void main() {
     });
   }
 
-  testWidgets('favorite stars use the theme accent, never a fixed yellow',
-      (tester) async {
+  testWidgets('favorite stars use the theme accent, never a fixed yellow', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -256,27 +264,29 @@ void main() {
     final themeService = ThemeService();
     addTearDown(themeService.dispose);
     await themeService.init();
-    final projects = _GridProjects()
-      ..favoriteIds.addAll(['project', 'folder']);
+    final projects = _GridProjects()..favoriteIds.addAll(['project', 'folder']);
     addTearDown(projects.dispose);
 
     // Match NiarimApp: ThemeService notifies a listener which rebuilds
     // MaterialApp, rather than substituting an independent static theme.
-    await tester.pumpWidget(AnimatedBuilder(
-      animation: themeService,
-      builder: (context, _) => _host(
-        projects,
-        ProjectViewMode.medium,
-        theme: themeService.themeData,
-        onOpenFolder: (_) {},
-        onSelectionChanged: (_) {},
+    await tester.pumpWidget(
+      AnimatedBuilder(
+        animation: themeService,
+        builder: (context, _) => _host(
+          projects,
+          ProjectViewMode.medium,
+          theme: themeService.themeData,
+          onOpenFolder: (_) {},
+          onSelectionChanged: (_) {},
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
 
     for (final accent in [
       const Color(0xFFE53935),
       const Color(0xFF2867DA),
+      const Color(0xFFDD00EE),
     ]) {
       // 星は背景の上のアイコンなので「アクセントの文字・アイコン色」で描く。
       // 既定のテーマはこの色を指定しているので、未指定（＝差し色に従う）にする。
@@ -292,73 +302,96 @@ void main() {
       expect(themeService.themeData.colorScheme.primary, accent);
       for (final name in ['Project', 'Folder']) {
         final star = find.descendant(
-          of: _card(name), matching: find.byIcon(Icons.star));
+          of: _card(name),
+          matching: find.byIcon(Icons.star),
+        );
         expect(star, findsOneWidget, reason: '$name with $accent');
-        expect(Theme.of(tester.element(star)).colorScheme.primary, accent,
-          reason: '$name must receive the active ThemeData');
-        expect(tester.widget<Icon>(star).color, accent,
-          reason: '$name must use the selected accent');
+        expect(
+          Theme.of(tester.element(star)).colorScheme.primary,
+          accent,
+          reason: '$name must receive the active ThemeData',
+        );
+        expect(
+          tester.widget<Icon>(star).color,
+          accent,
+          reason: '$name must use the selected accent',
+        );
       }
       expect(tester.takeException(), isNull);
     }
   });
 
-  testWidgets('selected project and folder checks follow custom selection colors', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    SharedPreferences.setMockInitialValues({});
-    const selectedBg = Color(0xFF334455);
-    const selectedForeground = Color(0xFFF1B777);
-    final themeService = ThemeService();
-    addTearDown(themeService.dispose);
-    await themeService.init();
-    themeService.previewCurrent(AppThemePreset.defaultLight.copyWith(
-      accentColor: const Color(0xFFEE5577),
-      buttonTextColor: Colors.white,
-      selectionColor: selectedBg,
-      selectionTextColor: selectedForeground,
-    ));
-    final projectService = _GridProjects();
-    addTearDown(projectService.dispose);
-    await tester.pumpWidget(_host(
-      projectService,
-      ProjectViewMode.medium,
-      isSelectionMode: true,
-      selectedIds: const {'project', 'folder'},
-      theme: themeService.themeData,
-      onOpenFolder: (_) {},
-      onSelectionChanged: (_) {},
-    ));
-    await tester.pumpAndSettle();
-    for (final name in ['Project', 'Folder']) {
-      final check = find.descendant(
-        of: _card(name), matching: find.byIcon(Icons.check));
-      expect(check, findsOneWidget);
-      expect(tester.widget<Icon>(check).color, selectedForeground);
-      // Project badge uses AnimatedContainer, folder badge uses Container.
-      final anim = tester.widgetList<AnimatedContainer>(
-        find.ancestor(of: check, matching: find.byType(AnimatedContainer)));
-      final containers = tester.widgetList<Container>(
-        find.ancestor(of: check, matching: find.byType(Container)));
-      final hasSelectedFill = [
-        ...anim.map((w) => w.decoration),
-        ...containers.map((w) => w.decoration),
-      ].any((decoration) =>
-          decoration is BoxDecoration && decoration.color == selectedBg);
-      expect(hasSelectedFill, isTrue, reason: '$name selection background');
-    }
-    final checkboxTheme = themeService.themeData.checkboxTheme;
-    expect(
-      checkboxTheme.fillColor!.resolve({WidgetState.selected}), selectedBg);
-    expect(
-      checkboxTheme.checkColor!.resolve({WidgetState.selected}),
-      selectedForeground);
-    expect(tester.takeException(), isNull);
-  });
+  testWidgets(
+    'selected project and folder checks follow custom selection colors',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      SharedPreferences.setMockInitialValues({});
+      const selectedBg = Color(0xFF334455);
+      const selectedForeground = Color(0xFFF1B777);
+      final themeService = ThemeService();
+      addTearDown(themeService.dispose);
+      await themeService.init();
+      themeService.previewCurrent(
+        AppThemePreset.defaultLight.copyWith(
+          accentColor: const Color(0xFFEE5577),
+          buttonTextColor: Colors.white,
+          selectionColor: selectedBg,
+          selectionTextColor: selectedForeground,
+        ),
+      );
+      final projectService = _GridProjects();
+      addTearDown(projectService.dispose);
+      await tester.pumpWidget(
+        _host(
+          projectService,
+          ProjectViewMode.medium,
+          isSelectionMode: true,
+          selectedIds: const {'project', 'folder'},
+          theme: themeService.themeData,
+          onOpenFolder: (_) {},
+          onSelectionChanged: (_) {},
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (final name in ['Project', 'Folder']) {
+        final check = find.descendant(
+          of: _card(name),
+          matching: find.byIcon(Icons.check),
+        );
+        expect(check, findsOneWidget);
+        expect(tester.widget<Icon>(check).color, selectedForeground);
+        // Project badge uses AnimatedContainer, folder badge uses Container.
+        final anim = tester.widgetList<AnimatedContainer>(
+          find.ancestor(of: check, matching: find.byType(AnimatedContainer)),
+        );
+        final containers = tester.widgetList<Container>(
+          find.ancestor(of: check, matching: find.byType(Container)),
+        );
+        final hasSelectedFill =
+            [
+              ...anim.map((w) => w.decoration),
+              ...containers.map((w) => w.decoration),
+            ].any(
+              (decoration) =>
+                  decoration is BoxDecoration && decoration.color == selectedBg,
+            );
+        expect(hasSelectedFill, isTrue, reason: '$name selection background');
+      }
+      final checkboxTheme = themeService.themeData.checkboxTheme;
+      expect(
+        checkboxTheme.fillColor!.resolve({WidgetState.selected}),
+        selectedBg,
+      );
+      expect(
+        checkboxTheme.checkColor!.resolve({WidgetState.selected}),
+        selectedForeground,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('project picker keeps editing menus hidden', (tester) async {
     final service = _GridProjects();

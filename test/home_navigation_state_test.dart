@@ -262,14 +262,15 @@ void main() {
     expect(find.byType(SplashScreen), findsOneWidget);
   });
 
-  // 検索中の左上はハンバーガーごと隠れ、検索は右上の×で閉じる。
+  // 検索中も左上の戻る矢印と右上のメニューはそのままで、検索は×で閉じる。
   testWidgets('the close button ends search without leaving Home', (
     tester,
   ) async {
     await boot(tester, projects: 1);
     await tester.tap(find.byIcon(Icons.search));
     await settle(tester);
-    expect(find.byIcon(Icons.menu), findsNothing);
+    expect(find.byKey(const Key('homeBackToSplashButton')), findsOneWidget);
+    expect(find.byKey(const Key('homeMenuButton')), findsOneWidget);
     await tester.tap(find.byIcon(Icons.close));
     await settle(tester);
     expect(find.byType(TextField), findsNothing);
@@ -343,10 +344,16 @@ void main() {
     tester,
   ) async {
     await boot(tester, projects: 20);
-    await tester.drag(find.byType(GridView), const Offset(0, -4000));
+    await tester.drag(
+      find.descendant(
+        of: find.byType(ProjectListWidget),
+        matching: find.byType(CustomScrollView),
+      ),
+      const Offset(0, -4000),
+    );
     await settle(tester);
     final fabTop = tester
-        .getRect(find.byKey(const Key('homeBackToSplashFab')))
+        .getRect(find.byKey(const Key('homeScrollToTopFab')))
         .top;
     for (final name in ['P1', 'P2', 'P3']) {
       expect(
@@ -376,8 +383,8 @@ void main() {
     expect(empty.center.dy, moreOrLessEquals(view.center.dy, epsilon: 1));
   });
 
-  // 起動画面へ戻るのは左下のFAB。
-  testWidgets('the back FAB returns to splash even over another screen', (
+  // 起動画面へ戻るのは左上の矢印。
+  testWidgets('the back arrow returns to splash even over another screen', (
     tester,
   ) async {
     await boot(tester);
@@ -385,7 +392,7 @@ void main() {
     appRouter.push('/home');
     await settle(tester);
     await tester.pump(const Duration(seconds: 1));
-    await tester.tap(find.byKey(const Key('homeBackToSplashFab')));
+    await tester.tap(find.byKey(const Key('homeBackToSplashButton')));
     await settle(tester);
     await tester.pump(const Duration(seconds: 1));
     expect(location(), '/');
@@ -429,7 +436,10 @@ void main() {
     tester,
   ) async {
     await boot(tester, projects: 40);
-    final grid = find.byType(GridView);
+    final grid = find.descendant(
+      of: find.byType(ProjectListWidget),
+      matching: find.byType(CustomScrollView),
+    );
     await tester.drag(grid, const Offset(0, -600));
     await settle(tester);
     // 先頭のScrollableはタブを横に送るPageViewなので、一覧のものを探す。

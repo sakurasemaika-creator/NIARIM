@@ -180,6 +180,19 @@ class AppLocalizationsFr extends AppLocalizations {
       'Exportez une vidéo ou un GIF depuis le canevas et il apparaîtra ici';
 
   @override
+  String get homeWorkFolderEmpty =>
+      'Ce dossier ne contient aucune œuvre exportée';
+
+  @override
+  String get homeSharedFolderEmpty =>
+      'Ce dossier ne contient aucun projet partagé';
+
+  @override
+  String homeDeleteFolderKeepContents(String name) {
+    return '\"$name\" sera supprimé. Son contenu reviendra dans la liste principale et ne sera pas supprimé.';
+  }
+
+  @override
   String get homeShareOpenWith => 'Partager / Ouvrir dans Photos';
 
   @override
@@ -731,6 +744,17 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get folderManagementEmpty => 'Aucun dossier pour le moment';
+
+  @override
+  String get folderCreateFailed => 'Impossible de créer le dossier. Réessayez.';
+
+  @override
+  String get folderChangesSaveFailed =>
+      'Impossible d’enregistrer les modifications du dossier. Réessayez.';
+
+  @override
+  String get folderChangesPartiallySaved =>
+      'Seule une partie des modifications a été enregistrée. Vérifiez la liste et réessayez.';
 
   @override
   String get folderNameLabel => 'Nom du dossier';
@@ -1551,7 +1575,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'Exporte votre oeuvre au format video MP4 standard. La version gratuite a une limite de duree (90 secondes) et ajoute automatiquement une carte de fin (logo de l\'application) a la fin de la video. Un format vidéo qui peut être exporté en conservant le canal alpha (les parties transparentes du fond). La lecture transparente ne fonctionne que dans les environnements de lecture compatibles. Idéal pour superposer comme matériau dans d\'autres applications. Exporte au format GIF anime. Comme il boucle automatiquement, il convient bien au partage decontracte sur les reseaux sociaux. Si la compatibilité prime, vous pouvez aussi exporter au format AVI (Motion JPEG). Il utilise un codec choisi pour sa sécurité en matière de brevets et de licences, mais ne prend pas en charge le canal alpha (transparence), et l\'aperçu dans l\'application peut ne pas fonctionner sur tous les appareils (vous pouvez tout de même le lire via un lecteur externe depuis Partager). Les comptes gratuits sont limités à 90 secondes de durée de projet (les comptes Premium ont 2 heures). Si ajouter ou dupliquer des images vous ferait dépasser la limite, une alerte apparaît dès que vous appuyez sur le bouton, donc vous ne dépassez jamais réellement 90 secondes.';
+      'Exporte votre oeuvre au format video MP4 standard. La version gratuite a une limite de duree (90 secondes) et ajoute automatiquement une carte de fin (logo de l\'application) a la fin de la video. Un format vidéo qui peut être exporté en conservant le canal alpha (les parties transparentes du fond). La lecture transparente ne fonctionne que dans les environnements de lecture compatibles. Idéal pour superposer comme matériau dans d\'autres applications. Exporte au format GIF anime. Comme il boucle automatiquement, il convient bien au partage decontracte sur les reseaux sociaux. Si la compatibilité prime, vous pouvez aussi exporter au format AVI (Motion JPEG). Il ne prend pas en charge le canal alpha (transparence), et l\'aperçu dans l\'application peut ne pas fonctionner sur tous les appareils (vous pouvez tout de même le lire via un lecteur externe depuis Partager). Les comptes gratuits sont limités à 90 secondes de durée de projet (les comptes Premium ont 2 heures). Si ajouter ou dupliquer des images vous ferait dépasser la limite, une alerte apparaît dès que vous appuyez sur le bouton, donc vous ne dépassez jamais réellement 90 secondes.';
 
   @override
   String get helpTransparentWebmTitle => 'WebM transparent';
@@ -1561,14 +1585,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Publiez vos animations et illustrations dans la communauté sous forme de vidéos YouTube, et parcourez les œuvres des autres utilisateurs. Basculez entre les onglets « Nouveautés », « Classement » et « Abonnements », et effectuez une recherche par titre d’œuvre ou nom du créateur. Passez en mode recherche par tag pour filtrer les œuvres par tag : n’importe quel utilisateur (pas seulement le créateur) peut ajouter ou retirer des tags, mais un tag verrouillé par le créateur ne peut être retiré que par lui, et toucher un tag filtre instantanément les œuvres correspondantes. Toucher une carte d’œuvre ouvre une fenêtre d’aperçu flottante déplaçable et redimensionnable, pour continuer à naviguer sur d’autres écrans pendant la lecture. Le bouton « Voir les détails » ouvre l’écran de détails de l’œuvre (créateur, date de publication, modification des tags, mise en favori, republication, etc.). Toucher le bouton « Suivre » à côté du nom d’un créateur l’ajoute à vos abonnements : l’onglet « Abonnements » regroupe alors uniquement les publications de ce créateur, triées par date. Lorsque quelqu’un vous suit, cela apparaît dans la liste de notifications sous l’icône de cloche en haut de l’écran. Vous pouvez choisir si vos listes d’abonnements/abonnés sont visibles par les autres utilisateurs (privées par défaut), et consulter les listes des autres utilisateurs si elles sont publiques. Vous pouvez repartager l’œuvre de n’importe qui d’autre (sauf la vôtre) avec le bouton « Repartager » ; lorsqu’un créateur que vous suivez repartage l’œuvre de quelqu’un d’autre, cette œuvre apparaît aussi dans votre onglet « Abonnements », triée selon la date la plus récente — sa date de publication d’origine ou sa date de republication (la carte affiche « Repartagé par… »). Les œuvres mises en favori apparaissent regroupées dans l’onglet « Favoris » de l’écran d’accueil, ainsi que dans l’onglet « Favoris » de l’écran des œuvres d’un créateur. Vous pouvez choisir si votre propre liste de favoris est visible par les autres utilisateurs (privée par défaut), et consulter la liste de favoris des autres utilisateurs si elle est rendue publique. Vous pouvez signaler une œuvre en indiquant un motif, et après l’envoi, il vous sera demandé si vous souhaitez bloquer ce créateur. Les vidéos verticales peuvent être visionnées en « mode vertical », qui les enchaîne comme un flux de vidéos courtes. Le nombre de publications par jour est limité : 1 par jour pour les membres gratuits, 3 par jour pour les membres Premium. Le bouton des filtres d’affichage en haut à droite (l’icône d’œil barré) permet de masquer les œuvres que vous ne souhaitez pas voir. Vous pouvez masquer les œuvres marquées « Contient des images ou vidéos générées par IA », et ajouter des titres masqués (comparés uniquement au titre de l’œuvre) et des tags masqués (comparés uniquement aux tags attribués à l’œuvre sur la Place des œuvres ; le # initial est ignoré), séparés par des virgules ou des retours à la ligne. Ces filtres s’appliquent aux onglets « Nouveautés », « Classement » et « Abonnements » (repartages compris), au mode vertical, aux pages des créateurs, aux détails des œuvres et aux favoris. La mention « Contient des images ou vidéos générées par IA » est déclarée par l’auteur au moment de la publication, et lui seul peut la modifier ensuite (depuis « Mes publications » ou l’écran de détails de l’œuvre).';
+      'Publiez vos animations et illustrations dans la communauté sous forme de vidéos YouTube, et parcourez les œuvres des autres utilisateurs. Basculez entre les onglets « Nouveautés », « Classement » et « Abonnements », et effectuez une recherche par titre d’œuvre ou nom du créateur. Passez en mode recherche par tag pour filtrer les œuvres par tag : n’importe quel utilisateur (pas seulement le créateur) peut ajouter ou retirer des tags, mais un tag verrouillé par le créateur ne peut être retiré que par lui, et toucher un tag filtre instantanément les œuvres correspondantes. Toucher une carte d’œuvre ouvre une fenêtre d’aperçu flottante déplaçable et redimensionnable, pour continuer à naviguer sur d’autres écrans pendant la lecture. Le bouton « Voir les détails » ouvre l’écran de détails de l’œuvre (créateur, date de publication, modification des tags, mise en favori, republication, etc.). Toucher le bouton « Suivre » à côté du nom d’un créateur l’ajoute à vos abonnements : l’onglet « Abonnements » regroupe alors uniquement les publications de ce créateur, triées par date. Lorsque quelqu’un vous suit, cela apparaît dans la liste de notifications sous l’icône de cloche en haut de l’écran. Vous pouvez choisir si vos listes d’abonnements/abonnés sont visibles par les autres utilisateurs (privées par défaut), et consulter les listes des autres utilisateurs si elles sont publiques. Vous pouvez repartager l’œuvre de n’importe qui d’autre (sauf la vôtre) avec le bouton « Repartager » ; lorsqu’un créateur que vous suivez repartage l’œuvre de quelqu’un d’autre, cette œuvre apparaît aussi dans votre onglet « Abonnements », triée selon la date la plus récente — sa date de publication d’origine ou sa date de republication (la carte affiche « Repartagé par… »). Les œuvres mises en favori apparaissent regroupées dans l’onglet « Favoris » de l’écran d’accueil, ainsi que dans l’onglet « Favoris » de l’écran des œuvres d’un créateur. Vous pouvez choisir si votre propre liste de favoris est visible par les autres utilisateurs (privée par défaut), et consulter la liste de favoris des autres utilisateurs si elle est rendue publique. Vous pouvez signaler une œuvre en indiquant un motif, et après l’envoi, il vous sera demandé si vous souhaitez bloquer ce créateur. Les vidéos verticales peuvent être visionnées en « mode vertical », qui les enchaîne comme un flux de vidéos courtes. Le nombre de publications par jour est limité : 1 par jour pour les membres gratuits, 3 par jour pour les membres Premium. Le bouton des filtres d’affichage en haut à droite (l’icône d’œil barré) permet de masquer les œuvres que vous ne souhaitez pas voir. Vous pouvez masquer les œuvres marquées « Contient des images ou vidéos générées par IA », et ajouter des titres masqués (comparés uniquement au titre de l’œuvre) et des tags masqués (comparés uniquement aux tags de la Place des œuvres), un par un avec « Ajouter ». Modifiez avec le crayon ou supprimez avec la corbeille ; aucune virgule ni # nécessaire. Ces filtres s’appliquent aux onglets « Nouveautés », « Classement » et « Abonnements » (repartages compris), au mode vertical, aux pages des créateurs, aux détails des œuvres et aux favoris. La mention « Contient des images ou vidéos générées par IA » est déclarée par l’auteur au moment de la publication, et lui seul peut la modifier ensuite (depuis « Mes publications » ou l’écran de détails de l’œuvre).';
 
   @override
   String get helpWatermarkEntryTitle => 'Filigrane';
 
   @override
   String get helpWatermarkEntryDesc =>
-      'Une fonctionnalité réservée aux membres premium qui permet d\'ajouter votre propre signature ou logo en filigrane sur les vidéos et images exportées. Vous pouvez ajuster sa position, sa taille et son opacité. Touchez le filigrane placé sur la piste de calque commun de la timeline pour modifier à tout moment son angle, sa taille, son opacité et sa plage d\'affichage (bouclage) — pas seulement lors de son enregistrement, mais chaque fois que vous l\'utilisez dans un projet.';
+      'Une fonctionnalité réservée aux membres premium qui permet d\'ajouter votre propre signature ou logo en filigrane sur les vidéos et images exportées. Vous pouvez ajuster sa position, sa taille et son opacité. Touchez le filigrane placé sur la piste de calque commun de la timeline pour modifier à tout moment son angle, sa taille, son opacité et sa plage d\'affichage (bouclage) — pas seulement lors de son enregistrement, mais chaque fois que vous l\'utilisez dans un projet. Pour ajouter un filigrane, ouvrez « Ajouter un matériau » dans la timeline, puis choisissez « + Filigrane ».';
 
   @override
   String get helpPremiumEntryTitle => 'Premium';
@@ -1810,7 +1834,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'Affiche la progression pendant l\'export d\'une vidéo ou d\'une image, et permet d\'annuler en cours de route. Le temps nécessaire dépend des performances de l\'appareil.';
+      'Dans « Préréglage », choisissez « Standard », « Haute qualité » ou « Personnalisé ». Le mode « Personnalisé » permet de régler les images par seconde (FPS). Affiche la progression pendant l\'export d\'une vidéo ou d\'une image, et permet d\'annuler en cours de route. Le temps nécessaire dépend des performances de l\'appareil.';
 
   @override
   String get helpDrawingFilterTitle => 'Filtres de dessin';
@@ -6491,6 +6515,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityFloatingPreviewPauseTooltip => 'Pause';
 
   @override
+  String get communityFloatingPreviewResizeTooltip => 'Redimensionner l’aperçu';
+
+  @override
+  String get communityFloatingPreviewMoveHint =>
+      'Faites glisser pour déplacer l’aperçu, ou utilisez Alt + les flèches.';
+
+  @override
+  String get communityFloatingPreviewCompactHint =>
+      'Ouvrez Détails pour voir cette œuvre.';
+
+  @override
   String get communityReportDialogTitle => 'Signaler cette œuvre';
 
   @override
@@ -6551,48 +6586,15 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle =>
-      'Rendre les listes d\'abonnements/abonnés publiques';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      'Si activé, les autres utilisateurs pourront voir vos listes d\'abonnements et d\'abonnés depuis cette page. Privées par défaut.';
-
-  @override
-  String get communityFollowersListTitle => 'Abonnés';
-
-  @override
-  String get communityFollowersListEmpty => 'Aucun abonné pour le moment';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '$count de plus non affichés, masqués par leurs propres paramètres de confidentialité';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return '$count abonnements';
   }
 
   @override
-  String get communityFollowingListTitle => 'Abonnements';
-
-  @override
-  String get communityFollowingListEmpty => 'Ne suit personne pour le moment';
-
-  @override
   String get communityFollowNotificationsTooltip => 'Notifications';
 
   @override
-  String get communityFollowNotificationsTitle => 'Notifications d\'abonnement';
-
-  @override
   String get communityFollowNotificationsEmpty => 'Aucune notification';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$name vous suit désormais';
-  }
 
   @override
   String get communityNoWorksMessage => 'Aucune œuvre';
@@ -6626,18 +6628,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityAuthorTabBookmarks => 'Favoris';
-
-  @override
-  String get communityBookmarksPublicToggleTitle =>
-      'Rendre la liste de favoris publique';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      'Si activé, les autres utilisateurs pourront voir votre liste de favoris depuis cette page. Privée par défaut.';
-
-  @override
-  String get communityBookmarksPrivateNotice =>
-      'Cet utilisateur a défini sa liste de favoris comme privée.';
 
   @override
   String get communityBookmarksEmptyMessage => 'Aucune œuvre en favoris';
@@ -7312,14 +7302,129 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityMutedWordsHint =>
-      'Masque les œuvres dont le titre contient ce texte (les noms des créateurs et les tags ne sont pas pris en compte). Séparez plusieurs entrées par des virgules ou des retours à la ligne.';
+      'Masque les œuvres dont le titre contient ces mots (sans vérifier les auteurs ni les tags). Ajoutez et modifiez chaque mot séparément.';
 
   @override
   String get communityMutedTags => 'Tags masqués';
 
   @override
   String get communityMutedTagsHint =>
-      'Masque les œuvres qui portent ce tag sur la Place des œuvres (le # initial est ignoré). Séparez plusieurs entrées par des virgules ou des retours à la ligne.';
+      'Masque les œuvres portant ces tags sur la Place des œuvres. Ajoutez chaque tag séparément, sans #.';
+
+  @override
+  String get communityMuteAddNew => 'Ajouter';
+
+  @override
+  String get communityScrollToTop => 'Retour en haut';
+
+  @override
+  String get communityPostPeriodTitle => 'Date de publication';
+
+  @override
+  String get communityDurationFilterTitle => 'Durée de la vidéo';
+
+  @override
+  String get communitySavedSearches => 'Recherches enregistrées';
+
+  @override
+  String get communitySignInPromptTitle => 'Se connecter avec Google';
+
+  @override
+  String get communitySignInPromptBody =>
+      'Un compte Google lié est requis pour publier et gérer des œuvres, suivre des créateurs, enregistrer et signaler du contenu.';
+
+  @override
+  String get communitySignInPromptConnect => 'Associer un compte Google';
+
+  @override
+  String get communitySignInUnavailable =>
+      'La connexion Google n’est pas configurée pour cette version de développement.';
+
+  @override
+  String get communitySaveSearch => 'Enregistrer la recherche';
+
+  @override
+  String get communitySavedSearchName => 'Nom de la recherche';
+
+  @override
+  String get communitySavedSearchLimit => '10 recherches enregistrées maximum';
+
+  @override
+  String get communitySavedSearchEmpty => 'Aucune recherche enregistrée';
+
+  @override
+  String get communityDurationAny => 'Toutes les durées';
+
+  @override
+  String get communityDurationUpTo => 'Jusqu’à N minutes (curseur)';
+
+  @override
+  String get communityDurationRange => 'Entre N et N minutes (saisie)';
+
+  @override
+  String get communityDurationMinutes => 'minutes maximum';
+
+  @override
+  String get communityDurationMinimum => 'Minutes min.';
+
+  @override
+  String get communityDurationMaximum => 'Minutes max.';
+
+  @override
+  String get communityTagExactMatch =>
+      'Correspondance exacte (désactivé pour partielle)';
+
+  @override
+  String get communityMinimumViews => 'Vues';
+
+  @override
+  String get communityMinimumBookmarks => 'Favoris';
+
+  @override
+  String get communityPostPeriodAll => 'Toutes les dates';
+
+  @override
+  String get communityPostPeriodToday => 'Aujourd\'hui';
+
+  @override
+  String get communityPostPeriodWeek => 'Cette semaine';
+
+  @override
+  String get communityPostPeriodMonth => 'Ce mois-ci';
+
+  @override
+  String get communityPostPeriodYear => 'Cette année';
+
+  @override
+  String get communityPostPeriodCustom => 'Période personnalisée';
+
+  @override
+  String get communityPostPeriodChooseRange => 'Choisir les dates';
+
+  @override
+  String get communityMutedAuthors => 'Créateurs masqués';
+
+  @override
+  String get communityMutedAuthorsEmpty => 'Aucun créateur masqué';
+
+  @override
+  String get communityUnmuteAuthor => 'Ne plus masquer ce créateur';
+
+  @override
+  String get communityMyWorksManagementHeading => 'Gérer les œuvres';
+
+  @override
+  String get communityWorkTagsTitle => 'Tags de l\'œuvre';
+
+  @override
+  String get communityWorkTagsHint =>
+      'Ajoutez, modifiez ou supprimez des tags. Le verrouillage empêche les autres de les modifier. Déverrouillez avant toute modification ou suppression.';
+
+  @override
+  String get communityWorkEditTag => 'Modifier le tag';
+
+  @override
+  String get communityWorkTagChangeFailed => 'Impossible de modifier le tag';
 
   @override
   String get communityContainsGenerativeAiImageVideo =>
@@ -7341,7 +7446,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityGoogleSignInNotConfigured =>
-      'La connexion avec Google n’est pas encore configurée';
+      'Aucun compte Google n’est associé';
 
   @override
   String get communityGoogleAccountBusy =>
@@ -7349,6 +7454,58 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityMyWorksTitle => 'Mes publications';
+
+  @override
+  String get communityMyWorksViewAuthorPage => 'Voir ma page de créations';
+
+  @override
+  String get communityMyWorksAccountRequired =>
+      'Connectez votre compte Google pour voir vos créations';
+
+  @override
+  String get communityMyWorksSettingsTitle => 'Paramètres de la création';
+
+  @override
+  String get communityMyWorksPublishInNiarim => 'Rendre visible dans NIARIM';
+
+  @override
+  String get communityMyWorksDeleteNiarim =>
+      'Supprimer cette œuvre de la Place des œuvres NIARIM';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => 'Supprimer cette création ?';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      'Cette création sera supprimée définitivement de NIARIM. La vidéo YouTube sera conservée. Cette action est irréversible.';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio =>
+      'Gérer la vidéo dans YouTube Studio';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'Gérez la visibilité et les réglages YouTube dans YouTube Studio, indépendamment de NIARIM.';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed =>
+      'Impossible d’ouvrir YouTube Studio';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return 'Échec de l’opération : $reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => 'Publier la sélection';
+
+  @override
+  String get communityMyWorksBulkHide => 'Masquer la sélection';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return 'Modifiées : $success / Échecs : $failed';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected =>
@@ -7377,11 +7534,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String communitySignInFailed(String reason) {
     return 'Impossible de se connecter avec votre compte Google. $reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return 'Impossible de modifier la visibilité. $reason';
   }
 
   @override
@@ -8168,22 +8320,83 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String folderColorName(String color) {
-    String _temp0 = intl.Intl.selectLogic(color, {
-      'pink': 'Rose',
-      'orange': 'Orange',
-      'yellow': 'Jaune',
-      'green': 'Vert',
-      'blue': 'Bleu',
-      'purple': 'Violet',
-      'gray': 'Gris',
-      'other': 'Couleur par défaut',
-    });
-    return '$_temp0';
-  }
-
-  @override
   String newProjectNumberRangeError(int min, int max) {
     return 'Saisissez un nombre entre $min et $max';
   }
+
+  @override
+  String get communityThresholdAny => 'Aucune condition';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return 'Au moins $count vues';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return 'Au moins $count favoris';
+  }
+
+  @override
+  String get communityTileSize => 'Taille des œuvres';
+
+  @override
+  String get communityMutedWordsEmpty => 'Aucun mot-clé masqué';
+
+  @override
+  String get communityMutedTagsEmpty => 'Aucun tag masqué';
+
+  @override
+  String get communityMuteShort => 'Masquer';
+
+  @override
+  String get communityMuteConfirmTitle => 'Masquer cet utilisateur ?';
+
+  @override
+  String get communityMuteConfirmBody =>
+      'Les œuvres de cet utilisateur ne seront plus affichées.';
+
+  @override
+  String get communityMuteConfirmAction => 'Masquer';
+
+  @override
+  String get communityUnmuteConfirmTitle => 'Ne plus masquer cet utilisateur ?';
+
+  @override
+  String get communityUnmuteConfirmAction => 'Rétablir';
+
+  @override
+  String get communityMuteNo => 'Non';
+
+  @override
+  String get communityMuteDone => 'Utilisateur masqué';
+
+  @override
+  String get communityUnmuteDone => 'Utilisateur rétabli';
+
+  @override
+  String get communityMilestoneNotificationsTitle => 'Notifications';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return 'Vous avez atteint $count abonnés';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '« $title » a atteint $count favoris';
+  }
+
+  @override
+  String get communitySearchHistory => 'Historique de recherche';
+
+  @override
+  String get communitySearchHistoryEmpty => 'Aucun historique';
+
+  @override
+  String get communityDeleteSavedSearchConfirm =>
+      'Supprimer cette recherche enregistrée ?';
+
+  @override
+  String get communitySortLabel => 'Trier';
 }

@@ -1,14 +1,17 @@
-import 'dart:math' as math;
+import '../../utils/tolerant_preferences.dart';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../services/api/community_api.dart' show RankingPeriod;
 import '../../widgets/ad_banner_mock_widget.dart';
-import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'community_edit_feedback.dart';
@@ -20,11 +23,29 @@ import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/color_contrast.dart';
-import '../../config/accent_text_theme.dart';
 
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
 enum _RankingSort { views, bookmarks }
+
+enum _PlazaSort { newest, views, bookmarks }
+
+enum _PostDateFilter { all, today, thisWeek, thisMonth, thisYear, custom }
+
+enum _DurationFilterMode { all, upTo, range }
+
+const _communityThresholdChoices = <int>[
+  0,
+  50,
+  100,
+  1000,
+  5000,
+  10000,
+  50000,
+  100000,
+  500000,
+  1000000,
+];
 
 /// 作品広場画面。
 ///
@@ -44,34 +65,47 @@ class CommunityScreen extends StatefulWidget {
 
 class _CommunityScreenState extends State<CommunityScreen>
     with SingleTickerProviderStateMixin {
+  static const _savedSearchesKey = 'community.savedSearches.v1';
+  static const _historyKey = 'community.searchHistory.v1';
+  static const _tileWidthKey = 'community.tileMinWidth.v1';
+  final List<Map<String, dynamic>> _savedSearches = [];
+  final List<Map<String, dynamic>> _searchHistory = [];
+  String _searchAccount = 'guest';
+  _PlazaSort _plazaSort = _PlazaSort.newest;
   late final TabController _tabController;
   _RankingPeriod _period = _RankingPeriod.allTime;
   _RankingSort _sort = _RankingSort.views;
   bool _sortAscending = false;
-  bool _isSearching = false;
   String _searchQuery = '';
+  String _draftQuery = '';
   final _searchController = TextEditingController();
-  final _searchFocus = FocusNode();
-  final _bodyKey = GlobalKey();
   bool _tagSearchMode = false;
   VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
+  _PostDateFilter _postDateFilter = _PostDateFilter.all;
+  DateTimeRange? _customPostDateRange;
+  bool _tagExactMatch = false;
+  double _minimumTileWidth = 160;
+  _DurationFilterMode _durationMode = _DurationFilterMode.all;
+  double _upToMinutes = 5;
+  int _minimumMinutes = 0;
+  int _maximumMinutes = 10;
+  int _minimumViews = 0;
+  int _minimumBookmarks = 0;
+  final _tabScrollControllers = List.generate(3, (_) => ScrollController());
 
   @override
   void initState() {
     super.initState();
+    _loadSavedSearches();
+    _loadTileWidth();
     _tabController = TabController(length: 3, vsync: this)
       ..addListener(_onTabChanged);
-    // 検索窓を押したら検索の種類（作品名・投稿者名／タグ）を選べるようにする。
-    _searchFocus.addListener(() {
-      if (_searchFocus.hasFocus && !_isSearching) {
-        setState(() => _isSearching = true);
-      }
-    });
     final initialTag = widget.initialTagFilter;
     if (initialTag != null && initialTag.isNotEmpty) {
-      _isSearching = true;
       _tagSearchMode = true;
+      _tagExactMatch = true;
       _searchQuery = initialTag;
+      _draftQuery = initialTag;
       _searchController.text = initialTag;
     }
     // With a backend, the plaza shows the server's latest works and the
@@ -83,6 +117,250 @@ class _CommunityScreenState extends State<CommunityScreen>
       service.refreshFromBackend();
       _fetchRanking();
     });
+  }
+
+  Future<void> _loadTileWidth() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.readDouble(_tileWidthKey);
+      if (saved != null && mounted) {
+        setState(
+          () => _minimumTileWidth = saved.clamp(120.0, 240.0).toDouble(),
+        );
+      }
+    } catch (error) {
+      debugPrint('Community tile width could not be restored: $error');
+    }
+  }
+
+  // History and saved criteria are device-local, scoped to an account.
+  void _useSearchAccount(String account) {
+    if (_searchAccount == account) return;
+    setState(() {
+      _searchAccount = account;
+      _savedSearches.clear();
+      _searchHistory.clear();
+    });
+    _loadSavedSearches();
+  }
+
+  Future<void> _loadSavedSearches() async {
+    final account = _searchAccount;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      List<Map<String, dynamic>> read(String key) {
+        final raw =
+            prefs.readString('$key.$account') ??
+            (account == 'guest' && key == _savedSearchesKey
+                ? prefs.readString(key)
+                : null);
+        if (raw == null) return [];
+        final decoded = jsonDecode(raw);
+        if (decoded is! List) return [];
+        return decoded
+            .whereType<Map>()
+            .take(10)
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList();
+      }
+
+      final saved = read(_savedSearchesKey);
+      final history = read(_historyKey);
+      if (!mounted || account != _searchAccount) return;
+      setState(() {
+        _savedSearches
+          ..clear()
+          ..addAll(saved);
+        _searchHistory
+          ..clear()
+          ..addAll(history);
+      });
+    } catch (error) {
+      debugPrint('Community search data could not be loaded: $error');
+    }
+  }
+
+  Future<void> _persistSavedSearches() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      '$_savedSearchesKey.$_searchAccount',
+      jsonEncode(_savedSearches),
+    );
+  }
+
+  Future<void> _persistSearchHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      '$_historyKey.$_searchAccount',
+      jsonEncode(_searchHistory),
+    );
+  }
+
+  Future<void> _runSearch() async {
+    final query = _searchController.text.trim();
+    setState(() {
+      _searchQuery = query;
+      _draftQuery = query;
+    });
+    if (query.isEmpty) return;
+    final snapshot = _currentSearchSnapshot(query);
+    setState(() {
+      // A repeated identical query is moved to the top.
+      _searchHistory.removeWhere(
+        (x) =>
+            x['query'] == snapshot['query'] &&
+            x['tagMode'] == snapshot['tagMode'] &&
+            x['exactTag'] == snapshot['exactTag'],
+      );
+      _searchHistory.insert(0, snapshot);
+      if (_searchHistory.length > 10) {
+        _searchHistory.removeRange(10, _searchHistory.length);
+      }
+    });
+    await _persistSearchHistory();
+  }
+
+  Future<void> _saveSearchFromHistory(Map<String, dynamic> item) async {
+    final l10n = AppLocalizations.of(context)!;
+    if (_savedSearches.length >= 10) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.communitySavedSearchLimit)));
+      return;
+    }
+    final snapshot = Map<String, dynamic>.from(item);
+    snapshot['name'] = snapshot['query'] as String? ?? '';
+    setState(() => _savedSearches.add(snapshot));
+    await _persistSavedSearches();
+  }
+
+  Future<void> _confirmDeleteSavedSearch(int index) async {
+    if (index < 0 || index >= _savedSearches.length) return;
+    final l10n = AppLocalizations.of(context)!;
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.communityDeleteSavedSearchConfirm),
+        content: Text(_savedSearches[index]['name'] as String? ?? ''),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (yes == true && mounted) await _deleteSavedSearch(index);
+  }
+
+  Map<String, dynamic> _currentSearchSnapshot(String name) => {
+    'name': name,
+    'query': _searchController.text.trim(),
+    'tagMode': _tagSearchMode,
+    'exactTag': _tagExactMatch,
+    'videoType': _videoTypeFilter.index,
+    'dateFilter': _postDateFilter.index,
+    'dateStart': _customPostDateRange?.start.toIso8601String(),
+    'dateEnd': _customPostDateRange?.end.toIso8601String(),
+    'durationMode': _durationMode.index,
+    'upToMinutes': _upToMinutes,
+    'minimumMinutes': _minimumMinutes,
+    'maximumMinutes': _maximumMinutes,
+    'minimumViews': _minimumViews,
+    'minimumBookmarks': _minimumBookmarks,
+    'tileWidth': _minimumTileWidth,
+  };
+
+  void _restoreSavedSearch(Map<String, dynamic> saved) {
+    int choice(String key, int max) =>
+        ((saved[key] as num?)?.toInt() ?? 0).clamp(0, max).toInt();
+    final start = DateTime.tryParse(saved['dateStart'] as String? ?? '');
+    final end = DateTime.tryParse(saved['dateEnd'] as String? ?? '');
+    setState(() {
+      _draftQuery = saved['query'] as String? ?? '';
+      _searchController.text = _draftQuery;
+      _tagSearchMode = saved['tagMode'] == true;
+      _tagExactMatch = saved['exactTag'] == true;
+      _videoTypeFilter = VideoTypeFilter
+          .values[choice('videoType', VideoTypeFilter.values.length - 1)];
+      _postDateFilter = _PostDateFilter
+          .values[choice('dateFilter', _PostDateFilter.values.length - 1)];
+      _customPostDateRange = start == null || end == null || end.isBefore(start)
+          ? null
+          : DateTimeRange(start: start, end: end);
+      _durationMode =
+          _DurationFilterMode.values[choice(
+            'durationMode',
+            _DurationFilterMode.values.length - 1,
+          )];
+      _upToMinutes = ((saved['upToMinutes'] as num?)?.toDouble() ?? 5)
+          .clamp(1, 60)
+          .toDouble();
+      _minimumMinutes = choice('minimumMinutes', 9999);
+      _maximumMinutes = choice('maximumMinutes', 9999);
+      _minimumViews = choice('minimumViews', 999999999);
+      _minimumBookmarks = choice('minimumBookmarks', 999999999);
+      if (!_communityThresholdChoices.contains(_minimumViews)) {
+        _minimumViews = 0;
+      }
+      if (!_communityThresholdChoices.contains(_minimumBookmarks)) {
+        _minimumBookmarks = 0;
+      }
+      _minimumTileWidth = ((saved['tileWidth'] as num?)?.toDouble() ?? 160)
+          .clamp(120, 240)
+          .toDouble();
+    });
+    _scrollCurrentTabToTop();
+  }
+
+  Future<void> _saveCurrentSearch() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (_savedSearches.length >= 10) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.communitySavedSearchLimit)));
+      return;
+    }
+    final controller = TextEditingController(text: _searchController.text);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.communitySaveSearch),
+        content: TextField(
+          key: const Key('communitySavedSearchName'),
+          controller: controller,
+          autofocus: true,
+          maxLength: 40,
+          decoration: InputDecoration(labelText: l10n.communitySavedSearchName),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.pop(dialogContext, controller.text.trim()),
+            child: Text(l10n.commonSave),
+          ),
+        ],
+      ),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    controller.dispose();
+    if (!mounted || name == null || name.isEmpty) return;
+    setState(() => _savedSearches.add(_currentSearchSnapshot(name)));
+    await _persistSavedSearches();
+  }
+
+  Future<void> _deleteSavedSearch(int index) async {
+    if (index < 0 || index >= _savedSearches.length) return;
+    setState(() => _savedSearches.removeAt(index));
+    await _persistSavedSearches();
   }
 
   /// The following tab shows the followed authors' works and reposts as
@@ -136,8 +414,9 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   /// Content that fills the refresh viewport even when the list is short.
-  Widget _scrollableContent(Widget child) => LayoutBuilder(
+  Widget _scrollableContent(Widget child, {required int tab}) => LayoutBuilder(
     builder: (context, constraints) => SingleChildScrollView(
+      controller: _tabScrollControllers[tab],
       physics: const AlwaysScrollableScrollPhysics(),
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -157,9 +436,10 @@ class _CommunityScreenState extends State<CommunityScreen>
         newTag.isNotEmpty &&
         newTag != oldWidget.initialTagFilter) {
       setState(() {
-        _isSearching = true;
         _tagSearchMode = true;
+        _tagExactMatch = true;
         _searchQuery = newTag;
+        _draftQuery = newTag;
         _searchController.text = newTag;
       });
     }
@@ -169,105 +449,96 @@ class _CommunityScreenState extends State<CommunityScreen>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
-    _searchFocus.dispose();
+    for (final controller in _tabScrollControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
-  static const double _toolbarIconWidth = 48;
-  static const double _minSearchFieldWidth = 140;
-
-  void _closeSearch() {
-    _searchFocus.unfocus();
-    setState(() {
-      _isSearching = false;
-      _tagSearchMode = false;
-      _searchQuery = '';
-      _searchController.clear();
-    });
-  }
-
-  /// 戻るボタンと[title]と、残り[width]の中で画面名が切れずに収まるか。
-  static bool _titleFitsBeside(
-    BuildContext context,
-    String title,
-    double width,
-  ) {
-    final theme = Theme.of(context);
-    final painter = TextPainter(
-      text: TextSpan(
-        text: title,
-        style: theme.appBarTheme.titleTextStyle ?? theme.textTheme.titleLarge,
+  bool _matchesPostDate(DateTime postedAt) {
+    final today = DateTime.now();
+    final startToday = DateTime(today.year, today.month, today.day);
+    final start = switch (_postDateFilter) {
+      _PostDateFilter.all => null,
+      _PostDateFilter.today => startToday,
+      _PostDateFilter.thisWeek => startToday.subtract(
+        Duration(days: startToday.weekday - DateTime.monday),
       ),
-      textScaler: MediaQuery.textScalerOf(context),
-      textDirection: Directionality.of(context),
-      maxLines: 1,
-    )..layout();
-    final fits = painter.width + kToolbarHeight + 32 + 4 <= width;
-    painter.dispose();
-    return fits;
-  }
-
-  /// [labels]のタブを[width]に等分して並べたとき、どのタブ名も切れないか。
-  static bool _tabsFitEqually(
-    BuildContext context,
-    List<String> labels,
-    double width,
-  ) {
-    final theme = Theme.of(context);
-    final style = theme.tabBarTheme.labelStyle ?? theme.textTheme.titleSmall;
-    var widest = 0.0;
-    for (final label in labels) {
-      final painter = TextPainter(
-        text: TextSpan(text: label, style: style),
-        textScaler: MediaQuery.textScalerOf(context),
-        textDirection: Directionality.of(context),
-        maxLines: 1,
-      )..layout();
-      widest = math.max(widest, painter.width);
-      painter.dispose();
-    }
-    // タブの左右の余白（16ずつ）を含めて、等分の幅に入るか。
-    return widest + 32 <= width / labels.length;
-  }
-
-  /// 動画の種類のボタン（漏斗・種類の名前・▼）の幅。
-  static double _videoFilterWidth(BuildContext context, String label) {
-    final painter = TextPainter(
-      text: TextSpan(
-        text: label,
-        style: DefaultTextStyle.of(context).style.copyWith(fontSize: 12),
-      ),
-      textScaler: MediaQuery.textScalerOf(context),
-      textDirection: Directionality.of(context),
-      maxLines: 1,
-    )..layout();
-    final width = painter.width + 48 + 8;
-    painter.dispose();
-    return width;
+      _PostDateFilter.thisMonth => DateTime(today.year, today.month),
+      _PostDateFilter.thisYear => DateTime(today.year),
+      _PostDateFilter.custom => _customPostDateRange?.start,
+    };
+    if (start == null) return true;
+    final end = _postDateFilter == _PostDateFilter.custom
+        ? _customPostDateRange?.end.add(const Duration(days: 1))
+        : null;
+    return !postedAt.isBefore(start) && (end == null || postedAt.isBefore(end));
   }
 
   List<CommunityWork> _applySearch(List<CommunityWork> works) {
-    final typeFiltered = _videoTypeFilter.apply(works);
+    final typeFiltered = _videoTypeFilter
+        .apply(works)
+        .where((work) => _matchesPostDate(work.postedAt))
+        .where(
+          (work) =>
+              work.viewCount >= _minimumViews &&
+              work.bookmarkCount >= _minimumBookmarks,
+        )
+        .where(
+          (work) => switch (_durationMode) {
+            _DurationFilterMode.all => true,
+            _DurationFilterMode.upTo =>
+              work.durationSeconds <= (_upToMinutes * 60).round(),
+            _DurationFilterMode.range =>
+              work.durationSeconds >= _minimumMinutes * 60 &&
+                  work.durationSeconds <= _maximumMinutes * 60,
+          },
+        )
+        .toList();
     final query = _searchQuery.trim().toLowerCase();
     if (query.isEmpty) return typeFiltered;
     if (_tagSearchMode) {
+      final tokens = query
+          .split(RegExp(r'\s+'))
+          .map((term) => term.replaceFirst(RegExp(r'^#'), ''))
+          .where((term) => term.isNotEmpty)
+          .toList();
       return typeFiltered
-          .where((w) => w.tags.any((t) => t.toLowerCase().contains(query)))
+          .where(
+            (work) => tokens.every(
+              (term) => work.tags.any((tag) {
+                final normalized = tag.toLowerCase().replaceFirst(
+                  RegExp(r'^#'),
+                  '',
+                );
+                return _tagExactMatch
+                    ? normalized == term
+                    : normalized.contains(term);
+              }),
+            ),
+          )
           .toList();
     }
-    return typeFiltered
-        .where(
-          (w) =>
-              w.title.toLowerCase().contains(query) ||
-              w.authorName.toLowerCase().contains(query),
-        )
-        .toList();
+    return typeFiltered.where((work) {
+      final title = work.title.toLowerCase();
+      final author = work.authorName.toLowerCase();
+      return _tagExactMatch
+          ? title == query || author == query
+          : title.contains(query) || author.contains(query);
+    }).toList();
   }
 
-  List<CommunityWork> _newArrivals(List<CommunityWork> allWorks) =>
-      _applySearch(
-        [...allWorks]..sort((a, b) => b.postedAt.compareTo(a.postedAt)),
-      );
+  List<CommunityWork> _newArrivals(List<CommunityWork> allWorks) {
+    final sorted = [...allWorks];
+    sorted.sort(switch (_plazaSort) {
+      _PlazaSort.newest => (a, b) => b.postedAt.compareTo(a.postedAt),
+      _PlazaSort.views => (a, b) => b.viewCount.compareTo(a.viewCount),
+      _PlazaSort.bookmarks => (a, b) => b.bookmarkCount.compareTo(
+        a.bookmarkCount,
+      ),
+    });
+    return _applySearch(sorted);
+  }
 
   Duration? _periodWindow(_RankingPeriod period) => switch (period) {
     _RankingPeriod.allTime => null,
@@ -314,12 +585,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   void _openFloatingPreview(CommunityWork work) {
-    // 上部のバー（2段）とタブを覆わないよう、一覧の上端に出す。
-    final body = _bodyKey.currentContext?.findRenderObject() as RenderBox?;
-    context.read<CommunityPreviewService>().show(
-      work,
-      top: body?.localToGlobal(Offset.zero).dy,
-    );
+    context.read<CommunityPreviewService>().show(work);
   }
 
   void _openAuthorWorks(CommunityWork work) {
@@ -334,117 +600,56 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   Future<void> _showContentFilters(CommunityService service) async {
-    // Pre-fill with the saved filters, not the empty ones before they load.
     await service.contentFiltersReady;
     if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-    // The dialog disposes these once it has really left the tree: its
-    // closing transition still reads them after showDialog returns.
-    final words = TextEditingController(text: service.mutedWords.join(', '));
-    final tags = TextEditingController(text: service.mutedTags.join(', '));
-    var hideAi = service.hideGenerativeAiImageVideo;
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final dialogBackground = opaqueOver(
-      theme.dialogTheme.backgroundColor ?? scheme.surfaceContainerHigh,
-      theme.scaffoldBackgroundColor,
-    );
-    final activeTrack = opaqueOver(scheme.primary, dialogBackground);
-    final inactiveTrack = opaqueOver(
-      scheme.surfaceContainerHighest,
-      dialogBackground,
-    );
-    // Use the user's theme foreground roles directly. A content-filter
-    // switch must not silently substitute a different color for readability.
-    final trackOutline = scheme.outline;
     final result = await showDialog<_ContentFilterInput>(
       context: context,
-      builder: (context) => DisposeOnUnmount(
-        controller: words,
-        builder: (context) => DisposeOnUnmount(
-          controller: tags,
-          builder: (context) => StatefulBuilder(
-            builder: (context, setDialogState) => AlertDialog(
-              title: Text(l10n.communityContentFilterTitle),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SwitchTheme(
-                      data: SwitchTheme.of(context).copyWith(
-                        trackOutlineWidth: const WidgetStatePropertyAll(2),
-                      ),
-                      child: SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        activeTrackColor: activeTrack,
-                        activeThumbColor: scheme.onPrimary,
-                        inactiveTrackColor: inactiveTrack,
-                        inactiveThumbColor: scheme.onSurfaceVariant,
-                        trackOutlineColor: WidgetStatePropertyAll(trackOutline),
-                        value: hideAi,
-                        onChanged: (v) => setDialogState(() => hideAi = v),
-                        title: Text(l10n.communityHideGenerativeAiImageVideo),
-                      ),
-                    ),
-                    TextField(
-                      key: const Key('communityMutedWordsField'),
-                      controller: words,
-                      keyboardType: TextInputType.multiline,
-                      minLines: 1,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        labelText: l10n.communityMutedWords,
-                        helperText: l10n.communityMutedWordsHint,
-                        helperMaxLines: 5,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      key: const Key('communityMutedTagsField'),
-                      controller: tags,
-                      keyboardType: TextInputType.multiline,
-                      minLines: 1,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        labelText: l10n.communityMutedTags,
-                        helperText: l10n.communityMutedTagsHint,
-                        helperMaxLines: 5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                // 文字ボタンの色はテーマの「アクセントの文字・アイコン色」
-                // （差し色を黒や白へ自動で差し替えない）。
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(l10n.commonCancel),
-                ),
-                FilledButton(
-                  key: const Key('communityContentFilterSaveButton'),
-                  onPressed: () => Navigator.pop(
-                    context,
-                    _ContentFilterInput(
-                      hideAi: hideAi,
-                      words: words.text,
-                      tags: tags.text,
-                    ),
-                  ),
-                  child: Text(l10n.commonSave),
-                ),
-              ],
-            ),
-          ),
-        ),
+      builder: (_) => _ContentFilterDialog(
+        initialWords: service.mutedWords.toList(),
+        initialTags: service.mutedTags.toList(),
+        initialHideAi: service.hideGenerativeAiImageVideo,
+        initialDateFilter: _postDateFilter,
+        initialDateRange: _customPostDateRange,
+        initialExactTag: _tagExactMatch,
+        initialDurationMode: _durationMode,
+        initialUpToMinutes: _upToMinutes,
+        initialMinimumMinutes: _minimumMinutes,
+        initialMaximumMinutes: _maximumMinutes,
+        initialMinimumViews: _minimumViews,
+        initialMinimumBookmarks: _minimumBookmarks,
+        initialTileWidth: _minimumTileWidth,
       ),
     );
     if (result == null) return;
     await service.setHideGenerativeAiImageVideo(result.hideAi);
-    await service.setMutedWords(
-      CommunityService.parseFilterInput(result.words),
+    await service.setMutedWords(result.words);
+    await service.setMutedTags(result.tags);
+    if (mounted) {
+      setState(() {
+        _postDateFilter = result.dateFilter;
+        _customPostDateRange = result.dateRange;
+        _tagExactMatch = result.exactTag;
+        _durationMode = result.durationMode;
+        _upToMinutes = result.upToMinutes;
+        _minimumMinutes = result.minimumMinutes;
+        _maximumMinutes = result.maximumMinutes;
+        _minimumViews = result.minimumViews;
+        _minimumBookmarks = result.minimumBookmarks;
+        _minimumTileWidth = result.tileWidth;
+      });
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble(_tileWidthKey, result.tileWidth);
+    }
+  }
+
+  void _scrollCurrentTabToTop() {
+    final controller = _tabScrollControllers[_tabController.index];
+    if (!controller.hasClients) return;
+    controller.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
     );
-    await service.setMutedTags(CommunityService.parseFilterInput(result.tags));
   }
 
   void _openMyWorks() {
@@ -490,253 +695,434 @@ class _CommunityScreenState extends State<CommunityScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final communityService = context.watch<CommunityService>();
+    final currentAccount = communityService.currentUserId ?? 'guest';
+    if (_searchAccount != currentAccount) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _useSearchAccount(currentAccount);
+      });
+    }
     final allWorks = communityService.discoverableWorks;
     final bookmarkedIds = communityService.bookmarkedIds;
-    final unread = communityService.unreadFollowNotificationCount;
-    final notificationsButton = IconButton(
-      key: const Key('communityNotificationsButton'),
-      icon: Badge(
-        label: Text('$unread'),
-        isLabelVisible: unread > 0,
-        child: const Icon(Icons.notifications_outlined),
-      ),
-      tooltip: l10n.communityFollowNotificationsTooltip,
-      onPressed: () => Navigator.of(context).push(
-        adMockMaterialPageRoute<void>(
-          builder: (_) => const CommunityFollowNotificationsScreen(),
-        ),
-      ),
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final width = MediaQuery.sizeOf(context).width;
+    final scaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+    final barBackground = opaqueOver(
+      theme.appBarTheme.backgroundColor ?? scheme.surface,
+      opaqueOver(theme.scaffoldBackgroundColor, Colors.black),
     );
-    const helpButton = HelpButton(topic: '作品広場');
-    final filterButtons = <Widget>[
-      VideoTypeFilterButton(
-        value: _videoTypeFilter,
-        onChanged: (v) => setState(() => _videoTypeFilter = v),
-      ),
-      if (_videoTypeFilter == VideoTypeFilter.shortOnly)
-        IconButton(
-          icon: const Icon(Icons.view_carousel_outlined),
-          tooltip: l10n.communityShortsModeTooltip,
-          onPressed: () => _openShortsMode(allWorks),
-        ),
-      IconButton(
-        // Distinct from the video-type filter's funnel next to it.
-        key: const Key('communityContentFilterButton'),
-        // 目のアイコンは「何のボタンか分かりにくい」（ユーザー指摘）うえ、
-        // 自分の投稿では「非公開」の印でもあるので、表示の調整を表すつまみ。
-        icon: const Icon(Icons.tune),
-        tooltip: l10n.communityContentFilterTitle,
-        onPressed: () => _showContentFilters(communityService),
-      ),
-    ];
-    // 上部のバー（ユーザー指定）：1段目は戻る・画面名と、右側に通知とヘルプ。
-    // 2段目は左に虫眼鏡の付いた検索窓（残りの幅いっぱい）、右にフィルター2つ。
-    // 画面名が長い言語・狭い画面・大きな文字で通知とヘルプを並べると画面名が
-    // 切れるときは、2段目の右端へ回す（画面名を途中で切らない、ユーザー指定）。
-    // 2段目に検索窓を置く幅が無いときは虫眼鏡のボタンにして、押すと2段目が
-    // 検索窓になる。
-    final textScaler = MediaQuery.textScalerOf(context);
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final iconsBesideTitle = _titleFitsBeside(
-      context,
+    final foreground = theme.appBarTheme.foregroundColor ?? scheme.onSurface;
+    final selected = theme.tabBarTheme.labelColor ?? scheme.primary;
+    final unselected =
+        theme.tabBarTheme.unselectedLabelColor ?? scheme.onSurfaceVariant;
+    final titleStyle =
+        (theme.appBarTheme.titleTextStyle ?? theme.textTheme.titleLarge!)
+            .copyWith(color: foreground);
+    final labelStyle =
+        theme.tabBarTheme.labelStyle ?? theme.textTheme.titleSmall!;
+    Size measure(
+      String text,
+      TextStyle style, {
+      double maxWidth = double.infinity,
+    }) {
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: style),
+        textDirection: direction,
+        textScaler: scaler,
+        locale: Localizations.localeOf(context),
+      )..layout(maxWidth: maxWidth);
+      final size = painter.size;
+      painter.dispose();
+      return size;
+    }
+
+    final titleSize = measure(
       l10n.communityScreenTitle,
-      screenWidth - _toolbarIconWidth * 2,
+      titleStyle,
+      maxWidth: (width - 168).clamp(1.0, double.infinity),
     );
-    final rowHeight = math.max(48.0, textScaler.scale(16) + 32);
-    final searchModeHeight =
-        12.0 + math.max(44.0, textScaler.scale(14) * 1.4 + 24);
-    final fixedWidth =
-        _toolbarIconWidth *
-            (filterButtons.length - 1 + (iconsBesideTitle ? 0 : 2)) +
-        _videoFilterWidth(context, _videoTypeFilter.label(l10n)) +
-        16;
-    final inlineSearch = screenWidth - fixedWidth >= _minSearchFieldWidth;
-    final tabLabels = [
+    final labels = [
       l10n.communityTabNew,
       l10n.communityTabRanking,
       l10n.communityTabFavoriteAuthors,
     ];
-    final tabsFit = _tabsFitEqually(context, tabLabels, screenWidth);
-
-    Widget searchField({required bool autofocus}) => Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-      child: TextField(
-        key: const Key('communitySearchField'),
-        controller: _searchController,
-        focusNode: _searchFocus,
-        autofocus: autofocus,
-        textInputAction: TextInputAction.search,
-        textAlignVertical: TextAlignVertical.center,
-        decoration: InputDecoration(
-          isDense: true,
-          filled: true,
-          fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-          hintText: _tagSearchMode
-              ? l10n.communityTagSearchHint
-              : l10n.communitySearchHint,
-          hintMaxLines: 1,
-          prefixIcon: Icon(
-            _tagSearchMode ? Icons.sell_outlined : Icons.search,
-            size: 20,
-          ),
-          suffixIcon: _isSearching
-              ? IconButton(
-                  key: const Key('communitySearchClose'),
-                  icon: const Icon(Icons.close, size: 20),
-                  tooltip: l10n.commonClose,
-                  onPressed: _closeSearch,
-                )
-              : null,
-          contentPadding: const EdgeInsets.symmetric(vertical: 8),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
-            borderSide: BorderSide.none,
-          ),
-        ),
-        onChanged: (v) => setState(() {
-          _searchQuery = v;
-          _isSearching = true;
-        }),
-      ),
+    final tabWidths = labels.map(
+      (label) => measure(label, labelStyle).width + 32,
     );
+    final scrollTabs = tabWidths.fold<double>(0, (a, b) => a + b) > width;
+    final tabHeight = labels
+        .map((label) => measure(label, labelStyle).height + 16)
+        .fold<double>(48, (a, b) => a > b ? a : b);
+    final searchFill =
+        theme.inputDecorationTheme.fillColor ?? scheme.surfaceContainerLow;
+    Widget searchRowFor(int tab) {
+      final headingStyle = theme.textTheme.titleSmall?.copyWith(
+        fontFamily: 'Kuramubon',
+        fontFamilyFallback: kHeadingFontFallback,
+      );
 
-    final Widget toolbarRow;
-    if (inlineSearch) {
-      toolbarRow = Row(
-        children: [
-          const SizedBox(width: 4),
-          Expanded(child: searchField(autofocus: false)),
-          ...filterButtons,
-          if (!iconsBesideTitle) ...[notificationsButton, helpButton],
-          const SizedBox(width: 4),
-        ],
-      );
-    } else if (_isSearching) {
-      toolbarRow = Row(
-        children: [
-          const SizedBox(width: 4),
-          Expanded(child: searchField(autofocus: true)),
-          const SizedBox(width: 4),
-        ],
-      );
-    } else {
-      toolbarRow = Row(
-        children: [
-          const SizedBox(width: 4),
-          IconButton(
-            key: const Key('communitySearchButton'),
-            icon: const Icon(Icons.search),
-            tooltip: l10n.commonSearch,
-            onPressed: () => setState(() => _isSearching = true),
-          ),
-          Expanded(
-            child: Align(
-              alignment: AlignmentDirectional.centerEnd,
-              // 狭い画面・大きな文字では横にスクロールして全部に届く。
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                reverse: true,
+      Widget accordion({
+        required String title,
+        required Key key,
+        required bool saved,
+      }) {
+        final entries = saved ? _savedSearches : _searchHistory;
+        return ExpansionTile(
+          key: key,
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: EdgeInsets.zero,
+          shape: const Border(),
+          collapsedShape: const Border(),
+          title: Text(title, style: headingStyle),
+          children: [
+            if (entries.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  saved
+                      ? l10n.communitySavedSearchEmpty
+                      : l10n.communitySearchHistoryEmpty,
+                ),
+              ),
+            for (var index = 0; index < entries.length; index++)
+              ListTile(
+                key: ValueKey(
+                  (saved
+                          ? 'communitySavedSearch-'
+                          : 'communitySearchHistory-') +
+                      index.toString(),
+                ),
+                dense: true,
+                title: Text(
+                  entries[index]['name'] as String? ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onTap: () => _restoreSavedSearch(entries[index]),
+                trailing: IconButton(
+                  key: ValueKey(
+                    (saved
+                            ? 'communityDeleteSavedSearch-'
+                            : 'communitySaveHistory-') +
+                        index.toString(),
+                  ),
+                  icon: Icon(
+                    saved ? Icons.delete_outline : Icons.save_outlined,
+                  ),
+                  tooltip: saved ? l10n.commonDelete : l10n.communitySaveSearch,
+                  onPressed: () {
+                    if (saved) {
+                      _confirmDeleteSavedSearch(index);
+                    } else {
+                      _saveSearchFromHistory(entries[index]);
+                    }
+                  },
+                ),
+              ),
+            if (saved)
+              TextButton.icon(
+                key: const Key('communitySaveCurrentSearchButton'),
+                onPressed: _saveCurrentSearch,
+                icon: const Icon(Icons.add),
+                label: Text(l10n.communitySaveSearch),
+              ),
+          ],
+        );
+      }
+
+      return Padding(
+        key: const Key('communitySearchRow'),
+        padding: const EdgeInsets.fromLTRB(8, 20, 8, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Material(
+              key: const Key('communitySearchTrigger'),
+              color: searchFill,
+              borderRadius: BorderRadius.circular(20),
+              child: SizedBox(
+                height: 48,
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    ...filterButtons,
-                    if (!iconsBesideTitle) ...[notificationsButton, helpButton],
-                    const SizedBox(width: 4),
+                    IconButton(
+                      key: const Key('communitySearchModeToggle'),
+                      icon: Icon(
+                        _tagSearchMode ? Icons.search : Icons.sell_outlined,
+                      ),
+                      tooltip: _tagSearchMode
+                          ? l10n.communitySearchHint
+                          : l10n.communityTagSearchHint,
+                      onPressed: () => setState(() {
+                        _tagSearchMode = !_tagSearchMode;
+                        _tagExactMatch = _tagSearchMode;
+                        _searchQuery = '';
+                        _draftQuery = '';
+                        _searchController.clear();
+                      }),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        key: const Key('communitySearchInput'),
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: _tagSearchMode
+                              ? l10n.communityTagSearchHint
+                              : l10n.communitySearchHint,
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
+                        ),
+                        onChanged: (value) => _draftQuery = value,
+                        onSubmitted: (_) => _runSearch(),
+                        textInputAction: TextInputAction.search,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 20),
+                      tooltip: l10n.commonClose,
+                      onPressed: () => setState(() {
+                        _searchController.clear();
+                        _draftQuery = '';
+                        _searchQuery = '';
+                      }),
+                    ),
                   ],
                 ),
               ),
             ),
-          ),
-        ],
+            accordion(
+              title: l10n.communitySavedSearches,
+              key: const Key('communitySavedSearchAccordion'),
+              saved: true,
+            ),
+            accordion(
+              title: l10n.communitySearchHistory,
+              key: const Key('communitySearchHistoryAccordion'),
+              saved: false,
+            ),
+            Row(
+              children: [
+                IconButton(
+                  key: const Key('communityContentFilterButton'),
+                  icon: const Icon(Icons.tune),
+                  tooltip: l10n.communityContentFilterTitle,
+                  onPressed: () => _showContentFilters(communityService),
+                ),
+                PopupMenuButton<String>(
+                  key: const Key('communitySortButton'),
+                  tooltip: l10n.communitySortLabel,
+                  icon: const Icon(Icons.sort),
+                  onSelected: (value) {
+                    if (value == 'shorts') {
+                      _openShortsMode(allWorks);
+                      return;
+                    }
+                    setState(() {
+                      if (value.startsWith('type:')) {
+                        final index = int.tryParse(value.substring(5)) ?? 0;
+                        _videoTypeFilter =
+                            VideoTypeFilter.values[index.clamp(
+                              0,
+                              VideoTypeFilter.values.length - 1,
+                            )];
+                      } else {
+                        _plazaSort = switch (value) {
+                          'views' => _PlazaSort.views,
+                          'bookmarks' => _PlazaSort.bookmarks,
+                          _ => _PlazaSort.newest,
+                        };
+                      }
+                    });
+                  },
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
+                      value: 'newest',
+                      child: Text(l10n.communityTabNew),
+                    ),
+                    PopupMenuItem(
+                      value: 'views',
+                      child: Text(l10n.communityRankingSortViews),
+                    ),
+                    PopupMenuItem(
+                      value: 'bookmarks',
+                      child: Text(l10n.communityRankingSortBookmarks),
+                    ),
+                    const PopupMenuDivider(),
+                    for (final type in VideoTypeFilter.values)
+                      CheckedPopupMenuItem(
+                        value: 'type:${type.index}',
+                        checked: type == _videoTypeFilter,
+                        child: Text(type.label(l10n)),
+                      ),
+                    if (_videoTypeFilter == VideoTypeFilter.shortOnly)
+                      PopupMenuItem(
+                        value: 'shorts',
+                        child: Text(l10n.communityShortsModeTooltip),
+                      ),
+                  ],
+                ),
+                IconButton(
+                  key: const Key('communityTileSizeButton'),
+                  tooltip: l10n.communityTileSize,
+                  icon: const Icon(Icons.grid_view_rounded),
+                  onPressed: () async {
+                    var size = _minimumTileWidth;
+                    final chosen = await showDialog<double>(
+                      context: context,
+                      builder: (dialogContext) => StatefulBuilder(
+                        builder: (dialogContext, update) => AlertDialog(
+                          title: Text(l10n.communityTileSize),
+                          content: Slider(
+                            key: const Key('communityTileSizeQuickSlider'),
+                            min: 120,
+                            max: 240,
+                            divisions: 6,
+                            value: size,
+                            onChanged: (next) => update(() => size = next),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(dialogContext),
+                              child: Text(l10n.commonCancel),
+                            ),
+                            FilledButton(
+                              onPressed: () =>
+                                  Navigator.pop(dialogContext, size),
+                              child: Text(l10n.commonSave),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                    if (chosen != null && mounted) {
+                      setState(() => _minimumTileWidth = chosen);
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setDouble(_tileWidthKey, chosen);
+                    }
+                  },
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: 92,
+                  height: 48,
+                  child: FilledButton(
+                    key: const Key('communitySearchButton'),
+                    onPressed: _runSearch,
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(l10n.commonSearch),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.communityScreenTitle),
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          key: const Key('communityBackToSplashButton'),
+          icon: const Icon(Icons.arrow_back),
+          tooltip: l10n.homeBackToSplashTooltip,
+          onPressed: () => context.go('/'),
+        ),
+        backgroundColor: barBackground,
+        foregroundColor: foreground,
+        titleTextStyle: titleStyle,
+        iconTheme: IconThemeData(color: foreground),
+        actionsIconTheme: IconThemeData(color: foreground),
+        toolbarHeight: (titleSize.height + 16)
+            .clamp(kToolbarHeight, double.infinity)
+            .toDouble(),
+        title: Text(
+          l10n.communityScreenTitle,
+          softWrap: true,
+          maxLines: 2,
+          overflow: TextOverflow.visible,
+        ),
         actions: [
-          if (iconsBesideTitle) ...[notificationsButton, helpButton],
+          IconButton(
+            icon: Badge(
+              label: Text('${communityService.unreadMilestoneCount}'),
+              isLabelVisible: communityService.unreadMilestoneCount > 0,
+              child: const Icon(Icons.notifications_outlined),
+            ),
+            tooltip: l10n.communityFollowNotificationsTooltip,
+            onPressed: () => Navigator.of(context).push(
+              adMockMaterialPageRoute<void>(
+                builder: (_) => const CommunityFollowNotificationsScreen(),
+              ),
+            ),
+          ),
+          const HelpButton(topic: '作品広場'),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(
-            rowHeight + (_isSearching ? searchModeHeight : 0) + 48,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                key: const Key('communityToolbarActions'),
-                height: rowHeight,
-                child: toolbarRow,
-              ),
-              if (_isSearching)
-                Container(
-                  height: searchModeHeight,
-                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: SegmentedButton<bool>(
-                      showSelectedIcon: false,
-                      segments: [
-                        ButtonSegment<bool>(
-                          value: false,
-                          icon: const Icon(Icons.search, size: 18),
-                          label: Text(
-                            l10n.communitySearchHint,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        ButtonSegment<bool>(
-                          value: true,
-                          icon: const Icon(Icons.sell_outlined, size: 18),
-                          label: Text(
-                            l10n.communityTagSearchHint,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                      selected: {_tagSearchMode},
-                      onSelectionChanged: (selection) {
-                        final tagMode = selection.first;
-                        if (tagMode == _tagSearchMode) return;
-                        setState(() {
-                          _tagSearchMode = tagMode;
-                          _searchQuery = '';
-                          _searchController.clear();
-                        });
-                        // 切り替えた後も続けて打てるよう、検索窓へ戻す。
-                        _searchFocus.requestFocus();
-                      },
-                    ),
-                  ),
-                ),
-              // タブ名が等分の幅に入りきらないとき（フランス語の320px等）は、
-              // 名前の幅のまま横にスクロールする（以前は「Classeme」の
-              // ように途中で切れていた）。
-              TabBar(
-                key: const Key('communityTabBar'),
-                controller: _tabController,
-                isScrollable: !tabsFit,
-                tabAlignment: tabsFit ? null : TabAlignment.start,
-                tabs: [for (final label in tabLabels) Tab(text: label)],
-              ),
+          preferredSize: Size.fromHeight(tabHeight),
+          child: TabBar(
+            controller: _tabController,
+            isScrollable: scrollTabs,
+            tabAlignment: scrollTabs ? TabAlignment.start : TabAlignment.fill,
+            labelStyle: labelStyle,
+            unselectedLabelStyle: labelStyle,
+            labelColor: selected,
+            unselectedLabelColor: unselected,
+            indicatorColor: selected,
+            tabs: [
+              for (final label in labels) Tab(text: label, height: tabHeight),
             ],
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        key: const Key('communityMyWorksButton'),
-        onPressed: _openMyWorks,
-        icon: const Icon(Icons.video_library_outlined),
-        label: Text(l10n.communityMyWorksTitle),
-        shape: const StadiumBorder(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            FloatingActionButton(
+              key: const Key('communityScrollToTopButton'),
+              heroTag: 'community-scroll-to-top',
+              tooltip: l10n.communityScrollToTop,
+              backgroundColor: scheme.primary,
+              foregroundColor: scheme.onPrimary,
+              shape: const CircleBorder(side: BorderSide.none),
+              elevation: 0,
+              onPressed: _scrollCurrentTabToTop,
+              child: const Icon(Icons.arrow_upward),
+            ),
+            FloatingActionButton(
+              key: const Key('communityMyWorksButton'),
+              heroTag: 'community-my-works',
+              mini: MediaQuery.sizeOf(context).height < 400,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              tooltip: l10n.communityMyWorksTitle,
+              backgroundColor: scheme.primary,
+              foregroundColor: scheme.onPrimary,
+              shape: const CircleBorder(side: BorderSide.none),
+              elevation: 0,
+              focusElevation: 0,
+              hoverElevation: 0,
+              highlightElevation: 0,
+              disabledElevation: 0,
+              onPressed: _openMyWorks,
+              child: const Icon(Icons.video_library_outlined),
+            ),
+          ],
+        ),
       ),
       body: desktopCentered(
         context,
         TabBarView(
-          key: _bodyKey,
           controller: _tabController,
           children: [
             Builder(
@@ -745,24 +1131,39 @@ class _CommunityScreenState extends State<CommunityScreen>
                 if (works.isEmpty) {
                   return _pullToRefresh(
                     communityService,
-                    _scrollableContent(_buildSearchEmptyState(l10n)),
+                    _scrollableContent(
+                      Column(
+                        children: [
+                          searchRowFor(0),
+                          _buildSearchEmptyState(l10n),
+                        ],
+                      ),
+                      tab: 0,
+                    ),
                   );
                 }
                 return _pullToRefresh(
                   communityService,
                   _scrollableContent(
-                    CommunityWorkGrid(
-                      works: works,
-                      bookmarkedIds: bookmarkedIds,
-                      onTapWork: _openFloatingPreview,
-                      onToggleBookmark: (w) => reportFailedCommunityEdit(
-                        context,
-                        communityService,
-                        communityService.toggleBookmark(w.id),
-                      ),
-                      onTapAuthor: _openAuthorWorks,
-                      bottomPadding: 88,
+                    Column(
+                      children: [
+                        searchRowFor(0),
+                        CommunityWorkGrid(
+                          minTileWidth: _minimumTileWidth,
+                          works: works,
+                          bookmarkedIds: bookmarkedIds,
+                          onTapWork: _openFloatingPreview,
+                          onToggleBookmark: (w) => reportFailedCommunityEdit(
+                            context,
+                            communityService,
+                            communityService.toggleBookmark(w.id),
+                          ),
+                          onTapAuthor: _openAuthorWorks,
+                          bottomPadding: 88,
+                        ),
+                      ],
                     ),
+                    tab: 0,
                   ),
                 );
               },
@@ -773,6 +1174,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    searchRowFor(1),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
                       child: Wrap(
@@ -795,29 +1197,40 @@ class _CommunityScreenState extends State<CommunityScreen>
                       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                       child: Row(
                         children: [
-                          ChoiceChip(
-                            avatar: const Icon(
-                              Icons.play_arrow_rounded,
-                              size: 16,
+                          Expanded(
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                ChoiceChip(
+                                  avatar: const Icon(
+                                    Icons.play_arrow_rounded,
+                                    size: 16,
+                                  ),
+                                  label: Text(l10n.communityRankingSortViews),
+                                  selected: _sort == _RankingSort.views,
+                                  onSelected: (_) {
+                                    setState(() => _sort = _RankingSort.views);
+                                    _fetchRanking();
+                                  },
+                                ),
+                                ChoiceChip(
+                                  avatar: const Icon(Icons.bookmark, size: 16),
+                                  label: Text(
+                                    l10n.communityRankingSortBookmarks,
+                                  ),
+                                  selected: _sort == _RankingSort.bookmarks,
+                                  onSelected: (_) {
+                                    setState(
+                                      () => _sort = _RankingSort.bookmarks,
+                                    );
+                                    _fetchRanking();
+                                  },
+                                ),
+                              ],
                             ),
-                            label: Text(l10n.communityRankingSortViews),
-                            selected: _sort == _RankingSort.views,
-                            onSelected: (_) {
-                              setState(() => _sort = _RankingSort.views);
-                              _fetchRanking();
-                            },
                           ),
-                          const SizedBox(width: 8),
-                          ChoiceChip(
-                            avatar: const Icon(Icons.bookmark, size: 16),
-                            label: Text(l10n.communityRankingSortBookmarks),
-                            selected: _sort == _RankingSort.bookmarks,
-                            onSelected: (_) {
-                              setState(() => _sort = _RankingSort.bookmarks);
-                              _fetchRanking();
-                            },
-                          ),
-                          const Spacer(),
                           IconButton(
                             icon: Icon(
                               _sortAscending
@@ -843,6 +1256,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                             ranked[i].id: i + 1,
                         };
                         return CommunityWorkGrid(
+                          minTileWidth: _minimumTileWidth,
                           works: ranked,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
@@ -859,6 +1273,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     ),
                   ],
                 ),
+                tab: 1,
               ),
             ),
             Builder(
@@ -873,31 +1288,54 @@ class _CommunityScreenState extends State<CommunityScreen>
                 if (communityService.favoriteAuthorIds.isEmpty) {
                   return _pullToRefresh(
                     communityService,
-                    _scrollableContent(_buildNoFavoriteAuthorsState(l10n)),
+                    _scrollableContent(
+                      Column(
+                        children: [
+                          searchRowFor(2),
+                          _buildNoFavoriteAuthorsState(l10n),
+                        ],
+                      ),
+                      tab: 2,
+                    ),
                   );
                 }
                 if (works.isEmpty) {
                   return _pullToRefresh(
                     communityService,
-                    _scrollableContent(_buildSearchEmptyState(l10n)),
+                    _scrollableContent(
+                      Column(
+                        children: [
+                          searchRowFor(2),
+                          _buildSearchEmptyState(l10n),
+                        ],
+                      ),
+                      tab: 2,
+                    ),
                   );
                 }
                 return _pullToRefresh(
                   communityService,
                   _scrollableContent(
-                    CommunityWorkGrid(
-                      works: works,
-                      bookmarkedIds: bookmarkedIds,
-                      onTapWork: _openFloatingPreview,
-                      onToggleBookmark: (w) => reportFailedCommunityEdit(
-                        context,
-                        communityService,
-                        communityService.toggleBookmark(w.id),
-                      ),
-                      onTapAuthor: _openAuthorWorks,
-                      repostedByNames: repostedByNames,
-                      bottomPadding: 88,
+                    Column(
+                      children: [
+                        searchRowFor(2),
+                        CommunityWorkGrid(
+                          minTileWidth: _minimumTileWidth,
+                          works: works,
+                          bookmarkedIds: bookmarkedIds,
+                          onTapWork: _openFloatingPreview,
+                          onToggleBookmark: (w) => reportFailedCommunityEdit(
+                            context,
+                            communityService,
+                            communityService.toggleBookmark(w.id),
+                          ),
+                          onTapAuthor: _openAuthorWorks,
+                          repostedByNames: repostedByNames,
+                          bottomPadding: 88,
+                        ),
+                      ],
                     ),
+                    tab: 2,
                   ),
                 );
               },
@@ -919,7 +1357,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             Icon(
               Icons.person_add_alt_1,
               size: 64,
-              color: AccentTextTheme.of(context).withValues(alpha: 0.6),
+              color: scheme.primary.withValues(alpha: 0.6),
             ),
             const SizedBox(height: 16),
             Text(
@@ -983,16 +1421,695 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 }
 
-/// What the viewer entered in the display-filter dialog, read before the
-/// dialog's text controllers are disposed.
+class _MuteEntry {
+  _MuteEntry(this.value, {this.editing = false});
+  String value;
+  bool editing;
+  final FocusNode focusNode = FocusNode();
+
+  void dispose() => focusNode.dispose();
+}
+
+/// Edit the draft only. Save commits all fields; Cancel discards everything.
+class _ContentFilterDialog extends StatefulWidget {
+  const _ContentFilterDialog({
+    required this.initialWords,
+    required this.initialTags,
+    required this.initialHideAi,
+    required this.initialDateFilter,
+    required this.initialDateRange,
+    required this.initialExactTag,
+    required this.initialDurationMode,
+    required this.initialUpToMinutes,
+    required this.initialMinimumMinutes,
+    required this.initialMaximumMinutes,
+    required this.initialMinimumViews,
+    required this.initialMinimumBookmarks,
+    required this.initialTileWidth,
+  });
+
+  final List<String> initialWords;
+  final List<String> initialTags;
+  final bool initialHideAi;
+  final _PostDateFilter initialDateFilter;
+  final DateTimeRange? initialDateRange;
+  final bool initialExactTag;
+  final _DurationFilterMode initialDurationMode;
+  final double initialUpToMinutes;
+  final int initialMinimumMinutes;
+  final int initialMaximumMinutes;
+  final int initialMinimumViews;
+  final int initialMinimumBookmarks;
+  final double initialTileWidth;
+
+  @override
+  State<_ContentFilterDialog> createState() => _ContentFilterDialogState();
+}
+
+class _ContentFilterDialogState extends State<_ContentFilterDialog> {
+  late final List<_MuteEntry> _words;
+  late final List<_MuteEntry> _tags;
+  late bool _hideAi;
+  late _PostDateFilter _dateFilter;
+  DateTimeRange? _dateRange;
+  late bool _exactTag;
+  late _DurationFilterMode _durationMode;
+  late double _upToMinutes;
+  late int _minimumMinutes;
+  late int _maximumMinutes;
+  late int _minimumViews;
+  late int _minimumBookmarks;
+  late double _tileWidth;
+
+  @override
+  void initState() {
+    super.initState();
+    _words = widget.initialWords.map(_makeEntry).toList();
+    _tags = widget.initialTags.map(_makeEntry).toList();
+    _hideAi = widget.initialHideAi;
+    _dateFilter = widget.initialDateFilter;
+    _dateRange = widget.initialDateRange;
+    _exactTag = widget.initialExactTag;
+    _durationMode = widget.initialDurationMode;
+    _upToMinutes = widget.initialUpToMinutes;
+    _minimumMinutes = widget.initialMinimumMinutes;
+    _maximumMinutes = widget.initialMaximumMinutes;
+    _minimumViews = widget.initialMinimumViews;
+    _minimumBookmarks = widget.initialMinimumBookmarks;
+    _tileWidth = widget.initialTileWidth;
+  }
+
+  _MuteEntry _makeEntry(String value, {bool editing = false}) {
+    final entry = _MuteEntry(value, editing: editing);
+    entry.focusNode.addListener(() {
+      if (!entry.focusNode.hasFocus &&
+          entry.editing &&
+          mounted &&
+          (_words.contains(entry) || _tags.contains(entry))) {
+        setState(() => entry.editing = false);
+      }
+    });
+    return entry;
+  }
+
+  @override
+  void dispose() {
+    for (final entry in [..._words, ..._tags]) {
+      entry.dispose();
+    }
+    super.dispose();
+  }
+
+  void _focusAfterBuild(_MuteEntry entry, List<_MuteEntry> entries) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && entries.contains(entry)) entry.focusNode.requestFocus();
+    });
+  }
+
+  void _add(List<_MuteEntry> entries) {
+    final entry = _makeEntry('', editing: true);
+    setState(() => entries.add(entry));
+    _focusAfterBuild(entry, entries);
+  }
+
+  void _edit(_MuteEntry entry, List<_MuteEntry> entries) {
+    setState(() => entry.editing = true);
+    _focusAfterBuild(entry, entries);
+  }
+
+  void _finishEditing(_MuteEntry entry) {
+    entry.focusNode.unfocus();
+    if (entry.editing && mounted) {
+      setState(() => entry.editing = false);
+    }
+  }
+
+  void _remove(List<_MuteEntry> entries, _MuteEntry entry) {
+    setState(() => entries.remove(entry));
+    // Let the removed TextFormField unmount before releasing its focus node.
+    WidgetsBinding.instance.addPostFrameCallback((_) => entry.dispose());
+  }
+
+  Widget _section({
+    required String title,
+    required String hint,
+    required String keyPrefix,
+    required List<_MuteEntry> entries,
+    required String emptyLabel,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    return ExpansionTile(
+      key: Key('${keyPrefix}Accordion'),
+      initiallyExpanded: false,
+      tilePadding: EdgeInsets.zero,
+      shape: const Border(),
+      collapsedShape: const Border(),
+      childrenPadding: const EdgeInsets.only(bottom: 8),
+      title: Text(
+        title,
+        style: theme.textTheme.titleSmall?.copyWith(
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback,
+        ),
+      ),
+      children: [
+        const SizedBox(height: 6),
+        Text(
+          hint,
+          softWrap: true,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        TextButton.icon(
+          key: Key('${keyPrefix}AddButton'),
+          onPressed: () => _add(entries),
+          icon: const Icon(Icons.add),
+          label: Text(l10n.communityMuteAddNew),
+        ),
+        if (entries.isEmpty)
+          Padding(padding: const EdgeInsets.all(12), child: Text(emptyLabel)),
+        for (final entry in entries)
+          Padding(
+            key: ObjectKey(entry),
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                IconButton(
+                  key: Key('${keyPrefix}Edit_${entries.indexOf(entry)}'),
+                  tooltip: l10n.commonEdit,
+                  onPressed: () => _edit(entry, entries),
+                  icon: const Icon(Icons.edit_outlined),
+                ),
+                Expanded(
+                  child: entry.editing
+                      ? TextFormField(
+                          key: Key(
+                            '${keyPrefix}Entry_${entries.indexOf(entry)}',
+                          ),
+                          initialValue: entry.value,
+                          focusNode: entry.focusNode,
+                          onChanged: (text) => entry.value = text,
+                          onFieldSubmitted: (_) => _finishEditing(entry),
+                          onTapOutside: (_) => _finishEditing(entry),
+                          maxLines: 1,
+                          textInputAction: TextInputAction.done,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            hintText: title,
+                            border: const OutlineInputBorder(),
+                          ),
+                        )
+                      : InkWell(
+                          key: Key(
+                            '${keyPrefix}Display_${entries.indexOf(entry)}',
+                          ),
+                          onTap: () => _edit(entry, entries),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            child: Text(
+                              entry.value,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                ),
+                IconButton(
+                  key: Key('${keyPrefix}Delete_${entries.indexOf(entry)}'),
+                  tooltip: l10n.commonDelete,
+                  onPressed: () => _remove(entries, entry),
+                  icon: const Icon(Icons.delete_outline),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  String _dateLabel(AppLocalizations l10n, _PostDateFilter date) =>
+      switch (date) {
+        _PostDateFilter.all => l10n.communityPostPeriodAll,
+        _PostDateFilter.today => l10n.communityPostPeriodToday,
+        _PostDateFilter.thisWeek => l10n.communityPostPeriodWeek,
+        _PostDateFilter.thisMonth => l10n.communityPostPeriodMonth,
+        _PostDateFilter.thisYear => l10n.communityPostPeriodYear,
+        _PostDateFilter.custom => l10n.communityPostPeriodCustom,
+      };
+
+  Future<void> _chooseDateRange() async {
+    final now = DateTime.now();
+    final picked = await showDateRangePicker(
+      context: context,
+      initialDateRange: _dateRange,
+      firstDate: DateTime(2005),
+      lastDate: DateTime(now.year + 1, 12, 31),
+    );
+    if (picked != null && mounted) {
+      setState(() {
+        _dateRange = picked;
+        _dateFilter = _PostDateFilter.custom;
+      });
+    }
+  }
+
+  Future<void> _manageMutedAuthors() async {
+    final l10n = AppLocalizations.of(context)!;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.communityMutedAuthors),
+        content: SizedBox(
+          width: 420,
+          child: Consumer<CommunityService>(
+            builder: (_, service, _) {
+              final muted = service.mutedAuthorIds.toList()
+                ..sort(
+                  (a, b) => (service.authorNameOf(a) ?? a).compareTo(
+                    service.authorNameOf(b) ?? b,
+                  ),
+                );
+              if (muted.isEmpty) return Text(l10n.communityMutedAuthorsEmpty);
+              return ListView.builder(
+                shrinkWrap: true,
+                itemCount: muted.length,
+                itemBuilder: (_, i) {
+                  final id = muted[i];
+                  final name = service.authorNameOf(id) ?? id;
+                  return ListTile(
+                    key: ValueKey('communityMutedAuthor-$id'),
+                    title: Text(name),
+                    onTap: () {
+                      Navigator.of(dialogContext).pop();
+                      Navigator.of(context).push(
+                        adMockMaterialPageRoute<void>(
+                          builder: (_) => CommunityAuthorWorksScreen(
+                            authorId: id,
+                            authorName: name,
+                          ),
+                        ),
+                      );
+                    },
+                    trailing: IconButton(
+                      key: ValueKey('communityUnmuteAuthor-$id'),
+                      tooltip: l10n.communityUnmuteAuthor,
+                      onPressed: () => confirmCommunityAuthorMute(
+                        context,
+                        service,
+                        id,
+                        mute: false,
+                      ),
+                      icon: const Icon(Icons.visibility_outlined),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.commonClose),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final background = opaqueOver(
+      theme.dialogTheme.backgroundColor ?? scheme.surfaceContainerHigh,
+      theme.scaffoldBackgroundColor,
+    );
+    return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      title: Text(l10n.communityContentFilterTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.communityPostPeriodTitle,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
+            DropdownButtonFormField<_PostDateFilter>(
+              key: const Key('communityPostDateFilter'),
+              initialValue: _dateFilter,
+              isExpanded: true,
+              items: [
+                for (final date in _PostDateFilter.values)
+                  DropdownMenuItem(
+                    value: date,
+                    child: Text(_dateLabel(l10n, date)),
+                  ),
+              ],
+              onChanged: (value) {
+                if (value == null) return;
+                if (value == _PostDateFilter.custom) {
+                  _chooseDateRange();
+                } else {
+                  setState(() => _dateFilter = value);
+                }
+              },
+            ),
+            if (_dateFilter == _PostDateFilter.custom)
+              TextButton.icon(
+                key: const Key('communityPostDateChooseRange'),
+                onPressed: _chooseDateRange,
+                icon: const Icon(Icons.date_range_outlined),
+                label: Text(
+                  _dateRange == null
+                      ? l10n.communityPostPeriodChooseRange
+                      : '${MaterialLocalizations.of(context).formatShortDate(_dateRange!.start)} - ${MaterialLocalizations.of(context).formatShortDate(_dateRange!.end)}',
+                ),
+              ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.communityDurationFilterTitle,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
+            DropdownButtonFormField<_DurationFilterMode>(
+              key: const Key('communityDurationMode'),
+              initialValue: _durationMode,
+              isExpanded: true,
+              items: [
+                DropdownMenuItem(
+                  value: _DurationFilterMode.all,
+                  child: Text(l10n.communityDurationAny),
+                ),
+                DropdownMenuItem(
+                  value: _DurationFilterMode.upTo,
+                  child: Text(l10n.communityDurationUpTo),
+                ),
+                DropdownMenuItem(
+                  value: _DurationFilterMode.range,
+                  child: Text(l10n.communityDurationRange),
+                ),
+              ],
+              onChanged: (value) => setState(
+                () => _durationMode = value ?? _DurationFilterMode.all,
+              ),
+            ),
+            if (_durationMode == _DurationFilterMode.upTo) ...[
+              Text('${_upToMinutes.round()} ${l10n.communityDurationMinutes}'),
+              Slider(
+                key: const Key('communityDurationSlider'),
+                value: _upToMinutes,
+                min: 1,
+                max: 60,
+                divisions: 59,
+                label: '${_upToMinutes.round()}',
+                onChanged: (value) => setState(() => _upToMinutes = value),
+              ),
+            ],
+            if (_durationMode == _DurationFilterMode.range)
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      key: const Key('communityDurationMinimum'),
+                      initialValue: '$_minimumMinutes',
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: l10n.communityDurationMinimum,
+                      ),
+                      onChanged: (value) => _minimumMinutes =
+                          (int.tryParse(value) ?? 0).clamp(0, 9999).toInt(),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      key: const Key('communityDurationMaximum'),
+                      initialValue: '$_maximumMinutes',
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: l10n.communityDurationMaximum,
+                      ),
+                      onChanged: (value) => _maximumMinutes =
+                          (int.tryParse(value) ?? 0).clamp(0, 9999).toInt(),
+                    ),
+                  ),
+                ],
+              ),
+            SwitchListTile(
+              key: const Key('communityTagExactMatch'),
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.communityTagExactMatch),
+              value: _exactTag,
+              onChanged: (value) => setState(() => _exactTag = value),
+            ),
+            for (final filter in [0, 1]) ...[
+              const SizedBox(height: 12),
+              Text(
+                filter == 0
+                    ? l10n.communityMinimumViews
+                    : l10n.communityMinimumBookmarks,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              DropdownButtonFormField<int>(
+                key: Key(
+                  filter == 0
+                      ? 'communityMinimumViews'
+                      : 'communityMinimumBookmarks',
+                ),
+                initialValue: filter == 0 ? _minimumViews : _minimumBookmarks,
+                isExpanded: true,
+                items: [
+                  for (final count in _communityThresholdChoices)
+                    DropdownMenuItem(
+                      value: count,
+                      child: Text(
+                        count == 0
+                            ? l10n.communityThresholdAny
+                            : filter == 0
+                            ? l10n.communityMinimumViewsOption(
+                                NumberFormat.decimalPattern().format(count),
+                              )
+                            : l10n.communityMinimumBookmarksOption(
+                                NumberFormat.decimalPattern().format(count),
+                              ),
+                      ),
+                    ),
+                ],
+                onChanged: (value) => setState(() {
+                  if (filter == 0) {
+                    _minimumViews = value ?? 0;
+                  } else {
+                    _minimumBookmarks = value ?? 0;
+                  }
+                }),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Text(
+              l10n.communityTileSize,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
+            Slider(
+              key: const Key('communityTileSizeSlider'),
+              min: 120,
+              max: 240,
+              divisions: 6,
+              value: _tileWidth,
+              label: '${_tileWidth.round()} px',
+              onChanged: (value) => setState(() => _tileWidth = value),
+            ),
+            const SizedBox(height: 8),
+            _section(
+              title: l10n.communityMutedWords,
+              hint: l10n.communityMutedWordsHint,
+              keyPrefix: 'communityMutedWords',
+              entries: _words,
+              emptyLabel: l10n.communityMutedWordsEmpty,
+            ),
+            const SizedBox(height: 12),
+            _section(
+              title: l10n.communityMutedTags,
+              hint: l10n.communityMutedTagsHint,
+              keyPrefix: 'communityMutedTags',
+              entries: _tags,
+              emptyLabel: l10n.communityMutedTagsEmpty,
+            ),
+            ExpansionTile(
+              key: const Key('communityMutedAuthorsAccordion'),
+              tilePadding: EdgeInsets.zero,
+              shape: const Border(),
+              collapsedShape: const Border(),
+              initiallyExpanded: false,
+              title: Text(
+                l10n.communityMutedAuthors,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              children: [
+                Consumer<CommunityService>(
+                  builder: (_, service, _) {
+                    final ids = service.mutedAuthorIds.toList()..sort();
+                    if (ids.isEmpty) {
+                      return Text(l10n.communityMutedAuthorsEmpty);
+                    }
+                    return Column(
+                      children: [
+                        for (final id in ids)
+                          ListTile(
+                            key: ValueKey('communityMutedAuthorInline-$id'),
+                            title: Text(service.authorNameOf(id) ?? id),
+                            onTap: () {
+                              final navigator = Navigator.of(context);
+                              final name = service.authorNameOf(id) ?? id;
+                              navigator.pop();
+                              navigator.push(
+                                adMockMaterialPageRoute<void>(
+                                  builder: (_) => CommunityAuthorWorksScreen(
+                                    authorId: id,
+                                    authorName: name,
+                                  ),
+                                ),
+                              );
+                            },
+                            trailing: IconButton(
+                              key: ValueKey('communityUnmuteAuthorInline-$id'),
+                              tooltip: l10n.communityUnmuteAuthor,
+                              onPressed: () =>
+                                  service.setAuthorMuted(id, false),
+                              icon: const Icon(Icons.visibility_outlined),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+                TextButton.icon(
+                  key: const Key('communityManageMutedAuthors'),
+                  onPressed: _manageMutedAuthors,
+                  icon: const Icon(Icons.person_off_outlined),
+                  label: Text(l10n.communityMutedAuthors),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SwitchTheme(
+              data: SwitchTheme.of(
+                context,
+              ).copyWith(trackOutlineWidth: const WidgetStatePropertyAll(2)),
+              child: SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                activeTrackColor: opaqueOver(
+                  scheme.primary.withValues(alpha: 0.2),
+                  background,
+                ),
+                activeThumbColor: scheme.onPrimary,
+                thumbIcon: WidgetStatePropertyAll(
+                  Icon(
+                    Icons.circle_outlined,
+                    color: scheme.onSurface,
+                    size: 20,
+                  ),
+                ),
+                inactiveTrackColor: opaqueOver(
+                  theme.scaffoldBackgroundColor,
+                  background,
+                ),
+                inactiveThumbColor: scheme.onSurfaceVariant,
+                trackOutlineColor: WidgetStatePropertyAll(scheme.onSurface),
+                value: _hideAi,
+                onChanged: (value) => setState(() => _hideAi = value),
+                title: Text(l10n.communityHideGenerativeAiImageVideo),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          style: TextButton.styleFrom(minimumSize: const Size(64, 48)),
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          key: const Key('communityContentFilterSaveButton'),
+          onPressed: () => Navigator.pop(
+            context,
+            _ContentFilterInput(
+              hideAi: _hideAi,
+              words: _words.map((entry) => entry.value).toList(),
+              tags: _tags.map((entry) => entry.value).toList(),
+              dateFilter:
+                  _dateFilter == _PostDateFilter.custom && _dateRange == null
+                  ? _PostDateFilter.all
+                  : _dateFilter,
+              dateRange: _dateRange,
+              exactTag: _exactTag,
+              durationMode: _durationMode,
+              upToMinutes: _upToMinutes,
+              minimumMinutes: _minimumMinutes,
+              maximumMinutes: _maximumMinutes,
+              minimumViews: _minimumViews,
+              minimumBookmarks: _minimumBookmarks,
+              tileWidth: _tileWidth,
+            ),
+          ),
+          child: Text(l10n.commonSave),
+        ),
+      ],
+    );
+  }
+}
+
 class _ContentFilterInput {
   const _ContentFilterInput({
     required this.hideAi,
     required this.words,
     required this.tags,
+    required this.dateFilter,
+    required this.dateRange,
+    required this.exactTag,
+    required this.durationMode,
+    required this.upToMinutes,
+    required this.minimumMinutes,
+    required this.maximumMinutes,
+    required this.minimumViews,
+    required this.minimumBookmarks,
+    required this.tileWidth,
   });
 
   final bool hideAi;
-  final String words;
-  final String tags;
+  final List<String> words;
+  final List<String> tags;
+  final _PostDateFilter dateFilter;
+  final DateTimeRange? dateRange;
+  final bool exactTag;
+  final _DurationFilterMode durationMode;
+  final double upToMinutes;
+  final int minimumMinutes;
+  final int maximumMinutes;
+  final int minimumViews;
+  final int minimumBookmarks;
+  final double tileWidth;
 }

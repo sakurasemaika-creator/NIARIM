@@ -158,16 +158,8 @@ void main() {
     tester,
   ) async {
     await openApp(tester, firstLaunch: false);
-    tester
-        .state<ScaffoldState>(
-          find
-              .descendant(
-                of: find.byType(HomeScreen),
-                matching: find.byType(Scaffold),
-              )
-              .first,
-        )
-        .openDrawer();
+    // メニューは右上のボタンから開く。
+    await tester.tap(find.byKey(const Key('homeMenuButton')));
     await tester.pumpAndSettle();
     final entry = find.byKey(const Key('homeDrawerTutorial'));
     expect(entry, findsOneWidget);

@@ -50,16 +50,26 @@ class VideoTypeFilterButton extends StatelessWidget {
             child: Text(type.label(l10n)),
           ),
       ],
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.filter_alt_outlined, size: 18),
-            const SizedBox(width: 4),
-            Text(value.label(l10n), style: const TextStyle(fontSize: 12)),
-            const Icon(Icons.arrow_drop_down, size: 18),
-          ],
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.filter_alt_outlined, size: 18),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  value.label(l10n),
+                  style: const TextStyle(fontSize: 12),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const Icon(Icons.arrow_drop_down, size: 18),
+            ],
+          ),
         ),
       ),
     );

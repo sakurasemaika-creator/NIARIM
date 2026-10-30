@@ -121,13 +121,18 @@ void main() {
           tester.view.physicalSize = size;
           tester.platformDispatcher.textScaleFactorTestValue = scale;
           await tester.pumpAndSettle();
-          for (final label in [
+          final labels = [
             l10n.homeTabProjects,
             l10n.homeTabWorks,
             l10n.homeTabBookmarked,
-          ]) {
+          ];
+          for (var index = 0; index < labels.length; index++) {
+            final label = labels[index];
             final paragraph = tester.renderObject<RenderParagraph>(
-              find.text(label),
+              find.descendant(
+                of: find.byKey(ValueKey('home_tab_$index')),
+                matching: find.text(label),
+              ),
             );
             expect(
               paragraph.size.width + 0.01,

@@ -50,6 +50,9 @@
   "homePermanentDeleteConfirmBody": "Esta acción no se puede deshacer.",
   "homeWorksEmpty": "Aún no hay obras exportadas",
   "homeWorksEmptyHint": "Exporta un vídeo o GIF desde el lienzo y aparecerá aquí",
+  "homeWorkFolderEmpty": "No hay obras exportadas en esta carpeta",
+  "homeSharedFolderEmpty": "No hay proyectos compartidos en esta carpeta",
+  "homeDeleteFolderKeepContents": "Se eliminará \"{name}\". Su contenido volverá a la lista principal y no se eliminará.",
   "homeShareOpenWith": "Compartir / Abrir en Fotos",
   "homeWorkDeleteConfirmTitle": "¿Eliminar {name}?",
   "homeWorkDeleteConfirmBody": "Se eliminará el archivo exportado de este dispositivo. Esta acción no se puede deshacer.",
@@ -235,6 +238,9 @@
   "folderManagementTitle": "Gestión de carpetas",
   "folderManagementCreateNew": "Nueva",
   "folderManagementEmpty": "Aún no hay carpetas",
+  "folderCreateFailed": "No se pudo crear la carpeta. Inténtalo de nuevo.",
+  "folderChangesSaveFailed": "No se pudieron guardar los cambios de la carpeta. Inténtalo de nuevo.",
+  "folderChangesPartiallySaved": "Solo se han guardado algunos cambios. Comprueba la lista e inténtalo de nuevo.",
   "folderNameLabel": "Nombre de la carpeta",
   "folderMoveToTitle": "Mover a carpeta",
   "folderNone": "Sin carpeta",
@@ -511,12 +517,12 @@
   "helpTransferTitle": "Transferencia (.niatra)",
   "helpTransferDesc": "Una función para transferir todo el entorno de la aplicación —ajustes, materiales, pinceles, ajustes de relleno automático, tema, paletas (selector de color y pixel art) y más— a otro dispositivo de una sola vez. Puedes elegir elementos individuales para transferir con casillas de verificación, e incluir opcionalmente proyectos en curso (los proyectos seleccionados se transfieren completos, con sus materiales y fuentes). Si solo quieres entregar un proyecto individual, también puedes usar \"Compartir (.niashare)\".",
   "helpVideoExportTitle": "Exportación de vídeo (MP4, WebM, GIF, AVI)",
-  "helpVideoExportDesc": "Exporta tu obra como un video MP4 estandar. La version gratuita tiene un limite de duracion (90 segundos) y anade automaticamente una tarjeta final (logotipo de la app) al final del video. Un formato de vídeo que se puede exportar conservando el canal alfa (las partes transparentes del fondo). La reproducción transparente solo funciona en entornos de reproducción compatibles. Ideal para superponer como material en otras aplicaciones. Exporta como GIF animado. Como se reproduce en bucle automaticamente, es ideal para compartir de forma casual en redes sociales. Si la compatibilidad es lo más importante, también puedes exportar como AVI (Motion JPEG). Usa un códec elegido por ser seguro en cuanto a patentes y licencias, pero no admite canal alfa (transparencia), y la vista previa dentro de la app puede no funcionar en todos los dispositivos (aun así puedes reproducirlo con un reproductor externo mediante Compartir). Las cuentas gratuitas tienen un límite de 90 segundos de duración de proyecto (las cuentas Premium tienen 2 horas). Si añadir o duplicar fotogramas te haría superar el límite, aparece un aviso justo al tocar el botón, así que nunca llegas a superar los 90 segundos.",
+  "helpVideoExportDesc": "Exporta tu obra como un video MP4 estandar. La version gratuita tiene un limite de duracion (90 segundos) y anade automaticamente una tarjeta final (logotipo de la app) al final del video. Un formato de vídeo que se puede exportar conservando el canal alfa (las partes transparentes del fondo). La reproducción transparente solo funciona en entornos de reproducción compatibles. Ideal para superponer como material en otras aplicaciones. Exporta como GIF animado. Como se reproduce en bucle automaticamente, es ideal para compartir de forma casual en redes sociales. Si la compatibilidad es lo más importante, también puedes exportar como AVI (Motion JPEG). No admite canal alfa (transparencia), y la vista previa dentro de la app puede no funcionar en todos los dispositivos (aun así puedes reproducirlo con un reproductor externo mediante Compartir). Las cuentas gratuitas tienen un límite de 90 segundos de duración de proyecto (las cuentas Premium tienen 2 horas). Si añadir o duplicar fotogramas te haría superar el límite, aparece un aviso justo al tocar el botón, así que nunca llegas a superar los 90 segundos.",
   "helpTransparentWebmTitle": "WebM transparente",
   "helpCommunityTitle": "Plaza de Obras",
-  "helpCommunityDesc": "Publica tus animaciones e ilustraciones en la comunidad como vídeos de YouTube y explora las obras de otros usuarios. Cambia entre las pestañas «Nuevas», «Ranking» y «Siguiendo», y busca por título de la obra o nombre del creador. Cambia al modo de búsqueda por etiquetas para filtrar obras por etiqueta: cualquier usuario (no solo el creador) puede añadir o quitar etiquetas, aunque las etiquetas bloqueadas por el creador solo él puede quitarlas, y tocar una etiqueta filtra al instante las obras con la misma etiqueta. Al tocar una tarjeta de obra se abre una ventana de vista previa flotante que se puede arrastrar y redimensionar, para seguir explorando otras pantallas mientras se reproduce. El botón «Ver detalles» abre la pantalla de detalles de la obra (creador, fecha de publicación, edición de etiquetas, marcador, republicación y más). Toca el botón «Seguir» junto al nombre de un creador para añadirlo a tus seguidos: la pestaña «Siguiendo» reúne entonces solo las publicaciones de ese creador, ordenadas por fecha. Cuando alguien te sigue, aparece en la lista de notificaciones bajo el icono de la campana en la parte superior de la pantalla. Puedes elegir si tus listas de seguidos/seguidores son visibles para otros usuarios (privadas por defecto), y puedes ver las listas de otros usuarios si las han hecho públicas. Puedes republicar la obra de cualquier otra persona (excepto la tuya propia) con el botón «Republicar»; cuando un creador al que sigues republica la obra de otra persona, esa obra también aparece en tu pestaña «Siguiendo», ordenada según lo que sea más reciente —su fecha de publicación original o su fecha de republicación— (la tarjeta muestra «Republicado por…»). Las obras marcadas aparecen juntas en la pestaña «Guardadas» de la pantalla de inicio, y también en la pestaña «Marcadores» de la pantalla de obras de un creador. Puedes elegir si tu propia lista de marcadores es visible para otros usuarios (privada de forma predeterminada), y puedes ver las listas de marcadores de otros usuarios si las han hecho públicas. Puedes denunciar una obra indicando un motivo, y tras enviarla se te preguntará si quieres bloquear a ese creador. Los vídeos verticales se pueden ver en «modo vertical», que los reproduce uno tras otro como un feed de vídeos cortos. Hay un límite diario de publicaciones: 1 al día para miembros gratuitos y 3 al día para miembros Premium. El botón de filtros de visualización de la parte superior derecha (el icono de un ojo tachado) te permite ocultar las obras que no quieras ver. Puedes ocultar las obras marcadas con «Contiene imágenes o vídeo de IA generativa» y añadir títulos silenciados (solo se comparan con el título de la obra) y etiquetas silenciadas (solo se comparan con las etiquetas asignadas a la obra en la Plaza de Obras; se ignora el # inicial), separados por comas o saltos de línea. Estos filtros se aplican a «Nuevas», «Ranking», «Siguiendo» (incluidas las republicaciones), el modo vertical, las páginas de los creadores, los detalles de las obras y los marcadores. «Contiene imágenes o vídeo de IA generativa» lo declara quien publica en el momento de publicar, y después solo esa persona puede cambiarlo (desde «Mis publicaciones» o la pantalla de detalles de la obra).",
+  "helpCommunityDesc": "Publica tus animaciones e ilustraciones en la comunidad como vídeos de YouTube y explora las obras de otros usuarios. Cambia entre las pestañas «Nuevas», «Ranking» y «Siguiendo», y busca por título de la obra o nombre del creador. Cambia al modo de búsqueda por etiquetas para filtrar obras por etiqueta: cualquier usuario (no solo el creador) puede añadir o quitar etiquetas, aunque las etiquetas bloqueadas por el creador solo él puede quitarlas, y tocar una etiqueta filtra al instante las obras con la misma etiqueta. Al tocar una tarjeta de obra se abre una ventana de vista previa flotante que se puede arrastrar y redimensionar, para seguir explorando otras pantallas mientras se reproduce. El botón «Ver detalles» abre la pantalla de detalles de la obra (creador, fecha de publicación, edición de etiquetas, marcador, republicación y más). Toca el botón «Seguir» junto al nombre de un creador para añadirlo a tus seguidos: la pestaña «Siguiendo» reúne entonces solo las publicaciones de ese creador, ordenadas por fecha. Cuando alguien te sigue, aparece en la lista de notificaciones bajo el icono de la campana en la parte superior de la pantalla. Puedes elegir si tus listas de seguidos/seguidores son visibles para otros usuarios (privadas por defecto), y puedes ver las listas de otros usuarios si las han hecho públicas. Puedes republicar la obra de cualquier otra persona (excepto la tuya propia) con el botón «Republicar»; cuando un creador al que sigues republica la obra de otra persona, esa obra también aparece en tu pestaña «Siguiendo», ordenada según lo que sea más reciente —su fecha de publicación original o su fecha de republicación— (la tarjeta muestra «Republicado por…»). Las obras marcadas aparecen juntas en la pestaña «Guardadas» de la pantalla de inicio, y también en la pestaña «Marcadores» de la pantalla de obras de un creador. Puedes elegir si tu propia lista de marcadores es visible para otros usuarios (privada de forma predeterminada), y puedes ver las listas de marcadores de otros usuarios si las han hecho públicas. Puedes denunciar una obra indicando un motivo, y tras enviarla se te preguntará si quieres bloquear a ese creador. Los vídeos verticales se pueden ver en «modo vertical», que los reproduce uno tras otro como un feed de vídeos cortos. Hay un límite diario de publicaciones: 1 al día para miembros gratuitos y 3 al día para miembros Premium. El botón de filtros de visualización de la parte superior derecha (el icono de un ojo tachado) te permite ocultar las obras que no quieras ver. Puedes ocultar las obras marcadas con «Contiene imágenes o vídeo de IA generativa» y añadir títulos silenciados (solo se comparan con el título de la obra) y etiquetas silenciadas (solo se comparan con las etiquetas de la Plaza de Obras) de una en una con «Añadir nuevo». Edita con el lápiz o elimina con la papelera; no hacen falta comas ni #. Estos filtros se aplican a «Nuevas», «Ranking», «Siguiendo» (incluidas las republicaciones), el modo vertical, las páginas de los creadores, los detalles de las obras y los marcadores. «Contiene imágenes o vídeo de IA generativa» lo declara quien publica en el momento de publicar, y después solo esa persona puede cambiarlo (desde «Mis publicaciones» o la pantalla de detalles de la obra).",
   "helpWatermarkEntryTitle": "Marca de agua",
-  "helpWatermarkEntryDesc": "Una función exclusiva de la versión premium que te permite añadir tu propia firma o logotipo como marca de agua en los vídeos e imágenes exportados. Puedes ajustar su posición, tamaño y opacidad. Toca la marca de agua colocada en la pista de capa común de la línea de tiempo para reeditar en cualquier momento su ángulo, tamaño, opacidad y rango visible (bucle), no solo al registrarla, sino cada vez que la uses en un proyecto.",
+  "helpWatermarkEntryDesc": "Una función exclusiva de la versión premium que te permite añadir tu propia firma o logotipo como marca de agua en los vídeos e imágenes exportados. Puedes ajustar su posición, tamaño y opacidad. Toca la marca de agua colocada en la pista de capa común de la línea de tiempo para reeditar en cualquier momento su ángulo, tamaño, opacidad y rango visible (bucle), no solo al registrarla, sino cada vez que la uses en un proyecto. Para añadir una marca de agua, abre «Añadir material» en la línea de tiempo y elige «+ Marca de agua».",
   "helpPremiumEntryTitle": "Premium",
   "helpPremiumEntryDesc": "La membresia premium amplia hasta 2 horas el limite de 90 segundos de duracion de video de la version gratuita y te permite quitar la tarjeta final (logotipo de la app) que se anade automaticamente al final de cada video. Tambien se ocultan los anuncios y obtienes acceso a la marca de agua, la curva de tonos y la correccion de niveles.",
   "helpPerformanceSettingsTitle": "Ajustes de rendimiento",
@@ -584,7 +590,7 @@
   "helpFontImportTitle": "Importar fuentes",
   "helpFontImportDesc": "Permite cargar un archivo de fuente directamente desde el almacenamiento del dispositivo. Añádela desde la pestaña \"Importar\" en la gestión de fuentes, en ajustes. Útil cuando quieres usar una fuente personalizada que no se distribuye en ningún sitio, o una fuente comercial que has comprado.",
   "helpExportScreenTitle": "Pantalla de exportación",
-  "helpExportScreenDesc": "Muestra el progreso al exportar un vídeo o una imagen, y permite cancelar a mitad de camino. El tiempo que tarda depende del rendimiento del dispositivo.",
+  "helpExportScreenDesc": "En «Preajuste», elige «Estándar», «Alta calidad» o «Personalizado». Con «Personalizado» puedes ajustar los fotogramas por segundo (FPS). Muestra el progreso al exportar un vídeo o una imagen, y permite cancelar a mitad de camino. El tiempo que tarda depende del rendimiento del dispositivo.",
   "helpDrawingFilterTitle": "Filtros de dibujo",
   "helpDrawingFilterDesc": "Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Los 28 filtros incluidos son Desenfoque gaussiano, Desenfoque de lente, Estilo anime, Curva de tonos, Niveles, Contorno, Enfoque, Máscara de enfoque, Viñeta, Grano de película, Anime retro, Tubo de rayos catódicos, Umbral, Ojo de pez, Aberración cromática, Distorsión óptica, Pixel art, Cambio de textura, Mimetismo de fondo, Acumulación de tinta, Dibujo lineal automático, Prisma, Ruido VHS, Invertir colores, Mosaico, Ruido, Sombreado esférico y Borde de acuarela. Borde de acuarela acumula el color en los bordes de lo pintado en la capa de trabajo y vuelve translúcido el interior, como una acuarela seca (con «También en los límites de color», los límites entre colores vecinos también reciben un borde). Estilo anime reduce los colores y traza una línea del «Grosor del borde» por el lado más oscuro de cada borde donde los colores vecinos difieren al menos el «Umbral de diferencia de color» (las líneas del dibujo no se engrosan). Prisma pinta cada forma de la capa con los seis colores del arcoíris (rojo, verde, cian, azul, morado, rojo), la desenfoca y pone la capa en Sobreexposición lineal. Dibuja antes en su propia capa formas pequeñas y finas como hojas en un color oscuro y obtendrás suaves destellos de arcoíris sobre tu dibujo (la Cantidad de desenfoque se mide como un desenfoque gaussiano normal). Sombreado esférico aplica un color de luz dentro de una luz elíptica y un color de sombra fuera de ella, solo donde hay dibujo (la luz también se puede arrastrar en el lienzo). Contorno no reescribe la capa original: dibuja solo el resultado en una capa nueva. Distorsión óptica aplica una deformación localizada, como a través de una lente de gafas potente, únicamente al área pintada en el lienzo con el «Pincel» y el «Cubo de pintura» del panel (se corrige con la «Goma de borrar»; parte de la selección o de la capa de selección si la hay). Cuando el lienzo tiene una selección, los filtros de dibujo se aplican solo dentro de ella. Pixel art también permite elegir un modo de color (sin límite, colores específicos, número de colores o paleta). Cuando los colores están limitados, las zonas a las que ningún color permitido se acerca se forman con dos o tres colores permitidos dispuestos en un patrón regular (tramado) que se parece más al original; los bordes se mantienen nítidos. Con un número de colores, estos se toman de lo que forma la mayor parte de la imagen. El tramado se puede desactivar para rellenar cada punto con el color más cercano. Su tamaño puede fijarse con el tamaño de bloque (100 pasos, de 1 a 100) o con controles deslizantes de puntos a lo ancho y a lo alto (1 en el extremo izquierdo, el tamaño del lienzo en el derecho); al mover uno, el otro cambia conservando las proporciones del dibujo, y ambas formas de ajuste van a la par. En ambos casos los puntos siguen siendo cuadrados y sin bordes semitransparentes. En Dibujo lineal automático puedes editar los puntos de control vectoriales temporales antes de aplicar el filtro. Arrastra un punto para mover solo ese punto. Elige «Añadir punto de control» junto a Aplicar y toca una línea para añadir un punto, o elige «Eliminar punto de control» y toca un punto para eliminarlo (sin ninguno elegido, tocar un punto pide confirmación antes de eliminarlo). La geometría editada se usa directamente en el resultado aplicado, y mover, añadir o eliminar puntos se puede deshacer y rehacer de uno en uno con Deshacer y Rehacer del editor de filtros. En la Curva de tonos, toca una zona vacía para añadir un punto, arrastra un punto para moverlo y mantenlo pulsado para eliminarlo; las curvas R, G y B se aplican después de la curva RGB. Los Niveles también se pueden ajustar por separado para R, G y B, y la Gamma cambia los tonos medios. El «Alcance hacia dentro» del contorno extiende el borde hacia el interior de la forma original, y la nueva capa del contorno se coloca justo debajo de la capa original. La aberración cromática permite repartir el desplazamiento entre X (horizontal), Y (vertical) y Z (hacia fuera desde el centro). El centro y el radio del ojo de pez también se pueden arrastrar en el lienzo, con la + y el tirador del círculo. Viñeta oscurece suavemente las cuatro esquinas de todo el lienzo (las zonas transparentes sin dibujar también reciben la sombra). «Alcance» fija hasta dónde llega desde las esquinas hacia el centro, e «Intensidad», lo oscuras que quedan las esquinas. Distorsión de lente funciona como unas gafas graduadas reales: lo que se ve a través de la lente se encoge por igual hacia su centro (valores negativos, para la miopía) o se agranda (valores positivos, para la hipermetropía), y el contorno se desplaza en escalón en el borde de la lente. Acumulación de tinta se acumula solo en el interior de los ángulos donde las líneas se juntan con el «Ángulo máximo» o menos (con los 90° iniciales, los agudos y rectos: una V, el lado estrecho de un cruce, una unión en T, una esquina cuadrada), nunca en ángulos más abiertos: en el punto de encuentro tiene el «Grosor central» desde el borde de la línea y se afina en línea recta hasta desaparecer en una punta suave al final del «Rango» (por mucho que se aumente el «Grosor central», nunca se abomba más allá de la recta que une los extremos de las dos acumulaciones: en su máximo, el centro queda plano); si una línea termina antes, la acumulación a lo largo de esa línea se afina hasta desaparecer donde termina, así que cada línea puede tener su propio largo, y aun así las dos acumulaciones se encuentran en el centro del ángulo con el mismo grosor desde cada línea (la de la línea más larga sigue afinándose desde allí hasta el final del rango). Entintado automático sigue el centro de las líneas del boceto y las dibuja finas. Las líneas próximas entre sí siguen siendo líneas separadas mientras quede algún hueco entre ellas; solo se rellenan las pequeñas motas de papel dentro de un trazo. Donde dos líneas se juntan, se van acercando poco a poco como en el boceto, en lugar de convertirse en una sola línea por el centro. Donde las líneas se cruzan o se superponen, cada una sigue tal como está en el boceto (no se dobla hacia el cruce y dos líneas superpuestas no se funden en una). Las líneas que se cruzan en un ángulo poco pronunciado siguen rectas a través del cruce, y las que solo se tocan (como el contorno del pelo dibujado junto a la cabeza) quedan como líneas separadas, cada una por su lado. Los puntos, como los ojos, se dibujan como puntos rellenos. Las ramas más cortas que el «Grosor del boceto» no se dibujan. «Afinar los extremos» se puede activar o desactivar; si se desactiva, las líneas mantienen el mismo grosor hasta sus extremos. Mimetismo de fondo superpone la luz y la sombra del fondo en el modo de fusión «Luz fuerte» (el color de la sombra no es negro ni gris, sino el color de las sombras del propio fondo, oscurecido). El color del entorno se superpone a todo el dibujo en «Superponer» para fijar su tono general, la luz que rebota desde abajo y la que se refleja alrededor se añaden en «Trama», y una luz de color intensa, como un neón, brilla en el contorno en «Suma (brillo)». «Ajustar a los tonos del fondo» lleva los colores más claros o más vivos que el fondo de vuelta a su rango y da a los tonos oscuros, medios y claros el matiz de los tonos del fondo con la misma luminosidad (el negro del dibujo de líneas no cambia). «Intensidad de desenfoque» es cuánto se desenfoca el fondo antes de tomar sus colores.",
   "helpLayerKeyframeTitle": "Fotogramas clave de capa (animación por partes)",
@@ -2647,6 +2653,9 @@
   "communityFloatingPreviewDetailButton": "Detalles",
   "communityFloatingPreviewPlayTooltip": "Reproducir",
   "communityFloatingPreviewPauseTooltip": "Pausar",
+  "communityFloatingPreviewResizeTooltip": "Cambiar el tamaño de la vista previa",
+  "communityFloatingPreviewMoveHint": "Arrastra para mover. También puedes usar Alt + las flechas.",
+  "communityFloatingPreviewCompactHint": "Abre Detalles para ver esta obra.",
   "communityReportDialogTitle": "Denunciar esta obra",
   "communityReportDialogBody": "Selecciona un motivo para la denuncia.",
   "communityReportReasonInappropriate": "Contenido inapropiado",
@@ -2684,18 +2693,6 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "Hacer públicas las listas de seguidos/seguidores",
-  "communityFollowersPublicToggleDesc": "Si está activado, otros usuarios podrán ver sus listas de seguidos y seguidores desde esta página. Son privadas de forma predeterminada.",
-  "communityFollowersListTitle": "Seguidores",
-  "communityFollowersListEmpty": "Todavía no hay seguidores",
-  "communityFollowersListHiddenNote": "{count} más no se muestran, ocultos por su propia configuración de privacidad",
-  "@communityFollowersListHiddenNote": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "communityAuthorFollowingCount": "Siguiendo a {count}",
   "@communityAuthorFollowingCount": {
     "placeholders": {
@@ -2704,19 +2701,8 @@
       }
     }
   },
-  "communityFollowingListTitle": "Siguiendo",
-  "communityFollowingListEmpty": "Todavía no sigue a nadie",
   "communityFollowNotificationsTooltip": "Notificaciones",
-  "communityFollowNotificationsTitle": "Notificaciones de seguidores",
   "communityFollowNotificationsEmpty": "No hay notificaciones",
-  "communityFollowNotificationBody": "{name} te ha seguido",
-  "@communityFollowNotificationBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "communityNoWorksMessage": "No hay obras",
   "communityFavoriteAuthorFollow": "Seguir",
   "communityFavoriteAuthorFollowing": "Siguiendo",
@@ -2734,9 +2720,6 @@
   },
   "communityAuthorTabWorks": "Obras",
   "communityAuthorTabBookmarks": "Marcadores",
-  "communityBookmarksPublicToggleTitle": "Hacer pública la lista de marcadores",
-  "communityBookmarksPublicToggleDesc": "Si está activado, otros usuarios podrán ver su lista de marcadores desde esta página. Es privada de forma predeterminada.",
-  "communityBookmarksPrivateNotice": "Este usuario ha configurado su lista de marcadores como privada.",
   "communityBookmarksEmptyMessage": "No hay obras marcadas",
   "communityShortsBadge": "Vertical",
   "communityVideoTypeFilterTooltip": "Filtrar por tipo de vídeo",
@@ -2984,17 +2967,68 @@
   "communityContentFilterTitle": "Filtros de visualización",
   "communityHideGenerativeAiImageVideo": "Ocultar obras con imágenes o vídeo de IA generativa",
   "communityMutedWords": "Títulos silenciados",
-  "communityMutedWordsHint": "Oculta las obras cuyo título contiene este texto (no se comprueban los nombres de los creadores ni las etiquetas). Separa varias entradas con comas o saltos de línea.",
+  "communityMutedWordsHint": "Oculta las obras cuyos títulos contienen estas palabras (no se comprueban creadores ni etiquetas). Añade y edita cada palabra por separado.",
   "communityMutedTags": "Etiquetas silenciadas",
-  "communityMutedTagsHint": "Oculta las obras que tienen esta etiqueta en la Plaza de Obras (se ignora el # inicial). Separa varias entradas con comas o saltos de línea.",
+  "communityMutedTagsHint": "Oculta las obras con etiquetas coincidentes en la Plaza de Obras. Añade cada etiqueta por separado; no hace falta #.",
+  "communityMuteAddNew": "Añadir nuevo",
+  "communityScrollToTop": "Volver arriba",
+  "communityPostPeriodTitle": "Fecha de publicación",
+  "communityDurationFilterTitle": "Duración del vídeo",
+  "communitySavedSearches": "Búsquedas guardadas",
+  "communitySignInPromptTitle": "Iniciar sesión con Google",
+  "communitySignInPromptBody": "Necesitas vincular Google para publicar, gestionar obras, seguir autores, guardar y denunciar contenido.",
+  "communitySignInPromptConnect": "Vincular cuenta Google",
+  "communitySignInUnavailable": "El inicio de sesión con Google no está configurado en esta versión de desarrollo.",
+  "communitySaveSearch": "Guardar la búsqueda actual",
+  "communitySavedSearchName": "Nombre de la búsqueda",
+  "communitySavedSearchLimit": "Puedes guardar hasta 10 búsquedas",
+  "communitySavedSearchEmpty": "No hay búsquedas guardadas",
+  "communityDurationAny": "Cualquier duración",
+  "communityDurationUpTo": "Hasta N minutos (control deslizante)",
+  "communityDurationRange": "Entre N y N minutos (números)",
+  "communityDurationMinutes": "minutos o menos",
+  "communityDurationMinimum": "Mín. minutos",
+  "communityDurationMaximum": "Máx. minutos",
+  "communityTagExactMatch": "Coincidencia exacta (desactivar para parcial)",
+  "communityMinimumViews": "Vistas",
+  "communityMinimumBookmarks": "Marcadores",
+  "communityPostPeriodAll": "Cualquier fecha",
+  "communityPostPeriodToday": "Hoy",
+  "communityPostPeriodWeek": "Esta semana",
+  "communityPostPeriodMonth": "Este mes",
+  "communityPostPeriodYear": "Este año",
+  "communityPostPeriodCustom": "Intervalo personalizado",
+  "communityPostPeriodChooseRange": "Elegir fechas",
+  "communityMutedAuthors": "Creadores silenciados",
+  "communityMutedAuthorsEmpty": "No hay creadores silenciados",
+  "communityUnmuteAuthor": "Dejar de silenciar a este creador",
+  "communityMyWorksManagementHeading": "Gestionar obras",
+  "communityWorkTagsTitle": "Etiquetas de la obra",
+  "communityWorkTagsHint": "Añade, edita o elimina etiquetas. El bloqueo impide cambios de otras personas. Desbloquéala antes de editarla o eliminarla.",
+  "communityWorkEditTag": "Editar etiqueta",
+  "communityWorkTagChangeFailed": "No se pudo cambiar la etiqueta",
   "communityContainsGenerativeAiImageVideo": "Contiene imágenes o vídeo de IA generativa",
   "communityContainsGenerativeAiImageVideoHelp": "Actívalo si se utilizó IA generativa para crear imágenes o vídeo de la obra. El software de síntesis de voz no está incluido.",
   "communityAiImageVideoUpdateFailed": "No se pudo cambiar «Contiene imágenes o vídeo de IA generativa». Comprueba la conexión e inténtalo de nuevo.",
   "communityRetry": "Reintentar",
   "communityReloadTooltip": "Recargar",
-  "communityGoogleSignInNotConfigured": "El inicio de sesión con Google aún no está configurado",
+  "communityGoogleSignInNotConfigured": "No hay ninguna cuenta de Google vinculada",
   "communityGoogleAccountBusy": "Hay otra operación de la cuenta de Google en curso. Inténtalo de nuevo cuando termine.",
   "communityMyWorksTitle": "Mis publicaciones",
+  "communityMyWorksViewAuthorPage": "Ver mi página de obras",
+  "communityMyWorksAccountRequired": "Conecta tu cuenta de Google para ver tus obras",
+  "communityMyWorksSettingsTitle": "Ajustes de la obra",
+  "communityMyWorksPublishInNiarim": "Mostrar en NIARIM",
+  "communityMyWorksDeleteNiarim": "Eliminar esta obra de la Plaza de Obras de NIARIM",
+  "communityMyWorksDeleteConfirmTitle": "¿Eliminar esta obra?",
+  "communityMyWorksDeleteConfirmBody": "La obra se eliminará permanentemente de NIARIM. El vídeo de YouTube se conservará. Esta acción no se puede deshacer.",
+  "communityMyWorksOpenYoutubeStudio": "Gestionar vídeo en YouTube Studio",
+  "communityMyWorksYoutubeStudioHelp": "Gestiona la visibilidad y los ajustes de YouTube desde YouTube Studio, de forma independiente de NIARIM.",
+  "communityMyWorksYoutubeOpenFailed": "No se pudo abrir YouTube Studio",
+  "communityMyWorksOperationFailed": "Error de operación: {reason}",
+  "communityMyWorksBulkPublish": "Publicar selección",
+  "communityMyWorksBulkHide": "Ocultar selección",
+  "communityMyWorksBulkResult": "Cambiadas: {success} / Fallidas: {failed}",
   "communityMyWorksAccountNotConnected": "No hay ninguna cuenta de Google conectada",
   "communityMyWorksAddAccount": "Añadir una cuenta de Google",
   "communityMyWorksSwitchAccount": "Cambiar o añadir una cuenta de Google",
@@ -3002,7 +3036,6 @@
   "communityMyWorksLoadFailed": "No se pudieron cargar tus publicaciones. {reason}",
   "communityAccountSwitchFailed": "No se pudo cambiar de cuenta de Google. {reason}",
   "communitySignInFailed": "No se pudo iniciar sesión con tu cuenta de Google. {reason}",
-  "communityVisibilityChangeFailed": "No se pudo cambiar la visibilidad. {reason}",
   "communityMyWorksDeletedCannotPublish": "Un vídeo eliminado de YouTube no se puede volver a mostrar en la Plaza de Obras",
   "communityMyWorksStatusDeletedOnYoutube": "Eliminado de YouTube • No se puede volver a mostrar",
   "communityMyWorksStatusYoutubePrivate": "Visible en la Plaza de Obras • Oculto temporalmente porque el vídeo de YouTube es privado",
@@ -3210,6 +3243,58 @@
   "homeTrashFolderPermanentDeleteBody": "\"{name}\" se eliminará de forma permanente. Esta acción no se puede deshacer.",
   "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{Vacía} =1{1 carpeta} other{{folders} carpetas}}} =1{1 proyecto{folders, plural, =0{} =1{ y 1 carpeta} other{ y {folders} carpetas}}} other{{projects} proyectos{folders, plural, =0{} =1{ y 1 carpeta} other{ y {folders} carpetas}}}}",
   "homeTrashFolderPermanentDeleteContents": "También se eliminará el contenido de la carpeta: {contents}.",
-  "folderColorName": "{color, select, pink{Rosa} orange{Naranja} yellow{Amarillo} green{Verde} blue{Azul} purple{Morado} gray{Gris} other{Color predeterminado}}",
-  "newProjectNumberRangeError": "Introduce un número entre {min} y {max}"
+  "newProjectNumberRangeError": "Introduce un número entre {min} y {max}",
+  "communityThresholdAny": "Sin condición",
+  "communityMinimumViewsOption": "Al menos {count} vistas",
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMinimumBookmarksOption": "Al menos {count} marcadores",
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityTileSize": "Tamaño de las obras",
+  "communityMutedWordsEmpty": "No hay palabras silenciadas",
+  "communityMutedTagsEmpty": "No hay etiquetas silenciadas",
+  "communityMuteShort": "Silenciar",
+  "communityMuteConfirmTitle": "¿Silenciar a este usuario?",
+  "communityMuteConfirmBody": "Se ocultarán sus obras.",
+  "communityMuteConfirmAction": "Silenciar",
+  "communityUnmuteConfirmTitle": "¿Dejar de silenciar a este usuario?",
+  "communityUnmuteConfirmAction": "Activar",
+  "communityMuteNo": "No",
+  "communityMuteDone": "Usuario silenciado",
+  "communityUnmuteDone": "Usuario reactivado",
+  "communityMilestoneNotificationsTitle": "Notificaciones",
+  "communityFollowerMilestone": "Has alcanzado {count} seguidores",
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBookmarkMilestone": "«{title}» alcanzó {count} marcadores",
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communitySearchHistory": "Historial de búsqueda",
+  "communitySearchHistoryEmpty": "No hay historial",
+  "communityDeleteSavedSearchConfirm": "¿Eliminar esta búsqueda guardada?",
+  "communitySortLabel": "Ordenar"
 }

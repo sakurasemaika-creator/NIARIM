@@ -8,6 +8,7 @@ import 'package:http/testing.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/community/community_edit_feedback.dart';
 import 'package:niarim/screens/community/community_my_works_screen.dart';
+import 'package:niarim/screens/community/community_work_settings_screen.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_service.dart';
@@ -238,13 +239,29 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        unawaited(
+          Navigator.of(
+            tester.element(find.byType(CommunityMyWorksScreen)),
+          ).push<void>(
+            MaterialPageRoute(
+              builder: (_) =>
+                  const CommunityWorkSettingsScreen(workId: 'old-private'),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.byType(ai ? Checkbox : Switch));
         await tester.tap(find.byType(ai ? Checkbox : Switch));
         await tester.pump();
         expect(pending, hasLength(1));
         for (final id in ['new', 'old']) {
           community.forgetOwner();
           auth.switchTo(id);
-          await tester.pumpAndSettle();
+          // Bound virtual time while an intentionally unresolved HTTP request exists.
+          // pumpAndSettle can advance its transport retry deadline via the spinner.
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 300));
+          await tester.pump();
         }
         await tester.tap(find.byType(ai ? Checkbox : Switch));
         await tester.pump();
@@ -263,10 +280,16 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 10));
         final row = find.byKey(
-          const ValueKey('communityMyWorksAi-old-private'),
+          Key(
+            ai
+                ? 'communityWorkSettingsAiFlag'
+                : 'communityWorkSettingsVisibility',
+          ),
         );
         expect(
-          tester.widget<CheckboxListTile>(row).onChanged,
+          ai
+              ? tester.widget<CheckboxListTile>(row).onChanged
+              : tester.widget<SwitchListTile>(row).onChanged,
           isNull,
           reason:
               'The old request must not clear the busy flag of the current account request.',
@@ -283,9 +306,101 @@ void main() {
           }),
         );
         await tester.pumpAndSettle();
-        expect(tester.widget<CheckboxListTile>(row).onChanged, isNotNull);
+        expect(
+          ai
+              ? tester.widget<CheckboxListTile>(row).onChanged
+              : tester.widget<SwitchListTile>(row).onChanged,
+          isNotNull,
+        );
         await tester.pumpWidget(const SizedBox.shrink());
       },
     );
+  }
+  for (final tag in [true, false]) {
+    for (final covered in [false, true]) {
+      testWidgets(
+        'owner revision removes ${tag ? 'tag' : 'delete'} modal; preserves unrelated route=$covered',
+        (tester) async {
+          final requests = <http.Request>[];
+          final community = CommunityService(
+            api: CommunityApi(
+              NiarimApiClient(
+                baseUrl: 'https://example.invalid',
+                tokenProvider: () async => 'old',
+                maxGetRetries: 0,
+                httpClient: MockClient((request) async {
+                  requests.add(request);
+                  return _reply(_page('old'));
+                }),
+              ),
+            ),
+          );
+          await community.loadOwnWorks();
+          addTearDown(community.dispose);
+          tester.view.physicalSize = const Size(390, 844);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          await tester.pumpWidget(
+            MultiProvider(
+              providers: [
+                ChangeNotifierProvider<CommunityService>.value(
+                  value: community,
+                ),
+                ChangeNotifierProvider(create: (_) => SettingsService()),
+              ],
+              child: MaterialApp(
+                locale: const Locale('en'),
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                home: const CommunityWorkSettingsScreen(workId: 'old-private'),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          final open = find.byKey(
+            Key(tag ? 'communityWorkTagAdd' : 'communityWorkSettingsDelete'),
+          );
+          await tester.scrollUntilVisible(
+            open,
+            250,
+            scrollable: find.byType(Scrollable).first,
+          );
+          await tester.ensureVisible(open);
+          await tester.tap(open);
+          await tester.pumpAndSettle();
+          expect(find.byType(AlertDialog), findsOneWidget);
+          if (tag) {
+            await tester.enterText(
+              find.byKey(const Key('communityWorkTagInput')),
+              'PRIVATE DRAFT',
+            );
+          }
+          if (covered) {
+            unawaited(
+              Navigator.of(tester.element(find.byType(AlertDialog))).push<void>(
+                MaterialPageRoute(
+                  builder: (_) => const Scaffold(body: Text('UNRELATED ROUTE')),
+                ),
+              ),
+            );
+            await tester.pumpAndSettle();
+          }
+          community.forgetOwner();
+          community.setCurrentUserId('new');
+          await tester.pumpAndSettle();
+          expect(find.byType(AlertDialog, skipOffstage: false), findsNothing);
+          expect(find.text('PRIVATE DRAFT', skipOffstage: false), findsNothing);
+          if (covered) expect(find.text('UNRELATED ROUTE'), findsOneWidget);
+          expect(
+            requests.where((r) => r.method != 'GET'),
+            isEmpty,
+            reason: 'No old dialog may send an edit in the new account',
+          );
+          expect(tester.takeException(), isNull);
+          await tester.pumpWidget(const SizedBox.shrink());
+        },
+      );
+    }
   }
 }

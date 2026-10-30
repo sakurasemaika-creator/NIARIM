@@ -50,6 +50,9 @@
   "homePermanentDeleteConfirmBody": "This cannot be undone.",
   "homeWorksEmpty": "No exported works yet",
   "homeWorksEmptyHint": "Export a video or GIF from the canvas and it will appear here",
+  "homeWorkFolderEmpty": "No exported works in this folder",
+  "homeSharedFolderEmpty": "No shared projects in this folder",
+  "homeDeleteFolderKeepContents": "\"{name}\" will be deleted. Its contents will return to the main list and will not be deleted.",
   "homeShareOpenWith": "Share / Open in Photos",
   "homeWorkDeleteConfirmTitle": "Delete {name}?",
   "homeWorkDeleteConfirmBody": "The exported file on this device will be deleted. This cannot be undone.",
@@ -235,6 +238,9 @@
   "folderManagementTitle": "Folder Management",
   "folderManagementCreateNew": "New",
   "folderManagementEmpty": "No folders yet",
+  "folderCreateFailed": "Couldn’t create the folder. Try again.",
+  "folderChangesSaveFailed": "Couldn’t save the folder changes. Try again.",
+  "folderChangesPartiallySaved": "Only some changes were saved. Check the list and try again.",
   "folderNameLabel": "Folder Name",
   "folderMoveToTitle": "Move to Folder",
   "folderNone": "No Folder",
@@ -511,12 +517,12 @@
   "helpTransferTitle": "Transfer (.niatra)",
   "helpTransferDesc": "A feature for transferring your entire app environment — settings, materials, brushes, autofill settings, theme, palettes (color picker and pixel-art), and more — to another device all at once. You can choose individual items to transfer with checkboxes, and optionally include in-progress projects too (selected projects are transferred whole, including their materials and fonts). If you just want to hand over a single project, you can also use \"Share (.niashare)\".",
   "helpVideoExportTitle": "Video Export (MP4, WebM, GIF, AVI)",
-  "helpVideoExportDesc": "Exports your work as a standard MP4 video. The free version has a length limit (90 seconds) and automatically adds an end card (app logo) at the end of the video. A video format that can be exported while keeping the alpha channel (the transparent parts of the background). Transparent playback only works in compatible playback environments. Good for layering as material in other apps. Exports as an animated GIF. Since it loops automatically, it works well for casual sharing on social media. If compatibility matters most, you can also export as AVI (Motion JPEG). It uses a codec chosen to be safe on patents and licensing, but it doesn't support the alpha channel (transparency), and in-app preview may not work on every device (you can still play it in an external player via Share in that case). Free accounts are capped at a 90-second project length (Premium accounts get 2 hours). If adding or duplicating frames would push you past the limit, a warning dialog appears the moment you tap the button, so you never actually go over 90 seconds.",
+  "helpVideoExportDesc": "Exports your work as a standard MP4 video. The free version has a length limit (90 seconds) and automatically adds an end card (app logo) at the end of the video. A video format that can be exported while keeping the alpha channel (the transparent parts of the background). Transparent playback only works in compatible playback environments. Good for layering as material in other apps. Exports as an animated GIF. Since it loops automatically, it works well for casual sharing on social media. If compatibility matters most, you can also export as AVI (Motion JPEG). It doesn't support the alpha channel (transparency), and in-app preview may not work on every device (you can still play it in an external player via Share in that case). Free accounts are capped at a 90-second project length (Premium accounts get 2 hours). If adding or duplicating frames would push you past the limit, a warning dialog appears the moment you tap the button, so you never actually go over 90 seconds.",
   "helpTransparentWebmTitle": "Transparent WebM",
   "helpCommunityTitle": "Work Plaza",
-  "helpCommunityDesc": "Post your animations and illustrations to the community as YouTube videos, and browse works by other users. Switch between the “New”, “Ranking”, and “Following” tabs, and search by work title or creator name. Switch to tag search mode to filter works by tag — anyone (not just the creator) can add or remove tags, though a tag the creator has locked can only be removed by the creator, and tapping a tag instantly filters to matching works. Tapping a work card opens a draggable, resizable floating preview window, so you can keep browsing other screens while it plays. The “View Details” button opens the work's detail screen (creator, post date, tag editing, bookmarking, reposting, and more). Tap the “Follow” button next to a creator's name to follow them — the “Following” tab then gathers just that creator's posts in chronological order. When someone follows you, it shows up in the notification list under the bell icon at the top of the screen. You can choose whether your own following/followers lists are visible to other users (private by default), and view other users' lists if they've made theirs public. You can repost anyone else's work (except your own) with the “Repost” button; when a creator you follow reposts someone else's work, that work also appears in your “Following” tab, sorted by whichever is more recent — its original post date or its repost date (the card shows “Reposted by …”). Bookmarked works appear together under the “Bookmarked” tab on the Home screen, and also under the “Bookmarks” tab on a creator's work list screen. You can choose whether your own bookmark list is visible to other users (private by default), and you can view other users' bookmark lists if they've made theirs public. You can report a work with a reason, and after submitting you'll be asked whether to block that creator. Portrait videos can be watched in “Portrait mode”, which plays them back-to-back like a short-form video feed. There is a daily limit on how many works you can post: 1 per day for free members, 3 per day for Premium members. The display filter button at the top right (the eye icon with a slash) lets you hide works you don't want to see. You can hide works marked “Contains generative-AI images or video”, and add muted titles (matched against work titles only) and muted tags (matched only against tags set on the work in the Work Plaza; a leading # is ignored), separated by commas or new lines. These filters apply to New, Ranking, Following (including reposts), portrait mode, creator pages, work details, and bookmarks. “Contains generative-AI images or video” is declared by the poster when posting, and only the poster can change it afterwards (from “My posts” or the work's detail screen).",
+  "helpCommunityDesc": "Post your animations and illustrations to the community as YouTube videos, and browse works by other users. Switch between the “New”, “Ranking”, and “Following” tabs, and search by work title or creator name. Switch to tag search mode to filter works by tag — anyone (not just the creator) can add or remove tags, though a tag the creator has locked can only be removed by the creator, and tapping a tag instantly filters to matching works. Tapping a work card opens a draggable, resizable floating preview window, so you can keep browsing other screens while it plays. The “View Details” button opens the work's detail screen (creator, post date, tag editing, bookmarking, reposting, and more). Tap the “Follow” button next to a creator's name to follow them — the “Following” tab then gathers just that creator's posts in chronological order. When someone follows you, it shows up in the notification list under the bell icon at the top of the screen. You can choose whether your own following/followers lists are visible to other users (private by default), and view other users' lists if they've made theirs public. You can repost anyone else's work (except your own) with the “Repost” button; when a creator you follow reposts someone else's work, that work also appears in your “Following” tab, sorted by whichever is more recent — its original post date or its repost date (the card shows “Reposted by …”). Bookmarked works appear together under the “Bookmarked” tab on the Home screen, and also under the “Bookmarks” tab on a creator's work list screen. You can choose whether your own bookmark list is visible to other users (private by default), and you can view other users' bookmark lists if they've made theirs public. You can report a work with a reason, and after submitting you'll be asked whether to block that creator. Portrait videos can be watched in “Portrait mode”, which plays them back-to-back like a short-form video feed. There is a daily limit on how many works you can post: 1 per day for free members, 3 per day for Premium members. The display filter button at the top right (the eye icon with a slash) lets you hide works you don't want to see. You can hide works marked “Contains generative-AI images or video”, and add muted titles (matched against work titles only) and muted tags (matched only against Work Plaza tags), one entry at a time using “Add new”. Edit with the pencil or delete with the trash icon; no commas or # needed. These filters apply to New, Ranking, Following (including reposts), portrait mode, creator pages, work details, and bookmarks. “Contains generative-AI images or video” is declared by the poster when posting, and only the poster can change it afterwards (from “My posts” or the work's detail screen).",
   "helpWatermarkEntryTitle": "Watermark",
-  "helpWatermarkEntryDesc": "A premium-only feature that lets you add your own signature or logo as a watermark on exported videos and images. You can adjust its position, size, and opacity. Tap the watermark placed on the common-layer track in the timeline to re-edit its angle, size, opacity, and visible range (looping) at any time — not just when you first register it, but whenever you use it in a project.",
+  "helpWatermarkEntryDesc": "A premium-only feature that lets you add your own signature or logo as a watermark on exported videos and images. You can adjust its position, size, and opacity. Tap the watermark placed on the common-layer track in the timeline to re-edit its angle, size, opacity, and visible range (looping) at any time — not just when you first register it, but whenever you use it in a project. To add a watermark, open “Add material” in the timeline and choose “+ Watermark”.",
   "helpPremiumEntryTitle": "Premium",
   "helpPremiumEntryDesc": "Premium membership extends the 90-second video length limit of the free version up to 2 hours and lets you remove the end card (app logo) automatically added at the end of every video. Ads are also hidden, and you gain access to the watermark, tone curve, and level correction features.",
   "helpPerformanceSettingsTitle": "Performance Settings",
@@ -584,7 +590,7 @@
   "helpFontImportTitle": "Font import",
   "helpFontImportDesc": "Lets you load a font file straight from your device's storage. Add it from the \"Import\" tab in font management, in settings. Handy when you want to use a custom-made font that isn't distributed anywhere, or a commercial font you've purchased.",
   "helpExportScreenTitle": "Export screen",
-  "helpExportScreenDesc": "Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device's performance.",
+  "helpExportScreenDesc": "Choose “Standard”, “High Quality”, or “Custom” under “Preset”. With “Custom”, you can adjust the FPS. Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device's performance.",
   "helpDrawingFilterTitle": "Draw filters",
   "helpDrawingFilterDesc": "Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 28 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, Invert colors, Mosaic, Noise, Sphere Shading, and Watercolor Edge. Watercolor Edge gathers color along the edges of what is painted on the working layer and makes the inside sheer, like dried watercolor (with \"Also at color borders\", borders between neighboring colors get an edge too). Anime Style reduces the colors and draws a line of the \"Border width\" on the darker side of every border where neighboring colors differ by at least the \"Color difference threshold\" (line art doesn't get thicker). Prism paints each shape on the layer with the six rainbow colors (red, green, cyan, blue, purple, red), blurs it and sets the layer to Linear Dodge. Draw small, slender leaf-like shapes in a dark color on their own layer first, and you get soft rainbow streaks of light over your picture (Blur amount is measured like an ordinary Gaussian blur). Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the canvas with the panel's \"Pen\" and \"Bucket\" (corrected with \"Eraser\"; it starts from the selection or Selection layer if there is one). When the canvas has a selection, drawing filters apply only inside it. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors laid out in a regular pattern (dithering) that looks closer to the original; edges stay crisp. With a color count, the colors are taken from what most of the picture is made of. Dithering can be switched off, to fill each dot with the nearest single color. Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose \"Add control point\" next to Apply and tap a line to add a point, or choose \"Delete control point\" and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor's Undo and Redo. On the Tone Curve, tap an empty spot to add a point, drag a point to move it and long-press it to delete it; the R, G and B curves apply after the RGB curve. Levels can also be set for R, G and B on their own, and Gamma changes the midtones. The Outline's \"Reach inside\" widens the edge into the original shape, and the outline's new layer is placed right below the original layer. Chromatic Aberration lets you share the shift between X (sideways), Y (up and down) and Z (outward from the centre). The Fisheye's centre and radius can also be dragged on the canvas, with the + and the knob on the circle. Vignette softly darkens the four corners of the whole canvas (transparent, undrawn areas get the shadow too). \"Range\" sets how far in from the corners it reaches, and \"Density\" how dark the corners get. Lens Distortion works like real strong glasses: what is seen through the lens shrinks evenly towards the lens centre (negative values, for short sight) or grows (positive values, for long sight), and the outline steps out of line at the lens rim. Ink Pooling collects only inside corners where lines meet at the \"Max angle\" or less (at the default 90°, acute and right angles: a V, the narrow side of a crossing, a T-junction, a square corner), never in wider ones: at the meeting point it is the \"Center width\" beyond the line's edge, and it thins in a straight slope to nothing, a smooth point, at the end of the \"Range\" (however large the \"Center width\", it never bulges past the straight line between the two pools' ends: at its widest the middle is flat); where a line ends sooner, the pool along that line thins to nothing where the line ends, so each line can have its own length, and the two pools still meet in the middle of the corner, as thick from either line (the longer line's pool thins on from there to the end of the range). Auto line art traces the centre of the rough lines and draws them thin. Lines running close together stay separate lines as long as any gap shows between them; only tiny specks of paper inside a stroke are filled. Where two lines run into each other, they come together gradually as in the rough, rather than turning into one line down the middle. Where lines cross or lie over each other, each line carries on as drawn in the rough (it does not bend into the crossing, and two overlapping lines do not melt into one). Lines crossing at a shallow slant carry straight on through the crossing, and lines that only touch (such as a hair outline drawn along the head) stay separate lines, each on its own side. Dots such as eyes stay filled dots. Branches shorter than the \"Rough line width\" are left out. \"Taper the ends\" can be switched on or off; when off, lines keep the same width right to their ends. Background Blend lays the background’s light and shadow over the picture in the \"Hard Light\" blend mode (the shadow colour is not black or grey but the colour of the background’s own shadows, darkened). The surroundings’ colour goes over the whole picture in \"Overlay\" to set its overall colour, light bouncing up from below and reflected from around goes on in \"Screen\", and a strong coloured light such as neon glows along the outline in \"Addition (Glow)\". \"Match the background’s tones\" brings colours brighter or more vivid than the background back into its range, and gives the dark, middle and light tones the colour cast of the background’s tones of the same brightness (black line art stays as it is). \"Blur amount\" is how much the background is blurred before its colours are taken.",
   "helpLayerKeyframeTitle": "Layer keyframes (per-part animation)",
@@ -2647,6 +2653,9 @@
   "communityFloatingPreviewDetailButton": "Details",
   "communityFloatingPreviewPlayTooltip": "Play",
   "communityFloatingPreviewPauseTooltip": "Pause",
+  "communityFloatingPreviewResizeTooltip": "Resize preview",
+  "communityFloatingPreviewMoveHint": "Drag to move. Alt + arrow keys also move the preview.",
+  "communityFloatingPreviewCompactHint": "Open Details to view this work.",
   "communityReportDialogTitle": "Report this work",
   "communityReportDialogBody": "Please choose a reason for reporting.",
   "communityReportReasonInappropriate": "Inappropriate content",
@@ -2684,18 +2693,6 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "Make following/follower lists public",
-  "communityFollowersPublicToggleDesc": "When on, other users can see your following and follower lists from this page. Private by default.",
-  "communityFollowersListTitle": "Followers",
-  "communityFollowersListEmpty": "No followers yet",
-  "communityFollowersListHiddenNote": "{count} more not shown, hidden by their own privacy setting",
-  "@communityFollowersListHiddenNote": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "communityAuthorFollowingCount": "{count} following",
   "@communityAuthorFollowingCount": {
     "placeholders": {
@@ -2704,19 +2701,8 @@
       }
     }
   },
-  "communityFollowingListTitle": "Following",
-  "communityFollowingListEmpty": "Not following anyone yet",
   "communityFollowNotificationsTooltip": "Notifications",
-  "communityFollowNotificationsTitle": "Follow notifications",
   "communityFollowNotificationsEmpty": "No notifications",
-  "communityFollowNotificationBody": "{name} followed you",
-  "@communityFollowNotificationBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "communityNoWorksMessage": "No works",
   "communityFavoriteAuthorFollow": "Follow",
   "communityFavoriteAuthorFollowing": "Following",
@@ -2734,9 +2720,6 @@
   },
   "communityAuthorTabWorks": "Works",
   "communityAuthorTabBookmarks": "Bookmarks",
-  "communityBookmarksPublicToggleTitle": "Make bookmarks list public",
-  "communityBookmarksPublicToggleDesc": "When on, other users can see your bookmark list from this page. Private by default.",
-  "communityBookmarksPrivateNotice": "This user has set their bookmark list to private.",
   "communityBookmarksEmptyMessage": "No bookmarked works",
   "communityShortsBadge": "Portrait",
   "communityVideoTypeFilterTooltip": "Filter by video type",
@@ -2991,17 +2974,68 @@
   "communityContentFilterTitle": "Display filters",
   "communityHideGenerativeAiImageVideo": "Hide works containing generative-AI images or video",
   "communityMutedWords": "Muted titles",
-  "communityMutedWordsHint": "Hides works whose title contains this text (creator names and tags aren’t checked). Separate multiple entries with commas or new lines.",
+  "communityMutedWordsHint": "Hides works whose titles contain these words (not creator names or tags). Add and edit each word separately.",
   "communityMutedTags": "Muted tags",
-  "communityMutedTagsHint": "Hides works that have this tag in the Work Plaza (a leading # is ignored). Separate multiple entries with commas or new lines.",
+  "communityMutedTagsHint": "Hides works with matching Work Plaza tags. Add each tag separately; no # is needed.",
+  "communityMuteAddNew": "Add new",
+  "communityScrollToTop": "Scroll to top",
+  "communityPostPeriodTitle": "Date posted",
+  "communityDurationFilterTitle": "Video duration",
+  "communitySavedSearches": "Saved searches",
+  "communitySignInPromptTitle": "Sign in with Google",
+  "communitySignInPromptBody": "A linked Google account is required to post and manage works, follow creators, bookmark works, and report content.",
+  "communitySignInPromptConnect": "Connect Google account",
+  "communitySignInUnavailable": "Google sign-in is not configured in this development build.",
+  "communitySaveSearch": "Save current search",
+  "communitySavedSearchName": "Search name",
+  "communitySavedSearchLimit": "You can save up to 10 searches",
+  "communitySavedSearchEmpty": "No saved searches",
+  "communityDurationAny": "Any duration",
+  "communityDurationUpTo": "Up to N minutes (slider)",
+  "communityDurationRange": "Between N and N minutes (numbers)",
+  "communityDurationMinutes": "minutes or less",
+  "communityDurationMinimum": "Min. minutes",
+  "communityDurationMaximum": "Max. minutes",
+  "communityTagExactMatch": "Exact match for search terms (off for partial match)",
+  "communityMinimumViews": "Views",
+  "communityMinimumBookmarks": "Bookmarks",
+  "communityPostPeriodAll": "Any time",
+  "communityPostPeriodToday": "Today",
+  "communityPostPeriodWeek": "This week",
+  "communityPostPeriodMonth": "This month",
+  "communityPostPeriodYear": "This year",
+  "communityPostPeriodCustom": "Custom range",
+  "communityPostPeriodChooseRange": "Select date range",
+  "communityMutedAuthors": "Muted creators",
+  "communityMutedAuthorsEmpty": "No muted creators",
+  "communityUnmuteAuthor": "Unmute this creator",
+  "communityMyWorksManagementHeading": "Manage works",
+  "communityWorkTagsTitle": "Work tags",
+  "communityWorkTagsHint": "Add, edit, or remove tags. Locking prevents others from changing a tag. Unlock before editing or removing it.",
+  "communityWorkEditTag": "Edit tag",
+  "communityWorkTagChangeFailed": "The tag could not be changed",
   "communityContainsGenerativeAiImageVideo": "Contains generative-AI images or video",
   "communityContainsGenerativeAiImageVideoHelp": "Turn this on when generative AI was used to create images or video in the work. Voice-synthesis software is not covered by this setting.",
   "communityAiImageVideoUpdateFailed": "Couldn’t change “Contains generative-AI images or video”. Check your connection and try again.",
   "communityRetry": "Retry",
   "communityReloadTooltip": "Reload",
-  "communityGoogleSignInNotConfigured": "Google sign-in isn’t set up yet",
+  "communityGoogleSignInNotConfigured": "No Google account is connected",
   "communityGoogleAccountBusy": "Another Google account action is in progress. Try again when it finishes.",
   "communityMyWorksTitle": "My posts",
+  "communityMyWorksViewAuthorPage": "View my public works page",
+  "communityMyWorksAccountRequired": "Connect your Google account to view your works page",
+  "communityMyWorksSettingsTitle": "Work settings",
+  "communityMyWorksPublishInNiarim": "Make visible in NIARIM",
+  "communityMyWorksDeleteNiarim": "Delete this work from NIARIM Work Plaza",
+  "communityMyWorksDeleteConfirmTitle": "Delete this work?",
+  "communityMyWorksDeleteConfirmBody": "This permanently removes the work from NIARIM. The YouTube video will remain. This cannot be undone.",
+  "communityMyWorksOpenYoutubeStudio": "Manage video in YouTube Studio",
+  "communityMyWorksYoutubeStudioHelp": "Manage YouTube visibility and video settings in YouTube Studio. These are separate from NIARIM visibility.",
+  "communityMyWorksYoutubeOpenFailed": "Could not open YouTube Studio",
+  "communityMyWorksOperationFailed": "Operation failed: {reason}",
+  "communityMyWorksBulkPublish": "Show selected",
+  "communityMyWorksBulkHide": "Hide selected",
+  "communityMyWorksBulkResult": "Changed: {success} / Failed: {failed}",
   "communityMyWorksAccountNotConnected": "No Google account connected",
   "communityMyWorksAddAccount": "Add a Google account",
   "communityMyWorksSwitchAccount": "Switch or add a Google account",
@@ -3009,7 +3043,6 @@
   "communityMyWorksLoadFailed": "Couldn’t load your posts. {reason}",
   "communityAccountSwitchFailed": "Couldn’t switch Google accounts. {reason}",
   "communitySignInFailed": "Couldn’t sign in with your Google account. {reason}",
-  "communityVisibilityChangeFailed": "Couldn’t change the visibility. {reason}",
   "communityMyWorksDeletedCannotPublish": "A video deleted from YouTube can’t be made visible in the Work Plaza again",
   "communityMyWorksStatusDeletedOnYoutube": "Deleted from YouTube • Can’t be made visible again",
   "communityMyWorksStatusYoutubePrivate": "Visible in the Work Plaza • Temporarily hidden because the YouTube video is private",
@@ -3217,6 +3250,58 @@
   "homeTrashFolderPermanentDeleteBody": "\"{name}\" will be permanently deleted. This cannot be undone.",
   "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{Empty} =1{1 folder} other{{folders} folders}}} =1{1 project{folders, plural, =0{} =1{ and 1 folder} other{ and {folders} folders}}} other{{projects} projects{folders, plural, =0{} =1{ and 1 folder} other{ and {folders} folders}}}}",
   "homeTrashFolderPermanentDeleteContents": "The {contents} inside will be deleted too.",
-  "folderColorName": "{color, select, pink{Pink} orange{Orange} yellow{Yellow} green{Green} blue{Blue} purple{Purple} gray{Gray} other{Default color}}",
-  "newProjectNumberRangeError": "Enter a number from {min} to {max}"
+  "newProjectNumberRangeError": "Enter a number from {min} to {max}",
+  "communityThresholdAny": "No condition",
+  "communityMinimumViewsOption": "{count} views or more",
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMinimumBookmarksOption": "{count} bookmarks or more",
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityTileSize": "Work tile size",
+  "communityMutedWordsEmpty": "No muted keywords",
+  "communityMutedTagsEmpty": "No muted tags",
+  "communityMuteShort": "Mute",
+  "communityMuteConfirmTitle": "Mute this user?",
+  "communityMuteConfirmBody": "This user's works will be hidden.",
+  "communityMuteConfirmAction": "Mute",
+  "communityUnmuteConfirmTitle": "Unmute this user?",
+  "communityUnmuteConfirmAction": "Unmute",
+  "communityMuteNo": "No",
+  "communityMuteDone": "User muted",
+  "communityUnmuteDone": "User unmuted",
+  "communityMilestoneNotificationsTitle": "Notifications",
+  "communityFollowerMilestone": "You reached {count} followers",
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBookmarkMilestone": "“{title}” reached {count} bookmarks",
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communitySearchHistory": "Search history",
+  "communitySearchHistoryEmpty": "No search history",
+  "communityDeleteSavedSearchConfirm": "Delete this saved search?",
+  "communitySortLabel": "Sort"
 }

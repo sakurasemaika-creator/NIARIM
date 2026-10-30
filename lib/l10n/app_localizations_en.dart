@@ -179,6 +179,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Export a video or GIF from the canvas and it will appear here';
 
   @override
+  String get homeWorkFolderEmpty => 'No exported works in this folder';
+
+  @override
+  String get homeSharedFolderEmpty => 'No shared projects in this folder';
+
+  @override
+  String homeDeleteFolderKeepContents(String name) {
+    return '\"$name\" will be deleted. Its contents will return to the main list and will not be deleted.';
+  }
+
+  @override
   String get homeShareOpenWith => 'Share / Open in Photos';
 
   @override
@@ -723,6 +734,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get folderManagementEmpty => 'No folders yet';
+
+  @override
+  String get folderCreateFailed => 'Couldn’t create the folder. Try again.';
+
+  @override
+  String get folderChangesSaveFailed =>
+      'Couldn’t save the folder changes. Try again.';
+
+  @override
+  String get folderChangesPartiallySaved =>
+      'Only some changes were saved. Check the list and try again.';
 
   @override
   String get folderNameLabel => 'Folder Name';
@@ -1531,7 +1553,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'Exports your work as a standard MP4 video. The free version has a length limit (90 seconds) and automatically adds an end card (app logo) at the end of the video. A video format that can be exported while keeping the alpha channel (the transparent parts of the background). Transparent playback only works in compatible playback environments. Good for layering as material in other apps. Exports as an animated GIF. Since it loops automatically, it works well for casual sharing on social media. If compatibility matters most, you can also export as AVI (Motion JPEG). It uses a codec chosen to be safe on patents and licensing, but it doesn\'t support the alpha channel (transparency), and in-app preview may not work on every device (you can still play it in an external player via Share in that case). Free accounts are capped at a 90-second project length (Premium accounts get 2 hours). If adding or duplicating frames would push you past the limit, a warning dialog appears the moment you tap the button, so you never actually go over 90 seconds.';
+      'Exports your work as a standard MP4 video. The free version has a length limit (90 seconds) and automatically adds an end card (app logo) at the end of the video. A video format that can be exported while keeping the alpha channel (the transparent parts of the background). Transparent playback only works in compatible playback environments. Good for layering as material in other apps. Exports as an animated GIF. Since it loops automatically, it works well for casual sharing on social media. If compatibility matters most, you can also export as AVI (Motion JPEG). It doesn\'t support the alpha channel (transparency), and in-app preview may not work on every device (you can still play it in an external player via Share in that case). Free accounts are capped at a 90-second project length (Premium accounts get 2 hours). If adding or duplicating frames would push you past the limit, a warning dialog appears the moment you tap the button, so you never actually go over 90 seconds.';
 
   @override
   String get helpTransparentWebmTitle => 'Transparent WebM';
@@ -1541,14 +1563,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Post your animations and illustrations to the community as YouTube videos, and browse works by other users. Switch between the “New”, “Ranking”, and “Following” tabs, and search by work title or creator name. Switch to tag search mode to filter works by tag — anyone (not just the creator) can add or remove tags, though a tag the creator has locked can only be removed by the creator, and tapping a tag instantly filters to matching works. Tapping a work card opens a draggable, resizable floating preview window, so you can keep browsing other screens while it plays. The “View Details” button opens the work\'s detail screen (creator, post date, tag editing, bookmarking, reposting, and more). Tap the “Follow” button next to a creator\'s name to follow them — the “Following” tab then gathers just that creator\'s posts in chronological order. When someone follows you, it shows up in the notification list under the bell icon at the top of the screen. You can choose whether your own following/followers lists are visible to other users (private by default), and view other users\' lists if they\'ve made theirs public. You can repost anyone else\'s work (except your own) with the “Repost” button; when a creator you follow reposts someone else\'s work, that work also appears in your “Following” tab, sorted by whichever is more recent — its original post date or its repost date (the card shows “Reposted by …”). Bookmarked works appear together under the “Bookmarked” tab on the Home screen, and also under the “Bookmarks” tab on a creator\'s work list screen. You can choose whether your own bookmark list is visible to other users (private by default), and you can view other users\' bookmark lists if they\'ve made theirs public. You can report a work with a reason, and after submitting you\'ll be asked whether to block that creator. Portrait videos can be watched in “Portrait mode”, which plays them back-to-back like a short-form video feed. There is a daily limit on how many works you can post: 1 per day for free members, 3 per day for Premium members. The display filter button at the top right (the eye icon with a slash) lets you hide works you don\'t want to see. You can hide works marked “Contains generative-AI images or video”, and add muted titles (matched against work titles only) and muted tags (matched only against tags set on the work in the Work Plaza; a leading # is ignored), separated by commas or new lines. These filters apply to New, Ranking, Following (including reposts), portrait mode, creator pages, work details, and bookmarks. “Contains generative-AI images or video” is declared by the poster when posting, and only the poster can change it afterwards (from “My posts” or the work\'s detail screen).';
+      'Post your animations and illustrations to the community as YouTube videos, and browse works by other users. Switch between the “New”, “Ranking”, and “Following” tabs, and search by work title or creator name. Switch to tag search mode to filter works by tag — anyone (not just the creator) can add or remove tags, though a tag the creator has locked can only be removed by the creator, and tapping a tag instantly filters to matching works. Tapping a work card opens a draggable, resizable floating preview window, so you can keep browsing other screens while it plays. The “View Details” button opens the work\'s detail screen (creator, post date, tag editing, bookmarking, reposting, and more). Tap the “Follow” button next to a creator\'s name to follow them — the “Following” tab then gathers just that creator\'s posts in chronological order. When someone follows you, it shows up in the notification list under the bell icon at the top of the screen. You can choose whether your own following/followers lists are visible to other users (private by default), and view other users\' lists if they\'ve made theirs public. You can repost anyone else\'s work (except your own) with the “Repost” button; when a creator you follow reposts someone else\'s work, that work also appears in your “Following” tab, sorted by whichever is more recent — its original post date or its repost date (the card shows “Reposted by …”). Bookmarked works appear together under the “Bookmarked” tab on the Home screen, and also under the “Bookmarks” tab on a creator\'s work list screen. You can choose whether your own bookmark list is visible to other users (private by default), and you can view other users\' bookmark lists if they\'ve made theirs public. You can report a work with a reason, and after submitting you\'ll be asked whether to block that creator. Portrait videos can be watched in “Portrait mode”, which plays them back-to-back like a short-form video feed. There is a daily limit on how many works you can post: 1 per day for free members, 3 per day for Premium members. The display filter button at the top right (the eye icon with a slash) lets you hide works you don\'t want to see. You can hide works marked “Contains generative-AI images or video”, and add muted titles (matched against work titles only) and muted tags (matched only against Work Plaza tags), one entry at a time using “Add new”. Edit with the pencil or delete with the trash icon; no commas or # needed. These filters apply to New, Ranking, Following (including reposts), portrait mode, creator pages, work details, and bookmarks. “Contains generative-AI images or video” is declared by the poster when posting, and only the poster can change it afterwards (from “My posts” or the work\'s detail screen).';
 
   @override
   String get helpWatermarkEntryTitle => 'Watermark';
 
   @override
   String get helpWatermarkEntryDesc =>
-      'A premium-only feature that lets you add your own signature or logo as a watermark on exported videos and images. You can adjust its position, size, and opacity. Tap the watermark placed on the common-layer track in the timeline to re-edit its angle, size, opacity, and visible range (looping) at any time — not just when you first register it, but whenever you use it in a project.';
+      'A premium-only feature that lets you add your own signature or logo as a watermark on exported videos and images. You can adjust its position, size, and opacity. Tap the watermark placed on the common-layer track in the timeline to re-edit its angle, size, opacity, and visible range (looping) at any time — not just when you first register it, but whenever you use it in a project. To add a watermark, open “Add material” in the timeline and choose “+ Watermark”.';
 
   @override
   String get helpPremiumEntryTitle => 'Premium';
@@ -1788,7 +1810,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device\'s performance.';
+      'Choose “Standard”, “High Quality”, or “Custom” under “Preset”. With “Custom”, you can adjust the FPS. Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device\'s performance.';
 
   @override
   String get helpDrawingFilterTitle => 'Draw filters';
@@ -6376,6 +6398,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityFloatingPreviewPauseTooltip => 'Pause';
 
   @override
+  String get communityFloatingPreviewResizeTooltip => 'Resize preview';
+
+  @override
+  String get communityFloatingPreviewMoveHint =>
+      'Drag to move. Alt + arrow keys also move the preview.';
+
+  @override
+  String get communityFloatingPreviewCompactHint =>
+      'Open Details to view this work.';
+
+  @override
   String get communityReportDialogTitle => 'Report this work';
 
   @override
@@ -6436,48 +6469,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle =>
-      'Make following/follower lists public';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      'When on, other users can see your following and follower lists from this page. Private by default.';
-
-  @override
-  String get communityFollowersListTitle => 'Followers';
-
-  @override
-  String get communityFollowersListEmpty => 'No followers yet';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '$count more not shown, hidden by their own privacy setting';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return '$count following';
   }
 
   @override
-  String get communityFollowingListTitle => 'Following';
-
-  @override
-  String get communityFollowingListEmpty => 'Not following anyone yet';
-
-  @override
   String get communityFollowNotificationsTooltip => 'Notifications';
 
   @override
-  String get communityFollowNotificationsTitle => 'Follow notifications';
-
-  @override
   String get communityFollowNotificationsEmpty => 'No notifications';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$name followed you';
-  }
 
   @override
   String get communityNoWorksMessage => 'No works';
@@ -6511,18 +6511,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityAuthorTabBookmarks => 'Bookmarks';
-
-  @override
-  String get communityBookmarksPublicToggleTitle =>
-      'Make bookmarks list public';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      'When on, other users can see your bookmark list from this page. Private by default.';
-
-  @override
-  String get communityBookmarksPrivateNotice =>
-      'This user has set their bookmark list to private.';
 
   @override
   String get communityBookmarksEmptyMessage => 'No bookmarked works';
@@ -7188,14 +7176,129 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityMutedWordsHint =>
-      'Hides works whose title contains this text (creator names and tags aren’t checked). Separate multiple entries with commas or new lines.';
+      'Hides works whose titles contain these words (not creator names or tags). Add and edit each word separately.';
 
   @override
   String get communityMutedTags => 'Muted tags';
 
   @override
   String get communityMutedTagsHint =>
-      'Hides works that have this tag in the Work Plaza (a leading # is ignored). Separate multiple entries with commas or new lines.';
+      'Hides works with matching Work Plaza tags. Add each tag separately; no # is needed.';
+
+  @override
+  String get communityMuteAddNew => 'Add new';
+
+  @override
+  String get communityScrollToTop => 'Scroll to top';
+
+  @override
+  String get communityPostPeriodTitle => 'Date posted';
+
+  @override
+  String get communityDurationFilterTitle => 'Video duration';
+
+  @override
+  String get communitySavedSearches => 'Saved searches';
+
+  @override
+  String get communitySignInPromptTitle => 'Sign in with Google';
+
+  @override
+  String get communitySignInPromptBody =>
+      'A linked Google account is required to post and manage works, follow creators, bookmark works, and report content.';
+
+  @override
+  String get communitySignInPromptConnect => 'Connect Google account';
+
+  @override
+  String get communitySignInUnavailable =>
+      'Google sign-in is not configured in this development build.';
+
+  @override
+  String get communitySaveSearch => 'Save current search';
+
+  @override
+  String get communitySavedSearchName => 'Search name';
+
+  @override
+  String get communitySavedSearchLimit => 'You can save up to 10 searches';
+
+  @override
+  String get communitySavedSearchEmpty => 'No saved searches';
+
+  @override
+  String get communityDurationAny => 'Any duration';
+
+  @override
+  String get communityDurationUpTo => 'Up to N minutes (slider)';
+
+  @override
+  String get communityDurationRange => 'Between N and N minutes (numbers)';
+
+  @override
+  String get communityDurationMinutes => 'minutes or less';
+
+  @override
+  String get communityDurationMinimum => 'Min. minutes';
+
+  @override
+  String get communityDurationMaximum => 'Max. minutes';
+
+  @override
+  String get communityTagExactMatch =>
+      'Exact match for search terms (off for partial match)';
+
+  @override
+  String get communityMinimumViews => 'Views';
+
+  @override
+  String get communityMinimumBookmarks => 'Bookmarks';
+
+  @override
+  String get communityPostPeriodAll => 'Any time';
+
+  @override
+  String get communityPostPeriodToday => 'Today';
+
+  @override
+  String get communityPostPeriodWeek => 'This week';
+
+  @override
+  String get communityPostPeriodMonth => 'This month';
+
+  @override
+  String get communityPostPeriodYear => 'This year';
+
+  @override
+  String get communityPostPeriodCustom => 'Custom range';
+
+  @override
+  String get communityPostPeriodChooseRange => 'Select date range';
+
+  @override
+  String get communityMutedAuthors => 'Muted creators';
+
+  @override
+  String get communityMutedAuthorsEmpty => 'No muted creators';
+
+  @override
+  String get communityUnmuteAuthor => 'Unmute this creator';
+
+  @override
+  String get communityMyWorksManagementHeading => 'Manage works';
+
+  @override
+  String get communityWorkTagsTitle => 'Work tags';
+
+  @override
+  String get communityWorkTagsHint =>
+      'Add, edit, or remove tags. Locking prevents others from changing a tag. Unlock before editing or removing it.';
+
+  @override
+  String get communityWorkEditTag => 'Edit tag';
+
+  @override
+  String get communityWorkTagChangeFailed => 'The tag could not be changed';
 
   @override
   String get communityContainsGenerativeAiImageVideo =>
@@ -7217,7 +7320,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityGoogleSignInNotConfigured =>
-      'Google sign-in isn’t set up yet';
+      'No Google account is connected';
 
   @override
   String get communityGoogleAccountBusy =>
@@ -7225,6 +7328,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityMyWorksTitle => 'My posts';
+
+  @override
+  String get communityMyWorksViewAuthorPage => 'View my public works page';
+
+  @override
+  String get communityMyWorksAccountRequired =>
+      'Connect your Google account to view your works page';
+
+  @override
+  String get communityMyWorksSettingsTitle => 'Work settings';
+
+  @override
+  String get communityMyWorksPublishInNiarim => 'Make visible in NIARIM';
+
+  @override
+  String get communityMyWorksDeleteNiarim =>
+      'Delete this work from NIARIM Work Plaza';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => 'Delete this work?';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      'This permanently removes the work from NIARIM. The YouTube video will remain. This cannot be undone.';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio =>
+      'Manage video in YouTube Studio';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'Manage YouTube visibility and video settings in YouTube Studio. These are separate from NIARIM visibility.';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed =>
+      'Could not open YouTube Studio';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return 'Operation failed: $reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => 'Show selected';
+
+  @override
+  String get communityMyWorksBulkHide => 'Hide selected';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return 'Changed: $success / Failed: $failed';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected =>
@@ -7252,11 +7407,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String communitySignInFailed(String reason) {
     return 'Couldn’t sign in with your Google account. $reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return 'Couldn’t change the visibility. $reason';
   }
 
   @override
@@ -8024,22 +8174,81 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String folderColorName(String color) {
-    String _temp0 = intl.Intl.selectLogic(color, {
-      'pink': 'Pink',
-      'orange': 'Orange',
-      'yellow': 'Yellow',
-      'green': 'Green',
-      'blue': 'Blue',
-      'purple': 'Purple',
-      'gray': 'Gray',
-      'other': 'Default color',
-    });
-    return '$_temp0';
-  }
-
-  @override
   String newProjectNumberRangeError(int min, int max) {
     return 'Enter a number from $min to $max';
   }
+
+  @override
+  String get communityThresholdAny => 'No condition';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '$count views or more';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '$count bookmarks or more';
+  }
+
+  @override
+  String get communityTileSize => 'Work tile size';
+
+  @override
+  String get communityMutedWordsEmpty => 'No muted keywords';
+
+  @override
+  String get communityMutedTagsEmpty => 'No muted tags';
+
+  @override
+  String get communityMuteShort => 'Mute';
+
+  @override
+  String get communityMuteConfirmTitle => 'Mute this user?';
+
+  @override
+  String get communityMuteConfirmBody => 'This user\'s works will be hidden.';
+
+  @override
+  String get communityMuteConfirmAction => 'Mute';
+
+  @override
+  String get communityUnmuteConfirmTitle => 'Unmute this user?';
+
+  @override
+  String get communityUnmuteConfirmAction => 'Unmute';
+
+  @override
+  String get communityMuteNo => 'No';
+
+  @override
+  String get communityMuteDone => 'User muted';
+
+  @override
+  String get communityUnmuteDone => 'User unmuted';
+
+  @override
+  String get communityMilestoneNotificationsTitle => 'Notifications';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return 'You reached $count followers';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '“$title” reached $count bookmarks';
+  }
+
+  @override
+  String get communitySearchHistory => 'Search history';
+
+  @override
+  String get communitySearchHistoryEmpty => 'No search history';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => 'Delete this saved search?';
+
+  @override
+  String get communitySortLabel => 'Sort';
 }

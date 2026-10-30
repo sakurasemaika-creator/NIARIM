@@ -42,7 +42,9 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
     // theme-derived outline as the main toolbar to survive varied artwork.
     final shadows = CanvasIconButton.foregroundShadows(fgColor, scheme);
     final variantShadows = CanvasIconButton.foregroundShadows(
-      fgColorVariant, scheme);
+      fgColorVariant,
+      scheme,
+    );
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       color: Colors.transparent,
@@ -60,20 +62,36 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                   const SizedBox(width: 4),
                   Text(
                     '${widget.brushSize.round()}',
-                    style: TextStyle(fontSize: 11, color: fgColor, shadows: shadows),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: fgColor,
+                      shadows: shadows,
+                    ),
                   ),
                   const SizedBox(width: 10),
-                  Icon(Icons.opacity, size: 12, color: fgColor, shadows: shadows),
+                  Icon(
+                    Icons.opacity,
+                    size: 12,
+                    color: fgColor,
+                    shadows: shadows,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     '${widget.opacity}%',
-                    style: TextStyle(fontSize: 11, color: fgColor, shadows: shadows),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: fgColor,
+                      shadows: shadows,
+                    ),
                   ),
                   const Spacer(),
                   Text(
                     l10n.canvasBrushSliderToggleLabel,
-                    style: TextStyle(fontSize: 10, color: fgColorVariant,
-                      shadows: variantShadows),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: fgColorVariant,
+                      shadows: variantShadows,
+                    ),
                   ),
                   Icon(
                     _expanded
@@ -114,7 +132,11 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                           child: EditableSliderValue(
                             text: '${widget.brushSize.round()}',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 11, color: fgColor, shadows: shadows),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: fgColor,
+                              shadows: shadows,
+                            ),
                             value: widget.brushSize,
                             min: 1,
                             max: 500,
@@ -143,7 +165,11 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                           child: EditableSliderValue(
                             text: '${widget.opacity}%',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 11, color: fgColor, shadows: shadows),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: fgColor,
+                              shadows: shadows,
+                            ),
                             value: widget.opacity,
                             min: 1,
                             max: 100,

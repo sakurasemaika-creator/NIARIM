@@ -172,6 +172,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeWorksEmptyHint => '从画布导出视频或GIF后，\n将显示在这里';
 
   @override
+  String get homeWorkFolderEmpty => '此文件夹中没有导出的作品';
+
+  @override
+  String get homeSharedFolderEmpty => '此文件夹中没有共享项目';
+
+  @override
+  String homeDeleteFolderKeepContents(String name) {
+    return '将删除文件夹“$name”。其中的项目将返回主列表，不会被删除。';
+  }
+
+  @override
   String get homeShareOpenWith => '分享・用照片应用等打开';
 
   @override
@@ -702,6 +713,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get folderManagementEmpty => '还没有文件夹';
+
+  @override
+  String get folderCreateFailed => '无法创建文件夹。请重试。';
+
+  @override
+  String get folderChangesSaveFailed => '无法保存文件夹更改。请重试。';
+
+  @override
+  String get folderChangesPartiallySaved => '仅保存了部分更改。请检查列表后重试。';
 
   @override
   String get folderNameLabel => '文件夹名称';
@@ -1493,7 +1513,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      '将作品导出为通用MP4视频。免费版可导出的时长有上限（90秒），且会在视频结尾自动添加片尾卡（应用Logo）。 可在保留Alpha通道（背景透明部分）的情况下导出的视频格式。仅在支持的播放环境中才能透明播放。适合作为素材叠加到其他应用中使用。 导出为动图GIF。由于会自动循环播放，适合在社交媒体上轻松分享的场景。 如果更看重兼容性，也可以导出为AVI（Motion JPEG）。所采用的编码器在专利和授权方面较为安全，但不支持Alpha通道（透明），部分设备上应用内预览可能无法使用（此时仍可通过「分享」用外部播放器播放）。 免费会员的项目长度上限为90秒（付费会员为2小时）。如果新增或复制帧会超过上限，在点击按钮的瞬间就会显示提示对话框，因此实际上不会超过90秒。';
+      '将作品导出为通用MP4视频。免费版可导出的时长有上限（90秒），且会在视频结尾自动添加片尾卡（应用Logo）。 可在保留Alpha通道（背景透明部分）的情况下导出的视频格式。仅在支持的播放环境中才能透明播放。适合作为素材叠加到其他应用中使用。 导出为动图GIF。由于会自动循环播放，适合在社交媒体上轻松分享的场景。 如果更看重兼容性，也可以导出为AVI（Motion JPEG）。不支持Alpha通道（透明），部分设备上应用内预览可能无法使用（此时仍可通过「分享」用外部播放器播放）。 免费会员的项目长度上限为90秒（付费会员为2小时）。如果新增或复制帧会超过上限，在点击按钮的瞬间就会显示提示对话框，因此实际上不会超过90秒。';
 
   @override
   String get helpTransparentWebmTitle => '透明WebM';
@@ -1503,14 +1523,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      '可以将动画・插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换「最新」「排行榜」「关注」三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击「查看详情」按钮可打开作品详情画面（投稿者、发布日期、标签编辑、书签、转发等）。点击投稿者名称旁的「关注」按钮即可将其加入关注列表，「关注」标签页会按时间顺序汇总显示该作者的作品。有人关注你时，会显示在画面右上角铃铛图标的通知列表中。你可以分别设置自己的关注列表/粉丝列表是否对所有用户公开（默认非公开），也可以查看已公开的其他用户的列表。除自己发布的作品外，都可以用「转发」按钮转发；当关注的作者转发了他人的作品时，该作品也会以「发布日期」和「转发日期」中较新的一方为基准，混入「关注」标签页中显示（卡片上会显示「○○转发了」）。加入书签的作品会汇总显示在主页的「书签」标签页中，也可以在投稿者作品列表画面的「书签」标签页中查看。可以设置自己的书签列表是否对其他用户公开（默认不公开），也可以查看已设为公开的其他用户的书签列表。对不当作品可以附上理由进行举报，举报提交后会询问你是否要屏蔽该投稿者。竖屏视频可以在「竖屏模式」中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏「包含生成式 AI 图像或视频」的作品外，还可以用逗号、顿号或换行分隔，登记只匹配作品标题的静音标题，以及只匹配作品在作品广场中所设标签的静音标签（开头的 # 会被忽略）。这些筛选适用于「最新」「排行榜」「关注」（含转发）、竖屏模式、投稿者页面、作品详情和书签。「包含生成式 AI 图像或视频」由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在「我的投稿」或作品详情画面中更改）。';
+      '可以将动画・插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换「最新」「排行榜」「关注」三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击「查看详情」按钮可打开作品详情画面（投稿者、发布日期、标签编辑、收藏、转发等）。点击投稿者名称旁的「关注」按钮即可将其加入关注列表，「关注」标签页会按时间顺序汇总显示该作者的作品。有人关注你时，会显示在画面右上角铃铛图标的通知列表中。你可以分别设置自己的关注列表/粉丝列表是否对所有用户公开（默认非公开），也可以查看已公开的其他用户的列表。除自己发布的作品外，都可以用「转发」按钮转发；当关注的作者转发了他人的作品时，该作品也会以「发布日期」和「转发日期」中较新的一方为基准，混入「关注」标签页中显示（卡片上会显示「○○转发了」）。收藏的作品会汇总显示在主页的「已收藏」标签页中，也可以在投稿者作品列表画面的「收藏」标签页中查看。可以设置自己的收藏列表是否对其他用户公开（默认不公开），也可以查看已设为公开的其他用户的收藏列表。对不当作品可以附上理由进行举报，举报提交后会询问你是否要屏蔽该投稿者。竖屏视频可以在「竖屏模式」中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏「包含生成式 AI 图像或视频」的作品外，还可以通过「新增」逐条登记只匹配作品标题的静音标题，以及只匹配作品广场标签的静音标签。可用编辑图标修改或垃圾桶图标删除，无需输入逗号或 #。这些筛选适用于「最新」「排行榜」「关注」（含转发）、竖屏模式、投稿者页面、作品详情和收藏。「包含生成式 AI 图像或视频」由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在「我的投稿」或作品详情画面中更改）。';
 
   @override
   String get helpWatermarkEntryTitle => '水印';
 
   @override
   String get helpWatermarkEntryDesc =>
-      '可以在导出的视频・图片上加入自己签名或Logo作为水印的高级会员专属功能。可以调整位置、大小、不透明度。点击时间轴共通图层轨道上放置的水印，随时都能重新编辑其角度、大小、不透明度、显示范围（循环显示）——不仅是首次设置时，在项目中实际使用时也能随时细致调整。';
+      '可以在导出的视频・图片上加入自己签名或Logo作为水印的高级会员专属功能。可以调整位置、大小、不透明度。点击时间轴共通图层轨道上放置的水印，随时都能重新编辑其角度、大小、不透明度、显示范围（循环显示）——不仅是首次设置时，在项目中实际使用时也能随时细致调整。 添加水印时，请在时间轴的“添加素材”菜单中选择“＋水印”。';
 
   @override
   String get helpPremiumEntryTitle => 'Premium';
@@ -1747,7 +1767,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get helpExportScreenTitle => '导出画面';
 
   @override
-  String get helpExportScreenDesc => '导出视频、图片期间会显示进度，也可以中途取消。所需时间会因设备性能而异。';
+  String get helpExportScreenDesc =>
+      '在“预设”中选择“标准”“高画质”或“自定义”。选择“自定义”后，可以调整帧率（FPS）。导出视频、图片期间会显示进度，也可以中途取消。所需时间会因设备性能而异。';
 
   @override
   String get helpDrawingFilterTitle => '绘图滤镜';
@@ -6119,6 +6140,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityFloatingPreviewPauseTooltip => '暂停';
 
   @override
+  String get communityFloatingPreviewResizeTooltip => '调整预览大小';
+
+  @override
+  String get communityFloatingPreviewMoveHint => '拖动可移动预览，也可以使用 Alt + 方向键。';
+
+  @override
+  String get communityFloatingPreviewCompactHint => '打开详情即可查看此作品。';
+
+  @override
   String get communityReportDialogTitle => '举报此作品';
 
   @override
@@ -6173,47 +6203,15 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle => '公开关注/粉丝列表';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      '开启后，其他用户可以在此页面看到你的关注列表和粉丝列表。默认不公开。';
-
-  @override
-  String get communityFollowersListTitle => '粉丝';
-
-  @override
-  String get communityFollowersListEmpty => '暂无粉丝';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '另有$count人因本人隐私设置未显示';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return '关注$count人';
   }
 
   @override
-  String get communityFollowingListTitle => '关注中';
-
-  @override
-  String get communityFollowingListEmpty => '暂未关注任何人';
-
-  @override
   String get communityFollowNotificationsTooltip => '通知';
 
   @override
-  String get communityFollowNotificationsTitle => '关注通知';
-
-  @override
   String get communityFollowNotificationsEmpty => '暂无通知';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$name关注了你';
-  }
 
   @override
   String get communityNoWorksMessage => '暂无作品';
@@ -6247,16 +6245,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityAuthorTabBookmarks => '书签';
-
-  @override
-  String get communityBookmarksPublicToggleTitle => '公开书签列表';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      '开启后，其他用户可以在此页面看到你的书签列表。默认不公开。';
-
-  @override
-  String get communityBookmarksPrivateNotice => '该用户已将书签列表设为不公开。';
 
   @override
   String get communityBookmarksEmptyMessage => '暂无加入书签的作品';
@@ -6900,15 +6888,124 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityMutedWords => '静音标题';
 
   @override
-  String get communityMutedWordsHint =>
-      '隐藏标题中包含这些文字的作品（不检查投稿者名称和标签）。多个条目可用逗号、顿号或换行分隔。';
+  String get communityMutedWordsHint => '隐藏标题中包含这些文字的作品（不检查作者名称和标签）。请逐条添加或编辑。';
 
   @override
   String get communityMutedTags => '静音标签';
 
   @override
-  String get communityMutedTagsHint =>
-      '隐藏在作品广场中带有这些标签的作品（开头的 # 会被忽略）。多个条目可用逗号、顿号或换行分隔。';
+  String get communityMutedTagsHint => '隐藏作品广场中标签匹配的作品。请逐条添加标签，无需输入 #。';
+
+  @override
+  String get communityMuteAddNew => '新增';
+
+  @override
+  String get communityScrollToTop => '返回顶部';
+
+  @override
+  String get communityPostPeriodTitle => '投稿日期';
+
+  @override
+  String get communityDurationFilterTitle => '视频时长';
+
+  @override
+  String get communitySavedSearches => '已保存的搜索';
+
+  @override
+  String get communitySignInPromptTitle => '使用 Google 账号登录';
+
+  @override
+  String get communitySignInPromptBody => '发布和管理作品、关注作者、收藏及举报内容需要关联 Google 账号。';
+
+  @override
+  String get communitySignInPromptConnect => '关联 Google 账号';
+
+  @override
+  String get communitySignInUnavailable => '此开发版本尚未配置 Google 登录。';
+
+  @override
+  String get communitySaveSearch => '保存当前搜索';
+
+  @override
+  String get communitySavedSearchName => '搜索名称';
+
+  @override
+  String get communitySavedSearchLimit => '最多保存10条搜索条件';
+
+  @override
+  String get communitySavedSearchEmpty => '暂无保存的搜索';
+
+  @override
+  String get communityDurationAny => '不限时长';
+
+  @override
+  String get communityDurationUpTo => 'N分钟以内（滑块）';
+
+  @override
+  String get communityDurationRange => 'N至N分钟（数字输入）';
+
+  @override
+  String get communityDurationMinutes => '分钟以内';
+
+  @override
+  String get communityDurationMinimum => '最短（分钟）';
+
+  @override
+  String get communityDurationMaximum => '最长（分钟）';
+
+  @override
+  String get communityTagExactMatch => '搜索词完全匹配（关闭后部分匹配）';
+
+  @override
+  String get communityMinimumViews => '观看次数';
+
+  @override
+  String get communityMinimumBookmarks => '收藏数';
+
+  @override
+  String get communityPostPeriodAll => '全部时间';
+
+  @override
+  String get communityPostPeriodToday => '今天';
+
+  @override
+  String get communityPostPeriodWeek => '本周';
+
+  @override
+  String get communityPostPeriodMonth => '本月';
+
+  @override
+  String get communityPostPeriodYear => '今年';
+
+  @override
+  String get communityPostPeriodCustom => '自定义日期';
+
+  @override
+  String get communityPostPeriodChooseRange => '选择日期范围';
+
+  @override
+  String get communityMutedAuthors => '已屏蔽的创作者';
+
+  @override
+  String get communityMutedAuthorsEmpty => '暂无已屏蔽的创作者';
+
+  @override
+  String get communityUnmuteAuthor => '取消屏蔽此用户';
+
+  @override
+  String get communityMyWorksManagementHeading => '作品管理';
+
+  @override
+  String get communityWorkTagsTitle => '作品标签管理';
+
+  @override
+  String get communityWorkTagsHint => '可添加、编辑或删除标签。锁定后其他用户无法修改。编辑或删除前请先解锁。';
+
+  @override
+  String get communityWorkEditTag => '编辑标签';
+
+  @override
+  String get communityWorkTagChangeFailed => '无法更改标签';
 
   @override
   String get communityContainsGenerativeAiImageVideo => '包含生成式 AI 图像或视频';
@@ -6928,13 +7025,61 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityReloadTooltip => '刷新';
 
   @override
-  String get communityGoogleSignInNotConfigured => '尚未设置Google登录';
+  String get communityGoogleSignInNotConfigured => '尚未关联 Google 账号';
 
   @override
   String get communityGoogleAccountBusy => '正在处理其他Google账号操作，请完成后重试。';
 
   @override
   String get communityMyWorksTitle => '我的投稿';
+
+  @override
+  String get communityMyWorksViewAuthorPage => '查看我的作品列表页';
+
+  @override
+  String get communityMyWorksAccountRequired => '请连接 Google 账号后查看作品列表';
+
+  @override
+  String get communityMyWorksSettingsTitle => '作品设置';
+
+  @override
+  String get communityMyWorksPublishInNiarim => '在 NIARIM 中公开';
+
+  @override
+  String get communityMyWorksDeleteNiarim => '从 NIARIM 作品广场删除此作品';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => '要删除此作品吗？';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      '此作品将从 NIARIM 永久删除，YouTube 视频不会被删除。此操作无法撤销。';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio => '在 YouTube Studio 中管理视频';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'YouTube 的可见性和视频设置请在 YouTube Studio 中管理，与 NIARIM 设置相互独立。';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed => '无法打开 YouTube Studio';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return '操作失败：$reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => '批量公开';
+
+  @override
+  String get communityMyWorksBulkHide => '批量隐藏';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return '完成：$success / 失败：$failed';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected => '未连接Google账号';
@@ -6961,11 +7106,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String communitySignInFailed(String reason) {
     return '无法使用Google账号登录。$reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return '无法更改公开状态。$reason';
   }
 
   @override
@@ -7665,24 +7805,83 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String folderColorName(String color) {
-    String _temp0 = intl.Intl.selectLogic(color, {
-      'pink': '粉色',
-      'orange': '橙色',
-      'yellow': '黄色',
-      'green': '绿色',
-      'blue': '蓝色',
-      'purple': '紫色',
-      'gray': '灰色',
-      'other': '默认颜色',
-    });
-    return '$_temp0';
-  }
-
-  @override
   String newProjectNumberRangeError(int min, int max) {
     return '请输入$min到$max之间的数字';
   }
+
+  @override
+  String get communityThresholdAny => '不限';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '至少 $count 次观看';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '至少 $count 个收藏';
+  }
+
+  @override
+  String get communityTileSize => '作品卡片大小';
+
+  @override
+  String get communityMutedWordsEmpty => '暂无屏蔽关键词';
+
+  @override
+  String get communityMutedTagsEmpty => '暂无屏蔽标签';
+
+  @override
+  String get communityMuteShort => '屏蔽';
+
+  @override
+  String get communityMuteConfirmTitle => '要屏蔽此用户吗？';
+
+  @override
+  String get communityMuteConfirmBody => '屏蔽后将不显示此用户的作品。';
+
+  @override
+  String get communityMuteConfirmAction => '屏蔽';
+
+  @override
+  String get communityUnmuteConfirmTitle => '要取消屏蔽此用户吗？';
+
+  @override
+  String get communityUnmuteConfirmAction => '取消屏蔽';
+
+  @override
+  String get communityMuteNo => '否';
+
+  @override
+  String get communityMuteDone => '已屏蔽此用户';
+
+  @override
+  String get communityUnmuteDone => '已取消屏蔽';
+
+  @override
+  String get communityMilestoneNotificationsTitle => '通知';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return '关注者达到 $count 人';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '作品《$title》的收藏达到 $count 个';
+  }
+
+  @override
+  String get communitySearchHistory => '搜索历史';
+
+  @override
+  String get communitySearchHistoryEmpty => '暂无搜索历史';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => '删除此保存的搜索条件？';
+
+  @override
+  String get communitySortLabel => '排序';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -7851,6 +8050,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeWorksEmptyHint => '從畫布匯出影片或GIF後，\n將顯示在這裡';
+
+  @override
+  String get homeWorkFolderEmpty => '此資料夾中沒有匯出的作品';
+
+  @override
+  String get homeSharedFolderEmpty => '此資料夾中沒有共享的專案';
+
+  @override
+  String homeDeleteFolderKeepContents(String name) {
+    return '將刪除資料夾「$name」。其中的項目會回到主清單，不會被刪除。';
+  }
 
   @override
   String get homeShareOpenWith => '分享・用相片App等開啟';
@@ -8383,6 +8593,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get folderManagementEmpty => '還沒有資料夾';
+
+  @override
+  String get folderCreateFailed => '無法建立資料夾。請重試。';
+
+  @override
+  String get folderChangesSaveFailed => '無法儲存資料夾變更。請再試一次。';
+
+  @override
+  String get folderChangesPartiallySaved => '僅儲存了部分變更。請檢查清單後再試一次。';
 
   @override
   String get folderNameLabel => '資料夾名稱';
@@ -9174,7 +9393,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpVideoExportDesc =>
-      '將作品匯出為通用MP4影片。免費版可匯出的長度有上限（90秒），且會在影片結尾自動加入片尾卡（應用程式Logo）。 可在保留Alpha色版（背景透明部分）的情況下匯出的影片格式。僅在支援的播放環境中才能透明播放。適合作為素材疊加到其他App中使用。 匯出為動畫GIF。由於會自動循環播放，適合在社群媒體上輕鬆分享的場景。 如果更重視相容性，也可以匯出為AVI（Motion JPEG）。所採用的編碼器在專利與授權方面較為安全，但不支援Alpha色版（透明），部分裝置上App內預覽可能無法使用（此時仍可透過「分享」用外部播放器播放）。 免費會員的專案長度上限為90秒（付費會員為2小時）。如果新增或複製影格會超過上限，在點擊按鈕的瞬間就會顯示提示對話框，因此實際上不會超過90秒。';
+      '將作品匯出為通用MP4影片。免費版可匯出的長度有上限（90秒），且會在影片結尾自動加入片尾卡（應用程式Logo）。 可在保留Alpha色版（背景透明部分）的情況下匯出的影片格式。僅在支援的播放環境中才能透明播放。適合作為素材疊加到其他App中使用。 匯出為動畫GIF。由於會自動循環播放，適合在社群媒體上輕鬆分享的場景。 如果更重視相容性，也可以匯出為AVI（Motion JPEG）。不支援Alpha色版（透明），部分裝置上App內預覽可能無法使用（此時仍可透過「分享」用外部播放器播放）。 免費會員的專案長度上限為90秒（付費會員為2小時）。如果新增或複製影格會超過上限，在點擊按鈕的瞬間就會顯示提示對話框，因此實際上不會超過90秒。';
 
   @override
   String get helpTransparentWebmTitle => '透明WebM';
@@ -9184,14 +9403,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpCommunityDesc =>
-      '可以將動畫・插畫作品以YouTube影片的形式發佈到社群，並瀏覽其他使用者的作品。可以切換「最新」「排行榜」「追蹤」三個分頁，也可以依作品標題或投稿者名稱搜尋。切換到標籤搜尋模式後可依標籤篩選作品，標籤不僅投稿者本人，其他使用者也可以自由新增或刪除（投稿者鎖定的標籤只能由投稿者本人解鎖），點擊標籤即可篩選出相同標籤的作品。點擊作品卡片會開啟可拖曳、可調整大小的浮動預覽視窗，可以在繼續操作其他畫面的同時觀看。點擊「查看詳情」按鈕可開啟作品詳情畫面（投稿者、發佈日期、標籤編輯、收藏、轉發等）。點擊投稿者名稱旁的「追蹤」按鈕即可將其加入追蹤清單，「追蹤」分頁會依時間順序彙整顯示該作者的作品。有人追蹤你時，會顯示在畫面右上角鈴鐺圖示的通知清單中。你可以分別設定自己的追蹤清單/粉絲清單是否對所有使用者公開（預設為非公開），也可以查看已公開的其他使用者的清單。除自己發佈的作品外，都可以用「轉發」按鈕轉發；當追蹤的作者轉發了他人的作品時，該作品也會以「發佈日期」和「轉發日期」中較新的一方為基準，混入「追蹤」分頁中顯示（卡片上會顯示「○○轉發了」）。收藏的作品會彙整顯示在主畫面的「已收藏」分頁中，也可以在投稿者作品清單畫面的「收藏」分頁中查看。可以設定自己的收藏清單是否對其他使用者公開（預設不公開），也可以查看已設為公開的其他使用者的收藏清單。對不當作品可以附上理由進行檢舉，檢舉送出後會詢問你是否要封鎖該投稿者。直向影片可以在「直向模式」中連續播放觀看。每日可發佈的作品數量有上限，免費會員每天1個，進階會員每天3個。點擊畫面右上角的顯示篩選按鈕（帶斜線的眼睛圖示），可以隱藏不想看到的作品。除了可以隱藏「包含生成式 AI 圖像或影片」的作品外，還可以用逗號、頓號或換行分隔，登錄只比對作品標題的靜音標題，以及只比對作品在作品廣場中所設標籤的靜音標籤（開頭的 # 會被忽略）。這些篩選適用於「最新」「排行榜」「追蹤」（含轉發）、直向模式、投稿者頁面、作品詳情和收藏。「包含生成式 AI 圖像或影片」由投稿者在發佈時自行聲明，發佈後也只有投稿者本人可以變更（可在「我的投稿」或作品詳情畫面中變更）。';
+      '可以將動畫・插畫作品以YouTube影片的形式發佈到社群，並瀏覽其他使用者的作品。可以切換「最新」「排行榜」「追蹤」三個分頁，也可以依作品標題或投稿者名稱搜尋。切換到標籤搜尋模式後可依標籤篩選作品，標籤不僅投稿者本人，其他使用者也可以自由新增或刪除（投稿者鎖定的標籤只能由投稿者本人解鎖），點擊標籤即可篩選出相同標籤的作品。點擊作品卡片會開啟可拖曳、可調整大小的浮動預覽視窗，可以在繼續操作其他畫面的同時觀看。點擊「查看詳情」按鈕可開啟作品詳情畫面（投稿者、發佈日期、標籤編輯、收藏、轉發等）。點擊投稿者名稱旁的「追蹤」按鈕即可將其加入追蹤清單，「追蹤」分頁會依時間順序彙整顯示該作者的作品。有人追蹤你時，會顯示在畫面右上角鈴鐺圖示的通知清單中。你可以分別設定自己的追蹤清單/粉絲清單是否對所有使用者公開（預設為非公開），也可以查看已公開的其他使用者的清單。除自己發佈的作品外，都可以用「轉發」按鈕轉發；當追蹤的作者轉發了他人的作品時，該作品也會以「發佈日期」和「轉發日期」中較新的一方為基準，混入「追蹤」分頁中顯示（卡片上會顯示「○○轉發了」）。收藏的作品會彙整顯示在主畫面的「已收藏」分頁中，也可以在投稿者作品清單畫面的「收藏」分頁中查看。可以設定自己的收藏清單是否對其他使用者公開（預設不公開），也可以查看已設為公開的其他使用者的收藏清單。對不當作品可以附上理由進行檢舉，檢舉送出後會詢問你是否要封鎖該投稿者。直向影片可以在「直向模式」中連續播放觀看。每日可發佈的作品數量有上限，免費會員每天1個，進階會員每天3個。點擊畫面右上角的顯示篩選按鈕（帶斜線的眼睛圖示），可以隱藏不想看到的作品。除了可以隱藏「包含生成式 AI 圖像或影片」的作品外，還可以透過「新增」逐條登錄只比對作品標題的靜音標題，以及只比對作品廣場標籤的靜音標籤。可用編輯圖示修改或垃圾桶圖示刪除，無需輸入逗號或 #。這些篩選適用於「最新」「排行榜」「追蹤」（含轉發）、直向模式、投稿者頁面、作品詳情和收藏。「包含生成式 AI 圖像或影片」由投稿者在發佈時自行聲明，發佈後也只有投稿者本人可以變更（可在「我的投稿」或作品詳情畫面中變更）。';
 
   @override
   String get helpWatermarkEntryTitle => '浮水印';
 
   @override
   String get helpWatermarkEntryDesc =>
-      '可以在匯出的影片・圖片上加入自己簽名或Logo作為浮水印的進階會員專屬功能。可以調整位置、大小、不透明度。點擊時間軸共用圖層軌道上放置的浮水印，隨時都能重新編輯其角度、大小、不透明度、顯示範圍（循環顯示）——不僅是首次設定時，在專案中實際使用時也能隨時細緻調整。';
+      '可以在匯出的影片・圖片上加入自己簽名或Logo作為浮水印的進階會員專屬功能。可以調整位置、大小、不透明度。點擊時間軸共用圖層軌道上放置的浮水印，隨時都能重新編輯其角度、大小、不透明度、顯示範圍（循環顯示）——不僅是首次設定時，在專案中實際使用時也能隨時細緻調整。 新增浮水印時，請在時間軸的「新增素材」選單中選取「＋浮水印」。';
 
   @override
   String get helpPremiumEntryTitle => 'Premium';
@@ -9428,7 +9647,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get helpExportScreenTitle => '匯出畫面';
 
   @override
-  String get helpExportScreenDesc => '匯出影片、圖片期間會顯示進度，也可以中途取消。所需時間會依裝置效能而異。';
+  String get helpExportScreenDesc =>
+      '在「預設」中選取「標準」「高畫質」或「自訂」。選取「自訂」後，可以調整影格率（FPS）。匯出影片、圖片期間會顯示進度，也可以中途取消。所需時間會依裝置效能而異。';
 
   @override
   String get helpDrawingFilterTitle => '繪圖濾鏡';
@@ -13800,6 +14020,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityFloatingPreviewPauseTooltip => '暫停';
 
   @override
+  String get communityFloatingPreviewResizeTooltip => '調整預覽大小';
+
+  @override
+  String get communityFloatingPreviewMoveHint => '拖曳可移動預覽，也可以使用 Alt + 方向鍵。';
+
+  @override
+  String get communityFloatingPreviewCompactHint => '開啟詳情即可查看此作品。';
+
+  @override
   String get communityReportDialogTitle => '檢舉此作品';
 
   @override
@@ -13854,47 +14083,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle => '公開追蹤中/粉絲清單';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      '開啟後，其他使用者可以在此頁面看到你的追蹤中清單和粉絲清單。預設不公開。';
-
-  @override
-  String get communityFollowersListTitle => '粉絲';
-
-  @override
-  String get communityFollowersListEmpty => '尚無粉絲';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '另有$count人因本人隱私設定未顯示';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return '追蹤中$count人';
   }
 
   @override
-  String get communityFollowingListTitle => '追蹤中';
-
-  @override
-  String get communityFollowingListEmpty => '尚未追蹤任何人';
-
-  @override
   String get communityFollowNotificationsTooltip => '通知';
 
   @override
-  String get communityFollowNotificationsTitle => '追蹤通知';
-
-  @override
   String get communityFollowNotificationsEmpty => '尚無通知';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$name追蹤了你';
-  }
 
   @override
   String get communityNoWorksMessage => '尚無作品';
@@ -13928,16 +14125,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityAuthorTabBookmarks => '收藏';
-
-  @override
-  String get communityBookmarksPublicToggleTitle => '公開收藏清單';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      '開啟後，其他使用者可以在此頁面看到你的收藏清單。預設不公開。';
-
-  @override
-  String get communityBookmarksPrivateNotice => '該使用者已將收藏清單設為不公開。';
 
   @override
   String get communityBookmarksEmptyMessage => '尚無收藏的作品';
@@ -14581,15 +14768,125 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityMutedWords => '靜音標題';
 
   @override
-  String get communityMutedWordsHint =>
-      '隱藏標題中包含這些文字的作品（不檢查投稿者名稱和標籤）。多個項目可用逗號、頓號或換行分隔。';
+  String get communityMutedWordsHint => '隱藏標題中包含這些文字的作品（不檢查作者名稱和標籤）。請逐條新增或編輯。';
 
   @override
   String get communityMutedTags => '靜音標籤';
 
   @override
-  String get communityMutedTagsHint =>
-      '隱藏在作品廣場中帶有這些標籤的作品（開頭的 # 會被忽略）。多個項目可用逗號、頓號或換行分隔。';
+  String get communityMutedTagsHint => '隱藏作品廣場中標籤相符的作品。請逐條新增標籤，無需輸入 #。';
+
+  @override
+  String get communityMuteAddNew => '新增';
+
+  @override
+  String get communityScrollToTop => '返回頂部';
+
+  @override
+  String get communityPostPeriodTitle => '投稿日期';
+
+  @override
+  String get communityDurationFilterTitle => '影片長度';
+
+  @override
+  String get communitySavedSearches => '已儲存的搜尋';
+
+  @override
+  String get communitySignInPromptTitle => '使用 Google 帳號登入';
+
+  @override
+  String get communitySignInPromptBody =>
+      '發布和管理作品、追蹤創作者、收藏及檢舉內容需要連結 Google 帳號。';
+
+  @override
+  String get communitySignInPromptConnect => '連結 Google 帳號';
+
+  @override
+  String get communitySignInUnavailable => '此開發版本尚未設定 Google 登入。';
+
+  @override
+  String get communitySaveSearch => '儲存目前搜尋';
+
+  @override
+  String get communitySavedSearchName => '搜尋名稱';
+
+  @override
+  String get communitySavedSearchLimit => '最多儲存10筆搜尋條件';
+
+  @override
+  String get communitySavedSearchEmpty => '沒有儲存的搜尋';
+
+  @override
+  String get communityDurationAny => '不限長度';
+
+  @override
+  String get communityDurationUpTo => 'N分鐘以內（滑桿）';
+
+  @override
+  String get communityDurationRange => 'N至N分鐘（數字輸入）';
+
+  @override
+  String get communityDurationMinutes => '分鐘以內';
+
+  @override
+  String get communityDurationMinimum => '最短（分鐘）';
+
+  @override
+  String get communityDurationMaximum => '最長（分鐘）';
+
+  @override
+  String get communityTagExactMatch => '搜尋詞完全相符（關閉後部分相符）';
+
+  @override
+  String get communityMinimumViews => '觀看次數';
+
+  @override
+  String get communityMinimumBookmarks => '收藏數';
+
+  @override
+  String get communityPostPeriodAll => '所有時間';
+
+  @override
+  String get communityPostPeriodToday => '今天';
+
+  @override
+  String get communityPostPeriodWeek => '本週';
+
+  @override
+  String get communityPostPeriodMonth => '本月';
+
+  @override
+  String get communityPostPeriodYear => '今年';
+
+  @override
+  String get communityPostPeriodCustom => '自訂日期';
+
+  @override
+  String get communityPostPeriodChooseRange => '選擇日期範圍';
+
+  @override
+  String get communityMutedAuthors => '已靜音的創作者';
+
+  @override
+  String get communityMutedAuthorsEmpty => '沒有已靜音的創作者';
+
+  @override
+  String get communityUnmuteAuthor => '解除此使用者靜音';
+
+  @override
+  String get communityMyWorksManagementHeading => '作品管理';
+
+  @override
+  String get communityWorkTagsTitle => '作品標籤管理';
+
+  @override
+  String get communityWorkTagsHint => '可新增、編輯或刪除標籤。鎖定後其他使用者無法修改。編輯或刪除前請先解鎖。';
+
+  @override
+  String get communityWorkEditTag => '編輯標籤';
+
+  @override
+  String get communityWorkTagChangeFailed => '無法變更標籤';
 
   @override
   String get communityContainsGenerativeAiImageVideo => '包含生成式 AI 圖像或影片';
@@ -14609,13 +14906,61 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityReloadTooltip => '重新整理';
 
   @override
-  String get communityGoogleSignInNotConfigured => '尚未設定Google登入';
+  String get communityGoogleSignInNotConfigured => '尚未連結 Google 帳號';
 
   @override
   String get communityGoogleAccountBusy => '正在處理其他Google帳號操作，請完成後再試一次。';
 
   @override
   String get communityMyWorksTitle => '我的投稿';
+
+  @override
+  String get communityMyWorksViewAuthorPage => '查看我的作品列表頁';
+
+  @override
+  String get communityMyWorksAccountRequired => '請連結 Google 帳戶後查看作品列表';
+
+  @override
+  String get communityMyWorksSettingsTitle => '作品設定';
+
+  @override
+  String get communityMyWorksPublishInNiarim => '在 NIARIM 中公開';
+
+  @override
+  String get communityMyWorksDeleteNiarim => '從 NIARIM 作品廣場刪除此作品';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => '要刪除此作品嗎？';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      '此作品將從 NIARIM 永久刪除，YouTube 影片不會被刪除。此操作無法復原。';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio => '在 YouTube Studio 中管理影片';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'YouTube 的公開狀態與影片設定請在 YouTube Studio 中管理，與 NIARIM 設定相互獨立。';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed => '無法開啟 YouTube Studio';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return '操作失敗：$reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => '批次公開';
+
+  @override
+  String get communityMyWorksBulkHide => '批次隱藏';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return '完成：$success / 失敗：$failed';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected => '未連結Google帳號';
@@ -14642,11 +14987,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String communitySignInFailed(String reason) {
     return '無法使用Google帳號登入。$reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return '無法變更公開狀態。$reason';
   }
 
   @override
@@ -15347,22 +15687,81 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String folderColorName(String color) {
-    String _temp0 = intl.Intl.selectLogic(color, {
-      'pink': '粉紅色',
-      'orange': '橘色',
-      'yellow': '黃色',
-      'green': '綠色',
-      'blue': '藍色',
-      'purple': '紫色',
-      'gray': '灰色',
-      'other': '預設顏色',
-    });
-    return '$_temp0';
-  }
-
-  @override
   String newProjectNumberRangeError(int min, int max) {
     return '請輸入$min到$max之間的數字';
   }
+
+  @override
+  String get communityThresholdAny => '不限';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '至少 $count 次觀看';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '至少 $count 個收藏';
+  }
+
+  @override
+  String get communityTileSize => '作品卡片大小';
+
+  @override
+  String get communityMutedWordsEmpty => '目前沒有封鎖關鍵字';
+
+  @override
+  String get communityMutedTagsEmpty => '目前沒有封鎖標籤';
+
+  @override
+  String get communityMuteShort => '封鎖';
+
+  @override
+  String get communityMuteConfirmTitle => '要封鎖這位使用者嗎？';
+
+  @override
+  String get communityMuteConfirmBody => '封鎖後不再顯示此使用者的作品。';
+
+  @override
+  String get communityMuteConfirmAction => '封鎖';
+
+  @override
+  String get communityUnmuteConfirmTitle => '要解除封鎖這位使用者嗎？';
+
+  @override
+  String get communityUnmuteConfirmAction => '解除封鎖';
+
+  @override
+  String get communityMuteNo => '否';
+
+  @override
+  String get communityMuteDone => '已封鎖使用者';
+
+  @override
+  String get communityUnmuteDone => '已解除封鎖';
+
+  @override
+  String get communityMilestoneNotificationsTitle => '通知';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return '追蹤者達到 $count 人';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '作品《$title》的收藏達到 $count 個';
+  }
+
+  @override
+  String get communitySearchHistory => '搜尋紀錄';
+
+  @override
+  String get communitySearchHistoryEmpty => '尚無搜尋紀錄';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => '要刪除這個已儲存的搜尋條件嗎？';
+
+  @override
+  String get communitySortLabel => '排序';
 }

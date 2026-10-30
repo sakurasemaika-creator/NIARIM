@@ -10,10 +10,12 @@ on:
       - 'lib/widgets/theme_rescue_button.dart'
       - 'lib/screens/splash/splash_screen.dart'
       - 'lib/screens/settings/theme_settings_screen.dart'
+      - 'lib/widgets/background_color_picker.dart'
       - 'lib/screens/settings/theme_preview_gallery_screen.dart'
       - 'lib/services/theme_service.dart'
       - 'lib/models/app_theme_preset.dart'
       - 'lib/screens/home/widgets/project_list_widget.dart'
+      - 'lib/screens/home/widgets/home_drawer.dart'
       - 'lib/services/home_widget_refresh.dart'
       - 'lib/services/home_widget_service.dart'
       - 'lib/screens/settings/widget_settings_screen.dart'
@@ -31,15 +33,23 @@ on:
       - 'lib/screens/canvas/canvas_screen.dart'
       - 'lib/screens/canvas/widgets/frame_strip_widget.dart'
       - 'test/home_entry_navigation_test.dart'
+      - 'test/community_search_tabs_test.dart'
+      - 'test/community_content_filter_dialog_test.dart'
+      - 'test/community_filter_dialog_layout_test.dart'
+      - 'test/community_header_matrix_test.dart'
       - 'test/timeline_no_overflow_test.dart'
       - 'test/theme_accent_contrast_test.dart'
+      - 'test/built_in_theme_original_palette_test.dart'
+      - 'test/accent_action_outline_test.dart'
       - 'test/project_grid_actions_test.dart'
       - 'test/theme_preset_adopt_test.dart'
+      - 'test/theme_original_builtin_palette_test.dart'
       - 'test/niatra_serializer_test.dart'
       - 'test/home_widget_shortcut_design_test.dart'
       - 'test/widget_settings_theme_foreground_test.dart'
       - 'test/theme_button_font_test.dart'
       - 'test/theme_settings_walkthrough_test.dart'
+      - 'test/background_color_picker_test.dart'
       - 'test/splash_layout_test.dart'
 
 jobs:
@@ -63,19 +73,26 @@ jobs:
           flutter test test/theme_preview_gallery_test.dart --reporter expanded
           flutter test test/canvas_bar_transparency_test.dart --reporter expanded
           flutter test test/home_entry_navigation_test.dart --reporter expanded
+          flutter test test/community_search_tabs_test.dart --reporter expanded
+          flutter test test/community_content_filter_dialog_test.dart --reporter expanded
+          flutter test test/community_filter_dialog_layout_test.dart --reporter expanded
           flutter test test/timeline_no_overflow_test.dart --reporter expanded
           flutter test test/theme_accent_contrast_test.dart --reporter expanded
+          flutter test test/built_in_theme_original_palette_test.dart --reporter expanded
+          flutter test test/accent_action_outline_test.dart --reporter expanded
           flutter test test/project_grid_actions_test.dart --reporter expanded
           flutter test test/theme_preset_adopt_test.dart --reporter expanded
+          flutter test test/theme_original_builtin_palette_test.dart --reporter expanded
           flutter test test/niatra_serializer_test.dart --reporter expanded
           flutter test test/home_widget_shortcut_design_test.dart --reporter expanded
           flutter test test/widget_settings_theme_foreground_test.dart --reporter expanded
           flutter test test/theme_button_font_test.dart --reporter expanded
           flutter test test/theme_settings_walkthrough_test.dart --reporter expanded
+          flutter test test/background_color_picker_test.dart --reporter expanded
           flutter test test/splash_layout_test.dart --reporter expanded
       - name: Theme and app static analysis
         run: flutter analyze lib test --no-fatal-infos --no-fatal-warnings
-      - name: Upload inline preview Flutter screenshot
+      - name: Upload inline preview and full-length theme settings screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:

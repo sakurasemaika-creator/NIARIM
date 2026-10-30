@@ -12,7 +12,49 @@ import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
 import '../../config/font_fallback.dart';
-import '../../config/accent_text_theme.dart';
+
+/// Confirm both mute and unmute; used by author profiles and muted-user lists.
+Future<void> confirmCommunityAuthorMute(
+  BuildContext context,
+  CommunityService service,
+  String authorId, {
+  required bool mute,
+}) async {
+  final l10n = AppLocalizations.of(context)!;
+  final approved = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(
+        mute
+            ? l10n.communityMuteConfirmTitle
+            : l10n.communityUnmuteConfirmTitle,
+      ),
+      content: mute ? Text(l10n.communityMuteConfirmBody) : null,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(l10n.communityMuteNo),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(
+            mute
+                ? l10n.communityMuteConfirmAction
+                : l10n.communityUnmuteConfirmAction,
+          ),
+        ),
+      ],
+    ),
+  );
+  if (approved != true || !context.mounted) return;
+  await service.setAuthorMuted(authorId, mute);
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(mute ? l10n.communityMuteDone : l10n.communityUnmuteDone),
+    ),
+  );
+}
 
 /// 特定の作者の投稿作品一覧（29_動画投稿・ランキング機能仕様.md 8.4節）＋
 /// その作者のブックマーク一覧（Task#145：ユーザー別ブックマーク一覧の
@@ -67,6 +109,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
       if (service.isBackendConnected) {
         service.refreshAuthorWorks(widget.authorId);
       }
+      service.refreshFollowerCount(widget.authorId);
     });
   }
 
@@ -104,88 +147,6 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     );
   }
 
-  /// フォロー中/フォロワー一覧を表示するダイアログ（Task#134継続：22.5節の
-  /// 本人選択制公開）。呼び出し元で公開可否を確認してから呼ぶこと。
-  /// [footerNote]は、フォロワー一覧で本人非公開設定のため除外した人数が
-  /// あるときの補足表示に使う（22.7節）。
-  void _showNameListDialog(
-    String title,
-    String emptyMessage,
-    List<String> names, {
-    String? footerNote,
-  }) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
-        // AlertDialogの`icon:`スロットへ入れると、Flutterが
-        // タイトルを強制的に中央寄せにするため（dialog.dartの
-        // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
-        // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
-        title: Row(
-          children: [
-            Expanded(child: Text(title)),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              iconSize: 18,
-              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: names.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          emptyMessage,
-                          style: TextStyle(
-                            color: Theme.of(
-                              dialogContext,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      )
-                    : ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: names.length,
-                        itemBuilder: (_, i) => ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Theme.of(
-                              dialogContext,
-                            ).colorScheme.primaryContainer,
-                            child: Text(names[i].substring(0, 1)),
-                          ),
-                          title: Text(names[i]),
-                        ),
-                      ),
-              ),
-              if (footerNote != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  child: Text(
-                    footerNote,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(
-                        dialogContext,
-                      ).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -193,6 +154,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final communityService = context.watch<CommunityService>();
     final isSelf = communityService.isOwnAuthor(widget.authorId);
     final isFavorite = communityService.isFavoriteAuthor(widget.authorId);
+    final isMuted = communityService.isAuthorMuted(widget.authorId);
     final works = communityService.worksByAuthor(
       widget.authorId,
       includeHidden: isSelf,
@@ -203,14 +165,8 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final filteredWorks = _videoTypeFilter.apply(works);
     final followerCount = communityService.followerCountOf(widget.authorId);
     final followingCount = communityService.followingCountOf(widget.authorId);
-    // 一覧（誰がフォロー中／フォロワーか）は本人選択制の公開設定に従う。
-    // 数字自体は常に公開だが、一覧を開けるのは本人自身か、本人が公開設定に
-    // した場合のみ（29_動画投稿・ランキング機能仕様.md 22.5節）。
-    final followersPublic = communityService.isFollowersPublic(widget.authorId);
-    final canViewFollowerList = isSelf || followersPublic;
     final bookmarkedIds = communityService.bookmarkedIds;
-    final bookmarksPublic = communityService.isBookmarksPublic(widget.authorId);
-    final bookmarkedWorks = (isSelf || bookmarksPublic)
+    final bookmarkedWorks = isSelf
         ? communityService.bookmarkedWorksOf(widget.authorId)
         : const <CommunityWork>[];
 
@@ -239,13 +195,15 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
               onPressed: () => _openShortsMode(filteredWorks, bookmarkedIds),
             ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: l10n.communityAuthorTabWorks),
-            Tab(text: l10n.communityAuthorTabBookmarks),
-          ],
-        ),
+        bottom: isSelf
+            ? TabBar(
+                controller: _tabController,
+                tabs: [
+                  Tab(text: l10n.communityAuthorTabWorks),
+                  Tab(text: l10n.communityAuthorTabBookmarks),
+                ],
+              )
+            : null,
       ),
       body: desktopCentered(
         context,
@@ -294,76 +252,20 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                 color: scheme.onSurfaceVariant,
                               ),
                             ),
-                            // フォロー中／フォロワー一覧（誰が誰をフォローして
-                            // いるか）は本人選択制の公開設定に従う。数字自体は
-                            // 特定個人を識別できずUGCリスクが小さいため常に
-                            // 表示するが、一覧を開けるのは本人か、本人が公開
-                            // 設定にした場合のみ（29_動画投稿・ランキング機能
-                            // 仕様.md 22.4節・22.5節）。
-                            InkWell(
-                              key: const Key(
-                                'communityAuthorFollowingCountTap',
+                            Text(
+                              l10n.communityAuthorFollowingCount(
+                                followingCount,
                               ),
-                              onTap: canViewFollowerList
-                                  ? () => _showNameListDialog(
-                                      l10n.communityFollowingListTitle,
-                                      l10n.communityFollowingListEmpty,
-                                      communityService.followingNamesOf(
-                                        widget.authorId,
-                                      ),
-                                    )
-                                  : null,
-                              child: Text(
-                                l10n.communityAuthorFollowingCount(
-                                  followingCount,
-                                ),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: scheme.onSurfaceVariant,
-                                  decoration: canViewFollowerList
-                                      ? TextDecoration.underline
-                                      : null,
-                                ),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: scheme.onSurfaceVariant,
                               ),
                             ),
-                            InkWell(
-                              key: const Key('communityAuthorFollowerCountTap'),
-                              onTap: canViewFollowerList
-                                  ? () {
-                                      // フォロワー自身がフォロー中/フォロワー
-                                      // 一覧を非公開にしている場合は、この
-                                      // authorId側が公開設定でもその人物
-                                      // だけは表示しない（Task#134継続：
-                                      // 22.7節）。
-                                      final visibleNames = communityService
-                                          .visibleFollowerNamesOf(
-                                            widget.authorId,
-                                          );
-                                      final hiddenCount =
-                                          followerCount - visibleNames.length;
-                                      _showNameListDialog(
-                                        l10n.communityFollowersListTitle,
-                                        l10n.communityFollowersListEmpty,
-                                        visibleNames,
-                                        footerNote: hiddenCount > 0
-                                            ? l10n.communityFollowersListHiddenNote(
-                                                hiddenCount,
-                                              )
-                                            : null,
-                                      );
-                                    }
-                                  : null,
-                              child: Text(
-                                l10n.communityAuthorFollowerCount(
-                                  followerCount,
-                                ),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: scheme.onSurfaceVariant,
-                                  decoration: canViewFollowerList
-                                      ? TextDecoration.underline
-                                      : null,
-                                ),
+                            Text(
+                              l10n.communityAuthorFollowerCount(followerCount),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: scheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -371,214 +273,114 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                       ],
                     ),
                   ),
-                  // 自分自身の投稿者ページではフォローボタンを表示しない
-                  // （Task#144：お気に入り作者機能）。
+                  // Keep the less-frequent mute action compact in the
+                  // profile row; following receives the full-width action.
                   if (!isSelf)
-                    OutlinedButton.icon(
-                      onPressed: () => reportFailedCommunityEdit(
+                    IconButton.outlined(
+                      key: const Key('communityAuthorMuteToggle'),
+                      tooltip: isMuted
+                          ? l10n.communityUnmuteAuthor
+                          : l10n.communityMuteShort,
+                      onPressed: () => confirmCommunityAuthorMute(
                         context,
                         communityService,
-                        communityService.toggleFavoriteAuthor(widget.authorId),
+                        widget.authorId,
+                        mute: !isMuted,
                       ),
                       icon: Icon(
-                        isFavorite
-                            ? Icons.person_remove_alt_1
-                            : Icons.person_add_alt_1,
-                        size: 18,
-                      ),
-                      label: Text(
-                        isFavorite
-                            ? l10n.communityFavoriteAuthorFollowing
-                            : l10n.communityFavoriteAuthorFollow,
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: isFavorite
-                            ? scheme.onSurfaceVariant
-                            : AccentTextTheme.of(context),
+                        isMuted
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
                       ),
                     ),
                 ],
               ),
             ),
-            // 自分自身のフォロワー一覧を公開するかどうかの設定
-            // （Task#134継続：本人選択制の公開。22.5節）。
-            if (isSelf)
+            if (!isSelf)
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: _PublicVisibilityToggle(
-                  value: communityService.selfFollowersPublic,
-                  onChanged: communityService.setSelfFollowersPublic,
-                  title: l10n.communityFollowersPublicToggleTitle,
-                  description: l10n.communityFollowersPublicToggleDesc,
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: OutlinedButton.icon(
+                  key: const Key('communityAuthorFollowToggle'),
+                  onPressed: () => reportFailedCommunityEdit(
+                    context,
+                    communityService,
+                    communityService.toggleFavoriteAuthor(widget.authorId),
+                  ),
+                  icon: Icon(
+                    isFavorite
+                        ? Icons.person_remove_alt_1
+                        : Icons.person_add_alt_1,
+                  ),
+                  label: Text(
+                    isFavorite
+                        ? l10n.communityFavoriteAuthorFollowing
+                        : l10n.communityFavoriteAuthorFollow,
+                  ),
                 ),
               ),
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  // ─── 作品タブ ───────────────────────────────────
-                  SingleChildScrollView(
-                    child: filteredWorks.isEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Center(
-                              child: Text(
-                                l10n.communityNoWorksMessage,
-                                style: TextStyle(
-                                  color: scheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          )
-                        : CommunityWorkGrid(
-                            works: filteredWorks,
-                            bookmarkedIds: bookmarkedIds,
-                            onTapWork: openWork,
-                            onToggleBookmark: toggleBookmark,
-                          ),
-                  ),
-                  // ─── ブックマークタブ（Task#145） ───────────────────
-                  SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: isSelf
+                  ? TabBarView(
+                      controller: _tabController,
                       children: [
-                        if (isSelf)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                            child: _PublicVisibilityToggle(
-                              value: communityService.selfBookmarksPublic,
-                              onChanged:
-                                  communityService.setSelfBookmarksPublic,
-                              title: l10n.communityBookmarksPublicToggleTitle,
-                              description:
-                                  l10n.communityBookmarksPublicToggleDesc,
-                            ),
-                          ),
-                        if (!isSelf && !bookmarksPublic)
-                          Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.lock_outline,
-                                    size: 40,
-                                    color: scheme.onSurfaceVariant,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    l10n.communityBookmarksPrivateNotice,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: scheme.onSurfaceVariant,
+                        // ─── 作品タブ ───────────────────────────────────
+                        SingleChildScrollView(
+                          child: filteredWorks.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.all(32),
+                                  child: Center(
+                                    child: Text(
+                                      l10n.communityNoWorksMessage,
+                                      style: TextStyle(
+                                        color: scheme.onSurfaceVariant,
+                                      ),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          )
-                        else if (bookmarkedWorks.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Center(
-                              child: Text(
-                                l10n.communityBookmarksEmptyMessage,
-                                style: TextStyle(
-                                  color: scheme.onSurfaceVariant,
+                                )
+                              : CommunityWorkGrid(
+                                  works: filteredWorks,
+                                  bookmarkedIds: bookmarkedIds,
+                                  onTapWork: openWork,
+                                  onToggleBookmark: toggleBookmark,
                                 ),
-                              ),
-                            ),
-                          )
-                        else
-                          CommunityWorkGrid(
-                            works: bookmarkedWorks,
-                            bookmarkedIds: bookmarkedIds,
-                            onTapWork: openWork,
-                            onToggleBookmark: toggleBookmark,
-                          ),
+                        ),
+                        // Private bookmarks are visible to their owner only.
+                        SingleChildScrollView(
+                          child: bookmarkedWorks.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.all(32),
+                                  child: Center(
+                                    child: Text(
+                                      l10n.communityBookmarksEmptyMessage,
+                                    ),
+                                  ),
+                                )
+                              : CommunityWorkGrid(
+                                  works: bookmarkedWorks,
+                                  bookmarkedIds: bookmarkedIds,
+                                  onTapWork: openWork,
+                                  onToggleBookmark: toggleBookmark,
+                                ),
+                        ),
                       ],
+                    )
+                  : SingleChildScrollView(
+                      child: filteredWorks.isEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.all(32),
+                              child: Center(
+                                child: Text(l10n.communityNoWorksMessage),
+                              ),
+                            )
+                          : CommunityWorkGrid(
+                              works: filteredWorks,
+                              bookmarkedIds: bookmarkedIds,
+                              onTapWork: openWork,
+                              onToggleBookmark: toggleBookmark,
+                            ),
                     ),
-                  ),
-                ],
-              ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 自分のブックマーク一覧タブに表示する公開設定スイッチ（ユーザー設定）。
-/// Task#145の調査で推奨した「既定非公開」を、オンにすることで他ユーザーが
-/// この画面から閲覧できるようになる。
-/// ブックマーク一覧・フォロワー一覧など、「自分の関係性データを他ユーザーに
-/// 公開するか」の設定で共通して使う汎用トグル（Task#134継続：フォロワー
-/// 一覧の本人選択制公開に合わせて、ブックマーク専用だったウィジェットを
-/// 汎用化した）。
-class _PublicVisibilityToggle extends StatelessWidget {
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  final String title;
-  final String description;
-
-  const _PublicVisibilityToggle({
-    required this.value,
-    required this.onChanged,
-    required this.title,
-    required this.description,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => onChanged(!value),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                value ? Icons.public : Icons.lock_outline,
-                color: value
-                    ? AccentTextTheme.of(context)
-                    : scheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Switch(value: value, onChanged: onChanged),
-            ],
-          ),
         ),
       ),
     );

@@ -125,16 +125,7 @@ void main() {
       await tab(tester, 2);
       await tab(tester, 1);
       expect(offset(tester, scrollableIn(works)), closeTo(before, .1));
-      tester
-          .state<ScaffoldState>(
-            find
-                .descendant(
-                  of: find.byType(HomeScreen),
-                  matching: find.byType(Scaffold),
-                )
-                .first,
-          )
-          .openDrawer();
+      await tester.tap(find.byKey(const Key('homeMenuButton')));
       await tester.pumpAndSettle();
       await tester.tap(
         find.descendant(of: find.byType(Drawer), matching: find.text('設定')),
@@ -223,11 +214,17 @@ void main() {
         await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
 
-        // お気に入りだけにすると先頭から、戻すと元の位置。
+        // お気に入りだけにすると先頭から、戻すと元の位置。絞り込みは一覧と
+        // 一緒にスクロールするので、絞り込みが見えている所で押す。
         await tester.drag(list(), const Offset(0, -1000));
         await tester.pumpAndSettle();
+        expect(offset(tester, list()), greaterThan(300));
+        await tester.drag(list(), const Offset(0, 3000));
+        await tester.pumpAndSettle();
+        await tester.drag(list(), const Offset(0, -40));
+        await tester.pumpAndSettle();
         final outside = offset(tester, list());
-        expect(outside, greaterThan(300));
+        expect(outside, greaterThan(5));
         final l10n = AppLocalizations.of(
           tester.element(find.byType(HomeScreen)),
         )!;

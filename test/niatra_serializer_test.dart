@@ -73,12 +73,14 @@ void main() {
     const menu = Color(0xFF123477);
     const selected = Color(0xFFEEFF11);
 
-    source.theme.previewCurrent(source.theme.current.copyWith(
-      textColor: body,
-      buttonTextColor: button,
-      menuTextColor: menu,
-      selectionTextColor: selected,
-    ));
+    source.theme.previewCurrent(
+      source.theme.current.copyWith(
+        textColor: body,
+        buttonTextColor: button,
+        menuTextColor: menu,
+        selectionTextColor: selected,
+      ),
+    );
     final bytes = await NiatraSerializer.export(
       selectedItems: const {'UIテーマ': true},
       settings: source.settings,

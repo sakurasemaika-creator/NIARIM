@@ -202,7 +202,7 @@ void main() {
     expect(service.byId('private'), isNull);
   });
 
-  test('with a backend no demo reposts or follow notifications are made '
+  test('with a backend no demo reposts or milestone notifications are made '
       'up', () async {
     final (:service, requests: _, :lists, patches: _) = backend();
     lists['latest'] = [
@@ -213,6 +213,6 @@ void main() {
       [for (var i = 0; i < 12; i++) service.repostCountOf('w$i')],
       [for (var i = 0; i < 12; i++) 0],
     );
-    expect(service.followNotifications, isEmpty);
+    expect(service.milestoneNotifications, isEmpty);
   });
 }

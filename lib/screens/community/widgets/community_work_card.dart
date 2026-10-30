@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
 import '../../../config/font_fallback.dart';
-import '../../../utils/color_contrast.dart';
 
 String formatDurationLabel(int seconds) {
   final m = seconds ~/ 60;
@@ -56,12 +55,7 @@ class CommunityWorkCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final cardColor = opaqueOver(
-      theme.cardTheme.color ?? scheme.surfaceContainerLow,
-      opaqueOver(theme.scaffoldBackgroundColor, Colors.black),
-    );
-    // 文字はテーマ・外観の本文の文字色（読みやすさのために黒・白へ差し替え
-    // ない）。カードの下地はポップアップと同じメニュー背景色。
+    final cardColor = theme.cardTheme.color ?? scheme.surfaceContainerLow;
     final textColor = scheme.onSurface;
     final detailColor = scheme.onSurfaceVariant;
     final author = work.authorName.trim().isEmpty
@@ -70,14 +64,7 @@ class CommunityWorkCard extends StatelessWidget {
     final language = Localizations.localeOf(context).languageCode;
     final views = formatCompactCount(work.viewCount, language);
     final bookmarks = formatCompactCount(work.bookmarkCount, language);
-    // サムネイルの上の札・再生の印・ブックマークの下地は、上部バー・
-    // メニューと同じ組み合わせ（メニュー背景色の上にメニューの文字色）。
-    // 絵柄に溶けないよう下地はほぼ不透明にする。
-    final overlay = opaqueOver(
-      theme.appBarTheme.backgroundColor ?? cardColor,
-      cardColor,
-    ).withValues(alpha: 0.88);
-    final overlayInk = theme.appBarTheme.foregroundColor ?? textColor;
+    final overlay = cardColor;
     Widget badge(
       String label, {
       IconData? icon,
@@ -95,7 +82,7 @@ class CommunityWorkCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null)
-              Icon(icon, size: iconOnly ? 18 : 12, color: overlayInk),
+              Icon(icon, size: iconOnly ? 18 : 12, color: textColor),
             if (!iconOnly) ...[
               if (icon != null) const SizedBox(width: 3),
               Flexible(
@@ -104,7 +91,7 @@ class CommunityWorkCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: overlayInk,
+                    color: textColor,
                     fontSize: fontSize,
                     fontWeight: FontWeight.w600,
                   ),
@@ -177,7 +164,7 @@ class CommunityWorkCard extends StatelessWidget {
                                     ),
                                     child: Icon(
                                       Icons.play_arrow_rounded,
-                                      color: overlayInk,
+                                      color: textColor,
                                       size: 28,
                                     ),
                                   ),
@@ -264,7 +251,7 @@ class CommunityWorkCard extends StatelessWidget {
                                       isBookmarked
                                           ? Icons.bookmark
                                           : Icons.bookmark_border,
-                                      color: overlayInk,
+                                      color: textColor,
                                     ),
                                   ),
                                 ),
@@ -389,6 +376,7 @@ class CommunityWorkGrid extends StatelessWidget {
   /// 画面では、これが無いと**最終行のカードの下側がFABに永久に隠れる**
   /// （どれだけスクロールしても出てこない）。
   final double bottomPadding;
+  final double minTileWidth;
 
   const CommunityWorkGrid({
     super.key,
@@ -400,13 +388,14 @@ class CommunityWorkGrid extends StatelessWidget {
     this.rankNumbers,
     this.repostedByNames,
     this.bottomPadding = 12,
+    this.minTileWidth = 160,
   });
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       final scale = MediaQuery.textScalerOf(context).scale(13) / 13;
-      final minimumWidth = 160 * (scale < 1 ? 1 : scale);
+      final minimumWidth = minTileWidth * (scale < 1 ? 1 : scale);
       final columns = ((constraints.maxWidth - 24 + 10) / (minimumWidth + 10))
           .floor()
           .clamp(1, 6);

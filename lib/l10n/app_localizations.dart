@@ -407,6 +407,24 @@ abstract class AppLocalizations {
   /// **'キャンバスの書き出しから動画・GIFを作成すると\nここに表示されます'**
   String get homeWorksEmptyHint;
 
+  /// No description provided for @homeWorkFolderEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダには書き出した作品がありません'**
+  String get homeWorkFolderEmpty;
+
+  /// No description provided for @homeSharedFolderEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダには共有プロジェクトがありません'**
+  String get homeSharedFolderEmpty;
+
+  /// No description provided for @homeDeleteFolderKeepContents.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」フォルダを削除します。中の項目は一覧に戻り、項目自体は削除されません。'**
+  String homeDeleteFolderKeepContents(String name);
+
   /// No description provided for @homeShareOpenWith.
   ///
   /// In ja, this message translates to:
@@ -1390,6 +1408,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'フォルダはまだありません'**
   String get folderManagementEmpty;
+
+  /// No description provided for @folderCreateFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダを作成できませんでした。もう一度お試しください。'**
+  String get folderCreateFailed;
+
+  /// No description provided for @folderChangesSaveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの変更を保存できませんでした。もう一度お試しください。'**
+  String get folderChangesSaveFailed;
+
+  /// No description provided for @folderChangesPartiallySaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'一部の変更だけが保存されました。一覧を確認して、もう一度お試しください。'**
+  String get folderChangesPartiallySaved;
 
   /// No description provided for @folderNameLabel.
   ///
@@ -2864,7 +2900,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpVideoExportDesc.
   ///
   /// In ja, this message translates to:
-  /// **'作品を汎用的なMP4動画として書き出します。無料版は書き出せる長さに上限（90秒）があり、動画の最後にエンドカード（アプリロゴ）が自動で追加されます。 アルファチャンネル（背景の透明部分）を保持したまま書き出せる動画形式です。対応する再生環境でのみ透過再生されます。他のアプリの素材として重ねて使いたい場合などに向いています。 アニメーションGIFとして書き出します。自動でループ再生される形式のため、SNSへの投稿など気軽に共有したい場面に向いています。 互換性を重視したい場合はAVI（Motion JPEG）としても書き出せます。特許・ライセンス面で安全なコーデックを採用していますが、アルファチャンネル（透過）には対応せず、端末によってはアプリ内プレビューが利用できない場合があります（その場合も「共有」から外部プレイヤーで再生できます）。 無料会員はプロジェクトの長さに90秒までの上限があります（プレミアム会員は2時間）。フレーム追加・複製によって上限を超えそうな場合は、ボタンをタップした時点で注意ダイアログが表示され、実際に90秒を超えることはありません。'**
+  /// **'作品を汎用的なMP4動画として書き出します。無料版は書き出せる長さに上限（90秒）があり、動画の最後にエンドカード（アプリロゴ）が自動で追加されます。 アルファチャンネル（背景の透明部分）を保持したまま書き出せる動画形式です。対応する再生環境でのみ透過再生されます。他のアプリの素材として重ねて使いたい場合などに向いています。 アニメーションGIFとして書き出します。自動でループ再生される形式のため、SNSへの投稿など気軽に共有したい場面に向いています。 互換性を重視したい場合はAVI（Motion JPEG）としても書き出せます。アルファチャンネル（透過）には対応せず、端末によってはアプリ内プレビューが利用できない場合があります（その場合も「共有」から外部プレイヤーで再生できます）。 無料会員はプロジェクトの長さに90秒までの上限があります（プレミアム会員は2時間）。フレーム追加・複製によって上限を超えそうな場合は、ボタンをタップした時点で注意ダイアログが表示され、実際に90秒を超えることはありません。'**
   String get helpVideoExportDesc;
 
   /// No description provided for @helpTransparentWebmTitle.
@@ -2882,7 +2918,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpCommunityDesc.
   ///
   /// In ja, this message translates to:
-  /// **'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」の3タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォローされると画面右上のベルアイコンの通知一覧に届きます。自分のフォロー中/フォロワー一覧を全体公開するかどうかも設定でき（既定は非公開）、公開設定にしている他のユーザーの一覧も閲覧できます。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品はホーム画面の「ブクマ済み」タブにまとめて表示されるほか、投稿者別の作品一覧画面の「ブックマーク」タブでも確認できます。自分のブックマーク一覧はユーザー全体へ公開するかどうかを設定でき（既定は非公開）、公開設定にしている他のユーザーのブックマーク一覧も閲覧できます。不適切な作品は理由を添えて通報でき、送信後にはその投稿者をブロックするか選べます。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にするミュートタイトルと、作品広場で作品に設定されたタグだけを対象にするミュートタグ（先頭の#は無視されます）を、カンマ・「、」・改行で区切って登録できます。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。'**
+  /// **'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」の3タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォローされると画面右上のベルアイコンの通知一覧に届きます。自分のフォロー中/フォロワー一覧を全体公開するかどうかも設定でき（既定は非公開）、公開設定にしている他のユーザーの一覧も閲覧できます。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品はホーム画面の「ブクマ済み」タブにまとめて表示されるほか、投稿者別の作品一覧画面の「ブックマーク」タブでも確認できます。自分のブックマーク一覧はユーザー全体へ公開するかどうかを設定でき（既定は非公開）、公開設定にしている他のユーザーのブックマーク一覧も閲覧できます。不適切な作品は理由を添えて通報でき、送信後にはその投稿者をブロックするか選べます。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にするミュートタイトルと、作品広場で作品に設定されたタグだけを対象にするミュートタグを「新規追加」から1件ずつ登録し、ペンで編集、ゴミ箱で削除できます。カンマや#は不要です。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。'**
   String get helpCommunityDesc;
 
   /// No description provided for @helpWatermarkEntryTitle.
@@ -2894,7 +2930,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpWatermarkEntryDesc.
   ///
   /// In ja, this message translates to:
-  /// **'書き出した動画・画像に、自分の署名やロゴを透かしとして入れられるプレミアム限定機能です。位置・大きさ・不透明度を調整できます。タイムラインの共通レイヤートラックに配置したウォーターマークをタップすると、角度・大きさ・不透明度・表示範囲（ループ表示）をいつでも再編集できます。登録時だけでなく、実際にプロジェクト内で使うタイミングで細かく調整できます。'**
+  /// **'書き出した動画・画像に、自分の署名やロゴを透かしとして入れられるプレミアム限定機能です。位置・大きさ・不透明度を調整できます。タイムラインの共通レイヤートラックに配置したウォーターマークをタップすると、角度・大きさ・不透明度・表示範囲（ループ表示）をいつでも再編集できます。登録時だけでなく、実際にプロジェクト内で使うタイミングで細かく調整できます。 追加するには、タイムラインの「素材を追加」メニューから「＋ウォーターマーク」を選びます。'**
   String get helpWatermarkEntryDesc;
 
   /// No description provided for @helpPremiumEntryTitle.
@@ -3302,7 +3338,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpExportScreenDesc.
   ///
   /// In ja, this message translates to:
-  /// **'動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。'**
+  /// **'「プリセット」で「標準」「高画質」「カスタム」を選べます。「カスタム」ではFPSを調整できます。動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。'**
   String get helpExportScreenDesc;
 
   /// No description provided for @helpDrawingFilterTitle.
@@ -11273,6 +11309,24 @@ abstract class AppLocalizations {
   /// **'一時停止'**
   String get communityFloatingPreviewPauseTooltip;
 
+  /// No description provided for @communityFloatingPreviewResizeTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューのサイズを変更'**
+  String get communityFloatingPreviewResizeTooltip;
+
+  /// No description provided for @communityFloatingPreviewMoveHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'ドラッグで移動できます。Alt＋矢印キーでも移動できます。'**
+  String get communityFloatingPreviewMoveHint;
+
+  /// No description provided for @communityFloatingPreviewCompactHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品は詳細画面で確認できます。'**
+  String get communityFloatingPreviewCompactHint;
+
   /// No description provided for @communityReportDialogTitle.
   ///
   /// In ja, this message translates to:
@@ -11369,53 +11423,11 @@ abstract class AppLocalizations {
   /// **'フォロワー{count}人'**
   String communityAuthorFollowerCount(int count);
 
-  /// No description provided for @communityFollowersPublicToggleTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォロー中/フォロワー一覧を公開する'**
-  String get communityFollowersPublicToggleTitle;
-
-  /// No description provided for @communityFollowersPublicToggleDesc.
-  ///
-  /// In ja, this message translates to:
-  /// **'オンにすると、他のユーザーがこのページからあなたのフォロー中/フォロワー一覧を見られるようになります。既定は非公開です。'**
-  String get communityFollowersPublicToggleDesc;
-
-  /// No description provided for @communityFollowersListTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォロワー'**
-  String get communityFollowersListTitle;
-
-  /// No description provided for @communityFollowersListEmpty.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォロワーがいません'**
-  String get communityFollowersListEmpty;
-
-  /// No description provided for @communityFollowersListHiddenNote.
-  ///
-  /// In ja, this message translates to:
-  /// **'他に{count}人いますが、本人の設定により非表示です'**
-  String communityFollowersListHiddenNote(int count);
-
   /// No description provided for @communityAuthorFollowingCount.
   ///
   /// In ja, this message translates to:
   /// **'フォロー中{count}人'**
   String communityAuthorFollowingCount(int count);
-
-  /// No description provided for @communityFollowingListTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォロー中'**
-  String get communityFollowingListTitle;
-
-  /// No description provided for @communityFollowingListEmpty.
-  ///
-  /// In ja, this message translates to:
-  /// **'誰もフォローしていません'**
-  String get communityFollowingListEmpty;
 
   /// No description provided for @communityFollowNotificationsTooltip.
   ///
@@ -11423,23 +11435,11 @@ abstract class AppLocalizations {
   /// **'通知'**
   String get communityFollowNotificationsTooltip;
 
-  /// No description provided for @communityFollowNotificationsTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォロー通知'**
-  String get communityFollowNotificationsTitle;
-
   /// No description provided for @communityFollowNotificationsEmpty.
   ///
   /// In ja, this message translates to:
   /// **'通知はありません'**
   String get communityFollowNotificationsEmpty;
-
-  /// No description provided for @communityFollowNotificationBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'{name}さんにフォローされました'**
-  String communityFollowNotificationBody(String name);
 
   /// No description provided for @communityNoWorksMessage.
   ///
@@ -11500,24 +11500,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ブックマーク'**
   String get communityAuthorTabBookmarks;
-
-  /// No description provided for @communityBookmarksPublicToggleTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'ブックマーク一覧を公開する'**
-  String get communityBookmarksPublicToggleTitle;
-
-  /// No description provided for @communityBookmarksPublicToggleDesc.
-  ///
-  /// In ja, this message translates to:
-  /// **'オンにすると、他のユーザーがこのページからあなたのブックマーク一覧を見られるようになります。既定は非公開です。'**
-  String get communityBookmarksPublicToggleDesc;
-
-  /// No description provided for @communityBookmarksPrivateNotice.
-  ///
-  /// In ja, this message translates to:
-  /// **'このユーザーはブックマーク一覧を非公開にしています。'**
-  String get communityBookmarksPrivateNotice;
 
   /// No description provided for @communityBookmarksEmptyMessage.
   ///
@@ -12740,7 +12722,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityHideGenerativeAiImageVideo.
   ///
   /// In ja, this message translates to:
-  /// **'「AI画像・AI動画使用」の作品を非表示'**
+  /// **'AIで生成した画像・動画を使用した作品を表示しない'**
   String get communityHideGenerativeAiImageVideo;
 
   /// No description provided for @communityMutedWords.
@@ -12752,7 +12734,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityMutedWordsHint.
   ///
   /// In ja, this message translates to:
-  /// **'作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。カンマ・「、」・改行で区切って複数指定できます'**
+  /// **'作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。1件ずつ追加・編集できます。'**
   String get communityMutedWordsHint;
 
   /// No description provided for @communityMutedTags.
@@ -12764,8 +12746,230 @@ abstract class AppLocalizations {
   /// No description provided for @communityMutedTagsHint.
   ///
   /// In ja, this message translates to:
-  /// **'作品広場で作品に設定されたタグが一致すると非表示にします（先頭の#は無視されます）。カンマ・「、」・改行で区切って複数指定できます'**
+  /// **'作品広場で一致するタグの作品を非表示にします。タグを1件ずつ登録でき、#は不要です。'**
   String get communityMutedTagsHint;
+
+  /// No description provided for @communityMuteAddNew.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規追加'**
+  String get communityMuteAddNew;
+
+  /// No description provided for @communityScrollToTop.
+  ///
+  /// In ja, this message translates to:
+  /// **'最上部に戻る'**
+  String get communityScrollToTop;
+
+  /// No description provided for @communityPostPeriodTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿期間'**
+  String get communityPostPeriodTitle;
+
+  /// No description provided for @communityDurationFilterTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の長さ'**
+  String get communityDurationFilterTitle;
+
+  /// No description provided for @communitySavedSearches.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存した検索条件'**
+  String get communitySavedSearches;
+
+  /// No description provided for @communitySignInPromptTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントでログイン'**
+  String get communitySignInPromptTitle;
+
+  /// No description provided for @communitySignInPromptBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の投稿・管理、フォロー、ブックマーク、通報などの機能を利用するにはGoogleアカウントとの連携が必要です。'**
+  String get communitySignInPromptBody;
+
+  /// No description provided for @communitySignInPromptConnect.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントを連携'**
+  String get communitySignInPromptConnect;
+
+  /// No description provided for @communitySignInUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'この開発ビルドにはGoogleログイン設定がないため、連携を開始できません。'**
+  String get communitySignInUnavailable;
+
+  /// No description provided for @communitySaveSearch.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の検索条件を保存'**
+  String get communitySaveSearch;
+
+  /// No description provided for @communitySavedSearchName.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索条件の名前'**
+  String get communitySavedSearchName;
+
+  /// No description provided for @communitySavedSearchLimit.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存できる検索条件は10件までです'**
+  String get communitySavedSearchLimit;
+
+  /// No description provided for @communitySavedSearchEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存した検索条件はありません'**
+  String get communitySavedSearchEmpty;
+
+  /// No description provided for @communityDurationAny.
+  ///
+  /// In ja, this message translates to:
+  /// **'長さを指定しない'**
+  String get communityDurationAny;
+
+  /// No description provided for @communityDurationUpTo.
+  ///
+  /// In ja, this message translates to:
+  /// **'〇分以内（スライダー）'**
+  String get communityDurationUpTo;
+
+  /// No description provided for @communityDurationRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'〇分以上〇分以内（数値入力）'**
+  String get communityDurationRange;
+
+  /// No description provided for @communityDurationMinutes.
+  ///
+  /// In ja, this message translates to:
+  /// **'分以内'**
+  String get communityDurationMinutes;
+
+  /// No description provided for @communityDurationMinimum.
+  ///
+  /// In ja, this message translates to:
+  /// **'最短（分）'**
+  String get communityDurationMinimum;
+
+  /// No description provided for @communityDurationMaximum.
+  ///
+  /// In ja, this message translates to:
+  /// **'最長（分）'**
+  String get communityDurationMaximum;
+
+  /// No description provided for @communityTagExactMatch.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索語を完全一致で検索する（オフなら部分一致）'**
+  String get communityTagExactMatch;
+
+  /// No description provided for @communityMinimumViews.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生回数'**
+  String get communityMinimumViews;
+
+  /// No description provided for @communityMinimumBookmarks.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマーク数'**
+  String get communityMinimumBookmarks;
+
+  /// No description provided for @communityPostPeriodAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべての期間'**
+  String get communityPostPeriodAll;
+
+  /// No description provided for @communityPostPeriodToday.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日'**
+  String get communityPostPeriodToday;
+
+  /// No description provided for @communityPostPeriodWeek.
+  ///
+  /// In ja, this message translates to:
+  /// **'今週'**
+  String get communityPostPeriodWeek;
+
+  /// No description provided for @communityPostPeriodMonth.
+  ///
+  /// In ja, this message translates to:
+  /// **'今月'**
+  String get communityPostPeriodMonth;
+
+  /// No description provided for @communityPostPeriodYear.
+  ///
+  /// In ja, this message translates to:
+  /// **'今年'**
+  String get communityPostPeriodYear;
+
+  /// No description provided for @communityPostPeriodCustom.
+  ///
+  /// In ja, this message translates to:
+  /// **'日付期間を指定'**
+  String get communityPostPeriodCustom;
+
+  /// No description provided for @communityPostPeriodChooseRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'日付を選ぶ'**
+  String get communityPostPeriodChooseRange;
+
+  /// No description provided for @communityMutedAuthors.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートしたユーザー'**
+  String get communityMutedAuthors;
+
+  /// No description provided for @communityMutedAuthorsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュート中のユーザーはいません'**
+  String get communityMutedAuthorsEmpty;
+
+  /// No description provided for @communityUnmuteAuthor.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーのミュートを解除する'**
+  String get communityUnmuteAuthor;
+
+  /// No description provided for @communityMyWorksManagementHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品管理'**
+  String get communityMyWorksManagementHeading;
+
+  /// No description provided for @communityWorkTagsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品のタグ管理'**
+  String get communityWorkTagsTitle;
+
+  /// No description provided for @communityWorkTagsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを追加・編集・削除できます。ロックすると他のユーザーは変更できません。ロックしたタグの編集・削除は先に解除してください。'**
+  String get communityWorkTagsHint;
+
+  /// No description provided for @communityWorkEditTag.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを編集'**
+  String get communityWorkEditTag;
+
+  /// No description provided for @communityWorkTagChangeFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグを変更できませんでした'**
+  String get communityWorkTagChangeFailed;
 
   /// No description provided for @communityContainsGenerativeAiImageVideo.
   ///
@@ -12800,7 +13004,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityGoogleSignInNotConfigured.
   ///
   /// In ja, this message translates to:
-  /// **'Googleログインがまだ設定されていません'**
+  /// **'Googleアカウントが連携されていません'**
   String get communityGoogleSignInNotConfigured;
 
   /// No description provided for @communityGoogleAccountBusy.
@@ -12814,6 +13018,90 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'自分の投稿'**
   String get communityMyWorksTitle;
+
+  /// No description provided for @communityMyWorksViewAuthorPage.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分の作品一覧ページを見る'**
+  String get communityMyWorksViewAuthorPage;
+
+  /// No description provided for @communityMyWorksAccountRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品一覧を表示するにはGoogleアカウントに接続してください'**
+  String get communityMyWorksAccountRequired;
+
+  /// No description provided for @communityMyWorksSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の設定'**
+  String get communityMyWorksSettingsTitle;
+
+  /// No description provided for @communityMyWorksPublishInNiarim.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM内で公開する'**
+  String get communityMyWorksPublishInNiarim;
+
+  /// No description provided for @communityMyWorksDeleteNiarim.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM作品広場からこの作品を削除'**
+  String get communityMyWorksDeleteNiarim;
+
+  /// No description provided for @communityMyWorksDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品を削除しますか？'**
+  String get communityMyWorksDeleteConfirmTitle;
+
+  /// No description provided for @communityMyWorksDeleteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM内の作品を完全に削除します。YouTube上の動画は削除されません。この操作は取り消せません。'**
+  String get communityMyWorksDeleteConfirmBody;
+
+  /// No description provided for @communityMyWorksOpenYoutubeStudio.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube Studioで動画を管理する'**
+  String get communityMyWorksOpenYoutubeStudio;
+
+  /// No description provided for @communityMyWorksYoutubeStudioHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube側の公開状態や動画設定はYouTube Studioで管理します。NIARIM内の公開設定とは独立しています。'**
+  String get communityMyWorksYoutubeStudioHelp;
+
+  /// No description provided for @communityMyWorksYoutubeOpenFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube Studioを開けませんでした'**
+  String get communityMyWorksYoutubeOpenFailed;
+
+  /// No description provided for @communityMyWorksOperationFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作に失敗しました。{reason}'**
+  String communityMyWorksOperationFailed(String reason);
+
+  /// No description provided for @communityMyWorksBulkPublish.
+  ///
+  /// In ja, this message translates to:
+  /// **'一括公開'**
+  String get communityMyWorksBulkPublish;
+
+  /// No description provided for @communityMyWorksBulkHide.
+  ///
+  /// In ja, this message translates to:
+  /// **'一括非公開'**
+  String get communityMyWorksBulkHide;
+
+  /// No description provided for @communityMyWorksBulkResult.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了: {success}件 / 失敗: {failed}件'**
+  String communityMyWorksBulkResult(int success, int failed);
 
   /// No description provided for @communityMyWorksAccountNotConnected.
   ///
@@ -12856,12 +13144,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'Googleアカウントでログインできませんでした。{reason}'**
   String communitySignInFailed(String reason);
-
-  /// No description provided for @communityVisibilityChangeFailed.
-  ///
-  /// In ja, this message translates to:
-  /// **'公開状態を変更できませんでした。{reason}'**
-  String communityVisibilityChangeFailed(String reason);
 
   /// No description provided for @communityMyWorksDeletedCannotPublish.
   ///
@@ -14105,17 +14387,143 @@ abstract class AppLocalizations {
   /// **'フォルダの中の{contents}も一緒に削除します。'**
   String homeTrashFolderPermanentDeleteContents(String contents);
 
-  /// No description provided for @folderColorName.
-  ///
-  /// In ja, this message translates to:
-  /// **'{color, select, pink{ピンク} orange{オレンジ} yellow{黄} green{緑} blue{青} purple{紫} gray{グレー} other{既定の色}}'**
-  String folderColorName(String color);
-
   /// No description provided for @newProjectNumberRangeError.
   ///
   /// In ja, this message translates to:
   /// **'{min}〜{max}の数字を入力してください'**
   String newProjectNumberRangeError(int min, int max);
+
+  /// No description provided for @communityThresholdAny.
+  ///
+  /// In ja, this message translates to:
+  /// **'条件なし'**
+  String get communityThresholdAny;
+
+  /// No description provided for @communityMinimumViewsOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}回再生以上'**
+  String communityMinimumViewsOption(String count);
+
+  /// No description provided for @communityMinimumBookmarksOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件以上'**
+  String communityMinimumBookmarksOption(String count);
+
+  /// No description provided for @communityTileSize.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の表示サイズ'**
+  String get communityTileSize;
+
+  /// No description provided for @communityMutedWordsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュート中のキーワードはありません'**
+  String get communityMutedWordsEmpty;
+
+  /// No description provided for @communityMutedTagsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュート中のタグはありません'**
+  String get communityMutedTagsEmpty;
+
+  /// No description provided for @communityMuteShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュート'**
+  String get communityMuteShort;
+
+  /// No description provided for @communityMuteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーをミュートしますか？'**
+  String get communityMuteConfirmTitle;
+
+  /// No description provided for @communityMuteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートするとこのユーザーの作品は非表示になります。'**
+  String get communityMuteConfirmBody;
+
+  /// No description provided for @communityMuteConfirmAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートする'**
+  String get communityMuteConfirmAction;
+
+  /// No description provided for @communityUnmuteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーのミュートを解除しますか？'**
+  String get communityUnmuteConfirmTitle;
+
+  /// No description provided for @communityUnmuteConfirmAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'解除する'**
+  String get communityUnmuteConfirmAction;
+
+  /// No description provided for @communityMuteNo.
+  ///
+  /// In ja, this message translates to:
+  /// **'いいえ'**
+  String get communityMuteNo;
+
+  /// No description provided for @communityMuteDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーをミュートしました'**
+  String get communityMuteDone;
+
+  /// No description provided for @communityUnmuteDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーのミュートを解除しました'**
+  String get communityUnmuteDone;
+
+  /// No description provided for @communityMilestoneNotificationsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知'**
+  String get communityMilestoneNotificationsTitle;
+
+  /// No description provided for @communityFollowerMilestone.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワーが{count}人に達しました'**
+  String communityFollowerMilestone(String count);
+
+  /// No description provided for @communityBookmarkMilestone.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品「{title}」のブックマークが{count}件に達しました'**
+  String communityBookmarkMilestone(String title, String count);
+
+  /// No description provided for @communitySearchHistory.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索履歴'**
+  String get communitySearchHistory;
+
+  /// No description provided for @communitySearchHistoryEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索履歴はありません'**
+  String get communitySearchHistoryEmpty;
+
+  /// No description provided for @communityDeleteSavedSearchConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存した検索条件を削除しますか？'**
+  String get communityDeleteSavedSearchConfirm;
+
+  /// No description provided for @communitySortLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'並び替え'**
+  String get communitySortLabel;
 }
 
 class _AppLocalizationsDelegate

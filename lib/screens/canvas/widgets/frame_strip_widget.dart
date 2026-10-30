@@ -549,7 +549,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                     icon: Icon(
                       Icons.movie_filter_outlined,
                       shadows: CanvasIconButton.foregroundShadows(
-                        scheme.onSurfaceVariant, scheme),
+                        scheme.onSurfaceVariant,
+                        scheme,
+                      ),
                     ),
                     iconSize: 21,
                     style: IconButton.styleFrom(
@@ -574,7 +576,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                         size: 16,
                         color: scheme.onSurface,
                         shadows: CanvasIconButton.foregroundShadows(
-                          scheme.onSurface, scheme),
+                          scheme.onSurface,
+                          scheme,
+                        ),
                       ),
                     ),
                   ),

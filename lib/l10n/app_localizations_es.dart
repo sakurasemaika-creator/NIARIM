@@ -181,6 +181,18 @@ class AppLocalizationsEs extends AppLocalizations {
       'Exporta un vídeo o GIF desde el lienzo y aparecerá aquí';
 
   @override
+  String get homeWorkFolderEmpty => 'No hay obras exportadas en esta carpeta';
+
+  @override
+  String get homeSharedFolderEmpty =>
+      'No hay proyectos compartidos en esta carpeta';
+
+  @override
+  String homeDeleteFolderKeepContents(String name) {
+    return 'Se eliminará \"$name\". Su contenido volverá a la lista principal y no se eliminará.';
+  }
+
+  @override
   String get homeShareOpenWith => 'Compartir / Abrir en Fotos';
 
   @override
@@ -733,6 +745,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get folderManagementEmpty => 'Aún no hay carpetas';
+
+  @override
+  String get folderCreateFailed =>
+      'No se pudo crear la carpeta. Inténtalo de nuevo.';
+
+  @override
+  String get folderChangesSaveFailed =>
+      'No se pudieron guardar los cambios de la carpeta. Inténtalo de nuevo.';
+
+  @override
+  String get folderChangesPartiallySaved =>
+      'Solo se han guardado algunos cambios. Comprueba la lista e inténtalo de nuevo.';
 
   @override
   String get folderNameLabel => 'Nombre de la carpeta';
@@ -1557,7 +1581,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'Exporta tu obra como un video MP4 estandar. La version gratuita tiene un limite de duracion (90 segundos) y anade automaticamente una tarjeta final (logotipo de la app) al final del video. Un formato de vídeo que se puede exportar conservando el canal alfa (las partes transparentes del fondo). La reproducción transparente solo funciona en entornos de reproducción compatibles. Ideal para superponer como material en otras aplicaciones. Exporta como GIF animado. Como se reproduce en bucle automaticamente, es ideal para compartir de forma casual en redes sociales. Si la compatibilidad es lo más importante, también puedes exportar como AVI (Motion JPEG). Usa un códec elegido por ser seguro en cuanto a patentes y licencias, pero no admite canal alfa (transparencia), y la vista previa dentro de la app puede no funcionar en todos los dispositivos (aun así puedes reproducirlo con un reproductor externo mediante Compartir). Las cuentas gratuitas tienen un límite de 90 segundos de duración de proyecto (las cuentas Premium tienen 2 horas). Si añadir o duplicar fotogramas te haría superar el límite, aparece un aviso justo al tocar el botón, así que nunca llegas a superar los 90 segundos.';
+      'Exporta tu obra como un video MP4 estandar. La version gratuita tiene un limite de duracion (90 segundos) y anade automaticamente una tarjeta final (logotipo de la app) al final del video. Un formato de vídeo que se puede exportar conservando el canal alfa (las partes transparentes del fondo). La reproducción transparente solo funciona en entornos de reproducción compatibles. Ideal para superponer como material en otras aplicaciones. Exporta como GIF animado. Como se reproduce en bucle automaticamente, es ideal para compartir de forma casual en redes sociales. Si la compatibilidad es lo más importante, también puedes exportar como AVI (Motion JPEG). No admite canal alfa (transparencia), y la vista previa dentro de la app puede no funcionar en todos los dispositivos (aun así puedes reproducirlo con un reproductor externo mediante Compartir). Las cuentas gratuitas tienen un límite de 90 segundos de duración de proyecto (las cuentas Premium tienen 2 horas). Si añadir o duplicar fotogramas te haría superar el límite, aparece un aviso justo al tocar el botón, así que nunca llegas a superar los 90 segundos.';
 
   @override
   String get helpTransparentWebmTitle => 'WebM transparente';
@@ -1567,14 +1591,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Publica tus animaciones e ilustraciones en la comunidad como vídeos de YouTube y explora las obras de otros usuarios. Cambia entre las pestañas «Nuevas», «Ranking» y «Siguiendo», y busca por título de la obra o nombre del creador. Cambia al modo de búsqueda por etiquetas para filtrar obras por etiqueta: cualquier usuario (no solo el creador) puede añadir o quitar etiquetas, aunque las etiquetas bloqueadas por el creador solo él puede quitarlas, y tocar una etiqueta filtra al instante las obras con la misma etiqueta. Al tocar una tarjeta de obra se abre una ventana de vista previa flotante que se puede arrastrar y redimensionar, para seguir explorando otras pantallas mientras se reproduce. El botón «Ver detalles» abre la pantalla de detalles de la obra (creador, fecha de publicación, edición de etiquetas, marcador, republicación y más). Toca el botón «Seguir» junto al nombre de un creador para añadirlo a tus seguidos: la pestaña «Siguiendo» reúne entonces solo las publicaciones de ese creador, ordenadas por fecha. Cuando alguien te sigue, aparece en la lista de notificaciones bajo el icono de la campana en la parte superior de la pantalla. Puedes elegir si tus listas de seguidos/seguidores son visibles para otros usuarios (privadas por defecto), y puedes ver las listas de otros usuarios si las han hecho públicas. Puedes republicar la obra de cualquier otra persona (excepto la tuya propia) con el botón «Republicar»; cuando un creador al que sigues republica la obra de otra persona, esa obra también aparece en tu pestaña «Siguiendo», ordenada según lo que sea más reciente —su fecha de publicación original o su fecha de republicación— (la tarjeta muestra «Republicado por…»). Las obras marcadas aparecen juntas en la pestaña «Guardadas» de la pantalla de inicio, y también en la pestaña «Marcadores» de la pantalla de obras de un creador. Puedes elegir si tu propia lista de marcadores es visible para otros usuarios (privada de forma predeterminada), y puedes ver las listas de marcadores de otros usuarios si las han hecho públicas. Puedes denunciar una obra indicando un motivo, y tras enviarla se te preguntará si quieres bloquear a ese creador. Los vídeos verticales se pueden ver en «modo vertical», que los reproduce uno tras otro como un feed de vídeos cortos. Hay un límite diario de publicaciones: 1 al día para miembros gratuitos y 3 al día para miembros Premium. El botón de filtros de visualización de la parte superior derecha (el icono de un ojo tachado) te permite ocultar las obras que no quieras ver. Puedes ocultar las obras marcadas con «Contiene imágenes o vídeo de IA generativa» y añadir títulos silenciados (solo se comparan con el título de la obra) y etiquetas silenciadas (solo se comparan con las etiquetas asignadas a la obra en la Plaza de Obras; se ignora el # inicial), separados por comas o saltos de línea. Estos filtros se aplican a «Nuevas», «Ranking», «Siguiendo» (incluidas las republicaciones), el modo vertical, las páginas de los creadores, los detalles de las obras y los marcadores. «Contiene imágenes o vídeo de IA generativa» lo declara quien publica en el momento de publicar, y después solo esa persona puede cambiarlo (desde «Mis publicaciones» o la pantalla de detalles de la obra).';
+      'Publica tus animaciones e ilustraciones en la comunidad como vídeos de YouTube y explora las obras de otros usuarios. Cambia entre las pestañas «Nuevas», «Ranking» y «Siguiendo», y busca por título de la obra o nombre del creador. Cambia al modo de búsqueda por etiquetas para filtrar obras por etiqueta: cualquier usuario (no solo el creador) puede añadir o quitar etiquetas, aunque las etiquetas bloqueadas por el creador solo él puede quitarlas, y tocar una etiqueta filtra al instante las obras con la misma etiqueta. Al tocar una tarjeta de obra se abre una ventana de vista previa flotante que se puede arrastrar y redimensionar, para seguir explorando otras pantallas mientras se reproduce. El botón «Ver detalles» abre la pantalla de detalles de la obra (creador, fecha de publicación, edición de etiquetas, marcador, republicación y más). Toca el botón «Seguir» junto al nombre de un creador para añadirlo a tus seguidos: la pestaña «Siguiendo» reúne entonces solo las publicaciones de ese creador, ordenadas por fecha. Cuando alguien te sigue, aparece en la lista de notificaciones bajo el icono de la campana en la parte superior de la pantalla. Puedes elegir si tus listas de seguidos/seguidores son visibles para otros usuarios (privadas por defecto), y puedes ver las listas de otros usuarios si las han hecho públicas. Puedes republicar la obra de cualquier otra persona (excepto la tuya propia) con el botón «Republicar»; cuando un creador al que sigues republica la obra de otra persona, esa obra también aparece en tu pestaña «Siguiendo», ordenada según lo que sea más reciente —su fecha de publicación original o su fecha de republicación— (la tarjeta muestra «Republicado por…»). Las obras marcadas aparecen juntas en la pestaña «Guardadas» de la pantalla de inicio, y también en la pestaña «Marcadores» de la pantalla de obras de un creador. Puedes elegir si tu propia lista de marcadores es visible para otros usuarios (privada de forma predeterminada), y puedes ver las listas de marcadores de otros usuarios si las han hecho públicas. Puedes denunciar una obra indicando un motivo, y tras enviarla se te preguntará si quieres bloquear a ese creador. Los vídeos verticales se pueden ver en «modo vertical», que los reproduce uno tras otro como un feed de vídeos cortos. Hay un límite diario de publicaciones: 1 al día para miembros gratuitos y 3 al día para miembros Premium. El botón de filtros de visualización de la parte superior derecha (el icono de un ojo tachado) te permite ocultar las obras que no quieras ver. Puedes ocultar las obras marcadas con «Contiene imágenes o vídeo de IA generativa» y añadir títulos silenciados (solo se comparan con el título de la obra) y etiquetas silenciadas (solo se comparan con las etiquetas de la Plaza de Obras) de una en una con «Añadir nuevo». Edita con el lápiz o elimina con la papelera; no hacen falta comas ni #. Estos filtros se aplican a «Nuevas», «Ranking», «Siguiendo» (incluidas las republicaciones), el modo vertical, las páginas de los creadores, los detalles de las obras y los marcadores. «Contiene imágenes o vídeo de IA generativa» lo declara quien publica en el momento de publicar, y después solo esa persona puede cambiarlo (desde «Mis publicaciones» o la pantalla de detalles de la obra).';
 
   @override
   String get helpWatermarkEntryTitle => 'Marca de agua';
 
   @override
   String get helpWatermarkEntryDesc =>
-      'Una función exclusiva de la versión premium que te permite añadir tu propia firma o logotipo como marca de agua en los vídeos e imágenes exportados. Puedes ajustar su posición, tamaño y opacidad. Toca la marca de agua colocada en la pista de capa común de la línea de tiempo para reeditar en cualquier momento su ángulo, tamaño, opacidad y rango visible (bucle), no solo al registrarla, sino cada vez que la uses en un proyecto.';
+      'Una función exclusiva de la versión premium que te permite añadir tu propia firma o logotipo como marca de agua en los vídeos e imágenes exportados. Puedes ajustar su posición, tamaño y opacidad. Toca la marca de agua colocada en la pista de capa común de la línea de tiempo para reeditar en cualquier momento su ángulo, tamaño, opacidad y rango visible (bucle), no solo al registrarla, sino cada vez que la uses en un proyecto. Para añadir una marca de agua, abre «Añadir material» en la línea de tiempo y elige «+ Marca de agua».';
 
   @override
   String get helpPremiumEntryTitle => 'Premium';
@@ -1816,7 +1840,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'Muestra el progreso al exportar un vídeo o una imagen, y permite cancelar a mitad de camino. El tiempo que tarda depende del rendimiento del dispositivo.';
+      'En «Preajuste», elige «Estándar», «Alta calidad» o «Personalizado». Con «Personalizado» puedes ajustar los fotogramas por segundo (FPS). Muestra el progreso al exportar un vídeo o una imagen, y permite cancelar a mitad de camino. El tiempo que tarda depende del rendimiento del dispositivo.';
 
   @override
   String get helpDrawingFilterTitle => 'Filtros de dibujo';
@@ -6478,6 +6502,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityFloatingPreviewPauseTooltip => 'Pausar';
 
   @override
+  String get communityFloatingPreviewResizeTooltip =>
+      'Cambiar el tamaño de la vista previa';
+
+  @override
+  String get communityFloatingPreviewMoveHint =>
+      'Arrastra para mover. También puedes usar Alt + las flechas.';
+
+  @override
+  String get communityFloatingPreviewCompactHint =>
+      'Abre Detalles para ver esta obra.';
+
+  @override
   String get communityReportDialogTitle => 'Denunciar esta obra';
 
   @override
@@ -6538,49 +6574,15 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle =>
-      'Hacer públicas las listas de seguidos/seguidores';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      'Si está activado, otros usuarios podrán ver sus listas de seguidos y seguidores desde esta página. Son privadas de forma predeterminada.';
-
-  @override
-  String get communityFollowersListTitle => 'Seguidores';
-
-  @override
-  String get communityFollowersListEmpty => 'Todavía no hay seguidores';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '$count más no se muestran, ocultos por su propia configuración de privacidad';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return 'Siguiendo a $count';
   }
 
   @override
-  String get communityFollowingListTitle => 'Siguiendo';
-
-  @override
-  String get communityFollowingListEmpty => 'Todavía no sigue a nadie';
-
-  @override
   String get communityFollowNotificationsTooltip => 'Notificaciones';
 
   @override
-  String get communityFollowNotificationsTitle =>
-      'Notificaciones de seguidores';
-
-  @override
   String get communityFollowNotificationsEmpty => 'No hay notificaciones';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$name te ha seguido';
-  }
 
   @override
   String get communityNoWorksMessage => 'No hay obras';
@@ -6615,18 +6617,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityAuthorTabBookmarks => 'Marcadores';
-
-  @override
-  String get communityBookmarksPublicToggleTitle =>
-      'Hacer pública la lista de marcadores';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      'Si está activado, otros usuarios podrán ver su lista de marcadores desde esta página. Es privada de forma predeterminada.';
-
-  @override
-  String get communityBookmarksPrivateNotice =>
-      'Este usuario ha configurado su lista de marcadores como privada.';
 
   @override
   String get communityBookmarksEmptyMessage => 'No hay obras marcadas';
@@ -7298,14 +7288,129 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityMutedWordsHint =>
-      'Oculta las obras cuyo título contiene este texto (no se comprueban los nombres de los creadores ni las etiquetas). Separa varias entradas con comas o saltos de línea.';
+      'Oculta las obras cuyos títulos contienen estas palabras (no se comprueban creadores ni etiquetas). Añade y edita cada palabra por separado.';
 
   @override
   String get communityMutedTags => 'Etiquetas silenciadas';
 
   @override
   String get communityMutedTagsHint =>
-      'Oculta las obras que tienen esta etiqueta en la Plaza de Obras (se ignora el # inicial). Separa varias entradas con comas o saltos de línea.';
+      'Oculta las obras con etiquetas coincidentes en la Plaza de Obras. Añade cada etiqueta por separado; no hace falta #.';
+
+  @override
+  String get communityMuteAddNew => 'Añadir nuevo';
+
+  @override
+  String get communityScrollToTop => 'Volver arriba';
+
+  @override
+  String get communityPostPeriodTitle => 'Fecha de publicación';
+
+  @override
+  String get communityDurationFilterTitle => 'Duración del vídeo';
+
+  @override
+  String get communitySavedSearches => 'Búsquedas guardadas';
+
+  @override
+  String get communitySignInPromptTitle => 'Iniciar sesión con Google';
+
+  @override
+  String get communitySignInPromptBody =>
+      'Necesitas vincular Google para publicar, gestionar obras, seguir autores, guardar y denunciar contenido.';
+
+  @override
+  String get communitySignInPromptConnect => 'Vincular cuenta Google';
+
+  @override
+  String get communitySignInUnavailable =>
+      'El inicio de sesión con Google no está configurado en esta versión de desarrollo.';
+
+  @override
+  String get communitySaveSearch => 'Guardar la búsqueda actual';
+
+  @override
+  String get communitySavedSearchName => 'Nombre de la búsqueda';
+
+  @override
+  String get communitySavedSearchLimit => 'Puedes guardar hasta 10 búsquedas';
+
+  @override
+  String get communitySavedSearchEmpty => 'No hay búsquedas guardadas';
+
+  @override
+  String get communityDurationAny => 'Cualquier duración';
+
+  @override
+  String get communityDurationUpTo => 'Hasta N minutos (control deslizante)';
+
+  @override
+  String get communityDurationRange => 'Entre N y N minutos (números)';
+
+  @override
+  String get communityDurationMinutes => 'minutos o menos';
+
+  @override
+  String get communityDurationMinimum => 'Mín. minutos';
+
+  @override
+  String get communityDurationMaximum => 'Máx. minutos';
+
+  @override
+  String get communityTagExactMatch =>
+      'Coincidencia exacta (desactivar para parcial)';
+
+  @override
+  String get communityMinimumViews => 'Vistas';
+
+  @override
+  String get communityMinimumBookmarks => 'Marcadores';
+
+  @override
+  String get communityPostPeriodAll => 'Cualquier fecha';
+
+  @override
+  String get communityPostPeriodToday => 'Hoy';
+
+  @override
+  String get communityPostPeriodWeek => 'Esta semana';
+
+  @override
+  String get communityPostPeriodMonth => 'Este mes';
+
+  @override
+  String get communityPostPeriodYear => 'Este año';
+
+  @override
+  String get communityPostPeriodCustom => 'Intervalo personalizado';
+
+  @override
+  String get communityPostPeriodChooseRange => 'Elegir fechas';
+
+  @override
+  String get communityMutedAuthors => 'Creadores silenciados';
+
+  @override
+  String get communityMutedAuthorsEmpty => 'No hay creadores silenciados';
+
+  @override
+  String get communityUnmuteAuthor => 'Dejar de silenciar a este creador';
+
+  @override
+  String get communityMyWorksManagementHeading => 'Gestionar obras';
+
+  @override
+  String get communityWorkTagsTitle => 'Etiquetas de la obra';
+
+  @override
+  String get communityWorkTagsHint =>
+      'Añade, edita o elimina etiquetas. El bloqueo impide cambios de otras personas. Desbloquéala antes de editarla o eliminarla.';
+
+  @override
+  String get communityWorkEditTag => 'Editar etiqueta';
+
+  @override
+  String get communityWorkTagChangeFailed => 'No se pudo cambiar la etiqueta';
 
   @override
   String get communityContainsGenerativeAiImageVideo =>
@@ -7327,7 +7432,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityGoogleSignInNotConfigured =>
-      'El inicio de sesión con Google aún no está configurado';
+      'No hay ninguna cuenta de Google vinculada';
 
   @override
   String get communityGoogleAccountBusy =>
@@ -7335,6 +7440,58 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityMyWorksTitle => 'Mis publicaciones';
+
+  @override
+  String get communityMyWorksViewAuthorPage => 'Ver mi página de obras';
+
+  @override
+  String get communityMyWorksAccountRequired =>
+      'Conecta tu cuenta de Google para ver tus obras';
+
+  @override
+  String get communityMyWorksSettingsTitle => 'Ajustes de la obra';
+
+  @override
+  String get communityMyWorksPublishInNiarim => 'Mostrar en NIARIM';
+
+  @override
+  String get communityMyWorksDeleteNiarim =>
+      'Eliminar esta obra de la Plaza de Obras de NIARIM';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => '¿Eliminar esta obra?';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      'La obra se eliminará permanentemente de NIARIM. El vídeo de YouTube se conservará. Esta acción no se puede deshacer.';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio =>
+      'Gestionar vídeo en YouTube Studio';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'Gestiona la visibilidad y los ajustes de YouTube desde YouTube Studio, de forma independiente de NIARIM.';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed =>
+      'No se pudo abrir YouTube Studio';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return 'Error de operación: $reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => 'Publicar selección';
+
+  @override
+  String get communityMyWorksBulkHide => 'Ocultar selección';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return 'Cambiadas: $success / Fallidas: $failed';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected =>
@@ -7363,11 +7520,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String communitySignInFailed(String reason) {
     return 'No se pudo iniciar sesión con tu cuenta de Google. $reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return 'No se pudo cambiar la visibilidad. $reason';
   }
 
   @override
@@ -8149,22 +8301,83 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String folderColorName(String color) {
-    String _temp0 = intl.Intl.selectLogic(color, {
-      'pink': 'Rosa',
-      'orange': 'Naranja',
-      'yellow': 'Amarillo',
-      'green': 'Verde',
-      'blue': 'Azul',
-      'purple': 'Morado',
-      'gray': 'Gris',
-      'other': 'Color predeterminado',
-    });
-    return '$_temp0';
-  }
-
-  @override
   String newProjectNumberRangeError(int min, int max) {
     return 'Introduce un número entre $min y $max';
   }
+
+  @override
+  String get communityThresholdAny => 'Sin condición';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return 'Al menos $count vistas';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return 'Al menos $count marcadores';
+  }
+
+  @override
+  String get communityTileSize => 'Tamaño de las obras';
+
+  @override
+  String get communityMutedWordsEmpty => 'No hay palabras silenciadas';
+
+  @override
+  String get communityMutedTagsEmpty => 'No hay etiquetas silenciadas';
+
+  @override
+  String get communityMuteShort => 'Silenciar';
+
+  @override
+  String get communityMuteConfirmTitle => '¿Silenciar a este usuario?';
+
+  @override
+  String get communityMuteConfirmBody => 'Se ocultarán sus obras.';
+
+  @override
+  String get communityMuteConfirmAction => 'Silenciar';
+
+  @override
+  String get communityUnmuteConfirmTitle =>
+      '¿Dejar de silenciar a este usuario?';
+
+  @override
+  String get communityUnmuteConfirmAction => 'Activar';
+
+  @override
+  String get communityMuteNo => 'No';
+
+  @override
+  String get communityMuteDone => 'Usuario silenciado';
+
+  @override
+  String get communityUnmuteDone => 'Usuario reactivado';
+
+  @override
+  String get communityMilestoneNotificationsTitle => 'Notificaciones';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return 'Has alcanzado $count seguidores';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '«$title» alcanzó $count marcadores';
+  }
+
+  @override
+  String get communitySearchHistory => 'Historial de búsqueda';
+
+  @override
+  String get communitySearchHistoryEmpty => 'No hay historial';
+
+  @override
+  String get communityDeleteSavedSearchConfirm =>
+      '¿Eliminar esta búsqueda guardada?';
+
+  @override
+  String get communitySortLabel => 'Ordenar';
 }

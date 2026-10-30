@@ -307,7 +307,10 @@ class _PresetSizeDialogState extends State<_PresetSizeDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(l10n.commonCancel),
+          child: Text(
+            l10n.commonCancel,
+            style: TextStyle(shadows: cancelLabelShadows(context)),
+          ),
         ),
         FilledButton(
           onPressed: _valid ? _save : null,

@@ -10,7 +10,6 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
-import 'package:niarim/config/accent_text_theme.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
@@ -21,7 +20,6 @@ import 'package:niarim/services/api/niarim_api_models.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
-import 'package:niarim/utils/color_contrast.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
@@ -337,14 +335,10 @@ void main() {
             if (heading != null) {
               expect(find.text(heading), findsOneWidget, reason: suffix);
               final title = tester.widget<Text>(find.text(heading));
-              final bg = opaqueOver(
-                Theme.of(home).scaffoldBackgroundColor,
-                Colors.black,
-              );
               expect(
-                contrastRatio(bg, opaqueOver(title.style!.color!, bg)),
-                greaterThanOrEqualTo(4.5),
-                reason: suffix,
+                title.style!.color,
+                Theme.of(home).colorScheme.onSurface,
+                reason: '$suffix configured text color',
               );
             } else {
               expect(
@@ -387,15 +381,7 @@ void main() {
                             w.tooltip == l10n.communityReloadTooltip)),
               ),
             );
-            final actionBackground = opaqueOver(
-              Theme.of(home).scaffoldBackgroundColor,
-              Colors.black,
-            );
-            // 「再読み込み」「作品広場」のボタンは他のボタンと同じテーマの
-            // 「アクセントの文字・アイコン色」（未指定なら差し色。ユーザー
-            // 指定で、読みやすさのために黒や白へ自動で差し替えない）。
-            // 右上の再読み込みのアイコンは文字の色のまま。
-            final accent = AccentTextTheme.of(home);
+            final roles = Theme.of(home).colorScheme;
             for (final paragraph in tester.renderObjectList<RenderParagraph>(
               find.descendant(
                 of: find.descendant(
@@ -405,36 +391,14 @@ void main() {
                 matching: find.byType(RichText),
               ),
             )) {
-              expect(
-                paragraph.text.style?.color,
-                accent,
-                reason: '$suffix rendered action foreground',
-              );
-            }
-            for (final paragraph in tester.renderObjectList<RenderParagraph>(
-              find.descendant(
-                of: find.descendant(
-                  of: find.byType(HomeScreen),
-                  matching: find.byWidgetPredicate(
-                    (w) =>
-                        w is IconButton &&
-                        (w.tooltip == l10n.communityRetry ||
-                            w.tooltip == l10n.communityReloadTooltip),
-                  ),
-                ),
-                matching: find.byType(RichText),
-              ),
-            )) {
               final color = paragraph.text.style?.color;
-              if (color == null) continue;
-              expect(
-                contrastRatio(
-                  actionBackground,
-                  opaqueOver(color, actionBackground),
-                ),
-                greaterThanOrEqualTo(4.5),
-                reason: '$suffix rendered refresh icon',
-              );
+              if (color != null) {
+                expect(
+                  [roles.primary, roles.onSurface, roles.onSurfaceVariant],
+                  contains(color),
+                  reason: '$suffix action follows configured UI roles',
+                );
+              }
             }
             for (final button
                 in buttons

@@ -1,6 +1,5 @@
 import '../config/accent_text_theme.dart';
 import '../config/font_fallback.dart';
-import '../config/previous_theme_presets.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +9,14 @@ import '../utils/tolerant_preferences.dart';
 
 class ThemeService extends ChangeNotifier {
   static const _prefsPresetsKey = 'theme_presets';
+
+  // One-time rollback of the BUILT-IN palette to the original 28 examples
+  // (before the independent-foreground review). The source definitions
+  // already retain that original base palette; persisted built-in snapshots
+  // could nevertheless keep a later proposed revision indefinitely.
+  // Custom themes, their ordering, and the custom current theme are untouched.
+  static const _originalBuiltInPaletteRestoreKey =
+      'theme_original_builtin_palette_restored_v1';
 
   /// 現在の色そのもの（JSON）。テーマ一覧から配色だけ取り込んだ状態は
   /// どのプリセットとも一致しないため、IDだけでは復元できない。
@@ -40,9 +47,8 @@ class ThemeService extends ChangeNotifier {
     return _rescueCachedResult;
   }
 
-
   static ColorScheme activeColorScheme = ColorScheme.fromSeed(
-    seedColor: const Color(0xFFFF5C7A),
+    seedColor: AppThemePreset.defaultLight.accentColor,
   );
 
   /// [activeColorScheme]と同じく、BuildContextの無い所（描画クラス等）から
@@ -77,131 +83,116 @@ class ThemeService extends ChangeNotifier {
   // デフォルトで選択されるのはdefaultLight（見た目はライト基調）と
   // なるよう、リストの先頭に置く。
   //
-  // 配色の決まり（APCAのLc、test/theme_preset_readability_test.dartが見張る）：
-  // - 塗りのボタン・選択中の文字はライト・ダークとも白抜き。差し色はその
-  //   文字がLc 60以上で読める濃さへ同じ色相のまま沈め、ライトとダークで
-  //   同じ色にする。グリーンはエメラルドと、ライトブルーはくすみブルーと
-  //   見分けがつくよう色相をずらした。
-  // - アクセントの文字・アイコン色は、パネル背景・メニュー背景の上で
-  //   ライトLc 75以上・ダークLc 70以上になる同じ色相の濃淡。
-  // - 更新マーク色は背景の上でライトLc 50以上・ダークLc 60以上で、差し色と
-  //   見分けがつく色（琥珀色が差し色に近い黄・橙は青緑、グリーンは朱色）。
-  // 配色を変えたら、以前の配色を版としてprevious_theme_presets.dartへ足すこと
-  // （手を加えていない保存済みのテーマを新しい配色にするため）。
+  // 組み込み28種の元の配色を正規値として保持する。
+  // 比較用の代替配色を元の配色へ誤適用しないよう、全9色を
+  // test/built_in_theme_original_palette_test.dart で固定検証する。
+  // 保存済みの編集版は現行の永続化仕様どおり保持する。
   static const List<AppThemePreset> _builtInPresets = [
     AppThemePreset.defaultLight, // 赤（ライト・既定選択）
     AppThemePreset.defaultDark, // 赤（ダーク）
     AppThemePreset(
       id: 'orange_light',
       name: 'オレンジ（ライト）',
-      accentColor: Color(0xFFEB7826),
+      accentColor: Color(0xFFFF8A3D),
       textColor: Color(0xFF2E2013),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFF2E2013),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFFFF6EE),
       menuBgColor: Color(0xFFFFFFFF),
-      selectionColor: Color(0xFFEB7826),
-      updateMarkColor: Color(0xFF0FAA93),
-      accentTextColor: Color(0xFF9E4A05),
+      selectionColor: Color(0xFFFF8A3D),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'orange_dark',
       name: 'オレンジ（ダーク）',
-      accentColor: Color(0xFFEB7826),
+      accentColor: Color(0xFFFF8A3D),
       textColor: Color(0xFFFAF0E6),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFFFAF0E6),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF1F160E),
       menuBgColor: Color(0xFF2A1D12),
-      selectionColor: Color(0xFFEB7826),
-      updateMarkColor: Color(0xFF24CAAF),
-      accentTextColor: Color(0xFFFFB68D),
+      selectionColor: Color(0xFFFF8A3D),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'yellow_light',
       name: 'イエロー（ライト）',
-      accentColor: Color(0xFFBF910C),
+      accentColor: Color(0xFFF2B90F),
       textColor: Color(0xFF2E2A12),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFF2E2A12),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFFFFBEA),
       menuBgColor: Color(0xFFFFFFFF),
-      selectionColor: Color(0xFFBF910C),
-      updateMarkColor: Color(0xFF0FAF97),
-      accentTextColor: Color(0xFF846302),
+      selectionColor: Color(0xFFF2B90F),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'yellow_dark',
       name: 'イエロー（ダーク）',
-      accentColor: Color(0xFFBF910C),
+      accentColor: Color(0xFFF2B90F),
       textColor: Color(0xFFFAF6E6),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFFFAF6E6),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF1E1B0C),
       menuBgColor: Color(0xFF292410),
-      selectionColor: Color(0xFFBF910C),
-      updateMarkColor: Color(0xFF27CBB1),
-      accentTextColor: Color(0xFFF0C152),
+      selectionColor: Color(0xFFF2B90F),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'green_light',
       name: 'グリーン（ライト）',
-      accentColor: Color(0xFF46AD2B),
+      accentColor: Color(0xFF3DDC97),
       textColor: Color(0xFF16291F),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFF16291F),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFF1FBF6),
       menuBgColor: Color(0xFFFFFFFF),
-      selectionColor: Color(0xFF46AD2B),
-      updateMarkColor: Color(0xFFFF5A1F),
-      accentTextColor: Color(0xFF237406),
+      selectionColor: Color(0xFF3DDC97),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'green_dark',
       name: 'グリーン（ダーク）',
-      accentColor: Color(0xFF46AD2B),
+      accentColor: Color(0xFF3DDC97),
       textColor: Color(0xFFF1FAF5),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFFF1FAF5),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF101A15),
       menuBgColor: Color(0xFF17251D),
-      selectionColor: Color(0xFF46AD2B),
-      updateMarkColor: Color(0xFFFE9C7F),
-      accentTextColor: Color(0xFF78DE61),
+      selectionColor: Color(0xFF3DDC97),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'blue_light',
       name: 'ブルー（ライト）',
-      accentColor: Color(0xFF2F9DF5),
+      accentColor: Color(0xFF3AA6FF),
       textColor: Color(0xFF16232E),
       buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFF16232E),
       selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFFF1F7FC),
       menuBgColor: Color(0xFFFFFFFF),
-      selectionColor: Color(0xFF2F9DF5),
-      updateMarkColor: Color(0xFFCB8902),
-      accentTextColor: Color(0xFF0464A5),
+      selectionColor: Color(0xFF3AA6FF),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'blue_dark',
       name: 'ブルー（ダーク）',
-      accentColor: Color(0xFF2F9DF5),
+      accentColor: Color(0xFF3AA6FF),
       textColor: Color(0xFFF2F6FA),
       buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFF2F6FA),
       selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF11181F),
       menuBgColor: Color(0xFF182430),
-      selectionColor: Color(0xFF2F9DF5),
+      selectionColor: Color(0xFF3AA6FF),
       updateMarkColor: Color(0xFFFFB020),
-      accentTextColor: Color(0xFF97CCFF),
     ),
     AppThemePreset(
       id: 'indigo_light',
@@ -215,8 +206,7 @@ class ThemeService extends ChangeNotifier {
       panelBgColor: Color(0xFFF3F3FC),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF5C6BFF),
-      updateMarkColor: Color(0xFFC88708),
-      accentTextColor: Color(0xFF4248DA),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'indigo_dark',
@@ -230,7 +220,6 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF1C1E2D),
       selectionColor: Color(0xFF5C6BFF),
       updateMarkColor: Color(0xFFFFB020),
-      accentTextColor: Color(0xFFB6C4FE),
     ),
     AppThemePreset(
       id: 'purple_light',
@@ -243,8 +232,7 @@ class ThemeService extends ChangeNotifier {
       panelBgColor: Color(0xFFF8F1FC),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFB15CFF),
-      updateMarkColor: Color(0xFFC68603),
-      accentTextColor: Color(0xFF8324CB),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'purple_dark',
@@ -258,212 +246,205 @@ class ThemeService extends ChangeNotifier {
       menuBgColor: Color(0xFF241C2D),
       selectionColor: Color(0xFFB15CFF),
       updateMarkColor: Color(0xFFFFB020),
-      accentTextColor: Color(0xFFD8B9FE),
     ),
     // ここから追加のパステル・ニュアンスカラー。
     AppThemePreset(
       id: 'pink_light',
       name: 'ピンク（ライト）',
-      accentColor: Color(0xFFEB6CA1),
+      accentColor: Color(0xFFFF7EB3),
       textColor: Color(0xFF33202A),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFF33202A),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFFFF1F6),
       menuBgColor: Color(0xFFFFFFFF),
-      selectionColor: Color(0xFFEB6CA1),
-      updateMarkColor: Color(0xFFC8880B),
-      accentTextColor: Color(0xFFA72C66),
+      selectionColor: Color(0xFFFF7EB3),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'pink_dark',
       name: 'ピンク（ダーク）',
-      accentColor: Color(0xFFEB6CA1),
+      accentColor: Color(0xFFFF7EB3),
       textColor: Color(0xFFFAEEF3),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFFFAEEF3),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF1F1418),
       menuBgColor: Color(0xFF2B1B22),
-      selectionColor: Color(0xFFEB6CA1),
+      selectionColor: Color(0xFFFF7EB3),
       updateMarkColor: Color(0xFFFFB020),
-      accentTextColor: Color(0xFFFFB0CD),
     ),
     AppThemePreset(
       id: 'light_purple_light',
       name: 'ライトパープル（ライト）',
-      accentColor: Color(0xFFA48ECB),
+      accentColor: Color(0xFFB39DDB),
       textColor: Color(0xFF272233),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFF272233),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFF6F2FC),
       menuBgColor: Color(0xFFFFFFFF),
-      selectionColor: Color(0xFFA48ECB),
-      updateMarkColor: Color(0xFFC78705),
-      accentTextColor: Color(0xFF69548C),
+      selectionColor: Color(0xFFB39DDB),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'light_purple_dark',
       name: 'ライトパープル（ダーク）',
-      accentColor: Color(0xFFA48ECB),
+      accentColor: Color(0xFFB39DDB),
       textColor: Color(0xFFF2EFF9),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFFF2EFF9),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF19171F),
       menuBgColor: Color(0xFF211E2C),
-      selectionColor: Color(0xFFA48ECB),
+      selectionColor: Color(0xFFB39DDB),
       updateMarkColor: Color(0xFFFFB020),
-      accentTextColor: Color(0xFFD2BCFD),
     ),
     AppThemePreset(
       id: 'light_blue_light',
       name: 'ライトブルー（ライト）',
-      accentColor: Color(0xFF2EA4C4),
+      accentColor: Color(0xFF90CAF9),
       textColor: Color(0xFF1D2733),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFF1D2733),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFF0F8FE),
       menuBgColor: Color(0xFFFFFFFF),
-      selectionColor: Color(0xFF2EA4C4),
-      updateMarkColor: Color(0xFFCC8A04),
-      accentTextColor: Color(0xFF056B83),
+      selectionColor: Color(0xFF90CAF9),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'light_blue_dark',
       name: 'ライトブルー（ダーク）',
-      accentColor: Color(0xFF2EA4C4),
+      accentColor: Color(0xFF90CAF9),
       textColor: Color(0xFFEDF5FB),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFFEDF5FB),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF141A1F),
       menuBgColor: Color(0xFF1C2530),
-      selectionColor: Color(0xFF2EA4C4),
+      selectionColor: Color(0xFF90CAF9),
       updateMarkColor: Color(0xFFFFB020),
-      accentTextColor: Color(0xFF68D5F6),
     ),
     AppThemePreset(
       id: 'emerald_light',
       name: 'エメラルドグリーン（ライト）',
-      accentColor: Color(0xFF01AC77),
+      accentColor: Color(0xFF10B981),
       textColor: Color(0xFF13291F),
       buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFF13291F),
       selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFFECFAF4),
       menuBgColor: Color(0xFFFFFFFF),
-      selectionColor: Color(0xFF01AC77),
-      updateMarkColor: Color(0xFFCC8A04),
-      accentTextColor: Color(0xFF05704D),
+      selectionColor: Color(0xFF10B981),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'emerald_dark',
       name: 'エメラルドグリーン（ダーク）',
-      accentColor: Color(0xFF01AC77),
+      accentColor: Color(0xFF10B981),
       textColor: Color(0xFFE9FAF3),
       buttonTextColor: Color(0xFFFFFFFF),
       menuTextColor: Color(0xFFE9FAF3),
       selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF0D1815),
       menuBgColor: Color(0xFF13221D),
-      selectionColor: Color(0xFF01AC77),
+      selectionColor: Color(0xFF10B981),
       updateMarkColor: Color(0xFFFFB020),
-      accentTextColor: Color(0xFF57DDA5),
     ),
     // くすみカラー（色名は「くすみ（カラー名）」表記）。
     AppThemePreset(
       id: 'dusty_pink_light',
       name: 'くすみピンク（ライト）',
-      accentColor: Color(0xFFC08A90),
+      accentColor: Color(0xFFD8A0A6),
       textColor: Color(0xFF2E2325),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFF2E2325),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFFAF2F2),
       menuBgColor: Color(0xFFFFFFFF),
-      selectionColor: Color(0xFFC08A90),
-      updateMarkColor: Color(0xFFC88708),
-      accentTextColor: Color(0xFF825157),
+      selectionColor: Color(0xFFD8A0A6),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'dusty_pink_dark',
       name: 'くすみピンク（ダーク）',
-      accentColor: Color(0xFFC08A90),
+      accentColor: Color(0xFFD8A0A6),
       textColor: Color(0xFFF5ECED),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFFF5ECED),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF1C1516),
       menuBgColor: Color(0xFF261C1E),
-      selectionColor: Color(0xFFC08A90),
+      selectionColor: Color(0xFFD8A0A6),
       updateMarkColor: Color(0xFFFFB020),
-      accentTextColor: Color(0xFFF0B8BE),
     ),
     AppThemePreset(
       id: 'dusty_blue_light',
       name: 'くすみブルー（ライト）',
-      accentColor: Color(0xFF809CB6),
+      accentColor: Color(0xFF8DA9C4),
       textColor: Color(0xFF212B33),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFF212B33),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFF1F5F9),
       menuBgColor: Color(0xFFFFFFFF),
-      selectionColor: Color(0xFF809CB6),
-      updateMarkColor: Color(0xFFC8880B),
-      accentTextColor: Color(0xFF48627A),
+      selectionColor: Color(0xFF8DA9C4),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'dusty_blue_dark',
       name: 'くすみブルー（ダーク）',
-      accentColor: Color(0xFF809CB6),
+      accentColor: Color(0xFF8DA9C4),
       textColor: Color(0xFFEDF1F5),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFFEDF1F5),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF151A1E),
       menuBgColor: Color(0xFF1C232B),
-      selectionColor: Color(0xFF809CB6),
+      selectionColor: Color(0xFF8DA9C4),
       updateMarkColor: Color(0xFFFFB020),
-      accentTextColor: Color(0xFFAECAE6),
     ),
     AppThemePreset(
       id: 'dusty_green_light',
       name: 'くすみグリーン（ライト）',
-      accentColor: Color(0xFF79A187),
+      accentColor: Color(0xFF8FB89D),
       textColor: Color(0xFF20281F),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFF20281F),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFF2F8F3),
       menuBgColor: Color(0xFFFFFFFF),
-      selectionColor: Color(0xFF79A187),
-      updateMarkColor: Color(0xFFCC8A04),
-      accentTextColor: Color(0xFF446A52),
+      selectionColor: Color(0xFF8FB89D),
+      updateMarkColor: Color(0xFFFFB020),
     ),
     AppThemePreset(
       id: 'dusty_green_dark',
       name: 'くすみグリーン（ダーク）',
-      accentColor: Color(0xFF79A187),
+      accentColor: Color(0xFF8FB89D),
       textColor: Color(0xFFEEF4EF),
-      buttonTextColor: Color(0xFFFFFFFF),
+      buttonTextColor: Color(0xFF17161C),
       menuTextColor: Color(0xFFEEF4EF),
-      selectionTextColor: Color(0xFFFFFFFF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF151A16),
       menuBgColor: Color(0xFF1D251F),
-      selectionColor: Color(0xFF79A187),
+      selectionColor: Color(0xFF8FB89D),
       updateMarkColor: Color(0xFFFFB020),
-      accentTextColor: Color(0xFFA7D1B5),
     ),
   ];
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    var upgradedAny = false;
+    final shouldRestoreBuiltIns =
+        prefs.readBool(_originalBuiltInPaletteRestoreKey) != true;
+    final originalBuiltIns = {
+      for (final preset in _builtInPresets) preset.id: preset,
+    };
     final raw = prefs.readStringList(_prefsPresetsKey);
+    // A corrupt saved entry must not be rewritten during initialization.
+    // Startup recovery tests require the original bytes to remain available
+    // for diagnostics and future recovery. Defer migration in that case.
+    var storedDataIsValid = true;
     if (raw == null || raw.isEmpty) {
       _presets.addAll(_builtInPresets);
     } else {
@@ -472,11 +453,15 @@ class ThemeService extends ChangeNotifier {
           final decoded = jsonDecode(encoded);
           if (decoded is Map<String, dynamic>) {
             _presets.add(AppThemePreset.fromJson(decoded));
+          } else {
+            storedDataIsValid = false;
           }
         } on FormatException {
           // Keep malformed persisted JSON untouched; skip it for this session.
+          storedDataIsValid = false;
         } on TypeError {
           // Isolate structurally invalid presets instead of aborting startup.
+          storedDataIsValid = false;
         }
       }
       // 保存済みプリセット一覧に、組み込みプリセット（パステル・
@@ -484,18 +469,22 @@ class ThemeService extends ChangeNotifier {
       // 追加しない。プリセット名は同一IDであれば保存済みデータ側が優先
       // されるため、名称を変更したい場合はプリセットの削除→再度組み込み
       // 一覧から選び直すことで反映できる）。
-      // 組み込みテーマの配色を見直したので、以前の配色のまま（利用者が
-      // 手を加えていない）組み込みテーマは新しい配色にする。
-      for (var i = 0; i < _presets.length; i++) {
-        final upgraded = _upgradedBuiltIn(_presets[i], _presets[i].id);
-        if (upgraded != null) {
-          _presets[i] = upgraded;
-          upgradedAny = true;
-        }
-      }
       final existingIds = _presets.map((p) => p.id).toSet();
       final missing = _builtInPresets.where((p) => !existingIds.contains(p.id));
       if (missing.isNotEmpty) _presets.addAll(missing);
+    }
+    if (shouldRestoreBuiltIns) {
+      // The built-in ID denotes a shipped palette, even when an older
+      // revision was written to SharedPreferences. Restore its original
+      // colors in the same slot, while keeping the favorite flag and list
+      // order. User-created presets with independent IDs are never modified.
+      for (var i = 0; i < _presets.length; i++) {
+        final stored = _presets[i];
+        final original = originalBuiltIns[stored.id];
+        if (original != null) {
+          _presets[i] = original.copyWith(isFavorite: stored.isFavorite);
+        }
+      }
     }
     // 現在の色は「一覧のどれか」とは限らないため、保存したJSONから復元する。
     final currentJson = prefs.readString(_prefsCurrentJsonKey);
@@ -512,59 +501,29 @@ class ThemeService extends ChangeNotifier {
         // Structurally invalid current theme must not abort app startup.
       }
     }
+    if (currentJson != null && restoredCurrent == null) {
+      storedDataIsValid = false;
+    }
     if (restoredCurrent != null) {
-      // 組み込みテーマそのもの（編集中）はそのIDで、一覧から配色だけ
-      // 取り込んだ現在の色はどの組み込みテーマの以前の配色と同じかで探す。
-      final restored = restoredCurrent;
-      final upgraded = restored.id == customCurrentId
-          ? kPreviousBuiltInThemeColors.keys
-                .map((id) => _upgradedBuiltIn(restored, id))
-                .nonNulls
-                .firstOrNull
-          : _upgradedBuiltIn(restored, restored.id);
-      if (upgraded != null) upgradedAny = true;
-      _current = upgraded ?? restored;
+      // Only an explicitly selected built-in should follow the rollback.
+      // A color-sampled/current-custom theme is a separate saved creation,
+      // so preserve all of its foreground tokens exactly.
+      final original = shouldRestoreBuiltIns
+          ? originalBuiltIns[restoredCurrent.id]
+          : null;
+      _current = original == null
+          ? restoredCurrent
+          : original.copyWith(isFavorite: restoredCurrent.isFavorite);
     } else if (_presets.isNotEmpty) {
       _current = _presets.first;
     }
-    if (upgradedAny) await _persist();
-  }
-
-  /// [preset]が組み込みテーマ[builtInId]の以前のどれかの版の配色のまま
-  /// （利用者が手を加えていない）なら、新しい配色にしたものを返す。
-  /// ID・名前・お気に入りはそのまま。
-  static AppThemePreset? _upgradedBuiltIn(
-    AppThemePreset preset,
-    String builtInId,
-  ) {
-    final versions = kPreviousBuiltInThemeColors[builtInId];
-    if (versions == null) return null;
-    final colours = [
-      preset.accentColor.toARGB32(),
-      preset.textColor.toARGB32(),
-      preset.buttonTextColor.toARGB32(),
-      preset.menuTextColor.toARGB32(),
-      preset.selectionTextColor.toARGB32(),
-      preset.panelBgColor.toARGB32(),
-      preset.menuBgColor.toARGB32(),
-      preset.selectionColor.toARGB32(),
-      preset.updateMarkColor.toARGB32(),
-      preset.accentTextColor?.toARGB32(),
-    ];
-    final untouched = versions.any((previous) {
-      for (var i = 0; i < colours.length; i++) {
-        if (colours[i] != previous[i]) return false;
-      }
-      return true;
-    });
-    if (!untouched) return null;
-    return _builtInPresets
-        .firstWhere((p) => p.id == builtInId)
-        .copyWith(
-          id: preset.id,
-          name: preset.name,
-          isFavorite: preset.isFavorite,
-        );
+    if (shouldRestoreBuiltIns && storedDataIsValid) {
+      // Persist before marking the migration. Never rewrite a malformed
+      // theme entry or current JSON on startup: a later recovery attempt
+      // still needs the original stored bytes.
+      await _persist();
+      await prefs.setBool(_originalBuiltInPaletteRestoreKey, true);
+    }
   }
 
   Future<void> _persist() async {
@@ -712,6 +671,15 @@ class ThemeService extends ChangeNotifier {
       seedColor: preset.accentColor,
       brightness: brightness,
     );
+    // Error labels are not a separate user-configurable color. Preserve
+    // Material's semantic error color when readable, but adapt it to the
+    // actual user-selected opaque panel and popup backgrounds otherwise.
+    final readableError = readableThemeError(
+      seedScheme.error,
+      panelColor,
+      popupColor,
+      preset.textColor,
+    );
     // 差し色を変えたら差し色だけが変わるよう、fromSeedが差し色から作る
     // ほかの色は、それぞれ対応する設定から作り直す。選択色の淡い色と
     // 3つ目の色は選択色から（組み込みテーマは選択色＝差し色なので同じ値）、
@@ -724,11 +692,20 @@ class ThemeService extends ChangeNotifier {
     Color towardText(double t) => Color.lerp(panelColor, surfaceInk, t)!;
     final light = brightness == Brightness.light;
     final scheme = seedScheme.copyWith(
+      error: readableError,
+      onError: contrastingForeground(readableError, seedScheme.onError),
       primary: accentColor,
       onPrimary: preset.buttonTextColor,
+      primaryContainer: Color.alphaBlend(
+        accentColor.withValues(alpha: 0.16),
+        popupColor,
+      ),
       secondary: selectionColor,
       onSecondary: preset.selectionTextColor,
-      secondaryContainer: selectionSeedScheme.secondaryContainer,
+      secondaryContainer: Color.alphaBlend(
+        selectionColor.withValues(alpha: 0.16),
+        popupColor,
+      ),
       secondaryFixed: selectionSeedScheme.secondaryFixed,
       secondaryFixedDim: selectionSeedScheme.secondaryFixedDim,
       onSecondaryFixed: selectionSeedScheme.onSecondaryFixed,
@@ -815,6 +792,7 @@ class ThemeService extends ChangeNotifier {
       textTheme: textTheme,
       extensions: [AccentTextTheme(accentText)],
       primaryTextTheme: textTheme,
+      iconTheme: IconThemeData(color: preset.textColor),
       scaffoldBackgroundColor: preset.panelBgColor,
       // InkSparkle（Material Youの光るリップル）は「いかにも最新Android技術デモ」
       // 感が強く、GPU負荷も高いため、低スペック端末を考慮しつつ落ち着いた
@@ -851,6 +829,7 @@ class ThemeService extends ChangeNotifier {
       // Match text/icon foreground to the same menu token as the top bar.
       popupMenuTheme: PopupMenuThemeData(
         color: popupColor,
+        surfaceTintColor: popupColor,
         textStyle: textTheme.bodyMedium?.copyWith(color: menuForeground),
         iconColor: menuForeground,
       ),
@@ -874,15 +853,17 @@ class ThemeService extends ChangeNotifier {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),
-          textStyle: textTheme.labelLarge?.copyWith(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-            fontWeight: FontWeight.w700,
-          ) ?? const TextStyle(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle:
+              textTheme.labelLarge?.copyWith(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+                fontWeight: FontWeight.w700,
+              ) ??
+              const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+                fontWeight: FontWeight.w700,
+              ),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -999,26 +980,33 @@ class ThemeService extends ChangeNotifier {
         actionTextColor: accentText,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
+          side: BorderSide.none,
         ),
       ),
       // Flutter既定のツールチップは下地が90%の不透明度で、後ろの画面が
-      // 透ける。下地は不透明な反転色（本文の文字色に近い色）、文字は
-      // パネル背景色で、どちらもテーマ・外観の色から作る。
+      // 透ける。色と形は既定のまま、不透明にする。
       tooltipTheme: TooltipThemeData(
+        textStyle: textTheme.bodySmall?.copyWith(color: preset.menuTextColor),
         decoration: BoxDecoration(
-          color: scheme.inverseSurface,
+          color: popupColor,
           borderRadius: const BorderRadius.all(Radius.circular(4)),
-        ),
-        textStyle: textTheme.bodySmall?.copyWith(
-          color: scheme.onInverseSurface,
         ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: preset.menuBgColor,
         selectedColor: selectionColor,
-        secondaryLabelStyle: textTheme.labelLarge?.copyWith(
-          color: preset.selectionTextColor,
+        // RawChip resolves a WidgetStateColor for every chip type. A static
+        // secondaryLabelStyle reaches ChoiceChip but misses Filter/InputChip.
+        labelStyle: textTheme.labelLarge?.copyWith(
+          color: WidgetStateColor.resolveWith((states) {
+            // RawChip applies the standard disabled opacity while painting.
+            if (states.contains(WidgetState.disabled)) return preset.textColor;
+            return states.contains(WidgetState.selected)
+                ? preset.selectionTextColor
+                : preset.menuTextColor;
+          }),
         ),
+        checkmarkColor: preset.selectionTextColor,
         // 完全な丸み（ピル型）：日本のアプリでよく使われる柔らかいタグ・
         // フィルターチップの形状。
         shape: const StadiumBorder(),
@@ -1029,9 +1017,8 @@ class ThemeService extends ChangeNotifier {
       // Flutter's normal themed fill (no forced contrast correction).
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith<Color?>(
-          (states) => states.contains(WidgetState.selected)
-              ? selectionColor
-              : null,
+          (states) =>
+              states.contains(WidgetState.selected) ? selectionColor : null,
         ),
         checkColor: WidgetStatePropertyAll(preset.selectionTextColor),
       ),
@@ -1063,15 +1050,18 @@ class ThemeService extends ChangeNotifier {
           ),
           backgroundColor: WidgetStateProperty.resolveWith<Color?>(
             (states) => states.contains(WidgetState.selected)
-                ? selectionColor : preset.menuBgColor,
+                ? selectionColor
+                : preset.menuBgColor,
           ),
           foregroundColor: WidgetStateProperty.resolveWith<Color?>(
             (states) => states.contains(WidgetState.selected)
-                ? preset.selectionTextColor : preset.textColor,
+                ? preset.selectionTextColor
+                : preset.textColor,
           ),
           iconColor: WidgetStateProperty.resolveWith<Color?>(
             (states) => states.contains(WidgetState.selected)
-                ? preset.selectionTextColor : preset.textColor,
+                ? preset.selectionTextColor
+                : preset.textColor,
           ),
         ),
       ),
@@ -1080,13 +1070,15 @@ class ThemeService extends ChangeNotifier {
         iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>(
           (states) => IconThemeData(
             color: states.contains(WidgetState.selected)
-                ? preset.selectionTextColor : preset.textColor,
+                ? preset.selectionTextColor
+                : preset.textColor,
           ),
         ),
         labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>(
           (states) => textTheme.labelMedium?.copyWith(
             color: states.contains(WidgetState.selected)
-                ? preset.selectionTextColor : preset.textColor,
+                ? preset.selectionTextColor
+                : preset.textColor,
           ),
         ),
       ),

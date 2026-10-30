@@ -1,8 +1,9 @@
+import '../home/widgets/work_folder_move_sheet.dart';
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -25,7 +26,7 @@ import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/duplicate_name.dart';
 import '../../utils/folder_tree.dart';
-import '../../widgets/scrollable_sheet_body.dart';
+import 'widgets/project_playback_status.dart';
 import '../home/widgets/project_list_widget.dart'
     show showMaterialIncludeDialog, buildFontShareBundle;
 import '../../config/accent_text_theme.dart';
@@ -52,10 +53,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   // プレビューと再生コントロールのみを全画面表示する
   // （タイムラインモードのプレビュー全画面化と同等の機能）。
   bool _isPreviewFullscreen = false;
+  final _fullscreenStatusScroll = ScrollController();
+  final _fullscreenPageScroll = ScrollController();
 
   @override
   void dispose() {
     _timer?.cancel();
+    _fullscreenStatusScroll.dispose();
+    _fullscreenPageScroll.dispose();
     _previewImage?.dispose();
     super.dispose();
   }
@@ -172,26 +177,94 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     // （タイムラインモードのプレビュー全画面化と同等）。
     if (_isPreviewFullscreen) {
       final theme = context.watch<ThemeService>().current;
-      return Scaffold(
-        backgroundColor: theme.panelBgColor,
-        body: SafeArea(
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  icon: Icon(Icons.fullscreen_exit, color: theme.textColor),
-                  tooltip: l10n.projectDetailFullscreenCloseTooltip,
-                  onPressed: () => setState(() => _isPreviewFullscreen = false),
-                ),
+      void exitFullscreen() => setState(() => _isPreviewFullscreen = false);
+      Widget exitButton() => IconButton(
+        key: const Key('projectDetailFullscreenExit'),
+        autofocus: true,
+        constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+        visualDensity: VisualDensity.standard,
+        icon: Icon(Icons.fullscreen_exit, color: theme.textColor),
+        tooltip: l10n.projectDetailFullscreenCloseTooltip,
+        onPressed: exitFullscreen,
+      );
+      Widget preview() => KeyedSubtree(
+        key: const Key('projectDetailFullscreenImage'),
+        child: _buildPreviewImage(project, showOverlayButtons: false),
+      );
+      Widget transport() => SizedBox(
+        key: const Key('projectDetailFullscreenTransport'),
+        height: 48,
+        child: _buildPlaybackBar(projectService, flat, project),
+      );
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop && mounted) exitFullscreen();
+        },
+        child: Scaffold(
+          backgroundColor: theme.panelBgColor,
+          body: SafeArea(
+            child: Focus(
+              canRequestFocus: false,
+              onKeyEvent: (_, event) {
+                if (event is KeyDownEvent &&
+                    event.logicalKey == LogicalKeyboardKey.escape) {
+                  exitFullscreen();
+                  return KeyEventResult.handled;
+                }
+                return KeyEventResult.ignored;
+              },
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxHeight < 208) {
+                    return SingleChildScrollView(
+                      controller: _fullscreenPageScroll,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: exitButton(),
+                          ),
+                          SizedBox(height: 64, child: preview()),
+                          _buildPlaybackStatus(flat, project),
+                          _buildSeekBar(flat),
+                          transport(),
+                        ],
+                      ),
+                    );
+                  }
+                  // Reserve a useful image and keep transport/seek reachable.
+                  // Only unusually tall status text scrolls in the short view.
+                  final statusMaxHeight = (constraints.maxHeight - 48 - 48 - 64)
+                      .clamp(48.0, double.infinity);
+                  return Column(
+                    children: [
+                      Expanded(child: preview()),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxHeight: statusMaxHeight),
+                        child: SingleChildScrollView(
+                          key: const Key('projectDetailFullscreenStatusScroll'),
+                          controller: _fullscreenStatusScroll,
+                          primary: false,
+                          child: _buildPlaybackStatus(flat, project),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 48,
+                        child: Row(
+                          children: [
+                            exitButton(),
+                            Expanded(child: _buildSeekBar(flat)),
+                          ],
+                        ),
+                      ),
+                      transport(),
+                    ],
+                  );
+                },
               ),
-              Expanded(
-                child: _buildPreviewImage(project, showOverlayButtons: false),
-              ),
-              _buildPlaybackStatus(flat, project),
-              _buildSeekBar(flat),
-              _buildPlaybackBar(projectService, flat, project),
-            ],
+            ),
           ),
         ),
       );
@@ -502,7 +575,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             color: theme.menuBgColor.withValues(alpha: 0.7),
             shape: const CircleBorder(),
             child: IconButton(
-              icon: Icon(Icons.fullscreen, color: theme.menuTextColor, size: 20),
+              key: const Key('projectDetailFullscreenButton'),
+              icon: Icon(
+                Icons.fullscreen,
+                color: theme.menuTextColor,
+                size: 20,
+              ),
               tooltip: l10n.projectDetailFullscreenTooltip,
               onPressed: () => setState(() => _isPreviewFullscreen = true),
             ),
@@ -520,68 +598,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     final currentFrame = flat.isEmpty
         ? 0
         : _frameIndex.clamp(0, flat.length - 1) + 1;
-    final currentSeconds = currentFrame == 0 ? 0.0 : (currentFrame - 1) / fps;
-    final totalSeconds = flat.length / fps;
-    final colors = Theme.of(context).colorScheme;
-    final timeStyle = TextStyle(
-      fontSize: 12,
-      color: colors.onSurfaceVariant,
-    );
-    final l10n = AppLocalizations.of(context)!;
-    // 文字を大きくした狭い画面では、数字を省略せずに縮めて1行に収める
-    // （収まる幅では元の大きさのまま並ぶ）。
-    Widget fit(Widget label) => Flexible(
-      child: FittedBox(fit: BoxFit.scaleDown, child: label),
-    );
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: SizedBox(
-        height: 34,
-        // Keep the two time labels flush with their original outer edges.
-        // spaceBetween distributes the THREE intervening gaps equally,
-        // independent of frame digit count and icon size.
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            fit(
-              Text(
-                '${currentSeconds.toStringAsFixed(1)}s',
-                key: const Key('projectDetailCurrentSeconds'),
-                style: timeStyle,
-              ),
-            ),
-            fit(
-              Text(
-                '$currentFrame/${flat.length}',
-                key: const Key('projectDetailFrameCounter'),
-                style: timeStyle,
-              ),
-            ),
-            IconButton(
-              key: const Key('projectDetailLoopButton'),
-              onPressed: () => setState(() => _loopPlayback = !_loopPlayback),
-              icon: Icon(
-                Icons.repeat,
-                color: _loopPlayback ? colors.primary : colors.onSurfaceVariant,
-              ),
-              tooltip: _loopPlayback
-                  ? l10n.timelineLoopOnTooltip
-                  : l10n.timelineLoopOffTooltip,
-              iconSize: 20,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints.tightFor(width: 34, height: 34),
-              visualDensity: VisualDensity.compact,
-            ),
-            fit(
-              Text(
-                '${totalSeconds.toStringAsFixed(1)}s',
-                key: const Key('projectDetailTotalSeconds'),
-                style: timeStyle,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return ProjectPlaybackStatus(
+      currentFrame: currentFrame,
+      totalFrames: flat.length,
+      fps: fps,
+      loopPlayback: _loopPlayback,
+      onToggleLoop: () => setState(() => _loopPlayback = !_loopPlayback),
     );
   }
 
@@ -736,50 +758,17 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   void _showMoveToFolderDialog(BuildContext context, ProjectService service) {
-    final l10n = AppLocalizations.of(context)!;
-    final folders = folderTree(service.folders);
-    showModalBottomSheet(
+    final tree = folderTree(service.folders);
+    showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => ScrollableSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                l10n.folderMoveToTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.folder_open),
-              title: Text(l10n.folderNone),
-              onTap: () {
-                service.moveToFolder(widget.projectId, null);
-                Navigator.pop(ctx);
-              },
-            ),
-            for (final (:folder, :depth) in folders)
-              ListTile(
-                contentPadding: folderTreeTilePadding(depth),
-                leading: Icon(
-                  Icons.folder,
-                  color: folder.color != null
-                      ? Color(folder.color!)
-                      : Theme.of(ctx).colorScheme.primary,
-                ),
-                title: Text(folder.name),
-                onTap: () {
-                  service.moveToFolder(widget.projectId, folder.id);
-                  Navigator.pop(ctx);
-                },
-              ),
-          ],
-        ),
+      builder: (_) => WorkFolderMoveSheet(
+        folders: [for (final entry in tree) entry.folder],
+        depths: {for (final entry in tree) entry.folder.id: entry.depth},
+        filename: service.projects
+            .where((p) => p.id == widget.projectId)
+            .first
+            .name,
+        onMove: (id) => service.moveToFolder(widget.projectId, id),
       ),
     );
   }

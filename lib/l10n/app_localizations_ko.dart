@@ -174,6 +174,17 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeWorksEmptyHint => '캔버스에서 동영상이나 GIF를 내보내면\n여기에 표시됩니다';
 
   @override
+  String get homeWorkFolderEmpty => '이 폴더에는 내보낸 작품이 없어요';
+
+  @override
+  String get homeSharedFolderEmpty => '이 폴더에는 공유된 프로젝트가 없어요';
+
+  @override
+  String homeDeleteFolderKeepContents(String name) {
+    return '\"$name\" 폴더를 삭제해요. 안의 항목은 목록으로 돌아가며 삭제되지 않아요.';
+  }
+
+  @override
   String get homeShareOpenWith => '공유・사진 앱 등으로 열기';
 
   @override
@@ -710,6 +721,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get folderManagementEmpty => '아직 폴더가 없습니다';
+
+  @override
+  String get folderCreateFailed => '폴더를 만들지 못했어요. 다시 시도해 주세요.';
+
+  @override
+  String get folderChangesSaveFailed => '폴더 변경 사항을 저장하지 못했어요. 다시 시도해 주세요.';
+
+  @override
+  String get folderChangesPartiallySaved =>
+      '일부 변경 사항만 저장됐어요. 목록을 확인하고 다시 시도해 주세요.';
 
   @override
   String get folderNameLabel => '폴더 이름';
@@ -1508,7 +1529,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      '작품을 범용 MP4 동영상으로 내보냅니다. 무료 버전은 내보낼 수 있는 길이에 제한(90초)이 있으며, 동영상 끝에 엔드카드(앱 로고)가 자동으로 추가됩니다. 알파 채널（배경의 투명 부분）을 유지한 채 내보낼 수 있는 동영상 형식입니다. 지원하는 재생 환경에서만 투명하게 재생됩니다. 다른 앱의 소재로 겹쳐서 사용하고 싶을 때 적합합니다. 애니메이션 GIF로 내보냅니다. 자동으로 반복 재생되는 형식이라 SNS 공유 등 가볍게 공유하고 싶을 때 적합합니다. 호환성을 중시한다면 AVI（Motion JPEG）로도 내보낼 수 있습니다. 특허・라이선스 면에서 안전한 코덱을 채택했지만 알파 채널（투명）은 지원하지 않으며, 기기에 따라 앱 내 미리보기가 되지 않을 수 있습니다（그 경우에도 「공유」에서 외부 플레이어로 재생할 수 있습니다）. 무료 회원은 프로젝트 길이에 90초까지의 상한이 있습니다（프리미엄 회원은 2시간）. 프레임 추가・복제로 상한을 넘어설 것 같으면 버튼을 탭한 순간 주의 대화상자가 표시되어, 실제로 90초를 넘지 않도록 되어 있습니다.';
+      '작품을 범용 MP4 동영상으로 내보냅니다. 무료 버전은 내보낼 수 있는 길이에 제한(90초)이 있으며, 동영상 끝에 엔드카드(앱 로고)가 자동으로 추가됩니다. 알파 채널（배경의 투명 부분）을 유지한 채 내보낼 수 있는 동영상 형식입니다. 지원하는 재생 환경에서만 투명하게 재생됩니다. 다른 앱의 소재로 겹쳐서 사용하고 싶을 때 적합합니다. 애니메이션 GIF로 내보냅니다. 자동으로 반복 재생되는 형식이라 SNS 공유 등 가볍게 공유하고 싶을 때 적합합니다. 호환성을 중시한다면 AVI（Motion JPEG）로도 내보낼 수 있습니다. 알파 채널（투명）은 지원하지 않으며, 기기에 따라 앱 내 미리보기가 되지 않을 수 있습니다（그 경우에도 「공유」에서 외부 플레이어로 재생할 수 있습니다）. 무료 회원은 프로젝트 길이에 90초까지의 상한이 있습니다（프리미엄 회원은 2시간）. 프레임 추가・복제로 상한을 넘어설 것 같으면 버튼을 탭한 순간 주의 대화상자가 표시되어, 실제로 90초를 넘지 않도록 되어 있습니다.';
 
   @override
   String get helpTransparentWebmTitle => '투명 WebM';
@@ -1518,14 +1539,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      '애니메이션・일러스트 작품을 YouTube 동영상으로 커뮤니티에 게시하고, 다른 사용자의 작품을 둘러볼 수 있는 기능입니다. 「신작」・「랭킹」・「팔로잉」 탭을 전환할 수 있으며, 작품 제목 또는 게시자 이름으로 검색할 수 있습니다. 태그 검색 모드로 전환하면 태그로 작품을 좁혀볼 수 있으며, 태그는 게시자 외의 사용자도 자유롭게 추가・삭제할 수 있습니다（게시자가 잠근 태그는 게시자 본인만 해제할 수 있습니다）. 태그를 탭하기만 해도 같은 태그의 작품으로 좁혀집니다. 작품 카드를 탭하면 드래그・크기 조절이 가능한 플로팅 미리보기 창이 열려 다른 화면을 조작하면서도 계속 시청할 수 있습니다. 「상세보기」 버튼으로 작품의 상세 화면（게시자・게시일・태그 편집・북마크・리포스트 등）을 열 수 있습니다. 게시자 이름 옆의 「팔로우」 버튼을 누르면 팔로우가 되어, 「팔로잉」 탭에서 그 작가의 게시물만 최신순으로 모아 볼 수 있습니다. 누군가 나를 팔로우하면 화면 오른쪽 위 종 모양 아이콘의 알림 목록에 표시됩니다. 자신의 팔로잉/팔로워 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 목록도 볼 수 있습니다. 다른 사람의 작품（자신의 게시물은 제외）은 「리포스트」 버튼으로 재게시할 수 있으며, 팔로우 중인 작가가 누군가의 작품을 리포스트하면 그 작품도 「게시일」과 「리포스트한 날짜」 중 더 최근인 쪽을 기준으로 「팔로잉」 탭에 섞여 표시됩니다（카드에 「○○님이 리포스트함」이라고 표시）. 북마크한 작품은 홈 화면의 「북마크됨」 탭에 모아서 표시되며, 게시자별 작품 목록 화면의 「북마크」 탭에서도 확인할 수 있습니다. 자신의 북마크 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 북마크 목록도 볼 수 있습니다. 부적절한 작품은 사유를 첨부해 신고할 수 있으며, 신고 후에는 해당 게시자를 차단할지 선택할 수 있습니다. 세로로 긴 동영상은 「세로 화면 모드」에서 연속 재생으로 시청할 수 있습니다. 하루에 게시할 수 있는 작품 수에는 상한이 있으며, 무료 회원은 하루 1개, 프리미엄 회원은 하루 3개까지입니다. 화면 오른쪽 위의 표시 필터 버튼（사선이 그어진 눈 아이콘）으로 보고 싶지 않은 작품을 숨길 수 있습니다. 「생성형 AI 이미지·동영상 포함」 작품을 숨기는 설정 외에도, 작품 제목만을 대상으로 하는 뮤트 제목과 작품 광장에서 작품에 붙은 태그만을 대상으로 하는 뮤트 태그（앞의 #은 무시됨）를 쉼표나 줄바꿈으로 구분해 등록할 수 있습니다. 이 필터는 신착・랭킹・팔로잉（리포스트 포함）・세로 화면 모드・게시자 페이지・작품 상세・북마크에 적용됩니다. 「생성형 AI 이미지·동영상 포함」은 게시할 때 게시자가 직접 표시하는 항목이며, 게시한 후에도 게시자 본인만 변경할 수 있습니다（「내 게시물」 또는 작품 상세 화면에서 변경）.';
+      '애니메이션・일러스트 작품을 YouTube 동영상으로 커뮤니티에 게시하고, 다른 사용자의 작품을 둘러볼 수 있는 기능입니다. 「신작」・「랭킹」・「팔로잉」 탭을 전환할 수 있으며, 작품 제목 또는 게시자 이름으로 검색할 수 있습니다. 태그 검색 모드로 전환하면 태그로 작품을 좁혀볼 수 있으며, 태그는 게시자 외의 사용자도 자유롭게 추가・삭제할 수 있습니다（게시자가 잠근 태그는 게시자 본인만 해제할 수 있습니다）. 태그를 탭하기만 해도 같은 태그의 작품으로 좁혀집니다. 작품 카드를 탭하면 드래그・크기 조절이 가능한 플로팅 미리보기 창이 열려 다른 화면을 조작하면서도 계속 시청할 수 있습니다. 「상세보기」 버튼으로 작품의 상세 화면（게시자・게시일・태그 편집・북마크・리포스트 등）을 열 수 있습니다. 게시자 이름 옆의 「팔로우」 버튼을 누르면 팔로우가 되어, 「팔로잉」 탭에서 그 작가의 게시물만 최신순으로 모아 볼 수 있습니다. 누군가 나를 팔로우하면 화면 오른쪽 위 종 모양 아이콘의 알림 목록에 표시됩니다. 자신의 팔로잉/팔로워 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 목록도 볼 수 있습니다. 다른 사람의 작품（자신의 게시물은 제외）은 「리포스트」 버튼으로 재게시할 수 있으며, 팔로우 중인 작가가 누군가의 작품을 리포스트하면 그 작품도 「게시일」과 「리포스트한 날짜」 중 더 최근인 쪽을 기준으로 「팔로잉」 탭에 섞여 표시됩니다（카드에 「○○님이 리포스트함」이라고 표시）. 북마크한 작품은 홈 화면의 「북마크됨」 탭에 모아서 표시되며, 게시자별 작품 목록 화면의 「북마크」 탭에서도 확인할 수 있습니다. 자신의 북마크 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 북마크 목록도 볼 수 있습니다. 부적절한 작품은 사유를 첨부해 신고할 수 있으며, 신고 후에는 해당 게시자를 차단할지 선택할 수 있습니다. 세로로 긴 동영상은 「세로 화면 모드」에서 연속 재생으로 시청할 수 있습니다. 하루에 게시할 수 있는 작품 수에는 상한이 있으며, 무료 회원은 하루 1개, 프리미엄 회원은 하루 3개까지입니다. 화면 오른쪽 위의 표시 필터 버튼（사선이 그어진 눈 아이콘）으로 보고 싶지 않은 작품을 숨길 수 있습니다. 「생성형 AI 이미지·동영상 포함」 작품을 숨기는 설정 외에도, 작품 제목만을 대상으로 하는 뮤트 제목과 작품 광장에서 작품에 붙은 태그만을 대상으로 하는 뮤트 태그를 「새로 추가」로 하나씩 등록하고 연필 아이콘으로 수정하거나 휴지통 아이콘으로 삭제할 수 있습니다. 쉼표나 #은 필요하지 않습니다. 이 필터는 신착・랭킹・팔로잉（리포스트 포함）・세로 화면 모드・게시자 페이지・작품 상세・북마크에 적용됩니다. 「생성형 AI 이미지·동영상 포함」은 게시할 때 게시자가 직접 표시하는 항목이며, 게시한 후에도 게시자 본인만 변경할 수 있습니다（「내 게시물」 또는 작품 상세 화면에서 변경）.';
 
   @override
   String get helpWatermarkEntryTitle => '워터마크';
 
   @override
   String get helpWatermarkEntryDesc =>
-      '내보낸 동영상・이미지에 자신의 서명이나 로고를 워터마크로 넣을 수 있는 프리미엄 전용 기능입니다. 위치・크기・불투명도를 조정할 수 있습니다. 타임라인의 공통 레이어 트랙에 배치한 워터마크를 탭하면 각도・크기・불투명도・표시 범위（루프 표시）를 언제든지 다시 편집할 수 있습니다. 등록할 때뿐 아니라 실제로 프로젝트에서 사용할 때도 세세하게 조정할 수 있습니다.';
+      '내보낸 동영상・이미지에 자신의 서명이나 로고를 워터마크로 넣을 수 있는 프리미엄 전용 기능입니다. 위치・크기・불투명도를 조정할 수 있습니다. 타임라인의 공통 레이어 트랙에 배치한 워터마크를 탭하면 각도・크기・불투명도・표시 범위（루프 표시）를 언제든지 다시 편집할 수 있습니다. 등록할 때뿐 아니라 실제로 프로젝트에서 사용할 때도 세세하게 조정할 수 있습니다. 워터마크를 추가하려면 타임라인의 \'소재 추가\' 메뉴에서 \'＋워터마크\'를 선택하세요.';
 
   @override
   String get helpPremiumEntryTitle => '프리미엄';
@@ -1763,7 +1784,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      '동영상・이미지를 내보내는 동안 진행 상황이 표시되며, 도중에 취소할 수도 있습니다. 내보내기에 걸리는 시간은 기기 성능에 따라 달라집니다.';
+      '\'프리셋\'에서 \'표준\', \'고화질\', \'커스텀\'를 선택할 수 있습니다. \'커스텀\'에서는 FPS를 조정할 수 있습니다. 동영상・이미지를 내보내는 동안 진행 상황이 표시되며, 도중에 취소할 수도 있습니다. 내보내기에 걸리는 시간은 기기 성능에 따라 달라집니다.';
 
   @override
   String get helpDrawingFilterTitle => '그리기 필터';
@@ -6197,6 +6218,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityFloatingPreviewPauseTooltip => '일시정지';
 
   @override
+  String get communityFloatingPreviewResizeTooltip => '미리보기 크기 조절';
+
+  @override
+  String get communityFloatingPreviewMoveHint =>
+      '드래그하거나 Alt + 방향키로 미리보기를 이동할 수 있습니다.';
+
+  @override
+  String get communityFloatingPreviewCompactHint => '이 작품은 상세 화면에서 볼 수 있습니다.';
+
+  @override
   String get communityReportDialogTitle => '작품 신고';
 
   @override
@@ -6253,47 +6284,15 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get communityFollowersPublicToggleTitle => '팔로잉/팔로워 목록 공개하기';
-
-  @override
-  String get communityFollowersPublicToggleDesc =>
-      '켜면 다른 사용자가 이 페이지에서 회원님의 팔로잉 및 팔로워 목록을 볼 수 있습니다. 기본값은 비공개입니다.';
-
-  @override
-  String get communityFollowersListTitle => '팔로워';
-
-  @override
-  String get communityFollowersListEmpty => '팔로워가 없습니다';
-
-  @override
-  String communityFollowersListHiddenNote(int count) {
-    return '$count명이 더 있지만, 본인 설정에 따라 표시되지 않습니다';
-  }
-
-  @override
   String communityAuthorFollowingCount(int count) {
     return '팔로잉 $count명';
   }
 
   @override
-  String get communityFollowingListTitle => '팔로잉';
-
-  @override
-  String get communityFollowingListEmpty => '팔로우한 사람이 없습니다';
-
-  @override
   String get communityFollowNotificationsTooltip => '알림';
 
   @override
-  String get communityFollowNotificationsTitle => '팔로우 알림';
-
-  @override
   String get communityFollowNotificationsEmpty => '알림이 없습니다';
-
-  @override
-  String communityFollowNotificationBody(String name) {
-    return '$name님이 회원님을 팔로우했습니다';
-  }
 
   @override
   String get communityNoWorksMessage => '작품이 없습니다';
@@ -6327,16 +6326,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityAuthorTabBookmarks => '북마크';
-
-  @override
-  String get communityBookmarksPublicToggleTitle => '북마크 목록 공개하기';
-
-  @override
-  String get communityBookmarksPublicToggleDesc =>
-      '켜면 다른 사용자가 이 페이지에서 회원님의 북마크 목록을 볼 수 있습니다. 기본값은 비공개입니다.';
-
-  @override
-  String get communityBookmarksPrivateNotice => '이 사용자는 북마크 목록을 비공개로 설정했습니다.';
 
   @override
   String get communityBookmarksEmptyMessage => '북마크한 작품이 없습니다';
@@ -6988,14 +6977,127 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityMutedWordsHint =>
-      '작품 제목에 이 문구가 포함된 작품을 표시하지 않습니다(투고자 이름・태그는 제외). 여러 개는 쉼표나 줄바꿈으로 구분해 입력하세요.';
+      '제목에 해당 단어가 포함된 작품을 숨깁니다(작성자 이름과 태그는 제외). 단어를 하나씩 추가하고 수정하세요.';
 
   @override
   String get communityMutedTags => '뮤트 태그';
 
   @override
   String get communityMutedTagsHint =>
-      '작품 광장에서 작품에 붙은 태그가 일치하는 작품을 표시하지 않습니다(앞의 #은 무시). 여러 개는 쉼표나 줄바꿈으로 구분해 입력하세요.';
+      '작품 광장에서 일치하는 태그가 있는 작품을 숨깁니다. 태그를 하나씩 추가하세요. #은 필요하지 않습니다.';
+
+  @override
+  String get communityMuteAddNew => '새로 추가';
+
+  @override
+  String get communityScrollToTop => '맨 위로';
+
+  @override
+  String get communityPostPeriodTitle => '게시 기간';
+
+  @override
+  String get communityDurationFilterTitle => '동영상 길이';
+
+  @override
+  String get communitySavedSearches => '저장한 검색';
+
+  @override
+  String get communitySignInPromptTitle => 'Google 계정으로 로그인';
+
+  @override
+  String get communitySignInPromptBody =>
+      '작품 게시와 관리, 팔로우, 북마크, 신고 기능을 사용하려면 Google 계정 연결이 필요합니다.';
+
+  @override
+  String get communitySignInPromptConnect => 'Google 계정 연결';
+
+  @override
+  String get communitySignInUnavailable => '이 개발 빌드에서는 Google 로그인이 설정되지 않았습니다.';
+
+  @override
+  String get communitySaveSearch => '현재 검색 저장';
+
+  @override
+  String get communitySavedSearchName => '검색 이름';
+
+  @override
+  String get communitySavedSearchLimit => '검색은 10개까지 저장할 수 있습니다';
+
+  @override
+  String get communitySavedSearchEmpty => '저장한 검색이 없습니다';
+
+  @override
+  String get communityDurationAny => '길이 제한 없음';
+
+  @override
+  String get communityDurationUpTo => 'N분 이하 (슬라이더)';
+
+  @override
+  String get communityDurationRange => 'N분 이상 N분 이하 (숫자 입력)';
+
+  @override
+  String get communityDurationMinutes => '분 이하';
+
+  @override
+  String get communityDurationMinimum => '최소 길이 (분)';
+
+  @override
+  String get communityDurationMaximum => '최대 길이 (분)';
+
+  @override
+  String get communityTagExactMatch => '검색어 완전 일치(끄면 부분 일치)';
+
+  @override
+  String get communityMinimumViews => '조회수';
+
+  @override
+  String get communityMinimumBookmarks => '북마크';
+
+  @override
+  String get communityPostPeriodAll => '전체 기간';
+
+  @override
+  String get communityPostPeriodToday => '오늘';
+
+  @override
+  String get communityPostPeriodWeek => '이번 주';
+
+  @override
+  String get communityPostPeriodMonth => '이번 달';
+
+  @override
+  String get communityPostPeriodYear => '올해';
+
+  @override
+  String get communityPostPeriodCustom => '날짜 범위 지정';
+
+  @override
+  String get communityPostPeriodChooseRange => '날짜 선택';
+
+  @override
+  String get communityMutedAuthors => '뮤트한 사용자';
+
+  @override
+  String get communityMutedAuthorsEmpty => '뮤트한 사용자가 없습니다';
+
+  @override
+  String get communityUnmuteAuthor => '이 사용자 뮤트 해제';
+
+  @override
+  String get communityMyWorksManagementHeading => '작품 관리';
+
+  @override
+  String get communityWorkTagsTitle => '작품 태그 관리';
+
+  @override
+  String get communityWorkTagsHint =>
+      '태그를 추가·수정·삭제할 수 있습니다. 잠그면 다른 사용자가 수정할 수 없습니다. 수정·삭제하려면 먼저 잠금을 해제하세요.';
+
+  @override
+  String get communityWorkEditTag => '태그 수정';
+
+  @override
+  String get communityWorkTagChangeFailed => '태그를 변경하지 못했습니다';
 
   @override
   String get communityContainsGenerativeAiImageVideo => '생성형 AI 이미지·동영상 포함';
@@ -7015,7 +7117,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityReloadTooltip => '새로고침';
 
   @override
-  String get communityGoogleSignInNotConfigured => 'Google 로그인이 아직 설정되지 않았습니다';
+  String get communityGoogleSignInNotConfigured => 'Google 계정이 연결되어 있지 않습니다';
 
   @override
   String get communityGoogleAccountBusy =>
@@ -7023,6 +7125,54 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityMyWorksTitle => '내 게시물';
+
+  @override
+  String get communityMyWorksViewAuthorPage => '내 작품 목록 페이지 보기';
+
+  @override
+  String get communityMyWorksAccountRequired => '작품 목록을 보려면 Google 계정을 연결하세요';
+
+  @override
+  String get communityMyWorksSettingsTitle => '작품 설정';
+
+  @override
+  String get communityMyWorksPublishInNiarim => 'NIARIM에 공개';
+
+  @override
+  String get communityMyWorksDeleteNiarim => 'NIARIM 작품 광장에서 이 작품 삭제';
+
+  @override
+  String get communityMyWorksDeleteConfirmTitle => '이 작품을 삭제할까요?';
+
+  @override
+  String get communityMyWorksDeleteConfirmBody =>
+      'NIARIM에서 작품을 영구 삭제합니다. YouTube 동영상은 삭제되지 않습니다. 이 작업은 취소할 수 없습니다.';
+
+  @override
+  String get communityMyWorksOpenYoutubeStudio => 'YouTube Studio에서 동영상 관리';
+
+  @override
+  String get communityMyWorksYoutubeStudioHelp =>
+      'YouTube 공개 상태와 설정은 YouTube Studio에서 관리합니다. NIARIM 공개 설정과 별개입니다.';
+
+  @override
+  String get communityMyWorksYoutubeOpenFailed => 'YouTube Studio를 열 수 없습니다';
+
+  @override
+  String communityMyWorksOperationFailed(String reason) {
+    return '작업 실패: $reason';
+  }
+
+  @override
+  String get communityMyWorksBulkPublish => '선택 항목 일괄 공개';
+
+  @override
+  String get communityMyWorksBulkHide => '선택 항목 일괄 비공개';
+
+  @override
+  String communityMyWorksBulkResult(int success, int failed) {
+    return '완료: $success / 실패: $failed';
+  }
 
   @override
   String get communityMyWorksAccountNotConnected => '연결된 Google 계정 없음';
@@ -7049,11 +7199,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String communitySignInFailed(String reason) {
     return 'Google 계정으로 로그인하지 못했습니다. $reason';
-  }
-
-  @override
-  String communityVisibilityChangeFailed(String reason) {
-    return '공개 상태를 변경하지 못했습니다. $reason';
   }
 
   @override
@@ -7777,22 +7922,81 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String folderColorName(String color) {
-    String _temp0 = intl.Intl.selectLogic(color, {
-      'pink': '분홍',
-      'orange': '주황',
-      'yellow': '노랑',
-      'green': '초록',
-      'blue': '파랑',
-      'purple': '보라',
-      'gray': '회색',
-      'other': '기본 색',
-    });
-    return '$_temp0';
-  }
-
-  @override
   String newProjectNumberRangeError(int min, int max) {
     return '$min~$max 사이의 숫자를 입력하세요';
   }
+
+  @override
+  String get communityThresholdAny => '조건 없음';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '조회수 $count회 이상';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '북마크 $count개 이상';
+  }
+
+  @override
+  String get communityTileSize => '작품 타일 크기';
+
+  @override
+  String get communityMutedWordsEmpty => '뮤트한 키워드가 없습니다';
+
+  @override
+  String get communityMutedTagsEmpty => '뮤트한 태그가 없습니다';
+
+  @override
+  String get communityMuteShort => '뮤트';
+
+  @override
+  String get communityMuteConfirmTitle => '이 사용자를 뮤트할까요?';
+
+  @override
+  String get communityMuteConfirmBody => '이 사용자의 작품이 표시되지 않습니다.';
+
+  @override
+  String get communityMuteConfirmAction => '뮤트';
+
+  @override
+  String get communityUnmuteConfirmTitle => '이 사용자의 뮤트를 해제할까요?';
+
+  @override
+  String get communityUnmuteConfirmAction => '해제';
+
+  @override
+  String get communityMuteNo => '아니요';
+
+  @override
+  String get communityMuteDone => '사용자를 뮤트했습니다';
+
+  @override
+  String get communityUnmuteDone => '사용자 뮤트를 해제했습니다';
+
+  @override
+  String get communityMilestoneNotificationsTitle => '알림';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return '팔로워가 $count명에 도달했습니다';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '「$title」 작품의 북마크가 $count개에 도달했습니다';
+  }
+
+  @override
+  String get communitySearchHistory => '검색 기록';
+
+  @override
+  String get communitySearchHistoryEmpty => '검색 기록이 없습니다';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => '저장된 검색 조건을 삭제할까요?';
+
+  @override
+  String get communitySortLabel => '정렬';
 }

@@ -50,6 +50,9 @@
   "homePermanentDeleteConfirmBody": "此操作无法撤销。",
   "homeWorksEmpty": "还没有导出的作品",
   "homeWorksEmptyHint": "从画布导出视频或GIF后，\n将显示在这里",
+  "homeWorkFolderEmpty": "此文件夹中没有导出的作品",
+  "homeSharedFolderEmpty": "此文件夹中没有共享项目",
+  "homeDeleteFolderKeepContents": "将删除文件夹“{name}”。其中的项目将返回主列表，不会被删除。",
   "homeShareOpenWith": "分享・用照片应用等打开",
   "homeWorkDeleteConfirmTitle": "要删除{name}吗？",
   "homeWorkDeleteConfirmBody": "设备中的导出文件将被删除，此操作无法撤销。",
@@ -235,6 +238,9 @@
   "folderManagementTitle": "文件夹管理",
   "folderManagementCreateNew": "新建",
   "folderManagementEmpty": "还没有文件夹",
+  "folderCreateFailed": "无法创建文件夹。请重试。",
+  "folderChangesSaveFailed": "无法保存文件夹更改。请重试。",
+  "folderChangesPartiallySaved": "仅保存了部分更改。请检查列表后重试。",
   "folderNameLabel": "文件夹名称",
   "folderMoveToTitle": "移至文件夹",
   "folderNone": "无文件夹",
@@ -511,12 +517,12 @@
   "helpTransferTitle": "数据迁移（.niatra）",
   "helpTransferDesc": "将设置、素材、笔刷、自动上色设置、主题、调色板（取色器・像素画专用）等整个应用环境一次性转移到其他设备的功能。可以通过复选框单独选择要转移的项目，还可以选择性地一并包含制作中的项目（所选项目会连同素材、字体一起完整转移）。如果只想传递单个项目，也可以改用「共享（.niashare）」。",
   "helpVideoExportTitle": "视频导出（MP4・WebM・GIF・AVI）",
-  "helpVideoExportDesc": "将作品导出为通用MP4视频。免费版可导出的时长有上限（90秒），且会在视频结尾自动添加片尾卡（应用Logo）。 可在保留Alpha通道（背景透明部分）的情况下导出的视频格式。仅在支持的播放环境中才能透明播放。适合作为素材叠加到其他应用中使用。 导出为动图GIF。由于会自动循环播放，适合在社交媒体上轻松分享的场景。 如果更看重兼容性，也可以导出为AVI（Motion JPEG）。所采用的编码器在专利和授权方面较为安全，但不支持Alpha通道（透明），部分设备上应用内预览可能无法使用（此时仍可通过「分享」用外部播放器播放）。 免费会员的项目长度上限为90秒（付费会员为2小时）。如果新增或复制帧会超过上限，在点击按钮的瞬间就会显示提示对话框，因此实际上不会超过90秒。",
+  "helpVideoExportDesc": "将作品导出为通用MP4视频。免费版可导出的时长有上限（90秒），且会在视频结尾自动添加片尾卡（应用Logo）。 可在保留Alpha通道（背景透明部分）的情况下导出的视频格式。仅在支持的播放环境中才能透明播放。适合作为素材叠加到其他应用中使用。 导出为动图GIF。由于会自动循环播放，适合在社交媒体上轻松分享的场景。 如果更看重兼容性，也可以导出为AVI（Motion JPEG）。不支持Alpha通道（透明），部分设备上应用内预览可能无法使用（此时仍可通过「分享」用外部播放器播放）。 免费会员的项目长度上限为90秒（付费会员为2小时）。如果新增或复制帧会超过上限，在点击按钮的瞬间就会显示提示对话框，因此实际上不会超过90秒。",
   "helpTransparentWebmTitle": "透明WebM",
   "helpCommunityTitle": "作品广场",
-  "helpCommunityDesc": "可以将动画・插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换「最新」「排行榜」「关注」三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击「查看详情」按钮可打开作品详情画面（投稿者、发布日期、标签编辑、书签、转发等）。点击投稿者名称旁的「关注」按钮即可将其加入关注列表，「关注」标签页会按时间顺序汇总显示该作者的作品。有人关注你时，会显示在画面右上角铃铛图标的通知列表中。你可以分别设置自己的关注列表/粉丝列表是否对所有用户公开（默认非公开），也可以查看已公开的其他用户的列表。除自己发布的作品外，都可以用「转发」按钮转发；当关注的作者转发了他人的作品时，该作品也会以「发布日期」和「转发日期」中较新的一方为基准，混入「关注」标签页中显示（卡片上会显示「○○转发了」）。加入书签的作品会汇总显示在主页的「书签」标签页中，也可以在投稿者作品列表画面的「书签」标签页中查看。可以设置自己的书签列表是否对其他用户公开（默认不公开），也可以查看已设为公开的其他用户的书签列表。对不当作品可以附上理由进行举报，举报提交后会询问你是否要屏蔽该投稿者。竖屏视频可以在「竖屏模式」中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏「包含生成式 AI 图像或视频」的作品外，还可以用逗号、顿号或换行分隔，登记只匹配作品标题的静音标题，以及只匹配作品在作品广场中所设标签的静音标签（开头的 # 会被忽略）。这些筛选适用于「最新」「排行榜」「关注」（含转发）、竖屏模式、投稿者页面、作品详情和书签。「包含生成式 AI 图像或视频」由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在「我的投稿」或作品详情画面中更改）。",
+  "helpCommunityDesc": "可以将动画・插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换「最新」「排行榜」「关注」三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击「查看详情」按钮可打开作品详情画面（投稿者、发布日期、标签编辑、收藏、转发等）。点击投稿者名称旁的「关注」按钮即可将其加入关注列表，「关注」标签页会按时间顺序汇总显示该作者的作品。有人关注你时，会显示在画面右上角铃铛图标的通知列表中。你可以分别设置自己的关注列表/粉丝列表是否对所有用户公开（默认非公开），也可以查看已公开的其他用户的列表。除自己发布的作品外，都可以用「转发」按钮转发；当关注的作者转发了他人的作品时，该作品也会以「发布日期」和「转发日期」中较新的一方为基准，混入「关注」标签页中显示（卡片上会显示「○○转发了」）。收藏的作品会汇总显示在主页的「已收藏」标签页中，也可以在投稿者作品列表画面的「收藏」标签页中查看。可以设置自己的收藏列表是否对其他用户公开（默认不公开），也可以查看已设为公开的其他用户的收藏列表。对不当作品可以附上理由进行举报，举报提交后会询问你是否要屏蔽该投稿者。竖屏视频可以在「竖屏模式」中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏「包含生成式 AI 图像或视频」的作品外，还可以通过「新增」逐条登记只匹配作品标题的静音标题，以及只匹配作品广场标签的静音标签。可用编辑图标修改或垃圾桶图标删除，无需输入逗号或 #。这些筛选适用于「最新」「排行榜」「关注」（含转发）、竖屏模式、投稿者页面、作品详情和收藏。「包含生成式 AI 图像或视频」由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在「我的投稿」或作品详情画面中更改）。",
   "helpWatermarkEntryTitle": "水印",
-  "helpWatermarkEntryDesc": "可以在导出的视频・图片上加入自己签名或Logo作为水印的高级会员专属功能。可以调整位置、大小、不透明度。点击时间轴共通图层轨道上放置的水印，随时都能重新编辑其角度、大小、不透明度、显示范围（循环显示）——不仅是首次设置时，在项目中实际使用时也能随时细致调整。",
+  "helpWatermarkEntryDesc": "可以在导出的视频・图片上加入自己签名或Logo作为水印的高级会员专属功能。可以调整位置、大小、不透明度。点击时间轴共通图层轨道上放置的水印，随时都能重新编辑其角度、大小、不透明度、显示范围（循环显示）——不仅是首次设置时，在项目中实际使用时也能随时细致调整。 添加水印时，请在时间轴的“添加素材”菜单中选择“＋水印”。",
   "helpPremiumEntryTitle": "Premium",
   "helpPremiumEntryDesc": "成为高级会员后，免费版限制的90秒视频时长将延长至最长2小时，并可移除每个视频结尾自动添加的片尾卡（应用Logo）。同时广告也会隐藏，还可使用水印、色调曲线、色阶校正功能。",
   "helpPerformanceSettingsTitle": "性能设置",
@@ -584,7 +590,7 @@
   "helpFontImportTitle": "字体读取",
   "helpFontImportDesc": "可以直接读取设备内的字体文件来使用的功能。可在设置画面字体管理的「读取」标签页中添加。想使用未公开发布的自制字体或已购买的商用字体时可以使用此功能。",
   "helpExportScreenTitle": "导出画面",
-  "helpExportScreenDesc": "导出视频、图片期间会显示进度，也可以中途取消。所需时间会因设备性能而异。",
+  "helpExportScreenDesc": "在“预设”中选择“标准”“高画质”或“自定义”。选择“自定义”后，可以调整帧率（FPS）。导出视频、图片期间会显示进度，也可以中途取消。所需时间会因设备性能而异。",
   "helpDrawingFilterTitle": "绘图滤镜",
   "helpDrawingFilterDesc": "直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置28种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、胶片颗粒、复古动漫、老电视、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换、背景融合、积墨、自动线稿、棱镜、VHS 噪点、反色、马赛克、噪点、球体阴影和水彩边界。水彩边界会让作业图层上涂色部分的边缘聚集颜色、内侧变得通透，就像干了的水彩（开启“颜色交界处也添加”后，相邻颜色的交界处也会出现边缘）。动漫风格会减少颜色数，并在相邻颜色之差达到“颜色差阈值”以上的边界上，于较暗的一侧画出“边界线粗细”的线（线稿的线条不会变粗）。棱镜会把图层上每个形状分别涂上彩虹六色（红、绿、青色、蓝、紫、红）并模糊，再把图层设为线性减淡。先在单独的图层上用深色画出细小的叶片状形状再使用，画面上就会出现柔和的彩虹光痕（模糊量与一般的高斯模糊采用相同标准）。球体阴影会在椭圆形光的内侧叠加光色、外侧叠加阴影色，且只加在已绘制的地方（也可以在画布上拖动光）。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对用面板的「画笔」「填充桶」在画布上涂抹的范围（可用「橡皮擦」修改）施加类似强力眼镜镜片的局部变形（如果有选区或选区图层，会从该范围开始）。画布上有选区时，绘图滤镜只应用于选区内。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动），使其更接近原色；轮廓处不混色，保持清晰。指定颜色数时，会从占画面大部分的颜色中选取。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。大小可在“指定色块大小”（1～100共100级）和“指定点数”（横向・纵向点数滑块，最左为1，最右为画布尺寸）之间切换，横向和纵向会在保持画面宽高比的同时一起变化，两种指定方式也会联动。两种方式下点都保持正方形，不会产生半透明的边缘。 自动线稿可在应用滤镜前直接编辑临时Vector控制点。拖动控制点时只移动该点。选择“应用”右侧的“添加控制点”后点击线条可添加控制点，选择“删除控制点”后点击控制点可将其删除（两者都未选择时点击控制点，会先确认再删除）。编辑后的形状会直接用于最终应用结果，控制点的移动、添加和删除也可以用滤镜编辑的撤销・重做逐一恢复。 色调曲线中，轻点曲线上的空白处可添加点，拖动点可移动，长按可删除；R、G、B 各颜色的曲线在 RGB 曲线之后生效。色阶也可按 R、G、B 分别调整，伽马可改变中间调的亮度。描边的“向内延伸”可将边缘扩展到原轮廓内侧，描边的新图层会放在原图层的正下方。色差可指定将偏移分配到 X（横向）、Y（纵向）、Z（从中心向外）各多少。鱼眼镜头的中心和半径也可以在画布上拖动 ＋ 和圆上的手柄来更改。暗角会柔和地压暗整个画布的四个角（没有绘画的透明处也会有阴影）。可用“范围”调整从四角向中心压暗到多远，用“浓度”调整四角的暗度。眼镜断层像真正的高度数眼镜一样，让透过镜片看到的景物朝镜片中心均匀缩小（负值，近视用）或放大（正值，远视用），并在镜片边缘使轮廓错开成台阶状。积墨只积在线条以“最大角度”或更小角度相交处（初始值90°时为锐角和直角：V字、交叉的窄侧、T字、方角）的夹角内侧，更宽的角不积：在相交点从线条边缘起为“中央宽度”，再朝“范围”的末端笔直变细，末端为0px，平滑地收成尖端（即使加大“中央宽度”，也不会鼓出连接两侧积墨末端的直线之外，最宽时中间也是平的）；若线条在范围内中断，该线条上的积墨会以中断处为终点细到0px（每条线的长度可以不同），此时两处积墨仍会在夹角的正中相接，距两条线的宽度相同（较长线条的积墨从那里再细到范围的末端）。自动线稿沿草稿线条的中心描出细线。靠得很近的线条只要中间有一点空隙，就仍画成两条线，只填补线条内部的小白点。两条线靠拢并贴在一起的地方，不会在中间画成一条线，而是像草稿一样两条线逐渐靠近并合在一起。线条交叉或重叠的地方，也会像草稿一样让每条线照原样延续（不会在交点处折弯，重叠的两条线也不会融成一条）。以较浅角度斜向交叉的线也会笔直地穿过交叉处，仅相互接触的线（例如沿着头部画的头发轮廓）则各自留在自己的一侧，仍是分开的线。眼睛之类的点会画成实心的点。比“草稿线宽”短的分叉不绘制。“起笔收笔”可以用开关打开或关闭，关闭后线条直到末端都保持相同粗细。背景融入以混合模式“强光”叠加背景的光与影（影子的颜色不是黑色或灰色，而是把背景中阴影部分的颜色压暗后的颜色）。周围的颜色以“叠加”覆盖整幅画来统一色彩方向，从下方反上来的光和周围的反射光以“滤色”加入，霓虹灯之类的强烈有色光以“相加（发光）”加在轮廓上。“匹配背景的明暗与色调”会把比背景过亮或过于鲜艳的颜色拉回背景的范围，并让暗部、中间调、亮部分别带上背景中相同明度的色调（线稿的黑色保持不变）。“模糊程度”是取色前模糊背景的程度。",
   "helpLayerKeyframeTitle": "图层关键帧（分部件动画）",
@@ -2647,6 +2653,9 @@
   "communityFloatingPreviewDetailButton": "详情",
   "communityFloatingPreviewPlayTooltip": "播放",
   "communityFloatingPreviewPauseTooltip": "暂停",
+  "communityFloatingPreviewResizeTooltip": "调整预览大小",
+  "communityFloatingPreviewMoveHint": "拖动可移动预览，也可以使用 Alt + 方向键。",
+  "communityFloatingPreviewCompactHint": "打开详情即可查看此作品。",
   "communityReportDialogTitle": "举报此作品",
   "communityReportDialogBody": "请选择举报原因。",
   "communityReportReasonInappropriate": "内容不当",
@@ -2684,18 +2693,6 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "公开关注/粉丝列表",
-  "communityFollowersPublicToggleDesc": "开启后，其他用户可以在此页面看到你的关注列表和粉丝列表。默认不公开。",
-  "communityFollowersListTitle": "粉丝",
-  "communityFollowersListEmpty": "暂无粉丝",
-  "communityFollowersListHiddenNote": "另有{count}人因本人隐私设置未显示",
-  "@communityFollowersListHiddenNote": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "communityAuthorFollowingCount": "关注{count}人",
   "@communityAuthorFollowingCount": {
     "placeholders": {
@@ -2704,19 +2701,8 @@
       }
     }
   },
-  "communityFollowingListTitle": "关注中",
-  "communityFollowingListEmpty": "暂未关注任何人",
   "communityFollowNotificationsTooltip": "通知",
-  "communityFollowNotificationsTitle": "关注通知",
   "communityFollowNotificationsEmpty": "暂无通知",
-  "communityFollowNotificationBody": "{name}关注了你",
-  "@communityFollowNotificationBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "communityNoWorksMessage": "暂无作品",
   "communityFavoriteAuthorFollow": "关注",
   "communityFavoriteAuthorFollowing": "已关注",
@@ -2734,9 +2720,6 @@
   },
   "communityAuthorTabWorks": "作品",
   "communityAuthorTabBookmarks": "书签",
-  "communityBookmarksPublicToggleTitle": "公开书签列表",
-  "communityBookmarksPublicToggleDesc": "开启后，其他用户可以在此页面看到你的书签列表。默认不公开。",
-  "communityBookmarksPrivateNotice": "该用户已将书签列表设为不公开。",
   "communityBookmarksEmptyMessage": "暂无加入书签的作品",
   "communityShortsBadge": "竖屏",
   "communityVideoTypeFilterTooltip": "按视频类型筛选",
@@ -2984,17 +2967,68 @@
   "communityContentFilterTitle": "显示筛选",
   "communityHideGenerativeAiImageVideo": "隐藏包含生成式 AI 图像或视频的作品",
   "communityMutedWords": "静音标题",
-  "communityMutedWordsHint": "隐藏标题中包含这些文字的作品（不检查投稿者名称和标签）。多个条目可用逗号、顿号或换行分隔。",
+  "communityMutedWordsHint": "隐藏标题中包含这些文字的作品（不检查作者名称和标签）。请逐条添加或编辑。",
   "communityMutedTags": "静音标签",
-  "communityMutedTagsHint": "隐藏在作品广场中带有这些标签的作品（开头的 # 会被忽略）。多个条目可用逗号、顿号或换行分隔。",
+  "communityMutedTagsHint": "隐藏作品广场中标签匹配的作品。请逐条添加标签，无需输入 #。",
+  "communityMuteAddNew": "新增",
+  "communityScrollToTop": "返回顶部",
+  "communityPostPeriodTitle": "投稿日期",
+  "communityDurationFilterTitle": "视频时长",
+  "communitySavedSearches": "已保存的搜索",
+  "communitySignInPromptTitle": "使用 Google 账号登录",
+  "communitySignInPromptBody": "发布和管理作品、关注作者、收藏及举报内容需要关联 Google 账号。",
+  "communitySignInPromptConnect": "关联 Google 账号",
+  "communitySignInUnavailable": "此开发版本尚未配置 Google 登录。",
+  "communitySaveSearch": "保存当前搜索",
+  "communitySavedSearchName": "搜索名称",
+  "communitySavedSearchLimit": "最多保存10条搜索条件",
+  "communitySavedSearchEmpty": "暂无保存的搜索",
+  "communityDurationAny": "不限时长",
+  "communityDurationUpTo": "N分钟以内（滑块）",
+  "communityDurationRange": "N至N分钟（数字输入）",
+  "communityDurationMinutes": "分钟以内",
+  "communityDurationMinimum": "最短（分钟）",
+  "communityDurationMaximum": "最长（分钟）",
+  "communityTagExactMatch": "搜索词完全匹配（关闭后部分匹配）",
+  "communityMinimumViews": "观看次数",
+  "communityMinimumBookmarks": "收藏数",
+  "communityPostPeriodAll": "全部时间",
+  "communityPostPeriodToday": "今天",
+  "communityPostPeriodWeek": "本周",
+  "communityPostPeriodMonth": "本月",
+  "communityPostPeriodYear": "今年",
+  "communityPostPeriodCustom": "自定义日期",
+  "communityPostPeriodChooseRange": "选择日期范围",
+  "communityMutedAuthors": "已屏蔽的创作者",
+  "communityMutedAuthorsEmpty": "暂无已屏蔽的创作者",
+  "communityUnmuteAuthor": "取消屏蔽此用户",
+  "communityMyWorksManagementHeading": "作品管理",
+  "communityWorkTagsTitle": "作品标签管理",
+  "communityWorkTagsHint": "可添加、编辑或删除标签。锁定后其他用户无法修改。编辑或删除前请先解锁。",
+  "communityWorkEditTag": "编辑标签",
+  "communityWorkTagChangeFailed": "无法更改标签",
   "communityContainsGenerativeAiImageVideo": "包含生成式 AI 图像或视频",
   "communityContainsGenerativeAiImageVideoHelp": "作品中的图像或视频使用生成式 AI 制作时请开启。语音合成软件不属于此项范围。",
   "communityAiImageVideoUpdateFailed": "无法更改“包含生成式 AI 图像或视频”。请检查连接后重试。",
   "communityRetry": "重试",
   "communityReloadTooltip": "刷新",
-  "communityGoogleSignInNotConfigured": "尚未设置Google登录",
+  "communityGoogleSignInNotConfigured": "尚未关联 Google 账号",
   "communityGoogleAccountBusy": "正在处理其他Google账号操作，请完成后重试。",
   "communityMyWorksTitle": "我的投稿",
+  "communityMyWorksViewAuthorPage": "查看我的作品列表页",
+  "communityMyWorksAccountRequired": "请连接 Google 账号后查看作品列表",
+  "communityMyWorksSettingsTitle": "作品设置",
+  "communityMyWorksPublishInNiarim": "在 NIARIM 中公开",
+  "communityMyWorksDeleteNiarim": "从 NIARIM 作品广场删除此作品",
+  "communityMyWorksDeleteConfirmTitle": "要删除此作品吗？",
+  "communityMyWorksDeleteConfirmBody": "此作品将从 NIARIM 永久删除，YouTube 视频不会被删除。此操作无法撤销。",
+  "communityMyWorksOpenYoutubeStudio": "在 YouTube Studio 中管理视频",
+  "communityMyWorksYoutubeStudioHelp": "YouTube 的可见性和视频设置请在 YouTube Studio 中管理，与 NIARIM 设置相互独立。",
+  "communityMyWorksYoutubeOpenFailed": "无法打开 YouTube Studio",
+  "communityMyWorksOperationFailed": "操作失败：{reason}",
+  "communityMyWorksBulkPublish": "批量公开",
+  "communityMyWorksBulkHide": "批量隐藏",
+  "communityMyWorksBulkResult": "完成：{success} / 失败：{failed}",
   "communityMyWorksAccountNotConnected": "未连接Google账号",
   "communityMyWorksAddAccount": "添加Google账号",
   "communityMyWorksSwitchAccount": "切换或添加Google账号",
@@ -3002,7 +3036,6 @@
   "communityMyWorksLoadFailed": "无法加载我的投稿。{reason}",
   "communityAccountSwitchFailed": "无法切换Google账号。{reason}",
   "communitySignInFailed": "无法使用Google账号登录。{reason}",
-  "communityVisibilityChangeFailed": "无法更改公开状态。{reason}",
   "communityMyWorksDeletedCannotPublish": "已从YouTube删除的视频无法在作品广场重新公开",
   "communityMyWorksStatusDeletedOnYoutube": "已从YouTube删除 • 无法重新公开",
   "communityMyWorksStatusYoutubePrivate": "在作品广场公开中 • 因YouTube视频设为私享，暂时隐藏",
@@ -3210,6 +3243,58 @@
   "homeTrashFolderPermanentDeleteBody": "将永久删除「{name}」。此操作无法撤销。",
   "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{空} other{{folders}个文件夹}}} other{{projects}个项目{folders, plural, =0{} other{和{folders}个文件夹}}}}",
   "homeTrashFolderPermanentDeleteContents": "文件夹中的{contents}也将一并删除。",
-  "folderColorName": "{color, select, pink{粉色} orange{橙色} yellow{黄色} green{绿色} blue{蓝色} purple{紫色} gray{灰色} other{默认颜色}}",
-  "newProjectNumberRangeError": "请输入{min}到{max}之间的数字"
+  "newProjectNumberRangeError": "请输入{min}到{max}之间的数字",
+  "communityThresholdAny": "不限",
+  "communityMinimumViewsOption": "至少 {count} 次观看",
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMinimumBookmarksOption": "至少 {count} 个收藏",
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityTileSize": "作品卡片大小",
+  "communityMutedWordsEmpty": "暂无屏蔽关键词",
+  "communityMutedTagsEmpty": "暂无屏蔽标签",
+  "communityMuteShort": "屏蔽",
+  "communityMuteConfirmTitle": "要屏蔽此用户吗？",
+  "communityMuteConfirmBody": "屏蔽后将不显示此用户的作品。",
+  "communityMuteConfirmAction": "屏蔽",
+  "communityUnmuteConfirmTitle": "要取消屏蔽此用户吗？",
+  "communityUnmuteConfirmAction": "取消屏蔽",
+  "communityMuteNo": "否",
+  "communityMuteDone": "已屏蔽此用户",
+  "communityUnmuteDone": "已取消屏蔽",
+  "communityMilestoneNotificationsTitle": "通知",
+  "communityFollowerMilestone": "关注者达到 {count} 人",
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBookmarkMilestone": "作品《{title}》的收藏达到 {count} 个",
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communitySearchHistory": "搜索历史",
+  "communitySearchHistoryEmpty": "暂无搜索历史",
+  "communityDeleteSavedSearchConfirm": "删除此保存的搜索条件？",
+  "communitySortLabel": "排序"
 }

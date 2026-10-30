@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart' hide MaterialType;
+import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -25,11 +26,15 @@ import '../../../utils/folder_tree.dart';
 import '../../../utils/name_collation.dart';
 import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/checked_menu_item.dart';
-import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/empty_state_placeholder.dart';
 import '../../../widgets/moved_to_trash_snack_bar.dart';
 import '../../../widgets/name_entry_dialog.dart';
-import '../../../widgets/scrollable_sheet_body.dart';
+import '../../../utils/app_error_reporter.dart';
+import '../../../utils/folder_persistence.dart';
+import 'folder_save_feedback.dart';
+import 'folder_delete_dialog.dart';
+import 'work_folder_move_sheet.dart';
+import 'project_folder_edit_dialog.dart';
 
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
 /// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
@@ -39,25 +44,193 @@ void showCreateFolderNameDialog(
   BuildContext context,
   Future<void> Function(String name) onCreate,
 ) {
-  final l10n = AppLocalizations.of(context)!;
-  showDialog(
+  showDialog<void>(
     context: context,
-    builder: (ctx) => NameEntryDialog(
-      title: l10n.projectListNewFolderTitle,
-      labelText: l10n.folderNameLabel,
-      confirmLabel: l10n.commonCreate,
-      cancelLabel: l10n.commonCancel,
-      // 同じ作品の複数話数・シリーズ物をまとめる使い方への気づきを促す
-      // ヒント（フォルダは複数階層に対応しているため実現可能）。
-      hint: Text(
-        l10n.projectListFolderHint,
-        style: TextStyle(
-          fontSize: 11,
-          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+    builder: (_) => _FolderNameDialog(onSave: onCreate),
+  );
+}
+
+class _FolderNameDialog extends StatefulWidget {
+  const _FolderNameDialog({
+    required this.onSave,
+    this.initialName = '',
+    this.rename = false,
+  });
+  final Future<void> Function(String name) onSave;
+  final String initialName;
+  final bool rename;
+  @override
+  State<_FolderNameDialog> createState() => _FolderNameDialogState();
+}
+
+class _FolderNameDialogState extends State<_FolderNameDialog> {
+  late final TextEditingController _controller;
+  final _errorKey = GlobalKey();
+  bool _saving = false;
+  Object? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialName);
+    _controller.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: widget.initialName.length,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final name = _controller.text.trim();
+    if (_saving || name.isEmpty) return;
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await widget.onSave(name);
+      if (mounted) closeFolderRoute(context);
+      // Keep submission disabled through the closing route animation.
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _error = error;
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final target = _errorKey.currentContext;
+          if (mounted && target != null) Scrollable.ensureVisible(target);
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final foreground =
+        theme.popupMenuTheme.textStyle?.color ?? theme.colorScheme.onSurface;
+    final heading =
+        (theme.dialogTheme.titleTextStyle ?? theme.textTheme.headlineSmall)
+            ?.copyWith(
+              color: foreground,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            );
+    // 保存中は閉じない（削除・編集のダイアログと同じ。閉じると失敗を
+    // 伝えられない）。
+    return PopScope(
+      canPop: !_saving,
+      child: Dialog(
+        insetPadding: const EdgeInsets.all(16),
+        constraints: const BoxConstraints(maxWidth: 560),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: DefaultTextStyle.merge(
+            style: TextStyle(color: foreground),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Semantics(
+                  namesRoute: true,
+                  child: Text(
+                    widget.rename
+                        ? l10n.commonRename
+                        : l10n.projectListNewFolderTitle,
+                    style: heading,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _controller,
+                  autofocus: true,
+                  enabled: !_saving,
+                  style: TextStyle(color: foreground),
+                  onChanged: (_) => setState(() {
+                    _error = null;
+                  }),
+                  // Enterでも作成・変更する（空白だけの名前では何もしない）。
+                  onSubmitted: (_) => _submit(),
+                  decoration: InputDecoration(
+                    labelText: l10n.folderNameLabel,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                if (!widget.rename) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.projectListFolderHint,
+                    style: TextStyle(fontSize: 11, color: foreground),
+                  ),
+                ],
+                if (_error != null) ...[
+                  const SizedBox(height: 12),
+                  Semantics(
+                    key: _errorKey,
+                    liveRegion: true,
+                    child: Text(
+                      widget.rename ||
+                              (_error is FolderSaveException &&
+                                  (_error as FolderSaveException)
+                                      .partiallySaved)
+                          ? folderSaveFailureText(l10n, _error!)
+                          : l10n.folderCreateFailed,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                OverflowBar(
+                  alignment: MainAxisAlignment.end,
+                  spacing: 8,
+                  overflowSpacing: 8,
+                  children: [
+                    TextButton(
+                      onPressed: _saving
+                          ? null
+                          : () {
+                              if (ModalRoute.of(context)?.isCurrent ?? false) {
+                                Navigator.pop(context);
+                              }
+                            },
+                      child: Text(l10n.commonCancel),
+                    ),
+                    FolderSaveButton(
+                      onPressed: _controller.text.trim().isEmpty
+                          ? null
+                          : _submit,
+                      label: widget.rename
+                          ? l10n.commonChange
+                          : l10n.commonCreate,
+                      saving: _saving,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      onSubmit: onCreate,
-    ),
+    );
+  }
+}
+
+void showRenameFolderNameDialog(
+  BuildContext context,
+  String name,
+  Future<void> Function(String name) onRename,
+) {
+  showDialog<void>(
+    context: context,
+    builder: (_) =>
+        _FolderNameDialog(onSave: onRename, initialName: name, rename: true),
   );
 }
 
@@ -108,6 +281,39 @@ class ProjectViewModeMenu extends StatelessWidget {
       ],
     );
   }
+}
+
+/// 表示サイズごとの列数（[ProjectListWidget.gridColumnsFor]）で並べ、
+/// ふだんの絵の比率を保ちつつ、名前の帯と右上の操作が入る高さを下回らない
+/// ようにする（文字を大きくした小さなカードで帯が絵を押しつぶさない）。
+class _ProjectGridDelegate extends SliverGridDelegateWithFixedCrossAxisCount {
+  const _ProjectGridDelegate({
+    required super.crossAxisCount,
+    required this.minHeight,
+  }) : super(
+         crossAxisSpacing: 8,
+         mainAxisSpacing: 8,
+         childAspectRatio: 16 / 12,
+       );
+  final double minHeight;
+
+  @override
+  SliverGridLayout getLayout(SliverConstraints constraints) {
+    final usual = super.getLayout(constraints) as SliverGridRegularTileLayout;
+    if (usual.childMainAxisExtent >= minHeight) return usual;
+    return SliverGridRegularTileLayout(
+      crossAxisCount: usual.crossAxisCount,
+      mainAxisStride: minHeight + mainAxisSpacing,
+      crossAxisStride: usual.crossAxisStride,
+      childMainAxisExtent: minHeight,
+      childCrossAxisExtent: usual.childCrossAxisExtent,
+      reverseCrossAxis: usual.reverseCrossAxis,
+    );
+  }
+
+  @override
+  bool shouldRelayout(covariant _ProjectGridDelegate oldDelegate) =>
+      minHeight != oldDelegate.minHeight || super.shouldRelayout(oldDelegate);
 }
 
 /// フォルダ・プロジェクトを同一一覧内で扱うための表示用ラッパー
@@ -177,6 +383,11 @@ class ProjectListWidget extends StatelessWidget {
   // 名前やメニューを隠さないよう、一番下までスクロールしたときにその上へ
   // 出せるようにする。
   final double bottomPadding;
+  final ScrollController? scrollController;
+
+  /// Optional controls that scroll away with the project list rather than
+  /// remaining pinned above its viewport.
+  final Widget? header;
 
   const ProjectListWidget({
     super.key,
@@ -198,6 +409,8 @@ class ProjectListWidget extends StatelessWidget {
     this.onShowAll,
     this.pendingCutIds = const {},
     this.bottomPadding = 0,
+    this.scrollController,
+    this.header,
   });
 
   /// フォルダを作品より前にまとめ、それぞれの中を[sortMode]で並べる。
@@ -308,12 +521,25 @@ class ProjectListWidget extends StatelessWidget {
         ];
       }
     } else {
+      // 入っていたフォルダが見つからない作品・フォルダは一番上に出す
+      // （保存の途中で終わったときなど、どこにも出ずに見失わないように）。
+      final folderIds = folders.map((f) => f.id).toSet();
       entries = [
         ...folders
-            .where((f) => f.parentFolderId == currentFolderId)
+            .where(
+              (f) =>
+                  (folderIds.contains(f.parentFolderId)
+                      ? f.parentFolderId
+                      : null) ==
+                  currentFolderId,
+            )
             .map((f) => _Entry.folder(f, folderDate(f))),
         ...projects
-            .where((p) => p.folderId == currentFolderId)
+            .where(
+              (p) =>
+                  (folderIds.contains(p.folderId) ? p.folderId : null) ==
+                  currentFolderId,
+            )
             .map((p) => _Entry.project(p)),
       ];
     }
@@ -353,7 +579,20 @@ class ProjectListWidget extends StatelessWidget {
             searchByTag: searchByTag,
             showFavoritesOnly: false,
           ).isNotEmpty;
-      return _emptyState(l10n, hiddenByFavorites: hiddenByFavorites);
+      final empty = _emptyState(l10n, hiddenByFavorites: hiddenByFavorites);
+      if (header == null) return empty;
+      return CustomScrollView(
+        controller: scrollController,
+        slivers: [
+          SliverToBoxAdapter(child: header!),
+          SliverFillRemaining(
+            // The empty-state layout uses LayoutBuilder, which cannot
+            // provide intrinsic heights to the non-scrollable variant.
+            hasScrollBody: true,
+            child: empty,
+          ),
+        ],
+      );
     }
 
     final searching = searchQuery.trim().isNotEmpty;
@@ -372,38 +611,89 @@ class ProjectListWidget extends StatelessWidget {
     final scrollKey = PageStorageKey<String>(
       'projects/${currentFolderId ?? '-'}/${viewMode.name}',
     );
+    // 上に置く絞り込み・パンくず（[header]）は一覧と一緒にスクロールする。
+    Widget scrollView(Widget sliver) => CustomScrollView(
+      key: scrollKey,
+      controller: scrollController,
+      slivers: [
+        if (header != null) SliverToBoxAdapter(child: header!),
+        sliver,
+      ],
+    );
     if (viewMode == ProjectViewMode.detail) {
-      return ListView.builder(
-        key: scrollKey,
-        padding: EdgeInsets.only(bottom: bottomPadding),
-        itemCount: sorted.length,
-        itemBuilder: (context, index) => _detailTile(
-          context,
-          l10n,
-          sorted[index],
-          locationOf(sorted[index]),
+      return scrollView(
+        SliverPadding(
+          padding: EdgeInsets.only(bottom: bottomPadding),
+          sliver: SliverList.builder(
+            itemCount: sorted.length,
+            itemBuilder: (context, index) => _detailTile(
+              context,
+              l10n,
+              sorted[index],
+              locationOf(sorted[index]),
+            ),
+          ),
         ),
       );
     }
 
+    // 名前の帯（と検索中の場所）と右上の操作が入る高さ。文字の大きさの
+    // 設定で帯が高くなっても、カードの絵を押しつぶさない。
+    final caption = TextPainter(
+      text: TextSpan(
+        text: 'Ag国한',
+        style: DefaultTextStyle.of(context).style
+            .merge(_captionStyle(context))
+            .copyWith(
+              fontWeight: MediaQuery.boldTextOf(context)
+                  ? FontWeight.bold
+                  : FontWeight.w600,
+            ),
+      ),
+      textScaler: MediaQuery.textScalerOf(
+        context,
+      ).clamp(maxScaleFactor: _captionMaxTextScale),
+      textDirection: Directionality.of(context),
+      locale: Localizations.localeOf(context),
+    )..layout();
+    final minimumHeight = 80 + caption.height * (searching ? 2 : 1) + 10;
+    caption.dispose();
+
     // カード基準サイズ（大/中/小）を軸に、画面幅に応じて列数が自然に増減する
     // グリッドを使う（PC/DeXモードの広い画面でも余白だらけにならないように）。
     return LayoutBuilder(
-      builder: (context, constraints) => GridView.builder(
-        key: scrollKey,
-        padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomPadding),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: gridColumnsFor(viewMode, constraints.maxWidth - 16),
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-          childAspectRatio: 16 / 12,
+      builder: (context, constraints) => scrollView(
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomPadding),
+          sliver: SliverGrid.builder(
+            gridDelegate: _ProjectGridDelegate(
+              crossAxisCount: gridColumnsFor(
+                viewMode,
+                constraints.maxWidth - 16,
+              ),
+              minHeight: minimumHeight,
+            ),
+            itemCount: sorted.length,
+            itemBuilder: (context, index) =>
+                _gridCard(context, sorted[index], locationOf(sorted[index])),
+          ),
         ),
-        itemCount: sorted.length,
-        itemBuilder: (context, index) =>
-            _gridCard(context, sorted[index], locationOf(sorted[index])),
       ),
     );
   }
+
+  // カードの名前の帯の文字は1.5倍までにとどめる（全文は詳細表示で読める）。
+  static const double _captionMaxTextScale = 1.5;
+
+  TextStyle _captionStyle(BuildContext context) => TextStyle(
+    fontSize: 12,
+    color:
+        Theme.of(context).popupMenuTheme.textStyle?.color ??
+        Theme.of(context).colorScheme.onSurface,
+    fontWeight: FontWeight.w600,
+    fontFamily: 'Kuramubon',
+    fontFamilyFallback: kHeadingFontFallback,
+  );
 
   /// 表示サイズごとの列数。基準の幅だけで決めると、スマホの幅では大と中
   /// （360px）や中と小（390〜430px）が同じ列数になり、選んでも何も
@@ -834,7 +1124,7 @@ class ProjectListWidget extends StatelessWidget {
                     // とどめる（文字を大きくした小さなカードで帯が絵を押しつぶし、
                     // はみ出していた）。全文は詳細表示で大きな文字のまま読める。
                     MediaQuery.withClampedTextScaling(
-                      maxScaleFactor: 1.5,
+                      maxScaleFactor: _captionMaxTextScale,
                       child: Padding(
                         // 小さなカードではお気に入りの星が名前の帯まで届くので、
                         // そのぶん空ける。
@@ -848,15 +1138,15 @@ class ProjectListWidget extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              entry.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
+                            Tooltip(
+                              message: entry.name,
+                              triggerMode: TooltipTriggerMode.manual,
+                              excludeFromSemantics: true,
+                              child: Text(
+                                entry.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: _captionStyle(context),
                               ),
                             ),
                             // 小表示のカードには場所まで入らない（詳細表示で出る）。
@@ -917,21 +1207,19 @@ class ProjectListWidget extends StatelessWidget {
         children: [
           if (showMenu)
             Material(
-              color: scheme.surface.withValues(alpha: 0.9),
+              color: Theme.of(context).cardTheme.color ?? scheme.surface,
               shape: const CircleBorder(),
               clipBehavior: Clip.antiAlias,
-              child: SizedBox.square(dimension: 32, child: menu),
-            )
-          else if (!isSelectionMode)
-            const SizedBox.square(dimension: 32),
+              child: SizedBox.square(dimension: 48, child: menu),
+            ),
           if (isFavorite)
             Padding(
               // 選択中はメニューの空き枠を残さず、星をタイル右上へ寄せる。
-              padding: EdgeInsets.only(top: isSelectionMode ? 0 : 4),
+              padding: EdgeInsets.only(top: showMenu ? 4 : 0),
               child: Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: scheme.surface.withValues(alpha: 0.9),
+                  color: Theme.of(context).cardTheme.color ?? scheme.surface,
                   shape: BoxShape.circle,
                 ),
                 child: Builder(
@@ -1110,12 +1398,23 @@ class ProjectListWidget extends StatelessWidget {
     showMovedToTrashSnackBar(messenger, l10n, service, [project.id]);
   }
 
-  void _handleFolderAction(
+  Future<void> _handleFolderAction(
     BuildContext context,
     String action,
     ProjectFolder folder,
-  ) {
+  ) async {
     final service = context.read<ProjectService>();
+    void showFailure(Object error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            folderSaveFailureText(AppLocalizations.of(context)!, error),
+          ),
+        ),
+      );
+    }
+
     switch (action) {
       case 'open':
         onOpenFolder(folder.id);
@@ -1123,18 +1422,28 @@ class ProjectListWidget extends StatelessWidget {
         _showEditFolderDialog(context, folder);
       case 'duplicate':
         // 同じ階層に、中身（フォルダ・作品）ごと複製する。
-        service.duplicateFolder(
-          folder.id,
-          targetParentId: folder.parentFolderId,
-          name: duplicateFolderName(
-            AppLocalizations.of(context)!,
-            folder.name,
-            parentId: folder.parentFolderId,
-            folders: service.folders,
-          ),
-        );
+        try {
+          await service.duplicateFolder(
+            folder.id,
+            targetParentId: folder.parentFolderId,
+            name: duplicateFolderName(
+              AppLocalizations.of(context)!,
+              folder.name,
+              parentId: folder.parentFolderId,
+              folders: service.folders,
+            ),
+          );
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+          showFailure(error);
+        }
       case 'favorite':
-        service.toggleFolderFavorite(folder.id);
+        try {
+          await service.toggleFolderFavorite(folder.id);
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+          showFailure(error);
+        }
       case 'move':
         _showMoveFolderToFolderDialog(context, folder);
       case 'delete':
@@ -1157,51 +1466,25 @@ class ProjectListWidget extends StatelessWidget {
     }
     final service = context.read<ProjectService>();
     final counts = service.folderContentCounts(folder.id);
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.projectListTrashFolderConfirmTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.projectListTrashFolderConfirmBody(folder.name)),
-            // 空のフォルダでは中身の行を出さない。
-            if (counts.projects + counts.folders > 0) ...[
-              const SizedBox(height: 8),
-              Text(
-                l10n.homeMoveToTrashFolderContents(
-                  l10n.homeFolderContents(counts.projects, counts.folders),
-                ),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
+      builder: (_) => FolderDeleteDialog(
+        folderName: folder.name,
+        title: l10n.projectListTrashFolderConfirmTitle,
+        // 空のフォルダでは中身の行を出さない。
+        body: [
+          l10n.projectListTrashFolderConfirmBody(folder.name),
+          if (counts.projects + counts.folders > 0)
+            l10n.homeMoveToTrashFolderContents(
+              l10n.homeFolderContents(counts.projects, counts.folders),
             ),
-            onPressed: () async {
-              // 閉じる途中にもう一度押されても二重に動かさない。
-              if (!(ModalRoute.of(ctx)?.isCurrent ?? false)) return;
-              Navigator.pop(ctx);
-              if (await service.moveFolderToTrash(folder.id) != null) {
-                showFolderMovedToTrashSnackBar(
-                  messenger,
-                  l10n,
-                  service,
-                  folder,
-                );
-              }
-            },
-            child: Text(l10n.commonMove),
-          ),
-        ],
+        ].join('\n\n'),
+        confirmLabel: l10n.commonMove,
+        onDelete: () async {
+          if (await service.moveFolderToTrash(folder.id) != null) {
+            showFolderMovedToTrashSnackBar(messenger, l10n, service, folder);
+          }
+        },
       ),
     );
   }
@@ -1266,12 +1549,17 @@ class ProjectListWidget extends StatelessWidget {
     _showFolderPickerSheet(
       context,
       excludeFolderId: null,
+      itemName: project.name,
       onSelect: (folderId) =>
           context.read<ProjectService>().moveToFolder(project.id, folderId),
       onCreateAndSelect: (name) async {
         final service = context.read<ProjectService>();
         final folder = await service.createFolder(name);
-        await service.moveToFolder(project.id, folder.id);
+        try {
+          await service.moveToFolder(project.id, folder.id);
+        } catch (error) {
+          throw FolderSaveException(partiallySaved: true, cause: error);
+        }
       },
     );
   }
@@ -1284,12 +1572,17 @@ class ProjectListWidget extends StatelessWidget {
       context,
       // 自分自身の直下へは移動できない（循環防止はサービス側でも二重にガードする）
       excludeFolderId: folder.id,
+      itemName: folder.name,
       onSelect: (folderId) =>
           context.read<ProjectService>().moveFolderTo(folder.id, folderId),
       onCreateAndSelect: (name) async {
         final service = context.read<ProjectService>();
         final newFolder = await service.createFolder(name);
-        await service.moveFolderTo(folder.id, newFolder.id);
+        try {
+          await service.moveFolderTo(folder.id, newFolder.id);
+        } catch (error) {
+          throw FolderSaveException(partiallySaved: true, cause: error);
+        }
       },
     );
   }
@@ -1297,210 +1590,37 @@ class ProjectListWidget extends StatelessWidget {
   void _showFolderPickerSheet(
     BuildContext context, {
     required String? excludeFolderId,
-    required ValueChanged<String?> onSelect,
+    required String itemName,
+    required Future<void> Function(String?) onSelect,
     required Future<void> Function(String name) onCreateAndSelect,
   }) {
-    final l10n = AppLocalizations.of(context)!;
-    final folders = folderTree(
+    // 親の下に子を字下げして並べ、動かすフォルダとその中は出さない。
+    final tree = folderTree(
       context.read<ProjectService>().folders,
       excluding: excludeFolderId,
     );
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => ScrollableSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                l10n.folderMoveToTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.folder_open),
-              title: Text(l10n.projectListFolderRootOption),
-              onTap: () {
-                onSelect(null);
-                Navigator.pop(ctx);
-              },
-            ),
-            for (final (:folder, :depth) in folders)
-              ListTile(
-                contentPadding: folderTreeTilePadding(depth),
-                leading: Icon(
-                  Icons.folder,
-                  color: folder.color != null
-                      ? Color(folder.color!)
-                      : Theme.of(ctx).colorScheme.primary,
-                ),
-                title: Text(folder.name),
-                trailing: IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 20),
-                  tooltip: l10n.projectListEditFolderTooltip,
-                  onPressed: () => _showEditFolderDialog(context, folder),
-                ),
-                onTap: () {
-                  onSelect(folder.id);
-                  Navigator.pop(ctx);
-                },
-              ),
-            ListTile(
-              leading: const Icon(Icons.create_new_folder),
-              title: Text(l10n.projectListCreateFolderAction),
-              onTap: () {
-                Navigator.pop(ctx);
-                showCreateFolderNameDialog(context, onCreateAndSelect);
-              },
-            ),
-          ],
-        ),
+      builder: (_) => WorkFolderMoveSheet(
+        folders: [for (final entry in tree) entry.folder],
+        depths: {for (final entry in tree) entry.folder.id: entry.depth},
+        filename: itemName,
+        rootLabel: AppLocalizations.of(context)!.projectListFolderRootOption,
+        onMove: onSelect,
+        onEdit: (folder) => _showEditFolderDialog(context, folder),
+        onCreate: () => showCreateFolderNameDialog(context, onCreateAndSelect),
       ),
     );
   }
-
-  // フォルダ名変更・色変更・削除（フォルダ管理）
-  // 色と読み上げの名前（folderColorNameの選択肢）。
-  static const _folderColors = [
-    (0xFFFF5C7A, 'pink'),
-    (0xFFFFB020, 'orange'),
-    (0xFFFFE066, 'yellow'),
-    (0xFF3DDC97, 'green'),
-    (0xFF3AA6FF, 'blue'),
-    (0xFFB15CFF, 'purple'),
-    (0xFF9E9E9E, 'gray'),
-  ];
 
   void _showEditFolderDialog(BuildContext context, ProjectFolder folder) {
-    final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: folder.name);
-    int? selectedColor = folder.color;
-    // 空白だけの名前にはしない（Enterでも同じ）。閉じる途中にもう一度
-    // 押されても二度保存しない。
-    void save(BuildContext ctx) {
-      final name = controller.text.trim();
-      if (name.isEmpty || !(ModalRoute.of(ctx)?.isCurrent ?? false)) return;
-      final service = context.read<ProjectService>();
-      if (name != folder.name) service.renameFolder(folder.id, name);
-      if (selectedColor != folder.color) {
-        service.setFolderColor(folder.id, selectedColor);
-      }
-      Navigator.pop(ctx);
-    }
-
-    showDialog(
+    final service = context.read<ProjectService>();
+    showDialog<void>(
       context: context,
-      builder: (ctx) => DisposeOnUnmount(
-        controller: controller,
-        builder: (_) => StatefulBuilder(
-          builder: (ctx, setS) => AlertDialog(
-            title: Text(l10n.projectListEditFolderTooltip),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: controller,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    labelText: l10n.folderNameLabel,
-                    border: const OutlineInputBorder(),
-                  ),
-                  // 空白だけの名前では保存できないことを、ボタンの状態で示す。
-                  onChanged: (_) => setS(() {}),
-                  onSubmitted: (_) => save(ctx),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.projectListFolderColorLabel,
-                  style: const TextStyle(fontSize: 12),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  children: [
-                    _colorDot(
-                      ctx,
-                      null,
-                      l10n.folderColorName('default'),
-                      selectedColor,
-                      (v) => setS(() => selectedColor = v),
-                    ),
-                    for (final (c, name) in _folderColors)
-                      _colorDot(
-                        ctx,
-                        c,
-                        l10n.folderColorName(name),
-                        selectedColor,
-                        (v) => setS(() => selectedColor = v),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(l10n.commonCancel),
-              ),
-              FilledButton(
-                onPressed: controller.text.trim().isEmpty
-                    ? null
-                    : () => save(ctx),
-                child: Text(l10n.commonSave),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _colorDot(
-    BuildContext context,
-    int? color,
-    String label,
-    int? selected,
-    ValueChanged<int?> onTap,
-  ) {
-    final isSelected = color == selected;
-    final scheme = Theme.of(context).colorScheme;
-    // 見た目は32pxの丸、押せる所は指で押しやすい48px四方。読み上げでは
-    // 色の名前と選んでいるかを伝える。
-    return Semantics(
-      button: true,
-      selected: isSelected,
-      inMutuallyExclusiveGroup: true,
-      label: label,
-      excludeSemantics: true,
-      child: InkResponse(
-        key: ValueKey('folderColor_${color ?? 'default'}'),
-        onTap: () => onTap(color),
-        radius: 24,
-        child: SizedBox.square(
-          dimension: 48,
-          child: Center(
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: color != null ? Color(color) : Colors.transparent,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? scheme.primary : scheme.outlineVariant,
-                  width: isSelected ? 3 : 1,
-                ),
-              ),
-              child: color == null
-                  ? Icon(Icons.block, size: 16, color: scheme.onSurfaceVariant)
-                  : null,
-            ),
-          ),
-        ),
+      builder: (_) => ProjectFolderEditDialog(
+        folder: folder,
+        onSave: (name, color) =>
+            service.editFolder(folder.id, name: name, color: color),
       ),
     );
   }

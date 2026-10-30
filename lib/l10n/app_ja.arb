@@ -95,6 +95,16 @@
   "homePermanentDeleteConfirmBody": "元に戻すことはできません。",
   "homeWorksEmpty": "書き出した作品がありません",
   "homeWorksEmptyHint": "キャンバスの書き出しから動画・GIFを作成すると\nここに表示されます",
+  "homeWorkFolderEmpty": "このフォルダには書き出した作品がありません",
+  "homeSharedFolderEmpty": "このフォルダには共有プロジェクトがありません",
+  "homeDeleteFolderKeepContents": "「{name}」フォルダを削除します。中の項目は一覧に戻り、項目自体は削除されません。",
+  "@homeDeleteFolderKeepContents": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "homeShareOpenWith": "共有・写真アプリ等で開く",
   "homeWorkDeleteConfirmTitle": "{name}を削除しますか？",
   "@homeWorkDeleteConfirmTitle": {
@@ -383,6 +393,9 @@
   "folderManagementTitle": "フォルダ管理",
   "folderManagementCreateNew": "新規作成",
   "folderManagementEmpty": "フォルダはまだありません",
+  "folderCreateFailed": "フォルダを作成できませんでした。もう一度お試しください。",
+  "folderChangesSaveFailed": "フォルダの変更を保存できませんでした。もう一度お試しください。",
+  "folderChangesPartiallySaved": "一部の変更だけが保存されました。一覧を確認して、もう一度お試しください。",
   "folderNameLabel": "フォルダ名",
   "folderMoveToTitle": "フォルダへ移動",
   "folderNone": "フォルダなし",
@@ -687,12 +700,12 @@
   "helpTransferTitle": "引き継ぎ（.niatra）",
   "helpTransferDesc": "設定・素材・ブラシ・自動塗り設定・テーマ・パレット（カラーピッカー・ドット絵専用）など、アプリ全体の環境を別の端末へまとめて引き継ぐための機能です。引き継ぐ項目はチェックボックスで個別に選べるほか、制作中のプロジェクトも任意で選んで含められます（選択したプロジェクトは素材・フォントも含めて丸ごと引き継がれます）。個別のプロジェクトだけを渡したい場合は「共有（.niashare）」も使えます。",
   "helpVideoExportTitle": "動画書き出し（MP4・WebM・GIF・AVI）",
-  "helpVideoExportDesc": "作品を汎用的なMP4動画として書き出します。無料版は書き出せる長さに上限（90秒）があり、動画の最後にエンドカード（アプリロゴ）が自動で追加されます。 アルファチャンネル（背景の透明部分）を保持したまま書き出せる動画形式です。対応する再生環境でのみ透過再生されます。他のアプリの素材として重ねて使いたい場合などに向いています。 アニメーションGIFとして書き出します。自動でループ再生される形式のため、SNSへの投稿など気軽に共有したい場面に向いています。 互換性を重視したい場合はAVI（Motion JPEG）としても書き出せます。特許・ライセンス面で安全なコーデックを採用していますが、アルファチャンネル（透過）には対応せず、端末によってはアプリ内プレビューが利用できない場合があります（その場合も「共有」から外部プレイヤーで再生できます）。 無料会員はプロジェクトの長さに90秒までの上限があります（プレミアム会員は2時間）。フレーム追加・複製によって上限を超えそうな場合は、ボタンをタップした時点で注意ダイアログが表示され、実際に90秒を超えることはありません。",
+  "helpVideoExportDesc": "作品を汎用的なMP4動画として書き出します。無料版は書き出せる長さに上限（90秒）があり、動画の最後にエンドカード（アプリロゴ）が自動で追加されます。 アルファチャンネル（背景の透明部分）を保持したまま書き出せる動画形式です。対応する再生環境でのみ透過再生されます。他のアプリの素材として重ねて使いたい場合などに向いています。 アニメーションGIFとして書き出します。自動でループ再生される形式のため、SNSへの投稿など気軽に共有したい場面に向いています。 互換性を重視したい場合はAVI（Motion JPEG）としても書き出せます。アルファチャンネル（透過）には対応せず、端末によってはアプリ内プレビューが利用できない場合があります（その場合も「共有」から外部プレイヤーで再生できます）。 無料会員はプロジェクトの長さに90秒までの上限があります（プレミアム会員は2時間）。フレーム追加・複製によって上限を超えそうな場合は、ボタンをタップした時点で注意ダイアログが表示され、実際に90秒を超えることはありません。",
   "helpTransparentWebmTitle": "透過WebM",
   "helpCommunityTitle": "作品広場",
-  "helpCommunityDesc": "アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」の3タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォローされると画面右上のベルアイコンの通知一覧に届きます。自分のフォロー中/フォロワー一覧を全体公開するかどうかも設定でき（既定は非公開）、公開設定にしている他のユーザーの一覧も閲覧できます。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品はホーム画面の「ブクマ済み」タブにまとめて表示されるほか、投稿者別の作品一覧画面の「ブックマーク」タブでも確認できます。自分のブックマーク一覧はユーザー全体へ公開するかどうかを設定でき（既定は非公開）、公開設定にしている他のユーザーのブックマーク一覧も閲覧できます。不適切な作品は理由を添えて通報でき、送信後にはその投稿者をブロックするか選べます。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にするミュートタイトルと、作品広場で作品に設定されたタグだけを対象にするミュートタグ（先頭の#は無視されます）を、カンマ・「、」・改行で区切って登録できます。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。",
+  "helpCommunityDesc": "アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」の3タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォローされると画面右上のベルアイコンの通知一覧に届きます。自分のフォロー中/フォロワー一覧を全体公開するかどうかも設定でき（既定は非公開）、公開設定にしている他のユーザーの一覧も閲覧できます。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品はホーム画面の「ブクマ済み」タブにまとめて表示されるほか、投稿者別の作品一覧画面の「ブックマーク」タブでも確認できます。自分のブックマーク一覧はユーザー全体へ公開するかどうかを設定でき（既定は非公開）、公開設定にしている他のユーザーのブックマーク一覧も閲覧できます。不適切な作品は理由を添えて通報でき、送信後にはその投稿者をブロックするか選べます。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にするミュートタイトルと、作品広場で作品に設定されたタグだけを対象にするミュートタグを「新規追加」から1件ずつ登録し、ペンで編集、ゴミ箱で削除できます。カンマや#は不要です。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。",
   "helpWatermarkEntryTitle": "ウォーターマーク",
-  "helpWatermarkEntryDesc": "書き出した動画・画像に、自分の署名やロゴを透かしとして入れられるプレミアム限定機能です。位置・大きさ・不透明度を調整できます。タイムラインの共通レイヤートラックに配置したウォーターマークをタップすると、角度・大きさ・不透明度・表示範囲（ループ表示）をいつでも再編集できます。登録時だけでなく、実際にプロジェクト内で使うタイミングで細かく調整できます。",
+  "helpWatermarkEntryDesc": "書き出した動画・画像に、自分の署名やロゴを透かしとして入れられるプレミアム限定機能です。位置・大きさ・不透明度を調整できます。タイムラインの共通レイヤートラックに配置したウォーターマークをタップすると、角度・大きさ・不透明度・表示範囲（ループ表示）をいつでも再編集できます。登録時だけでなく、実際にプロジェクト内で使うタイミングで細かく調整できます。 追加するには、タイムラインの「素材を追加」メニューから「＋ウォーターマーク」を選びます。",
   "helpPremiumEntryTitle": "プレミアム",
   "helpPremiumEntryDesc": "プレミアム会員になると、無料版で90秒までに制限されている動画の尺が最大2時間まで拡大され、動画の最後に自動追加されるエンドカード（アプリロゴ）を削除できます。広告も非表示になり、ウォーターマーク・トーンカーブ・レベル補正機能も利用できるようになります。",
   "helpPerformanceSettingsTitle": "パフォーマンス設定",
@@ -760,7 +773,7 @@
   "helpFontImportTitle": "フォントの読み込み",
   "helpFontImportDesc": "端末内のフォントファイルを直接読み込んで使えるようにする機能です。設定画面のフォント管理「読み込み」タブから追加できます。配信されていない自作フォントや購入した商用フォントを使いたい場合に利用します。",
   "helpExportScreenTitle": "書き出し画面",
-  "helpExportScreenDesc": "動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。",
+  "helpExportScreenDesc": "「プリセット」で「標準」「高画質」「カスタム」を選べます。「カスタム」ではFPSを調整できます。動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。",
   "helpDrawingFilterTitle": "描画フィルター",
   "helpDrawingFilterDesc": "選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転・モザイク・ノイズ・球体陰影・水彩境界の28種類が用意されています。水彩境界は、作業レイヤーの塗った所の縁に色を溜め、内側を透けさせて、乾いた水彩のようにします（「色の境目にも付ける」で、隣り合う色の境目にも縁が付きます）。アニメ風加工は色数を減らし、隣どうしの色の差が「色の違いの閾値」以上の境目に「境界線の太さ」の線を暗い側へ引きます（線画の線は太りません）。プリズムは、レイヤーに描いた形ごとに虹の6色（赤・緑・水色・青・紫・赤）で塗ってぼかし、合成モードを「覆い焼き（リニア）」にします。暗い色の細い葉のような形を別のレイヤーに描いてから使うと、絵の上に淡い虹の光の筋が入ります（「ぼかし量」は一般的なガウスぼかしと同じ尺度）。球体陰影は、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます（光の位置・大きさはキャンバス上でもドラッグできます）。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、パネルの「ペン」「バケツ」でキャンバスに塗った範囲（「消しゴム」で修正）だけに、強い眼鏡レンズのような局所的な歪みをかけられます（選択範囲・選択レイヤーがあればその範囲から始まります）。キャンバスで選択範囲を作ってあると、描画フィルターはその中だけに適用されます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。色を限るときは、1色では元の色から遠い所を、使える色のうち2〜3色を規則正しく並べて（ディザリング）元の色に近づけます。輪郭の所は混ぜずにくっきり保ちます。色数を指定すると、絵の多くを占める色から選ばれます。ディザリングはスイッチでオン・オフでき、オフにすると最も近い1色で塗ります。大きさは「ブロックサイズを指定」（1〜100の100段階）と「ドット数を指定」（横・縦のドット数のスライダー。左端で1、右端でキャンバスの画素数）を切り替えられ、縦横比を保ったまま横と縦が一緒に変わります。どちらの指定も連動します。どちらも正方形のドットのまま半透明の縁を作りません。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動します。「適用」の右の「制御点追加」を選んで線をタップすると制御点を追加、「制御点削除」を選んで点をタップすると削除できます（どちらも選んでいないときに点をタップすると、確認してから削除します）。編集した形状がそのまま適用結果になり、制御点の移動・追加・削除もフィルター編集の元に戻す・やり直すで1つずつ戻せます。 トーンカーブは曲線の何もない所をタップすると点を追加、点をドラッグで移動、長押しで削除でき、R・G・Bの色ごとのカーブはRGBのカーブの後にかかります。レベル補正もR・G・Bごとに調整でき、ガンマで中間の明るさを変えられます。縁取りは「内側への食い込み」で元の輪郭の内側まで縁を広げられ、縁取りの新規レイヤーは元のレイヤーの直下に作られます。色収差は、ずれをX（横）・Y（縦）・Z（中心から外向き）へどれだけ振り分けるかを指定できます。魚眼レンズの中心と半径は、キャンバス上の＋と円のつまみをドラッグしても変えられます。周辺減光はキャンバス全体の四隅をぼんやり暗くします（描いていない透明な所にも影がかかります）。「範囲」で四隅から中心へ向かってどこまで暗くするか、「濃さ」で四隅の暗さを調整できます。眼鏡断層は本物の度の強い眼鏡のように、レンズ越しの景色をレンズの中心へ向かって一様に縮め（負の値・近視用）、または広げ（正の値・遠視用）、レンズの縁で輪郭が段になってずれます。墨溜まりは線が「最大角度」以下で出会う所（初期値の90°では鋭角と直角：V字・交差の狭い側・T字・四角い角など）の角の内側にだけ溜まり、それより広い角には溜まりません。出会う点で線の縁から「中央の太さ」、そこから「範囲」の端に向かってまっすぐ細くなって、端で0pxになり、なめらかにとがって消えます。「中央の太さ」を大きくしても、両側の墨溜まりの端どうしを結ぶ直線より外へはふくらまず、いちばん太くても中央は平らになります。範囲の途中で線が途切れているときは、その線ではそこを終点として0pxまで細くなります（線ごとに長さが変わります）。そのときも2つの墨溜まりは角の真ん中で、どちらの線からも同じ太さで出会います（長い方の線の墨溜まりは、そこから範囲の端まで細くなります）。自動線画は下描きの線の中心をなぞって細い線にします。近くに並んだ線も間が少しでも空いていれば2本のまま描き、線の中の小さな白い点（かすれ）だけを埋めます。2本の線が近づいてくっついている所は、真ん中に1本の線を引くのではなく、下描きと同じように2本の線が徐々に近づいて合わさります。線が交差したり重なったりしている所も、下描きのとおりにそれぞれの線がそのまま続きます（交点で折れ曲がったり、重なった2本が1本に融けたりしません）。斜めに浅く交わる線もまっすぐ交差したまま続き、触れ合うだけの線（頭に沿って描いた髪の輪郭など）は、それぞれ自分の側を通る別々の線のままです。目のような点は塗りつぶした点のまま描きます。「対象ラフ線幅」より短い枝分かれは描きません。「入り抜き」はスイッチでオン・オフでき、オフにすると線の端まで同じ太さになります。背景馴染ませは、背景の光と影を合成モード「ハードライト」で重ねます（影の色は黒や灰色ではなく、背景の影の部分の色を暗くしたもの）。周りの色は「オーバーレイ」で全体に重ねて色の方向を合わせ、下からの照り返しや周りからの反射は「スクリーン」で、ネオンのような強い有色光は「加算・発光」で輪郭に入れます。「明るさ・色みを背景に合わせる」は、描いた色が背景より明るすぎたり鮮やかすぎたりする所を背景の範囲へ寄せ、暗い所・中間・明るい所をそれぞれ背景の同じ明るさの色みへ寄せます（線画の黒はそのまま）。「ぼかし具合」は色を拾う背景をぼかす量です。",
   "helpLayerKeyframeTitle": "レイヤーキーフレーム（パーツ単位アニメーション）",
@@ -3065,6 +3078,9 @@
   "communityFloatingPreviewDetailButton": "詳細へ",
   "communityFloatingPreviewPlayTooltip": "再生",
   "communityFloatingPreviewPauseTooltip": "一時停止",
+  "communityFloatingPreviewResizeTooltip": "プレビューのサイズを変更",
+  "communityFloatingPreviewMoveHint": "ドラッグで移動できます。Alt＋矢印キーでも移動できます。",
+  "communityFloatingPreviewCompactHint": "この作品は詳細画面で確認できます。",
   "communityReportDialogTitle": "作品を通報",
   "communityReportDialogBody": "通報理由を選択してください。",
   "communityReportReasonInappropriate": "不適切な内容",
@@ -3102,18 +3118,6 @@
       }
     }
   },
-  "communityFollowersPublicToggleTitle": "フォロー中/フォロワー一覧を公開する",
-  "communityFollowersPublicToggleDesc": "オンにすると、他のユーザーがこのページからあなたのフォロー中/フォロワー一覧を見られるようになります。既定は非公開です。",
-  "communityFollowersListTitle": "フォロワー",
-  "communityFollowersListEmpty": "フォロワーがいません",
-  "communityFollowersListHiddenNote": "他に{count}人いますが、本人の設定により非表示です",
-  "@communityFollowersListHiddenNote": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "communityAuthorFollowingCount": "フォロー中{count}人",
   "@communityAuthorFollowingCount": {
     "placeholders": {
@@ -3122,19 +3126,8 @@
       }
     }
   },
-  "communityFollowingListTitle": "フォロー中",
-  "communityFollowingListEmpty": "誰もフォローしていません",
   "communityFollowNotificationsTooltip": "通知",
-  "communityFollowNotificationsTitle": "フォロー通知",
   "communityFollowNotificationsEmpty": "通知はありません",
-  "communityFollowNotificationBody": "{name}さんにフォローされました",
-  "@communityFollowNotificationBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "communityNoWorksMessage": "作品がありません",
   "communityFavoriteAuthorFollow": "フォロー",
   "communityFavoriteAuthorFollowing": "フォロー中",
@@ -3152,9 +3145,6 @@
   },
   "communityAuthorTabWorks": "作品",
   "communityAuthorTabBookmarks": "ブックマーク",
-  "communityBookmarksPublicToggleTitle": "ブックマーク一覧を公開する",
-  "communityBookmarksPublicToggleDesc": "オンにすると、他のユーザーがこのページからあなたのブックマーク一覧を見られるようになります。既定は非公開です。",
-  "communityBookmarksPrivateNotice": "このユーザーはブックマーク一覧を非公開にしています。",
   "communityBookmarksEmptyMessage": "ブックマークした作品がありません",
   "communityShortsBadge": "縦画面",
   "communityVideoTypeFilterTooltip": "動画の種類を絞り込む",
@@ -3407,19 +3397,87 @@
   "filterNoiseColor": "カラーノイズ",
   "filterNoiseSeed": "模様のシード値",
   "communityContentFilterTitle": "表示フィルター",
-  "communityHideGenerativeAiImageVideo": "「AI画像・AI動画使用」の作品を非表示",
+  "communityHideGenerativeAiImageVideo": "AIで生成した画像・動画を使用した作品を表示しない",
   "communityMutedWords": "ミュートタイトル登録",
-  "communityMutedWordsHint": "作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。カンマ・「、」・改行で区切って複数指定できます",
+  "communityMutedWordsHint": "作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。1件ずつ追加・編集できます。",
   "communityMutedTags": "ミュートタグ登録",
-  "communityMutedTagsHint": "作品広場で作品に設定されたタグが一致すると非表示にします（先頭の#は無視されます）。カンマ・「、」・改行で区切って複数指定できます",
+  "communityMutedTagsHint": "作品広場で一致するタグの作品を非表示にします。タグを1件ずつ登録でき、#は不要です。",
+  "communityMuteAddNew": "新規追加",
+  "communityScrollToTop": "最上部に戻る",
+  "communityPostPeriodTitle": "投稿期間",
+  "communityDurationFilterTitle": "動画の長さ",
+  "communitySavedSearches": "保存した検索条件",
+  "communitySignInPromptTitle": "Googleアカウントでログイン",
+  "communitySignInPromptBody": "作品の投稿・管理、フォロー、ブックマーク、通報などの機能を利用するにはGoogleアカウントとの連携が必要です。",
+  "communitySignInPromptConnect": "Googleアカウントを連携",
+  "communitySignInUnavailable": "この開発ビルドにはGoogleログイン設定がないため、連携を開始できません。",
+  "communitySaveSearch": "現在の検索条件を保存",
+  "communitySavedSearchName": "検索条件の名前",
+  "communitySavedSearchLimit": "保存できる検索条件は10件までです",
+  "communitySavedSearchEmpty": "保存した検索条件はありません",
+  "communityDurationAny": "長さを指定しない",
+  "communityDurationUpTo": "〇分以内（スライダー）",
+  "communityDurationRange": "〇分以上〇分以内（数値入力）",
+  "communityDurationMinutes": "分以内",
+  "communityDurationMinimum": "最短（分）",
+  "communityDurationMaximum": "最長（分）",
+  "communityTagExactMatch": "検索語を完全一致で検索する（オフなら部分一致）",
+  "communityMinimumViews": "再生回数",
+  "communityMinimumBookmarks": "ブックマーク数",
+  "communityPostPeriodAll": "すべての期間",
+  "communityPostPeriodToday": "今日",
+  "communityPostPeriodWeek": "今週",
+  "communityPostPeriodMonth": "今月",
+  "communityPostPeriodYear": "今年",
+  "communityPostPeriodCustom": "日付期間を指定",
+  "communityPostPeriodChooseRange": "日付を選ぶ",
+  "communityMutedAuthors": "ミュートしたユーザー",
+  "communityMutedAuthorsEmpty": "ミュート中のユーザーはいません",
+  "communityUnmuteAuthor": "このユーザーのミュートを解除する",
+  "communityMyWorksManagementHeading": "作品管理",
+  "communityWorkTagsTitle": "作品のタグ管理",
+  "communityWorkTagsHint": "タグを追加・編集・削除できます。ロックすると他のユーザーは変更できません。ロックしたタグの編集・削除は先に解除してください。",
+  "communityWorkEditTag": "タグを編集",
+  "communityWorkTagChangeFailed": "タグを変更できませんでした",
   "communityContainsGenerativeAiImageVideo": "AI画像・AI動画使用",
   "communityContainsGenerativeAiImageVideoHelp": "画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等は「AI画像・AI動画使用」の対象外です。",
   "communityAiImageVideoUpdateFailed": "「AI画像・AI動画使用」を変更できませんでした。通信状態を確認して、もう一度お試しください。",
   "communityRetry": "再試行",
   "communityReloadTooltip": "再読み込み",
-  "communityGoogleSignInNotConfigured": "Googleログインがまだ設定されていません",
+  "communityGoogleSignInNotConfigured": "Googleアカウントが連携されていません",
   "communityGoogleAccountBusy": "Googleアカウントの別の操作を処理中です。完了してから、もう一度お試しください。",
   "communityMyWorksTitle": "自分の投稿",
+  "communityMyWorksViewAuthorPage": "自分の作品一覧ページを見る",
+  "communityMyWorksAccountRequired": "作品一覧を表示するにはGoogleアカウントに接続してください",
+  "communityMyWorksSettingsTitle": "作品の設定",
+  "communityMyWorksPublishInNiarim": "NIARIM内で公開する",
+  "communityMyWorksDeleteNiarim": "NIARIM作品広場からこの作品を削除",
+  "communityMyWorksDeleteConfirmTitle": "この作品を削除しますか？",
+  "communityMyWorksDeleteConfirmBody": "NIARIM内の作品を完全に削除します。YouTube上の動画は削除されません。この操作は取り消せません。",
+  "communityMyWorksOpenYoutubeStudio": "YouTube Studioで動画を管理する",
+  "communityMyWorksYoutubeStudioHelp": "YouTube側の公開状態や動画設定はYouTube Studioで管理します。NIARIM内の公開設定とは独立しています。",
+  "communityMyWorksYoutubeOpenFailed": "YouTube Studioを開けませんでした",
+  "communityMyWorksOperationFailed": "操作に失敗しました。{reason}",
+  "@communityMyWorksOperationFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMyWorksBulkPublish": "一括公開",
+  "communityMyWorksBulkHide": "一括非公開",
+  "communityMyWorksBulkResult": "完了: {success}件 / 失敗: {failed}件",
+  "@communityMyWorksBulkResult": {
+    "placeholders": {
+      "success": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
   "communityMyWorksAccountNotConnected": "Googleアカウント未接続",
   "communityMyWorksAddAccount": "Googleアカウントを追加",
   "communityMyWorksSwitchAccount": "Googleアカウントを切り替え・追加",
@@ -3442,14 +3500,6 @@
   },
   "communitySignInFailed": "Googleアカウントでログインできませんでした。{reason}",
   "@communitySignInFailed": {
-    "placeholders": {
-      "reason": {
-        "type": "String"
-      }
-    }
-  },
-  "communityVisibilityChangeFailed": "公開状態を変更できませんでした。{reason}",
-  "@communityVisibilityChangeFailed": {
     "placeholders": {
       "reason": {
         "type": "String"
@@ -3816,14 +3866,6 @@
       }
     }
   },
-  "folderColorName": "{color, select, pink{ピンク} orange{オレンジ} yellow{黄} green{緑} blue{青} purple{紫} gray{グレー} other{既定の色}}",
-  "@folderColorName": {
-    "placeholders": {
-      "color": {
-        "type": "String"
-      }
-    }
-  },
   "newProjectNumberRangeError": "{min}〜{max}の数字を入力してください",
   "@newProjectNumberRangeError": {
     "placeholders": {
@@ -3834,5 +3876,58 @@
         "type": "int"
       }
     }
-  }
+  },
+  "communityThresholdAny": "条件なし",
+  "communityMinimumViewsOption": "{count}回再生以上",
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMinimumBookmarksOption": "{count}件以上",
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityTileSize": "作品の表示サイズ",
+  "communityMutedWordsEmpty": "ミュート中のキーワードはありません",
+  "communityMutedTagsEmpty": "ミュート中のタグはありません",
+  "communityMuteShort": "ミュート",
+  "communityMuteConfirmTitle": "このユーザーをミュートしますか？",
+  "communityMuteConfirmBody": "ミュートするとこのユーザーの作品は非表示になります。",
+  "communityMuteConfirmAction": "ミュートする",
+  "communityUnmuteConfirmTitle": "このユーザーのミュートを解除しますか？",
+  "communityUnmuteConfirmAction": "解除する",
+  "communityMuteNo": "いいえ",
+  "communityMuteDone": "このユーザーをミュートしました",
+  "communityUnmuteDone": "このユーザーのミュートを解除しました",
+  "communityMilestoneNotificationsTitle": "通知",
+  "communityFollowerMilestone": "フォロワーが{count}人に達しました",
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBookmarkMilestone": "作品「{title}」のブックマークが{count}件に達しました",
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communitySearchHistory": "検索履歴",
+  "communitySearchHistoryEmpty": "検索履歴はありません",
+  "communityDeleteSavedSearchConfirm": "保存した検索条件を削除しますか？",
+  "communitySortLabel": "並び替え"
 }

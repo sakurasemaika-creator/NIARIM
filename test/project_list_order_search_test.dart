@@ -119,12 +119,20 @@ void main() {
     return service;
   }
 
-  // 一覧に出ている名前（上の行から、行の中は左から）。
+  // 一覧に出ている名前（上の行から、行の中は左から）。一覧の上の絞り込み・
+  // 並び替え（一覧と一緒にスクロールする）は数えない。
   List<String> shownNames(WidgetTester tester) {
     final list = find.byType(ProjectListWidget);
+    final items = find.descendant(
+      of: list,
+      matching: find.byWidgetPredicate((w) => w is Card || w is ListTile),
+    );
     final names = <(Offset, String)>[];
     for (final element
-        in find.descendant(of: list, matching: find.byType(Text)).evaluate()) {
+        in find
+            .descendant(of: items, matching: find.byType(Text))
+            .evaluate()
+            .toSet()) {
       final text = (element.widget as Text).data;
       if (text == null) continue;
       // カードの名前（見出しフォント）だけ。

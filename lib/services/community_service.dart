@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/community_follow_notification.dart';
+import 'community_milestone_store.dart';
 import '../models/community_repost.dart';
 import '../models/community_work.dart';
 import 'api/community_api.dart';
@@ -69,6 +69,10 @@ class CommunityService extends ChangeNotifier {
 
   CommunityService({this.api}) {
     contentFiltersReady = _loadContentFilters();
+    if (api == null) {
+      // No notifications about individual follows, even in demo mode.
+      loadMilestones();
+    }
   }
 
   /// Completes after persisted display filters have been restored.
@@ -202,13 +206,17 @@ class CommunityService extends ChangeNotifier {
   static const _hideAiImageVideoKey = 'community.hideGenerativeAiImageVideo';
   static const _mutedWordsKey = 'community.mutedWords';
   static const _mutedTagsKey = 'community.mutedTags';
+  static const _mutedAuthorsKey = 'community.mutedAuthors';
   bool _hideGenerativeAiImageVideo = false;
   final Set<String> _mutedWords = {};
   final Set<String> _mutedTags = {};
+  final Set<String> _mutedAuthorIds = {};
 
   bool get hideGenerativeAiImageVideo => _hideGenerativeAiImageVideo;
   Set<String> get mutedWords => Set.unmodifiable(_mutedWords);
   Set<String> get mutedTags => Set.unmodifiable(_mutedTags);
+  Set<String> get mutedAuthorIds => Set.unmodifiable(_mutedAuthorIds);
+  bool isAuthorMuted(String authorId) => _mutedAuthorIds.contains(authorId);
 
   /// Never completes with an error: unreadable settings fall back to
   /// showing everything, so the setters below, which wait for this, keep
@@ -231,6 +239,13 @@ class CommunityService extends ChangeNotifier {
           (prefs.readStringList(_mutedTagsKey) ?? const [])
               .map(_tagKey)
               .where((e) => e.isNotEmpty),
+        );
+      _mutedAuthorIds
+        ..clear()
+        ..addAll(
+          (prefs.readStringList(_mutedAuthorsKey) ?? const []).where(
+            (id) => id.isNotEmpty,
+          ),
         );
     } catch (error) {
       debugPrint('Community content filters could not be restored: $error');
@@ -284,7 +299,27 @@ class CommunityService extends ChangeNotifier {
     await prefs.setStringList(_mutedTagsKey, _mutedTags.toList()..sort());
   }
 
+  /// Viewer-only mute, independent of Google sign-in and of the backend block
+  /// endpoint. A muted author's works disappear from discovery/search without
+  /// sending a notification to that author.
+  Future<void> setAuthorMuted(String authorId, bool muted) async {
+    await contentFiltersReady;
+    if (_disposed || authorId.isEmpty) return;
+    if (muted) {
+      _mutedAuthorIds.add(authorId);
+    } else {
+      _mutedAuthorIds.remove(authorId);
+    }
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _mutedAuthorsKey,
+      _mutedAuthorIds.toList()..sort(),
+    );
+  }
+
   bool _passesContentFilters(CommunityWork work) {
+    if (_mutedAuthorIds.contains(work.authorId)) return false;
     if (_hideGenerativeAiImageVideo && work.containsGenerativeAiImageOrVideo) {
       return false;
     }
@@ -332,21 +367,10 @@ class CommunityService extends ChangeNotifier {
   late final Map<String, Set<String>> _dummyFollowersByAuthor = api == null
       ? _buildDummyFollowersByAuthor(_works)
       : {};
-  // 各authorIdの「自分のフォロワー一覧を他ユーザーに公開するか」設定。
-  // ブックマーク一覧の公開設定（_bookmarksPublicByAuthor）と同じパターン。
-  // 既定は非公開、他のダミー作者は公開/非公開どちらの見た目も確認できる
-  // よう交互に割り当てている。
-  final Map<String, bool> _followersPublicByAuthor =
-      _buildDummyPublicVisibility();
-  // フォロー通知（Task#134継続：「フォローされたら通知が来るようにして
-  // ほしい」という要望を受けた実装）。バックエンド未実装かつ実際の
-  // マルチユーザー環境が無いため、新しいフォローをリアルタイムに検知
-  // することはできない（他のダミー作者は自律的に行動しない）。ここでは
-  // 「自分（kDummySelfAuthorId）を既にフォローしているダミー作者」を
-  // 過去に届いた通知として初期化時に生成し、アプリ内通知一覧
-  // （21.3節で推奨された方式）として表示する。詳細は22.6節参照。
-  late final List<CommunityFollowNotification> _followNotifications =
-      api == null ? _buildFollowNotifications() : [];
+  final CommunityMilestoneStore _milestoneStore = CommunityMilestoneStore();
+  List<CommunityMilestoneEvent> _milestoneEvents = [];
+  final Map<String, int> _followerCounts = {};
+  final Map<String, int> _followingCounts = {};
 
   @visibleForTesting
   void replaceWorksForTest(Iterable<CommunityWork> works) {
@@ -435,6 +459,8 @@ class CommunityService extends ChangeNotifier {
     if (_currentUserId == id) return;
     if (_currentUserId != null) forgetOwner();
     _currentUserId = id;
+    _milestoneEvents = [];
+    loadMilestones();
     notifyListeners();
   }
 
@@ -495,6 +521,9 @@ class CommunityService extends ChangeNotifier {
     }
     _pruneUnconfirmed();
     notifyListeners();
+    await _observeOwnMilestones(
+      ownWorks: [for (final id in _ownIds) ?byId(id)],
+    );
     final id = page.authorId;
     if (accountKey != null && id != null) {
       try {
@@ -671,6 +700,9 @@ class CommunityService extends ChangeNotifier {
   void forgetOwner() {
     _accountRevision++;
     _currentUserId = null;
+    _milestoneEvents = [];
+    _followerCounts.clear();
+    _followingCounts.clear();
     _lastError = null;
     _isSocialLoading = false;
     _hasLoadedSocial = false;
@@ -809,6 +841,29 @@ class CommunityService extends ChangeNotifier {
     _ownIds.add(workId);
     applyServerWork(_plazaCopy(reply));
     return reply.toCommunityWork();
+  }
+
+  /// Deletes only the poster's NIARIM entry. The YouTube video is deliberately
+  /// left untouched; removing it there requires a separate explicit action.
+  Future<void> deleteOwnWork(String workId) async {
+    final known = byId(workId);
+    if (known == null || !isOwnWork(known)) {
+      throw StateError('Only the poster can delete $workId');
+    }
+    final revision = _accountRevision;
+    final client = api;
+    if (client != null) {
+      await _awaitInAccount(client.deleteWork(workId), revision);
+    }
+    if (!_isCurrentAccount(revision)) {
+      throw const CommunityAccountChangedException();
+    }
+    _works.removeWhere((work) => work.id == workId);
+    _ownIds.remove(workId);
+    _latestIds.remove(workId);
+    _bookmarkWorkIds.remove(workId);
+    _bookmarkedIds.remove(workId);
+    notifyListeners();
   }
 
   bool isBookmarked(String workId) => _bookmarkedIds.contains(workId);
@@ -1025,20 +1080,6 @@ class CommunityService extends ChangeNotifier {
   List<String> followerNamesOf(String authorId) =>
       followerIdsOf(authorId).map((id) => authorNameOf(id) ?? id).toList();
 
-  /// [authorId]のフォロワー一覧のうち、実際に画面へ表示してよい分だけを
-  /// 絞り込んだID一覧（Task#134継続：22.7節）。フォロワー自身が自分の
-  /// フォロー中/フォロワー一覧を非公開にしている場合、[authorId]側の
-  /// 一覧が公開設定であっても、その人物だけは表示しない（フォロワー
-  /// 本人の意思を優先する）。[followerCountOf]自体は非公開のフォロワーも
-  /// 含めた実数のまま変えない（「集計」と「表示」を分離する設計）。
-  List<String> visibleFollowerIdsOf(String authorId) =>
-      followerIdsOf(authorId).where(isFollowersPublic).toList();
-
-  /// [authorId]の表示可能なフォロワー名一覧（[visibleFollowerIdsOf]参照）。
-  List<String> visibleFollowerNamesOf(String authorId) => visibleFollowerIdsOf(
-    authorId,
-  ).map((id) => authorNameOf(id) ?? id).toList();
-
   /// [authorId]が誰をフォロー中かのID一覧。自分（kDummySelfAuthorId）に
   /// ついては実際にトグル操作した[_favoriteAuthorIds]をそのまま返す。
   /// 他のダミー作者については、フォロワー関係のダミーデータ
@@ -1059,7 +1100,9 @@ class CommunityService extends ChangeNotifier {
 
   /// [authorId]のフォロー中人数（数字のみ）。フォロワー数と同様、常に
   /// 公開情報として扱う（29_動画投稿・ランキング機能仕様.md 22.5節）。
-  int followingCountOf(String authorId) => followingIdsOf(authorId).length;
+  int followingCountOf(String authorId) =>
+      _followingCounts[authorId] ??
+      (api == null ? followingIdsOf(authorId).length : 0);
 
   /// 作者IDから表示名を引く（見つからなければnull）。
   String? authorNameOf(String authorId) => _works
@@ -1067,69 +1110,85 @@ class CommunityService extends ChangeNotifier {
       .map((w) => w.authorName)
       .firstOrNull;
 
-  /// [authorId]のフォロワー数（数字のみ）。「誰がフォローしているか」の
-  /// 一覧は既定で非公開のまま（[isFollowersPublic]がfalseの間は数字のみ
-  /// 表示し、一覧は表示しない設計をUI側で徹底する。29_動画投稿・
-  /// ランキング機能仕様.md 22.4節・22.5節）。集計値の表示だけであれば
-  /// 特定個人を識別できずUGCリスクが小さいため、こちらは常に公開情報
-  /// として扱う。
-  int followerCountOf(String authorId) => followerIdsOf(authorId).length;
+  /// 作者のフォロワー数（公開するのは件数だけ）。
+  int followerCountOf(String authorId) =>
+      _followerCounts[authorId] ??
+      (api == null ? followerIdsOf(authorId).length : 0);
 
-  /// [authorId]が自分のフォロワー一覧を他ユーザーに公開しているか。
-  /// 既定は非公開（Task#134継続：本人選択制で一覧を公開できる妥協案。
-  /// 22.5節参照）。
-  bool isFollowersPublic(String authorId) =>
-      _followersPublicByAuthor[authorId] ?? false;
+  /// A person's follower count is public, but individual followers are not.
+  List<CommunityMilestoneEvent> get milestoneNotifications =>
+      List.unmodifiable(_milestoneEvents);
 
-  /// 自分のフォロワー一覧の公開設定（ユーザー設定）。
-  bool get selfFollowersPublic => isFollowersPublic(kDummySelfAuthorId);
+  int get unreadMilestoneCount =>
+      _milestoneEvents.where((event) => !event.read).length;
 
-  /// 自分のフォロワー一覧を公開するかどうかを変更する。
-  void setSelfFollowersPublic(bool value) {
-    _followersPublicByAuthor[kDummySelfAuthorId] = value;
+  Future<void> loadMilestones() async {
+    final revision = _accountRevision;
+    final account = _selfId;
+    if (account == null) return;
+    final items = await _milestoneStore.load(account);
+    if (!_isCurrentAccount(revision) || _selfId != account) return;
+    _milestoneEvents = items;
     notifyListeners();
   }
 
-  // ─── フォロー通知（Task#134継続） ────────────────────────────────
-
-  /// 自分（kDummySelfAuthorId）宛てのフォロー通知一覧（新着順）。
-  List<CommunityFollowNotification> get followNotifications {
-    final list = [..._followNotifications]
-      ..sort((a, b) => b.followedAt.compareTo(a.followedAt));
-    return List.unmodifiable(list);
+  Future<void> markMilestonesRead() async {
+    final revision = _accountRevision;
+    final account = _selfId;
+    if (account == null) return;
+    final items = await _milestoneStore.markAllRead(account);
+    if (!_isCurrentAccount(revision) || _selfId != account) return;
+    _milestoneEvents = items;
+    notifyListeners();
   }
 
-  /// 未読のフォロー通知数（コミュニティ画面の通知ベルのバッジに使う）。
-  int get unreadFollowNotificationCount =>
-      _followNotifications.where((n) => !n.isRead).length;
-
-  /// フォロー通知を全て既読にする（通知一覧画面を開いたタイミングで
-  /// 呼ぶ想定）。
-  void markAllFollowNotificationsRead() {
-    if (_followNotifications.every((n) => n.isRead)) return;
-    for (var i = 0; i < _followNotifications.length; i++) {
-      _followNotifications[i] = _followNotifications[i].copyWith(isRead: true);
+  Future<void> _observeOwnMilestones({
+    int? followers,
+    Iterable<CommunityWork>? ownWorks,
+  }) async {
+    final revision = _accountRevision;
+    final account = _selfId;
+    if (account == null) return;
+    final snapshots = ownWorks == null
+        ? null
+        : <String, (String, int)>{
+            for (final work in ownWorks)
+              work.id: (work.title, work.bookmarkCount),
+          };
+    final events = await _milestoneStore.observe(
+      account,
+      followers: followers,
+      bookmarks: snapshots,
+    );
+    if (_isCurrentAccount(revision) && _selfId == account) {
+      _milestoneEvents = events;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
-  List<CommunityFollowNotification> _buildFollowNotifications() {
-    final random = Random(31);
-    final followerIds =
-        (_dummyFollowersByAuthor[kDummySelfAuthorId] ?? const <String>{})
-            .toList()
-          ..sort();
-    return [
-      for (final id in followerIds)
-        CommunityFollowNotification(
-          id: 'follow_$id',
-          followerId: id,
-          followerName: authorNameOf(id) ?? id,
-          followedAt: DateTime.now().subtract(
-            Duration(hours: random.nextInt(240)),
-          ),
-        ),
-    ];
+  /// Read only current aggregate counts from the server; prior counts live
+  /// on this device. First observation establishes a baseline.
+  Future<void> refreshFollowerCount(String authorId) async {
+    final client = api;
+    if (client == null) {
+      if (isOwnAuthor(authorId)) {
+        await _observeOwnMilestones(followers: followerIdsOf(authorId).length);
+      }
+      return;
+    }
+    final revision = _accountRevision;
+    try {
+      final counts = await client.socialCounts(authorId);
+      if (!_isCurrentAccount(revision)) return;
+      _followerCounts[authorId] = counts.followers;
+      _followingCounts[authorId] = counts.following;
+      notifyListeners();
+      if (isOwnAuthor(authorId)) {
+        await _observeOwnMilestones(followers: counts.followers);
+      }
+    } on NiarimApiException catch (error) {
+      if (_isCurrentAccount(revision)) _lastError = error;
+    }
   }
 
   /// フォロー中の作者タブに表示する一覧（新着順）。フォロー中の作者本人が

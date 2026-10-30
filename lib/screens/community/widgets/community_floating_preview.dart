@@ -1,41 +1,17 @@
-import 'package:niarim/services/theme_service.dart';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router.dart';
 import '../../../services/community_preview_service.dart';
 import '../../../services/community_service.dart';
 import '../../../widgets/ad_banner_mock_widget.dart';
-import '../../../config/accent_text_theme.dart';
-import '../../../config/font_fallback.dart';
-import '../../../utils/color_contrast.dart';
 import 'community_work_card.dart';
 
-/// ランキング・新着で作品カードをタップした際に表示するフローティング
-/// 動画プレビューウィンドウ。ウィンドウ全体をドラッグして移動でき、
-/// 右下のハンドルでリサイズできる。閉じる（×）ボタンと再生（プレース
-/// ホルダー）ボタンを並べた下部コントロールバー、および「詳細へ」
-/// ボタンを持つ。
-///
-/// 以前はタイトル文字＋閉じるボタンだけの専用ヘッダーバー（黒帯）を
-/// ウィンドウ移動用のドラッグハンドルとして使っていたが、「作品名の
-/// 表示は不要」「ドラッグはプレビュー全体で有効にしてほしい（黒帯を
-/// 減らして動画・下部コントロールのスペースを広げたい）」という
-/// フィードバックを受け、ヘッダーバー自体を廃止した。ドラッグは
-/// ウィンドウ全体（リサイズハンドルの領域を除く）で受け付ける。
-///
-/// `app.dart`の`MaterialApp.router`の`builder`（ルーティングされる画面の
-/// 外側、画面遷移をまたいで常に生き続ける層）に配置することで、他の画面
-/// （ホーム等）へ移動してもこのウィンドウは表示され続ける
-/// （「動画を再生しながら他の画面を閲覧し続けられる」という要件に対応）。
-///
-/// 実際の動画本体（YouTube埋め込み）はバックエンド未実装のため、
-/// 既存の作品詳細と同じプレースホルダー（グラデーション＋再生アイコン）
-/// を表示する。将来実際の動画を埋め込む際は、YouTube自身のミニプレイヤー
-/// 機能に類似する特許（Google保有）が存在することを踏まえ、この
-/// ウィジェットのような独自ドラッグ実装をそのまま流用するのではなく、
-/// OS標準のPicture-in-Picture APIへ乗せる方針を検討すること
-/// （詳細は`29_動画投稿・ランキング機能仕様.md`参照）。
+/// App-wide preview state survives navigation. The media area is currently a
+/// placeholder; the controls only toggle its visual state. Playback integration
+/// must separately satisfy the player, platform and IP requirements.
 class CommunityFloatingPreview extends StatefulWidget {
   const CommunityFloatingPreview({super.key});
 
@@ -45,17 +21,41 @@ class CommunityFloatingPreview extends StatefulWidget {
 }
 
 class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
-  // 実際の動画埋め込みが無いためプレースホルダーとしての再生状態
-  // （見た目のトグルのみ。実際の再生制御は行わない）。
   bool _isPlaying = true;
+  String? _lastWorkId;
+  bool? _showingPlayer;
+  final _resizeFocusKey = GlobalKey();
+  final _closeFocusKey = GlobalKey();
+  final _playFocusKey = GlobalKey();
+  final _detailsFocusKey = GlobalKey();
+  final _playFocus = FocusNode(debugLabel: 'Community preview play');
+  final _resizeFocus = FocusNode(debugLabel: 'Community preview resize');
+  final _detailsFocus = FocusNode(debugLabel: 'Community preview details');
+  final _closeFocus = FocusNode(debugLabel: 'Community preview close');
+
+  @override
+  void dispose() {
+    _playFocus.dispose();
+    _resizeFocus.dispose();
+    _detailsFocus.dispose();
+    _closeFocus.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final service = context.watch<CommunityPreviewService>();
     final opened = service.work;
-    if (opened == null) return const SizedBox.shrink();
-    // The work as it is now: one that becomes hidden or muted while it
-    // plays is closed, except the viewer's own.
+    if (opened == null) {
+      _lastWorkId = null;
+      _showingPlayer = null;
+      return const SizedBox.shrink();
+    }
+    if (_lastWorkId != opened.id) {
+      _lastWorkId = opened.id;
+      _isPlaying = true;
+      _showingPlayer = null;
+    }
     final community = context.watch<CommunityService>();
     final work = community.byId(opened.id) ?? opened;
     if (!community.isOwnWork(work) &&
@@ -66,284 +66,364 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
       return const SizedBox.shrink();
     }
     final l10n = AppLocalizations.of(context)!;
-    final screenSize = MediaQuery.sizeOf(context);
-    final position = service.position;
-    final size = service.sizeFor(screenSize.width);
-    // このプレビューはNavigatorの外側に常駐するため、通常のページ制約だけでは
-    // 画面最上部の固定広告まで覆えてしまう。広告専用領域より下だけへ移動を
-    // 制限し、ドラッグ中も広告と重ならないようにする。
-    final previewTopLimit =
-        MediaQuery.paddingOf(context).top + kPersistentHorizontalAdMockExtent;
-    final previewBottomLimit = (screenSize.height - size.height).clamp(
-      previewTopLimit,
-      double.infinity,
-    );
-
-    // リサイズハンドルの当たり判定は、見た目のアイコンより一回り以上
-    // 広く取る（「指を反応させるのが難しい」というフィードバックへの対応）。
-    // ハンドルは右下角に固定表示され、下部コントロールバーの「詳細へ」
-    // ボタンも同じ右下寄りに配置されるため、大きくしすぎると重なって
-    // タップを奪ってしまう。当たり判定を広げつつ両立できる大きさに留める。
-    const handleHitSize = 32.0;
-    const handleIconSize = 16.0;
-
-    // 下部の操作バーとリサイズの取っ手は上部バー・メニューと同じ組み合わせ
-    // （メニュー背景色の上にメニューの文字色）。以前は下地と記号の両方が
-    // 本文の文字色で、どのテーマでも記号が下地に溶けていた。
     final theme = Theme.of(context);
-    final barColor = opaqueOver(
-      theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
-      theme.scaffoldBackgroundColor,
-    );
-    final barInk =
+    final barColor = theme.cardTheme.color ?? theme.colorScheme.surface;
+    final controlColor =
         theme.appBarTheme.foregroundColor ?? theme.colorScheme.onSurface;
+    final media = MediaQuery.of(context);
+    final leftLimit = media.padding.left;
+    final topLimit = media.padding.top + kPersistentHorizontalAdMockExtent;
+    final availableWidth = math.max(
+      0.0,
+      media.size.width - leftLimit - media.padding.right,
+    );
+    final availableHeight = math.max(
+      0.0,
+      media.size.height -
+          topLimit -
+          math.max(media.padding.bottom, media.viewInsets.bottom),
+    );
+    if (availableWidth == 0 || availableHeight == 0) {
+      return const SizedBox.shrink();
+    }
+    final width = math.min(service.width, availableWidth);
+    const labelStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
+    final detailStyle =
+        theme.textTheme.labelLarge?.merge(labelStyle) ?? labelStyle;
+    final text = TextPainter(
+      text: TextSpan(
+        text: l10n.communityFloatingPreviewDetailButton,
+        style: detailStyle,
+      ),
+      textScaler: media.textScaler,
+      locale: Localizations.localeOf(context),
+      textDirection: Directionality.of(context),
+    )..layout(maxWidth: math.max(1, width - 40));
+    final detailsWidth = math.max(64.0, text.width + 24);
+    final detailsHeight = math.max(48.0, text.height + 24);
+    final playerHeight = CommunityPreviewService.playerHeightFor(width);
+    // Reserve every control outside the media rectangle, including the resize
+    // handle. Never overlay a handle on top of Details or the player.
+    final playerSplitRows = width < detailsWidth + 3 * 48 + 3 * 8 + 16;
+    final playerControlsHeight = playerSplitRows
+        ? 48 + detailsHeight
+        : detailsHeight;
+    final showPlayer =
+        width >= CommunityPreviewService.minWidth &&
+        playerHeight + playerControlsHeight <= availableHeight;
+    final splitRows = showPlayer
+        ? playerSplitRows
+        : width < detailsWidth + 48 + 16;
+    final controlsHeight = splitRows ? 48 + detailsHeight : detailsHeight;
+    if (_showingPlayer != showPlayer) {
+      final shouldFocus =
+          _showingPlayer == null ||
+          [
+            _playFocus,
+            _resizeFocus,
+            _detailsFocus,
+            _closeFocus,
+          ].any((node) => node.hasFocus);
+      _showingPlayer = showPlayer;
+      // Keep focus when resize replaces a focused player with its fallback.
+      // A field or dialog outside this preview retains its own focus.
+      if (shouldFocus) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted &&
+              service.work?.id == work.id &&
+              _showingPlayer == showPlayer) {
+            final target = showPlayer ? _playFocus : _detailsFocus;
+            target.requestFocus();
+            if (!showPlayer && target.context != null) {
+              Scrollable.ensureVisible(target.context!, alignment: 1);
+            }
+          }
+        });
+      }
+    }
+    final hint = TextPainter(
+      text: TextSpan(
+        text: l10n.communityFloatingPreviewCompactHint,
+        style: theme.textTheme.bodySmall,
+      ),
+      textScaler: media.textScaler,
+      locale: Localizations.localeOf(context),
+      textDirection: Directionality.of(context),
+    )..layout(maxWidth: math.max(1, width - 24));
+    final height = math.min(
+      availableHeight,
+      controlsHeight + (showPlayer ? playerHeight : hint.height + 24),
+    );
+    text.dispose();
+    hint.dispose();
+    Offset boundedPosition(Offset value) => Offset(
+      value.dx.clamp(leftLimit, leftLimit + availableWidth - width),
+      value.dy.clamp(topLimit, topLimit + availableHeight - height),
+    );
+    final position = boundedPosition(service.position);
+    double currentWidth() => math.min(service.width, availableWidth);
 
-    // このウィジェットはMaterialApp.routerのbuilder層（Navigator/Overlayの
-    // 外側）に常駐するため、IconButtonへtooltip:を指定すると内部のTooltipが
-    // Overlay祖先を見つけられずビルド時に例外になる（「No Overlay widget
-    // found」）。そのためtooltipは付けず、Semanticsでラベルだけ提供する。
-    final closeButton = Semantics(
-      label: l10n.commonClose,
-      button: true,
+    void resize(double next) =>
+        service.updateWidth(next, availableWidth: availableWidth);
+    void cycleWidth() => resize(
+      currentWidth() >=
+              math.min(availableWidth, CommunityPreviewService.maxWidth) - .1
+          ? CommunityPreviewService.minWidth
+          : currentWidth() + 80,
+    );
+    void details() {
+      service.close();
+      appRouter.push('/community/work/${work.id}');
+    }
+
+    final resizeControl = Focus(
+      key: _resizeFocusKey,
+      canRequestFocus: false,
+      onKeyEvent: (_, event) {
+        if (HardwareKeyboard.instance.isAltPressed) {
+          return KeyEventResult.ignored;
+        }
+        if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+          return KeyEventResult.ignored;
+        }
+        final key = event.logicalKey;
+        if (key == LogicalKeyboardKey.arrowLeft ||
+            key == LogicalKeyboardKey.arrowDown) {
+          resize(currentWidth() - 24);
+        } else if (key == LogicalKeyboardKey.arrowRight ||
+            key == LogicalKeyboardKey.arrowUp) {
+          resize(currentWidth() + 24);
+        } else if (key == LogicalKeyboardKey.home) {
+          resize(CommunityPreviewService.minWidth);
+        } else if (key == LogicalKeyboardKey.end) {
+          resize(availableWidth);
+        } else {
+          return KeyEventResult.ignored;
+        }
+        return KeyEventResult.handled;
+      },
+      child: Semantics(
+        value: '${width.round()} px',
+        increasedValue:
+            '${(width + 24).clamp(CommunityPreviewService.minWidth, math.max(CommunityPreviewService.minWidth, math.min(availableWidth, CommunityPreviewService.maxWidth))).round()} px',
+        decreasedValue:
+            '${(width - 24).clamp(CommunityPreviewService.minWidth, CommunityPreviewService.maxWidth).round()} px',
+        onIncrease:
+            width < math.min(availableWidth, CommunityPreviewService.maxWidth)
+            ? () => resize(currentWidth() + 24)
+            : null,
+        onDecrease: width > CommunityPreviewService.minWidth
+            ? () => resize(currentWidth() - 24)
+            : null,
+        child: GestureDetector(
+          onHorizontalDragStart: (_) {
+            _resizeFocus.requestFocus();
+            resize(width);
+          },
+          onHorizontalDragUpdate: (event) =>
+              resize(service.width + event.delta.dx),
+          child: IconButton(
+            key: const Key('communityPreviewResize'),
+            focusNode: _resizeFocus,
+            tooltip: l10n.communityFloatingPreviewResizeTooltip,
+            constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+            visualDensity: VisualDensity.standard,
+            icon: Icon(Icons.open_in_full, color: controlColor),
+            onPressed: () {
+              _resizeFocus.requestFocus();
+              cycleWidth();
+            },
+          ),
+        ),
+      ),
+    );
+    final close = KeyedSubtree(
+      key: _closeFocusKey,
       child: IconButton(
-        padding: const EdgeInsets.all(6),
-        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-        icon: Icon(Icons.close, color: barInk),
-        iconSize: 20,
+        key: const Key('communityPreviewClose'),
+        focusNode: _closeFocus,
+        tooltip: l10n.commonClose,
+        constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+        visualDensity: VisualDensity.standard,
+        icon: Icon(Icons.close, color: controlColor),
         onPressed: service.close,
       ),
     );
-    final detailButton = TextButton(
-      style: TextButton.styleFrom(
-        foregroundColor: AccentTextTheme.of(context),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        minimumSize: Size.zero,
-      ),
-      onPressed: () {
-        final workId = work.id;
-        service.close();
-        appRouter.push('/community/work/$workId');
-      },
-      child: Text(
-        l10n.communityFloatingPreviewDetailButton,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+    final play = KeyedSubtree(
+      key: _playFocusKey,
+      child: IconButton(
+        key: const Key('communityPreviewPlay'),
+        focusNode: _playFocus,
+        tooltip: _isPlaying
+            ? l10n.communityFloatingPreviewPauseTooltip
+            : l10n.communityFloatingPreviewPlayTooltip,
+        constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+        visualDensity: VisualDensity.standard,
+        icon: Icon(
+          _isPlaying ? Icons.pause : Icons.play_arrow,
+          color: controlColor,
+        ),
+        onPressed: () {
+          _playFocus.requestFocus();
+          setState(() => _isPlaying = !_isPlaying);
+        },
       ),
     );
-
-    // 画面の高さが動画エリアの最小（200）＋操作バーに足りないとき（分割画面・
-    // 小さなウィンドウ）は、規約を満たす大きさのプレーヤーを置けない。
-    // 操作が画面の外へ出ないよう、プレーヤーを出さずに操作バーだけ
-    // （閉じる・作品名・「詳細へ」）を出し、詳細画面で見てもらう。
-    if (screenSize.height - previewTopLimit < size.height) {
-      final barTop =
-          (screenSize.height - CommunityPreviewService.controlBarHeight).clamp(
-            previewTopLimit,
-            double.infinity,
-          );
-      return Positioned(
-        left: position.dx.clamp(
-          0,
-          (screenSize.width - size.width).clamp(0, double.infinity),
+    final detailButton = KeyedSubtree(
+      key: _detailsFocusKey,
+      child: TextButton(
+        key: const Key('communityPreviewDetails'),
+        focusNode: _detailsFocus,
+        style: TextButton.styleFrom(
+          foregroundColor: controlColor,
+          textStyle: detailStyle,
+          minimumSize: const Size(64, 48),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          visualDensity: VisualDensity.standard,
         ),
-        top: position.dy.clamp(previewTopLimit, barTop),
-        child: SizedBox(
-          key: const Key('communityFloatingPreviewCompactBar'),
-          width: size.width,
-          height: CommunityPreviewService.controlBarHeight,
-          child: Material(
-            elevation: 10,
-            color: barColor,
-            borderRadius: BorderRadius.circular(12),
-            clipBehavior: Clip.antiAlias,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onPanUpdate: (details) {
-                service.updatePosition(service.position + details.delta);
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Row(
+        onPressed: details,
+        child: Text(l10n.communityFloatingPreviewDetailButton),
+      ),
+    );
+    final controls = Container(
+      key: const Key('communityPreviewControls'),
+      color: barColor,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: splitRows
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    closeButton,
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        work.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                          color: barInk,
-                        ),
-                      ),
-                    ),
-                    detailButton,
+                    if (showPlayer) play,
+                    close,
+                    if (showPlayer) resizeControl,
                   ],
                 ),
+                detailButton,
+              ],
+            )
+          : SizedBox(
+              height: detailsHeight,
+              child: Row(
+                children: [
+                  if (showPlayer) play,
+                  close,
+                  Expanded(child: detailButton),
+                  if (showPlayer) resizeControl,
+                ],
               ),
             ),
-          ),
-        ),
-      );
-    }
+    );
 
     return Positioned(
-      left: position.dx.clamp(
-        0,
-        (screenSize.width - size.width).clamp(0, double.infinity),
-      ),
-      top: position.dy.clamp(previewTopLimit, previewBottomLimit),
+      left: position.dx,
+      top: position.dy,
       child: SizedBox(
-        width: size.width,
-        height: size.height,
-        child: Material(
-          elevation: 10,
-          borderRadius: BorderRadius.circular(12),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            children: [
-              // ウィンドウ全体（動画エリア＋下部コントロールバー）を
-              // ドラッグしてウィンドウを移動する。専用のドラッグ
-              // ハンドル（黒帯）は置かず、動画エリアを含む全体を対象に
-              // することで上部の黒帯を無くしている。
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onPanUpdate: (details) {
-                  service.updatePosition(service.position + details.delta);
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // 動画エリア。**この矩形の上には何も重ねない**
-                    // （YouTubeの埋め込みプレーヤーは、その上へ別の
-                    // コンテンツを重ねたり隠したりすることが認められて
-                    // いない）。操作ボタンはすべて下のバーへ置く。
-                    SizedBox(
-                      height:
-                          size.height -
-                          CommunityPreviewService.controlBarHeight,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: communityThumbnailGradient(
-                              Theme.of(context).colorScheme,
-                              work.thumbnailColorIndex,
-                            ),
-                          ),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            _isPlaying
-                                ? Icons.play_circle_fill_rounded
-                                : Icons.pause_circle_filled_rounded,
-                            color: ThemeService.activeColorScheme.onSurface
-                                .withValues(alpha: 0.70),
-                            size: 40,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      height: CommunityPreviewService.controlBarHeight,
-                      color: barColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      // SpacerやExpandedを挟むと、この位置（高さ無制限の
-                      // Column内、幅固定のContainer内）で極端なオーバー
-                      // フローが発生したため、Flex系ウィジェットを使わず
-                      // spaceBetweenで両端に振り分ける構成にしている。
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // 再生/一時停止ボタン（プレースホルダー）。
-                              // タップ領域は指が反応しやすいよう既定に近い
-                              // サイズを維持しつつ、3ボタン構成が最小
-                              // ウィンドウ幅（200）に収まるよう左右の余白
-                              // だけを詰める。
-                              // tooltipは付けずSemanticsでラベルを渡す
-                              // （上のcloseButtonの説明を参照）。
-                              Semantics(
-                                label: _isPlaying
-                                    ? l10n.communityFloatingPreviewPauseTooltip
-                                    : l10n.communityFloatingPreviewPlayTooltip,
-                                button: true,
-                                child: IconButton(
-                                  padding: const EdgeInsets.all(6),
-                                  constraints: BoxConstraints(
-                                    minWidth: 40,
-                                    minHeight: 40,
-                                  ),
-                                  icon: Icon(
-                                    _isPlaying ? Icons.pause : Icons.play_arrow,
-                                    color: barInk,
-                                  ),
-                                  iconSize: 22,
-                                  onPressed: () =>
-                                      setState(() => _isPlaying = !_isPlaying),
-                                ),
-                              ),
-                              // 再生ボタンと閉じるボタンの間は、誤タップ防止
-                              // のためある程度の間隔を空ける。
-                              const SizedBox(width: 16),
-                              closeButton,
-                            ],
-                          ),
-                          // 右下角のリサイズハンドルと重なってタップを
-                          // 奪われないよう、ボタンの右側にハンドル1つ分の
-                          // 余白を確保する。
-                          Padding(
-                            padding: EdgeInsets.only(right: handleHitSize - 8),
-                            child: detailButton,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // 右下コーナーのリサイズハンドル。ドラッグ移動の対象範囲より
-              // 手前（Stackの後ろの子ほど上に重なる）にあるため、この
-              // 範囲内の操作はドラッグ移動ではなくリサイズとして扱われる。
-              Positioned(
-                right: 0,
-                bottom: 0,
+        width: width,
+        height: height,
+        // This surface lives outside the router's Navigator. A local overlay
+        // supplies real hover/long-press tooltips without depending on a route.
+        child: Overlay.wrap(
+          clipBehavior: Clip.none,
+          child: FocusTraversalGroup(
+            policy: WidgetOrderTraversalPolicy(),
+            child: Focus(
+              canRequestFocus: false,
+              onKeyEvent: (_, event) {
+                if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+                  return KeyEventResult.ignored;
+                }
+                final key = event.logicalKey;
+                if (key == LogicalKeyboardKey.escape) {
+                  service.close();
+                  return KeyEventResult.handled;
+                }
+                if (!HardwareKeyboard.instance.isAltPressed) {
+                  return KeyEventResult.ignored;
+                }
+                final delta = switch (key) {
+                  LogicalKeyboardKey.arrowLeft => const Offset(-16, 0),
+                  LogicalKeyboardKey.arrowRight => const Offset(16, 0),
+                  LogicalKeyboardKey.arrowUp => const Offset(0, -16),
+                  LogicalKeyboardKey.arrowDown => const Offset(0, 16),
+                  _ => Offset.zero,
+                };
+                if (delta == Offset.zero) return KeyEventResult.ignored;
+                service.updatePosition(
+                  boundedPosition(boundedPosition(service.position) + delta),
+                );
+                return KeyEventResult.handled;
+              },
+              child: Material(
+                elevation: 10,
+                color: barColor,
+                borderRadius: BorderRadius.circular(12),
+                clipBehavior: Clip.antiAlias,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  // 幅だけを動かす。高さは16:9＋コントロールバーから
-                  // 導出されるため、利用者の操作でプレーヤーが
-                  // 最小サイズ（200×200）を割ることが構造的に起きない。
-                  onPanUpdate: (details) {
-                    service.updateWidth(
-                      size.width + details.delta.dx,
-                      availableWidth: screenSize.width,
-                    );
-                  },
-                  // 当たり判定は幅32px・高さは下部のバーいっぱい。記号は
-                  // その真ん中に描き、バーの他のボタン・「詳細へ」と同じ
-                  // 高さにそろえる（以前は32px四方の右下へ寄せていて、
-                  // ウィンドウの右下にずれて見えた）。下地はバーそのもの。
-                  child: SizedBox(
-                    key: const Key('communityFloatingPreviewResizeHandle'),
-                    width: handleHitSize,
-                    height: CommunityPreviewService.controlBarHeight,
-                    child: Center(
-                      child: Icon(
-                        Icons.open_in_full,
-                        size: handleIconSize,
-                        color: barInk,
-                      ),
+                  onPanStart: (_) => service.updatePosition(position),
+                  onPanUpdate: (event) => service.updatePosition(
+                    boundedPosition(service.position + event.delta),
+                  ),
+                  child: SingleChildScrollView(
+                    physics: showPlayer
+                        ? const NeverScrollableScrollPhysics()
+                        : null,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (showPlayer)
+                          Semantics(
+                            hint: l10n.communityFloatingPreviewMoveHint,
+                            child: SizedBox(
+                              key: const Key('communityPreviewPlayer'),
+                              height: playerHeight,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: communityThumbnailGradient(
+                                      theme.colorScheme,
+                                      work.thumbnailColorIndex,
+                                    ),
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    _isPlaying
+                                        ? Icons.play_circle_fill_rounded
+                                        : Icons.pause_circle_filled_rounded,
+                                    color: controlColor,
+                                    size: 40,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Text(
+                              l10n.communityFloatingPreviewCompactHint,
+                              key: const Key('communityPreviewCompactHint'),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: controlColor,
+                              ),
+                            ),
+                          ),
+                        controls,
+                      ],
                     ),
                   ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),

@@ -83,16 +83,7 @@ void main() {
     );
 
     // メニュー（引き出し）の見出し。
-    tester
-        .state<ScaffoldState>(
-          find
-              .descendant(
-                of: find.byType(HomeScreen),
-                matching: find.byType(Scaffold),
-              )
-              .first,
-        )
-        .openDrawer();
+    await tester.tap(find.byKey(const Key('homeMenuButton')));
     await tester.pumpAndSettle();
     expect(paintedColor(tester, find.text('NIARIM')), ink);
     expect(paintedColor(tester, find.text(l10n.homeDrawerAppTagline)), ink);

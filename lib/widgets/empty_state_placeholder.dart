@@ -14,74 +14,71 @@ class EmptyStatePlaceholder extends StatelessWidget {
   /// 次にできること（絞り込みを外す等）のボタン。
   final Widget? action;
 
+  /// Whether this widget supplies its own scroll viewport. A sizing sliver
+  /// can own scrolling instead by setting this to false.
+  final bool scrollable;
+
   const EmptyStatePlaceholder({
     super.key,
     required this.icon,
     required this.title,
     this.hint,
     this.action,
+    this.scrollable = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    // 横画面やキーボード表示中の低い画面でもはみ出さないよう、収まらない
-    // ときはスクロールできるようにする。
+    final content = Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              color: scheme.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 40, color: AccentTextTheme.of(context)),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: scheme.onSurface,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
+          ),
+          if (hint != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              hint!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
+            ),
+          ],
+          if (action != null) ...[const SizedBox(height: 16), action!],
+        ],
+      ),
+    );
+    if (!scrollable) return content;
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         child: ConstrainedBox(
           // 幅も使える分いっぱいに取る。Scaffoldのbodyは幅を「最大まで」
-          // としか渡さないので、取らないと中身の幅に縮んで左へ寄る
-          // （ゴミ箱の「ゴミ箱は空です」が左に寄っていた）。
+          // としか渡さないので、取らないと中身の幅に縮んで左へ寄る。
           constraints: BoxConstraints(
-            minWidth: constraints.hasBoundedWidth ? constraints.maxWidth : 0,
             minHeight: constraints.hasBoundedHeight ? constraints.maxHeight : 0,
+            minWidth: constraints.hasBoundedWidth ? constraints.maxWidth : 0,
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    color: scheme.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 40,
-                    color: AccentTextTheme.of(context),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: scheme.onSurface,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                ),
-                if (hint != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    hint!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: scheme.onSurfaceVariant,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-                if (action != null) ...[const SizedBox(height: 16), action!],
-              ],
-            ),
-          ),
+          child: content,
         ),
       ),
     );

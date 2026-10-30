@@ -1,3 +1,4 @@
+import 'package:niarim/widgets/sort_mode_control.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -144,12 +145,21 @@ void main() {
     await boot(tester);
     await goHome(tester);
 
-    final down = find.byIcon(Icons.arrow_downward);
+    final down = find.descendant(
+      of: find.byType(SortModeControl),
+      matching: find.byIcon(Icons.arrow_downward),
+    );
     expect(down, findsOneWidget);
     await tester.tap(down);
     await tester.pump(const Duration(milliseconds: 250));
     expectNoFlutterException(tester, '昇順/降順切り替え');
-    expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(SortModeControl),
+        matching: find.byIcon(Icons.arrow_upward),
+      ),
+      findsOneWidget,
+    );
     await capture(tester, '04_home_sort_ascending');
 
     final sortPopup = find.byType(PopupMenuButton<bool>);
@@ -213,11 +223,11 @@ void main() {
     final drawer = find.byType(Drawer);
     expect(drawer, findsOneWidget);
     final homeScaffold = Scaffold.of(tester.element(drawer));
-    expect(homeScaffold.isDrawerOpen, isTrue);
-    homeScaffold.closeDrawer();
+    expect(homeScaffold.isEndDrawerOpen, isTrue);
+    homeScaffold.closeEndDrawer();
     await tester.pumpAndSettle();
     expect(find.byType(Drawer).hitTestable(), findsNothing);
-    expect(homeScaffold.isDrawerOpen, isFalse);
+    expect(homeScaffold.isEndDrawerOpen, isFalse);
     expectNoFlutterException(tester, 'ホームドロワーを閉じる');
 
     final worksTab = find.text('作品一覧');

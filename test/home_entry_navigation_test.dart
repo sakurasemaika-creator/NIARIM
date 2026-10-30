@@ -8,11 +8,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
-import 'package:niarim/config/accent_text_theme.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/widgets/app_tutorial.dart';
 import 'package:provider/provider.dart';
@@ -42,6 +42,11 @@ void main() {
       'language': language,
       'force_pc_mode': pc ? 1 : 0,
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      // These UI tests exercise an EXISTING user's custom theme, not the
+      // first-run migration which restores the original built-in palettes.
+      // Without this marker, ThemeService.init replaces an id=default_light
+      // custom theme before the UI under test is even built.
+      'theme_original_builtin_palette_restored_v1': true,
       if (theme != null) 'theme_current_json': jsonEncode(theme.toJson()),
     });
     final directory = Directory.systemTemp.createTempSync('home-entry-');
@@ -138,40 +143,217 @@ void main() {
     },
   );
 
-  testWidgets('home bottom FABs and drawer icon obey navigation layout', (
+  testWidgets('home drawer uses the configured menu surface and foreground', (
+    tester,
+  ) async {
+    final preset = AppThemePreset.defaultLight.copyWith(
+      textColor: const Color(0xFF16593A),
+      menuTextColor: const Color(0xFF17325A),
+      menuBgColor: const Color(0xFFFFE5B7),
+    );
+    final l10n = await open(
+      tester,
+      language: 'en',
+      pc: true,
+      size: const Size(1440, 900),
+      theme: preset,
+    );
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+    final drawer = find.byType(Drawer);
+    expect(tester.widget<Drawer>(drawer).backgroundColor, preset.menuBgColor);
+    final label = find.descendant(
+      of: drawer,
+      matching: find.text(l10n.homeDrawerSettings),
+    );
+    expect(
+      tester.renderObject<RenderParagraph>(label).text.style!.color,
+      preset.menuTextColor,
+    );
+    final icon = find.descendant(
+      of: drawer,
+      matching: find.byIcon(Icons.settings_outlined),
+    );
+    expect(tester.widget<Icon>(icon).color, preset.accentColor);
+    // Menu labels retain the independently configured menu text color.
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets(
+    'drawer icons and selected tab follow live red/blue/purple accents',
+    (tester) async {
+      final l10n = await open(
+        tester,
+        language: 'ja',
+        size: const Size(390, 844),
+      );
+      final service = tester
+          .element(find.byType(HomeScreen))
+          .read<ThemeService>();
+      final presets = [
+        const Color(0xFFFF5C7A),
+        const Color(0xFF2C99F0),
+        const Color(0xFFDD00EE),
+      ];
+      for (final accent in presets) {
+        service.previewCurrent(
+          AppThemePreset.defaultLight.copyWith(accentColor: accent),
+        );
+        await tester.pumpAndSettle();
+
+        // The selected tab's glyph and its underline must use this very
+        // accent, not a cached copy of the default pink.
+        final tab = find.byKey(const ValueKey('home_tab_0'));
+        final tabTitle = find.descendant(
+          of: tab,
+          matching: find.text(l10n.homeTabProjects),
+        );
+        expect(tester.widget<Text>(tabTitle).style?.color, accent);
+        final border =
+            tester
+                    .widget<Container>(
+                      find
+                          .descendant(of: tab, matching: find.byType(Container))
+                          .first,
+                    )
+                    .decoration
+                as BoxDecoration;
+        expect(border.border!.bottom.color, accent);
+
+        final opener = find.byIcon(Icons.menu);
+        await tester.tap(opener);
+        await tester.pumpAndSettle();
+        final drawer = find.byType(Drawer);
+        expect(drawer, findsOneWidget);
+        final expectedIcons = [
+          Icons.share_outlined,
+          Icons.delete_outline,
+          Icons.palette_outlined,
+          Icons.cleaning_services_outlined,
+          Icons.settings_outlined,
+          Icons.help_outline,
+          Icons.lightbulb_outline,
+          Icons.workspace_premium_outlined,
+        ];
+        for (final glyph in expectedIcons) {
+          final found = find.descendant(
+            of: drawer,
+            matching: find.byIcon(glyph),
+          );
+          expect(found, findsOneWidget, reason: '$glyph for $accent');
+          expect(tester.widget<Icon>(found).color, accent);
+        }
+        final menuTitle = find.descendant(
+          of: drawer,
+          matching: find.text(l10n.homeDrawerSettings),
+        );
+        expect(
+          tester.renderObject<RenderParagraph>(menuTitle).text.style?.color,
+          service.current.menuTextColor,
+        );
+        Scaffold.of(tester.element(drawer)).closeEndDrawer();
+        await tester.pumpAndSettle();
+      }
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  testWidgets(
+    'selected favorite filter has white label on the current accent',
+    (tester) async {
+      final l10n = await open(tester);
+      final finder = find.widgetWithText(FilterChip, l10n.homeFavoritesOnly);
+      expect(finder, findsOneWidget);
+      await tester.tap(finder);
+      await tester.pumpAndSettle();
+      final chip = tester.widget<FilterChip>(finder);
+      final scheme = Theme.of(tester.element(finder)).colorScheme;
+      expect(chip.selected, isTrue);
+      expect(chip.selectedColor, scheme.primary);
+      expect((chip.label as Text).style?.color, Colors.white);
+      expect(chip.checkmarkColor, Colors.white);
+      await tester.tap(finder);
+      await tester.pumpAndSettle();
+      expect(
+        (tester.widget<FilterChip>(finder).label as Text).style?.color,
+        isNull,
+        reason: 'Unselected chip follows ordinary theme text',
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  testWidgets('home selected tab outline uses its actual menu background', (
+    tester,
+  ) async {
+    const menu = Color(0xFFFFE5B7), ink = Color(0xFF17325A);
+    final preset = AppThemePreset.defaultLight.copyWith(
+      panelBgColor: const Color(0xFF16593A),
+      textColor: const Color(0xFFF0F0FF),
+      accentColor: menu,
+      menuBgColor: menu,
+      menuTextColor: ink,
+    );
+    final l10n = await open(
+      tester,
+      language: 'en',
+      pc: true,
+      size: const Size(1440, 900),
+      theme: preset,
+    );
+    final label = find.descendant(
+      of: find.byKey(const ValueKey('home_tab_0')),
+      matching: find.text(l10n.homeTabProjects),
+    );
+    final style = tester.renderObject<RenderParagraph>(label).text.style!;
+    expect(style.color, menu);
+    expect(style.shadows, hasLength(8));
+    expect(style.shadows!.every((s) => s.color == ink), isTrue);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('home back arrow, right drawer and scroll-to-top obey layout', (
     tester,
   ) async {
     final l10n = await open(tester);
-    final backFinder = find.byKey(const Key('homeBackToSplashFab'));
+    final backFinder = find.byKey(const Key('homeBackToSplashButton'));
+    final scrollFinder = find.byKey(const Key('homeScrollToTopFab'));
     expect(backFinder, findsOneWidget);
+    expect(scrollFinder, findsOneWidget);
     expect(find.text(l10n.homeFavoritesOnly), findsOneWidget);
     final fabs = find.byType(FloatingActionButton);
     expect(fabs, findsNWidgets(2));
-    final back = tester.widget<FloatingActionButton>(backFinder);
-    expect(back.elevation, 0);
-    expect(back.shape, isA<CircleBorder>());
-    expect((back.shape! as CircleBorder).side, BorderSide.none);
+    final scrollFab = tester.widget<FloatingActionButton>(scrollFinder);
+    expect(scrollFab.elevation, 0);
+    expect(scrollFab.shape, isA<CircleBorder>());
+    expect((scrollFab.shape! as CircleBorder).side, BorderSide.none);
     final add = tester.widget<FloatingActionButton>(fabs.last);
     expect(add.elevation, 0);
     expect(add.shape, isA<CircleBorder>());
     expect((add.shape! as CircleBorder).side, BorderSide.none);
-    final leftCenter = tester.getCenter(backFinder);
+    final leftCenter = tester.getCenter(scrollFinder);
     final rightCenter = tester.getCenter(fabs.last);
     expect(leftCenter.dx, lessThan(rightCenter.dx));
     expect((leftCenter.dy - rightCenter.dy).abs(), lessThan(2));
     expect(leftCenter.dx, lessThan(80));
     expect(rightCenter.dx, greaterThan(310));
-    // The hamburger stays at the top left, the splash arrow is lower left.
+    // The splash arrow is top-left; the menu is top-right of search.
     final drawerIcon = find.descendant(
       of: find.byType(AppBar).first,
       matching: find.byIcon(Icons.menu),
     );
     expect(drawerIcon, findsOneWidget);
+    expect(tester.getCenter(backFinder).dx, lessThan(60));
+    expect(
+      tester.getCenter(drawerIcon).dx,
+      greaterThan(tester.getCenter(find.byIcon(Icons.search).first).dx),
+    );
     expect(tester.getCenter(drawerIcon).dy, lessThan(leftCenter.dy));
 
     await switchTab(tester, 2);
     expect(backFinder, findsOneWidget);
-    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -199,7 +381,7 @@ void main() {
                 )
                 .first,
           )
-          .openDrawer();
+          .openEndDrawer();
       await tester.pumpAndSettle();
       final item = find.descendant(
         of: find.byType(Drawer),
@@ -239,83 +421,49 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('home tabs and bookmark entry use the theme accent text colour', (
-    tester,
-  ) async {
-    for (final theme in [
-      AppThemePreset.defaultLight,
-      AppThemePreset.defaultLight.copyWith(
-        accentColor: Colors.white,
-        selectionColor: Colors.black,
-      ),
-      // 明るい差し色でも、アクセントの文字・アイコン色を選べば読める。
-      AppThemePreset.defaultLight.copyWith(
-        accentColor: Colors.white,
-        selectionColor: Colors.black,
-        accentTextColor: const Color(0xFF8A1538),
-      ),
-    ]) {
-      final l10n = await open(tester, theme: theme);
-      final accent = AccentTextTheme.of(
-        tester.element(find.byType(HomeScreen)),
-      );
-      expect(accent, theme.effectiveAccentTextColor, reason: theme.id);
-      // 選ばれたタブの名前・作品広場へのボタンは、テーマの「アクセントの
-      // 文字・アイコン色」（未指定なら差し色。ユーザー指定で、読みやすさの
-      // ために黒や白へ自動で差し替えない。読めない組み合わせは起動画面の
-      // リセットで戻せる）。
-      for (final index in [0, 1, 2]) {
-        await switchTab(tester, index);
-        final labels = tester.widgetList<Text>(
-          find.descendant(
-            of: find.byKey(ValueKey('home_tab_$index')),
-            matching: find.byType(Text),
-          ),
+  testWidgets(
+    'home tabs and bookmark entry follow the configured accent without correction',
+    (tester) async {
+      for (final theme in [
+        AppThemePreset.defaultLight,
+        AppThemePreset.defaultLight.copyWith(
+          accentColor: Colors.white,
+          selectionColor: Colors.black,
+        ),
+      ]) {
+        final l10n = await open(tester, theme: theme);
+        final scheme = Theme.of(
+          tester.element(find.byType(HomeScreen)),
+        ).colorScheme;
+        for (final index in [0, 1, 2]) {
+          await switchTab(tester, index);
+          final labels = tester.widgetList<Text>(
+            find.descendant(
+              of: find.byKey(ValueKey('home_tab_$index')),
+              matching: find.byType(Text),
+            ),
+          );
+          expect(
+            labels.single.style!.color,
+            scheme.primary,
+            reason: 'selected tab $index on ${theme.id}',
+          );
+        }
+        final action = tester.widget<OutlinedButton>(
+          find.widgetWithText(OutlinedButton, l10n.communityScreenTitle),
         );
-        expect(
-          labels.single.style!.color,
-          accent,
-          reason: 'selected tab $index on ${theme.id}',
-        );
+        final foreground =
+            action.style?.foregroundColor?.resolve({}) ??
+            Theme.of(
+              tester.element(find.byType(HomeScreen)),
+            ).colorScheme.primary;
+        expect(foreground, scheme.primary, reason: 'bookmark gallery action');
+        final icon = tester.widget<Icon>(find.byIcon(Icons.bookmark_border));
+        expect(icon.color, scheme.primary, reason: 'bookmark empty-state icon');
       }
-      final action = tester.widget<OutlinedButton>(
-        find.widgetWithText(OutlinedButton, l10n.communityScreenTitle),
-      );
-      final foreground = action.style?.foregroundColor?.resolve({}) ?? accent;
-      expect(foreground, accent, reason: 'bookmark gallery action');
-      // 空のときのアイコンは作品一覧の空の表示と同じ色・同じ下地の円
-      // （ユーザー指定。読みやすさのために黒や白へ自動で差し替えない）。
-      final icon = tester.widget<Icon>(find.byIcon(Icons.bookmark_border));
-      final circle = tester.widget<Container>(
-        find
-            .ancestor(
-              of: find.byIcon(Icons.bookmark_border),
-              matching: find.byType(Container),
-            )
-            .first,
-      );
-      await switchTab(tester, 1);
-      final worksIcon = tester.widget<Icon>(
-        find.byIcon(Icons.video_library_outlined),
-      );
-      final worksCircle = tester.widget<Container>(
-        find
-            .ancestor(
-              of: find.byIcon(Icons.video_library_outlined),
-              matching: find.byType(Container),
-            )
-            .first,
-      );
-      expect(icon.color, worksIcon.color, reason: 'bookmark icon colour');
-      expect(icon.size, worksIcon.size, reason: 'bookmark icon size');
-      expect(
-        (circle.decoration! as BoxDecoration).color,
-        (worksCircle.decoration! as BoxDecoration).color,
-        reason: 'bookmark icon circle',
-      );
-    }
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   testWidgets('home main states fit all widths, modes, languages and mutations', (
     tester,
@@ -465,10 +613,10 @@ void main() {
                   )
                   .first,
             )
-            .openDrawer();
+            .openEndDrawer();
         await tester.pumpAndSettle();
         await capture(tester, 'drawer-$suffix');
-        Scaffold.of(tester.element(find.byType(Drawer))).closeDrawer();
+        Scaffold.of(tester.element(find.byType(Drawer))).closeEndDrawer();
         await tester.pumpAndSettle();
       }
     }

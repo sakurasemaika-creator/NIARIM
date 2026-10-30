@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../config/accent_text_theme.dart';
+import '../screens/canvas/widgets/canvas_icon_button.dart';
+
 import '../utils/app_error_reporter.dart';
 
 /// 名前を1つ入力するダイアログ（フォルダの作成・作品やフォルダの名前の
@@ -101,7 +104,10 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
       actions: [
         TextButton(
           onPressed: _submitting ? null : () => Navigator.of(context).pop(),
-          child: Text(widget.cancelLabel),
+          child: Text(
+            widget.cancelLabel,
+            style: TextStyle(shadows: cancelLabelShadows(context)),
+          ),
         ),
         FilledButton(
           onPressed: _canSubmit ? _submit : null,
@@ -110,4 +116,15 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
       ],
     );
   }
+}
+
+/// ダイアログの「キャンセル」（文字のボタン）の文字が下地とほとんど同じ色の
+/// ときだけ縁取りを付ける。色はテーマ・外観で選んだまま変えない。
+List<Shadow>? cancelLabelShadows(BuildContext context) {
+  final theme = Theme.of(context);
+  return CanvasIconButton.actionShadows(
+    AccentTextTheme.of(context),
+    theme.dialogTheme.backgroundColor ?? theme.colorScheme.surface,
+    theme.colorScheme,
+  );
 }

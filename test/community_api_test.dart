@@ -247,22 +247,21 @@ void main() {
       expect(result.users.single.bookmarkedAt, isNotNull);
     });
 
-    test('フォロワー一覧は非表示人数も読む', () async {
-      final m = mock(
-        (_) => {
-          'targetId': 'u1',
-          'totalCount': 5,
-          'visibleFollowers': [
-            {'niarimUserId': 'u2', 'channelName': 'い'},
-          ],
-          'hiddenCount': 4,
-        },
-      );
-      final result = await apiWith(m.client).followers('u1');
-      expect(result.totalCount, 5);
-      expect(result.hiddenCount, 4);
-      expect(result.visibleFollowers.single.niarimUserId, 'u2');
-    });
+    test(
+      'public social totals use one request without follower identities or owner auth',
+      () async {
+        final m = mock((_) => {'followerCount': 5, 'followingCount': 3});
+        final result = await apiWith(
+          m.client,
+          token: 'ID_TOKEN',
+        ).socialCounts('u/1');
+        expect(result.followers, 5);
+        expect(result.following, 3);
+        expect(m.requests, hasLength(1));
+        expect(m.requests.single.url.path, '/api/users/u%2F1/social-counts');
+        expect(m.requests.single.headers.containsKey('authorization'), isFalse);
+      },
+    );
 
     test('チャンネル名が無いユーザーはIDで代用する', () {
       final user = ApiUserRef.fromJson({'niarimUserId': 'u9'});
@@ -511,7 +510,7 @@ void main() {
     await api.myWorks();
     await api.bookmarkers('W');
     await api.bookmarksOf('U');
-    await api.followers('U');
+    await api.socialCounts('U');
     await api.following('U');
     await api.repostsOf('U');
     await api.createWork(youtubeVideoId: 'V', youtubeAccessToken: 'T');
@@ -525,8 +524,6 @@ void main() {
     await api.toggleBookmark('W');
     await api.toggleRepost('W');
     await api.toggleFollow('U');
-    await api.setBookmarksPublic('U', true);
-    await api.setFollowersPublic('U', true);
     await api.reportWork(workId: 'W', reason: 'r');
     await api.blockUser('U');
     await api.notifications('U');

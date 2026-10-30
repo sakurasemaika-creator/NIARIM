@@ -34,7 +34,8 @@ class ThemeSettingsScreen extends StatelessWidget {
           const HelpButton(topic: 'テーマ設定'),
           if (themeService.needsThemeRescue)
             ThemeRescueButton(
-              iconOnly: MediaQuery.sizeOf(context).width < 520 ||
+              iconOnly:
+                  MediaQuery.sizeOf(context).width < 520 ||
                   MediaQuery.textScalerOf(context).scale(1) > 1.4,
             ),
         ],
@@ -75,7 +76,8 @@ class ThemeSettingsScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                Localizations.localeOf(context).languageCode == 'ja'
+                                Localizations.localeOf(context).languageCode ==
+                                        'ja'
                                     ? '画面プレビュー'
                                     : 'Screen preview',
                                 style: const TextStyle(
@@ -87,12 +89,15 @@ class ThemeSettingsScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                Localizations.localeOf(context).languageCode == 'ja'
+                                Localizations.localeOf(context).languageCode ==
+                                        'ja'
                                     ? 'プロジェクト一覧の見本'
                                     : 'Project list sample',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -101,7 +106,10 @@ class ThemeSettingsScreen extends StatelessWidget {
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      Localizations.localeOf(context).languageCode == 'ja'
+                                      Localizations.localeOf(
+                                                context,
+                                              ).languageCode ==
+                                              'ja'
                                           ? 'タップして全${themePreviewEntries.length}画面を見る'
                                           : 'Tap to view all ${themePreviewEntries.length} screens',
                                       style: TextStyle(
@@ -699,36 +707,74 @@ class _PresetColorSwatch extends StatelessWidget {
         borderRadius: BorderRadius.circular(9),
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
-      child: Column(children: [
-        Expanded(flex: 3, child: Row(children: [
-          Expanded(child: Container(
-            alignment: Alignment.center,
-            color: preset.panelBgColor,
-            child: Text('Aa', style: TextStyle(
-              color: preset.textColor,
-              fontSize: 13, fontWeight: FontWeight.bold)),
-          )),
-          Expanded(child: Container(
-            alignment: Alignment.center,
-            color: preset.accentColor,
-            child: Icon(Icons.check, color: preset.buttonTextColor, size: 18),
-          )),
-        ])),
-        Expanded(flex: 2, child: Row(children: [
-          Expanded(child: Container(
-            alignment: Alignment.center,
-            color: preset.menuBgColor,
-            child: Icon(Icons.menu, color: preset.menuTextColor, size: 16),
-          )),
-          Expanded(child: Container(
-            alignment: Alignment.center,
-            color: preset.selectionColor,
-            child: Text('Aa', style: TextStyle(
-              color: preset.selectionTextColor,
-              fontSize: 11, fontWeight: FontWeight.bold)),
-          )),
-        ])),
-      ]),
+      child: Column(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    color: preset.panelBgColor,
+                    child: Text(
+                      'Aa',
+                      style: TextStyle(
+                        color: preset.textColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    color: preset.accentColor,
+                    child: Icon(
+                      Icons.check,
+                      color: preset.buttonTextColor,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    color: preset.menuBgColor,
+                    child: Icon(
+                      Icons.menu,
+                      color: preset.menuTextColor,
+                      size: 16,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    color: preset.selectionColor,
+                    child: Text(
+                      'Aa',
+                      style: TextStyle(
+                        color: preset.selectionTextColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

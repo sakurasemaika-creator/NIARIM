@@ -1,6 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/material.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/services/project_service.dart';
+import 'package:niarim/screens/home/widgets/work_folder_move_sheet.dart';
 
 /// `showModalBottomSheet`で**件数が可変の一覧**を出しているのに、
 /// スクロールできる形になっていない箇所が無いことを、ソースを走査して検証する。
@@ -59,7 +63,11 @@ void main() {
             body.contains('SingleChildScrollView') ||
             body.contains('ListView') ||
             body.contains('DraggableScrollableSheet') ||
-            body.contains('isScrollControlled: true');
+            body.contains('isScrollControlled: true') ||
+            (body.contains('WorkFolderMoveSheet') &&
+                File(
+                  'lib/screens/home/widgets/work_folder_move_sheet.dart',
+                ).readAsStringSync().contains('ScrollableSheetBody'));
         if (scrollable) continue;
 
         final line = '\n'.allMatches(source.substring(0, start)).length + 1;
@@ -76,4 +84,54 @@ void main() {
           '${offenders.join('\n')}',
     );
   });
+  testWidgets(
+    'folder move wrapper reaches the last of 50 destinations at a compact height',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 220);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      String? selected;
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                child: const Text('OPEN'),
+                onPressed: () => showModalBottomSheet<void>(
+                  context: context,
+                  builder: (_) => WorkFolderMoveSheet(
+                    filename: 'AUDIT',
+                    folders: [
+                      for (var i = 0; i < 50; i++)
+                        ProjectFolder(id: '$i', name: 'Folder $i'),
+                    ],
+                    onMove: (id) async {
+                      selected = id;
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('OPEN'));
+      await tester.pumpAndSettle();
+      final last = find.text('Folder 49');
+      await tester.scrollUntilVisible(
+        last,
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(last);
+      await tester.pumpAndSettle();
+      expect(selected, '49');
+      expect(find.byType(WorkFolderMoveSheet), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

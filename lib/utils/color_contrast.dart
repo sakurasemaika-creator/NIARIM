@@ -39,7 +39,8 @@ double contrastRatio(Color a, Color b) {
 /// 低コントラスト領域だけを検出する。色相の違いだけでは判定しない。
 double apcaContrast(Color foreground, Color background) {
   double screenY(Color color) {
-    final y = 0.2126729 * math.pow(color.r, 2.4).toDouble() +
+    final y =
+        0.2126729 * math.pow(color.r, 2.4).toDouble() +
         0.7151522 * math.pow(color.g, 2.4).toDouble() +
         0.0721750 * math.pow(color.b, 2.4).toDouble();
     return y < 0.022 ? y + math.pow(0.022 - y, 1.414) : y;
@@ -71,8 +72,7 @@ const double kThemeRescueUnusableTextLc = 10.0;
 /// 文字サイズや字体、表示倍率そのものの推定は行わず、
 /// 低スペック端末でも短時間で済む一定個数の計算に限定する。
 bool isEssentialTextNearlyInvisible(Color foreground, Color background) {
-  if (apcaContrast(foreground, background).abs() <
-      kThemeRescueUnusableTextLc) {
+  if (apcaContrast(foreground, background).abs() < kThemeRescueUnusableTextLc) {
     return true;
   }
   for (final type in const [
@@ -103,6 +103,34 @@ Color contrastingForeground(Color background, Color preferred) {
       : Colors.white;
 }
 
+/// Choose a visible semantic error foreground on the actual opaque theme
+/// panel and popup surfaces. Material's seeded error often remains a nearly
+/// fixed red regardless of the user's panel/menu customization. Prefer that
+/// semantic red when legible; otherwise use the user's chosen text token,
+/// and only then a neutral high-contrast fallback. Never rewrite their preset.
+Color readableThemeError(
+  Color materialError,
+  Color panelBackground,
+  Color popupBackground,
+  Color userTextColor,
+) {
+  final surfaces = [panelBackground, popupBackground];
+  double weakestContrast(Color candidate) =>
+      surfaces.map((bg) => contrastRatio(candidate, bg)).reduce(math.min);
+  final candidates = [materialError, userTextColor, Colors.black, Colors.white];
+  if (materialError.a == 1 && weakestContrast(materialError) >= 4.5) {
+    return materialError;
+  }
+  // A custom foreground is preferred to an automatic neutral if it is
+  // readable across both contexts where Material error labels may appear.
+  if (userTextColor.a == 1 && weakestContrast(userTextColor) >= 4.5) {
+    return userTextColor;
+  }
+  return candidates
+      .where((c) => c.a == 1)
+      .reduce((a, b) => weakestContrast(a) >= weakestContrast(b) ? a : b);
+}
+
 /// Machado–Oliveira–Fernandes (2009) による線形sRGB色覚模擬行列。
 /// Severity 1.0 は二色覚に相当、0.6 は異常三色覚の例。個人差を示す診断ではない。
 /// https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html
@@ -117,34 +145,70 @@ enum ColorVisionType {
 
 const Map<ColorVisionType, List<double>> _colorVisionMatrices = {
   ColorVisionType.protanopia: [
-    0.152286, 1.052583, -0.204868,
-    0.114503, 0.786281, 0.099216,
-    -0.003882, -0.048116, 1.051998,
+    0.152286,
+    1.052583,
+    -0.204868,
+    0.114503,
+    0.786281,
+    0.099216,
+    -0.003882,
+    -0.048116,
+    1.051998,
   ],
   ColorVisionType.protanomaly: [
-    0.385450, 0.769005, -0.154455,
-    0.100526, 0.829802, 0.069673,
-    -0.007442, -0.022190, 1.029632,
+    0.385450,
+    0.769005,
+    -0.154455,
+    0.100526,
+    0.829802,
+    0.069673,
+    -0.007442,
+    -0.022190,
+    1.029632,
   ],
   ColorVisionType.deuteranopia: [
-    0.367322, 0.860646, -0.227968,
-    0.280085, 0.672501, 0.047413,
-    -0.011820, 0.042940, 0.968881,
+    0.367322,
+    0.860646,
+    -0.227968,
+    0.280085,
+    0.672501,
+    0.047413,
+    -0.011820,
+    0.042940,
+    0.968881,
   ],
   ColorVisionType.deuteranomaly: [
-    0.498864, 0.674741, -0.173604,
-    0.205199, 0.754872, 0.039929,
-    -0.011131, 0.030969, 0.980162,
+    0.498864,
+    0.674741,
+    -0.173604,
+    0.205199,
+    0.754872,
+    0.039929,
+    -0.011131,
+    0.030969,
+    0.980162,
   ],
   ColorVisionType.tritanopia: [
-    1.255528, -0.076749, -0.178779,
-    -0.078411, 0.930809, 0.147602,
-    0.004733, 0.691367, 0.303900,
+    1.255528,
+    -0.076749,
+    -0.178779,
+    -0.078411,
+    0.930809,
+    0.147602,
+    0.004733,
+    0.691367,
+    0.303900,
   ],
   ColorVisionType.tritanomaly: [
-    1.104996, -0.046633, -0.058363,
-    -0.032137, 0.971635, 0.060503,
-    0.001336, 0.317922, 0.680742,
+    1.104996,
+    -0.046633,
+    -0.058363,
+    -0.032137,
+    0.971635,
+    0.060503,
+    0.001336,
+    0.317922,
+    0.680742,
   ],
 };
 
@@ -159,11 +223,7 @@ double _toSrgb(double v) {
 /// 実際の画面に使われる色を、色覚特性のシミュレーションへ変換する。
 Color simulateColorVision(Color color, ColorVisionType type) {
   final matrix = _colorVisionMatrices[type]!;
-  final channels = [
-    _toLinear(color.r),
-    _toLinear(color.g),
-    _toLinear(color.b),
-  ];
+  final channels = [_toLinear(color.r), _toLinear(color.g), _toLinear(color.b)];
   double transformed(int row) => _toSrgb(
     matrix[row * 3] * channels[0] +
         matrix[row * 3 + 1] * channels[1] +
@@ -183,18 +243,15 @@ Color simulateColorVision(Color color, ColorVisionType type) {
   final r = _toLinear(color.r);
   final g = _toLinear(color.g);
   final b = _toLinear(color.b);
-  final l = math.pow(
-    0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b,
-    1 / 3,
-  ).toDouble();
-  final m = math.pow(
-    0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b,
-    1 / 3,
-  ).toDouble();
-  final s = math.pow(
-    0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b,
-    1 / 3,
-  ).toDouble();
+  final l = math
+      .pow(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b, 1 / 3)
+      .toDouble();
+  final m = math
+      .pow(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b, 1 / 3)
+      .toDouble();
+  final s = math
+      .pow(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b, 1 / 3)
+      .toDouble();
   return (
     l: 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
     a: 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
@@ -207,9 +264,7 @@ double okLabDistance(Color a, Color b) {
   final x = _okLab(a);
   final y = _okLab(b);
   return math.sqrt(
-    math.pow(x.l - y.l, 2) +
-        math.pow(x.a - y.a, 2) +
-        math.pow(x.b - y.b, 2),
+    math.pow(x.l - y.l, 2) + math.pow(x.a - y.a, 2) + math.pow(x.b - y.b, 2),
   );
 }
 
@@ -288,10 +343,9 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
 /// 実際に重なる操作に不可欠な文字・アイコンが、少なくとも1つの
 /// 視覚条件でほぼ識別不能になりそうな場合にだけ復旧ボタンを表示。
 /// 選んだテーマの保存、色の変更、その他のUI配色には一切影響させない。
-bool isThemeAtLockoutRisk(AppThemePreset preset) =>
-    readabilityCriticalPairs(preset).any(
-      (pair) => isEssentialTextNearlyInvisible(pair.a, pair.b),
-    );
+bool isThemeAtLockoutRisk(AppThemePreset preset) => readabilityCriticalPairs(
+  preset,
+).any((pair) => isEssentialTextNearlyInvisible(pair.a, pair.b));
 
 /// 既存テスト/呼び出しとの互換用の反転判定。
 /// 文字を人間が必ず読めるという保証ではなく、リセットボタンを表示する目安の否定形にすぎない。

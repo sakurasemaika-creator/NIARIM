@@ -124,11 +124,25 @@ void main() {
       panelBgColor: const Color(0xFFEAF4EC),
       selectionColor: const Color(0xFF7A5CC9),
     ),
+    // アクセントの文字・アイコン色を自分で選んだテーマ。
+    AppThemePreset.defaultLight.copyWith(
+      id: 'own_accent_text',
+      accentTextColor: const Color(0xFF8A1538),
+    ),
   ]) {
     test('${base.id}: the accent changes only the accent', () {
       final roles = changed(base, base.copyWith(accentColor: blue));
-      expect(roles.difference(accentRoles), isEmpty);
+      // アクセントの文字・アイコン色を選んでいなければ、それも差し色と同じ
+      // 色なので一緒に変わる（選んでいれば変わらない）。
+      final expected = {
+        ...accentRoles,
+        if (base.accentTextColor == null) ...{'accentText', 'listTileIcon'},
+      };
+      expect(roles.difference(expected), isEmpty);
       expect(roles, contains('primary'));
+      if (base.accentTextColor != null) {
+        expect(roles, isNot(contains('accentText')));
+      }
     });
 
     test('${base.id}: the selection colour changes only the selection', () {

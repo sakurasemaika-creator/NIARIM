@@ -14,6 +14,9 @@ import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import 'widgets/export_preset_selector.dart';
+import '../../models/export_preset.dart';
+export '../../models/export_preset.dart';
 
 class ExportScreen extends StatefulWidget {
   final String projectId;
@@ -82,32 +85,9 @@ class _ExportScreenState extends State<ExportScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            SegmentedButton<ExportPreset>(
-              segments: [
-                ButtonSegment(
-                  value: ExportPreset.standard,
-                  label: Text(l10n.exportPresetStandard, style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  )),
-                ),
-                ButtonSegment(
-                  value: ExportPreset.highQuality,
-                  label: Text(l10n.exportPresetHighQuality, style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  )),
-                ),
-                ButtonSegment(
-                  value: ExportPreset.custom,
-                  label: Text(l10n.exportPresetCustom, style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  )),
-                ),
-              ],
-              selected: {_preset},
-              onSelectionChanged: (v) => setState(() => _preset = v.first),
+            ExportPresetSelector(
+              value: _preset,
+              onChanged: (value) => setState(() => _preset = value),
             ),
             // 「カスタム」選択時のみ詳細設定を展開表示する（初心者はプリセットを
             // 選ぶだけで書き出しが完了する。詳細設定は「カスタム」タップ時のみ表示）。
@@ -166,47 +146,71 @@ class _ExportScreenState extends State<ExportScreen> {
               child: Column(
                 children: [
                   RadioListTile(
-                    title: Text(l10n.exportFormatMp4, style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  )),
-                    subtitle: Text(l10n.exportFormatMp4Subtitle, style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  )),
+                    title: Text(
+                      l10n.exportFormatMp4,
+                      style: const TextStyle(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                    subtitle: Text(
+                      l10n.exportFormatMp4Subtitle,
+                      style: const TextStyle(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
                     value: ExportFormat.mp4,
                   ),
                   RadioListTile(
-                    title: Text(l10n.exportFormatGif, style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  )),
-                    subtitle: Text(l10n.exportFormatGifSubtitle, style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  )),
+                    title: Text(
+                      l10n.exportFormatGif,
+                      style: const TextStyle(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                    subtitle: Text(
+                      l10n.exportFormatGifSubtitle,
+                      style: const TextStyle(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
                     value: ExportFormat.gif,
                   ),
                   RadioListTile(
-                    title: Text(l10n.helpTransparentWebmTitle, style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  )),
-                    subtitle: Text(l10n.exportFormatWebmSubtitle, style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  )),
+                    title: Text(
+                      l10n.helpTransparentWebmTitle,
+                      style: const TextStyle(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                    subtitle: Text(
+                      l10n.exportFormatWebmSubtitle,
+                      style: const TextStyle(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
                     value: ExportFormat.webm,
                   ),
                   RadioListTile(
-                    title: Text(l10n.exportFormatAvi, style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  )),
-                    subtitle: Text(l10n.exportFormatAviSubtitle, style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  )),
+                    title: Text(
+                      l10n.exportFormatAvi,
+                      style: const TextStyle(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                    subtitle: Text(
+                      l10n.exportFormatAviSubtitle,
+                      style: const TextStyle(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
                     value: ExportFormat.avi,
                   ),
                 ],
@@ -543,5 +547,3 @@ class _ExportScreenState extends State<ExportScreen> {
 }
 
 enum ExportFormat { mp4, gif, webm, avi }
-
-enum ExportPreset { standard, highQuality, custom }

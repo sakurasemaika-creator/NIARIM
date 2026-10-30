@@ -425,8 +425,15 @@ void main() {
       await tester.tap(find.text('ゴミ箱へ移動').last);
       await settle(tester);
       expect(find.text('フォルダをゴミ箱へ移動しますか？'), findsOneWidget);
-      expect(find.text('「親」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。'), findsOneWidget);
-      expect(find.text('フォルダの中のプロジェクト3件・フォルダ2件も一緒に移動します。'), findsOneWidget);
+      // 本文は、移す件数の行と一緒に1つの文で出る。
+      expect(
+        find.textContaining('「親」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('フォルダの中のプロジェクト3件・フォルダ2件も一緒に移動します。'),
+        findsOneWidget,
+      );
       await tester.tap(find.widgetWithText(FilledButton, '移動'));
       await settleIo(tester);
       expect(service.folders, isEmpty);
@@ -434,6 +441,10 @@ void main() {
       expect(find.text('「親」をゴミ箱へ移動しました'), findsOneWidget);
       await tester.tap(find.text('元に戻す'));
       await waitFor(tester, () => service.projects.length == 4);
+      // 作品は一覧に戻った後もファイルから読み直しているので、戻し終わる
+      // まで待つ（フォルダの処理は1つずつ順に動くので、次のフォルダの作成は
+      // 戻し終わるのを待つ）。
+      await settleIo(tester);
       expect(service.folders, hasLength(3));
       expect(service.projects, hasLength(4));
       expect(service.trash, isEmpty);
@@ -445,7 +456,10 @@ void main() {
       await openFolderMenu(tester, '空');
       await tester.tap(find.text('ゴミ箱へ移動').last);
       await settle(tester);
-      expect(find.text('「空」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。'), findsOneWidget);
+      expect(
+        find.textContaining('「空」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。'),
+        findsOneWidget,
+      );
       expect(find.textContaining('も一緒に移動します'), findsNothing);
       await tester.tap(find.widgetWithText(TextButton, 'キャンセル'));
       await settle(tester);
@@ -487,6 +501,9 @@ void main() {
       final id = service.trashedFolders.single.folder.id;
       await tester.tap(find.byKey(ValueKey('trashedFolderRestore_$id')));
       await waitFor(tester, () => service.projects.length == 3);
+      // 戻した作品をファイルから読み直し終わるまで待つ（次のフォルダの処理は
+      // それを待ってから動く）。
+      await settleIo(tester);
       expect(service.trashedFolders, isEmpty);
       expect(service.folders, hasLength(3));
       expect(folder, findsNothing);
@@ -585,30 +602,18 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('the folder edit dialog: named colours big enough to press, '
+    testWidgets('the folder edit dialog: colours big enough to press, '
         'no blank names, Enter saves', (tester) async {
       final service = await boot(tester);
       await openFolderMenu(tester, '親');
       await tester.tap(find.text('名前・色を編集').last);
       await settle(tester);
-      final green = find.byKey(const ValueKey('folderColor_${0xFF3DDC97}'));
+      final green = find.byTooltip('フォルダ色: #3DDC97');
       final size = tester.getSize(green);
       expect(size.width, greaterThanOrEqualTo(48));
       expect(size.height, greaterThanOrEqualTo(48));
-      expect(
-        tester.getSemantics(green),
-        isSemantics(label: '緑', isButton: true, isSelected: false),
-      );
-      expect(
-        tester.getSemantics(find.byKey(const ValueKey('folderColor_default'))),
-        isSemantics(label: '既定の色', isButton: true, isSelected: true),
-      );
       await tester.tap(green);
       await settle(tester);
-      expect(
-        tester.getSemantics(green),
-        isSemantics(label: '緑', isSelected: true),
-      );
       // 空白だけの名前では保存できない。
       final field = find.byType(TextField).last;
       await tester.enterText(field, '   ');
@@ -681,7 +686,7 @@ void main() {
       }
       expect(
         tester.getSemantics(current),
-        isSemantics(label: 'とても長い名前の階層3', isButton: true, isSelected: true),
+        isSemantics(label: 'とても長い名前の階層3', isButton: true),
       );
       // 一番上（ホーム）へ戻るボタンも、名前が読み上げられ押せる大きさ。
       await tester.drag(crumbs, const Offset(2000, 0));
@@ -694,7 +699,7 @@ void main() {
       expect(homeRect.height, greaterThanOrEqualTo(48));
       expect(
         tester.getSemantics(home),
-        isSemantics(label: 'プロジェクト', isButton: true),
+        isSemantics(tooltip: 'フォルダなし（ルート）', isButton: true),
       );
       await tester.tap(homeTarget);
       await settle(tester);

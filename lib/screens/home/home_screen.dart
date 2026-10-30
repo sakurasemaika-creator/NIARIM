@@ -23,9 +23,9 @@ import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../utils/app_error_reporter.dart';
+import '../../utils/folder_persistence.dart';
 import '../../utils/name_collation.dart';
 import '../../widgets/moved_to_trash_snack_bar.dart';
-import '../../widgets/name_entry_dialog.dart';
 import '../../services/share_intent_service.dart';
 import '../../services/shortcut_service.dart';
 import '../../services/work_folder_service.dart';
@@ -34,6 +34,11 @@ import '../../models/shortcut_binding.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
+import 'widgets/exported_work_card.dart';
+import 'widgets/exported_work_preview_layout.dart';
+import 'widgets/folder_delete_dialog.dart';
+import 'widgets/folder_save_feedback.dart';
+import 'widgets/work_folder_move_sheet.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
 import '../../config/font_fallback.dart';
@@ -45,6 +50,7 @@ import '../community/community_error_text.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/duplicate_name.dart';
 import '../../widgets/app_tutorial.dart';
+import '../canvas/widgets/canvas_icon_button.dart';
 
 /// ホームの一覧の下端に足す余白：画面下の左右に浮くFAB（56）とその下の
 /// 余白（16）、さらに端末のナビゲーションバーぶん（FABはその上に置かれる）。
@@ -61,13 +67,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
-  // 作品広場画面と同様に、左上から起動画面へ戻れるようにするための
-  // Scaffoldキー。ホーム画面はhamburgerメニュー（HomeDrawer）を持つため
-  // AppBarのleadingが自動的にメニューアイコンで埋まっており、そのままでは
-  // 戻る矢印を追加できない。そのためleadingを「戻る矢印＋メニュー
-  // アイコン」の2つ並びに差し替え、メニューアイコン側はこのキー経由で
-  // Scaffold.openDrawer()を呼び出す（自動表示に頼らない）。
+  // The menu opens from the right; the launch-screen back arrow sits at the
+  // left of the fixed AppBar. The page-level project list has its own scroll.
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _projectScrollController = ScrollController();
   late TabController _tabController;
   ProjectViewMode _viewMode = ProjectViewMode.medium;
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
@@ -159,6 +162,7 @@ class _HomeScreenState extends State<HomeScreen>
     _searchController.dispose();
     _searchFocusNode.dispose();
     _homeFocusNode.dispose();
+    _projectScrollController.dispose();
     _sharedFileSub?.cancel();
     super.dispose();
   }
@@ -414,20 +418,13 @@ class _HomeScreenState extends State<HomeScreen>
             child: Scaffold(
               key: _scaffoldKey,
               appBar: AppBar(
-                // 起動画面に戻るボタンは左下のFABへ移動する。左上は
-                // ドロワー用ハンバーガーメニューのみとし、お気に入りは変更しない。
                 automaticallyImplyLeading: false,
-                leadingWidth: _isSearching ? 0 : 56,
-                leading: _isSearching
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.menu),
-                        tooltip: MaterialLocalizations.of(
-                          context,
-                        ).openAppDrawerTooltip,
-                        onPressed: () =>
-                            _scaffoldKey.currentState?.openDrawer(),
-                      ),
+                leading: IconButton(
+                  key: const Key('homeBackToSplashButton'),
+                  icon: const Icon(Icons.arrow_back),
+                  tooltip: l10n.homeBackToSplashTooltip,
+                  onPressed: () => context.go('/'),
+                ),
                 // 作品一覧・ブクマ済みのタブでは、そのタブの名前を出す
                 // （並び替え・検索はプロジェクトの一覧にだけ効く）。
                 title: _currentTabIndex != 0
@@ -492,16 +489,7 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                         ],
                       )
-                    // アプリ名の代わりに、現在の並び替え基準（名前／更新日時）を
-                    // 常に表示するプルダウンと、昇順・降順をワンタップで切り替える
-                    // 矢印ボタンを置く。並び替え状態が常に一目でわかるようにする
-                    // ための変更。
-                    : SortModeControl(
-                        sortByName: _sortByName,
-                        sortAscending: _sortAscending,
-                        onSortByNameChanged: _setSortByName,
-                        onToggleDirection: _toggleSortDirection,
-                      ),
+                    : Text(l10n.homeTabProjects),
                 actions: [
                   // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
                   // トップ画面右上からは重複表示を削除した。
@@ -519,7 +507,7 @@ class _HomeScreenState extends State<HomeScreen>
                           _clipboardProjectIds.length +
                               _clipboardFolderIds.length,
                         ),
-                        onPressed: _pasteClipboard,
+                        onPressed: _pasting ? null : _pasteClipboard,
                       ),
                     ProjectViewModeMenu(
                       value: _viewMode,
@@ -536,6 +524,14 @@ class _HomeScreenState extends State<HomeScreen>
                       onPressed: _openSearch,
                     ),
                   ],
+                  IconButton(
+                    key: const Key('homeMenuButton'),
+                    icon: const Icon(Icons.menu),
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).openAppDrawerTooltip,
+                    onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+                  ),
                 ],
                 // 標準のTabBarは項目名の文字数に関わらず均等4分割になるため、
                 // 「プロジェクト」のように長い項目名が「共有」等の短い項目名と
@@ -556,7 +552,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
               ),
-              drawer: const HomeDrawer(),
+              endDrawer: const HomeDrawer(),
               body: Column(
                 children: [
                   if (_isSelectionMode) _buildSelectionBar(l10n),
@@ -566,32 +562,6 @@ class _HomeScreenState extends State<HomeScreen>
                       children: [
                         Column(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              child: Row(
-                                children: [
-                                  FilterChip(
-                                    label: Text(
-                                      l10n.homeFavoritesOnly,
-                                      style: const TextStyle(
-                                        fontFamily: 'Kuramubon',
-                                        fontFamilyFallback:
-                                            kHeadingFontFallback,
-                                      ),
-                                    ),
-                                    selected: _showFavoritesOnly,
-                                    onSelected: (v) =>
-                                        setState(() => _showFavoritesOnly = v),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // フォルダ内移動時のパンくずリスト。検索中は
-                            // 全体から検索するため非表示にする。
-                            if (!_isSearching) _buildBreadcrumb(),
                             // 保存先を読めなかったときは、空の一覧に見えて
                             // 作品が消えたと思わないよう知らせ、読み直せる
                             // ようにする。
@@ -605,6 +575,59 @@ class _HomeScreenState extends State<HomeScreen>
                               ),
                             Expanded(
                               child: ProjectListWidget(
+                                scrollController: _projectScrollController,
+                                header: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          FilterChip(
+                                            label: Text(
+                                              l10n.homeFavoritesOnly,
+                                              style: TextStyle(
+                                                fontFamily: 'Kuramubon',
+                                                fontFamilyFallback:
+                                                    kHeadingFontFallback,
+                                                color: _showFavoritesOnly
+                                                    ? Colors.white
+                                                    : null,
+                                              ),
+                                            ),
+                                            selectedColor: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                            checkmarkColor: Colors.white,
+                                            selected: _showFavoritesOnly,
+                                            onSelected: (v) => setState(
+                                              () => _showFavoritesOnly = v,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Align(
+                                              alignment: Alignment.centerRight,
+                                              child: SortModeControl(
+                                                sortByName: _sortByName,
+                                                sortAscending: _sortAscending,
+                                                onSortByNameChanged:
+                                                    _setSortByName,
+                                                onToggleDirection:
+                                                    _toggleSortDirection,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // フォルダ内移動時のパンくずリスト。検索中は
+                                    // 全体から検索するため非表示にする。
+                                    if (!_isSearching) _buildBreadcrumb(),
+                                  ],
+                                ),
                                 // 開いているフォルダ・表示ごとにスクロール位置を
                                 // 覚える（入力中の検索語ごとには覚えない）。
                                 key: PageStorageKey((
@@ -685,24 +708,40 @@ class _HomeScreenState extends State<HomeScreen>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    FloatingActionButton(
-                      key: const Key('homeBackToSplashFab'),
-                      heroTag: 'home-back-to-splash',
-                      tooltip: l10n.homeBackToSplashTooltip,
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                      shape: const CircleBorder(side: BorderSide.none),
-                      elevation: 0,
-                      focusElevation: 0,
-                      hoverElevation: 0,
-                      highlightElevation: 0,
-                      disabledElevation: 0,
-                      onPressed: () => context.go('/'),
-                      child: const Icon(Icons.arrow_back),
-                    ),
+                    if (_currentTabIndex == 0)
+                      FloatingActionButton(
+                        key: const Key('homeScrollToTopFab'),
+                        heroTag: 'home-scroll-to-top',
+                        mini: MediaQuery.sizeOf(context).height < 400,
+                        materialTapTargetSize: MaterialTapTargetSize.padded,
+                        tooltip: l10n.communityScrollToTop,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary,
+                        shape: const CircleBorder(side: BorderSide.none),
+                        elevation: 0,
+                        focusElevation: 0,
+                        hoverElevation: 0,
+                        highlightElevation: 0,
+                        disabledElevation: 0,
+                        onPressed: () {
+                          if (!_projectScrollController.hasClients) return;
+                          _projectScrollController.animateTo(
+                            0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOutCubic,
+                          );
+                        },
+                        child: const Icon(Icons.arrow_upward),
+                      )
+                    else
+                      const SizedBox(width: 56),
                     if (_currentTabIndex == 0)
                       FloatingActionButton(
                         heroTag: 'home-add-project',
+                        mini: MediaQuery.sizeOf(context).height < 400,
+                        materialTapTargetSize: MaterialTapTargetSize.padded,
                         tooltip: l10n.homeAddTooltip,
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Theme.of(
@@ -720,6 +759,8 @@ class _HomeScreenState extends State<HomeScreen>
                     else if (_currentTabIndex == 1)
                       FloatingActionButton(
                         heroTag: 'home-add-work-folder',
+                        mini: MediaQuery.sizeOf(context).height < 400,
+                        materialTapTargetSize: MaterialTapTargetSize.padded,
                         tooltip: l10n.homeAddSheetNewFolder,
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Theme.of(
@@ -1240,9 +1281,9 @@ class _HomeScreenState extends State<HomeScreen>
   /// （以前は何も起きなくても「貼り付けました」と出し、切り取ったフォルダは
   /// クリップボードから消えていた）。
   Future<void> _pasteClipboard() async {
-    // 押し続け・連打で同じ貼り付けを重ねない。
+    // 押し続け・連打で同じ貼り付けを重ねない（貼り付け中はボタンも押せない）。
     if (_pasting) return;
-    _pasting = true;
+    setState(() => _pasting = true);
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     final service = context.read<ProjectService>();
@@ -1254,7 +1295,7 @@ class _HomeScreenState extends State<HomeScreen>
     var missing = 0;
     var intoSelf = 0;
     final moved = <String>{};
-    var failed = false;
+    Object? failure;
     try {
       for (final id in _clipboardProjectIds.toList()) {
         final project = liveProjects[id];
@@ -1290,7 +1331,7 @@ class _HomeScreenState extends State<HomeScreen>
           continue;
         }
         if (isCut) {
-          if (target != null && service.isFolderWithin(target, id)) {
+          if (target != null && service.isFolderDescendantOf(target, id)) {
             intoSelf++;
             continue;
           }
@@ -1319,12 +1360,11 @@ class _HomeScreenState extends State<HomeScreen>
     } catch (error, stack) {
       // 途中で失敗しても、移せた分はクリップボードから外して結果を伝える。
       AppErrorReporter.record(error, stack);
-      failed = true;
-    } finally {
-      _pasting = false;
+      failure = error;
     }
     if (!mounted) return;
     setState(() {
+      _pasting = false;
       if (isCut) {
         _clipboardProjectIds.removeAll(moved);
         _clipboardFolderIds.removeAll(moved);
@@ -1337,7 +1377,11 @@ class _HomeScreenState extends State<HomeScreen>
       if (pasted > 0) l10n.homePastedSnackbar(pasted),
       if (intoSelf > 0) l10n.homePasteSkippedIntoSelf(intoSelf),
       if (missing > 0) l10n.homePasteSkippedMissing(missing),
-      if (failed) l10n.homePasteFailed,
+      // フォルダの保存の失敗はフォルダの文言、作品の複製などの失敗は貼り付けの文言。
+      if (failure != null)
+        failure is FolderSaveException
+            ? folderSaveFailureText(l10n, failure)
+            : l10n.homePasteFailed,
     ];
     messenger
       ..hideCurrentSnackBar()
@@ -1348,6 +1392,8 @@ class _HomeScreenState extends State<HomeScreen>
   /// ホームアイコンでルートへ、各フォルダ名でその階層へ移動。
   Widget _buildBreadcrumb() {
     if (_currentFolderId == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
+    final foreground = Theme.of(context).colorScheme.onSurface;
     final folders = context.watch<ProjectService>().folders;
     final chain = <ProjectFolder>[];
     String? current = _currentFolderId;
@@ -1357,58 +1403,36 @@ class _HomeScreenState extends State<HomeScreen>
       chain.insert(0, folder);
       current = folder.parentFolderId;
     }
-    final l10n = AppLocalizations.of(context)!;
-    // 押す所は指で押しやすい48px四方以上。深い階層でも今いるフォルダ
-    // （右端）が見えるよう、右端から並べる。
-    Widget crumb({
-      required VoidCallback onTap,
-      required Widget child,
-      required String label,
-      required bool current,
-    }) => Semantics(
-      button: true,
-      selected: current,
-      label: label,
-      excludeSemantics: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Center(widthFactor: 1, child: child),
-          ),
-        ),
-      ),
-    );
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: SingleChildScrollView(
         key: const Key('homeBreadcrumb'),
         scrollDirection: Axis.horizontal,
+        // 深い階層でも今いるフォルダ（右端）が見えるよう、右端から並べる。
         reverse: true,
         child: Row(
           children: [
-            crumb(
-              onTap: () => setState(() => _currentFolderId = null),
-              label: l10n.homeTabProjects,
-              current: false,
-              child: const Icon(Icons.home, size: 20),
+            IconButton(
+              tooltip: l10n.projectListFolderRootOption,
+              onPressed: () => setState(() => _currentFolderId = null),
+              constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+              visualDensity: VisualDensity.standard,
+              icon: const Icon(Icons.home, size: 18),
             ),
             for (final folder in chain) ...[
               const Icon(Icons.chevron_right, size: 16),
-              crumb(
-                onTap: () => setState(() => _currentFolderId = folder.id),
-                label: folder.name,
-                current: folder.id == _currentFolderId,
+              TextButton(
+                onPressed: () => setState(() => _currentFolderId = folder.id),
+                style: TextButton.styleFrom(
+                  foregroundColor: foreground,
+                  minimumSize: const Size(48, 48),
+                  visualDensity: VisualDensity.standard,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
                 child: Text(
                   folder.name,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
-                    fontWeight: folder.id == _currentFolderId
-                        ? FontWeight.w700
-                        : null,
                     fontFamily: 'Kuramubon',
                     fontFamilyFallback: kHeadingFontFallback,
                   ),
@@ -1463,7 +1487,17 @@ class _HomeTabBarState extends State<_HomeTabBar> {
     final scheme = Theme.of(context).colorScheme;
     // 選ばれたタブの下線は差し色、名前はテーマの「アクセントの文字・
     // アイコン色」（未指定なら差し色。ユーザー指定で、読みやすさのために
-    // 黒や白へ自動で差し替えない）。
+    // 黒や白へ自動で差し替えない）。下地とほとんど同じ色のときだけ、
+    // テーマの色から作った縁取りを付ける。
+    final background = opaqueOver(
+      Theme.of(context).appBarTheme.backgroundColor ?? scheme.surface,
+      opaqueOver(Theme.of(context).scaffoldBackgroundColor, Colors.black),
+    );
+    final menuScheme = scheme.copyWith(
+      surface: background,
+      onSurface:
+          Theme.of(context).appBarTheme.foregroundColor ?? scheme.onSurface,
+    );
     final selectedColor = scheme.primary;
     final selectedTextColor = AccentTextTheme.of(context);
     final textStyle = const TextStyle(
@@ -1478,6 +1512,7 @@ class _HomeTabBarState extends State<_HomeTabBar> {
         text: TextSpan(text: label, style: textStyle),
         textDirection: TextDirection.ltr,
         textScaler: MediaQuery.textScalerOf(context),
+        locale: Localizations.localeOf(context),
         maxLines: 1,
       )..layout();
       final width = tp.width + 32;
@@ -1515,6 +1550,13 @@ class _HomeTabBarState extends State<_HomeTabBar> {
               color: currentIndex == i
                   ? selectedTextColor
                   : scheme.onSurfaceVariant,
+              shadows: currentIndex == i
+                  ? CanvasIconButton.actionShadows(
+                      selectedTextColor,
+                      background,
+                      menuScheme,
+                    )
+                  : null,
             ),
           ),
         ),
@@ -1660,11 +1702,14 @@ class _SharedScreenState extends State<SharedScreen> {
                 FilterChip(
                   label: Text(
                     l10n.homeFavoritesOnly,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Kuramubon',
                       fontFamilyFallback: kHeadingFontFallback,
+                      color: _showFavoritesOnly ? Colors.white : null,
                     ),
                   ),
+                  selectedColor: Theme.of(context).colorScheme.primary,
+                  checkmarkColor: Colors.white,
                   selected: _showFavoritesOnly,
                   onSelected: (v) => setState(() => _showFavoritesOnly = v),
                 ),
@@ -1811,22 +1856,25 @@ class _SharedTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var shared = context.watch<ProjectService>().shared;
+    final service = context.watch<ProjectService>();
+    final folders = service.sharedFolders;
+    var shared = service.shared;
     if (showFavoritesOnly) {
       shared = shared.where((p) => p.isFavorite).toList();
     }
     shared = _sortProjects(shared, sortMode);
     final l10n = AppLocalizations.of(context)!;
-    if (shared.isEmpty) {
-      return EmptyStatePlaceholder(
-        icon: Icons.share_outlined,
-        title: l10n.homeSharedEmpty,
-      );
-    }
     return _FolderableList<Project>(
       allItems: shared,
-      folders: context.watch<ProjectService>().sharedFolders,
-      folderIdOf: (p) => p.sharedFolderId,
+      folders: folders,
+      emptyState: EmptyStatePlaceholder(
+        icon: Icons.share_outlined,
+        title: l10n.homeSharedEmpty,
+        scrollable: false,
+      ),
+      folderIdOf: (p) => folders.any((f) => f.id == p.sharedFolderId)
+          ? p.sharedFolderId
+          : null,
       onEnterFolder: (folderId, folderName, itemsInFolder) =>
           Navigator.of(context).push(
             adMockMaterialPageRoute(
@@ -1874,33 +1922,13 @@ class _SharedTab extends StatelessWidget {
   }
 
   void _showMoveToSharedFolderSheet(BuildContext context, Project project) {
-    final l10n = AppLocalizations.of(context)!;
     final service = context.read<ProjectService>();
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.folder_off_outlined),
-              title: Text(l10n.folderNone),
-              onTap: () {
-                service.moveToSharedFolder(project.id, null);
-                Navigator.pop(ctx);
-              },
-            ),
-            for (final f in service.sharedFolders)
-              ListTile(
-                leading: const Icon(Icons.folder_outlined),
-                title: Text(f.name),
-                onTap: () {
-                  service.moveToSharedFolder(project.id, f.id);
-                  Navigator.pop(ctx);
-                },
-              ),
-          ],
-        ),
+      builder: (_) => WorkFolderMoveSheet(
+        folders: service.sharedFolders,
+        filename: project.name,
+        onMove: (id) => service.moveToSharedFolder(project.id, id),
       ),
     );
   }
@@ -1923,13 +1951,9 @@ class _SharedFolderScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(folderName)),
       body: items.isEmpty
-          ? Center(
-              child: Text(
-                l10n.folderManagementEmpty,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
+          ? EmptyStatePlaceholder(
+              icon: Icons.folder_open_outlined,
+              title: l10n.homeSharedFolderEmpty,
             )
           : ListView.builder(
               itemCount: items.length,
@@ -1981,11 +2005,10 @@ class _FolderableList<T> extends StatelessWidget {
   final String? Function(T) folderIdOf;
   final void Function(String folderId, String folderName, List<T> itemsInFolder)
   onEnterFolder;
-  final void Function(String id, String name) onRenameFolder;
-  final void Function(String id) onDeleteFolder;
+  final Future<void> Function(String id, String name) onRenameFolder;
+  final Future<void> Function(String id) onDeleteFolder;
   final Widget Function(BuildContext, T) itemBuilder;
-  // 一覧の下端に足す余白（画面下のFABに最後の行が隠れないように）。
-  final double bottomPadding;
+  final Widget? emptyState;
 
   const _FolderableList({
     required this.allItems,
@@ -1995,7 +2018,7 @@ class _FolderableList<T> extends StatelessWidget {
     required this.onRenameFolder,
     required this.onDeleteFolder,
     required this.itemBuilder,
-    this.bottomPadding = 0,
+    this.emptyState,
   });
 
   @override
@@ -2012,62 +2035,110 @@ class _FolderableList<T> extends StatelessWidget {
     // 作品の行は表示されるぶんだけ作る。ListView(children:)だと、実際に
     // 描画されるのは画面内の行だけでも、全作品ぶんのカード（サムネイルの
     // Image.fileを含む）のウィジェットが毎buildで作られて捨てられる。
-    return ListView.builder(
-      padding: EdgeInsets.only(bottom: bottomPadding),
-      itemCount: rootItems.length + (hasHeader ? 2 : 0),
-      itemBuilder: (context, index) {
-        if (hasHeader && index == 0) {
-          return _folderChips(context, countByFolder);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (rootItems.isEmpty && emptyState != null) {
+          return CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              if (hasHeader) ...[
+                SliverToBoxAdapter(child: _folderChips(context, countByFolder)),
+                const SliverToBoxAdapter(child: Divider(height: 1)),
+              ],
+              SliverPadding(
+                padding: EdgeInsets.only(
+                  bottom: 88 + MediaQuery.paddingOf(context).bottom,
+                ),
+                sliver: SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: emptyState!,
+                ),
+              ),
+            ],
+          );
         }
-        if (hasHeader && index == 1) return const Divider(height: 1);
-        return itemBuilder(context, rootItems[index - (hasHeader ? 2 : 0)]);
+        return ListView.builder(
+          // Leave 48px for the action, 8px inner padding and 4px card margin.
+          padding: EdgeInsets.only(
+            bottom:
+                (constraints.maxHeight - 60).clamp(0.0, 88.0).toDouble() +
+                MediaQuery.paddingOf(context).bottom,
+          ),
+          itemCount: rootItems.length + (hasHeader ? 2 : 0),
+          itemBuilder: (context, index) {
+            if (hasHeader && index == 0) {
+              return _folderChips(context, countByFolder);
+            }
+            if (hasHeader && index == 1) return const Divider(height: 1);
+            return itemBuilder(context, rootItems[index - (hasHeader ? 2 : 0)]);
+          },
+        );
       },
     );
   }
 
   Widget _folderChips(BuildContext context, Map<String, int> countByFolder) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: folders.map((f) {
-          final count = countByFolder[f.id] ?? 0;
-          return InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: () => onEnterFolder(
-              f.id,
-              f.name,
-              allItems.where((e) => folderIdOf(e) == f.id).toList(),
-            ),
-            onLongPress: () => _showFolderMenu(context, f),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outlineVariant,
+    return LayoutBuilder(
+      builder: (context, constraints) => Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: folders.map((f) {
+            final count = countByFolder[f.id] ?? 0;
+            return ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: (constraints.maxWidth - 24).clamp(
+                  0.0,
+                  double.infinity,
                 ),
-                borderRadius: BorderRadius.circular(10),
+                minHeight: 48,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.folder, size: 18),
-                  const SizedBox(width: 6),
-                  Text(f.name),
-                  const SizedBox(width: 4),
-                  Text(
-                    '($count)',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+              child: Semantics(
+                button: true,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () => onEnterFolder(
+                    f.id,
+                    f.name,
+                    allItems.where((e) => folderIdOf(e) == f.id).toList(),
+                  ),
+                  onLongPress: () => _showFolderMenu(context, f),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.folder, size: 18),
+                        const SizedBox(width: 6),
+                        Flexible(child: Text(f.name)),
+                        const SizedBox(width: 4),
+                        Text(
+                          '($count)',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -2085,15 +2156,10 @@ class _FolderableList<T> extends StatelessWidget {
               title: Text(l10n.commonRename),
               onTap: () {
                 Navigator.pop(ctx);
-                showDialog(
-                  context: context,
-                  builder: (dctx) => NameEntryDialog(
-                    title: l10n.commonRename,
-                    initialName: folder.name,
-                    confirmLabel: l10n.commonChange,
-                    cancelLabel: l10n.commonCancel,
-                    onSubmit: (name) async => onRenameFolder(folder.id, name),
-                  ),
+                showRenameFolderNameDialog(
+                  context,
+                  folder.name,
+                  (name) => onRenameFolder(folder.id, name),
                 );
               },
             ),
@@ -2110,27 +2176,9 @@ class _FolderableList<T> extends StatelessWidget {
                 Navigator.pop(ctx);
                 showDialog(
                   context: context,
-                  builder: (dctx) => AlertDialog(
-                    title: Text(l10n.projectListDeleteFolderConfirmTitle),
-                    content: Text(
-                      l10n.projectListDeleteFolderConfirmBody(folder.name),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(dctx),
-                        child: Text(l10n.commonCancel),
-                      ),
-                      FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: ThemeService.activeColorScheme.error,
-                        ),
-                        onPressed: () {
-                          onDeleteFolder(folder.id);
-                          Navigator.pop(dctx);
-                        },
-                        child: Text(l10n.commonDelete),
-                      ),
-                    ],
+                  builder: (_) => FolderDeleteDialog(
+                    folderName: folder.name,
+                    onDelete: () => onDeleteFolder(folder.id),
                   ),
                 );
               },
@@ -2665,34 +2713,18 @@ class _WorksTabState extends State<_WorksTab> {
           return const Center(child: CircularProgressIndicator());
         }
         final files = snapshot.data!;
-        if (files.isEmpty) {
-          return RefreshIndicator(
-            onRefresh: _reload,
-            child: LayoutBuilder(
-              builder: (context, constraints) => ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  SizedBox(
-                    // 一覧の高さいっぱいに取り、他のタブの空の表示と同じく
-                    // 上下の中央に出す（固定の400だと上に寄っていた）。
-                    // 引っ張って読み直す操作のため、一覧のまま置く。
-                    height: constraints.maxHeight,
-                    child: EmptyStatePlaceholder(
-                      icon: Icons.video_library_outlined,
-                      title: l10n.homeWorksEmpty,
-                      hint: l10n.homeWorksEmptyHint,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
         final workFolders = context.watch<WorkFolderService>();
         return RefreshIndicator(
           onRefresh: _reload,
           child: _FolderableList<File>(
-            bottomPadding: _fabClearance(context),
+            emptyState: files.isEmpty
+                ? EmptyStatePlaceholder(
+                    icon: Icons.video_library_outlined,
+                    title: l10n.homeWorksEmpty,
+                    hint: l10n.homeWorksEmptyHint,
+                    scrollable: false,
+                  )
+                : null,
             allItems: files,
             folders: workFolders.folders,
             folderIdOf: (f) =>
@@ -2841,13 +2873,9 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
               )
               .toList();
           if (items.isEmpty) {
-            return Center(
-              child: Text(
-                l10n.folderManagementEmpty,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
+            return EmptyStatePlaceholder(
+              icon: Icons.folder_open_outlined,
+              title: l10n.homeWorkFolderEmpty,
             );
           }
           return ListView.builder(
@@ -2900,90 +2928,31 @@ class _WorkListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stat = file.statSync();
-    final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      elevation: 1,
-      shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-        alpha: 0.15,
-      ),
-      color: scheme.surfaceContainerLow,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: scheme.primaryContainer,
-          child: Icon(_icon, color: AccentTextTheme.of(context)),
-        ),
-        title: Text(
-          file.path.split('/').last,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-          ),
-        ),
-        subtitle: Text(
-          '${_formatDate(stat.modified)} ・ ${_formatSize(stat.size)}',
-          style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
-        ),
-        onTap: () => _openPreview(context),
-        onLongPress: () => _showMoveToFolderSheet(context),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 「写真アプリで開く」＝OSの共有シート経由（新規ネイティブ実装不要）。
-            IconButton(
-              icon: const Icon(Icons.ios_share, size: 20),
-              tooltip: l10n.homeShareOpenWith,
-              onPressed: () => SharePlus.instance.share(
-                ShareParams(files: [XFile(file.path)]),
-              ),
-            ),
-            IconButton(
-              icon: Icon(
-                Icons.delete_outline,
-                size: 20,
-                color: ThemeService.activeColorScheme.error,
-              ),
-              tooltip: l10n.commonDelete,
-              onPressed: () => _confirmDelete(context),
-            ),
-          ],
-        ),
-      ),
+    return ExportedWorkCard(
+      name: file.path.split(RegExp(r'[\\/]')).last,
+      metadata: '${_formatDate(stat.modified)} ・ ${_formatSize(stat.size)}',
+      icon: _icon,
+      moveLabel: l10n.folderMoveToTitle,
+      shareLabel: l10n.homeShareOpenWith,
+      deleteLabel: l10n.commonDelete,
+      onOpen: () => _openPreview(context),
+      onMove: () => _showMoveToFolderSheet(context),
+      onShare: () =>
+          SharePlus.instance.share(ShareParams(files: [XFile(file.path)])),
+      onDelete: () => _confirmDelete(context),
     );
   }
 
   void _showMoveToFolderSheet(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final service = context.read<WorkFolderService>();
     final fileName = file.path.split(RegExp(r'[\\/]')).last;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => ScrollableSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.folder_off_outlined),
-              title: Text(l10n.folderNone),
-              onTap: () {
-                service.moveFileToFolder(fileName, null);
-                Navigator.pop(ctx);
-              },
-            ),
-            for (final f in service.folders)
-              ListTile(
-                leading: const Icon(Icons.folder_outlined),
-                title: Text(f.name),
-                onTap: () {
-                  service.moveFileToFolder(fileName, f.id);
-                  Navigator.pop(ctx);
-                },
-              ),
-          ],
-        ),
+      builder: (_) => WorkFolderMoveSheet(
+        filename: fileName,
+        folders: service.folders,
+        onMove: (folderId) => service.moveFileToFolder(fileName, folderId),
       ),
     );
   }
@@ -2993,6 +2962,7 @@ class _WorkListItem extends StatelessWidget {
       context: context,
       builder: (ctx) => Dialog(
         insetPadding: const EdgeInsets.all(16),
+        constraints: const BoxConstraints(maxWidth: 720),
         child: _WorkPreview(file: file),
       ),
     );
@@ -3003,6 +2973,8 @@ class _WorkListItem extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
+        insetPadding: const EdgeInsets.all(16),
         title: Text(l10n.homeWorkDeleteConfirmTitle(file.path.split('/').last)),
         content: Text(l10n.homeWorkDeleteConfirmBody),
         actions: [
@@ -3028,7 +3000,7 @@ class _WorkListItem extends StatelessWidget {
 }
 
 /// アプリ内プレビュー：MP4/WebMはVideoPlayerController（timeline_screen.dart
-/// で既に実績のある仕組み）、GIFはFlutter標準のImage.file（アニメーション
+/// で既に実績のある仕組み）、GIFはFlutter標準のImage/FileImage（アニメーション
 /// GIFを自動再生する）を用いる。いずれも新規ネイティブ依存なし。
 class _WorkPreview extends StatefulWidget {
   final File file;
@@ -3042,12 +3014,19 @@ class _WorkPreviewState extends State<_WorkPreview> {
   VideoPlayerController? _controller;
   bool _isGif = false;
   bool _failed = false;
+  FileImage? _gifProvider;
+  ImageStream? _gifStream;
+  ImageStreamListener? _gifListener;
+  double? _gifAspectRatio;
+  bool _gifDimensionsResolved = false;
 
   @override
   void initState() {
     super.initState();
     _isGif = widget.file.path.toLowerCase().endsWith('.gif');
-    if (!_isGif) {
+    if (_isGif) {
+      _gifProvider = FileImage(widget.file);
+    } else {
       _controller = VideoPlayerController.file(widget.file)
         ..initialize()
             .then((_) {
@@ -3063,7 +3042,43 @@ class _WorkPreviewState extends State<_WorkPreview> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isGif || _gifDimensionsResolved || _gifListener != null) return;
+    // Share the Image widget's cached stream and release our first-frame clone.
+    _gifStream = _gifProvider!.resolve(createLocalImageConfiguration(context));
+    _gifListener = ImageStreamListener(
+      (info, synchronousCall) {
+        final ratio = info.image.width / info.image.height;
+        info.dispose();
+        _gifDimensionsResolved = true;
+        _stopGifSizeListener();
+        if (!mounted) return;
+        if (synchronousCall) {
+          _gifAspectRatio = ratio;
+        } else {
+          setState(() => _gifAspectRatio = ratio);
+        }
+      },
+      onError: (error, stackTrace) {
+        _gifDimensionsResolved = true;
+        _stopGifSizeListener();
+      },
+    );
+    _gifStream!.addListener(_gifListener!);
+  }
+
+  void _stopGifSizeListener() {
+    final stream = _gifStream;
+    final listener = _gifListener;
+    _gifStream = null;
+    _gifListener = null;
+    if (stream != null && listener != null) stream.removeListener(listener);
+  }
+
+  @override
   void dispose() {
+    _stopGifSizeListener();
     _controller?.dispose();
     super.dispose();
   }
@@ -3073,59 +3088,61 @@ class _WorkPreviewState extends State<_WorkPreview> {
     final l10n = AppLocalizations.of(context)!;
     Widget content;
     if (_isGif) {
-      content = Image.file(widget.file, fit: BoxFit.contain);
+      content = Image(
+        image: _gifProvider!,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Center(
+          child: Text(l10n.homePreviewFailed, textAlign: TextAlign.center),
+        ),
+      );
     } else if (_failed) {
-      content = Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(l10n.homePreviewFailed),
+      content = Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(l10n.homePreviewFailed, textAlign: TextAlign.center),
+        ),
       );
     } else if (_controller != null && _controller!.value.isInitialized) {
-      content = AspectRatio(
-        aspectRatio: _controller!.value.aspectRatio,
-        child: GestureDetector(
-          onTap: () => setState(() {
-            _controller!.value.isPlaying
-                ? _controller!.pause()
-                : _controller!.play();
-          }),
-          child: VideoPlayer(_controller!),
+      content = Center(
+        child: AspectRatio(
+          aspectRatio: _controller!.value.aspectRatio,
+          child: GestureDetector(
+            onTap: () => setState(() {
+              _controller!.value.isPlaying
+                  ? _controller!.pause()
+                  : _controller!.play();
+            }),
+            child: VideoPlayer(_controller!),
+          ),
         ),
       );
     } else {
-      content = const Padding(
-        padding: EdgeInsets.all(24),
-        child: SizedBox(
-          width: 32,
-          height: 32,
-          child: CircularProgressIndicator(),
+      content = const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: SizedBox(
+            width: 32,
+            height: 32,
+            child: CircularProgressIndicator(),
+          ),
         ),
       );
     }
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(child: content),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton.icon(
-                icon: const Icon(Icons.ios_share, size: 18),
-                label: Text(l10n.homeShareOpenWith),
-                onPressed: () => SharePlus.instance.share(
-                  ShareParams(files: [XFile(widget.file.path)]),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(l10n.commonClose),
-              ),
-            ],
-          ),
-        ],
+    return ExportedWorkPreviewLayout(
+      content: content,
+      contentAspectRatio: _isGif
+          ? _gifAspectRatio ?? 16 / 9
+          : _controller?.value.isInitialized == true
+          ? _controller!.value.aspectRatio
+          : 16 / 9,
+      shareLabel: l10n.homeShareOpenWith,
+      closeLabel: l10n.commonClose,
+      onShare: () => SharePlus.instance.share(
+        ShareParams(files: [XFile(widget.file.path)]),
       ),
+      onClose: () => Navigator.pop(context),
     );
   }
 }

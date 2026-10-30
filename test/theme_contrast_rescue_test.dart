@@ -63,11 +63,16 @@ void main() {
       for (final preset in service.presets) {
         final encoded = preset.toJson();
         for (final field in const [
-          'textColor', 'buttonTextColor',
-          'menuTextColor', 'selectionTextColor',
+          'textColor',
+          'buttonTextColor',
+          'menuTextColor',
+          'selectionTextColor',
         ]) {
-          expect(encoded[field], isA<int>(),
-            reason: '${preset.id} must define $field explicitly');
+          expect(
+            encoded[field],
+            isA<int>(),
+            reason: '${preset.id} must define $field explicitly',
+          );
         }
       }
     });
@@ -80,7 +85,8 @@ void main() {
         selectionTextColor: const Color(0xFF00FF00),
       );
       final restored = AppThemePreset.fromJson(
-        jsonDecode(jsonEncode(custom.toJson())) as Map<String, dynamic>);
+        jsonDecode(jsonEncode(custom.toJson())) as Map<String, dynamic>,
+      );
       expect(restored.textColor, const Color(0xFF111111));
       expect(restored.buttonTextColor, Colors.white);
       expect(restored.menuTextColor, const Color(0xFF993366));
@@ -88,7 +94,9 @@ void main() {
     });
 
     test('新形式に足りない文字色があるプリセットは不完全として読み込まない', () {
-      final old = Map<String, dynamic>.from(AppThemePreset.defaultLight.toJson());
+      final old = Map<String, dynamic>.from(
+        AppThemePreset.defaultLight.toJson(),
+      );
       old.remove('buttonTextColor');
       expect(() => AppThemePreset.fromJson(old), throwsA(isA<TypeError>()));
     });
@@ -97,12 +105,14 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final service = ThemeService();
       await service.init();
-      service.previewCurrent(AppThemePreset.defaultLight.copyWith(
-        textColor: const Color(0xFF111111),
-        buttonTextColor: Colors.white,
-        menuTextColor: const Color(0xFF8844CC),
-        selectionTextColor: const Color(0xFF44EE55),
-      ));
+      service.previewCurrent(
+        AppThemePreset.defaultLight.copyWith(
+          textColor: const Color(0xFF111111),
+          buttonTextColor: Colors.white,
+          menuTextColor: const Color(0xFF8844CC),
+          selectionTextColor: const Color(0xFF44EE55),
+        ),
+      );
       final data = service.themeData;
       expect(data.colorScheme.onSurface, const Color(0xFF111111));
       expect(data.colorScheme.onPrimary, Colors.white);
@@ -110,7 +120,10 @@ void main() {
       expect(data.colorScheme.onPrimaryContainer, const Color(0xFF111111));
       expect(data.colorScheme.onSecondaryContainer, const Color(0xFF111111));
       expect(data.listTileTheme.selectedColor, const Color(0xFF44EE55));
-      expect(data.listTileTheme.selectedTileColor, service.current.selectionColor);
+      expect(
+        data.listTileTheme.selectedTileColor,
+        service.current.selectionColor,
+      );
       final selected = <WidgetState>{WidgetState.selected};
       final unselected = <WidgetState>{};
       expect(
@@ -137,12 +150,20 @@ void main() {
     test('復旧リスクも各新しい文字色と実際の背景を参照する', () {
       final base = AppThemePreset.defaultLight;
       expect(isThemeAtLockoutRisk(base), isFalse);
-      expect(isThemeAtLockoutRisk(base.copyWith(
-        buttonTextColor: base.accentColor)), isTrue);
-      expect(isThemeAtLockoutRisk(base.copyWith(
-        menuTextColor: base.menuBgColor)), isTrue);
-      expect(isThemeAtLockoutRisk(base.copyWith(
-        selectionTextColor: base.selectionColor)), isTrue);
+      expect(
+        isThemeAtLockoutRisk(base.copyWith(buttonTextColor: base.accentColor)),
+        isTrue,
+      );
+      expect(
+        isThemeAtLockoutRisk(base.copyWith(menuTextColor: base.menuBgColor)),
+        isTrue,
+      );
+      expect(
+        isThemeAtLockoutRisk(
+          base.copyWith(selectionTextColor: base.selectionColor),
+        ),
+        isTrue,
+      );
     });
   });
 
@@ -166,8 +187,14 @@ void main() {
       expect(apcaContrast(pink, Colors.white), closeTo(31.8, 0.5));
       expect(isEssentialTextNearlyInvisible(red, darkRed), isTrue);
       expect(isEssentialTextNearlyInvisible(pink, Colors.white), isFalse);
-      expect(isEssentialTextNearlyInvisible(Colors.black, Colors.white), isFalse);
-      expect(isEssentialTextNearlyInvisible(Colors.white, Colors.white), isTrue);
+      expect(
+        isEssentialTextNearlyInvisible(Colors.black, Colors.white),
+        isFalse,
+      );
+      expect(
+        isEssentialTextNearlyInvisible(Colors.white, Colors.white),
+        isTrue,
+      );
     });
 
     test('スマホの小さな文字：水色とピンクも実文字のLcで判定', () {
@@ -380,18 +407,16 @@ void main() {
       );
       expect(isColorVisionPairConfusable(red, green), isTrue);
       expect(
-        isThemeAtLockoutRisk(AppThemePreset.defaultLight.copyWith(
-          textColor: red,
-          panelBgColor: green,
-        )),
+        isThemeAtLockoutRisk(
+          AppThemePreset.defaultLight.copyWith(
+            textColor: red,
+            panelBgColor: green,
+          ),
+        ),
         isTrue,
       );
-      expect(
-        isColorVisionPairConfusable(Colors.black, Colors.white),
-        isFalse,
-      );
+      expect(isColorVisionPairConfusable(Colors.black, Colors.white), isFalse);
     });
-
   });
 
   testWidgets('テーマ設定：低コントラストでもユーザーが選んだ色を保存する', (tester) async {
@@ -480,10 +505,14 @@ void main() {
     expect(service.current.id, unreadable.id);
     expect(find.text(l10n.themeResetConfirmTitle), findsOneWidget);
     final dialogTheme = Theme.of(tester.element(find.byType(AlertDialog)));
-    expect(dialogTheme.colorScheme.onSurface,
-        AppThemePreset.defaultLight.textColor);
-    expect(dialogTheme.dialogTheme.backgroundColor,
-        AppThemePreset.defaultLight.menuBgColor);
+    expect(
+      dialogTheme.colorScheme.onSurface,
+      AppThemePreset.defaultLight.textColor,
+    );
+    expect(
+      dialogTheme.dialogTheme.backgroundColor,
+      AppThemePreset.defaultLight.menuBgColor,
+    );
 
     await tester.tap(find.text(l10n.commonCancel).last);
     await tester.pumpAndSettle();
@@ -499,10 +528,13 @@ void main() {
     expect(service.current.id, AppThemePreset.defaultLight.id);
     expect(resetButton, findsNothing);
     final prefs = await SharedPreferences.getInstance();
-    final saved = jsonDecode(prefs.getString('theme_current_json')!)
-        as Map<String, dynamic>;
-    expect(AppThemePreset.fromJson(saved).textColor,
-        AppThemePreset.defaultLight.textColor);
+    final saved =
+        jsonDecode(prefs.getString('theme_current_json')!)
+            as Map<String, dynamic>;
+    expect(
+      AppThemePreset.fromJson(saved).textColor,
+      AppThemePreset.defaultLight.textColor,
+    );
 
     // 再起動しても標準色のまま
     final reopened = ThemeService();
@@ -561,13 +593,15 @@ void main() {
   test('引き継いだ詰みテーマも勝手に補正・拒否されず復元できる', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('theme_current_json', jsonEncode(unreadable.toJson()));
+    await prefs.setString(
+      'theme_current_json',
+      jsonEncode(unreadable.toJson()),
+    );
     final restored = ThemeService();
     await restored.init();
     expect(restored.current.textColor, unreadable.textColor);
     expect(isThemeAtLockoutRisk(restored.current), isTrue);
   });
-
 }
 
 Future<Widget> _splashApp(WidgetTester tester, ThemeService service) async {

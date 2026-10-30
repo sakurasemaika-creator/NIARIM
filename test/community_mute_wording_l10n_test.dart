@@ -33,17 +33,22 @@ void main() {
     }
   });
 
-  test('the hints name the separators beyond the ASCII comma', () {
+  test('the hints explain one entry at a time without typed separators', () {
     final ja = arb('ja');
-    for (final key in ['communityMutedWordsHint', 'communityMutedTagsHint']) {
-      expect(ja[key], contains('「、」'), reason: key);
-      expect(ja[key], contains('改行'), reason: key);
-    }
-    expect(arb('zh')['communityMutedWordsHint'], contains('顿号'));
-    expect(arb('zh_Hant')['communityMutedWordsHint'], contains('頓號'));
-    for (final locale in ['en', 'es', 'fr', 'ko']) {
-      final hint = arb(locale)['communityMutedWordsHint'] as String;
-      expect(hint.toLowerCase(), isNot(startsWith('comma-separated')));
+    expect(ja['communityMutedWordsHint'], contains('1件ずつ'));
+    expect(ja['communityMutedTagsHint'], contains('#は不要'));
+    for (final locale in ['ja', 'en', 'es', 'fr', 'ko', 'zh', 'zh_Hant']) {
+      final strings = arb(locale);
+      expect((strings['communityMuteAddNew'] as String).isNotEmpty, isTrue);
+      for (final key in ['communityMutedWordsHint', 'communityMutedTagsHint']) {
+        final hint = strings[key] as String;
+        expect(hint, isNot(contains('改行')), reason: '$locale $key');
+        expect(
+          hint.toLowerCase(),
+          isNot(contains('comma-separated')),
+          reason: '$locale $key',
+        );
+      }
     }
   });
 

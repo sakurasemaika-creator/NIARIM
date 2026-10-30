@@ -204,10 +204,12 @@ void main() {
     );
 
     // 読み込みのキャンセルでは、プロジェクトもセーブデータも変更しない。
-    await tester.tap(find.descendant(
-      of: find.widgetWithText(AlertDialog, l10n.saveTreeRestoreAction),
-      matching: find.widgetWithText(TextButton, l10n.commonCancel),
-    ));
+    await tester.tap(
+      find.descendant(
+        of: find.widgetWithText(AlertDialog, l10n.saveTreeRestoreAction),
+        matching: find.widgetWithText(TextButton, l10n.commonCancel),
+      ),
+    );
     await settle();
     expect(find.byType(AlertDialog), findsNothing);
     expect(saveService.getNodes(project.id).single.id, node.id);
@@ -220,15 +222,21 @@ void main() {
     // 同じ AlertDialog を2度返す。型で一意に取得する。
     final deleteDialog = find.byType(AlertDialog);
     expect(deleteDialog, findsOneWidget);
-    expect(find.descendant(of: deleteDialog,
-      matching: find.text(l10n.commonDelete)), findsNWidgets(2));
-    expect(find.descendant(of: deleteDialog,
-      matching: find.textContaining(comment)), findsOneWidget);
+    expect(
+      find.descendant(of: deleteDialog, matching: find.text(l10n.commonDelete)),
+      findsNWidgets(2),
+    );
+    expect(
+      find.descendant(of: deleteDialog, matching: find.textContaining(comment)),
+      findsOneWidget,
+    );
     expect(saveService.getNodes(project.id).single.id, node.id);
-    await tester.tap(find.descendant(
-      of: deleteDialog,
-      matching: find.widgetWithText(TextButton, l10n.commonCancel),
-    ));
+    await tester.tap(
+      find.descendant(
+        of: deleteDialog,
+        matching: find.widgetWithText(TextButton, l10n.commonCancel),
+      ),
+    );
     await settle();
     expect(find.byType(AlertDialog), findsNothing);
     expect(saveService.getNodes(project.id).single.id, node.id);
