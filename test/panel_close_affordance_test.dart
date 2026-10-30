@@ -20,7 +20,12 @@ void main() {
       'lib/screens/canvas/canvas_screen.dart',
     ).readAsStringSync();
 
-    expect(source, contains('if (_anyToolPanelOpen && !isDesktop)'));
+    // スマホの画面だけ（PC/DeXモードは別の作業画面`_buildPcWorkspace`で、
+    // パネルはドックに入るので外側を押して閉じる幕は要らない）。
+    final pcBranch = source.indexOf('? _buildPcWorkspace(');
+    final barrier = source.indexOf('if (_anyToolPanelOpen)');
+    expect(pcBranch, greaterThan(0));
+    expect(barrier, greaterThan(pcBranch));
     expect(source, contains('Positioned.fill('));
     expect(source, contains('behavior: HitTestBehavior.opaque'));
     expect(source, contains('onTap: () => setState(_closeAllOverlayPanels)'));
