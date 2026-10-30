@@ -83,7 +83,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
   _PostDateFilter _postDateFilter = _PostDateFilter.all;
   DateTimeRange? _customPostDateRange;
-  bool _tagExactMatch = false;
+  bool _tagExactMatch = true;
   double _minimumTileWidth = 160;
   _DurationFilterMode _durationMode = _DurationFilterMode.all;
   double _upToMinutes = 5;
