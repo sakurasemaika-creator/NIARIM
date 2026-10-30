@@ -53,3 +53,11 @@ app.*.map.json
 # Gradleビルド出力（android/build, android/app/build等）
 /android/**/build/
 /android/.gradle/
+
+# Android signing keys and local signing credentials — never commit
+*.jks
+*.keystore
+*.p12
+*.pfx
+/android/key.properties
+/android/signing.properties
