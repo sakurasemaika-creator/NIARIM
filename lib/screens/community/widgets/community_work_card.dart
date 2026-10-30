@@ -242,31 +242,6 @@ class CommunityWorkCard extends StatelessWidget {
                                 child: badge(l10n.communityShortsBadge),
                               ),
                             ),
-                          if (onMuteToggle != null && !isUnavailable)
-                            Positioned(
-                              right: 4,
-                              top: 4,
-                              child: Material(
-                                color: overlay,
-                                shape: const CircleBorder(),
-                                child: PopupMenuButton<String>(
-                                  key: ValueKey('communityMuteMenu-${work.id}'),
-                                  tooltip: isMuted
-                                      ? CommunityPlazaLabels.of(context).unmuteWork
-                                      : CommunityPlazaLabels.of(context).muteWork,
-                                  icon: const Icon(Icons.more_vert),
-                                  onSelected: (_) => onMuteToggle!(),
-                                  itemBuilder: (_) => [
-                                    PopupMenuItem(
-                                      value: isMuted ? 'unmute' : 'mute',
-                                      child: Text(isMuted
-                                          ? CommunityPlazaLabels.of(context).unmuteWork
-                                          : CommunityPlazaLabels.of(context).muteWork),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
                         ],
                       );
                     },
@@ -350,84 +325,100 @@ class CommunityWorkCard extends StatelessWidget {
                         ),
                       ),
                       if (!obscured) const SizedBox(height: 4),
-                      if (!obscured)
+                      if (!isUnavailable)
                         LayoutBuilder(
                           builder: (context, metrics) {
-                            // The bookmark stays at the tile's far right.
-                            // In the narrowest tiles, stack only the two
-                            // statistics so neither blocks the 56dp button.
-                            final stackCounts = metrics.maxWidth < 130;
-                            final showCountIcons = metrics.maxWidth >= 195;
-                            return Row(
-                              children: [
-                                Expanded(
-                                  child: stackCounts
-                                      ? Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            count(l10n.communityRankingSortViews, views),
-                                            count(l10n.communityRankingSortBookmarks, bookmarks),
-                                          ],
-                                        )
-                                      : Row(
-                                          children: [
-                                            if (showCountIcons) ...[
-                                              Icon(Icons.play_arrow_rounded,
-                                                  size: 13, color: detailColor),
-                                              const SizedBox(width: 2),
-                                            ],
-                                            Flexible(
-                                              child: count(
-                                                l10n.communityRankingSortViews,
-                                                views,
-                                              ),
+                            // On narrow tiles, numbers stay on their own row.
+                            // The bookmark and visibility menu remain adjacent
+                            // and pinned against the right edge of the card.
+                            final narrow = metrics.maxWidth < 230;
+                            Widget counts() => Row(
+                                  children: [
+                                    Icon(Icons.play_arrow_rounded,
+                                        size: 13, color: detailColor),
+                                    const SizedBox(width: 2),
+                                    Flexible(
+                                        child: count(l10n.communityRankingSortViews, views)),
+                                    const SizedBox(width: 6),
+                                    Icon(Icons.bookmarks_outlined,
+                                        size: 13, color: detailColor),
+                                    const SizedBox(width: 2),
+                                    Flexible(
+                                        child: count(
+                                            l10n.communityRankingSortBookmarks,
+                                            bookmarks)),
+                                  ],
+                                );
+                            Widget controls() => Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (!obscured)
+                                      MergeSemantics(
+                                        child: Semantics(
+                                          button: true,
+                                          label: isBookmarked
+                                              ? l10n.communityWorkDetailBookmarkRemove
+                                              : l10n.communityWorkDetailBookmarkAdd,
+                                          toggled: isBookmarked,
+                                          child: IconButton(
+                                            key: ValueKey('community-bookmark-${work.id}'),
+                                            tooltip: isBookmarked
+                                                ? l10n.communityWorkDetailBookmarkRemove
+                                                : l10n.communityWorkDetailBookmarkAdd,
+                                            constraints: const BoxConstraints.tightFor(
+                                              width: 56,
+                                              height: 56,
                                             ),
-                                            const SizedBox(width: 6),
-                                            if (showCountIcons) ...[
-                                              Icon(Icons.bookmarks_outlined,
-                                                  size: 13, color: detailColor),
-                                              const SizedBox(width: 2),
-                                            ],
-                                            Flexible(
-                                              child: count(
-                                                l10n.communityRankingSortBookmarks,
-                                                bookmarks,
-                                              ),
+                                            iconSize: 48,
+                                            padding: EdgeInsets.zero,
+                                            onPressed: onBookmarkToggle,
+                                            icon: Icon(
+                                              isBookmarked
+                                                  ? Icons.bookmark
+                                                  : Icons.bookmark_border,
+                                              color: detailColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    if (onMuteToggle != null)
+                                      Material(
+                                        color: cardColor,
+                                        shape: const CircleBorder(),
+                                        child: PopupMenuButton<String>(
+                                          key: ValueKey('communityMuteMenu-${work.id}'),
+                                          tooltip: isMuted
+                                              ? CommunityPlazaLabels.of(context).unmuteWork
+                                              : CommunityPlazaLabels.of(context).muteWork,
+                                          icon: Icon(Icons.more_vert,
+                                              color: textColor),
+                                          onSelected: (_) => onMuteToggle!(),
+                                          itemBuilder: (_) => [
+                                            PopupMenuItem(
+                                              value: isMuted ? 'unmute' : 'mute',
+                                              child: Text(isMuted
+                                                  ? CommunityPlazaLabels.of(context).unmuteWork
+                                                  : CommunityPlazaLabels.of(context).muteWork),
                                             ),
                                           ],
                                         ),
-                                ),
-                                // 48dp icon (twice the former default 24dp);
-                                // full 56dp tappable area, theme-derived color.
-                                MergeSemantics(
-                                  child: Semantics(
-                                    button: true,
-                                    label: isBookmarked
-                                        ? l10n.communityWorkDetailBookmarkRemove
-                                        : l10n.communityWorkDetailBookmarkAdd,
-                                    toggled: isBookmarked,
-                                    child: IconButton(
-                                      key: ValueKey('community-bookmark-${work.id}'),
-                                      tooltip: isBookmarked
-                                          ? l10n.communityWorkDetailBookmarkRemove
-                                          : l10n.communityWorkDetailBookmarkAdd,
-                                      constraints: const BoxConstraints.tightFor(
-                                        width: 56,
-                                        height: 56,
                                       ),
-                                      iconSize: 48,
-                                      padding: EdgeInsets.zero,
-                                      onPressed: onBookmarkToggle,
-                                      icon: Icon(
-                                        isBookmarked
-                                            ? Icons.bookmark
-                                            : Icons.bookmark_border,
-                                        color: detailColor,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                  ],
+                                );
+                            if (narrow) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  if (!obscured) counts(),
+                                  controls(),
+                                ],
+                              );
+                            }
+                            return Row(
+                              children: [
+                                if (!obscured)
+                                  Expanded(child: counts()),
+                                controls(),
                               ],
                             );
                           },
@@ -441,6 +432,39 @@ class CommunityWorkCard extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+/// The same hide/unhide action is used by grid cards and both ranking
+/// layouts. Persisted filters remain unchanged when changing the layout.
+Future<void> toggleCommunityWorkVisibility(
+  BuildContext context,
+  CommunityWork work,
+) async {
+  final service = context.read<CommunityService>();
+  if (!service.isWorkMuted(work)) {
+    await service.setWorkMuted(work.id);
+    return;
+  }
+  final texts = CommunityPlazaLabels.of(context);
+  final permanent = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(texts.unmuteQuestion),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: Text(texts.unmuteTemporary),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(dialogContext, true),
+          child: Text(texts.unmuteAlways),
+        ),
+      ],
+    ),
+  );
+  if (permanent != null) {
+    await service.unmuteWork(work.id, permanently: permanent);
   }
 }
 
@@ -472,33 +496,6 @@ class CommunityWorkGrid extends StatelessWidget {
     this.minTileWidth = 160,
   });
 
-  Future<void> _toggleMute(BuildContext context, CommunityWork work) async {
-    final service = context.read<CommunityService>();
-    if (!service.isWorkMuted(work)) {
-      await service.setWorkMuted(work.id);
-      return;
-    }
-    final texts = CommunityPlazaLabels.of(context);
-    final permanent = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(texts.unmuteQuestion),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(texts.unmuteTemporary),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(texts.unmuteAlways),
-          ),
-        ],
-      ),
-    );
-    if (permanent != null) {
-      await service.unmuteWork(work.id, permanently: permanent);
-    }
-  }
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -535,7 +532,7 @@ class CommunityWorkGrid extends StatelessWidget {
                     isUnavailable: work.isUnavailable || !work.isNiarimPublished,
                     onMuteToggle: work.isUnavailable || !work.isNiarimPublished
                         ? null
-                        : () => _toggleMute(context, work),
+                        : () => toggleCommunityWorkVisibility(context, work),
                   ),
                 ),
             ],
