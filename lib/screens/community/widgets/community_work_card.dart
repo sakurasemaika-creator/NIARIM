@@ -112,15 +112,14 @@ class CommunityWorkCard extends StatelessWidget {
         ),
       ),
     );
-    Widget count(String label, String value) => Flexible(
-      child: Semantics(
-        label: '$label: $value',
-        child: ExcludeSemantics(
-          child: Text(
-            value,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 11, color: detailColor),
-          ),
+    Widget count(String label, String value) => Semantics(
+      label: '$label: $value',
+      child: ExcludeSemantics(
+        child: Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 11, color: detailColor),
         ),
       ),
     );
@@ -274,7 +273,7 @@ class CommunityWorkCard extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                  padding: const EdgeInsets.fromLTRB(10, 8, 2, 10),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,63 +351,87 @@ class CommunityWorkCard extends StatelessWidget {
                       ),
                       if (!obscured) const SizedBox(height: 4),
                       if (!obscured)
-                      LayoutBuilder(
-                        builder: (context, metrics) {
-                          // At 120dp tiles, preserve readable counts by
-                          // suppressing redundant glyphs, never shrinking
-                          // the bookmark's minimum 48dp hit target.
-                          final dense = metrics.maxWidth < 150;
-                          return Row(
-                        children: [
-                          if (!dense) ...[
-                            Icon(
-                              Icons.play_arrow_rounded,
-                              size: 13,
-                              color: detailColor,
-                            ),
-                            const SizedBox(width: 2),
-                          ],
-                          count(l10n.communityRankingSortViews, views),
-                          SizedBox(width: dense ? 6 : 5),
-                          if (!dense) ...[
-                            Icon(Icons.bookmarks_outlined, size: 13, color: detailColor),
-                            const SizedBox(width: 2),
-                          ],
-                          count(l10n.communityRankingSortBookmarks, bookmarks),
-                          const SizedBox(width: 2),
-                          // Keep the bookmark action alongside the two counts;
-                          // the 48dp target stays tappable even at narrow widths.
-                          MergeSemantics(
-                            child: Semantics(
-                              button: true,
-                              label: isBookmarked
-                                  ? l10n.communityWorkDetailBookmarkRemove
-                                  : l10n.communityWorkDetailBookmarkAdd,
-                              toggled: isBookmarked,
-                              child: IconButton(
-                                key: ValueKey('community-bookmark-${work.id}'),
-                                tooltip: isBookmarked
-                                    ? l10n.communityWorkDetailBookmarkRemove
-                                    : l10n.communityWorkDetailBookmarkAdd,
-                                constraints: const BoxConstraints.tightFor(
-                                  width: 48,
-                                  height: 48,
+                        LayoutBuilder(
+                          builder: (context, metrics) {
+                            // The bookmark stays at the tile's far right.
+                            // In the narrowest tiles, stack only the two
+                            // statistics so neither blocks the 56dp button.
+                            final stackCounts = metrics.maxWidth < 130;
+                            final showCountIcons = metrics.maxWidth >= 195;
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: stackCounts
+                                      ? Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            count(l10n.communityRankingSortViews, views),
+                                            count(l10n.communityRankingSortBookmarks, bookmarks),
+                                          ],
+                                        )
+                                      : Row(
+                                          children: [
+                                            if (showCountIcons) ...[
+                                              Icon(Icons.play_arrow_rounded,
+                                                  size: 13, color: detailColor),
+                                              const SizedBox(width: 2),
+                                            ],
+                                            Flexible(
+                                              child: count(
+                                                l10n.communityRankingSortViews,
+                                                views,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            if (showCountIcons) ...[
+                                              Icon(Icons.bookmarks_outlined,
+                                                  size: 13, color: detailColor),
+                                              const SizedBox(width: 2),
+                                            ],
+                                            Flexible(
+                                              child: count(
+                                                l10n.communityRankingSortBookmarks,
+                                                bookmarks,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                 ),
-                                padding: EdgeInsets.zero,
-                                onPressed: onBookmarkToggle,
-                                icon: Icon(
-                                  isBookmarked
-                                      ? Icons.bookmark
-                                      : Icons.bookmark_border,
-                                  color: detailColor,
+                                // 48dp icon (twice the former default 24dp);
+                                // full 56dp tappable area, theme-derived color.
+                                MergeSemantics(
+                                  child: Semantics(
+                                    button: true,
+                                    label: isBookmarked
+                                        ? l10n.communityWorkDetailBookmarkRemove
+                                        : l10n.communityWorkDetailBookmarkAdd,
+                                    toggled: isBookmarked,
+                                    child: IconButton(
+                                      key: ValueKey('community-bookmark-${work.id}'),
+                                      tooltip: isBookmarked
+                                          ? l10n.communityWorkDetailBookmarkRemove
+                                          : l10n.communityWorkDetailBookmarkAdd,
+                                      constraints: const BoxConstraints.tightFor(
+                                        width: 56,
+                                        height: 56,
+                                      ),
+                                      iconSize: 48,
+                                      padding: EdgeInsets.zero,
+                                      onPressed: onBookmarkToggle,
+                                      icon: Icon(
+                                        isBookmarked
+                                            ? Icons.bookmark
+                                            : Icons.bookmark_border,
+                                        color: detailColor,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ),
-                        ],
-                          );
-                        },
-                      ),
+                              ],
+                            );
+                          },
+                        ),
                     ],
                   ),
                 ),

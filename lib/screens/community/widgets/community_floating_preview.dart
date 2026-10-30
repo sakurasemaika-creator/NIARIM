@@ -383,7 +383,10 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                 return KeyEventResult.handled;
               },
               child: Material(
-                elevation: 10,
+                key: const Key('communityPreviewSurface'),
+                // Avoid the heavy, almost black elevation shadow shown
+                // as an outline around the floating preview.
+                elevation: 0,
                 color: barColor,
                 borderRadius: BorderRadius.circular(12),
                 clipBehavior: Clip.antiAlias,
