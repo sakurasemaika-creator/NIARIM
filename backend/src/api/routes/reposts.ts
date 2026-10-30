@@ -8,7 +8,8 @@ import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate } from "../../lib/auth";
 import { toPublicWork } from "./_publicWork";
-import { notFound, ok } from "../../lib/response";
+import { notFound, ok, badRequest } from "../../lib/response";
+import { requestedPageSize } from "../../lib/pagination";
 import type { RepostItem, WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 
@@ -126,7 +127,7 @@ export async function toggleRepost(
  * (`USER#{id}` / `REPOST#{workId}`), so this is one Query without an index.
  */
 export async function getUserReposts(
-  _event: APIGatewayProxyEventV2,
+  event: APIGatewayProxyEventV2,
   userId: string,
 ) {
   const result = await ddb.send(
@@ -155,5 +156,21 @@ export async function getUserReposts(
       ? [{ repostedAt: record.repostedAt, work: toPublicWork(work) }]
       : [];
   });
-  return ok({ userId, reposts });
+  const qp = event.queryStringParameters ?? {};
+  if (qp.limit === undefined && qp.cursor === undefined) {
+    // Compatibility: callers tracking their own complete repost IDs still
+    // need the full list, without changing their existing API contract.
+    return ok({ userId, reposts });
+  }
+  const limit = requestedPageSize(qp.limit);
+  const offset = qp.cursor === undefined ? 0 : Number(qp.cursor);
+  if (!Number.isInteger(offset) || offset < 0 || offset > 100000 ||
+      offset % limit !== 0) {
+    badRequest("リポストのページカーソルが不正です", "INVALID_PAGE_CURSOR");
+  }
+  return ok({
+    userId,
+    reposts: reposts.slice(offset, offset + limit),
+    nextCursor: offset + limit < reposts.length ? String(offset + limit) : null,
+  });
 }

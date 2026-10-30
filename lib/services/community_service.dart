@@ -139,6 +139,7 @@ class CommunityService extends ChangeNotifier {
   String? _ownCursor;
   final Map<String, String?> _authorCursors = {};
   final Map<String, String?> _feedAuthorCursors = {};
+  final Map<String, String?> _feedRepostCursors = {};
   bool _fetchingMoreLatest = false;
   bool _fetchingMoreRanking = false;
   bool _fetchingMoreSearch = false;
@@ -158,7 +159,9 @@ class CommunityService extends ChangeNotifier {
   bool get hasMoreRanking => _rankingCursor != null;
   bool get hasMoreSearch => _searchCursor != null;
   bool get hasMoreOwn => _ownCursor != null;
-  bool get hasMoreFollowing => _feedAuthorCursors.values.any((v) => v != null);
+  bool get hasMoreFollowing =>
+      _feedAuthorCursors.values.any((v) => v != null) ||
+      _feedRepostCursors.values.any((v) => v != null);
   bool hasMoreAuthor(String authorId) => _authorCursors[authorId] != null;
   bool get isFetchingMoreLatest => _fetchingMoreLatest;
   bool get isFetchingMoreRanking => _fetchingMoreRanking;
@@ -663,6 +666,9 @@ class CommunityService extends ChangeNotifier {
   /// した作品を除外する。13章：YouTube側が非公開・削除の場合も表示を
   /// 強制停止する設計だが、ダミーデータにはYouTube側状態の概念が無いため
   /// ここではNIARIM側設定のみを対象にする）。
+  // Keep the raw discoverable slots, including muted works, so ranking
+  // positions do not shift when a viewer mutes an author or keyword.
+  // Individual feeds/author lists apply the viewer's filters separately.
   List<CommunityWork> get discoverableWorks =>
       _works.where((w) => w.isNiarimPublished && !w.isUnavailable).toList();
 
@@ -685,7 +691,8 @@ class CommunityService extends ChangeNotifier {
     bool includeHidden = false,
   }) => _works
       .where(
-        (w) => w.authorId == authorId && (includeHidden || w.isNiarimPublished),
+        (w) => w.authorId == authorId &&
+            (includeHidden || isDiscoverableForViewer(w)),
       )
       .toList();
 
@@ -910,6 +917,7 @@ class CommunityService extends ChangeNotifier {
       final pages = await Future.wait([
         for (final id in authors) client.worksByAuthorPage(id),
       ]);
+      if (!_isCurrentAccount(revision)) return false;
       _feedAuthorCursors
         ..clear()
         ..addEntries(
@@ -918,11 +926,21 @@ class CommunityService extends ChangeNotifier {
           ),
         );
       if (!_isCurrentAccount(revision)) return false;
-      final reposters = [...authors, ?me];
-      final reposts = await Future.wait([
-        for (final id in reposters) client.repostsOf(id),
+      final reposters = [...authors, if (me != null && !authors.contains(me)) me];
+      final reposts = await Future.wait<ApiRepostPage>([
+        for (final id in reposters)
+          id == me
+              ? client.repostsOf(id).then((entries) => ApiRepostPage(reposts: entries))
+              : client.repostsOfPage(id),
       ]);
       if (!_isCurrentAccount(revision)) return false;
+      _feedRepostCursors
+        ..clear()
+        ..addEntries(
+          reposters.asMap().entries.map(
+            (entry) => MapEntry(entry.value, reposts[entry.key].nextCursor),
+          ),
+        );
       final feed = <String>{};
       for (final page in pages) {
         for (final apiWork in page.works) {
@@ -934,7 +952,7 @@ class CommunityService extends ChangeNotifier {
       _reposts.clear();
       for (var i = 0; i < reposters.length; i++) {
         final reposterId = reposters[i];
-        for (final entry in reposts[i]) {
+        for (final entry in reposts[i].reposts) {
           final work = _plazaCopy(entry.work);
           _upsert(work);
           feed.add(work.id);
@@ -976,10 +994,19 @@ class CommunityService extends ChangeNotifier {
           if (entry.value != null && _favoriteAuthorIds.contains(entry.key))
             entry.key: entry.value!,
       };
-      if (targets.isEmpty) return false;
+      final repostTargets = {
+        for (final entry in _feedRepostCursors.entries)
+          if (entry.value != null && _favoriteAuthorIds.contains(entry.key))
+            entry.key: entry.value!,
+      };
+      if (targets.isEmpty && repostTargets.isEmpty) return false;
       final pages = await Future.wait([
         for (final entry in targets.entries)
           client.worksByAuthorPage(entry.key, cursor: entry.value),
+      ]);
+      final repostPages = await Future.wait([
+        for (final entry in repostTargets.entries)
+          client.repostsOfPage(entry.key, cursor: entry.value),
       ]);
       if (!_isCurrentAccount(revision)) return false;
       var index = 0;
@@ -989,6 +1016,22 @@ class CommunityService extends ChangeNotifier {
         for (final w in page.works) {
           _feedIds.add(w.workId);
           _upsert(_plazaCopy(w));
+        }
+      }
+      index = 0;
+      for (final reposterId in repostTargets.keys) {
+        final page = repostPages[index++];
+        _feedRepostCursors[reposterId] = page.nextCursor;
+        for (final entry in page.reposts) {
+          final work = _plazaCopy(entry.work);
+          _feedIds.add(work.id);
+          _upsert(work);
+          _reposts.add(CommunityRepost(
+            workId: work.id,
+            reposterId: reposterId,
+            reposterName: _followedNames[reposterId] ?? authorNameOf(reposterId) ?? '',
+            repostedAt: entry.repostedAt,
+          ));
         }
       }
       _pruneUnconfirmed();
@@ -1091,6 +1134,7 @@ class CommunityService extends ChangeNotifier {
       _authorPageIds.clear();
       _authorCursors.clear();
       _feedAuthorCursors.clear();
+      _feedRepostCursors.clear();
       _ownCursor = null;
       _searchEpoch++;
       _searchIds.clear();
@@ -1587,6 +1631,7 @@ class CommunityService extends ChangeNotifier {
     final byWork = <String, FavoriteFeedEntry>{};
     for (final w in discoverableWorks) {
       if (_favoriteAuthorIds.contains(w.authorId) &&
+          isDiscoverableForViewer(w) &&
           (api == null || _feedIds.contains(w.id))) {
         byWork[w.id] = FavoriteFeedEntry(work: w, feedTime: w.postedAt);
       }
@@ -1594,7 +1639,7 @@ class CommunityService extends ChangeNotifier {
     for (final r in _reposts) {
       if (!_favoriteAuthorIds.contains(r.reposterId)) continue;
       final work = byId(r.workId);
-      if (work == null || !work.isNiarimPublished) {
+      if (work == null || !isDiscoverableForViewer(work)) {
         continue;
       }
       final existing = byWork[r.workId];
@@ -1611,8 +1656,15 @@ class CommunityService extends ChangeNotifier {
         );
       }
     }
+    // All followed posts and reposts share ONE chronological stream.
+    // Tie-break by work ID for deterministic order across page fetches.
     final list = byWork.values.toList()
-      ..sort((a, b) => b.feedTime.compareTo(a.feedTime));
+      ..sort((a, b) {
+        final newestFirst = b.feedTime.compareTo(a.feedTime);
+        return newestFirst != 0
+            ? newestFirst
+            : a.work.id.compareTo(b.work.id);
+      });
     return list;
   }
 

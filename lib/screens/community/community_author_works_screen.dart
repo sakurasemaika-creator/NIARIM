@@ -114,10 +114,43 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   // ブックマーク一覧は本来の投稿順ではないため、ショートモード同様に
   // 対象外とする）。
   VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
+  final ScrollController _authorWorksScroll = ScrollController();
+  int _visibleWorks = CommunityService.pageSize;
+  bool _loadingMoreWorks = false;
+
+  void _onAuthorScroll() {
+    if (!_authorWorksScroll.hasClients ||
+        _authorWorksScroll.position.extentAfter > 220 ||
+        _loadingMoreWorks) {
+      return;
+    }
+    final service = context.read<CommunityService>();
+    if (service.api == null) {
+      final count = _videoTypeFilter.apply(service.worksByAuthor(
+        widget.authorId, includeHidden: service.isOwnAuthor(widget.authorId),
+      )).length;
+      if (_visibleWorks < count) {
+        setState(() => _visibleWorks += CommunityService.pageSize);
+      }
+    } else if (service.hasMoreAuthor(widget.authorId)) {
+      _loadMoreAuthorWorks();
+    }
+  }
+
+  Future<void> _loadMoreAuthorWorks() async {
+    if (_loadingMoreWorks) return;
+    setState(() => _loadingMoreWorks = true);
+    try {
+      await context.read<CommunityService>().loadMoreAuthorWorks(widget.authorId);
+    } finally {
+      if (mounted) setState(() => _loadingMoreWorks = false);
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    _authorWorksScroll.addListener(_onAuthorScroll);
     // With a backend the page lists the author's works as the server has
     // them now, not only those another list happened to bring in.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -133,6 +166,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _authorWorksScroll.dispose();
     super.dispose();
   }
 
@@ -179,7 +213,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     // 「作品」タブの一覧・縦画面モードにのみ「総合/縦画面のみ/横画面のみ」
     // 絞り込みを適用する。投稿数の表示（works.length）は絞り込みの影響を
     // 受けない総数のままにする。
-    final filteredWorks = _videoTypeFilter.apply(works);
+    final filteredWorks = _videoTypeFilter.apply(works).take(_visibleWorks).toList();
     final followerCount = communityService.followerCountOf(widget.authorId);
     final followingCount = communityService.followingCountOf(widget.authorId);
     final bookmarkedIds = communityService.bookmarkedIds;
@@ -342,17 +376,29 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                       children: [
                         // ─── 作品タブ ───────────────────────────────────
                         SingleChildScrollView(
+                          controller: _authorWorksScroll,
                           child: filteredWorks.isEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.all(32),
-                                  child: Center(
-                                    child: Text(
-                                      l10n.communityNoWorksMessage,
-                                      style: TextStyle(
-                                        color: scheme.onSurfaceVariant,
+                              ? Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(32),
+                                      child: Center(
+                                        child: Text(
+                                          l10n.communityNoWorksMessage,
+                                          style: TextStyle(
+                                            color: scheme.onSurfaceVariant,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
+                                    if (communityService.hasMoreAuthor(widget.authorId))
+                                      TextButton.icon(
+                                        key: const Key('communityAuthorLoadNextPage'),
+                                        onPressed: _loadingMoreWorks ? null : _loadMoreAuthorWorks,
+                                        icon: const Icon(Icons.expand_more),
+                                        label: Text(MaterialLocalizations.of(context).moreButtonTooltip),
+                                      ),
+                                  ],
                                 )
                               : CommunityWorkGrid(
                                   works: filteredWorks,
@@ -382,12 +428,22 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                       ],
                     )
                   : SingleChildScrollView(
+                      controller: _authorWorksScroll,
                       child: filteredWorks.isEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.all(32),
-                              child: Center(
-                                child: Text(l10n.communityNoWorksMessage),
-                              ),
+                          ? Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(32),
+                                  child: Center(child: Text(l10n.communityNoWorksMessage)),
+                                ),
+                                if (communityService.hasMoreAuthor(widget.authorId))
+                                  TextButton.icon(
+                                    key: const Key('communityAuthorLoadNextPage'),
+                                    onPressed: _loadingMoreWorks ? null : _loadMoreAuthorWorks,
+                                    icon: const Icon(Icons.expand_more),
+                                    label: Text(MaterialLocalizations.of(context).moreButtonTooltip),
+                                  ),
+                              ],
                             )
                           : CommunityWorkGrid(
                               works: filteredWorks,

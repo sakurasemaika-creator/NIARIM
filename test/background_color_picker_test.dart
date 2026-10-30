@@ -56,6 +56,12 @@ void main() {
     final outline = (swatch.decoration! as BoxDecoration).border! as Border;
     expect(outline.top.color, scheme.onSurfaceVariant);
     expect(outline.top.color, isNot(scheme.primary));
+    final whiteFill = find.descendant(
+      of: white,
+      matching: find.byType(ClipOval),
+    );
+    expect(whiteFill, findsOneWidget);
+    expect(tester.getSize(whiteFill), const Size(40, 40));
 
     await tester.tap(black);
     await tester.pump();
@@ -67,6 +73,17 @@ void main() {
     await tester.tap(transparent);
     await tester.pump();
     expect(current, Colors.transparent);
+    final transparentContainer = tester.widget<Container>(
+      find.descendant(of: transparent, matching: find.byType(Container)).first,
+    );
+    final transparentOutline =
+        (transparentContainer.decoration! as BoxDecoration).border! as Border;
+    expect(transparentOutline.top.color, scheme.onSurfaceVariant);
+    expect(transparentOutline.top.color, isNot(scheme.primary));
+    expect(
+      tester.getSize(find.descendant(of: transparent, matching: find.byType(ClipOval))),
+      const Size(40, 40),
+    );
     expect(
       find.descendant(of: transparent, matching: find.byType(CustomPaint)),
       findsWidgets,

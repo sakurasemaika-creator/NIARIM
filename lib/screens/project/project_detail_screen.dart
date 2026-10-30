@@ -652,8 +652,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  /// プレビューとシークバーの間：左右に現在秒数／総秒数、中央に
-  /// 1始まりの現在フレームとループ切替を配置する。
+  /// プレビューの直下には現在フレームとループだけを表示する。
+  /// 現在秒数・総秒数は再生ボタン列の両端へ移動する。
   /// 作品全シーンをフラット化したフレーム数を使い、再生・シークに追従する。
   Widget _buildPlaybackStatus(List<_FlatFrame> flat, Project project) {
     final fps = project.fps > 0 ? project.fps : 24;
@@ -666,6 +666,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       fps: fps,
       loopPlayback: _loopPlayback,
       onToggleLoop: () => setState(() => _loopPlayback = !_loopPlayback),
+      showTimes: false,
     );
   }
 
@@ -706,9 +707,30 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     Project project,
   ) {
     final l10n = AppLocalizations.of(context)!;
+    final fps = project.fps > 0 ? project.fps : 24;
+    final currentSeconds = flat.isEmpty
+        ? 0.0
+        : _frameIndex.clamp(0, flat.length - 1) / fps;
+    final currentLabel = '${currentSeconds.toStringAsFixed(1)}s';
+    final totalLabel = '${(flat.length / fps).toStringAsFixed(1)}s';
+    final timeStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+      fontSize: 12,
+    );
+
+    Widget timeLabel(String label, Key key) => Flexible(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(label, key: key, maxLines: 1, style: timeStyle),
+        ),
+      ),
+    );
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        timeLabel(currentLabel, const Key('projectDetailCurrentSeconds')),
         Flexible(
           child: IconButton(
             onPressed: flat.isEmpty
@@ -767,6 +789,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             tooltip: l10n.projectDetailLastFrameTooltip,
           ),
         ),
+        timeLabel(totalLabel, const Key('projectDetailTotalSeconds')),
       ],
     );
   }

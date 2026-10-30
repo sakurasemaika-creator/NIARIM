@@ -11,6 +11,7 @@ class ProjectPlaybackStatus extends StatefulWidget {
     required this.fps,
     required this.loopPlayback,
     required this.onToggleLoop,
+    this.showTimes = true,
   });
 
   final int currentFrame;
@@ -18,6 +19,9 @@ class ProjectPlaybackStatus extends StatefulWidget {
   final int fps;
   final bool loopPlayback;
   final VoidCallback onToggleLoop;
+  /// The detail screen moves seconds beside the first/last frame buttons.
+  /// Other callers can retain the complete status layout.
+  final bool showTimes;
 
   @override
   State<ProjectPlaybackStatus> createState() => _ProjectPlaybackStatusState();
@@ -84,6 +88,20 @@ class _ProjectPlaybackStatusState extends State<ProjectPlaybackStatus> {
         visualDensity: VisualDensity.standard,
       ),
     );
+    if (!widget.showTimes) {
+      return SizedBox(
+        key: const Key('projectDetailStatusWithoutSeconds'),
+        height: 48,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(child: counter),
+            const SizedBox(width: 8),
+            loop,
+          ],
+        ),
+      );
+    }
     Size textSize(
       String value,
       TextStyle style, {
