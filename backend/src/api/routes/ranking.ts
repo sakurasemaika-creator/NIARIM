@@ -6,6 +6,7 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { ok, badRequest } from "../../lib/response";
+import { requestedPageSize } from "../../lib/pagination";
 import { isDeltaRankingPeriod, isRankingPeriod } from "../../lib/ranking";
 import type { RankingSnapshotItem, WorkItem } from "../../lib/types";
 import { toPublicWork } from "./_publicWork";
@@ -24,12 +25,20 @@ import { toPublicWork } from "./_publicWork";
 // （router側が全ルートを同じシグネチャで呼び分けるため）。
 // eslint/tscの未使用検出を避けるためアンダースコア始まりにする。
 export async function getRanking(
-  _event: APIGatewayProxyEventV2,
+  event: APIGatewayProxyEventV2,
   period: string,
 ) {
-  if (period === "bookmarks") return getBookmarkRanking();
-  if (period === "all") return getAllTimeRanking();
-  if (isDeltaRankingPeriod(period)) return getPeriodRanking(period);
+  const qp = event.queryStringParameters ?? {};
+  const limit = requestedPageSize(qp.limit);
+  const offset = qp.cursor === undefined ? 0 : Number(qp.cursor);
+  if (!Number.isInteger(offset) || offset < 0 || offset > 50 || offset % limit !== 0) {
+    badRequest("ランキングのページカーソルが不正です", "INVALID_PAGE_CURSOR");
+  }
+  const ascending = qp.ascending === "true";
+  const bookmarks = qp.sort === "bookmarks";
+  if (period === "bookmarks") return getBookmarkRanking(offset, limit, ascending);
+  if (period === "all") return getAllTimeRanking(offset, limit, ascending);
+  if (isDeltaRankingPeriod(period)) return getPeriodRanking(period, offset, limit, ascending, bookmarks);
 
   if (!isRankingPeriod(period)) {
     badRequest(
@@ -38,10 +47,10 @@ export async function getRanking(
     );
   }
   // isRankingPeriodを通ったのにここへ来ることは無いが、型を絞り切るため。
-  return getAllTimeRanking();
+  return getAllTimeRanking(offset, limit, ascending);
 }
 
-async function getAllTimeRanking() {
+async function getAllTimeRanking(offset: number, limit: number, ascending: boolean) {
   const result = await ddb.send(
     new QueryCommand({
       TableName: tableName(),
@@ -54,14 +63,14 @@ async function getAllTimeRanking() {
   );
 
   const works = (result.Items ?? []) as WorkItem[];
-  return ok({ period: "all", works: works.map(toPublicWork) });
+  return rankingPage("all", works, offset, limit, ascending);
 }
 
 /**
  * 期間別ランキング。スナップショットがまだ無い（バッチ未実行）場合は
  * 空配列を返す。クライアントは「まだ集計されていません」の表示にする。
  */
-async function getPeriodRanking(period: string) {
+async function getPeriodRanking(period: string, offset: number, limit: number, ascending: boolean, bookmarks: boolean) {
   const snapshotResult = await ddb.send(
     new GetCommand({
       TableName: tableName(),
@@ -74,6 +83,7 @@ async function getPeriodRanking(period: string) {
     return ok({
       period,
       works: [],
+      nextCursor: null,
       computedAt: snapshot?.computedAt ?? null,
       windowId: snapshot?.windowId ?? null,
     });
@@ -89,9 +99,8 @@ async function getPeriodRanking(period: string) {
     .map((e) => byId.get(e.workId))
     .filter((w): w is WorkItem => Boolean(w) && Boolean(w!.gsi1pk));
 
-  return ok({
-    period,
-    works: ordered.map(toPublicWork),
+  if (bookmarks) ordered.sort((a, b) => b.bookmarkCount - a.bookmarkCount);
+  return rankingPage(period, ordered, offset, limit, ascending, {
     computedAt: snapshot?.computedAt ?? null,
     windowId: snapshot?.windowId ?? null,
   });
@@ -120,7 +129,7 @@ async function batchGetWorks(workIds: string[]): Promise<WorkItem[]> {
   return found;
 }
 
-async function getBookmarkRanking() {
+async function getBookmarkRanking(offset: number, limit: number, ascending: boolean) {
   const result = await ddb.send(
     new QueryCommand({
       TableName: tableName(),
@@ -132,5 +141,24 @@ async function getBookmarkRanking() {
     }),
   );
   const works = (result.Items ?? []) as WorkItem[];
-  return ok({ period: "bookmarks", works: works.map(toPublicWork) });
+  return rankingPage("bookmarks", works, offset, limit, ascending);
+}
+
+/** The ranking universe remains Top 50; only the API response is paginated. */
+function rankingPage(
+  period: string,
+  source: WorkItem[],
+  offset: number,
+  limit: number,
+  ascending: boolean,
+  extra: Record<string, unknown> = {},
+) {
+  const ordered = ascending ? [...source].reverse() : source;
+  const page = ordered.slice(offset, offset + limit);
+  return ok({
+    period,
+    works: page.map(toPublicWork),
+    nextCursor: offset + limit < ordered.length ? String(offset + limit) : null,
+    ...extra,
+  });
 }
