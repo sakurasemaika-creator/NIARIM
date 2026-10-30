@@ -769,10 +769,8 @@ void main() {
     final create = find.widgetWithText(FilledButton, '作成');
     await tester.tap(create);
     await tester.pump(const Duration(milliseconds: 10));
-    // 保存中は取り消しも戻るも効かない。
-    final cancel = find.widgetWithText(TextButton, 'キャンセル');
-    expect(tester.widget<TextButton>(cancel).onPressed, isNull);
-    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    // 保存中は作成を二度押せない。
+    expect(tester.widget<FilledButton>(create).onPressed, isNull);
     await settle(tester);
     expect(find.byType(Dialog), findsOneWidget);
     // 失敗を伝え、打った名前は残る。

@@ -124,97 +124,87 @@ class _FolderNameDialogState extends State<_FolderNameDialog> {
               fontFamily: 'Kuramubon',
               fontFamilyFallback: kHeadingFontFallback,
             );
-    // 保存中は閉じない（削除・編集のダイアログと同じ。閉じると失敗を
-    // 伝えられない）。
-    return PopScope(
-      canPop: !_saving,
-      child: Dialog(
-        insetPadding: const EdgeInsets.all(16),
-        constraints: const BoxConstraints(maxWidth: 560),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: DefaultTextStyle.merge(
-            style: TextStyle(color: foreground),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Semantics(
-                  namesRoute: true,
-                  child: Text(
-                    widget.rename
-                        ? l10n.commonRename
-                        : l10n.projectListNewFolderTitle,
-                    style: heading,
-                  ),
+    return Dialog(
+      insetPadding: const EdgeInsets.all(16),
+      constraints: const BoxConstraints(maxWidth: 560),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: DefaultTextStyle.merge(
+          style: TextStyle(color: foreground),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Semantics(
+                namesRoute: true,
+                child: Text(
+                  widget.rename
+                      ? l10n.commonRename
+                      : l10n.projectListNewFolderTitle,
+                  style: heading,
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _controller,
-                  autofocus: true,
-                  enabled: !_saving,
-                  style: TextStyle(color: foreground),
-                  onChanged: (_) => setState(() {
-                    _error = null;
-                  }),
-                  // Enterでも作成・変更する（空白だけの名前では何もしない）。
-                  onSubmitted: (_) => _submit(),
-                  decoration: InputDecoration(
-                    labelText: l10n.folderNameLabel,
-                    border: const OutlineInputBorder(),
-                  ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _controller,
+                autofocus: true,
+                enabled: !_saving,
+                style: TextStyle(color: foreground),
+                onChanged: (_) => setState(() {
+                  _error = null;
+                }),
+                // Enterでも作成・変更する（空白だけの名前では何もしない）。
+                onSubmitted: (_) => _submit(),
+                decoration: InputDecoration(
+                  labelText: l10n.folderNameLabel,
+                  border: const OutlineInputBorder(),
                 ),
-                if (!widget.rename) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.projectListFolderHint,
-                    style: TextStyle(fontSize: 11, color: foreground),
-                  ),
-                ],
-                if (_error != null) ...[
-                  const SizedBox(height: 12),
-                  Semantics(
-                    key: _errorKey,
-                    liveRegion: true,
-                    child: Text(
-                      widget.rename ||
-                              (_error is FolderSaveException &&
-                                  (_error as FolderSaveException)
-                                      .partiallySaved)
-                          ? folderSaveFailureText(l10n, _error!)
-                          : l10n.folderCreateFailed,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 16),
-                OverflowBar(
-                  alignment: MainAxisAlignment.end,
-                  spacing: 8,
-                  overflowSpacing: 8,
-                  children: [
-                    TextButton(
-                      onPressed: _saving
-                          ? null
-                          : () {
-                              if (ModalRoute.of(context)?.isCurrent ?? false) {
-                                Navigator.pop(context);
-                              }
-                            },
-                      child: Text(l10n.commonCancel),
-                    ),
-                    FolderSaveButton(
-                      onPressed: _controller.text.trim().isEmpty
-                          ? null
-                          : _submit,
-                      label: widget.rename
-                          ? l10n.commonChange
-                          : l10n.commonCreate,
-                      saving: _saving,
-                    ),
-                  ],
+              ),
+              if (!widget.rename) ...[
+                const SizedBox(height: 8),
+                Text(
+                  l10n.projectListFolderHint,
+                  style: TextStyle(fontSize: 11, color: foreground),
                 ),
               ],
-            ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Semantics(
+                  key: _errorKey,
+                  liveRegion: true,
+                  child: Text(
+                    widget.rename ||
+                            (_error is FolderSaveException &&
+                                (_error as FolderSaveException).partiallySaved)
+                        ? folderSaveFailureText(l10n, _error!)
+                        : l10n.folderCreateFailed,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              OverflowBar(
+                alignment: MainAxisAlignment.end,
+                spacing: 8,
+                overflowSpacing: 8,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      if (ModalRoute.of(context)?.isCurrent ?? false) {
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Text(l10n.commonCancel),
+                  ),
+                  FolderSaveButton(
+                    onPressed: _controller.text.trim().isEmpty ? null : _submit,
+                    label: widget.rename
+                        ? l10n.commonChange
+                        : l10n.commonCreate,
+                    saving: _saving,
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
