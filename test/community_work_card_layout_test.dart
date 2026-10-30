@@ -122,6 +122,15 @@ void main() {
                   greaterThanOrEqualTo(48),
                   reason: scope,
                 );
+                expect(
+                  tester.widget<IconButton>(bookmark).iconSize,
+                  48,
+                  reason: scope,
+                );
+                final tile = tester.getRect(find.byType(Card));
+                final buttonRect = tester.getRect(bookmark);
+                expect(tile.right - buttonRect.right,
+                    lessThanOrEqualTo(10), reason: scope);
                 final l10n = AppLocalizations.of(
                   tester.element(find.byType(CommunityWorkGrid)),
                 )!;
@@ -210,6 +219,13 @@ void main() {
     expect(tester.getRect(menu).top, lessThan(thumbnail.bottom));
     expect(tester.getRect(bookmark).top,
         greaterThanOrEqualTo(thumbnail.bottom));
+    // 48dp is twice IconButton's previous default 24dp icon.
+    final action = tester.widget<IconButton>(bookmark);
+    expect(action.iconSize, 48);
+    expect(tester.getSize(bookmark), const Size(56, 56));
+    final card = tester.getRect(find.byType(Card));
+    expect(card.right - tester.getRect(bookmark).right, lessThanOrEqualTo(10));
+    expect(tester.getRect(bookmark).center.dx, greaterThan(card.center.dx));
     expect(
       find.descendant(
         of: find.byType(AspectRatio),
