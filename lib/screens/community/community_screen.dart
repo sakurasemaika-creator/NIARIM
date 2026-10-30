@@ -619,12 +619,13 @@ class _CommunityScreenState extends State<CommunityScreen>
     );
   }
 
-  Future<void> _showContentFilters(CommunityService service) async {
+  Future<void> _showContentFilters(CommunityService service, {bool muteOnly = false}) async {
     await service.contentFiltersReady;
     if (!mounted) return;
     final result = await showDialog<_ContentFilterInput>(
       context: context,
       builder: (_) => _ContentFilterDialog(
+        muteOnly: muteOnly,
         initialWords: service.mutedWords.toList(),
         initialTags: service.mutedTags.toList(),
         initialHideAi: service.hideGenerativeAiImageVideo,
@@ -641,9 +642,12 @@ class _CommunityScreenState extends State<CommunityScreen>
       ),
     );
     if (result == null) return;
+    if (muteOnly) {
+      await service.setMutedWords(result.words);
+      await service.setMutedTags(result.tags);
+      return;
+    }
     await service.setHideGenerativeAiImageVideo(result.hideAi);
-    await service.setMutedWords(result.words);
-    await service.setMutedTags(result.tags);
     if (mounted) {
       setState(() {
         _postDateFilter = result.dateFilter;
@@ -657,8 +661,6 @@ class _CommunityScreenState extends State<CommunityScreen>
         _minimumBookmarks = result.minimumBookmarks;
         _minimumTileWidth = result.tileWidth;
       });
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setDouble(_tileWidthKey, result.tileWidth);
     }
   }
 
@@ -1093,6 +1095,13 @@ class _CommunityScreenState extends State<CommunityScreen>
               ),
             ),
           ),
+          IconButton(
+            key: const Key('communityMuteSettingsButton'),
+            icon: const Icon(Icons.visibility_off_outlined),
+            tooltip: CommunityPlazaLabels.of(context).muteSettings,
+            onPressed: () =>
+                _showContentFilters(communityService, muteOnly: true),
+          ),
           const HelpButton(topic: '作品広場'),
         ],
         bottom: PreferredSize(
@@ -1462,6 +1471,7 @@ class _MuteEntry {
 /// Edit the draft only. Save commits all fields; Cancel discards everything.
 class _ContentFilterDialog extends StatefulWidget {
   const _ContentFilterDialog({
+    this.muteOnly = false,
     required this.initialWords,
     required this.initialTags,
     required this.initialHideAi,
@@ -1477,6 +1487,7 @@ class _ContentFilterDialog extends StatefulWidget {
     required this.initialTileWidth,
   });
 
+  final bool muteOnly;
   final List<String> initialWords;
   final List<String> initialTags;
   final bool initialHideAi;
@@ -1782,12 +1793,15 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
     );
     return AlertDialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      title: Text(l10n.communityContentFilterTitle),
+      title: Text(widget.muteOnly
+          ? CommunityPlazaLabels.of(context).muteSettings
+          : l10n.communityContentFilterTitle),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (!widget.muteOnly) ...[
             Text(
               l10n.communityPostPeriodTitle,
               style: theme.textTheme.titleSmall?.copyWith(
@@ -1901,7 +1915,16 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
             SwitchListTile(
               key: const Key('communityTagExactMatch'),
               contentPadding: EdgeInsets.zero,
-              title: Text(l10n.communityTagExactMatch),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(CommunityPlazaLabels.of(context).exactTitle),
+                  Text(
+                    CommunityPlazaLabels.of(context).partialHint,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+              ),
               value: _exactTag,
               onChanged: (value) => setState(() => _exactTag = value),
             ),
@@ -1950,24 +1973,8 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                 }),
               ),
             ],
-            const SizedBox(height: 12),
-            Text(
-              l10n.communityTileSize,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            Slider(
-              key: const Key('communityTileSizeSlider'),
-              min: 120,
-              max: 240,
-              divisions: 6,
-              value: _tileWidth,
-              label: '${_tileWidth.round()} px',
-              onChanged: (value) => setState(() => _tileWidth = value),
-            ),
-            const SizedBox(height: 8),
+            ],
+            if (widget.muteOnly) ...[
             _section(
               title: l10n.communityMutedWords,
               hint: l10n.communityMutedWordsHint,
@@ -2042,7 +2049,8 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            ],
+            if (!widget.muteOnly)
             SwitchTheme(
               data: SwitchTheme.of(
                 context,
