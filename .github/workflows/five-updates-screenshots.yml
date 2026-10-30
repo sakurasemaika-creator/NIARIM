@@ -22,6 +22,10 @@ on:
       - 'test/community_content_filter_dialog_test.dart'
       - 'test/community_filter_dialog_layout_test.dart'
       - 'test/community_search_tabs_test.dart'
+      - 'test/community_work_card_layout_test.dart'
+      - 'test/community_mute_wording_l10n_test.dart'
+      - 'test/community_content_filter_l10n_contract_test.dart'
+      - 'lib/screens/community/widgets/community_work_card.dart'
       - 'test/community_milestone_store_test.dart'
       - 'test/community_service_test.dart'
       - 'lib/services/community_milestone_store.dart'
@@ -48,6 +52,9 @@ jobs:
         run: |
           flutter test test/community_content_filter_dialog_test.dart --reporter expanded
           flutter test test/community_search_tabs_test.dart --reporter expanded
+          flutter test test/community_work_card_layout_test.dart --plain-name 'thumbnail uses the right-side menu and a bookmark by counts' --reporter expanded
+          flutter test test/community_mute_wording_l10n_test.dart --reporter expanded
+          flutter test test/community_content_filter_l10n_contract_test.dart --reporter expanded
           flutter test test/community_milestone_store_test.dart --reporter expanded
           flutter test test/community_service_test.dart --reporter expanded
           flutter test test/community_filter_dialog_layout_test.dart --reporter expanded

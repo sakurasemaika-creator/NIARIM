@@ -215,4 +215,38 @@ void main() {
       expect(tester.takeException(), isNull, reason: '$locale');
     }
   });
+
+  testWidgets('search sort and tile-size controls align across languages', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    for (final locale in AppLocalizations.supportedLocales) {
+      for (final width in [320.0, 390.0, 720.0]) {
+        tester.view.physicalSize = Size(width, 844);
+        await tester.pumpWidget(app(locale: locale));
+        await tester.pumpAndSettle();
+        final sorter = tester.getRect(
+          find.byKey(const Key('communitySortButton')),
+        );
+        final size = tester.getRect(
+          find.byKey(const Key('communityTileSizeButton')),
+        );
+        final search = tester.getRect(
+          find.byKey(const Key('communitySearchButton')),
+        );
+        final scope = '${locale.toLanguageTag()} width $width';
+        expect(size.left, greaterThanOrEqualTo(sorter.right - 1),
+            reason: scope);
+        expect(search.left, greaterThanOrEqualTo(size.right - 1),
+            reason: scope);
+        expect(search.right, lessThanOrEqualTo(width + 0.5), reason: scope);
+        expect(search.width, inInclusiveRange(72, 132), reason: scope);
+        expect(tester.takeException(), isNull, reason: scope);
+      }
+    }
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 }
