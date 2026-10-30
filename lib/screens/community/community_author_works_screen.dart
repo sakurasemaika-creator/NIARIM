@@ -376,16 +376,27 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                         SingleChildScrollView(
                           controller: _authorWorksScroll,
                           child: filteredWorks.isEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.all(32),
-                                  child: Center(
-                                    child: Text(
-                                      l10n.communityNoWorksMessage,
-                                      style: TextStyle(
-                                        color: scheme.onSurfaceVariant,
+                              ? Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(32),
+                                      child: Center(
+                                        child: Text(
+                                          l10n.communityNoWorksMessage,
+                                          style: TextStyle(
+                                            color: scheme.onSurfaceVariant,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
+                                    if (communityService.hasMoreAuthor(widget.authorId))
+                                      TextButton.icon(
+                                        key: const Key('communityAuthorLoadNextPage'),
+                                        onPressed: _loadingMoreWorks ? null : _loadMoreAuthorWorks,
+                                        icon: const Icon(Icons.expand_more),
+                                        label: Text(MaterialLocalizations.of(context).moreButtonTooltip),
+                                      ),
+                                  ],
                                 )
                               : CommunityWorkGrid(
                                   works: filteredWorks,
@@ -417,11 +428,20 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                   : SingleChildScrollView(
                       controller: _authorWorksScroll,
                       child: filteredWorks.isEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.all(32),
-                              child: Center(
-                                child: Text(l10n.communityNoWorksMessage),
-                              ),
+                          ? Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(32),
+                                  child: Center(child: Text(l10n.communityNoWorksMessage)),
+                                ),
+                                if (communityService.hasMoreAuthor(widget.authorId))
+                                  TextButton.icon(
+                                    key: const Key('communityAuthorLoadNextPage'),
+                                    onPressed: _loadingMoreWorks ? null : _loadMoreAuthorWorks,
+                                    icon: const Icon(Icons.expand_more),
+                                    label: Text(MaterialLocalizations.of(context).moreButtonTooltip),
+                                  ),
+                              ],
                             )
                           : CommunityWorkGrid(
                               works: filteredWorks,
