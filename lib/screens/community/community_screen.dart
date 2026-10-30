@@ -998,7 +998,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                       ),
                   ],
                 ),
-                const Spacer(),
                 IconButton(
                   key: const Key('communityTileSizeButton'),
                   tooltip: l10n.communityTileSize,
@@ -1039,19 +1038,18 @@ class _CommunityScreenState extends State<CommunityScreen>
                     }
                   },
                 ),
-                SizedBox(
-                  width: 92,
-                  height: 48,
-                  child: FilledButton(
-                    key: const Key('communitySearchButton'),
-                    onPressed: _runSearch,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(l10n.commonSearch),
-                    ),
+                const Spacer(),
+                FilledButton(
+                  key: const Key('communitySearchButton'),
+                  onPressed: _runSearch,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(72, 48),
+                    maximumSize: const Size(132, 48),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(l10n.commonSearch, maxLines: 1),
                   ),
                 ),
               ],

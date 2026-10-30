@@ -177,23 +177,8 @@ class CommunityWorkCard extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              child: Center(
-                                child: ExcludeSemantics(
-                                  child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: overlay,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.play_arrow_rounded,
-                                      color: textColor,
-                                      size: 28,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              // Keep the thumbnail unobstructed. The whole card
+                              // remains the play/preview tap target.
                             ),
                           ),
                           if (!work.isNiarimPublished && !obscured)
@@ -246,47 +231,9 @@ class CommunityWorkCard extends StatelessWidget {
                                 child: badge(l10n.communityShortsBadge),
                               ),
                             ),
-                          if (!obscured)
-                          Positioned(
-                            right: 4,
-                            top: 4,
-                            child: MergeSemantics(
-                              child: Semantics(
-                                button: true,
-                                label: isBookmarked
-                                    ? l10n.communityWorkDetailBookmarkRemove
-                                    : l10n.communityWorkDetailBookmarkAdd,
-                                toggled: isBookmarked,
-                                child: Material(
-                                  color: overlay,
-                                  shape: const CircleBorder(),
-                                  child: IconButton(
-                                    key: ValueKey(
-                                      'community-bookmark-${work.id}',
-                                    ),
-                                    tooltip: isBookmarked
-                                        ? l10n.communityWorkDetailBookmarkRemove
-                                        : l10n.communityWorkDetailBookmarkAdd,
-                                    constraints: const BoxConstraints.tightFor(
-                                      width: 48,
-                                      height: 48,
-                                    ),
-                                    visualDensity: VisualDensity.standard,
-                                    onPressed: onBookmarkToggle,
-                                    icon: Icon(
-                                      isBookmarked
-                                          ? Icons.bookmark
-                                          : Icons.bookmark_border,
-                                      color: textColor,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
                           if (onMuteToggle != null && !isUnavailable)
                             Positioned(
-                              left: 4,
+                              right: 4,
                               top: 4,
                               child: Material(
                                 color: overlay,
@@ -402,10 +349,40 @@ class CommunityWorkCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 2),
                           count(l10n.communityRankingSortViews, views),
-                          const SizedBox(width: 8),
-                          Icon(Icons.bookmark, size: 13, color: detailColor),
+                          const SizedBox(width: 5),
+                          Icon(Icons.bookmarks_outlined, size: 13, color: detailColor),
                           const SizedBox(width: 2),
                           count(l10n.communityRankingSortBookmarks, bookmarks),
+                          const SizedBox(width: 2),
+                          // Keep the bookmark action alongside the two counts;
+                          // the 48dp target stays tappable even at narrow widths.
+                          MergeSemantics(
+                            child: Semantics(
+                              button: true,
+                              label: isBookmarked
+                                  ? l10n.communityWorkDetailBookmarkRemove
+                                  : l10n.communityWorkDetailBookmarkAdd,
+                              toggled: isBookmarked,
+                              child: IconButton(
+                                key: ValueKey('community-bookmark-${work.id}'),
+                                tooltip: isBookmarked
+                                    ? l10n.communityWorkDetailBookmarkRemove
+                                    : l10n.communityWorkDetailBookmarkAdd,
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 48,
+                                  height: 48,
+                                ),
+                                padding: EdgeInsets.zero,
+                                onPressed: onBookmarkToggle,
+                                icon: Icon(
+                                  isBookmarked
+                                      ? Icons.bookmark
+                                      : Icons.bookmark_border,
+                                  color: detailColor,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
