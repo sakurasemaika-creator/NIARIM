@@ -19,12 +19,8 @@ describe("stats update DynamoDB contract", () => {
     expect(source).toContain('values[":latestPk"] = "LATEST"');
   });
 
-  it("removes all public GSI keys when a work is hidden", () => {
+  it("removes discovery indexes but retains redacted ranking slots", () => {
     for (const key of [
-      "gsi1pk",
-      "gsi1sk",
-      "gsi2pk",
-      "gsi2sk",
       "gsi3pk",
       "gsi3sk",
       "gsi4pk",

@@ -42,8 +42,11 @@ void main() {
 
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.controller?.text, '手描き');
+    await tester.ensureVisible(
+      find.byKey(const Key('communityContentFilterButton')));
     await tester.tap(find.byKey(const Key('communityContentFilterButton')));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('communityTagExactMatch')));
     expect(
       tester.widget<SwitchListTile>(
         find.byKey(const Key('communityTagExactMatch')),
@@ -99,9 +102,7 @@ void main() {
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
-    await tester.pumpWidget(app(initialTag: '手描き'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('communitySearchModeToggle')));
+    await tester.pumpWidget(app());
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, '夜明け');
     await tester.tap(find.byKey(const Key('communitySearchButton')));

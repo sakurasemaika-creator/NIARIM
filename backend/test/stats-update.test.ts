@@ -86,10 +86,6 @@ describe("statistics batch data safety", () => {
     expect(input.ExpressionAttributeValues[":status"]).toBe("private");
     expect(input.UpdateExpression).not.toContain("isNiarimPublished =");
     for (const key of [
-      "gsi1pk",
-      "gsi1sk",
-      "gsi2pk",
-      "gsi2sk",
       "gsi3pk",
       "gsi3sk",
       "gsi4pk",

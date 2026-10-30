@@ -102,17 +102,15 @@ describe("work editing concurrency", () => {
     const removed = second.UpdateExpression?.split(" REMOVE ")[1]?.split(", ");
     expect(removed).toEqual(
       expect.arrayContaining([
-        "rankingScore",
-        "gsi1pk",
-        "gsi1sk",
-        "gsi2pk",
-        "gsi2sk",
         "gsi3pk",
         "gsi3sk",
         "gsi4pk",
         "gsi4sk",
       ]),
     );
+    // Retained only as a redacted ranking slot.
+    expect(removed).not.toContain("gsi1pk");
+    expect(removed).not.toContain("gsi2pk");
   });
 
   it("rebuilds rankings from current counters and retries if counters change", async () => {
