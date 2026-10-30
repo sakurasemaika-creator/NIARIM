@@ -27,6 +27,7 @@ import '../../widgets/moved_to_trash_snack_bar.dart';
 import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/duplicate_name.dart';
@@ -57,6 +58,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   // この画面が一番上に戻ってきたら（キャンバス・タイムライン等から）、
   // 編集された絵を描き直す。
   bool _wasCurrent = true;
+  bool _movingToTrash = false;
   Timer? _timer;
   ui.Image? _previewImage;
   // プレビュー全画面化：確認・仕上がりチェックに集中できるよう、
@@ -300,8 +302,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         actions: [
           const HelpButton(topic: 'プロジェクト詳細画面'),
           PopupMenuButton<String>(
+            enabled: !_movingToTrash,
             icon: const Icon(Icons.more_vert),
-            onSelected: (action) {
+            onSelected: (action) async {
               switch (action) {
                 case 'rename':
                   _showRenameDialog(context, project.name);
@@ -326,13 +329,26 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
                     );
                   } else {
-                    // ホームの一覧と同じく、その場で元に戻せる。
+                    if (_movingToTrash) return;
+                    setState(() => _movingToTrash = true);
+                    // ホームの一覧と同じく、保存できたらその場で元に戻せる。
                     final messenger = ScaffoldMessenger.of(context);
-                    projectService.deleteProject(widget.projectId);
-                    showMovedToTrashSnackBar(messenger, l10n, projectService, [
-                      widget.projectId,
-                    ]);
-                    context.pop();
+                    final saved = await runProjectTrashAction(
+                      context,
+                      () => projectService.deleteProject(widget.projectId),
+                    );
+                    if (!mounted || !context.mounted) return;
+                    if (saved) {
+                      showMovedToTrashSnackBar(
+                        messenger,
+                        l10n,
+                        projectService,
+                        [widget.projectId],
+                      );
+                      context.pop();
+                    } else {
+                      setState(() => _movingToTrash = false);
+                    }
                   }
               }
             },

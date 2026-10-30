@@ -69,12 +69,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeAddSheetNewFolder => '새 폴더';
 
   @override
-  String get homeAddTooltip => '새로 만들기';
-
-  @override
-  String get commonShowExplanation => '설명 보기';
-
-  @override
   String get homeSelectionAllSelect => '전체 선택';
 
   @override
@@ -126,9 +120,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => '상세';
-
-  @override
-  String get homeViewModeTooltip => '표시 크기';
 
   @override
   String get homeSortFieldName => '이름';
@@ -380,62 +371,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String homeMoveToTrashSkipFavorites(int count) {
-    return '즐겨찾기한 $count개 항목은 이동하지 않습니다(즐겨찾기를 해제하면 이동할 수 있습니다).';
-  }
-
-  @override
-  String get homeMoveToTrashNothing =>
-      '휴지통으로 이동할 항목이 없습니다(즐겨찾기한 항목은 이동하지 않습니다).';
-
-  @override
-  String homeMovedToTrashSnackbar(int count) {
-    return '$count개 항목을 휴지통으로 이동했습니다';
-  }
-
-  @override
-  String get homeUndoAction => '실행 취소';
-
-  @override
-  String homeCutSnackbar(int count) {
-    return '$count개 항목을 잘라냈습니다. 옮길 곳을 열고 오른쪽 위의 붙여넣기를 누르세요.';
-  }
-
-  @override
-  String homeCopiedSnackbar(int count) {
-    return '$count개 항목을 복사했습니다. 붙여넣을 곳을 열고 오른쪽 위의 붙여넣기를 누르세요.';
-  }
-
-  @override
-  String homePastedSnackbar(int count) {
-    return '$count개 항목을 붙여넣었습니다';
-  }
-
-  @override
-  String homePasteSkippedIntoSelf(int count) {
-    return '폴더 $count개는 자기 자신이나 그 안으로 옮길 수 없어 잘라낸 상태로 남겨 두었습니다.';
-  }
-
-  @override
-  String homePasteSkippedMissing(int count) {
-    return '원본이 없어 $count개 항목을 붙여넣지 못했습니다(휴지통으로 이동했거나 삭제됨).';
-  }
-
-  @override
-  String get homePasteFailed => '일부 항목을 붙여넣지 못했습니다. 다시 시도해 주세요.';
-
-  @override
-  String get homeCutPendingHint => '잘라냄(붙여넣기 대기 중)';
-
-  @override
-  String projectDuplicateName(String name) {
-    return '$name (사본)';
-  }
-
-  @override
-  String projectDuplicateNameNumbered(String name, int number) {
-    return '$name (사본 $number)';
-  }
+  String get homePasteSnackbar => '붙여넣었습니다';
 
   @override
   String get commonOk => '확인';
@@ -520,9 +456,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeDrawerTips => '활용 팁';
-
-  @override
-  String get homeDrawerTutorial => '사용법';
 
   @override
   String get homeDrawerPremium => 'Premium';
@@ -2614,9 +2547,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeColorAccent => '강조 색상';
 
   @override
-  String get themeColorAccentText => '강조 글자·아이콘 색';
-
-  @override
   String get themeColorText => '본문 및 일반 글자 색';
 
   @override
@@ -2925,6 +2855,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => '크기 편집';
 
   @override
+  String get canvasSizePresetDuplicateSuffix => '사본';
+
+  @override
   String newProjectDurationLabel(String max) {
     return '길이(최대 $max)';
   }
@@ -3193,9 +3126,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get projectDetailNotFoundBody => '프로젝트를 찾을 수 없습니다';
-
-  @override
-  String get projectDetailNotFoundBackToList => '프로젝트 목록으로';
 
   @override
   String get projectDetailFirstFrameTooltip => '첫 프레임';
@@ -3605,44 +3535,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get projectListEmptyHint => '＋ 버튼으로 새로 만들기';
-
-  @override
-  String projectListNoMatchTitle(String query) {
-    return '“$query”에 해당하는 작품이 없습니다';
-  }
-
-  @override
-  String get projectListNoMatchNameHint =>
-      '모든 폴더에서 이름으로 찾습니다. 대문자와 소문자, 전각과 반각은 구별하지 않습니다.';
-
-  @override
-  String get projectListNoMatchTagHint => '모든 폴더에서 작품의 태그로 찾습니다.';
-
-  @override
-  String get projectListClearSearch => '검색 지우기';
-
-  @override
-  String get projectListNoFavoritesTitle => '즐겨찾기한 작품이 없습니다';
-
-  @override
-  String get projectListNoFavoritesHint =>
-      '작품이나 폴더 메뉴에서 “즐겨찾기 등록”을 선택하면 여기에 표시됩니다.';
-
-  @override
-  String get projectListShowAll => '모두 보기';
-
-  @override
-  String get projectListEmptyFolderTitle => '이 폴더는 비어 있습니다';
-
-  @override
-  String projectListUpdatedOn(String date) {
-    return '$date 수정';
-  }
-
-  @override
-  String projectListInFolder(String path) {
-    return '폴더: $path';
-  }
 
   @override
   String get projectListOpenAction => '열기';
@@ -6198,9 +6090,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityWorkDetailTitle => '작품 상세';
 
   @override
-  String get communityWorkNotFoundMessage => '작품을 찾을 수 없습니다';
-
-  @override
   String get communityWorkHiddenByFilterMessage =>
       '표시 필터 설정에 따라 이 작품은 숨겨져 있습니다';
 
@@ -7736,6 +7625,211 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeWorksLoadFailed => '내보낸 작품 목록을 불러오지 못했습니다';
 
   @override
+  String get newProjectCreating => '만드는 중…';
+
+  @override
+  String get newProjectCreateFailed =>
+      '프로젝트를 저장하지 못했습니다. 저장 공간과 저장 위치를 확인한 후 다시 시도해 주세요.';
+
+  @override
+  String get communityCreatorLabel => '작성자';
+
+  @override
+  String get communityThresholdAny => '조건 없음';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '조회수 $count회 이상';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '북마크 $count개 이상';
+  }
+
+  @override
+  String get communityTileSize => '작품 타일 크기';
+
+  @override
+  String get communityMutedWordsEmpty => '숨긴 키워드가 없습니다';
+
+  @override
+  String get communityMutedTagsEmpty => '숨긴 태그가 없습니다';
+
+  @override
+  String get communityMuteShort => '숨기기';
+
+  @override
+  String get communityMuteConfirmTitle => '이 사용자를 숨길까요?';
+
+  @override
+  String get communityMuteConfirmBody => '이 사용자의 작품이 표시되지 않습니다.';
+
+  @override
+  String get communityMuteConfirmAction => '숨기기';
+
+  @override
+  String get communityUnmuteConfirmTitle => '이 사용자를 다시 표시할까요?';
+
+  @override
+  String get communityUnmuteConfirmAction => '다시 표시';
+
+  @override
+  String get communityMuteNo => '아니요';
+
+  @override
+  String get communityMuteDone => '사용자를 숨겼습니다';
+
+  @override
+  String get communityUnmuteDone => '사용자를 다시 표시했습니다';
+
+  @override
+  String get communityMilestoneNotificationsTitle => '알림';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return '팔로워가 $count명에 도달했습니다';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '「$title」 작품의 북마크가 $count개에 도달했습니다';
+  }
+
+  @override
+  String get communitySearchHistory => '검색 기록';
+
+  @override
+  String get communitySearchHistoryEmpty => '검색 기록이 없습니다';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => '저장된 검색 조건을 삭제할까요?';
+
+  @override
+  String get communitySortLabel => '정렬';
+
+  @override
+  String get homeTrashOperationFailed =>
+      '작업을 완료하지 못했습니다. 저장 공간을 확인하고 다시 시도해 주세요.';
+
+  @override
+  String get homeTrashWorking => '처리 중…';
+
+  @override
+  String get homeAddTooltip => '새로 만들기';
+
+  @override
+  String get commonShowExplanation => '설명 보기';
+
+  @override
+  String get homeViewModeTooltip => '표시 크기';
+
+  @override
+  String homeMoveToTrashSkipFavorites(int count) {
+    return '즐겨찾기한 $count개 항목은 이동하지 않습니다(즐겨찾기를 해제하면 이동할 수 있습니다).';
+  }
+
+  @override
+  String get homeMoveToTrashNothing =>
+      '휴지통으로 이동할 항목이 없습니다(즐겨찾기한 항목은 이동하지 않습니다).';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '$count개 항목을 휴지통으로 이동했습니다';
+  }
+
+  @override
+  String get homeUndoAction => '실행 취소';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '$count개 항목을 잘라냈습니다. 옮길 곳을 열고 오른쪽 위의 붙여넣기를 누르세요.';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '$count개 항목을 복사했습니다. 붙여넣을 곳을 열고 오른쪽 위의 붙여넣기를 누르세요.';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '$count개 항목을 붙여넣었습니다';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '폴더 $count개는 자기 자신이나 그 안으로 옮길 수 없어 잘라낸 상태로 남겨 두었습니다.';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '원본이 없어 $count개 항목을 붙여넣지 못했습니다(휴지통으로 이동했거나 삭제됨).';
+  }
+
+  @override
+  String get homePasteFailed => '일부 항목을 붙여넣지 못했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get homeCutPendingHint => '잘라냄(붙여넣기 대기 중)';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (사본)';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name (사본 $number)';
+  }
+
+  @override
+  String get homeDrawerTutorial => '사용법';
+
+  @override
+  String get themeColorAccentText => '강조 글자·아이콘 색';
+
+  @override
+  String get projectDetailNotFoundBackToList => '프로젝트 목록으로';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return '“$query”에 해당하는 작품이 없습니다';
+  }
+
+  @override
+  String get projectListNoMatchNameHint =>
+      '모든 폴더에서 이름으로 찾습니다. 대문자와 소문자, 전각과 반각은 구별하지 않습니다.';
+
+  @override
+  String get projectListNoMatchTagHint => '모든 폴더에서 작품의 태그로 찾습니다.';
+
+  @override
+  String get projectListClearSearch => '검색 지우기';
+
+  @override
+  String get projectListNoFavoritesTitle => '즐겨찾기한 작품이 없습니다';
+
+  @override
+  String get projectListNoFavoritesHint =>
+      '작품이나 폴더 메뉴에서 “즐겨찾기 등록”을 선택하면 여기에 표시됩니다.';
+
+  @override
+  String get projectListShowAll => '모두 보기';
+
+  @override
+  String get projectListEmptyFolderTitle => '이 폴더는 비어 있습니다';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return '$date 수정';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return '폴더: $path';
+  }
+
+  @override
   String get homeProjectsLoadFailed => '프로젝트를 불러오지 못했습니다';
 
   @override
@@ -7759,16 +7853,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get errorLogClear => '기록 지우기';
-
-  @override
-  String get newProjectCreating => '만드는 중…';
-
-  @override
-  String get newProjectCreateFailed =>
-      '프로젝트를 저장하지 못했습니다. 저장 공간과 저장 위치를 확인한 후 다시 시도해 주세요.';
-
-  @override
-  String get communityCreatorLabel => '작성자';
 
   @override
   String get tutorialSkip => '건너뛰기';
@@ -7928,80 +8012,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String newProjectNumberRangeError(int min, int max) {
     return '$min~$max 사이의 숫자를 입력하세요';
   }
-
-  @override
-  String get communityThresholdAny => '조건 없음';
-
-  @override
-  String communityMinimumViewsOption(String count) {
-    return '조회수 $count회 이상';
-  }
-
-  @override
-  String communityMinimumBookmarksOption(String count) {
-    return '북마크 $count개 이상';
-  }
-
-  @override
-  String get communityTileSize => '작품 타일 크기';
-
-  @override
-  String get communityMutedWordsEmpty => '숨긴 키워드가 없습니다';
-
-  @override
-  String get communityMutedTagsEmpty => '숨긴 태그가 없습니다';
-
-  @override
-  String get communityMuteShort => '숨기기';
-
-  @override
-  String get communityMuteConfirmTitle => '이 사용자를 숨길까요?';
-
-  @override
-  String get communityMuteConfirmBody => '이 사용자의 작품이 표시되지 않습니다.';
-
-  @override
-  String get communityMuteConfirmAction => '숨기기';
-
-  @override
-  String get communityUnmuteConfirmTitle => '이 사용자를 다시 표시할까요?';
-
-  @override
-  String get communityUnmuteConfirmAction => '다시 표시';
-
-  @override
-  String get communityMuteNo => '아니요';
-
-  @override
-  String get communityMuteDone => '사용자를 숨겼습니다';
-
-  @override
-  String get communityUnmuteDone => '사용자를 다시 표시했습니다';
-
-  @override
-  String get communityMilestoneNotificationsTitle => '알림';
-
-  @override
-  String communityFollowerMilestone(String count) {
-    return '팔로워가 $count명에 도달했습니다';
-  }
-
-  @override
-  String communityBookmarkMilestone(String title, String count) {
-    return '「$title」 작품의 북마크가 $count개에 도달했습니다';
-  }
-
-  @override
-  String get communitySearchHistory => '검색 기록';
-
-  @override
-  String get communitySearchHistoryEmpty => '검색 기록이 없습니다';
-
-  @override
-  String get communityDeleteSavedSearchConfirm => '저장된 검색 조건을 삭제할까요?';
-
-  @override
-  String get communitySortLabel => '정렬';
 
   @override
   String get pcMenuFile => '파일';

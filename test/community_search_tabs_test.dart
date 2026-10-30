@@ -66,9 +66,13 @@ void main() {
     tester.widget<TabBar>(find.byType(TabBar)).controller!.animateTo(1);
     await tester.pumpAndSettle();
     final tile = find.byKey(const Key('communityRankingHorizontalCard')).first;
-    final thumb = find.byKey(const Key('communityRankingHorizontalThumbnail')).first;
-    expect(tester.getSize(thumb).height,
-        closeTo(tester.getSize(tile).height, 0.5));
+    final thumb = find
+        .byKey(const Key('communityRankingHorizontalThumbnail'))
+        .first;
+    expect(
+      tester.getSize(thumb).height,
+      closeTo(tester.getSize(tile).height, 0.5),
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -103,10 +107,7 @@ void main() {
     final toggle = find.byKey(const Key('communitySearchModeToggle'));
     await tester.tap(toggle);
     await tester.pumpAndSettle();
-    expect(
-      find.byKey(const Key('communitySearchModePill')),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('communitySearchModePill')), findsOneWidget);
     expect(find.byType(SegmentedButton<bool>), findsNothing);
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller?.text,
@@ -255,10 +256,7 @@ void main() {
           );
         }
         if (!scrollTabs) {
-          expect(
-            actualWidths.reduce((a, b) => a + b),
-            closeTo(available, 0.5),
-          );
+          expect(actualWidths.reduce((a, b) => a + b), closeTo(available, 0.5));
         }
         expect(tester.takeException(), isNull);
       }

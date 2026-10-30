@@ -221,18 +221,6 @@ abstract class AppLocalizations {
   /// **'新規フォルダ'**
   String get homeAddSheetNewFolder;
 
-  /// No description provided for @homeAddTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'新規作成'**
-  String get homeAddTooltip;
-
-  /// No description provided for @commonShowExplanation.
-  ///
-  /// In ja, this message translates to:
-  /// **'説明を表示'**
-  String get commonShowExplanation;
-
   /// No description provided for @homeSelectionAllSelect.
   ///
   /// In ja, this message translates to:
@@ -322,12 +310,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'詳細'**
   String get homeViewModeDetail;
-
-  /// No description provided for @homeViewModeTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'表示の大きさ'**
-  String get homeViewModeTooltip;
 
   /// No description provided for @homeSortFieldName.
   ///
@@ -797,83 +779,11 @@ abstract class AppLocalizations {
   /// **'{count}件を貼り付け'**
   String homePasteTooltip(int count);
 
-  /// No description provided for @homeMoveToTrashSkipFavorites.
+  /// No description provided for @homePasteSnackbar.
   ///
   /// In ja, this message translates to:
-  /// **'お気に入りの{count}件は移動しません（お気に入りを外すと移動できます）。'**
-  String homeMoveToTrashSkipFavorites(int count);
-
-  /// No description provided for @homeMoveToTrashNothing.
-  ///
-  /// In ja, this message translates to:
-  /// **'ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。'**
-  String get homeMoveToTrashNothing;
-
-  /// No description provided for @homeMovedToTrashSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'{count}件をゴミ箱へ移動しました'**
-  String homeMovedToTrashSnackbar(int count);
-
-  /// No description provided for @homeUndoAction.
-  ///
-  /// In ja, this message translates to:
-  /// **'元に戻す'**
-  String get homeUndoAction;
-
-  /// No description provided for @homeCutSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'{count}件を切り取りました。移動先を開いて、右上の貼り付けを押してください。'**
-  String homeCutSnackbar(int count);
-
-  /// No description provided for @homeCopiedSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'{count}件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。'**
-  String homeCopiedSnackbar(int count);
-
-  /// No description provided for @homePastedSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'{count}件を貼り付けました'**
-  String homePastedSnackbar(int count);
-
-  /// No description provided for @homePasteSkippedIntoSelf.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。'**
-  String homePasteSkippedIntoSelf(int count);
-
-  /// No description provided for @homePasteSkippedMissing.
-  ///
-  /// In ja, this message translates to:
-  /// **'{count}件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。'**
-  String homePasteSkippedMissing(int count);
-
-  /// No description provided for @homePasteFailed.
-  ///
-  /// In ja, this message translates to:
-  /// **'一部を貼り付けられませんでした。もう一度お試しください。'**
-  String get homePasteFailed;
-
-  /// No description provided for @homeCutPendingHint.
-  ///
-  /// In ja, this message translates to:
-  /// **'切り取り中（貼り付けを待っています）'**
-  String get homeCutPendingHint;
-
-  /// Name of a duplicated work.
-  ///
-  /// In ja, this message translates to:
-  /// **'{name} (コピー)'**
-  String projectDuplicateName(String name);
-
-  /// Name of a duplicated work when a copy with the plain duplicate name already exists in the same place; number starts at 2.
-  ///
-  /// In ja, this message translates to:
-  /// **'{name} (コピー {number})'**
-  String projectDuplicateNameNumbered(String name, int number);
+  /// **'貼り付けました'**
+  String get homePasteSnackbar;
 
   /// No description provided for @commonOk.
   ///
@@ -1036,12 +946,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'活用Tips'**
   String get homeDrawerTips;
-
-  /// No description provided for @homeDrawerTutorial.
-  ///
-  /// In ja, this message translates to:
-  /// **'使い方'**
-  String get homeDrawerTutorial;
 
   /// No description provided for @homeDrawerPremium.
   ///
@@ -4829,12 +4733,6 @@ abstract class AppLocalizations {
   /// **'アクセントカラー'**
   String get themeColorAccent;
 
-  /// Theme color for accent-colored text and icons drawn directly on the background (selected tab label, outlined and text buttons, empty-state icons). Defaults to the accent color.
-  ///
-  /// In ja, this message translates to:
-  /// **'アクセントの文字・アイコン色'**
-  String get themeColorAccentText;
-
   /// No description provided for @themeColorText.
   ///
   /// In ja, this message translates to:
@@ -5405,6 +5303,12 @@ abstract class AppLocalizations {
   /// **'サイズを編集'**
   String get canvasSizePresetEditDialogTitle;
 
+  /// No description provided for @canvasSizePresetDuplicateSuffix.
+  ///
+  /// In ja, this message translates to:
+  /// **'のコピー'**
+  String get canvasSizePresetDuplicateSuffix;
+
   /// No description provided for @newProjectDurationLabel.
   ///
   /// In ja, this message translates to:
@@ -5872,12 +5776,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'プロジェクトが見つかりません'**
   String get projectDetailNotFoundBody;
-
-  /// プロジェクト詳細で作品が見つからないときに、ホームのプロジェクトの一覧へ戻るボタン
-  ///
-  /// In ja, this message translates to:
-  /// **'プロジェクトの一覧へ'**
-  String get projectDetailNotFoundBackToList;
 
   /// No description provided for @projectDetailFirstFrameTooltip.
   ///
@@ -6640,66 +6538,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'＋ ボタンから新規作成'**
   String get projectListEmptyHint;
-
-  /// No description provided for @projectListNoMatchTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'「{query}」に一致する作品はありません'**
-  String projectListNoMatchTitle(String query);
-
-  /// No description provided for @projectListNoMatchNameHint.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。'**
-  String get projectListNoMatchNameHint;
-
-  /// No description provided for @projectListNoMatchTagHint.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォルダの中も含めて、作品に付けたタグの一部で探しています。'**
-  String get projectListNoMatchTagHint;
-
-  /// No description provided for @projectListClearSearch.
-  ///
-  /// In ja, this message translates to:
-  /// **'検索をやめる'**
-  String get projectListClearSearch;
-
-  /// No description provided for @projectListNoFavoritesTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'お気に入りの作品はありません'**
-  String get projectListNoFavoritesTitle;
-
-  /// No description provided for @projectListNoFavoritesHint.
-  ///
-  /// In ja, this message translates to:
-  /// **'作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。'**
-  String get projectListNoFavoritesHint;
-
-  /// No description provided for @projectListShowAll.
-  ///
-  /// In ja, this message translates to:
-  /// **'すべて表示'**
-  String get projectListShowAll;
-
-  /// No description provided for @projectListEmptyFolderTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'このフォルダは空です'**
-  String get projectListEmptyFolderTitle;
-
-  /// Detail row: the date the work was last changed.
-  ///
-  /// In ja, this message translates to:
-  /// **'{date}更新'**
-  String projectListUpdatedOn(String date);
-
-  /// Search results: the folder a work is in (folder names joined by " / ").
-  ///
-  /// In ja, this message translates to:
-  /// **'フォルダ：{path}'**
-  String projectListInFolder(String path);
 
   /// No description provided for @projectListOpenAction.
   ///
@@ -11273,12 +11111,6 @@ abstract class AppLocalizations {
   /// **'作品詳細'**
   String get communityWorkDetailTitle;
 
-  /// No description provided for @communityWorkNotFoundMessage.
-  ///
-  /// In ja, this message translates to:
-  /// **'作品が見つかりませんでした'**
-  String get communityWorkNotFoundMessage;
-
   /// No description provided for @communityWorkHiddenByFilterMessage.
   ///
   /// In ja, this message translates to:
@@ -14093,6 +13925,342 @@ abstract class AppLocalizations {
   /// **'作品一覧を読み込めませんでした'**
   String get homeWorksLoadFailed;
 
+  /// No description provided for @newProjectCreating.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成しています…'**
+  String get newProjectCreating;
+
+  /// No description provided for @newProjectCreateFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。'**
+  String get newProjectCreateFailed;
+
+  /// No description provided for @communityCreatorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'作者'**
+  String get communityCreatorLabel;
+
+  /// No description provided for @communityThresholdAny.
+  ///
+  /// In ja, this message translates to:
+  /// **'条件なし'**
+  String get communityThresholdAny;
+
+  /// No description provided for @communityMinimumViewsOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}回再生以上'**
+  String communityMinimumViewsOption(String count);
+
+  /// No description provided for @communityMinimumBookmarksOption.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件以上'**
+  String communityMinimumBookmarksOption(String count);
+
+  /// No description provided for @communityTileSize.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の表示サイズ'**
+  String get communityTileSize;
+
+  /// No description provided for @communityMutedWordsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示ワードはありません'**
+  String get communityMutedWordsEmpty;
+
+  /// No description provided for @communityMutedTagsEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示タグはありません'**
+  String get communityMutedTagsEmpty;
+
+  /// No description provided for @communityMuteShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示'**
+  String get communityMuteShort;
+
+  /// No description provided for @communityMuteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーを非表示にしますか？'**
+  String get communityMuteConfirmTitle;
+
+  /// No description provided for @communityMuteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示にするとこのユーザーの作品は表示されなくなります。'**
+  String get communityMuteConfirmBody;
+
+  /// No description provided for @communityMuteConfirmAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示にする'**
+  String get communityMuteConfirmAction;
+
+  /// No description provided for @communityUnmuteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーの非表示を解除しますか？'**
+  String get communityUnmuteConfirmTitle;
+
+  /// No description provided for @communityUnmuteConfirmAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示を解除する'**
+  String get communityUnmuteConfirmAction;
+
+  /// No description provided for @communityMuteNo.
+  ///
+  /// In ja, this message translates to:
+  /// **'いいえ'**
+  String get communityMuteNo;
+
+  /// No description provided for @communityMuteDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーを非表示にしました'**
+  String get communityMuteDone;
+
+  /// No description provided for @communityUnmuteDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'このユーザーの非表示を解除しました'**
+  String get communityUnmuteDone;
+
+  /// No description provided for @communityMilestoneNotificationsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知'**
+  String get communityMilestoneNotificationsTitle;
+
+  /// No description provided for @communityFollowerMilestone.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワーが{count}人に達しました'**
+  String communityFollowerMilestone(String count);
+
+  /// No description provided for @communityBookmarkMilestone.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品「{title}」のブックマークが{count}件に達しました'**
+  String communityBookmarkMilestone(String title, String count);
+
+  /// No description provided for @communitySearchHistory.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索履歴'**
+  String get communitySearchHistory;
+
+  /// No description provided for @communitySearchHistoryEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索履歴はありません'**
+  String get communitySearchHistoryEmpty;
+
+  /// No description provided for @communityDeleteSavedSearchConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存した検索条件を削除しますか？'**
+  String get communityDeleteSavedSearchConfirm;
+
+  /// No description provided for @communitySortLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'並び替え'**
+  String get communitySortLabel;
+
+  /// No description provided for @homeTrashOperationFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作を完了できませんでした。保存先を確認して、もう一度お試しください。'**
+  String get homeTrashOperationFailed;
+
+  /// No description provided for @homeTrashWorking.
+  ///
+  /// In ja, this message translates to:
+  /// **'処理中…'**
+  String get homeTrashWorking;
+
+  /// No description provided for @homeAddTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規作成'**
+  String get homeAddTooltip;
+
+  /// No description provided for @commonShowExplanation.
+  ///
+  /// In ja, this message translates to:
+  /// **'説明を表示'**
+  String get commonShowExplanation;
+
+  /// No description provided for @homeViewModeTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示の大きさ'**
+  String get homeViewModeTooltip;
+
+  /// No description provided for @homeMoveToTrashSkipFavorites.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りの{count}件は移動しません（お気に入りを外すと移動できます）。'**
+  String homeMoveToTrashSkipFavorites(int count);
+
+  /// No description provided for @homeMoveToTrashNothing.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。'**
+  String get homeMoveToTrashNothing;
+
+  /// No description provided for @homeMovedToTrashSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件をゴミ箱へ移動しました'**
+  String homeMovedToTrashSnackbar(int count);
+
+  /// No description provided for @homeUndoAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'元に戻す'**
+  String get homeUndoAction;
+
+  /// No description provided for @homeCutSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件を切り取りました。移動先を開いて、右上の貼り付けを押してください。'**
+  String homeCutSnackbar(int count);
+
+  /// No description provided for @homeCopiedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。'**
+  String homeCopiedSnackbar(int count);
+
+  /// No description provided for @homePastedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件を貼り付けました'**
+  String homePastedSnackbar(int count);
+
+  /// No description provided for @homePasteSkippedIntoSelf.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。'**
+  String homePasteSkippedIntoSelf(int count);
+
+  /// No description provided for @homePasteSkippedMissing.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。'**
+  String homePasteSkippedMissing(int count);
+
+  /// No description provided for @homePasteFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'一部を貼り付けられませんでした。もう一度お試しください。'**
+  String get homePasteFailed;
+
+  /// No description provided for @homeCutPendingHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'切り取り中（貼り付けを待っています）'**
+  String get homeCutPendingHint;
+
+  /// Name of a duplicated work.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} (コピー)'**
+  String projectDuplicateName(String name);
+
+  /// Name of a duplicated work when a copy with the plain duplicate name already exists in the same place; number starts at 2.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} (コピー {number})'**
+  String projectDuplicateNameNumbered(String name, int number);
+
+  /// No description provided for @homeDrawerTutorial.
+  ///
+  /// In ja, this message translates to:
+  /// **'使い方'**
+  String get homeDrawerTutorial;
+
+  /// Theme color for accent-colored text and icons drawn directly on the background (selected tab label, outlined and text buttons, empty-state icons). Defaults to the accent color.
+  ///
+  /// In ja, this message translates to:
+  /// **'アクセントの文字・アイコン色'**
+  String get themeColorAccentText;
+
+  /// プロジェクト詳細で作品が見つからないときに、ホームのプロジェクトの一覧へ戻るボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトの一覧へ'**
+  String get projectDetailNotFoundBackToList;
+
+  /// No description provided for @projectListNoMatchTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{query}」に一致する作品はありません'**
+  String projectListNoMatchTitle(String query);
+
+  /// No description provided for @projectListNoMatchNameHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。'**
+  String get projectListNoMatchNameHint;
+
+  /// No description provided for @projectListNoMatchTagHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中も含めて、作品に付けたタグの一部で探しています。'**
+  String get projectListNoMatchTagHint;
+
+  /// No description provided for @projectListClearSearch.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索をやめる'**
+  String get projectListClearSearch;
+
+  /// No description provided for @projectListNoFavoritesTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りの作品はありません'**
+  String get projectListNoFavoritesTitle;
+
+  /// No description provided for @projectListNoFavoritesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。'**
+  String get projectListNoFavoritesHint;
+
+  /// No description provided for @projectListShowAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべて表示'**
+  String get projectListShowAll;
+
+  /// No description provided for @projectListEmptyFolderTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダは空です'**
+  String get projectListEmptyFolderTitle;
+
+  /// Detail row: the date the work was last changed.
+  ///
+  /// In ja, this message translates to:
+  /// **'{date}更新'**
+  String projectListUpdatedOn(String date);
+
+  /// Search results: the folder a work is in (folder names joined by " / ").
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ：{path}'**
+  String projectListInFolder(String path);
+
   /// No description provided for @homeProjectsLoadFailed.
   ///
   /// In ja, this message translates to:
@@ -14140,24 +14308,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'記録を消す'**
   String get errorLogClear;
-
-  /// No description provided for @newProjectCreating.
-  ///
-  /// In ja, this message translates to:
-  /// **'作成しています…'**
-  String get newProjectCreating;
-
-  /// No description provided for @newProjectCreateFailed.
-  ///
-  /// In ja, this message translates to:
-  /// **'プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。'**
-  String get newProjectCreateFailed;
-
-  /// No description provided for @communityCreatorLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'作者'**
-  String get communityCreatorLabel;
 
   /// No description provided for @tutorialSkip.
   ///
@@ -14398,138 +14548,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{min}〜{max}の数字を入力してください'**
   String newProjectNumberRangeError(int min, int max);
-
-  /// No description provided for @communityThresholdAny.
-  ///
-  /// In ja, this message translates to:
-  /// **'条件なし'**
-  String get communityThresholdAny;
-
-  /// No description provided for @communityMinimumViewsOption.
-  ///
-  /// In ja, this message translates to:
-  /// **'{count}回再生以上'**
-  String communityMinimumViewsOption(String count);
-
-  /// No description provided for @communityMinimumBookmarksOption.
-  ///
-  /// In ja, this message translates to:
-  /// **'{count}件以上'**
-  String communityMinimumBookmarksOption(String count);
-
-  /// No description provided for @communityTileSize.
-  ///
-  /// In ja, this message translates to:
-  /// **'作品の表示サイズ'**
-  String get communityTileSize;
-
-  /// No description provided for @communityMutedWordsEmpty.
-  ///
-  /// In ja, this message translates to:
-  /// **'非表示ワードはありません'**
-  String get communityMutedWordsEmpty;
-
-  /// No description provided for @communityMutedTagsEmpty.
-  ///
-  /// In ja, this message translates to:
-  /// **'非表示タグはありません'**
-  String get communityMutedTagsEmpty;
-
-  /// No description provided for @communityMuteShort.
-  ///
-  /// In ja, this message translates to:
-  /// **'非表示'**
-  String get communityMuteShort;
-
-  /// No description provided for @communityMuteConfirmTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'このユーザーを非表示にしますか？'**
-  String get communityMuteConfirmTitle;
-
-  /// No description provided for @communityMuteConfirmBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'非表示にするとこのユーザーの作品は表示されなくなります。'**
-  String get communityMuteConfirmBody;
-
-  /// No description provided for @communityMuteConfirmAction.
-  ///
-  /// In ja, this message translates to:
-  /// **'非表示にする'**
-  String get communityMuteConfirmAction;
-
-  /// No description provided for @communityUnmuteConfirmTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'このユーザーの非表示を解除しますか？'**
-  String get communityUnmuteConfirmTitle;
-
-  /// No description provided for @communityUnmuteConfirmAction.
-  ///
-  /// In ja, this message translates to:
-  /// **'非表示を解除する'**
-  String get communityUnmuteConfirmAction;
-
-  /// No description provided for @communityMuteNo.
-  ///
-  /// In ja, this message translates to:
-  /// **'いいえ'**
-  String get communityMuteNo;
-
-  /// No description provided for @communityMuteDone.
-  ///
-  /// In ja, this message translates to:
-  /// **'このユーザーを非表示にしました'**
-  String get communityMuteDone;
-
-  /// No description provided for @communityUnmuteDone.
-  ///
-  /// In ja, this message translates to:
-  /// **'このユーザーの非表示を解除しました'**
-  String get communityUnmuteDone;
-
-  /// No description provided for @communityMilestoneNotificationsTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'通知'**
-  String get communityMilestoneNotificationsTitle;
-
-  /// No description provided for @communityFollowerMilestone.
-  ///
-  /// In ja, this message translates to:
-  /// **'フォロワーが{count}人に達しました'**
-  String communityFollowerMilestone(String count);
-
-  /// No description provided for @communityBookmarkMilestone.
-  ///
-  /// In ja, this message translates to:
-  /// **'作品「{title}」のブックマークが{count}件に達しました'**
-  String communityBookmarkMilestone(String title, String count);
-
-  /// No description provided for @communitySearchHistory.
-  ///
-  /// In ja, this message translates to:
-  /// **'検索履歴'**
-  String get communitySearchHistory;
-
-  /// No description provided for @communitySearchHistoryEmpty.
-  ///
-  /// In ja, this message translates to:
-  /// **'検索履歴はありません'**
-  String get communitySearchHistoryEmpty;
-
-  /// No description provided for @communityDeleteSavedSearchConfirm.
-  ///
-  /// In ja, this message translates to:
-  /// **'保存した検索条件を削除しますか？'**
-  String get communityDeleteSavedSearchConfirm;
-
-  /// No description provided for @communitySortLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'並び替え'**
-  String get communitySortLabel;
 
   /// No description provided for @pcMenuFile.
   ///

@@ -29,6 +29,15 @@ import '../engine/undo_manager.dart';
 import '../utils/app_error_reporter.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/folder_persistence.dart';
+import '../utils/project_trash_guard.dart';
+
+/// Moving an active favorite to Trash requires removing its protection first.
+class FavoriteProjectDeleteException implements Exception {
+  const FavoriteProjectDeleteException();
+
+  @override
+  String toString() => 'A favorite project cannot be moved to Trash';
+}
 
 class ProjectFolder {
   final String id;
@@ -297,16 +306,29 @@ class ProjectService extends ChangeNotifier {
         notifyListeners();
         return;
       }
+      final cleanup = await ProjectTrashGuard.pending(basePath);
+      for (final guard in cleanup) {
+        _trashDeletedAt.putIfAbsent(guard.project.id, () => guard.deletedAt);
+      }
+      final existingDirectories = <String>{};
+      // 読み直し（[retryLoadProjects]）では、読み込み済み・ゴミ箱の作品を
+      // 二重にしない。
       final known = {
         for (final p in [..._projects, ..._trash]) p.id,
       };
       for (final dir in baseDir.listSync().whereType<Directory>()) {
         final projectId = dir.path.split(RegExp(r'[\\/]')).last;
+        existingDirectories.add(projectId);
         if (known.contains(projectId)) continue;
         final niaproFile = File('${dir.path}/$projectId.niapro');
         if (!niaproFile.existsSync()) continue;
         try {
           final data = await NiaproSerializer.load(niaproFile.path);
+          if (data.project.id != projectId) {
+            throw const FormatException(
+              'Project archive ID does not match its directory',
+            );
+          }
           // 容量（Manifest「容量」）は実ファイルサイズから都度算出する
           // （保存済みの数値をそのまま信用すると、外部要因での差分等でズレうるため）。
           final sizeBytes = niaproFile.lengthSync();
@@ -322,6 +344,25 @@ class ProjectService extends ChangeNotifier {
         } catch (error, stackTrace) {
           AppErrorReporter.record(error, stackTrace);
           // 破損ファイルはスキップ
+        }
+      }
+      for (final guard in cleanup) {
+        existingDirectories.add(guard.project.id);
+        if (!_trash.any((p) => p.id == guard.project.id) &&
+            !_projects.any((p) => p.id == guard.project.id)) {
+          // Even if the archive was among the files removed before a failure,
+          // keep the remaining directory identifiable and retryable in Trash.
+          _trash.add(guard.project);
+        }
+      }
+      final beforePrune = _trashDeletedAt.length;
+      _trashDeletedAt.removeWhere((id, _) => !existingDirectories.contains(id));
+      if (_trashDeletedAt.length != beforePrune) {
+        try {
+          await _persistTrashState(_trashDeletedAt);
+        } catch (error, stackTrace) {
+          // Content already gone: retry stale preference cleanup next time.
+          AppErrorReporter.record(error, stackTrace);
         }
       }
       _projectsLoadFailed = false;
@@ -357,15 +398,34 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
-  Future<void> _persistTrashState() async {
+  Future<void> _persistTrashState(Map<String, DateTime> next) async {
+    final prefs = await SharedPreferences.getInstance();
+    final before = prefs.get(_trashPrefsKey);
+    Future<bool> restoreCache() => switch (before) {
+      null => prefs.remove(_trashPrefsKey),
+      String v => prefs.setString(_trashPrefsKey, v),
+      bool v => prefs.setBool(_trashPrefsKey, v),
+      int v => prefs.setInt(_trashPrefsKey, v),
+      double v => prefs.setDouble(_trashPrefsKey, v),
+      List<Object?> v when v.every((item) => item is String) =>
+        prefs.setStringList(_trashPrefsKey, v.cast<String>()),
+      _ => throw StateError('Unsupported trash preference value'),
+    };
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final list = _trashDeletedAt.entries
+      final list = next.entries
           .map((e) => '${e.key}|${e.value.toIso8601String()}')
           .toList();
-      await prefs.setStringList(_trashPrefsKey, list);
+      // Always write, including permanent-delete preflight of the same value.
+      if (!await prefs.setStringList(_trashPrefsKey, list)) {
+        throw StateError('Trash preference write rejected');
+      }
     } catch (_) {
-      // 保存失敗時も続行（次回操作時に再試行される）
+      try {
+        await restoreCache();
+      } catch (_) {
+        // SharedPreferences restores its cache before the platform write.
+      }
+      rethrow;
     }
   }
 
@@ -380,7 +440,11 @@ class ProjectService extends ChangeNotifier {
         if (now.difference(t.deletedAt).inDays >= days) t.folder.id,
     ];
     for (final id in expiredFolders) {
-      await permanentDeleteTrashedFolder(id);
+      try {
+        await permanentDeleteTrashedFolder(id);
+      } catch (_) {
+        // 起動を止めない。フォルダの作品はゴミ箱に残り、後で消し直せる。
+      }
     }
     final expired = _trash
         .where((p) {
@@ -391,7 +455,12 @@ class ProjectService extends ChangeNotifier {
         .map((p) => p.id)
         .toList();
     for (final id in expired) {
-      await permanentDelete(id);
+      try {
+        await permanentDelete(id);
+      } catch (_) {
+        // Automatic cleanup must not prevent startup. The target remains in Trash
+        // and the operation records its failure for a later/manual retry.
+      }
     }
   }
 
@@ -410,22 +479,6 @@ class ProjectService extends ChangeNotifier {
     tm.importAll(data.tileData);
     _tileManagers[projectId] = tm;
     _layerIdCounters[projectId] = _maxLayerCounter(data.scenes);
-  }
-
-  /// projectIdの.niaproファイルをディスクから再読み込みする。
-  /// ファイルが存在しない・読み込みに失敗した場合は何もしない（呼び出し元で
-  /// _scenesが空のままになるが、これは元々ファイルが存在しない異常系であり
-  /// これ以上復元しようがないため）。
-  Future<void> _reloadProjectDataFromDisk(String projectId) async {
-    try {
-      final basePath = await NiaproSerializer.projectsBasePath();
-      final niaproFile = File('$basePath/$projectId/$projectId.niapro');
-      if (!niaproFile.existsSync()) return;
-      final data = await NiaproSerializer.load(niaproFile.path);
-      _applyLoadedProjectData(data);
-    } catch (_) {
-      // 読み込み失敗時は何もしない
-    }
   }
 
   int _maxLayerCounter(List<Scene> scenes) {
@@ -2571,6 +2624,18 @@ class ProjectService extends ChangeNotifier {
     return result;
   }
 
+  Future<void> _queueTrash(String id, Future<void> Function() operation) =>
+      _queueFolder(
+        () => _queueProjectSave(id, () async {
+          try {
+            await operation();
+          } catch (error, stackTrace) {
+            AppErrorReporter.record(error, stackTrace);
+            rethrow;
+          }
+        }),
+      );
+
   void _notifyFolders() {
     if (!_folderDisposed) notifyListeners();
   }
@@ -2589,28 +2654,30 @@ class ProjectService extends ChangeNotifier {
   }
 
   Future<void> saveProject(String projectId) =>
-      _queueProjectSave(projectId, () async {
-        final project = _projects.where((p) => p.id == projectId).firstOrNull;
-        final scenes = _scenes[projectId];
-        final tm = _tileManagers[projectId];
-        if (project == null || scenes == null || tm == null) return;
-        final saved = await NiaproSerializer.save(
-          project: project,
-          scenes: scenes,
-          tileManager: tm,
-        );
-        // 容量と最終保存の時刻は、ファイルに書いたものに合わせる。保存は
-        // 描いている間にも走るので、通知はせず次に画面を作るときに使われる
-        // 値だけを更新する。
-        final size = saved.lengthSync();
-        final i = _projects.indexWhere((p) => p.id == projectId);
-        if (i >= 0) {
-          _projects[i] = _projects[i].copyWith(
-            sizeBytes: size,
-            updatedAt: DateTime.now(),
-          );
-        }
-      });
+      _queueProjectSave(projectId, () => _writeProjectFile(projectId));
+
+  Future<void> _writeProjectFile(String projectId) async {
+    final project = _projects.where((p) => p.id == projectId).firstOrNull;
+    final scenes = _scenes[projectId];
+    final tm = _tileManagers[projectId];
+    if (project == null || scenes == null || tm == null) return;
+    final saved = await NiaproSerializer.save(
+      project: project,
+      scenes: scenes,
+      tileManager: tm,
+    );
+    // 容量と最終保存の時刻は、ファイルに書いたものに合わせる。保存は
+    // 描いている間にも走るので、通知はせず次に画面を作るときに使われる
+    // 値だけを更新する。
+    final size = saved.lengthSync();
+    final i = _projects.indexWhere((p) => p.id == projectId);
+    if (i >= 0) {
+      _projects[i] = _projects[i].copyWith(
+        sizeBytes: size,
+        updatedAt: DateTime.now(),
+      );
+    }
+  }
 
   /// [saveProject]と同じ保存。保存できたかを返す（失敗しても例外にしない）。
   Future<bool> _saveReportingSuccess(String projectId) {
@@ -2647,71 +2714,180 @@ class ProjectService extends ChangeNotifier {
     }
   });
 
-  Future<void> deleteProject(String id) async {
+  Future<void> deleteProject(String id) => _queueTrash(id, () async {
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
-      _moveProjectToTrash(idx, DateTime.now());
-      await _persistTrashState();
-      notifyListeners();
+      final project = _projects[idx];
+      // Check inside both queues: a project may become a favorite while a
+      // previous save or Trash operation is still awaiting acknowledgement.
+      if (project.isFavorite) throw const FavoriteProjectDeleteException();
+      final next = {..._trashDeletedAt, id: DateTime.now()};
+      await _persistTrashState(next);
+      _projects.removeAt(idx);
+      _trash.add(project);
+      _scenes.remove(id);
+      _layerIdCounters.remove(id);
+      _layerHomes.remove(id);
+      _tileManagers.remove(id)?.dispose();
+      _trashDeletedAt
+        ..clear()
+        ..addAll(next);
+      _notifyFolders();
     }
-  }
+  });
 
-  /// [index]の作品をゴミ箱へ移す（保存と通知は呼び出し側）。
-  void _moveProjectToTrash(int index, DateTime when) {
+  /// [index]の作品をゴミ箱へ移す（ゴミ箱の記録の保存と通知は呼び出し側）。
+  void _moveProjectToTrash(int index) {
     final project = _projects.removeAt(index);
     final id = project.id;
     _trash.add(project);
     _scenes.remove(id);
     _layerIdCounters.remove(id);
     _layerHomes.remove(id);
-    _trashDeletedAt[id] = when;
+    _tileManagers.remove(id)?.dispose();
   }
 
-  Future<void> restoreProject(String id) async {
+  Future<void> restoreProject(String id) =>
+      _queueTrash(id, () => _restoreProjectNow(id));
+
+  /// [restoreProject]の中身。フォルダの列に並ばないので、フォルダの処理
+  /// （[restoreTrashedFolder]）の中からは作品の保存の列だけを通して呼ぶ。
+  Future<void> _restoreProjectNow(String id) async {
     final idx = _trash.indexWhere((p) => p.id == id);
     if (idx >= 0) {
-      var project = _trash.removeAt(idx);
-      // ゴミ箱にある間に入っていたフォルダが削除されていれば、一番上へ戻す
-      // （消えたフォルダを指したままだと一覧のどこにも出ず、検索でしか
-      // 見つからなかった）。
-      if (project.folderId != null &&
-          !_folders.any((f) => f.id == project.folderId)) {
-        project = project.copyWith(folderId: null);
+      // ゴミ箱にある間にメモリ上で付け替えたサムネイル（複製元の完全削除）。
+      final trashedEntry = _trash[idx];
+      final basePath = await NiaproSerializer.projectsBasePath();
+      ProjectTrashGuard.fileFor(basePath, id);
+      final file = File('$basePath/$id/$id.niapro');
+      late final NiaproData data;
+      try {
+        data = await NiaproSerializer.load(file.path);
+        if (data.project.id != id) {
+          throw const FormatException('Restored project ID does not match');
+        }
+      } catch (_) {
+        try {
+          // Preserve a named, retryable Trash row across restart even when the
+          // unreadable archive cannot supply its own display metadata.
+          await ProjectTrashGuard.write(
+            basePath,
+            _trash[idx],
+            _trashDeletedAt[id] ?? DateTime.now(),
+          );
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+        }
+        rethrow;
       }
-      _projects.add(project);
-      _trashDeletedAt.remove(id);
-      await _persistTrashState();
-      // deleteProject()でメモリ上のシーン・レイヤーホーム索引・タイルマネージャ・
-      // レイヤーIDカウンターを破棄しているため、ディスク上の.niaproファイルから
-      // 再読み込みして復元する（ファイル自体はdeleteProject()時に削除していない）。
-      if (!_scenes.containsKey(id)) {
-        await _reloadProjectDataFromDisk(id);
+      final project = data.project.copyWith(sizeBytes: await file.length());
+      final homes = buildLayerHomeIndex(data.scenes);
+      final counter = _maxLayerCounter(data.scenes);
+      final tm = TileManager(
+        canvasWidth: project.drawingWidth,
+        canvasHeight: project.drawingHeight,
+        compositeCacheMax: _tileCacheBudget,
+      );
+      var committed = false;
+      try {
+        tm.importAll(data.tileData);
+        // A readable archive makes a previous partial-cleanup record unnecessary.
+        // Remove it before changing preferences: a rejected write still leaves
+        // the complete archive and its old Trash membership intact.
+        await ProjectTrashGuard.remove(basePath, id);
+        final next = {..._trashDeletedAt}..remove(id);
+        await _persistTrashState(next);
+        _trash.removeAt(idx);
+        _projects.add(project);
+        _trashDeletedAt
+          ..clear()
+          ..addAll(next);
+        _scenes[id] = data.scenes;
+        _layerHomes[id] = homes;
+        _layerIdCounters[id] = counter;
+        _tileManagers.remove(id)?.dispose();
+        _tileManagers[id] = tm;
+        committed = true;
+        _notifyFolders();
+      } finally {
+        if (!committed) tm.dispose();
       }
-      // ゴミ箱にある間の変更（フォルダ・サムネイルの付け替え）も保存する。
-      _saveAsync(id);
-      notifyListeners();
+      if (committed) {
+        // ゴミ箱にある間に入っていたフォルダが削除されていれば一番上へ戻し
+        // （消えたフォルダを指したままだと一覧のどこにも出ず、検索でしか
+        // 見つからなかった）、ゴミ箱にある間のサムネイルの付け替えも
+        // 合わせて保存する。
+        final i = _projects.indexWhere((p) => p.id == id);
+        if (i >= 0) {
+          var restored = _projects[i];
+          var changed = false;
+          if (trashedEntry.thumbnailPath != null &&
+              trashedEntry.thumbnailPath != restored.thumbnailPath) {
+            restored = restored.copyWith(
+              thumbnailPath: trashedEntry.thumbnailPath,
+            );
+            changed = true;
+          }
+          if (restored.folderId != null &&
+              !_folders.any((f) => f.id == restored.folderId)) {
+            restored = restored.copyWith(folderId: null);
+            changed = true;
+          }
+          if (changed) {
+            _projects[i] = restored;
+            _saveAsync(id);
+          }
+        }
+      }
     }
   }
 
-  Future<void> permanentDelete(String id) async {
+  Future<void> permanentDelete(String id) =>
+      _queueTrash(id, () => _permanentDeleteNow(id));
+
+  /// [permanentDelete]の中身（フォルダの処理の中から呼ぶとき用。
+  /// [_restoreProjectNow]と同じ）。
+  Future<void> _permanentDeleteNow(String id) async {
     final idx = _trash.indexWhere((p) => p.id == id);
     if (idx >= 0) {
+      final project = _trash[idx];
+      // A refused metadata write must stop before touching any content. Keep the
+      // old Trash membership until filesystem deletion succeeds, so a failed
+      // recursive delete never needs a fallible preference rollback.
+      await _persistTrashState(_trashDeletedAt);
+      final basePath = await NiaproSerializer.projectsBasePath();
+      await ProjectTrashGuard.write(
+        basePath,
+        project,
+        _trashDeletedAt[id] ?? DateTime.now(),
+      );
+      final dir = Directory('$basePath/$id');
+      final type = await FileSystemEntity.type(dir.path, followLinks: false);
+      if (type == FileSystemEntityType.directory) {
+        await _keepSharedThumbnails(dir.path);
+        await dir.delete(recursive: true);
+      } else if (type != FileSystemEntityType.notFound) {
+        throw FileSystemException('Project path is not a directory', dir.path);
+      }
       _trash.removeAt(idx);
       _trashDeletedAt.remove(id);
-      await _persistTrashState();
-      // ディスク上のプロジェクトフォルダ（.niapro・自動保存・セーブツリー等）を
-      // 完全に削除する（完全削除は元に戻せない）。
+      _scenes.remove(id);
+      _layerHomes.remove(id);
+      _layerIdCounters.remove(id);
+      _tileManagers.remove(id)?.dispose();
       try {
-        final basePath = await NiaproSerializer.projectsBasePath();
-        final dir = Directory('$basePath/$id');
-        if (dir.existsSync()) {
-          await _keepSharedThumbnails(dir.path);
-          await dir.delete(recursive: true);
-        }
-      } catch (_) {
-        // 削除に失敗してもアプリ側の状態は既に消去済みのため続行する
+        await _persistTrashState(_trashDeletedAt);
+      } catch (error, stackTrace) {
+        // The requested content is already gone. A stale ID cannot resurrect a
+        // missing directory; init() prunes and retries this metadata cleanup.
+        AppErrorReporter.record(error, stackTrace);
       }
-      notifyListeners();
+      try {
+        await ProjectTrashGuard.remove(basePath, id);
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+      }
+      _notifyFolders();
     }
   }
 
@@ -2932,16 +3108,24 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> toggleFavorite(String id) async {
+  Future<void> toggleFavorite(String id) => _queueProjectSave(id, () async {
+    if (_folderDisposed) return;
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
       _projects[idx] = _projects[idx].copyWith(
         isFavorite: !_projects[idx].isFavorite,
       );
-      _saveAsync(id);
-      notifyListeners();
+      _notifyFolders();
+      // A favorite requested during an acknowledged Trash write must wait for
+      // that write rather than display a change that its completion discards.
+      // The file write shares this queue without enqueuing itself recursively.
+      try {
+        await _writeProjectFile(id);
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+      }
     }
-  }
+  });
 
   /// このプロジェクトで使用する自動塗りプリセットを設定する。
   /// プロジェクトごとに使うプリセットだけを選べるようにする。
@@ -3244,12 +3428,42 @@ class ProjectService extends ChangeNotifier {
           ],
           deletedAt: now,
         );
+        // お気に入りの作品は、保護を外すまでゴミ箱へ移さない（作品の一括の
+        // 削除と同じ。フォルダごとでも迂回させない）。
+        if (_projects.any(
+          (p) => record.projectIds.contains(p.id) && p.isFavorite,
+        )) {
+          throw const FavoriteProjectDeleteException();
+        }
+        // ゴミ箱のフォルダの記録→作品のゴミ箱の記録→フォルダの一覧の順に
+        // 保存し、途中で失敗したら保存済みのものを戻して何も変えない。
         try {
           await saveFolderPreference(
             _trashedFoldersPrefsKey,
             _encodeTrashedFolders([..._trashedFolders, record]),
           );
         } catch (error) {
+          throw FolderSaveException(partiallySaved: false, cause: error);
+        }
+        Future<void> forgetRecord() async {
+          try {
+            await saveFolderPreference(
+              _trashedFoldersPrefsKey,
+              _encodeTrashedFolders(_trashedFolders),
+            );
+          } catch (_) {
+            // 残った記録は、起動時にフォルダがまだあれば捨てる。
+          }
+        }
+
+        final next = {
+          ..._trashDeletedAt,
+          for (final id in record.projectIds) id: now,
+        };
+        try {
+          await _persistTrashState(next);
+        } catch (error) {
+          await forgetRecord();
           throw FolderSaveException(partiallySaved: false, cause: error);
         }
         try {
@@ -3259,21 +3473,21 @@ class ProjectService extends ChangeNotifier {
           ]);
         } catch (error) {
           try {
-            await saveFolderPreference(
-              _trashedFoldersPrefsKey,
-              _encodeTrashedFolders(_trashedFolders),
-            );
+            await _persistTrashState(_trashDeletedAt);
           } catch (_) {
-            // 残った記録は、起動時にフォルダがまだあれば捨てる。
+            // 起動時に、ゴミ箱の記録だけ残った作品はフォルダのまま読む。
           }
+          await forgetRecord();
           throw FolderSaveException(partiallySaved: false, cause: error);
         }
         _trashedFolders.add(record);
         for (final id in record.projectIds) {
           final i = _projects.indexWhere((p) => p.id == id);
-          if (i >= 0) _moveProjectToTrash(i, now);
+          if (i >= 0) _moveProjectToTrash(i);
         }
-        await _persistTrashState();
+        _trashDeletedAt
+          ..clear()
+          ..addAll(next);
         _notifyFolders();
         return record;
       });
@@ -3302,8 +3516,16 @@ class ProjectService extends ChangeNotifier {
     }
     _trashedFolders.remove(record);
     await _persistTrashedFolders();
+    // フォルダの列の中なので、作品の保存の列だけを通す（restoreProjectは
+    // フォルダの列に並ぶので、ここから待つと止まる）。戻せなかった作品は
+    // ゴミ箱に1件ずつ残り、そこから戻し直せる。
     for (final id in record.projectIds) {
-      if (_trash.any((p) => p.id == id)) await restoreProject(id);
+      if (!_trash.any((p) => p.id == id)) continue;
+      try {
+        await _queueProjectSave(id, () => _restoreProjectNow(id));
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+      }
     }
     _notifyFolders();
   });
@@ -3317,8 +3539,14 @@ class ProjectService extends ChangeNotifier {
         if (record == null) return;
         _trashedFolders.remove(record);
         await _persistTrashedFolders();
+        // 消せなかった作品はゴミ箱に1件ずつ残り、そこから消し直せる。
         for (final id in record.projectIds) {
-          if (_trash.any((p) => p.id == id)) await permanentDelete(id);
+          if (!_trash.any((p) => p.id == id)) continue;
+          try {
+            await _queueProjectSave(id, () => _permanentDeleteNow(id));
+          } catch (error, stackTrace) {
+            AppErrorReporter.record(error, stackTrace);
+          }
         }
         _notifyFolders();
       });

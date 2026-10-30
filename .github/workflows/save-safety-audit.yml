@@ -22,6 +22,14 @@ on:
       - "test/project_folder_edit_ui_test.dart"
       - "test/shared_empty_folder_widget_test.dart"
       - "test/home_library_sort_layout_test.dart"
+      - "test/project_trash_persistence_test.dart"
+      - "test/project_trash_recovery_test.dart"
+      - "test/project_trash_dialog_test.dart"
+      - "test/project_favorite_delete_guard_test.dart"
+      - "lib/utils/project_trash_guard.dart"
+      - "lib/widgets/project_trash_dialog.dart"
+      - "assets/fonts/**"
+      - "test/font_coverage_test.dart"
       - "lib/widgets/sort_mode_control.dart"
       - "test/community_milestone_account_boundary_test.dart"
       - "lib/screens/community/community_work_settings_screen.dart"
@@ -197,7 +205,7 @@ jobs:
         run: |
           mkdir -p artifacts/save-safety
           set -o pipefail
-          flutter test --no-pub --reporter expanded test/project_save_safety_test.dart test/project_folder_persistence_test.dart test/project_folder_transaction_test.dart test/project_folder_edit_ui_test.dart test/shared_empty_folder_widget_test.dart test/home_library_sort_layout_test.dart test/tile_manager_test.dart test/save_slot_overwrite_test.dart test/save_slot_confirmation_dialog_test.dart test/save_slot_action_buttons_test.dart test/save_tree_lazy_list_test.dart 2>&1 | tee artifacts/save-safety/green.log
+          flutter test --no-pub --reporter expanded test/project_save_safety_test.dart test/project_folder_persistence_test.dart test/project_folder_transaction_test.dart test/project_folder_edit_ui_test.dart test/shared_empty_folder_widget_test.dart test/home_library_sort_layout_test.dart test/project_trash_persistence_test.dart test/project_trash_recovery_test.dart test/project_trash_dialog_test.dart test/project_favorite_delete_guard_test.dart test/tile_manager_test.dart test/save_slot_overwrite_test.dart test/save_slot_confirmation_dialog_test.dart test/save_slot_action_buttons_test.dart test/save_tree_lazy_list_test.dart 2>&1 | tee artifacts/save-safety/green.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:

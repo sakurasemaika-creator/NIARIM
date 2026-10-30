@@ -29,6 +29,7 @@ import '../../../widgets/checked_menu_item.dart';
 import '../../../widgets/empty_state_placeholder.dart';
 import '../../../widgets/moved_to_trash_snack_bar.dart';
 import '../../../widgets/name_entry_dialog.dart';
+import '../../../widgets/project_trash_dialog.dart';
 import '../../../utils/app_error_reporter.dart';
 import '../../../utils/folder_persistence.dart';
 import 'folder_save_feedback.dart';
@@ -1370,11 +1371,11 @@ class ProjectListWidget extends StatelessWidget {
   }
 
   /// お気に入り登録中は削除できない。
-  void _deleteProject(
+  Future<void> _deleteProject(
     BuildContext context,
     ProjectService service,
     Project project,
-  ) {
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     if (project.isFavorite) {
@@ -1383,10 +1384,15 @@ class ProjectListWidget extends StatelessWidget {
       );
       return;
     }
-    service.deleteProject(project.id);
-    // ゴミ箱へ移したことを伝え、その場で戻せるようにする（以前は何も
-    // 表示されず、一覧から消えるだけだった）。
-    showMovedToTrashSnackBar(messenger, l10n, service, [project.id]);
+    // 保存できたときだけ、ゴミ箱へ移したことを伝えてその場で戻せるようにする
+    // （失敗はrunProjectTrashActionが伝える）。
+    final moved = await runProjectTrashAction(
+      context,
+      () => service.deleteProject(project.id),
+    );
+    if (moved) {
+      showMovedToTrashSnackBar(messenger, l10n, service, [project.id]);
+    }
   }
 
   Future<void> _handleFolderAction(

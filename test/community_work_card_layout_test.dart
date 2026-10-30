@@ -155,13 +155,32 @@ void main() {
                   lessThanOrEqualTo(10),
                   reason: scope,
                 );
-                expect((buttonRect.center.dx - menuRect.center.dx).abs(), lessThan(3), reason: scope);
-                expect(buttonRect.top, greaterThanOrEqualTo(menuRect.bottom - 1), reason: scope);
+                expect(
+                  (buttonRect.center.dx - menuRect.center.dx).abs(),
+                  lessThan(3),
+                  reason: scope,
+                );
+                expect(
+                  buttonRect.top,
+                  greaterThanOrEqualTo(menuRect.bottom - 1),
+                  reason: scope,
+                );
                 final l10n = AppLocalizations.of(
                   tester.element(find.byType(CommunityWorkGrid)),
                 )!;
+                final bookmarkSemantics = find.ancestor(
+                  of: bookmark,
+                  matching: find.byWidgetPredicate(
+                    (widget) =>
+                        widget is Semantics &&
+                        widget.properties.toggled == true &&
+                        widget.properties.label ==
+                            l10n.communityWorkDetailBookmarkRemove,
+                  ),
+                );
+                expect(bookmarkSemantics, findsOneWidget, reason: scope);
                 expect(
-                  tester.getSemantics(bookmark).label,
+                  tester.getSemantics(bookmarkSemantics).label,
                   contains(l10n.communityWorkDetailBookmarkRemove),
                   reason: scope,
                 );
@@ -251,8 +270,15 @@ void main() {
       tester.getRect(bookmark).top,
       greaterThanOrEqualTo(thumbnail.bottom),
     );
-    expect((tester.getRect(menu).center.dx - tester.getRect(bookmark).center.dx).abs(), lessThan(3));
-    expect(tester.getRect(bookmark).top, greaterThanOrEqualTo(tester.getRect(menu).bottom - 1));
+    expect(
+      (tester.getRect(menu).center.dx - tester.getRect(bookmark).center.dx)
+          .abs(),
+      lessThan(3),
+    );
+    expect(
+      tester.getRect(bookmark).top,
+      greaterThanOrEqualTo(tester.getRect(menu).bottom - 1),
+    );
     // Smaller artwork, preserved 48dp touch target.
     final action = tester.widget<IconButton>(bookmark);
     expect(action.iconSize, 22);

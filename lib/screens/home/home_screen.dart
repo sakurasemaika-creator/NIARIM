@@ -34,6 +34,7 @@ import '../../models/shortcut_binding.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
+import '../../widgets/project_trash_dialog.dart';
 import 'widgets/exported_work_card.dart';
 import 'widgets/exported_work_preview_layout.dart';
 import 'widgets/folder_delete_dialog.dart';
@@ -1005,113 +1006,117 @@ class _HomeScreenState extends State<HomeScreen>
   void _deleteSelected() {
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<ProjectService>();
-    final selected = service.projects
-        .where((p) => _selectedIds.contains(p.id))
-        .toList();
-    final targetIds = [
-      for (final p in selected)
-        if (!p.isFavorite) p.id,
-    ];
+    final projectIds = service.projects.map((p) => p.id).toSet();
+    final targetIds = _selectedIds.where(projectIds.contains).toList();
     // フォルダは中身（下の階層のフォルダ・作品）ごとゴミ箱へ移す。
-    final selectedFolders = service.folders
-        .where((f) => _selectedIds.contains(f.id))
-        .toList();
     final folderIds = [
-      for (final f in selectedFolders)
-        if (!f.isFavorite) f.id,
+      for (final f in service.folders)
+        if (_selectedIds.contains(f.id)) f.id,
     ];
-    final skippedFavorites =
-        selected.length -
-        targetIds.length +
-        selectedFolders.length -
-        folderIds.length;
-    final inside = {
+    Set<String> inside() => {
       for (final id in folderIds) ...service.folderSubtreeIds(id),
     };
-    final contentFolders = inside.difference(folderIds.toSet()).length;
-    final contentProjects = service.projects
-        .where(
-          (p) =>
-              !p.isSharedImport &&
-              inside.contains(p.folderId) &&
-              !targetIds.contains(p.id),
-        )
-        .length;
+    // お気に入りは、選んだ作品でもフォルダの中の作品でも、保護を外すまで
+    // ゴミ箱へ移さない。
+    bool includesFavorite() {
+      final folders = inside();
+      return service.projects.any(
+        (p) =>
+            p.isFavorite &&
+            (targetIds.contains(p.id) ||
+                (!p.isSharedImport && folders.contains(p.folderId))),
+      );
+    }
+
     final messenger = ScaffoldMessenger.of(context);
+    if (includesFavorite()) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+        );
+      return;
+    }
     if (targetIds.isEmpty && folderIds.isEmpty) {
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(l10n.homeMoveToTrashNothing)));
       return;
     }
+    final folders = inside();
+    final contentFolders = folders.difference(folderIds.toSet()).length;
+    final contentProjects = service.projects
+        .where(
+          (p) =>
+              !p.isSharedImport &&
+              folders.contains(p.folderId) &&
+              !targetIds.contains(p.id),
+        )
+        .length;
+    // まだ移していないもの（途中で失敗したとき、残りだけを出してやり直す）。
+    List<String> pendingFolders() => [
+      for (final f in service.folders)
+        if (folderIds.contains(f.id)) f.name,
+    ];
+    List<String> pendingProjects() => [
+      for (final p in service.projects)
+        if (targetIds.contains(p.id)) p.name,
+    ];
+    final movedFolders = <String>[];
+    final movedProjects = <String>[];
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.homeMoveToTrash),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.homeMoveToTrashConfirm(targetIds.length + folderIds.length),
+      builder: (_) => ProjectTrashDialog(
+        title: l10n.homeMoveToTrash,
+        message: [
+          l10n.homeMoveToTrashConfirm(targetIds.length + folderIds.length),
+          if (contentProjects + contentFolders > 0)
+            l10n.homeMoveToTrashFolderContents(
+              l10n.homeFolderContents(contentProjects, contentFolders),
             ),
-            if (contentProjects + contentFolders > 0) ...[
-              const SizedBox(height: 8),
-              Text(
-                l10n.homeMoveToTrashFolderContents(
-                  l10n.homeFolderContents(contentProjects, contentFolders),
-                ),
-              ),
-            ],
-            if (skippedFavorites > 0) ...[
-              const SizedBox(height: 8),
-              Text(l10n.homeMoveToTrashSkipFavorites(skippedFavorites)),
-            ],
-          ],
+        ].join('\n'),
+        confirmLabel: l10n.commonMove,
+        itemNames: const [],
+        pendingMessage: () => l10n.homeMoveToTrashConfirm(
+          pendingFolders().length + pendingProjects().length,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
-            onPressed: () async {
-              // 閉じる途中にもう一度押されても二重に動かさない。
-              if (!(ModalRoute.of(ctx)?.isCurrent ?? false)) return;
-              Navigator.pop(ctx);
-              _exitSelection();
-              // フォルダを先に移す（選んだ作品がそのフォルダの中なら、
-              // フォルダと一緒にゴミ箱へ入り、フォルダごと戻せる）。
-              final movedFolders = <String>[];
-              for (final id in folderIds) {
-                if (await service.moveFolderToTrash(id) != null) {
-                  movedFolders.add(id);
-                }
-              }
-              final live = {for (final p in service.projects) p.id};
-              final movedProjects = [
-                for (final id in targetIds)
-                  if (live.contains(id)) id,
-              ];
-              for (final id in movedProjects) {
-                await service.deleteProject(id);
-              }
-              showMovedToTrashSnackBar(
-                messenger,
-                l10n,
-                service,
-                movedProjects,
-                folderIds: movedFolders,
-              );
-            },
-            child: Text(l10n.commonMove),
-          ),
-        ],
+        pendingItemNames: () => [...pendingFolders(), ...pendingProjects()],
+        onApply: () async {
+          // Validate the whole current selection before moving the first item.
+          // The service also enforces protection when each queued write runs.
+          if (includesFavorite()) throw const FavoriteProjectDeleteException();
+          // フォルダを先に移す（選んだ作品がそのフォルダの中なら、フォルダと
+          // 一緒にゴミ箱へ入り、フォルダごと戻せる）。
+          for (final id in folderIds) {
+            if (movedFolders.contains(id)) continue;
+            if (await service.moveFolderToTrash(id) != null) {
+              movedFolders.add(id);
+            }
+          }
+          for (final id in targetIds) {
+            if (!service.projects.any((p) => p.id == id)) continue;
+            await service.deleteProject(id);
+            movedProjects.add(id);
+            if (mounted) {
+              setState(() {
+                _selectedIds.remove(id);
+                _isSelectionMode = _selectedIds.isNotEmpty;
+              });
+            }
+          }
+        },
       ),
-    );
+    ).then((_) {
+      if (movedFolders.isEmpty && movedProjects.isEmpty) return;
+      if (mounted) _exitSelection();
+      showMovedToTrashSnackBar(
+        messenger,
+        l10n,
+        service,
+        movedProjects,
+        folderIds: movedFolders,
+      );
+    });
   }
 
   /// 現在開いているフォルダ直下のプロジェクト・フォルダを両方選択する
@@ -2217,7 +2222,7 @@ class _FolderableList<T> extends StatelessWidget {
   }
 }
 
-class _TrashTab extends StatelessWidget {
+class _TrashTab extends StatefulWidget {
   final ProjectSortMode sortMode;
 
   const _TrashTab({required this.sortMode});
@@ -2226,12 +2231,46 @@ class _TrashTab extends StatelessWidget {
       '${d.year}/${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}';
 
   @override
+  State<_TrashTab> createState() => _TrashTabState();
+}
+
+class _TrashTabState extends State<_TrashTab> {
+  // 戻している・消している最中の作品・フォルダ（二重に押させない）。
+  final _pending = <String>{};
+  final _restoring = <String>{};
+
+  Future<void> _run(
+    String id,
+    Future<void> Function() action, {
+    bool restoring = false,
+  }) async {
+    if (_pending.contains(id)) return;
+    setState(() {
+      _pending.add(id);
+      if (restoring) _restoring.add(id);
+    });
+    try {
+      await runProjectTrashAction(context, action);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _pending.remove(id);
+          _restoring.remove(id);
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final service = context.watch<ProjectService>();
     // フォルダと一緒に移した作品はフォルダの中に出し、1件ずつは出さない
     // （フォルダごとまとめて戻す・消す）。
-    final folders = _sortTrashedFolders(service.trashedFolders, sortMode);
-    final trash = _sortProjects(service.looseTrash, sortMode);
+    final folders = _sortTrashedFolders(
+      service.trashedFolders,
+      widget.sortMode,
+    );
+    final trash = _sortProjects(service.looseTrash, widget.sortMode);
     final l10n = AppLocalizations.of(context)!;
     if (trash.isEmpty && folders.isEmpty) {
       return EmptyStatePlaceholder(
@@ -2243,23 +2282,38 @@ class _TrashTab extends StatelessWidget {
       itemCount: folders.length + trash.length,
       itemBuilder: (context, index) {
         if (index < folders.length) {
-          return _TrashedFolderCard(record: folders[index]);
+          final record = folders[index];
+          final id = record.folder.id;
+          return _TrashedFolderCard(
+            record: record,
+            pending: _pending.contains(id),
+            restoring: _restoring.contains(id),
+            onRestore: () => _run(
+              id,
+              () => service.restoreTrashedFolder(id),
+              restoring: true,
+            ),
+            onDelete: (dialog) => _run(id, dialog),
+          );
         }
         final project = trash[index - folders.length];
-        final deletedAt = context.read<ProjectService>().deletedAtOf(
-          project.id,
-        );
+        final deletedAt = service.deletedAtOf(project.id);
         final deletedLabel = deletedAt == null
             ? ''
-            : l10n.homeTrashDeletedOn(_date(deletedAt));
+            : l10n.homeTrashDeletedOn(_TrashTab._date(deletedAt));
         final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
         return _TrashCard(
           actions: _TrashActions(
             restoreKey: ValueKey('trashedProjectRestore_${project.id}'),
             deleteKey: ValueKey('trashedProjectDelete_${project.id}'),
-            onRestore: () =>
-                context.read<ProjectService>().restoreProject(project.id),
-            onDelete: () => _confirmPermanentDelete(context, project.id),
+            pending: _pending.contains(project.id),
+            restoring: _restoring.contains(project.id),
+            onRestore: () => _run(
+              project.id,
+              () => service.restoreProject(project.id),
+              restoring: true,
+            ),
+            onDelete: () => _confirmPermanentDelete(project),
           ),
           details: ({Widget? trailing}) => ListTile(
             // ボタンを名前の右に並べるときは、作品とフォルダのカードで同じく
@@ -2290,31 +2344,25 @@ class _TrashTab extends StatelessWidget {
     );
   }
 
-  void _confirmPermanentDelete(BuildContext context, String id) {
+  Future<void> _confirmPermanentDelete(Project project) async {
+    if (_pending.contains(project.id)) return;
     final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.homePermanentDeleteConfirmTitle),
-        content: Text(l10n.homePermanentDeleteConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
-            onPressed: () {
-              context.read<ProjectService>().permanentDelete(id);
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonDelete),
-          ),
-        ],
-      ),
-    );
+    final service = context.read<ProjectService>();
+    setState(() => _pending.add(project.id));
+    try {
+      await showDialog<bool>(
+        context: context,
+        builder: (_) => ProjectTrashDialog(
+          title: l10n.homePermanentDeleteConfirmTitle,
+          message: l10n.homePermanentDeleteConfirmBody,
+          confirmLabel: l10n.commonDelete,
+          itemNames: [project.name],
+          onApply: () => service.permanentDelete(project.id),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _pending.remove(project.id));
+    }
   }
 }
 
@@ -2374,18 +2422,23 @@ class _TrashCard extends StatelessWidget {
   );
 }
 
-/// ゴミ箱のカードの「復元」「完全削除」（押しやすい48px以上）。
+/// ゴミ箱のカードの「復元」「完全削除」（押しやすい48px以上）。処理中は
+/// どちらも押せず、戻している間は「復元」が処理中の表示になる。
 class _TrashActions {
   final Key restoreKey;
   final Key deleteKey;
   final VoidCallback onRestore;
   final VoidCallback onDelete;
+  final bool pending;
+  final bool restoring;
 
   const _TrashActions({
     required this.restoreKey,
     required this.deleteKey,
     required this.onRestore,
     required this.onDelete,
+    this.pending = false,
+    this.restoring = false,
   });
 
   List<Widget> buttons(BuildContext context) {
@@ -2397,17 +2450,18 @@ class _TrashActions {
           minimumSize: const Size(48, 48),
           visualDensity: VisualDensity.standard,
         ),
-        onPressed: onRestore,
-        child: Text(l10n.commonRestore),
+        onPressed: pending ? null : onRestore,
+        child: Text(restoring ? l10n.homeTrashWorking : l10n.commonRestore),
       ),
       TextButton(
         key: deleteKey,
         style: TextButton.styleFrom(
           minimumSize: const Size(48, 48),
           visualDensity: VisualDensity.standard,
-          foregroundColor: ThemeService.activeColorScheme.error,
+          // 背景の上の差し色の文字（案A）。
+          foregroundColor: AccentTextTheme.of(context),
         ),
-        onPressed: onDelete,
+        onPressed: pending ? null : onDelete,
         child: Text(l10n.homePermanentDelete),
       ),
     ];
@@ -2418,8 +2472,20 @@ class _TrashActions {
 /// 完全に削除する。
 class _TrashedFolderCard extends StatelessWidget {
   final TrashedFolder record;
+  final bool pending;
+  final bool restoring;
+  final VoidCallback onRestore;
 
-  const _TrashedFolderCard({required this.record});
+  /// 完全に削除する確認を、処理中の表示を出したまま開く。
+  final void Function(Future<void> Function() dialog) onDelete;
+
+  const _TrashedFolderCard({
+    required this.record,
+    required this.onRestore,
+    required this.onDelete,
+    this.pending = false,
+    this.restoring = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -2438,11 +2504,16 @@ class _TrashedFolderCard extends StatelessWidget {
       actions: _TrashActions(
         restoreKey: ValueKey('trashedFolderRestore_${folder.id}'),
         deleteKey: ValueKey('trashedFolderDelete_${folder.id}'),
-        onRestore: () => service.restoreTrashedFolder(folder.id),
-        onDelete: () => _confirmPermanentDelete(
-          context,
-          projects.length,
-          record.subfolders.length,
+        pending: pending,
+        restoring: restoring,
+        onRestore: onRestore,
+        onDelete: () => onDelete(
+          () => _confirmPermanentDelete(
+            context,
+            service,
+            projects.length,
+            record.subfolders.length,
+          ),
         ),
       ),
       details: ({Widget? trailing}) => ListTile(
@@ -2488,49 +2559,27 @@ class _TrashedFolderCard extends StatelessWidget {
     );
   }
 
-  void _confirmPermanentDelete(
+  Future<void> _confirmPermanentDelete(
     BuildContext context,
+    ProjectService service,
     int projects,
     int folders,
-  ) {
+  ) async {
     final l10n = AppLocalizations.of(context)!;
-    final service = context.read<ProjectService>();
-    showDialog(
+    await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.homePermanentDeleteConfirmTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.homeTrashFolderPermanentDeleteBody(record.folder.name)),
-            if (projects + folders > 0) ...[
-              const SizedBox(height: 8),
-              Text(
-                l10n.homeTrashFolderPermanentDeleteContents(
-                  l10n.homeFolderContents(projects, folders),
-                ),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
+      builder: (_) => ProjectTrashDialog(
+        title: l10n.homePermanentDeleteConfirmTitle,
+        message: [
+          l10n.homeTrashFolderPermanentDeleteBody(record.folder.name),
+          if (projects + folders > 0)
+            l10n.homeTrashFolderPermanentDeleteContents(
+              l10n.homeFolderContents(projects, folders),
             ),
-            onPressed: () {
-              if (!(ModalRoute.of(ctx)?.isCurrent ?? false)) return;
-              service.permanentDeleteTrashedFolder(record.folder.id);
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonDelete),
-          ),
-        ],
+        ].join('\n'),
+        confirmLabel: l10n.commonDelete,
+        itemNames: [record.folder.name],
+        onApply: () => service.permanentDeleteTrashedFolder(record.folder.id),
       ),
     );
   }

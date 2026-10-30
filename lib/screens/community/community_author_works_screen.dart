@@ -126,9 +126,14 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     }
     final service = context.read<CommunityService>();
     if (service.api == null) {
-      final count = _videoTypeFilter.apply(service.worksByAuthor(
-        widget.authorId, includeHidden: service.isOwnAuthor(widget.authorId),
-      )).length;
+      final count = _videoTypeFilter
+          .apply(
+            service.worksByAuthor(
+              widget.authorId,
+              includeHidden: service.isOwnAuthor(widget.authorId),
+            ),
+          )
+          .length;
       if (_visibleWorks < count) {
         setState(() => _visibleWorks += CommunityService.pageSize);
       }
@@ -141,7 +146,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     if (_loadingMoreWorks) return;
     setState(() => _loadingMoreWorks = true);
     try {
-      await context.read<CommunityService>().loadMoreAuthorWorks(widget.authorId);
+      await context.read<CommunityService>().loadMoreAuthorWorks(
+        widget.authorId,
+      );
     } finally {
       if (mounted) setState(() => _loadingMoreWorks = false);
     }
@@ -213,7 +220,10 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     // 「作品」タブの一覧・縦画面モードにのみ「総合/縦画面のみ/横画面のみ」
     // 絞り込みを適用する。投稿数の表示（works.length）は絞り込みの影響を
     // 受けない総数のままにする。
-    final filteredWorks = _videoTypeFilter.apply(works).take(_visibleWorks).toList();
+    final filteredWorks = _videoTypeFilter
+        .apply(works)
+        .take(_visibleWorks)
+        .toList();
     final followerCount = communityService.followerCountOf(widget.authorId);
     final followingCount = communityService.followingCountOf(widget.authorId);
     final bookmarkedIds = communityService.bookmarkedIds;
@@ -391,12 +401,22 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                         ),
                                       ),
                                     ),
-                                    if (communityService.hasMoreAuthor(widget.authorId))
+                                    if (communityService.hasMoreAuthor(
+                                      widget.authorId,
+                                    ))
                                       TextButton.icon(
-                                        key: const Key('communityAuthorLoadNextPage'),
-                                        onPressed: _loadingMoreWorks ? null : _loadMoreAuthorWorks,
+                                        key: const Key(
+                                          'communityAuthorLoadNextPage',
+                                        ),
+                                        onPressed: _loadingMoreWorks
+                                            ? null
+                                            : _loadMoreAuthorWorks,
                                         icon: const Icon(Icons.expand_more),
-                                        label: Text(MaterialLocalizations.of(context).moreButtonTooltip),
+                                        label: Text(
+                                          MaterialLocalizations.of(
+                                            context,
+                                          ).moreButtonTooltip,
+                                        ),
                                       ),
                                   ],
                                 )
@@ -434,14 +454,26 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                               children: [
                                 Padding(
                                   padding: const EdgeInsets.all(32),
-                                  child: Center(child: Text(l10n.communityNoWorksMessage)),
+                                  child: Center(
+                                    child: Text(l10n.communityNoWorksMessage),
+                                  ),
                                 ),
-                                if (communityService.hasMoreAuthor(widget.authorId))
+                                if (communityService.hasMoreAuthor(
+                                  widget.authorId,
+                                ))
                                   TextButton.icon(
-                                    key: const Key('communityAuthorLoadNextPage'),
-                                    onPressed: _loadingMoreWorks ? null : _loadMoreAuthorWorks,
+                                    key: const Key(
+                                      'communityAuthorLoadNextPage',
+                                    ),
+                                    onPressed: _loadingMoreWorks
+                                        ? null
+                                        : _loadMoreAuthorWorks,
                                     icon: const Icon(Icons.expand_more),
-                                    label: Text(MaterialLocalizations.of(context).moreButtonTooltip),
+                                    label: Text(
+                                      MaterialLocalizations.of(
+                                        context,
+                                      ).moreButtonTooltip,
+                                    ),
                                   ),
                               ],
                             )

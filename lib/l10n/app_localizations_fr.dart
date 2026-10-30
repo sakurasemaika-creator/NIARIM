@@ -71,12 +71,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeAddSheetNewFolder => 'Nouveau dossier';
 
   @override
-  String get homeAddTooltip => 'Créer';
-
-  @override
-  String get commonShowExplanation => 'Afficher l’explication';
-
-  @override
   String get homeSelectionAllSelect => 'Tout sélectionner';
 
   @override
@@ -129,9 +123,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => 'Détails';
-
-  @override
-  String get homeViewModeTooltip => 'Taille d’affichage';
 
   @override
   String get homeSortFieldName => 'Nom';
@@ -397,63 +388,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String homeMoveToTrashSkipFavorites(int count) {
-    return '$count élément(s) favori(s) resteront en place (retirez-les des favoris pour les déplacer).';
-  }
-
-  @override
-  String get homeMoveToTrashNothing =>
-      'Rien à mettre à la corbeille (les favoris ne sont pas déplacés).';
-
-  @override
-  String homeMovedToTrashSnackbar(int count) {
-    return '$count élément(s) mis à la corbeille';
-  }
-
-  @override
-  String get homeUndoAction => 'Annuler';
-
-  @override
-  String homeCutSnackbar(int count) {
-    return '$count élément(s) coupé(s). Ouvrez la destination et touchez Coller en haut à droite.';
-  }
-
-  @override
-  String homeCopiedSnackbar(int count) {
-    return '$count élément(s) copié(s). Ouvrez l’emplacement voulu et touchez Coller en haut à droite.';
-  }
-
-  @override
-  String homePastedSnackbar(int count) {
-    return '$count élément(s) collé(s)';
-  }
-
-  @override
-  String homePasteSkippedIntoSelf(int count) {
-    return '$count dossier(s) ne peuvent pas être déplacés dans eux-mêmes ou leurs sous-dossiers ; ils restent coupés pour être collés ailleurs.';
-  }
-
-  @override
-  String homePasteSkippedMissing(int count) {
-    return '$count élément(s) n’ont pas pu être collés car l’original n’existe plus (corbeille ou supprimé).';
-  }
-
-  @override
-  String get homePasteFailed =>
-      'Certains éléments n’ont pas pu être collés. Réessayez.';
-
-  @override
-  String get homeCutPendingHint => 'Coupé, en attente de collage';
-
-  @override
-  String projectDuplicateName(String name) {
-    return '$name (copie)';
-  }
-
-  @override
-  String projectDuplicateNameNumbered(String name, int number) {
-    return '$name (copie $number)';
-  }
+  String get homePasteSnackbar => 'Collé';
 
   @override
   String get commonOk => 'OK';
@@ -540,9 +475,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeDrawerTips => 'Astuces';
-
-  @override
-  String get homeDrawerTutorial => 'Mode d\'emploi';
 
   @override
   String get homeDrawerPremium => 'Premium';
@@ -2735,9 +2667,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeColorAccent => 'Couleur d\'accent';
 
   @override
-  String get themeColorAccentText => 'Couleur du texte et des icônes d\'accent';
-
-  @override
   String get themeColorText => 'Couleur du texte courant';
 
   @override
@@ -3060,6 +2989,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => 'Modifier la taille';
 
   @override
+  String get canvasSizePresetDuplicateSuffix => 'copie';
+
+  @override
   String newProjectDurationLabel(String max) {
     return 'Durée (max $max)';
   }
@@ -3334,9 +3266,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get projectDetailNotFoundBody => 'Projet introuvable';
-
-  @override
-  String get projectDetailNotFoundBackToList => 'Aller aux projets';
 
   @override
   String get projectDetailFirstFrameTooltip => 'Première image';
@@ -3765,45 +3694,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get projectListEmptyHint => 'Appuyez sur + pour en créer un';
-
-  @override
-  String projectListNoMatchTitle(String query) {
-    return 'Aucun résultat pour « $query »';
-  }
-
-  @override
-  String get projectListNoMatchNameHint =>
-      'Recherche dans les noms de tous les dossiers, sans distinguer majuscules et minuscules ni caractères pleine et demi-chasse.';
-
-  @override
-  String get projectListNoMatchTagHint =>
-      'Recherche dans les étiquettes des œuvres de tous les dossiers.';
-
-  @override
-  String get projectListClearSearch => 'Effacer la recherche';
-
-  @override
-  String get projectListNoFavoritesTitle => 'Aucun favori ici';
-
-  @override
-  String get projectListNoFavoritesHint =>
-      'Choisissez « Ajouter aux favoris » dans le menu d’une œuvre ou d’un dossier pour l’afficher ici.';
-
-  @override
-  String get projectListShowAll => 'Tout afficher';
-
-  @override
-  String get projectListEmptyFolderTitle => 'Ce dossier est vide';
-
-  @override
-  String projectListUpdatedOn(String date) {
-    return 'Modifié le $date';
-  }
-
-  @override
-  String projectListInFolder(String path) {
-    return 'Dans $path';
-  }
 
   @override
   String get projectListOpenAction => 'Ouvrir';
@@ -6494,9 +6384,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityWorkDetailTitle => 'Détails de l\'œuvre';
 
   @override
-  String get communityWorkNotFoundMessage => 'Cette œuvre est introuvable';
-
-  @override
   String get communityWorkHiddenByFilterMessage =>
       'Cette œuvre est masquée par vos filtres d’affichage';
 
@@ -8108,6 +7995,215 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible de charger vos créations exportées';
 
   @override
+  String get newProjectCreating => 'Création en cours…';
+
+  @override
+  String get newProjectCreateFailed =>
+      'Impossible d’enregistrer le projet. Vérifiez l’espace de stockage et l’emplacement d’enregistrement, puis réessayez.';
+
+  @override
+  String get communityCreatorLabel => 'Créateur';
+
+  @override
+  String get communityThresholdAny => 'Aucune condition';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return 'Au moins $count vues';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return 'Au moins $count favoris';
+  }
+
+  @override
+  String get communityTileSize => 'Taille des œuvres';
+
+  @override
+  String get communityMutedWordsEmpty => 'Aucun mot-clé masqué';
+
+  @override
+  String get communityMutedTagsEmpty => 'Aucun tag masqué';
+
+  @override
+  String get communityMuteShort => 'Masquer';
+
+  @override
+  String get communityMuteConfirmTitle => 'Masquer ce créateur ?';
+
+  @override
+  String get communityMuteConfirmBody =>
+      'Les œuvres de ce créateur ne seront plus affichées.';
+
+  @override
+  String get communityMuteConfirmAction => 'Masquer';
+
+  @override
+  String get communityUnmuteConfirmTitle => 'Réafficher ce créateur ?';
+
+  @override
+  String get communityUnmuteConfirmAction => 'Réafficher';
+
+  @override
+  String get communityMuteNo => 'Non';
+
+  @override
+  String get communityMuteDone => 'Créateur masqué';
+
+  @override
+  String get communityUnmuteDone => 'Créateur réaffiché';
+
+  @override
+  String get communityMilestoneNotificationsTitle => 'Notifications';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return 'Vous avez atteint $count abonnés';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '« $title » a atteint $count favoris';
+  }
+
+  @override
+  String get communitySearchHistory => 'Historique de recherche';
+
+  @override
+  String get communitySearchHistoryEmpty => 'Aucun historique';
+
+  @override
+  String get communityDeleteSavedSearchConfirm =>
+      'Supprimer cette recherche enregistrée ?';
+
+  @override
+  String get communitySortLabel => 'Trier';
+
+  @override
+  String get homeTrashOperationFailed =>
+      'L’opération n’a pas pu être terminée. Vérifiez votre stockage et réessayez.';
+
+  @override
+  String get homeTrashWorking => 'Traitement…';
+
+  @override
+  String get homeAddTooltip => 'Créer';
+
+  @override
+  String get commonShowExplanation => 'Afficher l’explication';
+
+  @override
+  String get homeViewModeTooltip => 'Taille d’affichage';
+
+  @override
+  String homeMoveToTrashSkipFavorites(int count) {
+    return '$count élément(s) favori(s) resteront en place (retirez-les des favoris pour les déplacer).';
+  }
+
+  @override
+  String get homeMoveToTrashNothing =>
+      'Rien à mettre à la corbeille (les favoris ne sont pas déplacés).';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '$count élément(s) mis à la corbeille';
+  }
+
+  @override
+  String get homeUndoAction => 'Annuler';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '$count élément(s) coupé(s). Ouvrez la destination et touchez Coller en haut à droite.';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '$count élément(s) copié(s). Ouvrez l’emplacement voulu et touchez Coller en haut à droite.';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '$count élément(s) collé(s)';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count dossier(s) ne peuvent pas être déplacés dans eux-mêmes ou leurs sous-dossiers ; ils restent coupés pour être collés ailleurs.';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '$count élément(s) n’ont pas pu être collés car l’original n’existe plus (corbeille ou supprimé).';
+  }
+
+  @override
+  String get homePasteFailed =>
+      'Certains éléments n’ont pas pu être collés. Réessayez.';
+
+  @override
+  String get homeCutPendingHint => 'Coupé, en attente de collage';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (copie)';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name (copie $number)';
+  }
+
+  @override
+  String get homeDrawerTutorial => 'Mode d\'emploi';
+
+  @override
+  String get themeColorAccentText => 'Couleur du texte et des icônes d\'accent';
+
+  @override
+  String get projectDetailNotFoundBackToList => 'Aller aux projets';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return 'Aucun résultat pour « $query »';
+  }
+
+  @override
+  String get projectListNoMatchNameHint =>
+      'Recherche dans les noms de tous les dossiers, sans distinguer majuscules et minuscules ni caractères pleine et demi-chasse.';
+
+  @override
+  String get projectListNoMatchTagHint =>
+      'Recherche dans les étiquettes des œuvres de tous les dossiers.';
+
+  @override
+  String get projectListClearSearch => 'Effacer la recherche';
+
+  @override
+  String get projectListNoFavoritesTitle => 'Aucun favori ici';
+
+  @override
+  String get projectListNoFavoritesHint =>
+      'Choisissez « Ajouter aux favoris » dans le menu d’une œuvre ou d’un dossier pour l’afficher ici.';
+
+  @override
+  String get projectListShowAll => 'Tout afficher';
+
+  @override
+  String get projectListEmptyFolderTitle => 'Ce dossier est vide';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return 'Modifié le $date';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return 'Dans $path';
+  }
+
+  @override
   String get homeProjectsLoadFailed => 'Impossible de charger vos projets';
 
   @override
@@ -8132,16 +8228,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get errorLogClear => 'Effacer le journal';
-
-  @override
-  String get newProjectCreating => 'Création en cours…';
-
-  @override
-  String get newProjectCreateFailed =>
-      'Impossible d’enregistrer le projet. Vérifiez l’espace de stockage et l’emplacement d’enregistrement, puis réessayez.';
-
-  @override
-  String get communityCreatorLabel => 'Créateur';
 
   @override
   String get tutorialSkip => 'Passer';
@@ -8326,82 +8412,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String newProjectNumberRangeError(int min, int max) {
     return 'Saisissez un nombre entre $min et $max';
   }
-
-  @override
-  String get communityThresholdAny => 'Aucune condition';
-
-  @override
-  String communityMinimumViewsOption(String count) {
-    return 'Au moins $count vues';
-  }
-
-  @override
-  String communityMinimumBookmarksOption(String count) {
-    return 'Au moins $count favoris';
-  }
-
-  @override
-  String get communityTileSize => 'Taille des œuvres';
-
-  @override
-  String get communityMutedWordsEmpty => 'Aucun mot-clé masqué';
-
-  @override
-  String get communityMutedTagsEmpty => 'Aucun tag masqué';
-
-  @override
-  String get communityMuteShort => 'Masquer';
-
-  @override
-  String get communityMuteConfirmTitle => 'Masquer ce créateur ?';
-
-  @override
-  String get communityMuteConfirmBody =>
-      'Les œuvres de ce créateur ne seront plus affichées.';
-
-  @override
-  String get communityMuteConfirmAction => 'Masquer';
-
-  @override
-  String get communityUnmuteConfirmTitle => 'Réafficher ce créateur ?';
-
-  @override
-  String get communityUnmuteConfirmAction => 'Réafficher';
-
-  @override
-  String get communityMuteNo => 'Non';
-
-  @override
-  String get communityMuteDone => 'Créateur masqué';
-
-  @override
-  String get communityUnmuteDone => 'Créateur réaffiché';
-
-  @override
-  String get communityMilestoneNotificationsTitle => 'Notifications';
-
-  @override
-  String communityFollowerMilestone(String count) {
-    return 'Vous avez atteint $count abonnés';
-  }
-
-  @override
-  String communityBookmarkMilestone(String title, String count) {
-    return '« $title » a atteint $count favoris';
-  }
-
-  @override
-  String get communitySearchHistory => 'Historique de recherche';
-
-  @override
-  String get communitySearchHistoryEmpty => 'Aucun historique';
-
-  @override
-  String get communityDeleteSavedSearchConfirm =>
-      'Supprimer cette recherche enregistrée ?';
-
-  @override
-  String get communitySortLabel => 'Trier';
 
   @override
   String get pcMenuFile => 'Fichier';

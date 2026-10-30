@@ -112,8 +112,11 @@ void main() {
     final scheme = Theme.of(tester.element(writes.first)).colorScheme;
     Color? iconColor(Finder buttons) =>
         (tester.widget<IconButton>(buttons.first).icon as Icon).color;
-    expect(iconColor(writes), scheme.onSurfaceVariant,
-        reason: '書き込みはテーマの中立色に変更する');
+    expect(
+      iconColor(writes),
+      scheme.onSurfaceVariant,
+      reason: '書き込みはテーマの中立色に変更する',
+    );
     final disabled = Theme.of(tester.element(loads.first)).disabledColor;
     expect(iconColor(loads), disabled, reason: '空スロットの読み込みは無効色');
     expect(iconColor(deletes), disabled, reason: '空スロットの削除は無効色');

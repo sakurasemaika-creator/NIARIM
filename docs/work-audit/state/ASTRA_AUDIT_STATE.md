@@ -144,7 +144,7 @@ status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判
 
 ### 判定・申し送り
 
-- 機能 PASS / 挙動 PASS / 見た目 PASS / 継続性 PASS / 製品品質 PASS（初回案内の中身はDISC045で扱う）。
+- 機能 PASS / 挙動 PASS / 見た目 PASS / 継続性 PASS / 製品品質 PASS（初回案内の中身はDISC048で扱う）。
 - 未確認（環境なし）：Android実機の戻るジェスチャー（予測型を含む）・ソフトキーボードの確定キー・折りたたみ端末。ウィジェットテストで戻る処理（`handlePopRoute`）とNavigatorの`canPop`、ヒンジのある画面を確認済み。
 - 後続IDへの申し送り（既存IDで扱う）：
   - A004：黒い背景色のプロジェクトのカード名が読めない（カードの文字とグラデーションが同じ色）、詳細表示で透明な背景に市松模様が無い、表示サイズ・並び順のメニューに今の選択が出ない、ルートでフォルダが見えるか、簡体字で「お気に入り」と「ブックマーク」が同じ「收藏」、空の一覧の文言、表示サイズ・並び順の保存、仏語の並び替え表示が360〜375pxで「Mis à…」に省略、320pxで並び替えがアイコンだけになる時の読み上げ名。
@@ -199,9 +199,9 @@ status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判
   - DISC010（確認）：2段のバーで画面名は切れない。2つのフィルターはホバー・長押しで「動画の種類を絞り込む」「表示フィルター」。ただし目のアイコンは何のためか分かりにくい（ユーザーから「目アイコンってなんですか？」）。2段目に文字を添える案をユーザーに確認する。
   - DISC007・DISC008・DISC009・DISC011：専用のテスト（`home_scroll_continuity_test`・`home_bookmark_states_test`・`community_account_boundary*_test`・`community_work_card_layout_test`）がこのHEADで成功。DISC009は実際のGoogleログイン・バックエンドが無いため実画面では未確認（合成のHTTPのみ）。
   - DISC001（修正、A001から発見・Discoveryの先頭）：言語を保存していない新規インストールが端末の言語に関係なく日本語。→保存された言語が無ければ`appLanguageCodeFor(端末の言語)`（7言語、台湾・香港・マカオは繁体字、対応外は日本語＝起動に失敗した画面と同じ決まり）、保存はしない（App `0cfdfd5`）。`test/flutter_test_config.dart`で全テストを日本語の端末として動かす。実画面：新しい端末で`LANG=en_US`→英語、`zh_TW`→繁体字、`de_DE`→日本語。全件2224成功・17スキップ・2失敗（既知）。対応外の言語の既定（日本語か英語か）はユーザーに確認する。
-  - ユーザーの判断（2026-10-24）：対応外の言語は英語、目のアイコンは替える、DISC002は設定に足す、DISC045は図つきの数ページ＋読み直し。→対応外の言語は英語（起動に失敗した画面も同じ決まり、App `27c973b`）、表示フィルターは`Icons.tune`（同）、DISC002「エラーの記録」（設定、新しい順20件・すべてコピー・消す、時刻、メール・トークン等を伏せる、保存しない、App `eb62009`、実画面で実際のエラー2件の表示を確認）。DISC045は着手。
+  - ユーザーの判断（2026-10-24）：対応外の言語は英語、目のアイコンは替える、DISC002は設定に足す、DISC048は図つきの数ページ＋読み直し。→対応外の言語は英語（起動に失敗した画面も同じ決まり、App `27c973b`）、表示フィルターは`Icons.tune`（同）、DISC002「エラーの記録」（設定、新しい順20件・すべてコピー・消す、時刻、メール・トークン等を伏せる、保存しない、App `eb62009`、実画面で実際のエラー2件の表示を確認）。DISC045は着手。
   - 作品広場の上部のバー（ユーザー指定2回）：1段目に戻る・画面名・通知・ヘルプ、2段目の左に検索窓・右にフィルター。画面名が切れるときは通知・ヘルプを2段目へ、検索窓の幅が無いときは虫眼鏡のボタン。フランス語320pxのタブ名の切れも直した（App `8816dcf`、関連229件成功、実画面 日本語390・英語320・フランス語320）。
-  - DISC045（修正、ユーザーの判断「図つきの数ページ＋読み直し」）：初回の案内が一文だけで二度と見られず、機能の吹き出しも戻せなかった。→図つきの6ページの使い方（`AppTutorial`、スキップ・次へ・スワイプ・はじめる、読み上げのページ位置、スマホ全画面・PC枠・横長は左右配置、大きな文字はボタンを縦に積む）を初回起動に出し、ホームのメニューの「使い方」（ヘルプ・活用Tipsの並び。最初は設定に置いたが、ユーザーの質問「設定の中に使い方なんて項目ありましたっけ？」への回答で移した、App `7d857fa`）・ヘルプの先頭から見直せ、設定「機能の説明をもう一度表示」で吹き出しを戻す。7言語、韓国語・簡体字のサブセットフォントを作り直し（App `191421d`）。`app_tutorial_test`で7言語×4画面×文字1/2倍の全ページ、撮った120枚を目視、関連37件成功。実画面：新しい端末で6ページをめくって閉じる。
+  - DISC048（修正、ユーザーの判断「図つきの数ページ＋読み直し」）：初回の案内が一文だけで二度と見られず、機能の吹き出しも戻せなかった。→図つきの6ページの使い方（`AppTutorial`、スキップ・次へ・スワイプ・はじめる、読み上げのページ位置、スマホ全画面・PC枠・横長は左右配置、大きな文字はボタンを縦に積む）を初回起動に出し、ホームのメニューの「使い方」（ヘルプ・活用Tipsの並び。最初は設定に置いたが、ユーザーの質問「設定の中に使い方なんて項目ありましたっけ？」への回答で移した、App `7d857fa`）・ヘルプの先頭から見直せ、設定「機能の説明をもう一度表示」で吹き出しを戻す。7言語、韓国語・簡体字のサブセットフォントを作り直し（App `191421d`）。`app_tutorial_test`で7言語×4画面×文字1/2倍の全ページ、撮った120枚を目視、関連37件成功。実画面：新しい端末で6ページをめくって閉じる。
   - タイムラインのプレビューの操作（ユーザー指定、スクリーンショットの赤丸）：フレーム数・ループ・全画面を絵の上から、プレビュー欄の隅の絵の外（左下・右下・右上）へ。縦長の絵は左右、横長の絵は上下に空け、低い欄では全画面をループの左へ。全画面表示の中の「全画面にする」を消した（App `7f2fb37`、`timeline_preview_controls_test`の27通り＋全画面、実画面で9:16・16:9・全画面・低い欄・1280×800）。
   - DISC005（2026-10-25、A003の呼び出し元）：差し色の上はonPrimary＝ボタン内の文字色、選択色の上はonSecondary＝選択中の文字色に結線済みで、ホームの丸いボタン・メニューの見出し・使い方・選択の枠はこの役目（`accent_fill_roles_test`）。テーマ・外観の見本の作品広場・作品詳細・投稿者の作品が実際の画面と違う色・形（固定のピンク・黒地に白の印・枠つきカード・1段のバー）だったので実際の役目と形にそろえた（App `a9f9491`、`theme_preview_community_roles_test`で修正前3件失敗）。白い差し色のカスタムでは固定色の救済ボタンが出て色は書き換えない（実画面）。時間軸・キャンバス・レイヤーの選択色の呼び出し元は各IDで確認する。
   - DISC007（2026-10-25）：作品一覧・ブクマ済みのタブ往復とメニュー経由、フォルダの中と外・お気に入りで位置を共有しない（`home_scroll_continuity_related_test`、スマホ・PC、キーを外すと失敗）。実画面での大量データの往復は未。
@@ -1599,3 +1599,54 @@ label-fit buildのmainはGtk pkg-config依存で停止、Dart analyze0/2.7sは�
 - 次はこの検証済みunitを通常push（App product/test/workflow+State、Web State mirror）しremote HEAD/tree/全317sourceを確認、fresh CI。その後S27のrestore/delete失敗fresh counterとtarget identityへ進む。
 
 S26最終native18原本/五軸review/6niapro整合を含む証跡core: Drive1-DwI5eZb3yNOfDtDRXpaOuNXWVk1P1Vc、4393690B/SHAecd5c98e6bf465f70db258ae5aed1a2a6a52dbf3e1664f7837474331a43a46d6/268manifest。metadata/raw再取得SHA/CRC/allhash確認済み。最新runtime差分1QbYYuftBBUqSejTWlQ0mFi2AncixkMpPとfull2partsからSDK/pub再build不要で再生可能。
+
+
+S26公開確認: App997f4c20717d005dfa293115d8e7215652e17830（parentc51、tree3883efea6d6bb44795ab8650f29c503fe657c65b、38paths）、Web60b6d2a2f013a3be8258172e83a9d5a978858668（parent521c58c、treedfa8ade151c08c565d3e70cf89165350ff374779、4paths）へexpected-parent/force:falseで通常反映。API refs/commit親/treeとfetch後全path/blob、native317source対published内容の全SHA一致を確認し、ローカルもff-only同期。保護Dela原本不変、未stage。published-verification.json参照。
+CI: Save safety41011827494（full-gates123919197585）、audit-gate-repairs/checkpoint-format/auto-lineartの3jobs成功、残3実行中。App policy41011827477/Web policy41011831901とも成功。全CI greenとはまだしない。次はS27 DISC043/044のfresh反例・修正へ。S26既完了test/nativeを復元だけの理由で繰り返さない。
+
+
+## S27 fresh BEFORE 2026-10-30
+
+S26通常push/refs/source照合は完了。CI網羅fixture1call補完32e1b79を追加pushし48tests/analyze0。S27は保存拒否false/throwの6反例0PASS/6FAIL、実nativeで復元後に消えたBetaがcoldで戻ることを4原本で確認。隔離保存先はexact復旧、6niapro不変、App停止。詳細と次の具体策はA003_S27_20261030_RESUME.md。まだS27製品修正/AFTER/pushは未完了。
+
+
+## S27 最新確認 — 2026-10-31（通常push準備）
+
+最新remote App `c2e3495d4ffac1ee07de014dcdd97d697c991103` / Web `60b6d2a2f013a3be8258172e83a9d5a978858668` を再確認。保存済みfinalNativeBefore8670 core `1h-SBsdPwj5G0S3i5ncg3VldTb5_GR-sJ` をraw SHA/CRC/全332hashで復元し、追加18commitを保持して3way統合した。衝突したall-routes preview試験は最新upstreamのcounter overlay/equal gaps/loop-share隣接を保持。S27 service/guard/dialog/Home/Storageの主要sourceは前回12原本時とbyte一致、Themeのoutline/shadow削除とProjectList clip等の新対象はD001.19–28へtodo登録。Baseline定義/lock/orderは変更なし、Deltaトップ37/子を含む宣言65。
+
+- 保存整合: trash/restore/permanent-delete×false/throwのfresh BEFORE 0PASS/6FAIL→修正後6PASS。recovery13PASS（queue/cache/partial FS/cold/読込不能/ID mismatch/cleanup/guard/dispose/自己tmp清掃）、dialog6PASS（7locale×4profile、全文/48px/busy/cancel/retry/partial bulk/dispose/short error）、font/l10n関連21PASSは保存済み。重複を固有件数へ加算しない。
+- 最新c2統合9filesは49PASS/1FAIL。失敗1件はbookmark accessible labelをinner IconButtonに求めたfixture locatorで、実ラベルは親Semanticsにある。toggled=true/正式localized labelの親を検証するよう修正し、同file2PASS（7locale×6variant×14width×3scale=1764条件とgeometry）。一度のaggregate50PASSとは記録しない。最新format780files変更0、全analyze0、normal main/fixture両Linux build成功。
+- 最新kernel `45753ec66430e58e838a6dcb470bc50b877147f6c8ecabf33bf6bb49df02a842` /319lib/8fontを証跡化。runtime `1P69japaBMGYWwfWeRJmwyhiv0JwgNRvN`（32787257B/SHA1c757acce56047d16cee6e536ce65985314311ba47210939f1bb9de4527c4597/8hash）、build前後core `1xKERR8vbEu6cr1p4BTmaJKhUnUiodEvg`（7321406B/SHAf6321e1db677a97ea1c3f9372422e4ded6179e84b3aa4cb4e657d68af2742edc/347hash）をmetadata/raw SHA/CRC/全hash確認し、actual downloaded runtimeを再配置した。native依存は今回223/223 SHA/size確認済み、以前219/223の記録と区別する。
+- 新しい7原本を全個別目視（oct31-c2-native-review.json）。FR320×844/text2/paperの長い多言語target全文/不可逆性/Cancel/Delete、320×220でfalse2拒否後のinline failure先頭への自動scroll、対象と実1archiveの保持・Escape取消を確認。ENPC1440×900/paperは最新Home thumbnail clip→実Drawer→空Trash、実5archive全hash不変。Dart/Python全hash一致、該当runner範囲の例外/overflow0。明示fixtureのprefs ack拒否でありOS failureとは言わない。
+- 前回kernel932a142bの12原本/実削除1→0/cold0と復元失敗→retry→成功後旧SnackBar消去/cold・他5archive保持は同一S27 sourceの保存済み証拠として継承し、環境復旧だけを理由に再実行していない。最新7原本をその全機能/全callerの再操作とは扱わない。
+- 新Trash dialogは正式Appearance primary/onPrimary、失敗はonSurface。固定UI色・自動contrast色を追加していない。韓国語겼(U+ACBC)を公式固定Google Fontsから両KR subsetへ補完、旧全cmap/20字outline・advance/ライセンス保持、7locale coverageは合格。該当mute snackbarのnative字形は未確認のためDISC045はtodo。
+
+全suiteは以前2d2候補で2261PASS/23SKIP/24FAIL（15m、expanded log完全、JSONはdone無しの部分出力）。最新c2全suiteは未実行、旧Community masked/filter/paging/preview smoke等を最新仕様で修正・再検証する作業が残る。S27の全caller native、全matrix、実backend/OAuth/Android/codec、法務/性能/最終Visual closureは未完了。Baseline2/628/currentA003、DISC001–045todo、Delta37todo/not_startedを維持し、全面監査完了とはしない。
+
+次: この検証済みS27単位をApp product/test/fonts/workflow+State/Web Stateへ非force・expected-parentで通常push→remote親/tree/全319source/8font照合→fresh CIの現在結果を確認。残りのA003 caller/Bookmarked/masked-slot/current Community回帰へ継続。保護Dela原本SHA4e8851…は未stage/未push。
+
+
+
+## S28 favorite保護のfresh反例 — 2026-10-31
+
+S27はApp9f99f89a8a661108a630439ba1c22a5847a362f8/Webf9e6b58eebc6c6ec6e9ebacacf8e6303202d85e9へ通常push済み。remote親/tree/54App+6Web exact pathsと全blob、compiled319source/8font対published全SHA一致、保護Dela原本未stageを確認。7native原本core1fjK2gvljktUU51Iwvk1kpeIde3Tw7Yin（7640373B/SHAd7102729b09a325035c5a7718b10b7e74826cbc71112dbf08d81954ad0ab2685/379hash）はmetadata/raw SHA/CRC/全hash確認済み。fresh SaveSafety41099893602は実行中、checkpoint-formatだけsuccess、他jobsは未確定時点。
+
+S28 Home一覧の保存拒否は正式failure通知/target保持、F11実再試行後にBetaがTrash所属になり実5file全hash不変を確認。menuがsettle前だったno-op2画像は命名にsuccessを含むが明示除外、actual verified画像s28-home-list-retry-confirmed.pngと実prefs/modelのみを根拠にする。続いてGammaのお気に入り個別削除blockedとbulk削除成功の不一致をfresh nativeで実証、DISC046 todo登録。作品のpermanent delete/file lossは起きていない。原因候補: bulk callerのfavorite事前確認欠落、ProjectService.deleteProjectもfavoriteを検証せず移動。次はcold確認/BEFORE保存→fresh unit/UI反例→サービスqueue実行時のfavorite guardとbulk全対象preflight/正式localized説明→回帰/最新build/native AFTER/通常push。残りdetail/Storage callerは継続。Baseline2/628/currentA003、DISC001–046todo、Delta37todo/宣言65を維持。
+
+
+S28 candidate 2026-10-31: fresh favorite service/queued-state/mixed selection/dialog-open-stateの4反例は0PASS/4FAIL（before-v2、初回UI tooltip setup失敗2件は除外）。service queue内favorite guard、bulk全対象preflight、同じ正式localized保護説明で4PASSへ。さらにTrash ack待ち中にfavoriteだけ先に表示され消えるfresh追加counterが4PASS/1FAILの1件として再現。favorite変更と実file保存を同じper-project queueへ直列化し、saveProject低レベルwriterを共用、再帰enqueueを避けた。6files関連51PASS/17s（favorite5、既存Trash6+13+6、save/folder回帰を含む）、locale追加testは別run。favorite file-save失敗自体の既存optimistic挙動は変更しておらずDISC046追加対象に明記、データ永続化全体を閉じない。BEFORE core1Wd2VwdvXgZoURsB3zkBJ3-YNyjQpUnvz（5561682B/SHA8c8e957a1d9b4438628d8bdb9953beeb1a338267c6a2b6f79edfc86ecb86afff/373manifest）metadata/raw SHA/CRC/全hash確認済み。これからglobal format/analyze/main+fixture/runtime保存→最新ENPC mixed/FRSP favorite保護・通常bulk/詳細/Storageの実操作。S28 source未push/AFTER未完了、Baseline2/628/A003/46DISCtodo/Delta37todo維持。
+
+S28 latest native c437e1b8: ENPC mixed favorite selection is blocked with full localized explanation and both selected targets retained. Nonfavorite Beta bulk false2 retains target/5 file hashes, F11 retry moves only Beta; cold FR320/text2 keeps Gamma active/favorited and Beta Trash, favorite-only bulk blocked with full French warning. 8 AFTER originals individually viewed, Python/Dart all5 hashes match (s28-after-review.json). New selection-toolbar label problem registered DISC047 todo. Runtime111QWAmt2QOi90u7X3HQlT6zWvGzpobUF (32764200B/SHAa6432a220a6d8a421cd5b5d0457a98c80262bcb65cf35fcff34575b37eefd19a/9hash), core1Ii-gmgG9dt6Ef0zdyy8dsB9uArKerojT (5668276B/SHA7e2c2e5b9c6a0aa8a1b2d3d63b939968ace38ec5e7ad2a772468f076b6e29a03/388) metadata/raw SHA/CRC/allhash verified, downloaded runtime actually replayed. Global format/analyze/main+fixture succeeded; source319/font8. S27 CI 5 target jobs success, full-gates124215193985 still pending at last successful read (later metadata ReadTimeout is not a CI verdict). Remaining detail/Storage native and S28 bounded publication; favorite file-save failure/selection visuals remain open. Interactive console session expired after FR proof; files/runtime retained, resume console without SDK/build/test replay. Baseline2/628/A003/DISC001–047todo/Delta37todo unchanged.
+
+
+## S28 最終単位確認 — 2026-10-31
+
+Latest parent App9f99f89/Webf9e6b58を再確認。S28 favorite guardはservice queue実行時に検証し、bulk初回とconfirm時に全対象preflight、正式localized説明、favorite切替とsave/Trashをper-project queueへ直列化。fresh4反例0PASS/4FAIL→4PASS、追加ack-pending競合1FAILも修正。関連6files51PASS/17sと新locale説明を含むdialog7PASS/8s（重複6を加算しない）。global format0/analyze0、normalmain+fixture成功、kernelc437e1b8e8e355ddec65d6be2ea590bca5f3a7581c7d03047f61f5b96485fe9d/319source/8fonts。保護Dela原本4e8851…は未stage。
+
+最新22原本を全個別目視しs28-final-native-review.jsonへ五軸/各SHA/実操作を保存。ENPC1440 mixed favorite選択は説明と2選択を保持し、FR320/text2 all-favoriteも全文通知。普通のBetaはbulk false2→保持/retry→Trash、実復元、詳細menu false2→同route保持/retry→Homeへ戻る。実Drawer→Storage EmptyTrashでBeta全文/不可逆性、false拒否累計4→5file保持、retryで実5→4、cold Trash0件/Storage0B・EmptyTrash無効を確認。他4niapro全hash不変、Python/Dart全12proof一致、該当runner例外/overflow0、App停止/fault off。直後のspinner画像は最終0B画像の代用にせず区別。物理Android/実OAuth/backend/codec/全matrixは未確認。
+
+8原本core1tK7xFbDm3m0AWAFy62XsoZxxryAs40Yj（6006164B/SHA9b959f4b99ad84b6d18afc8bef48a8d6a6ea932034e4c3b9d2334f2f3a16c0ab/402manifest）metadata/raw SHA/CRC/全hash確認済み。runtime111QWAmt2QOi90u7X3HQlT6zWvGzpobUF/core1Ii-gmgG9dt6Ef0zdyy8dsB9uArKerojTも検証済み、実downloaded runtimeから操作。最終22原本coreの保存とこの検証済みS28単位の通常push/remote/source/font照合へ進む。
+
+公開済みS27 fresh SaveSafety41099893602の全結果を取得: 他5jobs成功、full124215193985はformat/analyze成功・2268PASS/23SKIP/23FAIL/23m37s。decoded完全log oct31-s27-published-full-ci.log（608384B/SHA50202ebc6304b28762dc51a9e6c0d3e92cc670158c55bd4a6260c212df3e817b）を保存。旧2d2の2261/23/24と混同しない。Community masked slot/filter/preview/search fixturesとtext-scale failuresは最新契約で原因を調べる。全greenではない。generic fetchのjobs metadataはReadTimeout、専用run_jobs/steps/logs toolsで結果取得できた（権限拒否ではない）。
+
+残: DISC046 favorite file-save失敗の既存optimistic挙動、DISC047 FR320/text2選択barのSelectAll/DeselectAll不可視と件数省略、DISC005既存error-role等、A003残Bookmarked/current Community23failの切分け。いずれも未確認/未修正をdoneにしない。Baseline2/628/currentA003、DISC001–047todo、Delta37todo/not_started（全宣言65）維持。次はS28単位通常push→最新refs/tree/319source/8fonts確認→新CI追跡と上記反例/修正を継続。復旧だけを理由に今回の22nativeや51tests/7tests/buildを繰り返さない。

@@ -19,8 +19,6 @@
   "homeFavoritesOnly": "お気に入り",
   "homeAddSheetNewProject": "新規プロジェクト",
   "homeAddSheetNewFolder": "新規フォルダ",
-  "homeAddTooltip": "新規作成",
-  "commonShowExplanation": "説明を表示",
   "homeSelectionAllSelect": "全選択",
   "homeSelectionAllDeselect": "全解除",
   "homeSelectionCount": "{count}件選択中",
@@ -64,7 +62,6 @@
   "homeViewModeMedium": "中",
   "homeViewModeSmall": "小",
   "homeViewModeDetail": "詳細",
-  "homeViewModeTooltip": "表示の大きさ",
   "homeSortFieldName": "名前",
   "homeSortFieldUpdated": "更新日時",
   "homeSortDirectionAscTooltip": "昇順（タップで降順に切り替え）",
@@ -195,87 +192,7 @@
       }
     }
   },
-  "homeMoveToTrashSkipFavorites": "お気に入りの{count}件は移動しません（お気に入りを外すと移動できます）。",
-  "@homeMoveToTrashSkipFavorites": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "homeMoveToTrashNothing": "ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。",
-  "homeMovedToTrashSnackbar": "{count}件をゴミ箱へ移動しました",
-  "@homeMovedToTrashSnackbar": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "homeUndoAction": "元に戻す",
-  "homeCutSnackbar": "{count}件を切り取りました。移動先を開いて、右上の貼り付けを押してください。",
-  "@homeCutSnackbar": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "homeCopiedSnackbar": "{count}件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。",
-  "@homeCopiedSnackbar": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "homePastedSnackbar": "{count}件を貼り付けました",
-  "@homePastedSnackbar": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "homePasteSkippedIntoSelf": "フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。",
-  "@homePasteSkippedIntoSelf": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "homePasteSkippedMissing": "{count}件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。",
-  "homePasteFailed": "一部を貼り付けられませんでした。もう一度お試しください。",
-  "homeCutPendingHint": "切り取り中（貼り付けを待っています）",
-  "@homePasteSkippedMissing": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "projectDuplicateName": "{name} (コピー)",
-  "@projectDuplicateName": {
-    "description": "Name of a duplicated work.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "projectDuplicateNameNumbered": "{name} (コピー {number})",
-  "@projectDuplicateNameNumbered": {
-    "description": "Name of a duplicated work when a copy with the plain duplicate name already exists in the same place; number starts at 2.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "number": {
-        "type": "int"
-      }
-    }
-  },
+  "homePasteSnackbar": "貼り付けました",
   "commonOk": "OK",
   "gestureSettingsTitle": "ジェスチャー設定",
   "gestureTwoFingerTap": "2本指タップ",
@@ -310,7 +227,6 @@
   "homeDrawerSettings": "設定",
   "homeDrawerHelp": "ヘルプ",
   "homeDrawerTips": "活用Tips",
-  "homeDrawerTutorial": "使い方",
   "homeDrawerPremium": "プレミアム",
   "gestureActionNoneShort": "なし",
   "pressureTryDrawHint": "この設定で試し書きできます（ペンの場合、実際の筆圧が反映されます）",
@@ -1092,10 +1008,6 @@
   "themeSettingsTitle": "テーマ・外観",
   "themeColorCustomizeSection": "カラーカスタマイズ",
   "themeColorAccent": "アクセントカラー",
-  "themeColorAccentText": "アクセントの文字・アイコン色",
-  "@themeColorAccentText": {
-    "description": "Theme color for accent-colored text and icons drawn directly on the background (selected tab label, outlined and text buttons, empty-state icons). Defaults to the accent color."
-  },
   "themeColorText": "本文・通常の文字色",
   "themeColorButtonText": "ボタン内の文字・アイコン色",
   "themeColorMenuText": "メニュー・上部バーの文字色",
@@ -1276,6 +1188,7 @@
   "canvasSizePresetEmpty": "保存されたサイズはありません",
   "canvasSizePresetEmptyHint": "新規プロジェクト画面でカスタムサイズを指定し、「このサイズを保存する」から追加できます",
   "canvasSizePresetEditDialogTitle": "サイズを編集",
+  "canvasSizePresetDuplicateSuffix": "のコピー",
   "newProjectDurationLabel": "長さ（最大{max}）",
   "@newProjectDurationLabel": {
     "placeholders": {
@@ -1490,10 +1403,6 @@
   "brushSettingsMixingWatercolorHint": "透明な絵の具を重ねて塗ります。ペンを離すと乾いて、筆の外へ少しにじみ、縁に色が溜まります。",
   "projectDetailNotFoundTitle": "プロジェクト",
   "projectDetailNotFoundBody": "プロジェクトが見つかりません",
-  "projectDetailNotFoundBackToList": "プロジェクトの一覧へ",
-  "@projectDetailNotFoundBackToList": {
-    "description": "プロジェクト詳細で作品が見つからないときに、ホームのプロジェクトの一覧へ戻るボタン"
-  },
   "projectDetailFirstFrameTooltip": "先頭フレーム",
   "projectDetailPrevFrameTooltip": "1フレーム戻る",
   "projectDetailPauseTooltip": "一時停止",
@@ -1704,39 +1613,6 @@
   "projectListFolderHint": "同じ作品の複数話数やシリーズをまとめる場合にも使えます",
   "projectListEmptyTitle": "プロジェクトがありません",
   "projectListEmptyHint": "＋ ボタンから新規作成",
-  "projectListNoMatchTitle": "「{query}」に一致する作品はありません",
-  "@projectListNoMatchTitle": {
-    "placeholders": {
-      "query": {
-        "type": "String"
-      }
-    }
-  },
-  "projectListNoMatchNameHint": "フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。",
-  "projectListNoMatchTagHint": "フォルダの中も含めて、作品に付けたタグの一部で探しています。",
-  "projectListClearSearch": "検索をやめる",
-  "projectListNoFavoritesTitle": "お気に入りの作品はありません",
-  "projectListNoFavoritesHint": "作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。",
-  "projectListShowAll": "すべて表示",
-  "projectListEmptyFolderTitle": "このフォルダは空です",
-  "projectListUpdatedOn": "{date}更新",
-  "@projectListUpdatedOn": {
-    "description": "Detail row: the date the work was last changed.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "projectListInFolder": "フォルダ：{path}",
-  "@projectListInFolder": {
-    "description": "Search results: the folder a work is in (folder names joined by \" / \").",
-    "placeholders": {
-      "path": {
-        "type": "String"
-      }
-    }
-  },
   "projectListOpenAction": "開く",
   "projectListCreateShareAction": ".niashareを作成",
   "projectListEditFolderAction": "名前・色を編集",
@@ -3075,7 +2951,6 @@
   "communityVisibilityHiddenDesc": "非公開中：新着・ランキング・投稿者別作品一覧から非表示です（YouTube側の公開設定とは独立した設定です）。",
   "communityVisibilityHiddenBadge": "非公開",
   "communityWorkDetailTitle": "作品詳細",
-  "communityWorkNotFoundMessage": "作品が見つかりませんでした",
   "communityWorkHiddenByFilterMessage": "表示フィルターの設定により、この作品は非表示になっています",
   "communityEditFailed": "変更を保存できませんでした。通信状態を確認して、もう一度お試しください。",
   "communityEditSignInRequired": "変更するにはGoogleアカウントでログインしてください",
@@ -3765,6 +3640,190 @@
   "errorViewTitle": "この部分の表示でエラーが発生しました",
   "errorViewBody": "作業中のデータは保持されています。前の画面へ戻ってからもう一度お試しください。以下の内容を開発元へお知らせいただけると原因の特定に役立ちます。",
   "homeWorksLoadFailed": "作品一覧を読み込めませんでした",
+  "newProjectCreating": "作成しています…",
+  "newProjectCreateFailed": "プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。",
+  "communityCreatorLabel": "作者",
+  "communityThresholdAny": "条件なし",
+  "communityMinimumViewsOption": "{count}回再生以上",
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMinimumBookmarksOption": "{count}件以上",
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityTileSize": "作品の表示サイズ",
+  "communityMutedWordsEmpty": "非表示ワードはありません",
+  "communityMutedTagsEmpty": "非表示タグはありません",
+  "communityMuteShort": "非表示",
+  "communityMuteConfirmTitle": "このユーザーを非表示にしますか？",
+  "communityMuteConfirmBody": "非表示にするとこのユーザーの作品は表示されなくなります。",
+  "communityMuteConfirmAction": "非表示にする",
+  "communityUnmuteConfirmTitle": "このユーザーの非表示を解除しますか？",
+  "communityUnmuteConfirmAction": "非表示を解除する",
+  "communityMuteNo": "いいえ",
+  "communityMuteDone": "このユーザーを非表示にしました",
+  "communityUnmuteDone": "このユーザーの非表示を解除しました",
+  "communityMilestoneNotificationsTitle": "通知",
+  "communityFollowerMilestone": "フォロワーが{count}人に達しました",
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBookmarkMilestone": "作品「{title}」のブックマークが{count}件に達しました",
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communitySearchHistory": "検索履歴",
+  "communitySearchHistoryEmpty": "検索履歴はありません",
+  "communityDeleteSavedSearchConfirm": "保存した検索条件を削除しますか？",
+  "communitySortLabel": "並び替え",
+  "homeTrashOperationFailed": "操作を完了できませんでした。保存先を確認して、もう一度お試しください。",
+  "homeTrashWorking": "処理中…",
+  "homeAddTooltip": "新規作成",
+  "commonShowExplanation": "説明を表示",
+  "homeViewModeTooltip": "表示の大きさ",
+  "homeMoveToTrashSkipFavorites": "お気に入りの{count}件は移動しません（お気に入りを外すと移動できます）。",
+  "@homeMoveToTrashSkipFavorites": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeMoveToTrashNothing": "ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。",
+  "homeMovedToTrashSnackbar": "{count}件をゴミ箱へ移動しました",
+  "@homeMovedToTrashSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeUndoAction": "元に戻す",
+  "homeCutSnackbar": "{count}件を切り取りました。移動先を開いて、右上の貼り付けを押してください。",
+  "@homeCutSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeCopiedSnackbar": "{count}件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。",
+  "@homeCopiedSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePastedSnackbar": "{count}件を貼り付けました",
+  "@homePastedSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSkippedIntoSelf": "フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。",
+  "@homePasteSkippedIntoSelf": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSkippedMissing": "{count}件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。",
+  "homePasteFailed": "一部を貼り付けられませんでした。もう一度お試しください。",
+  "homeCutPendingHint": "切り取り中（貼り付けを待っています）",
+  "@homePasteSkippedMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "projectDuplicateName": "{name} (コピー)",
+  "@projectDuplicateName": {
+    "description": "Name of a duplicated work.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "projectDuplicateNameNumbered": "{name} (コピー {number})",
+  "@projectDuplicateNameNumbered": {
+    "description": "Name of a duplicated work when a copy with the plain duplicate name already exists in the same place; number starts at 2.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "homeDrawerTutorial": "使い方",
+  "themeColorAccentText": "アクセントの文字・アイコン色",
+  "@themeColorAccentText": {
+    "description": "Theme color for accent-colored text and icons drawn directly on the background (selected tab label, outlined and text buttons, empty-state icons). Defaults to the accent color."
+  },
+  "projectDetailNotFoundBackToList": "プロジェクトの一覧へ",
+  "@projectDetailNotFoundBackToList": {
+    "description": "プロジェクト詳細で作品が見つからないときに、ホームのプロジェクトの一覧へ戻るボタン"
+  },
+  "projectListNoMatchTitle": "「{query}」に一致する作品はありません",
+  "@projectListNoMatchTitle": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "projectListNoMatchNameHint": "フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。",
+  "projectListNoMatchTagHint": "フォルダの中も含めて、作品に付けたタグの一部で探しています。",
+  "projectListClearSearch": "検索をやめる",
+  "projectListNoFavoritesTitle": "お気に入りの作品はありません",
+  "projectListNoFavoritesHint": "作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。",
+  "projectListShowAll": "すべて表示",
+  "projectListEmptyFolderTitle": "このフォルダは空です",
+  "projectListUpdatedOn": "{date}更新",
+  "@projectListUpdatedOn": {
+    "description": "Detail row: the date the work was last changed.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projectListInFolder": "フォルダ：{path}",
+  "@projectListInFolder": {
+    "description": "Search results: the folder a work is in (folder names joined by \" / \").",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "homeProjectsLoadFailed": "プロジェクトを読み込めませんでした",
   "settingsErrorLogTitle": "エラーの記録",
   "settingsErrorLogSubtitle": "不具合を知らせるときに、アプリで起きたエラーを確認してコピーできます",
@@ -3773,9 +3832,6 @@
   "errorLogCopyAll": "すべてコピー",
   "errorLogCopied": "エラーの記録をコピーしました",
   "errorLogClear": "記録を消す",
-  "newProjectCreating": "作成しています…",
-  "newProjectCreateFailed": "プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。",
-  "communityCreatorLabel": "作者",
   "tutorialSkip": "スキップ",
   "tutorialNext": "次へ",
   "tutorialPageIndicator": "{total}ページ中{current}ページ目",
@@ -3881,59 +3937,6 @@
       }
     }
   },
-  "communityThresholdAny": "条件なし",
-  "communityMinimumViewsOption": "{count}回再生以上",
-  "@communityMinimumViewsOption": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "communityMinimumBookmarksOption": "{count}件以上",
-  "@communityMinimumBookmarksOption": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "communityTileSize": "作品の表示サイズ",
-  "communityMutedWordsEmpty": "非表示ワードはありません",
-  "communityMutedTagsEmpty": "非表示タグはありません",
-  "communityMuteShort": "非表示",
-  "communityMuteConfirmTitle": "このユーザーを非表示にしますか？",
-  "communityMuteConfirmBody": "非表示にするとこのユーザーの作品は表示されなくなります。",
-  "communityMuteConfirmAction": "非表示にする",
-  "communityUnmuteConfirmTitle": "このユーザーの非表示を解除しますか？",
-  "communityUnmuteConfirmAction": "非表示を解除する",
-  "communityMuteNo": "いいえ",
-  "communityMuteDone": "このユーザーを非表示にしました",
-  "communityUnmuteDone": "このユーザーの非表示を解除しました",
-  "communityMilestoneNotificationsTitle": "通知",
-  "communityFollowerMilestone": "フォロワーが{count}人に達しました",
-  "@communityFollowerMilestone": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "communityBookmarkMilestone": "作品「{title}」のブックマークが{count}件に達しました",
-  "@communityBookmarkMilestone": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      },
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "communitySearchHistory": "検索履歴",
-  "communitySearchHistoryEmpty": "検索履歴はありません",
-  "communityDeleteSavedSearchConfirm": "保存した検索条件を削除しますか？",
-  "communitySortLabel": "並び替え",
   "pcMenuFile": "ファイル",
   "pcMenuSelection": "選択範囲",
   "pcMenuView": "表示",

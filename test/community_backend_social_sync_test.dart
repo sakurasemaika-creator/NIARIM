@@ -298,7 +298,8 @@ void main() {
     expect(service.bookmarkedIds, isEmpty);
     expect(service.favoriteAuthorFeed, isEmpty);
     expect(service.isRepostedBySelf('favplain001'), isFalse);
-  });  test('フォロー中は投稿とリポストを同じ時系列で25件ずつ統合する', () async {
+  });
+  test('フォロー中は投稿とリポストを同じ時系列で25件ずつ統合する', () async {
     Map<String, dynamic> candidate(String id, String author, DateTime at) => {
       'workId': id,
       'authorId': author,
@@ -354,7 +355,8 @@ void main() {
       final path = request.url.path;
       final segments = path.split('/').where((s) => s.isNotEmpty).toList();
       Map<String, dynamic> page(List<Map<String, dynamic>> all, String key) {
-        final start = int.tryParse(request.url.queryParameters['cursor'] ?? '0') ?? 0;
+        final start =
+            int.tryParse(request.url.queryParameters['cursor'] ?? '0') ?? 0;
         final count = request.url.queryParameters['limit'] == null
             ? all.length
             : 25;
@@ -364,6 +366,7 @@ void main() {
           if (end < all.length) 'nextCursor': '$end',
         };
       }
+
       Map<String, dynamic> response;
       if (path == '/me/works') {
         response = {'authorId': 'self', 'works': <Object>[]};
@@ -389,20 +392,26 @@ void main() {
       return http.Response(jsonEncode(response), 200, headers: headers);
     });
     final service = CommunityService(
-      api: CommunityApi(NiarimApiClient(
-        baseUrl: 'https://example.invalid',
-        httpClient: client,
-        tokenProvider: () async => 'token',
-        maxGetRetries: 0,
-        retryBackoff: Duration.zero,
-      )),
+      api: CommunityApi(
+        NiarimApiClient(
+          baseUrl: 'https://example.invalid',
+          httpClient: client,
+          tokenProvider: () async => 'token',
+          maxGetRetries: 0,
+          retryBackoff: Duration.zero,
+        ),
+      ),
     );
     addTearDown(service.dispose);
     await service.loadOwnWorks();
     expect(await service.loadSocial(), isTrue);
 
-    List<String> ids() => service.favoriteAuthorFeed.map((e) => e.work.id).toList();
-    expect(ids().take(25).toList(), expected.take(25).map((e) => e.id).toList());
+    List<String> ids() =>
+        service.favoriteAuthorFeed.map((e) => e.work.id).toList();
+    expect(
+      ids().take(25).toList(),
+      expected.take(25).map((e) => e.id).toList(),
+    );
     expect(ids().take(25).where((id) => id.contains('_repost_')), isNotEmpty);
     expect(ids().take(25).where((id) => id.contains('_post_')), isNotEmpty);
     expect(service.hasMoreFollowing, isTrue);
@@ -415,18 +424,24 @@ void main() {
     expect(repost.repostedByAuthorName, 'Alice');
     expect(repost.feedTime.isAtSameMomentAs(activityAt(0, 2)), isTrue);
     expect(
-      requests.where((uri) =>
-          uri.path == '/users/alice/works' &&
-          uri.queryParameters.containsKey('cursor')).length,
+      requests
+          .where(
+            (uri) =>
+                uri.path == '/users/alice/works' &&
+                uri.queryParameters.containsKey('cursor'),
+          )
+          .length,
       1,
     );
     expect(
-      requests.where((uri) =>
-          uri.path == '/users/alice/reposts' &&
-          uri.queryParameters.containsKey('cursor')).length,
+      requests
+          .where(
+            (uri) =>
+                uri.path == '/users/alice/reposts' &&
+                uri.queryParameters.containsKey('cursor'),
+          )
+          .length,
       1,
     );
   });
-
-
 }

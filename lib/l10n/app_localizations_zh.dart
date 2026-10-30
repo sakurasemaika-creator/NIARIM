@@ -67,12 +67,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeAddSheetNewFolder => '新建文件夹';
 
   @override
-  String get homeAddTooltip => '新建';
-
-  @override
-  String get commonShowExplanation => '显示说明';
-
-  @override
   String get homeSelectionAllSelect => '全选';
 
   @override
@@ -124,9 +118,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => '详情';
-
-  @override
-  String get homeViewModeTooltip => '显示大小';
 
   @override
   String get homeSortFieldName => '名称';
@@ -377,61 +368,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String homeMoveToTrashSkipFavorites(int count) {
-    return '$count个已收藏的项目不会移动（取消收藏后即可移动）。';
-  }
-
-  @override
-  String get homeMoveToTrashNothing => '没有可移至回收站的项目（收藏的项目不会移动）。';
-
-  @override
-  String homeMovedToTrashSnackbar(int count) {
-    return '已将$count项移至回收站';
-  }
-
-  @override
-  String get homeUndoAction => '撤销';
-
-  @override
-  String homeCutSnackbar(int count) {
-    return '已剪切$count项。打开目标位置后，点按右上角的粘贴。';
-  }
-
-  @override
-  String homeCopiedSnackbar(int count) {
-    return '已复制$count项。打开要粘贴的位置后，点按右上角的粘贴。';
-  }
-
-  @override
-  String homePastedSnackbar(int count) {
-    return '已粘贴$count项';
-  }
-
-  @override
-  String homePasteSkippedIntoSelf(int count) {
-    return '$count个文件夹无法移入自身或其子文件夹，已保留为剪切状态。';
-  }
-
-  @override
-  String homePasteSkippedMissing(int count) {
-    return '有$count项因原作品已不存在（已移至回收站或已删除）而无法粘贴。';
-  }
-
-  @override
-  String get homePasteFailed => '部分项目未能粘贴，请重试。';
-
-  @override
-  String get homeCutPendingHint => '已剪切（等待粘贴）';
-
-  @override
-  String projectDuplicateName(String name) {
-    return '$name（副本）';
-  }
-
-  @override
-  String projectDuplicateNameNumbered(String name, int number) {
-    return '$name（副本 $number）';
-  }
+  String get homePasteSnackbar => '已粘贴';
 
   @override
   String get commonOk => '确定';
@@ -516,9 +453,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeDrawerTips => '使用技巧';
-
-  @override
-  String get homeDrawerTutorial => '使用方法';
 
   @override
   String get homeDrawerPremium => 'Premium';
@@ -2589,9 +2523,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeColorAccent => '强调色';
 
   @override
-  String get themeColorAccentText => '强调文字与图标颜色';
-
-  @override
   String get themeColorText => '正文及普通文字颜色';
 
   @override
@@ -2899,6 +2830,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => '编辑尺寸';
 
   @override
+  String get canvasSizePresetDuplicateSuffix => '副本';
+
+  @override
   String newProjectDurationLabel(String max) {
     return '时长（最大$max）';
   }
@@ -3164,9 +3098,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get projectDetailNotFoundBody => '找不到项目';
-
-  @override
-  String get projectDetailNotFoundBackToList => '前往项目列表';
 
   @override
   String get projectDetailFirstFrameTooltip => '第一帧';
@@ -3572,42 +3503,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get projectListEmptyHint => '点击「＋」新建';
-
-  @override
-  String projectListNoMatchTitle(String query) {
-    return '没有与“$query”匹配的作品';
-  }
-
-  @override
-  String get projectListNoMatchNameHint => '正在所有文件夹中按名称搜索，不区分大小写和全角半角。';
-
-  @override
-  String get projectListNoMatchTagHint => '正在所有文件夹中按作品标签搜索。';
-
-  @override
-  String get projectListClearSearch => '清除搜索';
-
-  @override
-  String get projectListNoFavoritesTitle => '这里没有收藏的作品';
-
-  @override
-  String get projectListNoFavoritesHint => '在作品或文件夹的菜单中选择“加入收藏”，即可显示在这里。';
-
-  @override
-  String get projectListShowAll => '显示全部';
-
-  @override
-  String get projectListEmptyFolderTitle => '此文件夹为空';
-
-  @override
-  String projectListUpdatedOn(String date) {
-    return '$date更新';
-  }
-
-  @override
-  String projectListInFolder(String path) {
-    return '位于：$path';
-  }
 
   @override
   String get projectListOpenAction => '打开';
@@ -6122,9 +6017,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityWorkDetailTitle => '作品详情';
 
   @override
-  String get communityWorkNotFoundMessage => '未找到该作品';
-
-  @override
   String get communityWorkHiddenByFilterMessage => '该作品已按显示筛选设置隐藏';
 
   @override
@@ -7626,6 +7518,206 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeWorksLoadFailed => '无法加载导出的作品';
 
   @override
+  String get newProjectCreating => '正在创建…';
+
+  @override
+  String get newProjectCreateFailed => '无法保存项目。请检查存储空间和保存位置，然后重试。';
+
+  @override
+  String get communityCreatorLabel => '作者';
+
+  @override
+  String get communityThresholdAny => '不限';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '至少 $count 次观看';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '至少 $count 个收藏';
+  }
+
+  @override
+  String get communityTileSize => '作品卡片大小';
+
+  @override
+  String get communityMutedWordsEmpty => '没有隐藏的关键词';
+
+  @override
+  String get communityMutedTagsEmpty => '没有隐藏的标签';
+
+  @override
+  String get communityMuteShort => '隐藏';
+
+  @override
+  String get communityMuteConfirmTitle => '要隐藏这位用户吗？';
+
+  @override
+  String get communityMuteConfirmBody => '将不再显示这位用户的作品。';
+
+  @override
+  String get communityMuteConfirmAction => '隐藏';
+
+  @override
+  String get communityUnmuteConfirmTitle => '要重新显示这位用户吗？';
+
+  @override
+  String get communityUnmuteConfirmAction => '重新显示';
+
+  @override
+  String get communityMuteNo => '否';
+
+  @override
+  String get communityMuteDone => '已隐藏这位用户';
+
+  @override
+  String get communityUnmuteDone => '已重新显示这位用户';
+
+  @override
+  String get communityMilestoneNotificationsTitle => '通知';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return '关注者达到 $count 人';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '作品《$title》的收藏达到 $count 个';
+  }
+
+  @override
+  String get communitySearchHistory => '搜索历史';
+
+  @override
+  String get communitySearchHistoryEmpty => '暂无搜索历史';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => '删除此保存的搜索条件？';
+
+  @override
+  String get communitySortLabel => '排序';
+
+  @override
+  String get homeTrashOperationFailed => '无法完成操作。请检查存储空间后重试。';
+
+  @override
+  String get homeTrashWorking => '正在处理…';
+
+  @override
+  String get homeAddTooltip => '新建';
+
+  @override
+  String get commonShowExplanation => '显示说明';
+
+  @override
+  String get homeViewModeTooltip => '显示大小';
+
+  @override
+  String homeMoveToTrashSkipFavorites(int count) {
+    return '$count个已收藏的项目不会移动（取消收藏后即可移动）。';
+  }
+
+  @override
+  String get homeMoveToTrashNothing => '没有可移至回收站的项目（收藏的项目不会移动）。';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '已将$count项移至回收站';
+  }
+
+  @override
+  String get homeUndoAction => '撤销';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '已剪切$count项。打开目标位置后，点按右上角的粘贴。';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '已复制$count项。打开要粘贴的位置后，点按右上角的粘贴。';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '已粘贴$count项';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count个文件夹无法移入自身或其子文件夹，已保留为剪切状态。';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '有$count项因原作品已不存在（已移至回收站或已删除）而无法粘贴。';
+  }
+
+  @override
+  String get homePasteFailed => '部分项目未能粘贴，请重试。';
+
+  @override
+  String get homeCutPendingHint => '已剪切（等待粘贴）';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name（副本）';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name（副本 $number）';
+  }
+
+  @override
+  String get homeDrawerTutorial => '使用方法';
+
+  @override
+  String get themeColorAccentText => '强调文字与图标颜色';
+
+  @override
+  String get projectDetailNotFoundBackToList => '前往项目列表';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return '没有与“$query”匹配的作品';
+  }
+
+  @override
+  String get projectListNoMatchNameHint => '正在所有文件夹中按名称搜索，不区分大小写和全角半角。';
+
+  @override
+  String get projectListNoMatchTagHint => '正在所有文件夹中按作品标签搜索。';
+
+  @override
+  String get projectListClearSearch => '清除搜索';
+
+  @override
+  String get projectListNoFavoritesTitle => '这里没有收藏的作品';
+
+  @override
+  String get projectListNoFavoritesHint => '在作品或文件夹的菜单中选择“加入收藏”，即可显示在这里。';
+
+  @override
+  String get projectListShowAll => '显示全部';
+
+  @override
+  String get projectListEmptyFolderTitle => '此文件夹为空';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return '$date更新';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return '位于：$path';
+  }
+
+  @override
   String get homeProjectsLoadFailed => '无法加载项目';
 
   @override
@@ -7648,15 +7740,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errorLogClear => '清除记录';
-
-  @override
-  String get newProjectCreating => '正在创建…';
-
-  @override
-  String get newProjectCreateFailed => '无法保存项目。请检查存储空间和保存位置，然后重试。';
-
-  @override
-  String get communityCreatorLabel => '作者';
 
   @override
   String get tutorialSkip => '跳过';
@@ -7813,80 +7896,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get communityThresholdAny => '不限';
-
-  @override
-  String communityMinimumViewsOption(String count) {
-    return '至少 $count 次观看';
-  }
-
-  @override
-  String communityMinimumBookmarksOption(String count) {
-    return '至少 $count 个收藏';
-  }
-
-  @override
-  String get communityTileSize => '作品卡片大小';
-
-  @override
-  String get communityMutedWordsEmpty => '没有隐藏的关键词';
-
-  @override
-  String get communityMutedTagsEmpty => '没有隐藏的标签';
-
-  @override
-  String get communityMuteShort => '隐藏';
-
-  @override
-  String get communityMuteConfirmTitle => '要隐藏这位用户吗？';
-
-  @override
-  String get communityMuteConfirmBody => '将不再显示这位用户的作品。';
-
-  @override
-  String get communityMuteConfirmAction => '隐藏';
-
-  @override
-  String get communityUnmuteConfirmTitle => '要重新显示这位用户吗？';
-
-  @override
-  String get communityUnmuteConfirmAction => '重新显示';
-
-  @override
-  String get communityMuteNo => '否';
-
-  @override
-  String get communityMuteDone => '已隐藏这位用户';
-
-  @override
-  String get communityUnmuteDone => '已重新显示这位用户';
-
-  @override
-  String get communityMilestoneNotificationsTitle => '通知';
-
-  @override
-  String communityFollowerMilestone(String count) {
-    return '关注者达到 $count 人';
-  }
-
-  @override
-  String communityBookmarkMilestone(String title, String count) {
-    return '作品《$title》的收藏达到 $count 个';
-  }
-
-  @override
-  String get communitySearchHistory => '搜索历史';
-
-  @override
-  String get communitySearchHistoryEmpty => '暂无搜索历史';
-
-  @override
-  String get communityDeleteSavedSearchConfirm => '删除此保存的搜索条件？';
-
-  @override
-  String get communitySortLabel => '排序';
-
-  @override
   String get pcMenuFile => '文件';
 
   @override
@@ -8040,12 +8049,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get homeAddSheetNewFolder => '新增資料夾';
 
   @override
-  String get homeAddTooltip => '新增';
-
-  @override
-  String get commonShowExplanation => '顯示說明';
-
-  @override
   String get homeSelectionAllSelect => '全選';
 
   @override
@@ -8097,9 +8100,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeViewModeDetail => '詳細';
-
-  @override
-  String get homeViewModeTooltip => '顯示大小';
 
   @override
   String get homeSortFieldName => '名稱';
@@ -8350,61 +8350,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String homeMoveToTrashSkipFavorites(int count) {
-    return '$count項我的最愛不會移動（取消我的最愛後即可移動）。';
-  }
-
-  @override
-  String get homeMoveToTrashNothing => '沒有可移至垃圾桶的項目（我的最愛不會移動）。';
-
-  @override
-  String homeMovedToTrashSnackbar(int count) {
-    return '已將$count項移至垃圾桶';
-  }
-
-  @override
-  String get homeUndoAction => '復原';
-
-  @override
-  String homeCutSnackbar(int count) {
-    return '已剪下$count項。開啟目標位置後，點按右上角的貼上。';
-  }
-
-  @override
-  String homeCopiedSnackbar(int count) {
-    return '已複製$count項。開啟要貼上的位置後，點按右上角的貼上。';
-  }
-
-  @override
-  String homePastedSnackbar(int count) {
-    return '已貼上$count項';
-  }
-
-  @override
-  String homePasteSkippedIntoSelf(int count) {
-    return '$count個資料夾無法移入自身或其子資料夾，已保留為剪下狀態。';
-  }
-
-  @override
-  String homePasteSkippedMissing(int count) {
-    return '有$count項因原作品已不存在（已移至垃圾桶或已刪除）而無法貼上。';
-  }
-
-  @override
-  String get homePasteFailed => '部分項目未能貼上，請再試一次。';
-
-  @override
-  String get homeCutPendingHint => '已剪下（等待貼上）';
-
-  @override
-  String projectDuplicateName(String name) {
-    return '$name（副本）';
-  }
-
-  @override
-  String projectDuplicateNameNumbered(String name, int number) {
-    return '$name（副本 $number）';
-  }
+  String get homePasteSnackbar => '已貼上';
 
   @override
   String get commonOk => '確定';
@@ -8489,9 +8435,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeDrawerTips => '使用技巧';
-
-  @override
-  String get homeDrawerTutorial => '使用方法';
 
   @override
   String get homeDrawerPremium => 'Premium';
@@ -10562,9 +10505,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get themeColorAccent => '強調色';
 
   @override
-  String get themeColorAccentText => '強調文字與圖示顏色';
-
-  @override
   String get themeColorText => '內文及一般文字顏色';
 
   @override
@@ -10871,6 +10811,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get canvasSizePresetEditDialogTitle => '編輯尺寸';
 
   @override
+  String get canvasSizePresetDuplicateSuffix => '副本';
+
+  @override
   String newProjectDurationLabel(String max) {
     return '時長（最大$max）';
   }
@@ -11136,9 +11079,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get projectDetailNotFoundBody => '找不到專案';
-
-  @override
-  String get projectDetailNotFoundBackToList => '前往專案列表';
 
   @override
   String get projectDetailFirstFrameTooltip => '第一格';
@@ -11544,42 +11484,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get projectListEmptyHint => '點擊「＋」新增';
-
-  @override
-  String projectListNoMatchTitle(String query) {
-    return '沒有與「$query」相符的作品';
-  }
-
-  @override
-  String get projectListNoMatchNameHint => '正在所有資料夾中依名稱搜尋，不區分大小寫與全形半形。';
-
-  @override
-  String get projectListNoMatchTagHint => '正在所有資料夾中依作品標籤搜尋。';
-
-  @override
-  String get projectListClearSearch => '清除搜尋';
-
-  @override
-  String get projectListNoFavoritesTitle => '這裡沒有我的最愛';
-
-  @override
-  String get projectListNoFavoritesHint => '在作品或資料夾的選單中選擇「加入最愛」，即可顯示在這裡。';
-
-  @override
-  String get projectListShowAll => '顯示全部';
-
-  @override
-  String get projectListEmptyFolderTitle => '此資料夾是空的';
-
-  @override
-  String projectListUpdatedOn(String date) {
-    return '$date更新';
-  }
-
-  @override
-  String projectListInFolder(String path) {
-    return '位於：$path';
-  }
 
   @override
   String get projectListOpenAction => '開啟';
@@ -14095,9 +13999,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityWorkDetailTitle => '作品詳情';
 
   @override
-  String get communityWorkNotFoundMessage => '找不到該作品';
-
-  @override
   String get communityWorkHiddenByFilterMessage => '該作品已依顯示篩選設定隱藏';
 
   @override
@@ -15601,6 +15502,206 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get homeWorksLoadFailed => '無法載入匯出的作品';
 
   @override
+  String get newProjectCreating => '正在建立…';
+
+  @override
+  String get newProjectCreateFailed => '無法儲存專案。請檢查儲存空間與儲存位置，然後再試一次。';
+
+  @override
+  String get communityCreatorLabel => '作者';
+
+  @override
+  String get communityThresholdAny => '不限';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '至少 $count 次觀看';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '至少 $count 個收藏';
+  }
+
+  @override
+  String get communityTileSize => '作品卡片大小';
+
+  @override
+  String get communityMutedWordsEmpty => '沒有隱藏的關鍵字';
+
+  @override
+  String get communityMutedTagsEmpty => '沒有隱藏的標籤';
+
+  @override
+  String get communityMuteShort => '隱藏';
+
+  @override
+  String get communityMuteConfirmTitle => '要隱藏這位使用者嗎？';
+
+  @override
+  String get communityMuteConfirmBody => '將不再顯示這位使用者的作品。';
+
+  @override
+  String get communityMuteConfirmAction => '隱藏';
+
+  @override
+  String get communityUnmuteConfirmTitle => '要重新顯示這位使用者嗎？';
+
+  @override
+  String get communityUnmuteConfirmAction => '重新顯示';
+
+  @override
+  String get communityMuteNo => '否';
+
+  @override
+  String get communityMuteDone => '已隱藏這位使用者';
+
+  @override
+  String get communityUnmuteDone => '已重新顯示這位使用者';
+
+  @override
+  String get communityMilestoneNotificationsTitle => '通知';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return '追蹤者達到 $count 人';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '作品《$title》的收藏達到 $count 個';
+  }
+
+  @override
+  String get communitySearchHistory => '搜尋紀錄';
+
+  @override
+  String get communitySearchHistoryEmpty => '尚無搜尋紀錄';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => '要刪除這個已儲存的搜尋條件嗎？';
+
+  @override
+  String get communitySortLabel => '排序';
+
+  @override
+  String get homeTrashOperationFailed => '無法完成操作。請檢查儲存空間後重試。';
+
+  @override
+  String get homeTrashWorking => '處理中…';
+
+  @override
+  String get homeAddTooltip => '新增';
+
+  @override
+  String get commonShowExplanation => '顯示說明';
+
+  @override
+  String get homeViewModeTooltip => '顯示大小';
+
+  @override
+  String homeMoveToTrashSkipFavorites(int count) {
+    return '$count項我的最愛不會移動（取消我的最愛後即可移動）。';
+  }
+
+  @override
+  String get homeMoveToTrashNothing => '沒有可移至垃圾桶的項目（我的最愛不會移動）。';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '已將$count項移至垃圾桶';
+  }
+
+  @override
+  String get homeUndoAction => '復原';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '已剪下$count項。開啟目標位置後，點按右上角的貼上。';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '已複製$count項。開啟要貼上的位置後，點按右上角的貼上。';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '已貼上$count項';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count個資料夾無法移入自身或其子資料夾，已保留為剪下狀態。';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '有$count項因原作品已不存在（已移至垃圾桶或已刪除）而無法貼上。';
+  }
+
+  @override
+  String get homePasteFailed => '部分項目未能貼上，請再試一次。';
+
+  @override
+  String get homeCutPendingHint => '已剪下（等待貼上）';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name（副本）';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name（副本 $number）';
+  }
+
+  @override
+  String get homeDrawerTutorial => '使用方法';
+
+  @override
+  String get themeColorAccentText => '強調文字與圖示顏色';
+
+  @override
+  String get projectDetailNotFoundBackToList => '前往專案列表';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return '沒有與「$query」相符的作品';
+  }
+
+  @override
+  String get projectListNoMatchNameHint => '正在所有資料夾中依名稱搜尋，不區分大小寫與全形半形。';
+
+  @override
+  String get projectListNoMatchTagHint => '正在所有資料夾中依作品標籤搜尋。';
+
+  @override
+  String get projectListClearSearch => '清除搜尋';
+
+  @override
+  String get projectListNoFavoritesTitle => '這裡沒有我的最愛';
+
+  @override
+  String get projectListNoFavoritesHint => '在作品或資料夾的選單中選擇「加入最愛」，即可顯示在這裡。';
+
+  @override
+  String get projectListShowAll => '顯示全部';
+
+  @override
+  String get projectListEmptyFolderTitle => '此資料夾是空的';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return '$date更新';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return '位於：$path';
+  }
+
+  @override
   String get homeProjectsLoadFailed => '無法載入專案';
 
   @override
@@ -15623,15 +15724,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get errorLogClear => '清除記錄';
-
-  @override
-  String get newProjectCreating => '正在建立…';
-
-  @override
-  String get newProjectCreateFailed => '無法儲存專案。請檢查儲存空間與儲存位置，然後再試一次。';
-
-  @override
-  String get communityCreatorLabel => '作者';
 
   @override
   String get tutorialSkip => '略過';
@@ -15786,80 +15878,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String newProjectNumberRangeError(int min, int max) {
     return '請輸入$min到$max之間的數字';
   }
-
-  @override
-  String get communityThresholdAny => '不限';
-
-  @override
-  String communityMinimumViewsOption(String count) {
-    return '至少 $count 次觀看';
-  }
-
-  @override
-  String communityMinimumBookmarksOption(String count) {
-    return '至少 $count 個收藏';
-  }
-
-  @override
-  String get communityTileSize => '作品卡片大小';
-
-  @override
-  String get communityMutedWordsEmpty => '沒有隱藏的關鍵字';
-
-  @override
-  String get communityMutedTagsEmpty => '沒有隱藏的標籤';
-
-  @override
-  String get communityMuteShort => '隱藏';
-
-  @override
-  String get communityMuteConfirmTitle => '要隱藏這位使用者嗎？';
-
-  @override
-  String get communityMuteConfirmBody => '將不再顯示這位使用者的作品。';
-
-  @override
-  String get communityMuteConfirmAction => '隱藏';
-
-  @override
-  String get communityUnmuteConfirmTitle => '要重新顯示這位使用者嗎？';
-
-  @override
-  String get communityUnmuteConfirmAction => '重新顯示';
-
-  @override
-  String get communityMuteNo => '否';
-
-  @override
-  String get communityMuteDone => '已隱藏這位使用者';
-
-  @override
-  String get communityUnmuteDone => '已重新顯示這位使用者';
-
-  @override
-  String get communityMilestoneNotificationsTitle => '通知';
-
-  @override
-  String communityFollowerMilestone(String count) {
-    return '追蹤者達到 $count 人';
-  }
-
-  @override
-  String communityBookmarkMilestone(String title, String count) {
-    return '作品《$title》的收藏達到 $count 個';
-  }
-
-  @override
-  String get communitySearchHistory => '搜尋紀錄';
-
-  @override
-  String get communitySearchHistoryEmpty => '尚無搜尋紀錄';
-
-  @override
-  String get communityDeleteSavedSearchConfirm => '要刪除這個已儲存的搜尋條件嗎？';
-
-  @override
-  String get communitySortLabel => '排序';
 
   @override
   String get pcMenuFile => '檔案';

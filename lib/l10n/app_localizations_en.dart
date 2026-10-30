@@ -70,12 +70,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeAddSheetNewFolder => 'New Folder';
 
   @override
-  String get homeAddTooltip => 'Create new';
-
-  @override
-  String get commonShowExplanation => 'Show explanation';
-
-  @override
   String get homeSelectionAllSelect => 'Select All';
 
   @override
@@ -128,9 +122,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => 'Detail';
-
-  @override
-  String get homeViewModeTooltip => 'Display size';
 
   @override
   String get homeSortFieldName => 'Name';
@@ -390,63 +381,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String homeMoveToTrashSkipFavorites(int count) {
-    return '$count favorite item(s) will stay (remove them from favorites to move them).';
-  }
-
-  @override
-  String get homeMoveToTrashNothing =>
-      'Nothing to move to the trash (favorites are not moved).';
-
-  @override
-  String homeMovedToTrashSnackbar(int count) {
-    return 'Moved $count item(s) to the trash';
-  }
-
-  @override
-  String get homeUndoAction => 'Undo';
-
-  @override
-  String homeCutSnackbar(int count) {
-    return 'Cut $count item(s). Open the destination and tap Paste at the top right.';
-  }
-
-  @override
-  String homeCopiedSnackbar(int count) {
-    return 'Copied $count item(s). Open where you want them and tap Paste at the top right.';
-  }
-
-  @override
-  String homePastedSnackbar(int count) {
-    return 'Pasted $count item(s)';
-  }
-
-  @override
-  String homePasteSkippedIntoSelf(int count) {
-    return '$count folder(s) can’t move into themselves or their subfolders, so they are still cut and ready to paste elsewhere.';
-  }
-
-  @override
-  String homePasteSkippedMissing(int count) {
-    return '$count item(s) couldn’t be pasted because the original is gone (moved to the trash or deleted).';
-  }
-
-  @override
-  String get homePasteFailed =>
-      'Some items couldn’t be pasted. Please try again.';
-
-  @override
-  String get homeCutPendingHint => 'Cut, waiting to be pasted';
-
-  @override
-  String projectDuplicateName(String name) {
-    return '$name (copy)';
-  }
-
-  @override
-  String projectDuplicateNameNumbered(String name, int number) {
-    return '$name (copy $number)';
-  }
+  String get homePasteSnackbar => 'Pasted';
 
   @override
   String get commonOk => 'OK';
@@ -531,9 +466,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeDrawerTips => 'Tips';
-
-  @override
-  String get homeDrawerTutorial => 'How to use';
 
   @override
   String get homeDrawerPremium => 'Premium';
@@ -2702,9 +2634,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeColorAccent => 'Accent Color';
 
   @override
-  String get themeColorAccentText => 'Accent text & icon color';
-
-  @override
   String get themeColorText => 'Body & regular text color';
 
   @override
@@ -3021,6 +2950,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => 'Edit size';
 
   @override
+  String get canvasSizePresetDuplicateSuffix => 'copy';
+
+  @override
   String newProjectDurationLabel(String max) {
     return 'Length (max $max)';
   }
@@ -3293,9 +3225,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get projectDetailNotFoundBody => 'Project not found';
-
-  @override
-  String get projectDetailNotFoundBackToList => 'Go to projects';
 
   @override
   String get projectDetailFirstFrameTooltip => 'First frame';
@@ -3713,45 +3642,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get projectListEmptyHint => 'Tap + to create a new one';
-
-  @override
-  String projectListNoMatchTitle(String query) {
-    return 'Nothing matches “$query”';
-  }
-
-  @override
-  String get projectListNoMatchNameHint =>
-      'Searching names in every folder. Upper and lower case, and full- and half-width letters, count as the same.';
-
-  @override
-  String get projectListNoMatchTagHint =>
-      'Searching the tags of works in every folder.';
-
-  @override
-  String get projectListClearSearch => 'Clear search';
-
-  @override
-  String get projectListNoFavoritesTitle => 'No favorites here';
-
-  @override
-  String get projectListNoFavoritesHint =>
-      'Choose “Add to favorites” in the menu of a work or folder to show it here.';
-
-  @override
-  String get projectListShowAll => 'Show all';
-
-  @override
-  String get projectListEmptyFolderTitle => 'This folder is empty';
-
-  @override
-  String projectListUpdatedOn(String date) {
-    return 'Updated $date';
-  }
-
-  @override
-  String projectListInFolder(String path) {
-    return 'In $path';
-  }
 
   @override
   String get projectListOpenAction => 'Open';
@@ -6377,9 +6267,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityWorkDetailTitle => 'Work Details';
 
   @override
-  String get communityWorkNotFoundMessage => 'This work could not be found';
-
-  @override
   String get communityWorkHiddenByFilterMessage =>
       'This work is hidden by your display filters';
 
@@ -7964,6 +7851,214 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeWorksLoadFailed => 'Could not load your exported works';
 
   @override
+  String get newProjectCreating => 'Creating…';
+
+  @override
+  String get newProjectCreateFailed =>
+      'Could not save the project. Check your storage space and save location, then try again.';
+
+  @override
+  String get communityCreatorLabel => 'Creator';
+
+  @override
+  String get communityThresholdAny => 'No condition';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '$count views or more';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '$count bookmarks or more';
+  }
+
+  @override
+  String get communityTileSize => 'Work tile size';
+
+  @override
+  String get communityMutedWordsEmpty => 'No hidden keywords';
+
+  @override
+  String get communityMutedTagsEmpty => 'No hidden tags';
+
+  @override
+  String get communityMuteShort => 'Hide';
+
+  @override
+  String get communityMuteConfirmTitle => 'Hide this creator?';
+
+  @override
+  String get communityMuteConfirmBody =>
+      'This creator\'s works will be hidden.';
+
+  @override
+  String get communityMuteConfirmAction => 'Hide';
+
+  @override
+  String get communityUnmuteConfirmTitle => 'Show this creator again?';
+
+  @override
+  String get communityUnmuteConfirmAction => 'Show';
+
+  @override
+  String get communityMuteNo => 'No';
+
+  @override
+  String get communityMuteDone => 'Creator hidden';
+
+  @override
+  String get communityUnmuteDone => 'Creator shown again';
+
+  @override
+  String get communityMilestoneNotificationsTitle => 'Notifications';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return 'You reached $count followers';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '“$title” reached $count bookmarks';
+  }
+
+  @override
+  String get communitySearchHistory => 'Search history';
+
+  @override
+  String get communitySearchHistoryEmpty => 'No search history';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => 'Delete this saved search?';
+
+  @override
+  String get communitySortLabel => 'Sort';
+
+  @override
+  String get homeTrashOperationFailed =>
+      'The operation could not be completed. Check your storage and try again.';
+
+  @override
+  String get homeTrashWorking => 'Working…';
+
+  @override
+  String get homeAddTooltip => 'Create new';
+
+  @override
+  String get commonShowExplanation => 'Show explanation';
+
+  @override
+  String get homeViewModeTooltip => 'Display size';
+
+  @override
+  String homeMoveToTrashSkipFavorites(int count) {
+    return '$count favorite item(s) will stay (remove them from favorites to move them).';
+  }
+
+  @override
+  String get homeMoveToTrashNothing =>
+      'Nothing to move to the trash (favorites are not moved).';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return 'Moved $count item(s) to the trash';
+  }
+
+  @override
+  String get homeUndoAction => 'Undo';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return 'Cut $count item(s). Open the destination and tap Paste at the top right.';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return 'Copied $count item(s). Open where you want them and tap Paste at the top right.';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return 'Pasted $count item(s)';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count folder(s) can’t move into themselves or their subfolders, so they are still cut and ready to paste elsewhere.';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '$count item(s) couldn’t be pasted because the original is gone (moved to the trash or deleted).';
+  }
+
+  @override
+  String get homePasteFailed =>
+      'Some items couldn’t be pasted. Please try again.';
+
+  @override
+  String get homeCutPendingHint => 'Cut, waiting to be pasted';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (copy)';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name (copy $number)';
+  }
+
+  @override
+  String get homeDrawerTutorial => 'How to use';
+
+  @override
+  String get themeColorAccentText => 'Accent text & icon color';
+
+  @override
+  String get projectDetailNotFoundBackToList => 'Go to projects';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return 'Nothing matches “$query”';
+  }
+
+  @override
+  String get projectListNoMatchNameHint =>
+      'Searching names in every folder. Upper and lower case, and full- and half-width letters, count as the same.';
+
+  @override
+  String get projectListNoMatchTagHint =>
+      'Searching the tags of works in every folder.';
+
+  @override
+  String get projectListClearSearch => 'Clear search';
+
+  @override
+  String get projectListNoFavoritesTitle => 'No favorites here';
+
+  @override
+  String get projectListNoFavoritesHint =>
+      'Choose “Add to favorites” in the menu of a work or folder to show it here.';
+
+  @override
+  String get projectListShowAll => 'Show all';
+
+  @override
+  String get projectListEmptyFolderTitle => 'This folder is empty';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return 'Updated $date';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return 'In $path';
+  }
+
+  @override
   String get homeProjectsLoadFailed => 'Could not load your projects';
 
   @override
@@ -7988,16 +8083,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorLogClear => 'Clear log';
-
-  @override
-  String get newProjectCreating => 'Creating…';
-
-  @override
-  String get newProjectCreateFailed =>
-      'Could not save the project. Check your storage space and save location, then try again.';
-
-  @override
-  String get communityCreatorLabel => 'Creator';
 
   @override
   String get tutorialSkip => 'Skip';
@@ -8180,81 +8265,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String newProjectNumberRangeError(int min, int max) {
     return 'Enter a number from $min to $max';
   }
-
-  @override
-  String get communityThresholdAny => 'No condition';
-
-  @override
-  String communityMinimumViewsOption(String count) {
-    return '$count views or more';
-  }
-
-  @override
-  String communityMinimumBookmarksOption(String count) {
-    return '$count bookmarks or more';
-  }
-
-  @override
-  String get communityTileSize => 'Work tile size';
-
-  @override
-  String get communityMutedWordsEmpty => 'No hidden keywords';
-
-  @override
-  String get communityMutedTagsEmpty => 'No hidden tags';
-
-  @override
-  String get communityMuteShort => 'Hide';
-
-  @override
-  String get communityMuteConfirmTitle => 'Hide this creator?';
-
-  @override
-  String get communityMuteConfirmBody =>
-      'This creator\'s works will be hidden.';
-
-  @override
-  String get communityMuteConfirmAction => 'Hide';
-
-  @override
-  String get communityUnmuteConfirmTitle => 'Show this creator again?';
-
-  @override
-  String get communityUnmuteConfirmAction => 'Show';
-
-  @override
-  String get communityMuteNo => 'No';
-
-  @override
-  String get communityMuteDone => 'Creator hidden';
-
-  @override
-  String get communityUnmuteDone => 'Creator shown again';
-
-  @override
-  String get communityMilestoneNotificationsTitle => 'Notifications';
-
-  @override
-  String communityFollowerMilestone(String count) {
-    return 'You reached $count followers';
-  }
-
-  @override
-  String communityBookmarkMilestone(String title, String count) {
-    return '“$title” reached $count bookmarks';
-  }
-
-  @override
-  String get communitySearchHistory => 'Search history';
-
-  @override
-  String get communitySearchHistoryEmpty => 'No search history';
-
-  @override
-  String get communityDeleteSavedSearchConfirm => 'Delete this saved search?';
-
-  @override
-  String get communitySortLabel => 'Sort';
 
   @override
   String get pcMenuFile => 'File';

@@ -171,12 +171,16 @@ class CommunityService extends ChangeNotifier {
   bool get searchReady => _searchReady;
   List<CommunityWork> get searchedWorks => [
     for (final work in _works)
-      if (_searchIds.contains(work.id) && work.isNiarimPublished && !work.isUnavailable)
+      if (_searchIds.contains(work.id) &&
+          work.isNiarimPublished &&
+          !work.isUnavailable)
         work,
   ];
   List<CommunityWork> get latestPageWorks => [
     for (final work in _works)
-      if (_latestIds.contains(work.id) && work.isNiarimPublished && !work.isUnavailable)
+      if (_latestIds.contains(work.id) &&
+          work.isNiarimPublished &&
+          !work.isUnavailable)
         work,
   ];
 
@@ -230,7 +234,10 @@ class CommunityService extends ChangeNotifier {
     _fetchingMoreLatest = true;
     notifyListeners();
     try {
-      final page = await client.latestWorksPage(limit: pageSize, cursor: cursor);
+      final page = await client.latestWorksPage(
+        limit: pageSize,
+        cursor: cursor,
+      );
       if (_disposed || epoch != _latestEpoch) return false;
       _latestCursor = page.nextCursor;
       for (final apiWork in page.works) {
@@ -275,7 +282,9 @@ class CommunityService extends ChangeNotifier {
       if (_disposed || epoch != _searchEpoch) return false;
       _searchCursor = page.nextCursor;
       _searchIds = {for (final w in page.works) w.workId};
-      for (final w in page.works) { _upsert(_plazaCopy(w)); }
+      for (final w in page.works) {
+        _upsert(_plazaCopy(w));
+      }
       _pruneUnconfirmed();
       notifyListeners();
       return true;
@@ -691,7 +700,8 @@ class CommunityService extends ChangeNotifier {
     bool includeHidden = false,
   }) => _works
       .where(
-        (w) => w.authorId == authorId &&
+        (w) =>
+            w.authorId == authorId &&
             (includeHidden || isDiscoverableForViewer(w)),
       )
       .toList();
@@ -815,7 +825,10 @@ class CommunityService extends ChangeNotifier {
     final owner = _currentUserId;
     _fetchingMoreOwn = true;
     try {
-      final page = await _awaitInAccount(client.myWorks(cursor: cursor), revision);
+      final page = await _awaitInAccount(
+        client.myWorks(cursor: cursor),
+        revision,
+      );
       if (!_isCurrentAccount(revision) || page.authorId != owner) return null;
       _ownCursor = page.nextCursor;
       for (final apiWork in page.works) {
@@ -926,11 +939,16 @@ class CommunityService extends ChangeNotifier {
           ),
         );
       if (!_isCurrentAccount(revision)) return false;
-      final reposters = [...authors, if (me != null && !authors.contains(me)) me];
+      final reposters = [
+        ...authors,
+        if (me != null && !authors.contains(me)) me,
+      ];
       final reposts = await Future.wait<ApiRepostPage>([
         for (final id in reposters)
           id == me
-              ? client.repostsOf(id).then((entries) => ApiRepostPage(reposts: entries))
+              ? client
+                    .repostsOf(id)
+                    .then((entries) => ApiRepostPage(reposts: entries))
               : client.repostsOfPage(id),
       ]);
       if (!_isCurrentAccount(revision)) return false;
@@ -1026,12 +1044,15 @@ class CommunityService extends ChangeNotifier {
           final work = _plazaCopy(entry.work);
           _feedIds.add(work.id);
           _upsert(work);
-          _reposts.add(CommunityRepost(
-            workId: work.id,
-            reposterId: reposterId,
-            reposterName: _followedNames[reposterId] ?? authorNameOf(reposterId) ?? '',
-            repostedAt: entry.repostedAt,
-          ));
+          _reposts.add(
+            CommunityRepost(
+              workId: work.id,
+              reposterId: reposterId,
+              reposterName:
+                  _followedNames[reposterId] ?? authorNameOf(reposterId) ?? '',
+              repostedAt: entry.repostedAt,
+            ),
+          );
         }
       }
       _pruneUnconfirmed();
@@ -1080,7 +1101,9 @@ class CommunityService extends ChangeNotifier {
   Future<bool> loadMoreAuthorWorks(String authorId) async {
     final client = api;
     final cursor = _authorCursors[authorId];
-    if (client == null || cursor == null || !_fetchingMoreAuthors.add(authorId)) {
+    if (client == null ||
+        cursor == null ||
+        !_fetchingMoreAuthors.add(authorId)) {
       return false;
     }
     final revision = _accountRevision;
@@ -1661,9 +1684,7 @@ class CommunityService extends ChangeNotifier {
     final list = byWork.values.toList()
       ..sort((a, b) {
         final newestFirst = b.feedTime.compareTo(a.feedTime);
-        return newestFirst != 0
-            ? newestFirst
-            : a.work.id.compareTo(b.work.id);
+        return newestFirst != 0 ? newestFirst : a.work.id.compareTo(b.work.id);
       });
     return list;
   }

@@ -68,12 +68,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeAddSheetNewFolder => '新規フォルダ';
 
   @override
-  String get homeAddTooltip => '新規作成';
-
-  @override
-  String get commonShowExplanation => '説明を表示';
-
-  @override
   String get homeSelectionAllSelect => '全選択';
 
   @override
@@ -125,9 +119,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => '詳細';
-
-  @override
-  String get homeViewModeTooltip => '表示の大きさ';
 
   @override
   String get homeSortFieldName => '名前';
@@ -379,61 +370,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String homeMoveToTrashSkipFavorites(int count) {
-    return 'お気に入りの$count件は移動しません（お気に入りを外すと移動できます）。';
-  }
-
-  @override
-  String get homeMoveToTrashNothing => 'ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。';
-
-  @override
-  String homeMovedToTrashSnackbar(int count) {
-    return '$count件をゴミ箱へ移動しました';
-  }
-
-  @override
-  String get homeUndoAction => '元に戻す';
-
-  @override
-  String homeCutSnackbar(int count) {
-    return '$count件を切り取りました。移動先を開いて、右上の貼り付けを押してください。';
-  }
-
-  @override
-  String homeCopiedSnackbar(int count) {
-    return '$count件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。';
-  }
-
-  @override
-  String homePastedSnackbar(int count) {
-    return '$count件を貼り付けました';
-  }
-
-  @override
-  String homePasteSkippedIntoSelf(int count) {
-    return 'フォルダ$count件は、自分自身やその中へは移動できないため、切り取ったまま残しました。';
-  }
-
-  @override
-  String homePasteSkippedMissing(int count) {
-    return '$count件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。';
-  }
-
-  @override
-  String get homePasteFailed => '一部を貼り付けられませんでした。もう一度お試しください。';
-
-  @override
-  String get homeCutPendingHint => '切り取り中（貼り付けを待っています）';
-
-  @override
-  String projectDuplicateName(String name) {
-    return '$name (コピー)';
-  }
-
-  @override
-  String projectDuplicateNameNumbered(String name, int number) {
-    return '$name (コピー $number)';
-  }
+  String get homePasteSnackbar => '貼り付けました';
 
   @override
   String get commonOk => 'OK';
@@ -518,9 +455,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeDrawerTips => '活用Tips';
-
-  @override
-  String get homeDrawerTutorial => '使い方';
 
   @override
   String get homeDrawerPremium => 'プレミアム';
@@ -2603,9 +2537,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeColorAccent => 'アクセントカラー';
 
   @override
-  String get themeColorAccentText => 'アクセントの文字・アイコン色';
-
-  @override
   String get themeColorText => '本文・通常の文字色';
 
   @override
@@ -2913,6 +2844,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get canvasSizePresetEditDialogTitle => 'サイズを編集';
 
   @override
+  String get canvasSizePresetDuplicateSuffix => 'のコピー';
+
+  @override
   String newProjectDurationLabel(String max) {
     return '長さ（最大$max）';
   }
@@ -3179,9 +3113,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get projectDetailNotFoundBody => 'プロジェクトが見つかりません';
-
-  @override
-  String get projectDetailNotFoundBackToList => 'プロジェクトの一覧へ';
 
   @override
   String get projectDetailFirstFrameTooltip => '先頭フレーム';
@@ -3587,44 +3518,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get projectListEmptyHint => '＋ ボタンから新規作成';
-
-  @override
-  String projectListNoMatchTitle(String query) {
-    return '「$query」に一致する作品はありません';
-  }
-
-  @override
-  String get projectListNoMatchNameHint =>
-      'フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。';
-
-  @override
-  String get projectListNoMatchTagHint => 'フォルダの中も含めて、作品に付けたタグの一部で探しています。';
-
-  @override
-  String get projectListClearSearch => '検索をやめる';
-
-  @override
-  String get projectListNoFavoritesTitle => 'お気に入りの作品はありません';
-
-  @override
-  String get projectListNoFavoritesHint =>
-      '作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。';
-
-  @override
-  String get projectListShowAll => 'すべて表示';
-
-  @override
-  String get projectListEmptyFolderTitle => 'このフォルダは空です';
-
-  @override
-  String projectListUpdatedOn(String date) {
-    return '$date更新';
-  }
-
-  @override
-  String projectListInFolder(String path) {
-    return 'フォルダ：$path';
-  }
 
   @override
   String get projectListOpenAction => '開く';
@@ -6168,9 +6061,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityWorkDetailTitle => '作品詳細';
 
   @override
-  String get communityWorkNotFoundMessage => '作品が見つかりませんでした';
-
-  @override
   String get communityWorkHiddenByFilterMessage =>
       '表示フィルターの設定により、この作品は非表示になっています';
 
@@ -7698,6 +7588,209 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeWorksLoadFailed => '作品一覧を読み込めませんでした';
 
   @override
+  String get newProjectCreating => '作成しています…';
+
+  @override
+  String get newProjectCreateFailed =>
+      'プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。';
+
+  @override
+  String get communityCreatorLabel => '作者';
+
+  @override
+  String get communityThresholdAny => '条件なし';
+
+  @override
+  String communityMinimumViewsOption(String count) {
+    return '$count回再生以上';
+  }
+
+  @override
+  String communityMinimumBookmarksOption(String count) {
+    return '$count件以上';
+  }
+
+  @override
+  String get communityTileSize => '作品の表示サイズ';
+
+  @override
+  String get communityMutedWordsEmpty => '非表示ワードはありません';
+
+  @override
+  String get communityMutedTagsEmpty => '非表示タグはありません';
+
+  @override
+  String get communityMuteShort => '非表示';
+
+  @override
+  String get communityMuteConfirmTitle => 'このユーザーを非表示にしますか？';
+
+  @override
+  String get communityMuteConfirmBody => '非表示にするとこのユーザーの作品は表示されなくなります。';
+
+  @override
+  String get communityMuteConfirmAction => '非表示にする';
+
+  @override
+  String get communityUnmuteConfirmTitle => 'このユーザーの非表示を解除しますか？';
+
+  @override
+  String get communityUnmuteConfirmAction => '非表示を解除する';
+
+  @override
+  String get communityMuteNo => 'いいえ';
+
+  @override
+  String get communityMuteDone => 'このユーザーを非表示にしました';
+
+  @override
+  String get communityUnmuteDone => 'このユーザーの非表示を解除しました';
+
+  @override
+  String get communityMilestoneNotificationsTitle => '通知';
+
+  @override
+  String communityFollowerMilestone(String count) {
+    return 'フォロワーが$count人に達しました';
+  }
+
+  @override
+  String communityBookmarkMilestone(String title, String count) {
+    return '作品「$title」のブックマークが$count件に達しました';
+  }
+
+  @override
+  String get communitySearchHistory => '検索履歴';
+
+  @override
+  String get communitySearchHistoryEmpty => '検索履歴はありません';
+
+  @override
+  String get communityDeleteSavedSearchConfirm => '保存した検索条件を削除しますか？';
+
+  @override
+  String get communitySortLabel => '並び替え';
+
+  @override
+  String get homeTrashOperationFailed => '操作を完了できませんでした。保存先を確認して、もう一度お試しください。';
+
+  @override
+  String get homeTrashWorking => '処理中…';
+
+  @override
+  String get homeAddTooltip => '新規作成';
+
+  @override
+  String get commonShowExplanation => '説明を表示';
+
+  @override
+  String get homeViewModeTooltip => '表示の大きさ';
+
+  @override
+  String homeMoveToTrashSkipFavorites(int count) {
+    return 'お気に入りの$count件は移動しません（お気に入りを外すと移動できます）。';
+  }
+
+  @override
+  String get homeMoveToTrashNothing => 'ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '$count件をゴミ箱へ移動しました';
+  }
+
+  @override
+  String get homeUndoAction => '元に戻す';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '$count件を切り取りました。移動先を開いて、右上の貼り付けを押してください。';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '$count件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '$count件を貼り付けました';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return 'フォルダ$count件は、自分自身やその中へは移動できないため、切り取ったまま残しました。';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '$count件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。';
+  }
+
+  @override
+  String get homePasteFailed => '一部を貼り付けられませんでした。もう一度お試しください。';
+
+  @override
+  String get homeCutPendingHint => '切り取り中（貼り付けを待っています）';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (コピー)';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name (コピー $number)';
+  }
+
+  @override
+  String get homeDrawerTutorial => '使い方';
+
+  @override
+  String get themeColorAccentText => 'アクセントの文字・アイコン色';
+
+  @override
+  String get projectDetailNotFoundBackToList => 'プロジェクトの一覧へ';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return '「$query」に一致する作品はありません';
+  }
+
+  @override
+  String get projectListNoMatchNameHint =>
+      'フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。';
+
+  @override
+  String get projectListNoMatchTagHint => 'フォルダの中も含めて、作品に付けたタグの一部で探しています。';
+
+  @override
+  String get projectListClearSearch => '検索をやめる';
+
+  @override
+  String get projectListNoFavoritesTitle => 'お気に入りの作品はありません';
+
+  @override
+  String get projectListNoFavoritesHint =>
+      '作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。';
+
+  @override
+  String get projectListShowAll => 'すべて表示';
+
+  @override
+  String get projectListEmptyFolderTitle => 'このフォルダは空です';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return '$date更新';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return 'フォルダ：$path';
+  }
+
+  @override
   String get homeProjectsLoadFailed => 'プロジェクトを読み込めませんでした';
 
   @override
@@ -7721,16 +7814,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get errorLogClear => '記録を消す';
-
-  @override
-  String get newProjectCreating => '作成しています…';
-
-  @override
-  String get newProjectCreateFailed =>
-      'プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。';
-
-  @override
-  String get communityCreatorLabel => '作者';
 
   @override
   String get tutorialSkip => 'スキップ';
@@ -7885,80 +7968,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String newProjectNumberRangeError(int min, int max) {
     return '$min〜$maxの数字を入力してください';
   }
-
-  @override
-  String get communityThresholdAny => '条件なし';
-
-  @override
-  String communityMinimumViewsOption(String count) {
-    return '$count回再生以上';
-  }
-
-  @override
-  String communityMinimumBookmarksOption(String count) {
-    return '$count件以上';
-  }
-
-  @override
-  String get communityTileSize => '作品の表示サイズ';
-
-  @override
-  String get communityMutedWordsEmpty => '非表示ワードはありません';
-
-  @override
-  String get communityMutedTagsEmpty => '非表示タグはありません';
-
-  @override
-  String get communityMuteShort => '非表示';
-
-  @override
-  String get communityMuteConfirmTitle => 'このユーザーを非表示にしますか？';
-
-  @override
-  String get communityMuteConfirmBody => '非表示にするとこのユーザーの作品は表示されなくなります。';
-
-  @override
-  String get communityMuteConfirmAction => '非表示にする';
-
-  @override
-  String get communityUnmuteConfirmTitle => 'このユーザーの非表示を解除しますか？';
-
-  @override
-  String get communityUnmuteConfirmAction => '非表示を解除する';
-
-  @override
-  String get communityMuteNo => 'いいえ';
-
-  @override
-  String get communityMuteDone => 'このユーザーを非表示にしました';
-
-  @override
-  String get communityUnmuteDone => 'このユーザーの非表示を解除しました';
-
-  @override
-  String get communityMilestoneNotificationsTitle => '通知';
-
-  @override
-  String communityFollowerMilestone(String count) {
-    return 'フォロワーが$count人に達しました';
-  }
-
-  @override
-  String communityBookmarkMilestone(String title, String count) {
-    return '作品「$title」のブックマークが$count件に達しました';
-  }
-
-  @override
-  String get communitySearchHistory => '検索履歴';
-
-  @override
-  String get communitySearchHistoryEmpty => '検索履歴はありません';
-
-  @override
-  String get communityDeleteSavedSearchConfirm => '保存した検索条件を削除しますか？';
-
-  @override
-  String get communitySortLabel => '並び替え';
 
   @override
   String get pcMenuFile => 'ファイル';

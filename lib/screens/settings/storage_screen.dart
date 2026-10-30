@@ -11,6 +11,7 @@ import '../../services/storage_info_service.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/project_trash_dialog.dart';
 import '../../config/font_fallback.dart';
 
 /// 容量削減画面（ホーム画面ハンバーガーメニューから遷移）。
@@ -60,6 +61,7 @@ class StorageScreen extends StatefulWidget {
 class _StorageScreenState extends State<StorageScreen> {
   final _service = StorageInfoService();
   bool _loading = true;
+  bool _emptyingTrash = false;
   StorageBreakdown? _breakdown;
   DeviceSpaceInfo? _deviceSpace;
 
@@ -291,7 +293,7 @@ class _StorageScreenState extends State<StorageScreen> {
           icon: Icons.delete_sweep_outlined,
           title: l10n.storageEmptyTrashButton,
           subtitle: formatStorageBytes(trashBytes),
-          onTap: trashBytes <= 0 ? null : _confirmEmptyTrash,
+          onTap: trashBytes <= 0 || _emptyingTrash ? null : _confirmEmptyTrash,
         ),
         _actionTile(
           icon: Icons.folder_open_outlined,
@@ -376,16 +378,45 @@ class _StorageScreenState extends State<StorageScreen> {
   }
 
   Future<void> _confirmEmptyTrash() async {
+    if (_emptyingTrash) return;
     final l10n = AppLocalizations.of(context)!;
-    final ok = await confirmDelete(
-      context,
-      itemName: l10n.storageCategoryTrash,
-    );
-    if (!ok || !mounted) return;
     final ps = context.read<ProjectService>();
-    await ps.emptyTrash();
-    if (!mounted) return;
-    await _reload();
+    // ゴミ箱のフォルダ（中の作品ごと）も含めて空にする。
+    final targets = ps.trash.map((p) => p.id).toSet();
+    final folderTargets = ps.trashedFolders.map((t) => t.folder.id).toSet();
+    setState(() => _emptyingTrash = true);
+    try {
+      await showDialog<bool>(
+        context: context,
+        builder: (_) => ProjectTrashDialog(
+          title: l10n.homePermanentDeleteConfirmTitle,
+          message: l10n.homePermanentDeleteConfirmBody,
+          confirmLabel: l10n.commonDelete,
+          itemNames: const [],
+          pendingItemNames: () => [
+            for (final t in ps.trashedFolders)
+              if (folderTargets.contains(t.folder.id)) t.folder.name,
+            for (final p in ps.looseTrash)
+              if (targets.contains(p.id)) p.name,
+          ],
+          onApply: () async {
+            for (final id in folderTargets) {
+              await ps.permanentDeleteTrashedFolder(id);
+            }
+            for (final id in targets) {
+              if (ps.trash.any((p) => p.id == id)) {
+                await ps.permanentDelete(id);
+              }
+            }
+          },
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _emptyingTrash = false);
+        await _reload();
+      }
+    }
   }
 
   Future<void> _confirmEraseAll() async {
