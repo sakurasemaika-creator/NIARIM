@@ -485,6 +485,8 @@ void main() {
         find.byKey(const Key('communitySearchHistoryAccordion')),
       );
       expect(find.byKey(const Key('communitySearchHistory-0')), findsOneWidget);
+      expect(find.text('(1/10)'), findsWidgets);
+      expect(find.byKey(const Key('communityDeleteHistory-0')), findsOneWidget);
       await tapVisible(tester, find.byKey(const Key('communitySaveHistory-0')));
       await tapVisible(
         tester,
@@ -521,6 +523,13 @@ void main() {
         prefs.getString('community.searchHistory.v1.guest'),
         contains('夜明け'),
       );
+      await tapVisible(
+        tester,
+        find.byKey(const Key('communityDeleteHistory-0')),
+      );
+      expect(find.text('この検索履歴を削除しますか？'), findsOneWidget);
+      await tapVisible(tester, find.text(l10n.commonDelete).last);
+      expect(find.byKey(const Key('communitySearchHistory-0')), findsNothing);
     },
   );
 

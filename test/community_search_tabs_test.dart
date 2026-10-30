@@ -101,6 +101,36 @@ void main() {
     expect(find.byType(CommunityWorkCard), findsNothing);
   });
 
+
+  testWidgets('keyword and tag searches respect tags, title and -exclusions', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('communitySearchInput')), '手描き -風景');
+    await tester.tap(find.byKey(const Key('communitySearchButton')));
+    await tester.pumpAndSettle();
+    final keywordCards = tester.widgetList<CommunityWorkCard>(
+      find.byType(CommunityWorkCard)).toList();
+    expect(keywordCards, isNotEmpty);
+    expect(keywordCards.every((card) {
+      final w = card.work;
+      final terms = [...w.tags, w.title].join(' ').toLowerCase();
+      return terms.contains('手描き') && !terms.contains('風景');
+    }), isTrue);
+    await tester.tap(find.byKey(const Key('communitySearchModeToggle')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('communitySearchInput')), '手描き');
+    await tester.tap(find.byKey(const Key('communitySearchButton')));
+    await tester.pumpAndSettle();
+    final tagCards = tester.widgetList<CommunityWorkCard>(
+      find.byType(CommunityWorkCard)).toList();
+    expect(tagCards, isNotEmpty);
+    expect(tagCards.every((card) =>
+        card.work.tags.any((tag) => tag.contains('手描き'))), isTrue);
+  });
+
   testWidgets('long localized plaza tabs align to the leading edge', (
     tester,
   ) async {
