@@ -229,6 +229,21 @@ class ApiRepost {
   );
 }
 
+/// A single page of a followed author's repost activity.
+class ApiRepostPage {
+  final List<ApiRepost> reposts;
+  final String? nextCursor;
+  const ApiRepostPage({required this.reposts, this.nextCursor});
+
+  factory ApiRepostPage.fromJson(Map<String, dynamic> json) => ApiRepostPage(
+    reposts: (json['reposts'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(ApiRepost.fromJson)
+        .toList(),
+    nextCursor: json['nextCursor'] as String?,
+  );
+}
+
 class ApiBookmarkers {
   final String workId;
   final int totalCount;

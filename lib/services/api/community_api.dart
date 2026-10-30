@@ -138,6 +138,16 @@ class CommunityApi {
         .toList();
   }
 
+  /// Return only one 25-item repost page to the feed UI. The legacy
+  /// repostsOf() remains available for complete own-repost state.
+  Future<ApiRepostPage> repostsOfPage(String userId, {String? cursor}) async {
+    final json = await _client.getJson(
+      '/users/${Uri.encodeComponent(userId)}/reposts',
+      query: {'limit': '25', 'cursor': ?cursor},
+    );
+    return ApiRepostPage.fromJson(json);
+  }
+
   /// Public totals only. This API does not return any follower identities.
   Future<({int followers, int following})> socialCounts(String userId) async {
     final json = await _client.getJson(
