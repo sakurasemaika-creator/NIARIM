@@ -1153,6 +1153,7 @@
   "brushSettingsMixingWatercolorHint": "疊加透明的顏料。抬筆後顏料變乾，向筆刷外稍微暈開，顏色聚集在邊緣。",
   "projectDetailNotFoundTitle": "專案",
   "projectDetailNotFoundBody": "找不到專案",
+  "projectDetailNotFoundBackToList": "前往專案列表",
   "projectDetailFirstFrameTooltip": "第一格",
   "projectDetailPrevFrameTooltip": "後退1格",
   "projectDetailPauseTooltip": "暫停",

@@ -1153,6 +1153,7 @@
   "brushSettingsMixingWatercolorHint": "叠加透明的颜料。抬笔后颜料变干，向笔刷外稍微晕开，颜色聚集在边缘。",
   "projectDetailNotFoundTitle": "项目",
   "projectDetailNotFoundBody": "找不到项目",
+  "projectDetailNotFoundBackToList": "前往项目列表",
   "projectDetailFirstFrameTooltip": "第一帧",
   "projectDetailPrevFrameTooltip": "后退1帧",
   "projectDetailPauseTooltip": "暂停",

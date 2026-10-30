@@ -5873,6 +5873,12 @@ abstract class AppLocalizations {
   /// **'プロジェクトが見つかりません'**
   String get projectDetailNotFoundBody;
 
+  /// プロジェクト詳細で作品が見つからないときに、ホームのプロジェクトの一覧へ戻るボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトの一覧へ'**
+  String get projectDetailNotFoundBackToList;
+
   /// No description provided for @projectDetailFirstFrameTooltip.
   ///
   /// In ja, this message translates to:

@@ -154,6 +154,7 @@ class _FolderNameDialogState extends State<_FolderNameDialog> {
                   _error = null;
                 }),
                 // Enterでも作成・変更する（空白だけの名前では何もしない）。
+                onEditingComplete: () {},
                 onSubmitted: (_) => _submit(),
                 decoration: InputDecoration(
                   labelText: l10n.folderNameLabel,

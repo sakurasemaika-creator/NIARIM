@@ -3166,6 +3166,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectDetailNotFoundBody => '找不到项目';
 
   @override
+  String get projectDetailNotFoundBackToList => '前往项目列表';
+
+  @override
   String get projectDetailFirstFrameTooltip => '第一帧';
 
   @override
@@ -11043,6 +11046,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get projectDetailNotFoundBody => '找不到專案';
+
+  @override
+  String get projectDetailNotFoundBackToList => '前往專案列表';
 
   @override
   String get projectDetailFirstFrameTooltip => '第一格';

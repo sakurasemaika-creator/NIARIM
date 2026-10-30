@@ -92,6 +92,8 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
             autofocus: true,
             textInputAction: TextInputAction.done,
             onChanged: (_) => setState(() {}),
+            // 空のままEnterを押しても欄から抜けず、続けて打てる。
+            onEditingComplete: () {},
             onSubmitted: (_) => _submit(),
             decoration: InputDecoration(
               labelText: widget.labelText,

@@ -1153,6 +1153,7 @@
   "brushSettingsMixingWatercolorHint": "투명한 물감을 겹쳐 칠합니다. 펜을 떼면 마르면서 붓 바깥으로 조금 번지고 가장자리에 색이 고입니다.",
   "projectDetailNotFoundTitle": "프로젝트",
   "projectDetailNotFoundBody": "프로젝트를 찾을 수 없습니다",
+  "projectDetailNotFoundBackToList": "프로젝트 목록으로",
   "projectDetailFirstFrameTooltip": "첫 프레임",
   "projectDetailPrevFrameTooltip": "1프레임 뒤로",
   "projectDetailPauseTooltip": "일시정지",

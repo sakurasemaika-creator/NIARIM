@@ -3338,6 +3338,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get projectDetailNotFoundBody => 'No se encontró el proyecto';
 
   @override
+  String get projectDetailNotFoundBackToList => 'Ir a los proyectos';
+
+  @override
   String get projectDetailFirstFrameTooltip => 'Primer fotograma';
 
   @override

@@ -1,4 +1,5 @@
 import '../home/widgets/work_folder_move_sheet.dart';
+
 import 'dart:async';
 import 'dart:ui' as ui;
 
@@ -20,6 +21,9 @@ import '../../services/save_tree_service.dart';
 import '../../services/theme_service.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/dispose_on_unmount.dart';
+import '../../widgets/frame_preview_background.dart';
+import '../../widgets/moved_to_trash_snack_bar.dart';
+import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/stepped_slider.dart';
@@ -47,6 +51,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   bool _isPlaying = false;
   bool _loopPlayback = true;
   bool _rendering = false;
+  // 描いている間に別のフレームが選ばれた（早いシーク・再生）。描き終えてから
+  // 最新のフレームを描き直す（そのまま捨てると、止めた所と違う絵が残った）。
+  bool _renderAgain = false;
+  // この画面が一番上に戻ってきたら（キャンバス・タイムライン等から）、
+  // 編集された絵を描き直す。
+  bool _wasCurrent = true;
   Timer? _timer;
   ui.Image? _previewImage;
   // プレビュー全画面化：確認・仕上がりチェックに集中できるよう、
@@ -76,42 +86,57 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Future<void> _renderFrame(ProjectService ps, List<_FlatFrame> flat) async {
-    if (_rendering || flat.isEmpty) return;
-    _rendering = true;
-    final entry = flat[_frameIndex.clamp(0, flat.length - 1)];
-    final tileManager = ps.tileManagerOf(widget.projectId);
-    final layers = ps.layersOf(
-      widget.projectId,
-      entry.sceneId,
-      entry.frameIndex,
-    );
-    final img = await LayerCompositor.composite(
-      tileManager,
-      layers,
-      (l) => ps.tileKeyFor(
-        widget.projectId,
-        entry.sceneId,
-        entry.frameIndex,
-        l.id,
-      ),
-      tileManager.canvasWidth,
-      tileManager.canvasHeight,
-      paperColor: LayerCompositor.paperForBlendModes(
-        layers,
-        ps.projects
-            .where((p) => p.id == widget.projectId)
-            .firstOrNull
-            ?.backgroundColor,
-      ),
-    );
-    _rendering = false;
-    if (!mounted) {
-      img.dispose();
+    if (flat.isEmpty) return;
+    if (_rendering) {
+      _renderAgain = true;
       return;
     }
-    final old = _previewImage;
-    setState(() => _previewImage = img);
-    old?.dispose();
+    _rendering = true;
+    try {
+      do {
+        _renderAgain = false;
+        // 描いている間にフレームが足された・消された場合も、今の並びで描く。
+        final frames = _flatten(ps);
+        if (frames.isEmpty) return;
+        final entry = frames[_frameIndex.clamp(0, frames.length - 1)];
+        final tileManager = ps.tileManagerOf(widget.projectId);
+        // 書き出し・タイムラインのプレビューと同じ重なり順とマスク。
+        final stacked = ps.stackedLayersOf(
+          widget.projectId,
+          entry.sceneId,
+          entry.frameIndex,
+        );
+        final img = await LayerCompositor.composite(
+          tileManager,
+          stacked.layers,
+          (l) => ps.tileKeyFor(
+            widget.projectId,
+            entry.sceneId,
+            entry.frameIndex,
+            l.id,
+          ),
+          tileManager.canvasWidth,
+          tileManager.canvasHeight,
+          paperColor: LayerCompositor.paperForBlendModes(
+            stacked.layers,
+            ps.projects
+                .where((p) => p.id == widget.projectId)
+                .firstOrNull
+                ?.backgroundColor,
+          ),
+          maskGroups: stacked.maskGroups,
+        );
+        if (!mounted) {
+          img.dispose();
+          return;
+        }
+        final old = _previewImage;
+        setState(() => _previewImage = img);
+        old?.dispose();
+      } while (_renderAgain);
+    } finally {
+      _rendering = false;
+    }
   }
 
   void _seekTo(ProjectService ps, List<_FlatFrame> flat, int index) {
@@ -160,13 +185,41 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         .firstOrNull;
 
     if (project == null) {
+      // ゴミ箱へ移した・消した作品や、古いリンクから開いたとき。戻る先が
+      // 無くてもホームへ戻れるようにする。
       return Scaffold(
         appBar: AppBar(title: Text(l10n.projectDetailNotFoundTitle)),
-        body: Center(child: Text(l10n.projectDetailNotFoundBody)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.projectDetailNotFoundBody,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  key: const Key('projectDetailNotFoundHome'),
+                  onPressed: () => context.go('/home'),
+                  child: Text(l10n.projectDetailNotFoundBackToList),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
 
     final flat = _flatten(projectService);
+    final isCurrent = ModalRoute.of(context)?.isCurrent ?? true;
+    if (isCurrent && !_wasCurrent) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _renderFrame(projectService, flat),
+      );
+    }
+    _wasCurrent = isCurrent;
     if (_previewImage == null && !_rendering) {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => _renderFrame(projectService, flat),
@@ -302,7 +355,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
                     );
                   } else {
+                    // ホームの一覧と同じく、その場で元に戻せる。
+                    final messenger = ScaffoldMessenger.of(context);
                     projectService.deleteProject(widget.projectId);
+                    showMovedToTrashSnackBar(messenger, l10n, projectService, [
+                      widget.projectId,
+                    ]);
                     context.pop();
                   }
               }
@@ -362,45 +420,40 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ),
               const SizedBox(height: 16),
               // フォルダ・タグ・お気に入り・共有のクイックアクセス
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              _QuickActionsRow(
+                key: const Key('projectDetailQuickActions'),
                 children: [
-                  Expanded(
-                    child: _quickAction(
-                      icon: Icons.folder_outlined,
-                      label: l10n.creativePanelFolderButton,
-                      onTap: () =>
-                          _showMoveToFolderDialog(context, projectService),
-                    ),
+                  (
+                    icon: Icons.folder_outlined,
+                    label: l10n.creativePanelFolderButton,
+                    iconColor: null,
+                    onTap: () =>
+                        _showMoveToFolderDialog(context, projectService),
                   ),
-                  Expanded(
-                    child: _quickAction(
-                      icon: Icons.sell_outlined,
-                      label: l10n.projectDetailTagsQuickAction,
-                      onTap: () =>
-                          _showTagsDialog(context, projectService, project),
-                    ),
+                  (
+                    icon: Icons.sell_outlined,
+                    label: l10n.projectDetailTagsQuickAction,
+                    iconColor: null,
+                    onTap: () =>
+                        _showTagsDialog(context, projectService, project),
                   ),
-                  Expanded(
-                    child: _quickAction(
-                      icon: project.isFavorite ? Icons.star : Icons.star_border,
-                      label: project.isFavorite
-                          ? l10n.projectDetailFavoriteRegistered
-                          : l10n.projectDetailFavoriteUnregistered,
-                      iconColor: project.isFavorite
-                          ? AccentTextTheme.of(context)
-                          : null,
-                      onTap: () =>
-                          projectService.toggleFavorite(widget.projectId),
-                    ),
+                  (
+                    icon: project.isFavorite ? Icons.star : Icons.star_border,
+                    label: project.isFavorite
+                        ? l10n.projectDetailFavoriteRegistered
+                        : l10n.projectDetailFavoriteUnregistered,
+                    iconColor: project.isFavorite
+                        ? AccentTextTheme.of(context)
+                        : null,
+                    onTap: () =>
+                        projectService.toggleFavorite(widget.projectId),
                   ),
-                  Expanded(
-                    child: _quickAction(
-                      icon: Icons.ios_share,
-                      label: l10n.projectDetailShareQuickAction,
-                      onTap: () =>
-                          _createNiashare(context, projectService, project),
-                    ),
+                  (
+                    icon: Icons.ios_share,
+                    label: l10n.projectDetailShareQuickAction,
+                    iconColor: null,
+                    onTap: () =>
+                        _createNiashare(context, projectService, project),
                   ),
                 ],
               ),
@@ -544,21 +597,30 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   Widget _buildPreviewImage(Project project, {bool showOverlayButtons = true}) {
     final l10n = AppLocalizations.of(context)!;
     final theme = context.watch<ThemeService>().current;
-    final image = Container(
-      decoration: BoxDecoration(
-        color: Color(project.backgroundColor),
-        borderRadius: BorderRadius.circular(8),
+    // 絵の縦横比のまま、絵の範囲にだけ作品の背景色（透明なら市松模様）を
+    // 敷く（16:9の枠いっぱいに背景色を塗ると、縦長の絵の左右まで絵の一部に
+    // 見え、透明の作品は何も見えなかった）。
+    final image = ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: ColoredBox(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        child: FramePreviewBackground(
+          key: const Key('projectDetailPreviewArtwork'),
+          backgroundColor: project.backgroundColor,
+          aspectRatio: project.exportHeight > 0
+              ? project.exportWidth / project.exportHeight
+              : null,
+          child: _previewImage != null
+              ? RawImage(image: _previewImage, fit: BoxFit.contain)
+              : Center(
+                  child: Icon(
+                    Icons.play_circle_outline,
+                    size: 48,
+                    color: theme.textColor.withValues(alpha: 0.38),
+                  ),
+                ),
+        ),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: _previewImage != null
-          ? RawImage(image: _previewImage, fit: BoxFit.contain)
-          : Center(
-              child: Icon(
-                Icons.play_circle_outline,
-                size: 48,
-                color: theme.textColor.withValues(alpha: 0.38),
-              ),
-            ),
     );
     if (!showOverlayButtons) return image;
     // プレビュー画像の中身は任意のプロジェクトの絵柄でどんな色にもなり
@@ -727,36 +789,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  Widget _quickAction({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    Color? iconColor,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              color:
-                  iconColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _showMoveToFolderDialog(BuildContext context, ProjectService service) {
     final tree = folderTree(service.folders);
     showModalBottomSheet<void>(
@@ -786,59 +818,68 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       builder: (ctx) => DisposeOnUnmount(
         controller: controller,
         builder: (ctx) => StatefulBuilder(
-          builder: (ctx, setDialogState) => AlertDialog(
-            title: Text(l10n.projectDetailTagsQuickAction),
-            content: SizedBox(
-              width: 320,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: tags
-                        .map(
-                          (tag) => Chip(
-                            label: Text(tag),
-                            onDeleted: () =>
-                                setDialogState(() => tags.remove(tag)),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: controller,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      labelText: l10n.projectDetailAddTagHint,
-                      border: const OutlineInputBorder(),
+          builder: (ctx, setDialogState) {
+            // 欄に打ったまま保存しても、打ったタグを捨てない。
+            void addTyped() {
+              final t = controller.text.trim();
+              if (t.isNotEmpty && !tags.contains(t)) {
+                setDialogState(() => tags.add(t));
+              }
+              controller.clear();
+            }
+
+            return AlertDialog(
+              scrollable: true,
+              title: Text(l10n.projectDetailTagsQuickAction),
+              content: SizedBox(
+                width: 320,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: tags
+                          .map(
+                            (tag) => Chip(
+                              label: Text(tag),
+                              onDeleted: () =>
+                                  setDialogState(() => tags.remove(tag)),
+                            ),
+                          )
+                          .toList(),
                     ),
-                    onSubmitted: (value) {
-                      final t = value.trim();
-                      if (t.isNotEmpty && !tags.contains(t)) {
-                        setDialogState(() => tags.add(t));
-                      }
-                      controller.clear();
-                    },
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        labelText: l10n.projectDetailAddTagHint,
+                        border: const OutlineInputBorder(),
+                      ),
+                      // Enterで足した後も欄から抜けず、続けて打てる。
+                      onEditingComplete: () {},
+                      onSubmitted: (_) => addTyped(),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(l10n.commonCancel),
-              ),
-              FilledButton(
-                onPressed: () {
-                  service.setProjectTags(widget.projectId, tags);
-                  Navigator.pop(ctx);
-                },
-                child: Text(l10n.commonSave),
-              ),
-            ],
-          ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(l10n.commonCancel),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    addTyped();
+                    service.setProjectTags(widget.projectId, tags);
+                    Navigator.pop(ctx);
+                  },
+                  child: Text(l10n.commonSave),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -926,36 +967,110 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
   void _showRenameDialog(BuildContext context, String currentName) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: currentName);
+    final service = context.read<ProjectService>();
     showDialog(
       context: context,
-      builder: (ctx) => DisposeOnUnmount(
-        controller: controller,
-        builder: (ctx) => AlertDialog(
-          title: Text(l10n.commonRename),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(border: OutlineInputBorder()),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                context.read<ProjectService>().renameProject(
-                  widget.projectId,
-                  controller.text,
-                );
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonChange),
-            ),
-          ],
-        ),
+      builder: (_) => NameEntryDialog(
+        title: l10n.commonRename,
+        initialName: currentName,
+        confirmLabel: l10n.commonChange,
+        cancelLabel: l10n.commonCancel,
+        onSubmit: (name) async {
+          if (name != currentName) {
+            await service.renameProject(widget.projectId, name);
+          }
+        },
       ),
     );
   }
+}
+
+typedef _QuickAction = ({
+  IconData icon,
+  String label,
+  Color? iconColor,
+  VoidCallback onTap,
+});
+
+/// 詳細画面のフォルダ・タグ・お気に入り・共有。ふだんは4つを1行に並べ、
+/// 長い言葉（フランス語の「Étiquettes」等）が大きな文字で欄に収まらない
+/// ときは、語の途中で折らずに2列・1列にする。
+class _QuickActionsRow extends StatelessWidget {
+  const _QuickActionsRow({super.key, required this.children});
+
+  final List<_QuickAction> children;
+
+  static const _labelStyle = TextStyle(fontSize: 12);
+
+  // 漢字・かなは字の間で折ってよいので、それ以外の語の幅だけを測る。
+  static final _cjk = RegExp(r'[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff]');
+
+  double _longestWord(BuildContext context, String label) {
+    var widest = 0.0;
+    for (final word in label.split(RegExp(r'\s+'))) {
+      if (word.isEmpty || _cjk.hasMatch(word)) continue;
+      final painter = TextPainter(
+        text: TextSpan(
+          text: word,
+          style: DefaultTextStyle.of(context).style.merge(_labelStyle),
+        ),
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+        locale: Localizations.localeOf(context),
+        maxLines: 1,
+      )..layout();
+      if (painter.width > widest) widest = painter.width;
+      painter.dispose();
+    }
+    return widest;
+  }
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final widest = children
+          .map((a) => _longestWord(context, a.label))
+          .fold<double>(0, (a, b) => a > b ? a : b);
+      // 1欄の中で文字に使える幅（左右の余白ぶんを引く）。
+      final columns = [4, 2, 1].firstWhere(
+        (n) => widest <= constraints.maxWidth / n - 8,
+        orElse: () => 1,
+      );
+      final width = (constraints.maxWidth / columns).floorToDouble();
+      return Wrap(
+        children: [
+          for (final action in children)
+            SizedBox(
+              width: width,
+              child: InkWell(
+                onTap: action.onTap,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 4,
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        action.icon,
+                        color:
+                            action.iconColor ??
+                            Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        action.label,
+                        textAlign: TextAlign.center,
+                        style: _labelStyle,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      );
+    },
+  );
 }

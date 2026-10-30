@@ -3195,6 +3195,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get projectDetailNotFoundBody => '프로젝트를 찾을 수 없습니다';
 
   @override
+  String get projectDetailNotFoundBackToList => '프로젝트 목록으로';
+
+  @override
   String get projectDetailFirstFrameTooltip => '첫 프레임';
 
   @override

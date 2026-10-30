@@ -3181,6 +3181,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectDetailNotFoundBody => 'プロジェクトが見つかりません';
 
   @override
+  String get projectDetailNotFoundBackToList => 'プロジェクトの一覧へ';
+
+  @override
   String get projectDetailFirstFrameTooltip => '先頭フレーム';
 
   @override

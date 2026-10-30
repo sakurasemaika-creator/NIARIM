@@ -1490,6 +1490,10 @@
   "brushSettingsMixingWatercolorHint": "透明な絵の具を重ねて塗ります。ペンを離すと乾いて、筆の外へ少しにじみ、縁に色が溜まります。",
   "projectDetailNotFoundTitle": "プロジェクト",
   "projectDetailNotFoundBody": "プロジェクトが見つかりません",
+  "projectDetailNotFoundBackToList": "プロジェクトの一覧へ",
+  "@projectDetailNotFoundBackToList": {
+    "description": "プロジェクト詳細で作品が見つからないときに、ホームのプロジェクトの一覧へ戻るボタン"
+  },
   "projectDetailFirstFrameTooltip": "先頭フレーム",
   "projectDetailPrevFrameTooltip": "1フレーム戻る",
   "projectDetailPauseTooltip": "一時停止",

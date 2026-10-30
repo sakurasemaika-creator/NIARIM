@@ -1153,6 +1153,7 @@
   "brushSettingsMixingWatercolorHint": "Pose des lavis transparents. Quand vous levez le stylet, le lavis sèche, se diffuse un peu au-delà du pinceau et la couleur s'accumule sur son bord.",
   "projectDetailNotFoundTitle": "Projet",
   "projectDetailNotFoundBody": "Projet introuvable",
+  "projectDetailNotFoundBackToList": "Aller aux projets",
   "projectDetailFirstFrameTooltip": "Première image",
   "projectDetailPrevFrameTooltip": "Reculer d'une image",
   "projectDetailPauseTooltip": "Pause",

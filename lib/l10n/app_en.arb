@@ -1153,6 +1153,7 @@
   "brushSettingsMixingWatercolorHint": "Lays transparent washes. When you lift the pen the wash dries, bleeds a little past the brush, and color gathers at its edge.",
   "projectDetailNotFoundTitle": "Project",
   "projectDetailNotFoundBody": "Project not found",
+  "projectDetailNotFoundBackToList": "Go to projects",
   "projectDetailFirstFrameTooltip": "First frame",
   "projectDetailPrevFrameTooltip": "Back 1 frame",
   "projectDetailPauseTooltip": "Pause",

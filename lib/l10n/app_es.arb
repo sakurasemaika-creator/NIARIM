@@ -1153,6 +1153,7 @@
   "brushSettingsMixingWatercolorHint": "Aplica aguadas transparentes. Al levantar el lápiz, la aguada se seca, se difunde un poco más allá del pincel y el color se acumula en su borde.",
   "projectDetailNotFoundTitle": "Proyecto",
   "projectDetailNotFoundBody": "No se encontró el proyecto",
+  "projectDetailNotFoundBackToList": "Ir a los proyectos",
   "projectDetailFirstFrameTooltip": "Primer fotograma",
   "projectDetailPrevFrameTooltip": "Retroceder 1 fotograma",
   "projectDetailPauseTooltip": "Pausar",

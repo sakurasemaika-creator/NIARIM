@@ -2516,8 +2516,9 @@ class ProjectService extends ChangeNotifier {
     );
 
     // 編集へ進める前に、再起動後も復元できる初回保存を完了する。
+    final File saved;
     try {
-      await NiaproSerializer.save(
+      saved = await NiaproSerializer.save(
         project: project,
         scenes: scenes,
         tileManager: tileManager,
@@ -2526,14 +2527,15 @@ class ProjectService extends ChangeNotifier {
       tileManager.dispose();
       rethrow;
     }
+    final created = project.copyWith(sizeBytes: await saved.length());
 
-    _projects.add(project);
+    _projects.add(created);
     _scenes[projectId] = scenes;
     _tileManagers[projectId] = tileManager;
     _layerIdCounters[projectId] = 2;
 
     notifyListeners();
-    return project;
+    return created;
   }
 
   final Map<String, Future<void>> _projectSaves = {};
@@ -2592,11 +2594,22 @@ class ProjectService extends ChangeNotifier {
         final scenes = _scenes[projectId];
         final tm = _tileManagers[projectId];
         if (project == null || scenes == null || tm == null) return;
-        await NiaproSerializer.save(
+        final saved = await NiaproSerializer.save(
           project: project,
           scenes: scenes,
           tileManager: tm,
         );
+        // 容量と最終保存の時刻は、ファイルに書いたものに合わせる。保存は
+        // 描いている間にも走るので、通知はせず次に画面を作るときに使われる
+        // 値だけを更新する。
+        final size = await saved.length();
+        final i = _projects.indexWhere((p) => p.id == projectId);
+        if (i >= 0) {
+          _projects[i] = _projects[i].copyWith(
+            sizeBytes: size,
+            updatedAt: DateTime.now(),
+          );
+        }
       });
 
   /// [saveProject]と同じ保存。保存できたかを返す（失敗しても例外にしない）。

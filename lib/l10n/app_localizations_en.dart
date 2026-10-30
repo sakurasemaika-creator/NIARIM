@@ -3295,6 +3295,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get projectDetailNotFoundBody => 'Project not found';
 
   @override
+  String get projectDetailNotFoundBackToList => 'Go to projects';
+
+  @override
   String get projectDetailFirstFrameTooltip => 'First frame';
 
   @override
