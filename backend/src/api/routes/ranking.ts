@@ -8,7 +8,8 @@ import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { ok, badRequest } from "../../lib/response";
 import { isDeltaRankingPeriod, isRankingPeriod } from "../../lib/ranking";
 import type { RankingSnapshotItem, WorkItem } from "../../lib/types";
-import { toPublicWork } from "./_publicWork";
+import { toPublicWork, toUnavailableWork } from "./_publicWork";
+import { TABLE_ITEM_TYPE } from "../../lib/types";
 
 /**
  * `GET /ranking/{period}`（8.2節）。
@@ -41,6 +42,20 @@ export async function getRanking(
   return getAllTimeRanking();
 }
 
+function safeRankingEntry(item: Record<string, unknown>) {
+  const workId = String(item.workId ?? "");
+  if (item.itemType !== TABLE_ITEM_TYPE.Work) {
+    return toUnavailableWork(workId);
+  }
+  const work = item as unknown as WorkItem;
+  if (!work.isNiarimPublished ||
+      work.youtubePrivacyStatus === "private" ||
+      work.youtubePrivacyStatus === "deleted") {
+    return toUnavailableWork(workId);
+  }
+  return toPublicWork(work);
+}
+
 async function getAllTimeRanking() {
   const result = await ddb.send(
     new QueryCommand({
@@ -53,8 +68,8 @@ async function getAllTimeRanking() {
     }),
   );
 
-  const works = (result.Items ?? []) as WorkItem[];
-  return ok({ period: "all", works: works.map(toPublicWork) });
+  const works = (result.Items ?? []) as Record<string, unknown>[];
+  return ok({ period: "all", works: works.map(safeRankingEntry) });
 }
 
 /**
@@ -81,17 +96,19 @@ async function getPeriodRanking(period: string) {
 
   const works = await batchGetWorks(entries.map((e) => e.workId));
 
-  // BatchGetItemは順序を保証しないので、スナップショットの並びへ戻す。
-  // 期間中に非公開化・削除された作品は取得できないか可視性が落ちている
-  // ため、ここで除外する（次回のバッチでスナップショットからも消える）。
+  // BatchGetItem is unordered. Keep a redacted slot for every ranking
+  // snapshot entry, including missing tombstones, without shifting ranks.
   const byId = new Map(works.map((w) => [w.workId, w]));
-  const ordered = entries
-    .map((e) => byId.get(e.workId))
-    .filter((w): w is WorkItem => Boolean(w) && Boolean(w!.gsi1pk));
+  const ordered = entries.map((entry) => {
+    const found = byId.get(entry.workId);
+    return found
+      ? safeRankingEntry(found as unknown as Record<string, unknown>)
+      : toUnavailableWork(entry.workId);
+  });
 
   return ok({
     period,
-    works: ordered.map(toPublicWork),
+    works: ordered,
     computedAt: snapshot?.computedAt ?? null,
     windowId: snapshot?.windowId ?? null,
   });
@@ -131,6 +148,6 @@ async function getBookmarkRanking() {
       Limit: 50,
     }),
   );
-  const works = (result.Items ?? []) as WorkItem[];
-  return ok({ period: "bookmarks", works: works.map(toPublicWork) });
+  const works = (result.Items ?? []) as Record<string, unknown>[];
+  return ok({ period: "bookmarks", works: works.map(safeRankingEntry) });
 }

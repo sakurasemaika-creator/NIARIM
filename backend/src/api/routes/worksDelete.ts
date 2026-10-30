@@ -65,6 +65,13 @@ export async function deleteWork(
           itemType: "WORK_TOMBSTONE",
           workId,
           deletedAt: new Date().toISOString(),
+          // Preserve index positions without keeping any private metadata.
+          ...(work.gsi1pk != null && work.gsi1sk != null
+            ? { gsi1pk: work.gsi1pk, gsi1sk: work.gsi1sk }
+            : {}),
+          ...(work.gsi2pk != null && work.gsi2sk != null
+            ? { gsi2pk: work.gsi2pk, gsi2sk: work.gsi2sk }
+            : {}),
         },
         // Get後に別処理で既に削除/置換されていた場合、古い操作で墓標を
         // 上書きし直さない。作者本人の現在のWorkItemであることも再確認する。

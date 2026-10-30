@@ -220,11 +220,8 @@ async function updateWorkStats(
     }
   } else {
     removes.push(
-      "rankingScore",
-      "gsi1pk",
-      "gsi1sk",
-      "gsi2pk",
-      "gsi2sk",
+      // Retain historic ranking keys for placeholder slots. Latest
+      // discovery and author pages must still become inaccessible.
       "gsi3pk",
       "gsi3sk",
       "gsi4pk",

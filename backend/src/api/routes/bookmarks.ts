@@ -10,7 +10,7 @@ import { authenticate, tryAuthenticate, getUser } from "../../lib/auth";
 import { forbidden, notFound, ok } from "../../lib/response";
 import type { BookmarkItem, WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
-import { toPublicWork } from "./_publicWork";
+import { toPublicWork, toUnavailableWork } from "./_publicWork";
 
 function isWorkPublic(work: WorkItem): boolean {
   return (
@@ -169,12 +169,19 @@ export async function getUserBookmarks(
       ),
     ),
   );
-  const publicWorks = works
-    .map((w) => w.Item as WorkItem | undefined)
-    .filter((w): w is WorkItem => Boolean(w) && isWorkPublic(w!))
-    .map(toPublicWork);
+  // Bookmarks belong to this authenticated user. Preserve their order and
+  // count even if the work was deleted, privatized or tombstoned.
+  // Never return metadata for a hidden work.
+  const bookmarkWorks = works.map((result, index) => {
+    const raw = result.Item;
+    if (raw?.itemType === TABLE_ITEM_TYPE.Work &&
+        isWorkPublic(raw as WorkItem)) {
+      return toPublicWork(raw as WorkItem);
+    }
+    return toUnavailableWork(bookmarks[index].workId);
+  });
 
-  return ok({ userId: targetUserId, works: publicWorks });
+  return ok({ userId: targetUserId, works: bookmarkWorks });
 }
 
 /**
