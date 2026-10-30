@@ -62,6 +62,7 @@ jobs:
           flutter test test/community_content_filter_l10n_contract_test.dart --reporter expanded
           flutter test test/community_milestone_store_test.dart --reporter expanded
           flutter test test/community_service_test.dart --reporter expanded
+          flutter test test/community_service_backend_test.dart --reporter expanded
           flutter test test/community_filter_dialog_layout_test.dart --reporter expanded
           flutter test test/community_header_quality_test.dart --reporter expanded
           flutter test test/community_mute_wording_l10n_test.dart --reporter expanded

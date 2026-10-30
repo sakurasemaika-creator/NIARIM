@@ -131,4 +131,137 @@ void main() {
     expect(paths.single, '/ranking/monthly');
     expect(works.single.title, '月間1位');
   });
+  test('新着は25件ずつカーソル取得し、重複を増やさず最後で止まる', () async {
+    final seen = <Uri>[];
+    final client = MockClient((request) async {
+      seen.add(request.url);
+      expect(request.url.queryParameters['limit'], '25');
+      final cursor = request.url.queryParameters['cursor'];
+      final start = cursor == null ? 0 : int.parse(cursor);
+      final end = start == 50 ? 53 : start + 25;
+      return http.Response(
+        jsonEncode({
+          'works': [
+            for (var i = start; i < end; i++)
+              work('latest_$i', '新着$i'),
+          ],
+          'nextCursor': end < 53 ? '$end' : null,
+        }),
+        200, headers: jsonHeaders,
+      );
+    });
+    final service = CommunityService(api: api(client));
+    expect(await service.refreshFromBackend(), isTrue);
+    expect(service.latestPageWorks, hasLength(25));
+    expect(service.hasMoreLatest, isTrue);
+    expect(await service.loadMoreLatest(), isTrue);
+    expect(service.latestPageWorks, hasLength(50));
+    expect(await service.loadMoreLatest(), isTrue);
+    expect(service.latestPageWorks, hasLength(53));
+    expect(service.hasMoreLatest, isFalse);
+    expect(await service.loadMoreLatest(), isFalse);
+    expect(seen, hasLength(3));
+    expect(seen[1].queryParameters['cursor'], '25');
+    expect(seen[2].queryParameters['cursor'], '50');
+    expect(service.latestPageWorks.map((w) => w.id).toSet(), hasLength(53));
+  });
+
+  test('ランキングはTop50を25件ずつ、並び方向をサーバーへ渡す', () async {
+    final seen = <Uri>[];
+    final client = MockClient((request) async {
+      seen.add(request.url);
+      final cursor = int.parse(request.url.queryParameters['cursor'] ?? '0');
+      return http.Response(
+        jsonEncode({
+          'period': 'monthly',
+          'works': [
+            for (var i = cursor; i < cursor + 25; i++)
+              work('rank_$i', '順位$i'),
+          ],
+          'nextCursor': cursor == 0 ? '25' : null,
+        }),
+        200, headers: jsonHeaders,
+      );
+    });
+    final service = CommunityService(api: api(client));
+    await service.fetchRanking(
+      RankingPeriod.month, ascending: true, sortBookmarks: true,
+    );
+    expect(service.rankedWorks, hasLength(25));
+    expect(service.hasMoreRanking, isTrue);
+    await service.loadMoreRanking(
+      RankingPeriod.month, ascending: true, sortBookmarks: true,
+    );
+    expect(service.rankedWorks, hasLength(50));
+    expect(service.hasMoreRanking, isFalse);
+    expect(seen[0].queryParameters['ascending'], 'true');
+    expect(seen[0].queryParameters['sort'], 'bookmarks');
+    expect(seen[1].queryParameters['cursor'], '25');
+    expect(seen, hasLength(2));
+  });
+
+  test('検索結果は独立ページ、タグ完全一致条件を次ページへ維持する', () async {
+    final seen = <Uri>[];
+    final client = MockClient((request) async {
+      seen.add(request.url);
+      final cursor = request.url.queryParameters['cursor'];
+      final start = cursor == null ? 0 : 25;
+      return http.Response(
+        jsonEncode({
+          'works': [
+            for (var i = start; i < start + 25; i++)
+              work('search_$i', '作品$i'),
+          ],
+          'nextCursor': cursor == null ? 'next' : null,
+        }),
+        200, headers: jsonHeaders,
+      );
+    });
+    final service = CommunityService(api: api(client));
+    await service.refreshSearch(query: '手描き', tagMode: true, exact: true);
+    expect(service.searchedWorks, hasLength(25));
+    expect(service.hasMoreSearch, isTrue);
+    await service.loadMoreSearch();
+    expect(service.searchedWorks, hasLength(50));
+    expect(service.hasMoreSearch, isFalse);
+    expect(seen[1].queryParameters['cursor'], 'next');
+    for (final uri in seen) {
+      expect(uri.queryParameters['q'], '手描き');
+      expect(uri.queryParameters['tagMode'], 'true');
+      expect(uri.queryParameters['exact'], 'true');
+    }
+    await service.refreshSearch(query: '別の検索', tagMode: false, exact: false);
+    expect(service.searchedWorks, hasLength(25));
+    expect(seen.last.queryParameters.containsKey('cursor'), isFalse);
+    expect(seen.last.queryParameters.containsKey('tagMode'), isFalse);
+  });
+
+  test('作者別投稿は25件単位で追加取得し、初回ページを消さない', () async {
+    final seen = <Uri>[];
+    final client = MockClient((request) async {
+      seen.add(request.url);
+      final cursor = request.url.queryParameters['cursor'];
+      final start = cursor == null ? 0 : 25;
+      return http.Response(
+        jsonEncode({
+          'works': [
+            for (var i = start; i < start + 25; i++)
+              work('author_$i', '投稿$i'),
+          ],
+          'nextCursor': cursor == null ? 'author-next' : null,
+        }),
+        200, headers: jsonHeaders,
+      );
+    });
+    final service = CommunityService(api: api(client));
+    expect(await service.refreshAuthorWorks('user_1'), isTrue);
+    expect(service.worksByAuthor('user_1'), hasLength(25));
+    expect(service.hasMoreAuthor('user_1'), isTrue);
+    expect(await service.loadMoreAuthorWorks('user_1'), isTrue);
+    expect(service.worksByAuthor('user_1'), hasLength(50));
+    expect(service.hasMoreAuthor('user_1'), isFalse);
+    expect(seen, hasLength(2));
+    expect(seen.last.queryParameters['cursor'], 'author-next');
+  });
+
 }
