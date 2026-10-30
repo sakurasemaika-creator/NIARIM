@@ -129,8 +129,14 @@ void main() {
                 );
                 final tile = tester.getRect(find.byType(Card));
                 final buttonRect = tester.getRect(bookmark);
-                expect(tile.right - buttonRect.right,
+                final menu = find.byKey(
+                  const ValueKey('communityMuteMenu-fixture'));
+                expect(menu, findsOneWidget, reason: scope);
+                final menuRect = tester.getRect(menu);
+                expect(tile.right - menuRect.right,
                     lessThanOrEqualTo(10), reason: scope);
+                expect(buttonRect.right, lessThanOrEqualTo(menuRect.left + 1),
+                    reason: 'Three-dot menu sits right of bookmark: $scope');
                 final l10n = AppLocalizations.of(
                   tester.element(find.byType(CommunityWorkGrid)),
                 )!;
@@ -227,7 +233,7 @@ void main() {
     expect(action.iconSize, 48);
     expect(tester.getSize(bookmark), const Size(56, 56));
     final card = tester.getRect(find.byType(Card));
-    expect(card.right - tester.getRect(bookmark).right, lessThanOrEqualTo(10));
+    expect(card.right - tester.getRect(menu).right, lessThanOrEqualTo(10));
     expect(tester.getRect(bookmark).center.dx, greaterThan(card.center.dx));
     expect(
       find.descendant(
