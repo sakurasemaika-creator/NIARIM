@@ -31,6 +31,14 @@ import '../utils/tolerant_preferences.dart';
 import '../utils/folder_persistence.dart';
 import '../utils/project_trash_guard.dart';
 
+/// Moving an active favorite to Trash requires removing its protection first.
+class FavoriteProjectDeleteException implements Exception {
+  const FavoriteProjectDeleteException();
+
+  @override
+  String toString() => 'A favorite project cannot be moved to Trash';
+}
+
 class ProjectFolder {
   final String id;
   final String name;
@@ -2544,17 +2552,19 @@ class ProjectService extends ChangeNotifier {
   }
 
   Future<void> saveProject(String projectId) =>
-      _queueProjectSave(projectId, () async {
-        final project = _projects.where((p) => p.id == projectId).firstOrNull;
-        final scenes = _scenes[projectId];
-        final tm = _tileManagers[projectId];
-        if (project == null || scenes == null || tm == null) return;
-        await NiaproSerializer.save(
-          project: project,
-          scenes: scenes,
-          tileManager: tm,
-        );
-      });
+      _queueProjectSave(projectId, () => _writeProjectFile(projectId));
+
+  Future<void> _writeProjectFile(String projectId) async {
+    final project = _projects.where((p) => p.id == projectId).firstOrNull;
+    final scenes = _scenes[projectId];
+    final tm = _tileManagers[projectId];
+    if (project == null || scenes == null || tm == null) return;
+    await NiaproSerializer.save(
+      project: project,
+      scenes: scenes,
+      tileManager: tm,
+    );
+  }
 
   Future<void> _saveMembership(
     String id,
@@ -2587,6 +2597,9 @@ class ProjectService extends ChangeNotifier {
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
       final project = _projects[idx];
+      // Check inside both queues: a project may become a favorite while a
+      // previous save or Trash operation is still awaiting acknowledgement.
+      if (project.isFavorite) throw const FavoriteProjectDeleteException();
       final next = {..._trashDeletedAt, id: DateTime.now()};
       await _persistTrashState(next);
       _projects.removeAt(idx);
@@ -2872,16 +2885,24 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> toggleFavorite(String id) async {
+  Future<void> toggleFavorite(String id) => _queueProjectSave(id, () async {
+    if (_folderDisposed) return;
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
       _projects[idx] = _projects[idx].copyWith(
         isFavorite: !_projects[idx].isFavorite,
       );
-      _saveAsync(id);
-      notifyListeners();
+      _notifyFolders();
+      // A favorite requested during an acknowledged Trash write must wait for
+      // that write rather than display a change that its completion discards.
+      // The file write shares this queue without enqueuing itself recursively.
+      try {
+        await _writeProjectFile(id);
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+      }
     }
-  }
+  });
 
   /// このプロジェクトで使用する自動塗りプリセットを設定する。
   /// プロジェクトごとに使うプリセットだけを選べるようにする。

@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import '../services/project_service.dart' show FavoriteProjectDeleteException;
+
+String _failureText(AppLocalizations l10n, Object? failure) =>
+    failure is FavoriteProjectDeleteException
+    ? l10n.commonFavoriteDeleteBlocked
+    : l10n.homeTrashOperationFailed;
 
 Future<bool> runProjectTrashAction(
   BuildContext context,
@@ -10,13 +16,13 @@ Future<bool> runProjectTrashAction(
   try {
     await apply();
     return true;
-  } catch (_) {
+  } catch (error) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Semantics(
             liveRegion: true,
-            child: Text(AppLocalizations.of(context)!.homeTrashOperationFailed),
+            child: Text(_failureText(AppLocalizations.of(context)!, error)),
           ),
         ),
       );
@@ -54,6 +60,7 @@ class ProjectTrashDialog extends StatefulWidget {
 class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
   bool _working = false;
   bool _failed = false;
+  Object? _failure;
   final _errorAnchor = GlobalKey();
 
   Future<void> _apply() async {
@@ -61,15 +68,17 @@ class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
     setState(() {
       _working = true;
       _failed = false;
+      _failure = null;
     });
     try {
       await widget.onApply();
       if (mounted) Navigator.of(context).pop(true);
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         setState(() {
           _working = false;
           _failed = true;
+          _failure = error;
         });
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted || !_failed) return;
@@ -113,7 +122,7 @@ class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
                   key: _errorAnchor,
                   liveRegion: true,
                   child: Text(
-                    l10n.homeTrashOperationFailed,
+                    _failureText(l10n, _failure),
                     key: const Key('trash-dialog-error'),
                     style: TextStyle(color: scheme.onSurface),
                   ),

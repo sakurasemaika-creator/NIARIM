@@ -767,6 +767,17 @@ class _HomeScreenState extends State<HomeScreen>
     final service = context.read<ProjectService>();
     final projectIds = service.projects.map((p) => p.id).toSet();
     final targetIds = _selectedIds.where(projectIds.contains).toList();
+    bool includesFavorite() => service.projects.any(
+      (project) => targetIds.contains(project.id) && project.isFavorite,
+    );
+    if (includesFavorite()) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+        );
+      return;
+    }
     showDialog(
       context: context,
       builder: (_) => ProjectTrashDialog(
@@ -782,6 +793,9 @@ class _HomeScreenState extends State<HomeScreen>
             .map((p) => p.name)
             .toList(),
         onApply: () async {
+          // Validate the whole current selection before moving the first item.
+          // The service also enforces protection when each queued write runs.
+          if (includesFavorite()) throw const FavoriteProjectDeleteException();
           for (final id in targetIds) {
             await service.deleteProject(id);
             if (mounted) {

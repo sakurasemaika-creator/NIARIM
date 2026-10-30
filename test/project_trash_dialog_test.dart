@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
+import 'package:niarim/services/project_service.dart'
+    show FavoriteProjectDeleteException;
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/project_trash_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -128,6 +130,40 @@ void main() {
     await tester.tap(find.byKey(const Key('open-trash-dialog')));
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'favorite protection explains the required action in every locale',
+    (tester) async {
+      for (final locale in AppLocalizations.supportedLocales) {
+        await host(
+          tester,
+          locale: locale,
+          size: const Size(320, 844),
+          scale: 2,
+          apply: () async => throw const FavoriteProjectDeleteException(),
+        );
+        await tester.tap(find.byKey(const Key('trash-dialog-confirm')));
+        await tester.pumpAndSettle();
+        final error = find.byKey(const Key('trash-dialog-error'));
+        final context = tester.element(error);
+        final l10n = AppLocalizations.of(context)!;
+        final text = tester.widget<Text>(error);
+        expect(text.data, l10n.commonFavoriteDeleteBlocked, reason: '$locale');
+        expect(text.style!.color, Theme.of(context).colorScheme.onSurface);
+        expect(
+          tester.renderObject<RenderParagraph>(error).didExceedMaxLines,
+          isFalse,
+        );
+        expect(
+          find.byKey(const Key('trash-dialog-cancel')).hitTestable(),
+          findsOneWidget,
+        );
+        await tester.tap(find.byKey(const Key('trash-dialog-cancel')));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
 
   testWidgets(
     'all locales keep the complete target and 48px reachable cancel/confirm',
