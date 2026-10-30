@@ -153,15 +153,29 @@ class ApiUserRef {
       : channelName!;
 }
 
+/// A page of public works with an opaque cursor for the next 25 results.
+class ApiWorkPage {
+  final List<ApiWork> works;
+  final String? nextCursor;
+  const ApiWorkPage({required this.works, this.nextCursor});
+
+  factory ApiWorkPage.fromJson(Map<String, dynamic> json) => ApiWorkPage(
+    works: _works(json['works']),
+    nextCursor: json['nextCursor'] as String?,
+  );
+}
+
 class ApiRankingPage {
   final String period;
   final List<ApiWork> works;
+  final String? nextCursor;
   final DateTime? computedAt;
   final String? windowId;
 
   const ApiRankingPage({
     required this.period,
     required this.works,
+    this.nextCursor,
     this.computedAt,
     this.windowId,
   });
@@ -169,6 +183,7 @@ class ApiRankingPage {
   factory ApiRankingPage.fromJson(Map<String, dynamic> json) => ApiRankingPage(
     period: _string(json['period']),
     works: _works(json['works']),
+    nextCursor: json['nextCursor'] as String?,
     computedAt: json['computedAt'] == null
         ? null
         : _dateTime(json['computedAt']),
@@ -181,12 +196,18 @@ class ApiRankingPage {
 class ApiMyWorks {
   final String? authorId;
   final List<ApiWork> works;
+  final String? nextCursor;
 
-  const ApiMyWorks({required this.authorId, required this.works});
+  const ApiMyWorks({
+    required this.authorId,
+    required this.works,
+    this.nextCursor,
+  });
 
   factory ApiMyWorks.fromJson(Map<String, dynamic> json) => ApiMyWorks(
     authorId: json['authorId'] as String?,
     works: _works(json['works']),
+    nextCursor: json['nextCursor'] as String?,
   );
 }
 
