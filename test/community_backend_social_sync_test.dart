@@ -358,7 +358,7 @@ void main() {
         final count = request.url.queryParameters['limit'] == null
             ? all.length
             : 25;
-        final end = (start + count).clamp(0, all.length);
+        final end = (start + count).clamp(0, all.length).toInt();
         return {
           key: all.sublist(start, end),
           if (end < all.length) 'nextCursor': '$end',
