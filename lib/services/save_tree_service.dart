@@ -1,9 +1,14 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import '../engine/niapro_serializer.dart';
 import '../engine/tile_manager.dart';
 import '../models/project.dart';
 import '../models/save_node.dart';
 import '../models/scene.dart';
+import '../utils/app_error_reporter.dart';
 
 /// セーブツリーサービス
 /// スロット方式：固定数のスロットで管理
@@ -37,6 +42,177 @@ class SaveTreeService extends ChangeNotifier {
 
   String _newId() =>
       'save_${DateTime.now().millisecondsSinceEpoch}_${_idCounter++}';
+
+  /// 作品ごとの保存の一覧のファイル名（SaveTree/の中）。
+  static const String indexFileName = 'index.json';
+
+  /// 起動時に、各作品の保存の一覧（SaveTree/index.json）を読み込む。一覧に
+  /// 無い保存のファイル（一覧を書けなかった・以前の版で保存した）も拾い直す。
+  /// 読めないものは飛ばし、起動は止めない。
+  Future<void> init() async {
+    final String base;
+    try {
+      base = await NiaproSerializer.projectsBasePath();
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      return;
+    }
+    final root = Directory(base);
+    if (!root.existsSync()) return;
+    for (final dir in root.listSync().whereType<Directory>()) {
+      final projectId = dir.path.split(RegExp(r'[\\/]')).last;
+      try {
+        await _loadProject(projectId, Directory('${dir.path}/SaveTree'));
+      } catch (error, stack) {
+        AppErrorReporter.record(error, stack);
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<void> _loadProject(String projectId, Directory dir) async {
+    if (!dir.existsSync()) return;
+    String? thumbnailOf(String id) {
+      final file = File('${dir.path}/${id}_thumb.png');
+      return file.existsSync() ? file.path : null;
+    }
+
+    bool hasData(String id) => File('${dir.path}/$id.niapro').existsSync();
+    final nodes = <SaveNode>[];
+    final archived = <SaveNode>[];
+    final known = <String>{};
+    final index = File('${dir.path}/$indexFileName');
+    if (index.existsSync()) {
+      try {
+        final json = jsonDecode(index.readAsStringSync());
+        if (json is Map) {
+          for (final (key, into) in [
+            ('nodes', nodes),
+            ('archived', archived),
+          ]) {
+            final list = json[key];
+            if (list is! List) continue;
+            for (final item in list) {
+              final id = item is Map ? item['id'] : null;
+              // 実データの無い保存は出さない（開くと失敗するため）。
+              if (id is! String || known.contains(id) || !hasData(id)) {
+                continue;
+              }
+              final node = SaveNode.fromJson(
+                item,
+                projectId: projectId,
+                thumbnailPath: thumbnailOf(id),
+              );
+              if (node == null) continue;
+              known.add(id);
+              into.add(node);
+            }
+          }
+        }
+      } on FormatException catch (error, stack) {
+        AppErrorReporter.record(error, stack);
+      }
+    }
+    // 一覧に無い保存のファイルを古い順に拾い直す。
+    final orphans = <SaveNode>[];
+    for (final file in dir.listSync().whereType<File>()) {
+      final name = file.uri.pathSegments.last;
+      if (!name.endsWith('.niapro')) continue;
+      final id = name.substring(0, name.length - '.niapro'.length);
+      if (known.contains(id)) continue;
+      orphans.add(
+        SaveNode(
+          id: id,
+          projectId: projectId,
+          savedAt: _savedAtOf(id) ?? file.lastModifiedSync(),
+          thumbnailPath: thumbnailOf(id),
+        ),
+      );
+    }
+    orphans.sort((a, b) => a.savedAt.compareTo(b.savedAt));
+    if (_isTreeMode) {
+      nodes.addAll(orphans);
+    } else {
+      // スロット方式：空いているスロットへ入れ、入りきらない分は退避する
+      // （ツリー方式へ変えると出る）。
+      final used = {
+        for (final n in nodes)
+          if (n.slotIndex >= 0) n.slotIndex,
+      };
+      for (final orphan in orphans) {
+        int? free;
+        for (var i = 0; i < _slotMax; i++) {
+          if (!used.contains(i)) {
+            free = i;
+            break;
+          }
+        }
+        if (free == null) {
+          archived.add(orphan);
+          continue;
+        }
+        used.add(free);
+        nodes.add(
+          SaveNode(
+            id: orphan.id,
+            projectId: projectId,
+            savedAt: orphan.savedAt,
+            thumbnailPath: orphan.thumbnailPath,
+            slotIndex: free,
+          ),
+        );
+      }
+    }
+    if (nodes.isEmpty && archived.isEmpty) return;
+    _nodesByProject[projectId] = nodes;
+    if (archived.isNotEmpty) _archivedByProject[projectId] = archived;
+    if (orphans.isNotEmpty) await _persist(projectId);
+  }
+
+  /// 保存のIDは`save_<ミリ秒>_<連番>`なので、そこから保存した時刻が分かる。
+  static DateTime? _savedAtOf(String id) {
+    final match = RegExp(r'^save_(\d+)_').firstMatch(id);
+    if (match == null) return null;
+    return DateTime.fromMillisecondsSinceEpoch(int.parse(match.group(1)!));
+  }
+
+  final Map<String, Future<void>> _persisting = {};
+
+  /// 作品の保存の一覧を書く。同じ作品の書き込みは1つずつ順に行う。失敗は
+  /// 記録だけして続ける（保存のファイル自体は残り、次の起動で拾い直す）。
+  Future<void> _persist(String projectId) {
+    final previous = _persisting[projectId] ?? Future<void>.value();
+    final next = previous.then((_) => _writeIndex(projectId));
+    _persisting[projectId] = next;
+    return next;
+  }
+
+  Future<void> _writeIndex(String projectId) async {
+    try {
+      final base = await NiaproSerializer.projectsBasePath();
+      // 作品ごと消えたあとは書かない（フォルダを作り直さない）。
+      if (!Directory('$base/$projectId').existsSync()) return;
+      final dir = Directory('$base/$projectId/SaveTree');
+      if (!dir.existsSync()) dir.createSync(recursive: true);
+      final json = jsonEncode({
+        'nodes': [
+          for (final n in _nodesByProject[projectId] ?? const <SaveNode>[])
+            n.toJson(),
+        ],
+        'archived': [
+          for (final n in _archivedByProject[projectId] ?? const <SaveNode>[])
+            n.toJson(),
+        ],
+      });
+      // 書き込みと置き換えは同期で行い、途中で別の書き込みが割り込まない
+      // ようにする（作品の保存と同じ）。
+      File('${dir.path}/$indexFileName.tmp')
+        ..writeAsStringSync(json, flush: true)
+        ..renameSync('${dir.path}/$indexFileName');
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+    }
+  }
 
   List<SaveNode> getNodes(String projectId) =>
       List.unmodifiable(_nodesByProject[projectId] ?? []);
@@ -108,6 +284,7 @@ class SaveTreeService extends ChangeNotifier {
     }
     _nodesByProject[projectId]!.add(node);
     notifyListeners();
+    await _persist(projectId);
     return node;
   }
 
@@ -149,6 +326,7 @@ class SaveTreeService extends ChangeNotifier {
     );
     _nodesByProject[projectId]!.add(node);
     notifyListeners();
+    await _persist(projectId);
     return node;
   }
 
@@ -166,6 +344,7 @@ class SaveTreeService extends ChangeNotifier {
     _nodesByProject[projectId]?.removeWhere((n) => n.id == nodeId);
     notifyListeners();
     await NiaproSerializer.deleteSaveTreeNode(projectId, nodeId);
+    await _persist(projectId);
   }
 
   List<SaveNode> getChildren(String projectId, String? parentId) {
@@ -240,6 +419,7 @@ class SaveTreeService extends ChangeNotifier {
     _nodesByProject[projectId] = newNodes;
     _isTreeMode = newIsTreeMode;
     notifyListeners();
+    await _persist(projectId);
   }
 
   /// スロット→ツリー方式へ変更した時にアーカイブを自動復元（外部呼び出し用）
@@ -250,5 +430,6 @@ class SaveTreeService extends ChangeNotifier {
     _nodesByProject[projectId]!.addAll(archived);
     _archivedByProject[projectId] = [];
     notifyListeners();
+    unawaited(_persist(projectId));
   }
 }

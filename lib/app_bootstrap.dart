@@ -186,6 +186,13 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   await autosaveService.init();
   await enter('save_tree');
   final saveTreeService = own(SaveTreeService());
+  if (performanceService.saveMode == SaveMode.slot) {
+    saveTreeService.setSlotMax(performanceService.slotCount);
+  }
+  saveTreeService.setTreeMode(performanceService.saveMode == SaveMode.tree);
+  // 方式とスロット数が決まってから、保存の一覧を読む（一覧に無いファイルを
+  // 空いているスロットへ戻すため）。
+  await saveTreeService.init();
   await enter('autofill_preset');
   final autofillPresetService = own(AutofillPresetService());
   await autofillPresetService.init();
@@ -288,10 +295,6 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   final undoManager = app_undo.UndoManager();
   undoManager.setMaxUndoCount(settingsService.undoLimit);
   projectService.setUndoManager(undoManager);
-  if (performanceService.saveMode == SaveMode.slot) {
-    saveTreeService.setSlotMax(performanceService.slotCount);
-  }
-  saveTreeService.setTreeMode(performanceService.saveMode == SaveMode.tree);
 
   return [
     ChangeNotifierProvider.value(value: settingsService),
