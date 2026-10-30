@@ -5,6 +5,8 @@ import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
 import '../../router.dart';
 import '../../services/community_service.dart';
+import '../../services/api/community_api.dart';
+import 'widgets/community_playback_status_view.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
@@ -32,6 +34,21 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   static const double _defaultPreviewHeight = 220;
   double _previewHeight = _defaultPreviewHeight;
   bool _aiDisclosureBusy = false;
+  CommunityPlaybackStatus _playbackStatus = CommunityPlaybackStatus.checking;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkPlaybackStatus());
+  }
+
+  Future<void> _checkPlaybackStatus() async {
+    if (!mounted) return;
+    setState(() => _playbackStatus = CommunityPlaybackStatus.checking);
+    final status = await context.read<CommunityService>().playbackStatus(widget.workId);
+    if (mounted) setState(() => _playbackStatus = status);
+  }
+
 
   /// With a backend an edit can be refused or lost; it is undone, and the
   /// viewer is told.
@@ -253,21 +270,23 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final isOwner = work != null && communityService.isOwnWork(work);
     if (work == null ||
         (!isOwner && !communityService.isDiscoverableForViewer(work))) {
-      // A public work the viewer's own filters hide is not "missing".
-      final hiddenByFilter = work != null && work.isNiarimPublished;
+      final hiddenByViewer = work != null &&
+          work.isNiarimPublished &&
+          !work.isUnavailable;
       return Scaffold(
         appBar: AppBar(title: Text(l10n.communityWorkDetailTitle)),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              hiddenByFilter
-                  ? l10n.communityWorkHiddenByFilterMessage
-                  : l10n.communityWorkNotFoundMessage,
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
+        body: hiddenByViewer
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(l10n.communityWorkHiddenByFilterMessage,
+                      textAlign: TextAlign.center),
+                ),
+              )
+            : CommunityPlaybackStatusView(
+                status: _playbackStatus,
+                onRetry: _checkPlaybackStatus,
+              ),
       );
     }
     final scheme = Theme.of(context).colorScheme;
@@ -310,14 +329,19 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                         ),
                       ),
                     ),
-                    child: Center(
-                      child: Icon(
-                        Icons.play_circle_fill_rounded,
-                        color: ThemeService.activeColorScheme.onSurface
-                            .withValues(alpha: 0.70),
-                        size: 56,
-                      ),
-                    ),
+                    child: _playbackStatus != CommunityPlaybackStatus.available
+                        ? CommunityPlaybackStatusView(
+                            status: _playbackStatus,
+                            onRetry: _checkPlaybackStatus,
+                          )
+                        : Center(
+                            child: Icon(
+                              Icons.play_circle_fill_rounded,
+                              color: ThemeService.activeColorScheme.onSurface
+                                  .withValues(alpha: 0.70),
+                              size: 56,
+                            ),
+                          ),
                   ),
                 ),
               ),
