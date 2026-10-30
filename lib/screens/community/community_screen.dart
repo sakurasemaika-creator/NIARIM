@@ -1342,17 +1342,22 @@ class _CommunityScreenState extends State<CommunityScreen>
                     ),
                   ),
                   const SizedBox(width: 6),
-                  FilledButton(
-                    key: const Key('communitySearchButton'),
-                    onPressed: _runSearch,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(72, 48),
-                      maximumSize: const Size(132, 48),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(l10n.commonSearch, maxLines: 1),
+                  SizedBox(
+                    // Long translations would otherwise expand the button
+                    // beyond 132px on narrow 320px phones.
+                    width: MediaQuery.sizeOf(context).width < 360 ? 72 : 132,
+                    child: FilledButton(
+                      key: const Key('communitySearchButton'),
+                      onPressed: _runSearch,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(72, 48),
+                        maximumSize: const Size(132, 48),
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(l10n.commonSearch, maxLines: 1),
+                      ),
                     ),
                   ),
                 ],
