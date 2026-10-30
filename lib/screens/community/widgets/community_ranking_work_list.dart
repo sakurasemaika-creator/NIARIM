@@ -84,7 +84,9 @@ class CommunityRankBadge extends StatelessWidget {
     final words = CommunityRankingLayoutLabels.of(context);
     final top = rank <= 3;
     final (fill, ink) = switch (rank) {
-      1 => (scheme.primaryContainer, scheme.onPrimaryContainer),
+      // The first place has the distinct tertiary role; second and third
+      // deliberately share the same secondary role in every app theme.
+      1 => (scheme.tertiaryContainer, scheme.onTertiaryContainer),
       2 => (scheme.secondaryContainer, scheme.onSecondaryContainer),
       3 => (scheme.secondaryContainer, scheme.onSecondaryContainer),
       _ => (scheme.surface, scheme.onSurface),
