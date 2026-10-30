@@ -73,7 +73,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       final page = await context.read<CommunityService>().loadMoreOwnWorks();
       if (!mounted || generation != _ownerLoadGeneration ||
           accountId != context.read<GoogleAuthService>().account?.id ||
-          page == null) return;
+          page == null) {
+        return;
+      }
       setState(() {
         _ownerWorks = [
           ...?_ownerWorks,
