@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config/accent_text_theme.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/community_service.dart';
@@ -62,7 +63,7 @@ class _CommunityFollowNotificationsScreenState
                       notification.isFollower
                           ? Icons.people_outline
                           : Icons.bookmarks_outlined,
-                      color: scheme.primary,
+                      color: AccentTextTheme.of(context),
                     ),
                     title: Text(message),
                     subtitle: Text(

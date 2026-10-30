@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config/accent_text_theme.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -657,7 +658,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                             Icon(
                               Icons.video_library_outlined,
                               size: 56,
-                              color: scheme.primary.withValues(alpha: 0.55),
+                              color: AccentTextTheme.of(
+                                context,
+                              ).withValues(alpha: 0.55),
                             ),
                             const SizedBox(height: 12),
                             Text(

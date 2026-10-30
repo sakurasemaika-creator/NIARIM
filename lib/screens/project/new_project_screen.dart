@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config/accent_text_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -367,7 +368,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       Icons.tune,
                       size: 18,
                       shadows: CanvasIconButton.actionShadows(
-                        Theme.of(context).colorScheme.primary,
+                        AccentTextTheme.of(context),
                         Theme.of(context).scaffoldBackgroundColor,
                         Theme.of(context).colorScheme,
                       ),
@@ -376,7 +377,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       l10n.newProjectSizePresetManageButton,
                       style: TextStyle(
                         shadows: CanvasIconButton.actionShadows(
-                          Theme.of(context).colorScheme.primary,
+                          AccentTextTheme.of(context),
                           Theme.of(context).scaffoldBackgroundColor,
                           Theme.of(context).colorScheme,
                         ),
@@ -553,7 +554,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       Icons.save_outlined,
                       size: 18,
                       shadows: CanvasIconButton.actionShadows(
-                        Theme.of(context).colorScheme.primary,
+                        AccentTextTheme.of(context),
                         Theme.of(context).scaffoldBackgroundColor,
                         Theme.of(context).colorScheme,
                       ),
@@ -562,7 +563,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       l10n.newProjectSaveCustomSizeButton,
                       style: TextStyle(
                         shadows: CanvasIconButton.actionShadows(
-                          Theme.of(context).colorScheme.primary,
+                          AccentTextTheme.of(context),
                           Theme.of(context).scaffoldBackgroundColor,
                           Theme.of(context).colorScheme,
                         ),
@@ -811,7 +812,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 icon: Icon(
                   Icons.auto_fix_high_outlined,
                   shadows: CanvasIconButton.actionShadows(
-                    Theme.of(context).colorScheme.primary,
+                    AccentTextTheme.of(context),
                     Theme.of(context).scaffoldBackgroundColor,
                     Theme.of(context).colorScheme,
                   ),
@@ -824,7 +825,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                         ),
                   style: TextStyle(
                     shadows: CanvasIconButton.actionShadows(
-                      Theme.of(context).colorScheme.primary,
+                      AccentTextTheme.of(context),
                       Theme.of(context).scaffoldBackgroundColor,
                       Theme.of(context).colorScheme,
                     ),

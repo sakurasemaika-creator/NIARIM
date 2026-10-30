@@ -1,4 +1,5 @@
 import '../../utils/tolerant_preferences.dart';
+import '../../config/accent_text_theme.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -1195,14 +1196,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                         width: scrollTabs
                             ? naturalTabWidths[i]
                             : constraints.maxWidth *
-                                naturalTabWidths[i] /
-                                totalNatural,
+                                  naturalTabWidths[i] /
+                                  totalNatural,
                         child: Center(
-                          child: Text(
-                            labels[i],
-                            maxLines: 1,
-                            softWrap: false,
-                          ),
+                          child: Text(labels[i], maxLines: 1, softWrap: false),
                         ),
                       ),
                     ),
@@ -1549,7 +1546,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             Icon(
               Icons.person_add_alt_1,
               size: 64,
-              color: scheme.primary.withValues(alpha: 0.6),
+              color: AccentTextTheme.of(context).withValues(alpha: 0.6),
             ),
             const SizedBox(height: 16),
             Text(

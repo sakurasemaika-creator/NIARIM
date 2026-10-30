@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../config/accent_text_theme.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Playback values remain legible when system text scaling exceeds one row.
@@ -71,7 +72,9 @@ class _ProjectPlaybackStatusState extends State<ProjectPlaybackStatus> {
         onPressed: widget.onToggleLoop,
         icon: Icon(
           Icons.repeat,
-          color: widget.loopPlayback ? colors.primary : colors.onSurfaceVariant,
+          color: widget.loopPlayback
+              ? AccentTextTheme.of(context)
+              : colors.onSurfaceVariant,
         ),
         tooltip: widget.loopPlayback
             ? l10n.timelineLoopOnTooltip

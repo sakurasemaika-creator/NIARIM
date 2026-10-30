@@ -600,7 +600,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: isReposted ? BorderSide(color: scheme.primary) : null,
+                    side: isReposted
+                        ? BorderSide(color: AccentTextTheme.of(context))
+                        : null,
                   ),
                 ),
               ),

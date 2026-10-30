@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/theme_service.dart';
+import '../../config/accent_text_theme.dart';
 import '../../config/font_fallback.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
 import '../../utils/color_contrast.dart';
@@ -80,6 +81,7 @@ class _ThemePreviewGalleryScreenState extends State<ThemePreviewGalleryScreen> {
                   child: _ThemeSampleScreen(
                     entry: themePreviewEntries[i],
                     ja: ja,
+                    accentText: AccentTextTheme.of(context),
                   ),
                 ),
               ),
@@ -262,6 +264,7 @@ class ThemePreviewThumbnail extends StatelessWidget {
                     child: _ThemeSampleScreen(
                       entry: themePreviewEntries[1], // Projects screen.
                       ja: japanese,
+                      accentText: AccentTextTheme.of(context),
                     ),
                   ),
                 ),
@@ -279,7 +282,14 @@ class ThemePreviewThumbnail extends StatelessWidget {
 class _ThemeSampleScreen extends StatelessWidget {
   final ThemePreviewEntry entry;
   final bool ja;
-  const _ThemeSampleScreen({required this.entry, required this.ja});
+  // 背景の上の差し色の文字・アイコン（実際の画面のAccentTextTheme）。
+  // 塗りは差し色（c.primary）のまま。
+  final Color accentText;
+  const _ThemeSampleScreen({
+    required this.entry,
+    required this.ja,
+    required this.accentText,
+  });
   String t(String j, String e) => ja ? j : e;
 
   Widget _card(Widget child) => Card(
@@ -592,7 +602,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       borderRadius: BorderRadius.circular(13),
       child: ListTile(
         dense: true,
-        leading: Icon(icon, color: c.primary, size: 22),
+        leading: Icon(icon, color: accentText, size: 22),
         title: Text(
           title,
           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
@@ -802,11 +812,11 @@ class _ThemeSampleScreen extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'Kuramubon',
                                 color: tab == t('プロジェクト', 'Projects')
-                                    ? c.primary
+                                    ? accentText
                                     : c.onSurfaceVariant,
                                 shadows: tab == t('プロジェクト', 'Projects')
                                     ? CanvasIconButton.actionShadows(
-                                        c.primary,
+                                        accentText,
                                         tabBackground,
                                         tabScheme,
                                       )
@@ -868,7 +878,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                         child: Icon(
                           Icons.movie_creation_outlined,
                           size: 31,
-                          color: c.primary,
+                          color: accentText,
                         ),
                       ),
                       const SizedBox(height: 13),
@@ -946,7 +956,7 @@ class _ThemeSampleScreen extends StatelessWidget {
             child: Icon(
               Icons.movie_creation_outlined,
               size: 42,
-              color: c.primary,
+              color: accentText,
             ),
           ),
         ),
@@ -961,7 +971,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                   style: const TextStyle(fontSize: 12),
                 ),
               ),
-              Icon(Icons.star_border, color: c.primary, size: 16),
+              Icon(Icons.star_border, color: accentText, size: 16),
               const Icon(Icons.more_vert, size: 16),
             ],
           ),
@@ -1060,7 +1070,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
                                 color: tab == t('新着', 'New')
-                                    ? c.primary
+                                    ? accentText
                                     : c.onSurfaceVariant,
                               ),
                             ),
@@ -1602,7 +1612,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                         Icons.repeat,
                         key: const Key('themePreviewLoopButton'),
                         size: 24,
-                        color: c.primary,
+                        color: accentText,
                       ),
                     ),
                   ],
@@ -1710,7 +1720,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               children: [
                 Text(
                   t('選択', 'Select'),
-                  style: TextStyle(fontSize: 11, color: c.primary),
+                  style: TextStyle(fontSize: 11, color: accentText),
                 ),
                 const SizedBox(width: 12),
                 Container(
@@ -1995,7 +2005,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontFamily: 'Kuramubon',
-                              color: c.primary,
+                              color: accentText,
                             ),
                           ),
                         ),
@@ -2175,7 +2185,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                 key: const Key('themePreviewDetailLoopButton'),
                 width: 34,
                 height: 34,
-                child: Icon(Icons.repeat, color: c.primary, size: 20),
+                child: Icon(Icons.repeat, color: accentText, size: 20),
               ),
               Text(
                 '1.0s',
@@ -2530,7 +2540,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: c.primary,
+                                  color: accentText,
                                 ),
                               ),
                             ),
@@ -2538,7 +2548,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                             Icon(
                               Icons.open_in_full,
                               size: 17,
-                              color: c.primary,
+                              color: accentText,
                             ),
                           ],
                         ),
@@ -2705,7 +2715,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    child: Icon(item.$1, color: c.primary, size: 22),
+                    child: Icon(item.$1, color: accentText, size: 22),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -2866,10 +2876,14 @@ class _ThemeSampleScreen extends StatelessWidget {
                         children: [
                           Text(
                             item.value.$2,
-                            style: TextStyle(color: c.primary),
+                            style: TextStyle(color: accentText),
                           ),
                           const SizedBox(width: 6),
-                          Icon(Icons.chevron_right, color: c.primary, size: 20),
+                          Icon(
+                            Icons.chevron_right,
+                            color: accentText,
+                            size: 20,
+                          ),
                         ],
                       ),
                     ),
@@ -2978,7 +2992,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                   Expanded(
                     child: Text(e.$2, style: const TextStyle(fontSize: 11)),
                   ),
-                  Icon(Icons.delete_outline, size: 17, color: c.primary),
+                  Icon(Icons.delete_outline, size: 17, color: accentText),
                 ],
               ),
             ),
@@ -3056,7 +3070,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                 ),
                 Text(
                   t('クリア', 'Clear'),
-                  style: TextStyle(fontSize: 11, color: c.primary),
+                  style: TextStyle(fontSize: 11, color: accentText),
                 ),
               ],
             ),
@@ -3092,9 +3106,9 @@ class _ThemeSampleScreen extends StatelessWidget {
                       children: [
                         Text(
                           t('消しゴム切替', 'Eraser'),
-                          style: TextStyle(color: c.primary),
+                          style: TextStyle(color: accentText),
                         ),
-                        Icon(Icons.chevron_right, color: c.primary),
+                        Icon(Icons.chevron_right, color: accentText),
                       ],
                     ),
                   ),
@@ -3106,9 +3120,9 @@ class _ThemeSampleScreen extends StatelessWidget {
                       children: [
                         Text(
                           t('スポイト', 'Eyedropper'),
-                          style: TextStyle(color: c.primary),
+                          style: TextStyle(color: accentText),
                         ),
-                        Icon(Icons.chevron_right, color: c.primary),
+                        Icon(Icons.chevron_right, color: accentText),
                       ],
                     ),
                   ),
@@ -3246,7 +3260,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                   ),
                   child: Text(
                     t('順序をリセット', 'Reset order'),
-                    style: TextStyle(fontSize: 12, color: c.primary),
+                    style: TextStyle(fontSize: 12, color: accentText),
                   ),
                 ),
               ),
@@ -3311,7 +3325,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   child: Text(
                     t('幅をリセット', 'Reset width'),
-                    style: TextStyle(color: c.primary),
+                    style: TextStyle(color: accentText),
                   ),
                 ),
               ),
@@ -3488,7 +3502,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Icon(Icons.drag_handle, color: c.primary, size: 20),
+                      Icon(Icons.drag_handle, color: accentText, size: 20),
                     ],
                   ),
                 ),
@@ -3523,7 +3537,7 @@ class _ThemeSampleScreen extends StatelessWidget {
           ? c.error
           : inactive
           ? c.onSurfaceVariant.withValues(alpha: .45)
-          : c.primary;
+          : accentText;
       return Padding(
         padding: const EdgeInsets.only(bottom: 8),
         child: Material(
@@ -3676,7 +3690,7 @@ class _ThemeSampleScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.wallpaper_outlined, size: 48, color: c.primary),
+              Icon(Icons.wallpaper_outlined, size: 48, color: accentText),
               const SizedBox(height: 12),
               Text(
                 t('登録されたウォーターマークがありません', 'No saved watermarks'),
@@ -3778,9 +3792,12 @@ class _ThemeSampleScreen extends StatelessWidget {
           color: c.surfaceContainerLow,
           borderRadius: BorderRadius.circular(14),
           child: ListTile(
-            leading: Icon(Icons.add_photo_alternate_outlined, color: c.primary),
+            leading: Icon(
+              Icons.add_photo_alternate_outlined,
+              color: accentText,
+            ),
             title: Text(t('作品を選ぶ', 'Choose artwork')),
-            trailing: Icon(Icons.chevron_right, color: c.primary),
+            trailing: Icon(Icons.chevron_right, color: accentText),
           ),
         ),
       ),
@@ -3915,7 +3932,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Icon(Icons.edit_note, color: c.primary),
+                  Icon(Icons.edit_note, color: accentText),
                   const SizedBox(width: 18),
                   Icon(
                     Icons.book_outlined,
@@ -3962,7 +3979,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               child: Icon(
                 Icons.perm_media_outlined,
                 size: 36,
-                color: c.primary,
+                color: accentText,
               ),
             ),
             const SizedBox(height: 18),
@@ -4006,7 +4023,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: c.primary,
+                          color: accentText,
                         ),
                       ),
                     ),
@@ -4034,7 +4051,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                     backgroundColor: c.primary.withValues(alpha: .16),
                     child: Icon(
                       Icons.font_download_outlined,
-                      color: c.primary,
+                      color: accentText,
                       size: 38,
                     ),
                   ),
@@ -4095,7 +4112,7 @@ class _ThemeSampleScreen extends StatelessWidget {
           if (isTips)
             Text(
               t('動画制作のコツ', 'Video production tips'),
-              style: TextStyle(fontWeight: FontWeight.w700, color: c.primary),
+              style: TextStyle(fontWeight: FontWeight.w700, color: accentText),
             ),
           for (final title in titles)
             Padding(
@@ -4118,7 +4135,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                       child: Icon(
                         isTips ? Icons.lightbulb_outline : Icons.help_outline,
                         size: 17,
-                        color: c.primary,
+                        color: accentText,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -4202,7 +4219,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-                        Icon(Icons.star_border, color: c.primary),
+                        Icon(Icons.star_border, color: accentText),
                         const SizedBox(width: 14),
                         Icon(Icons.more_vert, color: c.onSurfaceVariant),
                       ],
@@ -4409,12 +4426,12 @@ class _ThemeSampleScreen extends StatelessWidget {
           CircleAvatar(
             radius: 14,
             backgroundColor: c.primary.withValues(alpha: .18),
-            child: Text(t('あ', 'A'), style: TextStyle(color: c.primary)),
+            child: Text(t('あ', 'A'), style: TextStyle(color: accentText)),
           ),
           const SizedBox(width: 8),
           Text(
             t('あさかぜ工房', 'Asakaze Studio'),
-            style: TextStyle(color: c.primary, fontSize: 13),
+            style: TextStyle(color: accentText, fontSize: 13),
           ),
         ],
       ),
@@ -4467,7 +4484,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
-                color: c.primary,
+                color: accentText,
               ),
             ),
             const SizedBox(height: 8),
@@ -4515,7 +4532,7 @@ class _ThemeSampleScreen extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(item.$1, color: c.primary),
+              Icon(item.$1, color: accentText),
               const SizedBox(width: 9),
               Expanded(
                 child: Column(
@@ -4700,7 +4717,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                       color: name == t('作品', 'Works')
-                          ? c.primary
+                          ? accentText
                           : c.onSurfaceVariant,
                     ),
                   ),
@@ -4899,7 +4916,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                 style: const TextStyle(fontSize: 12),
               ),
             ),
-            Icon(Icons.star_border, size: 19, color: c.primary),
+            Icon(Icons.star_border, size: 19, color: accentText),
           ],
         ),
       ),
@@ -4941,7 +4958,7 @@ class _ThemeSampleScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.delete_outline, size: 44, color: c.primary),
+              Icon(Icons.delete_outline, size: 44, color: accentText),
               const SizedBox(height: 12),
               Text(
                 t('ゴミ箱は空です', 'Trash is empty'),
