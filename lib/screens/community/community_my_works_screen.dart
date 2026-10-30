@@ -64,7 +64,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   }
 
   Future<void> _loadMoreOwnerWorks() async {
-    if (_loadingMoreOwnWorks) return;
+    if (_loadingMoreOwnWorks) {
+      return;
+    }
     final generation = _ownerLoadGeneration;
     final accountId = context.read<GoogleAuthService>().account?.id;
     setState(() => _loadingMoreOwnWorks = true);

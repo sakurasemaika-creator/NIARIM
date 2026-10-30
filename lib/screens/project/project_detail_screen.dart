@@ -31,7 +31,6 @@ import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/duplicate_name.dart';
 import '../../utils/folder_tree.dart';
-import 'widgets/project_playback_status.dart';
 import '../home/widgets/project_list_widget.dart'
     show showMaterialIncludeDialog, buildFontShareBundle;
 import '../../config/accent_text_theme.dart';
@@ -64,13 +63,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   // プレビューと再生コントロールのみを全画面表示する
   // （タイムラインモードのプレビュー全画面化と同等の機能）。
   bool _isPreviewFullscreen = false;
-  final _fullscreenStatusScroll = ScrollController();
   final _fullscreenPageScroll = ScrollController();
 
   @override
   void dispose() {
     _timer?.cancel();
-    _fullscreenStatusScroll.dispose();
     _fullscreenPageScroll.dispose();
     _previewImage?.dispose();
     super.dispose();
@@ -221,7 +218,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       );
       Widget preview() => KeyedSubtree(
         key: const Key('projectDetailFullscreenImage'),
-        child: _buildPreviewImage(project, showOverlayButtons: false),
+        child: _buildPreviewImage(project, totalFrames: flat.length, showOverlayButtons: false),
       );
       Widget transport() => SizedBox(
         key: const Key('projectDetailFullscreenTransport'),
@@ -254,39 +251,27 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: exitButton(),
+                          Row(
+                            children: [exitButton(), _buildLoopButton()],
                           ),
                           SizedBox(height: 64, child: preview()),
-                          _buildPlaybackStatus(flat, project),
                           _buildSeekBar(flat),
                           transport(),
                         ],
                       ),
                     );
                   }
-                  // Reserve a useful image and keep transport/seek reachable.
-                  // Only unusually tall status text scrolls in the short view.
-                  final statusMaxHeight = (constraints.maxHeight - 48 - 48 - 64)
-                      .clamp(48.0, double.infinity);
+                  // The frame counter lives on the image; there is no
+                  // second status row consuming preview height.
                   return Column(
                     children: [
                       Expanded(child: preview()),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxHeight: statusMaxHeight),
-                        child: SingleChildScrollView(
-                          key: const Key('projectDetailFullscreenStatusScroll'),
-                          controller: _fullscreenStatusScroll,
-                          primary: false,
-                          child: _buildPlaybackStatus(flat, project),
-                        ),
-                      ),
                       SizedBox(
                         height: 48,
                         child: Row(
                           children: [
                             exitButton(),
+                            _buildLoopButton(),
                             Expanded(child: _buildSeekBar(flat)),
                           ],
                         ),
@@ -375,9 +360,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             children: [
               AspectRatio(
                 aspectRatio: 16 / 9,
-                child: _buildPreviewImage(project),
+                child: _buildPreviewImage(project, totalFrames: flat.length),
               ),
-              _buildPlaybackStatus(flat, project),
               _buildSeekBar(flat),
               // メディアプレイヤー風：中央の再生ボタンをテーマカラーの円で強調する
               Container(
@@ -435,6 +419,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         _createNiashare(context, projectService, project),
                   ),
                 ],
+                // Keep the loop control directly beside Share.
+                trailing: _buildLoopButton(),
+                trailingWidth: _loopButtonWidth,
               ),
               if (project.tags.isNotEmpty) ...[
                 const SizedBox(height: 24),
@@ -570,10 +557,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  /// プレビュー画像本体。[showOverlayButtons]がtrueの場合のみ、右上に
-  /// 全画面化ボタンを重ねる（全画面表示中はこのメソッド自体を全画面化用に
-  /// 別途呼び出すため不要）。
-  Widget _buildPreviewImage(Project project, {bool showOverlayButtons = true}) {
+  /// Preview with the current frame counter inside its bottom-left corner.
+  /// This overlay is visible in both embedded and fullscreen modes.
+  Widget _buildPreviewImage(
+    Project project, {
+    required int totalFrames,
+    bool showOverlayButtons = true,
+  }) {
     final l10n = AppLocalizations.of(context)!;
     final theme = context.watch<ThemeService>().current;
     // 絵の縦横比のまま、絵の範囲にだけ作品の背景色（透明なら市松模様）を
@@ -601,51 +591,84 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         ),
       ),
     );
-    if (!showOverlayButtons) return image;
-    // プレビュー画像の中身は任意のプロジェクトの絵柄でどんな色にもなり
-    // 得るため、ボタン自体は白固定ではなくテーマ連動（アイコン＝文字色、
-    // 背景の縁取り＝メニュー背景色の半透明）にしつつ、キャンバスの
-    // CanvasIconButtonと同じ考え方で視認性を確保する。
+    final currentFrame = totalFrames == 0
+        ? 0
+        : _frameIndex.clamp(0, totalFrames - 1) + 1;
     return Stack(
+      key: const Key('projectDetailPreviewArea'),
       children: [
         Positioned.fill(child: image),
         Positioned(
-          right: 4,
-          top: 4,
-          child: Material(
-            color: theme.menuBgColor.withValues(alpha: 0.7),
-            shape: const CircleBorder(),
-            child: IconButton(
-              key: const Key('projectDetailFullscreenButton'),
-              icon: Icon(
-                Icons.fullscreen,
-                color: theme.menuTextColor,
-                size: 20,
+          left: 8,
+          bottom: 8,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: theme.menuBgColor.withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                '$currentFrame/$totalFrames',
+                key: const Key('projectDetailFrameCounter'),
+                style: TextStyle(
+                  color: theme.menuTextColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              tooltip: l10n.projectDetailFullscreenTooltip,
-              onPressed: () => setState(() => _isPreviewFullscreen = true),
             ),
           ),
         ),
+        if (showOverlayButtons)
+          Positioned(
+            right: 4,
+            top: 4,
+            child: Material(
+              color: theme.menuBgColor.withValues(alpha: 0.7),
+              shape: const CircleBorder(),
+              child: IconButton(
+                key: const Key('projectDetailFullscreenButton'),
+                icon: Icon(
+                  Icons.fullscreen,
+                  color: theme.menuTextColor,
+                  size: 20,
+                ),
+                tooltip: l10n.projectDetailFullscreenTooltip,
+                onPressed: () => setState(() => _isPreviewFullscreen = true),
+              ),
+            ),
+          ),
       ],
     );
   }
 
-  /// プレビューの直下には現在フレームとループだけを表示する。
-  /// 現在秒数・総秒数は再生ボタン列の両端へ移動する。
-  /// 作品全シーンをフラット化したフレーム数を使い、再生・シークに追従する。
-  Widget _buildPlaybackStatus(List<_FlatFrame> flat, Project project) {
-    final fps = project.fps > 0 ? project.fps : 24;
-    final currentFrame = flat.isEmpty
-        ? 0
-        : _frameIndex.clamp(0, flat.length - 1) + 1;
-    return ProjectPlaybackStatus(
-      currentFrame: currentFrame,
-      totalFrames: flat.length,
-      fps: fps,
-      loopPlayback: _loopPlayback,
-      onToggleLoop: () => setState(() => _loopPlayback = !_loopPlayback),
-      showTimes: false,
+  static const double _loopButtonWidth = 44;
+
+  Widget _buildLoopButton() {
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    return Semantics(
+      toggled: _loopPlayback,
+      child: IconButton(
+        key: const Key('projectDetailLoopButton'),
+        tooltip: _loopPlayback
+            ? l10n.timelineLoopOnTooltip
+            : l10n.timelineLoopOffTooltip,
+        onPressed: () => setState(() => _loopPlayback = !_loopPlayback),
+        icon: Icon(
+          Icons.repeat,
+          color: _loopPlayback
+              ? AccentTextTheme.of(context)
+              : scheme.onSurfaceVariant,
+          size: 22,
+        ),
+        constraints: const BoxConstraints.tightFor(
+          width: _loopButtonWidth,
+          height: 48,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
     );
   }
 
@@ -697,79 +720,80 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       fontSize: 12,
     );
 
-    Widget timeLabel(String label, Key key) => Flexible(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(label, key: key, maxLines: 1, style: timeStyle),
-        ),
-      ),
+    // Seven *equal-width cells*: elapsed time, five transport controls,
+    // total time. Padding keeps the time labels away from the outer edges.
+    Widget cell(Widget child) => Expanded(child: Center(child: child));
+    Widget timeLabel(String label, Key key) => FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(label, key: key, maxLines: 1, style: timeStyle),
     );
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        timeLabel(currentLabel, const Key('projectDetailCurrentSeconds')),
-        Flexible(
-          child: IconButton(
+    Widget control({
+      required IconData icon,
+      required String tooltip,
+      required VoidCallback? onPressed,
+      Color? iconColor,
+    }) => IconButton(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 23, color: iconColor),
+      tooltip: tooltip,
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints(minWidth: 36, minHeight: 40),
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        children: [
+          cell(timeLabel(currentLabel, const Key('projectDetailCurrentSeconds'))),
+          cell(control(
+            icon: Icons.skip_previous,
+            tooltip: l10n.projectDetailFirstFrameTooltip,
             onPressed: flat.isEmpty
                 ? null
                 : () => _seekTo(projectService, flat, 0),
-            icon: const Icon(Icons.skip_previous),
-            tooltip: l10n.projectDetailFirstFrameTooltip,
-          ),
-        ),
-        Flexible(
-          child: IconButton(
+          )),
+          cell(control(
+            icon: Icons.fast_rewind,
+            tooltip: l10n.projectDetailPrevFrameTooltip,
             onPressed: flat.isEmpty
                 ? null
                 : () => _seekTo(projectService, flat, _frameIndex - 1),
-            icon: const Icon(Icons.fast_rewind),
-            tooltip: l10n.projectDetailPrevFrameTooltip,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Container(
+          )),
+          cell(Container(
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
               shape: BoxShape.circle,
             ),
-            child: IconButton(
-              onPressed: flat.isEmpty
-                  ? null
-                  : () => _togglePlay(projectService, flat, project.fps),
-              icon: Icon(
-                _isPlaying ? Icons.pause : Icons.play_arrow,
-                color: Theme.of(context).colorScheme.onPrimary,
-              ),
+            child: control(
+              icon: _isPlaying ? Icons.pause : Icons.play_arrow,
+              iconColor: Theme.of(context).colorScheme.onPrimary,
               tooltip: _isPlaying
                   ? l10n.projectDetailPauseTooltip
                   : l10n.projectDetailPlayTooltip,
+              onPressed: flat.isEmpty
+                  ? null
+                  : () => _togglePlay(projectService, flat, project.fps),
             ),
-          ),
-        ),
-        const SizedBox(width: 4),
-        Flexible(
-          child: IconButton(
+          )),
+          cell(control(
+            icon: Icons.fast_forward,
+            tooltip: l10n.projectDetailNextFrameTooltip,
             onPressed: flat.isEmpty
                 ? null
                 : () => _seekTo(projectService, flat, _frameIndex + 1),
-            icon: const Icon(Icons.fast_forward),
-            tooltip: l10n.projectDetailNextFrameTooltip,
-          ),
-        ),
-        Flexible(
-          child: IconButton(
+          )),
+          cell(control(
+            icon: Icons.skip_next,
+            tooltip: l10n.projectDetailLastFrameTooltip,
             onPressed: flat.isEmpty
                 ? null
                 : () => _seekTo(projectService, flat, flat.length - 1),
-            icon: const Icon(Icons.skip_next),
-            tooltip: l10n.projectDetailLastFrameTooltip,
-          ),
-        ),
-        timeLabel(totalLabel, const Key('projectDetailTotalSeconds')),
-      ],
+          )),
+          cell(timeLabel(totalLabel, const Key('projectDetailTotalSeconds'))),
+        ],
+      ),
     );
   }
 
@@ -996,11 +1020,19 @@ typedef _QuickAction = ({
 
 /// 詳細画面のフォルダ・タグ・お気に入り・共有。ふだんは4つを1行に並べ、
 /// 長い言葉（フランス語の「Étiquettes」等）が大きな文字で欄に収まらない
-/// ときは、語の途中で折らずに2列・1列にする。
+/// ときは、語の途中で折らずに2列・1列にする。[trailing]（ループ）は最後の
+/// 行の右端、つまり共有のすぐ隣に置く。
 class _QuickActionsRow extends StatelessWidget {
-  const _QuickActionsRow({super.key, required this.children});
+  const _QuickActionsRow({
+    super.key,
+    required this.children,
+    this.trailing,
+    this.trailingWidth = 0,
+  });
 
   final List<_QuickAction> children;
+  final Widget? trailing;
+  final double trailingWidth;
 
   static const _labelStyle = TextStyle(fontSize: 12);
 
@@ -1033,44 +1065,67 @@ class _QuickActionsRow extends StatelessWidget {
       final widest = children
           .map((a) => _longestWord(context, a.label))
           .fold<double>(0, (a, b) => a > b ? a : b);
-      // 1欄の中で文字に使える幅（左右の余白ぶんを引く）。
-      final columns = [4, 2, 1].firstWhere(
-        (n) => widest <= constraints.maxWidth / n - 8,
-        orElse: () => 1,
-      );
-      final width = (constraints.maxWidth / columns).floorToDouble();
-      return Wrap(
-        children: [
-          for (final action in children)
-            SizedBox(
-              width: width,
-              child: InkWell(
-                onTap: action.onTap,
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 4,
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        action.icon,
-                        color:
-                            action.iconColor ??
-                            Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        action.label,
-                        textAlign: TextAlign.center,
-                        style: _labelStyle,
-                      ),
-                    ],
-                  ),
+      // 1欄の中で文字に使える幅（左右の余白ぶんを引く）。ループを最後の行の
+      // 右に置くと1列でも語が入らないときだけ、ループを次の行へ下ろして
+      // 欄に横幅をすべて使う。
+      final besideFits = widest <= constraints.maxWidth - trailingWidth - 8;
+      final available =
+          constraints.maxWidth - (besideFits ? trailingWidth : 0);
+      final columns = [
+        4,
+        2,
+        1,
+      ].firstWhere((n) => widest <= available / n - 8, orElse: () => 1);
+      final width = (available / columns).floorToDouble();
+      Widget cell(_QuickAction action) => SizedBox(
+        width: width,
+        child: InkWell(
+          onTap: action.onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+            child: Column(
+              children: [
+                Icon(
+                  action.icon,
+                  color:
+                      action.iconColor ??
+                      Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  action.label,
+                  textAlign: TextAlign.center,
+                  style: _labelStyle,
+                ),
+              ],
             ),
+          ),
+        ),
+      );
+      final rows = [
+        for (var i = 0; i < children.length; i += columns)
+          children.sublist(
+            i,
+            i + columns < children.length ? i + columns : children.length,
+          ),
+      ];
+      return Column(
+        children: [
+          for (final (index, row) in rows.indexed)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final action in row) cell(action),
+                const Spacer(),
+                if (besideFits && index == rows.length - 1 && trailing != null)
+                  trailing!
+                else if (besideFits)
+                  SizedBox(width: trailingWidth),
+              ],
+            ),
+          if (!besideFits && trailing != null)
+            Align(alignment: AlignmentDirectional.centerEnd, child: trailing),
         ],
       );
     },

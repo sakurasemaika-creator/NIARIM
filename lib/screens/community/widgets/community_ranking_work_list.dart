@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -237,6 +236,8 @@ class CommunityRankingWorkCard extends StatelessWidget {
         key: ValueKey('communityRankingMenu-${work.id}'),
         tooltip: message,
         icon: Icon(Icons.more_vert, color: scheme.onSurface),
+        iconSize: 22,
+        padding: EdgeInsets.zero,
         constraints: const BoxConstraints(minWidth: 180),
         onSelected: (_) => onVisibilityToggle?.call(),
         itemBuilder: (_) => [
@@ -258,8 +259,11 @@ class CommunityRankingWorkCard extends StatelessWidget {
         isBookmarked ? Icons.bookmark : Icons.bookmark_border,
         color: scheme.onSurfaceVariant,
       ),
-      iconSize: large ? 40 : 32,
-      constraints: BoxConstraints.tightFor(width: large ? 52 : 44, height: 48),
+      iconSize: large ? 32 : 22,
+      constraints: BoxConstraints.tightFor(
+        width: large ? 48 : 40,
+        height: large ? 48 : 40,
+      ),
       padding: EdgeInsets.zero,
       onPressed: onBookmarkToggle,
     );
@@ -371,44 +375,62 @@ class CommunityRankingWorkCard extends StatelessWidget {
 
   Widget _horizontal(BuildContext context, double width) {
     final thumbnailWidth = (width * .35).clamp(106.0, 230.0).toDouble();
-    final actionsOnTop = width >= 590;
-    return SizedBox(
-      key: const Key('communityRankingHorizontalCard'),
+    // Let the information determine the tile height, and stretch the
+    // thumbnail to exactly that height (including tall localized titles).
+    return IntrinsicHeight(
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        key: const Key('communityRankingHorizontalCard'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(
+            key: const Key('communityRankingHorizontalThumbnail'),
             width: thumbnailWidth,
-            height: math.max(110.0, thumbnailWidth * 9 / 16),
             child: _thumbnail(context),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(top: 5, right: 2, bottom: 5),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              padding: const EdgeInsets.fromLTRB(0, 8, 3, 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CommunityRankBadge(rank: rank, small: width < 400),
-                      const SizedBox(width: 4),
-                      Expanded(child: _title(context)),
-                      if (actionsOnTop && !_obscured) _bookmark(context),
-                      if (onVisibilityToggle != null) _menu(context),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  if (!_obscured)
-                    Row(
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(child: _author(context)),
-                        if (!actionsOnTop) _bookmark(context),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CommunityRankBadge(rank: rank, small: width < 400),
+                            const SizedBox(width: 4),
+                            Expanded(child: _title(context)),
+                          ],
+                        ),
+                        if (!_obscured) ...[
+                          const SizedBox(height: 4),
+                          _author(context),
+                          const SizedBox(height: 2),
+                          _counts(context),
+                        ],
                       ],
                     ),
-                  if (!_obscured) _counts(context),
+                  ),
+                  SizedBox(
+                    width: 40,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (onVisibilityToggle != null)
+                          SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: _menu(context),
+                          ),
+                        if (!_obscured) _bookmark(context),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

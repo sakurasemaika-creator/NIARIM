@@ -32,6 +32,46 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('plaza cards align small menu and bookmark in one right rail', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    final card = tester.widget<CommunityWorkCard>(
+      find.byType(CommunityWorkCard).first,
+    );
+    final menu = find.byKey(ValueKey('communityMuteMenu-${card.work.id}'));
+    final bookmark = find.byKey(ValueKey('community-bookmark-${card.work.id}'));
+    expect(menu, findsOneWidget);
+    expect(bookmark, findsOneWidget);
+    final menuRect = tester.getRect(menu);
+    final bookmarkRect = tester.getRect(bookmark);
+    expect((menuRect.center.dx - bookmarkRect.center.dx).abs(), lessThan(3));
+    expect(bookmarkRect.top, greaterThanOrEqualTo(menuRect.bottom - 1));
+    expect(tester.widget<IconButton>(bookmark).iconSize, 22);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('horizontal ranking thumbnails stretch to tile height', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    tester.widget<TabBar>(find.byType(TabBar)).controller!.animateTo(1);
+    await tester.pumpAndSettle();
+    final tile = find.byKey(const Key('communityRankingHorizontalCard')).first;
+    final thumb = find.byKey(const Key('communityRankingHorizontalThumbnail')).first;
+    expect(tester.getSize(thumb).height,
+        closeTo(tester.getSize(tile).height, 0.5));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('タグチップ遷移ではタグ検索タブと検索語を自動選択する', (tester) async {
     await tester.pumpWidget(app(initialTag: '手描き'));
     await tester.pumpAndSettle();
@@ -39,9 +79,9 @@ void main() {
     final toggle = find.byKey(const Key('communitySearchModeToggle'));
     expect(toggle, findsOneWidget);
     expect(
-      find.descendant(of: toggle, matching: find.byIcon(Icons.search)),
+      find.byKey(const Key('communitySearchModePill')),
       findsOneWidget,
-      reason: 'Tag mode offers keyword search as next mode',
+      reason: 'Tag mode is selectable immediately beside Search',
     );
     expect(find.byType(SegmentedButton<bool>), findsNothing);
 
@@ -64,7 +104,7 @@ void main() {
     await tester.tap(toggle);
     await tester.pumpAndSettle();
     expect(
-      find.descendant(of: toggle, matching: find.byIcon(Icons.sell_outlined)),
+      find.byKey(const Key('communitySearchModePill')),
       findsOneWidget,
     );
     expect(find.byType(SegmentedButton<bool>), findsNothing);
@@ -309,7 +349,12 @@ void main() {
         final search = tester.getRect(
           find.byKey(const Key('communitySearchButton')),
         );
+        final mode = tester.getRect(
+          find.byKey(const Key('communitySearchModePill')),
+        );
         final scope = '${locale.toLanguageTag()} width $width';
+        expect(mode.right, lessThanOrEqualTo(search.left), reason: scope);
+        expect(mode.left, greaterThanOrEqualTo(size.right - 1), reason: scope);
         expect(
           size.left,
           greaterThanOrEqualTo(sorter.right - 1),

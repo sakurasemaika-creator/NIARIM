@@ -226,9 +226,8 @@ void main() {
         appRouter.go(entry.route);
         await settleRoute();
         if (entry.name == '03_project_detail') {
-          // Actual project data: 12 frames at 12fps. Seconds now sit
-          // *beside* the first and last transport buttons, not beneath the
-          // preview. The status row retains only frame number and loop.
+          // 12 frames at 12fps: frame counter inside preview,
+          // loop next to Share, seven equally spaced transport cells.
           expect(find.text('0.0s'), findsOneWidget);
           expect(find.text('1/12'), findsOneWidget);
           expect(find.text('1.0s'), findsOneWidget);
@@ -238,27 +237,36 @@ void main() {
           final counter = tester.getRect(
             find.byKey(const Key('projectDetailFrameCounter')),
           );
+          final preview = tester.getRect(
+            find.byKey(const Key('projectDetailPreviewArea')),
+          );
           final loop = tester.getRect(
             find.byKey(const Key('projectDetailLoopButton')),
           );
+          final share = tester.getRect(find.byIcon(Icons.ios_share));
           final total = tester.getRect(
             find.byKey(const Key('projectDetailTotalSeconds')),
           );
-          final first = tester.getRect(find.byIcon(Icons.skip_previous));
-          final last = tester.getRect(find.byIcon(Icons.skip_next));
-          expect(current.right, lessThan(first.left));
-          expect(last.right, lessThan(total.left));
-          expect(counter.right, lessThan(loop.left));
-          expect(counter.bottom, lessThan(current.top));
-          expect(loop.bottom, lessThan(total.top));
-          expect(
-            (current.center.dy - first.center.dy).abs(),
-            lessThan(12),
-          );
-          expect(
-            (total.center.dy - last.center.dy).abs(),
-            lessThan(12),
-          );
+          expect(counter.left, greaterThanOrEqualTo(preview.left));
+          expect(counter.bottom, lessThanOrEqualTo(preview.bottom));
+          expect(counter.center.dy, greaterThan(preview.center.dy));
+          expect(loop.left, greaterThan(share.left));
+          expect((loop.center.dy - share.center.dy).abs(), lessThan(22));
+          final cells = [
+            current.center.dx,
+            tester.getRect(find.byIcon(Icons.skip_previous)).center.dx,
+            tester.getRect(find.byIcon(Icons.fast_rewind)).center.dx,
+            tester.getRect(find.byIcon(Icons.play_arrow)).center.dx,
+            tester.getRect(find.byIcon(Icons.fast_forward)).center.dx,
+            tester.getRect(find.byIcon(Icons.skip_next)).center.dx,
+            total.center.dx,
+          ];
+          final gaps = [
+            for (var i = 1; i < cells.length; i++) cells[i] - cells[i - 1],
+          ];
+          for (final gap in gaps) {
+            expect(gap, closeTo(gaps.first, 3));
+          }
           final loopButton = find.byKey(const Key('projectDetailLoopButton'));
           final activeIcon = tester.widget<Icon>(
             find.descendant(

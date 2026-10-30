@@ -381,6 +381,30 @@ void main() {
         );
       }
     }
+    // ここまで欄が狭いと、ループは共有のすぐ下の行の右へ下りる。
+    final share = tester.getRect(find.text('Partager'));
+    final loop = tester.getRect(
+      find.byKey(const Key('projectDetailLoopButton')),
+    );
+    expect(loop.top, greaterThanOrEqualTo(share.bottom - 1));
+    expect(loop.right, lessThanOrEqualTo(320));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the loop sits right beside Share', (tester) async {
+    await open(tester);
+    final share = tester.getRect(
+      find.descendant(
+        of: find.byKey(const Key('projectDetailQuickActions')),
+        matching: find.text('共有'),
+      ),
+    );
+    final loop = tester.getRect(
+      find.byKey(const Key('projectDetailLoopButton')),
+    );
+    expect(loop.left, greaterThanOrEqualTo(share.right));
+    expect(loop.left - share.right, lessThan(80));
+    expect(loop.top < share.bottom && loop.bottom > share.top, isTrue);
     expect(tester.takeException(), isNull);
   });
 

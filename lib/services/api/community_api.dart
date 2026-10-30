@@ -112,7 +112,7 @@ class CommunityApi {
     final json = await _client.getJson(
       '/users/${Uri.encodeComponent(authorId)}/works',
       authenticated: asOwner,
-      query: {'cursor': ?cursor},
+      query: {'limit': '25', 'cursor': ?cursor},
     );
     return ApiWorkPage.fromJson(json);
   }
