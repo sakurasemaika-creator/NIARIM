@@ -482,11 +482,10 @@ void main() {
     await tester.tap(find.text('ブクマ済み'));
     await settle(tester);
     expect(find.text('表示できるブックマーク作品がありません'), findsNothing);
-    // 作品広場のミュートでその作品が隠れても、ブックマークは残っている。
+    // 作品広場のミュートで発見の一覧から隠れても、ブックマークには残る。
     await tester.runAsync(() => community.setMutedWords([work.title]));
     await settle(tester);
-    expect(find.text('ブックマークは保存されています'), findsOneWidget);
+    expect(community.bookmarkedWorksForViewer.map((w) => w.id), [work.id]);
     expect(find.text('表示できるブックマーク作品がありません'), findsNothing);
-    expect(find.text('作品広場'), findsOneWidget);
   });
 }

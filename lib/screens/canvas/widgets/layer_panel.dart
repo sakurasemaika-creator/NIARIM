@@ -2485,7 +2485,7 @@ class _LayerPanelState extends State<LayerPanel> {
       lineartLayer: lineartLayer,
       mode: mode,
     );
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   /// 対応する自動塗り用線画レイヤーが存在しない自動塗りレイヤー（線画レイヤーを
