@@ -6090,9 +6090,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityWorkDetailTitle => '작품 상세';
 
   @override
-  String get communityWorkNotFoundMessage => '작품을 찾을 수 없습니다';
-
-  @override
   String get communityWorkHiddenByFilterMessage =>
       '표시 필터 설정에 따라 이 작품은 숨겨져 있습니다';
 
@@ -7710,4 +7707,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communitySortLabel => '정렬';
+
+  @override
+  String get homeTrashOperationFailed =>
+      '작업을 완료하지 못했습니다. 저장 공간을 확인하고 다시 시도해 주세요.';
+
+  @override
+  String get homeTrashWorking => '처리 중…';
 }

@@ -194,8 +194,11 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final project = context.read<ProjectService>().projects
-        .where((project) => project.id == widget.projectId).firstOrNull;
+    final project = context
+        .read<ProjectService>()
+        .projects
+        .where((project) => project.id == widget.projectId)
+        .firstOrNull;
     final backgroundColor = project?.backgroundColor ?? 0x00000000;
     return Card(
       elevation: 0,

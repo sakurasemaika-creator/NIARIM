@@ -65,15 +65,14 @@ class SettingsService extends ChangeNotifier {
   List<ToolbarItemId> get toolbarOrder => List.unmodifiable(_toolbarOrder);
   int get toolbarSizeLevel => _toolbarSizeLevel;
 
-  static double toolbarIconScaleForLevel(int level) => switch (
-    level.clamp(1, 5)
-  ) {
-    1 => 0.75,
-    2 => 0.88,
-    3 => 1.0,
-    4 => 1.15,
-    _ => 1.3,
-  };
+  static double toolbarIconScaleForLevel(int level) =>
+      switch (level.clamp(1, 5)) {
+        1 => 0.75,
+        2 => 0.88,
+        3 => 1.0,
+        4 => 1.15,
+        _ => 1.3,
+      };
 
   Future<void> setToolbarSizeLevel(int level) async {
     final next = level.clamp(1, 5);
@@ -83,6 +82,7 @@ class SettingsService extends ChangeNotifier {
     await prefs.setInt('toolbar_size_level', next);
     notifyListeners();
   }
+
   Set<ToolbarItemId> get hiddenToolbarItems =>
       Set.unmodifiable(_hiddenToolbarItems);
   Set<CanvasDockPanel> get defaultDockedPanels =>

@@ -22,6 +22,7 @@ import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
 import '../home/widgets/project_list_widget.dart'
@@ -43,6 +44,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   bool _isPlaying = false;
   bool _loopPlayback = false;
   bool _rendering = false;
+  bool _movingToTrash = false;
   Timer? _timer;
   ui.Image? _previewImage;
   // プレビュー全画面化：確認・仕上がりチェックに集中できるよう、
@@ -183,7 +185,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       );
       Widget preview() => KeyedSubtree(
         key: const Key('projectDetailFullscreenImage'),
-        child: _buildPreviewImage(project, totalFrames: flat.length, showOverlayButtons: false),
+        child: _buildPreviewImage(
+          project,
+          totalFrames: flat.length,
+          showOverlayButtons: false,
+        ),
       );
       Widget transport() => SizedBox(
         key: const Key('projectDetailFullscreenTransport'),
@@ -217,7 +223,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Row(
-                            children: [exitButton(), _buildLoopButton(compact: true)],
+                            children: [
+                              exitButton(),
+                              _buildLoopButton(compact: true),
+                            ],
                           ),
                           SizedBox(height: 64, child: preview()),
                           _buildSeekBar(flat),
@@ -258,8 +267,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         actions: [
           const HelpButton(topic: 'プロジェクト詳細画面'),
           PopupMenuButton<String>(
+            enabled: !_movingToTrash,
             icon: const Icon(Icons.more_vert),
-            onSelected: (action) {
+            onSelected: (action) async {
               switch (action) {
                 case 'rename':
                   _showRenameDialog(context, project.name);
@@ -276,8 +286,18 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
                     );
                   } else {
-                    projectService.deleteProject(widget.projectId);
-                    context.pop();
+                    if (_movingToTrash) return;
+                    setState(() => _movingToTrash = true);
+                    final saved = await runProjectTrashAction(
+                      context,
+                      () => projectService.deleteProject(widget.projectId),
+                    );
+                    if (!mounted || !context.mounted) return;
+                    if (saved) {
+                      context.pop();
+                    } else {
+                      setState(() => _movingToTrash = false);
+                    }
                   }
               }
             },
@@ -595,7 +615,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     final l10n = AppLocalizations.of(context)!;
     // The loop is the fifth quick action: neutral when off, accent when on.
     final label = l10n.timelineLoopOffTooltip
-        .split(RegExp(r'[:：]')).first.trim();
+        .split(RegExp(r'[:：]'))
+        .first
+        .trim();
     final foreground = _loopPlayback ? scheme.primary : scheme.onSurfaceVariant;
     if (compact) {
       return IconButton(
@@ -709,53 +731,65 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         children: [
-          cell(timeLabel(currentLabel, const Key('projectDetailCurrentSeconds'))),
-          cell(control(
-            icon: Icons.skip_previous,
-            tooltip: l10n.projectDetailFirstFrameTooltip,
-            onPressed: flat.isEmpty
-                ? null
-                : () => _seekTo(projectService, flat, 0),
-          )),
-          cell(control(
-            icon: Icons.fast_rewind,
-            tooltip: l10n.projectDetailPrevFrameTooltip,
-            onPressed: flat.isEmpty
-                ? null
-                : () => _seekTo(projectService, flat, _frameIndex - 1),
-          )),
-          cell(Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              shape: BoxShape.circle,
-            ),
-            child: control(
-              icon: _isPlaying ? Icons.pause : Icons.play_arrow,
-              iconColor: Theme.of(context).colorScheme.onPrimary,
-              tooltip: _isPlaying
-                  ? l10n.projectDetailPauseTooltip
-                  : l10n.projectDetailPlayTooltip,
+          cell(
+            timeLabel(currentLabel, const Key('projectDetailCurrentSeconds')),
+          ),
+          cell(
+            control(
+              icon: Icons.skip_previous,
+              tooltip: l10n.projectDetailFirstFrameTooltip,
               onPressed: flat.isEmpty
                   ? null
-                  : () => _togglePlay(projectService, flat, project.fps),
+                  : () => _seekTo(projectService, flat, 0),
             ),
-          )),
-          cell(control(
-            icon: Icons.fast_forward,
-            tooltip: l10n.projectDetailNextFrameTooltip,
-            onPressed: flat.isEmpty
-                ? null
-                : () => _seekTo(projectService, flat, _frameIndex + 1),
-          )),
-          cell(control(
-            icon: Icons.skip_next,
-            tooltip: l10n.projectDetailLastFrameTooltip,
-            onPressed: flat.isEmpty
-                ? null
-                : () => _seekTo(projectService, flat, flat.length - 1),
-          )),
+          ),
+          cell(
+            control(
+              icon: Icons.fast_rewind,
+              tooltip: l10n.projectDetailPrevFrameTooltip,
+              onPressed: flat.isEmpty
+                  ? null
+                  : () => _seekTo(projectService, flat, _frameIndex - 1),
+            ),
+          ),
+          cell(
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                shape: BoxShape.circle,
+              ),
+              child: control(
+                icon: _isPlaying ? Icons.pause : Icons.play_arrow,
+                iconColor: Theme.of(context).colorScheme.onPrimary,
+                tooltip: _isPlaying
+                    ? l10n.projectDetailPauseTooltip
+                    : l10n.projectDetailPlayTooltip,
+                onPressed: flat.isEmpty
+                    ? null
+                    : () => _togglePlay(projectService, flat, project.fps),
+              ),
+            ),
+          ),
+          cell(
+            control(
+              icon: Icons.fast_forward,
+              tooltip: l10n.projectDetailNextFrameTooltip,
+              onPressed: flat.isEmpty
+                  ? null
+                  : () => _seekTo(projectService, flat, _frameIndex + 1),
+            ),
+          ),
+          cell(
+            control(
+              icon: Icons.skip_next,
+              tooltip: l10n.projectDetailLastFrameTooltip,
+              onPressed: flat.isEmpty
+                  ? null
+                  : () => _seekTo(projectService, flat, flat.length - 1),
+            ),
+          ),
           cell(timeLabel(totalLabel, const Key('projectDetailTotalSeconds'))),
         ],
       ),

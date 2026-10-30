@@ -2620,7 +2620,6 @@
   "communityVisibilityHiddenDesc": "Hidden: removed from New Arrivals, Rankings, and this author's work list (independent of the YouTube-side visibility setting).",
   "communityVisibilityHiddenBadge": "Hidden",
   "communityWorkDetailTitle": "Work Details",
-  "communityWorkNotFoundMessage": "This work could not be found",
   "communityWorkHiddenByFilterMessage": "This work is hidden by your display filters",
   "communityEditFailed": "Couldn’t save the change. Check your connection and try again.",
   "communityEditSignInRequired": "Sign in with your Google account to make this change",
@@ -3229,5 +3228,7 @@
   "communitySearchHistory": "Search history",
   "communitySearchHistoryEmpty": "No search history",
   "communityDeleteSavedSearchConfirm": "Delete this saved search?",
-  "communitySortLabel": "Sort"
+  "communitySortLabel": "Sort",
+  "homeTrashOperationFailed": "The operation could not be completed. Check your storage and try again.",
+  "homeTrashWorking": "Working…"
 }

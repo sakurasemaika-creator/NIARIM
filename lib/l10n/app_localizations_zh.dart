@@ -6017,9 +6017,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityWorkDetailTitle => '作品详情';
 
   @override
-  String get communityWorkNotFoundMessage => '未找到该作品';
-
-  @override
   String get communityWorkHiddenByFilterMessage => '该作品已按显示筛选设置隐藏';
 
   @override
@@ -7602,6 +7599,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communitySortLabel => '排序';
+
+  @override
+  String get homeTrashOperationFailed => '无法完成操作。请检查存储空间后重试。';
+
+  @override
+  String get homeTrashWorking => '正在处理…';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -13617,9 +13620,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityWorkDetailTitle => '作品詳情';
 
   @override
-  String get communityWorkNotFoundMessage => '找不到該作品';
-
-  @override
   String get communityWorkHiddenByFilterMessage => '該作品已依顯示篩選設定隱藏';
 
   @override
@@ -15204,4 +15204,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communitySortLabel => '排序';
+
+  @override
+  String get homeTrashOperationFailed => '無法完成操作。請檢查儲存空間後重試。';
+
+  @override
+  String get homeTrashWorking => '處理中…';
 }

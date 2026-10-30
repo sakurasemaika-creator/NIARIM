@@ -2620,7 +2620,6 @@
   "communityVisibilityHiddenDesc": "非公开中：已从新着、排行榜和该投稿者的作品列表中隐藏（这是独立于YouTube端公开设置的设置）。",
   "communityVisibilityHiddenBadge": "非公开",
   "communityWorkDetailTitle": "作品详情",
-  "communityWorkNotFoundMessage": "未找到该作品",
   "communityWorkHiddenByFilterMessage": "该作品已按显示筛选设置隐藏",
   "communityEditFailed": "无法保存更改。请检查连接后重试。",
   "communityEditSignInRequired": "请使用Google账号登录后再进行更改",
@@ -3222,5 +3221,7 @@
   "communitySearchHistory": "搜索历史",
   "communitySearchHistoryEmpty": "暂无搜索历史",
   "communityDeleteSavedSearchConfirm": "删除此保存的搜索条件？",
-  "communitySortLabel": "排序"
+  "communitySortLabel": "排序",
+  "homeTrashOperationFailed": "无法完成操作。请检查存储空间后重试。",
+  "homeTrashWorking": "正在处理…"
 }

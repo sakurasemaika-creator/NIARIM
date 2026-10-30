@@ -6061,9 +6061,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityWorkDetailTitle => '作品詳細';
 
   @override
-  String get communityWorkNotFoundMessage => '作品が見つかりませんでした';
-
-  @override
   String get communityWorkHiddenByFilterMessage =>
       '表示フィルターの設定により、この作品は非表示になっています';
 
@@ -7673,4 +7670,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communitySortLabel => '並び替え';
+
+  @override
+  String get homeTrashOperationFailed => '操作を完了できませんでした。保存先を確認して、もう一度お試しください。';
+
+  @override
+  String get homeTrashWorking => '処理中…';
 }

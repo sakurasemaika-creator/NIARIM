@@ -2620,7 +2620,6 @@
   "communityVisibilityHiddenDesc": "Masqué : retiré de Nouveautés, Classements et la liste des œuvres de cet auteur (réglage indépendant de la visibilité côté YouTube).",
   "communityVisibilityHiddenBadge": "Masqué",
   "communityWorkDetailTitle": "Détails de l'œuvre",
-  "communityWorkNotFoundMessage": "Cette œuvre est introuvable",
   "communityWorkHiddenByFilterMessage": "Cette œuvre est masquée par vos filtres d’affichage",
   "communityEditFailed": "Impossible d’enregistrer la modification. Vérifiez votre connexion et réessayez.",
   "communityEditSignInRequired": "Connectez-vous avec votre compte Google pour effectuer cette modification",
@@ -3222,5 +3221,7 @@
   "communitySearchHistory": "Historique de recherche",
   "communitySearchHistoryEmpty": "Aucun historique",
   "communityDeleteSavedSearchConfirm": "Supprimer cette recherche enregistrée ?",
-  "communitySortLabel": "Trier"
+  "communitySortLabel": "Trier",
+  "homeTrashOperationFailed": "L’opération n’a pas pu être terminée. Vérifiez votre stockage et réessayez.",
+  "homeTrashWorking": "Traitement…"
 }

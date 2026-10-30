@@ -324,10 +324,7 @@ void main() {
       final tile = find.byKey(Key(entry.key));
       expect(tile, findsOneWidget);
       for (final label in entry.value) {
-        final finder = find.descendant(
-          of: tile,
-          matching: find.text(label),
-        );
+        final finder = find.descendant(of: tile, matching: find.text(label));
         expect(finder, findsOneWidget, reason: label);
         final textWidget = tester.widget<Text>(finder);
         expect(textWidget.style?.fontFamily, 'Kuramubon', reason: label);

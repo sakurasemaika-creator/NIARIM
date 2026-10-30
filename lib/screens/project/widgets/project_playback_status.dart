@@ -18,6 +18,7 @@ class ProjectPlaybackStatus extends StatefulWidget {
   final int fps;
   final bool loopPlayback;
   final VoidCallback onToggleLoop;
+
   /// The detail screen moves seconds beside the first/last frame buttons.
   /// Other callers can retain the complete status layout.
   final bool showTimes;

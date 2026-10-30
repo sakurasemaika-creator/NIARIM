@@ -2951,7 +2951,6 @@
   "communityVisibilityHiddenDesc": "非公開中：新着・ランキング・投稿者別作品一覧から非表示です（YouTube側の公開設定とは独立した設定です）。",
   "communityVisibilityHiddenBadge": "非公開",
   "communityWorkDetailTitle": "作品詳細",
-  "communityWorkNotFoundMessage": "作品が見つかりませんでした",
   "communityWorkHiddenByFilterMessage": "表示フィルターの設定により、この作品は非表示になっています",
   "communityEditFailed": "変更を保存できませんでした。通信状態を確認して、もう一度お試しください。",
   "communityEditSignInRequired": "変更するにはGoogleアカウントでログインしてください",
@@ -3696,5 +3695,7 @@
   "communitySearchHistory": "検索履歴",
   "communitySearchHistoryEmpty": "検索履歴はありません",
   "communityDeleteSavedSearchConfirm": "保存した検索条件を削除しますか？",
-  "communitySortLabel": "並び替え"
+  "communitySortLabel": "並び替え",
+  "homeTrashOperationFailed": "操作を完了できませんでした。保存先を確認して、もう一度お試しください。",
+  "homeTrashWorking": "処理中…"
 }

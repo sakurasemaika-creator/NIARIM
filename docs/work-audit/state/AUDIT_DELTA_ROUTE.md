@@ -131,6 +131,89 @@ status: `todo`。2026-10-29 App0c02171d、41a37bf以降の28path差分。常設f
 
 status: `todo`。同HEAD差分。public FF count pair一括request・owner-only following・identity/list/visibility endpoint削除、匿名device-local milestone historyとaccount分離、新community_milestone_store、bookmark owner-onlyと他author bookmark入口/API削除をinventoryしUI/backend契約・公開/本人/別account/匿名/late completion/error/retry/通知既読/保存互換を実操作。追加workflow/fixtureを実backend/PASSへ代用しない。28path manifestはS24 resume0c021-recovery.json、旧CI8失敗はs23-followup-full-gates-CI.logに保存し現在HEADで切り分ける。
 
+
+2026-10-30差分登録: App32e1b79→dc0df194704e11923d029c5fddda55689ddc522bの24pathを確認。以下は新対象の登録であり、D001全体の再inventory/監査完了を意味しない。tab/画面の安定した実装順に追記する。
+
+## D001.9 — Community 新着の25件ページング
+
+status: todo。community_screen/community_service/CommunityApi/worksLatest。初回25件・次cursor・終端・空page・重複・再読込・失敗/retry・少数/全非表示時のload-more導線、7locale/PC-SP/keyboard/保持状態を実操作する。
+
+## D001.10 — Community ランキングの25件ページング
+
+status: todo。ranking API/ランキングlayout。server順位母集団と順序・同順位tie・cursor境界を保ち、非表示/ミュート/再生不可のplaceholderが順位を詰めないこと、表示切替と次page/戻る/refreshを確認する。旧filter前提へ製品を戻さない。
+
+## D001.11 — Community フォロー投稿・repost統合ページング
+
+status: todo。reposts/userWorks/community_service。投稿とrepostをUTC時刻で時系列統合、25件境界/同時刻/同一作品イベント/追加page/ミュート/所有者状態/refresh/error/retryを実データとUIで検証する。
+
+## D001.12 — Community 検索タブのページングと条件変更
+
+status: todo。独立検索タブでquery/tag/exact/saved/historyとpage cursorの対応、検索条件変更時の旧応答排除、全filter後0件でも続きがある場合の到達、全件終了を検証する。
+
+## D001.13 — Community 作者投稿一覧の25件ページング
+
+status: todo。community_author_works_screen/userWorks。初回page全非表示でも次pageを要求できること、作者変更/ミュート/次page失敗/retry/scroll/戻る保持を確認する。
+
+## D001.14 — Community 自分の投稿一覧の25件ページング
+
+status: todo。community_my_works_screen/worksByAuthorPage。owner/account revision・private/AI/muteの意図した扱い、25件以後の公開変更/削除/タグ・遅延応答・refreshを追跡する。
+
+## D001.15 — Project preview transport両端の秒数
+
+status: todo。project_detail_screen/project_playback_status。現在秒数は先頭frame移動の左、総秒数は最終frame移動の右、中央frame/loopを含む全controlsの意味/seek/end/全画面/PC-SP/文字拡大/7locale/保存互換を実操作する。
+
+## D001.16 — 新規project背景色見本の全面描画
+
+status: todo。background_color_picker。白/黒/透明の丸全面が内容色/透明市松で描画され、アクセントが内部へ漏れないこと。未選択白の輪郭は正式theme roleを使い、選択/保存preset/7locale/PC-SPを確認する。
+
+## D001.17 — Save slot actionと確認の最新差分
+
+status: todo。save_management_screen/save_slot_action_buttons_test。保存/読込/削除の各固有icon/label/tooltip/confirm target/cancel/実行/失敗/retry/slot保持/7locale/PC-SPを最新実装から確認する。
+
+## D001.18 — Splash entry labels・subtitleのKuramubon固定差分
+
+status: todo。2d2a2aebで追加。両entry tile label/subtitleの正式font/fallback、7locale/PC-SP/文字拡大/28theme/当たり判定/初回導線を最新sourceから確認する。A002の過去証拠をこの変更の最新Visual closureへ昇格させない。
+
+## D001.19 — Project preview frame overlay・等間隔transport・loop/share配置
+
+status: todo。5bdd4cd6以降。現在時間/全長と全transportの等間隔、frame count overlay、loop/share隣接、再生/停止/先頭末尾/fullscreen、全幅/7locale/PC-SP/文字拡大/theme、実操作・原本・保存再訪。旧画像を新配置のclosureに流用しない。
+
+## D001.20 — Plaza card右rail menu/bookmarkと48dp当たり判定
+
+status: todo。3059c181–c6571fda。title横compact menu、右rail下bookmark、22dp icon/48dp target、preview/details/menu/bookmarkの誤操作・long press/keyboard、全layout/7locale/PC-SP/狭幅/文字拡大/theme/owner権限と状態保持。
+
+## D001.21 — Ranking横型thumbnailのtile高追従とcompact actions
+
+status: todo。a82f0ac1/7dcf9ffd。画像aspectと横縦種別、tile高、順位masked slot/未取得/非公開/再生可否、compact actionsの位置・48dp・導線、全幅/7locale/PC-SP/文字拡大/themeと実結果。
+
+## D001.22 — Search隣接keyword/tag pill・翻訳幅制約・明示feed limit25
+
+status: todo。95527d63–8670f3d8。keyword/tag選択と検索確定、入力保持/clear/back/retry/paging、pill/button隣接、320px/長い翻訳/textScale、keyboard/IME/focus/semantic/PC-SP/7locale/theme。author feedの明示limit25をD001.9–15の条件にも含める。
+
+## D001.23 — Project thumbnail checkerboardの枠内clip
+
+status: todo。fbc48103。project listのthumbnail/Canvas背景/透明格子のclipと角丸、実画像の縦横比/透過/scale、PC-SP/全width/theme/文字拡大とcache/revisit。ProjectListのS27 await変更と共存することも確認する。
+
+## D001.24 — Canvas mode切替ボタンと上部メニューの高さ揃え
+
+status: todo。fbc48103。canvas右上timeline切替と上部controlのbaseline/高さ/余白、矢印・label・当たり判定、PC-SP/文字拡大/全幅/toolbar設定/7locale/左利き/再訪。
+
+## D001.25 — Toolbarの5段階size設定とlive/preview伝播・永続化
+
+status: todo。03ace188–47116e30。toolbar_size_levelの1/2/3/4/5（scale 0.75/0.88/1.0/1.15/1.3）、default3、clamp/legacy/invalid、全実iconと設定previewの一致、並び替え/非表示/docking/左利き/7locale（zh/Hant区別）/theme/PC-SP/48dp・gesture、保存false/throw/再試行/coldを実操作する。sourceだけで保存失敗を不具合確定しない。
+
+## D001.26 — Project背景色のpreviewへの一致
+
+status: todo。fbc48103/c2e3495d。ProjectDetail/canvas color-adjust/filterの実previewがproject由来背景・透明格子を正しく描画し、UI背景のtheme roleと混同しないこと、透過/不透明色/alpha/適用Cancel/元データ/保存再訪/全preview callerを確認。
+
+## D001.27 — Loop default OFF・label・fullscreen compact row
+
+status: todo。ecc8d37c/4bc378c2。既定OFF、切替とicon/label/semantics、通常/fullscreen、48px seek行の横幅/文字拡大/7locale/PC-SP/再生末尾挙動/戻る再訪と保存の意図仕様を確認。
+
+## D001.28 — Dialogのoutline/shadow除去の全caller追従
+
+status: todo。ecc8d37c。ThemeService dialog elevation0/BorderSide.noneとcolor-adjust/filterの明示shapeを確認。全modal/確認/危険操作/失敗/文字拡大/全幅/7locale/PC-SP/28themeで、境界・focus・表示階層・操作性を実画面から判定する。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。

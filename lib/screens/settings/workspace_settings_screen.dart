@@ -68,7 +68,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    _toolbarSizeLabel(Localizations.localeOf(context).languageCode),
+                    _toolbarSizeLabel(
+                      Localizations.localeOf(context).languageCode,
+                    ),
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),

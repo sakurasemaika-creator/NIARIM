@@ -28,6 +28,7 @@ import '../../models/shortcut_binding.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
+import '../../widgets/project_trash_dialog.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
 import 'widgets/exported_work_card.dart';
@@ -768,31 +769,29 @@ class _HomeScreenState extends State<HomeScreen>
     final targetIds = _selectedIds.where(projectIds.contains).toList();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.homeMoveToTrash),
-        content: Text(l10n.homeMoveToTrashConfirm(targetIds.length)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
-            onPressed: () {
-              for (final id in targetIds) {
-                service.deleteProject(id);
-              }
+      builder: (_) => ProjectTrashDialog(
+        title: l10n.homeMoveToTrash,
+        message: l10n.homeMoveToTrashConfirm(targetIds.length),
+        confirmLabel: l10n.commonMove,
+        itemNames: const [],
+        pendingMessage: () => l10n.homeMoveToTrashConfirm(
+          service.projects.where((p) => targetIds.contains(p.id)).length,
+        ),
+        pendingItemNames: () => service.projects
+            .where((p) => targetIds.contains(p.id))
+            .map((p) => p.name)
+            .toList(),
+        onApply: () async {
+          for (final id in targetIds) {
+            await service.deleteProject(id);
+            if (mounted) {
               setState(() {
-                _selectedIds.clear();
-                _isSelectionMode = false;
+                _selectedIds.remove(id);
+                _isSelectionMode = _selectedIds.isNotEmpty;
               });
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonMove),
-          ),
-        ],
+            }
+          }
+        },
       ),
     );
   }
@@ -1737,16 +1736,43 @@ class _FolderableList<T> extends StatelessWidget {
   }
 }
 
-class _TrashTab extends StatelessWidget {
+class _TrashTab extends StatefulWidget {
   final ProjectSortMode sortMode;
 
   const _TrashTab({required this.sortMode});
 
   @override
+  State<_TrashTab> createState() => _TrashTabState();
+}
+
+class _TrashTabState extends State<_TrashTab> {
+  final _pending = <String>{};
+  final _restoring = <String>{};
+
+  Future<void> _restore(String id) async {
+    if (_pending.contains(id)) return;
+    final service = context.read<ProjectService>();
+    setState(() {
+      _pending.add(id);
+      _restoring.add(id);
+    });
+    try {
+      await runProjectTrashAction(context, () => service.restoreProject(id));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _pending.remove(id);
+          _restoring.remove(id);
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final trash = _sortProjects(
       context.watch<ProjectService>().trash,
-      sortMode,
+      widget.sortMode,
     );
     final l10n = AppLocalizations.of(context)!;
     if (trash.isEmpty) {
@@ -1770,21 +1796,28 @@ class _TrashTab extends StatelessWidget {
         final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
         final actions = [
           TextButton(
+            key: ValueKey('trash-restore-${project.id}'),
             style: TextButton.styleFrom(
               minimumSize: const Size(48, 48),
               visualDensity: VisualDensity.standard,
             ),
-            onPressed: () =>
-                context.read<ProjectService>().restoreProject(project.id),
-            child: Text(l10n.commonRestore),
+            onPressed: _pending.contains(project.id)
+                ? null
+                : () => _restore(project.id),
+            child: _restoring.contains(project.id)
+                ? Text(l10n.homeTrashWorking)
+                : Text(l10n.commonRestore),
           ),
           TextButton(
+            key: ValueKey('trash-delete-${project.id}'),
             style: TextButton.styleFrom(
               minimumSize: const Size(48, 48),
               visualDensity: VisualDensity.standard,
-              foregroundColor: ThemeService.activeColorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.primary,
             ),
-            onPressed: () => _confirmPermanentDelete(context, project.id),
+            onPressed: _pending.contains(project.id)
+                ? null
+                : () => _confirmPermanentDelete(project),
             child: Text(l10n.homePermanentDelete),
           ),
         ];
@@ -1849,31 +1882,25 @@ class _TrashTab extends StatelessWidget {
     );
   }
 
-  void _confirmPermanentDelete(BuildContext context, String id) {
+  Future<void> _confirmPermanentDelete(Project project) async {
+    if (_pending.contains(project.id)) return;
     final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.homePermanentDeleteConfirmTitle),
-        content: Text(l10n.homePermanentDeleteConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
-            onPressed: () {
-              context.read<ProjectService>().permanentDelete(id);
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonDelete),
-          ),
-        ],
-      ),
-    );
+    final service = context.read<ProjectService>();
+    setState(() => _pending.add(project.id));
+    try {
+      await showDialog<bool>(
+        context: context,
+        builder: (_) => ProjectTrashDialog(
+          title: l10n.homePermanentDeleteConfirmTitle,
+          message: l10n.homePermanentDeleteConfirmBody,
+          confirmLabel: l10n.commonDelete,
+          itemNames: [project.name],
+          onApply: () => service.permanentDelete(project.id),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _pending.remove(project.id));
+    }
   }
 }
 

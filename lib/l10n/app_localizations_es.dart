@@ -6371,9 +6371,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityWorkDetailTitle => 'Detalles de la obra';
 
   @override
-  String get communityWorkNotFoundMessage => 'No se pudo encontrar esta obra';
-
-  @override
   String get communityWorkHiddenByFilterMessage =>
       'Esta obra está oculta por tus filtros de visualización';
 
@@ -8062,4 +8059,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communitySortLabel => 'Ordenar';
+
+  @override
+  String get homeTrashOperationFailed =>
+      'No se pudo completar la operación. Revisa el almacenamiento e inténtalo de nuevo.';
+
+  @override
+  String get homeTrashWorking => 'Procesando…';
 }

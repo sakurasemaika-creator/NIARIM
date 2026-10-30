@@ -2619,7 +2619,6 @@
   "communityVisibilityHiddenDesc": "非公開中：已從新作、排行榜和該投稿者的作品清單中隱藏（這是獨立於YouTube端公開設定的設定）。",
   "communityVisibilityHiddenBadge": "非公開",
   "communityWorkDetailTitle": "作品詳情",
-  "communityWorkNotFoundMessage": "找不到該作品",
   "communityWorkHiddenByFilterMessage": "該作品已依顯示篩選設定隱藏",
   "communityEditFailed": "無法儲存變更。請檢查網路連線後再試一次。",
   "communityEditSignInRequired": "請使用Google帳號登入後再進行變更",
@@ -3222,5 +3221,7 @@
   "communitySearchHistory": "搜尋紀錄",
   "communitySearchHistoryEmpty": "尚無搜尋紀錄",
   "communityDeleteSavedSearchConfirm": "要刪除這個已儲存的搜尋條件嗎？",
-  "communitySortLabel": "排序"
+  "communitySortLabel": "排序",
+  "homeTrashOperationFailed": "無法完成操作。請檢查儲存空間後重試。",
+  "homeTrashWorking": "處理中…"
 }

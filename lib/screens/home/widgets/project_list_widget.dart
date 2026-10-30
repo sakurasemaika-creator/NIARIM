@@ -20,6 +20,7 @@ import '../../../services/project_service.dart';
 import '../home_screen.dart';
 import '../../../config/font_fallback.dart';
 import '../../../widgets/empty_state_placeholder.dart';
+import '../../../widgets/project_trash_dialog.dart';
 import '../../../utils/app_error_reporter.dart';
 import 'folder_save_feedback.dart';
 import 'folder_delete_dialog.dart';
@@ -515,15 +516,15 @@ class ProjectListWidget extends StatelessWidget {
     final placeholder = ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       child: Container(
-      color: Color(project.backgroundColor),
-      child: Center(
-        child: Icon(
-          Icons.image,
-          color: ThemeService.activeColorScheme.onSurface.withValues(
-            alpha: 0.38,
+        color: Color(project.backgroundColor),
+        child: Center(
+          child: Icon(
+            Icons.image,
+            color: ThemeService.activeColorScheme.onSurface.withValues(
+              alpha: 0.38,
+            ),
           ),
         ),
-      ),
       ),
     );
     final path = project.thumbnailPath;
@@ -531,15 +532,15 @@ class ProjectListWidget extends StatelessWidget {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       child: ColoredBox(
-      color: Color(project.backgroundColor),
-      child: Image.file(
-        File(path),
-        fit: BoxFit.cover,
-        cacheWidth: displayWidth == null
-            ? null
-            : (displayWidth * MediaQuery.devicePixelRatioOf(context)).round(),
-        errorBuilder: (context, error, stackTrace) => placeholder,
-      ),
+        color: Color(project.backgroundColor),
+        child: Image.file(
+          File(path),
+          fit: BoxFit.cover,
+          cacheWidth: displayWidth == null
+              ? null
+              : (displayWidth * MediaQuery.devicePixelRatioOf(context)).round(),
+          errorBuilder: (context, error, stackTrace) => placeholder,
+        ),
       ),
     );
   }
@@ -1003,11 +1004,11 @@ class ProjectListWidget extends StatelessWidget {
   }
 
   /// お気に入り登録中は削除できない。
-  void _deleteProject(
+  Future<void> _deleteProject(
     BuildContext context,
     ProjectService service,
     Project project,
-  ) {
+  ) async {
     if (project.isFavorite) {
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
@@ -1015,7 +1016,10 @@ class ProjectListWidget extends StatelessWidget {
       ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
-    service.deleteProject(project.id);
+    await runProjectTrashAction(
+      context,
+      () => service.deleteProject(project.id),
+    );
   }
 
   Future<void> _handleFolderAction(

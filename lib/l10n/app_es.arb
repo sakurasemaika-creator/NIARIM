@@ -2620,7 +2620,6 @@
   "communityVisibilityHiddenDesc": "Oculto: se elimina de Novedades, Rankings y la lista de obras de este autor (es un ajuste independiente de la visibilidad en YouTube).",
   "communityVisibilityHiddenBadge": "Oculto",
   "communityWorkDetailTitle": "Detalles de la obra",
-  "communityWorkNotFoundMessage": "No se pudo encontrar esta obra",
   "communityWorkHiddenByFilterMessage": "Esta obra está oculta por tus filtros de visualización",
   "communityEditFailed": "No se pudo guardar el cambio. Comprueba la conexión e inténtalo de nuevo.",
   "communityEditSignInRequired": "Inicia sesión con tu cuenta de Google para hacer este cambio",
@@ -3222,5 +3221,7 @@
   "communitySearchHistory": "Historial de búsqueda",
   "communitySearchHistoryEmpty": "No hay historial",
   "communityDeleteSavedSearchConfirm": "¿Eliminar esta búsqueda guardada?",
-  "communitySortLabel": "Ordenar"
+  "communitySortLabel": "Ordenar",
+  "homeTrashOperationFailed": "No se pudo completar la operación. Revisa el almacenamiento e inténtalo de nuevo.",
+  "homeTrashWorking": "Procesando…"
 }

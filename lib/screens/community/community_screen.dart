@@ -142,21 +142,29 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   Widget _pageFooter(int tab, CommunityService service) {
-    final moreFromBackend = service.isBackendConnected && switch (tab) {
-      0 => service.hasMoreLatest,
-      1 => service.hasMoreRanking,
-      2 => service.hasMoreFollowing,
-      _ => service.searchReady ? service.hasMoreSearch : service.hasMoreLatest,
-    };
+    final moreFromBackend =
+        service.isBackendConnected &&
+        switch (tab) {
+          0 => service.hasMoreLatest,
+          1 => service.hasMoreRanking,
+          2 => service.hasMoreFollowing,
+          _ =>
+            service.searchReady ? service.hasMoreSearch : service.hasMoreLatest,
+        };
     final loaded = switch (tab) {
-      0 => _newArrivals(service.isBackendConnected
-          ? service.latestPageWorks : service.discoverableWorks).length,
+      0 => _newArrivals(
+        service.isBackendConnected
+            ? service.latestPageWorks
+            : service.discoverableWorks,
+      ).length,
       1 => _rankingWorks(service.discoverableWorks).length,
       2 => _applySearch(service.favoriteAuthorWorks).length,
       _ => _applySearch(
         service.isBackendConnected
-          ? service.searchReady ? service.searchedWorks : service.latestPageWorks
-          : service.discoverableWorks,
+            ? service.searchReady
+                  ? service.searchedWorks
+                  : service.latestPageWorks
+            : service.discoverableWorks,
         includeQuery: true,
       ).length,
     };
@@ -179,24 +187,29 @@ class _CommunityScreenState extends State<CommunityScreen>
     final service = context.read<CommunityService>();
     final all = service.discoverableWorks;
     final loaded = switch (tab) {
-      0 => _newArrivals(service.isBackendConnected ? service.latestPageWorks : all).length,
+      0 => _newArrivals(
+        service.isBackendConnected ? service.latestPageWorks : all,
+      ).length,
       1 => _rankingWorks(all).length,
       2 => _applySearch(service.favoriteAuthorWorks).length,
       _ => _applySearch(
         service.isBackendConnected
             ? service.searchReady
-                ? service.searchedWorks
-                : service.latestPageWorks
+                  ? service.searchedWorks
+                  : service.latestPageWorks
             : all,
         includeQuery: true,
       ).length,
     };
-    final hasMore = service.isBackendConnected && switch (tab) {
-      0 => service.hasMoreLatest,
-      1 => service.hasMoreRanking,
-      2 => service.hasMoreFollowing,
-      _ => service.searchReady ? service.hasMoreSearch : service.hasMoreLatest,
-    };
+    final hasMore =
+        service.isBackendConnected &&
+        switch (tab) {
+          0 => service.hasMoreLatest,
+          1 => service.hasMoreRanking,
+          2 => service.hasMoreFollowing,
+          _ =>
+            service.searchReady ? service.hasMoreSearch : service.hasMoreLatest,
+        };
     if (!hasMore && _visiblePageCounts[tab] >= loaded) return;
     _pagingTabs[tab] = true;
     Future<void>(() async {
@@ -286,7 +299,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   Future<void> _loadRankingLayout() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getString(_rankingLayoutKey);
+      final saved = prefs.readString(_rankingLayoutKey);
       if (!mounted || saved == null) return;
       final layouts = CommunityRankingLayout.values.where(
         (item) => item.name == saved,
@@ -1303,40 +1316,44 @@ class _CommunityScreenState extends State<CommunityScreen>
                                     children: [
                                       Text(
                                         l10n.creativePanelSearchModeKeyword,
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: !_tagSearchMode
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                        color: !_tagSearchMode
-                                            ? scheme.primary
-                                            : scheme.onSurfaceVariant,
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: !_tagSearchMode
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                          color: !_tagSearchMode
+                                              ? scheme.primary
+                                              : scheme.onSurfaceVariant,
+                                        ),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                                      child: Text(
-                                        '|',
-                                        style: TextStyle(color: scheme.outline),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 5,
+                                        ),
+                                        child: Text(
+                                          '|',
+                                          style: TextStyle(
+                                            color: scheme.outline,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      l10n.creativePanelSearchModeTag,
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: _tagSearchMode
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                        color: _tagSearchMode
-                                            ? scheme.primary
-                                            : scheme.onSurfaceVariant,
+                                      Text(
+                                        l10n.creativePanelSearchModeTag,
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: _tagSearchMode
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                          color: _tagSearchMode
+                                              ? scheme.primary
+                                              : scheme.onSurfaceVariant,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
                         ),
                       ),
                     ),
@@ -1447,14 +1464,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                         width: scrollTabs
                             ? naturalTabWidths[i]
                             : constraints.maxWidth *
-                                naturalTabWidths[i] /
-                                totalNatural,
+                                  naturalTabWidths[i] /
+                                  totalNatural,
                         child: Center(
-                          child: Text(
-                            labels[i],
-                            maxLines: 1,
-                            softWrap: false,
-                          ),
+                          child: Text(labels[i], maxLines: 1, softWrap: false),
                         ),
                       ),
                     ),
@@ -1509,8 +1522,11 @@ class _CommunityScreenState extends State<CommunityScreen>
             Builder(
               builder: (context) {
                 final works = _visible(
-                  _newArrivals(communityService.isBackendConnected
-                      ? communityService.latestPageWorks : allWorks),
+                  _newArrivals(
+                    communityService.isBackendConnected
+                        ? communityService.latestPageWorks
+                        : allWorks,
+                  ),
                   0,
                 );
                 if (works.isEmpty) {
@@ -1777,10 +1793,11 @@ class _CommunityScreenState extends State<CommunityScreen>
                 final works = _visible(
                   _applySearch(
                     (communityService.isBackendConnected
-                      ? communityService.searchReady
-                          ? communityService.searchedWorks
-                          : communityService.latestPageWorks
-                      : allWorks).toList(),
+                            ? communityService.searchReady
+                                  ? communityService.searchedWorks
+                                  : communityService.latestPageWorks
+                            : allWorks)
+                        .toList(),
                     includeQuery: true,
                   ),
                   3,

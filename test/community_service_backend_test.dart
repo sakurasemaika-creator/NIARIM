@@ -142,12 +142,12 @@ void main() {
       return http.Response(
         jsonEncode({
           'works': [
-            for (var i = start; i < end; i++)
-              work('latest_$i', '新着$i'),
+            for (var i = start; i < end; i++) work('latest_$i', '新着$i'),
           ],
           'nextCursor': end < 53 ? '$end' : null,
         }),
-        200, headers: jsonHeaders,
+        200,
+        headers: jsonHeaders,
       );
     });
     final service = CommunityService(api: api(client));
@@ -175,22 +175,26 @@ void main() {
         jsonEncode({
           'period': 'monthly',
           'works': [
-            for (var i = cursor; i < cursor + 25; i++)
-              work('rank_$i', '順位$i'),
+            for (var i = cursor; i < cursor + 25; i++) work('rank_$i', '順位$i'),
           ],
           'nextCursor': cursor == 0 ? '25' : null,
         }),
-        200, headers: jsonHeaders,
+        200,
+        headers: jsonHeaders,
       );
     });
     final service = CommunityService(api: api(client));
     await service.fetchRanking(
-      RankingPeriod.month, ascending: true, sortBookmarks: true,
+      RankingPeriod.month,
+      ascending: true,
+      sortBookmarks: true,
     );
     expect(service.rankedWorks, hasLength(25));
     expect(service.hasMoreRanking, isTrue);
     await service.loadMoreRanking(
-      RankingPeriod.month, ascending: true, sortBookmarks: true,
+      RankingPeriod.month,
+      ascending: true,
+      sortBookmarks: true,
     );
     expect(service.rankedWorks, hasLength(50));
     expect(service.hasMoreRanking, isFalse);
@@ -209,12 +213,12 @@ void main() {
       return http.Response(
         jsonEncode({
           'works': [
-            for (var i = start; i < start + 25; i++)
-              work('search_$i', '作品$i'),
+            for (var i = start; i < start + 25; i++) work('search_$i', '作品$i'),
           ],
           'nextCursor': cursor == null ? 'next' : null,
         }),
-        200, headers: jsonHeaders,
+        200,
+        headers: jsonHeaders,
       );
     });
     final service = CommunityService(api: api(client));
@@ -245,12 +249,12 @@ void main() {
       return http.Response(
         jsonEncode({
           'works': [
-            for (var i = start; i < start + 25; i++)
-              work('author_$i', '投稿$i'),
+            for (var i = start; i < start + 25; i++) work('author_$i', '投稿$i'),
           ],
           'nextCursor': cursor == null ? 'author-next' : null,
         }),
-        200, headers: jsonHeaders,
+        200,
+        headers: jsonHeaders,
       );
     });
     final service = CommunityService(api: api(client));
@@ -263,5 +267,4 @@ void main() {
     expect(seen, hasLength(2));
     expect(seen.last.queryParameters['cursor'], 'author-next');
   });
-
 }

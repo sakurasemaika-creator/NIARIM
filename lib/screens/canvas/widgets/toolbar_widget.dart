@@ -293,10 +293,7 @@ class ToolbarWidget extends StatelessWidget {
             width: 40 * iconScale,
             height: 40 * iconScale,
             child: Center(
-              child: Transform.scale(
-                scale: iconScale,
-                child: item,
-              ),
+              child: Transform.scale(scale: iconScale, child: item),
             ),
           ),
     ];

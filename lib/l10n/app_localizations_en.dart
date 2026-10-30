@@ -6267,9 +6267,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityWorkDetailTitle => 'Work Details';
 
   @override
-  String get communityWorkNotFoundMessage => 'This work could not be found';
-
-  @override
   String get communityWorkHiddenByFilterMessage =>
       'This work is hidden by your display filters';
 
@@ -7937,4 +7934,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communitySortLabel => 'Sort';
+
+  @override
+  String get homeTrashOperationFailed =>
+      'The operation could not be completed. Check your storage and try again.';
+
+  @override
+  String get homeTrashWorking => 'Working…';
 }

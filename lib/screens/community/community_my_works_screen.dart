@@ -53,7 +53,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     }
     final service = context.read<CommunityService>();
     if (service.api == null) {
-      final total = service.worksByAuthor(kDummySelfAuthorId, includeHidden: true).length;
+      final total = service
+          .worksByAuthor(kDummySelfAuthorId, includeHidden: true)
+          .length;
       if (_visibleOwnCount < total) {
         setState(() => _visibleOwnCount += CommunityService.pageSize);
       }
@@ -71,7 +73,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     setState(() => _loadingMoreOwnWorks = true);
     try {
       final page = await context.read<CommunityService>().loadMoreOwnWorks();
-      if (!mounted || generation != _ownerLoadGeneration ||
+      if (!mounted ||
+          generation != _ownerLoadGeneration ||
           accountId != context.read<GoogleAuthService>().account?.id ||
           page == null) {
         return;
@@ -519,10 +522,11 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
               communityService.byId(w.id) ?? w,
           ]
         : (communityService.worksByAuthor(
-            kDummySelfAuthorId,
-            includeHidden: true,
-          )..sort((a, b) => b.postedAt.compareTo(a.postedAt)))
-            .take(_visibleOwnCount).toList();
+                kDummySelfAuthorId,
+                includeHidden: true,
+              )..sort((a, b) => b.postedAt.compareTo(a.postedAt)))
+              .take(_visibleOwnCount)
+              .toList();
 
     return Scaffold(
       appBar: AppBar(

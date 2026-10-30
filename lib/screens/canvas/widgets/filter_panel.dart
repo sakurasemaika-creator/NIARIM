@@ -1031,34 +1031,40 @@ class _FilterPanelState extends State<FilterPanel> {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: FramePreviewBackground(
-                    backgroundColor: context.read<ProjectService>().projects
-                        .where((project) => project.id == widget.projectId)
-                        .firstOrNull?.backgroundColor ?? 0x00000000,
+                    backgroundColor:
+                        context
+                            .read<ProjectService>()
+                            .projects
+                            .where((project) => project.id == widget.projectId)
+                            .firstOrNull
+                            ?.backgroundColor ??
+                        0x00000000,
                     checkerSize: 8,
                     child: _previewImage == null
-                      ? const Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                        ? const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child:
+                                lineartEditor &&
+                                    _autoLineartPreviewGraph != null
+                                ? AutoLineartControlOverlay(
+                                    image: _previewImage!,
+                                    graph: _autoLineartPreviewGraph!,
+                                    mode: _autoLineartControlMode,
+                                    onPointMoved: _moveAutoLineartPoint,
+                                    onGraphChanged: _replaceAutoLineartGraph,
+                                  )
+                                : RawImage(
+                                    image: _previewImage,
+                                    fit: BoxFit.contain,
+                                  ),
                           ),
-                        )
-                      : ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child:
-                              lineartEditor && _autoLineartPreviewGraph != null
-                              ? AutoLineartControlOverlay(
-                                  image: _previewImage!,
-                                  graph: _autoLineartPreviewGraph!,
-                                  mode: _autoLineartControlMode,
-                                  onPointMoved: _moveAutoLineartPoint,
-                                  onGraphChanged: _replaceAutoLineartGraph,
-                                )
-                              : RawImage(
-                                  image: _previewImage,
-                                  fit: BoxFit.contain,
-                                ),
-                        ),
                   ),
                 ),
               ),

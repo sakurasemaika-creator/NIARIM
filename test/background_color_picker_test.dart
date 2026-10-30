@@ -81,7 +81,9 @@ void main() {
     expect(transparentOutline.top.color, scheme.onSurfaceVariant);
     expect(transparentOutline.top.color, isNot(scheme.primary));
     expect(
-      tester.getSize(find.descendant(of: transparent, matching: find.byType(ClipOval))),
+      tester.getSize(
+        find.descendant(of: transparent, matching: find.byType(ClipOval)),
+      ),
       const Size(40, 40),
     );
     expect(

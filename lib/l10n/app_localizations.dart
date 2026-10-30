@@ -11111,12 +11111,6 @@ abstract class AppLocalizations {
   /// **'作品詳細'**
   String get communityWorkDetailTitle;
 
-  /// No description provided for @communityWorkNotFoundMessage.
-  ///
-  /// In ja, this message translates to:
-  /// **'作品が見つかりませんでした'**
-  String get communityWorkNotFoundMessage;
-
   /// No description provided for @communityWorkHiddenByFilterMessage.
   ///
   /// In ja, this message translates to:
@@ -14080,6 +14074,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'並び替え'**
   String get communitySortLabel;
+
+  /// No description provided for @homeTrashOperationFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作を完了できませんでした。保存先を確認して、もう一度お試しください。'**
+  String get homeTrashOperationFailed;
+
+  /// No description provided for @homeTrashWorking.
+  ///
+  /// In ja, this message translates to:
+  /// **'処理中…'**
+  String get homeTrashWorking;
 }
 
 class _AppLocalizationsDelegate
