@@ -109,6 +109,54 @@ double canvasViewScaleOf(Matrix4 viewTransform) {
   return scale.isFinite && scale > 0 ? scale : 1.0;
 }
 
+/// PC/DeXモードのメニュー・コマンドバーから行う、キャンバスの表示の操作。
+enum CanvasViewAction {
+  zoomIn,
+  zoomOut,
+  fit,
+  actualPixels,
+  rotateLeft,
+  rotateRight,
+  resetRotation,
+}
+
+/// [CanvasArea.viewRequest]で渡す表示の操作。[serial]が変わるたびに1回行う。
+@immutable
+class CanvasViewRequest {
+  const CanvasViewRequest(this.serial, this.action);
+
+  final int serial;
+  final CanvasViewAction action;
+}
+
+/// キャンバスの今の表示（PC/DeXモードのステータスバー用）。[zoom]は、
+/// プロジェクトの1pxが画面の1論理pxになるときに1。
+@immutable
+class CanvasViewInfo {
+  const CanvasViewInfo({required this.zoom, required this.rotationDeg});
+
+  final double zoom;
+  final double rotationDeg;
+
+  @override
+  bool operator ==(Object other) =>
+      other is CanvasViewInfo &&
+      other.zoom == zoom &&
+      other.rotationDeg == rotationDeg;
+
+  @override
+  int get hashCode => Object.hash(zoom, rotationDeg);
+}
+
+/// 表示を回転させる1回分の角度（コマンドバーの左・右回転）。
+const double kCanvasRotateStepDeg = 15;
+
+/// [viewTransform]の回転（度、-180〜180）。
+double canvasViewRotationDegOf(Matrix4 viewTransform) =>
+    math.atan2(viewTransform.entry(1, 0), viewTransform.entry(0, 0)) *
+    180 /
+    math.pi;
+
 /// キャンバスの表示変換を背景（＝CanvasAreaの表示領域）内へ拘束する。
 ///
 /// 回転後の[drawingRect]の外接矩形を使い、縮小時はキャンバス全体が背景内から
@@ -470,6 +518,12 @@ class CanvasArea extends StatefulWidget {
   /// スライダーから指を離したときに増える。増えたら実画素へ確定する。
   final int selectionTransformCommitToken;
 
+  /// 表示の操作（拡大・縮小・全体表示・回転）。serialが変わったら行う。
+  final CanvasViewRequest? viewRequest;
+
+  /// 今の表示の倍率・回転をここへ書く（nullなら書かない）。
+  final ValueNotifier<CanvasViewInfo>? viewInfo;
+
   const CanvasArea({
     super.key,
     this.onTapForText,
@@ -524,6 +578,8 @@ class CanvasArea extends StatefulWidget {
     this.selectionScale = 1,
     this.selectionRotateDeg = 0,
     this.selectionTransformCommitToken = 0,
+    this.viewRequest,
+    this.viewInfo,
   });
 
   @override
@@ -747,6 +803,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     // 描き直すようにしてある（下のbuild()参照）。
     widget.filterLensMask?.addListener(_onLensMaskChanged);
     _onLensMaskChanged();
+    // ステータスバーへ出す倍率・回転だけを書く（画面は作り直さない）。
+    _transformController.addListener(_publishViewInfo);
   }
 
   @override
@@ -908,6 +966,68 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (old.clearSelectionToken != widget.clearSelectionToken) {
       _clearSelectionMask();
     }
+    final view = widget.viewRequest;
+    if (view != null && view.serial != old.viewRequest?.serial) {
+      // ビルド中に変換を変えると、変換を描くAnimatedBuilderとステータスバーの
+      // 作り直しがビルド中に起きるので、次のフレームで行う。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _applyViewAction(view.action);
+      });
+    }
+  }
+
+  /// [CanvasViewAction]を表示の中央を基準に行う。
+  void _applyViewAction(CanvasViewAction action) {
+    final size = context.size;
+    if (size == null || size.isEmpty) return;
+    final center = size.center(Offset.zero);
+    final current = _transformController.value;
+    Matrix4 around(Matrix4 t) =>
+        Matrix4.translationValues(center.dx, center.dy, 0)
+          ..multiply(t)
+          ..multiply(Matrix4.translationValues(-center.dx, -center.dy, 0));
+    Matrix4 scaled(double requested) {
+      final f = boundedCanvasScaleFactor(canvasViewScaleOf(current), requested);
+      return around(Matrix4.diagonal3Values(f, f, 1))..multiply(current);
+    }
+
+    Matrix4 rotated(double deg) =>
+        around(Matrix4.rotationZ(deg * math.pi / 180))..multiply(current);
+    final next = switch (action) {
+      CanvasViewAction.zoomIn => scaled(1.25),
+      CanvasViewAction.zoomOut => scaled(0.8),
+      CanvasViewAction.fit => Matrix4.identity(),
+      CanvasViewAction.actualPixels => scaled(
+        _fitZoom(size) > 0
+            ? 1 / (_fitZoom(size) * canvasViewScaleOf(current))
+            : 1,
+      ),
+      CanvasViewAction.rotateLeft => rotated(-kCanvasRotateStepDeg),
+      CanvasViewAction.rotateRight => rotated(kCanvasRotateStepDeg),
+      CanvasViewAction.resetRotation => rotated(
+        -canvasViewRotationDegOf(current),
+      ),
+    };
+    _transformController.value = _constrainViewMatrix(next);
+  }
+
+  /// 表示倍率1（全体表示）のときの、プロジェクトの1pxあたりの画面の論理px。
+  double _fitZoom(Size size) {
+    final canvas = canvasPixelSizeOf(widget.project);
+    if (canvas.width <= 0) return 0;
+    return canvasDrawingRectFor(size, widget.project).width / canvas.width;
+  }
+
+  void _publishViewInfo() {
+    final notifier = widget.viewInfo;
+    if (notifier == null || !mounted) return;
+    final size = context.size;
+    if (size == null || size.isEmpty) return;
+    final matrix = _transformController.value;
+    notifier.value = CanvasViewInfo(
+      zoom: _fitZoom(size) * canvasViewScaleOf(matrix),
+      rotationDeg: canvasViewRotationDegOf(matrix),
+    );
   }
 
   @override
@@ -924,6 +1044,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     _holdEyedropperTimer?.cancel();
     meshSourceImage?.dispose();
+    _transformController.removeListener(_publishViewInfo);
     _transformController.dispose();
     _compositeImage?.dispose();
     _belowImage?.dispose();
@@ -4161,6 +4282,10 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.viewInfo != null) {
+      // 窓の大きさが変わると、同じ表示でも実際の倍率が変わる。
+      WidgetsBinding.instance.addPostFrameCallback((_) => _publishViewInfo());
+    }
     final settings = context.watch<SettingsService>();
     final theme = context.watch<ThemeService>().current;
     final currentBrush = context.watch<BrushService>().currentBrush;

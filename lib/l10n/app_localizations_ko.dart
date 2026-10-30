@@ -5727,7 +5727,7 @@ class AppLocalizationsKo extends AppLocalizations {
       'PC/DeX 모드에서는 체크한 여러 패널을 동시에 고정 표시할 수 있습니다(모바일은 오작동 방지를 위해 항상 모든 패널이 숨겨진 상태로 시작).';
 
   @override
-  String get workspaceDockPanelBrush => '브러쉬';
+  String get workspaceDockPanelBrush => '브러시';
 
   @override
   String get workspaceDockPanelColorPicker => '컬러 피커';
@@ -5742,10 +5742,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get workspaceDockPanelStamp => '스탬프';
 
   @override
-  String get workspaceDockPanelPenSubTool => '펜 보조 도구';
+  String get workspaceDockPanelPenSubTool => '펜 서브 도구';
 
   @override
-  String get workspaceDockPanelOnionSkin => '양파 스타일';
+  String get workspaceDockPanelOnionSkin => '어니언 스킨';
 
   @override
   String get workspaceDockPanelRuler => '자';
@@ -5754,10 +5754,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get workspaceDockPanelFilter => '필터';
 
   @override
-  String get workspaceDockPanelQuickTool => '빠른교체 도구';
+  String get workspaceDockPanelQuickTool => '빠른 교체 도구';
 
   @override
-  String get workspaceDockPanelColorAdjust => '색상 조정';
+  String get workspaceDockPanelColorAdjust => '색조 조정';
 
   @override
   String get workspaceDockPanelCanvasPreview => '캔버스 미리보기';
@@ -8002,4 +8002,60 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communitySortLabel => '정렬';
+
+  @override
+  String get pcMenuFile => '파일';
+
+  @override
+  String get pcMenuSelection => '선택 영역';
+
+  @override
+  String get pcMenuView => '보기';
+
+  @override
+  String get pcMenuWindow => '창';
+
+  @override
+  String get pcViewZoomIn => '확대';
+
+  @override
+  String get pcViewZoomOut => '축소';
+
+  @override
+  String get pcViewFit => '창에 맞추기';
+
+  @override
+  String get pcViewActualPixels => '실제 픽셀(100%)';
+
+  @override
+  String get pcViewRotateLeft => '왼쪽으로 회전';
+
+  @override
+  String get pcViewRotateRight => '오른쪽으로 회전';
+
+  @override
+  String get pcViewResetRotation => '회전 초기화';
+
+  @override
+  String get pcViewHidePanels => '패널 숨기기';
+
+  @override
+  String get pcViewFrameStrip => '프레임 목록';
+
+  @override
+  String get pcPaneToolProperty => '도구 속성';
+
+  @override
+  String get pcToolPropertyEmpty => '이 도구에는 설정이 없습니다';
+
+  @override
+  String get pcLayerNew => '새 레이어';
+
+  @override
+  String get pcModeCanvas => '캔버스';
+
+  @override
+  String pcStatusFrame(int current, int total) {
+    return '프레임 $current/$total';
+  }
 }

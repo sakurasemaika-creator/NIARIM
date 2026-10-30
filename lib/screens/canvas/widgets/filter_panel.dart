@@ -37,6 +37,7 @@ import '../../../widgets/grab_pan_gesture_recognizer.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
 import '../../../widgets/premium_lock_widget.dart';
 import '../../../widgets/progress_dialog.dart';
+import '../../../widgets/docked_panel_scope.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'auto_lineart_control_overlay.dart';
 import 'canvas_icon_button.dart';
@@ -693,7 +694,12 @@ class _FilterPanelState extends State<FilterPanel> {
     // While a filter is edited the panel floats over the canvas with no
     // background, and touches on its empty parts go through to the canvas
     // (a Card would take them, as would the scroll view's own area).
-    final shell = current == null
+    // PC/DeXモードのドックでは、ペインの面をそのまま使い、ペインいっぱいに
+    // 広げる（たたむのもペインの見出しで行う）。
+    final docked = DockedPanelScope.of(context);
+    final shell = docked
+        ? (Widget child) => child
+        : current == null
         ? (Widget child) => Card(
             elevation: 8,
             surfaceTintColor: Colors.transparent,
@@ -701,16 +707,16 @@ class _FilterPanelState extends State<FilterPanel> {
           )
         : (Widget child) =>
               Material(type: MaterialType.transparency, child: child);
-    final collapsed = current != null && _collapsed;
+    final collapsed = !docked && current != null && _collapsed;
     return shell(
       SizedBox(
-        width: 300,
-        height: collapsed ? null : 520,
+        width: docked ? null : 300,
+        height: docked || collapsed ? null : 520,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: _outlinedOverCanvas(
             context,
-            enabled: current != null,
+            enabled: !docked && current != null,
             child: Column(
               mainAxisSize: collapsed ? MainAxisSize.min : MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -974,20 +980,21 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
           ),
         ),
-        IconButton(
-          key: const ValueKey('filter-collapse-button'),
-          icon: Icon(
-            collapsed ? Icons.expand_less : Icons.expand_more,
-            size: 18,
+        if (!DockedPanelScope.of(context))
+          IconButton(
+            key: const ValueKey('filter-collapse-button'),
+            icon: Icon(
+              collapsed ? Icons.expand_less : Icons.expand_more,
+              size: 18,
+            ),
+            tooltip: collapsed
+                ? l10n.filterPanelExpand
+                : l10n.filterPanelCollapse,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            onPressed: () => setState(() => _collapsed = !_collapsed),
           ),
-          tooltip: collapsed
-              ? l10n.filterPanelExpand
-              : l10n.filterPanelCollapse,
-          visualDensity: VisualDensity.compact,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-          onPressed: () => setState(() => _collapsed = !_collapsed),
-        ),
         PanelCenterCloseBar(onClose: widget.onClose),
       ],
     );

@@ -15,6 +15,7 @@ import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/widgets/pc_workspace.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -129,7 +130,9 @@ void main() {
       expect(
         canvas.width,
         greaterThanOrEqualTo(
-          width >= 800 ? 240 : width - 40 - 16 - 260 - 240 - 1,
+          width >= 800
+              ? 240
+              : width - 42 - 2 * PcDockSplitter.width - 260 - 240 - 1,
         ),
         reason: 'the canvas keeps room beside the docks',
       );
@@ -152,9 +155,7 @@ void main() {
       // つまみを外側へ引くと色・レイヤーのドックが広がる（左利きでは
       // 向きが逆になっていて、引くと狭まった）。
       if (width == 1280 && rightWidth == 436) {
-        final handle = find.byWidgetPredicate(
-          (w) => w.runtimeType.toString() == '_ResizeHandle',
-        );
+        final handle = find.byType(PcDockSplitter);
         final before = layers.width;
         // 色・レイヤーのドックに一番近いつまみ。
         final nearest =

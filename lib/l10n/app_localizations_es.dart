@@ -8382,4 +8382,60 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communitySortLabel => 'Ordenar';
+
+  @override
+  String get pcMenuFile => 'Archivo';
+
+  @override
+  String get pcMenuSelection => 'Selección';
+
+  @override
+  String get pcMenuView => 'Ver';
+
+  @override
+  String get pcMenuWindow => 'Ventana';
+
+  @override
+  String get pcViewZoomIn => 'Acercar';
+
+  @override
+  String get pcViewZoomOut => 'Alejar';
+
+  @override
+  String get pcViewFit => 'Ajustar a la ventana';
+
+  @override
+  String get pcViewActualPixels => 'Píxeles reales (100 %)';
+
+  @override
+  String get pcViewRotateLeft => 'Girar a la izquierda';
+
+  @override
+  String get pcViewRotateRight => 'Girar a la derecha';
+
+  @override
+  String get pcViewResetRotation => 'Restablecer el giro';
+
+  @override
+  String get pcViewHidePanels => 'Ocultar paneles';
+
+  @override
+  String get pcViewFrameStrip => 'Lista de fotogramas';
+
+  @override
+  String get pcPaneToolProperty => 'Propiedades de la herramienta';
+
+  @override
+  String get pcToolPropertyEmpty => 'Esta herramienta no tiene ajustes';
+
+  @override
+  String get pcLayerNew => 'Nueva capa';
+
+  @override
+  String get pcModeCanvas => 'Lienzo';
+
+  @override
+  String pcStatusFrame(int current, int total) {
+    return 'Fotograma $current/$total';
+  }
 }

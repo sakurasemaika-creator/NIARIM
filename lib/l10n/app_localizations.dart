@@ -14530,6 +14530,114 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'並び替え'**
   String get communitySortLabel;
+
+  /// No description provided for @pcMenuFile.
+  ///
+  /// In ja, this message translates to:
+  /// **'ファイル'**
+  String get pcMenuFile;
+
+  /// No description provided for @pcMenuSelection.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択範囲'**
+  String get pcMenuSelection;
+
+  /// No description provided for @pcMenuView.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示'**
+  String get pcMenuView;
+
+  /// No description provided for @pcMenuWindow.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウィンドウ'**
+  String get pcMenuWindow;
+
+  /// No description provided for @pcViewZoomIn.
+  ///
+  /// In ja, this message translates to:
+  /// **'拡大'**
+  String get pcViewZoomIn;
+
+  /// No description provided for @pcViewZoomOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'縮小'**
+  String get pcViewZoomOut;
+
+  /// No description provided for @pcViewFit.
+  ///
+  /// In ja, this message translates to:
+  /// **'全体を表示'**
+  String get pcViewFit;
+
+  /// No description provided for @pcViewActualPixels.
+  ///
+  /// In ja, this message translates to:
+  /// **'100%で表示'**
+  String get pcViewActualPixels;
+
+  /// No description provided for @pcViewRotateLeft.
+  ///
+  /// In ja, this message translates to:
+  /// **'左に回転'**
+  String get pcViewRotateLeft;
+
+  /// No description provided for @pcViewRotateRight.
+  ///
+  /// In ja, this message translates to:
+  /// **'右に回転'**
+  String get pcViewRotateRight;
+
+  /// No description provided for @pcViewResetRotation.
+  ///
+  /// In ja, this message translates to:
+  /// **'回転を戻す'**
+  String get pcViewResetRotation;
+
+  /// No description provided for @pcViewHidePanels.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルを隠す'**
+  String get pcViewHidePanels;
+
+  /// No description provided for @pcViewFrameStrip.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム一覧'**
+  String get pcViewFrameStrip;
+
+  /// No description provided for @pcPaneToolProperty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールプロパティ'**
+  String get pcPaneToolProperty;
+
+  /// No description provided for @pcToolPropertyEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'このツールには設定がありません'**
+  String get pcToolPropertyEmpty;
+
+  /// No description provided for @pcLayerNew.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規レイヤー'**
+  String get pcLayerNew;
+
+  /// No description provided for @pcModeCanvas.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバス'**
+  String get pcModeCanvas;
+
+  /// PC/DeXモードのステータスバー：今のフレームと総数
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム {current}/{total}'**
+  String pcStatusFrame(int current, int total);
 }
 
 class _AppLocalizationsDelegate

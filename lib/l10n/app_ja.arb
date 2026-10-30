@@ -3933,5 +3933,34 @@
   "communitySearchHistory": "検索履歴",
   "communitySearchHistoryEmpty": "検索履歴はありません",
   "communityDeleteSavedSearchConfirm": "保存した検索条件を削除しますか？",
-  "communitySortLabel": "並び替え"
+  "communitySortLabel": "並び替え",
+  "pcMenuFile": "ファイル",
+  "pcMenuSelection": "選択範囲",
+  "pcMenuView": "表示",
+  "pcMenuWindow": "ウィンドウ",
+  "pcViewZoomIn": "拡大",
+  "pcViewZoomOut": "縮小",
+  "pcViewFit": "全体を表示",
+  "pcViewActualPixels": "100%で表示",
+  "pcViewRotateLeft": "左に回転",
+  "pcViewRotateRight": "右に回転",
+  "pcViewResetRotation": "回転を戻す",
+  "pcViewHidePanels": "パネルを隠す",
+  "pcViewFrameStrip": "フレーム一覧",
+  "pcPaneToolProperty": "ツールプロパティ",
+  "pcToolPropertyEmpty": "このツールには設定がありません",
+  "pcLayerNew": "新規レイヤー",
+  "pcModeCanvas": "キャンバス",
+  "pcStatusFrame": "フレーム {current}/{total}",
+  "@pcStatusFrame": {
+    "description": "PC/DeXモードのステータスバー：今のフレームと総数",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  }
 }

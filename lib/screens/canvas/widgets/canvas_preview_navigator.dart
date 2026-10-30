@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
 import '../../../config/font_fallback.dart';
+import '../../../widgets/docked_panel_scope.dart';
 import '../../../widgets/frame_preview_background.dart';
 
 /// キャンバスプレビュー（ナビゲーター）：拡大表示中でも作品全体を縮小した
@@ -125,6 +126,15 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
     final l10n = AppLocalizations.of(context)!;
     final theme = context.watch<ThemeService>().current;
     final scheme = Theme.of(context).colorScheme;
+    final preview = _preview(scheme);
+    // PC/DeXモードのドックでは、見出しと閉じるボタンはペインが持つ。
+    // 縮小した絵はペインの大きさに収めて中央へ置く。
+    if (DockedPanelScope.of(context)) {
+      return Padding(
+        padding: const EdgeInsets.all(8),
+        child: Center(child: preview),
+      );
+    }
     return Material(
       color: theme.panelBgColor,
       borderRadius: BorderRadius.circular(10),
@@ -159,31 +169,31 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
               ],
             ),
           ),
-          AspectRatio(
-            aspectRatio: _image != null ? _image!.width / _image!.height : 1,
-            child: Container(
-              color: scheme.surfaceContainerHighest,
-              child: _image == null
-                  ? const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  // The project's own background, as on the canvas.
-                  : FramePreviewBackground(
-                      backgroundColor:
-                          context
-                              .watch<ProjectService>()
-                              .projects
-                              .where((p) => p.id == widget.projectId)
-                              .firstOrNull
-                              ?.backgroundColor ??
-                          0xFFFFFFFF,
-                      aspectRatio: _image!.width / _image!.height,
-                      child: RawImage(image: _image, fit: BoxFit.fill),
-                    ),
-            ),
-          ),
+          preview,
         ],
       ),
     );
   }
+
+  Widget _preview(ColorScheme scheme) => AspectRatio(
+    aspectRatio: _image != null ? _image!.width / _image!.height : 1,
+    child: Container(
+      color: scheme.surfaceContainerHighest,
+      child: _image == null
+          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+          // The project's own background, as on the canvas.
+          : FramePreviewBackground(
+              backgroundColor:
+                  context
+                      .watch<ProjectService>()
+                      .projects
+                      .where((p) => p.id == widget.projectId)
+                      .firstOrNull
+                      ?.backgroundColor ??
+                  0xFFFFFFFF,
+              aspectRatio: _image!.width / _image!.height,
+              child: RawImage(image: _image, fit: BoxFit.fill),
+            ),
+    ),
+  );
 }

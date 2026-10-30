@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/labeled_slider.dart';
+import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 
@@ -39,94 +40,92 @@ class MeshTransformPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Material(
+    return PanelSurface(
+      width: 240,
       elevation: 4,
       borderRadius: BorderRadius.circular(8),
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
-      child: SizedBox(
-        width: 240,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            PanelCenterCloseBar(onClose: onClose),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Text(
-                l10n.meshTransformPanelTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          PanelCenterCloseBar(onClose: onClose),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: Text(
+              l10n.meshTransformPanelTitle,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text(
-                l10n.meshTransformPanelHint,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              l10n.meshTransformPanelHint,
+              style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-            const Divider(height: 12),
-            LabeledSlider(
-              padding: _sliderPadding,
-              label: l10n.meshTransformDensityLabel,
-              valueText: '$density×$density',
-              editable: false,
-              value: density.toDouble(),
-              min: 1,
-              max: 10,
-              divisions: 9,
-              onChanged: (v) => onDensityChanged(v.round()),
-            ),
-            LabeledSlider(
-              padding: _sliderPadding,
-              label: l10n.meshTransformRotateLabel,
-              valueText: '${rotateDeg.round()}°',
-              editable: false,
-              value: rotateDeg,
-              min: -180,
-              max: 180,
-              onChanged: onRotateChanged,
-            ),
-            LabeledSlider(
-              padding: _sliderPadding,
-              label: l10n.meshTransformScaleLabel,
-              valueText: '${scaleValue.toStringAsFixed(2)}×',
-              editable: false,
-              value: scaleValue,
-              min: 0.2,
-              max: 3.0,
-              step: 0.05,
-              onChanged: onScaleChanged,
-            ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: onCancel,
-                      child: Text(l10n.commonCancel),
-                    ),
+          ),
+          const Divider(height: 12),
+          LabeledSlider(
+            padding: _sliderPadding,
+            label: l10n.meshTransformDensityLabel,
+            valueText: '$density×$density',
+            editable: false,
+            value: density.toDouble(),
+            min: 1,
+            max: 10,
+            divisions: 9,
+            onChanged: (v) => onDensityChanged(v.round()),
+          ),
+          LabeledSlider(
+            padding: _sliderPadding,
+            label: l10n.meshTransformRotateLabel,
+            valueText: '${rotateDeg.round()}°',
+            editable: false,
+            value: rotateDeg,
+            min: -180,
+            max: 180,
+            onChanged: onRotateChanged,
+          ),
+          LabeledSlider(
+            padding: _sliderPadding,
+            label: l10n.meshTransformScaleLabel,
+            valueText: '${scaleValue.toStringAsFixed(2)}×',
+            editable: false,
+            value: scaleValue,
+            min: 0.2,
+            max: 3.0,
+            step: 0.05,
+            onChanged: onScaleChanged,
+          ),
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: onCancel,
+                    child: Text(l10n.commonCancel),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: onApply,
-                      child: Text(l10n.meshTransformApplyButton),
-                    ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: onApply,
+                    child: Text(l10n.meshTransformApplyButton),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

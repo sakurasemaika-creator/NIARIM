@@ -8255,4 +8255,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communitySortLabel => 'Sort';
+
+  @override
+  String get pcMenuFile => 'File';
+
+  @override
+  String get pcMenuSelection => 'Selection';
+
+  @override
+  String get pcMenuView => 'View';
+
+  @override
+  String get pcMenuWindow => 'Window';
+
+  @override
+  String get pcViewZoomIn => 'Zoom In';
+
+  @override
+  String get pcViewZoomOut => 'Zoom Out';
+
+  @override
+  String get pcViewFit => 'Fit to Window';
+
+  @override
+  String get pcViewActualPixels => 'Actual Pixels (100%)';
+
+  @override
+  String get pcViewRotateLeft => 'Rotate Left';
+
+  @override
+  String get pcViewRotateRight => 'Rotate Right';
+
+  @override
+  String get pcViewResetRotation => 'Reset Rotation';
+
+  @override
+  String get pcViewHidePanels => 'Hide Panels';
+
+  @override
+  String get pcViewFrameStrip => 'Frame List';
+
+  @override
+  String get pcPaneToolProperty => 'Tool Property';
+
+  @override
+  String get pcToolPropertyEmpty => 'This tool has no settings';
+
+  @override
+  String get pcLayerNew => 'New Layer';
+
+  @override
+  String get pcModeCanvas => 'Canvas';
+
+  @override
+  String pcStatusFrame(int current, int total) {
+    return 'Frame $current/$total';
+  }
 }

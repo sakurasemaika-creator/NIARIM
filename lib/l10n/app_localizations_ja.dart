@@ -7959,4 +7959,60 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communitySortLabel => '並び替え';
+
+  @override
+  String get pcMenuFile => 'ファイル';
+
+  @override
+  String get pcMenuSelection => '選択範囲';
+
+  @override
+  String get pcMenuView => '表示';
+
+  @override
+  String get pcMenuWindow => 'ウィンドウ';
+
+  @override
+  String get pcViewZoomIn => '拡大';
+
+  @override
+  String get pcViewZoomOut => '縮小';
+
+  @override
+  String get pcViewFit => '全体を表示';
+
+  @override
+  String get pcViewActualPixels => '100%で表示';
+
+  @override
+  String get pcViewRotateLeft => '左に回転';
+
+  @override
+  String get pcViewRotateRight => '右に回転';
+
+  @override
+  String get pcViewResetRotation => '回転を戻す';
+
+  @override
+  String get pcViewHidePanels => 'パネルを隠す';
+
+  @override
+  String get pcViewFrameStrip => 'フレーム一覧';
+
+  @override
+  String get pcPaneToolProperty => 'ツールプロパティ';
+
+  @override
+  String get pcToolPropertyEmpty => 'このツールには設定がありません';
+
+  @override
+  String get pcLayerNew => '新規レイヤー';
+
+  @override
+  String get pcModeCanvas => 'キャンバス';
+
+  @override
+  String pcStatusFrame(int current, int total) {
+    return 'フレーム $current/$total';
+  }
 }

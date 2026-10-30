@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/docked_panel_scope.dart';
 
 /// ツール詳細設定ポップアップ（ブラシ・カラーピッカー・フィルター・
 /// レイヤー・オニオンスキン・早替えツール・定規・スタンプ・トーンの
@@ -14,6 +15,8 @@ class PanelCenterCloseBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // PC/DeXモードのドックでは、ペインの見出しの×で閉じる。
+    if (DockedPanelScope.of(context)) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context)!;
     return Align(
       alignment: Alignment.centerRight,

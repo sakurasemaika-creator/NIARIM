@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../config/accent_text_theme.dart';
 import '../../../services/theme_service.dart';
 import '../../../utils/color_contrast.dart';
+import '../../../widgets/pc_workspace.dart';
 
 /// キャンバスモード内の常設ボタン共通スタイル：
 /// 背景は一切持たせず、キャンバス上にアイコンだけが浮かんでいる状態にした
@@ -120,9 +122,14 @@ class CanvasIconButton extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     // Subscribe so changing the appearance preset repaints the outline.
     context.watch<ThemeService>();
-    final iconColor = selected ? scheme.primary : scheme.onSurface;
+    // PC/DeXモードのツールパレットはパネルの面の上なので、選択中は
+    // 背景の上の差し色（案A）の文字・アイコン色と淡い下地で示す。
+    final inPalette = PcPaletteScope.of(context);
+    final iconColor = selected
+        ? (inPalette ? AccentTextTheme.of(context) : scheme.primary)
+        : scheme.onSurface;
     final outline = outlineColor(iconColor, scheme);
-    return Tooltip(
+    final button = Tooltip(
       message: tooltip,
       triggerMode: longPressTooltip
           ? TooltipTriggerMode.longPress
@@ -141,6 +148,15 @@ class CanvasIconButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+    if (!inPalette || !selected) return button;
+    final colors = PcWorkspaceColors.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.selectedOn(colors.pane),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: button,
     );
   }
 }

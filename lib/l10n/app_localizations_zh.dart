@@ -5667,13 +5667,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceDockPanelTone => '网点';
 
   @override
-  String get workspaceDockPanelStamp => '貼纸';
+  String get workspaceDockPanelStamp => '贴纸';
 
   @override
-  String get workspaceDockPanelPenSubTool => '笔子子工具';
+  String get workspaceDockPanelPenSubTool => '画笔子工具';
 
   @override
-  String get workspaceDockPanelOnionSkin => '洋葱红';
+  String get workspaceDockPanelOnionSkin => '洋葱皮';
 
   @override
   String get workspaceDockPanelRuler => '尺规';
@@ -7885,6 +7885,62 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communitySortLabel => '排序';
+
+  @override
+  String get pcMenuFile => '文件';
+
+  @override
+  String get pcMenuSelection => '选区';
+
+  @override
+  String get pcMenuView => '视图';
+
+  @override
+  String get pcMenuWindow => '窗口';
+
+  @override
+  String get pcViewZoomIn => '放大';
+
+  @override
+  String get pcViewZoomOut => '缩小';
+
+  @override
+  String get pcViewFit => '适应窗口';
+
+  @override
+  String get pcViewActualPixels => '实际像素（100%）';
+
+  @override
+  String get pcViewRotateLeft => '向左旋转';
+
+  @override
+  String get pcViewRotateRight => '向右旋转';
+
+  @override
+  String get pcViewResetRotation => '重置旋转';
+
+  @override
+  String get pcViewHidePanels => '隐藏面板';
+
+  @override
+  String get pcViewFrameStrip => '帧列表';
+
+  @override
+  String get pcPaneToolProperty => '工具属性';
+
+  @override
+  String get pcToolPropertyEmpty => '此工具没有可调整的设置';
+
+  @override
+  String get pcLayerNew => '新建图层';
+
+  @override
+  String get pcModeCanvas => '画布';
+
+  @override
+  String pcStatusFrame(int current, int total) {
+    return '第 $current/$total 帧';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -13538,7 +13594,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '在PC/DeX模式下，選中的多個面板可以同時展開固定顯示（手機版為避免誤觸總是以全部隱藏開始）。';
 
   @override
-  String get workspaceDockPanelBrush => '畫筆';
+  String get workspaceDockPanelBrush => '筆刷';
 
   @override
   String get workspaceDockPanelColorPicker => '取色器';
@@ -13553,10 +13609,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceDockPanelStamp => '貼紙';
 
   @override
-  String get workspaceDockPanelPenSubTool => '筆子子工具';
+  String get workspaceDockPanelPenSubTool => '畫筆子工具';
 
   @override
-  String get workspaceDockPanelOnionSkin => '洋葱紅';
+  String get workspaceDockPanelOnionSkin => '洋蔥皮';
 
   @override
   String get workspaceDockPanelRuler => '尺規';
@@ -15770,4 +15826,60 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communitySortLabel => '排序';
+
+  @override
+  String get pcMenuFile => '檔案';
+
+  @override
+  String get pcMenuSelection => '選取範圍';
+
+  @override
+  String get pcMenuView => '檢視';
+
+  @override
+  String get pcMenuWindow => '視窗';
+
+  @override
+  String get pcViewZoomIn => '放大';
+
+  @override
+  String get pcViewZoomOut => '縮小';
+
+  @override
+  String get pcViewFit => '符合視窗';
+
+  @override
+  String get pcViewActualPixels => '實際像素（100%）';
+
+  @override
+  String get pcViewRotateLeft => '向左旋轉';
+
+  @override
+  String get pcViewRotateRight => '向右旋轉';
+
+  @override
+  String get pcViewResetRotation => '重設旋轉';
+
+  @override
+  String get pcViewHidePanels => '隱藏面板';
+
+  @override
+  String get pcViewFrameStrip => '影格列表';
+
+  @override
+  String get pcPaneToolProperty => '工具屬性';
+
+  @override
+  String get pcToolPropertyEmpty => '此工具沒有可調整的設定';
+
+  @override
+  String get pcLayerNew => '新增圖層';
+
+  @override
+  String get pcModeCanvas => '畫布';
+
+  @override
+  String pcStatusFrame(int current, int total) {
+    return '影格 $current/$total';
+  }
 }

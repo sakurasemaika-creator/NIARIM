@@ -8,6 +8,7 @@ import '../../../services/quick_tool_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart' show DrawingTool;
+import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
@@ -38,104 +39,96 @@ class QuickToolPanel extends StatelessWidget {
     final service = context.watch<QuickToolService>();
     final entries = service.entries;
 
-    return Card(
-      elevation: 8,
-      child: SizedBox(
-        width: 260,
-        height: 360,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PanelCenterCloseBar(onClose: onClose),
-              Row(
-                children: [
-                  Text(
-                    l10n.quickToolPanelTitle,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                    ),
+    return PanelSurface(
+      width: 260,
+      height: 360,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PanelCenterCloseBar(onClose: onClose),
+            Row(
+              children: [
+                Text(
+                  l10n.quickToolPanelTitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
                   ),
-                  const Spacer(),
-                ],
-              ),
-              const Divider(),
-              Expanded(
-                child: entries.isEmpty
-                    ? Center(
-                        child: Text(
-                          l10n.quickToolEmpty,
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                            fontSize: 12,
-                          ),
+                ),
+                const Spacer(),
+              ],
+            ),
+            const Divider(),
+            Expanded(
+              child: entries.isEmpty
+                  ? Center(
+                      child: Text(
+                        l10n.quickToolEmpty,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontSize: 12,
                         ),
-                      )
-                    : ReorderableListView.builder(
-                        // ドラッグハンドルを明示アイコンとして置く（既定のまま
-                        // だと行の長押しでしか並べ替えを開始できず、可視の
-                        // 目印が無いままだった）。
-                        buildDefaultDragHandles: false,
-                        itemCount: entries.length,
-                        onReorderItem: (oldIndex, newIndex) => service.reorder(
-                          oldIndex,
-                          preRemovalIndex(oldIndex, newIndex),
-                        ),
-                        itemBuilder: (context, index) {
-                          final e = entries[index];
-                          return ListTile(
-                            key: ValueKey(e.id),
-                            dense: true,
-                            leading: Text(
-                              '${index + 1}',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                            title: Text(
-                              e.label,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
-                              ),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.delete,
-                                    size: 16,
-                                    color: ThemeService.activeColorScheme.error,
-                                  ),
-                                  tooltip: l10n.commonDelete,
-                                  onPressed: () => service.removeEntry(e.id),
-                                ),
-                                ReorderableDragStartListener(
-                                  index: index,
-                                  child: const Icon(
-                                    Icons.drag_handle,
-                                    size: 18,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
                       ),
-              ),
-              const Divider(height: 1),
-              TextButton.icon(
-                icon: const Icon(Icons.add, size: 16),
-                label: Text(l10n.commonAdd),
-                onPressed: () => _showAddDialog(context, service),
-              ),
-            ],
-          ),
+                    )
+                  : ReorderableListView.builder(
+                      // ドラッグハンドルを明示アイコンとして置く（既定のまま
+                      // だと行の長押しでしか並べ替えを開始できず、可視の
+                      // 目印が無いままだった）。
+                      buildDefaultDragHandles: false,
+                      itemCount: entries.length,
+                      onReorderItem: (oldIndex, newIndex) => service.reorder(
+                        oldIndex,
+                        preRemovalIndex(oldIndex, newIndex),
+                      ),
+                      itemBuilder: (context, index) {
+                        final e = entries[index];
+                        return ListTile(
+                          key: ValueKey(e.id),
+                          dense: true,
+                          leading: Text(
+                            '${index + 1}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          title: Text(
+                            e.label,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontFamily: 'Kuramubon',
+                              fontFamilyFallback: kHeadingFontFallback,
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  Icons.delete,
+                                  size: 16,
+                                  color: ThemeService.activeColorScheme.error,
+                                ),
+                                tooltip: l10n.commonDelete,
+                                onPressed: () => service.removeEntry(e.id),
+                              ),
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: const Icon(Icons.drag_handle, size: 18),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            const Divider(height: 1),
+            TextButton.icon(
+              icon: const Icon(Icons.add, size: 16),
+              label: Text(l10n.commonAdd),
+              onPressed: () => _showAddDialog(context, service),
+            ),
+          ],
         ),
       ),
     );

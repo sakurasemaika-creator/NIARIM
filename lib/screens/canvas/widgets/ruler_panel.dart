@@ -4,6 +4,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/ruler.dart';
+import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../config/accent_text_theme.dart';
@@ -27,137 +28,131 @@ class RulerPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Material(
+    return PanelSurface(
+      width: 200,
+      // On a short screen (or with large text) the list scrolls instead of
+      // running off the bottom.
+      maxHeight: MediaQuery.sizeOf(context).height * 0.75,
       elevation: 4,
       borderRadius: BorderRadius.circular(8),
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
-      // On a short screen (or with large text) the list scrolls instead of
-      // running off the bottom.
-      child: ConstrainedBox(
-        constraints: BoxConstraints.tightFor(
-          width: 200,
-        ).copyWith(maxHeight: MediaQuery.sizeOf(context).height * 0.75),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            PanelCenterCloseBar(onClose: onClose),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                children: [
-                  Text(
-                    l10n.rulerPanelTitle,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          PanelCenterCloseBar(onClose: onClose),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Text(
+                  l10n.rulerPanelTitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                ),
+                const Spacer(),
+                if (activeRuler != null)
+                  TextButton(
+                    onPressed: () => onRulerChanged(null),
+                    style: TextButton.styleFrom(
+                      foregroundColor: ThemeService.activeColorScheme.error,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      l10n.commonDelete,
+                      style: const TextStyle(fontSize: 11),
                     ),
                   ),
-                  const Spacer(),
-                  if (activeRuler != null)
-                    TextButton(
-                      onPressed: () => onRulerChanged(null),
-                      style: TextButton.styleFrom(
-                        foregroundColor: ThemeService.activeColorScheme.error,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(
-                        l10n.commonDelete,
-                        style: const TextStyle(fontSize: 11),
-                      ),
+              ],
+            ),
+          ),
+          if (activeRuler != null) ...[
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.rulerSnap,
+                      style: const TextStyle(fontSize: 12),
                     ),
+                  ),
+                  Switch(
+                    key: const ValueKey('ruler-snap-switch'),
+                    value: activeRuler!.snapEnabled,
+                    onChanged: (value) => onRulerChanged(
+                      activeRuler!.copyWith(snapEnabled: value),
+                    ),
+                  ),
                 ],
               ),
             ),
-            if (activeRuler != null) ...[
-              const Divider(height: 1),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 2,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.rulerSnap,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                    Switch(
-                      key: const ValueKey('ruler-snap-switch'),
-                      value: activeRuler!.snapEnabled,
-                      onChanged: (value) => onRulerChanged(
-                        activeRuler!.copyWith(snapEnabled: value),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-            const Divider(height: 1),
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _rulerTile(
-                      context,
-                      RulerType.line,
-                      Icons.straighten,
-                      l10n.rulerTypeLine,
-                    ),
-                    _rulerTile(
-                      context,
-                      RulerType.ellipse,
-                      Icons.circle_outlined,
-                      l10n.rulerTypeEllipse,
-                    ),
-                    _rulerTile(
-                      context,
-                      RulerType.radial,
-                      Icons.hub_outlined,
-                      l10n.rulerTypeRadial,
-                    ),
+          ],
+          const Divider(height: 1),
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _rulerTile(
+                    context,
+                    RulerType.line,
+                    Icons.straighten,
+                    l10n.rulerTypeLine,
+                  ),
+                  _rulerTile(
+                    context,
+                    RulerType.ellipse,
+                    Icons.circle_outlined,
+                    l10n.rulerTypeEllipse,
+                  ),
+                  _rulerTile(
+                    context,
+                    RulerType.radial,
+                    Icons.hub_outlined,
+                    l10n.rulerTypeRadial,
+                  ),
+                  const Divider(height: 1),
+                  _rulerTile(
+                    context,
+                    RulerType.onePointPerspective,
+                    Icons.filter_center_focus,
+                    l10n.rulerTypeOnePoint,
+                  ),
+                  _rulerTile(
+                    context,
+                    RulerType.twoPointPerspective,
+                    Icons.compare_arrows,
+                    l10n.rulerTypeTwoPoint,
+                  ),
+                  _rulerTile(
+                    context,
+                    RulerType.threePointPerspective,
+                    Icons.grid_3x3,
+                    l10n.rulerTypeThreePoint,
+                  ),
+                  _rulerTile(
+                    context,
+                    RulerType.fisheyePerspective,
+                    Icons.language,
+                    l10n.rulerTypeFisheye,
+                  ),
+                  if (activeRuler?.type == RulerType.radial) ...[
                     const Divider(height: 1),
-                    _rulerTile(
-                      context,
-                      RulerType.onePointPerspective,
-                      Icons.filter_center_focus,
-                      l10n.rulerTypeOnePoint,
-                    ),
-                    _rulerTile(
-                      context,
-                      RulerType.twoPointPerspective,
-                      Icons.compare_arrows,
-                      l10n.rulerTypeTwoPoint,
-                    ),
-                    _rulerTile(
-                      context,
-                      RulerType.threePointPerspective,
-                      Icons.grid_3x3,
-                      l10n.rulerTypeThreePoint,
-                    ),
-                    _rulerTile(
-                      context,
-                      RulerType.fisheyePerspective,
-                      Icons.language,
-                      l10n.rulerTypeFisheye,
-                    ),
-                    if (activeRuler?.type == RulerType.radial) ...[
-                      const Divider(height: 1),
-                      _divisionsRow(context),
-                    ],
+                    _divisionsRow(context),
                   ],
-                ),
+                ],
               ),
             ),
-            const SizedBox(height: 4),
-          ],
-        ),
+          ),
+          const SizedBox(height: 4),
+        ],
       ),
     );
   }

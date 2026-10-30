@@ -8,6 +8,7 @@ import '../../../models/stamp.dart';
 import '../../../services/stamp_service.dart';
 import '../../../widgets/labeled_slider.dart';
 import 'creative_folder_sheets.dart';
+import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
@@ -78,299 +79,288 @@ class _StampPanelState extends State<StampPanel> {
         query.isNotEmpty ||
         (_folderFilter != null && _folderFilter != _allFolders);
 
-    return Card(
-      elevation: 8,
-      child: SizedBox(
-        width: 280,
-        height: 460,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PanelCenterCloseBar(onClose: widget.onClose),
-              Row(
+    return PanelSurface(
+      width: 280,
+      height: 460,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PanelCenterCloseBar(onClose: widget.onClose),
+            Row(
+              children: [
+                Text(
+                  l10n.stampTitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                ),
+                Spacer(),
+                IconButton(
+                  icon: Icon(
+                    _showFavoritesOnly ? Icons.star : Icons.star_outline,
+                    size: 16,
+                    color: _showFavoritesOnly
+                        ? ThemeService.activeColorScheme.tertiary
+                        : null,
+                  ),
+                  onPressed: () =>
+                      setState(() => _showFavoritesOnly = !_showFavoritesOnly),
+                  tooltip: l10n.creativePanelFavoritesOnlyTooltip,
+                ),
+                IconButton(
+                  icon: Icon(
+                    _showSearch ? Icons.search_off : Icons.search,
+                    size: 16,
+                  ),
+                  onPressed: () => setState(() {
+                    _showSearch = !_showSearch;
+                    if (!_showSearch) {
+                      _searchQuery = '';
+                      _searchController.clear();
+                    }
+                  }),
+                  tooltip: l10n.creativePanelSearchTooltip,
+                ),
+              ],
+            ),
+            // 【不具合修正】brush_panel.dartと同じ理由（PC/DeXモードの
+            // ドッキングパネル既定幅ではボタン3つの自然幅が収まらず
+            // RenderFlexがオーバーフローしていた）で横スクロール化。
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
                 children: [
-                  Text(
-                    l10n.stampTitle,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                  TextButton.icon(
+                    icon: const Icon(Icons.folder_outlined, size: 15),
+                    label: Text(
+                      l10n.creativePanelFolderButton,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
                     ),
+                    onPressed: () =>
+                        _openFolderManagement(context, stampService),
                   ),
-                  Spacer(),
-                  IconButton(
-                    icon: Icon(
-                      _showFavoritesOnly ? Icons.star : Icons.star_outline,
-                      size: 16,
-                      color: _showFavoritesOnly
-                          ? ThemeService.activeColorScheme.tertiary
-                          : null,
+                  TextButton.icon(
+                    icon: const Icon(
+                      Icons.add_photo_alternate_outlined,
+                      size: 15,
                     ),
-                    onPressed: () => setState(
-                      () => _showFavoritesOnly = !_showFavoritesOnly,
+                    label: Text(
+                      l10n.creativePanelCreateButton,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
                     ),
-                    tooltip: l10n.creativePanelFavoritesOnlyTooltip,
+                    onPressed: () => _createFromImage(context, stampService),
                   ),
-                  IconButton(
-                    icon: Icon(
-                      _showSearch ? Icons.search_off : Icons.search,
-                      size: 16,
+                  TextButton.icon(
+                    icon: const Icon(Icons.file_upload_outlined, size: 15),
+                    label: Text(
+                      l10n.creativePanelImportButton,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
                     ),
-                    onPressed: () => setState(() {
-                      _showSearch = !_showSearch;
-                      if (!_showSearch) {
-                        _searchQuery = '';
-                        _searchController.clear();
-                      }
-                    }),
-                    tooltip: l10n.creativePanelSearchTooltip,
+                    onPressed: () => _importStamp(context, stampService),
                   ),
                 ],
               ),
-              // 【不具合修正】brush_panel.dartと同じ理由（PC/DeXモードの
-              // ドッキングパネル既定幅ではボタン3つの自然幅が収まらず
-              // RenderFlexがオーバーフローしていた）で横スクロール化。
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    TextButton.icon(
-                      icon: const Icon(Icons.folder_outlined, size: 15),
-                      label: Text(
-                        l10n.creativePanelFolderButton,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
+            ),
+            if (folders.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: SizedBox(
+                  height: 30,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      _folderChip(
+                        l10n.creativePanelFolderAllChip,
+                        _folderFilter == null || _folderFilter == _allFolders,
+                        () => setState(() => _folderFilter = null),
+                      ),
+                      _folderChip(
+                        l10n.folderNone,
+                        _folderFilter == '',
+                        () => setState(() => _folderFilter = ''),
+                      ),
+                      ...folders.map(
+                        (f) => _folderChip(
+                          f.name,
+                          _folderFilter == f.id,
+                          () => setState(() => _folderFilter = f.id),
                         ),
                       ),
-                      onPressed: () =>
-                          _openFolderManagement(context, stampService),
-                    ),
-                    TextButton.icon(
-                      icon: const Icon(
-                        Icons.add_photo_alternate_outlined,
-                        size: 15,
-                      ),
-                      label: Text(
-                        l10n.creativePanelCreateButton,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                        ),
-                      ),
-                      onPressed: () => _createFromImage(context, stampService),
-                    ),
-                    TextButton.icon(
-                      icon: const Icon(Icons.file_upload_outlined, size: 15),
-                      label: Text(
-                        l10n.creativePanelImportButton,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                        ),
-                      ),
-                      onPressed: () => _importStamp(context, stampService),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-              if (folders.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: SizedBox(
-                    height: 30,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        _folderChip(
-                          l10n.creativePanelFolderAllChip,
-                          _folderFilter == null || _folderFilter == _allFolders,
-                          () => setState(() => _folderFilter = null),
+            if (_showSearch)
+              AssetSearchBar(
+                controller: _searchController,
+                mode: _searchMode,
+                availableTags: localizeAssetTags(l10n, stampService.allTags()),
+                keywordHint: l10n.stampSearchHint,
+                onModeChanged: (m) => setState(() {
+                  _searchMode = m;
+                  // 方式を切り替えたら入力は持ち越さない。名前とタグでは
+                  // 一致するものが全く違い、切り替えた瞬間に0件になって
+                  // 「壊れた」ように見えるため。
+                  _searchQuery = '';
+                  _searchController.clear();
+                }),
+                onQueryChanged: (v) => setState(() => _searchQuery = v),
+              ),
+            const Divider(),
+            Expanded(
+              child: stampList.isEmpty
+                  ? Center(
+                      child: Text(
+                        l10n.stampEmpty,
+                        style: TextStyle(
+                          color:
+                              ThemeService.activeColorScheme.onSurfaceVariant,
+                          fontSize: 12,
                         ),
-                        _folderChip(
-                          l10n.folderNone,
-                          _folderFilter == '',
-                          () => setState(() => _folderFilter = ''),
-                        ),
-                        ...folders.map(
-                          (f) => _folderChip(
-                            f.name,
-                            _folderFilter == f.id,
-                            () => setState(() => _folderFilter = f.id),
+                      ),
+                    )
+                  : ReorderableListView.builder(
+                      // ドラッグハンドルは行末に明示アイコンとして置く
+                      // （既定のドラッグハンドルだと、行全体の長押しで開く
+                      // 編集シートや、お気に入り・三点メニューのタップと
+                      // ジェスチャーが競合するため）。
+                      buildDefaultDragHandles: false,
+                      itemCount: stampList.length,
+                      onReorderItem: (oldIndex, newIndex) {
+                        if (!isFiltering) {
+                          stampService.reorderStamp(
+                            oldIndex,
+                            preRemovalIndex(oldIndex, newIndex),
+                          );
+                        }
+                      },
+                      itemBuilder: (context, index) {
+                        final stamp = stampList[index];
+                        final isSelected = current?.id == stamp.id;
+                        // プリインストールのスタンプは編集・削除できない
+                        // （複製したものは複製元とは別IDになるため編集・削除可能）。
+                        final builtIn = stampService.isBuiltIn(stamp.id);
+                        return ListTile(
+                          key: ValueKey(stamp.id),
+                          dense: true,
+                          selected: isSelected,
+                          leading: Icon(
+                            Icons.star_border_purple500,
+                            size: 16,
+                            color: isSelected
+                                ? AccentTextTheme.of(context)
+                                : null,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              if (_showSearch)
-                AssetSearchBar(
-                  controller: _searchController,
-                  mode: _searchMode,
-                  availableTags: localizeAssetTags(
-                    l10n,
-                    stampService.allTags(),
-                  ),
-                  keywordHint: l10n.stampSearchHint,
-                  onModeChanged: (m) => setState(() {
-                    _searchMode = m;
-                    // 方式を切り替えたら入力は持ち越さない。名前とタグでは
-                    // 一致するものが全く違い、切り替えた瞬間に0件になって
-                    // 「壊れた」ように見えるため。
-                    _searchQuery = '';
-                    _searchController.clear();
-                  }),
-                  onQueryChanged: (v) => setState(() => _searchQuery = v),
-                ),
-              const Divider(),
-              Expanded(
-                child: stampList.isEmpty
-                    ? Center(
-                        child: Text(
-                          l10n.stampEmpty,
-                          style: TextStyle(
-                            color:
-                                ThemeService.activeColorScheme.onSurfaceVariant,
-                            fontSize: 12,
+                          title: Text(
+                            stamp.name,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontFamily: 'Kuramubon',
+                              fontFamilyFallback: kHeadingFontFallback,
+                            ),
                           ),
-                        ),
-                      )
-                    : ReorderableListView.builder(
-                        // ドラッグハンドルは行末に明示アイコンとして置く
-                        // （既定のドラッグハンドルだと、行全体の長押しで開く
-                        // 編集シートや、お気に入り・三点メニューのタップと
-                        // ジェスチャーが競合するため）。
-                        buildDefaultDragHandles: false,
-                        itemCount: stampList.length,
-                        onReorderItem: (oldIndex, newIndex) {
-                          if (!isFiltering) {
-                            stampService.reorderStamp(
-                              oldIndex,
-                              preRemovalIndex(oldIndex, newIndex),
-                            );
-                          }
-                        },
-                        itemBuilder: (context, index) {
-                          final stamp = stampList[index];
-                          final isSelected = current?.id == stamp.id;
-                          // プリインストールのスタンプは編集・削除できない
-                          // （複製したものは複製元とは別IDになるため編集・削除可能）。
-                          final builtIn = stampService.isBuiltIn(stamp.id);
-                          return ListTile(
-                            key: ValueKey(stamp.id),
-                            dense: true,
-                            selected: isSelected,
-                            leading: Icon(
-                              Icons.star_border_purple500,
-                              size: 16,
-                              color: isSelected
-                                  ? AccentTextTheme.of(context)
-                                  : null,
-                            ),
-                            title: Text(
-                              stamp.name,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
-                              ),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                GestureDetector(
-                                  onTap: () =>
-                                      stampService.toggleFavorite(stamp.id),
-                                  child: Icon(
-                                    stamp.isFavorite
-                                        ? Icons.star
-                                        : Icons.star_outline,
-                                    size: 14,
-                                    color: stamp.isFavorite
-                                        ? ThemeService
-                                              .activeColorScheme
-                                              .tertiary
-                                        : ThemeService
-                                              .activeColorScheme
-                                              .onSurfaceVariant,
-                                  ),
-                                ),
-                                PopupMenuButton<String>(
-                                  icon: const Icon(Icons.more_vert, size: 14),
-                                  onSelected: (action) =>
-                                      _handleAction(context, action, stamp),
-                                  itemBuilder: (_) => [
-                                    if (!builtIn)
-                                      PopupMenuItem(
-                                        value: 'edit',
-                                        child: Text(
-                                          l10n.creativePanelEditAction,
-                                        ),
-                                      ),
-                                    PopupMenuItem(
-                                      value: 'duplicate',
-                                      child: Text(l10n.themeDuplicateAction),
-                                    ),
-                                    PopupMenuItem(
-                                      value: 'move',
-                                      child: Text(l10n.folderMoveToTitle),
-                                    ),
-                                    // タグはお気に入りと同じく
-                                    // 「利用者の分類」なので、
-                                    // 組み込み素材にも付けられる。
-                                    PopupMenuItem(
-                                      value: 'tags',
-                                      child: Text(l10n.creativePanelTagsLabel),
-                                    ),
-                                    PopupMenuItem(
-                                      value: 'export',
-                                      child: Text(l10n.transferExport),
-                                    ),
-                                    if (!builtIn)
-                                      PopupMenuItem(
-                                        value: 'delete',
-                                        child: Text(
-                                          l10n.commonDelete,
-                                          style: TextStyle(
-                                            color: ThemeService
-                                                .activeColorScheme
-                                                .error,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                if (!isFiltering)
-                                  ReorderableDragStartListener(
-                                    index: index,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(left: 2),
-                                      child: Icon(
-                                        Icons.drag_indicator,
-                                        size: 16,
-                                        color: ThemeService
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              GestureDetector(
+                                onTap: () =>
+                                    stampService.toggleFavorite(stamp.id),
+                                child: Icon(
+                                  stamp.isFavorite
+                                      ? Icons.star
+                                      : Icons.star_outline,
+                                  size: 14,
+                                  color: stamp.isFavorite
+                                      ? ThemeService.activeColorScheme.tertiary
+                                      : ThemeService
                                             .activeColorScheme
                                             .onSurfaceVariant,
+                                ),
+                              ),
+                              PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert, size: 14),
+                                onSelected: (action) =>
+                                    _handleAction(context, action, stamp),
+                                itemBuilder: (_) => [
+                                  if (!builtIn)
+                                    PopupMenuItem(
+                                      value: 'edit',
+                                      child: Text(l10n.creativePanelEditAction),
+                                    ),
+                                  PopupMenuItem(
+                                    value: 'duplicate',
+                                    child: Text(l10n.themeDuplicateAction),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'move',
+                                    child: Text(l10n.folderMoveToTitle),
+                                  ),
+                                  // タグはお気に入りと同じく
+                                  // 「利用者の分類」なので、
+                                  // 組み込み素材にも付けられる。
+                                  PopupMenuItem(
+                                    value: 'tags',
+                                    child: Text(l10n.creativePanelTagsLabel),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'export',
+                                    child: Text(l10n.transferExport),
+                                  ),
+                                  if (!builtIn)
+                                    PopupMenuItem(
+                                      value: 'delete',
+                                      child: Text(
+                                        l10n.commonDelete,
+                                        style: TextStyle(
+                                          color: ThemeService
+                                              .activeColorScheme
+                                              .error,
+                                        ),
                                       ),
                                     ),
+                                ],
+                              ),
+                              if (!isFiltering)
+                                ReorderableDragStartListener(
+                                  index: index,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(left: 2),
+                                    child: Icon(
+                                      Icons.drag_indicator,
+                                      size: 16,
+                                      color: ThemeService
+                                          .activeColorScheme
+                                          .onSurfaceVariant,
+                                    ),
                                   ),
-                              ],
-                            ),
-                            onTap: () => stampService.selectStamp(stamp.id),
-                            onLongPress: builtIn
-                                ? null
-                                : () => _showStampSettings(context, stamp),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
+                                ),
+                            ],
+                          ),
+                          onTap: () => stampService.selectStamp(stamp.id),
+                          onLongPress: builtIn
+                              ? null
+                              : () => _showStampSettings(context, stamp),
+                        );
+                      },
+                    ),
+            ),
+          ],
         ),
       ),
     );

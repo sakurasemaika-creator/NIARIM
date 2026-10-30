@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/onion_skin_settings.dart';
 import '../../../services/performance_service.dart';
 import '../../../widgets/labeled_slider.dart';
+import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 
@@ -78,135 +79,129 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
       }
     }
 
-    return Card(
-      elevation: 8,
+    return PanelSurface(
+      width: 280,
       // 背の低い画面では、画面の下へはみ出さず設定部分がスクロールする。
-      child: ConstrainedBox(
-        constraints: BoxConstraints.tightFor(
-          width: 280,
-        ).copyWith(maxHeight: MediaQuery.sizeOf(context).height * 0.8),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PanelCenterCloseBar(onClose: widget.onClose),
-              // ヘッダー：オニオンスキン全体ON/OFF
-              Row(
-                children: [
-                  Text(
-                    l10n.onionSkinTitle,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                    ),
-                  ),
-                  const Spacer(),
-                  Switch(
-                    value: _settings.enabled,
-                    onChanged: (v) => _update(_settings.copyWith(enabled: v)),
-                  ),
-                ],
-              ),
-              if (_settings.enabled) ...[
-                const Divider(),
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ── 前フレーム ──
-                        _OnionSideSection(
-                          label: l10n.onionSkinPrevFrame,
-                          showToggle: _settings.showPrev,
-                          frames: _settings.prevFrames,
-                          color: _settings.prevColor,
-                          opacity: _settings.prevOpacity,
-                          isCustom: isCustom,
-                          onShowChanged: isCustom
-                              ? (v) => _update(_settings.copyWith(showPrev: v))
-                              : null,
-                          onFramesChanged: isCustom
-                              ? (v) =>
-                                    _update(_settings.copyWith(prevFrames: v))
-                              : null,
-                          onColorChanged: (c) =>
-                              _update(_settings.copyWith(prevColor: c)),
-                          onOpacityChanged: (v) =>
-                              _update(_settings.copyWith(prevOpacity: v)),
-                          onShowColorPicker: _showColorPicker,
-                        ),
-                        const Divider(),
-                        // ── 後フレーム ──
-                        _OnionSideSection(
-                          label: l10n.onionSkinNextFrame,
-                          showToggle: _settings.showNext,
-                          frames: _settings.nextFrames,
-                          color: _settings.nextColor,
-                          opacity: _settings.nextOpacity,
-                          isCustom: isCustom,
-                          onShowChanged: isCustom
-                              ? (v) => _update(_settings.copyWith(showNext: v))
-                              : null,
-                          onFramesChanged: isCustom
-                              ? (v) =>
-                                    _update(_settings.copyWith(nextFrames: v))
-                              : null,
-                          onColorChanged: (c) =>
-                              _update(_settings.copyWith(nextColor: c)),
-                          onOpacityChanged: (v) =>
-                              _update(_settings.copyWith(nextOpacity: v)),
-                          onShowColorPicker: _showColorPicker,
-                        ),
-                        const Divider(),
-                        // ── 共通設定 ──
-                        Text(
-                          l10n.onionSkinFrameInterval,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        const SizedBox(height: 4),
-                        Wrap(
-                          spacing: 4,
-                          children: OnionSkinSettings.frameIntervalOptions
-                              .map(
-                                (interval) => ChoiceChip(
-                                  label: Text('$interval'),
-                                  selected: _settings.frameInterval == interval,
-                                  onSelected: (selected) {
-                                    if (selected) {
-                                      _update(
-                                        _settings.copyWith(
-                                          frameInterval: interval,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-                              )
-                              .toList(),
-                        ),
-                        const SizedBox(height: 4),
-                        SwitchListTile(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(
-                            l10n.onionSkinFadeByDistance,
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          value: _settings.fadeByDistance,
-                          onChanged: (v) =>
-                              _update(_settings.copyWith(fadeByDistance: v)),
-                        ),
-                      ],
-                    ),
+      maxHeight: MediaQuery.sizeOf(context).height * 0.8,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PanelCenterCloseBar(onClose: widget.onClose),
+            // ヘッダー：オニオンスキン全体ON/OFF
+            Row(
+              children: [
+                Text(
+                  l10n.onionSkinTitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
+                const Spacer(),
+                Switch(
+                  value: _settings.enabled,
+                  onChanged: (v) => _update(_settings.copyWith(enabled: v)),
+                ),
               ],
+            ),
+            if (_settings.enabled) ...[
+              const Divider(),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── 前フレーム ──
+                      _OnionSideSection(
+                        label: l10n.onionSkinPrevFrame,
+                        showToggle: _settings.showPrev,
+                        frames: _settings.prevFrames,
+                        color: _settings.prevColor,
+                        opacity: _settings.prevOpacity,
+                        isCustom: isCustom,
+                        onShowChanged: isCustom
+                            ? (v) => _update(_settings.copyWith(showPrev: v))
+                            : null,
+                        onFramesChanged: isCustom
+                            ? (v) => _update(_settings.copyWith(prevFrames: v))
+                            : null,
+                        onColorChanged: (c) =>
+                            _update(_settings.copyWith(prevColor: c)),
+                        onOpacityChanged: (v) =>
+                            _update(_settings.copyWith(prevOpacity: v)),
+                        onShowColorPicker: _showColorPicker,
+                      ),
+                      const Divider(),
+                      // ── 後フレーム ──
+                      _OnionSideSection(
+                        label: l10n.onionSkinNextFrame,
+                        showToggle: _settings.showNext,
+                        frames: _settings.nextFrames,
+                        color: _settings.nextColor,
+                        opacity: _settings.nextOpacity,
+                        isCustom: isCustom,
+                        onShowChanged: isCustom
+                            ? (v) => _update(_settings.copyWith(showNext: v))
+                            : null,
+                        onFramesChanged: isCustom
+                            ? (v) => _update(_settings.copyWith(nextFrames: v))
+                            : null,
+                        onColorChanged: (c) =>
+                            _update(_settings.copyWith(nextColor: c)),
+                        onOpacityChanged: (v) =>
+                            _update(_settings.copyWith(nextOpacity: v)),
+                        onShowColorPicker: _showColorPicker,
+                      ),
+                      const Divider(),
+                      // ── 共通設定 ──
+                      Text(
+                        l10n.onionSkinFrameInterval,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 4,
+                        children: OnionSkinSettings.frameIntervalOptions
+                            .map(
+                              (interval) => ChoiceChip(
+                                label: Text('$interval'),
+                                selected: _settings.frameInterval == interval,
+                                onSelected: (selected) {
+                                  if (selected) {
+                                    _update(
+                                      _settings.copyWith(
+                                        frameInterval: interval,
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 4),
+                      SwitchListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          l10n.onionSkinFadeByDistance,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        value: _settings.fadeByDistance,
+                        onChanged: (v) =>
+                            _update(_settings.copyWith(fadeByDistance: v)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );
