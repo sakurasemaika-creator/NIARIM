@@ -132,6 +132,50 @@ class CommunityService extends ChangeNotifier {
   /// バックエンドから一覧を取得中かどうか。
   bool get isLoading => _isLoading;
   bool _isLoading = false;
+  static const int pageSize = 25;
+  String? _latestCursor;
+  String? _rankingCursor;
+  String? _searchCursor;
+  String? _ownCursor;
+  final Map<String, String?> _authorCursors = {};
+  final Map<String, String?> _feedAuthorCursors = {};
+  bool _fetchingMoreLatest = false;
+  bool _fetchingMoreRanking = false;
+  bool _fetchingMoreSearch = false;
+  bool _fetchingMoreOwn = false;
+  bool _fetchingMoreFeed = false;
+  final Set<String> _fetchingMoreAuthors = {};
+  int _latestEpoch = 0;
+  int _rankingEpoch = 0;
+  int _searchEpoch = 0;
+  String _searchQuery = '';
+  bool _searchTagMode = false;
+  bool _searchExact = false;
+  bool _searchReady = false;
+  Set<String> _searchIds = {};
+
+  bool get hasMoreLatest => _latestCursor != null;
+  bool get hasMoreRanking => _rankingCursor != null;
+  bool get hasMoreSearch => _searchCursor != null;
+  bool get hasMoreOwn => _ownCursor != null;
+  bool get hasMoreFollowing => _feedAuthorCursors.values.any((v) => v != null);
+  bool hasMoreAuthor(String authorId) => _authorCursors[authorId] != null;
+  bool get isFetchingMoreLatest => _fetchingMoreLatest;
+  bool get isFetchingMoreRanking => _fetchingMoreRanking;
+  bool get isFetchingMoreSearch => _fetchingMoreSearch;
+  bool get isFetchingMoreOwn => _fetchingMoreOwn;
+  bool get isFetchingMoreFollowing => _fetchingMoreFeed;
+  bool get searchReady => _searchReady;
+  List<CommunityWork> get searchedWorks => [
+    for (final work in _works)
+      if (_searchIds.contains(work.id) && work.isNiarimPublished && !work.isUnavailable)
+        work,
+  ];
+  List<CommunityWork> get latestPageWorks => [
+    for (final work in _works)
+      if (_latestIds.contains(work.id) && work.isNiarimPublished && !work.isUnavailable)
+        work,
+  ];
 
   bool _isSocialLoading = false;
   bool _hasLoadedSocial = false;
@@ -153,13 +197,16 @@ class CommunityService extends ChangeNotifier {
   Future<bool> refreshFromBackend() async {
     final client = api;
     if (client == null) return false;
+    final epoch = ++_latestEpoch;
+    _latestCursor = null;
     _isLoading = true;
     _lastError = null;
     notifyListeners();
     try {
-      final fetched = await client.latestWorks();
-      if (_disposed) return false;
-      _mergeLatest([for (final w in fetched) w.toCommunityWork()]);
+      final page = await client.latestWorksPage(limit: pageSize);
+      if (_disposed || epoch != _latestEpoch) return false;
+      _latestCursor = page.nextCursor;
+      _mergeLatest([for (final w in page.works) w.toCommunityWork()]);
       return true;
     } on NiarimApiException catch (e) {
       if (_disposed) return false;
@@ -171,14 +218,122 @@ class CommunityService extends ChangeNotifier {
     }
   }
 
+  /// Append a real next server page instead of downloading every work.
+  Future<bool> loadMoreLatest() async {
+    final client = api;
+    final cursor = _latestCursor;
+    if (client == null || cursor == null || _fetchingMoreLatest) return false;
+    final epoch = _latestEpoch;
+    _fetchingMoreLatest = true;
+    notifyListeners();
+    try {
+      final page = await client.latestWorksPage(limit: pageSize, cursor: cursor);
+      if (_disposed || epoch != _latestEpoch) return false;
+      _latestCursor = page.nextCursor;
+      for (final apiWork in page.works) {
+        final work = _plazaCopy(apiWork);
+        _latestIds.add(work.id);
+        _upsert(work);
+      }
+      _pruneUnconfirmed();
+      notifyListeners();
+      return true;
+    } on NiarimApiException catch (error) {
+      if (!_disposed && epoch == _latestEpoch) _lastError = error;
+      return false;
+    } finally {
+      _fetchingMoreLatest = false;
+      if (!_disposed) notifyListeners();
+    }
+  }
+
+  Future<bool> refreshSearch({
+    required String query,
+    required bool tagMode,
+    required bool exact,
+  }) async {
+    final client = api;
+    if (client == null) return false;
+    final epoch = ++_searchEpoch;
+    _searchReady = true;
+    _searchQuery = query;
+    _searchTagMode = tagMode;
+    _searchExact = exact;
+    _searchCursor = null;
+    _searchIds = {};
+    notifyListeners();
+    try {
+      final page = await client.latestWorksPage(
+        limit: pageSize,
+        query: query,
+        tagMode: tagMode,
+        exact: exact,
+      );
+      if (_disposed || epoch != _searchEpoch) return false;
+      _searchCursor = page.nextCursor;
+      _searchIds = {for (final w in page.works) w.workId};
+      for (final w in page.works) { _upsert(_plazaCopy(w)); }
+      _pruneUnconfirmed();
+      notifyListeners();
+      return true;
+    } on NiarimApiException catch (error) {
+      if (!_disposed && epoch == _searchEpoch) _lastError = error;
+      return false;
+    }
+  }
+
+  Future<bool> loadMoreSearch() async {
+    final client = api;
+    final cursor = _searchCursor;
+    if (client == null || cursor == null || _fetchingMoreSearch) return false;
+    final epoch = _searchEpoch;
+    _fetchingMoreSearch = true;
+    notifyListeners();
+    try {
+      final page = await client.latestWorksPage(
+        limit: pageSize,
+        cursor: cursor,
+        query: _searchQuery,
+        tagMode: _searchTagMode,
+        exact: _searchExact,
+      );
+      if (_disposed || epoch != _searchEpoch) return false;
+      _searchCursor = page.nextCursor;
+      for (final w in page.works) {
+        _searchIds.add(w.workId);
+        _upsert(_plazaCopy(w));
+      }
+      _pruneUnconfirmed();
+      notifyListeners();
+      return true;
+    } on NiarimApiException catch (error) {
+      if (!_disposed && epoch == _searchEpoch) _lastError = error;
+      return false;
+    } finally {
+      _fetchingMoreSearch = false;
+      if (!_disposed) notifyListeners();
+    }
+  }
+
   /// ランキングを取得する（画面側がタブごとに呼ぶ）。
   /// [api]がnullなら手元のダミーデータから作った一覧を返す。
-  Future<List<CommunityWork>> fetchRanking(RankingPeriod period) async {
+  Future<List<CommunityWork>> fetchRanking(
+    RankingPeriod period, {
+    bool ascending = false,
+    bool sortBookmarks = false,
+  }) async {
     final client = api;
     if (client == null) return discoverableWorks;
+    final epoch = ++_rankingEpoch;
+    _rankingCursor = null;
     try {
-      final page = await client.ranking(period);
-      if (_disposed) return const [];
+      final page = await client.ranking(
+        period,
+        ascending: ascending,
+        sortBookmarks: sortBookmarks,
+      );
+      if (_disposed || epoch != _rankingEpoch) return const [];
+      _rankingCursor = page.nextCursor;
       _lastError = null;
       final ranked = [for (final w in page.works) _plazaCopy(w)];
       // Ranked works join the one store, so their detail, tags and the
@@ -191,13 +346,49 @@ class CommunityService extends ChangeNotifier {
       notifyListeners();
       return rankedWorks;
     } on NiarimApiException catch (e) {
-      if (_disposed) return const [];
+      if (_disposed || epoch != _rankingEpoch) return const [];
       _lastError = e;
       // The previous period's order must not stand in for this one.
       _rankingIds = const [];
       _pruneUnconfirmed();
       notifyListeners();
       return const [];
+    }
+  }
+
+  Future<bool> loadMoreRanking(
+    RankingPeriod period, {
+    bool ascending = false,
+    bool sortBookmarks = false,
+  }) async {
+    final client = api;
+    final cursor = _rankingCursor;
+    if (client == null || cursor == null || _fetchingMoreRanking) return false;
+    final epoch = _rankingEpoch;
+    _fetchingMoreRanking = true;
+    notifyListeners();
+    try {
+      final page = await client.ranking(
+        period,
+        cursor: cursor,
+        ascending: ascending,
+        sortBookmarks: sortBookmarks,
+      );
+      if (_disposed || epoch != _rankingEpoch) return false;
+      _rankingCursor = page.nextCursor;
+      for (final w in page.works) {
+        _rankingIds.add(w.workId);
+        _upsert(_plazaCopy(w));
+      }
+      _pruneUnconfirmed();
+      notifyListeners();
+      return true;
+    } on NiarimApiException catch (error) {
+      if (!_disposed && epoch == _rankingEpoch) _lastError = error;
+      return false;
+    } finally {
+      _fetchingMoreRanking = false;
+      if (!_disposed) notifyListeners();
     }
   }
 
@@ -577,6 +768,7 @@ class CommunityService extends ChangeNotifier {
     if (client == null) return null;
     final revision = _accountRevision;
     final ApiMyWorks page;
+    _ownCursor = null;
     try {
       page = await _awaitInAccount(client.myWorks(), revision);
     } on CommunityAccountChangedException {
@@ -584,6 +776,7 @@ class CommunityService extends ChangeNotifier {
     }
     if (!_isCurrentAccount(revision)) return null;
     setCurrentUserId(page.authorId);
+    _ownCursor = page.nextCursor;
     _ownIds.clear();
     for (final apiWork in page.works) {
       final work = _plazaCopy(apiWork);
@@ -605,6 +798,32 @@ class CommunityService extends ChangeNotifier {
       }
     }
     return page;
+  }
+
+  Future<ApiMyWorks?> loadMoreOwnWorks() async {
+    final client = api;
+    final cursor = _ownCursor;
+    if (client == null || cursor == null || _fetchingMoreOwn) return null;
+    final revision = _accountRevision;
+    final owner = _currentUserId;
+    _fetchingMoreOwn = true;
+    try {
+      final page = await _awaitInAccount(client.myWorks(cursor: cursor), revision);
+      if (!_isCurrentAccount(revision) || page.authorId != owner) return null;
+      _ownCursor = page.nextCursor;
+      for (final apiWork in page.works) {
+        final work = _plazaCopy(apiWork);
+        _ownIds.add(work.id);
+        _upsert(work);
+      }
+      notifyListeners();
+      return page;
+    } on CommunityAccountChangedException {
+      return null;
+    } finally {
+      _fetchingMoreOwn = false;
+      if (!_disposed) notifyListeners();
+    }
   }
 
   /// With a backend and a known poster, takes in the viewer's bookmarks and
@@ -688,9 +907,16 @@ class CommunityService extends ChangeNotifier {
     final me = _currentUserId;
     final authors = {..._favoriteAuthorIds};
     try {
-      final works = await Future.wait([
-        for (final id in authors) client.worksByAuthor(id),
+      final pages = await Future.wait([
+        for (final id in authors) client.worksByAuthorPage(id),
       ]);
+      _feedAuthorCursors
+        ..clear()
+        ..addEntries(
+          authors.toList().asMap().entries.map(
+            (entry) => MapEntry(entry.value, pages[entry.key].nextCursor),
+          ),
+        );
       if (!_isCurrentAccount(revision)) return false;
       final reposters = [...authors, ?me];
       final reposts = await Future.wait([
@@ -698,8 +924,8 @@ class CommunityService extends ChangeNotifier {
       ]);
       if (!_isCurrentAccount(revision)) return false;
       final feed = <String>{};
-      for (final page in works) {
-        for (final apiWork in page) {
+      for (final page in pages) {
+        for (final apiWork in page.works) {
           final work = _plazaCopy(apiWork);
           _upsert(work);
           feed.add(work.id);
@@ -736,6 +962,47 @@ class CommunityService extends ChangeNotifier {
     }
   }
 
+  /// Only the next 25 works of each followed author are requested.
+  /// Repost pages still use the separate repost endpoint.
+  Future<bool> loadMoreFollowingFeed() async {
+    final client = api;
+    if (client == null || _fetchingMoreFeed || !hasMoreFollowing) return false;
+    final revision = _accountRevision;
+    _fetchingMoreFeed = true;
+    notifyListeners();
+    try {
+      final targets = {
+        for (final entry in _feedAuthorCursors.entries)
+          if (entry.value != null && _favoriteAuthorIds.contains(entry.key))
+            entry.key: entry.value!,
+      };
+      if (targets.isEmpty) return false;
+      final pages = await Future.wait([
+        for (final entry in targets.entries)
+          client.worksByAuthorPage(entry.key, cursor: entry.value),
+      ]);
+      if (!_isCurrentAccount(revision)) return false;
+      var index = 0;
+      for (final authorId in targets.keys) {
+        final page = pages[index++];
+        _feedAuthorCursors[authorId] = page.nextCursor;
+        for (final w in page.works) {
+          _feedIds.add(w.workId);
+          _upsert(_plazaCopy(w));
+        }
+      }
+      _pruneUnconfirmed();
+      notifyListeners();
+      return true;
+    } on NiarimApiException catch (error) {
+      if (_isCurrentAccount(revision)) _lastError = error;
+      return false;
+    } finally {
+      _fetchingMoreFeed = false;
+      if (!_disposed) notifyListeners();
+    }
+  }
+
   /// An author's page from the server (the owner's own page includes their
   /// hidden works). The works join the one store; [worksByAuthor] then lists
   /// them through the viewer's filters. Without a backend nothing changes.
@@ -744,12 +1011,13 @@ class CommunityService extends ChangeNotifier {
     if (client == null) return false;
     final revision = _accountRevision;
     try {
-      final fetched = await client.worksByAuthor(
+      final page = await client.worksByAuthorPage(
         authorId,
         asOwner: isOwnAuthor(authorId),
       );
       if (!_isCurrentAccount(revision)) return false;
-      final works = [for (final w in fetched) _plazaCopy(w)];
+      _authorCursors[authorId] = page.nextCursor;
+      final works = [for (final w in page.works) _plazaCopy(w)];
       for (final work in works) {
         _upsert(work);
       }
@@ -763,6 +1031,38 @@ class CommunityService extends ChangeNotifier {
       _lastError = error;
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<bool> loadMoreAuthorWorks(String authorId) async {
+    final client = api;
+    final cursor = _authorCursors[authorId];
+    if (client == null || cursor == null || !_fetchingMoreAuthors.add(authorId)) {
+      return false;
+    }
+    final revision = _accountRevision;
+    try {
+      final page = await client.worksByAuthorPage(
+        authorId,
+        asOwner: isOwnAuthor(authorId),
+        cursor: cursor,
+      );
+      if (!_isCurrentAccount(revision)) return false;
+      _authorCursors[authorId] = page.nextCursor;
+      final ids = _authorPageIds.putIfAbsent(authorId, () => {});
+      for (final w in page.works) {
+        final work = _plazaCopy(w);
+        ids.add(work.id);
+        _upsert(work);
+      }
+      notifyListeners();
+      return true;
+    } on NiarimApiException catch (error) {
+      if (_isCurrentAccount(revision)) _lastError = error;
+      return false;
+    } finally {
+      _fetchingMoreAuthors.remove(authorId);
+      if (!_disposed) notifyListeners();
     }
   }
 
@@ -789,6 +1089,13 @@ class CommunityService extends ChangeNotifier {
       _reposts.clear();
       _feedIds = {};
       _authorPageIds.clear();
+      _authorCursors.clear();
+      _feedAuthorCursors.clear();
+      _ownCursor = null;
+      _searchEpoch++;
+      _searchIds.clear();
+      _searchCursor = null;
+      _searchReady = false;
       _works.removeWhere((work) => !work.isNiarimPublished);
     }
     _pruneUnconfirmed();
@@ -847,6 +1154,7 @@ class CommunityService extends ChangeNotifier {
     final confirmed = {
       ..._latestIds,
       ..._rankingIds,
+      ..._searchIds,
       ..._ownIds,
       ..._feedIds,
       ..._bookmarkWorkIds,
@@ -1278,7 +1586,8 @@ class CommunityService extends ChangeNotifier {
   List<FavoriteFeedEntry> get favoriteAuthorFeed {
     final byWork = <String, FavoriteFeedEntry>{};
     for (final w in discoverableWorks) {
-      if (_favoriteAuthorIds.contains(w.authorId)) {
+      if (_favoriteAuthorIds.contains(w.authorId) &&
+          (api == null || _feedIds.contains(w.id))) {
         byWork[w.id] = FavoriteFeedEntry(work: w, feedTime: w.postedAt);
       }
     }
