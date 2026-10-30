@@ -1631,6 +1631,7 @@ class CommunityService extends ChangeNotifier {
     final byWork = <String, FavoriteFeedEntry>{};
     for (final w in discoverableWorks) {
       if (_favoriteAuthorIds.contains(w.authorId) &&
+          isDiscoverableForViewer(w) &&
           (api == null || _feedIds.contains(w.id))) {
         byWork[w.id] = FavoriteFeedEntry(work: w, feedTime: w.postedAt);
       }
