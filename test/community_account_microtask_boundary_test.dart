@@ -21,7 +21,7 @@ class QueuedAccountApi extends CommunityApi {
   final void Function() switchAccount;
 
   @override
-  Future<ApiMyWorks> myWorks() {
+  Future<ApiMyWorks> myWorks({String? cursor}) {
     switchAccount();
     return Future.value(
       ApiMyWorks.fromJson({

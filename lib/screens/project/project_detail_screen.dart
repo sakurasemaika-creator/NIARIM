@@ -49,13 +49,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   // プレビューと再生コントロールのみを全画面表示する
   // （タイムラインモードのプレビュー全画面化と同等の機能）。
   bool _isPreviewFullscreen = false;
-  final _fullscreenStatusScroll = ScrollController();
   final _fullscreenPageScroll = ScrollController();
 
   @override
   void dispose() {
     _timer?.cancel();
-    _fullscreenStatusScroll.dispose();
     _fullscreenPageScroll.dispose();
     _previewImage?.dispose();
     super.dispose();
@@ -544,6 +542,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         ? 0
         : _frameIndex.clamp(0, totalFrames - 1) + 1;
     return Stack(
+      key: const Key('projectDetailPreviewArea'),
       children: [
         Positioned.fill(child: image),
         Positioned(
@@ -557,7 +556,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: Text(
-                '${currentFrame}/${totalFrames}',
+                '$currentFrame/$totalFrames',
                 key: const Key('projectDetailFrameCounter'),
                 style: TextStyle(
                   color: theme.menuTextColor,

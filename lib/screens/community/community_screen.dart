@@ -1295,11 +1295,14 @@ class _CommunityScreenState extends State<CommunityScreen>
                                     color: scheme.onSurface,
                                   ),
                                 )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      l10n.creativePanelSearchModeKeyword,
+                              : FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        l10n.creativePanelSearchModeKeyword,
                                       maxLines: 1,
                                       style: TextStyle(
                                         fontSize: 11,
@@ -1333,6 +1336,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                                     ),
                                   ],
                                 ),
+                              ),
                         ),
                       ),
                     ),

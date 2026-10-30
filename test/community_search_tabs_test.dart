@@ -39,9 +39,9 @@ void main() {
     final toggle = find.byKey(const Key('communitySearchModeToggle'));
     expect(toggle, findsOneWidget);
     expect(
-      find.descendant(of: toggle, matching: find.byIcon(Icons.search)),
+      find.byKey(const Key('communitySearchModePill')),
       findsOneWidget,
-      reason: 'Tag mode offers keyword search as next mode',
+      reason: 'Tag mode is selectable immediately beside Search',
     );
     expect(find.byType(SegmentedButton<bool>), findsNothing);
 
@@ -64,7 +64,7 @@ void main() {
     await tester.tap(toggle);
     await tester.pumpAndSettle();
     expect(
-      find.descendant(of: toggle, matching: find.byIcon(Icons.sell_outlined)),
+      find.byKey(const Key('communitySearchModePill')),
       findsOneWidget,
     );
     expect(find.byType(SegmentedButton<bool>), findsNothing);
@@ -309,7 +309,12 @@ void main() {
         final search = tester.getRect(
           find.byKey(const Key('communitySearchButton')),
         );
+        final mode = tester.getRect(
+          find.byKey(const Key('communitySearchModePill')),
+        );
         final scope = '${locale.toLanguageTag()} width $width';
+        expect(mode.right, lessThanOrEqualTo(search.left), reason: scope);
+        expect(mode.left, greaterThanOrEqualTo(size.right - 1), reason: scope);
         expect(
           size.left,
           greaterThanOrEqualTo(sorter.right - 1),
