@@ -340,18 +340,28 @@ class CommunityWorkCard extends StatelessWidget {
                       ),
                       if (!obscured) const SizedBox(height: 4),
                       if (!obscured)
-                      Row(
+                      LayoutBuilder(
+                        builder: (context, metrics) {
+                          // At 120dp tiles, preserve readable counts by
+                          // suppressing redundant glyphs, never shrinking
+                          // the bookmark's minimum 48dp hit target.
+                          final dense = metrics.maxWidth < 150;
+                          return Row(
                         children: [
-                          Icon(
-                            Icons.play_arrow_rounded,
-                            size: 13,
-                            color: detailColor,
-                          ),
-                          const SizedBox(width: 2),
+                          if (!dense) ...[
+                            Icon(
+                              Icons.play_arrow_rounded,
+                              size: 13,
+                              color: detailColor,
+                            ),
+                            const SizedBox(width: 2),
+                          ],
                           count(l10n.communityRankingSortViews, views),
-                          const SizedBox(width: 5),
-                          Icon(Icons.bookmarks_outlined, size: 13, color: detailColor),
-                          const SizedBox(width: 2),
+                          SizedBox(width: dense ? 6 : 5),
+                          if (!dense) ...[
+                            Icon(Icons.bookmarks_outlined, size: 13, color: detailColor),
+                            const SizedBox(width: 2),
+                          ],
                           count(l10n.communityRankingSortBookmarks, bookmarks),
                           const SizedBox(width: 2),
                           // Keep the bookmark action alongside the two counts;
@@ -384,6 +394,8 @@ class CommunityWorkCard extends StatelessWidget {
                             ),
                           ),
                         ],
+                          );
+                        },
                       ),
                     ],
                   ),

@@ -99,7 +99,16 @@ void main() {
                 final scope =
                     '${locale.toLanguageTag()} $variant $width scale$scale';
                 expect(tester.takeException(), isNull, reason: scope);
-                final bookmark = find.byType(IconButton);
+                if (variant == 'private') {
+                  expect(find.byType(IconButton), findsNothing, reason: scope);
+                  expect(
+                    find.textContaining('deleted', findRichText: true),
+                    findsNothing,
+                    reason: 'Unavailable placeholders are locale-aware',
+                  );
+                  continue;
+                }
+                final bookmark = find.byKey(const ValueKey('community-bookmark-fixture'));
                 await tester.ensureVisible(bookmark);
                 await tester.pump();
                 expect(bookmark.hitTestable(), findsOneWidget, reason: scope);
@@ -155,4 +164,68 @@ void main() {
     },
     timeout: const Timeout(Duration(minutes: 10)),
   );
+
+  testWidgets('thumbnail uses the right-side menu and a bookmark by counts',
+      (tester) async {
+    const work = CommunityWork(
+      id: 'layout-sample',
+      title: 'A sample',
+      authorId: 'author',
+      authorName: 'Artist',
+      viewCount: 1234,
+      likeCount: 0,
+      bookmarkCount: 55,
+      postedAt: DateTime.utc(2026, 10, 29),
+      durationSeconds: 90,
+      thumbnailColorIndex: 2,
+    );
+    var marks = 0;
+    var hidden = 0;
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('ja'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: Center(
+          child: SizedBox(
+            width: 180,
+            child: CommunityWorkCard(
+              work: work,
+              isBookmarked: false,
+              onTap: () {},
+              onBookmarkToggle: () => marks++,
+              onMuteToggle: () => hidden++,
+            ),
+          ),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final menu = find.byKey(const ValueKey('communityMuteMenu-layout-sample'));
+    final bookmark = find.byKey(const ValueKey('community-bookmark-layout-sample'));
+    expect(menu, findsOneWidget);
+    expect(bookmark, findsOneWidget);
+    final thumbnail = tester.getRect(find.byType(AspectRatio));
+    expect(tester.getRect(menu).right, greaterThan(thumbnail.center.dx));
+    expect(tester.getRect(menu).top, lessThan(thumbnail.bottom));
+    expect(tester.getRect(bookmark).top,
+        greaterThanOrEqualTo(thumbnail.bottom));
+    expect(
+      find.descendant(
+        of: find.byType(AspectRatio),
+        matching: find.byIcon(Icons.play_arrow_rounded),
+      ),
+      findsNothing,
+      reason: 'The central play symbol must not cover the artwork',
+    );
+    await tester.tap(bookmark);
+    await tester.pump();
+    expect(marks, 1);
+    await tester.tap(menu);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('この作品を非表示にする'));
+    await tester.pumpAndSettle();
+    expect(hidden, 1);
+    expect(tester.takeException(), isNull);
+  });
 }
