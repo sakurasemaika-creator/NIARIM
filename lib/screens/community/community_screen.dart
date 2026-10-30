@@ -1837,7 +1837,16 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.communityMutedAuthors),
-        content: SizedBox(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              CommunityPlazaLabels.of(dialogContext).mutePrivacyNotice,
+              style: Theme.of(dialogContext).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            Flexible(child: SizedBox(
           width: 420,
           child: Consumer<CommunityService>(
             builder: (_, service, _) {
@@ -1883,7 +1892,8 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                 },
               );
             },
-          ),
+          )),
+          ],
         ),
         actions: [
           TextButton(
@@ -2093,12 +2103,25 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               shape: const Border(),
               collapsedShape: const Border(),
               initiallyExpanded: false,
-              title: Text(
-                l10n.communityMutedAuthors,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.communityMutedAuthors,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    CommunityPlazaLabels.of(context).mutePrivacyNotice,
+                    key: const Key('communityMutePrivacyNoticeSettings'),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ),
               children: [
                 Consumer<CommunityService>(
