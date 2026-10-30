@@ -215,10 +215,13 @@ void main() {
     expect(menu, findsOneWidget);
     expect(bookmark, findsOneWidget);
     final thumbnail = tester.getRect(find.byType(AspectRatio));
-    expect(tester.getRect(menu).right, greaterThan(thumbnail.center.dx));
-    expect(tester.getRect(menu).top, lessThan(thumbnail.bottom));
+    expect(tester.getRect(menu).top,
+        greaterThanOrEqualTo(thumbnail.bottom));
     expect(tester.getRect(bookmark).top,
         greaterThanOrEqualTo(thumbnail.bottom));
+    expect(tester.getRect(menu).left,
+        greaterThanOrEqualTo(tester.getRect(bookmark).right - 1),
+        reason: 'Menu moves immediately to the bookmark right side');
     // 48dp is twice IconButton's previous default 24dp icon.
     final action = tester.widget<IconButton>(bookmark);
     expect(action.iconSize, 48);

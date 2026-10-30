@@ -109,7 +109,6 @@ class CommunityRankBadge extends StatelessWidget {
                   color: ink,
                   fontSize: small ? 16 : 19,
                   fontWeight: FontWeight.w900,
-                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
             )
@@ -345,7 +344,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
   }
 
   Widget _horizontal(BuildContext context, double width) {
-    final thumbnailWidth = (width * .35).clamp(106.0, 230.0);
+    final thumbnailWidth = (width * .35).clamp(106.0, 230.0).toDouble();
     final actionsOnTop = width >= 590;
     return SizedBox(
       key: const Key('communityRankingHorizontalCard'),
@@ -354,7 +353,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
         children: [
           SizedBox(
             width: thumbnailWidth,
-            height: math.max(110, thumbnailWidth * 9 / 16),
+            height: math.max(110.0, thumbnailWidth * 9 / 16),
             child: _thumbnail(context),
           ),
           const SizedBox(width: 10),
