@@ -84,8 +84,21 @@ void main() {
   };
 
   void expectHiddenEverywhere(CommunityService s, String id) {
+    // The work stays in exactly those feeds where it belonged before being
+    // muted. It must never create entries in unrelated author/other feeds.
+    const memberships = <String, Set<String>>{
+      'ai': {'new / ranking', 'author_b page', 'bookmarks', 'reposts'},
+      'gore': {'new / ranking', 'author_b page', 'bookmarks', 'reposts'},
+      'spoiler': {'new / ranking', 'author_a page', 'bookmarks', 'following'},
+      'plain': {'new / ranking', 'author_a page', 'bookmarks', 'following'},
+    };
+    final expected = memberships[id]!;
     for (final MapEntry(:key, :value) in surfaces(s).entries) {
-      expect(value, contains(id), reason: '$id lost its masked slot on $key');
+      if (expected.contains(key)) {
+        expect(value, contains(id), reason: '$id lost its masked slot on $key');
+      } else {
+        expect(value, isNot(contains(id)), reason: '$id leaked into $key');
+      }
     }
     expect(s.isWorkMuted(s.byId(id)!), isTrue, reason: 'masked card');
     expect(s.isDiscoverableForViewer(s.byId(id)!), isFalse, reason: 'detail');
