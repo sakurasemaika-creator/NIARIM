@@ -20,6 +20,7 @@ class ApiWork {
   final List<String> tags;
   final Set<String> lockedTags;
   final bool isNiarimPublished;
+  final bool isUnavailable;
   final bool containsGenerativeAiImageOrVideo;
 
   /// Owner-list responses include the current YouTube privacy state so the app
@@ -52,6 +53,7 @@ class ApiWork {
     required this.tags,
     required this.lockedTags,
     required this.isNiarimPublished,
+    this.isUnavailable = false,
     required this.containsGenerativeAiImageOrVideo,
     this.youtubePrivacyStatus,
     this.projectFps = 0,
@@ -80,6 +82,7 @@ class ApiWork {
     tags: _stringList(json['tags']),
     lockedTags: _stringList(json['lockedTags']).toSet(),
     isNiarimPublished: json['isNiarimPublished'] != false,
+    isUnavailable: json['isUnavailable'] == true,
     containsGenerativeAiImageOrVideo:
         json['containsGenerativeAiImageOrVideo'] == true,
     youtubePrivacyStatus: json['youtubePrivacyStatus'] as String?,
@@ -95,7 +98,9 @@ class ApiWork {
       ? projectFrameCount ~/ projectFps
       : 0;
 
-  CommunityWork toCommunityWork() => CommunityWork(
+  CommunityWork toCommunityWork() => isUnavailable
+      ? CommunityWork.unavailable(workId)
+      : CommunityWork(
     id: workId,
     title: title,
     authorId: authorId,

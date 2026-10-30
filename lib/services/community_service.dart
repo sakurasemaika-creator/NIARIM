@@ -168,7 +168,7 @@ class CommunityService extends ChangeNotifier {
       final page = await client.ranking(period);
       if (_disposed) return const [];
       _lastError = null;
-      final ranked = [for (final w in page.works) w.toCommunityWork()];
+      final ranked = [for (final w in page.works) _plazaCopy(w)];
       // Ranked works join the one store, so their detail, tags and the
       // viewer's filters work on the same copy as every other surface.
       for (final work in ranked) {
@@ -446,8 +446,7 @@ class CommunityService extends ChangeNotifier {
   /// Their own works remain visible even when hidden from other viewers.
   List<CommunityWork> get bookmarkedWorksForViewer => [
     for (final id in bookmarkedIdsNewestFirst)
-      if (byId(id) case final work? when work.isNiarimPublished || isOwnWork(work))
-        work,
+      if (byId(id) case final work?) work,
   ];
 
   List<String> get bookmarkedIdsNewestFirst =>
@@ -459,13 +458,13 @@ class CommunityService extends ChangeNotifier {
   /// 強制停止する設計だが、ダミーデータにはYouTube側状態の概念が無いため
   /// ここではNIARIM側設定のみを対象にする）。
   List<CommunityWork> get discoverableWorks => _works
-      .where((w) => w.isNiarimPublished)
+      .where((w) => w.isNiarimPublished && !w.isUnavailable)
       .toList();
 
   /// Whether a work may appear in public discovery surfaces for the
   /// current viewer. Owner-only management screens intentionally bypass this.
   bool isDiscoverableForViewer(CommunityWork work) =>
-      work.isNiarimPublished && !isWorkMuted(work);
+      !work.isUnavailable && work.isNiarimPublished && !isWorkMuted(work);
 
   CommunityWork? byId(String workId) {
     final index = _indexOf(workId);
@@ -511,7 +510,7 @@ class CommunityService extends ChangeNotifier {
   /// filters allow.
   List<CommunityWork> get rankedWorks => [
     for (final id in _rankingIds)
-      if (byId(id) case final work? when work.isNiarimPublished) work,
+      if (byId(id) case final work?) work,
   ];
 
   void setCurrentUserId(String? id) {
@@ -788,6 +787,7 @@ class CommunityService extends ChangeNotifier {
   /// replies include such works).
   static CommunityWork _plazaCopy(ApiWork work) {
     final converted = work.toCommunityWork();
+    if (converted.isUnavailable) return converted;
     final youtube = work.youtubePrivacyStatus;
     return youtube == 'private' || youtube == 'deleted'
         ? converted.copyWith(isNiarimPublished: false)
@@ -917,11 +917,16 @@ class CommunityService extends ChangeNotifier {
     if (!_isCurrentAccount(revision)) {
       throw const CommunityAccountChangedException();
     }
-    _works.removeWhere((work) => work.id == workId);
+    // Keep only a redacted slot in views which must preserve old positions.
+    if (_rankingIds.contains(workId) || _bookmarkedIds.contains(workId)) {
+      _upsert(CommunityWork.unavailable(workId));
+    } else {
+      _works.removeWhere((work) => work.id == workId);
+    }
     _ownIds.remove(workId);
     _latestIds.remove(workId);
-    _bookmarkWorkIds.remove(workId);
-    _bookmarkedIds.remove(workId);
+    // The user's bookmark record and ranking slot intentionally remain.
+    // The backend tombstone prevents this deleted YouTube ID being republished.
     notifyListeners();
   }
 
@@ -1421,7 +1426,7 @@ class CommunityService extends ChangeNotifier {
         .where(
           (w) =>
               ids.contains(w.id) &&
-              ((isSelf && isOwnWork(w)) || w.isNiarimPublished),
+              (w.isUnavailable || (isSelf && isOwnWork(w)) || w.isNiarimPublished),
         )
         .toList();
     list.sort((a, b) => b.postedAt.compareTo(a.postedAt));

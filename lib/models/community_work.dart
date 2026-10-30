@@ -42,6 +42,8 @@ class CommunityWork {
   final Set<String> lockedTags;
   // 作品広場独自の公開/非公開設定。
   final bool isNiarimPublished;
+  /// True for a redacted entry kept only in bookmarks/ranking.
+  final bool isUnavailable;
   // ショート動画（縦長）かどうか。
   final bool isShort;
 
@@ -68,14 +70,32 @@ class CommunityWork {
     this.tags = const [],
     this.lockedTags = const {},
     this.isNiarimPublished = true,
+    this.isUnavailable = false,
     this.isShort = false,
     this.containsGenerativeAiImageOrVideo = false,
   });
+
+  /// A deliberately metadata-free stub: no private title, tags or author leak.
+  factory CommunityWork.unavailable(String id) => CommunityWork(
+    id: id,
+    title: '',
+    authorId: '',
+    authorName: '',
+    viewCount: 0,
+    likeCount: 0,
+    bookmarkCount: 0,
+    postedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+    durationSeconds: 0,
+    thumbnailColorIndex: 0,
+    isNiarimPublished: false,
+    isUnavailable: true,
+  );
 
   CommunityWork copyWith({
     List<String>? tags,
     Set<String>? lockedTags,
     bool? isNiarimPublished,
+    bool? isUnavailable,
     bool? isShort,
     bool? containsGenerativeAiImageOrVideo,
     int? projectFps,
@@ -105,6 +125,7 @@ class CommunityWork {
       tags: tags ?? this.tags,
       lockedTags: lockedTags ?? this.lockedTags,
       isNiarimPublished: isNiarimPublished ?? this.isNiarimPublished,
+      isUnavailable: isUnavailable ?? this.isUnavailable,
       isShort: isShort ?? this.isShort,
       containsGenerativeAiImageOrVideo:
           containsGenerativeAiImageOrVideo ??

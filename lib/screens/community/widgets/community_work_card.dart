@@ -42,6 +42,7 @@ class CommunityWorkCard extends StatelessWidget {
   final int? rankNumber;
   final String? repostedByAuthorName;
   final bool isMuted;
+  final bool isUnavailable;
   final VoidCallback? onMuteToggle;
 
   const CommunityWorkCard({
@@ -54,6 +55,7 @@ class CommunityWorkCard extends StatelessWidget {
     this.rankNumber,
     this.repostedByAuthorName,
     this.isMuted = false,
+    this.isUnavailable = false,
     this.onMuteToggle,
   });
 
@@ -65,6 +67,7 @@ class CommunityWorkCard extends StatelessWidget {
     final cardColor = theme.cardTheme.color ?? scheme.surfaceContainerLow;
     final textColor = scheme.onSurface;
     final detailColor = scheme.onSurfaceVariant;
+    final obscured = isUnavailable || isMuted;
     final author = work.authorName.trim().isEmpty
         ? l10n.communityCreatorLabel
         : work.authorName;
@@ -133,7 +136,7 @@ class CommunityWorkCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
           ),
           child: InkWell(
-            onTap: isMuted ? null : onTap,
+            onTap: obscured ? null : onTap,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,7 +151,7 @@ class CommunityWorkCard extends StatelessWidget {
                       );
                       return Stack(
                         children: [
-                          if (isMuted)
+                          if (obscured)
                             Positioned.fill(
                               child: ColoredBox(
                                 color: scheme.surfaceContainerHighest,
@@ -161,7 +164,7 @@ class CommunityWorkCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          if (!isMuted)
+                          if (!obscured)
                           Positioned.fill(
                             child: DecoratedBox(
                               decoration: BoxDecoration(
@@ -193,7 +196,7 @@ class CommunityWorkCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          if (!work.isNiarimPublished && !isMuted)
+                          if (!work.isNiarimPublished && !obscured)
                             Positioned(
                               left: 6,
                               top: 6,
@@ -219,7 +222,7 @@ class CommunityWorkCard extends StatelessWidget {
                                 child: badge('#$rankNumber', fontSize: 16),
                               ),
                             ),
-                          if (!isMuted)
+                          if (!obscured)
                           Positioned(
                             right: 6,
                             bottom: 6,
@@ -232,7 +235,7 @@ class CommunityWorkCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          if (work.isShort && !isMuted)
+                          if (work.isShort && !obscured)
                             Positioned(
                               left: 6,
                               bottom: 6,
@@ -243,7 +246,7 @@ class CommunityWorkCard extends StatelessWidget {
                                 child: badge(l10n.communityShortsBadge),
                               ),
                             ),
-                          if (!isMuted)
+                          if (!obscured)
                           Positioned(
                             right: 4,
                             top: 4,
@@ -281,7 +284,7 @@ class CommunityWorkCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          if (onMuteToggle != null)
+                          if (onMuteToggle != null && !isUnavailable)
                             Positioned(
                               left: 4,
                               top: 4,
@@ -317,7 +320,7 @@ class CommunityWorkCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (repostedByAuthorName != null && !isMuted) ...[
+                      if (repostedByAuthorName != null && !obscured) ...[
                         Row(
                           children: [
                             Icon(Icons.repeat, size: 12, color: detailColor),
@@ -341,7 +344,9 @@ class CommunityWorkCard extends StatelessWidget {
                         const SizedBox(height: 3),
                       ],
                       Text(
-                        isMuted
+                        isUnavailable
+                            ? CommunityPlazaLabels.of(context).unavailablePlaceholder
+                            : isMuted
                             ? CommunityPlazaLabels.of(context).mutedPlaceholder
                             : work.title,
                         maxLines: 1,
@@ -354,8 +359,8 @@ class CommunityWorkCard extends StatelessWidget {
                           color: textColor,
                         ),
                       ),
-                      if (!isMuted) const SizedBox(height: 4),
-                      if (!isMuted)
+                      if (!obscured) const SizedBox(height: 4),
+                      if (!obscured)
                       Semantics(
                         button: onAuthorTap != null,
                         label: author,
@@ -386,8 +391,8 @@ class CommunityWorkCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (!isMuted) const SizedBox(height: 4),
-                      if (!isMuted)
+                      if (!obscured) const SizedBox(height: 4),
+                      if (!obscured)
                       Row(
                         children: [
                           Icon(
@@ -502,8 +507,11 @@ class CommunityWorkGrid extends StatelessWidget {
                         : () => onTapAuthor!(work),
                     rankNumber: rankNumbers?[work.id],
                     repostedByAuthorName: repostedByNames?[work.id],
-                    isMuted: service.isWorkMuted(work),
-                    onMuteToggle: () => _toggleMute(context, work),
+                    isMuted: !work.isUnavailable && service.isWorkMuted(work),
+                    isUnavailable: work.isUnavailable || !work.isNiarimPublished,
+                    onMuteToggle: work.isUnavailable || !work.isNiarimPublished
+                        ? null
+                        : () => _toggleMute(context, work),
                   ),
                 ),
             ],
