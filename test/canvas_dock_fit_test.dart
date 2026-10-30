@@ -10,9 +10,11 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
 import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -179,4 +181,72 @@ void main() {
       }
     });
   }
+
+  // 向きが変わってPC/DeXモードからスマホ表示へ移ったら、ドックのパネルは
+  // 閉じる（開いたままだと浮かぶパネルが重なってキャンバスを覆った）。
+  // PC/DeXモードへ戻ったら同じパネルがまた開く。
+  testWidgets('docked panels close on the phone layout and come back', (
+    tester,
+  ) async {
+    tempDir = Directory.systemTemp.createTempSync('niarim_dock_switch_');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathChannel, (call) async => tempDir.path);
+    appRouter.go('/home');
+    SharedPreferences.setMockInitialValues({
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      'first_launch': false,
+      'language': 'ja',
+      'force_pc_mode': 1,
+    });
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await loadAppFonts(tester);
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: rootKey,
+        child: MultiProvider(providers: providers, child: const NiarimApp()),
+      ),
+    );
+    await settle(tester, 4);
+    final home = tester.element(find.byType(HomeScreen));
+    final service = home.read<ProjectService>();
+    final settings = home.read<SettingsService>();
+    late String id;
+    await tester.runAsync(() async {
+      final project = await service.createProject(
+        name: 'ドック',
+        fps: 2,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 160,
+        exportHeight: 90,
+      );
+      id = project.id;
+    });
+    appRouter.push('/canvas/$id');
+    await settle(tester, 12);
+
+    void expectDocked(Matcher matcher) {
+      expect(find.byType(BrushPanel), matcher);
+      expect(find.byType(ColorPickerPanel), matcher);
+      expect(find.byType(LayerPanel), matcher);
+    }
+
+    expectDocked(findsOneWidget);
+    await tester.runAsync(() => settings.setForcePcMode(false));
+    tester.view.physicalSize = const Size(800, 1280);
+    await settle(tester, 4);
+    await capture(tester, 'switch_phone');
+    expectDocked(findsNothing);
+    expect(tester.takeException(), isNull);
+
+    await tester.runAsync(() => settings.setForcePcMode(true));
+    tester.view.physicalSize = const Size(1280, 800);
+    await settle(tester, 4);
+    expectDocked(findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

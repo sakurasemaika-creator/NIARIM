@@ -1007,6 +1007,40 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // かどうか（1セッション1回のみ。ユーザーが手動で閉じた後に毎回また
   // 開き直されると邪魔になるため）。
   bool _autoOpenedDesktopPanels = false;
+  // 直前の表示がPC/DeXモードだったか（向きが変わって切り替わったかを見る）。
+  bool? _lastLayoutWasWide;
+  // スマホ表示へ移るときに閉じたドックのパネル（PC/DeXモードへ戻ったら開く）。
+  Set<CanvasDockPanel>? _panelsBeforePhoneLayout;
+
+  Set<CanvasDockPanel> _openDockPanels() => {
+    if (_showBrushPanel) CanvasDockPanel.brush,
+    if (_showColorPicker) CanvasDockPanel.colorPicker,
+    if (_showLayerPanel) CanvasDockPanel.layer,
+    if (_showTonePanel) CanvasDockPanel.tone,
+    if (_showStampPanel) CanvasDockPanel.stamp,
+    if (_showPenSubToolPanel) CanvasDockPanel.penSubTool,
+    if (_showOnionSkinPanel) CanvasDockPanel.onionSkin,
+    if (_showRulerPanel) CanvasDockPanel.ruler,
+    if (_showFilterPanel) CanvasDockPanel.filter,
+    if (_showQuickToolPanel) CanvasDockPanel.quickTool,
+    if (_showColorAdjustPanel) CanvasDockPanel.colorAdjust,
+    if (_showCanvasPreviewPanel) CanvasDockPanel.canvasPreview,
+  };
+
+  void _setDockPanels(Set<CanvasDockPanel> panels) {
+    _showBrushPanel = panels.contains(CanvasDockPanel.brush);
+    _showColorPicker = panels.contains(CanvasDockPanel.colorPicker);
+    _showLayerPanel = panels.contains(CanvasDockPanel.layer);
+    _showTonePanel = panels.contains(CanvasDockPanel.tone);
+    _showStampPanel = panels.contains(CanvasDockPanel.stamp);
+    _showPenSubToolPanel = panels.contains(CanvasDockPanel.penSubTool);
+    _showOnionSkinPanel = panels.contains(CanvasDockPanel.onionSkin);
+    _showRulerPanel = panels.contains(CanvasDockPanel.ruler);
+    _showFilterPanel = panels.contains(CanvasDockPanel.filter);
+    _showQuickToolPanel = panels.contains(CanvasDockPanel.quickTool);
+    _showColorAdjustPanel = panels.contains(CanvasDockPanel.colorAdjust);
+    _showCanvasPreviewPanel = panels.contains(CanvasDockPanel.canvasPreview);
+  }
 
   @override
   void initState() {
@@ -1039,23 +1073,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // 閉じた後にまた自動で開き直されると邪魔になるため、手動で閉じた後は
     // 再度自動では開かない。いずれも独立して閉じられる
     // （_closeAllOverlayPanelsもPC/DeXモードではこれらを対象外にしている）。
-    if (!_autoOpenedDesktopPanels && isWideScreen(context)) {
+    final wide = isWideScreen(context);
+    if (!_autoOpenedDesktopPanels && wide) {
       _autoOpenedDesktopPanels = true;
-      final defaults = context.read<SettingsService>().defaultDockedPanels;
-      _showBrushPanel = defaults.contains(CanvasDockPanel.brush);
-      _showColorPicker = defaults.contains(CanvasDockPanel.colorPicker);
-      _showLayerPanel = defaults.contains(CanvasDockPanel.layer);
-      _showTonePanel = defaults.contains(CanvasDockPanel.tone);
-      _showStampPanel = defaults.contains(CanvasDockPanel.stamp);
-      _showPenSubToolPanel = defaults.contains(CanvasDockPanel.penSubTool);
-      _showOnionSkinPanel = defaults.contains(CanvasDockPanel.onionSkin);
-      _showRulerPanel = defaults.contains(CanvasDockPanel.ruler);
-      _showFilterPanel = defaults.contains(CanvasDockPanel.filter);
-      _showQuickToolPanel = defaults.contains(CanvasDockPanel.quickTool);
-      _showColorAdjustPanel = defaults.contains(CanvasDockPanel.colorAdjust);
-      _showCanvasPreviewPanel = defaults.contains(
-        CanvasDockPanel.canvasPreview,
-      );
+      _setDockPanels(context.read<SettingsService>().defaultDockedPanels);
+    }
+    // 自動判定で画面の向きが変わり、PC/DeXモードとスマホ表示が入れ替わった
+    // とき：スマホ表示へ移るときはドックのパネルを閉じ（スマホは全パネルを
+    // 閉じた状態が基本。開いたままだと浮かぶパネルが重なってキャンバスを
+    // 覆った）、PC/DeXモードへ戻ったら同じパネルをまた開く。
+    final wasWide = _lastLayoutWasWide;
+    _lastLayoutWasWide = wide;
+    if (wasWide == true && !wide) {
+      _panelsBeforePhoneLayout = _openDockPanels();
+      _setDockPanels(const {});
+    } else if (wasWide == false && wide && _panelsBeforePhoneLayout != null) {
+      _setDockPanels(_panelsBeforePhoneLayout!);
+      _panelsBeforePhoneLayout = null;
     }
     _projectServiceForDispose = context.read<ProjectService>();
     // PerformanceServiceをlistenerで監視（依存差し替えに対応）
