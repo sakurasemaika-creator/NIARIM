@@ -370,22 +370,20 @@ class CommunityRankingWorkCard extends StatelessWidget {
                       CommunityRankBadge(rank: rank, small: width < 400),
                       const SizedBox(width: 4),
                       Expanded(child: _title(context)),
-                      if (actionsOnTop) _bookmark(context),
-                      if (actionsOnTop && onVisibilityToggle != null)
-                        _menu(context),
+                      if (actionsOnTop && !_obscured)
+                        _bookmark(context),
+                      if (onVisibilityToggle != null) _menu(context),
                     ],
                   ),
                   const SizedBox(height: 2),
-                  if (!_obscured) _author(context),
-                  if (!_obscured) _counts(context),
-                  if (!actionsOnTop)
+                  if (!_obscured)
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        _bookmark(context),
-                        if (onVisibilityToggle != null) _menu(context),
+                        Expanded(child: _author(context)),
+                        if (!actionsOnTop) _bookmark(context),
                       ],
                     ),
+                  if (!_obscured) _counts(context),
                 ],
               ),
             ),
