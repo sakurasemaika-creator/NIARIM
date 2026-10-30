@@ -32,7 +32,7 @@ export async function getPlaybackStatus(workId: string) {
   // A stale cached 'public' flag is insufficient: check YouTube on opening,
   // so removals between ranking fetches do not lead into a player error.
   const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) return ok({ status: "unknown" });
+  if (!apiKey || apiKey === "REPLACE_ME") return ok({ status: "unknown" });
   try {
     const url = new URL("https://www.googleapis.com/youtube/v3/videos");
     url.searchParams.set("part", "status");

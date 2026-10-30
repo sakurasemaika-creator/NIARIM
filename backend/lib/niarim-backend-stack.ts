@@ -195,7 +195,13 @@ export class NiarimBackendStack extends Stack {
       // 公開Function URLへの急増リクエストがLambda/DynamoDBの費用と
       // 同時実行枠を無制限に消費しないよう上限を設ける（最大約100 RPS）。
       reservedConcurrentExecutions: 10,
-      environment: commonEnvironment,
+      environment: {
+        ...commonEnvironment,
+        // Playback preflight reads the public YouTube video status server-side.
+        // Never ship this API key in the Flutter binary or an API response.
+        YOUTUBE_API_KEY:
+          this.node.tryGetContext("youtubeApiKey") ?? "REPLACE_ME",
+      },
       bundling: { minify: true, sourceMap: false },
     });
     table.grantReadWriteData(apiFunction);
