@@ -7036,8 +7036,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
       // 「保存」導線（三点メニュー等）と同じentry=timelineを指定し、
       // セーブツリー画面から戻ってきたタイミングで、続けてプロジェクト
       // 一覧へ遷移する。
+      final saves = context.read<SaveTreeService>();
+      final before = saves.latestSaveOf(widget.projectId);
       await context.push('/save-tree/${widget.projectId}?entry=timeline');
       if (!mounted) return;
+      // 保存せずに戻った（取り消した・保存に失敗した）ときは一覧へ移らず、
+      // タイムラインに残る。
+      if (saves.latestSaveOf(widget.projectId) == before) return;
     }
     if (mounted) context.go('/home');
   }

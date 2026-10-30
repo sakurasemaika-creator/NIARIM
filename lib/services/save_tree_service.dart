@@ -41,6 +41,16 @@ class SaveTreeService extends ChangeNotifier {
   List<SaveNode> getNodes(String projectId) =>
       List.unmodifiable(_nodesByProject[projectId] ?? []);
 
+  /// この作品の保存のうち一番新しいものの時刻（無ければnull）。保存の画面へ
+  /// 移る前と戻った後で比べると、その間に保存したかが分かる。
+  DateTime? latestSaveOf(String projectId) {
+    DateTime? latest;
+    for (final n in _nodesByProject[projectId] ?? const <SaveNode>[]) {
+      if (latest == null || n.savedAt.isAfter(latest)) latest = n.savedAt;
+    }
+    return latest;
+  }
+
   List<SaveNode> getArchivedNodes(String projectId) =>
       List.unmodifiable(_archivedByProject[projectId] ?? []);
 

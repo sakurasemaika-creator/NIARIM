@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../services/save_tree_service.dart';
 import '../../services/autosave_service.dart';
 import '../../services/project_service.dart';
 import '../../services/layer_clipboard_service.dart';
@@ -23,6 +24,7 @@ import '../../services/settings_service.dart';
 import '../../services/shortcut_service.dart';
 import '../../models/shortcut_binding.dart';
 import '../../models/custom_automation.dart';
+import '../../widgets/project_not_found_view.dart';
 import '../../widgets/background_color_picker.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
@@ -1120,6 +1122,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
           label: l10n.canvasResearchButton,
           onPressed: () => _checkMissingMaterials(materialService),
         ),
+        // 操作ボタン付きのSnackBarは既定では時間で消えず、ホーム等の次の
+        // 画面まで付いてきて、後から出す通知もその後ろで待ち続ける。
+        persist: false,
         duration: const Duration(seconds: 6),
       ),
     );
@@ -1166,6 +1171,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
         .projects
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
+    // 存在しないID・ゴミ箱へ移した作品：空のキャンバスを出さず、一覧へ戻す。
+    if (project == null) {
+      return const ProjectNotFoundView(
+        homeButtonKey: Key('canvasNotFoundHome'),
+      );
+    }
     // PC/DeXモード（広い画面）：レイヤーパネルをフローティング表示ではなく、
     // 常時表示のドッキングパネルとして右側に固定する（プロ向けレイアウト）。
     // サブツール系パネル（ブラシ・トーン・スタンプ等）もPC版では互いに
@@ -3048,8 +3059,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (choice == 'save') {
       // 「保存して戻る」は、キャンバス画面の「保存」ボタンと同じ
       // セーブツリー画面（手動セーブ）を経由させる。
+      final saves = context.read<SaveTreeService>();
+      final before = saves.latestSaveOf(widget.projectId);
       await context.push('/save-tree/${widget.projectId}');
       if (!mounted) return;
+      // 保存せずに戻った（取り消した・保存に失敗した）ときは一覧へ移らず、
+      // キャンバスに残る。
+      if (saves.latestSaveOf(widget.projectId) == before) return;
     }
     if (mounted) context.go('/home');
   }

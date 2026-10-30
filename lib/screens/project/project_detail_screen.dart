@@ -19,6 +19,7 @@ import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/theme_service.dart';
+import '../../widgets/project_not_found_view.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/frame_preview_background.dart';
@@ -185,30 +186,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         .firstOrNull;
 
     if (project == null) {
-      // ゴミ箱へ移した・消した作品や、古いリンクから開いたとき。戻る先が
-      // 無くてもホームへ戻れるようにする。
-      return Scaffold(
-        appBar: AppBar(title: Text(l10n.projectDetailNotFoundTitle)),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.projectDetailNotFoundBody,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                FilledButton(
-                  key: const Key('projectDetailNotFoundHome'),
-                  onPressed: () => context.go('/home'),
-                  child: Text(l10n.projectDetailNotFoundBackToList),
-                ),
-              ],
-            ),
-          ),
-        ),
+      return const ProjectNotFoundView(
+        homeButtonKey: Key('projectDetailNotFoundHome'),
       );
     }
 
