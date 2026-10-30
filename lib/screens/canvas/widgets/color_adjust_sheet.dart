@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -12,6 +11,7 @@ import '../../../models/filter_def.dart';
 import '../../../services/filter_service.dart';
 import '../../../services/project_service.dart';
 import '../../../widgets/labeled_slider.dart';
+import '../../../widgets/frame_preview_background.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 
@@ -198,6 +198,12 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
     // 高さを420に固定していた頃は、スマホでスライダー3本が1本半ほどの
     // 小さな枠の中でしか動かせず、下の行は横にはみ出していた。
     final maxHeight = math.max(0.0, MediaQuery.sizeOf(context).height - 72);
+    final project = context
+        .read<ProjectService>()
+        .projects
+        .where((project) => project.id == widget.projectId)
+        .firstOrNull;
+    final backgroundColor = project?.backgroundColor ?? 0x00000000;
     return Card(
       elevation: 8,
       child: SizedBox(
@@ -225,25 +231,25 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                   child: Container(
                     width: 120,
                     height: 120,
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
-                      color: ThemeService.activeColorScheme.onSurfaceVariant,
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: _previewImage != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: RawImage(
-                              image: _previewImage,
-                              fit: BoxFit.contain,
+                    child: FramePreviewBackground(
+                      backgroundColor: backgroundColor,
+                      checkerSize: 8,
+                      child: _previewImage != null
+                          ? RawImage(image: _previewImage, fit: BoxFit.contain)
+                          : const Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
                             ),
-                          )
-                        : const Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),

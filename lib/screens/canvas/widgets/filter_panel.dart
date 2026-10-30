@@ -31,6 +31,7 @@ import '../../../services/theme_service.dart';
 import '../../../utils/blend_mode_label.dart';
 import '../../../utils/filter_display_name.dart';
 import '../../../widgets/filter_sample_preview.dart';
+import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/grab_pan_gesture_recognizer.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
@@ -1026,13 +1027,16 @@ class _FilterPanelState extends State<FilterPanel> {
                 child: Container(
                   width: previewSide,
                   height: previewSide,
+                  clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: _previewImage == null
+                  child: FramePreviewBackground(
+                    backgroundColor: context.read<ProjectService>().projects
+                        .where((project) => project.id == widget.projectId)
+                        .firstOrNull?.backgroundColor ?? 0x00000000,
+                    checkerSize: 8,
+                    child: _previewImage == null
                       ? const Center(
                           child: SizedBox(
                             width: 20,
@@ -1056,6 +1060,7 @@ class _FilterPanelState extends State<FilterPanel> {
                                   fit: BoxFit.contain,
                                 ),
                         ),
+                  ),
                 ),
               ),
               const SizedBox(height: 6),

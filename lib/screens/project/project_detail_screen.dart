@@ -49,7 +49,7 @@ typedef _FlatFrame = ({String sceneId, int frameIndex});
 class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   int _frameIndex = 0;
   bool _isPlaying = false;
-  bool _loopPlayback = true;
+  bool _loopPlayback = false;
   bool _rendering = false;
   // 描いている間に別のフレームが選ばれた（早いシーク・再生）。描き終えてから
   // 最新のフレームを描き直す（そのまま捨てると、止めた所と違う絵が残った）。
@@ -218,7 +218,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       );
       Widget preview() => KeyedSubtree(
         key: const Key('projectDetailFullscreenImage'),
-        child: _buildPreviewImage(project, totalFrames: flat.length, showOverlayButtons: false),
+        child: _buildPreviewImage(
+          project,
+          totalFrames: flat.length,
+          showOverlayButtons: false,
+        ),
       );
       Widget transport() => SizedBox(
         key: const Key('projectDetailFullscreenTransport'),
@@ -252,7 +256,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Row(
-                            children: [exitButton(), _buildLoopButton()],
+                            children: [
+                              exitButton(),
+                              _buildLoopButton(compact: true),
+                            ],
                           ),
                           SizedBox(height: 64, child: preview()),
                           _buildSeekBar(flat),
@@ -271,7 +278,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         child: Row(
                           children: [
                             exitButton(),
-                            _buildLoopButton(),
+                            _buildLoopButton(compact: true),
                             Expanded(child: _buildSeekBar(flat)),
                           ],
                         ),
@@ -387,6 +394,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 key: const Key('projectDetailQuickActions'),
                 children: [
                   (
+                    key: null,
+                    toggled: null,
                     icon: Icons.folder_outlined,
                     label: l10n.creativePanelFolderButton,
                     iconColor: null,
@@ -394,6 +403,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         _showMoveToFolderDialog(context, projectService),
                   ),
                   (
+                    key: null,
+                    toggled: null,
                     icon: Icons.sell_outlined,
                     label: l10n.projectDetailTagsQuickAction,
                     iconColor: null,
@@ -401,6 +412,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         _showTagsDialog(context, projectService, project),
                   ),
                   (
+                    key: null,
+                    toggled: null,
                     icon: project.isFavorite ? Icons.star : Icons.star_border,
                     label: project.isFavorite
                         ? l10n.projectDetailFavoriteRegistered
@@ -412,16 +425,17 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         projectService.toggleFavorite(widget.projectId),
                   ),
                   (
+                    key: null,
+                    toggled: null,
                     icon: Icons.ios_share,
                     label: l10n.projectDetailShareQuickAction,
                     iconColor: null,
                     onTap: () =>
                         _createNiashare(context, projectService, project),
                   ),
+                  // The loop is the fifth quick action, directly beside Share.
+                  _loopQuickAction(),
                 ],
-                // Keep the loop control directly beside Share.
-                trailing: _buildLoopButton(),
-                trailingWidth: _loopButtonWidth,
               ),
               if (project.tags.isNotEmpty) ...[
                 const SizedBox(height: 24),
@@ -643,31 +657,65 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  static const double _loopButtonWidth = 44;
+  String _loopLabel(AppLocalizations l10n) =>
+      l10n.timelineLoopOffTooltip.split(RegExp(r'[:：]')).first.trim();
 
-  Widget _buildLoopButton() {
+  /// The loop is the fifth quick action: neutral when off, accent when on.
+  _QuickAction _loopQuickAction() {
+    final l10n = AppLocalizations.of(context)!;
+    return (
+      key: const Key('projectDetailLoopButton'),
+      icon: Icons.repeat,
+      label: _loopLabel(l10n),
+      iconColor: _loopPlayback ? AccentTextTheme.of(context) : null,
+      toggled: _loopPlayback,
+      onTap: () => setState(() => _loopPlayback = !_loopPlayback),
+    );
+  }
+
+  Widget _buildLoopButton({bool compact = false}) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    return Semantics(
-      toggled: _loopPlayback,
-      child: IconButton(
-        key: const Key('projectDetailLoopButton'),
+    final label = _loopLabel(l10n);
+    final foreground = _loopPlayback
+        ? AccentTextTheme.of(context)
+        : scheme.onSurfaceVariant;
+    if (compact) {
+      return IconButton(
+        key: const Key('projectDetailFullscreenLoopButton'),
         tooltip: _loopPlayback
             ? l10n.timelineLoopOnTooltip
             : l10n.timelineLoopOffTooltip,
         onPressed: () => setState(() => _loopPlayback = !_loopPlayback),
-        icon: Icon(
-          Icons.repeat,
-          color: _loopPlayback
-              ? AccentTextTheme.of(context)
-              : scheme.onSurfaceVariant,
-          size: 22,
+        icon: Icon(Icons.repeat, color: foreground, size: 22),
+      );
+    }
+    return Semantics(
+      toggled: _loopPlayback,
+      button: true,
+      label: label,
+      child: InkWell(
+        key: const Key('projectDetailLoopButton'),
+        onTap: () => setState(() => _loopPlayback = !_loopPlayback),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.repeat, size: 24, color: foreground),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'HakkouMincho',
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
         ),
-        constraints: const BoxConstraints.tightFor(
-          width: _loopButtonWidth,
-          height: 48,
-        ),
-        visualDensity: VisualDensity.compact,
       ),
     );
   }
@@ -744,53 +792,65 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         children: [
-          cell(timeLabel(currentLabel, const Key('projectDetailCurrentSeconds'))),
-          cell(control(
-            icon: Icons.skip_previous,
-            tooltip: l10n.projectDetailFirstFrameTooltip,
-            onPressed: flat.isEmpty
-                ? null
-                : () => _seekTo(projectService, flat, 0),
-          )),
-          cell(control(
-            icon: Icons.fast_rewind,
-            tooltip: l10n.projectDetailPrevFrameTooltip,
-            onPressed: flat.isEmpty
-                ? null
-                : () => _seekTo(projectService, flat, _frameIndex - 1),
-          )),
-          cell(Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              shape: BoxShape.circle,
-            ),
-            child: control(
-              icon: _isPlaying ? Icons.pause : Icons.play_arrow,
-              iconColor: Theme.of(context).colorScheme.onPrimary,
-              tooltip: _isPlaying
-                  ? l10n.projectDetailPauseTooltip
-                  : l10n.projectDetailPlayTooltip,
+          cell(
+            timeLabel(currentLabel, const Key('projectDetailCurrentSeconds')),
+          ),
+          cell(
+            control(
+              icon: Icons.skip_previous,
+              tooltip: l10n.projectDetailFirstFrameTooltip,
               onPressed: flat.isEmpty
                   ? null
-                  : () => _togglePlay(projectService, flat, project.fps),
+                  : () => _seekTo(projectService, flat, 0),
             ),
-          )),
-          cell(control(
-            icon: Icons.fast_forward,
-            tooltip: l10n.projectDetailNextFrameTooltip,
-            onPressed: flat.isEmpty
-                ? null
-                : () => _seekTo(projectService, flat, _frameIndex + 1),
-          )),
-          cell(control(
-            icon: Icons.skip_next,
-            tooltip: l10n.projectDetailLastFrameTooltip,
-            onPressed: flat.isEmpty
-                ? null
-                : () => _seekTo(projectService, flat, flat.length - 1),
-          )),
+          ),
+          cell(
+            control(
+              icon: Icons.fast_rewind,
+              tooltip: l10n.projectDetailPrevFrameTooltip,
+              onPressed: flat.isEmpty
+                  ? null
+                  : () => _seekTo(projectService, flat, _frameIndex - 1),
+            ),
+          ),
+          cell(
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                shape: BoxShape.circle,
+              ),
+              child: control(
+                icon: _isPlaying ? Icons.pause : Icons.play_arrow,
+                iconColor: Theme.of(context).colorScheme.onPrimary,
+                tooltip: _isPlaying
+                    ? l10n.projectDetailPauseTooltip
+                    : l10n.projectDetailPlayTooltip,
+                onPressed: flat.isEmpty
+                    ? null
+                    : () => _togglePlay(projectService, flat, project.fps),
+              ),
+            ),
+          ),
+          cell(
+            control(
+              icon: Icons.fast_forward,
+              tooltip: l10n.projectDetailNextFrameTooltip,
+              onPressed: flat.isEmpty
+                  ? null
+                  : () => _seekTo(projectService, flat, _frameIndex + 1),
+            ),
+          ),
+          cell(
+            control(
+              icon: Icons.skip_next,
+              tooltip: l10n.projectDetailLastFrameTooltip,
+              onPressed: flat.isEmpty
+                  ? null
+                  : () => _seekTo(projectService, flat, flat.length - 1),
+            ),
+          ),
           cell(timeLabel(totalLabel, const Key('projectDetailTotalSeconds'))),
         ],
       ),
@@ -1012,27 +1072,21 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 }
 
 typedef _QuickAction = ({
+  Key? key,
   IconData icon,
   String label,
   Color? iconColor,
+  bool? toggled,
   VoidCallback onTap,
 });
 
-/// 詳細画面のフォルダ・タグ・お気に入り・共有。ふだんは4つを1行に並べ、
+/// 詳細画面のフォルダ・タグ・お気に入り・共有・ループ。ふだんは1行に並べ、
 /// 長い言葉（フランス語の「Étiquettes」等）が大きな文字で欄に収まらない
-/// ときは、語の途中で折らずに2列・1列にする。[trailing]（ループ）は最後の
-/// 行の右端、つまり共有のすぐ隣に置く。
+/// ときは、語の途中で折らずに2列・1列にする。
 class _QuickActionsRow extends StatelessWidget {
-  const _QuickActionsRow({
-    super.key,
-    required this.children,
-    this.trailing,
-    this.trailingWidth = 0,
-  });
+  const _QuickActionsRow({super.key, required this.children});
 
   final List<_QuickAction> children;
-  final Widget? trailing;
-  final double trailingWidth;
 
   static const _labelStyle = TextStyle(fontSize: 12);
 
@@ -1065,67 +1119,49 @@ class _QuickActionsRow extends StatelessWidget {
       final widest = children
           .map((a) => _longestWord(context, a.label))
           .fold<double>(0, (a, b) => a > b ? a : b);
-      // 1欄の中で文字に使える幅（左右の余白ぶんを引く）。ループを最後の行の
-      // 右に置くと1列でも語が入らないときだけ、ループを次の行へ下ろして
-      // 欄に横幅をすべて使う。
-      final besideFits = widest <= constraints.maxWidth - trailingWidth - 8;
-      final available =
-          constraints.maxWidth - (besideFits ? trailingWidth : 0);
-      final columns = [
-        4,
-        2,
-        1,
-      ].firstWhere((n) => widest <= available / n - 8, orElse: () => 1);
-      final width = (available / columns).floorToDouble();
-      Widget cell(_QuickAction action) => SizedBox(
-        width: width,
-        child: InkWell(
-          onTap: action.onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-            child: Column(
-              children: [
-                Icon(
-                  action.icon,
-                  color:
-                      action.iconColor ??
-                      Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  action.label,
-                  textAlign: TextAlign.center,
-                  style: _labelStyle,
-                ),
-              ],
-            ),
-          ),
-        ),
+      // 1欄の中で文字に使える幅（左右の余白ぶんを引く）。
+      final columns = [children.length, 3, 2, 1].firstWhere(
+        (n) => widest <= constraints.maxWidth / n - 8,
+        orElse: () => 1,
       );
-      final rows = [
-        for (var i = 0; i < children.length; i += columns)
-          children.sublist(
-            i,
-            i + columns < children.length ? i + columns : children.length,
-          ),
-      ];
-      return Column(
+      final width = (constraints.maxWidth / columns).floorToDouble();
+      return Wrap(
         children: [
-          for (final (index, row) in rows.indexed)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (final action in row) cell(action),
-                const Spacer(),
-                if (besideFits && index == rows.length - 1 && trailing != null)
-                  trailing!
-                else if (besideFits)
-                  SizedBox(width: trailingWidth),
-              ],
+          for (final action in children)
+            SizedBox(
+              width: width,
+              child: Semantics(
+                toggled: action.toggled,
+                button: true,
+                child: InkWell(
+                  key: action.key,
+                  onTap: action.onTap,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 4,
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          action.icon,
+                          color:
+                              action.iconColor ??
+                              Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          action.label,
+                          textAlign: TextAlign.center,
+                          style: _labelStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
-          if (!besideFits && trailing != null)
-            Align(alignment: AlignmentDirectional.centerEnd, child: trailing),
         ],
       );
     },

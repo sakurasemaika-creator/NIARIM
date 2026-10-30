@@ -3157,14 +3157,17 @@ class _CanvasScreenState extends State<CanvasScreen> {
           // CanvasIconButton keeps both glyphs transparent and theme-colored.
           CanvasIconButton(
             key: const Key('canvasTimelineModeButton'),
-            iconSize: 35,
-            iconBuilder: (color) => Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.movie_filter_outlined, size: 19, color: color),
-                const SizedBox(width: 2),
-                Icon(Icons.arrow_forward, size: 14, color: color),
-              ],
+            iconSize: 24,
+            iconBuilder: (color) => FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.movie_filter_outlined, size: 19, color: color),
+                  const SizedBox(width: 2),
+                  Icon(Icons.arrow_forward, size: 14, color: color),
+                ],
+              ),
             ),
             onPressed: () => _runAutomationBlockedAction(
               () => context.go('/timeline/${widget.projectId}'),

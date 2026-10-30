@@ -157,11 +157,11 @@ void main() {
           ),
         )
         .color;
-    // 既定はループ再生オン。
-    expect(loopColor(), accentText);
+    // 既定はループ再生オフ。オンにするとこの色。
+    expect(loopColor(), isNot(accentText));
     await tester.tap(find.byKey(const Key('projectDetailLoopButton')));
     await tester.pump();
-    expect(loopColor(), isNot(accentText));
+    expect(loopColor(), accentText);
   });
 
   testWidgets('the save slot delete icon uses it', (tester) async {
