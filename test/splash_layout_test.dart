@@ -286,6 +286,65 @@ void main() {
     expect(failures, isEmpty, reason: failures.join('\n'));
   });
 
+  testWidgets('both entry buttons and community subtitle use Kuramubon', (
+    tester,
+  ) async {
+    await loadAppFonts(tester);
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providers,
+        child: Builder(
+          builder: (context) => MaterialApp(
+            theme: context.watch<ThemeService>().themeData,
+            locale: const Locale('ja'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            home: const SplashScreen(),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    final labels = {
+      'splashCommunityActionButton': [
+        l10n.splashCommunityButtonTitle,
+        l10n.splashCommunityButtonSubtitle,
+      ],
+      'splashCreateActionButton': [l10n.splashCreateButton],
+    };
+    for (final entry in labels.entries) {
+      final tile = find.byKey(Key(entry.key));
+      expect(tile, findsOneWidget);
+      for (final label in entry.value) {
+        final finder = find.descendant(
+          of: tile,
+          matching: find.text(label),
+        );
+        expect(finder, findsOneWidget, reason: label);
+        final textWidget = tester.widget<Text>(finder);
+        expect(textWidget.style?.fontFamily, 'Kuramubon', reason: label);
+        expect(textWidget.style?.fontFamilyFallback, isNotEmpty);
+        final richText = tester.widget<RichText>(
+          find.descendant(of: finder, matching: find.byType(RichText)),
+        );
+        expect(
+          (richText.text as TextSpan).style?.fontFamily,
+          'Kuramubon',
+          reason: 'The rendered TextSpan must use Kuramubon: $label',
+        );
+      }
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('screen readers get each tile as a labelled button', (
     tester,
   ) async {
