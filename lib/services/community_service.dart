@@ -112,6 +112,19 @@ class CommunityService extends ChangeNotifier {
   /// バックエンドに接続する設定になっているか。
   bool get isBackendConnected => api != null;
 
+  /// A fresh, metadata-free playback check. In the demo build no remote player
+  /// exists; keep the preview available for Flutter UI tests.
+  Future<CommunityPlaybackStatus> playbackStatus(String workId) async {
+    if (api == null) return CommunityPlaybackStatus.available;
+    try {
+      return await api!.playbackStatus(workId);
+    } catch (error) {
+      debugPrint('Playback status check failed: $error');
+      return CommunityPlaybackStatus.unknown;
+    }
+  }
+
+
   /// 直近の取得が失敗した理由（成功していればnull）。画面側で
   /// 「読み込めませんでした・再試行」を出すために使う。
   NiarimApiException? get lastError => _lastError;
