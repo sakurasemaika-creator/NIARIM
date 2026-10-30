@@ -124,6 +124,19 @@ void main() {
       expect(find.byKey(ValueKey('communityRankMedal-$rank')), findsOneWidget);
     }
     expect(find.byKey(const ValueKey('communityRankNumber-4')), findsOneWidget);
+    final second = tester.widget<Container>(
+      find.byKey(const ValueKey('communityRankMedal-2')),
+    );
+    final third = tester.widget<Container>(
+      find.byKey(const ValueKey('communityRankMedal-3')),
+    );
+    final first = tester.widget<Container>(
+      find.byKey(const ValueKey('communityRankMedal-1')),
+    );
+    expect((second.decoration as BoxDecoration).color,
+        (third.decoration as BoxDecoration).color);
+    expect((first.decoration as BoxDecoration).color,
+        isNot((second.decoration as BoxDecoration).color));
     expect(find.byKey(const ValueKey('communityRankMedal-4')), findsNothing);
   });
 

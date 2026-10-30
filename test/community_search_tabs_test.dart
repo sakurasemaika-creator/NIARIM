@@ -232,4 +232,59 @@ void main() {
     }
     await tester.pumpWidget(const SizedBox.shrink());
   });
+
+  testWidgets('four tabs isolate Search and prevent ranking filter/reordering',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    final bar = tester.widget<TabBar>(find.byType(TabBar));
+    expect(bar.tabs.length, 4);
+    // New arrivals retain content filter, but never render search controls.
+    expect(find.byKey(const Key('communityContentFilterButton')),
+        findsOneWidget);
+    expect(find.byKey(const Key('communitySearchInput')), findsNothing);
+    expect(find.byKey(const Key('communitySavedSearchAccordion')),
+        findsNothing);
+    expect(find.byKey(const Key('communitySearchHistoryAccordion')),
+        findsNothing);
+
+    bar.controller!.animateTo(1);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('communityContentFilterButton')), findsNothing);
+    expect(find.byKey(const Key('communitySearchInput')), findsNothing);
+    expect(find.byKey(const Key('communitySearchRow')), findsNothing);
+    final rankingBefore = tester.widgetList(
+      find.byKey(const Key('communityRankingHorizontalCard')),
+    ).length;
+    expect(rankingBefore, greaterThan(0));
+
+    bar.controller!.animateTo(3);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('communitySearchInput')), findsOneWidget);
+    expect(find.byKey(const Key('communitySavedSearchAccordion')),
+        findsOneWidget);
+    expect(find.byKey(const Key('communitySearchHistoryAccordion')),
+        findsOneWidget);
+    expect(find.byKey(const Key('communitySearchExactMatch')), findsOneWidget);
+    await tester.enterText(
+        find.byKey(const Key('communitySearchInput')), '検索では見つからない文字列');
+    await tester.tap(find.byKey(const Key('communitySearchButton')));
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityWorkCard), findsNothing);
+
+    bar.controller!.animateTo(1);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('communityRankingHorizontalCard')),
+      findsNWidgets(rankingBefore),
+      reason: 'Search queries must never renumber the ranking',
+    );
+    bar.controller!.animateTo(2);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('communityContentFilterButton')),
+        findsOneWidget);
+    expect(find.byKey(const Key('communitySearchInput')), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }

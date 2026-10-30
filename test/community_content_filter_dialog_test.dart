@@ -293,6 +293,8 @@ void main() {
       tester,
       find.byKey(const Key('communityMutedAuthorsAccordion')),
     );
+    expect(find.byKey(const Key('communityMutePrivacyNoticeSettings')),
+        findsOneWidget);
     await tapVisible(
       tester,
       find.byKey(const Key('communityManageMutedAuthors')),
@@ -342,6 +344,8 @@ void main() {
     expect(service.isAuthorMuted(authorWork.authorId), isFalse);
     final l10n = AppLocalizations.of(tester.element(toggle))!;
     expect(find.text(l10n.communityMuteConfirmTitle), findsOneWidget);
+    expect(find.byKey(const Key('communityMutePrivacyNoticeDialog')),
+        findsOneWidget);
     await tester.tap(find.text(l10n.communityMuteNo));
     await tester.pumpAndSettle();
     expect(service.isAuthorMuted(authorWork.authorId), isFalse);
