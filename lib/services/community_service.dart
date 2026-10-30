@@ -910,6 +910,7 @@ class CommunityService extends ChangeNotifier {
       final pages = await Future.wait([
         for (final id in authors) client.worksByAuthorPage(id),
       ]);
+      if (!_isCurrentAccount(revision)) return false;
       _feedAuthorCursors
         ..clear()
         ..addEntries(
