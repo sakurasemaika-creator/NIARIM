@@ -163,6 +163,9 @@ class ToolbarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsService>();
+    final iconScale = SettingsService.toolbarIconScaleForLevel(
+      settings.toolbarSizeLevel,
+    );
     context.watch<ThemeService>();
     final colorScheme = Theme.of(context).colorScheme;
     // A contrasting opaque theme-token ring also keeps the color swatch
@@ -281,9 +284,25 @@ class ToolbarWidget extends StatelessWidget {
       ),
     ];
 
+    final scaledItems = [
+      for (final item in items)
+        if (identical(item, spacer))
+          spacer
+        else
+          SizedBox(
+            width: 40 * iconScale,
+            height: 40 * iconScale,
+            child: Center(
+              child: Transform.scale(
+                scale: iconScale,
+                child: item,
+              ),
+            ),
+          ),
+    ];
     return Container(
-      height: vertical ? null : 40,
-      width: vertical ? 40 : null,
+      height: vertical ? null : 40 * iconScale,
+      width: vertical ? 40 * iconScale : null,
       padding: EdgeInsets.symmetric(
         horizontal: vertical ? 0 : 4,
         vertical: vertical ? 4 : 0,
@@ -291,7 +310,9 @@ class ToolbarWidget extends StatelessWidget {
       color: Colors.transparent,
       child: SingleChildScrollView(
         scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
-        child: vertical ? Column(children: items) : Row(children: items),
+        child: vertical
+            ? Column(children: scaledItems)
+            : Row(children: scaledItems),
       ),
     );
   }

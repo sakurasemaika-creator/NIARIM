@@ -61,6 +61,28 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             _ToolbarPreview(
               order: settings.toolbarOrder,
               hidden: settings.hiddenToolbarItems,
+              sizeLevel: settings.toolbarSizeLevel,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _toolbarSizeLabel(Localizations.localeOf(context).languageCode),
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                Text('${settings.toolbarSizeLevel}/5'),
+              ],
+            ),
+            Slider(
+              key: const Key('workspaceToolbarSizeSlider'),
+              value: settings.toolbarSizeLevel.toDouble(),
+              min: 1,
+              max: 5,
+              divisions: 4,
+              label: '${settings.toolbarSizeLevel}/5',
+              onChanged: (value) => settings.setToolbarSizeLevel(value.round()),
             ),
             SizedBox(height: 8),
             Card(
@@ -990,11 +1012,27 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
 /// キャンバス画面の実際のツールバー（横並び）を模したプレビュー
 /// （設定のチェックボックス一覧だけでは仕上がりが分かり
 /// にくいため、非表示にしたツールが除かれた状態の並びをそのまま示す）。
+String _toolbarSizeLabel(String languageCode) => switch (languageCode) {
+  'ja' => 'ツールの表示サイズ',
+  'en' => 'Toolbar icon size',
+  'fr' => 'Taille des outils',
+  'de' => 'Werkzeuggröße',
+  'es' => 'Tamaño de herramientas',
+  'ko' => '도구 표시 크기',
+  'zh' => '工具显示大小',
+  _ => 'Toolbar icon size',
+};
+
 class _ToolbarPreview extends StatelessWidget {
   final List<ToolbarItemId> order;
   final Set<ToolbarItemId> hidden;
+  final int sizeLevel;
 
-  const _ToolbarPreview({required this.order, required this.hidden});
+  const _ToolbarPreview({
+    required this.order,
+    required this.hidden,
+    required this.sizeLevel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1006,8 +1044,9 @@ class _ToolbarPreview extends StatelessWidget {
         .where((id) => id != ToolbarItemId.pan || canShowPanTool(context))
         .toList();
     final scheme = Theme.of(context).colorScheme;
+    final iconScale = SettingsService.toolbarIconScaleForLevel(sizeLevel);
     return Container(
-      height: 48,
+      height: 48 * (iconScale > 1 ? iconScale : 1),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8),
@@ -1030,7 +1069,10 @@ class _ToolbarPreview extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Tooltip(
                         message: id.label(l10n),
-                        child: id.buildIcon(size: 20, color: scheme.onSurface),
+                        child: id.buildIcon(
+                          size: 20 * iconScale,
+                          color: scheme.onSurface,
+                        ),
                       ),
                     ),
                 ],

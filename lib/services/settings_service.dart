@@ -33,6 +33,8 @@ class SettingsService extends ChangeNotifier {
   // ツールバー編集（表示するツールをチェックボックスで選択・ドラッグで並び替え）
   List<ToolbarItemId> _toolbarOrder = List.of(ToolbarItemId.values);
   Set<ToolbarItemId> _hiddenToolbarItems = {};
+  // Five persistent visual sizes; applies to the toolbar's real hit cells.
+  int _toolbarSizeLevel = 3;
   // PC/DeXモードでキャンバス画面を開いた際に既定でドッキング表示する
   // パネル（ワークスペース設定）。スマホ版は常に全パネル
   // 非表示スタートのため、この設定は使わない。
@@ -61,6 +63,26 @@ class SettingsService extends ChangeNotifier {
   /// working one.
   bool get selectionReferenceAllVisible => _selectionReferenceAllVisible;
   List<ToolbarItemId> get toolbarOrder => List.unmodifiable(_toolbarOrder);
+  int get toolbarSizeLevel => _toolbarSizeLevel;
+
+  static double toolbarIconScaleForLevel(int level) => switch (
+    level.clamp(1, 5)
+  ) {
+    1 => 0.75,
+    2 => 0.88,
+    3 => 1.0,
+    4 => 1.15,
+    _ => 1.3,
+  };
+
+  Future<void> setToolbarSizeLevel(int level) async {
+    final next = level.clamp(1, 5);
+    if (_toolbarSizeLevel == next) return;
+    _toolbarSizeLevel = next;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('toolbar_size_level', next);
+    notifyListeners();
+  }
   Set<ToolbarItemId> get hiddenToolbarItems =>
       Set.unmodifiable(_hiddenToolbarItems);
   Set<CanvasDockPanel> get defaultDockedPanels =>
@@ -602,6 +624,7 @@ class SettingsService extends ChangeNotifier {
     }
     _endCardDefaultHiddenForPremium =
         prefs.readBool('endcard_default_hidden_for_premium') ?? false;
+    _toolbarSizeLevel = (prefs.readInt('toolbar_size_level') ?? 3).clamp(1, 5);
     final toolbarOrderNames = prefs.readStringList('toolbar_order');
     if (toolbarOrderNames != null && toolbarOrderNames.isNotEmpty) {
       final map = ToolbarItemId.values.asNameMap();
