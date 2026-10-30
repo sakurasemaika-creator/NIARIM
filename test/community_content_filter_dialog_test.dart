@@ -54,6 +54,11 @@ void main() {
     expect(find.byType(AlertDialog), findsOneWidget);
   }
 
+  Future<void> selectSearch(WidgetTester tester) async {
+    tester.widget<TabBar>(find.byType(TabBar)).controller!.animateTo(3);
+    await tester.pumpAndSettle();
+  }
+
   Future<void> expandMuteSections(WidgetTester tester) async {
     await tapVisible(
       tester,
@@ -388,7 +393,7 @@ void main() {
     expect(find.byType(TabBar), findsOneWidget);
   });
 
-  testWidgets('duration, thresholds and exact tag conditions are editable', (
+  testWidgets('duration and thresholds are editable without search exactness', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -400,7 +405,7 @@ void main() {
     await tapVisible(tester, find.byKey(const Key('communityDurationMode')));
     await tapVisible(tester, find.text(l10n.communityDurationUpTo).last);
     expect(find.byKey(const Key('communityDurationSlider')), findsOneWidget);
-    await tapVisible(tester, find.byKey(const Key('communityTagExactMatch')));
+    expect(find.byKey(const Key('communityTagExactMatch')), findsNothing);
     await tapVisible(tester, find.byKey(const Key('communityMinimumViews')));
     await tapVisible(
       tester,
@@ -421,14 +426,7 @@ void main() {
       find.byKey(const Key('communityContentFilterSaveButton')),
     );
     await openDialog(tester, mute: false);
-    expect(
-      tester
-          .widget<SwitchListTile>(
-            find.byKey(const Key('communityTagExactMatch')),
-          )
-          .value,
-      isTrue,
-    );
+    expect(find.byKey(const Key('communityTagExactMatch')), findsNothing);
     await tapVisible(tester, find.byKey(const Key('communityDurationMode')));
     await tapVisible(tester, find.text(l10n.communityDurationRange).last);
     expect(find.byKey(const Key('communityDurationMinimum')), findsOneWidget);
@@ -442,6 +440,7 @@ void main() {
     final service = CommunityService();
     await tester.pumpWidget(host(service));
     await tester.pumpAndSettle();
+    await selectSearch(tester);
     final l10n = l10nOf(tester);
     await tapVisible(
       tester,
@@ -474,6 +473,7 @@ void main() {
       final service = CommunityService();
       await tester.pumpWidget(host(service));
       await tester.pumpAndSettle();
+      await selectSearch(tester);
       final l10n = l10nOf(tester);
       await tester.enterText(
         find.byKey(const Key('communitySearchInput')),
@@ -540,6 +540,7 @@ void main() {
       final service = CommunityService();
       await tester.pumpWidget(host(service));
       await tester.pumpAndSettle();
+      await selectSearch(tester);
       for (var n = 0; n < 12; n++) {
         await tester.enterText(
           find.byKey(const Key('communitySearchInput')),

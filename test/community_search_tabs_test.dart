@@ -27,6 +27,11 @@ void main() {
     );
   }
 
+  Future<void> selectSearch(WidgetTester tester) async {
+    tester.widget<TabBar>(find.byType(TabBar)).controller!.animateTo(3);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('タグチップ遷移ではタグ検索タブと検索語を自動選択する', (tester) async {
     await tester.pumpWidget(app(initialTag: '手描き'));
     await tester.pumpAndSettle();
@@ -42,33 +47,13 @@ void main() {
 
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.controller?.text, '手描き');
-    await tester.runAsync(
-      () => tester.element(find.byType(CommunityScreen))
-          .read<CommunityService>()
-          .contentFiltersReady,
-    );
-    await tester.ensureVisible(
-      find.byKey(const Key('communityContentFilterButton')));
-    await tester.tap(find.byKey(const Key('communityContentFilterButton')));
+    expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 3);
+    final exact = find.byKey(const Key('communitySearchExactMatch'));
+    expect(tester.widget<CheckboxListTile>(exact).value, isTrue);
+    expect(find.byKey(const Key('communityTagExactMatch')), findsNothing);
+    await tester.tap(exact);
     await tester.pumpAndSettle();
-    expect(find.byType(AlertDialog), findsOneWidget);
-    await tester.ensureVisible(find.byKey(const Key('communityTagExactMatch')));
-    expect(
-      tester.widget<SwitchListTile>(
-        find.byKey(const Key('communityTagExactMatch')),
-      ).value,
-      isTrue,
-      reason: 'A tag chip must launch exact tag matches by default',
-    );
-    await tester.tap(find.byKey(const Key('communityTagExactMatch')));
-    await tester.pumpAndSettle();
-    expect(
-      tester.widget<SwitchListTile>(
-        find.byKey(const Key('communityTagExactMatch')),
-      ).value,
-      isFalse,
-      reason: 'The viewer may subsequently switch to partial matching',
-    );
+    expect(tester.widget<CheckboxListTile>(exact).value, isFalse);
   });
 
   testWidgets('キーワード/タグ検索を切り替えると古い検索語を持ち越さない', (tester) async {
@@ -110,18 +95,12 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).first, '夜明け');
+    await selectSearch(tester);
+    await tester.enterText(find.byKey(const Key('communitySearchInput')), '夜明け');
     await tester.tap(find.byKey(const Key('communitySearchButton')));
     await tester.pumpAndSettle();
     expect(find.byType(CommunityWorkCard), findsWidgets);
-    await tester.tap(find.byKey(const Key('communityContentFilterButton')));
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('communityTagExactMatch')));
-    await tester.tap(find.byKey(const Key('communityTagExactMatch')));
-    await tester.ensureVisible(
-      find.byKey(const Key('communityContentFilterSaveButton')),
-    );
-    await tester.tap(find.byKey(const Key('communityContentFilterSaveButton')));
+    await tester.tap(find.byKey(const Key('communitySearchExactMatch')));
     await tester.pumpAndSettle();
     expect(find.byType(CommunityWorkCard), findsNothing);
   });
@@ -131,6 +110,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
+    await selectSearch(tester);
     await tester.enterText(
       find.byKey(const Key('communitySearchInput')), '手描き -風景');
     await tester.tap(find.byKey(const Key('communitySearchButton')));
@@ -200,6 +180,8 @@ void main() {
         reason: '$locale: first label must not get clipped',
       );
       final initialBottom = tester.getRect(find.byType(TabBar)).bottom;
+      expect(find.byKey(const Key('communitySearchButton')), findsNothing);
+      await selectSearch(tester);
       expect(find.byKey(const Key('communitySearchButton')), findsOneWidget);
       await tester.pumpAndSettle();
       expect(find.byType(SegmentedButton<bool>), findsNothing);
@@ -228,6 +210,7 @@ void main() {
         tester.view.physicalSize = Size(width, 844);
         await tester.pumpWidget(app(locale: locale));
         await tester.pumpAndSettle();
+        await selectSearch(tester);
         final sorter = tester.getRect(
           find.byKey(const Key('communitySortButton')),
         );

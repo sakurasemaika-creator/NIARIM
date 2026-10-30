@@ -207,6 +207,8 @@ void main() {
     await tester.pumpAndSettle();
     Navigator.of(tester.element(find.byType(CommunityMyWorksScreen))).pop();
     await tester.pumpAndSettle();
+    tester.widget<TabBar>(find.byType(TabBar)).controller!.animateTo(3);
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('communitySearchInput')), findsOneWidget);
     final switcher = find.byKey(const Key('communitySearchModeToggle'));
     expect(tester.getSize(switcher).width, lessThan(60));

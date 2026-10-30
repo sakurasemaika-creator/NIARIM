@@ -157,6 +157,8 @@ void main() {
               locale.toLanguageTag().toLowerCase(),
             );
             if (state == 'search' || state == 'tag-search') {
+              tester.widget<TabBar>(find.byType(TabBar)).controller!.animateTo(3);
+              await tester.pumpAndSettle();
               expect(
                 find.byKey(const Key('communitySearchInput')),
                 findsOneWidget,
@@ -202,6 +204,8 @@ void main() {
                   ? 1
                   : state == 'following'
                   ? 2
+                  : state == 'search' || state == 'tag-search'
+                  ? 3
                   : 0,
             );
             if (state == 'search' || state == 'tag-search') {
@@ -220,16 +224,19 @@ void main() {
               );
             }
             final bar = find.byType(AppBar);
-            final searchRowRect = tester.getRect(
-              find.byKey(const Key('communitySearchRow')),
-            );
+            final searchRowRect = state == 'ranking'
+                ? null
+                : tester.getRect(find.byKey(const Key('communitySearchRow')));
             final tabsRect = tester.getRect(find.byType(TabBar));
-            if (tabsRect.bottom > searchRowRect.top + .01) {
+            if (searchRowRect != null &&
+                tabsRect.bottom > searchRowRect.top + .01) {
               failures.add(
                 'Page search overlaps fixed tabs: $searchRowRect / $tabsRect',
               );
             }
-            if (state != 'search' && state != 'tag-search') {
+            if (state != 'search' &&
+                state != 'tag-search' &&
+                state != 'ranking') {
               final titleRect = tester.getRect(
                 find.descendant(
                   of: bar,
