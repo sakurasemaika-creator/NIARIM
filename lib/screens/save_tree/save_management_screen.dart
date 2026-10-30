@@ -512,8 +512,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                // MaterialのIcons.edit_noteは📝に近い「メモ＋ペン」、
-                // Icons.book_outlinedは📓に近い閉じたノートとして使う。
+                // 書き込みはメモ＋ペン、読み込みは開いたノートを使う。
                 _SlotActionButton(
                   icon: Icons.edit_note,
                   tooltip: l10n.saveTreeSlotWriteTooltip,
@@ -521,7 +520,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                   onPressed: onWrite,
                 ),
                 _SlotActionButton(
-                  icon: Icons.book_outlined,
+                  icon: Icons.menu_book_outlined,
                   tooltip: l10n.saveTreeSlotLoadTooltip,
                   color: scheme.onSurfaceVariant,
                   onPressed: onLoad,

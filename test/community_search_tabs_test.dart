@@ -151,6 +151,80 @@ void main() {
     );
   });
 
+  testWidgets('plaza tabs use project-list-style proportional widths', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    for (final width in [320.0, 390.0, 720.0]) {
+      tester.view.physicalSize = Size(width, 844);
+      for (final locale in [const Locale('ja'), const Locale('en')]) {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pumpWidget(app(locale: locale));
+        await tester.pumpAndSettle();
+
+        final barFinder = find.byType(TabBar);
+        final bar = tester.widget<TabBar>(barFinder);
+        expect(bar.isScrollable, isTrue);
+        expect(bar.tabAlignment, TabAlignment.start);
+        expect(bar.labelPadding, EdgeInsets.zero);
+
+        final context = tester.element(barFinder);
+        final theme = Theme.of(context);
+        final textStyle =
+            theme.tabBarTheme.labelStyle ?? theme.textTheme.titleSmall!;
+        final labels = <String>[];
+        final actualWidths = <double>[];
+        for (var i = 0; i < 4; i++) {
+          final tab = find.byKey(Key('communityTabWidth$i'));
+          labels.add(
+            tester
+                .widget<Text>(
+                  find.descendant(of: tab, matching: find.byType(Text)),
+                )
+                .data!,
+          );
+          actualWidths.add(tester.getSize(tab).width);
+        }
+        final naturalWidths = <double>[];
+        for (final label in labels) {
+          final painter = TextPainter(
+            text: TextSpan(text: label, style: textStyle),
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+            locale: Localizations.localeOf(context),
+            maxLines: 1,
+          )..layout();
+          naturalWidths.add(painter.width + 32);
+          painter.dispose();
+        }
+        final totalNatural = naturalWidths.reduce((a, b) => a + b);
+        final available = tester.getSize(barFinder).width;
+        final scrollTabs = totalNatural > available;
+        for (var i = 0; i < labels.length; i++) {
+          final expected = scrollTabs
+              ? naturalWidths[i]
+              : available * naturalWidths[i] / totalNatural;
+          expect(
+            actualWidths[i],
+            closeTo(expected, 0.5),
+            reason: '$locale at width $width, tab $i',
+          );
+        }
+        if (!scrollTabs) {
+          expect(
+            actualWidths.reduce((a, b) => a + b),
+            closeTo(available, 0.5),
+          );
+        }
+        expect(tester.takeException(), isNull);
+      }
+    }
+  });
+
   testWidgets('long localized plaza tabs align to the leading edge', (
     tester,
   ) async {

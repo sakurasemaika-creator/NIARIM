@@ -32,15 +32,28 @@ class CommunityApi {
 
   const CommunityApi(this._client);
 
-  Future<List<ApiWork>> latestWorks({int? limit, String? cursor}) async {
+  /// Existing list API remains available for callers needing only one page.
+  Future<List<ApiWork>> latestWorks({int? limit, String? cursor}) async =>
+      (await latestWorksPage(limit: limit, cursor: cursor)).works;
+
+  Future<ApiWorkPage> latestWorksPage({
+    int? limit,
+    String? cursor,
+    String? query,
+    bool tagMode = false,
+    bool exact = false,
+  }) async {
     final json = await _client.getJson(
       '/works/latest',
-      query: {if (limit != null) 'limit': '$limit', 'cursor': ?cursor},
+      query: {
+        if (limit != null) 'limit': '$limit',
+        'cursor': ?cursor,
+        if (query != null && query.trim().isNotEmpty) 'q': query.trim(),
+        if (tagMode) 'tagMode': 'true',
+        if (exact) 'exact': 'true',
+      },
     );
-    return (json['works'] as List? ?? const [])
-        .whereType<Map<String, dynamic>>()
-        .map(ApiWork.fromJson)
-        .toList();
+    return ApiWorkPage.fromJson(json);
   }
 
   Future<CommunityPlaybackStatus> playbackStatus(String workId) async {
@@ -56,8 +69,20 @@ class CommunityApi {
     };
   }
 
-  Future<ApiRankingPage> ranking(RankingPeriod period) async {
-    final json = await _client.getJson('/ranking/${period.pathValue}');
+  Future<ApiRankingPage> ranking(
+    RankingPeriod period, {
+    String? cursor,
+    bool ascending = false,
+    bool sortBookmarks = false,
+  }) async {
+    final json = await _client.getJson(
+      '/ranking/${period.pathValue}',
+      query: {
+        'cursor': ?cursor,
+        if (ascending) 'ascending': 'true',
+        if (sortBookmarks) 'sort': 'bookmarks',
+      },
+    );
     return ApiRankingPage.fromJson(json);
   }
 
@@ -65,23 +90,31 @@ class CommunityApi {
   /// The backend resolves the generated NIARIM user id from the Google ID token,
   /// so changing Google accounts immediately changes the owner list without a local
   /// author-id cache.
-  Future<ApiMyWorks> myWorks() async {
-    final json = await _client.getJson('/me/works', authenticated: true);
+  Future<ApiMyWorks> myWorks({String? cursor}) async {
+    final json = await _client.getJson(
+      '/me/works',
+      authenticated: true,
+      query: {'cursor': ?cursor},
+    );
     return ApiMyWorks.fromJson(json);
   }
 
   Future<List<ApiWork>> worksByAuthor(
     String authorId, {
     bool asOwner = false,
+  }) async => (await worksByAuthorPage(authorId, asOwner: asOwner)).works;
+
+  Future<ApiWorkPage> worksByAuthorPage(
+    String authorId, {
+    bool asOwner = false,
+    String? cursor,
   }) async {
     final json = await _client.getJson(
       '/users/${Uri.encodeComponent(authorId)}/works',
       authenticated: asOwner,
+      query: {'cursor': ?cursor},
     );
-    return (json['works'] as List? ?? const [])
-        .whereType<Map<String, dynamic>>()
-        .map(ApiWork.fromJson)
-        .toList();
+    return ApiWorkPage.fromJson(json);
   }
 
   Future<ApiBookmarkers> bookmarkers(String workId) async {

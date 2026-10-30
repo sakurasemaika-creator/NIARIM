@@ -2,51 +2,62 @@ import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import { QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName } from "../../lib/dynamo";
 import { ok } from "../../lib/response";
+import { decodePageCursor, encodePageCursor, requestedPageSize } from "../../lib/pagination";
 import type { WorkItem } from "../../lib/types";
 import { toPublicWork } from "./_publicWork";
 
-const DEFAULT_LIMIT = 50;
-const MAX_LIMIT = 100;
-
 /**
- * `GET /works/latest`（8.3節）。GSI4（LatestIndex）へのQuery1回で完結
- * する。非公開・強制非表示の作品はGSI4のソートキー属性が存在しない
- * ため、そもそもQuery結果に含まれない（13章）。
- *
- * 8.6節の検索は`q`クエリパラメータで受け、Lambda側で部分一致フィルタを
- * かける（初期規模向けの簡易実装。大規模化時はOpenSearch等へ移行）。
+ * GSI4 keyset paging. Each reply contains at most 25 works, even for search.
+ * Search scans bounded 25-item Dynamo pages, so it never loads all works.
+ * The cursor advances over scanned items, not just matched ones.
  */
 export async function getLatestWorks(event: APIGatewayProxyEventV2) {
   const qp = event.queryStringParameters ?? {};
-  const limit = clampLimit(qp.limit);
-  const query = qp.q?.trim().toLowerCase();
-
-  const result = await ddb.send(
-    new QueryCommand({
-      TableName: tableName(),
-      IndexName: "GSI4",
-      KeyConditionExpression: "gsi4pk = :pk",
-      ExpressionAttributeValues: { ":pk": "LATEST" },
-      ScanIndexForward: false, // 新着順（postedAt降順）
-      Limit: query ? undefined : limit, // 検索時はフィルタ後に件数を絞るためLimitを付けない
-    }),
-  );
-
-  let works = (result.Items ?? []) as WorkItem[];
-  if (query) {
-    works = works.filter(
-      (w) =>
-        w.title.toLowerCase().includes(query) ||
-        w.channelName.toLowerCase().includes(query),
+  const limit = requestedPageSize(qp.limit);
+  const query = (qp.q ?? "").trim().toLowerCase();
+  const tagMode = qp.tagMode === "true";
+  const exact = qp.exact === "true";
+  const scope = `latest|${query}|${tagMode}|${exact}`;
+  let key = decodePageCursor(qp.cursor, scope);
+  const works: WorkItem[] = [];
+  // Bound Lambda read cost even for a rare query with few matches.
+  let more = true;
+  for (let scan = 0; scan < 10 && works.length < limit && more; scan++) {
+    const result = await ddb.send(
+      new QueryCommand({
+        TableName: tableName(),
+        IndexName: "GSI4",
+        KeyConditionExpression: "gsi4pk = :pk",
+        ExpressionAttributeValues: { ":pk": "LATEST" },
+        ScanIndexForward: false,
+        Limit: limit - works.length,
+        ExclusiveStartKey: key,
+      }),
     );
-    works = works.slice(0, limit);
+    for (const work of (result.Items ?? []) as WorkItem[]) {
+      if (matchesSearch(work, query, tagMode, exact)) works.push(work);
+    }
+    key = result.LastEvaluatedKey;
+    more = Boolean(key);
   }
-
-  return ok({ works: works.map(toPublicWork) });
+  return ok({
+    works: works.map(toPublicWork),
+    nextCursor: more ? encodePageCursor(key, scope) : null,
+  });
 }
 
-function clampLimit(raw: string | undefined): number {
-  const n = raw ? Number(raw) : DEFAULT_LIMIT;
-  if (!Number.isFinite(n) || n <= 0) return DEFAULT_LIMIT;
-  return Math.min(n, MAX_LIMIT);
+function matchesSearch(work: WorkItem, query: string, tagMode: boolean, exact: boolean) {
+  if (!query) return true;
+  const terms = query.match(/-?"[^"]+"|-?\S+/g) ?? [];
+  return terms.every((raw) => {
+    const negative = raw.startsWith("-") && raw.length > 1;
+    const term = (negative ? raw.slice(1) : raw).replace(/"/g, "").replace(/^#/, "");
+    const foundTag = (work.tags ?? []).some((tag) => {
+      const normalized = tag.toLowerCase().replace(/^[#＃]/, "");
+      return exact ? normalized === term : normalized.includes(term);
+    });
+    const title = work.title.toLowerCase();
+    const found = tagMode ? foundTag : foundTag || (exact ? title === term : title.includes(term));
+    return negative ? !found : found;
+  });
 }
