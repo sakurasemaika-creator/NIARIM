@@ -292,13 +292,30 @@ async function updateWorkStats(
 async function writeRankingSnapshots(topLists: TopLists): Promise<void> {
   const now = new Date();
   await Promise.all(
-    DELTA_RANKING_PERIODS.map((period) => {
+    DELTA_RANKING_PERIODS.map(async (period) => {
+      const previous = await ddb.send(new GetCommand({
+        TableName: tableName(),
+        Key: Keys.rankingSnapshot(period),
+      }));
+      const old = previous.Item as RankingSnapshotItem | undefined;
+      const nextWindow = currentWindowId(period, now);
+      // An unavailable work must retain its previous rank for the remainder
+      // of the same ranking window. Never carry it into a different period.
+      const merged = [...topLists[period]];
+      if (old?.windowId === nextWindow) {
+        for (const entry of old.entries) {
+          if (!merged.some((current) => current.workId === entry.workId)) {
+            merged.push(entry);
+          }
+        }
+      }
+      merged.sort((a, b) => b.score - a.score || a.workId.localeCompare(b.workId));
       const item: RankingSnapshotItem = {
         itemType: TABLE_ITEM_TYPE.RankingSnapshot,
         ...Keys.rankingSnapshot(period),
         period,
-        windowId: currentWindowId(period, now),
-        entries: topLists[period],
+        windowId: nextWindow,
+        entries: merged.slice(0, RANKING_TOP_LIMIT),
         computedAt: now.toISOString(),
       };
       return ddb.send(new PutCommand({ TableName: tableName(), Item: item }));
