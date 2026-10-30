@@ -58,15 +58,13 @@
    `debugPrint`を使う。以前はdev_branchの
    `lib/screens/settings/theme_preview_gallery_screen.dart`に7件あったが、
    2026-10-30にdev_branch `4751cbe`を取り込んだ時点で無くなり、例外なしの0件）
-3. `flutter test`（ベースライン：2026-10-25、dev_branch `25723b3`を
-   取り込んだ`ccr-f56ee68e-77ag7y`のフォルダを中身ごとゴミ箱へ（A006、
-   `313f300`）の時点で**成功2279・スキップ17・失敗2**。失敗はdev_branchでも落ちる
-   `test/popup_opaque_background_test.dart`と、dev_branchがキャンバスの
-   タイムラインのボタンを矢印つきの`iconBuilder`に変えたために落ちる
-   監査担当の`test/app_web_reference_export_exact_test.dart`で、通常タスク
-   では直さない（以前の失敗〔`test/app_web_reference_*`の他2件・
-   `test/texture_filter_gold_palette_test.dart`・
-   `test/community_filter_dialog_contrast_test.dart`〕は通るようになった）。
+3. `flutter test`（ベースライン：2026-10-30、dev_branch `997f4c2`を
+   取り込んだ`ccr-f56ee68e-77ag7y`（`97ec5ba`）で**成功2414・スキップ23・
+   失敗26**。うち23件はdev_branchだけでも落ちる（作品広場の各テスト
+   〔`community_*`の15件〕・`app_smoke_test`の作品広場4件・
+   `home_bookmark_states_test`の2件・`l10n_unused_key_test`・
+   `startup_failure_recovery_test`）ので通常タスクでは直さない。残り3件は
+   取り込みが原因で、次のコミットで直した。
    スキップのうち3件は
    `test/google_auth_init_once_test.dart`で、
    `--dart-define=NIARIM_GOOGLE_CLIENT_ID=test`を付けたときだけ動く。
@@ -771,6 +769,15 @@ onTap: ...)`だったために
   Enterで確定・二度押しで2回動かない・失敗したら開いたまま・確定中は閉じない、
   をまとめて持つ（ホームのフォルダ作成で二度押しすると2つでき、名前の変更で
   空の名前にできた）。コントローラーもダイアログ自身が持って破棄する。
+  **Enterで確定・追加する欄には`onEditingComplete: () {}`を付けること**：
+  付けないとEnterで欄からフォーカスが外れ、空のまま押して確定できなかった
+  とき、続けて打った字がどこにも入らない（実画面で踏んだ）。タグのように
+  Enterで1つずつ足す欄も、付ければキーボードを閉じずに続けて打てる。
+- **作品の「容量」（`sizeBytes`）と「最終保存」（`updatedAt`）は保存のたびに
+  `saveProject`が合わせる**：以前は起動時にファイルから読むときだけ設定して
+  いたので、作ったばかりの作品は0B、描いても再起動まで古い値だった（ホームの
+  「更新日時」順も同じ値）。保存は描いている間にも走るので通知はせず、
+  次に画面を作るときに使われる値だけを変える。
 - **作成・保存の「処理中」フラグは、成功して画面を移るときは戻さないこと**：
   新規プロジェクトは作成に成功した後`finally`で`_creating = false`に戻して
   いたため、キャンバスを描く前に届いたダブルクリックの2回目（描くのが遅い
