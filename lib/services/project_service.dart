@@ -2527,7 +2527,7 @@ class ProjectService extends ChangeNotifier {
       tileManager.dispose();
       rethrow;
     }
-    final created = project.copyWith(sizeBytes: await saved.length());
+    final created = project.copyWith(sizeBytes: saved.lengthSync());
 
     _projects.add(created);
     _scenes[projectId] = scenes;
@@ -2602,7 +2602,7 @@ class ProjectService extends ChangeNotifier {
         // 容量と最終保存の時刻は、ファイルに書いたものに合わせる。保存は
         // 描いている間にも走るので、通知はせず次に画面を作るときに使われる
         // 値だけを更新する。
-        final size = await saved.length();
+        final size = saved.lengthSync();
         final i = _projects.indexWhere((p) => p.id == projectId);
         if (i >= 0) {
           _projects[i] = _projects[i].copyWith(
