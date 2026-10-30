@@ -225,8 +225,9 @@ void main() {
         appRouter.go(entry.route);
         await settleRoute();
         if (entry.name == '03_project_detail') {
-          // Actual project data: 12 frames at 12fps. Keep playback status
-          // between preview and seek bar and check its real loop toggle.
+          // Actual project data: 12 frames at 12fps. Seconds now sit
+          // *beside* the first and last transport buttons, not beneath the
+          // preview. The status row retains only frame number and loop.
           expect(find.text('0.0s'), findsOneWidget);
           expect(find.text('1/12'), findsOneWidget);
           expect(find.text('1.0s'), findsOneWidget);
@@ -242,16 +243,21 @@ void main() {
           final total = tester.getRect(
             find.byKey(const Key('projectDetailTotalSeconds')),
           );
-          expect(current.right, lessThan(counter.left));
+          final first = tester.getRect(find.byIcon(Icons.skip_previous));
+          final last = tester.getRect(find.byIcon(Icons.skip_next));
+          expect(current.right, lessThan(first.left));
+          expect(last.right, lessThan(total.left));
           expect(counter.right, lessThan(loop.left));
-          expect(loop.right, lessThan(total.left));
-          // Gaps remain equal while current/total seconds stay at the
-          // outside edges. The loop icon gets no special fixed offset.
-          final gap1 = counter.left - current.right;
-          final gap2 = loop.left - counter.right;
-          final gap3 = total.left - loop.right;
-          expect(gap2, closeTo(gap1, 2));
-          expect(gap3, closeTo(gap1, 2));
+          expect(counter.bottom, lessThan(current.top));
+          expect(loop.bottom, lessThan(total.top));
+          expect(
+            (current.center.dy - first.center.dy).abs(),
+            lessThan(12),
+          );
+          expect(
+            (total.center.dy - last.center.dy).abs(),
+            lessThan(12),
+          );
           final loopButton = find.byKey(const Key('projectDetailLoopButton'));
           final activeIcon = tester.widget<Icon>(
             find.descendant(
