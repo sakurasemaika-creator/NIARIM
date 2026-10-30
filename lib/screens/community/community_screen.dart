@@ -138,6 +138,44 @@ class _CommunityScreenState extends State<CommunityScreen>
     if (!controller.hasClients || controller.position.extentAfter > 220) {
       return;
     }
+    _loadNextPage(tab);
+  }
+
+  Widget _pageFooter(int tab, CommunityService service) {
+    final moreFromBackend = service.isBackendConnected && switch (tab) {
+      0 => service.hasMoreLatest,
+      1 => service.hasMoreRanking,
+      2 => service.hasMoreFollowing,
+      _ => service.searchReady ? service.hasMoreSearch : service.hasMoreLatest,
+    };
+    final loaded = switch (tab) {
+      0 => _newArrivals(service.isBackendConnected
+          ? service.latestPageWorks : service.discoverableWorks).length,
+      1 => _rankingWorks(service.discoverableWorks).length,
+      2 => _applySearch(service.favoriteAuthorWorks).length,
+      _ => _applySearch(
+        service.isBackendConnected
+          ? service.searchReady ? service.searchedWorks : service.latestPageWorks
+          : service.discoverableWorks,
+        includeQuery: true,
+      ).length,
+    };
+    if (!moreFromBackend && _visiblePageCounts[tab] >= loaded) {
+      return const SizedBox.shrink();
+    }
+    return Center(
+      child: TextButton.icon(
+        key: Key('communityLoadNextPage$tab'),
+        onPressed: _pagingTabs[tab] ? null : () => _loadNextPage(tab),
+        icon: const Icon(Icons.expand_more),
+        // Use Flutter's localized 'More' label (no fixed language/color).
+        label: Text(MaterialLocalizations.of(context).moreButtonTooltip),
+      ),
+    );
+  }
+
+  void _loadNextPage(int tab) {
+    if (!mounted || _pagingTabs[tab]) return;
     final service = context.read<CommunityService>();
     final all = service.discoverableWorks;
     final loaded = switch (tab) {
@@ -1408,6 +1446,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                         children: [
                           searchRowFor(0),
                           _buildSearchEmptyState(l10n),
+                          _pageFooter(0, communityService),
                         ],
                       ),
                       tab: 0,
@@ -1433,6 +1472,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                           onTapAuthor: _openAuthorWorks,
                           bottomPadding: 88,
                         ),
+                        _pageFooter(0, communityService),
                       ],
                     ),
                     tab: 0,
@@ -1582,6 +1622,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                         );
                       },
                     ),
+                    _pageFooter(1, communityService),
                   ],
                 ),
                 tab: 1,
@@ -1621,6 +1662,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                         children: [
                           searchRowFor(2),
                           _buildSearchEmptyState(l10n),
+                          _pageFooter(2, communityService),
                         ],
                       ),
                       tab: 2,
@@ -1647,6 +1689,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                           repostedByNames: repostedByNames,
                           bottomPadding: 88,
                         ),
+                        _pageFooter(2, communityService),
                       ],
                     ),
                     tab: 2,
@@ -1689,6 +1732,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                             onTapAuthor: _openAuthorWorks,
                             bottomPadding: 88,
                           ),
+                        _pageFooter(3, communityService),
                       ],
                     ),
                     tab: 3,
