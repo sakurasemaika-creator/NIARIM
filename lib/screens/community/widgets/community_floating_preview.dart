@@ -6,6 +6,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../../router.dart';
 import '../../../services/community_preview_service.dart';
 import '../../../services/community_service.dart';
+import '../../../services/api/community_api.dart';
+import 'community_playback_status_view.dart';
 import '../../../widgets/ad_banner_mock_widget.dart';
 import 'community_work_card.dart';
 
@@ -22,6 +24,7 @@ class CommunityFloatingPreview extends StatefulWidget {
 
 class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
   bool _isPlaying = true;
+  CommunityPlaybackStatus _playbackStatus = CommunityPlaybackStatus.checking;
   String? _lastWorkId;
   bool? _showingPlayer;
   final _resizeFocusKey = GlobalKey();
@@ -32,6 +35,19 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
   final _resizeFocus = FocusNode(debugLabel: 'Community preview resize');
   final _detailsFocus = FocusNode(debugLabel: 'Community preview details');
   final _closeFocus = FocusNode(debugLabel: 'Community preview close');
+
+  Future<void> _checkPlayback(String workId) async {
+    final status = await context.read<CommunityService>().playbackStatus(workId);
+    if (!mounted || _lastWorkId != workId) return;
+    setState(() => _playbackStatus = status);
+  }
+
+  void _retryPlayback() {
+    final workId = _lastWorkId;
+    if (workId == null) return;
+    setState(() => _playbackStatus = CommunityPlaybackStatus.checking);
+    _checkPlayback(workId);
+  }
 
   @override
   void dispose() {
@@ -55,10 +71,16 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
       _lastWorkId = opened.id;
       _isPlaying = true;
       _showingPlayer = null;
+      _playbackStatus = CommunityPlaybackStatus.checking;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _lastWorkId == opened.id) _checkPlayback(opened.id);
+      });
     }
     final community = context.watch<CommunityService>();
     final work = community.byId(opened.id) ?? opened;
     if (!community.isOwnWork(work) &&
+        !work.isUnavailable &&
+        work.isNiarimPublished &&
         !community.isDiscoverableForViewer(work)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (service.work?.id == opened.id) service.close();
@@ -298,7 +320,8 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (showPlayer) play,
+                    if (showPlayer &&
+                        _playbackStatus == CommunityPlaybackStatus.available) play,
                     close,
                     if (showPlayer) resizeControl,
                   ],
@@ -310,7 +333,8 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
               height: detailsHeight,
               child: Row(
                 children: [
-                  if (showPlayer) play,
+                  if (showPlayer &&
+                      _playbackStatus == CommunityPlaybackStatus.available) play,
                   close,
                   Expanded(child: detailButton),
                   if (showPlayer) resizeControl,
@@ -383,27 +407,32 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                             child: SizedBox(
                               key: const Key('communityPreviewPlayer'),
                               height: playerHeight,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: communityThumbnailGradient(
-                                      theme.colorScheme,
-                                      work.thumbnailColorIndex,
+                              child: _playbackStatus != CommunityPlaybackStatus.available
+                                  ? CommunityPlaybackStatusView(
+                                      status: _playbackStatus,
+                                      onRetry: _retryPlayback,
+                                    )
+                                  : DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: communityThumbnailGradient(
+                                            theme.colorScheme,
+                                            work.thumbnailColorIndex,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          _isPlaying
+                                              ? Icons.play_circle_fill_rounded
+                                              : Icons.pause_circle_filled_rounded,
+                                          color: controlColor,
+                                          size: 40,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Icon(
-                                    _isPlaying
-                                        ? Icons.play_circle_fill_rounded
-                                        : Icons.pause_circle_filled_rounded,
-                                    color: controlColor,
-                                    size: 40,
-                                  ),
-                                ),
-                              ),
                             ),
                           )
                         else
