@@ -503,6 +503,7 @@ void main() {
     );
 
     await api.latestWorks();
+    await api.playbackStatus('W');
     for (final period in RankingPeriod.values) {
       await api.ranking(period);
     }
