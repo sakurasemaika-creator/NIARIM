@@ -120,6 +120,18 @@ class _CommunityScreenState extends State<CommunityScreen>
           _RankingPeriod.daily => RankingPeriod.day,
         };
 
+  void _refreshSearchAfterSettingChange() {
+    _resetPage(3);
+    final service = context.read<CommunityService>();
+    if (service.isBackendConnected) {
+      service.refreshSearch(
+        query: _searchQuery,
+        tagMode: _tagSearchMode,
+        exact: _tagExactMatch,
+      );
+    }
+  }
+
   void _onPageScroll(int tab) {
     if (!mounted || _pagingTabs[tab]) return;
     final controller = _tabScrollControllers[tab];
@@ -133,8 +145,11 @@ class _CommunityScreenState extends State<CommunityScreen>
       1 => _rankingWorks(all).length,
       2 => _applySearch(service.favoriteAuthorWorks).length,
       _ => _applySearch(
-        service.isBackendConnected && service.searchReady
-          ? service.searchedWorks : all,
+        service.isBackendConnected
+            ? service.searchReady
+                ? service.searchedWorks
+                : service.latestPageWorks
+            : all,
         includeQuery: true,
       ).length,
     };
@@ -1050,12 +1065,15 @@ class _CommunityScreenState extends State<CommunityScreen>
                         tooltip: _tagSearchMode
                             ? l10n.communitySearchHint
                             : l10n.communityTagSearchHint,
-                        onPressed: () => setState(() {
-                          _tagSearchMode = !_tagSearchMode;
-                          _searchQuery = '';
-                          _draftQuery = '';
-                          _searchController.clear();
-                        }),
+                        onPressed: () {
+                          setState(() {
+                            _tagSearchMode = !_tagSearchMode;
+                            _searchQuery = '';
+                            _draftQuery = '';
+                            _searchController.clear();
+                          });
+                          _refreshSearchAfterSettingChange();
+                        },
                       ),
                       Expanded(
                         child: TextField(
@@ -1079,11 +1097,14 @@ class _CommunityScreenState extends State<CommunityScreen>
                       IconButton(
                         icon: const Icon(Icons.close, size: 20),
                         tooltip: l10n.commonClose,
-                        onPressed: () => setState(() {
-                          _searchController.clear();
-                          _draftQuery = '';
-                          _searchQuery = '';
-                        }),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                            _draftQuery = '';
+                            _searchQuery = '';
+                          });
+                          _refreshSearchAfterSettingChange();
+                        },
                       ),
                     ],
                   ),
@@ -1095,8 +1116,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                 controlAffinity: ListTileControlAffinity.leading,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 4),
                 title: Text(CommunityPlazaLabels.of(context).exactTitle),
-                onChanged: (enabled) =>
-                    setState(() => _tagExactMatch = enabled ?? false),
+                onChanged: (enabled) {
+                  setState(() => _tagExactMatch = enabled ?? false);
+                  _refreshSearchAfterSettingChange();
+                },
               ),
               accordion(
                 title: l10n.communitySavedSearches,
@@ -1635,10 +1658,11 @@ class _CommunityScreenState extends State<CommunityScreen>
               builder: (context) {
                 final works = _visible(
                   _applySearch(
-                    (communityService.isBackendConnected &&
-                            communityService.searchReady
-                        ? communityService.searchedWorks
-                        : allWorks).toList(),
+                    (communityService.isBackendConnected
+                      ? communityService.searchReady
+                          ? communityService.searchedWorks
+                          : communityService.latestPageWorks
+                      : allWorks).toList(),
                     includeQuery: true,
                   ),
                   3,
