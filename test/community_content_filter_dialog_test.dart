@@ -425,7 +425,7 @@ void main() {
             find.byKey(const Key('communityTagExactMatch')),
           )
           .value,
-      isTrue,
+      isFalse,
     );
     await tapVisible(tester, find.byKey(const Key('communityDurationMode')));
     await tapVisible(tester, find.text(l10n.communityDurationRange).last);
