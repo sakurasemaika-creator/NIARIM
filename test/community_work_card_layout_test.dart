@@ -140,7 +140,7 @@ void main() {
                 );
                 expect(
                   tester.widget<IconButton>(bookmark).iconSize,
-                  48,
+                  22,
                   reason: scope,
                 );
                 final tile = tester.getRect(find.byType(Card));
@@ -155,11 +155,8 @@ void main() {
                   lessThanOrEqualTo(10),
                   reason: scope,
                 );
-                expect(
-                  buttonRect.right,
-                  lessThanOrEqualTo(menuRect.left + 1),
-                  reason: 'Three-dot menu sits right of bookmark: $scope',
-                );
+                expect((buttonRect.center.dx - menuRect.center.dx).abs(), lessThan(3), reason: scope);
+                expect(buttonRect.top, greaterThanOrEqualTo(menuRect.bottom - 1), reason: scope);
                 final l10n = AppLocalizations.of(
                   tester.element(find.byType(CommunityWorkGrid)),
                 )!;
@@ -254,15 +251,12 @@ void main() {
       tester.getRect(bookmark).top,
       greaterThanOrEqualTo(thumbnail.bottom),
     );
-    expect(
-      tester.getRect(menu).left,
-      greaterThanOrEqualTo(tester.getRect(bookmark).right - 1),
-      reason: 'Menu moves immediately to the bookmark right side',
-    );
-    // 48dp is twice IconButton's previous default 24dp icon.
+    expect((tester.getRect(menu).center.dx - tester.getRect(bookmark).center.dx).abs(), lessThan(3));
+    expect(tester.getRect(bookmark).top, greaterThanOrEqualTo(tester.getRect(menu).bottom - 1));
+    // Smaller artwork, preserved 48dp touch target.
     final action = tester.widget<IconButton>(bookmark);
-    expect(action.iconSize, 48);
-    expect(tester.getSize(bookmark), const Size(56, 56));
+    expect(action.iconSize, 22);
+    expect(tester.getSize(bookmark), const Size(48, 48));
     final card = tester.getRect(find.byType(Card));
     expect(card.right - tester.getRect(menu).right, lessThanOrEqualTo(10));
     expect(tester.getRect(bookmark).center.dx, greaterThan(card.center.dx));

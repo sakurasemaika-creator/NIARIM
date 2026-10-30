@@ -313,7 +313,7 @@ class CommunityWorkCard extends StatelessWidget {
                                       behavior: HitTestBehavior.opaque,
                                       child: ConstrainedBox(
                                         constraints: BoxConstraints(
-                                          minHeight: onAuthorTap == null ? 0 : 40,
+                                          minHeight: onAuthorTap == null ? 0 : 48,
                                         ),
                                         child: Align(
                                           alignment: Alignment.centerLeft,
@@ -354,14 +354,14 @@ class CommunityWorkCard extends StatelessWidget {
                           ),
                           if (!isUnavailable)
                             SizedBox(
-                              width: 40,
+                              width: 48,
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (onMuteToggle != null)
                                     SizedBox(
-                                      width: 40,
-                                      height: 40,
+                                      width: 48,
+                                      height: 48,
                                       child: PopupMenuButton<String>(
                                         key: ValueKey('communityMuteMenu-${work.id}'),
                                         padding: EdgeInsets.zero,
@@ -394,7 +394,7 @@ class CommunityWorkCard extends StatelessWidget {
                                             ? l10n.communityWorkDetailBookmarkRemove
                                             : l10n.communityWorkDetailBookmarkAdd,
                                         constraints: const BoxConstraints.tightFor(
-                                          width: 40, height: 40),
+                                          width: 48, height: 48),
                                         visualDensity: VisualDensity.compact,
                                         iconSize: 22,
                                         padding: EdgeInsets.zero,
