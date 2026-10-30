@@ -40,10 +40,69 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   final Set<String> _selectedIds = <String>{};
   bool _selectionMode = false;
   bool _bulkBusy = false;
+  final ScrollController _worksScrollController = ScrollController();
+  bool _loadingMoreOwnWorks = false;
+  int _visibleOwnCount = CommunityService.pageSize;
+
+  void _onWorksScroll() {
+    if (!_worksScrollController.hasClients ||
+        _worksScrollController.position.extentAfter > 220 ||
+        _loadingWorks ||
+        _loadingMoreOwnWorks) return;
+    final service = context.read<CommunityService>();
+    if (service.api == null) {
+      final total = service.worksByAuthor(kDummySelfAuthorId, includeHidden: true).length;
+      if (_visibleOwnCount < total) {
+        setState(() => _visibleOwnCount += CommunityService.pageSize);
+      }
+    } else if (service.hasMoreOwn) {
+      _loadMoreOwnerWorks();
+    }
+  }
+
+  Future<void> _loadMoreOwnerWorks() async {
+    if (_loadingMoreOwnWorks) return;
+    final generation = _ownerLoadGeneration;
+    final accountId = context.read<GoogleAuthService>().account?.id;
+    setState(() => _loadingMoreOwnWorks = true);
+    try {
+      final page = await context.read<CommunityService>().loadMoreOwnWorks();
+      if (!mounted || generation != _ownerLoadGeneration ||
+          accountId != context.read<GoogleAuthService>().account?.id ||
+          page == null) return;
+      setState(() {
+        _ownerWorks = [
+          ...?_ownerWorks,
+          for (final w in page.works)
+            if (!(_ownerWorks?.any((old) => old.id == w.workId) ?? false))
+              w.toCommunityWork(),
+        ];
+        _youtubePrivacyById = {
+          ..._youtubePrivacyById,
+          for (final work in page.works)
+            if (work.youtubePrivacyStatus != null)
+              work.workId: work.youtubePrivacyStatus!,
+        };
+      });
+    } catch (error) {
+      if (mounted && generation == _ownerLoadGeneration) {
+        setState(() => _worksError = error);
+      }
+    } finally {
+      if (mounted) setState(() => _loadingMoreOwnWorks = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _worksScrollController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
+    _worksScrollController.addListener(_onWorksScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) => _reloadOwnerWorks());
   }
 
@@ -61,6 +120,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     _ownerLoadGeneration++;
     _ownerStateAccountId = accountId;
     _ownerWorks = null;
+    _visibleOwnCount = CommunityService.pageSize;
     _youtubePrivacyById = const <String, String>{};
     _worksError = null;
     _selectedIds.clear();
@@ -77,6 +137,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final community = context.read<CommunityService>();
     final api = community.api;
     final generation = ++_ownerLoadGeneration;
+    _visibleOwnCount = CommunityService.pageSize;
+    if (_worksScrollController.hasClients) _worksScrollController.jumpTo(0);
     if (api == null || !auth.isSignedIn) {
       community.forgetOwner();
       setState(() {
@@ -453,7 +515,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
         : (communityService.worksByAuthor(
             kDummySelfAuthorId,
             includeHidden: true,
-          )..sort((a, b) => b.postedAt.compareTo(a.postedAt)));
+          )..sort((a, b) => b.postedAt.compareTo(a.postedAt)))
+            .take(_visibleOwnCount).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -672,15 +735,24 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                       ),
                     )
                   : ListView.separated(
+                      controller: _worksScrollController,
                       padding: EdgeInsets.fromLTRB(
                         16,
                         8,
                         16,
                         _selectionMode ? 126 : 24,
                       ),
-                      itemCount: works.length,
+                      itemCount: works.length + (_loadingMoreOwnWorks ? 1 : 0),
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
+                        if (index == works.length) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(12),
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
                         final work = works[index];
                         final youtubePrivacy = _youtubePrivacyById[work.id];
                         final deleted = youtubePrivacy == 'deleted';

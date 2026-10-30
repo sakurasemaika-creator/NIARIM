@@ -112,7 +112,7 @@ describe("current-user works contract", () => {
     expect(userWorksSource).toContain(
       "youtubePrivacyStatus: work.youtubePrivacyStatus",
     );
-    expect(userWorksSource).toContain("works: works.map(toOwnerWork)");
+    expect(userWorksSource).toContain("works: page.works.map(toOwnerWork)");
     expect(userWorksSource).toContain(
       "works: includeHidden ? result.map(toOwnerWork) : result.map(toPublicWork)",
     );
