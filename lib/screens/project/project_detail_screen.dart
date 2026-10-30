@@ -217,7 +217,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Row(
-                            children: [exitButton(), _buildLoopButton()],
+                            children: [exitButton(), _buildLoopButton(compact: true)],
                           ),
                           SizedBox(height: 64, child: preview()),
                           _buildSeekBar(flat),
@@ -236,7 +236,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         child: Row(
                           children: [
                             exitButton(),
-                            _buildLoopButton(),
+                            _buildLoopButton(compact: true),
                             Expanded(child: _buildSeekBar(flat)),
                           ],
                         ),
@@ -590,13 +590,23 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  Widget _buildLoopButton() {
+  Widget _buildLoopButton({bool compact = false}) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     // The loop is the fifth quick action: neutral when off, accent when on.
     final label = l10n.timelineLoopOffTooltip
         .split(RegExp(r'[:：]')).first.trim();
     final foreground = _loopPlayback ? scheme.primary : scheme.onSurfaceVariant;
+    if (compact) {
+      return IconButton(
+        key: const Key('projectDetailFullscreenLoopButton'),
+        tooltip: _loopPlayback
+            ? l10n.timelineLoopOnTooltip
+            : l10n.timelineLoopOffTooltip,
+        onPressed: () => setState(() => _loopPlayback = !_loopPlayback),
+        icon: Icon(Icons.repeat, color: foreground, size: 22),
+      );
+    }
     return Semantics(
       toggled: _loopPlayback,
       button: true,
