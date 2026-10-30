@@ -211,13 +211,16 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('communitySearchInput')), findsOneWidget);
     final switcher = find.byKey(const Key('communitySearchModeToggle'));
-    expect(tester.getSize(switcher).width, lessThan(60));
+    final searchRect = tester.getRect(
+      find.byKey(const Key('communitySearchButton')),
+    );
+    expect(tester.getRect(switcher).right, lessThanOrEqualTo(searchRect.left));
+    expect(find.byKey(const Key('communitySearchModePill')), findsOneWidget);
     await tester.tap(switcher);
     await tester.pumpAndSettle();
-    expect(
-      find.descendant(of: switcher, matching: find.byIcon(Icons.search)),
-      findsOneWidget,
-    );
+    // The selected mode is displayed in the pill (on narrow screens with
+    // an icon; on wider screens with localized labels).
+    expect(find.byKey(const Key('communitySearchModePill')), findsOneWidget);
     await tester.enterText(
       find.byKey(const Key('communitySearchInput')),
       '手描き',
