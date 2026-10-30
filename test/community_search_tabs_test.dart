@@ -46,7 +46,14 @@ void main() {
       find.byKey(const Key('communityContentFilterButton')));
     await tester.tap(find.byKey(const Key('communityContentFilterButton')));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('communityTagExactMatch')));
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('communityTagExactMatch')),
+      180,
+      scrollable: find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(Scrollable),
+      ).last,
+    );
     expect(
       tester.widget<SwitchListTile>(
         find.byKey(const Key('communityTagExactMatch')),
