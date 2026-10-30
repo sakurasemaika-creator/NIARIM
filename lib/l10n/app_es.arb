@@ -124,7 +124,6 @@
       }
     }
   },
-  "homePasteSnackbar": "Pegado",
   "commonPaste": "Pegar",
   "commonDuplicate": "Duplicar",
   "commonOk": "Aceptar",
@@ -925,7 +924,6 @@
   "canvasSizePresetEmpty": "Todavía no hay tamaños guardados",
   "canvasSizePresetEmptyHint": "Especifica un tamaño personalizado en la pantalla de nuevo proyecto y toca «Guardar este tamaño» para añadirlo",
   "canvasSizePresetEditDialogTitle": "Editar tamaño",
-  "canvasSizePresetDuplicateSuffix": "copia",
   "newProjectDurationLabel": "Duración (máx. {max})",
   "@newProjectDurationLabel": {
     "placeholders": {
@@ -3227,7 +3225,6 @@
   "homeAddTooltip": "Crear nuevo",
   "commonShowExplanation": "Mostrar explicación",
   "homeViewModeTooltip": "Tamaño de visualización",
-  "homeMoveToTrashSkipFavorites": "{count} elemento(s) favorito(s) se quedarán (quítalos de favoritos para moverlos).",
   "homeMoveToTrashNothing": "No hay nada que mover a la papelera (los favoritos no se mueven).",
   "homeMovedToTrashSnackbar": "{count} elemento(s) movido(s) a la papelera",
   "homeUndoAction": "Deshacer",

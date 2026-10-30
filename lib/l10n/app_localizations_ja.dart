@@ -370,9 +370,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => '貼り付けました';
-
-  @override
   String get commonOk => 'OK';
 
   @override
@@ -2842,9 +2839,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get canvasSizePresetEditDialogTitle => 'サイズを編集';
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => 'のコピー';
 
   @override
   String newProjectDurationLabel(String max) {
@@ -7685,11 +7679,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeViewModeTooltip => '表示の大きさ';
-
-  @override
-  String homeMoveToTrashSkipFavorites(int count) {
-    return 'お気に入りの$count件は移動しません（お気に入りを外すと移動できます）。';
-  }
 
   @override
   String get homeMoveToTrashNothing => 'ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。';

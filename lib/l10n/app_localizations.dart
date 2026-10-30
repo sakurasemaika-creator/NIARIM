@@ -779,12 +779,6 @@ abstract class AppLocalizations {
   /// **'{count}件を貼り付け'**
   String homePasteTooltip(int count);
 
-  /// No description provided for @homePasteSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'貼り付けました'**
-  String get homePasteSnackbar;
-
   /// No description provided for @commonOk.
   ///
   /// In ja, this message translates to:
@@ -5302,12 +5296,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'サイズを編集'**
   String get canvasSizePresetEditDialogTitle;
-
-  /// No description provided for @canvasSizePresetDuplicateSuffix.
-  ///
-  /// In ja, this message translates to:
-  /// **'のコピー'**
-  String get canvasSizePresetDuplicateSuffix;
 
   /// No description provided for @newProjectDurationLabel.
   ///
@@ -14104,12 +14092,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'表示の大きさ'**
   String get homeViewModeTooltip;
-
-  /// No description provided for @homeMoveToTrashSkipFavorites.
-  ///
-  /// In ja, this message translates to:
-  /// **'お気に入りの{count}件は移動しません（お気に入りを外すと移動できます）。'**
-  String homeMoveToTrashSkipFavorites(int count);
 
   /// No description provided for @homeMoveToTrashNothing.
   ///

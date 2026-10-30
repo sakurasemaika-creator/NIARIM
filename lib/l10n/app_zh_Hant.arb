@@ -124,7 +124,6 @@
       }
     }
   },
-  "homePasteSnackbar": "已貼上",
   "commonPaste": "貼上",
   "commonDuplicate": "複製",
   "commonOk": "確定",
@@ -925,7 +924,6 @@
   "canvasSizePresetEmpty": "尚無已儲存的尺寸",
   "canvasSizePresetEmptyHint": "在新增專案畫面指定自訂尺寸後，點選「儲存此尺寸」即可新增",
   "canvasSizePresetEditDialogTitle": "編輯尺寸",
-  "canvasSizePresetDuplicateSuffix": "副本",
   "newProjectDurationLabel": "時長（最大{max}）",
   "@newProjectDurationLabel": {
     "placeholders": {
@@ -3227,7 +3225,6 @@
   "homeAddTooltip": "新增",
   "commonShowExplanation": "顯示說明",
   "homeViewModeTooltip": "顯示大小",
-  "homeMoveToTrashSkipFavorites": "{count}項我的最愛不會移動（取消我的最愛後即可移動）。",
   "homeMoveToTrashNothing": "沒有可移至垃圾桶的項目（我的最愛不會移動）。",
   "homeMovedToTrashSnackbar": "已將{count}項移至垃圾桶",
   "homeUndoAction": "復原",

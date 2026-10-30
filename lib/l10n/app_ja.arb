@@ -192,7 +192,6 @@
       }
     }
   },
-  "homePasteSnackbar": "貼り付けました",
   "commonOk": "OK",
   "gestureSettingsTitle": "ジェスチャー設定",
   "gestureTwoFingerTap": "2本指タップ",
@@ -1188,7 +1187,6 @@
   "canvasSizePresetEmpty": "保存されたサイズはありません",
   "canvasSizePresetEmptyHint": "新規プロジェクト画面でカスタムサイズを指定し、「このサイズを保存する」から追加できます",
   "canvasSizePresetEditDialogTitle": "サイズを編集",
-  "canvasSizePresetDuplicateSuffix": "のコピー",
   "newProjectDurationLabel": "長さ（最大{max}）",
   "@newProjectDurationLabel": {
     "placeholders": {
@@ -3701,14 +3699,6 @@
   "homeAddTooltip": "新規作成",
   "commonShowExplanation": "説明を表示",
   "homeViewModeTooltip": "表示の大きさ",
-  "homeMoveToTrashSkipFavorites": "お気に入りの{count}件は移動しません（お気に入りを外すと移動できます）。",
-  "@homeMoveToTrashSkipFavorites": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "homeMoveToTrashNothing": "ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。",
   "homeMovedToTrashSnackbar": "{count}件をゴミ箱へ移動しました",
   "@homeMovedToTrashSnackbar": {

@@ -371,9 +371,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => '붙여넣었습니다';
-
-  @override
   String get commonOk => '확인';
 
   @override
@@ -2853,9 +2850,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get canvasSizePresetEditDialogTitle => '크기 편집';
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => '사본';
 
   @override
   String newProjectDurationLabel(String max) {
@@ -7723,11 +7717,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeViewModeTooltip => '표시 크기';
-
-  @override
-  String homeMoveToTrashSkipFavorites(int count) {
-    return '즐겨찾기한 $count개 항목은 이동하지 않습니다(즐겨찾기를 해제하면 이동할 수 있습니다).';
-  }
 
   @override
   String get homeMoveToTrashNothing =>

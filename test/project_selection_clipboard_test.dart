@@ -61,6 +61,14 @@ void main() {
     }
   }
 
+  // ゴミ箱から戻すと作品をファイルから読み直すので、[done]になるまで実時間で
+  // 待つ。
+  Future<void> waitFor(WidgetTester tester, bool Function() done) async {
+    for (var i = 0; i < 100 && !done(); i++) {
+      await settleIo(tester);
+    }
+  }
+
   Future<ProjectService> boot(
     WidgetTester tester, {
     List<String> names = const [],
@@ -140,7 +148,7 @@ void main() {
   }
 
   testWidgets('bulk delete moves folders with their contents and can be '
-      'undone; favorites stay', (tester) async {
+      'undone; unselected favorites stay', (tester) async {
     final service = await boot(
       tester,
       names: ['apple', 'banana', 'cherry'],
@@ -161,16 +169,19 @@ void main() {
     );
     await tester.longPress(card('apple'));
     await settle(tester);
-    await tester.tap(card('banana'));
     await tester.tap(card('フォルダ'));
     await settle(tester);
     await tester.tap(find.byTooltip('ゴミ箱へ移動'));
     await settle(tester);
-    expect(find.text('2件をゴミ箱へ移動しますか？'), findsOneWidget);
-    expect(find.textContaining('お気に入りの1件は移動しません'), findsOneWidget);
-    expect(find.text('フォルダの中のプロジェクト1件・フォルダ1件も一緒に移動します。'), findsOneWidget);
+    // 確認はdev_branchの作り（失敗したらやり直せるダイアログ）で、本文は
+    // 1つの文に2行で入る。
+    expect(find.textContaining('2件をゴミ箱へ移動しますか？'), findsOneWidget);
+    expect(
+      find.textContaining('フォルダの中のプロジェクト1件・フォルダ1件も一緒に移動します。'),
+      findsOneWidget,
+    );
     await tester.tap(find.widgetWithText(FilledButton, '移動'));
-    await settleIo(tester);
+    await waitFor(tester, () => snackText(tester) != null);
     expect(service.projects.map((p) => p.name), ['banana']);
     expect(service.folders, isEmpty);
     expect(service.trashedFolders.single.folder.name, 'フォルダ');
@@ -204,23 +215,40 @@ void main() {
     expect(card('apple'), findsOneWidget);
   });
 
-  testWidgets('bulk delete of only favorites says nothing can move', (
-    tester,
-  ) async {
+  // dev_branchの決まり：お気に入りが1件でも入っていれば、選んだ作品でも
+  // フォルダの中の作品でも、一括の削除そのものを止める（保護を外してから）。
+  testWidgets('bulk delete stops when a favorite is selected or inside a '
+      'selected folder', (tester) async {
     final service = await boot(
       tester,
-      names: ['banana'],
+      names: ['apple', 'banana', 'cherry'],
       extra: (service) async {
-        await service.toggleFavorite(service.projects.single.id);
+        await service.toggleFavorite(
+          service.projects.firstWhere((p) => p.name == 'banana').id,
+        );
+        final folder = await service.createFolder('フォルダ');
+        final cherry = service.projects.firstWhere((p) => p.name == 'cherry');
+        await service.toggleFavorite(cherry.id);
+        await service.moveToFolder(cherry.id, folder.id);
       },
     );
-    await tester.longPress(card('banana'));
+    await tester.longPress(card('apple'));
+    await settle(tester);
+    await tester.tap(card('banana'));
     await settle(tester);
     await tester.tap(find.byTooltip('ゴミ箱へ移動'));
     await settle(tester);
     expect(find.byType(AlertDialog), findsNothing);
-    expect(snackText(tester), contains('ゴミ箱へ移動できるものがありません'));
-    expect(service.projects, hasLength(1));
+    expect(snackText(tester), contains('お気に入り登録中は削除できません'));
+    await tester.tap(card('banana'));
+    await tester.tap(card('フォルダ'));
+    await settle(tester);
+    await tester.tap(find.byTooltip('ゴミ箱へ移動'));
+    await settle(tester);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(snackText(tester), contains('お気に入り登録中は削除できません'));
+    expect(service.projects, hasLength(3));
+    expect(service.folders, hasLength(1));
   });
 
   testWidgets('a cut folder pasted into itself stays cut and says why', (
@@ -506,7 +534,7 @@ void main() {
     expect(service.projects, isEmpty);
     expect(snackText(tester), '1件をゴミ箱へ移動しました');
     await tester.tap(find.text('元に戻す'));
-    await settleIo(tester);
+    await waitFor(tester, () => service.projects.isNotEmpty);
     expect(service.projects.single.name, 'apple');
     expect(service.scenesOf(service.projects.single.id), isNotEmpty);
     expect(card('apple'), findsOneWidget);
@@ -550,9 +578,13 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('ゴミ箱へ移動'));
     await settle(tester);
-    await tester.runAsync(() => service.deleteFolder(folderId));
-    await tester.tap(find.text('元に戻す'));
+    // ゴミ箱へ移す保存はフォルダの列の中で進むので、偽の時計を進めながら
+    // フォルダを消す（実時間の中だけで待つと、偽の時計を待つ列で止まる）。
+    final deleted = service.deleteFolder(folderId);
     await settleIo(tester);
+    await tester.runAsync(() => deleted);
+    await tester.tap(find.text('元に戻す'));
+    await waitFor(tester, () => service.projects.isNotEmpty);
     expect(service.projects.single.folderId, isNull);
     // 一番上の一覧に出る（消えたフォルダを指したままだと検索でしか
     // 見つからなかった）。

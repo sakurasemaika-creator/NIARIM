@@ -1043,16 +1043,6 @@ class _HomeScreenState extends State<HomeScreen>
         ..showSnackBar(SnackBar(content: Text(l10n.homeMoveToTrashNothing)));
       return;
     }
-    final folders = inside();
-    final contentFolders = folders.difference(folderIds.toSet()).length;
-    final contentProjects = service.projects
-        .where(
-          (p) =>
-              !p.isSharedImport &&
-              folders.contains(p.folderId) &&
-              !targetIds.contains(p.id),
-        )
-        .length;
     // まだ移していないもの（途中で失敗したとき、残りだけを出してやり直す）。
     List<String> pendingFolders() => [
       for (final f in service.folders)
@@ -1064,22 +1054,42 @@ class _HomeScreenState extends State<HomeScreen>
     ];
     final movedFolders = <String>[];
     final movedProjects = <String>[];
+    // 件数の文と、フォルダの中身も一緒に移ることの文（中身はまだ移していない
+    // フォルダの分だけ）。
+    String message() {
+      final left = [
+        for (final id in folderIds)
+          if (!movedFolders.contains(id)) id,
+      ];
+      final inside = {for (final id in left) ...service.folderSubtreeIds(id)};
+      final folders = inside.difference(left.toSet()).length;
+      final projects = service.projects
+          .where(
+            (p) =>
+                !p.isSharedImport &&
+                inside.contains(p.folderId) &&
+                !targetIds.contains(p.id),
+          )
+          .length;
+      return [
+        l10n.homeMoveToTrashConfirm(
+          pendingFolders().length + pendingProjects().length,
+        ),
+        if (projects + folders > 0)
+          l10n.homeMoveToTrashFolderContents(
+            l10n.homeFolderContents(projects, folders),
+          ),
+      ].join('\n');
+    }
+
     showDialog(
       context: context,
       builder: (_) => ProjectTrashDialog(
         title: l10n.homeMoveToTrash,
-        message: [
-          l10n.homeMoveToTrashConfirm(targetIds.length + folderIds.length),
-          if (contentProjects + contentFolders > 0)
-            l10n.homeMoveToTrashFolderContents(
-              l10n.homeFolderContents(contentProjects, contentFolders),
-            ),
-        ].join('\n'),
+        message: message(),
         confirmLabel: l10n.commonMove,
         itemNames: const [],
-        pendingMessage: () => l10n.homeMoveToTrashConfirm(
-          pendingFolders().length + pendingProjects().length,
-        ),
+        pendingMessage: message,
         pendingItemNames: () => [...pendingFolders(), ...pendingProjects()],
         onApply: () async {
           // Validate the whole current selection before moving the first item.

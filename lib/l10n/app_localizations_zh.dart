@@ -368,9 +368,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => '已粘贴';
-
-  @override
   String get commonOk => '确定';
 
   @override
@@ -2828,9 +2825,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get canvasSizePresetEditDialogTitle => '编辑尺寸';
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => '副本';
 
   @override
   String newProjectDurationLabel(String max) {
@@ -7616,11 +7610,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeViewModeTooltip => '显示大小';
 
   @override
-  String homeMoveToTrashSkipFavorites(int count) {
-    return '$count个已收藏的项目不会移动（取消收藏后即可移动）。';
-  }
-
-  @override
   String get homeMoveToTrashNothing => '没有可移至回收站的项目（收藏的项目不会移动）。';
 
   @override
@@ -8348,9 +8337,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String homePasteTooltip(int count) {
     return '貼上$count項';
   }
-
-  @override
-  String get homePasteSnackbar => '已貼上';
 
   @override
   String get commonOk => '確定';
@@ -10809,9 +10795,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasSizePresetEditDialogTitle => '編輯尺寸';
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => '副本';
 
   @override
   String newProjectDurationLabel(String max) {
@@ -15598,11 +15581,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeViewModeTooltip => '顯示大小';
-
-  @override
-  String homeMoveToTrashSkipFavorites(int count) {
-    return '$count項我的最愛不會移動（取消我的最愛後即可移動）。';
-  }
 
   @override
   String get homeMoveToTrashNothing => '沒有可移至垃圾桶的項目（我的最愛不會移動）。';

@@ -124,7 +124,6 @@
       }
     }
   },
-  "homePasteSnackbar": "붙여넣었습니다",
   "commonPaste": "붙여넣기",
   "commonDuplicate": "복제",
   "commonOk": "확인",
@@ -925,7 +924,6 @@
   "canvasSizePresetEmpty": "저장된 크기가 없습니다",
   "canvasSizePresetEmptyHint": "새 프로젝트 화면에서 사용자 지정 크기를 지정하고 「이 크기 저장하기」로 추가할 수 있습니다",
   "canvasSizePresetEditDialogTitle": "크기 편집",
-  "canvasSizePresetDuplicateSuffix": "사본",
   "newProjectDurationLabel": "길이(최대 {max})",
   "@newProjectDurationLabel": {
     "placeholders": {
@@ -3227,7 +3225,6 @@
   "homeAddTooltip": "새로 만들기",
   "commonShowExplanation": "설명 보기",
   "homeViewModeTooltip": "표시 크기",
-  "homeMoveToTrashSkipFavorites": "즐겨찾기한 {count}개 항목은 이동하지 않습니다(즐겨찾기를 해제하면 이동할 수 있습니다).",
   "homeMoveToTrashNothing": "휴지통으로 이동할 항목이 없습니다(즐겨찾기한 항목은 이동하지 않습니다).",
   "homeMovedToTrashSnackbar": "{count}개 항목을 휴지통으로 이동했습니다",
   "homeUndoAction": "실행 취소",

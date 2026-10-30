@@ -513,10 +513,16 @@ void main() {
       await settle(tester);
       await tester.tap(find.byKey(ValueKey('trashedFolderDelete_$id')));
       await settle(tester);
-      expect(find.text('「親」を完全に削除します。元に戻すことはできません。'), findsOneWidget);
-      expect(find.text('フォルダの中のプロジェクト3件・フォルダ2件も一緒に削除します。'), findsOneWidget);
+      // 確認はdev_branchの作り（失敗したらやり直せるダイアログ）で、本文は
+      // 1つの文に2行で入る。
+      expect(find.textContaining('「親」を完全に削除します。元に戻すことはできません。'), findsOneWidget);
+      expect(
+        find.textContaining('フォルダの中のプロジェクト3件・フォルダ2件も一緒に削除します。'),
+        findsOneWidget,
+      );
       await tester.tap(find.widgetWithText(FilledButton, '削除'));
-      await settleIo(tester);
+      // 中の作品を1件ずつファイルごと消し終わるまで待つ。
+      await waitFor(tester, () => service.trash.length == 1);
       expect(service.trashedFolders, isEmpty);
       expect(service.trash.map((p) => p.name), ['上の作品']);
       expect(service.projects, isEmpty);

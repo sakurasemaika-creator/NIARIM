@@ -124,7 +124,6 @@
       }
     }
   },
-  "homePasteSnackbar": "已粘贴",
   "commonPaste": "粘贴",
   "commonDuplicate": "复制",
   "commonOk": "确定",
@@ -925,7 +924,6 @@
   "canvasSizePresetEmpty": "尚无已保存的尺寸",
   "canvasSizePresetEmptyHint": "在新建项目画面指定自定义尺寸后，点击「保存此尺寸」即可添加",
   "canvasSizePresetEditDialogTitle": "编辑尺寸",
-  "canvasSizePresetDuplicateSuffix": "副本",
   "newProjectDurationLabel": "时长（最大{max}）",
   "@newProjectDurationLabel": {
     "placeholders": {
@@ -3227,7 +3225,6 @@
   "homeAddTooltip": "新建",
   "commonShowExplanation": "显示说明",
   "homeViewModeTooltip": "显示大小",
-  "homeMoveToTrashSkipFavorites": "{count}个已收藏的项目不会移动（取消收藏后即可移动）。",
   "homeMoveToTrashNothing": "没有可移至回收站的项目（收藏的项目不会移动）。",
   "homeMovedToTrashSnackbar": "已将{count}项移至回收站",
   "homeUndoAction": "撤销",

@@ -381,9 +381,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => 'Pasted';
-
-  @override
   String get commonOk => 'OK';
 
   @override
@@ -2948,9 +2945,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get canvasSizePresetEditDialogTitle => 'Edit size';
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => 'copy';
 
   @override
   String newProjectDurationLabel(String max) {
@@ -7950,11 +7944,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeViewModeTooltip => 'Display size';
-
-  @override
-  String homeMoveToTrashSkipFavorites(int count) {
-    return '$count favorite item(s) will stay (remove them from favorites to move them).';
-  }
 
   @override
   String get homeMoveToTrashNothing =>

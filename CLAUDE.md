@@ -1026,10 +1026,14 @@ onTap: ...)`だったために
   `WorkFolderMoveSheet`）。ゴミ箱へ移すときは先にゴミ箱の記録、次にフォルダの
   一覧を保存し、どちらかが失敗すれば何も変えない（途中で終わって記録だけ
   残ったときは、起動時にフォルダがまだあれば記録を捨てる）。`_queueFolder`の
-  中から別の`_queueFolder`の処理を待つと止まるので、中で使うのは
-  `restoreProject`・`permanentDelete`・`duplicateProject`のような列に
-  並ばない処理だけにすること。共有タブのフォルダの削除（中身は一番上へ）は
-  dev_branchのまま。
+  中から別の`_queueFolder`の処理を待つと止まる。dev_branchのゴミ箱（2026-10-30
+  取り込み）で`restoreProject`・`permanentDelete`もフォルダの列に並ぶように
+  なったので、フォルダの処理の中からは`_queueProjectSave(id, () =>
+  _restoreProjectNow(id))`のように、列に並ばない中身（`_restoreProjectNow`・
+  `_permanentDeleteNow`）を作品の保存の列だけを通して呼ぶこと。お気に入りの
+  作品は一括の削除でもフォルダごとでもゴミ箱へ移さない
+  （`FavoriteProjectDeleteException`、dev_branchの決まり）。共有タブのフォルダの
+  削除（中身は一番上へ）はdev_branchのまま。
   ゴミ箱のカード（作品・フォルダとも`_TrashCard`）は、幅が600×文字の倍率より
   狭いと「復元」「完全削除」を名前の下の右端の別の行、広いと名前の右の上下の
   真ん中に置く（dev_branchの決まりを両方のカードに当てた。カードの種類で
