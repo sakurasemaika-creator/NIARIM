@@ -4883,10 +4883,11 @@ class _ThemeSampleScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // 実際の「自分の投稿」の空の表示と同じ色。
                 Icon(
                   Icons.video_library_outlined,
                   size: 48,
-                  color: c.onSurfaceVariant,
+                  color: accentText.withValues(alpha: 0.55),
                 ),
                 const SizedBox(height: 12),
                 Text(
