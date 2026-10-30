@@ -219,7 +219,7 @@ void main() {
     final editor = find.byKey(const Key('communityMutedWordsEntry_0'));
     expect(editor, findsOneWidget);
     await tester.enterText(editor, '修正済み');
-    await tester.tap(find.text('ミュート設定'));
+    await tester.tap(find.text('非表示設定'));
     await tester.pumpAndSettle();
     expect(editor, findsNothing);
     expect(find.text('修正済み'), findsOneWidget);

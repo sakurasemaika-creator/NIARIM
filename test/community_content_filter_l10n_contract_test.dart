@@ -38,7 +38,7 @@ void main() {
         jsonDecode(File('lib/l10n/app_ja.arb').readAsStringSync())
             as Map<String, dynamic>;
     expect(ja['communityContainsGenerativeAiImageVideo'], 'AI画像・AI動画使用');
-    expect(ja['communityMutedWords'], 'ミュートタイトル登録');
-    expect(ja['communityMutedTags'], 'ミュートタグ登録');
+    expect(ja['communityMutedWords'], '非表示ワード登録');
+    expect(ja['communityMutedTags'], '非表示タグ登録');
   });
 }
