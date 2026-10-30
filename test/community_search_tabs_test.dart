@@ -42,18 +42,17 @@ void main() {
 
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.controller?.text, '手描き');
+    await tester.runAsync(
+      () => tester.element(find.byType(CommunityScreen))
+          .read<CommunityService>()
+          .contentFiltersReady,
+    );
     await tester.ensureVisible(
       find.byKey(const Key('communityContentFilterButton')));
     await tester.tap(find.byKey(const Key('communityContentFilterButton')));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('communityTagExactMatch')),
-      180,
-      scrollable: find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.byType(Scrollable),
-      ).last,
-    );
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('communityTagExactMatch')));
     expect(
       tester.widget<SwitchListTile>(
         find.byKey(const Key('communityTagExactMatch')),
