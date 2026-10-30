@@ -4,6 +4,13 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// GitHub Actions / local environment inject private signing materials via environment
+// variables. Never commit keystores or passwords to this repository.
+val niarimDebugKeystorePath = System.getenv("NIARIM_DEBUG_KEYSTORE_PATH")?.takeIf { it.isNotBlank() }
+val niarimDebugStorePassword = System.getenv("NIARIM_DEBUG_STORE_PASSWORD")?.takeIf { it.isNotBlank() }
+val niarimUploadKeystorePath = System.getenv("NIARIM_UPLOAD_KEYSTORE_PATH")?.takeIf { it.isNotBlank() }
+val niarimUploadStorePassword = System.getenv("NIARIM_UPLOAD_STORE_PASSWORD")?.takeIf { it.isNotBlank() }
+
 android {
     namespace = "com.niarim.niarim"
     // google_mobile_ads 7.x系はcompileSdk 36を要求するため、Flutter側の既定値が
@@ -30,11 +37,34 @@ android {
         versionName = flutter.versionName
     }
 
+    // Dedicated keys: CI debug APKs must keep one certificate across runs;
+    // Play upload releases use a DIFFERENT key. Google Play signs delivered
+    // APKs with its own app-signing key, whose SHA-1 must also be registered.
+    signingConfigs {
+        if (niarimDebugKeystorePath != null && niarimDebugStorePassword != null) {
+            getByName("debug") {
+                storeFile = file(niarimDebugKeystorePath)
+                storePassword = niarimDebugStorePassword
+                keyAlias = "niarim_ci_debug"
+                keyPassword = niarimDebugStorePassword
+            }
+        }
+        if (niarimUploadKeystorePath != null && niarimUploadStorePassword != null) {
+            create("niarimUpload") {
+                storeFile = file(niarimUploadKeystorePath)
+                storePassword = niarimUploadStorePassword
+                keyAlias = "niarim_upload"
+                keyPassword = niarimUploadStorePassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Never ship a release signed with a temporary CI debug key.
+            // An unsigned local release is prevented below; CI also fails closed
+            // until the persistent upload key has been configured.
+            signingConfig = signingConfigs.findByName("niarimUpload")
 
             // APK容量削減（仕様書01：低スペック端末対応）。R8はJava/Kotlinの
             // プラグイングルーコードのみを対象とし、FlutterのDartコード
@@ -72,4 +102,20 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+// Fail closed for release builds when the upload keystore is unavailable.
+// Flutter invokes assembleRelease / bundleRelease; ordinary analysis and debug
+// builds remain available without release secrets.
+val niarimReleaseRequested = gradle.startParameter.taskNames.any { task ->
+    val simpleName = task.substringAfterLast(':').lowercase()
+    (simpleName.startsWith("assemble") ||
+        simpleName.startsWith("bundle") ||
+        simpleName.startsWith("package")) && simpleName.contains("release")
+}
+if (niarimReleaseRequested && android.signingConfigs.findByName("niarimUpload") == null) {
+    throw org.gradle.api.GradleException(
+        "NIARIM release signing is not configured. Set NIARIM_UPLOAD_KEYSTORE_PATH " +
+            "and NIARIM_UPLOAD_STORE_PASSWORD; never fall back to the debug key.",
+    )
 }

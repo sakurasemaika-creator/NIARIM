@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// The display filters' mute entries must not read like blocking a user:
 /// in Chinese 「屏蔽」/「封鎖」 is the word the plaza uses for the block
-/// button, so the mute labels use 「静音」/「靜音」 instead. Their hints say
+/// button, so the hidden-work labels use 「隐藏」/「隱藏」 instead. Their hints say
 /// what is matched and that entries can be separated by more than ASCII
 /// commas.
 void main() {
@@ -19,8 +19,8 @@ void main() {
     expect(zh['communityWorkDetailBlockButton'], '屏蔽');
     expect(hant['communityWorkDetailBlockButton'], '封鎖');
     for (final key in ['communityMutedWords', 'communityMutedTags']) {
-      expect(zh[key], startsWith('静音'), reason: 'zh $key');
-      expect(hant[key], startsWith('靜音'), reason: 'zh_Hant $key');
+      expect(zh[key], startsWith('隐藏'), reason: 'zh $key');
+      expect(hant[key], startsWith('隱藏'), reason: 'zh_Hant $key');
     }
     for (final key in [
       'communityMutedWords',

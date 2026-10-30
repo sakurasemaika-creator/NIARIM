@@ -593,14 +593,18 @@ class _HomeScreenState extends State<HomeScreen>
                                                 fontFamilyFallback:
                                                     kHeadingFontFallback,
                                                 color: _showFavoritesOnly
-                                                    ? Colors.white
+                                                    ? Theme.of(
+                                                        context,
+                                                      ).colorScheme.onPrimary
                                                     : null,
                                               ),
                                             ),
                                             selectedColor: Theme.of(
                                               context,
                                             ).colorScheme.primary,
-                                            checkmarkColor: Colors.white,
+                                            checkmarkColor: Theme.of(
+                                              context,
+                                            ).colorScheme.onPrimary,
                                             selected: _showFavoritesOnly,
                                             onSelected: (v) => setState(
                                               () => _showFavoritesOnly = v,
@@ -1678,42 +1682,33 @@ class _SharedScreenState extends State<SharedScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        // タイトル欄を並び替えコントロールで潰さない。ハンバーガー
-        // メニューから開くこの2画面は見た目がほとんど同じなので、
-        // 画面名が出ていないと「共有」と「ゴミ箱」のどちらを見ているのか
-        // 分からなくなる（build/all-route-screenshots/31_shared.png で発覚）。
+        // Keep the screen name independent of translated sorting controls.
         title: Text(l10n.homeTabShared),
-        actions: [
-          SortModeControl(
-            sortByName: _sortByName,
-            sortAscending: _sortAscending,
-            onSortByNameChanged: _setSortByName,
-            onToggleDirection: _toggleSortDirection,
-          ),
-          const SizedBox(width: 4),
-        ],
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                FilterChip(
-                  label: Text(
-                    l10n.homeFavoritesOnly,
-                    style: TextStyle(
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                      color: _showFavoritesOnly ? Colors.white : null,
-                    ),
-                  ),
-                  selectedColor: Theme.of(context).colorScheme.primary,
-                  checkmarkColor: Colors.white,
-                  selected: _showFavoritesOnly,
-                  onSelected: (v) => setState(() => _showFavoritesOnly = v),
+          _LibraryListControls(
+            sort: SortModeControl(
+              sortByName: _sortByName,
+              sortAscending: _sortAscending,
+              onSortByNameChanged: _setSortByName,
+              onToggleDirection: _toggleSortDirection,
+            ),
+            leading: FilterChip(
+              label: Text(
+                l10n.homeFavoritesOnly,
+                style: TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                  color: _showFavoritesOnly
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : null,
                 ),
-              ],
+              ),
+              selectedColor: Theme.of(context).colorScheme.primary,
+              checkmarkColor: Theme.of(context).colorScheme.onPrimary,
+              selected: _showFavoritesOnly,
+              onSelected: (v) => setState(() => _showFavoritesOnly = v),
             ),
           ),
           Expanded(
@@ -1785,24 +1780,56 @@ class _TrashScreenState extends State<TrashScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        // タイトル欄を並び替えコントロールで潰さない。ハンバーガー
-        // メニューから開くこの2画面は見た目がほとんど同じなので、
-        // 画面名が出ていないと「共有」と「ゴミ箱」のどちらを見ているのか
-        // 分からなくなる（build/all-route-screenshots/31_shared.png で発覚）。
+        // Keep the screen name independent of translated sorting controls.
         title: Text(l10n.homeTabTrash),
-        actions: [
-          SortModeControl(
-            sortByName: _sortByName,
-            sortAscending: _sortAscending,
-            onSortByNameChanged: _setSortByName,
-            onToggleDirection: _toggleSortDirection,
+      ),
+      body: Column(
+        children: [
+          _LibraryListControls(
+            sort: SortModeControl(
+              sortByName: _sortByName,
+              sortAscending: _sortAscending,
+              onSortByNameChanged: _setSortByName,
+              onToggleDirection: _toggleSortDirection,
+            ),
           ),
-          const SizedBox(width: 4),
+          Expanded(child: _TrashTab(sortMode: _sortMode)),
         ],
       ),
-      body: _TrashTab(sortMode: _sortMode),
     );
   }
+}
+
+/// Library actions can wrap without taking space from the route title.
+class _LibraryListControls extends StatelessWidget {
+  const _LibraryListControls({required this.sort, this.leading});
+
+  final Widget sort;
+  final Widget? leading;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    child: LayoutBuilder(
+      builder: (context, constraints) => OverflowBar(
+        alignment: leading == null
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.spaceBetween,
+        overflowAlignment: OverflowBarAlignment.end,
+        spacing: 8,
+        overflowSpacing: 4,
+        children: [
+          ?leading,
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: constraints.maxWidth < 400 ? 96 : constraints.maxWidth,
+            ),
+            child: sort,
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 /// [ProjectSortMode]に従って並び替えたリストを返す。共有一覧・ゴミ箱一覧
@@ -2226,44 +2253,37 @@ class _TrashTab extends StatelessWidget {
             ? ''
             : l10n.homeTrashDeletedOn(_date(deletedAt));
         final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
-        return Card(
-          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          elevation: 1,
-          shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-            alpha: 0.15,
+        return _TrashCard(
+          actions: _TrashActions(
+            restoreKey: ValueKey('trashedProjectRestore_${project.id}'),
+            deleteKey: ValueKey('trashedProjectDelete_${project.id}'),
+            onRestore: () =>
+                context.read<ProjectService>().restoreProject(project.id),
+            onDelete: () => _confirmPermanentDelete(context, project.id),
           ),
-          color: Theme.of(context).colorScheme.surfaceContainerLow,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ListTile(
-                leading: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Color(project.backgroundColor),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                title: Text(
-                  project.name,
-                  style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                ),
-                subtitle: Text(
-                  deletedLabel.isEmpty ? meta : '$deletedLabel · $meta',
-                ),
+          details: ({Widget? trailing}) => ListTile(
+            // ボタンを名前の右に並べるときは、作品とフォルダのカードで同じく
+            // 上下の真ん中に置く。
+            titleAlignment: ListTileTitleAlignment.center,
+            leading: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Color(project.backgroundColor),
+                borderRadius: BorderRadius.circular(10),
               ),
-              _TrashActions(
-                restoreKey: ValueKey('trashedProjectRestore_${project.id}'),
-                deleteKey: ValueKey('trashedProjectDelete_${project.id}'),
-                onRestore: () =>
-                    context.read<ProjectService>().restoreProject(project.id),
-                onDelete: () => _confirmPermanentDelete(context, project.id),
+            ),
+            title: Text(
+              project.name,
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
               ),
-            ],
+            ),
+            subtitle: Text(
+              deletedLabel.isEmpty ? meta : '$deletedLabel · $meta',
+            ),
+            trailing: trailing,
           ),
         );
       },
@@ -2298,10 +2318,64 @@ class _TrashTab extends StatelessWidget {
   }
 }
 
-/// ゴミ箱のカードの「復元」「完全削除」。作品とフォルダのどちらのカードも、
-/// 名前の下の右端の同じ位置に置く（名前の右に並べると、作品とフォルダで
-/// 位置がずれ、長い名前や大きな文字では名前を押し縮めた）。
-class _TrashActions extends StatelessWidget {
+/// ゴミ箱のカード。「復元」「完全削除」は、狭い画面・大きな文字では名前の
+/// 下の右端に別の行で、広い画面では名前の右に並べる。作品とフォルダの
+/// どちらのカードも同じ決まりで置く（置き場所が違うと、並べたときに
+/// ずれて見えた。名前の右に詰めると、狭い画面では名前と日付を押しつぶした）。
+class _TrashCard extends StatelessWidget {
+  const _TrashCard({super.key, required this.details, required this.actions});
+
+  /// 名前と日付の行（広い画面ではボタンを[trailing]に受け取る）。
+  final Widget Function({Widget? trailing}) details;
+  final _TrashActions actions;
+
+  /// この幅（文字の大きさに合わせて広げる）より狭いと、ボタンを別の行にする。
+  static const double _wideWidth = 600;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final compact =
+          constraints.maxWidth <
+          _wideWidth * MediaQuery.textScalerOf(context).scale(1);
+      return Card(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        elevation: 1,
+        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+          alpha: 0.15,
+        ),
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        child: compact
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  details(),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                    child: OverflowBar(
+                      alignment: MainAxisAlignment.end,
+                      overflowAlignment: OverflowBarAlignment.end,
+                      spacing: 8,
+                      overflowSpacing: 4,
+                      children: actions.buttons(context),
+                    ),
+                  ),
+                ],
+              )
+            : details(
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: actions.buttons(context),
+                ),
+              ),
+      );
+    },
+  );
+}
+
+/// ゴミ箱のカードの「復元」「完全削除」（押しやすい48px以上）。
+class _TrashActions {
   final Key restoreKey;
   final Key deleteKey;
   final VoidCallback onRestore;
@@ -2314,32 +2388,29 @@ class _TrashActions extends StatelessWidget {
     required this.onDelete,
   });
 
-  @override
-  Widget build(BuildContext context) {
+  List<Widget> buttons(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 4),
-      child: OverflowBar(
-        alignment: MainAxisAlignment.end,
-        overflowAlignment: OverflowBarAlignment.end,
-        spacing: 8,
-        children: [
-          TextButton(
-            key: restoreKey,
-            onPressed: onRestore,
-            child: Text(l10n.commonRestore),
-          ),
-          TextButton(
-            key: deleteKey,
-            style: TextButton.styleFrom(
-              foregroundColor: ThemeService.activeColorScheme.error,
-            ),
-            onPressed: onDelete,
-            child: Text(l10n.homePermanentDelete),
-          ),
-        ],
+    return [
+      TextButton(
+        key: restoreKey,
+        style: TextButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          visualDensity: VisualDensity.standard,
+        ),
+        onPressed: onRestore,
+        child: Text(l10n.commonRestore),
       ),
-    );
+      TextButton(
+        key: deleteKey,
+        style: TextButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          visualDensity: VisualDensity.standard,
+          foregroundColor: ThemeService.activeColorScheme.error,
+        ),
+        onPressed: onDelete,
+        child: Text(l10n.homePermanentDelete),
+      ),
+    ];
   }
 }
 
@@ -2362,63 +2433,57 @@ class _TrashedFolderCard extends StatelessWidget {
       record.subfolders.length,
     );
     final scheme = Theme.of(context).colorScheme;
-    return Card(
+    return _TrashCard(
       key: ValueKey('trashedFolder_${folder.id}'),
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      elevation: 1,
-      shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-        alpha: 0.15,
+      actions: _TrashActions(
+        restoreKey: ValueKey('trashedFolderRestore_${folder.id}'),
+        deleteKey: ValueKey('trashedFolderDelete_${folder.id}'),
+        onRestore: () => service.restoreTrashedFolder(folder.id),
+        onDelete: () => _confirmPermanentDelete(
+          context,
+          projects.length,
+          record.subfolders.length,
+        ),
       ),
-      color: scheme.surfaceContainerLow,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ListTile(
-            leading: SizedBox(
-              width: 48,
-              height: 48,
-              child: Icon(
-                Icons.folder,
-                size: 40,
-                // ホームの一覧と同じ色（フォルダの既定色は差し色の塗り）。
-                color: folder.color != null
-                    ? Color(folder.color!)
-                    : scheme.primary,
-              ),
-            ),
-            title: Text(
-              folder.name,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            subtitle: Text(
+      details: ({Widget? trailing}) => ListTile(
+        titleAlignment: ListTileTitleAlignment.center,
+        leading: SizedBox(
+          width: 48,
+          height: 48,
+          child: Icon(
+            Icons.folder,
+            size: 40,
+            // ホームの一覧と同じ色（フォルダの既定色は差し色の塗り）。
+            color: folder.color != null ? Color(folder.color!) : scheme.primary,
+          ),
+        ),
+        title: Text(
+          folder.name,
+          style: const TextStyle(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+          ),
+        ),
+        // 中の作品の名前は日付・件数の下に（2行まで）。
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
               '${l10n.homeTrashDeletedOn(_TrashTab._date(record.deletedAt))}'
               ' · $contents',
             ),
-          ),
-          if (projects.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-              child: Text(
+            if (projects.isNotEmpty)
+              Text(
                 projects.map((p) => p.name).join('、'),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: scheme.onSurfaceVariant),
               ),
-            ),
-          _TrashActions(
-            restoreKey: ValueKey('trashedFolderRestore_${folder.id}'),
-            deleteKey: ValueKey('trashedFolderDelete_${folder.id}'),
-            onRestore: () => service.restoreTrashedFolder(folder.id),
-            onDelete: () => _confirmPermanentDelete(
-              context,
-              projects.length,
-              record.subfolders.length,
-            ),
-          ),
-        ],
+          ],
+        ),
+        isThreeLine: projects.isNotEmpty,
+        trailing: trailing,
       ),
     );
   }

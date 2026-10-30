@@ -15,7 +15,7 @@ import 'helpers/load_app_fonts.dart';
 
 void main() {
   testWidgets(
-    'content-filter controls and instructions remain complete at large text',
+    'mute settings controls and instructions remain complete at large text',
     (tester) async {
       SharedPreferences.setMockInitialValues({});
       final themes = ThemeService();
@@ -53,10 +53,10 @@ void main() {
             await tester.pumpAndSettle();
             final l10n = AppLocalizations.of(screen)!;
             await tester.ensureVisible(
-              find.byKey(const Key('communityContentFilterButton')),
+              find.byKey(const Key('communityMuteSettingsButton')),
             );
             await tester.tap(
-              find.byKey(const Key('communityContentFilterButton')),
+              find.byKey(const Key('communityMuteSettingsButton')),
             );
             await tester.pumpAndSettle();
             await tester.ensureVisible(

@@ -19,7 +19,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - Route状態はdev_branchのまま：Baseline done 2/628、current A003 in_progress、Discovery cursor DISC001、Delta not_started。Opusのブランチで「A003・A004 done」「A005 done」とした判定は引き継がない。その記録はASTRA_AUDIT_STATE.mdの「Opusブランチの証跡」節（A003・A004・A005）に残し、該当IDの監査で現在のHEADで再確認してから再利用する。
 - 統合した製品修正（dev_branchに無かったもの）：起動画面の釣り合い（ユーザー指摘、`7c96013`・`b928b22`）／A003相当（`d83cbe4`：ホームの戻る操作、`TypingAwareShortcuts`〔ホーム・キャンバス・タイムライン〕、検索の開閉とフォーカス、初回の説明カードのルート化）／A004相当（`adf4176`：名前の並び・検索のそろえ方、空の表示の分岐、カードの名前を絵の下へ・背景色と縦横比、詳細表示、表示サイズ・並び順の保存とメニューのチェック、サムネイルの別名保存）／A005相当（`14c53d7`：一括のゴミ箱でお気に入りを守る・元に戻す、貼り付けの検証、切り取りの取り消しと読み上げ、複製で素材とサムネイルを写す、右クリックのメニュー、`NameEntryDialog`、SnackBarの操作ボタンの色）。
 - dev_branchを優先したもの：選択中の操作バー（1行・一括お気に入りの撤去、ユーザー指定）、ホームのタブバー、ブクマ済みタブの状態表示、作品一覧の取得失敗と再試行、引き出しの見出し、カードのメニューと選択色、空の表示のスクロール、初回案内は「はじめる」で表示済み、検索中はショートカットを効かせない、テーマの明示色とAPCAの救済判定。OpusのPCの側面パネルは、PCでも引き出しを使うdev_branchの仕様（テスト）と食い違うため取り下げた。
-- Discovery：Opusのブランチで登録した「オンボーディング・初回説明の再表示」は、dev_branchのDISC003（書き出し済み作品一覧の取得失敗）と番号が重なるため、DISC014として登録し直した。その後dev_branchがDISC014（テーマの9色契約と見本一覧）〜DISC041を登録したため、2026-10-30の取り込みでDISC042へ移した（中身は同じ。以下のOpusの記録のDISC014はDISC042に読み替える）。
+- Discovery：Opusのブランチで登録した「オンボーディング・初回説明の再表示」は、dev_branchのDISC003（書き出し済み作品一覧の取得失敗）と番号が重なるため、DISC014として登録し直した。その後dev_branchがDISC014（テーマの9色契約と見本一覧）〜DISC041を登録したため、2026-10-30の取り込みでDISC042へ移したが、同じ日のdev_branchがDISC042〜044を登録したため、さらにDISC045へ移した（中身は同じ。以下のOpusの記録のDISC014・DISC042はDISC045に読み替える）。
 - ユーザー指定（2026-10-23）：書体は、見出し・タイトル・ボタンはくらむぼん、説明文・本文・エラー文・注釈は白光明朝。ただしSnackBarの「元に戻す」は小さく太字だと潰れるので白光明朝のまま（ユーザー指定）。テーマへ反映済み（App `8763583`）。全画面での確認はA081で行う。
 - 2回目の取り込み（dev_branch `d9c9531`、App `ab2b946`）：ホームの「起動画面へ戻る」を左下のFABへ（左上はハンバーガーだけ）、タブの選択線をアクセント色に、テーマのプレビュー一覧・タイムラインのプレビューの更新はdev_branchどおり。Opusの「左上の矢印で検索を閉じる」は矢印ごと無くなったので撤回。dev_branch単体で壊れていた2点だけを最小に直した：FloatingActionButtonに存在しない`shadowColor`を渡しFlutter 3.47.7でコンパイルできない（3行削除、影はelevation 0で消えている）、タイムラインのプレビューの秒数がプロジェクト未読み込みで`project!`の例外（既定値を0にして24fpsへ）。
 - 統合後の実画面確認で見つけた不具合：ホームの一覧の最後の行が左右のFABに隠れる（一覧の下端の余白が8pxだけ。複数選択で画面にちょうど収まるとスクロールもできない）→一覧の下端にFAB＋余白＋ナビゲーションバーぶんの余白（App `baae313`）。証跡はASTRA_AUDIT_STATE.mdのA005節。
@@ -35,14 +35,14 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - テーマ・外観で差し色だけ変えたら差し色の役目の色だけが変わるようにした（ユーザー指示、App `9df71be`）。ダークのボタンの文字もユーザー判断で白抜きに統一し、差し色をライトと揃えた（App `d3c811b`）。
 - dev_branchのS9（通常UIの色をテーマ・外観の正式色から取る）の残りを済ませた：作品広場のカードの文字・札・再生の印・ブックマーク、浮かぶプレビューの操作バー、ツールチップ、スイッチ。あわせてユーザー指摘の4件（起動画面のアプリ名のロゴをアイコンと同じ差し色に、作品広場の上部のバーを2段に、プレビューの拡大縮小の記号をバーの他のボタンと同じ高さに、「詳細へ」をアクセントの文字・アイコン色に、App `855b0c3`）。正式色の対応表はASTRA_AUDIT_STATE.mdのA003節。Route状態はdev_branchのまま（A003 in_progress、DISC003〜014 todo）。
 - A003のDiscoveryを実操作で確認：DISC013（プレビューを狭い・低い画面に収める）とDISC003の残り（プロジェクトを読み込めなかったときの通知・再試行）を修正（App `205ad92`）。DISC004・006・010・012は実画面で確認、007・008・009・011はテストで確認。結果はASTRA_AUDIT_STATE.mdのA003節。statusはtodoのまま。
-- DISC001（初回の表示言語を端末の言語に）を修正（App `0cfdfd5`）。対応外の言語の既定・目のアイコンの文字・DISC002のエラーの記録の画面・DISC042のチュートリアルはユーザーに確認する。
+- DISC001（初回の表示言語を端末の言語に）を修正（App `0cfdfd5`）。対応外の言語の既定・目のアイコンの文字・DISC002のエラーの記録の画面・DISC045のチュートリアルはユーザーに確認する。
 - ユーザーの判断に沿って、対応外の言語は英語・表示フィルターのアイコン（App `27c973b`）、DISC002「エラーの記録」（App `eb62009`）、作品広場の上部のバーの並べ直し（App `8816dcf`）。DISC014（図つきのチュートリアル）は着手中。
-- DISC042（図つきの6ページの使い方、ホームのメニュー・ヘルプから見直し、設定で機能の説明の再表示、App `191421d`・`7d857fa`）と、ユーザー指定のタイムラインのプレビューの操作（フレーム数・ループ・全画面を絵の外の隅へ、App `7f2fb37`）。次は全件の`flutter test`でベースラインを更新し、A003の残り（DISC005・009の実バックエンド等）へ。
+- DISC045（図つきの6ページの使い方、ホームのメニュー・ヘルプから見直し、設定で機能の説明の再表示、App `191421d`・`7d857fa`）と、ユーザー指定のタイムラインのプレビューの操作（フレーム数・ループ・全画面を絵の外の隅へ、App `7f2fb37`）。次は全件の`flutter test`でベースラインを更新し、A003の残り（DISC005・009の実バックエンド等）へ。
 - 2026-10-25：DISC005（見本の作品広場を実際の役目にそろえる・差し色の上の文字の役目のテスト、App `a9f9491`・`28326dd`）、DISC007（関連一覧のスクロール位置のテスト、App `eb725d3`）、DISC008（理由の7言語のテスト、App `300168d`）。次はDISC011（作品カードの札・長い名前・文字2倍）とDISC009（実バックエンドが要る）。
 - 2026-10-25：A006（フォルダの階層・パンくず・削除と複製）を現在のHEADで実操作。ユーザーの判断で、フォルダは中身ごとゴミ箱へ移してフォルダごと戻す・中身ごと複製（App `313f300`）、同じ階層の同じ名前には番号を付ける（App `dc2aebd`）。パンくずの押せる大きさ・読み上げ、フォルダの編集の色の丸も修正。DISC011は既存の`community_work_card_layout_test`で見張られていることを確認（修正なし）。詳細はASTRA_AUDIT_STATE.mdのA006節。Route状態はdev_branchのまま（A003 in_progress、A006 todo、DISC todo）。次はA007（新規プロジェクト。カスタムサイズの保存のダイアログが`showDialog().then()`で入力欄を破棄している件を確認する）。
 - 2026-10-25：ゴミ箱の復元・完全削除の位置をそろえた（ユーザー指摘、App `54118d3`）。A007（新規プロジェクト）を実操作：保存のダイアログの破棄で画面全体がエラーになる・空白の名前で保存できる、数字の欄の表示と実際の値の食い違い、ダブルクリックで作品が2つできる、見出しの行のはみ出しを修正（App `59d81f2`）。詳細はASTRA_AUDIT_STATE.mdのA007節。Route状態はdev_branchのまま。次はA008（キャンバスサイズのプリセット管理）。
 - 2026-10-25：A008（サイズ設定）を実操作：範囲外のサイズ（5000×5000）・空白の名前を保存できる、コピーの名前、組み込みと同じ大きさで2つのチップが選ばれる件を修正（App `29f1d16`）。詳細はASTRA_AUDIT_STATE.mdのA008節。Route状態はdev_branchのまま。次はA009（プロジェクト詳細）。
-- 2026-10-30：dev_branchの最新（App `4751cbe`、Web `521c58c`）を取り込んだ（ユーザー指示「最新のdev_branchをプルしたうえで正式完了にしないまま全面監査を続けてください」）。競合はdev_branchを優先：組み込みテーマ28種は元の配色（Opusの10-24の配色の見直しを取り下げ）、作品広場・テーマの見本一覧はdev_branchのまま、ホームの上部（左上の戻る・右上のメニュー・左下の一番上へ）とフォルダの保存の仕組み（保存してから変える・失敗を残して出す）はdev_branch。Opusのうち食い違わないもの（フォルダを中身ごとゴミ箱へ・中身ごと複製・同じ名前の番号・移動先の階層・貼り付けの結果・一覧の列数・使い方・A007/A008）はdev_branchの仕組みに乗せ直して残した。発見事項はdev_branchのDISC014〜041と重ならないよう、Opusの初回の案内をDISC042にした。Route状態はdev_branchのまま（A003 in_progress、DISCはtodo）。詳細は`12_実装チェックリスト.md`の同日の節。
+- 2026-10-30：dev_branchの最新（App `4751cbe`→同日の`997f4c2`、Web `521c58c`→`60b6d2a`）を取り込んだ（ユーザー指示「最新のdev_branchをプルしたうえで正式完了にしないまま全面監査を続けてください」）。競合はdev_branchを優先：組み込みテーマ28種は元の配色（Opusの10-24の配色の見直しを取り下げ）、作品広場・テーマの見本一覧はdev_branchのまま、ホームの上部（左上の戻る・右上のメニュー・左下の一番上へ）とフォルダの保存の仕組み（保存してから変える・失敗を残して出す）はdev_branch。Opusのうち食い違わないもの（フォルダを中身ごとゴミ箱へ・中身ごと複製・同じ名前の番号・移動先の階層・貼り付けの結果・一覧の列数・使い方・A007/A008）はdev_branchの仕組みに乗せ直して残した。発見事項はdev_branchのDISC014〜041と重ならないよう、Opusの初回の案内をDISC045にした。Route状態はdev_branchのまま（A003 in_progress、DISCはtodo）。ゴミ箱のカードはdev_branchの「狭いと別の行・広いと右」を作品とフォルダの両方に当てた（ユーザー指摘の位置のずれを保つ）。詳細は`12_実装チェックリスト.md`の同日の節。
 
 ## 2026-10-22 中断前保存・再開の運用（ユーザー指示）
 
@@ -71,7 +71,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S25 — Shared空folder不可視 DISC038のnative反例→修正/再検証
+current_substep: A003/S26 — latest c51 build/actualdownloaded native18/6niapro verified、通常push/CI pending
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -91,7 +91,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: S25 native77Ready保存/readback→検証済みunit通常push/source313→runtime保存/freshCI→DISC040 Shared/Trash画面名とsortの狭幅配置を修正・実再検証。
+next_action: S26最終証跡保存→検証済みunit通常push→remote/tree/317source/freshCI→S27削除対象identity・restore/delete保存失敗counter。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
@@ -114,7 +114,7 @@ completed_substeps:
 - A001/S6 fresh/warm/corrupt real startup: verified。
 - A002 全操作・336表示マトリクス・修正・再検証: done。
 
-current_substep: none（A003未着手）
+current_substep: A003/S26 — latest c51 build/actualdownloaded native18/6niapro verified、通常push/CI pending
 
 remaining_substeps:
 - A003 ホーム /home・初回案内・ドロワー（申し送り：初回案内「手描きアニメーションを制作できます」は「はじめる」を押すまで再起動のたびに出る。仕様どおりか判定する）。
@@ -123,7 +123,7 @@ blockers:
 - advisor blocker: none。
 - NATIVE（Android実機・低性能端末）: 実行環境なし。該当IDでblockedとして記録する。
 
-next_action: A003をRoute定義どおり実操作で監査する（初回/既訪、一覧の空/大量、PC/SP、3タブ、ドロワー全リンク、検索、起動画面へ戻る、336表示マトリクス）。
+next_action: S26最終証跡保存→検証済みunit通常push→remote/tree/317source/freshCI→S27削除対象identity・restore/delete保存失敗counter。
 
 ## 前セッションまでのA001 substep記録（履歴）
 
@@ -587,3 +587,66 @@ S25公開前の検証済み単位: Shared全0件でもfolder一覧を保ち、�
 最新native: 320×844/text2/7localeの空Shared folder説明7原本を個別目視（glyph/全文/見た目）。cf0b原本の長名折返し/favorites-filter空/320×220のscroll可読性はbody文言変更との依存を区別。4e5のENPCで同process内prefs fault→error/入力保持→exact復元→same dialog retry→実prefs2folders→rename→cold2→delete cancel保持→delete→cold1を実UI/実file hashの両方で確認。旧境界でのretry/rename/delete誤labelは明示無効化、成功へ集計していない。fault全解除、App停止、保護Dela4e原本未stage。native-review.json/native-empty-retry-review.json参照。
 
 S25の対象修正だけを通常pushする準備。DISC038/039/041の全closureをdoneにはせず、DISC040 Shared狭幅AppBarのtitle/sort問題は未修正で次に優先処理する。Shared actual niapro membership move/非空folder delete、他の全visible/state/preset/実機/SR/性能/法務等は未完了。Baseline2/628/currentA003、Discovery001–041todo/cursor001、Delta37not_startedを維持。次: final evidence/core readback→単位push/remote/tree/paths/source313→compiled runtime保存→freshCI追跡しDISC040へ。
+
+S26 / DISC040（App4751cbeb/Web521c58c）: actualdownloaded最新4e5 runtimeでFR320/text2 Trashの画面名はC…になりsort Mise à jourが支配することを実確認。Sharedも既存EN/FR実原本で確認し現headで再取得。fresh home_library_sort_layout_test.dartは0PASS/3FAIL: Shared/Trashの画面名実RenderParagraphが不足、sort field100.2×24・direction40×40。testはactual font/production widgets/real service初期化でgeometryを判定し、存在finderだけでPASSにしない。次は両screen headerをbody内へ適応配置しsort2controlを48px以上、全sortmodeと実データ順・7locale/PC-SP/短画面/resize/menu/keyboard/関連回帰/原本を確認する。S25 source77+native/backup/pushは完了unitとして復元目的で繰返さず、latest fullCIはSaveSafety40970901899/full-gates123787076462実行中（他5job成功）。Baseline2/628/currentA003、Discovery001–041todo、Delta37not_started維持。
+
+
+## 2026-10-30 再開・S26 responsive card復元
+
+App最新dev_branchは9d0e322bbfa333bb12ee3788fee59b199dbb4a99、Webは521c58c18450f2a8656087475d9bd6fa7a2f854e。4751以後はCommunity検索/撮影CIの4pathでS26の3source/testに競合なし。他作業を保持。環境のscratch消失からS26 cardBefore ZIPを再取得し24120376B/SHA63de0a7e0a05959f7a039105f0f1ceb41ba2b1f0aa073c4280b2e2e8c0a51eee/CRC/1782manifest全hashを確認しWIP/実6niaproを復元。最新card/7番目testは復旧Docへ保存・全文readback一致、指定証跡folderのparent確認済み（Doc1TLd1HVmRLE9G49WN7rj5AcGvdRskv9WjMMN6UFP0X40）。元候補とのbyte一致は主張せず意味的に復元し、最終中断の未知patchは未検証へ戻した。
+
+狭幅Trashの操作を別行へ、全restore/delete48px、600×textScale境界でPC横列と切替。header/Sort48pxと合わせ、新7locale×10profile（599/600/601,text2の1199/1200/1201含む）action到達matrixを追加。復元候補の関連3filesは14PASS/0FAIL/11s、oct30-s26-recovered-target.log。84title条件と70action条件は自動geometry/actualservice検証であり、全native/336matrix/全監査closureではない。追加のShared favorites正式foreground testは反例確認前。Home関連5filesと全analyzeは開始中で結果未確定。
+
+S25はSaveSafety40970901899の6jobs全成功、full2237PASS/23SKIP/0FAIL/analyze0/format767変更0。旧文のrunningは履歴として失効。S25 receipts core1wwDCKhmNSALJKX_O4LCodsv3V9Iqitq2とcompiled runtime1-oPaDjyi3EkAAlnUE6B0F8x0gGh52Kotは既存検証済み。S25既完了の再試験/再操作は復元理由で繰返していない。
+
+次: Home関連結果→追加foreground反例→正式token修正/回帰→全analyze/main+S26fixturebuild→ENPC/FRSP320text2のShared/Trash4sort/shortheight/resize/keyboard/niapro不変の実再操作→証跡/runtime保存→S26通常pushとfreshCI。DISC043/044は次S27の未完了priority。Baseline2/628/currentA003、DISC001–044todo、Delta37not_started。保護Dela原本は未stage。
+
+
+S26最終build前: 広域Home関連5filesは23PASS/0FAIL/3m51s。Home6状態×(24幅×PC/SP+7mutation)×7locale=2310条件の自動layout確認を含む（captureRootなし、今回画像生成/目視の主張なし）。最初のanalyzeは新Library leading null構文でinfo1、?leadingへ修正後全analyze0/13.2s。既存Home/Sharedお気に入りFilterChipの白固定をDISC005の既知formal-color問題の具体callerとして再確認し、設定onPrimaryを非白へ変えた2反例が0PASS/2FAIL。primary背景に対応するonPrimary（preset.buttonTextColor）へ文字/checkmarkを接続し、同2反例2PASS。最終18PASS/0FAIL/11s（S26新8+Homefav4+Shared3+Theme3）、ThemeService既存testは全28built-inの明示色mappingを含む。広域Homeの再試験はgeometry/操作へ影響しない4色参照変更だけなので繰返さず、変更したHome色は新反例で再検証した。
+
+log: oct30-s26-recovered-related.log / foreground-before.log / foreground-after.log / final-target.log / final-analyze.log。テーマへの局所色固定や自動neutral上書きは追加していない。次はnormal main→S26 native fixtureの順にbuildし、最新binary/source313不変を確認して実再操作。まだnative AFTER/push/full監査closureは未完了。
+
+
+S26 2回目環境初期化: 最新Appd275204d478bed30947e87b34205b273eb5799a9へ取得。41upstream pathsはS26WIPと競合せず、7localeのhome/restore/cancel/delete文字列も不変。prebuildZIP1hZa8AzAXT2ZPDX7_wKAi80fV7RDd5O4bを全1810hash確認して復元。18/23/2の保存済み結果は元コードへ紐付けて継承し、復元だけを理由に繰返さない。最新全体analyze/main+fixtureは新HEADで必要なため実行し、直後にfullbundle ZIPを自動生成してnative UI前に退避する。以前の6e659のbuildは成功出力を記録したがbundle/raw proofは保存前に消失。UI capture結果未回収につき目視扱い禁止。次はpipelineのcore/runtime Drive保存→最新native UI。
+
+
+S26 latest d275204d: format771files0変更、全analyze0（最新final2.3s）。通常mainとfixturebuild成功、315source全hash不変/kernel57b94b825ca6316bc98cd86cb04627c64b880343b61c79e662b586336d706d57。119MB fullZIPは送信前413上限で未作成、不要なFlutter temp kernelを除いてvalid ZIP2本へ分割し保存。part1 Drive17TGRb_yhbNf7e7mAGCKVsweoH3GR4JKg/84092718B/SHA2421009b288d7bb83b5bd7077136295532291568669e3578e39900ed40ea1ec6/8hash、part2 Drive1EmxjuxdpC-iQOWVFYjWFpRwr1OYckra2/15896067B/SHA7325346a03f14721470ca1a2d72af14ef440ac2ed916c7494c173fdaef2b358f/76hash。両方metadata/raw再取得SHA/CRC/allmanifest検証済み。SDK/pub/rebuild不要、native223helperとrelocateは必要。両ZIPのactualdownloaded61bundlefilesをmode/mtime含め新しいbundleへinstallし、同kernel315一致で実native起動成功。
+
+最新upstreamのformat17files/生成翻訳の同期、analyzer6指摘をbehavior-neutral修正。Community layout fixtureへ必要providerを供給し、旧「英語deletedを禁止」assertを実7localeの専用Unavailable文言と作品名非表示へ置換。修正後関連2filesは12PASS/40s（7locale×6variant×14width×3scale=1764自動条件を含む、全画像目視とはしない）。全体の新Community機能監査はDeltaで未完了。保存済みS26最終18PASS/関連Home23PASS/色反例2PASSは元source・条件不変の範囲で継承。
+
+PC EN1440/text1/paperでactualdownloaded UIをmouse操作しHome→Drawer→Shared、実3sharedの4sort順・お気に入りGammaへのfilter・設定onPrimaryの文字/checkを確認。10原本を個別目視、selected文字には実RGB255,232,176の画素を確認。native-pc-shared-review.json参照、実6niapro全hash不変。keyboard用と命名した2原本は実際にはTabがBackへ入りHome/Splashへ戻っており、sort成功へ数えない（invalid-labels記録）。最初Tabのfocus順からやり直す。現在nativeconsole9811/Xvfb89、AppはSplash表示、faultなし。
+
+次の1手: SplashのCreate an Animation→Home Drawer→Sharedへ入り、3Tabのfocusを画像で確認してSpace/menu/Escape/方向を実操作。その後PC TrashとFRSP320text2/短高/resizeを確認→最新native証跡保存→通常push/remote/tree/CI。全体Baseline2/628/currentA003、DISC001–044todo、Delta37not_startedを維持。S27削除対象identity/restore-delete失敗対応は未完了。
+
+
+S26 v1 native review追加: cached57b9のPC Shared keyboardはfresh route3Tab→criterion focus→Space popup→Tab/SpaceでName desc、Tab/SpaceでName asc、ShiftTab/Space/Down/Down/ReturnでUpdated asc、Tab/Spaceでdesc、Escape取消後保持を実確認。PC Trashの4mouse-sortと全名/metadata/actions、confirmを開く→Escape取消・3件保持も確認（DISC043の対象名欠落は未修正）。FR320/text2/darkのShared4sort/全画面名、TrashのBeta/Alpha/Gamma名・日時と別行action、末尾scroll、320x220でTabによるRestore/Deleteの全control到達を目視。native-v1-review.jsonに35有効原本と命名誤り4除外を区別、全39原本を個別目視。実6niaproは全hash不変、実delete/restoreはこのunitで行っていない。
+
+Home FR320/text2でProj…とMi…を新たに観察。DISC040へHome caller条件を追記し、画面名の省略は未解決とする。criterionは154px/text2のfresh counterで実82px/必要177.06px（0PASS/1FAIL）。固定132px判定を実locale/font/textScalerの自然幅+2controls寸法へ変更し、全文labelまたは意味付きiconへ適応。最初の補助TextSpan.copyWith記法はcompile errorとして保存し、TextSpan constructorへ直した後isolated1PASS。7locale×2criterion×5width×3scale=210条件へ拡張、関連4filesは19PASS/15s。最新label-fit sourceはまだnative未buildであり、v1原本を最新AFTERへ偽装しない。
+
+現在nativeconsole9811/Xvfb89、AppはFR Trash/320x220でBeta Delete focus、未押下/faultなし。次: 320x844へ戻しFRTrash残3sortと1199/1200/1201text2のCard境界・狭幅復帰を原本確認→App停止→label-fit全analyze/normal main+fixture→既存runtime2partsをbaseに差分kernelを退避→Home Mi…がnamed iconとなる最新AFTER・Shared/Trash代表regression→証跡保存/通常push/CI。S27 identity/保存失敗は未完了。Baseline2/628,currentA003,DISC001–044todo,Delta37not_started保持。
+
+
+S26 v1 native最終: FR Trash残3sort/descending復帰、1199/1200/1201（forcedSP/text2）で別行→横列の境界、320復帰と全direction tooltipも個別目視。native-v1-review.jsonは43有効観察＋命名誤り4除外=47原本、5軸を別記。復帰画像ではhover tooltipが一時的にBeta名を覆うため明瞭な全名証拠とはせず、他の原本へ結線。全6niapro不変、App停止・faultなし、nativeconsole9811/Xvfb89はApp無しで維持。
+
+labelFitTests19WIP Drive1LwdCSyfOMJ-La1gNts3uWQMih1oOHvee/3220164B/SHA c5127a7b8816b3ca62883f71f6b65f2140d9a12ad95ae885f275b5e1e52f14c1/216manifestはmetadata/raw SHA/CRC/allhash検証済み。次の長処理前にこの最新47原本・delta保存helperも退避。runtime-base-manifest.jsonは検証済みS26 full2partsの84hashとID/SHAを保持。新build後はpackage_s26_delta_runtime.pyで変更bundle/proofだけを差分保存し、100MBの全再uploadを繰返さない。
+
+次の具体的コマンド（現環境はSDK/native復元済み）: python3 -u tools/recover_build_s26.py labelFitBuilt --skip-restore --delta-runtime → s26-labelFitDelta-meta.jsonとs26-labelFitBuilt-meta.jsonの両ZIPを既定Driveへ保存/metadata/raw/hash検証。環境が空なら --skip-restore を外す。SDK不要な再生はfull parts1+2→最新delta、各FILE_METADATAのmode/mtimeを適用→native223helper/relocate→native_console.py。新kernelからHomeFR320text2のcriterion icon/tooltip（BEFORE Mi…）、Shared/Trash代表PCSPを再目視し、変更範囲だけ再操作。S26の通常push/CIとS27保存・削除問題は未完了。
+
+
+label-fit buildのmainはGtk pkg-config依存で停止、Dart analyze0/2.7sは維持。実際にはwayland-client.pc/Lerc.pc/libunwind.pcの3件が0byte。環境helper旧relocate_native.pyは全pcをread/truncate/writeし、以前のnativeconsole/test並列sourceが同時更新し得る実装だった。発生した厳密なinterleavingは追跡していないが、raceを除去するためexclusive filelock＋atomic replace＋内容不変ならmtimeも触らない方式へ修正。3件は固定SHA検証済みdebから元ファイルだけ復元し、4並列helper実呼出しは全0終了、全203pc非空・内容/mtime不変、gtk pkg-config --exists成功。新deltaはこの修復helperも上書き保存する。製品19testsとv1 43観察の再実行は不要。
+
+最新版WIP coreはDrive13yTd7VGM2weyLTAAoaSmnuQrWPJosxM9/3794774B/SHA9d8469aa5294efcedb9ce8872e26c93ec35988a1d32419ffb1363c7fa2786068/230manifest（upload成功、metadataは確認、raw再取得検証は次）。このZIPに現在コード・19tests・47v1原本・atomic helper・差分runtime保存scriptがある。環境が初期化されたらこのcoreとS26runtime full2partsを先に復元し、以前のnonatomic helperへ戻さない。
+
+現在App停止、fault無し、nativeconsole9811/Xvfb89は残る。次のコマンドは既存archiveと重複しないlabelで python3 -u tools/recover_build_s26.py labelFitBuilt2 --skip-restore --delta-runtime 。新delta/coreを続けてDrive保存/metadata/raw検証→最新kernelを実再生してHome criterion/Shared/Trashを確認→通常push/CI。GitHub pushはまだ行っていない。全面監査未完了を維持。
+
+
+## 2026-10-30 S26 c51 latest native AFTER / publication ready
+
+- 最新c51で全format774files変更0、analyze0、通常main/監査fixturebuildとも成功。317 Dart source全hash不変、kernel807fca1b87af27f9320af6f86fe027f2f612b494364d7d3298ad5d43ba7a21bc。labelFitBuilt3 pipeline成功であり、以前のGTK失敗/静的解析失敗とは区別。
+- 差分runtime Drive1QbYYuftBBUqSejTWlQ0mFi2AncixkMpP（31597546B/SHA43ddb64e7e02d7310473d20fd149a5e81cf4b15a688eb182606ba4846c6aca12/7hash）、core1Bgn91X4W4meBDKYfKFczA_pUYjQzW1Hx（3836121B/SHA03b93f67f9afc0aad293d9b0cb73199dd612a7a871609a4779263595b9008f1b/244hash）はmetadata/raw再取得SHA/CRC/allmanifest確認済み。full parts1+2とactualdownloaded deltaから62bundlefilesをmode/mtime付きinstall、SDK/pub/rebuild無しで最新実UI起動。
+- 最新18原本を各個別目視。FR320/text2 HomeのMi…は意味付きupdate iconへ、hover Mise à jour全文とmenu Nom/Mise à jour全文、Shared title/3件/Name desc→asc、Trash fulltitle/名/日付/別行actions/末尾scroll/320x220のTab Restore→Delete到達。ENPC1440/text1/paperはHome→実Drawer→Shared/お気に入りGamma→Homeお気に入り→Trashを操作し、全名/操作と正式onPrimary色を確認。Home/Shared各favorite領域で設定RGB255,232,176を各293画素確認、局所固定色を追加していない。
+- native-v2-label-fit-review.jsonは五軸と全18原本SHAを保持。実6niapro全hash不変、App停止/faultなし。旧v1は43有効/4命名無効の47原本で旧57b9kernelへ正しく結線し、最新AFTERと混同しない。
+- Home AppBar Proj…は未修正。DISC043対象名のないconfirm/044非同期保存失敗はS27未完了。native18で全7locale/全preset/全336/Android/codec/実backendを閉じていない。Baseline2/628/currentA003、DISC001–044todo、Delta37not_started維持。
+- 次はこの検証済みunitを通常push（App product/test/workflow+State、Web State mirror）しremote HEAD/tree/全317sourceを確認、fresh CI。その後S27のrestore/delete失敗fresh counterとtarget identityへ進む。
+
+S26最終native18原本/五軸review/6niapro整合を含む証跡core: Drive1-DwI5eZb3yNOfDtDRXpaOuNXWVk1P1Vc、4393690B/SHAecd5c98e6bf465f70db258ae5aed1a2a6a52dbf3e1664f7837474331a43a46d6/268manifest。metadata/raw再取得SHA/CRC/allhash確認済み。最新runtime差分1QbYYuftBBUqSejTWlQ0mFi2AncixkMpPとfull2partsからSDK/pub再build不要で再生可能。

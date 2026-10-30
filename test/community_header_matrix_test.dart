@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/l10n/community_plaza_labels.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/services/community_preview_service.dart';
@@ -157,6 +158,11 @@ void main() {
               locale.toLanguageTag().toLowerCase(),
             );
             if (state == 'search' || state == 'tag-search') {
+              tester
+                  .widget<TabBar>(find.byType(TabBar))
+                  .controller!
+                  .animateTo(3);
+              await tester.pumpAndSettle();
               expect(
                 find.byKey(const Key('communitySearchInput')),
                 findsOneWidget,
@@ -202,6 +208,8 @@ void main() {
                   ? 1
                   : state == 'following'
                   ? 2
+                  : state == 'search' || state == 'tag-search'
+                  ? 3
                   : 0,
             );
             if (state == 'search' || state == 'tag-search') {
@@ -220,16 +228,21 @@ void main() {
               );
             }
             final bar = find.byType(AppBar);
-            final searchRowRect = tester.getRect(
-              find.byKey(const Key('communitySearchRow')),
-            );
+            final searchRowRect = state == 'ranking'
+                ? null
+                : tester.getRect(find.byKey(const Key('communitySearchRow')));
             final tabsRect = tester.getRect(find.byType(TabBar));
-            if (tabsRect.bottom > searchRowRect.top + .01) {
+            if (searchRowRect != null &&
+                tabsRect.bottom > searchRowRect.top + .01) {
               failures.add(
                 'Page search overlaps fixed tabs: $searchRowRect / $tabsRect',
               );
             }
-            if (state != 'search' && state != 'tag-search') {
+            if (state != 'search' &&
+                state != 'tag-search' &&
+                state != 'ranking') {
+              expect(searchRowRect, isNotNull);
+              final pageSearchRect = searchRowRect!;
               final titleRect = tester.getRect(
                 find.descendant(
                   of: bar,
@@ -244,8 +257,8 @@ void main() {
               );
               if (titleRect.bottom > tabsRect.top ||
                   notificationRect.bottom > tabsRect.top ||
-                  filterRect.top < searchRowRect.top ||
-                  filterRect.bottom > searchRowRect.bottom) {
+                  filterRect.top < pageSearchRect.top ||
+                  filterRect.bottom > pageSearchRect.bottom) {
                 failures.add(
                   'Header rows regressed: $titleRect / '
                   '$notificationRect / $searchRowRect / $filterRect',
@@ -257,6 +270,7 @@ void main() {
               l10n.communityTabNew,
               l10n.communityTabRanking,
               l10n.communityTabFavoriteAuthors,
+              CommunityPlazaLabels.of(screen).searchTab,
             ];
             if (state != 'search' && state != 'tag-search') {
               labels.add(l10n.communityScreenTitle);
@@ -283,6 +297,11 @@ void main() {
                     state == 'tag-search'
                         ? l10n.communitySearchHint
                         : l10n.communityTagSearchHint,
+                  ]
+                : state == 'ranking'
+                ? [
+                    l10n.communityFollowNotificationsTooltip,
+                    l10n.layerPanelHelpTooltip,
                   ]
                 : [
                     l10n.communityFollowNotificationsTooltip,

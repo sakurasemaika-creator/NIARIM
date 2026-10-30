@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../l10n/community_plaza_labels.dart';
 import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
@@ -29,7 +30,23 @@ Future<void> confirmCommunityAuthorMute(
             ? l10n.communityMuteConfirmTitle
             : l10n.communityUnmuteConfirmTitle,
       ),
-      content: mute ? Text(l10n.communityMuteConfirmBody) : null,
+      content: mute
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.communityMuteConfirmBody),
+                const SizedBox(height: 12),
+                Text(
+                  CommunityPlazaLabels.of(dialogContext).mutePrivacyNotice,
+                  key: const Key('communityMutePrivacyNoticeDialog'),
+                  style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            )
+          : null,
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),

@@ -1563,7 +1563,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Post your animations and illustrations to the community as YouTube videos, and browse works by other users. Switch between the “New”, “Ranking”, and “Following” tabs, and search by work title or creator name. Switch to tag search mode to filter works by tag — anyone (not just the creator) can add or remove tags, though a tag the creator has locked can only be removed by the creator, and tapping a tag instantly filters to matching works. Tapping a work card opens a draggable, resizable floating preview window, so you can keep browsing other screens while it plays. The “View Details” button opens the work\'s detail screen (creator, post date, tag editing, bookmarking, reposting, and more). Tap the “Follow” button next to a creator\'s name to follow them — the “Following” tab then gathers just that creator\'s posts in chronological order. When someone follows you, it shows up in the notification list under the bell icon at the top of the screen. You can choose whether your own following/followers lists are visible to other users (private by default), and view other users\' lists if they\'ve made theirs public. You can repost anyone else\'s work (except your own) with the “Repost” button; when a creator you follow reposts someone else\'s work, that work also appears in your “Following” tab, sorted by whichever is more recent — its original post date or its repost date (the card shows “Reposted by …”). Bookmarked works appear together under the “Bookmarked” tab on the Home screen, and also under the “Bookmarks” tab on a creator\'s work list screen. You can choose whether your own bookmark list is visible to other users (private by default), and you can view other users\' bookmark lists if they\'ve made theirs public. You can report a work with a reason, and after submitting you\'ll be asked whether to block that creator. Portrait videos can be watched in “Portrait mode”, which plays them back-to-back like a short-form video feed. There is a daily limit on how many works you can post: 1 per day for free members, 3 per day for Premium members. The display filter button at the top right (the eye icon with a slash) lets you hide works you don\'t want to see. You can hide works marked “Contains generative-AI images or video”, and add muted titles (matched against work titles only) and muted tags (matched only against Work Plaza tags), one entry at a time using “Add new”. Edit with the pencil or delete with the trash icon; no commas or # needed. These filters apply to New, Ranking, Following (including reposts), portrait mode, creator pages, work details, and bookmarks. “Contains generative-AI images or video” is declared by the poster when posting, and only the poster can change it afterwards (from “My posts” or the work\'s detail screen).';
+      'Post your animations and illustrations to the community as YouTube videos, and browse works by other users. Switch between the “New”, “Ranking”, and “Following” tabs, and search by work title or creator name. Switch to tag search mode to filter works by tag — anyone (not just the creator) can add or remove tags, though a tag the creator has locked can only be removed by the creator, and tapping a tag instantly filters to matching works. Tapping a work card opens a draggable, resizable floating preview window, so you can keep browsing other screens while it plays. The “View Details” button opens the work\'s detail screen (creator, post date, tag editing, bookmarking, reposting, and more). Tap the “Follow” button next to a creator\'s name to follow them — the “Following” tab then gathers just that creator\'s posts in chronological order. When someone follows you, it shows up in the notification list under the bell icon at the top of the screen. You can choose whether your own following/followers lists are visible to other users (private by default), and view other users\' lists if they\'ve made theirs public. You can repost anyone else\'s work (except your own) with the “Repost” button; when a creator you follow reposts someone else\'s work, that work also appears in your “Following” tab, sorted by whichever is more recent — its original post date or its repost date (the card shows “Reposted by …”). Bookmarked works appear together under the “Bookmarked” tab on the Home screen, and also under the “Bookmarks” tab on a creator\'s work list screen. You can choose whether your own bookmark list is visible to other users (private by default), and you can view other users\' bookmark lists if they\'ve made theirs public. You can report a work with a reason, and after submitting you\'ll be asked whether to block that creator. Portrait videos can be watched in “Portrait mode”, which plays them back-to-back like a short-form video feed. There is a daily limit on how many works you can post: 1 per day for free members, 3 per day for Premium members. The display filter button at the top right (the eye icon with a slash) lets you hide works you don\'t want to see. You can hide works marked “Contains generative-AI images or video”, and add hidden-title keywords (matched against work titles only) and hidden tags (matched only against Work Plaza tags), one entry at a time using “Add new”. Edit with the pencil or delete with the trash icon; no commas or # needed. These filters apply to New, Ranking, Following (including reposts), portrait mode, creator pages, work details, and bookmarks. “Contains generative-AI images or video” is declared by the poster when posting, and only the poster can change it afterwards (from “My posts” or the work\'s detail screen).';
 
   @override
   String get helpWatermarkEntryTitle => 'Watermark';
@@ -7172,14 +7172,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Hide works containing generative-AI images or video';
 
   @override
-  String get communityMutedWords => 'Muted titles';
+  String get communityMutedWords => 'Hidden title words';
 
   @override
   String get communityMutedWordsHint =>
       'Hides works whose titles contain these words (not creator names or tags). Add and edit each word separately.';
 
   @override
-  String get communityMutedTags => 'Muted tags';
+  String get communityMutedTags => 'Hidden tags';
 
   @override
   String get communityMutedTagsHint =>
@@ -7276,13 +7276,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityPostPeriodChooseRange => 'Select date range';
 
   @override
-  String get communityMutedAuthors => 'Muted creators';
+  String get communityMutedAuthors => 'Hidden creators';
 
   @override
-  String get communityMutedAuthorsEmpty => 'No muted creators';
+  String get communityMutedAuthorsEmpty => 'No hidden creators';
 
   @override
-  String get communityUnmuteAuthor => 'Unmute this creator';
+  String get communityUnmuteAuthor => 'Show this creator again';
 
   @override
   String get communityMyWorksManagementHeading => 'Manage works';
@@ -8195,37 +8195,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityTileSize => 'Work tile size';
 
   @override
-  String get communityMutedWordsEmpty => 'No muted keywords';
+  String get communityMutedWordsEmpty => 'No hidden keywords';
 
   @override
-  String get communityMutedTagsEmpty => 'No muted tags';
+  String get communityMutedTagsEmpty => 'No hidden tags';
 
   @override
-  String get communityMuteShort => 'Mute';
+  String get communityMuteShort => 'Hide';
 
   @override
-  String get communityMuteConfirmTitle => 'Mute this user?';
+  String get communityMuteConfirmTitle => 'Hide this creator?';
 
   @override
-  String get communityMuteConfirmBody => 'This user\'s works will be hidden.';
+  String get communityMuteConfirmBody =>
+      'This creator\'s works will be hidden.';
 
   @override
-  String get communityMuteConfirmAction => 'Mute';
+  String get communityMuteConfirmAction => 'Hide';
 
   @override
-  String get communityUnmuteConfirmTitle => 'Unmute this user?';
+  String get communityUnmuteConfirmTitle => 'Show this creator again?';
 
   @override
-  String get communityUnmuteConfirmAction => 'Unmute';
+  String get communityUnmuteConfirmAction => 'Show';
 
   @override
   String get communityMuteNo => 'No';
 
   @override
-  String get communityMuteDone => 'User muted';
+  String get communityMuteDone => 'Creator hidden';
 
   @override
-  String get communityUnmuteDone => 'User unmuted';
+  String get communityUnmuteDone => 'Creator shown again';
 
   @override
   String get communityMilestoneNotificationsTitle => 'Notifications';

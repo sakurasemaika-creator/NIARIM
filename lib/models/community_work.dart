@@ -35,6 +35,9 @@ class CommunityWork {
   // サムネイル画像の代わりに表示するプレースホルダーの配色を選ぶための
   // インデックス（実際のサムネイル取得はバックエンド実装後に対応）。
   final int thumbnailColorIndex;
+
+  /// Remote YouTube artwork; empty for dummy/local-only cards.
+  final String thumbnailUrl;
   // ユーザーが自由に追加・削除できるタグ（誰でも編集可能）。
   final List<String> tags;
   // tagsのうち、投稿者がロックして他ユーザーが削除できないようにした
@@ -42,6 +45,9 @@ class CommunityWork {
   final Set<String> lockedTags;
   // 作品広場独自の公開/非公開設定。
   final bool isNiarimPublished;
+
+  /// True for a redacted entry kept only in bookmarks/ranking.
+  final bool isUnavailable;
   // ショート動画（縦長）かどうか。
   final bool isShort;
 
@@ -59,6 +65,7 @@ class CommunityWork {
     required this.postedAt,
     required this.durationSeconds,
     required this.thumbnailColorIndex,
+    this.thumbnailUrl = '',
     this.projectFps = 0,
     this.projectFrameCount = 0,
     this.projectWorkSeconds = 0,
@@ -68,14 +75,33 @@ class CommunityWork {
     this.tags = const [],
     this.lockedTags = const {},
     this.isNiarimPublished = true,
+    this.isUnavailable = false,
     this.isShort = false,
     this.containsGenerativeAiImageOrVideo = false,
   });
 
+  /// A deliberately metadata-free stub: no private title, tags or author leak.
+  factory CommunityWork.unavailable(String id) => CommunityWork(
+    id: id,
+    title: '',
+    authorId: '',
+    authorName: '',
+    viewCount: 0,
+    likeCount: 0,
+    bookmarkCount: 0,
+    postedAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+    durationSeconds: 0,
+    thumbnailColorIndex: 0,
+    isNiarimPublished: false,
+    isUnavailable: true,
+  );
+
   CommunityWork copyWith({
     List<String>? tags,
     Set<String>? lockedTags,
+    String? thumbnailUrl,
     bool? isNiarimPublished,
+    bool? isUnavailable,
     bool? isShort,
     bool? containsGenerativeAiImageOrVideo,
     int? projectFps,
@@ -96,6 +122,7 @@ class CommunityWork {
       postedAt: postedAt,
       durationSeconds: durationSeconds,
       thumbnailColorIndex: thumbnailColorIndex,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       projectFps: projectFps ?? this.projectFps,
       projectFrameCount: projectFrameCount ?? this.projectFrameCount,
       projectWorkSeconds: projectWorkSeconds ?? this.projectWorkSeconds,
@@ -105,6 +132,7 @@ class CommunityWork {
       tags: tags ?? this.tags,
       lockedTags: lockedTags ?? this.lockedTags,
       isNiarimPublished: isNiarimPublished ?? this.isNiarimPublished,
+      isUnavailable: isUnavailable ?? this.isUnavailable,
       isShort: isShort ?? this.isShort,
       containsGenerativeAiImageOrVideo:
           containsGenerativeAiImageOrVideo ??

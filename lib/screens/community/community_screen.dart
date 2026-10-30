@@ -7,10 +7,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/app_localizations.dart';
+import '../../l10n/community_plaza_labels.dart';
 import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../services/api/community_api.dart' show RankingPeriod;
+import '../../l10n/community_ranking_layout_labels.dart';
+import 'widgets/community_ranking_work_list.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
@@ -68,6 +71,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   static const _savedSearchesKey = 'community.savedSearches.v1';
   static const _historyKey = 'community.searchHistory.v1';
   static const _tileWidthKey = 'community.tileMinWidth.v1';
+  static const _rankingLayoutKey = 'community.rankingLayout.v1';
   final List<Map<String, dynamic>> _savedSearches = [];
   final List<Map<String, dynamic>> _searchHistory = [];
   String _searchAccount = 'guest';
@@ -85,20 +89,22 @@ class _CommunityScreenState extends State<CommunityScreen>
   DateTimeRange? _customPostDateRange;
   bool _tagExactMatch = false;
   double _minimumTileWidth = 160;
+  CommunityRankingLayout _rankingLayout = CommunityRankingLayout.horizontal;
   _DurationFilterMode _durationMode = _DurationFilterMode.all;
   double _upToMinutes = 5;
   int _minimumMinutes = 0;
   int _maximumMinutes = 10;
   int _minimumViews = 0;
   int _minimumBookmarks = 0;
-  final _tabScrollControllers = List.generate(3, (_) => ScrollController());
+  final _tabScrollControllers = List.generate(4, (_) => ScrollController());
 
   @override
   void initState() {
     super.initState();
     _loadSavedSearches();
     _loadTileWidth();
-    _tabController = TabController(length: 3, vsync: this)
+    _loadRankingLayout();
+    _tabController = TabController(length: 4, vsync: this)
       ..addListener(_onTabChanged);
     final initialTag = widget.initialTagFilter;
     if (initialTag != null && initialTag.isNotEmpty) {
@@ -107,6 +113,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       _searchQuery = initialTag;
       _draftQuery = initialTag;
       _searchController.text = initialTag;
+      _tabController.index = 3;
     }
     // With a backend, the plaza shows the server's latest works and the
     // selected ranking; without one, the bundled dummy works.
@@ -130,6 +137,32 @@ class _CommunityScreenState extends State<CommunityScreen>
       }
     } catch (error) {
       debugPrint('Community tile width could not be restored: $error');
+    }
+  }
+
+  Future<void> _loadRankingLayout() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_rankingLayoutKey);
+      if (!mounted || saved == null) return;
+      final layouts = CommunityRankingLayout.values.where(
+        (item) => item.name == saved,
+      );
+      if (layouts.isNotEmpty) {
+        setState(() => _rankingLayout = layouts.first);
+      }
+    } catch (error) {
+      debugPrint('Ranking layout could not be restored: $error');
+    }
+  }
+
+  Future<void> _setRankingLayout(CommunityRankingLayout value) async {
+    setState(() => _rankingLayout = value);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_rankingLayoutKey, value.name);
+    } catch (error) {
+      debugPrint('Ranking layout could not be saved: $error');
     }
   }
 
@@ -272,7 +305,6 @@ class _CommunityScreenState extends State<CommunityScreen>
     'maximumMinutes': _maximumMinutes,
     'minimumViews': _minimumViews,
     'minimumBookmarks': _minimumBookmarks,
-    'tileWidth': _minimumTileWidth,
   };
 
   void _restoreSavedSearch(Map<String, dynamic> saved) {
@@ -310,10 +342,8 @@ class _CommunityScreenState extends State<CommunityScreen>
       if (!_communityThresholdChoices.contains(_minimumBookmarks)) {
         _minimumBookmarks = 0;
       }
-      _minimumTileWidth = ((saved['tileWidth'] as num?)?.toDouble() ?? 160)
-          .clamp(120, 240)
-          .toDouble();
     });
+    _tabController.animateTo(3);
     _scrollCurrentTabToTop();
   }
 
@@ -363,11 +393,37 @@ class _CommunityScreenState extends State<CommunityScreen>
     await _persistSavedSearches();
   }
 
+  Future<void> _confirmDeleteHistory(int index) async {
+    if (index < 0 || index >= _searchHistory.length) return;
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(CommunityPlazaLabels.of(dialogContext).deleteHistory),
+        content: Text(_searchHistory[index]['query'] as String? ?? ''),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(AppLocalizations.of(dialogContext)!.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(AppLocalizations.of(dialogContext)!.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (approved != true || !mounted || index >= _searchHistory.length) return;
+    setState(() => _searchHistory.removeAt(index));
+    await _persistSearchHistory();
+  }
+
   /// The following tab shows the followed authors' works and reposts as
   /// the server has them now.
   void _onTabChanged() {
-    if (_tabController.indexIsChanging || _tabController.index != 2) return;
+    if (_tabController.indexIsChanging) return;
     final service = context.read<CommunityService>();
+    service.clearTemporaryUnmutes();
+    if (_tabController.index != 2) return;
     if (service.isBackendConnected) service.refreshFollowingFeed();
   }
 
@@ -394,6 +450,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   /// (a poster's AI image/video declaration, tags, a work hidden) shows.
   Future<void> _refreshAll() async {
     final service = context.read<CommunityService>();
+    service.clearTemporaryUnmutes();
     if (!service.isBackendConnected) return;
     await Future.wait([
       service.refreshFromBackend(),
@@ -441,6 +498,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         _searchQuery = newTag;
         _draftQuery = newTag;
         _searchController.text = newTag;
+        _tabController.index = 3;
       });
     }
   }
@@ -475,7 +533,10 @@ class _CommunityScreenState extends State<CommunityScreen>
     return !postedAt.isBefore(start) && (end == null || postedAt.isBefore(end));
   }
 
-  List<CommunityWork> _applySearch(List<CommunityWork> works) {
+  List<CommunityWork> _applySearch(
+    List<CommunityWork> works, {
+    bool includeQuery = false,
+  }) {
     final typeFiltered = _videoTypeFilter
         .apply(works)
         .where((work) => _matchesPostDate(work.postedAt))
@@ -496,35 +557,31 @@ class _CommunityScreenState extends State<CommunityScreen>
         )
         .toList();
     final query = _searchQuery.trim().toLowerCase();
-    if (query.isEmpty) return typeFiltered;
-    if (_tagSearchMode) {
-      final tokens = query
-          .split(RegExp(r'\s+'))
-          .map((term) => term.replaceFirst(RegExp(r'^#'), ''))
-          .where((term) => term.isNotEmpty)
-          .toList();
-      return typeFiltered
-          .where(
-            (work) => tokens.every(
-              (term) => work.tags.any((tag) {
-                final normalized = tag.toLowerCase().replaceFirst(
-                  RegExp(r'^#'),
-                  '',
-                );
-                return _tagExactMatch
-                    ? normalized == term
-                    : normalized.contains(term);
-              }),
-            ),
-          )
-          .toList();
-    }
-    return typeFiltered.where((work) {
+    if (!includeQuery || query.isEmpty) return typeFiltered;
+    // Positive terms must all match; -term excludes; quoted phrases supported.
+    final terms = RegExp(
+      r'-?"[^"]+"|-?\S+',
+    ).allMatches(query).map((m) => m.group(0)!).toList();
+    bool matches(CommunityWork work, String raw) {
+      final term = raw.replaceAll('"', '').replaceFirst(RegExp(r'^#'), '');
+      if (term.isEmpty) return false;
+      final matchesTag = work.tags.any((tag) {
+        final tagName = tag.toLowerCase().replaceFirst(RegExp(r'^[#＃]'), '');
+        return _tagExactMatch ? tagName == term : tagName.contains(term);
+      });
+      if (_tagSearchMode) return matchesTag;
       final title = work.title.toLowerCase();
-      final author = work.authorName.toLowerCase();
-      return _tagExactMatch
-          ? title == query || author == query
-          : title.contains(query) || author.contains(query);
+      return matchesTag ||
+          (_tagExactMatch ? title == term : title.contains(term));
+    }
+
+    return typeFiltered.where((work) {
+      return terms.every((token) {
+        final negative = token.startsWith('-') && token.length > 1;
+        final word = negative ? token.substring(1) : token;
+        final found = matches(work, word);
+        return negative ? !found : found;
+      });
     }).toList();
   }
 
@@ -554,14 +611,15 @@ class _CommunityScreenState extends State<CommunityScreen>
       // The server's ranking for the period, in its order, as the viewer's
       // filters allow. It ranks by views; the bookmark order is its own
       // all-time ranking, or the period's works re-sorted by bookmarks.
-      final ranked = [..._applySearch(service.rankedWorks)];
+      final ranked = [...service.rankedWorks];
       if (_sort == _RankingSort.bookmarks &&
           _period != _RankingPeriod.allTime) {
         ranked.sort((a, b) => b.bookmarkCount.compareTo(a.bookmarkCount));
       }
       return _sortAscending ? ranked.reversed.toList() : ranked;
     }
-    final filtered = _applySearch(allWorks.toList());
+    // Ranking is not subject to the search tab or local filter criteria.
+    final filtered = allWorks.toList();
     final window = _periodWindow(_period);
     final now = DateTime.now();
     double scoreOf(CommunityWork w) {
@@ -589,6 +647,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   void _openAuthorWorks(CommunityWork work) {
+    context.read<CommunityService>().clearTemporaryUnmutes();
     Navigator.of(context).push(
       adMockMaterialPageRoute(
         builder: (_) => CommunityAuthorWorksScreen(
@@ -599,12 +658,16 @@ class _CommunityScreenState extends State<CommunityScreen>
     );
   }
 
-  Future<void> _showContentFilters(CommunityService service) async {
+  Future<void> _showContentFilters(
+    CommunityService service, {
+    bool muteOnly = false,
+  }) async {
     await service.contentFiltersReady;
     if (!mounted) return;
     final result = await showDialog<_ContentFilterInput>(
       context: context,
       builder: (_) => _ContentFilterDialog(
+        muteOnly: muteOnly,
         initialWords: service.mutedWords.toList(),
         initialTags: service.mutedTags.toList(),
         initialHideAi: service.hideGenerativeAiImageVideo,
@@ -621,14 +684,16 @@ class _CommunityScreenState extends State<CommunityScreen>
       ),
     );
     if (result == null) return;
+    if (muteOnly) {
+      await service.setMutedWords(result.words);
+      await service.setMutedTags(result.tags);
+      return;
+    }
     await service.setHideGenerativeAiImageVideo(result.hideAi);
-    await service.setMutedWords(result.words);
-    await service.setMutedTags(result.tags);
     if (mounted) {
       setState(() {
         _postDateFilter = result.dateFilter;
         _customPostDateRange = result.dateRange;
-        _tagExactMatch = result.exactTag;
         _durationMode = result.durationMode;
         _upToMinutes = result.upToMinutes;
         _minimumMinutes = result.minimumMinutes;
@@ -637,8 +702,6 @@ class _CommunityScreenState extends State<CommunityScreen>
         _minimumBookmarks = result.minimumBookmarks;
         _minimumTileWidth = result.tileWidth;
       });
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setDouble(_tileWidthKey, result.tileWidth);
     }
   }
 
@@ -653,6 +716,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   void _openMyWorks() {
+    context.read<CommunityService>().clearTemporaryUnmutes();
     Navigator.of(context).push(
       adMockMaterialPageRoute<void>(
         builder: (_) => const CommunityMyWorksScreen(),
@@ -661,10 +725,12 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   void _openShortsMode(List<CommunityWork> allWorks) {
+    context.read<CommunityService>().clearTemporaryUnmutes();
     final base = switch (_tabController.index) {
       0 => _newArrivals(allWorks),
       1 => _rankingWorks(allWorks),
-      _ => _applySearch(context.read<CommunityService>().favoriteAuthorWorks),
+      2 => _applySearch(context.read<CommunityService>().favoriteAuthorWorks),
+      _ => _applySearch(allWorks, includeQuery: true),
     };
     if (base.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
@@ -740,12 +806,13 @@ class _CommunityScreenState extends State<CommunityScreen>
     final titleSize = measure(
       l10n.communityScreenTitle,
       titleStyle,
-      maxWidth: (width - 168).clamp(1.0, double.infinity),
+      maxWidth: (width - 216).clamp(1.0, double.infinity),
     );
     final labels = [
       l10n.communityTabNew,
       l10n.communityTabRanking,
       l10n.communityTabFavoriteAuthors,
+      CommunityPlazaLabels.of(context).searchTab,
     ];
     final tabWidths = labels.map(
       (label) => measure(label, labelStyle).width + 32,
@@ -774,7 +841,14 @@ class _CommunityScreenState extends State<CommunityScreen>
           childrenPadding: EdgeInsets.zero,
           shape: const Border(),
           collapsedShape: const Border(),
-          title: Text(title, style: headingStyle),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(child: Text(title, style: headingStyle)),
+              const SizedBox(width: 6),
+              Text('(${entries.length}/10)', style: theme.textTheme.bodySmall),
+            ],
+          ),
           children: [
             if (entries.isEmpty)
               Padding(
@@ -800,24 +874,29 @@ class _CommunityScreenState extends State<CommunityScreen>
                   overflow: TextOverflow.ellipsis,
                 ),
                 onTap: () => _restoreSavedSearch(entries[index]),
-                trailing: IconButton(
-                  key: ValueKey(
-                    (saved
-                            ? 'communityDeleteSavedSearch-'
-                            : 'communitySaveHistory-') +
-                        index.toString(),
-                  ),
-                  icon: Icon(
-                    saved ? Icons.delete_outline : Icons.save_outlined,
-                  ),
-                  tooltip: saved ? l10n.commonDelete : l10n.communitySaveSearch,
-                  onPressed: () {
-                    if (saved) {
-                      _confirmDeleteSavedSearch(index);
-                    } else {
-                      _saveSearchFromHistory(entries[index]);
-                    }
-                  },
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!saved)
+                      IconButton(
+                        key: ValueKey('communitySaveHistory-$index'),
+                        icon: const Icon(Icons.save_outlined),
+                        tooltip: l10n.communitySaveSearch,
+                        onPressed: () => _saveSearchFromHistory(entries[index]),
+                      ),
+                    IconButton(
+                      key: ValueKey(
+                        saved
+                            ? 'communityDeleteSavedSearch-$index'
+                            : 'communityDeleteHistory-$index',
+                      ),
+                      icon: const Icon(Icons.delete_outline),
+                      tooltip: l10n.commonDelete,
+                      onPressed: () => saved
+                          ? _confirmDeleteSavedSearch(index)
+                          : _confirmDeleteHistory(index),
+                    ),
+                  ],
                 ),
               ),
             if (saved)
@@ -837,72 +916,82 @@ class _CommunityScreenState extends State<CommunityScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Material(
-              key: const Key('communitySearchTrigger'),
-              color: searchFill,
-              borderRadius: BorderRadius.circular(20),
-              child: SizedBox(
-                height: 48,
-                child: Row(
-                  children: [
-                    IconButton(
-                      key: const Key('communitySearchModeToggle'),
-                      icon: Icon(
-                        _tagSearchMode ? Icons.search : Icons.sell_outlined,
-                      ),
-                      tooltip: _tagSearchMode
-                          ? l10n.communitySearchHint
-                          : l10n.communityTagSearchHint,
-                      onPressed: () => setState(() {
-                        _tagSearchMode = !_tagSearchMode;
-                        _tagExactMatch = _tagSearchMode;
-                        _searchQuery = '';
-                        _draftQuery = '';
-                        _searchController.clear();
-                      }),
-                    ),
-                    Expanded(
-                      child: TextField(
-                        key: const Key('communitySearchInput'),
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: _tagSearchMode
-                              ? l10n.communityTagSearchHint
-                              : l10n.communitySearchHint,
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                          ),
+            if (tab == 3) ...[
+              Material(
+                key: const Key('communitySearchTrigger'),
+                color: searchFill,
+                borderRadius: BorderRadius.circular(20),
+                child: SizedBox(
+                  height: 48,
+                  child: Row(
+                    children: [
+                      IconButton(
+                        key: const Key('communitySearchModeToggle'),
+                        icon: Icon(
+                          _tagSearchMode ? Icons.search : Icons.sell_outlined,
                         ),
-                        onChanged: (value) => _draftQuery = value,
-                        onSubmitted: (_) => _runSearch(),
-                        textInputAction: TextInputAction.search,
+                        tooltip: _tagSearchMode
+                            ? l10n.communitySearchHint
+                            : l10n.communityTagSearchHint,
+                        onPressed: () => setState(() {
+                          _tagSearchMode = !_tagSearchMode;
+                          _searchQuery = '';
+                          _draftQuery = '';
+                          _searchController.clear();
+                        }),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 20),
-                      tooltip: l10n.commonClose,
-                      onPressed: () => setState(() {
-                        _searchController.clear();
-                        _draftQuery = '';
-                        _searchQuery = '';
-                      }),
-                    ),
-                  ],
+                      Expanded(
+                        child: TextField(
+                          key: const Key('communitySearchInput'),
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            hintText: _tagSearchMode
+                                ? l10n.communityTagSearchHint
+                                : l10n.communitySearchHint,
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                            ),
+                          ),
+                          onChanged: (value) => _draftQuery = value,
+                          onSubmitted: (_) => _runSearch(),
+                          textInputAction: TextInputAction.search,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 20),
+                        tooltip: l10n.commonClose,
+                        onPressed: () => setState(() {
+                          _searchController.clear();
+                          _draftQuery = '';
+                          _searchQuery = '';
+                        }),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            accordion(
-              title: l10n.communitySavedSearches,
-              key: const Key('communitySavedSearchAccordion'),
-              saved: true,
-            ),
-            accordion(
-              title: l10n.communitySearchHistory,
-              key: const Key('communitySearchHistoryAccordion'),
-              saved: false,
-            ),
+              CheckboxListTile(
+                key: const Key('communitySearchExactMatch'),
+                value: _tagExactMatch,
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                title: Text(CommunityPlazaLabels.of(context).exactTitle),
+                onChanged: (enabled) =>
+                    setState(() => _tagExactMatch = enabled ?? false),
+              ),
+              accordion(
+                title: l10n.communitySavedSearches,
+                key: const Key('communitySavedSearchAccordion'),
+                saved: true,
+              ),
+              accordion(
+                title: l10n.communitySearchHistory,
+                key: const Key('communitySearchHistoryAccordion'),
+                saved: false,
+              ),
+            ],
             Row(
               children: [
                 IconButton(
@@ -1005,21 +1094,20 @@ class _CommunityScreenState extends State<CommunityScreen>
                   },
                 ),
                 const Spacer(),
-                SizedBox(
-                  width: 92,
-                  height: 48,
-                  child: FilledButton(
+                if (tab == 3)
+                  FilledButton(
                     key: const Key('communitySearchButton'),
                     onPressed: _runSearch,
                     style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      minimumSize: const Size(72, 48),
+                      maximumSize: const Size(132, 48),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
                     ),
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
-                      child: Text(l10n.commonSearch),
+                      child: Text(l10n.commonSearch, maxLines: 1),
                     ),
                   ),
-                ),
               ],
             ),
           ],
@@ -1034,7 +1122,10 @@ class _CommunityScreenState extends State<CommunityScreen>
           key: const Key('communityBackToSplashButton'),
           icon: const Icon(Icons.arrow_back),
           tooltip: l10n.homeBackToSplashTooltip,
-          onPressed: () => context.go('/'),
+          onPressed: () {
+            communityService.clearTemporaryUnmutes();
+            context.go('/');
+          },
         ),
         backgroundColor: barBackground,
         foregroundColor: foreground,
@@ -1047,7 +1138,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         title: Text(
           l10n.communityScreenTitle,
           softWrap: true,
-          maxLines: 2,
+          maxLines: 3,
           overflow: TextOverflow.visible,
         ),
         actions: [
@@ -1063,6 +1154,13 @@ class _CommunityScreenState extends State<CommunityScreen>
                 builder: (_) => const CommunityFollowNotificationsScreen(),
               ),
             ),
+          ),
+          IconButton(
+            key: const Key('communityMuteSettingsButton'),
+            icon: const Icon(Icons.visibility_off_outlined),
+            tooltip: CommunityPlazaLabels.of(context).muteSettings,
+            onPressed: () =>
+                _showContentFilters(communityService, muteOnly: true),
           ),
           const HelpButton(topic: '作品広場'),
         ],
@@ -1174,7 +1272,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    searchRowFor(1),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
                       child: Wrap(
@@ -1244,6 +1341,40 @@ class _CommunityScreenState extends State<CommunityScreen>
                               () => _sortAscending = !_sortAscending,
                             ),
                           ),
+                          PopupMenuButton<CommunityRankingLayout>(
+                            key: const Key('communityRankingLayoutButton'),
+                            tooltip: CommunityRankingLayoutLabels.of(
+                              context,
+                            ).title,
+                            icon: Icon(
+                              _rankingLayout ==
+                                      CommunityRankingLayout.horizontal
+                                  ? Icons.view_agenda_outlined
+                                  : Icons.view_stream_outlined,
+                            ),
+                            onSelected: _setRankingLayout,
+                            itemBuilder: (context) {
+                              final words = CommunityRankingLayoutLabels.of(
+                                context,
+                              );
+                              return [
+                                CheckedPopupMenuItem(
+                                  value: CommunityRankingLayout.horizontal,
+                                  checked:
+                                      _rankingLayout ==
+                                      CommunityRankingLayout.horizontal,
+                                  child: Text(words.horizontal),
+                                ),
+                                CheckedPopupMenuItem(
+                                  value: CommunityRankingLayout.largeThumbnail,
+                                  checked:
+                                      _rankingLayout ==
+                                      CommunityRankingLayout.largeThumbnail,
+                                  child: Text(words.largeThumbnail),
+                                ),
+                              ];
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -1251,12 +1382,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                       builder: (context) {
                         final ranked = _rankingWorks(allWorks);
                         if (ranked.isEmpty) return _buildSearchEmptyState(l10n);
-                        final rankNumbers = {
-                          for (int i = 0; i < ranked.length; i++)
-                            ranked[i].id: i + 1,
-                        };
-                        return CommunityWorkGrid(
-                          minTileWidth: _minimumTileWidth,
+                        return CommunityRankingWorkList(
+                          layout: _rankingLayout,
                           works: ranked,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
@@ -1266,7 +1393,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                             communityService.toggleBookmark(w.id),
                           ),
                           onTapAuthor: _openAuthorWorks,
-                          rankNumbers: rankNumbers,
                           bottomPadding: 88,
                         );
                       },
@@ -1336,6 +1462,41 @@ class _CommunityScreenState extends State<CommunityScreen>
                       ],
                     ),
                     tab: 2,
+                  ),
+                );
+              },
+            ),
+            Builder(
+              builder: (context) {
+                final works = _applySearch(
+                  allWorks.toList(),
+                  includeQuery: true,
+                );
+                return _pullToRefresh(
+                  communityService,
+                  _scrollableContent(
+                    Column(
+                      children: [
+                        searchRowFor(3),
+                        if (works.isEmpty)
+                          _buildSearchEmptyState(l10n)
+                        else
+                          CommunityWorkGrid(
+                            minTileWidth: _minimumTileWidth,
+                            works: works,
+                            bookmarkedIds: bookmarkedIds,
+                            onTapWork: _openFloatingPreview,
+                            onToggleBookmark: (w) => reportFailedCommunityEdit(
+                              context,
+                              communityService,
+                              communityService.toggleBookmark(w.id),
+                            ),
+                            onTapAuthor: _openAuthorWorks,
+                            bottomPadding: 88,
+                          ),
+                      ],
+                    ),
+                    tab: 3,
                   ),
                 );
               },
@@ -1433,6 +1594,7 @@ class _MuteEntry {
 /// Edit the draft only. Save commits all fields; Cancel discards everything.
 class _ContentFilterDialog extends StatefulWidget {
   const _ContentFilterDialog({
+    this.muteOnly = false,
     required this.initialWords,
     required this.initialTags,
     required this.initialHideAi,
@@ -1448,6 +1610,7 @@ class _ContentFilterDialog extends StatefulWidget {
     required this.initialTileWidth,
   });
 
+  final bool muteOnly;
   final List<String> initialWords;
   final List<String> initialTags;
   final bool initialHideAi;
@@ -1684,53 +1847,68 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.communityMutedAuthors),
-        content: SizedBox(
-          width: 420,
-          child: Consumer<CommunityService>(
-            builder: (_, service, _) {
-              final muted = service.mutedAuthorIds.toList()
-                ..sort(
-                  (a, b) => (service.authorNameOf(a) ?? a).compareTo(
-                    service.authorNameOf(b) ?? b,
-                  ),
-                );
-              if (muted.isEmpty) return Text(l10n.communityMutedAuthorsEmpty);
-              return ListView.builder(
-                shrinkWrap: true,
-                itemCount: muted.length,
-                itemBuilder: (_, i) {
-                  final id = muted[i];
-                  final name = service.authorNameOf(id) ?? id;
-                  return ListTile(
-                    key: ValueKey('communityMutedAuthor-$id'),
-                    title: Text(name),
-                    onTap: () {
-                      Navigator.of(dialogContext).pop();
-                      Navigator.of(context).push(
-                        adMockMaterialPageRoute<void>(
-                          builder: (_) => CommunityAuthorWorksScreen(
-                            authorId: id,
-                            authorName: name,
-                          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              CommunityPlazaLabels.of(dialogContext).mutePrivacyNotice,
+              style: Theme.of(dialogContext).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            Flexible(
+              child: SizedBox(
+                width: 420,
+                child: Consumer<CommunityService>(
+                  builder: (_, service, _) {
+                    final muted = service.mutedAuthorIds.toList()
+                      ..sort(
+                        (a, b) => (service.authorNameOf(a) ?? a).compareTo(
+                          service.authorNameOf(b) ?? b,
                         ),
                       );
-                    },
-                    trailing: IconButton(
-                      key: ValueKey('communityUnmuteAuthor-$id'),
-                      tooltip: l10n.communityUnmuteAuthor,
-                      onPressed: () => confirmCommunityAuthorMute(
-                        context,
-                        service,
-                        id,
-                        mute: false,
-                      ),
-                      icon: const Icon(Icons.visibility_outlined),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
+                    if (muted.isEmpty) {
+                      return Text(l10n.communityMutedAuthorsEmpty);
+                    }
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: muted.length,
+                      itemBuilder: (_, i) {
+                        final id = muted[i];
+                        final name = service.authorNameOf(id) ?? id;
+                        return ListTile(
+                          key: ValueKey('communityMutedAuthor-$id'),
+                          title: Text(name),
+                          onTap: () {
+                            Navigator.of(dialogContext).pop();
+                            Navigator.of(context).push(
+                              adMockMaterialPageRoute<void>(
+                                builder: (_) => CommunityAuthorWorksScreen(
+                                  authorId: id,
+                                  authorName: name,
+                                ),
+                              ),
+                            );
+                          },
+                          trailing: IconButton(
+                            key: ValueKey('communityUnmuteAuthor-$id'),
+                            tooltip: l10n.communityUnmuteAuthor,
+                            onPressed: () => confirmCommunityAuthorMute(
+                              context,
+                              service,
+                              id,
+                              mute: false,
+                            ),
+                            icon: const Icon(Icons.visibility_outlined),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -1753,296 +1931,296 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
     );
     return AlertDialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      title: Text(l10n.communityContentFilterTitle),
+      title: Text(
+        widget.muteOnly
+            ? CommunityPlazaLabels.of(context).muteSettings
+            : l10n.communityContentFilterTitle,
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.communityPostPeriodTitle,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            DropdownButtonFormField<_PostDateFilter>(
-              key: const Key('communityPostDateFilter'),
-              initialValue: _dateFilter,
-              isExpanded: true,
-              items: [
-                for (final date in _PostDateFilter.values)
-                  DropdownMenuItem(
-                    value: date,
-                    child: Text(_dateLabel(l10n, date)),
-                  ),
-              ],
-              onChanged: (value) {
-                if (value == null) return;
-                if (value == _PostDateFilter.custom) {
-                  _chooseDateRange();
-                } else {
-                  setState(() => _dateFilter = value);
-                }
-              },
-            ),
-            if (_dateFilter == _PostDateFilter.custom)
-              TextButton.icon(
-                key: const Key('communityPostDateChooseRange'),
-                onPressed: _chooseDateRange,
-                icon: const Icon(Icons.date_range_outlined),
-                label: Text(
-                  _dateRange == null
-                      ? l10n.communityPostPeriodChooseRange
-                      : '${MaterialLocalizations.of(context).formatShortDate(_dateRange!.start)} - ${MaterialLocalizations.of(context).formatShortDate(_dateRange!.end)}',
-                ),
-              ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.communityDurationFilterTitle,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            DropdownButtonFormField<_DurationFilterMode>(
-              key: const Key('communityDurationMode'),
-              initialValue: _durationMode,
-              isExpanded: true,
-              items: [
-                DropdownMenuItem(
-                  value: _DurationFilterMode.all,
-                  child: Text(l10n.communityDurationAny),
-                ),
-                DropdownMenuItem(
-                  value: _DurationFilterMode.upTo,
-                  child: Text(l10n.communityDurationUpTo),
-                ),
-                DropdownMenuItem(
-                  value: _DurationFilterMode.range,
-                  child: Text(l10n.communityDurationRange),
-                ),
-              ],
-              onChanged: (value) => setState(
-                () => _durationMode = value ?? _DurationFilterMode.all,
-              ),
-            ),
-            if (_durationMode == _DurationFilterMode.upTo) ...[
-              Text('${_upToMinutes.round()} ${l10n.communityDurationMinutes}'),
-              Slider(
-                key: const Key('communityDurationSlider'),
-                value: _upToMinutes,
-                min: 1,
-                max: 60,
-                divisions: 59,
-                label: '${_upToMinutes.round()}',
-                onChanged: (value) => setState(() => _upToMinutes = value),
-              ),
-            ],
-            if (_durationMode == _DurationFilterMode.range)
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      key: const Key('communityDurationMinimum'),
-                      initialValue: '$_minimumMinutes',
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: l10n.communityDurationMinimum,
-                      ),
-                      onChanged: (value) => _minimumMinutes =
-                          (int.tryParse(value) ?? 0).clamp(0, 9999).toInt(),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextFormField(
-                      key: const Key('communityDurationMaximum'),
-                      initialValue: '$_maximumMinutes',
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: l10n.communityDurationMaximum,
-                      ),
-                      onChanged: (value) => _maximumMinutes =
-                          (int.tryParse(value) ?? 0).clamp(0, 9999).toInt(),
-                    ),
-                  ),
-                ],
-              ),
-            SwitchListTile(
-              key: const Key('communityTagExactMatch'),
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.communityTagExactMatch),
-              value: _exactTag,
-              onChanged: (value) => setState(() => _exactTag = value),
-            ),
-            for (final filter in [0, 1]) ...[
-              const SizedBox(height: 12),
+            if (!widget.muteOnly) ...[
               Text(
-                filter == 0
-                    ? l10n.communityMinimumViews
-                    : l10n.communityMinimumBookmarks,
+                l10n.communityPostPeriodTitle,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
-              DropdownButtonFormField<int>(
-                key: Key(
-                  filter == 0
-                      ? 'communityMinimumViews'
-                      : 'communityMinimumBookmarks',
-                ),
-                initialValue: filter == 0 ? _minimumViews : _minimumBookmarks,
+              DropdownButtonFormField<_PostDateFilter>(
+                key: const Key('communityPostDateFilter'),
+                initialValue: _dateFilter,
                 isExpanded: true,
                 items: [
-                  for (final count in _communityThresholdChoices)
+                  for (final date in _PostDateFilter.values)
                     DropdownMenuItem(
-                      value: count,
-                      child: Text(
-                        count == 0
-                            ? l10n.communityThresholdAny
-                            : filter == 0
-                            ? l10n.communityMinimumViewsOption(
-                                NumberFormat.decimalPattern().format(count),
-                              )
-                            : l10n.communityMinimumBookmarksOption(
-                                NumberFormat.decimalPattern().format(count),
-                              ),
-                      ),
+                      value: date,
+                      child: Text(_dateLabel(l10n, date)),
                     ),
                 ],
-                onChanged: (value) => setState(() {
-                  if (filter == 0) {
-                    _minimumViews = value ?? 0;
+                onChanged: (value) {
+                  if (value == null) return;
+                  if (value == _PostDateFilter.custom) {
+                    _chooseDateRange();
                   } else {
-                    _minimumBookmarks = value ?? 0;
+                    setState(() => _dateFilter = value);
                   }
-                }),
+                },
               ),
-            ],
-            const SizedBox(height: 12),
-            Text(
-              l10n.communityTileSize,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            Slider(
-              key: const Key('communityTileSizeSlider'),
-              min: 120,
-              max: 240,
-              divisions: 6,
-              value: _tileWidth,
-              label: '${_tileWidth.round()} px',
-              onChanged: (value) => setState(() => _tileWidth = value),
-            ),
-            const SizedBox(height: 8),
-            _section(
-              title: l10n.communityMutedWords,
-              hint: l10n.communityMutedWordsHint,
-              keyPrefix: 'communityMutedWords',
-              entries: _words,
-              emptyLabel: l10n.communityMutedWordsEmpty,
-            ),
-            const SizedBox(height: 12),
-            _section(
-              title: l10n.communityMutedTags,
-              hint: l10n.communityMutedTagsHint,
-              keyPrefix: 'communityMutedTags',
-              entries: _tags,
-              emptyLabel: l10n.communityMutedTagsEmpty,
-            ),
-            ExpansionTile(
-              key: const Key('communityMutedAuthorsAccordion'),
-              tilePadding: EdgeInsets.zero,
-              shape: const Border(),
-              collapsedShape: const Border(),
-              initiallyExpanded: false,
-              title: Text(
-                l10n.communityMutedAuthors,
+              if (_dateFilter == _PostDateFilter.custom)
+                TextButton.icon(
+                  key: const Key('communityPostDateChooseRange'),
+                  onPressed: _chooseDateRange,
+                  icon: const Icon(Icons.date_range_outlined),
+                  label: Text(
+                    _dateRange == null
+                        ? l10n.communityPostPeriodChooseRange
+                        : '${MaterialLocalizations.of(context).formatShortDate(_dateRange!.start)} - ${MaterialLocalizations.of(context).formatShortDate(_dateRange!.end)}',
+                  ),
+                ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.communityDurationFilterTitle,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
-              children: [
-                Consumer<CommunityService>(
-                  builder: (_, service, _) {
-                    final ids = service.mutedAuthorIds.toList()..sort();
-                    if (ids.isEmpty) {
-                      return Text(l10n.communityMutedAuthorsEmpty);
-                    }
-                    return Column(
-                      children: [
-                        for (final id in ids)
-                          ListTile(
-                            key: ValueKey('communityMutedAuthorInline-$id'),
-                            title: Text(service.authorNameOf(id) ?? id),
-                            onTap: () {
-                              final navigator = Navigator.of(context);
-                              final name = service.authorNameOf(id) ?? id;
-                              navigator.pop();
-                              navigator.push(
-                                adMockMaterialPageRoute<void>(
-                                  builder: (_) => CommunityAuthorWorksScreen(
-                                    authorId: id,
-                                    authorName: name,
-                                  ),
-                                ),
-                              );
-                            },
-                            trailing: IconButton(
-                              key: ValueKey('communityUnmuteAuthorInline-$id'),
-                              tooltip: l10n.communityUnmuteAuthor,
-                              onPressed: () =>
-                                  service.setAuthorMuted(id, false),
-                              icon: const Icon(Icons.visibility_outlined),
-                            ),
-                          ),
-                      ],
-                    );
-                  },
+              DropdownButtonFormField<_DurationFilterMode>(
+                key: const Key('communityDurationMode'),
+                initialValue: _durationMode,
+                isExpanded: true,
+                items: [
+                  DropdownMenuItem(
+                    value: _DurationFilterMode.all,
+                    child: Text(l10n.communityDurationAny),
+                  ),
+                  DropdownMenuItem(
+                    value: _DurationFilterMode.upTo,
+                    child: Text(l10n.communityDurationUpTo),
+                  ),
+                  DropdownMenuItem(
+                    value: _DurationFilterMode.range,
+                    child: Text(l10n.communityDurationRange),
+                  ),
+                ],
+                onChanged: (value) => setState(
+                  () => _durationMode = value ?? _DurationFilterMode.all,
                 ),
-                TextButton.icon(
-                  key: const Key('communityManageMutedAuthors'),
-                  onPressed: _manageMutedAuthors,
-                  icon: const Icon(Icons.person_off_outlined),
-                  label: Text(l10n.communityMutedAuthors),
+              ),
+              if (_durationMode == _DurationFilterMode.upTo) ...[
+                Text(
+                  '${_upToMinutes.round()} ${l10n.communityDurationMinutes}',
+                ),
+                Slider(
+                  key: const Key('communityDurationSlider'),
+                  value: _upToMinutes,
+                  min: 1,
+                  max: 60,
+                  divisions: 59,
+                  label: '${_upToMinutes.round()}',
+                  onChanged: (value) => setState(() => _upToMinutes = value),
                 ),
               ],
-            ),
-            const SizedBox(height: 16),
-            SwitchTheme(
-              data: SwitchTheme.of(
-                context,
-              ).copyWith(trackOutlineWidth: const WidgetStatePropertyAll(2)),
-              child: SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                activeTrackColor: opaqueOver(
-                  scheme.primary.withValues(alpha: 0.2),
-                  background,
+              if (_durationMode == _DurationFilterMode.range)
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        key: const Key('communityDurationMinimum'),
+                        initialValue: '$_minimumMinutes',
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: l10n.communityDurationMinimum,
+                        ),
+                        onChanged: (value) => _minimumMinutes =
+                            (int.tryParse(value) ?? 0).clamp(0, 9999).toInt(),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        key: const Key('communityDurationMaximum'),
+                        initialValue: '$_maximumMinutes',
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: l10n.communityDurationMaximum,
+                        ),
+                        onChanged: (value) => _maximumMinutes =
+                            (int.tryParse(value) ?? 0).clamp(0, 9999).toInt(),
+                      ),
+                    ),
+                  ],
                 ),
-                activeThumbColor: scheme.onPrimary,
-                thumbIcon: WidgetStatePropertyAll(
-                  Icon(
-                    Icons.circle_outlined,
-                    color: scheme.onSurface,
-                    size: 20,
+              for (final filter in [0, 1]) ...[
+                const SizedBox(height: 12),
+                Text(
+                  filter == 0
+                      ? l10n.communityMinimumViews
+                      : l10n.communityMinimumBookmarks,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
-                inactiveTrackColor: opaqueOver(
-                  theme.scaffoldBackgroundColor,
-                  background,
+                DropdownButtonFormField<int>(
+                  key: Key(
+                    filter == 0
+                        ? 'communityMinimumViews'
+                        : 'communityMinimumBookmarks',
+                  ),
+                  initialValue: filter == 0 ? _minimumViews : _minimumBookmarks,
+                  isExpanded: true,
+                  items: [
+                    for (final count in _communityThresholdChoices)
+                      DropdownMenuItem(
+                        value: count,
+                        child: Text(
+                          count == 0
+                              ? l10n.communityThresholdAny
+                              : filter == 0
+                              ? l10n.communityMinimumViewsOption(
+                                  NumberFormat.decimalPattern().format(count),
+                                )
+                              : l10n.communityMinimumBookmarksOption(
+                                  NumberFormat.decimalPattern().format(count),
+                                ),
+                        ),
+                      ),
+                  ],
+                  onChanged: (value) => setState(() {
+                    if (filter == 0) {
+                      _minimumViews = value ?? 0;
+                    } else {
+                      _minimumBookmarks = value ?? 0;
+                    }
+                  }),
                 ),
-                inactiveThumbColor: scheme.onSurfaceVariant,
-                trackOutlineColor: WidgetStatePropertyAll(scheme.onSurface),
-                value: _hideAi,
-                onChanged: (value) => setState(() => _hideAi = value),
-                title: Text(l10n.communityHideGenerativeAiImageVideo),
+              ],
+            ],
+            if (widget.muteOnly) ...[
+              _section(
+                title: l10n.communityMutedWords,
+                hint: l10n.communityMutedWordsHint,
+                keyPrefix: 'communityMutedWords',
+                entries: _words,
+                emptyLabel: l10n.communityMutedWordsEmpty,
               ),
-            ),
+              const SizedBox(height: 12),
+              _section(
+                title: l10n.communityMutedTags,
+                hint: l10n.communityMutedTagsHint,
+                keyPrefix: 'communityMutedTags',
+                entries: _tags,
+                emptyLabel: l10n.communityMutedTagsEmpty,
+              ),
+              ExpansionTile(
+                key: const Key('communityMutedAuthorsAccordion'),
+                tilePadding: EdgeInsets.zero,
+                shape: const Border(),
+                collapsedShape: const Border(),
+                initiallyExpanded: false,
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.communityMutedAuthors,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      CommunityPlazaLabels.of(context).mutePrivacyNotice,
+                      key: const Key('communityMutePrivacyNoticeSettings'),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+                children: [
+                  Consumer<CommunityService>(
+                    builder: (_, service, _) {
+                      final ids = service.mutedAuthorIds.toList()..sort();
+                      if (ids.isEmpty) {
+                        return Text(l10n.communityMutedAuthorsEmpty);
+                      }
+                      return Column(
+                        children: [
+                          for (final id in ids)
+                            ListTile(
+                              key: ValueKey('communityMutedAuthorInline-$id'),
+                              title: Text(service.authorNameOf(id) ?? id),
+                              onTap: () {
+                                final navigator = Navigator.of(context);
+                                final name = service.authorNameOf(id) ?? id;
+                                navigator.pop();
+                                navigator.push(
+                                  adMockMaterialPageRoute<void>(
+                                    builder: (_) => CommunityAuthorWorksScreen(
+                                      authorId: id,
+                                      authorName: name,
+                                    ),
+                                  ),
+                                );
+                              },
+                              trailing: IconButton(
+                                key: ValueKey(
+                                  'communityUnmuteAuthorInline-$id',
+                                ),
+                                tooltip: l10n.communityUnmuteAuthor,
+                                onPressed: () =>
+                                    service.setAuthorMuted(id, false),
+                                icon: const Icon(Icons.visibility_outlined),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                  TextButton.icon(
+                    key: const Key('communityManageMutedAuthors'),
+                    onPressed: _manageMutedAuthors,
+                    icon: const Icon(Icons.person_off_outlined),
+                    label: Text(l10n.communityMutedAuthors),
+                  ),
+                ],
+              ),
+            ],
+            if (!widget.muteOnly)
+              SwitchTheme(
+                data: SwitchTheme.of(
+                  context,
+                ).copyWith(trackOutlineWidth: const WidgetStatePropertyAll(2)),
+                child: SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  activeTrackColor: opaqueOver(
+                    scheme.primary.withValues(alpha: 0.2),
+                    background,
+                  ),
+                  activeThumbColor: scheme.onPrimary,
+                  thumbIcon: WidgetStatePropertyAll(
+                    Icon(
+                      Icons.circle_outlined,
+                      color: scheme.onSurface,
+                      size: 20,
+                    ),
+                  ),
+                  inactiveTrackColor: opaqueOver(
+                    theme.scaffoldBackgroundColor,
+                    background,
+                  ),
+                  inactiveThumbColor: scheme.onSurfaceVariant,
+                  trackOutlineColor: WidgetStatePropertyAll(scheme.onSurface),
+                  value: _hideAi,
+                  onChanged: (value) => setState(() => _hideAi = value),
+                  title: Text(l10n.communityHideGenerativeAiImageVideo),
+                ),
+              ),
           ],
         ),
       ),

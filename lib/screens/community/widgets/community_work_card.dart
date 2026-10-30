@@ -1,6 +1,9 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../l10n/community_plaza_labels.dart';
+import '../../../services/community_service.dart';
+import 'package:provider/provider.dart';
 import '../../../models/community_work.dart';
 import '../../../config/font_fallback.dart';
 
@@ -38,6 +41,9 @@ class CommunityWorkCard extends StatelessWidget {
   final VoidCallback? onAuthorTap;
   final int? rankNumber;
   final String? repostedByAuthorName;
+  final bool isMuted;
+  final bool isUnavailable;
+  final VoidCallback? onMuteToggle;
 
   const CommunityWorkCard({
     super.key,
@@ -48,6 +54,9 @@ class CommunityWorkCard extends StatelessWidget {
     this.onAuthorTap,
     this.rankNumber,
     this.repostedByAuthorName,
+    this.isMuted = false,
+    this.isUnavailable = false,
+    this.onMuteToggle,
   });
 
   @override
@@ -58,6 +67,7 @@ class CommunityWorkCard extends StatelessWidget {
     final cardColor = theme.cardTheme.color ?? scheme.surfaceContainerLow;
     final textColor = scheme.onSurface;
     final detailColor = scheme.onSurfaceVariant;
+    final obscured = isUnavailable || isMuted;
     final author = work.authorName.trim().isEmpty
         ? l10n.communityCreatorLabel
         : work.authorName;
@@ -102,15 +112,14 @@ class CommunityWorkCard extends StatelessWidget {
         ),
       ),
     );
-    Widget count(String label, String value) => Flexible(
-      child: Semantics(
-        label: '$label: $value',
-        child: ExcludeSemantics(
-          child: Text(
-            value,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 11, color: detailColor),
-          ),
+    Widget count(String label, String value) => Semantics(
+      label: '$label: $value',
+      child: ExcludeSemantics(
+        child: Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 11, color: detailColor),
         ),
       ),
     );
@@ -126,7 +135,7 @@ class CommunityWorkCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
           ),
           child: InkWell(
-            onTap: onTap,
+            onTap: obscured ? null : onTap,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,38 +150,46 @@ class CommunityWorkCard extends StatelessWidget {
                       );
                       return Stack(
                         children: [
-                          Positioned.fill(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: communityThumbnailGradient(
-                                    scheme,
-                                    work.thumbnailColorIndex,
-                                  ),
-                                ),
-                              ),
-                              child: Center(
-                                child: ExcludeSemantics(
-                                  child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: overlay,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.play_arrow_rounded,
-                                      color: textColor,
-                                      size: 28,
-                                    ),
+                          if (obscured)
+                            Positioned.fill(
+                              child: ColoredBox(
+                                color: scheme.surfaceContainerHighest,
+                                child: Center(
+                                  child: Icon(
+                                    Icons.visibility_off_outlined,
+                                    size: 32,
+                                    color: scheme.onSurfaceVariant,
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          if (!work.isNiarimPublished)
+                          if (!obscured)
+                            Positioned.fill(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: communityThumbnailGradient(
+                                      scheme,
+                                      work.thumbnailColorIndex,
+                                    ),
+                                  ),
+                                ),
+                                // Draw real YouTube artwork whenever the backend
+                                // supplies it. A theme-derived gradient remains
+                                // visible while loading or if the URL fails.
+                                child: work.thumbnailUrl.startsWith('https://')
+                                    ? Image.network(
+                                        work.thumbnailUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stack) =>
+                                            const SizedBox.shrink(),
+                                      )
+                                    : null,
+                              ),
+                            ),
+                          if (!work.isNiarimPublished && !obscured)
                             Positioned(
                               left: 6,
                               top: 6,
@@ -198,19 +215,23 @@ class CommunityWorkCard extends StatelessWidget {
                                 child: badge('#$rankNumber', fontSize: 16),
                               ),
                             ),
-                          Positioned(
-                            right: 6,
-                            bottom: 6,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: (thumbnail.maxWidth - 18) * .48,
-                              ),
-                              child: badge(
-                                formatDurationLabel(work.durationSeconds),
+                          // The upper menu is a 48dp touch target. On
+                          // 120dp tiles a bottom-right duration chip would
+                          // overlap it, so favor a clear thumbnail.
+                          if (!obscured && thumbnail.maxWidth >= 148)
+                            Positioned(
+                              right: 6,
+                              bottom: 6,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: (thumbnail.maxWidth - 18) * .48,
+                                ),
+                                child: badge(
+                                  formatDurationLabel(work.durationSeconds),
+                                ),
                               ),
                             ),
-                          ),
-                          if (work.isShort)
+                          if (work.isShort && !obscured)
                             Positioned(
                               left: 6,
                               bottom: 6,
@@ -221,55 +242,18 @@ class CommunityWorkCard extends StatelessWidget {
                                 child: badge(l10n.communityShortsBadge),
                               ),
                             ),
-                          Positioned(
-                            right: 4,
-                            top: 4,
-                            child: MergeSemantics(
-                              child: Semantics(
-                                button: true,
-                                label: isBookmarked
-                                    ? l10n.communityWorkDetailBookmarkRemove
-                                    : l10n.communityWorkDetailBookmarkAdd,
-                                toggled: isBookmarked,
-                                child: Material(
-                                  color: overlay,
-                                  shape: const CircleBorder(),
-                                  child: IconButton(
-                                    key: ValueKey(
-                                      'community-bookmark-${work.id}',
-                                    ),
-                                    tooltip: isBookmarked
-                                        ? l10n.communityWorkDetailBookmarkRemove
-                                        : l10n.communityWorkDetailBookmarkAdd,
-                                    constraints: const BoxConstraints.tightFor(
-                                      width: 48,
-                                      height: 48,
-                                    ),
-                                    visualDensity: VisualDensity.standard,
-                                    onPressed: onBookmarkToggle,
-                                    icon: Icon(
-                                      isBookmarked
-                                          ? Icons.bookmark
-                                          : Icons.bookmark_border,
-                                      color: textColor,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
                         ],
                       );
                     },
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                  padding: const EdgeInsets.fromLTRB(10, 8, 2, 10),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (repostedByAuthorName != null) ...[
+                      if (repostedByAuthorName != null && !obscured) ...[
                         Row(
                           children: [
                             Icon(Icons.repeat, size: 12, color: detailColor),
@@ -293,7 +277,13 @@ class CommunityWorkCard extends StatelessWidget {
                         const SizedBox(height: 3),
                       ],
                       Text(
-                        work.title,
+                        isUnavailable
+                            ? CommunityPlazaLabels.of(
+                                context,
+                              ).unavailablePlaceholder
+                            : isMuted
+                            ? CommunityPlazaLabels.of(context).mutedPlaceholder
+                            : work.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -304,53 +294,162 @@ class CommunityWorkCard extends StatelessWidget {
                           color: textColor,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Semantics(
-                        button: onAuthorTap != null,
-                        label: author,
-                        child: GestureDetector(
-                          key: ValueKey('community-author-${work.id}'),
-                          onTap: onAuthorTap,
-                          behavior: HitTestBehavior.opaque,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: onAuthorTap == null ? 0 : 48,
-                            ),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: ExcludeSemantics(
-                                child: Text(
-                                  author,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: detailColor,
-                                    fontFamily: 'Kuramubon',
-                                    fontFamilyFallback: kHeadingFontFallback,
+                      if (!obscured) const SizedBox(height: 4),
+                      if (!obscured)
+                        Semantics(
+                          button: onAuthorTap != null,
+                          label: author,
+                          child: GestureDetector(
+                            key: ValueKey('community-author-${work.id}'),
+                            onTap: onAuthorTap,
+                            behavior: HitTestBehavior.opaque,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: onAuthorTap == null ? 0 : 48,
+                              ),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: ExcludeSemantics(
+                                  child: Text(
+                                    author,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: detailColor,
+                                      fontFamily: 'Kuramubon',
+                                      fontFamilyFallback: kHeadingFontFallback,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.play_arrow_rounded,
-                            size: 13,
-                            color: detailColor,
-                          ),
-                          const SizedBox(width: 2),
-                          count(l10n.communityRankingSortViews, views),
-                          const SizedBox(width: 8),
-                          Icon(Icons.bookmark, size: 13, color: detailColor),
-                          const SizedBox(width: 2),
-                          count(l10n.communityRankingSortBookmarks, bookmarks),
-                        ],
-                      ),
+                      if (!obscured) const SizedBox(height: 4),
+                      if (!isUnavailable)
+                        LayoutBuilder(
+                          builder: (context, metrics) {
+                            // On narrow tiles, numbers stay on their own row.
+                            // The bookmark and visibility menu remain adjacent
+                            // and pinned against the right edge of the card.
+                            final narrow = metrics.maxWidth < 230;
+                            Widget counts() => Row(
+                              children: [
+                                Icon(
+                                  Icons.play_arrow_rounded,
+                                  size: 13,
+                                  color: detailColor,
+                                ),
+                                const SizedBox(width: 2),
+                                Flexible(
+                                  child: count(
+                                    l10n.communityRankingSortViews,
+                                    views,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Icon(
+                                  Icons.bookmarks_outlined,
+                                  size: 13,
+                                  color: detailColor,
+                                ),
+                                const SizedBox(width: 2),
+                                Flexible(
+                                  child: count(
+                                    l10n.communityRankingSortBookmarks,
+                                    bookmarks,
+                                  ),
+                                ),
+                              ],
+                            );
+                            Widget controls() => Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (!obscured)
+                                  MergeSemantics(
+                                    child: Semantics(
+                                      button: true,
+                                      label: isBookmarked
+                                          ? l10n.communityWorkDetailBookmarkRemove
+                                          : l10n.communityWorkDetailBookmarkAdd,
+                                      toggled: isBookmarked,
+                                      child: IconButton(
+                                        key: ValueKey(
+                                          'community-bookmark-${work.id}',
+                                        ),
+                                        tooltip: isBookmarked
+                                            ? l10n.communityWorkDetailBookmarkRemove
+                                            : l10n.communityWorkDetailBookmarkAdd,
+                                        constraints:
+                                            const BoxConstraints.tightFor(
+                                              width: 56,
+                                              height: 56,
+                                            ),
+                                        iconSize: 48,
+                                        padding: EdgeInsets.zero,
+                                        onPressed: onBookmarkToggle,
+                                        icon: Icon(
+                                          isBookmarked
+                                              ? Icons.bookmark
+                                              : Icons.bookmark_border,
+                                          color: detailColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                if (onMuteToggle != null)
+                                  Material(
+                                    color: cardColor,
+                                    shape: const CircleBorder(),
+                                    child: PopupMenuButton<String>(
+                                      key: ValueKey(
+                                        'communityMuteMenu-${work.id}',
+                                      ),
+                                      tooltip: isMuted
+                                          ? CommunityPlazaLabels.of(
+                                              context,
+                                            ).unmuteWork
+                                          : CommunityPlazaLabels.of(
+                                              context,
+                                            ).muteWork,
+                                      icon: Icon(
+                                        Icons.more_vert,
+                                        color: textColor,
+                                      ),
+                                      onSelected: (_) => onMuteToggle!(),
+                                      itemBuilder: (_) => [
+                                        PopupMenuItem(
+                                          value: isMuted ? 'unmute' : 'mute',
+                                          child: Text(
+                                            isMuted
+                                                ? CommunityPlazaLabels.of(
+                                                    context,
+                                                  ).unmuteWork
+                                                : CommunityPlazaLabels.of(
+                                                    context,
+                                                  ).muteWork,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            );
+                            if (narrow) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [if (!obscured) counts(), controls()],
+                              );
+                            }
+                            return Row(
+                              children: [
+                                if (!obscured) Expanded(child: counts()),
+                                controls(),
+                              ],
+                            );
+                          },
+                        ),
                     ],
                   ),
                 ),
@@ -360,6 +459,39 @@ class CommunityWorkCard extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+/// The same hide/unhide action is used by grid cards and both ranking
+/// layouts. Persisted filters remain unchanged when changing the layout.
+Future<void> toggleCommunityWorkVisibility(
+  BuildContext context,
+  CommunityWork work,
+) async {
+  final service = context.read<CommunityService>();
+  if (!service.isWorkMuted(work)) {
+    await service.setWorkMuted(work.id);
+    return;
+  }
+  final texts = CommunityPlazaLabels.of(context);
+  final permanent = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(texts.unmuteQuestion),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: Text(texts.unmuteTemporary),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(dialogContext, true),
+          child: Text(texts.unmuteAlways),
+        ),
+      ],
+    ),
+  );
+  if (permanent != null) {
+    await service.unmuteWork(work.id, permanently: permanent);
   }
 }
 
@@ -394,6 +526,7 @@ class CommunityWorkGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
+      final service = context.watch<CommunityService>();
       final scale = MediaQuery.textScalerOf(context).scale(13) / 13;
       final minimumWidth = minTileWidth * (scale < 1 ? 1 : scale);
       final columns = ((constraints.maxWidth - 24 + 10) / (minimumWidth + 10))
@@ -421,6 +554,12 @@ class CommunityWorkGrid extends StatelessWidget {
                         : () => onTapAuthor!(work),
                     rankNumber: rankNumbers?[work.id],
                     repostedByAuthorName: repostedByNames?[work.id],
+                    isMuted: !work.isUnavailable && service.isWorkMuted(work),
+                    isUnavailable:
+                        work.isUnavailable || !work.isNiarimPublished,
+                    onMuteToggle: work.isUnavailable || !work.isNiarimPublished
+                        ? null
+                        : () => toggleCommunityWorkVisibility(context, work),
                   ),
                 ),
             ],

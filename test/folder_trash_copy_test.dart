@@ -540,8 +540,15 @@ void main() {
           .element(find.byType(Scaffold).last)
           .read<SettingsService>();
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-      // カードの右下の角から見た位置。
-      Offset fromCorner(Finder button) {
+      // カードの右下の角から見た位置（狭い画面・大きな文字では作品のカードが
+      // 画面の下にあるので、見える所までスクロールしてから測る）。
+      Future<Offset> fromCorner(Finder button) async {
+        await tester.scrollUntilVisible(
+          button,
+          60,
+          scrollable: find.byType(Scrollable).last,
+        );
+        await settle(tester);
         final card = tester.getRect(
           find.ancestor(of: button, matching: find.byType(Card)).first,
         );
@@ -571,9 +578,37 @@ void main() {
                 find.byKey(ValueKey('trashedFolderDelete_$folderId')),
               ),
             ]) {
-              final a = fromCorner(work);
-              final b = fromCorner(folder);
-              expect((a - b).distance, lessThan(0.5), reason: '$where $a $b');
+              final a = await fromCorner(work);
+              final card = tester.getRect(
+                find.ancestor(of: work, matching: find.byType(Card)).first,
+              );
+              final workCentre =
+                  tester.getRect(work).center.dy - card.center.dy;
+              // フォルダのカードは一覧の上の方にあるので、戻して測る。
+              await tester.drag(
+                find.byType(Scrollable).last,
+                const Offset(0, 3000),
+              );
+              await settle(tester);
+              final b = await fromCorner(folder);
+              final folderCard = tester.getRect(
+                find.ancestor(of: folder, matching: find.byType(Card)).first,
+              );
+              final folderCentre =
+                  tester.getRect(folder).center.dy - folderCard.center.dy;
+              // 狭い画面・大きな文字では名前の下の右端の別の行、広い画面では
+              // 名前の右の上下の真ん中（どちらも作品とフォルダで同じ）。
+              if (card.width < 600 * scale) {
+                expect((a - b).distance, lessThan(0.5), reason: '$where $a $b');
+              } else {
+                expect((a.dx - b.dx).abs(), lessThan(0.5), reason: where);
+                expect(workCentre.abs(), lessThan(0.5), reason: '$where work');
+                expect(
+                  folderCentre.abs(),
+                  lessThan(0.5),
+                  reason: '$where folder',
+                );
+              }
               expect(a.dx, greaterThanOrEqualTo(0), reason: where);
               expect(a.dy, greaterThanOrEqualTo(0), reason: where);
             }

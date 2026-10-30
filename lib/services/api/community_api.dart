@@ -1,6 +1,18 @@
 import 'niarim_api_client.dart';
 import 'niarim_api_models.dart';
 
+/// Visibility of a YouTube video at the moment it is opened. A missing
+/// public video cannot be identified as deleted versus private without
+/// owner credentials, so [unavailable] is intentionally separate.
+enum CommunityPlaybackStatus {
+  checking,
+  available,
+  deleted,
+  private,
+  unavailable,
+  unknown,
+}
+
 enum RankingPeriod {
   all('all'),
   year('yearly'),
@@ -29,6 +41,19 @@ class CommunityApi {
         .whereType<Map<String, dynamic>>()
         .map(ApiWork.fromJson)
         .toList();
+  }
+
+  Future<CommunityPlaybackStatus> playbackStatus(String workId) async {
+    final json = await _client.getJson(
+      '/works/${Uri.encodeComponent(workId)}/playback-status',
+    );
+    return switch (json['status']) {
+      'available' => CommunityPlaybackStatus.available,
+      'deleted' => CommunityPlaybackStatus.deleted,
+      'private' => CommunityPlaybackStatus.private,
+      'unavailable' => CommunityPlaybackStatus.unavailable,
+      _ => CommunityPlaybackStatus.unknown,
+    };
   }
 
   Future<ApiRankingPage> ranking(RankingPeriod period) async {

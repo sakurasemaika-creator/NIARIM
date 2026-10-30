@@ -1,0 +1,51 @@
+name: NIARIM Latest UI & Playback Captures
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/niarim-playback-ui-captures.yml'
+      - 'test/five_fixes_screenshot_test.dart'
+      - 'test/community_playback_status_capture_test.dart'
+      - 'test/community_ranking_layout_test.dart'
+      - 'lib/screens/community/widgets/community_ranking_work_list.dart'
+      - 'lib/screens/community/widgets/community_playback_status_view.dart'
+      - 'lib/screens/community/widgets/community_floating_preview.dart'
+      - 'lib/screens/community/widgets/community_work_card.dart'
+      - 'lib/screens/community/community_screen.dart'
+      - 'lib/l10n/**'
+
+jobs:
+  captures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter gen-l10n
+      - name: Capture updated real Flutter screens
+        env:
+          NIARIM_FIVE_FIXES_CAPTURE: build/latest-ui
+        run: |
+          flutter test test/five_fixes_screenshot_test.dart --reporter expanded
+          flutter test test/community_playback_status_capture_test.dart --reporter expanded
+          flutter test test/community_ranking_layout_test.dart --reporter expanded
+      - name: Validate all 23 real captures
+        run: |
+          for n in 00_advanced_content_filters 01_mute_words 02_mute_tags 03_selected_favorites_white 04_compact_tag_search 05_french_tab_alignment 06_work_plaza_post_button 07_my_works_after_button 08_after_post_action 09_my_works_bulk_selection 10_individual_work_settings 11_individual_delete_confirmation 12_my_public_works_page 13_other_creator_mute_button 14_search_history_expanded 15_saved_search_expanded 16_deleted_video_preview 17_private_video_preview 18_unavailable_video_preview 19_playback_check_failed 20_updated_plaza_card_layout 21_ranking_horizontal 22_ranking_large_thumbnail; do
+            test -s "build/latest-ui/${n}.png"
+          done
+      - name: Upload complete latest UI captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: niarim-latest-ui-and-playback-real-flutter-captures
+          path: build/latest-ui/*.png
+          retention-days: 14
+          if-no-files-found: warn

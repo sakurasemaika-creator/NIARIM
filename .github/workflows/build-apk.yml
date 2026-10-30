@@ -55,6 +55,38 @@ jobs:
           # APK生成後にrunnerの空き容量を使い切ることがあるため無効化。
           cache: false
 
+      # The keystores live only in GitHub Actions encrypted Secrets, not in git.
+      # Fail closed rather than silently producing a different SHA-1 each run.
+      - name: 固定debug署名鍵を復元
+        if: ${{ inputs.build-type == 'debug' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.NIARIM_DEBUG_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.NIARIM_DEBUG_STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$KEYSTORE_BASE64" || -z "$KEYSTORE_PASSWORD" ]]; then
+            echo "::error::NIARIM_DEBUG_KEYSTORE_BASE64 / NIARIM_DEBUG_STORE_PASSWORD をRepository Secretsに登録してください"
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/niarim-ci-debug.jks"
+          chmod 600 "$RUNNER_TEMP/niarim-ci-debug.jks"
+          keytool -list -keystore "$RUNNER_TEMP/niarim-ci-debug.jks" -storepass "$KEYSTORE_PASSWORD" -alias niarim_ci_debug >/dev/null
+
+      - name: 固定upload署名鍵を復元
+        if: ${{ inputs.build-type == 'release' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.NIARIM_UPLOAD_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.NIARIM_UPLOAD_STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$KEYSTORE_BASE64" || -z "$KEYSTORE_PASSWORD" ]]; then
+            echo "::error::NIARIM_UPLOAD_KEYSTORE_BASE64 / NIARIM_UPLOAD_STORE_PASSWORD をRepository Secretsに登録してください"
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/niarim-upload.jks"
+          chmod 600 "$RUNNER_TEMP/niarim-upload.jks"
+          keytool -list -keystore "$RUNNER_TEMP/niarim-upload.jks" -storepass "$KEYSTORE_PASSWORD" -alias niarim_upload >/dev/null
+
       - name: 依存関係取得
         run: flutter pub get
 
@@ -64,10 +96,16 @@ jobs:
 
       - name: APKビルド（debug）
         if: ${{ inputs.build-type == 'debug' }}
+        env:
+          NIARIM_DEBUG_KEYSTORE_PATH: ${{ runner.temp }}/niarim-ci-debug.jks
+          NIARIM_DEBUG_STORE_PASSWORD: ${{ secrets.NIARIM_DEBUG_STORE_PASSWORD }}
         run: flutter build apk --debug
 
       - name: APKビルド（release）
         if: ${{ inputs.build-type == 'release' }}
+        env:
+          NIARIM_UPLOAD_KEYSTORE_PATH: ${{ runner.temp }}/niarim-upload.jks
+          NIARIM_UPLOAD_STORE_PASSWORD: ${{ secrets.NIARIM_UPLOAD_STORE_PASSWORD }}
         run: flutter build apk --release
 
       # Actions Storage（無料枠0.5GB）の上限に達していると、このステップ

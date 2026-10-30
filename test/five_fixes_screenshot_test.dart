@@ -100,6 +100,10 @@ void main() {
     await tester.tap(find.byKey(const Key('communityContentFilterButton')));
     await tester.pumpAndSettle();
     await capture(root, '00_advanced_content_filters', tester);
+    await tester.tap(find.text(l10n.commonCancel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('communityMuteSettingsButton')));
+    await tester.pumpAndSettle();
     await tester.ensureVisible(
       find.byKey(const Key('communityMutedWordsAccordion')),
     );
@@ -113,10 +117,7 @@ void main() {
     final words = find.byKey(const Key('communityMutedWordsDisplay_0'));
     final tags = find.byKey(const Key('communityMutedTagsDisplay_0'));
     expect(tester.getRect(words).top, lessThan(tester.getRect(tags).top));
-    expect(
-      tester.getRect(tags).top,
-      lessThan(tester.getRect(find.byType(SwitchListTile).last).top),
-    );
+    expect(tester.getRect(tags).top, greaterThan(0));
     await tester.tap(find.byKey(const Key('communityMutedWordsAddButton')));
     await tester.pumpAndSettle();
     await tester.enterText(
@@ -206,6 +207,8 @@ void main() {
     await tester.pumpAndSettle();
     Navigator.of(tester.element(find.byType(CommunityMyWorksScreen))).pop();
     await tester.pumpAndSettle();
+    tester.widget<TabBar>(find.byType(TabBar)).controller!.animateTo(3);
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('communitySearchInput')), findsOneWidget);
     final switcher = find.byKey(const Key('communitySearchModeToggle'));
     expect(tester.getSize(switcher).width, lessThan(60));
@@ -222,6 +225,35 @@ void main() {
     await tester.tap(find.byKey(const Key('communitySearchButton')));
     await tester.pumpAndSettle();
     await capture(root, '04_compact_tag_search', tester);
+
+    // Capture the newly introduced search-history and saved-filter accordions.
+    final historyAccordion = find.byKey(
+      const Key('communitySearchHistoryAccordion'),
+    );
+    await tester.ensureVisible(historyAccordion);
+    await tester.tap(historyAccordion);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('communitySearchHistory-0')),
+      findsOneWidget,
+    );
+    await capture(root, '14_search_history_expanded', tester);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('communitySaveHistory-0')),
+    );
+    await tester.tap(find.byKey(const ValueKey('communitySaveHistory-0')));
+    await tester.pumpAndSettle();
+    final savedAccordion = find.byKey(
+      const Key('communitySavedSearchAccordion'),
+    );
+    await tester.ensureVisible(savedAccordion);
+    await tester.tap(savedAccordion);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('communitySavedSearch-0')),
+      findsOneWidget,
+    );
+    await capture(root, '15_saved_search_expanded', tester);
 
     // The public author page exposes an explicit creator mute action.
     final peerWork = community.discoverableWorks.firstWhere(

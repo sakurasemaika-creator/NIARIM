@@ -10,6 +10,7 @@ import {
 } from "../lib/response";
 import { getRanking } from "./routes/ranking";
 import { getLatestWorks } from "./routes/worksLatest";
+import { getPlaybackStatus } from "./routes/worksPlaybackStatus";
 import { getAuthorWorks, getMyWorks } from "./routes/userWorks";
 import { createWork } from "./routes/worksCreate";
 import { updateWork } from "./routes/worksUpdate";
@@ -74,6 +75,7 @@ const routes: Route[] = [
   // Public/optionally authenticated reads.
   route("GET", "/ranking/{period}", (e, p) => getRanking(e, p.period)),
   route("GET", "/works/latest", (e) => getLatestWorks(e)),
+  route("GET", "/works/{id}/playback-status", (_e, p) => getPlaybackStatus(p.id)),
   route("GET", "/users/{id}/works", (e, p) => getAuthorWorks(e, p.id)),
   route("GET", "/works/{id}/bookmarkers", (e, p) =>
     getWorkBookmarkers(e, p.id),

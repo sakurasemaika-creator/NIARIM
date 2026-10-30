@@ -15,8 +15,10 @@ describe("bookmark visibility contract", () => {
     expect(source).toContain('work.youtubePrivacyStatus !== "deleted"');
   });
 
-  it("does not expose hidden works through a user's bookmark list", () => {
-    expect(source).toContain("Boolean(w) && isWorkPublic(w!)");
+  it("retains a redacted placeholder without exposing hidden work metadata", () => {
+    expect(source).toContain("toUnavailableWork(bookmarks[index].workId)");
+    expect(source).toContain("isWorkPublic(raw as WorkItem)");
+    expect(source).not.toContain("publicWorks");
   });
 
   it("does not allow a new bookmark on a hidden work for a non-author", () => {

@@ -1591,7 +1591,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Publica tus animaciones e ilustraciones en la comunidad como vídeos de YouTube y explora las obras de otros usuarios. Cambia entre las pestañas «Nuevas», «Ranking» y «Siguiendo», y busca por título de la obra o nombre del creador. Cambia al modo de búsqueda por etiquetas para filtrar obras por etiqueta: cualquier usuario (no solo el creador) puede añadir o quitar etiquetas, aunque las etiquetas bloqueadas por el creador solo él puede quitarlas, y tocar una etiqueta filtra al instante las obras con la misma etiqueta. Al tocar una tarjeta de obra se abre una ventana de vista previa flotante que se puede arrastrar y redimensionar, para seguir explorando otras pantallas mientras se reproduce. El botón «Ver detalles» abre la pantalla de detalles de la obra (creador, fecha de publicación, edición de etiquetas, marcador, republicación y más). Toca el botón «Seguir» junto al nombre de un creador para añadirlo a tus seguidos: la pestaña «Siguiendo» reúne entonces solo las publicaciones de ese creador, ordenadas por fecha. Cuando alguien te sigue, aparece en la lista de notificaciones bajo el icono de la campana en la parte superior de la pantalla. Puedes elegir si tus listas de seguidos/seguidores son visibles para otros usuarios (privadas por defecto), y puedes ver las listas de otros usuarios si las han hecho públicas. Puedes republicar la obra de cualquier otra persona (excepto la tuya propia) con el botón «Republicar»; cuando un creador al que sigues republica la obra de otra persona, esa obra también aparece en tu pestaña «Siguiendo», ordenada según lo que sea más reciente —su fecha de publicación original o su fecha de republicación— (la tarjeta muestra «Republicado por…»). Las obras marcadas aparecen juntas en la pestaña «Guardadas» de la pantalla de inicio, y también en la pestaña «Marcadores» de la pantalla de obras de un creador. Puedes elegir si tu propia lista de marcadores es visible para otros usuarios (privada de forma predeterminada), y puedes ver las listas de marcadores de otros usuarios si las han hecho públicas. Puedes denunciar una obra indicando un motivo, y tras enviarla se te preguntará si quieres bloquear a ese creador. Los vídeos verticales se pueden ver en «modo vertical», que los reproduce uno tras otro como un feed de vídeos cortos. Hay un límite diario de publicaciones: 1 al día para miembros gratuitos y 3 al día para miembros Premium. El botón de filtros de visualización de la parte superior derecha (el icono de un ojo tachado) te permite ocultar las obras que no quieras ver. Puedes ocultar las obras marcadas con «Contiene imágenes o vídeo de IA generativa» y añadir títulos silenciados (solo se comparan con el título de la obra) y etiquetas silenciadas (solo se comparan con las etiquetas de la Plaza de Obras) de una en una con «Añadir nuevo». Edita con el lápiz o elimina con la papelera; no hacen falta comas ni #. Estos filtros se aplican a «Nuevas», «Ranking», «Siguiendo» (incluidas las republicaciones), el modo vertical, las páginas de los creadores, los detalles de las obras y los marcadores. «Contiene imágenes o vídeo de IA generativa» lo declara quien publica en el momento de publicar, y después solo esa persona puede cambiarlo (desde «Mis publicaciones» o la pantalla de detalles de la obra).';
+      'Publica tus animaciones e ilustraciones en la comunidad como vídeos de YouTube y explora las obras de otros usuarios. Cambia entre las pestañas «Nuevas», «Ranking» y «Siguiendo», y busca por título de la obra o nombre del creador. Cambia al modo de búsqueda por etiquetas para filtrar obras por etiqueta: cualquier usuario (no solo el creador) puede añadir o quitar etiquetas, aunque las etiquetas bloqueadas por el creador solo él puede quitarlas, y tocar una etiqueta filtra al instante las obras con la misma etiqueta. Al tocar una tarjeta de obra se abre una ventana de vista previa flotante que se puede arrastrar y redimensionar, para seguir explorando otras pantallas mientras se reproduce. El botón «Ver detalles» abre la pantalla de detalles de la obra (creador, fecha de publicación, edición de etiquetas, marcador, republicación y más). Toca el botón «Seguir» junto al nombre de un creador para añadirlo a tus seguidos: la pestaña «Siguiendo» reúne entonces solo las publicaciones de ese creador, ordenadas por fecha. Cuando alguien te sigue, aparece en la lista de notificaciones bajo el icono de la campana en la parte superior de la pantalla. Puedes elegir si tus listas de seguidos/seguidores son visibles para otros usuarios (privadas por defecto), y puedes ver las listas de otros usuarios si las han hecho públicas. Puedes republicar la obra de cualquier otra persona (excepto la tuya propia) con el botón «Republicar»; cuando un creador al que sigues republica la obra de otra persona, esa obra también aparece en tu pestaña «Siguiendo», ordenada según lo que sea más reciente —su fecha de publicación original o su fecha de republicación— (la tarjeta muestra «Republicado por…»). Las obras marcadas aparecen juntas en la pestaña «Guardadas» de la pantalla de inicio, y también en la pestaña «Marcadores» de la pantalla de obras de un creador. Puedes elegir si tu propia lista de marcadores es visible para otros usuarios (privada de forma predeterminada), y puedes ver las listas de marcadores de otros usuarios si las han hecho públicas. Puedes denunciar una obra indicando un motivo, y tras enviarla se te preguntará si quieres bloquear a ese creador. Los vídeos verticales se pueden ver en «modo vertical», que los reproduce uno tras otro como un feed de vídeos cortos. Hay un límite diario de publicaciones: 1 al día para miembros gratuitos y 3 al día para miembros Premium. El botón de filtros de visualización de la parte superior derecha (el icono de un ojo tachado) te permite ocultar las obras que no quieras ver. Puedes ocultar las obras marcadas con «Contiene imágenes o vídeo de IA generativa» y añadir palabras ocultas del título (solo se comparan con el título de la obra) y etiquetas ocultas (solo se comparan con las etiquetas de la Plaza de Obras) de una en una con «Añadir nuevo». Edita con el lápiz o elimina con la papelera; no hacen falta comas ni #. Estos filtros se aplican a «Nuevas», «Ranking», «Siguiendo» (incluidas las republicaciones), el modo vertical, las páginas de los creadores, los detalles de las obras y los marcadores. «Contiene imágenes o vídeo de IA generativa» lo declara quien publica en el momento de publicar, y después solo esa persona puede cambiarlo (desde «Mis publicaciones» o la pantalla de detalles de la obra).';
 
   @override
   String get helpWatermarkEntryTitle => 'Marca de agua';
@@ -7284,14 +7284,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Ocultar obras con imágenes o vídeo de IA generativa';
 
   @override
-  String get communityMutedWords => 'Títulos silenciados';
+  String get communityMutedWords => 'Palabras ocultas del título';
 
   @override
   String get communityMutedWordsHint =>
       'Oculta las obras cuyos títulos contienen estas palabras (no se comprueban creadores ni etiquetas). Añade y edita cada palabra por separado.';
 
   @override
-  String get communityMutedTags => 'Etiquetas silenciadas';
+  String get communityMutedTags => 'Etiquetas ocultas';
 
   @override
   String get communityMutedTagsHint =>
@@ -7388,13 +7388,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityPostPeriodChooseRange => 'Elegir fechas';
 
   @override
-  String get communityMutedAuthors => 'Creadores silenciados';
+  String get communityMutedAuthors => 'Creadores ocultos';
 
   @override
-  String get communityMutedAuthorsEmpty => 'No hay creadores silenciados';
+  String get communityMutedAuthorsEmpty => 'No hay creadores ocultos';
 
   @override
-  String get communityUnmuteAuthor => 'Dejar de silenciar a este creador';
+  String get communityUnmuteAuthor => 'Volver a mostrar este creador';
 
   @override
   String get communityMyWorksManagementHeading => 'Gestionar obras';
@@ -8322,38 +8322,37 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityTileSize => 'Tamaño de las obras';
 
   @override
-  String get communityMutedWordsEmpty => 'No hay palabras silenciadas';
+  String get communityMutedWordsEmpty => 'No hay palabras ocultas';
 
   @override
-  String get communityMutedTagsEmpty => 'No hay etiquetas silenciadas';
+  String get communityMutedTagsEmpty => 'No hay etiquetas ocultas';
 
   @override
-  String get communityMuteShort => 'Silenciar';
+  String get communityMuteShort => 'Ocultar';
 
   @override
-  String get communityMuteConfirmTitle => '¿Silenciar a este usuario?';
+  String get communityMuteConfirmTitle => '¿Ocultar este creador?';
 
   @override
-  String get communityMuteConfirmBody => 'Se ocultarán sus obras.';
+  String get communityMuteConfirmBody => 'Sus obras dejarán de mostrarse.';
 
   @override
-  String get communityMuteConfirmAction => 'Silenciar';
+  String get communityMuteConfirmAction => 'Ocultar';
 
   @override
-  String get communityUnmuteConfirmTitle =>
-      '¿Dejar de silenciar a este usuario?';
+  String get communityUnmuteConfirmTitle => '¿Volver a mostrar este creador?';
 
   @override
-  String get communityUnmuteConfirmAction => 'Activar';
+  String get communityUnmuteConfirmAction => 'Mostrar';
 
   @override
   String get communityMuteNo => 'No';
 
   @override
-  String get communityMuteDone => 'Usuario silenciado';
+  String get communityMuteDone => 'Creador oculto';
 
   @override
-  String get communityUnmuteDone => 'Usuario reactivado';
+  String get communityUnmuteDone => 'Creador visible de nuevo';
 
   @override
   String get communityMilestoneNotificationsTitle => 'Notificaciones';

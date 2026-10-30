@@ -84,9 +84,23 @@ void main() {
   };
 
   void expectHiddenEverywhere(CommunityService s, String id) {
+    // The work stays in exactly those feeds where it belonged before being
+    // muted. It must never create entries in unrelated author/other feeds.
+    const memberships = <String, Set<String>>{
+      'ai': {'new / ranking', 'author_b page', 'bookmarks', 'reposts'},
+      'gore': {'new / ranking', 'author_b page', 'bookmarks', 'reposts'},
+      'spoiler': {'new / ranking', 'author_a page', 'bookmarks', 'following'},
+      'plain': {'new / ranking', 'author_a page', 'bookmarks', 'following'},
+    };
+    final expected = memberships[id]!;
     for (final MapEntry(:key, :value) in surfaces(s).entries) {
-      expect(value, isNot(contains(id)), reason: '$id still on $key');
+      if (expected.contains(key)) {
+        expect(value, contains(id), reason: '$id lost its masked slot on $key');
+      } else {
+        expect(value, isNot(contains(id)), reason: '$id leaked into $key');
+      }
     }
+    expect(s.isWorkMuted(s.byId(id)!), isTrue, reason: 'masked card');
     expect(s.isDiscoverableForViewer(s.byId(id)!), isFalse, reason: 'detail');
   }
 
@@ -107,21 +121,21 @@ void main() {
     final s = await plaza();
     await s.setHideGenerativeAiImageVideo(true);
     expectHiddenEverywhere(s, 'ai');
-    expect(surfaces(s)['reposts'], {'gore'});
+    expect(surfaces(s)['reposts'], {'gore', 'ai'});
   });
 
   test('a muted title hides the work on every surface', () async {
     final s = await plaza();
     await s.setMutedWords(CommunityService.parseFilterInput('ネタバレ'));
     expectHiddenEverywhere(s, 'spoiler');
-    expect(surfaces(s)['following'], {'plain', 'c_own'});
+    expect(surfaces(s)['following'], {'plain', 'spoiler', 'c_own'});
   });
 
   test('a muted tag hides the work on every surface', () async {
     final s = await plaza();
     await s.setMutedTags(CommunityService.parseFilterInput('#グロ'));
     expectHiddenEverywhere(s, 'gore');
-    expect(surfaces(s)['reposts'], {'ai'});
+    expect(surfaces(s)['reposts'], {'gore', 'ai'});
   });
 
   test('a tag added or removed after posting moves the work at once', () async {
@@ -143,7 +157,8 @@ void main() {
     final own = work('own', author: kDummySelfAuthorId, ai: true);
     s.replaceWorksForTest([own]);
     await s.setHideGenerativeAiImageVideo(true);
-    expect(s.discoverableWorks, isEmpty);
+    expect(s.discoverableWorks, hasLength(1));
+    expect(s.isWorkMuted(own), isTrue);
     expect(
       s.worksByAuthor(kDummySelfAuthorId, includeHidden: true).single.id,
       'own',

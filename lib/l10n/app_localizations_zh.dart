@@ -1523,7 +1523,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      '可以将动画・插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换「最新」「排行榜」「关注」三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击「查看详情」按钮可打开作品详情画面（投稿者、发布日期、标签编辑、收藏、转发等）。点击投稿者名称旁的「关注」按钮即可将其加入关注列表，「关注」标签页会按时间顺序汇总显示该作者的作品。有人关注你时，会显示在画面右上角铃铛图标的通知列表中。你可以分别设置自己的关注列表/粉丝列表是否对所有用户公开（默认非公开），也可以查看已公开的其他用户的列表。除自己发布的作品外，都可以用「转发」按钮转发；当关注的作者转发了他人的作品时，该作品也会以「发布日期」和「转发日期」中较新的一方为基准，混入「关注」标签页中显示（卡片上会显示「○○转发了」）。收藏的作品会汇总显示在主页的「已收藏」标签页中，也可以在投稿者作品列表画面的「收藏」标签页中查看。可以设置自己的收藏列表是否对其他用户公开（默认不公开），也可以查看已设为公开的其他用户的收藏列表。对不当作品可以附上理由进行举报，举报提交后会询问你是否要屏蔽该投稿者。竖屏视频可以在「竖屏模式」中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏「包含生成式 AI 图像或视频」的作品外，还可以通过「新增」逐条登记只匹配作品标题的静音标题，以及只匹配作品广场标签的静音标签。可用编辑图标修改或垃圾桶图标删除，无需输入逗号或 #。这些筛选适用于「最新」「排行榜」「关注」（含转发）、竖屏模式、投稿者页面、作品详情和收藏。「包含生成式 AI 图像或视频」由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在「我的投稿」或作品详情画面中更改）。';
+      '可以将动画・插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换「最新」「排行榜」「关注」三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击「查看详情」按钮可打开作品详情画面（投稿者、发布日期、标签编辑、收藏、转发等）。点击投稿者名称旁的「关注」按钮即可将其加入关注列表，「关注」标签页会按时间顺序汇总显示该作者的作品。有人关注你时，会显示在画面右上角铃铛图标的通知列表中。你可以分别设置自己的关注列表/粉丝列表是否对所有用户公开（默认非公开），也可以查看已公开的其他用户的列表。除自己发布的作品外，都可以用「转发」按钮转发；当关注的作者转发了他人的作品时，该作品也会以「发布日期」和「转发日期」中较新的一方为基准，混入「关注」标签页中显示（卡片上会显示「○○转发了」）。收藏的作品会汇总显示在主页的「已收藏」标签页中，也可以在投稿者作品列表画面的「收藏」标签页中查看。可以设置自己的收藏列表是否对其他用户公开（默认不公开），也可以查看已设为公开的其他用户的收藏列表。对不当作品可以附上理由进行举报，举报提交后会询问你是否要屏蔽该投稿者。竖屏视频可以在「竖屏模式」中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏「包含生成式 AI 图像或视频」的作品外，还可以通过「新增」逐条登记只匹配作品标题的隐藏标题关键词，以及只匹配作品广场标签的隐藏标签。可用编辑图标修改或垃圾桶图标删除，无需输入逗号或 #。这些筛选适用于「最新」「排行榜」「关注」（含转发）、竖屏模式、投稿者页面、作品详情和收藏。「包含生成式 AI 图像或视频」由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在「我的投稿」或作品详情画面中更改）。';
 
   @override
   String get helpWatermarkEntryTitle => '水印';
@@ -6885,13 +6885,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityHideGenerativeAiImageVideo => '隐藏包含生成式 AI 图像或视频的作品';
 
   @override
-  String get communityMutedWords => '静音标题';
+  String get communityMutedWords => '隐藏标题关键词';
 
   @override
   String get communityMutedWordsHint => '隐藏标题中包含这些文字的作品（不检查作者名称和标签）。请逐条添加或编辑。';
 
   @override
-  String get communityMutedTags => '静音标签';
+  String get communityMutedTags => '隐藏标签';
 
   @override
   String get communityMutedTagsHint => '隐藏作品广场中标签匹配的作品。请逐条添加标签，无需输入 #。';
@@ -6984,13 +6984,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityPostPeriodChooseRange => '选择日期范围';
 
   @override
-  String get communityMutedAuthors => '已屏蔽的创作者';
+  String get communityMutedAuthors => '已隐藏的创作者';
 
   @override
-  String get communityMutedAuthorsEmpty => '暂无已屏蔽的创作者';
+  String get communityMutedAuthorsEmpty => '没有已隐藏的创作者';
 
   @override
-  String get communityUnmuteAuthor => '取消屏蔽此用户';
+  String get communityUnmuteAuthor => '重新显示此创作者';
 
   @override
   String get communityMyWorksManagementHeading => '作品管理';
@@ -7826,37 +7826,37 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityTileSize => '作品卡片大小';
 
   @override
-  String get communityMutedWordsEmpty => '暂无屏蔽关键词';
+  String get communityMutedWordsEmpty => '没有隐藏的关键词';
 
   @override
-  String get communityMutedTagsEmpty => '暂无屏蔽标签';
+  String get communityMutedTagsEmpty => '没有隐藏的标签';
 
   @override
-  String get communityMuteShort => '屏蔽';
+  String get communityMuteShort => '隐藏';
 
   @override
-  String get communityMuteConfirmTitle => '要屏蔽此用户吗？';
+  String get communityMuteConfirmTitle => '要隐藏这位用户吗？';
 
   @override
-  String get communityMuteConfirmBody => '屏蔽后将不显示此用户的作品。';
+  String get communityMuteConfirmBody => '将不再显示这位用户的作品。';
 
   @override
-  String get communityMuteConfirmAction => '屏蔽';
+  String get communityMuteConfirmAction => '隐藏';
 
   @override
-  String get communityUnmuteConfirmTitle => '要取消屏蔽此用户吗？';
+  String get communityUnmuteConfirmTitle => '要重新显示这位用户吗？';
 
   @override
-  String get communityUnmuteConfirmAction => '取消屏蔽';
+  String get communityUnmuteConfirmAction => '重新显示';
 
   @override
   String get communityMuteNo => '否';
 
   @override
-  String get communityMuteDone => '已屏蔽此用户';
+  String get communityMuteDone => '已隐藏这位用户';
 
   @override
-  String get communityUnmuteDone => '已取消屏蔽';
+  String get communityUnmuteDone => '已重新显示这位用户';
 
   @override
   String get communityMilestoneNotificationsTitle => '通知';
@@ -9403,7 +9403,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpCommunityDesc =>
-      '可以將動畫・插畫作品以YouTube影片的形式發佈到社群，並瀏覽其他使用者的作品。可以切換「最新」「排行榜」「追蹤」三個分頁，也可以依作品標題或投稿者名稱搜尋。切換到標籤搜尋模式後可依標籤篩選作品，標籤不僅投稿者本人，其他使用者也可以自由新增或刪除（投稿者鎖定的標籤只能由投稿者本人解鎖），點擊標籤即可篩選出相同標籤的作品。點擊作品卡片會開啟可拖曳、可調整大小的浮動預覽視窗，可以在繼續操作其他畫面的同時觀看。點擊「查看詳情」按鈕可開啟作品詳情畫面（投稿者、發佈日期、標籤編輯、收藏、轉發等）。點擊投稿者名稱旁的「追蹤」按鈕即可將其加入追蹤清單，「追蹤」分頁會依時間順序彙整顯示該作者的作品。有人追蹤你時，會顯示在畫面右上角鈴鐺圖示的通知清單中。你可以分別設定自己的追蹤清單/粉絲清單是否對所有使用者公開（預設為非公開），也可以查看已公開的其他使用者的清單。除自己發佈的作品外，都可以用「轉發」按鈕轉發；當追蹤的作者轉發了他人的作品時，該作品也會以「發佈日期」和「轉發日期」中較新的一方為基準，混入「追蹤」分頁中顯示（卡片上會顯示「○○轉發了」）。收藏的作品會彙整顯示在主畫面的「已收藏」分頁中，也可以在投稿者作品清單畫面的「收藏」分頁中查看。可以設定自己的收藏清單是否對其他使用者公開（預設不公開），也可以查看已設為公開的其他使用者的收藏清單。對不當作品可以附上理由進行檢舉，檢舉送出後會詢問你是否要封鎖該投稿者。直向影片可以在「直向模式」中連續播放觀看。每日可發佈的作品數量有上限，免費會員每天1個，進階會員每天3個。點擊畫面右上角的顯示篩選按鈕（帶斜線的眼睛圖示），可以隱藏不想看到的作品。除了可以隱藏「包含生成式 AI 圖像或影片」的作品外，還可以透過「新增」逐條登錄只比對作品標題的靜音標題，以及只比對作品廣場標籤的靜音標籤。可用編輯圖示修改或垃圾桶圖示刪除，無需輸入逗號或 #。這些篩選適用於「最新」「排行榜」「追蹤」（含轉發）、直向模式、投稿者頁面、作品詳情和收藏。「包含生成式 AI 圖像或影片」由投稿者在發佈時自行聲明，發佈後也只有投稿者本人可以變更（可在「我的投稿」或作品詳情畫面中變更）。';
+      '可以將動畫・插畫作品以YouTube影片的形式發佈到社群，並瀏覽其他使用者的作品。可以切換「最新」「排行榜」「追蹤」三個分頁，也可以依作品標題或投稿者名稱搜尋。切換到標籤搜尋模式後可依標籤篩選作品，標籤不僅投稿者本人，其他使用者也可以自由新增或刪除（投稿者鎖定的標籤只能由投稿者本人解鎖），點擊標籤即可篩選出相同標籤的作品。點擊作品卡片會開啟可拖曳、可調整大小的浮動預覽視窗，可以在繼續操作其他畫面的同時觀看。點擊「查看詳情」按鈕可開啟作品詳情畫面（投稿者、發佈日期、標籤編輯、收藏、轉發等）。點擊投稿者名稱旁的「追蹤」按鈕即可將其加入追蹤清單，「追蹤」分頁會依時間順序彙整顯示該作者的作品。有人追蹤你時，會顯示在畫面右上角鈴鐺圖示的通知清單中。你可以分別設定自己的追蹤清單/粉絲清單是否對所有使用者公開（預設為非公開），也可以查看已公開的其他使用者的清單。除自己發佈的作品外，都可以用「轉發」按鈕轉發；當追蹤的作者轉發了他人的作品時，該作品也會以「發佈日期」和「轉發日期」中較新的一方為基準，混入「追蹤」分頁中顯示（卡片上會顯示「○○轉發了」）。收藏的作品會彙整顯示在主畫面的「已收藏」分頁中，也可以在投稿者作品清單畫面的「收藏」分頁中查看。可以設定自己的收藏清單是否對其他使用者公開（預設不公開），也可以查看已設為公開的其他使用者的收藏清單。對不當作品可以附上理由進行檢舉，檢舉送出後會詢問你是否要封鎖該投稿者。直向影片可以在「直向模式」中連續播放觀看。每日可發佈的作品數量有上限，免費會員每天1個，進階會員每天3個。點擊畫面右上角的顯示篩選按鈕（帶斜線的眼睛圖示），可以隱藏不想看到的作品。除了可以隱藏「包含生成式 AI 圖像或影片」的作品外，還可以透過「新增」逐條登錄只比對作品標題的隱藏標題關鍵字，以及只比對作品廣場標籤的隱藏標籤。可用編輯圖示修改或垃圾桶圖示刪除，無需輸入逗號或 #。這些篩選適用於「最新」「排行榜」「追蹤」（含轉發）、直向模式、投稿者頁面、作品詳情和收藏。「包含生成式 AI 圖像或影片」由投稿者在發佈時自行聲明，發佈後也只有投稿者本人可以變更（可在「我的投稿」或作品詳情畫面中變更）。';
 
   @override
   String get helpWatermarkEntryTitle => '浮水印';
@@ -14765,13 +14765,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityHideGenerativeAiImageVideo => '隱藏包含生成式 AI 圖像或影片的作品';
 
   @override
-  String get communityMutedWords => '靜音標題';
+  String get communityMutedWords => '隱藏標題關鍵字';
 
   @override
   String get communityMutedWordsHint => '隱藏標題中包含這些文字的作品（不檢查作者名稱和標籤）。請逐條新增或編輯。';
 
   @override
-  String get communityMutedTags => '靜音標籤';
+  String get communityMutedTags => '隱藏標籤';
 
   @override
   String get communityMutedTagsHint => '隱藏作品廣場中標籤相符的作品。請逐條新增標籤，無需輸入 #。';
@@ -14865,13 +14865,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityPostPeriodChooseRange => '選擇日期範圍';
 
   @override
-  String get communityMutedAuthors => '已靜音的創作者';
+  String get communityMutedAuthors => '已隱藏的創作者';
 
   @override
-  String get communityMutedAuthorsEmpty => '沒有已靜音的創作者';
+  String get communityMutedAuthorsEmpty => '沒有已隱藏的創作者';
 
   @override
-  String get communityUnmuteAuthor => '解除此使用者靜音';
+  String get communityUnmuteAuthor => '重新顯示此創作者';
 
   @override
   String get communityMyWorksManagementHeading => '作品管理';
@@ -15708,37 +15708,37 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityTileSize => '作品卡片大小';
 
   @override
-  String get communityMutedWordsEmpty => '目前沒有封鎖關鍵字';
+  String get communityMutedWordsEmpty => '沒有隱藏的關鍵字';
 
   @override
-  String get communityMutedTagsEmpty => '目前沒有封鎖標籤';
+  String get communityMutedTagsEmpty => '沒有隱藏的標籤';
 
   @override
-  String get communityMuteShort => '封鎖';
+  String get communityMuteShort => '隱藏';
 
   @override
-  String get communityMuteConfirmTitle => '要封鎖這位使用者嗎？';
+  String get communityMuteConfirmTitle => '要隱藏這位使用者嗎？';
 
   @override
-  String get communityMuteConfirmBody => '封鎖後不再顯示此使用者的作品。';
+  String get communityMuteConfirmBody => '將不再顯示這位使用者的作品。';
 
   @override
-  String get communityMuteConfirmAction => '封鎖';
+  String get communityMuteConfirmAction => '隱藏';
 
   @override
-  String get communityUnmuteConfirmTitle => '要解除封鎖這位使用者嗎？';
+  String get communityUnmuteConfirmTitle => '要重新顯示這位使用者嗎？';
 
   @override
-  String get communityUnmuteConfirmAction => '解除封鎖';
+  String get communityUnmuteConfirmAction => '重新顯示';
 
   @override
   String get communityMuteNo => '否';
 
   @override
-  String get communityMuteDone => '已封鎖使用者';
+  String get communityMuteDone => '已隱藏這位使用者';
 
   @override
-  String get communityUnmuteDone => '已解除封鎖';
+  String get communityUnmuteDone => '已重新顯示這位使用者';
 
   @override
   String get communityMilestoneNotificationsTitle => '通知';
