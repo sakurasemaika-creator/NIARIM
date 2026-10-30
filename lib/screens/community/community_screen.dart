@@ -814,10 +814,11 @@ class _CommunityScreenState extends State<CommunityScreen>
       l10n.communityTabFavoriteAuthors,
       CommunityPlazaLabels.of(context).searchTab,
     ];
-    final tabWidths = labels.map(
-      (label) => measure(label, labelStyle).width + 32,
-    );
-    final scrollTabs = tabWidths.fold<double>(0, (a, b) => a + b) > width;
+    // Match the project-list tabs: measured label width + 32px touch padding.
+    // Short labels get proportionally less space; long translations can scroll.
+    final naturalTabWidths = labels
+        .map((label) => measure(label, labelStyle).width + 32)
+        .toList();
     final tabHeight = labels
         .map((label) => measure(label, labelStyle).height + 16)
         .fold<double>(48, (a, b) => a > b ? a : b);
@@ -1166,18 +1167,48 @@ class _CommunityScreenState extends State<CommunityScreen>
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(tabHeight),
-          child: TabBar(
-            controller: _tabController,
-            isScrollable: scrollTabs,
-            tabAlignment: scrollTabs ? TabAlignment.start : TabAlignment.fill,
-            labelStyle: labelStyle,
-            unselectedLabelStyle: labelStyle,
-            labelColor: selected,
-            unselectedLabelColor: unselected,
-            indicatorColor: selected,
-            tabs: [
-              for (final label in labels) Tab(text: label, height: tabHeight),
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final totalNatural = naturalTabWidths.fold<double>(
+                0,
+                (sum, tabWidth) => sum + tabWidth,
+              );
+              final scrollTabs = totalNatural > constraints.maxWidth;
+              return TabBar(
+                controller: _tabController,
+                // Scrollable TabBar respects the explicit, proportional widths.
+                // Non-scrollable TabBar forces all tabs to equal widths.
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                labelPadding: EdgeInsets.zero,
+                labelStyle: labelStyle,
+                unselectedLabelStyle: labelStyle,
+                labelColor: selected,
+                unselectedLabelColor: unselected,
+                indicatorColor: selected,
+                tabs: [
+                  for (var i = 0; i < labels.length; i++)
+                    Tab(
+                      height: tabHeight,
+                      child: SizedBox(
+                        key: Key('communityTabWidth$i'),
+                        width: scrollTabs
+                            ? naturalTabWidths[i]
+                            : constraints.maxWidth *
+                                naturalTabWidths[i] /
+                                totalNatural,
+                        child: Center(
+                          child: Text(
+                            labels[i],
+                            maxLines: 1,
+                            softWrap: false,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
         ),
       ),

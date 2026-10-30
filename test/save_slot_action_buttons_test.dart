@@ -107,7 +107,7 @@ void main() {
     IconData iconOf(Finder f) =>
         ((f.evaluate().first.widget as IconButton).icon as Icon).icon!;
     expect(iconOf(writes), Icons.edit_note, reason: '書き込みはメモ＋ペンのアイコン');
-    expect(iconOf(loads), Icons.book_outlined, reason: '読み込みはノートのアイコン');
+    expect(iconOf(loads), Icons.menu_book_outlined, reason: '読み込みは開いたノートのアイコン');
     expect(iconOf(deletes), Icons.delete_outline, reason: '削除はゴミ箱のアイコン');
 
     final source = File(
