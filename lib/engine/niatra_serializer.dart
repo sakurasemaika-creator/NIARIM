@@ -34,9 +34,21 @@ class NiatraSerializer {
   static bool _portablePreference(String key) {
     final lower = key.toLowerCase();
     const sensitive = [
-      'token', 'oauth', 'secret', 'password', 'credential', 'session',
-      'cookie', 'api_key', 'private_key', 'google', 'login',
-      'device_id', 'installation_id', 'refresh', 'authorization',
+      'token',
+      'oauth',
+      'secret',
+      'password',
+      'credential',
+      'session',
+      'cookie',
+      'api_key',
+      'private_key',
+      'google',
+      'login',
+      'device_id',
+      'installation_id',
+      'refresh',
+      'authorization',
     ];
     return !sensitive.any(lower.contains);
   }
@@ -86,8 +98,11 @@ class NiatraSerializer {
       for (final key in prefs.getKeys()) {
         if (!_portablePreference(key)) continue;
         final value = prefs.get(key);
-        if (value is String || value is bool ||
-            value is int || value is double || value is List<String>) {
+        if (value is String ||
+            value is bool ||
+            value is int ||
+            value is double ||
+            value is List<String>) {
           local[key] = value;
         }
       }

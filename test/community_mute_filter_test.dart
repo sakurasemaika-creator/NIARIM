@@ -39,8 +39,14 @@ void main() {
     expect(visible.map((w) => w.authorName), contains('禁止語作者'));
     expect(visible.any((w) => w.tags.contains('禁止語')), isTrue);
     expect(visible.any((w) => w.title.contains('禁止語')), isTrue);
-    expect(service.isWorkMuted(visible.firstWhere((w) => w.title.contains('禁止語'))), isTrue);
-    expect(service.isWorkMuted(visible.firstWhere((w) => w.authorName == '禁止語作者')), isFalse);
+    expect(
+      service.isWorkMuted(visible.firstWhere((w) => w.title.contains('禁止語'))),
+      isTrue,
+    );
+    expect(
+      service.isWorkMuted(visible.firstWhere((w) => w.authorName == '禁止語作者')),
+      isFalse,
+    );
   });
 
   test('mute tag filters exact work-plaza tag only', () async {
@@ -56,7 +62,10 @@ void main() {
     expect(visible.any((w) => w.title.startsWith('#手描き')), isTrue);
     expect(visible.any((w) => w.tags.contains('手描き風')), isTrue);
     expect(visible.any((w) => w.tags.contains('手描き')), isTrue);
-    expect(service.isWorkMuted(visible.firstWhere((w) => w.tags.contains('手描き'))), isTrue);
+    expect(
+      service.isWorkMuted(visible.firstWhere((w) => w.tags.contains('手描き'))),
+      isTrue,
+    );
   });
 
   test(
@@ -116,9 +125,14 @@ void main() {
         makeWork(title: 'mute this'),
       ]);
 
-      expect(service.worksByAuthor('author_x').map((w) => w.title),
-        containsAll(['visible', 'mute this']));
-      expect(service.isWorkMuted(service.worksByAuthor('author_x').last), isTrue);
+      expect(
+        service.worksByAuthor('author_x').map((w) => w.title),
+        containsAll(['visible', 'mute this']),
+      );
+      expect(
+        service.isWorkMuted(service.worksByAuthor('author_x').last),
+        isTrue,
+      );
       expect(
         service
             .worksByAuthor('author_x', includeHidden: true)
@@ -173,7 +187,6 @@ void main() {
       'ネタバレ',
     ]);
   });
-
 
   test('permanent and temporary work unmute are device-local', () async {
     final s = CommunityService();

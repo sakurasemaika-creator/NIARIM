@@ -23,8 +23,18 @@ class CommunityRankingLayoutLabels {
 const _all = <String, List<String>>{
   'ja': ['ランキングの表示形式', '横長リスト', '大きいサムネイル', '位'],
   'en': ['Ranking layout', 'Compact rows', 'Large thumbnails', 'Rank'],
-  'es': ['Vista de clasificación', 'Filas compactas', 'Miniaturas grandes', 'Puesto'],
-  'fr': ['Affichage du classement', 'Lignes compactes', 'Grandes miniatures', 'Rang'],
+  'es': [
+    'Vista de clasificación',
+    'Filas compactas',
+    'Miniaturas grandes',
+    'Puesto',
+  ],
+  'fr': [
+    'Affichage du classement',
+    'Lignes compactes',
+    'Grandes miniatures',
+    'Rang',
+  ],
   'ko': ['랭킹 표시 방식', '가로 목록', '큰 썸네일', '순위'],
   'zh': ['排行榜布局', '横向列表', '大缩略图', '排名'],
   'zh_Hant': ['排行榜版面', '橫向清單', '大縮圖', '排名'],

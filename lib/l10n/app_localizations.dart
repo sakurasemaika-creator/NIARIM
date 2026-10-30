@@ -2822,7 +2822,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpCommunityDesc.
   ///
   /// In ja, this message translates to:
-  /// **'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」の3タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォローされると画面右上のベルアイコンの通知一覧に届きます。自分のフォロー中/フォロワー一覧を全体公開するかどうかも設定でき（既定は非公開）、公開設定にしている他のユーザーの一覧も閲覧できます。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品はホーム画面の「ブクマ済み」タブにまとめて表示されるほか、投稿者別の作品一覧画面の「ブックマーク」タブでも確認できます。自分のブックマーク一覧はユーザー全体へ公開するかどうかを設定でき（既定は非公開）、公開設定にしている他のユーザーのブックマーク一覧も閲覧できます。不適切な作品は理由を添えて通報でき、送信後にはその投稿者をブロックするか選べます。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にするミュートタイトルと、作品広場で作品に設定されたタグだけを対象にするミュートタグを「新規追加」から1件ずつ登録し、ペンで編集、ゴミ箱で削除できます。カンマや#は不要です。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。'**
+  /// **'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」の3タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォローされると画面右上のベルアイコンの通知一覧に届きます。自分のフォロー中/フォロワー一覧を全体公開するかどうかも設定でき（既定は非公開）、公開設定にしている他のユーザーの一覧も閲覧できます。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品はホーム画面の「ブクマ済み」タブにまとめて表示されるほか、投稿者別の作品一覧画面の「ブックマーク」タブでも確認できます。自分のブックマーク一覧はユーザー全体へ公開するかどうかを設定でき（既定は非公開）、公開設定にしている他のユーザーのブックマーク一覧も閲覧できます。不適切な作品は理由を添えて通報でき、送信後にはその投稿者をブロックするか選べます。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にする非表示ワードと、作品広場で作品に設定されたタグだけを対象にする非表示タグを「新規追加」から1件ずつ登録し、ペンで編集、ゴミ箱で削除できます。カンマや#は不要です。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。'**
   String get helpCommunityDesc;
 
   /// No description provided for @helpWatermarkEntryTitle.
@@ -12572,7 +12572,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityMutedWords.
   ///
   /// In ja, this message translates to:
-  /// **'ミュートタイトル登録'**
+  /// **'非表示ワード登録'**
   String get communityMutedWords;
 
   /// No description provided for @communityMutedWordsHint.
@@ -12584,7 +12584,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityMutedTags.
   ///
   /// In ja, this message translates to:
-  /// **'ミュートタグ登録'**
+  /// **'非表示タグ登録'**
   String get communityMutedTags;
 
   /// No description provided for @communityMutedTagsHint.
@@ -12770,19 +12770,19 @@ abstract class AppLocalizations {
   /// No description provided for @communityMutedAuthors.
   ///
   /// In ja, this message translates to:
-  /// **'ミュートしたユーザー'**
+  /// **'非表示にしたユーザー'**
   String get communityMutedAuthors;
 
   /// No description provided for @communityMutedAuthorsEmpty.
   ///
   /// In ja, this message translates to:
-  /// **'ミュート中のユーザーはいません'**
+  /// **'非表示にしたユーザーはいません'**
   String get communityMutedAuthorsEmpty;
 
   /// No description provided for @communityUnmuteAuthor.
   ///
   /// In ja, this message translates to:
-  /// **'このユーザーのミュートを解除する'**
+  /// **'このユーザーの非表示を解除する'**
   String get communityUnmuteAuthor;
 
   /// No description provided for @communityMyWorksManagementHeading.
@@ -13976,49 +13976,49 @@ abstract class AppLocalizations {
   /// No description provided for @communityMutedWordsEmpty.
   ///
   /// In ja, this message translates to:
-  /// **'ミュート中のキーワードはありません'**
+  /// **'非表示ワードはありません'**
   String get communityMutedWordsEmpty;
 
   /// No description provided for @communityMutedTagsEmpty.
   ///
   /// In ja, this message translates to:
-  /// **'ミュート中のタグはありません'**
+  /// **'非表示タグはありません'**
   String get communityMutedTagsEmpty;
 
   /// No description provided for @communityMuteShort.
   ///
   /// In ja, this message translates to:
-  /// **'ミュート'**
+  /// **'非表示'**
   String get communityMuteShort;
 
   /// No description provided for @communityMuteConfirmTitle.
   ///
   /// In ja, this message translates to:
-  /// **'このユーザーをミュートしますか？'**
+  /// **'このユーザーを非表示にしますか？'**
   String get communityMuteConfirmTitle;
 
   /// No description provided for @communityMuteConfirmBody.
   ///
   /// In ja, this message translates to:
-  /// **'ミュートするとこのユーザーの作品は非表示になります。'**
+  /// **'非表示にするとこのユーザーの作品は表示されなくなります。'**
   String get communityMuteConfirmBody;
 
   /// No description provided for @communityMuteConfirmAction.
   ///
   /// In ja, this message translates to:
-  /// **'ミュートする'**
+  /// **'非表示にする'**
   String get communityMuteConfirmAction;
 
   /// No description provided for @communityUnmuteConfirmTitle.
   ///
   /// In ja, this message translates to:
-  /// **'このユーザーのミュートを解除しますか？'**
+  /// **'このユーザーの非表示を解除しますか？'**
   String get communityUnmuteConfirmTitle;
 
   /// No description provided for @communityUnmuteConfirmAction.
   ///
   /// In ja, this message translates to:
-  /// **'解除する'**
+  /// **'非表示を解除する'**
   String get communityUnmuteConfirmAction;
 
   /// No description provided for @communityMuteNo.
@@ -14030,13 +14030,13 @@ abstract class AppLocalizations {
   /// No description provided for @communityMuteDone.
   ///
   /// In ja, this message translates to:
-  /// **'このユーザーをミュートしました'**
+  /// **'このユーザーを非表示にしました'**
   String get communityMuteDone;
 
   /// No description provided for @communityUnmuteDone.
   ///
   /// In ja, this message translates to:
-  /// **'このユーザーのミュートを解除しました'**
+  /// **'このユーザーの非表示を解除しました'**
   String get communityUnmuteDone;
 
   /// No description provided for @communityMilestoneNotificationsTitle.

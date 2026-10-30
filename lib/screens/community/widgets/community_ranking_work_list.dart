@@ -10,7 +10,10 @@ import '../../../l10n/community_ranking_layout_labels.dart';
 import '../../../models/community_work.dart';
 import '../../../services/community_service.dart';
 import 'community_work_card.dart'
-    show communityThumbnailGradient, formatDurationLabel, toggleCommunityWorkVisibility;
+    show
+        communityThumbnailGradient,
+        formatDurationLabel,
+        toggleCommunityWorkVisibility;
 
 /// Only the ranking tab uses these two presentation modes.
 enum CommunityRankingLayout { horizontal, largeThumbnail }
@@ -57,8 +60,8 @@ class CommunityRankingWorkList extends StatelessWidget {
               onTap: () => onTapWork(works[i]),
               onBookmarkToggle: () => onToggleBookmark(works[i]),
               onAuthorTap: () => onTapAuthor(works[i]),
-              onVisibilityToggle: works[i].isUnavailable ||
-                      !works[i].isNiarimPublished
+              onVisibilityToggle:
+                  works[i].isUnavailable || !works[i].isNiarimPublished
                   ? null
                   : () => toggleCommunityWorkVisibility(context, works[i]),
             ),
@@ -170,8 +173,11 @@ class CommunityRankingWorkCard extends StatelessWidget {
         if (_obscured)
           ColoredBox(
             color: scheme.surfaceContainerHighest,
-            child: Icon(Icons.visibility_off_outlined,
-                size: 36, color: scheme.onSurfaceVariant),
+            child: Icon(
+              Icons.visibility_off_outlined,
+              size: 36,
+              color: scheme.onSurfaceVariant,
+            ),
           )
         else
           DecoratedBox(
@@ -180,14 +186,16 @@ class CommunityRankingWorkCard extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: communityThumbnailGradient(
-                    scheme, work.thumbnailColorIndex),
+                  scheme,
+                  work.thumbnailColorIndex,
+                ),
               ),
             ),
             child: work.thumbnailUrl.startsWith('https://')
                 ? Image.network(
                     work.thumbnailUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
                   )
                 : null,
           ),
@@ -205,9 +213,10 @@ class CommunityRankingWorkCard extends StatelessWidget {
               child: Text(
                 formatDurationLabel(work.durationSeconds),
                 style: TextStyle(
-                    color: scheme.onSurface,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600),
+                  color: scheme.onSurface,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -250,8 +259,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
         color: scheme.onSurfaceVariant,
       ),
       iconSize: large ? 40 : 32,
-      constraints:
-          BoxConstraints.tightFor(width: large ? 52 : 44, height: 48),
+      constraints: BoxConstraints.tightFor(width: large ? 52 : 44, height: 48),
       padding: EdgeInsets.zero,
       onPressed: onBookmarkToggle,
     );
@@ -264,8 +272,8 @@ class CommunityRankingWorkCard extends StatelessWidget {
       isUnavailable
           ? t.unavailablePlaceholder
           : isMuted
-              ? t.mutedPlaceholder
-              : work.title,
+          ? t.mutedPlaceholder
+          : work.title,
       maxLines: large ? 2 : 2,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
@@ -325,21 +333,37 @@ class CommunityRankingWorkCard extends StatelessWidget {
       children: [
         Semantics(
           label: '${l10n.communityRankingSortViews}: $views',
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.play_arrow_rounded,
-                size: 15, color: scheme.onSurfaceVariant),
-            Text(views, style: TextStyle(
-                fontSize: 12, color: scheme.onSurfaceVariant)),
-          ]),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.play_arrow_rounded,
+                size: 15,
+                color: scheme.onSurfaceVariant,
+              ),
+              Text(
+                views,
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+              ),
+            ],
+          ),
         ),
         Semantics(
           label: '${l10n.communityRankingSortBookmarks}: $bookmarks',
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.bookmarks_outlined,
-                size: 15, color: scheme.onSurfaceVariant),
-            Text(bookmarks, style: TextStyle(
-                fontSize: 12, color: scheme.onSurfaceVariant)),
-          ]),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.bookmarks_outlined,
+                size: 15,
+                color: scheme.onSurfaceVariant,
+              ),
+              Text(
+                bookmarks,
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -372,8 +396,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
                       CommunityRankBadge(rank: rank, small: width < 400),
                       const SizedBox(width: 4),
                       Expanded(child: _title(context)),
-                      if (actionsOnTop && !_obscured)
-                        _bookmark(context),
+                      if (actionsOnTop && !_obscured) _bookmark(context),
                       if (onVisibilityToggle != null) _menu(context),
                     ],
                   ),
@@ -450,9 +473,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
         color: Theme.of(context).cardTheme.color ?? scheme.surfaceContainerLow,
         surfaceTintColor: Colors.transparent,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: InkWell(
           onTap: _obscured ? null : onTap,
           child: layout == CommunityRankingLayout.horizontal

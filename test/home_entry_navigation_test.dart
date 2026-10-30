@@ -253,9 +253,16 @@ void main() {
   );
 
   testWidgets(
-    'selected favorite filter has white label on the current accent',
+    'selected favorite filter uses the configured accent foreground',
     (tester) async {
-      final l10n = await open(tester);
+      const foreground = Color(0xFF164A30);
+      final l10n = await open(
+        tester,
+        theme: AppThemePreset.defaultLight.copyWith(
+          accentColor: const Color(0xFFF1D780),
+          buttonTextColor: foreground,
+        ),
+      );
       final finder = find.widgetWithText(FilterChip, l10n.homeFavoritesOnly);
       expect(finder, findsOneWidget);
       await tester.tap(finder);
@@ -264,8 +271,9 @@ void main() {
       final scheme = Theme.of(tester.element(finder)).colorScheme;
       expect(chip.selected, isTrue);
       expect(chip.selectedColor, scheme.primary);
-      expect((chip.label as Text).style?.color, Colors.white);
-      expect(chip.checkmarkColor, Colors.white);
+      expect(scheme.onPrimary, foreground);
+      expect((chip.label as Text).style?.color, scheme.onPrimary);
+      expect(chip.checkmarkColor, scheme.onPrimary);
       await tester.tap(finder);
       await tester.pumpAndSettle();
       expect(

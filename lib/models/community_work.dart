@@ -35,6 +35,7 @@ class CommunityWork {
   // サムネイル画像の代わりに表示するプレースホルダーの配色を選ぶための
   // インデックス（実際のサムネイル取得はバックエンド実装後に対応）。
   final int thumbnailColorIndex;
+
   /// Remote YouTube artwork; empty for dummy/local-only cards.
   final String thumbnailUrl;
   // ユーザーが自由に追加・削除できるタグ（誰でも編集可能）。
@@ -44,6 +45,7 @@ class CommunityWork {
   final Set<String> lockedTags;
   // 作品広場独自の公開/非公開設定。
   final bool isNiarimPublished;
+
   /// True for a redacted entry kept only in bookmarks/ranking.
   final bool isUnavailable;
   // ショート動画（縦長）かどうか。

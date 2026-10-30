@@ -158,7 +158,10 @@ void main() {
               locale.toLanguageTag().toLowerCase(),
             );
             if (state == 'search' || state == 'tag-search') {
-              tester.widget<TabBar>(find.byType(TabBar)).controller!.animateTo(3);
+              tester
+                  .widget<TabBar>(find.byType(TabBar))
+                  .controller!
+                  .animateTo(3);
               await tester.pumpAndSettle();
               expect(
                 find.byKey(const Key('communitySearchInput')),
@@ -238,6 +241,8 @@ void main() {
             if (state != 'search' &&
                 state != 'tag-search' &&
                 state != 'ranking') {
+              expect(searchRowRect, isNotNull);
+              final pageSearchRect = searchRowRect!;
               final titleRect = tester.getRect(
                 find.descendant(
                   of: bar,
@@ -252,8 +257,8 @@ void main() {
               );
               if (titleRect.bottom > tabsRect.top ||
                   notificationRect.bottom > tabsRect.top ||
-                  filterRect.top < searchRowRect.top ||
-                  filterRect.bottom > searchRowRect.bottom) {
+                  filterRect.top < pageSearchRect.top ||
+                  filterRect.bottom > pageSearchRect.bottom) {
                 failures.add(
                   'Header rows regressed: $titleRect / '
                   '$notificationRect / $searchRowRect / $filterRect',
@@ -294,17 +299,17 @@ void main() {
                         : l10n.communityTagSearchHint,
                   ]
                 : state == 'ranking'
-                    ? [
-                        l10n.communityFollowNotificationsTooltip,
-                        l10n.layerPanelHelpTooltip,
-                      ]
-                    : [
-                        l10n.communityFollowNotificationsTooltip,
-                        l10n.communitySortLabel,
-                        l10n.communityTileSize,
-                        l10n.communityContentFilterTitle,
-                        l10n.layerPanelHelpTooltip,
-                      ];
+                ? [
+                    l10n.communityFollowNotificationsTooltip,
+                    l10n.layerPanelHelpTooltip,
+                  ]
+                : [
+                    l10n.communityFollowNotificationsTooltip,
+                    l10n.communitySortLabel,
+                    l10n.communityTileSize,
+                    l10n.communityContentFilterTitle,
+                    l10n.layerPanelHelpTooltip,
+                  ];
             for (final tip in tips) {
               final f = find.byTooltip(tip);
               expect(f, findsOneWidget);

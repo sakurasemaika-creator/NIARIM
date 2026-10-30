@@ -73,9 +73,7 @@ void main() {
       '',
     );
   });
-  testWidgets('space-delimited tags must all match by default', (
-    tester,
-  ) async {
+  testWidgets('space-delimited tags must all match by default', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final works = buildDummyCommunityWorks();
     final expected = works
@@ -96,7 +94,10 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
     await selectSearch(tester);
-    await tester.enterText(find.byKey(const Key('communitySearchInput')), '夜明け');
+    await tester.enterText(
+      find.byKey(const Key('communitySearchInput')),
+      '夜明け',
+    );
     await tester.tap(find.byKey(const Key('communitySearchButton')));
     await tester.pumpAndSettle();
     expect(find.byType(CommunityWorkCard), findsWidgets);
@@ -105,35 +106,49 @@ void main() {
     expect(find.byType(CommunityWorkCard), findsNothing);
   });
 
-
-  testWidgets('keyword and tag searches respect tags, title and -exclusions', (tester) async {
+  testWidgets('keyword and tag searches respect tags, title and -exclusions', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
     await selectSearch(tester);
     await tester.enterText(
-      find.byKey(const Key('communitySearchInput')), '手描き -風景');
+      find.byKey(const Key('communitySearchInput')),
+      '手描き -風景',
+    );
     await tester.tap(find.byKey(const Key('communitySearchButton')));
     await tester.pumpAndSettle();
-    final keywordCards = tester.widgetList<CommunityWorkCard>(
-      find.byType(CommunityWorkCard)).toList();
+    final keywordCards = tester
+        .widgetList<CommunityWorkCard>(find.byType(CommunityWorkCard))
+        .toList();
     expect(keywordCards, isNotEmpty);
-    expect(keywordCards.every((card) {
-      final w = card.work;
-      final terms = [...w.tags, w.title].join(' ').toLowerCase();
-      return terms.contains('手描き') && !terms.contains('風景');
-    }), isTrue);
+    expect(
+      keywordCards.every((card) {
+        final w = card.work;
+        final terms = [...w.tags, w.title].join(' ').toLowerCase();
+        return terms.contains('手描き') && !terms.contains('風景');
+      }),
+      isTrue,
+    );
     await tester.tap(find.byKey(const Key('communitySearchModeToggle')));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(const Key('communitySearchInput')), '手描き');
+      find.byKey(const Key('communitySearchInput')),
+      '手描き',
+    );
     await tester.tap(find.byKey(const Key('communitySearchButton')));
     await tester.pumpAndSettle();
-    final tagCards = tester.widgetList<CommunityWorkCard>(
-      find.byType(CommunityWorkCard)).toList();
+    final tagCards = tester
+        .widgetList<CommunityWorkCard>(find.byType(CommunityWorkCard))
+        .toList();
     expect(tagCards, isNotEmpty);
-    expect(tagCards.every((card) =>
-        card.work.tags.any((tag) => tag.contains('手描き'))), isTrue);
+    expect(
+      tagCards.every(
+        (card) => card.work.tags.any((tag) => tag.contains('手描き')),
+      ),
+      isTrue,
+    );
   });
 
   testWidgets('long localized plaza tabs align to the leading edge', (
@@ -221,10 +236,16 @@ void main() {
           find.byKey(const Key('communitySearchButton')),
         );
         final scope = '${locale.toLanguageTag()} width $width';
-        expect(size.left, greaterThanOrEqualTo(sorter.right - 1),
-            reason: scope);
-        expect(search.left, greaterThanOrEqualTo(size.right - 1),
-            reason: scope);
+        expect(
+          size.left,
+          greaterThanOrEqualTo(sorter.right - 1),
+          reason: scope,
+        );
+        expect(
+          search.left,
+          greaterThanOrEqualTo(size.right - 1),
+          reason: scope,
+        );
         expect(search.right, lessThanOrEqualTo(width + 0.5), reason: scope);
         expect(search.width, inInclusiveRange(72, 132), reason: scope);
         expect(tester.takeException(), isNull, reason: scope);
@@ -233,58 +254,80 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('four tabs isolate Search and prevent ranking filter/reordering',
-      (tester) async {
-    SharedPreferences.setMockInitialValues({});
-    await tester.pumpWidget(app());
-    await tester.pumpAndSettle();
-    final bar = tester.widget<TabBar>(find.byType(TabBar));
-    expect(bar.tabs.length, 4);
-    // New arrivals retain content filter, but never render search controls.
-    expect(find.byKey(const Key('communityContentFilterButton')),
-        findsOneWidget);
-    expect(find.byKey(const Key('communitySearchInput')), findsNothing);
-    expect(find.byKey(const Key('communitySavedSearchAccordion')),
-        findsNothing);
-    expect(find.byKey(const Key('communitySearchHistoryAccordion')),
-        findsNothing);
+  testWidgets(
+    'four tabs isolate Search and prevent ranking filter/reordering',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      final bar = tester.widget<TabBar>(find.byType(TabBar));
+      expect(bar.tabs.length, 4);
+      // New arrivals retain content filter, but never render search controls.
+      expect(
+        find.byKey(const Key('communityContentFilterButton')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('communitySearchInput')), findsNothing);
+      expect(
+        find.byKey(const Key('communitySavedSearchAccordion')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const Key('communitySearchHistoryAccordion')),
+        findsNothing,
+      );
 
-    bar.controller!.animateTo(1);
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('communityContentFilterButton')), findsNothing);
-    expect(find.byKey(const Key('communitySearchInput')), findsNothing);
-    expect(find.byKey(const Key('communitySearchRow')), findsNothing);
-    final rankingBefore = tester.widgetList(
-      find.byKey(const Key('communityRankingHorizontalCard')),
-    ).length;
-    expect(rankingBefore, greaterThan(0));
+      bar.controller!.animateTo(1);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('communityContentFilterButton')),
+        findsNothing,
+      );
+      expect(find.byKey(const Key('communitySearchInput')), findsNothing);
+      expect(find.byKey(const Key('communitySearchRow')), findsNothing);
+      final rankingBefore = tester
+          .widgetList(find.byKey(const Key('communityRankingHorizontalCard')))
+          .length;
+      expect(rankingBefore, greaterThan(0));
 
-    bar.controller!.animateTo(3);
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('communitySearchInput')), findsOneWidget);
-    expect(find.byKey(const Key('communitySavedSearchAccordion')),
-        findsOneWidget);
-    expect(find.byKey(const Key('communitySearchHistoryAccordion')),
-        findsOneWidget);
-    expect(find.byKey(const Key('communitySearchExactMatch')), findsOneWidget);
-    await tester.enterText(
-        find.byKey(const Key('communitySearchInput')), '検索では見つからない文字列');
-    await tester.tap(find.byKey(const Key('communitySearchButton')));
-    await tester.pumpAndSettle();
-    expect(find.byType(CommunityWorkCard), findsNothing);
+      bar.controller!.animateTo(3);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('communitySearchInput')), findsOneWidget);
+      expect(
+        find.byKey(const Key('communitySavedSearchAccordion')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('communitySearchHistoryAccordion')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('communitySearchExactMatch')),
+        findsOneWidget,
+      );
+      await tester.enterText(
+        find.byKey(const Key('communitySearchInput')),
+        '検索では見つからない文字列',
+      );
+      await tester.tap(find.byKey(const Key('communitySearchButton')));
+      await tester.pumpAndSettle();
+      expect(find.byType(CommunityWorkCard), findsNothing);
 
-    bar.controller!.animateTo(1);
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const Key('communityRankingHorizontalCard')),
-      findsNWidgets(rankingBefore),
-      reason: 'Search queries must never renumber the ranking',
-    );
-    bar.controller!.animateTo(2);
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('communityContentFilterButton')),
-        findsOneWidget);
-    expect(find.byKey(const Key('communitySearchInput')), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
+      bar.controller!.animateTo(1);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('communityRankingHorizontalCard')),
+        findsNWidgets(rankingBefore),
+        reason: 'Search queries must never renumber the ranking',
+      );
+      bar.controller!.animateTo(2);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('communityContentFilterButton')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('communitySearchInput')), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

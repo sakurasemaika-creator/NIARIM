@@ -1472,7 +1472,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      '애니메이션・일러스트 작품을 YouTube 동영상으로 커뮤니티에 게시하고, 다른 사용자의 작품을 둘러볼 수 있는 기능입니다. 「신작」・「랭킹」・「팔로잉」 탭을 전환할 수 있으며, 작품 제목 또는 게시자 이름으로 검색할 수 있습니다. 태그 검색 모드로 전환하면 태그로 작품을 좁혀볼 수 있으며, 태그는 게시자 외의 사용자도 자유롭게 추가・삭제할 수 있습니다（게시자가 잠근 태그는 게시자 본인만 해제할 수 있습니다）. 태그를 탭하기만 해도 같은 태그의 작품으로 좁혀집니다. 작품 카드를 탭하면 드래그・크기 조절이 가능한 플로팅 미리보기 창이 열려 다른 화면을 조작하면서도 계속 시청할 수 있습니다. 「상세보기」 버튼으로 작품의 상세 화면（게시자・게시일・태그 편집・북마크・리포스트 등）을 열 수 있습니다. 게시자 이름 옆의 「팔로우」 버튼을 누르면 팔로우가 되어, 「팔로잉」 탭에서 그 작가의 게시물만 최신순으로 모아 볼 수 있습니다. 누군가 나를 팔로우하면 화면 오른쪽 위 종 모양 아이콘의 알림 목록에 표시됩니다. 자신의 팔로잉/팔로워 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 목록도 볼 수 있습니다. 다른 사람의 작품（자신의 게시물은 제외）은 「리포스트」 버튼으로 재게시할 수 있으며, 팔로우 중인 작가가 누군가의 작품을 리포스트하면 그 작품도 「게시일」과 「리포스트한 날짜」 중 더 최근인 쪽을 기준으로 「팔로잉」 탭에 섞여 표시됩니다（카드에 「○○님이 리포스트함」이라고 표시）. 북마크한 작품은 홈 화면의 「북마크됨」 탭에 모아서 표시되며, 게시자별 작품 목록 화면의 「북마크」 탭에서도 확인할 수 있습니다. 자신의 북마크 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 북마크 목록도 볼 수 있습니다. 부적절한 작품은 사유를 첨부해 신고할 수 있으며, 신고 후에는 해당 게시자를 차단할지 선택할 수 있습니다. 세로로 긴 동영상은 「세로 화면 모드」에서 연속 재생으로 시청할 수 있습니다. 하루에 게시할 수 있는 작품 수에는 상한이 있으며, 무료 회원은 하루 1개, 프리미엄 회원은 하루 3개까지입니다. 화면 오른쪽 위의 표시 필터 버튼（사선이 그어진 눈 아이콘）으로 보고 싶지 않은 작품을 숨길 수 있습니다. 「생성형 AI 이미지·동영상 포함」 작품을 숨기는 설정 외에도, 작품 제목만을 대상으로 하는 뮤트 제목과 작품 광장에서 작품에 붙은 태그만을 대상으로 하는 뮤트 태그를 「새로 추가」로 하나씩 등록하고 연필 아이콘으로 수정하거나 휴지통 아이콘으로 삭제할 수 있습니다. 쉼표나 #은 필요하지 않습니다. 이 필터는 신착・랭킹・팔로잉（리포스트 포함）・세로 화면 모드・게시자 페이지・작품 상세・북마크에 적용됩니다. 「생성형 AI 이미지·동영상 포함」은 게시할 때 게시자가 직접 표시하는 항목이며, 게시한 후에도 게시자 본인만 변경할 수 있습니다（「내 게시물」 또는 작품 상세 화면에서 변경）.';
+      '애니메이션・일러스트 작품을 YouTube 동영상으로 커뮤니티에 게시하고, 다른 사용자의 작품을 둘러볼 수 있는 기능입니다. 「신작」・「랭킹」・「팔로잉」 탭을 전환할 수 있으며, 작품 제목 또는 게시자 이름으로 검색할 수 있습니다. 태그 검색 모드로 전환하면 태그로 작품을 좁혀볼 수 있으며, 태그는 게시자 외의 사용자도 자유롭게 추가・삭제할 수 있습니다（게시자가 잠근 태그는 게시자 본인만 해제할 수 있습니다）. 태그를 탭하기만 해도 같은 태그의 작품으로 좁혀집니다. 작품 카드를 탭하면 드래그・크기 조절이 가능한 플로팅 미리보기 창이 열려 다른 화면을 조작하면서도 계속 시청할 수 있습니다. 「상세보기」 버튼으로 작품의 상세 화면（게시자・게시일・태그 편집・북마크・리포스트 등）을 열 수 있습니다. 게시자 이름 옆의 「팔로우」 버튼을 누르면 팔로우가 되어, 「팔로잉」 탭에서 그 작가의 게시물만 최신순으로 모아 볼 수 있습니다. 누군가 나를 팔로우하면 화면 오른쪽 위 종 모양 아이콘의 알림 목록에 표시됩니다. 자신의 팔로잉/팔로워 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 목록도 볼 수 있습니다. 다른 사람의 작품（자신의 게시물은 제외）은 「리포스트」 버튼으로 재게시할 수 있으며, 팔로우 중인 작가가 누군가의 작품을 리포스트하면 그 작품도 「게시일」과 「리포스트한 날짜」 중 더 최근인 쪽을 기준으로 「팔로잉」 탭에 섞여 표시됩니다（카드에 「○○님이 리포스트함」이라고 표시）. 북마크한 작품은 홈 화면의 「북마크됨」 탭에 모아서 표시되며, 게시자별 작품 목록 화면의 「북마크」 탭에서도 확인할 수 있습니다. 자신의 북마크 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 북마크 목록도 볼 수 있습니다. 부적절한 작품은 사유를 첨부해 신고할 수 있으며, 신고 후에는 해당 게시자를 차단할지 선택할 수 있습니다. 세로로 긴 동영상은 「세로 화면 모드」에서 연속 재생으로 시청할 수 있습니다. 하루에 게시할 수 있는 작품 수에는 상한이 있으며, 무료 회원은 하루 1개, 프리미엄 회원은 하루 3개까지입니다. 화면 오른쪽 위의 표시 필터 버튼（사선이 그어진 눈 아이콘）으로 보고 싶지 않은 작품을 숨길 수 있습니다. 「생성형 AI 이미지·동영상 포함」 작품을 숨기는 설정 외에도, 작품 제목만을 대상으로 하는 숨길 제목 키워드과 작품 광장에서 작품에 붙은 태그만을 대상으로 하는 숨길 태그를 「새로 추가」로 하나씩 등록하고 연필 아이콘으로 수정하거나 휴지통 아이콘으로 삭제할 수 있습니다. 쉼표나 #은 필요하지 않습니다. 이 필터는 신착・랭킹・팔로잉（리포스트 포함）・세로 화면 모드・게시자 페이지・작품 상세・북마크에 적용됩니다. 「생성형 AI 이미지·동영상 포함」은 게시할 때 게시자가 직접 표시하는 항목이며, 게시한 후에도 게시자 본인만 변경할 수 있습니다（「내 게시물」 또는 작품 상세 화면에서 변경）.';
 
   @override
   String get helpWatermarkEntryTitle => '워터마크';
@@ -6868,14 +6868,14 @@ class AppLocalizationsKo extends AppLocalizations {
       '생성형 AI 이미지·동영상이 포함된 작품 숨기기';
 
   @override
-  String get communityMutedWords => '뮤트 제목';
+  String get communityMutedWords => '숨길 제목 키워드';
 
   @override
   String get communityMutedWordsHint =>
       '제목에 해당 단어가 포함된 작품을 숨깁니다(작성자 이름과 태그는 제외). 단어를 하나씩 추가하고 수정하세요.';
 
   @override
-  String get communityMutedTags => '뮤트 태그';
+  String get communityMutedTags => '숨길 태그';
 
   @override
   String get communityMutedTagsHint =>
@@ -6970,13 +6970,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityPostPeriodChooseRange => '날짜 선택';
 
   @override
-  String get communityMutedAuthors => '뮤트한 사용자';
+  String get communityMutedAuthors => '숨긴 사용자';
 
   @override
-  String get communityMutedAuthorsEmpty => '뮤트한 사용자가 없습니다';
+  String get communityMutedAuthorsEmpty => '숨긴 사용자가 없습니다';
 
   @override
-  String get communityUnmuteAuthor => '이 사용자 뮤트 해제';
+  String get communityUnmuteAuthor => '이 사용자 다시 표시';
 
   @override
   String get communityMyWorksManagementHeading => '작품 관리';
@@ -7654,37 +7654,37 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityTileSize => '작품 타일 크기';
 
   @override
-  String get communityMutedWordsEmpty => '뮤트한 키워드가 없습니다';
+  String get communityMutedWordsEmpty => '숨긴 키워드가 없습니다';
 
   @override
-  String get communityMutedTagsEmpty => '뮤트한 태그가 없습니다';
+  String get communityMutedTagsEmpty => '숨긴 태그가 없습니다';
 
   @override
-  String get communityMuteShort => '뮤트';
+  String get communityMuteShort => '숨기기';
 
   @override
-  String get communityMuteConfirmTitle => '이 사용자를 뮤트할까요?';
+  String get communityMuteConfirmTitle => '이 사용자를 숨길까요?';
 
   @override
   String get communityMuteConfirmBody => '이 사용자의 작품이 표시되지 않습니다.';
 
   @override
-  String get communityMuteConfirmAction => '뮤트';
+  String get communityMuteConfirmAction => '숨기기';
 
   @override
-  String get communityUnmuteConfirmTitle => '이 사용자의 뮤트를 해제할까요?';
+  String get communityUnmuteConfirmTitle => '이 사용자를 다시 표시할까요?';
 
   @override
-  String get communityUnmuteConfirmAction => '해제';
+  String get communityUnmuteConfirmAction => '다시 표시';
 
   @override
   String get communityMuteNo => '아니요';
 
   @override
-  String get communityMuteDone => '사용자를 뮤트했습니다';
+  String get communityMuteDone => '사용자를 숨겼습니다';
 
   @override
-  String get communityUnmuteDone => '사용자 뮤트를 해제했습니다';
+  String get communityUnmuteDone => '사용자를 다시 표시했습니다';
 
   @override
   String get communityMilestoneNotificationsTitle => '알림';

@@ -25,16 +25,22 @@ void main() {
   final directory = Platform.environment['NIARIM_FIVE_FIXES_CAPTURE'];
   if (directory == null) return;
 
-  Future<void> capture(GlobalKey root, String filename, WidgetTester tester) async {
+  Future<void> capture(
+    GlobalKey root,
+    String filename,
+    WidgetTester tester,
+  ) async {
     expect(tester.takeException(), isNull, reason: filename);
     await tester.runAsync(() async {
-      final render = root.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+      final render =
+          root.currentContext!.findRenderObject()! as RenderRepaintBoundary;
       final image = await render.toImage(pixelRatio: 1);
       final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
       Directory(directory).createSync(recursive: true);
-      File('${directory}/${filename}.png')
-          .writeAsBytesSync(bytes!.buffer.asUint8List());
+      File(
+        '$directory/$filename.png',
+      ).writeAsBytesSync(bytes!.buffer.asUint8List());
     });
   }
 
@@ -69,11 +75,13 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       final work = example('work-${status.name}');
-      final httpClient = MockClient((request) async => http.Response(
-        jsonEncode({'status': status.name}),
-        200,
-        headers: {'content-type': 'application/json'},
-      ));
+      final httpClient = MockClient(
+        (request) async => http.Response(
+          jsonEncode({'status': status.name}),
+          200,
+          headers: {'content-type': 'application/json'},
+        ),
+      );
       final apiClient = NiarimApiClient(
         baseUrl: 'https://mock.invalid',
         httpClient: httpClient,
@@ -101,15 +109,18 @@ void main() {
               theme: themes.themeData,
               home: Scaffold(
                 appBar: AppBar(title: const Text('作品広場')),
-                body: Stack(fit: StackFit.expand, children: [
-                  CommunityWorkGrid(
-                    works: [work],
-                    bookmarkedIds: const {},
-                    onTapWork: (_) {},
-                    onToggleBookmark: (_) {},
-                  ),
-                  const CommunityFloatingPreview(),
-                ]),
+                body: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    CommunityWorkGrid(
+                      works: [work],
+                      bookmarkedIds: const {},
+                      onTapWork: (_) {},
+                      onToggleBookmark: (_) {},
+                    ),
+                    const CommunityFloatingPreview(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -118,8 +129,14 @@ void main() {
       await tester.pumpAndSettle();
       // Work statuses come from the real CommunityApi -> CommunityService
       // asynchronous preflight, not a screenshot-only substitution.
-      expect(find.byKey(const Key('communityPlaybackStatusPanel')), findsOneWidget);
-      expect(find.byKey(const Key('communityPlaybackStatusTitle')), findsOneWidget);
+      expect(
+        find.byKey(const Key('communityPlaybackStatusPanel')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('communityPlaybackStatusTitle')),
+        findsOneWidget,
+      );
       await capture(root, file, tester);
       await tester.pumpWidget(const SizedBox.shrink());
     });
@@ -138,32 +155,41 @@ void main() {
     final community = CommunityService();
     addTearDown(community.dispose);
     final root = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(
-      key: root,
-      child: ChangeNotifierProvider.value(
-        value: community,
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          locale: const Locale('ja'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: themes.themeData,
-          home: Scaffold(
-            appBar: AppBar(title: const Text('作品広場')),
-            body: CommunityWorkGrid(
-              works: [example('fresh-01'), example('fresh-02'),
-                      example('fresh-03'), example('fresh-04')],
-              bookmarkedIds: const {'fresh-02'},
-              rankNumbers: const {'fresh-01': 1, 'fresh-02': 2},
-              onTapWork: (_) {},
-              onToggleBookmark: (_) {},
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: root,
+        child: ChangeNotifierProvider.value(
+          value: community,
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            theme: themes.themeData,
+            home: Scaffold(
+              appBar: AppBar(title: const Text('作品広場')),
+              body: CommunityWorkGrid(
+                works: [
+                  example('fresh-01'),
+                  example('fresh-02'),
+                  example('fresh-03'),
+                  example('fresh-04'),
+                ],
+                bookmarkedIds: const {'fresh-02'},
+                rankNumbers: const {'fresh-01': 1, 'fresh-02': 2},
+                onTapWork: (_) {},
+                onToggleBookmark: (_) {},
+              ),
             ),
           ),
         ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('community-bookmark-fresh-01')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('community-bookmark-fresh-01')),
+      findsOneWidget,
+    );
     await capture(root, '20_updated_plaza_card_layout', tester);
     await tester.pumpWidget(const SizedBox.shrink());
   });

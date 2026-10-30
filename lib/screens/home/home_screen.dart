@@ -543,14 +543,18 @@ class _HomeScreenState extends State<HomeScreen>
                                       fontFamily: 'Kuramubon',
                                       fontFamilyFallback: kHeadingFontFallback,
                                       color: _showFavoritesOnly
-                                          ? Colors.white
+                                          ? Theme.of(
+                                              context,
+                                            ).colorScheme.onPrimary
                                           : null,
                                     ),
                                   ),
                                   selectedColor: Theme.of(
                                     context,
                                   ).colorScheme.primary,
-                                  checkmarkColor: Colors.white,
+                                  checkmarkColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
                                   selected: _showFavoritesOnly,
                                   onSelected: (v) =>
                                       setState(() => _showFavoritesOnly = v),
@@ -1224,42 +1228,33 @@ class _SharedScreenState extends State<SharedScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        // タイトル欄を並び替えコントロールで潰さない。ハンバーガー
-        // メニューから開くこの2画面は見た目がほとんど同じなので、
-        // 画面名が出ていないと「共有」と「ゴミ箱」のどちらを見ているのか
-        // 分からなくなる（build/all-route-screenshots/31_shared.png で発覚）。
+        // Keep the screen name independent of translated sorting controls.
         title: Text(l10n.homeTabShared),
-        actions: [
-          SortModeControl(
-            sortByName: _sortByName,
-            sortAscending: _sortAscending,
-            onSortByNameChanged: _setSortByName,
-            onToggleDirection: _toggleSortDirection,
-          ),
-          const SizedBox(width: 4),
-        ],
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                FilterChip(
-                  label: Text(
-                    l10n.homeFavoritesOnly,
-                    style: TextStyle(
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                      color: _showFavoritesOnly ? Colors.white : null,
-                    ),
-                  ),
-                  selectedColor: Theme.of(context).colorScheme.primary,
-                  checkmarkColor: Colors.white,
-                  selected: _showFavoritesOnly,
-                  onSelected: (v) => setState(() => _showFavoritesOnly = v),
+          _LibraryListControls(
+            sort: SortModeControl(
+              sortByName: _sortByName,
+              sortAscending: _sortAscending,
+              onSortByNameChanged: _setSortByName,
+              onToggleDirection: _toggleSortDirection,
+            ),
+            leading: FilterChip(
+              label: Text(
+                l10n.homeFavoritesOnly,
+                style: TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                  color: _showFavoritesOnly
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : null,
                 ),
-              ],
+              ),
+              selectedColor: Theme.of(context).colorScheme.primary,
+              checkmarkColor: Theme.of(context).colorScheme.onPrimary,
+              selected: _showFavoritesOnly,
+              onSelected: (v) => setState(() => _showFavoritesOnly = v),
             ),
           ),
           Expanded(
@@ -1331,24 +1326,56 @@ class _TrashScreenState extends State<TrashScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        // タイトル欄を並び替えコントロールで潰さない。ハンバーガー
-        // メニューから開くこの2画面は見た目がほとんど同じなので、
-        // 画面名が出ていないと「共有」と「ゴミ箱」のどちらを見ているのか
-        // 分からなくなる（build/all-route-screenshots/31_shared.png で発覚）。
+        // Keep the screen name independent of translated sorting controls.
         title: Text(l10n.homeTabTrash),
-        actions: [
-          SortModeControl(
-            sortByName: _sortByName,
-            sortAscending: _sortAscending,
-            onSortByNameChanged: _setSortByName,
-            onToggleDirection: _toggleSortDirection,
+      ),
+      body: Column(
+        children: [
+          _LibraryListControls(
+            sort: SortModeControl(
+              sortByName: _sortByName,
+              sortAscending: _sortAscending,
+              onSortByNameChanged: _setSortByName,
+              onToggleDirection: _toggleSortDirection,
+            ),
           ),
-          const SizedBox(width: 4),
+          Expanded(child: _TrashTab(sortMode: _sortMode)),
         ],
       ),
-      body: _TrashTab(sortMode: _sortMode),
     );
   }
+}
+
+/// Library actions can wrap without taking space from the route title.
+class _LibraryListControls extends StatelessWidget {
+  const _LibraryListControls({required this.sort, this.leading});
+
+  final Widget sort;
+  final Widget? leading;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    child: LayoutBuilder(
+      builder: (context, constraints) => OverflowBar(
+        alignment: leading == null
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.spaceBetween,
+        overflowAlignment: OverflowBarAlignment.end,
+        spacing: 8,
+        overflowSpacing: 4,
+        children: [
+          ?leading,
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: constraints.maxWidth < 400 ? 96 : constraints.maxWidth,
+            ),
+            child: sort,
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 /// [ProjectSortMode]に従って並び替えたリストを返す。共有一覧・ゴミ箱一覧
@@ -1741,50 +1768,82 @@ class _TrashTab extends StatelessWidget {
                 '${deletedAt.year}/${deletedAt.month.toString().padLeft(2, '0')}/${deletedAt.day.toString().padLeft(2, '0')}',
               );
         final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
-        return Card(
-          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          elevation: 1,
-          shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-            alpha: 0.15,
+        final actions = [
+          TextButton(
+            style: TextButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              visualDensity: VisualDensity.standard,
+            ),
+            onPressed: () =>
+                context.read<ProjectService>().restoreProject(project.id),
+            child: Text(l10n.commonRestore),
           ),
-          color: Theme.of(context).colorScheme.surfaceContainerLow,
-          child: ListTile(
-            leading: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Color(project.backgroundColor),
-                borderRadius: BorderRadius.circular(10),
-              ),
+          TextButton(
+            style: TextButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              visualDensity: VisualDensity.standard,
+              foregroundColor: ThemeService.activeColorScheme.error,
             ),
-            title: Text(
-              project.name,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            subtitle: Text(
-              deletedLabel.isEmpty ? meta : '$deletedLabel · $meta',
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextButton(
-                  onPressed: () =>
-                      context.read<ProjectService>().restoreProject(project.id),
-                  child: Text(l10n.commonRestore),
-                ),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    foregroundColor: ThemeService.activeColorScheme.error,
-                  ),
-                  onPressed: () => _confirmPermanentDelete(context, project.id),
-                  child: Text(l10n.homePermanentDelete),
-                ),
-              ],
+            onPressed: () => _confirmPermanentDelete(context, project.id),
+            child: Text(l10n.homePermanentDelete),
+          ),
+        ];
+        Widget details({Widget? trailing}) => ListTile(
+          leading: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Color(project.backgroundColor),
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
+          title: Text(
+            project.name,
+            style: const TextStyle(
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
+          ),
+          subtitle: Text(deletedLabel.isEmpty ? meta : '$deletedLabel · $meta'),
+          trailing: trailing,
+        );
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final compact =
+                constraints.maxWidth <
+                600 * MediaQuery.textScalerOf(context).scale(1);
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              elevation: 1,
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                alpha: 0.15,
+              ),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: compact
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        details(),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                          child: OverflowBar(
+                            alignment: MainAxisAlignment.end,
+                            overflowAlignment: OverflowBarAlignment.end,
+                            spacing: 8,
+                            overflowSpacing: 4,
+                            children: actions,
+                          ),
+                        ),
+                      ],
+                    )
+                  : details(
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: actions,
+                      ),
+                    ),
+            );
+          },
         );
       },
     );

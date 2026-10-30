@@ -45,10 +45,11 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   Future<void> _checkPlaybackStatus() async {
     if (!mounted) return;
     setState(() => _playbackStatus = CommunityPlaybackStatus.checking);
-    final status = await context.read<CommunityService>().playbackStatus(widget.workId);
+    final status = await context.read<CommunityService>().playbackStatus(
+      widget.workId,
+    );
     if (mounted) setState(() => _playbackStatus = status);
   }
-
 
   /// With a backend an edit can be refused or lost; it is undone, and the
   /// viewer is told.
@@ -270,17 +271,18 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final isOwner = work != null && communityService.isOwnWork(work);
     if (work == null ||
         (!isOwner && !communityService.isDiscoverableForViewer(work))) {
-      final hiddenByViewer = work != null &&
-          work.isNiarimPublished &&
-          !work.isUnavailable;
+      final hiddenByViewer =
+          work != null && work.isNiarimPublished && !work.isUnavailable;
       return Scaffold(
         appBar: AppBar(title: Text(l10n.communityWorkDetailTitle)),
         body: hiddenByViewer
             ? Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Text(l10n.communityWorkHiddenByFilterMessage,
-                      textAlign: TextAlign.center),
+                  child: Text(
+                    l10n.communityWorkHiddenByFilterMessage,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               )
             : CommunityPlaybackStatusView(

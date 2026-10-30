@@ -124,7 +124,6 @@ class CommunityService extends ChangeNotifier {
     }
   }
 
-
   /// 直近の取得が失敗した理由（成功していればnull）。画面側で
   /// 「読み込めませんでした・再試行」を出すために使う。
   NiarimApiException? get lastError => _lastError;
@@ -240,7 +239,9 @@ class CommunityService extends ChangeNotifier {
   /// Device-local view only. The server's ranking and publication remain intact.
   bool isWorkMuted(CommunityWork work) {
     if (_temporaryVisibleWorkIds.contains(work.id) ||
-        _alwaysVisibleWorkIds.contains(work.id)) return false;
+        _alwaysVisibleWorkIds.contains(work.id)) {
+      return false;
+    }
     return _mutedWorkIds.contains(work.id) || !_passesContentFilters(work);
   }
 
@@ -254,7 +255,8 @@ class CommunityService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_mutedWorksKey, _mutedWorkIds.toList()..sort());
     await prefs.setStringList(
-      _alwaysVisibleWorksKey, _alwaysVisibleWorkIds.toList()..sort(),
+      _alwaysVisibleWorksKey,
+      _alwaysVisibleWorkIds.toList()..sort(),
     );
   }
 
@@ -268,7 +270,8 @@ class CommunityService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(_mutedWorksKey, _mutedWorkIds.toList()..sort());
       await prefs.setStringList(
-        _alwaysVisibleWorksKey, _alwaysVisibleWorkIds.toList()..sort(),
+        _alwaysVisibleWorksKey,
+        _alwaysVisibleWorkIds.toList()..sort(),
       );
     } else {
       _temporaryVisibleWorkIds.add(id);
@@ -458,8 +461,7 @@ class CommunityService extends ChangeNotifier {
   /// The viewer's bookmarks, newest first, as their filters allow.
   /// Their own works remain visible even when hidden from other viewers.
   List<CommunityWork> get bookmarkedWorksForViewer => [
-    for (final id in bookmarkedIdsNewestFirst)
-      if (byId(id) case final work?) work,
+    for (final id in bookmarkedIdsNewestFirst) ?byId(id),
   ];
 
   List<String> get bookmarkedIdsNewestFirst =>
@@ -470,9 +472,8 @@ class CommunityService extends ChangeNotifier {
   /// した作品を除外する。13章：YouTube側が非公開・削除の場合も表示を
   /// 強制停止する設計だが、ダミーデータにはYouTube側状態の概念が無いため
   /// ここではNIARIM側設定のみを対象にする）。
-  List<CommunityWork> get discoverableWorks => _works
-      .where((w) => w.isNiarimPublished && !w.isUnavailable)
-      .toList();
+  List<CommunityWork> get discoverableWorks =>
+      _works.where((w) => w.isNiarimPublished && !w.isUnavailable).toList();
 
   /// Whether a work may appear in public discovery surfaces for the
   /// current viewer. Owner-only management screens intentionally bypass this.
@@ -493,10 +494,7 @@ class CommunityService extends ChangeNotifier {
     bool includeHidden = false,
   }) => _works
       .where(
-        (w) =>
-            w.authorId == authorId &&
-            (includeHidden ||
-                w.isNiarimPublished),
+        (w) => w.authorId == authorId && (includeHidden || w.isNiarimPublished),
       )
       .toList();
 
@@ -1442,7 +1440,9 @@ class CommunityService extends ChangeNotifier {
         .where(
           (w) =>
               ids.contains(w.id) &&
-              (w.isUnavailable || (isSelf && isOwnWork(w)) || w.isNiarimPublished),
+              (w.isUnavailable ||
+                  (isSelf && isOwnWork(w)) ||
+                  w.isNiarimPublished),
         )
         .toList();
     list.sort((a, b) => b.postedAt.compareTo(a.postedAt));

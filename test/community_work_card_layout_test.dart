@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/l10n/community_plaza_labels.dart';
 import 'package:niarim/models/community_work.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
+import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/load_app_fonts.dart';
 
@@ -15,6 +18,9 @@ void main() {
       final theme = ThemeService();
       await theme.init();
       addTearDown(theme.dispose);
+      final community = CommunityService();
+      await community.contentFiltersReady;
+      addTearDown(community.dispose);
       await loadAppFonts(tester);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
@@ -76,20 +82,23 @@ void main() {
                       ).copyWith(textScaler: TextScaler.linear(scale)),
                       child: child!,
                     ),
-                    home: Scaffold(
-                      body: SingleChildScrollView(
-                        child: CommunityWorkGrid(
-                          works: [work],
-                          bookmarkedIds: const {'fixture'},
-                          rankNumbers: variant.contains('rank')
-                              ? const {'fixture': 123}
-                              : null,
-                          repostedByNames: variant.contains('repost')
-                              ? const {'fixture': 'A very long reposter name'}
-                              : null,
-                          onTapWork: (_) => cardTaps++,
-                          onToggleBookmark: (_) => bookmarks++,
-                          onTapAuthor: (_) => authors++,
+                    home: ChangeNotifierProvider<CommunityService>.value(
+                      value: community,
+                      child: Scaffold(
+                        body: SingleChildScrollView(
+                          child: CommunityWorkGrid(
+                            works: [work],
+                            bookmarkedIds: const {'fixture'},
+                            rankNumbers: variant.contains('rank')
+                                ? const {'fixture': 123}
+                                : null,
+                            repostedByNames: variant.contains('repost')
+                                ? const {'fixture': 'A very long reposter name'}
+                                : null,
+                            onTapWork: (_) => cardTaps++,
+                            onToggleBookmark: (_) => bookmarks++,
+                            onTapAuthor: (_) => authors++,
+                          ),
                         ),
                       ),
                     ),
@@ -102,13 +111,20 @@ void main() {
                 if (variant == 'private') {
                   expect(find.byType(IconButton), findsNothing, reason: scope);
                   expect(
-                    find.textContaining('deleted', findRichText: true),
-                    findsNothing,
+                    find.text(
+                      CommunityPlazaLabels.of(
+                        tester.element(find.byType(CommunityWorkGrid)),
+                      ).unavailablePlaceholder,
+                    ),
+                    findsOneWidget,
                     reason: 'Unavailable placeholders are locale-aware',
                   );
+                  expect(find.text(work.title), findsNothing, reason: scope);
                   continue;
                 }
-                final bookmark = find.byKey(const ValueKey('community-bookmark-fixture'));
+                final bookmark = find.byKey(
+                  const ValueKey('community-bookmark-fixture'),
+                );
                 await tester.ensureVisible(bookmark);
                 await tester.pump();
                 expect(bookmark.hitTestable(), findsOneWidget, reason: scope);
@@ -130,13 +146,20 @@ void main() {
                 final tile = tester.getRect(find.byType(Card));
                 final buttonRect = tester.getRect(bookmark);
                 final menu = find.byKey(
-                  const ValueKey('communityMuteMenu-fixture'));
+                  const ValueKey('communityMuteMenu-fixture'),
+                );
                 expect(menu, findsOneWidget, reason: scope);
                 final menuRect = tester.getRect(menu);
-                expect(tile.right - menuRect.right,
-                    lessThanOrEqualTo(10), reason: scope);
-                expect(buttonRect.right, lessThanOrEqualTo(menuRect.left + 1),
-                    reason: 'Three-dot menu sits right of bookmark: $scope');
+                expect(
+                  tile.right - menuRect.right,
+                  lessThanOrEqualTo(10),
+                  reason: scope,
+                );
+                expect(
+                  buttonRect.right,
+                  lessThanOrEqualTo(menuRect.left + 1),
+                  reason: 'Three-dot menu sits right of bookmark: $scope',
+                );
                 final l10n = AppLocalizations.of(
                   tester.element(find.byType(CommunityWorkGrid)),
                 )!;
@@ -180,8 +203,9 @@ void main() {
     timeout: const Timeout(Duration(minutes: 10)),
   );
 
-  testWidgets('thumbnail uses the right-side menu and a bookmark by counts',
-      (tester) async {
+  testWidgets('thumbnail uses the right-side menu and a bookmark by counts', (
+    tester,
+  ) async {
     final work = CommunityWork(
       id: 'layout-sample',
       title: 'A sample',
@@ -196,38 +220,45 @@ void main() {
     );
     var marks = 0;
     var hidden = 0;
-    await tester.pumpWidget(MaterialApp(
-      locale: const Locale('ja'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: Center(
-          child: SizedBox(
-            width: 180,
-            child: CommunityWorkCard(
-              work: work,
-              isBookmarked: false,
-              onTap: () {},
-              onBookmarkToggle: () => marks++,
-              onMuteToggle: () => hidden++,
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ja'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 180,
+              child: CommunityWorkCard(
+                work: work,
+                isBookmarked: false,
+                onTap: () {},
+                onBookmarkToggle: () => marks++,
+                onMuteToggle: () => hidden++,
+              ),
             ),
           ),
         ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
     final menu = find.byKey(const ValueKey('communityMuteMenu-layout-sample'));
-    final bookmark = find.byKey(const ValueKey('community-bookmark-layout-sample'));
+    final bookmark = find.byKey(
+      const ValueKey('community-bookmark-layout-sample'),
+    );
     expect(menu, findsOneWidget);
     expect(bookmark, findsOneWidget);
     final thumbnail = tester.getRect(find.byType(AspectRatio));
-    expect(tester.getRect(menu).top,
-        greaterThanOrEqualTo(thumbnail.bottom));
-    expect(tester.getRect(bookmark).top,
-        greaterThanOrEqualTo(thumbnail.bottom));
-    expect(tester.getRect(menu).left,
-        greaterThanOrEqualTo(tester.getRect(bookmark).right - 1),
-        reason: 'Menu moves immediately to the bookmark right side');
+    expect(tester.getRect(menu).top, greaterThanOrEqualTo(thumbnail.bottom));
+    expect(
+      tester.getRect(bookmark).top,
+      greaterThanOrEqualTo(thumbnail.bottom),
+    );
+    expect(
+      tester.getRect(menu).left,
+      greaterThanOrEqualTo(tester.getRect(bookmark).right - 1),
+      reason: 'Menu moves immediately to the bookmark right side',
+    );
     // 48dp is twice IconButton's previous default 24dp icon.
     final action = tester.widget<IconButton>(bookmark);
     expect(action.iconSize, 48);

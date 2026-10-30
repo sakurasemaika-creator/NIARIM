@@ -37,7 +37,9 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
   final _closeFocus = FocusNode(debugLabel: 'Community preview close');
 
   Future<void> _checkPlayback(String workId) async {
-    final status = await context.read<CommunityService>().playbackStatus(workId);
+    final status = await context.read<CommunityService>().playbackStatus(
+      workId,
+    );
     if (!mounted || _lastWorkId != workId) return;
     setState(() => _playbackStatus = status);
   }
@@ -321,7 +323,8 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     if (showPlayer &&
-                        _playbackStatus == CommunityPlaybackStatus.available) play,
+                        _playbackStatus == CommunityPlaybackStatus.available)
+                      play,
                     close,
                     if (showPlayer) resizeControl,
                   ],
@@ -334,7 +337,8 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
               child: Row(
                 children: [
                   if (showPlayer &&
-                      _playbackStatus == CommunityPlaybackStatus.available) play,
+                      _playbackStatus == CommunityPlaybackStatus.available)
+                    play,
                   close,
                   Expanded(child: detailButton),
                   if (showPlayer) resizeControl,
@@ -410,7 +414,9 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                             child: SizedBox(
                               key: const Key('communityPreviewPlayer'),
                               height: playerHeight,
-                              child: _playbackStatus != CommunityPlaybackStatus.available
+                              child:
+                                  _playbackStatus !=
+                                      CommunityPlaybackStatus.available
                                   ? CommunityPlaybackStatusView(
                                       status: _playbackStatus,
                                       onRetry: _retryPlayback,
@@ -430,7 +436,8 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                         child: Icon(
                                           _isPlaying
                                               ? Icons.play_circle_fill_rounded
-                                              : Icons.pause_circle_filled_rounded,
+                                              : Icons
+                                                    .pause_circle_filled_rounded,
                                           color: controlColor,
                                           size: 40,
                                         ),

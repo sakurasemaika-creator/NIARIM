@@ -224,8 +224,11 @@ void main() {
       final previewSurface = tester.widget<Material>(
         find.byKey(const Key('communityPreviewSurface')),
       );
-      expect(previewSurface.elevation, 0,
-          reason: 'No thick black shadow/outline around the popup');
+      expect(
+        previewSurface.elevation,
+        0,
+        reason: 'No thick black shadow/outline around the popup',
+      );
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );

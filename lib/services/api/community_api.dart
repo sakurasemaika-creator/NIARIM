@@ -4,7 +4,14 @@ import 'niarim_api_models.dart';
 /// Visibility of a YouTube video at the moment it is opened. A missing
 /// public video cannot be identified as deleted versus private without
 /// owner credentials, so [unavailable] is intentionally separate.
-enum CommunityPlaybackStatus { checking, available, deleted, private, unavailable, unknown }
+enum CommunityPlaybackStatus {
+  checking,
+  available,
+  deleted,
+  private,
+  unavailable,
+  unknown,
+}
 
 enum RankingPeriod {
   all('all'),

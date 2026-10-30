@@ -7191,7 +7191,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Masquer les œuvres contenant des images ou vidéos générées par IA';
 
   @override
-  String get communityMutedWords => 'Titres masqués';
+  String get communityMutedWords => 'Mots masqués du titre';
 
   @override
   String get communityMutedWordsHint =>
@@ -7301,7 +7301,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityMutedAuthorsEmpty => 'Aucun créateur masqué';
 
   @override
-  String get communityUnmuteAuthor => 'Ne plus masquer ce créateur';
+  String get communityUnmuteAuthor => 'Réafficher ce créateur';
 
   @override
   String get communityMyWorksManagementHeading => 'Gérer les œuvres';
@@ -8033,29 +8033,29 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityMuteShort => 'Masquer';
 
   @override
-  String get communityMuteConfirmTitle => 'Masquer cet utilisateur ?';
+  String get communityMuteConfirmTitle => 'Masquer ce créateur ?';
 
   @override
   String get communityMuteConfirmBody =>
-      'Les œuvres de cet utilisateur ne seront plus affichées.';
+      'Les œuvres de ce créateur ne seront plus affichées.';
 
   @override
   String get communityMuteConfirmAction => 'Masquer';
 
   @override
-  String get communityUnmuteConfirmTitle => 'Ne plus masquer cet utilisateur ?';
+  String get communityUnmuteConfirmTitle => 'Réafficher ce créateur ?';
 
   @override
-  String get communityUnmuteConfirmAction => 'Rétablir';
+  String get communityUnmuteConfirmAction => 'Réafficher';
 
   @override
   String get communityMuteNo => 'Non';
 
   @override
-  String get communityMuteDone => 'Utilisateur masqué';
+  String get communityMuteDone => 'Créateur masqué';
 
   @override
-  String get communityUnmuteDone => 'Utilisateur rétabli';
+  String get communityUnmuteDone => 'Créateur réaffiché';
 
   @override
   String get communityMilestoneNotificationsTitle => 'Notifications';
