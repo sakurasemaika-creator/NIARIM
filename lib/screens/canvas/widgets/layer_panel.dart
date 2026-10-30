@@ -96,25 +96,29 @@ class _LayerPanelState extends State<LayerPanel> {
     required String label,
     required VoidCallback onPressed,
   }) {
+    // 幅が足りないとラベルは省略されるので、全文はツールチップで出す。
     return Expanded(
-      child: TextButton(
-        style: _shortcutButtonStyle,
-        onPressed: onPressed,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 13),
-            const SizedBox(width: 3),
-            Flexible(
-              child: Text(
-                label,
-                style: const TextStyle(fontSize: 10),
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
+      child: Tooltip(
+        message: label,
+        child: TextButton(
+          style: _shortcutButtonStyle,
+          onPressed: onPressed,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 13),
+              const SizedBox(width: 3),
+              Flexible(
+                child: Text(
+                  label,
+                  style: const TextStyle(fontSize: 10),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -275,15 +279,20 @@ class _LayerPanelState extends State<LayerPanel> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
               children: [
-                Text(
-                  l10n.layerPanelTitle,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                // ドックを狭めたとき（下限200）でも右のボタンを押せるよう、
+                // 見出しの方を省略する。
+                Expanded(
+                  child: Text(
+                    l10n.layerPanelTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
                   ),
                 ),
-                const Spacer(),
                 // 表示中の全レイヤーをワンタップで結合する（複数選択モードを
                 // 使わずに済む一括操作の一つ）。
                 IconButton(

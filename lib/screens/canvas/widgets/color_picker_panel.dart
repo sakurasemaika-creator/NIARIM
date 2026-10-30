@@ -369,14 +369,17 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       children: [
         Row(
           children: [
-            Text(
-              l10n.colorPickerPaletteLabel,
-              style: TextStyle(
-                fontSize: 11,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+            Expanded(
+              child: Text(
+                l10n.colorPickerPaletteLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
-            const Spacer(),
             IconButton(
               icon: const Icon(Icons.add, size: 16),
               tooltip: l10n.colorPickerNewPaletteTooltip,

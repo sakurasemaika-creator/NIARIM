@@ -48,7 +48,7 @@ void main() {
       expect(s.timelinePreviewHeightFraction, 0.18);
       expect(s.timelineTrackHeightLevel, 5);
       expect(s.desktopPanelWidth, 480);
-      expect(s.desktopToolPanelWidth, 200);
+      expect(s.desktopToolPanelWidth, SettingsService.minDesktopToolPanelWidth);
       expect(s.defaultFps, 24);
       expect(s.language, 'en');
       expect(s.defaultDrawingAreaEnabled, isTrue);
@@ -78,7 +78,10 @@ void main() {
       expect(restored.timelinePreviewHeightFraction, 0.18);
       expect(restored.timelineTrackHeightLevel, 5);
       expect(restored.desktopPanelWidth, 480);
-      expect(restored.desktopToolPanelWidth, 200);
+      expect(
+        restored.desktopToolPanelWidth,
+        SettingsService.minDesktopToolPanelWidth,
+      );
       expect(restored.defaultFps, 24);
       expect(restored.language, 'en');
       expect(restored.defaultDrawingAreaEnabled, isTrue);

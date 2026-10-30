@@ -204,10 +204,23 @@ class SettingsService extends ChangeNotifier {
   // 共通の設定として保存される。
   double _desktopPanelWidth = 280.0;
 
+  /// 右のドック（色・レイヤー）を狭められる下限。これより狭いとレイヤーの
+  /// 名前が1文字も読めなかった。
+  static const double minDesktopPanelWidth = 240.0;
+
+  /// 左のドック（ブラシ等）を狭められる下限。これより狭いとブラシの名前が
+  /// 1文字ずつ縦に並んだ。
+  static const double minDesktopToolPanelWidth = 260.0;
+
+  static const double maxDesktopPanelWidth = 480.0;
+
   double get desktopPanelWidth => _desktopPanelWidth;
 
   Future<void> setDesktopPanelWidth(double value) async {
-    _desktopPanelWidth = value.clamp(200.0, 480.0);
+    _desktopPanelWidth = value.clamp(
+      minDesktopPanelWidth,
+      maxDesktopPanelWidth,
+    );
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('desktop_panel_width', _desktopPanelWidth);
     notifyListeners();
@@ -219,7 +232,10 @@ class SettingsService extends ChangeNotifier {
   double get desktopToolPanelWidth => _desktopToolPanelWidth;
 
   Future<void> setDesktopToolPanelWidth(double value) async {
-    _desktopToolPanelWidth = value.clamp(200.0, 480.0);
+    _desktopToolPanelWidth = value.clamp(
+      minDesktopToolPanelWidth,
+      maxDesktopPanelWidth,
+    );
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('desktop_tool_panel_width', _desktopToolPanelWidth);
     notifyListeners();

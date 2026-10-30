@@ -1228,6 +1228,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // 左利きモード：フローティング／ドッキングパネルを左右反転し、
     // 描画する手の側にパネルが重ならないようにする。
     final leftHanded = context.watch<SettingsService>().isLeftHanded;
+    final rightDockOpen =
+        isDesktop &&
+        (_showColorPicker || _showLayerPanel || _showCanvasPreviewPanel);
+    final dockWidths = _fitDockWidths(
+      context,
+      isDesktop: isDesktop,
+      toolDockOpen: openToolPanels.isNotEmpty,
+      rightDockOpen: rightDockOpen,
+    );
 
     // DeXモード・マウス/キーボード入力・左手デバイス：設定画面
     // 「ショートカット設定」で割り当てたキーで、ツール切替やUndo/Redo
@@ -1270,6 +1279,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     Expanded(
                       child: Row(
                         children: [
+                          // 左利きモードでは、色・レイヤーのドックを左端へ
+                          // （ツールのドックとツールバーは右側へ）鏡映しにする。
+                          if (rightDockOpen && leftHanded)
+                            ..._buildRightDock(
+                              leftHanded: true,
+                              width: dockWidths.right,
+                              maxWidth: dockWidths.rightMax,
+                            ),
                           // デスクトップでは常設ツールバーを画面下部の横並びバーではなく、
                           // 左側（左利きモード時は右側）の縦レールとして常時表示する。
                           if (isDesktop && !leftHanded)
@@ -1279,11 +1296,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           // として表示する（複数同時に開いていれば縦に積んで並べる）。
                           if (openToolPanels.isNotEmpty && !leftHanded) ...[
                             SizedBox(
-                              width:
-                                  _toolPanelWidthDragOverride ??
-                                  context
-                                      .watch<SettingsService>()
-                                      .desktopToolPanelWidth,
+                              width: dockWidths.tool,
                               child: _dockedPanelStack(openToolPanels),
                             ),
                             _ResizeHandle(
@@ -1294,7 +1307,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                     _toolPanelWidthDragOverride ??
                                     settings.desktopToolPanelWidth;
                                 _toolPanelWidthDragOverride = (current + dx)
-                                    .clamp(200.0, 480.0);
+                                    .clamp(
+                                      SettingsService.minDesktopToolPanelWidth,
+                                      dockWidths.toolMax,
+                                    );
                               }),
                               onDragEnd: () {
                                 final w = _toolPanelWidthDragOverride;
@@ -1533,7 +1549,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                     _toolPanelWidthDragOverride ??
                                     settings.desktopToolPanelWidth;
                                 _toolPanelWidthDragOverride = (current - dx)
-                                    .clamp(200.0, 480.0);
+                                    .clamp(
+                                      SettingsService.minDesktopToolPanelWidth,
+                                      dockWidths.toolMax,
+                                    );
                               }),
                               onDragEnd: () {
                                 final w = _toolPanelWidthDragOverride;
@@ -1545,11 +1564,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                               },
                             ),
                             SizedBox(
-                              width:
-                                  _toolPanelWidthDragOverride ??
-                                  context
-                                      .watch<SettingsService>()
-                                      .desktopToolPanelWidth,
+                              width: dockWidths.tool,
                               child: _dockedPanelStack(openToolPanels),
                             ),
                           ],
@@ -1557,47 +1572,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             _buildToolbarWidget(vertical: true),
                           // PC/DeXモード：カラーピッカー・レイヤーパネル・キャンバス
                           // プレビューは、ツールオプション系ドッキング領域（上の
-                          // openToolPanels）とは別に、右側（左利きモード時は左側）へ
-                          // 縦に並べて同時表示する。単独でも複数同時でも表示可。
-                          if (isDesktop &&
-                              (_showColorPicker ||
-                                  _showLayerPanel ||
-                                  _showCanvasPreviewPanel))
-                            _ResizeHandle(
-                              onDeltaX: (dx) => setState(() {
-                                final settings = context
-                                    .read<SettingsService>();
-                                final current =
-                                    _panelWidthDragOverride ??
-                                    settings.desktopPanelWidth;
-                                // 左利きモードでは領域が左側にあるため、ハンドルを
-                                // 左へ引くほど広がる（右側配置とドラッグ方向を反転）。
-                                _panelWidthDragOverride =
-                                    (current + (leftHanded ? dx : -dx)).clamp(
-                                      200.0,
-                                      480.0,
-                                    );
-                              }),
-                              onDragEnd: () {
-                                final w = _panelWidthDragOverride;
-                                if (w != null) {
-                                  context
-                                      .read<SettingsService>()
-                                      .setDesktopPanelWidth(w);
-                                }
-                              },
-                            ),
-                          if (isDesktop &&
-                              (_showColorPicker ||
-                                  _showLayerPanel ||
-                                  _showCanvasPreviewPanel))
-                            SizedBox(
-                              width:
-                                  _panelWidthDragOverride ??
-                                  context
-                                      .watch<SettingsService>()
-                                      .desktopPanelWidth,
-                              child: _buildRightDockColumn(),
+                          // openToolPanels）とは別に、右側（左利きモード時は
+                          // 左端、build()のRowの先頭）へ縦に並べて同時表示する。
+                          if (rightDockOpen && !leftHanded)
+                            ..._buildRightDock(
+                              leftHanded: false,
+                              width: dockWidths.right,
+                              maxWidth: dockWidths.rightMax,
                             ),
                         ],
                       ),
@@ -1968,6 +1949,100 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// 常設ツールバー本体。[vertical]がtrueの場合は左側（左利きモードでは
   /// 右側）の縦レールとして、falseの場合は画面下部の横並びバーとして
   /// 表示する。
+  /// 色・レイヤー・キャンバスプレビューのドックと、その幅を変えるつまみ。
+  /// 右利きでは［つまみ｜ドック］を右端に、左利きでは［ドック｜つまみ］を
+  /// 左端に置く。つまみを外側（右利きは左、左利きは右）へ引くほど広がる。
+  List<Widget> _buildRightDock({
+    required bool leftHanded,
+    required double width,
+    required double maxWidth,
+  }) {
+    final handle = _ResizeHandle(
+      onDeltaX: (dx) => setState(() {
+        final settings = context.read<SettingsService>();
+        final current = _panelWidthDragOverride ?? settings.desktopPanelWidth;
+        _panelWidthDragOverride = (current + (leftHanded ? dx : -dx)).clamp(
+          SettingsService.minDesktopPanelWidth,
+          maxWidth,
+        );
+      }),
+      onDragEnd: () {
+        final w = _panelWidthDragOverride;
+        if (w != null) {
+          context.read<SettingsService>().setDesktopPanelWidth(w);
+        }
+      },
+    );
+    final dock = SizedBox(width: width, child: _buildRightDockColumn());
+    return leftHanded ? [dock, handle] : [handle, dock];
+  }
+
+  /// PC/DeXモードの左右のドックの幅。保存した幅（ドラッグ中はその値）を
+  /// 使うが、窓が狭くてキャンバスに[_minCanvasWidth]を残せないときは、
+  /// 2つのドックを同じ割合で、パネルが崩れない下限
+  /// （[SettingsService.minDesktopToolPanelWidth]・
+  /// [SettingsService.minDesktopPanelWidth]）まで狭める
+  /// （保存した幅のまま並べると、窓を狭めたときキャンバスが細い帯になり、
+  /// さらに狭めると行がはみ出してキャンバスが消えた）。それでも入らない
+  /// ほど狭い窓では、残りをキャンバスへ回す。`toolMax`・`rightMax`は
+  /// ドラッグで広げられる上限。
+  ({double tool, double right, double toolMax, double rightMax}) _fitDockWidths(
+    BuildContext context, {
+    required bool isDesktop,
+    required bool toolDockOpen,
+    required bool rightDockOpen,
+  }) {
+    final settings = context.watch<SettingsService>();
+    const toolMin = SettingsService.minDesktopToolPanelWidth;
+    const rightMin = SettingsService.minDesktopPanelWidth;
+    const widest = SettingsService.maxDesktopPanelWidth;
+    // 以前の版で下限より狭く保存した幅も、下限まで広げて使う。
+    var tool = toolDockOpen
+        ? (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth).clamp(
+            toolMin,
+            widest,
+          )
+        : 0.0;
+    var right = rightDockOpen
+        ? (_panelWidthDragOverride ?? settings.desktopPanelWidth).clamp(
+            rightMin,
+            widest,
+          )
+        : 0.0;
+    final rowWidth =
+        MediaQuery.sizeOf(context).width -
+        MediaQuery.paddingOf(context).horizontal;
+    // 縦のツールバー（40）とドックのつまみ（8ずつ）。
+    final fixed =
+        (isDesktop ? 40.0 : 0.0) +
+        (toolDockOpen ? 8.0 : 0.0) +
+        (rightDockOpen ? 8.0 : 0.0);
+    final budget = rowWidth - fixed - _minCanvasWidth;
+    final wanted = tool + right;
+    if (wanted > 0 && wanted > budget) {
+      final scale = budget > 0 ? budget / wanted : 0.0;
+      if (toolDockOpen) {
+        tool = (tool * scale).clamp(toolMin, tool);
+      }
+      if (rightDockOpen) {
+        // 片方が下限で止まった分は、もう片方を狭めて合わせる。
+        right = (budget - tool).clamp(rightMin, right);
+      }
+      if (toolDockOpen) {
+        tool = (budget - right).clamp(toolMin, tool);
+      }
+    }
+    return (
+      tool: tool,
+      right: right,
+      toolMax: (budget - right).clamp(toolMin, widest),
+      rightMax: (budget - tool).clamp(rightMin, widest),
+    );
+  }
+
+  /// PC/DeXモードでドックを開いても、キャンバスに残す幅。
+  static const double _minCanvasWidth = 240;
+
   Widget _buildToolbarWidget({required bool vertical}) => ToolbarWidget(
     vertical: vertical,
     currentTool: _currentTool,
