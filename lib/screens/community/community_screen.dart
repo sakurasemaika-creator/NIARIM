@@ -97,6 +97,85 @@ class _CommunityScreenState extends State<CommunityScreen>
   int _minimumViews = 0;
   int _minimumBookmarks = 0;
   final _tabScrollControllers = List.generate(4, (_) => ScrollController());
+  final _visiblePageCounts = List<int>.filled(4, CommunityService.pageSize);
+  final _pagingTabs = List<bool>.filled(4, false);
+
+  List<CommunityWork> _visible(List<CommunityWork> works, int tab) =>
+      works.take(_visiblePageCounts[tab]).toList();
+
+  void _resetPage(int tab) {
+    _visiblePageCounts[tab] = CommunityService.pageSize;
+    final controller = _tabScrollControllers[tab];
+    if (controller.hasClients) controller.jumpTo(0);
+  }
+
+  RankingPeriod get _apiRankingPeriod =>
+      _sort == _RankingSort.bookmarks && _period == _RankingPeriod.allTime
+      ? RankingPeriod.bookmarks
+      : switch (_period) {
+          _RankingPeriod.allTime => RankingPeriod.all,
+          _RankingPeriod.yearly => RankingPeriod.year,
+          _RankingPeriod.monthly => RankingPeriod.month,
+          _RankingPeriod.weekly => RankingPeriod.week,
+          _RankingPeriod.daily => RankingPeriod.day,
+        };
+
+  void _onPageScroll(int tab) {
+    if (!mounted || _pagingTabs[tab]) return;
+    final controller = _tabScrollControllers[tab];
+    if (!controller.hasClients || controller.position.extentAfter > 220) {
+      return;
+    }
+    final service = context.read<CommunityService>();
+    final all = service.discoverableWorks;
+    final loaded = switch (tab) {
+      0 => _newArrivals(service.isBackendConnected ? service.latestPageWorks : all).length,
+      1 => _rankingWorks(all).length,
+      2 => _applySearch(service.favoriteAuthorWorks).length,
+      _ => _applySearch(
+        service.isBackendConnected && service.searchReady
+          ? service.searchedWorks : all,
+        includeQuery: true,
+      ).length,
+    };
+    final hasMore = service.isBackendConnected && switch (tab) {
+      0 => service.hasMoreLatest,
+      1 => service.hasMoreRanking,
+      2 => service.hasMoreFollowing,
+      _ => service.searchReady ? service.hasMoreSearch : service.hasMoreLatest,
+    };
+    if (!hasMore && _visiblePageCounts[tab] >= loaded) return;
+    _pagingTabs[tab] = true;
+    Future<void>(() async {
+      try {
+        if (hasMore) {
+          switch (tab) {
+            case 0:
+              await service.loadMoreLatest();
+            case 1:
+              await service.loadMoreRanking(
+                _apiRankingPeriod,
+                ascending: _sortAscending,
+                sortBookmarks: _sort == _RankingSort.bookmarks,
+              );
+            case 2:
+              await service.loadMoreFollowingFeed();
+            case 3:
+              if (service.searchReady) {
+                await service.loadMoreSearch();
+              } else {
+                await service.loadMoreLatest();
+              }
+          }
+        }
+        if (mounted) {
+          setState(() => _visiblePageCounts[tab] += CommunityService.pageSize);
+        }
+      } finally {
+        _pagingTabs[tab] = false;
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -106,6 +185,10 @@ class _CommunityScreenState extends State<CommunityScreen>
     _loadRankingLayout();
     _tabController = TabController(length: 4, vsync: this)
       ..addListener(_onTabChanged);
+    for (var i = 0; i < _tabScrollControllers.length; i++) {
+      final tab = i;
+      _tabScrollControllers[i].addListener(() => _onPageScroll(tab));
+    }
     final initialTag = widget.initialTagFilter;
     if (initialTag != null && initialTag.isNotEmpty) {
       _tagSearchMode = true;
@@ -123,6 +206,13 @@ class _CommunityScreenState extends State<CommunityScreen>
       if (!service.isBackendConnected) return;
       service.refreshFromBackend();
       _fetchRanking();
+      if (_searchQuery.isNotEmpty) {
+        service.refreshSearch(
+          query: _searchQuery,
+          tagMode: _tagSearchMode,
+          exact: _tagExactMatch,
+        );
+      }
     });
   }
 
@@ -234,7 +324,16 @@ class _CommunityScreenState extends State<CommunityScreen>
     setState(() {
       _searchQuery = query;
       _draftQuery = query;
+      _resetPage(3);
     });
+    final service = context.read<CommunityService>();
+    if (service.isBackendConnected) {
+      await service.refreshSearch(
+        query: query,
+        tagMode: _tagSearchMode,
+        exact: _tagExactMatch,
+      );
+    }
     if (query.isEmpty) return;
     final snapshot = _currentSearchSnapshot(query);
     setState(() {
@@ -344,6 +443,15 @@ class _CommunityScreenState extends State<CommunityScreen>
       }
     });
     _tabController.animateTo(3);
+    _resetPage(3);
+    final service = context.read<CommunityService>();
+    if (service.isBackendConnected) {
+      service.refreshSearch(
+        query: _searchQuery,
+        tagMode: _tagSearchMode,
+        exact: _tagExactMatch,
+      );
+    }
     _scrollCurrentTabToTop();
   }
 
@@ -433,15 +541,9 @@ class _CommunityScreenState extends State<CommunityScreen>
     final service = context.read<CommunityService>();
     if (!service.isBackendConnected) return;
     await service.fetchRanking(
-      _sort == _RankingSort.bookmarks && _period == _RankingPeriod.allTime
-          ? RankingPeriod.bookmarks
-          : switch (_period) {
-              _RankingPeriod.allTime => RankingPeriod.all,
-              _RankingPeriod.yearly => RankingPeriod.year,
-              _RankingPeriod.monthly => RankingPeriod.month,
-              _RankingPeriod.weekly => RankingPeriod.week,
-              _RankingPeriod.daily => RankingPeriod.day,
-            },
+      _apiRankingPeriod,
+      ascending: _sortAscending,
+      sortBookmarks: _sort == _RankingSort.bookmarks,
     );
   }
 
@@ -451,11 +553,23 @@ class _CommunityScreenState extends State<CommunityScreen>
   Future<void> _refreshAll() async {
     final service = context.read<CommunityService>();
     service.clearTemporaryUnmutes();
-    if (!service.isBackendConnected) return;
+    for (var tab = 0; tab < 4; tab++) {
+      _resetPage(tab);
+    }
+    if (!service.isBackendConnected) {
+      if (mounted) setState(() {});
+      return;
+    }
     await Future.wait([
       service.refreshFromBackend(),
       _fetchRanking(),
       service.refreshFollowingFeed(),
+      if (service.searchReady)
+        service.refreshSearch(
+          query: _searchQuery,
+          tagMode: _tagSearchMode,
+          exact: _tagExactMatch,
+        ),
     ]);
   }
 
@@ -499,7 +613,12 @@ class _CommunityScreenState extends State<CommunityScreen>
         _draftQuery = newTag;
         _searchController.text = newTag;
         _tabController.index = 3;
+        _resetPage(3);
       });
+      final service = context.read<CommunityService>();
+      if (service.isBackendConnected) {
+        service.refreshSearch(query: newTag, tagMode: true, exact: true);
+      }
     }
   }
 
@@ -611,12 +730,9 @@ class _CommunityScreenState extends State<CommunityScreen>
       // The server's ranking for the period, in its order, as the viewer's
       // filters allow. It ranks by views; the bookmark order is its own
       // all-time ranking, or the period's works re-sorted by bookmarks.
-      final ranked = [...service.rankedWorks];
-      if (_sort == _RankingSort.bookmarks &&
-          _period != _RankingPeriod.allTime) {
-        ranked.sort((a, b) => b.bookmarkCount.compareTo(a.bookmarkCount));
-      }
-      return _sortAscending ? ranked.reversed.toList() : ranked;
+      // The server pages the *global* Top 50 in the requested order.
+      // Re-sorting just the first 25 locally would misrepresent the ranking.
+      return [...service.rankedWorks];
     }
     // Ranking is not subject to the search tab or local filter criteria.
     final filtered = allWorks.toList();
@@ -1256,7 +1372,11 @@ class _CommunityScreenState extends State<CommunityScreen>
           children: [
             Builder(
               builder: (context) {
-                final works = _newArrivals(allWorks);
+                final works = _visible(
+                  _newArrivals(communityService.isBackendConnected
+                      ? communityService.latestPageWorks : allWorks),
+                  0,
+                );
                 if (works.isEmpty) {
                   return _pullToRefresh(
                     communityService,
@@ -1314,7 +1434,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                               label: Text(_periodLabel(l10n, period)),
                               selected: _period == period,
                               onSelected: (_) {
-                                setState(() => _period = period);
+                                setState(() {
+                                  _period = period;
+                                  _resetPage(1);
+                                });
                                 _fetchRanking();
                               },
                             ),
@@ -1339,7 +1462,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                                   label: Text(l10n.communityRankingSortViews),
                                   selected: _sort == _RankingSort.views,
                                   onSelected: (_) {
-                                    setState(() => _sort = _RankingSort.views);
+                                    setState(() {
+                                      _sort = _RankingSort.views;
+                                      _resetPage(1);
+                                    });
                                     _fetchRanking();
                                   },
                                 ),
@@ -1350,9 +1476,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                                   ),
                                   selected: _sort == _RankingSort.bookmarks,
                                   onSelected: (_) {
-                                    setState(
-                                      () => _sort = _RankingSort.bookmarks,
-                                    );
+                                    setState(() {
+                                      _sort = _RankingSort.bookmarks;
+                                      _resetPage(1);
+                                    });
                                     _fetchRanking();
                                   },
                                 ),
@@ -1368,9 +1495,13 @@ class _CommunityScreenState extends State<CommunityScreen>
                             tooltip: _sortAscending
                                 ? l10n.communityRankingSortAscendingTooltip
                                 : l10n.communityRankingSortDescendingTooltip,
-                            onPressed: () => setState(
-                              () => _sortAscending = !_sortAscending,
-                            ),
+                            onPressed: () {
+                              setState(() {
+                                _sortAscending = !_sortAscending;
+                                _resetPage(1);
+                              });
+                              _fetchRanking();
+                            },
                           ),
                           PopupMenuButton<CommunityRankingLayout>(
                             key: const Key('communityRankingLayoutButton'),
@@ -1411,7 +1542,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     ),
                     Builder(
                       builder: (context) {
-                        final ranked = _rankingWorks(allWorks);
+                        final ranked = _visible(_rankingWorks(allWorks), 1);
                         if (ranked.isEmpty) return _buildSearchEmptyState(l10n);
                         return CommunityRankingWorkList(
                           layout: _rankingLayout,
@@ -1436,7 +1567,10 @@ class _CommunityScreenState extends State<CommunityScreen>
             Builder(
               builder: (context) {
                 final feed = communityService.favoriteAuthorFeed;
-                final works = _applySearch(feed.map((e) => e.work).toList());
+                final works = _visible(
+                  _applySearch(feed.map((e) => e.work).toList()),
+                  2,
+                );
                 final repostedByNames = {
                   for (final e in feed)
                     if (e.repostedByAuthorName != null)
@@ -1499,9 +1633,15 @@ class _CommunityScreenState extends State<CommunityScreen>
             ),
             Builder(
               builder: (context) {
-                final works = _applySearch(
-                  allWorks.toList(),
-                  includeQuery: true,
+                final works = _visible(
+                  _applySearch(
+                    (communityService.isBackendConnected &&
+                            communityService.searchReady
+                        ? communityService.searchedWorks
+                        : allWorks).toList(),
+                    includeQuery: true,
+                  ),
+                  3,
                 );
                 return _pullToRefresh(
                   communityService,
