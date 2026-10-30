@@ -283,8 +283,8 @@ class CommunityWorkCard extends StatelessWidget {
                           ),
                           if (onMuteToggle != null)
                             Positioned(
-                              right: 4,
-                              top: isMuted ? 4 : 48,
+                              left: 4,
+                              top: 4,
                               child: Material(
                                 color: overlay,
                                 shape: const CircleBorder(),
