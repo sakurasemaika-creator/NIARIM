@@ -110,6 +110,9 @@ describe("statistics batch data safety", () => {
       send.mockImplementation(async (command) => {
         if (command instanceof ScanCommand) return { Items: [work] };
         if (command instanceof GetCommand) {
+          if (String(command.input.Key?.pk ?? "").startsWith("RANKINGSNAPSHOT#")) {
+            return {};
+          }
           expect(command.input.ConsistentRead).toBe(true);
           return {
             Item:
