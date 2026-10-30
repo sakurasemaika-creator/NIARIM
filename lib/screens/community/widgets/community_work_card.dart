@@ -207,7 +207,10 @@ class CommunityWorkCard extends StatelessWidget {
                                 child: badge('#$rankNumber', fontSize: 16),
                               ),
                             ),
-                          if (!obscured)
+                          // The upper menu is a 48dp touch target. On
+                          // 120dp tiles a bottom-right duration chip would
+                          // overlap it, so favor a clear thumbnail.
+                          if (!obscured && thumbnail.maxWidth >= 148)
                           Positioned(
                             right: 6,
                             bottom: 6,
