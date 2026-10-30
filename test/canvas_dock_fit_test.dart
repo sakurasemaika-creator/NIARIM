@@ -249,4 +249,50 @@ void main() {
     expectDocked(findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  // 設定（ワークスペース）で選んだ右のドックの並び順どおりに積む。
+  testWidgets('the right dock follows the saved order', (tester) async {
+    tempDir = Directory.systemTemp.createTempSync('niarim_dock_order_');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathChannel, (call) async => tempDir.path);
+    appRouter.go('/home');
+    SharedPreferences.setMockInitialValues({
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      'first_launch': false,
+      'language': 'ja',
+      'force_pc_mode': 1,
+      'right_dock_order': ['layer', 'colorPicker', 'canvasPreview'],
+    });
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    await tester.pumpWidget(
+      MultiProvider(providers: providers, child: const NiarimApp()),
+    );
+    await settle(tester, 4);
+    final service = tester
+        .element(find.byType(HomeScreen))
+        .read<ProjectService>();
+    late String id;
+    await tester.runAsync(() async {
+      final project = await service.createProject(
+        name: 'ドック',
+        fps: 2,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 160,
+        exportHeight: 90,
+      );
+      id = project.id;
+    });
+    appRouter.push('/canvas/$id');
+    await settle(tester, 12);
+    expect(
+      tester.getRect(find.byType(LayerPanel)).top,
+      lessThan(tester.getRect(find.byType(ColorPickerPanel)).top),
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
