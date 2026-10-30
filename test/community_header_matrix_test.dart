@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/l10n/community_plaza_labels.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/services/community_preview_service.dart';
@@ -264,6 +265,7 @@ void main() {
               l10n.communityTabNew,
               l10n.communityTabRanking,
               l10n.communityTabFavoriteAuthors,
+              CommunityPlazaLabels.of(screen).searchTab,
             ];
             if (state != 'search' && state != 'tag-search') {
               labels.add(l10n.communityScreenTitle);
@@ -291,13 +293,18 @@ void main() {
                         ? l10n.communitySearchHint
                         : l10n.communityTagSearchHint,
                   ]
-                : [
-                    l10n.communityFollowNotificationsTooltip,
-                    l10n.communitySortLabel,
-                    l10n.communityTileSize,
-                    l10n.communityContentFilterTitle,
-                    l10n.layerPanelHelpTooltip,
-                  ];
+                : state == 'ranking'
+                    ? [
+                        l10n.communityFollowNotificationsTooltip,
+                        l10n.layerPanelHelpTooltip,
+                      ]
+                    : [
+                        l10n.communityFollowNotificationsTooltip,
+                        l10n.communitySortLabel,
+                        l10n.communityTileSize,
+                        l10n.communityContentFilterTitle,
+                        l10n.layerPanelHelpTooltip,
+                      ];
             for (final tip in tips) {
               final f = find.byTooltip(tip);
               expect(f, findsOneWidget);
