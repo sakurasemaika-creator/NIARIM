@@ -41,7 +41,7 @@ typedef _FlatFrame = ({String sceneId, int frameIndex});
 class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   int _frameIndex = 0;
   bool _isPlaying = false;
-  bool _loopPlayback = true;
+  bool _loopPlayback = false;
   bool _rendering = false;
   Timer? _timer;
   ui.Image? _previewImage;
@@ -594,7 +594,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     // The loop is the fifth quick action: neutral when off, accent when on.
-    final label = l10n.timelineLoopOffTooltip.split('：').first;
+    final label = l10n.timelineLoopOffTooltip
+        .split(RegExp(r'[:：]')).first.trim();
     final foreground = _loopPlayback ? scheme.primary : scheme.onSurfaceVariant;
     return Semantics(
       toggled: _loopPlayback,

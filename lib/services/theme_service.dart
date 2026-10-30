@@ -894,7 +894,11 @@ class ThemeService extends ChangeNotifier {
       // いれば、そちらが優先されるため既存の明示指定箇所への影響はない。
       dialogTheme: DialogThemeData(
         backgroundColor: popupColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide.none,
+        ),
         titleTextStyle: textTheme.titleLarge?.copyWith(color: preset.textColor),
       ),
       bottomSheetTheme: BottomSheetThemeData(
