@@ -139,6 +139,7 @@ class CommunityService extends ChangeNotifier {
   String? _ownCursor;
   final Map<String, String?> _authorCursors = {};
   final Map<String, String?> _feedAuthorCursors = {};
+  final Map<String, String?> _feedRepostCursors = {};
   bool _fetchingMoreLatest = false;
   bool _fetchingMoreRanking = false;
   bool _fetchingMoreSearch = false;
@@ -158,7 +159,9 @@ class CommunityService extends ChangeNotifier {
   bool get hasMoreRanking => _rankingCursor != null;
   bool get hasMoreSearch => _searchCursor != null;
   bool get hasMoreOwn => _ownCursor != null;
-  bool get hasMoreFollowing => _feedAuthorCursors.values.any((v) => v != null);
+  bool get hasMoreFollowing =>
+      _feedAuthorCursors.values.any((v) => v != null) ||
+      _feedRepostCursors.values.any((v) => v != null);
   bool hasMoreAuthor(String authorId) => _authorCursors[authorId] != null;
   bool get isFetchingMoreLatest => _fetchingMoreLatest;
   bool get isFetchingMoreRanking => _fetchingMoreRanking;
@@ -919,11 +922,21 @@ class CommunityService extends ChangeNotifier {
           ),
         );
       if (!_isCurrentAccount(revision)) return false;
-      final reposters = [...authors, ?me];
-      final reposts = await Future.wait([
-        for (final id in reposters) client.repostsOf(id),
+      final reposters = [...authors, if (me != null && !authors.contains(me)) me];
+      final reposts = await Future.wait<ApiRepostPage>([
+        for (final id in reposters)
+          id == me
+              ? client.repostsOf(id).then((entries) => ApiRepostPage(reposts: entries))
+              : client.repostsOfPage(id),
       ]);
       if (!_isCurrentAccount(revision)) return false;
+      _feedRepostCursors
+        ..clear()
+        ..addEntries(
+          reposters.asMap().entries.map(
+            (entry) => MapEntry(entry.value, reposts[entry.key].nextCursor),
+          ),
+        );
       final feed = <String>{};
       for (final page in pages) {
         for (final apiWork in page.works) {
@@ -935,7 +948,7 @@ class CommunityService extends ChangeNotifier {
       _reposts.clear();
       for (var i = 0; i < reposters.length; i++) {
         final reposterId = reposters[i];
-        for (final entry in reposts[i]) {
+        for (final entry in reposts[i].reposts) {
           final work = _plazaCopy(entry.work);
           _upsert(work);
           feed.add(work.id);
@@ -977,10 +990,19 @@ class CommunityService extends ChangeNotifier {
           if (entry.value != null && _favoriteAuthorIds.contains(entry.key))
             entry.key: entry.value!,
       };
-      if (targets.isEmpty) return false;
+      final repostTargets = {
+        for (final entry in _feedRepostCursors.entries)
+          if (entry.value != null && _favoriteAuthorIds.contains(entry.key))
+            entry.key: entry.value!,
+      };
+      if (targets.isEmpty && repostTargets.isEmpty) return false;
       final pages = await Future.wait([
         for (final entry in targets.entries)
           client.worksByAuthorPage(entry.key, cursor: entry.value),
+      ]);
+      final repostPages = await Future.wait([
+        for (final entry in repostTargets.entries)
+          client.repostsOfPage(entry.key, cursor: entry.value),
       ]);
       if (!_isCurrentAccount(revision)) return false;
       var index = 0;
@@ -990,6 +1012,22 @@ class CommunityService extends ChangeNotifier {
         for (final w in page.works) {
           _feedIds.add(w.workId);
           _upsert(_plazaCopy(w));
+        }
+      }
+      index = 0;
+      for (final reposterId in repostTargets.keys) {
+        final page = repostPages[index++];
+        _feedRepostCursors[reposterId] = page.nextCursor;
+        for (final entry in page.reposts) {
+          final work = _plazaCopy(entry.work);
+          _feedIds.add(work.id);
+          _upsert(work);
+          _reposts.add(CommunityRepost(
+            workId: work.id,
+            reposterId: reposterId,
+            reposterName: _followedNames[reposterId] ?? authorNameOf(reposterId) ?? '',
+            repostedAt: entry.repostedAt,
+          ));
         }
       }
       _pruneUnconfirmed();
@@ -1092,6 +1130,7 @@ class CommunityService extends ChangeNotifier {
       _authorPageIds.clear();
       _authorCursors.clear();
       _feedAuthorCursors.clear();
+      _feedRepostCursors.clear();
       _ownCursor = null;
       _searchEpoch++;
       _searchIds.clear();
