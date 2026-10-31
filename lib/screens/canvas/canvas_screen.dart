@@ -1850,7 +1850,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _showQuickToolPanel ||
       _showColorAdjustPanel;
 
-
   bool _desktopPanelVisible(CanvasDockPanel p) => switch (p) {
     CanvasDockPanel.brush => _showBrushPanel,
     CanvasDockPanel.colorPicker => _showColorPicker,
@@ -1868,25 +1867,42 @@ class _CanvasScreenState extends State<CanvasScreen> {
   void _setDesktopPanelVisible(CanvasDockPanel p, bool visible) {
     setState(() {
       switch (p) {
-        case CanvasDockPanel.brush: _showBrushPanel = visible;
-        case CanvasDockPanel.colorPicker: _showColorPicker = visible;
-        case CanvasDockPanel.layer: _showLayerPanel = visible;
-        case CanvasDockPanel.tone: _showTonePanel = visible;
-        case CanvasDockPanel.stamp: _showStampPanel = visible;
-        case CanvasDockPanel.penSubTool: _showPenSubToolPanel = visible;
-        case CanvasDockPanel.onionSkin: _showOnionSkinPanel = visible;
-        case CanvasDockPanel.ruler: _showRulerPanel = visible;
-        case CanvasDockPanel.filter: _showFilterPanel = visible;
-        case CanvasDockPanel.quickTool: _showQuickToolPanel = visible;
-        case CanvasDockPanel.colorAdjust: _showColorAdjustPanel = visible;
-        case CanvasDockPanel.canvasPreview: _showCanvasPreviewPanel = visible;
+        case CanvasDockPanel.brush:
+          _showBrushPanel = visible;
+        case CanvasDockPanel.colorPicker:
+          _showColorPicker = visible;
+        case CanvasDockPanel.layer:
+          _showLayerPanel = visible;
+        case CanvasDockPanel.tone:
+          _showTonePanel = visible;
+        case CanvasDockPanel.stamp:
+          _showStampPanel = visible;
+        case CanvasDockPanel.penSubTool:
+          _showPenSubToolPanel = visible;
+        case CanvasDockPanel.onionSkin:
+          _showOnionSkinPanel = visible;
+        case CanvasDockPanel.ruler:
+          _showRulerPanel = visible;
+        case CanvasDockPanel.filter:
+          _showFilterPanel = visible;
+        case CanvasDockPanel.quickTool:
+          _showQuickToolPanel = visible;
+        case CanvasDockPanel.colorAdjust:
+          _showColorAdjustPanel = visible;
+        case CanvasDockPanel.canvasPreview:
+          _showCanvasPreviewPanel = visible;
       }
     });
     final settings = context.read<SettingsService>();
     final next = Set<CanvasDockPanel>.of(settings.defaultDockedPanels);
-    if (visible) {next.add(p);} else {next.remove(p);}
+    if (visible) {
+      next.add(p);
+    } else {
+      next.remove(p);
+    }
     settings.setDefaultDockedPanels(next);
   }
+
   String _dockTitle(CanvasDockPanel p) {
     final l = AppLocalizations.of(context)!;
     return switch (p) {
@@ -1904,6 +1920,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       CanvasDockPanel.canvasPreview => l.workspaceDockPanelCanvasPreview,
     };
   }
+
   Widget _dockBody(CanvasDockPanel p) => switch (p) {
     CanvasDockPanel.brush => _brushPanel(),
     CanvasDockPanel.colorPicker => _colorPickerPanel(),
@@ -1930,7 +1947,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
       projectId: widget.projectId,
       sceneId: _currentSceneId,
       frameIndex: _currentFrame,
-      onClose: () => _setDesktopPanelVisible(CanvasDockPanel.canvasPreview, false),
+      onClose: () =>
+          _setDesktopPanelVisible(CanvasDockPanel.canvasPreview, false),
     ),
   };
   Widget _desktopDockWindow(CanvasDockPanel p, {required bool right}) {
@@ -1943,76 +1961,111 @@ class _CanvasScreenState extends State<CanvasScreen> {
       key: ValueKey('dockTarget-${p.name}'),
       onWillAcceptWithDetails: (d) => d.data != p,
       onAcceptWithDetails: (d) =>
-        settings.moveDesktopDockPanel(d.data, toRight: right, before: p),
+          settings.moveDesktopDockPanel(d.data, toRight: right, before: p),
       builder: (context, candidates, _) => Container(
         decoration: BoxDecoration(
           color: scheme.surface,
-          border: Border.all(color: candidates.isEmpty
-              ? scheme.outlineVariant : scheme.primary),
+          border: Border.all(
+            color: candidates.isEmpty ? scheme.outlineVariant : scheme.primary,
+          ),
         ),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          SizedBox(height: 34, child: Row(children: [
-            LongPressDraggable<CanvasDockPanel>(
-              data: p,
-              feedback: Material(
-                color: scheme.surfaceContainerHighest,
-                child: Padding(padding: const EdgeInsets.all(8),
-                  child: Text(title)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 34,
+              child: Row(
+                children: [
+                  LongPressDraggable<CanvasDockPanel>(
+                    data: p,
+                    feedback: Material(
+                      color: scheme.surfaceContainerHighest,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(title),
+                      ),
+                    ),
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.grab,
+                      child: SizedBox(
+                        key: ValueKey('dockDrag-${p.name}'),
+                        width: 36,
+                        child: Icon(
+                          Icons.drag_indicator,
+                          size: 20,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    key: ValueKey('dockMenu-${p.name}'),
+                    icon: const Icon(Icons.more_vert, size: 18),
+                    onSelected: (action) {
+                      if (action == 'hide') {
+                        _setDesktopPanelVisible(p, false);
+                      } else {
+                        settings.moveDesktopDockPanel(
+                          p,
+                          toRight: action == 'right',
+                        );
+                      }
+                    },
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: 'left',
+                        child: Text(l.pcWorkspaceLayoutToolOrderSection),
+                      ),
+                      PopupMenuItem(
+                        value: 'right',
+                        child: Text(l.pcWorkspaceLayoutRightOrderSection),
+                      ),
+                      PopupMenuItem(value: 'hide', child: Text(l.commonClose)),
+                    ],
+                  ),
+                ],
               ),
-              child: MouseRegion(
-                cursor: SystemMouseCursors.grab,
-                child: SizedBox(
-                  key: ValueKey('dockDrag-${p.name}'),
-                  width: 36,
-                  child: Icon(Icons.drag_indicator, size: 20,
-                    color: scheme.onSurfaceVariant),
+            ),
+            SizedBox(height: height, child: _dockBody(p)),
+            MouseRegion(
+              cursor: SystemMouseCursors.resizeUpDown,
+              child: GestureDetector(
+                key: ValueKey('dockResize-${p.name}'),
+                behavior: HitTestBehavior.opaque,
+                onVerticalDragUpdate: (d) => setState(() {
+                  _dockDragHeight[p] =
+                      ((_dockDragHeight[p] ?? settings.desktopDockHeight(p)) +
+                              d.delta.dy)
+                          .clamp(140.0, 700.0);
+                }),
+                onVerticalDragEnd: (_) {
+                  final value = _dockDragHeight.remove(p);
+                  if (value != null) settings.setDesktopDockHeight(p, value);
+                },
+                child: Container(
+                  height: 16,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.drag_handle,
+                    size: 20,
+                    color: scheme.outline,
+                  ),
                 ),
               ),
             ),
-            Expanded(child: Text(title, maxLines: 1,
-              overflow: TextOverflow.ellipsis)),
-            PopupMenuButton<String>(
-              key: ValueKey('dockMenu-${p.name}'),
-              icon: const Icon(Icons.more_vert, size: 18),
-              onSelected: (action) {
-                if (action == 'hide') {
-                  _setDesktopPanelVisible(p, false);
-                } else {
-                  settings.moveDesktopDockPanel(p, toRight: action == 'right');
-                }
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(value: 'left',
-                  child: Text(l.pcWorkspaceLayoutToolOrderSection)),
-                PopupMenuItem(value: 'right',
-                  child: Text(l.pcWorkspaceLayoutRightOrderSection)),
-                PopupMenuItem(value: 'hide', child: Text(l.commonClose)),
-              ],
-            ),
-          ])),
-          SizedBox(height: height, child: _dockBody(p)),
-          MouseRegion(
-            cursor: SystemMouseCursors.resizeUpDown,
-            child: GestureDetector(
-              key: ValueKey('dockResize-${p.name}'),
-              behavior: HitTestBehavior.opaque,
-              onVerticalDragUpdate: (d) => setState(() {
-                _dockDragHeight[p] =
-                  ((_dockDragHeight[p] ?? settings.desktopDockHeight(p)) +
-                  d.delta.dy).clamp(140.0, 700.0);
-              }),
-              onVerticalDragEnd: (_) {
-                final value = _dockDragHeight.remove(p);
-                if (value != null) settings.setDesktopDockHeight(p, value);
-              },
-              child: Container(height: 16, alignment: Alignment.center,
-                child: Icon(Icons.drag_handle, size: 20, color: scheme.outline)),
-            ),
-          ),
-        ]),
+          ],
+        ),
       ),
     );
   }
+
   List<Widget> _openToolOptionPanels() {
     final settings = context.watch<SettingsService>();
     return [
@@ -2021,6 +2074,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       if (_showMeshTransformPanel) _meshTransformPanel(),
     ];
   }
+
   List<Widget> _openRightDockPanels() {
     final settings = context.watch<SettingsService>();
     return [
