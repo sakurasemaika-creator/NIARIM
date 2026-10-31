@@ -290,8 +290,10 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                   ),
                 ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 4,
+                runSpacing: 0,
                 children: [
                   TextButton(
                     onPressed: () => _addToDrawFilter(context),

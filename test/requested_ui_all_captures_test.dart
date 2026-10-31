@@ -161,6 +161,7 @@ void main() {
     // Desktop (1500 logical pixels): all docks use a global shared layout.
     tester.view.physicalSize = const Size(1500, 900);
     tester.view.devicePixelRatio = 1;
+    await settings.setForcePcMode(true);
     await settings.setDefaultDockedPanels({
       CanvasDockPanel.brush, CanvasDockPanel.colorPicker,
       CanvasDockPanel.layer, CanvasDockPanel.canvasPreview,
@@ -187,6 +188,8 @@ void main() {
     await navigate('/settings/workspace');
     final l = AppLocalizations.of(tester.element(find.byType(Scaffold).last))!;
     final pcLayout = find.text(l.workspacePcLayoutButton);
+    await tester.scrollUntilVisible(pcLayout, 220,
+      scrollable: find.byType(Scrollable).first);
     if (pcLayout.evaluate().isNotEmpty) {
       await tester.ensureVisible(pcLayout.last);
       await tester.tap(pcLayout.last);
