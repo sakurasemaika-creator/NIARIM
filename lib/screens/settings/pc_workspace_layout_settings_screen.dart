@@ -113,6 +113,13 @@ class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
                   trailing: Text('${settings.desktopDockHeight(panel).round()}px'),
                 ),
                 Slider(
+                  key: ValueKey('workspaceDockWidth-${panel.name}'),
+                  min: 200, max: 480, divisions: 14,
+                  value: settings.desktopDockWidth(panel,
+                    right: settings.rightDockOrder.contains(panel)),
+                  onChanged: (value) => settings.setDesktopDockWidth(panel, value),
+                ),
+                Slider(
                   key: ValueKey('workspaceDockHeight-${panel.name}'),
                   min: 140,
                   max: 700,
