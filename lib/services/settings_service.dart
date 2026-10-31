@@ -192,6 +192,26 @@ class SettingsService extends ChangeNotifier {
   // 右側ドッキング領域（カラーピッカー・レイヤーパネル・キャンバス
   // プレビュー）の横幅。ドラッグハンドルで変更でき、アプリ全体で
   // 共通の設定として保存される。
+  // Per-window heights are global workspace settings, not project state.
+  final Map<CanvasDockPanel, double> _desktopPanelHeights = {};
+
+  double desktopDockHeight(CanvasDockPanel panel) =>
+      _desktopPanelHeights[panel] ?? 260.0;
+
+  Future<void> setDesktopDockHeight(CanvasDockPanel panel, double value) async {
+    final height = value.clamp(140.0, 700.0);
+    _desktopPanelHeights[panel] = height;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'desktop_dock_heights',
+      jsonEncode({
+        for (final entry in _desktopPanelHeights.entries)
+          entry.key.name: entry.value,
+      }),
+    );
+  }
+
   double _desktopPanelWidth = 280.0;
 
   double get desktopPanelWidth => _desktopPanelWidth;
@@ -271,6 +291,24 @@ class SettingsService extends ChangeNotifier {
 
   Future<void> resetRightDockOrder() =>
       setRightDockOrder(_defaultRightDockOrder);
+
+  /// Move a dock window within or between columns, persist its position.
+  /// Settings screen and canvas use these same global order lists.
+  Future<void> moveDesktopDockPanel(
+    CanvasDockPanel panel, {
+    required bool toRight,
+    CanvasDockPanel? before,
+  }) async {
+    final left = List<CanvasDockPanel>.of(_toolOptionDockOrder)
+      ..remove(panel);
+    final right = List<CanvasDockPanel>.of(_rightDockOrder)
+      ..remove(panel);
+    final target = toRight ? right : left;
+    final insertIndex = before == null ? -1 : target.indexOf(before);
+    target.insert(insertIndex < 0 ? target.length : insertIndex, panel);
+    await setToolOptionDockOrder(left);
+    await setRightDockOrder(right);
+  }
 
   // マウス・スタイラス（ペンタブ等）の接続検出フラグ。ポインティング
   // デバイスの接続を一度でも検知したら、以後アプリ終了までtrueを保持する
@@ -579,6 +617,24 @@ class SettingsService extends ChangeNotifier {
     _timelineTrackHeightLevel =
         prefs.readInt('timeline_track_height_level') ?? 4;
     _desktopPanelWidth = prefs.readDouble('desktop_panel_width') ?? 280.0;
+    _desktopPanelHeights.clear();
+    final rawDockHeights = prefs.readString('desktop_dock_heights');
+    if (rawDockHeights != null) {
+      try {
+        final decoded = jsonDecode(rawDockHeights);
+        if (decoded is Map) {
+          for (final entry in decoded.entries) {
+            final panel = CanvasDockPanel.values.asNameMap()[entry.key];
+            final value = entry.value;
+            if (panel != null && value is num) {
+              _desktopPanelHeights[panel] = value.toDouble().clamp(140, 700);
+            }
+          }
+        }
+      } on FormatException {
+        // Ignore malformed saved workspace dimensions.
+      }
+    }
     _desktopToolPanelWidth =
         prefs.readDouble('desktop_tool_panel_width') ?? 280.0;
     final toolOptionDockOrderNames = prefs.readStringList(
