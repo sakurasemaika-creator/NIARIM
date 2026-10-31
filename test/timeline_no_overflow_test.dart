@@ -119,11 +119,11 @@ void main() {
           'Timeline must render without any Flutter layout/runtime exception at 320 logical px',
     );
     expect(find.text('timeline-overflow-probe'), findsOneWidget);
-    // The frame count and loop toggle remain within the picture.
+    // The frame counter remains in the preview, while the duplicated loop
+    // control was intentionally removed from its bottom-right corner.
     expect(find.byKey(const Key('timelinePreviewFrameCount')), findsOneWidget);
     expect(find.text('1/12'), findsOneWidget);
-    final loop = find.byKey(const Key('timelinePreviewLoopButton'));
-    expect(loop, findsOneWidget);
+    expect(find.byKey(const Key('timelinePreviewLoopButton')), findsNothing);
     final handle = tester.getCenter(
       find.byKey(const Key('timelinePreviewResizeHandle')),
     );
