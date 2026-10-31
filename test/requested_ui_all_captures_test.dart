@@ -122,7 +122,7 @@ void main() {
     if (gear.evaluate().isNotEmpty) {
       await tester.tap(gear.first);
       await settle();
-      final l = AppLocalizations.of(tester.element(find.byType(MaterialApp).first))!;
+      final l = AppLocalizations.of(tester.element(find.byType(Scaffold).last))!;
       final adjust = find.text(l.canvasColorAdjustMenuTitle);
       if (adjust.evaluate().isNotEmpty) {
         await tester.ensureVisible(adjust.last);
@@ -138,7 +138,7 @@ void main() {
     if (find.byIcon(Icons.settings).evaluate().isNotEmpty) {
       await tester.tap(find.byIcon(Icons.settings).first);
       await settle();
-      final l = AppLocalizations.of(tester.element(find.byType(MaterialApp).first))!;
+      final l = AppLocalizations.of(tester.element(find.byType(Scaffold).last))!;
       final filter = find.text(l.filterPanelTitle);
       if (filter.evaluate().isNotEmpty) {
         await tester.ensureVisible(filter.last);
@@ -185,7 +185,7 @@ void main() {
     }
 
     await navigate('/settings/workspace');
-    final l = AppLocalizations.of(tester.element(find.byType(MaterialApp).first))!;
+    final l = AppLocalizations.of(tester.element(find.byType(Scaffold).last))!;
     final pcLayout = find.text(l.workspacePcLayoutButton);
     if (pcLayout.evaluate().isNotEmpty) {
       await tester.ensureVisible(pcLayout.last);
