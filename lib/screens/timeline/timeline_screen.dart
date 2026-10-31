@@ -1513,7 +1513,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final ps = context.watch<ProjectService>();
     final sceneId = _selectedSceneId;
     final preview = Container(
-      margin: EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       // Around the picture, the canvas's surroundings (the canvas's
       // kCanvasOutsideColor); behind it, the project's background (see
       // _TimelinePreview), as on the canvas.
@@ -1574,10 +1574,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     },
                   ),
           ),
-          // Keep live frame counter and loop toggle inside the picture.
+          // Place the live frame counter at the extreme left of the
+          // preview AREA, away from the centered canvas image.
           Positioned(
-            left: 8,
-            bottom: 6,
+            left: 0,
+            bottom: 0,
             child: IgnorePointer(
               child: ValueListenableBuilder<int>(
                 valueListenable: _currentFrameNotifier,
@@ -1599,30 +1600,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
             ),
           ),
-          Positioned(
-            right: 5,
-            bottom: 3,
-            child: IconButton(
-              key: const Key('timelinePreviewLoopButton'),
-              icon: Icon(
-                Icons.repeat,
-                color: _loopEnabled
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              tooltip: _loopEnabled
-                  ? l10n.timelineLoopOnTooltip
-                  : l10n.timelineLoopOffTooltip,
-              onPressed: () => setState(() => _loopEnabled = !_loopEnabled),
-            ),
-          ),
           // プレビュー全画面化ボタン（確認・仕上がり
           // チェックに集中できるよう、プレビューのみを拡大表示する導線）。
           // 全画面表示中は_buildPreviewContent()自体が呼ばれないため、ここには
           // 「開く」方向のボタンのみを置けばよい。
           Positioned(
-            right: 4,
-            top: 4,
+            right: 0,
+            top: 0,
             child: FirstUseTooltip(
               tooltipKey: 'timeline_preview_fullscreen',
               message: l10n.timelinePreviewFullscreenTip,

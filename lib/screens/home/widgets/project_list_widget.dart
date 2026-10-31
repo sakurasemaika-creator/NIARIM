@@ -874,43 +874,43 @@ class ProjectListWidget extends StatelessWidget {
   }) {
     final scheme = Theme.of(context).colorScheme;
     final showMenu = !isSelectionMode && onPickProject == null;
-    return Positioned(
-      top: 4,
-      right: 4,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (showMenu)
-            Material(
+    // Menu remains top-right. Favorite is independently anchored to the
+    // thumbnail bottom-left, including transparent checkerboard thumbnails.
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (showMenu)
+          Positioned(
+            top: 4,
+            right: 4,
+            child: Material(
               color: Theme.of(context).cardTheme.color ?? scheme.surface,
               shape: const CircleBorder(),
               clipBehavior: Clip.antiAlias,
               child: SizedBox.square(dimension: 48, child: menu),
             ),
-          if (isFavorite)
-            Padding(
-              // 選択中はメニューの空き枠を残さず、星をタイル右上へ寄せる。
-              padding: EdgeInsets.only(top: showMenu ? 4 : 0),
-              child: Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardTheme.color ?? scheme.surface,
-                  shape: BoxShape.circle,
-                ),
-                child: Builder(
-                  // SliverGrid delegates may reuse cached children when the
-                  // outer itemBuilder is unchanged. Let the badge itself
-                  // depend on the live inherited Theme.
-                  builder: (themeContext) => Icon(
-                    Icons.star,
-                    color: Theme.of(themeContext).colorScheme.primary,
-                    size: 14,
-                  ),
+          ),
+        if (isFavorite)
+          Positioned(
+            key: const Key('projectGridFavoriteBottomLeft'),
+            left: 4,
+            bottom: 4,
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardTheme.color ?? scheme.surface,
+                shape: BoxShape.circle,
+              ),
+              child: Builder(
+                builder: (themeContext) => Icon(
+                  Icons.star,
+                  color: Theme.of(themeContext).colorScheme.primary,
+                  size: 14,
                 ),
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 
