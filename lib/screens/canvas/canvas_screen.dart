@@ -3086,10 +3086,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
           if (isWideScreen(context))
             PopupMenuButton<CanvasDockPanel>(
               key: const Key('desktopWindowVisibilityMenu'),
-              tooltip: AppLocalizations.of(context)!.pcWorkspaceLayoutScreenTitle,
+              tooltip: AppLocalizations.of(
+                context,
+              )!.pcWorkspaceLayoutScreenTitle,
               icon: const Icon(Icons.view_sidebar_outlined, size: 22),
               onSelected: (panel) =>
-                _setDesktopPanelVisible(panel, !_desktopPanelVisible(panel)),
+                  _setDesktopPanelVisible(panel, !_desktopPanelVisible(panel)),
               itemBuilder: (_) => [
                 for (final p in CanvasDockPanel.values)
                   CheckedPopupMenuItem<CanvasDockPanel>(
