@@ -194,6 +194,15 @@ void main() {
     if (menu.evaluate().isNotEmpty) {
       await tester.tap(menu.first);
       await shot('12_desktop_window_visibility_menu');
+      // Reposition a real open navigator window and capture the new dock.
+      await tester.tapAt(const Offset(760, 550));
+      await settle();
+      await settings.moveDesktopDockPanel(
+        CanvasDockPanel.canvasPreview, toRight: false);
+      await settle();
+      final moved = find.byKey(const ValueKey('dockDrag-canvasPreview'));
+      expect(moved, findsOneWidget);
+      await shot('12b_desktop_navigator_moved_to_left_dock');
     } else {
       errors.add('12_desktop_window_visibility_menu: menu not found');
     }
