@@ -172,6 +172,20 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // プレビュー）の横幅。ドラッグ中はここへローカルに反映し、指を離した
   // 時点でSettingsServiceへ確定値を保存する。
   final Map<CanvasDockPanel, double> _dockDragHeight = {};
+  final Map<CanvasDockPanel, double> _dockDragWidth = {};
+  double _desktopDockColumnWidth({required bool right}) {
+    final settings = context.watch<SettingsService>();
+    final order = right ? settings.rightDockOrder : settings.toolOptionDockOrder;
+    var width = right ? settings.desktopPanelWidth : settings.desktopToolPanelWidth;
+    for (final panel in order) {
+      if (!_desktopPanelVisible(panel)) continue;
+      final w = _dockDragWidth[panel] ??
+          settings.desktopDockWidth(panel, right: right);
+      if (w > width) width = w;
+    }
+    return width;
+  }
+
   double? _panelWidthDragOverride;
   // 左側ツールオプション系ドッキング領域の横幅（ドラッグ中のローカル反映用）。
   double? _toolPanelWidthDragOverride;
@@ -1223,10 +1237,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           if (openToolPanels.isNotEmpty && !leftHanded) ...[
                             SizedBox(
                               width:
-                                  _toolPanelWidthDragOverride ??
-                                  context
-                                      .watch<SettingsService>()
-                                      .desktopToolPanelWidth,
+                                  _desktopDockColumnWidth(right: false),
                               child: _dockedPanelStack(openToolPanels),
                             ),
                             _ResizeHandle(
@@ -1468,10 +1479,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             ),
                             SizedBox(
                               width:
-                                  _toolPanelWidthDragOverride ??
-                                  context
-                                      .watch<SettingsService>()
-                                      .desktopToolPanelWidth,
+                                  _desktopDockColumnWidth(right: false),
                               child: _dockedPanelStack(openToolPanels),
                             ),
                           ],
@@ -1509,10 +1517,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           if (isDesktop && _openRightDockPanels().isNotEmpty)
                             SizedBox(
                               width:
-                                  _panelWidthDragOverride ??
-                                  context
-                                      .watch<SettingsService>()
-                                      .desktopPanelWidth,
+                                  _desktopDockColumnWidth(right: true),
                               child: _buildRightDockColumn(),
                             ),
                         ],
@@ -1956,8 +1961,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final scheme = Theme.of(context).colorScheme;
     final title = _dockTitle(p);
     final height = _dockDragHeight[p] ?? settings.desktopDockHeight(p);
+    final width = _dockDragWidth[p] ??
+        settings.desktopDockWidth(p, right: right);
     final l = AppLocalizations.of(context)!;
-    return DragTarget<CanvasDockPanel>(
+    return SizedBox(
+      width: width,
+      child: DragTarget<CanvasDockPanel>(
       key: ValueKey('dockTarget-${p.name}'),
       onWillAcceptWithDetails: (d) => d.data != p,
       onAcceptWithDetails: (d) =>
@@ -2033,7 +2042,43 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 ],
               ),
             ),
-            SizedBox(height: height, child: _dockBody(p)),
+            SizedBox(
+              height: height,
+              child: Stack(children: [
+                Positioned.fill(
+                  left: right ? 12 : 0,
+                  right: right ? 0 : 12,
+                  child: _dockBody(p),
+                ),
+                Positioned(
+                  left: right ? 0 : null,
+                  right: right ? null : 0,
+                  top: 0,
+                  bottom: 0,
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.resizeLeftRight,
+                    child: GestureDetector(
+                      key: ValueKey('dockWidthResize-${p.name}'),
+                      behavior: HitTestBehavior.opaque,
+                      onHorizontalDragUpdate: (d) => setState(() {
+                        _dockDragWidth[p] = (
+                          (_dockDragWidth[p] ??
+                           settings.desktopDockWidth(p, right: right)) +
+                          d.delta.dx * (right ? -1 : 1)
+                        ).clamp(200.0, 480.0);
+                      }),
+                      onHorizontalDragEnd: (_) {
+                        final w = _dockDragWidth.remove(p);
+                        if (w != null) settings.setDesktopDockWidth(p, w);
+                      },
+                      child: SizedBox(width: 12,
+                        child: Center(child: Container(
+                          width: 3, color: scheme.outlineVariant))),
+                    ),
+                  ),
+                ),
+              ]),
+            ),
             MouseRegion(
               cursor: SystemMouseCursors.resizeUpDown,
               child: GestureDetector(
@@ -2062,6 +2107,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
