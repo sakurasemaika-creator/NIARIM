@@ -3029,6 +3029,22 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ),
           const Spacer(),
+          if (isWideScreen(context))
+            PopupMenuButton<CanvasDockPanel>(
+              key: const Key('desktopWindowVisibilityMenu'),
+              tooltip: AppLocalizations.of(context)!.pcWorkspaceLayoutScreenTitle,
+              icon: const Icon(Icons.view_sidebar_outlined, size: 22),
+              onSelected: (panel) =>
+                _setDesktopPanelVisible(panel, !_desktopPanelVisible(panel)),
+              itemBuilder: (_) => [
+                for (final p in CanvasDockPanel.values)
+                  CheckedPopupMenuItem<CanvasDockPanel>(
+                    value: p,
+                    checked: _desktopPanelVisible(p),
+                    child: Text(_dockTitle(p)),
+                  ),
+              ],
+            ),
           // 設定/編集メニュー（背景色・オニオンスキン・
           // フィルター・フレーム範囲選択を集約）。
           _topBarIconButton(

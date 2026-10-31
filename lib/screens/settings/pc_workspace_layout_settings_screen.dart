@@ -43,6 +43,28 @@ class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
+          _sectionLabel(context, l10n.pcWorkspaceLayoutRightOrderSection),
+          Card(
+            child: Column(
+              children: [
+                for (final panel in CanvasDockPanel.values)
+                  CheckboxListTile(
+                    key: ValueKey('workspaceDockVisible-${panel.name}'),
+                    dense: true,
+                    title: Text(_panelLabel(l10n, panel)),
+                    value: settings.defaultDockedPanels.contains(panel),
+                    onChanged: (value) {
+                      final chosen = Set<CanvasDockPanel>.of(
+                        settings.defaultDockedPanels);
+                      if (value == true) { chosen.add(panel); }
+                      else { chosen.remove(panel); }
+                      settings.setDefaultDockedPanels(chosen);
+                    },
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
           _sectionLabel(context, l10n.pcWorkspaceLayoutToolOrderSection),
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -82,6 +104,24 @@ class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
           ),
           SizedBox(height: 20),
           _sectionLabel(context, l10n.pcWorkspaceLayoutWidthSection),
+          for (final panel in CanvasDockPanel.values)
+            Column(
+              children: [
+                ListTile(
+                  dense: true,
+                  title: Text(_panelLabel(l10n, panel)),
+                  trailing: Text('${settings.desktopDockHeight(panel).round()}px'),
+                ),
+                Slider(
+                  key: ValueKey('workspaceDockHeight-${panel.name}'),
+                  min: 140,
+                  max: 700,
+                  divisions: 28,
+                  value: settings.desktopDockHeight(panel),
+                  onChanged: (v) => settings.setDesktopDockHeight(panel, v),
+                ),
+              ],
+            ),
           Card(
             elevation: 1,
             shadowColor: ThemeService.activeColorScheme.shadow.withValues(
