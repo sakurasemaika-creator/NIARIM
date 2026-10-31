@@ -95,6 +95,7 @@ void main() {
     final context = tester.element(find.byType(MaterialApp).first);
     final ps = context.read<ProjectService>();
     final settings = context.read<SettingsService>();
+    await settings.markFirstLaunchDone();
     final transparent = (await tester.runAsync(() => ps.createProject(
       name: '透明背景テスト作品',
       fps: 12, durationSeconds: 1, backgroundColor: 0x00000000,
@@ -134,6 +135,9 @@ void main() {
         errors.add('06_color_adjust_colored_background: menu not found');
       }
     }
+    // Rebuild the route, since an existing adjustment popup otherwise
+    // remains on the same Navigator when going to the same URI.
+    await navigate('/home');
     await navigate('/canvas/${colored.id}');
     if (find.byIcon(Icons.settings).evaluate().isNotEmpty) {
       await tester.tap(find.byIcon(Icons.settings).first);
@@ -149,7 +153,11 @@ void main() {
         } else {
           errors.add('07_filter_preview_colored_background: panel not found');
         }
+      } else {
+        errors.add('07_filter_preview_colored_background: menu not found');
       }
+    } else {
+      errors.add('07_filter_preview_colored_background: settings not found');
     }
 
     await navigate('/settings/workspace');
@@ -174,6 +182,11 @@ void main() {
       await tester.drag(resize.first, const Offset(0, 80));
       await settle();
       await shot('11_desktop_window_resized');
+      final widthHandle = find.byKey(const ValueKey('dockWidthResize-canvasPreview'));
+      expect(widthHandle, findsOneWidget);
+      await tester.drag(widthHandle.first, const Offset(-35, 0));
+      await settle();
+      await shot('11b_desktop_window_width_resized');
     } else {
       errors.add('11_desktop_window_resized: resize handle not found');
     }
@@ -196,6 +209,10 @@ void main() {
       await settle();
       expect(find.byType(PcWorkspaceLayoutSettingsScreen), findsOneWidget);
       await shot('13_global_pc_layout_settings');
+      final widthSlider = find.byKey(const ValueKey('workspaceDockWidth-canvasPreview'));
+      await tester.scrollUntilVisible(
+        widthSlider, 220, scrollable: find.byType(Scrollable).first);
+      await shot('14_global_panel_width_controls');
     } else {
       errors.add('13_global_pc_layout_settings: navigation button missing');
     }
