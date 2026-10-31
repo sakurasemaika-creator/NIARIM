@@ -20,6 +20,7 @@ import '../../../services/project_service.dart';
 import '../home_screen.dart';
 import '../../../config/font_fallback.dart';
 import '../../../widgets/empty_state_placeholder.dart';
+import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/project_trash_dialog.dart';
 import '../../../utils/app_error_reporter.dart';
 import 'folder_save_feedback.dart';
@@ -515,8 +516,9 @@ class ProjectListWidget extends StatelessWidget {
   }) {
     final placeholder = ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-      child: Container(
-        color: Color(project.backgroundColor),
+      child: FramePreviewBackground(
+        backgroundColor: project.backgroundColor,
+        checkerSize: 8,
         child: Center(
           child: Icon(
             Icons.image,
@@ -531,8 +533,9 @@ class ProjectListWidget extends StatelessWidget {
     if (path == null) return placeholder;
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-      child: ColoredBox(
-        color: Color(project.backgroundColor),
+      child: FramePreviewBackground(
+        backgroundColor: project.backgroundColor,
+        checkerSize: 8,
         child: Image.file(
           File(path),
           fit: BoxFit.cover,
