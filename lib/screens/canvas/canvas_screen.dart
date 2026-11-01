@@ -3078,6 +3078,96 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _currentTool = DrawingTool.pen;
   });
 
+  /// Desktop-only application menus, placed in the same top row as the
+  /// canvas action icons. Actions reuse the existing canvas handlers.
+  Widget _buildDesktopMenuBar() {
+    final l = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    final titles = switch (locale.languageCode) {
+      'ja' => const ['ファイル', 'レイヤー', '表示', '設定'],
+      'ko' => const ['파일', '레이어', '보기', '설정'],
+      'zh' when locale.scriptCode == 'Hant' =>
+        const ['檔案', '圖層', '檢視', '設定'],
+      'zh' => const ['文件', '图层', '视图', '设置'],
+      'es' => const ['Archivo', 'Capa', 'Ver', 'Ajustes'],
+      'fr' => const ['Fichier', 'Calque', 'Affichage', 'Paramètres'],
+      _ => const ['File', 'Layer', 'View', 'Settings'],
+    };
+    final scheme = Theme.of(context).colorScheme;
+    return MenuBar(
+      style: MenuStyle(
+        backgroundColor: WidgetStatePropertyAll(
+          scheme.surface.withValues(alpha: 0),
+        ),
+        elevation: const WidgetStatePropertyAll(0),
+        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+      ),
+      children: [
+        SubmenuButton(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: () => context.read<ProjectService>()
+                  .saveProject(widget.projectId),
+              child: Text(l.commonSave),
+            ),
+            MenuItemButton(
+              onPressed: _confirmBackToProjectList,
+              child: Text(l.timelineBackToProjectListTooltip),
+            ),
+          ],
+          child: Text(titles[0]),
+        ),
+        SubmenuButton(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: () =>
+                  _setDesktopPanelVisible(CanvasDockPanel.layer, !_showLayerPanel),
+              child: Text(l.layerPanelTitle),
+            ),
+            MenuItemButton(
+              onPressed: _selectAllLayers,
+              child: Text(l.layerPanelSelectAll),
+            ),
+          ],
+          child: Text(titles[1]),
+        ),
+        SubmenuButton(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: _toggleBackground,
+              child: Text(l.canvasEditMenuBackgroundToggle),
+            ),
+            MenuItemButton(
+              onPressed: () => _setDesktopPanelVisible(
+                CanvasDockPanel.canvasPreview,
+                !_showCanvasPreviewPanel,
+              ),
+              child: Text(l.canvasEditMenuPreviewNavigator),
+            ),
+            MenuItemButton(
+              onPressed: () => context.push('/settings/workspace'),
+              child: Text(l.pcWorkspaceLayoutScreenTitle),
+            ),
+          ],
+          child: Text(titles[2]),
+        ),
+        SubmenuButton(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: () => _showEditMenu(context),
+              child: Text(l.canvasSettingsMenuTooltip),
+            ),
+            MenuItemButton(
+              onPressed: () => context.push('/settings/workspace'),
+              child: Text(l.workspacePcLayoutButton),
+            ),
+          ],
+          child: Text(titles[3]),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
@@ -3147,6 +3237,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ),
           const Spacer(),
+          if (isWideScreen(context)) _buildDesktopMenuBar(),
           if (isWideScreen(context))
             PopupMenuButton<CanvasDockPanel>(
               key: const Key('desktopWindowVisibilityMenu'),
@@ -3189,16 +3280,24 @@ class _CanvasScreenState extends State<CanvasScreen> {
           CanvasIconButton(
             key: const Key('canvasTimelineModeButton'),
             iconSize: 24,
-            iconBuilder: (color) => FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.movie_filter_outlined, size: 19, color: color),
-                  const SizedBox(width: 2),
-                  Icon(Icons.arrow_forward, size: 14, color: color),
-                ],
-              ),
+            iconWidth: 36,
+            outlinedIconBuilder: (color, outline) => Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.movie_filter_outlined,
+                  size: 19,
+                  color: color,
+                  shadows: CanvasIconButton.outlineShadows(outline),
+                ),
+                const SizedBox(width: 2),
+                Icon(
+                  Icons.arrow_forward,
+                  size: 14,
+                  color: color,
+                  shadows: CanvasIconButton.outlineShadows(outline),
+                ),
+              ],
             ),
             onPressed: () => _runAutomationBlockedAction(
               () => context.go('/timeline/${widget.projectId}'),
