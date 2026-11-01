@@ -176,6 +176,9 @@ void main() {
     });
     await navigate('/home');
     await navigate('/canvas/${colored.id}');
+    expect(find.byType(MenuBar), findsOneWidget,
+      reason: 'The desktop canvas must show File/Layer/View/Settings menus.');
+    expect(find.byKey(const Key('canvasTimelineModeButton')), findsOneWidget);
     await shot('10_desktop_multiple_dock_windows');
     final resize = find.byKey(const ValueKey('dockResize-canvasPreview'));
     if (resize.evaluate().isNotEmpty) {
@@ -217,11 +220,20 @@ void main() {
       await tester.tap(pcLayout.last);
       await settle();
       expect(find.byType(PcWorkspaceLayoutSettingsScreen), findsOneWidget);
+      expect(find.byKey(const Key('pcWorkspaceInteractivePreview')), findsOneWidget);
+      expect(find.byType(Slider), findsNothing,
+        reason: 'PC layout must be edited directly in the workspace preview.');
       await shot('13_global_pc_layout_settings');
-      final widthSlider = find.byKey(const ValueKey('workspaceDockWidth-canvasPreview'));
-      await tester.scrollUntilVisible(
-        widthSlider, 220, scrollable: find.byType(Scrollable).first);
-      await shot('14_global_panel_width_controls');
+      final brushWidthBefore =
+          settings.desktopDockWidth(CanvasDockPanel.brush, right: false);
+      final brushWidthGrip = find.byKey(const ValueKey('pcPreviewWidth-brush'));
+      expect(brushWidthGrip, findsOneWidget);
+      await tester.drag(brushWidthGrip, const Offset(32, 0));
+      await settle();
+      expect(settings.desktopDockWidth(CanvasDockPanel.brush, right: false),
+        greaterThan(brushWidthBefore),
+        reason: 'The preview grip must save real desktop dock dimensions.');
+      await shot('14_global_panel_resized_by_preview_drag');
     } else {
       errors.add('13_global_pc_layout_settings: navigation button missing');
     }
