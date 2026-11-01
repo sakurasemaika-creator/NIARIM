@@ -27,7 +27,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
   final TransformationController _transform = TransformationController();
   final Map<CanvasDockPanel, double> _resizingWidth = {};
   final Map<CanvasDockPanel, double> _resizingHeight = {};
-  double? _lastViewportWidth;
+  Size? _lastViewportSize;
   double? _leftColumnWidthDrag;
   double? _rightColumnWidthDrag;
 
@@ -37,8 +37,11 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     super.dispose();
   }
 
-  void _fit(double viewportWidth) {
-    final scale = (viewportWidth / workspaceWidth).clamp(0.26, 1.0);
+  void _fit(Size viewport) {
+    final widthScale = viewport.width / workspaceWidth;
+    final heightScale = viewport.height / workspaceHeight;
+    final scale = (widthScale < heightScale ? widthScale : heightScale)
+        .clamp(0.25, 1.0);
     _transform.value = Matrix4.diagonal3Values(scale, scale, 1);
   }
 
@@ -70,11 +73,13 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     final l = AppLocalizations.of(context)!;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final availableWidth = constraints.maxWidth;
-        if (_lastViewportWidth != availableWidth && availableWidth > 0) {
-          _lastViewportWidth = availableWidth;
+        final viewport = Size(constraints.maxWidth, constraints.maxHeight);
+        if (_lastViewportSize != viewport &&
+            viewport.width > 0 &&
+            viewport.height > 0) {
+          _lastViewportSize = viewport;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _fit(availableWidth);
+            if (mounted) _fit(viewport);
           });
         }
         return Stack(
@@ -126,7 +131,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
               child: IconButton.filledTonal(
                 key: const Key('pcWorkspaceFitPreview'),
                 tooltip: l.pcWorkspaceLayoutScreenTitle,
-                onPressed: () => _fit(availableWidth),
+                onPressed: () => _fit(viewport),
                 icon: const Icon(Icons.fit_screen),
               ),
             ),
