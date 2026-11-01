@@ -1,10 +1,9 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/canvas_dock_panel.dart';
 import '../../services/settings_service.dart';
-import '../../config/font_fallback.dart';
+import 'widgets/pc_workspace_layout_preview.dart';
 
 /// PC専用ワークスペースUIのドッキングパネルの並び順・幅を調整する設定画面。
 class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
@@ -28,227 +27,83 @@ class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsService>();
+    final locale = Localizations.localeOf(context).languageCode;
+    final instruction = switch (locale) {
+      'ja' => 'プレビューのウィンドウ端をドラッグして幅・高さを変更し、左上のハンドルを長押しして移動・入れ替えできます。ピンチで拡大できます。',
+      'ko' => '미리보기의 가장자리를 드래그하여 크기를 바꾸고, 창 손잡이를 길게 눌러 이동할 수 있습니다. 확대하려면 핀치하세요.',
+      'zh' => '拖动预览窗口边缘调整大小，长按窗口手柄并拖动以移动或交换位置。双指缩放可放大预览。',
+      'es' => 'Arrastra los bordes para cambiar el tamaño y mantén pulsado el asa de cada ventana para moverla. Pellizca para ampliar.',
+      'fr' => 'Faites glisser les bords pour redimensionner les fenêtres et maintenez leur poignée pour les déplacer. Pincez pour zoomer.',
+      _ => 'Drag window edges to resize. Long-press and drag a window grip to reorder or move it between sides. Pinch to zoom.',
+    };
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.pcWorkspaceLayoutScreenTitle)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            l10n.pcWorkspaceLayoutIntroHint,
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 20),
-          _sectionLabel(context, l10n.pcWorkspaceLayoutRightOrderSection),
-          Card(
-            child: Column(
-              children: [
-                for (final panel in CanvasDockPanel.values)
-                  CheckboxListTile(
-                    key: ValueKey('workspaceDockVisible-${panel.name}'),
-                    dense: true,
-                    title: Text(_panelLabel(l10n, panel)),
-                    value: settings.defaultDockedPanels.contains(panel),
-                    onChanged: (value) {
-                      final chosen = Set<CanvasDockPanel>.of(
-                        settings.defaultDockedPanels);
-                      if (value == true) { chosen.add(panel); }
-                      else { chosen.remove(panel); }
-                      settings.setDefaultDockedPanels(chosen);
-                    },
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          _sectionLabel(context, l10n.pcWorkspaceLayoutToolOrderSection),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-              l10n.pcWorkspaceLayoutToolOrderHint,
-              style: TextStyle(
-                fontSize: 11,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          _OrderCard(
-            order: settings.toolOptionDockOrder,
-            labelOf: (p) => _panelLabel(l10n, p),
-            onReorder: (order) => settings.setToolOptionDockOrder(order),
-            onReset: () => settings.resetToolOptionDockOrder(),
-            resetLabel: l10n.pcWorkspaceLayoutResetOrderButton,
-          ),
-          const SizedBox(height: 20),
-          _sectionLabel(context, l10n.pcWorkspaceLayoutRightOrderSection),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-              l10n.pcWorkspaceLayoutRightOrderHint,
-              style: TextStyle(
-                fontSize: 11,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          _OrderCard(
-            order: settings.rightDockOrder,
-            labelOf: (p) => _panelLabel(l10n, p),
-            onReorder: (order) => settings.setRightDockOrder(order),
-            onReset: () => settings.resetRightDockOrder(),
-            resetLabel: l10n.pcWorkspaceLayoutResetOrderButton,
-          ),
-          SizedBox(height: 20),
-          _sectionLabel(context, l10n.pcWorkspaceLayoutWidthSection),
-          for (final panel in CanvasDockPanel.values)
-            Column(
-              children: [
-                ListTile(
-                  dense: true,
-                  title: Text(_panelLabel(l10n, panel)),
-                  trailing: Text('${settings.desktopDockHeight(panel).round()}px'),
-                ),
-                Slider(
-                  key: ValueKey('workspaceDockWidth-${panel.name}'),
-                  min: 200, max: 480, divisions: 14,
-                  value: settings.desktopDockWidth(panel,
-                    right: settings.rightDockOrder.contains(panel)),
-                  onChanged: (value) => settings.setDesktopDockWidth(panel, value),
-                ),
-                Slider(
-                  key: ValueKey('workspaceDockHeight-${panel.name}'),
-                  min: 140,
-                  max: 700,
-                  divisions: 28,
-                  value: settings.desktopDockHeight(panel),
-                  onChanged: (v) => settings.setDesktopDockHeight(panel, v),
-                ),
-              ],
-            ),
-          Card(
-            elevation: 1,
-            shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-              alpha: 0.15,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            child: Column(
-              children: [
-                ListTile(
-                  title: Text(l10n.pcWorkspaceLayoutToolWidthLabel),
-                  trailing: Text('${settings.desktopToolPanelWidth.round()}px'),
-                ),
-                ListTile(
-                  title: Text(l10n.pcWorkspaceLayoutRightWidthLabel),
-                  trailing: Text('${settings.desktopPanelWidth.round()}px'),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        settings.setDesktopToolPanelWidth(280.0);
-                        settings.setDesktopPanelWidth(280.0);
-                      },
-                      child: Text(l10n.pcWorkspaceLayoutResetWidthButton),
+      appBar: AppBar(title: Text(l.pcWorkspaceLayoutScreenTitle)),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l.pcWorkspaceLayoutIntroHint,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    instruction,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _sectionLabel(BuildContext context, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+            Expanded(
+              child: PcWorkspaceLayoutPreview(
+                labelOf: (panel) => _panelLabel(l, panel),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                children: [
+                  TextButton.icon(
+                    onPressed: () async {
+                      await settings.resetToolOptionDockOrder();
+                      await settings.resetRightDockOrder();
+                    },
+                    icon: const Icon(Icons.restart_alt),
+                    label: Text(l.pcWorkspaceLayoutResetOrderButton),
+                  ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      await settings.setDesktopToolPanelWidth(280);
+                      await settings.setDesktopPanelWidth(280);
+                      for (final panel in CanvasDockPanel.values) {
+                        await settings.setDesktopDockWidth(panel, 280);
+                        await settings.setDesktopDockHeight(panel, 260);
+                      }
+                    },
+                    icon: const Icon(Icons.aspect_ratio_outlined),
+                    label: Text(l.pcWorkspaceLayoutResetWidthButton),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-/// ドッキングパネルの積み重ね順を編集するドラッグ並べ替え可能な一覧カード。
-class _OrderCard extends StatelessWidget {
-  final List<CanvasDockPanel> order;
-  final String Function(CanvasDockPanel) labelOf;
-  final ValueChanged<List<CanvasDockPanel>> onReorder;
-  final VoidCallback onReset;
-  final String resetLabel;
-
-  const _OrderCard({
-    required this.order,
-    required this.labelOf,
-    required this.onReorder,
-    required this.onReset,
-    required this.resetLabel,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 1,
-      shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-        alpha: 0.15,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
-      child: Column(
-        children: [
-          ReorderableListView(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            buildDefaultDragHandles: false,
-            // onReorderItemはnewIndexを「削除後の位置」へ調整済みで渡すため、
-            // 従来必要だった `if (newIndex > oldIndex) newIndex -= 1;` は不要。
-            onReorderItem: (oldIndex, newIndex) {
-              final next = List<CanvasDockPanel>.of(order);
-              final item = next.removeAt(oldIndex);
-              next.insert(newIndex, item);
-              onReorder(next);
-            },
-            children: [
-              for (final entry in order.asMap().entries)
-                ListTile(
-                  key: ValueKey(entry.value),
-                  title: Text(labelOf(entry.value)),
-                  trailing: ReorderableDragStartListener(
-                    index: entry.key,
-                    child: const Icon(Icons.drag_handle),
-                  ),
-                ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(onPressed: onReset, child: Text(resetLabel)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
