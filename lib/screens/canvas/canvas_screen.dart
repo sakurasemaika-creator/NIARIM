@@ -1015,21 +1015,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // （_closeAllOverlayPanelsもPC/DeXモードではこれらを対象外にしている）。
     if (!_autoOpenedDesktopPanels && isWideScreen(context)) {
       _autoOpenedDesktopPanels = true;
-      final defaults = context.read<SettingsService>().defaultDockedPanels;
-      _showBrushPanel = defaults.contains(CanvasDockPanel.brush);
-      _showColorPicker = defaults.contains(CanvasDockPanel.colorPicker);
-      _showLayerPanel = defaults.contains(CanvasDockPanel.layer);
-      _showTonePanel = defaults.contains(CanvasDockPanel.tone);
-      _showStampPanel = defaults.contains(CanvasDockPanel.stamp);
-      _showPenSubToolPanel = defaults.contains(CanvasDockPanel.penSubTool);
-      _showOnionSkinPanel = defaults.contains(CanvasDockPanel.onionSkin);
-      _showRulerPanel = defaults.contains(CanvasDockPanel.ruler);
-      _showFilterPanel = defaults.contains(CanvasDockPanel.filter);
-      _showQuickToolPanel = defaults.contains(CanvasDockPanel.quickTool);
-      _showColorAdjustPanel = defaults.contains(CanvasDockPanel.colorAdjust);
-      _showCanvasPreviewPanel = defaults.contains(
-        CanvasDockPanel.canvasPreview,
-      );
+      _applyDesktopDockVisibilityPreferences();
     }
     _projectServiceForDispose = context.read<ProjectService>();
     // PerformanceServiceをlistenerで監視（依存差し替えに対応）
@@ -3078,6 +3064,30 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _currentTool = DrawingTool.pen;
   });
 
+  /// Apply visibility changes made in the workspace layout editor as soon as
+  /// the user returns to the still-mounted canvas route.
+  void _applyDesktopDockVisibilityPreferences() {
+    final defaults = context.read<SettingsService>().defaultDockedPanels;
+    _showBrushPanel = defaults.contains(CanvasDockPanel.brush);
+    _showColorPicker = defaults.contains(CanvasDockPanel.colorPicker);
+    _showLayerPanel = defaults.contains(CanvasDockPanel.layer);
+    _showTonePanel = defaults.contains(CanvasDockPanel.tone);
+    _showStampPanel = defaults.contains(CanvasDockPanel.stamp);
+    _showPenSubToolPanel = defaults.contains(CanvasDockPanel.penSubTool);
+    _showOnionSkinPanel = defaults.contains(CanvasDockPanel.onionSkin);
+    _showRulerPanel = defaults.contains(CanvasDockPanel.ruler);
+    _showFilterPanel = defaults.contains(CanvasDockPanel.filter);
+    _showQuickToolPanel = defaults.contains(CanvasDockPanel.quickTool);
+    _showColorAdjustPanel = defaults.contains(CanvasDockPanel.colorAdjust);
+    _showCanvasPreviewPanel = defaults.contains(CanvasDockPanel.canvasPreview);
+  }
+
+  Future<void> _openDesktopWorkspaceSettings() async {
+    await context.push('/settings/workspace');
+    if (!mounted) return;
+    setState(_applyDesktopDockVisibilityPreferences);
+  }
+
   /// Desktop-only application menus, placed in the same top row as the
   /// canvas action icons. Actions reuse the existing canvas handlers.
   Widget _buildDesktopMenuBar() {
@@ -3146,7 +3156,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               child: Text(l.canvasEditMenuPreviewNavigator),
             ),
             MenuItemButton(
-              onPressed: () => context.push('/settings/workspace'),
+              onPressed: _openDesktopWorkspaceSettings,
               child: Text(l.pcWorkspaceLayoutScreenTitle),
             ),
           ],
@@ -3159,7 +3169,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               child: Text(l.canvasSettingsMenuTooltip),
             ),
             MenuItemButton(
-              onPressed: () => context.push('/settings/workspace'),
+              onPressed: _openDesktopWorkspaceSettings,
               child: Text(l.workspacePcLayoutButton),
             ),
           ],
@@ -3190,6 +3200,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onPressed: () => context.read<UndoManager>().redo(),
             tooltip: l10n.commonRedo,
           ),
+          if (isWideScreen(context)) ...[
+            const SizedBox(width: 16),
+            _buildDesktopMenuBar(),
+          ],
           // 投げ縄塗り選択中：囲って塗るモードスイッチ
           if (_currentTool == DrawingTool.lasso &&
               _currentSubTool == PenSubTool.lassoFill) ...[
@@ -3238,7 +3252,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ),
           const Spacer(),
-          if (isWideScreen(context)) _buildDesktopMenuBar(),
           if (isWideScreen(context))
             PopupMenuButton<CanvasDockPanel>(
               key: const Key('desktopWindowVisibilityMenu'),
