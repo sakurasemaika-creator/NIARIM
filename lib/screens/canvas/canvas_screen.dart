@@ -179,8 +179,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
         ? settings.rightDockOrder
         : settings.toolOptionDockOrder;
     var width = right
-        ? settings.desktopPanelWidth
-        : settings.desktopToolPanelWidth;
+        ? (_panelWidthDragOverride ?? settings.desktopPanelWidth)
+        : (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth);
     for (final panel in order) {
       if (!_desktopPanelVisible(panel)) continue;
       final w =
