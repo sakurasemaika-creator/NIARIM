@@ -467,14 +467,20 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
         physics: const NeverScrollableScrollPhysics(),
         children: [
           for (var i = 0; i < 4; i++)
-            ListTile(
-              dense: true,
-              leading: Icon(Icons.layers_outlined,
-                  size: 18, color: scheme.onSurface),
-              title: Container(
-                height: 8,
-                width: 100,
-                color: scheme.surfaceContainerHighest,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                children: [
+                  Icon(Icons.layers_outlined,
+                      size: 18, color: scheme.onSurface),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Container(
+                      height: 8,
+                      color: scheme.surfaceContainerHighest,
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
