@@ -3086,8 +3086,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final titles = switch (locale.languageCode) {
       'ja' => const ['ファイル', 'レイヤー', '表示', '設定'],
       'ko' => const ['파일', '레이어', '보기', '설정'],
-      'zh' when locale.scriptCode == 'Hant' =>
-        const ['檔案', '圖層', '檢視', '設定'],
+      'zh' when locale.scriptCode == 'Hant' => const ['檔案', '圖層', '檢視', '設定'],
       'zh' => const ['文件', '图层', '视图', '设置'],
       'es' => const ['Archivo', 'Capa', 'Ver', 'Ajustes'],
       'fr' => const ['Fichier', 'Calque', 'Affichage', 'Paramètres'],
@@ -3106,8 +3105,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
         SubmenuButton(
           menuChildren: [
             MenuItemButton(
-              onPressed: () => context.read<ProjectService>()
-                  .saveProject(widget.projectId),
+              onPressed: () =>
+                  context.read<ProjectService>().saveProject(widget.projectId),
               child: Text(l.commonSave),
             ),
             MenuItemButton(
@@ -3120,8 +3119,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
         SubmenuButton(
           menuChildren: [
             MenuItemButton(
-              onPressed: () =>
-                  _setDesktopPanelVisible(CanvasDockPanel.layer, !_showLayerPanel),
+              onPressed: () => _setDesktopPanelVisible(
+                CanvasDockPanel.layer,
+                !_showLayerPanel,
+              ),
               child: Text(l.layerPanelTitle),
             ),
             MenuItemButton(
