@@ -28,6 +28,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
   final Map<CanvasDockPanel, double> _resizingWidth = {};
   final Map<CanvasDockPanel, double> _resizingHeight = {};
   double? _lastViewportWidth;
+  double? _leftColumnWidthDrag;
+  double? _rightColumnWidthDrag;
 
   @override
   void dispose() {
@@ -49,8 +51,9 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
   double _columnWidth(SettingsService settings, {required bool right}) {
     final order =
         right ? settings.rightDockOrder : settings.toolOptionDockOrder;
-    double width =
-        right ? settings.desktopPanelWidth : settings.desktopToolPanelWidth;
+    double width = right
+        ? (_rightColumnWidthDrag ?? settings.desktopPanelWidth)
+        : (_leftColumnWidthDrag ?? settings.desktopToolPanelWidth);
     for (final panel in order) {
       if (!settings.defaultDockedPanels.contains(panel)) continue;
       final panelWidth = _resizingWidth[panel] ??
@@ -238,14 +241,27 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
       child: GestureDetector(
         key: ValueKey(right ? 'pcPreviewRightColumnResize' : 'pcPreviewToolColumnResize'),
         behavior: HitTestBehavior.opaque,
-        onHorizontalDragUpdate: (details) {
+        onHorizontalDragUpdate: (details) => setState(() {
           final delta = details.delta.dx * (right ? -1 : 1);
           if (right) {
-            settings.setDesktopPanelWidth(
-                (settings.desktopPanelWidth + delta).clamp(200.0, 480.0));
+            _rightColumnWidthDrag =
+                ((_rightColumnWidthDrag ?? settings.desktopPanelWidth) + delta)
+                    .clamp(200.0, 480.0);
           } else {
-            settings.setDesktopToolPanelWidth(
-                (settings.desktopToolPanelWidth + delta).clamp(200.0, 480.0));
+            _leftColumnWidthDrag =
+                ((_leftColumnWidthDrag ?? settings.desktopToolPanelWidth) + delta)
+                    .clamp(200.0, 480.0);
+          }
+        }),
+        onHorizontalDragEnd: (_) {
+          if (right) {
+            final width = _rightColumnWidthDrag;
+            if (width != null) settings.setDesktopPanelWidth(width);
+            setState(() => _rightColumnWidthDrag = null);
+          } else {
+            final width = _leftColumnWidthDrag;
+            if (width != null) settings.setDesktopToolPanelWidth(width);
+            setState(() => _leftColumnWidthDrag = null);
           }
         },
         child: SizedBox(
@@ -501,24 +517,27 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
           decoration: BoxDecoration(
             border: Border(top: BorderSide(color: scheme.outlineVariant)),
           ),
-          child: Row(
-            children: [
-              const SizedBox(width: 8),
-              for (var i = 0; i < 6; i++)
-                Container(
-                  width: 48,
-                  height: 42,
-                  margin: const EdgeInsets.only(right: 4),
-                  decoration: BoxDecoration(
-                    color: scheme.primaryContainer,
-                    border: Border.all(
-                      color: i == 0 ? scheme.primary : scheme.outlineVariant,
-                      width: i == 0 ? 2 : 1,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                const SizedBox(width: 8),
+                for (var i = 0; i < 6; i++)
+                  Container(
+                    width: 48,
+                    height: 42,
+                    margin: const EdgeInsets.only(right: 4),
+                    decoration: BoxDecoration(
+                      color: scheme.primaryContainer,
+                      border: Border.all(
+                        color: i == 0 ? scheme.primary : scheme.outlineVariant,
+                        width: i == 0 ? 2 : 1,
+                      ),
                     ),
                   ),
-                ),
-              Icon(Icons.add, color: scheme.onSurface),
-            ],
+                Icon(Icons.add, color: scheme.onSurface),
+              ],
+            ),
           ),
         ),
       ],
