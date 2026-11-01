@@ -19,6 +19,10 @@ class CanvasIconButton extends StatelessWidget {
   // モード切替のように複数グリフを1つのボタンとして見せたい箇所向け。
   // 指定時は[icon]より優先される。
   final Widget Function(Color color)? iconBuilder;
+  // Composite icons can paint an outline on each glyph at its exact position.
+  // Unlike displaced FittedBox copies, shadows stay aligned after scaling.
+  final Widget Function(Color foreground, Color outline)? outlinedIconBuilder;
+  final double? iconWidth;
   final VoidCallback? onPressed;
   final String tooltip;
   final bool selected;
@@ -31,13 +35,15 @@ class CanvasIconButton extends StatelessWidget {
     super.key,
     this.icon,
     this.iconBuilder,
+    this.outlinedIconBuilder,
+    this.iconWidth,
     required this.onPressed,
     required this.tooltip,
     this.selected = false,
     this.iconSize = 20,
     this.longPressTooltip = true,
   }) : assert(
-         icon != null || iconBuilder != null,
+         icon != null || iconBuilder != null || outlinedIconBuilder != null,
          'iconかiconBuilderのどちらかを指定してください',
        );
 
@@ -93,6 +99,9 @@ class CanvasIconButton extends StatelessWidget {
 
   /// アイコン本体＋縁取りを描く。
   Widget _renderIcon(Color iconColor, Color outlineColor) {
+    if (outlinedIconBuilder != null) {
+      return outlinedIconBuilder!(iconColor, outlineColor);
+    }
     if (iconBuilder != null) {
       return Stack(
         clipBehavior: Clip.none,
@@ -135,7 +144,7 @@ class CanvasIconButton extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(6),
           child: SizedBox(
-            width: iconSize,
+            width: iconWidth ?? iconSize,
             height: iconSize,
             child: _renderIcon(iconColor, outline),
           ),
