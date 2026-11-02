@@ -78,7 +78,7 @@ class _StampPanelState extends State<StampPanel> {
         (_folderFilter != null && _folderFilter != _allFolders);
 
     return Card(
-      elevation: 8,
+      elevation: 0, // Prevent black shadows around the floating panel.
       child: SizedBox(
         width: 280,
         height: 460,
