@@ -138,7 +138,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     final l10n = AppLocalizations.of(context)!;
     final paletteService = context.watch<PaletteService>();
     return Card(
-      elevation: 8,
+      elevation: 0, // Prevent black shadows around the floating panel.
       child: Container(
         width: 288,
         padding: const EdgeInsets.all(12),
