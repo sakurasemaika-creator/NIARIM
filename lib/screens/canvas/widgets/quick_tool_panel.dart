@@ -39,7 +39,7 @@ class QuickToolPanel extends StatelessWidget {
     final entries = service.entries;
 
     return Card(
-      elevation: 8,
+      elevation: 0, // Prevent black shadows around the floating panel.
       child: SizedBox(
         width: 260,
         height: 360,
