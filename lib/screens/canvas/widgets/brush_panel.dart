@@ -86,7 +86,7 @@ class _BrushPanelState extends State<BrushPanel> {
     final current = brushService.currentBrush;
 
     return Card(
-      elevation: 8,
+      elevation: 0, // Prevent black shadows around the floating panel.
       child: SizedBox(
         width: 280,
         height: 460,
