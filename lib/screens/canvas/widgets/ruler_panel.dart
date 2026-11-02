@@ -27,7 +27,7 @@ class RulerPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Material(
-      elevation: 4,
+      elevation: 0, // Flat popup surface: avoid the black border-like shadow.
       borderRadius: BorderRadius.circular(8),
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       // On a short screen (or with large text) the list scrolls instead of
