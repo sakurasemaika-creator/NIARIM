@@ -85,7 +85,7 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Card(
-      elevation: 8,
+      elevation: 0, // Prevent black shadows around the floating panel.
       child: SizedBox(
         width: 280,
         height: 480,
