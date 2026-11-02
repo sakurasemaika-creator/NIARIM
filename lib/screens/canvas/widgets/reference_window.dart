@@ -66,13 +66,11 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
       left: _position.dx,
       top: _position.dy,
       child: Material(
-        elevation: 12,
+        elevation: 0,
         borderRadius: BorderRadius.circular(12),
         clipBehavior: Clip.antiAlias,
         color: theme.panelBgColor,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-          alpha: 0.4,
-        ),
+
         child: SizedBox(
           width: _size.width,
           height: _size.height,
