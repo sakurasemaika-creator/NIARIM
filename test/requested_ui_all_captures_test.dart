@@ -11,6 +11,8 @@ import 'package:niarim/router.dart';
 import 'package:niarim/models/canvas_dock_panel.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
+import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
+import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/screens/settings/pc_workspace_layout_settings_screen.dart';
 import 'package:niarim/services/project_service.dart';
@@ -179,6 +181,22 @@ void main() {
     expect(find.byType(MenuBar), findsOneWidget,
       reason: 'The desktop canvas must show File/Layer/View/Settings menus.');
     expect(find.byKey(const Key('canvasTimelineModeButton')), findsOneWidget);
+    // The panel body previously cast an 8dp solid-looking black shadow
+    // inside each PC dock window. Both modes reuse the same panel widgets.
+    // A zero elevation Card leaves no black halo over the theme background.
+    final brushCards = find.descendant(
+      of: find.byType(BrushPanel),
+      matching: find.byType(Card),
+    );
+    final colorPickerCards = find.descendant(
+      of: find.byType(ColorPickerPanel),
+      matching: find.byType(Card),
+    );
+    expect(brushCards, findsOneWidget);
+    expect(colorPickerCards, findsOneWidget);
+    expect(tester.widget<Card>(brushCards).elevation, 0);
+    expect(tester.widget<Card>(colorPickerCards).elevation, 0);
+    await shot('10a_desktop_docks_without_black_outlines');
     await shot('10_desktop_multiple_dock_windows');
     final resize = find.byKey(const ValueKey('dockResize-canvasPreview'));
     if (resize.evaluate().isNotEmpty) {
