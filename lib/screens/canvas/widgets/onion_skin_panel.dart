@@ -79,7 +79,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
     }
 
     return Card(
-      elevation: 8,
+      elevation: 0, // Prevent black shadows around the floating panel.
       // 背の低い画面では、画面の下へはみ出さず設定部分がスクロールする。
       child: ConstrainedBox(
         constraints: BoxConstraints.tightFor(
