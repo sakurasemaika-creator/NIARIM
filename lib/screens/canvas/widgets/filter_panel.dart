@@ -694,7 +694,7 @@ class _FilterPanelState extends State<FilterPanel> {
     // (a Card would take them, as would the scroll view's own area).
     final shell = current == null
         ? (Widget child) => Card(
-            elevation: 8,
+            elevation: 0, // Prevent black shadows around the floating panel.
             surfaceTintColor: Colors.transparent,
             child: child,
           )
