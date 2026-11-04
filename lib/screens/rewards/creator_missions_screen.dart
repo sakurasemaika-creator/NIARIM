@@ -142,6 +142,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Text(t.format('candidateMinutes', candidateMinutes)),
+                    const SizedBox(height: 8),
                     if (info['enabled'] != true)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 12),
