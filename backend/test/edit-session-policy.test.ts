@@ -22,12 +22,18 @@ describe("inexpensive unverified creator editing time pilot", () => {
     expect(boundedCandidateEditSeconds({
       ...base, meaningfulMutations: 0,
     })).toBe(0);
+    // A real 1-second edit must not disappear solely because only one
+    // undoable change occurred in the interval. The server still caps it.
+    expect(boundedCandidateEditSeconds({
+      ...base, serverElapsedMs: 1000,
+      reportedActiveSeconds: 1, meaningfulMutations: 1,
+    })).toBe(1);
     expect(boundedCandidateEditSeconds({
       ...base, meaningfulMutations: 1,
-    })).toBe(0);
+    })).toBe(180);
     expect(boundedCandidateEditSeconds({
       ...base, meaningfulMutations: 3,
-    })).toBe(270);
+    })).toBe(540);
   });
   it("caps per-UTC-day candidate time", () => {
     expect(boundedCandidateEditSeconds({
