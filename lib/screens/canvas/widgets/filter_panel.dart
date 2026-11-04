@@ -1148,99 +1148,98 @@ class _FilterPanelState extends State<FilterPanel> {
     FilterDef current,
   ) {
     final bulk = widget.bulkFrameIndices;
+    const compact = BoxConstraints.tightFor(width: 36, height: 40);
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
           children: [
-        IconButton(
-          key: const ValueKey('filter-undo-button'),
-          constraints: const BoxConstraints.tightFor(width: 36, height: 40),
-          padding: EdgeInsets.zero,
-          onPressed: service.canUndoFilterEdit
-              ? () {
-                  service.undoFilterEdit();
-                  _updatePreview();
-                }
-              : null,
-          icon: const Icon(Icons.undo, size: 18),
-          tooltip: l10n.commonUndo,
-        ),
-        IconButton(
-          key: const ValueKey('filter-redo-button'),
-          constraints: const BoxConstraints.tightFor(width: 36, height: 40),
-          padding: EdgeInsets.zero,
-          onPressed: service.canRedoFilterEdit
-              ? () {
-                  service.redoFilterEdit();
-                  _updatePreview();
-                }
-              : null,
-          icon: const Icon(Icons.redo, size: 18),
-          tooltip: l10n.commonRedo,
-        ),
-        OutlinedButton(
-          key: const ValueKey('filter-cancel-button'),
-          onPressed: _applying ? null : _cancelPreview,
-          child: Text(l10n.commonCancel),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: FilledButton.icon(
-            key: const ValueKey('filter-apply-button'),
-            onPressed: widget.layerId == null || _applying
-                ? null
-                : _applyFilter,
-            icon: _applying
-                ? SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                  )
-                : const Icon(Icons.check, size: 16),
-            label: Text(
-              bulk != null
-                  ? l10n.filterApplyBulkButton(bulk.length)
-                  : l10n.filterApplyButton,
+            IconButton(
+              key: const ValueKey('filter-undo-button'),
+              constraints: compact,
+              padding: EdgeInsets.zero,
+              onPressed: service.canUndoFilterEdit
+                  ? () {
+                      service.undoFilterEdit();
+                      _updatePreview();
+                    }
+                  : null,
+              icon: const Icon(Icons.undo, size: 18),
+              tooltip: l10n.commonUndo,
             ),
-          ),
-        ),
+            IconButton(
+              key: const ValueKey('filter-redo-button'),
+              constraints: compact,
+              padding: EdgeInsets.zero,
+              onPressed: service.canRedoFilterEdit
+                  ? () {
+                      service.redoFilterEdit();
+                      _updatePreview();
+                    }
+                  : null,
+              icon: const Icon(Icons.redo, size: 18),
+              tooltip: l10n.commonRedo,
+            ),
+            if (current.kind == FilterKind.autoLineart) ...[
+              IconButton(
+                key: const ValueKey('auto-lineart-add-point-button'),
+                constraints: compact,
+                padding: EdgeInsets.zero,
+                onPressed: () => setState(
+                  () => _autoLineartControlMode =
+                      _autoLineartControlMode == AutoLineartControlMode.add
+                          ? AutoLineartControlMode.move
+                          : AutoLineartControlMode.add,
+                ),
+                icon: const Icon(Icons.add_circle_outline, size: 20),
+                tooltip: l10n.filterAutoLineartAddPointTooltip,
+                isSelected: _autoLineartControlMode == AutoLineartControlMode.add,
+              ),
+              IconButton(
+                key: const ValueKey('auto-lineart-delete-point-button'),
+                constraints: compact,
+                padding: EdgeInsets.zero,
+                onPressed: () => setState(
+                  () => _autoLineartControlMode =
+                      _autoLineartControlMode == AutoLineartControlMode.delete
+                          ? AutoLineartControlMode.move
+                          : AutoLineartControlMode.delete,
+                ),
+                icon: const Icon(Icons.remove_circle_outline, size: 20),
+                tooltip: l10n.filterAutoLineartDeletePointTooltip,
+                isSelected:
+                    _autoLineartControlMode == AutoLineartControlMode.delete,
+              ),
+            ],
+            const Spacer(),
+            OutlinedButton(
+              key: const ValueKey('filter-cancel-button'),
+              onPressed: _applying ? null : _cancelPreview,
+              child: Text(l10n.commonCancel),
+            ),
           ],
         ),
-        if (current.kind == FilterKind.autoLineart)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-          IconButton(
-            key: const ValueKey('auto-lineart-add-point-button'),
-            onPressed: () => setState(
-              () => _autoLineartControlMode =
-                  _autoLineartControlMode == AutoLineartControlMode.add
-                  ? AutoLineartControlMode.move
-                  : AutoLineartControlMode.add,
-            ),
-            icon: const Icon(Icons.add_circle_outline, size: 20),
-            tooltip: l10n.filterAutoLineartAddPointTooltip,
-            isSelected: _autoLineartControlMode == AutoLineartControlMode.add,
+        const SizedBox(height: 4),
+        FilledButton.icon(
+          key: const ValueKey('filter-apply-button'),
+          onPressed: widget.layerId == null || _applying ? null : _applyFilter,
+          icon: _applying
+              ? SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                )
+              : const Icon(Icons.check, size: 16),
+          label: Text(
+            bulk != null
+                ? l10n.filterApplyBulkButton(bulk.length)
+                : l10n.filterApplyButton,
           ),
-          IconButton(
-            key: const ValueKey('auto-lineart-delete-point-button'),
-            onPressed: () => setState(
-              () => _autoLineartControlMode =
-                  _autoLineartControlMode == AutoLineartControlMode.delete
-                  ? AutoLineartControlMode.move
-                  : AutoLineartControlMode.delete,
-            ),
-            icon: const Icon(Icons.remove_circle_outline, size: 20),
-            tooltip: l10n.filterAutoLineartDeletePointTooltip,
-            isSelected:
-                _autoLineartControlMode == AutoLineartControlMode.delete,
-          ),
-            ],
-          ),
+        ),
       ],
     );
   }
