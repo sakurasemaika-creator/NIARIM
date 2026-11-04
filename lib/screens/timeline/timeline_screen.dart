@@ -1574,11 +1574,33 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     },
                   ),
           ),
+
+        ],
+      ),
+    );
+    // 幅の制限は呼び出し元（_buildPreviewWithHandle）のAspectRatioが
+    // 実際のキャンバス比率に応じて行うため、ここでは横に間延びしない
+    // よう最低限の上限（PC/DeXモードのみ）だけを設けておく。
+    if (!isWideScreen(context)) return preview;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 900),
+      child: preview,
+    );
+  }
+
+  /// These controls belong to the entire preview VIEWPORT, not to the
+  /// center-fitted drawing. They stay at the edges even with letterboxing,
+  /// portrait projects, and different preview heights on PC/DeX and phone.
+  Widget _buildPreviewViewportControls() {
+    final l10n = AppLocalizations.of(context)!;
+    final sceneId = _selectedSceneId;
+    return Stack(
+      children: [
           // Place the live frame counter at the extreme left of the
           // preview AREA, away from the centered canvas image.
           Positioned(
-            left: 0,
-            bottom: 0,
+            left: 8,
+            bottom: 8,
             child: IgnorePointer(
               child: ValueListenableBuilder<int>(
                 valueListenable: _currentFrameNotifier,
@@ -1604,9 +1626,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
           // チェックに集中できるよう、プレビューのみを拡大表示する導線）。
           // 全画面表示中は_buildPreviewContent()自体が呼ばれないため、ここには
           // 「開く」方向のボタンのみを置けばよい。
-          Positioned(
-            right: 0,
-            top: 0,
+          if (!_isPreviewFullscreen)
+            Positioned(
+              right: 8,
+              top: 8,
             child: FirstUseTooltip(
               tooltipKey: 'timeline_preview_fullscreen',
               message: l10n.timelinePreviewFullscreenTip,
@@ -1618,6 +1641,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     .withValues(alpha: 0.7),
                 shape: const CircleBorder(),
                 child: IconButton(
+                  key: const Key('timelinePreviewFullscreenButton'),
                   icon: Icon(
                     Icons.fullscreen,
                     color: context.watch<ThemeService>().current.menuTextColor,
@@ -1631,22 +1655,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
             ),
           ),
-        ],
-      ),
-    );
-    // 幅の制限は呼び出し元（_buildPreviewWithHandle）のAspectRatioが
-    // 実際のキャンバス比率に応じて行うため、ここでは横に間延びしない
-    // よう最低限の上限（PC/DeXモードのみ）だけを設けておく。
-    if (!isWideScreen(context)) return preview;
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 900),
-      child: preview,
+      ],
     );
   }
 
   /// 全画面プレビュー表示（isPreviewFullscreen）専用。周囲に空きがあれば
   /// 目一杯まで拡大する。
-  Widget _buildPreview() => Expanded(flex: 3, child: _buildPreviewContent());
+  Widget _buildPreview() => Expanded(
+    flex: 3,
+    child: Stack(
+      key: const Key('timelinePreviewArea'),
+      fit: StackFit.expand,
+      children: [
+        _buildPreviewContent(),
+        Positioned.fill(child: _buildPreviewViewportControls()),
+      ],
+    ),
+  );
 
   /// 通常表示のプレビュー欄。底辺のドラッグハンドルで縦方向のサイズを
   /// 変更できるようにする。高さはアプリ全体で共通の割合として
@@ -1699,13 +1724,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
             // 合わせて幅も高さに追従させ、画面幅を超える場合のみ幅が頭打ちに
             // なるようにする。
             SizedBox(
+              key: const Key('timelinePreviewArea'),
               height: visiblePreviewHeight,
               width: double.infinity,
-              child: Center(
-                child: AspectRatio(
-                  aspectRatio: aspect,
-                  child: _buildPreviewContent(),
-                ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Center(
+                    child: AspectRatio(
+                      aspectRatio: aspect,
+                      child: _buildPreviewContent(),
+                    ),
+                  ),
+                  Positioned.fill(child: _buildPreviewViewportControls()),
+                ],
               ),
             ),
             // ヒット領域はシークバー等の他の操作と混同しないよう、見た目の
