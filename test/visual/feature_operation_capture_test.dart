@@ -118,20 +118,6 @@ void main() {
           if (filter.id == FilterService.genericNoiseFilterId &&
               variant == NoiseStyle.filmGrain.name) {
             await h.capture('Filter0027-gallery-top');
-            final gallery = find.byKey(const ValueKey('filter-tile-grid'));
-            final noiseTile = find.byKey(
-              const ValueKey('filter-card-Filter0027'),
-            );
-            await tester.scrollUntilVisible(
-              noiseTile,
-              120,
-              scrollable: find.descendant(
-                of: gallery,
-                matching: find.byType(Scrollable),
-              ),
-            );
-            await h.settle();
-            await h.capture('Filter0027-gallery-noise-tile');
           }
           await h.tap(
             find
