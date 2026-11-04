@@ -14,6 +14,7 @@ import { getPlaybackStatus } from "./routes/worksPlaybackStatus";
 import { getAuthorWorks, getMyWorks } from "./routes/userWorks";
 import { createWork } from "./routes/worksCreate";
 import { getMyRewardState } from "./routes/rewardState";
+import { startRewardedAdSession, receiveRewardedAdSsv } from "./routes/rewardedAd";
 import { getMyCreatorMissions, claimCreatorMission } from "./routes/creatorMissions";
 import { editSessionAction } from "./routes/creatorEditSession";
 import { updateWork } from "./routes/worksUpdate";
@@ -92,6 +93,9 @@ const routes: Route[] = [
   // callers do not need to know or persist the generated NIARIM user id.
   route("GET", "/me/works", (e) => getMyWorks(e)),
   route("GET", "/me/rewards", (e) => getMyRewardState(e)),
+  route("POST", "/me/rewards/ad-session", (e) => startRewardedAdSession(e)),
+  // Public Google-to-server callback; signature and one-time nonce mandatory.
+  route("GET", "/admob/ssv", (e) => receiveRewardedAdSsv(e)),
   route("GET", "/me/missions", (e) => getMyCreatorMissions(e)),
   route("POST", "/me/missions/claim", (e) => claimCreatorMission(e)),
   route("POST", "/me/missions/edit-session", (e) => editSessionAction(e)),
