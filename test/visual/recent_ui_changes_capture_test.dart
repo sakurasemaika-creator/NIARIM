@@ -200,6 +200,11 @@ void main() {
       find.byKey(const ValueKey('dockTarget-canvasPreview')),
     );
     final frameStrip = tester.getRect(find.byType(FrameStripWidget));
+    // Capture actual bounds to distinguish a vertically centered column
+    // from a child panel centered within a full-height column.
+    debugPrint('DOCK_GEOMETRY expanded: '
+        'left=$leftDock right=$rightDock '
+        'brush=$brushWindow preview=$previewWindow frame=$frameStrip');
     expect(brushWindow.top, closeTo(leftDock.top, 2));
     expect(previewWindow.top, closeTo(rightDock.top, 2));
     expect(leftDock.top, closeTo(rightDock.top, 2),
