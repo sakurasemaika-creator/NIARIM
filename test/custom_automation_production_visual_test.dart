@@ -98,11 +98,18 @@ void main() {
       expect(automation.draft!.steps, hasLength(1));
       expect(automation.draft!.steps.single.command, 'canvas.filterApply');
 
-      expect(
-        find.byType(FilterPanel),
-        findsNothing,
-        reason: 'FilterPanel closes itself after a successful Apply',
+      expect(find.byType(FilterPanel), findsOneWidget);
+      expect(find.byKey(const ValueKey('filter-tile-grid')), findsOneWidget,
+        reason: 'After applying, filters return to the catalog for stacking.');
+      // Explicitly close the catalog before opening the automation manager.
+      await tester.tap(
+        find.descendant(
+          of: find.byType(FilterPanel),
+          matching: find.byIcon(Icons.close),
+        ).first,
       );
+      await tester.pump();
+      expect(find.byType(FilterPanel), findsNothing);
 
       harness.showRecordingStop();
       await tester.pump(const Duration(milliseconds: 200));
