@@ -1,5 +1,8 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
+import {
+  ConditionalCheckFailedException,
+  TransactionCanceledException,
+} from "@aws-sdk/client-dynamodb";
 import {
   GetCommand,
   QueryCommand,
@@ -128,7 +131,7 @@ async function measuredProgress(
 
     case "qualifiedWorks": {
       let matching = 0;
-      let cursor: Record<string, unknown> | undefined;
+      let cursor: Record<string, string | number> | undefined;
       let exhausted = false;
       // Query the already-existing public author GSI; do not add a new index
       // or copy all works to a mission-only per-work table.
@@ -209,7 +212,7 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
       // rather than scanning and charging every time this page opens.
       progress: mission.kind === "followers"
         ? user?.followerCount ?? 0
-        : mission.kind === "verifiedEditSeconds" ? null : null,
+        : null,
       rewardEnabled: enabled() && mission.kind !== "verifiedEditSeconds",
     })),
   });
@@ -277,7 +280,7 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
       }));
     } catch (error) {
       if (error instanceof TransactionCanceledException ||
-          error instanceof Error && error.name === "ConditionalCheckFailedException") {
+          error instanceof ConditionalCheckFailedException) {
         conflict("進捗が更新されました。再試行してください", "MISSION_STATE_CHANGED");
       }
       throw error;
