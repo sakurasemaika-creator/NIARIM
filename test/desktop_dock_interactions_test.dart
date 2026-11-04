@@ -65,6 +65,15 @@ void main() {
     expect(find.byKey(const ValueKey('pcPreviewWidth-brush')), findsOneWidget);
     expect(find.byKey(const ValueKey('pcPreviewHeight-brush')), findsOneWidget);
 
+    // The layout preview must mirror the real dock on left-handed workspaces.
+    final toolColumn = find.byKey(const ValueKey('pcPreviewToolColumn'));
+    final leftPosition = tester.getRect(toolColumn).left;
+    await settings.setLeftHanded(true);
+    await tester.pumpAndSettle();
+    expect(tester.getRect(toolColumn).left, greaterThan(leftPosition + 150));
+    await settings.setLeftHanded(false);
+    await tester.pumpAndSettle();
+
     await tester.tap(find.byKey(const ValueKey('pcPreviewCollapse-brush')));
     await tester.pump();
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
