@@ -466,7 +466,9 @@ class ProjectService extends ChangeNotifier {
   void recordConfirmedEdit(String projectId) {
     if (projectId != _trackedProjectId || _workPaused) return;
     pingWorkActivity();
-    _creatorEditReporter?.recordCommittedMutation(projectId);
+    _creatorEditReporter?.recordCommittedMutation(
+      projectId, activeSeconds: () => currentWorkSessionSeconds,
+    );
   }
 
   /// Ordinary UI activity keeps the existing local display counter active.
@@ -480,6 +482,7 @@ class ProjectService extends ChangeNotifier {
       _workLastSettledMs = now; // do not count the idle gap retroactively
     }
     _workLastActivityMs = now;
+    _creatorEditReporter?.noteInteraction();
   }
 
   /// Supports sub-15-minute sessions. The 10-second timer limits UI rebuilds
