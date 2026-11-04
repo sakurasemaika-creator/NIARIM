@@ -77,7 +77,7 @@ void main() {
       selections: const [
         CoinUnlockSelection(target: CoinUnlockTarget.communityPostQuota),
       ],
-      duration: const CoinUnlockDuration(1, CoinDurationUnit.day),
+      duration: const CoinUnlockDuration(2, CoinDurationUnit.day),
       prices: prices, priceVersion: 'sample',
     ), throwsStateError);
   });
