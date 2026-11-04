@@ -16,7 +16,7 @@ vi.mock("../src/lib/playVerification", async (original) => ({
   ...(await original<typeof import("../src/lib/playVerification")>()),
   queryGooglePlaySubscription: googleLookup,
 }));
-import { verifyMyPlayPremium } from "../src/api/routes/playPremium";
+import { verifyMyPlayPremium, getPlayPurchaseAvailability } from "../src/api/routes/playPremium";
 import { evaluatePlaySubscription } from "../src/lib/playVerification";
 const productId = "niarim_premium_monthly";
 const purchaseToken = "long-google-play-token-1234567890";
@@ -36,6 +36,20 @@ beforeEach(() => {
   googleLookup.mockReset(); googleLookup.mockResolvedValue(valid);
 });
 describe("Google Play purchase verification", () => {
+  it("declines Billing preflight when backend verifier is off", async () => {
+    const out = await getPlayPurchaseAvailability(request({}));
+    expect(JSON.parse(out.body ?? "{}")).toEqual({enabled:false,products:[]});
+    expect(send).not.toHaveBeenCalled();
+    expect(googleLookup).not.toHaveBeenCalled();
+  });
+  it("only reports server-side product IDs when enabled", async () => {
+    process.env.PLAY_PURCHASE_VERIFICATION_ENABLED = "true";
+    const out = await getPlayPurchaseAvailability(request({}));
+    expect(JSON.parse(out.body ?? "{}")).toMatchObject({
+      enabled: true, products: ["niarim_premium_monthly", "niarim_premium_yearly"],
+    });
+    expect(send).not.toHaveBeenCalled();
+  });
   it("is fail-closed by default", async () => {
     await expect(verifyMyPlayPremium(request({productId,purchaseToken})))
       .rejects.toMatchObject({code: "PLAY_VERIFICATION_DISABLED"});

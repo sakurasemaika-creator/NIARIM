@@ -41,12 +41,15 @@ class PremiumService extends ChangeNotifier {
   Timer? _playExpiryTimer;
   Timer? _playRefreshTimer;
   Future<Map<String, dynamic>> Function(String, String)? _playVerifier;
+  Future<bool> Function()? _playPreflight;
 
   /// The caller uses the NIARIM authenticated API, never a local purchase flag.
   void bindPlayVerifier(
-    Future<Map<String, dynamic>> Function(String productId, String purchaseToken) verify,
-  ) {
+    Future<Map<String, dynamic>> Function(String productId, String purchaseToken) verify, {
+    required Future<bool> Function() canPurchase,
+  }) {
     _playVerifier = verify;
+    _playPreflight = canPurchase;
     if (_storeAvailable && _boundGoogleAuth?.account != null) {
       unawaited(_restorePlayPurchasesSilently());
     }
@@ -349,13 +352,28 @@ class PremiumService extends ChangeNotifier {
       notifyListeners();
       return false;
     }
-    if (_boundGoogleAuth?.account == null || _playVerifier == null) {
+    if (_boundGoogleAuth?.account == null || _playVerifier == null ||
+        _playPreflight == null) {
       _purchaseError = '購入にはログインとサーバー検証が必要です';
       notifyListeners();
       return false;
     }
     if (!_storeAvailable) {
       _purchaseError = 'ストアに接続できません';
+      notifyListeners();
+      return false;
+    }
+    // Do not charge a user if the NIARIM server cannot verify Play purchases.
+    final startingAccount = _boundGoogleAuth?.account?.id;
+    bool backendReady;
+    try {
+      backendReady = await _playPreflight!();
+    } catch (_) {
+      backendReady = false;
+    }
+    if (!backendReady || startingAccount == null ||
+        startingAccount != _boundGoogleAuth?.account?.id) {
+      _purchaseError = '購入検証サーバーが利用できないため購入を開始できません';
       notifyListeners();
       return false;
     }

@@ -18,7 +18,7 @@ import { startRewardedAdSession, receiveRewardedAdSsv } from "./routes/rewardedA
 import { getCoinRedemptionQuote, redeemCoins } from "./routes/coinRedemption";
 import { getMyCreatorMissions, claimCreatorMission } from "./routes/creatorMissions";
 import { editSessionAction } from "./routes/creatorEditSession";
-import { verifyMyPlayPremium } from "./routes/playPremium";
+import { verifyMyPlayPremium, getPlayPurchaseAvailability } from "./routes/playPremium";
 import { updateWork } from "./routes/worksUpdate";
 import { deleteWork } from "./routes/worksDelete";
 import { updateTags } from "./routes/tags";
@@ -96,6 +96,7 @@ const routes: Route[] = [
   route("GET", "/me/works", (e) => getMyWorks(e)),
   route("GET", "/me/rewards", (e) => getMyRewardState(e)),
   route("POST", "/me/premium/play/verify", (e) => verifyMyPlayPremium(e)),
+  route("GET", "/me/premium/play/availability", (e) => getPlayPurchaseAvailability(e)),
   route("GET", "/me/rewards/history", (e) => getMyCoinHistory(e)),
   route("POST", "/me/rewards/ad-session", (e) => startRewardedAdSession(e)),
   route("GET", "/me/rewards/quote", (e) => getCoinRedemptionQuote(e)),

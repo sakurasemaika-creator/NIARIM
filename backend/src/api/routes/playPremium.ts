@@ -18,6 +18,17 @@ export function playVerificationEnabled(): boolean {
     process.env.PLAY_ANDROID_PACKAGE_NAME === PLAY_PACKAGE_NAME;
 }
 
+/** A purchase must never open Billing when backend verification is off. */
+export async function getPlayPurchaseAvailability(event: APIGatewayProxyEventV2) {
+  await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
+  return ok({
+    enabled: playVerificationEnabled(),
+    products: playVerificationEnabled() ? PLAY_SUBSCRIPTION_PRODUCTS : [],
+  });
+}
+
 export async function verifyMyPlayPremium(event: APIGatewayProxyEventV2) {
   const auth = await authenticate(
     event.headers["authorization"] ?? event.headers["Authorization"],

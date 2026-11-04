@@ -91,6 +91,17 @@ class CommunityApi {
   Future<Map<String, dynamic>> myRewardState() =>
       _client.getJson('/me/rewards', authenticated: true);
 
+  /// Verify readiness before opening the Google Play Billing purchase sheet.
+  Future<bool> canVerifyPlayPurchases() async {
+    final result = await _client.getJson(
+      '/me/premium/play/availability', authenticated: true,
+    );
+    return result['enabled'] == true &&
+        result['products'] is List &&
+        (result['products'] as List).contains('niarim_premium_monthly') &&
+        (result['products'] as List).contains('niarim_premium_yearly');
+  }
+
   /// Google Play purchase token is sent only to the authenticated backend.
   Future<Map<String, dynamic>> verifyMyPlaySubscription({
     required String productId,

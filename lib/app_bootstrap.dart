@@ -256,6 +256,10 @@ Future<List<SingleChildWidget>> _buildAppProviders(
     return api.verifyMyPlaySubscription(
       productId: productId, purchaseToken: purchaseToken,
     );
+  }, canPurchase: () async {
+    final api = communityService.api;
+    if (api == null) return false;
+    return api.canVerifyPlayPurchases();
   });
   // Optional low-write edit-time pilot. Default builds have zero new network
   // traffic; the server must independently enable the same pilot flag.
