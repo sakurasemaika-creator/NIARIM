@@ -117,15 +117,18 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                                   if (!settings.isLeftHanded) ...[
                                     _toolbar(scheme),
                                     _column(settings, right: false),
-                                    _columnResizeGrip(settings, right: false),
+                                    if (_columnWidth(settings, right: false) > 52)
+                                      _columnResizeGrip(settings, right: false),
                                   ],
                                   Expanded(child: _canvasAndFrames(scheme)),
                                   if (settings.isLeftHanded) ...[
-                                    _columnResizeGrip(settings, right: false),
+                                    if (_columnWidth(settings, right: false) > 52)
+                                      _columnResizeGrip(settings, right: false),
                                     _column(settings, right: false),
                                     _toolbar(scheme),
                                   ],
-                                  _columnResizeGrip(settings, right: true),
+                                  if (_columnWidth(settings, right: true) > 52)
+                                    _columnResizeGrip(settings, right: true),
                                   _column(settings, right: true),
                                 ],
                               ),
@@ -334,10 +337,28 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                   height: 48,
                   child: IconButton(
                     key: ValueKey('pcPreviewExpand-${panel.name}'),
-                    tooltip: widget.labelOf(panel),
-                    icon: Icon(
-                      foldsLeft ? Icons.chevron_right : Icons.chevron_left,
-                      color: scheme.onSurface,
+                    tooltip: '${widget.labelOf(panel)} · ${AppLocalizations.of(context)!.filterPanelExpand}',
+                    icon: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          switch (panel) {
+                            CanvasDockPanel.brush => Icons.brush_outlined,
+                            CanvasDockPanel.colorPicker => Icons.palette_outlined,
+                            CanvasDockPanel.layer => Icons.layers_outlined,
+                            CanvasDockPanel.canvasPreview => Icons.map_outlined,
+                            _ => Icons.tune_outlined,
+                          },
+                          size: 18,
+                          color: scheme.onSurface,
+                        ),
+                        Icon(
+                          foldsLeft ? Icons.chevron_right : Icons.chevron_left,
+                          size: 13,
+                          color: scheme.onSurface,
+                        ),
+                      ],
                     ),
                     onPressed: () => settings.setDesktopDockCollapsed(
                       panel,

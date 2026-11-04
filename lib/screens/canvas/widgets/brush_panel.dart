@@ -23,10 +23,12 @@ import '../../../widgets/asset_tag_label.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
+  final bool dockedMode;
   final Future<int?> Function()? onEyedropOutlineColor;
   const BrushPanel({
     super.key,
     required this.onClose,
+    this.dockedMode = false,
     this.onEyedropOutlineColor,
   });
 
@@ -95,7 +97,8 @@ class _BrushPanelState extends State<BrushPanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PanelCenterCloseBar(onClose: widget.onClose),
+              if (!widget.dockedMode)
+                PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
                   Text(

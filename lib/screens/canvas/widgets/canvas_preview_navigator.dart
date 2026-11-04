@@ -130,7 +130,7 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
       borderRadius: BorderRadius.circular(10),
       clipBehavior: Clip.antiAlias,
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         children: [
           Container(
             color: theme.menuBgColor,
@@ -159,9 +159,11 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
               ],
             ),
           ),
-          AspectRatio(
-            aspectRatio: _image != null ? _image!.width / _image!.height : 1,
-            child: Container(
+          Expanded(
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: _image != null ? _image!.width / _image!.height : 1,
+                child: Container(
               color: scheme.surfaceContainerHighest,
               child: _image == null
                   ? const Center(
@@ -180,6 +182,8 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
                       aspectRatio: _image!.width / _image!.height,
                       child: RawImage(image: _image, fit: BoxFit.fill),
                     ),
+                ),
+              ),
             ),
           ),
         ],

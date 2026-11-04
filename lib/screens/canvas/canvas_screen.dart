@@ -64,6 +64,7 @@ import 'widgets/quick_tool_panel.dart';
 import 'widgets/mesh_transform_panel.dart';
 import 'widgets/reference_window.dart';
 import 'widgets/canvas_preview_navigator.dart';
+import 'widgets/desktop_dock_content_viewport.dart';
 import '../../models/canvas_dock_panel.dart';
 import '../../models/ruler.dart';
 import '../../widgets/responsive.dart';
@@ -1245,7 +1246,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                               width: _desktopDockColumnWidth(right: false),
                               child: _dockedPanelStack(openToolPanels),
                             ),
-                            _ResizeHandle(
+                            if (_desktopDockColumnWidth(right: false) > 52)
+                              _ResizeHandle(
                               onDeltaX: (dx) => setState(() {
                                 final settings = context
                                     .read<SettingsService>();
@@ -1463,7 +1465,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             ),
                           ),
                           if (openToolPanels.isNotEmpty && leftHanded) ...[
-                            _ResizeHandle(
+                            if (_desktopDockColumnWidth(right: false) > 52)
+                              _ResizeHandle(
                               onDeltaX: (dx) => setState(() {
                                 final settings = context
                                     .read<SettingsService>();
@@ -1493,7 +1496,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           // プレビューは、ツールオプション系ドッキング領域（上の
                           // openToolPanels）とは別に、右側（左利きモード時は左側）へ
                           // 縦に並べて同時表示する。単独でも複数同時でも表示可。
-                          if (isDesktop && _openRightDockPanels().isNotEmpty)
+                          if (isDesktop &&
+                              _openRightDockPanels().isNotEmpty &&
+                              _desktopDockColumnWidth(right: true) > 52)
                             _ResizeHandle(
                               onDeltaX: (dx) => setState(() {
                                 final settings = context
@@ -1929,6 +1934,42 @@ class _CanvasScreenState extends State<CanvasScreen> {
     };
   }
 
+  IconData _dockCollapsedIcon(CanvasDockPanel panel) => switch (panel) {
+    CanvasDockPanel.brush => Icons.brush_outlined,
+    CanvasDockPanel.colorPicker => Icons.palette_outlined,
+    CanvasDockPanel.layer => Icons.layers_outlined,
+    CanvasDockPanel.tone => Icons.gradient_outlined,
+    CanvasDockPanel.stamp => Icons.auto_fix_high_outlined,
+    CanvasDockPanel.penSubTool => Icons.draw_outlined,
+    CanvasDockPanel.onionSkin => Icons.filter_none_outlined,
+    CanvasDockPanel.ruler => Icons.straighten_outlined,
+    CanvasDockPanel.filter => Icons.tune_outlined,
+    CanvasDockPanel.quickTool => Icons.flash_on_outlined,
+    CanvasDockPanel.colorAdjust => Icons.color_lens_outlined,
+    CanvasDockPanel.canvasPreview => Icons.map_outlined,
+  };
+
+  /// Full-scene tools keep their entire primary visual in view. Collection
+  /// panels scale their contents by width, but retain vertical scrolling.
+  Widget _responsiveDockBody(CanvasDockPanel panel) {
+    final isCompleteVisual = panel == CanvasDockPanel.colorPicker ||
+        panel == CanvasDockPanel.canvasPreview;
+    return DesktopDockContentViewport(
+      key: ValueKey('dockViewport-${panel.name}'),
+      mode: isCompleteVisual
+          ? DesktopDockContentMode.fit
+          : DesktopDockContentMode.scroll,
+      designWidth: panel == CanvasDockPanel.brush ? 280 : 288,
+      minimumContentHeight: switch (panel) {
+        CanvasDockPanel.colorPicker => 310,
+        CanvasDockPanel.canvasPreview => 220,
+        CanvasDockPanel.brush => 460,
+        _ => 260,
+      },
+      child: _dockBody(panel),
+    );
+  }
+
   Widget _dockBody(CanvasDockPanel p) => switch (p) {
     CanvasDockPanel.brush => _brushPanel(),
     CanvasDockPanel.colorPicker => _colorPickerPanel(),
@@ -1990,16 +2031,21 @@ class _CanvasScreenState extends State<CanvasScreen> {
             child: collapsed
                 ? SizedBox(
                     height: 48,
-                    child: Tooltip(
-                      message: title,
-                      child: IconButton(
-                        key: ValueKey('dockExpand-${p.name}'),
-                        tooltip: l.filterPanelExpand,
-                        onPressed: () =>
-                            settings.setDesktopDockCollapsed(p, false),
-                        icon: Icon(
-                          foldsLeft ? Icons.chevron_right : Icons.chevron_left,
-                        ),
+                    child: IconButton(
+                      key: ValueKey('dockExpand-${p.name}'),
+                      tooltip: '$title · ${l.filterPanelExpand}',
+                      onPressed: () =>
+                          settings.setDesktopDockCollapsed(p, false),
+                      icon: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(_dockCollapsedIcon(p), size: 18),
+                          Icon(
+                            foldsLeft ? Icons.chevron_right : Icons.chevron_left,
+                            size: 13,
+                          ),
+                        ],
                       ),
                     ),
                   )
@@ -2098,7 +2144,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             Positioned.fill(
                               left: right ? 18 : 0,
                               right: right ? 0 : 18,
-                              child: _dockBody(p),
+                              child: _responsiveDockBody(p),
                             ),
                             Positioned(
                               left: right ? 0 : null,
@@ -2276,6 +2322,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   );
 
   Widget _colorPickerPanel() => ColorPickerPanel(
+    showCloseBar: !isWideScreen(context),
     currentColor: _currentColor,
     onColorChanged: (color) {
       setState(() => _currentColor = color);
@@ -2296,6 +2343,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   );
 
   Widget _brushPanel() => BrushPanel(
+    dockedMode: isWideScreen(context),
     onClose: () => setState(() => _showBrushPanel = false),
     onEyedropOutlineColor: _startBrushOutlineEyedropper,
   );

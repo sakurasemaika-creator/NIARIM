@@ -154,10 +154,11 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                           child: InteractiveViewer(
                             minScale: 0.5,
                             maxScale: 6,
-                            child: Image.memory(
-                              _imageBytes!,
-                              fit: BoxFit.contain,
-                              width: double.infinity,
+                            child: SizedBox.expand(
+                              child: Image.memory(
+                                _imageBytes!,
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                         ),
