@@ -958,7 +958,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      '尺の上限なし・透かしなし・トーンカーブ／レベル補正など、制作の幅を広げる機能がすべて解放されます';
+      '最大尺2時間・透かしなし・トーンカーブ／レベル補正など、制作の幅を広げる機能がすべて解放されます';
 
   @override
   String get premiumHeroHighlightDuration => '尺は最大2時間';
