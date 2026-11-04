@@ -27,9 +27,9 @@ import {
 export function rewardedAdConfiguration() {
   const adUnit = process.env.ADMOB_REWARDED_AD_UNIT_ID ?? "";
   const rawCap = process.env.REWARDED_AD_DAILY_LIMIT ?? "";
-  // A typo in the production cap must DISABLE grants, never silently
-  // convert a limited offer into unlimited rewards.
-  const capIsValid = rawCap === "" || dailyRewardLimit() !== null;
+  // A missing or invalid cap must DISABLE issuance. A configured launch
+  // cannot accidentally mint unlimited coins because of an omitted value.
+  const capIsValid = rawCap !== "" && dailyRewardLimit() !== null;
   const enabled = capIsValid &&
     process.env.REWARDED_AD_SSV_ENABLED === "true" &&
     /^ca-app-pub-[0-9]{16}\/[0-9]{10}$/.test(adUnit) &&

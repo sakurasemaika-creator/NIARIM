@@ -3,6 +3,7 @@
  * This is NOT AdMob's impression frequency cap and does not predict fill.
  *
  * No arbitrary launch cap: a production owner must configure one explicitly.
+ * Missing/invalid configuration disables production SSV coin issuance.
  * UTC boundaries are fixed on the server so device timezone changes cannot
  * bypass the counter. A late SSV is charged against its signed ad day.
  */
@@ -22,7 +23,8 @@ export function rewardAdUtcDay(epochMs: number): string {
 
 export function dailyRewardLimit(): number | null {
   const raw = process.env.REWARDED_AD_DAILY_LIMIT ?? "";
-  // Empty means unlimited by NIARIM. Google may independently cap/no-fill.
+  // Null means not configured (production issuance disabled).
+  // AdMob may separately cap impressions or have no fill.
   if (raw === "") return null;
   if (!/^[1-9][0-9]{0,2}$/.test(raw)) return null;
   const limit = Number(raw);

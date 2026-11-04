@@ -45,6 +45,7 @@ beforeEach(() => {
   delete process.env.ADMOB_REWARDED_AD_UNIT_ID;
   delete process.env.REWARDED_AD_SSV_ENABLED;
   delete process.env.REWARDED_AD_REVIEW_APPROVED;
+  delete process.env.REWARDED_AD_DAILY_LIMIT;
 });
 
 function enable() {
@@ -52,6 +53,8 @@ function enable() {
     "ca-app-pub-1111111111111111/2222222222";
   process.env.REWARDED_AD_SSV_ENABLED = "true";
   process.env.REWARDED_AD_REVIEW_APPROVED = "true";
+  // Unit test fixture, not an invented launch quota.
+  process.env.REWARDED_AD_DAILY_LIMIT = "10";
 }
 
 describe("rewarded ad SSV + exactly-once wallet", () => {
@@ -65,6 +68,12 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     });
     expect(send).not.toHaveBeenCalled();
     enable();
+    delete process.env.REWARDED_AD_DAILY_LIMIT;
+    expect(rewardedAdConfiguration().enabled).toBe(false);
+    process.env.REWARDED_AD_DAILY_LIMIT = "9999";
+    expect(rewardedAdConfiguration().enabled).toBe(false);
+    process.env.REWARDED_AD_DAILY_LIMIT = "10";
+    expect(rewardedAdConfiguration().enabled).toBe(true);
     process.env.ADMOB_REWARDED_AD_UNIT_ID =
       "ca-app-pub-3940256099942544/5224354917";
     expect(rewardedAdConfiguration().enabled).toBe(false);
@@ -77,8 +86,9 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     expect(body.customData).toMatch(/^v1\.N[a-f0-9]{32}\.[0-9a-f-]{36}$/);
     expect(body.rewardCoins).toBe(10);
     expect(body.adUnitId).toContain("2222222222");
-    expect(send).toHaveBeenCalledTimes(1);
-    const command = send.mock.calls[0][0];
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(send.mock.calls[0][0]).toBeInstanceOf(GetCommand);
+    const command = send.mock.calls[1][0];
     expect(command).toBeInstanceOf(UpdateCommand);
     expect(command.input.Key.pk).toBe(`USER#N${"a".repeat(32)}`);
     expect(command.input.ConditionExpression).toContain("issuedAtMs");
@@ -140,17 +150,19 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     expect(response.statusCode).toBe(200);
     const tx = send.mock.calls[0][0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
-    expect(tx.input.TransactItems).toHaveLength(4);
+    expect(tx.input.TransactItems).toHaveLength(5);
     const rows = tx.input.TransactItems!;
     expect(rows[0].Put?.Item?.pk).toMatch(/^ADMOB_TX#/);
     expect(rows[0].Put?.ConditionExpression).toContain("attribute_not_exists");
     expect(rows[0].Put?.Item?.ttl).toBeGreaterThan(Date.now() / 1000);
     expect(rows[1].Update?.ConditionExpression).toContain("attribute_not_exists(consumedAtMs)");
     expect(rows[1].Update?.Key?.sk).toBe("REWARDED_AD_SESSION");
-    expect(rows[2].Put?.Item?.sk).toMatch(/^COIN_HISTORY#/);
-    expect(rows[2].Put?.Item?.deltaCoins).toBe(10);
-    expect(rows[3].Update?.Key?.sk).toBe("COIN_WALLET");
-    expect(rows[3].Update?.ExpressionAttributeValues?.[":reward"]).toBe(10);
+    expect(rows[2].Update?.Key?.sk).toMatch(/^REWARDED_AD_DAY#/);
+    expect(rows[2].Update?.ExpressionAttributeValues?.[":limit"]).toBe(10);
+    expect(rows[3].Put?.Item?.sk).toMatch(/^COIN_HISTORY#/);
+    expect(rows[3].Put?.Item?.deltaCoins).toBe(10);
+    expect(rows[4].Update?.Key?.sk).toBe("COIN_WALLET");
+    expect(rows[4].Update?.ExpressionAttributeValues?.[":reward"]).toBe(10);
   });
 
   it("lost acknowledgment does not mint another ten coins", async () => {
