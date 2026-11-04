@@ -24,6 +24,11 @@ export const Keys = {
   work: (workId: string) => ({ pk: `WORK#${workId}`, sk: "META" }),
   user: (niarimUserId: string) => ({ pk: `USER#${niarimUserId}`, sk: "META" }),
   googleSubLookup: (sub: string) => ({ pk: `GOOGLESUB#${sub}`, sk: "META" }),
+  /** Reward entitlement is server-issued only; clients cannot write this key. */
+  rewardEntitlement: (niarimUserId: string, entitlement: string) => ({
+    pk: `USER#${niarimUserId}`,
+    sk: `ENTITLEMENT#${entitlement}`,
+  }),
   bookmark: (niarimUserId: string, workId: string) => ({
     pk: `USER#${niarimUserId}`,
     sk: `BOOKMARK#${workId}`,
