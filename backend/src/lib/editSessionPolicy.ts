@@ -9,8 +9,8 @@ export const EDIT_CHECKPOINT_INTERVAL_SECONDS = 15 * 60;
 export const EDIT_CHECKPOINT_MAX_GAP_SECONDS = 20 * 60;
 export const EDIT_DAILY_CANDIDATE_MAX_SECONDS = 8 * 60 * 60;
 
-/** Min content-changing operations (not touches or timeline scrubs). */
-export const SECONDS_PER_MEANINGFUL_MUTATION = 90;
+/** One real committed content change is enough for short sessions. */
+export const SECONDS_PER_MEANINGFUL_MUTATION = 180;
 
 /**
  * No edit data, images or coordinates are sent. This upper-bounds how much
@@ -31,7 +31,7 @@ export function boundedCandidateEditSeconds(args: {
   if (serverElapsedMs > EDIT_CHECKPOINT_MAX_GAP_SECONDS * 1000) {
     throw new Error("Editing session expired");
   }
-  if (meaningfulMutations < 2) return 0;
+  if (meaningfulMutations < 1) return 0;
   return Math.max(0, Math.min(
     Math.floor(serverElapsedMs / 1000),
     reportedActiveSeconds,
