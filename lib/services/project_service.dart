@@ -474,9 +474,9 @@ class ProjectService extends ChangeNotifier {
   void pingWorkActivity() {
     final clock = _workStopwatch;
     if (clock == null || _workPaused) return;
-    _settleWorkTime();
     final now = clock.elapsedMilliseconds;
     if (now - _workLastActivityMs > _workInactivityThreshold.inMilliseconds) {
+      _settleWorkTime();
       _workLastSettledMs = now; // do not count the idle gap retroactively
     }
     _workLastActivityMs = now;
@@ -945,6 +945,7 @@ class ProjectService extends ChangeNotifier {
       layers: newLayers,
     );
     scenes[sceneIdx] = scene.copyWith(frames: newFrames);
+    recordConfirmedEdit(projectId);
     notifyListeners();
   }
 
