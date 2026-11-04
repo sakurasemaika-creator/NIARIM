@@ -131,7 +131,7 @@ async function measuredProgress(
 
     case "qualifiedWorks": {
       let matching = 0;
-      let cursor: Record<string, string | number> | undefined;
+      let cursor: Record<string, any> | undefined;
       let exhausted = false;
       // Query the already-existing public author GSI; do not add a new index
       // or copy all works to a mission-only per-work table.
