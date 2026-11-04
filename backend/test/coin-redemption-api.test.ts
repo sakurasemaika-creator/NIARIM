@@ -103,6 +103,8 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     expect(rows[3].Update?.ExpressionAttributeValues?.[":user"]).toBe("USER");
     expect(rows[3].Update?.ConditionExpression).toContain("membershipTier = :free");
     expect(rows[3].Update?.ConditionExpression).toContain("playPremiumExpiresAtEpochMs");
+    expect(rows[3].Update?.ConditionExpression)
+      .not.toContain("playPremiumVerifiedUntilEpochMs");
     expect(rows[4].Put?.Item?.source).toBe("coin-redemption");
     expect(rows[4].Put?.Item?.deltaCoins).toBe(-55000);
   });
@@ -138,6 +140,22 @@ describe("fail-closed one-month full Premium coin redemption", () => {
       ?.ExpressionAttributeValues?.[":oldExpiry"]).toBe(priorExpiry);
     expect(tx.input.TransactItems?.[3].Update
       ?.ExpressionAttributeValues?.[":now"]).toBeGreaterThan(0);
+  });
+
+  it("rejects Play term overlap even after the short validation lease expires", async () => {
+    enable();
+    const now = Date.now();
+    vi.mocked(getUser).mockResolvedValueOnce({
+      itemType: "USER", membershipTier: "free",
+      playPremiumExpiresAtEpochMs: now + 20 * 86400_000,
+      playPremiumVerifiedUntilEpochMs: now - 1000,
+    } as Awaited<ReturnType<typeof getUser>>);
+    await expect(redeemCoins(req({
+      target: "fullPremium", months: 1,
+      priceVersion: "v1-premium-month", requestId,
+    }))).rejects.toMatchObject({code: "REDEMPTION_SUBSCRIPTION_CONFLICT"});
+    expect(send.mock.calls.some(([x]) => x instanceof TransactWriteCommand))
+      .toBe(false);
   });
 
   it("rejects an active Play subscription even when the account tier is free", async () => {

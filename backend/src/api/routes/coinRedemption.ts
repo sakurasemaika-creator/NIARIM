@@ -74,13 +74,15 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
   }
   const user = await getUser(auth.niarimUserId);
   const preflightNow = Date.now();
-  const playActive =
+  // A stale 15-minute verification lease must NOT imply that the Play
+  // subscription's paid term has ended. Fail closed until its known expiry
+  // or an authoritative cancellation/revocation re-check clears it.
+  const playTermNotExpired =
     typeof user?.playPremiumExpiresAtEpochMs === "number" &&
-    typeof user.playPremiumVerifiedUntilEpochMs === "number" &&
-    user.playPremiumExpiresAtEpochMs > preflightNow &&
-    user.playPremiumVerifiedUntilEpochMs > preflightNow;
+    Number.isSafeInteger(user.playPremiumExpiresAtEpochMs) &&
+    user.playPremiumExpiresAtEpochMs > preflightNow;
   if (!user || user.itemType !== "USER" ||
-      user.membershipTier !== "free" || playActive) {
+      user.membershipTier !== "free" || playTermNotExpired) {
     // A coin-funded Premium membership is allowed to add another month.
     // An active Play subscription still requires separate pause/resume logic.
     forbidden("購入済み会員の交換延長は準備中です",
@@ -185,9 +187,7 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
             ConditionExpression:
               "itemType = :user AND membershipTier = :free AND " +
               "(attribute_not_exists(playPremiumExpiresAtEpochMs) OR " +
-              "playPremiumExpiresAtEpochMs <= :now OR " +
-              "attribute_not_exists(playPremiumVerifiedUntilEpochMs) OR " +
-              "playPremiumVerifiedUntilEpochMs <= :now) AND " +
+              "playPremiumExpiresAtEpochMs <= :now) AND " +
               "(attribute_not_exists(coinPremiumExpiresAtEpochMs) OR " +
               "coinPremiumExpiresAtEpochMs <= :expires)",
             ExpressionAttributeValues: {
