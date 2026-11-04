@@ -976,6 +976,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // 最大限確保できるようにする）。
   bool _showToolbar = true;
   bool _workTrackingStarted = false;
+  int? _workTrackingLease;
   bool _missingMaterialChecked = false;
   // PC/DeXモードでブラシ・カラーピッカーのドッキングパネルを自動で開いた
   // かどうか（1セッション1回のみ。ユーザーが手動で閉じた後に毎回また
@@ -1043,7 +1044,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // 制作時間カウント（描画モードのみカウント）
     if (!_workTrackingStarted) {
       _workTrackingStarted = true;
-      context.read<ProjectService>().beginWorkTracking(widget.projectId);
+      _workTrackingLease = context.read<ProjectService>()
+          .beginWorkTracking(widget.projectId);
     }
     // 不足素材の検出（プロジェクトを開いた際に参照先の素材が
     // 見つからない場合は「不足素材があります」と表示。「再検索」で再確認）
@@ -1066,7 +1068,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _perf?.removeListener(_onPerfChanged);
     if (_autosaveAttached) _autosaveService?.detach();
     final projectService = _projectServiceForDispose;
-    if (_workTrackingStarted) projectService?.endWorkTracking();
+    if (_workTrackingStarted) {
+      projectService?.endWorkTracking(lease: _workTrackingLease);
+    }
     // プロジェクトカードのサムネイルを編集終了時に更新する。
     // 非同期処理だがdispose()自体は同期のままfire-and-forgetで発火する
     // （ProjectService内部状態のみを参照するため、Widget破棄後も安全）。
