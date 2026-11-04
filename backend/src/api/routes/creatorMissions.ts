@@ -40,6 +40,7 @@ type MissionStateRecord = {
   claimedMask: number;
   revision: number;
   verifiedEditSeconds: number;
+  candidateEditSeconds: number;
   totalMissionCoins: number;
   firstQualifiedAt: Record<string, number>;
   claimedAt: Record<string, number>;
@@ -66,6 +67,9 @@ function normalizeState(
   const verifiedEditSeconds = typeof raw?.verifiedEditSeconds === "number" &&
     Number.isSafeInteger(raw.verifiedEditSeconds) &&
     raw.verifiedEditSeconds >= 0 ? raw.verifiedEditSeconds : 0;
+  const candidateEditSeconds = typeof raw?.candidateEditSeconds === "number" &&
+    Number.isSafeInteger(raw.candidateEditSeconds) &&
+    raw.candidateEditSeconds >= 0 ? raw.candidateEditSeconds : 0;
   const totalMissionCoins = typeof raw?.totalMissionCoins === "number" &&
     Number.isSafeInteger(raw.totalMissionCoins) &&
     raw.totalMissionCoins >= 0 ? raw.totalMissionCoins : 0;
@@ -86,6 +90,7 @@ function normalizeState(
     claimedMask,
     revision,
     verifiedEditSeconds,
+    candidateEditSeconds,
     totalMissionCoins,
     firstQualifiedAt: parseDates(raw?.firstQualifiedAt),
     claimedAt: parseDates(raw?.claimedAt),
@@ -237,7 +242,10 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
     enabled: enabled(),
     claimedMask: state.claimedMask,
     verifiedEditSeconds: state.verifiedEditSeconds,
+    candidateEditSeconds: state.candidateEditSeconds,
     editTimeVerificationReady: false,
+    editSessionPilotEnabled:
+      process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED === "true",
     followerCount: user?.followerCount ?? 0,
     totalMissionCoins: state.totalMissionCoins,
     maximumLifetimeCreatorCoins: MAX_CREATOR_MISSION_COINS,
