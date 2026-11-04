@@ -21,6 +21,10 @@ class RewardUnlockLabels {
 const Map<String, Map<String, String>> _translations = {
   'ja': {
     'title': '無料でPremium機能を使う',
+    'loading': '残高を確認中…',
+    'paused': '保管中・残り秒数',
+    'activeUntil': '利用期限',
+    'subscriptionBenefit': 'コインは広告視聴で無料で貯められます。広告視聴の時間を省きたい方には月額・年額Premiumが便利です。',
     'active': '現在利用中の特典',
     'activePremium': 'Premium会員として全特典を利用中',
     'activeCampaign': 'リリース記念キャンペーン：Premium特典を開放中',
@@ -62,6 +66,10 @@ const Map<String, Map<String, String>> _translations = {
   },
   'en': {
     'title': 'Use Premium features for free',
+    'loading': 'Loading balance…',
+    'paused': 'Saved remaining seconds',
+    'activeUntil': 'Active until',
+    'subscriptionBenefit': 'Earn coins for free by watching optional ads, or save time with Premium monthly / yearly.',
     'active': 'Currently active benefits',
     'activePremium': 'All benefits active through Premium membership',
     'activeCampaign': 'Launch campaign: Premium benefits unlocked',
@@ -103,6 +111,10 @@ const Map<String, Map<String, String>> _translations = {
   },
   'es': {
     'title':'Usar funciones Premium gratis',
+    'loading':'Consultando saldo…',
+    'paused':'Tiempo guardado (segundos)',
+    'activeUntil':'Válido hasta',
+    'subscriptionBenefit':'Consigue monedas gratis viendo anuncios opcionales. Ahorra tiempo con Premium mensual o anual.',
     'active':'Ventajas activas',
     'duration':'Período de uso',
     'chooseBenefits':'Selecciona ventajas',
@@ -119,6 +131,10 @@ const Map<String, Map<String, String>> _translations = {
   },
   'fr': {
     'title':'Utiliser les fonctions Premium gratuitement',
+    'loading':'Chargement du solde…',
+    'paused':'Temps conservé (secondes)',
+    'activeUntil':"Valable jusqu'au",
+    'subscriptionBenefit':'Gagnez gratuitement des pièces via des publicités facultatives, ou gagnez du temps avec Premium.',
     'active':'Avantages actifs',
     'duration':"Durée d'utilisation",
     'chooseBenefits':'Choisir des avantages',
@@ -135,6 +151,10 @@ const Map<String, Map<String, String>> _translations = {
   },
   'ko': {
     'title':'무료로 Premium 기능 사용',
+    'loading':'잔액 확인 중…',
+    'paused':'보관된 남은 초',
+    'activeUntil':'만료 시각',
+    'subscriptionBenefit':'선택형 광고 시청으로 무료 코인을 모으거나 월간·연간 Premium으로 시간을 아낄 수 있습니다.',
     'active':'현재 이용 중인 혜택',
     'duration':'이용 기간',
     'chooseBenefits':'혜택 선택',
@@ -151,6 +171,10 @@ const Map<String, Map<String, String>> _translations = {
   },
   'zh': {
     'title':'免费使用高级功能',
+    'loading':'正在查询余额…',
+    'paused':'保存的剩余秒数',
+    'activeUntil':'有效期至',
+    'subscriptionBenefit':'可通过自愿观看广告免费积累金币，也可选择月付或年付 Premium 节省时间。',
     'active':'当前使用中的权益',
     'duration':'使用期限',
     'chooseBenefits':'选择权益',
@@ -167,6 +191,10 @@ const Map<String, Map<String, String>> _translations = {
   },
   'zh_Hant': {
     'title':'免費使用進階功能',
+    'loading':'正在查詢餘額…',
+    'paused':'保留的剩餘秒數',
+    'activeUntil':'有效期限',
+    'subscriptionBenefit':'可透過自願觀看廣告免費累積金幣，也可選擇月付或年付 Premium 節省時間。',
     'active':'目前使用中的權益',
     'duration':'使用期限',
     'chooseBenefits':'選擇權益',
