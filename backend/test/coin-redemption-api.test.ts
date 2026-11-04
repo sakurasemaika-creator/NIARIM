@@ -80,8 +80,7 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     expect(JSON.parse(result.body ?? "{}")).toMatchObject({
       redeemed: true, costCoins: 55000,
     });
-    const tx = send.mock.calls.find(([x]) => x instanceof TransactWriteCommand)?.[0]
-      as TransactWriteCommand;
+    const tx = send.mock.calls.find(([x]) => x instanceof TransactWriteCommand)?.[0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
     const rows = tx.input.TransactItems!;
     expect(rows).toHaveLength(3);
