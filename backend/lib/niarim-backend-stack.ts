@@ -202,6 +202,13 @@ export class NiarimBackendStack extends Stack {
         PLAY_PURCHASE_VERIFICATION_ENABLED:
           this.node.tryGetContext("playPurchaseVerificationEnabled") === "true"
             ? "true" : "false",
+        // Anti-sybil, moderation and economics signoff is independent.
+        CREATOR_MISSION_CLAIMS_ENABLED:
+          this.node.tryGetContext("creatorMissionClaimsEnabled") === "true"
+            ? "true" : "false",
+        CREATOR_MISSION_CLAIMS_REVIEW_APPROVED:
+          this.node.tryGetContext("creatorMissionClaimsReviewApproved") === "true"
+            ? "true" : "false",
         PLAY_ANDROID_PACKAGE_NAME: "com.niarim.niarim",
         // Playback preflight reads the public YouTube video status server-side.
         // Never ship this API key in the Flutter binary or an API response.

@@ -30,6 +30,7 @@ const req = (body?: object) => ({
 beforeEach(() => {
   process.env.TABLE_NAME = "test-table";
   delete process.env.CREATOR_MISSION_CLAIMS_ENABLED;
+  delete process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED;
   send.mockReset();
   send.mockResolvedValue({});
 });
@@ -64,8 +65,16 @@ describe("creator mission endpoints", () => {
     expect(send).not.toHaveBeenCalled();
   });
 
+  it("experimental feature toggle alone never authorizes a mission payout", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    await expect(claimCreatorMission(req({ missionId: "followers_10" })))
+      .rejects.toMatchObject({ code: "CREATOR_MISSIONS_DISABLED" });
+    expect(send).not.toHaveBeenCalled();
+  });
+
   it("never pays from locally editable project work seconds", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
     await expect(claimCreatorMission(req({
       missionId: "edit_100h", totalWorkSeconds: 1000000,
     }))).rejects.toMatchObject({
@@ -76,6 +85,7 @@ describe("creator mission endpoints", () => {
 
   it("first eligible follower claim enters hold and creates no coins", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
     const resp = await claimCreatorMission(req({ missionId: "followers_10" }));
     expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
       claimed: false, pending: true, awardedCoins: 0,
@@ -87,6 +97,7 @@ describe("creator mission endpoints", () => {
 
   it("matured achievement credits the existing wallet atomically once", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
     const old = Math.floor(Date.now() / 1000) - 3 * 86400;
     send.mockImplementation(async (c: unknown) => {
       if (c instanceof GetCommand) return { Item: {
@@ -120,6 +131,7 @@ describe("creator mission endpoints", () => {
 
   it("duplicate claimed mask never pays the wallet twice", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
     send.mockImplementation(async (c: unknown) => {
       if (c instanceof GetCommand) return { Item: {
         itemType: "CREATOR_MISSIONS_V1", claimedMask: 2 ** 10,
@@ -135,6 +147,7 @@ describe("creator mission endpoints", () => {
   });
   it("requires explicit owned work ID for per-work mission payouts", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
     await expect(claimCreatorMission(req({
       missionId: "work_bookmarks_10",
     }))).rejects.toMatchObject({ code: "MISSION_WORK_ID_REQUIRED" });
@@ -143,6 +156,7 @@ describe("creator mission endpoints", () => {
 
   it("claims bookmark milestones for one named work, never the whole account", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
     send.mockImplementation(async (c: unknown) => {
       if (c instanceof GetCommand && c.input.Key?.pk === "WORK#abcdefghijk") {
         return { Item: {
@@ -172,6 +186,7 @@ describe("creator mission endpoints", () => {
 
   it("refuses to award for another author's work", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
     send.mockImplementation(async (c: unknown) => {
       if (c instanceof GetCommand) return {
         Item: { itemType: "WORK", workId: "abcdefghijk",
@@ -191,6 +206,7 @@ describe("creator mission endpoints", () => {
 
   it("pays matured per-work award only with the work's own bitmask", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
     const old = Math.floor(Date.now() / 1000) - 3 * 86400;
     send.mockImplementation(async (c: unknown) => {
       if (c instanceof GetCommand && c.input.Key?.pk === "WORK#abcdefghijk") {

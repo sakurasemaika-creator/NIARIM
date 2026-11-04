@@ -29,7 +29,8 @@ import {
  * No AWS write or reward issuance occurs when the feature flag is absent.
  */
 function enabled(): boolean {
-  return process.env.CREATOR_MISSION_CLAIMS_ENABLED === "true";
+  return process.env.CREATOR_MISSION_CLAIMS_ENABLED === "true" &&
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED === "true";
 }
 
 const SOCIAL_HOLD_SECONDS = 48 * 60 * 60;
