@@ -90,9 +90,17 @@ class CreatorEditSessionReporter {
 
   /// Pointer movement keeps an in-progress brush stroke active without
   /// counting taps, scrubbing, or panning as verified edits.
-  void noteInteraction() {
+  void noteInteraction({
+    required String projectId,
+    required int Function() activeSeconds,
+  }) {
+    if (_active == null && _canSend) {
+      // Start before the next stroke is committed: its first seconds should
+      // have a server-clock interval to compare against.
+      begin(projectId: projectId, activeSeconds: activeSeconds);
+    }
     final period = _active;
-    if (period != null && !period.closed) {
+    if (period != null && !period.closed && period.projectId == projectId) {
       period.lastInteractionAt = DateTime.now();
     }
   }
