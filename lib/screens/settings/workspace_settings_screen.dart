@@ -1067,13 +1067,16 @@ class _ToolbarPreview extends StatelessWidget {
               child: Row(
                 children: [
                   for (final id in visible)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Tooltip(
-                        message: id.label(l10n),
-                        child: id.buildIcon(
-                          size: 20 * iconScale,
-                          color: scheme.onSurface,
+                    SizedBox(
+                      width: 40 * iconScale,
+                      height: 40 * iconScale,
+                      child: Center(
+                        child: Tooltip(
+                          message: id.label(l10n),
+                          child: id.buildIcon(
+                            size: 20 * iconScale,
+                            color: scheme.onSurface,
+                          ),
                         ),
                       ),
                     ),

@@ -42,7 +42,6 @@ class MeshTransformPanel extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return PanelSurface(
       width: 240,
-      elevation: 4,
       borderRadius: BorderRadius.circular(8),
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Column(

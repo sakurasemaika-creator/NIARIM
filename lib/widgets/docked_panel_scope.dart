@@ -19,14 +19,15 @@ class DockedPanelScope extends InheritedWidget {
 ///
 /// [height]を持つパネル（一覧を`Expanded`で伸ばす作り）はペインの高さに
 /// 合わせて並べ、持たないパネル（中身の高さで決まる作り）はペインより
-/// 高いときだけスクロールする。
+/// 高いときだけスクロールする。浮かぶカードにも影は付けない（明るい
+/// テーマで影が黒い縁取りのように見えた）。
 class PanelSurface extends StatelessWidget {
   const PanelSurface({
     super.key,
     required this.width,
     this.height,
     this.maxHeight,
-    this.elevation = 8,
+    this.elevation = 0,
     this.surfaceTintColor,
     this.color,
     this.borderRadius,

@@ -119,18 +119,17 @@ void main() {
           'Timeline must render without any Flutter layout/runtime exception at 320 logical px',
     );
     expect(find.text('timeline-overflow-probe'), findsOneWidget);
-    // The frame count, loop toggle and fullscreen button sit in the corners
-    // of the preview band, outside the picture (user request).
+    // The frame count and fullscreen button sit in the corners of the preview
+    // band, outside the picture (user request); the duplicated loop toggle
+    // was removed from the preview (the playback bar keeps one).
     expect(find.byKey(const Key('timelinePreviewFrameCount')), findsOneWidget);
     expect(find.text('1/12'), findsOneWidget);
-    final loop = find.byKey(const Key('timelinePreviewLoopButton'));
-    expect(loop, findsOneWidget);
+    expect(find.byKey(const Key('timelinePreviewLoopButton')), findsNothing);
     final picture = tester.getRect(
       find.byKey(const Key('timelinePreviewPicture')),
     );
     for (final key in const [
       'timelinePreviewFrameCount',
-      'timelinePreviewLoopButton',
       'timelinePreviewFullscreenButton',
     ]) {
       final rect = tester.getRect(find.byKey(Key(key)));
@@ -161,7 +160,6 @@ void main() {
       expect((totalRect.center.dy - lastRect.center.dy).abs(), lessThan(12));
       expect(currentRect.center.dy, greaterThan(handle.dy + 10));
       expect(totalRect.center.dy, greaterThan(handle.dy + 10));
-      expect(tester.getCenter(loop).dy, lessThan(handle.dy));
     }
 
     expectPlaybackPlacement();

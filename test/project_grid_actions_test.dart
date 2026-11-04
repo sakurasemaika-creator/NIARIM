@@ -183,7 +183,7 @@ void main() {
     ProjectViewMode.medium,
     ProjectViewMode.small,
   ]) {
-    testWidgets('${mode.name}: selection stars stay at the top right', (
+    testWidgets('${mode.name}: selection stars stay at the bottom left', (
       tester,
     ) async {
       tester.view.devicePixelRatio = 1;
@@ -226,14 +226,15 @@ void main() {
             );
             final cardRect = tester.getRect(_card(name));
             final starRect = tester.getRect(star);
+            // お気に入りの星は絵の左下（右上のメニューと離す）。
             expect(
-              starRect.top - cardRect.top,
+              starRect.left - cardRect.left,
               lessThan(16),
               reason: '$name at $size / $scale',
             );
             expect(
-              cardRect.right - starRect.right,
-              lessThan(16),
+              starRect.center.dy,
+              greaterThan(cardRect.center.dy),
               reason: '$name at $size / $scale',
             );
             expect(

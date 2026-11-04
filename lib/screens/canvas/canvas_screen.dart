@@ -179,6 +179,29 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _currentTool == DrawingTool.selectLasso ||
       _currentTool == DrawingTool.selectMagicWand;
 
+  /// PC/DeXモードのドックの列の幅。列の幅と、その列で開いている窓ごとの幅
+  /// （PCレイアウト設定で窓ごとに変えられる）のうち一番広いもの。列の境目を
+  /// ドラッグしている間はその幅。
+  double _desktopDockColumnWidth({required bool right}) {
+    final settings = context.watch<SettingsService>();
+    final dragging = right
+        ? _panelWidthDragOverride
+        : _toolPanelWidthDragOverride;
+    if (dragging != null) return dragging;
+    final order = right
+        ? settings.rightDockOrder
+        : settings.toolOptionDockOrder;
+    var width = right
+        ? settings.desktopPanelWidth
+        : settings.desktopToolPanelWidth;
+    for (final panel in order) {
+      if (!_desktopPanelVisible(panel)) continue;
+      final w = settings.desktopDockWidth(panel, right: right);
+      if (w > width) width = w;
+    }
+    return width;
+  }
+
   // 右側ドッキング領域（カラーピッカー・レイヤーパネル・キャンバス
   // プレビュー）の横幅。ドラッグ中はここへローカルに反映し、指を離した
   // 時点でSettingsServiceへ確定値を保存する。
@@ -191,9 +214,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // ドックのタブを前に出す要求（PcPane.focusTab/focusSerial）。
   String? _pcFocusTab;
   int _pcFocusSerial = 0;
-  // ドックの各ペインで前に出ているタブ（PcDockColumnが知らせる。描き直しは
-  // 要らないのでsetStateしない）。
-  final Map<String, String> _pcActiveTabs = {};
   // ツールプロパティのペインを出すか、ドックをすべて隠すか。
   bool _showPcToolProperty = true;
   bool _pcPanelsHidden = false;
@@ -1099,7 +1119,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final wide = isWideScreen(context);
     if (!_autoOpenedDesktopPanels && wide) {
       _autoOpenedDesktopPanels = true;
-      _setDockPanels(context.read<SettingsService>().defaultDockedPanels);
+      _applyDesktopDockVisibilityPreferences();
     }
     // 自動判定で画面の向きが変わり、PC/DeXモードとスマホ表示が入れ替わった
     // とき：スマホ表示へ移るときはドックのパネルを閉じ（スマホは全パネルを
@@ -1817,6 +1837,108 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _showQuickToolPanel ||
       _showColorAdjustPanel;
 
+  bool _desktopPanelVisible(CanvasDockPanel p) => switch (p) {
+    CanvasDockPanel.brush => _showBrushPanel,
+    CanvasDockPanel.colorPicker => _showColorPicker,
+    CanvasDockPanel.layer => _showLayerPanel,
+    CanvasDockPanel.tone => _showTonePanel,
+    CanvasDockPanel.stamp => _showStampPanel,
+    CanvasDockPanel.penSubTool => _showPenSubToolPanel,
+    CanvasDockPanel.onionSkin => _showOnionSkinPanel,
+    CanvasDockPanel.ruler => _showRulerPanel,
+    CanvasDockPanel.filter => _showFilterPanel,
+    CanvasDockPanel.quickTool => _showQuickToolPanel,
+    CanvasDockPanel.colorAdjust => _showColorAdjustPanel,
+    CanvasDockPanel.canvasPreview => _showCanvasPreviewPanel,
+  };
+  void _setDesktopPanelVisible(CanvasDockPanel p, bool visible) {
+    setState(() {
+      switch (p) {
+        case CanvasDockPanel.brush:
+          _showBrushPanel = visible;
+        case CanvasDockPanel.colorPicker:
+          _showColorPicker = visible;
+        case CanvasDockPanel.layer:
+          _showLayerPanel = visible;
+        case CanvasDockPanel.tone:
+          _showTonePanel = visible;
+        case CanvasDockPanel.stamp:
+          _showStampPanel = visible;
+        case CanvasDockPanel.penSubTool:
+          _showPenSubToolPanel = visible;
+        case CanvasDockPanel.onionSkin:
+          _showOnionSkinPanel = visible;
+        case CanvasDockPanel.ruler:
+          _showRulerPanel = visible;
+        case CanvasDockPanel.filter:
+          _showFilterPanel = visible;
+        case CanvasDockPanel.quickTool:
+          _showQuickToolPanel = visible;
+        case CanvasDockPanel.colorAdjust:
+          _showColorAdjustPanel = visible;
+        case CanvasDockPanel.canvasPreview:
+          _showCanvasPreviewPanel = visible;
+      }
+    });
+    final settings = context.read<SettingsService>();
+    final next = Set<CanvasDockPanel>.of(settings.defaultDockedPanels);
+    if (visible) {
+      next.add(p);
+    } else {
+      next.remove(p);
+    }
+    settings.setDefaultDockedPanels(next);
+  }
+
+  String _dockTitle(CanvasDockPanel p) {
+    final l = AppLocalizations.of(context)!;
+    return switch (p) {
+      CanvasDockPanel.brush => l.workspaceDockPanelBrush,
+      CanvasDockPanel.colorPicker => l.workspaceDockPanelColorPicker,
+      CanvasDockPanel.layer => l.workspaceDockPanelLayer,
+      CanvasDockPanel.tone => l.workspaceDockPanelTone,
+      CanvasDockPanel.stamp => l.workspaceDockPanelStamp,
+      CanvasDockPanel.penSubTool => l.workspaceDockPanelPenSubTool,
+      CanvasDockPanel.onionSkin => l.workspaceDockPanelOnionSkin,
+      CanvasDockPanel.ruler => l.workspaceDockPanelRuler,
+      CanvasDockPanel.filter => l.workspaceDockPanelFilter,
+      CanvasDockPanel.quickTool => l.workspaceDockPanelQuickTool,
+      CanvasDockPanel.colorAdjust => l.workspaceDockPanelColorAdjust,
+      CanvasDockPanel.canvasPreview => l.workspaceDockPanelCanvasPreview,
+    };
+  }
+
+  Widget _dockBody(CanvasDockPanel p) => switch (p) {
+    CanvasDockPanel.brush => _brushPanel(),
+    CanvasDockPanel.colorPicker => _colorPickerPanel(),
+    CanvasDockPanel.layer => LayerPanel(
+      projectId: widget.projectId,
+      sceneId: _currentSceneId,
+      frameIndex: _currentFrame,
+      dockedMode: true,
+      currentLayerId: _currentLayerId,
+      selectAllToken: _layerSelectAllToken,
+      onClose: () => _setDesktopPanelVisible(CanvasDockPanel.layer, false),
+      onEditTextLayer: _onEditTextLayerTapped,
+      onLayerSelected: (id) => setState(() => _currentLayerId = id),
+    ),
+    CanvasDockPanel.tone => _tonePanel(),
+    CanvasDockPanel.stamp => _stampPanel(),
+    CanvasDockPanel.penSubTool => _penSubToolPanel(),
+    CanvasDockPanel.onionSkin => _onionSkinPanel(),
+    CanvasDockPanel.ruler => _rulerPanel(),
+    CanvasDockPanel.filter => _filterPanel(),
+    CanvasDockPanel.quickTool => _quickToolPanel(),
+    CanvasDockPanel.colorAdjust => _colorAdjustPanel(),
+    CanvasDockPanel.canvasPreview => CanvasPreviewNavigator(
+      projectId: widget.projectId,
+      sceneId: _currentSceneId,
+      frameIndex: _currentFrame,
+      onClose: () =>
+          _setDesktopPanelVisible(CanvasDockPanel.canvasPreview, false),
+    ),
+  };
+
   // ─── PC/DeXモードの作業画面 ───────────────────────────────────────────
 
   /// PC/DeXモード専用の作業画面。上から、メニューバー・コマンドバー・
@@ -1829,8 +1951,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
     required bool selectionEditingHidden,
     required bool leftHanded,
   }) {
-    final leftPanes = _pcPanelsHidden ? const <PcPane>[] : _pcLeftPanes();
-    final rightPanes = _pcPanelsHidden ? const <PcPane>[] : _pcRightPanes();
+    final leftPanes = _pcPanelsHidden
+        ? const <PcPane>[]
+        : _pcDockPanes(right: false);
+    final rightPanes = _pcPanelsHidden
+        ? const <PcPane>[]
+        : _pcDockPanes(right: true);
     final leftOpen = leftPanes.any((p) => p.tabs.isNotEmpty);
     final rightOpen = rightPanes.any((p) => p.tabs.isNotEmpty);
     final widths = _fitDockWidths(
@@ -1839,7 +1965,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
       toolDockOpen: leftOpen,
       rightDockOpen: rightOpen,
     );
-    void onActiveTab(String pane, String tab) => _pcActiveTabs[pane] = tab;
     // つまみは、ドックの外側へ引くほどドックが広がる。
     final toolSplitter = PcDockSplitter(
       key: const ValueKey('pcToolDockSplitter'),
@@ -1850,12 +1975,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
           widths.toolMax,
         );
       }),
-      onDragEnd: () {
-        final w = _toolPanelWidthDragOverride;
-        if (w != null) {
-          context.read<SettingsService>().setDesktopToolPanelWidth(w);
-        }
-      },
+      onDragEnd: () => _saveDockColumnWidth(right: false),
     );
     final rightSplitter = PcDockSplitter(
       key: const ValueKey('pcRightDockSplitter'),
@@ -1866,12 +1986,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
           widths.rightMax,
         );
       }),
-      onDragEnd: () {
-        final w = _panelWidthDragOverride;
-        if (w != null) {
-          context.read<SettingsService>().setDesktopPanelWidth(w);
-        }
-      },
+      onDragEnd: () => _saveDockColumnWidth(right: true),
     );
     final middle = <Widget>[
       _buildPcToolPalette(),
@@ -1882,7 +1997,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
           child: PcDockColumn(
             key: const ValueKey('pcToolDock'),
             panes: leftPanes,
-            onActiveTabChanged: onActiveTab,
+            onPaneResized: _savePcPaneHeight,
+            onPaneDropped: (id, before) =>
+                _movePcPane(id, before, right: false),
           ),
         ),
         toolSplitter,
@@ -1910,7 +2027,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
           child: PcDockColumn(
             key: const ValueKey('pcRightDock'),
             panes: rightPanes,
-            onActiveTabChanged: onActiveTab,
+            onPaneResized: _savePcPaneHeight,
+            onPaneDropped: (id, before) => _movePcPane(id, before, right: true),
           ),
         ),
       ],
@@ -1940,16 +2058,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
-  /// PC/DeXモード：ドックのタブを開いて前に出す。開いていて前に出ていれば閉じる。
-  void _togglePcTab(CanvasDockPanel panel) => setState(() {
-    final open = _openDockPanels().contains(panel);
-    if (open && _pcActiveTabs.containsValue(panel.name)) {
-      _setDockPanelOpen(panel, false);
-    } else {
-      _setDockPanelOpen(panel, true);
-      _focusPcTab(panel.name);
-    }
-  });
+  /// PC/DeXモード：ドックの窓を開いて前に出す。開いていれば閉じる
+  /// （スマホのボタンと同じく押すたびに開閉する）。
+  void _togglePcTab(CanvasDockPanel panel) {
+    final open = _desktopPanelVisible(panel);
+    _setDesktopPanelVisible(panel, !open);
+    if (!open) setState(() => _focusPcTab(panel.name));
+  }
 
   void _focusPcTab(String tabId) {
     _pcFocusTab = tabId;
@@ -1957,7 +2072,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _pcPanelsHidden = false;
   }
 
+  /// パネルを開く・閉じる。PC/DeXモードでは、次に開くときも同じ窓が開く
+  /// よう保存する（PCレイアウト設定の「既定で開くパネル」と同じ設定）。
   void _setDockPanelOpen(CanvasDockPanel panel, bool open) {
+    if (isWideScreen(context, listen: false)) {
+      _setDesktopPanelVisible(panel, open);
+      return;
+    }
     final panels = _openDockPanels();
     if (open) {
       panels.add(panel);
@@ -1967,6 +2088,43 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _setDockPanels(panels);
   }
 
+  /// ドックの列の境目を離したとき：列の幅と、その列で開いている窓の幅を
+  /// 同じ値で保存する（列の幅は開いている窓の一番広い幅に合わせるため）。
+  void _saveDockColumnWidth({required bool right}) {
+    final w = right ? _panelWidthDragOverride : _toolPanelWidthDragOverride;
+    if (w == null) return;
+    final settings = context.read<SettingsService>();
+    final order = right
+        ? settings.rightDockOrder
+        : settings.toolOptionDockOrder;
+    for (final panel in order) {
+      if (_desktopPanelVisible(panel)) settings.setDesktopDockWidth(panel, w);
+    }
+    if (right) {
+      settings.setDesktopPanelWidth(w);
+    } else {
+      settings.setDesktopToolPanelWidth(w);
+    }
+  }
+
+  void _savePcPaneHeight(String paneId, double height) {
+    final panel = CanvasDockPanel.values.asNameMap()[paneId];
+    if (panel == null) return;
+    context.read<SettingsService>().setDesktopDockHeight(panel, height);
+  }
+
+  /// 窓を見出しでつかんで別の窓の上へ落としたとき（列をまたいでもよい）。
+  void _movePcPane(String paneId, String? beforeId, {required bool right}) {
+    final names = CanvasDockPanel.values.asNameMap();
+    final panel = names[paneId];
+    if (panel == null) return;
+    context.read<SettingsService>().moveDesktopDockPanel(
+      panel,
+      toRight: right,
+      before: beforeId == null ? null : names[beforeId],
+    );
+  }
+
   void _viewAction(CanvasViewAction action) => setState(
     () => _viewRequest = CanvasViewRequest(
       (_viewRequest?.serial ?? 0) + 1,
@@ -1974,163 +2132,64 @@ class _CanvasScreenState extends State<CanvasScreen> {
     ),
   );
 
-  /// ツールのドック：ツールプロパティ／サブツール（ペンサブツール・ブラシ・
-  /// トーン・スタンプ・早替え・定規）／調整（フィルター・色調調整・
-  /// オニオンスキン・変形）。タブの並びは「PCレイアウト設定」の順。
-  List<PcPane> _pcLeftPanes() {
+  /// ドックの列の窓。PCレイアウト設定と同じ並び・表示・高さで、窓ごとに
+  /// 1つのペインにする（見出しをつかんで並べ替え・反対側の列へ移せる）。
+  /// ツールの列は先頭に「ツールの設定」、自由変形・メッシュ変形中は最後に
+  /// その操作を出す。一番下の窓は列の残りの高さを使う。
+  List<PcPane> _pcDockPanes({required bool right}) {
     final l10n = AppLocalizations.of(context)!;
-    const subTools = {
-      CanvasDockPanel.penSubTool,
-      CanvasDockPanel.brush,
-      CanvasDockPanel.tone,
-      CanvasDockPanel.stamp,
-      CanvasDockPanel.quickTool,
-      CanvasDockPanel.ruler,
-    };
-    final byPanel = <CanvasDockPanel, Widget>{
-      if (_showPenSubToolPanel) CanvasDockPanel.penSubTool: _penSubToolPanel(),
-      if (_showBrushPanel) CanvasDockPanel.brush: _brushPanel(),
-      if (_showTonePanel) CanvasDockPanel.tone: _tonePanel(),
-      if (_showStampPanel) CanvasDockPanel.stamp: _stampPanel(),
-      if (_showOnionSkinPanel) CanvasDockPanel.onionSkin: _onionSkinPanel(),
-      if (_showRulerPanel) CanvasDockPanel.ruler: _rulerPanel(),
-      if (_showFilterPanel) CanvasDockPanel.filter: _filterPanel(),
-      if (_showQuickToolPanel) CanvasDockPanel.quickTool: _quickToolPanel(),
-      if (_showColorAdjustPanel)
-        CanvasDockPanel.colorAdjust: _colorAdjustPanel(),
-    };
-    final order = context.read<SettingsService>().toolOptionDockOrder;
-    final subToolTabs = <PcPaneTab>[];
-    final adjustTabs = <PcPaneTab>[];
-    for (final key in order) {
-      final child = byPanel[key];
-      if (child == null) continue;
-      (subTools.contains(key) ? subToolTabs : adjustTabs).add(
-        _pcDockTab(l10n, key, child),
-      );
-    }
-    if (_showMeshTransformPanel) {
-      adjustTabs.add(
-        PcPaneTab(
-          id: 'meshTransform',
-          title: l10n.canvasEditMenuMeshTransform,
-          icon: Icons.crop_free,
-          child: _meshTransformPanel(),
-          onClose: _cancelMeshTransform,
+    final settings = context.watch<SettingsService>();
+    final order = right
+        ? settings.rightDockOrder
+        : settings.toolOptionDockOrder;
+    final panes = <PcPane>[
+      if (!right)
+        PcPane(
+          id: 'toolProperty',
+          preferredHeight: 250,
+          minLayoutHeight: 0,
+          tabs: [
+            if (_showPcToolProperty)
+              PcPaneTab(
+                id: 'toolProperty',
+                title: l10n.pcPaneToolProperty,
+                icon: Icons.tune,
+                child: _pcToolProperty(),
+                onClose: () => setState(() => _showPcToolProperty = false),
+              ),
+          ],
         ),
-      );
-    }
-    return [
-      PcPane(
-        id: 'toolProperty',
-        preferredHeight: 250,
-        minLayoutHeight: 0,
-        tabs: [
-          if (_showPcToolProperty)
+      for (final panel in order)
+        if (_desktopPanelVisible(panel))
+          PcPane(
+            id: panel.name,
+            movable: true,
+            preferredHeight: settings.desktopDockHeight(panel),
+            // 自分で大きさを合わせるパネル（プレビュー・カラー）は、ペインの
+            // 高さのまま並べる。
+            minLayoutHeight:
+                panel == CanvasDockPanel.canvasPreview ||
+                    panel == CanvasDockPanel.colorPicker
+                ? 0
+                : 240,
+            focusTab: _pcFocusTab,
+            focusSerial: _pcFocusSerial,
+            tabs: [_pcDockTab(l10n, panel, _dockBody(panel))],
+          ),
+      if (!right && _showMeshTransformPanel)
+        PcPane(
+          id: 'meshTransform',
+          tabs: [
             PcPaneTab(
-              id: 'toolProperty',
-              title: l10n.pcPaneToolProperty,
-              icon: Icons.tune,
-              child: _pcToolProperty(),
-              onClose: () => setState(() => _showPcToolProperty = false),
+              id: 'meshTransform',
+              title: l10n.canvasEditMenuMeshTransform,
+              icon: Icons.crop_free,
+              child: _meshTransformPanel(),
+              onClose: _cancelMeshTransform,
             ),
-        ],
-      ),
-      PcPane(
-        id: 'subTool',
-        fill: true,
-        tabs: subToolTabs,
-        focusTab: _pcFocusTab,
-        focusSerial: _pcFocusSerial,
-      ),
-      PcPane(
-        id: 'adjust',
-        fill: true,
-        tabs: adjustTabs,
-        focusTab: _pcFocusTab,
-        focusSerial: _pcFocusSerial,
-      ),
+          ],
+        ),
     ];
-  }
-
-  /// 色・レイヤーのドック：キャンバスプレビュー・カラー・レイヤーを
-  /// 「PCレイアウト設定」の順に縦に並べる。
-  List<PcPane> _pcRightPanes() {
-    final l10n = AppLocalizations.of(context)!;
-    final order = context.watch<SettingsService>().rightDockOrder;
-    final panes = <PcPane>[];
-    for (final key in order) {
-      switch (key) {
-        case CanvasDockPanel.canvasPreview:
-          panes.add(
-            PcPane(
-              id: key.name,
-              preferredHeight: 150,
-              minLayoutHeight: 0,
-              focusTab: _pcFocusTab,
-              focusSerial: _pcFocusSerial,
-              tabs: [
-                if (_showCanvasPreviewPanel)
-                  _pcDockTab(
-                    l10n,
-                    key,
-                    CanvasPreviewNavigator(
-                      projectId: widget.projectId,
-                      sceneId: _currentSceneId,
-                      frameIndex: _currentFrame,
-                      onClose: () =>
-                          setState(() => _showCanvasPreviewPanel = false),
-                    ),
-                  ),
-              ],
-            ),
-          );
-        case CanvasDockPanel.colorPicker:
-          panes.add(
-            PcPane(
-              id: key.name,
-              preferredHeight: 290,
-              minLayoutHeight: 0,
-              focusTab: _pcFocusTab,
-              focusSerial: _pcFocusSerial,
-              tabs: [
-                if (_showColorPicker)
-                  _pcDockTab(l10n, key, _colorPickerPanel()),
-              ],
-            ),
-          );
-        case CanvasDockPanel.layer:
-          panes.add(
-            PcPane(
-              id: key.name,
-              fill: true,
-              focusTab: _pcFocusTab,
-              focusSerial: _pcFocusSerial,
-              tabs: [
-                if (_showLayerPanel)
-                  _pcDockTab(
-                    l10n,
-                    key,
-                    LayerPanel(
-                      onClose: () => setState(() => _showLayerPanel = false),
-                      projectId: widget.projectId,
-                      sceneId: _currentSceneId,
-                      frameIndex: _currentFrame,
-                      dockedMode: true,
-                      onEditTextLayer: _onEditTextLayerTapped,
-                      currentLayerId: _currentLayerId,
-                      onLayerSelected: (id) =>
-                          setState(() => _currentLayerId = id),
-                      selectAllToken: _layerSelectAllToken,
-                    ),
-                  ),
-              ],
-            ),
-          );
-        default:
-          break;
-      }
-    }
     return panes;
   }
 
@@ -2143,7 +2202,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     title: _dockPanelTitle(l10n, panel),
     icon: _dockPanelIcon(panel),
     child: child,
-    onClose: () => setState(() => _setDockPanelOpen(panel, false)),
+    onClose: () => _setDesktopPanelVisible(panel, false),
   );
 
   static String _dockPanelTitle(AppLocalizations l10n, CanvasDockPanel p) =>
@@ -3235,16 +3294,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
     const widest = SettingsService.maxDesktopPanelWidth;
     // 以前の版で下限より狭く保存した幅も、下限まで広げて使う。
     var tool = toolDockOpen
-        ? (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth).clamp(
-            toolMin,
-            widest,
-          )
+        ? _desktopDockColumnWidth(right: false).clamp(toolMin, widest)
         : 0.0;
     var right = rightDockOpen
-        ? (_panelWidthDragOverride ?? settings.desktopPanelWidth).clamp(
-            rightMin,
-            widest,
-          )
+        ? _desktopDockColumnWidth(right: true).clamp(rightMin, widest)
         : 0.0;
     final rowWidth =
         MediaQuery.sizeOf(context).width -
@@ -4213,6 +4266,121 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _currentTool = DrawingTool.pen;
   });
 
+  /// Apply visibility changes made in the workspace layout editor as soon as
+  /// the user returns to the still-mounted canvas route.
+  void _applyDesktopDockVisibilityPreferences() {
+    final defaults = context.read<SettingsService>().defaultDockedPanels;
+    _showBrushPanel = defaults.contains(CanvasDockPanel.brush);
+    _showColorPicker = defaults.contains(CanvasDockPanel.colorPicker);
+    _showLayerPanel = defaults.contains(CanvasDockPanel.layer);
+    _showTonePanel = defaults.contains(CanvasDockPanel.tone);
+    _showStampPanel = defaults.contains(CanvasDockPanel.stamp);
+    _showPenSubToolPanel = defaults.contains(CanvasDockPanel.penSubTool);
+    _showOnionSkinPanel = defaults.contains(CanvasDockPanel.onionSkin);
+    _showRulerPanel = defaults.contains(CanvasDockPanel.ruler);
+    _showFilterPanel = defaults.contains(CanvasDockPanel.filter);
+    _showQuickToolPanel = defaults.contains(CanvasDockPanel.quickTool);
+    _showColorAdjustPanel = defaults.contains(CanvasDockPanel.colorAdjust);
+    _showCanvasPreviewPanel = defaults.contains(CanvasDockPanel.canvasPreview);
+  }
+
+  Future<void> _openDesktopWorkspaceSettings() async {
+    await context.push('/settings/workspace');
+    if (!mounted) return;
+    setState(_applyDesktopDockVisibilityPreferences);
+  }
+
+  /// Desktop-only application menus, placed in the same top row as the
+  /// canvas action icons. Actions reuse the existing canvas handlers.
+  Widget _buildDesktopMenuBar() {
+    final l = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    final titles = switch (locale.languageCode) {
+      'ja' => const ['ファイル', 'レイヤー', '表示', '設定'],
+      'ko' => const ['파일', '레이어', '보기', '설정'],
+      'zh' when locale.scriptCode == 'Hant' => const ['檔案', '圖層', '檢視', '設定'],
+      'zh' => const ['文件', '图层', '视图', '设置'],
+      'es' => const ['Archivo', 'Capa', 'Ver', 'Ajustes'],
+      'fr' => const ['Fichier', 'Calque', 'Affichage', 'Paramètres'],
+      _ => const ['File', 'Layer', 'View', 'Settings'],
+    };
+    final scheme = Theme.of(context).colorScheme;
+    return MenuBar(
+      style: MenuStyle(
+        backgroundColor: WidgetStatePropertyAll(
+          scheme.surface.withValues(alpha: 0),
+        ),
+        elevation: const WidgetStatePropertyAll(0),
+        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+      ),
+      children: [
+        SubmenuButton(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: () =>
+                  context.read<ProjectService>().saveProject(widget.projectId),
+              child: Text(l.commonSave),
+            ),
+            MenuItemButton(
+              onPressed: _confirmBackToProjectList,
+              child: Text(l.timelineBackToProjectListTooltip),
+            ),
+          ],
+          child: Text(titles[0]),
+        ),
+        SubmenuButton(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: () => _setDesktopPanelVisible(
+                CanvasDockPanel.layer,
+                !_showLayerPanel,
+              ),
+              child: Text(l.layerPanelTitle),
+            ),
+            MenuItemButton(
+              onPressed: _selectAllLayers,
+              child: Text(l.layerPanelSelectAll),
+            ),
+          ],
+          child: Text(titles[1]),
+        ),
+        SubmenuButton(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: _toggleBackground,
+              child: Text(l.canvasEditMenuBackgroundToggle),
+            ),
+            MenuItemButton(
+              onPressed: () => _setDesktopPanelVisible(
+                CanvasDockPanel.canvasPreview,
+                !_showCanvasPreviewPanel,
+              ),
+              child: Text(l.canvasEditMenuPreviewNavigator),
+            ),
+            MenuItemButton(
+              onPressed: _openDesktopWorkspaceSettings,
+              child: Text(l.pcWorkspaceLayoutScreenTitle),
+            ),
+          ],
+          child: Text(titles[2]),
+        ),
+        SubmenuButton(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: () => _showEditMenu(context),
+              child: Text(l.canvasSettingsMenuTooltip),
+            ),
+            MenuItemButton(
+              onPressed: _openDesktopWorkspaceSettings,
+              child: Text(l.workspacePcLayoutButton),
+            ),
+          ],
+          child: Text(titles[3]),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
@@ -4234,6 +4402,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onPressed: () => context.read<UndoManager>().redo(),
             tooltip: l10n.commonRedo,
           ),
+          if (isWideScreen(context)) ...[
+            const SizedBox(width: 16),
+            _buildDesktopMenuBar(),
+          ],
           // 投げ縄塗り選択中：囲って塗るモードスイッチ
           if (_currentTool == DrawingTool.lasso &&
               _currentSubTool == PenSubTool.lassoFill) ...[
@@ -4282,6 +4454,24 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ),
           const Spacer(),
+          if (isWideScreen(context))
+            PopupMenuButton<CanvasDockPanel>(
+              key: const Key('desktopWindowVisibilityMenu'),
+              tooltip: AppLocalizations.of(
+                context,
+              )!.pcWorkspaceLayoutScreenTitle,
+              icon: const Icon(Icons.view_sidebar_outlined, size: 22),
+              onSelected: (panel) =>
+                  _setDesktopPanelVisible(panel, !_desktopPanelVisible(panel)),
+              itemBuilder: (_) => [
+                for (final p in CanvasDockPanel.values)
+                  CheckedPopupMenuItem<CanvasDockPanel>(
+                    value: p,
+                    checked: _desktopPanelVisible(p),
+                    child: Text(_dockTitle(p)),
+                  ),
+              ],
+            ),
           // 設定/編集メニュー（背景色・オニオンスキン・
           // フィルター・フレーム範囲選択を集約）。
           _topBarIconButton(
@@ -4306,16 +4496,24 @@ class _CanvasScreenState extends State<CanvasScreen> {
           CanvasIconButton(
             key: const Key('canvasTimelineModeButton'),
             iconSize: 24,
-            iconBuilder: (color) => FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.movie_filter_outlined, size: 19, color: color),
-                  const SizedBox(width: 2),
-                  Icon(Icons.arrow_forward, size: 14, color: color),
-                ],
-              ),
+            iconWidth: 36,
+            outlinedIconBuilder: (color, outline) => Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.movie_filter_outlined,
+                  size: 19,
+                  color: color,
+                  shadows: CanvasIconButton.outlineShadows(outline),
+                ),
+                const SizedBox(width: 2),
+                Icon(
+                  Icons.arrow_forward,
+                  size: 14,
+                  color: color,
+                  shadows: CanvasIconButton.outlineShadows(outline),
+                ),
+              ],
             ),
             onPressed: () => _runAutomationBlockedAction(
               () => context.go('/timeline/${widget.projectId}'),

@@ -701,7 +701,7 @@ class _FilterPanelState extends State<FilterPanel> {
         ? (Widget child) => child
         : current == null
         ? (Widget child) => Card(
-            elevation: 8,
+            elevation: 0, // Prevent black shadows around the floating panel.
             surfaceTintColor: Colors.transparent,
             child: child,
           )

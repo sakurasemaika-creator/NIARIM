@@ -224,6 +224,42 @@ class SettingsService extends ChangeNotifier {
   // 右側ドッキング領域（カラーピッカー・レイヤーパネル・キャンバス
   // プレビュー）の横幅。ドラッグハンドルで変更でき、アプリ全体で
   // 共通の設定として保存される。
+  // Per-window heights are global workspace settings, not project state.
+  final Map<CanvasDockPanel, double> _desktopPanelHeights = {};
+  final Map<CanvasDockPanel, double> _desktopPanelWidths = {};
+  double desktopDockWidth(CanvasDockPanel panel, {required bool right}) =>
+      _desktopPanelWidths[panel] ??
+      (right ? _desktopPanelWidth : _desktopToolPanelWidth);
+  Future<void> setDesktopDockWidth(CanvasDockPanel panel, double width) async {
+    _desktopPanelWidths[panel] = width.clamp(200.0, 480.0);
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'desktop_dock_widths',
+      jsonEncode({
+        for (final entry in _desktopPanelWidths.entries)
+          entry.key.name: entry.value,
+      }),
+    );
+  }
+
+  double desktopDockHeight(CanvasDockPanel panel) =>
+      _desktopPanelHeights[panel] ?? 260.0;
+
+  Future<void> setDesktopDockHeight(CanvasDockPanel panel, double value) async {
+    final height = value.clamp(140.0, 700.0);
+    _desktopPanelHeights[panel] = height;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'desktop_dock_heights',
+      jsonEncode({
+        for (final entry in _desktopPanelHeights.entries)
+          entry.key.name: entry.value,
+      }),
+    );
+  }
+
   double _desktopPanelWidth = 280.0;
 
   /// 右のドック（色・レイヤー）を狭められる下限。これより狭いとレイヤーの
@@ -319,6 +355,22 @@ class SettingsService extends ChangeNotifier {
 
   Future<void> resetRightDockOrder() =>
       setRightDockOrder(_defaultRightDockOrder);
+
+  /// Move a dock window within or between columns, persist its position.
+  /// Settings screen and canvas use these same global order lists.
+  Future<void> moveDesktopDockPanel(
+    CanvasDockPanel panel, {
+    required bool toRight,
+    CanvasDockPanel? before,
+  }) async {
+    final left = List<CanvasDockPanel>.of(_toolOptionDockOrder)..remove(panel);
+    final right = List<CanvasDockPanel>.of(_rightDockOrder)..remove(panel);
+    final target = toRight ? right : left;
+    final insertIndex = before == null ? -1 : target.indexOf(before);
+    target.insert(insertIndex < 0 ? target.length : insertIndex, panel);
+    await setToolOptionDockOrder(left);
+    await setRightDockOrder(right);
+  }
 
   // マウス・スタイラス（ペンタブ等）の接続検出フラグ。ポインティング
   // デバイスの接続を一度でも検知したら、以後アプリ終了までtrueを保持する
@@ -640,35 +692,76 @@ class SettingsService extends ChangeNotifier {
     _timelineTrackHeightLevel =
         prefs.readInt('timeline_track_height_level') ?? 4;
     _desktopPanelWidth = prefs.readDouble('desktop_panel_width') ?? 280.0;
+    _desktopPanelWidths.clear();
+    final savedPanelWidths = prefs.readString('desktop_dock_widths');
+    if (savedPanelWidths != null) {
+      try {
+        final decoded = jsonDecode(savedPanelWidths);
+        if (decoded is Map) {
+          for (final entry in decoded.entries) {
+            final panel = CanvasDockPanel.values.asNameMap()[entry.key];
+            if (panel != null && entry.value is num) {
+              _desktopPanelWidths[panel] = (entry.value as num)
+                  .toDouble()
+                  .clamp(200.0, 480.0);
+            }
+          }
+        }
+      } on FormatException {
+        // Keep other saved workspace preferences when widths are invalid.
+      }
+    }
+    _desktopPanelHeights.clear();
+    final rawDockHeights = prefs.readString('desktop_dock_heights');
+    if (rawDockHeights != null) {
+      try {
+        final decoded = jsonDecode(rawDockHeights);
+        if (decoded is Map) {
+          for (final entry in decoded.entries) {
+            final panel = CanvasDockPanel.values.asNameMap()[entry.key];
+            final value = entry.value;
+            if (panel != null && value is num) {
+              _desktopPanelHeights[panel] = value.toDouble().clamp(140, 700);
+            }
+          }
+        }
+      } on FormatException {
+        // Ignore malformed saved workspace dimensions.
+      }
+    }
     _desktopToolPanelWidth =
         prefs.readDouble('desktop_tool_panel_width') ?? 280.0;
-    final toolOptionDockOrderNames = prefs.readStringList(
-      'tool_option_dock_order',
-    );
-    if (toolOptionDockOrderNames != null &&
-        toolOptionDockOrderNames.isNotEmpty) {
-      final map = CanvasDockPanel.values.asNameMap();
-      final restored = toolOptionDockOrderNames
-          .map((n) => map[n])
-          .whereType<CanvasDockPanel>()
-          .toList();
-      for (final p in _defaultToolOptionDockOrder) {
-        if (!restored.contains(p)) restored.add(p);
+    // 窓は左右どちらかの列にだけ置く（moveDesktopDockPanelで列を移せる）。
+    // 保存した並びに無い窓は既定の列の最後へ足すが、反対側の列へ移した
+    // 窓は足さない（足すと起動し直したとき同じ窓が両方の列に出た）。
+    final dockPanelNames = CanvasDockPanel.values.asNameMap();
+    List<CanvasDockPanel>? restoreDockOrder(List<String>? names) {
+      if (names == null) return null;
+      final order = <CanvasDockPanel>[];
+      for (final name in names) {
+        final panel = dockPanelNames[name];
+        if (panel != null && !order.contains(panel)) order.add(panel);
       }
-      _toolOptionDockOrder = restored;
+      return order;
     }
-    final rightDockOrderNames = prefs.readStringList('right_dock_order');
-    if (rightDockOrderNames != null && rightDockOrderNames.isNotEmpty) {
-      final map = CanvasDockPanel.values.asNameMap();
-      final restored = rightDockOrderNames
-          .map((n) => map[n])
-          .whereType<CanvasDockPanel>()
-          .toList();
-      for (final p in _defaultRightDockOrder) {
-        if (!restored.contains(p)) restored.add(p);
-      }
-      _rightDockOrder = restored;
+
+    final toolOrder =
+        restoreDockOrder(prefs.readStringList('tool_option_dock_order')) ??
+        List.of(_defaultToolOptionDockOrder);
+    final rightOrder = [
+      for (final p
+          in restoreDockOrder(prefs.readStringList('right_dock_order')) ??
+              _defaultRightDockOrder)
+        if (!toolOrder.contains(p)) p,
+    ];
+    for (final p in _defaultToolOptionDockOrder) {
+      if (!toolOrder.contains(p) && !rightOrder.contains(p)) toolOrder.add(p);
     }
+    for (final p in _defaultRightDockOrder) {
+      if (!toolOrder.contains(p) && !rightOrder.contains(p)) rightOrder.add(p);
+    }
+    _toolOptionDockOrder = toolOrder;
+    _rightDockOrder = rightOrder;
     final sizePresetStrings = prefs.readStringList('custom_size_presets') ?? [];
     _customSizePresets = [];
     for (final encoded in sizePresetStrings) {

@@ -828,6 +828,13 @@ class ThemeService extends ChangeNotifier {
       // PopupMenuItem labels do not automatically use AppBar foreground.
       // Match text/icon foreground to the same menu token as the top bar.
       popupMenuTheme: PopupMenuThemeData(
+        // Flat popup surface: the default Material elevation looked like
+        // a thick black border against light workspace themes.
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+          side: BorderSide.none,
+        ),
         color: popupColor,
         surfaceTintColor: popupColor,
         textStyle: textTheme.bodyMedium?.copyWith(color: menuForeground),

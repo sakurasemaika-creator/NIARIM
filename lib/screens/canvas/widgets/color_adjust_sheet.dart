@@ -294,7 +294,9 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
             SizedBox(
               width: double.infinity,
               child: Wrap(
-                alignment: WrapAlignment.spaceEvenly,
+                alignment: WrapAlignment.center,
+                spacing: 4,
+                runSpacing: 0,
                 children: [
                   TextButton(
                     onPressed: () => _addToDrawFilter(context),

@@ -33,7 +33,6 @@ class RulerPanel extends StatelessWidget {
       // On a short screen (or with large text) the list scrolls instead of
       // running off the bottom.
       maxHeight: MediaQuery.sizeOf(context).height * 0.75,
-      elevation: 4,
       borderRadius: BorderRadius.circular(8),
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Column(

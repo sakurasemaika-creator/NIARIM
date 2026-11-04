@@ -2442,7 +2442,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   /// プレビューの絵（キャンバスの縦横比の枠いっぱいに描く）。フレーム数・
-  /// ループ・全画面の操作は[_buildPreviewBand]が絵の外に置く。
+  /// 全画面の操作は[_buildPreviewBand]が絵の外に置く。
   Widget _buildPreviewContent() {
     final l10n = AppLocalizations.of(context)!;
     final ps = context.watch<ProjectService>();
@@ -2498,7 +2498,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// プレビュー欄の操作（フレーム数・ループ・全画面）の大きさ。
+  /// プレビュー欄の操作（フレーム数・全画面）の大きさ。
   static const double _previewControlSize = 48;
 
   /// プロジェクトの縦横比（書き出しの大きさ。分からなければ16:9）。
@@ -2511,9 +2511,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
         : 16 / 9;
   }
 
-  /// プレビュー欄：中央にキャンバスの絵を置き、フレーム数（左下）・ループ
-  /// （右下）・全画面（右上）は欄の隅の、絵の外に置く（絵に重ねると確かめたい
-  /// 絵が隠れる）。操作の場所を絵の左右に空けるか上下に空けるかは、絵を
+  /// プレビュー欄：中央にキャンバスの絵を置き、フレーム数（左下）・全画面
+  /// （右上）は欄の隅の、絵の外に置く（絵に重ねると確かめたい絵が隠れる）。
+  /// ループの切り替えは再生の操作の段にあるので、ここには置かない（同じ操作が
+  /// 2か所に重複する）。操作の場所を絵の左右に空けるか上下に空けるかは、絵を
   /// 大きく出せる方にする（縦長の絵は左右、横長の絵は上下）。
   Widget _buildPreviewBand({
     required double aspect,
@@ -2541,7 +2542,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           width,
           pictureWidth + (gutter + control) * 2,
         );
-        // 低い欄では、全画面のボタンも下の段（ループの左）に置く。
+        // 低い欄では、全画面のボタンを下の段に置く。
         final oneRow = height < control * 2 + 4;
         final fullscreen = fullscreenButton
             ? FirstUseTooltip(
@@ -2557,19 +2558,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
               )
             : null;
-        final loop = IconButton(
-          key: const Key('timelinePreviewLoopButton'),
-          icon: Icon(
-            Icons.repeat,
-            color: _loopEnabled
-                ? AccentTextTheme.of(context)
-                : scheme.onSurfaceVariant,
-          ),
-          tooltip: _loopEnabled
-              ? l10n.timelineLoopOnTooltip
-              : l10n.timelineLoopOffTooltip,
-          onPressed: () => setState(() => _loopEnabled = !_loopEnabled),
-        );
         return Stack(
           children: [
             Center(
@@ -2610,19 +2598,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         ),
                       ),
                     ),
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (fullscreen != null && oneRow) fullscreen,
-                          loop,
-                        ],
+                    if (fullscreen != null)
+                      Positioned(
+                        right: 0,
+                        top: oneRow ? null : 0,
+                        bottom: oneRow ? 0 : null,
+                        child: fullscreen,
                       ),
-                    ),
-                    if (fullscreen != null && !oneRow)
-                      Positioned(right: 0, top: 0, child: fullscreen),
                   ],
                 ),
               ),
@@ -2653,7 +2635,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final aspect = _previewAspect(context.watch<ProjectService>());
     final maxH = maxAvailableHeight > 0 ? maxAvailableHeight : 600.0;
     // 上限は「表示中のキャンバス横幅が画面の横幅ぴったりになる高さ」（絵の
-    // 上下にフレーム数・ループ・全画面の段を足した高さ）とレイアウト上
+    // 上下にフレーム数・全画面の段を足した高さ）とレイアウト上
     // 実際に使える高さ（maxH）のうち小さい方。下限は0（ハンドルが
     // プレビュー領域の一番上に付くまで、加減なく縮小できるようにする）。
     final screenWidth = MediaQuery.sizeOf(context).width;

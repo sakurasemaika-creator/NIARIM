@@ -29,7 +29,6 @@ void main() {
   ];
   const controls = [
     'timelinePreviewFrameCount',
-    'timelinePreviewLoopButton',
     'timelinePreviewFullscreenButton',
   ];
 
@@ -112,12 +111,10 @@ void main() {
     final count = tester.getRect(
       find.byKey(const Key('timelinePreviewFrameCount')),
     );
-    final loop = tester.getRect(
-      find.byKey(const Key('timelinePreviewLoopButton')),
-    );
-    // フレーム数は左下、ループは右下。
+    // フレーム数は左下。ループの切り替えはプレビューに置かない（再生の
+    // 操作と重複する）。
     expect(count.center.dx, lessThan(picture.center.dx), reason: label);
-    expect(loop.center.dx, greaterThan(picture.center.dx), reason: label);
+    expect(find.byKey(const Key('timelinePreviewLoopButton')), findsNothing);
   }
 
   testWidgets(
@@ -145,18 +142,16 @@ void main() {
             final fullscreen = tester.getRect(
               find.byKey(const Key('timelinePreviewFullscreenButton')),
             );
-            final loop = tester.getRect(
-              find.byKey(const Key('timelinePreviewLoopButton')),
+            final count = tester.getRect(
+              find.byKey(const Key('timelinePreviewFrameCount')),
             );
-            // 全画面は右上（低い欄ではループの左の同じ段）。
-            if (loop.top - fullscreen.top > 1) {
+            // 全画面は右上（低い欄ではフレーム数と同じ下の段の右端）。
+            if (count.bottom - fullscreen.bottom > 1) {
               expect(
                 fullscreen.top,
                 lessThan(picture.center.dy),
                 reason: label,
               );
-            } else {
-              expect(fullscreen.right, lessThanOrEqualTo(loop.left + 1));
             }
             expect(fullscreen.center.dx, greaterThan(picture.center.dx));
           }
@@ -193,7 +188,6 @@ void main() {
       );
       expectOutsidePicture(tester, 'fullscreen $shape', screen, const [
         'timelinePreviewFrameCount',
-        'timelinePreviewLoopButton',
       ]);
     }
     await tester.pumpWidget(const SizedBox.shrink());

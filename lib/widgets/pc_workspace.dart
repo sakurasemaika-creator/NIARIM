@@ -495,12 +495,17 @@ class PcPane {
     this.minLayoutHeight = 240,
     this.focusTab,
     this.focusSerial = 0,
+    this.movable = false,
   });
 
   final String id;
   final List<PcPaneTab> tabs;
   final bool fill;
   final double preferredHeight;
+
+  /// 見出しをつかんで、同じ列の別の位置や反対側の列へ動かせる
+  /// （[PcDockColumn.onPaneDropped]）。
+  final bool movable;
 
   /// 中身を並べる最低の高さ。ペインがこれより低いときは、中身をこの高さで
   /// 並べてペインの中でスクロールする（パネルの見出し・ボタンの段が潰れて
@@ -515,14 +520,29 @@ class PcPane {
 /// ドックの列。ペインを縦に並べ、境目のつまみで高さを分け直せる。
 /// ペインは見出しの矢印でたためる（見出しにダブルクリックを付けると、
 /// タブのクリックがダブルクリックの判定を待って遅れる）。タブは開いた順に
-/// 前に出る。
+/// 前に出る。動かせるペインは見出しをつかんで、別のペインの上へ落とすと
+/// その前（ペインの下半分なら後ろ）へ入る。列をまたいでも落とせる。
 class PcDockColumn extends StatefulWidget {
-  const PcDockColumn({super.key, required this.panes, this.onActiveTabChanged});
+  const PcDockColumn({
+    super.key,
+    required this.panes,
+    this.onActiveTabChanged,
+    this.onPaneResized,
+    this.onPaneDropped,
+  });
 
   final List<PcPane> panes;
 
   /// ペインの前に出ているタブが変わったとき（ペインのid, タブのid）。
   final void Function(String paneId, String tabId)? onActiveTabChanged;
+
+  /// 境目のつまみを離したとき、高さを変えたペインのidと中身の高さ。
+  /// 保存した高さを[PcPane.preferredHeight]で渡し直すと、その値で並べる。
+  final void Function(String paneId, double height)? onPaneResized;
+
+  /// 動かせるペインがこの列へ落とされたとき（落とされたペインのid、その
+  /// 前に入るペインのid。nullなら列の最後）。
+  final void Function(String paneId, String? beforePaneId)? onPaneDropped;
 
   static const double headerHeight = 28;
   static const double splitterHeight = 5;
@@ -539,6 +559,9 @@ class _PcDockColumnState extends State<PcDockColumn> {
   final Map<String, double> _weights = {};
   // 直前のレイアウトでの中身の高さ（つまみのドラッグの基準）。
   final Map<String, double> _laidOut = {};
+  final Map<String, GlobalKey> _paneKeys = {};
+  // いま動かしているつまみで高さが変わるペイン。
+  String? _resizing;
 
   @override
   void initState() {
@@ -554,6 +577,11 @@ class _PcDockColumnState extends State<PcDockColumn> {
     final old = {for (final p in oldWidget.panes) p.id: p};
     for (final pane in widget.panes) {
       _syncActive(pane, old[pane.id]);
+      // 外で決め直した高さ（保存した値・設定の画面）を優先する。
+      final before = old[pane.id];
+      if (before != null && before.preferredHeight != pane.preferredHeight) {
+        _heights.remove(pane.id);
+      }
     }
   }
 
@@ -607,18 +635,21 @@ class _PcDockColumnState extends State<PcDockColumn> {
     const minH = PcDockColumn.minContentHeight;
     setState(() {
       if (upperOpen && !fills.contains(upper.id)) {
+        _resizing = upper.id;
         _heights[upper.id] =
             ((_heights[upper.id] ?? upper.preferredHeight) + dy).clamp(
               minH,
               4000.0,
             );
       } else if (lowerOpen && !fills.contains(lower.id)) {
+        _resizing = lower.id;
         _heights[lower.id] =
             ((_heights[lower.id] ?? lower.preferredHeight) - dy).clamp(
               minH,
               4000.0,
             );
       } else if (upperOpen && lowerOpen) {
+        _resizing = null;
         // 2つとも残りを分け合うペイン：今の高さを重みにして、境目を動かす。
         for (final id in fills) {
           _weights[id] = _laidOut[id] ?? 1;
@@ -632,6 +663,31 @@ class _PcDockColumnState extends State<PcDockColumn> {
         _weights[lower.id] = total - na;
       }
     });
+  }
+
+  void _dragEnd() {
+    final id = _resizing;
+    _resizing = null;
+    final height = id == null ? null : _heights[id];
+    if (id != null && height != null) widget.onPaneResized?.call(id, height);
+  }
+
+  /// [pane]の上へ落とされたとき：ペインの上半分ならその前、下半分なら
+  /// その後ろ（次のペインの前）へ入れる。
+  void _drop(List<PcPane> panes, PcPane pane, String dragged, Offset global) {
+    final box =
+        _paneKeys[pane.id]?.currentContext?.findRenderObject() as RenderBox?;
+    var lower = false;
+    if (box != null && box.hasSize) {
+      lower = box.globalToLocal(global).dy > box.size.height / 2;
+    }
+    String? before = pane.id;
+    if (lower) {
+      final i = panes.indexOf(pane);
+      before = i + 1 < panes.length ? panes[i + 1].id : null;
+    }
+    if (before == dragged) return;
+    widget.onPaneDropped?.call(dragged, before);
   }
 
   @override
@@ -697,22 +753,43 @@ class _PcDockColumnState extends State<PcDockColumn> {
                 _PcSplitter(
                   axis: Axis.vertical,
                   onDrag: (d) => _drag(panes, fills, i - 1, d),
+                  onDragEnd: _dragEnd,
                 ),
               );
             }
             final collapsed = _collapsed.contains(pane.id);
-            children.add(
-              SizedBox(
-                height: header + (collapsed ? 0 : content[pane.id] ?? 0),
-                child: _PcDockPaneView(
-                  pane: pane,
-                  activeId: _active[pane.id] ?? pane.tabs.first.id,
-                  collapsed: collapsed,
-                  onSelect: (id) => _select(pane, id),
-                  onToggleCollapsed: () => _toggleCollapsed(pane),
-                ),
+            Widget view = SizedBox(
+              key: _paneKeys.putIfAbsent(pane.id, GlobalKey.new),
+              height: header + (collapsed ? 0 : content[pane.id] ?? 0),
+              child: _PcDockPaneView(
+                pane: pane,
+                activeId: _active[pane.id] ?? pane.tabs.first.id,
+                collapsed: collapsed,
+                onSelect: (id) => _select(pane, id),
+                onToggleCollapsed: () => _toggleCollapsed(pane),
               ),
             );
+            if (widget.onPaneDropped != null) {
+              final inner = view;
+              view = DragTarget<_PcPaneDrag>(
+                onWillAcceptWithDetails: (d) => d.data.id != pane.id,
+                onAcceptWithDetails: (d) =>
+                    _drop(panes, pane, d.data.id, d.offset),
+                builder: (context, candidates, _) => candidates.isEmpty
+                    ? inner
+                    : DecoratedBox(
+                        position: DecorationPosition.foreground,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: colors.accentFill,
+                            width: 2,
+                          ),
+                        ),
+                        child: inner,
+                      ),
+              );
+            }
+            children.add(view);
           }
           return ClipRect(
             child: OverflowBox(
@@ -757,6 +834,16 @@ class _PcDockPaneView extends StatelessWidget {
       fontSize: 12,
       color: colors.onPane,
     );
+    final tabs = [
+      for (final tab in pane.tabs)
+        _PcTabLabel(
+          key: ValueKey('pcPaneTab.${tab.id}'),
+          tab: tab,
+          active: tab.id == active.id,
+          style: titleStyle,
+          onTap: () => onSelect(tab.id),
+        ),
+    ];
     return Material(
       color: colors.pane,
       child: Column(
@@ -772,21 +859,12 @@ class _PcDockPaneView extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        for (final tab in pane.tabs)
-                          _PcTabLabel(
-                            key: ValueKey('pcPaneTab.${tab.id}'),
-                            tab: tab,
-                            active: tab.id == active.id,
-                            style: titleStyle,
-                            onTap: () => onSelect(tab.id),
-                          ),
-                      ],
-                    ),
-                  ),
+                  child: pane.movable
+                      ? _draggableHeader(context, tabs, active, titleStyle)
+                      : SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(children: tabs),
+                        ),
                 ),
                 PcToolButton(
                   key: ValueKey('pcPaneCollapse.${pane.id}'),
@@ -851,6 +929,55 @@ class _PcDockPaneView extends StatelessWidget {
       ),
     );
   }
+
+  /// 動かせるペインの見出し。つかんで別のペインの上へ落とす。
+  Widget _draggableHeader(
+    BuildContext context,
+    List<Widget> tabs,
+    PcPaneTab active,
+    TextStyle titleStyle,
+  ) {
+    final colors = PcWorkspaceColors.of(context);
+    final row = Row(children: tabs);
+    return MouseRegion(
+      cursor: SystemMouseCursors.grab,
+      child: Draggable<_PcPaneDrag>(
+        key: ValueKey('pcPaneDrag.${pane.id}'),
+        data: _PcPaneDrag(pane.id),
+        dragAnchorStrategy: pointerDragAnchorStrategy,
+        feedback: Material(
+          color: colors.paneHeader,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            side: BorderSide(color: colors.accentFill),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (active.icon != null) ...[
+                  Icon(active.icon, size: 14, color: colors.onPane),
+                  const SizedBox(width: 5),
+                ],
+                Text(active.title, style: titleStyle),
+              ],
+            ),
+          ),
+        ),
+        childWhenDragging: Opacity(opacity: 0.4, child: row),
+        child: row,
+      ),
+    );
+  }
+}
+
+/// ドックのペインを動かすときに運ぶもの。
+@immutable
+class _PcPaneDrag {
+  const _PcPaneDrag(this.id);
+  final String id;
 }
 
 class _PcTabLabel extends StatelessWidget {
