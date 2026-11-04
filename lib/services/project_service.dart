@@ -522,6 +522,23 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Explicit user saves, NOT autosaves, trigger a separate lightweight
+  /// editing-time checkpoint after the project has been saved successfully.
+  /// A network failure never rolls back or blocks the local save.
+  void onManualSaveCommitted(String projectId) {
+    if (projectId != _trackedProjectId || _workPaused) return;
+    _settleWorkTime();
+    _creatorEditReporter?.manualSaveSucceeded(projectId);
+  }
+
+  /// For the desktop File > Save action. Internal saveProject() callers
+  /// (autosave, navigation, folder updates) intentionally do not report.
+  Future<void> saveProjectManually(String projectId) async {
+    _settleWorkTime();
+    await saveProject(projectId);
+    onManualSaveCommitted(projectId);
+  }
+
   /// Android background time does not count. Keep the editor's tracking
   /// lease alive and reopen a short server session only upon resume.
   void pauseWorkTracking() {
