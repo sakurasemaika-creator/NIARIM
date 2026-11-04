@@ -115,6 +115,24 @@ void main() {
           await h.capture('$id-before-ui');
           await h.openMenu(h.l10n.filterPanelTitle);
           final panel = find.byType(FilterPanel);
+          if (filter.id == FilterService.genericNoiseFilterId &&
+              variant == NoiseStyle.filmGrain.name) {
+            await h.capture('Filter0027-gallery-top');
+            final gallery = find.byKey(const ValueKey('filter-tile-grid'));
+            final noiseTile = find.byKey(
+              const ValueKey('filter-card-Filter0027'),
+            );
+            await tester.scrollUntilVisible(
+              noiseTile,
+              120,
+              scrollable: find.descendant(
+                of: gallery,
+                matching: find.byType(Scrollable),
+              ),
+            );
+            await h.settle();
+            await h.capture('Filter0027-gallery-noise-tile');
+          }
           await h.tap(
             find
                 .descendant(of: panel, matching: find.byIcon(Icons.search))
@@ -211,6 +229,14 @@ void main() {
           await h.settle(6);
           final settings = h.context.read<FilterService>().currentFilter!;
           await h.capture('$id-settings');
+          if (filter.id == FilterService.genericNoiseFilterId &&
+              variant == NoiseStyle.vhs.name) {
+            await tester.ensureVisible(
+              find.textContaining(h.l10n.filterNoiseSeed).first,
+            );
+            await h.settle(4);
+            await h.capture('$id-settings-bottom');
+          }
           await h.tap(find.text(h.l10n.filterApplyButton));
           await h.until(
             () => h.context.read<FilterService>().currentFilter == null &&
