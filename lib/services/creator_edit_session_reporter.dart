@@ -89,14 +89,12 @@ class CreatorEditSessionReporter {
       // have a server-clock interval to compare against.
       begin(projectId: projectId, activeSeconds: activeSeconds);
     }
-    final period = _active;
-    if (period != null && !period.closed && period.projectId == projectId) {
-    }
   }
 
   void recordCommittedMutation(
-    String projectId, {required int Function() activeSeconds},
-  ) {
+    String projectId, {
+    required int Function() activeSeconds,
+  }) {
     if (_active == null && _canSend) {
       // Reopen a short bounded server session after an idle flush. The
       // absolute local editing counter is never resent as a fresh delta.
