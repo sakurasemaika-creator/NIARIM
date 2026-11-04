@@ -2795,7 +2795,10 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
             ),
           ),
-          if (eyedropperTarget != null)
+          // An eyedropper without a canvas callback would look actionable
+          // but silently do nothing (for example in a standalone panel).
+          if (eyedropperTarget != null &&
+              widget.onStartCanvasEyedropper != null)
             IconButton(
               visualDensity: VisualDensity.compact,
               icon: const Icon(Icons.colorize, size: 18),

@@ -134,6 +134,18 @@ void main() {
         // Preview mode removes the tile gallery to give the canvas more
         // space. The user returns to the same gallery by cancelling.
         expect(find.byKey(const ValueKey('filter-apply-button')), findsOneWidget);
+        if (filter.kind == FilterKind.outline ||
+            filter.kind == FilterKind.inkPool) {
+          // This isolated panel does not provide a canvas-pick callback:
+          // an eyedropper button would misleadingly do nothing on tap.
+          expect(
+            find.descendant(
+              of: find.byType(FilterPanel),
+              matching: find.byIcon(Icons.colorize),
+            ),
+            findsNothing,
+          );
+        }
         expect(find.byKey(const ValueKey('filter-cancel-button')), findsOneWidget);
         expect(gallery, findsNothing);
         final noiseStyleSelector =
