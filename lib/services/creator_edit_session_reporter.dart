@@ -28,11 +28,9 @@ class CreatorEditSessionReporter {
   Future<void> _serial = Future<void>.value();
   _EditPeriod? _active;
 
-  /// Continuous-editing safety limit: the server expires after 20 minutes.
-  /// Normal uploads happen on exit or after 2 minutes without interaction.
+  /// Maximum continuous-editing interval. Normal uploads happen when a
+  /// manual save succeeds or the editor is left. No idle-only network calls.
   static const _checkpointPeriod = Duration(minutes: 15);
-  static const _idleAfter = Duration(minutes: 2);
-  static const _idlePoll = Duration(seconds: 30);
   static const _maxPending = 16;
   static const _keyPrefix = 'creator_edit_pending_v1_';
   static const _lostPrefix = 'creator_edit_unverified_seconds_v1_';
@@ -74,14 +72,6 @@ class CreatorEditSessionReporter {
     period.timer = Timer.periodic(
       _checkpointPeriod, (_) => _checkpoint(period, stop: false),
     );
-    // The client-only idle poll performs NO network request until the
-    // editor has been inactive for two minutes.
-    period.idleTimer = Timer.periodic(_idlePoll, (_) {
-      if (period.closed || !identical(_active, period)) return;
-      if (DateTime.now().difference(period.lastInteractionAt) >= _idleAfter) {
-        _checkpoint(period, stop: true);
-      }
-    });
     _enqueue(() async {
       await _drain(period.accountId);
       await _start(period);
@@ -101,7 +91,6 @@ class CreatorEditSessionReporter {
     }
     final period = _active;
     if (period != null && !period.closed && period.projectId == projectId) {
-      period.lastInteractionAt = DateTime.now();
     }
   }
 
@@ -119,7 +108,6 @@ class CreatorEditSessionReporter {
         period.accountId != _accountId()) return;
     // Count commits, not pointer/tap/scrub events. A single real edit suffices
     // for a 1-9 second session, capped by the backend's server clock.
-    period.lastInteractionAt = DateTime.now();
     if (period.mutations < 100000) period.mutations++;
   }
 
@@ -134,8 +122,6 @@ class CreatorEditSessionReporter {
       period.closed = true;
       period.timer?.cancel();
       period.timer = null;
-      period.idleTimer?.cancel();
-      period.idleTimer = null;
       if (identical(_active, period)) _active = null;
     }
     // No need for a costly write if there was no actual editing;
@@ -160,6 +146,26 @@ class CreatorEditSessionReporter {
       };
       await _persistAndDrain(period.accountId, payload);
     });
+  }
+
+  /// Manual save is an extra checkpoint, NOT a new server session. Save
+  /// actions never send editor images, and no autosave invokes this method.
+  /// It is safe to call when the pilot is disabled or outside an editor.
+  void manualSaveSucceeded(String projectId) {
+    final period = _active;
+    if (period == null || period.closed ||
+        period.projectId != projectId ||
+        period.accountId != _accountId()) return;
+    _checkpoint(period, stop: false);
+  }
+
+  /// Retry already-persisted checkpoints when the authenticated account
+  /// becomes available again. Never treat offline time as verified credits.
+  void retryPendingAfterSignIn() {
+    if (!_canSend) return;
+    final account = _accountId();
+    if (account == null) return;
+    _enqueue(() => _drain(account));
   }
 
   void end() {
@@ -290,8 +296,6 @@ class _EditPeriod {
   final String nonce;
   final int Function() activeSeconds;
   Timer? timer;
-  Timer? idleTimer;
-  DateTime lastInteractionAt = DateTime.now();
   String? sessionId;
   int sequence = 1;
   int lastSnapshotSeconds;
