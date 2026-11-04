@@ -961,7 +961,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      '길이 제한 없음・워터마크 없음・톤 커브／레벨 보정 등 제작의 폭을 넓히는 기능이 모두 해제됩니다';
+      '길이 최대 2시간・워터마크 없음・톤 커브／레벨 보정 등 제작의 폭을 넓히는 기능이 모두 해제됩니다';
 
   @override
   String get premiumHeroHighlightDuration => '길이 최대 2시간';
