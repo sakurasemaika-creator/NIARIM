@@ -9,6 +9,7 @@ import '../../services/advertising_service.dart';
 import '../../services/coin_redemption_attempt_store.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
+import '../../widgets/coin_history_sheet.dart';
 import '../../widgets/responsive.dart';
 
 /// Reward UI shell; the server wallet/pricing/ad issuance are not yet live.
@@ -105,6 +106,24 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         setState(() => _walletLoading = false);
       }
     }
+  }
+
+  void _showCoinHistory() {
+    final auth = context.read<GoogleAuthService>();
+    final owner = auth.account?.id;
+    final api = context.read<CommunityService>().api;
+    if (owner == null || api == null) return;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => CoinHistorySheet(
+        ownerId: owner,
+        accountChanges: auth,
+        currentAccountId: () => auth.account?.id,
+        fetchPage: ({String? cursor, int limit = 20}) =>
+            api.myCoinHistory(cursor: cursor, limit: limit),
+      ),
+    );
   }
 
   Future<void> _watchRewardedAd() async {
@@ -532,6 +551,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
               ),
             ],
             if (_rewardState != null) ...[
+              TextButton.icon(
+                key: const Key('coinHistoryButton'),
+                icon: const Icon(Icons.receipt_long_outlined),
+                onPressed: _lastAccountId != null ? _showCoinHistory : null,
+                label: Text(t['coinHistory']),
+              ),
               TextButton.icon(
                 icon: const Icon(Icons.refresh),
                 onPressed: !_walletLoading && _lastAccountId != null
