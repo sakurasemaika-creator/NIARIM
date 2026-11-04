@@ -13,6 +13,11 @@ import '../models/scene.dart';
 /// ディスクへ保存する。自動保存（クラッシュ復元専用）とは
 /// 完全に別領域・別ライフサイクルで管理される。
 class SaveTreeService extends ChangeNotifier {
+  /// Invoked ONLY when a user-initiated save slot/tree archive succeeds.
+  /// No network response is awaited; a failed sync cannot invalidate the
+  /// completed on-device save. AutosaveService does not call this callback.
+  void Function(String projectId)? onManualSaveCommitted;
+
   int _slotMax = 10;
   int get slotMax => _slotMax;
 
@@ -98,6 +103,7 @@ class SaveTreeService extends ChangeNotifier {
     }
     _nodesByProject[projectId]!.add(node);
     notifyListeners();
+    onManualSaveCommitted?.call(projectId);
     return node;
   }
 
@@ -139,6 +145,7 @@ class SaveTreeService extends ChangeNotifier {
     );
     _nodesByProject[projectId]!.add(node);
     notifyListeners();
+    onManualSaveCommitted?.call(projectId);
     return node;
   }
 
