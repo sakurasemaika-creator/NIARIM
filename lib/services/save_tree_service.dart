@@ -18,6 +18,16 @@ class SaveTreeService extends ChangeNotifier {
   /// completed on-device save. AutosaveService does not call this callback.
   void Function(String projectId)? onManualSaveCommitted;
 
+  void _notifySuccessfulManualSave(String projectId) {
+    // A failed network checkpoint must NEVER make a completed local archive
+    // look like a failed save or cause a second save/overwrite attempt.
+    try {
+      onManualSaveCommitted?.call(projectId);
+    } catch (error) {
+      debugPrint('Optional editing-time checkpoint skipped: $error');
+    }
+  }
+
   int _slotMax = 10;
   int get slotMax => _slotMax;
 
@@ -103,7 +113,7 @@ class SaveTreeService extends ChangeNotifier {
     }
     _nodesByProject[projectId]!.add(node);
     notifyListeners();
-    onManualSaveCommitted?.call(projectId);
+    _notifySuccessfulManualSave(projectId);
     return node;
   }
 
@@ -145,7 +155,7 @@ class SaveTreeService extends ChangeNotifier {
     );
     _nodesByProject[projectId]!.add(node);
     notifyListeners();
-    onManualSaveCommitted?.call(projectId);
+    _notifySuccessfulManualSave(projectId);
     return node;
   }
 
