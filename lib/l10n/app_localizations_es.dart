@@ -1001,7 +1001,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      'Sin límite de duración, sin marca de agua, curva de tonos y corrección de niveles, y mucho más: todo queda desbloqueado.';
+      'Hasta 2 horas de duración, sin marca de agua, curva de tonos y corrección de niveles, y mucho más.';
 
   @override
   String get premiumHeroHighlightDuration => 'Hasta 2 horas';
