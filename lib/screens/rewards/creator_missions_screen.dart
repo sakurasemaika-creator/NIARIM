@@ -133,6 +133,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                   );
                 }
                 final info = snapshot.data!;
+                final candidateMinutes =
+                    ((info['candidateEditSeconds'] as num?)?.toInt() ?? 0) ~/ 60;
                 final rows = (info['missions'] as List? ?? const [])
                     .whereType<Map>()
                     .map((entry) => Map<String, dynamic>.from(entry))
