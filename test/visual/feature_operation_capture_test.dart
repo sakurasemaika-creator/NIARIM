@@ -202,8 +202,9 @@ void main() {
           await h.capture('$id-settings');
           await h.tap(find.text(h.l10n.filterApplyButton));
           await h.until(
-            () => panel.evaluate().isEmpty,
-            'filter apply must finish and close the panel',
+            () => h.context.read<FilterService>().currentFilter == null &&
+                find.byKey(const ValueKey('filter-tile-grid')).evaluate().isNotEmpty,
+            'filter apply must finish and return to the tile catalog',
           );
           final after = await h.art('$id-after');
           await h.capture('$id-after-ui');
@@ -382,8 +383,9 @@ void main() {
           await h.capture('$id-settings');
           await h.tap(find.text(h.l10n.filterApplyButton));
           await h.until(
-            () => panel.evaluate().isEmpty,
-            '$id apply must finish and close the panel',
+            () => h.context.read<FilterService>().currentFilter == null &&
+                find.byKey(const ValueKey('filter-tile-grid')).evaluate().isNotEmpty,
+            '$id apply must finish and restore the catalog',
           );
           final after = await h.art('$id-after');
           if (square) outputs[id] = after;
@@ -731,8 +733,16 @@ void main() {
       await h.settle();
       await h.tap(find.text(h.l10n.filterApplyButton));
       await h.until(
-        () => find.byType(FilterPanel).evaluate().isEmpty,
-        'recorded filter must complete',
+        () => h.context.read<FilterService>().currentFilter == null &&
+            find.byKey(const ValueKey('filter-tile-grid')).evaluate().isNotEmpty,
+        'recorded filter must finish and restore the catalog',
+      );
+      // The filter palette stays open by design after Apply.
+      await h.tap(
+        find.descendant(
+          of: find.byType(FilterPanel),
+          matching: find.byIcon(Icons.close),
+        ).first,
       );
       final expectedReplay = await h.art('$replayId-original');
       await h.tap(find.text(h.l10n.customAutomationStopRecording));
