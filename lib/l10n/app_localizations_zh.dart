@@ -951,7 +951,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumHeroTitle => '开通高级版，创作更自由';
 
   @override
-  String get premiumHeroSubtitle => '无时长上限、无水印、色调曲线／色阶校正等功能全部解锁';
+  String get premiumHeroSubtitle =>
+      '时长最长2小时、无水印、色调曲线／色阶校正等功能全部解锁';
 
   @override
   String get premiumHeroHighlightDuration => '时长最长2小时';
@@ -8554,7 +8555,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumHeroTitle => '開通進階版，創作更自由';
 
   @override
-  String get premiumHeroSubtitle => '無時長上限、無浮水印、色調曲線／色階校正等功能全部解鎖';
+  String get premiumHeroSubtitle =>
+      '時長最長2小時、無浮水印、色調曲線／色階校正等功能全部解鎖';
 
   @override
   String get premiumHeroHighlightDuration => '時長最長2小時';
