@@ -28,9 +28,10 @@ jobs:
         with:
           channel: stable
       - run: flutter pub get
-      - name: Validate filter menu contracts and persistence
+      - name: Validate unified noise, help translations and filter gallery
         run: |
-          flutter test test/filter_panel_production_ui_contract_test.dart test/filter_noise_settings_test.dart --reporter expanded
+          flutter test test/filter_noise_settings_test.dart test/help_filter_names_test.dart --reporter expanded
+          flutter test test/filter_panel_production_ui_contract_test.dart --plain-name "every built-in filter is reachable by a stable production UI card" --reporter expanded
           flutter analyze lib/screens/canvas/widgets/filter_panel.dart lib/services/filter_service.dart test/filter_panel_production_ui_contract_test.dart test/filter_noise_settings_test.dart
       - name: Capture each drawing filter on the real Canvas route
         env:
