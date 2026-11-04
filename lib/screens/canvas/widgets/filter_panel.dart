@@ -934,8 +934,8 @@ class _FilterPanelState extends State<FilterPanel> {
                           LayoutBuilder(
                             builder: (context, size) => FilterSamplePreview(
                               filter,
-                              width: math.max(1, size.maxWidth),
-                              height: math.max(1, size.maxHeight),
+                              width: math.max(1.0, size.maxWidth),
+                              height: math.max(1.0, size.maxHeight),
                             ),
                           ),
                           Positioned(
