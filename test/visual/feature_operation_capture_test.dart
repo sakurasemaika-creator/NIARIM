@@ -381,6 +381,9 @@ void main() {
             expect(current().pixelArtCellSize(width, height), byDots ? 1 : 8);
           }
           await h.capture('$id-settings');
+          // Apply clears the selected filter and restores the tile catalog.
+          // Retain the configured filter for the output audit metadata.
+          final appliedSettings = current();
           await h.tap(find.text(h.l10n.filterApplyButton));
           await h.until(
             () => h.context.read<FilterService>().currentFilter == null &&
@@ -430,14 +433,14 @@ void main() {
               'kind': filter.kind.name,
               if (filter.kind == FilterKind.pixelate) ...{
                 'pixelArtByDots': byDots,
-                'cellSize': current().pixelArtCellSize(width, height),
+                'cellSize': appliedSettings.pixelArtCellSize(width, height),
                 'canvas': '$width x $height',
-                'colorMode': current().pixelColorMode.name,
-                'colors': current().pixelExplicitColors,
-                'dither': current().pixelDither,
+                'colorMode': appliedSettings.pixelColorMode.name,
+                'colors': appliedSettings.pixelExplicitColors,
+                'dither': appliedSettings.pixelDither,
               },
               if (filter.kind == FilterKind.mosaic)
-                'blockSize': current().strength,
+                'blockSize': appliedSettings.strength,
             },
             note: switch (id) {
               'pixel_art_blocks_six_colours' => '8pxの正方形ブロック・黒白赤黄青緑の6色・半透明なし。',
