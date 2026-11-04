@@ -1054,8 +1054,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // 制作時間カウント（描画モードのみカウント）
     if (!_workTrackingStarted) {
       _workTrackingStarted = true;
-      _workTrackingLease = context.read<ProjectService>()
-          .beginWorkTracking(widget.projectId);
+      _workTrackingLease = context.read<ProjectService>().beginWorkTracking(
+        widget.projectId,
+      );
     }
     // 不足素材の検出（プロジェクトを開いた際に参照先の素材が
     // 見つからない場合は「不足素材があります」と表示。「再検索」で再確認）
@@ -1974,198 +1975,209 @@ class _CanvasScreenState extends State<CanvasScreen> {
         width: collapsed ? 52 : width,
         child: DragTarget<CanvasDockPanel>(
           key: ValueKey('dockTarget-${p.name}'),
-        onWillAcceptWithDetails: (d) => d.data != p,
-        onAcceptWithDetails: (d) =>
-            settings.moveDesktopDockPanel(d.data, toRight: right, before: p),
-        builder: (context, candidates, _) => Container(
-          decoration: BoxDecoration(
-            color: scheme.surface,
-            border: Border.all(
-              color: candidates.isEmpty
-                  ? scheme.outlineVariant
-                  : scheme.primary,
-            ),
-          ),
-          child: collapsed
-              ? SizedBox(
-                  height: 48,
-                  child: Tooltip(
-                    message: title,
-                    child: IconButton(
-                      key: ValueKey('dockExpand-${p.name}'),
-                      tooltip: l.filterPanelExpand,
-                      onPressed: () => settings.setDesktopDockCollapsed(p, false),
-                      icon: Icon(
-                        foldsLeft ? Icons.chevron_right : Icons.chevron_left,
-                      ),
-                    ),
-                  ),
-                )
-              : Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: 34,
-                child: Row(
-                  children: [
-                    Draggable<CanvasDockPanel>(
-                      data: p,
-                      feedback: Material(
-                        color: scheme.surfaceContainerHighest,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Text(title),
-                        ),
-                      ),
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.grab,
-                        child: SizedBox(
-                          key: ValueKey('dockDrag-${p.name}'),
-                          width: 36,
-                          child: Icon(
-                            Icons.drag_indicator,
-                            size: 20,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    IconButton(
-                      key: ValueKey('dockCollapse-${p.name}'),
-                      tooltip: l.filterPanelCollapse,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 36,
-                        height: 32,
-                      ),
-                      padding: EdgeInsets.zero,
-                      onPressed: () => settings.setDesktopDockCollapsed(p, true),
-                      icon: Icon(
-                        foldsLeft ? Icons.chevron_left : Icons.chevron_right,
-                        size: 22,
-                      ),
-                    ),
-                    PopupMenuButton<String>(
-                      key: ValueKey('dockMenu-${p.name}'),
-                      icon: const Icon(Icons.more_vert, size: 18),
-                      onSelected: (action) {
-                        if (action == 'hide') {
-                          _setDesktopPanelVisible(p, false);
-                        } else {
-                          settings.moveDesktopDockPanel(
-                            p,
-                            toRight: action == 'right',
-                          );
-                        }
-                      },
-                      itemBuilder: (_) => [
-                        PopupMenuItem(
-                          value: 'left',
-                          child: Text(l.pcWorkspaceLayoutToolOrderSection),
-                        ),
-                        PopupMenuItem(
-                          value: 'right',
-                          child: Text(l.pcWorkspaceLayoutRightOrderSection),
-                        ),
-                        PopupMenuItem(
-                          value: 'hide',
-                          child: Text(l.commonClose),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+          onWillAcceptWithDetails: (d) => d.data != p,
+          onAcceptWithDetails: (d) =>
+              settings.moveDesktopDockPanel(d.data, toRight: right, before: p),
+          builder: (context, candidates, _) => Container(
+            decoration: BoxDecoration(
+              color: scheme.surface,
+              border: Border.all(
+                color: candidates.isEmpty
+                    ? scheme.outlineVariant
+                    : scheme.primary,
               ),
-              SizedBox(
-                height: height,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      left: right ? 18 : 0,
-                      right: right ? 0 : 18,
-                      child: _dockBody(p),
+            ),
+            child: collapsed
+                ? SizedBox(
+                    height: 48,
+                    child: Tooltip(
+                      message: title,
+                      child: IconButton(
+                        key: ValueKey('dockExpand-${p.name}'),
+                        tooltip: l.filterPanelExpand,
+                        onPressed: () =>
+                            settings.setDesktopDockCollapsed(p, false),
+                        icon: Icon(
+                          foldsLeft ? Icons.chevron_right : Icons.chevron_left,
+                        ),
+                      ),
                     ),
-                    Positioned(
-                      left: right ? 0 : null,
-                      right: right ? null : 0,
-                      top: 0,
-                      bottom: 0,
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.resizeLeftRight,
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: 34,
+                        child: Row(
+                          children: [
+                            Draggable<CanvasDockPanel>(
+                              data: p,
+                              feedback: Material(
+                                color: scheme.surfaceContainerHighest,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Text(title),
+                                ),
+                              ),
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.grab,
+                                child: SizedBox(
+                                  key: ValueKey('dockDrag-${p.name}'),
+                                  width: 36,
+                                  child: Icon(
+                                    Icons.drag_indicator,
+                                    size: 20,
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            IconButton(
+                              key: ValueKey('dockCollapse-${p.name}'),
+                              tooltip: l.filterPanelCollapse,
+                              constraints: const BoxConstraints.tightFor(
+                                width: 36,
+                                height: 32,
+                              ),
+                              padding: EdgeInsets.zero,
+                              onPressed: () =>
+                                  settings.setDesktopDockCollapsed(p, true),
+                              icon: Icon(
+                                foldsLeft
+                                    ? Icons.chevron_left
+                                    : Icons.chevron_right,
+                                size: 22,
+                              ),
+                            ),
+                            PopupMenuButton<String>(
+                              key: ValueKey('dockMenu-${p.name}'),
+                              icon: const Icon(Icons.more_vert, size: 18),
+                              onSelected: (action) {
+                                if (action == 'hide') {
+                                  _setDesktopPanelVisible(p, false);
+                                } else {
+                                  settings.moveDesktopDockPanel(
+                                    p,
+                                    toRight: action == 'right',
+                                  );
+                                }
+                              },
+                              itemBuilder: (_) => [
+                                PopupMenuItem(
+                                  value: 'left',
+                                  child: Text(
+                                    l.pcWorkspaceLayoutToolOrderSection,
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'right',
+                                  child: Text(
+                                    l.pcWorkspaceLayoutRightOrderSection,
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'hide',
+                                  child: Text(l.commonClose),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: height,
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              left: right ? 18 : 0,
+                              right: right ? 0 : 18,
+                              child: _dockBody(p),
+                            ),
+                            Positioned(
+                              left: right ? 0 : null,
+                              right: right ? null : 0,
+                              top: 0,
+                              bottom: 0,
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.resizeLeftRight,
+                                child: GestureDetector(
+                                  key: ValueKey('dockWidthResize-${p.name}'),
+                                  behavior: HitTestBehavior.opaque,
+                                  onHorizontalDragUpdate: (d) => setState(() {
+                                    _dockDragWidth[p] =
+                                        ((_dockDragWidth[p] ??
+                                                    settings.desktopDockWidth(
+                                                      p,
+                                                      right: right,
+                                                    )) +
+                                                d.delta.dx * (right ? -1 : 1))
+                                            .clamp(200.0, 480.0);
+                                  }),
+                                  onHorizontalDragEnd: (_) {
+                                    final w = _dockDragWidth.remove(p);
+                                    if (w != null)
+                                      settings.setDesktopDockWidth(p, w);
+                                  },
+                                  child: SizedBox(
+                                    width: 18,
+                                    child: Center(
+                                      child: RotatedBox(
+                                        quarterTurns: 1,
+                                        child: Icon(
+                                          Icons.drag_handle,
+                                          size: 20,
+                                          color: scheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      MouseRegion(
+                        cursor: SystemMouseCursors.resizeUpDown,
                         child: GestureDetector(
-                          key: ValueKey('dockWidthResize-${p.name}'),
+                          key: ValueKey('dockResize-${p.name}'),
                           behavior: HitTestBehavior.opaque,
-                          onHorizontalDragUpdate: (d) => setState(() {
-                            _dockDragWidth[p] =
-                                ((_dockDragWidth[p] ??
-                                            settings.desktopDockWidth(
-                                              p,
-                                              right: right,
-                                            )) +
-                                        d.delta.dx * (right ? -1 : 1))
-                                    .clamp(200.0, 480.0);
+                          onVerticalDragUpdate: (d) => setState(() {
+                            _dockDragHeight[p] =
+                                ((_dockDragHeight[p] ??
+                                            settings.desktopDockHeight(p)) +
+                                        d.delta.dy)
+                                    .clamp(140.0, 700.0);
                           }),
-                          onHorizontalDragEnd: (_) {
-                            final w = _dockDragWidth.remove(p);
-                            if (w != null) settings.setDesktopDockWidth(p, w);
+                          onVerticalDragEnd: (_) {
+                            final value = _dockDragHeight.remove(p);
+                            if (value != null)
+                              settings.setDesktopDockHeight(p, value);
                           },
                           child: SizedBox(
-                            width: 18,
+                            height: 22,
                             child: Center(
-                              child: RotatedBox(
-                                quarterTurns: 1,
-                                child: Icon(
-                                  Icons.drag_handle,
-                                  size: 20,
-                                  color: scheme.onSurfaceVariant,
-                                ),
+                              child: Icon(
+                                Icons.drag_handle,
+                                size: 24,
+                                color: scheme.onSurfaceVariant,
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              MouseRegion(
-                cursor: SystemMouseCursors.resizeUpDown,
-                child: GestureDetector(
-                  key: ValueKey('dockResize-${p.name}'),
-                  behavior: HitTestBehavior.opaque,
-                  onVerticalDragUpdate: (d) => setState(() {
-                    _dockDragHeight[p] =
-                        ((_dockDragHeight[p] ?? settings.desktopDockHeight(p)) +
-                                d.delta.dy)
-                            .clamp(140.0, 700.0);
-                  }),
-                  onVerticalDragEnd: (_) {
-                    final value = _dockDragHeight.remove(p);
-                    if (value != null) settings.setDesktopDockHeight(p, value);
-                  },
-                  child: SizedBox(
-                    height: 22,
-                    child: Center(
-                      child: Icon(
-                        Icons.drag_handle,
-                        size: 24,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
+                    ],
                   ),
-                ),
-              ),
-            ],
           ),
         ),
       ),
-    ),
     );
   }
 
