@@ -91,8 +91,14 @@ class CommunityApi {
   Future<Map<String, dynamic>> myRewardState() =>
       _client.getJson('/me/rewards', authenticated: true);
 
-  Future<Map<String, dynamic>> myCreatorMissions() =>
-      _client.getJson('/me/missions', authenticated: true);
+  /// Account status by default; specify an owned YouTube video ID to
+  /// inspect the once-per-work bookmark and rank claim history.
+  Future<Map<String, dynamic>> myCreatorMissions({String? workId}) =>
+      _client.getJson(
+        '/me/missions',
+        authenticated: true,
+        query: {if (workId != null) 'workId': workId},
+      );
 
   /// The signed-in account's works, including NIARIM-hidden works.
   /// The backend resolves the generated NIARIM user id from the Google ID token,
