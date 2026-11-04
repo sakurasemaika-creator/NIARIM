@@ -122,6 +122,32 @@ void main() {
     await navigate('/timeline/${colored.id}');
     await shot('04_timeline_preview_edges_without_duplicate_loop');
 
+    // Portrait artwork is narrower than the preview viewport: the controls
+    // must remain at the full viewport's extreme edges rather than moving
+    // toward the center with the fitted artwork.
+    final portrait = (await tester.runAsync(() => ps.createProject(
+      name: '縦長プレビュー端配置テスト',
+      fps: 12, durationSeconds: 1, backgroundColor: 0xFFB8CEDA,
+      exportWidth: 180, exportHeight: 320,
+    )))!;
+    await navigate('/timeline/${portrait.id}');
+    final viewport = tester.getRect(
+      find.byKey(const Key('timelinePreviewArea')),
+    );
+    final frameCounter = tester.getRect(
+      find.byKey(const Key('timelinePreviewFrameCount')),
+    );
+    final fullscreenButton = tester.getRect(
+      find.byKey(const Key('timelinePreviewFullscreenButton')),
+    );
+    expect((frameCounter.left - (viewport.left + 8)).abs(), lessThan(1),
+      reason: 'Counter must track the preview viewport, not artwork.');
+    expect((frameCounter.bottom - (viewport.bottom - 8)).abs(), lessThan(1));
+    expect((fullscreenButton.right - (viewport.right - 8)).abs(), lessThan(1),
+      reason: 'Fullscreen control must track the preview viewport edge.');
+    expect((fullscreenButton.top - (viewport.top + 8)).abs(), lessThan(1));
+    await shot('04b_timeline_portrait_artwork_controls_at_viewport_edges');
+
     await navigate('/canvas/${colored.id}');
     await shot('05_canvas_timeline_button_alignment');
     final gear = find.byIcon(Icons.settings);
