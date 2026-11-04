@@ -220,6 +220,21 @@ void main() {
       errors.add('07_filter_preview_colored_background: settings not found');
     }
 
+    // The selection action bar uses the same borderless transparent
+    // Material strategy as the mesh action bar. Capture it in the real
+    // canvas to document both requested black-outline fixes.
+    await navigate('/home');
+    await navigate('/canvas/${colored.id}');
+    await tester.tap(find.byIcon(Icons.highlight_alt).first);
+    await settle();
+    final selectionActionBar =
+        find.byKey(const ValueKey('selection-tool-action-bar'));
+    expect(selectionActionBar, findsOneWidget);
+    final selectionMaterial = tester.widget<Material>(selectionActionBar);
+    expect(selectionMaterial.type, MaterialType.transparency);
+    expect(selectionMaterial.elevation, 0);
+    await shot('07e_selection_action_bar_without_black_frame');
+
     await navigate('/settings/workspace');
     await settings.setToolbarSizeLevel(1);
     await shot('08_toolbar_size_1_preview');
