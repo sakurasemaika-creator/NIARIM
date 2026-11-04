@@ -55,8 +55,11 @@ export function unauthorized(message = "認証が必要です"): never {
   throw new ApiError(401, message, "UNAUTHORIZED");
 }
 
-export function forbidden(message = "この操作は許可されていません"): never {
-  throw new ApiError(403, message, "FORBIDDEN");
+export function forbidden(
+  message = "この操作は許可されていません",
+  code = "FORBIDDEN",
+): never {
+  throw new ApiError(403, message, code);
 }
 
 export function notFound(message = "見つかりません"): never {

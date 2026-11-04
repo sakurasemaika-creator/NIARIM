@@ -563,6 +563,13 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   移動・変形（`_beginTileUndo(paints: false)`）にはかけない。フィルター・
   色調整・明度で透過はまだロックを見ていない。
   `test/layer_lock_canvas_test.dart`。
+- **制作時間（`ProjectService.beginWorkTracking`・`endWorkTracking`）は画面の
+  initState・disposeから呼ばれる**：キャンバスからタイムラインへ移ると、
+  タイムラインのinitStateが前の画面の分を締めて`notifyListeners`する。
+  組み立ての最中に知らせると「組み立て中のsetState」の例外になったので、
+  `_notifyOutsideBuild`がそのときはフレームの後へ回す（dev_branchの
+  リースつきの制作時間、2026-11-04取り込み。`timeline_pc_workspace_test`で
+  発見）。
 - **ペンの線は、押して線を始めた指（`_strokePointer`）だけが描く**：
   `DrawingEngine.continueStroke`は線が無ければ新しく始めるので、押した時点で
   描かなかった指（手のひら除外・フィルターの調整中・ペンのボタン・ロック）の
@@ -855,6 +862,14 @@ onTap: ...)`だったために
     （スマホでは浮かぶカード〔影は付けない〕、ドックではペインいっぱい）、
     閉じるボタンは`PanelCenterCloseBar`（ドックでは出さない。窓の見出しの×で
     閉じる）。新しいパネルを足すときもこの2つを使うこと。
+  - 窓のたたみ（見出しの矢印）はPCレイアウト設定と同じ設定
+    （`SettingsService.isDesktopDockCollapsed`・`setDesktopDockCollapsed`、
+    保存キー`desktop_collapsed_docks`）に残す（`PcPane.collapsed`・
+    `onCollapsedChanged`）。列の窓がすべてたたまれると、列は外側の細い帯
+    （`PcDockColumn.foldedWidth`＝52px、窓ごとに広げるボタン
+    `pcPaneExpand.<id>`）になってキャンバスへ場所を返す（dev_branchの
+    「窓を横へたたむ」）。「ツールの設定」のたたみは画面の中だけで覚える。
+    `_fitDockWidths`は帯の列を下限まで広げないこと。
   - 窓の見出しにダブルクリック（`GestureDetector(onDoubleTap)`）を付けない。
     クリックがダブルクリックの判定時間（300ms）だけ遅れた。見出しは空いた所
     までつかめるようにしてある（文字の所だけだと、つかみ損ねた）。
@@ -950,6 +965,12 @@ onTap: ...)`だったために
   小を基準に、中・大を少なくとも1列ずつ減らす（スマホは1・2・3列）。
   カードにはメニュー（32px）と星が載るので、スマホで4列にはしない。
   `test/project_grid_view_size_test.dart`が見張る。
+  表示サイズを選んだことが無ければ、画面の幅で決める（dev_branch
+  2026-11-04：幅600未満は小・1000未満は中・それ以上は大、
+  `lib/utils/responsive_tile_defaults.dart`）。選んだ表示サイズは設定
+  （`home_view_mode`、並び順と同じ所で設定の引き継ぎにも入る）と
+  dev_branchのキー（`home.projectViewMode.v1`）の両方へ保存する。
+  低スペック端末で小にする決まりはdev_branchが外した。
 - **`SliverMultiBoxAdaptorElement`の「見えている子」は描画範囲ぶんだけ**：
   `ListView.builder`はcacheExtent（既定250px）ぶん先の子も**生成・レイアウト
   する**が、`debugVisitOnstageChildren`が返すのは**実際に描画される範囲の
@@ -1702,7 +1723,11 @@ DateTime(2027, 1, 1)`により、この日時に達するまで広告SDK（AdMob
    全ユーザーへプレミアム機能が無料開放される「リリース記念キャンペーン」
    状態になっている（税務上の都合、`PremiumService`・`AdvertisingService`
    のクラスコメント参照）。**本番公開のタイミングに合わせてこの日付を
-   ユーザー自身が判断・変更**すること。恒久的に有効化する場合は、同ファイル
+   ユーザー自身が判断・変更**すること。dev_branch（2026-11-04）から、日付に
+   加えてビルド時の`--dart-define=NIARIM_MONETIZATION_APPROVED=true`が無いと
+   有効にならない（`kMonetizationExplicitlyApproved`。Play購入のサーバー検証・
+   AdMob SSV・コイン台帳・運用審査を済ませたリリースビルドだけで付ける。
+   端末の時計を進めても有効にならない）。恒久的に有効化する場合は、同ファイル
    のコメントの指示どおり`monetization_gate.dart`自体を削除し、参照箇所
    （`kMonetizationEnabledFrom`を条件式に使っている箇所。
    `grep -rn kMonetizationEnabledFrom lib/`で洗い出せる）も外す。

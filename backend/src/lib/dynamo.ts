@@ -35,9 +35,33 @@ export const Keys = {
   creatorMissionState: (niarimUserId: string) => ({
     pk: `USER#${niarimUserId}`, sk: "MISSION_STATE_V1",
   }),
+  /** Persistent per-work bitmask; one tiny item only after a work earns a reward. */
+  creatorWorkMissionState: (niarimUserId: string, workId: string) => ({
+    pk: `USER#${niarimUserId}`, sk: `MISSION_WORK#${workId}`,
+  }),
   coinTransaction: (niarimUserId: string, transactionId: string) => ({
     pk: `USER#${niarimUserId}`, sk: `COIN_TX#${transactionId}`,
   }),
+  /** Chronological per-user movement journal, written atomically with coins. */
+  coinHistory: (userId: string, occurredAtEpochMs: number, id: string) => ({
+    pk: `USER#${userId}`,
+    sk: `COIN_HISTORY#${String(9_999_999_999_999 - occurredAtEpochMs).padStart(13, "0")}#${id}`,
+  }),
+  /** Global SSV receipt: a transaction ID is unique across ALL accounts.
+   * Short retention is safe only because callback timestamps expire in 7d.
+   */
+  admobReceipt: (transactionId: string) => ({
+    pk: `ADMOB_TX#${transactionId}`, sk: "META",
+  }),
+  /** One replaceable ad invitation per signed-in account. */
+  rewardedAdSession: (niarimUserId: string) => ({
+    pk: `USER#${niarimUserId}`, sk: "REWARDED_AD_SESSION",
+  }),
+  /** One compact per-account per-UTC-day counter only when capped. */
+  rewardAdDailyCount: (niarimUserId: string, dayUtc: string) => ({
+    pk: `USER#${niarimUserId}`, sk: `REWARDED_AD_DAY#${dayUtc}`,
+  }),
+
   bookmark: (niarimUserId: string, workId: string) => ({
     pk: `USER#${niarimUserId}`,
     sk: `BOOKMARK#${workId}`,

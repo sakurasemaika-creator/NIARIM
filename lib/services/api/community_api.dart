@@ -91,8 +91,89 @@ class CommunityApi {
   Future<Map<String, dynamic>> myRewardState() =>
       _client.getJson('/me/rewards', authenticated: true);
 
-  Future<Map<String, dynamic>> myCreatorMissions() =>
-      _client.getJson('/me/missions', authenticated: true);
+  /// Read-only server journal. Its opaque cursor remains account-scoped.
+  Future<Map<String, dynamic>> myCoinHistory({String? cursor, int limit = 20}) =>
+      _client.getJson(
+        '/me/rewards/history',
+        authenticated: true,
+        query: {
+          'limit': '$limit',
+          'cursor': ?cursor,
+        },
+      );
+
+  /// The backend issues a one-time, account-bound, 30-minute AdMob session.
+  /// It returns ONLY signed-callback customData, never coins or an ad grant.
+  Future<Map<String, dynamic>> beginRewardedAdSession() =>
+      _client.postJson('/me/rewards/ad-session', authenticated: true);
+
+  /// Price from authenticated server catalog. Never use local reference rates.
+  Future<Map<String, dynamic>> fullPremiumCoinQuote() =>
+      _client.getJson('/me/rewards/quote',
+        authenticated: true,
+        query: {'target': 'fullPremium', 'months': '1'});
+
+  /// Exactly-once redemption; the stable request UUID MUST be reused after
+  /// network timeout, rather than creating a fresh debit attempt.
+  Future<Map<String, dynamic>> redeemFullPremiumCoins({
+    required String requestId,
+    required String priceVersion,
+  }) => _client.postJson('/me/rewards/redeem',
+      authenticated: true,
+      body: {
+        'target': 'fullPremium',
+        'months': 1,
+        'requestId': requestId,
+        'priceVersion': priceVersion,
+      });
+
+  /// Account status by default; specify an owned YouTube video ID to
+  /// inspect the once-per-work bookmark and rank claim history.
+  Future<Map<String, dynamic>> myCreatorMissions({String? workId}) =>
+      _client.getJson(
+        '/me/missions',
+        authenticated: true,
+        query: {'workId': ?workId},
+      );
+
+  /// The server verifies the achievement and either starts the mandatory
+  /// hold period or completes an atomic, exactly-once mission reward.
+  Future<Map<String, dynamic>> claimCreatorMission({
+    required String missionId,
+    String? workId,
+  }) => _client.postJson('/me/missions/claim',
+      authenticated: true,
+      body: {
+        'missionId': missionId,
+        'workId': ?workId,
+      });
+
+  /// Measurement-only pilot: DOES NOT issue coins or verify creative time.
+  /// startNonce must be a securely generated UUID. The backend is disabled
+  /// unless CREATOR_EDIT_SESSION_PILOT_ENABLED is explicitly enabled.
+  Future<Map<String, dynamic>> beginCreatorEditSession(String startNonce) =>
+      _client.postJson('/me/missions/edit-session',
+          body: {'action': 'start', 'startNonce': startNonce},
+          authenticated: true);
+
+  /// Client reports only summarized real-content edits, never strokes/images.
+  /// The server clamps to its clock and stores UNVERIFIED candidate seconds.
+  Future<Map<String, dynamic>> checkpointCreatorEditSession({
+    required String sessionId,
+    required int sequence,
+    required int activeSeconds,
+    required int meaningfulMutations,
+    bool stop = false,
+  }) => _client.postJson('/me/missions/edit-session',
+          body: {
+            'action': 'checkpoint',
+            'sessionId': sessionId,
+            'sequence': sequence,
+            'activeSeconds': activeSeconds,
+            'meaningfulMutations': meaningfulMutations,
+            'stop': stop,
+          },
+          authenticated: true);
 
   /// The signed-in account's works, including NIARIM-hidden works.
   /// The backend resolves the generated NIARIM user id from the Google ID token,

@@ -193,10 +193,21 @@ class _CanvasScreenState extends State<CanvasScreen> {
     var width = right
         ? settings.desktopPanelWidth
         : settings.desktopToolPanelWidth;
+    // 左の列の「ツールの設定」も窓として数える。
+    var anyVisible = !right && _showPcToolProperty;
+    var anyExpanded = anyVisible && !_pcToolPropertyCollapsed;
     for (final panel in order) {
       if (!_desktopPanelVisible(panel)) continue;
+      anyVisible = true;
+      if (settings.isDesktopDockCollapsed(panel)) continue;
+      anyExpanded = true;
       final w = settings.desktopDockWidth(panel, right: right);
       if (w > width) width = w;
+    }
+    // 列の窓がすべてたたまれていたら、列を外側の細い帯にしてキャンバスへ
+    // 場所を返す（メッシュ変形の窓はたためない）。
+    if (anyVisible && !anyExpanded && (right || !_showMeshTransformPanel)) {
+      return PcDockColumn.foldedWidth;
     }
     return width;
   }
@@ -215,6 +226,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   int _pcFocusSerial = 0;
   // ツールプロパティのペインを出すか、ドックをすべて隠すか。
   bool _showPcToolProperty = true;
+  // 「ツールの設定」の窓をたたんでいるか（ドックの窓のたたみは設定に残す）。
+  bool _pcToolPropertyCollapsed = false;
   bool _pcPanelsHidden = false;
   // キャンバスの表示の操作（拡大・縮小・回転）と、今の倍率・回転。
   CanvasViewRequest? _viewRequest;
@@ -1062,6 +1075,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // 最大限確保できるようにする）。
   bool _showToolbar = true;
   bool _workTrackingStarted = false;
+  int? _workTrackingLease;
   bool _missingMaterialChecked = false;
   // PC/DeXモードでブラシ・カラーピッカーのドッキングパネルを自動で開いた
   // かどうか（1セッション1回のみ。ユーザーが手動で閉じた後に毎回また
@@ -1177,7 +1191,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // 制作時間カウント（描画モードのみカウント）
     if (!_workTrackingStarted) {
       _workTrackingStarted = true;
-      context.read<ProjectService>().beginWorkTracking(widget.projectId);
+      _workTrackingLease = context.read<ProjectService>().beginWorkTracking(
+        widget.projectId,
+      );
     }
     // 不足素材の検出（プロジェクトを開いた際に参照先の素材が
     // 見つからない場合は「不足素材があります」と表示。「再検索」で再確認）
@@ -1202,7 +1218,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _perf?.removeListener(_onPerfChanged);
     if (_autosaveAttached) _autosaveService?.detach();
     final projectService = _projectServiceForDispose;
-    if (_workTrackingStarted) projectService?.endWorkTracking();
+    if (_workTrackingStarted) {
+      projectService?.endWorkTracking(lease: _workTrackingLease);
+    }
     // プロジェクトカードのサムネイルを編集終了時に更新する。
     // 非同期処理だがdispose()自体は同期のままfire-and-forgetで発火する
     // （ProjectService内部状態のみを参照するため、Widget破棄後も安全）。
@@ -2179,6 +2197,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
           id: 'toolProperty',
           preferredHeight: 250,
           minLayoutHeight: 0,
+          collapsed: _pcToolPropertyCollapsed,
+          onCollapsedChanged: (v) =>
+              setState(() => _pcToolPropertyCollapsed = v),
           tabs: [
             if (_showPcToolProperty)
               PcPaneTab(
@@ -2206,6 +2227,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
             },
             focusTab: _pcFocusTab,
             focusSerial: _pcFocusSerial,
+            // たたむと、PCレイアウト設定と同じく次に開いたときもたたんだまま。
+            collapsed: settings.isDesktopDockCollapsed(panel),
+            onCollapsedChanged: (v) =>
+                settings.setDesktopDockCollapsed(panel, v),
             tabs: [_pcDockTab(l10n, panel, _dockBody(panel))],
           ),
       if (!right && _showMeshTransformPanel)
@@ -2885,13 +2910,17 @@ class _CanvasScreenState extends State<CanvasScreen> {
     const toolMin = SettingsService.minDesktopToolPanelWidth;
     const rightMin = SettingsService.minDesktopPanelWidth;
     const widest = SettingsService.maxDesktopPanelWidth;
-    // 以前の版で下限より狭く保存した幅も、下限まで広げて使う。
-    var tool = toolDockOpen
-        ? _desktopDockColumnWidth(right: false).clamp(toolMin, widest)
-        : 0.0;
-    var right = rightDockOpen
-        ? _desktopDockColumnWidth(right: true).clamp(rightMin, widest)
-        : 0.0;
+    // 以前の版で下限より狭く保存した幅も、下限まで広げて使う。窓をすべて
+    // たたんだ列（細い帯）はそのまま。
+    double column(bool right, double min) {
+      final w = _desktopDockColumnWidth(right: right);
+      return w <= PcDockColumn.foldedWidth ? w : w.clamp(min, widest);
+    }
+
+    var tool = toolDockOpen ? column(false, toolMin) : 0.0;
+    var right = rightDockOpen ? column(true, rightMin) : 0.0;
+    final toolFolded = toolDockOpen && tool <= PcDockColumn.foldedWidth;
+    final rightFolded = rightDockOpen && right <= PcDockColumn.foldedWidth;
     final rowWidth =
         MediaQuery.sizeOf(context).width -
         MediaQuery.paddingOf(context).horizontal;
@@ -2910,14 +2939,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final wanted = tool + right;
     if (wanted > 0 && wanted > budget) {
       final scale = budget > 0 ? budget / wanted : 0.0;
-      if (toolDockOpen) {
+      if (toolDockOpen && !toolFolded) {
         tool = (tool * scale).clamp(toolMin, tool);
       }
-      if (rightDockOpen) {
+      if (rightDockOpen && !rightFolded) {
         // 片方が下限で止まった分は、もう片方を狭めて合わせる。
         right = (budget - tool).clamp(rightMin, right);
       }
-      if (toolDockOpen) {
+      if (toolDockOpen && !toolFolded) {
         tool = (budget - right).clamp(toolMin, tool);
       }
     }

@@ -13,8 +13,11 @@ import { getLatestWorks } from "./routes/worksLatest";
 import { getPlaybackStatus } from "./routes/worksPlaybackStatus";
 import { getAuthorWorks, getMyWorks } from "./routes/userWorks";
 import { createWork } from "./routes/worksCreate";
-import { getMyRewardState } from "./routes/rewardState";
+import { getMyRewardState, getMyCoinHistory } from "./routes/rewardState";
+import { startRewardedAdSession, receiveRewardedAdSsv } from "./routes/rewardedAd";
+import { getCoinRedemptionQuote, redeemCoins } from "./routes/coinRedemption";
 import { getMyCreatorMissions, claimCreatorMission } from "./routes/creatorMissions";
+import { editSessionAction } from "./routes/creatorEditSession";
 import { updateWork } from "./routes/worksUpdate";
 import { deleteWork } from "./routes/worksDelete";
 import { updateTags } from "./routes/tags";
@@ -91,8 +94,15 @@ const routes: Route[] = [
   // callers do not need to know or persist the generated NIARIM user id.
   route("GET", "/me/works", (e) => getMyWorks(e)),
   route("GET", "/me/rewards", (e) => getMyRewardState(e)),
+  route("GET", "/me/rewards/history", (e) => getMyCoinHistory(e)),
+  route("POST", "/me/rewards/ad-session", (e) => startRewardedAdSession(e)),
+  route("GET", "/me/rewards/quote", (e) => getCoinRedemptionQuote(e)),
+  route("POST", "/me/rewards/redeem", (e) => redeemCoins(e)),
+  // Public Google-to-server callback; signature and one-time nonce mandatory.
+  route("GET", "/admob/ssv", (e) => receiveRewardedAdSsv(e)),
   route("GET", "/me/missions", (e) => getMyCreatorMissions(e)),
   route("POST", "/me/missions/claim", (e) => claimCreatorMission(e)),
+  route("POST", "/me/missions/edit-session", (e) => editSessionAction(e)),
 
   // Authenticated mutations.
   route("POST", "/works", (e) => createWork(e)),

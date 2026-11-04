@@ -9,9 +9,17 @@
 /// 発生しないため税務上の位置づけは変わらない。詳細はPremiumServiceの
 /// クラスコメントを参照。
 ///
-/// 有効化後は本ファイルを削除し、AdvertisingService・PremiumService・
-/// PremiumScreenから参照を外すこと。
+/// 2027-01-01の到来だけでは自動有効化しない。Play購入のサーバー検証、
+/// AdMob SSV、コイン台帳、運用審査を済ませたリリースビルドだけで
+/// --dart-define=NIARIM_MONETIZATION_APPROVED=true を指定する。
+/// 端末時計を進めても公開前の広告・課金機能を有効にできないようにする。
 final DateTime kMonetizationEnabledFrom = DateTime(2027, 1, 1);
 
+const bool kMonetizationExplicitlyApproved = bool.fromEnvironment(
+  'NIARIM_MONETIZATION_APPROVED',
+  defaultValue: false,
+);
+
 bool get isMonetizationEnabled =>
+    kMonetizationExplicitlyApproved &&
     !DateTime.now().isBefore(kMonetizationEnabledFrom);

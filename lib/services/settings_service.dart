@@ -227,6 +227,29 @@ class SettingsService extends ChangeNotifier {
   // Per-window heights are global workspace settings, not project state.
   final Map<CanvasDockPanel, double> _desktopPanelHeights = {};
   final Map<CanvasDockPanel, double> _desktopPanelWidths = {};
+
+  // Collapsing a dock keeps it open and preserves its width, height and order.
+  // The collapsed side tab is restored on the next launch.
+  final Set<CanvasDockPanel> _collapsedDesktopDocks = {};
+  bool isDesktopDockCollapsed(CanvasDockPanel panel) =>
+      _collapsedDesktopDocks.contains(panel);
+
+  Future<void> setDesktopDockCollapsed(
+    CanvasDockPanel panel,
+    bool collapsed,
+  ) async {
+    final changed = collapsed
+        ? _collapsedDesktopDocks.add(panel)
+        : _collapsedDesktopDocks.remove(panel);
+    if (!changed) return;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'desktop_collapsed_docks',
+      _collapsedDesktopDocks.map((p) => p.name).toList(),
+    );
+  }
+
   double desktopDockWidth(CanvasDockPanel panel, {required bool right}) =>
       _desktopPanelWidths[panel] ??
       (right ? _desktopPanelWidth : _desktopToolPanelWidth);
@@ -692,6 +715,14 @@ class SettingsService extends ChangeNotifier {
     _timelineTrackHeightLevel =
         prefs.readInt('timeline_track_height_level') ?? 4;
     _desktopPanelWidth = prefs.readDouble('desktop_panel_width') ?? 280.0;
+    _collapsedDesktopDocks.clear();
+    final savedCollapsed = prefs.readStringList('desktop_collapsed_docks');
+    if (savedCollapsed != null) {
+      final byName = CanvasDockPanel.values.asNameMap();
+      _collapsedDesktopDocks.addAll(
+        savedCollapsed.map((name) => byName[name]).whereType<CanvasDockPanel>(),
+      );
+    }
     _desktopPanelWidths.clear();
     final savedPanelWidths = prefs.readString('desktop_dock_widths');
     if (savedPanelWidths != null) {

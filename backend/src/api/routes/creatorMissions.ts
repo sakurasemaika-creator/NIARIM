@@ -18,9 +18,9 @@ import {
   CREATOR_MISSIONS,
   MAX_CREATOR_MISSION_COINS,
   MISSION_CATALOG_VERSION,
+  missionRewardCoins,
   missionClaimed,
   claimMissionInMask,
-  type CreatorMissionState,
   type MissionDefinition,
 } from "../../lib/missionCatalog";
 
@@ -35,11 +35,27 @@ function enabled(): boolean {
 const SOCIAL_HOLD_SECONDS = 48 * 60 * 60;
 const QUERY_WORK_PAGE_SIZE = 25;
 const MAX_OWN_WORK_PAGES = 20; // Prevent unbounded DynamoDB reads.
-type MissionStateRecord = CreatorMissionState & { revision: number };
-const missionKey = (userId: string) => Keys.creatorMissionState(userId);
+type MissionStateRecord = {
+  itemType: "CREATOR_MISSIONS_V1" | "CREATOR_WORK_MISSIONS_V1";
+  claimedMask: number;
+  revision: number;
+  verifiedEditSeconds: number;
+  candidateEditSeconds: number;
+  totalMissionCoins: number;
+  firstQualifiedAt: Record<string, number>;
+  claimedAt: Record<string, number>;
+  pendingCoins: Record<string, number>;
+};
+const missionKey = (userId: string, workId?: string) =>
+  workId === undefined ? Keys.creatorMissionState(userId) :
+    Keys.creatorWorkMissionState(userId, workId);
 
-function normalizeState(raw: Record<string, unknown> | undefined): MissionStateRecord {
-  const claimedMask = raw?.itemType === "CREATOR_MISSIONS_V1" &&
+function normalizeState(
+  raw: Record<string, unknown> | undefined, perWork = false,
+): MissionStateRecord {
+  const type = perWork ? "CREATOR_WORK_MISSIONS_V1" as const :
+    "CREATOR_MISSIONS_V1" as const;
+  const claimedMask = raw?.itemType === type &&
     typeof raw.claimedMask === "number" &&
     Number.isSafeInteger(raw.claimedMask) && raw.claimedMask >= 0
       ? raw.claimedMask
@@ -51,6 +67,9 @@ function normalizeState(raw: Record<string, unknown> | undefined): MissionStateR
   const verifiedEditSeconds = typeof raw?.verifiedEditSeconds === "number" &&
     Number.isSafeInteger(raw.verifiedEditSeconds) &&
     raw.verifiedEditSeconds >= 0 ? raw.verifiedEditSeconds : 0;
+  const candidateEditSeconds = typeof raw?.candidateEditSeconds === "number" &&
+    Number.isSafeInteger(raw.candidateEditSeconds) &&
+    raw.candidateEditSeconds >= 0 ? raw.candidateEditSeconds : 0;
   const totalMissionCoins = typeof raw?.totalMissionCoins === "number" &&
     Number.isSafeInteger(raw.totalMissionCoins) &&
     raw.totalMissionCoins >= 0 ? raw.totalMissionCoins : 0;
@@ -67,23 +86,27 @@ function normalizeState(raw: Record<string, unknown> | undefined): MissionStateR
     return clean;
   };
   return {
-    itemType: "CREATOR_MISSIONS_V1",
+    itemType: type,
     claimedMask,
     revision,
     verifiedEditSeconds,
+    candidateEditSeconds,
     totalMissionCoins,
     firstQualifiedAt: parseDates(raw?.firstQualifiedAt),
     claimedAt: parseDates(raw?.claimedAt),
+    pendingCoins: parseDates(raw?.pendingCoins),
   };
 }
 
-async function loadMissionState(userId: string): Promise<MissionStateRecord> {
+async function loadMissionState(
+  userId: string, workId?: string,
+): Promise<MissionStateRecord> {
   const record = await ddb.send(new GetCommand({
     TableName: tableName(),
-    Key: missionKey(userId),
+    Key: missionKey(userId, workId),
     ConsistentRead: true,
   }));
-  return normalizeState(record.Item);
+  return normalizeState(record.Item, workId !== undefined);
 }
 
 function isPublicWork(work: WorkItem | undefined, ownerId: string): boolean {
@@ -163,8 +186,11 @@ async function measuredProgress(
     }
 
     case "niarimBookmarkRanking": {
-      // The app's existing 'all' ranking is based on YouTube statistics and
-      // MUST NOT be used to reward user-generated YouTube engagement.
+      if (!workId || !/^[A-Za-z0-9_-]{11}$/.test(workId)) {
+        badRequest("作品IDを指定してください", "MISSION_WORK_ID_REQUIRED");
+      }
+      // Rank the EXACT named work, never the author's highest-ranked work.
+      // Only the NIARIM-native bookmark index can award mission coins.
       const ranking = await ddb.send(new QueryCommand({
         TableName: tableName(),
         IndexName: "GSI2",
@@ -175,8 +201,8 @@ async function measuredProgress(
       }));
       const list = ranking.Items ?? [];
       const index = list.findIndex((w) =>
-        w.itemType === "WORK" && w.authorId === userId &&
-        w.isNiarimPublished === true);
+        w.itemType === "WORK" && w.workId === workId &&
+        w.authorId === userId && w.isNiarimPublished === true);
       return {
         count: index < 0 ? 51 : index + 1,
         authoritative: true,
@@ -189,32 +215,62 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
   const auth = await authenticate(
     event.headers["authorization"] ?? event.headers["Authorization"],
   );
-  // Two point reads, no work scan and no additional GSIs.
-  const [user, state] = await Promise.all([
+  const selectedWorkId = event.queryStringParameters?.workId;
+  if (selectedWorkId && !/^[A-Za-z0-9_-]{11}$/.test(selectedWorkId)) {
+    badRequest("作品IDが不正です", "MISSION_INVALID_WORK_ID");
+  }
+  const [user, state, rankData] = await Promise.all([
     getUser(auth.niarimUserId),
     loadMissionState(auth.niarimUserId),
+    ddb.send(new GetCommand({ TableName: tableName(), Key: Keys.batchState() })),
   ]);
+  const rawCount = rankData.Item?.publishedWorkCount;
+  const publishedWorkCount = typeof rawCount === "number" &&
+    Number.isSafeInteger(rawCount) && rawCount >= 0 ? rawCount : 0;
+  let workState: MissionStateRecord | undefined;
+  if (selectedWorkId) {
+    const work = await ddb.send(new GetCommand({
+      TableName: tableName(), Key: Keys.work(selectedWorkId), ConsistentRead: true,
+    }));
+    if ((work.Item as WorkItem | undefined)?.authorId !== auth.niarimUserId) {
+      forbidden("この作品のミッションは参照できません", "MISSION_NOT_YOUR_WORK");
+    }
+    workState = await loadMissionState(auth.niarimUserId, selectedWorkId);
+  }
   return ok({
     catalogVersion: MISSION_CATALOG_VERSION,
     enabled: enabled(),
     claimedMask: state.claimedMask,
     verifiedEditSeconds: state.verifiedEditSeconds,
+    candidateEditSeconds: state.candidateEditSeconds,
     editTimeVerificationReady: false,
+    editSessionPilotEnabled:
+      process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED === "true",
     followerCount: user?.followerCount ?? 0,
     totalMissionCoins: state.totalMissionCoins,
     maximumLifetimeCreatorCoins: MAX_CREATOR_MISSION_COINS,
-    missions: CREATOR_MISSIONS.map((mission) => ({
-      ...mission,
-      claimed: missionClaimed(state.claimedMask, mission.bit),
-      claimedAt: state.claimedAt?.[String(mission.bit)] ?? null,
-      pendingSince: state.firstQualifiedAt?.[String(mission.bit)] ?? null,
-      // Work/ranking progress is fetched only on intentional claim attempts
-      // rather than scanning and charging every time this page opens.
-      progress: mission.kind === "followers"
-        ? user?.followerCount ?? 0
-        : null,
-      rewardEnabled: enabled() && mission.kind !== "verifiedEditSeconds",
-    })),
+    perWorkRewardsAreUncapped: true,
+    selectedWorkId: selectedWorkId ?? null,
+    publishedWorkCount,
+    missions: CREATOR_MISSIONS.map((mission) => {
+      const current = mission.perWork ? workState : state;
+      const key = String(mission.bit);
+      return {
+        ...mission,
+        claimed: current ? missionClaimed(current.claimedMask, mission.bit) : null,
+        claimedAt: current?.claimedAt[key] ?? null,
+        pendingSince: current?.firstQualifiedAt[key] ?? null,
+        coins: current?.pendingCoins[key] ??
+          missionRewardCoins(mission, publishedWorkCount),
+        progress: mission.kind === "followers"
+          ? user?.followerCount ?? 0
+          : mission.kind === "verifiedEditSeconds" ? state.verifiedEditSeconds : null,
+        rewardEnabled: enabled() &&
+          mission.kind !== "verifiedEditSeconds" &&
+          !(mission.kind === "qualifiedWorks" &&
+            mission.required > MAX_OWN_WORK_PAGES * QUERY_WORK_PAGE_SIZE),
+      };
+    }),
   });
 }
 
@@ -233,13 +289,31 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
   const mission = CREATOR_MISSIONS.find((m) => m.id === id);
   if (!mission) badRequest("不明なミッションです", "INVALID_MISSION_ID");
 
-  const workId = typeof body.workId === "string" ? body.workId : undefined;
-  const state = await loadMissionState(auth.niarimUserId);
-  if (missionClaimed(state.claimedMask, mission.bit)) {
-    return ok({ missionId: id, claimed: true, awardedCoins: 0 });
+  const workId = mission.perWork ? body.workId : undefined;
+  if (mission.perWork) {
+    if (typeof workId !== "string" || !/^[A-Za-z0-9_-]{11}$/.test(workId)) {
+      badRequest("作品ごとのミッションは作品IDが必要です", "MISSION_WORK_ID_REQUIRED");
+    }
+    const work = await ddb.send(new GetCommand({
+      TableName: tableName(),
+      Key: Keys.work(workId),
+      ConsistentRead: true,
+    }));
+    if (!isPublicWork(work.Item as WorkItem | undefined, auth.niarimUserId)) {
+      forbidden("公開中の自分の作品に限ります", "MISSION_WORK_NOT_ELIGIBLE");
+    }
   }
 
-  const progress = await measuredProgress(auth.niarimUserId, mission, workId);
+  const itemWorkId = mission.perWork ? workId as string : undefined;
+  const state = await loadMissionState(auth.niarimUserId, itemWorkId);
+  if (missionClaimed(state.claimedMask, mission.bit)) {
+    return ok({ missionId: id, workId: itemWorkId ?? null,
+      claimed: true, awardedCoins: 0 });
+  }
+
+  const progress = await measuredProgress(
+    auth.niarimUserId, mission, itemWorkId,
+  );
   if (!progress.authoritative) {
     forbidden("このミッションの安全な計測は準備中です", "MISSION_VERIFICATION_PENDING");
   }
@@ -252,27 +326,38 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
 
   const nowSec = Math.floor(Date.now() / 1000);
   const bitKey = String(mission.bit);
-  const first = state.firstQualifiedAt?.[bitKey];
-
-  // First successful verification only starts a mandatory dwell timer.
-  // Reacting to an immediate self-created bookmark/follow is not enough.
+  const first = state.firstQualifiedAt[bitKey];
+  let coins = state.pendingCoins[bitKey];
   if (!first || first > nowSec) {
+    let publishedWorkCount = 0;
+    if (mission.kind === "niarimBookmarkRanking") {
+      const count = await ddb.send(new GetCommand({
+        TableName: tableName(), Key: Keys.batchState(),
+      }));
+      const candidate = count.Item?.publishedWorkCount;
+      if (typeof candidate === "number" &&
+          Number.isSafeInteger(candidate) && candidate >= 0) {
+        publishedWorkCount = candidate;
+      }
+    }
+    coins = missionRewardCoins(mission, publishedWorkCount);
     const firstQualifiedAt = { ...state.firstQualifiedAt, [bitKey]: nowSec };
+    const pendingCoins = { ...state.pendingCoins, [bitKey]: coins };
     try {
       await ddb.send(new UpdateCommand({
         TableName: tableName(),
-        Key: missionKey(auth.niarimUserId),
+        Key: missionKey(auth.niarimUserId, itemWorkId),
         UpdateExpression:
-          "SET itemType = :type, firstQualifiedAt = :first, " +
+          "SET itemType = :type, firstQualifiedAt = :first, pendingCoins = :coins, " +
           "claimedMask = if_not_exists(claimedMask, :zero), " +
-          "verifiedEditSeconds = if_not_exists(verifiedEditSeconds, :zero), " +
           "totalMissionCoins = if_not_exists(totalMissionCoins, :zero) " +
           "ADD revision :one",
         ConditionExpression:
           "attribute_not_exists(revision) OR revision = :revision",
         ExpressionAttributeValues: {
-          ":type": "CREATOR_MISSIONS_V1",
+          ":type": state.itemType,
           ":first": firstQualifiedAt,
+          ":coins": pendingCoins,
           ":zero": 0,
           ":one": 1,
           ":revision": state.revision,
@@ -285,46 +370,49 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
       }
       throw error;
     }
-    return ok({
-      missionId: id,
-      claimed: false,
-      pending: true,
+    return ok({ missionId: id, workId: itemWorkId ?? null,
+      claimed: false, pending: true,
       readyAt: (nowSec + SOCIAL_HOLD_SECONDS) * 1000,
-      awardedCoins: 0,
-    });
+      offeredCoins: coins, awardedCoins: 0 });
   }
   if (nowSec - first < SOCIAL_HOLD_SECONDS) {
-    return ok({
-      missionId: id,
-      claimed: false,
-      pending: true,
+    return ok({ missionId: id, workId: itemWorkId ?? null,
+      claimed: false, pending: true,
       readyAt: (first + SOCIAL_HOLD_SECONDS) * 1000,
-      awardedCoins: 0,
-    });
+      offeredCoins: coins ?? 0, awardedCoins: 0 });
   }
 
+  // An already-present, versioned offer is immutable. Never pay a new rate
+  // after the 48h hold. No forged client-side amounts are accepted.
+  if (!Number.isSafeInteger(coins) || coins <= 0) {
+    forbidden("報酬額の再検証が必要です", "MISSION_OFFER_MISSING");
+  }
   const nextMask = claimMissionInMask(state.claimedMask, mission.bit);
-  const nextTotal = state.totalMissionCoins + mission.coins;
-  if (!Number.isSafeInteger(nextTotal) ||
-      nextTotal > MAX_CREATOR_MISSION_COINS) {
+  const nextTotal = state.totalMissionCoins + coins;
+  if (!Number.isSafeInteger(nextTotal) || nextTotal < 0 ||
+      (!mission.perWork && nextTotal > MAX_CREATOR_MISSION_COINS)) {
     forbidden("ミッションの獲得上限を超えています", "MISSION_REWARD_BUDGET");
   }
+  const awardedAtMs = Date.now();
   const claimedAt = { ...state.claimedAt, [bitKey]: nowSec };
   const pending = { ...state.firstQualifiedAt };
+  const pendingCoins = { ...state.pendingCoins };
   delete pending[bitKey];
-  // One user mission row + the existing coin wallet, atomically updated.
-  // The revision and claimedMask preconditions make retries/races idempotent.
+  delete pendingCoins[bitKey];
+
+  // Exactly one atomic transaction: the SAME mission cannot credit twice
+  // even if two clients race, the user switches devices or a request retries.
   try {
     await ddb.send(new TransactWriteCommand({
       TransactItems: [
         {
           Update: {
             TableName: tableName(),
-            Key: missionKey(auth.niarimUserId),
+            Key: missionKey(auth.niarimUserId, itemWorkId),
             UpdateExpression:
               "SET claimedMask = :newMask, totalMissionCoins = :total, " +
-              "claimedAt = :claimedAt, firstQualifiedAt = :pending " +
-              "ADD revision :one",
+              "claimedAt = :claimedAt, firstQualifiedAt = :pending, " +
+              "pendingCoins = :pendingCoins ADD revision :one",
             ConditionExpression: "revision = :rev AND claimedMask = :oldMask",
             ExpressionAttributeValues: {
               ":newMask": nextMask,
@@ -332,6 +420,7 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
               ":total": nextTotal,
               ":claimedAt": claimedAt,
               ":pending": pending,
+              ":pendingCoins": pendingCoins,
               ":rev": state.revision,
               ":one": 1,
             },
@@ -345,27 +434,40 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
               "SET itemType = :walletType ADD balanceCoins :reward, " +
               "missionEarnedCoins :reward",
             ConditionExpression:
-              "attribute_not_exists(itemType) OR itemType = :walletType",
+              "(attribute_not_exists(itemType) OR itemType = :walletType) " +
+              "AND (attribute_not_exists(balanceCoins) OR " +
+              "balanceCoins BETWEEN :zero AND :maxBefore)",
             ExpressionAttributeValues: {
               ":walletType": "COIN_WALLET",
-              ":reward": mission.coins,
+              ":reward": coins,
+              ":zero": 0,
+              ":maxBefore": Number.MAX_SAFE_INTEGER - coins,
             },
+          },
+        },
+        {
+          Put: {
+            TableName: tableName(),
+            Item: {
+              ...Keys.coinHistory(auth.niarimUserId, awardedAtMs,
+                `mission-${id}-${itemWorkId ?? "account"}`),
+              itemType: "COIN_HISTORY", source: "creator-mission",
+              deltaCoins: coins, occurredAtEpochMs: awardedAtMs,
+              missionId: id, workId: itemWorkId ?? null,
+            },
+            ConditionExpression: "attribute_not_exists(pk)",
           },
         },
       ],
     }));
   } catch (error) {
-    if (error instanceof TransactionCanceledException) {
-      // A simultaneous claim might have succeeded. Never award twice:
-      // caller can refresh the read-only status and retry if unclaimed.
+    if (error instanceof TransactionCanceledException ||
+        error instanceof ConditionalCheckFailedException) {
       conflict("達成状況が更新されました。再読み込みしてください", "MISSION_STATE_CHANGED");
     }
     throw error;
   }
 
-  return ok({
-    missionId: id,
-    claimed: true,
-    awardedCoins: mission.coins,
-  });
+  return ok({ missionId: id, workId: itemWorkId ?? null,
+    claimed: true, awardedCoins: coins });
 }

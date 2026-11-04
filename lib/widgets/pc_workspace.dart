@@ -327,6 +327,8 @@ class PcPane {
     this.focusTab,
     this.focusSerial = 0,
     this.movable = false,
+    this.collapsed,
+    this.onCollapsedChanged,
   });
 
   final String id;
@@ -346,6 +348,11 @@ class PcPane {
   /// [focusSerial]が変わったとき、このタブを前に出し、ペインを広げる。
   final String? focusTab;
   final int focusSerial;
+
+  /// たたんでいるか（外で覚えておく場合。nullなら列が自分で覚える）。
+  /// 外で覚えるときは、たたむ・広げるの操作を[onCollapsedChanged]で受ける。
+  final bool? collapsed;
+  final ValueChanged<bool>? onCollapsedChanged;
 }
 
 /// ドックの列。ペインを縦に並べ、境目のつまみで高さを分け直せる。
@@ -376,6 +383,10 @@ class PcDockColumn extends StatefulWidget {
   final void Function(String paneId, String? beforePaneId)? onPaneDropped;
 
   static const double headerHeight = 28;
+
+  /// 列の窓がすべてたたまれたときの列の幅（窓ごとに広げるボタンだけを
+  /// 縦に並べた細い帯）。
+  static const double foldedWidth = 52;
   static const double splitterHeight = 5;
   static const double minContentHeight = 120;
 
@@ -431,7 +442,11 @@ class _PcDockColumnState extends State<PcDockColumn> {
         ids.contains(pane.focusTab) &&
         (old == null || old.focusSerial != pane.focusSerial)) {
       next = pane.focusTab;
-      if (old != null) _collapsed.remove(pane.id);
+      if (old != null && _isCollapsed(pane)) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _setCollapsed(pane, false);
+        });
+      }
     }
     if (next == null || !ids.contains(next)) next = ids.first;
     if (_active[pane.id] != next) {
@@ -445,24 +460,39 @@ class _PcDockColumnState extends State<PcDockColumn> {
     }
   }
 
-  void _select(PcPane pane, String tabId) {
-    if (_active[pane.id] == tabId && !_collapsed.contains(pane.id)) return;
+  bool _isCollapsed(PcPane pane) =>
+      pane.collapsed ?? _collapsed.contains(pane.id);
+
+  void _setCollapsed(PcPane pane, bool collapsed) {
+    final notify = pane.onCollapsedChanged;
+    if (pane.collapsed != null && notify != null) {
+      if (pane.collapsed != collapsed) notify(collapsed);
+      return;
+    }
     setState(() {
-      _active[pane.id] = tabId;
-      _collapsed.remove(pane.id);
+      if (collapsed) {
+        _collapsed.add(pane.id);
+      } else {
+        _collapsed.remove(pane.id);
+      }
     });
+  }
+
+  void _select(PcPane pane, String tabId) {
+    if (_active[pane.id] == tabId && !_isCollapsed(pane)) return;
+    setState(() => _active[pane.id] = tabId);
+    _setCollapsed(pane, false);
     widget.onActiveTabChanged?.call(pane.id, tabId);
   }
 
-  void _toggleCollapsed(PcPane pane) => setState(() {
-    if (!_collapsed.remove(pane.id)) _collapsed.add(pane.id);
-  });
+  void _toggleCollapsed(PcPane pane) =>
+      _setCollapsed(pane, !_isCollapsed(pane));
 
   void _drag(List<PcPane> panes, Set<String> fills, int i, double dy) {
     final upper = panes[i];
     final lower = panes[i + 1];
-    final upperOpen = !_collapsed.contains(upper.id);
-    final lowerOpen = !_collapsed.contains(lower.id);
+    final upperOpen = !_isCollapsed(upper);
+    final lowerOpen = !_isCollapsed(lower);
     const minH = PcDockColumn.minContentHeight;
     setState(() {
       if (upperOpen && !fills.contains(upper.id)) {
@@ -533,12 +563,17 @@ class _PcDockColumnState extends State<PcDockColumn> {
       color: colors.pane,
       child: LayoutBuilder(
         builder: (context, constraints) {
+          // すべてたたんだ列は細い帯：窓ごとに広げるボタンだけを並べる。
+          if (panes.every(_isCollapsed) &&
+              constraints.maxWidth <= PcDockColumn.foldedWidth + 0.5) {
+            return _folded(panes, colors);
+          }
           const header = PcDockColumn.headerHeight;
           const splitter = PcDockColumn.splitterHeight;
           const minH = PcDockColumn.minContentHeight;
           final open = [
             for (final p in panes)
-              if (!_collapsed.contains(p.id)) p,
+              if (!_isCollapsed(p)) p,
           ];
           final fills = {
             for (final p in open)
@@ -590,7 +625,7 @@ class _PcDockColumnState extends State<PcDockColumn> {
                 ),
               );
             }
-            final collapsed = _collapsed.contains(pane.id);
+            final collapsed = _isCollapsed(pane);
             Widget view = SizedBox(
               key: _paneKeys.putIfAbsent(pane.id, GlobalKey.new),
               height: header + (collapsed ? 0 : content[pane.id] ?? 0),
@@ -633,6 +668,36 @@ class _PcDockColumnState extends State<PcDockColumn> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _folded(List<PcPane> panes, PcWorkspaceColors colors) {
+    return SingleChildScrollView(
+      key: const ValueKey('pcDockFolded'),
+      child: Column(
+        children: [
+          for (final pane in panes)
+            Builder(
+              builder: (context) {
+                final tab = pane.tabs.firstWhere(
+                  (t) => t.id == _active[pane.id],
+                  orElse: () => pane.tabs.first,
+                );
+                return SizedBox(
+                  height: 48,
+                  child: Center(
+                    child: IconButton(
+                      key: ValueKey('pcPaneExpand.${pane.id}'),
+                      tooltip: tab.title,
+                      icon: Icon(tab.icon, color: colors.onPane),
+                      onPressed: () => _setCollapsed(pane, false),
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
       ),
     );
   }

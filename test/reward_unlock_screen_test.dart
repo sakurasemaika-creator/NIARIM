@@ -50,17 +50,16 @@ void main() {
     expect(find.text('4 coins'), findsOneWidget);
     await tester.tap(find.byKey(const Key('rewardDurationButton')));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('days').last, 220,
-      scrollable: find.byType(Scrollable).last,
-    );
-    await tester.tap(find.text('days').last);
+    // The bottom sheet has nested scrollables; scrolling the last one can
+    // target an offscreen list or a non-visible expansion child.
+    await tester.ensureVisible(find.text('days'));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('2days').last, 160,
-      scrollable: find.byType(Scrollable).last,
-    );
-    await tester.tap(find.text('2days').last);
+    await tester.tap(find.text('days'));
+    await tester.pumpAndSettle();
+    final day2 = find.byKey(const ValueKey('rewardDuration_day_2'));
+    await tester.ensureVisible(day2);
+    await tester.pumpAndSettle();
+    await tester.tap(day2);
     await tester.pumpAndSettle();
     expect(find.text('40 coins'), findsOneWidget);
 

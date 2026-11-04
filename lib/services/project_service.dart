@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'creator_edit_session_reporter.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/painting.dart';
 import 'package:image/image.dart' as img;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -520,44 +522,194 @@ class ProjectService extends ChangeNotifier {
 
   Timer? _workTimer;
   String? _trackedProjectId;
-  DateTime _lastActivity = DateTime.now();
+  Stopwatch? _workStopwatch;
+  int _workLastActivityMs = 0;
+  int _workLastSettledMs = 0;
+  int _workFractionMs = 0;
+  int _workSessionSeconds = 0;
+  int _workTrackingLease = 0;
+  bool _workPaused = false;
+
+  CreatorEditSessionReporter? _creatorEditReporter;
+
+  /// The optional pilot sends only bounded counters, never image or stroke
+  /// data. Local work-time tracking works identically with no backend.
+  void attachCreatorEditReporter(CreatorEditSessionReporter? reporter) {
+    _creatorEditReporter = reporter;
+  }
+
   static const _workTickInterval = Duration(seconds: 10);
   static const _workInactivityThreshold = Duration(minutes: 1);
 
-  /// キャンバスモード・タイムラインモードへ入った時に呼び出す。
-  void beginWorkTracking(String projectId) {
+  /// Each route receives a distinct lease. A canvas disposed AFTER the
+  /// timeline opened must not stop the new route's counter.
+  int beginWorkTracking(String projectId) {
+    if (_trackedProjectId != null) endWorkTracking();
+    final lease = ++_workTrackingLease;
     _trackedProjectId = projectId;
-    _lastActivity = DateTime.now();
+    _workStopwatch = Stopwatch()..start();
+    _workLastActivityMs = 0;
+    _workLastSettledMs = 0;
+    _workSessionSeconds = 0;
+    _workFractionMs = 0;
+    _workPaused = false;
     _workTimer?.cancel();
-    _workTimer = Timer.periodic(_workTickInterval, (_) => _tickWorkTime());
+    _workTimer = Timer.periodic(_workTickInterval, (_) => _settleWorkTime());
+    _creatorEditReporter?.begin(
+      projectId: projectId,
+      activeSeconds: () => currentWorkSessionSeconds,
+    );
+    return lease;
   }
 
-  /// 描画・タップ・スクラブ等の操作があるたびに呼び出す（無操作判定のリセット）。
+  /// The rewarded candidate count uses confirmed content edits, not pointer
+  /// taps or video/timeline scrubbing. Call only after a real change.
+  void recordConfirmedEdit(String projectId) {
+    if (projectId != _trackedProjectId || _workPaused) return;
+    pingWorkActivity();
+    _creatorEditReporter?.recordCommittedMutation(
+      projectId,
+      activeSeconds: () => currentWorkSessionSeconds,
+    );
+  }
+
+  /// Ordinary UI activity keeps the existing local display counter active.
+  /// It never counts as a confirmed mutation for coin eligibility.
   void pingWorkActivity() {
-    _lastActivity = DateTime.now();
+    final clock = _workStopwatch;
+    if (clock == null || _workPaused) return;
+    final now = clock.elapsedMilliseconds;
+    if (now - _workLastActivityMs > _workInactivityThreshold.inMilliseconds) {
+      _settleWorkTime();
+      _workLastSettledMs = now; // do not count the idle gap retroactively
+    }
+    _workLastActivityMs = now;
+    final id = _trackedProjectId;
+    if (id != null) {
+      _creatorEditReporter?.noteInteraction(
+        projectId: id,
+        activeSeconds: () => currentWorkSessionSeconds,
+      );
+    }
   }
 
-  /// キャンバスモード・タイムラインモードを離れる時に呼び出す。
-  void endWorkTracking() {
-    _workTimer?.cancel();
-    _workTimer = null;
-    _trackedProjectId = null;
+  /// Supports sub-15-minute sessions. The 10-second timer limits UI rebuilds
+  /// only; exit and app background settle *actual elapsed milliseconds*.
+  int get currentWorkSessionSeconds {
+    _settleWorkTime();
+    return _workSessionSeconds;
   }
 
-  void _tickWorkTime() {
-    final projectId = _trackedProjectId;
-    if (projectId == null) return;
-    // 直近一定時間操作がなければカウントを一時停止する
-    if (DateTime.now().difference(_lastActivity) > _workInactivityThreshold) {
+  void _settleWorkTime() {
+    final id = _trackedProjectId;
+    final clock = _workStopwatch;
+    if (id == null || clock == null || _workPaused) return;
+    final now = clock.elapsedMilliseconds;
+    final activeEnd =
+        now < _workLastActivityMs + _workInactivityThreshold.inMilliseconds
+        ? now
+        : _workLastActivityMs + _workInactivityThreshold.inMilliseconds;
+    final delta = activeEnd - _workLastSettledMs;
+    if (delta <= 0) return;
+    _workLastSettledMs = activeEnd;
+    final allMs = _workFractionMs + delta;
+    final seconds = allMs ~/ 1000;
+    _workFractionMs = allMs % 1000;
+    if (seconds == 0) return;
+    final idx = _projects.indexWhere((p) => p.id == id);
+    if (idx < 0) return;
+    _workSessionSeconds += seconds;
+    _projects[idx] = _projects[idx].copyWith(
+      totalWorkSeconds: _projects[idx].totalWorkSeconds + seconds,
+    );
+    _notifyOutsideBuild();
+  }
+
+  /// 制作時間は画面を開く処理（initState・dispose）からも締められる
+  /// （キャンバスからタイムラインへ移ると、タイムラインのinitStateが
+  /// キャンバスの分を締める）。組み立ての最中に知らせると、聞いている
+  /// 画面の作り直しが「組み立て中のsetState」の例外になるので、その時は
+  /// フレームの後へ回す。
+  void _notifyOutsideBuild() {
+    SchedulerPhase? phase;
+    try {
+      phase = SchedulerBinding.instance.schedulerPhase;
+    } catch (_) {
+      phase = null; // バインディングの無い単体テスト
+    }
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) => notifyListeners());
       return;
     }
-    final idx = _projects.indexWhere((p) => p.id == projectId);
-    if (idx < 0) return;
-    _projects[idx] = _projects[idx].copyWith(
-      totalWorkSeconds:
-          _projects[idx].totalWorkSeconds + _workTickInterval.inSeconds,
-    );
     notifyListeners();
+  }
+
+  /// Explicit user saves, NOT autosaves, trigger a separate lightweight
+  /// editing-time checkpoint after the project has been saved successfully.
+  /// A network failure never rolls back or blocks the local save.
+  void onManualSaveCommitted(String projectId) {
+    if (projectId != _trackedProjectId || _workPaused) return;
+    _settleWorkTime();
+    _creatorEditReporter?.manualSaveSucceeded(projectId);
+  }
+
+  /// For the desktop File > Save action. Internal saveProject() callers
+  /// (autosave, navigation, folder updates) intentionally do not report.
+  Future<void> saveProjectManually(String projectId) async {
+    _settleWorkTime();
+    await saveProject(projectId);
+    try {
+      onManualSaveCommitted(projectId);
+    } catch (error) {
+      // The file is saved. Reporting time is independent and optional.
+      debugPrint('Manual-save editing-time checkpoint skipped: $error');
+    }
+  }
+
+  /// Android background time does not count. Keep the editor's tracking
+  /// lease alive and reopen a short server session only upon resume.
+  void pauseWorkTracking() {
+    if (_trackedProjectId == null || _workPaused) return;
+    _settleWorkTime();
+    _workPaused = true;
+    _workStopwatch?.stop();
+    _workTimer?.cancel();
+    _workTimer = null;
+    _creatorEditReporter?.end();
+    final id = _trackedProjectId;
+    if (id != null) _saveAsync(id);
+  }
+
+  void resumeWorkTracking() {
+    if (_trackedProjectId == null || !_workPaused) return;
+    _workPaused = false;
+    _workStopwatch?.start();
+    _workLastSettledMs = _workStopwatch!.elapsedMilliseconds;
+    _workLastActivityMs = _workLastSettledMs;
+    _workTimer?.cancel();
+    _workTimer = Timer.periodic(_workTickInterval, (_) => _settleWorkTime());
+    _creatorEditReporter?.begin(
+      projectId: _trackedProjectId!,
+      activeSeconds: () => currentWorkSessionSeconds,
+    );
+  }
+
+  /// Exit can occur after another route has already acquired the counter.
+  void endWorkTracking({int? lease}) {
+    if (lease != null && lease != _workTrackingLease) return;
+    final id = _trackedProjectId;
+    if (id == null) return;
+    _settleWorkTime();
+    _workTimer?.cancel();
+    _workTimer = null;
+    _workStopwatch?.stop();
+    _workStopwatch = null;
+    _trackedProjectId = null;
+    _workPaused = false;
+    _creatorEditReporter?.end();
+    // Persist even a 1-9 second session; no reliance on the next 10s tick.
+    _saveAsync(id);
   }
 
   // ─── Scene/Frame/Layer アクセサ ───────────────────────────────────────
@@ -946,6 +1098,7 @@ class ProjectService extends ChangeNotifier {
       layers: newLayers,
     );
     scenes[sceneIdx] = scene.copyWith(frames: newFrames);
+    recordConfirmedEdit(projectId);
     notifyListeners();
   }
 

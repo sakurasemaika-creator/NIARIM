@@ -1749,6 +1749,11 @@ class _CanvasAreaState extends State<CanvasArea> {
       _panToolLastScreenPos = event.localPosition;
       return;
     }
+    // A long continuous brush/selection drag must not become "idle" after
+    // one minute. This is display activity only, never a reward mutation.
+    if (widget.project != null) {
+      context.read<ProjectService>().pingWorkActivity();
+    }
     if (_isSelectionTool && _selectionTransformActive) {
       _updateSelectionTransform(canvasPos);
       return;
@@ -2100,6 +2105,12 @@ class _CanvasAreaState extends State<CanvasArea> {
         },
       ),
     );
+    // Only real tile edits that reached Undo become mission candidates.
+    // Pan, eyedropper, selection preview, taps and scrubbing are excluded.
+    final project = widget.project;
+    if (project != null) {
+      context.read<ProjectService>().recordConfirmedEdit(project.id);
+    }
   }
 
   /// 開始済みのタイルUndo記録を履歴へ残さずキャンセルし、操作開始前の

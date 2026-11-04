@@ -245,6 +245,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // initState時点（要素がまだ確実にアクティブ）で取得して保持しておき、
   // dispose()ではこちらを使う。
   late final ProjectService _projectService;
+  late final int _workTrackingLease;
   Timer? _playTimer;
   // プレビュー全画面化：確認・仕上がりチェックに
   // 集中できるよう、プレビューのみ＋再生コントロールだけを全画面表示する。
@@ -566,7 +567,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     // 制作時間カウント（タイムラインモードのみカウント）
     _projectService = context.read<ProjectService>();
-    _projectService.beginWorkTracking(widget.projectId);
+    _workTrackingLease = _projectService.beginWorkTracking(widget.projectId);
   }
 
   List<ScrollController> get _trackScrollCtrls => [
@@ -611,7 +612,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _moveThumbnail?.dispose();
     _currentFrameNotifier.removeListener(_onCurrentFrameChanged);
     _currentFrameNotifier.dispose();
-    _projectService.endWorkTracking();
+    _projectService.endWorkTracking(lease: _workTrackingLease);
     _screenFocus.dispose();
     super.dispose();
   }

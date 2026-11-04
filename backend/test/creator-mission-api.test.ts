@@ -40,13 +40,16 @@ describe("creator mission endpoints", () => {
     expect(resp.statusCode).toBe(200);
     const body = JSON.parse(resp.body ?? "{}");
     expect(body.enabled).toBe(false);
-    expect(body.missions).toHaveLength(17);
+    expect(body.missions).toHaveLength(53);
+    expect(body.missions.find((m: {id: string}) => m.id === 'edit_50h').coins).toBe(55000);
+    expect(body.missions.find((m: {id: string}) => m.id === 'bookmark_rank_1').claimed).toBe(null);
     expect(body.editTimeVerificationReady).toBe(false);
     expect(body.verifiedEditSeconds).toBe(0);
     const commands = send.mock.calls.map(([command]) => command);
-    expect(commands).toHaveLength(1);
+    expect(commands).toHaveLength(2);
     expect(commands[0]).toBeInstanceOf(GetCommand);
     expect(commands[0].input.Key?.pk).toBe("USER#NverifiedByGoogle");
+    expect(commands[1].input.Key?.pk).toBe("BATCHSTATE#STATS_UPDATE");
     expect(commands[0]).not.toBeInstanceOf(QueryCommand);
   });
 
@@ -93,6 +96,7 @@ describe("creator mission endpoints", () => {
         totalMissionCoins: 0,
         verifiedEditSeconds: 0,
         firstQualifiedAt: { "10": old },
+        pendingCoins: { "10": 50 },
       }};
       return {};
     });
@@ -102,11 +106,15 @@ describe("creator mission endpoints", () => {
     });
     const tx = send.mock.calls.map(([c]) => c)
       .find((c) => c instanceof TransactWriteCommand);
-    expect(tx).toBeDefined();
-    expect(tx.input.TransactItems).toHaveLength(2);
+    if (!tx) throw new Error("Missing atomic mission award transaction");
+    expect(tx.input.TransactItems).toHaveLength(3);
     expect(tx.input.TransactItems?.[0].Update?.Key?.pk).toBe("USER#NverifiedByGoogle");
     expect(tx.input.TransactItems?.[1].Update?.Key?.pk).toBe("USER#NverifiedByGoogle");
     expect(tx.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":reward"]).toBe(50);
+    expect(tx.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":maxBefore"])
+      .toBe(Number.MAX_SAFE_INTEGER - 50);
+    expect(tx.input.TransactItems?.[2].Put?.Item?.deltaCoins).toBe(50);
+    expect(tx.input.TransactItems?.[2].Put?.Item?.sk).toMatch(/^COIN_HISTORY#/);
     expect(tx.input.TransactItems?.[0].Update?.ExpressionAttributeValues?.[":newMask"]).toBe(2 ** 10);
   });
 
@@ -125,4 +133,92 @@ describe("creator mission endpoints", () => {
     });
     expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand)).toBe(false);
   });
+  it("requires explicit owned work ID for per-work mission payouts", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    await expect(claimCreatorMission(req({
+      missionId: "work_bookmarks_10",
+    }))).rejects.toMatchObject({ code: "MISSION_WORK_ID_REQUIRED" });
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("claims bookmark milestones for one named work, never the whole account", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    send.mockImplementation(async (c: unknown) => {
+      if (c instanceof GetCommand && c.input.Key?.pk === "WORK#abcdefghijk") {
+        return { Item: {
+          itemType: "WORK", workId: "abcdefghijk",
+          authorId: "NverifiedByGoogle",
+          isNiarimPublished: true, youtubePrivacyStatus: "public",
+          gsi2pk: "BOOKMARK_RANKING", bookmarkCount: 21,
+        }};
+      }
+      return {};
+    });
+    const resp = await claimCreatorMission(req({
+      missionId: "work_bookmarks_10",
+      workId: "abcdefghijk",
+    }));
+    expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
+      pending: true, offeredCoins: 50, awardedCoins: 0,
+      workId: "abcdefghijk",
+    });
+    const write = send.mock.calls.map(([c]) => c)
+      .find((c) => c instanceof UpdateCommand);
+    expect(write?.input.Key).toEqual({
+      pk: "USER#NverifiedByGoogle",
+      sk: "MISSION_WORK#abcdefghijk",
+    });
+  });
+
+  it("refuses to award for another author's work", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    send.mockImplementation(async (c: unknown) => {
+      if (c instanceof GetCommand) return {
+        Item: { itemType: "WORK", workId: "abcdefghijk",
+          authorId: "Nother", isNiarimPublished: true,
+          youtubePrivacyStatus: "public", gsi2pk: "BOOKMARK_RANKING" },
+      };
+      return {};
+    });
+    await expect(claimCreatorMission(req({
+      missionId: "work_bookmarks_10",
+      workId: "abcdefghijk",
+    }))).rejects.toMatchObject({
+      code: "MISSION_WORK_NOT_ELIGIBLE",
+    });
+    expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand)).toBe(false);
+  });
+
+  it("pays matured per-work award only with the work's own bitmask", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    const old = Math.floor(Date.now() / 1000) - 3 * 86400;
+    send.mockImplementation(async (c: unknown) => {
+      if (c instanceof GetCommand && c.input.Key?.pk === "WORK#abcdefghijk") {
+        return { Item: {
+          itemType: "WORK", workId: "abcdefghijk", authorId: "NverifiedByGoogle",
+          isNiarimPublished: true, youtubePrivacyStatus: "public",
+          gsi2pk: "BOOKMARK_RANKING", bookmarkCount: 20,
+        }};
+      }
+      if (c instanceof GetCommand && c.input.Key?.sk === "MISSION_WORK#abcdefghijk") {
+        return { Item: {
+          itemType: "CREATOR_WORK_MISSIONS_V1", claimedMask: 0,
+          revision: 5, totalMissionCoins: 0,
+          firstQualifiedAt: { "5": old }, pendingCoins: { "5": 50 },
+        }};
+      }
+      return {};
+    });
+    const resp = await claimCreatorMission(req({
+      missionId: "work_bookmarks_10", workId: "abcdefghijk",
+    }));
+    expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
+      claimed: true, awardedCoins: 50,
+    });
+    const tx = send.mock.calls.map(([c]) => c)
+      .find((c) => c instanceof TransactWriteCommand);
+    expect(tx?.input.TransactItems?.[0].Update?.Key?.sk).toBe("MISSION_WORK#abcdefghijk");
+    expect(tx?.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":reward"]).toBe(50);
+  });
+
 });

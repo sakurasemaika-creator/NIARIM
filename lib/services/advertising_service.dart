@@ -114,6 +114,57 @@ class AdvertisingService extends ChangeNotifier {
   bool get canOfferRewardedAds =>
       isMonetizationEnabled && _canRequestAds && supportsMobilePluginRuntime;
 
+  /// Voluntary rewarded ad: the SDK callback never grants coins locally.
+  /// Spendable coins are credited ONLY after Google signs the SSV event.
+  Future<bool> showRewardedCoinAd({
+    required String adUnitId,
+    required String customData,
+  }) async {
+    if (!canOfferRewardedAds ||
+        !RegExp(r'^ca-app-pub-[0-9]{16}/[0-9]{10}$').hasMatch(adUnitId) ||
+        !RegExp(r'^v1[.]N[0-9a-f]{32}[.][0-9a-f-]{36}$')
+            .hasMatch(customData)) {
+      return false;
+    }
+    final completed = Completer<bool>();
+    var earned = false;
+    RewardedAd.load(
+      adUnitId: adUnitId,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          try {
+            ad.setServerSideOptions(
+              ServerSideVerificationOptions(customData: customData),
+            );
+            ad.fullScreenContentCallback = FullScreenContentCallback(
+              onAdDismissedFullScreenContent: (ad) {
+                ad.dispose();
+                if (!completed.isCompleted) completed.complete(earned);
+              },
+              onAdFailedToShowFullScreenContent: (ad, error) {
+                ad.dispose();
+                if (!completed.isCompleted) completed.complete(false);
+              },
+            );
+            ad.show(
+              onUserEarnedReward: (ad, reward) {
+                earned = true; // SSV, NOT this callback, credits the wallet.
+              },
+            );
+          } catch (error) {
+            ad.dispose();
+            if (!completed.isCompleted) completed.complete(false);
+          }
+        },
+        onAdFailedToLoad: (error) {
+          if (!completed.isCompleted) completed.complete(false);
+        },
+      ),
+    );
+    return completed.future;
+  }
+
   /// ロード済みバナー広告。未ロード・プレミアム時はnull（AdBannerWidgetが描画に使う）。
   BannerAd? get bannerAd => shouldShowAds ? _provider.currentBanner : null;
 

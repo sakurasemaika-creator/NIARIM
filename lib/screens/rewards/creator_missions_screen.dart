@@ -12,7 +12,10 @@ import '../../widgets/responsive.dart';
 /// Mission overview. Reading status is safe; coin claims are disabled pending
 /// production anti-fraud. Local work time is explicitly a non-reward reference.
 class CreatorMissionsScreen extends StatefulWidget {
-  const CreatorMissionsScreen({super.key});
+  const CreatorMissionsScreen({super.key, this.workId});
+
+  /// An owned Work Plaza video ID. Omit for account-wide overview.
+  final String? workId;
 
   @override
   State<CreatorMissionsScreen> createState() => _CreatorMissionsScreenState();
@@ -20,11 +23,12 @@ class CreatorMissionsScreen extends StatefulWidget {
 
 class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
   String? _accountId;
+  String? _lastWorkId;
   CommunityApi? _lastApi;
   Future<Map<String, dynamic>>? _statusFuture;
 
   void _refresh(CommunityApi client) {
-    setState(() => _statusFuture = client.myCreatorMissions());
+    setState(() => _statusFuture = client.myCreatorMissions(workId: widget.workId));
   }
 
   String _missionName(CreatorMissionLabels t, Map<String, dynamic> mission) {
@@ -50,8 +54,12 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     final theme = Theme.of(context);
     final claimed = mission['claimed'] == true;
     final pending = mission['pendingSince'] is num && !claimed;
+    // When no work is selected, per-work claims cannot be summarized as
+    // "unclaimed" across all works: each work has its own durable bitmask.
     final status = claimed ? t.get('claimed')
-        : pending ? t.get('pending') : t.get('notClaimed');
+        : pending ? t.get('pending')
+        : mission['perWork'] == true && mission['claimed'] == null
+            ? t.get('perWork') : t.get('notClaimed');
     final reward = (mission['coins'] as num?)?.toInt() ?? 0;
     return Card(
       child: ListTile(
@@ -79,11 +87,13 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         .fold<int>(0, (sum, project) => sum + project.totalWorkSeconds);
     // Cache the future by authenticated account; never refetch on every
     // build or timer tick. Switching Google accounts invalidates old results.
-    if (_accountId != accountId || !identical(_lastApi, api)) {
+    if (_accountId != accountId || !identical(_lastApi, api) ||
+        _lastWorkId != widget.workId) {
       _accountId = accountId;
+      _lastWorkId = widget.workId;
       _lastApi = api;
       _statusFuture = accountId != null && api != null
-          ? api.myCreatorMissions() : null;
+          ? api.myCreatorMissions(workId: widget.workId) : null;
     }
     return Scaffold(
       appBar: AppBar(title: Text(t.get('title'))),
@@ -130,6 +140,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                   );
                 }
                 final info = snapshot.data!;
+                final candidateMinutes =
+                    ((info['candidateEditSeconds'] as num?)?.toInt() ?? 0) ~/ 60;
                 final rows = (info['missions'] as List? ?? const [])
                     .whereType<Map>()
                     .map((entry) => Map<String, dynamic>.from(entry))
@@ -137,6 +149,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Text(t.format('candidateMinutes', candidateMinutes)),
+                    const SizedBox(height: 8),
                     if (info['enabled'] != true)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 12),

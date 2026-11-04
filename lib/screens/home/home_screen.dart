@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 
@@ -19,7 +20,6 @@ import '../../models/project.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../services/font_service.dart';
-import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../utils/app_error_reporter.dart';
@@ -50,6 +50,8 @@ import '../../widgets/typing_aware_shortcuts.dart';
 import '../community/community_error_text.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/duplicate_name.dart';
+import '../../utils/responsive_tile_defaults.dart';
+import '../../utils/tolerant_preferences.dart';
 import '../../widgets/app_tutorial.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
 
@@ -73,7 +75,45 @@ class _HomeScreenState extends State<HomeScreen>
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _projectScrollController = ScrollController();
   late TabController _tabController;
-  ProjectViewMode _viewMode = ProjectViewMode.medium;
+  static const _projectViewModeKey = 'home.projectViewMode.v1';
+  ProjectViewMode? _userViewMode;
+
+  ProjectViewMode _effectiveViewMode(BuildContext context) =>
+      _userViewMode ??
+      switch (tileScreenClassForWidth(MediaQuery.sizeOf(context).width)) {
+        TileScreenClass.phone => ProjectViewMode.small,
+        TileScreenClass.tablet => ProjectViewMode.medium,
+        TileScreenClass.desktop => ProjectViewMode.large,
+      };
+
+  Future<void> _loadProjectViewMode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.readString(_projectViewModeKey);
+      if (!mounted || saved == null) return;
+      for (final mode in ProjectViewMode.values) {
+        if (mode.name == saved) {
+          setState(() => _userViewMode = mode);
+          return;
+        }
+      }
+    } catch (error) {
+      debugPrint('Project tile preference could not be restored: $error');
+    }
+  }
+
+  Future<void> _selectProjectViewMode(ProjectViewMode mode) async {
+    setState(() => _userViewMode = mode);
+    // 設定の引き継ぎにも入る保存先（並び順と同じ所）。
+    context.read<SettingsService>().setHomeViewMode(mode.name);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_projectViewModeKey, mode.name);
+    } catch (error) {
+      debugPrint('Project tile preference could not be saved: $error');
+    }
+  }
+
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
@@ -140,17 +180,12 @@ class _HomeScreenState extends State<HomeScreen>
       }
     });
     // 最後に選んだ表示サイズ・並び順を引き継ぐ。表示サイズを選んだことが
-    // 無ければ、低スペック端末では小表示を初期値にする。
+    // 無ければ、画面の幅で決まる大きさ（_effectiveViewMode）で出す。
     final settings = context.read<SettingsService>();
-    final savedView = ProjectViewMode.values.asNameMap()[settings.homeViewMode];
-    if (savedView != null) {
-      _viewMode = savedView;
-    } else if (context.read<PerformanceService>().qualityLevel ==
-        QualityLevel.low) {
-      _viewMode = ProjectViewMode.small;
-    }
+    _userViewMode = ProjectViewMode.values.asNameMap()[settings.homeViewMode];
     _sortMode =
         ProjectSortMode.values.asNameMap()[settings.homeSortMode] ?? _sortMode;
+    if (_userViewMode == null) _loadProjectViewMode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkFirstLaunch();
       _initShareIntentHandling();
@@ -511,13 +546,8 @@ class _HomeScreenState extends State<HomeScreen>
                         onPressed: _pasting ? null : _pasteClipboard,
                       ),
                     ProjectViewModeMenu(
-                      value: _viewMode,
-                      onChanged: (mode) {
-                        setState(() => _viewMode = mode);
-                        context.read<SettingsService>().setHomeViewMode(
-                          mode.name,
-                        );
-                      },
+                      value: _effectiveViewMode(context),
+                      onChanged: _selectProjectViewMode,
                     ),
                     IconButton(
                       icon: const Icon(Icons.search),
@@ -637,7 +667,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 // 覚える（入力中の検索語ごとには覚えない）。
                                 key: PageStorageKey((
                                   'home-projects',
-                                  _viewMode,
+                                  _effectiveViewMode(context),
                                   _currentFolderId,
                                   _showFavoritesOnly,
                                   _isSearching,
@@ -650,7 +680,7 @@ class _HomeScreenState extends State<HomeScreen>
                                     .projects
                                     .where((p) => !p.isSharedImport)
                                     .toList(),
-                                viewMode: _viewMode,
+                                viewMode: _effectiveViewMode(context),
                                 bottomPadding: _fabClearance(context),
                                 sortMode: _sortMode,
                                 isSelectionMode: _isSelectionMode,

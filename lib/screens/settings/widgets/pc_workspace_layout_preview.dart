@@ -57,12 +57,18 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     double width = right
         ? (_rightColumnWidthDrag ?? settings.desktopPanelWidth)
         : (_leftColumnWidthDrag ?? settings.desktopToolPanelWidth);
+    var anyVisible = false;
+    var anyExpanded = false;
     for (final panel in order) {
       if (!settings.defaultDockedPanels.contains(panel)) continue;
+      anyVisible = true;
+      if (settings.isDesktopDockCollapsed(panel)) continue;
+      anyExpanded = true;
       final panelWidth = _resizingWidth[panel] ??
           settings.desktopDockWidth(panel, right: right);
       if (panelWidth > width) width = panelWidth;
     }
+    if (anyVisible && !anyExpanded) return 52.0;
     return width;
   }
 
@@ -108,10 +114,17 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                             Expanded(
                               child: Row(
                                 children: [
-                                  _toolbar(scheme),
-                                  _column(settings, right: false),
-                                  _columnResizeGrip(settings, right: false),
+                                  if (!settings.isLeftHanded) ...[
+                                    _toolbar(scheme),
+                                    _column(settings, right: false),
+                                    _columnResizeGrip(settings, right: false),
+                                  ],
                                   Expanded(child: _canvasAndFrames(scheme)),
+                                  if (settings.isLeftHanded) ...[
+                                    _columnResizeGrip(settings, right: false),
+                                    _column(settings, right: false),
+                                    _toolbar(scheme),
+                                  ],
                                   _columnResizeGrip(settings, right: true),
                                   _column(settings, right: true),
                                 ],
@@ -228,8 +241,9 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
             children: [
               for (final panel in visible)
                 Align(
-                  alignment:
-                      right ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: right || settings.isLeftHanded
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: _window(settings, panel, right: right),
                 ),
             ],
@@ -247,7 +261,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
         key: ValueKey(right ? 'pcPreviewRightColumnResize' : 'pcPreviewToolColumnResize'),
         behavior: HitTestBehavior.opaque,
         onHorizontalDragUpdate: (details) => setState(() {
-          final delta = details.delta.dx * (right ? -1 : 1);
+          final delta =
+              details.delta.dx * (right || settings.isLeftHanded ? -1 : 1);
           if (right) {
             _rightColumnWidthDrag =
                 ((_rightColumnWidthDrag ?? settings.desktopPanelWidth) + delta)
@@ -270,9 +285,16 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
           }
         },
         child: SizedBox(
-          width: 10,
+          width: 18,
           child: Center(
-            child: Container(width: 3, color: scheme.outlineVariant),
+            child: RotatedBox(
+              quarterTurns: 1,
+              child: Icon(
+                Icons.drag_handle,
+                size: 20,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
           ),
         ),
       ),
@@ -288,8 +310,10 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     final width = _resizingWidth[panel] ??
         settings.desktopDockWidth(panel, right: right);
     final height = _resizingHeight[panel] ?? settings.desktopDockHeight(panel);
+    final collapsed = settings.isDesktopDockCollapsed(panel);
+    final foldsLeft = !right && !settings.isLeftHanded;
     return SizedBox(
-      width: width,
+      width: collapsed ? 52 : width,
       child: DragTarget<CanvasDockPanel>(
         key: ValueKey('pcPreviewDrop-${panel.name}'),
         onWillAcceptWithDetails: (details) => details.data != panel,
@@ -305,14 +329,30 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
               color: candidates.isNotEmpty ? scheme.primary : scheme.outlineVariant,
             ),
           ),
-          child: Column(
+          child: collapsed
+              ? SizedBox(
+                  height: 48,
+                  child: IconButton(
+                    key: ValueKey('pcPreviewExpand-${panel.name}'),
+                    tooltip: widget.labelOf(panel),
+                    icon: Icon(
+                      foldsLeft ? Icons.chevron_right : Icons.chevron_left,
+                      color: scheme.onSurface,
+                    ),
+                    onPressed: () => settings.setDesktopDockCollapsed(
+                      panel,
+                      false,
+                    ),
+                  ),
+                )
+              : Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
                 height: 34,
                 child: Row(
                   children: [
-                    LongPressDraggable<CanvasDockPanel>(
+                    Draggable<CanvasDockPanel>(
                       data: panel,
                       feedback: Material(
                         color: scheme.surfaceContainerHighest,
@@ -340,6 +380,24 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                         style: TextStyle(color: scheme.onSurface, fontSize: 13),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      key: ValueKey('pcPreviewCollapse-${panel.name}'),
+                      tooltip: AppLocalizations.of(context)!.filterPanelCollapse,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 36,
+                        height: 32,
+                      ),
+                      padding: EdgeInsets.zero,
+                      onPressed: () => settings.setDesktopDockCollapsed(
+                        panel,
+                        true,
+                      ),
+                      icon: Icon(
+                        foldsLeft ? Icons.chevron_left : Icons.chevron_right,
+                        size: 22,
+                        color: scheme.onSurface,
                       ),
                     ),
                     PopupMenuButton<String>(
@@ -381,13 +439,13 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      left: right ? 12 : 0,
-                      right: right ? 0 : 12,
+                      left: foldsLeft ? 0 : 18,
+                      right: foldsLeft ? 18 : 0,
                       child: _windowContents(panel, scheme),
                     ),
                     Positioned(
-                      left: right ? 0 : null,
-                      right: right ? null : 0,
+                      left: foldsLeft ? null : 0,
+                      right: foldsLeft ? 0 : null,
                       top: 0,
                       bottom: 0,
                       child: MouseRegion(
@@ -398,7 +456,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                           onHorizontalDragUpdate: (details) => setState(() {
                             _resizingWidth[panel] = ((_resizingWidth[panel] ??
                                     settings.desktopDockWidth(panel, right: right)) +
-                                details.delta.dx * (right ? -1 : 1))
+                                details.delta.dx * (foldsLeft ? 1 : -1))
                                 .clamp(200.0, 480.0);
                           }),
                           onHorizontalDragEnd: (_) {
@@ -409,10 +467,16 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                             }
                           },
                           child: SizedBox(
-                            width: 12,
+                            width: 18,
                             child: Center(
-                              child: Container(
-                                  width: 3, color: scheme.outlineVariant),
+                              child: RotatedBox(
+                                quarterTurns: 1,
+                                child: Icon(
+                                  Icons.drag_handle,
+                                  size: 20,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -440,10 +504,13 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                     }
                   },
                   child: SizedBox(
-                    height: 16,
+                    height: 22,
                     child: Center(
-                      child: Icon(Icons.drag_handle,
-                          size: 20, color: scheme.outline),
+                      child: Icon(
+                        Icons.drag_handle,
+                        size: 24,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ),

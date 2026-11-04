@@ -395,6 +395,62 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('folded windows stay folded; a fully folded column is a strip', (
+    tester,
+  ) async {
+    await openCanvas(tester, size: const Size(1280, 800));
+    final settings = tester
+        .element(find.byType(CanvasScreen))
+        .read<SettingsService>();
+    final right = settings.rightDockOrder
+        .where(
+          (p) => find
+              .byKey(ValueKey('pcPaneCollapse.${p.name}'))
+              .evaluate()
+              .isNotEmpty,
+        )
+        .toList();
+    expect(right, isNotEmpty);
+    final canvasBefore = tester.getSize(find.byType(CanvasArea)).width;
+
+    // 右の列の窓を1つずつたたむ。たたんだことは設定に残る（PCレイアウト
+    // 設定のプレビューと同じ値）。
+    for (final panel in right) {
+      await tester.tap(find.byKey(ValueKey('pcPaneCollapse.${panel.name}')));
+      await settle(tester, 2);
+      expect(
+        settings.isDesktopDockCollapsed(panel),
+        isTrue,
+        reason: panel.name,
+      );
+    }
+    // 全部たたむと列は外側の細い帯になり、キャンバスが広がる。
+    expect(find.byKey(const ValueKey('pcDockFolded')), findsOneWidget);
+    for (final panel in right) {
+      expect(
+        find.byKey(ValueKey('pcPaneExpand.${panel.name}')),
+        findsOneWidget,
+      );
+    }
+    final canvasFolded = tester.getSize(find.byType(CanvasArea)).width;
+    expect(canvasFolded, greaterThan(canvasBefore + 150));
+    await capture(tester, 'folded_right_column');
+
+    // 帯のボタンで1つ広げると、列が戻ってその窓だけ開く。
+    await tester.tap(find.byKey(ValueKey('pcPaneExpand.${right.first.name}')));
+    await settle(tester, 2);
+    expect(settings.isDesktopDockCollapsed(right.first), isFalse);
+    expect(find.byKey(const ValueKey('pcDockFolded')), findsNothing);
+    for (final panel in right.skip(1)) {
+      expect(settings.isDesktopDockCollapsed(panel), isTrue);
+    }
+    for (final panel in right.skip(1)) {
+      await settings.setDesktopDockCollapsed(panel, false);
+    }
+    await settle(tester, 2);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final (name, size, language, leftHanded) in [
     ('left_1280x800', const Size(1280, 800), 'ja', true),
     ('narrow_1024x700', const Size(1024, 700), 'ja', false),

@@ -21,7 +21,7 @@ class NiarimApp extends StatefulWidget {
   State<NiarimApp> createState() => _NiarimAppState();
 }
 
-class _NiarimAppState extends State<NiarimApp> {
+class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
   final _homeWidgetBridge = HomeWidgetBridge();
 
   /// 直近にウィジェットへ書き出した「テーマ色＋表示言語」。ウィジェットの
@@ -32,6 +32,7 @@ class _NiarimAppState extends State<NiarimApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // ホーム画面ウィジェットのタップで指定されたルートを開く。
     // go()ではなくpush()を使う（go()は履歴を丸ごと置き換えるため、
     // ウィジェット経由で入った画面から戻れなくなる）。
@@ -50,6 +51,26 @@ class _NiarimAppState extends State<NiarimApp> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _homeWidgetBridge.init();
     });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // An unfocused/backgrounded editor is not active creative time.
+    // Short sessions are flushed and the optional pilot sends stop=true.
+    final projects = context.read<ProjectService>();
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      projects.pauseWorkTracking();
+    } else if (state == AppLifecycleState.resumed) {
+      projects.resumeWorkTracking();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   /// テーマカラー・表示言語が変わったらウィジェットの見た目も追従させる
