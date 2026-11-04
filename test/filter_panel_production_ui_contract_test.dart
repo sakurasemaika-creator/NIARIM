@@ -211,7 +211,7 @@ void main() {
         card,
         120,
         scrollable: find.descendant(
-          of: find.byType(ListView).first,
+          of: find.byKey(const ValueKey('filter-tile-grid')),
           matching: find.byType(Scrollable),
         ),
       );
@@ -269,7 +269,7 @@ void main() {
         levelsCard,
         120,
         scrollable: find.descendant(
-          of: find.byType(ListView).first,
+          of: find.byKey(const ValueKey('filter-tile-grid')),
           matching: find.byType(Scrollable),
         ),
       );
