@@ -1239,6 +1239,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     if (!filterAdjusting) _buildTopBar(),
                     Expanded(
                       child: Row(
+                        // Stretch both dock columns to the canvas row's full
+                        // usable height. With the default center alignment a
+                        // short dock floats vertically in the middle instead
+                        // of starting directly below the top menu.
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           // デスクトップでは常設ツールバーを画面下部の横並びバーではなく、
                           // 左側（左利きモード時は右側）の縦レールとして常時表示する。
