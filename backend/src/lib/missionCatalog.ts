@@ -90,4 +90,6 @@ export interface CreatorMissionState {
   totalMissionCoins: number;
   /** Server-observed maturity/anti-farming checkpoints, integer epoch seconds. */
   firstQualifiedAt?: Record<string, number>;
+  /** Compact immutable achievement history: mission bit index -> UTC epoch sec. */
+  claimedAt?: Record<string, number>;
 }
