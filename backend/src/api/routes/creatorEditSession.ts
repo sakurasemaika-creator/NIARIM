@@ -144,6 +144,19 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
     badRequest("stopは真偽値で指定してください", "EDIT_SESSION_INVALID_STOP");
   }
   if (!active || active.id !== sessionId) {
+    // An acknowledged stop may have been applied even if its HTTP response
+    // was lost. Keep only one tiny completion receipt, not a session log.
+    const closed = state?.lastEditStop;
+    if (body.stop === true && closed && typeof closed === "object" &&
+        (closed as Record<string, unknown>).id === sessionId &&
+        (closed as Record<string, unknown>).sequence === sequence) {
+      return ok({
+        replay: true, stopped: true, acceptedCandidateSeconds: 0,
+        candidateEditSeconds:
+          nonNegativeRecordNumber(state?.candidateEditSeconds),
+        verified: false, nextSequence: null,
+      });
+    }
     conflict("計測セッションが無効または期限切れです", "EDIT_SESSION_MISSING");
   }
   if (sequence === active.lastSequence) {
@@ -188,8 +201,8 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
         "SET candidateEditSeconds = :candidate, editDay = :day, " +
         "editDailyCandidateSeconds = :daily " +
         (stop
-          ? "REMOVE editSession, editSessionStartNonce "
-          : " , editSession = :session ") +
+          ? ", lastEditStop = :closed REMOVE editSession, editSessionStartNonce "
+          : ", editSession = :session ") +
         "ADD revision :one",
       ConditionExpression:
         "revision = :rev AND editSession.id = :sid " +
@@ -199,7 +212,8 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
         ":day": day, ":daily": yesterdayAmount + candidate,
         ":rev": revision, ":sid": sessionId,
         ":prev": active.lastSequence, ":one": 1,
-        ...(!stop ? { ":session": nextSession } : {}),
+        ...(!stop ? { ":session": nextSession } :
+          { ":closed": { id: sessionId, sequence, atMs: now } }),
       },
     }));
   } catch (err) { conditionalConflict(err); }
