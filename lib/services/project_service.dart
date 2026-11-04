@@ -482,7 +482,12 @@ class ProjectService extends ChangeNotifier {
       _workLastSettledMs = now; // do not count the idle gap retroactively
     }
     _workLastActivityMs = now;
-    _creatorEditReporter?.noteInteraction();
+    final id = _trackedProjectId;
+    if (id != null) {
+      _creatorEditReporter?.noteInteraction(
+        projectId: id, activeSeconds: () => currentWorkSessionSeconds,
+      );
+    }
   }
 
   /// Supports sub-15-minute sessions. The 10-second timer limits UI rebuilds
