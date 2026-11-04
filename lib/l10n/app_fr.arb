@@ -1921,6 +1921,7 @@
   "layerPanelOpacityLabel": "Opacité",
   "layerPanelLockLabel": "Verrouiller",
   "layerPanelOpacityLockLabel": "Verrouiller l'opacité",
+  "canvasLayerLockedNotice": "Ce calque est verrouillé : impossible d'y dessiner. Désactivez « Verrouiller » dans les réglages du calque.",
   "layerPanelClippingDescription": "Dessiner uniquement dans la zone opaque du calque du dessous",
   "layerPanelConvertToCommonLabel": "Changer en calque commun",
   "layerPanelConvertOption1Title": "Rendre le calque actuel commun",

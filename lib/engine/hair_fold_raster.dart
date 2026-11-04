@@ -1168,13 +1168,12 @@ class HairFoldRaster {
             final b = (unit(fillB * rest + lineB * mix) * 255).round();
             final i = p * 4, ig = i + 1, ib = i + 2, ia = i + 3;
             final srcA = alpha / 255.0;
-            final dstA = target[ia] / 255.0;
-            final outA = srcA + dstA * (1.0 - srcA);
-            if (outA <= 0) continue;
-            target[i] = _over(r, target[i], srcA, dstA, outA);
-            target[ig] = _over(g, target[ig], srcA, dstA, outA);
-            target[ib] = _over(b, target[ib], srcA, dstA, outA);
-            target[ia] = (outA * 255).round().clamp(0, 255);
+            final keep = 1.0 - srcA;
+            final outA = (alpha + target[ia] * keep).round().clamp(0, 255);
+            target[i] = _over(r, target[i], srcA, keep, outA);
+            target[ig] = _over(g, target[ig], srcA, keep, outA);
+            target[ib] = _over(b, target[ib], srcA, keep, outA);
+            target[ia] = outA;
           }
         }
       }
@@ -1182,9 +1181,10 @@ class HairFoldRaster {
     }
   }
 
-  /// One channel of [TileManager.blendPixel]: [c] over [under].
-  static int _over(int c, int under, double srcA, double dstA, double outA) =>
-      ((c * srcA + under * dstA * (1.0 - srcA)) / outA).round().clamp(0, 255);
+  /// One channel of [TileManager.blendPixel]: [c] (straight) over [under]
+  /// (premultiplied, as the tiles are).
+  static int _over(int c, int under, double srcA, double keep, int outA) =>
+      (c * srcA + under * keep).round().clamp(0, outA);
 
   /// The fill and outer radii come from each end's width and scale
   /// ([outlinedStrokeRadii]); being linear in both, they are interpolated

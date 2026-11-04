@@ -4745,6 +4745,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get layerPanelOpacityLockLabel => 'Verrouiller l\'opacité';
 
   @override
+  String get canvasLayerLockedNotice =>
+      'Ce calque est verrouillé : impossible d\'y dessiner. Désactivez « Verrouiller » dans les réglages du calque.';
+
+  @override
   String get layerPanelClippingDescription =>
       'Dessiner uniquement dans la zone opaque du calque du dessous';
 

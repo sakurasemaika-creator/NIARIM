@@ -4733,6 +4733,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get layerPanelOpacityLockLabel => 'Bloquear opacidad';
 
   @override
+  String get canvasLayerLockedNotice =>
+      'Esta capa está bloqueada y no se puede dibujar en ella. Desactiva «Bloquear» en los ajustes de la capa.';
+
+  @override
   String get layerPanelClippingDescription =>
       'Dibujar solo dentro del área opaca de la capa inferior';
 

@@ -1263,6 +1263,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
+  /// ロックしたレイヤーへ描こうとしたとき（押すたびに出し直す）。
+  void _showLockedLayerNotice() {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.canvasLayerLockedNotice),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   void _onPerfChanged() => _syncOnionFromPerf();
 
   void _syncOnionFromPerf() {
@@ -1762,6 +1775,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             selectionTransformCommitToken: _selectionTransformCommitToken,
             viewRequest: _viewRequest,
             viewInfo: isDesktop ? _viewInfo : null,
+            onLockedLayerEdit: _showLockedLayerNotice,
           ),
         ),
         if (_filterColorEyedropperTarget != null ||

@@ -525,6 +525,9 @@ class CanvasArea extends StatefulWidget {
   /// 今の表示の倍率・回転をここへ書く（nullなら書かない）。
   final ValueNotifier<CanvasViewInfo>? viewInfo;
 
+  /// ロックしたレイヤーへ描こうとした（描かずにここを呼ぶ）。
+  final VoidCallback? onLockedLayerEdit;
+
   const CanvasArea({
     super.key,
     this.onTapForText,
@@ -581,6 +584,7 @@ class CanvasArea extends StatefulWidget {
     this.selectionTransformCommitToken = 0,
     this.viewRequest,
     this.viewInfo,
+    this.onLockedLayerEdit,
   });
 
   @override
@@ -1570,6 +1574,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (_isSelectionTool &&
         _selectionMask != null &&
+        _selectionTransformHitAt(canvasPos) != null &&
+        _refuseLockedLayer(event.pointer)) {
+      return;
+    }
+    if (_isSelectionTool &&
+        _selectionMask != null &&
         _beginSelectionTransformIfHit(canvasPos)) {
       // 既存の選択範囲の中・またはハンドルをタップ＝新規選択ではなく
       // 移動・拡大縮小・回転操作として扱う。
@@ -1596,6 +1606,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (widget.currentTool == DrawingTool.selectMagicWand) {
       _clearSelectionMask();
       _magicWandSelectAt(canvasPos);
+      return;
+    }
+    // ここから先のツールはどれもレイヤーの絵を書き換える（定規はハンドルの
+    // 操作だけ書き換えないので、ハンドルに当たらなかったときに調べる）。
+    if (widget.currentTool != DrawingTool.ruler &&
+        _refuseLockedLayer(event.pointer)) {
       return;
     }
     if (widget.currentTool == DrawingTool.shape &&
@@ -1630,6 +1646,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       // 【重大バグ修正】以前はここで無条件にreturnしていたため、定規
       // ツールでハンドル以外の場所をタップしても何も反応しなかった）。
       if (_handleRulerDown(canvasPos)) return;
+      if (_refuseLockedLayer(event.pointer)) return;
     }
     if (widget.currentTool == DrawingTool.bucket) {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
@@ -1678,6 +1695,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     // anchorとして扱うため、この呼び出しで既存仕様も維持される。
     final point = _toCanvasPoint(_rawToStrokePoint(event));
     _beginTileUndo();
+    _strokePointer = event.pointer;
     _drawingEngine.beginStroke(
       point,
       _tileKeyFor(_layerId),
@@ -1810,6 +1828,11 @@ class _CanvasAreaState extends State<CanvasArea> {
         widget.currentTool == DrawingTool.eyedropper) {
       return;
     }
+    // Only the pointer that began the stroke draws it: continueStroke would
+    // otherwise start a new stroke (with nothing recorded for Undo) from a
+    // pointer whose press began none (a palm while the pen was down, a
+    // press while a filter is adjusted, a pen button).
+    if (event.pointer != _strokePointer) return;
     _updateHoldEyedropper(event, canvasPos);
     final point = _toCanvasPoint(_rawToStrokePoint(event));
     _drawingEngine.continueStroke(
@@ -1953,13 +1976,23 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
 
     _disarmHoldEyedropper(event.pointer);
+    if (event.pointer != _strokePointer) {
+      // No stroke of its own (a pen button, a refused press): only the
+      // pen's lift is noted (palm rejection ends with it).
+      _inputHandler.onPointerUp(event);
+      return;
+    }
+    _strokePointer = null;
     if (_drawingEngine.needsFinalFadeReplay && _undoRecordingLayerKey != null) {
       final layerKey = _undoRecordingLayerKey!;
       final previewSnapshot = _tileManager.endUndoRecording();
       if (previewSnapshot.before.isNotEmpty) {
         _tileManager.applyTileSnapshot(layerKey, previewSnapshot.before);
       }
-      _tileManager.beginUndoRecording(layerKey);
+      _tileManager.beginUndoRecording(
+        layerKey,
+        lockOpacity: _recordingLocksOpacity,
+      );
       _drawingEngine.replayCurrentStrokeWithFinalFade();
     }
     _drawingEngine.endStroke();
@@ -1989,10 +2022,25 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   /// 描画操作（ストローク・バケツ・投げ縄塗り・トーン・スタンプ・移動・
   /// 変形・図形）の直前に呼び、現在のレイヤーへのタイル変更差分の記録を開始する。
-  void _beginTileUndo() {
+  /// [paints]は絵を描き加える操作か（移動・変形は偽）。描き加える操作は、
+  /// レイヤーの不透明度ロックが入っていれば透明な所へ描かず、各画素の
+  /// 不透明度を変えない（[TileManager.opacityLocked]）。
+  void _beginTileUndo({bool paints = true}) {
     _undoRecordingLayerKey = _tileKeyFor(_layerId);
-    _tileManager.beginUndoRecording(_undoRecordingLayerKey!);
+    _recordingLocksOpacity =
+        paints &&
+        (_layers.where((l) => l.id == _layerId).firstOrNull?.opacityLocked ??
+            false);
+    _tileManager.beginUndoRecording(
+      _undoRecordingLayerKey!,
+      lockOpacity: _recordingLocksOpacity,
+    );
   }
+
+  bool _recordingLocksOpacity = false;
+
+  /// 今のペン・消しゴムのストロークを描いている指（無ければnull）。
+  int? _strokePointer;
 
   /// ブラシのピクセルモードで配色方式（[Brush.pixelColorMode]）が
   /// none以外の場合、ストローク確定直後・Undo記録終了前に今回変更された
@@ -2317,6 +2365,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       _tileManager.applyTileSnapshot(layerKey, snapshot.before);
     }
     _drawingEngine.endStroke(cancel: true);
+    if (_strokePointer == pointer) _strokePointer = null;
     _toolHandledPointers.remove(pointer);
     _scheduleComposite();
 
@@ -2512,7 +2561,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     });
     if (start == null) return;
     if (delta.dx.abs() < 0.5 && delta.dy.abs() < 0.5) return;
-    _beginTileUndo();
+    _beginTileUndo(paints: false);
     _tileManager.translateLayer(_tileKeyFor(_layerId), delta.dx, delta.dy).then(
       (_) {
         if (!mounted) return;
@@ -2674,7 +2723,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     final rows = meshRows;
     final cols = meshCols;
     _meshCommitInFlight = true;
-    _beginTileUndo();
+    _beginTileUndo(paints: false);
     try {
       await _tileManager.meshTransformLayer(
         _tileKeyFor(_layerId),
@@ -2799,6 +2848,16 @@ class _CanvasAreaState extends State<CanvasArea> {
   bool _beginSelectionTransformIfHit(Offset canvasPos) {
     final bounds = _selectionMaskBounds();
     if (bounds == null) return false;
+    final mode = _selectionTransformHitAt(canvasPos);
+    if (mode == null) return false;
+    _beginSelectionTransform(canvasPos, mode, bounds);
+    return true;
+  }
+
+  /// 選択範囲の中・ハンドルを押したら、その変形の種類（当たらなければnull）。
+  _TransformMode? _selectionTransformHitAt(Offset canvasPos) {
+    final bounds = _selectionMaskBounds();
+    if (bounds == null) return null;
     final r = _selectionHandleHitRadius;
     final rotateR = selectionRotateHandleRadiusFor(_canvasToScreenScale);
     final reachable = _reachableCanvasRect;
@@ -2821,9 +2880,78 @@ class _CanvasAreaState extends State<CanvasArea> {
         _selectionMaskContains(canvasPos)) {
       mode = _TransformMode.translate;
     } else {
-      return false;
+      return null;
     }
-    _beginSelectionTransform(canvasPos, mode, bounds);
+    return mode;
+  }
+
+  /// OSが指を取り上げた（システムのジェスチャー・手のひらと判定された等、
+  /// PointerCancel）。その指で描いていたものは丸ごと取りやめ、途中までを
+  /// 残さない（残すと次の操作の記録に混ざって取り消せなくなる）。選択範囲の
+  /// 変形・メッシュ変形は確定の操作が別にあるのでここでは触らない。
+  void _cancelToolPointer(int pointer) {
+    if (pointer == _strokePointer) {
+      _strokePointer = null;
+      _drawingEngine.endStroke(cancel: true);
+      if (_undoRecordingLayerKey != null) _cancelTileUndoAndRestore();
+      return;
+    }
+    switch (widget.currentTool) {
+      case DrawingTool.finger || DrawingTool.blur || DrawingTool.mosaic:
+        _warpBuffer = null;
+        _warpLastPos = null;
+        if (_undoRecordingLayerKey != null) _cancelTileUndoAndRestore();
+      case DrawingTool.shape:
+        setState(() {
+          _shapeStart = null;
+          _shapeEnd = null;
+        });
+      case DrawingTool.move:
+        setState(() {
+          _moveStart = null;
+          _moveDelta = Offset.zero;
+        });
+      case DrawingTool.selectRect:
+        if (!_selectionTransformActive) {
+          setState(() {
+            _selectionStart = null;
+            _selectionEnd = null;
+          });
+        }
+      case DrawingTool.selectLasso || DrawingTool.lasso:
+        if (!_selectionTransformActive) {
+          _lassoGeneration++;
+          setState(() => _lassoPoints = []);
+        }
+      case DrawingTool.pen:
+        if (_subToolStrokePoints.isNotEmpty) {
+          setState(() => _subToolStrokePoints = []);
+        }
+      default:
+        break;
+    }
+  }
+
+  /// 今のレイヤーがロック中なら、描かずに知らせて真を返す。[pointer]は
+  /// 断った指（以後の動き・離すもツールへ渡さない。渡すとペンは動きだけで
+  /// 線を描き始め、ぼかしは動いた所をぼかしてしまう）。
+  bool _refuseLockedLayer(int? pointer) {
+    final layer = _layers.where((l) => l.id == _layerId).firstOrNull;
+    if (layer == null || !layer.isLocked) return false;
+    if (pointer != null) _toolHandledPointers.remove(pointer);
+    final notify = widget.onLockedLayerEdit;
+    if (notify == null) return true;
+    // スライダーの変形はビルド中（didUpdateWidget）に来る。そこから親の
+    // SnackBarを出すと例外になるので、フレームの後へ回す。
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) notify();
+      });
+    } else {
+      notify();
+    }
     return true;
   }
 
@@ -2842,7 +2970,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       _selectionTransformBounds = bounds;
       _selectionTransformLive = Matrix4.identity();
     });
-    _beginTileUndo();
+    _beginTileUndo(paints: false);
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
     final key = _tileKeyFor(_layerId);
@@ -2904,6 +3032,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     final bounds = _selectionMaskBounds();
     if (bounds == null) return;
     if (!_selectionTransformActive) {
+      if (_refuseLockedLayer(null)) return;
       // まだ掴んでいない状態からスライダーが動いた：切り出しだけ先に始める。
       _beginSelectionTransform(bounds.center, _TransformMode.translate, bounds);
     }
@@ -3159,7 +3288,8 @@ class _CanvasAreaState extends State<CanvasArea> {
           final tile = _tileManager.getOrCreateTile(key, tx, ty);
           final lx = px % TileManager.tileSize;
           final ly = py % TileManager.tileSize;
-          _tileManager.blendPixel(
+          // The blurred picture is premultiplied (read from an image).
+          _tileManager.blendPremultipliedPixel(
             tile,
             lx,
             ly,
@@ -4413,7 +4543,9 @@ class _CanvasAreaState extends State<CanvasArea> {
             if (_activeTouchPositions.isEmpty) _touchTransformActive = false;
           }
           _disarmHoldEyedropper(e.pointer);
-          _toolHandledPointers.remove(e.pointer);
+          if (_toolHandledPointers.remove(e.pointer)) {
+            _cancelToolPointer(e.pointer);
+          }
           if (e.pointer == _gizmoPointer) _endFilterGizmoDrag();
           if (e.pointer == _lensPointer) _abandonLensMaskEdit();
         },

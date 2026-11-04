@@ -1921,6 +1921,7 @@
   "layerPanelOpacityLabel": "Opacity",
   "layerPanelLockLabel": "Lock",
   "layerPanelOpacityLockLabel": "Lock opacity",
+  "canvasLayerLockedNotice": "This layer is locked, so you can't draw on it. Turn off \"Lock\" in the layer settings.",
   "layerPanelClippingDescription": "Draw only within the opaque area of the layer below",
   "layerPanelConvertToCommonLabel": "Change to common layer",
   "layerPanelConvertOption1Title": "Make the current layer common",

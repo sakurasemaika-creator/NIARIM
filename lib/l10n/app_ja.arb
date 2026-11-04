@@ -2236,6 +2236,10 @@
   "layerPanelOpacityLabel": "不透明度",
   "layerPanelLockLabel": "ロック",
   "layerPanelOpacityLockLabel": "不透明度ロック",
+  "canvasLayerLockedNotice": "このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」をオフにしてください。",
+  "@canvasLayerLockedNotice": {
+    "description": "ロックしたレイヤーへ描こうとしたときのキャンバスの通知"
+  },
   "layerPanelClippingDescription": "下のレイヤーの不透明範囲内のみ描画",
   "layerPanelConvertToCommonLabel": "共通レイヤーへ変更",
   "layerPanelConvertOption1Title": "現在レイヤーを共通化",

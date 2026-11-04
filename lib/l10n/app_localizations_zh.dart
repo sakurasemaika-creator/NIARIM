@@ -4492,6 +4492,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelOpacityLockLabel => '锁定不透明度';
 
   @override
+  String get canvasLayerLockedNotice => '此图层已锁定，无法绘制。请在图层设置中关闭“锁定”。';
+
+  @override
   String get layerPanelClippingDescription => '仅在下方图层的不透明范围内绘制';
 
   @override
@@ -12436,6 +12439,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get layerPanelOpacityLockLabel => '鎖定不透明度';
+
+  @override
+  String get canvasLayerLockedNotice => '此圖層已鎖定，無法繪製。請在圖層設定中關閉「鎖定」。';
 
   @override
   String get layerPanelClippingDescription => '僅在下方圖層的不透明範圍內繪製';

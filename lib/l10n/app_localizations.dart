@@ -8315,6 +8315,12 @@ abstract class AppLocalizations {
   /// **'不透明度ロック'**
   String get layerPanelOpacityLockLabel;
 
+  /// ロックしたレイヤーへ描こうとしたときのキャンバスの通知
+  ///
+  /// In ja, this message translates to:
+  /// **'このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」をオフにしてください。'**
+  String get canvasLayerLockedNotice;
+
   /// No description provided for @layerPanelClippingDescription.
   ///
   /// In ja, this message translates to:

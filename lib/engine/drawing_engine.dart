@@ -1030,9 +1030,14 @@ class DrawingEngine {
               final idx = (py * TileManager.tileSize + px) * 4;
               final belowAlpha = tile[idx + 3];
               // A faint edge holds less paint to pick up than a solid area.
+              // The tile is premultiplied: the colour under the brush is
+              // its RGB divided back by its alpha.
+              int under(int c) => (c * 255 ~/ belowAlpha).clamp(0, 255);
               final mixed = belowAlpha > 0
                   ? _oilMixerFor(paint, mixingBrightnessCorrection).mixNear(
-                      tile[idx] << 16 | tile[idx + 1] << 8 | tile[idx + 2],
+                      under(tile[idx]) << 16 |
+                          under(tile[idx + 1]) << 8 |
+                          under(tile[idx + 2]),
                       mixingRate / 100.0 * belowAlpha / 255.0,
                       paint,
                     )
