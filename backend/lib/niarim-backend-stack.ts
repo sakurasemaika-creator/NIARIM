@@ -211,6 +211,10 @@ export class NiarimBackendStack extends Stack {
         REWARDED_AD_REVIEW_APPROVED:
           this.node.tryGetContext("rewardedAdReviewApproved") === "true"
             ? "true" : "false",
+        // Optional UTC-day cap on verified rewarded coin grants. Blank means
+        // no NIARIM-specific count cap; Google may independently no-fill.
+        REWARDED_AD_DAILY_LIMIT:
+          String(this.node.tryGetContext("rewardedAdDailyLimit") ?? ""),
         // Exchange price must be explicitly approved; no placeholder price
         // can accidentally spend user coins or mint Premium.
         COIN_REDEMPTION_ENABLED:
