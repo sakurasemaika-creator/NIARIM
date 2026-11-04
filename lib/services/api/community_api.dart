@@ -100,6 +100,33 @@ class CommunityApi {
         query: {if (workId != null) 'workId': workId},
       );
 
+  /// Measurement-only pilot: DOES NOT issue coins or verify creative time.
+  /// startNonce must be a securely generated UUID. The backend is disabled
+  /// unless CREATOR_EDIT_SESSION_PILOT_ENABLED is explicitly enabled.
+  Future<Map<String, dynamic>> beginCreatorEditSession(String startNonce) =>
+      _client.postJson('/me/missions/edit-session',
+          body: {'action': 'start', 'startNonce': startNonce},
+          authenticated: true);
+
+  /// Client reports only summarized real-content edits, never strokes/images.
+  /// The server clamps to its clock and stores UNVERIFIED candidate seconds.
+  Future<Map<String, dynamic>> checkpointCreatorEditSession({
+    required String sessionId,
+    required int sequence,
+    required int activeSeconds,
+    required int meaningfulMutations,
+    bool stop = false,
+  }) => _client.postJson('/me/missions/edit-session',
+          body: {
+            'action': 'checkpoint',
+            'sessionId': sessionId,
+            'sequence': sequence,
+            'activeSeconds': activeSeconds,
+            'meaningfulMutations': meaningfulMutations,
+            'stop': stop,
+          },
+          authenticated: true);
+
   /// The signed-in account's works, including NIARIM-hidden works.
   /// The backend resolves the generated NIARIM user id from the Google ID token,
   /// so changing Google accounts immediately changes the owner list without a local
