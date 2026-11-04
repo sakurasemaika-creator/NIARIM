@@ -181,8 +181,11 @@ async function measuredProgress(
     }
 
     case "niarimBookmarkRanking": {
-      // The app's existing 'all' ranking is based on YouTube statistics and
-      // MUST NOT be used to reward user-generated YouTube engagement.
+      if (!workId || !/^[A-Za-z0-9_-]{11}$/.test(workId)) {
+        badRequest("作品IDを指定してください", "MISSION_WORK_ID_REQUIRED");
+      }
+      // Rank the EXACT named work, never the author's highest-ranked work.
+      // Only the NIARIM-native bookmark index can award mission coins.
       const ranking = await ddb.send(new QueryCommand({
         TableName: tableName(),
         IndexName: "GSI2",
@@ -193,8 +196,8 @@ async function measuredProgress(
       }));
       const list = ranking.Items ?? [];
       const index = list.findIndex((w) =>
-        w.itemType === "WORK" && w.authorId === userId &&
-        w.isNiarimPublished === true);
+        w.itemType === "WORK" && w.workId === workId &&
+        w.authorId === userId && w.isNiarimPublished === true);
       return {
         count: index < 0 ? 51 : index + 1,
         authoritative: true,
