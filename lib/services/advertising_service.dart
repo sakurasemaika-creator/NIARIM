@@ -114,93 +114,16 @@ class AdvertisingService extends ChangeNotifier {
   bool get canOfferRewardedAds =>
       isMonetizationEnabled && _canRequestAds && supportsMobilePluginRuntime;
 
-  /// Shows one user-requested rewarded video using the server-created
-  /// invitation, NEVER issues coins locally. The server will only increase
-  /// the wallet after Google AdMob's signed SSV callback is verified.
-  ///
-  /// False means the client did not see an earned-reward event; true means
-  /// only that the SDK reported it. Neither is a server wallet guarantee.
+  /// Voluntary rewarded ad: the SDK callback never grants coins locally.
+  /// Spendable coins are credited ONLY after Google signs the SSV event.
   Future<bool> showRewardedCoinAd({
     required String adUnitId,
     required String customData,
   }) async {
     if (!canOfferRewardedAds ||
-        !RegExp(r'^ca-app-pub-[0-9]{16}/[0-9]{10}
-  BannerAd? get bannerAd => shouldShowAds ? _provider.currentBanner : null;
-
-  /// ロード済み正方形広告。未ロード・プレミアム時はnull（処理中ダイアログが描画に使う）。
-  BannerAd? get squareAd => shouldShowAds ? _provider.currentSquareAd : null;
-
-  void _onPremiumChanged() {
-    if (premiumService.isPremium) hideAllAds();
-    notifyListeners();
-  }
-
-  Future<void> showBanner(AdPosition position) async {
-    if (!shouldShowAds) return;
-    await _provider.showBanner(position);
-  }
-
-  Future<void> showSquareAd() async {
-    if (!shouldShowAds) return;
-    await _provider.showSquareAd();
-  }
-
-  Future<void> hideAllAds() async {
-    await _provider.hideAllAds();
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    if (_initialized) {
-      premiumService.removeListener(_onPremiumChanged);
-      _provider.hideAllAds();
-    }
-    super.dispose();
-  }
-}
-
-enum AdPosition { top, bottom }
-).hasMatch(adUnitId) ||
-        !RegExp(r'^v1\\.N[0-9a-f]{32}\\.[0-9a-f-]{36}
-  BannerAd? get bannerAd => shouldShowAds ? _provider.currentBanner : null;
-
-  /// ロード済み正方形広告。未ロード・プレミアム時はnull（処理中ダイアログが描画に使う）。
-  BannerAd? get squareAd => shouldShowAds ? _provider.currentSquareAd : null;
-
-  void _onPremiumChanged() {
-    if (premiumService.isPremium) hideAllAds();
-    notifyListeners();
-  }
-
-  Future<void> showBanner(AdPosition position) async {
-    if (!shouldShowAds) return;
-    await _provider.showBanner(position);
-  }
-
-  Future<void> showSquareAd() async {
-    if (!shouldShowAds) return;
-    await _provider.showSquareAd();
-  }
-
-  Future<void> hideAllAds() async {
-    await _provider.hideAllAds();
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    if (_initialized) {
-      premiumService.removeListener(_onPremiumChanged);
-      _provider.hideAllAds();
-    }
-    super.dispose();
-  }
-}
-
-enum AdPosition { top, bottom }
-).hasMatch(customData)) {
+        !RegExp(r'^ca-app-pub-[0-9]{16}/[0-9]{10}$').hasMatch(adUnitId) ||
+        !RegExp(r'^v1[.]N[0-9a-f]{32}[.][0-9a-f-]{36}$')
+            .hasMatch(customData)) {
       return false;
     }
     final completed = Completer<bool>();
@@ -226,8 +149,7 @@ enum AdPosition { top, bottom }
             );
             ad.show(
               onUserEarnedReward: (ad, reward) {
-                // The SDK signal is NOT spendable currency. SSV only.
-                earned = true;
+                earned = true; // SSV, NOT this callback, credits the wallet.
               },
             );
           } catch (error) {
