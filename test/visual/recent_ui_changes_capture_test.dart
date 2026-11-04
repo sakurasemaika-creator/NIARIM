@@ -214,6 +214,36 @@ void main() {
     expect(leftDock.left, greaterThanOrEqualTo(-1));
     expect(rightDock.right, lessThanOrEqualTo(1501));
 
+    // Narrow desktop/DeX viewport: neither column may leave the screen or
+    // overlap the frame strip, even with three open windows on the right.
+    tester.view.physicalSize = const Size(800, 600);
+    await _shot(tester, root, '28_pc_narrow_800x600_docks_fit');
+    final narrowLeft =
+        tester.getRect(find.byKey(const ValueKey('desktopLeftDockScroll')));
+    final narrowRight =
+        tester.getRect(find.byKey(const ValueKey('desktopRightDockScroll')));
+    final narrowFrames = tester.getRect(find.byType(FrameStripWidget));
+    final narrowBrush =
+        tester.getRect(find.byKey(const ValueKey('dockTarget-brush')));
+    final narrowPreview =
+        tester.getRect(find.byKey(const ValueKey('dockTarget-canvasPreview')));
+    final narrowColor =
+        tester.getRect(find.byKey(const ValueKey('dockTarget-colorPicker')));
+    final narrowLayers =
+        tester.getRect(find.byKey(const ValueKey('dockTarget-layer')));
+    expect(narrowLeft.left, greaterThanOrEqualTo(-1));
+    expect(narrowRight.right, lessThanOrEqualTo(801));
+    expect(narrowLeft.right, lessThan(narrowRight.left));
+    expect(narrowLeft.top, closeTo(narrowRight.top, 2));
+    expect(narrowBrush.top, closeTo(narrowLeft.top, 2));
+    expect(narrowPreview.top, closeTo(narrowRight.top, 2));
+    expect(narrowLeft.bottom, lessThanOrEqualTo(narrowFrames.top + 1));
+    expect(narrowRight.bottom, lessThanOrEqualTo(narrowFrames.top + 1));
+    expect(narrowColor.width, closeTo(narrowLayers.width, 1));
+    expect(narrowPreview.width, closeTo(narrowColor.width, 1));
+
+    tester.view.physicalSize = const Size(1500, 900);
+    await _settle(tester);
     final brushFold = find.byKey(const ValueKey('dockCollapse-brush'));
     final layerFold = find.byKey(const ValueKey('dockCollapse-layer'));
     expect(brushFold, findsOneWidget);
