@@ -1212,33 +1212,48 @@ class _FilterPanelState extends State<FilterPanel> {
                     _autoLineartControlMode == AutoLineartControlMode.delete,
               ),
             ],
-            const Spacer(),
-            OutlinedButton(
-              key: const ValueKey('filter-cancel-button'),
-              onPressed: _applying ? null : _cancelPreview,
-              child: Text(l10n.commonCancel),
-            ),
           ],
         ),
         const SizedBox(height: 4),
-        FilledButton.icon(
-          key: const ValueKey('filter-apply-button'),
-          onPressed: widget.layerId == null || _applying ? null : _applyFilter,
-          icon: _applying
-              ? SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Theme.of(context).colorScheme.onPrimary,
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                key: const ValueKey('filter-cancel-button'),
+                onPressed: _applying ? null : _cancelPreview,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(l10n.commonCancel),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: FilledButton.icon(
+                key: const ValueKey('filter-apply-button'),
+                onPressed:
+                    widget.layerId == null || _applying ? null : _applyFilter,
+                icon: _applying
+                    ? SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      )
+                    : const Icon(Icons.check, size: 16),
+                label: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    bulk != null
+                        ? l10n.filterApplyBulkButton(bulk.length)
+                        : l10n.filterApplyButton,
                   ),
-                )
-              : const Icon(Icons.check, size: 16),
-          label: Text(
-            bulk != null
-                ? l10n.filterApplyBulkButton(bulk.length)
-                : l10n.filterApplyButton,
-          ),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
