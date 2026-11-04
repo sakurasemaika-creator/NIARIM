@@ -242,13 +242,13 @@ void main() {
     await tester.tap(
       find.byKey(const ValueKey('pcPreviewCollapse-brush')));
     await _shot(tester, root, '19_pc_layout_preview_left_folded');
-    await tester.tap(
-      find.byKey(const ValueKey('pcPreviewCollapse-layer')));
+    // The right column uses lazy ListView children. The layer can be outside
+    // its visible viewport, so change the same persisted setting directly.
+    await settings.setDesktopDockCollapsed(CanvasDockPanel.layer, true);
     await _shot(tester, root, '20_pc_layout_preview_both_sides_folded');
-    await tester.tap(
-      find.byKey(const ValueKey('pcPreviewExpand-brush')));
-    await tester.tap(
-      find.byKey(const ValueKey('pcPreviewExpand-layer')));
+    await settings.setDesktopDockCollapsed(CanvasDockPanel.brush, false);
+    await settings.setDesktopDockCollapsed(CanvasDockPanel.layer, false);
+    await _settle(tester);
     final width = find.byKey(const ValueKey('pcPreviewWidth-brush'));
     final height = find.byKey(const ValueKey('pcPreviewHeight-brush'));
     expect(width, findsOneWidget);
