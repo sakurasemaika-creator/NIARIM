@@ -18,9 +18,9 @@ import {
   CREATOR_MISSIONS,
   MAX_CREATOR_MISSION_COINS,
   MISSION_CATALOG_VERSION,
+  missionRewardCoins,
   missionClaimed,
   claimMissionInMask,
-  type CreatorMissionState,
   type MissionDefinition,
 } from "../../lib/missionCatalog";
 
@@ -35,11 +35,26 @@ function enabled(): boolean {
 const SOCIAL_HOLD_SECONDS = 48 * 60 * 60;
 const QUERY_WORK_PAGE_SIZE = 25;
 const MAX_OWN_WORK_PAGES = 20; // Prevent unbounded DynamoDB reads.
-type MissionStateRecord = CreatorMissionState & { revision: number };
-const missionKey = (userId: string) => Keys.creatorMissionState(userId);
+type MissionStateRecord = {
+  itemType: "CREATOR_MISSIONS_V1" | "CREATOR_WORK_MISSIONS_V1";
+  claimedMask: number;
+  revision: number;
+  verifiedEditSeconds: number;
+  totalMissionCoins: number;
+  firstQualifiedAt: Record<string, number>;
+  claimedAt: Record<string, number>;
+  pendingCoins: Record<string, number>;
+};
+const missionKey = (userId: string, workId?: string) =>
+  workId === undefined ? Keys.creatorMissionState(userId) :
+    Keys.creatorWorkMissionState(userId, workId);
 
-function normalizeState(raw: Record<string, unknown> | undefined): MissionStateRecord {
-  const claimedMask = raw?.itemType === "CREATOR_MISSIONS_V1" &&
+function normalizeState(
+  raw: Record<string, unknown> | undefined, perWork = false,
+): MissionStateRecord {
+  const type = perWork ? "CREATOR_WORK_MISSIONS_V1" as const :
+    "CREATOR_MISSIONS_V1" as const;
+  const claimedMask = raw?.itemType === type &&
     typeof raw.claimedMask === "number" &&
     Number.isSafeInteger(raw.claimedMask) && raw.claimedMask >= 0
       ? raw.claimedMask
@@ -67,23 +82,26 @@ function normalizeState(raw: Record<string, unknown> | undefined): MissionStateR
     return clean;
   };
   return {
-    itemType: "CREATOR_MISSIONS_V1",
+    itemType: type,
     claimedMask,
     revision,
     verifiedEditSeconds,
     totalMissionCoins,
     firstQualifiedAt: parseDates(raw?.firstQualifiedAt),
     claimedAt: parseDates(raw?.claimedAt),
+    pendingCoins: parseDates(raw?.pendingCoins),
   };
 }
 
-async function loadMissionState(userId: string): Promise<MissionStateRecord> {
+async function loadMissionState(
+  userId: string, workId?: string,
+): Promise<MissionStateRecord> {
   const record = await ddb.send(new GetCommand({
     TableName: tableName(),
-    Key: missionKey(userId),
+    Key: missionKey(userId, workId),
     ConsistentRead: true,
   }));
-  return normalizeState(record.Item);
+  return normalizeState(record.Item, workId !== undefined);
 }
 
 function isPublicWork(work: WorkItem | undefined, ownerId: string): boolean {
