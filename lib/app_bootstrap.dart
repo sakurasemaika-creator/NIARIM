@@ -253,6 +253,10 @@ Future<List<SingleChildWidget>> _buildAppProviders(
     accountId: () => googleAuthService.account?.id,
   );
   projectService.attachCreatorEditReporter(editReporter);
+  // Both save tree and save slot reuse this one explicit-success hook.
+  // AutosaveService and internal saveProject() calls remain untouched.
+  saveTreeService.onManualSaveCommitted =
+      projectService.onManualSaveCommitted;
 
   await enter('community_preview');
   final communityPreviewService = own(CommunityPreviewService());
@@ -280,6 +284,7 @@ Future<List<SingleChildWidget>> _buildAppProviders(
     signedInAccountId = accountId;
     communityService.forgetOwner();
     if (accountId != null && communityService.isBackendConnected) {
+      editReporter.retryPendingAfterSignIn();
       learnPoster(accountId);
     }
   }
@@ -287,6 +292,7 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   googleAuthService.addListener(followSignedInAccount);
   if (signedInAccountId case final accountId?
       when communityService.isBackendConnected) {
+    editReporter.retryPendingAfterSignIn();
     learnPoster(accountId);
   }
 
