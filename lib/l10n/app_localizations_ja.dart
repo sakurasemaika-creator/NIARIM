@@ -4518,6 +4518,14 @@ class AppLocalizationsJa extends AppLocalizations {
       'このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」をオフにしてください。';
 
   @override
+  String brushPanelDeleteConfirmTitle(String name) {
+    return '「$name」を削除しますか？';
+  }
+
+  @override
+  String get brushPanelDeleteConfirmBody => '削除したブラシは元に戻せません。';
+
+  @override
   String get layerPanelClippingDescription => '下のレイヤーの不透明範囲内のみ描画';
 
   @override

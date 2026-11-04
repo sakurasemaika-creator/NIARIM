@@ -7,6 +7,8 @@ import 'package:flutter/painting.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../utils/app_error_reporter.dart';
+
 import '../engine/brush_texture_cache.dart';
 import '../models/asset_tags.dart';
 import '../models/brush.dart';
@@ -851,16 +853,33 @@ class BrushService extends ChangeNotifier {
       _brushes.addAll(_defaultBrushes());
       await _persist();
     } else {
-      _brushes.addAll(
-        raw.map((s) => Brush.fromJson(jsonDecode(s) as Map<String, dynamic>)),
-      );
+      // 1件ずつ読む。壊れた1件（途中で切れた・項目の欠けた保存）で全体を
+      // 読めなくすると、起動の初期化が毎回同じ所で失敗して二度と起動
+      // できない。読めない分は記録して捨てる。
+      var dropped = false;
+      final seen = <String>{};
+      for (final entry in raw) {
+        try {
+          final brush = Brush.fromJson(
+            jsonDecode(entry) as Map<String, dynamic>,
+          );
+          if (!seen.add(brush.id)) {
+            dropped = true;
+            continue;
+          }
+          _brushes.add(brush);
+        } catch (error, stack) {
+          dropped = true;
+          AppErrorReporter.record(error, stack);
+        }
+      }
       // 既存ユーザーにも新規追加した初期ブラシ（マーカーペン・カリグラフィー）を
       // 反映する（既に同じIDのブラシが存在する場合は追加しない）。
       final existingIds = _brushes.map((b) => b.id).toSet();
       final missing = _defaultBrushes().where(
         (b) => !existingIds.contains(b.id),
       );
-      bool needsPersist = false;
+      bool needsPersist = dropped;
       if (missing.isNotEmpty) {
         _brushes.addAll(missing);
         needsPersist = true;
@@ -913,11 +932,15 @@ class BrushService extends ChangeNotifier {
     final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();
     if (foldersRaw != null) {
-      _folders.addAll(
-        foldersRaw.map(
-          (s) => BrushFolder.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        ),
-      );
+      for (final entry in foldersRaw) {
+        try {
+          _folders.add(
+            BrushFolder.fromJson(jsonDecode(entry) as Map<String, dynamic>),
+          );
+        } catch (error, stack) {
+          AppErrorReporter.record(error, stack);
+        }
+      }
     }
     final currentId = prefs.readString(_currentIdKey);
     _currentBrush =
@@ -965,7 +988,9 @@ class BrushService extends ChangeNotifier {
   }
 
   void selectBrush(String id) {
-    _currentBrush = _brushes.firstWhere((b) => b.id == id);
+    final brush = _brushes.where((b) => b.id == id).firstOrNull;
+    if (brush == null) return;
+    _currentBrush = brush;
     _preloadTextureIfNeeded(_currentBrush);
     notifyListeners();
     _persistCurrent();
@@ -1009,17 +1034,36 @@ class BrushService extends ChangeNotifier {
     if (idx < 0) return false;
     if (_brushes[idx].isFavorite) return false;
     _brushes.removeAt(idx);
+    // 使っていたブラシを消したら、隣のブラシへ移る（消したブラシで
+    // 描き続け、一覧ではどれも選ばれていない状態にしない）。
+    if (_currentBrush?.id == id) {
+      _currentBrush = _brushes.isEmpty
+          ? null
+          : _brushes[idx.clamp(0, _brushes.length - 1)];
+      _preloadTextureIfNeeded(_currentBrush);
+      _persistCurrent();
+    }
     notifyListeners();
     _persist();
     return true;
   }
 
-  void duplicateBrush(String id) {
-    final brush = _brushes.firstWhere((b) => b.id == id);
-    final newId = 'Brush${DateTime.now().millisecondsSinceEpoch}';
-    _brushes.add(brush.copyWith(id: newId, name: '${brush.name} (コピー)'));
+  /// [id]のブラシを複製して一覧の最後に足し、新しいIDを返す。名前は
+  /// [name]（画面が「名前 (コピー 2)」のように言語と番号を付けて渡す）。
+  String? duplicateBrush(String id, {String? name}) {
+    final idx = _brushes.indexWhere((b) => b.id == id);
+    if (idx < 0) return null;
+    final brush = _brushes[idx];
+    var newId = 'Brush${DateTime.now().millisecondsSinceEpoch}';
+    while (_brushes.any((b) => b.id == newId)) {
+      newId = '${newId}_';
+    }
+    _brushes.add(
+      brush.copyWith(id: newId, name: name ?? '${brush.name} (コピー)'),
+    );
     notifyListeners();
     _persist();
+    return newId;
   }
 
   /// ブラシへ分類用タグを設定する（既存のタグ列を置き換える）。

@@ -2240,6 +2240,15 @@
   "@canvasLayerLockedNotice": {
     "description": "ロックしたレイヤーへ描こうとしたときのキャンバスの通知"
   },
+  "brushPanelDeleteConfirmTitle": "「{name}」を削除しますか？",
+  "@brushPanelDeleteConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "brushPanelDeleteConfirmBody": "削除したブラシは元に戻せません。",
   "layerPanelClippingDescription": "下のレイヤーの不透明範囲内のみ描画",
   "layerPanelConvertToCommonLabel": "共通レイヤーへ変更",
   "layerPanelConvertOption1Title": "現在レイヤーを共通化",

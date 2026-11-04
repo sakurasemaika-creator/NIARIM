@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../utils/duplicate_name.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
 import '../../../services/brush_service.dart';
@@ -421,7 +422,14 @@ class _BrushPanelState extends State<BrushPanel> {
       case 'edit':
         _showBrushSettings(context, brush);
       case 'duplicate':
-        service.duplicateBrush(brush.id);
+        // 言語に合わせた「名前 (コピー)」、同じ名前があれば番号を付ける
+        // （以前は日本語の「(コピー)」固定で、2回複製すると同じ名前が並んだ）。
+        service.duplicateBrush(
+          brush.id,
+          name: numberedCopyName(l10n, brush.name, {
+            for (final b in service.brushes) b.name,
+          }),
+        );
       case 'move':
         showMoveToCreativeFolderSheet(
           context,
@@ -451,14 +459,39 @@ class _BrushPanelState extends State<BrushPanel> {
 
   /// お気に入り登録中は削除できない（誤って
   /// お気に入りのブラシを消してしまう事故を防ぐため）。
-  void _deleteBrush(BuildContext context, BrushService service, Brush brush) {
+  Future<void> _deleteBrush(
+    BuildContext context,
+    BrushService service,
+    Brush brush,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
     if (brush.isFavorite) {
-      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
+    // 消したブラシは戻せない（自作の画像ブラシは作り直しになる）ので、
+    // メニューの1回の押し間違いで消さないよう確かめる。
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.brushPanelDeleteConfirmTitle(brush.name)),
+        content: Text(l10n.brushPanelDeleteConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            key: const Key('brushDeleteConfirm'),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
     service.deleteBrush(brush.id);
   }
 

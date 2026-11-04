@@ -4749,6 +4749,15 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ce calque est verrouillé : impossible d\'y dessiner. Désactivez « Verrouiller » dans les réglages du calque.';
 
   @override
+  String brushPanelDeleteConfirmTitle(String name) {
+    return 'Supprimer « $name » ?';
+  }
+
+  @override
+  String get brushPanelDeleteConfirmBody =>
+      'Un pinceau supprimé ne peut pas être restauré.';
+
+  @override
   String get layerPanelClippingDescription =>
       'Dessiner uniquement dans la zone opaque du calque du dessous';
 

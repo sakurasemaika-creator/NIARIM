@@ -1922,6 +1922,8 @@
   "layerPanelLockLabel": "Bloquear",
   "layerPanelOpacityLockLabel": "Bloquear opacidad",
   "canvasLayerLockedNotice": "Esta capa está bloqueada y no se puede dibujar en ella. Desactiva «Bloquear» en los ajustes de la capa.",
+  "brushPanelDeleteConfirmTitle": "¿Eliminar «{name}»?",
+  "brushPanelDeleteConfirmBody": "Un pincel eliminado no se puede recuperar.",
   "layerPanelClippingDescription": "Dibujar solo dentro del área opaca de la capa inferior",
   "layerPanelConvertToCommonLabel": "Cambiar a capa común",
   "layerPanelConvertOption1Title": "Hacer común la capa actual",

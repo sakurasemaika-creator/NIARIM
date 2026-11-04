@@ -4737,6 +4737,15 @@ class AppLocalizationsEs extends AppLocalizations {
       'Esta capa está bloqueada y no se puede dibujar en ella. Desactiva «Bloquear» en los ajustes de la capa.';
 
   @override
+  String brushPanelDeleteConfirmTitle(String name) {
+    return '¿Eliminar «$name»?';
+  }
+
+  @override
+  String get brushPanelDeleteConfirmBody =>
+      'Un pincel eliminado no se puede recuperar.';
+
+  @override
   String get layerPanelClippingDescription =>
       'Dibujar solo dentro del área opaca de la capa inferior';
 

@@ -4672,6 +4672,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'This layer is locked, so you can\'t draw on it. Turn off \"Lock\" in the layer settings.';
 
   @override
+  String brushPanelDeleteConfirmTitle(String name) {
+    return 'Delete \"$name\"?';
+  }
+
+  @override
+  String get brushPanelDeleteConfirmBody =>
+      'A deleted brush can\'t be restored.';
+
+  @override
   String get layerPanelClippingDescription =>
       'Draw only within the opaque area of the layer below';
 

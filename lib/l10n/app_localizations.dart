@@ -8321,6 +8321,18 @@ abstract class AppLocalizations {
   /// **'このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」をオフにしてください。'**
   String get canvasLayerLockedNotice;
 
+  /// No description provided for @brushPanelDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を削除しますか？'**
+  String brushPanelDeleteConfirmTitle(String name);
+
+  /// No description provided for @brushPanelDeleteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除したブラシは元に戻せません。'**
+  String get brushPanelDeleteConfirmBody;
+
   /// No description provided for @layerPanelClippingDescription.
   ///
   /// In ja, this message translates to:

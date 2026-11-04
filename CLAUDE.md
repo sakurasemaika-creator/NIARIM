@@ -570,6 +570,12 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   `_notifyOutsideBuild`がそのときはフレームの後へ回す（dev_branchの
   リースつきの制作時間、2026-11-04取り込み。`timeline_pc_workspace_test`で
   発見）。
+- **保存した一覧（ブラシ等）は1件ずつ読むこと**：`BrushService.init`は以前、
+  保存の一覧を1度に`map(fromJson)`しており、壊れた1件で初期化全体が失敗して
+  起動できなくなった（起動失敗画面でやり直しても同じ）。読めない分は
+  `AppErrorReporter`へ記録して捨て、除いて保存し直す（`test/brush_management_test.dart`）。
+  使っているブラシを消したら隣のブラシへ移ること、複製の名前は
+  `numberedCopyName`（言語と番号）、削除は確かめてから、もここで見張る。
 - **ペンの線は、押して線を始めた指（`_strokePointer`）だけが描く**：
   `DrawingEngine.continueStroke`は線が無ければ新しく始めるので、押した時点で
   描かなかった指（手のひら除外・フィルターの調整中・ペンのボタン・ロック）の

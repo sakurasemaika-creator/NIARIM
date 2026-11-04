@@ -4540,6 +4540,14 @@ class AppLocalizationsKo extends AppLocalizations {
       '이 레이어는 잠겨 있어 그릴 수 없습니다. 레이어 설정에서 \"잠금\"을 끄세요.';
 
   @override
+  String brushPanelDeleteConfirmTitle(String name) {
+    return '\"$name\"을(를) 삭제할까요?';
+  }
+
+  @override
+  String get brushPanelDeleteConfirmBody => '삭제한 브러시는 되돌릴 수 없습니다.';
+
+  @override
   String get layerPanelClippingDescription => '아래 레이어의 불투명 범위 내에만 그리기';
 
   @override

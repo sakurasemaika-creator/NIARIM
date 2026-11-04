@@ -1922,6 +1922,8 @@
   "layerPanelLockLabel": "Lock",
   "layerPanelOpacityLockLabel": "Lock opacity",
   "canvasLayerLockedNotice": "This layer is locked, so you can't draw on it. Turn off \"Lock\" in the layer settings.",
+  "brushPanelDeleteConfirmTitle": "Delete \"{name}\"?",
+  "brushPanelDeleteConfirmBody": "A deleted brush can't be restored.",
   "layerPanelClippingDescription": "Draw only within the opaque area of the layer below",
   "layerPanelConvertToCommonLabel": "Change to common layer",
   "layerPanelConvertOption1Title": "Make the current layer common",
