@@ -2024,7 +2024,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final collapsed = settings.isDesktopDockCollapsed(p);
     final foldsLeft = !right && !settings.isLeftHanded;
     return Align(
-      alignment: foldsLeft ? Alignment.centerLeft : Alignment.centerRight,
+      // Without heightFactor, a single window can occupy the full dock column
+      // and end up vertically centered. Each dock window must instead take
+      // only its own height and stack from the top of the canvas viewport.
+      alignment: foldsLeft ? Alignment.topLeft : Alignment.topRight,
+      heightFactor: 1,
       child: SizedBox(
         // All expanded windows have exactly the width of their dock column.
         width: collapsed ? 52 : double.infinity,
