@@ -3,7 +3,7 @@ import {
   ConditionalCheckFailedException, TransactionCanceledException,
 } from "@aws-sdk/client-dynamodb";
 import { GetCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
-import { authenticate } from "../../lib/auth";
+import { authenticate, getUser } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { badRequest, conflict, forbidden, ok } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
@@ -72,9 +72,17 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
     conflict("交換価格が変更されました。再確認してください",
       "REDEMPTION_PRICE_CHANGED");
   }
-  if (auth.membershipTier !== "free") {
-    // Mixing active Google Play subscriptions and reward extensions needs
-    // separate pause/resume verification before it can safely be enabled.
+  const user = await getUser(auth.niarimUserId);
+  const preflightNow = Date.now();
+  const playActive =
+    typeof user?.playPremiumExpiresAtEpochMs === "number" &&
+    typeof user.playPremiumVerifiedUntilEpochMs === "number" &&
+    user.playPremiumExpiresAtEpochMs > preflightNow &&
+    user.playPremiumVerifiedUntilEpochMs > preflightNow;
+  if (!user || user.itemType !== "USER" ||
+      user.membershipTier !== "free" || playActive) {
+    // A coin-funded Premium membership is allowed to add another month.
+    // An active Play subscription still requires separate pause/resume logic.
     forbidden("購入済み会員の交換延長は準備中です",
       "REDEMPTION_SUBSCRIPTION_CONFLICT");
   }
@@ -175,10 +183,16 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
             Key: Keys.user(auth.niarimUserId),
             UpdateExpression: "SET coinPremiumExpiresAtEpochMs = :expires",
             ConditionExpression:
-              "itemType = :user AND (attribute_not_exists(coinPremiumExpiresAtEpochMs) " +
-              "OR coinPremiumExpiresAtEpochMs <= :expires)",
+              "itemType = :user AND membershipTier = :free AND " +
+              "(attribute_not_exists(playPremiumExpiresAtEpochMs) OR " +
+              "playPremiumExpiresAtEpochMs <= :now OR " +
+              "attribute_not_exists(playPremiumVerifiedUntilEpochMs) OR " +
+              "playPremiumVerifiedUntilEpochMs <= :now) AND " +
+              "(attribute_not_exists(coinPremiumExpiresAtEpochMs) OR " +
+              "coinPremiumExpiresAtEpochMs <= :expires)",
             ExpressionAttributeValues: {
-              ":user": "USER", ":expires": expiresAtEpochMs,
+              ":user": "USER", ":free": "free",
+              ":now": now, ":expires": expiresAtEpochMs,
             },
           },
         },

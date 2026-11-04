@@ -14,9 +14,13 @@ vi.mock("../src/lib/auth", () => ({
     googleSub: "verified-google-sub",
     membershipTier: "free",
   })),
+  getUser: vi.fn(async () => ({
+    itemType: "USER", membershipTier: "free",
+  })),
 }));
 import { getCoinRedemptionQuote, redeemCoins } from
   "../src/api/routes/coinRedemption";
+import { getUser } from "../src/lib/auth";
 import {
   addOneCalendarMonthUtc, premiumRedemptionOffer,
 } from "../src/lib/coinRedemption";
@@ -38,6 +42,10 @@ function enable() {
 beforeEach(() => {
   send.mockReset();
   send.mockResolvedValue({});
+  vi.mocked(getUser).mockReset();
+  vi.mocked(getUser).mockResolvedValue({
+    itemType: "USER", membershipTier: "free",
+  } as Awaited<ReturnType<typeof getUser>>);
   process.env.TABLE_NAME = "unit-test-table";
   delete process.env.COIN_REDEMPTION_ENABLED;
   delete process.env.COIN_REDEMPTION_REVIEW_APPROVED;
@@ -93,8 +101,57 @@ describe("fail-closed one-month full Premium coin redemption", () => {
       .toContain("attribute_not_exists(expiresAtEpochMs)");
     expect(rows[3].Update?.Key?.sk).toBe("META");
     expect(rows[3].Update?.ExpressionAttributeValues?.[":user"]).toBe("USER");
+    expect(rows[3].Update?.ConditionExpression).toContain("membershipTier = :free");
+    expect(rows[3].Update?.ConditionExpression).toContain("playPremiumExpiresAtEpochMs");
     expect(rows[4].Put?.Item?.source).toBe("coin-redemption");
     expect(rows[4].Put?.Item?.deltaCoins).toBe(-55000);
+  });
+
+  it("extends an existing coin-funded Premium without mixing an active Play purchase", async () => {
+    enable();
+    const priorExpiry = Date.now() + 12 * 86400_000;
+    vi.mocked(getUser).mockResolvedValueOnce({
+      itemType: "USER", membershipTier: "free",
+      coinPremiumExpiresAtEpochMs: priorExpiry,
+    } as Awaited<ReturnType<typeof getUser>>);
+    send.mockImplementation(async (command: unknown) => {
+      if (command instanceof GetCommand &&
+          command.input.Key?.sk === "ENTITLEMENT#fullPremium") {
+        return {Item: {
+          itemType: "REWARD_ENTITLEMENT", status: "active",
+          expiresAtEpochMs: priorExpiry,
+        }};
+      }
+      return {};
+    });
+    const result = await redeemCoins(req({
+      target: "fullPremium", months: 1,
+      priceVersion: "v1-premium-month", requestId,
+    }));
+    const response = JSON.parse(result.body ?? "{}");
+    expect(response.redeemed).toBe(true);
+    expect(response.expiresAtEpochMs).toBeGreaterThan(priorExpiry);
+    const tx = send.mock.calls.find(([c]) => c instanceof TransactWriteCommand)?.[0]
+      as TransactWriteCommand;
+    expect(tx.input.TransactItems?.[2].Update
+      ?.ExpressionAttributeValues?.[":oldExpiry"]).toBe(priorExpiry);
+    expect(tx.input.TransactItems?.[3].Update
+      ?.ExpressionAttributeValues?.[":now"]).toBeGreaterThan(0);
+  });
+
+  it("rejects an active Play subscription even when the account tier is free", async () => {
+    enable();
+    const future = Date.now() + 3600_000;
+    vi.mocked(getUser).mockResolvedValueOnce({
+      itemType: "USER", membershipTier: "free",
+      playPremiumExpiresAtEpochMs: future,
+      playPremiumVerifiedUntilEpochMs: future,
+    } as Awaited<ReturnType<typeof getUser>>);
+    await expect(redeemCoins(req({
+      target: "fullPremium", months: 1,
+      priceVersion: "v1-premium-month", requestId,
+    }))).rejects.toMatchObject({code:"REDEMPTION_SUBSCRIPTION_CONFLICT"});
+    expect(send.mock.calls.some(([x]) => x instanceof TransactWriteCommand)).toBe(false);
   });
 
   it("retrying a committed transaction returns the old receipt, never debits twice", async () => {
