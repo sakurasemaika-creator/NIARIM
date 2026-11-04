@@ -118,7 +118,7 @@ describe("creator mission endpoints", () => {
     const tx = send.mock.calls.map(([c]) => c)
       .find((c) => c instanceof TransactWriteCommand);
     if (!tx) throw new Error("Missing atomic mission award transaction");
-    expect(tx.input.TransactItems).toHaveLength(3);
+    expect(tx.input.TransactItems).toHaveLength(4);
     expect(tx.input.TransactItems?.[0].Update?.Key?.pk).toBe("USER#NverifiedByGoogle");
     expect(tx.input.TransactItems?.[1].Update?.Key?.pk).toBe("USER#NverifiedByGoogle");
     expect(tx.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":reward"]).toBe(50);
@@ -127,6 +127,9 @@ describe("creator mission endpoints", () => {
     expect(tx.input.TransactItems?.[2].Put?.Item?.deltaCoins).toBe(50);
     expect(tx.input.TransactItems?.[2].Put?.Item?.sk).toMatch(/^COIN_HISTORY#/);
     expect(tx.input.TransactItems?.[0].Update?.ExpressionAttributeValues?.[":newMask"]).toBe(2 ** 10);
+    expect(tx.input.TransactItems?.[3].ConditionCheck?.Key?.sk).toBe("META");
+    expect(tx.input.TransactItems?.[3].ConditionCheck?.ExpressionAttributeValues?.[":minimum"])
+      .toBe(10);
   });
 
   it("duplicate claimed mask never pays the wallet twice", async () => {
@@ -204,6 +207,39 @@ describe("creator mission endpoints", () => {
     expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand)).toBe(false);
   });
 
+  it("clears a held offer when bookmark progress drops below the requirement", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    const first = Math.floor(Date.now() / 1000) - 49 * 3600;
+    send.mockImplementation(async (command: unknown) => {
+      if (command instanceof GetCommand &&
+          command.input.Key?.pk === "WORK#abcdefghijk") {
+        return {Item: {
+          itemType: "WORK", workId: "abcdefghijk",
+          authorId: "NverifiedByGoogle", isNiarimPublished: true,
+          youtubePrivacyStatus: "public",
+          gsi2pk: "BOOKMARK_RANKING", bookmarkCount: 9,
+        }};
+      }
+      if (command instanceof GetCommand &&
+          command.input.Key?.sk === "MISSION_WORK#abcdefghijk") {
+        return {Item: {
+          itemType: "CREATOR_WORK_MISSIONS_V1", revision: 9, claimedMask: 0,
+          firstQualifiedAt: { "5": first }, pendingCoins: { "5": 50 },
+        }};
+      }
+      return {};
+    });
+    await expect(claimCreatorMission(req({
+      missionId: "work_bookmarks_10", workId: "abcdefghijk",
+    }))).rejects.toMatchObject({code:"MISSION_NOT_YET_COMPLETE"});
+    const writes = send.mock.calls.map(([command]) => command);
+    const clear = writes.find((x) => x instanceof UpdateCommand);
+    expect(clear?.input.ExpressionAttributeValues?.[":first"]).toEqual({});
+    expect(clear?.input.ExpressionAttributeValues?.[":coins"]).toEqual({});
+    expect(writes.some((x) => x instanceof TransactWriteCommand)).toBe(false);
+  });
+
   it("pays matured per-work award only with the work's own bitmask", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
     process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
@@ -235,6 +271,12 @@ describe("creator mission endpoints", () => {
       .find((c) => c instanceof TransactWriteCommand);
     expect(tx?.input.TransactItems?.[0].Update?.Key?.sk).toBe("MISSION_WORK#abcdefghijk");
     expect(tx?.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":reward"]).toBe(50);
+    expect(tx?.input.TransactItems?.[3].ConditionCheck?.Key?.pk)
+      .toBe("WORK#abcdefghijk");
+    expect(tx?.input.TransactItems?.[3].ConditionCheck?.ConditionExpression)
+      .toContain("bookmarkCount >= :required");
+    expect(tx?.input.TransactItems?.[3].ConditionCheck?.ExpressionAttributeValues?.[":required"])
+      .toBe(10);
   });
 
 });
