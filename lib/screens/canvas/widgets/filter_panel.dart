@@ -1036,20 +1036,21 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
           ),
         ),
-        IconButton(
-          key: const ValueKey('filter-collapse-button'),
-          icon: Icon(
-            collapsed ? Icons.expand_less : Icons.expand_more,
-            size: 18,
+        if (!_isInstantColorInvert(current))
+          IconButton(
+            key: const ValueKey('filter-collapse-button'),
+            icon: Icon(
+              collapsed ? Icons.expand_less : Icons.expand_more,
+              size: 18,
+            ),
+            tooltip: collapsed
+                ? l10n.filterPanelExpand
+                : l10n.filterPanelCollapse,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            onPressed: () => setState(() => _collapsed = !_collapsed),
           ),
-          tooltip: collapsed
-              ? l10n.filterPanelExpand
-              : l10n.filterPanelCollapse,
-          visualDensity: VisualDensity.compact,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-          onPressed: () => setState(() => _collapsed = !_collapsed),
-        ),
         if (withClose) PanelCenterCloseBar(onClose: widget.onClose),
       ],
     );
