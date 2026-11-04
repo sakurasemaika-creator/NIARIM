@@ -1,0 +1,56 @@
+name: Creator Edit Checkpoint Verification
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/creator-edit-checkpoint-verify.yml'
+      - 'lib/services/creator_edit_session_reporter.dart'
+      - 'lib/services/project_service.dart'
+      - 'lib/services/save_tree_service.dart'
+      - 'lib/app_bootstrap.dart'
+      - 'lib/app.dart'
+      - 'lib/screens/canvas/canvas_screen.dart'
+      - 'lib/screens/timeline/timeline_screen.dart'
+      - 'test/manual_save_edit_time_checkpoint_test.dart'
+  pull_request:
+    paths:
+      - '.github/workflows/creator-edit-checkpoint-verify.yml'
+      - 'lib/services/creator_edit_session_reporter.dart'
+      - 'lib/services/project_service.dart'
+      - 'lib/services/save_tree_service.dart'
+      - 'lib/app_bootstrap.dart'
+      - 'test/manual_save_edit_time_checkpoint_test.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Analyze affected editor, reporter, and save services
+        run: |
+          flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
+            lib/services/creator_edit_session_reporter.dart \
+            lib/services/project_service.dart \
+            lib/services/save_tree_service.dart \
+            lib/app_bootstrap.dart \
+            lib/app.dart \
+            lib/screens/canvas/canvas_screen.dart \
+            lib/screens/timeline/timeline_screen.dart \
+            test/manual_save_edit_time_checkpoint_test.dart
+      - name: Verify manual save triggers and existing overwrite safety
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/manual_save_edit_time_checkpoint_test.dart \
+            test/save_slot_overwrite_test.dart
