@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
-import { GetCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, PutCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 const { send } = vi.hoisted(() => ({ send: vi.fn() }));
 vi.mock("../src/lib/dynamo", async (original) => ({
@@ -56,10 +56,14 @@ describe("bounded per-author candidate scans", () => {
       .find(x=>x instanceof QueryCommand) as QueryCommand;
     expect(query.input.ExpressionAttributeValues?.[":author"])
       .toBe("AUTHOR#NactualOwner");
-    const put = send.mock.calls.map(([x])=>x)
-      .find(x=>x instanceof PutCommand) as PutCommand;
-    expect(put.input.Item?.pk).toBe("USER#NactualOwner");
-    expect(put.input.Item?.revision).toBe(1);
+    const writes = send.mock.calls.map(([x]) => x)
+      .filter(x => x instanceof PutCommand) as PutCommand[];
+    expect(writes).toHaveLength(2); // initial lease + committed result
+    expect(writes[0].input.Item?.scanLeaseToken).toMatch(/^[0-9a-f-]{36}$/);
+    expect(writes[1].input.Item?.pk).toBe("USER#NactualOwner");
+    expect(writes[1].input.Item?.revision).toBe(1);
+    expect(writes[1].input.ConditionExpression).toContain("scanLeaseToken = :token");
+    expect(writes[1].input.Item?.scanLeaseUntilEpochMs).toBe(0);
   });
   it("resumes the server cursor and version under an atomic compare", async () => {
     process.env.CREATOR_QUALIFIED_WORK_SCAN_ENABLED = "true";
@@ -86,7 +90,9 @@ describe("bounded per-author candidate scans", () => {
     const put = send.mock.calls.map(([x])=>x)
       .find(x=>x instanceof PutCommand) as PutCommand;
     expect(put.input.ConditionExpression).toContain("revision = :revision");
+    expect(put.input.ConditionExpression).toContain("scanLeaseToken = :token");
     expect(put.input.ExpressionAttributeValues?.[":revision"]).toBe(7);
+    expect(send.mock.calls.some(([x]) => x instanceof UpdateCommand)).toBe(true);
     expect(put.input.Item?.cursor).toBeUndefined();
   });
   it("never scans more than 8 pages within one 10-second Lambda request", async () => {
@@ -105,7 +111,64 @@ describe("bounded per-author candidate scans", () => {
     expect(body).toMatchObject({processedWorks:200,worksWith20Bookmarks:200,
       scanComplete:false,pagesScanned:8,morePages:true});
     expect(page).toBe(8);
-    expect(send.mock.calls.filter(([c])=>c instanceof PutCommand)).toHaveLength(1);
+    expect(send.mock.calls.filter(([c])=>c instanceof PutCommand)).toHaveLength(2);
+  });
+  it("rejects concurrent scans before any GSI read", async () => {
+    process.env.CREATOR_QUALIFIED_WORK_SCAN_ENABLED = "true";
+    const stamp = Date.now();
+    send.mockResolvedValueOnce({Item: {
+      pk: "USER#NactualOwner", sk:"MISSION_QUALIFIED_WORK_SCAN_V1",
+      itemType:"MISSION_QUALIFIED_WORK_SCAN_V1", revision:3,
+      startedAtEpochMs:stamp-10000, updatedAtEpochMs:stamp-10000,
+      processedWorks:200, worksWith10Bookmarks:3, worksWith20Bookmarks:1,
+      scanComplete:false, scanLeaseToken:"123e4567-e89b-12d3-a456-426614174000",
+      scanLeaseUntilEpochMs:stamp+20000,
+    }});
+    await expect(scanMyQualifiedWorks(request()))
+      .rejects.toMatchObject({code:"MISSION_SCAN_BUSY"});
+    expect(send.mock.calls.filter(([x]) => x instanceof QueryCommand))
+      .toHaveLength(0);
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+  it("rate-limits repeated page reads without discarding server counts", async () => {
+    process.env.CREATOR_QUALIFIED_WORK_SCAN_ENABLED = "true";
+    const stamp = Date.now();
+    send.mockResolvedValueOnce({Item: {
+      pk: "USER#NactualOwner", sk:"MISSION_QUALIFIED_WORK_SCAN_V1",
+      itemType:"MISSION_QUALIFIED_WORK_SCAN_V1", revision:3,
+      startedAtEpochMs:stamp-10000, updatedAtEpochMs:stamp-10000,
+      processedWorks:200, worksWith10Bookmarks:3, worksWith20Bookmarks:1,
+      scanComplete:false, nextAllowedAtEpochMs:stamp+3000,
+    }});
+    const data = JSON.parse((await scanMyQualifiedWorks(request())).body ?? "{}");
+    expect(data).toMatchObject({
+      processedWorks:200, unchanged:true,
+      authoritativeForRewards:false,
+    });
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+  it("rejects a write race before starting expensive GSI reads", async () => {
+    process.env.CREATOR_QUALIFIED_WORK_SCAN_ENABLED = "true";
+    const stamp = Date.now()-100000;
+    send.mockImplementation(async (command: unknown) => {
+      if (command instanceof GetCommand) return {Item: {
+        pk:"USER#NactualOwner",sk:"MISSION_QUALIFIED_WORK_SCAN_V1",
+        itemType:"MISSION_QUALIFIED_WORK_SCAN_V1", revision:2,
+        startedAtEpochMs:stamp,updatedAtEpochMs:stamp,
+        processedWorks:200,worksWith10Bookmarks:20,
+        worksWith20Bookmarks:4,scanComplete:false,
+      }};
+      if (command instanceof UpdateCommand) {
+        throw new ConditionalCheckFailedException({
+          $metadata:{},message:"concurrent lease",
+        });
+      }
+      return {};
+    });
+    await expect(scanMyQualifiedWorks(request()))
+      .rejects.toMatchObject({code:"MISSION_SCAN_BUSY"});
+    expect(send.mock.calls.filter(([x]) => x instanceof QueryCommand))
+      .toHaveLength(0);
   });
   it("requires an explicit restart for completed current scans", async () => {
     process.env.CREATOR_QUALIFIED_WORK_SCAN_ENABLED = "true";

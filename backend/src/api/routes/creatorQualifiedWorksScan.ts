@@ -1,6 +1,7 @@
+import { randomUUID } from "node:crypto";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
-import { GetCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, PutCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { authenticate } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { badRequest, conflict, forbidden, ok } from "../../lib/response";
@@ -21,6 +22,9 @@ const MAX_PAGES_PER_REQUEST = 8;
 const PAGE_SIZE = 25;
 const SCAN_VALIDITY_MS = 24 * 60 * 60_000;
 const MAX_WORKS_PER_SCAN = 1_000_000;
+const LEASE_MS = 30_000;
+const PAGE_COOLDOWN_MS = 4_000;
+const RESTART_COOLDOWN_MS = 60_000;
 type ScanRecord = {
   pk: string;
   sk: string;
@@ -33,6 +37,10 @@ type ScanRecord = {
   worksWith20Bookmarks: number;
   cursor?: Record<string, unknown>;
   scanComplete: boolean;
+  // Optional for compatibility with scan records written before lease support.
+  scanLeaseToken?: string;
+  scanLeaseUntilEpochMs?: number;
+  nextAllowedAtEpochMs?: number;
   // TTL is opportunistic; explicit age checks always enforce freshness.
   expiresAtEpochSeconds: number;
 };
@@ -44,6 +52,14 @@ function validScan(value: Record<string, unknown> | undefined): value is ScanRec
     if (typeof n !== "number" || !Number.isSafeInteger(n) || n < 0) return false;
   }
   if (value.scanComplete !== true && value.scanComplete !== false) return false;
+  for (const name of ["scanLeaseUntilEpochMs", "nextAllowedAtEpochMs"]) {
+    const n = value[name];
+    if (n !== undefined &&
+        (typeof n !== "number" || !Number.isSafeInteger(n) || n < 0)) return false;
+  }
+  if (value.scanLeaseToken !== undefined &&
+      (typeof value.scanLeaseToken !== "string" ||
+       !/^[0-9a-f-]{36}$/.test(value.scanLeaseToken))) return false;
   if (value.cursor !== undefined &&
       (value.cursor === null || typeof value.cursor !== "object" ||
        Array.isArray(value.cursor))) return false;
@@ -63,6 +79,7 @@ function snapshot(scan: ScanRecord, unchanged: boolean) {
     updatedAtEpochMs: scan.updatedAtEpochMs,
     morePages: !scan.scanComplete,
     unchanged,
+    nextAllowedAtEpochMs: scan.nextAllowedAtEpochMs ?? null,
   };
 }
 
@@ -94,7 +111,66 @@ export async function scanMyQualifiedWorks(event: APIGatewayProxyEventV2) {
   const reset = body.restart === true || expired;
   if (existing?.scanComplete && !reset) return ok(snapshot(existing, true));
 
+  if (existing?.scanLeaseUntilEpochMs &&
+      existing.scanLeaseUntilEpochMs >= now) {
+    conflict("別の端末が集計中です。再試行してください", "MISSION_SCAN_BUSY");
+  }
+  if (body.restart === true && existing &&
+      now - existing.startedAtEpochMs < RESTART_COOLDOWN_MS) {
+    conflict("再集計までしばらく時間を空けてください", "MISSION_SCAN_RESTART_COOLDOWN");
+  }
+  if (existing?.nextAllowedAtEpochMs &&
+      existing.nextAllowedAtEpochMs > now && !reset) {
+    return ok(snapshot(existing, true));
+  }
+
+  // Acquire a short lease BEFORE any expensive GSI reads. The lease token
+  // fences a timed-out worker: a later holder cannot be overwritten by it.
+  // A missing item is stored as a fully valid placeholder, so a Lambda crash
+  // never leaves a broken state that blocks future resumes indefinitely.
   const priorRevision = existing?.revision ?? 0;
+  const leaseToken = randomUUID();
+  const leaseUntil = now + LEASE_MS;
+  try {
+    if (existing) {
+      await ddb.send(new UpdateCommand({
+        TableName: tableName(),
+        Key: key,
+        UpdateExpression:
+          "SET scanLeaseToken = :token, scanLeaseUntilEpochMs = :until",
+        ConditionExpression:
+          "itemType = :type AND revision = :revision AND " +
+          "(attribute_not_exists(scanLeaseUntilEpochMs) OR " +
+          "scanLeaseUntilEpochMs < :now) AND " +
+          "(attribute_not_exists(nextAllowedAtEpochMs) OR " +
+          "nextAllowedAtEpochMs <= :now)",
+        ExpressionAttributeValues: {
+          ":type": "MISSION_QUALIFIED_WORK_SCAN_V1",
+          ":revision": priorRevision,
+          ":token": leaseToken, ":until": leaseUntil, ":now": now,
+        },
+      }));
+    } else {
+      await ddb.send(new PutCommand({
+        TableName: tableName(),
+        Item: {
+          ...key,
+          itemType: "MISSION_QUALIFIED_WORK_SCAN_V1",
+          revision: 0, startedAtEpochMs: now, updatedAtEpochMs: now,
+          processedWorks: 0, worksWith10Bookmarks: 0,
+          worksWith20Bookmarks: 0, scanComplete: false,
+          scanLeaseToken: leaseToken, scanLeaseUntilEpochMs: leaseUntil,
+          expiresAtEpochSeconds: Math.floor((now + SCAN_VALIDITY_MS) / 1000),
+        },
+        ConditionExpression: "attribute_not_exists(pk)",
+      }));
+    }
+  } catch (error) {
+    if (error instanceof ConditionalCheckFailedException) {
+      conflict("別の端末が集計を更新しました", "MISSION_SCAN_BUSY");
+    }
+    throw error;
+  }
   const started = reset ? now : existing!.startedAtEpochMs;
   let cursor: Record<string, unknown> | undefined =
     reset ? undefined : existing!.cursor;
@@ -143,19 +219,21 @@ export async function scanMyQualifiedWorks(event: APIGatewayProxyEventV2) {
     worksWith20Bookmarks: matching20,
     ...(complete ? {} : { cursor }),
     scanComplete: complete,
+    scanLeaseUntilEpochMs: 0,
+    nextAllowedAtEpochMs: now + PAGE_COOLDOWN_MS,
     expiresAtEpochSeconds: Math.floor((started + SCAN_VALIDITY_MS) / 1000),
   };
   try {
     await ddb.send(new PutCommand({
       TableName: tableName(),
       Item: next,
-      ConditionExpression: existing
-        ? "itemType = :type AND revision = :revision"
-        : "attribute_not_exists(pk)",
-      ...(existing ? {ExpressionAttributeValues: {
+      ConditionExpression:
+        "itemType = :type AND revision = :revision AND scanLeaseToken = :token",
+      ExpressionAttributeValues: {
         ":type": "MISSION_QUALIFIED_WORK_SCAN_V1",
         ":revision": priorRevision,
-      }} : {}),
+        ":token": leaseToken,
+      },
     }));
   } catch (error) {
     if (error instanceof ConditionalCheckFailedException) {
