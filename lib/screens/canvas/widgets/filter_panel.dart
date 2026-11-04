@@ -1351,32 +1351,33 @@ class _FilterPanelState extends State<FilterPanel> {
     if (current.kind == FilterKind.noise) {
       return Column(
         children: [
-          DropdownButtonFormField<NoiseStyle>(
-            key: ValueKey('noise-style-${current.noiseStyle.name}'),
-            decoration: _overCanvasDecoration(label: l10n.filterNoiseStyle),
-            style: _overCanvasTextStyle(),
-            initialValue: current.noiseStyle,
-            items: [
-              DropdownMenuItem(
-                value: NoiseStyle.filmGrain,
-                child: Text(l10n.filterNoiseFilmGrain),
-              ),
-              DropdownMenuItem(
-                value: NoiseStyle.color,
-                child: Text(l10n.filterNoiseColor),
-              ),
-              DropdownMenuItem(
-                value: NoiseStyle.vhs,
-                child: Text(l10n.filterNameVhsNoise),
-              ),
-            ],
-            onChanged: (style) {
-              if (style != null) {
-                service.updateFilterParams(current.id, noiseStyle: style);
-                _updatePreview();
-              }
-            },
-          ),
+          if (FilterService.dedicatedNoiseStyleFor(current.id) == null)
+            DropdownButtonFormField<NoiseStyle>(
+              key: ValueKey('noise-style-${current.noiseStyle.name}'),
+              decoration: _overCanvasDecoration(label: l10n.filterNoiseStyle),
+              style: _overCanvasTextStyle(),
+              initialValue: current.noiseStyle,
+              items: [
+                DropdownMenuItem(
+                  value: NoiseStyle.filmGrain,
+                  child: Text(l10n.filterNoiseFilmGrain),
+                ),
+                DropdownMenuItem(
+                  value: NoiseStyle.color,
+                  child: Text(l10n.filterNoiseColor),
+                ),
+                DropdownMenuItem(
+                  value: NoiseStyle.vhs,
+                  child: Text(l10n.filterNameVhsNoise),
+                ),
+              ],
+              onChanged: (style) {
+                if (style != null) {
+                  service.updateFilterParams(current.id, noiseStyle: style);
+                  _updatePreview();
+                }
+              },
+            ),
           _paramSlider(
             l10n.filterNoiseStrength,
             current.strength,

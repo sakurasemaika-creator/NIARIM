@@ -12,12 +12,21 @@ import '../utils/tolerant_preferences.dart';
 
 class FilterService extends ChangeNotifier {
   static const _prefsKey = 'draw_filters';
+  static const filmGrainFilterId = 'Filter0010';
   static const prismFilterId = 'Filter0022';
   static const vhsNoiseFilterId = 'Filter0024';
   static const mosaicFilterId = 'Filter0026';
   static const genericNoiseFilterId = 'Filter0027';
   static const sphereShadingFilterId = 'Filter0028';
   static const watercolorBorderFilterId = 'Filter0029';
+
+  /// Dedicated film-grain and VHS tiles always keep their named effects.
+  /// The general Noise tile and custom filters can change noise style.
+  static NoiseStyle? dedicatedNoiseStyleFor(String id) {
+    if (id == filmGrainFilterId) return NoiseStyle.filmGrain;
+    if (id == vhsNoiseFilterId) return NoiseStyle.vhs;
+    return null;
+  }
 
   final List<FilterDef> _filters = [];
   String? _currentFilterId;
@@ -96,7 +105,7 @@ class FilterService extends ChangeNotifier {
       strength: 50,
     ),
     FilterDef(
-      id: 'Filter0010',
+      id: filmGrainFilterId,
       name: 'フィルムグレイン',
       kind: FilterKind.noise,
       strength: 15,
@@ -272,6 +281,15 @@ class FilterService extends ChangeNotifier {
             );
             migratedFilterState = true;
           }
+          final dedicatedStyle = filter.kind == FilterKind.noise
+              ? dedicatedNoiseStyleFor(filter.id)
+              : null;
+          if (dedicatedStyle != null && filter.noiseStyle != dedicatedStyle) {
+            // Older versions could save a different effect under the named
+            // film-grain or VHS tile. Preserve all other edited parameters.
+            filter = filter.copyWith(noiseStyle: dedicatedStyle);
+            migratedFilterState = true;
+          }
           return filter;
         }),
       );
@@ -411,7 +429,11 @@ class FilterService extends ChangeNotifier {
     final before = _filters[idx];
     final after = before.copyWith(
       strength: strength,
-      noiseStyle: noiseStyle,
+      noiseStyle:
+          (before.kind == FilterKind.noise
+              ? dedicatedNoiseStyleFor(before.id)
+              : null) ??
+          noiseStyle,
       noiseSeed: noiseSeed,
       colorLevels: colorLevels,
       edgeStrength: edgeStrength,

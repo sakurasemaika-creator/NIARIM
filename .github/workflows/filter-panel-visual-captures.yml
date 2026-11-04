@@ -1,0 +1,66 @@
+name: Drawing Filter UI Capture Matrix
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/screens/canvas/widgets/filter_panel.dart'
+      - 'lib/services/filter_service.dart'
+      - 'lib/models/filter_def.dart'
+      - 'test/filter_noise_settings_test.dart'
+      - 'test/filter_panel_production_ui_contract_test.dart'
+      - 'test/visual/feature_operation_capture_test.dart'
+      - '.github/workflows/filter-panel-visual-captures.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - name: Validate filter menu contracts and persistence
+        run: |
+          flutter test test/filter_panel_production_ui_contract_test.dart test/filter_noise_settings_test.dart --reporter expanded
+          flutter analyze lib/screens/canvas/widgets/filter_panel.dart lib/services/filter_service.dart test/filter_panel_production_ui_contract_test.dart test/filter_noise_settings_test.dart
+      - name: Capture each drawing filter on the real Canvas route
+        env:
+          CI: 'true'
+        run: |
+          flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=filters
+      - name: Verify all 28 filter settings screenshots exist
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          captures = Path('build/feature-captures/filters')
+          screenshots = sorted(captures.glob('Filter????_*-settings.png'))
+          ids = {path.name.split('_', 1)[0] for path in screenshots}
+          assert len(ids) == 28, f'Expected 28 named filters, captured {len(ids)}: {sorted(ids)}'
+          assert (captures / 'Filter0025_default-settings.png').is_file()
+          assert (captures / 'Filter0010_default-settings.png').is_file()
+          assert (captures / 'Filter0024_default-settings.png').is_file()
+          assert (captures / 'Filter0027_default-settings.png').is_file()
+          print(f'Captured {len(screenshots)} settings screens across {len(ids)} filters')
+          PY
+      - name: Stamp revision for human screenshot review
+        if: always()
+        run: |
+          mkdir -p build/feature-captures/filters
+          printf 'commit=%s\nrun=%s\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" > build/feature-captures/filters/capture-revision.txt
+      - name: Upload per-filter before/settings/after screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: drawing-filter-ui-captures
+          path: build/feature-captures/filters/
+          if-no-files-found: warn
+          retention-days: 14

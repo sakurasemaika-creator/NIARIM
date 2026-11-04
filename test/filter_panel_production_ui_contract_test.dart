@@ -136,6 +136,20 @@ void main() {
         expect(find.byKey(const ValueKey('filter-apply-button')), findsOneWidget);
         expect(find.byKey(const ValueKey('filter-cancel-button')), findsOneWidget);
         expect(gallery, findsNothing);
+        final noiseStyleSelector =
+            find.byType(DropdownButtonFormField<NoiseStyle>);
+        expect(
+          noiseStyleSelector,
+          filter.id == FilterService.genericNoiseFilterId
+              ? findsOneWidget
+              : findsNothing,
+          reason: '${filter.id}: only general noise needs an algorithm selector',
+        );
+        expect(
+          find.byKey(const ValueKey('filter-collapse-button')),
+          filter.id == 'Filter0025' ? findsNothing : findsOneWidget,
+          reason: '${filter.id}: one-step inversion must not collapse',
+        );
         if (filter.id == 'Filter0025') {
           // Color invert uses the tone-curve engine internally, but is a
           // one-tap operation, not an editable RGB curve.
