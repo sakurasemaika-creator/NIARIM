@@ -132,7 +132,7 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
               receivedAtMs: now,
               // TTL is a storage optimisation; a 7-day signed timestamp
               // boundary prevents old callbacks from becoming valid again.
-              expiresAt: Math.floor(now / 1000) + RECEIPT_LIFETIME_SECONDS,
+              ttl: Math.floor(now / 1000) + RECEIPT_LIFETIME_SECONDS,
             },
             ConditionExpression: "attribute_not_exists(pk)",
           },
