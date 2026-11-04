@@ -135,6 +135,50 @@ describe("edit session pilot: no coins or verified time issued", () => {
     expect(send).toHaveBeenCalledTimes(1);
   });
 
+  it("ends a session with an idempotent tiny receipt and no coin change", async () => {
+    process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED = "true";
+    send.mockImplementation(async (c: unknown) => c instanceof GetCommand ? {
+      Item: {
+        editSession: {
+          id, startedAtMs: Date.now() - 600000,
+          lastAtMs: Date.now() - 300000, lastSequence: 2,
+        },
+        revision: 2,
+      },
+    } : {});
+    const result = await editSessionAction(event({
+      action: "checkpoint", sessionId: id, sequence: 3,
+      activeSeconds: 300, meaningfulMutations: 10, stop: true,
+    }));
+    expect(JSON.parse(result.body ?? "{}")).toMatchObject({
+      stopped: true, verified: false, nextSequence: null,
+    });
+    const tx = send.mock.calls.map(([c]) => c)
+      .find((c) => c instanceof UpdateCommand) as UpdateCommand;
+    expect(tx.input.UpdateExpression).toContain("REMOVE editSession");
+    expect(tx.input.ExpressionAttributeValues?.[":closed"]).toMatchObject({
+      id, sequence: 3,
+    });
+    expect(JSON.stringify(tx.input)).not.toContain("balanceCoins");
+  });
+
+  it("replays an already committed stop without second write", async () => {
+    process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED = "true";
+    send.mockResolvedValueOnce({ Item: {
+      lastEditStop: { id, sequence: 3, atMs: Date.now() - 1000 },
+      candidateEditSeconds: 800,
+    }});
+    const result = await editSessionAction(event({
+      action: "checkpoint", sessionId: id, sequence: 3,
+      activeSeconds: 300, meaningfulMutations: 10, stop: true,
+    }));
+    expect(JSON.parse(result.body ?? "{}")).toMatchObject({
+      replay: true, stopped: true, acceptedCandidateSeconds: 0,
+      candidateEditSeconds: 800,
+    });
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
   it("rejects checkpoints older than the maximum window", async () => {
     process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED = "true";
     send.mockResolvedValueOnce({ Item: {
