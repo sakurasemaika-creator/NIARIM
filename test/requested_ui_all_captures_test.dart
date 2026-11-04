@@ -334,6 +334,13 @@ void main() {
     await tester.tap(meshEntry.last);
     await settle();
     expect(find.byType(MeshTransformPanel), findsOneWidget);
+    // Regressions: the bottom floating mesh action bar must not draw
+    // a black shadow or an opaque enclosing rectangle.
+    final meshBar = find.byKey(const ValueKey('mesh-transform-action-bar'));
+    expect(meshBar, findsOneWidget);
+    final meshMaterial = tester.widget<Material>(meshBar);
+    expect(meshMaterial.type, MaterialType.transparency);
+    expect(meshMaterial.elevation, 0);
     await shot('popup_fix_mesh_transform');
 
     await navigate('/home');
