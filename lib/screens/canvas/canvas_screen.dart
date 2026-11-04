@@ -1248,24 +1248,24 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             ),
                             if (_desktopDockColumnWidth(right: false) > 52)
                               _ResizeHandle(
-                              onDeltaX: (dx) => setState(() {
-                                final settings = context
-                                    .read<SettingsService>();
-                                final current =
-                                    _toolPanelWidthDragOverride ??
-                                    settings.desktopToolPanelWidth;
-                                _toolPanelWidthDragOverride = (current + dx)
-                                    .clamp(200.0, 480.0);
-                              }),
-                              onDragEnd: () {
-                                final w = _toolPanelWidthDragOverride;
-                                if (w != null) {
-                                  context
-                                      .read<SettingsService>()
-                                      .setDesktopToolPanelWidth(w);
-                                }
-                              },
-                            ),
+                                onDeltaX: (dx) => setState(() {
+                                  final settings = context
+                                      .read<SettingsService>();
+                                  final current =
+                                      _toolPanelWidthDragOverride ??
+                                      settings.desktopToolPanelWidth;
+                                  _toolPanelWidthDragOverride = (current + dx)
+                                      .clamp(200.0, 480.0);
+                                }),
+                                onDragEnd: () {
+                                  final w = _toolPanelWidthDragOverride;
+                                  if (w != null) {
+                                    context
+                                        .read<SettingsService>()
+                                        .setDesktopToolPanelWidth(w);
+                                  }
+                                },
+                              ),
                           ],
                           Expanded(
                             child: Stack(
@@ -1467,24 +1467,24 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           if (openToolPanels.isNotEmpty && leftHanded) ...[
                             if (_desktopDockColumnWidth(right: false) > 52)
                               _ResizeHandle(
-                              onDeltaX: (dx) => setState(() {
-                                final settings = context
-                                    .read<SettingsService>();
-                                final current =
-                                    _toolPanelWidthDragOverride ??
-                                    settings.desktopToolPanelWidth;
-                                _toolPanelWidthDragOverride = (current - dx)
-                                    .clamp(200.0, 480.0);
-                              }),
-                              onDragEnd: () {
-                                final w = _toolPanelWidthDragOverride;
-                                if (w != null) {
-                                  context
-                                      .read<SettingsService>()
-                                      .setDesktopToolPanelWidth(w);
-                                }
-                              },
-                            ),
+                                onDeltaX: (dx) => setState(() {
+                                  final settings = context
+                                      .read<SettingsService>();
+                                  final current =
+                                      _toolPanelWidthDragOverride ??
+                                      settings.desktopToolPanelWidth;
+                                  _toolPanelWidthDragOverride = (current - dx)
+                                      .clamp(200.0, 480.0);
+                                }),
+                                onDragEnd: () {
+                                  final w = _toolPanelWidthDragOverride;
+                                  if (w != null) {
+                                    context
+                                        .read<SettingsService>()
+                                        .setDesktopToolPanelWidth(w);
+                                  }
+                                },
+                              ),
                             SizedBox(
                               width: _desktopDockColumnWidth(right: false),
                               child: _dockedPanelStack(openToolPanels),
@@ -1952,7 +1952,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// Full-scene tools keep their entire primary visual in view. Collection
   /// panels scale their contents by width, but retain vertical scrolling.
   Widget _responsiveDockBody(CanvasDockPanel panel) {
-    final isCompleteVisual = panel == CanvasDockPanel.colorPicker ||
+    final isCompleteVisual =
+        panel == CanvasDockPanel.colorPicker ||
         panel == CanvasDockPanel.canvasPreview;
     return DesktopDockContentViewport(
       key: ValueKey('dockViewport-${panel.name}'),
@@ -2042,7 +2043,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         children: [
                           Icon(_dockCollapsedIcon(p), size: 18),
                           Icon(
-                            foldsLeft ? Icons.chevron_right : Icons.chevron_left,
+                            foldsLeft
+                                ? Icons.chevron_right
+                                : Icons.chevron_left,
                             size: 13,
                           ),
                         ],
