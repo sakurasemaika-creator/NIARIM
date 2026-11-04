@@ -13,10 +13,8 @@ Future<void> pickFilterCard(WidgetTester tester, String filterId) async {
     card,
     120,
     scrollable: find.descendant(
-      of: find.byType(FilterPanel),
-      matching: find.byWidgetPredicate(
-        (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
-      ),
+      of: find.byKey(const ValueKey('filter-tile-grid')),
+      matching: find.byType(Scrollable),
     ),
   );
   // A card only partly inside the strip would take the tap off-screen.
