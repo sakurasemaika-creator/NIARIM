@@ -19,6 +19,7 @@ import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/screens/settings/pc_workspace_layout_settings_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/filter_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/load_app_fonts.dart';
@@ -154,6 +155,35 @@ void main() {
         await settle();
         if (find.byType(FilterPanel).evaluate().isNotEmpty) {
           await shot('07_filter_preview_colored_background');
+          final gallery = find.byKey(const ValueKey('filter-tile-grid'));
+          expect(gallery, findsOneWidget);
+          expect(tester.widget<GridView>(gallery).scrollDirection, Axis.vertical);
+          await shot('07a_vertical_filter_tile_gallery');
+          final service = tester.element(find.byType(FilterPanel).first)
+              .read<FilterService>();
+          final candidates = service.filters.take(2).toList();
+          expect(candidates, hasLength(2));
+          await tester.tap(find.byKey(
+              ValueKey('filter-card-${candidates.first.id}')));
+          await settle();
+          expect(service.currentFilter?.id, candidates.first.id);
+          expect(find.byKey(const ValueKey('filter-cancel-button')),
+              findsOneWidget);
+          expect(find.byKey(const ValueKey('filter-apply-button')),
+              findsOneWidget);
+          await shot('07b_filter_canvas_temporary_preview');
+          await tester.tap(find.byKey(
+              ValueKey('filter-card-${candidates.last.id}')));
+          await settle();
+          expect(service.currentFilter?.id, candidates.last.id,
+              reason: 'Selecting another tile replaces, not applies, the old preview.');
+          await shot('07c_switch_preview_without_applying');
+          await tester.tap(find.byKey(
+              const ValueKey('filter-cancel-button')));
+          await settle();
+          expect(service.currentFilter, isNull);
+          await shot('07d_cancel_filter_preview');
+
         } else {
           errors.add('07_filter_preview_colored_background: panel not found');
         }
