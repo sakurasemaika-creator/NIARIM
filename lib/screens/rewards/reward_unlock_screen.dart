@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../l10n/reward_unlock_labels.dart';
 import '../../models/coin_unlock_quote.dart';
 import '../../services/premium_service.dart';
+import '../../services/community_service.dart';
+import '../../services/google_auth_service.dart';
 import '../../widgets/responsive.dart';
 
 /// Reward UI shell; the server wallet/pricing/ad issuance are not yet live.
@@ -28,6 +30,54 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   CoinUnlockDuration _duration =
       const CoinUnlockDuration(1, CoinDurationUnit.hour);
   final Set<CoinUnlockTarget> _selected = {};
+  GoogleAuthService? _authService;
+  String? _lastAccountId;
+  Map<String, dynamic>? _rewardState;
+  bool _walletLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _authService = context.read<GoogleAuthService>();
+      _authService!.addListener(_onAccountChanged);
+      _onAccountChanged();
+    });
+  }
+
+  void _onAccountChanged() {
+    final id = _authService?.account?.id;
+    if (_lastAccountId == id) return;
+    _lastAccountId = id;
+    setState(() => _rewardState = null);
+    if (id != null) _loadWallet(id);
+  }
+
+  Future<void> _loadWallet(String accountId) async {
+    final api = context.read<CommunityService>().api;
+    if (api == null) return;
+    setState(() => _walletLoading = true);
+    try {
+      final state = await api.myRewardState();
+      if (!mounted || _authService?.account?.id != accountId) return;
+      setState(() => _rewardState = state);
+    } catch (_) {
+      // Never show a stale wallet or an invented zero while offline.
+      if (!mounted || _authService?.account?.id != accountId) return;
+      setState(() => _rewardState = null);
+    } finally {
+      if (mounted && _authService?.account?.id == accountId) {
+        setState(() => _walletLoading = false);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _authService?.removeListener(_onAccountChanged);
+    super.dispose();
+  }
 
   static const _standardTargets = <CoinUnlockTarget>[
     CoinUnlockTarget.endCardEdit,
@@ -160,9 +210,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final enabled = target.isRedeemableNow;
     final selected = _selected.contains(target);
     final rate = widget.priceCatalog[target];
-    final price = enabled && rate != null
-        ? rate.cost(_duration)
-        : null;
+    int? price;
+    try {
+      if (enabled && rate != null) price = rate.cost(_duration);
+    } on StateError {
+      price = null;
+    }
+    final hasSubscription = context.read<PremiumService>().hasPurchasedPremium;
     return CheckboxListTile(
       key: ValueKey('rewardFeature_${target.name}'),
       value: selected,
@@ -170,9 +224,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       controlAffinity: ListTileControlAffinity.leading,
       title: Text(t[target.name]),
       subtitle: Text(
-        price == null
-            ? t['pricePending']
-            : '$price ${t['coins']}',
+        hasSubscription
+            ? t['activePremium']
+            : price == null
+                ? t['pricePending']
+                : '$price ${t['coins']}',
         style: Theme.of(context).textTheme.bodySmall,
       ),
       secondary: !enabled
@@ -190,12 +246,16 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   bool _fullBundleBadge() {
     final targets = [..._standardTargets, ..._placementTargets]
       ..remove(CoinUnlockTarget.communityPostQuota);
-    return const CoinUnlockQuoteCalculator().isFullPremiumBestValue(
-      duration: _duration,
-      prices: widget.priceCatalog,
-      comparisonTargets: targets,
-      fullPremiumMinimumCoins: widget.fullPremiumMinimumCoins ?? 0,
-    );
+    try {
+      return const CoinUnlockQuoteCalculator().isFullPremiumBestValue(
+        duration: _duration,
+        prices: widget.priceCatalog,
+        comparisonTargets: targets,
+        fullPremiumMinimumCoins: widget.fullPremiumMinimumCoins ?? 0,
+      );
+    } on StateError {
+      return false;
+    }
   }
 
   @override
@@ -225,13 +285,35 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         : premium.isLaunchCampaignActive
                             ? t['activeCampaign']
                             : t['activeUnavailable']),
+                    if (_rewardState != null)
+                      for (final item in (_rewardState!['entitlements'] as List? ?? const []))
+                        if (item is Map &&
+                            item['feature'] is String &&
+                            item['status'] is String)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              '${t[item['feature'] as String]} · '
+                              '${item['status'] == 'paused' ? t['paused'] : t['activeUntil']} '
+                              '${item['status'] == 'paused'
+                                ? item['pausedRemainingSeconds']
+                                : DateTime.fromMillisecondsSinceEpoch(item['expiresAtEpochMs'] as int).toLocal()}',
+                            ),
+                          ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 12),
-            Text(t['balancePending'],
-                style: Theme.of(context).textTheme.bodyMedium),
+            Text(
+              _rewardState != null &&
+                  _rewardState!['balanceCoins'] is int
+                  ? '${_rewardState!['balanceCoins']} ${t['coins']}'
+                  : _walletLoading
+                      ? t['loading']
+                      : t['balancePending'],
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             const SizedBox(height: 16),
             // Shared duration goes BEFORE the list of checkboxes.
             Text(t['duration'],
