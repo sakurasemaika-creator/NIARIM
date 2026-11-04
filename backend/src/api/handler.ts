@@ -15,6 +15,7 @@ import { getAuthorWorks, getMyWorks } from "./routes/userWorks";
 import { createWork } from "./routes/worksCreate";
 import { getMyRewardState } from "./routes/rewardState";
 import { startRewardedAdSession, receiveRewardedAdSsv } from "./routes/rewardedAd";
+import { getCoinRedemptionQuote, redeemCoins } from "./routes/coinRedemption";
 import { getMyCreatorMissions, claimCreatorMission } from "./routes/creatorMissions";
 import { editSessionAction } from "./routes/creatorEditSession";
 import { updateWork } from "./routes/worksUpdate";
@@ -94,6 +95,8 @@ const routes: Route[] = [
   route("GET", "/me/works", (e) => getMyWorks(e)),
   route("GET", "/me/rewards", (e) => getMyRewardState(e)),
   route("POST", "/me/rewards/ad-session", (e) => startRewardedAdSession(e)),
+  route("GET", "/me/rewards/quote", (e) => getCoinRedemptionQuote(e)),
+  route("POST", "/me/rewards/redeem", (e) => redeemCoins(e)),
   // Public Google-to-server callback; signature and one-time nonce mandatory.
   route("GET", "/admob/ssv", (e) => receiveRewardedAdSsv(e)),
   route("GET", "/me/missions", (e) => getMyCreatorMissions(e)),
