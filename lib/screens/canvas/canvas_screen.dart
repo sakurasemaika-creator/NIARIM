@@ -2773,9 +2773,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
       );
     }
 
+    // Selection controls have no outer panel decoration. Only the individual
+    // theme-colored buttons are visible over the canvas.
     return Material(
-      elevation: 4,
-      borderRadius: BorderRadius.circular(10),
+      key: const ValueKey('selection-tool-action-bar'),
+      type: MaterialType.transparency,
       child: Padding(
         padding: const EdgeInsets.all(4),
         child: Column(
@@ -2971,9 +2973,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// （メッシュ変形のときだけ、画面下部に分割数のスライダーが付く）。
   Widget _meshCancelBar(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // A raised Material cast a dark, border-like halo around both buttons.
+    // Keep the buttons' own theme surfaces without an enclosing black frame.
     return Material(
-      elevation: 4,
-      borderRadius: BorderRadius.circular(10),
+      key: const ValueKey('mesh-transform-action-bar'),
+      type: MaterialType.transparency,
       child: Padding(
         padding: const EdgeInsets.all(4),
         child: Row(
