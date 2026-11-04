@@ -10,6 +10,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/canvas_dock_panel.dart';
 import 'package:niarim/screens/canvas/widgets/hsv_color_wheel.dart';
+import 'package:niarim/screens/canvas/widgets/frame_strip_widget.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/settings/widgets/pc_workspace_layout_preview.dart';
 import 'package:niarim/services/project_service.dart';
@@ -183,6 +184,29 @@ void main() {
     )))!;
     appRouter.go('/canvas/' + project.id);
     await _shot(tester, root, '10_pc_canvas_docks_expanded');
+
+    // Dock windows must start at their column's top, rather than centering
+    // vertically when only one window is open on a side.
+    final leftDock = tester.getRect(
+      find.byKey(const ValueKey('desktopLeftDockScroll')),
+    );
+    final rightDock = tester.getRect(
+      find.byKey(const ValueKey('desktopRightDockScroll')),
+    );
+    final brushWindow = tester.getRect(
+      find.byKey(const ValueKey('dockTarget-brush')),
+    );
+    final previewWindow = tester.getRect(
+      find.byKey(const ValueKey('dockTarget-canvasPreview')),
+    );
+    final frameStrip = tester.getRect(find.byType(FrameStripWidget));
+    expect(brushWindow.top, closeTo(leftDock.top, 2));
+    expect(previewWindow.top, closeTo(rightDock.top, 2));
+    expect(leftDock.bottom, lessThanOrEqualTo(frameStrip.top + 1));
+    expect(rightDock.bottom, lessThanOrEqualTo(frameStrip.top + 1));
+    expect(leftDock.left, greaterThanOrEqualTo(-1));
+    expect(rightDock.right, lessThanOrEqualTo(1501));
+
     final brushFold = find.byKey(const ValueKey('dockCollapse-brush'));
     final layerFold = find.byKey(const ValueKey('dockCollapse-layer'));
     expect(brushFold, findsOneWidget);
