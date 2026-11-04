@@ -2018,9 +2018,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final settings = context.watch<SettingsService>();
     final scheme = Theme.of(context).colorScheme;
     final title = _dockTitle(p);
-    final height = fittedBodyHeight ??
-        _dockDragHeight[p] ??
-        settings.desktopDockHeight(p);
+    final height =
+        fittedBodyHeight ?? _dockDragHeight[p] ?? settings.desktopDockHeight(p);
     final l = AppLocalizations.of(context)!;
     final collapsed = settings.isDesktopDockCollapsed(p);
     final foldsLeft = !right && !settings.isLeftHanded;
@@ -2154,10 +2153,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           ],
                         ),
                       ),
-                      SizedBox(
-                        height: height,
-                        child: _responsiveDockBody(p),
-                      ),
+                      SizedBox(height: height, child: _responsiveDockBody(p)),
                       MouseRegion(
                         cursor: SystemMouseCursors.resizeUpDown,
                         child: GestureDetector(
@@ -2296,7 +2292,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
       return ClipRect(
         child: Scrollbar(
           child: SingleChildScrollView(
-            key: ValueKey(right ? 'desktopRightDockScroll' : 'desktopLeftDockScroll'),
+            key: ValueKey(
+              right ? 'desktopRightDockScroll' : 'desktopLeftDockScroll',
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
