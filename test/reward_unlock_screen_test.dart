@@ -50,11 +50,11 @@ void main() {
     expect(find.text('4 coins'), findsOneWidget);
     await tester.tap(find.byKey(const Key('rewardDurationButton')));
     await tester.pumpAndSettle();
-    // The bottom sheet has nested scrollables; scrolling the last one can
-    // target an offscreen list or a non-visible expansion child.
-    await tester.ensureVisible(find.text('days'));
+    // The 24-hour choices are initially expanded and push the next category
+    // out of the ListView's lazy build range. Collapse them before opening days.
+    await tester.tap(find.widgetWithText(ExpansionTile, 'hours'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('days'));
+    await tester.tap(find.widgetWithText(ExpansionTile, 'days'));
     await tester.pumpAndSettle();
     final day2 = find.byKey(const ValueKey('rewardDuration_day_2'));
     await tester.ensureVisible(day2);
