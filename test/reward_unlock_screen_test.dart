@@ -50,10 +50,7 @@ void main() {
     expect(find.text('4 coins'), findsOneWidget);
     await tester.tap(find.byKey(const Key('rewardDurationButton')));
     await tester.pumpAndSettle();
-    // The 24-hour choices are initially expanded and push the next category
-    // out of the ListView's lazy build range. Collapse them before opening days.
-    await tester.tap(find.widgetWithText(ExpansionTile, 'hours'));
-    await tester.pumpAndSettle();
+    // Categories start collapsed so days remains reachable on small screens.
     await tester.tap(find.widgetWithText(ExpansionTile, 'days'));
     await tester.pumpAndSettle();
     final day2 = find.byKey(const ValueKey('rewardDuration_day_2'));

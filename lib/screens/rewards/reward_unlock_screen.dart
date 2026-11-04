@@ -310,7 +310,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 for (final (label, options) in groups)
                   ExpansionTile(
                     title: Text(label),
-                    initiallyExpanded: label == t['hour'],
+                    // Keep all duration categories accessible without scrolling past
+                    // 24 hourly choices on small phones.
+                    initiallyExpanded: false,
                     children: [
                       for (final option in options)
                         ListTile(
