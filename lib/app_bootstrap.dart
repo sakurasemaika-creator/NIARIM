@@ -266,6 +266,29 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   // The remembered poster id is restored first so their own works and
   // settings are theirs from the start; GET /me/works then confirms it, and
   // their bookmarks, follows and reposts follow.
+  Future<void> refreshCoinPremium(String accountId) async {
+    final api = communityService.api;
+    if (api == null) return;
+    try {
+      final state = await api.myRewardState();
+      if (googleAuthService.account?.id != accountId) return;
+      DateTime? expiresAt;
+      for (final raw in (state['entitlements'] as List? ?? const [])) {
+        if (raw is Map && raw['feature'] == 'fullPremium' &&
+            raw['status'] == 'active' && raw['expiresAtEpochMs'] is num) {
+          final value = (raw['expiresAtEpochMs'] as num).toInt();
+          if (value > DateTime.now().millisecondsSinceEpoch) {
+            expiresAt = DateTime.fromMillisecondsSinceEpoch(value);
+          }
+        }
+      }
+      premiumService.applyServerCoinPremiumExpiry(expiresAt);
+    } catch (error) {
+      // Offline projects remain usable; never invent a successful coin grant.
+      debugPrint('Coin Premium entitlement read unavailable: $error');
+    }
+  }
+
   Future<void> learnPoster(String accountId) async {
     try {
       await communityService.restoreOwner(accountId);
@@ -282,9 +305,11 @@ Future<List<SingleChildWidget>> _buildAppProviders(
     final accountId = googleAuthService.account?.id;
     if (accountId == signedInAccountId) return;
     signedInAccountId = accountId;
+    premiumService.applyServerCoinPremiumExpiry(null);
     communityService.forgetOwner();
     if (accountId != null && communityService.isBackendConnected) {
       editReporter.retryPendingAfterSignIn();
+      unawaited(refreshCoinPremium(accountId));
       learnPoster(accountId);
     }
   }
@@ -293,6 +318,7 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   if (signedInAccountId case final accountId?
       when communityService.isBackendConnected) {
     editReporter.retryPendingAfterSignIn();
+    unawaited(refreshCoinPremium(accountId));
     learnPoster(accountId);
   }
 
