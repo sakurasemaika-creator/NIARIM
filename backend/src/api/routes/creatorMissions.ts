@@ -393,6 +393,7 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
       (!mission.perWork && nextTotal > MAX_CREATOR_MISSION_COINS)) {
     forbidden("ミッションの獲得上限を超えています", "MISSION_REWARD_BUDGET");
   }
+  const awardedAtMs = Date.now();
   const claimedAt = { ...state.claimedAt, [bitKey]: nowSec };
   const pending = { ...state.firstQualifiedAt };
   const pendingCoins = { ...state.pendingCoins };
@@ -433,11 +434,28 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
               "SET itemType = :walletType ADD balanceCoins :reward, " +
               "missionEarnedCoins :reward",
             ConditionExpression:
-              "attribute_not_exists(itemType) OR itemType = :walletType",
+              "(attribute_not_exists(itemType) OR itemType = :walletType) " +
+              "AND (attribute_not_exists(balanceCoins) OR " +
+              "balanceCoins BETWEEN :zero AND :maxBefore)",
             ExpressionAttributeValues: {
               ":walletType": "COIN_WALLET",
               ":reward": coins,
+              ":zero": 0,
+              ":maxBefore": Number.MAX_SAFE_INTEGER - coins,
             },
+          },
+        },
+        {
+          Put: {
+            TableName: tableName(),
+            Item: {
+              ...Keys.coinHistory(auth.niarimUserId, awardedAtMs,
+                `mission-${id}-${itemWorkId ?? "account"}`),
+              itemType: "COIN_HISTORY", source: "creator-mission",
+              deltaCoins: coins, occurredAtEpochMs: awardedAtMs,
+              missionId: id, workId: itemWorkId ?? null,
+            },
+            ConditionExpression: "attribute_not_exists(pk)",
           },
         },
       ],

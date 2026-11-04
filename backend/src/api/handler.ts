@@ -13,7 +13,7 @@ import { getLatestWorks } from "./routes/worksLatest";
 import { getPlaybackStatus } from "./routes/worksPlaybackStatus";
 import { getAuthorWorks, getMyWorks } from "./routes/userWorks";
 import { createWork } from "./routes/worksCreate";
-import { getMyRewardState } from "./routes/rewardState";
+import { getMyRewardState, getMyCoinHistory } from "./routes/rewardState";
 import { startRewardedAdSession, receiveRewardedAdSsv } from "./routes/rewardedAd";
 import { getCoinRedemptionQuote, redeemCoins } from "./routes/coinRedemption";
 import { getMyCreatorMissions, claimCreatorMission } from "./routes/creatorMissions";
@@ -94,6 +94,7 @@ const routes: Route[] = [
   // callers do not need to know or persist the generated NIARIM user id.
   route("GET", "/me/works", (e) => getMyWorks(e)),
   route("GET", "/me/rewards", (e) => getMyRewardState(e)),
+  route("GET", "/me/rewards/history", (e) => getMyCoinHistory(e)),
   route("POST", "/me/rewards/ad-session", (e) => startRewardedAdSession(e)),
   route("GET", "/me/rewards/quote", (e) => getCoinRedemptionQuote(e)),
   route("POST", "/me/rewards/redeem", (e) => redeemCoins(e)),

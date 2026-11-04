@@ -79,7 +79,8 @@ export async function startRewardedAdSession(event: APIGatewayProxyEventV2) {
         "expiresAtMs = :expires, offerVersion = :version, " +
         "rewardCoins = :amount REMOVE consumedAtMs",
       ConditionExpression:
-        "attribute_not_exists(issuedAtMs) OR issuedAtMs <= :cooldown",
+        "attribute_not_exists(issuedAtMs) OR expiresAtMs < :issued OR " +
+        "(attribute_exists(consumedAtMs) AND issuedAtMs <= :cooldown)",
       ExpressionAttributeValues: {
         ":type": "REWARDED_AD_SESSION",
         ":nonce": nonce,
@@ -201,6 +202,18 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
           },
         }]),
         {
+          Put: {
+            TableName: tableName(),
+            Item: {
+              ...Keys.coinHistory(userId, reward.timestampMs, `admob-${transactionId}`),
+              itemType: "COIN_HISTORY", source: "rewarded-ad",
+              deltaCoins: config.amount, occurredAtEpochMs: reward.timestampMs,
+              transactionId,
+            },
+            ConditionExpression: "attribute_not_exists(pk)",
+          },
+        },
+        {
           Update: {
             TableName: tableName(),
             Key: Keys.coinWallet(userId),
@@ -209,11 +222,13 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
               "ADD balanceCoins :reward, rewardedEarnedCoins :reward",
             ConditionExpression:
               "(attribute_not_exists(itemType) OR itemType = :type) " +
-              "AND (attribute_not_exists(balanceCoins) OR balanceCoins < :limit)",
+              "AND (attribute_not_exists(balanceCoins) OR " +
+              "balanceCoins BETWEEN :zero AND :limit)",
             ExpressionAttributeValues: {
               ":type": "COIN_WALLET",
               ":now": now,
               ":reward": config.amount,
+              ":zero": 0,
               ":limit": Number.MAX_SAFE_INTEGER - config.amount,
             },
           },

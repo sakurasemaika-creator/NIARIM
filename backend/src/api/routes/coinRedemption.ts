@@ -169,6 +169,18 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
             },
           },
         },
+        {
+          Put: {
+            TableName: tableName(),
+            Item: {
+              ...Keys.coinHistory(auth.niarimUserId, now, `redeem-${requestId}`),
+              itemType: "COIN_HISTORY", source: "coin-redemption",
+              deltaCoins: -amount, occurredAtEpochMs: now,
+              target: "fullPremium", requestId,
+            },
+            ConditionExpression: "attribute_not_exists(pk)",
+          },
+        },
       ],
     }));
   } catch (error) {

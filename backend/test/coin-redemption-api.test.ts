@@ -83,7 +83,7 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     const tx = send.mock.calls.find(([x]) => x instanceof TransactWriteCommand)?.[0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
     const rows = tx.input.TransactItems!;
-    expect(rows).toHaveLength(3);
+    expect(rows).toHaveLength(4);
     expect(rows[0].Put?.Item?.pk).toBe("USER#Nverified-account");
     expect(rows[1].Update?.Key?.sk).toBe("COIN_WALLET");
     expect(rows[1].Update?.ConditionExpression).toContain("balanceCoins >= :price");
@@ -91,6 +91,8 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     expect(rows[2].Update?.Key?.sk).toBe("ENTITLEMENT#fullPremium");
     expect(rows[2].Update?.ConditionExpression)
       .toContain("attribute_not_exists(expiresAtEpochMs)");
+    expect(rows[3].Put?.Item?.source).toBe("coin-redemption");
+    expect(rows[3].Put?.Item?.deltaCoins).toBe(-55000);
   });
 
   it("retrying a committed transaction returns the old receipt, never debits twice", async () => {

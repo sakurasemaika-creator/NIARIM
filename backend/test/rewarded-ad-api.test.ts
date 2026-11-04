@@ -81,25 +81,29 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     expect(command).toBeInstanceOf(UpdateCommand);
     expect(command.input.Key.pk).toBe(`USER#N${"a".repeat(32)}`);
     expect(command.input.ConditionExpression).toContain("issuedAtMs");
+    expect(command.input.ConditionExpression).toContain("attribute_exists(consumedAtMs)");
+    expect(command.input.ConditionExpression).toContain("expiresAtMs < :issued");
     expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand))
       .toBe(false);
   });
 
-  it("credits signed event once in three-item atomic transaction", async () => {
+  it("credits signed event once with immutable coin history", async () => {
     enable();
     const response = await receiveRewardedAdSsv(request);
     expect(response.statusCode).toBe(200);
     const tx = send.mock.calls[0][0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
-    expect(tx.input.TransactItems).toHaveLength(3);
+    expect(tx.input.TransactItems).toHaveLength(4);
     const rows = tx.input.TransactItems!;
     expect(rows[0].Put?.Item?.pk).toMatch(/^ADMOB_TX#/);
     expect(rows[0].Put?.ConditionExpression).toContain("attribute_not_exists");
     expect(rows[0].Put?.Item?.ttl).toBeGreaterThan(Date.now() / 1000);
     expect(rows[1].Update?.ConditionExpression).toContain("attribute_not_exists(consumedAtMs)");
     expect(rows[1].Update?.Key?.sk).toBe("REWARDED_AD_SESSION");
-    expect(rows[2].Update?.Key?.sk).toBe("COIN_WALLET");
-    expect(rows[2].Update?.ExpressionAttributeValues?.[":reward"]).toBe(10);
+    expect(rows[2].Put?.Item?.sk).toMatch(/^COIN_HISTORY#/);
+    expect(rows[2].Put?.Item?.deltaCoins).toBe(10);
+    expect(rows[3].Update?.Key?.sk).toBe("COIN_WALLET");
+    expect(rows[3].Update?.ExpressionAttributeValues?.[":reward"]).toBe(10);
   });
 
   it("lost acknowledgment does not mint another ten coins", async () => {

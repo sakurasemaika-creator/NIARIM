@@ -107,10 +107,14 @@ describe("creator mission endpoints", () => {
     const tx = send.mock.calls.map(([c]) => c)
       .find((c) => c instanceof TransactWriteCommand);
     if (!tx) throw new Error("Missing atomic mission award transaction");
-    expect(tx.input.TransactItems).toHaveLength(2);
+    expect(tx.input.TransactItems).toHaveLength(3);
     expect(tx.input.TransactItems?.[0].Update?.Key?.pk).toBe("USER#NverifiedByGoogle");
     expect(tx.input.TransactItems?.[1].Update?.Key?.pk).toBe("USER#NverifiedByGoogle");
     expect(tx.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":reward"]).toBe(50);
+    expect(tx.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":maxBefore"])
+      .toBe(Number.MAX_SAFE_INTEGER - 50);
+    expect(tx.input.TransactItems?.[2].Put?.Item?.deltaCoins).toBe(50);
+    expect(tx.input.TransactItems?.[2].Put?.Item?.sk).toMatch(/^COIN_HISTORY#/);
     expect(tx.input.TransactItems?.[0].Update?.ExpressionAttributeValues?.[":newMask"]).toBe(2 ** 10);
   });
 
