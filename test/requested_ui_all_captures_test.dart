@@ -197,18 +197,25 @@ void main() {
               findsOneWidget);
           expect(find.byKey(const ValueKey('filter-apply-button')),
               findsOneWidget);
+          expect(gallery, findsNothing);
           await shot('07b_filter_canvas_temporary_preview');
-          await tester.tap(find.byKey(
-              ValueKey('filter-card-${candidates.last.id}')));
-          await settle();
-          expect(service.currentFilter?.id, candidates.last.id,
-              reason: 'Selecting another tile replaces, not applies, the old preview.');
-          await shot('07c_switch_preview_without_applying');
           await tester.tap(find.byKey(
               const ValueKey('filter-cancel-button')));
           await settle();
           expect(service.currentFilter, isNull);
-          await shot('07d_cancel_filter_preview');
+          expect(gallery, findsOneWidget);
+          await shot('07c_cancel_returns_to_filter_tiles');
+          await tester.tap(find.byKey(
+              ValueKey('filter-card-${candidates.last.id}')));
+          await settle();
+          expect(service.currentFilter?.id, candidates.last.id);
+          expect(gallery, findsNothing);
+          await shot('07d_second_filter_preview_without_first_applied');
+          await tester.tap(find.byKey(
+              const ValueKey('filter-cancel-button')));
+          await settle();
+          expect(service.currentFilter, isNull);
+          expect(gallery, findsOneWidget);
 
         } else {
           errors.add('07_filter_preview_colored_background: panel not found');
@@ -219,6 +226,94 @@ void main() {
     } else {
       errors.add('07_filter_preview_colored_background: settings not found');
     }
+
+    // The selection action bar uses the same borderless transparent
+    // Material strategy as the mesh action bar. Capture it in the real
+    // canvas to document both requested black-outline fixes.
+    await navigate('/home');
+    await navigate('/canvas/${colored.id}');
+    await tester.tap(find.byIcon(Icons.highlight_alt).first);
+    await settle();
+    final selectionActionBar =
+        find.byKey(const ValueKey('selection-tool-action-bar'));
+    expect(selectionActionBar, findsOneWidget);
+    final selectionMaterial = tester.widget<Material>(selectionActionBar);
+    expect(selectionMaterial.type, MaterialType.transparency);
+    expect(selectionMaterial.elevation, 0);
+    await shot('07e_selection_action_bar_without_black_frame');
+
+    // Stacking example: draw visible pixels, bake one filter into the pixels
+    // via Apply, then open another filter. These are genuine render captures,
+    // not a mockup of the expected cumulative result.
+    final filterDemo = (await tester.runAsync(() => ps.createProject(
+      name: 'フィルター重ね掛け実画面テスト',
+      fps: 12, durationSeconds: 1, backgroundColor: 0xFFFFFFFF,
+      exportWidth: 256, exportHeight: 256,
+    )))!;
+    final demoScene = ps.scenesOf(filterDemo.id).first;
+    final demoLayer = demoScene.frames.first.layers.first;
+    final pixelArt = Uint8List(256 * 256 * 4);
+    for (var y = 0; y < 256; y++) {
+      for (var x = 0; x < 256; x++) {
+        final p = (y * 256 + x) * 4;
+        pixelArt[p] = (x ~/ 16).isEven ? 230 : 35;
+        pixelArt[p + 1] = (y ~/ 16).isEven ? 75 : 200;
+        pixelArt[p + 2] = (x ~/ 24).isEven ? 45 : 215;
+        pixelArt[p + 3] = 255;
+      }
+    }
+    ps.replaceLayerPixels(
+      projectId: filterDemo.id,
+      sceneId: demoScene.id,
+      frameIndex: 0,
+      layerId: demoLayer.id,
+      pixels: pixelArt,
+    );
+    await navigate('/home');
+    await navigate('/canvas/${filterDemo.id}');
+    final originalFrame = find.byType(Scaffold);
+    await shot('07f_filter_sample_before_apply');
+    await tester.tap(find.byIcon(Icons.settings).first);
+    await settle();
+    final filterL10n = AppLocalizations.of(
+        tester.element(originalFrame.last))!;
+    await tester.tap(find.text(filterL10n.filterPanelTitle).last);
+    await settle();
+    expect(find.byType(FilterPanel), findsOneWidget);
+    final demoService = tester.element(find.byType(FilterPanel))
+        .read<FilterService>();
+    demoService.selectFilter('Filter0025'); // Invert colors.
+    await settle();
+    expect(demoService.currentFilter?.id, 'Filter0025');
+    await shot('07g_first_filter_temporary_inversion_preview');
+    expect(find.byKey(const ValueKey('tone-curve-editor-0')), findsNothing);
+    expect(find.byKey(const ValueKey('tone-curve-channel-selector')),
+        findsNothing);
+    await tester.tap(find.byKey(const ValueKey('filter-apply-button')));
+    await settle();
+    expect(find.byType(FilterPanel), findsOneWidget);
+    expect(demoService.currentFilter, isNull);
+    expect(find.byKey(const ValueKey('filter-tile-grid')), findsOneWidget);
+    final canvasPixelsAfterApply = await tester.runAsync(() async {
+      final tm = ps.tileManagerOf(filterDemo.id);
+      final image = await tm.compositeLayerToImage(
+        ps.tileKeyFor(filterDemo.id, demoScene.id, 0, demoLayer.id),
+      );
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      return bytes!.buffer.asUint8List();
+    });
+    expect(canvasPixelsAfterApply!.sublist(0, 3),
+      isNot(equals(pixelArt.sublist(0, 3))),
+      reason: 'Apply must bake the first filter into the saved pixel buffer.');
+    await shot('07h_first_filter_applied_pixels');
+    // Apply keeps the gallery open and the next effect uses reloaded pixels.
+    demoService.selectFilter('Filter0001'); // Blur the inverted pixels.
+    await settle();
+    expect(demoService.currentFilter?.id, 'Filter0001');
+    await shot('07i_second_filter_preview_after_first_applied');
+    await tester.tap(find.byKey(const ValueKey('filter-cancel-button')));
+    await settle();
 
     await navigate('/settings/workspace');
     await settings.setToolbarSizeLevel(1);

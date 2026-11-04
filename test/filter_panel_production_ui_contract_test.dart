@@ -131,14 +131,25 @@ void main() {
           reason:
               '${filter.id} ${filter.name} must be selectable through the UI',
         );
-        // Selecting a filter must not hide the vertically scrolling gallery:
-        // the next candidate replaces the uncommitted preview.
+        // Preview mode removes the tile gallery to give the canvas more
+        // space. The user returns to the same gallery by cancelling.
         expect(find.byKey(const ValueKey('filter-apply-button')), findsOneWidget);
         expect(find.byKey(const ValueKey('filter-cancel-button')), findsOneWidget);
-        expect(gallery, findsOneWidget);
+        expect(gallery, findsNothing);
+        if (filter.id == 'Filter0025') {
+          // Color invert uses the tone-curve engine internally, but is a
+          // one-tap operation, not an editable RGB curve.
+          expect(find.byKey(const ValueKey('tone-curve-channel-selector')),
+              findsNothing);
+          expect(find.byKey(const ValueKey('tone-curve-editor-0')),
+              findsNothing);
+          expect(find.byKey(const ValueKey('filter-undo-button')),
+              findsNothing);
+        }
         await tester.tap(find.byKey(const ValueKey('filter-cancel-button')));
         await tester.pump();
         expect(panelContext.read<FilterService>().currentFilter, isNull);
+        expect(gallery, findsOneWidget);
       }
       expect(tester.takeException(), isNull);
     },

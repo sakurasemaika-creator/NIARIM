@@ -202,8 +202,9 @@ void main() {
           await h.capture('$id-settings');
           await h.tap(find.text(h.l10n.filterApplyButton));
           await h.until(
-            () => panel.evaluate().isEmpty,
-            'filter apply must finish and close the panel',
+            () => h.context.read<FilterService>().currentFilter == null &&
+                find.byKey(const ValueKey('filter-tile-grid')).evaluate().isNotEmpty,
+            'filter apply must finish and return to the tile catalog',
           );
           final after = await h.art('$id-after');
           await h.capture('$id-after-ui');
@@ -380,10 +381,14 @@ void main() {
             expect(current().pixelArtCellSize(width, height), byDots ? 1 : 8);
           }
           await h.capture('$id-settings');
+          // Apply clears the selected filter and restores the tile catalog.
+          // Retain the configured filter for the output audit metadata.
+          final appliedSettings = current();
           await h.tap(find.text(h.l10n.filterApplyButton));
           await h.until(
-            () => panel.evaluate().isEmpty,
-            '$id apply must finish and close the panel',
+            () => h.context.read<FilterService>().currentFilter == null &&
+                find.byKey(const ValueKey('filter-tile-grid')).evaluate().isNotEmpty,
+            '$id apply must finish and restore the catalog',
           );
           final after = await h.art('$id-after');
           if (square) outputs[id] = after;
@@ -428,14 +433,14 @@ void main() {
               'kind': filter.kind.name,
               if (filter.kind == FilterKind.pixelate) ...{
                 'pixelArtByDots': byDots,
-                'cellSize': current().pixelArtCellSize(width, height),
+                'cellSize': appliedSettings.pixelArtCellSize(width, height),
                 'canvas': '$width x $height',
-                'colorMode': current().pixelColorMode.name,
-                'colors': current().pixelExplicitColors,
-                'dither': current().pixelDither,
+                'colorMode': appliedSettings.pixelColorMode.name,
+                'colors': appliedSettings.pixelExplicitColors,
+                'dither': appliedSettings.pixelDither,
               },
               if (filter.kind == FilterKind.mosaic)
-                'blockSize': current().strength,
+                'blockSize': appliedSettings.strength,
             },
             note: switch (id) {
               'pixel_art_blocks_six_colours' => '8pxの正方形ブロック・黒白赤黄青緑の6色・半透明なし。',
@@ -731,8 +736,16 @@ void main() {
       await h.settle();
       await h.tap(find.text(h.l10n.filterApplyButton));
       await h.until(
-        () => find.byType(FilterPanel).evaluate().isEmpty,
-        'recorded filter must complete',
+        () => h.context.read<FilterService>().currentFilter == null &&
+            find.byKey(const ValueKey('filter-tile-grid')).evaluate().isNotEmpty,
+        'recorded filter must finish and restore the catalog',
+      );
+      // The filter palette stays open by design after Apply.
+      await h.tap(
+        find.descendant(
+          of: find.byType(FilterPanel),
+          matching: find.byIcon(Icons.close),
+        ).first,
       );
       final expectedReplay = await h.art('$replayId-original');
       await h.tap(find.text(h.l10n.customAutomationStopRecording));
@@ -1241,6 +1254,16 @@ class _Harness {
 
   Future<void> generatedLayerView(String id, Set<String> inputIds) async {
     if (!layers.any((l) => !inputIds.contains(l.id))) return;
+    // After Apply the catalog stays open; close it explicitly before
+    // entering the layer panel to inspect generated output.
+    if (find.byType(FilterPanel).evaluate().isNotEmpty) {
+      await tap(
+        find.descendant(
+          of: find.byType(FilterPanel),
+          matching: find.byIcon(Icons.close),
+        ).first,
+      );
+    }
     final visibleInputs = layers
         .where(
           (l) =>
