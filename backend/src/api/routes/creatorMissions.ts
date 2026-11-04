@@ -229,11 +229,13 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
   const publishedWorkCount = typeof rawCount === "number" &&
     Number.isSafeInteger(rawCount) && rawCount >= 0 ? rawCount : 0;
   let workState: MissionStateRecord | undefined;
+  let selectedWork: WorkItem | undefined;
   if (selectedWorkId) {
     const work = await ddb.send(new GetCommand({
       TableName: tableName(), Key: Keys.work(selectedWorkId), ConsistentRead: true,
     }));
-    if ((work.Item as WorkItem | undefined)?.authorId !== auth.niarimUserId) {
+    selectedWork = work.Item as WorkItem | undefined;
+    if (selectedWork?.authorId !== auth.niarimUserId) {
       forbidden("この作品のミッションは参照できません", "MISSION_NOT_YOUR_WORK");
     }
     workState = await loadMissionState(auth.niarimUserId, selectedWorkId);
@@ -252,12 +254,26 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
     maximumLifetimeCreatorCoins: MAX_CREATOR_MISSION_COINS,
     perWorkRewardsAreUncapped: true,
     selectedWorkId: selectedWorkId ?? null,
+    selectedWorkTitle: selectedWork?.title ?? null,
     publishedWorkCount,
     missions: CREATOR_MISSIONS.map((mission) => {
       const current = mission.perWork ? workState : state;
       const key = String(mission.bit);
+      const eligible = mission.kind === "followers"
+        ? (user?.followerCount ?? 0) >= mission.required
+        : mission.kind === "workBookmarks" && selectedWorkId
+          ? isPublicWork(selectedWork, auth.niarimUserId) &&
+            Number.isSafeInteger(selectedWork!.bookmarkCount) &&
+            selectedWork!.bookmarkCount >= mission.required
+          : mission.kind === "verifiedEditSeconds"
+            ? false : null;
+      const pendingAt = current?.firstQualifiedAt[key];
       return {
         ...mission,
+        eligible,
+        readyForClaim: eligible === true &&
+          (pendingAt === undefined ||
+            (Math.floor(Date.now() / 1000) - pendingAt) >= SOCIAL_HOLD_SECONDS),
         claimed: current ? missionClaimed(current.claimedMask, mission.bit) : null,
         claimedAt: current?.claimedAt[key] ?? null,
         pendingSince: current?.firstQualifiedAt[key] ?? null,
@@ -265,7 +281,9 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
           missionRewardCoins(mission, publishedWorkCount),
         progress: mission.kind === "followers"
           ? user?.followerCount ?? 0
-          : mission.kind === "verifiedEditSeconds" ? state.verifiedEditSeconds : null,
+          : mission.kind === "verifiedEditSeconds" ? state.verifiedEditSeconds
+          : mission.kind === "workBookmarks" && selectedWorkId
+            ? selectedWork?.bookmarkCount ?? 0 : null,
         rewardEnabled: enabled() &&
           mission.kind !== "verifiedEditSeconds" &&
           !(mission.kind === "qualifiedWorks" &&
