@@ -248,6 +248,15 @@ Future<List<SingleChildWidget>> _buildAppProviders(
       ),
     ),
   );
+  // The purchase token is verified through Google Play on the NIARIM backend.
+  // Client-side Billing callbacks and local preferences never mint access.
+  premiumService.bindPlayVerifier((productId, purchaseToken) async {
+    final api = communityService.api;
+    if (api == null) throw StateError('NIARIM backend unavailable');
+    return api.verifyMyPlaySubscription(
+      productId: productId, purchaseToken: purchaseToken,
+    );
+  });
   // Optional low-write edit-time pilot. Default builds have zero new network
   // traffic; the server must independently enable the same pilot flag.
   final editReporter = CreatorEditSessionReporter(
@@ -284,7 +293,9 @@ Future<List<SingleChildWidget>> _buildAppProviders(
           }
         }
       }
-      premiumService.applyServerCoinPremiumExpiry(expiresAt);
+      premiumService.applyServerCoinPremiumExpiry(
+        expiresAt, accountId: accountId,
+      );
     } catch (error) {
       // Offline projects remain usable; never invent a successful coin grant.
       debugPrint('Coin Premium entitlement read unavailable: $error');

@@ -91,6 +91,15 @@ class CommunityApi {
   Future<Map<String, dynamic>> myRewardState() =>
       _client.getJson('/me/rewards', authenticated: true);
 
+  /// Google Play purchase token is sent only to the authenticated backend.
+  Future<Map<String, dynamic>> verifyMyPlaySubscription({
+    required String productId,
+    required String purchaseToken,
+  }) => _client.postJson(
+    '/me/premium/play/verify', authenticated: true,
+    body: {'productId': productId, 'purchaseToken': purchaseToken},
+  );
+
   /// Read-only server journal. Its opaque cursor remains account-scoped.
   Future<Map<String, dynamic>> myCoinHistory({String? cursor, int limit = 20}) =>
       _client.getJson(
