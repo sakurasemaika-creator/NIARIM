@@ -406,6 +406,16 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ? _officialPremiumQuote!['priceCoins'] as int
         : null;
     final balance = _rewardState?['balanceCoins'];
+    final rewardDailyLimit = _rewardState?['rewardedDailyLimit'];
+    final rewardDailyRemaining = _rewardState?['rewardedDailyRemaining'];
+    final rewardCapReached = rewardDailyLimit is int &&
+        rewardDailyRemaining is int && rewardDailyRemaining <= 0;
+    final rewardQuotaLabel = rewardCapReached
+        ? t['rewardQuotaReached']
+        : rewardDailyLimit is int && rewardDailyRemaining is int
+            ? t['rewardQuotaRemaining']
+                .replaceAll('{count}', '$rewardDailyRemaining')
+            : t['rewardQuotaUncapped'];
     return Scaffold(
       appBar: AppBar(title: Text(t['title'])),
       body: desktopCentered(
@@ -465,11 +475,29 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.smart_display_outlined),
-                onPressed: !_rewardBusy &&
+                onPressed: !_rewardBusy && !rewardCapReached &&
                         context.watch<AdvertisingService>().canOfferRewardedAds
                     ? _watchRewardedAd
                     : null,
-                label: Text(t['watchRewardedAd']),
+                label: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(t['watchRewardedAd']),
+                    Text(
+                      rewardQuotaLabel,
+                      style: Theme.of(context).textTheme.labelSmall,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  t['rewardQuotaCaution'],
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
             if (_rewardState != null) ...[
