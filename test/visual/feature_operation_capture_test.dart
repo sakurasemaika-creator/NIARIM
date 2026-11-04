@@ -1251,6 +1251,16 @@ class _Harness {
 
   Future<void> generatedLayerView(String id, Set<String> inputIds) async {
     if (!layers.any((l) => !inputIds.contains(l.id))) return;
+    // After Apply the catalog stays open; close it explicitly before
+    // entering the layer panel to inspect generated output.
+    if (find.byType(FilterPanel).evaluate().isNotEmpty) {
+      await tap(
+        find.descendant(
+          of: find.byType(FilterPanel),
+          matching: find.byIcon(Icons.close),
+        ).first,
+      );
+    }
     final visibleInputs = layers
         .where(
           (l) =>
