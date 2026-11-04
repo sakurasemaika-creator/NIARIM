@@ -211,6 +211,18 @@ export class NiarimBackendStack extends Stack {
         REWARDED_AD_REVIEW_APPROVED:
           this.node.tryGetContext("rewardedAdReviewApproved") === "true"
             ? "true" : "false",
+        // Exchange price must be explicitly approved; no placeholder price
+        // can accidentally spend user coins or mint Premium.
+        COIN_REDEMPTION_ENABLED:
+          this.node.tryGetContext("coinRedemptionEnabled") === "true"
+            ? "true" : "false",
+        COIN_REDEMPTION_REVIEW_APPROVED:
+          this.node.tryGetContext("coinRedemptionReviewApproved") === "true"
+            ? "true" : "false",
+        COIN_FULL_PREMIUM_MONTH_COINS:
+          this.node.tryGetContext("coinFullPremiumMonthCoins") ?? "",
+        COIN_PRICE_VERSION:
+          this.node.tryGetContext("coinPriceVersion") ?? "",
       },
       bundling: { minify: true, sourceMap: false },
     });
