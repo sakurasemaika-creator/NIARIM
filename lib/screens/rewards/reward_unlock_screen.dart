@@ -55,6 +55,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final id = _authService?.account?.id;
     if (_lastAccountId == id) return;
     _lastAccountId = id;
+    context.read<PremiumService>().applyServerCoinPremiumExpiry(null);
     setState(() {
       _rewardState = null;
       _officialPremiumQuote = null;
@@ -81,7 +82,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         }
       }
       context.read<PremiumService>()
-          .applyServerCoinPremiumExpiry(activeCoinPremium);
+          .applyServerCoinPremiumExpiry(activeCoinPremium, accountId: accountId);
       if (state['redemptionEnabled'] == true) {
         try {
           final quote = await api.fullPremiumCoinQuote();

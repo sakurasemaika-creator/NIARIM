@@ -91,6 +91,17 @@ class CommunityApi {
   Future<Map<String, dynamic>> myRewardState() =>
       _client.getJson('/me/rewards', authenticated: true);
 
+  /// Read-only server journal. Its opaque cursor remains account-scoped.
+  Future<Map<String, dynamic>> myCoinHistory({String? cursor, int limit = 20}) =>
+      _client.getJson(
+        '/me/rewards/history',
+        authenticated: true,
+        query: {
+          'limit': '$limit',
+          if (cursor != null) 'cursor': cursor,
+        },
+      );
+
   /// The backend issues a one-time, account-bound, 30-minute AdMob session.
   /// It returns ONLY signed-callback customData, never coins or an ad grant.
   Future<Map<String, dynamic>> beginRewardedAdSession() =>

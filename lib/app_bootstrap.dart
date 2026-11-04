@@ -237,6 +237,8 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   await enter('google_auth');
   final googleAuthService = own(GoogleAuthService());
   await googleAuthService.init();
+  // Drop coin Premium on account change across the entire application.
+  premiumService.bindGoogleAuth(googleAuthService);
 
   await enter('community');
   final communityService = own(

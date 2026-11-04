@@ -5,6 +5,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/monetization_gate.dart';
+import 'google_auth_service.dart';
 import '../utils/runtime_platform.dart';
 import '../utils/tolerant_preferences.dart';
 
@@ -38,15 +39,55 @@ class PremiumService extends ChangeNotifier {
   // Only the authenticated backend may provide coin-purchased Premium.
   // This is intentionally not an editable SharedPreferences entitlement.
   DateTime? _serverCoinPremiumExpiresAt;
+  String? _serverCoinPremiumOwnerId;
   Timer? _coinPremiumExpiryTimer;
-  bool get hasCoinPremium => _serverCoinPremiumExpiresAt?.isAfter(DateTime.now()) ?? false;
+  GoogleAuthService? _boundGoogleAuth;
+  String? _lastGoogleAccountId;
 
-  void applyServerCoinPremiumExpiry(DateTime? expiresAt) {
+  /// A purchased coin entitlement must not follow the device to another user.
+  /// Bind once at app startup even when the rewards screen is never opened.
+  void bindGoogleAuth(GoogleAuthService auth) {
+    if (identical(_boundGoogleAuth, auth)) return;
+    _boundGoogleAuth?.removeListener(_onGoogleAccountChanged);
+    _boundGoogleAuth = auth;
+    _lastGoogleAccountId = auth.account?.id;
+    _coinPremiumExpiryTimer?.cancel();
+    _serverCoinPremiumExpiresAt = null;
+    _serverCoinPremiumOwnerId = null;
+    auth.addListener(_onGoogleAccountChanged);
+    notifyListeners();
+  }
+
+  void _onGoogleAccountChanged() {
+    final current = _boundGoogleAuth?.account?.id;
+    if (current == _lastGoogleAccountId) return;
+    _lastGoogleAccountId = current;
+    applyServerCoinPremiumExpiry(null);
+  }
+
+  bool get hasCoinPremium {
+    final expiresAt = _serverCoinPremiumExpiresAt;
+    if (expiresAt == null || !expiresAt.isAfter(DateTime.now())) return false;
+    final auth = _boundGoogleAuth;
+    return auth == null ||
+        (auth.account != null &&
+            _serverCoinPremiumOwnerId == auth.account!.id);
+  }
+
+  /// Only an account-matched, authenticated API response may update expiry.
+  void applyServerCoinPremiumExpiry(DateTime? expiresAt, {String? accountId}) {
+    final auth = _boundGoogleAuth;
+    if (expiresAt != null && auth != null &&
+        (accountId == null || auth.account?.id != accountId)) {
+      return;
+    }
     _coinPremiumExpiryTimer?.cancel();
     _serverCoinPremiumExpiresAt = expiresAt;
+    _serverCoinPremiumOwnerId = expiresAt == null ? null : accountId;
     if (expiresAt != null && expiresAt.isAfter(DateTime.now())) {
       _coinPremiumExpiryTimer = Timer(expiresAt.difference(DateTime.now()), () {
         _serverCoinPremiumExpiresAt = null;
+        _serverCoinPremiumOwnerId = null;
         notifyListeners();
       });
     }
@@ -343,6 +384,7 @@ class PremiumService extends ChangeNotifier {
 
   @override
   void dispose() {
+    _boundGoogleAuth?.removeListener(_onGoogleAccountChanged);
     _coinPremiumExpiryTimer?.cancel();
     _subscription?.cancel();
     super.dispose();
