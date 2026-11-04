@@ -35,6 +35,24 @@ class PremiumService extends ChangeNotifier {
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   bool _isPremium = false;
+  // Only the authenticated backend may provide coin-purchased Premium.
+  // This is intentionally not an editable SharedPreferences entitlement.
+  DateTime? _serverCoinPremiumExpiresAt;
+  Timer? _coinPremiumExpiryTimer;
+  bool get hasCoinPremium => _serverCoinPremiumExpiresAt?.isAfter(DateTime.now()) ?? false;
+
+  void applyServerCoinPremiumExpiry(DateTime? expiresAt) {
+    _coinPremiumExpiryTimer?.cancel();
+    _serverCoinPremiumExpiresAt = expiresAt;
+    if (expiresAt != null && expiresAt.isAfter(DateTime.now())) {
+      _coinPremiumExpiryTimer = Timer(expiresAt.difference(DateTime.now()), () {
+        _serverCoinPremiumExpiresAt = null;
+        notifyListeners();
+      });
+    }
+    notifyListeners();
+  }
+
   // 購入日時・購入商品ID（登録日・次回更新日の表示用）。サーバー側の
   // レシート検証（Google Play Developer API等）は行っていないため、
   // 実際の請求確定日はストアからは取得できない。ただしサブスクリプションの
@@ -123,7 +141,7 @@ class PremiumService extends ChangeNotifier {
 
   /// プレミアム機能を利用できるかどうか（機能制限の判定に使用）。
   /// 実際の購入済み、またはリリース記念キャンペーン期間中はtrue。
-  bool get isPremium => _isPremium || isLaunchCampaignActive;
+  bool get isPremium => _isPremium || hasCoinPremium || isLaunchCampaignActive;
 
   bool _storeAvailable = false;
   bool get storeAvailable => _storeAvailable;
@@ -325,6 +343,7 @@ class PremiumService extends ChangeNotifier {
 
   @override
   void dispose() {
+    _coinPremiumExpiryTimer?.cancel();
     _subscription?.cancel();
     super.dispose();
   }
