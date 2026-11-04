@@ -24,6 +24,8 @@ export const Keys = {
   work: (workId: string) => ({ pk: `WORK#${workId}`, sk: "META" }),
   user: (niarimUserId: string) => ({ pk: `USER#${niarimUserId}`, sk: "META" }),
   googleSubLookup: (sub: string) => ({ pk: `GOOGLESUB#${sub}`, sk: "META" }),
+  /** A Play purchase token is bound to a single account by its SHA256 hash. */
+  playPurchaseToken: (hash: string) => ({ pk: `PLAY_PURCHASE#${hash}`, sk: "META" }),
   /** Reward entitlement is server-issued only; clients cannot write this key. */
   rewardEntitlement: (niarimUserId: string, entitlement: string) => ({
     pk: `USER#${niarimUserId}`,

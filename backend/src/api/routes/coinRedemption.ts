@@ -170,6 +170,19 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
           },
         },
         {
+          Update: {
+            TableName: tableName(),
+            Key: Keys.user(auth.niarimUserId),
+            UpdateExpression: "SET coinPremiumExpiresAtEpochMs = :expires",
+            ConditionExpression:
+              "itemType = :user AND (attribute_not_exists(coinPremiumExpiresAtEpochMs) " +
+              "OR coinPremiumExpiresAtEpochMs <= :expires)",
+            ExpressionAttributeValues: {
+              ":user": "USER", ":expires": expiresAtEpochMs,
+            },
+          },
+        },
+        {
           Put: {
             TableName: tableName(),
             Item: {
