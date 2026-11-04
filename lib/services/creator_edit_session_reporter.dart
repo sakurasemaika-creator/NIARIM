@@ -28,7 +28,11 @@ class CreatorEditSessionReporter {
   Future<void> _serial = Future<void>.value();
   _EditPeriod? _active;
 
+  /// Continuous-editing safety limit: the server expires after 20 minutes.
+  /// Normal uploads happen on exit or after 2 minutes without interaction.
   static const _checkpointPeriod = Duration(minutes: 15);
+  static const _idleAfter = Duration(minutes: 2);
+  static const _idlePoll = Duration(seconds: 30);
   static const _maxPending = 16;
   static const _keyPrefix = 'creator_edit_pending_v1_';
   static const _lostPrefix = 'creator_edit_unverified_seconds_v1_';
@@ -64,24 +68,50 @@ class CreatorEditSessionReporter {
       accountId: _accountId()!,
       nonce: _nonce(),
       activeSeconds: activeSeconds,
+      lastSnapshotSeconds: activeSeconds(),
     );
     _active = period;
     period.timer = Timer.periodic(
       _checkpointPeriod, (_) => _checkpoint(period, stop: false),
     );
+    // The client-only idle poll performs NO network request until the
+    // editor has been inactive for two minutes.
+    period.idleTimer = Timer.periodic(_idlePoll, (_) {
+      if (period.closed || !identical(_active, period)) return;
+      if (DateTime.now().difference(period.lastInteractionAt) >= _idleAfter) {
+        _checkpoint(period, stop: true);
+      }
+    });
     _enqueue(() async {
       await _drain(period.accountId);
       await _start(period);
     });
   }
 
-  void recordCommittedMutation(String projectId) {
+  /// Pointer movement keeps an in-progress brush stroke active without
+  /// counting taps, scrubbing, or panning as verified edits.
+  void noteInteraction() {
+    final period = _active;
+    if (period != null && !period.closed) {
+      period.lastInteractionAt = DateTime.now();
+    }
+  }
+
+  void recordCommittedMutation(
+    String projectId, {required int Function() activeSeconds},
+  ) {
+    if (_active == null && _canSend) {
+      // Reopen a short bounded server session after an idle flush. The
+      // absolute local editing counter is never resent as a fresh delta.
+      begin(projectId: projectId, activeSeconds: activeSeconds);
+    }
     final period = _active;
     if (period == null || period.closed ||
         period.projectId != projectId ||
         period.accountId != _accountId()) return;
     // Count commits, not pointer/tap/scrub events. A single real edit suffices
     // for a 1-9 second session, capped by the backend's server clock.
+    period.lastInteractionAt = DateTime.now();
     if (period.mutations < 100000) period.mutations++;
   }
 
@@ -96,6 +126,8 @@ class CreatorEditSessionReporter {
       period.closed = true;
       period.timer?.cancel();
       period.timer = null;
+      period.idleTimer?.cancel();
+      period.idleTimer = null;
       if (identical(_active, period)) _active = null;
     }
     // No need for a costly write if there was no actual editing;
@@ -243,15 +275,18 @@ class _EditPeriod {
     required this.accountId,
     required this.nonce,
     required this.activeSeconds,
+    required this.lastSnapshotSeconds,
   });
   final String projectId;
   final String accountId;
   final String nonce;
   final int Function() activeSeconds;
   Timer? timer;
+  Timer? idleTimer;
+  DateTime lastInteractionAt = DateTime.now();
   String? sessionId;
   int sequence = 1;
-  int lastSnapshotSeconds = 0;
+  int lastSnapshotSeconds;
   int mutations = 0;
   bool closed = false;
 }
