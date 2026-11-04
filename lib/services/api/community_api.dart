@@ -86,6 +86,11 @@ class CommunityApi {
     return ApiRankingPage.fromJson(json);
   }
 
+  /// The authenticated user's server-owned coin balance and entitlements.
+  /// No user-id parameter: Google ID token resolves the NIARIM ID server-side.
+  Future<Map<String, dynamic>> myRewardState() =>
+      _client.getJson('/me/rewards', authenticated: true);
+
   /// The signed-in account's works, including NIARIM-hidden works.
   /// The backend resolves the generated NIARIM user id from the Google ID token,
   /// so changing Google accounts immediately changes the owner list without a local
