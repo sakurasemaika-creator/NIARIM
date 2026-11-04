@@ -536,7 +536,12 @@ class ProjectService extends ChangeNotifier {
   Future<void> saveProjectManually(String projectId) async {
     _settleWorkTime();
     await saveProject(projectId);
-    onManualSaveCommitted(projectId);
+    try {
+      onManualSaveCommitted(projectId);
+    } catch (error) {
+      // The file is saved. Reporting time is independent and optional.
+      debugPrint('Manual-save editing-time checkpoint skipped: $error');
+    }
   }
 
   /// Android background time does not count. Keep the editor's tracking
