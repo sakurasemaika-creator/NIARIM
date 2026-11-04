@@ -8403,18 +8403,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get pcMenuFile => 'Fichier';
-
-  @override
-  String get pcMenuSelection => 'Sélection';
-
-  @override
-  String get pcMenuView => 'Affichage';
-
-  @override
-  String get pcMenuWindow => 'Fenêtre';
-
-  @override
   String get pcViewZoomIn => 'Zoom avant';
 
   @override
@@ -8442,16 +8430,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pcViewFrameStrip => 'Liste des images';
 
   @override
-  String get pcPaneToolProperty => 'Propriétés de l’outil';
+  String get pcPaneToolProperty => 'Réglages de l’outil';
 
   @override
   String get pcToolPropertyEmpty => 'Cet outil n’a pas de réglages';
-
-  @override
-  String get pcLayerNew => 'Nouveau calque';
-
-  @override
-  String get pcModeCanvas => 'Canevas';
 
   @override
   String pcStatusFrame(int current, int total) {
@@ -8459,16 +8441,10 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get pcMenuPlayback => 'Lecture';
+  String get pcPaneProgram => 'Aperçu';
 
   @override
-  String get pcPaneProgram => 'Programme';
-
-  @override
-  String get pcPaneInspector => 'Inspecteur';
-
-  @override
-  String get pcLoopPlayback => 'Lecture en boucle';
+  String get pcPaneInspector => 'Détails';
 
   @override
   String get pcTimelineZoomIn => 'Agrandir la chronologie';

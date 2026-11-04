@@ -76,7 +76,6 @@ import '../../widgets/custom_automation_draft_sheet.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/pc_workspace.dart';
-import '../../widgets/app_tutorial.dart';
 import '../settings/pc_workspace_layout_settings_screen.dart';
 
 class CanvasScreen extends StatefulWidget {
@@ -324,19 +323,43 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   /// オニオンスキンパネルの開閉（キャンバス上部
   /// バーの「設定/編集」メニューへ集約）。
-  void _toggleOnionSkinPanel() => setState(() {
-    final next = !_showOnionSkinPanel;
-    _closeAllOverlayPanels();
-    _showOnionSkinPanel = next;
-  });
+  void _toggleOnionSkinPanel() {
+    if (isWideScreen(context, listen: false)) {
+      _togglePcTab(CanvasDockPanel.onionSkin);
+      return;
+    }
+    setState(() {
+      final next = !_showOnionSkinPanel;
+      _closeAllOverlayPanels();
+      _showOnionSkinPanel = next;
+    });
+  }
 
   /// フィルターパネルの開閉（キャンバス上部バーの
-  /// 「設定/編集」メニューへ集約）。
-  void _toggleFilterPanel() => setState(() {
-    final next = !_showFilterPanel;
-    _closeAllOverlayPanels();
-    _showFilterPanel = next;
-  });
+  /// 「設定/編集」メニューへ集約）。PC/DeXモードではドックの窓を開閉する。
+  void _toggleFilterPanel() {
+    if (isWideScreen(context, listen: false)) {
+      _togglePcTab(CanvasDockPanel.filter);
+      return;
+    }
+    setState(() {
+      final next = !_showFilterPanel;
+      _closeAllOverlayPanels();
+      _showFilterPanel = next;
+    });
+  }
+
+  void _toggleColorAdjustPanel() {
+    if (isWideScreen(context, listen: false)) {
+      _togglePcTab(CanvasDockPanel.colorAdjust);
+      return;
+    }
+    setState(() {
+      final next = !_showColorAdjustPanel;
+      _closeAllOverlayPanels();
+      _showColorAdjustPanel = next;
+    });
+  }
 
   void _toggleFilterColorEyedropper(FilterColorEyedropperTarget target) {
     setState(() {
@@ -962,11 +985,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 title: Text(l10n.canvasColorAdjustMenuTitle),
                 onTap: () {
                   Navigator.pop(ctx);
-                  setState(() {
-                    final next = !_showColorAdjustPanel;
-                    _closeAllOverlayPanels();
-                    _showColorAdjustPanel = next;
-                  });
+                  _toggleColorAdjustPanel();
                 },
               ),
               // 資料ウィンドウ（アニメ制作では三面図・キャラクター設定表などの
@@ -996,9 +1015,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   subtitle: Text(l10n.canvasEditMenuPreviewNavigatorSubtitle),
                   onTap: () {
                     Navigator.pop(ctx);
-                    setState(
-                      () => _showCanvasPreviewPanel = !_showCanvasPreviewPanel,
-                    );
+                    _togglePcTab(CanvasDockPanel.canvasPreview);
                   },
                 ),
             ],
@@ -1293,9 +1310,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
         homeButtonKey: Key('canvasNotFoundHome'),
       );
     }
-    // PC/DeXモード（広い画面）では、スマホの浮かぶパネルを横に並べ直すのでは
-    // なく、メニューバー・コマンドバー・ツールパレット・左右のドック・
-    // フレーム一覧・ステータスバーで画面を区切った、PC専用の作業画面にする
+    // PC/DeXモード（広い画面）では、スマホと同じボタン（上部バー・ツールバー）
+    // のまま、浮かぶパネルの代わりに左右のドックの窓・フレーム一覧・
+    // ステータスバーで画面を区切った、PC専用の作業画面にする
     // （_buildPcWorkspace）。
     final isDesktop = isWideScreen(context);
     final filterAdjusting = _showFilterPanel && !isDesktop;
@@ -1941,11 +1958,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   // ─── PC/DeXモードの作業画面 ───────────────────────────────────────────
 
-  /// PC/DeXモード専用の作業画面。上から、メニューバー・コマンドバー・
-  /// ［ツールパレット｜ツールのドック｜キャンバス｜色・レイヤーのドック］・
+  /// PC/DeXモード専用の作業画面。上から、上部バー・
+  /// ［ツールバー｜ツールのドック｜キャンバス｜色・レイヤーのドック］・
   /// フレーム一覧・ステータスバー（左利きモードでは中段を左右反転）。
-  /// スマホの「キャンバスの上に浮かぶパネル」は使わず、パネルはすべて
-  /// ドックのペイン（タブ）に入るので、キャンバスを隠さない。
+  /// ボタンはスマホと同じもの（上部バー・ツールバー・設定/編集メニュー）で、
+  /// パネルはキャンバスの上に浮かべずドックの窓に入れるので、キャンバスを
+  /// 隠さない。
   Widget _buildPcWorkspace(
     Project project, {
     required bool selectionEditingHidden,
@@ -2037,8 +2055,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       children: [
         Column(
           children: [
-            _buildPcMenuBar(project),
-            _buildPcCommandBar(),
+            _buildPcTopBar(),
             Expanded(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2236,8 +2253,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     CanvasDockPanel.canvasPreview => Icons.map_outlined,
   };
 
-  /// ツールパレット（縦一列）。描くツールだけを並べ、パネルの開閉・保存・
-  /// ヘルプはメニューバー・コマンドバーへ移してある。
+  /// ツールバー（縦一列）。スマホのツールバーと同じボタンを同じ順に並べる
+  /// （パネルのボタンはドックの窓を開閉する）。
   Widget _buildPcToolPalette() {
     final colors = PcWorkspaceColors.of(context);
     return DecoratedBox(
@@ -2246,13 +2263,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
         color: colors.pane,
         border: Border.symmetric(vertical: BorderSide(color: colors.divider)),
       ),
-      child: PcPaletteScope(
-        child: _buildToolbarWidget(vertical: true, pcPalette: true),
-      ),
+      child: PcPaletteScope(child: _buildToolbarWidget(vertical: true)),
     );
   }
 
-  /// ツールプロパティ：いま選んでいるツールの設定（太さ・不透明度・
+  /// ツールの設定：いま選んでいるツールの設定（太さ・不透明度・
   /// 種類・選択範囲の変形など）を、ツールに合わせて出し分ける。
   Widget _pcToolProperty() {
     final l10n = AppLocalizations.of(context)!;
@@ -2573,505 +2588,30 @@ class _CanvasScreenState extends State<CanvasScreen> {
         : name;
   }
 
-  String? _shortcutLabel(ShortcutCommand command) {
-    for (final b in context.read<ShortcutService>().bindings) {
-      if (b.command == command) return b.comboLabel;
-    }
-    return null;
-  }
-
-  void _pcAddLayer(model.LayerType type) {
-    final l10n = AppLocalizations.of(context)!;
-    final projects = context.read<ProjectService>();
-    final count = projects
-        .layersOf(widget.projectId, _currentSceneId, _currentFrame)
-        .length;
-    final created = projects.addLayer(
-      projectId: widget.projectId,
-      sceneId: _currentSceneId,
-      frameIndex: _currentFrame,
-      type: type,
-      name: type == model.LayerType.folder
-          ? l10n.layerPanelDefaultFolderName(count + 1)
-          : l10n.layerPanelDefaultLayerName(count + 1),
-    );
-    if (type != model.LayerType.folder) {
-      setState(() => _currentLayerId = created.id);
-    }
-  }
-
-  void _pcDuplicateLayer() {
-    final layerId = _currentLayerId;
-    if (layerId == null) return;
-    final copy = context.read<ProjectService>().duplicateLayer(
-      projectId: widget.projectId,
-      sceneId: _currentSceneId,
-      frameIndex: _currentFrame,
-      layerId: layerId,
-    );
-    if (copy != null) setState(() => _currentLayerId = copy.id);
-  }
-
-  /// メニューバー。スマホの「設定/編集」メニュー・上部バー・ツールバーに
-  /// 分かれていた操作を、PCのペイントソフトと同じ分類で並べる。
-  Widget _buildPcMenuBar(Project project) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = PcWorkspaceColors.of(context);
-    final undo = context.watch<UndoManager>();
-    final open = _openDockPanels();
-    void push(String route) =>
-        _runAutomationBlockedAction(() => context.push(route));
-    PcMenuItem windowItem(CanvasDockPanel panel) => PcMenuItem(
-      key: ValueKey('pcMenuWindow.${panel.name}'),
-      label: _dockPanelTitle(l10n, panel),
-      checked: open.contains(panel),
-      onPressed: () => _togglePcTab(panel),
-    );
-    PcMenuItem selectTool(DrawingTool tool, String label) => PcMenuItem(
-      label: label,
-      checked: _currentTool == tool,
-      onPressed: () => setState(() => _currentTool = tool),
-    );
-    PcMenuItem checkMode(AutofillCheckMode mode, String label) => PcMenuItem(
-      label: label,
-      checked: _autofillCheckMode == mode,
-      onPressed: () => setState(() => _autofillCheckMode = mode),
-    );
-    final menus = [
-      PcMenu(
-        key: const ValueKey('pcMenu.file'),
-        label: l10n.pcMenuFile,
-        entries: [
-          PcMenuItem(
-            key: const ValueKey('pcMenuSave'),
-            label: l10n.toolbarSaveTooltip,
-            icon: Icons.save_outlined,
-            onPressed: () => push('/save-tree/${widget.projectId}'),
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.canvasTimelineModeTooltip,
-            icon: Icons.movie_filter_outlined,
-            onPressed: () => _runAutomationBlockedAction(
-              () => context.go('/timeline/${widget.projectId}'),
-            ),
-          ),
-          PcMenuItem(
-            label: l10n.timelineBackToProjectListTooltip,
-            icon: Icons.home_outlined,
-            onPressed: _confirmBackToProjectList,
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.canvasEditMenuAutofillPresets,
-            icon: Icons.auto_fix_high_outlined,
-            onPressed: () => push('/autofill-presets'),
-          ),
-          PcMenuItem(
-            label: l10n.customAutomationTitle,
-            icon: Icons.playlist_play,
-            onPressed: _showCustomAutomationManager,
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.settingsScreenTitle,
-            icon: Icons.settings_outlined,
-            onPressed: () => push('/settings'),
-          ),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.edit'),
-        label: l10n.commonEdit,
-        entries: [
-          PcMenuItem(
-            key: const ValueKey('pcMenuUndo'),
-            label: l10n.shortcutCommandUndo,
-            icon: Icons.undo,
-            shortcut: _shortcutLabel(ShortcutCommand.undo),
-            onPressed: undo.canUndo ? _undo : null,
-          ),
-          PcMenuItem(
-            key: const ValueKey('pcMenuRedo'),
-            label: l10n.shortcutCommandRedo,
-            icon: Icons.redo,
-            shortcut: _shortcutLabel(ShortcutCommand.redo),
-            onPressed: undo.canRedo ? _redo : null,
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.commonCopy,
-            icon: Icons.copy,
-            shortcut: _shortcutLabel(ShortcutCommand.copy),
-            onPressed: _currentLayerId == null ? null : _copyActiveLayer,
-          ),
-          PcMenuItem(
-            label: l10n.commonPaste,
-            icon: Icons.paste,
-            shortcut: _shortcutLabel(ShortcutCommand.paste),
-            onPressed: _currentLayerId == null ? null : _pasteCopiedLayer,
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            key: const ValueKey('pcMenuMeshTransform'),
-            label: l10n.canvasEditMenuMeshTransform,
-            icon: Icons.crop_free,
-            onPressed: () => _openMeshTransformPanel(),
-          ),
-          PcMenuItem(
-            label: l10n.canvasEditMenuPressureCurve,
-            icon: Icons.gesture,
-            onPressed: () => push('/settings/pen'),
-          ),
-          PcMenuItem(
-            label: l10n.shortcutSettingsTitle,
-            icon: Icons.keyboard_outlined,
-            onPressed: () => push('/settings/shortcuts'),
-          ),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.selection'),
-        label: l10n.pcMenuSelection,
-        entries: [
-          PcMenuItem(
-            key: const ValueKey('pcMenuSelectAll'),
-            label: l10n.canvasSelectAllButton,
-            icon: Icons.select_all,
-            onPressed: () => setState(() {
-              if (!_isSelectionToolActive) {
-                _currentTool = DrawingTool.selectRect;
-              }
-              _selectAllSelectionToken++;
-            }),
-          ),
-          PcMenuItem(
-            label: l10n.canvasDeselectAllButton,
-            icon: Icons.deselect,
-            onPressed: _hasActiveSelection
-                ? () => setState(() => _clearSelectionToken++)
-                : null,
-          ),
-          PcMenuItem(
-            label: l10n.canvasInvertSelectionTooltip,
-            icon: Icons.invert_colors_outlined,
-            onPressed: _hasActiveSelection
-                ? () => setState(() => _invertSelectionToken++)
-                : null,
-          ),
-          const PcMenuDivider(),
-          selectTool(DrawingTool.selectRect, l10n.toolbarSelectRect),
-          selectTool(DrawingTool.selectLasso, l10n.toolbarSelectLasso),
-          selectTool(DrawingTool.selectMagicWand, l10n.toolbarSelectMagicWand),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.layer'),
-        label: l10n.layerPanelTitle,
-        entries: [
-          PcMenuItem(
-            key: const ValueKey('pcMenuNewLayer'),
-            label: l10n.pcLayerNew,
-            icon: Icons.add,
-            onPressed: () => _pcAddLayer(model.LayerType.normal),
-          ),
-          PcMenuItem(
-            label: l10n.layerPanelNewFolderButton,
-            icon: Icons.create_new_folder_outlined,
-            onPressed: () => _pcAddLayer(model.LayerType.folder),
-          ),
-          PcMenuItem(
-            label: l10n.customAutomationStepDuplicateLayer,
-            icon: Icons.control_point_duplicate,
-            onPressed: _currentLayerId == null ? null : _pcDuplicateLayer,
-          ),
-          const PcMenuDivider(),
-          windowItem(CanvasDockPanel.layer),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.filter'),
-        label: l10n.filterPanelTitle,
-        entries: [
-          PcMenuItem(
-            key: const ValueKey('pcMenuFilter'),
-            label: l10n.filterPanelTitle,
-            icon: Icons.blur_on,
-            checked: _showFilterPanel,
-            onPressed: () => _togglePcTab(CanvasDockPanel.filter),
-          ),
-          PcMenuItem(
-            label: l10n.canvasColorAdjustMenuTitle,
-            icon: Icons.tune,
-            checked: _showColorAdjustPanel,
-            onPressed: () => _togglePcTab(CanvasDockPanel.colorAdjust),
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.canvasEditMenuFrameMultiSelect,
-            checked: _frameMultiSelectMode,
-            onPressed: _toggleFrameMultiSelect,
-          ),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.view'),
-        label: l10n.pcMenuView,
-        entries: [
-          PcMenuItem(
-            key: const ValueKey('pcMenuZoomIn'),
-            label: l10n.pcViewZoomIn,
-            icon: Icons.zoom_in,
-            onPressed: () => _viewAction(CanvasViewAction.zoomIn),
-          ),
-          PcMenuItem(
-            label: l10n.pcViewZoomOut,
-            icon: Icons.zoom_out,
-            onPressed: () => _viewAction(CanvasViewAction.zoomOut),
-          ),
-          PcMenuItem(
-            label: l10n.pcViewFit,
-            icon: Icons.fit_screen_outlined,
-            onPressed: () => _viewAction(CanvasViewAction.fit),
-          ),
-          PcMenuItem(
-            label: l10n.pcViewActualPixels,
-            icon: Icons.crop_square,
-            onPressed: () => _viewAction(CanvasViewAction.actualPixels),
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.pcViewRotateLeft,
-            icon: Icons.rotate_left,
-            onPressed: () => _viewAction(CanvasViewAction.rotateLeft),
-          ),
-          PcMenuItem(
-            label: l10n.pcViewRotateRight,
-            icon: Icons.rotate_right,
-            onPressed: () => _viewAction(CanvasViewAction.rotateRight),
-          ),
-          PcMenuItem(
-            label: l10n.pcViewResetRotation,
-            icon: Icons.screen_rotation_alt_outlined,
-            onPressed: () => _viewAction(CanvasViewAction.resetRotation),
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.canvasEditMenuBackgroundToggle,
-            icon: Icons.grid_4x4,
-            checked: _canvasBackground == CanvasBackground.transparent,
-            onPressed: _toggleBackground,
-          ),
-          PcMenuItem(
-            label: l10n.newProjectBackgroundColorLabel,
-            icon: Icons.format_paint_outlined,
-            onPressed: () => _showBackgroundColorPicker(context),
-          ),
-          PcMenuItem(
-            key: const ValueKey('pcMenuOnionSkin'),
-            label: l10n.onionSkinTitle,
-            checked: _onionSkinSettings.enabled,
-            onPressed: () => setState(
-              () => _onionSkinSettings = _onionSkinSettings.copyWith(
-                enabled: !_onionSkinSettings.enabled,
-              ),
-            ),
-          ),
-          PcSubmenu(
-            label: l10n.canvasAutofillCheckView,
-            icon: Icons.contrast,
-            entries: [
-              checkMode(
-                AutofillCheckMode.normal,
-                l10n.canvasAutofillCheckNormal,
-              ),
-              checkMode(
-                AutofillCheckMode.partSeparation,
-                l10n.canvasAutofillCheckParts,
-              ),
-              checkMode(
-                AutofillCheckMode.silhouette,
-                l10n.canvasAutofillCheckSilhouette,
-              ),
-            ],
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.canvasEditMenuReferenceWindow,
-            checked: _showReferenceWindow,
-            onPressed: () =>
-                setState(() => _showReferenceWindow = !_showReferenceWindow),
-          ),
-          PcMenuItem(
-            key: const ValueKey('pcMenuFrameStrip'),
-            label: l10n.pcViewFrameStrip,
-            checked: _showFrameStrip,
-            onPressed: () => setState(() => _showFrameStrip = !_showFrameStrip),
-          ),
-          PcMenuItem(
-            key: const ValueKey('pcMenuHidePanels'),
-            label: l10n.pcViewHidePanels,
-            checked: _pcPanelsHidden,
-            onPressed: () => setState(() => _pcPanelsHidden = !_pcPanelsHidden),
-          ),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.window'),
-        label: l10n.pcMenuWindow,
-        entries: [
-          PcMenuItem(
-            key: const ValueKey('pcMenuWindow.toolProperty'),
-            label: l10n.pcPaneToolProperty,
-            checked: _showPcToolProperty,
-            onPressed: () => setState(() {
-              _showPcToolProperty = !_showPcToolProperty;
-              if (_showPcToolProperty) _pcPanelsHidden = false;
-            }),
-          ),
-          windowItem(CanvasDockPanel.penSubTool),
-          windowItem(CanvasDockPanel.brush),
-          windowItem(CanvasDockPanel.tone),
-          windowItem(CanvasDockPanel.stamp),
-          windowItem(CanvasDockPanel.quickTool),
-          windowItem(CanvasDockPanel.ruler),
-          const PcMenuDivider(),
-          windowItem(CanvasDockPanel.filter),
-          windowItem(CanvasDockPanel.colorAdjust),
-          windowItem(CanvasDockPanel.onionSkin),
-          const PcMenuDivider(),
-          windowItem(CanvasDockPanel.canvasPreview),
-          windowItem(CanvasDockPanel.colorPicker),
-          windowItem(CanvasDockPanel.layer),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.pcWorkspaceLayoutScreenTitle,
-            icon: Icons.dashboard_outlined,
-            onPressed: () => _runAutomationBlockedAction(
-              () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const PcWorkspaceLayoutSettingsScreen(),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.help'),
-        label: l10n.homeDrawerHelp,
-        entries: [
-          PcMenuItem(
-            label: l10n.helpScreenTitle,
-            icon: Icons.help_outline,
-            onPressed: () => push('/help'),
-          ),
-          PcMenuItem(
-            label: l10n.homeDrawerTutorial,
-            icon: Icons.school_outlined,
-            onPressed: () => AppTutorial.show(context),
-          ),
-          PcMenuItem(
-            label: l10n.shortcutSettingsTitle,
-            icon: Icons.keyboard_outlined,
-            onPressed: () => push('/settings/shortcuts'),
-          ),
-        ],
-      ),
-    ];
-    return PcMenuBar(
-      menus: menus,
-      trailing: [
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 260),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              project.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 12,
-                color: colors.mutedOnChrome,
-              ),
-            ),
-          ),
-        ),
-        PcModeSwitch(
-          key: const ValueKey('pcModeSwitch'),
-          labels: [l10n.pcModeCanvas, l10n.premiumFeatureTimeline],
-          icons: const [Icons.brush_outlined, Icons.movie_filter_outlined],
-          selectedIndex: 0,
-          onSelected: (i) {
-            if (i == 1) {
-              _runAutomationBlockedAction(
-                () => context.go('/timeline/${widget.projectId}'),
-              );
-            }
-          },
-        ),
-        const SizedBox(width: 6),
-      ],
-    );
-  }
-
-  /// コマンドバー：よく使う操作（取り消し・保存・選択範囲・表示の倍率と
-  /// 回転・背景・オニオンスキン）をアイコンで並べる。
-  Widget _buildPcCommandBar() {
+  /// PC/DeXモードの上部バー。スマホの上部バーと同じボタン（取り消し・
+  /// やり直し、設定/編集メニュー、ホーム、タイムラインへ）を同じ順に並べ、
+  /// PCでは指の操作の代わりになる表示の操作（拡大・縮小・全体表示・回転）と、
+  /// ドックの窓の一覧を足す。機能をメニューの分類に並べ直さず、スマホと同じ
+  /// ボタンから同じ機能に届くようにする（ツールに応じた切り替えは
+  /// 「ツールの設定」の窓に出る）。
+  Widget _buildPcTopBar() {
     final l10n = AppLocalizations.of(context)!;
     final colors = PcWorkspaceColors.of(context);
     final undo = context.watch<UndoManager>();
     return PcCommandBar(
+      key: const ValueKey('pcTopBar'),
       leading: [
-        PcToolButton(
-          key: const ValueKey('pcCommandHome'),
-          icon: Icons.home_outlined,
-          tooltip: l10n.timelineBackToProjectListTooltip,
-          onPressed: _confirmBackToProjectList,
-        ),
-        const PcCommandDivider(),
         PcToolButton(
           key: const ValueKey('pcCommandUndo'),
           icon: Icons.undo,
-          tooltip: l10n.shortcutCommandUndo,
+          tooltip: l10n.commonUndo,
           onPressed: undo.canUndo ? _undo : null,
         ),
         PcToolButton(
           key: const ValueKey('pcCommandRedo'),
           icon: Icons.redo,
-          tooltip: l10n.shortcutCommandRedo,
+          tooltip: l10n.commonRedo,
           onPressed: undo.canRedo ? _redo : null,
-        ),
-        PcToolButton(
-          key: const ValueKey('pcCommandSave'),
-          icon: Icons.save_outlined,
-          tooltip: l10n.toolbarSaveTooltip,
-          onPressed: () => _runAutomationBlockedAction(
-            () => context.push('/save-tree/${widget.projectId}'),
-          ),
-        ),
-        const PcCommandDivider(),
-        PcToolButton(
-          icon: Icons.select_all,
-          tooltip: l10n.canvasSelectAllButton,
-          onPressed: () => setState(() {
-            if (!_isSelectionToolActive) _currentTool = DrawingTool.selectRect;
-            _selectAllSelectionToken++;
-          }),
-        ),
-        PcToolButton(
-          icon: Icons.deselect,
-          tooltip: l10n.canvasDeselectAllButton,
-          onPressed: _hasActiveSelection
-              ? () => setState(() => _clearSelectionToken++)
-              : null,
-        ),
-        PcToolButton(
-          icon: Icons.invert_colors_outlined,
-          tooltip: l10n.canvasInvertSelectionTooltip,
-          onPressed: _hasActiveSelection
-              ? () => setState(() => _invertSelectionToken++)
-              : null,
         ),
         const PcCommandDivider(),
         PcToolButton(
@@ -3138,46 +2678,84 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 : null,
           ),
         ),
-        const PcCommandDivider(),
-        PcToolButton(
-          icon: Icons.grid_4x4,
-          tooltip: l10n.canvasEditMenuBackgroundToggle,
-          selected: _canvasBackground == CanvasBackground.transparent,
-          onPressed: _toggleBackground,
-        ),
-        PcToolButton(
-          key: const ValueKey('pcCommandOnionSkin'),
-          icon: Icons.filter_none,
-          tooltip: l10n.onionSkinTitle,
-          selected: _onionSkinSettings.enabled,
-          onPressed: () => setState(
-            () => _onionSkinSettings = _onionSkinSettings.copyWith(
-              enabled: !_onionSkinSettings.enabled,
-            ),
-          ),
-        ),
-        PcToolButton(
-          icon: Icons.dashboard_customize_outlined,
-          tooltip: l10n.canvasEditMenuReferenceWindow,
-          selected: _showReferenceWindow,
-          onPressed: () =>
-              setState(() => _showReferenceWindow = !_showReferenceWindow),
-        ),
-        PcToolButton(
-          icon: Icons.loop,
-          tooltip: l10n.toolbarQuickToolTooltip,
-          onPressed: _applyNextQuickTool,
-        ),
       ],
       trailing: [
+        _buildPcWindowMenu(l10n),
+        // スマホと同じ「設定/編集」メニュー（背景・オニオンスキン・
+        // フィルター・資料ウィンドウ・メッシュ変形・自動操作など）。
         PcToolButton(
-          key: const ValueKey('pcCommandHidePanels'),
-          icon: _pcPanelsHidden
-              ? Icons.view_sidebar_outlined
-              : Icons.fullscreen,
-          tooltip: l10n.pcViewHidePanels,
-          selected: _pcPanelsHidden,
-          onPressed: () => setState(() => _pcPanelsHidden = !_pcPanelsHidden),
+          key: const ValueKey('pcCommandEditMenu'),
+          icon: Icons.settings,
+          tooltip: l10n.canvasSettingsMenuTooltip,
+          onPressed: () => _showEditMenu(context),
+        ),
+        PcToolButton(
+          key: const ValueKey('pcCommandHome'),
+          icon: Icons.home_outlined,
+          tooltip: l10n.timelineBackToProjectListTooltip,
+          onPressed: _confirmBackToProjectList,
+        ),
+        PcToolButton(
+          key: const Key('canvasTimelineModeButton'),
+          icon: Icons.movie_filter_outlined,
+          trailingIcon: Icons.arrow_forward,
+          tooltip: l10n.canvasTimelineModeTooltip,
+          onPressed: () => _runAutomationBlockedAction(
+            () => context.go('/timeline/${widget.projectId}'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// ドックの窓の一覧（チェックで表示・非表示）と、PCレイアウト設定。
+  Widget _buildPcWindowMenu(AppLocalizations l10n) {
+    final colors = PcWorkspaceColors.of(context);
+    CheckedPopupMenuItem<Object> item(
+      Object value,
+      String label,
+      bool checked,
+    ) => CheckedPopupMenuItem<Object>(
+      key: ValueKey(
+        'pcWindow.${value is CanvasDockPanel ? value.name : value}',
+      ),
+      value: value,
+      checked: checked,
+      child: Text(label),
+    );
+    return PopupMenuButton<Object>(
+      key: const Key('desktopWindowVisibilityMenu'),
+      tooltip: l10n.workspaceDockPanelSection,
+      icon: Icon(Icons.view_sidebar_outlined, size: 18, color: colors.onChrome),
+      style: pcBarButtonStyle(context),
+      onSelected: (value) {
+        switch (value) {
+          case CanvasDockPanel panel:
+            _togglePcTab(panel);
+          case 'toolProperty':
+            setState(() {
+              _showPcToolProperty = !_showPcToolProperty;
+              if (_showPcToolProperty) _pcPanelsHidden = false;
+            });
+          case 'frameStrip':
+            setState(() => _showFrameStrip = !_showFrameStrip);
+          case 'hidePanels':
+            setState(() => _pcPanelsHidden = !_pcPanelsHidden);
+          case 'layout':
+            _runAutomationBlockedAction(_openDesktopWorkspaceSettings);
+        }
+      },
+      itemBuilder: (_) => [
+        item('toolProperty', l10n.pcPaneToolProperty, _showPcToolProperty),
+        for (final panel in CanvasDockPanel.values)
+          item(panel, _dockTitle(panel), _desktopPanelVisible(panel)),
+        item('frameStrip', l10n.pcViewFrameStrip, _showFrameStrip),
+        const PopupMenuDivider(),
+        item('hidePanels', l10n.pcViewHidePanels, _pcPanelsHidden),
+        PopupMenuItem<Object>(
+          key: const ValueKey('pcWindow.layout'),
+          value: 'layout',
+          child: Text(l10n.pcWorkspaceLayoutScreenTitle),
         ),
       ],
     );
@@ -3339,75 +2917,79 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// PC/DeXモードでドックを開いても、キャンバスに残す幅。
   static const double _minCanvasWidth = 240;
 
-  /// 常設ツールバー本体。[vertical]がtrueの場合は縦一列、falseの場合は
-  /// 画面下部の横並びバーとして表示する。[pcPalette]はPC/DeXモードの
-  /// ツールパレット（パネルの開閉はドックのタブで行う）。
-  Widget _buildToolbarWidget({
-    required bool vertical,
-    bool pcPalette = false,
-  }) => ToolbarWidget(
-    vertical: vertical,
-    pcPalette: pcPalette,
-    currentTool: _currentTool,
-    currentColor: _currentColor,
-    isStampSelected: _currentSubTool == PenSubTool.stamp,
-    onToolSelected: (tool) {
-      setState(() => _currentTool = tool);
-      _recordCanvasAutomation(
-        'canvas.tool',
-        tool.name,
-        args: {'tool': tool.name},
-      );
-    },
-    onColorTap: pcPalette
-        ? () => _togglePcTab(CanvasDockPanel.colorPicker)
+  /// 常設ツールバー本体。[vertical]がtrueの場合は縦一列（PC/DeXモード）、
+  /// falseの場合は画面下部の横並びバーとして表示する。PC/DeXモードでは
+  /// パネルのボタンがドックの窓を開閉する。
+  Widget _buildToolbarWidget({required bool vertical}) {
+    final pc = isWideScreen(context);
+    VoidCallback toggle(
+      CanvasDockPanel panel,
+      bool Function() isOpen,
+      void Function(bool) setOpen,
+    ) => pc
+        ? () => _togglePcTab(panel)
         : () => setState(() {
-            final next = !_showColorPicker;
+            final next = !isOpen();
             _closeAllOverlayPanels();
-            _showColorPicker = next;
-          }),
-    onBrushTap: () => setState(() {
-      final next = !_showBrushPanel;
-      _closeAllOverlayPanels();
-      _showBrushPanel = next;
-    }),
-    onLayerTap: () => setState(() {
-      final next = !_showLayerPanel;
-      _closeAllOverlayPanels();
-      _showLayerPanel = next;
-    }),
-    onPenLongPress: pcPalette
-        ? () => _togglePcTab(CanvasDockPanel.penSubTool)
-        : () => setState(() {
-            final next = !_showPenSubToolPanel;
-            _closeAllOverlayPanels();
-            _showPenSubToolPanel = next;
-          }),
-    onFingerLongPress: () => _showFingerSubMenu(context),
-    onTextTap: () => setState(() => _currentTool = DrawingTool.text),
-    onShapeTap: () => _showShapeMenu(context),
-    onQuickToolTap: _applyNextQuickTool,
-    onQuickToolLongPress: pcPalette
-        ? () => _togglePcTab(CanvasDockPanel.quickTool)
-        : () => setState(() {
-            final next = !_showQuickToolPanel;
-            _closeAllOverlayPanels();
-            _showQuickToolPanel = next;
-          }),
-    // 手動保存（セーブツリー）：「キャンバス → 保存 → キャンバスへ戻る」
-    onSaveTap: () => _runAutomationBlockedAction(
-      () => context.push('/save-tree/${widget.projectId}'),
-    ),
-    // 投げ縄塗り：ペンのサブツールではなくバケツ長押しメニューから
-    // 選べるようにする（投げ縄で囲った範囲を塗る点でバケツ塗りに
-    // 近いため）。
-    onLassoFillSelected: () => setState(() {
-      _currentSubTool = PenSubTool.lassoFill;
-      _currentTool = DrawingTool.lasso;
-    }),
-    // 定規ボタン（キャンバス上部バーからツールバー内へ移設）。
-    onRulerTap: _toggleRuler,
-  );
+            setOpen(next);
+          });
+    return ToolbarWidget(
+      vertical: vertical,
+      currentTool: _currentTool,
+      currentColor: _currentColor,
+      isStampSelected: _currentSubTool == PenSubTool.stamp,
+      onToolSelected: (tool) {
+        setState(() => _currentTool = tool);
+        _recordCanvasAutomation(
+          'canvas.tool',
+          tool.name,
+          args: {'tool': tool.name},
+        );
+      },
+      onColorTap: toggle(
+        CanvasDockPanel.colorPicker,
+        () => _showColorPicker,
+        (v) => _showColorPicker = v,
+      ),
+      onBrushTap: toggle(
+        CanvasDockPanel.brush,
+        () => _showBrushPanel,
+        (v) => _showBrushPanel = v,
+      ),
+      onLayerTap: toggle(
+        CanvasDockPanel.layer,
+        () => _showLayerPanel,
+        (v) => _showLayerPanel = v,
+      ),
+      onPenLongPress: toggle(
+        CanvasDockPanel.penSubTool,
+        () => _showPenSubToolPanel,
+        (v) => _showPenSubToolPanel = v,
+      ),
+      onFingerLongPress: () => _showFingerSubMenu(context),
+      onTextTap: () => setState(() => _currentTool = DrawingTool.text),
+      onShapeTap: () => _showShapeMenu(context),
+      onQuickToolTap: _applyNextQuickTool,
+      onQuickToolLongPress: toggle(
+        CanvasDockPanel.quickTool,
+        () => _showQuickToolPanel,
+        (v) => _showQuickToolPanel = v,
+      ),
+      // 手動保存（セーブツリー）：「キャンバス → 保存 → キャンバスへ戻る」
+      onSaveTap: () => _runAutomationBlockedAction(
+        () => context.push('/save-tree/${widget.projectId}'),
+      ),
+      // 投げ縄塗り：ペンのサブツールではなくバケツ長押しメニューから
+      // 選べるようにする（投げ縄で囲った範囲を塗る点でバケツ塗りに
+      // 近いため）。
+      onLassoFillSelected: () => setState(() {
+        _currentSubTool = PenSubTool.lassoFill;
+        _currentTool = DrawingTool.lasso;
+      }),
+      // 定規ボタン（キャンバス上部バーからツールバー内へ移設）。
+      onRulerTap: _toggleRuler,
+    );
+  }
 
   Widget _colorPickerPanel() => ColorPickerPanel(
     currentColor: _currentColor,
@@ -4284,101 +3866,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _showCanvasPreviewPanel = defaults.contains(CanvasDockPanel.canvasPreview);
   }
 
+  /// PCレイアウト設定（窓の配置の編集）を開き、戻ったら開く窓を合わせる。
   Future<void> _openDesktopWorkspaceSettings() async {
-    await context.push('/settings/workspace');
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const PcWorkspaceLayoutSettingsScreen(),
+      ),
+    );
     if (!mounted) return;
     setState(_applyDesktopDockVisibilityPreferences);
-  }
-
-  /// Desktop-only application menus, placed in the same top row as the
-  /// canvas action icons. Actions reuse the existing canvas handlers.
-  Widget _buildDesktopMenuBar() {
-    final l = AppLocalizations.of(context)!;
-    final locale = Localizations.localeOf(context);
-    final titles = switch (locale.languageCode) {
-      'ja' => const ['ファイル', 'レイヤー', '表示', '設定'],
-      'ko' => const ['파일', '레이어', '보기', '설정'],
-      'zh' when locale.scriptCode == 'Hant' => const ['檔案', '圖層', '檢視', '設定'],
-      'zh' => const ['文件', '图层', '视图', '设置'],
-      'es' => const ['Archivo', 'Capa', 'Ver', 'Ajustes'],
-      'fr' => const ['Fichier', 'Calque', 'Affichage', 'Paramètres'],
-      _ => const ['File', 'Layer', 'View', 'Settings'],
-    };
-    final scheme = Theme.of(context).colorScheme;
-    return MenuBar(
-      style: MenuStyle(
-        backgroundColor: WidgetStatePropertyAll(
-          scheme.surface.withValues(alpha: 0),
-        ),
-        elevation: const WidgetStatePropertyAll(0),
-        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-      ),
-      children: [
-        SubmenuButton(
-          menuChildren: [
-            MenuItemButton(
-              onPressed: () =>
-                  context.read<ProjectService>().saveProject(widget.projectId),
-              child: Text(l.commonSave),
-            ),
-            MenuItemButton(
-              onPressed: _confirmBackToProjectList,
-              child: Text(l.timelineBackToProjectListTooltip),
-            ),
-          ],
-          child: Text(titles[0]),
-        ),
-        SubmenuButton(
-          menuChildren: [
-            MenuItemButton(
-              onPressed: () => _setDesktopPanelVisible(
-                CanvasDockPanel.layer,
-                !_showLayerPanel,
-              ),
-              child: Text(l.layerPanelTitle),
-            ),
-            MenuItemButton(
-              onPressed: _selectAllLayers,
-              child: Text(l.layerPanelSelectAll),
-            ),
-          ],
-          child: Text(titles[1]),
-        ),
-        SubmenuButton(
-          menuChildren: [
-            MenuItemButton(
-              onPressed: _toggleBackground,
-              child: Text(l.canvasEditMenuBackgroundToggle),
-            ),
-            MenuItemButton(
-              onPressed: () => _setDesktopPanelVisible(
-                CanvasDockPanel.canvasPreview,
-                !_showCanvasPreviewPanel,
-              ),
-              child: Text(l.canvasEditMenuPreviewNavigator),
-            ),
-            MenuItemButton(
-              onPressed: _openDesktopWorkspaceSettings,
-              child: Text(l.pcWorkspaceLayoutScreenTitle),
-            ),
-          ],
-          child: Text(titles[2]),
-        ),
-        SubmenuButton(
-          menuChildren: [
-            MenuItemButton(
-              onPressed: () => _showEditMenu(context),
-              child: Text(l.canvasSettingsMenuTooltip),
-            ),
-            MenuItemButton(
-              onPressed: _openDesktopWorkspaceSettings,
-              child: Text(l.workspacePcLayoutButton),
-            ),
-          ],
-          child: Text(titles[3]),
-        ),
-      ],
-    );
   }
 
   Widget _buildTopBar() {
@@ -4402,10 +3898,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onPressed: () => context.read<UndoManager>().redo(),
             tooltip: l10n.commonRedo,
           ),
-          if (isWideScreen(context)) ...[
-            const SizedBox(width: 16),
-            _buildDesktopMenuBar(),
-          ],
           // 投げ縄塗り選択中：囲って塗るモードスイッチ
           if (_currentTool == DrawingTool.lasso &&
               _currentSubTool == PenSubTool.lassoFill) ...[
@@ -4454,24 +3946,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ),
           const Spacer(),
-          if (isWideScreen(context))
-            PopupMenuButton<CanvasDockPanel>(
-              key: const Key('desktopWindowVisibilityMenu'),
-              tooltip: AppLocalizations.of(
-                context,
-              )!.pcWorkspaceLayoutScreenTitle,
-              icon: const Icon(Icons.view_sidebar_outlined, size: 22),
-              onSelected: (panel) =>
-                  _setDesktopPanelVisible(panel, !_desktopPanelVisible(panel)),
-              itemBuilder: (_) => [
-                for (final p in CanvasDockPanel.values)
-                  CheckedPopupMenuItem<CanvasDockPanel>(
-                    value: p,
-                    checked: _desktopPanelVisible(p),
-                    child: Text(_dockTitle(p)),
-                  ),
-              ],
-            ),
           // 設定/編集メニュー（背景色・オニオンスキン・
           // フィルター・フレーム範囲選択を集約）。
           _topBarIconButton(

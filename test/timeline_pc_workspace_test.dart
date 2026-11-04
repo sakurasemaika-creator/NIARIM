@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
@@ -19,9 +20,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
-/// PC/DeXモードのタイムラインは、動画編集ソフトのように［シーン・素材｜
-/// プログラムモニター｜インスペクター］の段と、横幅いっぱいのタイムラインで
-/// 区切る。各段階を`build/timeline-pc-workspace/`へ撮る。
+/// PC/DeXモードのタイムラインは、スマホと同じボタン（上部バー・ツールバー・
+/// 三点メニュー）を1段の上部バーに並べ、［シーン・素材｜プレビュー｜詳細］の
+/// 段と、横幅いっぱいのタイムラインで区切る。他のソフトのメニューの分類は
+/// 持ち込まない。各段階を`build/timeline-pc-workspace/`へ撮る。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
@@ -106,10 +108,11 @@ void main() {
     await settle(tester, 12);
   }
 
-  Future<void> menu(WidgetTester tester, String menu, Finder item) async {
-    await tester.tap(find.byKey(ValueKey('pcMenu.$menu')));
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(item);
+  Future<void> window(WidgetTester tester, String item) async {
+    await tester.tap(find.byKey(const ValueKey('pcTimelineWindowMenu')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(ValueKey('pcWindow.$item')));
     await settle(tester, 3);
   }
 
@@ -124,7 +127,8 @@ void main() {
     await capture(tester, '01_default');
     expect(tester.takeException(), isNull);
 
-    final menuBar = tester.getRect(find.byType(PcMenuBar));
+    expect(find.byType(MenuBar), findsNothing);
+    final topBar = tester.getRect(find.byKey(const ValueKey('pcTopBar')));
     final status = tester.getRect(find.byType(PcStatusBar));
     final bin = tester.getRect(find.byKey(const ValueKey('pcTimelineBin')));
     final monitor = tester.getRect(
@@ -136,26 +140,42 @@ void main() {
     final tracks = tester.getRect(
       find.byKey(const ValueKey('pcTimelineTracks')),
     );
-    expect(menuBar.top, 0);
+    expect(topBar.top, 0);
     expect(status.bottom, 900);
-    // 上の段：左にシーン・素材、中央にモニター、右にインスペクター。
+    // 上の段：左にシーン・素材、中央にプレビュー、右に詳細。
     expect(bin.right, lessThanOrEqualTo(monitor.left));
     expect(inspector.left, greaterThanOrEqualTo(monitor.right));
     // 下の段：タイムラインは横幅いっぱい。
     expect(tracks.top, greaterThanOrEqualTo(monitor.bottom));
     expect(tracks.width, 1440);
-    // スマホのツールバー（素材の追加・書き出し）はコマンドバーへ移した。
+    // スマホのツールバー・上部バーのボタンは上部バーへ（素材を追加・三点
+    // メニュー・書き出しはスマホと同じもの）。
     expect(find.byKey(const Key('timelineExportButton')), findsNothing);
+    expect(find.byKey(const Key('timelineAddMaterialMenu')), findsOneWidget);
+    expect(find.byKey(const ValueKey('timelineMoreMenu')), findsOneWidget);
     expect(find.byKey(const ValueKey('pcCommandExport')), findsOneWidget);
+    expect(find.byKey(const ValueKey('pcCommandBackToCanvas')), findsOneWidget);
     expect(find.byKey(const ValueKey('pcInspectorProject')), findsOneWidget);
     expect(find.byKey(const ValueKey('pcTimecode')), findsOneWidget);
+    // 借りた呼び名（プログラム・インスペクター）は使わない。
+    expect(find.text('プレビュー'), findsWidgets);
+    expect(find.text('詳細'), findsOneWidget);
+    expect(find.text('インスペクター'), findsNothing);
+    expect(find.text('プログラム'), findsNothing);
 
-    // 再生メニューの「1フレーム進む」で時刻とステータスバーが進む。
+    // プレビューの下の再生の操作の「1フレーム進む」で時刻とステータスバーが
+    // 進む。
     expect(statusFrame(tester), contains('1/8'));
-    await menu(tester, 'playback', find.text('1フレーム進む'));
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('pcProgramMonitor')),
+        matching: find.byIcon(Icons.fast_forward),
+      ),
+    );
+    await settle(tester, 2);
     expect(statusFrame(tester), contains('2/8'));
 
-    // 重なり順はインスペクターに出て、見出しの×で戻る。タイムラインは隠れない。
+    // 重なり順は右の「詳細」に出て、見出しの×で戻る。タイムラインは隠れない。
     await tester.tap(find.byKey(const ValueKey('pcCommandStackOrder')));
     await settle(tester, 3);
     expect(find.byType(TimelineStackOrderPanel), findsOneWidget);
@@ -172,17 +192,9 @@ void main() {
     expect(find.text('素材はまだありません'), findsOneWidget);
     expect(find.byKey(const ValueKey('pcMaterialBinAdd.text')), findsOneWidget);
 
-    // ウィンドウメニューで左右の区画を隠すと、モニターが広がる。
-    await menu(
-      tester,
-      'window',
-      find.byKey(const ValueKey('pcMenuWindow.bin')),
-    );
-    await menu(
-      tester,
-      'window',
-      find.byKey(const ValueKey('pcMenuWindow.inspector')),
-    );
+    // 上部バーの区画の一覧で左右の区画を隠すと、プレビューが広がる。
+    await window(tester, 'bin');
+    await window(tester, 'inspector');
     expect(find.byKey(const ValueKey('pcTimelineBin')), findsNothing);
     expect(
       tester.getRect(find.byKey(const ValueKey('pcProgramMonitor'))).width,
@@ -191,35 +203,43 @@ void main() {
     await capture(tester, '03_monitor_only');
     expect(tester.takeException(), isNull);
 
-    // メニューバーの右端の切り替えでキャンバスへ。
-    await tester.tap(find.byKey(const ValueKey('pcModeSwitch.0')));
+    // 上部バーの左端（スマホと同じ「キャンバスへ戻る」）でキャンバスへ。
+    await tester.tap(find.byKey(const ValueKey('pcCommandBackToCanvas')));
     await settle(tester, 12);
     expect(find.byType(CanvasScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the timeline menus open inside the window', (tester) async {
+  testWidgets('Ctrl + wheel zooms the timeline, the wheel alone scrolls', (
+    tester,
+  ) async {
     await openTimeline(tester, size: const Size(1280, 800));
-    for (final name in [
-      'file',
-      'edit',
-      'material',
-      'playback',
-      'view',
-      'window',
-      'help',
-    ]) {
-      await tester.tap(find.byKey(ValueKey('pcMenu.$name')));
-      await tester.pump(const Duration(milliseconds: 300));
-      await capture(tester, 'menu_$name');
-      for (final item in find.byType(MenuItemButton).evaluate()) {
-        final rect = tester.getRect(find.byWidget(item.widget));
-        expect(rect.bottom, lessThanOrEqualTo(800), reason: name);
-        expect(rect.right, lessThanOrEqualTo(1280), reason: name);
-      }
-      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-      await tester.pump(const Duration(milliseconds: 300));
+    // フレーム一覧の真ん中の赤枠（今のフレーム）はフレームと同じ幅。
+    final marker = find.byKey(const ValueKey('timelineCurrentFrameMarker'));
+    final at = tester.getCenter(marker) + const Offset(60, 0);
+    double frameWidth() => tester.getSize(marker).width;
+    final before = frameWidth();
+    Future<void> scroll(Offset delta, {LogicalKeyboardKey? holding}) async {
+      if (holding != null) await tester.sendKeyDownEvent(holding);
+      final pointer = TestPointer(1, PointerDeviceKind.mouse);
+      await tester.sendEventToBinding(pointer.hover(at));
+      await tester.sendEventToBinding(pointer.scroll(delta));
+      if (holding != null) await tester.sendKeyUpEvent(holding);
+      await settle(tester, 2);
     }
+
+    await scroll(
+      const Offset(0, -100),
+      holding: LogicalKeyboardKey.controlLeft,
+    );
+    final zoomed = frameWidth();
+    expect(zoomed, greaterThan(before));
+    await scroll(const Offset(0, 100), holding: LogicalKeyboardKey.controlLeft);
+    expect(frameWidth(), lessThan(zoomed));
+    // Ctrlを押さないホイールでは大きさは変わらない。
+    final unchanged = frameWidth();
+    await scroll(const Offset(0, 100));
+    expect(frameWidth(), unchanged);
     expect(tester.takeException(), isNull);
   });
 

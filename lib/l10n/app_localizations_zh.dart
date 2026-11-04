@@ -7885,18 +7885,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get pcMenuFile => '文件';
-
-  @override
-  String get pcMenuSelection => '选区';
-
-  @override
-  String get pcMenuView => '视图';
-
-  @override
-  String get pcMenuWindow => '窗口';
-
-  @override
   String get pcViewZoomIn => '放大';
 
   @override
@@ -7924,16 +7912,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pcViewFrameStrip => '帧列表';
 
   @override
-  String get pcPaneToolProperty => '工具属性';
+  String get pcPaneToolProperty => '工具设置';
 
   @override
   String get pcToolPropertyEmpty => '此工具没有可调整的设置';
-
-  @override
-  String get pcLayerNew => '新建图层';
-
-  @override
-  String get pcModeCanvas => '画布';
 
   @override
   String pcStatusFrame(int current, int total) {
@@ -7941,16 +7923,10 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get pcMenuPlayback => '播放';
+  String get pcPaneProgram => '预览';
 
   @override
-  String get pcPaneProgram => '节目';
-
-  @override
-  String get pcPaneInspector => '检查器';
-
-  @override
-  String get pcLoopPlayback => '循环播放';
+  String get pcPaneInspector => '详情';
 
   @override
   String get pcTimelineZoomIn => '放大时间轴';
@@ -15858,18 +15834,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get pcMenuFile => '檔案';
-
-  @override
-  String get pcMenuSelection => '選取範圍';
-
-  @override
-  String get pcMenuView => '檢視';
-
-  @override
-  String get pcMenuWindow => '視窗';
-
-  @override
   String get pcViewZoomIn => '放大';
 
   @override
@@ -15897,16 +15861,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get pcViewFrameStrip => '影格列表';
 
   @override
-  String get pcPaneToolProperty => '工具屬性';
+  String get pcPaneToolProperty => '工具設定';
 
   @override
   String get pcToolPropertyEmpty => '此工具沒有可調整的設定';
-
-  @override
-  String get pcLayerNew => '新增圖層';
-
-  @override
-  String get pcModeCanvas => '畫布';
 
   @override
   String pcStatusFrame(int current, int total) {
@@ -15914,16 +15872,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get pcMenuPlayback => '播放';
+  String get pcPaneProgram => '預覽';
 
   @override
-  String get pcPaneProgram => '節目';
-
-  @override
-  String get pcPaneInspector => '檢閱器';
-
-  @override
-  String get pcLoopPlayback => '循環播放';
+  String get pcPaneInspector => '詳情';
 
   @override
   String get pcTimelineZoomIn => '放大時間軸';

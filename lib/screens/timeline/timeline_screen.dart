@@ -1,7 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/gestures.dart' show DragStartBehavior;
+import 'package:flutter/gestures.dart'
+    show
+        DragStartBehavior,
+        GestureBinding,
+        PointerScrollEvent,
+        PointerSignalEvent;
 
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -10,6 +15,7 @@ import 'dart:ui' as ui;
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart' hide MaterialType;
+import 'package:flutter/services.dart' show HardwareKeyboard;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
@@ -77,7 +83,6 @@ import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
-import '../../widgets/app_tutorial.dart';
 import '../../widgets/pc_workspace.dart';
 import 'widgets/material_edit_panel.dart';
 import 'widgets/material_gizmo.dart';
@@ -230,9 +235,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   set _currentFrame(int value) => _currentFrameNotifier.value = value;
   String? _selectedSceneId;
   bool _isPlaying = false;
-  // プレビュー再生をループさせるかどうか。既定はON（従来どおり最終フレーム
-  // から先頭へ戻って再生し続ける）。OFFの場合は最終フレームで自動停止する。
-  bool _loopEnabled = true;
+  // プレビュー再生をループさせるかどうか（切り替えのボタンは置かない。
+  // 常に最終フレームから先頭へ戻って再生し続ける）。
+  final bool _loopEnabled = true;
   // dispose()内でcontext.read<ProjectService>()を呼ぶと、画面が他の
   // ウィジェットツリーの一括破棄に巻き込まれた際（例：GoRouterの
   // go()によるスタック置き換えで前の画面がまとめて破棄されるケース）に
@@ -249,8 +254,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   double? _previewHeightDragOverride;
 
   // ─── PC/DeXモードの作業画面 ───────────────────────────────
-  // モニターの段の高さ（つまみで変える。nullなら全体の55%）、左の
-  // シーン・素材と右のインスペクターの幅と表示。
+  // プレビューの段の高さ（つまみで変える。nullなら全体の55%）、左の
+  // シーン・素材と右の「詳細」の幅と表示。
   double? _pcUpperHeight;
   double _pcBinWidth = 260;
   double _pcInspectorWidth = 340;
@@ -1059,8 +1064,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// タイムラインの区画：ツールバー・シーンのタブ・フレーム一覧・各トラック。
   /// スマホでは画面の下半分、PC/DeXモードでは画面の下に横幅いっぱいで出す
-  /// （PCのツールバーの操作はメニューバー・コマンドバーにあるので
-  /// [toolbar]をfalseにする）。
+  /// （PCではツールバーのボタンを上部バーに並べるので[toolbar]をfalseにする）。
   List<Widget> _buildTimelineArea(
     AppLocalizations l10n, {
     bool toolbar = true,
@@ -1077,6 +1081,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       onPointerMove: _onTimelinePinchPointerMove,
       onPointerUp: _onTimelinePinchPointerUp,
       onPointerCancel: _onTimelinePinchPointerUp,
+      onPointerSignal: _onTimelinePointerSignal,
       child: _buildFrameList(),
     ),
     // 各種タイムライン行：デフォルトではプレビュー・
@@ -1097,67 +1102,85 @@ class _TimelineScreenState extends State<TimelineScreen> {
         onPointerUp: _onTimelinePinchPointerUp,
         onPointerCancel: _onTimelinePinchPointerUp,
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildCommonLayerTrack(),
-              // シーン・フレームの複数選択モード中の一括操作バー
-              // （小さいボタンではなく素材タイムラインの上に大きな
-              // 3分割ボタンで表示）
-              _buildMultiSelectActionBar(),
-              _buildClipToolbar(),
-              // 並びは既定の重なり順（テキストが手前、
-              // フレームのイラスト、画像、動画）と同じ。
-              _buildMaterialTrackGroup(
-                type: TimelineRowKind.text,
-                icon: Icons.text_fields,
-                defaultLabel: l10n.timelineMaterialText,
-                allClips: _textClips,
-                addColor: _textClipColor,
-              ),
-              _buildMaterialTrackGroup(
-                type: TimelineRowKind.image,
-                icon: Icons.image,
-                defaultLabel: l10n.projectListMaterialImage,
-                allClips: _imageClips,
-                addColor: ThemeService.activeColorScheme.secondary,
-              ),
-              _buildMaterialTrackGroup(
-                type: TimelineRowKind.video,
-                icon: Icons.videocam,
-                defaultLabel: l10n.projectListMaterialVideo,
-                allClips: _videoClips,
-                addColor: ThemeService.activeColorScheme.primary,
-              ),
-              _buildMaterialTrackGroup(
-                type: TimelineRowKind.audio,
-                icon: Icons.audiotrack,
-                defaultLabel: l10n.projectListMaterialAudio,
-                allClips: _audioClips,
-                addColor: ThemeService.activeColorScheme.tertiary,
-              ),
-              _buildCameraTrack(),
-              _buildMarkerTrack(),
-              _buildEffectFilterTrack(),
-              _buildEndCardTrack(),
-            ],
+          // Ctrl＋ホイールの拡大・縮小は、縦のスクロールより内側で受ける
+          // （ホイールはより内側で受けた方が使うので、外側で受けると
+          // 一覧が縦にスクロールしてしまう）。
+          child: Listener(
+            onPointerSignal: _onTimelinePointerSignal,
+            child: Column(
+              children: [
+                _buildCommonLayerTrack(),
+                // シーン・フレームの複数選択モード中の一括操作バー
+                // （小さいボタンではなく素材タイムラインの上に大きな
+                // 3分割ボタンで表示）
+                _buildMultiSelectActionBar(),
+                _buildClipToolbar(),
+                // 並びは既定の重なり順（テキストが手前、
+                // フレームのイラスト、画像、動画）と同じ。
+                _buildMaterialTrackGroup(
+                  type: TimelineRowKind.text,
+                  icon: Icons.text_fields,
+                  defaultLabel: l10n.timelineMaterialText,
+                  allClips: _textClips,
+                  addColor: _textClipColor,
+                ),
+                _buildMaterialTrackGroup(
+                  type: TimelineRowKind.image,
+                  icon: Icons.image,
+                  defaultLabel: l10n.projectListMaterialImage,
+                  allClips: _imageClips,
+                  addColor: ThemeService.activeColorScheme.secondary,
+                ),
+                _buildMaterialTrackGroup(
+                  type: TimelineRowKind.video,
+                  icon: Icons.videocam,
+                  defaultLabel: l10n.projectListMaterialVideo,
+                  allClips: _videoClips,
+                  addColor: ThemeService.activeColorScheme.primary,
+                ),
+                _buildMaterialTrackGroup(
+                  type: TimelineRowKind.audio,
+                  icon: Icons.audiotrack,
+                  defaultLabel: l10n.projectListMaterialAudio,
+                  allClips: _audioClips,
+                  addColor: ThemeService.activeColorScheme.tertiary,
+                ),
+                _buildCameraTrack(),
+                _buildMarkerTrack(),
+                _buildEffectFilterTrack(),
+                _buildEndCardTrack(),
+              ],
+            ),
           ),
         ),
       ),
     ),
   ];
 
+  /// Ctrl（Macの⌘）＋ホイールで、タイムラインのフレームの幅を拡大・縮小する
+  /// （そのままのホイールは上下、Shift＋ホイールは左右にスクロールする）。
+  void _onTimelinePointerSignal(PointerSignalEvent event) {
+    if (event is! PointerScrollEvent) return;
+    final keys = HardwareKeyboard.instance;
+    if (!keys.isControlPressed && !keys.isMetaPressed) return;
+    if (event.scrollDelta.dy == 0) return;
+    GestureBinding.instance.pointerSignalResolver.register(event, (resolved) {
+      final dy = (resolved as PointerScrollEvent).scrollDelta.dy;
+      _zoomTimeline(dy > 0 ? 1 / 1.1 : 1.1);
+    });
+  }
+
   // ─── PC/DeXモードの作業画面 ───────────────────────────────────────────
 
-  /// PC/DeXモード専用のタイムライン。動画編集ソフトのように、上から
-  /// メニューバー・コマンドバー・［シーンと素材｜プログラムモニター｜
-  /// インスペクター］・横幅いっぱいのタイムライン・ステータスバーを並べる。
-  /// 素材の編集パネルは右のインスペクターに出るので、編集中もタイムラインが
-  /// 隠れない（スマホでは編集パネルがタイムラインの場所に入れ替わる）。
+  /// PC/DeXモード専用のタイムライン。上から、上部バー（スマホと同じボタン）・
+  /// ［シーンと素材｜プレビュー｜詳細］・横幅いっぱいのタイムライン・
+  /// ステータスバーを並べる。素材の編集パネルは右の「詳細」に出るので、
+  /// 編集中もタイムラインが隠れない（スマホでは編集パネルがタイムラインの
+  /// 場所に入れ替わる）。
   Widget _buildPcTimelineWorkspace(AppLocalizations l10n) {
     return Column(
       children: [
-        _buildPcTimelineMenuBar(l10n),
-        _buildPcTimelineCommandBar(l10n),
+        _buildPcTimelineTopBar(l10n),
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -1169,7 +1192,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               );
               final upper = (_pcUpperHeight ?? constraints.maxHeight * 0.55)
                   .clamp(minUpper, maxUpper);
-              // モニターに360pxを残せないほど狭い窓では、左右の区画を狭める。
+              // プレビューに360pxを残せないほど狭い窓では、左右の区画を狭める。
               final sides =
                   constraints.maxWidth - 360 - PcDockSplitter.width * 2;
               final wanted =
@@ -1309,7 +1332,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return fps > 0 ? fps : 24;
   }
 
-  /// プログラムモニター：見出し（時刻）・プレビュー・シークバー・再生操作。
+  /// プレビュー：見出し（時刻）・プレビュー・シークバー・再生操作。
   Widget _buildPcProgramMonitor(AppLocalizations l10n) {
     final colors = PcWorkspaceColors.of(context);
     final ps = context.watch<ProjectService>();
@@ -1405,7 +1428,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   /// このシーンの素材（テキスト・画像・動画・音源）の一覧と追加ボタン。
-  /// 押すとインスペクターで編集する（音源は詳細のシート）。
+  /// 押すと右の「詳細」で編集する（音源は詳細のシート）。
   Widget _buildPcMaterialBin(AppLocalizations l10n) {
     final colors = PcWorkspaceColors.of(context);
     final groups = [
@@ -1484,7 +1507,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// インスペクター：素材を編集中ならその編集パネル（重なり順もここ）、
+  /// 詳細：素材を編集中ならその編集パネル（重なり順もここ）、
   /// そうでなければ作品の書き出しの設定と、長さ・大きさの変更。
   Widget _buildPcInspector(AppLocalizations l10n) {
     if (_isEditPanelOpen) return _buildEditPanel();
@@ -1578,19 +1601,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
     () => _frameWidthScale = (_frameWidthScale * factor).clamp(0.6, 2.5),
   );
 
-  String? _shortcutLabel(ShortcutCommand command) {
-    for (final b in context.read<ShortcutService>().bindings) {
-      if (b.command == command) return b.comboLabel;
-    }
-    return null;
-  }
-
-  /// メニューバー。スマホの三点メニュー・ツールバー・再生操作に分かれて
-  /// いた操作を、動画編集ソフトと同じ分類で並べる。
-  Widget _buildPcTimelineMenuBar(AppLocalizations l10n) {
+  /// PC/DeXモードの上部バー。スマホの上部バー（キャンバスへ・作品名・ホーム・
+  /// 取り消し・やり直し・三点メニュー・ヘルプ）とツールバー（素材を追加・
+  /// 演出フィルター・カメラ・タイムスタンプ・重なり順・書き出し）のボタンを、
+  /// 同じ順のまま1段に並べ、PCではタイムラインの拡大・縮小と、左右の区画の
+  /// 表示を足す。再生の操作はプレビューの下にある。
+  Widget _buildPcTimelineTopBar(AppLocalizations l10n) {
     final colors = PcWorkspaceColors.of(context);
     final undo = context.watch<UndoManager>();
     final hasScene = _selectedSceneId != null;
+    final barStyle = pcBarButtonStyle(context);
     final projectName =
         context
             .watch<ProjectService>()
@@ -1599,356 +1619,35 @@ class _TimelineScreenState extends State<TimelineScreen> {
             .firstOrNull
             ?.name ??
         l10n.timelineDefaultProjectName;
-    void push(String route) =>
-        _runAutomationBlockedAction(() => context.push(route));
-    final menus = [
-      PcMenu(
-        key: const ValueKey('pcMenu.file'),
-        label: l10n.pcMenuFile,
-        entries: [
-          PcMenuItem(
-            label: context.read<SaveTreeService>().isTreeMode
-                ? l10n.saveTreeScreenTitleTree
-                : l10n.saveTreeScreenTitleSlot,
-            icon: Icons.save_outlined,
-            onPressed: () =>
-                push('/save-tree/${widget.projectId}?entry=timeline'),
-          ),
-          PcMenuItem(
-            key: const ValueKey('pcMenuExport'),
-            label: l10n.timelineExportMenuItem,
-            icon: Icons.upload_file,
-            onPressed: () => push('/export/${widget.projectId}'),
-          ),
-          PcMenuItem(
-            label: l10n.timelineExportFrameMenuItem,
-            icon: Icons.image_outlined,
-            onPressed: _exportCurrentFrameImage,
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.timelineBackToCanvasTooltip,
-            icon: Icons.brush_outlined,
-            onPressed: _saveAndGoToCanvas,
-          ),
-          PcMenuItem(
-            label: l10n.timelineBackToProjectListTooltip,
-            icon: Icons.home_outlined,
-            onPressed: _confirmBackToProjectList,
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.customAutomationTitle,
-            icon: Icons.playlist_play,
-            onPressed: _showCustomAutomationManager,
-          ),
-          PcMenuItem(
-            label: l10n.layerPanelMenuRunAutofill,
-            icon: Icons.auto_fix_high_outlined,
-            onPressed: _showAutofillDialog,
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.settingsScreenTitle,
-            icon: Icons.settings_outlined,
-            onPressed: () => push('/settings'),
-          ),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.edit'),
-        label: l10n.commonEdit,
-        entries: [
-          PcMenuItem(
-            label: l10n.shortcutCommandUndo,
-            icon: Icons.undo,
-            shortcut: _shortcutLabel(ShortcutCommand.undo),
-            onPressed: undo.canUndo ? undo.undo : null,
-          ),
-          PcMenuItem(
-            label: l10n.shortcutCommandRedo,
-            icon: Icons.redo,
-            shortcut: _shortcutLabel(ShortcutCommand.redo),
-            onPressed: undo.canRedo ? undo.redo : null,
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.timelineDurationChangeMenuItem,
-            icon: Icons.timer_outlined,
-            onPressed: _showDurationChangeDialog,
-          ),
-          PcMenuItem(
-            label: l10n.timelineCanvasSizeChangeMenuItem,
-            icon: Icons.aspect_ratio,
-            onPressed: _showCanvasSizeChangeDialog,
-          ),
-          PcMenuItem(
-            key: const ValueKey('pcMenuStackOrder'),
-            label: l10n.timelineStackOrderTitle,
-            icon: Icons.layers_outlined,
-            onPressed: hasScene
-                ? () => setState(() {
-                    _editingMaterialId = null;
-                    _showStackOrder = true;
-                  })
-                : null,
-          ),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.material'),
-        label: l10n.storageCategoryMaterials,
-        entries: [
-          for (final (type, icon, label) in [
-            (
-              _ClipTrackType.text,
-              Icons.text_fields,
-              l10n.timelineAddTextTooltip,
-            ),
-            (_ClipTrackType.image, Icons.image, l10n.timelineAddImageTooltip),
-            (
-              _ClipTrackType.video,
-              Icons.videocam,
-              l10n.timelineAddVideoTooltip,
-            ),
-            (
-              _ClipTrackType.audio,
-              Icons.audiotrack,
-              l10n.timelineAddAudioTooltip,
-            ),
-          ])
-            PcMenuItem(
-              key: ValueKey('pcMenuAdd.${type.name}'),
-              label: label,
-              icon: icon,
-              onPressed: hasScene ? () => _addMaterialOfType(type) : null,
-            ),
-          PcMenuItem(
-            label: l10n.timelineAddWatermarkTooltip,
-            icon: Icons.branding_watermark,
-            onPressed: () {
-              if (context.read<PremiumService>().isFeatureAvailable(
-                PremiumFeature.watermark,
-              )) {
-                _showWatermarkPicker();
-              } else {
-                showPremiumBanner(context);
-              }
-            },
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            label: l10n.timelineEffectFilterLabel,
-            icon: Icons.movie_filter,
-            onPressed: _showEffectFilterDialog,
-          ),
-          PcMenuItem(
-            label: l10n.timelineAddCameraKfTooltip,
-            icon: Icons.camera,
-            onPressed: _addCameraKf,
-          ),
-          PcMenuItem(
-            label: l10n.timelineMarkerTrackLabel,
-            icon: Icons.push_pin_outlined,
-            onPressed: _showAddMarkerDialog,
-          ),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.playback'),
-        label: l10n.pcMenuPlayback,
-        entries: [
-          PcMenuItem(
-            key: const ValueKey('pcMenuPlay'),
-            label: _isPlaying ? l10n.commonPause : l10n.commonPlay,
-            icon: _isPlaying ? Icons.pause : Icons.play_arrow,
-            shortcut: _shortcutLabel(ShortcutCommand.playPause),
-            onPressed: _togglePlay,
-          ),
-          PcMenuItem(
-            label: l10n.timelineSkipToStart,
-            icon: Icons.skip_previous,
-            onPressed: () => setState(() => _currentFrame = 0),
-          ),
-          PcMenuItem(
-            label: l10n.timelineStepBack,
-            icon: Icons.fast_rewind,
-            shortcut: _shortcutLabel(ShortcutCommand.previousFrame),
-            onPressed: _stepFramePrevious,
-          ),
-          PcMenuItem(
-            label: l10n.timelineStepForward,
-            icon: Icons.fast_forward,
-            shortcut: _shortcutLabel(ShortcutCommand.nextFrame),
-            onPressed: _stepFrameNext,
-          ),
-          PcMenuItem(
-            label: l10n.timelineSkipToEnd,
-            icon: Icons.skip_next,
-            onPressed: () => setState(() => _currentFrame = _totalFrames - 1),
-          ),
-          const PcMenuDivider(),
-          PcMenuItem(
-            key: const ValueKey('pcMenuLoop'),
-            label: l10n.pcLoopPlayback,
-            checked: _loopEnabled,
-            onPressed: () => setState(() => _loopEnabled = !_loopEnabled),
-          ),
-          PcMenuItem(
-            label: l10n.timelinePreviewFullscreenTooltip,
-            icon: Icons.fullscreen,
-            onPressed: hasScene
-                ? () => setState(() => _isPreviewFullscreen = true)
-                : null,
-          ),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.view'),
-        label: l10n.pcMenuView,
-        entries: [
-          PcMenuItem(
-            key: const ValueKey('pcMenuTimelineZoomIn'),
-            label: l10n.pcTimelineZoomIn,
-            icon: Icons.zoom_in,
-            onPressed: () => _zoomTimeline(1.25),
-          ),
-          PcMenuItem(
-            label: l10n.pcTimelineZoomOut,
-            icon: Icons.zoom_out,
-            onPressed: () => _zoomTimeline(0.8),
-          ),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.window'),
-        label: l10n.pcMenuWindow,
-        entries: [
-          PcMenuItem(
-            key: const ValueKey('pcMenuWindow.bin'),
-            label: '${l10n.helpSceneTitle} / ${l10n.storageCategoryMaterials}',
-            checked: _pcShowBin,
-            onPressed: () => setState(() => _pcShowBin = !_pcShowBin),
-          ),
-          PcMenuItem(
-            key: const ValueKey('pcMenuWindow.inspector'),
-            label: l10n.pcPaneInspector,
-            checked: _pcShowInspector,
-            onPressed: () =>
-                setState(() => _pcShowInspector = !_pcShowInspector),
-          ),
-        ],
-      ),
-      PcMenu(
-        key: const ValueKey('pcMenu.help'),
-        label: l10n.homeDrawerHelp,
-        entries: [
-          PcMenuItem(
-            label: l10n.helpScreenTitle,
-            icon: Icons.help_outline,
-            onPressed: () => push('/help'),
-          ),
-          PcMenuItem(
-            label: l10n.homeDrawerTutorial,
-            icon: Icons.school_outlined,
-            onPressed: () => AppTutorial.show(context),
-          ),
-          PcMenuItem(
-            label: l10n.shortcutSettingsTitle,
-            icon: Icons.keyboard_outlined,
-            onPressed: () => push('/settings/shortcuts'),
-          ),
-        ],
-      ),
-    ];
-    return PcMenuBar(
-      menus: menus,
-      trailing: [
+    return PcCommandBar(
+      key: const ValueKey('pcTopBar'),
+      leading: [
+        PcToolButton(
+          key: const ValueKey('pcCommandBackToCanvas'),
+          icon: Icons.arrow_back,
+          trailingIcon: Icons.palette_outlined,
+          tooltip: l10n.timelineBackToCanvasTooltip,
+          onPressed: _saveAndGoToCanvas,
+        ),
         ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 260),
+          constraints: const BoxConstraints(maxWidth: 220),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
               projectName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 12,
-                color: colors.mutedOnChrome,
+              style: TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+                fontSize: 13,
+                color: colors.onChrome,
               ),
             ),
           ),
         ),
-        PcModeSwitch(
-          key: const ValueKey('pcModeSwitch'),
-          labels: [l10n.pcModeCanvas, l10n.premiumFeatureTimeline],
-          icons: const [Icons.brush_outlined, Icons.movie_filter_outlined],
-          selectedIndex: 1,
-          onSelected: (i) {
-            if (i == 0) _saveAndGoToCanvas();
-          },
-        ),
-        const SizedBox(width: 6),
-      ],
-    );
-  }
-
-  /// コマンドバー：よく使う操作（取り消し・保存・素材の追加・演出・
-  /// カメラ・タイムスタンプ・重なり順・タイムラインの拡大縮小）と書き出し。
-  Widget _buildPcTimelineCommandBar(AppLocalizations l10n) {
-    final undo = context.watch<UndoManager>();
-    final hasScene = _selectedSceneId != null;
-    return PcCommandBar(
-      leading: [
-        PcToolButton(
-          icon: Icons.home_outlined,
-          tooltip: l10n.timelineBackToProjectListTooltip,
-          onPressed: _confirmBackToProjectList,
-        ),
-        PcToolButton(
-          key: const ValueKey('pcCommandBackToCanvas'),
-          icon: Icons.brush_outlined,
-          tooltip: l10n.timelineBackToCanvasTooltip,
-          onPressed: _saveAndGoToCanvas,
-        ),
         const PcCommandDivider(),
-        PcToolButton(
-          icon: Icons.undo,
-          tooltip: l10n.shortcutCommandUndo,
-          onPressed: undo.canUndo ? undo.undo : null,
-        ),
-        PcToolButton(
-          icon: Icons.redo,
-          tooltip: l10n.shortcutCommandRedo,
-          onPressed: undo.canRedo ? undo.redo : null,
-        ),
-        PcToolButton(
-          icon: Icons.save_outlined,
-          tooltip: context.read<SaveTreeService>().isTreeMode
-              ? l10n.saveTreeScreenTitleTree
-              : l10n.saveTreeScreenTitleSlot,
-          onPressed: () => _runAutomationBlockedAction(
-            () => context.push('/save-tree/${widget.projectId}?entry=timeline'),
-          ),
-        ),
-        const PcCommandDivider(),
-        for (final (type, icon, label) in [
-          (_ClipTrackType.text, Icons.text_fields, l10n.timelineAddTextTooltip),
-          (_ClipTrackType.image, Icons.image, l10n.timelineAddImageTooltip),
-          (_ClipTrackType.video, Icons.videocam, l10n.timelineAddVideoTooltip),
-          (
-            _ClipTrackType.audio,
-            Icons.audiotrack,
-            l10n.timelineAddAudioTooltip,
-          ),
-        ])
-          PcToolButton(
-            key: ValueKey('pcCommandAdd.${type.name}'),
-            icon: icon,
-            tooltip: label,
-            onPressed: hasScene ? () => _addMaterialOfType(type) : null,
-          ),
-        const PcCommandDivider(),
+        _addMaterialMenu(l10n, style: barStyle),
         PcToolButton(
           icon: Icons.movie_filter,
           tooltip: l10n.timelineEffectFilterLabel,
@@ -1989,14 +1688,30 @@ class _TimelineScreenState extends State<TimelineScreen> {
           tooltip: l10n.pcTimelineZoomIn,
           onPressed: () => _zoomTimeline(1.25),
         ),
-        PcToolButton(
-          icon: Icons.repeat,
-          tooltip: l10n.pcLoopPlayback,
-          selected: _loopEnabled,
-          onPressed: () => setState(() => _loopEnabled = !_loopEnabled),
-        ),
       ],
       trailing: [
+        _buildPcTimelineWindowMenu(l10n),
+        PcToolButton(
+          key: const ValueKey('pcCommandHome'),
+          icon: Icons.home_outlined,
+          tooltip: l10n.timelineBackToProjectListTooltip,
+          onPressed: _confirmBackToProjectList,
+        ),
+        PcToolButton(
+          key: const ValueKey('pcCommandUndo'),
+          icon: Icons.undo,
+          tooltip: l10n.commonUndo,
+          onPressed: undo.canUndo ? undo.undo : null,
+        ),
+        PcToolButton(
+          key: const ValueKey('pcCommandRedo'),
+          icon: Icons.redo,
+          tooltip: l10n.commonRedo,
+          onPressed: undo.canRedo ? undo.redo : null,
+        ),
+        _moreMenu(l10n, style: barStyle),
+        HelpButton(topic: 'タイムライン', iconColor: colors.onChrome),
+        const SizedBox(width: 4),
         FilledButton.icon(
           key: const ValueKey('pcCommandExport'),
           onPressed: () => _runAutomationBlockedAction(
@@ -2009,6 +1724,37 @@ class _TimelineScreenState extends State<TimelineScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             visualDensity: VisualDensity.compact,
           ),
+        ),
+      ],
+    );
+  }
+
+  /// 左右の区画（シーン・素材／詳細）の表示。
+  Widget _buildPcTimelineWindowMenu(AppLocalizations l10n) {
+    final colors = PcWorkspaceColors.of(context);
+    return PopupMenuButton<String>(
+      key: const ValueKey('pcTimelineWindowMenu'),
+      tooltip: l10n.workspaceDockPanelSection,
+      icon: Icon(Icons.view_sidebar_outlined, size: 18, color: colors.onChrome),
+      style: pcBarButtonStyle(context),
+      onSelected: (value) => setState(() {
+        if (value == 'bin') _pcShowBin = !_pcShowBin;
+        if (value == 'inspector') _pcShowInspector = !_pcShowInspector;
+      }),
+      itemBuilder: (_) => [
+        CheckedPopupMenuItem(
+          key: const ValueKey('pcWindow.bin'),
+          value: 'bin',
+          checked: _pcShowBin,
+          child: Text(
+            '${l10n.helpSceneTitle} / ${l10n.storageCategoryMaterials}',
+          ),
+        ),
+        CheckedPopupMenuItem(
+          key: const ValueKey('pcWindow.inspector'),
+          value: 'inspector',
+          checked: _pcShowInspector,
+          child: Text(l10n.pcPaneInspector),
         ),
       ],
     );
@@ -2310,6 +2056,74 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  /// 三点メニュー（セーブツリー/スロット・自動操作・自動塗り・長さ・大きさ・
+  /// 書き出し）。保存ボタン・プロジェクト保存ボタンはセーブツリー（設定に
+  /// よってはセーブスロット）と役割が被っていたため置かない。
+  Widget _moreMenu(AppLocalizations l10n, {ButtonStyle? style}) {
+    return PopupMenuButton<String>(
+      key: const ValueKey('timelineMoreMenu'),
+      icon: Icon(Icons.more_vert, size: style == null ? null : 18),
+      style: style,
+      onSelected: (action) {
+        if (action == 'autofill') _showAutofillDialog();
+        if (action == 'automation') _showCustomAutomationManager();
+        if (action == 'save_tree') {
+          _runAutomationBlockedAction(
+            () => context.push('/save-tree/${widget.projectId}?entry=timeline'),
+          );
+        }
+        if (action == 'export') {
+          _runAutomationBlockedAction(
+            () => context.push('/export/${widget.projectId}'),
+          );
+        }
+        if (action == 'export_frame') _exportCurrentFrameImage();
+        if (action == 'duration') _showDurationChangeDialog();
+        if (action == 'canvas_size') _showCanvasSizeChangeDialog();
+      },
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: 'automation',
+          child: Row(
+            children: [
+              const Icon(Icons.playlist_play, size: 18),
+              const SizedBox(width: 8),
+              Text(l10n.customAutomationTitle),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'save_tree',
+          child: Text(
+            context.read<SaveTreeService>().isTreeMode
+                ? l10n.saveTreeScreenTitleTree
+                : l10n.saveTreeScreenTitleSlot,
+          ),
+        ),
+        PopupMenuItem(
+          value: 'autofill',
+          child: Text(l10n.layerPanelMenuRunAutofill),
+        ),
+        PopupMenuItem(
+          value: 'duration',
+          child: Text(l10n.timelineDurationChangeMenuItem),
+        ),
+        PopupMenuItem(
+          value: 'canvas_size',
+          child: Text(l10n.timelineCanvasSizeChangeMenuItem),
+        ),
+        PopupMenuItem(
+          value: 'export',
+          child: Text(l10n.timelineExportMenuItem),
+        ),
+        PopupMenuItem(
+          value: 'export_frame',
+          child: Text(l10n.timelineExportFrameMenuItem),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
     final projectName =
@@ -2369,72 +2183,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             tooltip: l10n.commonRedo,
             onPressed: undoManager.canRedo ? undoManager.redo : null,
           ),
-          // 三点メニュー（保存ボタン・プロジェクト保存ボタンはセーブツリー
-          // （設定によってはセーブスロット）と役割が被っていた
-          // ため削除し、セーブツリー/スロット・自動塗り実行・書き出しの
-          // 3項目のみに整理した）。
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            onSelected: (action) {
-              if (action == 'autofill') _showAutofillDialog();
-              if (action == 'automation') _showCustomAutomationManager();
-              if (action == 'save_tree') {
-                _runAutomationBlockedAction(
-                  () => context.push(
-                    '/save-tree/${widget.projectId}?entry=timeline',
-                  ),
-                );
-              }
-              if (action == 'export') {
-                _runAutomationBlockedAction(
-                  () => context.push('/export/${widget.projectId}'),
-                );
-              }
-              if (action == 'export_frame') _exportCurrentFrameImage();
-              if (action == 'duration') _showDurationChangeDialog();
-              if (action == 'canvas_size') _showCanvasSizeChangeDialog();
-            },
-            itemBuilder: (_) => [
-              PopupMenuItem(
-                value: 'automation',
-                child: Row(
-                  children: [
-                    const Icon(Icons.playlist_play, size: 18),
-                    const SizedBox(width: 8),
-                    Text(l10n.customAutomationTitle),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'save_tree',
-                child: Text(
-                  context.read<SaveTreeService>().isTreeMode
-                      ? l10n.saveTreeScreenTitleTree
-                      : l10n.saveTreeScreenTitleSlot,
-                ),
-              ),
-              PopupMenuItem(
-                value: 'autofill',
-                child: Text(l10n.layerPanelMenuRunAutofill),
-              ),
-              PopupMenuItem(
-                value: 'duration',
-                child: Text(l10n.timelineDurationChangeMenuItem),
-              ),
-              PopupMenuItem(
-                value: 'canvas_size',
-                child: Text(l10n.timelineCanvasSizeChangeMenuItem),
-              ),
-              PopupMenuItem(
-                value: 'export',
-                child: Text(l10n.timelineExportMenuItem),
-              ),
-              PopupMenuItem(
-                value: 'export_frame',
-                child: Text(l10n.timelineExportFrameMenuItem),
-              ),
-            ],
-          ),
+          _moreMenu(l10n),
           const HelpButton(topic: 'タイムライン'),
         ],
       ),
@@ -2863,93 +2612,91 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  Widget _buildToolbar() {
-    final l10n = AppLocalizations.of(context)!;
+  /// 「素材を追加」のメニュー（テキスト・画像・動画・音源・透かし）。
+  Widget _addMaterialMenu(AppLocalizations l10n, {ButtonStyle? style}) {
     final canUseWatermark = context.watch<PremiumService>().isFeatureAvailable(
       PremiumFeature.watermark,
     );
-    final controls = <Widget>[
-      PopupMenuButton<Object>(
-        key: const Key('timelineAddMaterialMenu'),
-        icon: const Icon(Icons.add_circle_outline, size: 18),
-        tooltip: l10n.timelineAddMaterialTooltip,
-        onSelected: (action) {
-          if (action is _ClipTrackType) {
-            _addMaterialOfType(action);
-          } else if (action == _TimelineToolbarAction.watermark) {
-            // Recheck at selection, including changes while the menu is open.
-            if (context.read<PremiumService>().isFeatureAvailable(
-              PremiumFeature.watermark,
-            )) {
-              _showWatermarkPicker();
-            } else {
-              showPremiumBanner(context);
-            }
+    return PopupMenuButton<Object>(
+      key: const Key('timelineAddMaterialMenu'),
+      icon: const Icon(Icons.add_circle_outline, size: 18),
+      style: style,
+      tooltip: l10n.timelineAddMaterialTooltip,
+      onSelected: (action) {
+        if (action is _ClipTrackType) {
+          _addMaterialOfType(action);
+        } else if (action == _TimelineToolbarAction.watermark) {
+          // Recheck at selection, including changes while the menu is open.
+          if (context.read<PremiumService>().isFeatureAvailable(
+            PremiumFeature.watermark,
+          )) {
+            _showWatermarkPicker();
+          } else {
+            showPremiumBanner(context);
           }
-        },
-        itemBuilder: (_) => [
-          for (final (type, icon, label) in [
-            (
-              _ClipTrackType.text,
-              Icons.text_fields,
-              l10n.timelineAddTextTooltip,
-            ),
-            (_ClipTrackType.image, Icons.image, l10n.timelineAddImageTooltip),
-            (
-              _ClipTrackType.video,
-              Icons.videocam,
-              l10n.timelineAddVideoTooltip,
-            ),
-            (
-              _ClipTrackType.audio,
-              Icons.audiotrack,
-              l10n.timelineAddAudioTooltip,
-            ),
-          ])
-            PopupMenuItem<Object>(
-              value: type,
-              child: Row(
-                children: [
-                  Icon(icon, size: 20),
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          const PopupMenuDivider(),
+        }
+      },
+      itemBuilder: (_) => [
+        for (final (type, icon, label) in [
+          (_ClipTrackType.text, Icons.text_fields, l10n.timelineAddTextTooltip),
+          (_ClipTrackType.image, Icons.image, l10n.timelineAddImageTooltip),
+          (_ClipTrackType.video, Icons.videocam, l10n.timelineAddVideoTooltip),
+          (
+            _ClipTrackType.audio,
+            Icons.audiotrack,
+            l10n.timelineAddAudioTooltip,
+          ),
+        ])
           PopupMenuItem<Object>(
-            key: const Key('timelineAddWatermarkMenuItem'),
-            value: _TimelineToolbarAction.watermark,
+            value: type,
             child: Row(
               children: [
-                const Icon(Icons.branding_watermark, size: 20),
+                Icon(icon, size: 20),
                 const SizedBox(width: 12),
                 Flexible(
                   child: Text(
-                    l10n.timelineAddWatermarkTooltip,
+                    label,
                     style: const TextStyle(
                       fontFamily: 'Kuramubon',
                       fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                 ),
-                if (!canUseWatermark) ...[
-                  const SizedBox(width: 8),
-                  const Icon(Icons.lock_outline, size: 16),
-                ],
               ],
             ),
           ),
-        ],
-      ),
+        const PopupMenuDivider(),
+        PopupMenuItem<Object>(
+          key: const Key('timelineAddWatermarkMenuItem'),
+          value: _TimelineToolbarAction.watermark,
+          child: Row(
+            children: [
+              const Icon(Icons.branding_watermark, size: 20),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  l10n.timelineAddWatermarkTooltip,
+                  style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                ),
+              ),
+              if (!canUseWatermark) ...[
+                const SizedBox(width: 8),
+                const Icon(Icons.lock_outline, size: 16),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToolbar() {
+    final l10n = AppLocalizations.of(context)!;
+    final controls = <Widget>[
+      _addMaterialMenu(l10n),
       IconButton(
         icon: const Icon(Icons.movie_filter, size: 18),
         onPressed: _showEffectFilterDialog,
@@ -4594,6 +4341,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               IgnorePointer(
                                 child: Center(
                                   child: Container(
+                                    key: const ValueKey(
+                                      'timelineCurrentFrameMarker',
+                                    ),
                                     width: _frameW,
                                     height: 40,
                                     decoration: BoxDecoration(

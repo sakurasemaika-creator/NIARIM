@@ -8003,18 +8003,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get pcMenuFile => '파일';
-
-  @override
-  String get pcMenuSelection => '선택 영역';
-
-  @override
-  String get pcMenuView => '보기';
-
-  @override
-  String get pcMenuWindow => '창';
-
-  @override
   String get pcViewZoomIn => '확대';
 
   @override
@@ -8042,16 +8030,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pcViewFrameStrip => '프레임 목록';
 
   @override
-  String get pcPaneToolProperty => '도구 속성';
+  String get pcPaneToolProperty => '도구 설정';
 
   @override
   String get pcToolPropertyEmpty => '이 도구에는 설정이 없습니다';
-
-  @override
-  String get pcLayerNew => '새 레이어';
-
-  @override
-  String get pcModeCanvas => '캔버스';
 
   @override
   String pcStatusFrame(int current, int total) {
@@ -8059,16 +8041,10 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get pcMenuPlayback => '재생';
+  String get pcPaneProgram => '미리보기';
 
   @override
-  String get pcPaneProgram => '프로그램';
-
-  @override
-  String get pcPaneInspector => '인스펙터';
-
-  @override
-  String get pcLoopPlayback => '반복 재생';
+  String get pcPaneInspector => '상세';
 
   @override
   String get pcTimelineZoomIn => '타임라인 확대';

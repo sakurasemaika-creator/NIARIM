@@ -7959,18 +7959,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get pcMenuFile => 'ファイル';
-
-  @override
-  String get pcMenuSelection => '選択範囲';
-
-  @override
-  String get pcMenuView => '表示';
-
-  @override
-  String get pcMenuWindow => 'ウィンドウ';
-
-  @override
   String get pcViewZoomIn => '拡大';
 
   @override
@@ -7998,16 +7986,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pcViewFrameStrip => 'フレーム一覧';
 
   @override
-  String get pcPaneToolProperty => 'ツールプロパティ';
+  String get pcPaneToolProperty => 'ツールの設定';
 
   @override
   String get pcToolPropertyEmpty => 'このツールには設定がありません';
-
-  @override
-  String get pcLayerNew => '新規レイヤー';
-
-  @override
-  String get pcModeCanvas => 'キャンバス';
 
   @override
   String pcStatusFrame(int current, int total) {
@@ -8015,16 +7997,10 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get pcMenuPlayback => '再生';
+  String get pcPaneProgram => 'プレビュー';
 
   @override
-  String get pcPaneProgram => 'プログラム';
-
-  @override
-  String get pcPaneInspector => 'インスペクター';
-
-  @override
-  String get pcLoopPlayback => 'ループ再生';
+  String get pcPaneInspector => '詳細';
 
   @override
   String get pcTimelineZoomIn => 'タイムラインを拡大';

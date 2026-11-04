@@ -3927,10 +3927,6 @@
       }
     }
   },
-  "pcMenuFile": "ファイル",
-  "pcMenuSelection": "選択範囲",
-  "pcMenuView": "表示",
-  "pcMenuWindow": "ウィンドウ",
   "pcViewZoomIn": "拡大",
   "pcViewZoomOut": "縮小",
   "pcViewFit": "全体を表示",
@@ -3940,10 +3936,8 @@
   "pcViewResetRotation": "回転を戻す",
   "pcViewHidePanels": "パネルを隠す",
   "pcViewFrameStrip": "フレーム一覧",
-  "pcPaneToolProperty": "ツールプロパティ",
+  "pcPaneToolProperty": "ツールの設定",
   "pcToolPropertyEmpty": "このツールには設定がありません",
-  "pcLayerNew": "新規レイヤー",
-  "pcModeCanvas": "キャンバス",
   "pcStatusFrame": "フレーム {current}/{total}",
   "@pcStatusFrame": {
     "description": "PC/DeXモードのステータスバー：今のフレームと総数",
@@ -3956,10 +3950,8 @@
       }
     }
   },
-  "pcMenuPlayback": "再生",
-  "pcPaneProgram": "プログラム",
-  "pcPaneInspector": "インスペクター",
-  "pcLoopPlayback": "ループ再生",
+  "pcPaneProgram": "プレビュー",
+  "pcPaneInspector": "詳細",
   "pcTimelineZoomIn": "タイムラインを拡大",
   "pcTimelineZoomOut": "タイムラインを縮小",
   "pcBinEmpty": "素材はまだありません",

@@ -8,10 +8,10 @@ import 'docked_panel_scope.dart';
 
 /// PC/DeXモード専用の作業画面（キャンバス・タイムライン）の部品。
 ///
-/// スマホの「キャンバスの上に浮かぶアイコン・パネル」とは別に、デスクトップの
-/// ペイントソフト・動画編集ソフトのように、メニューバー・コマンドバー・ドックの
-/// ペイン・ステータスバーで画面を区切って並べる。メニューバー・コマンドバー・
-/// ステータスバーはテーマのメニューの色、ペインはパネルの色で塗る。
+/// ボタンはスマホと同じもの（同じ機能を同じボタンで）を使い、スマホでは
+/// キャンバスの上に浮かべていたパネルを、広い画面ではドックの窓に入れて
+/// 画面を区切って並べる。上部バー・ステータスバーはテーマのメニューの色、
+/// 窓はパネルの色で塗る。
 @immutable
 class PcWorkspaceColors {
   const PcWorkspaceColors._({
@@ -54,7 +54,7 @@ class PcWorkspaceColors {
     );
   }
 
-  /// メニューバー・コマンドバー・ステータスバーの面と文字。
+  /// 上部バー・ステータスバーの面と文字。
   final Color chrome;
   final Color onChrome;
   final Color mutedOnChrome;
@@ -75,204 +75,7 @@ class PcWorkspaceColors {
       Color.alphaBlend(accentFill.withValues(alpha: 0.24), base);
 }
 
-/// メニューの項目。
-sealed class PcMenuEntry {
-  const PcMenuEntry();
-}
-
-/// 押すと[onPressed]が動く項目。[onPressed]がnullなら押せない。
-/// [checked]がnullでなければ、先頭に入切の印を出す。[shortcut]は右端に出す
-/// キーの表示だけで、キーの割り当て自体は画面のショートカットが受け持つ。
-class PcMenuItem extends PcMenuEntry {
-  const PcMenuItem({
-    required this.label,
-    required this.onPressed,
-    this.icon,
-    this.shortcut,
-    this.checked,
-    this.key,
-  });
-
-  final String label;
-  final VoidCallback? onPressed;
-  final IconData? icon;
-  final String? shortcut;
-  final bool? checked;
-  final Key? key;
-}
-
-class PcMenuDivider extends PcMenuEntry {
-  const PcMenuDivider();
-}
-
-class PcSubmenu extends PcMenuEntry {
-  const PcSubmenu({
-    required this.label,
-    required this.entries,
-    this.icon,
-    this.key,
-  });
-
-  final String label;
-  final List<PcMenuEntry> entries;
-  final IconData? icon;
-  final Key? key;
-}
-
-/// メニューバーの1つのメニュー（「ファイル」「編集」…）。
-class PcMenu {
-  const PcMenu({required this.label, required this.entries, this.key});
-
-  final String label;
-  final List<PcMenuEntry> entries;
-  final Key? key;
-}
-
-/// 画面最上段のメニューバー。[trailing]は右端に並べる（作品名・モード切替）。
-class PcMenuBar extends StatelessWidget {
-  const PcMenuBar({super.key, required this.menus, this.trailing = const []});
-
-  final List<PcMenu> menus;
-  final List<Widget> trailing;
-
-  static const double height = 30;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = PcWorkspaceColors.of(context);
-    final theme = Theme.of(context);
-    final popup = theme.popupMenuTheme;
-    final popupColor = popup.color ?? colors.pane;
-    final popupText = popup.textStyle?.color ?? colors.onPane;
-    final barLabel = theme.textTheme.bodyMedium?.copyWith(
-      fontSize: 13,
-      color: colors.onChrome,
-    );
-    final itemLabel = theme.textTheme.bodyMedium?.copyWith(
-      fontSize: 13,
-      color: popupText,
-    );
-    final menuStyle = MenuStyle(
-      backgroundColor: WidgetStatePropertyAll(popupColor),
-      surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
-      elevation: const WidgetStatePropertyAll(6),
-      padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 4)),
-      shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6),
-          side: BorderSide(color: colors.divider),
-        ),
-      ),
-    );
-    final itemStyle = MenuItemButton.styleFrom(
-      foregroundColor: popupText,
-      iconColor: popupText,
-      disabledForegroundColor: popupText.withValues(alpha: 0.38),
-      disabledIconColor: popupText.withValues(alpha: 0.38),
-      textStyle: itemLabel,
-      minimumSize: const Size(220, 32),
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      visualDensity: VisualDensity.compact,
-    );
-
-    Widget entry(PcMenuEntry e) => switch (e) {
-      PcMenuDivider() => Divider(height: 9, color: colors.divider),
-      PcSubmenu() => SubmenuButton(
-        key: e.key,
-        style: itemStyle,
-        menuStyle: menuStyle,
-        leadingIcon: _leading(e.icon, null),
-        menuChildren: [for (final c in e.entries) entry(c)],
-        child: Text(e.label),
-      ),
-      PcMenuItem() => MenuItemButton(
-        key: e.key,
-        style: itemStyle,
-        onPressed: e.onPressed,
-        leadingIcon: _leading(e.icon, e.checked),
-        trailingIcon: e.shortcut == null
-            ? null
-            : Padding(
-                padding: const EdgeInsets.only(left: 24),
-                child: Text(
-                  e.shortcut!,
-                  style: itemLabel?.copyWith(
-                    fontSize: 12,
-                    color: popupText.withValues(alpha: 0.6),
-                  ),
-                ),
-              ),
-        child: Text(e.label),
-      ),
-    };
-
-    return Material(
-      color: colors.chrome,
-      child: SizedBox(
-        height: height,
-        child: Row(
-          children: [
-            Expanded(
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: MenuBar(
-                    style: const MenuStyle(
-                      backgroundColor: WidgetStatePropertyAll(
-                        Colors.transparent,
-                      ),
-                      surfaceTintColor: WidgetStatePropertyAll(
-                        Colors.transparent,
-                      ),
-                      elevation: WidgetStatePropertyAll(0),
-                      padding: WidgetStatePropertyAll(
-                        EdgeInsets.symmetric(horizontal: 4),
-                      ),
-                      shape: WidgetStatePropertyAll(RoundedRectangleBorder()),
-                    ),
-                    children: [
-                      for (final menu in menus)
-                        SubmenuButton(
-                          key: menu.key,
-                          menuStyle: menuStyle,
-                          style: SubmenuButton.styleFrom(
-                            foregroundColor: colors.onChrome,
-                            textStyle: barLabel,
-                            minimumSize: const Size(0, height),
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                          menuChildren: [
-                            for (final e in menu.entries) entry(e),
-                          ],
-                          child: Text(menu.label),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            ...trailing,
-          ],
-        ),
-      ),
-    );
-  }
-
-  static Widget? _leading(IconData? icon, bool? checked) {
-    if (checked == null && icon == null) return null;
-    if (checked != null) {
-      return SizedBox(
-        width: 18,
-        child: checked ? const Icon(Icons.check, size: 16) : null,
-      );
-    }
-    return Icon(icon, size: 17);
-  }
-}
-
-/// メニューバーの下のコマンドバー。よく使う操作をアイコンで並べる。
+/// 画面の上の上部バー。ボタンをアイコンで並べる。
 /// 入りきらない幅では[leading]が横にスクロールし、[trailing]は右端に残る。
 class PcCommandBar extends StatelessWidget {
   const PcCommandBar({
@@ -317,7 +120,7 @@ class PcCommandBar extends StatelessWidget {
   }
 }
 
-/// コマンドバー・ペインの見出しのアイコンボタン。[selected]は入切の
+/// 上部バー・窓の見出しのアイコンボタン。[selected]は入切の
 /// 「オン」を淡い差し色の塗りで表す。
 class PcToolButton extends StatelessWidget {
   const PcToolButton({
@@ -329,9 +132,13 @@ class PcToolButton extends StatelessWidget {
     this.onPane = false,
     this.size = 30,
     this.iconSize = 18,
+    this.trailingIcon,
   });
 
   final IconData icon;
+
+  /// [icon]の右に小さく添えるアイコン（行き先の向きなど）。ボタンは横に広がる。
+  final IconData? trailingIcon;
   final String tooltip;
   final VoidCallback? onPressed;
   final bool selected;
@@ -349,7 +156,16 @@ class PcToolButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 1),
       child: IconButton(
-        icon: Icon(icon, size: iconSize),
+        icon: trailingIcon == null
+            ? Icon(icon, size: iconSize)
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: iconSize),
+                  const SizedBox(width: 2),
+                  Icon(trailingIcon, size: iconSize * 0.75),
+                ],
+              ),
         tooltip: tooltip,
         onPressed: onPressed,
         isSelected: selected,
@@ -357,8 +173,8 @@ class PcToolButton extends StatelessWidget {
           foregroundColor: fg,
           disabledForegroundColor: fg.withValues(alpha: 0.35),
           backgroundColor: selected ? colors.selectedOn(base) : null,
-          minimumSize: Size(size, size),
-          fixedSize: Size(size, size),
+          minimumSize: Size(trailingIcon == null ? size : size * 1.6, size),
+          fixedSize: Size(trailingIcon == null ? size : size * 1.6, size),
           padding: EdgeInsets.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
@@ -368,7 +184,22 @@ class PcToolButton extends StatelessWidget {
   }
 }
 
-/// コマンドバーの区切り。
+/// 上部バーに置くメニューのボタン（`PopupMenuButton.style`）を
+/// [PcToolButton]と同じ大きさ・色にする。
+ButtonStyle pcBarButtonStyle(BuildContext context) {
+  final colors = PcWorkspaceColors.of(context);
+  return IconButton.styleFrom(
+    foregroundColor: colors.onChrome,
+    disabledForegroundColor: colors.onChrome.withValues(alpha: 0.35),
+    minimumSize: const Size(30, 30),
+    fixedSize: const Size(30, 30),
+    padding: EdgeInsets.zero,
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+  );
+}
+
+/// 上部バーの区切り。
 class PcCommandDivider extends StatelessWidget {
   const PcCommandDivider({super.key});
 
@@ -751,6 +582,8 @@ class _PcDockColumnState extends State<PcDockColumn> {
             if (i > 0) {
               children.add(
                 _PcSplitter(
+                  // 上の窓の下端のつまみ。
+                  key: ValueKey('pcPaneResize.${panes[i - 1].id}'),
                   axis: Axis.vertical,
                   onDrag: (d) => _drag(panes, fills, i - 1, d),
                   onDragEnd: _dragEnd,
@@ -938,7 +771,16 @@ class _PcDockPaneView extends StatelessWidget {
     TextStyle titleStyle,
   ) {
     final colors = PcWorkspaceColors.of(context);
-    final row = Row(children: tabs);
+    // 見出しの空いた所もつかめるよう、行の外側まで当たりにする。
+    final row = ColoredBox(
+      color: Colors.transparent,
+      child: SizedBox.expand(
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: Row(mainAxisSize: MainAxisSize.min, children: tabs),
+        ),
+      ),
+    );
     return MouseRegion(
       cursor: SystemMouseCursors.grab,
       child: Draggable<_PcPaneDrag>(
@@ -1034,7 +876,12 @@ class _PcTabLabel extends StatelessWidget {
 /// ペインの境目・ドックの境目のつまみ。[axis]がverticalなら上下に、
 /// horizontalなら左右に動かす。
 class _PcSplitter extends StatelessWidget {
-  const _PcSplitter({required this.axis, required this.onDrag, this.onDragEnd});
+  const _PcSplitter({
+    super.key,
+    required this.axis,
+    required this.onDrag,
+    this.onDragEnd,
+  });
 
   final Axis axis;
   final ValueChanged<double> onDrag;
@@ -1107,76 +954,4 @@ class PcPaletteScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(PcPaletteScope oldWidget) => false;
-}
-
-/// メニューバーの右端の作業モードの切り替え（キャンバス／タイムライン）。
-class PcModeSwitch extends StatelessWidget {
-  const PcModeSwitch({
-    super.key,
-    required this.labels,
-    required this.icons,
-    required this.selectedIndex,
-    required this.onSelected,
-  });
-
-  final List<String> labels;
-  final List<IconData> icons;
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = PcWorkspaceColors.of(context);
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      height: 24,
-      decoration: BoxDecoration(
-        border: Border.all(color: colors.divider),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (var i = 0; i < labels.length; i++)
-            Semantics(
-              selected: i == selectedIndex,
-              button: true,
-              child: InkWell(
-                key: ValueKey('pcModeSwitch.$i'),
-                onTap: i == selectedIndex ? null : () => onSelected(i),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  color: i == selectedIndex ? colors.accentFill : null,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        icons[i],
-                        size: 14,
-                        color: i == selectedIndex
-                            ? scheme.onPrimary
-                            : colors.onChrome,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        labels[i],
-                        style: TextStyle(
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                          fontSize: 12,
-                          color: i == selectedIndex
-                              ? scheme.onPrimary
-                              : colors.onChrome,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 }

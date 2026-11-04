@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart' show HardwareKeyboard;
 import 'package:provider/provider.dart';
 
 import '../../../engine/autofill_engine.dart'
@@ -1423,10 +1424,27 @@ class _CanvasAreaState extends State<CanvasArea> {
     return constrainCanvasViewTransform(size, drawingRect, candidate);
   }
 
-  /// マウスホイールでのズーム（Galaxy DeXモード・マウス入力）。
-  /// カーソル位置を中心に拡大縮小する。
+  /// マウスのホイール（Galaxy DeX・PC）：そのままなら上下、Shiftを押しながらなら左右に動かし、
+  /// Ctrl（Macの⌘）を押しながらならカーソルの位置を中心に拡大・縮小する。
+  /// タッチパッドの横方向の移動（scrollDeltaのdx）はそのまま左右に動かす。
   void _handlePointerSignal(PointerSignalEvent event) {
     if (event is! PointerScrollEvent) return;
+    final keys = HardwareKeyboard.instance;
+    if (!keys.isControlPressed && !keys.isMetaPressed) {
+      var dx = event.scrollDelta.dx;
+      var dy = event.scrollDelta.dy;
+      // 端末がShift＋ホイールを横の移動へ変えていなければ、ここで変える。
+      if (keys.isShiftPressed && dx == 0) {
+        dx = dy;
+        dy = 0;
+      }
+      if (dx == 0 && dy == 0) return;
+      _transformController.value = _constrainViewMatrix(
+        Matrix4.translationValues(-dx, -dy, 0) * _transformController.value,
+      );
+      return;
+    }
+    if (event.scrollDelta.dy == 0) return;
     final requestedFactor = event.scrollDelta.dy > 0 ? 0.9 : 1.1;
     final currentScale = canvasViewScaleOf(_transformController.value);
     final scaleFactor = boundedCanvasScaleFactor(currentScale, requestedFactor);

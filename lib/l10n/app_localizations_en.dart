@@ -8256,18 +8256,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pcMenuFile => 'File';
-
-  @override
-  String get pcMenuSelection => 'Selection';
-
-  @override
-  String get pcMenuView => 'View';
-
-  @override
-  String get pcMenuWindow => 'Window';
-
-  @override
   String get pcViewZoomIn => 'Zoom In';
 
   @override
@@ -8295,16 +8283,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pcViewFrameStrip => 'Frame List';
 
   @override
-  String get pcPaneToolProperty => 'Tool Property';
+  String get pcPaneToolProperty => 'Tool Settings';
 
   @override
   String get pcToolPropertyEmpty => 'This tool has no settings';
-
-  @override
-  String get pcLayerNew => 'New Layer';
-
-  @override
-  String get pcModeCanvas => 'Canvas';
 
   @override
   String pcStatusFrame(int current, int total) {
@@ -8312,16 +8294,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pcMenuPlayback => 'Playback';
+  String get pcPaneProgram => 'Preview';
 
   @override
-  String get pcPaneProgram => 'Program';
-
-  @override
-  String get pcPaneInspector => 'Inspector';
-
-  @override
-  String get pcLoopPlayback => 'Loop Playback';
+  String get pcPaneInspector => 'Details';
 
   @override
   String get pcTimelineZoomIn => 'Zoom In Timeline';

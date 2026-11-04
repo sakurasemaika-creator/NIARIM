@@ -226,15 +226,19 @@ void main() {
             );
             final cardRect = tester.getRect(_card(name));
             final starRect = tester.getRect(star);
-            // お気に入りの星は絵の左下（右上のメニューと離す）。
+            // お気に入りの星は絵の左下（右上のメニューと離し、名前の帯には
+            // 重ねない）。
             expect(
               starRect.left - cardRect.left,
               lessThan(16),
               reason: '$name at $size / $scale',
             );
+            final caption = tester.getRect(
+              find.descendant(of: _card(name), matching: find.text(name)),
+            );
             expect(
-              starRect.center.dy,
-              greaterThan(cardRect.center.dy),
+              starRect.bottom,
+              lessThanOrEqualTo(caption.top),
               reason: '$name at $size / $scale',
             );
             expect(

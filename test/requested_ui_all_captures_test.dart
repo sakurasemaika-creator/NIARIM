@@ -178,32 +178,32 @@ void main() {
     });
     await navigate('/home');
     await navigate('/canvas/${colored.id}');
-    expect(find.byType(MenuBar), findsOneWidget,
-      reason: 'The desktop canvas must show File/Layer/View/Settings menus.');
+    // The PC workspace keeps NIARIM's own buttons (the phone's top bar,
+    // toolbar and settings/edit menu) instead of an application menu bar
+    // split into File/Layer/View/Settings (user request, 2026-11-04).
+    expect(find.byType(MenuBar), findsNothing,
+      reason: 'The desktop canvas must not copy a File/Layer/View menu bar.');
     expect(find.byKey(const Key('canvasTimelineModeButton')), findsOneWidget);
     // The panel body previously cast an 8dp solid-looking black shadow
-    // inside each PC dock window. Both modes reuse the same panel widgets.
-    // A zero elevation Card leaves no black halo over the theme background.
-    final brushCards = find.descendant(
-      of: find.byType(BrushPanel),
-      matching: find.byType(Card),
-    );
-    final colorPickerCards = find.descendant(
-      of: find.byType(ColorPickerPanel),
-      matching: find.byType(Card),
-    );
-    expect(brushCards, findsOneWidget);
-    expect(colorPickerCards, findsOneWidget);
-    expect(tester.widget<Card>(brushCards).elevation, 0);
-    expect(tester.widget<Card>(colorPickerCards).elevation, 0);
+    // inside each PC dock window. Docked panels fill their window without a
+    // card; any card left inside must stay flat.
+    expect(find.byType(BrushPanel), findsOneWidget);
+    expect(find.byType(ColorPickerPanel), findsOneWidget);
+    for (final panel in [BrushPanel, ColorPickerPanel]) {
+      for (final card in find
+          .descendant(of: find.byType(panel), matching: find.byType(Card))
+          .evaluate()) {
+        expect((card.widget as Card).elevation ?? 0, 0);
+      }
+    }
     await shot('10a_desktop_docks_without_black_outlines');
     await shot('10_desktop_multiple_dock_windows');
-    final resize = find.byKey(const ValueKey('dockResize-canvasPreview'));
+    final resize = find.byKey(const ValueKey('pcPaneResize.canvasPreview'));
     if (resize.evaluate().isNotEmpty) {
       await tester.drag(resize.first, const Offset(0, 80));
       await settle();
       await shot('11_desktop_window_resized');
-      final widthHandle = find.byKey(const ValueKey('dockWidthResize-canvasPreview'));
+      final widthHandle = find.byKey(const ValueKey('pcRightDockSplitter'));
       expect(widthHandle, findsOneWidget);
       await tester.drag(widthHandle.first, const Offset(-35, 0));
       await settle();
@@ -214,15 +214,21 @@ void main() {
     final menu = find.byKey(const Key('desktopWindowVisibilityMenu'));
     if (menu.evaluate().isNotEmpty) {
       await tester.tap(menu.first);
-      await shot('12_desktop_window_visibility_menu');
-      // Reposition a real open navigator window and capture the new dock.
-      await tester.tapAt(const Offset(760, 550));
+      await tester.pump();
       await settle();
+      await shot('12_desktop_window_visibility_menu');
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await settle();
+      // Reposition a real open navigator window and capture the new dock.
       await settings.moveDesktopDockPanel(
         CanvasDockPanel.canvasPreview, toRight: false);
       await settle();
-      final moved = find.byKey(const ValueKey('dockDrag-canvasPreview'));
+      final moved = find.byKey(const ValueKey('pcPaneDrag.canvasPreview'));
       expect(moved, findsOneWidget);
+      expect(
+        tester.getCenter(moved).dx,
+        lessThan(tester.getCenter(find.byType(ColorPickerPanel)).dx),
+      );
       await shot('12b_desktop_navigator_moved_to_left_dock');
     } else {
       errors.add('12_desktop_window_visibility_menu: menu not found');

@@ -14531,30 +14531,6 @@ abstract class AppLocalizations {
   /// **'{min}〜{max}の数字を入力してください'**
   String newProjectNumberRangeError(int min, int max);
 
-  /// No description provided for @pcMenuFile.
-  ///
-  /// In ja, this message translates to:
-  /// **'ファイル'**
-  String get pcMenuFile;
-
-  /// No description provided for @pcMenuSelection.
-  ///
-  /// In ja, this message translates to:
-  /// **'選択範囲'**
-  String get pcMenuSelection;
-
-  /// No description provided for @pcMenuView.
-  ///
-  /// In ja, this message translates to:
-  /// **'表示'**
-  String get pcMenuView;
-
-  /// No description provided for @pcMenuWindow.
-  ///
-  /// In ja, this message translates to:
-  /// **'ウィンドウ'**
-  String get pcMenuWindow;
-
   /// No description provided for @pcViewZoomIn.
   ///
   /// In ja, this message translates to:
@@ -14612,7 +14588,7 @@ abstract class AppLocalizations {
   /// No description provided for @pcPaneToolProperty.
   ///
   /// In ja, this message translates to:
-  /// **'ツールプロパティ'**
+  /// **'ツールの設定'**
   String get pcPaneToolProperty;
 
   /// No description provided for @pcToolPropertyEmpty.
@@ -14621,47 +14597,23 @@ abstract class AppLocalizations {
   /// **'このツールには設定がありません'**
   String get pcToolPropertyEmpty;
 
-  /// No description provided for @pcLayerNew.
-  ///
-  /// In ja, this message translates to:
-  /// **'新規レイヤー'**
-  String get pcLayerNew;
-
-  /// No description provided for @pcModeCanvas.
-  ///
-  /// In ja, this message translates to:
-  /// **'キャンバス'**
-  String get pcModeCanvas;
-
   /// PC/DeXモードのステータスバー：今のフレームと総数
   ///
   /// In ja, this message translates to:
   /// **'フレーム {current}/{total}'**
   String pcStatusFrame(int current, int total);
 
-  /// No description provided for @pcMenuPlayback.
-  ///
-  /// In ja, this message translates to:
-  /// **'再生'**
-  String get pcMenuPlayback;
-
   /// No description provided for @pcPaneProgram.
   ///
   /// In ja, this message translates to:
-  /// **'プログラム'**
+  /// **'プレビュー'**
   String get pcPaneProgram;
 
   /// No description provided for @pcPaneInspector.
   ///
   /// In ja, this message translates to:
-  /// **'インスペクター'**
+  /// **'詳細'**
   String get pcPaneInspector;
-
-  /// No description provided for @pcLoopPlayback.
-  ///
-  /// In ja, this message translates to:
-  /// **'ループ再生'**
-  String get pcLoopPlayback;
 
   /// No description provided for @pcTimelineZoomIn.
   ///

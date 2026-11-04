@@ -1085,6 +1085,34 @@ class ProjectListWidget extends StatelessWidget {
                         fit: StackFit.expand,
                         children: [
                           art,
+                          // お気に入りの星は絵の左下（右上のメニューと離し、
+                          // 名前の帯には重ねない）。
+                          if (entry.isFavorite)
+                            Positioned(
+                              key: const Key('projectGridFavoriteBottomLeft'),
+                              left: 4,
+                              bottom: 4,
+                              child: Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  color:
+                                      Theme.of(context).cardTheme.color ??
+                                      scheme.surface,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Builder(
+                                  // SliverGrid delegates may reuse cached
+                                  // children when the outer itemBuilder is
+                                  // unchanged. Let the badge itself depend on
+                                  // the live inherited Theme.
+                                  builder: (themeContext) => Icon(
+                                    Icons.star,
+                                    color: AccentTextTheme.of(themeContext),
+                                    size: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
                           if (isSelectionMode)
                             Positioned(
                               top: 4,
@@ -1118,14 +1146,7 @@ class ProjectListWidget extends StatelessWidget {
                     MediaQuery.withClampedTextScaling(
                       maxScaleFactor: _captionMaxTextScale,
                       child: Padding(
-                        // 小さなカードではお気に入りの星が名前の帯まで届くので、
-                        // そのぶん空ける。
-                        padding: EdgeInsets.fromLTRB(
-                          6,
-                          4,
-                          entry.isFavorite ? 40 : 6,
-                          6,
-                        ),
+                        padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -1159,13 +1180,11 @@ class ProjectListWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                // メニュー（選択中・選ぶ画面では出さない）と、その下にお気に入り。
                 _gridCardActions(
                   context,
                   menu: entry.isFolder
                       ? _folderMenu(context, entry.folder!)
                       : _projectMenu(context, entry.project!),
-                  isFavorite: entry.isFavorite,
                 ),
               ],
             ),
@@ -1184,15 +1203,10 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  Widget _gridCardActions(
-    BuildContext context, {
-    required Widget menu,
-    required bool isFavorite,
-  }) {
+  /// カードの右上のメニュー（選択中・選ぶ画面では出さない）。
+  Widget _gridCardActions(BuildContext context, {required Widget menu}) {
     final scheme = Theme.of(context).colorScheme;
     final showMenu = !isSelectionMode && onPickProject == null;
-    // Menu remains top-right. Favorite is independently anchored to the
-    // thumbnail bottom-left, including transparent checkerboard thumbnails.
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -1205,26 +1219,6 @@ class ProjectListWidget extends StatelessWidget {
               shape: const CircleBorder(),
               clipBehavior: Clip.antiAlias,
               child: SizedBox.square(dimension: 48, child: menu),
-            ),
-          ),
-        if (isFavorite)
-          Positioned(
-            key: const Key('projectGridFavoriteBottomLeft'),
-            left: 4,
-            bottom: 4,
-            child: Container(
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardTheme.color ?? scheme.surface,
-                shape: BoxShape.circle,
-              ),
-              child: Builder(
-                builder: (themeContext) => Icon(
-                  Icons.star,
-                  color: AccentTextTheme.of(themeContext),
-                  size: 14,
-                ),
-              ),
             ),
           ),
       ],

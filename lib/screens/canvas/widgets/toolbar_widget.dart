@@ -34,10 +34,6 @@ class ToolbarWidget extends StatelessWidget {
   final bool isStampSelected;
   final bool vertical;
 
-  /// PC/DeXモードのツールパレット。描くツールと色だけを並べる（パネルの
-  /// 開閉・保存・ヘルプはメニューバー・コマンドバー・ドックが受け持つ）。
-  final bool pcPalette;
-
   const ToolbarWidget({
     super.key,
     required this.currentTool,
@@ -57,7 +53,6 @@ class ToolbarWidget extends StatelessWidget {
     required this.onRulerTap,
     this.isStampSelected = false,
     this.vertical = false,
-    this.pcPalette = false,
   });
 
   Widget _buildToolItem(
@@ -232,20 +227,18 @@ class ToolbarWidget extends StatelessWidget {
           ],
         ),
       ),
-      if (!pcPalette) ...[
-        _borderedIconButton(
-          context,
-          Icons.tune,
-          onPressed: onBrushTap,
-          tooltip: l10n.toolbarBrushSettingsTooltip,
-        ),
-        _borderedIconButton(
-          context,
-          Icons.layers,
-          onPressed: onLayerTap,
-          tooltip: l10n.toolbarLayerTooltip,
-        ),
-      ],
+      _borderedIconButton(
+        context,
+        Icons.tune,
+        onPressed: onBrushTap,
+        tooltip: l10n.toolbarBrushSettingsTooltip,
+      ),
+      _borderedIconButton(
+        context,
+        Icons.layers,
+        onPressed: onLayerTap,
+        tooltip: l10n.toolbarLayerTooltip,
+      ),
       FirstUseTooltip(
         tooltipKey: 'quick_tool',
         message: l10n.toolbarQuickToolFirstUseTip,
@@ -265,13 +258,12 @@ class ToolbarWidget extends StatelessWidget {
           ),
         ),
       ),
-      if (!pcPalette)
-        _borderedIconButton(
-          context,
-          Icons.save_outlined,
-          onPressed: onSaveTap,
-          tooltip: l10n.toolbarSaveTooltip,
-        ),
+      _borderedIconButton(
+        context,
+        Icons.save_outlined,
+        onPressed: onSaveTap,
+        tooltip: l10n.toolbarSaveTooltip,
+      ),
       FirstUseTooltip(
         tooltipKey: 'ruler_tool',
         message: l10n.canvasRulerFirstUseTip,
@@ -283,14 +275,13 @@ class ToolbarWidget extends StatelessWidget {
           selected: currentTool == DrawingTool.ruler,
         ),
       ),
-      if (!pcPalette)
-        HelpButton(
-          iconColor: colorScheme.onSurface,
-          iconShadows: CanvasIconButton.foregroundShadows(
-            colorScheme.onSurface,
-            colorScheme,
-          ),
+      HelpButton(
+        iconColor: colorScheme.onSurface,
+        iconShadows: CanvasIconButton.foregroundShadows(
+          colorScheme.onSurface,
+          colorScheme,
         ),
+      ),
     ];
 
     final scaledItems = [

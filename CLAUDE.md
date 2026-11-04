@@ -490,8 +490,8 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   揃えてあるので、バー側は透明のままにすること（過去に2度、バー側へ色を
   塗る／塗り直しが剥がれる形で再発している）。
   `test/canvas_bar_transparency_test.dart`が両側を見張っている。
-  （スマホの画面の話。PC/DeXモードの作業画面のメニューバー・コマンドバー・
-  ドック・ステータスバーは、デスクトップのソフトと同じく面を持つ別の作り。）
+  （スマホの画面の話。PC/DeXモードの作業画面の上部バー・ドック・
+  ステータスバーは、面を持つ別の作り。）
 - **`shouldRepaint`を1行で無効化しないこと**：`_CanvasPainter.shouldRepaint`は
   30項目を比較しているが、`build()`側で`Map.unmodifiable(...)`のように
   **毎回新しいオブジェクト**を作って渡すと、その1項目が常に不一致になり
@@ -784,22 +784,41 @@ onTap: ...)`だったために
   スマホ表示へ移るときはドックのパネルを閉じ、戻ったら開き直す
   （`_panelsBeforePhoneLayout`）。`test/canvas_dock_fit_test.dart`が見張る。
 - **PC/DeXモードのキャンバス・タイムラインはPC専用の作業画面（ユーザー指定、
-  2026-10-30）**：スマホの浮かぶパネルを横へ並べ直すのではなく、
-  `lib/widgets/pc_workspace.dart`の部品（`PcMenuBar`・`PcCommandBar`・
-  `PcDockColumn`のペインとタブ・`PcStatusBar`・`PcModeSwitch`・つまみ）で
-  画面を区切る。キャンバスは`_buildPcWorkspace`（メニュー・コマンドバー・
-  ツールパレット・ツールのドック〔ツールプロパティ／サブツール／調整〕・
-  キャンバス・色とレイヤーのドック・フレーム一覧・ステータスバー）、
-  タイムラインは`_buildPcTimelineWorkspace`（シーン・素材｜プログラム
-  モニター｜インスペクター、全幅のタイムライン）。スマホの画面は別の枝で
-  変えていない。守ること：
+  2026-10-30）。ただしボタンはNIARIMのスマホ版と同じ（ユーザー指定、
+  2026-11-04「スマホ版UIでボタンごとに機能を分けているのにファイル・編集・
+  選択範囲…に分ける必要はありますか？完全にパクリはやめてくださいね」
+  「あくまでもNIARIMのPC版UIであることを念頭に」）**：他のソフトのメニュー
+  バー（ファイル・編集・選択範囲・レイヤー・表示・ウィンドウ…）や呼び名
+  （ツールプロパティ・プログラムモニター・インスペクター等）を持ち込まない。
+  スマホの浮かぶパネルの代わりに、`lib/widgets/pc_workspace.dart`の部品
+  （`PcCommandBar`＝上部バー・`PcDockColumn`の窓・`PcStatusBar`・つまみ）で
+  画面を区切る。キャンバスは`_buildPcWorkspace`：上部バー（スマホの上部
+  バーと同じ取り消し・やり直し・設定/編集メニュー・ホーム・タイムラインへ
+  に、指の操作の代わりの拡大・縮小・全体表示・回転と、窓の一覧
+  `desktopWindowVisibilityMenu`を足したもの）・ツールバー（スマホの
+  ツールバーと同じボタンを縦に。パネルのボタンはドックの窓を開閉）・
+  ツールの列（先頭に「ツールの設定」）・キャンバス・反対側の列・フレーム
+  一覧・ステータスバー。タイムラインは`_buildPcTimelineWorkspace`：上部バー
+  （スマホの上部バーとツールバーのボタン〔キャンバスへ・作品名・素材を追加・
+  演出フィルター・カメラ・タイムスタンプ・重なり順・ホーム・取り消し・
+  やり直し・三点メニュー・ヘルプ・書き出し〕を1段に、拡大・縮小と区画の
+  表示を足す）・［シーン・素材｜プレビュー｜詳細］・全幅のタイムライン。
+  スマホの画面は別の枝で変えていない。守ること：
+  - ドックの窓はdev_branchのPCレイアウト設定と同じ設定で並べる（左右どちらの
+    列か＝`toolOptionDockOrder`/`rightDockOrder`、開く窓＝
+    `defaultDockedPanels`、高さ＝`desktopDockHeight`、幅＝列で一番広い
+    `desktopDockWidth`）。窓ごとに1つのペインで、見出しをつかんで別の窓の
+    上へ落とすと並べ替え・反対側の列へ移る（`moveDesktopDockPanel`）。
+    開閉は`_setDesktopPanelVisible`で保存する（ツールバー・設定/編集メニュー
+    から開いても同じ）。一番下の窓は列の残りの高さを使う。
   - パネルをドックへ入れるときは`DockedPanelScope`（`lib/widgets/
     docked_panel_scope.dart`）の中で描く。パネルの下地は`PanelSurface`
-    （スマホでは浮かぶカード、ドックではペインいっぱい）、閉じるボタンは
-    `PanelCenterCloseBar`（ドックでは出さない。ペインの見出しの×で閉じる）。
-    新しいパネルを足すときもこの2つを使うこと。
-  - ペインの見出しにダブルクリック（`GestureDetector(onDoubleTap)`）を付けない。
-    タブのクリックがダブルクリックの判定時間（300ms）だけ遅れた。
+    （スマホでは浮かぶカード〔影は付けない〕、ドックではペインいっぱい）、
+    閉じるボタンは`PanelCenterCloseBar`（ドックでは出さない。窓の見出しの×で
+    閉じる）。新しいパネルを足すときもこの2つを使うこと。
+  - 窓の見出しにダブルクリック（`GestureDetector(onDoubleTap)`）を付けない。
+    クリックがダブルクリックの判定時間（300ms）だけ遅れた。見出しは空いた所
+    までつかめるようにしてある（文字の所だけだと、つかみ損ねた）。
   - ペインの中身は`PcPane.minLayoutHeight`（既定240）より低いと、その高さで
     並べてペインの中でスクロールする（パネルの見出し・ボタンの段がはみ出さ
     ないように）。自分で大きさを合わせる・スクロールする中身は0にする。
@@ -809,15 +828,19 @@ onTap: ...)`だったために
     （serialが変わったら次のフレームで行う。ビルド中に変換を変えると、変換を
     描くAnimatedBuilderとステータスバーの作り直しがビルド中に起きる）、
     倍率・回転は`CanvasViewInfo`（ValueNotifier）で受ける。
-  - メニューの`MenuItemButton`に`shortcut:`を渡さない（画面の
-    `TypingAwareShortcuts`と別にキーを登録してしまう）。キーの表示は
-    `PcMenuItem.shortcut`の文字だけで、割り当ては設定のショートカットから
-    `comboLabel`で引く。
-  - タイムラインの素材の編集パネル・重なり順は、PCではインスペクターに出す
+  - マウスのホイール（ユーザー指定）：キャンバスはホイールで上下、Shift＋
+    ホイールで左右に動かし、Ctrl（⌘）＋ホイールでカーソルの位置を中心に
+    拡大・縮小する（`CanvasArea._handlePointerSignal`）。タイムラインは
+    ホイール・Shift＋ホイールがそのままスクロール（FlutterのScrollable）、
+    Ctrl＋ホイールでフレームの幅を拡大・縮小する
+    （`_onTimelinePointerSignal`）。Ctrl＋ホイールは縦のスクロールより内側の
+    `Listener`で`pointerSignalResolver`に登録すること（ホイールは内側で
+    受けた方が使うので、外側で受けると一覧が縦にスクロールする）。
+  - タイムラインの素材の編集パネル・重なり順は、PCでは右の「詳細」に出す
     （スマホのようにタイムラインの場所と入れ替えない）。
   `test/canvas_pc_workspace_test.dart`・`test/timeline_pc_workspace_test.dart`が
-  配置・メニュー・タブ・各窓の大きさ・仏語・左利きを見張り、
-  `build/canvas-pc-workspace/`・`build/timeline-pc-workspace/`へ撮る。
+  配置・スマホと同じボタン・窓の移動・ホイール・各窓の大きさ・仏語・左利きを
+  見張り、`build/canvas-pc-workspace/`・`build/timeline-pc-workspace/`へ撮る。
 - **見つからない作品の画面は`ProjectNotFoundView`**
   （`lib/widgets/project_not_found_view.dart`）：古いリンク・ゴミ箱へ移した後に
   プロジェクト詳細・キャンバスを開くと、空の画面を出さずに一覧へ戻す道を出す。
