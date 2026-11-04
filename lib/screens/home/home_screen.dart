@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 
@@ -17,7 +18,6 @@ import '../../models/project.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../services/font_service.dart';
-import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/share_intent_service.dart';
@@ -42,6 +42,7 @@ import '../community/community_edit_feedback.dart';
 import '../community/community_error_text.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/color_contrast.dart';
+import '../../utils/responsive_tile_defaults.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -58,7 +59,42 @@ class _HomeScreenState extends State<HomeScreen>
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _projectScrollController = ScrollController();
   late TabController _tabController;
-  ProjectViewMode _viewMode = ProjectViewMode.medium;
+  static const _projectViewModeKey = 'home.projectViewMode.v1';
+  ProjectViewMode? _userViewMode;
+
+  ProjectViewMode _effectiveViewMode(BuildContext context) =>
+      _userViewMode ??
+      switch (tileScreenClassForWidth(MediaQuery.sizeOf(context).width)) {
+        TileScreenClass.phone => ProjectViewMode.small,
+        TileScreenClass.tablet => ProjectViewMode.medium,
+        TileScreenClass.desktop => ProjectViewMode.large,
+      };
+
+  Future<void> _loadProjectViewMode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_projectViewModeKey);
+      if (!mounted || saved == null) return;
+      for (final mode in ProjectViewMode.values) {
+        if (mode.name == saved) {
+          setState(() => _userViewMode = mode);
+          return;
+        }
+      }
+    } catch (error) {
+      debugPrint('Project tile preference could not be restored: $error');
+    }
+  }
+
+  Future<void> _selectProjectViewMode(ProjectViewMode mode) async {
+    setState(() => _userViewMode = mode);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_projectViewModeKey, mode.name);
+    } catch (error) {
+      debugPrint('Project tile preference could not be saved: $error');
+    }
+  }
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
@@ -110,11 +146,7 @@ class _HomeScreenState extends State<HomeScreen>
         }
       }
     });
-    // 低スペック端末では小表示を自動推奨する。ユーザーが表示切替
-    // メニューからいつでも変更できる初期値としてのみ適用する。
-    if (context.read<PerformanceService>().qualityLevel == QualityLevel.low) {
-      _viewMode = ProjectViewMode.small;
-    }
+    _loadProjectViewMode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkFirstLaunch();
       _initShareIntentHandling();
@@ -358,7 +390,7 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   PopupMenuButton<ProjectViewMode>(
                     icon: const Icon(Icons.view_module),
-                    onSelected: (mode) => setState(() => _viewMode = mode),
+                    onSelected: _selectProjectViewMode,
                     itemBuilder: (_) => [
                       PopupMenuItem(
                         value: ProjectViewMode.large,
@@ -583,7 +615,7 @@ class _HomeScreenState extends State<HomeScreen>
                       // Keep bounded browsing scopes rather than every typed query.
                       key: PageStorageKey((
                         'home-projects',
-                        _viewMode,
+                        _effectiveViewMode(context),
                         _currentFolderId,
                         _showFavoritesOnly,
                         _isSearching,
@@ -596,7 +628,7 @@ class _HomeScreenState extends State<HomeScreen>
                           .projects
                           .where((p) => !p.isSharedImport)
                           .toList(),
-                      viewMode: _viewMode,
+                      viewMode: _effectiveViewMode(context),
                       sortMode: _sortMode,
                       isSelectionMode: _isSelectionMode,
                       selectedIds: _selectedIds,

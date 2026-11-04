@@ -26,6 +26,7 @@ import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/color_contrast.dart';
+import '../../utils/responsive_tile_defaults.dart';
 
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
@@ -88,7 +89,11 @@ class _CommunityScreenState extends State<CommunityScreen>
   _PostDateFilter _postDateFilter = _PostDateFilter.all;
   DateTimeRange? _customPostDateRange;
   bool _tagExactMatch = false;
-  double _minimumTileWidth = 160;
+  double? _userTileWidth;
+
+  double _effectiveTileWidth(BuildContext context) =>
+      _userTileWidth ??
+      defaultCommunityTileWidthForWidth(MediaQuery.sizeOf(context).width);
   CommunityRankingLayout _rankingLayout = CommunityRankingLayout.horizontal;
   _DurationFilterMode _durationMode = _DurationFilterMode.all;
   double _upToMinutes = 5;
@@ -288,7 +293,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       final saved = prefs.readDouble(_tileWidthKey);
       if (saved != null && mounted) {
         setState(
-          () => _minimumTileWidth = saved.clamp(120.0, 240.0).toDouble(),
+          () => _userTileWidth = saved.clamp(120.0, 360.0).toDouble(),
         );
       }
     } catch (error) {
@@ -862,7 +867,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         initialMaximumMinutes: _maximumMinutes,
         initialMinimumViews: _minimumViews,
         initialMinimumBookmarks: _minimumBookmarks,
-        initialTileWidth: _minimumTileWidth,
+        initialTileWidth: _effectiveTileWidth(context),
       ),
     );
     if (result == null) return;
@@ -882,7 +887,6 @@ class _CommunityScreenState extends State<CommunityScreen>
         _maximumMinutes = result.maximumMinutes;
         _minimumViews = result.minimumViews;
         _minimumBookmarks = result.minimumBookmarks;
-        _minimumTileWidth = result.tileWidth;
       });
     }
   }
@@ -1231,7 +1235,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   tooltip: l10n.communityTileSize,
                   icon: const Icon(Icons.grid_view_rounded),
                   onPressed: () async {
-                    var size = _minimumTileWidth;
+                    var size = _effectiveTileWidth(context);
                     final chosen = await showDialog<double>(
                       context: context,
                       builder: (dialogContext) => StatefulBuilder(
@@ -1240,8 +1244,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                           content: Slider(
                             key: const Key('communityTileSizeQuickSlider'),
                             min: 120,
-                            max: 240,
-                            divisions: 6,
+                            max: 360,
+                            divisions: 12,
                             value: size,
                             onChanged: (next) => update(() => size = next),
                           ),
@@ -1260,7 +1264,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       ),
                     );
                     if (chosen != null && mounted) {
-                      setState(() => _minimumTileWidth = chosen);
+                      setState(() => _userTileWidth = chosen);
                       final prefs = await SharedPreferences.getInstance();
                       await prefs.setDouble(_tileWidthKey, chosen);
                     }
@@ -1551,7 +1555,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       children: [
                         searchRowFor(0),
                         CommunityWorkGrid(
-                          minTileWidth: _minimumTileWidth,
+                          minTileWidth: _effectiveTileWidth(context),
                           works: works,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
@@ -1767,7 +1771,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       children: [
                         searchRowFor(2),
                         CommunityWorkGrid(
-                          minTileWidth: _minimumTileWidth,
+                          minTileWidth: _effectiveTileWidth(context),
                           works: works,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
@@ -1812,7 +1816,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                           _buildSearchEmptyState(l10n)
                         else
                           CommunityWorkGrid(
-                            minTileWidth: _minimumTileWidth,
+                            minTileWidth: _effectiveTileWidth(context),
                             works: works,
                             bookmarkedIds: bookmarkedIds,
                             onTapWork: _openFloatingPreview,
