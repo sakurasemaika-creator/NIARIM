@@ -998,7 +998,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      'Sans limite de durée, sans filigrane, courbe de tons et correction des niveaux, et bien plus : tout est débloqué.';
+      'Jusqu\'à 2 heures de durée, sans filigrane, courbe de tons et correction des niveaux, et bien plus.';
 
   @override
   String get premiumHeroHighlightDuration => 'Jusqu\'à 2 heures';
