@@ -125,6 +125,18 @@ class CommunityApi {
         query: {if (workId != null) 'workId': workId},
       );
 
+  /// The server verifies the achievement and either starts the mandatory
+  /// hold period or completes an atomic, exactly-once mission reward.
+  Future<Map<String, dynamic>> claimCreatorMission({
+    required String missionId,
+    String? workId,
+  }) => _client.postJson('/me/missions/claim',
+      authenticated: true,
+      body: {
+        'missionId': missionId,
+        if (workId != null) 'workId': workId,
+      });
+
   /// Measurement-only pilot: DOES NOT issue coins or verify creative time.
   /// startNonce must be a securely generated UUID. The backend is disabled
   /// unless CREATOR_EDIT_SESSION_PILOT_ENABLED is explicitly enabled.
