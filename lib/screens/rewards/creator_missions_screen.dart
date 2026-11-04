@@ -49,8 +49,12 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     final theme = Theme.of(context);
     final claimed = mission['claimed'] == true;
     final pending = mission['pendingSince'] is num && !claimed;
+    // When no work is selected, per-work claims cannot be summarized as
+    // "unclaimed" across all works: each work has its own durable bitmask.
     final status = claimed ? t.get('claimed')
-        : pending ? t.get('pending') : t.get('notClaimed');
+        : pending ? t.get('pending')
+        : mission['perWork'] == true && mission['claimed'] == null
+            ? t.get('perWork') : t.get('notClaimed');
     final reward = (mission['coins'] as num?)?.toInt() ?? 0;
     return Card(
       child: ListTile(
