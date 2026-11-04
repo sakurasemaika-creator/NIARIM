@@ -181,12 +181,22 @@ class _CanvasScreenState extends State<CanvasScreen> {
     var width = right
         ? (_panelWidthDragOverride ?? settings.desktopPanelWidth)
         : (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth);
+    var anyVisible = false;
+    var anyExpanded = false;
     for (final panel in order) {
       if (!_desktopPanelVisible(panel)) continue;
+      anyVisible = true;
+      if (settings.isDesktopDockCollapsed(panel)) continue;
+      anyExpanded = true;
       final w =
           _dockDragWidth[panel] ??
           settings.desktopDockWidth(panel, right: right);
       if (w > width) width = w;
+    }
+    // Give the drawing canvas back its space when every window is folded.
+    // The mesh transform sheet is not a standard collapsible dock window.
+    if (anyVisible && !anyExpanded && (right || !_showMeshTransformPanel)) {
+      return 52.0;
     }
     return width;
   }
@@ -1956,10 +1966,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final width =
         _dockDragWidth[p] ?? settings.desktopDockWidth(p, right: right);
     final l = AppLocalizations.of(context)!;
-    return SizedBox(
-      width: width,
-      child: DragTarget<CanvasDockPanel>(
-        key: ValueKey('dockTarget-${p.name}'),
+    final collapsed = settings.isDesktopDockCollapsed(p);
+    final foldsLeft = !right && !settings.isLeftHanded;
+    return Align(
+      alignment: foldsLeft ? Alignment.centerLeft : Alignment.centerRight,
+      child: SizedBox(
+        width: collapsed ? 52 : width,
+        child: DragTarget<CanvasDockPanel>(
+          key: ValueKey('dockTarget-${p.name}'),
         onWillAcceptWithDetails: (d) => d.data != p,
         onAcceptWithDetails: (d) =>
             settings.moveDesktopDockPanel(d.data, toRight: right, before: p),
@@ -1972,14 +1986,29 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   : scheme.primary,
             ),
           ),
-          child: Column(
+          child: collapsed
+              ? SizedBox(
+                  height: 48,
+                  child: Tooltip(
+                    message: title,
+                    child: IconButton(
+                      key: ValueKey('dockExpand-${p.name}'),
+                      tooltip: l.filterPanelExpand,
+                      onPressed: () => settings.setDesktopDockCollapsed(p, false),
+                      icon: Icon(
+                        foldsLeft ? Icons.chevron_right : Icons.chevron_left,
+                      ),
+                    ),
+                  ),
+                )
+              : Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
                 height: 34,
                 child: Row(
                   children: [
-                    LongPressDraggable<CanvasDockPanel>(
+                    Draggable<CanvasDockPanel>(
                       data: p,
                       feedback: Material(
                         color: scheme.surfaceContainerHighest,
@@ -2006,6 +2035,20 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      key: ValueKey('dockCollapse-${p.name}'),
+                      tooltip: l.filterPanelCollapse,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 36,
+                        height: 32,
+                      ),
+                      padding: EdgeInsets.zero,
+                      onPressed: () => settings.setDesktopDockCollapsed(p, true),
+                      icon: Icon(
+                        foldsLeft ? Icons.chevron_left : Icons.chevron_right,
+                        size: 22,
                       ),
                     ),
                     PopupMenuButton<String>(
@@ -2044,8 +2087,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      left: right ? 12 : 0,
-                      right: right ? 0 : 12,
+                      left: right ? 18 : 0,
+                      right: right ? 0 : 18,
                       child: _dockBody(p),
                     ),
                     Positioned(
@@ -2073,11 +2116,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             if (w != null) settings.setDesktopDockWidth(p, w);
                           },
                           child: SizedBox(
-                            width: 12,
+                            width: 18,
                             child: Center(
-                              child: Container(
-                                width: 3,
-                                color: scheme.outlineVariant,
+                              child: RotatedBox(
+                                quarterTurns: 1,
+                                child: Icon(
+                                  Icons.drag_handle,
+                                  size: 20,
+                                  color: scheme.onSurfaceVariant,
+                                ),
                               ),
                             ),
                           ),
@@ -2102,13 +2149,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     final value = _dockDragHeight.remove(p);
                     if (value != null) settings.setDesktopDockHeight(p, value);
                   },
-                  child: Container(
-                    height: 16,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.drag_handle,
-                      size: 20,
-                      color: scheme.outline,
+                  child: SizedBox(
+                    height: 22,
+                    child: Center(
+                      child: Icon(
+                        Icons.drag_handle,
+                        size: 24,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ),
@@ -2117,6 +2165,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -4185,12 +4234,16 @@ class _ResizeHandle extends StatelessWidget {
         onHorizontalDragUpdate: (d) => onDeltaX(d.delta.dx),
         onHorizontalDragEnd: (_) => onDragEnd(),
         child: Container(
-          width: 8,
+          width: 18,
           color: Colors.transparent,
           child: Center(
-            child: Container(
-              width: 2,
-              color: Theme.of(context).colorScheme.outlineVariant,
+            child: RotatedBox(
+              quarterTurns: 1,
+              child: Icon(
+                Icons.drag_handle,
+                size: 20,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ),

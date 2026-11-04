@@ -57,12 +57,18 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     double width = right
         ? (_rightColumnWidthDrag ?? settings.desktopPanelWidth)
         : (_leftColumnWidthDrag ?? settings.desktopToolPanelWidth);
+    var anyVisible = false;
+    var anyExpanded = false;
     for (final panel in order) {
       if (!settings.defaultDockedPanels.contains(panel)) continue;
+      anyVisible = true;
+      if (settings.isDesktopDockCollapsed(panel)) continue;
+      anyExpanded = true;
       final panelWidth = _resizingWidth[panel] ??
           settings.desktopDockWidth(panel, right: right);
       if (panelWidth > width) width = panelWidth;
     }
+    if (anyVisible && !anyExpanded) return 52.0;
     return width;
   }
 
@@ -270,9 +276,16 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
           }
         },
         child: SizedBox(
-          width: 10,
+          width: 18,
           child: Center(
-            child: Container(width: 3, color: scheme.outlineVariant),
+            child: RotatedBox(
+              quarterTurns: 1,
+              child: Icon(
+                Icons.drag_handle,
+                size: 20,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
           ),
         ),
       ),
@@ -288,8 +301,9 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     final width = _resizingWidth[panel] ??
         settings.desktopDockWidth(panel, right: right);
     final height = _resizingHeight[panel] ?? settings.desktopDockHeight(panel);
+    final collapsed = settings.isDesktopDockCollapsed(panel);
     return SizedBox(
-      width: width,
+      width: collapsed ? 52 : width,
       child: DragTarget<CanvasDockPanel>(
         key: ValueKey('pcPreviewDrop-${panel.name}'),
         onWillAcceptWithDetails: (details) => details.data != panel,
@@ -305,14 +319,30 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
               color: candidates.isNotEmpty ? scheme.primary : scheme.outlineVariant,
             ),
           ),
-          child: Column(
+          child: collapsed
+              ? SizedBox(
+                  height: 48,
+                  child: IconButton(
+                    key: ValueKey('pcPreviewExpand-${panel.name}'),
+                    tooltip: widget.labelOf(panel),
+                    icon: Icon(
+                      right ? Icons.chevron_left : Icons.chevron_right,
+                      color: scheme.onSurface,
+                    ),
+                    onPressed: () => settings.setDesktopDockCollapsed(
+                      panel,
+                      false,
+                    ),
+                  ),
+                )
+              : Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
                 height: 34,
                 child: Row(
                   children: [
-                    LongPressDraggable<CanvasDockPanel>(
+                    Draggable<CanvasDockPanel>(
                       data: panel,
                       feedback: Material(
                         color: scheme.surfaceContainerHighest,
@@ -340,6 +370,24 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                         style: TextStyle(color: scheme.onSurface, fontSize: 13),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      key: ValueKey('pcPreviewCollapse-${panel.name}'),
+                      tooltip: AppLocalizations.of(context)!.filterPanelCollapse,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 36,
+                        height: 32,
+                      ),
+                      padding: EdgeInsets.zero,
+                      onPressed: () => settings.setDesktopDockCollapsed(
+                        panel,
+                        true,
+                      ),
+                      icon: Icon(
+                        right ? Icons.chevron_right : Icons.chevron_left,
+                        size: 22,
+                        color: scheme.onSurface,
                       ),
                     ),
                     PopupMenuButton<String>(
@@ -381,8 +429,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      left: right ? 12 : 0,
-                      right: right ? 0 : 12,
+                      left: right ? 18 : 0,
+                      right: right ? 0 : 18,
                       child: _windowContents(panel, scheme),
                     ),
                     Positioned(
@@ -409,10 +457,16 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                             }
                           },
                           child: SizedBox(
-                            width: 12,
+                            width: 18,
                             child: Center(
-                              child: Container(
-                                  width: 3, color: scheme.outlineVariant),
+                              child: RotatedBox(
+                                quarterTurns: 1,
+                                child: Icon(
+                                  Icons.drag_handle,
+                                  size: 20,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -440,10 +494,13 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                     }
                   },
                   child: SizedBox(
-                    height: 16,
+                    height: 22,
                     child: Center(
-                      child: Icon(Icons.drag_handle,
-                          size: 20, color: scheme.outline),
+                      child: Icon(
+                        Icons.drag_handle,
+                        size: 24,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ),
