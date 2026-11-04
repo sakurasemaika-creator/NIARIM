@@ -198,18 +198,25 @@ void main() {
               findsOneWidget);
           expect(find.byKey(const ValueKey('filter-apply-button')),
               findsOneWidget);
+          expect(gallery, findsNothing);
           await shot('07b_filter_canvas_temporary_preview');
-          await tester.tap(find.byKey(
-              ValueKey('filter-card-${candidates.last.id}')));
-          await settle();
-          expect(service.currentFilter?.id, candidates.last.id,
-              reason: 'Selecting another tile replaces, not applies, the old preview.');
-          await shot('07c_switch_preview_without_applying');
           await tester.tap(find.byKey(
               const ValueKey('filter-cancel-button')));
           await settle();
           expect(service.currentFilter, isNull);
-          await shot('07d_cancel_filter_preview');
+          expect(gallery, findsOneWidget);
+          await shot('07c_cancel_returns_to_filter_tiles');
+          await tester.tap(find.byKey(
+              ValueKey('filter-card-${candidates.last.id}')));
+          await settle();
+          expect(service.currentFilter?.id, candidates.last.id);
+          expect(gallery, findsNothing);
+          await shot('07d_second_filter_preview_without_first_applied');
+          await tester.tap(find.byKey(
+              const ValueKey('filter-cancel-button')));
+          await settle();
+          expect(service.currentFilter, isNull);
+          expect(gallery, findsOneWidget);
 
         } else {
           errors.add('07_filter_preview_colored_background: panel not found');
@@ -280,9 +287,14 @@ void main() {
     await settle();
     expect(demoService.currentFilter?.id, 'Filter0025');
     await shot('07g_first_filter_temporary_inversion_preview');
+    expect(find.byKey(const ValueKey('tone-curve-editor-0')), findsNothing);
+    expect(find.byKey(const ValueKey('tone-curve-channel-selector')),
+        findsNothing);
     await tester.tap(find.byKey(const ValueKey('filter-apply-button')));
     await settle();
-    expect(find.byType(FilterPanel), findsNothing);
+    expect(find.byType(FilterPanel), findsOneWidget);
+    expect(demoService.currentFilter, isNull);
+    expect(find.byKey(const ValueKey('filter-tile-grid')), findsOneWidget);
     final canvasPixelsAfterApply = await tester.runAsync(() async {
       final tm = ps.tileManagerOf(filterDemo.id);
       final image = await tm.compositeLayerToImage(
@@ -296,11 +308,7 @@ void main() {
       isNot(equals(pixelArt.sublist(0, 3))),
       reason: 'Apply must bake the first filter into the saved pixel buffer.');
     await shot('07h_first_filter_applied_pixels');
-    await tester.tap(find.byIcon(Icons.settings).first);
-    await settle();
-    await tester.tap(find.text(filterL10n.filterPanelTitle).last);
-    await settle();
-    expect(find.byType(FilterPanel), findsOneWidget);
+    // Apply keeps the gallery open and the next effect uses reloaded pixels.
     demoService.selectFilter('Filter0001'); // Blur the inverted pixels.
     await settle();
     expect(demoService.currentFilter?.id, 'Filter0001');
