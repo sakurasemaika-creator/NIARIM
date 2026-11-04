@@ -201,6 +201,16 @@ export class NiarimBackendStack extends Stack {
         // Never ship this API key in the Flutter binary or an API response.
         YOUTUBE_API_KEY:
           this.node.tryGetContext("youtubeApiKey") ?? "REPLACE_ME",
+        // All reward issuance remains OFF until real AdMob verification,
+        // economics review and explicit human production approval.
+        ADMOB_REWARDED_AD_UNIT_ID:
+          this.node.tryGetContext("admobRewardedAdUnitId") ?? "",
+        REWARDED_AD_SSV_ENABLED:
+          this.node.tryGetContext("rewardedAdSsvEnabled") === "true"
+            ? "true" : "false",
+        REWARDED_AD_REVIEW_APPROVED:
+          this.node.tryGetContext("rewardedAdReviewApproved") === "true"
+            ? "true" : "false",
       },
       bundling: { minify: true, sourceMap: false },
     });
@@ -251,6 +261,10 @@ export class NiarimBackendStack extends Stack {
     });
 
     new CfnOutput(this, "ApiFunctionUrl", { value: functionUrl.url });
+    new CfnOutput(this, "AdmobSsvCallbackUrl", {
+      value: `${functionUrl.url}admob/ssv`,
+      description: "Configure this URL ONLY in the AdMob rewarded-ad SSV setting",
+    });
     new CfnOutput(this, "TableName", { value: table.tableName });
   }
 }
