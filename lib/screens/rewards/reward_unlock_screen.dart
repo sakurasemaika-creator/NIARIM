@@ -6,6 +6,7 @@ import '../../l10n/reward_unlock_labels.dart';
 import '../../models/coin_unlock_quote.dart';
 import '../../services/premium_service.dart';
 import '../../services/advertising_service.dart';
+import '../../services/coin_redemption_attempt_store.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../widgets/responsive.dart';
@@ -36,6 +37,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   Map<String, dynamic>? _rewardState;
   bool _walletLoading = false;
   bool _rewardBusy = false;
+  bool _redeemBusy = false;
+  Map<String, dynamic>? _officialPremiumQuote;
 
   @override
   void initState() {
@@ -52,7 +55,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final id = _authService?.account?.id;
     if (_lastAccountId == id) return;
     _lastAccountId = id;
-    setState(() => _rewardState = null);
+    setState(() {
+      _rewardState = null;
+      _officialPremiumQuote = null;
+    });
     if (id != null) _loadWallet(id);
   }
 
@@ -64,6 +70,31 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       final state = await api.myRewardState();
       if (!mounted || _authService?.account?.id != accountId) return;
       setState(() => _rewardState = state);
+      DateTime? activeCoinPremium;
+      for (final row in (state['entitlements'] as List? ?? const [])) {
+        if (row is Map && row['feature'] == 'fullPremium' &&
+            row['status'] == 'active' && row['expiresAtEpochMs'] is num) {
+          final ms = (row['expiresAtEpochMs'] as num).toInt();
+          if (ms > DateTime.now().millisecondsSinceEpoch) {
+            activeCoinPremium = DateTime.fromMillisecondsSinceEpoch(ms);
+          }
+        }
+      }
+      context.read<PremiumService>()
+          .applyServerCoinPremiumExpiry(activeCoinPremium);
+      if (state['redemptionEnabled'] == true) {
+        try {
+          final quote = await api.fullPremiumCoinQuote();
+          if (!mounted || _authService?.account?.id != accountId) return;
+          setState(() => _officialPremiumQuote = quote);
+        } catch (_) {
+          if (mounted && _authService?.account?.id == accountId) {
+            setState(() => _officialPremiumQuote = null);
+          }
+        }
+      } else {
+        setState(() => _officialPremiumQuote = null);
+      }
     } catch (_) {
       // Never show a stale wallet or an invented zero while offline.
       if (!mounted || _authService?.account?.id != accountId) return;
@@ -115,6 +146,63 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       }
     } finally {
       if (mounted) setState(() => _rewardBusy = false);
+    }
+  }
+
+  Future<void> _redeemFullPremium() async {
+    if (_redeemBusy) return;
+    final accountId = context.read<GoogleAuthService>().account?.id;
+    final api = context.read<CommunityService>().api;
+    final priceVersion = _officialPremiumQuote?['priceVersion'];
+    final price = _officialPremiumQuote?['priceCoins'];
+    if (accountId == null || api == null ||
+        priceVersion is! String || price is! int || price <= 0) return;
+    final t = RewardUnlockLabels.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t['redeem']),
+        content: Text(
+          '${t['fullPremium']} · 1 ${t['month']} · $price ${t['coins']}',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t['redeem']),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted ||
+        context.read<GoogleAuthService>().account?.id != accountId) return;
+    setState(() => _redeemBusy = true);
+    try {
+      final result = await const CoinRedemptionAttemptStore().redeem(
+        api: api,
+        accountId: accountId,
+        serverPriceVersion: priceVersion,
+      );
+      if (!mounted ||
+          context.read<GoogleAuthService>().account?.id != accountId) return;
+      if (result['redeemed'] == true) {
+        await _loadWallet(accountId);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(t['redemptionSuccess'])),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(t['redemptionUncertain'])),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _redeemBusy = false);
     }
   }
 
@@ -309,6 +397,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final premium = context.watch<PremiumService>();
     final scheme = Theme.of(context).colorScheme;
     final quote = _quote();
+    final serverPrice = _selected.length == 1 &&
+            _selected.contains(CoinUnlockTarget.fullPremium) &&
+            _duration.unit == CoinDurationUnit.month &&
+            _duration.amount == 1 &&
+            _officialPremiumQuote?['enabled'] == true &&
+            _officialPremiumQuote?['priceCoins'] is int
+        ? _officialPremiumQuote!['priceCoins'] as int
+        : null;
+    final balance = _rewardState?['balanceCoins'];
     return Scaffold(
       appBar: AppBar(title: Text(t['title'])),
       body: desktopCentered(
@@ -418,9 +515,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
                     Text(
-                      quote == null
-                          ? t['unavailable']
-                          : '${quote.requiredCoins} ${t['coins']}',
+                      serverPrice != null
+                          ? '$serverPrice ${t['coins']}'
+                          : quote == null
+                              ? t['unavailable']
+                              : '${quote.requiredCoins} ${t['coins']}',
                       key: const Key('rewardTotalCoins'),
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
@@ -433,7 +532,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                       child: Text(t['goal']),
                     ),
                     OutlinedButton(
-                      onPressed: null,
+                      onPressed: serverPrice != null &&
+                              _rewardState?['redemptionEnabled'] == true &&
+                              balance is int && balance >= serverPrice &&
+                              !_redeemBusy
+                          ? _redeemFullPremium
+                          : null,
                       child: Text(t['redeem']),
                     ),
                   ],
