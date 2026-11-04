@@ -29,6 +29,12 @@ export const Keys = {
     pk: `USER#${niarimUserId}`,
     sk: `ENTITLEMENT#${entitlement}`,
   }),
+  coinWallet: (niarimUserId: string) => ({
+    pk: `USER#${niarimUserId}`, sk: "COIN_WALLET",
+  }),
+  coinTransaction: (niarimUserId: string, transactionId: string) => ({
+    pk: `USER#${niarimUserId}`, sk: `COIN_TX#${transactionId}`,
+  }),
   bookmark: (niarimUserId: string, workId: string) => ({
     pk: `USER#${niarimUserId}`,
     sk: `BOOKMARK#${workId}`,
