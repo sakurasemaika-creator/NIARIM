@@ -8,7 +8,7 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import { authenticate } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
-import { ApiError, conflict, forbidden, json, ok } from "../../lib/response";
+import { ApiError, badRequest, conflict, forbidden, json, ok } from "../../lib/response";
 import {
   admobPublicKeys, SsvVerificationError,
   validateAdmobOffer, verifyAdmobSsv,
@@ -106,6 +106,42 @@ export async function startRewardedAdSession(event: APIGatewayProxyEventV2) {
     dailyRewardRemaining: remainingToday,
     expiresAtEpochMs: now + SESSION_LIFETIME_MS,
   });
+}
+
+/**
+ * Read-only, owner-bound receipt status. Session consumption and wallet credit
+ * occur in the SAME DynamoDB transaction, so consumedAtMs is a server-side
+ * proof. A Flutter callback alone cannot mark an ad as paid.
+ */
+export async function getRewardedAdStatus(event: APIGatewayProxyEventV2) {
+  const auth = await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
+  const nonce = event.queryStringParameters?.nonce;
+  if (!nonce || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(nonce)) {
+    badRequest("広告セッションIDが不正です", "REWARDED_AD_INVALID_NONCE");
+  }
+  const result = await ddb.send(new GetCommand({
+    TableName: tableName(),
+    Key: Keys.rewardedAdSession(auth.niarimUserId),
+    ConsistentRead: true,
+  }));
+  const session = result.Item;
+  if (session?.itemType !== "REWARDED_AD_SESSION" ||
+      session.nonce !== nonce) {
+    return ok({credited: false, status: "not_found"});
+  }
+  if (typeof session.consumedAtMs === "number" &&
+      Number.isSafeInteger(session.consumedAtMs) &&
+      session.consumedAtMs > 0) {
+    return ok({credited: true, status: "credited"});
+  }
+  if (typeof session.expiresAtMs === "number" &&
+      Number.isSafeInteger(session.expiresAtMs) &&
+      session.expiresAtMs < Date.now()) {
+    return ok({credited: false, status: "expired"});
+  }
+  return ok({credited: false, status: "pending"});
 }
 
 /**

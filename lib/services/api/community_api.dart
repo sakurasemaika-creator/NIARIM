@@ -127,6 +127,13 @@ class CommunityApi {
   Future<Map<String, dynamic>> beginRewardedAdSession() =>
       _client.postJson('/me/rewards/ad-session', authenticated: true);
 
+  /// GET never creates a grant; consumedAtMs is committed with the wallet.
+  Future<Map<String, dynamic>> rewardedAdStatus(String nonce) =>
+      _client.getJson(
+        '/me/rewards/ad-status',
+        authenticated: true, query: {'nonce': nonce},
+      );
+
   /// Price from authenticated server catalog. Never use local reference rates.
   Future<Map<String, dynamic>> fullPremiumCoinQuote() =>
       _client.getJson('/me/rewards/quote',

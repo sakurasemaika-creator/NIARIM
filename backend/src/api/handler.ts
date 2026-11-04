@@ -14,7 +14,9 @@ import { getPlaybackStatus } from "./routes/worksPlaybackStatus";
 import { getAuthorWorks, getMyWorks } from "./routes/userWorks";
 import { createWork } from "./routes/worksCreate";
 import { getMyRewardState, getMyCoinHistory } from "./routes/rewardState";
-import { startRewardedAdSession, receiveRewardedAdSsv } from "./routes/rewardedAd";
+import {
+  startRewardedAdSession, receiveRewardedAdSsv, getRewardedAdStatus,
+} from "./routes/rewardedAd";
 import { getCoinRedemptionQuote, redeemCoins } from "./routes/coinRedemption";
 import { getMyCreatorMissions, claimCreatorMission } from "./routes/creatorMissions";
 import { scanMyQualifiedWorks } from "./routes/creatorQualifiedWorksScan";
@@ -100,6 +102,7 @@ const routes: Route[] = [
   route("GET", "/me/premium/play/availability", (e) => getPlayPurchaseAvailability(e)),
   route("GET", "/me/rewards/history", (e) => getMyCoinHistory(e)),
   route("POST", "/me/rewards/ad-session", (e) => startRewardedAdSession(e)),
+  route("GET", "/me/rewards/ad-status", (e) => getRewardedAdStatus(e)),
   route("GET", "/me/rewards/quote", (e) => getCoinRedemptionQuote(e)),
   route("POST", "/me/rewards/redeem", (e) => redeemCoins(e)),
   // Public Google-to-server callback; signature and one-time nonce mandatory.

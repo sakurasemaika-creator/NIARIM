@@ -137,8 +137,36 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           content: Text(completed ? t['rewardPending'] : t['rewardUnavailable']),
         ),
       );
-      // The SDK callback is NOT an award. Only AdMob's signed server callback
-      // may add coins; the refresh button reads the actual server wallet.
+      // The SDK callback is NOT an award. Only a signed SSV transaction may
+      // consume the session and credit the wallet. Query a bounded number of
+      // times so the user needn't manually refresh after a normal callback.
+      // This intentionally never increments balanceCoins on the device.
+      if (completed) {
+        final nonce = customData.split('.').last;
+        for (final delay in [
+          const Duration(seconds: 1),
+          const Duration(seconds: 2),
+          const Duration(seconds: 4),
+          const Duration(seconds: 6),
+        ]) {
+          await Future<void>.delayed(delay);
+          if (!mounted ||
+              context.read<GoogleAuthService>().account?.id != accountId) break;
+          try {
+            final status = await api.rewardedAdStatus(nonce);
+            if (!mounted ||
+                context.read<GoogleAuthService>().account?.id != accountId) break;
+            if (status['credited'] == true) {
+              await _loadWallet(accountId);
+              break;
+            }
+            if (status['status'] == 'expired' ||
+                status['status'] == 'not_found') break;
+          } catch (_) {
+            // Temporary network errors never create local coin grants.
+          }
+        }
+      }
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
