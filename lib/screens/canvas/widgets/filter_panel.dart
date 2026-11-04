@@ -66,7 +66,8 @@ class FilterPanel extends StatefulWidget {
   /// to be shown on the canvas in place of the layer; the receiver owns the
   /// image. When set, the panel shows no preview of its own (auto line
   /// art's control-point editor aside).
-  final ValueChanged<ui.Image>? onCanvasPreviewChanged;
+  // Null clears an uncommitted preview when switching or cancelling.
+  final ValueChanged<ui.Image?>? onCanvasPreviewChanged;
 
   /// The canvas selection (one byte per canvas pixel, non-zero inside), or
   /// null: when set, the filter changes only what is inside it.
