@@ -52,6 +52,10 @@ export const Keys = {
   rewardedAdSession: (niarimUserId: string) => ({
     pk: `USER#${niarimUserId}`, sk: "REWARDED_AD_SESSION",
   }),
+  /** One compact per-account per-UTC-day counter only when capped. */
+  rewardAdDailyCount: (niarimUserId: string, dayUtc: string) => ({
+    pk: `USER#${niarimUserId}`, sk: `REWARDED_AD_DAY#${dayUtc}`,
+  }),
 
   bookmark: (niarimUserId: string, workId: string) => ({
     pk: `USER#${niarimUserId}`,
