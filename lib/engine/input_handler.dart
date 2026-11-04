@@ -31,7 +31,11 @@ class InputHandler {
     double Function(double)? pressureCurve,
   }) {
     final type = _lastInputType; // classifyInput()は呼び出し元で既に実行済み
-    final rawPressure = event.pressure.clamp(0.0, 1.0);
+    // マウスに筆圧は無い。環境によっては0が届き（Linuxのデスクトップ）、
+    // 筆圧で太さが変わるブラシが一番細い太さ（ペンなら2割）で描かれた。
+    final rawPressure = event.kind == PointerDeviceKind.mouse
+        ? 1.0
+        : event.pressure.clamp(0.0, 1.0);
     return StrokePoint(
       x: event.localPosition.dx,
       y: event.localPosition.dy,

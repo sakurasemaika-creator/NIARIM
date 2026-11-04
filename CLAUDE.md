@@ -583,6 +583,13 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   （PointerCancel：システムのジェスチャー・手のひらの判定）ときは
   `_cancelToolPointer`で描きかけを丸ごと戻す（以前は残り、次の線の記録に
   混ざって取り消せなかった）。`test/stroke_pointer_lifecycle_test.dart`。
+- **ペンは選んだ色の不透明度を線に掛け、透明色のペンは消しゴム**：以前は色の
+  不透明度を無視し、透明色を選ぶと隠れた色を不透明に塗った。消しゴムかどうかは
+  `CanvasArea._erasing`（消しゴムのツール、または透明色のペン）で、線の始めと
+  画面の更新で同じ決まりを使う（片方だけ`widget.isEraser`に戻すと線の途中で
+  消しゴムでなくなる）。マウスの筆圧は`InputHandler`で常に1.0（Linuxの
+  デスクトップは0を渡し、筆圧で太さが変わるブラシが2割の太さになった）。
+  `test/eraser_transparent_colour_test.dart`・`input_handler_pressure_test.dart`。
 - **`TileManager`のタイル画像のキャッシュは複製（clone）を返す**：本体を
   返すと、受け取ってから描くまで（awaitの続き）の間に同時に走る別の合成が
   追い出して破棄し、破棄済みの画像を描いた（小さいキャンバスで油彩風の

@@ -283,7 +283,8 @@ class DrawingEngine {
           // (outlinedStrokeRadii); they never fade it.
           (brush.opacity /
                   100 *
-                  (brush.strokeDecay ? _calculateDecay(distance) : 1))
+                  (brush.strokeDecay ? _calculateDecay(distance) : 1) *
+                  currentColor.a)
               .clamp(0.0, 1.0)
               .toDouble(),
           scale,
@@ -555,6 +556,9 @@ class DrawingEngine {
       opacity *= _calculateDecay(strokeLength);
     }
 
+    // 選んだ色の不透明度も効かせる（カラーピッカーで半透明の色を選んで
+    // いても、以前は不透明で塗っていた）。
+    if (!isEraser) opacity *= currentColor.a;
     opacity = opacity.clamp(0.0, 1.0);
     final outlinedRadii = brush.outlineEnabled
         ? outlinedStrokeRadii(

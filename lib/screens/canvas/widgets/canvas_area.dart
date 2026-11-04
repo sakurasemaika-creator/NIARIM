@@ -860,7 +860,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       _layers = const [];
       _initEngine();
     }
-    _drawingEngine.isEraser = widget.isEraser;
+    _drawingEngine.isEraser = _erasing;
     if (old.currentLayerPreview != widget.currentLayerPreview ||
         old.currentLayerPreviewBlendMode !=
             widget.currentLayerPreviewBlendMode) {
@@ -1363,6 +1363,16 @@ class _CanvasAreaState extends State<CanvasArea> {
       (c.g * 255).round().clamp(0, 255),
       (c.b * 255).round().clamp(0, 255),
     );
+    // 透明色を選んでいるペンは消しゴムとして消す（投げ縄塗りの「透明色＝
+    // 消しゴム」と同じ。以前は透明色の下に隠れた色で不透明に塗っていた）。
+    _drawingEngine.isEraser = _erasing;
+  }
+
+  /// 消しゴムか、透明色を選んでいるペン（[_syncBrushAndColor]）。
+  bool get _erasing {
+    if (widget.isEraser) return true;
+    if (widget.currentTool != DrawingTool.pen) return false;
+    return (context.read<BrushService>().currentColor.a * 255).round() == 0;
   }
 
   /// 筆圧カーブ（アプリ全体に適用）と、品質設定の「傾き検知」ON/OFF
