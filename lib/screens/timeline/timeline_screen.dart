@@ -2247,8 +2247,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// プレビュー欄の操作（フレーム数・全画面）の大きさ。
+  /// プレビュー欄の操作（フレーム数・全画面）の大きさと、欄の端からの距離。
   static const double _previewControlSize = 48;
+  static const double _previewControlInset = 8;
 
   /// プロジェクトの縦横比（書き出しの大きさ。分からなければ16:9）。
   double _previewAspect(ProjectService ps) {
@@ -2261,53 +2262,37 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   /// プレビュー欄：中央にキャンバスの絵を置き、フレーム数（左下）・全画面
-  /// （右上）は欄の隅の、絵の外に置く（絵に重ねると確かめたい絵が隠れる）。
-  /// ループの切り替えは再生の操作の段にあるので、ここには置かない（同じ操作が
-  /// 2か所に重複する）。操作の場所を絵の左右に空けるか上下に空けるかは、絵を
-  /// 大きく出せる方にする（縦長の絵は左右、横長の絵は上下）。
+  /// （右上）はプレビュー欄そのものの隅（端から8px）に置く。絵の大きさは、
+  /// 隅の操作に重ならない大きさにする（絵に重ねると確かめたい絵が隠れる）。
+  /// 操作の場所を絵の左右に空けるか上下に空けるかは、絵を大きく出せる方に
+  /// する（縦長の絵は左右、横長の絵は上下）。ループの切り替えは置かない
+  /// （再生はいつも先頭へ戻って続く）。
   Widget _buildPreviewBand({
     required double aspect,
     required bool fullscreenButton,
   }) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    const control = _previewControlSize;
-    const gutter = control + 4;
+    const edge = _previewControlInset;
+    const gutter = _previewControlSize + edge;
     final sceneId = _selectedSceneId;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = math.max(0.0, constraints.maxWidth - 16);
+        final width = constraints.maxWidth;
         final height = constraints.maxHeight;
         final besideWidth = math.min(width - gutter * 2, height * aspect);
-        final aboveWidth = math.min(width, (height - control * 2) * aspect);
+        final aboveWidth = math.min(
+          width - edge * 2,
+          (height - gutter * 2) * aspect,
+        );
         var pictureWidth = math.max(0.0, math.max(besideWidth, aboveWidth));
         // PC/DeXでは横に間延びしないよう上限を設ける。
         if (isWideScreen(context)) {
           pictureWidth = math.min(pictureWidth, 900);
         }
         final pictureHeight = aspect > 0 ? pictureWidth / aspect : 0.0;
-        // 操作は欄の隅に置くが、広い画面で絵から離れすぎないようにする。
-        final controlsWidth = math.min(
-          width,
-          pictureWidth + (gutter + control) * 2,
-        );
-        // 低い欄では、全画面のボタンを下の段に置く。
-        final oneRow = height < control * 2 + 4;
-        final fullscreen = fullscreenButton
-            ? FirstUseTooltip(
-                tooltipKey: 'timeline_preview_fullscreen',
-                message: l10n.timelinePreviewFullscreenTip,
-                child: IconButton(
-                  key: const Key('timelinePreviewFullscreenButton'),
-                  icon: Icon(Icons.fullscreen, color: scheme.onSurfaceVariant),
-                  tooltip: l10n.timelinePreviewFullscreenTooltip,
-                  onPressed: sceneId == null
-                      ? null
-                      : () => setState(() => _isPreviewFullscreen = true),
-                ),
-              )
-            : null;
         return Stack(
+          key: const Key('timelinePreviewArea'),
           children: [
             Center(
               child: SizedBox(
@@ -2317,47 +2302,50 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 child: _buildPreviewContent(),
               ),
             ),
-            Center(
-              child: SizedBox(
-                width: controlsWidth,
-                height: height,
-                child: Stack(
-                  children: [
-                    Positioned(
-                      left: 0,
-                      bottom: 0,
-                      width: gutter,
-                      height: control,
-                      child: IgnorePointer(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: AlignmentDirectional.centerStart,
-                          child: ValueListenableBuilder<int>(
-                            valueListenable: _currentFrameNotifier,
-                            builder: (_, frame, _) => Text(
-                              '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/$_totalFrames',
-                              key: const Key('timelinePreviewFrameCount'),
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: scheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                        ),
+            // 長いフレーム数は、絵との間（操作の大きさ）に収まるよう縮める。
+            Positioned(
+              left: edge,
+              bottom: edge,
+              width: _previewControlSize,
+              child: IgnorePointer(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.bottomLeft,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: _currentFrameNotifier,
+                    builder: (_, frame, _) => Text(
+                      '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/$_totalFrames',
+                      key: const Key('timelinePreviewFrameCount'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurfaceVariant,
                       ),
                     ),
-                    if (fullscreen != null)
-                      Positioned(
-                        right: 0,
-                        top: oneRow ? null : 0,
-                        bottom: oneRow ? 0 : null,
-                        child: fullscreen,
-                      ),
-                  ],
+                  ),
                 ),
               ),
             ),
+            if (fullscreenButton)
+              Positioned(
+                right: edge,
+                top: edge,
+                child: FirstUseTooltip(
+                  tooltipKey: 'timeline_preview_fullscreen',
+                  message: l10n.timelinePreviewFullscreenTip,
+                  child: IconButton(
+                    key: const Key('timelinePreviewFullscreenButton'),
+                    icon: Icon(
+                      Icons.fullscreen,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    tooltip: l10n.timelinePreviewFullscreenTooltip,
+                    onPressed: sceneId == null
+                        ? null
+                        : () => setState(() => _isPreviewFullscreen = true),
+                  ),
+                ),
+              ),
           ],
         );
       },
@@ -2389,7 +2377,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // プレビュー領域の一番上に付くまで、加減なく縮小できるようにする）。
     final screenWidth = MediaQuery.sizeOf(context).width;
     final maxHeightByScreenWidth = aspect > 0
-        ? (screenWidth - 16) / aspect + _previewControlSize * 2
+        ? (screenWidth - _previewControlInset * 2) / aspect +
+              (_previewControlSize + _previewControlInset) * 2
         : maxH;
     final maxPreviewHeight = maxHeightByScreenWidth < maxH
         ? maxHeightByScreenWidth

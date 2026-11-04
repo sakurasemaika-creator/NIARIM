@@ -13,10 +13,13 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
+import 'package:niarim/screens/canvas/widgets/mesh_transform_panel.dart';
+import 'package:niarim/screens/canvas/widgets/reference_window.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/screens/settings/pc_workspace_layout_settings_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/filter_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/load_app_fonts.dart';
@@ -119,6 +122,32 @@ void main() {
     await navigate('/timeline/${colored.id}');
     await shot('04_timeline_preview_edges_without_duplicate_loop');
 
+    // Portrait artwork is narrower than the preview viewport: the controls
+    // must remain at the full viewport's extreme edges rather than moving
+    // toward the center with the fitted artwork.
+    final portrait = (await tester.runAsync(() => ps.createProject(
+      name: '縦長プレビュー端配置テスト',
+      fps: 12, durationSeconds: 1, backgroundColor: 0xFFB8CEDA,
+      exportWidth: 180, exportHeight: 320,
+    )))!;
+    await navigate('/timeline/${portrait.id}');
+    final viewport = tester.getRect(
+      find.byKey(const Key('timelinePreviewArea')),
+    );
+    final frameCounter = tester.getRect(
+      find.byKey(const Key('timelinePreviewFrameCount')),
+    );
+    final fullscreenButton = tester.getRect(
+      find.byKey(const Key('timelinePreviewFullscreenButton')),
+    );
+    expect((frameCounter.left - (viewport.left + 8)).abs(), lessThan(1),
+      reason: 'Counter must track the preview viewport, not artwork.');
+    expect((frameCounter.bottom - (viewport.bottom - 8)).abs(), lessThan(1));
+    expect((fullscreenButton.right - (viewport.right - 8)).abs(), lessThan(1),
+      reason: 'Fullscreen control must track the preview viewport edge.');
+    expect((fullscreenButton.top - (viewport.top + 8)).abs(), lessThan(1));
+    await shot('04b_timeline_portrait_artwork_controls_at_viewport_edges');
+
     await navigate('/canvas/${colored.id}');
     await shot('05_canvas_timeline_button_alignment');
     final gear = find.byIcon(Icons.settings);
@@ -152,6 +181,35 @@ void main() {
         await settle();
         if (find.byType(FilterPanel).evaluate().isNotEmpty) {
           await shot('07_filter_preview_colored_background');
+          final gallery = find.byKey(const ValueKey('filter-tile-grid'));
+          expect(gallery, findsOneWidget);
+          expect(tester.widget<GridView>(gallery).scrollDirection, Axis.vertical);
+          await shot('07a_vertical_filter_tile_gallery');
+          final service = tester.element(find.byType(FilterPanel).first)
+              .read<FilterService>();
+          final candidates = service.filters.take(2).toList();
+          expect(candidates, hasLength(2));
+          await tester.tap(find.byKey(
+              ValueKey('filter-card-${candidates.first.id}')));
+          await settle();
+          expect(service.currentFilter?.id, candidates.first.id);
+          expect(find.byKey(const ValueKey('filter-cancel-button')),
+              findsOneWidget);
+          expect(find.byKey(const ValueKey('filter-apply-button')),
+              findsOneWidget);
+          await shot('07b_filter_canvas_temporary_preview');
+          await tester.tap(find.byKey(
+              ValueKey('filter-card-${candidates.last.id}')));
+          await settle();
+          expect(service.currentFilter?.id, candidates.last.id,
+              reason: 'Selecting another tile replaces, not applies, the old preview.');
+          await shot('07c_switch_preview_without_applying');
+          await tester.tap(find.byKey(
+              const ValueKey('filter-cancel-button')));
+          await settle();
+          expect(service.currentFilter, isNull);
+          await shot('07d_cancel_filter_preview');
+
         } else {
           errors.add('07_filter_preview_colored_background: panel not found');
         }
@@ -261,6 +319,74 @@ void main() {
     } else {
       errors.add('13_global_pc_layout_settings: navigation button missing');
     }
+
+    // Capture every popup-appearance fix in the *real* Flutter canvas.
+    // Desktop panels use the same widgets as the smartphone popups, so these
+    // captures prove the exact revised Card/Material styling is rendered.
+    final affectedDocks = <CanvasDockPanel>[
+      CanvasDockPanel.brush,
+      CanvasDockPanel.colorPicker,
+      CanvasDockPanel.tone,
+      CanvasDockPanel.stamp,
+      CanvasDockPanel.penSubTool,
+      CanvasDockPanel.onionSkin,
+      CanvasDockPanel.filter,
+      CanvasDockPanel.quickTool,
+      CanvasDockPanel.ruler,
+    ];
+    for (final panel in affectedDocks) {
+      await navigate('/home');
+      await settings.setDefaultDockedPanels({panel});
+      await settings.setDesktopDockHeight(panel, 520);
+      await navigate('/canvas/${colored.id}');
+      final grip = find.byKey(ValueKey('pcPaneDrag.${panel.name}'));
+      expect(grip, findsOneWidget,
+          reason: 'Affected popup must be visible: ${panel.name}');
+      await shot('popup_fix_${panel.name}');
+    }
+
+    // The global popup menu theme was also changed to flat/no border.
+    final dockMenu = find.byKey(const Key('desktopWindowVisibilityMenu'));
+    expect(dockMenu, findsOneWidget);
+    await tester.tap(dockMenu);
+    await shot('popup_fix_global_menu');
+
+    // Mesh transform and the floating reference window are not configurable
+    // dock panels; open them through the same settings/edit menu as users do.
+    await navigate('/home');
+    await settings.setDefaultDockedPanels(<CanvasDockPanel>{});
+    await navigate('/canvas/${colored.id}');
+    final topSettings = find.byIcon(Icons.settings).first;
+    await tester.tap(topSettings);
+    await settle();
+    final canvasL10n = AppLocalizations.of(
+      tester.element(find.byType(Scaffold).last))!;
+    final meshEntry = find.text(canvasL10n.canvasEditMenuMeshTransform);
+    await tester.ensureVisible(meshEntry.last);
+    await tester.tap(meshEntry.last);
+    await settle();
+    expect(find.byType(MeshTransformPanel), findsOneWidget);
+    // Regressions: the bottom floating mesh action bar must not draw
+    // a black shadow or an opaque enclosing rectangle.
+    final meshBar = find.byKey(const ValueKey('mesh-transform-action-bar'));
+    expect(meshBar, findsOneWidget);
+    final meshMaterial = tester.widget<Material>(meshBar);
+    expect(meshMaterial.type, MaterialType.transparency);
+    expect(meshMaterial.elevation, 0);
+    await shot('popup_fix_mesh_transform');
+
+    await navigate('/home');
+    await navigate('/canvas/${colored.id}');
+    await tester.tap(find.byIcon(Icons.settings).first);
+    await settle();
+    final referenceEntry = find.text(
+      AppLocalizations.of(
+        tester.element(find.byType(Scaffold).last))!.canvasEditMenuReferenceWindow);
+    await tester.ensureVisible(referenceEntry.last);
+    await tester.tap(referenceEntry.last);
+    await settle();
+    expect(find.byType(ReferenceWindow), findsOneWidget);
+    await shot('popup_fix_reference_window');
 
     await tester.runAsync(() => File('${out.path}/capture_status.txt')
       .writeAsString(errors.isEmpty ? 'PASS' : errors.join('\n')));

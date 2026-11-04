@@ -104,14 +104,14 @@ void main() {
         .where((f) => f.kind == FilterKind.noise)
         .toList();
     expect(filters, hasLength(3));
-    final horizontalList = find.byType(ListView).first;
+    final gallery = find.byKey(const ValueKey('filter-tile-grid'));
     for (final filter in filters) {
       final card = find.byKey(ValueKey('filter-card-${filter.id}'));
       await tester.scrollUntilVisible(
         card,
         120,
         scrollable: find.descendant(
-          of: horizontalList,
+          of: gallery,
           matching: find.byType(Scrollable),
         ),
       );
@@ -142,8 +142,8 @@ void main() {
           NoiseStyle.color,
         );
       }
-      // Selecting a card now opens its settings in place of the card list.
-      panelContext.read<FilterService>().clearCurrentFilter();
+      // The gallery remains visible; cancel the temporary selection.
+      await tester.tap(find.byKey(const ValueKey('filter-cancel-button')));
       await tester.pump();
     }
     expect(tester.takeException(), isNull);

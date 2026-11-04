@@ -68,7 +68,8 @@ class FilterPanel extends StatefulWidget {
   /// to be shown on the canvas in place of the layer; the receiver owns the
   /// image. When set, the panel shows no preview of its own (auto line
   /// art's control-point editor aside).
-  final ValueChanged<ui.Image>? onCanvasPreviewChanged;
+  // Null clears an uncommitted preview when switching or cancelling.
+  final ValueChanged<ui.Image?>? onCanvasPreviewChanged;
 
   /// The canvas selection (one byte per canvas pixel, non-zero inside), or
   /// null: when set, the filter changes only what is inside it.
@@ -510,6 +511,38 @@ class _FilterPanelState extends State<FilterPanel> {
     });
   }
 
+  /// Switching candidates or cancelling never edits the drawing pixels.
+  /// Clear the old image immediately, before the next asynchronous preview
+  /// finishes, so the previous filter cannot appear on the new selection.
+  void _clearPendingPreview() {
+    _autoLineartPreviewRevision++;
+    _previewRequestedFor = null;
+    _previewImage?.dispose();
+    _previewImage = null;
+    widget.onCanvasPreviewChanged?.call(null);
+  }
+
+  void _chooseFilter(FilterService service, FilterDef filter) {
+    if (_applying || service.currentFilter?.id == filter.id) return;
+    _clearPendingPreview();
+    _autoLineartBaseGraph = null;
+    _autoLineartPreviewGraph = null;
+    _autoLineartEditBaselineGraph = null;
+    _autoLineartPreviewRoughWidth = null;
+    _autoLineartPreviewSmoothingLevel = null;
+    _autoLineartManualEdited = false;
+    _autoLineartBeforeHandEdit = null;
+    setState(() => _collapsed = false);
+    service.selectFilter(filter.id);
+  }
+
+  void _cancelPreview() {
+    if (_applying) return;
+    _clearPendingPreview();
+    context.read<FilterService>().clearCurrentFilter();
+    setState(() => _collapsed = false);
+  }
+
   Future<void> _updatePreview() async {
     final base = _previewBase;
     final filter = context.read<FilterService>().currentFilter;
@@ -641,7 +674,9 @@ class _FilterPanelState extends State<FilterPanel> {
       completer.complete,
     );
     final image = await completer.future;
-    if (!mounted || previewRevision != _autoLineartPreviewRevision) {
+    if (!mounted ||
+        previewRevision != _autoLineartPreviewRevision ||
+        !identical(context.read<FilterService>().currentFilter, filter)) {
       image.dispose();
       return;
     }
@@ -711,43 +746,36 @@ class _FilterPanelState extends State<FilterPanel> {
     return shell(
       SizedBox(
         width: docked ? null : 300,
-        height: docked || collapsed ? null : 520,
+        height: docked ? null : 520,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: _outlinedOverCanvas(
             context,
             enabled: !docked && current != null,
             child: Column(
-              mainAxisSize: collapsed ? MainAxisSize.min : MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: current == null
-                  ? [
-                      PanelCenterCloseBar(onClose: widget.onClose),
-                      _listTitleRow(l10n),
-                      if (_showSearch) _searchField(l10n, service),
-                      const Divider(),
-                      _filterCards(l10n, service, filters, current),
-                      const Divider(),
-                      Expanded(
-                        child: Center(
-                          // "No filters" only when the search or favourites
-                          // leave none; otherwise point at the list above.
-                          child: Text(
-                            filters.isEmpty
-                                ? l10n.filterEmpty
-                                : l10n.filterPickHint,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ]
-                  : [
-                      _editHeader(l10n, service, current, collapsed),
-                      if (!collapsed)
-                        Expanded(child: _editControls(l10n, service, current)),
-                      const SizedBox(height: 8),
-                      _actionRow(l10n, service, current),
-                    ],
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (current == null)
+                  PanelCenterCloseBar(onClose: widget.onClose),
+                _listTitleRow(l10n),
+                if (_showSearch) _searchField(l10n, service),
+                const SizedBox(height: 6),
+                if (current == null)
+                  Expanded(child: _filterCards(l10n, service, filters, current))
+                else
+                  SizedBox(
+                    height: collapsed ? 220 : 164,
+                    child: _filterCards(l10n, service, filters, current),
+                  ),
+                if (current != null) ...[
+                  const Divider(height: 10),
+                  _editHeader(l10n, service, current, collapsed),
+                  if (!collapsed)
+                    Expanded(child: _editControls(l10n, service, current)),
+                  const SizedBox(height: 6),
+                  _actionRow(l10n, service, current),
+                ],
+              ],
             ),
           ),
         ),
@@ -766,7 +794,11 @@ class _FilterPanelState extends State<FilterPanel> {
     FilterDef? current,
   ) {
     final collapsed = current != null && _collapsed;
-    final maxControls = MediaQuery.sizeOf(context).height * 0.3;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final maxControls = screenHeight * 0.26;
+    final tileHeight = current == null
+        ? math.min(228.0, screenHeight * 0.30)
+        : math.min(collapsed ? 220.0 : 154.0, screenHeight * 0.20);
     return Material(
       key: const ValueKey('filter-bottom-bar'),
       type: MaterialType.transparency,
@@ -778,30 +810,36 @@ class _FilterPanelState extends State<FilterPanel> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: current == null
-                ? [
-                    _listTitleRow(l10n, withClose: true),
-                    if (_showSearch) _searchField(l10n, service),
-                    _filterCards(l10n, service, filters, current),
-                    if (filters.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Text(
-                          l10n.filterEmpty,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                  ]
-                : [
-                    _editHeader(l10n, service, current, collapsed),
-                    if (!collapsed)
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxHeight: maxControls),
-                        child: _editControls(l10n, service, current),
-                      ),
-                    const SizedBox(height: 4),
-                    _actionRow(l10n, service, current),
-                  ],
+            children: [
+              _listTitleRow(l10n, withClose: true),
+              if (_showSearch) _searchField(l10n, service),
+              SizedBox(
+                height: tileHeight,
+                child: _filterCards(l10n, service, filters, current),
+              ),
+              if (filters.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Text(l10n.filterEmpty, textAlign: TextAlign.center),
+                ),
+              if (current != null) ...[
+                const Divider(height: 8),
+                _editHeader(
+                  l10n,
+                  service,
+                  current,
+                  collapsed,
+                  withClose: false,
+                ),
+                if (!collapsed)
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: maxControls),
+                    child: _editControls(l10n, service, current),
+                  ),
+                const SizedBox(height: 4),
+                _actionRow(l10n, service, current),
+              ],
+            ],
           ),
         ),
       ),
@@ -859,90 +897,101 @@ class _FilterPanelState extends State<FilterPanel> {
         onChanged: service.setSearchQuery,
       );
 
-  /// The filters to choose from, as a row of cards.
+  /// A vertically scrolling tile gallery. Never scroll sideways or hide the
+  /// gallery during a preview, so candidates can be compared by one tap.
   Widget _filterCards(
     AppLocalizations l10n,
     FilterService service,
     List<FilterDef> filters,
     FilterDef? current,
   ) {
-    return SizedBox(
-      height: 112,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: filters.length,
-        itemBuilder: (context, index) {
-          final filter = filters[index];
-          final premium = _premiumFeatureFor(filter.kind);
-          final locked =
-              premium != null &&
-              !context.watch<PremiumService>().isFeatureAvailable(premium);
-          final selected = filter.id == current?.id;
-          final child = GestureDetector(
-            key: ValueKey('filter-card-${filter.id}'),
-            onTap: locked ? null : () => service.selectFilter(filter.id),
-            child: Container(
-              width: 84,
-              margin: const EdgeInsets.only(right: 6),
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: selected
-                      ? Theme.of(context).colorScheme.primary
-                      : ThemeService.activeColorScheme.outlineVariant,
-                  width: selected ? 2 : 1,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 320 ? 3 : 2;
+        return GridView.builder(
+          key: const ValueKey('filter-tile-grid'),
+          scrollDirection: Axis.vertical,
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            mainAxisSpacing: 6,
+            crossAxisSpacing: 6,
+            mainAxisExtent: 108,
+          ),
+          itemCount: filters.length,
+          itemBuilder: (context, index) {
+            final filter = filters[index];
+            final premium = _premiumFeatureFor(filter.kind);
+            final locked =
+                premium != null &&
+                !context.watch<PremiumService>().isFeatureAvailable(premium);
+            final selected = filter.id == current?.id;
+            final scheme = Theme.of(context).colorScheme;
+            final child = InkWell(
+              key: ValueKey('filter-card-${filter.id}'),
+              onTap: locked ? null : () => _chooseFilter(service, filter),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: selected ? scheme.primary : scheme.outlineVariant,
+                    width: selected ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // What the filter does with its settings, on a sample
-                  // picture, with its icon in the corner.
-                  Stack(
-                    children: [
-                      FilterSamplePreview(filter, width: 72, height: 46),
-                      Positioned(
-                        right: 1,
-                        bottom: 1,
-                        child: Container(
-                          padding: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surface.withValues(alpha: .85),
-                            borderRadius: BorderRadius.circular(3),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          LayoutBuilder(
+                            builder: (context, size) => FilterSamplePreview(
+                              filter,
+                              width: math.max(1.0, size.maxWidth),
+                              height: math.max(1.0, size.maxHeight),
+                            ),
                           ),
-                          child: Icon(_iconForFilter(filter), size: 12),
-                        ),
+                          Positioned(
+                            right: 1,
+                            bottom: 1,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: scheme.surface.withValues(alpha: .85),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: Icon(_iconForFilter(filter), size: 12),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    filterDisplayName(l10n, filter),
-                    maxLines: 2,
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 9),
-                  ),
-                  const SizedBox(height: 2),
-                  InkWell(
-                    onTap: () => service.toggleFavorite(filter.id),
-                    child: Icon(
-                      filter.isFavorite ? Icons.star : Icons.star_outline,
-                      size: 13,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 3),
+                    Text(
+                      filterDisplayName(l10n, filter),
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 9),
+                    ),
+                    InkWell(
+                      onTap: () => service.toggleFavorite(filter.id),
+                      child: Icon(
+                        filter.isFavorite ? Icons.star : Icons.star_outline,
+                        size: 15,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-          return locked
-              ? PremiumLockWidget(feature: premium, child: child)
-              : child;
-        },
-      ),
+            );
+            return locked
+                ? PremiumLockWidget(feature: premium, child: child)
+                : child;
+          },
+        );
+      },
     );
   }
 
@@ -952,12 +1001,12 @@ class _FilterPanelState extends State<FilterPanel> {
     AppLocalizations l10n,
     FilterService service,
     FilterDef current,
-    bool collapsed,
-  ) {
+    bool collapsed, {
+    bool withClose = true,
+  }) {
     return Row(
       children: [
-        // While editing, the filter list stays hidden to keep the canvas
-        // visible; this returns to it without closing.
+        // Dismiss the uncommitted preview; the gallery itself stays visible.
         IconButton(
           key: const ValueKey('filter-back-to-list'),
           icon: const Icon(Icons.arrow_back, size: 18),
@@ -965,7 +1014,7 @@ class _FilterPanelState extends State<FilterPanel> {
           visualDensity: VisualDensity.compact,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-          onPressed: service.clearCurrentFilter,
+          onPressed: _cancelPreview,
         ),
         Expanded(
           child: Text(
@@ -995,7 +1044,7 @@ class _FilterPanelState extends State<FilterPanel> {
             constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
             onPressed: () => setState(() => _collapsed = !_collapsed),
           ),
-        PanelCenterCloseBar(onClose: widget.onClose),
+        if (withClose) PanelCenterCloseBar(onClose: widget.onClose),
       ],
     );
   }
@@ -1114,80 +1163,115 @@ class _FilterPanelState extends State<FilterPanel> {
     FilterDef current,
   ) {
     final bulk = widget.bulkFrameIndices;
-    return Row(
+    const compact = BoxConstraints.tightFor(width: 36, height: 40);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        IconButton(
-          key: const ValueKey('filter-undo-button'),
-          onPressed: service.canUndoFilterEdit
-              ? () {
-                  service.undoFilterEdit();
-                  _updatePreview();
-                }
-              : null,
-          icon: const Icon(Icons.undo, size: 18),
-          tooltip: l10n.commonUndo,
-        ),
-        IconButton(
-          key: const ValueKey('filter-redo-button'),
-          onPressed: service.canRedoFilterEdit
-              ? () {
-                  service.redoFilterEdit();
-                  _updatePreview();
-                }
-              : null,
-          icon: const Icon(Icons.redo, size: 18),
-          tooltip: l10n.commonRedo,
-        ),
-        Expanded(
-          child: FilledButton.icon(
-            key: const ValueKey('filter-apply-button'),
-            onPressed: widget.layerId == null || _applying
-                ? null
-                : _applyFilter,
-            icon: _applying
-                ? SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                  )
-                : const Icon(Icons.check, size: 16),
-            label: Text(
-              bulk != null
-                  ? l10n.filterApplyBulkButton(bulk.length)
-                  : l10n.filterApplyButton,
+        Row(
+          children: [
+            IconButton(
+              key: const ValueKey('filter-undo-button'),
+              constraints: compact,
+              padding: EdgeInsets.zero,
+              onPressed: service.canUndoFilterEdit
+                  ? () {
+                      service.undoFilterEdit();
+                      _updatePreview();
+                    }
+                  : null,
+              icon: const Icon(Icons.undo, size: 18),
+              tooltip: l10n.commonUndo,
             ),
-          ),
+            IconButton(
+              key: const ValueKey('filter-redo-button'),
+              constraints: compact,
+              padding: EdgeInsets.zero,
+              onPressed: service.canRedoFilterEdit
+                  ? () {
+                      service.redoFilterEdit();
+                      _updatePreview();
+                    }
+                  : null,
+              icon: const Icon(Icons.redo, size: 18),
+              tooltip: l10n.commonRedo,
+            ),
+            if (current.kind == FilterKind.autoLineart) ...[
+              IconButton(
+                key: const ValueKey('auto-lineart-add-point-button'),
+                constraints: compact,
+                padding: EdgeInsets.zero,
+                onPressed: () => setState(
+                  () => _autoLineartControlMode =
+                      _autoLineartControlMode == AutoLineartControlMode.add
+                      ? AutoLineartControlMode.move
+                      : AutoLineartControlMode.add,
+                ),
+                icon: const Icon(Icons.add_circle_outline, size: 20),
+                tooltip: l10n.filterAutoLineartAddPointTooltip,
+                isSelected:
+                    _autoLineartControlMode == AutoLineartControlMode.add,
+              ),
+              IconButton(
+                key: const ValueKey('auto-lineart-delete-point-button'),
+                constraints: compact,
+                padding: EdgeInsets.zero,
+                onPressed: () => setState(
+                  () => _autoLineartControlMode =
+                      _autoLineartControlMode == AutoLineartControlMode.delete
+                      ? AutoLineartControlMode.move
+                      : AutoLineartControlMode.delete,
+                ),
+                icon: const Icon(Icons.remove_circle_outline, size: 20),
+                tooltip: l10n.filterAutoLineartDeletePointTooltip,
+                isSelected:
+                    _autoLineartControlMode == AutoLineartControlMode.delete,
+              ),
+            ],
+          ],
         ),
-        if (current.kind == FilterKind.autoLineart) ...[
-          IconButton(
-            key: const ValueKey('auto-lineart-add-point-button'),
-            onPressed: () => setState(
-              () => _autoLineartControlMode =
-                  _autoLineartControlMode == AutoLineartControlMode.add
-                  ? AutoLineartControlMode.move
-                  : AutoLineartControlMode.add,
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                key: const ValueKey('filter-cancel-button'),
+                onPressed: _applying ? null : _cancelPreview,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(l10n.commonCancel),
+                ),
+              ),
             ),
-            icon: const Icon(Icons.add_circle_outline, size: 20),
-            tooltip: l10n.filterAutoLineartAddPointTooltip,
-            isSelected: _autoLineartControlMode == AutoLineartControlMode.add,
-          ),
-          IconButton(
-            key: const ValueKey('auto-lineart-delete-point-button'),
-            onPressed: () => setState(
-              () => _autoLineartControlMode =
-                  _autoLineartControlMode == AutoLineartControlMode.delete
-                  ? AutoLineartControlMode.move
-                  : AutoLineartControlMode.delete,
+            const SizedBox(width: 8),
+            Expanded(
+              child: FilledButton.icon(
+                key: const ValueKey('filter-apply-button'),
+                onPressed: widget.layerId == null || _applying
+                    ? null
+                    : _applyFilter,
+                icon: _applying
+                    ? SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      )
+                    : const Icon(Icons.check, size: 16),
+                label: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    bulk != null
+                        ? l10n.filterApplyBulkButton(bulk.length)
+                        : l10n.filterApplyButton,
+                  ),
+                ),
+              ),
             ),
-            icon: const Icon(Icons.remove_circle_outline, size: 20),
-            tooltip: l10n.filterAutoLineartDeletePointTooltip,
-            isSelected:
-                _autoLineartControlMode == AutoLineartControlMode.delete,
-          ),
-        ],
+          ],
+        ),
       ],
     );
   }

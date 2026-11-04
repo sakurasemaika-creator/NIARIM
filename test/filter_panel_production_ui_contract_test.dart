@@ -101,14 +101,16 @@ void main() {
       final filters = panelContext.read<FilterService>().filters;
       expect(filters, isNotEmpty);
       expect(filters.map((f) => f.id).toSet(), hasLength(filters.length));
-      final horizontalList = find.byType(ListView).first;
+      final gallery = find.byKey(const ValueKey('filter-tile-grid'));
+      expect(gallery, findsOneWidget);
+      expect(tester.widget<GridView>(gallery).scrollDirection, Axis.vertical);
       for (final filter in filters) {
         final card = find.byKey(ValueKey('filter-card-${filter.id}'));
         await tester.scrollUntilVisible(
           card,
           120,
           scrollable: find.descendant(
-            of: horizontalList,
+            of: gallery,
             matching: find.byType(Scrollable),
           ),
         );
@@ -129,14 +131,14 @@ void main() {
           reason:
               '${filter.id} ${filter.name} must be selectable through the UI',
         );
-        // Edit mode hides the list; the back button returns to it.
-        expect(
-          find.byKey(const ValueKey('filter-apply-button')),
-          findsOneWidget,
-        );
-        expect(find.byKey(ValueKey('filter-card-${filter.id}')), findsNothing);
-        await tester.tap(find.byKey(const ValueKey('filter-back-to-list')));
+        // Selecting a filter must not hide the vertically scrolling gallery:
+        // the next candidate replaces the uncommitted preview.
+        expect(find.byKey(const ValueKey('filter-apply-button')), findsOneWidget);
+        expect(find.byKey(const ValueKey('filter-cancel-button')), findsOneWidget);
+        expect(gallery, findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('filter-cancel-button')));
         await tester.pump();
+        expect(panelContext.read<FilterService>().currentFilter, isNull);
       }
       expect(tester.takeException(), isNull);
     },
@@ -209,7 +211,7 @@ void main() {
         card,
         120,
         scrollable: find.descendant(
-          of: find.byType(ListView).first,
+          of: find.byKey(const ValueKey('filter-tile-grid')),
           matching: find.byType(Scrollable),
         ),
       );
@@ -267,7 +269,7 @@ void main() {
         levelsCard,
         120,
         scrollable: find.descendant(
-          of: find.byType(ListView).first,
+          of: find.byKey(const ValueKey('filter-tile-grid')),
           matching: find.byType(Scrollable),
         ),
       );

@@ -1625,15 +1625,19 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   `ConstrainedBox`で45%までに抑えてパネルを`Expanded`にしてある。
   プレビューは高さを使い切らない`Flexible(fit: loose)`なので、Flexの配分の
   ままだと余りが空白になりパネルが細い帯になった（実際に踏んだ）。
-- **タイムラインのプレビューの操作（フレーム数・ループ・全画面）は絵に重ねない
+- **タイムラインのプレビューの操作（フレーム数・全画面）は絵に重ねない
   （ユーザー指定）**：`timeline_screen.dart`の`_buildPreviewBand`が、プレビュー
-  欄の中央に絵を置き、フレーム数を左下・ループを右下・全画面を右上の「欄の隅の
-  絵の外」に置く。縦長の絵は左右、横長の絵は上下に操作の場所を空ける（絵を
-  大きく出せる方）。プレビュー欄の高さの上限は、横長の絵が横幅いっぱいになる
-  高さに上下の段（`_previewControlSize`×2）を足したもの。プレビューに操作を
-  足すときも絵の上ではなくこの欄の隅へ置き、
+  欄（`timelinePreviewArea`）の中央に絵を置き、フレーム数を左下・全画面を右上の
+  「欄そのものの隅（端から8px、dev_branchの決まり）」に置く。絵の大きさは隅の
+  操作に重ならない大きさにし、縦長の絵は左右、横長の絵は上下に操作の場所を
+  空ける（絵を大きく出せる方）。フレーム数は操作の大きさの幅に収まるよう縮める。
+  プレビュー欄の高さの上限は、横長の絵が横幅いっぱいになる高さに上下の段
+  （（`_previewControlSize`＋`_previewControlInset`）×2）を足したもの。
+  ループの切り替えは置かない（dev_branchが消した。再生はいつも先頭へ戻る）。
+  プレビューに操作を足すときも絵の上ではなくこの欄の隅へ置き、
   `test/timeline_preview_controls_test.dart`（絵の形3×画面3×欄の高さ3と
-  全画面表示）に通すこと。
+  全画面表示）とdev_branchの`requested_ui_all_captures_test`（欄の端から8px）に
+  通すこと。
 - **`dart format lib test tool`は他セッションの未整形ファイルまで書き換える**：
   別セッションがGitHub API経由で未整形のまま入れたファイル
   （`brush_texture_selector.dart`等）があり、全体にかけると無関係なファイルが
