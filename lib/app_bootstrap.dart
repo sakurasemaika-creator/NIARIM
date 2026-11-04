@@ -8,6 +8,7 @@ import 'engine/undo_manager.dart' as app_undo;
 import 'services/advertising_service.dart';
 import 'services/premium_service.dart';
 import 'services/project_service.dart';
+import 'services/creator_edit_session_reporter.dart';
 import 'services/settings_service.dart';
 import 'services/performance_service.dart';
 import 'services/brush_service.dart';
@@ -245,6 +246,14 @@ Future<List<SingleChildWidget>> _buildAppProviders(
       ),
     ),
   );
+  // Optional low-write edit-time pilot. Default builds have zero new network
+  // traffic; the server must independently enable the same pilot flag.
+  final editReporter = CreatorEditSessionReporter(
+    api: communityService.api,
+    accountId: () => googleAuthService.account?.id,
+  );
+  projectService.attachCreatorEditReporter(editReporter);
+
   await enter('community_preview');
   final communityPreviewService = own(CommunityPreviewService());
   // The poster's identity follows the signed-in Google account: signing out
