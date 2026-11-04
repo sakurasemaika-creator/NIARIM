@@ -15,6 +15,8 @@ on:
       - 'test/coin_redemption_attempt_store_test.dart'
       - 'test/reward_unlock_screen_test.dart'
       - 'test/coin_unlock_quote_test.dart'
+      - 'test/premium_coin_account_isolation_test.dart'
+      - 'lib/config/monetization_gate.dart'
   workflow_dispatch:
 
 permissions:
@@ -38,14 +40,17 @@ jobs:
             lib/services/advertising_service.dart \
             lib/services/coin_redemption_attempt_store.dart \
             lib/services/premium_service.dart \
+            lib/config/monetization_gate.dart \
             lib/services/api/community_api.dart \
             lib/screens/rewards/reward_unlock_screen.dart \
             lib/l10n/reward_unlock_labels.dart \
             lib/app_bootstrap.dart \
-            test/coin_redemption_attempt_store_test.dart
+            test/coin_redemption_attempt_store_test.dart \
+            test/premium_coin_account_isolation_test.dart
       - name: Reward idempotency and pricing widget tests
         run: |
           flutter test --no-pub --reporter expanded \
             test/coin_redemption_attempt_store_test.dart \
             test/reward_unlock_screen_test.dart \
-            test/coin_unlock_quote_test.dart
+            test/coin_unlock_quote_test.dart \
+            test/premium_coin_account_isolation_test.dart
