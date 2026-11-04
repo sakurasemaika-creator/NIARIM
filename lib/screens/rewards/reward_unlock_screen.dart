@@ -559,6 +559,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                     // these buttons become available. Never claim a saved
                     // goal or a completed redemption without a server ack.
                     FilledButton(
+                      key: const Key('rewardSetGoalButton'),
                       onPressed: null,
                       child: Text(t['goal']),
                     ),

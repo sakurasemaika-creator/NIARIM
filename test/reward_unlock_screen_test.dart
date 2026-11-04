@@ -61,8 +61,13 @@ void main() {
     expect(find.text('40 coins'), findsOneWidget);
 
     // No wallet/SSV/price quote is connected: neither action can spend coins.
-    expect(tester.widget<FilledButton>(find.byType(FilledButton).first).onPressed,
-        isNull);
+    final goalButton = find.byKey(const Key('rewardSetGoalButton'));
+    await tester.scrollUntilVisible(
+      goalButton, 260,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilledButton>(goalButton).onPressed, isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     premium.dispose();
     settings.dispose();
