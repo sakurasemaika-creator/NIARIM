@@ -978,7 +978,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      'No duration limit, no watermark, tone curve and level correction, and more — everything opens up.';
+      'Up to 2 hours, no watermark, tone curve and level correction, and more — unlock Premium features.';
 
   @override
   String get premiumHeroHighlightDuration => 'Up to 2 hours';
