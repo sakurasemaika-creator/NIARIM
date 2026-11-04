@@ -12,6 +12,8 @@ import '../utils/tolerant_preferences.dart';
 
 class FilterService extends ChangeNotifier {
   static const _prefsKey = 'draw_filters';
+  static const _colorNoiseProfileKey = 'draw_filter_noise_color_profile';
+  static const filmGrainFilterId = 'Filter0010';
   static const prismFilterId = 'Filter0022';
   static const vhsNoiseFilterId = 'Filter0024';
   static const mosaicFilterId = 'Filter0026';
@@ -19,6 +21,19 @@ class FilterService extends ChangeNotifier {
   static const sphereShadingFilterId = 'Filter0028';
   static const watercolorBorderFilterId = 'Filter0029';
 
+  /// Dedicated film-grain and VHS tiles always keep their named effects.
+  /// The general Noise tile and custom filters can change noise style.
+  static NoiseStyle? dedicatedNoiseStyleFor(String id) {
+    if (id == filmGrainFilterId) return NoiseStyle.filmGrain;
+    if (id == vhsNoiseFilterId) return NoiseStyle.vhs;
+    return null;
+  }
+
+  /// Legacy named presets remain private for saved settings and automations.
+  static bool _isMergedNoisePreset(FilterDef f) =>
+      f.id == filmGrainFilterId || f.id == vhsNoiseFilterId;
+
+  FilterDef? _colorNoiseProfile;
   final List<FilterDef> _filters = [];
   String? _currentFilterId;
   String _searchQuery = '';
@@ -28,7 +43,8 @@ class FilterService extends ChangeNotifier {
   int _editGroupDepth = 0;
   bool _editGroupRecorded = false;
 
-  List<FilterDef> get filters => List.unmodifiable(_filters);
+  List<FilterDef> get filters =>
+      List.unmodifiable(_filters.where((f) => !_isMergedNoisePreset(f)));
   FilterDef? get currentFilter =>
       _filters.where((f) => f.id == _currentFilterId).firstOrNull;
   String get searchQuery => _searchQuery;
@@ -37,7 +53,7 @@ class FilterService extends ChangeNotifier {
   bool get canRedoFilterEdit => _filterEditRedo.isNotEmpty;
 
   List<FilterDef> get visibleFilters {
-    return _filters.where((f) {
+    return filters.where((f) {
       if (_favoritesOnly && !f.isFavorite) return false;
       if (_searchQuery.isEmpty) return true;
       return f.name.contains(_searchQuery);
@@ -45,7 +61,8 @@ class FilterService extends ChangeNotifier {
   }
 
   /// The filters the app comes with, at their initial settings.
-  static List<FilterDef> get builtInFilters => _defaultFilters();
+  static List<FilterDef> get builtInFilters =>
+      _defaultFilters().where((f) => !_isMergedNoisePreset(f)).toList();
 
   static List<FilterDef> _defaultFilters() => const [
     FilterDef(
@@ -96,7 +113,7 @@ class FilterService extends ChangeNotifier {
       strength: 50,
     ),
     FilterDef(
-      id: 'Filter0010',
+      id: filmGrainFilterId,
       name: 'フィルムグレイン',
       kind: FilterKind.noise,
       strength: 15,
@@ -234,6 +251,22 @@ class FilterService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.readStringList(_prefsKey);
     _filters.clear();
+    _colorNoiseProfile = null;
+    final savedColor = prefs.readString(_colorNoiseProfileKey);
+    if (savedColor != null) {
+      try {
+        final json = jsonDecode(savedColor) as Map<String, dynamic>;
+        if (FilterDef.hasKnownKind(json)) {
+          final profile = FilterDef.fromJson(json);
+          if (profile.kind == FilterKind.noise &&
+              profile.noiseStyle == NoiseStyle.color) {
+            _colorNoiseProfile = profile;
+          }
+        }
+      } catch (_) {
+        // A damaged optional profile must not prevent opening a project.
+      }
+    }
     if (raw == null) {
       _filters.addAll(_defaultFilters());
       await _persist();
@@ -272,6 +305,15 @@ class FilterService extends ChangeNotifier {
             );
             migratedFilterState = true;
           }
+          final dedicatedStyle = filter.kind == FilterKind.noise
+              ? dedicatedNoiseStyleFor(filter.id)
+              : null;
+          if (dedicatedStyle != null && filter.noiseStyle != dedicatedStyle) {
+            // Older versions could save a different effect under the named
+            // film-grain or VHS tile. Preserve all other edited parameters.
+            filter = filter.copyWith(noiseStyle: dedicatedStyle);
+            migratedFilterState = true;
+          }
           return filter;
         }),
       );
@@ -282,7 +324,27 @@ class FilterService extends ChangeNotifier {
       if (missing.isNotEmpty) _filters.addAll(missing);
       if (missing.isNotEmpty || migratedFilterState) await _persist();
     }
-    _currentFilterId = _filters.firstOrNull?.id;
+    final index = _filters.indexWhere((f) => f.id == genericNoiseFilterId);
+    // Merge old stars into Noise, then clear hidden stars so unstar stays.
+    final inheritedStar = _filters.any(
+      (f) => _isMergedNoisePreset(f) && f.isFavorite,
+    );
+    if (index >= 0 && inheritedStar) {
+      _filters[index] = _filters[index].copyWith(isFavorite: true);
+      for (var i = 0; i < _filters.length; i++) {
+        if (_isMergedNoisePreset(_filters[i]) && _filters[i].isFavorite) {
+          _filters[i] = _filters[i].copyWith(isFavorite: false);
+        }
+      }
+      await _persist();
+    }
+    if (index >= 0 && _filters[index].noiseStyle == NoiseStyle.color) {
+      _colorNoiseProfile = _filters[index];
+    }
+    _colorNoiseProfile ??= _defaultFilters().firstWhere(
+      (f) => f.id == genericNoiseFilterId,
+    );
+    _currentFilterId = filters.firstOrNull?.id;
   }
 
   Future<void> _persist() async {
@@ -291,6 +353,60 @@ class FilterService extends ChangeNotifier {
       _prefsKey,
       _filters.map((f) => jsonEncode(f.toJson())).toList(),
     );
+    final color = _colorNoiseProfile;
+    if (color != null) {
+      await prefs.setString(_colorNoiseProfileKey, jsonEncode(color.toJson()));
+    }
+  }
+
+  /// One Noise tile restores distinct settings for film, color, and VHS.
+  /// The old IDs remain readable for earlier saved and recorded operations.
+  void selectNoiseStyle(String id, NoiseStyle style) {
+    final filter = _filters.where((f) => f.id == id).firstOrNull;
+    if (filter == null || filter.kind != FilterKind.noise) return;
+    if (filter.noiseStyle == style) return;
+    if (id != genericNoiseFilterId) {
+      updateFilterParams(id, noiseStyle: style);
+      return;
+    }
+
+    if (filter.noiseStyle == NoiseStyle.color) {
+      _colorNoiseProfile = filter;
+    } else {
+      final previousId = filter.noiseStyle == NoiseStyle.vhs
+          ? vhsNoiseFilterId
+          : filmGrainFilterId;
+      final previousIndex = _filters.indexWhere((f) => f.id == previousId);
+      if (previousIndex >= 0) {
+        _filters[previousIndex] = _filters[previousIndex].copyWith(
+          strength: filter.strength,
+          noiseSeed: filter.noiseSeed,
+          caSaturation: filter.caSaturation,
+          caBrightness: filter.caBrightness,
+          caContrast: filter.caContrast,
+        );
+      }
+    }
+
+    final profile = style == NoiseStyle.color
+        ? _colorNoiseProfile
+        : _filters.where(
+            (f) => f.id ==
+                (style == NoiseStyle.vhs ? vhsNoiseFilterId : filmGrainFilterId),
+          ).firstOrNull;
+    if (profile == null) {
+      updateFilterParams(id, noiseStyle: style);
+    } else {
+      updateFilterParams(
+        id,
+        noiseStyle: style,
+        strength: profile.strength,
+        noiseSeed: profile.noiseSeed,
+        caSaturation: profile.caSaturation,
+        caBrightness: profile.caBrightness,
+        caContrast: profile.caContrast,
+      );
+    }
   }
 
   void selectFilter(String id) {
@@ -411,7 +527,11 @@ class FilterService extends ChangeNotifier {
     final before = _filters[idx];
     final after = before.copyWith(
       strength: strength,
-      noiseStyle: noiseStyle,
+      noiseStyle:
+          (before.kind == FilterKind.noise
+              ? dedicatedNoiseStyleFor(before.id)
+              : null) ??
+          noiseStyle,
       noiseSeed: noiseSeed,
       colorLevels: colorLevels,
       edgeStrength: edgeStrength,
@@ -687,12 +807,19 @@ class FilterService extends ChangeNotifier {
   }
 
   void reorderFilter(String id, int newIndex) {
-    final oldIndex = _filters.indexWhere((f) => f.id == id);
+    final displayed = filters.toList();
+    final oldIndex = displayed.indexWhere((f) => f.id == id);
     if (oldIndex < 0) return;
-    final target = newIndex.clamp(0, _filters.length - 1);
+    final target = newIndex.clamp(0, displayed.length - 1);
     if (oldIndex == target) return;
-    final item = _filters.removeAt(oldIndex);
-    _filters.insert(target, item);
+    final item = displayed.removeAt(oldIndex);
+    displayed.insert(target, item);
+    var next = 0;
+    for (var i = 0; i < _filters.length; i++) {
+      if (!_isMergedNoisePreset(_filters[i])) {
+        _filters[i] = displayed[next++];
+      }
+    }
     notifyListeners();
     _persist();
   }

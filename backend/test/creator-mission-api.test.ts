@@ -1,0 +1,128 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { GetCommand, QueryCommand, TransactWriteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
+
+const { send } = vi.hoisted(() => ({ send: vi.fn() }));
+vi.mock("../src/lib/dynamo", async (original) => ({
+  ...(await original<typeof import("../src/lib/dynamo")>()),
+  ddb: { send },
+}));
+vi.mock("../src/lib/auth", () => ({
+  authenticate: vi.fn(async () => ({
+    niarimUserId: "NverifiedByGoogle",
+    googleSub: "test-google-sub",
+    membershipTier: "free",
+  })),
+  getUser: vi.fn(async () => ({
+    niarimUserId: "NverifiedByGoogle",
+    followerCount: 14,
+  })),
+}));
+import { claimCreatorMission, getMyCreatorMissions } from "../src/api/routes/creatorMissions";
+import { ApiError } from "../src/lib/response";
+
+const req = (body?: object) => ({
+  headers: { authorization: "Bearer mock-google-id-token" },
+  queryStringParameters: { niarimUserId: "Nattacker" },
+  body: body === undefined ? undefined : JSON.stringify(body),
+}) as unknown as APIGatewayProxyEventV2;
+
+beforeEach(() => {
+  process.env.TABLE_NAME = "test-table";
+  delete process.env.CREATOR_MISSION_CLAIMS_ENABLED;
+  send.mockReset();
+  send.mockResolvedValue({});
+});
+
+describe("creator mission endpoints", () => {
+  it("GET uses only point reads and verified user ID", async () => {
+    const resp = await getMyCreatorMissions(req());
+    expect(resp.statusCode).toBe(200);
+    const body = JSON.parse(resp.body ?? "{}");
+    expect(body.enabled).toBe(false);
+    expect(body.missions).toHaveLength(17);
+    expect(body.editTimeVerificationReady).toBe(false);
+    expect(body.verifiedEditSeconds).toBe(0);
+    const commands = send.mock.calls.map(([command]) => command);
+    expect(commands).toHaveLength(1);
+    expect(commands[0]).toBeInstanceOf(GetCommand);
+    expect(commands[0].input.Key?.pk).toBe("USER#NverifiedByGoogle");
+    expect(commands[0]).not.toBeInstanceOf(QueryCommand);
+  });
+
+  it("does not allow arbitrary user claims or award coins before launch", async () => {
+    await expect(claimCreatorMission(req({
+      missionId: "followers_10",
+      niarimUserId: "Nattacker",
+    }))).rejects.toMatchObject({
+      statusCode: 403,
+      code: "CREATOR_MISSIONS_DISABLED",
+    } satisfies Partial<ApiError>);
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("never pays from locally editable project work seconds", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    await expect(claimCreatorMission(req({
+      missionId: "edit_100h", totalWorkSeconds: 1000000,
+    }))).rejects.toMatchObject({
+      code: "MISSION_VERIFICATION_PENDING",
+    });
+    expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand)).toBe(false);
+  });
+
+  it("first eligible follower claim enters hold and creates no coins", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    const resp = await claimCreatorMission(req({ missionId: "followers_10" }));
+    expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
+      claimed: false, pending: true, awardedCoins: 0,
+    });
+    const writes = send.mock.calls.map(([c]) => c);
+    expect(writes.filter((c) => c instanceof UpdateCommand)).toHaveLength(1);
+    expect(writes.filter((c) => c instanceof TransactWriteCommand)).toHaveLength(0);
+  });
+
+  it("matured achievement credits the existing wallet atomically once", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    const old = Math.floor(Date.now() / 1000) - 3 * 86400;
+    send.mockImplementation(async (c: unknown) => {
+      if (c instanceof GetCommand) return { Item: {
+        itemType: "CREATOR_MISSIONS_V1",
+        claimedMask: 0,
+        revision: 3,
+        totalMissionCoins: 0,
+        verifiedEditSeconds: 0,
+        firstQualifiedAt: { "10": old },
+      }};
+      return {};
+    });
+    const resp = await claimCreatorMission(req({ missionId: "followers_10" }));
+    expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
+      claimed: true, awardedCoins: 50,
+    });
+    const tx = send.mock.calls.map(([c]) => c)
+      .find((c) => c instanceof TransactWriteCommand);
+    expect(tx).toBeDefined();
+    expect(tx.input.TransactItems).toHaveLength(2);
+    expect(tx.input.TransactItems?.[0].Update?.Key?.pk).toBe("USER#NverifiedByGoogle");
+    expect(tx.input.TransactItems?.[1].Update?.Key?.pk).toBe("USER#NverifiedByGoogle");
+    expect(tx.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":reward"]).toBe(50);
+    expect(tx.input.TransactItems?.[0].Update?.ExpressionAttributeValues?.[":newMask"]).toBe(2 ** 10);
+  });
+
+  it("duplicate claimed mask never pays the wallet twice", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    send.mockImplementation(async (c: unknown) => {
+      if (c instanceof GetCommand) return { Item: {
+        itemType: "CREATOR_MISSIONS_V1", claimedMask: 2 ** 10,
+        revision: 4, totalMissionCoins: 50,
+      }};
+      return {};
+    });
+    const resp = await claimCreatorMission(req({ missionId: "followers_10" }));
+    expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
+      claimed: true, awardedCoins: 0,
+    });
+    expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand)).toBe(false);
+  });
+});

@@ -2148,6 +2148,11 @@ void main() {
     await visitRoutesAndPop(tester, const ['/shared', '/trash']);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
+  testWidgets('起動→ホーム→特典・クリエイターミッション画面を例外なく表示できる', (WidgetTester tester) async {
+    await bootToHome(tester);
+    await visitRoutesAndPop(tester, const ['/rewards', '/creator-missions']);
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
   testWidgets('起動→新規プロジェクト作成→詳細・素材管理・書き出し・自動塗りプリセット・'
       'セーブツリー画面を例外なく表示できる', (WidgetTester tester) async {
     await bootToHome(tester);

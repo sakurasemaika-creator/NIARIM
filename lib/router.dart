@@ -21,6 +21,8 @@ import 'screens/export/export_screen.dart';
 import 'screens/help/help_screen.dart';
 import 'screens/tips/tips_screen.dart';
 import 'screens/premium/premium_screen.dart';
+import 'screens/rewards/reward_unlock_screen.dart';
+import 'screens/rewards/creator_missions_screen.dart';
 import 'screens/autofill/autofill_preset_screen.dart';
 import 'screens/save_tree/save_management_screen.dart';
 import 'screens/materials/material_list_screen.dart';
@@ -175,6 +177,16 @@ final appRouter = GoRouter(
       path: '/premium',
       builder: (context, state) =>
           const AdMockPageFrame(child: PremiumScreen()),
+    ),
+    GoRoute(
+      path: '/rewards',
+      builder: (context, state) =>
+          const AdMockPageFrame(child: RewardUnlockScreen()),
+    ),
+    GoRoute(
+      path: '/creator-missions',
+      builder: (context, state) =>
+          const AdMockPageFrame(child: CreatorMissionsScreen()),
     ),
     GoRoute(
       path: '/autofill-presets',

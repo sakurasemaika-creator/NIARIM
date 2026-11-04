@@ -13,6 +13,8 @@ import { getLatestWorks } from "./routes/worksLatest";
 import { getPlaybackStatus } from "./routes/worksPlaybackStatus";
 import { getAuthorWorks, getMyWorks } from "./routes/userWorks";
 import { createWork } from "./routes/worksCreate";
+import { getMyRewardState } from "./routes/rewardState";
+import { getMyCreatorMissions, claimCreatorMission } from "./routes/creatorMissions";
 import { updateWork } from "./routes/worksUpdate";
 import { deleteWork } from "./routes/worksDelete";
 import { updateTags } from "./routes/tags";
@@ -88,6 +90,9 @@ const routes: Route[] = [
   // Authenticated owner read. This keeps account switching simple on clients:
   // callers do not need to know or persist the generated NIARIM user id.
   route("GET", "/me/works", (e) => getMyWorks(e)),
+  route("GET", "/me/rewards", (e) => getMyRewardState(e)),
+  route("GET", "/me/missions", (e) => getMyCreatorMissions(e)),
+  route("POST", "/me/missions/claim", (e) => claimCreatorMission(e)),
 
   // Authenticated mutations.
   route("POST", "/works", (e) => createWork(e)),

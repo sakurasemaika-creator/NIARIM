@@ -107,6 +107,13 @@ class AdvertisingService extends ChangeNotifier {
   bool get shouldShowAds =>
       isMonetizationEnabled && !premiumService.isPremium && _canRequestAds;
 
+  /// Rewarded ads are USER-INITIATED and separate from normal placements.
+  /// A paying Premium member may choose to accumulate coins for later use.
+  /// Being Premium hides normal ads, but does not prevent optional rewards.
+  /// Real grants remain disabled until rewarded SDK/SSV/wallet are connected.
+  bool get canOfferRewardedAds =>
+      isMonetizationEnabled && _canRequestAds && supportsMobilePluginRuntime;
+
   /// ロード済みバナー広告。未ロード・プレミアム時はnull（AdBannerWidgetが描画に使う）。
   BannerAd? get bannerAd => shouldShowAds ? _provider.currentBanner : null;
 

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -36,7 +37,7 @@ void main() {
         .setMockMethodCallHandler(pathProviderChannel, null);
   });
 
-  testWidgets('every noise style is editable through the production UI', (
+  testWidgets('dedicated noise effects keep focused controls while general noise stays configurable', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1080, 2160);
@@ -103,7 +104,8 @@ void main() {
         .filters
         .where((f) => f.kind == FilterKind.noise)
         .toList();
-    expect(filters, hasLength(3));
+    expect(filters, hasLength(1));
+    expect(panelContext.read<FilterService>().filters, hasLength(26));
     final gallery = find.byKey(const ValueKey('filter-tile-grid'));
     for (final filter in filters) {
       final card = find.byKey(ValueKey('filter-card-${filter.id}'));
@@ -130,16 +132,34 @@ void main() {
         reason: '${filter.id} ${filter.name} must be selectable through the UI',
       );
       expect(find.byKey(const ValueKey('filter-apply-button')), findsOneWidget);
-      if (filter.kind == FilterKind.noise) {
-        final selector = find.byType(DropdownButtonFormField<NoiseStyle>);
-        await tester.ensureVisible(selector);
-        await tester.tap(selector);
-        await tester.pump(const Duration(milliseconds: 300));
-        await tester.tap(find.text('カラーノイズ').last);
-        await tester.pump();
+      final selector = find.byKey(const ValueKey('noise-style-option-color'));
+      expect(find.byKey(const ValueKey('noise-style-option-filmGrain')), findsOneWidget);
+      expect(find.byKey(const ValueKey('noise-style-option-vhs')), findsOneWidget);
+      if (filter.id == FilterService.genericNoiseFilterId) {
+        expect(selector, findsOneWidget);
+        for (final style in [
+          NoiseStyle.filmGrain,
+          NoiseStyle.vhs,
+          NoiseStyle.color,
+        ]) {
+          final choice = find.byKey(ValueKey('noise-style-option-${style.name}'));
+          await tester.ensureVisible(choice);
+          await tester.tap(choice);
+          await tester.pump();
+          expect(panelContext.read<FilterService>().currentFilter!.noiseStyle, style);
+          expect(
+            find.textContaining('走査線'),
+            style == NoiseStyle.vhs ? findsOneWidget : findsNothing,
+          );
+        }
+      } else {
+        // Two named effects do not need an algorithm selector.
+        expect(selector, findsNothing);
         expect(
           panelContext.read<FilterService>().currentFilter!.noiseStyle,
-          NoiseStyle.color,
+          filter.id == FilterService.vhsNoiseFilterId
+              ? NoiseStyle.vhs
+              : NoiseStyle.filmGrain,
         );
       }
       // The gallery remains visible; cancel the temporary selection.
@@ -147,6 +167,82 @@ void main() {
       await tester.pump();
     }
     expect(tester.takeException(), isNull);
+  });
+  test('saved named noise effects are normalized but custom filters are kept',
+      () async {
+    final template = FilterService.builtInFilters.firstWhere(
+      (f) => f.id == FilterService.genericNoiseFilterId,
+    );
+    final grain = template.copyWith(
+      id: FilterService.filmGrainFilterId,
+      name: 'フィルムグレイン',
+      noiseStyle: NoiseStyle.filmGrain,
+      strength: 47,
+      isFavorite: true,
+    );
+    final vhs = template.copyWith(
+      id: FilterService.vhsNoiseFilterId,
+      name: 'VHSノイズ',
+      noiseStyle: NoiseStyle.vhs,
+      strength: 38,
+      caSaturation: 62,
+    );
+    final color = template.copyWith(strength: 21);
+    const custom = FilterDef(
+      id: 'custom-noise',
+      name: 'Custom noise',
+      kind: FilterKind.noise,
+      noiseStyle: NoiseStyle.vhs,
+    );
+    SharedPreferences.setMockInitialValues({
+      'draw_filters': [
+        jsonEncode(grain.toJson()),
+        jsonEncode(vhs.toJson()),
+        jsonEncode(color.toJson()),
+        jsonEncode(custom.toJson()),
+      ],
+    });
+    final service = FilterService();
+    await service.init();
+
+    FilterDef noise() => service.filters.firstWhere(
+      (f) => f.id == FilterService.genericNoiseFilterId,
+    );
+    expect(service.filters, hasLength(27)); // 26 built-ins and one custom
+    expect(service.filters.where((f) => f.kind == FilterKind.noise), hasLength(2));
+    expect(noise().isFavorite, isTrue);
+    expect(service.filters.any((f) => f.id == FilterService.filmGrainFilterId), isFalse);
+    expect(service.filters.any((f) => f.id == FilterService.vhsNoiseFilterId), isFalse);
+    expect(service.filters.firstWhere((f) => f.id == 'custom-noise').noiseStyle, NoiseStyle.vhs);
+    // Legacy names still resolve internally for older recorded operations.
+    service.selectFilter(FilterService.vhsNoiseFilterId);
+    expect(service.currentFilter!.strength, 38);
+    service.clearCurrentFilter();
+
+    service.selectNoiseStyle(FilterService.genericNoiseFilterId, NoiseStyle.filmGrain);
+    expect(noise().strength, 47);
+    service.updateFilterParams(FilterService.genericNoiseFilterId, strength: 49);
+    service.selectNoiseStyle(FilterService.genericNoiseFilterId, NoiseStyle.vhs);
+    expect(noise().strength, 38);
+    expect(noise().caSaturation, 62);
+    service.selectNoiseStyle(FilterService.genericNoiseFilterId, NoiseStyle.color);
+    expect(noise().strength, 21);
+    service.selectNoiseStyle(FilterService.genericNoiseFilterId, NoiseStyle.filmGrain);
+    expect(noise().strength, 49);
+    service.toggleFavorite(FilterService.genericNoiseFilterId);
+    expect(noise().isFavorite, isFalse);
+
+    await Future<void>.delayed(Duration.zero);
+    final reopened = FilterService();
+    await reopened.init();
+    final restored = reopened.filters.firstWhere(
+      (f) => f.id == FilterService.genericNoiseFilterId,
+    );
+    expect(restored.isFavorite, isFalse);
+    reopened.selectNoiseStyle(FilterService.genericNoiseFilterId, NoiseStyle.vhs);
+    expect(reopened.filters.firstWhere((f) => f.id == FilterService.genericNoiseFilterId).caSaturation, 62);
+    reopened.selectNoiseStyle(FilterService.genericNoiseFilterId, NoiseStyle.color);
+    expect(reopened.filters.firstWhere((f) => f.id == FilterService.genericNoiseFilterId).strength, 21);
   });
 }
 

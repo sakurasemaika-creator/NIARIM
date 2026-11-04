@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../config/accent_text_theme.dart';
+import '../../../l10n/reward_unlock_labels.dart';
+import '../../../l10n/creator_mission_labels.dart';
 import '../../../config/font_fallback.dart';
 import '../../canvas/widgets/canvas_icon_button.dart';
 import '../../../widgets/app_tutorial.dart';
@@ -198,6 +200,36 @@ class HomeDrawer extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 context.push('/tips');
+              },
+            ),
+            ListTile(
+              key: const Key('homeCreatorMissionsMenuItem'),
+              leading: drawerIcon(Icons.flag_outlined),
+              title: Text(
+                CreatorMissionLabels.of(context).get('title'),
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/creator-missions');
+              },
+            ),
+            ListTile(
+              key: const Key('homeRewardMenuItem'),
+              leading: drawerIcon(Icons.ondemand_video_outlined),
+              title: Text(
+                RewardUnlockLabels.of(context)['title'],
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/rewards');
               },
             ),
             ListTile(

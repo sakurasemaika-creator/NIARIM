@@ -12,6 +12,7 @@ import {
 } from "./dynamo";
 import type { MembershipTier } from "./types";
 import { conflict } from "./response";
+import { resolvePostMembershipTier } from "./rewardEntitlement";
 
 /** 11.1節の初期仕様。 */
 export const DAILY_POST_LIMIT_PER_USER: Record<MembershipTier, number> = {
@@ -47,7 +48,11 @@ export async function reservePostQuota(
 ): Promise<void> {
   const now = new Date();
   const date = todayYyyymmdd(now);
-  const userLimit = DAILY_POST_LIMIT_PER_USER[tier];
+  // Use only entitlements obtained from the authenticated, server-side NIARIM ID.
+  // An expired/paused reward reverts to free quota, but previously posted
+  // works and the already-used daily counter remain unchanged.
+  const effectiveTier = await resolvePostMembershipTier(niarimUserId, tier, now);
+  const userLimit = DAILY_POST_LIMIT_PER_USER[effectiveTier];
   const ttl = counterTtl(now);
 
   const userKey = Keys.dailyCounter(niarimUserId, date);
