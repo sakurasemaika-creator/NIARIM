@@ -55,5 +55,5 @@ jobs:
             test/coin_redemption_attempt_store_test.dart \
             test/reward_unlock_screen_test.dart \
             test/coin_unlock_quote_test.dart \
-            test/premium_play_verification_policy_test.dart
+            test/premium_play_verification_policy_test.dart \
             test/premium_coin_account_isolation_test.dart
