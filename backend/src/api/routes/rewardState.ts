@@ -40,6 +40,7 @@ export async function getMyRewardState(event: APIGatewayProxyEventV2) {
   // Missing wallet means zero verified spendable coins, never an error.
   const balanceCoins =
     coin?.itemType === "COIN_WALLET" &&
+    typeof coin.balanceCoins === "number" &&
     Number.isSafeInteger(coin.balanceCoins) &&
     coin.balanceCoins >= 0
       ? coin.balanceCoins as number
