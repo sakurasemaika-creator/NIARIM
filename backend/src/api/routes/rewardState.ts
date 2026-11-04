@@ -5,6 +5,7 @@ import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { ok } from "../../lib/response";
 import { rewardedAdConfiguration } from "./rewardedAd";
 import { premiumRedemptionOffer } from "../../lib/coinRedemption";
+import { remainingRewardedGrants, rewardAdDailyQuota } from "../../lib/rewardAdQuota";
 
 /**
  * Read-only reward wallet endpoint. Google ID token -> NIARIM user ID is
@@ -15,7 +16,10 @@ export async function getMyRewardState(event: APIGatewayProxyEventV2) {
   const auth = await authenticate(
     event.headers["authorization"] ?? event.headers["Authorization"],
   );
-  const [wallet, entitlementPage] = await Promise.all([
+  const now = Date.now();
+  const adConfig = rewardedAdConfiguration();
+  const adQuota = rewardAdDailyQuota(now);
+  const [wallet, entitlementPage, adCount] = await Promise.all([
     ddb.send(
       new GetCommand({
         TableName: tableName(),
@@ -35,6 +39,13 @@ export async function getMyRewardState(event: APIGatewayProxyEventV2) {
         Limit: 100,
       }),
     ),
+    adConfig.enabled && adQuota.limit !== null
+      ? ddb.send(new GetCommand({
+          TableName: tableName(),
+          Key: Keys.rewardAdDailyCount(auth.niarimUserId, adQuota.dayUtc),
+          ConsistentRead: true,
+        }))
+      : Promise.resolve(null),
   ]);
 
   const coin = wallet.Item;
@@ -47,8 +58,6 @@ export async function getMyRewardState(event: APIGatewayProxyEventV2) {
     coin.balanceCoins >= 0
       ? coin.balanceCoins as number
       : 0;
-  const now = Date.now();
-
   const entitlements = (entitlementPage.Items ?? [])
     .filter((row) =>
       row.itemType === "REWARD_ENTITLEMENT" &&
@@ -74,10 +83,18 @@ export async function getMyRewardState(event: APIGatewayProxyEventV2) {
     balanceCoins,
     entitlements,
     membershipTier: auth.membershipTier,
-    // No fabricated coin rewards/quotes; server write endpoints are not live.
-    rewardEarningEnabled: rewardedAdConfiguration().enabled,
-    rewardedOfferVersion: rewardedAdConfiguration().version,
-    rewardedCoinsPerCompletion: rewardedAdConfiguration().amount,
+    // Actual ad availability remains dependent on AdMob inventory and
+    // AdMob's independently configured frequency caps. This counter only
+    // tracks NIARIM-verifiable COIN GRANTS on a UTC day.
+    rewardEarningEnabled: adConfig.enabled,
+    rewardedOfferVersion: adConfig.version,
+    rewardedCoinsPerCompletion: adConfig.amount,
+    rewardedDailyLimit: adConfig.enabled ? adQuota.limit : null,
+    rewardedDailyRemaining: adConfig.enabled
+      ? remainingRewardedGrants(adQuota.limit, adCount?.Item?.consumed)
+      : null,
+    rewardedDailyResetAtEpochMs: adConfig.enabled && adQuota.limit !== null
+      ? adQuota.resetsAtEpochMs : null,
     redemptionEnabled: premiumRedemptionOffer().enabled,
   });
 }
