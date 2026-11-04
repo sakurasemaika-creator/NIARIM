@@ -96,6 +96,26 @@ class CommunityApi {
   Future<Map<String, dynamic>> beginRewardedAdSession() =>
       _client.postJson('/me/rewards/ad-session', authenticated: true);
 
+  /// Price from authenticated server catalog. Never use local reference rates.
+  Future<Map<String, dynamic>> fullPremiumCoinQuote() =>
+      _client.getJson('/me/rewards/quote',
+        authenticated: true,
+        query: {'target': 'fullPremium', 'months': '1'});
+
+  /// Exactly-once redemption; the stable request UUID MUST be reused after
+  /// network timeout, rather than creating a fresh debit attempt.
+  Future<Map<String, dynamic>> redeemFullPremiumCoins({
+    required String requestId,
+    required String priceVersion,
+  }) => _client.postJson('/me/rewards/redeem',
+      authenticated: true,
+      body: {
+        'target': 'fullPremium',
+        'months': 1,
+        'requestId': requestId,
+        'priceVersion': priceVersion,
+      });
+
   /// Account status by default; specify an owned YouTube video ID to
   /// inspect the once-per-work bookmark and rank claim history.
   Future<Map<String, dynamic>> myCreatorMissions({String? workId}) =>
