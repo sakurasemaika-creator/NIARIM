@@ -106,7 +106,7 @@ describe("creator mission endpoints", () => {
     });
     const tx = send.mock.calls.map(([c]) => c)
       .find((c) => c instanceof TransactWriteCommand);
-    expect(tx).toBeDefined();
+    if (!tx) throw new Error("Missing atomic mission award transaction");
     expect(tx.input.TransactItems).toHaveLength(2);
     expect(tx.input.TransactItems?.[0].Update?.Key?.pk).toBe("USER#NverifiedByGoogle");
     expect(tx.input.TransactItems?.[1].Update?.Key?.pk).toBe("USER#NverifiedByGoogle");
