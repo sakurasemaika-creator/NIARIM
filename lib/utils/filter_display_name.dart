@@ -6,8 +6,7 @@ import '../services/filter_service.dart';
 /// built-in Japanese one).
 String filterDisplayName(AppLocalizations l10n, FilterDef filter) {
   if (filter.id == 'Filter0025') return l10n.filterNameInvert;
-  // Its noise style can be changed, so it is named by its preset rather
-  // than by style; otherwise it shares Film Grain's name.
+  // The unified Noise tile keeps its name across all three modes.
   if (filter.id == FilterService.genericNoiseFilterId) {
     return l10n.filterNameGenericNoise;
   }

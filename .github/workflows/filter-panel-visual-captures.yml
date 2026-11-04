@@ -37,18 +37,18 @@ jobs:
           CI: 'true'
         run: |
           flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=filters
-      - name: Verify all 28 filter settings screenshots exist
+      - name: Verify 26 filter tiles and three noise styles have screenshots
         run: |
           python3 - <<'PY'
           from pathlib import Path
           captures = Path('build/feature-captures/filters')
           screenshots = sorted(captures.glob('Filter????_*-settings.png'))
           ids = {path.name.split('_', 1)[0] for path in screenshots}
-          assert len(ids) == 28, f'Expected 28 named filters, captured {len(ids)}: {sorted(ids)}'
+          assert len(ids) == 26, f'Expected 26 named filters, captured {len(ids)}: {sorted(ids)}'
           assert (captures / 'Filter0025_default-settings.png').is_file()
-          assert (captures / 'Filter0010_default-settings.png').is_file()
-          assert (captures / 'Filter0024_default-settings.png').is_file()
-          assert (captures / 'Filter0027_default-settings.png').is_file()
+          assert (captures / 'Filter0027_filmGrain-settings.png').is_file()
+          assert (captures / 'Filter0027_color-settings.png').is_file()
+          assert (captures / 'Filter0027_vhs-settings.png').is_file()
           print(f'Captured {len(screenshots)} settings screens across {len(ids)} filters')
           PY
       - name: Stamp revision for human screenshot review

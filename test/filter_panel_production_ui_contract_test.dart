@@ -148,14 +148,10 @@ void main() {
         }
         expect(find.byKey(const ValueKey('filter-cancel-button')), findsOneWidget);
         expect(gallery, findsNothing);
-        final noiseStyleSelector =
-            find.byType(DropdownButtonFormField<NoiseStyle>);
         expect(
-          noiseStyleSelector,
-          filter.id == FilterService.genericNoiseFilterId
-              ? findsOneWidget
-              : findsNothing,
-          reason: '${filter.id}: only general noise needs an algorithm selector',
+          find.byKey(const ValueKey('noise-style-option-color')),
+          filter.kind == FilterKind.noise ? findsOneWidget : findsNothing,
+          reason: '${filter.id}: Noise has the three radio options',
         );
         expect(
           find.byKey(const ValueKey('filter-collapse-button')),

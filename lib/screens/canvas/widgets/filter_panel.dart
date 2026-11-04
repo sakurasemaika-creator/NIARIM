@@ -1351,32 +1351,45 @@ class _FilterPanelState extends State<FilterPanel> {
     if (current.kind == FilterKind.noise) {
       return Column(
         children: [
-          if (FilterService.dedicatedNoiseStyleFor(current.id) == null)
-            DropdownButtonFormField<NoiseStyle>(
-              key: ValueKey('noise-style-${current.noiseStyle.name}'),
-              decoration: _overCanvasDecoration(label: l10n.filterNoiseStyle),
-              style: _overCanvasTextStyle(),
-              initialValue: current.noiseStyle,
-              items: [
-                DropdownMenuItem(
-                  value: NoiseStyle.filmGrain,
-                  child: Text(l10n.filterNoiseFilmGrain),
-                ),
-                DropdownMenuItem(
-                  value: NoiseStyle.color,
-                  child: Text(l10n.filterNoiseColor),
-                ),
-                DropdownMenuItem(
-                  value: NoiseStyle.vhs,
-                  child: Text(l10n.filterNameVhsNoise),
-                ),
-              ],
-              onChanged: (style) {
-                if (style != null) {
-                  service.updateFilterParams(current.id, noiseStyle: style);
-                  _updatePreview();
-                }
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(l10n.filterNoiseStyle, style: _overCanvasTextStyle()),
+          ),
+          for (final style in NoiseStyle.values)
+            InkWell(
+              key: ValueKey('noise-style-option-${style.name}'),
+              borderRadius: BorderRadius.circular(6),
+              onTap: () {
+                service.selectNoiseStyle(current.id, style);
+                _updatePreview();
               },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+                child: Row(
+                  children: [
+                    Icon(
+                      style == current.noiseStyle
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      size: 18,
+                      color: style == current.noiseStyle
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        switch (style) {
+                          NoiseStyle.filmGrain => l10n.filterNameNoise,
+                          NoiseStyle.color => l10n.filterNoiseColor,
+                          NoiseStyle.vhs => l10n.filterNameVhsNoise,
+                        },
+                        style: _overCanvasTextStyle(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           _paramSlider(
             l10n.filterNoiseStrength,

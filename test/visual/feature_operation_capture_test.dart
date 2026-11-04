@@ -60,6 +60,8 @@ void main() {
         }
         final variants = filter.id == 'Filter0004'
             ? ToneCurvePreset.values.map((e) => e.name).toList()
+            : filter.id == FilterService.genericNoiseFilterId
+            ? NoiseStyle.values.map((e) => e.name).toList()
             : filter.kind == FilterKind.auroraHologram
             ? AuroraHologramPreset.values.map((e) => e.name).toList()
             : filter.kind == FilterKind.pixelate
@@ -143,6 +145,15 @@ void main() {
                 .at(index);
             await tester.ensureVisible(chip);
             await h.tap(chip);
+          } else if (filter.id == FilterService.genericNoiseFilterId) {
+            final style = NoiseStyle.values.firstWhere(
+              (e) => e.name == variant,
+            );
+            await h.tap(find.byKey(ValueKey('noise-style-option-${style.name}')));
+            expect(
+              h.context.read<FilterService>().currentFilter!.noiseStyle,
+              style,
+            );
           } else if (filter.kind == FilterKind.pixelate) {
             final mode = PixelColorMode.values.firstWhere(
               (e) => e.name == variant.split('_').first,
