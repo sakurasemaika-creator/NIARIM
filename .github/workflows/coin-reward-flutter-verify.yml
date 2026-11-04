@@ -10,6 +10,9 @@ on:
       - 'lib/services/premium_service.dart'
       - 'lib/services/api/community_api.dart'
       - 'lib/screens/rewards/reward_unlock_screen.dart'
+      - 'lib/screens/rewards/creator_missions_screen.dart'
+      - 'lib/l10n/creator_mission_labels.dart'
+      - 'test/creator_mission_claim_ui_policy_test.dart'
       - 'lib/l10n/reward_unlock_labels.dart'
       - 'lib/app_bootstrap.dart'
       - 'test/coin_redemption_attempt_store_test.dart'
@@ -44,6 +47,8 @@ jobs:
             lib/config/monetization_gate.dart \
             lib/services/api/community_api.dart \
             lib/screens/rewards/reward_unlock_screen.dart \
+            lib/screens/rewards/creator_missions_screen.dart \
+            lib/l10n/creator_mission_labels.dart \
             lib/widgets/coin_history_sheet.dart \
             lib/l10n/reward_unlock_labels.dart \
             lib/app_bootstrap.dart \
@@ -58,4 +63,5 @@ jobs:
             test/coin_unlock_quote_test.dart \
             test/premium_play_verification_policy_test.dart \
             test/premium_coin_account_isolation_test.dart \
-            test/coin_history_sheet_test.dart
+            test/coin_history_sheet_test.dart \
+            test/creator_mission_claim_ui_policy_test.dart

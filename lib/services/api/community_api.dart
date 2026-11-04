@@ -165,6 +165,13 @@ class CommunityApi {
         body: {'restart': restart},
       );
 
+  /// Read-only list of achieved milestones, 25 author-owned works per page.
+  Future<Map<String, dynamic>> myWorkMissionAchievements({String? cursor}) =>
+      _client.getJson('/me/missions/work-achievements',
+        authenticated: true,
+        query: {if (cursor != null) 'cursor': cursor},
+      );
+
   Future<Map<String, dynamic>> myCreatorMissions({String? workId}) =>
       _client.getJson(
         '/me/missions',
