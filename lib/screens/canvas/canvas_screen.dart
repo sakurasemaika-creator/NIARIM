@@ -3184,8 +3184,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
         SubmenuButton(
           menuChildren: [
             MenuItemButton(
-              onPressed: () =>
-                  context.read<ProjectService>().saveProject(widget.projectId),
+              onPressed: () => context
+                  .read<ProjectService>()
+                  .saveProjectManually(widget.projectId),
               child: Text(l.commonSave),
             ),
             MenuItemButton(
