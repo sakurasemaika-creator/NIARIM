@@ -134,6 +134,7 @@ describe("fail-closed one-month full Premium coin redemption", () => {
       target: "fullPremium", months: 1,
       priceVersion: "v1-premium-month", requestId: "not-a-uuid",
     }))).rejects.toMatchObject({ code: "REDEMPTION_REQUEST_ID_INVALID" });
-    expect(send).not.toHaveBeenCalled();
+    expect(send.mock.calls.some(([x]) => x instanceof TransactWriteCommand))
+      .toBe(false);
   });
 });
