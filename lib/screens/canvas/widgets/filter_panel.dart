@@ -161,6 +161,12 @@ class _FilterPanelState extends State<FilterPanel> {
   final Set<int> _editPointers = {};
   FilterService? _editGroupService;
 
+  // Filter0025 is a one-tap color inversion. Its engine intentionally
+  // reuses the tone-curve inversion preset, but must not expose the general
+  // tone-curve editor (RGB graph, curve presets, etc.) in the UI.
+  bool _isInstantColorInvert(FilterDef filter) =>
+      filter.id == 'Filter0025' && filter.kind == FilterKind.toneCurve;
+
   bool _isPrism(FilterDef filter) => filter.kind == FilterKind.prism;
   bool _isVhs(FilterDef filter) =>
       filter.kind == FilterKind.noise && filter.noiseStyle == NoiseStyle.vhs;
@@ -531,6 +537,24 @@ class _FilterPanelState extends State<FilterPanel> {
     _autoLineartManualEdited = false;
     _autoLineartBeforeHandEdit = null;
     setState(() => _collapsed = false);
+    if (_isInstantColorInvert(filter) &&
+        (filter.toneCurvePreset != ToneCurvePreset.invert ||
+            filter.toneCurvePoints.isNotEmpty ||
+            filter.toneCurveRedPoints.isNotEmpty ||
+            filter.toneCurveGreenPoints.isNotEmpty ||
+            filter.toneCurveBluePoints.isNotEmpty)) {
+      // A previously edited Filter0025 must still be a pure inversion.
+      // Custom tone curves remain editable through the separate Tone Curve
+      // filter; the named Invert tile always performs an exact inversion.
+      service.updateFilterParams(
+        filter.id,
+        toneCurvePreset: ToneCurvePreset.invert,
+        toneCurvePoints: const [],
+        toneCurveRedPoints: const [],
+        toneCurveGreenPoints: const [],
+        toneCurveBluePoints: const [],
+      );
+    }
     service.selectFilter(filter.id);
   }
 
@@ -736,10 +760,11 @@ class _FilterPanelState extends State<FilterPanel> {
         : (Widget child) =>
               Material(type: MaterialType.transparency, child: child);
     final collapsed = current != null && _collapsed;
+    final instantInvert = current != null && _isInstantColorInvert(current);
     return shell(
       SizedBox(
         width: 300,
-        height: 520,
+        height: current == null ? 520 : instantInvert ? 148 : collapsed ? 196 : 520,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: _outlinedOverCanvas(
@@ -748,21 +773,20 @@ class _FilterPanelState extends State<FilterPanel> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (current == null) PanelCenterCloseBar(onClose: widget.onClose),
-                _listTitleRow(l10n),
-                if (_showSearch) _searchField(l10n, service),
-                const SizedBox(height: 6),
-                if (current == null)
-                  Expanded(child: _filterCards(l10n, service, filters, current))
-                else
-                  SizedBox(
-                    height: collapsed ? 220 : 164,
+                if (current == null) ...[
+                  PanelCenterCloseBar(onClose: widget.onClose),
+                  _listTitleRow(l10n),
+                  if (_showSearch) _searchField(l10n, service),
+                  const SizedBox(height: 6),
+                  Expanded(
                     child: _filterCards(l10n, service, filters, current),
                   ),
-                if (current != null) ...[
-                  const Divider(height: 10),
-                  _editHeader(l10n, service, current, collapsed),
-                  if (!collapsed)
+                  if (filters.isEmpty)
+                    Text(l10n.filterEmpty, textAlign: TextAlign.center),
+                ] else ...[
+                  _editHeader(l10n, service, current, collapsed,
+                      withClose: false),
+                  if (!collapsed && !instantInvert)
                     Expanded(child: _editControls(l10n, service, current)),
                   const SizedBox(height: 6),
                   _actionRow(l10n, service, current),
@@ -788,9 +812,6 @@ class _FilterPanelState extends State<FilterPanel> {
     final collapsed = current != null && _collapsed;
     final screenHeight = MediaQuery.sizeOf(context).height;
     final maxControls = screenHeight * 0.26;
-    final tileHeight = current == null
-        ? math.min(228.0, screenHeight * 0.30)
-        : math.min(collapsed ? 220.0 : 154.0, screenHeight * 0.20);
     return Material(
       key: const ValueKey('filter-bottom-bar'),
       type: MaterialType.transparency,
@@ -803,22 +824,22 @@ class _FilterPanelState extends State<FilterPanel> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _listTitleRow(l10n, withClose: true),
-              if (_showSearch) _searchField(l10n, service),
-              SizedBox(
-                height: tileHeight,
-                child: _filterCards(l10n, service, filters, current),
-              ),
-              if (filters.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Text(l10n.filterEmpty, textAlign: TextAlign.center),
+              if (current == null) ...[
+                _listTitleRow(l10n, withClose: true),
+                if (_showSearch) _searchField(l10n, service),
+                SizedBox(
+                  height: math.min(228.0, screenHeight * 0.30),
+                  child: _filterCards(l10n, service, filters, current),
                 ),
-              if (current != null) ...[
-                const Divider(height: 8),
+                if (filters.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Text(l10n.filterEmpty, textAlign: TextAlign.center),
+                  ),
+              ] else ...[
                 _editHeader(l10n, service, current, collapsed,
                     withClose: false),
-                if (!collapsed)
+                if (!collapsed && !_isInstantColorInvert(current))
                   ConstrainedBox(
                     constraints: BoxConstraints(maxHeight: maxControls),
                     child: _editControls(l10n, service, current),
@@ -884,8 +905,8 @@ class _FilterPanelState extends State<FilterPanel> {
         onChanged: service.setSearchQuery,
       );
 
-  /// A vertically scrolling tile gallery. Never scroll sideways or hide the
-  /// gallery during a preview, so candidates can be compared by one tap.
+  /// The catalog is a vertical 2/3-column gallery. It is only mounted while
+  /// no preview is active, so the canvas and filter adjustments have room.
   Widget _filterCards(
     AppLocalizations l10n,
     FilterService service,
@@ -1153,6 +1174,7 @@ class _FilterPanelState extends State<FilterPanel> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (!_isInstantColorInvert(current)) ...[
         Row(
           children: [
             IconButton(
@@ -1215,6 +1237,7 @@ class _FilterPanelState extends State<FilterPanel> {
           ],
         ),
         const SizedBox(height: 4),
+        ],
         Row(
           children: [
             Expanded(
@@ -2992,7 +3015,15 @@ class _FilterPanelState extends State<FilterPanel> {
           );
         }
       }
-      if (mounted) widget.onClose();
+      if (mounted) {
+        // Keep the panel open and return to its catalog. Clear the temporary
+        // canvas overlay and reload the now-committed pixels before another
+        // filter can be chosen, so the next preview stacks on the result.
+        _clearPendingPreview();
+        context.read<FilterService>().clearCurrentFilter();
+        setState(() => _collapsed = false);
+        await _loadPreviewBase();
+      }
     } finally {
       if (mounted) setState(() => _applying = false);
     }
