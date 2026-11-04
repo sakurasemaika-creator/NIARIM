@@ -202,6 +202,8 @@ void main() {
     final frameStrip = tester.getRect(find.byType(FrameStripWidget));
     expect(brushWindow.top, closeTo(leftDock.top, 2));
     expect(previewWindow.top, closeTo(rightDock.top, 2));
+    expect(leftDock.top, closeTo(rightDock.top, 2),
+        reason: 'Both side columns must start directly under the top menu');
     expect(leftDock.bottom, lessThanOrEqualTo(frameStrip.top + 1));
     expect(rightDock.bottom, lessThanOrEqualTo(frameStrip.top + 1));
     expect(leftDock.left, greaterThanOrEqualTo(-1));
@@ -229,6 +231,14 @@ void main() {
       CanvasDockPanel.canvasPreview, toRight: false,
     );
     await _shot(tester, root, '16_pc_canvas_moved_between_sides');
+    expect(
+      tester.getRect(find.byKey(const ValueKey('desktopRightDockScroll'))).top,
+      closeTo(
+        tester.getRect(find.byKey(const ValueKey('desktopLeftDockScroll'))).top,
+        2,
+      ),
+      reason: 'Moving a window must not re-center the shorter dock column',
+    );
     await settings.setLeftHanded(true);
     await _shot(tester, root, '17_pc_canvas_left_handed_layout');
 
