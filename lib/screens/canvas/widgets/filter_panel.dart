@@ -1148,10 +1148,15 @@ class _FilterPanelState extends State<FilterPanel> {
     FilterDef current,
   ) {
     final bulk = widget.bulkFrameIndices;
-    return Row(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
+        Row(
+          children: [
         IconButton(
           key: const ValueKey('filter-undo-button'),
+          constraints: const BoxConstraints.tightFor(width: 36, height: 40),
+          padding: EdgeInsets.zero,
           onPressed: service.canUndoFilterEdit
               ? () {
                   service.undoFilterEdit();
@@ -1163,6 +1168,8 @@ class _FilterPanelState extends State<FilterPanel> {
         ),
         IconButton(
           key: const ValueKey('filter-redo-button'),
+          constraints: const BoxConstraints.tightFor(width: 36, height: 40),
+          padding: EdgeInsets.zero,
           onPressed: service.canRedoFilterEdit
               ? () {
                   service.redoFilterEdit();
@@ -1201,7 +1208,12 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
           ),
         ),
-        if (current.kind == FilterKind.autoLineart) ...[
+          ],
+        ),
+        if (current.kind == FilterKind.autoLineart)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
           IconButton(
             key: const ValueKey('auto-lineart-add-point-button'),
             onPressed: () => setState(
@@ -1227,7 +1239,8 @@ class _FilterPanelState extends State<FilterPanel> {
             isSelected:
                 _autoLineartControlMode == AutoLineartControlMode.delete,
           ),
-        ],
+            ],
+          ),
       ],
     );
   }
