@@ -42,6 +42,17 @@ export const Keys = {
   coinTransaction: (niarimUserId: string, transactionId: string) => ({
     pk: `USER#${niarimUserId}`, sk: `COIN_TX#${transactionId}`,
   }),
+  /** Global SSV receipt: a transaction ID is unique across ALL accounts.
+   * Short retention is safe only because callback timestamps expire in 7d.
+   */
+  admobReceipt: (transactionId: string) => ({
+    pk: `ADMOB_TX#${transactionId}`, sk: "META",
+  }),
+  /** One replaceable ad invitation per signed-in account. */
+  rewardedAdSession: (niarimUserId: string) => ({
+    pk: `USER#${niarimUserId}`, sk: "REWARDED_AD_SESSION",
+  }),
+
   bookmark: (niarimUserId: string, workId: string) => ({
     pk: `USER#${niarimUserId}`,
     sk: `BOOKMARK#${workId}`,
