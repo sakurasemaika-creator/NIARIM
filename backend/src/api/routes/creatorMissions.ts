@@ -257,7 +257,10 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
         progress: mission.kind === "followers"
           ? user?.followerCount ?? 0
           : mission.kind === "verifiedEditSeconds" ? state.verifiedEditSeconds : null,
-        rewardEnabled: enabled() && mission.kind !== "verifiedEditSeconds",
+        rewardEnabled: enabled() &&
+          mission.kind !== "verifiedEditSeconds" &&
+          !(mission.kind === "qualifiedWorks" &&
+            mission.required > MAX_OWN_WORK_PAGES * QUERY_WORK_PAGE_SIZE),
       };
     }),
   });
