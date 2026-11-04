@@ -131,8 +131,9 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     const response = JSON.parse(result.body ?? "{}");
     expect(response.redeemed).toBe(true);
     expect(response.expiresAtEpochMs).toBeGreaterThan(priorExpiry);
-    const tx = send.mock.calls.find(([c]) => c instanceof TransactWriteCommand)?.[0]
-      as TransactWriteCommand;
+    const tx = (send.mock.calls.find(
+      ([c]) => c instanceof TransactWriteCommand,
+    )?.[0]) as TransactWriteCommand;
     expect(tx.input.TransactItems?.[2].Update
       ?.ExpressionAttributeValues?.[":oldExpiry"]).toBe(priorExpiry);
     expect(tx.input.TransactItems?.[3].Update
