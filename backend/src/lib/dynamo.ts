@@ -35,6 +35,10 @@ export const Keys = {
   creatorMissionState: (niarimUserId: string) => ({
     pk: `USER#${niarimUserId}`, sk: "MISSION_STATE_V1",
   }),
+  /** Persistent per-work bitmask; one tiny item only after a work earns a reward. */
+  creatorWorkMissionState: (niarimUserId: string, workId: string) => ({
+    pk: `USER#${niarimUserId}`, sk: `MISSION_WORK#${workId}`,
+  }),
   coinTransaction: (niarimUserId: string, transactionId: string) => ({
     pk: `USER#${niarimUserId}`, sk: `COIN_TX#${transactionId}`,
   }),
