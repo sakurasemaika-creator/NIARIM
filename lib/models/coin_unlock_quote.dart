@@ -1,8 +1,7 @@
-/// リワードコインの見積もりで使用する純粋なドメインモデル。
+/// リワードコインの見積もり・期間・重複延長の表示用ドメインモデル。
 ///
-/// このファイルはクライアントの表示・事前試算専用。コインの付与・消費、
-/// 視聴完了検証、正規の交換価格、利用権の失効時刻は必ずバックエンドが確定する。
-/// 現時点では本番用の価格定数を持たない。
+/// 権限、残高、広告収益による最低価格、消費、凍結・再開は認証済み
+/// サーバー側のみを正とする。このモデルで交換成立を確定してはならない。
 library;
 
 import 'dart:math' as math;
@@ -14,42 +13,42 @@ enum CoinUnlockTarget {
   levelAdjustment,
   unlimitedDuration,
   customAutomation,
+  // 作品広場の投稿上限緩和は未実装。サーバー側実装確認まで交換不可。
+  communityPostQuota,
   projectListAds,
   canvasAds,
   timelineAds,
   processingAds,
   allAds,
-  fullPremium,
+  fullPremium;
+
+  bool get isRedeemableNow => this != CoinUnlockTarget.communityPostQuota;
 }
 
 enum CoinDurationUnit { hour, day, week, month }
 
-/// UIは1〜24時間、2〜6日、1〜3週間、1か月以上から選択する。
-/// 1日=24時間、1週間=7日、1か月=暦月（28〜31日）。
+/// 全チェック項目が共通して使う「ひとつの期間」。
 class CoinUnlockDuration {
   const CoinUnlockDuration(this.amount, this.unit)
     : assert(amount > 0),
       assert(
         (unit == CoinDurationUnit.hour && amount <= 24) ||
             (unit == CoinDurationUnit.day && amount >= 2 && amount <= 6) ||
-            (unit == CoinDurationUnit.week && amount <= 3) ||
-            (unit == CoinDurationUnit.month && amount >= 1),
+            (unit == CoinDurationUnit.week && amount >= 1 && amount <= 3) ||
+            (unit == CoinDurationUnit.month && amount >= 1 && amount <= 120),
       );
 
   final int amount;
   final CoinDurationUnit unit;
 
-  /// 不正データがサーバーなどから届いてもreleaseビルドで黙認しない。
-  bool get isValid =>
-      switch (unit) {
+  bool get isValid => switch (unit) {
         CoinDurationUnit.hour => amount >= 1 && amount <= 24,
         CoinDurationUnit.day => amount >= 2 && amount <= 6,
         CoinDurationUnit.week => amount >= 1 && amount <= 3,
         CoinDurationUnit.month => amount >= 1 && amount <= 120,
       };
 
-  /// サーバーが計算した期限を正として使い、この関数は見積もり表示のみ。
-  /// 暦月は月末（31日など）を次月の末日に丸める。
+  /// UIのプレビューに限定。正式な期限はサーバーのUTC時刻で確定。
   DateTime previewExpiry(DateTime activatedAt) {
     if (!isValid) throw StateError('Unsupported unlock duration');
     return switch (unit) {
@@ -64,10 +63,10 @@ class CoinUnlockDuration {
     final monthZeroBased = date.month - 1 + months;
     final year = date.year + monthZeroBased ~/ 12;
     final month = monthZeroBased % 12 + 1;
-    final finalDay = date.isUtc
+    final lastDay = date.isUtc
         ? DateTime.utc(year, month + 1, 0).day
         : DateTime(year, month + 1, 0).day;
-    final day = math.min(date.day, finalDay);
+    final day = math.min(date.day, lastDay);
     return date.isUtc
         ? DateTime.utc(
             year, month, day, date.hour, date.minute, date.second,
@@ -80,7 +79,7 @@ class CoinUnlockDuration {
   }
 }
 
-/// 対象ごとの単価表。額面はAPI側で決める。0枚や負数は不正価格。
+/// 交換レートはサーバー価格表から受け取る。こちらは表示用の演算のみ。
 class CoinUnlockUnitPrices {
   const CoinUnlockUnitPrices({
     required this.perHour,
@@ -107,27 +106,23 @@ class CoinUnlockUnitPrices {
   }
 }
 
+/// チェックボックスで選択する項目。時間は持たず、見積もりで一括指定する。
 class CoinUnlockSelection {
-  const CoinUnlockSelection({
-    required this.target,
-    required this.duration,
-  });
-
+  const CoinUnlockSelection({required this.target});
   final CoinUnlockTarget target;
-  final CoinUnlockDuration duration;
 }
 
 class CoinUnlockQuote {
   const CoinUnlockQuote({
     required this.selections,
+    required this.duration,
     required this.requiredCoins,
     required this.priceVersion,
   });
 
   final List<CoinUnlockSelection> selections;
+  final CoinUnlockDuration duration;
   final int requiredCoins;
-
-  /// サーバー価格表のバージョン。目標保存時にもセットで保持する。
   final String priceVersion;
 
   int missingCoins(int balance) => math.max(requiredCoins - balance, 0);
@@ -139,26 +134,30 @@ class CoinUnlockQuote {
   }
 }
 
-/// ユーザーが複数の対象・期間を指定した時に即時計算するための見積もり。
-/// この結果を使って直接コインを減らしてはならない。
+/// 同じコイン交換で選んだすべての特典を、一つの期間で見積もる。
+/// fullPremiumはサーバーが計算した収益下限を渡さなければ計算不能にする。
 class CoinUnlockQuoteCalculator {
   const CoinUnlockQuoteCalculator();
 
   CoinUnlockQuote calculate({
     required List<CoinUnlockSelection> selections,
+    required CoinUnlockDuration duration,
     required Map<CoinUnlockTarget, CoinUnlockUnitPrices> prices,
     required String priceVersion,
+    int? fullPremiumMinimumCoins,
   }) {
     if (priceVersion.trim().isEmpty) {
       throw ArgumentError.value(priceVersion, 'priceVersion');
     }
+    if (!duration.isValid) throw ArgumentError('Unsupported duration');
     if (selections.isEmpty) {
       throw ArgumentError('At least one unlock must be selected');
     }
+
     final targets = <CoinUnlockTarget>{};
     for (final selection in selections) {
-      if (!selection.duration.isValid) {
-        throw ArgumentError('Unsupported duration: ${selection.target}');
+      if (!selection.target.isRedeemableNow) {
+        throw StateError('Premium entitlement is not implemented');
       }
       if (!targets.add(selection.target)) {
         throw ArgumentError('Duplicate unlock target: ${selection.target}');
@@ -167,12 +166,10 @@ class CoinUnlockQuoteCalculator {
         throw StateError('Missing prices: ${selection.target}');
       }
     }
-
-    // 一括商品を個別対象と重複請求しない。画面側では一括商品を選んだ
-    // 時点で被る個別項目を解除し、サーバー側も同じ条件で再検証する。
     if (targets.contains(CoinUnlockTarget.fullPremium) && targets.length > 1) {
       throw ArgumentError('Full Premium cannot overlap other unlocks');
     }
+
     final hasIndividualAds = targets.any((target) =>
         target == CoinUnlockTarget.projectListAds ||
         target == CoinUnlockTarget.canvasAds ||
@@ -182,14 +179,98 @@ class CoinUnlockQuoteCalculator {
       throw ArgumentError('All ads cannot overlap ad placements');
     }
 
-    var requiredCoins = 0;
+    var total = 0;
     for (final selection in selections) {
-      requiredCoins += prices[selection.target]!.cost(selection.duration);
+      total += prices[selection.target]!.cost(duration);
     }
+
+    if (targets.contains(CoinUnlockTarget.fullPremium)) {
+      if (fullPremiumMinimumCoins == null || fullPremiumMinimumCoins <= 0) {
+        throw StateError('Full Premium revenue floor has not been verified');
+      }
+      // サーバー側の保守的な収益下限を下回るレートの配布を防ぐ。
+      // この比較自体が広告の最終精算を保証するわけではない。
+      if (total < fullPremiumMinimumCoins) {
+        throw StateError('Full Premium price is below the revenue floor');
+      }
+    }
+
     return CoinUnlockQuote(
       selections: List.unmodifiable(selections),
-      requiredCoins: requiredCoins,
+      duration: duration,
+      requiredCoins: total,
       priceVersion: priceVersion,
     );
+  }
+
+  /// 「最もお得」バッジはコインで同じ期間・同じ権利を揃えた場合のみ表示。
+  bool isFullPremiumBestValue({
+    required CoinUnlockDuration duration,
+    required Map<CoinUnlockTarget, CoinUnlockUnitPrices> prices,
+    required Iterable<CoinUnlockTarget> comparisonTargets,
+    required int fullPremiumMinimumCoins,
+  }) {
+    if (!duration.isValid || fullPremiumMinimumCoins <= 0) return false;
+    final bundle = prices[CoinUnlockTarget.fullPremium];
+    if (bundle == null) return false;
+    final bundleCost = bundle.cost(duration);
+    if (bundleCost < fullPremiumMinimumCoins) return false;
+    final individualTargets = comparisonTargets.toSet();
+    if (individualTargets.isEmpty ||
+        individualTargets.contains(CoinUnlockTarget.fullPremium) ||
+        individualTargets.contains(CoinUnlockTarget.communityPostQuota)) {
+      return false;
+    }
+    var separateCost = 0;
+    for (final target in individualTargets) {
+      final unitPrices = prices[target];
+      if (unitPrices == null) return false;
+      separateCost += unitPrices.cost(duration);
+    }
+    return bundleCost < separateCost;
+  }
+}
+
+/// 新規コイン交換時の表示用プレビュー。既存の同一特典に残り時間がある
+/// 場合は先に取得済みの権利を失わないよう、後ろに共通期間を足す。
+/// bundleが他の権利を包含する場合の一時停止・再開はサーバーが処理する。
+class CoinOverlapPreview {
+  const CoinOverlapPreview({
+    required this.target,
+    required this.startsAt,
+    required this.expiresAt,
+    required this.extendsExisting,
+  });
+
+  final CoinUnlockTarget target;
+  final DateTime startsAt;
+  final DateTime expiresAt;
+  final bool extendsExisting;
+}
+
+class CoinOverlapPlanner {
+  const CoinOverlapPlanner();
+
+  List<CoinOverlapPreview> preview({
+    required CoinUnlockQuote quote,
+    required DateTime now,
+    required Map<CoinUnlockTarget, DateTime> activeThrough,
+    required bool subscriptionActive,
+  }) {
+    if (subscriptionActive) {
+      throw StateError('Subscription already covers these Premium rights');
+    }
+    return List.unmodifiable(quote.selections.map((selection) {
+      final lastExpiry = activeThrough[selection.target];
+      final extendsExisting =
+          lastExpiry != null && lastExpiry.isAfter(now);
+      final startsAt = extendsExisting ? lastExpiry : now;
+      return CoinOverlapPreview(
+        target: selection.target,
+        startsAt: startsAt,
+        expiresAt: quote.duration.previewExpiry(startsAt),
+        extendsExisting: extendsExisting,
+      );
+    }));
   }
 }
