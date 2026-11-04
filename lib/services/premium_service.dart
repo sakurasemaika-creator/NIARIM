@@ -11,7 +11,9 @@ import '../utils/tolerant_preferences.dart';
 
 /// プレミアム加入状態・課金処理を管理する。
 /// 実際の課金はGoogle Play Billing（in_app_purchase）経由で行い、
-/// purchaseStreamの結果を受けてisPremiumを更新する。
+/// 購入・復元通知をNIARIMバックエンドからGoogle Play Developer APIで
+/// 検証できた場合に限り、購入権限を短時間保持する。端末保存値だけでは
+/// Premiumを有効にしない。
 ///
 /// `isMonetizationEnabled`がfalseの間（税務上の都合による一時停止期間）は
 /// ストアへの接続・商品情報取得・購入操作を一切行わない。この期間は
@@ -196,20 +198,13 @@ class PremiumService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 購入日時・購入商品ID（登録日・次回更新日の表示用）。サーバー側の
-  // レシート検証（Google Play Developer API等）は行っていないため、
-  // 実際の請求確定日はストアからは取得できない。ただしサブスクリプションの
-  // 更新日は購入日と同じ「日」（年額なら月日、月額なら日）に固定される
-  // ため、購入日さえ分かれば暦計算だけで正確に求められる（月をまたぐ
-  // 日数の単純な加算だと、月の日数の違いでずれることがあるため、
-  // 年・月を直接ずらすDateTimeコンストラクタで計算する）。
+  // 購入日時・商品IDは参考表示用の端末データ。
+  // 請求日や更新日をこの日時から確定扱いしない。
+  // 権限には、サーバー検証済みの期限と検証リースを必須とする。
   DateTime? _purchaseDate;
   String? _purchasedProductId;
-  // サーバー側レシート検証（Google Play Developer API等）で得られる
-  // 「確定した」有効期限。まだバックエンドが無いため常にnullで、
-  // その間は[nextRenewalDateEstimate]による暦計算の推定値にフォールバック
-  // する。バックエンドが用意でき次第[_verifyReceiptAndUpdateExpiry]の
-  // コメントアウトを外せば、この値が優先的に使われるようになる設計。
+  // Google Playサーバー検証で受け取った有効期限。
+  // アカウント切替・失効時には同時に破棄する。
   DateTime? _verifiedExpiryDate;
 
   /// 実際に購入済みかどうか（課金・ストア関連の判定に使用）。
@@ -218,8 +213,7 @@ class PremiumService extends ChangeNotifier {
   /// 購入日時（登録日表示用）。未購入または記録前はnull。
   DateTime? get purchaseDate => _purchaseDate;
 
-  /// サーバー側レシート検証で確定した有効期限（分かっていればそれを最優先）。
-  /// 未実装の間は常にnull。
+  /// Google Playで検証したサブスクリプションの有効期限。
   DateTime? get verifiedExpiryDate => _verifiedExpiryDate;
 
   /// 次回更新日。サーバー側レシート検証済みの有効期限があればそれを、
@@ -482,29 +476,8 @@ class PremiumService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // サーバー側レシート検証（未実装：バックエンドAPIが用意でき次第
-  // 実装する）。購入トークン（purchase.verificationData）をバックエンドへ
-  // 送り、Google Play Developer API
-  // (purchases.subscriptions.get)等で検証した上で確定した有効期限を
-  // 受け取る想定。バックエンドが無い現状ではエラーになるためコメント
-  // アウトしているが、呼び出し側（[_onPurchaseUpdate]）は既に
-  // レシート検証がある前提で書いてあるので、この中身だけ実装すれば
-  // 有効化できる。
-  // Future<void> _verifyReceiptAndUpdateExpiry(PurchaseDetails purchase) async {
-  //   try {
-  //     final token = purchase.verificationData.serverVerificationData;
-  //     final result = await _receiptVerificationApi.verify(
-  //       productId: purchase.productID,
-  //       purchaseToken: token,
-  //     );
-  //     _verifiedExpiryDate = result.expiryDate;
-  //     notifyListeners();
-  //   } catch (_) {
-  //     // 検証に失敗した場合は[nextRenewalDateEstimate]の推定値のまま
-  //     // フォールバックする（購入自体は既に成立しているため機能制限は
-  //     // かけない）。
-  //   }
-  // }
+  // Google Play検証は _onPurchaseUpdate → _playVerifier 経由で実施。
+  // purchaseTokenは端末の永続設定には保存しない。
 
   // プロジェクト最大尺：無料90秒 / Premium 2時間（7200秒）。
   // PremiumFeature.unlimitedDuration は既存IDとの互換性のため名称のみ維持。
