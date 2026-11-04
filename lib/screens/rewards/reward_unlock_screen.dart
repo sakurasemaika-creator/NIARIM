@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/reward_unlock_labels.dart';
 import '../../models/coin_unlock_quote.dart';
 import '../../services/premium_service.dart';
+import '../../services/advertising_service.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../widgets/responsive.dart';
@@ -34,6 +35,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   String? _lastAccountId;
   Map<String, dynamic>? _rewardState;
   bool _walletLoading = false;
+  bool _rewardBusy = false;
 
   @override
   void initState() {
@@ -70,6 +72,49 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       if (mounted && _authService?.account?.id == accountId) {
         setState(() => _walletLoading = false);
       }
+    }
+  }
+
+  Future<void> _watchRewardedAd() async {
+    if (_rewardBusy) return;
+    final accountId = context.read<GoogleAuthService>().account?.id;
+    final api = context.read<CommunityService>().api;
+    final ads = context.read<AdvertisingService>();
+    if (accountId == null || api == null || !ads.canOfferRewardedAds) return;
+    setState(() => _rewardBusy = true);
+    try {
+      final invitation = await api.beginRewardedAdSession();
+      if (!mounted || context.read<GoogleAuthService>().account?.id != accountId) {
+        return;
+      }
+      final adUnit = invitation['adUnitId'];
+      final customData = invitation['customData'];
+      if (adUnit is! String || customData is! String) {
+        throw StateError('Missing server-issued rewarded ad session');
+      }
+      final completed = await ads.showRewardedCoinAd(
+        adUnitId: adUnit,
+        customData: customData,
+      );
+      if (!mounted || context.read<GoogleAuthService>().account?.id != accountId) {
+        return;
+      }
+      final t = RewardUnlockLabels.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(completed ? t['rewardPending'] : t['rewardUnavailable']),
+        ),
+      );
+      // The SDK callback is NOT an award. Only AdMob's signed server callback
+      // may add coins; the refresh button reads the actual server wallet.
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(RewardUnlockLabels.of(context)['rewardUnavailable'])),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _rewardBusy = false);
     }
   }
 
@@ -314,6 +359,31 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                       : t['balancePending'],
               style: Theme.of(context).textTheme.bodyMedium,
             ),
+            if (_rewardState?['rewardEarningEnabled'] == true) ...[
+              const SizedBox(height: 10),
+              FilledButton.icon(
+                icon: _rewardBusy
+                    ? const SizedBox(
+                        width: 18, height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.smart_display_outlined),
+                onPressed: !_rewardBusy &&
+                        context.watch<AdvertisingService>().canOfferRewardedAds
+                    ? _watchRewardedAd
+                    : null,
+                label: Text(t['watchRewardedAd']),
+              ),
+            ],
+            if (_rewardState != null) ...[
+              TextButton.icon(
+                icon: const Icon(Icons.refresh),
+                onPressed: !_walletLoading && _lastAccountId != null
+                    ? () => _loadWallet(_lastAccountId!)
+                    : null,
+                label: Text(t['rewardRefresh']),
+              ),
+            ],
             const SizedBox(height: 16),
             // Shared duration goes BEFORE the list of checkboxes.
             Text(t['duration'],
