@@ -9,6 +9,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/canvas_dock_panel.dart';
+import 'package:niarim/screens/canvas/widgets/hsv_color_wheel.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/settings/widgets/pc_workspace_layout_preview.dart';
 import 'package:niarim/services/project_service.dart';
@@ -206,6 +207,32 @@ void main() {
     await _shot(tester, root, '16_pc_canvas_moved_between_sides');
     await settings.setLeftHanded(true);
     await _shot(tester, root, '17_pc_canvas_left_handed_layout');
+
+    // Explicitly exercise the tiny viewport described in the user report.
+    await settings.setLeftHanded(false);
+    await settings.setDesktopDockCollapsed(CanvasDockPanel.layer, true);
+    await settings.setDesktopDockWidth(CanvasDockPanel.colorPicker, 200);
+    await settings.setDesktopDockHeight(CanvasDockPanel.colorPicker, 140);
+    await _shot(tester, root, '24_pc_color_picker_200x140_entire_wheel');
+    final wheel = tester.getRect(find.byType(HsvColorWheel));
+    final dock = tester.getRect(
+      find.byKey(const ValueKey('dockViewport-colorPicker')),
+    );
+    expect(wheel.left, greaterThanOrEqualTo(dock.left - 1));
+    expect(wheel.right, lessThanOrEqualTo(dock.right + 1));
+    expect(wheel.top, greaterThanOrEqualTo(dock.top - 1));
+    expect(wheel.bottom, lessThanOrEqualTo(dock.bottom + 1));
+    expect((wheel.width - wheel.height).abs(), lessThan(1.0));
+
+    await settings.setDesktopDockWidth(CanvasDockPanel.colorPicker, 480);
+    await settings.setDesktopDockHeight(CanvasDockPanel.colorPicker, 600);
+    await _shot(tester, root, '25_pc_color_picker_480x600_full_wheel');
+
+    await settings.setDesktopDockWidth(CanvasDockPanel.brush, 200);
+    await settings.setDesktopDockHeight(CanvasDockPanel.brush, 140);
+    await _shot(tester, root, '26_pc_brush_short_scrollable');
+    await settings.setDesktopDockWidth(CanvasDockPanel.brush, 480);
+    await _shot(tester, root, '27_pc_brush_wide_same_height');
   }, timeout: const Timeout(Duration(minutes: 11)));
 
   testWidgets('capture interactive PC workspace preview', (tester) async {
