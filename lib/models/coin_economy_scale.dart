@@ -13,6 +13,11 @@ abstract final class CoinEconomyScale {
   /// Product design reference: 1 yen of displayed plan price maps to 100 coins.
   static const int referenceCoinsPerYen = 100;
 
+  /// Launch configuration to use when AdMob SSV and server offer are ready.
+  /// This does NOT create coins and must not override server-signed offers.
+  static const int initialRewardedCoinsPerCompletion = 10;
+  static const String initialRewardOfferVersion = 'launch-v1-10-coins';
+
   /// Premium plan reference prices only; not active redemption prices.
   static const int monthlyPlanYen = 550;
   static const int yearlyPlanYen = 5500;
