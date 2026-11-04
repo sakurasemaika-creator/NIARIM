@@ -41,14 +41,36 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
   if (body.target !== "fullPremium" || body.months !== 1) {
     badRequest("この交換内容は準備中です", "REDEMPTION_NOT_AVAILABLE");
   }
-  if (body.priceVersion !== offer.priceVersion) {
-    conflict("交換価格が変更されました。再確認してください",
-      "REDEMPTION_PRICE_CHANGED");
-  }
   const requestId = body.requestId;
   if (typeof requestId !== "string" ||
       !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(requestId)) {
     badRequest("リクエストIDが不正です", "REDEMPTION_REQUEST_ID_INVALID");
+  }
+  const receiptKey = Keys.coinTransaction(
+    auth.niarimUserId, `redeem-${requestId}`);
+  // A lost response may arrive after a price change. Retry the old,
+  // authenticated receipt first; NEVER charge the same request again.
+  const already = await ddb.send(new GetCommand({
+    TableName: tableName(), Key: receiptKey, ConsistentRead: true,
+  }));
+  if (already.Item) {
+    if (already.Item.itemType !== "COIN_REDEMPTION" ||
+        already.Item.target !== "fullPremium" ||
+        already.Item.months !== 1 ||
+        already.Item.priceVersion !== body.priceVersion ||
+        !Number.isSafeInteger(already.Item.costCoins) ||
+        !Number.isSafeInteger(already.Item.expiresAtEpochMs)) {
+      conflict("交換履歴が一致しません", "REDEMPTION_REQUEST_REUSED");
+    }
+    return ok({
+      redeemed: true, duplicate: true,
+      target: "fullPremium", costCoins: already.Item.costCoins,
+      expiresAtEpochMs: already.Item.expiresAtEpochMs,
+    });
+  }
+  if (body.priceVersion !== offer.priceVersion) {
+    conflict("交換価格が変更されました。再確認してください",
+      "REDEMPTION_PRICE_CHANGED");
   }
   if (auth.membershipTier !== "free") {
     // Mixing active Google Play subscriptions and reward extensions needs
@@ -57,8 +79,6 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
       "REDEMPTION_SUBSCRIPTION_CONFLICT");
   }
 
-  const receiptKey = Keys.coinTransaction(
-    auth.niarimUserId, `redeem-${requestId}`);
   const entitlementKey = Keys.rewardEntitlement(
     auth.niarimUserId, "fullPremium");
   const current = await ddb.send(new GetCommand({
