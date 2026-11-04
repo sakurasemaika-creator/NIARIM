@@ -13,6 +13,8 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
+import 'package:niarim/screens/canvas/widgets/mesh_transform_panel.dart';
+import 'package:niarim/screens/canvas/widgets/reference_window.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/screens/settings/pc_workspace_layout_settings_screen.dart';
 import 'package:niarim/services/project_service.dart';
@@ -255,6 +257,67 @@ void main() {
     } else {
       errors.add('13_global_pc_layout_settings: navigation button missing');
     }
+
+    // Capture every popup-appearance fix in the *real* Flutter canvas.
+    // Desktop panels use the same widgets as the smartphone popups, so these
+    // captures prove the exact revised Card/Material styling is rendered.
+    final affectedDocks = <CanvasDockPanel>[
+      CanvasDockPanel.brush,
+      CanvasDockPanel.colorPicker,
+      CanvasDockPanel.tone,
+      CanvasDockPanel.stamp,
+      CanvasDockPanel.penSubTool,
+      CanvasDockPanel.onionSkin,
+      CanvasDockPanel.filter,
+      CanvasDockPanel.quickTool,
+      CanvasDockPanel.ruler,
+    ];
+    for (final panel in affectedDocks) {
+      await navigate('/home');
+      await settings.setDefaultDockedPanels({panel});
+      await settings.setDesktopDockHeight(panel, 520);
+      await navigate('/canvas/${colored.id}');
+      final grip = find.byKey(ValueKey('dockDrag-${panel.name}'));
+      expect(grip, findsOneWidget,
+          reason: 'Affected popup must be visible: ${panel.name}');
+      await shot('popup_fix_${panel.name}');
+    }
+
+    // The global popup menu theme was also changed to flat/no border.
+    final dockMenu = find.byKey(const Key('desktopWindowVisibilityMenu'));
+    expect(dockMenu, findsOneWidget);
+    await tester.tap(dockMenu);
+    await shot('popup_fix_global_menu');
+
+    // Mesh transform and the floating reference window are not configurable
+    // dock panels; open them through the same settings/edit menu as users do.
+    await navigate('/home');
+    await settings.setDefaultDockedPanels(<CanvasDockPanel>{});
+    await navigate('/canvas/${colored.id}');
+    final topSettings = find.byIcon(Icons.settings).first;
+    await tester.tap(topSettings);
+    await settle();
+    final canvasL10n = AppLocalizations.of(
+      tester.element(find.byType(Scaffold).last))!;
+    final meshEntry = find.text(canvasL10n.canvasEditMenuMeshTransform);
+    await tester.ensureVisible(meshEntry.last);
+    await tester.tap(meshEntry.last);
+    await settle();
+    expect(find.byType(MeshTransformPanel), findsOneWidget);
+    await shot('popup_fix_mesh_transform');
+
+    await navigate('/home');
+    await navigate('/canvas/${colored.id}');
+    await tester.tap(find.byIcon(Icons.settings).first);
+    await settle();
+    final referenceEntry = find.text(
+      AppLocalizations.of(
+        tester.element(find.byType(Scaffold).last))!.canvasEditMenuReferenceWindow);
+    await tester.ensureVisible(referenceEntry.last);
+    await tester.tap(referenceEntry.last);
+    await settle();
+    expect(find.byType(ReferenceWindow), findsOneWidget);
+    await shot('popup_fix_reference_window');
 
     await tester.runAsync(() => File('${out.path}/capture_status.txt')
       .writeAsString(errors.isEmpty ? 'PASS' : errors.join('\n')));
