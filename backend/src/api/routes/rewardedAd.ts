@@ -15,6 +15,9 @@ import {
 } from "../../lib/admobSsv";
 import { INITIAL_REWARDED_COINS_PER_COMPLETION,
   INITIAL_REWARD_OFFER_VERSION } from "../../lib/coinEconomyScale";
+import {
+  dailyRewardLimit, remainingRewardedGrants, rewardAdUtcDay,
+} from "../../lib/rewardAdQuota";
 
 /**
  * Explicit kill switch. No ad grants, sessions or SSV key downloads until the
@@ -45,6 +48,21 @@ export async function startRewardedAdSession(event: APIGatewayProxyEventV2) {
   if (!config.enabled) forbidden("報酬広告は準備中です", "REWARDED_AD_DISABLED");
 
   const now = Date.now();
+  const limit = dailyRewardLimit();
+  let remainingToday: number | null = null;
+  if (limit !== null) {
+    const day = rewardAdUtcDay(now);
+    const counter = await ddb.send(new GetCommand({
+      TableName: tableName(),
+      Key: Keys.rewardAdDailyCount(auth.niarimUserId, day),
+      ConsistentRead: true,
+    }));
+    remainingToday = remainingRewardedGrants(limit, counter.Item?.consumed);
+    if (remainingToday === 0) {
+      forbidden("本日の広告コイン獲得上限に達しました",
+        "REWARDED_AD_DAILY_LIMIT");
+    }
+  }
   const nonce = randomUUID();
   const key = Keys.rewardedAdSession(auth.niarimUserId);
   try {
@@ -78,6 +96,8 @@ export async function startRewardedAdSession(event: APIGatewayProxyEventV2) {
     rewardCoins: config.amount,
     offerVersion: config.version,
     customData: `v1.${auth.niarimUserId}.${nonce}`,
+    dailyRewardLimit: limit,
+    dailyRewardRemaining: remainingToday,
     expiresAtEpochMs: now + SESSION_LIFETIME_MS,
   });
 }
@@ -114,9 +134,11 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
   const receiptKey = Keys.admobReceipt(transactionId);
   const sessionKey = Keys.rewardedAdSession(userId);
   const now = Date.now();
+  const dailyCap = dailyRewardLimit();
+  const watchedDayUtc = rewardAdUtcDay(reward.timestampMs);
   try {
-    // One indivisible write across THREE DISTINCT items. Global receipt
-    // prevents a valid Google transaction ID crediting multiple accounts.
+    // One indivisible transaction: global receipt prevents replay across
+    // accounts, and an optional 4th item enforces the daily coin-grant cap.
     await ddb.send(new TransactWriteCommand({
       TransactItems: [
         {
@@ -157,6 +179,22 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
             },
           },
         },
+        ...(dailyCap === null ? [] : [{
+          Update: {
+            TableName: tableName(),
+            Key: Keys.rewardAdDailyCount(userId, watchedDayUtc),
+            UpdateExpression:
+              "SET itemType = :type, ttl = :ttl ADD consumed :one",
+            ConditionExpression:
+              "attribute_not_exists(consumed) OR consumed < :limit",
+            ExpressionAttributeValues: {
+              ":type": "REWARDED_AD_DAY",
+              ":ttl": Math.floor(now / 1000) + RECEIPT_LIFETIME_SECONDS,
+              ":one": 1,
+              ":limit": dailyCap,
+            },
+          },
+        }]),
         {
           Update: {
             TableName: tableName(),
