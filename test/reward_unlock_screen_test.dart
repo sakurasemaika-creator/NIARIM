@@ -51,16 +51,16 @@ void main() {
     await tester.tap(find.byKey(const Key('rewardDurationButton')));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.text('days').last, 220,
+      find.text('days'), 220,
       scrollable: find.byType(Scrollable).last,
     );
-    await tester.tap(find.text('days').last);
+    await tester.tap(find.text('days'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.text('2days').last, 160,
+      find.text('2days'), 160,
       scrollable: find.byType(Scrollable).last,
     );
-    await tester.tap(find.text('2days').last);
+    await tester.tap(find.text('2days'));
     await tester.pumpAndSettle();
     expect(find.text('40 coins'), findsOneWidget);
 
