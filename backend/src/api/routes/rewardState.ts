@@ -3,6 +3,7 @@ import { GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { authenticate } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { ok } from "../../lib/response";
+import { rewardedAdConfiguration } from "./rewardedAd";
 
 /**
  * Read-only reward wallet endpoint. Google ID token -> NIARIM user ID is
@@ -73,7 +74,9 @@ export async function getMyRewardState(event: APIGatewayProxyEventV2) {
     entitlements,
     membershipTier: auth.membershipTier,
     // No fabricated coin rewards/quotes; server write endpoints are not live.
-    rewardEarningEnabled: false,
+    rewardEarningEnabled: rewardedAdConfiguration().enabled,
+    rewardedOfferVersion: rewardedAdConfiguration().version,
+    rewardedCoinsPerCompletion: rewardedAdConfiguration().amount,
     redemptionEnabled: false,
   });
 }
