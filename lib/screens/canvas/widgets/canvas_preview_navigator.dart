@@ -140,7 +140,7 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
       borderRadius: BorderRadius.circular(10),
       clipBehavior: Clip.antiAlias,
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         children: [
           Container(
             color: theme.menuBgColor,
@@ -169,7 +169,7 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
               ],
             ),
           ),
-          preview,
+          Expanded(child: Center(child: preview)),
         ],
       ),
     );

@@ -226,8 +226,7 @@ class SettingsService extends ChangeNotifier {
   // 共通の設定として保存される。
   // Per-window heights are global workspace settings, not project state.
   final Map<CanvasDockPanel, double> _desktopPanelHeights = {};
-  final Map<CanvasDockPanel, double> _desktopPanelWidths = {};
-
+ 
   // Collapsing a dock keeps it open and preserves its width, height and order.
   // The collapsed side tab is restored on the next launch.
   final Set<CanvasDockPanel> _collapsedDesktopDocks = {};
@@ -250,21 +249,16 @@ class SettingsService extends ChangeNotifier {
     );
   }
 
+  /// All expanded windows in a dock column share the same horizontal size.
+  /// Legacy per-window width calls use the panel's CURRENT column so old
+  /// workspace settings cannot re-introduce mismatched widths.
   double desktopDockWidth(CanvasDockPanel panel, {required bool right}) =>
-      _desktopPanelWidths[panel] ??
-      (right ? _desktopPanelWidth : _desktopToolPanelWidth);
-  Future<void> setDesktopDockWidth(CanvasDockPanel panel, double width) async {
-    _desktopPanelWidths[panel] = width.clamp(200.0, 480.0);
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      'desktop_dock_widths',
-      jsonEncode({
-        for (final entry in _desktopPanelWidths.entries)
-          entry.key.name: entry.value,
-      }),
-    );
-  }
+      right ? _desktopPanelWidth : _desktopToolPanelWidth;
+
+  Future<void> setDesktopDockWidth(CanvasDockPanel panel, double width) =>
+      _rightDockOrder.contains(panel)
+          ? setDesktopPanelWidth(width)
+          : setDesktopToolPanelWidth(width);
 
   double desktopDockHeight(CanvasDockPanel panel) =>
       _desktopPanelHeights[panel] ?? 260.0;
@@ -723,25 +717,8 @@ class SettingsService extends ChangeNotifier {
         savedCollapsed.map((name) => byName[name]).whereType<CanvasDockPanel>(),
       );
     }
-    _desktopPanelWidths.clear();
-    final savedPanelWidths = prefs.readString('desktop_dock_widths');
-    if (savedPanelWidths != null) {
-      try {
-        final decoded = jsonDecode(savedPanelWidths);
-        if (decoded is Map) {
-          for (final entry in decoded.entries) {
-            final panel = CanvasDockPanel.values.asNameMap()[entry.key];
-            if (panel != null && entry.value is num) {
-              _desktopPanelWidths[panel] = (entry.value as num)
-                  .toDouble()
-                  .clamp(200.0, 480.0);
-            }
-          }
-        }
-      } on FormatException {
-        // Keep other saved workspace preferences when widths are invalid.
-      }
-    }
+    // Legacy per-window widths are intentionally ignored. The persisted
+    // left/right column widths below are now the only source of truth.
     _desktopPanelHeights.clear();
     final rawDockHeights = prefs.readString('desktop_dock_heights');
     if (rawDockHeights != null) {

@@ -66,6 +66,7 @@ import 'widgets/quick_tool_panel.dart';
 import 'widgets/mesh_transform_panel.dart';
 import 'widgets/reference_window.dart';
 import 'widgets/canvas_preview_navigator.dart';
+import 'widgets/desktop_dock_content_viewport.dart';
 import '../../models/canvas_dock_panel.dart';
 import '../../models/ruler.dart';
 import '../../widgets/responsive.dart';
@@ -209,7 +210,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (anyVisible && !anyExpanded && (right || !_showMeshTransformPanel)) {
       return PcDockColumn.foldedWidth;
     }
-    return width;
+    return right
+        ? (_panelWidthDragOverride ?? settings.desktopPanelWidth)
+        : (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth);
   }
 
   // 右側ドッキング領域（カラーピッカー・レイヤーパネル・キャンバス
@@ -2231,7 +2234,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             collapsed: settings.isDesktopDockCollapsed(panel),
             onCollapsedChanged: (v) =>
                 settings.setDesktopDockCollapsed(panel, v),
-            tabs: [_pcDockTab(l10n, panel, _dockBody(panel))],
+            tabs: [_pcDockTab(l10n, panel, _pcDockBody(panel))],
           ),
       if (!right && _showMeshTransformPanel)
         PcPane(
@@ -2248,6 +2251,20 @@ class _CanvasScreenState extends State<CanvasScreen> {
         ),
     ];
     return panes;
+  }
+
+  /// 窓の中身。カラーピッカーは円をまるごと見せる部品なので、窓が狭い・
+  /// 低いときは全体を縮めて収める（切れて円の一部しか見えなかった、という
+  /// 利用者の報告。dev_branchの`DesktopDockContentViewport`）。一覧の窓は
+  /// これまでどおり`PcPane.minLayoutHeight`で並べて窓の中でスクロールする。
+  Widget _pcDockBody(CanvasDockPanel panel) {
+    final body = _dockBody(panel);
+    if (panel != CanvasDockPanel.colorPicker) return body;
+    return DesktopDockContentViewport(
+      key: ValueKey('dockViewport-${panel.name}'),
+      mode: DesktopDockContentMode.fit,
+      child: body,
+    );
   }
 
   PcPaneTab _pcDockTab(
@@ -3036,6 +3053,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   Widget _colorPickerPanel() => ColorPickerPanel(
+    showCloseBar: !isWideScreen(context),
     currentColor: _currentColor,
     onColorChanged: (color) {
       setState(() => _currentColor = color);
@@ -3057,6 +3075,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   );
 
   Widget _brushPanel() => BrushPanel(
+    dockedMode: isWideScreen(context),
     onClose: () => setState(() => _showBrushPanel = false),
     onEyedropOutlineColor: _startBrushOutlineEyedropper,
   );

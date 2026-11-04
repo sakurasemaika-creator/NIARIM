@@ -26,10 +26,12 @@ import '../../../config/accent_text_theme.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
+  final bool dockedMode;
   final Future<int?> Function()? onEyedropOutlineColor;
   const BrushPanel({
     super.key,
     required this.onClose,
+    this.dockedMode = false,
     this.onEyedropOutlineColor,
   });
 
@@ -96,7 +98,10 @@ class _BrushPanelState extends State<BrushPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PanelCenterCloseBar(onClose: widget.onClose),
+            // ドックの中では窓の見出しの×で閉じる（PanelCenterCloseBarも
+            // DockedPanelScopeの中では出ない）。
+            if (!widget.dockedMode)
+              PanelCenterCloseBar(onClose: widget.onClose),
             Row(
               children: [
                 Text(

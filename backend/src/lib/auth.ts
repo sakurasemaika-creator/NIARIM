@@ -61,7 +61,14 @@ export async function authenticate(
   return {
     niarimUserId: user.niarimUserId,
     googleSub: sub,
-    membershipTier: user.membershipTier,
+    membershipTier:
+      (typeof user.playPremiumExpiresAtEpochMs === "number" &&
+       typeof user.playPremiumVerifiedUntilEpochMs === "number" &&
+       user.playPremiumExpiresAtEpochMs > Date.now() &&
+       user.playPremiumVerifiedUntilEpochMs > Date.now()) ||
+      (typeof user.coinPremiumExpiresAtEpochMs === "number" &&
+       user.coinPremiumExpiresAtEpochMs > Date.now())
+        ? "premium" : user.membershipTier,
   };
 }
 

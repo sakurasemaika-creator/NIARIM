@@ -29,7 +29,8 @@ import {
  * No AWS write or reward issuance occurs when the feature flag is absent.
  */
 function enabled(): boolean {
-  return process.env.CREATOR_MISSION_CLAIMS_ENABLED === "true";
+  return process.env.CREATOR_MISSION_CLAIMS_ENABLED === "true" &&
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED === "true";
 }
 
 const SOCIAL_HOLD_SECONDS = 48 * 60 * 60;
@@ -320,12 +321,42 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
   const eligible = mission.kind === "niarimBookmarkRanking"
     ? progress.count <= mission.required
     : progress.count >= mission.required;
+  const bitKey = String(mission.bit);
   if (!eligible) {
+    // A mission that lost its requirement must restart the 48-hour hold.
+    // Never retain an old qualifying timestamp for a later temporary spike.
+    if (state.firstQualifiedAt[bitKey]) {
+      const firstQualifiedAt = { ...state.firstQualifiedAt };
+      const pendingCoins = { ...state.pendingCoins };
+      delete firstQualifiedAt[bitKey];
+      delete pendingCoins[bitKey];
+      try {
+        await ddb.send(new UpdateCommand({
+          TableName: tableName(),
+          Key: missionKey(auth.niarimUserId, itemWorkId),
+          UpdateExpression:
+            "SET firstQualifiedAt = :first, pendingCoins = :coins ADD revision :one",
+          ConditionExpression:
+            "revision = :rev AND claimedMask = :mask AND itemType = :type",
+          ExpressionAttributeValues: {
+            ":first": firstQualifiedAt,
+            ":coins": pendingCoins,
+            ":one": 1, ":rev": state.revision,
+            ":mask": state.claimedMask, ":type": state.itemType,
+          },
+        }));
+      } catch (error) {
+        if (error instanceof ConditionalCheckFailedException ||
+            error instanceof TransactionCanceledException) {
+          conflict("進捗が更新されました。再確認してください", "MISSION_STATE_CHANGED");
+        }
+        throw error;
+      }
+    }
     conflict("ミッションの達成条件を確認できません", "MISSION_NOT_YET_COMPLETE");
   }
 
   const nowSec = Math.floor(Date.now() / 1000);
-  const bitKey = String(mission.bit);
   const first = state.firstQualifiedAt[bitKey];
   let coins = state.pendingCoins[bitKey];
   if (!first || first > nowSec) {
@@ -400,6 +431,41 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
   delete pending[bitKey];
   delete pendingCoins[bitKey];
 
+  // Revalidate the live source in the SAME transaction as the wallet.
+  // A GET alone would allow a simultaneous unpublish, unfollow or bookmark
+  // removal to race with payout. Rankings and cross-work counts still require
+  // separate consistency/anti-sybil reviews before launch.
+  const sourceCondition = mission.perWork ? {
+    ConditionCheck: {
+      TableName: tableName(),
+      Key: Keys.work(itemWorkId!),
+      ConditionExpression:
+        "itemType = :workType AND authorId = :author " +
+        "AND isNiarimPublished = :published " +
+        "AND youtubePrivacyStatus <> :private " +
+        "AND youtubePrivacyStatus <> :deleted " +
+        "AND gsi2pk = :bookmarkRank" +
+        (mission.kind === "workBookmarks" ? " AND bookmarkCount >= :required" : ""),
+      ExpressionAttributeValues: {
+        ":workType": "WORK",
+        ":author": auth.niarimUserId,
+        ":published": true,
+        ":private": "private",
+        ":deleted": "deleted",
+        ":bookmarkRank": "BOOKMARK_RANKING",
+        ...(mission.kind === "workBookmarks" ? { ":required": mission.required } : {}),
+      },
+    },
+  } : mission.kind === "followers" ? {
+    ConditionCheck: {
+      TableName: tableName(),
+      Key: Keys.user(auth.niarimUserId),
+      ConditionExpression:
+        "itemType = :type AND followerCount >= :minimum",
+      ExpressionAttributeValues: { ":type": "USER", ":minimum": mission.required },
+    },
+  } : null;
+
   // Exactly one atomic transaction: the SAME mission cannot credit twice
   // even if two clients race, the user switches devices or a request retries.
   try {
@@ -458,6 +524,7 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
             ConditionExpression: "attribute_not_exists(pk)",
           },
         },
+        ...(sourceCondition ? [sourceCondition] : []),
       ],
     }));
   } catch (error) {

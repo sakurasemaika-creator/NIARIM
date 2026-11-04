@@ -24,6 +24,8 @@ export const Keys = {
   work: (workId: string) => ({ pk: `WORK#${workId}`, sk: "META" }),
   user: (niarimUserId: string) => ({ pk: `USER#${niarimUserId}`, sk: "META" }),
   googleSubLookup: (sub: string) => ({ pk: `GOOGLESUB#${sub}`, sk: "META" }),
+  /** A Play purchase token is bound to a single account by its SHA256 hash. */
+  playPurchaseToken: (hash: string) => ({ pk: `PLAY_PURCHASE#${hash}`, sk: "META" }),
   /** Reward entitlement is server-issued only; clients cannot write this key. */
   rewardEntitlement: (niarimUserId: string, entitlement: string) => ({
     pk: `USER#${niarimUserId}`,
@@ -34,6 +36,10 @@ export const Keys = {
   }),
   creatorMissionState: (niarimUserId: string) => ({
     pk: `USER#${niarimUserId}`, sk: "MISSION_STATE_V1",
+  }),
+  /** Server-owned bounded progress scanner; never a spendable coin proof. */
+  creatorQualifiedWorksScan: (userId: string) => ({
+    pk: `USER#${userId}`, sk: "MISSION_QUALIFIED_WORK_SCAN_V1",
   }),
   /** Persistent per-work bitmask; one tiny item only after a work earns a reward. */
   creatorWorkMissionState: (niarimUserId: string, workId: string) => ({

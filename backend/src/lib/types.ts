@@ -152,6 +152,15 @@ export interface UserItem {
   niarimUserId: string;
   googleSub: string;
   membershipTier: MembershipTier;
+  // Play purchases are authenticated by Google, never by local preferences.
+  // Cached verification expires quickly even when the Play expiry is later.
+  playPremiumExpiresAtEpochMs?: number;
+  playPremiumVerifiedUntilEpochMs?: number;
+  playPremiumCheckedAtMs?: number;
+  playPremiumProductId?: string;
+  playPremiumTokenHash?: string;
+  // Coin redemptions extend subscription-level capabilities atomically.
+  coinPremiumExpiresAtEpochMs?: number;
 
   youtubeChannelId?: string;
   channelName?: string;

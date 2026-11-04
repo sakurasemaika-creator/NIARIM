@@ -197,6 +197,24 @@ export class NiarimBackendStack extends Stack {
       reservedConcurrentExecutions: 10,
       environment: {
         ...commonEnvironment,
+        // Default-off. ADC must be provisioned using a Google-to-AWS
+        // workload identity federation or equivalent secure credential source.
+        PLAY_PURCHASE_VERIFICATION_ENABLED:
+          this.node.tryGetContext("playPurchaseVerificationEnabled") === "true"
+            ? "true" : "false",
+        // Anti-sybil, moderation and economics signoff is independent.
+        CREATOR_MISSION_CLAIMS_ENABLED:
+          this.node.tryGetContext("creatorMissionClaimsEnabled") === "true"
+            ? "true" : "false",
+        // Demand-driven 10,000-work candidate scanner; read budget is bounded.
+        // Does not mint coins and defaults OFF to protect free-tier capacity.
+        CREATOR_QUALIFIED_WORK_SCAN_ENABLED:
+          this.node.tryGetContext("creatorQualifiedWorkScanEnabled") === "true"
+            ? "true" : "false",
+        CREATOR_MISSION_CLAIMS_REVIEW_APPROVED:
+          this.node.tryGetContext("creatorMissionClaimsReviewApproved") === "true"
+            ? "true" : "false",
+        PLAY_ANDROID_PACKAGE_NAME: "com.niarim.niarim",
         // Playback preflight reads the public YouTube video status server-side.
         // Never ship this API key in the Flutter binary or an API response.
         YOUTUBE_API_KEY:

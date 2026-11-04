@@ -30,6 +30,7 @@ vi.mock("../src/lib/admobSsv", async (original) => ({
 }));
 import {
   receiveRewardedAdSsv, rewardedAdConfiguration, startRewardedAdSession,
+  getRewardedAdStatus,
 } from "../src/api/routes/rewardedAd";
 
 const request = {
@@ -85,6 +86,52 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     expect(command.input.ConditionExpression).toContain("expiresAtMs < :issued");
     expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand))
       .toBe(false);
+  });
+
+  it("only reports ad coin grant after a server-consumed session", async () => {
+    enable();
+    const nonce = "123e4567-e89b-12d3-a456-426614174000";
+    const checked = {...request, queryStringParameters: {nonce}};
+    send.mockResolvedValueOnce({ Item: {
+      itemType: "REWARDED_AD_SESSION", nonce,
+      expiresAtMs: Date.now() + 300_000,
+    }});
+    const pending = await getRewardedAdStatus(checked);
+    expect(JSON.parse(pending.body ?? "{}")).toEqual({
+      credited:false,status:"pending",
+    });
+    send.mockResolvedValueOnce({ Item: {
+      itemType:"REWARDED_AD_SESSION", nonce,
+      consumedAtMs:Date.now(),
+    }});
+    const credited = await getRewardedAdStatus(checked);
+    expect(JSON.parse(credited.body ?? "{}")).toEqual({
+      credited:true,status:"credited",
+    });
+    expect(send.mock.calls.every(([command]) => command instanceof GetCommand)).toBe(true);
+    expect(send.mock.calls[0][0].input.Key.pk)
+      .toBe(`USER#N${"a".repeat(32)}`);
+  });
+
+  it("never leaks another account's ad result and rejects invalid nonces", async () => {
+    enable();
+    send.mockResolvedValueOnce({Item: {
+      itemType:"REWARDED_AD_SESSION",
+      nonce:"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      consumedAtMs:Date.now(),
+    }});
+    const status = await getRewardedAdStatus({
+      ...request, queryStringParameters: {
+        nonce:"123e4567-e89b-12d3-a456-426614174000",
+      },
+    });
+    expect(JSON.parse(status.body ?? "{}")).toMatchObject({
+      credited:false,status:"not_found",
+    });
+    await expect(getRewardedAdStatus({
+      ...request,queryStringParameters:{nonce:"attacker"},
+    })).rejects.toMatchObject({code:"REWARDED_AD_INVALID_NONCE"});
+    expect(send).toHaveBeenCalledTimes(1);
   });
 
   it("credits signed event once with immutable coin history", async () => {

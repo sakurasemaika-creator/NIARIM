@@ -18,6 +18,13 @@ void main() {
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isFalse);
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.layer), isFalse);
     await settings.setDesktopDockWidth(CanvasDockPanel.brush, 360);
+    expect(settings.desktopToolPanelWidth, 360);
+    expect(settings.desktopDockWidth(CanvasDockPanel.penSubTool, right: false), 360);
+    expect(settings.desktopPanelWidth, 280);
+    await settings.setDesktopDockWidth(CanvasDockPanel.colorPicker, 340);
+    expect(settings.desktopPanelWidth, 340);
+    expect(settings.desktopDockWidth(CanvasDockPanel.layer, right: true), 340);
+    expect(settings.desktopToolPanelWidth, 360);
     await settings.setDesktopDockHeight(CanvasDockPanel.brush, 340);
     await settings.setDesktopDockCollapsed(CanvasDockPanel.brush, true);
     await settings.setDesktopDockCollapsed(CanvasDockPanel.layer, true);
@@ -28,6 +35,7 @@ void main() {
     expect(reloaded.isDesktopDockCollapsed(CanvasDockPanel.brush), isFalse);
     expect(reloaded.isDesktopDockCollapsed(CanvasDockPanel.layer), isTrue);
     expect(reloaded.desktopDockWidth(CanvasDockPanel.brush, right: false), 360);
+    expect(reloaded.desktopDockWidth(CanvasDockPanel.layer, right: true), 340);
     expect(reloaded.desktopDockHeight(CanvasDockPanel.brush), 340);
     await reloaded.setDesktopDockCollapsed(CanvasDockPanel.layer, false);
     final reopened = SettingsService();
@@ -62,8 +70,20 @@ void main() {
     expect(find.byKey(const ValueKey('pcPreviewCollapse-brush')), findsOneWidget);
     expect(find.byKey(const ValueKey('pcPreviewCollapse-layer')), findsOneWidget);
     expect(find.byKey(const ValueKey('pcPreviewDrag-brush')), findsOneWidget);
-    expect(find.byKey(const ValueKey('pcPreviewWidth-brush')), findsOneWidget);
+    expect(find.byKey(const ValueKey('pcPreviewWidth-brush')), findsNothing);
+    expect(find.byKey(const ValueKey('pcPreviewWidth-layer')), findsNothing);
+    expect(find.byKey(const ValueKey('pcPreviewToolColumnResize')), findsOneWidget);
+    expect(find.byKey(const ValueKey('pcPreviewRightColumnResize')), findsOneWidget);
     expect(find.byKey(const ValueKey('pcPreviewHeight-brush')), findsOneWidget);
+
+    // A single column drag changes every window on that side, not the other.
+    await tester.drag(
+      find.byKey(const ValueKey('pcPreviewToolColumnResize')),
+      const Offset(40, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(settings.desktopToolPanelWidth, greaterThan(280));
+    expect(settings.desktopPanelWidth, 280);
 
     // The layout preview must mirror the real dock on left-handed workspaces.
     final toolColumn = find.byKey(const ValueKey('pcPreviewToolColumn'));

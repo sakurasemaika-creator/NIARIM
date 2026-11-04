@@ -91,6 +91,26 @@ class CommunityApi {
   Future<Map<String, dynamic>> myRewardState() =>
       _client.getJson('/me/rewards', authenticated: true);
 
+  /// Verify readiness before opening the Google Play Billing purchase sheet.
+  Future<bool> canVerifyPlayPurchases() async {
+    final result = await _client.getJson(
+      '/me/premium/play/availability', authenticated: true,
+    );
+    return result['enabled'] == true &&
+        result['products'] is List &&
+        (result['products'] as List).contains('niarim_premium_monthly') &&
+        (result['products'] as List).contains('niarim_premium_yearly');
+  }
+
+  /// Google Play purchase token is sent only to the authenticated backend.
+  Future<Map<String, dynamic>> verifyMyPlaySubscription({
+    required String productId,
+    required String purchaseToken,
+  }) => _client.postJson(
+    '/me/premium/play/verify', authenticated: true,
+    body: {'productId': productId, 'purchaseToken': purchaseToken},
+  );
+
   /// Read-only server journal. Its opaque cursor remains account-scoped.
   Future<Map<String, dynamic>> myCoinHistory({String? cursor, int limit = 20}) =>
       _client.getJson(
@@ -106,6 +126,13 @@ class CommunityApi {
   /// It returns ONLY signed-callback customData, never coins or an ad grant.
   Future<Map<String, dynamic>> beginRewardedAdSession() =>
       _client.postJson('/me/rewards/ad-session', authenticated: true);
+
+  /// GET never creates a grant; consumedAtMs is committed with the wallet.
+  Future<Map<String, dynamic>> rewardedAdStatus(String nonce) =>
+      _client.getJson(
+        '/me/rewards/ad-status',
+        authenticated: true, query: {'nonce': nonce},
+      );
 
   /// Price from authenticated server catalog. Never use local reference rates.
   Future<Map<String, dynamic>> fullPremiumCoinQuote() =>
@@ -129,6 +156,15 @@ class CommunityApi {
 
   /// Account status by default; specify an owned YouTube video ID to
   /// inspect the once-per-work bookmark and rank claim history.
+  /// Advances only a bounded server-owned candidate scan.
+  /// This NEVER awards coins; callers may resume without storing any cursor.
+  Future<Map<String, dynamic>> scanMyQualifiedWorks({bool restart = false}) =>
+      _client.postJson(
+        '/me/missions/qualified-works/scan',
+        authenticated: true,
+        body: {'restart': restart},
+      );
+
   Future<Map<String, dynamic>> myCreatorMissions({String? workId}) =>
       _client.getJson(
         '/me/missions',

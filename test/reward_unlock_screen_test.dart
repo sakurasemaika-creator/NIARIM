@@ -50,11 +50,8 @@ void main() {
     expect(find.text('4 coins'), findsOneWidget);
     await tester.tap(find.byKey(const Key('rewardDurationButton')));
     await tester.pumpAndSettle();
-    // The bottom sheet has nested scrollables; scrolling the last one can
-    // target an offscreen list or a non-visible expansion child.
-    await tester.ensureVisible(find.text('days'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('days'));
+    // Categories start collapsed so days remains reachable on small screens.
+    await tester.tap(find.widgetWithText(ExpansionTile, 'days'));
     await tester.pumpAndSettle();
     final day2 = find.byKey(const ValueKey('rewardDuration_day_2'));
     await tester.ensureVisible(day2);
@@ -64,8 +61,13 @@ void main() {
     expect(find.text('40 coins'), findsOneWidget);
 
     // No wallet/SSV/price quote is connected: neither action can spend coins.
-    expect(tester.widget<FilledButton>(find.byType(FilledButton).first).onPressed,
-        isNull);
+    final goalButton = find.byKey(const Key('rewardSetGoalButton'));
+    await tester.scrollUntilVisible(
+      goalButton, 260,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilledButton>(goalButton).onPressed, isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     premium.dispose();
     settings.dispose();

@@ -11,7 +11,9 @@ import '../utils/tolerant_preferences.dart';
 
 /// プレミアム加入状態・課金処理を管理する。
 /// 実際の課金はGoogle Play Billing（in_app_purchase）経由で行い、
-/// purchaseStreamの結果を受けてisPremiumを更新する。
+/// 購入・復元通知をNIARIMバックエンドからGoogle Play Developer APIで
+/// 検証できた場合に限り、購入権限を短時間保持する。端末保存値だけでは
+/// Premiumを有効にしない。
 ///
 /// `isMonetizationEnabled`がfalseの間（税務上の都合による一時停止期間）は
 /// ストアへの接続・商品情報取得・購入操作を一切行わない。この期間は
@@ -36,6 +38,103 @@ class PremiumService extends ChangeNotifier {
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   bool _isPremium = false;
+  DateTime? _playVerifiedUntil;
+  String? _playVerifiedOwner;
+  Timer? _playExpiryTimer;
+  Timer? _playRefreshTimer;
+  Future<Map<String, dynamic>> Function(String, String)? _playVerifier;
+  Future<bool> Function()? _playPreflight;
+
+  /// The caller uses the NIARIM authenticated API, never a local purchase flag.
+  void bindPlayVerifier(
+    Future<Map<String, dynamic>> Function(String productId, String purchaseToken) verify, {
+    required Future<bool> Function() canPurchase,
+  }) {
+    _playVerifier = verify;
+    _playPreflight = canPurchase;
+    if (_storeAvailable && _boundGoogleAuth?.account != null) {
+      unawaited(_restorePlayPurchasesSilently());
+    }
+  }
+
+  Future<void> _restorePlayPurchasesSilently() async {
+    try {
+      await restorePurchases();
+    } catch (_) {
+      // A transient Play outage cannot grant access.
+    }
+  }
+
+  void _invalidatePlayPremium() {
+    _playExpiryTimer?.cancel();
+    _playRefreshTimer?.cancel();
+    _playVerifiedUntil = null;
+    _playVerifiedOwner = null;
+    _verifiedExpiryDate = null;
+    _isPremium = false;
+    notifyListeners();
+  }
+
+  /// A device flag/receipt callback alone cannot prove subscription ownership.
+  bool get hasVerifiedPlayPremium {
+    final now = DateTime.now();
+    return _isPremium &&
+        _verifiedExpiryDate?.isAfter(now) == true &&
+        _playVerifiedUntil?.isAfter(now) == true &&
+        _playVerifiedOwner != null &&
+        _playVerifiedOwner == _boundGoogleAuth?.account?.id;
+  }
+
+  @visibleForTesting
+  static bool isValidPlayVerification(
+    Map<String, dynamic> value, String productId, DateTime now,
+  ) {
+    final expiry = value['expiresAtEpochMs'];
+    final until = value['verifiedUntilEpochMs'];
+    final nowMs = now.millisecondsSinceEpoch;
+    return value['verified'] == true &&
+        value['productId'] == productId &&
+        expiry is int && until is int &&
+        expiry > nowMs && until > nowMs && until <= expiry &&
+        until <= nowMs + const Duration(minutes: 16).inMilliseconds;
+  }
+
+  void _applyVerifiedPlayPremium(
+    Map<String, dynamic> response, String ownerId,
+  ) {
+    _playExpiryTimer?.cancel();
+    _playRefreshTimer?.cancel();
+    final expiry = DateTime.fromMillisecondsSinceEpoch(
+      response['expiresAtEpochMs'] as int,
+    );
+    final until = DateTime.fromMillisecondsSinceEpoch(
+      response['verifiedUntilEpochMs'] as int,
+    );
+    _verifiedExpiryDate = expiry;
+    _playVerifiedUntil = until;
+    _playVerifiedOwner = ownerId;
+    _isPremium = true;
+    final remaining = until.difference(DateTime.now());
+    if (remaining > const Duration(minutes: 1)) {
+      _playRefreshTimer = Timer(
+        remaining - const Duration(minutes: 1),
+        () {
+          if (_boundGoogleAuth?.account?.id == ownerId) {
+            unawaited(_restorePlayPurchasesSilently());
+          }
+        },
+      );
+    }
+    _playExpiryTimer = Timer(
+      remaining > Duration.zero ? remaining : Duration.zero,
+      () {
+        if (_playVerifiedOwner == ownerId && _playVerifiedUntil == until) {
+          _invalidatePlayPremium();
+        }
+      },
+    );
+    notifyListeners();
+  }
   // Only the authenticated backend may provide coin-purchased Premium.
   // This is intentionally not an editable SharedPreferences entitlement.
   DateTime? _serverCoinPremiumExpiresAt;
@@ -54,6 +153,7 @@ class PremiumService extends ChangeNotifier {
     _coinPremiumExpiryTimer?.cancel();
     _serverCoinPremiumExpiresAt = null;
     _serverCoinPremiumOwnerId = null;
+    _invalidatePlayPremium();
     auth.addListener(_onGoogleAccountChanged);
     notifyListeners();
   }
@@ -63,6 +163,10 @@ class PremiumService extends ChangeNotifier {
     if (current == _lastGoogleAccountId) return;
     _lastGoogleAccountId = current;
     applyServerCoinPremiumExpiry(null);
+    _invalidatePlayPremium();
+    if (current != null && _storeAvailable && _playVerifier != null) {
+      unawaited(_restorePlayPurchasesSilently());
+    }
   }
 
   bool get hasCoinPremium {
@@ -94,30 +198,22 @@ class PremiumService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 購入日時・購入商品ID（登録日・次回更新日の表示用）。サーバー側の
-  // レシート検証（Google Play Developer API等）は行っていないため、
-  // 実際の請求確定日はストアからは取得できない。ただしサブスクリプションの
-  // 更新日は購入日と同じ「日」（年額なら月日、月額なら日）に固定される
-  // ため、購入日さえ分かれば暦計算だけで正確に求められる（月をまたぐ
-  // 日数の単純な加算だと、月の日数の違いでずれることがあるため、
-  // 年・月を直接ずらすDateTimeコンストラクタで計算する）。
+  // 購入日時・商品IDは参考表示用の端末データ。
+  // 請求日や更新日をこの日時から確定扱いしない。
+  // 権限には、サーバー検証済みの期限と検証リースを必須とする。
   DateTime? _purchaseDate;
   String? _purchasedProductId;
-  // サーバー側レシート検証（Google Play Developer API等）で得られる
-  // 「確定した」有効期限。まだバックエンドが無いため常にnullで、
-  // その間は[nextRenewalDateEstimate]による暦計算の推定値にフォールバック
-  // する。バックエンドが用意でき次第[_verifyReceiptAndUpdateExpiry]の
-  // コメントアウトを外せば、この値が優先的に使われるようになる設計。
+  // Google Playサーバー検証で受け取った有効期限。
+  // アカウント切替・失効時には同時に破棄する。
   DateTime? _verifiedExpiryDate;
 
   /// 実際に購入済みかどうか（課金・ストア関連の判定に使用）。
-  bool get hasPurchasedPremium => _isPremium;
+  bool get hasPurchasedPremium => hasVerifiedPlayPremium;
 
   /// 購入日時（登録日表示用）。未購入または記録前はnull。
   DateTime? get purchaseDate => _purchaseDate;
 
-  /// サーバー側レシート検証で確定した有効期限（分かっていればそれを最優先）。
-  /// 未実装の間は常にnull。
+  /// Google Playで検証したサブスクリプションの有効期限。
   DateTime? get verifiedExpiryDate => _verifiedExpiryDate;
 
   /// 次回更新日。サーバー側レシート検証済みの有効期限があればそれを、
@@ -182,7 +278,7 @@ class PremiumService extends ChangeNotifier {
 
   /// プレミアム機能を利用できるかどうか（機能制限の判定に使用）。
   /// 実際の購入済み、またはリリース記念キャンペーン期間中はtrue。
-  bool get isPremium => _isPremium || hasCoinPremium || isLaunchCampaignActive;
+  bool get isPremium => hasVerifiedPlayPremium || hasCoinPremium || isLaunchCampaignActive;
 
   bool _storeAvailable = false;
   bool get storeAvailable => _storeAvailable;
@@ -203,7 +299,8 @@ class PremiumService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    _isPremium = prefs.readBool('is_premium') ?? false;
+    // A locally editable preference is never a billable Premium entitlement.
+    _isPremium = false;
     final purchaseMillis = prefs.readInt('premium_purchase_date');
     if (purchaseMillis != null) {
       _purchaseDate = DateTime.fromMillisecondsSinceEpoch(purchaseMillis);
@@ -249,8 +346,28 @@ class PremiumService extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+    if (_boundGoogleAuth?.account == null || _playVerifier == null ||
+        _playPreflight == null) {
+      _purchaseError = '購入にはログインとサーバー検証が必要です';
+      notifyListeners();
+      return false;
+    }
     if (!_storeAvailable) {
       _purchaseError = 'ストアに接続できません';
+      notifyListeners();
+      return false;
+    }
+    // Do not charge a user if the NIARIM server cannot verify Play purchases.
+    final startingAccount = _boundGoogleAuth?.account?.id;
+    bool backendReady;
+    try {
+      backendReady = await _playPreflight!();
+    } catch (_) {
+      backendReady = false;
+    }
+    if (!backendReady || startingAccount == null ||
+        startingAccount != _boundGoogleAuth?.account?.id) {
+      _purchaseError = '購入検証サーバーが利用できないため購入を開始できません';
       notifyListeners();
       return false;
     }
@@ -276,6 +393,7 @@ class PremiumService extends ChangeNotifier {
 
   Future<void> _onPurchaseUpdate(List<PurchaseDetails> purchases) async {
     for (final purchase in purchases) {
+      bool verifiedAndReadyToAcknowledge = false;
       switch (purchase.status) {
         case PurchaseStatus.pending:
           _purchasePending = true;
@@ -283,31 +401,38 @@ class PremiumService extends ChangeNotifier {
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
           _purchasePending = false;
-          _purchaseError = null;
-          // transactionDateはミリ秒文字列（ストアによっては秒の場合もある
-          // ため桁数で判定する）。取得できない場合は現在時刻で代用する。
-          final rawDate = purchase.transactionDate;
-          DateTime? parsedDate;
-          if (rawDate != null) {
-            final ms = int.tryParse(rawDate);
-            if (ms != null) {
-              parsedDate = DateTime.fromMillisecondsSinceEpoch(
-                ms.toString().length > 11 ? ms : ms * 1000,
-              );
-            }
+          final verifier = _playVerifier;
+          final accountId = _boundGoogleAuth?.account?.id;
+          final purchaseToken = purchase.verificationData.serverVerificationData;
+          if (verifier == null || accountId == null ||
+              purchaseToken.isEmpty || !_productIds.contains(purchase.productID)) {
+            _purchaseError = '購入をサーバーで検証できません';
+            break;
           }
-          await setPremium(
-            true,
-            purchaseDate: parsedDate ?? DateTime.now(),
-            productId: purchase.productID,
-          );
-          // サーバー側レシート検証はまだバックエンドが無いため未接続。
-          // 将来Google Play Developer API等の検証エンドポイントが用意でき
-          // 次第、以下のコメントアウトを外せば確定した有効期限が
-          // [nextRenewalDate]へ自動的に反映される（バックエンド未実装の
-          // 現状ではawaitせずfire-and-forgetにしておき、失敗しても
-          // 購入処理自体は成立させる）。
-          // unawaited(_verifyReceiptAndUpdateExpiry(purchase));
+          try {
+            final result = await verifier(purchase.productID, purchaseToken);
+            if (_boundGoogleAuth?.account?.id != accountId) break;
+            if (!isValidPlayVerification(result, purchase.productID, DateTime.now())) {
+              _invalidatePlayPremium();
+              _purchaseError = 'Google Playの有効な購入を確認できませんでした';
+              break;
+            }
+            _applyVerifiedPlayPremium(result, accountId);
+            _purchaseError = null;
+            verifiedAndReadyToAcknowledge = true;
+            final rawDate = purchase.transactionDate;
+            final ms = rawDate == null ? null : int.tryParse(rawDate);
+            final purchaseDate = ms == null
+                ? DateTime.now()
+                : DateTime.fromMillisecondsSinceEpoch(
+                    rawDate!.length > 11 ? ms : ms * 1000,
+                  );
+            await setPremium(true,
+              purchaseDate: purchaseDate, productId: purchase.productID);
+          } catch (_) {
+            _purchaseError = '購入検証に失敗しました。購入を復元して再確認してください';
+            // Leave purchase unacknowledged for a verified retry.
+          }
           break;
         case PurchaseStatus.error:
           _purchasePending = false;
@@ -317,7 +442,7 @@ class PremiumService extends ChangeNotifier {
           _purchasePending = false;
           break;
       }
-      if (purchase.pendingCompletePurchase) {
+      if (purchase.pendingCompletePurchase && verifiedAndReadyToAcknowledge) {
         await _iap.completePurchase(purchase);
       }
     }
@@ -351,29 +476,8 @@ class PremiumService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // サーバー側レシート検証（未実装：バックエンドAPIが用意でき次第
-  // 実装する）。購入トークン（purchase.verificationData）をバックエンドへ
-  // 送り、Google Play Developer API
-  // (purchases.subscriptions.get)等で検証した上で確定した有効期限を
-  // 受け取る想定。バックエンドが無い現状ではエラーになるためコメント
-  // アウトしているが、呼び出し側（[_onPurchaseUpdate]）は既に
-  // レシート検証がある前提で書いてあるので、この中身だけ実装すれば
-  // 有効化できる。
-  // Future<void> _verifyReceiptAndUpdateExpiry(PurchaseDetails purchase) async {
-  //   try {
-  //     final token = purchase.verificationData.serverVerificationData;
-  //     final result = await _receiptVerificationApi.verify(
-  //       productId: purchase.productID,
-  //       purchaseToken: token,
-  //     );
-  //     _verifiedExpiryDate = result.expiryDate;
-  //     notifyListeners();
-  //   } catch (_) {
-  //     // 検証に失敗した場合は[nextRenewalDateEstimate]の推定値のまま
-  //     // フォールバックする（購入自体は既に成立しているため機能制限は
-  //     // かけない）。
-  //   }
-  // }
+  // Google Play検証は _onPurchaseUpdate → _playVerifier 経由で実施。
+  // purchaseTokenは端末の永続設定には保存しない。
 
   // プロジェクト最大尺：無料90秒 / Premium 2時間（7200秒）。
   // PremiumFeature.unlimitedDuration は既存IDとの互換性のため名称のみ維持。
@@ -386,6 +490,8 @@ class PremiumService extends ChangeNotifier {
   void dispose() {
     _boundGoogleAuth?.removeListener(_onGoogleAccountChanged);
     _coinPremiumExpiryTimer?.cancel();
+    _playExpiryTimer?.cancel();
+    _playRefreshTimer?.cancel();
     _subscription?.cancel();
     super.dispose();
   }
