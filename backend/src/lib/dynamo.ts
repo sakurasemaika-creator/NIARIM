@@ -32,6 +32,9 @@ export const Keys = {
   coinWallet: (niarimUserId: string) => ({
     pk: `USER#${niarimUserId}`, sk: "COIN_WALLET",
   }),
+  creatorMissionState: (niarimUserId: string) => ({
+    pk: `USER#${niarimUserId}`, sk: "MISSION_STATE_V1",
+  }),
   coinTransaction: (niarimUserId: string, transactionId: string) => ({
     pk: `USER#${niarimUserId}`, sk: `COIN_TX#${transactionId}`,
   }),
