@@ -185,7 +185,9 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/creator-missions',
       builder: (context, state) =>
-          const AdMockPageFrame(child: CreatorMissionsScreen()),
+          AdMockPageFrame(child: CreatorMissionsScreen(
+            workId: state.uri.queryParameters['workId'],
+          )),
     ),
     GoRoute(
       path: '/autofill-presets',
