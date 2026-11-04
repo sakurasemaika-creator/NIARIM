@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import { GetCommand, QueryCommand, TransactWriteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 
@@ -277,6 +278,93 @@ describe("creator mission endpoints", () => {
       .toContain("bookmarkCount >= :required");
     expect(tx?.input.TransactItems?.[3].ConditionCheck?.ExpressionAttributeValues?.[":required"])
       .toBe(10);
+  });
+
+  it("a claimed bit for the same work and mission is never payable again", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    send.mockImplementation(async (command: unknown) => {
+      if (command instanceof GetCommand &&
+          command.input.Key?.pk === "WORK#abcdefghijk") {
+        return {Item:{
+          itemType:"WORK",workId:"abcdefghijk",
+          authorId:"NverifiedByGoogle",isNiarimPublished:true,
+          youtubePrivacyStatus:"public",gsi2pk:"BOOKMARK_RANKING",
+          bookmarkCount:150,
+        }};
+      }
+      if (command instanceof GetCommand &&
+          command.input.Key?.sk === "MISSION_WORK#abcdefghijk") {
+        return {Item:{
+          itemType:"CREATOR_WORK_MISSIONS_V1",
+          claimedMask:2**5,revision:3,totalMissionCoins:50,
+        }};
+      }
+      return {};
+    });
+    const result = await claimCreatorMission(req({
+      missionId:"work_bookmarks_10",workId:"abcdefghijk",
+    }));
+    expect(JSON.parse(result.body ?? "{}")).toMatchObject({
+      claimed:true,awardedCoins:0,
+    });
+    expect(send.mock.calls.some(([c])=>c instanceof TransactWriteCommand)).toBe(false);
+    expect(send.mock.calls.some(([c])=>c instanceof UpdateCommand)).toBe(false);
+  });
+
+  it("two distinct works have independently persisted claim keys", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    send.mockImplementation(async (command: unknown) => {
+      if (command instanceof GetCommand &&
+          typeof command.input.Key?.pk === "string" &&
+          command.input.Key.pk.startsWith("WORK#")) {
+        return {Item:{
+          itemType:"WORK",workId:command.input.Key.pk.slice(5),
+          authorId:"NverifiedByGoogle",isNiarimPublished:true,
+          youtubePrivacyStatus:"public",gsi2pk:"BOOKMARK_RANKING",
+          bookmarkCount:110,
+        }};
+      }
+      return {};
+    });
+    for (const workId of ["abcdefghijk","lmnopqrstuv"]) {
+      const result = await claimCreatorMission(req({
+        missionId:"work_bookmarks_100",workId,
+      }));
+      expect(JSON.parse(result.body ?? "{}")).toMatchObject({
+        pending:true,awardedCoins:0,workId,
+      });
+    }
+    const writes = send.mock.calls.map(([c])=>c)
+      .filter(c=>c instanceof UpdateCommand);
+    expect(writes.map(c=>c.input.Key?.sk)).toEqual([
+      "MISSION_WORK#abcdefghijk","MISSION_WORK#lmnopqrstuv",
+    ]);
+  });
+
+  it("concurrent state changes cancel the whole wallet and mask transaction", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    const eligibleSince = Math.floor(Date.now()/1000)-3*86400;
+    send.mockImplementation(async (command: unknown) => {
+      if (command instanceof GetCommand) return {Item:{
+        itemType:"CREATOR_MISSIONS_V1",claimedMask:0,revision:3,
+        totalMissionCoins:0,firstQualifiedAt:{"10":eligibleSince},
+        pendingCoins:{"10":50},
+      }};
+      if (command instanceof TransactWriteCommand) {
+        throw new TransactionCanceledException({
+          $metadata:{},message:"Conditional check failed",
+        });
+      }
+      return {};
+    });
+    await expect(claimCreatorMission(req({
+      missionId:"followers_10",
+    }))).rejects.toMatchObject({code:"MISSION_STATE_CHANGED"});
+    expect(send.mock.calls.filter(([c])=>c instanceof TransactWriteCommand))
+      .toHaveLength(1);
   });
 
 });
