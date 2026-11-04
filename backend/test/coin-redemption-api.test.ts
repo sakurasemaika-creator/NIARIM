@@ -95,6 +95,7 @@ describe("fail-closed one-month full Premium coin redemption", () => {
 
   it("retrying a committed transaction returns the old receipt, never debits twice", async () => {
     enable();
+    let receiptReads = 0;
     send.mockImplementation(async (command: unknown) => {
       if (command instanceof TransactWriteCommand) {
         throw new TransactionCanceledException({
@@ -103,6 +104,7 @@ describe("fail-closed one-month full Premium coin redemption", () => {
       }
       if (command instanceof GetCommand &&
           command.input.Key?.sk === `COIN_TX#redeem-${requestId}`) {
+        if (++receiptReads === 1) return {};
         return { Item: {
           itemType: "COIN_REDEMPTION",
           target: "fullPremium", months: 1,
