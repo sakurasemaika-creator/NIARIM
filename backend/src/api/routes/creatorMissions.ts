@@ -210,11 +210,28 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
   const auth = await authenticate(
     event.headers["authorization"] ?? event.headers["Authorization"],
   );
-  // Two point reads, no work scan and no additional GSIs.
-  const [user, state] = await Promise.all([
+  const selectedWorkId = event.queryStringParameters?.workId;
+  if (selectedWorkId && !/^[A-Za-z0-9_-]{11}$/.test(selectedWorkId)) {
+    badRequest("作品IDが不正です", "MISSION_INVALID_WORK_ID");
+  }
+  const [user, state, rankData] = await Promise.all([
     getUser(auth.niarimUserId),
     loadMissionState(auth.niarimUserId),
+    ddb.send(new GetCommand({ TableName: tableName(), Key: Keys.batchState() })),
   ]);
+  const rawCount = rankData.Item?.publishedWorkCount;
+  const publishedWorkCount = typeof rawCount === "number" &&
+    Number.isSafeInteger(rawCount) && rawCount >= 0 ? rawCount : 0;
+  let workState: MissionStateRecord | undefined;
+  if (selectedWorkId) {
+    const work = await ddb.send(new GetCommand({
+      TableName: tableName(), Key: Keys.work(selectedWorkId), ConsistentRead: true,
+    }));
+    if ((work.Item as WorkItem | undefined)?.authorId !== auth.niarimUserId) {
+      forbidden("この作品のミッションは参照できません", "MISSION_NOT_YOUR_WORK");
+    }
+    workState = await loadMissionState(auth.niarimUserId, selectedWorkId);
+  }
   return ok({
     catalogVersion: MISSION_CATALOG_VERSION,
     enabled: enabled(),
@@ -224,18 +241,25 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
     followerCount: user?.followerCount ?? 0,
     totalMissionCoins: state.totalMissionCoins,
     maximumLifetimeCreatorCoins: MAX_CREATOR_MISSION_COINS,
-    missions: CREATOR_MISSIONS.map((mission) => ({
-      ...mission,
-      claimed: missionClaimed(state.claimedMask, mission.bit),
-      claimedAt: state.claimedAt?.[String(mission.bit)] ?? null,
-      pendingSince: state.firstQualifiedAt?.[String(mission.bit)] ?? null,
-      // Work/ranking progress is fetched only on intentional claim attempts
-      // rather than scanning and charging every time this page opens.
-      progress: mission.kind === "followers"
-        ? user?.followerCount ?? 0
-        : null,
-      rewardEnabled: enabled() && mission.kind !== "verifiedEditSeconds",
-    })),
+    perWorkRewardsAreUncapped: true,
+    selectedWorkId: selectedWorkId ?? null,
+    publishedWorkCount,
+    missions: CREATOR_MISSIONS.map((mission) => {
+      const current = mission.perWork ? workState : state;
+      const key = String(mission.bit);
+      return {
+        ...mission,
+        claimed: current ? missionClaimed(current.claimedMask, mission.bit) : null,
+        claimedAt: current?.claimedAt[key] ?? null,
+        pendingSince: current?.firstQualifiedAt[key] ?? null,
+        coins: current?.pendingCoins[key] ??
+          missionRewardCoins(mission, publishedWorkCount),
+        progress: mission.kind === "followers"
+          ? user?.followerCount ?? 0
+          : mission.kind === "verifiedEditSeconds" ? state.verifiedEditSeconds : null,
+        rewardEnabled: enabled() && mission.kind !== "verifiedEditSeconds",
+      };
+    }),
   });
 }
 
