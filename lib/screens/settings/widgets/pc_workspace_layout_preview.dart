@@ -4,13 +4,15 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/canvas_dock_panel.dart';
 import '../../../services/settings_service.dart';
+import '../../../utils/desktop_dock_column_fit.dart';
 
 /// A live, interactive representation of the desktop canvas docking layout.
 ///
 /// The preview uses the same SettingsService lists, visibility preferences and
 /// per-window dimensions as CanvasScreen. Nothing is stored separately.
-/// Drag a window's grip to reorder or move it between columns; drag its right
-/// or left edge and bottom edge to resize it. Pinch/zoom the whole workspace.
+/// Drag a window's grip to move it between columns; drag the column boundary
+/// to resize every window there, or a window's bottom grip for its own height.
+/// Pinch/zoom the whole workspace.
 class PcWorkspaceLayoutPreview extends StatefulWidget {
   final String Function(CanvasDockPanel) labelOf;
 
@@ -25,7 +27,6 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
   static const double workspaceWidth = 1120;
   static const double workspaceHeight = 650;
   final TransformationController _transform = TransformationController();
-  final Map<CanvasDockPanel, double> _resizingWidth = {};
   final Map<CanvasDockPanel, double> _resizingHeight = {};
   Size? _lastViewportSize;
   double? _leftColumnWidthDrag;
@@ -51,25 +52,29 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     settings.setDefaultDockedPanels(next);
   }
 
-  double _columnWidth(SettingsService settings, {required bool right}) {
+  double _preferredWidth(SettingsService settings, {required bool right}) {
     final order =
         right ? settings.rightDockOrder : settings.toolOptionDockOrder;
-    double width = right
+    final visible =
+        order.where(settings.defaultDockedPanels.contains).toList();
+    if (visible.isEmpty) return 0;
+    if (visible.every(settings.isDesktopDockCollapsed)) return 52;
+    return right
         ? (_rightColumnWidthDrag ?? settings.desktopPanelWidth)
         : (_leftColumnWidthDrag ?? settings.desktopToolPanelWidth);
-    var anyVisible = false;
-    var anyExpanded = false;
-    for (final panel in order) {
-      if (!settings.defaultDockedPanels.contains(panel)) continue;
-      anyVisible = true;
-      if (settings.isDesktopDockCollapsed(panel)) continue;
-      anyExpanded = true;
-      final panelWidth = _resizingWidth[panel] ??
-          settings.desktopDockWidth(panel, right: right);
-      if (panelWidth > width) width = panelWidth;
-    }
-    if (anyVisible && !anyExpanded) return 52.0;
-    return width;
+  }
+
+  double _columnWidth(SettingsService settings, {required bool right}) {
+    final left = _preferredWidth(settings, right: false);
+    final rightWidth = _preferredWidth(settings, right: true);
+    final sizes = DesktopDockColumnFit.columnWidths(
+      availableWidth: workspaceWidth,
+      leftDesired: left,
+      rightDesired: rightWidth,
+      leftVisible: left > 0,
+      rightVisible: rightWidth > 0,
+    );
+    return right ? sizes.right : sizes.left;
   }
 
   @override
@@ -229,27 +234,55 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
 
   Widget _column(SettingsService settings, {required bool right}) {
     final scheme = Theme.of(context).colorScheme;
-    final order = right ? settings.rightDockOrder : settings.toolOptionDockOrder;
-    final visible = order.where(settings.defaultDockedPanels.contains).toList();
-    return SizedBox(
-      width: _columnWidth(settings, right: right),
-      child: DragTarget<CanvasDockPanel>(
-        key: ValueKey(right ? 'pcPreviewRightColumn' : 'pcPreviewToolColumn'),
-        onWillAcceptWithDetails: (_) => true,
-        onAcceptWithDetails: (details) =>
-            settings.moveDesktopDockPanel(details.data, toRight: right),
-        builder: (context, candidates, _) => ColoredBox(
-          color: candidates.isEmpty ? scheme.surface : scheme.primaryContainer,
-          child: ListView(
-            children: [
-              for (final panel in visible)
-                Align(
-                  alignment: right || settings.isLeftHanded
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                  child: _window(settings, panel, right: right),
-                ),
-            ],
+    final order =
+        right ? settings.rightDockOrder : settings.toolOptionDockOrder;
+    final visible =
+        order.where(settings.defaultDockedPanels.contains).toList();
+    return Padding(
+      // The frame timeline is 58px tall: docks never enter its bottom strip.
+      padding: const EdgeInsets.only(bottom: 58),
+      child: SizedBox(
+        width: _columnWidth(settings, right: right),
+        child: DragTarget<CanvasDockPanel>(
+          key: ValueKey(right ? 'pcPreviewRightColumn' : 'pcPreviewToolColumn'),
+          onWillAcceptWithDetails: (_) => true,
+          onAcceptWithDetails: (details) =>
+              settings.moveDesktopDockPanel(details.data, toRight: right),
+          builder: (context, candidates, _) => ColoredBox(
+            color: candidates.isEmpty ? scheme.surface : scheme.primaryContainer,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final heights = DesktopDockColumnFit.bodyHeights(
+                  availableHeight: constraints.maxHeight,
+                  visible: visible,
+                  isCollapsed: settings.isDesktopDockCollapsed,
+                  preferredHeight: (panel) => _resizingHeight[panel] ??
+                      settings.desktopDockHeight(panel),
+                );
+                return ListView(
+                  key: ValueKey(
+                    right ? 'pcPreviewRightDockScroll' : 'pcPreviewLeftDockScroll',
+                  ),
+                  children: [
+                    for (var i = 0; i < visible.length; i++) ...[
+                      if (i > 0)
+                        const SizedBox(height: DesktopDockColumnFit.gap),
+                      Align(
+                        alignment: right || settings.isLeftHanded
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: _window(
+                          settings,
+                          visible[i],
+                          right: right,
+                          fittedBodyHeight: heights[visible[i]],
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -308,15 +341,17 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     SettingsService settings,
     CanvasDockPanel panel, {
     required bool right,
+    double? fittedBodyHeight,
   }) {
     final scheme = Theme.of(context).colorScheme;
-    final width = _resizingWidth[panel] ??
-        settings.desktopDockWidth(panel, right: right);
-    final height = _resizingHeight[panel] ?? settings.desktopDockHeight(panel);
+    final height = fittedBodyHeight ??
+        _resizingHeight[panel] ??
+        settings.desktopDockHeight(panel);
     final collapsed = settings.isDesktopDockCollapsed(panel);
     final foldsLeft = !right && !settings.isLeftHanded;
     return SizedBox(
-      width: collapsed ? 52 : width,
+      // Only the whole column has an independent width.
+      width: collapsed ? 52 : double.infinity,
       child: DragTarget<CanvasDockPanel>(
         key: ValueKey('pcPreviewDrop-${panel.name}'),
         onWillAcceptWithDetails: (details) => details.data != panel,
@@ -457,54 +492,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
               ),
               SizedBox(
                 height: height,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      left: foldsLeft ? 0 : 18,
-                      right: foldsLeft ? 18 : 0,
-                      child: _windowContents(panel, scheme),
-                    ),
-                    Positioned(
-                      left: foldsLeft ? null : 0,
-                      right: foldsLeft ? 0 : null,
-                      top: 0,
-                      bottom: 0,
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.resizeLeftRight,
-                        child: GestureDetector(
-                          key: ValueKey('pcPreviewWidth-${panel.name}'),
-                          behavior: HitTestBehavior.opaque,
-                          onHorizontalDragUpdate: (details) => setState(() {
-                            _resizingWidth[panel] = ((_resizingWidth[panel] ??
-                                    settings.desktopDockWidth(panel, right: right)) +
-                                details.delta.dx * (foldsLeft ? 1 : -1))
-                                .clamp(200.0, 480.0);
-                          }),
-                          onHorizontalDragEnd: (_) {
-                            final newWidth = _resizingWidth[panel];
-                            if (newWidth != null) {
-                              settings.setDesktopDockWidth(panel, newWidth);
-                              setState(() => _resizingWidth.remove(panel));
-                            }
-                          },
-                          child: SizedBox(
-                            width: 18,
-                            child: Center(
-                              child: RotatedBox(
-                                quarterTurns: 1,
-                                child: Icon(
-                                  Icons.drag_handle,
-                                  size: 20,
-                                  color: scheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                child: _windowContents(panel, scheme),
               ),
               MouseRegion(
                 cursor: SystemMouseCursors.resizeUpDown,

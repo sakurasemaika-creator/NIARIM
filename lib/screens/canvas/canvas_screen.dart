@@ -65,6 +65,7 @@ import 'widgets/mesh_transform_panel.dart';
 import 'widgets/reference_window.dart';
 import 'widgets/canvas_preview_navigator.dart';
 import 'widgets/desktop_dock_content_viewport.dart';
+import '../../utils/desktop_dock_column_fit.dart';
 import '../../models/canvas_dock_panel.dart';
 import '../../models/ruler.dart';
 import '../../widgets/responsive.dart';
@@ -173,33 +174,38 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // プレビュー）の横幅。ドラッグ中はここへローカルに反映し、指を離した
   // 時点でSettingsServiceへ確定値を保存する。
   final Map<CanvasDockPanel, double> _dockDragHeight = {};
-  final Map<CanvasDockPanel, double> _dockDragWidth = {};
-  double _desktopDockColumnWidth({required bool right}) {
-    final settings = context.watch<SettingsService>();
+
+  double _preferredDockColumnWidth(
+    SettingsService settings, {
+    required bool right,
+  }) {
     final order = right
         ? settings.rightDockOrder
         : settings.toolOptionDockOrder;
-    var width = right
-        ? (_panelWidthDragOverride ?? settings.desktopPanelWidth)
-        : (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth);
-    var anyVisible = false;
-    var anyExpanded = false;
-    for (final panel in order) {
-      if (!_desktopPanelVisible(panel)) continue;
-      anyVisible = true;
-      if (settings.isDesktopDockCollapsed(panel)) continue;
-      anyExpanded = true;
-      final w =
-          _dockDragWidth[panel] ??
-          settings.desktopDockWidth(panel, right: right);
-      if (w > width) width = w;
-    }
-    // Give the drawing canvas back its space when every window is folded.
-    // The mesh transform sheet is not a standard collapsible dock window.
-    if (anyVisible && !anyExpanded && (right || !_showMeshTransformPanel)) {
+    final visible = order.where(_desktopPanelVisible).toList();
+    if (visible.isEmpty && (right || !_showMeshTransformPanel)) return 0;
+    if (visible.isNotEmpty &&
+        visible.every(settings.isDesktopDockCollapsed) &&
+        (right || !_showMeshTransformPanel)) {
       return 52.0;
     }
-    return width;
+    return right
+        ? (_panelWidthDragOverride ?? settings.desktopPanelWidth)
+        : (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth);
+  }
+
+  double _desktopDockColumnWidth({required bool right}) {
+    final settings = context.watch<SettingsService>();
+    final left = _preferredDockColumnWidth(settings, right: false);
+    final rightWidth = _preferredDockColumnWidth(settings, right: true);
+    final sizes = DesktopDockColumnFit.columnWidths(
+      availableWidth: MediaQuery.sizeOf(context).width,
+      leftDesired: left,
+      rightDesired: rightWidth,
+      leftVisible: left > 0,
+      rightVisible: rightWidth > 0,
+    );
+    return right ? sizes.right : sizes.left;
   }
 
   double? _panelWidthDragOverride;
@@ -1244,10 +1250,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           if (openToolPanels.isNotEmpty && !leftHanded) ...[
                             SizedBox(
                               width: _desktopDockColumnWidth(right: false),
-                              child: _dockedPanelStack(openToolPanels),
+                              child: _dockedPanelStack(right: false),
                             ),
                             if (_desktopDockColumnWidth(right: false) > 52)
                               _ResizeHandle(
+                                key: const ValueKey('dockColumnResize-left'),
                                 onDeltaX: (dx) => setState(() {
                                   final settings = context
                                       .read<SettingsService>();
@@ -1467,6 +1474,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           if (openToolPanels.isNotEmpty && leftHanded) ...[
                             if (_desktopDockColumnWidth(right: false) > 52)
                               _ResizeHandle(
+                                key: const ValueKey('dockColumnResize-left'),
                                 onDeltaX: (dx) => setState(() {
                                   final settings = context
                                       .read<SettingsService>();
@@ -1487,7 +1495,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                               ),
                             SizedBox(
                               width: _desktopDockColumnWidth(right: false),
-                              child: _dockedPanelStack(openToolPanels),
+                              child: _dockedPanelStack(right: false),
                             ),
                           ],
                           if (isDesktop && leftHanded)
@@ -1500,6 +1508,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                               _openRightDockPanels().isNotEmpty &&
                               _desktopDockColumnWidth(right: true) > 52)
                             _ResizeHandle(
+                              key: const ValueKey('dockColumnResize-right'),
                               onDeltaX: (dx) => setState(() {
                                 final settings = context
                                     .read<SettingsService>();
@@ -2001,20 +2010,25 @@ class _CanvasScreenState extends State<CanvasScreen> {
           _setDesktopPanelVisible(CanvasDockPanel.canvasPreview, false),
     ),
   };
-  Widget _desktopDockWindow(CanvasDockPanel p, {required bool right}) {
+  Widget _desktopDockWindow(
+    CanvasDockPanel p, {
+    required bool right,
+    double? fittedBodyHeight,
+  }) {
     final settings = context.watch<SettingsService>();
     final scheme = Theme.of(context).colorScheme;
     final title = _dockTitle(p);
-    final height = _dockDragHeight[p] ?? settings.desktopDockHeight(p);
-    final width =
-        _dockDragWidth[p] ?? settings.desktopDockWidth(p, right: right);
+    final height = fittedBodyHeight ??
+        _dockDragHeight[p] ??
+        settings.desktopDockHeight(p);
     final l = AppLocalizations.of(context)!;
     final collapsed = settings.isDesktopDockCollapsed(p);
     final foldsLeft = !right && !settings.isLeftHanded;
     return Align(
       alignment: foldsLeft ? Alignment.centerLeft : Alignment.centerRight,
       child: SizedBox(
-        width: collapsed ? 52 : width,
+        // All expanded windows have exactly the width of their dock column.
+        width: collapsed ? 52 : double.infinity,
         child: DragTarget<CanvasDockPanel>(
           key: ValueKey('dockTarget-${p.name}'),
           onWillAcceptWithDetails: (d) => d.data != p,
@@ -2142,56 +2156,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                       SizedBox(
                         height: height,
-                        child: Stack(
-                          children: [
-                            Positioned.fill(
-                              left: right ? 18 : 0,
-                              right: right ? 0 : 18,
-                              child: _responsiveDockBody(p),
-                            ),
-                            Positioned(
-                              left: right ? 0 : null,
-                              right: right ? null : 0,
-                              top: 0,
-                              bottom: 0,
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.resizeLeftRight,
-                                child: GestureDetector(
-                                  key: ValueKey('dockWidthResize-${p.name}'),
-                                  behavior: HitTestBehavior.opaque,
-                                  onHorizontalDragUpdate: (d) => setState(() {
-                                    _dockDragWidth[p] =
-                                        ((_dockDragWidth[p] ??
-                                                    settings.desktopDockWidth(
-                                                      p,
-                                                      right: right,
-                                                    )) +
-                                                d.delta.dx * (right ? -1 : 1))
-                                            .clamp(200.0, 480.0);
-                                  }),
-                                  onHorizontalDragEnd: (_) {
-                                    final w = _dockDragWidth.remove(p);
-                                    if (w != null)
-                                      settings.setDesktopDockWidth(p, w);
-                                  },
-                                  child: SizedBox(
-                                    width: 18,
-                                    child: Center(
-                                      child: RotatedBox(
-                                        quarterTurns: 1,
-                                        child: Icon(
-                                          Icons.drag_handle,
-                                          size: 20,
-                                          color: scheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        child: _responsiveDockBody(p),
                       ),
                       MouseRegion(
                         cursor: SystemMouseCursors.resizeUpDown,
@@ -2307,21 +2272,54 @@ class _CanvasScreenState extends State<CanvasScreen> {
     onRulerTap: _toggleRuler,
   );
 
-  Widget _buildRightDockColumn() => _dockedPanelStack(_openRightDockPanels());
+  Widget _buildRightDockColumn() => _dockedPanelStack(right: true);
 
-  /// 複数のドッキングパネルを縦に積んで表示する。開いているパネル数が
-  /// 多く画面高さに収まらない場合はスクロールできるようにする。各パネル
-  /// 間には視認しやすいよう余白を入れる。
-  Widget _dockedPanelStack(List<Widget> panels) => SingleChildScrollView(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (int i = 0; i < panels.length; i++) ...[
-          if (i > 0) const SizedBox(height: 8),
-          panels[i],
-        ],
-      ],
-    ),
+  /// Every column is confined to the canvas row above the frame strip.
+  /// Preferred per-window heights shrink to fit when possible; otherwise
+  /// the dock column scrolls without overlapping the frame timeline.
+  Widget _dockedPanelStack({required bool right}) => LayoutBuilder(
+    builder: (context, constraints) {
+      final settings = context.watch<SettingsService>();
+      final order = right
+          ? settings.rightDockOrder
+          : settings.toolOptionDockOrder;
+      final visible = order.where(_desktopPanelVisible).toList();
+      final hasMesh = !right && _showMeshTransformPanel;
+      final heights = DesktopDockColumnFit.bodyHeights(
+        availableHeight: constraints.maxHeight,
+        visible: visible,
+        isCollapsed: settings.isDesktopDockCollapsed,
+        preferredHeight: (panel) =>
+            _dockDragHeight[panel] ?? settings.desktopDockHeight(panel),
+        extraFixedHeight: hasMesh ? 320 : 0,
+      );
+      return ClipRect(
+        child: Scrollbar(
+          child: SingleChildScrollView(
+            key: ValueKey(right ? 'desktopRightDockScroll' : 'desktopLeftDockScroll'),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < visible.length; i++) ...[
+                  if (i > 0) const SizedBox(height: DesktopDockColumnFit.gap),
+                  _desktopDockWindow(
+                    visible[i],
+                    right: right,
+                    fittedBodyHeight: heights[visible[i]],
+                  ),
+                ],
+                if (hasMesh) ...[
+                  if (visible.isNotEmpty)
+                    const SizedBox(height: DesktopDockColumnFit.gap),
+                  _meshTransformPanel(),
+                ],
+              ],
+            ),
+          ),
+        ),
+      );
+    },
   );
 
   Widget _colorPickerPanel() => ColorPickerPanel(
@@ -4287,7 +4285,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
 class _ResizeHandle extends StatelessWidget {
   final ValueChanged<double> onDeltaX;
   final VoidCallback onDragEnd;
-  const _ResizeHandle({required this.onDeltaX, required this.onDragEnd});
+  const _ResizeHandle({
+    super.key,
+    required this.onDeltaX,
+    required this.onDragEnd,
+  });
 
   @override
   Widget build(BuildContext context) {

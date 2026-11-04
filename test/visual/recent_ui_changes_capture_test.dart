@@ -194,7 +194,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('dockExpand-brush')));
     await _shot(tester, root, '13_pc_canvas_left_brush_expanded');
     final height = find.byKey(const ValueKey('dockResize-canvasPreview'));
-    final width = find.byKey(const ValueKey('dockWidthResize-canvasPreview'));
+    final width = find.byKey(const ValueKey('dockColumnResize-right'));
     expect(height, findsOneWidget);
     expect(width, findsOneWidget);
     await tester.drag(height, const Offset(0, 80));
@@ -276,7 +276,7 @@ void main() {
     await settings.setDesktopDockCollapsed(CanvasDockPanel.brush, false);
     await settings.setDesktopDockCollapsed(CanvasDockPanel.layer, false);
     await _settle(tester);
-    final width = find.byKey(const ValueKey('pcPreviewWidth-brush'));
+    final width = find.byKey(const ValueKey('pcPreviewToolColumnResize'));
     final height = find.byKey(const ValueKey('pcPreviewHeight-brush'));
     expect(width, findsOneWidget);
     expect(height, findsOneWidget);
