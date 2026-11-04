@@ -91,6 +91,11 @@ class CommunityApi {
   Future<Map<String, dynamic>> myRewardState() =>
       _client.getJson('/me/rewards', authenticated: true);
 
+  /// The backend issues a one-time, account-bound, 30-minute AdMob session.
+  /// It returns ONLY signed-callback customData, never coins or an ad grant.
+  Future<Map<String, dynamic>> beginRewardedAdSession() =>
+      _client.postJson('/me/rewards/ad-session', authenticated: true);
+
   /// Account status by default; specify an owned YouTube video ID to
   /// inspect the once-per-work bookmark and rank claim history.
   Future<Map<String, dynamic>> myCreatorMissions({String? workId}) =>
