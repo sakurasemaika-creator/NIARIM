@@ -4681,6 +4681,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'A deleted brush can\'t be restored.';
 
   @override
+  String numberInputRangeError(String min, String max) {
+    return 'Enter a number from $min to $max';
+  }
+
+  @override
   String get layerPanelClippingDescription =>
       'Draw only within the opaque area of the layer below';
 

@@ -8333,6 +8333,12 @@ abstract class AppLocalizations {
   /// **'削除したブラシは元に戻せません。'**
   String get brushPanelDeleteConfirmBody;
 
+  /// No description provided for @numberInputRangeError.
+  ///
+  /// In ja, this message translates to:
+  /// **'{min}〜{max}の数字を入力してください'**
+  String numberInputRangeError(String min, String max);
+
   /// No description provided for @layerPanelClippingDescription.
   ///
   /// In ja, this message translates to:

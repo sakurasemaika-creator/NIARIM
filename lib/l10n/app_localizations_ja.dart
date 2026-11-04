@@ -4526,6 +4526,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushPanelDeleteConfirmBody => '削除したブラシは元に戻せません。';
 
   @override
+  String numberInputRangeError(String min, String max) {
+    return '$min〜$maxの数字を入力してください';
+  }
+
+  @override
   String get layerPanelClippingDescription => '下のレイヤーの不透明範囲内のみ描画';
 
   @override

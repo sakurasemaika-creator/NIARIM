@@ -4746,6 +4746,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Un pincel eliminado no se puede recuperar.';
 
   @override
+  String numberInputRangeError(String min, String max) {
+    return 'Introduce un número entre $min y $max';
+  }
+
+  @override
   String get layerPanelClippingDescription =>
       'Dibujar solo dentro del área opaca de la capa inferior';
 

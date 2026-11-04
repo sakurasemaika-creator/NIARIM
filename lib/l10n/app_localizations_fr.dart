@@ -4758,6 +4758,11 @@ class AppLocalizationsFr extends AppLocalizations {
       'Un pinceau supprimé ne peut pas être restauré.';
 
   @override
+  String numberInputRangeError(String min, String max) {
+    return 'Saisissez un nombre entre $min et $max';
+  }
+
+  @override
   String get layerPanelClippingDescription =>
       'Dessiner uniquement dans la zone opaque du calque du dessous';
 

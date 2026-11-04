@@ -4548,6 +4548,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushPanelDeleteConfirmBody => '삭제한 브러시는 되돌릴 수 없습니다.';
 
   @override
+  String numberInputRangeError(String min, String max) {
+    return '$min~$max 사이의 숫자를 입력하세요';
+  }
+
+  @override
   String get layerPanelClippingDescription => '아래 레이어의 불투명 범위 내에만 그리기';
 
   @override

@@ -507,6 +507,13 @@ class _BrushPanelState extends State<BrushPanel> {
       builder: (ctx) => _BrushSettingsSheet(
         brush: brush,
         onEyedropOutlineColor: widget.onEyedropOutlineColor,
+        // 縁取りの色をキャンバスから取った後、編集中の内容のままシートを
+        // 開き直す（パネルが閉じていれば開き直せないので偽を返す）。
+        onReopen: (draft) {
+          if (!mounted) return false;
+          _showBrushSettings(this.context, draft);
+          return true;
+        },
       ),
     );
   }
@@ -588,7 +595,12 @@ class _BrushPanelState extends State<BrushPanel> {
 class _BrushSettingsSheet extends StatefulWidget {
   final Brush brush;
   final Future<int?> Function()? onEyedropOutlineColor;
-  const _BrushSettingsSheet({required this.brush, this.onEyedropOutlineColor});
+  final bool Function(Brush draft)? onReopen;
+  const _BrushSettingsSheet({
+    required this.brush,
+    this.onEyedropOutlineColor,
+    this.onReopen,
+  });
 
   @override
   State<_BrushSettingsSheet> createState() => _BrushSettingsSheetState();
@@ -647,10 +659,17 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     if (callback == null) return;
     final service = context.read<BrushService>();
     final draft = _brush;
+    final reopen = widget.onReopen;
     Navigator.of(context).pop();
     final sampled = await callback();
-    if (sampled == null) return;
-    service.updateBrush(draft.copyWith(outlineColor: sampled));
+    if (sampled != null) {
+      service.updateBrush(draft.copyWith(outlineColor: sampled));
+    }
+    // 色を取った後は設定のシートへ戻す（以前は閉じたままで、取るのを
+    // やめたときは編集中の内容が消えていた）。
+    reopen?.call(
+      sampled == null ? draft : draft.copyWith(outlineColor: sampled),
+    );
   }
 
   late Brush _brush;

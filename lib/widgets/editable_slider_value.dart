@@ -72,9 +72,11 @@ class EditableSliderValue extends StatelessWidget {
         initialValue: value,
         isInt: isInt,
         signed: min < 0,
+        min: min,
+        max: max,
       ),
     );
-    if (result != null) onChanged(result.clamp(min, max));
+    if (result != null && result.isFinite) onChanged(result.clamp(min, max));
   }
 }
 
@@ -97,7 +99,12 @@ class _NumberInputDialog extends StatefulWidget {
     required this.initialValue,
     required this.isInt,
     required this.signed,
+    required this.min,
+    required this.max,
   });
+
+  final num min;
+  final num max;
 
   @override
   State<_NumberInputDialog> createState() => _NumberInputDialogState();
@@ -122,7 +129,39 @@ class _NumberInputDialogState extends State<_NumberInputDialog> {
     super.dispose();
   }
 
-  num? _parse(String s) => widget.isInt ? int.tryParse(s) : double.tryParse(s);
+  // 打った文字のうち、範囲の中の有限の数だけを受け付ける（「NaN」
+  // 「Infinity」も数として読めるので、そのまま渡すと太さが数でなくなった）。
+  // 全角の数字・記号は半角へ寄せる。
+  num? _parse(String s) {
+    final text = s.trim().replaceAllMapped(
+      RegExp('[０-９．－]'),
+      (m) => String.fromCharCode(m[0]!.codeUnitAt(0) - 0xFEE0),
+    );
+    final value = widget.isInt ? int.tryParse(text) : double.tryParse(text);
+    if (value == null || !value.isFinite) return null;
+    if (value < widget.min || value > widget.max) return null;
+    return value;
+  }
+
+  String? _error;
+
+  /// 範囲の中の数なら閉じて返す。そうでなければ開いたまま範囲を知らせる
+  /// （以前は黙って閉じる・黙って範囲へ丸めていた）。
+  void _submit(String text) {
+    final value = _parse(text);
+    if (value == null) {
+      setState(() => _error = _rangeText());
+      return;
+    }
+    Navigator.pop(context, value);
+  }
+
+  String _format(num v) =>
+      widget.isInt ? v.round().toString() : _trimZeros(v.toDouble());
+
+  String _rangeText() => AppLocalizations.of(
+    context,
+  )!.numberInputRangeError(_format(widget.min), _format(widget.max));
 
   String _trimZeros(double v) {
     var s = v.toStringAsFixed(2);
@@ -143,7 +182,16 @@ class _NumberInputDialogState extends State<_NumberInputDialog> {
           decimal: !widget.isInt,
           signed: widget.signed,
         ),
-        onSubmitted: (v) => Navigator.pop(context, _parse(v)),
+        decoration: InputDecoration(
+          helperText: _error == null ? _rangeText() : null,
+          errorText: _error,
+        ),
+        onChanged: (_) {
+          if (_error != null) setState(() => _error = null);
+        },
+        // 確定できなかったときに欄からフォーカスが外れないように。
+        onEditingComplete: () {},
+        onSubmitted: _submit,
       ),
       actions: [
         TextButton(
@@ -151,7 +199,7 @@ class _NumberInputDialogState extends State<_NumberInputDialog> {
           child: Text(l10n.commonCancel),
         ),
         FilledButton(
-          onPressed: () => Navigator.pop(context, _parse(_controller.text)),
+          onPressed: () => _submit(_controller.text),
           child: Text(l10n.commonOk),
         ),
       ],

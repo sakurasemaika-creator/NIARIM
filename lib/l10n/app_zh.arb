@@ -1924,6 +1924,7 @@
   "canvasLayerLockedNotice": "此图层已锁定，无法绘制。请在图层设置中关闭“锁定”。",
   "brushPanelDeleteConfirmTitle": "要删除“{name}”吗？",
   "brushPanelDeleteConfirmBody": "删除的笔刷无法恢复。",
+  "numberInputRangeError": "请输入{min}到{max}之间的数字",
   "layerPanelClippingDescription": "仅在下方图层的不透明范围内绘制",
   "layerPanelConvertToCommonLabel": "更改为公共图层",
   "layerPanelConvertOption1Title": "将当前图层设为公共图层",

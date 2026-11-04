@@ -1924,6 +1924,7 @@
   "canvasLayerLockedNotice": "此圖層已鎖定，無法繪製。請在圖層設定中關閉「鎖定」。",
   "brushPanelDeleteConfirmTitle": "要刪除「{name}」嗎？",
   "brushPanelDeleteConfirmBody": "刪除的筆刷無法復原。",
+  "numberInputRangeError": "請輸入{min}到{max}之間的數字",
   "layerPanelClippingDescription": "僅在下方圖層的不透明範圍內繪製",
   "layerPanelConvertToCommonLabel": "變更為共用圖層",
   "layerPanelConvertOption1Title": "將目前圖層設為共用圖層",

@@ -4503,6 +4503,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushPanelDeleteConfirmBody => '删除的笔刷无法恢复。';
 
   @override
+  String numberInputRangeError(String min, String max) {
+    return '请输入$min到$max之间的数字';
+  }
+
+  @override
   String get layerPanelClippingDescription => '仅在下方图层的不透明范围内绘制';
 
   @override
@@ -12458,6 +12463,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushPanelDeleteConfirmBody => '刪除的筆刷無法復原。';
+
+  @override
+  String numberInputRangeError(String min, String max) {
+    return '請輸入$min到$max之間的數字';
+  }
 
   @override
   String get layerPanelClippingDescription => '僅在下方圖層的不透明範圍內繪製';
