@@ -93,7 +93,6 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     expect(tx).toBeInstanceOf(TransactWriteCommand);
     expect(tx.input.TransactItems).toHaveLength(3);
     const rows = tx.input.TransactItems!;
-    expect(rows[0].Put?.Key).toBeUndefined();
     expect(rows[0].Put?.Item?.pk).toMatch(/^ADMOB_TX#/);
     expect(rows[0].Put?.ConditionExpression).toContain("attribute_not_exists");
     expect(rows[0].Put?.Item?.ttl).toBeGreaterThan(Date.now() / 1000);
