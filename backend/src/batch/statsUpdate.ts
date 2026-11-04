@@ -57,6 +57,8 @@ interface BatchPayload {
    * 十分小さい。
    */
   topLists?: TopLists;
+  /** Number of public NIARIM works counted by the EXISTING batch scan. */
+  publishedWorkCount?: number;
 }
 
 function emptyTopLists(): TopLists {
@@ -87,12 +89,17 @@ export async function handler(event: BatchPayload = {}): Promise<void> {
   const works = (scanResult.Items ?? []) as WorkItem[];
   const topLists = event.topLists ?? emptyTopLists();
   await processPage(works, apiKey, topLists);
+  const publishedWorkCount = (event.publishedWorkCount ?? 0) +
+    works.filter((w) => w.isNiarimPublished &&
+      w.youtubePrivacyStatus !== "private" &&
+      w.youtubePrivacyStatus !== "deleted").length;
 
   if (scanResult.LastEvaluatedKey) {
     await invokeSelfAsync({
       lastEvaluatedKey: scanResult.LastEvaluatedKey,
       pageIndex: pageIndex + 1,
       topLists,
+      publishedWorkCount,
     });
     return;
   }
@@ -104,11 +111,12 @@ export async function handler(event: BatchPayload = {}): Promise<void> {
       TableName: tableName(),
       Key: Keys.batchState(),
       UpdateExpression:
-        "SET itemType = :type, lastCompletedAt = :now, inProgress = :false",
+        "SET itemType = :type, lastCompletedAt = :now, inProgress = :false, publishedWorkCount = :published",
       ExpressionAttributeValues: {
         ":type": "BATCH_STATE",
         ":now": new Date().toISOString(),
         ":false": false,
+        ":published": publishedWorkCount,
       },
     }),
   );
