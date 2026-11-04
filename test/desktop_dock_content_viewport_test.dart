@@ -20,10 +20,13 @@ void main() {
               mode: DesktopDockContentMode.fit,
               designWidth: 288,
               minimumContentHeight: 310,
-              child: SizedBox(
-                key: ValueKey('wholeColourWheelArea'),
-                width: 288,
-                height: 310,
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: SizedBox(
+                  key: ValueKey('wholeColourWheelArea'),
+                  width: 288,
+                  height: 310,
+                ),
               ),
             ),
           ),
