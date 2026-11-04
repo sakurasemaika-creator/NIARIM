@@ -4,6 +4,7 @@ import { authenticate } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { ok } from "../../lib/response";
 import { rewardedAdConfiguration } from "./rewardedAd";
+import { premiumRedemptionOffer } from "../../lib/coinRedemption";
 
 /**
  * Read-only reward wallet endpoint. Google ID token -> NIARIM user ID is
@@ -77,6 +78,6 @@ export async function getMyRewardState(event: APIGatewayProxyEventV2) {
     rewardEarningEnabled: rewardedAdConfiguration().enabled,
     rewardedOfferVersion: rewardedAdConfiguration().version,
     rewardedCoinsPerCompletion: rewardedAdConfiguration().amount,
-    redemptionEnabled: false,
+    redemptionEnabled: premiumRedemptionOffer().enabled,
   });
 }
