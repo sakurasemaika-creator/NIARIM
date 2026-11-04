@@ -114,6 +114,135 @@ class AdvertisingService extends ChangeNotifier {
   bool get canOfferRewardedAds =>
       isMonetizationEnabled && _canRequestAds && supportsMobilePluginRuntime;
 
+  /// Shows one user-requested rewarded video using the server-created
+  /// invitation, NEVER issues coins locally. The server will only increase
+  /// the wallet after Google AdMob's signed SSV callback is verified.
+  ///
+  /// False means the client did not see an earned-reward event; true means
+  /// only that the SDK reported it. Neither is a server wallet guarantee.
+  Future<bool> showRewardedCoinAd({
+    required String adUnitId,
+    required String customData,
+  }) async {
+    if (!canOfferRewardedAds ||
+        !RegExp(r'^ca-app-pub-[0-9]{16}/[0-9]{10}
+  BannerAd? get bannerAd => shouldShowAds ? _provider.currentBanner : null;
+
+  /// ロード済み正方形広告。未ロード・プレミアム時はnull（処理中ダイアログが描画に使う）。
+  BannerAd? get squareAd => shouldShowAds ? _provider.currentSquareAd : null;
+
+  void _onPremiumChanged() {
+    if (premiumService.isPremium) hideAllAds();
+    notifyListeners();
+  }
+
+  Future<void> showBanner(AdPosition position) async {
+    if (!shouldShowAds) return;
+    await _provider.showBanner(position);
+  }
+
+  Future<void> showSquareAd() async {
+    if (!shouldShowAds) return;
+    await _provider.showSquareAd();
+  }
+
+  Future<void> hideAllAds() async {
+    await _provider.hideAllAds();
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    if (_initialized) {
+      premiumService.removeListener(_onPremiumChanged);
+      _provider.hideAllAds();
+    }
+    super.dispose();
+  }
+}
+
+enum AdPosition { top, bottom }
+).hasMatch(adUnitId) ||
+        !RegExp(r'^v1\\.N[0-9a-f]{32}\\.[0-9a-f-]{36}
+  BannerAd? get bannerAd => shouldShowAds ? _provider.currentBanner : null;
+
+  /// ロード済み正方形広告。未ロード・プレミアム時はnull（処理中ダイアログが描画に使う）。
+  BannerAd? get squareAd => shouldShowAds ? _provider.currentSquareAd : null;
+
+  void _onPremiumChanged() {
+    if (premiumService.isPremium) hideAllAds();
+    notifyListeners();
+  }
+
+  Future<void> showBanner(AdPosition position) async {
+    if (!shouldShowAds) return;
+    await _provider.showBanner(position);
+  }
+
+  Future<void> showSquareAd() async {
+    if (!shouldShowAds) return;
+    await _provider.showSquareAd();
+  }
+
+  Future<void> hideAllAds() async {
+    await _provider.hideAllAds();
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    if (_initialized) {
+      premiumService.removeListener(_onPremiumChanged);
+      _provider.hideAllAds();
+    }
+    super.dispose();
+  }
+}
+
+enum AdPosition { top, bottom }
+).hasMatch(customData)) {
+      return false;
+    }
+    final completed = Completer<bool>();
+    var earned = false;
+    RewardedAd.load(
+      adUnitId: adUnitId,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          try {
+            ad.setServerSideOptions(
+              ServerSideVerificationOptions(customData: customData),
+            );
+            ad.fullScreenContentCallback = FullScreenContentCallback(
+              onAdDismissedFullScreenContent: (ad) {
+                ad.dispose();
+                if (!completed.isCompleted) completed.complete(earned);
+              },
+              onAdFailedToShowFullScreenContent: (ad, error) {
+                ad.dispose();
+                if (!completed.isCompleted) completed.complete(false);
+              },
+            );
+            ad.show(
+              onUserEarnedReward: (ad, reward) {
+                // The SDK signal is NOT spendable currency. SSV only.
+                earned = true;
+              },
+            );
+          } catch (error) {
+            ad.dispose();
+            if (!completed.isCompleted) completed.complete(false);
+          }
+        },
+        onAdFailedToLoad: (error) {
+          if (!completed.isCompleted) completed.complete(false);
+        },
+      ),
+    );
+    return completed.future;
+  }
+
   /// ロード済みバナー広告。未ロード・プレミアム時はnull（AdBannerWidgetが描画に使う）。
   BannerAd? get bannerAd => shouldShowAds ? _provider.currentBanner : null;
 
