@@ -206,6 +206,11 @@ export class NiarimBackendStack extends Stack {
         CREATOR_MISSION_CLAIMS_ENABLED:
           this.node.tryGetContext("creatorMissionClaimsEnabled") === "true"
             ? "true" : "false",
+        // Demand-driven 10,000-work candidate scanner; read budget is bounded.
+        // Does not mint coins and defaults OFF to protect free-tier capacity.
+        CREATOR_QUALIFIED_WORK_SCAN_ENABLED:
+          this.node.tryGetContext("creatorQualifiedWorkScanEnabled") === "true"
+            ? "true" : "false",
         CREATOR_MISSION_CLAIMS_REVIEW_APPROVED:
           this.node.tryGetContext("creatorMissionClaimsReviewApproved") === "true"
             ? "true" : "false",

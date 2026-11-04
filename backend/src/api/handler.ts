@@ -17,6 +17,7 @@ import { getMyRewardState, getMyCoinHistory } from "./routes/rewardState";
 import { startRewardedAdSession, receiveRewardedAdSsv } from "./routes/rewardedAd";
 import { getCoinRedemptionQuote, redeemCoins } from "./routes/coinRedemption";
 import { getMyCreatorMissions, claimCreatorMission } from "./routes/creatorMissions";
+import { scanMyQualifiedWorks } from "./routes/creatorQualifiedWorksScan";
 import { editSessionAction } from "./routes/creatorEditSession";
 import { verifyMyPlayPremium, getPlayPurchaseAvailability } from "./routes/playPremium";
 import { updateWork } from "./routes/worksUpdate";
@@ -105,6 +106,7 @@ const routes: Route[] = [
   route("GET", "/admob/ssv", (e) => receiveRewardedAdSsv(e)),
   route("GET", "/me/missions", (e) => getMyCreatorMissions(e)),
   route("POST", "/me/missions/claim", (e) => claimCreatorMission(e)),
+  route("POST", "/me/missions/qualified-works/scan", (e) => scanMyQualifiedWorks(e)),
   route("POST", "/me/missions/edit-session", (e) => editSessionAction(e)),
 
   // Authenticated mutations.

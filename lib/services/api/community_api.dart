@@ -149,6 +149,15 @@ class CommunityApi {
 
   /// Account status by default; specify an owned YouTube video ID to
   /// inspect the once-per-work bookmark and rank claim history.
+  /// Advances only a bounded server-owned candidate scan.
+  /// This NEVER awards coins; callers may resume without storing any cursor.
+  Future<Map<String, dynamic>> scanMyQualifiedWorks({bool restart = false}) =>
+      _client.postJson(
+        '/me/missions/qualified-works/scan',
+        authenticated: true,
+        body: {'restart': restart},
+      );
+
   Future<Map<String, dynamic>> myCreatorMissions({String? workId}) =>
       _client.getJson(
         '/me/missions',
