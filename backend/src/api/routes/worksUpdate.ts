@@ -88,9 +88,6 @@ export async function updateWork(
         work.youtubePrivacyStatus === "deleted";
       if (body.isNiarimPublished && !forcedHidden) {
         updates.push(
-          "rankingScore = :score",
-          "gsi1pk = :rankPk",
-          "gsi1sk = :score",
           "gsi2pk = :bmPk",
           "gsi2sk = :bm",
           "gsi3pk = :authorPk",
@@ -99,14 +96,23 @@ export async function updateWork(
           "gsi4sk = :postedAt",
         );
         Object.assign(values, {
-          ":rankPk": "RANKING#ALL",
-          ":score": computeRankingScore(work),
           ":bmPk": "BOOKMARK_RANKING",
           ":bm": work.bookmarkCount,
           ":authorPk": `AUTHOR#${work.authorId}`,
           ":postedAt": work.postedAt,
           ":latestPk": "LATEST",
         });
+        if (work.youtubePrivacyStatus === "public") {
+          updates.push(
+            "rankingScore = :score",
+            "gsi1pk = :rankPk",
+            "gsi1sk = :score",
+          );
+          values[":score"] = computeRankingScore(work);
+          values[":rankPk"] = "RANKING#ALL";
+        } else {
+          removes.push("rankingScore", "gsi1pk", "gsi1sk");
+        }
         // Hidden works have no rankingScore. Derive it from the counters and
         // guard those counters so a simultaneous stats/bookmark update wins.
         for (const counter of [

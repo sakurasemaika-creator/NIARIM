@@ -25,7 +25,6 @@ describe("YouTube statistics and visibility", () => {
     const url = fetch.mock.calls[0][0] as URL;
     expect(url.pathname).toBe("/youtube/v3/videos:batchGetStats");
     expect(url.searchParams.get("part")).toBe("statistics");
-    expect(url.searchParams.get("fields")).toBe("items(id,statistics/viewCount),summary");
     expect((fetch.mock.calls[1][0] as URL).searchParams.get("part")).toBe(
       "status",
     );
@@ -56,7 +55,7 @@ describe("YouTube statistics and visibility", () => {
     mockResponses({ items: [] }, { items: [] });
     expect(
       (await batchGetVideoStats(["video"], "key")).get("video")?.privacyStatus,
-    ).toBe("private");
+    ).toBe("unknown");
   });
 
   it("rejects an unknown privacy response instead of treating it as public", async () => {

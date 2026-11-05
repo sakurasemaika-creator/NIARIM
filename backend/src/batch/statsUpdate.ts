@@ -153,7 +153,9 @@ async function updateWorkStats(
   const nowDate = new Date();
   const now = nowDate.toISOString();
 
-  const youtubePrivacyStatus = stats.privacyStatus;
+  const youtubePrivacyStatus = stats.privacyStatus === "unknown"
+    ? work.youtubePrivacyStatus
+    : stats.privacyStatus;
   const viewCount = stats?.viewCount ?? work.viewCount;
   const likeCount = stats?.likeCount ?? work.likeCount;
   const commentCount = stats?.commentCount ?? work.commentCount;
@@ -163,16 +165,22 @@ async function updateWorkStats(
     commentCount,
   });
 
-  const forcedHidden = youtubePrivacyStatus === "private";
+  const forcedHidden = youtubePrivacyStatus === "private" ||
+    youtubePrivacyStatus === "deleted";
   const isVisible = work.isNiarimPublished && !forcedHidden;
+  const rankingVisible = isVisible && youtubePrivacyStatus === "public";
 
   const setParts = [
     "viewCount = :view",
+    "likeCount = :like",
+    "commentCount = :comment",
     "lastFetchedAt = :now",
     "youtubePrivacyStatus = :status",
   ];
   const values: Record<string, unknown> = {
     ":view": viewCount,
+    ":like": likeCount,
+    ":comment": commentCount,
     ":now": now,
     ":status": youtubePrivacyStatus,
     ":expectedType": TABLE_ITEM_TYPE.Work,
@@ -197,13 +205,18 @@ async function updateWorkStats(
   values[":windows"] = statsWindows;
 
   if (isVisible) {
-    setParts.push(
-      "rankingScore = :score",
-      "gsi1pk = :rankPk",
-      "gsi1sk = :score",
-    );
-    values[":score"] = rankingScore;
-    values[":rankPk"] = "RANKING#ALL";
+    if (rankingVisible) {
+      setParts.push(
+        "rankingScore = :score",
+        "gsi1pk = :rankPk",
+        "gsi1sk = :score",
+      );
+      values[":score"] = rankingScore;
+      values[":rankPk"] = "RANKING#ALL";
+    } else {
+      // 限定公開の作品はNIARIMに残すが、YouTube再生数順位からは除く。
+      removes.push("rankingScore", "gsi1pk", "gsi1sk");
+    }
 
     const hasPublicIndexes =
       work.gsi2pk != null &&
@@ -291,7 +304,7 @@ async function updateWorkStats(
     throw error;
   }
 
-  if (isVisible) {
+  if (rankingVisible) {
     for (const period of DELTA_RANKING_PERIODS) {
       const score = computePeriodScore(current, statsWindows[period]);
       topLists[period] = insertIntoTopList(

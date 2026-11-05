@@ -29,7 +29,7 @@ export interface YoutubeVideoStats {
   viewCount?: number;
   likeCount?: number;
   commentCount?: number;
-  privacyStatus: "public" | "unlisted" | "private";
+  privacyStatus: "public" | "unlisted" | "private" | "unknown";
 }
 
 async function callYoutubeApi<T>(
@@ -108,8 +108,6 @@ export async function batchGetVideoStats(
     throw new Error("統計取得は50件以内で指定してください");
   const url = new URL(`${API_BASE}/videos:batchGetStats`);
   url.searchParams.set("part", "statistics");
-  // APIクォータは変わらないが、不要な高評価・コメントを転送しない。
-  url.searchParams.set("fields", "items(id,statistics/viewCount),summary");
   url.searchParams.set("id", videoIds.join(","));
   url.searchParams.set("key", apiKey);
 
@@ -160,13 +158,14 @@ export async function batchGetVideoStats(
   );
   const result = new Map<string, YoutubeVideoStats>();
   for (const id of videoIds) {
-    // APIキーで読めない動画は非公開・削除を区別できない。削除と断定せず
-    // 安全側に非表示とし、後のサイクルで再確認する。
-    const privacyStatus = statuses.has(id) ? statuses.get(id) : "private";
+    // 認証なしで取得できない場合は削除/非公開/限定公開を断定できない。
+    // 既存の公開状態はバッチ呼び出し元で保持し、プレーヤーで再生可否を判定する。
+    const privacyStatus = statuses.has(id) ? statuses.get(id) : "unknown";
     if (
       privacyStatus !== "public" &&
       privacyStatus !== "unlisted" &&
-      privacyStatus !== "private"
+      privacyStatus !== "private" &&
+      privacyStatus !== "unknown"
     ) {
       throw new Error("YouTube公開状態が不正です");
     }

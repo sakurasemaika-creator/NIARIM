@@ -132,6 +132,7 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     const isNiarimPublished = body.isNiarimPublished ?? true;
     const isVisible =
       isNiarimPublished && isYoutubeVisible(snippet.privacyStatus);
+    const rankingVisible = isVisible && snippet.privacyStatus === "public";
     const rankingScore = computeRankingScore({
       viewCount: 0,
       likeCount: 0,
@@ -157,7 +158,7 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       likeCount: 0,
       commentCount: 0,
       lastFetchedAt: now,
-      rankingScore: isVisible ? rankingScore : undefined,
+      rankingScore: rankingVisible ? rankingScore : undefined,
       bookmarkCount: 0,
       bookmarkScore: isVisible ? 0 : undefined,
       repostCount: 0,
@@ -175,8 +176,8 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       projectCreatedAt: body.projectCreatedAt,
       projectCanvasWidth: body.projectCanvasWidth,
       projectCanvasHeight: body.projectCanvasHeight,
-      gsi1pk: isVisible ? "RANKING#ALL" : undefined,
-      gsi1sk: isVisible ? rankingScore : undefined,
+      gsi1pk: rankingVisible ? "RANKING#ALL" : undefined,
+      gsi1sk: rankingVisible ? rankingScore : undefined,
       gsi2pk: isVisible ? "BOOKMARK_RANKING" : undefined,
       gsi2sk: isVisible ? 0 : undefined,
       gsi3pk: isVisible ? `AUTHOR#${auth.niarimUserId}` : undefined,

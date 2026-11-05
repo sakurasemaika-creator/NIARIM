@@ -81,11 +81,38 @@ describe("statistics batch data safety", () => {
     const input = updates()[0].input;
     expect(input.ExpressionAttributeValues).toMatchObject({
       ":view": 100,
+      ":like": 5,
+      ":comment": 2,
       ":status": "public",
     });
-    expect(input.UpdateExpression).not.toContain("likeCount =");
-    expect(input.UpdateExpression).not.toContain("commentCount =");
     expect(input.UpdateExpression).not.toContain("isNiarimPublished =");
+  });
+
+  it("keeps an unlisted video discoverable but removes it from YouTube view rankings", async () => {
+    stats.mockResolvedValue(new Map([[work.workId, {
+      id: work.workId, privacyStatus: "unlisted", viewCount: 150,
+    }]]));
+    await handler();
+    const input = updates()[0].input;
+    expect(input.UpdateExpression).toContain("REMOVE rankingScore, gsi1pk, gsi1sk");
+    expect(input.UpdateExpression).not.toContain('"gsi3pk"');
+    const snapshots = send.mock.calls.map(([c]) => c)
+      .filter((c) => c instanceof PutCommand);
+    for (const snapshot of snapshots) {
+      expect(snapshot.input.Item?.entries).toEqual([]);
+    }
+  });
+
+  it("does not treat an unobservable video as deleted", async () => {
+    const previous = { ...work, youtubePrivacyStatus: "unlisted" as const };
+    send.mockImplementation(async (c) =>
+      c instanceof ScanCommand ? { Items: [previous] } : {},
+    );
+    stats.mockResolvedValue(new Map([[work.workId, {
+      id: work.workId, privacyStatus: "unknown",
+    }]]));
+    await handler();
+    expect(updates()[0].input.ExpressionAttributeValues[":status"]).toBe("unlisted");
   });
 
   it("hides an inaccessible video while preserving the owner's publication preference", async () => {
