@@ -46,6 +46,14 @@ class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
       'fr' => 'En cas de manque de place, les fenêtres peu utilisées se replient temporairement. La fenêtre active reste ouverte et les autres reviennent quand la place le permet. Désactivez pour ne garder que le défilement.',
       _ => 'When windows no longer fit after shrinking, the least recently used fold temporarily. The active window stays open; folded windows restore when space returns. Turn off to use scrolling only.',
     };
+    final resetWorkspaceTitle = switch (locale) {
+      'ja' => 'ワークスペースを初期化',
+      'ko' => '작업 공간 초기화',
+      'zh' => '重置工作区',
+      'es' => 'Restablecer espacio de trabajo',
+      'fr' => 'Réinitialiser l’espace de travail',
+      _ => 'Reset workspace',
+    };
     final instruction = switch (locale) {
       'ja' => 'プレビューのウィンドウ端をドラッグして幅・高さを変更し、左上のハンドルを長押しして移動・入れ替えできます。ピンチで拡大できます。',
       'ko' => '미리보기의 가장자리를 드래그하여 크기를 바꾸고, 창 손잡이를 길게 눌러 이동할 수 있습니다. 확대하려면 핀치하세요.',
@@ -105,11 +113,16 @@ class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
                 children: [
                   TextButton.icon(
                     onPressed: () async {
-                      await settings.resetToolOptionDockOrder();
-                      await settings.resetRightDockOrder();
+                      await settings.resetDesktopDockOrderToHandedDefaults();
                     },
                     icon: const Icon(Icons.restart_alt),
                     label: Text(l.pcWorkspaceLayoutResetOrderButton),
+                  ),
+                  TextButton.icon(
+                    key: const Key('resetDesktopWorkspaceLayout'),
+                    onPressed: settings.resetDesktopWorkspaceLayout,
+                    icon: const Icon(Icons.settings_backup_restore),
+                    label: Text(resetWorkspaceTitle),
                   ),
                   TextButton.icon(
                     onPressed: () async {
