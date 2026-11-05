@@ -11,7 +11,8 @@ import '../../l10n/community_plaza_labels.dart';
 import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
-import '../../services/api/community_api.dart' show RankingPeriod;
+import '../../services/google_auth_service.dart';
+import '../../services/api/community_api.dart' show RankingPeriod, CommunityApi;
 import '../../l10n/community_ranking_layout_labels.dart';
 import 'widgets/community_ranking_work_list.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
@@ -68,7 +69,36 @@ class CommunityScreen extends StatefulWidget {
 }
 
 class _CommunityScreenState extends State<CommunityScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+  String? _lastLoginVisitKey;
+  void _recordCumulativeLoginVisit(String? ownerId, CommunityApi? api) {
+    if (ownerId == null || api == null) return;
+    final today = DateTime.now().toUtc().toIso8601String().substring(0,10);
+    final key = '$ownerId/$today';
+    if (_lastLoginVisitKey == key) return;
+    _lastLoginVisitKey = key;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted ||
+          context.read<GoogleAuthService>().account?.id != ownerId ||
+          !identical(context.read<CommunityService>().api,api)) return;
+      try {
+        await api.visitLoginBonus();
+      } catch (error) {
+        debugPrint('Plaza cumulative visit recording unavailable: $error');
+      }
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      _recordCumulativeLoginVisit(
+        context.read<GoogleAuthService>().account?.id,
+        context.read<CommunityService>().api,
+      );
+    }
+  }
+
   static const _savedSearchesKey = 'community.savedSearches.v1';
   static const _historyKey = 'community.searchHistory.v1';
   static const _tileWidthKey = 'community.tileMinWidth.v1';
@@ -251,6 +281,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadSavedSearches();
     _loadTileWidth();
     _loadRankingLayout();
@@ -695,6 +726,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     _searchController.dispose();
     for (final controller in _tabScrollControllers) {
@@ -947,6 +979,10 @@ class _CommunityScreenState extends State<CommunityScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final communityService = context.watch<CommunityService>();
+    _recordCumulativeLoginVisit(
+      context.watch<GoogleAuthService>().account?.id,
+      communityService.api,
+    );
     final currentAccount = communityService.currentUserId ?? 'guest';
     if (_searchAccount != currentAccount) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
