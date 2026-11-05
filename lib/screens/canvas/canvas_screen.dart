@@ -240,10 +240,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (visible.isNotEmpty && (right || !_showMeshTransformPanel)) {
       final fitted = _fitDesktopDock(settings, visible, availableHeight);
       if (visible.every(
-        (panel) => fitted.isCollapsed(
-          panel,
-          settings.isDesktopDockCollapsed(panel),
-        ),
+        (panel) =>
+            fitted.isCollapsed(panel, settings.isDesktopDockCollapsed(panel)),
       )) {
         return 52.0;
       }
@@ -1310,287 +1308,312 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     Expanded(
                       child: LayoutBuilder(
                         builder: (context, dockRowConstraints) => Row(
-                        // Stretch both dock columns to the canvas row's full
-                        // usable height. With the default center alignment a
-                        // short dock floats vertically in the middle instead
-                        // of starting directly below the top menu.
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // デスクトップでは常設ツールバーを画面下部の横並びバーではなく、
-                          // 左側（左利きモード時は右側）の縦レールとして常時表示する。
-                          if (isDesktop && !leftHanded)
-                            _buildToolbarWidget(vertical: true),
-                          // PC/DeXモード：ツールオプション系パネルはフローティングではなく
-                          // キャンバス左側の常時ドッキング領域（左利きでも左右は固定）
-                          // として表示する（複数同時に開いていれば縦に積んで並べる）。
-                          if (openToolPanels.isNotEmpty) ...[
-                            SizedBox(
-                              width: _desktopDockColumnWidth(right: false, availableHeight: dockRowConstraints.maxHeight),
-                              child: _dockedPanelStack(right: false),
+                          // Stretch both dock columns to the canvas row's full
+                          // usable height. With the default center alignment a
+                          // short dock floats vertically in the middle instead
+                          // of starting directly below the top menu.
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // デスクトップでは常設ツールバーを画面下部の横並びバーではなく、
+                            // 左側（左利きモード時は右側）の縦レールとして常時表示する。
+                            if (isDesktop && !leftHanded)
+                              _buildToolbarWidget(vertical: true),
+                            // PC/DeXモード：ツールオプション系パネルはフローティングではなく
+                            // キャンバス左側の常時ドッキング領域（左利きでも左右は固定）
+                            // として表示する（複数同時に開いていれば縦に積んで並べる）。
+                            if (openToolPanels.isNotEmpty) ...[
+                              SizedBox(
+                                width: _desktopDockColumnWidth(
+                                  right: false,
+                                  availableHeight: dockRowConstraints.maxHeight,
+                                ),
+                                child: _dockedPanelStack(right: false),
+                              ),
+                              if (_desktopDockColumnWidth(
+                                    right: false,
+                                    availableHeight:
+                                        dockRowConstraints.maxHeight,
+                                  ) >
+                                  52)
+                                _ResizeHandle(
+                                  key: const ValueKey('dockColumnResize-left'),
+                                  onDeltaX: (dx) => setState(() {
+                                    final settings = context
+                                        .read<SettingsService>();
+                                    final current =
+                                        _toolPanelWidthDragOverride ??
+                                        settings.desktopToolPanelWidth;
+                                    _toolPanelWidthDragOverride = (current + dx)
+                                        .clamp(200.0, 480.0);
+                                  }),
+                                  onDragEnd: () {
+                                    final w = _toolPanelWidthDragOverride;
+                                    if (w != null) {
+                                      context
+                                          .read<SettingsService>()
+                                          .setDesktopToolPanelWidth(w);
+                                    }
+                                  },
+                                ),
+                            ] else if (isDesktop && _desktopDockDragActive)
+                              _desktopEmptyDockDropTarget(right: false),
+                            Expanded(
+                              child: Stack(
+                                children: [
+                                  // 【重大バグ修正】背景は1枚だけ：CanvasArea自体は
+                                  // 「枠外」を塗らず、実際の描画内容（drawingRect）
+                                  // だけを描く透明なレイヤーになっており、この
+                                  // Containerがキャンバス全域の唯一の背景として
+                                  // 常に固定サイズ・固定色で存在する（=キャンバスは
+                                  // この背景の中央に乗っているだけ、という単純な
+                                  // 構成）。CanvasArea内部はTransformでピンチズーム・
+                                  // パンを描画時に適用しているため、ズームアウトで
+                                  // 描画内容だけが縮小されても、この背景自体は
+                                  // 動かずに全域を覆い続ける（以前はCanvasArea側にも
+                                  // 同じ色の「枠外」塗りを重ねて二重に背景を持たせて
+                                  // いたため、縮小時に背景まで一緒に縮んで見た目が
+                                  // ちぐはぐになる不具合があった）。
+                                  Container(color: kCanvasOutsideColor),
+                                  CanvasArea(
+                                    onTapForText:
+                                        _currentTool == DrawingTool.text
+                                        ? onCanvasTapForText
+                                        : null,
+                                    onEyedropper: _handleCanvasEyedropper,
+                                    autofillCheckMode: _autofillCheckMode,
+                                    filterEyedropperActive:
+                                        _filterColorEyedropperTarget != null ||
+                                        _textColorEyedropperTarget != null ||
+                                        _brushOutlineEyedropperActive,
+                                    filterGizmo: _filterCanvasGizmo(project),
+                                    currentLayerPreview:
+                                        _filterCanvasPreviewShown(),
+                                    currentLayerPreviewBlendMode:
+                                        _filterCanvasPreviewBlendMode(),
+                                    lockToolInput: selectionEditingHidden,
+                                    onFilterGizmoChanged: (gizmo) =>
+                                        _moveFilterGizmo(project, gizmo),
+                                    onFilterGizmoDragStart: () => context
+                                        .read<FilterService>()
+                                        .beginFilterEditGroup(),
+                                    onFilterGizmoDragEnd: () => context
+                                        .read<FilterService>()
+                                        .endFilterEditGroup(),
+                                    project: project,
+                                    background: _canvasBackground,
+                                    currentLayerId: _currentLayerId,
+                                    isEraser:
+                                        _currentTool == DrawingTool.eraser,
+                                    currentTool: _currentTool,
+                                    currentSubTool: _currentSubTool,
+                                    lassoFillEnclosedMode:
+                                        _lassoFillEnclosedMode,
+                                    onionSkinSettings: _onionSkinSettings,
+                                    currentFrame: _currentFrame,
+                                    sceneId: _currentSceneId,
+                                    activeRuler: _activeRuler,
+                                    onRulerChanged: _setActiveRulerLive,
+                                    shapeKind: _shapeKind,
+                                    onGestureToolChange: (tool) =>
+                                        setState(() => _currentTool = tool),
+                                    onGestureToggleTool:
+                                        _handleGestureToggleTool,
+                                    onNextQuickTool: _applyNextQuickTool,
+                                    onToggleOnionSkin: () => setState(
+                                      () => _onionSkinSettings =
+                                          _onionSkinSettings.copyWith(
+                                            enabled:
+                                                !_onionSkinSettings.enabled,
+                                          ),
+                                    ),
+                                    meshDensity: _meshDensity,
+                                    meshRotateDeg: _meshRotateDeg,
+                                    meshScaleValue: _meshScaleValue,
+                                    meshCommitToken: _meshCommitToken,
+                                    meshCancelToken: _meshCancelToken,
+                                    onNextFrame: _goToNextFrame,
+                                    onPreviousFrame: _goToPreviousFrame,
+                                    invertSelectionToken: _invertSelectionToken,
+                                    selectAllSelectionToken:
+                                        _selectAllSelectionToken,
+                                    clearSelectionToken: _clearSelectionToken,
+                                    selectionReferenceAllVisible: context
+                                        .watch<SettingsService>()
+                                        .selectionReferenceAllVisible,
+                                    lassoSnapToLines: context
+                                        .watch<SettingsService>()
+                                        .lassoSnapToLines,
+                                    lassoGapTolerancePx: context
+                                        .watch<SettingsService>()
+                                        .lassoGapTolerancePx,
+                                    onSelectionActiveChanged: (v) {
+                                      if (_hasActiveSelection == v) return;
+                                      setState(() {
+                                        _hasActiveSelection = v;
+                                        // 選択範囲を作り直した／解除したら、
+                                        // 「変更キャンセル」で戻せる範囲も
+                                        // そこで区切る。
+                                        _selectionTransformSteps = 0;
+                                        _resetSelectionSliders();
+                                      });
+                                    },
+                                    onSelectionMaskChanged: (mask) {
+                                      if (identical(
+                                        _canvasSelectionMask,
+                                        mask,
+                                      )) {
+                                        return;
+                                      }
+                                      setState(
+                                        () => _canvasSelectionMask = mask,
+                                      );
+                                    },
+                                    filterLensMask: _filterLensMaskShown(),
+                                    onUndoGesture: _undo,
+                                    onRedoGesture: _redo,
+                                    onFilterLensMaskEdited: _editFilterLensMask,
+                                    selectionMoveX: _selectionMoveX,
+                                    selectionMoveY: _selectionMoveY,
+                                    selectionScale: _selectionScale,
+                                    selectionRotateDeg: _selectionRotateDeg,
+                                    selectionTransformCommitToken:
+                                        _selectionTransformCommitToken,
+                                  ),
+                                  if (_filterColorEyedropperTarget != null ||
+                                      _textColorEyedropperTarget != null ||
+                                      _brushOutlineEyedropperActive)
+                                    Positioned(
+                                      top: 12,
+                                      left: 12,
+                                      right: 12,
+                                      child: IgnorePointer(
+                                        child: Center(
+                                          child: Material(
+                                            elevation: 4,
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.inverseSurface,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 14,
+                                                    vertical: 9,
+                                                  ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.colorize,
+                                                    size: 18,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onInverseSurface,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Flexible(
+                                                    child: Text(
+                                                      _activeColorEyedropperHint(
+                                                        context,
+                                                      ),
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .onInverseSurface,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  if (_isSelectionToolActive ||
+                                      _currentTool == DrawingTool.meshTransform)
+                                    Positioned(
+                                      left: 12,
+                                      bottom: 12,
+                                      right: 12,
+                                      // Out of the way while a filter is
+                                      // adjusted: the selection stays as it is
+                                      // (the filter keeps to it) and the
+                                      // canvas shows the preview. Hidden, not
+                                      // removed, so the Stack keeps its order.
+                                      child: Visibility(
+                                        visible: !selectionEditingHidden,
+                                        child: SafeArea(
+                                          child: Align(
+                                            alignment: Alignment.bottomLeft,
+                                            child:
+                                                _currentTool ==
+                                                    DrawingTool.meshTransform
+                                                ? _meshCancelBar(context)
+                                                : _selectionToolBar(context),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  // ツールオプション系フローティングパネル（ブラシ・トーン・
+                                  // スタンプ・ペンサブツール・オニオンスキン・定規・
+                                  // フィルター・早替え設定・レイヤー）は画面全体を覆う
+                                  // 一番外側のStackへ移した（build()末尾を参照）。
+                                ],
+                              ),
                             ),
-                            if (_desktopDockColumnWidth(right: false, availableHeight: dockRowConstraints.maxHeight) > 52)
+                            // PC/DeXモード：カラーピッカー・レイヤーパネル・キャンバス
+                            // プレビューは、ツールオプション系ドッキング領域（上の
+                            // openToolPanels）とは別に、左利きでも右側へ
+                            // 縦に並べて同時表示する。単独でも複数同時でも表示可。
+                            if (isDesktop &&
+                                _openRightDockPanels().isNotEmpty &&
+                                _desktopDockColumnWidth(
+                                      right: true,
+                                      availableHeight:
+                                          dockRowConstraints.maxHeight,
+                                    ) >
+                                    52)
                               _ResizeHandle(
-                                key: const ValueKey('dockColumnResize-left'),
+                                key: const ValueKey('dockColumnResize-right'),
                                 onDeltaX: (dx) => setState(() {
                                   final settings = context
                                       .read<SettingsService>();
                                   final current =
-                                      _toolPanelWidthDragOverride ??
-                                      settings.desktopToolPanelWidth;
-                                  _toolPanelWidthDragOverride = (current + dx)
+                                      _panelWidthDragOverride ??
+                                      settings.desktopPanelWidth;
+                                  // Right dock stays on the right in both
+                                  // handedness modes, so the direction is fixed.
+                                  _panelWidthDragOverride = (current - dx)
                                       .clamp(200.0, 480.0);
                                 }),
                                 onDragEnd: () {
-                                  final w = _toolPanelWidthDragOverride;
+                                  final w = _panelWidthDragOverride;
                                   if (w != null) {
                                     context
                                         .read<SettingsService>()
-                                        .setDesktopToolPanelWidth(w);
+                                        .setDesktopPanelWidth(w);
                                   }
                                 },
                               ),
-                          ] else if (isDesktop && _desktopDockDragActive)
-                            _desktopEmptyDockDropTarget(right: false),
-                          Expanded(
-                            child: Stack(
-                              children: [
-                                // 【重大バグ修正】背景は1枚だけ：CanvasArea自体は
-                                // 「枠外」を塗らず、実際の描画内容（drawingRect）
-                                // だけを描く透明なレイヤーになっており、この
-                                // Containerがキャンバス全域の唯一の背景として
-                                // 常に固定サイズ・固定色で存在する（=キャンバスは
-                                // この背景の中央に乗っているだけ、という単純な
-                                // 構成）。CanvasArea内部はTransformでピンチズーム・
-                                // パンを描画時に適用しているため、ズームアウトで
-                                // 描画内容だけが縮小されても、この背景自体は
-                                // 動かずに全域を覆い続ける（以前はCanvasArea側にも
-                                // 同じ色の「枠外」塗りを重ねて二重に背景を持たせて
-                                // いたため、縮小時に背景まで一緒に縮んで見た目が
-                                // ちぐはぐになる不具合があった）。
-                                Container(color: kCanvasOutsideColor),
-                                CanvasArea(
-                                  onTapForText: _currentTool == DrawingTool.text
-                                      ? onCanvasTapForText
-                                      : null,
-                                  onEyedropper: _handleCanvasEyedropper,
-                                  autofillCheckMode: _autofillCheckMode,
-                                  filterEyedropperActive:
-                                      _filterColorEyedropperTarget != null ||
-                                      _textColorEyedropperTarget != null ||
-                                      _brushOutlineEyedropperActive,
-                                  filterGizmo: _filterCanvasGizmo(project),
-                                  currentLayerPreview:
-                                      _filterCanvasPreviewShown(),
-                                  currentLayerPreviewBlendMode:
-                                      _filterCanvasPreviewBlendMode(),
-                                  lockToolInput: selectionEditingHidden,
-                                  onFilterGizmoChanged: (gizmo) =>
-                                      _moveFilterGizmo(project, gizmo),
-                                  onFilterGizmoDragStart: () => context
-                                      .read<FilterService>()
-                                      .beginFilterEditGroup(),
-                                  onFilterGizmoDragEnd: () => context
-                                      .read<FilterService>()
-                                      .endFilterEditGroup(),
-                                  project: project,
-                                  background: _canvasBackground,
-                                  currentLayerId: _currentLayerId,
-                                  isEraser: _currentTool == DrawingTool.eraser,
-                                  currentTool: _currentTool,
-                                  currentSubTool: _currentSubTool,
-                                  lassoFillEnclosedMode: _lassoFillEnclosedMode,
-                                  onionSkinSettings: _onionSkinSettings,
-                                  currentFrame: _currentFrame,
-                                  sceneId: _currentSceneId,
-                                  activeRuler: _activeRuler,
-                                  onRulerChanged: _setActiveRulerLive,
-                                  shapeKind: _shapeKind,
-                                  onGestureToolChange: (tool) =>
-                                      setState(() => _currentTool = tool),
-                                  onGestureToggleTool: _handleGestureToggleTool,
-                                  onNextQuickTool: _applyNextQuickTool,
-                                  onToggleOnionSkin: () => setState(
-                                    () => _onionSkinSettings =
-                                        _onionSkinSettings.copyWith(
-                                          enabled: !_onionSkinSettings.enabled,
-                                        ),
-                                  ),
-                                  meshDensity: _meshDensity,
-                                  meshRotateDeg: _meshRotateDeg,
-                                  meshScaleValue: _meshScaleValue,
-                                  meshCommitToken: _meshCommitToken,
-                                  meshCancelToken: _meshCancelToken,
-                                  onNextFrame: _goToNextFrame,
-                                  onPreviousFrame: _goToPreviousFrame,
-                                  invertSelectionToken: _invertSelectionToken,
-                                  selectAllSelectionToken:
-                                      _selectAllSelectionToken,
-                                  clearSelectionToken: _clearSelectionToken,
-                                  selectionReferenceAllVisible: context
-                                      .watch<SettingsService>()
-                                      .selectionReferenceAllVisible,
-                                  lassoSnapToLines: context
-                                      .watch<SettingsService>()
-                                      .lassoSnapToLines,
-                                  lassoGapTolerancePx: context
-                                      .watch<SettingsService>()
-                                      .lassoGapTolerancePx,
-                                  onSelectionActiveChanged: (v) {
-                                    if (_hasActiveSelection == v) return;
-                                    setState(() {
-                                      _hasActiveSelection = v;
-                                      // 選択範囲を作り直した／解除したら、
-                                      // 「変更キャンセル」で戻せる範囲も
-                                      // そこで区切る。
-                                      _selectionTransformSteps = 0;
-                                      _resetSelectionSliders();
-                                    });
-                                  },
-                                  onSelectionMaskChanged: (mask) {
-                                    if (identical(_canvasSelectionMask, mask)) {
-                                      return;
-                                    }
-                                    setState(() => _canvasSelectionMask = mask);
-                                  },
-                                  filterLensMask: _filterLensMaskShown(),
-                                  onUndoGesture: _undo,
-                                  onRedoGesture: _redo,
-                                  onFilterLensMaskEdited: _editFilterLensMask,
-                                  selectionMoveX: _selectionMoveX,
-                                  selectionMoveY: _selectionMoveY,
-                                  selectionScale: _selectionScale,
-                                  selectionRotateDeg: _selectionRotateDeg,
-                                  selectionTransformCommitToken:
-                                      _selectionTransformCommitToken,
+                            if (isDesktop && _openRightDockPanels().isNotEmpty)
+                              SizedBox(
+                                width: _desktopDockColumnWidth(
+                                  right: true,
+                                  availableHeight: dockRowConstraints.maxHeight,
                                 ),
-                                if (_filterColorEyedropperTarget != null ||
-                                    _textColorEyedropperTarget != null ||
-                                    _brushOutlineEyedropperActive)
-                                  Positioned(
-                                    top: 12,
-                                    left: 12,
-                                    right: 12,
-                                    child: IgnorePointer(
-                                      child: Center(
-                                        child: Material(
-                                          elevation: 4,
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.inverseSurface,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 14,
-                                              vertical: 9,
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.colorize,
-                                                  size: 18,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onInverseSurface,
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Flexible(
-                                                  child: Text(
-                                                    _activeColorEyedropperHint(
-                                                      context,
-                                                    ),
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .onInverseSurface,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                if (_isSelectionToolActive ||
-                                    _currentTool == DrawingTool.meshTransform)
-                                  Positioned(
-                                    left: 12,
-                                    bottom: 12,
-                                    right: 12,
-                                    // Out of the way while a filter is
-                                    // adjusted: the selection stays as it is
-                                    // (the filter keeps to it) and the
-                                    // canvas shows the preview. Hidden, not
-                                    // removed, so the Stack keeps its order.
-                                    child: Visibility(
-                                      visible: !selectionEditingHidden,
-                                      child: SafeArea(
-                                        child: Align(
-                                          alignment: Alignment.bottomLeft,
-                                          child:
-                                              _currentTool ==
-                                                  DrawingTool.meshTransform
-                                              ? _meshCancelBar(context)
-                                              : _selectionToolBar(context),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                // ツールオプション系フローティングパネル（ブラシ・トーン・
-                                // スタンプ・ペンサブツール・オニオンスキン・定規・
-                                // フィルター・早替え設定・レイヤー）は画面全体を覆う
-                                // 一番外側のStackへ移した（build()末尾を参照）。
-                              ],
-                            ),
-                          ),
-                          // PC/DeXモード：カラーピッカー・レイヤーパネル・キャンバス
-                          // プレビューは、ツールオプション系ドッキング領域（上の
-                          // openToolPanels）とは別に、左利きでも右側へ
-                          // 縦に並べて同時表示する。単独でも複数同時でも表示可。
-                          if (isDesktop &&
-                              _openRightDockPanels().isNotEmpty &&
-                              _desktopDockColumnWidth(right: true, availableHeight: dockRowConstraints.maxHeight) > 52)
-                            _ResizeHandle(
-                              key: const ValueKey('dockColumnResize-right'),
-                              onDeltaX: (dx) => setState(() {
-                                final settings = context
-                                    .read<SettingsService>();
-                                final current =
-                                    _panelWidthDragOverride ??
-                                    settings.desktopPanelWidth;
-                                // Right dock stays on the right in both
-                                // handedness modes, so the direction is fixed.
-                                _panelWidthDragOverride = (current - dx).clamp(
-                                  200.0,
-                                  480.0,
-                                );
-                              }),
-                              onDragEnd: () {
-                                final w = _panelWidthDragOverride;
-                                if (w != null) {
-                                  context
-                                      .read<SettingsService>()
-                                      .setDesktopPanelWidth(w);
-                                }
-                              },
-                            ),
-                          if (isDesktop && _openRightDockPanels().isNotEmpty)
-                            SizedBox(
-                              width: _desktopDockColumnWidth(right: true, availableHeight: dockRowConstraints.maxHeight),
-                              child: _buildRightDockColumn(),
-                            )
-                          else if (isDesktop && _desktopDockDragActive)
-                            _desktopEmptyDockDropTarget(right: true),
-                          // Handedness changes the OUTER vertical toolbar
-                          // only; left/right dock columns never swap.
-                          if (isDesktop && leftHanded)
-                            _buildToolbarWidget(vertical: true),
-                        ],
+                                child: _buildRightDockColumn(),
+                              )
+                            else if (isDesktop && _desktopDockDragActive)
+                              _desktopEmptyDockDropTarget(right: true),
+                            // Handedness changes the OUTER vertical toolbar
+                            // only; left/right dock columns never swap.
+                            if (isDesktop && leftHanded)
+                              _buildToolbarWidget(vertical: true),
+                          ],
                         ),
                       ),
                     ),
@@ -2115,194 +2138,202 @@ class _CanvasScreenState extends State<CanvasScreen> {
     return Listener(
       onPointerDown: (_) => _rememberDockInteraction(p),
       child: Align(
-      // Without heightFactor, a single window can occupy the full dock column
-      // and end up vertically centered. Each dock window must instead take
-      // only its own height and stack from the top of the canvas viewport.
-      alignment: foldsLeft ? Alignment.topLeft : Alignment.topRight,
-      heightFactor: 1,
-      child: SizedBox(
-        // All expanded windows have exactly the width of their dock column.
-        width: collapsed ? 52 : double.infinity,
-        child: DragTarget<CanvasDockPanel>(
-          key: ValueKey('dockTarget-${p.name}'),
-          onWillAcceptWithDetails: (d) => d.data != p,
-          onAcceptWithDetails: (d) =>
-              settings.moveDesktopDockPanel(d.data, toRight: right, before: p),
-          builder: (context, candidates, _) => Container(
-            decoration: BoxDecoration(
-              color: scheme.surface,
-              border: Border.all(
-                color: candidates.isEmpty
-                    ? scheme.outlineVariant
-                    : scheme.primary,
-              ),
+        // Without heightFactor, a single window can occupy the full dock column
+        // and end up vertically centered. Each dock window must instead take
+        // only its own height and stack from the top of the canvas viewport.
+        alignment: foldsLeft ? Alignment.topLeft : Alignment.topRight,
+        heightFactor: 1,
+        child: SizedBox(
+          // All expanded windows have exactly the width of their dock column.
+          width: collapsed ? 52 : double.infinity,
+          child: DragTarget<CanvasDockPanel>(
+            key: ValueKey('dockTarget-${p.name}'),
+            onWillAcceptWithDetails: (d) => d.data != p,
+            onAcceptWithDetails: (d) => settings.moveDesktopDockPanel(
+              d.data,
+              toRight: right,
+              before: p,
             ),
-            child: collapsed
-                ? SizedBox(
-                    height: 48,
-                    child: Draggable<CanvasDockPanel>(
-                      key: ValueKey('dockCollapsedDrag-${p.name}'),
-                      data: p,
-                      onDragStarted: () => _setDesktopDockDragging(true),
-                      onDragEnd: (_) => _setDesktopDockDragging(false),
-                      feedback: Material(
-                        color: scheme.surfaceContainerHighest,
-                        elevation: 4,
-                        child: SizedBox(
+            builder: (context, candidates, _) => Container(
+              decoration: BoxDecoration(
+                color: scheme.surface,
+                border: Border.all(
+                  color: candidates.isEmpty
+                      ? scheme.outlineVariant
+                      : scheme.primary,
+                ),
+              ),
+              child: collapsed
+                  ? SizedBox(
+                      height: 48,
+                      child: Draggable<CanvasDockPanel>(
+                        key: ValueKey('dockCollapsedDrag-${p.name}'),
+                        data: p,
+                        onDragStarted: () => _setDesktopDockDragging(true),
+                        onDragEnd: (_) => _setDesktopDockDragging(false),
+                        feedback: Material(
+                          color: scheme.surfaceContainerHighest,
+                          elevation: 4,
+                          child: SizedBox(
+                            width: 52,
+                            height: 48,
+                            child: Icon(_dockCollapsedIcon(p), size: 24),
+                          ),
+                        ),
+                        childWhenDragging: const SizedBox(
                           width: 52,
                           height: 48,
-                          child: Icon(_dockCollapsedIcon(p), size: 24),
+                        ),
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.grab,
+                          child: IconButton(
+                            key: ValueKey('dockExpand-${p.name}'),
+                            tooltip: '$title · ${l.filterPanelExpand}',
+                            onPressed: () => _expandDesktopDock(p, settings),
+                            icon: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(_dockCollapsedIcon(p), size: 18),
+                                Icon(
+                                  foldsLeft
+                                      ? Icons.chevron_right
+                                      : Icons.chevron_left,
+                                  size: 13,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                      childWhenDragging: const SizedBox(width: 52, height: 48),
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.grab,
-                        child: IconButton(
-                          key: ValueKey('dockExpand-${p.name}'),
-                          tooltip: '$title · ${l.filterPanelExpand}',
-                          onPressed: () => _expandDesktopDock(p, settings),
-                          icon: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
+                    )
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          height: 34,
+                          child: Row(
                             children: [
-                              Icon(_dockCollapsedIcon(p), size: 18),
-                              Icon(
-                                foldsLeft
-                                    ? Icons.chevron_right
-                                    : Icons.chevron_left,
-                                size: 13,
+                              Draggable<CanvasDockPanel>(
+                                data: p,
+                                onDragStarted: () =>
+                                    _setDesktopDockDragging(true),
+                                onDragEnd: (_) =>
+                                    _setDesktopDockDragging(false),
+                                feedback: Material(
+                                  color: scheme.surfaceContainerHighest,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Text(title),
+                                  ),
+                                ),
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.grab,
+                                  child: SizedBox(
+                                    key: ValueKey('dockDrag-${p.name}'),
+                                    width: 36,
+                                    child: Icon(
+                                      Icons.drag_indicator,
+                                      size: 20,
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              IconButton(
+                                key: ValueKey('dockCollapse-${p.name}'),
+                                tooltip: l.filterPanelCollapse,
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 36,
+                                  height: 32,
+                                ),
+                                padding: EdgeInsets.zero,
+                                onPressed: () =>
+                                    _collapseDesktopDock(p, settings),
+                                icon: Icon(
+                                  foldsLeft
+                                      ? Icons.chevron_left
+                                      : Icons.chevron_right,
+                                  size: 22,
+                                ),
+                              ),
+                              PopupMenuButton<String>(
+                                key: ValueKey('dockMenu-${p.name}'),
+                                icon: const Icon(Icons.more_vert, size: 18),
+                                onSelected: (action) {
+                                  if (action == 'hide') {
+                                    _setDesktopPanelVisible(p, false);
+                                  } else {
+                                    settings.moveDesktopDockPanel(
+                                      p,
+                                      toRight: action == 'right',
+                                    );
+                                  }
+                                },
+                                itemBuilder: (_) => [
+                                  PopupMenuItem(
+                                    value: 'left',
+                                    child: Text(
+                                      l.pcWorkspaceLayoutToolOrderSection,
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'right',
+                                    child: Text(
+                                      l.pcWorkspaceLayoutRightOrderSection,
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'hide',
+                                    child: Text(l.commonClose),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ),
-                  )
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        height: 34,
-                        child: Row(
-                          children: [
-                            Draggable<CanvasDockPanel>(
-                              data: p,
-                              onDragStarted: () =>
-                                  _setDesktopDockDragging(true),
-                              onDragEnd: (_) => _setDesktopDockDragging(false),
-                              feedback: Material(
-                                color: scheme.surfaceContainerHighest,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: Text(title),
+                        SizedBox(height: height, child: _responsiveDockBody(p)),
+                        MouseRegion(
+                          cursor: SystemMouseCursors.resizeUpDown,
+                          child: GestureDetector(
+                            key: ValueKey('dockResize-${p.name}'),
+                            behavior: HitTestBehavior.opaque,
+                            onVerticalDragUpdate: (d) => setState(() {
+                              _dockDragHeight[p] =
+                                  ((_dockDragHeight[p] ??
+                                              settings.desktopDockHeight(p)) +
+                                          d.delta.dy)
+                                      .clamp(140.0, 700.0);
+                            }),
+                            onVerticalDragEnd: (_) {
+                              final value = _dockDragHeight.remove(p);
+                              if (value != null)
+                                settings.setDesktopDockHeight(p, value);
+                            },
+                            child: SizedBox(
+                              height: 22,
+                              child: Center(
+                                child: Icon(
+                                  Icons.drag_handle,
+                                  size: 24,
+                                  color: scheme.onSurfaceVariant,
                                 ),
-                              ),
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.grab,
-                                child: SizedBox(
-                                  key: ValueKey('dockDrag-${p.name}'),
-                                  width: 36,
-                                  child: Icon(
-                                    Icons.drag_indicator,
-                                    size: 20,
-                                    color: scheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Text(
-                                title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            IconButton(
-                              key: ValueKey('dockCollapse-${p.name}'),
-                              tooltip: l.filterPanelCollapse,
-                              constraints: const BoxConstraints.tightFor(
-                                width: 36,
-                                height: 32,
-                              ),
-                              padding: EdgeInsets.zero,
-                              onPressed: () => _collapseDesktopDock(p, settings),
-                              icon: Icon(
-                                foldsLeft
-                                    ? Icons.chevron_left
-                                    : Icons.chevron_right,
-                                size: 22,
-                              ),
-                            ),
-                            PopupMenuButton<String>(
-                              key: ValueKey('dockMenu-${p.name}'),
-                              icon: const Icon(Icons.more_vert, size: 18),
-                              onSelected: (action) {
-                                if (action == 'hide') {
-                                  _setDesktopPanelVisible(p, false);
-                                } else {
-                                  settings.moveDesktopDockPanel(
-                                    p,
-                                    toRight: action == 'right',
-                                  );
-                                }
-                              },
-                              itemBuilder: (_) => [
-                                PopupMenuItem(
-                                  value: 'left',
-                                  child: Text(
-                                    l.pcWorkspaceLayoutToolOrderSection,
-                                  ),
-                                ),
-                                PopupMenuItem(
-                                  value: 'right',
-                                  child: Text(
-                                    l.pcWorkspaceLayoutRightOrderSection,
-                                  ),
-                                ),
-                                PopupMenuItem(
-                                  value: 'hide',
-                                  child: Text(l.commonClose),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: height, child: _responsiveDockBody(p)),
-                      MouseRegion(
-                        cursor: SystemMouseCursors.resizeUpDown,
-                        child: GestureDetector(
-                          key: ValueKey('dockResize-${p.name}'),
-                          behavior: HitTestBehavior.opaque,
-                          onVerticalDragUpdate: (d) => setState(() {
-                            _dockDragHeight[p] =
-                                ((_dockDragHeight[p] ??
-                                            settings.desktopDockHeight(p)) +
-                                        d.delta.dy)
-                                    .clamp(140.0, 700.0);
-                          }),
-                          onVerticalDragEnd: (_) {
-                            final value = _dockDragHeight.remove(p);
-                            if (value != null)
-                              settings.setDesktopDockHeight(p, value);
-                          },
-                          child: SizedBox(
-                            height: 22,
-                            child: Center(
-                              child: Icon(
-                                Icons.drag_handle,
-                                size: 24,
-                                color: scheme.onSurfaceVariant,
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -2420,8 +2451,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     visible[i],
                     right: right,
                     fittedBodyHeight: heights[visible[i]],
-                    automaticallyCollapsed:
-                        fitted.automaticallyCollapsed.contains(visible[i]),
+                    automaticallyCollapsed: fitted.automaticallyCollapsed
+                        .contains(visible[i]),
                   ),
                 ],
                 if (hasMesh) ...[
