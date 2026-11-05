@@ -2004,6 +2004,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       showCloseButton: false,
     ),
   };
+
   /// An empty dock takes zero width at rest, but becomes a temporary
   /// 52px-wide drop target while a window is being dragged.
   Widget _desktopEmptyDockDropTarget({required bool right}) {
@@ -2024,12 +2025,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 ? scheme.surfaceContainerLow
                 : scheme.primaryContainer,
             border: Border.all(
-              color: candidates.isEmpty ? scheme.outlineVariant : scheme.primary,
+              color: candidates.isEmpty
+                  ? scheme.outlineVariant
+                  : scheme.primary,
             ),
           ),
-          child: Center(
-            child: Icon(Icons.add, color: scheme.onSurfaceVariant),
-          ),
+          child: Center(child: Icon(Icons.add, color: scheme.onSurfaceVariant)),
         ),
       ),
     );
@@ -2122,7 +2123,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           children: [
                             Draggable<CanvasDockPanel>(
                               data: p,
-                              onDragStarted: () => _setDesktopDockDragging(true),
+                              onDragStarted: () =>
+                                  _setDesktopDockDragging(true),
                               onDragEnd: (_) => _setDesktopDockDragging(false),
                               feedback: Material(
                                 color: scheme.surfaceContainerHighest,
