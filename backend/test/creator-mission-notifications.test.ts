@@ -59,6 +59,12 @@ describe("durable mission bell notices",()=>{
     await expect(recordMissionAchievement("Nowner",post)).rejects
       .toBeInstanceOf(TransactionCanceledException);
   });
+  it("creates one account-scoped follower event with no fabricated work ID",()=>{
+    expect(missionEventId({
+      kind:"followers",missionId:"followers_10",
+      required:10,occurredAt:"2026-11-05T00:00:00.000Z",
+    })).toBe("account_followers_10");
+  });
   it("won't accept a notification without a valid server work ID",()=>{
     expect(()=>missionEventId({...post,workId:"!!!"})).toThrow();
   });

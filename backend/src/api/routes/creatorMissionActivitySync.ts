@@ -10,6 +10,7 @@ import {
 } from "../../lib/missionNotifications";
 import { getMyWorkMissionAchievements } from "./creatorWorkAchievements";
 import { getMyWorkCountMissionGrid } from "./creatorWorkCountGrid";
+import { getMyCreatorMissions } from "./creatorMissions";
 
 /**
  * On-demand backfill and discovery on opening the plaza bell.
@@ -79,12 +80,14 @@ export async function syncMyMissionActivity(event:APIGatewayProxyEventV2){
     ...event,queryStringParameters:body.cursor
       ? {cursor:body.cursor} : {},
   } as APIGatewayProxyEventV2;
-  const [workResult,gridResult]=await Promise.all([
+  const [workResult,gridResult,accountResult]=await Promise.all([
     getMyWorkMissionAchievements(workEvent),
     body.cursor ? Promise.resolve(undefined) : getMyWorkCountMissionGrid(event),
+    body.cursor ? Promise.resolve(undefined) : getMyCreatorMissions(event),
   ]);
   const workData=parseResponse(workResult.body);
   const gridData=gridResult ? parseResponse(gridResult.body) : undefined;
+  const accountData=accountResult ? parseResponse(accountResult.body) : undefined;
   const now=new Date().toISOString();
   const works:Candidate[]=[];
   for(const raw of workData.items??[]){
@@ -121,6 +124,18 @@ export async function syncMyMissionActivity(event:APIGatewayProxyEventV2){
       occurredAt:now,dateIsObserved:true,
     });
   }
+  // Follower milestones were previously device-only. Preserve them in the
+  // same account-owned, cross-device bell history; exact historic crossing
+  // times aren't available, so mark them as first-observed.
+  for(const raw of accountData?.missions??[]){
+    if(!raw || typeof raw!=="object" ||
+        raw.kind!=="followers" || raw.eligible!==true ||
+        typeof raw.id!=="string" || typeof raw.required!=="number")continue;
+    grid.push({
+      kind:"followers",missionId:raw.id,required:raw.required,
+      occurredAt:now,dateIsObserved:true,
+    });
+  }
   // Within newly discovered cohorts, prioritize high-value thresholds.
   grid.sort((a,b)=>b.required-a.required ||
     (b.eachWorkBookmarks??0)-(a.eachWorkBookmarks??0));
@@ -139,7 +154,8 @@ export async function syncMyMissionActivity(event:APIGatewayProxyEventV2){
   // Drain all unrecorded milestones on this page before advancing to the
   // next 25 works. The same cursor is safe because dedupe markers are
   // immutable, strongly consistent, and checked before each write.
-  // Grid milestones must also finish before leaving the cursorless page.
+  // Grid and follower milestones must also finish before leaving the
+  // cursorless page.
   const pageNotDrained=newWorks.length>WORK_WRITE_LIMIT ||
     newGrid.length>GRID_WRITE_LIMIT;
   const nextWorkCursor=pageNotDrained
