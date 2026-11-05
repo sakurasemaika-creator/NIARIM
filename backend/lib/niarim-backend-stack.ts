@@ -300,11 +300,11 @@ export class NiarimBackendStack extends Stack {
     batchFunction.grantInvoke(batchFunction);
 
     // EventBridge Scheduler：更新サイクルの開始のみをトリガーする
-    // （8.1節）。既定は1日2回（14章：作品数が増えてきたら1日2回を基本）。
-    // cron式はUTC。JSTの9時・21時に相当するよう0時・12時UTCで実行する。
+    // （8.1節）。YouTubeクォータ・DynamoDB WCU節約のため1日1回。
+    // cron式はUTC。毎日0時UTC＝JST9時に実行する。
     new events.Rule(this, "StatsUpdateSchedule", {
       ruleName: "niarim-stats-update-schedule",
-      schedule: events.Schedule.expression("cron(0 0,12 * * ? *)"),
+      schedule: events.Schedule.expression("cron(0 0 * * ? *)"),
       targets: [
         new targets.LambdaFunction(batchFunction, {
           event: events.RuleTargetInput.fromObject({}),
