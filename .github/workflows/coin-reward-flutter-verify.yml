@@ -10,6 +10,13 @@ on:
       - 'lib/services/premium_service.dart'
       - 'lib/services/api/community_api.dart'
       - 'lib/screens/rewards/reward_unlock_screen.dart'
+      - 'lib/screens/rewards/membership_benefits_screen.dart'
+      - 'lib/screens/rewards/login_bonus_panel.dart'
+      - 'lib/screens/premium/premium_screen.dart'
+      - 'lib/l10n/login_bonus_labels.dart'
+      - 'lib/l10n/reward_navigation_labels.dart'
+      - 'lib/router.dart'
+      - 'test/login_bonus_ui_policy_test.dart'
       - 'lib/screens/rewards/creator_missions_screen.dart'
       - 'lib/screens/community/community_follow_notifications_screen.dart'
       - 'lib/screens/home/widgets/home_drawer.dart'
@@ -52,6 +59,12 @@ jobs:
             lib/config/monetization_gate.dart \
             lib/services/api/community_api.dart \
             lib/screens/rewards/reward_unlock_screen.dart \
+            lib/screens/rewards/membership_benefits_screen.dart \
+            lib/screens/rewards/login_bonus_panel.dart \
+            lib/screens/premium/premium_screen.dart \
+            lib/l10n/login_bonus_labels.dart \
+            lib/l10n/reward_navigation_labels.dart \
+            lib/router.dart \
             lib/screens/rewards/creator_missions_screen.dart \
             lib/screens/community/community_follow_notifications_screen.dart \
             lib/screens/home/widgets/home_drawer.dart \
@@ -74,4 +87,5 @@ jobs:
             test/coin_history_sheet_test.dart \
             test/creator_mission_claim_ui_policy_test.dart \
             test/creator_mission_sort_policy_test.dart \
-            test/creator_mission_drawer_attention_test.dart
+            test/creator_mission_drawer_attention_test.dart \
+            test/login_bonus_ui_policy_test.dart
