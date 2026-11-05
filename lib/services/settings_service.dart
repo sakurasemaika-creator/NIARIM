@@ -201,6 +201,41 @@ class SettingsService extends ChangeNotifier {
   // This preference is independent from the user-controlled/persisted folds.
   // Automatic folds are transient and calculated from the available height.
   bool _desktopDockAutoCollapseEnabled = true;
+  // Before the user edits the workspace, handedness selects the initial side.
+  // Once edited, the physical left/right positions are saved and no longer
+  // follow handedness changes. This state is global, never project-specific.
+  bool _desktopDockLayoutCustomized = false;
+  bool get desktopDockLayoutCustomized => _desktopDockLayoutCustomized;
+  bool get desktopDockDefaultMirrored =>
+      !_desktopDockLayoutCustomized && _isLeftHanded;
+
+  /// Convert the current (possibly mirrored) initial layout into physical
+  /// left/right lists before the first user edit. Persist the snapshot before
+  /// subsequent edits, so switching hands cannot move customized windows.
+  Future<void> _pinDesktopDockLayout() async {
+    if (_desktopDockLayoutCustomized) return;
+    if (_isLeftHanded) {
+      final previousLeft = _toolOptionDockOrder;
+      _toolOptionDockOrder = _rightDockOrder;
+      _rightDockOrder = previousLeft;
+      final previousLeftWidth = _desktopToolPanelWidth;
+      _desktopToolPanelWidth = _desktopPanelWidth;
+      _desktopPanelWidth = previousLeftWidth;
+    }
+    _desktopDockLayoutCustomized = true;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('desktop_dock_layout_customized', true);
+    await prefs.setStringList(
+      'tool_option_dock_order',
+      _toolOptionDockOrder.map((p) => p.name).toList(),
+    );
+    await prefs.setStringList(
+      'right_dock_order',
+      _rightDockOrder.map((p) => p.name).toList(),
+    );
+    await prefs.setDouble('desktop_tool_panel_width', _desktopToolPanelWidth);
+    await prefs.setDouble('desktop_panel_width', _desktopPanelWidth);
+  }
   bool get desktopDockAutoCollapseEnabled => _desktopDockAutoCollapseEnabled;
 
   Future<void> setDesktopDockAutoCollapseEnabled(bool enabled) async {
@@ -222,6 +257,7 @@ class SettingsService extends ChangeNotifier {
         ? _collapsedDesktopDocks.add(panel)
         : _collapsedDesktopDocks.remove(panel);
     if (!changed) return;
+    await _pinDesktopDockLayout();
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
@@ -234,10 +270,10 @@ class SettingsService extends ChangeNotifier {
   /// Legacy per-window width calls use the panel's CURRENT column so old
   /// workspace settings cannot re-introduce mismatched widths.
   double desktopDockWidth(CanvasDockPanel panel, {required bool right}) =>
-      right ? _desktopPanelWidth : _desktopToolPanelWidth;
+      right ? desktopPanelWidth : desktopToolPanelWidth;
 
   Future<void> setDesktopDockWidth(CanvasDockPanel panel, double width) =>
-      _rightDockOrder.contains(panel)
+      rightDockOrder.contains(panel)
           ? setDesktopPanelWidth(width)
           : setDesktopToolPanelWidth(width);
 
@@ -246,6 +282,7 @@ class SettingsService extends ChangeNotifier {
       _desktopPanelHeights[panel] ?? 260.0;
 
   Future<void> setDesktopDockHeight(CanvasDockPanel panel, double value) async {
+    await _pinDesktopDockLayout();
     final height = value.clamp(140.0, 700.0);
     _desktopPanelHeights[panel] = height;
     notifyListeners();
@@ -261,9 +298,11 @@ class SettingsService extends ChangeNotifier {
 
   double _desktopPanelWidth = 280.0;
 
-  double get desktopPanelWidth => _desktopPanelWidth;
+  double get desktopPanelWidth =>
+      desktopDockDefaultMirrored ? _desktopToolPanelWidth : _desktopPanelWidth;
 
   Future<void> setDesktopPanelWidth(double value) async {
+    await _pinDesktopDockLayout();
     _desktopPanelWidth = value.clamp(200.0, 480.0);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('desktop_panel_width', _desktopPanelWidth);
@@ -273,9 +312,11 @@ class SettingsService extends ChangeNotifier {
   // 左側（左利きモードでは右側）ツールオプション系ドッキング領域の横幅。
   double _desktopToolPanelWidth = 280.0;
 
-  double get desktopToolPanelWidth => _desktopToolPanelWidth;
+  double get desktopToolPanelWidth =>
+      desktopDockDefaultMirrored ? _desktopPanelWidth : _desktopToolPanelWidth;
 
   Future<void> setDesktopToolPanelWidth(double value) async {
+    await _pinDesktopDockLayout();
     _desktopToolPanelWidth = value.clamp(200.0, 480.0);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('desktop_tool_panel_width', _desktopToolPanelWidth);
@@ -299,10 +340,12 @@ class SettingsService extends ChangeNotifier {
     _defaultToolOptionDockOrder,
   );
 
-  List<CanvasDockPanel> get toolOptionDockOrder =>
-      List.unmodifiable(_toolOptionDockOrder);
+  List<CanvasDockPanel> get toolOptionDockOrder => List.unmodifiable(
+    desktopDockDefaultMirrored ? _rightDockOrder : _toolOptionDockOrder,
+  );
 
   Future<void> setToolOptionDockOrder(List<CanvasDockPanel> order) async {
+    await _pinDesktopDockLayout();
     _toolOptionDockOrder = List.of(order);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
@@ -323,10 +366,12 @@ class SettingsService extends ChangeNotifier {
   ];
   List<CanvasDockPanel> _rightDockOrder = List.of(_defaultRightDockOrder);
 
-  List<CanvasDockPanel> get rightDockOrder =>
-      List.unmodifiable(_rightDockOrder);
+  List<CanvasDockPanel> get rightDockOrder => List.unmodifiable(
+    desktopDockDefaultMirrored ? _toolOptionDockOrder : _rightDockOrder,
+  );
 
   Future<void> setRightDockOrder(List<CanvasDockPanel> order) async {
+    await _pinDesktopDockLayout();
     _rightDockOrder = List.of(order);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
@@ -339,6 +384,66 @@ class SettingsService extends ChangeNotifier {
   Future<void> resetRightDockOrder() =>
       setRightDockOrder(_defaultRightDockOrder);
 
+  /// Reset the entire shared PC workspace. The chosen handedness then decides
+  /// the initial placement again, until the user customizes it.
+  Future<void> resetDesktopWorkspaceLayout() async {
+    _desktopDockLayoutCustomized = false;
+    _toolOptionDockOrder = List.of(_defaultToolOptionDockOrder);
+    _rightDockOrder = List.of(_defaultRightDockOrder);
+    _desktopToolPanelWidth = 280.0;
+    _desktopPanelWidth = 280.0;
+    _desktopPanelHeights.clear();
+    _collapsedDesktopDocks.clear();
+    _defaultDockedPanels = {
+      CanvasDockPanel.brush,
+      CanvasDockPanel.colorPicker,
+      CanvasDockPanel.layer,
+    };
+    _desktopDockAutoCollapseEnabled = true;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('desktop_dock_layout_customized', false);
+    await prefs.setStringList(
+      'tool_option_dock_order',
+      _toolOptionDockOrder.map((p) => p.name).toList(),
+    );
+    await prefs.setStringList(
+      'right_dock_order',
+      _rightDockOrder.map((p) => p.name).toList(),
+    );
+    await prefs.setDouble('desktop_tool_panel_width', 280.0);
+    await prefs.setDouble('desktop_panel_width', 280.0);
+    await prefs.setString('desktop_dock_heights', '{}');
+    await prefs.setStringList('desktop_collapsed_docks', []);
+    await prefs.setStringList(
+      'default_docked_panels',
+      _defaultDockedPanels.map((p) => p.name).toList(),
+    );
+    await prefs.setBool('desktop_dock_auto_collapse_enabled', true);
+    notifyListeners();
+  }
+
+  /// Reset order alone to the CURRENT handedness' default physical sides.
+  /// Preserve sizes/visibility and keep the result pinned as a custom layout.
+  Future<void> resetDesktopDockOrderToHandedDefaults() async {
+    await _pinDesktopDockLayout();
+    _toolOptionDockOrder = List.of(
+      _isLeftHanded ? _defaultRightDockOrder : _defaultToolOptionDockOrder,
+    );
+    _rightDockOrder = List.of(
+      _isLeftHanded ? _defaultToolOptionDockOrder : _defaultRightDockOrder,
+    );
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'tool_option_dock_order',
+      _toolOptionDockOrder.map((p) => p.name).toList(),
+    );
+    await prefs.setStringList(
+      'right_dock_order',
+      _rightDockOrder.map((p) => p.name).toList(),
+    );
+    notifyListeners();
+  }
+
   /// Move a dock window within or between columns, persist its position.
   /// Settings screen and canvas use these same global order lists.
   Future<void> moveDesktopDockPanel(
@@ -346,6 +451,8 @@ class SettingsService extends ChangeNotifier {
     required bool toRight,
     CanvasDockPanel? before,
   }) async {
+    // [toRight] now always means the physical right edge, regardless of hand.
+    await _pinDesktopDockLayout();
     final left = List<CanvasDockPanel>.of(_toolOptionDockOrder)
       ..remove(panel);
     final right = List<CanvasDockPanel>.of(_rightDockOrder)
@@ -676,6 +783,12 @@ class SettingsService extends ChangeNotifier {
     _timelineTrackHeightLevel =
         prefs.readInt('timeline_track_height_level') ?? 4;
     _desktopPanelWidth = prefs.readDouble('desktop_panel_width') ?? 280.0;
+    // A pre-release saved order without the new flag is a user customization.
+    // A newly installed app follows handedness only until its first edit.
+    _desktopDockLayoutCustomized =
+        prefs.readBool('desktop_dock_layout_customized') ??
+        (prefs.readStringList('tool_option_dock_order') != null ||
+            prefs.readStringList('right_dock_order') != null);
     _desktopDockAutoCollapseEnabled =
         prefs.readBool('desktop_dock_auto_collapse_enabled') ?? true;
     _collapsedDesktopDocks.clear();
@@ -917,7 +1030,8 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 左利きモードを切り替える（キャンバスのドッキングパネル配置を反転）。
+  /// 利き手は未カスタマイズ時の初期配置だけに作用する。
+  /// カスタム配置がある場合は外側ツールバーのみ左右が切り替わる。
   Future<void> setLeftHanded(bool value) async {
     _isLeftHanded = value;
     final prefs = await SharedPreferences.getInstance();
@@ -975,6 +1089,8 @@ class SettingsService extends ChangeNotifier {
   /// PC/DeXモードで既定でドッキング表示するパネルの一覧を丸ごと入れ替える
   /// （ワークスペース設定＞PC版で既定で開くパネル）。
   Future<void> setDefaultDockedPanels(Set<CanvasDockPanel> panels) async {
+    if (setEquals(_defaultDockedPanels, panels)) return;
+    await _pinDesktopDockLayout();
     _defaultDockedPanels = Set.of(panels);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
