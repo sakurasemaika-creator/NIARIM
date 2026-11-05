@@ -2402,10 +2402,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     },
     onColorTap: () =>
         _toggleDesktopOrMobileDockPanel(CanvasDockPanel.colorPicker),
-    onBrushTap: () =>
-        _toggleDesktopOrMobileDockPanel(CanvasDockPanel.brush),
-    onLayerTap: () =>
-        _toggleDesktopOrMobileDockPanel(CanvasDockPanel.layer),
+    onBrushTap: () => _toggleDesktopOrMobileDockPanel(CanvasDockPanel.brush),
+    onLayerTap: () => _toggleDesktopOrMobileDockPanel(CanvasDockPanel.layer),
     onPenLongPress: () =>
         _toggleDesktopOrMobileDockPanel(CanvasDockPanel.penSubTool),
     onFingerLongPress: () => _showFingerSubMenu(context),
@@ -2511,11 +2509,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
     onEyedropOutlineColor: _startBrushOutlineEyedropper,
   );
 
-  Widget _tonePanel() =>
-      TonePanel(onClose: () => _setDesktopPanelVisible(CanvasDockPanel.tone, false));
+  Widget _tonePanel() => TonePanel(
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.tone, false),
+  );
 
-  Widget _stampPanel() =>
-      StampPanel(onClose: () => _setDesktopPanelVisible(CanvasDockPanel.stamp, false));
+  Widget _stampPanel() => StampPanel(
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.stamp, false),
+  );
 
   Widget _penSubToolPanel() => PenSubToolPanel(
     currentTool: _currentTool,
