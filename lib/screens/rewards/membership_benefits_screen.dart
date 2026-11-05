@@ -25,6 +25,29 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
   CommunityApi? _api;
   Future<Map<String, dynamic>>? _state;
 
+  Future<Map<String, dynamic>> _fetch(CommunityApi api, String owner) async {
+    final result = await api.myRewardState();
+    if (!mounted || _owner != owner || !identical(_api, api) ||
+        context.read<GoogleAuthService>().account?.id != owner) {
+      return result;
+    }
+    // Refresh coin-purchased Premium from the authenticated entitlement list,
+    // even if the user has never opened the separate exchange screen.
+    DateTime? activeUntil;
+    for (final row in (result['entitlements'] as List? ?? const [])) {
+      if (row is! Map || row['feature'] != 'fullPremium' ||
+          row['status'] != 'active' || row['expiresAtEpochMs'] is! num) {
+        continue;
+      }
+      final date = DateTime.fromMillisecondsSinceEpoch(
+        (row['expiresAtEpochMs'] as num).toInt());
+      if (date.isAfter(DateTime.now())) activeUntil = date;
+    }
+    context.read<PremiumService>()
+        .applyServerCoinPremiumExpiry(activeUntil, accountId: owner);
+    return result;
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -33,7 +56,7 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
     if (_owner != owner || !identical(_api, api)) {
       _owner = owner;
       _api = api;
-      _state = owner != null && api != null ? api.myRewardState() : null;
+      _state = owner != null && api != null ? _fetch(api, owner) : null;
     }
   }
 
