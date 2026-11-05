@@ -88,13 +88,18 @@ export async function updateWorkMetadata(event: APIGatewayProxyEventV2, workId: 
         },
   ];
   if (description !== oldDescription) {
-    txn.push({
-      Put: {
-        TableName: tableName(),
-        Item: { ...detailKey(workId), itemType: "WORK_DETAIL",
-          authorId: caller.niarimUserId, description, updatedAt: new Date().toISOString() },
-      },
-    });
+    // Clearing the overview deletes its spare record instead of storing
+    // an unnecessary empty item (and never changes any GSI projection).
+    txn.push(description === ""
+      ? { Delete: { TableName: tableName(), Key: detailKey(workId) } }
+      : {
+          Put: {
+            TableName: tableName(),
+            Item: { ...detailKey(workId), itemType: "WORK_DETAIL",
+              authorId: caller.niarimUserId, description,
+              updatedAt: new Date().toISOString() },
+          },
+        });
   }
   try {
     await ddb.send(new TransactWriteCommand({ TransactItems: txn }));
