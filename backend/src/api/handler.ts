@@ -22,6 +22,7 @@ import { getMyCreatorMissions, claimCreatorMission } from "./routes/creatorMissi
 import { scanMyQualifiedWorks } from "./routes/creatorQualifiedWorksScan";
 import { getMyWorkMissionAchievements } from "./routes/creatorWorkAchievements";
 import { getMyWorkCountMissionGrid } from "./routes/creatorWorkCountGrid";
+import { getMyCreatorMissionAttention } from "./routes/creatorMissionAttention";
 import { editSessionAction } from "./routes/creatorEditSession";
 import { verifyMyPlayPremium, getPlayPurchaseAvailability } from "./routes/playPremium";
 import { updateWork } from "./routes/worksUpdate";
@@ -111,6 +112,7 @@ const routes: Route[] = [
   route("GET", "/admob/ssv", (e) => receiveRewardedAdSsv(e)),
   route("GET", "/me/missions", (e) => getMyCreatorMissions(e)),
   route("GET", "/me/missions/grid", (e) => getMyWorkCountMissionGrid(e)),
+  route("GET", "/me/missions/attention", (e) => getMyCreatorMissionAttention(e)),
   route("GET", "/me/missions/work-achievements", (e) => getMyWorkMissionAchievements(e)),
   route("POST", "/me/missions/claim", (e) => claimCreatorMission(e)),
   route("POST", "/me/missions/qualified-works/scan", (e) => scanMyQualifiedWorks(e)),
