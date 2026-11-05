@@ -1,5 +1,21 @@
 import '../models/canvas_dock_panel.dart';
 
+/// Transient fit for one column. Automatic folding never changes saved manual
+/// collapse preferences or preferred window heights.
+class DesktopDockLayout {
+  const DesktopDockLayout({
+    required this.automaticallyCollapsed,
+    required this.bodyHeights,
+  });
+
+  final Set<CanvasDockPanel> automaticallyCollapsed;
+  final Map<CanvasDockPanel, double> bodyHeights;
+
+  bool isCollapsed(CanvasDockPanel panel, bool manuallyCollapsed) =>
+      manuallyCollapsed || automaticallyCollapsed.contains(panel);
+}
+
+
 /// Fits open desktop dock windows into the usable canvas height.
 ///
 /// This height comes from the same Expanded row as the canvas, so it already
@@ -13,6 +29,67 @@ class DesktopDockColumnFit {
   static const double collapsedHeight = 48;
   static const double gap = 8;
   static const double minimumBodyHeight = 80;
+
+  /// First shrink expanded bodies to their minimum, then temporarily fold the
+  /// least recently used panels until everything fits. If even the folded
+  /// icons cannot fit, the caller's existing column scroll remains available.
+  ///
+  /// The active panel is never folded automatically. Its remaining minimum
+  /// body can instead scroll if there is literally no room for it.
+  static DesktopDockLayout layout({
+    required double availableHeight,
+    required List<CanvasDockPanel> visible,
+    required bool Function(CanvasDockPanel) isManuallyCollapsed,
+    required double Function(CanvasDockPanel) preferredHeight,
+    required bool autoCollapseEnabled,
+    Map<CanvasDockPanel, int> lastUsed = const {},
+    CanvasDockPanel? activePanel,
+    double extraFixedHeight = 0,
+  }) {
+    final auto = <CanvasDockPanel>{};
+
+    bool collapsed(CanvasDockPanel panel) =>
+        isManuallyCollapsed(panel) || auto.contains(panel);
+
+    double minimumRequiredHeight() {
+      final expanded = visible.where((p) => !collapsed(p)).length;
+      final folded = visible.length - expanded;
+      final gaps = visible.length > 1 ? (visible.length - 1) * gap : 0.0;
+      return expanded * (titleHeight + resizeGripHeight + minimumBodyHeight) +
+          folded * collapsedHeight +
+          gaps +
+          extraFixedHeight;
+    }
+
+    if (autoCollapseEnabled && availableHeight.isFinite && availableHeight > 0) {
+      // For equally unused windows, retain the earlier/top windows longer.
+      // A deliberately opened/active window is protected regardless of age.
+      final candidates = <({CanvasDockPanel panel, int index})>[
+        for (var i = 0; i < visible.length; i++)
+          if (!isManuallyCollapsed(visible[i]) && visible[i] != activePanel)
+            (panel: visible[i], index: i),
+      ];
+      candidates.sort((a, b) {
+        final age = (lastUsed[a.panel] ?? 0).compareTo(lastUsed[b.panel] ?? 0);
+        return age != 0 ? age : b.index.compareTo(a.index);
+      });
+      for (final candidate in candidates) {
+        if (minimumRequiredHeight() <= availableHeight) break;
+        auto.add(candidate.panel);
+      }
+    }
+
+    return DesktopDockLayout(
+      automaticallyCollapsed: auto,
+      bodyHeights: bodyHeights(
+        availableHeight: availableHeight,
+        visible: visible,
+        isCollapsed: collapsed,
+        preferredHeight: preferredHeight,
+        extraFixedHeight: extraFixedHeight,
+      ),
+    );
+  }
 
   /// Keeps both dock columns inside the viewport, preserving space for the
   /// vertical toolbar, resize grips and a usable canvas. A folded column

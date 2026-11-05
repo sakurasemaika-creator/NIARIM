@@ -12,6 +12,21 @@ void main() {
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  test('automatic dock folding defaults ON and persists the user toggle',
+      () async {
+    final settings = SettingsService();
+    await settings.init();
+    expect(settings.desktopDockAutoCollapseEnabled, isTrue);
+    await settings.setDesktopDockAutoCollapseEnabled(false);
+    final reloaded = SettingsService();
+    await reloaded.init();
+    expect(reloaded.desktopDockAutoCollapseEnabled, isFalse);
+    await reloaded.setDesktopDockAutoCollapseEnabled(true);
+    final reopened = SettingsService();
+    await reopened.init();
+    expect(reopened.desktopDockAutoCollapseEnabled, isTrue);
+  });
+
   test('each dock collapses independently and restores after restart', () async {
     final settings = SettingsService();
     await settings.init();

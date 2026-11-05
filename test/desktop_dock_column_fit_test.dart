@@ -3,6 +3,94 @@ import 'package:niarim/models/canvas_dock_panel.dart';
 import 'package:niarim/utils/desktop_dock_column_fit.dart';
 
 void main() {
+  test('automatic folding starts only after minimum body heights are exhausted', () {
+    const panels = [
+      CanvasDockPanel.brush,
+      CanvasDockPanel.colorPicker,
+      CanvasDockPanel.layer,
+    ];
+    final roomy = DesktopDockColumnFit.layout(
+      availableHeight: 440,
+      visible: panels,
+      isManuallyCollapsed: (_) => false,
+      preferredHeight: (_) => 600,
+      autoCollapseEnabled: true,
+    );
+    expect(roomy.automaticallyCollapsed, isEmpty);
+    expect(roomy.bodyHeights.length, 3);
+    expect(roomy.bodyHeights.values.every((h) => h >= 80), isTrue);
+
+    final cramped = DesktopDockColumnFit.layout(
+      availableHeight: 370,
+      visible: panels,
+      isManuallyCollapsed: (_) => false,
+      preferredHeight: (_) => 600,
+      autoCollapseEnabled: true,
+      activePanel: CanvasDockPanel.brush,
+    );
+    expect(cramped.automaticallyCollapsed, {CanvasDockPanel.layer});
+    expect(cramped.bodyHeights.containsKey(CanvasDockPanel.brush), isTrue);
+    expect(cramped.bodyHeights.containsKey(CanvasDockPanel.layer), isFalse);
+  });
+
+  test('least recently used window folds first and active panel never folds', () {
+    const panels = [
+      CanvasDockPanel.brush,
+      CanvasDockPanel.colorPicker,
+      CanvasDockPanel.layer,
+      CanvasDockPanel.tone,
+    ];
+    final fitted = DesktopDockColumnFit.layout(
+      availableHeight: 350,
+      visible: panels,
+      isManuallyCollapsed: (_) => false,
+      preferredHeight: (_) => 260,
+      autoCollapseEnabled: true,
+      lastUsed: {
+        CanvasDockPanel.tone: 10,
+        CanvasDockPanel.colorPicker: 20,
+        CanvasDockPanel.layer: 30,
+        CanvasDockPanel.brush: 40,
+      },
+      activePanel: CanvasDockPanel.tone,
+    );
+    expect(fitted.automaticallyCollapsed, {
+      CanvasDockPanel.colorPicker,
+      CanvasDockPanel.layer,
+      CanvasDockPanel.brush,
+    });
+    expect(fitted.automaticallyCollapsed.contains(CanvasDockPanel.tone), isFalse);
+
+    final expandedAgain = DesktopDockColumnFit.layout(
+      availableHeight: 900,
+      visible: panels,
+      isManuallyCollapsed: (_) => false,
+      preferredHeight: (_) => 260,
+      autoCollapseEnabled: true,
+    );
+    expect(expandedAgain.automaticallyCollapsed, isEmpty);
+  });
+
+  test('manual folds are preserved and disabling automation uses scroll', () {
+    final panels = CanvasDockPanel.values.toList();
+    DesktopDockLayout fit(bool auto) => DesktopDockColumnFit.layout(
+      availableHeight: 400,
+      visible: panels,
+      isManuallyCollapsed: (p) => p == CanvasDockPanel.layer,
+      preferredHeight: (_) => 260,
+      autoCollapseEnabled: auto,
+      activePanel: CanvasDockPanel.brush,
+    );
+    final on = fit(true);
+    expect(on.isCollapsed(CanvasDockPanel.layer, true), isTrue);
+    expect(on.automaticallyCollapsed.contains(CanvasDockPanel.layer), isFalse);
+    expect(on.automaticallyCollapsed.contains(CanvasDockPanel.brush), isFalse);
+    final off = fit(false);
+    expect(off.automaticallyCollapsed, isEmpty);
+    expect(off.bodyHeights.length, panels.length - 1);
+    expect(off.bodyHeights.values.every((h) => h == 80), isTrue);
+  });
+
   test('each entire dock column shares a width and leaves canvas space', () {
     final widths = DesktopDockColumnFit.columnWidths(
       availableWidth: 900,

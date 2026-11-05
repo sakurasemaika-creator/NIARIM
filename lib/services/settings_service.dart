@@ -198,6 +198,19 @@ class SettingsService extends ChangeNotifier {
   // Collapsing a dock keeps it open and preserves its width, height and order.
   // The collapsed side tab is restored on the next launch.
   final Set<CanvasDockPanel> _collapsedDesktopDocks = {};
+  // This preference is independent from the user-controlled/persisted folds.
+  // Automatic folds are transient and calculated from the available height.
+  bool _desktopDockAutoCollapseEnabled = true;
+  bool get desktopDockAutoCollapseEnabled => _desktopDockAutoCollapseEnabled;
+
+  Future<void> setDesktopDockAutoCollapseEnabled(bool enabled) async {
+    if (_desktopDockAutoCollapseEnabled == enabled) return;
+    _desktopDockAutoCollapseEnabled = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('desktop_dock_auto_collapse_enabled', enabled);
+  }
+
   bool isDesktopDockCollapsed(CanvasDockPanel panel) =>
       _collapsedDesktopDocks.contains(panel);
 
@@ -663,6 +676,8 @@ class SettingsService extends ChangeNotifier {
     _timelineTrackHeightLevel =
         prefs.readInt('timeline_track_height_level') ?? 4;
     _desktopPanelWidth = prefs.readDouble('desktop_panel_width') ?? 280.0;
+    _desktopDockAutoCollapseEnabled =
+        prefs.readBool('desktop_dock_auto_collapse_enabled') ?? true;
     _collapsedDesktopDocks.clear();
     final savedCollapsed = prefs.readStringList('desktop_collapsed_docks');
     if (savedCollapsed != null) {
