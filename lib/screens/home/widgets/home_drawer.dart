@@ -217,8 +217,8 @@ class _HomeDrawerState extends State<HomeDrawer> {
               },
             ),
             ListTile(
-              key: const Key('homeCreatorMissionsMenuItem'),
-              leading: drawerIcon(Icons.flag_outlined),
+              key: const Key('homeRewardMenuItem'),
+              leading: drawerIcon(Icons.toll_outlined),
               trailing: _attentionFuture == null ? null
                   : FutureBuilder<Map<String, dynamic>>(
                       future: _attentionFuture,
@@ -254,21 +254,6 @@ class _HomeDrawerState extends State<HomeDrawer> {
                         );
                       },
                     ),
-              title: Text(
-                CreatorMissionLabels.of(context).get('title'),
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/creator-missions');
-              },
-            ),
-            ListTile(
-              key: const Key('homeRewardMenuItem'),
-              leading: drawerIcon(Icons.ondemand_video_outlined),
               title: Text(
                 RewardUnlockLabels.of(context)['title'],
                 style: const TextStyle(

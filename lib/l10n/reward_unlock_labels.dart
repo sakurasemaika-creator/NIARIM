@@ -20,7 +20,9 @@ class RewardUnlockLabels {
 
 const Map<String, Map<String, String>> _translations = {
   'ja': {
-    'title': '無料でPremium機能を使う',
+    'title': '報酬',
+    'missionTitle': 'ミッション',
+    'missionSubtitle': '作品の投稿やブックマーク達成でコインを獲得',
     'loading': '残高を確認中…',
     'paused': '保管中・残り秒数',
     'activeUntil': '利用期限',
@@ -83,7 +85,9 @@ const Map<String, Map<String, String>> _translations = {
     'choose': '選択',
   },
   'en': {
-    'title': 'Use Premium features for free',
+    'title': 'Rewards',
+    'missionTitle': 'Missions',
+    'missionSubtitle': 'Earn coins from work and bookmark milestones',
     'loading': 'Loading balance…',
     'paused': 'Saved remaining seconds',
     'activeUntil': 'Active until',
@@ -146,7 +150,9 @@ const Map<String, Map<String, String>> _translations = {
     'choose': 'Select',
   },
   'es': {
-    'title':'Usar funciones Premium gratis',
+    'title':'Recompensas',
+    'missionTitle': 'Misiones',
+    'missionSubtitle': 'Gana monedas al publicar y alcanzar objetivos',
     'loading':'Consultando saldo…',
     'paused':'Tiempo guardado (segundos)',
     'activeUntil':'Válido hasta',
@@ -206,7 +212,9 @@ const Map<String, Map<String, String>> _translations = {
     'choose':"Seleccionar",
   },
   'fr': {
-    'title':'Utiliser les fonctions Premium gratuitement',
+    'title':'Récompenses',
+    'missionTitle': 'Missions',
+    'missionSubtitle': 'Gagnez des pièces en publiant et en atteignant vos objectifs',
     'loading':'Chargement du solde…',
     'paused':'Temps conservé (secondes)',
     'activeUntil':"Valable jusqu'au",
@@ -266,7 +274,9 @@ const Map<String, Map<String, String>> _translations = {
     'choose':"Sélectionner",
   },
   'ko': {
-    'title':'무료로 Premium 기능 사용',
+    'title':'보상',
+    'missionTitle': '미션',
+    'missionSubtitle': '작품 게시와 북마크 달성으로 코인 획득',
     'loading':'잔액 확인 중…',
     'paused':'보관된 남은 초',
     'activeUntil':'만료 시각',
@@ -326,7 +336,9 @@ const Map<String, Map<String, String>> _translations = {
     'choose':"선택",
   },
   'zh': {
-    'title':'免费使用高级功能',
+    'title':'奖励',
+    'missionTitle': '任务',
+    'missionSubtitle': '通过发布作品和达成收藏目标获得金币',
     'loading':'正在查询余额…',
     'paused':'保存的剩余秒数',
     'activeUntil':'有效期至',
@@ -386,7 +398,9 @@ const Map<String, Map<String, String>> _translations = {
     'choose':"选择",
   },
   'zh_Hant': {
-    'title':'免費使用進階功能',
+    'title':'獎勵',
+    'missionTitle': '任務',
+    'missionSubtitle': '透過發佈作品和達成收藏目標獲得金幣',
     'loading':'正在查詢餘額…',
     'paused':'保留的剩餘秒數',
     'activeUntil':'有效期限',

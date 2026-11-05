@@ -474,6 +474,18 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             Card(
+              key: const Key('rewardMissionEntry'),
+              child: ListTile(
+                leading: Icon(Icons.flag_outlined, color: scheme.primary),
+                title: Text(t['missionTitle'],
+                    style: Theme.of(context).textTheme.titleMedium),
+                subtitle: Text(t['missionSubtitle']),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/creator-missions'),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
