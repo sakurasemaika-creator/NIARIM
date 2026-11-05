@@ -122,11 +122,11 @@ void main() {
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.layer), isTrue);
     expect(find.byKey(const ValueKey('pcPreviewExpand-layer')), findsOneWidget);
 
-    // Drag the collapsed brush icon to the RIGHT column before the
-    // navigator, without expanding it or losing the saved folded state.
+    // Drag the collapsed brush icon into the RIGHT column before the
+    // layer. Default workspace does not open the navigator.
     final dragIcon =
         find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush'));
-    final target = find.byKey(const ValueKey('pcPreviewDrop-canvasPreview'));
+    final target = find.byKey(const ValueKey('pcPreviewDrop-layer'));
     await tester.drag(
       dragIcon,
       tester.getCenter(target) - tester.getCenter(dragIcon),
@@ -137,7 +137,7 @@ void main() {
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
     expect(
       settings.rightDockOrder.indexOf(CanvasDockPanel.brush),
-      lessThan(settings.rightDockOrder.indexOf(CanvasDockPanel.canvasPreview)),
+      lessThan(settings.rightDockOrder.indexOf(CanvasDockPanel.layer)),
     );
     expect(find.byKey(const ValueKey('pcPreviewExpand-brush')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('pcPreviewExpand-brush')));
