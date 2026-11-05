@@ -17,6 +17,8 @@ import '../../l10n/app_localizations.dart';
 import '../../models/project.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
+import '../../services/google_auth_service.dart';
+import '../../services/api/community_api.dart';
 import '../../services/font_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
@@ -53,11 +55,41 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   // The menu opens from the right; the launch-screen back arrow sits at the
   // left of the fixed AppBar. The page-level project list has its own scroll.
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   int _missionDrawerRefreshToken = 0;
+  String? _lastVisitRequest;
+  void _maybeRecordLogin(String? ownerId, CommunityApi? api) {
+    if (ownerId == null || api == null) return;
+    // Local date merely suppresses redundant traffic. The server determines
+    // the actual UTC day and checks the visit transaction atomically.
+    final day = DateTime.now().toUtc().toIso8601String().substring(0, 10);
+    final requestKey = '$ownerId/$day';
+    if (_lastVisitRequest == requestKey) return;
+    _lastVisitRequest = requestKey;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted ||
+          context.read<GoogleAuthService>().account?.id != ownerId ||
+          !identical(context.read<CommunityService>().api, api)) return;
+      try {
+        await api.visitLoginBonus();
+      } catch (error) {
+        debugPrint('Cumulative login visit could not be saved: $error');
+      }
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      _maybeRecordLogin(
+        context.read<GoogleAuthService>().account?.id,
+        context.read<CommunityService>().api,
+      );
+    }
+  }
   final _projectScrollController = ScrollController();
   late TabController _tabController;
   static const _projectViewModeKey = 'home.projectViewMode.v1';
@@ -127,6 +159,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index != _currentTabIndex) {
@@ -156,6 +189,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     _searchController.dispose();
     _projectScrollController.dispose();
@@ -309,6 +343,10 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    _maybeRecordLogin(
+      context.watch<GoogleAuthService>().account?.id,
+      context.read<CommunityService>().api,
+    );
 
     // マウス/キーボード入力・左手デバイス：設定画面「ショートカット設定」
     // で割り当てたキーで、全選択・コピー・切り取り・貼り付けを
