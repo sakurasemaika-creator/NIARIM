@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../l10n/creator_mission_labels.dart';
+import '../../l10n/login_bonus_labels.dart';
 import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
@@ -133,6 +134,11 @@ class _CommunityFollowNotificationsScreenState
   }
 
   String _message(CreatorMissionLabels t, Map<String, dynamic> event) {
+    if (event['kind'] == 'loginMilestone') {
+      final days = (event['required'] as num?)?.toInt() ?? 0;
+      return LoginBonusLabels.of(context)['activityMilestone']
+          .replaceAll('{n}', '$days');
+    }
     final name = event['workTitle'] is String &&
             (event['workTitle'] as String).isNotEmpty
         ? event['workTitle'] as String : t.get('genericPublished');
@@ -292,6 +298,7 @@ class _CommunityFollowNotificationsScreenState
                       'workBookmarks' => Icons.bookmarks_outlined,
                       'qualifiedWorks' => Icons.emoji_events_outlined,
                       'followers' => Icons.people_outline,
+                      'loginMilestone' => Icons.calendar_month_outlined,
                       _ => Icons.flag_outlined,
                     };
                     return ListTile(
