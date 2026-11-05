@@ -19,6 +19,7 @@ on:
       - 'test/login_bonus_ui_policy_test.dart'
       - 'lib/screens/rewards/creator_missions_screen.dart'
       - 'lib/screens/community/community_follow_notifications_screen.dart'
+      - 'lib/screens/community/community_screen.dart'
       - 'lib/screens/home/widgets/home_drawer.dart'
       - 'lib/screens/home/home_screen.dart'
       - 'test/creator_mission_drawer_attention_test.dart'
@@ -67,6 +68,7 @@ jobs:
             lib/router.dart \
             lib/screens/rewards/creator_missions_screen.dart \
             lib/screens/community/community_follow_notifications_screen.dart \
+            lib/screens/community/community_screen.dart \
             lib/screens/home/widgets/home_drawer.dart \
             lib/screens/home/home_screen.dart \
             lib/l10n/creator_mission_labels.dart \
