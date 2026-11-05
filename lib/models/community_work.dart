@@ -97,6 +97,7 @@ class CommunityWork {
   );
 
   CommunityWork copyWith({
+    String? title,
     String? authorName,
     List<String>? tags,
     Set<String>? lockedTags,
@@ -114,7 +115,7 @@ class CommunityWork {
   }) {
     return CommunityWork(
       id: id,
-      title: title,
+      title: title ?? this.title,
       authorId: authorId,
       authorName: authorName ?? this.authorName,
       viewCount: viewCount,

@@ -81,6 +81,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   static const _pendingAccountEmailKey =
       'community.pendingUpload.googleAccountEmail';
   static const _pendingTitleKey = 'community.pendingUpload.title';
+  static const _pendingDescriptionKey = 'community.pendingUpload.description';
   static const _pendingYoutubePrivacyKey = 'community.pendingUpload.youtubePrivacyStatus';
   static const _pendingIsShortKey = 'community.pendingUpload.isShort';
   static const _pendingPublishedKey =
@@ -89,6 +90,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       'community.pendingUpload.containsGenerativeAiImageOrVideo';
 
   final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
   File? _videoFile;
   String? _youtubeVideoId;
   String? _uploadAccountId;
@@ -112,6 +114,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   @override
   void dispose() {
     _titleController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -133,6 +136,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
           _containsGenerativeAiImageOrVideo =
               prefs.readBool(_pendingAiImageVideoKey) ?? false;
           _titleController.text = prefs.readString(_pendingTitleKey) ?? '';
+          _descriptionController.text = prefs.readString(_pendingDescriptionKey) ?? '';
           _status = _PostStatus.pendingRestored;
         });
       }
@@ -152,6 +156,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     await prefs.setString(_pendingAccountIdKey, accountId);
     await prefs.setString(_pendingAccountEmailKey, accountEmail);
     await prefs.setString(_pendingTitleKey, title);
+    await prefs.setString(_pendingDescriptionKey, _descriptionController.text.trim());
     await prefs.setBool(_pendingIsShortKey, _isShort);
     await prefs.setString(_pendingYoutubePrivacyKey, _youtubePrivacyStatus);
     await prefs.setBool(_pendingPublishedKey, _isNiarimPublished);
@@ -168,6 +173,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       prefs.remove(_pendingAccountIdKey),
       prefs.remove(_pendingAccountEmailKey),
       prefs.remove(_pendingTitleKey),
+      prefs.remove(_pendingDescriptionKey),
       prefs.remove(_pendingIsShortKey),
       prefs.remove(_pendingYoutubePrivacyKey),
       prefs.remove(_pendingPublishedKey),
@@ -202,6 +208,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _uploadAccountEmail = null;
       _videoFile = null;
       _titleController.clear();
+      _descriptionController.clear();
       _isShort = false;
       _youtubePrivacyStatus = 'unlisted';
       _isNiarimPublished = true;
@@ -263,6 +270,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     if (_busy || _restoringPending) return;
     final file = _videoFile;
     final title = _titleController.text.trim();
+    final description = _descriptionController.text.trim();
     if (_youtubeVideoId == null && file == null) {
       setState(() => _error = const _PostFailure(_PostFailureKind.noVideo));
       return;
@@ -375,6 +383,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             file: file!,
             accessToken: youtubeToken,
             title: title,
+            description: description,
             privacyStatus: _youtubePrivacyStatus,
             onProgress: (sent, total) {
               if (!mounted || total <= 0) return;
@@ -420,6 +429,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       final registeredWork = await api.createWork(
         youtubeVideoId: registeredVideoId,
         youtubeAccessToken: youtubeToken,
+        title: title,
+        description: description,
         isShort: _isShort,
         isNiarimPublished: _isNiarimPublished,
         containsGenerativeAiImageOrVideo: _containsGenerativeAiImageOrVideo,
@@ -543,6 +554,20 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   decoration: InputDecoration(
                     labelText: l10n.communityPostTitleLabel,
                     border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  key: const Key('communityPostDescription'),
+                  controller: _descriptionController,
+                  enabled: !_busy && retainedVideoId == null,
+                  minLines: 2,
+                  maxLines: 5,
+                  maxLength: 2000,
+                  decoration: const InputDecoration(
+                    labelText: '作品の概要欄',
+                    hintText: '作品の説明や制作について（任意）',
+                    border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),

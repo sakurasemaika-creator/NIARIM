@@ -56,6 +56,29 @@ class CommunityApi {
     return ApiWorkPage.fromJson(json);
   }
 
+  /// YouTube comments are fetched only after an explicit viewer action.
+  Future<Map<String, dynamic>> youtubeComments(
+    String workId, {String? cursor}
+  ) => _client.getJson(
+    '/works/${Uri.encodeComponent(workId)}/youtube-comments',
+    query: {'cursor': ?cursor},
+  );
+
+  /// NIARIM-authored description is stored outside the indexing GSIs.
+  Future<Map<String, dynamic>> workMetadata(String workId) =>
+      _client.getJson(
+        '/works/${Uri.encodeComponent(workId)}/metadata',
+        authenticated: true,
+      );
+
+  Future<Map<String, dynamic>> updateWorkMetadata(
+    String workId, {required String title, required String description}
+  ) => _client.patchJson(
+    '/works/${Uri.encodeComponent(workId)}/metadata',
+    body: {'title': title, 'description': description},
+    retries: 1,
+  );
+
   Future<CommunityPlaybackStatus> playbackStatus(String workId) async {
     final json = await _client.getJson(
       '/works/${Uri.encodeComponent(workId)}/playback-status',
