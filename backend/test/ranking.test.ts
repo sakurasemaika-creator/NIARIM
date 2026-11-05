@@ -90,8 +90,8 @@ describe("currentWindowId", () => {
 
   it("週間はISO週（月曜始まり）で、同じ週の月曜と日曜が同一IDになる", () => {
     const monday = new Date("2026-08-31T00:00:00Z");
-    const sunday = new Date("2026-09-06T23:59:59Z");
-    const nextMonday = new Date("2026-09-07T00:00:00Z");
+    const sunday = new Date("2026-09-06T14:59:59Z");
+    const nextMonday = new Date("2026-09-06T15:00:00Z");
     expect(currentWindowId("weekly", monday)).toBe(
       currentWindowId("weekly", sunday),
     );
@@ -119,7 +119,7 @@ describe("rollStatsWindows / computePeriodScore", () => {
 
   it("同じ窓の間は基準点が動かず、伸びた分だけスコアが積み上がる", () => {
     const first = rollStatsWindows(undefined, base, t0);
-    const later = new Date("2026-09-02T18:00:00Z"); // 同じ日
+    const later = new Date("2026-09-02T14:00:00Z"); // JSTで同じ日
     const grown = { viewCount: 1500, likeCount: 120, commentCount: 15 };
     const second = rollStatsWindows(first, grown, later);
 
