@@ -3,7 +3,6 @@ import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import type { WorkItem } from "../src/lib/types";
-import { computeRankingScore } from "../src/lib/ranking";
 
 const { send } = vi.hoisted(() => ({ send: vi.fn() }));
 vi.mock("../src/lib/dynamo", async (original) => ({
@@ -102,9 +101,6 @@ describe("work editing concurrency", () => {
     const removed = second.UpdateExpression?.split(" REMOVE ")[1]?.split(", ");
     expect(removed).toEqual(
       expect.arrayContaining([
-        "rankingScore",
-        "gsi1pk",
-        "gsi1sk",
         "gsi2pk",
         "gsi2sk",
         "gsi3pk",
@@ -115,7 +111,7 @@ describe("work editing concurrency", () => {
     );
   });
 
-  it("rebuilds rankings from current counters and retries if counters change", async () => {
+  it("rebuilds bookmark indexes from current counts after a conflict", async () => {
     let reads = 0;
     send.mockImplementation(async (c) => {
       if (c instanceof GetCommand)
@@ -123,27 +119,19 @@ describe("work editing concurrency", () => {
           Item: {
             ...work,
             isNiarimPublished: false,
-            viewCount: reads++ ? 200 : 100,
+            bookmarkCount: reads++ ? 8 : 4,
           },
         };
       if (updates().length === 1) throw changed();
-      return { Attributes: { ...work, viewCount: 200 } };
+      return { Attributes: { ...work, bookmarkCount: 8 } };
     });
     await updateWork(event({ isNiarimPublished: true }), work.workId);
     expect(updates()).toHaveLength(2);
     const input = updates()[1].input;
-    expect(input.ExpressionAttributeValues?.[":score"]).toBe(
-      computeRankingScore({ ...work, viewCount: 200 }),
-    );
-    expect(input.UpdateExpression).toContain("rankingScore = :score");
-    for (const name of [
-      "viewCount",
-      "likeCount",
-      "commentCount",
-      "bookmarkCount",
-    ]) {
-      expect(input.ConditionExpression).toContain(`${name} = :${name}`);
-    }
+    expect(input.ExpressionAttributeValues?.[":bm"]).toBe(8);
+    expect(input.UpdateExpression).toContain("gsi2sk = :bm");
+    expect(input.UpdateExpression).not.toContain("rankingScore");
+    expect(input.ConditionExpression).toContain("bookmarkCount = :bookmarkCount");
   });
 
   it("never recreates a work deleted between the read and update", async () => {
