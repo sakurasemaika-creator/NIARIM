@@ -3,6 +3,37 @@ import 'package:niarim/models/canvas_dock_panel.dart';
 import 'package:niarim/utils/desktop_dock_column_fit.dart';
 
 void main() {
+  test('physical sides select mirrored saved dock groups in left-handed mode', () {
+    expect(
+      DesktopDockColumnFit.storedRightForPhysicalSide(
+        physicalRight: false,
+        leftHanded: false,
+      ),
+      isFalse,
+    );
+    expect(
+      DesktopDockColumnFit.storedRightForPhysicalSide(
+        physicalRight: true,
+        leftHanded: false,
+      ),
+      isTrue,
+    );
+    expect(
+      DesktopDockColumnFit.storedRightForPhysicalSide(
+        physicalRight: false,
+        leftHanded: true,
+      ),
+      isTrue,
+    );
+    expect(
+      DesktopDockColumnFit.storedRightForPhysicalSide(
+        physicalRight: true,
+        leftHanded: true,
+      ),
+      isFalse,
+    );
+  });
+
   test('automatic folding starts only after minimum body heights are exhausted', () {
     const panels = [
       CanvasDockPanel.brush,

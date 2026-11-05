@@ -154,8 +154,8 @@ void main() {
     expect(settings.desktopToolPanelWidth, greaterThan(280));
     expect(settings.desktopPanelWidth, 280);
 
-    // Handedness moves ONLY the outer toolbar. Both dock columns keep
-    // their left/right order, and the column resize grip direction stays fixed.
+    // Handedness moves the toolbar to the outside and mirrors the saved
+    // contents of the two physical dock columns.
     final toolColumn = find.byKey(const ValueKey('pcPreviewToolColumn'));
     final rightColumn = find.byKey(const ValueKey('pcPreviewRightColumn'));
     final outerToolbar = find.byKey(const ValueKey('pcPreviewToolbar'));
@@ -170,11 +170,27 @@ void main() {
       lessThan(tester.getRect(rightColumn).left),
     );
     expect(
+      tester.getRect(find.byKey(const ValueKey('pcPreviewDrop-layer'))).right,
+      lessThanOrEqualTo(tester.getRect(toolColumn).right),
+    );
+    expect(
+      tester.getRect(find.byKey(const ValueKey('pcPreviewDrop-brush'))).left,
+      greaterThanOrEqualTo(tester.getRect(rightColumn).left),
+    );
+    expect(
       tester.getRect(outerToolbar).left,
       greaterThanOrEqualTo(tester.getRect(rightColumn).right),
     );
     await settings.setLeftHanded(false);
     await tester.pumpAndSettle();
+    expect(
+      tester.getRect(find.byKey(const ValueKey('pcPreviewDrop-brush'))).right,
+      lessThanOrEqualTo(tester.getRect(toolColumn).right),
+    );
+    expect(
+      tester.getRect(find.byKey(const ValueKey('pcPreviewDrop-layer'))).left,
+      greaterThanOrEqualTo(tester.getRect(rightColumn).left),
+    );
 
     await tester.tap(find.byKey(const ValueKey('pcPreviewCollapse-brush')));
     await tester.pump();
@@ -312,6 +328,145 @@ void main() {
     await tester.pumpAndSettle();
     expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
     expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isFalse);
+    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('left-handed docks mirror the saved groups, resizing and drag',
+      (tester) async {
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final settings = SettingsService();
+    await settings.init();
+    await settings.setLeftHanded(true);
+    await settings.setDesktopDockAutoCollapseEnabled(false);
+    await settings.setDefaultDockedPanels({
+      CanvasDockPanel.brush,
+      CanvasDockPanel.layer,
+    });
+    await settings.setDesktopDockCollapsed(CanvasDockPanel.brush, true);
+    await settings.setDesktopDockCollapsed(CanvasDockPanel.layer, true);
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: settings,
+        child: MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: PcWorkspaceLayoutPreview(labelOf: (panel) => panel.name),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final left = find.byKey(const ValueKey('pcPreviewToolColumn'));
+    final right = find.byKey(const ValueKey('pcPreviewRightColumn'));
+    final brush = find.byKey(const ValueKey('pcPreviewDrop-brush'));
+    final layer = find.byKey(const ValueKey('pcPreviewDrop-layer'));
+    expect(
+      tester.getRect(layer).right,
+      lessThanOrEqualTo(tester.getRect(left).right),
+    );
+    expect(
+      tester.getRect(brush).left,
+      greaterThanOrEqualTo(tester.getRect(right).left),
+    );
+
+    // The physical left grip now belongs to the saved right dock group.
+    await settings.setDesktopDockCollapsed(CanvasDockPanel.layer, false);
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byKey(const ValueKey('pcPreviewToolColumnResize')),
+      const Offset(40, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(settings.desktopPanelWidth, greaterThan(280));
+    expect(settings.desktopToolPanelWidth, 280);
+
+    // Physical right -> physical left must update the SAVED right list.
+    final dragIcon =
+        find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush'));
+    await tester.drag(
+      dragIcon,
+      tester.getCenter(layer) - tester.getCenter(dragIcon),
+    );
+    await tester.pumpAndSettle();
+    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isFalse);
+    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
+    expect(
+      tester.getRect(brush).left,
+      lessThanOrEqualTo(tester.getRect(left).right),
+    );
+
+    // Changing handedness does not rewrite the user's saved dock order.
+    final savedRight = settings.rightDockOrder.toList();
+    final savedLeft = settings.toolOptionDockOrder.toList();
+    await settings.setLeftHanded(false);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getRect(brush).left,
+      greaterThanOrEqualTo(tester.getRect(right).left),
+    );
+    expect(settings.rightDockOrder, savedRight);
+    expect(settings.toolOptionDockOrder, savedLeft);
+    final restored = SettingsService();
+    await restored.init();
+    expect(restored.rightDockOrder, savedRight);
+    expect(restored.toolOptionDockOrder, savedLeft);
+    expect(restored.isLeftHanded, isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('left-handed empty physical right dock accepts a dropped tool',
+      (tester) async {
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final settings = SettingsService();
+    await settings.init();
+    await settings.setLeftHanded(true);
+    await settings.setDefaultDockedPanels({
+      CanvasDockPanel.brush,
+      CanvasDockPanel.layer,
+    });
+    await settings.setDesktopDockCollapsed(CanvasDockPanel.brush, true);
+    await settings.moveDesktopDockPanel(CanvasDockPanel.brush, toRight: true);
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: settings,
+        child: MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: PcWorkspaceLayoutPreview(labelOf: (panel) => panel.name),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final physicalRight = find.byKey(const ValueKey('pcPreviewRightColumn'));
+    expect(tester.getSize(physicalRight).width, 0);
+    final dragIcon =
+        find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush'));
+    final drag = await tester.startGesture(tester.getCenter(dragIcon));
+    await drag.moveBy(const Offset(40, 0));
+    await tester.pump();
+    expect(tester.getSize(physicalRight).width, 52);
+    await drag.moveTo(tester.getCenter(physicalRight));
+    await tester.pump();
+    await drag.up();
+    await tester.pumpAndSettle();
+
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isFalse);
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
     expect(tester.takeException(), isNull);
   });
