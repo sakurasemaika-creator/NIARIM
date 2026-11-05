@@ -128,6 +128,24 @@ describe("work registration AI image/video disclosure", () => {
     expect(getOwnChannelInfo).not.toHaveBeenCalled();
   });
 
+  it("stores the uploader's NIARIM title and description in separate items", async () => {
+    const result = await post({
+      title: "My animation", description: "This was hand drawn",
+    });
+    expect(result.statusCode).toBe(201);
+    const puts = send.mock.calls.map(([cmd]) => cmd)
+      .filter((cmd) => cmd instanceof PutCommand) as PutCommand[];
+    expect(puts).toHaveLength(2);
+    expect(puts[0].input.Item?.title).toBe("My animation");
+    expect(puts[0].input.Item?.description).toBeUndefined();
+    expect(puts[1].input.Item).toMatchObject({
+      pk: "WORK#abcdefghijk", sk: "DETAIL",
+      itemType: "WORK_DETAIL", description: "This was hand drawn",
+      authorId: "Nauthor",
+    });
+    expect(puts[1].input.Item?.gsi2pk).toBeUndefined();
+  });
+
   it("stores the flag as false when the poster omits it", async () => {
     const result = await post({});
     expect(result.statusCode).toBe(201);
