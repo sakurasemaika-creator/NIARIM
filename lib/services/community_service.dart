@@ -1189,6 +1189,22 @@ class CommunityService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 手動YouTubeプロフィール更新後に、読み込み済みの自分の作品だけ即時表示更新。
+  /// サーバーの旧作品メタデータを書き換えないためWCUを増やさない。
+  void applyMyYoutubeChannelName(String channelName) {
+    final ownerId = _currentUserId;
+    if (ownerId == null || channelName.trim().isEmpty) return;
+    for (var i = 0; i < _works.length; i++) {
+      final work = _works[i];
+      if (work.authorId == ownerId) {
+        _works[i] = work.copyWith(authorName: channelName);
+      }
+    }
+    if (!_disposed) notifyListeners();
+  }
+
+
+
   void _upsert(CommunityWork work) {
     final index = _indexOf(work.id);
     if (index == -1) {
