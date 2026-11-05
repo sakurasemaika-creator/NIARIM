@@ -5,7 +5,7 @@ import '../../../services/community_service.dart';
 import '../../../services/google_auth_service.dart';
 import '../../../services/api/community_api.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../l10n/reward_unlock_labels.dart';
+import '../../../l10n/reward_navigation_labels.dart';
 import '../../../l10n/creator_mission_labels.dart';
 import '../../../config/font_fallback.dart';
 import '../../canvas/widgets/canvas_icon_button.dart';
@@ -217,8 +217,21 @@ class _HomeDrawerState extends State<HomeDrawer> {
               },
             ),
             ListTile(
-              key: const Key('homeRewardMenuItem'),
-              leading: drawerIcon(Icons.toll_outlined),
+              key: const Key('homeBenefitExchangeMenuItem'),
+              leading: drawerIcon(Icons.redeem_outlined),
+              title: Text(RewardNavigationLabels.of(context)['exchange'],
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                )),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/rewards');
+              },
+            ),
+            ListTile(
+              key: const Key('homeCreatorMissionsMenuItem'),
+              leading: drawerIcon(Icons.flag_outlined),
               trailing: _attentionFuture == null ? null
                   : FutureBuilder<Map<String, dynamic>>(
                       future: _attentionFuture,
@@ -254,30 +267,40 @@ class _HomeDrawerState extends State<HomeDrawer> {
                         );
                       },
                     ),
-              title: Text(
-                RewardUnlockLabels.of(context)['title'],
+              title: Text(RewardNavigationLabels.of(context)['missions'],
                 style: const TextStyle(
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
+                )),
               onTap: () {
                 Navigator.pop(context);
-                context.push('/rewards');
+                context.push('/creator-missions');
               },
             ),
             ListTile(
-              leading: drawerIcon(Icons.workspace_premium_outlined),
-              title: Text(
-                l10n.homeDrawerPremium,
+              key: const Key('homeEarnCoinsMenuItem'),
+              leading: drawerIcon(Icons.smart_display_outlined),
+              title: Text(RewardNavigationLabels.of(context)['earn'],
                 style: const TextStyle(
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
+                )),
               onTap: () {
                 Navigator.pop(context);
-                context.push('/premium');
+                context.push('/earn-coins');
+              },
+            ),
+            ListTile(
+              key: const Key('homeMembershipBenefitsMenuItem'),
+              leading: drawerIcon(Icons.workspace_premium_outlined),
+              title: Text(RewardNavigationLabels.of(context)['membership'],
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                )),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/membership');
               },
             ),
           ],
