@@ -37,6 +37,20 @@ export async function getRanking(
   const ascending = qp.ascending === "true";
   const bookmarks = qp.sort === "bookmarks";
   if (period === "bookmarks") return getBookmarkRanking(offset, limit, ascending);
+  // YouTube API由来のランキングは追加利用条件の承認まで公開禁止。
+  // 期間別ブックマークは独自イベント集計が未実装なので、
+  // YouTubeのTop50をブックマーク順に並べて誤表示しない。
+  if (bookmarks && period !== "all") {
+    return ok({ period, works: [], nextCursor: null,
+      unavailableReason: "BOOKMARK_PERIOD_NOT_IMPLEMENTED" });
+  }
+  if (bookmarks && period === "all") {
+    return getBookmarkRanking(offset, limit, ascending);
+  }
+  if (process.env.YOUTUBE_VIEW_RANKINGS_APPROVED !== "true") {
+    return ok({ period, works: [], nextCursor: null,
+      unavailableReason: "YOUTUBE_RANKING_APPROVAL_REQUIRED" });
+  }
   if (period === "all") return getAllTimeRanking(offset, limit, ascending);
   if (isDeltaRankingPeriod(period)) return getPeriodRanking(period, offset, limit, ascending, bookmarks);
 

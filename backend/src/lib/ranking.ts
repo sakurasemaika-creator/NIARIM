@@ -62,7 +62,7 @@ export function isDeltaRankingPeriod(
  * そのついでに期間ごとのTop 50を集計し、`RANKINGSNAPSHOT#{PERIOD}`という
  * 1アイテムへ書き出す。読み出しはGetItem 1回（1 RCU未満）で済み、GSIも
  * 追加の書き込み容量も要らない。順位が更新されるのはバッチ実行時
- * （既定1日2回）だが、期間別ランキングは元々その粒度で十分。
+ * （既定1日1回）だが、期間別ランキングは元々その粒度で十分。
  */
 
 /** 作品が持つ期間別スナップショット。 */
@@ -75,7 +75,7 @@ export interface StatsSnapshot {
 export type StatsWindows = Partial<Record<DeltaRankingPeriod, StatsSnapshot>>;
 
 /**
- * 現在の窓ID。UTC基準の固定境界で、年=YYYY・月=YYYYMM・週=ISO週・
+ * 現在の窓ID。JST（日本時間）0:00基準の固定境界で、年=YYYY・月=YYYYMM・週=ISO週・
  * 日=YYYYMMDD。窓が変わった瞬間に全作品のスナップショットが順次
  * 取り直され、その期間のランキングが0から積み上がる。
  */
@@ -83,14 +83,16 @@ export function currentWindowId(
   period: DeltaRankingPeriod,
   now: Date = new Date(),
 ): string {
-  const iso = now.toISOString();
+  // ランキング対象期間は日本時間の0:00に切り替わる。
+  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const iso = jst.toISOString();
   switch (period) {
     case "yearly":
       return iso.slice(0, 4);
     case "monthly":
       return iso.slice(0, 7).replace("-", "");
     case "weekly":
-      return isoWeekId(now);
+      return isoWeekId(jst);
     case "daily":
       return iso.slice(0, 10).replace(/-/g, "");
   }

@@ -56,6 +56,26 @@ describe("ランキング期間の判定", () => {
 describe("currentWindowId", () => {
   const t = new Date("2026-09-02T12:34:56Z"); // 水曜日
 
+  it("JST日付はUTC 15:00で翌日に切り替わる", () => {
+    const before = new Date("2026-09-01T14:59:59Z");
+    const after = new Date("2026-09-01T15:00:00Z");
+    expect(currentWindowId("daily", before)).toBe("20260901");
+    expect(currentWindowId("daily", after)).toBe("20260902");
+  });
+
+  it("週・月・年の境界もJST 0:00", () => {
+    const before = new Date("2026-12-31T14:59:59Z");
+    const after = new Date("2026-12-31T15:00:00Z");
+    expect(currentWindowId("monthly", before)).toBe("202612");
+    expect(currentWindowId("monthly", after)).toBe("202701");
+    expect(currentWindowId("yearly", before)).toBe("2026");
+    expect(currentWindowId("yearly", after)).toBe("2027");
+    expect(currentWindowId("weekly", new Date("2026-09-06T14:59:59Z")))
+      .toBe("2026W36");
+    expect(currentWindowId("weekly", new Date("2026-09-06T15:00:00Z")))
+      .toBe("2026W37");
+  });
+
   it("年間は西暦4桁", () => {
     expect(currentWindowId("yearly", t)).toBe("2026");
   });

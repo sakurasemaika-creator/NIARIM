@@ -233,6 +233,10 @@ export class NiarimBackendStack extends Stack {
           this.node.tryGetContext("creatorGridRewardsReviewApproved") === "true"
             ? "true" : "false",
         PLAY_ANDROID_PACKAGE_NAME: "com.niarim.niarim",
+        // YouTube由来のランキングは追加指標利用の承認があるまで非公開。
+        YOUTUBE_VIEW_RANKINGS_APPROVED:
+          this.node.tryGetContext("youtubeViewRankingsApproved") === "true"
+            ? "true" : "false",
         // Playback preflight reads the public YouTube video status server-side.
         // Never ship this API key in the Flutter binary or an API response.
         YOUTUBE_API_KEY:
