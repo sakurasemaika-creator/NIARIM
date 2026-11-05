@@ -176,6 +176,19 @@ class CommunityApi {
   Future<Map<String, dynamic>> myCreatorMissionAttention() =>
       _client.getJson('/me/missions/attention', authenticated: true);
 
+  /// Newest-first durable milestone history. Never modifies coin balances.
+  Future<Map<String, dynamic>> myMissionActivity({
+    String? cursor, int limit = 30,
+  }) => _client.getJson('/me/missions/activity', authenticated: true,
+      query: {if (cursor != null) 'cursor': cursor, 'limit': '$limit'},
+    );
+
+  /// Owner-scoped, bounded discovery of historical achievements on bell open.
+  Future<Map<String, dynamic>> syncMyMissionActivity({String? workCursor}) =>
+      _client.postJson('/me/missions/activity/sync', authenticated: true,
+        body: {if (workCursor != null) 'cursor': workCursor},
+      );
+
   Future<Map<String, dynamic>> myWorkMissionAchievements({String? cursor}) =>
       _client.getJson('/me/missions/work-achievements',
         authenticated: true,
