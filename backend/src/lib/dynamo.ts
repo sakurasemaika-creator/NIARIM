@@ -31,6 +31,12 @@ export const Keys = {
     pk: `USER#${niarimUserId}`,
     sk: `ENTITLEMENT#${entitlement}`,
   }),
+  loginBonusState: (userId: string) => ({
+    pk: `USER#${userId}`, sk: "LOGIN_BONUS_STATE",
+  }),
+  loginBonusMilestone: (userId: string, days: number) => ({
+    pk: `USER#${userId}`, sk: `LOGIN_BONUS_MILESTONE#${days}`,
+  }),
   coinWallet: (niarimUserId: string) => ({
     pk: `USER#${niarimUserId}`, sk: "COIN_WALLET",
   }),
