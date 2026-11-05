@@ -225,16 +225,17 @@ class _CanvasScreenState extends State<CanvasScreen> {
     setState(() => _desktopDockDragActive = active);
   }
 
-  bool _storedRightForPhysicalSide(bool physicalRight) =>
-      DesktopDockColumnFit.storedRightForPhysicalSide(
-        physicalRight: physicalRight,
-        leftHanded: context.read<SettingsService>().isLeftHanded,
-      );
+  // SettingsService's dock orders now represent physical left/right sides.
+  // Only pristine defaults are mirrored by the service.
+  bool _physicalDockSideIsRight(bool physicalRight) => physicalRight;
+
+  bool _meshDockOnRight(SettingsService settings) =>
+      settings.rightDockOrder.contains(CanvasDockPanel.penSubTool);
 
   List<CanvasDockPanel> _physicalDockOrder(
     SettingsService settings, {
     required bool right,
-  }) => _storedRightForPhysicalSide(right)
+  }) => _physicalDockSideIsRight(right)
       ? settings.rightDockOrder
       : settings.toolOptionDockOrder;
 
@@ -243,14 +244,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
     required bool right,
   }) =>
       _physicalDockOrder(settings, right: right).any(_desktopPanelVisible) ||
-      (!_storedRightForPhysicalSide(right) && _showMeshTransformPanel);
+      (right == _meshDockOnRight(settings) && _showMeshTransformPanel);
 
   void _resizePhysicalDockColumn({
     required bool right,
     required double deltaX,
   }) {
     final settings = context.read<SettingsService>();
-    final storedRight = _storedRightForPhysicalSide(right);
+    final storedRight = _physicalDockSideIsRight(right);
     final current = storedRight
         ? (_panelWidthDragOverride ?? settings.desktopPanelWidth)
         : (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth);
@@ -266,7 +267,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   void _finishPhysicalDockResize({required bool right}) {
     final settings = context.read<SettingsService>();
-    final storedRight = _storedRightForPhysicalSide(right);
+    final storedRight = _physicalDockSideIsRight(right);
     if (storedRight) {
       final width = _panelWidthDragOverride;
       if (width != null) settings.setDesktopPanelWidth(width);
@@ -283,15 +284,17 @@ class _CanvasScreenState extends State<CanvasScreen> {
     required bool right,
     required double availableHeight,
   }) {
-    final storedRight = _storedRightForPhysicalSide(right);
+    final storedRight = _physicalDockSideIsRight(right);
     final visible = _physicalDockOrder(
       settings,
       right: right,
     ).where(_desktopPanelVisible).toList();
-    if (visible.isEmpty && (storedRight || !_showMeshTransformPanel)) {
+    if (visible.isEmpty &&
+        (right != _meshDockOnRight(settings) || !_showMeshTransformPanel)) {
       return _desktopDockDragActive ? 52.0 : 0.0;
     }
-    if (visible.isNotEmpty && (storedRight || !_showMeshTransformPanel)) {
+    if (visible.isNotEmpty &&
+        (right != _meshDockOnRight(settings) || !_showMeshTransformPanel)) {
       final fitted = _fitDesktopDock(settings, visible, availableHeight);
       if (visible.every(
         (panel) =>
@@ -2021,6 +2024,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       }
     });
     final settings = context.read<SettingsService>();
+    if (!isWideScreen(context, listen: false)) return;
     final next = Set<CanvasDockPanel>.of(settings.defaultDockedPanels);
     if (visible) {
       next.add(p);
@@ -2028,6 +2032,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
       next.remove(p);
     }
     settings.setDefaultDockedPanels(next);
+  }
+
+  /// Only explicit PC dock actions update the cross-project visible set.
+  /// Mobile overlay toggles cannot overwrite the desktop workspace.
+  void _persistDesktopDockVisibility() {
+    if (!mounted || !isWideScreen(context, listen: false)) return;
+    final current = <CanvasDockPanel>{
+      for (final panel in CanvasDockPanel.values)
+        if (_desktopPanelVisible(panel)) panel,
+    };
+    context.read<SettingsService>().setDefaultDockedPanels(current);
+  }
+
+  void _toggleDesktopOrMobileDockPanel(CanvasDockPanel panel) {
+    final next = !_desktopPanelVisible(panel);
+    setState(_closeAllOverlayPanels);
+    _setDesktopPanelVisible(panel, next);
   }
 
   String _dockTitle(CanvasDockPanel p) {
@@ -2131,7 +2152,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         onAcceptWithDetails: (details) =>
             context.read<SettingsService>().moveDesktopDockPanel(
               details.data,
-              toRight: _storedRightForPhysicalSide(right),
+              toRight: _physicalDockSideIsRight(right),
             ),
         builder: (context, candidates, _) => DecoratedBox(
           decoration: BoxDecoration(
@@ -2181,7 +2202,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onWillAcceptWithDetails: (d) => d.data != p,
             onAcceptWithDetails: (d) => settings.moveDesktopDockPanel(
               d.data,
-              toRight: _storedRightForPhysicalSide(right),
+              toRight: _physicalDockSideIsRight(right),
               before: p,
             ),
             builder: (context, candidates, _) => Container(
@@ -2303,7 +2324,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   } else {
                                     settings.moveDesktopDockPanel(
                                       p,
-                                      toRight: _storedRightForPhysicalSide(
+                                      toRight: _physicalDockSideIsRight(
                                         action == 'right',
                                       ),
                                     );
@@ -2442,12 +2463,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Widget _dockedPanelStack({required bool right}) => LayoutBuilder(
     builder: (context, constraints) {
       final settings = context.watch<SettingsService>();
-      final storedRight = _storedRightForPhysicalSide(right);
+      final storedRight = _physicalDockSideIsRight(right);
       final visible = _physicalDockOrder(
         settings,
         right: right,
       ).where(_desktopPanelVisible).toList();
-      final hasMesh = !storedRight && _showMeshTransformPanel;
+      final hasMesh =
+          right == _meshDockOnRight(settings) && _showMeshTransformPanel;
       final fitted = _fitDesktopDock(
         settings,
         visible,
