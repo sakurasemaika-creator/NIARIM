@@ -34,6 +34,10 @@ export const Keys = {
   coinWallet: (niarimUserId: string) => ({
     pk: `USER#${niarimUserId}`, sk: "COIN_WALLET",
   }),
+  /** 20 account-owned shards, each containing 24 independent grid bits. */
+  creatorGridShard: (userId: string, workGoal: number) => ({
+    pk: `USER#${userId}`, sk: `MISSION_GRID#${workGoal}`,
+  }),
   creatorMissionState: (niarimUserId: string) => ({
     pk: `USER#${niarimUserId}`, sk: "MISSION_STATE_V1",
   }),

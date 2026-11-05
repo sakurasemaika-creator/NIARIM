@@ -21,6 +21,7 @@ import { getCoinRedemptionQuote, redeemCoins } from "./routes/coinRedemption";
 import { getMyCreatorMissions, claimCreatorMission } from "./routes/creatorMissions";
 import { scanMyQualifiedWorks } from "./routes/creatorQualifiedWorksScan";
 import { getMyWorkMissionAchievements } from "./routes/creatorWorkAchievements";
+import { getMyWorkCountMissionGrid } from "./routes/creatorWorkCountGrid";
 import { editSessionAction } from "./routes/creatorEditSession";
 import { verifyMyPlayPremium, getPlayPurchaseAvailability } from "./routes/playPremium";
 import { updateWork } from "./routes/worksUpdate";
@@ -109,6 +110,7 @@ const routes: Route[] = [
   // Public Google-to-server callback; signature and one-time nonce mandatory.
   route("GET", "/admob/ssv", (e) => receiveRewardedAdSsv(e)),
   route("GET", "/me/missions", (e) => getMyCreatorMissions(e)),
+  route("GET", "/me/missions/grid", (e) => getMyWorkCountMissionGrid(e)),
   route("GET", "/me/missions/work-achievements", (e) => getMyWorkMissionAchievements(e)),
   route("POST", "/me/missions/claim", (e) => claimCreatorMission(e)),
   route("POST", "/me/missions/qualified-works/scan", (e) => scanMyQualifiedWorks(e)),
