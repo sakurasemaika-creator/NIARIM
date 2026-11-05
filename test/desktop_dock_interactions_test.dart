@@ -90,25 +90,25 @@ void main() {
     await tester.pumpAndSettle();
     // Four expanded tools need more than the preview's left column height.
     expect(
-      find.byKey(const ValueKey('pcPreviewExpand-penSubTool')),
+      find.byKey(const ValueKey('pcPreviewExpand-stamp')),
       findsOneWidget,
     );
-    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isFalse);
-    await tester.tap(find.byKey(const ValueKey('pcPreviewExpand-penSubTool')));
+    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.stamp), isFalse);
+    await tester.tap(find.byKey(const ValueKey('pcPreviewExpand-stamp')));
     await tester.pumpAndSettle();
     expect(
-      find.byKey(const ValueKey('pcPreviewCollapse-penSubTool')),
+      find.byKey(const ValueKey('pcPreviewCollapse-stamp')),
       findsOneWidget,
     );
-    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isFalse);
+    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.stamp), isFalse);
 
     await settings.setDesktopDockAutoCollapseEnabled(false);
     await tester.pumpAndSettle();
     expect(
-      find.byKey(const ValueKey('pcPreviewExpand-penSubTool')),
+      find.byKey(const ValueKey('pcPreviewExpand-stamp')),
       findsNothing,
     );
-    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isFalse);
+    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.stamp), isFalse);
     expect(tester.takeException(), isNull);
   });
 
