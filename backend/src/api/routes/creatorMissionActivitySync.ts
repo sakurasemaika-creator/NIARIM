@@ -11,6 +11,7 @@ import {
 import { getMyWorkMissionAchievements } from "./creatorWorkAchievements";
 import { getMyWorkCountMissionGrid } from "./creatorWorkCountGrid";
 import { getMyCreatorMissions } from "./creatorMissions";
+import { getMyLoginBonus } from "./loginBonus";
 
 /**
  * On-demand backfill and discovery on opening the plaza bell.
@@ -80,14 +81,16 @@ export async function syncMyMissionActivity(event:APIGatewayProxyEventV2){
     ...event,queryStringParameters:body.cursor
       ? {cursor:body.cursor} : {},
   } as APIGatewayProxyEventV2;
-  const [workResult,gridResult,accountResult]=await Promise.all([
+  const [workResult,gridResult,accountResult,loginResult]=await Promise.all([
     getMyWorkMissionAchievements(workEvent),
     body.cursor ? Promise.resolve(undefined) : getMyWorkCountMissionGrid(event),
     body.cursor ? Promise.resolve(undefined) : getMyCreatorMissions(event),
+    body.cursor ? Promise.resolve(undefined) : getMyLoginBonus(event),
   ]);
   const workData=parseResponse(workResult.body);
   const gridData=gridResult ? parseResponse(gridResult.body) : undefined;
   const accountData=accountResult ? parseResponse(accountResult.body) : undefined;
+  const loginData=loginResult ? parseResponse(loginResult.body) : undefined;
   const now=new Date().toISOString();
   const works:Candidate[]=[];
   for(const raw of workData.items??[]){
@@ -136,6 +139,16 @@ export async function syncMyMissionActivity(event:APIGatewayProxyEventV2){
       occurredAt:now,dateIsObserved:true,
     });
   }
+  // Backfill login milestones on demand, including old recorded visits.
+  // Only milestone days are notified; daily one-coin claims stay quiet.
+  for(const raw of loginData?.milestones??[]){
+    if(!raw || typeof raw!=="object" || raw.eligible!==true ||
+        typeof raw.days!=="number" || !Number.isSafeInteger(raw.days))continue;
+    grid.push({
+      kind:"loginMilestone",missionId:`login_total_${raw.days}`,
+      required:raw.days,occurredAt:now,dateIsObserved:true,
+    });
+  }
   // Within newly discovered cohorts, prioritize high-value thresholds.
   grid.sort((a,b)=>b.required-a.required ||
     (b.eachWorkBookmarks??0)-(a.eachWorkBookmarks??0));
@@ -154,8 +167,8 @@ export async function syncMyMissionActivity(event:APIGatewayProxyEventV2){
   // Drain all unrecorded milestones on this page before advancing to the
   // next 25 works. The same cursor is safe because dedupe markers are
   // immutable, strongly consistent, and checked before each write.
-  // Grid and follower milestones must also finish before leaving the
-  // cursorless page.
+  // Grid, follower and cumulative-login milestones must also finish
+  // before leaving the cursorless page.
   const pageNotDrained=newWorks.length>WORK_WRITE_LIMIT ||
     newGrid.length>GRID_WRITE_LIMIT;
   const nextWorkCursor=pageNotDrained
