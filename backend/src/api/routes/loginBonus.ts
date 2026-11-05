@@ -10,7 +10,7 @@ import { parseJsonObject } from "../../lib/request";
 import { badRequest, conflict, forbidden, ok } from "../../lib/response";
 import {
   DAILY_LOGIN_COINS, LOGIN_BONUS_CATALOG_VERSION, LOGIN_BONUS_MILESTONES,
-  loginBonusRewardEnabled, milestoneCoins, utcLoginDay,
+  loginBonusRewardEnabled, milestoneCoins, jstLoginDay,
 } from "../../lib/loginBonusCatalog";
 
 const ITEM_TYPE = "LOGIN_BONUS_STATE_V1";
@@ -52,7 +52,7 @@ async function getState(userId: string) {
  */
 export async function visitMyLoginBonus(event: APIGatewayProxyEventV2) {
   const userId = await owner(event);
-  const day = utcLoginDay();
+  const day = jstLoginDay();
   try {
     const result = await ddb.send(new UpdateCommand({
       TableName: tableName(),Key: Keys.loginBonusState(userId),
@@ -79,7 +79,7 @@ export async function visitMyLoginBonus(event: APIGatewayProxyEventV2) {
 }
 
 export async function getMyLoginBonus(event: APIGatewayProxyEventV2) {
-  const userId = await owner(event),day = utcLoginDay();
+  const userId = await owner(event),day = jstLoginDay();
   const table = tableName();
   const [state,marks] = await Promise.all([
     getState(userId),
@@ -110,7 +110,7 @@ export async function getMyLoginBonus(event: APIGatewayProxyEventV2) {
     dailyCoins:DAILY_LOGIN_COINS,
     rewardEnabled:loginBonusRewardEnabled(),
     catalogVersion:LOGIN_BONUS_CATALOG_VERSION,
-    resetTimeZone:"UTC",
+    resetTimeZone:"Asia/Tokyo",
     milestones:LOGIN_BONUS_MILESTONES.map(m=>({
       ...m,eligible:state.totalDays>=m.days,claimed:claimed.has(m.days),
     })),
@@ -153,7 +153,7 @@ export async function claimMyLoginBonus(event: APIGatewayProxyEventV2) {
   if (!loginBonusRewardEnabled()) {
     forbidden("ログイン報酬の公開準備中です", "LOGIN_BONUS_PAYOUTS_DISABLED");
   }
-  const today=utcLoginDay();
+  const today=jstLoginDay();
   const table=tableName();
   let amount:number,missionId:string;
   const stateKey=Keys.loginBonusState(userId);

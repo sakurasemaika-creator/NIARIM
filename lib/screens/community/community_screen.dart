@@ -73,7 +73,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   String? _lastLoginVisitKey;
   void _recordCumulativeLoginVisit(String? ownerId, CommunityApi? api) {
     if (ownerId == null || api == null) return;
-    final today = DateTime.now().toUtc().toIso8601String().substring(0,10);
+    final today = DateTime.now().toUtc().add(const Duration(hours: 9)).toIso8601String().substring(0, 10);
     final key = '$ownerId/$today';
     if (_lastLoginVisitKey == key) return;
     _lastLoginVisitKey = key;

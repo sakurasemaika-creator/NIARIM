@@ -13,7 +13,7 @@ import {
   visitMyLoginBonus,getMyLoginBonus,claimMyLoginBonus,
 } from "../src/api/routes/loginBonus";
 import {
-  DAILY_LOGIN_COINS,LOGIN_BONUS_MILESTONES,milestoneCoins,utcLoginDay,
+  DAILY_LOGIN_COINS,LOGIN_BONUS_MILESTONES,milestoneCoins,jstLoginDay,
 } from "../src/lib/loginBonusCatalog";
 
 const req=(body?:object)=>({
@@ -22,7 +22,7 @@ const req=(body?:object)=>({
   body:JSON.stringify(body??{}),
 }) as unknown as APIGatewayProxyEventV2;
 const state={itemType:"LOGIN_BONUS_STATE_V1",
- totalDays:100,lastVisitedDay:utcLoginDay(),lastClaimedDay:"2020-01-01"};
+ totalDays:100,lastVisitedDay:jstLoginDay(),lastClaimedDay:"2020-01-01"};
 function enable(){
  process.env.LOGIN_BONUS_CLAIMS_ENABLED="true";
  process.env.LOGIN_BONUS_REWARDS_REVIEW_APPROVED="true";
@@ -35,6 +35,10 @@ beforeEach(()=>{
  send.mockResolvedValue({});
 });
 describe("cumulative login bonus and non-streak earning",()=>{
+ it("switches calendar day at midnight Japan time",()=>{
+  expect(jstLoginDay(Date.parse("2026-11-04T14:59:59Z"))).toBe("2026-11-04");
+  expect(jstLoginDay(Date.parse("2026-11-04T15:00:00Z"))).toBe("2026-11-05");
+ });
  it("uses the specified five milestone ranges with extra round-number prizes",()=>{
   expect(DAILY_LOGIN_COINS).toBe(1);
   expect(LOGIN_BONUS_MILESTONES).toHaveLength(54);
@@ -49,7 +53,7 @@ describe("cumulative login bonus and non-streak earning",()=>{
  it("visit increments only a distinct server-side day and never mints",async()=>{
   send.mockResolvedValueOnce({Attributes:{
     itemType:"LOGIN_BONUS_STATE_V1",totalDays:4,
-    lastVisitedDay:utcLoginDay(),
+    lastVisitedDay:jstLoginDay(),
   }});
   const result=JSON.parse((await visitMyLoginBonus(req())).body??"{}");
   expect(result).toMatchObject({totalDays:4,visitedToday:true});

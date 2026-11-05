@@ -3,6 +3,7 @@
  * a streak. A missed day does not reset progress. A UTC calendar day is
  * chosen deliberately so device clock/timezone edits cannot double-claim.
  *
+ * The server day boundary is midnight JST (UTC+09:00).
  * 1 coin per checked-in day; notable round-number milestones grant extra.
  * These coin prices are launch proposals and payout is OFF by default.
  */
@@ -35,8 +36,8 @@ export const LOGIN_BONUS_MILESTONES: readonly LoginMilestone[] =
 export function milestoneCoins(days:number):number|undefined {
   return LOGIN_BONUS_MILESTONES.find(m=>m.days===days)?.coins;
 }
-export function utcLoginDay(now=Date.now()):string {
-  return new Date(now).toISOString().slice(0,10);
+export function jstLoginDay(now=Date.now()):string {
+  return new Date(now+9*60*60*1000).toISOString().slice(0,10);
 }
 export function loginBonusRewardEnabled():boolean {
   return process.env.LOGIN_BONUS_CLAIMS_ENABLED==="true" &&

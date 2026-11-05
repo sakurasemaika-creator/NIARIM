@@ -64,8 +64,8 @@ class _HomeScreenState extends State<HomeScreen>
   void _maybeRecordLogin(String? ownerId, CommunityApi? api) {
     if (ownerId == null || api == null) return;
     // Local date merely suppresses redundant traffic. The server determines
-    // the actual UTC day and checks the visit transaction atomically.
-    final day = DateTime.now().toUtc().toIso8601String().substring(0, 10);
+    // the actual JST day and checks the visit transaction atomically.
+    final day = DateTime.now().toUtc().add(const Duration(hours: 9)).toIso8601String().substring(0, 10);
     final requestKey = '$ownerId/$day';
     if (_lastVisitRequest == requestKey) return;
     _lastVisitRequest = requestKey;
