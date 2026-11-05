@@ -22,6 +22,7 @@ import 'screens/help/help_screen.dart';
 import 'screens/tips/tips_screen.dart';
 import 'screens/premium/premium_screen.dart';
 import 'screens/rewards/reward_unlock_screen.dart';
+import 'screens/rewards/membership_benefits_screen.dart';
 import 'screens/rewards/creator_missions_screen.dart';
 import 'screens/autofill/autofill_preset_screen.dart';
 import 'screens/save_tree/save_management_screen.dart';
@@ -181,6 +182,18 @@ final appRouter = GoRouter(
       path: '/rewards',
       builder: (context, state) =>
           const AdMockPageFrame(child: RewardUnlockScreen()),
+    ),
+    GoRoute(
+      path: '/earn-coins',
+      builder: (context, state) =>
+          const AdMockPageFrame(
+            child: RewardUnlockScreen(mode: RewardPageMode.earnCoins),
+          ),
+    ),
+    GoRoute(
+      path: '/membership',
+      builder: (context, state) =>
+          const AdMockPageFrame(child: MembershipBenefitsScreen()),
     ),
     GoRoute(
       path: '/creator-missions',
