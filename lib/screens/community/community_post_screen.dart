@@ -10,6 +10,7 @@ import '../../services/api/niarim_api_exception.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/youtube_upload_service.dart';
+import '../../l10n/community_post_visibility_labels.dart';
 import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
 import '../../utils/tolerant_preferences.dart';
@@ -80,6 +81,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   static const _pendingAccountEmailKey =
       'community.pendingUpload.googleAccountEmail';
   static const _pendingTitleKey = 'community.pendingUpload.title';
+  static const _pendingYoutubePrivacyKey = 'community.pendingUpload.youtubePrivacyStatus';
   static const _pendingIsShortKey = 'community.pendingUpload.isShort';
   static const _pendingPublishedKey =
       'community.pendingUpload.isNiarimPublished';
@@ -92,6 +94,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   String? _uploadAccountId;
   String? _uploadAccountEmail;
   bool _isShort = false;
+  String _youtubePrivacyStatus = 'unlisted';
   bool _isNiarimPublished = true;
   bool _containsGenerativeAiImageOrVideo = false;
   bool _busy = false;
@@ -123,6 +126,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
           _uploadAccountId = prefs.readString(_pendingAccountIdKey);
           _uploadAccountEmail = prefs.readString(_pendingAccountEmailKey);
           _isShort = prefs.readBool(_pendingIsShortKey) ?? false;
+          _youtubePrivacyStatus = prefs.readString(_pendingYoutubePrivacyKey) == 'public'
+              ? 'public'
+              : 'unlisted';
           _isNiarimPublished = prefs.readBool(_pendingPublishedKey) ?? true;
           _containsGenerativeAiImageOrVideo =
               prefs.readBool(_pendingAiImageVideoKey) ?? false;
@@ -147,6 +153,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     await prefs.setString(_pendingAccountEmailKey, accountEmail);
     await prefs.setString(_pendingTitleKey, title);
     await prefs.setBool(_pendingIsShortKey, _isShort);
+    await prefs.setString(_pendingYoutubePrivacyKey, _youtubePrivacyStatus);
     await prefs.setBool(_pendingPublishedKey, _isNiarimPublished);
     await prefs.setBool(
       _pendingAiImageVideoKey,
@@ -162,6 +169,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       prefs.remove(_pendingAccountEmailKey),
       prefs.remove(_pendingTitleKey),
       prefs.remove(_pendingIsShortKey),
+      prefs.remove(_pendingYoutubePrivacyKey),
       prefs.remove(_pendingPublishedKey),
       prefs.remove(_pendingAiImageVideoKey),
     ]);
@@ -195,6 +203,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _videoFile = null;
       _titleController.clear();
       _isShort = false;
+      _youtubePrivacyStatus = 'unlisted';
       _isNiarimPublished = true;
       _containsGenerativeAiImageOrVideo = false;
       _status = null;
@@ -366,7 +375,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             file: file!,
             accessToken: youtubeToken,
             title: title,
-            privacyStatus: 'unlisted',
+            privacyStatus: _youtubePrivacyStatus,
             onProgress: (sent, total) {
               if (!mounted || total <= 0) return;
               setState(() => _progress = sent / total);
@@ -558,6 +567,48 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                       : (value) => setState(() => _isShort = value),
                   title: Text(l10n.communityPostAsShort),
                 ),
+                Builder(builder: (context) {
+                  final labels = CommunityPostVisibilityLabels.of(context);
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(labels.heading, style: Theme.of(context).textTheme.titleSmall),
+                      const SizedBox(height: 6),
+                      RadioListTile<String>(
+                        key: const Key('communityPostYouTubeUnlisted'),
+                        contentPadding: EdgeInsets.zero,
+                        value: 'unlisted',
+                        groupValue: _youtubePrivacyStatus,
+                        onChanged: _busy || retainedVideoId != null
+                            ? null
+                            : (value) => setState(
+                                () => _youtubePrivacyStatus = value ?? 'unlisted'),
+                        title: Text(labels.unlistedTitle),
+                        subtitle: Text(labels.unlistedHelp),
+                      ),
+                      RadioListTile<String>(
+                        key: const Key('communityPostYouTubePublic'),
+                        contentPadding: EdgeInsets.zero,
+                        value: 'public',
+                        groupValue: _youtubePrivacyStatus,
+                        onChanged: _busy || retainedVideoId != null
+                            ? null
+                            : (value) => setState(
+                                () => _youtubePrivacyStatus = value ?? 'public'),
+                        title: Text(labels.publicTitle),
+                        subtitle: Text(labels.publicHelp),
+                      ),
+                      if (_youtubePrivacyStatus == 'unlisted')
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Text(
+                            labels.unlistedDisclosure,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ),
+                    ],
+                  );
+                }),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   value: _containsGenerativeAiImageOrVideo,
