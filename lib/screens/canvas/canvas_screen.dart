@@ -175,6 +175,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // プレビュー）の横幅。ドラッグ中はここへローカルに反映し、指を離した
   // 時点でSettingsServiceへ確定値を保存する。
   final Map<CanvasDockPanel, double> _dockDragHeight = {};
+  // A fully empty column normally disappears. During panel dragging,
+  // its temporary drop zone lets users recreate it without a menu.
+  bool _desktopDockDragActive = false;
+
+  void _setDesktopDockDragging(bool active) {
+    if (!mounted || _desktopDockDragActive == active) return;
+    setState(() => _desktopDockDragActive = active);
+  }
 
   double _preferredDockColumnWidth(
     SettingsService settings, {
@@ -184,7 +192,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
         ? settings.rightDockOrder
         : settings.toolOptionDockOrder;
     final visible = order.where(_desktopPanelVisible).toList();
-    if (visible.isEmpty && (right || !_showMeshTransformPanel)) return 0;
+    if (visible.isEmpty && (right || !_showMeshTransformPanel)) {
+      return _desktopDockDragActive ? 52.0 : 0.0;
+    }
     if (visible.isNotEmpty &&
         visible.every(settings.isDesktopDockCollapsed) &&
         (right || !_showMeshTransformPanel)) {
@@ -1279,7 +1289,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   }
                                 },
                               ),
-                          ],
+                          ] else if (isDesktop && _desktopDockDragActive)
+                            _desktopEmptyDockDropTarget(right: false),
                           Expanded(
                             child: Stack(
                               children: [
@@ -1512,7 +1523,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             SizedBox(
                               width: _desktopDockColumnWidth(right: true),
                               child: _buildRightDockColumn(),
-                            ),
+                            )
+                          else if (isDesktop && _desktopDockDragActive)
+                            _desktopEmptyDockDropTarget(right: true),
                           // Handedness changes the OUTER vertical toolbar
                           // only; left/right dock columns never swap.
                           if (isDesktop && leftHanded)
@@ -1991,6 +2004,37 @@ class _CanvasScreenState extends State<CanvasScreen> {
       showCloseButton: false,
     ),
   };
+  /// An empty dock takes zero width at rest, but becomes a temporary
+  /// 52px-wide drop target while a window is being dragged.
+  Widget _desktopEmptyDockDropTarget({required bool right}) {
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 52,
+      child: DragTarget<CanvasDockPanel>(
+        key: ValueKey(
+          right ? 'desktopEmptyRightDockDrop' : 'desktopEmptyLeftDockDrop',
+        ),
+        onWillAcceptWithDetails: (_) => true,
+        onAcceptWithDetails: (details) => context
+            .read<SettingsService>()
+            .moveDesktopDockPanel(details.data, toRight: right),
+        builder: (context, candidates, _) => DecoratedBox(
+          decoration: BoxDecoration(
+            color: candidates.isEmpty
+                ? scheme.surfaceContainerLow
+                : scheme.primaryContainer,
+            border: Border.all(
+              color: candidates.isEmpty ? scheme.outlineVariant : scheme.primary,
+            ),
+          ),
+          child: Center(
+            child: Icon(Icons.add, color: scheme.onSurfaceVariant),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _desktopDockWindow(
     CanvasDockPanel p, {
     required bool right,
@@ -2033,6 +2077,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     child: Draggable<CanvasDockPanel>(
                       key: ValueKey('dockCollapsedDrag-${p.name}'),
                       data: p,
+                      onDragStarted: () => _setDesktopDockDragging(true),
+                      onDragEnd: (_) => _setDesktopDockDragging(false),
                       feedback: Material(
                         color: scheme.surfaceContainerHighest,
                         elevation: 4,
@@ -2076,6 +2122,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           children: [
                             Draggable<CanvasDockPanel>(
                               data: p,
+                              onDragStarted: () => _setDesktopDockDragging(true),
+                              onDragEnd: (_) => _setDesktopDockDragging(false),
                               feedback: Material(
                                 color: scheme.surfaceContainerHighest,
                                 child: Padding(

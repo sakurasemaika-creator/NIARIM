@@ -340,8 +340,20 @@ class SettingsService extends ChangeNotifier {
     final target = toRight ? right : left;
     final insertIndex = before == null ? -1 : target.indexOf(before);
     target.insert(insertIndex < 0 ? target.length : insertIndex, panel);
-    await setToolOptionDockOrder(left);
-    await setRightDockOrder(right);
+    // Notify once so an empty column is removed immediately without
+    // exposing an intermediate, half-moved layout to either UI.
+    _toolOptionDockOrder = left;
+    _rightDockOrder = right;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'tool_option_dock_order',
+      left.map((p) => p.name).toList(),
+    );
+    await prefs.setStringList(
+      'right_dock_order',
+      right.map((p) => p.name).toList(),
+    );
   }
 
   // マウス・スタイラス（ペンタブ等）の接続検出フラグ。ポインティング
@@ -684,31 +696,42 @@ class SettingsService extends ChangeNotifier {
     final toolOptionDockOrderNames = prefs.readStringList(
       'tool_option_dock_order',
     );
-    if (toolOptionDockOrderNames != null &&
-        toolOptionDockOrderNames.isNotEmpty) {
-      final map = CanvasDockPanel.values.asNameMap();
-      final restored = toolOptionDockOrderNames
-          .map((n) => map[n])
-          .whereType<CanvasDockPanel>()
-          .toList();
-      for (final p in _defaultToolOptionDockOrder) {
-        if (!restored.contains(p)) restored.add(p);
-      }
-      _toolOptionDockOrder = restored;
-    }
     final rightDockOrderNames = prefs.readStringList('right_dock_order');
-    if (rightDockOrderNames != null && rightDockOrderNames.isNotEmpty) {
-      final map = CanvasDockPanel.values.asNameMap();
-      final restored = rightDockOrderNames
-          .map((n) => map[n])
-          .whereType<CanvasDockPanel>()
-          .toList();
-      for (final p in _defaultRightDockOrder) {
-        if (!restored.contains(p)) restored.add(p);
+    if (toolOptionDockOrderNames != null || rightDockOrderNames != null) {
+      // An empty list means all windows were moved out, not "use defaults".
+      // Resolve saved positions across both sides before appending any newly
+      // introduced dock types, so moved windows never reappear twice.
+      final byName = CanvasDockPanel.values.asNameMap();
+      final seen = <CanvasDockPanel>{};
+      final left = <CanvasDockPanel>[];
+      final right = <CanvasDockPanel>[];
+
+      void appendUnique(List<CanvasDockPanel> target, Iterable<String> values) {
+        for (final value in values) {
+          final panel = byName[value];
+          if (panel != null && seen.add(panel)) target.add(panel);
+        }
       }
-      _rightDockOrder = restored;
+
+      appendUnique(
+        left,
+        toolOptionDockOrderNames ??
+            _defaultToolOptionDockOrder.map((p) => p.name),
+      );
+      appendUnique(
+        right,
+        rightDockOrderNames ?? _defaultRightDockOrder.map((p) => p.name),
+      );
+      for (final panel in _defaultToolOptionDockOrder) {
+        if (seen.add(panel)) left.add(panel);
+      }
+      for (final panel in _defaultRightDockOrder) {
+        if (seen.add(panel)) right.add(panel);
+      }
+      _toolOptionDockOrder = left;
+      _rightDockOrder = right;
     }
-    final sizePresetStrings = prefs.readStringList('custom_size_presets') ?? [];
+        final sizePresetStrings = prefs.readStringList('custom_size_presets') ?? [];
     _customSizePresets = [];
     for (final encoded in sizePresetStrings) {
       try {

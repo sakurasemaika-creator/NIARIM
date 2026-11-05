@@ -31,6 +31,13 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
   Size? _lastViewportSize;
   double? _leftColumnWidthDrag;
   double? _rightColumnWidthDrag;
+  // Empty columns reclaim their canvas space outside a panel drag.
+  bool _dockDragActive = false;
+
+  void _setDockDragging(bool active) {
+    if (!mounted || _dockDragActive == active) return;
+    setState(() => _dockDragActive = active);
+  }
 
   @override
   void dispose() {
@@ -57,7 +64,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
         right ? settings.rightDockOrder : settings.toolOptionDockOrder;
     final visible =
         order.where(settings.defaultDockedPanels.contains).toList();
-    if (visible.isEmpty) return 0;
+    if (visible.isEmpty) return _dockDragActive ? 52 : 0;
     if (visible.every(settings.isDesktopDockCollapsed)) return 52;
     return right
         ? (_rightColumnWidthDrag ?? settings.desktopPanelWidth)
@@ -268,6 +275,13 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                     right ? 'pcPreviewRightDockScroll' : 'pcPreviewLeftDockScroll',
                   ),
                   children: [
+                    if (visible.isEmpty && _dockDragActive)
+                      SizedBox(
+                        height: 80,
+                        child: Center(
+                          child: Icon(Icons.add, color: scheme.onSurfaceVariant),
+                        ),
+                      ),
                     for (var i = 0; i < visible.length; i++) ...[
                       if (i > 0)
                         const SizedBox(height: DesktopDockColumnFit.gap),
@@ -376,6 +390,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                   child: Draggable<CanvasDockPanel>(
                     key: ValueKey('pcPreviewCollapsedDrag-${panel.name}'),
                     data: panel,
+                    onDragStarted: () => _setDockDragging(true),
+                    onDragEnd: (_) => _setDockDragging(false),
                     feedback: Material(
                       color: scheme.surfaceContainerHighest,
                       elevation: 4,
@@ -443,6 +459,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                   children: [
                     Draggable<CanvasDockPanel>(
                       data: panel,
+                      onDragStarted: () => _setDockDragging(true),
+                      onDragEnd: (_) => _setDockDragging(false),
                       feedback: Material(
                         color: scheme.surfaceContainerHighest,
                         child: Padding(

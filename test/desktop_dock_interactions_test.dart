@@ -147,4 +147,103 @@ void main() {
     expect(find.byKey(const ValueKey('pcPreviewExpand-layer')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  test('empty dock assignment persists on both sides without duplicates',
+      () async {
+    final settings = SettingsService();
+    await settings.init();
+    await settings.setDesktopDockCollapsed(CanvasDockPanel.brush, true);
+
+    for (final panel in List<CanvasDockPanel>.of(settings.toolOptionDockOrder)) {
+      await settings.moveDesktopDockPanel(panel, toRight: true);
+    }
+    expect(settings.toolOptionDockOrder, isEmpty);
+    final reloaded = SettingsService();
+    await reloaded.init();
+    expect(reloaded.toolOptionDockOrder, isEmpty);
+    expect(reloaded.rightDockOrder.toSet(), CanvasDockPanel.values.toSet());
+    expect(reloaded.rightDockOrder.length, CanvasDockPanel.values.length);
+    expect(reloaded.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
+
+    for (final panel in List<CanvasDockPanel>.of(reloaded.rightDockOrder)) {
+      await reloaded.moveDesktopDockPanel(panel, toRight: false);
+    }
+    expect(reloaded.rightDockOrder, isEmpty);
+    final restored = SettingsService();
+    await restored.init();
+    expect(restored.rightDockOrder, isEmpty);
+    expect(restored.toolOptionDockOrder.toSet(), CanvasDockPanel.values.toSet());
+    expect(restored.toolOptionDockOrder.length, CanvasDockPanel.values.length);
+    expect(restored.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
+  });
+
+  testWidgets('an empty preview column reappears only for drag and drop',
+      (tester) async {
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final settings = SettingsService();
+    await settings.init();
+    await settings.setDefaultDockedPanels({
+      CanvasDockPanel.brush,
+      CanvasDockPanel.layer,
+    });
+    await settings.setDesktopDockCollapsed(CanvasDockPanel.brush, true);
+    await settings.moveDesktopDockPanel(CanvasDockPanel.brush, toRight: true);
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: settings,
+        child: MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: PcWorkspaceLayoutPreview(labelOf: (panel) => panel.name),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final left = find.byKey(const ValueKey('pcPreviewToolColumn'));
+    final right = find.byKey(const ValueKey('pcPreviewRightColumn'));
+    expect(tester.getSize(left).width, 0);
+    expect(find.byKey(const ValueKey('pcPreviewToolColumnResize')), findsNothing);
+
+    final fromRight =
+        find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush'));
+    final dragLeft = await tester.startGesture(tester.getCenter(fromRight));
+    await dragLeft.moveBy(const Offset(-50, 0));
+    await tester.pump();
+    expect(tester.getSize(left).width, 52);
+    await dragLeft.moveTo(tester.getCenter(left));
+    await tester.pump();
+    await dragLeft.up();
+    await tester.pumpAndSettle();
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isFalse);
+    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
+    expect(tester.getSize(left).width, 52);
+
+    await settings.moveDesktopDockPanel(CanvasDockPanel.layer, toRight: false);
+    await tester.pumpAndSettle();
+    expect(tester.getSize(right).width, 0);
+    final fromLeft =
+        find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush'));
+    final dragRight = await tester.startGesture(tester.getCenter(fromLeft));
+    await dragRight.moveBy(const Offset(50, 0));
+    await tester.pump();
+    expect(tester.getSize(right).width, 52);
+    await dragRight.moveTo(tester.getCenter(right));
+    await tester.pump();
+    await dragRight.up();
+    await tester.pumpAndSettle();
+    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isFalse);
+    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
+    expect(tester.takeException(), isNull);
+  });
 }
