@@ -171,6 +171,11 @@ class CommunityApi {
   Future<Map<String, dynamic>> myWorkCountMissions() =>
       _client.getJson('/me/missions/grid', authenticated: true);
 
+  /// On-demand Home drawer marker. The server owns the counts and claimed bits.
+  /// A positive response is an achievement hint, not a coin deposit.
+  Future<Map<String, dynamic>> myCreatorMissionAttention() =>
+      _client.getJson('/me/missions/attention', authenticated: true);
+
   Future<Map<String, dynamic>> myWorkMissionAchievements({String? cursor}) =>
       _client.getJson('/me/missions/work-achievements',
         authenticated: true,

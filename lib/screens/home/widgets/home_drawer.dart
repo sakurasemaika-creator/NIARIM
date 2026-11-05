@@ -1,16 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../../services/community_service.dart';
+import '../../../services/google_auth_service.dart';
+import '../../../services/api/community_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/reward_unlock_labels.dart';
 import '../../../l10n/creator_mission_labels.dart';
 import '../../../config/font_fallback.dart';
 import '../../canvas/widgets/canvas_icon_button.dart';
 
-class HomeDrawer extends StatelessWidget {
-  const HomeDrawer({super.key});
+/// Server status alone controls the mission drawer exclamation mark.
+bool missionDrawerNeedsAttention(Map<String, dynamic>? result) =>
+    result?['hasAchievedUnclaimed'] == true;
+
+class HomeDrawer extends StatefulWidget {
+  const HomeDrawer({super.key, this.refreshToken = 0});
+
+  /// Increment when the hamburger menu opens, to refresh achievements after
+  /// posting a work or returning from the mission claim screen.
+  final int refreshToken;
+
+  @override
+  State<HomeDrawer> createState() => _HomeDrawerState();
+}
+
+class _HomeDrawerState extends State<HomeDrawer> {
+  String? _accountId;
+  CommunityApi? _lastApi;
+  int? _lastRefreshToken;
+  Future<Map<String, dynamic>>? _attentionFuture;
 
   @override
   Widget build(BuildContext context) {
+    final accountId = context.watch<GoogleAuthService>().account?.id;
+    final api = context.read<CommunityService>().api;
+    if (_accountId != accountId || !identical(_lastApi, api) ||
+        _lastRefreshToken != widget.refreshToken) {
+      _accountId = accountId;
+      _lastApi = api;
+      _lastRefreshToken = widget.refreshToken;
+      // Account isolation: the server resolves the user from the Google token.
+      // Offline and signed-out states never display a stale exclamation mark.
+      _attentionFuture = accountId != null && api != null
+          ? api.myCreatorMissionAttention() : null;
+    }
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final menuForeground =
@@ -185,6 +219,36 @@ class HomeDrawer extends StatelessWidget {
             ListTile(
               key: const Key('homeCreatorMissionsMenuItem'),
               leading: drawerIcon(Icons.flag_outlined),
+              trailing: _attentionFuture == null ? null
+                  : FutureBuilder<Map<String, dynamic>>(
+                      future: _attentionFuture,
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData ||
+                            !missionDrawerNeedsAttention(snapshot.data)) {
+                          return const SizedBox.shrink();
+                        }
+                        final label =
+                            CreatorMissionLabels.of(context).get('drawerAttention');
+                        return Tooltip(
+                          message: label,
+                          child: Semantics(
+                            label: label,
+                            child: CircleAvatar(
+                              key: const Key('homeCreatorMissionAttention'),
+                              radius: 11,
+                              backgroundColor: scheme.primary,
+                              child: Text('!',
+                                style: TextStyle(
+                                  color: scheme.onPrimary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
               title: Text(
                 CreatorMissionLabels.of(context).get('title'),
                 style: const TextStyle(

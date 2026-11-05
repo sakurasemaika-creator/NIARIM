@@ -57,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen>
   // The menu opens from the right; the launch-screen back arrow sits at the
   // left of the fixed AppBar. The page-level project list has its own scroll.
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  int _missionDrawerRefreshToken = 0;
   final _projectScrollController = ScrollController();
   late TabController _tabController;
   static const _projectViewModeKey = 'home.projectViewMode.v1';
@@ -424,7 +425,12 @@ class _HomeScreenState extends State<HomeScreen>
                 key: const Key('homeMenuButton'),
                 icon: const Icon(Icons.menu),
                 tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
-                onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+                onPressed: () {
+                  // Refresh server-owned mission status only when the drawer
+                  // is opened, never with an endless polling timer.
+                  setState(() => _missionDrawerRefreshToken++);
+                  _scaffoldKey.currentState?.openEndDrawer();
+                },
               ),
             ],
             // 標準のTabBarは項目名の文字数に関わらず均等4分割になるため、
@@ -446,7 +452,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
           ),
-          endDrawer: const HomeDrawer(),
+          endDrawer: HomeDrawer(refreshToken: _missionDrawerRefreshToken),
           body: Column(
             children: [
               if (_isSelectionMode)
