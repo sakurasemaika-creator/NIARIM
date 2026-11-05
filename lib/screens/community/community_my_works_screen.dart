@@ -7,6 +7,7 @@ import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
+import '../../l10n/community_channel_refresh_labels.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
@@ -29,6 +30,7 @@ class CommunityMyWorksScreen extends StatefulWidget {
 
 class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   bool _switchingAccount = false;
+  bool _refreshingYouTubeChannel = false;
   bool _loadingWorks = false;
   Object? _worksError;
   List<CommunityWork>? _ownerWorks;
@@ -320,6 +322,43 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       );
     } finally {
       if (mounted) setState(() => _switchingAccount = false);
+    }
+  }
+
+  Future<void> _refreshYoutubeChannel() async {
+    if (_refreshingYouTubeChannel) return;
+    final labels = CommunityChannelRefreshLabels.of(context);
+    final auth = context.read<GoogleAuthService>();
+    final service = context.read<CommunityService>();
+    final api = service.api;
+    if (api == null || !auth.isSignedIn) {
+      _showSnackBar(labels.unavailable);
+      return;
+    }
+    final accountId = auth.account?.id;
+    setState(() => _refreshingYouTubeChannel = true);
+    try {
+      final token = await auth.youtubeUploadAccessToken(promptIfNecessary: true);
+      if (token == null || token.isEmpty) throw StateError(labels.noToken);
+      if (!mounted || auth.account?.id != accountId) return;
+      final profile = await api.refreshYoutubeChannelInfo(token);
+      if (!mounted || auth.account?.id != accountId) return;
+      final name = profile['channelName'] as String?;
+      if (name != null && name.isNotEmpty) {
+        service.applyMyYoutubeChannelName(name);
+        setState(() {
+          _ownerWorks = [
+            for (final work in _ownerWorks ?? <CommunityWork>[])
+              work.copyWith(authorName: name),
+          ];
+        });
+      }
+      _showSnackBar(labels.success);
+    } catch (error) {
+      if (!mounted) return;
+      _showSnackBar('${labels.failed}: $error');
+    } finally {
+      if (mounted) setState(() => _refreshingYouTubeChannel = false);
     }
   }
 
@@ -619,7 +658,26 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                             label: Text(l10n.communityMyWorksViewAuthorPage),
                           ),
                           const SizedBox(height: 8),
-                          OutlinedButton.icon(
+                          if (account != null && communityService.api != null) ...[
+                             OutlinedButton.icon(
+                               key: const Key('communityMyWorksYoutubeChannelRefresh'),
+                               onPressed: _refreshingYouTubeChannel
+                                   ? null
+                                   : _refreshYoutubeChannel,
+                               icon: _refreshingYouTubeChannel
+                                   ? const SizedBox(
+                                       width: 16,
+                                       height: 16,
+                                       child: CircularProgressIndicator(strokeWidth: 2),
+                                     )
+                                   : const Icon(Icons.refresh_outlined),
+                               label: Text(
+                                 CommunityChannelRefreshLabels.of(context).button,
+                               ),
+                             ),
+                             const SizedBox(height: 8),
+                           ],
+                           OutlinedButton.icon(
                             key: const Key('communityMyWorksAccountButton'),
                             onPressed: _switchingAccount
                                 ? null
