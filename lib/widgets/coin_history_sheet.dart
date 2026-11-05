@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/reward_unlock_labels.dart';
+import '../l10n/login_bonus_labels.dart';
 
 /// Signed-in account, server-authenticated coin ledger. No local balances,
 /// purchase callbacks or user-supplied transaction amounts are displayed.
@@ -105,12 +106,22 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
     super.dispose();
   }
 
-  String _sourceLabel(RewardUnlockLabels t, String source) => switch (source) {
-    'rewarded-ad' => t['historyAd'],
-    'creator-mission' => t['historyMission'],
-    'coin-redemption' => t['historyRedemption'],
-    _ => t['historyOther'],
-  };
+  String _sourceLabel(BuildContext context, RewardUnlockLabels t,
+      Map<String, dynamic> entry) {
+    final source = entry['source'] as String;
+    if (source == 'login-bonus') {
+      final lb = LoginBonusLabels.of(context);
+      final mission = entry['missionId'];
+      return mission is String && mission.startsWith('login_daily_')
+          ? lb['daily'] : lb['title'];
+    }
+    return switch (source) {
+      'rewarded-ad' => t['historyAd'],
+      'creator-mission' || 'creator-grid' => t['historyMission'],
+      'coin-redemption' => t['historyRedemption'],
+      _ => t['historyOther'],
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +144,7 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
                   children: [
                     for (final row in _entries)
                       ListTile(
-                        title: Text(_sourceLabel(t, row['source'] as String)),
+                        title: Text(_sourceLabel(context, t, row)),
                         subtitle: Text(
                           DateTime.fromMillisecondsSinceEpoch(
                             row['occurredAtEpochMs'] as int,
