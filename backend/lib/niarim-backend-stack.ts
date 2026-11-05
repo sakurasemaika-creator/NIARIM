@@ -218,6 +218,14 @@ export class NiarimBackendStack extends Stack {
             ? "true" : "false",
         // New 480-stage matrix has independent, default-OFF review gates.
         // Draft coin amounts may NEVER pay until pricing is approved.
+        // Cumulative login visit tracking is available without payouts.
+        // New daily/milestone coin grants require independent human review.
+        LOGIN_BONUS_CLAIMS_ENABLED:
+          this.node.tryGetContext("loginBonusClaimsEnabled") === "true"
+            ? "true" : "false",
+        LOGIN_BONUS_REWARDS_REVIEW_APPROVED:
+          this.node.tryGetContext("loginBonusRewardsReviewApproved") === "true"
+            ? "true" : "false",
         CREATOR_GRID_PAYOUTS_ENABLED:
           this.node.tryGetContext("creatorGridPayoutsEnabled") === "true"
             ? "true" : "false",
