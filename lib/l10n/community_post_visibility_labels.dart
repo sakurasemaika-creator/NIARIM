@@ -1,0 +1,83 @@
+import 'package:flutter/widgets.dart';
+
+/// Posting visibility must be explicit: unlisted does not mean private.
+class CommunityPostVisibilityLabels {
+  const CommunityPostVisibilityLabels._(this._texts);
+  final List<String> _texts;
+
+  static CommunityPostVisibilityLabels of(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    final key = locale.languageCode == 'zh' && locale.scriptCode == 'Hant'
+        ? 'zh_Hant'
+        : locale.languageCode;
+    return CommunityPostVisibilityLabels._(
+      _translations[key] ?? _translations['en']!,
+    );
+  }
+
+  String get heading => _texts[0];
+  String get unlistedTitle => _texts[1];
+  String get unlistedHelp => _texts[2];
+  String get publicTitle => _texts[3];
+  String get publicHelp => _texts[4];
+  String get unlistedDisclosure => _texts[5];
+}
+
+const Map<String, List<String>> _translations = {
+  'ja': [
+    'YouTubeでの公開範囲',
+    '作品広場向けに投稿（YouTubeは限定公開）',
+    'NIARIM作品広場に表示されますが、再生回数ランキングの対象外です。',
+    'YouTubeにも同時に公開（全体公開）',
+    'YouTubeの検索・おすすめにも表示される可能性があります。再生回数ランキングの対象になります。',
+    '※ 限定公開は非公開ではありません。動画のURLを知る人は、NIARIM外でも視聴・共有できます。',
+  ],
+  'en': [
+    'YouTube visibility',
+    'Post for NIARIM (Unlisted on YouTube)',
+    'Visible in the NIARIM plaza, but excluded from view-count rankings.',
+    'Also publish on YouTube (Public)',
+    'May appear in YouTube search/recommendations and is eligible for view-count rankings.',
+    'Note: Unlisted is not private. Anyone with the link can watch and share the video outside NIARIM.',
+  ],
+  'es': [
+    'Visibilidad en YouTube',
+    'Publicar para NIARIM (no listado en YouTube)',
+    'Visible en NIARIM, pero fuera de la clasificación por visualizaciones.',
+    'Publicar también en YouTube (público)',
+    'Puede aparecer en las búsquedas y recomendaciones de YouTube y optar a la clasificación por visualizaciones.',
+    'Nota: no listado no significa privado. Cualquiera con el enlace puede ver y compartir el video fuera de NIARIM.',
+  ],
+  'fr': [
+    'Visibilité sur YouTube',
+    'Publier pour NIARIM (non répertorié sur YouTube)',
+    'Visible dans NIARIM, mais exclu du classement par vues.',
+    'Publier aussi sur YouTube (public)',
+    'Peut apparaître dans les recherches et recommandations YouTube et dans le classement par vues.',
+    'Attention : non répertorié ne signifie pas privé. Toute personne ayant le lien peut regarder et partager la vidéo hors de NIARIM.',
+  ],
+  'ko': [
+    'YouTube 공개 범위',
+    'NIARIM용 게시 (YouTube 일부 공개)',
+    'NIARIM 작품 광장에는 표시되지만 조회수 랭킹에서는 제외됩니다.',
+    'YouTube에도 공개 (전체 공개)',
+    'YouTube 검색 및 추천에 표시될 수 있으며 조회수 랭킹 대상이 됩니다.',
+    '참고: 일부 공개는 비공개가 아닙니다. 링크를 아는 사람은 NIARIM 밖에서도 시청하고 공유할 수 있습니다.',
+  ],
+  'zh': [
+    'YouTube 公开范围',
+    '发布到 NIARIM（YouTube 不公开列出）',
+    '在 NIARIM 作品广场展示，但不参与播放量排名。',
+    '同时公开到 YouTube',
+    '可能出现在 YouTube 搜索和推荐中，并参与播放量排名。',
+    '注意：不公开列出不等于私密。知道链接的人也能在 NIARIM 外观看和分享。',
+  ],
+  'zh_Hant': [
+    'YouTube 公開範圍',
+    '發佈至 NIARIM（YouTube 不公開列出）',
+    '在 NIARIM 作品廣場顯示，但不參與觀看次數排名。',
+    '同時公開至 YouTube',
+    '可能出現在 YouTube 搜尋及推薦中，並參與觀看次數排名。',
+    '注意：不公開列出不等於私人。知道連結的人也能在 NIARIM 以外觀看和分享。',
+  ],
+};
