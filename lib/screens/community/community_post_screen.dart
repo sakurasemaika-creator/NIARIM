@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -35,6 +36,7 @@ enum _PostStatus {
 enum _PostFailureKind {
   noVideo,
   noTitle,
+  invalidYoutubeDescription,
   googleNotConfigured,
   serverNotConfigured,
   googleAccountBusy,
@@ -83,6 +85,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       'community.pendingUpload.googleAccountEmail';
   static const _pendingTitleKey = 'community.pendingUpload.title';
   static const _pendingDescriptionKey = 'community.pendingUpload.description';
+  static const _pendingYoutubeDescriptionKey =
+      'community.pendingUpload.youtubeDescription';
   static const _pendingYoutubePrivacyKey = 'community.pendingUpload.youtubePrivacyStatus';
   static const _pendingIsShortKey = 'community.pendingUpload.isShort';
   static const _pendingPublishedKey =
@@ -92,6 +96,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
 
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _youtubeDescriptionController = TextEditingController();
   File? _videoFile;
   String? _youtubeVideoId;
   String? _uploadAccountId;
@@ -116,6 +121,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _youtubeDescriptionController.dispose();
     super.dispose();
   }
 
@@ -138,6 +144,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
               prefs.readBool(_pendingAiImageVideoKey) ?? false;
           _titleController.text = prefs.readString(_pendingTitleKey) ?? '';
           _descriptionController.text = prefs.readString(_pendingDescriptionKey) ?? '';
+          _youtubeDescriptionController.text =
+              prefs.readString(_pendingYoutubeDescriptionKey) ?? '';
           _status = _PostStatus.pendingRestored;
         });
       }
@@ -158,6 +166,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     await prefs.setString(_pendingAccountEmailKey, accountEmail);
     await prefs.setString(_pendingTitleKey, title);
     await prefs.setString(_pendingDescriptionKey, _descriptionController.text.trim());
+    await prefs.setString(
+        _pendingYoutubeDescriptionKey, _youtubeDescriptionController.text.trim());
     await prefs.setBool(_pendingIsShortKey, _isShort);
     await prefs.setString(_pendingYoutubePrivacyKey, _youtubePrivacyStatus);
     await prefs.setBool(_pendingPublishedKey, _isNiarimPublished);
@@ -175,6 +185,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       prefs.remove(_pendingAccountEmailKey),
       prefs.remove(_pendingTitleKey),
       prefs.remove(_pendingDescriptionKey),
+      prefs.remove(_pendingYoutubeDescriptionKey),
       prefs.remove(_pendingIsShortKey),
       prefs.remove(_pendingYoutubePrivacyKey),
       prefs.remove(_pendingPublishedKey),
@@ -210,6 +221,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _videoFile = null;
       _titleController.clear();
       _descriptionController.clear();
+      _youtubeDescriptionController.clear();
       _isShort = false;
       _youtubePrivacyStatus = 'unlisted';
       _isNiarimPublished = true;
@@ -272,12 +284,20 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     final file = _videoFile;
     final title = _titleController.text.trim();
     final description = _descriptionController.text.trim();
+    final youtubeDescription = _youtubeDescriptionController.text.trim();
     if (_youtubeVideoId == null && file == null) {
       setState(() => _error = const _PostFailure(_PostFailureKind.noVideo));
       return;
     }
     if (title.isEmpty) {
       setState(() => _error = const _PostFailure(_PostFailureKind.noTitle));
+      return;
+    }
+    if (utf8.encode(youtubeDescription).length > 5000 ||
+        youtubeDescription.contains('<') ||
+        youtubeDescription.contains('>')) {
+      setState(() => _error =
+          const _PostFailure(_PostFailureKind.invalidYoutubeDescription));
       return;
     }
 
@@ -384,7 +404,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             file: file!,
             accessToken: youtubeToken,
             title: title,
-            description: description,
+            description: youtubeDescription,
             privacyStatus: _youtubePrivacyStatus,
             onProgress: (sent, total) {
               if (!mounted || total <= 0) return;
@@ -512,6 +532,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     return switch (error.kind) {
       _PostFailureKind.noVideo => l10n.communityPostErrorNoVideo,
       _PostFailureKind.noTitle => l10n.communityPostErrorNoTitle,
+      _PostFailureKind.invalidYoutubeDescription =>
+        CommunityWorkMetadataLabels.of(context).youtubeDescriptionInvalid,
       _PostFailureKind.googleNotConfigured =>
         l10n.communityGoogleSignInNotConfigured,
       _PostFailureKind.serverNotConfigured =>
@@ -569,6 +591,20 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                     labelText: CommunityWorkMetadataLabels.of(context).description,
                     hintText: CommunityWorkMetadataLabels.of(context).descriptionHint,
                     border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  key: const Key('communityPostYoutubeDescription'),
+                  controller: _youtubeDescriptionController,
+                  enabled: !_busy && retainedVideoId == null,
+                  minLines: 2,
+                  maxLines: 5,
+                  maxLength: 5000,
+                  decoration: InputDecoration(
+                    labelText: CommunityWorkMetadataLabels.of(context).youtubeDescription,
+                    hintText: CommunityWorkMetadataLabels.of(context).youtubeDescriptionHint,
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),

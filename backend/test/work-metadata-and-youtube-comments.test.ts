@@ -93,6 +93,16 @@ describe("NIARIM-owned description row", () => {
     expect(send.mock.calls.some(([cmd]) => cmd instanceof TransactWriteCommand)).toBe(false);
   });
 
+  it("accepts a 2000-character NIARIM description independently of YouTube", async () => {
+    const description = "あ".repeat(2000);
+    await updateWorkMetadata(
+      event({ title: "Original", description }, true), work.workId,
+    );
+    const txn = send.mock.calls.map(([cmd]) => cmd)
+      .find((cmd) => cmd instanceof TransactWriteCommand) as TransactWriteCommand;
+    expect(txn.input.TransactItems?.[1].Put?.Item?.description).toBe(description);
+  });
+
   it("rejects an oversized description before touching the database", async () => {
     await expect(updateWorkMetadata(
       event({ title: "Title", description: "x".repeat(2001) }, true), work.workId,

@@ -44,6 +44,15 @@ void main() {
     },
   );
 
+  test('keeps NIARIM and YouTube descriptions independent during posting', () {
+    expect(source, contains("key: const Key('communityPostDescription')"));
+    expect(source, contains("key: const Key('communityPostYoutubeDescription')"));
+    expect(source, contains('description: youtubeDescription,'));
+    expect(source, contains('description: description,'));
+    expect(source, contains('utf8.encode(youtubeDescription).length > 5000'));
+    expect(source, contains('prefs.remove(_pendingYoutubeDescriptionKey)'));
+  });
+
   test('still requests YouTube scope when pending video is not registered', () {
     expect(source, contains('ここへ来るのは新規YouTubeアップロード、またはYouTubeには存在するが'));
     expect(source, contains('promptIfNecessary: true'));
