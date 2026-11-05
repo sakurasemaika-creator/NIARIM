@@ -35,9 +35,8 @@ class SettingsService extends ChangeNotifier {
   Set<ToolbarItemId> _hiddenToolbarItems = {};
   // Five persistent visual sizes; applies to the toolbar's real hit cells.
   int _toolbarSizeLevel = 3;
-  // PC/DeXモードでキャンバス画面を開いた際に既定でドッキング表示する
-  // パネル（ワークスペース設定）。スマホ版は常に全パネル
-  // 非表示スタートのため、この設定は使わない。
+  // Last visible set of PC dock windows, shared across all projects and
+  // restored on every canvas open. Mobile overlay state stays independent.
   Set<CanvasDockPanel> _defaultDockedPanels = {
     CanvasDockPanel.brush,
     CanvasDockPanel.colorPicker,
@@ -189,9 +188,9 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 右側ドッキング領域（カラーピッカー・レイヤーパネル・キャンバス
-  // プレビュー）の横幅。ドラッグハンドルで変更でき、アプリ全体で
-  // 共通の設定として保存される。
+  // Widths and window heights are shared physical workspace dimensions,
+  // not project state. Before any customization only, handedness can mirror
+  // which initial panel group occupies either side.
   // Per-window heights are global workspace settings, not project state.
   final Map<CanvasDockPanel, double> _desktopPanelHeights = {};
  
@@ -309,7 +308,7 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 左側（左利きモードでは右側）ツールオプション系ドッキング領域の横幅。
+  // Physical left column width, independent of handedness after editing.
   double _desktopToolPanelWidth = 280.0;
 
   double get desktopToolPanelWidth =>
@@ -323,8 +322,8 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ツールオプション系ドッキング領域（ブラシ・トーン・スタンプ等）の
-  // 積み重ね順。
+  // Initial LEFT column order (brush etc.). Once edited it is the user's
+  // saved physical left-side order, regardless of panel type or handedness.
   static const List<CanvasDockPanel> _defaultToolOptionDockOrder = [
     CanvasDockPanel.penSubTool,
     CanvasDockPanel.brush,
@@ -358,7 +357,8 @@ class SettingsService extends ChangeNotifier {
   Future<void> resetToolOptionDockOrder() =>
       setToolOptionDockOrder(_defaultToolOptionDockOrder);
 
-  // カラーピッカー・レイヤーパネル・キャンバスプレビューの積み重ね順。
+  // Initial RIGHT column order (color, layers, navigator). Once edited it is
+  // the user's saved physical right-side order.
   static const List<CanvasDockPanel> _defaultRightDockOrder = [
     CanvasDockPanel.canvasPreview,
     CanvasDockPanel.colorPicker,
@@ -1090,8 +1090,10 @@ class SettingsService extends ChangeNotifier {
   /// （ワークスペース設定＞PC版で既定で開くパネル）。
   Future<void> setDefaultDockedPanels(Set<CanvasDockPanel> panels) async {
     if (setEquals(_defaultDockedPanels, panels)) return;
-    await _pinDesktopDockLayout();
+    // Publish the most recent user action in memory before the first await.
+    // Rapidly opening two panels must not lose the earlier open/close change.
     _defaultDockedPanels = Set.of(panels);
+    await _pinDesktopDockLayout();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
       'default_docked_panels',
