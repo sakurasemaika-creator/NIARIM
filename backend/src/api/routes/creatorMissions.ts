@@ -27,8 +27,10 @@ import {
 } from "../../lib/missionCatalog";
 
 /**
- * Claims OFF by default until anti-sybil / age / moderation / wallet review.
- * No AWS write or reward issuance occurs when the feature flag is absent.
+ * Claims OFF pending payout economics, moderation and wallet integrity review.
+ * Initial community policy permits multiple accounts and reciprocal bookmarks;
+ * this is separate from preventing the SAME account/work/goal from receiving
+ * duplicate coins. A disabled flag cannot produce new wallet credits.
  */
 function enabled(): boolean {
   return process.env.CREATOR_MISSION_CLAIMS_ENABLED === "true" &&

@@ -163,12 +163,41 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         : row['eligible'] == null ? t.get('reviewing')
         : t.get('notAchieved');
     final coins = (row['coins'] as num?)?.toInt() ?? 0;
+    final goal = (row['required'] as num?)?.toInt() ?? 0;
+    final progress = (row['progress'] as num?)?.toInt() ??
+        (row['bookmarkCount'] as num?)?.toInt();
+    final kind = row['kind'];
+    final template = row['_genericTemplate'] == true;
+    final details = <String>[
+      name,
+      status,
+      if (progress != null && !template && kind == 'qualifiedWorks')
+        t.format('detailsWorksProgress', progress, each: goal),
+      if (progress != null && !template && kind == 'workBookmarks' &&
+          goal > 0)
+        t.format('detailsWorkProgress', progress, each: goal),
+      if (progress != null && kind == 'followers')
+        t.format('detailsFollowersProgress', progress, each: goal),
+      if (kind == 'qualifiedWorks') t.get('detailsDraftCount'),
+      if (template) t.get('detailsTemplateRule'),
+      if (row['perWork'] == true)
+        t.get('detailsPerWorkRule')
+      else
+        t.get('detailsAccountRule'),
+      if (row['pendingSince'] is num && !claimed)
+        t.get('detailsPending'),
+      if (row['rewardEnabled'] != true)
+        t.get('detailsOffline'),
+      coins.toString() + ' ' + t.get('coin'),
+      t.get('detailsHint'),
+    ];
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(t.get('detailsTitle')),
-        content: Text(
-          '$name\n\n$status\n$coins ${t.get('coin')}\n\n${t.get('detailsHint')}'),
+        content: SingleChildScrollView(
+          child: Text(details.join('\n\n')),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),

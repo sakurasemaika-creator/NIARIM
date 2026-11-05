@@ -202,7 +202,9 @@ export class NiarimBackendStack extends Stack {
         PLAY_PURCHASE_VERIFICATION_ENABLED:
           this.node.tryGetContext("playPurchaseVerificationEnabled") === "true"
             ? "true" : "false",
-        // Anti-sybil, moderation and economics signoff is independent.
+        // Payout economics and wallet/moderation signoff are independent.
+        // Early community policy permits multiple accounts and reciprocal
+        // bookmarks; exactly-once credits are still mandatory.
         CREATOR_MISSION_CLAIMS_ENABLED:
           this.node.tryGetContext("creatorMissionClaimsEnabled") === "true"
             ? "true" : "false",
