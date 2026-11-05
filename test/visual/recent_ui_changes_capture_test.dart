@@ -574,12 +574,7 @@ void main() {
     await settings.markFirstLaunchDone();
     await settings.setForcePcMode(true);
     await settings.setDesktopDockAutoCollapseEnabled(false);
-    await settings.setDefaultDockedPanels({
-      CanvasDockPanel.brush,
-      CanvasDockPanel.colorPicker,
-      CanvasDockPanel.layer,
-      CanvasDockPanel.canvasPreview,
-    });
+    // Use untouched defaults to prove handedness selects the initial sides.
     final project = (await tester.runAsync(() => projects.createProject(
       name: '左手モード左右反転の実画面確認',
       fps: 12, durationSeconds: 1, backgroundColor: 0xFFB8CEDA,
@@ -612,10 +607,10 @@ void main() {
     expect(width, findsOneWidget);
     await tester.drag(width, const Offset(40, 0));
     await _shot(tester, root, '52_mirror_canvas_left_hand_resize_left');
-    expect(settings.desktopPanelWidth, greaterThan(280));
-    expect(settings.desktopToolPanelWidth, 280);
+    expect(settings.desktopToolPanelWidth, greaterThan(280));
+    expect(settings.desktopPanelWidth, 280);
 
-    // Physical right -> physical left: persist to logical right order.
+    // Physical right -> physical left: persist to the shared physical left.
     await settings.setDesktopDockCollapsed(CanvasDockPanel.brush, true);
     await _settle(tester);
     final source = find.byKey(const ValueKey('dockCollapsedDrag-brush'));
@@ -623,12 +618,12 @@ void main() {
     await tester.drag(source,
         tester.getCenter(target) - tester.getCenter(source));
     await _shot(tester, root, '53_mirror_canvas_drag_brush_to_physical_left');
-    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
 
-    // Moving all saved-right windows out removes the PHYSICAL left dock.
-    for (final panel in List<CanvasDockPanel>.of(settings.rightDockOrder)) {
-      await settings.moveDesktopDockPanel(panel, toRight: false);
+    // Moving every left-side window to the right empties the physical left.
+    for (final panel in List<CanvasDockPanel>.of(settings.toolOptionDockOrder)) {
+      await settings.moveDesktopDockPanel(panel, toRight: true);
     }
     await _shot(tester, root, '54_mirror_canvas_physical_left_empty');
     expect(find.byKey(const ValueKey('desktopLeftDockScroll')), findsNothing);
@@ -643,13 +638,14 @@ void main() {
     await tester.pump();
     await gesture.up();
     await _shot(tester, root, '56_mirror_canvas_left_dock_restored');
-    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
 
     await settings.setLeftHanded(false);
     await _shot(tester, root, '57_mirror_canvas_return_normal_mode');
-    expect(tester.getRect(brush).left,
-        greaterThanOrEqualTo(tester.getRect(layer).right));
+    // Customized physical position remains unchanged when hand changes.
+    expect(tester.getRect(brush).right,
+        lessThanOrEqualTo(tester.getRect(layer).left));
     expect(tester.takeException(), isNull);
   }, timeout: const Timeout(Duration(minutes: 11)));
 
@@ -664,12 +660,7 @@ void main() {
     final settings = SettingsService();
     await settings.init();
     await settings.setDesktopDockAutoCollapseEnabled(false);
-    await settings.setDefaultDockedPanels({
-      CanvasDockPanel.brush,
-      CanvasDockPanel.colorPicker,
-      CanvasDockPanel.layer,
-      CanvasDockPanel.canvasPreview,
-    });
+    // Use untouched defaults to prove handedness selects the initial sides.
     final root = GlobalKey();
     await tester.pumpWidget(RepaintBoundary(
       key: root,
@@ -700,18 +691,18 @@ void main() {
     final target = find.byKey(const ValueKey('pcPreviewDrop-layer'));
     await tester.drag(drag, tester.getCenter(target) - tester.getCenter(drag));
     await _shot(tester, root, '61_mirror_preview_drag_brush_to_left');
-    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
 
     await settings.setDesktopDockCollapsed(CanvasDockPanel.layer, false);
     await _settle(tester);
     final grip = find.byKey(const ValueKey('pcPreviewToolColumnResize'));
     await tester.drag(grip, const Offset(40, 0));
     await _shot(tester, root, '62_mirror_preview_left_column_resized');
-    expect(settings.desktopPanelWidth, greaterThan(280));
+    expect(settings.desktopToolPanelWidth, greaterThan(280));
 
-    // Empty physical right is the logical LEFT list in left-handed mode.
-    for (final panel in List<CanvasDockPanel>.of(settings.toolOptionDockOrder)) {
-      await settings.moveDesktopDockPanel(panel, toRight: true);
+    // Empty physical right by moving any remaining right windows left.
+    for (final panel in List<CanvasDockPanel>.of(settings.rightDockOrder)) {
+      await settings.moveDesktopDockPanel(panel, toRight: false);
     }
     await _shot(tester, root, '63_mirror_preview_physical_right_empty');
     final physicalRight = find.byKey(const ValueKey('pcPreviewRightColumn'));
@@ -726,7 +717,7 @@ void main() {
     await tester.pump();
     await toRight.up();
     await _shot(tester, root, '65_mirror_preview_right_dock_restored');
-    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
 
     await settings.setLeftHanded(false);
     await _shot(tester, root, '66_mirror_preview_return_normal');
