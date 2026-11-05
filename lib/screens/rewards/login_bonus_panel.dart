@@ -111,7 +111,7 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
             final dailyClaimed=status['dailyClaimed']==true;
             final milestones=(status['milestones'] as List? ?? const [])
                 .whereType<Map>()
-                .map(m=>Map<String,dynamic>.from(m))
+                .map((m)=>Map<String,dynamic>.from(m))
                 .toList();
             milestones.sort((a,b) {
               final ap=a['eligible']==true && a['claimed']!=true?0:1;
