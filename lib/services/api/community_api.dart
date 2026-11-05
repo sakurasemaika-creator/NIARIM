@@ -390,6 +390,8 @@ class CommunityApi {
   Future<ApiWork> createWork({
     required String youtubeVideoId,
     required String youtubeAccessToken,
+    String? title,
+    String description = '',
     bool isShort = false,
     bool isNiarimPublished = true,
     bool containsGenerativeAiImageOrVideo = false,
@@ -410,6 +412,8 @@ class CommunityApi {
       body: {
         'youtubeVideoId': youtubeVideoId,
         'youtubeAccessToken': youtubeAccessToken,
+        'title': ?title,
+        'description': description,
         'isShort': isShort,
         'isNiarimPublished': isNiarimPublished,
         'containsGenerativeAiImageOrVideo': containsGenerativeAiImageOrVideo,
