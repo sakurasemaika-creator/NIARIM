@@ -22,7 +22,7 @@ class CreatorMissionLabels {
 
 const Map<String, Map<String, String>> _translations = {
   'ja': {
-    'title': 'クリエイターミッション',
+    'title': 'ミッション',
     'genericBookmark': '投稿した作品がブックマーク数{n}件達成する',
     'namedBookmark': 'がブックマーク数{n}件達成する',
     'genericPublished': '投稿した作品を公開する',
