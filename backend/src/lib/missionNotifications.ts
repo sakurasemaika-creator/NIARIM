@@ -17,7 +17,8 @@ import { ddb, Keys, tableName } from "./dynamo";
  * remain available in the user's personal history.
  */
 export type MissionActivityKind =
-  | "workPublished" | "workBookmarks" | "qualifiedWorks" | "followers";
+  | "workPublished" | "workBookmarks" | "qualifiedWorks" | "followers"
+  | "loginMilestone";
 
 export type MissionAchievement = {
   kind: MissionActivityKind;
@@ -37,7 +38,8 @@ export function missionEventId(event: MissionAchievement): string {
   if (!allowedMissionId.test(event.missionId)) {
     throw new Error("Invalid mission event id");
   }
-  if (event.kind !== "qualifiedWorks" && event.kind !== "followers") {
+  if (event.kind !== "qualifiedWorks" && event.kind !== "followers" &&
+      event.kind !== "loginMilestone") {
     if (!event.workId || !safeEventId.test(event.workId)) {
       throw new Error("Mission activity needs a valid work id");
     }

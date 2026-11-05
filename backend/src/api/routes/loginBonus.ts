@@ -7,6 +7,7 @@ import { BatchGetCommand, GetCommand, TransactWriteCommand, UpdateCommand } from
 import { authenticate } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { parseJsonObject } from "../../lib/request";
+import { recordMissionAchievement } from "../../lib/missionNotifications";
 import { badRequest, conflict, forbidden, ok } from "../../lib/response";
 import {
   DAILY_LOGIN_COINS, LOGIN_BONUS_CATALOG_VERSION, LOGIN_BONUS_MILESTONES,
@@ -67,6 +68,19 @@ export async function visitMyLoginBonus(event: APIGatewayProxyEventV2) {
       ReturnValues: "ALL_NEW",
     }));
     const state = snapshot(result.Attributes);
+    if (milestoneCoins(state.totalDays) !== undefined) {
+      try {
+        await recordMissionAchievement(userId, {
+          kind: "loginMilestone",
+          missionId: `login_total_${state.totalDays}`,
+          required: state.totalDays,
+          occurredAt: new Date().toISOString(),
+        });
+      } catch (error) {
+        // A notification failure never loses an already recorded login day.
+        console.warn("Login milestone notice could not be saved", error);
+      }
+    }
     return ok({...state,day,visitedToday:true});
   } catch (error) {
     if (!(error instanceof ConditionalCheckFailedException)) throw error;
