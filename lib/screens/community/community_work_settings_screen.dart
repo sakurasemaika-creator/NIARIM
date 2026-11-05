@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../l10n/community_work_metadata_labels.dart';
 import '../../models/community_work.dart';
 import '../../services/community_service.dart';
 import '../../widgets/responsive.dart';
@@ -82,6 +83,111 @@ class _CommunityWorkSettingsScreenState
   }
 
   bool _busy = false;
+
+  Future<void> _editMetadata(CommunityWork work) async {
+    if (_busy) return;
+    final service = context.read<CommunityService>();
+    final labels = CommunityWorkMetadataLabels.of(context);
+    setState(() => _busy = true);
+    try {
+      final metadata = service.api == null
+          ? <String, dynamic>{'title': work.title, 'description': ''}
+          : await service.api!.workMetadata(work.id);
+      if (!mounted || !service.isOwnWork(work)) return;
+      final titleController = TextEditingController(
+        text: metadata['title'] as String? ?? work.title,
+      );
+      final descriptionController = TextEditingController(
+        text: metadata['description'] as String? ?? '',
+      );
+      final formKey = GlobalKey<FormState>();
+      try {
+        final saved = await _showOwnerDialog<Map<String, String>>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Text(labels.edit),
+            content: SizedBox(
+              width: 460,
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        key: const Key('communityWorkSettingsTitleInput'),
+                        controller: titleController,
+                        maxLength: 100,
+                        decoration: InputDecoration(
+                          labelText: labels.title,
+                          border: const OutlineInputBorder(),
+                        ),
+                        validator: (value) =>
+                            value == null || value.trim().isEmpty ? labels.title : null,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        key: const Key('communityWorkSettingsDescriptionInput'),
+                        controller: descriptionController,
+                        minLines: 2,
+                        maxLines: 6,
+                        maxLength: 2000,
+                        decoration: InputDecoration(
+                          labelText: labels.description,
+                          hintText: labels.descriptionHint,
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                      Text(labels.info,
+                        style: Theme.of(dialogContext).textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: Text(AppLocalizations.of(dialogContext)!.commonCancel),
+              ),
+              FilledButton(
+                key: const Key('communityWorkSettingsMetadataSave'),
+                onPressed: () {
+                  if (formKey.currentState?.validate() != true) return;
+                  Navigator.pop(dialogContext, {
+                    'title': titleController.text.trim(),
+                    'description': descriptionController.text.trim(),
+                  });
+                },
+                child: Text(AppLocalizations.of(dialogContext)!.commonSave),
+              ),
+            ],
+          ),
+        );
+        if (saved == null || !mounted) return;
+        await service.updateOwnWorkMetadata(
+          work.id,
+          title: saved['title']!,
+          description: saved['description']!,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(labels.saved)),
+          );
+        }
+      } finally {
+        titleController.dispose();
+        descriptionController.dispose();
+      }
+    } on CommunityAccountChangedException {
+      // Owner/account changed while the editor was open.
+    } catch (error) {
+      if (mounted) _showError(error);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   Future<void> _editTag(CommunityWork work, {String? original}) async {
     if (_busy) return;
@@ -331,6 +437,17 @@ class _CommunityWorkSettingsScreenState
                     style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                   const SizedBox(height: 18),
+                  Card(
+                    child: ListTile(
+                      key: const Key('communityWorkSettingsEditMetadata'),
+                      leading: const Icon(Icons.edit_note_outlined),
+                      title: Text(CommunityWorkMetadataLabels.of(context).edit),
+                      subtitle: Text(CommunityWorkMetadataLabels.of(context).info),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: ownWork && !_busy ? () => _editMetadata(work) : null,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Card(
                     child: Column(
                       children: [
