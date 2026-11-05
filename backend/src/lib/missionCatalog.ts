@@ -85,7 +85,9 @@ export const CREATOR_MISSIONS: readonly MissionDefinition[] = Object.freeze([
 ]);
 
 export const ACCOUNT_MISSIONS = CREATOR_MISSIONS.filter((m) => !m.perWork);
-export const PER_WORK_MISSIONS = CREATOR_MISSIONS.filter((m) => m.perWork);
+export const PER_WORK_MISSIONS = CREATOR_MISSIONS.filter((m) => m.perWork)
+  .sort((a, b) => a.kind === "workBookmarks" && b.kind === "workBookmarks"
+    ? a.required - b.required : 0);
 
 /** Account-wide guaranteed MAX; per-work missions have no account-wide cap. */
 export const MAX_CREATOR_MISSION_COINS = ACCOUNT_MISSIONS.reduce(
