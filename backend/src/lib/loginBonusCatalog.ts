@@ -25,7 +25,7 @@ const tiers = [
 export const LOGIN_BONUS_MILESTONES: readonly LoginMilestone[] =
   Object.freeze(tiers.flatMap(tier => {
     const rows:LoginMilestone[]=[];
-    for (let days=tier.from;days<=tier.to;days+=tier.step) {
+    for (let days: number = tier.from;days<=tier.to;days+=tier.step) {
       const roundBonus = days === 50 ? 50 : days === 100 ? 100
         : days === 500 ? 250 : days === 1000 ? 500 : tier.coins;
       rows.push({days,coins:roundBonus});
