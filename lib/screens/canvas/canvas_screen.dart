@@ -241,7 +241,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _hasPhysicalDockPanels(
     SettingsService settings, {
     required bool right,
-  }) => _physicalDockOrder(settings, right: right).any(_desktopPanelVisible) ||
+  }) =>
+      _physicalDockOrder(settings, right: right).any(_desktopPanelVisible) ||
       (!_storedRightForPhysicalSide(right) && _showMeshTransformPanel);
 
   void _resizePhysicalDockColumn({
@@ -2127,9 +2128,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
           right ? 'desktopEmptyRightDockDrop' : 'desktopEmptyLeftDockDrop',
         ),
         onWillAcceptWithDetails: (_) => true,
-        onAcceptWithDetails: (details) => context
-            .read<SettingsService>()
-            .moveDesktopDockPanel(
+        onAcceptWithDetails: (details) =>
+            context.read<SettingsService>().moveDesktopDockPanel(
               details.data,
               toRight: _storedRightForPhysicalSide(right),
             ),
@@ -2439,10 +2439,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
     builder: (context, constraints) {
       final settings = context.watch<SettingsService>();
       final storedRight = _storedRightForPhysicalSide(right);
-      final visible =
-          _physicalDockOrder(settings, right: right)
-              .where(_desktopPanelVisible)
-              .toList();
+      final visible = _physicalDockOrder(
+        settings,
+        right: right,
+      ).where(_desktopPanelVisible).toList();
       final hasMesh = !storedRight && _showMeshTransformPanel;
       final fitted = _fitDesktopDock(
         settings,
