@@ -1,5 +1,5 @@
 import {beforeEach,describe,it,expect,vi} from "vitest";
-import {BatchGetCommand,QueryCommand} from "@aws-sdk/lib-dynamodb";
+import {BatchGetCommand,GetCommand,QueryCommand} from "@aws-sdk/lib-dynamodb";
 import type {APIGatewayProxyEventV2} from "aws-lambda";
 const {send}=vi.hoisted(()=>({send:vi.fn()}));
 vi.mock("../src/lib/dynamo",async(original)=>({
@@ -33,7 +33,7 @@ describe("work-count grid display",()=>{
    expect(data.missions.find((m:{id:string})=>m.id==="works_3_x_10"))
     .toMatchObject({eligible:false,claimed:true});
    expect(send.mock.calls.map(([cmd])=>cmd).every(c=>
-     c instanceof QueryCommand||c instanceof BatchGetCommand)).toBe(true);
+     c instanceof QueryCommand||c instanceof BatchGetCommand||c instanceof GetCommand)).toBe(true);
    const q=send.mock.calls.map(([c])=>c).find(c=>c instanceof QueryCommand) as QueryCommand;
    expect(q.input.ExpressionAttributeValues?.[":author"]).toBe("AUTHOR#Nowner");
  });
