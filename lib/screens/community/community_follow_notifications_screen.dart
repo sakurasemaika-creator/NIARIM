@@ -145,6 +145,7 @@ class _CommunityFollowNotificationsScreenState
       'workBookmarks' => 'activityWorkBookmarks',
       'qualifiedWorks' when each == 0 => 'activityWorksPublished',
       'qualifiedWorks' => 'activityWorksBookmarks',
+      'followers' => 'activityFollowers',
       _ => 'activityTitle',
     };
     return t.get(key)
@@ -290,6 +291,7 @@ class _CommunityFollowNotificationsScreenState
                       'workPublished' => Icons.movie_creation_outlined,
                       'workBookmarks' => Icons.bookmarks_outlined,
                       'qualifiedWorks' => Icons.emoji_events_outlined,
+                      'followers' => Icons.people_outline,
                       _ => Icons.flag_outlined,
                     };
                     return ListTile(
