@@ -72,7 +72,6 @@ class CommunityWorkCard extends StatelessWidget {
         ? l10n.communityCreatorLabel
         : work.authorName;
     final language = Localizations.localeOf(context).languageCode;
-    final views = formatCompactCount(work.viewCount, language);
     final bookmarks = formatCompactCount(work.bookmarkCount, language);
     final overlay = cardColor;
     Widget badge(
@@ -346,19 +345,6 @@ class CommunityWorkCard extends StatelessWidget {
                                   const SizedBox(height: 4),
                                   Row(
                                     children: [
-                                      Icon(
-                                        Icons.play_arrow_rounded,
-                                        size: 13,
-                                        color: detailColor,
-                                      ),
-                                      const SizedBox(width: 2),
-                                      Flexible(
-                                        child: count(
-                                          l10n.communityRankingSortViews,
-                                          views,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
                                       Icon(
                                         Icons.bookmarks_outlined,
                                         size: 13,

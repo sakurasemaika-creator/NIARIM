@@ -109,7 +109,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   _PlazaSort _plazaSort = _PlazaSort.newest;
   late final TabController _tabController;
   _RankingPeriod _period = _RankingPeriod.allTime;
-  _RankingSort _sort = _RankingSort.views;
+  _RankingSort _sort = _RankingSort.bookmarks;
   bool _sortAscending = false;
   String _searchQuery = '';
   String _draftQuery = '';
@@ -145,7 +145,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   RankingPeriod get _apiRankingPeriod =>
-      _sort == _RankingSort.bookmarks && _period == _RankingPeriod.allTime
+      _period == _RankingPeriod.allTime
       ? RankingPeriod.bookmarks
       : switch (_period) {
           _RankingPeriod.allTime => RankingPeriod.all,
@@ -257,7 +257,7 @@ class _CommunityScreenState extends State<CommunityScreen>
               await service.loadMoreRanking(
                 _apiRankingPeriod,
                 ascending: _sortAscending,
-                sortBookmarks: _sort == _RankingSort.bookmarks,
+                sortBookmarks: true,
               );
             case 2:
               await service.loadMoreFollowingFeed();
@@ -645,7 +645,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     await service.fetchRanking(
       _apiRankingPeriod,
       ascending: _sortAscending,
-      sortBookmarks: _sort == _RankingSort.bookmarks,
+      sortBookmarks: true,
     );
   }
 
@@ -764,7 +764,6 @@ class _CommunityScreenState extends State<CommunityScreen>
         .where((work) => _matchesPostDate(work.postedAt))
         .where(
           (work) =>
-              work.viewCount >= _minimumViews &&
               work.bookmarkCount >= _minimumBookmarks,
         )
         .where(
@@ -1245,10 +1244,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                       child: Text(l10n.communityTabNew),
                     ),
                     PopupMenuItem(
-                      value: 'views',
-                      child: Text(l10n.communityRankingSortViews),
-                    ),
-                    PopupMenuItem(
                       value: 'bookmarks',
                       child: Text(l10n.communityRankingSortBookmarks),
                     ),
@@ -1628,6 +1623,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                             for (final period in _RankingPeriod.values)
                               DropdownMenuItem<_RankingPeriod>(
                                 value: period,
+                                enabled: period == _RankingPeriod.allTime,
                                 child: Text(_periodLabel(l10n, period)),
                               ),
                           ],
@@ -1652,21 +1648,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                               runSpacing: 4,
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                ChoiceChip(
-                                  avatar: const Icon(
-                                    Icons.play_arrow_rounded,
-                                    size: 16,
-                                  ),
-                                  label: Text(l10n.communityRankingSortViews),
-                                  selected: _sort == _RankingSort.views,
-                                  onSelected: (_) {
-                                    setState(() {
-                                      _sort = _RankingSort.views;
-                                      _resetPage(1);
-                                    });
-                                    _fetchRanking();
-                                  },
-                                ),
                                 ChoiceChip(
                                   avatar: const Icon(Icons.bookmark, size: 16),
                                   label: Text(
@@ -2429,7 +2410,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                     ),
                   ],
                 ),
-              for (final filter in [0, 1]) ...[
+              for (final filter in [1]) ...[
                 const SizedBox(height: 12),
                 Text(
                   filter == 0

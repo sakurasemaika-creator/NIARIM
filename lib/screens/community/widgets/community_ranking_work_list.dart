@@ -327,30 +327,12 @@ class CommunityRankingWorkCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final language = Localizations.localeOf(context).languageCode;
-    final views = formatCompactCount(work.viewCount, language);
     final bookmarks = formatCompactCount(work.bookmarkCount, language);
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 10,
       runSpacing: 2,
       children: [
-        Semantics(
-          label: '${l10n.communityRankingSortViews}: $views',
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.play_arrow_rounded,
-                size: 15,
-                color: scheme.onSurfaceVariant,
-              ),
-              Text(
-                views,
-                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
         Semantics(
           label: '${l10n.communityRankingSortBookmarks}: $bookmarks',
           child: Row(

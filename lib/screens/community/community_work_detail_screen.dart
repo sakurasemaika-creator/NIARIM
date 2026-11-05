@@ -438,17 +438,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
               Row(
                 children: [
                   Icon(
-                    Icons.play_arrow_rounded,
-                    size: 16,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 3),
-                  Text(
-                    formatCompactCount(work.viewCount, languageCode),
-                    style: TextStyle(color: scheme.onSurfaceVariant),
-                  ),
-                  const SizedBox(width: 14),
-                  Icon(
                     Icons.bookmark,
                     size: 16,
                     color: scheme.onSurfaceVariant,
