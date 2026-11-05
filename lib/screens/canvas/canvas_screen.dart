@@ -1494,8 +1494,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                     settings.desktopPanelWidth;
                                 // Right dock stays on the right in both
                                 // handedness modes, so the direction is fixed.
-                                _panelWidthDragOverride =
-                                    (current - dx).clamp(200.0, 480.0);
+                                _panelWidthDragOverride = (current - dx).clamp(
+                                  200.0,
+                                  480.0,
+                                );
                               }),
                               onDragEnd: () {
                                 final w = _panelWidthDragOverride;
@@ -1954,9 +1956,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         CanvasDockPanel.brush => 460,
         _ => 260,
       },
-      child: DockedPanelCloseScope(
-        child: _dockBody(panel),
-      ),
+      child: DockedPanelCloseScope(child: _dockBody(panel)),
     );
   }
 
@@ -2042,10 +2042,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           child: Icon(_dockCollapsedIcon(p), size: 24),
                         ),
                       ),
-                      childWhenDragging: const SizedBox(
-                        width: 52,
-                        height: 48,
-                      ),
+                      childWhenDragging: const SizedBox(width: 52, height: 48),
                       child: MouseRegion(
                         cursor: SystemMouseCursors.grab,
                         child: IconButton(
