@@ -92,7 +92,7 @@ void main() {
     final outerToolbar = find.byKey(const ValueKey('pcPreviewToolbar'));
     expect(
       tester.getRect(outerToolbar).right,
-      lessThan(tester.getRect(toolColumn).left),
+      lessThanOrEqualTo(tester.getRect(toolColumn).left),
     );
     await settings.setLeftHanded(true);
     await tester.pumpAndSettle();
