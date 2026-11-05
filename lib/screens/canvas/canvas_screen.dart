@@ -2313,13 +2313,17 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   PopupMenuItem(
                                     value: 'left',
                                     child: Text(
-                                      settings.isLeftHanded ? l.pcWorkspaceLayoutRightOrderSection : l.pcWorkspaceLayoutToolOrderSection,
+                                      settings.isLeftHanded
+                                          ? l.pcWorkspaceLayoutRightOrderSection
+                                          : l.pcWorkspaceLayoutToolOrderSection,
                                     ),
                                   ),
                                   PopupMenuItem(
                                     value: 'right',
                                     child: Text(
-                                      settings.isLeftHanded ? l.pcWorkspaceLayoutToolOrderSection : l.pcWorkspaceLayoutRightOrderSection,
+                                      settings.isLeftHanded
+                                          ? l.pcWorkspaceLayoutToolOrderSection
+                                          : l.pcWorkspaceLayoutRightOrderSection,
                                     ),
                                   ),
                                   PopupMenuItem(
