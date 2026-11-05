@@ -449,17 +449,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   ),
                   const SizedBox(width: 14),
                   Icon(
-                    Icons.thumb_up_alt_outlined,
-                    size: 16,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 3),
-                  Text(
-                    formatCompactCount(work.likeCount, languageCode),
-                    style: TextStyle(color: scheme.onSurfaceVariant),
-                  ),
-                  const SizedBox(width: 14),
-                  Icon(
                     Icons.bookmark,
                     size: 16,
                     color: scheme.onSurfaceVariant,

@@ -26,10 +26,10 @@ class CommunityPostVisibilityLabels {
 const Map<String, List<String>> _translations = {
   'ja': [
     'YouTubeでの公開範囲',
-    '作品広場向けに投稿（YouTubeは限定公開）',
-    'NIARIM作品広場に表示されますが、再生回数ランキングの対象外です。',
-    'YouTubeにも同時に公開（全体公開）',
-    'YouTubeの検索・おすすめにも表示される可能性があります。再生回数ランキングの対象になります。',
+    '作品広場にのみ投稿する',
+    '※YouTube上では限定公開になります。NIARIMの再生回数ランキングには載らなくなります。',
+    'YouTubeにも同時投稿する',
+    '※YouTube上では全体公開になります。NIARIMの再生回数ランキングに載る可能性があります。',
     '※ 限定公開は非公開ではありません。動画のURLを知る人は、NIARIM外でも視聴・共有できます。',
   ],
   'en': [

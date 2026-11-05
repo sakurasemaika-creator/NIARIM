@@ -1619,23 +1619,27 @@ class _CommunityScreenState extends State<CommunityScreen>
                   children: [
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                      child: Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          for (final period in _RankingPeriod.values)
-                            ChoiceChip(
-                              label: Text(_periodLabel(l10n, period)),
-                              selected: _period == period,
-                              onSelected: (_) {
-                                setState(() {
-                                  _period = period;
-                                  _resetPage(1);
-                                });
-                                _fetchRanking();
-                              },
-                            ),
-                        ],
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: DropdownButton<_RankingPeriod>(
+                          key: const Key('communityRankingPeriodDropdown'),
+                          value: _period,
+                          items: [
+                            for (final period in _RankingPeriod.values)
+                              DropdownMenuItem<_RankingPeriod>(
+                                value: period,
+                                child: Text(_periodLabel(l10n, period)),
+                              ),
+                          ],
+                          onChanged: (period) {
+                            if (period == null || period == _period) return;
+                            setState(() {
+                              _period = period;
+                              _resetPage(1);
+                            });
+                            _fetchRanking();
+                          },
+                        ),
                       ),
                     ),
                     Padding(
