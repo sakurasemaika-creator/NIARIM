@@ -166,6 +166,8 @@ export interface UserItem {
   channelName?: string;
   channelAvatarUrl?: string;
   channelInfoCachedAt?: string;
+  /** JST日付につき成功1回の手動YouTubeプロフィール更新。 */
+  channelInfoManualUpdatedJstDay?: string;
 
   // 8.5節「ブックマーク一覧の公開設定」・22.5節「フォロー中/フォロワー
   // 一覧の公開設定」。いずれも既定false（非公開）。

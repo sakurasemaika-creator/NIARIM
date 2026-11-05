@@ -9,6 +9,7 @@ import {
   payloadTooLarge,
 } from "../lib/response";
 import { getRanking } from "./routes/ranking";
+import { refreshMyYoutubeChannel } from "./routes/youtubeChannelRefresh";
 import { getLatestWorks } from "./routes/worksLatest";
 import { getPlaybackStatus } from "./routes/worksPlaybackStatus";
 import { getAuthorWorks, getMyWorks } from "./routes/userWorks";
@@ -103,6 +104,7 @@ const routes: Route[] = [
   // Authenticated owner read. This keeps account switching simple on clients:
   // callers do not need to know or persist the generated NIARIM user id.
   route("GET", "/me/works", (e) => getMyWorks(e)),
+  route("POST", "/me/youtube-channel/refresh", (e) => refreshMyYoutubeChannel(e)),
   route("GET", "/me/rewards", (e) => getMyRewardState(e)),
   route("POST", "/me/premium/play/verify", (e) => verifyMyPlayPremium(e)),
   route("GET", "/me/premium/play/availability", (e) => getPlayPurchaseAvailability(e)),

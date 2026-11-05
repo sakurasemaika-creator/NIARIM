@@ -86,6 +86,14 @@ class CommunityApi {
     return ApiRankingPage.fromJson(json);
   }
 
+  /// OAuth token stays in this single authenticated request and is not saved.
+  Future<Map<String, dynamic>> refreshYoutubeChannelInfo(String youtubeAccessToken) =>
+      _client.postJson(
+        '/me/youtube-channel/refresh',
+        body: {'youtubeAccessToken': youtubeAccessToken},
+        authenticated: true,
+      );
+
   /// The authenticated user's server-owned coin balance and entitlements.
   /// No user-id parameter: Google ID token resolves the NIARIM ID server-side.
   Future<Map<String, dynamic>> myRewardState() =>
