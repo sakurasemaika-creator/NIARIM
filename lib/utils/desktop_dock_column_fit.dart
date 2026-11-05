@@ -30,6 +30,13 @@ class DesktopDockColumnFit {
   static const double gap = 8;
   static const double minimumBodyHeight = 80;
 
+  /// Left-handed mode mirrors the visual sides without mutating saved
+  /// logical dock orders. Drag/drop uses this mapping in reverse.
+  static bool storedRightForPhysicalSide({
+    required bool physicalRight,
+    required bool leftHanded,
+  }) => physicalRight != leftHanded;
+
   /// First shrink expanded bodies to their minimum, then temporarily fold the
   /// least recently used panels until everything fits. If even the folded
   /// icons cannot fit, the caller's existing column scroll remains available.

@@ -97,9 +97,22 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     settings.setDefaultDockedPanels(next);
   }
 
+  bool _storedRightForPhysicalSide(SettingsService settings, bool right) =>
+      DesktopDockColumnFit.storedRightForPhysicalSide(
+        physicalRight: right,
+        leftHanded: settings.isLeftHanded,
+      );
+
+  List<CanvasDockPanel> _physicalDockOrder(
+    SettingsService settings, {
+    required bool right,
+  }) => _storedRightForPhysicalSide(settings, right)
+      ? settings.rightDockOrder
+      : settings.toolOptionDockOrder;
+
   double _preferredWidth(SettingsService settings, {required bool right}) {
-    final order =
-        right ? settings.rightDockOrder : settings.toolOptionDockOrder;
+    final storedRight = _storedRightForPhysicalSide(settings, right);
+    final order = _physicalDockOrder(settings, right: right);
     final visible =
         order.where(settings.defaultDockedPanels.contains).toList();
     if (visible.isEmpty) return _dockDragActive ? 52 : 0;
@@ -113,7 +126,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     )) {
       return 52;
     }
-    return right
+    return storedRight
         ? (_rightColumnWidthDrag ?? settings.desktopPanelWidth)
         : (_leftColumnWidthDrag ?? settings.desktopToolPanelWidth);
   }
@@ -292,8 +305,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
 
   Widget _column(SettingsService settings, {required bool right}) {
     final scheme = Theme.of(context).colorScheme;
-    final order =
-        right ? settings.rightDockOrder : settings.toolOptionDockOrder;
+    final storedRight = _storedRightForPhysicalSide(settings, right);
+    final order = _physicalDockOrder(settings, right: right);
     final visible =
         order.where(settings.defaultDockedPanels.contains).toList();
     return Padding(
@@ -305,7 +318,10 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
           key: ValueKey(right ? 'pcPreviewRightColumn' : 'pcPreviewToolColumn'),
           onWillAcceptWithDetails: (_) => true,
           onAcceptWithDetails: (details) =>
-              settings.moveDesktopDockPanel(details.data, toRight: right),
+              settings.moveDesktopDockPanel(
+                details.data,
+                toRight: storedRight,
+              ),
           builder: (context, candidates, _) => ColoredBox(
             color: candidates.isEmpty ? scheme.surface : scheme.primaryContainer,
             child: LayoutBuilder(
@@ -364,7 +380,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
         behavior: HitTestBehavior.opaque,
         onHorizontalDragUpdate: (details) => setState(() {
           final delta = details.delta.dx * (right ? -1 : 1);
-          if (right) {
+          final storedRight = _storedRightForPhysicalSide(settings, right);
+          if (storedRight) {
             _rightColumnWidthDrag =
                 ((_rightColumnWidthDrag ?? settings.desktopPanelWidth) + delta)
                     .clamp(200.0, 480.0);
@@ -375,7 +392,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
           }
         }),
         onHorizontalDragEnd: (_) {
-          if (right) {
+          final storedRight = _storedRightForPhysicalSide(settings, right);
+          if (storedRight) {
             final width = _rightColumnWidthDrag;
             if (width != null) settings.setDesktopPanelWidth(width);
             setState(() => _rightColumnWidthDrag = null);
@@ -426,7 +444,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
         onWillAcceptWithDetails: (details) => details.data != panel,
         onAcceptWithDetails: (details) => settings.moveDesktopDockPanel(
           details.data,
-          toRight: right,
+          toRight: _storedRightForPhysicalSide(settings, right),
           before: panel,
         ),
         builder: (context, candidates, _) => Container(
@@ -562,7 +580,10 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                         } else {
                           settings.moveDesktopDockPanel(
                             panel,
-                            toRight: action == 'right',
+                            toRight: _storedRightForPhysicalSide(
+                              settings,
+                              action == 'right',
+                            ),
                           );
                         }
                       },
