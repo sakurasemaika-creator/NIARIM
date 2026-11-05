@@ -111,6 +111,7 @@ export async function getMyWorkMissionAchievements(event: APIGatewayProxyEventV2
           missionId: m.id,
           workId: work.workId,
           workTitle: work.title,
+          workPostedAt: work.postedAt,
           kind: m.kind,
           required: m.required,
           bookmarkCount: work.bookmarkCount,

@@ -24,6 +24,7 @@ import { getMyWorkMissionAchievements } from "./routes/creatorWorkAchievements";
 import { getMyWorkCountMissionGrid } from "./routes/creatorWorkCountGrid";
 import { getMyCreatorMissionAttention } from "./routes/creatorMissionAttention";
 import { getMyMissionActivity } from "./routes/creatorMissionActivity";
+import { syncMyMissionActivity } from "./routes/creatorMissionActivitySync";
 import { editSessionAction } from "./routes/creatorEditSession";
 import { verifyMyPlayPremium, getPlayPurchaseAvailability } from "./routes/playPremium";
 import { updateWork } from "./routes/worksUpdate";
@@ -115,6 +116,7 @@ const routes: Route[] = [
   route("GET", "/me/missions/grid", (e) => getMyWorkCountMissionGrid(e)),
   route("GET", "/me/missions/attention", (e) => getMyCreatorMissionAttention(e)),
   route("GET", "/me/missions/activity", (e) => getMyMissionActivity(e)),
+  route("POST", "/me/missions/activity/sync", (e) => syncMyMissionActivity(e)),
   route("GET", "/me/missions/work-achievements", (e) => getMyWorkMissionAchievements(e)),
   route("POST", "/me/missions/claim", (e) => claimCreatorMission(e)),
   route("POST", "/me/missions/qualified-works/scan", (e) => scanMyQualifiedWorks(e)),
