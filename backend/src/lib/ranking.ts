@@ -12,12 +12,7 @@ export function computeRankingScore(input: {
   likeCount: number;
   commentCount: number;
 }): number {
-  const { viewCount, likeCount, commentCount } = input;
-  return (
-    Math.max(0, viewCount) +
-    Math.max(0, likeCount) * 5 +
-    Math.max(0, commentCount) * 2
-  );
+  return Math.max(0, input.viewCount);
 }
 
 /**
@@ -146,9 +141,8 @@ export function rollStatsWindows(
 }
 
 /**
- * 期間別スコア。現在値 − 期間開始時点の値をcomputeRankingScoreと同じ
- * 重み付けで合成する。統計が減ることは通常ないが、YouTube側で高評価が
- * 取り消される等で負になり得るため0で下限を切る。
+ * 期間別スコア。現在値 − 期間基準値の再生数増加分のみを計算する。
+ * YouTube側の再集計などで減少した場合は0で下限を切る。
  */
 export function computePeriodScore(
   current: StatsTriple,
