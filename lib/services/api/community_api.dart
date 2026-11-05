@@ -195,6 +195,21 @@ class CommunityApi {
         query: {if (cursor != null) 'cursor': cursor},
       );
 
+  /// Record an actual authenticated calendar-day visit. No coins granted.
+  Future<Map<String, dynamic>> visitLoginBonus() =>
+      _client.postJson('/me/login-bonus/visit',
+        authenticated: true, body: const {});
+
+  Future<Map<String, dynamic>> myLoginBonus() =>
+      _client.getJson('/me/login-bonus', authenticated: true);
+
+  /// Explicit, server-validated claim; duplicate claims cannot mint coins.
+  Future<Map<String, dynamic>> claimLoginBonus({
+    required String kind,
+    int? days,
+  }) => _client.postJson('/me/login-bonus/claim', authenticated: true,
+      body: {'kind': kind, if (days != null) 'days': days});
+
   Future<Map<String, dynamic>> myCreatorMissions({String? workId}) =>
       _client.getJson(
         '/me/missions',
