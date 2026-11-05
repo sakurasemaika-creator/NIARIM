@@ -7,6 +7,8 @@ import '../../router.dart';
 import '../../services/community_service.dart';
 import '../../services/api/community_api.dart';
 import 'widgets/community_playback_status_view.dart';
+import 'widgets/community_work_description.dart';
+import 'widgets/community_youtube_comments_section.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
@@ -376,6 +378,10 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
+              CommunityWorkDescription(
+                key: ValueKey('communityWorkDescription-${work.id}'),
+                workId: work.id,
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -526,6 +532,11 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                         : null,
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              CommunityYoutubeCommentsSection(
+                key: ValueKey('communityYoutubeComments-${work.id}'),
+                workId: work.id,
               ),
               const SizedBox(height: 20),
               Row(

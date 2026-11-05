@@ -456,6 +456,12 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       ),
     );
     if (!mounted) return;
+    if (deleted != true) {
+      // A title edit is stored server-side. Reload the owner page so its
+      // cached 25-item list also reflects the new title.
+      await _reloadOwnerWorks();
+      if (!mounted) return;
+    }
     setState(() {
       if (deleted == true) {
         _ownerWorks?.removeWhere((item) => item.id == work.id);

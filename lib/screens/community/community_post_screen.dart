@@ -10,6 +10,7 @@ import '../../services/api/niarim_api_exception.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/youtube_upload_service.dart';
+import '../../l10n/community_work_metadata_labels.dart';
 import '../../l10n/community_post_visibility_labels.dart';
 import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
@@ -564,9 +565,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   minLines: 2,
                   maxLines: 5,
                   maxLength: 2000,
-                  decoration: const InputDecoration(
-                    labelText: '作品の概要欄',
-                    hintText: '作品の説明や制作について（任意）',
+                  decoration: InputDecoration(
+                    labelText: CommunityWorkMetadataLabels.of(context).description,
+                    hintText: CommunityWorkMetadataLabels.of(context).descriptionHint,
                     border: OutlineInputBorder(),
                   ),
                 ),
