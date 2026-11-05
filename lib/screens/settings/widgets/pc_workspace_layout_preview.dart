@@ -97,11 +97,10 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     settings.setDefaultDockedPanels(next);
   }
 
+  // SettingsService mirrors only pristine defaults; all order getters and
+  // drop targets are otherwise the user's saved physical left/right sides.
   bool _storedRightForPhysicalSide(SettingsService settings, bool right) =>
-      DesktopDockColumnFit.storedRightForPhysicalSide(
-        physicalRight: right,
-        leftHanded: settings.isLeftHanded,
-      );
+      right;
 
   List<CanvasDockPanel> _physicalDockOrder(
     SettingsService settings, {
@@ -592,11 +591,11 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                         return [
                           PopupMenuItem(
                             value: 'left',
-                            child: Text(settings.isLeftHanded ? l.pcWorkspaceLayoutRightOrderSection : l.pcWorkspaceLayoutToolOrderSection),
+                            child: Text(l.pcWorkspaceLayoutToolOrderSection),
                           ),
                           PopupMenuItem(
                             value: 'right',
-                            child: Text(settings.isLeftHanded ? l.pcWorkspaceLayoutToolOrderSection : l.pcWorkspaceLayoutRightOrderSection),
+                            child: Text(l.pcWorkspaceLayoutRightOrderSection),
                           ),
                           PopupMenuItem(
                             value: 'hide',
