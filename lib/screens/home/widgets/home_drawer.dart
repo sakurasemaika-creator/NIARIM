@@ -223,7 +223,12 @@ class _HomeDrawerState extends State<HomeDrawer> {
                   : FutureBuilder<Map<String, dynamic>>(
                       future: _attentionFuture,
                       builder: (context, snapshot) {
-                        if (!snapshot.hasData ||
+                        // FutureBuilder may temporarily retain the previous
+                        // account's successful snapshot while awaiting a new
+                        // Future. Never show the old user's badge during that
+                        // handoff or after a new request fails.
+                        if (snapshot.connectionState != ConnectionState.done ||
+                            snapshot.hasError || !snapshot.hasData ||
                             !missionDrawerNeedsAttention(snapshot.data)) {
                           return const SizedBox.shrink();
                         }
