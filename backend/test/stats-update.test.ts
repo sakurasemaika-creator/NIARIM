@@ -62,6 +62,17 @@ beforeEach(() => {
 });
 
 describe("statistics batch data safety", () => {
+  it("1日1回のランキングは前回取得値からの再生増加分をdailyに反映する", async () => {
+    stats.mockResolvedValue(new Map([[work.workId, {
+      id: work.workId, privacyStatus: "public", viewCount: 150,
+    }]]));
+    await handler();
+    const snapshots = send.mock.calls.map(([c]) => c)
+      .filter((c) => c instanceof PutCommand);
+    const daily = snapshots.find((c) => c.input.Item?.period === "daily");
+    expect(daily?.input.Item?.entries).toEqual([{ workId: work.workId, score: 50 }]);
+  });
+
   it("retains previous counters after a partial failure without changing the publication preference", async () => {
     stats.mockResolvedValue(
       new Map([[work.workId, { id: work.workId, privacyStatus: "public" }]]),
@@ -70,10 +81,10 @@ describe("statistics batch data safety", () => {
     const input = updates()[0].input;
     expect(input.ExpressionAttributeValues).toMatchObject({
       ":view": 100,
-      ":like": 5,
-      ":comment": 2,
       ":status": "public",
     });
+    expect(input.UpdateExpression).not.toContain("likeCount =");
+    expect(input.UpdateExpression).not.toContain("commentCount =");
     expect(input.UpdateExpression).not.toContain("isNiarimPublished =");
   });
 
