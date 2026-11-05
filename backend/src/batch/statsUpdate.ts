@@ -168,15 +168,11 @@ async function updateWorkStats(
 
   const setParts = [
     "viewCount = :view",
-    "likeCount = :like",
-    "commentCount = :comment",
     "lastFetchedAt = :now",
     "youtubePrivacyStatus = :status",
   ];
   const values: Record<string, unknown> = {
     ":view": viewCount,
-    ":like": likeCount,
-    ":comment": commentCount,
     ":now": now,
     ":status": youtubePrivacyStatus,
     ":expectedType": TABLE_ITEM_TYPE.Work,
@@ -189,7 +185,14 @@ async function updateWorkStats(
   ];
 
   const current = { viewCount, likeCount, commentCount };
-  const statsWindows = rollStatsWindows(work.statsWindows, current, nowDate);
+  // 1日1回の集計では、前回取得値を期間開始の基準として使う。
+  // 新しい日に現在値を基準にすると daily の増加分が常に0になるため。
+  const previous = {
+    viewCount: work.viewCount,
+    likeCount: work.likeCount,
+    commentCount: work.commentCount,
+  };
+  const statsWindows = rollStatsWindows(work.statsWindows, previous, nowDate);
   setParts.push("statsWindows = :windows");
   values[":windows"] = statsWindows;
 
