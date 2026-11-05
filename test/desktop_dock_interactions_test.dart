@@ -58,6 +58,60 @@ void main() {
     expect(reopened.isDesktopDockCollapsed(CanvasDockPanel.layer), isFalse);
   });
 
+  testWidgets('preview auto folds only under pressure and manual toggle stays intact',
+      (tester) async {
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final settings = SettingsService();
+    await settings.init();
+    await settings.setDefaultDockedPanels({
+      CanvasDockPanel.brush,
+      CanvasDockPanel.tone,
+      CanvasDockPanel.stamp,
+      CanvasDockPanel.penSubTool,
+      CanvasDockPanel.colorPicker,
+      CanvasDockPanel.layer,
+    });
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: settings,
+        child: MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: PcWorkspaceLayoutPreview(labelOf: (panel) => panel.name),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    // Four expanded tools need more than the preview's left column height.
+    expect(
+      find.byKey(const ValueKey('pcPreviewExpand-penSubTool')),
+      findsOneWidget,
+    );
+    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isFalse);
+    await tester.tap(find.byKey(const ValueKey('pcPreviewExpand-penSubTool')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('pcPreviewCollapse-penSubTool')),
+      findsOneWidget,
+    );
+    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isFalse);
+
+    await settings.setDesktopDockAutoCollapseEnabled(false);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('pcPreviewExpand-penSubTool')),
+      findsNothing,
+    );
+    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('preview folds left and right windows toward their outer edges',
       (tester) async {
     tester.view.physicalSize = const Size(1280, 900);

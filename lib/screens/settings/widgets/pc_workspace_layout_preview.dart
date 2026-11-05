@@ -31,6 +31,44 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
   Size? _lastViewportSize;
   double? _leftColumnWidthDrag;
   double? _rightColumnWidthDrag;
+  final Map<CanvasDockPanel, int> _dockLastUsed = {};
+  int _dockUseSequence = 0;
+  CanvasDockPanel? _activeDockPanel;
+
+  void _rememberDockInteraction(CanvasDockPanel panel) {
+    _dockLastUsed[panel] = ++_dockUseSequence;
+    _activeDockPanel = panel;
+  }
+
+  void _expandDock(CanvasDockPanel panel, SettingsService settings) {
+    _rememberDockInteraction(panel);
+    if (settings.isDesktopDockCollapsed(panel)) {
+      settings.setDesktopDockCollapsed(panel, false);
+    } else {
+      // Auto folding is transient and never overwrites user preferences.
+      setState(() {});
+    }
+  }
+
+  void _collapseDock(CanvasDockPanel panel, SettingsService settings) {
+    if (_activeDockPanel == panel) _activeDockPanel = null;
+    settings.setDesktopDockCollapsed(panel, true);
+  }
+
+  DesktopDockLayout _fitDock(
+    SettingsService settings,
+    List<CanvasDockPanel> visible,
+    double availableHeight,
+  ) => DesktopDockColumnFit.layout(
+    availableHeight: availableHeight,
+    visible: visible,
+    isManuallyCollapsed: settings.isDesktopDockCollapsed,
+    preferredHeight: (panel) =>
+        _resizingHeight[panel] ?? settings.desktopDockHeight(panel),
+    autoCollapseEnabled: settings.desktopDockAutoCollapseEnabled,
+    lastUsed: _dockLastUsed,
+    activePanel: _activeDockPanel,
+  );
   // Empty columns reclaim their canvas space outside a panel drag.
   bool _dockDragActive = false;
 
@@ -65,7 +103,16 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     final visible =
         order.where(settings.defaultDockedPanels.contains).toList();
     if (visible.isEmpty) return _dockDragActive ? 52 : 0;
-    if (visible.every(settings.isDesktopDockCollapsed)) return 52;
+    final fitted = _fitDock(
+      settings,
+      visible,
+      workspaceHeight - 44 - 58,
+    );
+    if (visible.every(
+      (p) => fitted.isCollapsed(p, settings.isDesktopDockCollapsed(p)),
+    )) {
+      return 52;
+    }
     return right
         ? (_rightColumnWidthDrag ?? settings.desktopPanelWidth)
         : (_leftColumnWidthDrag ?? settings.desktopToolPanelWidth);
@@ -263,13 +310,12 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
             color: candidates.isEmpty ? scheme.surface : scheme.primaryContainer,
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final heights = DesktopDockColumnFit.bodyHeights(
-                  availableHeight: constraints.maxHeight,
-                  visible: visible,
-                  isCollapsed: settings.isDesktopDockCollapsed,
-                  preferredHeight: (panel) => _resizingHeight[panel] ??
-                      settings.desktopDockHeight(panel),
+                final fitted = _fitDock(
+                  settings,
+                  visible,
+                  constraints.maxHeight,
                 );
+                final heights = fitted.bodyHeights;
                 return ListView(
                   key: ValueKey(
                     right ? 'pcPreviewRightDockScroll' : 'pcPreviewLeftDockScroll',
@@ -294,6 +340,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                           visible[i],
                           right: right,
                           fittedBodyHeight: heights[visible[i]],
+                          automaticallyCollapsed:
+                              fitted.automaticallyCollapsed.contains(visible[i]),
                         ),
                       ),
                     ],
@@ -359,14 +407,18 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     CanvasDockPanel panel, {
     required bool right,
     double? fittedBodyHeight,
+    bool automaticallyCollapsed = false,
   }) {
     final scheme = Theme.of(context).colorScheme;
     final height = fittedBodyHeight ??
         _resizingHeight[panel] ??
         settings.desktopDockHeight(panel);
-    final collapsed = settings.isDesktopDockCollapsed(panel);
+    final collapsed =
+        settings.isDesktopDockCollapsed(panel) || automaticallyCollapsed;
     final foldsLeft = !right;
-    return SizedBox(
+    return Listener(
+      onPointerDown: (_) => _rememberDockInteraction(panel),
+      child: SizedBox(
       // Only the whole column has an independent width.
       width: collapsed ? 52 : double.infinity,
       child: DragTarget<CanvasDockPanel>(
@@ -442,10 +494,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                             ),
                           ],
                         ),
-                        onPressed: () => settings.setDesktopDockCollapsed(
-                          panel,
-                          false,
-                        ),
+                        onPressed: () => _expandDock(panel, settings),
                       ),
                     ),
                   ),
@@ -497,10 +546,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                         height: 32,
                       ),
                       padding: EdgeInsets.zero,
-                      onPressed: () => settings.setDesktopDockCollapsed(
-                        panel,
-                        true,
-                      ),
+                      onPressed: () => _collapseDock(panel, settings),
                       icon: Icon(
                         foldsLeft ? Icons.chevron_left : Icons.chevron_right,
                         size: 22,
@@ -578,6 +624,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

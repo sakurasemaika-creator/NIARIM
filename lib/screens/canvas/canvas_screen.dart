@@ -175,6 +175,47 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // プレビュー）の横幅。ドラッグ中はここへローカルに反映し、指を離した
   // 時点でSettingsServiceへ確定値を保存する。
   final Map<CanvasDockPanel, double> _dockDragHeight = {};
+  final Map<CanvasDockPanel, int> _dockLastUsed = {};
+  int _dockUseSequence = 0;
+  CanvasDockPanel? _activeDockPanel;
+
+  void _rememberDockInteraction(CanvasDockPanel panel) {
+    _dockLastUsed[panel] = ++_dockUseSequence;
+    _activeDockPanel = panel;
+  }
+
+  void _expandDesktopDock(CanvasDockPanel panel, SettingsService settings) {
+    _rememberDockInteraction(panel);
+    if (settings.isDesktopDockCollapsed(panel)) {
+      settings.setDesktopDockCollapsed(panel, false);
+    } else {
+      // An automatically folded panel is only a temporary layout decision.
+      // Opening it promotes it above older windows without saving a fold.
+      setState(() {});
+    }
+  }
+
+  void _collapseDesktopDock(CanvasDockPanel panel, SettingsService settings) {
+    if (_activeDockPanel == panel) _activeDockPanel = null;
+    settings.setDesktopDockCollapsed(panel, true);
+  }
+
+  DesktopDockLayout _fitDesktopDock(
+    SettingsService settings,
+    List<CanvasDockPanel> visible,
+    double availableHeight, {
+    double extraFixedHeight = 0,
+  }) => DesktopDockColumnFit.layout(
+    availableHeight: availableHeight,
+    visible: visible,
+    isManuallyCollapsed: settings.isDesktopDockCollapsed,
+    preferredHeight: (panel) =>
+        _dockDragHeight[panel] ?? settings.desktopDockHeight(panel),
+    autoCollapseEnabled: settings.desktopDockAutoCollapseEnabled,
+    lastUsed: _dockLastUsed,
+    activePanel: _activeDockPanel,
+    extraFixedHeight: extraFixedHeight,
+  );
   // A fully empty column normally disappears. During panel dragging,
   // its temporary drop zone lets users recreate it without a menu.
   bool _desktopDockDragActive = false;
@@ -187,6 +228,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   double _preferredDockColumnWidth(
     SettingsService settings, {
     required bool right,
+    required double availableHeight,
   }) {
     final order = right
         ? settings.rightDockOrder
@@ -195,20 +237,37 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (visible.isEmpty && (right || !_showMeshTransformPanel)) {
       return _desktopDockDragActive ? 52.0 : 0.0;
     }
-    if (visible.isNotEmpty &&
-        visible.every(settings.isDesktopDockCollapsed) &&
-        (right || !_showMeshTransformPanel)) {
-      return 52.0;
+    if (visible.isNotEmpty && (right || !_showMeshTransformPanel)) {
+      final fitted = _fitDesktopDock(settings, visible, availableHeight);
+      if (visible.every(
+        (panel) => fitted.isCollapsed(
+          panel,
+          settings.isDesktopDockCollapsed(panel),
+        ),
+      )) {
+        return 52.0;
+      }
     }
     return right
         ? (_panelWidthDragOverride ?? settings.desktopPanelWidth)
         : (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth);
   }
 
-  double _desktopDockColumnWidth({required bool right}) {
+  double _desktopDockColumnWidth({
+    required bool right,
+    required double availableHeight,
+  }) {
     final settings = context.watch<SettingsService>();
-    final left = _preferredDockColumnWidth(settings, right: false);
-    final rightWidth = _preferredDockColumnWidth(settings, right: true);
+    final left = _preferredDockColumnWidth(
+      settings,
+      right: false,
+      availableHeight: availableHeight,
+    );
+    final rightWidth = _preferredDockColumnWidth(
+      settings,
+      right: true,
+      availableHeight: availableHeight,
+    );
     final sizes = DesktopDockColumnFit.columnWidths(
       availableWidth: MediaQuery.sizeOf(context).width,
       leftDesired: left,
@@ -1249,7 +1308,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // 調整パネル側だけにして、同じ役割のボタンを重ねて出さない。
                     if (!filterAdjusting) _buildTopBar(),
                     Expanded(
-                      child: Row(
+                      child: LayoutBuilder(
+                        builder: (context, dockRowConstraints) => Row(
                         // Stretch both dock columns to the canvas row's full
                         // usable height. With the default center alignment a
                         // short dock floats vertically in the middle instead
@@ -1265,10 +1325,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           // として表示する（複数同時に開いていれば縦に積んで並べる）。
                           if (openToolPanels.isNotEmpty) ...[
                             SizedBox(
-                              width: _desktopDockColumnWidth(right: false),
+                              width: _desktopDockColumnWidth(right: false, availableHeight: dockRowConstraints.maxHeight),
                               child: _dockedPanelStack(right: false),
                             ),
-                            if (_desktopDockColumnWidth(right: false) > 52)
+                            if (_desktopDockColumnWidth(right: false, availableHeight: dockRowConstraints.maxHeight) > 52)
                               _ResizeHandle(
                                 key: const ValueKey('dockColumnResize-left'),
                                 onDeltaX: (dx) => setState(() {
@@ -1494,7 +1554,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           // 縦に並べて同時表示する。単独でも複数同時でも表示可。
                           if (isDesktop &&
                               _openRightDockPanels().isNotEmpty &&
-                              _desktopDockColumnWidth(right: true) > 52)
+                              _desktopDockColumnWidth(right: true, availableHeight: dockRowConstraints.maxHeight) > 52)
                             _ResizeHandle(
                               key: const ValueKey('dockColumnResize-right'),
                               onDeltaX: (dx) => setState(() {
@@ -1521,7 +1581,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             ),
                           if (isDesktop && _openRightDockPanels().isNotEmpty)
                             SizedBox(
-                              width: _desktopDockColumnWidth(right: true),
+                              width: _desktopDockColumnWidth(right: true, availableHeight: dockRowConstraints.maxHeight),
                               child: _buildRightDockColumn(),
                             )
                           else if (isDesktop && _desktopDockDragActive)
@@ -1531,6 +1591,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           if (isDesktop && leftHanded)
                             _buildToolbarWidget(vertical: true),
                         ],
+                        ),
                       ),
                     ),
                     // ブラシサイズ／不透明度スライダーは、サイズ・不透明度が実際に
@@ -2040,6 +2101,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     CanvasDockPanel p, {
     required bool right,
     double? fittedBodyHeight,
+    bool automaticallyCollapsed = false,
   }) {
     final settings = context.watch<SettingsService>();
     final scheme = Theme.of(context).colorScheme;
@@ -2047,9 +2109,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final height =
         fittedBodyHeight ?? _dockDragHeight[p] ?? settings.desktopDockHeight(p);
     final l = AppLocalizations.of(context)!;
-    final collapsed = settings.isDesktopDockCollapsed(p);
+    final collapsed =
+        settings.isDesktopDockCollapsed(p) || automaticallyCollapsed;
     final foldsLeft = !right;
-    return Align(
+    return Listener(
+      onPointerDown: (_) => _rememberDockInteraction(p),
+      child: Align(
       // Without heightFactor, a single window can occupy the full dock column
       // and end up vertically centered. Each dock window must instead take
       // only its own height and stack from the top of the canvas viewport.
@@ -2095,8 +2160,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         child: IconButton(
                           key: ValueKey('dockExpand-${p.name}'),
                           tooltip: '$title · ${l.filterPanelExpand}',
-                          onPressed: () =>
-                              settings.setDesktopDockCollapsed(p, false),
+                          onPressed: () => _expandDesktopDock(p, settings),
                           icon: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
@@ -2161,8 +2225,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 height: 32,
                               ),
                               padding: EdgeInsets.zero,
-                              onPressed: () =>
-                                  settings.setDesktopDockCollapsed(p, true),
+                              onPressed: () => _collapseDesktopDock(p, settings),
                               icon: Icon(
                                 foldsLeft
                                     ? Icons.chevron_left
@@ -2239,6 +2302,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   ),
           ),
         ),
+      ),
       ),
     );
   }
@@ -2333,14 +2397,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
           : settings.toolOptionDockOrder;
       final visible = order.where(_desktopPanelVisible).toList();
       final hasMesh = !right && _showMeshTransformPanel;
-      final heights = DesktopDockColumnFit.bodyHeights(
-        availableHeight: constraints.maxHeight,
-        visible: visible,
-        isCollapsed: settings.isDesktopDockCollapsed,
-        preferredHeight: (panel) =>
-            _dockDragHeight[panel] ?? settings.desktopDockHeight(panel),
+      final fitted = _fitDesktopDock(
+        settings,
+        visible,
+        constraints.maxHeight,
         extraFixedHeight: hasMesh ? 320 : 0,
       );
+      final heights = fitted.bodyHeights;
       return ClipRect(
         child: Scrollbar(
           child: SingleChildScrollView(
@@ -2357,6 +2420,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     visible[i],
                     right: right,
                     fittedBodyHeight: heights[visible[i]],
+                    automaticallyCollapsed:
+                        fitted.automaticallyCollapsed.contains(visible[i]),
                   ),
                 ],
                 if (hasMesh) ...[
