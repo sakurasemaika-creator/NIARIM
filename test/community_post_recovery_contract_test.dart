@@ -53,6 +53,27 @@ void main() {
     expect(source, contains('prefs.remove(_pendingYoutubeDescriptionKey)'));
   });
 
+  test('separates both titles and persists YouTube title for recovery', () {
+    expect(source, contains("key: const Key('communityPostTitle')"));
+    expect(source, contains("key: const Key('communityPostYoutubeTitle')"));
+    expect(source, contains('title: youtubeTitle,'));
+    expect(source, contains('title: title,'));
+    expect(source, contains('prefs.readString(_pendingYoutubeTitleKey) ?? _titleController.text'));
+    expect(source, contains('prefs.remove(_pendingYoutubeTitleKey)'));
+  });
+
+  test('offers four one-tap directional copy controls below the fields', () {
+    for (final key in [
+      'copyNiarimTitleToYoutube',
+      'copyYoutubeTitleToNiarim',
+      'copyNiarimDescriptionToYoutube',
+      'copyYoutubeDescriptionToNiarim',
+    ]) {
+      expect(source, contains("key: const Key('$key')"));
+    }
+    expect(source, contains('youtubeDescription: true,'));
+  });
+
   test('still requests YouTube scope when pending video is not registered', () {
     expect(source, contains('ここへ来るのは新規YouTubeアップロード、またはYouTubeには存在するが'));
     expect(source, contains('promptIfNecessary: true'));
