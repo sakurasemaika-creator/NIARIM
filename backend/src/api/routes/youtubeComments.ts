@@ -4,6 +4,14 @@ import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { TABLE_ITEM_TYPE, type WorkItem } from "../../lib/types";
 import { ApiError, badRequest, notFound, ok } from "../../lib/response";
 
+// Best-effort 45s cache per warm Lambda instance; no DynamoDB storage.
+// This is not a quota guarantee across cold starts or multiple instances.
+const commentCache = new Map<string, {
+  expiryMs: number;
+  payload: { comments: unknown[]; nextCursor: string | null; unavailable: boolean };
+}>();
+
+
 interface YoutubeCommentSnippet {
   authorDisplayName?: string;
   authorProfileImageUrl?: string;
@@ -49,6 +57,9 @@ export async function getYoutubeComments(event: APIGatewayProxyEventV2, workId: 
       work.youtubePrivacyStatus === "deleted") {
     notFound();
   }
+  const cacheKey = `${workId}:${cursor}`;
+  const cached = commentCache.get(cacheKey);
+  if (cached && cached.expiryMs > Date.now()) return ok(cached.payload);
   const key = process.env.YOUTUBE_API_KEY;
   if (!key || key === "REPLACE_ME") {
     throw new ApiError(503, "コメント機能を利用できません", "YOUTUBE_NOT_CONFIGURED");
@@ -76,7 +87,7 @@ export async function getYoutubeComments(event: APIGatewayProxyEventV2, workId: 
   const body = await response.json() as {
     items?: YoutubeThread[]; nextPageToken?: string;
   };
-  return ok({
+  const payload = {
     comments: (body.items ?? []).slice(0, 20).map((thread) => ({
       ...safeComment(thread.snippet?.topLevelComment ?? {}),
       replies: (thread.replies?.comments ?? []).slice(0, 5).map(safeComment),
@@ -85,5 +96,9 @@ export async function getYoutubeComments(event: APIGatewayProxyEventV2, workId: 
     nextCursor: typeof body.nextPageToken === "string"
       ? body.nextPageToken : null,
     unavailable: false,
-  });
+  };
+  // Bound memory and expire quickly so deleted/edited comments are refreshed.
+  if (commentCache.size >= 200) commentCache.clear();
+  commentCache.set(cacheKey, { expiryMs: Date.now() + 45_000, payload });
+  return ok(payload);
 }
