@@ -85,6 +85,8 @@ describe("statistics batch data safety", () => {
       ":comment": 2,
       ":status": "public",
     });
+    expect(input.UpdateExpression).not.toContain("likeCount =");
+    expect(input.UpdateExpression).not.toContain("commentCount =");
     expect(input.UpdateExpression).not.toContain("isNiarimPublished =");
   });
 

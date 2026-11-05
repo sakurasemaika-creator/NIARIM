@@ -108,6 +108,8 @@ export async function batchGetVideoStats(
     throw new Error("統計取得は50件以内で指定してください");
   const url = new URL(`${API_BASE}/videos:batchGetStats`);
   url.searchParams.set("part", "statistics");
+  // 同じクォータで再生数だけ返す。不要なレスポンスを減らす。
+  url.searchParams.set("fields", "items(id,statistics/viewCount),summary");
   url.searchParams.set("id", videoIds.join(","));
   url.searchParams.set("key", apiKey);
 

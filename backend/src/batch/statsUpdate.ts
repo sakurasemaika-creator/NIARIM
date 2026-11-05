@@ -172,15 +172,11 @@ async function updateWorkStats(
 
   const setParts = [
     "viewCount = :view",
-    "likeCount = :like",
-    "commentCount = :comment",
     "lastFetchedAt = :now",
     "youtubePrivacyStatus = :status",
   ];
   const values: Record<string, unknown> = {
     ":view": viewCount,
-    ":like": likeCount,
-    ":comment": commentCount,
     ":now": now,
     ":status": youtubePrivacyStatus,
     ":expectedType": TABLE_ITEM_TYPE.Work,
