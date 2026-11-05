@@ -7,6 +7,7 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/project_service.dart';
 import '../../widgets/responsive.dart';
+import 'login_bonus_panel.dart';
 
 /// Display-only policy. The server must independently verify every request.
 bool missionClaimActionAllowed({
@@ -371,6 +372,10 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         if (index == 0) return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (widget.workId == null) ...[
+              const LoginBonusPanel(),
+              const SizedBox(height: 12),
+            ],
             Text(t.get('subtitle'),
               style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
