@@ -145,6 +145,12 @@ describe("read-only, on-demand YouTube comments", () => {
     expect(url.searchParams.get("maxResults")).toBe("20");
     expect(url.searchParams.get("textFormat")).toBe("plainText");
     expect(send.mock.calls.every(([cmd]) => cmd instanceof GetCommand)).toBe(true);
+    // Reopening the same page during this warm-Lambda cache window should
+    // check NIARIM visibility again, but avoid another YouTube quota unit.
+    const repeated = await getYoutubeComments(event(), work.workId);
+    expect(JSON.parse(repeated.body ?? "{}").comments).toHaveLength(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls.every(([cmd]) => cmd instanceof GetCommand)).toBe(true);
   });
 
   it("does not contact YouTube for a hidden NIARIM work", async () => {
