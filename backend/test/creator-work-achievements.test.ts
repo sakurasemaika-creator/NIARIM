@@ -43,11 +43,15 @@ describe("manual, per-work mission achievement list",()=>{
     const result=await getMyWorkMissionAchievements(request());
     const body=JSON.parse(result.body??"{}");
     expect(body.rewardEnabled).toBe(false);
-    expect(body.items).toHaveLength(3);
-    expect(body.items.map((x:{required:number})=>x.required)).toEqual([10,50,100]);
-    expect(body.items[0]).toMatchObject({workTitle:"My animation",
+    expect(body.items).toHaveLength(12);
+    expect(body.items.map((x:{required:number})=>x.required)).toEqual(
+      [0,10,20,30,40,50,60,70,80,90,100,0]);
+    expect(body.items[1]).toMatchObject({workTitle:"My animation",
       claimed:true,workId:"abcdefghijk",missionId:"work_bookmarks_10"});
-    expect(body.items[2]).toMatchObject({claimed:false,required:100,readyForClaim:true});
+    expect(body.items[10]).toMatchObject({
+      claimed:false,required:100,readyForClaim:true});
+    expect(body.items[11]).toMatchObject({
+      claimed:false,required:0,workTitle:"Not yet",readyForClaim:true});
     expect(send.mock.calls.some(([c])=>c instanceof BatchGetCommand)).toBe(true);
     expect(send.mock.calls.every(([c])=>c instanceof QueryCommand ||
       c instanceof BatchGetCommand)).toBe(true);

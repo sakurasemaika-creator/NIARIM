@@ -65,7 +65,7 @@ export async function getMyWorkMissionAchievements(event: APIGatewayProxyEventV2
       typeof work.workId === "string" &&
       /^[A-Za-z0-9_-]{11}$/.test(work.workId) &&
       Number.isSafeInteger(work.bookmarkCount) &&
-      work.bookmarkCount >= 10;
+      work.bookmarkCount >= 0;
   }) as WorkItem[];
   // Only one BatchGet on the primary table (GSI reads aren't strongly
   // consistent). Missing state is treated as unclaimed, not as proof.
