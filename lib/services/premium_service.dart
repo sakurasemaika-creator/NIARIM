@@ -209,6 +209,11 @@ class PremiumService extends ChangeNotifier {
 
   /// 実際に購入済みかどうか（課金・ストア関連の判定に使用）。
   bool get hasPurchasedPremium => hasVerifiedPlayPremium;
+  /// A saved product ID alone is never proof of a paid subscription.
+  String? get verifiedSubscriptionProductId =>
+      hasVerifiedPlayPremium ? _purchasedProductId : null;
+  DateTime? get activeCoinPremiumExpiry =>
+      hasCoinPremium ? _serverCoinPremiumExpiresAt : null;
 
   /// 購入日時（登録日表示用）。未購入または記録前はnull。
   DateTime? get purchaseDate => _purchaseDate;

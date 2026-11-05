@@ -2,14 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/monetization_gate.dart';
 import '../../l10n/app_localizations.dart';
+import '../../l10n/reward_navigation_labels.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 
 /// プレミアム画面。ユーザー作品そのものを除くUI色はColorSchemeへ集約する。
-class PremiumScreen extends StatelessWidget {
+class PremiumScreen extends StatefulWidget {
   const PremiumScreen({super.key});
+
+  @override
+  State<PremiumScreen> createState() => _PremiumScreenState();
+}
+
+class _PremiumScreenState extends State<PremiumScreen> {
+  final _planKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +111,23 @@ class PremiumScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _comparisonTable(context, l10n),
+              if (!premium.hasPurchasedPremium &&
+                  !premium.isLaunchCampaignActive) ...[
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  key: const Key('premiumSeePlansButton'),
+                  onPressed: () {
+                    final target = _planKey.currentContext;
+                    if (target != null) {
+                      Scrollable.ensureVisible(target,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut);
+                    }
+                  },
+                  icon: const Icon(Icons.workspace_premium_outlined),
+                  label: Text(RewardNavigationLabels.of(context)['premiumJoin']),
+                ),
+              ],
               if (premium.isLaunchCampaignActive) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -118,6 +143,7 @@ class PremiumScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 Text(
                   l10n.premiumPlanSectionTitle,
+                  key: _planKey,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
