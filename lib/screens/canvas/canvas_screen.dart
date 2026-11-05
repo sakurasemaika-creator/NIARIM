@@ -425,30 +425,22 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// 定規ボタン（下部ツールバーからキャンバス上部
   /// バーの常設ボタンへ昇格）。定規パネルの開閉と定規ツールへの切替を
   /// 同時に行う（従来の下部ツールバー版と同じ挙動）。
-  void _toggleRuler() => setState(() {
-    final next = !_showRulerPanel;
-    _closeAllOverlayPanels();
-    _showRulerPanel = next;
+  void _toggleRuler() {
+    _toggleDesktopOrMobileDockPanel(CanvasDockPanel.ruler);
     if (_currentTool != DrawingTool.ruler) {
-      _currentTool = DrawingTool.ruler;
+      setState(() => _currentTool = DrawingTool.ruler);
     }
-  });
+  }
 
   /// オニオンスキンパネルの開閉（キャンバス上部
   /// バーの「設定/編集」メニューへ集約）。
-  void _toggleOnionSkinPanel() => setState(() {
-    final next = !_showOnionSkinPanel;
-    _closeAllOverlayPanels();
-    _showOnionSkinPanel = next;
-  });
+  void _toggleOnionSkinPanel() =>
+      _toggleDesktopOrMobileDockPanel(CanvasDockPanel.onionSkin);
 
   /// フィルターパネルの開閉（キャンバス上部バーの
   /// 「設定/編集」メニューへ集約）。
-  void _toggleFilterPanel() => setState(() {
-    final next = !_showFilterPanel;
-    _closeAllOverlayPanels();
-    _showFilterPanel = next;
-  });
+  void _toggleFilterPanel() =>
+      _toggleDesktopOrMobileDockPanel(CanvasDockPanel.filter);
 
   void _toggleFilterColorEyedropper(FilterColorEyedropperTarget target) {
     setState(() {
@@ -1035,11 +1027,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 title: Text(l10n.canvasColorAdjustMenuTitle),
                 onTap: () {
                   Navigator.pop(ctx);
-                  setState(() {
-                    final next = !_showColorAdjustPanel;
-                    _closeAllOverlayPanels();
-                    _showColorAdjustPanel = next;
-                  });
+                  _toggleDesktopOrMobileDockPanel(CanvasDockPanel.colorAdjust);
                 },
               ),
               // 資料ウィンドウ（アニメ制作では三面図・キャラクター設定表などの
@@ -1069,8 +1057,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   subtitle: Text(l10n.canvasEditMenuPreviewNavigatorSubtitle),
                   onTap: () {
                     Navigator.pop(ctx);
-                    setState(
-                      () => _showCanvasPreviewPanel = !_showCanvasPreviewPanel,
+                    _setDesktopPanelVisible(
+                      CanvasDockPanel.canvasPreview,
+                      !_showCanvasPreviewPanel,
                     );
                   },
                 ),
@@ -2411,35 +2400,20 @@ class _CanvasScreenState extends State<CanvasScreen> {
         args: {'tool': tool.name},
       );
     },
-    onColorTap: () => setState(() {
-      final next = !_showColorPicker;
-      _closeAllOverlayPanels();
-      _showColorPicker = next;
-    }),
-    onBrushTap: () => setState(() {
-      final next = !_showBrushPanel;
-      _closeAllOverlayPanels();
-      _showBrushPanel = next;
-    }),
-    onLayerTap: () => setState(() {
-      final next = !_showLayerPanel;
-      _closeAllOverlayPanels();
-      _showLayerPanel = next;
-    }),
-    onPenLongPress: () => setState(() {
-      final next = !_showPenSubToolPanel;
-      _closeAllOverlayPanels();
-      _showPenSubToolPanel = next;
-    }),
+    onColorTap: () =>
+        _toggleDesktopOrMobileDockPanel(CanvasDockPanel.colorPicker),
+    onBrushTap: () =>
+        _toggleDesktopOrMobileDockPanel(CanvasDockPanel.brush),
+    onLayerTap: () =>
+        _toggleDesktopOrMobileDockPanel(CanvasDockPanel.layer),
+    onPenLongPress: () =>
+        _toggleDesktopOrMobileDockPanel(CanvasDockPanel.penSubTool),
     onFingerLongPress: () => _showFingerSubMenu(context),
     onTextTap: () => setState(() => _currentTool = DrawingTool.text),
     onShapeTap: () => _showShapeMenu(context),
     onQuickToolTap: _applyNextQuickTool,
-    onQuickToolLongPress: () => setState(() {
-      final next = !_showQuickToolPanel;
-      _closeAllOverlayPanels();
-      _showQuickToolPanel = next;
-    }),
+    onQuickToolLongPress: () =>
+        _toggleDesktopOrMobileDockPanel(CanvasDockPanel.quickTool),
     // 手動保存（セーブツリー）：「キャンバス → 保存 → キャンバスへ戻る」
     onSaveTap: () => _runAutomationBlockedAction(
       () => context.push('/save-tree/${widget.projectId}'),
@@ -2522,26 +2496,26 @@ class _CanvasScreenState extends State<CanvasScreen> {
         args: {'argb': color.toARGB32()},
       );
     },
-    onClose: () => setState(() => _showColorPicker = false),
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.colorPicker, false),
     // カラーピッカー内のスポイトボタン：スポイトツールへ切り替えて
     // キャンバス上の色を取得できるようにする
-    onEyedropperTap: () => setState(() {
-      _currentTool = DrawingTool.eyedropper;
-      _showColorPicker = false;
-    }),
+    onEyedropperTap: () {
+      setState(() => _currentTool = DrawingTool.eyedropper);
+      _setDesktopPanelVisible(CanvasDockPanel.colorPicker, false);
+    },
   );
 
   Widget _brushPanel() => BrushPanel(
     dockedMode: isWideScreen(context),
-    onClose: () => setState(() => _showBrushPanel = false),
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.brush, false),
     onEyedropOutlineColor: _startBrushOutlineEyedropper,
   );
 
   Widget _tonePanel() =>
-      TonePanel(onClose: () => setState(() => _showTonePanel = false));
+      TonePanel(onClose: () => _setDesktopPanelVisible(CanvasDockPanel.tone, false));
 
   Widget _stampPanel() =>
-      StampPanel(onClose: () => setState(() => _showStampPanel = false));
+      StampPanel(onClose: () => _setDesktopPanelVisible(CanvasDockPanel.stamp, false));
 
   Widget _penSubToolPanel() => PenSubToolPanel(
     currentTool: _currentTool,
@@ -2554,27 +2528,30 @@ class _CanvasScreenState extends State<CanvasScreen> {
             : DrawingTool.pen;
       });
     },
-    onClose: () => setState(() => _showPenSubToolPanel = false),
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.penSubTool, false),
     // フル機能管理パネル（フォルダ・自作・検索・読み込み書き出し）
-    onManage: (subTool) => setState(() {
-      _showPenSubToolPanel = false;
-      switch (subTool) {
-        case PenSubTool.brush:
-          _showBrushPanel = true;
-        case PenSubTool.tone:
-          _showTonePanel = true;
-        case PenSubTool.stamp:
-          _showStampPanel = true;
-        case PenSubTool.lassoFill:
-          break;
-      }
-    }),
+    onManage: (subTool) {
+      setState(() {
+        _showPenSubToolPanel = false;
+        switch (subTool) {
+          case PenSubTool.brush:
+            _showBrushPanel = true;
+          case PenSubTool.tone:
+            _showTonePanel = true;
+          case PenSubTool.stamp:
+            _showStampPanel = true;
+          case PenSubTool.lassoFill:
+            break;
+        }
+      });
+      _persistDesktopDockVisibility();
+    },
   );
 
   Widget _onionSkinPanel() => OnionSkinPanel(
     settings: _onionSkinSettings,
     onChanged: (s) => setState(() => _onionSkinSettings = s),
-    onClose: () => setState(() => _showOnionSkinPanel = false),
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.onionSkin, false),
   );
 
   Widget _rulerPanel() {
@@ -2584,7 +2561,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     return RulerPanel(
       activeRuler: _activeRuler,
       onRulerChanged: _setActiveRulerWithUndo,
-      onClose: () => setState(() => _showRulerPanel = false),
+      onClose: () => _setDesktopPanelVisible(CanvasDockPanel.ruler, false),
       canvasWidth: tileManager.canvasWidth,
       canvasHeight: tileManager.canvasHeight,
     );
@@ -2737,21 +2714,24 @@ class _CanvasScreenState extends State<CanvasScreen> {
     onCanvasPreviewChanged: _setFilterCanvasPreview,
     selectionMask: _canvasSelectionMask,
     lensMask: _filterLensMask,
-    onClose: () => setState(() {
-      _filterLensMask.reset();
-      _filterCanvasPreview?.dispose();
-      _filterCanvasPreview = null;
-      _showFilterPanel = false;
-      _filterBulkFrames = null;
-      if (_frameMultiSelectMode) {
-        _frameMultiSelectMode = false;
-        _selectedFrameIndices = {};
-      }
-    }),
+    onClose: () {
+      setState(() {
+        _filterLensMask.reset();
+        _filterCanvasPreview?.dispose();
+        _filterCanvasPreview = null;
+        _showFilterPanel = false;
+        _filterBulkFrames = null;
+        if (_frameMultiSelectMode) {
+          _frameMultiSelectMode = false;
+          _selectedFrameIndices = {};
+        }
+      });
+      _persistDesktopDockVisibility();
+    },
   );
 
   Widget _quickToolPanel() => QuickToolPanel(
-    onClose: () => setState(() => _showQuickToolPanel = false),
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.quickTool, false),
     currentTool: _currentTool,
     currentBrushId: context.read<BrushService>().currentBrush?.id,
     currentBrushName: context.read<BrushService>().currentBrush?.name,
@@ -2781,7 +2761,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       widget.projectId,
       _currentSceneId,
     ),
-    onClose: () => setState(() => _showColorAdjustPanel = false),
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.colorAdjust, false),
   );
 
   /// フローティングパネルの左右配置ヘルパー。[anchorLeft]は通常（右利き）モードでの
@@ -2886,10 +2866,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// パネルが既に開いている場合はその場で全選択される。閉じていた場合は
   /// このタップで開くのみで、全選択はもう一度Ctrl+Aを押した時点で働く
   /// （LayerPanel初回表示時点ではdidUpdateWidgetが発火しないため）。
-  void _selectAllLayers() => setState(() {
-    _showLayerPanel = true;
-    _layerSelectAllToken++;
-  });
+  void _selectAllLayers() {
+    setState(() => _layerSelectAllToken++);
+    _setDesktopPanelVisible(CanvasDockPanel.layer, true);
+  }
 
   /// 現在アクティブなレイヤーをコピー（Ctrl+C）。2本指上スワイプと
   /// 同じスナップショット式クリップボードを使うため、フレーム移動後も貼れる。
@@ -2921,11 +2901,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     setState(() => _currentLayerId = copy.id);
   }
 
-  void _toggleLayerPanel() => setState(() {
-    final next = !_showLayerPanel;
-    _closeAllOverlayPanels();
-    _showLayerPanel = next;
-  });
+  void _toggleLayerPanel() =>
+      _toggleDesktopOrMobileDockPanel(CanvasDockPanel.layer);
 
   /// 設定画面「ショートカット設定」の割り当て一覧から、キャンバスモードで
   /// 有効なキー割り当てのマップを組み立てる。ツール選択の割り当ては
@@ -3703,10 +3680,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
           FilledButton.icon(
             onPressed: _selectedFrameIndices.isEmpty
                 ? null
-                : () => setState(() {
-                    _filterBulkFrames = _selectedFrameIndices;
-                    _showFilterPanel = true;
-                  }),
+                : () {
+                    setState(() => _filterBulkFrames = _selectedFrameIndices);
+                    _setDesktopPanelVisible(CanvasDockPanel.filter, true);
+                  },
             icon: const Icon(Icons.blur_on, size: 14),
             label: Text(
               l10n.canvasApplyFilterButton,
