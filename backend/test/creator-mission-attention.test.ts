@@ -61,7 +61,7 @@ describe("creator mission drawer attention is read-only and owner-bound",()=>{
     send.mockImplementation(async(c:unknown)=>{
       if(c instanceof QueryCommand)return {Items:ids.map(id=>work(id,0))};
       if(c instanceof BatchGetCommand && c.input.RequestItems?.test?.Keys
-          ?.some((x:{sk:string})=>x.sk.startsWith("MISSION_WORK#"))){
+          ?.some(x=>typeof x.sk==="string" && x.sk.startsWith("MISSION_WORK#"))){
         return {Responses:{test:ids.map(id=>({
           pk:"USER#Nowner",sk:"MISSION_WORK#"+id,
           itemType:"CREATOR_WORK_MISSIONS_V1",claimedMask:2**posted.bit,
@@ -80,7 +80,7 @@ describe("creator mission drawer attention is read-only and owner-bound",()=>{
     send.mockImplementation(async(c:unknown)=>{
       if(c instanceof QueryCommand)return {Items:[work(ids[0],0)]};
       if(c instanceof BatchGetCommand && c.input.RequestItems?.test?.Keys
-          ?.some((x:{sk:string})=>x.sk.startsWith("MISSION_WORK#"))){
+          ?.some(x=>typeof x.sk==="string" && x.sk.startsWith("MISSION_WORK#"))){
         return {Responses:{test:[{
           pk:"USER#Nowner",sk:"MISSION_WORK#"+ids[0],
           itemType:"CREATOR_WORK_MISSIONS_V1",claimedMask:2**posted.bit,
