@@ -166,6 +166,11 @@ class CommunityApi {
       );
 
   /// Read-only list of achieved milestones, 25 author-owned works per page.
+  /// Read-only cross-product of 20 work-count goals and 24 bookmark levels.
+  /// Candidate matches are not permission to mint coins.
+  Future<Map<String, dynamic>> myWorkCountMissions() =>
+      _client.getJson('/me/missions/grid', authenticated: true);
+
   Future<Map<String, dynamic>> myWorkMissionAchievements({String? cursor}) =>
       _client.getJson('/me/missions/work-achievements',
         authenticated: true,
