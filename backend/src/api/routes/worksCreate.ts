@@ -20,6 +20,8 @@ import { recordMissionAchievement } from "../../lib/missionNotifications";
 interface CreateWorkRequestBody {
   youtubeVideoId: string;
   youtubeAccessToken: string;
+  title?: string;
+  description?: string;
   isShort?: boolean;
   isNiarimPublished?: boolean;
   containsGenerativeAiImageOrVideo?: boolean;
@@ -75,6 +77,7 @@ export async function createWork(event: APIGatewayProxyEventV2) {
         "VIDEO_ALREADY_REGISTERED",
       );
     }
+    await saveDescriptionOnce(body.youtubeVideoId, auth.niarimUserId, body.description);
     return created({ work: toPublicWork(existing) });
   }
 
@@ -143,7 +146,7 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       channelAvatarUrl:
         channelInfo?.channelAvatarUrl ?? user.channelAvatarUrl ?? "",
       channelInfoCachedAt: now,
-      title: snippet.title,
+      title: body.title ?? snippet.title,
       postedAt: now,
       youtubeUrl: `https://www.youtube.com/watch?v=${body.youtubeVideoId}`,
       thumbnailUrl: snippet.thumbnailUrl,
@@ -206,6 +209,7 @@ export async function createWork(event: APIGatewayProxyEventV2) {
           if (racedWork.authorId === auth.niarimUserId) {
             await releasePostQuota(auth.niarimUserId);
             quotaReserved = false;
+            await saveDescriptionOnce(body.youtubeVideoId, auth.niarimUserId, body.description);
             return created({ work: toPublicWork(racedWork) });
           }
           conflict(
@@ -227,6 +231,9 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       throw error;
     }
 
+    // Work row is now committed; a detail write failure must not undo quota.
+    quotaReserved = false;
+    await saveDescriptionOnce(body.youtubeVideoId, auth.niarimUserId, body.description);
     if (isVisible) {
       // The publication operation already committed. A notification failure
       // MUST NOT roll back the work or release the user's posting quota.
@@ -250,8 +257,37 @@ export async function createWork(event: APIGatewayProxyEventV2) {
   }
 }
 
+/**
+ * A separate non-GSI detail record keeps descriptions out of seven ALL-projected
+ * indexes. On a lost response an idempotent POST retries just this missing item.
+ */
+async function saveDescriptionOnce(workId: string, authorId: string, description?: string) {
+  if (!description) return;
+  try {
+    await ddb.send(new PutCommand({
+      TableName: tableName(),
+      Item: {
+        ...Keys.workDetail(workId), itemType: "WORK_DETAIL",
+        authorId, description, updatedAt: new Date().toISOString(),
+      },
+      ConditionExpression: "attribute_not_exists(pk)",
+    }));
+  } catch (error) {
+    if (!(error instanceof ConditionalCheckFailedException)) throw error;
+  }
+}
+
 function parseBody(raw: string | undefined): CreateWorkRequestBody {
   const body = parseJsonObject(raw);
+  if (body.title !== undefined &&
+      (typeof body.title !== "string" ||
+       !body.title.trim() || body.title.trim().length > 100)) {
+    badRequest("作品タイトルは1〜100文字で入力してください", "INVALID_TITLE");
+  }
+  if (body.description !== undefined &&
+      (typeof body.description !== "string" || body.description.length > 2000)) {
+    badRequest("概要欄は2000文字以内で入力してください", "INVALID_DESCRIPTION");
+  }
   if (
     typeof body.youtubeVideoId !== "string" ||
     !/^[A-Za-z0-9_-]{11}$/.test(body.youtubeVideoId)
@@ -318,6 +354,8 @@ function parseBody(raw: string | undefined): CreateWorkRequestBody {
   return {
     youtubeVideoId: body.youtubeVideoId,
     youtubeAccessToken: body.youtubeAccessToken,
+    title: typeof body.title === "string" ? body.title.trim() : undefined,
+    description: typeof body.description === "string" ? body.description.trim() : undefined,
     isShort: body.isShort,
     isNiarimPublished: body.isNiarimPublished,
     containsGenerativeAiImageOrVideo:
