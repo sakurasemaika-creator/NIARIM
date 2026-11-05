@@ -467,8 +467,8 @@ void main() {
       const Offset(40, 0),
     );
     await tester.pumpAndSettle();
-    expect(settings.desktopPanelWidth, greaterThan(280));
-    expect(settings.desktopToolPanelWidth, 280);
+    expect(settings.desktopToolPanelWidth, greaterThan(280));
+    expect(settings.desktopPanelWidth, 280);
 
     // Physical right -> physical left must update the SAVED physical left list.
     final dragIcon =
