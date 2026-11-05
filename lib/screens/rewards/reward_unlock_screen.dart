@@ -449,7 +449,6 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   @override
   Widget build(BuildContext context) {
     final t = RewardUnlockLabels.of(context);
-    final premium = context.watch<PremiumService>();
     final scheme = Theme.of(context).colorScheme;
     final quote = _quote();
     final serverPrice = _selected.length == 1 &&
