@@ -39,6 +39,7 @@ vi.mock("../src/lib/youtube", () => ({
   verifyVideoOwnership: vi.fn(() => ({ ok: true })),
 }));
 import { createWork } from "../src/api/routes/worksCreate";
+import { getOwnChannelInfo } from "../src/lib/youtube";
 
 const source = readFileSync(
   resolve(__dirname, "../src/api/routes/worksCreate.ts"),
@@ -118,6 +119,13 @@ describe("work registration AI image/video disclosure", () => {
     send.mockReset();
     send.mockResolvedValue({});
     process.env.TABLE_NAME = "test-table";
+  });
+
+  it("reuses the linked channel on subsequent posts without channels.list", async () => {
+    vi.mocked(getOwnChannelInfo).mockClear();
+    const result = await post({});
+    expect(result.statusCode).toBe(201);
+    expect(getOwnChannelInfo).not.toHaveBeenCalled();
   });
 
   it("stores the flag as false when the poster omits it", async () => {

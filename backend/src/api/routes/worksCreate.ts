@@ -84,12 +84,13 @@ export async function createWork(event: APIGatewayProxyEventV2) {
 
   let quotaReserved = false;
   try {
-    // The upload access token identifies the same YouTube account used by the client.
-    // On a user's first post there may be no cached channel yet, so discover and cache
-    // it here instead of requiring a separate hidden pre-link step. If a channel was
-    // already cached, a different OAuth channel is rejected rather than silently
-    // relinking the NIARIM identity.
-    const channelInfo = await getOwnChannelInfo(body.youtubeAccessToken);
+    // First post resolves the channel name/avatar once. Later posts reuse the
+    // cached channel ID and verify new video ownership via videos.list, avoiding
+    // one redundant channels.list unit for each additional upload.
+    // Explicit manual profile refresh will be a separate, rate-limited action.
+    const channelInfo = user.youtubeChannelId
+      ? null
+      : await getOwnChannelInfo(body.youtubeAccessToken);
     const linkedChannelId = user.youtubeChannelId ?? channelInfo?.channelId;
     if (!linkedChannelId) {
       forbidden(
