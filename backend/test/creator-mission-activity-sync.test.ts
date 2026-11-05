@@ -66,6 +66,70 @@ describe("idempotent plaza mission activity sync",()=>{
   expect(data.added).toBe(0);
   expect(scanGrid).not.toHaveBeenCalled();
  });
+ it("repeats the same page before advancing past more than twelve works",async()=>{
+  const items=Array.from({length:14},(_,i)=>({
+    missionId:"work_bookmarks_"+(i+1)*10,
+    workId:"abcdefghijk",workTitle:"Popular animation",
+    required:(i+1)*10,workPostedAt:"2026-11-05T00:00:00Z",
+  }));
+  scanWorks.mockResolvedValueOnce({body:JSON.stringify({
+    items,nextCursor:"next-work-page",
+  })});
+  scanGrid.mockResolvedValueOnce({body:JSON.stringify({missions:[],complete:true})});
+  const first=JSON.parse((await syncMyMissionActivity(req())).body??"{}");
+  expect(first).toMatchObject({added:12,hadMore:true,nextWorkCursor:null});
+  const firstIds=record.mock.calls.map((call:unknown[])=>
+    "work_abcdefghijk_"+(call[1] as {missionId:string}).missionId);
+  send.mockImplementation(async (cmd:unknown)=>cmd instanceof BatchGetCommand
+    ? {Responses:{test:firstIds.map(eventId=>({
+        pk:"USER#Nowner",itemType:"MISSION_NOTICE_DEDUPE_V1",eventId,
+      }))}} : {});
+  scanWorks.mockResolvedValueOnce({body:JSON.stringify({
+    items,nextCursor:"next-work-page",
+  })});
+  scanGrid.mockResolvedValueOnce({body:JSON.stringify({missions:[],complete:true})});
+  const second=JSON.parse((await syncMyMissionActivity(req())).body??"{}");
+  expect(second).toMatchObject({
+    added:2,hadMore:true,nextWorkCursor:"next-work-page",
+  });
+  expect(record).toHaveBeenCalledTimes(14);
+ });
+ it("drains multiple grid achievement batches before going to work page two",async()=>{
+  const missions=Array.from({length:14},(_,i)=>({
+    id:"works_"+(i+3)+"_x_0",required:i+3,eachWorkBookmarks:0,eligible:true,
+  }));
+  scanWorks.mockResolvedValueOnce({body:JSON.stringify({
+    items:[],nextCursor:"next-work-page",
+  })});
+  scanGrid.mockResolvedValueOnce({body:JSON.stringify({missions,complete:true})});
+  const first=JSON.parse((await syncMyMissionActivity(req())).body??"{}");
+  expect(first).toMatchObject({added:12,nextWorkCursor:null,hadMore:true});
+  const firstIds=record.mock.calls.map((call:unknown[])=>
+    "account_"+(call[1] as {missionId:string}).missionId);
+  send.mockImplementation(async (cmd:unknown)=>cmd instanceof BatchGetCommand
+    ? {Responses:{test:firstIds.map(eventId=>({
+        pk:"USER#Nowner",itemType:"MISSION_NOTICE_DEDUPE_V1",eventId,
+      }))}} : {});
+  scanWorks.mockResolvedValueOnce({body:JSON.stringify({
+    items:[],nextCursor:"next-work-page",
+  })});
+  scanGrid.mockResolvedValueOnce({body:JSON.stringify({missions,complete:true})});
+  const second=JSON.parse((await syncMyMissionActivity(req())).body??"{}");
+  expect(second).toMatchObject({
+    added:2,hadMore:true,nextWorkCursor:"next-work-page",
+  });
+ });
+ it("marks missing original publication timestamps as observed dates",async()=>{
+  scanWorks.mockResolvedValueOnce({body:JSON.stringify({
+    items:[{missionId:"work_posted",workId:"abcdefghijk",required:0}],
+    nextCursor:null,
+  })});
+  scanGrid.mockResolvedValueOnce({body:JSON.stringify({missions:[],complete:true})});
+  await syncMyMissionActivity(req());
+  expect(record.mock.calls[0][1]).toMatchObject({
+    kind:"workPublished",dateIsObserved:true,
+  });
+ });
  it("never emits an already recorded milestone",async()=>{
   send.mockResolvedValue({
    Responses:{test:[{

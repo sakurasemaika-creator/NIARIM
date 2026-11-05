@@ -93,13 +93,13 @@ export async function syncMyMissionActivity(event:APIGatewayProxyEventV2){
       typeof raw.workId!=="string" ||
       typeof raw.required!=="number")continue;
     const published=raw.required===0;
-    const occurredAt=published&&validDate(raw.workPostedAt)
-      ? raw.workPostedAt : now;
+    const exactPublishedDate=published&&validDate(raw.workPostedAt);
+    const occurredAt=exactPublishedDate?raw.workPostedAt:now;
     works.push({
       kind:published?"workPublished":"workBookmarks",
       missionId:raw.missionId,workId:raw.workId,workTitle:raw.workTitle,
       required:raw.required,occurredAt,
-      dateIsObserved:!published,
+      dateIsObserved:!exactPublishedDate,
     });
   }
   // Prioritize a work's publication then its most important achievements.
@@ -136,12 +136,19 @@ export async function syncMyMissionActivity(event:APIGatewayProxyEventV2){
   // Unrelated transaction/storage failures propagate, not false success.
   const wrote=await Promise.all(toWrite.map(m=>
     recordMissionAchievement(auth.niarimUserId,m)));
+  // Drain all unrecorded milestones on this page before advancing to the
+  // next 25 works. The same cursor is safe because dedupe markers are
+  // immutable, strongly consistent, and checked before each write.
+  // Grid milestones must also finish before leaving the cursorless page.
+  const pageNotDrained=newWorks.length>WORK_WRITE_LIMIT ||
+    newGrid.length>GRID_WRITE_LIMIT;
+  const nextWorkCursor=pageNotDrained
+    ? (typeof body.cursor==="string" ? body.cursor : null)
+    : workData.nextCursor??null;
   return ok({
     added:wrote.filter(Boolean).length,
-    hadMore: newWorks.length>WORK_WRITE_LIMIT ||
-      newGrid.length>GRID_WRITE_LIMIT ||
-      workData.nextCursor!==null,
-    nextWorkCursor:workData.nextCursor??null,
+    hadMore:pageNotDrained || nextWorkCursor!==null,
+    nextWorkCursor,
     gridComplete:gridData?.complete??null,
     datePolicy:"source-for-publishing; first-observed-for-older-milestones",
   });
