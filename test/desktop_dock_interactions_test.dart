@@ -85,12 +85,25 @@ void main() {
     expect(settings.desktopToolPanelWidth, greaterThan(280));
     expect(settings.desktopPanelWidth, 280);
 
-    // The layout preview must mirror the real dock on left-handed workspaces.
+    // Handedness moves ONLY the outer toolbar. Both dock columns keep
+    // their left/right order, and the column resize grip direction stays fixed.
     final toolColumn = find.byKey(const ValueKey('pcPreviewToolColumn'));
-    final leftPosition = tester.getRect(toolColumn).left;
+    final rightColumn = find.byKey(const ValueKey('pcPreviewRightColumn'));
+    final outerToolbar = find.byKey(const ValueKey('pcPreviewToolbar'));
+    expect(
+      tester.getRect(outerToolbar).right,
+      lessThan(tester.getRect(toolColumn).left),
+    );
     await settings.setLeftHanded(true);
     await tester.pumpAndSettle();
-    expect(tester.getRect(toolColumn).left, greaterThan(leftPosition + 150));
+    expect(
+      tester.getRect(toolColumn).right,
+      lessThan(tester.getRect(rightColumn).left),
+    );
+    expect(
+      tester.getRect(outerToolbar).left,
+      greaterThanOrEqualTo(tester.getRect(rightColumn).right),
+    );
     await settings.setLeftHanded(false);
     await tester.pumpAndSettle();
 
@@ -98,6 +111,10 @@ void main() {
     await tester.pump();
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
     expect(find.byKey(const ValueKey('pcPreviewExpand-brush')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush')),
+      findsOneWidget,
+    );
     expect(find.byKey(const ValueKey('pcPreviewCollapse-layer')), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('pcPreviewCollapse-layer')));
@@ -105,6 +122,24 @@ void main() {
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.layer), isTrue);
     expect(find.byKey(const ValueKey('pcPreviewExpand-layer')), findsOneWidget);
 
+    // Drag the collapsed brush icon to the RIGHT column before the
+    // navigator, without expanding it or losing the saved folded state.
+    final dragIcon =
+        find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush'));
+    final target = find.byKey(const ValueKey('pcPreviewDrop-canvasPreview'));
+    await tester.drag(
+      dragIcon,
+      tester.getCenter(target) - tester.getCenter(dragIcon),
+    );
+    await tester.pumpAndSettle();
+    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isFalse);
+    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
+    expect(
+      settings.rightDockOrder.indexOf(CanvasDockPanel.brush),
+      lessThan(settings.rightDockOrder.indexOf(CanvasDockPanel.canvasPreview)),
+    );
+    expect(find.byKey(const ValueKey('pcPreviewExpand-brush')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('pcPreviewExpand-brush')));
     await tester.pump();
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isFalse);

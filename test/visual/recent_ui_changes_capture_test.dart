@@ -11,6 +11,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/canvas_dock_panel.dart';
 import 'package:niarim/screens/canvas/widgets/hsv_color_wheel.dart';
 import 'package:niarim/screens/canvas/widgets/frame_strip_widget.dart';
+import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/settings/widgets/pc_workspace_layout_preview.dart';
 import 'package:niarim/services/project_service.dart';
@@ -252,6 +253,27 @@ void main() {
     await _shot(tester, root, '11_pc_canvas_left_brush_folded');
     await tester.tap(layerFold);
     await _shot(tester, root, '12_pc_canvas_both_sides_partially_folded');
+
+    // A folded icon is directly draggable across dock columns and remains
+    // folded. Tap on that same icon expands it.
+    final collapsedBrush = find.byKey(
+      const ValueKey('dockCollapsedDrag-brush'),
+    );
+    final rightTarget = find.byKey(
+      const ValueKey('dockTarget-canvasPreview'),
+    );
+    expect(collapsedBrush, findsOneWidget);
+    await tester.drag(
+      collapsedBrush,
+      tester.getCenter(rightTarget) - tester.getCenter(collapsedBrush),
+    );
+    await _settle(tester);
+    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
+    await _shot(tester, root, '29_pc_collapsed_icon_dragged_to_right');
+    await settings.moveDesktopDockPanel(CanvasDockPanel.brush, toRight: false);
+    await _settle(tester);
+
     await tester.tap(find.byKey(const ValueKey('dockExpand-brush')));
     await _shot(tester, root, '13_pc_canvas_left_brush_expanded');
     final height = find.byKey(const ValueKey('dockResize-canvasPreview'));
@@ -274,8 +296,23 @@ void main() {
       ),
       reason: 'Moving a window must not re-center the shorter dock column',
     );
+    final toolbarRightHanded = tester.getRect(find.byType(ToolbarWidget));
+    final leftBefore = tester.getRect(
+      find.byKey(const ValueKey('desktopLeftDockScroll')),
+    );
+    expect(toolbarRightHanded.right, lessThanOrEqualTo(leftBefore.left + 1));
     await settings.setLeftHanded(true);
     await _shot(tester, root, '17_pc_canvas_left_handed_layout');
+    final leftAfter = tester.getRect(
+      find.byKey(const ValueKey('desktopLeftDockScroll')),
+    );
+    final rightAfter = tester.getRect(
+      find.byKey(const ValueKey('desktopRightDockScroll')),
+    );
+    final toolbarLeftHanded = tester.getRect(find.byType(ToolbarWidget));
+    expect(leftAfter.right, lessThan(rightAfter.left));
+    expect(toolbarLeftHanded.left, greaterThanOrEqualTo(rightAfter.right - 1));
+    expect(toolbarLeftHanded.right, lessThanOrEqualTo(1501));
 
     // Explicitly exercise the tiny viewport described in the user report.
     await settings.setLeftHanded(false);

@@ -119,22 +119,17 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                             Expanded(
                               child: Row(
                                 children: [
-                                  if (!settings.isLeftHanded) ...[
+                                  if (!settings.isLeftHanded)
                                     _toolbar(scheme),
-                                    _column(settings, right: false),
-                                    if (_columnWidth(settings, right: false) > 52)
-                                      _columnResizeGrip(settings, right: false),
-                                  ],
+                                  _column(settings, right: false),
+                                  if (_columnWidth(settings, right: false) > 52)
+                                    _columnResizeGrip(settings, right: false),
                                   Expanded(child: _canvasAndFrames(scheme)),
-                                  if (settings.isLeftHanded) ...[
-                                    if (_columnWidth(settings, right: false) > 52)
-                                      _columnResizeGrip(settings, right: false),
-                                    _column(settings, right: false),
-                                    _toolbar(scheme),
-                                  ],
                                   if (_columnWidth(settings, right: true) > 52)
                                     _columnResizeGrip(settings, right: true),
                                   _column(settings, right: true),
+                                  if (settings.isLeftHanded)
+                                    _toolbar(scheme),
                                 ],
                               ),
                             ),
@@ -205,10 +200,19 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
   }
 
   Widget _toolbar(ColorScheme scheme) {
+    final leftHanded = context.watch<SettingsService>().isLeftHanded;
     return Container(
+      key: const ValueKey('pcPreviewToolbar'),
       width: 52,
       decoration: BoxDecoration(
-        border: Border(right: BorderSide(color: scheme.outlineVariant)),
+        border: Border(
+          left: leftHanded
+              ? BorderSide(color: scheme.outlineVariant)
+              : BorderSide.none,
+          right: leftHanded
+              ? BorderSide.none
+              : BorderSide(color: scheme.outlineVariant),
+        ),
       ),
       child: Column(
         children: [
@@ -268,7 +272,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                       if (i > 0)
                         const SizedBox(height: DesktopDockColumnFit.gap),
                       Align(
-                        alignment: right || settings.isLeftHanded
+                        alignment: right
                             ? Alignment.centerRight
                             : Alignment.centerLeft,
                         child: _window(
@@ -297,8 +301,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
         key: ValueKey(right ? 'pcPreviewRightColumnResize' : 'pcPreviewToolColumnResize'),
         behavior: HitTestBehavior.opaque,
         onHorizontalDragUpdate: (details) => setState(() {
-          final delta =
-              details.delta.dx * (right || settings.isLeftHanded ? -1 : 1);
+          final delta = details.delta.dx * (right ? -1 : 1);
           if (right) {
             _rightColumnWidthDrag =
                 ((_rightColumnWidthDrag ?? settings.desktopPanelWidth) + delta)
@@ -348,7 +351,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
         _resizingHeight[panel] ??
         settings.desktopDockHeight(panel);
     final collapsed = settings.isDesktopDockCollapsed(panel);
-    final foldsLeft = !right && !settings.isLeftHanded;
+    final foldsLeft = !right;
     return SizedBox(
       // Only the whole column has an independent width.
       width: collapsed ? 52 : double.infinity,
@@ -370,14 +373,16 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
           child: collapsed
               ? SizedBox(
                   height: 48,
-                  child: IconButton(
-                    key: ValueKey('pcPreviewExpand-${panel.name}'),
-                    tooltip: '${widget.labelOf(panel)} · ${AppLocalizations.of(context)!.filterPanelExpand}',
-                    icon: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
+                  child: Draggable<CanvasDockPanel>(
+                    key: ValueKey('pcPreviewCollapsedDrag-${panel.name}'),
+                    data: panel,
+                    feedback: Material(
+                      color: scheme.surfaceContainerHighest,
+                      elevation: 4,
+                      child: SizedBox(
+                        width: 52,
+                        height: 48,
+                        child: Icon(
                           switch (panel) {
                             CanvasDockPanel.brush => Icons.brush_outlined,
                             CanvasDockPanel.colorPicker => Icons.palette_outlined,
@@ -385,19 +390,47 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                             CanvasDockPanel.canvasPreview => Icons.map_outlined,
                             _ => Icons.tune_outlined,
                           },
-                          size: 18,
-                          color: scheme.onSurface,
+                          size: 24,
                         ),
-                        Icon(
-                          foldsLeft ? Icons.chevron_right : Icons.chevron_left,
-                          size: 13,
-                          color: scheme.onSurface,
-                        ),
-                      ],
+                      ),
                     ),
-                    onPressed: () => settings.setDesktopDockCollapsed(
-                      panel,
-                      false,
+                    childWhenDragging: const SizedBox(width: 52, height: 48),
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.grab,
+                      child: IconButton(
+                        key: ValueKey('pcPreviewExpand-${panel.name}'),
+                        tooltip: '${widget.labelOf(panel)} · ${AppLocalizations.of(context)!.filterPanelExpand}',
+                        icon: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              switch (panel) {
+                                CanvasDockPanel.brush => Icons.brush_outlined,
+                                CanvasDockPanel.colorPicker =>
+                                    Icons.palette_outlined,
+                                CanvasDockPanel.layer => Icons.layers_outlined,
+                                CanvasDockPanel.canvasPreview =>
+                                    Icons.map_outlined,
+                                _ => Icons.tune_outlined,
+                              },
+                              size: 18,
+                              color: scheme.onSurface,
+                            ),
+                            Icon(
+                              foldsLeft
+                                  ? Icons.chevron_right
+                                  : Icons.chevron_left,
+                              size: 13,
+                              color: scheme.onSurface,
+                            ),
+                          ],
+                        ),
+                        onPressed: () => settings.setDesktopDockCollapsed(
+                          panel,
+                          false,
+                        ),
+                      ),
                     ),
                   ),
                 )

@@ -20,6 +20,7 @@ class CanvasPreviewNavigator extends StatefulWidget {
   final String sceneId;
   final int frameIndex;
   final VoidCallback onClose;
+  final bool showCloseButton;
 
   const CanvasPreviewNavigator({
     super.key,
@@ -27,6 +28,7 @@ class CanvasPreviewNavigator extends StatefulWidget {
     required this.sceneId,
     required this.frameIndex,
     required this.onClose,
+    this.showCloseButton = true,
   });
 
   @override
@@ -152,10 +154,11 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                InkWell(
-                  onTap: widget.onClose,
-                  child: Icon(Icons.close, size: 16, color: theme.textColor),
-                ),
+                if (widget.showCloseButton)
+                  InkWell(
+                    onTap: widget.onClose,
+                    child: Icon(Icons.close, size: 16, color: theme.textColor),
+                  ),
               ],
             ),
           ),

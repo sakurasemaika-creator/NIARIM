@@ -65,6 +65,7 @@ import 'widgets/mesh_transform_panel.dart';
 import 'widgets/reference_window.dart';
 import 'widgets/canvas_preview_navigator.dart';
 import 'widgets/desktop_dock_content_viewport.dart';
+import 'widgets/docked_panel_close_scope.dart';
 import '../../utils/desktop_dock_column_fit.dart';
 import '../../models/canvas_dock_panel.dart';
 import '../../models/ruler.dart';
@@ -1250,9 +1251,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           if (isDesktop && !leftHanded)
                             _buildToolbarWidget(vertical: true),
                           // PC/DeXモード：ツールオプション系パネルはフローティングではなく
-                          // キャンバス左側（左利きモード時は右側）の常時ドッキング領域
+                          // キャンバス左側の常時ドッキング領域（左利きでも左右は固定）
                           // として表示する（複数同時に開いていれば縦に積んで並べる）。
-                          if (openToolPanels.isNotEmpty && !leftHanded) ...[
+                          if (openToolPanels.isNotEmpty) ...[
                             SizedBox(
                               width: _desktopDockColumnWidth(right: false),
                               child: _dockedPanelStack(right: false),
@@ -1476,38 +1477,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                               ],
                             ),
                           ),
-                          if (openToolPanels.isNotEmpty && leftHanded) ...[
-                            if (_desktopDockColumnWidth(right: false) > 52)
-                              _ResizeHandle(
-                                key: const ValueKey('dockColumnResize-left'),
-                                onDeltaX: (dx) => setState(() {
-                                  final settings = context
-                                      .read<SettingsService>();
-                                  final current =
-                                      _toolPanelWidthDragOverride ??
-                                      settings.desktopToolPanelWidth;
-                                  _toolPanelWidthDragOverride = (current - dx)
-                                      .clamp(200.0, 480.0);
-                                }),
-                                onDragEnd: () {
-                                  final w = _toolPanelWidthDragOverride;
-                                  if (w != null) {
-                                    context
-                                        .read<SettingsService>()
-                                        .setDesktopToolPanelWidth(w);
-                                  }
-                                },
-                              ),
-                            SizedBox(
-                              width: _desktopDockColumnWidth(right: false),
-                              child: _dockedPanelStack(right: false),
-                            ),
-                          ],
-                          if (isDesktop && leftHanded)
-                            _buildToolbarWidget(vertical: true),
                           // PC/DeXモード：カラーピッカー・レイヤーパネル・キャンバス
                           // プレビューは、ツールオプション系ドッキング領域（上の
-                          // openToolPanels）とは別に、右側（左利きモード時は左側）へ
+                          // openToolPanels）とは別に、左利きでも右側へ
                           // 縦に並べて同時表示する。単独でも複数同時でも表示可。
                           if (isDesktop &&
                               _openRightDockPanels().isNotEmpty &&
@@ -1520,13 +1492,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 final current =
                                     _panelWidthDragOverride ??
                                     settings.desktopPanelWidth;
-                                // 左利きモードでは領域が左側にあるため、ハンドルを
-                                // 左へ引くほど広がる（右側配置とドラッグ方向を反転）。
+                                // Right dock stays on the right in both
+                                // handedness modes, so the direction is fixed.
                                 _panelWidthDragOverride =
-                                    (current + (leftHanded ? dx : -dx)).clamp(
-                                      200.0,
-                                      480.0,
-                                    );
+                                    (current - dx).clamp(200.0, 480.0);
                               }),
                               onDragEnd: () {
                                 final w = _panelWidthDragOverride;
@@ -1542,6 +1511,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                               width: _desktopDockColumnWidth(right: true),
                               child: _buildRightDockColumn(),
                             ),
+                          // Handedness changes the OUTER vertical toolbar
+                          // only; left/right dock columns never swap.
+                          if (isDesktop && leftHanded)
+                            _buildToolbarWidget(vertical: true),
                         ],
                       ),
                     ),
@@ -1981,7 +1954,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
         CanvasDockPanel.brush => 460,
         _ => 260,
       },
-      child: _dockBody(panel),
+      child: DockedPanelCloseScope(
+        child: _dockBody(panel),
+      ),
     );
   }
 
@@ -2013,6 +1988,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       frameIndex: _currentFrame,
       onClose: () =>
           _setDesktopPanelVisible(CanvasDockPanel.canvasPreview, false),
+      showCloseButton: false,
     ),
   };
   Widget _desktopDockWindow(
@@ -2027,7 +2003,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         fittedBodyHeight ?? _dockDragHeight[p] ?? settings.desktopDockHeight(p);
     final l = AppLocalizations.of(context)!;
     final collapsed = settings.isDesktopDockCollapsed(p);
-    final foldsLeft = !right && !settings.isLeftHanded;
+    final foldsLeft = !right;
     return Align(
       // Without heightFactor, a single window can occupy the full dock column
       // and end up vertically centered. Each dock window must instead take
@@ -2054,23 +2030,43 @@ class _CanvasScreenState extends State<CanvasScreen> {
             child: collapsed
                 ? SizedBox(
                     height: 48,
-                    child: IconButton(
-                      key: ValueKey('dockExpand-${p.name}'),
-                      tooltip: '$title · ${l.filterPanelExpand}',
-                      onPressed: () =>
-                          settings.setDesktopDockCollapsed(p, false),
-                      icon: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(_dockCollapsedIcon(p), size: 18),
-                          Icon(
-                            foldsLeft
-                                ? Icons.chevron_right
-                                : Icons.chevron_left,
-                            size: 13,
+                    child: Draggable<CanvasDockPanel>(
+                      key: ValueKey('dockCollapsedDrag-${p.name}'),
+                      data: p,
+                      feedback: Material(
+                        color: scheme.surfaceContainerHighest,
+                        elevation: 4,
+                        child: SizedBox(
+                          width: 52,
+                          height: 48,
+                          child: Icon(_dockCollapsedIcon(p), size: 24),
+                        ),
+                      ),
+                      childWhenDragging: const SizedBox(
+                        width: 52,
+                        height: 48,
+                      ),
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.grab,
+                        child: IconButton(
+                          key: ValueKey('dockExpand-${p.name}'),
+                          tooltip: '$title · ${l.filterPanelExpand}',
+                          onPressed: () =>
+                              settings.setDesktopDockCollapsed(p, false),
+                          icon: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(_dockCollapsedIcon(p), size: 18),
+                              Icon(
+                                foldsLeft
+                                    ? Icons.chevron_right
+                                    : Icons.chevron_left,
+                                size: 13,
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   )
