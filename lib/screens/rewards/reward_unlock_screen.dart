@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/reward_unlock_labels.dart';
+import '../../l10n/reward_navigation_labels.dart';
 import '../../models/coin_unlock_quote.dart';
 import '../../services/premium_service.dart';
 import '../../services/advertising_service.dart';
@@ -12,6 +13,8 @@ import '../../services/google_auth_service.dart';
 import '../../widgets/coin_history_sheet.dart';
 import '../../widgets/responsive.dart';
 
+enum RewardPageMode { exchange, earnCoins }
+
 /// Reward UI shell; the server wallet/pricing/ad issuance are not yet live.
 /// Never invent coin balances, price quotes or exchange success on the client.
 class RewardUnlockScreen extends StatefulWidget {
@@ -19,11 +22,13 @@ class RewardUnlockScreen extends StatefulWidget {
     super.key,
     this.priceCatalog = const {},
     this.fullPremiumMinimumCoins,
+    this.mode = RewardPageMode.exchange,
   });
 
   /// Server-verified price catalog. Missing entries are NOT free.
   final Map<CoinUnlockTarget, CoinUnlockUnitPrices> priceCatalog;
   final int? fullPremiumMinimumCoins;
+  final RewardPageMode mode;
 
   @override
   State<RewardUnlockScreen> createState() => _RewardUnlockScreenState();
@@ -466,59 +471,19 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             ? t['rewardQuotaRemaining']
                 .replaceAll('{count}', '$rewardDailyRemaining')
             : t['rewardQuotaUncapped'];
+    final nav = RewardNavigationLabels.of(context);
+    final earn = widget.mode == RewardPageMode.earnCoins;
     return Scaffold(
-      appBar: AppBar(title: Text(t['title'])),
+      appBar: AppBar(title: Text(
+        earn ? nav['earn'] : nav['exchange'])),
       body: desktopCentered(
         context,
         ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Card(
-              key: const Key('rewardMissionEntry'),
-              child: ListTile(
-                leading: Icon(Icons.flag_outlined, color: scheme.primary),
-                title: Text(t['missionTitle'],
-                    style: Theme.of(context).textTheme.titleMedium),
-                subtitle: Text(t['missionSubtitle']),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.push('/creator-missions'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(t['active'],
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    Text(premium.hasPurchasedPremium
-                        ? t['activePremium']
-                        : premium.isLaunchCampaignActive
-                            ? t['activeCampaign']
-                            : t['activeUnavailable']),
-                    if (_rewardState != null)
-                      for (final item in (_rewardState!['entitlements'] as List? ?? const []))
-                        if (item is Map &&
-                            item['feature'] is String &&
-                            item['status'] is String)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              '${t[item['feature'] as String]} · '
-                              '${item['status'] == 'paused' ? t['paused'] : t['activeUntil']} '
-                              '${item['status'] == 'paused'
-                                ? item['pausedRemainingSeconds']
-                                : DateTime.fromMillisecondsSinceEpoch(item['expiresAtEpochMs'] as int).toLocal()}',
-                            ),
-                          ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
+            Text(earn ? nav['earnDescription'] : nav['exchange'],
+              style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 16),
             Text(
               _rewardState != null &&
                   _rewardState!['balanceCoins'] is int
@@ -528,7 +493,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                       : t['balancePending'],
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            if (_rewardState?['rewardEarningEnabled'] == true) ...[
+            if (earn && _rewardState?['rewardEarningEnabled'] == true) ...[
               const SizedBox(height: 10),
               FilledButton.icon(
                 icon: _rewardBusy
@@ -562,7 +527,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 ),
               ),
             ],
-            if (_rewardState != null) ...[
+            if (earn && _rewardState?['rewardEarningEnabled'] != true)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(nav['earnUnavailable']),
+              ),
+            if (!earn && _rewardState != null) ...[
               TextButton.icon(
                 key: const Key('coinHistoryButton'),
                 icon: const Icon(Icons.receipt_long_outlined),
@@ -577,6 +547,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 label: Text(t['rewardRefresh']),
               ),
             ],
+            if (!earn) ...[
             const SizedBox(height: 16),
             // Shared duration goes BEFORE the list of checkboxes.
             Text(t['duration'],
@@ -649,9 +620,16 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall),
             TextButton(
-              onPressed: () => context.push('/premium'),
-              child: Text(t['subscribe']),
+              onPressed: () => context.push('/membership'),
+              child: Text(nav['membership']),
             ),
+            ],
+            if (earn)
+              OutlinedButton.icon(
+                onPressed: () => context.push('/rewards'),
+                icon: const Icon(Icons.redeem_outlined),
+                label: Text(nav['exchange']),
+              ),
           ],
         ),
       ),
