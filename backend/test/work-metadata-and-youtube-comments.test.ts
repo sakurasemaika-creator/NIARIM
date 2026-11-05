@@ -11,6 +11,7 @@ vi.mock("../src/lib/auth", () => ({
 }));
 import { getWorkMetadata, updateWorkMetadata } from "../src/api/routes/workMetadata";
 import { getYoutubeComments } from "../src/api/routes/youtubeComments";
+import { deleteWork } from "../src/api/routes/worksDelete";
 
 const work = {
   pk: "WORK#abcdefghijk", sk: "META", itemType: "WORK",
@@ -87,6 +88,18 @@ describe("NIARIM-owned description row", () => {
       event({ title: "Title", description: "x".repeat(2001) }, true), work.workId,
     )).rejects.toMatchObject({ statusCode: 400 });
     expect(send).not.toHaveBeenCalled();
+  });
+});
+
+describe("work deletion with a separate detail row", () => {
+  it("atomically replaces a work with its tombstone and deletes its description", async () => {
+    await deleteWork(event(undefined, true), work.workId);
+    const txn = send.mock.calls.map(([cmd]) => cmd)
+      .find((cmd) => cmd instanceof TransactWriteCommand) as TransactWriteCommand;
+    expect(txn).toBeDefined();
+    expect(txn.input.TransactItems?.[0].Put?.Item?.itemType).toBe("WORK_TOMBSTONE");
+    expect(txn.input.TransactItems?.[1].Delete?.Key)
+      .toEqual({ pk: "WORK#abcdefghijk", sk: "DETAIL" });
   });
 });
 
