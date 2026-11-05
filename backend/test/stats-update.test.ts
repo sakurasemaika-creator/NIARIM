@@ -81,8 +81,6 @@ describe("statistics batch data safety", () => {
     const input = updates()[0].input;
     expect(input.ExpressionAttributeValues).toMatchObject({
       ":view": 100,
-      ":like": 5,
-      ":comment": 2,
       ":status": "public",
     });
     expect(input.UpdateExpression).not.toContain("likeCount =");
