@@ -225,19 +225,72 @@ class _CanvasScreenState extends State<CanvasScreen> {
     setState(() => _desktopDockDragActive = active);
   }
 
+  bool _storedRightForPhysicalSide(bool physicalRight) =>
+      DesktopDockColumnFit.storedRightForPhysicalSide(
+        physicalRight: physicalRight,
+        leftHanded: context.read<SettingsService>().isLeftHanded,
+      );
+
+  List<CanvasDockPanel> _physicalDockOrder(
+    SettingsService settings, {
+    required bool right,
+  }) => _storedRightForPhysicalSide(right)
+      ? settings.rightDockOrder
+      : settings.toolOptionDockOrder;
+
+  bool _hasPhysicalDockPanels(
+    SettingsService settings, {
+    required bool right,
+  }) => _physicalDockOrder(settings, right: right).any(_desktopPanelVisible) ||
+      (!_storedRightForPhysicalSide(right) && _showMeshTransformPanel);
+
+  void _resizePhysicalDockColumn({
+    required bool right,
+    required double deltaX,
+  }) {
+    final settings = context.read<SettingsService>();
+    final storedRight = _storedRightForPhysicalSide(right);
+    final current = storedRight
+        ? (_panelWidthDragOverride ?? settings.desktopPanelWidth)
+        : (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth);
+    final next = (current + (right ? -deltaX : deltaX)).clamp(200.0, 480.0);
+    setState(() {
+      if (storedRight) {
+        _panelWidthDragOverride = next;
+      } else {
+        _toolPanelWidthDragOverride = next;
+      }
+    });
+  }
+
+  void _finishPhysicalDockResize({required bool right}) {
+    final settings = context.read<SettingsService>();
+    final storedRight = _storedRightForPhysicalSide(right);
+    if (storedRight) {
+      final width = _panelWidthDragOverride;
+      if (width != null) settings.setDesktopPanelWidth(width);
+      _panelWidthDragOverride = null;
+    } else {
+      final width = _toolPanelWidthDragOverride;
+      if (width != null) settings.setDesktopToolPanelWidth(width);
+      _toolPanelWidthDragOverride = null;
+    }
+  }
+
   double _preferredDockColumnWidth(
     SettingsService settings, {
     required bool right,
     required double availableHeight,
   }) {
-    final order = right
-        ? settings.rightDockOrder
-        : settings.toolOptionDockOrder;
-    final visible = order.where(_desktopPanelVisible).toList();
-    if (visible.isEmpty && (right || !_showMeshTransformPanel)) {
+    final storedRight = _storedRightForPhysicalSide(right);
+    final visible = _physicalDockOrder(
+      settings,
+      right: right,
+    ).where(_desktopPanelVisible).toList();
+    if (visible.isEmpty && (storedRight || !_showMeshTransformPanel)) {
       return _desktopDockDragActive ? 52.0 : 0.0;
     }
-    if (visible.isNotEmpty && (right || !_showMeshTransformPanel)) {
+    if (visible.isNotEmpty && (storedRight || !_showMeshTransformPanel)) {
       final fitted = _fitDesktopDock(settings, visible, availableHeight);
       if (visible.every(
         (panel) =>
@@ -246,7 +299,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         return 52.0;
       }
     }
-    return right
+    return storedRight
         ? (_panelWidthDragOverride ?? settings.desktopPanelWidth)
         : (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth);
   }
@@ -1262,12 +1315,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final isDesktop = isWideScreen(context);
     final filterAdjusting = _showFilterPanel && !isDesktop;
     final selectionEditingHidden = _selectionEditingGivesWay(isDesktop);
-    final openToolPanels = isDesktop
-        ? _openToolOptionPanels()
-        : const <Widget>[];
+    final settings = context.watch<SettingsService>();
+    final leftDockHasPanels =
+        isDesktop && _hasPhysicalDockPanels(settings, right: false);
+    final rightDockHasPanels =
+        isDesktop && _hasPhysicalDockPanels(settings, right: true);
     // 左利きモード：フローティング／ドッキングパネルを左右反転し、
     // 描画する手の側にパネルが重ならないようにする。
-    final leftHanded = context.watch<SettingsService>().isLeftHanded;
+    final leftHanded = settings.isLeftHanded;
 
     // DeXモード・マウス/キーボード入力・左手デバイス：設定画面
     // 「ショートカット設定」で割り当てたキーで、ツール切替やUndo/Redo
@@ -1318,10 +1373,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             // 左側（左利きモード時は右側）の縦レールとして常時表示する。
                             if (isDesktop && !leftHanded)
                               _buildToolbarWidget(vertical: true),
-                            // PC/DeXモード：ツールオプション系パネルはフローティングではなく
-                            // キャンバス左側の常時ドッキング領域（左利きでも左右は固定）
-                            // として表示する（複数同時に開いていれば縦に積んで並べる）。
-                            if (openToolPanels.isNotEmpty) ...[
+                            // Physical left dock: show the saved right group
+                            // in left-handed mode, and the left group otherwise.
+                            if (leftDockHasPanels) ...[
                               SizedBox(
                                 width: _desktopDockColumnWidth(
                                   right: false,
@@ -1337,23 +1391,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   52)
                                 _ResizeHandle(
                                   key: const ValueKey('dockColumnResize-left'),
-                                  onDeltaX: (dx) => setState(() {
-                                    final settings = context
-                                        .read<SettingsService>();
-                                    final current =
-                                        _toolPanelWidthDragOverride ??
-                                        settings.desktopToolPanelWidth;
-                                    _toolPanelWidthDragOverride = (current + dx)
-                                        .clamp(200.0, 480.0);
-                                  }),
-                                  onDragEnd: () {
-                                    final w = _toolPanelWidthDragOverride;
-                                    if (w != null) {
-                                      context
-                                          .read<SettingsService>()
-                                          .setDesktopToolPanelWidth(w);
-                                    }
-                                  },
+                                  onDeltaX: (dx) => _resizePhysicalDockColumn(
+                                    right: false,
+                                    deltaX: dx,
+                                  ),
+                                  onDragEnd: () =>
+                                      _finishPhysicalDockResize(right: false),
                                 ),
                             ] else if (isDesktop && _desktopDockDragActive)
                               _desktopEmptyDockDropTarget(right: false),
@@ -1565,12 +1608,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 ],
                               ),
                             ),
-                            // PC/DeXモード：カラーピッカー・レイヤーパネル・キャンバス
-                            // プレビューは、ツールオプション系ドッキング領域（上の
-                            // openToolPanels）とは別に、左利きでも右側へ
-                            // 縦に並べて同時表示する。単独でも複数同時でも表示可。
-                            if (isDesktop &&
-                                _openRightDockPanels().isNotEmpty &&
+                            // Physical right dock shows the opposite saved
+                            // group when left-handed mode is enabled.
+                            if (rightDockHasPanels &&
                                 _desktopDockColumnWidth(
                                       right: true,
                                       availableHeight:
@@ -1579,27 +1619,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                     52)
                               _ResizeHandle(
                                 key: const ValueKey('dockColumnResize-right'),
-                                onDeltaX: (dx) => setState(() {
-                                  final settings = context
-                                      .read<SettingsService>();
-                                  final current =
-                                      _panelWidthDragOverride ??
-                                      settings.desktopPanelWidth;
-                                  // Right dock stays on the right in both
-                                  // handedness modes, so the direction is fixed.
-                                  _panelWidthDragOverride = (current - dx)
-                                      .clamp(200.0, 480.0);
-                                }),
-                                onDragEnd: () {
-                                  final w = _panelWidthDragOverride;
-                                  if (w != null) {
-                                    context
-                                        .read<SettingsService>()
-                                        .setDesktopPanelWidth(w);
-                                  }
-                                },
+                                onDeltaX: (dx) => _resizePhysicalDockColumn(
+                                  right: true,
+                                  deltaX: dx,
+                                ),
+                                onDragEnd: () =>
+                                    _finishPhysicalDockResize(right: true),
                               ),
-                            if (isDesktop && _openRightDockPanels().isNotEmpty)
+                            if (rightDockHasPanels)
                               SizedBox(
                                 width: _desktopDockColumnWidth(
                                   right: true,
@@ -1609,8 +1636,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                               )
                             else if (isDesktop && _desktopDockDragActive)
                               _desktopEmptyDockDropTarget(right: true),
-                            // Handedness changes the OUTER vertical toolbar
-                            // only; left/right dock columns never swap.
+                            // The outer toolbar moves to the dominant hand;
+                            // the saved dock groups are visually mirrored.
                             if (isDesktop && leftHanded)
                               _buildToolbarWidget(vertical: true),
                           ],
@@ -2102,7 +2129,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
         onWillAcceptWithDetails: (_) => true,
         onAcceptWithDetails: (details) => context
             .read<SettingsService>()
-            .moveDesktopDockPanel(details.data, toRight: right),
+            .moveDesktopDockPanel(
+              details.data,
+              toRight: _storedRightForPhysicalSide(right),
+            ),
         builder: (context, candidates, _) => DecoratedBox(
           decoration: BoxDecoration(
             color: candidates.isEmpty
@@ -2151,7 +2181,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onWillAcceptWithDetails: (d) => d.data != p,
             onAcceptWithDetails: (d) => settings.moveDesktopDockPanel(
               d.data,
-              toRight: right,
+              toRight: _storedRightForPhysicalSide(right),
               before: p,
             ),
             builder: (context, candidates, _) => Container(
@@ -2273,7 +2303,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   } else {
                                     settings.moveDesktopDockPanel(
                                       p,
-                                      toRight: action == 'right',
+                                      toRight: _storedRightForPhysicalSide(
+                                        action == 'right',
+                                      ),
                                     );
                                   }
                                 },
@@ -2336,23 +2368,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
         ),
       ),
     );
-  }
-
-  List<Widget> _openToolOptionPanels() {
-    final settings = context.watch<SettingsService>();
-    return [
-      for (final p in settings.toolOptionDockOrder)
-        if (_desktopPanelVisible(p)) _desktopDockWindow(p, right: false),
-      if (_showMeshTransformPanel) _meshTransformPanel(),
-    ];
-  }
-
-  List<Widget> _openRightDockPanels() {
-    final settings = context.watch<SettingsService>();
-    return [
-      for (final p in settings.rightDockOrder)
-        if (_desktopPanelVisible(p)) _desktopDockWindow(p, right: true),
-    ];
   }
 
   /// 常設ツールバー本体。[vertical]がtrueの場合は左側（左利きモードでは
@@ -2423,11 +2438,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Widget _dockedPanelStack({required bool right}) => LayoutBuilder(
     builder: (context, constraints) {
       final settings = context.watch<SettingsService>();
-      final order = right
-          ? settings.rightDockOrder
-          : settings.toolOptionDockOrder;
-      final visible = order.where(_desktopPanelVisible).toList();
-      final hasMesh = !right && _showMeshTransformPanel;
+      final storedRight = _storedRightForPhysicalSide(right);
+      final visible =
+          _physicalDockOrder(settings, right: right)
+              .where(_desktopPanelVisible)
+              .toList();
+      final hasMesh = !storedRight && _showMeshTransformPanel;
       final fitted = _fitDesktopDock(
         settings,
         visible,
