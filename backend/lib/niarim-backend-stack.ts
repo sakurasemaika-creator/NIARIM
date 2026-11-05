@@ -9,8 +9,6 @@ import { Construct } from "constructs";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import * as events from "aws-cdk-lib/aws-events";
-import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as path from "path";
 
 /**
@@ -32,7 +30,7 @@ import * as path from "path";
 
 /**
  * DynamoDBの容量配分（Always Free枠 25 RCU / 25 WCU に収める）。
- * テーブル本体15 + GSI 7本合計10 = 25で上限ちょうど。GSIを増減する場合は
+ * テーブル本体15 + GSI 6本合計8 = 23。GSIを増減する場合は
  * 必ず`assertCapacityWithinFreeTier()`が通る範囲に収めること（超過分は
  * Provisioned Throughputの課金対象になる）。
  *
@@ -45,7 +43,6 @@ import * as path from "path";
  */
 const CAPACITY_PLAN = {
   table: { read: 15, write: 15 },
-  gsi1RankingIndex: { read: 2, write: 2 },
   gsi2BookmarkRankingIndex: { read: 2, write: 2 },
   gsi3AuthorWorksIndex: { read: 1, write: 1 },
   gsi3AllAuthorWorksIndex: { read: 1, write: 1 },
@@ -90,16 +87,6 @@ export class NiarimBackendStack extends Stack {
       timeToLiveAttribute: "ttl", // DailyCounterItem・FollowNotificationItem共通
       removalPolicy: RemovalPolicy.RETAIN, // 誤ってスタックを消しても作品データを失わない
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: false }, // 追加コスト回避（$0方針）
-    });
-
-    // GSI1：ランキング表示（8.2節）。gsi1pk="RANKING#ALL"固定パーティション。
-    table.addGlobalSecondaryIndex({
-      indexName: "GSI1",
-      partitionKey: { name: "gsi1pk", type: dynamodb.AttributeType.STRING },
-      sortKey: { name: "gsi1sk", type: dynamodb.AttributeType.NUMBER },
-      projectionType: dynamodb.ProjectionType.ALL,
-      readCapacity: CAPACITY_PLAN.gsi1RankingIndex.read,
-      writeCapacity: CAPACITY_PLAN.gsi1RankingIndex.write,
     });
 
     // GSI2：ブックマーク数ランキング（8.5節）。
@@ -234,9 +221,6 @@ export class NiarimBackendStack extends Stack {
             ? "true" : "false",
         PLAY_ANDROID_PACKAGE_NAME: "com.niarim.niarim",
         // YouTube由来のランキングは追加指標利用の承認があるまで非公開。
-        YOUTUBE_VIEW_RANKINGS_APPROVED:
-          this.node.tryGetContext("youtubeViewRankingsApproved") === "true"
-            ? "true" : "false",
         // Playback preflight reads the public YouTube video status server-side.
         // Never ship this API key in the Flutter binary or an API response.
         YOUTUBE_API_KEY:
@@ -277,44 +261,8 @@ export class NiarimBackendStack extends Stack {
       authType: lambda.FunctionUrlAuthType.NONE,
     });
 
-    const batchFunction = new NodejsFunction(this, "StatsUpdateFunction", {
-      functionName: "niarim-stats-update",
-      entry: path.join(__dirname, "../src/batch/statsUpdate.ts"),
-      handler: "handler",
-      runtime: lambda.Runtime.NODEJS_22_X,
-      memorySize: 512,
-      // 1ページ分の処理（YouTube API呼び出し＋DynamoDB更新）に十分な
-      // 時間を確保する。8.1節の「1回の実行は最大15分」はLambdaの上限を
-      // 指しているが、1ページ25件なら数十秒〜数分で収まる想定。
-      timeout: Duration.minutes(5),
-      environment: {
-        TABLE_NAME: table.tableName,
-        // 【要設定】YouTube Data APIキー（videos.batchGetStats用、10章）。
-        // Secrets Managerは月額課金が発生するため、$0方針に合わせて
-        // Lambda環境変数（AWS管理キーで暗号化済み）に留めている。
-        // より強固な秘匿が必要な場合はSecrets Managerへの切り替えを検討。
-        YOUTUBE_API_KEY:
-          this.node.tryGetContext("youtubeApiKey") ?? "REPLACE_ME",
-        SELF_FUNCTION_NAME: "niarim-stats-update",
-      },
-      bundling: { minify: true, sourceMap: false },
-    });
-    table.grantReadWriteData(batchFunction);
-    // 自己再帰呼び出し用（8.1節）。
-    batchFunction.grantInvoke(batchFunction);
-
-    // EventBridge Scheduler：更新サイクルの開始のみをトリガーする
-    // （8.1節）。YouTubeクォータ・DynamoDB WCU節約のため1日1回。
-    // cron式はUTC。毎日0時UTC＝JST9時に実行する。
-    new events.Rule(this, "StatsUpdateSchedule", {
-      ruleName: "niarim-stats-update-schedule",
-      schedule: events.Schedule.expression("cron(0 0 * * ? *)"),
-      targets: [
-        new targets.LambdaFunction(batchFunction, {
-          event: events.RuleTargetInput.fromObject({}),
-        }),
-      ],
-    });
+    // YouTube再生数の定期取得は採用しない。統計バッチと定期イベントは作成しない。
+    // ランキングはNIARIM独自ブックマークのGSI2から取得する。
 
     new CfnOutput(this, "ApiFunctionUrl", { value: functionUrl.url });
     new CfnOutput(this, "AdmobSsvCallbackUrl", {

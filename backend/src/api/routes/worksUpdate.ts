@@ -10,7 +10,6 @@ import {
   notFound,
   ok,
 } from "../../lib/response";
-import { computeRankingScore } from "../../lib/ranking";
 import { parseJsonObject } from "../../lib/request";
 import type { WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
@@ -27,8 +26,8 @@ interface UpdateWorkRequestBody {
  * `PATCH /works/{id}`（13章：NIARIM側の公開/非公開切り替え・メタデータ
  * 編集）。投稿枠は消費しない（`videos.insert`を使わないため）。
  *
- * 公開/非公開の切り替えは、GSI1/2/3/4のソートキー属性
- * （gsi1sk/gsi2sk/gsi3sk/gsi4sk）を書き込む/削除することで、8.2節の
+ * 公開/非公開の切り替えは、GSI2/3/4のソートキー属性
+ * （gsi2sk/gsi3sk/gsi4sk）を書き込む/削除することで、8.2節の
  * 「GSIにソートキー属性が無ければそのGSIから除外される」性質を使う。
  * ただしYouTube側が非公開・削除の場合（youtubePrivacyStatusが
  * 'private'/'deleted'）は、NIARIM側の設定に関わらず強制非表示のままに
@@ -102,33 +101,11 @@ export async function updateWork(
           ":postedAt": work.postedAt,
           ":latestPk": "LATEST",
         });
-        if (work.youtubePrivacyStatus === "public") {
-          updates.push(
-            "rankingScore = :score",
-            "gsi1pk = :rankPk",
-            "gsi1sk = :score",
-          );
-          values[":score"] = computeRankingScore(work);
-          values[":rankPk"] = "RANKING#ALL";
-        } else {
-          removes.push("rankingScore", "gsi1pk", "gsi1sk");
-        }
-        // Hidden works have no rankingScore. Derive it from the counters and
-        // guard those counters so a simultaneous stats/bookmark update wins.
-        for (const counter of [
-          "viewCount",
-          "likeCount",
-          "commentCount",
-          "bookmarkCount",
-        ] as const) {
-          conditions.push(`${counter} = :${counter}`);
-          values[`:${counter}`] = work[counter];
-        }
+        // ブックマーク変更と公開状態変更の競合は防止する。
+        conditions.push("bookmarkCount = :bookmarkCount");
+        values[":bookmarkCount"] = work.bookmarkCount;
       } else {
         removes.push(
-          "rankingScore",
-          "gsi1pk",
-          "gsi1sk",
           "gsi2pk",
           "gsi2sk",
           "gsi3pk",

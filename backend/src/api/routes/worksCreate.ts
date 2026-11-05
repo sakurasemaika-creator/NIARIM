@@ -9,7 +9,6 @@ import {
   getOwnChannelInfo,
   verifyVideoOwnership,
 } from "../../lib/youtube";
-import { computeRankingScore } from "../../lib/ranking";
 import { badRequest, conflict, created, forbidden } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
 import type { WorkItem } from "../../lib/types";
@@ -133,13 +132,6 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     const isNiarimPublished = body.isNiarimPublished ?? true;
     const isVisible =
       isNiarimPublished && isYoutubeVisible(snippet.privacyStatus);
-    const rankingVisible = isVisible && snippet.privacyStatus === "public";
-    const rankingScore = computeRankingScore({
-      viewCount: 0,
-      likeCount: 0,
-      commentCount: 0,
-    });
-
     const work: WorkWithProjectMetadata = {
       itemType: TABLE_ITEM_TYPE.Work,
       ...Keys.work(body.youtubeVideoId),
@@ -159,7 +151,6 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       likeCount: 0,
       commentCount: 0,
       lastFetchedAt: now,
-      rankingScore: rankingVisible ? rankingScore : undefined,
       bookmarkCount: 0,
       bookmarkScore: isVisible ? 0 : undefined,
       repostCount: 0,
@@ -177,8 +168,6 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       projectCreatedAt: body.projectCreatedAt,
       projectCanvasWidth: body.projectCanvasWidth,
       projectCanvasHeight: body.projectCanvasHeight,
-      gsi1pk: rankingVisible ? "RANKING#ALL" : undefined,
-      gsi1sk: rankingVisible ? rankingScore : undefined,
       gsi2pk: isVisible ? "BOOKMARK_RANKING" : undefined,
       gsi2sk: isVisible ? 0 : undefined,
       gsi3pk: isVisible ? `AUTHOR#${auth.niarimUserId}` : undefined,
