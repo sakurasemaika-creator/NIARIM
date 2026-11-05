@@ -11,10 +11,10 @@ import {
 } from "../src/lib/ranking";
 
 describe("computeRankingScore", () => {
-  it("viewCountを主軸に、likeCountとcommentCountを加重して合算する", () => {
+  it("再生数のみを順位基準とし、高評価やコメント数を加算しない", () => {
     expect(
       computeRankingScore({ viewCount: 100, likeCount: 10, commentCount: 5 }),
-    ).toBe(100 + 10 * 5 + 5 * 2);
+    ).toBe(100);
   });
 
   it("負の値は0として扱う（異常データからの防御）", () => {
