@@ -1306,6 +1306,42 @@ class CommunityService extends ChangeNotifier {
     return reply.toCommunityWork();
   }
 
+  /// Save NIARIM-owned title/description without modifying YouTube metadata.
+  Future<CommunityWork> updateOwnWorkMetadata(
+    String workId, {required String title, required String description}
+  ) async {
+    final known = byId(workId);
+    if (known == null || !isOwnWork(known)) {
+      throw StateError('Only the poster can edit $workId');
+    }
+    final trimmedTitle = title.trim();
+    if (trimmedTitle.isEmpty || trimmedTitle.length > 100 ||
+        description.length > 2000) {
+      throw ArgumentError('Invalid NIARIM work metadata');
+    }
+    final revision = _accountRevision;
+    final client = api;
+    if (client != null) {
+      await _awaitInAccount(
+        client.updateWorkMetadata(
+          workId, title: trimmedTitle, description: description.trim(),
+        ),
+        revision,
+      );
+      if (!_isCurrentAccount(revision)) {
+        throw const CommunityAccountChangedException();
+      }
+    }
+    final latest = byId(workId);
+    if (latest == null || !isOwnWork(latest)) {
+      throw const CommunityAccountChangedException();
+    }
+    final updated = latest.copyWith(title: trimmedTitle);
+    _upsert(updated);
+    notifyListeners();
+    return updated;
+  }
+
   /// Deletes only the poster's NIARIM entry. The YouTube video is deliberately
   /// left untouched; removing it there requires a separate explicit action.
   Future<void> deleteOwnWork(String workId) async {
