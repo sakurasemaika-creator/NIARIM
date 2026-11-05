@@ -59,6 +59,12 @@ describe("durable mission bell notices",()=>{
     await expect(recordMissionAchievement("Nowner",post)).rejects
       .toBeInstanceOf(TransactionCanceledException);
   });
+  it("creates an account-owned login milestone ID without a work ID",()=>{
+    expect(missionEventId({
+      kind:"loginMilestone",missionId:"login_total_50",
+      required:50,occurredAt:"2026-11-05T00:00:00.000Z",
+    })).toBe("account_login_total_50");
+  });
   it("creates one account-scoped follower event with no fabricated work ID",()=>{
     expect(missionEventId({
       kind:"followers",missionId:"followers_10",

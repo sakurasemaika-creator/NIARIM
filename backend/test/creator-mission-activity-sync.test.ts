@@ -1,9 +1,9 @@
 import {beforeEach,describe,it,expect,vi} from "vitest";
 import type {APIGatewayProxyEventV2} from "aws-lambda";
 import {BatchGetCommand} from "@aws-sdk/lib-dynamodb";
-const {send,scanWorks,scanGrid,scanAccount,record}=vi.hoisted(()=>({
+const {send,scanWorks,scanGrid,scanAccount,scanLogin,record}=vi.hoisted(()=>({
  send:vi.fn(),scanWorks:vi.fn(),scanGrid:vi.fn(),
- scanAccount:vi.fn(),record:vi.fn(),
+ scanAccount:vi.fn(),scanLogin:vi.fn(),record:vi.fn(),
 }));
 vi.mock("../src/lib/auth",()=>({
  authenticate:vi.fn(async()=>({niarimUserId:"Nowner"})),
@@ -19,6 +19,9 @@ vi.mock("../src/api/routes/creatorWorkCountGrid",()=>({
 }));
 vi.mock("../src/api/routes/creatorMissions",()=>({
  getMyCreatorMissions:scanAccount,
+}));
+vi.mock("../src/api/routes/loginBonus",()=>({
+ getMyLoginBonus:scanLogin,
 }));
 vi.mock("../src/lib/missionNotifications",async original=>({
  ...(await original<typeof import("../src/lib/missionNotifications")>()),
@@ -41,6 +44,9 @@ beforeEach(()=>{
  })});
  scanAccount.mockReset();scanAccount.mockResolvedValue({body:JSON.stringify({
   missions:[],
+ })});
+ scanLogin.mockReset();scanLogin.mockResolvedValue({body:JSON.stringify({
+  milestones:[],
  })});
  record.mockReset();record.mockResolvedValue(true);
 });
@@ -73,6 +79,7 @@ describe("idempotent plaza mission activity sync",()=>{
   expect(data.added).toBe(0);
   expect(scanGrid).not.toHaveBeenCalled();
   expect(scanAccount).not.toHaveBeenCalled();
+  expect(scanLogin).not.toHaveBeenCalled();
  });
  it("repeats the same page before advancing past more than twelve works",async()=>{
   const items=Array.from({length:14},(_,i)=>({
@@ -157,6 +164,26 @@ describe("idempotent plaza mission activity sync",()=>{
   expect(record.mock.calls[0][1]).toMatchObject({
     kind:"followers",missionId:"followers_10",
     required:10,dateIsObserved:true,
+  });
+ });
+ it("adds previously achieved cumulative login milestones once",async()=>{
+  scanWorks.mockResolvedValueOnce({body:JSON.stringify({
+    items:[],nextCursor:null,
+  })});
+  scanGrid.mockResolvedValueOnce({body:JSON.stringify({
+    missions:[],complete:true,
+  })});
+  scanLogin.mockResolvedValueOnce({body:JSON.stringify({
+    milestones:[
+      {days:5,eligible:true,claimed:false},
+      {days:10,eligible:false,claimed:false},
+    ],
+  })});
+  const result=JSON.parse((await syncMyMissionActivity(req())).body??"{}");
+  expect(result).toMatchObject({added:1,hadMore:false});
+  expect(record.mock.calls[0][1]).toMatchObject({
+    kind:"loginMilestone",missionId:"login_total_5",
+    required:5,dateIsObserved:true,
   });
  });
  it("never emits an already recorded milestone",async()=>{
