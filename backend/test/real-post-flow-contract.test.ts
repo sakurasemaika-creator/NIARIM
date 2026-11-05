@@ -57,7 +57,10 @@ describe("real posting flow contract", () => {
 
   it("discovers and caches the upload account's YouTube channel on first post", () => {
     expect(createSource).toContain(
-      "const channelInfo = await getOwnChannelInfo(body.youtubeAccessToken)",
+      "const channelInfo = user.youtubeChannelId",
+    );
+    expect(createSource).toContain(
+      ": await getOwnChannelInfo(body.youtubeAccessToken)",
     );
     expect(createSource).toContain(
       "const linkedChannelId = user.youtubeChannelId ?? channelInfo?.channelId",
