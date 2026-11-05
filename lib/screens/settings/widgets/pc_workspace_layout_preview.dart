@@ -592,11 +592,11 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                         return [
                           PopupMenuItem(
                             value: 'left',
-                            child: Text(l.pcWorkspaceLayoutToolOrderSection),
+                            child: Text(settings.isLeftHanded ? l.pcWorkspaceLayoutRightOrderSection : l.pcWorkspaceLayoutToolOrderSection),
                           ),
                           PopupMenuItem(
                             value: 'right',
-                            child: Text(l.pcWorkspaceLayoutRightOrderSection),
+                            child: Text(settings.isLeftHanded ? l.pcWorkspaceLayoutToolOrderSection : l.pcWorkspaceLayoutRightOrderSection),
                           ),
                           PopupMenuItem(
                             value: 'hide',
