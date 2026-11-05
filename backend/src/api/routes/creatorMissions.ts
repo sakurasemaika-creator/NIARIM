@@ -14,6 +14,8 @@ import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { badRequest, conflict, forbidden, ok } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
 import type { WorkItem } from "../../lib/types";
+import { workCountMissionById } from "../../lib/workCountMissionGrid";
+import { claimWorkCountMission } from "./creatorWorkCountClaim";
 import {
   CREATOR_MISSIONS,
   MAX_CREATOR_MISSION_COINS,
@@ -306,7 +308,11 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
     badRequest("ミッションIDが不正です", "INVALID_MISSION_ID");
   }
   const mission = CREATOR_MISSIONS.find((m) => m.id === id);
-  if (!mission) badRequest("不明なミッションです", "INVALID_MISSION_ID");
+  if (!mission) {
+    const gridMission=workCountMissionById(id);
+    if (gridMission) return claimWorkCountMission(auth.niarimUserId,gridMission);
+    badRequest("不明なミッションです", "INVALID_MISSION_ID");
+  }
 
   const workId = mission.perWork ? body.workId : undefined;
   if (mission.perWork) {

@@ -56,6 +56,18 @@ export const WORK_COUNT_MISSIONS: readonly GridMission[] =
       provisionalPrice:true as const,
     }))
   ));
+/** Previously issued v2 qualified-work rewards must never be paid again. */
+export const LEGACY_GRID_BITS: Readonly<Record<string,number>> = {
+  works_3_x_10:8,works_5_x_20:9,works_10_x_20:36,
+  works_25_x_20:37,works_50_x_20:38,works_100_x_20:39,
+  works_250_x_20:40,works_500_x_20:41,
+};
+export function gridClaimsEnabled():boolean{
+  return process.env.CREATOR_MISSION_CLAIMS_ENABLED==="true" &&
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED==="true" &&
+    process.env.CREATOR_GRID_PAYOUTS_ENABLED==="true" &&
+    process.env.CREATOR_GRID_REWARDS_REVIEW_APPROVED==="true";
+}
 export const TOTAL_GRID_MISSIONS=WORK_COUNT_MISSIONS.length;
 export const ACCOUNT_GRID_MAX_COINS=WORK_COUNT_MISSIONS.reduce((n,m)=>n+m.coins,0);
 export function workCountMissionById(id:string):GridMission|undefined{

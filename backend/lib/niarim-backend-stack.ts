@@ -214,6 +214,14 @@ export class NiarimBackendStack extends Stack {
         CREATOR_MISSION_CLAIMS_REVIEW_APPROVED:
           this.node.tryGetContext("creatorMissionClaimsReviewApproved") === "true"
             ? "true" : "false",
+        // New 480-stage matrix has independent, default-OFF review gates.
+        // Draft coin amounts may NEVER pay until pricing is approved.
+        CREATOR_GRID_PAYOUTS_ENABLED:
+          this.node.tryGetContext("creatorGridPayoutsEnabled") === "true"
+            ? "true" : "false",
+        CREATOR_GRID_REWARDS_REVIEW_APPROVED:
+          this.node.tryGetContext("creatorGridRewardsReviewApproved") === "true"
+            ? "true" : "false",
         PLAY_ANDROID_PACKAGE_NAME: "com.niarim.niarim",
         // Playback preflight reads the public YouTube video status server-side.
         // Never ship this API key in the Flutter binary or an API response.
