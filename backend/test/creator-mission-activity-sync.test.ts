@@ -75,7 +75,8 @@ describe("idempotent plaza mission activity sync",()=>{
   });
   const data=JSON.parse((await syncMyMissionActivity(req())).body??"{}");
   expect(data.added).toBe(1);
-  expect(record.mock.calls.map((call:unknown[])=>call[1].missionId))
+  expect(record.mock.calls.map((call:unknown[])=>
+    (call[1] as {missionId:string}).missionId))
    .toEqual(["works_3_x_0"]);
  });
 });
