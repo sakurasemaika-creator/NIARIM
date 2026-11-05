@@ -10,6 +10,89 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('pristine dock defaults mirror by hand, but never after a user edit',
+      () async {
+    final settings = SettingsService();
+    await settings.init();
+    expect(settings.desktopDockLayoutCustomized, isFalse);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.rightDockOrder.contains(CanvasDockPanel.layer), isTrue);
+
+    await settings.setLeftHanded(true);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.layer), isTrue);
+    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    await settings.setLeftHanded(false);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+
+    await settings.setLeftHanded(true);
+    await settings.moveDesktopDockPanel(CanvasDockPanel.brush, toRight: false);
+    expect(settings.desktopDockLayoutCustomized, isTrue);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.layer), isTrue);
+
+    final physicalLeft = settings.toolOptionDockOrder.toList();
+    final physicalRight = settings.rightDockOrder.toList();
+    await settings.setLeftHanded(false);
+    expect(settings.toolOptionDockOrder, physicalLeft);
+    expect(settings.rightDockOrder, physicalRight);
+    await settings.setLeftHanded(true);
+    expect(settings.toolOptionDockOrder, physicalLeft);
+    expect(settings.rightDockOrder, physicalRight);
+
+    final restarted = SettingsService();
+    await restarted.init();
+    expect(restarted.isLeftHanded, isTrue);
+    expect(restarted.desktopDockLayoutCustomized, isTrue);
+    expect(restarted.toolOptionDockOrder, physicalLeft);
+    expect(restarted.rightDockOrder, physicalRight);
+  });
+
+  test('latest workspace visibility, sizes, folds and reset', () async {
+    final settings = SettingsService();
+    await settings.init();
+    await settings.setLeftHanded(true);
+    await settings.setDefaultDockedPanels({
+      CanvasDockPanel.layer,
+      CanvasDockPanel.canvasPreview,
+    });
+    await settings.setDesktopDockCollapsed(CanvasDockPanel.layer, true);
+    await settings.setDesktopDockHeight(CanvasDockPanel.layer, 330);
+    await settings.setDesktopPanelWidth(360);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.layer), isTrue);
+    expect(settings.desktopDockLayoutCustomized, isTrue);
+    final left = settings.toolOptionDockOrder.toList();
+    final right = settings.rightDockOrder.toList();
+    final reopened = SettingsService();
+    await reopened.init();
+    expect(reopened.defaultDockedPanels,
+        {CanvasDockPanel.layer, CanvasDockPanel.canvasPreview});
+    expect(reopened.desktopPanelWidth, 360);
+    expect(reopened.desktopDockHeight(CanvasDockPanel.layer), 330);
+    expect(reopened.isDesktopDockCollapsed(CanvasDockPanel.layer), isTrue);
+    expect(reopened.toolOptionDockOrder, left);
+    expect(reopened.rightDockOrder, right);
+    await reopened.setLeftHanded(false);
+    expect(reopened.toolOptionDockOrder, left);
+    expect(reopened.rightDockOrder, right);
+
+    await reopened.setLeftHanded(true);
+    await reopened.resetDesktopWorkspaceLayout();
+    expect(reopened.desktopDockLayoutCustomized, isFalse);
+    expect(reopened.toolOptionDockOrder.contains(CanvasDockPanel.layer), isTrue);
+    expect(reopened.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(reopened.desktopPanelWidth, 280);
+    expect(reopened.desktopToolPanelWidth, 280);
+    expect(reopened.desktopDockHeight(CanvasDockPanel.layer), 260);
+    expect(reopened.isDesktopDockCollapsed(CanvasDockPanel.layer), isFalse);
+    expect(reopened.defaultDockedPanels,
+        {CanvasDockPanel.brush, CanvasDockPanel.colorPicker,
+         CanvasDockPanel.layer});
+    await reopened.setLeftHanded(false);
+    expect(reopened.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(reopened.rightDockOrder.contains(CanvasDockPanel.layer), isTrue);
+  });
+
+
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   test('automatic dock folding defaults ON and persists the user toggle',
@@ -154,8 +237,8 @@ void main() {
     expect(settings.desktopToolPanelWidth, greaterThan(280));
     expect(settings.desktopPanelWidth, 280);
 
-    // Handedness moves the toolbar to the outside and mirrors the saved
-    // contents of the two physical dock columns.
+    // A resized column is already customized: handedness only moves the
+    // outer toolbar and must never relocate its physical dock windows.
     final toolColumn = find.byKey(const ValueKey('pcPreviewToolColumn'));
     final rightColumn = find.byKey(const ValueKey('pcPreviewRightColumn'));
     final outerToolbar = find.byKey(const ValueKey('pcPreviewToolbar'));
@@ -170,11 +253,11 @@ void main() {
       lessThan(tester.getRect(rightColumn).left),
     );
     expect(
-      tester.getRect(find.byKey(const ValueKey('pcPreviewDrop-layer'))).right,
+      tester.getRect(find.byKey(const ValueKey('pcPreviewDrop-brush'))).right,
       lessThanOrEqualTo(tester.getRect(toolColumn).right),
     );
     expect(
-      tester.getRect(find.byKey(const ValueKey('pcPreviewDrop-brush'))).left,
+      tester.getRect(find.byKey(const ValueKey('pcPreviewDrop-layer'))).left,
       greaterThanOrEqualTo(tester.getRect(rightColumn).left),
     );
     expect(
@@ -387,7 +470,7 @@ void main() {
     expect(settings.desktopPanelWidth, greaterThan(280));
     expect(settings.desktopToolPanelWidth, 280);
 
-    // Physical right -> physical left must update the SAVED right list.
+    // Physical right -> physical left must update the SAVED physical left list.
     final dragIcon =
         find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush'));
     await tester.drag(
@@ -395,8 +478,8 @@ void main() {
       tester.getCenter(layer) - tester.getCenter(dragIcon),
     );
     await tester.pumpAndSettle();
-    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
-    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isFalse);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isFalse);
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
     expect(
       tester.getRect(brush).left,
@@ -409,8 +492,8 @@ void main() {
     await settings.setLeftHanded(false);
     await tester.pumpAndSettle();
     expect(
-      tester.getRect(brush).left,
-      greaterThanOrEqualTo(tester.getRect(right).left),
+      tester.getRect(brush).right,
+      lessThanOrEqualTo(tester.getRect(left).right),
     );
     expect(settings.rightDockOrder, savedRight);
     expect(settings.toolOptionDockOrder, savedLeft);
@@ -436,7 +519,7 @@ void main() {
       CanvasDockPanel.layer,
     });
     await settings.setDesktopDockCollapsed(CanvasDockPanel.brush, true);
-    await settings.moveDesktopDockPanel(CanvasDockPanel.brush, toRight: true);
+    await settings.moveDesktopDockPanel(CanvasDockPanel.brush, toRight: false);
     await tester.pumpWidget(
       ChangeNotifierProvider.value(
         value: settings,
@@ -465,8 +548,8 @@ void main() {
     await drag.up();
     await tester.pumpAndSettle();
 
-    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
-    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isFalse);
+    expect(settings.rightDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isFalse);
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
     expect(tester.takeException(), isNull);
   });
