@@ -38,6 +38,15 @@ export const Keys = {
   creatorGridShard: (userId: string, workGoal: number) => ({
     pk: `USER#${userId}`, sk: `MISSION_GRID#${workGoal}`,
   }),
+  /** Once-only marker for each distinct mission achievement event. */
+  missionNoticeDedupe: (userId: string, eventId: string) => ({
+    pk: `USER#${userId}`, sk: `MISSION_NOTICE_KEY#${eventId}`,
+  }),
+  /** Newest-first ordered personal activity entry. */
+  missionActivity: (userId: string, epochMs: number, eventId: string) => ({
+    pk: `USER#${userId}`,
+    sk: `MISSION_ACTIVITY#${String(9_999_999_999_999-epochMs).padStart(13,"0")}#${eventId}`,
+  }),
   creatorMissionState: (niarimUserId: string) => ({
     pk: `USER#${niarimUserId}`, sk: "MISSION_STATE_V1",
   }),
