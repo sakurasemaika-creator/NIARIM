@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
-import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { ConditionalCheckFailedException, TransactionCanceledException } from "@aws-sdk/client-dynamodb";
+import { GetCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate } from "../../lib/auth";
 import { deleteVideo } from "../../lib/youtube";
@@ -57,26 +57,25 @@ export async function deleteWork(
 
   const key = Keys.work(workId);
   try {
-    await ddb.send(
-      new PutCommand({
-        TableName: tableName(),
-        Item: {
-          ...key,
-          itemType: "WORK_TOMBSTONE",
-          workId,
-          deletedAt: new Date().toISOString(),
+    await ddb.send(new TransactWriteCommand({
+      TransactItems: [
+        {
+          Put: {
+            TableName: tableName(),
+            Item: { ...key, itemType: "WORK_TOMBSTONE",
+              workId, deletedAt: new Date().toISOString() },
+            ConditionExpression: "itemType = :workType AND authorId = :authorId",
+            ExpressionAttributeValues: {
+              ":workType": TABLE_ITEM_TYPE.Work,
+              ":authorId": auth.niarimUserId,
+            },
+          },
         },
-        // Get後に別処理で既に削除/置換されていた場合、古い操作で墓標を
-        // 上書きし直さない。作者本人の現在のWorkItemであることも再確認する。
-        ConditionExpression: "itemType = :workType AND authorId = :authorId",
-        ExpressionAttributeValues: {
-          ":workType": TABLE_ITEM_TYPE.Work,
-          ":authorId": auth.niarimUserId,
-        },
-      }),
-    );
+        { Delete: { TableName: tableName(), Key: Keys.workDetail(workId) } },
+      ],
+    }));
   } catch (error) {
-    if (error instanceof ConditionalCheckFailedException) {
+    if (error instanceof ConditionalCheckFailedException || error instanceof TransactionCanceledException) {
       notFound("作品が見つかりません");
     }
     throw error;

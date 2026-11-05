@@ -12,6 +12,8 @@ import { getRanking } from "./routes/ranking";
 import { refreshMyYoutubeChannel } from "./routes/youtubeChannelRefresh";
 import { getLatestWorks } from "./routes/worksLatest";
 import { getPlaybackStatus } from "./routes/worksPlaybackStatus";
+import { getWorkMetadata, updateWorkMetadata } from "./routes/workMetadata";
+import { getYoutubeComments } from "./routes/youtubeComments";
 import { getAuthorWorks, getMyWorks } from "./routes/userWorks";
 import { createWork } from "./routes/worksCreate";
 import { getMyRewardState, getMyCoinHistory } from "./routes/rewardState";
@@ -92,6 +94,9 @@ const routes: Route[] = [
   route("GET", "/ranking/{period}", (e, p) => getRanking(e, p.period)),
   route("GET", "/works/latest", (e) => getLatestWorks(e)),
   route("GET", "/works/{id}/playback-status", (_e, p) => getPlaybackStatus(p.id)),
+  route("GET", "/works/{id}/metadata", (e, p) => getWorkMetadata(e, p.id)),
+  route("PATCH", "/works/{id}/metadata", (e, p) => updateWorkMetadata(e, p.id)),
+  route("GET", "/works/{id}/youtube-comments", (e, p) => getYoutubeComments(e, p.id)),
   route("GET", "/users/{id}/works", (e, p) => getAuthorWorks(e, p.id)),
   route("GET", "/works/{id}/bookmarkers", (e, p) =>
     getWorkBookmarkers(e, p.id),

@@ -22,6 +22,7 @@ export function tableName(): string {
 
 export const Keys = {
   work: (workId: string) => ({ pk: `WORK#${workId}`, sk: "META" }),
+  workDetail: (workId: string) => ({ pk: `WORK#${workId}`, sk: "DETAIL" }),
   user: (niarimUserId: string) => ({ pk: `USER#${niarimUserId}`, sk: "META" }),
   googleSubLookup: (sub: string) => ({ pk: `GOOGLESUB#${sub}`, sk: "META" }),
   /** A Play purchase token is bound to a single account by its SHA256 hash. */
