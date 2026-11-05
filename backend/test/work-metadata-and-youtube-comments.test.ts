@@ -76,6 +76,16 @@ describe("NIARIM-owned description row", () => {
     expect(detail?.gsi2pk).toBeUndefined();
   });
 
+  it("deletes the separate detail item when the author clears the description", async () => {
+    await updateWorkMetadata(
+      event({ title: "Original", description: "" }, true), work.workId,
+    );
+    const txn = send.mock.calls.map(([cmd]) => cmd)
+      .find((cmd) => cmd instanceof TransactWriteCommand) as TransactWriteCommand;
+    expect(txn.input.TransactItems?.[1].Delete?.Key)
+      .toEqual({ pk: "WORK#abcdefghijk", sk: "DETAIL" });
+  });
+
   it("does not write when both author-owned values are unchanged", async () => {
     await updateWorkMetadata(
       event({ title: "Original", description: "Saved description" }, true), work.workId,
