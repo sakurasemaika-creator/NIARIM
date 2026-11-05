@@ -15,6 +15,7 @@ import { parseJsonObject } from "../../lib/request";
 import type { WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 import { toPublicWork } from "./_publicWork";
+import { recordMissionAchievement } from "../../lib/missionNotifications";
 
 interface UpdateWorkRequestBody {
   isNiarimPublished?: boolean;
@@ -146,7 +147,22 @@ export async function updateWork(
           ReturnValues: "ALL_NEW",
         }),
       );
-      return ok({ work: toPublicWork(result.Attributes as WorkItem) });
+      const updated = result.Attributes as WorkItem;
+      if (body.isNiarimPublished === true &&
+          work.isNiarimPublished !== true &&
+          updated.gsi2pk === "BOOKMARK_RANKING") {
+        try {
+          await recordMissionAchievement(auth.niarimUserId, {
+            kind: "workPublished", missionId: "work_posted",
+            workId: updated.workId, workTitle: updated.title,
+            required: 0, occurredAt: new Date().toISOString(),
+          });
+        } catch (noticeError) {
+          console.warn("Mission publication notice could not be recorded",
+            noticeError);
+        }
+      }
+      return ok({ work: toPublicWork(updated) });
     } catch (error) {
       if (!(error instanceof ConditionalCheckFailedException)) throw error;
     }

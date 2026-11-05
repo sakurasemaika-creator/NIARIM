@@ -16,6 +16,7 @@ import type { WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 import type { WorkWithProjectMetadata } from "../../lib/workProjectMetadata";
 import { toPublicWork } from "./_publicWork";
+import { recordMissionAchievement } from "../../lib/missionNotifications";
 
 interface CreateWorkRequestBody {
   youtubeVideoId: string;
@@ -235,6 +236,20 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       throw error;
     }
 
+    if (isVisible) {
+      // The publication operation already committed. A notification failure
+      // MUST NOT roll back the work or release the user's posting quota.
+      try {
+        await recordMissionAchievement(auth.niarimUserId, {
+          kind: "workPublished", missionId: "work_posted",
+          workId: work.workId, workTitle: work.title,
+          required: 0, occurredAt: work.postedAt,
+        });
+      } catch (noticeError) {
+        console.warn("Mission publication notice could not be recorded",
+          noticeError);
+      }
+    }
     return created({ work: toPublicWork(work) });
   } catch (err) {
     if (quotaReserved) {

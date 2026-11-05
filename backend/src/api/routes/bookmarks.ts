@@ -11,6 +11,8 @@ import { forbidden, notFound, ok } from "../../lib/response";
 import type { BookmarkItem, WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 import { toPublicWork, toUnavailableWork } from "./_publicWork";
+import { PER_WORK_MISSIONS } from "../../lib/missionCatalog";
+import { recordMissionAchievement } from "../../lib/missionNotifications";
 
 function isWorkPublic(work: WorkItem): boolean {
   return (
@@ -127,6 +129,30 @@ export async function toggleBookmark(
     throw err;
   }
 
+  if (!isBookmarked && isPublic &&
+      Number.isSafeInteger(work.bookmarkCount) &&
+      work.bookmarkCount >= 0) {
+    // Only the first crossing of a threshold creates its notification.
+    // Server-side once-only markers absorb concurrent updates/retries.
+    const oldCount = work.bookmarkCount;
+    const nextCount = oldCount + 1;
+    for (const milestone of PER_WORK_MISSIONS) {
+      if (milestone.kind !== "workBookmarks" ||
+          milestone.required <= 0 || milestone.required <= oldCount ||
+          milestone.required > nextCount) continue;
+      try {
+        await recordMissionAchievement(work.authorId, {
+          kind: "workBookmarks", missionId: milestone.id,
+          workId: work.workId, workTitle: work.title,
+          required: milestone.required, occurredAt: now,
+        });
+      } catch (noticeError) {
+        // A notification is independent from the already committed bookmark.
+        console.warn("Mission bookmark notice could not be recorded",
+          noticeError);
+      }
+    }
+  }
   return ok({ bookmarked: !isBookmarked });
 }
 
