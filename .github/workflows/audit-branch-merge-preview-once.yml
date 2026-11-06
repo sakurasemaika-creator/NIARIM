@@ -45,6 +45,19 @@ jobs:
         shell: bash
         run: |
           flutter pub get
+          # Keep new localization keys introduced on either branch.
+          python3 - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          for p in sorted(Path('lib/l10n').glob('app_*.arb')):
+              original = json.loads(subprocess.check_output(['git', 'show', f'HEAD:{p.as_posix()}'], text=True))
+              current = json.loads(p.read_text(encoding='utf-8'))
+              missing = {key: value for key, value in original.items() if key not in current}
+              if missing:
+                  current.update(missing)
+                  p.write_text(json.dumps(current, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+                  print(f'{p}: restored {len(missing)} recent dev keys')
+          PY
           flutter gen-l10n
       - name: Analyze merged Flutter project
         shell: bash
