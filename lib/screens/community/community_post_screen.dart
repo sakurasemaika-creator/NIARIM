@@ -312,6 +312,147 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     });
   }
 
+
+  Future<void> _storeThumbnail(File source) async {
+    if (_busy || _thumbnailApplied) return;
+    final lower = source.path.toLowerCase();
+    if (!lower.endsWith('.png') && !lower.endsWith('.jpg') &&
+        !lower.endsWith('.jpeg')) {
+      throw ArgumentError('PNGまたはJPEGの画像を指定してください');
+    }
+    final length = await source.length();
+    if (length == 0 || length > 10 * 1024 * 1024) {
+      throw ArgumentError('サムネイル画像は10MB以内にしてください');
+    }
+    final base = await getApplicationSupportDirectory();
+    final directory = Directory('${base.path}/post_thumbnails');
+    await directory.create(recursive: true);
+    final ext = lower.endsWith('.png') ? '.png' : '.jpg';
+    final copy = await source.copy(
+      '${directory.path}/${DateTime.now().microsecondsSinceEpoch}$ext',
+    );
+    if (!mounted) return;
+    setState(() {
+      _thumbnailFile = copy;
+      _thumbnailApplied = false;
+    });
+    if (_youtubeVideoId != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_pendingThumbnailPathKey, copy.path);
+      await prefs.setBool(_pendingThumbnailAppliedKey, false);
+    }
+  }
+
+  Future<void> _pickThumbnail() async {
+    if (_busy || _thumbnailApplied) return;
+    final choice = await FilePicker.platform.pickFiles(
+      type: FileType.custom, allowedExtensions: ['jpg', 'jpeg', 'png'],
+    );
+    if (choice?.files.single.path case final String path) {
+      try {
+        await _storeThumbnail(File(path));
+      } on Object catch (error) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('画像を選択できませんでした: $error')),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickVideoFrame() async {
+    final video = _videoFile;
+    if (video == null || _busy || _thumbnailApplied) return;
+    try {
+      final lengthMs = await _frameChannel.invokeMethod<int>(
+        'getVideoDuration', {'path': video.path},
+      );
+      if (!mounted) return;
+      if (lengthMs == null || lengthMs < 1) {
+        throw StateError('動画の再生時間が取得できません');
+      }
+      final duration = lengthMs / 1000.0;
+      var selectedSeconds = 0.0;
+      final result = await showDialog<double>(
+        context: context,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (dialogContext, update) => AlertDialog(
+            title: const Text('サムネイルにするフレームを選択'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('${selectedSeconds.toStringAsFixed(1)} / '
+                    '${duration.toStringAsFixed(1)} 秒'),
+                Slider(
+                  key: const Key('communityPostFrameSlider'),
+                  min: 0, max: duration,
+                  value: selectedSeconds.clamp(0.0, duration),
+                  onChanged: (v) => update(() => selectedSeconds = v),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('キャンセル'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext, selectedSeconds),
+                child: const Text('このフレームを使う'),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (result == null) return;
+      final path = await _frameChannel.invokeMethod<String>(
+        'extractFrame',
+        {'path': video.path, 'timeMs': (result * 1000).round()},
+      );
+      if (path == null || path.isEmpty) {
+        throw StateError('動画フレームを取得できません');
+      }
+      await _storeThumbnail(File(path));
+    } on MissingPluginException {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('この環境はフレーム抽出に非対応です。画像を選択してください。')),
+      );
+    } on Object catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('フレーム取得に失敗しました: $error')),
+      );
+    }
+  }
+
+  Future<void> _pickSchedule() async {
+    if (_busy || _youtubeVideoId != null) return;
+    final now = DateTime.now();
+    final initial = _scheduledPublishAt?.toLocal() ??
+        now.add(const Duration(hours: 1));
+    final day = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (!mounted || day == null) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial),
+    );
+    if (!mounted || time == null) return;
+    final chosen = DateTime(day.year, day.month, day.day, time.hour, time.minute);
+    if (!chosen.isAfter(DateTime.now().add(const Duration(minutes: 2)))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('現在時刻から2分以上先の日時を指定してください')),
+      );
+      return;
+    }
+    setState(() {
+      _youtubePrivacyStatus = 'scheduled';
+      _scheduledPublishAt = chosen;
+    });
+  }
+
   Future<void> _finishRegistration(
     CommunityService community,
     String registeredVideoId, {
