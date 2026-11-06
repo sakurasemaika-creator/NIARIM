@@ -1,0 +1,116 @@
+# One-shot, guarded deployment of the dev_branch NIARIM Lambda SSV fix.
+# Push triggers only when this workflow is added/edited.
+# Fails closed unless the CloudFormation diff is limited to Lambda code
+# and the expected public AdMob rewarded-ad unit ID.
+name: NIARIM AdMob SSV guarded deploy (one shot)
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/admob-ssv-deploy-once.yml"
+
+permissions: {}
+
+jobs:
+  guarded-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+      - name: Typecheck and SSV regression tests
+        working-directory: backend
+        run: |
+          npm run build
+          npm test -- --reporter=dot
+      - uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: niarim-admob-ssv-oneshot
+          aws-region: ap-northeast-1
+      - name: Guard AWS identity, region and secrets
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          set -euo pipefail
+          test "$(aws sts get-caller-identity --query Account --output text)" = "368601349794"
+          test "${AWS_REGION:-}" = "ap-northeast-1"
+          test -n "$GOOGLE_CLIENT_ID" && test "$GOOGLE_CLIENT_ID" != "REPLACE_ME"
+          test -n "$YOUTUBE_API_KEY" && test "$YOUTUBE_API_KEY" != "REPLACE_ME"
+      - name: Synthesize and compare CloudFormation templates without printing secrets
+        working-directory: backend
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          set -euo pipefail
+          npx cdk synth NiarimBackendStack --quiet \
+            -c googleClientId="$GOOGLE_CLIENT_ID" \
+            -c youtubeApiKey="$YOUTUBE_API_KEY" > /dev/null
+          aws cloudformation get-template --stack-name NiarimBackendStack --output json > "$RUNNER_TEMP/niarim-live-template.json"
+          python3 - "$RUNNER_TEMP/niarim-live-template.json" "cdk.out/NiarimBackendStack.template.json" <<'PY'
+          import json, sys
+          with open(sys.argv[1]) as f:
+              live = json.load(f)["TemplateBody"]
+          if isinstance(live, str):
+              live = json.loads(live)
+          with open(sys.argv[2]) as f:
+              desired = json.load(f)
+          old, new = live["Resources"], desired["Resources"]
+          if set(old) != set(new):
+              raise SystemExit("Refusing deploy: CloudFormation resources were added/removed")
+          changes = []
+          for resource_id in sorted(old):
+              before, after = old[resource_id], new[resource_id]
+              if before == after:
+                  continue
+              if before.get("Type") != "AWS::Lambda::Function" or after.get("Type") != "AWS::Lambda::Function":
+                  raise SystemExit("Refusing deploy: unrelated resource changes: " + resource_id)
+              a, b = before.get("Properties", {}), after.get("Properties", {})
+              fields = {k for k in set(a) | set(b) if a.get(k) != b.get(k)}
+              if fields - {"Code", "Environment"}:
+                  raise SystemExit("Refusing deploy: unexpected Lambda property changes: " + repr(fields))
+              ea = a.get("Environment", {}).get("Variables", {})
+              eb = b.get("Environment", {}).get("Variables", {})
+              envdiff = {k for k in set(ea) | set(eb) if ea.get(k) != eb.get(k)}
+              if envdiff - {"ADMOB_REWARDED_AD_UNIT_ID"}:
+                  raise SystemExit("Refusing deploy: unexpected Lambda environment changes: " + repr(envdiff))
+              if eb.get("ADMOB_REWARDED_AD_UNIT_ID") != "ca-app-pub-4380578821900659/6321761453":
+                  raise SystemExit("Refusing deploy: unexpected AdMob unit")
+              if eb.get("REWARDED_AD_SSV_ENABLED") != "false" or eb.get("REWARDED_AD_REVIEW_APPROVED") != "false":
+                  raise SystemExit("Refusing deploy: rewards must remain disabled")
+              changes.append({"resource_id":resource_id,"fields":sorted(fields),"environment_keys_changed":sorted(envdiff)})
+          if not changes:
+              raise SystemExit("Refusing deploy: no Lambda changes detected")
+          print("Safe CloudFormation delta:", json.dumps(changes))
+          PY
+      - name: Deploy only after the safe-delta guard
+        working-directory: backend
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          set -euo pipefail
+          npx cdk deploy NiarimBackendStack --require-approval never --quiet \
+            -c googleClientId="$GOOGLE_CLIENT_ID" \
+            -c youtubeApiKey="$YOUTUBE_API_KEY"
+      - name: Confirm public community API still responds
+        run: |
+          set -euo pipefail
+          code="$(curl --silent --show-error --max-time 25 \
+            --output "$RUNNER_TEMP/response.json" --write-out '%{http_code}' \
+            "https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/works/latest")"
+          test "$code" = "200"
