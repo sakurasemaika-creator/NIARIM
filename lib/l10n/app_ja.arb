@@ -459,7 +459,6 @@
   "premiumHeroHighlightDuration": "尺は最大2時間",
   "premiumHeroHighlightWatermark": "透かしなし",
   "premiumHeroHighlightGrading": "トーンカーブ／\nレベル補正",
-  "premiumCampaignFreeNote": "※ キャンペーン期間中は無料版でも上記プレミアム機能を全てご利用いただけます",
   "premiumPlanSectionTitle": "プラン",
   "premiumStoreUnavailable": "ストアに接続できません（実機・ストア審査環境以外では購入できません）",
   "premiumYearlyTitle": "年額プラン（おすすめ）",
@@ -470,16 +469,6 @@
   "premiumMonthlyTitle": "月額プラン",
   "premiumRestorePurchases": "購入を復元",
   "premiumRestoredSnackbar": "購入情報を復元しました（該当する購入がある場合）",
-  "premiumCampaignBannerTitle": "リリース記念！有料会員限定機能解放キャンペーン",
-  "premiumCampaignBannerBody": "期間中は無料版でも全てのプレミアム機能（尺2時間まで拡大・エンドロゴ編集・ウォーターマーク・トーンカーブ・レベル補正）を無料でご利用いただけます。",
-  "premiumCampaignEndLabel": "～{date}まで",
-  "@premiumCampaignEndLabel": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
   "premiumComparisonFeature": "機能",
   "premiumComparisonFree": "無料",
   "premiumFeatureDrawing": "アニメ制作・描画機能",
