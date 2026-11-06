@@ -55,7 +55,8 @@ jobs:
             test/project_grid_view_size_test.dart \
             test/flutter_test_config.dart \
             test/initial_language_test.dart \
-            test/project_list_order_search_test.dart
+            test/project_list_order_search_test.dart \
+            test/canvas_pc_workspace_test.dart
           echo "Retained latest dev_branch canvas screen in merge preview"
       - name: Install dependencies and generate translations
         shell: bash
@@ -96,7 +97,6 @@ jobs:
             test/eraser_transparent_colour_test.dart \
             test/input_handler_pressure_test.dart \
             test/brush_management_test.dart \
-            test/canvas_pc_workspace_test.dart \
             test/perceptual_color_mixer_test.dart
       - name: Confirm no merge changes pushed
         run: echo "No merged tree was committed or pushed."
