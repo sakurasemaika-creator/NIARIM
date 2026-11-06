@@ -155,7 +155,7 @@ jobs:
       # Actions Storage（無料枠0.5GB）の上限に達していると、このステップ
       # だけが失敗してもビルド済みAPKは下のGitHub Releaseから取得できる。
       - name: APKをArtifactsへアップロード
-        uses: actions/upload-artifact@b7c566a772e6b6fb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         continue-on-error: true
         with:
           name: niarim-${{ inputs.build-type }}-apk
@@ -167,7 +167,7 @@ jobs:
       # から元の名前を復元する際や、将来の同種の不具合調査に備えて保存）。
       - name: R8マッピング/使用状況レポートをArtifactsへアップロード
         if: ${{ inputs.build-type == 'release' }}
-        uses: actions/upload-artifact@b7c566a772e6b6fb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         continue-on-error: true
         with:
           name: niarim-release-r8-reports
