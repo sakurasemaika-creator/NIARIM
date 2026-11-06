@@ -204,6 +204,11 @@ void main() {
       ),
     );
     final project = p!;
+    // Capture the actual content-bearing home state separately from the
+    // initial onboarding/empty home screenshot.
+    appRouter.go('/home');
+    await settleRoute(maxRounds: 4);
+    await capture('01b_home_with_project');
     final community = context.read<CommunityService>();
     final workId = community.works.isEmpty ? null : community.works.first.id;
 
