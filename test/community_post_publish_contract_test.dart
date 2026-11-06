@@ -65,5 +65,7 @@ void main() {
     expect(api, contains("'/me/works/"));
     expect(detail, contains('_loadOwnerOnlyWorkIfNeeded'));
     expect(detail, contains('_ownerOnlyAccountId'));
+    expect(detail, contains('cached.isUnavailable'));
+    expect(detail, contains('(ownerFallback ?? cachedWork)'));
   });
 }
