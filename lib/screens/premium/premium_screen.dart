@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../config/monetization_gate.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/reward_navigation_labels.dart';
 import '../../services/premium_service.dart';
@@ -38,10 +37,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (premium.isLaunchCampaignActive) ...[
-                _campaignBanner(context, l10n),
-                const SizedBox(height: 24),
-              ] else if (premium.hasPurchasedPremium) ...[
+              if (premium.hasPurchasedPremium) ...[
                 Card(
                   color: scheme.primary,
                   child: Padding(
@@ -95,8 +91,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 ),
                 const SizedBox(height: 24),
               ],
-              if (!premium.hasPurchasedPremium &&
-                  !premium.isLaunchCampaignActive) ...[
+              if (!premium.hasPurchasedPremium) ...[
                 _heroSection(context, l10n),
                 const SizedBox(height: 24),
               ],
@@ -112,8 +107,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
               ),
               const SizedBox(height: 16),
               _comparisonTable(context, l10n),
-              if (!premium.hasPurchasedPremium &&
-                  !premium.isLaunchCampaignActive) ...[
+              if (!premium.hasPurchasedPremium) ...[
                 const SizedBox(height: 16),
                 FilledButton.icon(
                   key: const Key('premiumSeePlansButton'),
@@ -133,18 +127,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   ),
                 ),
               ],
-              if (premium.isLaunchCampaignActive) ...[
-                const SizedBox(height: 8),
-                Text(
-                  l10n.premiumCampaignFreeNote,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-              if (!premium.isLaunchCampaignActive &&
-                  !premium.hasPurchasedPremium) ...[
+              if (!premium.hasPurchasedPremium) ...[
                 const SizedBox(height: 24),
                 Text(
                   l10n.premiumPlanSectionTitle,
@@ -223,67 +206,8 @@ class _PremiumScreenState extends State<PremiumScreen> {
     );
   }
 
-  String _campaignEndLabel(AppLocalizations l10n) {
-    final end = kMonetizationEnabledFrom.subtract(const Duration(minutes: 1));
-    final mo = end.month.toString().padLeft(2, '0');
-    final dd = end.day.toString().padLeft(2, '0');
-    final hh = end.hour.toString().padLeft(2, '0');
-    final mm = end.minute.toString().padLeft(2, '0');
-    return l10n.premiumCampaignEndLabel('${end.year}/$mo/$dd $hh:$mm');
-  }
-
   String _formatDate(DateTime d) =>
       '${d.year}/${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}';
-
-  Widget _campaignBanner(BuildContext context, AppLocalizations l10n) {
-    final scheme = Theme.of(context).colorScheme;
-    return Card(
-      color: scheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.celebration_rounded,
-                  color: AccentTextTheme.of(context),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    l10n.premiumCampaignBannerTitle,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                      color: scheme.onPrimaryContainer,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.premiumCampaignBannerBody,
-              style: TextStyle(fontSize: 12, color: scheme.onPrimaryContainer),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _campaignEndLabel(l10n),
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: scheme.onPrimaryContainer,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _heroSection(BuildContext context, AppLocalizations l10n) {
     final scheme = Theme.of(context).colorScheme;
