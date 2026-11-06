@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/api/niarim_api_config.dart';
@@ -6,7 +8,7 @@ import 'package:niarim/services/api/niarim_api_exception.dart';
 /// Read-only live check using the very same API client shipped in Flutter.
 ///
 /// Run with:
-/// dart run --define=NIARIM_API_BASE_URL=https://<your-function-url>/ \\
+/// dart run --define=NIARIM_API_BASE_URL=https://YOUR_FUNCTION_URL/ \\
 ///   tool/live_backend_smoke.dart
 ///
 /// This only reads public discovery, ranking and the authentication guard.
@@ -44,7 +46,7 @@ Future<void> main() async {
       throw StateError('The latest-works API returned an invalid work.');
     }
   }
-  print('PASS /works/latest: ${latest.works.length} work(s) parsed');
+  stdout.writeln('PASS /works/latest: ${latest.works.length} work(s) parsed');
 
   final search = await api.latestWorksPage(
     query: '__niarim_live_smoke_tag_not_found__',
@@ -55,13 +57,13 @@ Future<void> main() async {
   if (search.works.isNotEmpty) {
     throw StateError('Exact-match search unexpectedly returned results.');
   }
-  print('PASS /works/latest?q=...&tagMode=true&exact=true');
+  stdout.writeln('PASS /works/latest?q=...&tagMode=true&exact=true');
 
   final ranking = await api.ranking(RankingPeriod.bookmarks);
   if (ranking.period != 'bookmarks' || ranking.works.length > 25) {
     throw StateError('The live bookmark ranking contract did not match.');
   }
-  print('PASS /ranking/bookmarks: ${ranking.works.length} work(s) parsed');
+  stdout.writeln('PASS /ranking/bookmarks: ${ranking.works.length} work(s) parsed');
 
   // A private user list must NOT become readable without an ID token.
   final guardClient = NiarimApiClient(
@@ -76,11 +78,11 @@ Future<void> main() async {
       if (e.statusCode != 401) {
         throw StateError('Expected HTTP 401 from /me/works; got ${e.statusCode}.');
       }
-      print('PASS /me/works: anonymous access rejected with HTTP 401');
+      stdout.writeln('PASS /me/works: anonymous access rejected with HTTP 401');
     }
   } finally {
     guardClient.close();
   }
 
-  print('PASS Flutter/Dart client → live NIARIM backend (read-only)');
+  stdout.writeln('PASS Flutter/Dart client → live NIARIM backend (read-only)');
 }
