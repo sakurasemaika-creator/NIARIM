@@ -44,6 +44,16 @@ describe("stats update DynamoDB contract", () => {
     );
   });
 
+  it("retires pending schedule keys when statistics sync sees YouTube release first", () => {
+    expect(source).toContain(
+      'const removes: string[] = newlyReleased ? ["gsi6pk", "gsi6sk"] : []',
+    );
+    expect(source).toContain(
+      'setParts.push("postedAt = :actualPostedAt", "gsi3AllSk = :actualPostedAt")',
+    );
+    expect(source).toContain('conditions.push("youtubePrivacyStatus = :oldPrivacy")');
+  });
+
   it("does not rewrite bookmark ranking from a stale scan during normal visible updates", () => {
     expect(source).toContain("const hasPublicIndexes =");
     expect(source).toContain("if (!hasPublicIndexes)");
