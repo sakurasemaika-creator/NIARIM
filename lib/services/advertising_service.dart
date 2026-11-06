@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import '../config/monetization_gate.dart';
 import '../utils/runtime_platform.dart';
 import 'premium_service.dart';
 import 'ad_provider.dart';
@@ -9,9 +8,6 @@ import 'admob_provider.dart';
 
 /// 広告表示の窓口。画面側はこのサービス経由でのみ広告を扱い、
 /// 広告SDK（AdMob）へ直接依存しない。プレミアム時は全広告を非表示にする。
-/// `isMonetizationEnabled`がfalseの間（税務上の都合による一時停止期間）は
-/// AdMob SDK自体を初期化せず、広告を一切表示しない。
-///
 /// EEA・英国・スイスのユーザーへ広告を配信するには、IAB TCF準拠の
 /// 同意管理プラットフォーム（CMP）の導入がGoogleのポリシーで必須と
 /// なっている（2024年1月16日以降。Google AdMob Help「Google consent
@@ -40,7 +36,7 @@ class AdvertisingService extends ChangeNotifier {
     // 投げられ、アプリの起動自体が完了しなくなるため、対応OSでのみ実行する。
     // defaultTargetPlatformはwidget testでもAndroidを返すため、条件付き
     // import先で実際の実行OSを判定する（Webではdart:ioを読み込まない）。
-    if (isMonetizationEnabled && supportsMobilePluginRuntime) {
+    if (supportsMobilePluginRuntime) {
       await _requestConsentThenInitialize();
     }
     premiumService.addListener(_onPremiumChanged);
@@ -104,15 +100,13 @@ class AdvertisingService extends ChangeNotifier {
     return completer.future;
   }
 
-  bool get shouldShowAds =>
-      isMonetizationEnabled && !premiumService.isPremium && _canRequestAds;
+  bool get shouldShowAds => !premiumService.isPremium && _canRequestAds;
 
   /// Rewarded ads are USER-INITIATED and separate from normal placements.
   /// A paying Premium member may choose to accumulate coins for later use.
   /// Being Premium hides normal ads, but does not prevent optional rewards.
   /// Real grants remain disabled until rewarded SDK/SSV/wallet are connected.
-  bool get canOfferRewardedAds =>
-      isMonetizationEnabled && _canRequestAds && supportsMobilePluginRuntime;
+  bool get canOfferRewardedAds => _canRequestAds && supportsMobilePluginRuntime;
 
   /// Voluntary rewarded ad: the SDK callback never grants coins locally.
   /// Spendable coins are credited ONLY after Google signs the SSV event.
