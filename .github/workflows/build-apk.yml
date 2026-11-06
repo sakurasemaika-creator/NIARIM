@@ -19,6 +19,11 @@ on:
         required: true
         type: boolean
         default: false
+      connect_google_auth:
+        description: "Googleログインも有効化する（OAuthクライアントとAndroid SHA-1の設定が必要・既定オフ）"
+        required: true
+        type: boolean
+        default: false
 
 # 誤って同じブランチで複数回起動された場合は、古いビルドを継続して資源を消費しない。
 # 最新の手動実行だけを残す。
@@ -107,21 +112,35 @@ jobs:
           # The Lambda Function URL is a public API endpoint, NOT a secret.
           NIARIM_DEV_API_BASE_URL: https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/
           CONNECT_BACKEND: ${{ inputs.connect_backend }}
+          CONNECT_GOOGLE_AUTH: ${{ inputs.connect_google_auth }}
+          NIARIM_GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         run: |
           set -euo pipefail
+          if [[ "$CONNECT_GOOGLE_AUTH" == "true" && "$CONNECT_BACKEND" != "true" ]]; then
+            echo "::error::Googleログインをテストするにはconnect_backendもオンにしてください"
+            exit 1
+          fi
+          args=(--debug)
           if [[ "$CONNECT_BACKEND" == "true" ]]; then
             if [[ "${{ github.ref }}" != "refs/heads/dev_branch" ]]; then
               echo "::error::開発用APIへの接続は dev_branch のデバッグAPKに限定します"
               exit 1
             fi
-            flutter build apk --debug --dart-define="NIARIM_API_BASE_URL=$NIARIM_DEV_API_BASE_URL"
-          else
-            flutter build apk --debug
+            args+=(--dart-define="NIARIM_API_BASE_URL=$NIARIM_DEV_API_BASE_URL")
           fi
+          if [[ "$CONNECT_GOOGLE_AUTH" == "true" ]]; then
+            if [[ ! "$NIARIM_GOOGLE_WEB_CLIENT_ID" =~ ^[a-zA-Z0-9-]+[.]apps[.]googleusercontent[.]com$ ]]; then
+              echo "::error::GOOGLE_CLIENT_ID（Web OAuthクライアントID）をGitHub Secretsに正しく登録してください"
+              exit 1
+            fi
+            # Google Client ID is an identifier, not a password. Never pass access/ID tokens to the build.
+            args+=(--dart-define="NIARIM_GOOGLE_CLIENT_ID=$NIARIM_GOOGLE_WEB_CLIENT_ID")
+          fi
+          flutter build apk "${args[@]}"
 
       # 本番配布APKに開発用AWS URLを誤混入させない。
       - name: 開発用APIへのリリース接続を禁止
-        if: ${{ inputs.build-type == 'release' && inputs.connect_backend }}
+        if: ${{ inputs.build-type == 'release' && (inputs.connect_backend || inputs.connect_google_auth) }}
         run: |
           echo "::error::リリースAPKではconnect_backendをオフにしてください"
           exit 1
@@ -161,7 +180,10 @@ jobs:
 
       # Actions Storageの上限とは別枠のGitHub Releaseへapkを添付する代替
       # 配布経路。ビルド種別ごとに固定タグを使い回し、毎回置き換える。
+      # Public GitHub repository: NEVER publish a dev-backend test APK to Releases.
+      # Testers can retrieve it from the run's short-lived Actions artifact instead.
       - name: APKをGitHub Releaseへ公開（Actions Storage逼迫時の代替配布）
+        if: ${{ !(inputs.build-type == 'debug' && inputs.connect_backend) }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
