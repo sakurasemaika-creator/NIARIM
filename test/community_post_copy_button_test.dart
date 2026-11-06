@@ -76,8 +76,66 @@ void main() {
     source.text = 'Copied title';
     await tester.pump();
     await tester.tap(find.text('Copy to YouTube'));
-    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('communityPostCopyConfirmationDialog')), findsOneWidget);
+    expect(find.text("The destination's current contents will be overwritten. Do you want to copy?"), findsOneWidget);
+    expect(target.text, 'Other');
+
+    await tester.tap(find.byKey(const Key('communityPostCopyCancelButton')));
+    await tester.pumpAndSettle();
+    expect(target.text, 'Other');
+
+    await tester.tap(find.text('Copy to YouTube'));
+    await tester.pumpAndSettle();
+    expect(target.text, 'Other');
+    await tester.tap(find.byKey(const Key('communityPostCopyConfirmButton')));
+    await tester.pumpAndSettle();
     expect(target.text, 'Copied title');
     expect(errors, isEmpty);
+  });
+
+  testWidgets('confirmation is required even if the destination is empty', (tester) async {
+    final source = TextEditingController(text: 'New description');
+    final target = TextEditingController();
+    addTearDown(source.dispose);
+    addTearDown(target.dispose);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: CommunityPostCopyButton(
+          source: source, destination: target,
+          label: 'Copy description', maxLength: 2000,
+          enabled: true, onError: (_, __) {},
+        ),
+      ),
+    ));
+    await tester.tap(find.text('Copy description'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('communityPostCopyConfirmationDialog')), findsOneWidget);
+    expect(target.text, isEmpty);
+    await tester.tap(find.byKey(const Key('communityPostCopyCancelButton')));
+    await tester.pumpAndSettle();
+    expect(target.text, isEmpty);
+  });
+
+  testWidgets('does not overwrite if a field changed while confirming', (tester) async {
+    final source = TextEditingController(text: 'Old source');
+    final target = TextEditingController(text: 'Old destination');
+    addTearDown(source.dispose);
+    addTearDown(target.dispose);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: CommunityPostCopyButton(
+          source: source, destination: target,
+          label: 'Copy description', maxLength: 2000,
+          enabled: true, onError: (_, __) {},
+        ),
+      ),
+    ));
+    await tester.tap(find.text('Copy description'));
+    await tester.pumpAndSettle();
+    target.text = 'Updated destination';
+    await tester.tap(find.byKey(const Key('communityPostCopyConfirmButton')));
+    await tester.pumpAndSettle();
+    expect(target.text, 'Updated destination');
   });
 }
