@@ -120,7 +120,7 @@ class AdMockPageFrame extends StatelessWidget {
         return Column(
           children: [
             if (showSlot)
-              _AdBannerMockSlot(live: ads != null, size: bannerSize!)
+              _AdBannerMockSlot(live: ads != null, size: bannerSize)
             else
               const SizedBox.shrink(),
             Expanded(
