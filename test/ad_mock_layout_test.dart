@@ -6,6 +6,7 @@ import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/widgets/ad_banner_mock_widget.dart';
 import 'package:niarim/widgets/progress_dialog.dart';
 import 'package:niarim/services/ad_placement_policy.dart';
+import 'package:niarim/services/ad_modal_visibility_observer.dart';
 import 'package:provider/provider.dart';
 
 /// A free user who can see the mock slot when it fits.
@@ -42,6 +43,31 @@ Widget _app(Widget home) {
 }
 
 void main() {
+  testWidgets('modal visibility observer tracks dialogs and their removal',
+      (tester) async {
+    final observer = AdModalVisibilityObserver();
+    await tester.pumpWidget(MaterialApp(
+      navigatorObservers: [observer],
+      home: Scaffold(body: Builder(
+        builder: (context) => TextButton(
+          onPressed: () => showDialog<void>(
+            context: context,
+            builder: (_) => const AlertDialog(
+              content: Text('confirm'),
+            ),
+          ),
+          child: const Text('open dialog'),
+        ),
+      )),
+    ));
+    await tester.tap(find.text('open dialog'));
+    await tester.pumpAndSettle();
+    expect(observer.isModalVisible.value, isTrue);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(observer.isModalVisible.value, isFalse);
+  });
+
   test('route policy excludes navigation, account and form screens', () {
     for (final path in [
       '/', '/new-project', '/export/123', '/settings', '/settings/license',

@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'services/ad_modal_visibility_observer.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/community/community_screen.dart';
 import 'screens/community/community_work_detail_screen.dart';
@@ -38,6 +39,7 @@ import 'screens/settings/widget_artwork_picker_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
+  observers: [adModalVisibilityObserver],
   routes: [
     GoRoute(
       path: '/',

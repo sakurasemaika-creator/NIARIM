@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
@@ -8,6 +9,7 @@ import 'services/home_widget_refresh.dart';
 import 'services/home_widget_bridge.dart';
 import 'services/home_widget_service.dart';
 import 'services/ad_placement_policy.dart';
+import 'services/ad_modal_visibility_observer.dart';
 import 'services/project_service.dart';
 import 'services/settings_service.dart';
 import 'services/theme_service.dart';
@@ -141,7 +143,10 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
           // content routes. Do not request ads on menu-only, settings,
           // registration, empty-list or other low-value screens.
           child: ListenableBuilder(
-            listenable: appRouter.routerDelegate,
+            listenable: Listenable.merge([
+              appRouter.routerDelegate,
+              adModalVisibilityObserver.isModalVisible,
+            ]),
             builder: (context, _) {
               final route =
                   appRouter.routerDelegate.currentConfiguration.uri.path;
@@ -157,9 +162,13 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
               };
               return AdPersistentRootFrame(
                 allowBanner: isBannerEligibleRoute(
-                  route,
-                  hasLocalContent: hasLocalContent,
-                ),
+                      route,
+                      hasLocalContent: hasLocalContent,
+                    ) &&
+                    // A popup route leaves only an alert/confirmation visible.
+                    // Never serve live release ads on low-content modal views.
+                    (!kReleaseMode ||
+                        !adModalVisibilityObserver.isModalVisible.value),
                 child: Stack(
                   children: [child!, const CommunityFloatingPreview()],
                 ),
