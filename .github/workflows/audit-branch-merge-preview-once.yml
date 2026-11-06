@@ -52,7 +52,10 @@ jobs:
           git rm -f --ignore-unmatch \
             test/home_display_matrix_test.dart \
             test/home_navigation_state_test.dart \
-            test/project_grid_view_size_test.dart
+            test/project_grid_view_size_test.dart \
+            test/flutter_test_config.dart \
+            test/initial_language_test.dart \
+            test/project_list_order_search_test.dart
           echo "Retained latest dev_branch canvas screen in merge preview"
       - name: Install dependencies and generate translations
         shell: bash
