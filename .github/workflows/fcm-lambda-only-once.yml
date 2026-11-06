@@ -1,0 +1,108 @@
+# One-shot FCM Lambda-only deploy; protects existing DynamoDB and CloudFormation.
+# Delete this workflow after verifying the runtime.
+name: FCM Lambda-only deploy (dev_branch only)
+on:
+  push:
+    branches: [dev_branch]
+    paths: [".github/workflows/fcm-lambda-only-once.yml"]
+permissions:
+  contents: read
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - name: Bundle existing Lambda handler
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/niarim-fcm-lambda"
+          npx esbuild src/api/handler.ts --bundle --minify             --platform=node --target=node22 --format=cjs             --outfile="$RUNNER_TEMP/niarim-fcm-lambda/index.js"
+          cd "$RUNNER_TEMP/niarim-fcm-lambda"
+          zip -q ../niarim-fcm-lambda.zip index.js
+          test -s ../niarim-fcm-lambda.zip
+      - name: Authenticate AWS deployment identity
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-northeast-1
+      - name: Verify exact existing Lambda and account
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(aws sts get-caller-identity --query Account --output text)" = "368601349794"
+          test "$AWS_REGION" = "ap-northeast-1"
+          aws lambda get-function-configuration --function-name niarim-api > "$RUNNER_TEMP/niarim-old-config.json"
+          python3 - <<'PY'
+          import json,os
+          c=json.load(open(os.environ["RUNNER_TEMP"]+"/niarim-old-config.json"))
+          assert c["FunctionName"] == "niarim-api"
+          assert c["Runtime"] == "nodejs22.x"
+          assert c["Role"].endswith(":role/NiarimBackendStack-ApiFunctionServiceRole52B9747B-GfX9OSrqCbE4")
+          PY
+      - name: Update existing Lambda code only
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws lambda update-function-code --function-name niarim-api             --zip-file "fileb://$RUNNER_TEMP/niarim-fcm-lambda.zip"             --output json > "$RUNNER_TEMP/niarim-code-updated.json"
+          aws lambda wait function-updated --function-name niarim-api
+      - name: Preserve existing env and add keyless FCM settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws lambda get-function-configuration --function-name niarim-api             > "$RUNNER_TEMP/niarim-current-config.json"
+          python3 - <<'PY'
+          import json,os
+          base=os.environ["RUNNER_TEMP"]
+          c=json.load(open(base+"/niarim-current-config.json"))
+          e=dict(c["Environment"]["Variables"])
+          e.pop("FCM_SERVICE_ACCOUNT_JSON",None)
+          e.update({
+            "FCM_PROJECT_ID":"niarim-513201",
+            "FCM_WIF_AUDIENCE":"//iam.googleapis.com/projects/673224289740/locations/global/workloadIdentityPools/niarim-aws-fcm/providers/niarim-aws-lambda",
+            "FCM_SENDER_SERVICE_ACCOUNT":"niarim-fcm-sender@niarim-513201.iam.gserviceaccount.com",
+          })
+          with open(base+"/niarim-new-env.json","w") as f:
+            json.dump({"Variables":e},f)
+          assert c["FunctionName"] == "niarim-api"
+          PY
+          chmod 600 "$RUNNER_TEMP/niarim-new-env.json"
+          aws lambda update-function-configuration --function-name niarim-api             --environment "file://$RUNNER_TEMP/niarim-new-env.json"             --output json > "$RUNNER_TEMP/niarim-env-updated.json"
+          aws lambda wait function-updated --function-name niarim-api
+      - name: Verify API and FCM environment without printing secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws lambda get-function-configuration --function-name niarim-api             > "$RUNNER_TEMP/niarim-final-config.json"
+          python3 - <<'PY'
+          import json,os
+          c=json.load(open(os.environ["RUNNER_TEMP"]+"/niarim-final-config.json"))
+          env=c["Environment"]["Variables"]
+          assert env["FCM_PROJECT_ID"]=="niarim-513201"
+          assert "niarim-aws-lambda" in env["FCM_WIF_AUDIENCE"]
+          assert env["FCM_SENDER_SERVICE_ACCOUNT"].startswith("niarim-fcm-sender@")
+          assert "FCM_SERVICE_ACCOUNT_JSON" not in env
+          assert c["State"]=="Active"
+          print("FCM Lambda config verified without showing environment secrets")
+          PY
+          code="$(curl --max-time 25 --silent --show-error --output "$RUNNER_TEMP/niarim-response.json"             --write-out '%{http_code}'             "https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/works/latest")"
+          test "$code" = "200"
+          echo "GET /works/latest -> HTTP 200"
