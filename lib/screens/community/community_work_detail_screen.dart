@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
 import '../../router.dart';
 import '../../services/community_service.dart';
+import '../../services/google_auth_service.dart';
 import '../../services/api/community_api.dart';
 import 'widgets/community_playback_status_view.dart';
 import 'widgets/community_work_description.dart';
@@ -38,11 +39,39 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   double _previewHeight = _defaultPreviewHeight;
   bool _aiDisclosureBusy = false;
   CommunityPlaybackStatus _playbackStatus = CommunityPlaybackStatus.checking;
+  CommunityWork? _ownerOnlyWork;
+  String? _ownerOnlyAccountId;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _checkPlaybackStatus());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkPlaybackStatus();
+      _loadOwnerOnlyWorkIfNeeded();
+    });
+  }
+
+  /// Hidden works cannot be returned from the public feed. Fetch the exact
+  /// owner-owned item for a notification deep link without leaking private
+  /// video metadata to other users.
+  Future<void> _loadOwnerOnlyWorkIfNeeded() async {
+    if (!mounted) return;
+    final community = context.read<CommunityService>();
+    final auth = context.read<GoogleAuthService>();
+    final accountId = auth.account?.id;
+    if (community.byId(widget.workId) != null ||
+        accountId == null || community.api == null) return;
+    try {
+      final response = await community.api!.myWork(widget.workId);
+      if (!mounted ||
+          context.read<GoogleAuthService>().account?.id != accountId) return;
+      setState(() {
+        _ownerOnlyAccountId = accountId;
+        _ownerOnlyWork = response.toCommunityWork();
+      });
+    } on Object catch (error) {
+      debugPrint('Owner detail fetch unavailable: $error');
+    }
   }
 
   Future<void> _checkPlaybackStatus() async {
@@ -270,8 +299,12 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final communityService = context.watch<CommunityService>();
-    final work = communityService.byId(widget.workId);
-    final isOwner = work != null && communityService.isOwnWork(work);
+    final currentAccount = context.watch<GoogleAuthService>().account?.id;
+    final ownerFallback = currentAccount != null &&
+        currentAccount == _ownerOnlyAccountId ? _ownerOnlyWork : null;
+    final work = communityService.byId(widget.workId) ?? ownerFallback;
+    final isOwner = work != null &&
+        (ownerFallback != null || communityService.isOwnWork(work));
     if (work == null ||
         (!isOwner && !communityService.isDiscoverableForViewer(work))) {
       final hiddenByViewer =
