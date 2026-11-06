@@ -179,9 +179,12 @@ export class NiarimBackendStack extends Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
       memorySize: 256,
       timeout: Duration.seconds(10),
-      // 公開Function URLへの急増リクエストがLambda/DynamoDBの費用と
-      // 同時実行枠を無制限に消費しないよう上限を設ける（最大約100 RPS）。
-      reservedConcurrentExecutions: 10,
+      // 2026-11-06: ap-northeast-1 のアカウント同時実行上限は10。
+      // AWS Lambdaは予約なしの同時実行枠を最低10残す必要があるため、
+      // reservedConcurrentExecutions: 10 はCREATE_FAILEDになる。
+      // この環境ではアカウント全体の上限10が代わりに同時実行を制限する。
+      // 将来クォータを20以上へ引き上げた場合は、公開APIの費用抑制のため
+      // 予約同時実行10を改めて設定・検証すること。
       environment: {
         ...commonEnvironment,
         // Default-off. ADC must be provisioned using a Google-to-AWS
