@@ -1,0 +1,42 @@
+name: Preview audit branch merge (one-shot)
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - .github/workflows/audit-branch-merge-preview-once.yml
+permissions:
+  contents: read
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: dev_branch
+      - name: Preview a three-way merge without publishing changes
+        shell: bash
+        run: |
+          set -uo pipefail
+          git config user.name "NIARIM merge preview"
+          git config user.email "noreply@github.com"
+          git fetch origin ccr-f56ee68e-77ag7y
+          echo "BASE=$(git rev-parse HEAD)"
+          echo "AUDIT=$(git rev-parse origin/ccr-f56ee68e-77ag7y)"
+          set +e
+          git merge --no-commit --no-ff -X ours origin/ccr-f56ee68e-77ag7y > /tmp/merge-output.txt 2>&1
+          outcome=$?
+          set -e
+          echo "MERGE_EXIT_CODE=$outcome"
+          cat /tmp/merge-output.txt
+          echo "===== UNRESOLVED FILES ====="
+          git diff --name-only --diff-filter=U
+          echo "===== MERGED CHANGE SUMMARY ====="
+          git diff --cached --stat | tail -n 100
+          echo "===== TOTAL FILES CHANGED ====="
+          git diff --cached --name-only | wc -l
+          echo "===== CONFLICT MARKERS ====="
+          git grep -I -l '^<<<<<<< ' -- 'lib/**' 'test/**' 'docs/**' || true
+          echo "===== NEW FILES ====="
+          git diff --cached --name-status | grep -E '^(A|D)' | head -n 120 || true
+          echo "===== NO CHANGES WERE PUSHED ====="
