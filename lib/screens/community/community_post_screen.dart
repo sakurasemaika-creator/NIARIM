@@ -458,15 +458,20 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     String registeredVideoId, {
     bool recovered = false,
   }) async {
+    // The POST /works response already confirmed success. Never let a
+    // secondary feed refresh suppress the completion notification or turn
+    // the successful registration into a misleading retryable failure.
     await _clearPendingUpload();
-    await community.refreshFromBackend();
-    if (!mounted) return;
-    // Never notify on a partial upload: only after NIARIM has the work ID.
     await PostCompletionNotificationService.notifySuccess(
       workId: registeredVideoId,
       title: _titleController.text.trim(),
       scheduled: _scheduledPublishAt != null,
     );
+    try {
+      await community.refreshFromBackend();
+    } on Object catch (error) {
+      debugPrint('Community refresh after successful post failed: $error');
+    }
     if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
     setState(
