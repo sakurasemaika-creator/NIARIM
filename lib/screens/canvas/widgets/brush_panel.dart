@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../utils/duplicate_name.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
 import '../../../services/brush_service.dart';
@@ -12,7 +11,6 @@ import '../../../services/settings_service.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
 import 'creative_folder_sheets.dart';
-import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
 import 'color_picker_panel.dart';
 import 'brush_extension_settings.dart';
@@ -22,7 +20,22 @@ import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
-import '../../../config/accent_text_theme.dart';
+
+/// Name a copied brush uniquely without changing user-set names.
+String _numberedBrushCopyName(
+  AppLocalizations l10n,
+  String original,
+  Set<String> existingNames,
+) {
+  final copy = l10n.themePresetDuplicateName(original);
+  if (!existingNames.contains(copy)) return copy;
+  for (var number = 2; ; number++) {
+    final numbered = copy.endsWith(')')
+        ? '${copy.substring(0, copy.length - 1)} $number)'
+        : '$copy ($number)';
+    if (!existingNames.contains(numbered)) return numbered;
+  }
+}
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -90,307 +103,320 @@ class _BrushPanelState extends State<BrushPanel> {
         (_folderFilter != null && _folderFilter != _allFolders);
     final current = brushService.currentBrush;
 
-    return PanelSurface(
-      width: 280,
-      height: 460,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ドックの中では窓の見出しの×で閉じる（PanelCenterCloseBarも
-            // DockedPanelScopeの中では出ない）。
-            if (!widget.dockedMode)
-              PanelCenterCloseBar(onClose: widget.onClose),
-            Row(
-              children: [
-                Text(
-                  l10n.penSubToolTabBrush,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                ),
-                Spacer(),
-                // お気に入りのみ表示
-                IconButton(
-                  icon: Icon(
-                    _showFavoritesOnly ? Icons.star : Icons.star_outline,
-                    size: 16,
-                    color: _showFavoritesOnly
-                        ? ThemeService.activeColorScheme.tertiary
-                        : null,
-                  ),
-                  onPressed: () =>
-                      setState(() => _showFavoritesOnly = !_showFavoritesOnly),
-                  tooltip: l10n.creativePanelFavoritesOnlyTooltip,
-                ),
-                IconButton(
-                  icon: Icon(
-                    _showSearch ? Icons.search_off : Icons.search,
-                    size: 16,
-                  ),
-                  onPressed: () => setState(() {
-                    _showSearch = !_showSearch;
-                    if (!_showSearch) {
-                      _searchQuery = '';
-                      _searchController.clear();
-                    }
-                  }),
-                  tooltip: l10n.creativePanelSearchTooltip,
-                ),
-              ],
-            ),
-            // フォルダ管理・自作ブラシ・読み込み。
-            // 【不具合修正】PC/DeXモードのドッキングパネルは既定幅
-            // 280px（パディング差引後240px）まで狭められるため、
-            // 3ボタンの自然幅がわずかに収まらずRenderFlexが
-            // オーバーフローしていた（PC/DeXモードのドッキングパネルを
-            // 実際に自律テストで開くまで気付かれていなかった）。
-            // 横スクロール可能にして、狭い幅でも常に例外なく描画・
-            // 全ボタンへアクセスできるようにする。
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
+    return Card(
+      elevation: 0, // Prevent black shadows around the floating panel.
+      child: SizedBox(
+        width: 280,
+        height: 460,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!widget.dockedMode)
+                PanelCenterCloseBar(onClose: widget.onClose),
+              Row(
                 children: [
-                  TextButton.icon(
-                    icon: const Icon(Icons.folder_outlined, size: 15),
-                    label: Text(
-                      l10n.creativePanelFolderButton,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
+                  Text(
+                    l10n.penSubToolTabBrush,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
                     ),
-                    onPressed: () =>
-                        _openFolderManagement(context, brushService),
                   ),
-                  TextButton.icon(
-                    icon: const Icon(
-                      Icons.add_photo_alternate_outlined,
-                      size: 15,
+                  Spacer(),
+                  // お気に入りのみ表示
+                  IconButton(
+                    icon: Icon(
+                      _showFavoritesOnly ? Icons.star : Icons.star_outline,
+                      size: 16,
+                      color: _showFavoritesOnly
+                          ? ThemeService.activeColorScheme.tertiary
+                          : null,
                     ),
-                    label: Text(
-                      l10n.creativePanelCreateButton,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
+                    onPressed: () => setState(
+                      () => _showFavoritesOnly = !_showFavoritesOnly,
                     ),
-                    onPressed: () => _createFromImage(context, brushService),
+                    tooltip: l10n.creativePanelFavoritesOnlyTooltip,
                   ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.file_upload_outlined, size: 15),
-                    label: Text(
-                      l10n.creativePanelImportButton,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
+                  IconButton(
+                    icon: Icon(
+                      _showSearch ? Icons.search_off : Icons.search,
+                      size: 16,
                     ),
-                    onPressed: () => _importBrush(context, brushService),
+                    onPressed: () => setState(() {
+                      _showSearch = !_showSearch;
+                      if (!_showSearch) {
+                        _searchQuery = '';
+                        _searchController.clear();
+                      }
+                    }),
+                    tooltip: l10n.creativePanelSearchTooltip,
                   ),
                 ],
               ),
-            ),
-            if (folders.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: SizedBox(
-                  height: 30,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      _folderChip(
-                        context,
-                        l10n.creativePanelFolderAllChip,
-                        _folderFilter == null || _folderFilter == _allFolders,
-                        () => setState(() => _folderFilter = null),
-                      ),
-                      _folderChip(
-                        context,
-                        l10n.folderNone,
-                        _folderFilter == '',
-                        () => setState(() => _folderFilter = ''),
-                      ),
-                      ...folders.map(
-                        (f) => _folderChip(
-                          context,
-                          f.name,
-                          _folderFilter == f.id,
-                          () => setState(() => _folderFilter = f.id),
+              // フォルダ管理・自作ブラシ・読み込み。
+              // 【不具合修正】PC/DeXモードのドッキングパネルは既定幅
+              // 280px（パディング差引後240px）まで狭められるため、
+              // 3ボタンの自然幅がわずかに収まらずRenderFlexが
+              // オーバーフローしていた（PC/DeXモードのドッキングパネルを
+              // 実際に自律テストで開くまで気付かれていなかった）。
+              // 横スクロール可能にして、狭い幅でも常に例外なく描画・
+              // 全ボタンへアクセスできるようにする。
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    TextButton.icon(
+                      icon: const Icon(Icons.folder_outlined, size: 15),
+                      label: Text(
+                        l10n.creativePanelFolderButton,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
-                    ],
-                  ),
+                      onPressed: () =>
+                          _openFolderManagement(context, brushService),
+                    ),
+                    TextButton.icon(
+                      icon: const Icon(
+                        Icons.add_photo_alternate_outlined,
+                        size: 15,
+                      ),
+                      label: Text(
+                        l10n.creativePanelCreateButton,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
+                      onPressed: () => _createFromImage(context, brushService),
+                    ),
+                    TextButton.icon(
+                      icon: const Icon(Icons.file_upload_outlined, size: 15),
+                      label: Text(
+                        l10n.creativePanelImportButton,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
+                      onPressed: () => _importBrush(context, brushService),
+                    ),
+                  ],
                 ),
               ),
-            if (_showSearch)
-              AssetSearchBar(
-                controller: _searchController,
-                mode: _searchMode,
-                availableTags: localizeAssetTags(l10n, brushService.allTags()),
-                keywordHint: l10n.brushSearchHint,
-                onModeChanged: (m) => setState(() {
-                  _searchMode = m;
-                  // 方式を切り替えたら入力は持ち越さない。名前とタグでは
-                  // 一致するものが全く違い、切り替えた瞬間に0件になって
-                  // 「壊れた」ように見えるため。
-                  _searchQuery = '';
-                  _searchController.clear();
-                }),
-                onQueryChanged: (v) => setState(() => _searchQuery = v),
-              ),
-            const Divider(),
-            Expanded(
-              child: brushList.isEmpty
-                  ? Center(
-                      child: Text(
-                        l10n.brushEmpty,
-                        style: TextStyle(
-                          color:
-                              ThemeService.activeColorScheme.onSurfaceVariant,
-                          fontSize: 12,
+              if (folders.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: SizedBox(
+                    height: 30,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        _folderChip(
+                          context,
+                          l10n.creativePanelFolderAllChip,
+                          _folderFilter == null || _folderFilter == _allFolders,
+                          () => setState(() => _folderFilter = null),
                         ),
-                      ),
-                    )
-                  : ReorderableListView.builder(
-                      // ドラッグハンドルは行末に明示アイコンとして置く（既定の
-                      // ドラッグハンドルだと、行全体の長押しで開く編集シート
-                      // （onLongPress）や、お気に入り・三点メニューのタップと
-                      // ジェスチャーが競合するため）。
-                      buildDefaultDragHandles: false,
-                      itemCount: brushList.length,
-                      onReorderItem: (oldIndex, newIndex) {
-                        if (!isFiltering) {
-                          brushService.reorderBrush(
-                            oldIndex,
-                            preRemovalIndex(oldIndex, newIndex),
-                          );
-                        }
-                      },
-                      itemBuilder: (context, index) {
-                        final brush = brushList[index];
-                        final isSelected = current?.id == brush.id;
-                        // プリインストールのブラシは編集・削除できない
-                        // （複製したものは複製元とは別IDになるため編集・削除可能）。
-                        final builtIn = brushService.isBuiltIn(brush.id);
-                        return ListTile(
-                          key: ValueKey(brush.id),
-                          dense: true,
-                          selected: isSelected,
-                          leading: Icon(
-                            Icons.brush,
-                            size: 16,
-                            color: isSelected
-                                ? AccentTextTheme.of(context)
-                                : null,
+                        _folderChip(
+                          context,
+                          l10n.folderNone,
+                          _folderFilter == '',
+                          () => setState(() => _folderFilter = ''),
+                        ),
+                        ...folders.map(
+                          (f) => _folderChip(
+                            context,
+                            f.name,
+                            _folderFilter == f.id,
+                            () => setState(() => _folderFilter = f.id),
                           ),
-                          title: Text(
-                            brush.name,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontFamily: 'Kuramubon',
-                              fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (_showSearch)
+                AssetSearchBar(
+                  controller: _searchController,
+                  mode: _searchMode,
+                  availableTags: localizeAssetTags(
+                    l10n,
+                    brushService.allTags(),
+                  ),
+                  keywordHint: l10n.brushSearchHint,
+                  onModeChanged: (m) => setState(() {
+                    _searchMode = m;
+                    // 方式を切り替えたら入力は持ち越さない。名前とタグでは
+                    // 一致するものが全く違い、切り替えた瞬間に0件になって
+                    // 「壊れた」ように見えるため。
+                    _searchQuery = '';
+                    _searchController.clear();
+                  }),
+                  onQueryChanged: (v) => setState(() => _searchQuery = v),
+                ),
+              const Divider(),
+              Expanded(
+                child: brushList.isEmpty
+                    ? Center(
+                        child: Text(
+                          l10n.brushEmpty,
+                          style: TextStyle(
+                            color:
+                                ThemeService.activeColorScheme.onSurfaceVariant,
+                            fontSize: 12,
+                          ),
+                        ),
+                      )
+                    : ReorderableListView.builder(
+                        // ドラッグハンドルは行末に明示アイコンとして置く（既定の
+                        // ドラッグハンドルだと、行全体の長押しで開く編集シート
+                        // （onLongPress）や、お気に入り・三点メニューのタップと
+                        // ジェスチャーが競合するため）。
+                        buildDefaultDragHandles: false,
+                        itemCount: brushList.length,
+                        onReorderItem: (oldIndex, newIndex) {
+                          if (!isFiltering) {
+                            brushService.reorderBrush(
+                              oldIndex,
+                              preRemovalIndex(oldIndex, newIndex),
+                            );
+                          }
+                        },
+                        itemBuilder: (context, index) {
+                          final brush = brushList[index];
+                          final isSelected = current?.id == brush.id;
+                          // プリインストールのブラシは編集・削除できない
+                          // （複製したものは複製元とは別IDになるため編集・削除可能）。
+                          final builtIn = brushService.isBuiltIn(brush.id);
+                          return ListTile(
+                            key: ValueKey(brush.id),
+                            dense: true,
+                            selected: isSelected,
+                            leading: Icon(
+                              Icons.brush,
+                              size: 16,
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : null,
                             ),
-                          ),
-                          subtitle: Text(
-                            l10n.penSubToolBrushSizeOpacity(
-                              brush.size.round(),
-                              brush.opacity,
-                            ),
-                            style: const TextStyle(fontSize: 10),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              GestureDetector(
-                                onTap: () =>
-                                    brushService.toggleFavoriteBrush(brush.id),
-                                child: Icon(
-                                  brush.isFavorite
-                                      ? Icons.star
-                                      : Icons.star_outline,
-                                  size: 14,
-                                  color: brush.isFavorite
-                                      ? ThemeService.activeColorScheme.tertiary
-                                      : ThemeService
-                                            .activeColorScheme
-                                            .onSurfaceVariant,
-                                ),
+                            title: Text(
+                              brush.name,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontFamily: 'Kuramubon',
+                                fontFamilyFallback: kHeadingFontFallback,
                               ),
-                              PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert, size: 14),
-                                onSelected: (action) =>
-                                    _handleBrushAction(context, action, brush),
-                                itemBuilder: (_) => [
-                                  if (!builtIn)
-                                    PopupMenuItem(
-                                      value: 'edit',
-                                      child: Text(l10n.creativePanelEditAction),
-                                    ),
-                                  PopupMenuItem(
-                                    value: 'duplicate',
-                                    child: Text(l10n.themeDuplicateAction),
+                            ),
+                            subtitle: Text(
+                              l10n.penSubToolBrushSizeOpacity(
+                                brush.size.round(),
+                                brush.opacity,
+                              ),
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                GestureDetector(
+                                  onTap: () => brushService.toggleFavoriteBrush(
+                                    brush.id,
                                   ),
-                                  PopupMenuItem(
-                                    value: 'move',
-                                    child: Text(l10n.folderMoveToTitle),
-                                  ),
-                                  // タグはお気に入りと同じく
-                                  // 「利用者の分類」なので、
-                                  // 組み込み素材にも付けられる。
-                                  PopupMenuItem(
-                                    value: 'tags',
-                                    child: Text(l10n.creativePanelTagsLabel),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'export',
-                                    child: Text(l10n.transferExport),
-                                  ),
-                                  if (!builtIn)
-                                    PopupMenuItem(
-                                      value: 'delete',
-                                      child: Text(
-                                        l10n.commonDelete,
-                                        style: TextStyle(
-                                          color: ThemeService
+                                  child: Icon(
+                                    brush.isFavorite
+                                        ? Icons.star
+                                        : Icons.star_outline,
+                                    size: 14,
+                                    color: brush.isFavorite
+                                        ? ThemeService
                                               .activeColorScheme
-                                              .error,
+                                              .tertiary
+                                        : ThemeService
+                                              .activeColorScheme
+                                              .onSurfaceVariant,
+                                  ),
+                                ),
+                                PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert, size: 14),
+                                  onSelected: (action) => _handleBrushAction(
+                                    context,
+                                    action,
+                                    brush,
+                                  ),
+                                  itemBuilder: (_) => [
+                                    if (!builtIn)
+                                      PopupMenuItem(
+                                        value: 'edit',
+                                        child: Text(
+                                          l10n.creativePanelEditAction,
                                         ),
                                       ),
+                                    PopupMenuItem(
+                                      value: 'duplicate',
+                                      child: Text(l10n.themeDuplicateAction),
                                     ),
-                                ],
-                              ),
-                              if (!isFiltering)
-                                ReorderableDragStartListener(
-                                  index: index,
-                                  child: Padding(
-                                    padding: EdgeInsets.only(left: 2),
-                                    child: Icon(
-                                      Icons.drag_indicator,
-                                      size: 16,
-                                      color: ThemeService
-                                          .activeColorScheme
-                                          .onSurfaceVariant,
+                                    PopupMenuItem(
+                                      value: 'move',
+                                      child: Text(l10n.folderMoveToTitle),
+                                    ),
+                                    // タグはお気に入りと同じく
+                                    // 「利用者の分類」なので、
+                                    // 組み込み素材にも付けられる。
+                                    PopupMenuItem(
+                                      value: 'tags',
+                                      child: Text(l10n.creativePanelTagsLabel),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'export',
+                                      child: Text(l10n.transferExport),
+                                    ),
+                                    if (!builtIn)
+                                      PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text(
+                                          l10n.commonDelete,
+                                          style: TextStyle(
+                                            color: ThemeService
+                                                .activeColorScheme
+                                                .error,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                if (!isFiltering)
+                                  ReorderableDragStartListener(
+                                    index: index,
+                                    child: Padding(
+                                      padding: EdgeInsets.only(left: 2),
+                                      child: Icon(
+                                        Icons.drag_indicator,
+                                        size: 16,
+                                        color: ThemeService
+                                            .activeColorScheme
+                                            .onSurfaceVariant,
+                                      ),
                                     ),
                                   ),
-                                ),
-                            ],
-                          ),
-                          onTap: () => brushService.selectBrush(brush.id),
-                          onLongPress: builtIn
-                              ? null
-                              : () => _showBrushSettings(context, brush),
-                        );
-                      },
-                    ),
-            ),
-          ],
+                              ],
+                            ),
+                            onTap: () => brushService.selectBrush(brush.id),
+                            onLongPress: builtIn
+                                ? null
+                                : () => _showBrushSettings(context, brush),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -431,7 +457,7 @@ class _BrushPanelState extends State<BrushPanel> {
         // （以前は日本語の「(コピー)」固定で、2回複製すると同じ名前が並んだ）。
         service.duplicateBrush(
           brush.id,
-          name: numberedCopyName(l10n, brush.name, {
+          name: _numberedBrushCopyName(l10n, brush.name, {
             for (final b in service.brushes) b.name,
           }),
         );
