@@ -1,0 +1,26 @@
+# Registration-only workflow for GitHub Actions UI.
+# The actual deploy workflow lives on dev_branch at this exact path.
+# GitHub requires the workflow file to exist on the default branch to accept
+# workflow_dispatch; selecting dev_branch runs the dev_branch workflow.
+# The main branch must NEVER deploy the development backend.
+name: Backend CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "AWSへデプロイする（必ずdev_branchを選択）"
+        type: boolean
+        default: false
+
+permissions: {}
+
+jobs:
+  main-branch-safety:
+    name: Main branch cannot deploy NIARIM development backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stop here; select dev_branch in Run workflow
+        run: |
+          echo "::error::Do not run the backend deploy from main. Choose dev_branch in the GitHub Actions Run workflow branch selector."
+          exit 1
