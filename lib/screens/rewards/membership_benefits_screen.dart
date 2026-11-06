@@ -89,8 +89,6 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
               : t['membershipPlay'])
         : premium.hasCoinPremium
         ? t['membershipCoin']
-        : premium.isLaunchCampaignActive
-        ? t['membershipCampaign']
         : t['membershipFree'];
     final coinExpiry = premium.activeCoinPremiumExpiry;
     return Scaffold(
