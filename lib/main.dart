@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'services/push_notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +28,16 @@ void main() async {
     DeviceOrientation.landscapeRight,
   ]);
 
+  // Push messaging is optional: an absent/misconfigured Firebase install must
+  // never prevent offline animation editing or widget tests from starting.
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    try {
+      await Firebase.initializeApp();
+      PushNotificationService.firebaseAvailable = true;
+    } catch (error) {
+      debugPrint('FCM initialization unavailable: $error');
+    }
+  }
   await _startApp();
 }
 

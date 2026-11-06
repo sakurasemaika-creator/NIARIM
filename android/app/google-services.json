@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "673224289740",
+    "project_id": "niarim-513201",
+    "storage_bucket": "niarim-513201.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:673224289740:android:68a062a1c6760246880169",
+        "android_client_info": {
+          "package_name": "com.niarim.niarim"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "673224289740-2dq86sb7504i055sng98fmdsp0qaimbo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1TDcEEZv7X5eiibaVBSoXxHbHPODYKi0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "673224289740-2dq86sb7504i055sng98fmdsp0qaimbo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

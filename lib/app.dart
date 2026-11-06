@@ -11,6 +11,9 @@ import 'services/home_widget_service.dart';
 import 'services/ad_placement_policy.dart';
 import 'services/ad_modal_visibility_observer.dart';
 import 'services/project_service.dart';
+import 'services/google_auth_service.dart';
+import 'services/community_service.dart';
+import 'services/push_notification_service.dart';
 import 'services/community_service.dart';
 import 'services/settings_service.dart';
 import 'services/theme_service.dart';
@@ -34,6 +37,7 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
   final _homeWidgetBridge = HomeWidgetBridge();
   final _AdPlacementNotifier _adPlacementRefresh = _AdPlacementNotifier();
   bool _adRefreshQueued = false;
+  PushNotificationService? _pushNotifications;
 
   /// Router delegates may notify while a child widget is building.
   /// Rebuilding the root ad frame synchronously in that phase throws a
@@ -76,7 +80,14 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
     // Routerが最初のルートを構築し終える前にpush()すると遷移が失われる
     // ため、最初のフレームが出てから起動時ルートを取りに行く。
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       _homeWidgetBridge.init();
+      if (PushNotificationService.firebaseAvailable) {
+        _pushNotifications = PushNotificationService(
+          auth: context.read<GoogleAuthService>(),
+          community: context.read<CommunityService>(),
+        )..start();
+      }
     });
   }
 
@@ -100,6 +111,7 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
     appRouter.routerDelegate.removeListener(_scheduleAdPlacementRefresh);
     adModalVisibilityObserver.isModalVisible
         .removeListener(_scheduleAdPlacementRefresh);
+    _pushNotifications?.dispose();
     _adPlacementRefresh.dispose();
     super.dispose();
   }
@@ -141,6 +153,7 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
     _syncHomeWidgets(context, themeService, localeFromLanguageCode(language));
     return MaterialApp.router(
       title: 'NIARIM',
+      scaffoldMessengerKey: PushNotificationService.scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       theme: themeService.themeData,
       scrollBehavior: const AppScrollBehavior(),
