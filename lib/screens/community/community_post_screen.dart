@@ -1044,6 +1044,51 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                             title: Text(labels.publicTitle),
                             subtitle: Text(labels.publicHelp),
                           ),
+                          RadioListTile<String>(
+                            key: const Key('communityPostYouTubePrivate'),
+                            contentPadding: EdgeInsets.zero,
+                            value: 'private',
+                            enabled: canChange,
+                            title: const Text('非公開'),
+                            subtitle: const Text('YouTubeにも作品広場にも一般公開されません。'),
+                          ),
+                          RadioListTile<String>(
+                            key: const Key('communityPostYouTubeScheduled'),
+                            contentPadding: EdgeInsets.zero,
+                            value: 'scheduled',
+                            enabled: canChange,
+                            title: const Text('日時を指定して予約公開'),
+                            subtitle: const Text(
+                              '指定日時まではYouTubeで非公開。公開後に作品広場にも反映します。',
+                            ),
+                          ),
+                          if (_youtubePrivacyStatus == 'scheduled')
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _scheduledPublishAt == null
+                                        ? '公開日時が未設定です'
+                                        : '公開予定: ${_scheduledPublishAt!.toLocal().year}/'
+                                          '${_scheduledPublishAt!.toLocal().month.toString().padLeft(2, '0')}/'
+                                          '${_scheduledPublishAt!.toLocal().day.toString().padLeft(2, '0')} '
+                                          '${_scheduledPublishAt!.toLocal().hour.toString().padLeft(2, '0')}:'
+                                          '${_scheduledPublishAt!.toLocal().minute.toString().padLeft(2, '0')}',
+                                    key: const Key('communityPostScheduleLabel'),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  OutlinedButton.icon(
+                                    key: const Key('communityPostChooseSchedule'),
+                                    onPressed: canChange ? _pickSchedule : null,
+                                    icon: const Icon(Icons.schedule),
+                                    label: Text(_scheduledPublishAt == null
+                                        ? '予約日時を選択' : '予約日時を変更'),
+                                  ),
+                                ],
+                              ),
+                            ),
                           if (_youtubePrivacyStatus == 'unlisted')
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 4),
