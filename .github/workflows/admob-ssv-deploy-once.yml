@@ -71,6 +71,8 @@ jobs:
               desired = json.load(f)
           old, new = live["Resources"], desired["Resources"]
           if set(old) != set(new):
+              print("New logical resource IDs:", sorted(set(new)-set(old)))
+              print("Removed logical resource IDs:", sorted(set(old)-set(new)))
               raise SystemExit("Refusing deploy: CloudFormation resources were added/removed")
           changes = []
           for resource_id in sorted(old):
