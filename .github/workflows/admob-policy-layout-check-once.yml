@@ -26,6 +26,8 @@ jobs:
         run: |
           flutter analyze --no-pub --no-fatal-infos \
             lib/app.dart \
+            lib/router.dart \
+            lib/services/ad_modal_visibility_observer.dart \
             lib/services/ad_placement_policy.dart \
             lib/widgets/ad_banner_mock_widget.dart \
             lib/widgets/progress_dialog.dart \
