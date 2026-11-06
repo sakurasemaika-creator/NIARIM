@@ -18,6 +18,10 @@ import 'widgets/app_scroll_behavior.dart';
 import 'widgets/app_chip_theme.dart';
 import 'widgets/ad_banner_mock_widget.dart';
 
+class _AdPlacementNotifier extends ChangeNotifier {
+  void refresh() => notifyListeners();
+}
+
 class NiarimApp extends StatefulWidget {
   const NiarimApp({super.key});
 
@@ -27,7 +31,7 @@ class NiarimApp extends StatefulWidget {
 
 class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
   final _homeWidgetBridge = HomeWidgetBridge();
-  final ChangeNotifier _adPlacementRefresh = ChangeNotifier();
+  final _AdPlacementNotifier _adPlacementRefresh = _AdPlacementNotifier();
   bool _adRefreshQueued = false;
 
   /// Router delegates may notify while a child widget is building.
@@ -39,7 +43,7 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
     _adRefreshQueued = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _adRefreshQueued = false;
-      if (mounted) _adPlacementRefresh.notifyListeners();
+      if (mounted) _adPlacementRefresh.refresh();
     });
   }
 
