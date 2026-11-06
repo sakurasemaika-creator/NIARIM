@@ -10,6 +10,13 @@ import '../l10n/app_localizations.dart';
 /// SafeAreaの上端を除いた、横長広告専用領域の高さ。
 const double kPersistentHorizontalAdMockExtent = 74;
 const double _fixedBannerWidth = 320;
+
+/// Widget-test-only visual evidence switch; cannot affect release builds.
+/// Shows the *mock* banner in production screen geometry without requesting
+/// AdMob SDK ads or changing premium/consent checks in shipped builds.
+const bool kNiarimAdSnapshotPreview =
+    !kReleaseMode &&
+    bool.fromEnvironment('NIARIM_AD_AUDIT_PREVIEW', defaultValue: false);
 const double _minimumPageHeightWithBanner = 320;
 
 /// Supported Google fixed-size units (dp), chosen conservatively by physical
@@ -115,12 +122,15 @@ class AdMockPageFrame extends StatelessWidget {
             allowBanner &&
             !isPremium &&
             media.viewInsets.bottom <= 0 &&
-            (ads == null || ads.shouldShowAds) &&
+            (ads == null || ads.shouldShowAds || kNiarimAdSnapshotPreview) &&
             bannerSize != null;
         return Column(
           children: [
             if (showSlot)
-              _AdBannerMockSlot(live: ads != null, size: bannerSize)
+              _AdBannerMockSlot(
+                live: ads != null && !kNiarimAdSnapshotPreview,
+                size: bannerSize,
+              )
             else
               const SizedBox.shrink(),
             Expanded(
@@ -244,7 +254,7 @@ class AdMediumRectangleMockWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final ads = context.watch<AdvertisingService?>();
     if (context.watch<PremiumService>().isPremium ||
-        (ads != null && !ads.shouldShowAds)) {
+        (ads != null && !ads.shouldShowAds && !kNiarimAdSnapshotPreview)) {
       return const SizedBox.shrink();
     }
     // AlertDialog uses intrinsic sizing, so LayoutBuilder cannot be placed
@@ -265,7 +275,7 @@ class AdMediumRectangleMockWidget extends StatelessWidget {
     // publisher-content rule prohibits live ads on such surfaces. Keep the
     // 300x250 placement available in debug with official TEST IDs for layout
     // review; fail closed in release even after production IDs are added.
-    if (ads != null) {
+    if (ads != null && !kNiarimAdSnapshotPreview) {
       if (kReleaseMode) return const SizedBox.shrink();
       return const Center(child: AdMobLiveSlot(rectangle: true));
     }
