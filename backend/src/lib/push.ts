@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { GoogleAuth, type OAuth2Client } from "google-auth-library";
+import { GoogleAuth } from "google-auth-library";
 import { DeleteCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "./dynamo";
 import type { DeviceTokenItem } from "./types";
@@ -89,10 +89,10 @@ async function listDeviceTokens(
 // External-account credentials contain only non-secret WIF metadata. AWS Lambda
 // provides short-lived AWS credentials in its execution environment. No GCP
 // private key is needed or stored in CloudFormation, GitHub or Lambda.
-let cachedClient: OAuth2Client | undefined;
+let cachedClient: ReturnType<GoogleAuth['fromJSON']> | undefined;
 let cachedProjectId: string | undefined;
 
-function fcmClient(): { client: OAuth2Client; projectId: string } | undefined {
+function fcmClient(): { client: ReturnType<GoogleAuth['fromJSON']>; projectId: string } | undefined {
   const projectId = process.env.FCM_PROJECT_ID;
   const audience = process.env.FCM_WIF_AUDIENCE;
   const serviceAccount = process.env.FCM_SENDER_SERVICE_ACCOUNT;

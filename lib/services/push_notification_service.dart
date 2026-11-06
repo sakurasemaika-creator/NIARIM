@@ -34,6 +34,7 @@ class PushNotificationService {
   bool _disposed = false;
   bool _syncing = false;
   bool _needsSync = false;
+  bool _permissionPrompted = false;
   String? _registeredOwner;
   String? _registeredToken;
 
@@ -145,9 +146,8 @@ class PushNotificationService {
     if (!permitted) {
       // Android 13+ permission: only prompt once after actual sign-in, never
       // while the signed-out user edits locally.
-      if (permission.authorizationStatus != AuthorizationStatus.notDetermined) {
-        return;
-      }
+      if (_permissionPrompted) return;
+      _permissionPrompted = true;
       final requested = await _messaging.requestPermission();
       if (requested.authorizationStatus != AuthorizationStatus.authorized &&
           requested.authorizationStatus != AuthorizationStatus.provisional) {
