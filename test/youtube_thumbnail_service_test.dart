@@ -65,4 +65,75 @@ void main() {
     );
     uploader.close();
   });
+  test('Shorts processing is confirmed before custom thumbnail upload',
+      () async {
+    var checks = 0;
+    final uploader = YoutubeThumbnailService(client: MockClient(
+      (request) async {
+        expect(request.method, 'GET');
+        expect(request.url.path, '/youtube/v3/videos');
+        expect(request.url.queryParameters['part'], 'processingDetails');
+        expect(request.url.queryParameters['id'], 'abcdefghijk');
+        expect(request.headers['authorization'], 'Bearer owner-token');
+        checks++;
+        return http.Response(
+          '{"items":[{"id":"abcdefghijk","processingDetails":'
+          '{"processingStatus":"${checks < 3 ? 'processing' : 'succeeded'}"}}]}',
+          200,
+        );
+      },
+    ));
+    await uploader.waitUntilProcessed(
+      videoId: 'abcdefghijk',
+      accessToken: 'owner-token',
+      maxChecks: 3,
+      pollInterval: Duration.zero,
+    );
+    expect(checks, 3);
+    uploader.close();
+  });
+
+  test('Shorts never set a thumbnail while YouTube still processes the video',
+      () async {
+    var checks = 0;
+    final uploader = YoutubeThumbnailService(client: MockClient(
+      (_) async {
+        checks++;
+        return http.Response(
+          '{"items":[{"processingDetails":{"processingStatus":"processing"}}]}',
+          200,
+        );
+      },
+    ));
+    await expectLater(
+      uploader.waitUntilProcessed(
+        videoId: 'abcdefghijk',
+        accessToken: 'owner-token',
+        maxChecks: 2,
+        pollInterval: Duration.zero,
+      ),
+      throwsA(isA<YoutubeThumbnailException>()),
+    );
+    expect(checks, 2);
+    uploader.close();
+  });
+
+  test('Shorts reject terminal video processing failures', () async {
+    final uploader = YoutubeThumbnailService(client: MockClient(
+      (_) async => http.Response(
+        '{"items":[{"processingDetails":{"processingStatus":"failed"}}]}',
+        200,
+      ),
+    ));
+    await expectLater(
+      uploader.waitUntilProcessed(
+        videoId: 'abcdefghijk',
+        accessToken: 'owner-token',
+        pollInterval: Duration.zero,
+      ),
+      throwsA(isA<YoutubeThumbnailException>()),
+    );
+    uploader.close();
+  });
+
 }
