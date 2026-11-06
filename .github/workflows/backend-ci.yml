@@ -24,7 +24,10 @@
 # 2. このリポジトリからのみ引き受けられるIAMロールを作り、CDKデプロイに
 #    必要な権限（CloudFormation・IAM・Lambda・DynamoDB・EventBridge・
 #    Logs等）を付ける。信頼ポリシーの`sub`は
-#    `repo:sakurasemaika-creator/MIRANIMA:*` に絞ること。
+#    `repo:sakurasemaika-creator@308185400/NIARIM@1309376423:ref:refs/heads/dev_branch`
+#    に厳密一致させること（2026-07-23作成リポジトリのimmutable OIDC sub形式）。
+#    audienceは `sts.amazonaws.com`。他のブランチや別リポジトリに許可を広げない。
+#    IAM作成時はGitHubの実際のOIDC sub形式と一致することを再確認する。
 # 3. そのロールのARNを、リポジトリのSecretsへ `AWS_DEPLOY_ROLE_ARN`
 #    として登録する。
 # 4. 同じくSecretsへ `GOOGLE_CLIENT_ID`・`YOUTUBE_API_KEY` を登録する
@@ -87,7 +90,7 @@ jobs:
     name: AWSへデプロイ
     needs: ci
     # 手動実行でdeploy=trueを選んだときだけ動く。Push/PRでは走らない。
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy && github.ref == 'refs/heads/dev_branch'
     runs-on: ubuntu-latest
     permissions:
       id-token: write # OIDCでIAMロールを引き受けるために必要
