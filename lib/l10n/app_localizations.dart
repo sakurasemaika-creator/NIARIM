@@ -1901,12 +1901,6 @@ abstract class AppLocalizations {
   /// **'トーンカーブ／\nレベル補正'**
   String get premiumHeroHighlightGrading;
 
-  /// No description provided for @premiumCampaignFreeNote.
-  ///
-  /// In ja, this message translates to:
-  /// **'※ キャンペーン期間中は無料版でも上記プレミアム機能を全てご利用いただけます'**
-  String get premiumCampaignFreeNote;
-
   /// No description provided for @premiumPlanSectionTitle.
   ///
   /// In ja, this message translates to:
@@ -1966,24 +1960,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'購入情報を復元しました（該当する購入がある場合）'**
   String get premiumRestoredSnackbar;
-
-  /// No description provided for @premiumCampaignBannerTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'リリース記念！有料会員限定機能解放キャンペーン'**
-  String get premiumCampaignBannerTitle;
-
-  /// No description provided for @premiumCampaignBannerBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'期間中は無料版でも全てのプレミアム機能（尺2時間まで拡大・エンドロゴ編集・ウォーターマーク・トーンカーブ・レベル補正）を無料でご利用いただけます。'**
-  String get premiumCampaignBannerBody;
-
-  /// No description provided for @premiumCampaignEndLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'～{date}まで'**
-  String premiumCampaignEndLabel(String date);
 
   /// No description provided for @premiumComparisonFeature.
   ///
