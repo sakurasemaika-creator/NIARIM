@@ -1,0 +1,120 @@
+name: Integrate verified audit branch and remove it (one-shot)
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - .github/workflows/merge-audit-branch-once.yml
+permissions:
+  contents: write
+concurrency:
+  group: niarim-audit-merge-one-shot
+  cancel-in-progress: false
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: dev_branch
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Merge older audit work while retaining newer dev UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "NIARIM audited branch integration"
+          git config user.email "noreply@github.com"
+          git fetch origin dev_branch ccr-f56ee68e-77ag7y
+          test "$(git rev-parse origin/ccr-f56ee68e-77ag7y)" = adcc712ad851a4f1b6d08e4e74af0c02253a525c
+          git reset --hard origin/dev_branch
+          git merge --no-commit --no-ff -X ours origin/ccr-f56ee68e-77ag7y
+          test -z "$(git diff --name-only --diff-filter=U)"
+          # Retain verified newer app and UI parts. These files were changed
+          # on dev_branch later than the ccr audit branch's counterpart.
+          git restore --source=HEAD --staged --worktree -- \
+            lib/screens/canvas/canvas_screen.dart \
+            lib/screens/home/home_screen.dart \
+            lib/screens/home/widgets/home_drawer.dart \
+            test/direct_service_coverage_batch10_test.dart \
+            lib/screens/home/widgets/project_list_widget.dart \
+            lib/screens/project/project_detail_screen.dart \
+            lib/screens/timeline/timeline_screen.dart \
+            lib/screens/settings/widget_artwork_picker_screen.dart \
+            lib/services/settings_service.dart \
+            test/home_widget_artwork_picker_test.dart \
+            test/visual/recent_ui_changes_capture_test.dart
+          # Old audit tests refer to removed UI/SettingsService APIs and did
+          # not exist on the current development branch.
+          git rm -f --ignore-unmatch \
+            test/home_display_matrix_test.dart \
+            test/home_navigation_state_test.dart \
+            test/project_grid_view_size_test.dart \
+            test/flutter_test_config.dart \
+            test/initial_language_test.dart \
+            test/project_list_order_search_test.dart \
+            test/canvas_pc_workspace_test.dart
+          git diff --cached --stat | tail -n 20
+      - name: Restore recent dev translation keys and generate localization
+        shell: bash
+        run: |
+          set -euo pipefail
+          flutter pub get
+          python3 - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          for p in sorted(Path('lib/l10n').glob('app_*.arb')):
+              original = json.loads(subprocess.check_output(['git', 'show', f'HEAD:{p.as_posix()}'], text=True))
+              current = json.loads(p.read_text(encoding='utf-8'))
+              missing = {k: v for k, v in original.items() if k not in current}
+              if missing:
+                  current.update(missing)
+                  p.write_text(json.dumps(current, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+                  print(f'{p}: retained {len(missing)} development-only translation keys')
+          PY
+          flutter gen-l10n
+          git add -A
+          git diff --cached --check
+      - name: Static analysis gate
+        run: timeout 300s flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings
+      - name: Regression gate
+        run: |
+          timeout 300s flutter test --no-pub \
+            test/eraser_transparent_colour_test.dart \
+            test/input_handler_pressure_test.dart \
+            test/brush_management_test.dart \
+            test/perceptual_color_mixer_test.dart
+      - name: Publish verified merge commit to dev_branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git commit -m "merge(audit): incorporate ccr revisions while preserving newer dev UI and tests"
+          echo "MERGE_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          # A concurrent push to dev_branch causes a safe non-fast-forward
+          # rejection. Never force-push or modify main.
+          git push origin HEAD:dev_branch
+      - name: Delete audit branch only when the published merge contains it
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const auditRef = 'heads/ccr-f56ee68e-77ag7y';
+            const known = 'adcc712ad851a4f1b6d08e4e74af0c02253a525c';
+            const old = await github.rest.git.getRef({owner, repo, ref: auditRef});
+            if (old.data.object.sha !== known) {
+              throw new Error('Audit branch moved since review: refusing deletion.');
+            }
+            const latest = await github.rest.git.getRef({owner, repo, ref: 'heads/dev_branch'});
+            const comparison = await github.rest.repos.compareCommits({
+              owner, repo, base: known, head: latest.data.object.sha
+            });
+            if (comparison.data.behind_by !== 0 ||
+                !['ahead','identical'].includes(comparison.data.status)) {
+              throw new Error('Audit commits are not contained in dev_branch.');
+            }
+            await github.rest.git.deleteRef({owner, repo, ref: auditRef});
+            core.notice('Audit branch merged and deleted. Only main and dev_branch remain.');
