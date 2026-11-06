@@ -1,0 +1,94 @@
+# One-shot minimal deploy. Preserves the exact currently running Lambda ZIP,
+# appending only a verified no-coin-grant compatibility handler for AdMob URL checks.
+# Does NOT perform a CDK deploy, change environment variables or add resources.
+name: NIARIM AdMob SSV Lambda code-only update (one shot)
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/admob-ssv-lambda-code-only-once.yml"
+
+permissions: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Verify SSV signature checks and unbound callback rejection
+        run: |
+          node --check backend/scripts/admob-ssv-verify-shim.cjs
+          node --test backend/scripts/admob-ssv-verify-shim.test.cjs
+      - uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: niarim-admob-ssv-code-only
+          aws-region: ap-northeast-1
+      - name: Preserve deployed code and update only the Lambda handler wrapper
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(aws sts get-caller-identity --query Account --output text)" = "368601349794"
+          test "${AWS_REGION:-}" = "ap-northeast-1"
+          lambda_name="niarim-api"
+          meta="$RUNNER_TEMP/niarim-lambda-metadata.json"
+          orig="$RUNNER_TEMP/niarim-original.zip"
+          patch="$RUNNER_TEMP/niarim-patched.zip"
+          dir="$RUNNER_TEMP/niarim-existing-code"
+          aws lambda get-function --function-name "$lambda_name" > "$meta"
+          original_sha="$(jq -r '.Configuration.CodeSha256 // empty' "$meta")"
+          revision="$(jq -r '.Configuration.RevisionId // empty' "$meta")"
+          test "$original_sha" = "hIV+IPWUvc3IZF8H0fNIh7/UivNX22y4HmS5QFdQ6jQ="
+          test -n "$revision"
+          test "$(jq -r '.Configuration.State' "$meta")" = "Active"
+          test "$(jq -r '.Configuration.Environment.Variables.ADMOB_REWARDED_AD_UNIT_ID' "$meta")" = "ca-app-pub-4380578821900659/6321761453"
+          test "$(jq -r '.Configuration.Environment.Variables.REWARDED_AD_SSV_ENABLED' "$meta")" = "false"
+          test "$(jq -r '.Configuration.Environment.Variables.REWARDED_AD_REVIEW_APPROVED' "$meta")" = "false"
+          # The temporary presigned URL is never printed to logs.
+          curl --silent --show-error --fail --location --max-time 30 \
+            --output "$orig" "$(jq -r '.Code.Location' "$meta")"
+          python3 - "$orig" "$original_sha" <<'PY'
+          import base64,hashlib,sys
+          actual=base64.b64encode(hashlib.sha256(open(sys.argv[1],'rb').read()).digest()).decode()
+          if actual!=sys.argv[2]:
+              raise SystemExit("Deployed ZIP hash mismatch: refusing update")
+          PY
+          mkdir -p "$dir"
+          unzip -q "$orig" -d "$dir"
+          test -f "$dir/index.js"
+          # Appending the standalone module preserves every byte of the
+          # existing deployed bundle and all unrelated handler routes.
+          printf '\n' >> "$dir/index.js"
+          cat backend/scripts/admob-ssv-verify-shim.cjs >> "$dir/index.js"
+          node --check "$dir/index.js"
+          ( cd "$dir" && zip -qr "$patch" . )
+          updated=false
+          rollback() {
+            if [ "$updated" = true ]; then
+              echo "::warning::Smoke check failed; restoring original Lambda ZIP"
+              aws lambda update-function-code --function-name "$lambda_name" \
+                --zip-file "fileb://$orig" > /dev/null || true
+              aws lambda wait function-updated --function-name "$lambda_name" || true
+            fi
+          }
+          trap rollback ERR
+          aws lambda update-function-code --function-name "$lambda_name" \
+            --revision-id "$revision" --zip-file "fileb://$patch" > /dev/null
+          updated=true
+          aws lambda wait function-updated --function-name "$lambda_name"
+          new_sha="$(aws lambda get-function-configuration \
+            --function-name "$lambda_name" --query CodeSha256 --output text)"
+          test -n "$new_sha" && test "$new_sha" != "$original_sha"
+          # No production rewards have been enabled. Other APIs must work.
+          status="$(curl --silent --show-error --max-time 25 \
+            --output "$RUNNER_TEMP/smoke.json" --write-out '%{http_code}' \
+            "https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/works/latest")"
+          test "$status" = "200"
+          echo "Verified: Lambda code-only patch deployed; existing works API returned 200."
+          trap - ERR
