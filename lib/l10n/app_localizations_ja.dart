@@ -4514,6 +4514,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get layerPanelOpacityLabel => '不透明度';
 
   @override
+  String brushPanelDeleteConfirmTitle(String name) {
+    return '「$name」を削除しますか？';
+  }
+
+  @override
+  String get brushPanelDeleteConfirmBody => '削除したブラシは元に戻せません。';
+
+  @override
+  String numberInputRangeError(String min, String max) {
+    return '$min〜$maxの数字を入力してください';
+  }
+
+  @override
   String get layerPanelLockLabel => 'ロック';
 
   @override

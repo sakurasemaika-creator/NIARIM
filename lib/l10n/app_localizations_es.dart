@@ -4733,6 +4733,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get layerPanelOpacityLabel => 'Opacidad';
 
   @override
+  String brushPanelDeleteConfirmTitle(String name) {
+    return '¿Eliminar «$name»?';
+  }
+
+  @override
+  String get brushPanelDeleteConfirmBody =>
+      'Un pincel eliminado no se puede recuperar.';
+
+  @override
+  String numberInputRangeError(String min, String max) {
+    return 'Introduce un número entre $min y $max';
+  }
+
+  @override
   String get layerPanelLockLabel => 'Bloquear';
 
   @override

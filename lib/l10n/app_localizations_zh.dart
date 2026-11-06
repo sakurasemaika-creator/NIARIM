@@ -4493,6 +4493,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelOpacityLabel => '不透明度';
 
   @override
+  String brushPanelDeleteConfirmTitle(String name) {
+    return '要删除“$name”吗？';
+  }
+
+  @override
+  String get brushPanelDeleteConfirmBody => '删除的笔刷无法恢复。';
+
+  @override
+  String numberInputRangeError(String min, String max) {
+    return '请输入$min到$max之间的数字';
+  }
+
+  @override
   String get layerPanelLockLabel => '锁定';
 
   @override
@@ -12434,7 +12447,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineStackDeselectAll => '取消全選';
 
   @override
+  String brushPanelDeleteConfirmTitle(String name) {
+    return '要刪除「$name」嗎？';
+  }
+
+  @override
+  String get brushPanelDeleteConfirmBody => '刪除的筆刷無法復原。';
+
+  @override
   String get timelineStackSelectAll => '全選';
+
+  @override
+  String numberInputRangeError(String min, String max) {
+    return '請輸入$min到$max之間的數字';
+  }
 
   @override
   String get timelineStackMultiSelectHint =>

@@ -2238,6 +2238,26 @@
   "layerPanelOpacityLabel": "不透明度",
   "layerPanelLockLabel": "ロック",
   "layerPanelOpacityLockLabel": "不透明度ロック",
+  "brushPanelDeleteConfirmTitle": "「{name}」を削除しますか？",
+  "@brushPanelDeleteConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "brushPanelDeleteConfirmBody": "削除したブラシは元に戻せません。",
+  "numberInputRangeError": "{min}〜{max}の数字を入力してください",
+  "@numberInputRangeError": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
   "layerPanelClippingDescription": "下のレイヤーの不透明範囲内のみ描画",
   "layerPanelConvertToCommonLabel": "共通レイヤーへ変更",
   "layerPanelConvertOption1Title": "現在レイヤーを共通化",

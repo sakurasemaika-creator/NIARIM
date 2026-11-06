@@ -8327,6 +8327,24 @@ abstract class AppLocalizations {
   /// **'不透明度ロック'**
   String get layerPanelOpacityLockLabel;
 
+  /// No description provided for @brushPanelDeleteConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を削除しますか？'**
+  String brushPanelDeleteConfirmTitle(String name);
+
+  /// No description provided for @brushPanelDeleteConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'削除したブラシは元に戻せません。'**
+  String get brushPanelDeleteConfirmBody;
+
+  /// No description provided for @numberInputRangeError.
+  ///
+  /// In ja, this message translates to:
+  /// **'{min}〜{max}の数字を入力してください'**
+  String numberInputRangeError(String min, String max);
+
   /// No description provided for @layerPanelClippingDescription.
   ///
   /// In ja, this message translates to:

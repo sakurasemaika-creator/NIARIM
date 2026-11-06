@@ -4536,6 +4536,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get layerPanelOpacityLabel => '불투명도';
 
   @override
+  String brushPanelDeleteConfirmTitle(String name) {
+    return '\"$name\"을(를) 삭제할까요?';
+  }
+
+  @override
+  String get brushPanelDeleteConfirmBody => '삭제한 브러시는 되돌릴 수 없습니다.';
+
+  @override
+  String numberInputRangeError(String min, String max) {
+    return '$min~$max 사이의 숫자를 입력하세요';
+  }
+
+  @override
   String get layerPanelLockLabel => '잠금';
 
   @override
