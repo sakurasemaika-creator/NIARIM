@@ -39,8 +39,16 @@ jobs:
             echo "::error::GOOGLE_CLIENT_ID is missing or does not look like a Web OAuth client ID."
             exit 1
           fi
+          # Compare to the web OAuth client configured on the deployed AWS backend.
+          # SHA-256 avoids embedding the client ID or printing the secret in CI logs.
+          expected_client_id_sha256='63180ba0c638cd09b57a6dbee0e40f6ec1051e0eb427ec6657d617bff9a43f9c'
+          actual_client_id_sha256="$(printf '%s' "$GOOGLE_WEB_CLIENT_ID" | sha256sum | cut -d ' ' -f1)"
+          if [[ "$actual_client_id_sha256" != "$expected_client_id_sha256" ]]; then
+            echo "::error::GOOGLE_CLIENT_ID differs from the Google Web client ID deployed to the NIARIM backend."
+            exit 1
+          fi
           grep -q 'applicationId = "com.niarim.niarim"' android/app/build.gradle.kts
-          echo "PASS: expected package name and Google Web OAuth client ID format."
+          echo "PASS: expected Android package and exact Google Web OAuth client ID match."
 
       - name: Verify fixed debug certificate SHA-1
         shell: bash
