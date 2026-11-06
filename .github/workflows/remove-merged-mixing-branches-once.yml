@@ -1,0 +1,43 @@
+name: Delete superseded and merged October mixing branches (one-shot)
+on:
+  push:
+    branches: [dev_branch]
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check git ancestry and delete only the two verified old branches
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const staleBranches = [
+              {name: 'docs/analog-style-mixing-names', sha: '8abf08653e3b1effbe57d96643974bb71c9c80da'},
+              {name: 'fix/analog-style-mixing-labels', sha: 'daa0a15812aa343fefcf762a75eaf01fd9f5fe9b'}
+            ];
+            for (const target of staleBranches) {
+              let old;
+              try {
+                old = await github.rest.git.getRef({owner, repo, ref: `heads/${target.name}`});
+              } catch (error) {
+                if (error.status === 404) {
+                  core.info(`${target.name} already deleted`);
+                  continue;
+                }
+                throw error;
+              }
+              if (old.data.object.sha !== target.sha) {
+                throw new Error(`${target.name} was modified after review; refusing deletion`);
+              }
+              const latest = await github.rest.git.getRef({owner, repo, ref: 'heads/dev_branch'});
+              const cmp = await github.rest.repos.compareCommits({
+                owner, repo, base: old.data.object.sha, head: latest.data.object.sha
+              });
+              if (cmp.data.behind_by !== 0 || !['ahead', 'identical'].includes(cmp.data.status)) {
+                throw new Error(`${target.name} has unmerged commits; refusing deletion`);
+              }
+              await github.rest.git.deleteRef({owner, repo, ref: `heads/${target.name}`});
+              core.notice(`Deleted verified merged branch ${target.name}`);
+            }
