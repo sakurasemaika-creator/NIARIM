@@ -1,0 +1,74 @@
+name: Community Posting and Scheduled Release Verification
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'backend/src/batch/scheduledRelease.ts'
+      - 'backend/src/api/routes/worksCreate.ts'
+      - 'backend/src/api/routes/userWorks.ts'
+      - 'backend/src/lib/types.ts'
+      - 'backend/src/lib/youtube.ts'
+      - 'backend/lib/niarim-backend-stack.ts'
+      - 'lib/screens/community/community_post_screen.dart'
+      - 'lib/screens/community/community_my_works_screen.dart'
+      - 'lib/screens/community/community_work_detail_screen.dart'
+      - 'lib/services/youtube_upload_service.dart'
+      - 'lib/services/youtube_thumbnail_service.dart'
+      - 'lib/services/post_completion_notification_service.dart'
+      - 'lib/services/api/community_api.dart'
+      - 'lib/services/api/niarim_api_models.dart'
+      - 'android/app/src/main/kotlin/com/niarim/niarim/MainActivity.kt'
+      - 'android/app/src/main/AndroidManifest.xml'
+      - 'test/youtube_thumbnail_service_test.dart'
+      - 'test/community_post_publish_contract_test.dart'
+      - '.github/workflows/post-publish-verification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  flutter:
+    name: Flutter posting validation and Android compilation
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - name: Analyze affected Dart files
+        run: |
+          flutter analyze --no-fatal-infos --no-fatal-warnings             lib/screens/community/community_post_screen.dart             lib/screens/community/community_my_works_screen.dart             lib/screens/community/community_work_detail_screen.dart             lib/services/youtube_upload_service.dart             lib/services/youtube_thumbnail_service.dart             lib/services/post_completion_notification_service.dart             lib/services/api/community_api.dart             lib/services/api/niarim_api_models.dart             test/youtube_thumbnail_service_test.dart             test/community_post_publish_contract_test.dart
+      - name: Verify posting regression and thumbnail upload
+        run: |
+          flutter test test/youtube_thumbnail_service_test.dart             test/community_post_publish_contract_test.dart             test/community_post_recovery_contract_test.dart --reporter expanded
+      - name: Compile Android debug APK and native posting notifications
+        run: flutter build apk --debug --no-pub
+
+  backend:
+    name: Scheduled publication security and CDK synthesis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Publication tests
+        run: npx vitest run test/scheduled-release.test.ts test/real-post-flow-contract.test.ts
+      - name: Synth and free-tier capacity
+        run: npx cdk synth --quiet -c googleClientId=ci-dummy -c youtubeApiKey=ci-dummy
