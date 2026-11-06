@@ -411,6 +411,7 @@ class CommunityApi {
     String? title,
     String description = '',
     bool isShort = false,
+    DateTime? scheduledPublishAt,
     bool isNiarimPublished = true,
     bool containsGenerativeAiImageOrVideo = false,
     int? projectFps,
@@ -433,6 +434,8 @@ class CommunityApi {
         'title': ?title,
         'description': description,
         'isShort': isShort,
+        if (scheduledPublishAt != null)
+          'scheduledPublishAt': scheduledPublishAt.toUtc().toIso8601String(),
         'isNiarimPublished': isNiarimPublished,
         'containsGenerativeAiImageOrVideo': containsGenerativeAiImageOrVideo,
         'projectFps': ?projectFps,

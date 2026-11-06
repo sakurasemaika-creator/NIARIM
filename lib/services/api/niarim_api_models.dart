@@ -27,6 +27,8 @@ class ApiWork {
   /// can distinguish a NIARIM-hidden work from a work forced hidden by YouTube.
   /// Public list responses intentionally omit it.
   final String? youtubePrivacyStatus;
+  /// Owner-only scheduled YouTube public release (UTC).
+  final DateTime? scheduledPublishAt;
 
   final int projectFps;
   final int projectFrameCount;
@@ -56,6 +58,7 @@ class ApiWork {
     this.isUnavailable = false,
     required this.containsGenerativeAiImageOrVideo,
     this.youtubePrivacyStatus,
+    this.scheduledPublishAt,
     this.projectFps = 0,
     this.projectFrameCount = 0,
     this.projectWorkSeconds = 0,
@@ -86,6 +89,7 @@ class ApiWork {
     containsGenerativeAiImageOrVideo:
         json['containsGenerativeAiImageOrVideo'] == true,
     youtubePrivacyStatus: json['youtubePrivacyStatus'] as String?,
+    scheduledPublishAt: _nullableDateTime(json['scheduledPublishAt']),
     projectFps: _int(json['projectFps']),
     projectFrameCount: _int(json['projectFrameCount']),
     projectWorkSeconds: _int(json['projectWorkSeconds']),
