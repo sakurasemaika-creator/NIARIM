@@ -33,5 +33,4 @@ jobs:
             exit 0
           fi
           git commit -m "chore(fcm): lock compatible Firebase Flutter packages"
-          git pull --rebase origin dev_branch
           git push origin HEAD:refs/heads/dev_branch
