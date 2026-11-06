@@ -405,6 +405,15 @@ class CommunityApi {
         .toList();
   }
 
+  /// Exact owner-only detail read for a cold-start posting notification.
+  Future<ApiWork> myWork(String workId) async {
+    final response = await _client.getJson(
+      '/me/works/${Uri.encodeComponent(workId)}',
+      authenticated: true,
+    );
+    return ApiWork.fromJson(_work(response));
+  }
+
   Future<ApiWork> createWork({
     required String youtubeVideoId,
     required String youtubeAccessToken,
