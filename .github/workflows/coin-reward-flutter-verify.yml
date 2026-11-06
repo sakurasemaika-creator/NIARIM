@@ -51,6 +51,17 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get --enforce-lockfile
+      - name: Assert campaign and date-gate code is entirely absent
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Split match strings so the verification step does not count itself.
+          pattern='isLaunchCampaignActive|isMonetizationEnabled|NIARIM_MONETIZATION_APPROVED|monetization_gate[.]dart|premiumCampaign|membershipCampaign'
+          if grep -RInE --include='*.dart' "$pattern" lib test; then
+            echo "::error::A removed launch-campaign reference still exists."
+            exit 1
+          fi
+          echo 'PASS: no campaign or arbitrary monetization approval gate remains in Dart.'
       - name: Analyze app reward and subscription integration
         run: |
           flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
