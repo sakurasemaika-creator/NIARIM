@@ -1,0 +1,49 @@
+# Read-only live API contract check through the production Flutter Dart client.
+# This workflow never publishes an APK and never writes to AWS.
+name: Flutter Live Backend Smoke
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/flutter-live-backend-smoke.yml"
+      - "tool/live_backend_smoke.dart"
+      - "lib/services/api/**"
+      - "lib/models/community_work.dart"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-read-only:
+    name: Flutter client → live AWS backend
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout current dev_branch
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: false
+
+      - name: Resolve Flutter dependencies
+        run: flutter pub get
+
+      - name: Validate the existing Flutter API/service contracts
+        run: |
+          flutter test test/community_api_contract_test.dart test/community_service_backend_test.dart
+
+      - name: Execute actual Flutter Dart client against live AWS (GET only)
+        run: |
+          dart run \
+            --define=NIARIM_API_BASE_URL=https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/ \
+            tool/live_backend_smoke.dart
