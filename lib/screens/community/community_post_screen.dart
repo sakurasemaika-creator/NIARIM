@@ -953,6 +953,53 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                const SizedBox(height: 12),
+                Text('サムネイル', style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 6),
+                if (_thumbnailFile != null) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(
+                      _thumbnailFile!,
+                      key: const Key('communityPostThumbnailPreview'),
+                      height: 155,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const Text(
+                        '画像を読み込めません。画像を選び直してください。',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  if (_thumbnailApplied)
+                    const Text('YouTubeへサムネイルを設定済み'),
+                ] else
+                  const Text('未指定の場合はYouTubeの自動サムネイルを使用します。'),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      key: const Key('communityPostChooseThumbnail'),
+                      onPressed: _busy || _thumbnailApplied ? null : _pickThumbnail,
+                      icon: const Icon(Icons.image_outlined),
+                      label: const Text('画像を指定'),
+                    ),
+                    OutlinedButton.icon(
+                      key: const Key('communityPostChooseVideoFrame'),
+                      onPressed: _busy || _videoFile == null || _thumbnailApplied
+                          ? null : _pickVideoFrame,
+                      icon: const Icon(Icons.movie_filter_outlined),
+                      label: const Text('動画のフレームを指定'),
+                    ),
+                    if (_thumbnailFile != null && !_thumbnailApplied)
+                      TextButton(
+                        onPressed: _busy
+                            ? null : () => setState(() => _thumbnailFile = null),
+                        child: const Text('自動サムネイルに戻す'),
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 8),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
