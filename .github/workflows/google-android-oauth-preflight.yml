@@ -1,0 +1,77 @@
+# Checks prerequisites for Google Sign-In without authenticating a real user.
+# No keystore or password is uploaded or committed; SHA-1 is public metadata.
+name: Google Android OAuth Preflight
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/google-android-oauth-preflight.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Validate debug-signing identity and OAuth client configuration
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout dev_branch
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Java 17 for keytool
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Check Google Web client ID and Android application ID
+        shell: bash
+        env:
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$GOOGLE_WEB_CLIENT_ID" =~ ^[a-zA-Z0-9-]+[.]apps[.]googleusercontent[.]com$ ]]; then
+            echo "::error::GOOGLE_CLIENT_ID is missing or does not look like a Web OAuth client ID."
+            exit 1
+          fi
+          grep -q 'applicationId = "com.niarim.niarim"' android/app/build.gradle.kts
+          echo "PASS: expected package name and Google Web OAuth client ID format."
+
+      - name: Verify fixed debug certificate SHA-1
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.NIARIM_DEBUG_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.NIARIM_DEBUG_STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$KEYSTORE_BASE64" || -z "$KEYSTORE_PASSWORD" ]]; then
+            echo "::error::The persistent CI debug keystore secrets are missing."
+            exit 1
+          fi
+          trap 'rm -f "$RUNNER_TEMP/niarim-preflight-debug.jks"' EXIT
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/niarim-preflight-debug.jks"
+          chmod 600 "$RUNNER_TEMP/niarim-preflight-debug.jks"
+          certificate="$(keytool -list -v \
+            -keystore "$RUNNER_TEMP/niarim-preflight-debug.jks" \
+            -storepass:env KEYSTORE_PASSWORD \
+            -alias niarim_ci_debug)"
+          sha1="$(printf '%s\\n' "$certificate" | sed -n 's/.*SHA1: //p' | head -n 1)"
+          expected='5B:AA:90:49:23:7A:54:A8:81:6F:52:DA:D6:6C:09:ED:2C:C4:F4:57'
+          if [[ "$sha1" != "$expected" ]]; then
+            echo "::error::CI debug signing SHA-1 does not match docs/ANDROID_SIGNING_SETUP.md"
+            exit 1
+          fi
+          echo "PASS: verified CI debug APK certificate SHA-1: $sha1"
+          {
+            echo "### Google Sign-In setup check"
+            echo "- Android package: \`com.niarim.niarim\`"
+            echo "- CI debug SHA-1: \`$sha1\`"
+            echo "- Web OAuth client ID secret: configured (value not printed)"
+            echo "- Google Cloud Android OAuth registration: **must still be checked in Google Cloud Console**"
+            echo "- Interactive sign-in and authenticated AWS API: **not tested by this workflow**"
+          } >> "$GITHUB_STEP_SUMMARY"
