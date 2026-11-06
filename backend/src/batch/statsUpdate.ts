@@ -193,7 +193,10 @@ async function updateWorkStats(
     setParts.push("postedAt = :actualPostedAt", "gsi3AllSk = :actualPostedAt");
     values[":actualPostedAt"] = actualPostedAt;
   }
-  const removes: string[] = [];
+  // The hourly/daily stats sync may observe YouTube's scheduled release before
+  // the minute release worker does. Retire the sparse schedule keys here too:
+  // otherwise a public work remains stuck in the pending-release index.
+  const removes: string[] = newlyReleased ? ["gsi6pk", "gsi6sk"] : [];
   const conditions = [
     "itemType = :expectedType",
     "isNiarimPublished = :expectedPublished",
