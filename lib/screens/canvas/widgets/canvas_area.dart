@@ -797,7 +797,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       _layers = const [];
       _initEngine();
     }
-    _drawingEngine.isEraser = widget.isEraser;
+    _drawingEngine.isEraser = _erasing;
     if (old.currentLayerPreview != widget.currentLayerPreview ||
         old.currentLayerPreviewBlendMode !=
             widget.currentLayerPreviewBlendMode) {
@@ -1237,6 +1237,14 @@ class _CanvasAreaState extends State<CanvasArea> {
       (c.g * 255).round().clamp(0, 255),
       (c.b * 255).round().clamp(0, 255),
     );
+    _drawingEngine.isEraser = _erasing;
+  }
+
+  /// An explicitly selected eraser or a pen with fully transparent color.
+  bool get _erasing {
+    if (widget.isEraser) return true;
+    if (widget.currentTool != DrawingTool.pen) return false;
+    return (context.read<BrushService>().currentColor.a * 255).round() == 0;
   }
 
   /// 筆圧カーブ（アプリ全体に適用）と、品質設定の「傾き検知」ON/OFF

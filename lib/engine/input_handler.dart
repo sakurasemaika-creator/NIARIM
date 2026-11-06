@@ -31,7 +31,10 @@ class InputHandler {
     double Function(double)? pressureCurve,
   }) {
     final type = _lastInputType; // classifyInput()は呼び出し元で既に実行済み
-    final rawPressure = event.pressure.clamp(0.0, 1.0);
+    // A mouse has no hardware pressure; some desktop backends report zero.
+    final rawPressure = event.kind == PointerDeviceKind.mouse
+        ? 1.0
+        : event.pressure.clamp(0.0, 1.0);
     return StrokePoint(
       x: event.localPosition.dx,
       y: event.localPosition.dy,
