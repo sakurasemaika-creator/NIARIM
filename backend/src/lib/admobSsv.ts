@@ -58,7 +58,9 @@ export interface VerifiedAdmobReward {
   rewardItem: string;
   transactionId: string;
   timestampMs: number;
-  customData: string;
+  // AdMob's signed URL-verification callback may omit custom_data.
+  // An absent binding is NEVER eligible for a wallet credit.
+  customData: string | null;
 }
 
 export async function verifyAdmobSsv(
@@ -117,7 +119,13 @@ export async function verifyAdmobSsv(
     rewardItem: required("reward_item"),
     transactionId,
     timestampMs,
-    customData: required("custom_data"),
+    customData: (() => {
+      const values = params.getAll("custom_data");
+      if (values.length > 1) {
+        throw new SsvVerificationError("Duplicate signed custom_data field");
+      }
+      return values.length === 1 && values[0] ? values[0] : null;
+    })(),
   };
 }
 
@@ -134,7 +142,7 @@ export function validateAdmobOffer(
       config.nowMs - reward.timestampMs > 7 * 24 * 3600 * 1000) {
     throw new SsvVerificationError("Ad unit, offer or timestamp mismatch");
   }
-  const match = /^v1\.(N[0-9a-f]{32})\.([0-9a-f-]{36})$/.exec(reward.customData);
+  const match = /^v1\.(N[0-9a-f]{32})\.([0-9a-f-]{36})$/.exec(reward.customData ?? "");
   if (!match || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(match[2])) {
     throw new SsvVerificationError("Invalid signed reward session");
   }

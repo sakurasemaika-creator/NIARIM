@@ -48,6 +48,18 @@ describe("AdMob ECDSA callback verification", () => {
     })).toThrow();
   });
 
+  it("accepts a signed callback without custom_data but never binds a user", async () => {
+    const raw = content().replace(/custom_data=[^&]*&/, "");
+    const reward = await verifyAdmobSsv(signed(raw), keys);
+    expect(reward.customData).toBeNull();
+    expect(() => validateAdmobOffer(reward, {
+      adUnitId, amount: 10, nowMs: timestamp,
+    })).toThrow(SsvVerificationError);
+    await expect(verifyAdmobSsv(
+      signed(raw + "&custom_data=x&custom_data=y"), keys,
+    )).rejects.toBeInstanceOf(SsvVerificationError);
+  });
+
   it("rejects wrong signing key, duplicate query fields and unsigned callback", async () => {
     await expect(verifyAdmobSsv(signed(content()), async () => new Map()))
       .rejects.toBeInstanceOf(SsvVerificationError);

@@ -5,7 +5,9 @@ import {
 import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 
-const { send } = vi.hoisted(() => ({ send: vi.fn() }));
+const { send, verifySignedCallback } = vi.hoisted(() => ({
+  send: vi.fn(), verifySignedCallback: vi.fn(),
+}));
 vi.mock("../src/lib/dynamo", async (original) => ({
   ...(await original<typeof import("../src/lib/dynamo")>()),
   ddb: { send },
@@ -19,14 +21,7 @@ vi.mock("../src/lib/auth", () => ({
 }));
 vi.mock("../src/lib/admobSsv", async (original) => ({
   ...(await original<typeof import("../src/lib/admobSsv")>()),
-  verifyAdmobSsv: vi.fn(async () => ({
-    adUnit: "2222222222",
-    rewardAmount: 10,
-    rewardItem: "coins",
-    transactionId: "18fa792de1bca816048293fc71035638",
-    timestampMs: Date.now(),
-    customData: `v1.N${"a".repeat(32)}.123e4567-e89b-12d3-a456-426614174000`,
-  })),
+  verifyAdmobSsv: verifySignedCallback,
 }));
 import {
   receiveRewardedAdSsv, rewardedAdConfiguration, startRewardedAdSession,
@@ -41,6 +36,15 @@ const request = {
 beforeEach(() => {
   send.mockReset();
   send.mockResolvedValue({});
+  verifySignedCallback.mockReset();
+  verifySignedCallback.mockImplementation(async () => ({
+    adUnit: "2222222222",
+    rewardAmount: 10,
+    rewardItem: "coins",
+    transactionId: "18fa792de1bca816048293fc71035638",
+    timestampMs: Date.now(),
+    customData: `v1.N${"a".repeat(32)}.123e4567-e89b-12d3-a456-426614174000`,
+  }));
   process.env.TABLE_NAME = "unit-test-table";
   delete process.env.ADMOB_REWARDED_AD_UNIT_ID;
   delete process.env.REWARDED_AD_SSV_ENABLED;
@@ -77,6 +81,42 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     process.env.ADMOB_REWARDED_AD_UNIT_ID =
       "ca-app-pub-3940256099942544/5224354917";
     expect(rewardedAdConfiguration().enabled).toBe(false);
+  });
+
+  it("acknowledges only a matching signed unbound URL check without issuing coins", async () => {
+    process.env.ADMOB_REWARDED_AD_UNIT_ID =
+      "ca-app-pub-1111111111111111/2222222222";
+    verifySignedCallback.mockImplementationOnce(async () => ({
+      adUnit: "2222222222",
+      rewardAmount: 10,
+      rewardItem: "coins",
+      transactionId: "18fa792de1bca816048293fc71035638",
+      timestampMs: Date.now(),
+      customData: null,
+    }));
+    const response = await receiveRewardedAdSsv(request);
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body ?? "{}")).toMatchObject({
+      verified: true, credited: false,
+    });
+    expect(send).not.toHaveBeenCalled();
+    expect(rewardedAdConfiguration().enabled).toBe(false);
+  });
+
+  it("rejects mismatching or unsigned verification callbacks", async () => {
+    process.env.ADMOB_REWARDED_AD_UNIT_ID =
+      "ca-app-pub-1111111111111111/2222222222";
+    verifySignedCallback.mockImplementationOnce(async () => ({
+      adUnit: "0000000000", rewardAmount: 10, rewardItem: "coins",
+      transactionId: "18fa792de1bca816048293fc71035638",
+      timestampMs: Date.now(), customData: null,
+    }));
+    await expect(receiveRewardedAdSsv(request)).rejects.toMatchObject({
+      code: "INVALID_SSV",
+    });
+    verifySignedCallback.mockRejectedValueOnce(new Error("bad signature"));
+    await expect(receiveRewardedAdSsv(request)).rejects.toThrow();
+    expect(send).not.toHaveBeenCalled();
   });
 
   it("mints an unguessable user-bound ad invitation, not coins", async () => {

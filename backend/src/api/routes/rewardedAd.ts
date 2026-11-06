@@ -151,11 +151,28 @@ export async function getRewardedAdStatus(event: APIGatewayProxyEventV2) {
  */
 export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
   const config = rewardedAdConfiguration();
-  if (!config.enabled) forbidden("広告報酬は無効です", "REWARDED_AD_DISABLED");
   let reward;
   let identity;
   try {
+    // Always verify Google's ECDSA signature BEFORE acknowledging a
+    // callback, even if issuance is disabled. AdMob's URL verification
+    // sends a real signed callback without an app-issued custom_data value.
     reward = await verifyAdmobSsv(event.rawQueryString ?? "", admobPublicKeys);
+    if (!reward.customData) {
+      const now = Date.now();
+      const suffix = config.adUnitId.split("/").at(-1);
+      if (!suffix || reward.adUnit !== suffix ||
+          reward.rewardItem !== "coins" ||
+          reward.rewardAmount !== config.amount ||
+          reward.timestampMs > now + 5 * 60_000 ||
+          now - reward.timestampMs > 60 * 60_000) {
+        throw new SsvVerificationError("Unbound AdMob verification mismatch");
+      }
+      // Nothing is written to DynamoDB and no coins can be granted.
+      // This is a signed connectivity acknowledgment, NOT a reward.
+      return ok({ verified: true, credited: false });
+    }
+    if (!config.enabled) forbidden("広告報酬は無効です", "REWARDED_AD_DISABLED");
     identity = validateAdmobOffer(reward, {
       adUnitId: config.adUnitId,
       amount: config.amount,
