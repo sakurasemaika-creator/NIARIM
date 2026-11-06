@@ -11,75 +11,15 @@ class YoutubeThumbnailService {
 
   final http.Client _client;
 
-  /// YouTube Shorts accepts custom thumbnails reliably only after processing
-  /// succeeds. Poll the uploader-owned video using the same OAuth token
-  /// before calling thumbnails.set. Keep the video ID in pending upload state
-  /// so a timeout can be retried without uploading the movie again.
+  /// The Shorts custom thumbnail must be sent after YouTube processing.
+  /// Retain the uploaded video ID on timeout, so retries never upload twice.
   Future<void> waitUntilProcessed({
     required String videoId,
     required String accessToken,
     int maxChecks = 12,
     Duration pollInterval = const Duration(seconds: 5),
   }) async {
-    if (!RegExp(r'^[A-Za-z0-9_-]{11}
-    required File file,
-    required String videoId,
-    required String accessToken,
-  }) async {
     if (!RegExp(r'^[A-Za-z0-9_-]{11}$').hasMatch(videoId)) {
-      throw ArgumentError('動画IDが不正です');
-    }
-    final path = file.path.toLowerCase();
-    final type = path.endsWith('.png') ? 'image/png'
-        : path.endsWith('.jpg') || path.endsWith('.jpeg') ? 'image/jpeg' : null;
-    if (type == null) {
-      throw ArgumentError('サムネイルはPNGまたはJPEGを選択してください');
-    }
-    final size = await file.length();
-    // YouTube allows 50 MB, but cap local memory/traffic at a safer 10 MB.
-    if (size == 0 || size > 10 * 1024 * 1024) {
-      throw ArgumentError('サムネイル画像は10MB以内にしてください');
-    }
-    final uri = Uri.https(
-      'www.googleapis.com',
-      '/upload/youtube/v3/thumbnails/set',
-      {'videoId': videoId, 'uploadType': 'media'},
-    );
-    final request = http.StreamedRequest('POST', uri)
-      ..headers['Authorization'] = 'Bearer $accessToken'
-      ..headers['Content-Type'] = type
-      ..contentLength = size;
-    final responseFuture = _client.send(request);
-    await request.sink.addStream(file.openRead());
-    await request.sink.close();
-    final response = await http.Response.fromStream(await responseFuture);
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      String message = 'サムネイルを設定できませんでした（HTTP ${response.statusCode}）';
-      try {
-        final error = jsonDecode(response.body) as Map<String, dynamic>;
-        final details = error['error'];
-        if (details is Map && details['message'] is String) {
-          message += ': ${details['message']}';
-        }
-      } on Object {
-        // Keep a generic user-facing status. Never include OAuth credentials.
-      }
-      throw YoutubeThumbnailException(message, statusCode: response.statusCode);
-    }
-  }
-
-  void close() => _client.close();
-}
-
-class YoutubeThumbnailException implements Exception {
-  const YoutubeThumbnailException(this.message, {this.statusCode});
-  final String message;
-  final int? statusCode;
-
-  @override
-  String toString() => message;
-}
-).hasMatch(videoId)) {
       throw ArgumentError('動画IDが不正です');
     }
     if (accessToken.isEmpty) {
@@ -109,11 +49,7 @@ class YoutubeThumbnailException implements Exception {
         throw const YoutubeThumbnailException('YouTubeの動画処理状態が不正です');
       }
       final items = decoded['items'] as List;
-      if (items.isEmpty || items.first is! Map) {
-        // The upload has returned an ID but processing metadata may not be
-        // available immediately. Allow the same bounded polling retry.
-        continue;
-      }
+      if (items.isEmpty || items.first is! Map) continue;
       final video = items.first as Map;
       final details = video['processingDetails'];
       final status = details is Map ? details['processingStatus'] : null;
