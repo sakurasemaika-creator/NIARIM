@@ -1,4 +1,5 @@
-# One-shot full-app widget-rendered captures with visible *mock* ad slots.
+# Full-app widget-rendered captures with visible *mock* ad slots.
+# Includes the content-bearing home variant for all 10 viewports.
 # Does NOT connect to actual AdMob or publish/install Android APK.
 name: NIARIM AdMob all-routes 10-viewport capture (one shot)
 # Rerun after ChangeNotifier analyzer correction.
