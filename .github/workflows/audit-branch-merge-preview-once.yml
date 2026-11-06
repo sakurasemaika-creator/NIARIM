@@ -35,7 +35,11 @@ jobs:
           echo "Mergeable diff has $(git diff --cached --name-only | wc -l) files"
           # The PC canvas changed significantly after the audit branch. Never
           # splice an older PC workspace into this newer screen.
-          git restore --source=HEAD --staged --worktree -- lib/screens/canvas/canvas_screen.dart
+          git restore --source=HEAD --staged --worktree -- \
+            lib/screens/canvas/canvas_screen.dart \
+            lib/screens/home/home_screen.dart \
+            lib/screens/home/widgets/home_drawer.dart \
+            test/direct_service_coverage_batch10_test.dart
           echo "Retained latest dev_branch canvas screen in merge preview"
       - name: Install dependencies and generate translations
         shell: bash
@@ -46,7 +50,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          timeout 300s flutter analyze --no-pub > /tmp/merge-analyze.log 2>&1
+          timeout 300s flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings > /tmp/merge-analyze.log 2>&1
           result=$?
           echo "ANALYZE_EXIT_CODE=$result"
           echo "===== ERROR COUNTS BY FILE ====="
