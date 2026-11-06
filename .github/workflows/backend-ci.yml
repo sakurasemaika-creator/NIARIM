@@ -139,8 +139,24 @@ jobs:
           # NEVER pass an FCM private-key JSON via CDK context/CloudFormation.
           # Firebase push stays disabled until a secure runtime secret source exists.
           npx cdk deploy NiarimBackendStack --require-approval never \
+            --outputs-file "$RUNNER_TEMP/niarim-cdk-outputs.json" \
             -c googleClientId="$GOOGLE_CLIENT_ID" \
             -c youtubeApiKey="$YOUTUBE_API_KEY"
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+      - name: Smoke test deployed public works API
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="$(jq -r '.NiarimBackendStack.ApiFunctionUrl // empty' "$RUNNER_TEMP/niarim-cdk-outputs.json")"
+          if [[ ! "$url" =~ ^https://[a-z0-9-]+[.]lambda-url[.]ap-northeast-1[.]on[.]aws/$ ]]; then
+            echo "::error::Unexpected or missing Lambda Function URL in CDK outputs."
+            exit 1
+          fi
+          code="$(curl --max-time 25 --silent --show-error --output "$RUNNER_TEMP/niarim-smoke-response.json" --write-out '%{http_code}' "${url}works/latest")"
+          if [ "$code" != "200" ]; then
+            echo "::error::GET /works/latest returned HTTP $code after deployment."
+            exit 1
+          fi
+          echo "Smoke test passed: GET /works/latest returned HTTP 200."
