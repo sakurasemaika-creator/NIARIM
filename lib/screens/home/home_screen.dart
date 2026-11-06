@@ -157,6 +157,7 @@ class _HomeScreenState extends State<HomeScreen>
   bool _searchByTag = false;
   String _searchQuery = '';
   final _searchController = TextEditingController();
+  final _searchFocus = FocusNode();
   StreamSubscription<String>? _sharedFileSub;
   // 現在開いているフォルダ（フォルダは複数階層に対応・
   // パンくずリストで現在位置を表示）。nullはルート直下。
@@ -178,14 +179,11 @@ class _HomeScreenState extends State<HomeScreen>
           if (_currentTabIndex != 0) {
             _selectedIds.clear();
             _isSelectionMode = false;
-            _isSearching = false;
-            _searchByTag = false;
-            _searchQuery = '';
-            _searchController.clear();
+            _resetProjectSearch();
           }
         });
         if (wasSearching && _currentTabIndex != 0) {
-          FocusManager.instance.primaryFocus?.unfocus();
+          _searchFocus.unfocus();
         }
       }
     });
@@ -201,6 +199,7 @@ class _HomeScreenState extends State<HomeScreen>
     WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     _searchController.dispose();
+    _searchFocus.dispose();
     _projectScrollController.dispose();
     _sharedFileSub?.cancel();
     super.dispose();
@@ -404,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen>
                       Expanded(
                         child: TextField(
                           controller: _searchController,
-                          autofocus: true,
+                          focusNode: _searchFocus,
                           decoration: InputDecoration(
                             hintText: _searchByTag
                                 ? l10n.projectDetailTagsQuickAction
@@ -426,12 +425,7 @@ class _HomeScreenState extends State<HomeScreen>
                   IconButton(
                     icon: const Icon(Icons.close),
                     tooltip: l10n.commonClose,
-                    onPressed: () => _changeProjectScope(() {
-                      _isSearching = false;
-                      _searchByTag = false;
-                      _searchQuery = '';
-                      _searchController.clear();
-                    }),
+                    onPressed: _closeProjectSearch,
                   )
                 else ...[
                   if (_hasClipboard)
@@ -468,10 +462,7 @@ class _HomeScreenState extends State<HomeScreen>
                   IconButton(
                     icon: const Icon(Icons.search),
                     tooltip: l10n.commonSearch,
-                    onPressed: () => _changeProjectScope(() {
-                      _isSearching = true;
-                      _searchByTag = false;
-                    }),
+                    onPressed: _openProjectSearch,
                   ),
                 ],
               ],
@@ -641,8 +632,7 @@ class _HomeScreenState extends State<HomeScreen>
                       searchQuery: _searchQuery,
                       searchByTag: _searchByTag,
                       currentFolderId: _currentFolderId,
-                      onOpenFolder: (id) =>
-                          _changeProjectScope(() => _currentFolderId = id),
+                      onOpenFolder: _openProjectFolder,
                     ),
                     const _WorksTab(key: PageStorageKey('home-works')),
                     const _BookmarkedTab(key: PageStorageKey('home-bookmarks')),
@@ -847,6 +837,32 @@ class _HomeScreenState extends State<HomeScreen>
       change();
       _selectedIds.clear();
       _isSelectionMode = false;
+    });
+  }
+
+  void _resetProjectSearch() {
+    _isSearching = false;
+    _searchByTag = false;
+    _searchQuery = '';
+    _searchController.clear();
+  }
+
+  void _openProjectSearch() {
+    _changeProjectScope(() => _isSearching = true);
+    _searchFocus.requestFocus();
+  }
+
+  void _closeProjectSearch() {
+    _searchFocus.unfocus();
+    _changeProjectScope(_resetProjectSearch);
+  }
+
+  void _openProjectFolder(String id) {
+    if (_isSearching) _searchFocus.unfocus();
+    _changeProjectScope(() {
+      _currentFolderId = id;
+      // A search is global; close it to display the selected folder's contents.
+      if (_isSearching) _resetProjectSearch();
     });
   }
 
