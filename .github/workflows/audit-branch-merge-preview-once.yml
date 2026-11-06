@@ -42,7 +42,17 @@ jobs:
             test/direct_service_coverage_batch10_test.dart \
             lib/screens/home/widgets/project_list_widget.dart \
             lib/screens/project/project_detail_screen.dart \
-            lib/screens/timeline/timeline_screen.dart
+            lib/screens/timeline/timeline_screen.dart \
+            lib/screens/settings/widget_artwork_picker_screen.dart \
+            lib/services/settings_service.dart \
+            test/home_widget_artwork_picker_test.dart \
+            test/visual/recent_ui_changes_capture_test.dart
+          # The older view-mode classes were removed by later project-grid UI.
+          # Tests that only cover that former API cannot be carried forward unchanged.
+          git rm -f --ignore-unmatch \
+            test/home_display_matrix_test.dart \
+            test/home_navigation_state_test.dart \
+            test/project_grid_view_size_test.dart
           echo "Retained latest dev_branch canvas screen in merge preview"
       - name: Install dependencies and generate translations
         shell: bash
