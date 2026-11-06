@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../config/accent_text_theme.dart';
 import '../../l10n/creator_mission_labels.dart';
 import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
