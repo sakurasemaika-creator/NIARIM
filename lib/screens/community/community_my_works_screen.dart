@@ -40,6 +40,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   bool _observingAccount = false;
   int _ownerLoadGeneration = 0;
   Map<String, String> _youtubePrivacyById = const <String, String>{};
+  Map<String, DateTime> _scheduledPublishById = const <String, DateTime>{};
   final Set<String> _selectedIds = <String>{};
   bool _selectionMode = false;
   bool _bulkBusy = false;
@@ -95,6 +96,12 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
             if (work.youtubePrivacyStatus != null)
               work.workId: work.youtubePrivacyStatus!,
         };
+        _scheduledPublishById = {
+          ..._scheduledPublishById,
+          for (final work in page.works)
+            if (work.scheduledPublishAt != null)
+              work.workId: work.scheduledPublishAt!,
+        };
       });
     } catch (error) {
       if (mounted && generation == _ownerLoadGeneration) {
@@ -134,6 +141,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     _ownerWorks = null;
     _visibleOwnCount = CommunityService.pageSize;
     _youtubePrivacyById = const <String, String>{};
+    _scheduledPublishById = const <String, DateTime>{};
     _worksError = null;
     _selectedIds.clear();
     _selectionMode = false;
@@ -157,6 +165,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
         _ownerStateAccountId = null;
         _ownerWorks = null;
         _youtubePrivacyById = const <String, String>{};
+        _scheduledPublishById = const <String, DateTime>{};
         _worksError = null;
         _loadingWorks = false;
         _selectedIds.clear();
@@ -189,10 +198,16 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
           if (work.youtubePrivacyStatus != null)
             work.workId: work.youtubePrivacyStatus!,
       };
+      final schedules = <String, DateTime>{
+        for (final work in works)
+          if (work.scheduledPublishAt != null)
+            work.workId: work.scheduledPublishAt!,
+      };
       if (!mounted) return;
       setState(() {
         _ownerWorks = converted;
         _youtubePrivacyById = privacy;
+        _scheduledPublishById = schedules;
         final availableIds = converted.map((work) => work.id).toSet();
         _selectedIds.removeWhere((id) => !availableIds.contains(id));
         if (_selectedIds.isEmpty) _selectionMode = false;
@@ -469,6 +484,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       if (deleted == true) {
         _ownerWorks?.removeWhere((item) => item.id == work.id);
         _youtubePrivacyById = Map.of(_youtubePrivacyById)..remove(work.id);
+        _scheduledPublishById = Map.of(_scheduledPublishById)..remove(work.id);
         _selectedIds.remove(work.id);
         if (_selectedIds.isEmpty) _selectionMode = false;
       }
@@ -524,6 +540,20 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     if (youtubePrivacy == 'deleted') {
       return l10n.communityMyWorksStatusDeletedOnYoutube;
     }
+    final schedule = _scheduledPublishById[work.id];
+    if (youtubePrivacy == 'private' && schedule != null) {
+      final date = schedule.toLocal();
+      final stamp = '${date.year}/'
+          '${date.month.toString().padLeft(2, '0')}/'
+          '${date.day.toString().padLeft(2, '0')} '
+          '${date.hour.toString().padLeft(2, '0')}:'
+          '${date.minute.toString().padLeft(2, '0')}';
+      if (schedule.isAfter(DateTime.now())) {
+        return '予約公開中 • $stamp'
+            '${work.isNiarimPublished ? '' : ' • 作品広場は非公開'}';
+      }
+      return '公開予定日時経過 • YouTubeの公開処理を確認中';
+    }
     if (youtubePrivacy == 'private') {
       return work.isNiarimPublished
           ? l10n.communityMyWorksStatusYoutubePrivate
@@ -537,6 +567,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   IconData _visibilityIcon(CommunityWork work) {
     final youtubePrivacy = _youtubePrivacyById[work.id];
     if (youtubePrivacy == 'deleted') return Icons.delete_forever_outlined;
+    if (youtubePrivacy == 'private' &&
+        _scheduledPublishById[work.id] != null) return Icons.schedule;
     if (youtubePrivacy == 'private') return Icons.lock_outline;
     return work.isNiarimPublished
         ? Icons.public
