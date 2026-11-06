@@ -38,6 +38,9 @@ jobs:
       - name: Resolve Flutter dependencies
         run: flutter pub get
 
+      - name: Analyze Flutter source and live API test script
+        run: flutter analyze
+
       - name: Validate the existing Flutter API/service contracts
         run: |
           flutter test test/community_api_contract_test.dart test/community_service_backend_test.dart
