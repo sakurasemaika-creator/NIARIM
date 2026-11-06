@@ -123,3 +123,31 @@
   a new design and policy review before enabling live ads.
 - All 39 routes: statically reviewed; **not all are suitable advertising
   placements**, and remote empty/overlay states need more live testing.
+
+## Follow-up: SP / DeX responsive viewport validation (2026-11-06)
+
+- [Successful CI run](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/42216835683):
+  Flutter static analysis and targeted widget tests completed successfully.
+- Tested width/height combinations in logical pixels:
+  `280×640`, `319×700`, `320×568`, `360×780`, `393×852`,
+  `430×932`, `640×360`, `800×440`, `480×720`, `600×800`,
+  `800×600`, `1024×768`, `1280×720`, `1440×900`,
+  `1920×1080`.
+- Fixed banner sizes (never stretched): phone `320×50`; intermediate
+  tablet/DeX `468×60`; desktop-like/DeX `728×90`. When available
+  width/height is insufficient, no banner slot is mounted.
+- Popup medium rectangle is not requested below its safe viewport minimum.
+  Fixed a Flutter `AlertDialog` intrinsic-sizing incompatibility introduced
+  by a nested `LayoutBuilder`; all targeted tests now pass.
+- Hide top banners while the system keyboard is open. Root modal routes
+  suppress live/release banners and the 300×250 processing ad is debug-only.
+- **More conservative production policy:** `/community` and individual
+  works, `/tips`, `/help`, creative canvas/timeline and materials/save
+  controls are disabled until visible-content/interactive-surface-specific
+  tests exist. At this stage, only nonempty local list surfaces and project
+  detail have static route eligibility.
+- These are **automated Flutter geometry/widget tests**, not screenshot-based
+  review of each real device. Physical Galaxy, Samsung DeX and real Google
+  test-ad rendering remain unverified. Publisher policy compliance cannot be
+  guaranteed without reviewing actual production content, overlays and
+  AdMob's final policy assessment.
