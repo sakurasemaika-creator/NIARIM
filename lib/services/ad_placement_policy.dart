@@ -1,33 +1,42 @@
-/// Conservative route-level guard for Google-served display banners.
+/// Route policy for a persistently anchored, separated AdMob banner.
 ///
-/// A banner is NOT a mandatory part of every route. The publisher content
-/// must be the focus; pure navigation, billing, consent, settings, error,
-/// empty-state and alert screens are not appropriate advertising inventory.
+/// A creative canvas is user content, and an always-on banner is NOT banned
+/// merely because a drawing tool is active. Google recommends preventing
+/// accidental clicks by reserving a dedicated non-overlapping region and
+/// separating ads from stylus/touch controls.
 ///
-/// Further dynamic checks are required for network-driven feeds that may
-/// have no content, or for full-screen media and overlays. This function is
-/// a fail-closed baseline, not a guarantee of AdMob policy approval.
+/// Deny empty/list-loading screens and menu/consent/paywall/legal-only
+/// surfaces. Other content routes use the common top slot, not a floating
+/// banner. This policy is a layout risk reduction, not AdMob approval.
 bool isBannerEligibleRoute(
   String path, {
   bool hasLocalContent = true,
 }) {
+  if (path == '/home' ||
+      path == '/shared' ||
+      path == '/trash' ||
+      path == '/community' ||
+      path.startsWith('/community/work/')) {
+    // Those screens may be empty or waiting for remote content.
+    return hasLocalContent;
+  }
+
+  // Persistent, content-bearing editor / viewer / documentation surfaces.
+  if (path.startsWith('/project/') ||
+      path.startsWith('/canvas/') ||
+      path.startsWith('/timeline/') ||
+      path.startsWith('/materials/') ||
+      path.startsWith('/save-tree/')) {
+    return true;
+  }
+
   switch (path) {
-    case '/home':
-    case '/shared':
-    case '/trash':
-      return hasLocalContent;
-    // The community list and player can be loading, filtered to zero
-    // results, unavailable, muted or covered by a video overlay. Until
-    // per-tab/per-player visible-content signals are implemented, do NOT
-    // request production ads on those dynamic routes.
-    case '/community':
     case '/tips':
     case '/help':
-      return false;
+      return true;
+    // Forms/menus without independent content, purchase flows, legal,
+    // diagnostics and action-only screens intentionally remain ad-free.
     default:
-      // Canvas/timeline are high-frequency pen/touch surfaces: do not place
-      // clickable banners adjacent to continuous creative interaction.
-      // Save tree and materials are control/gallery-first flows.
-      return path.startsWith('/project/');
+      return false;
   }
 }

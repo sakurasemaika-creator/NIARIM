@@ -74,13 +74,22 @@ void main() {
       '/settings/privacy-policy', '/settings/error-log', '/premium',
       '/rewards', '/earn-coins', '/membership', '/creator-missions',
       '/storage', '/autofill-presets', '/unknown',
-      '/community', '/community/work/123',
-      '/canvas/123', '/timeline/123', '/materials/123',
-      '/save-tree/123', '/tips', '/help',
+      '/community/work/123',
     ]) {
       expect(isBannerEligibleRoute(path), isFalse, reason: path);
     }
-    expect(isBannerEligibleRoute('/project/123'), isTrue);
+    for (final path in [
+      '/project/123', '/canvas/123', '/timeline/123',
+      '/materials/123', '/save-tree/123', '/tips', '/help',
+    ]) {
+      expect(isBannerEligibleRoute(path), isTrue, reason: path);
+    }
+    for (final path in ['/community', '/community/work/123']) {
+      expect(isBannerEligibleRoute(path, hasLocalContent: false),
+          isFalse, reason: path);
+      expect(isBannerEligibleRoute(path, hasLocalContent: true),
+          isTrue, reason: path);
+    }
     for (final path in ['/home', '/shared', '/trash']) {
       expect(isBannerEligibleRoute(path, hasLocalContent: false),
           isFalse, reason: path);

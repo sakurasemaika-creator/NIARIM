@@ -11,6 +11,7 @@ import 'services/home_widget_service.dart';
 import 'services/ad_placement_policy.dart';
 import 'services/ad_modal_visibility_observer.dart';
 import 'services/project_service.dart';
+import 'services/community_service.dart';
 import 'services/settings_service.dart';
 import 'services/theme_service.dart';
 import 'utils/app_locale.dart';
@@ -165,15 +166,16 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
           onPointerHover: (e) =>
               context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
           behavior: HitTestBehavior.translucent,
-          // Keep the same top banner mounted while switching between
-          // content routes. Do not request ads on menu-only, settings,
-          // registration, empty-list or other low-value screens.
+          // Keep one anchored banner on content-bearing routes, including
+          // creative canvas and timeline. Menu-only, empty, legal, paywall
+          // and modal alert states remain excluded for ad quality.
           child: ListenableBuilder(
             listenable: _adPlacementRefresh,
             builder: (context, _) {
               final route =
                   appRouter.routerDelegate.currentConfiguration.uri.path;
               final projects = context.watch<ProjectService>();
+              final community = context.watch<CommunityService>();
               final hasLocalContent = switch (route) {
                 '/home' =>
                   projects.projects.isNotEmpty ||
@@ -181,6 +183,12 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
                       projects.trash.isNotEmpty,
                 '/shared' => projects.shared.isNotEmpty,
                 '/trash' => projects.trash.isNotEmpty,
+                '/community' =>
+                  community.discoverableWorks.isNotEmpty,
+                _ when route.startsWith('/community/work/') =>
+                  community.byId(
+                    route.substring('/community/work/'.length),
+                  ) != null,
                 _ => true,
               };
               return AdPersistentRootFrame(
