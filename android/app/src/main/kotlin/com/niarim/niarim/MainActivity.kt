@@ -1,5 +1,16 @@
 package com.niarim.niarim
 
+import android.Manifest
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
+import android.os.Build
+import java.io.File
+import java.io.FileOutputStream
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -19,6 +30,10 @@ class MainActivity : FlutterActivity() {
     private val channelName = "com.niarim.niarim/share_intent"
     private val widgetChannelName = "com.niarim.niarim/home_widget_route"
     private val hwVideoEncoderChannelName = "com.niarim.niarim/hw_video_encoder"
+    private val postChannelName = "com.niarim.niarim/post_notification"
+    private val videoFrameChannelName = "com.niarim.niarim/video_frame"
+    private val notificationChannelId = "niarim_post_complete"
+    private var pendingPostNotification: Triple<String, String, Boolean>? = null
     private var methodChannel: MethodChannel? = null
     private var widgetChannel: MethodChannel? = null
     private var pendingUri: String? = null
@@ -116,6 +131,76 @@ class MainActivity : FlutterActivity() {
                 }
             }
 
+        // Publish completion notifications are local and have an explicit,
+        // owner-only work-detail PendingIntent (works even on cold launch).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, postChannelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "showSuccess" -> {
+                        val videoId = call.argument<String>("workId")
+                        val title = call.argument<String>("title") ?: ""
+                        val scheduled = call.argument<Boolean>("scheduled") ?: false
+                        if (videoId == null || !Regex("^[A-Za-z0-9_-]{11}$").matches(videoId)) {
+                            result.error("BAD_WORK_ID", "Invalid work ID", null)
+                        } else {
+                            showPostNotification(videoId, title, scheduled)
+                            result.success(null)
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, videoFrameChannelName)
+            .setMethodCallHandler { call, result ->
+                val path = call.argument<String>("path")
+                if (path.isNullOrBlank()) {
+                    result.error("INVALID_PATH", "動画が指定されていません", null)
+                    return@setMethodCallHandler
+                }
+                when (call.method) {
+                    "getVideoDuration", "extractFrame" -> thread(name = "thumbnail-frame") {
+                        val retriever = MediaMetadataRetriever()
+                        try {
+                            retriever.setDataSource(path)
+                            if (call.method == "getVideoDuration") {
+                                val ms = retriever.extractMetadata(
+                                    MediaMetadataRetriever.METADATA_KEY_DURATION
+                                )?.toLongOrNull() ?: 0L
+                                mainHandler.post { result.success(ms.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()) }
+                            } else {
+                                val ms = call.argument<Int>("timeMs") ?: 0
+                                val frame = retriever.getFrameAtTime(
+                                    ms.toLong().coerceAtLeast(0) * 1000,
+                                    MediaMetadataRetriever.OPTION_CLOSEST_SYNC,
+                                ) ?: throw IllegalArgumentException("動画から画像を抽出できません")
+                                val scale = minOf(1.0, 1280.0 / maxOf(frame.width, frame.height))
+                                val w = maxOf(1, (frame.width * scale).toInt())
+                                val h = maxOf(1, (frame.height * scale).toInt())
+                                val bitmap = if (scale < 1.0)
+                                    Bitmap.createScaledBitmap(frame, w, h, true) else frame
+                                val file = File(cacheDir, "niarim_video_frame_${System.nanoTime()}.jpg")
+                                FileOutputStream(file).use { output ->
+                                    if (!bitmap.compress(Bitmap.CompressFormat.JPEG, 88, output)) {
+                                        throw IllegalStateException("サムネイルの生成に失敗しました")
+                                    }
+                                }
+                                if (bitmap !== frame) bitmap.recycle()
+                                frame.recycle()
+                                mainHandler.post { result.success(file.absolutePath) }
+                            }
+                        } catch (error: Exception) {
+                            mainHandler.post {
+                                result.error("FRAME_READ_FAILED", error.message, null)
+                            }
+                        } finally {
+                            retriever.release()
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
         // ホーム画面ウィジェットのタップで開くルートをFlutterへ渡す。
         widgetChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, widgetChannelName)
         widgetChannel?.setMethodCallHandler { call, result ->
@@ -140,6 +225,72 @@ class MainActivity : FlutterActivity() {
         if (route != null) {
             widgetChannel?.invokeMethod("onWidgetRoute", route)
         }
+    }
+
+    private fun showPostNotification(
+        workId: String, title: String, scheduled: Boolean
+    ) {
+        val record = Triple(workId, title, scheduled)
+        if (Build.VERSION.SDK_INT >= 33 &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED) {
+            pendingPostNotification = record
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 4311)
+            return
+        }
+        postConfirmedNotification(record)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != 4311) return
+        val pending = pendingPostNotification
+        pendingPostNotification = null
+        if (pending != null && grantResults.firstOrNull() ==
+            PackageManager.PERMISSION_GRANTED) {
+            postConfirmedNotification(pending)
+        }
+    }
+
+    private fun postConfirmedNotification(item: Triple<String, String, Boolean>) {
+        val (workId, title, scheduled) = item
+        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= 26) {
+            manager.createNotificationChannel(
+                NotificationChannel(
+                    notificationChannelId, "作品投稿の完了",
+                    NotificationManager.IMPORTANCE_DEFAULT
+                )
+            )
+        }
+        val route = "/community/work/$workId"
+        val intent = Intent(this, MainActivity::class.java).apply {
+            putExtra(WIDGET_ROUTE_EXTRA, route)
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this, workId.hashCode(), intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val message = if (scheduled) {
+            "予約投稿を受け付けました。タップして作品詳細を開きます。"
+        } else {
+            "作品広場への投稿が完了しました。タップして詳細を開きます。"
+        }
+        val builder = if (Build.VERSION.SDK_INT >= 26)
+            Notification.Builder(this, notificationChannelId)
+        else @Suppress("DEPRECATION") Notification.Builder(this)
+        manager.notify(
+            workId.hashCode(),
+            builder.setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(if (title.isBlank()) "NIARIM 投稿完了" else title)
+                .setContentText(message)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .build(),
+        )
     }
 
     private fun extractUri(intent: Intent?): String? {
