@@ -967,10 +967,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumHeroHighlightGrading => 'トーンカーブ／\nレベル補正';
 
   @override
-  String get premiumCampaignFreeNote =>
-      '※ キャンペーン期間中は無料版でも上記プレミアム機能を全てご利用いただけます';
-
-  @override
   String get premiumPlanSectionTitle => 'プラン';
 
   @override
@@ -999,18 +995,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get premiumRestoredSnackbar => '購入情報を復元しました（該当する購入がある場合）';
-
-  @override
-  String get premiumCampaignBannerTitle => 'リリース記念！有料会員限定機能解放キャンペーン';
-
-  @override
-  String get premiumCampaignBannerBody =>
-      '期間中は無料版でも全てのプレミアム機能（尺2時間まで拡大・エンドロゴ編集・ウォーターマーク・トーンカーブ・レベル補正）を無料でご利用いただけます。';
-
-  @override
-  String premiumCampaignEndLabel(String date) {
-    return '～$dateまで';
-  }
 
   @override
   String get premiumComparisonFeature => '機能';
