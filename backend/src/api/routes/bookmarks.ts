@@ -1,0 +1,284 @@
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import {
+  GetCommand,
+  QueryCommand,
+  TransactWriteCommand,
+} from "@aws-sdk/lib-dynamodb";
+import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
+import { ddb, tableName, Keys } from "../../lib/dynamo";
+import { authenticate, tryAuthenticate, getUser } from "../../lib/auth";
+import { forbidden, notFound, ok } from "../../lib/response";
+import type { BookmarkItem, WorkItem } from "../../lib/types";
+import { TABLE_ITEM_TYPE } from "../../lib/types";
+import { toPublicWork, toUnavailableWork } from "./_publicWork";
+import { PER_WORK_MISSIONS } from "../../lib/missionCatalog";
+import { recordMissionAchievement } from "../../lib/missionNotifications";
+
+function isWorkPublic(work: WorkItem): boolean {
+  return (
+    work.isNiarimPublished &&
+    work.youtubePrivacyStatus !== "private" &&
+    work.youtubePrivacyStatus !== "deleted"
+  );
+}
+
+/**
+ * `POST /works/{id}/bookmark`（8.5節）。ブックマーク/解除の操作ごとに
+ * `TransactWriteItems`で「ユーザー別ブックマーク記録の作成/削除」と
+ * 「作品側bookmarkCountの±1」をアトミックに行う。記録の存在チェック
+ * （ConditionExpression）により、同一ユーザーが同じ作品を二重に
+ * ブックマークしてカウントがずれることを防ぐ。
+ */
+export async function toggleBookmark(
+  event: APIGatewayProxyEventV2,
+  workId: string,
+) {
+  const auth = await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
+  const bookmarkKey = Keys.bookmark(auth.niarimUserId, workId);
+  const workKey = Keys.work(workId);
+
+  const [existingBookmark, existingWork] = await Promise.all([
+    ddb.send(new GetCommand({ TableName: tableName(), Key: bookmarkKey })),
+    ddb.send(new GetCommand({ TableName: tableName(), Key: workKey })),
+  ]);
+  const work = existingWork.Item as WorkItem | undefined;
+  if (!work) notFound("作品が見つかりません");
+
+  const isBookmarked = Boolean(existingBookmark.Item);
+  const isPublic = isWorkPublic(work);
+  // 非公開作品はIDを知っていても新規ブックマークできない。既に公開中に
+  // ブックマークしていた作品が後から非公開になった場合は、利用者が自分の
+  // 記録を解除できなくなるのを避けるため解除だけ許可する。作者本人は
+  // 自作品の管理用として非公開中でも操作可能。
+  if (!isPublic && work.authorId !== auth.niarimUserId && !isBookmarked) {
+    notFound("作品が見つかりません");
+  }
+  const isVisible = isPublic && Boolean(work.gsi2pk);
+
+  const now = new Date().toISOString();
+
+  try {
+    if (isBookmarked) {
+      await ddb.send(
+        new TransactWriteCommand({
+          TransactItems: [
+            {
+              Delete: {
+                TableName: tableName(),
+                Key: bookmarkKey,
+                ConditionExpression: "attribute_exists(pk)",
+              },
+            },
+            {
+              Update: {
+                TableName: tableName(),
+                Key: workKey,
+                UpdateExpression: isVisible
+                  ? "ADD bookmarkCount :minus, gsi2sk :minus"
+                  : "ADD bookmarkCount :minus",
+                ConditionExpression: "bookmarkCount > :zero",
+                ExpressionAttributeValues: { ":minus": -1, ":zero": 0 },
+              },
+            },
+          ],
+        }),
+      );
+    } else {
+      const bookmark: BookmarkItem = {
+        itemType: TABLE_ITEM_TYPE.Bookmark,
+        ...bookmarkKey,
+        niarimUserId: auth.niarimUserId,
+        workId,
+        bookmarkedAt: now,
+        gsi5pk: `WORKBOOKMARKS#${workId}`,
+        gsi5sk: now,
+      };
+      await ddb.send(
+        new TransactWriteCommand({
+          TransactItems: [
+            {
+              Put: {
+                TableName: tableName(),
+                Item: bookmark,
+                ConditionExpression: "attribute_not_exists(pk)",
+              },
+            },
+            {
+              Update: {
+                TableName: tableName(),
+                Key: workKey,
+                UpdateExpression: isVisible
+                  ? "ADD bookmarkCount :plus, gsi2sk :plus"
+                  : "ADD bookmarkCount :plus",
+                ExpressionAttributeValues: { ":plus": 1 },
+              },
+            },
+          ],
+        }),
+      );
+    }
+  } catch (err) {
+    if (err instanceof TransactionCanceledException) {
+      // 直前のGetCommandと実際の書き込みの間に競合が起きたケース
+      // （同時に二重タップされた等）。呼び出し元には現在の状態を
+      // 返し、ユーザーには再操作を促す想定。
+      return ok({ bookmarked: isBookmarked, conflict: true });
+    }
+    throw err;
+  }
+
+  if (!isBookmarked && isPublic &&
+      Number.isSafeInteger(work.bookmarkCount) &&
+      work.bookmarkCount >= 0) {
+    // Only the first crossing of a threshold creates its notification.
+    // Server-side once-only markers absorb concurrent updates/retries.
+    const oldCount = work.bookmarkCount;
+    const nextCount = oldCount + 1;
+    for (const milestone of PER_WORK_MISSIONS) {
+      if (milestone.kind !== "workBookmarks" ||
+          milestone.required <= 0 || milestone.required <= oldCount ||
+          milestone.required > nextCount) continue;
+      try {
+        await recordMissionAchievement(work.authorId, {
+          kind: "workBookmarks", missionId: milestone.id,
+          workId: work.workId, workTitle: work.title,
+          required: milestone.required, occurredAt: now,
+        });
+      } catch (noticeError) {
+        // A notification is independent from the already committed bookmark.
+        console.warn("Mission bookmark notice could not be recorded",
+          noticeError);
+      }
+    }
+  }
+  return ok({ bookmarked: !isBookmarked });
+}
+
+const bookmarksVisibilityDefault = false;
+
+/**
+ * `GET /users/{id}/bookmarks`（8.5節・21.2節）。非公開の場合は403で
+ * 拒否する。本人自身が見る場合は公開設定に関わらず常に見られる。
+ * ただしブックマーク先の作品自体が非公開になった場合、その作品はこの
+ * 一覧から除外する。ブックマーク一覧を経由して作品公開設定を迂回させない。
+ */
+export async function getUserBookmarks(
+  event: APIGatewayProxyEventV2,
+  targetUserId: string,
+) {
+  const caller = await tryAuthenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
+  if (caller?.niarimUserId !== targetUserId) {
+    forbidden("本人のブックマーク一覧のみ取得できます");
+  }
+
+  const result = await ddb.send(
+    new QueryCommand({
+      TableName: tableName(),
+      KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
+      ExpressionAttributeValues: {
+        ":pk": `USER#${targetUserId}`,
+        ":prefix": "BOOKMARK#",
+      },
+      ScanIndexForward: false,
+    }),
+  );
+  const bookmarks = (result.Items ?? []) as BookmarkItem[];
+
+  const works = await Promise.all(
+    bookmarks.map((b) =>
+      ddb.send(
+        new GetCommand({ TableName: tableName(), Key: Keys.work(b.workId) }),
+      ),
+    ),
+  );
+  // Bookmarks belong to this authenticated user. Preserve their order and
+  // count even if the work was deleted, privatized or tombstoned.
+  // Never return metadata for a hidden work.
+  const bookmarkWorks = works.map((result, index) => {
+    const raw = result.Item;
+    if (raw?.itemType === TABLE_ITEM_TYPE.Work &&
+        isWorkPublic(raw as WorkItem)) {
+      return toPublicWork(raw as WorkItem);
+    }
+    return toUnavailableWork(bookmarks[index].workId);
+  });
+
+  return ok({ userId: targetUserId, works: bookmarkWorks });
+}
+
+/**
+ * `GET /works/{id}/bookmarkers`（21.1節：被ブックマーク一覧）。
+ *
+ * BookmarkItemに張ってあるGSI5（`WORKBOOKMARKS#{workId}`）を引き、その
+ * 作品をブックマークしたユーザーを新しい順に返す。これまでGSI5は
+ * 書き込むだけで誰も読んでいなかったため、CDKスタック側にもインデックス
+ * 自体が作られていなかった（今回追加した）。
+ *
+ * プライバシーの扱い：ブックマーク一覧を非公開にしているユーザー
+ * （`bookmarksPublic = false`、既定値）は、その人が誰を/何をブックマーク
+ * したかを他人に見せない設定なので、この一覧からも除外する。除外しても
+ * 総数（`totalCount`）には数えるため、作者は「何人にブックマークされたか」
+ * は分かる。呼び出し本人は公開設定に関わらず自分自身を見られる。
+ * 作品自体が非公開の場合は、作者本人以外には404相当として扱い、作品の
+ * 存在・総ブックマーク数・ブックマークした利用者を漏らさない。
+ */
+export async function getWorkBookmarkers(
+  event: APIGatewayProxyEventV2,
+  workId: string,
+) {
+  const caller = await tryAuthenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
+
+  const workResult = await ddb.send(
+    new GetCommand({ TableName: tableName(), Key: Keys.work(workId) }),
+  );
+  const work = workResult.Item as WorkItem | undefined;
+  if (!work) notFound("作品が見つかりません");
+  if (!isWorkPublic(work) && caller?.niarimUserId !== work.authorId) {
+    notFound("作品が見つかりません");
+  }
+
+  const result = await ddb.send(
+    new QueryCommand({
+      TableName: tableName(),
+      IndexName: "GSI5",
+      KeyConditionExpression: "gsi5pk = :pk",
+      ExpressionAttributeValues: { ":pk": `WORKBOOKMARKS#${workId}` },
+      ScanIndexForward: false, // 新しい順
+      Limit: BOOKMARKERS_PAGE_LIMIT,
+    }),
+  );
+  const bookmarks = (result.Items ?? []) as BookmarkItem[];
+
+  const users = await Promise.all(
+    bookmarks.map((b) => getUser(b.niarimUserId)),
+  );
+  const visible = bookmarks
+    .map((bookmark, i) => ({ bookmark, user: users[i] }))
+    .filter(({ bookmark, user }) => {
+      if (caller?.niarimUserId === bookmark.niarimUserId) return true;
+      return user?.bookmarksPublic ?? bookmarksVisibilityDefault;
+    })
+    .map(({ bookmark, user }) => ({
+      userId: bookmark.niarimUserId,
+      channelName: user?.channelName ?? null,
+      channelAvatarUrl: user?.channelAvatarUrl ?? null,
+      bookmarkedAt: bookmark.bookmarkedAt,
+    }));
+
+  return ok({
+    workId,
+    // 作品側が持つ集計値。非公開設定のユーザーぶんも含んだ総数。
+    totalCount: work.bookmarkCount,
+    // 公開設定にしているユーザーだけを並べたもの。totalCountより少なくなり得る。
+    users: visible,
+  });
+}
+
+/** 被ブックマーク一覧の1ページ件数。 */
+const BOOKMARKERS_PAGE_LIMIT = 100;

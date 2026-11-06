@@ -1,0 +1,123 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const createSource = readFileSync(
+  resolve(__dirname, "../src/api/routes/worksCreate.ts"),
+  "utf8",
+);
+const statsSource = readFileSync(
+  resolve(__dirname, "../src/batch/statsUpdate.ts"),
+  "utf8",
+);
+const handlerSource = readFileSync(
+  resolve(__dirname, "../src/api/handler.ts"),
+  "utf8",
+);
+const userWorksSource = readFileSync(
+  resolve(__dirname, "../src/api/routes/userWorks.ts"),
+  "utf8",
+);
+
+describe("real posting flow contract", () => {
+  it("uses the YouTube video id as the canonical NIARIM work id", () => {
+    expect(createSource).toContain("Keys.work(body.youtubeVideoId)");
+    expect(createSource).toContain("workId: body.youtubeVideoId");
+    expect(createSource).toContain("youtubeVideoId: body.youtubeVideoId");
+  });
+
+  it("makes POST /works idempotent for a same-author retry", () => {
+    expect(createSource).toContain("if (existing)");
+    expect(createSource).toContain("existing.authorId !== auth.niarimUserId");
+    expect(createSource).toContain(
+      "return created({ work: toPublicWork(existing) })",
+    );
+  });
+
+  it("uses strongly consistent reads and resolves a concurrent same-author winner", () => {
+    expect(createSource).toContain("ConsistentRead: true");
+    expect(createSource).toContain("const racedResult = await ddb.send");
+    expect(createSource).toContain("racedWork.authorId === auth.niarimUserId");
+    expect(createSource).toContain("await releasePostQuota(auth.niarimUserId)");
+    expect(createSource).toContain(
+      "return created({ work: toPublicWork(racedWork) })",
+    );
+  });
+
+  it("creates an initially hidden NIARIM work without a temporary public-index window", () => {
+    expect(createSource).toContain("isNiarimPublished?: boolean");
+    expect(createSource).toContain(
+      "const isNiarimPublished = body.isNiarimPublished ?? true",
+    );
+    expect(createSource).toContain(
+      "isNiarimPublished && isYoutubeVisible(snippet.privacyStatus)",
+    );
+    expect(createSource).toContain("isNiarimPublished,");
+  });
+
+  it("discovers and caches the upload account's YouTube channel on first post", () => {
+    expect(createSource).toContain(
+      "const channelInfo = user.youtubeChannelId",
+    );
+    expect(createSource).toContain(
+      ": await getOwnChannelInfo(body.youtubeAccessToken)",
+    );
+    expect(createSource).toContain(
+      "const linkedChannelId = user.youtubeChannelId ?? channelInfo?.channelId",
+    );
+    expect(createSource).toContain("await cacheChannelInfo(auth.niarimUserId");
+  });
+
+  it("rejects a token whose YouTube channel differs from an already linked channel", () => {
+    expect(createSource).toContain(
+      "user.youtubeChannelId !== channelInfo.channelId",
+    );
+    expect(createSource).toContain("アカウントを切り替えてください");
+  });
+});
+
+describe("YouTube visibility recovery contract", () => {
+  // Publication preferences, metadata-only edits and concurrent privacy changes
+  // are exercised by updateWork in works-update.test.ts instead of source text.
+
+  it("restores public indexes automatically when YouTube becomes public again", () => {
+    expect(statsSource).toContain(
+      "const isVisible = work.isNiarimPublished && !forcedHidden",
+    );
+    expect(statsSource).toContain("youtubePrivacyStatus = :status");
+    expect(statsSource).toContain('"gsi2pk = :bmPk"');
+    expect(statsSource).toContain('"gsi3pk = :authorPk"');
+    expect(statsSource).toContain('"gsi4pk = :latestPk"');
+    expect(statsSource).toContain("if (!hasPublicIndexes)");
+  });
+
+  // Partial failures and unavailable videos are exercised with actual API
+  // responses in youtube-stats.test.ts and batch behavior in stats-update.test.ts.
+  // batchGetStats failure IDs are not proof of deletion.
+});
+
+describe("current-user works contract", () => {
+  it("routes GET /me/works to an authenticated owner lookup", () => {
+    expect(handlerSource).toContain(
+      'route("GET", "/me/works", (e) => getMyWorks(e))',
+    );
+    expect(userWorksSource).toContain("export async function getMyWorks");
+    expect(userWorksSource).toContain("caller.niarimUserId");
+  });
+
+  it("queries the all-states author index so hidden own posts remain manageable", () => {
+    expect(userWorksSource).toContain('IndexName: "GSI3AllStates"');
+    expect(userWorksSource).toContain("`AUTHOR#${authorId}`");
+  });
+
+  it("returns YouTube privacy state only on owner-visible work lists", () => {
+    expect(userWorksSource).toContain("function toOwnerWork(work: WorkItem)");
+    expect(userWorksSource).toContain(
+      "youtubePrivacyStatus: work.youtubePrivacyStatus",
+    );
+    expect(userWorksSource).toContain("works: page.works.map(toOwnerWork)");
+    expect(userWorksSource).toContain(
+      "works: includeHidden ? works.map(toOwnerWork) : works.map(toPublicWork)",
+    );
+  });
+});

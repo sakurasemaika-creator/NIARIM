@@ -1,0 +1,96 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/models/brush.dart';
+
+Brush _brush(String id) => Brush(
+  id: id,
+  name: id,
+  size: 20,
+  opacity: 80,
+  spacing: 10,
+  stabilization: false,
+  stabilizationStrength: 50,
+  pixelMode: false,
+  fadeMode: FadeMode.off,
+  strokeDecay: false,
+);
+
+void main() {
+  group('Brush pressure profiles', () {
+    test('new brushes store explicit pressure profile defaults', () {
+      final brush = _brush('pressure-defaults');
+
+      expect(brush.pressureOn, BrushPressureOnSettings.defaults);
+      expect(brush.pressureOff, BrushPressureOffSettings.defaults);
+      expect(brush.pressureOn.size.enabled, isFalse);
+      expect(brush.pressureOn.size.weak, 100);
+      expect(brush.pressureOn.size.strong, 100);
+      expect(brush.pressureOn.opacity.enabled, isFalse);
+      expect(brush.pressureOn.opacity.weak, 100);
+      expect(brush.pressureOn.opacity.strong, 100);
+      expect(brush.pressureOn.blur.enabled, isFalse);
+      expect(brush.pressureOn.blur.weak, 0);
+      expect(brush.pressureOn.blur.strong, 0);
+      expect(brush.pressureOn.edgeJitter.enabled, isFalse);
+      expect(brush.pressureOn.edgeJitter.weak, 0);
+      expect(brush.pressureOn.edgeJitter.strong, 0);
+      expect(brush.pressureOn.mixing.enabled, isFalse);
+      expect(brush.pressureOn.mixing.weakRate, 0);
+      expect(brush.pressureOn.mixing.strongRate, 0);
+
+      expect(brush.pressureOff, BrushPressureOffSettings.defaults);
+    });
+
+    test('serializes only the current pressure profile schema', () {
+      final json = _brush('pressure-schema').toJson();
+
+      expect(json.containsKey('pressureOn'), isTrue);
+      expect(json.containsKey('pressureOff'), isTrue);
+      expect(json.containsKey('pressureMode'), isFalse);
+      expect(json.containsKey('pressureStrength'), isFalse);
+      expect(json.containsKey('edgeJitterStrength'), isFalse);
+      expect(json.containsKey('edgeJitter'), isFalse);
+      expect(json.containsKey('mixingRate'), isFalse);
+      expect(json.containsKey('mixingMode'), isFalse);
+      expect(json.containsKey('blurRadius'), isFalse);
+    });
+
+    test('pressure profiles round trip through brush json', () {
+      final original = _brush('pressure-roundtrip').copyWith(
+        pressureOn: BrushPressureOnSettings.defaults.copyWith(
+          size: const PressureRangeSetting(enabled: true, weak: 35, strong: 92),
+          opacity: const PressureRangeSetting(
+            enabled: true,
+            weak: 44,
+            strong: 88,
+          ),
+          blur: const PressureRangeSetting(enabled: true, weak: 70, strong: 10),
+          edgeJitter: const PressureRangeSetting(
+            enabled: true,
+            weak: 60,
+            strong: 5,
+          ),
+          mixing: const PressureMixingOnSetting(
+            enabled: true,
+            mode: BrushMixingMode.watercolor,
+            weakRate: 75,
+            strongRate: 15,
+          ),
+        ),
+        pressureOff: BrushPressureOffSettings.defaults.copyWith(
+          blur: const FixedBrushSetting(enabled: true, value: 23),
+          edgeJitter: const FixedBrushSetting(enabled: true, value: 34),
+          mixing: const PressureMixingOffSetting(
+            enabled: true,
+            mode: BrushMixingMode.oil,
+            rate: 45,
+          ),
+        ),
+      );
+
+      final restored = Brush.fromJson(original.toJson());
+
+      expect(restored.pressureOn, original.pressureOn);
+      expect(restored.pressureOff, original.pressureOff);
+    });
+  });
+}

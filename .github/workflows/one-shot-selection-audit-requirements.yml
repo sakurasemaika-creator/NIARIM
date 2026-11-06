@@ -1,0 +1,70 @@
+name: One-shot Selection Audit Requirements
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/scripts/apply_selection_audit_requirements.py'
+      - '.github/workflows/one-shot-selection-audit-requirements.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: one-shot-selection-audit-requirements
+  cancel-in-progress: false
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: 追加要件を適用
+        run: python3 .github/scripts/apply_selection_audit_requirements.py
+      - name: Dart整形
+        run: dart format lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/canvas_area.dart lib/screens/canvas/widgets/toolbar_widget.dart
+      - name: 静的解析
+        run: flutter analyze lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/canvas_area.dart lib/screens/canvas/widgets/toolbar_widget.dart
+      - name: 既存の選択系実操作テスト
+        shell: bash
+        run: |
+          set -e
+          for f in test/functional_audit_batch*.dart test/*selection*test.dart; do
+            [ -f "$f" ] || continue
+            flutter test "$f" --reporter compact
+          done
+      - name: 要件配線を確認
+        shell: bash
+        run: |
+          grep -q "onToolSelected(DrawingTool.selectLasso)" lib/screens/canvas/widgets/toolbar_widget.dart
+          grep -q "selection_select_all_floating" lib/screens/canvas/canvas_screen.dart
+          grep -q "selectAllSelectionToken" lib/screens/canvas/widgets/canvas_area.dart
+          grep -q "timeline.bulk_duration_change" audit-dashboard/feature-audit-manifest.json
+          grep -q "selection.pixel_nudge" audit-dashboard/feature-audit-manifest.json
+      - name: 変更をdev_branchへ反映
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "変更なし"
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/canvas_area.dart lib/screens/canvas/widgets/toolbar_widget.dart audit-dashboard/feature-audit-manifest.json
+          git commit -m "選択ツールの全選択・全解除と投げ縄既定を追加"
+          git push origin HEAD:dev_branch
+      - name: 連続監査を即再開
+        run: gh workflow run audit-continuous-queue.yml --ref dev_branch || true
+        env:
+          GH_TOKEN: ${{ github.token }}

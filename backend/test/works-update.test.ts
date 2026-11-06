@@ -1,0 +1,251 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
+import { GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import type { WorkItem } from "../src/lib/types";
+
+const { send } = vi.hoisted(() => ({ send: vi.fn() }));
+vi.mock("../src/lib/dynamo", async (original) => ({
+  ...(await original<typeof import("../src/lib/dynamo")>()),
+  ddb: { send },
+}));
+vi.mock("../src/lib/auth", () => ({
+  authenticate: vi.fn(async () => ({ niarimUserId: "Nauthor" })),
+}));
+import { authenticate } from "../src/lib/auth";
+import { updateWork } from "../src/api/routes/worksUpdate";
+
+const work: WorkItem = {
+  itemType: "WORK",
+  pk: "WORK#abcdefghijk",
+  sk: "META",
+  workId: "abcdefghijk",
+  youtubeVideoId: "abcdefghijk",
+  authorId: "Nauthor",
+  youtubeChannelId: "channel",
+  channelName: "Channel",
+  channelAvatarUrl: "",
+  channelInfoCachedAt: "2026-09-01T00:00:00Z",
+  title: "Work",
+  postedAt: "2026-09-01T00:00:00Z",
+  createdAt: "2026-09-01T00:00:00Z",
+  youtubeUrl: "",
+  thumbnailUrl: "",
+  viewCount: 100,
+  likeCount: 5,
+  commentCount: 2,
+  lastFetchedAt: "2026-09-01T00:00:00Z",
+  bookmarkCount: 4,
+  repostCount: 0,
+  isNiarimPublished: true,
+  youtubePrivacyStatus: "public",
+  isShort: false,
+  tags: [],
+  lockedTags: [],
+  gsi3AllPk: "AUTHOR#Nauthor",
+  gsi3AllSk: "2026-09-01T00:00:00Z",
+};
+const event = (body: object) =>
+  ({ headers: {}, body: JSON.stringify(body) }) as APIGatewayProxyEventV2;
+const updates = () =>
+  send.mock.calls.map(([c]) => c).filter((c) => c instanceof UpdateCommand);
+const changed = () =>
+  new ConditionalCheckFailedException({ message: "changed", $metadata: {} });
+
+beforeEach(() => {
+  send.mockReset();
+  process.env.TABLE_NAME = "test-table";
+  send.mockImplementation(async (c) =>
+    c instanceof GetCommand
+      ? { Item: { ...work } }
+      : { Attributes: { ...work } },
+  );
+});
+
+describe("work editing concurrency", () => {
+  it("edits only the title without rewriting visibility or ranking indexes", async () => {
+    await updateWork(event({ title: "  Renamed  " }), work.workId);
+    const input = updates()[0].input;
+    expect(input.UpdateExpression).toBe("SET title = :title");
+    expect(input.ExpressionAttributeValues).toEqual({
+      ":title": "Renamed",
+      ":workType": "WORK",
+      ":authorId": "Nauthor",
+    });
+    expect(input.ConditionExpression).toContain("authorId = :authorId");
+  });
+
+  it("re-reads a concurrent YouTube privacy change and keeps the work hidden", async () => {
+    let reads = 0;
+    send.mockImplementation(async (c) => {
+      if (c instanceof GetCommand) {
+        expect(c.input.ConsistentRead).toBe(true);
+        return {
+          Item: {
+            ...work,
+            youtubePrivacyStatus: reads++ === 0 ? "public" : "private",
+          },
+        };
+      }
+      if (updates().length === 1) throw changed();
+      return { Attributes: { ...work, youtubePrivacyStatus: "private" } };
+    });
+    await updateWork(event({ isNiarimPublished: true }), work.workId);
+    expect(updates()).toHaveLength(2);
+    const [first, second] = updates().map((c) => c.input);
+    expect(first.ConditionExpression).toContain(
+      "youtubePrivacyStatus = :privacy",
+    );
+    expect(second.ExpressionAttributeValues?.[":privacy"]).toBe("private");
+    expect(second.ExpressionAttributeValues?.[":pub"]).toBe(true);
+    const removed = second.UpdateExpression?.split(" REMOVE ")[1]?.split(", ");
+    expect(removed).toEqual(
+      expect.arrayContaining([
+        "gsi2pk",
+        "gsi2sk",
+        "gsi3pk",
+        "gsi3sk",
+        "gsi4pk",
+        "gsi4sk",
+      ]),
+    );
+  });
+
+  it("rebuilds bookmark indexes from current counts after a conflict", async () => {
+    let reads = 0;
+    send.mockImplementation(async (c) => {
+      if (c instanceof GetCommand)
+        return {
+          Item: {
+            ...work,
+            isNiarimPublished: false,
+            bookmarkCount: reads++ ? 8 : 4,
+          },
+        };
+      if (updates().length === 1) throw changed();
+      return { Attributes: { ...work, bookmarkCount: 8 } };
+    });
+    await updateWork(event({ isNiarimPublished: true }), work.workId);
+    expect(updates()).toHaveLength(2);
+    const input = updates()[1].input;
+    expect(input.ExpressionAttributeValues?.[":bm"]).toBe(8);
+    expect(input.UpdateExpression).toContain("gsi2sk = :bm");
+    expect(input.UpdateExpression).not.toContain("rankingScore");
+    expect(input.ConditionExpression).toContain("bookmarkCount = :bookmarkCount");
+  });
+
+  it("never recreates a work deleted between the read and update", async () => {
+    let reads = 0;
+    send.mockImplementation(async (c) => {
+      if (c instanceof GetCommand)
+        return { Item: reads++ ? { itemType: "WORK_TOMBSTONE" } : work };
+      throw changed();
+    });
+    await expect(
+      updateWork(event({ title: "Renamed" }), work.workId),
+    ).rejects.toMatchObject({ statusCode: 404 });
+    expect(updates()).toHaveLength(1);
+  });
+
+  it("leaves empty patches as reads without writing stale state", async () => {
+    const result = await updateWork(event({}), work.workId);
+    expect(result.statusCode).toBe(200);
+    expect(updates()).toHaveLength(0);
+  });
+
+  it("bounds repeated conflicts without accepting an unsafe write", async () => {
+    send.mockImplementation(async (c) => {
+      if (c instanceof GetCommand) return { Item: work };
+      throw changed();
+    });
+    await expect(
+      updateWork(event({ isNiarimPublished: true }), work.workId),
+    ).rejects.toMatchObject({ statusCode: 409, code: "WORK_CHANGED" });
+    expect(updates()).toHaveLength(3);
+  });
+});
+
+describe("AI image/video disclosure flag", () => {
+  // Echo the written flag back like DynamoDB's ReturnValues: "ALL_NEW".
+  const storeWith = (stored: Partial<WorkItem>) =>
+    send.mockImplementation(async (c) =>
+      c instanceof GetCommand
+        ? { Item: { ...work, ...stored } }
+        : {
+            Attributes: {
+              ...work,
+              ...stored,
+              containsGenerativeAiImageOrVideo:
+                c.input.ExpressionAttributeValues[":aiImageVideo"],
+            },
+          },
+    );
+  const responseWork = (result: { body?: string }) =>
+    JSON.parse(result.body ?? "{}").work;
+
+  it("lets the poster turn the flag on without touching publication or ranking indexes", async () => {
+    storeWith({});
+    const result = await updateWork(
+      event({ containsGenerativeAiImageOrVideo: true }),
+      work.workId,
+    );
+    expect(result.statusCode).toBe(200);
+    expect(updates()).toHaveLength(1);
+    const input = updates()[0].input;
+    expect(input.UpdateExpression).toBe(
+      "SET containsGenerativeAiImageOrVideo = :aiImageVideo",
+    );
+    expect(input.UpdateExpression).not.toMatch(/gsi|rankingScore|REMOVE/);
+    expect(input.ExpressionAttributeValues).toEqual({
+      ":aiImageVideo": true,
+      ":workType": "WORK",
+      ":authorId": "Nauthor",
+    });
+    expect(input.ConditionExpression).toContain("authorId = :authorId");
+    expect(input.ConditionExpression).not.toContain("youtubePrivacyStatus");
+    expect(responseWork(result).containsGenerativeAiImageOrVideo).toBe(true);
+  });
+
+  it("lets the poster turn a previously set flag back off", async () => {
+    storeWith({ containsGenerativeAiImageOrVideo: true });
+    const result = await updateWork(
+      event({ containsGenerativeAiImageOrVideo: false }),
+      work.workId,
+    );
+    expect(result.statusCode).toBe(200);
+    expect(updates()).toHaveLength(1);
+    expect(
+      updates()[0].input.ExpressionAttributeValues?.[":aiImageVideo"],
+    ).toBe(false);
+    expect(responseWork(result).containsGenerativeAiImageOrVideo).toBe(false);
+  });
+
+  it("forbids another signed-in user from changing the flag", async () => {
+    storeWith({});
+    vi.mocked(authenticate).mockResolvedValueOnce({
+      niarimUserId: "Nintruder",
+      googleSub: "intruder-sub",
+      membershipTier: "free",
+    });
+    await expect(
+      updateWork(
+        event({ containsGenerativeAiImageOrVideo: true }),
+        work.workId,
+      ),
+    ).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN" });
+    expect(updates()).toHaveLength(0);
+  });
+
+  it.each(["yes", 1, null])(
+    "rejects a non-boolean flag (%j) before reading the work",
+    async (value) => {
+      await expect(
+        updateWork(
+          event({ containsGenerativeAiImageOrVideo: value }),
+          work.workId,
+        ),
+      ).rejects.toMatchObject({ statusCode: 400 });
+      expect(send).not.toHaveBeenCalled();
+    },
+  );
+});

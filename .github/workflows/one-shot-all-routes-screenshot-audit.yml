@@ -1,0 +1,199 @@
+name: One-shot All Routes Screenshot Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/one-shot-all-routes-screenshot-audit.yml"
+      - "test/all_routes_screenshot_audit_test.dart"
+      - "lib/**"
+      - "assets/**"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+
+      - name: Run all-route production screenshot audit
+        shell: bash
+        run: |
+          set +e
+          rc=1
+          for attempt in 1 2; do
+            echo "all-route visual-quality audit attempt $attempt"
+            timeout 900s flutter test test/all_routes_screenshot_audit_test.dart --reporter expanded
+            rc=$?
+            if [ $rc -eq 0 ]; then break; fi
+            echo "attempt $attempt failed rc=$rc; retrying after 10s"
+            sleep 10
+          done
+          mkdir -p build
+          echo "$rc" > build/all-route-test-exit-code.txt
+          exit 0
+
+      - name: Record capture metadata
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p build/all-route-screenshots
+          {
+            echo "commit=${GITHUB_SHA}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_number=${GITHUB_RUN_NUMBER}"
+            echo "ref=${GITHUB_REF}"
+            echo "flutter=$(flutter --version | head -n 1)"
+            echo "captured_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > build/all-route-screenshots/capture_metadata.txt
+
+      - name: Fetch previous real-Flutter screenshot artifact as baseline
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set +e
+          mkdir -p build/visual-baseline/screenshots
+          previous_run_id=$(gh api "/repos/${GITHUB_REPOSITORY}/actions/workflows/one-shot-all-routes-screenshot-audit.yml/runs?branch=dev_branch&status=completed&per_page=20" \
+            --jq ".workflow_runs[] | select(.id != ${GITHUB_RUN_ID}) | .id" | head -n 1)
+          if [ -z "$previous_run_id" ]; then
+            echo "No previous completed screenshot run available." > build/visual-baseline/BASELINE_NOT_AVAILABLE.txt
+            exit 0
+          fi
+          echo "baseline_run_id=$previous_run_id" > build/visual-baseline/baseline_metadata.txt
+          gh run download "$previous_run_id" -n all-route-screenshot-audit -D build/visual-baseline/raw || {
+            echo "Failed to download baseline artifact from run $previous_run_id" > build/visual-baseline/BASELINE_DOWNLOAD_FAILED.txt
+            exit 0
+          }
+          find build/visual-baseline/raw -type f -name '*.png' -exec cp '{}' build/visual-baseline/screenshots/ \;
+          find build/visual-baseline/raw -type f -name 'capture_metadata.txt' -exec cp '{}' build/visual-baseline/previous_capture_metadata.txt \; || true
+
+      - name: Install pixel diff dependency
+        if: always()
+        run: python3 -m pip install --disable-pip-version-check pillow
+
+      - name: Pixel-compare current screenshots against previous real-Flutter baseline
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageChops, ImageOps
+          import json
+
+          current = Path('build/all-route-screenshots')
+          baseline = Path('build/visual-baseline/screenshots')
+          out = Path('build/visual-diff')
+          out.mkdir(parents=True, exist_ok=True)
+          results = []
+
+          for cur in sorted(current.glob('*.png')):
+              base = baseline / cur.name
+              row = {'file': cur.name, 'baseline_available': base.exists()}
+              if not base.exists():
+                  results.append(row)
+                  continue
+              try:
+                  a = Image.open(cur).convert('RGBA')
+                  b = Image.open(base).convert('RGBA')
+                  row['current_size'] = list(a.size)
+                  row['baseline_size'] = list(b.size)
+                  if a.size != b.size:
+                      row['size_mismatch'] = True
+                      results.append(row)
+                      continue
+                  diff = ImageChops.difference(a, b)
+                  bbox = diff.getbbox()
+                  pixels = a.size[0] * a.size[1]
+                  changed = 0
+                  total_rgb = 0
+                  max_delta = 0
+                  mask = Image.new('L', a.size, 0)
+                  mp = mask.load()
+                  dp = diff.load()
+                  for y in range(a.size[1]):
+                      for x in range(a.size[0]):
+                          d = dp[x, y]
+                          md = max(d)
+                          if md:
+                              changed += 1
+                              total_rgb += d[0] + d[1] + d[2]
+                              max_delta = max(max_delta, md)
+                              mp[x, y] = 255
+                  row['changed_pixels'] = changed
+                  row['changed_ratio'] = (changed / pixels) if pixels else 0.0
+                  row['mean_abs_rgb_delta'] = (total_rgb / (pixels * 3)) if pixels else 0.0
+                  row['max_channel_delta'] = max_delta
+                  gray = ImageOps.grayscale(a).convert('RGBA')
+                  red = Image.new('RGBA', a.size, (255, 0, 0, 255))
+                  visual = Image.composite(red, gray, mask)
+                  visual.save(out / f'{cur.stem}.diff.png')
+              except Exception as e:
+                  row['error'] = str(e)
+              results.append(row)
+
+          summary = {
+              'current_count': len(list(current.glob('*.png'))),
+              'baseline_count': len(list(baseline.glob('*.png'))) if baseline.exists() else 0,
+              'comparisons': results,
+          }
+          (out / 'pixel_diff_summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
+          lines = [
+              '# Real Flutter pixel diff summary',
+              '',
+              f"Current screenshots: {summary['current_count']}  ",
+              f"Baseline screenshots: {summary['baseline_count']}",
+              '',
+              '| Screenshot | Changed pixels | Changed ratio | Mean RGB delta | Notes |',
+              '|---|---:|---:|---:|---|',
+          ]
+          for r in results:
+              notes = []
+              if not r.get('baseline_available'): notes.append('no baseline')
+              if r.get('size_mismatch'): notes.append('size mismatch')
+              if r.get('error'): notes.append(r['error'])
+              changed = r.get('changed_pixels', '-')
+              ratio = f"{r['changed_ratio']:.6f}" if 'changed_ratio' in r else '-'
+              mean = f"{r['mean_abs_rgb_delta']:.4f}" if 'mean_abs_rgb_delta' in r else '-'
+              lines.append(f"| {r['file']} | {changed} | {ratio} | {mean} | {', '.join(notes)} |")
+          (out / 'pixel_diff_summary.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
+
+      - name: Upload current real Flutter screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-route-screenshot-audit
+          path: build/all-route-screenshots
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload pixel comparison bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-route-pixel-comparison
+          path: |
+            build/visual-baseline
+            build/visual-diff
+            build/all-route-screenshots
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Enforce screenshot audit test result
+        if: always()
+        shell: bash
+        run: |
+          rc=$(cat build/all-route-test-exit-code.txt 2>/dev/null || echo 1)
+          exit "$rc"

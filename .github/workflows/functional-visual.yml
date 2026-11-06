@@ -1,0 +1,106 @@
+name: Functional Visual Audit
+# Visual closure excludes the material/Gradient Map filter by request. Rerun selecting the generic-noise card among shared labels.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/functional-visual.yml'
+      - 'lib/screens/canvas/**'
+      - 'test/canvas_*_test.dart'
+      - 'test/visual/feature_operation_capture_test.dart'
+      - 'lib/engine/autofill_batch_runner.dart'
+      - 'lib/engine/autofill_engine.dart'
+      - 'lib/models/autofill_preset.dart'
+      - 'lib/services/autofill_preset_service.dart'
+      - 'lib/screens/community/community_post_screen.dart' # localization compile closure
+      - 'lib/screens/community/community_screen.dart'
+      - 'lib/l10n/**'
+      - 'test/functional_render_real_async_test.dart'
+      - 'test/functional_audit_batch*_test.dart'
+      # Functional Visual Audit trigger includes its full render regression suite.
+
+jobs:
+  functional-render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+
+    steps:
+      - name: リポジトリ取得
+        uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+
+      - name: Flutter セットアップ
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: 依存関係取得
+        run: flutter pub get
+
+      - name: 通常フィルター production UI実キャプチャ（質感変更を除外）
+        run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=filters-core
+
+      - name: Pixel Art / Mosaic 同一fixture production UI比較
+        run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=pixel-compare
+
+      - name: 全25 Blend Modes production UI実キャプチャ
+        run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=blend
+
+      - name: 公式Automation production UI実キャプチャ
+        run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=automation
+
+      - name: Auto Fill プリセット別・全パーツ同一キャンバス実キャプチャ
+        run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=autofill
+
+      - name: 記録・再実行など追加 production UI実キャプチャ
+        run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=extras
+
+      - name: キャンバス1/5縮小・斜め回転・背景端実操作監査
+        run: flutter test test/canvas_angle_boundary_visual_audit_test.dart --reporter expanded
+
+      - name: キャンバス回転・背景境界の契約監査
+        run: |
+          flutter test test/canvas_pinch_gesture_test.dart --reporter expanded
+          flutter test test/canvas_extended_drawing_rotation_contract_test.dart --reporter expanded
+          flutter test test/canvas_rotated_coordinate_mapping_test.dart --reporter expanded
+          flutter test test/selection_handle_rotated_reachability_test.dart --reporter expanded
+          flutter test test/canvas_background_layer_architecture_test.dart --reporter expanded
+          flutter test test/canvas_mesh_handle_scale_contract_test.dart --reporter expanded
+
+      - name: 機能監査テスト 1-26
+        run: |
+          flutter test test/functional_render_real_async_test.dart --reporter expanded
+          for n in $(seq 2 26); do
+            flutter test "test/functional_audit_batch${n}_test.dart" --reporter expanded
+          done
+
+      - name: 最新HEAD strict evidence
+        run: |
+          flutter test test/strict_visual_evidence_audit_test.dart --reporter expanded
+          flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
+
+      - name: 機能別レンダリング画像を保存
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: functional-render-screenshots-latest-head
+          path: |
+            build/functional-visual/*.png
+            build/strict-visual-evidence/*.png
+            build/final-remaining-strict/*.png
+            build/visual-reaudit/canvas-angle-boundary/*.png
+            build/feature-captures/filters/*
+            build/feature-captures/blend/*
+            build/feature-captures/pixel-compare/*
+            build/feature-captures/automation/*
+            build/feature-captures/autofill/*
+            build/feature-captures/extras/*
+          if-no-files-found: warn
+          retention-days: 7
+# Latest HEAD strict manifest evidence rerun: 2026-09-18 hologram preset production UI capture verification rerun 3 — all 12 variants.

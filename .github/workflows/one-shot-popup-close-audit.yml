@@ -1,0 +1,62 @@
+name: One-shot Popup Close Audit
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-popup-close-audit.yml'
+      - '.github/scripts/standardize_popup_close.py'
+  workflow_dispatch:
+
+jobs:
+  clean-patch-and-verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      CLEAN_BASE: 71bc3eeaebf18928af2a3b3683d29ba38006c396
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Restore app source before popup patch
+        shell: bash
+        run: git checkout "$CLEAN_BASE" -- lib
+      - name: Apply popup close standard only
+        run: python3 .github/scripts/standardize_popup_close.py
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Static analysis
+        run: flutter analyze lib
+      - name: Verify popup close contract
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          files=list(Path('lib').rglob('*.dart'))
+          joined='\n'.join(p.read_text(encoding='utf-8') for p in files)
+          n=joined.count('popup-standard-close')
+          print('STANDARD_CLOSE_COUNT',n)
+          assert n >= 5, n
+          premium=Path('lib/widgets/premium_lock_widget.dart').read_text(encoding='utf-8')
+          assert 'tooltip: MaterialLocalizations.of(context).closeButtonTooltip' in premium
+          assert 'child: Text(l10n.commonClose)' not in premium
+          assert 'barrierDismissible: false' in joined
+          changed=subprocess.check_output(['git','diff','--name-only','--','lib'],text=True).splitlines()
+          print('LIB_CHANGED_FILES',len(changed))
+          for p in changed: print(p)
+          assert 1 <= len(changed) <= 12, changed
+          PY
+      - name: Commit exact popup-only implementation
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib
+          git commit -m 'fix: keep popup close diff focused'
+          git push

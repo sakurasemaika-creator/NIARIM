@@ -1,0 +1,704 @@
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+
+import '../../../engine/layer_compositor.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../services/premium_service.dart';
+import '../../../services/project_service.dart';
+import '../../../services/theme_service.dart';
+import '../../../widgets/dispose_on_unmount.dart';
+import '../../../widgets/frame_preview_background.dart';
+import 'canvas_icon_button.dart';
+
+class FrameStripWidget extends StatefulWidget {
+  final int currentFrame;
+  final String projectId;
+  final String sceneId;
+  final ValueChanged<int> onFrameSelected;
+  final VoidCallback onTimelineTap;
+  final bool multiSelectMode;
+  final Set<int> selectedFrames;
+  final ValueChanged<int>? onFrameToggle;
+
+  /// Whether the canvas is showing transparency (its checkerboard) instead
+  /// of the project's background colour; the previews follow it.
+  final bool showTransparency;
+  const FrameStripWidget({
+    super.key,
+    required this.currentFrame,
+    required this.projectId,
+    required this.sceneId,
+    required this.onFrameSelected,
+    required this.onTimelineTap,
+    this.multiSelectMode = false,
+    this.selectedFrames = const {},
+    this.onFrameToggle,
+    this.showTransparency = false,
+  });
+  @override
+  State<FrameStripWidget> createState() => _FrameStripWidgetState();
+}
+
+class _FrameStripWidgetState extends State<FrameStripWidget> {
+  final Map<int, int> _refreshTick = {};
+  final ScrollController _scrollController = ScrollController();
+  static const double _itemExtent = 50;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _scrollToCurrent(animate: false),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant FrameStripWidget old) {
+    super.didUpdateWidget(old);
+    if (old.currentFrame != widget.currentFrame ||
+        old.sceneId != widget.sceneId) {
+      final left = old.currentFrame;
+      _refreshTick[left] = (_refreshTick[left] ?? 0) + 1;
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _scrollToCurrent(animate: true),
+      );
+    }
+  }
+
+  void _scrollToCurrent({required bool animate}) {
+    if (!_scrollController.hasClients) return;
+    final target = (widget.currentFrame * _itemExtent).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+    if (animate) {
+      _scrollController.animateTo(
+        target,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    } else {
+      _scrollController.jumpTo(target);
+    }
+  }
+
+  bool _handleScrollEnd(ScrollEndNotification notification, int total) {
+    if (notification.dragDetails == null ||
+        widget.multiSelectMode ||
+        total <= 0 ||
+        !_scrollController.hasClients) {
+      return false;
+    }
+    final nearest = (_scrollController.offset / _itemExtent).round().clamp(
+      0,
+      total - 1,
+    );
+    if (nearest != widget.currentFrame) {
+      widget.onFrameSelected(nearest);
+    } else {
+      _scrollToCurrent(animate: true);
+    }
+    return false;
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  bool _canAddFrames(BuildContext context, ProjectService service, int count) {
+    final isPremium = context.read<PremiumService>().isPremium;
+    final maxSeconds = isPremium ? 7200 : 90;
+    final projected = service.projectedDurationSeconds(
+      widget.projectId,
+      frameDelta: count,
+    );
+    if (projected <= maxSeconds) return true;
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
+        // AlertDialogの`icon:`スロットへ入れると、Flutterが
+        // タイトルを強制的に中央寄せにするため（dialog.dartの
+        // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
+        // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
+        title: Row(
+          children: [
+            Expanded(child: Text(l10n.timelineDurationLimitTitle)),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              icon: const Icon(Icons.close),
+            ),
+          ],
+        ),
+        content: Text(
+          isPremium
+              ? l10n.timelineDurationLimitBodyPremium
+              : l10n.timelineDurationLimitBodyFree,
+        ),
+      ),
+    );
+    return false;
+  }
+
+  void _showBatchAddDialog(BuildContext context, ProjectService service) {
+    final l10n = AppLocalizations.of(context)!;
+    var count = 2;
+    final controller = TextEditingController(text: '$count');
+    void syncController() {
+      final text = '$count';
+      if (controller.text != text) {
+        controller.value = TextEditingValue(
+          text: text,
+          selection: TextSelection.collapsed(offset: text.length),
+        );
+      }
+    }
+
+    showDialog<void>(
+      context: context,
+      // 閉じるアニメーション中もTextFieldがcontrollerを使うので、ダイアログが
+      // 外れるまで破棄を待つ。
+      builder: (ctx) => DisposeOnUnmount(
+        controller: controller,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setS) {
+            void setCount(int value) {
+              setS(() {
+                count = value.clamp(1, 100);
+                syncController();
+              });
+            }
+
+            return AlertDialog(
+              // スライダーを画面の横幅いっぱいに使えるよう、ダイアログを
+              // 既定（左右40px空け、内容が狭ければ幅280）より広く取る。
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 24,
+              ),
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.library_add_rounded,
+                    color: Theme.of(ctx).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(l10n.frameStripBulkAddTitle)),
+                ],
+              ),
+              content: SizedBox(
+                width: 480,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Slider(
+                      value: count.toDouble(),
+                      min: 1,
+                      max: 100,
+                      divisions: 99,
+                      label: '$count',
+                      onChanged: (v) => setCount(v.round()),
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove_rounded),
+                          tooltip: l10n.commonDecrease,
+                          onPressed: count > 1
+                              ? () => setCount(count - 1)
+                              : null,
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: controller,
+                            textAlign: TextAlign.center,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            decoration: InputDecoration(
+                              suffixText: l10n.frameStripBulkAddUnit,
+                              isDense: true,
+                            ),
+                            onChanged: (value) {
+                              final parsed = int.tryParse(value);
+                              if (parsed != null) {
+                                setS(() => count = parsed.clamp(1, 100));
+                              }
+                            },
+                            onSubmitted: (_) => syncController(),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add_rounded),
+                          tooltip: l10n.commonIncrease,
+                          onPressed: count < 100
+                              ? () => setCount(count + 1)
+                              : null,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(l10n.commonCancel),
+                ),
+                FilledButton.icon(
+                  icon: const Icon(Icons.add_rounded),
+                  onPressed: () {
+                    final parsed = int.tryParse(controller.text);
+                    final addCount = (parsed ?? count).clamp(1, 100);
+                    if (!_canAddFrames(context, service, addCount)) return;
+                    for (var i = 0; i < addCount; i++) {
+                      service.addFrame(widget.projectId, widget.sceneId);
+                    }
+                    Navigator.pop(ctx);
+                  },
+                  label: Text(l10n.commonOk),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showHoldDialog(
+    BuildContext context,
+    ProjectService service,
+    int frameIndex,
+    int currentHold,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    int hold = currentHold;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: Text(l10n.frameStripHoldDialogTitle(frameIndex + 1)),
+          content: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.remove),
+                tooltip: l10n.commonDecrease,
+                onPressed: hold > 1 ? () => setS(() => hold--) : null,
+              ),
+              Expanded(
+                child: Center(
+                  child: Text('$hold', style: const TextStyle(fontSize: 24)),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add),
+                tooltip: l10n.commonIncrease,
+                onPressed: hold < 99 ? () => setS(() => hold++) : null,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                service.setFrameHold(
+                  widget.projectId,
+                  widget.sceneId,
+                  frameIndex,
+                  hold,
+                );
+                Navigator.pop(ctx);
+              },
+              child: Text(l10n.commonOk),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.watch<ProjectService>();
+    final total = service.frameCount(widget.projectId, widget.sceneId);
+    final scheme = Theme.of(context).colorScheme;
+    final project = service.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    return Container(
+      height: 64,
+      color: scheme.surface.withValues(alpha: 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final sidePadding = ((constraints.maxWidth - _itemExtent) / 2)
+                    .clamp(0.0, double.infinity);
+                return NotificationListener<ScrollEndNotification>(
+                  onNotification: (n) => _handleScrollEnd(n, total),
+                  child: Stack(
+                    children: [
+                      ListView.builder(
+                        controller: _scrollController,
+                        scrollDirection: Axis.horizontal,
+                        padding: EdgeInsets.symmetric(horizontal: sidePadding),
+                        itemCount: total + 1,
+                        itemBuilder: (context, index) {
+                          if (index == total) {
+                            return GestureDetector(
+                              // 自動テストがコマを番号指定でタップできるよう
+                              // にするためのKey（見た目・挙動には影響しない）。
+                              key: const ValueKey('frameStripAddCell'),
+                              onTap: () {
+                                if (!_canAddFrames(context, service, 1)) return;
+                                service.addFrame(
+                                  widget.projectId,
+                                  widget.sceneId,
+                                );
+                              },
+                              onLongPress: () =>
+                                  _showBatchAddDialog(context, service),
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                margin: const EdgeInsets.symmetric(vertical: 7),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: scheme.outline),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.add,
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          final isChecked = widget.selectedFrames.contains(
+                            index,
+                          );
+                          final isSelected =
+                              widget.multiSelectMode && isChecked;
+                          final hold = service.frameHold(
+                            widget.projectId,
+                            widget.sceneId,
+                            index,
+                          );
+                          return GestureDetector(
+                            key: ValueKey('frameStripCell$index'),
+                            onTap: widget.multiSelectMode
+                                ? () => widget.onFrameToggle?.call(index)
+                                : () => widget.onFrameSelected(index),
+                            onLongPress: widget.multiSelectMode
+                                ? null
+                                : () => _showHoldDialog(
+                                    context,
+                                    service,
+                                    index,
+                                    hold,
+                                  ),
+                            child: Container(
+                              width: 50,
+                              height: 50,
+                              margin: const EdgeInsets.symmetric(vertical: 7),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? scheme.surfaceContainerHighest
+                                    : scheme.surfaceContainerHigh,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? scheme.primary
+                                      : scheme.outlineVariant,
+                                  width: isSelected ? 2 : 1,
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(3),
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    // The background behind the picture's
+                                    // own rectangle, as on the canvas.
+                                    FramePreviewBackground(
+                                      backgroundColor:
+                                          project?.backgroundColor ??
+                                          0xFFFFFFFF,
+                                      showTransparency: widget.showTransparency,
+                                      aspectRatio: project == null
+                                          ? null
+                                          : project.exportWidth /
+                                                project.exportHeight,
+                                      child: _FrameThumbnail(
+                                        key: ValueKey(
+                                          '$index-${_refreshTick[index] ?? 0}',
+                                        ),
+                                        projectId: widget.projectId,
+                                        sceneId: widget.sceneId,
+                                        frameIndex: index,
+                                        backgroundColor: widget.showTransparency
+                                            ? null
+                                            : project?.backgroundColor,
+                                      ),
+                                    ),
+                                    if (hold > 1)
+                                      Center(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 3,
+                                            vertical: 1,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: context
+                                                .watch<ThemeService>()
+                                                .current
+                                                .menuBgColor
+                                                .withValues(alpha: 0.7),
+                                            borderRadius: BorderRadius.circular(
+                                              3,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '$hold',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: context
+                                                  .watch<ThemeService>()
+                                                  .current
+                                                  .updateMarkColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    if (widget.multiSelectMode)
+                                      Positioned(
+                                        right: 2,
+                                        top: 2,
+                                        child: Icon(
+                                          isChecked
+                                              ? Icons.check_box
+                                              : Icons.check_box_outline_blank,
+                                          size: 14,
+                                          color: isChecked
+                                              ? scheme.primary
+                                              : scheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      IgnorePointer(
+                        child: Center(
+                          child: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: context
+                                    .watch<ThemeService>()
+                                    .current
+                                    .updateMarkColor,
+                                width: 3,
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 4, right: 2),
+            child: SizedBox(
+              width: 58,
+              height: 44,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.centerLeft,
+                children: [
+                  IconButton(
+                    key: const ValueKey('frameStripTimelineButton'),
+                    tooltip: l10n.frameStripTimelineModeLabel,
+                    onPressed: widget.onTimelineTap,
+                    icon: Icon(
+                      Icons.movie_filter_outlined,
+                      shadows: CanvasIconButton.foregroundShadows(
+                        scheme.onSurfaceVariant,
+                        scheme,
+                      ),
+                    ),
+                    iconSize: 21,
+                    style: IconButton.styleFrom(
+                      fixedSize: const Size(42, 42),
+                      minimumSize: const Size(42, 42),
+                      maximumSize: const Size(42, 42),
+                      padding: EdgeInsets.zero,
+                      shape: const CircleBorder(),
+                      side: BorderSide(color: scheme.outlineVariant),
+                      foregroundColor: scheme.onSurfaceVariant,
+                      backgroundColor: scheme.surfaceContainerLow.withValues(
+                        alpha: 0.72,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 42,
+                    child: IgnorePointer(
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        key: const ValueKey('frameStripTimelineArrow'),
+                        size: 16,
+                        color: scheme.onSurface,
+                        shadows: CanvasIconButton.foregroundShadows(
+                          scheme.onSurface,
+                          scheme,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FrameThumbnail extends StatefulWidget {
+  final String projectId;
+  final String sceneId;
+  final int frameIndex;
+
+  /// The project's opaque background, when the strip shows it (not the
+  /// transparency checkerboard): blend modes act on it.
+  final int? backgroundColor;
+  const _FrameThumbnail({
+    super.key,
+    required this.projectId,
+    required this.sceneId,
+    required this.frameIndex,
+    this.backgroundColor,
+  });
+  @override
+  State<_FrameThumbnail> createState() => _FrameThumbnailState();
+}
+
+class _FrameThumbnailState extends State<_FrameThumbnail> {
+  ui.Image? _image;
+  @override
+  void initState() {
+    super.initState();
+    _generate();
+  }
+
+  @override
+  void didUpdateWidget(covariant _FrameThumbnail old) {
+    super.didUpdateWidget(old);
+    // Blend modes act on the paper, so a new background is drawn again.
+    if (old.backgroundColor != widget.backgroundColor) _generate();
+  }
+
+  Future<void> _generate() async {
+    final ps = context.read<ProjectService>();
+    final project = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    final tileManager = ps.tileManagerOf(widget.projectId);
+    final drawW = tileManager.canvasWidth;
+    final drawH = tileManager.canvasHeight;
+    if (drawW <= 0 || drawH <= 0) return;
+    final exportW = (project?.exportWidth ?? drawW).clamp(1, drawW).toInt();
+    final exportH = (project?.exportHeight ?? drawH).clamp(1, drawH).toInt();
+    final layers = ps.layersOf(
+      widget.projectId,
+      widget.sceneId,
+      widget.frameIndex,
+    );
+    final fullImage = await LayerCompositor.composite(
+      tileManager,
+      layers,
+      (l) => ps.tileKeyFor(
+        widget.projectId,
+        widget.sceneId,
+        widget.frameIndex,
+        l.id,
+      ),
+      drawW,
+      drawH,
+      paperColor: LayerCompositor.paperForBlendModes(
+        layers,
+        widget.backgroundColor,
+      ),
+    );
+    final offsetX = (drawW - exportW) / 2;
+    final offsetY = (drawH - exportH) / 2;
+    const thumbW = 96;
+    final thumbH = (thumbW * exportH / exportW).round().clamp(1, 300).toInt();
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawImageRect(
+      fullImage,
+      ui.Rect.fromLTWH(
+        offsetX,
+        offsetY,
+        exportW.toDouble(),
+        exportH.toDouble(),
+      ),
+      ui.Rect.fromLTWH(0, 0, thumbW.toDouble(), thumbH.toDouble()),
+      ui.Paint(),
+    );
+    fullImage.dispose();
+    final picture = recorder.endRecording();
+    final thumb = await picture.toImage(thumbW, thumbH);
+    picture.dispose();
+    if (!mounted) {
+      thumb.dispose();
+      return;
+    }
+    final old = _image;
+    setState(() => _image = thumb);
+    old?.dispose();
+  }
+
+  @override
+  void dispose() {
+    _image?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final image = _image;
+    if (image == null) return const SizedBox.shrink();
+    // Keeps the canvas's proportions (FramePreviewBackground has already
+    // given it the picture's own rectangle, so it fills that exactly).
+    return RawImage(image: image, fit: BoxFit.contain);
+  }
+}

@@ -1,0 +1,50 @@
+name: Drawing Engine Brush Extension Green
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/drawing-engine-brush-extension-green.yml'
+      - '.github/scripts/complete_screen_space_fold_integration.py'
+      - '.github/scripts/complete_canvas_fold_screen_input.py'
+      - 'lib/engine/drawing_engine.dart'
+      - 'lib/engine/brush_stroke_geometry.dart'
+      - 'lib/engine/brush_texture_cache.dart'
+      - 'lib/engine/brush_texture_selector.dart'
+      - 'lib/models/brush_presets_extension.dart'
+      - 'assets/brushes/**'
+      - 'pubspec.yaml'
+      - 'lib/screens/canvas/widgets/canvas_area.dart'
+      - 'test/engine/drawing_engine_brush_extensions_test.dart'
+      - 'test/engine/brush_stroke_geometry_test.dart'
+      - 'test/engine/brush_texture_cache_test.dart'
+      - 'test/engine/brush_texture_selector_test.dart'
+      - 'test/engine/four_panel_ruler_integration_test.dart'
+      - 'test/brush_asset_bundle_regression_test.dart'
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get --enforce-lockfile
+      - name: Format current screen-space fold integration
+        run: dart format lib/engine/drawing_engine.dart lib/screens/canvas/widgets/canvas_area.dart
+      - name: Verify GREEN
+        run: |
+          flutter test test/engine/drawing_engine_brush_extensions_test.dart --reporter expanded
+          flutter test test/engine/brush_stroke_geometry_test.dart --reporter expanded
+          flutter test test/engine/brush_texture_cache_test.dart --reporter expanded
+          flutter test test/engine/brush_texture_selector_test.dart --reporter expanded
+          flutter test test/engine/four_panel_ruler_integration_test.dart --reporter expanded
+          flutter test test/brush_asset_bundle_regression_test.dart --reporter expanded
+          flutter test test/engine/brush_render_plan_test.dart --reporter expanded
+          flutter analyze lib/engine/drawing_engine.dart lib/engine/brush_stroke_geometry.dart lib/engine/brush_render_plan.dart lib/screens/canvas/widgets/canvas_area.dart test/engine/drawing_engine_brush_extensions_test.dart test/engine/brush_stroke_geometry_test.dart --no-fatal-infos --no-fatal-warnings

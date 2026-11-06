@@ -1,0 +1,2146 @@
+
+===== 明度で透過 =====
+lib/screens/tips/tip_diagrams.dart-813-    );
+lib/screens/tips/tip_diagrams.dart-814-    canvas.drawRRect(
+lib/screens/tips/tip_diagrams.dart-815-      RRect.fromRectAndRadius(rightPanel, Radius.circular(3 * s)),
+lib/screens/tips/tip_diagrams.dart-816-      _fillPrimaryFaint,
+lib/screens/tips/tip_diagrams.dart-817-    );
+lib/screens/tips/tip_diagrams.dart-818-  }
+lib/screens/tips/tip_diagrams.dart-819-
+lib/screens/tips/tip_diagrams.dart-820-  /// 左：色つきのイラスト（グラデーション＋線）→矢印→右：市松模様（透過）の
+lib/screens/tips/tip_diagrams.dart:821:  /// 上に線だけが残った線画。色調補正・二値化・明度で透過を組み合わせて
+lib/screens/tips/tip_diagrams.dart-822-  /// 線画を抽出するTipsの図解。
+lib/screens/tips/tip_diagrams.dart-823-  void _paintLineArtExtraction(Canvas canvas, Size size) {
+lib/screens/tips/tip_diagrams.dart-824-    final s = size.height / 96;
+lib/screens/tips/tip_diagrams.dart-825-    final left = Rect.fromLTWH(
+lib/screens/tips/tip_diagrams.dart-826-      4 * s,
+lib/screens/tips/tip_diagrams.dart-827-      size.height * 0.1,
+lib/screens/tips/tip_diagrams.dart-828-      size.width * 0.36,
+lib/screens/tips/tip_diagrams.dart-829-      size.height * 0.8,
+--
+lib/screens/canvas/widgets/layer_panel.dart-2061-                    color: ThemeService.activeColorScheme.primary,
+lib/screens/canvas/widgets/layer_panel.dart-2062-                  ),
+lib/screens/canvas/widgets/layer_panel.dart-2063-                  title: Text(l10n.layerPanelConvertToCommonLabel),
+lib/screens/canvas/widgets/layer_panel.dart-2064-                  onTap: () {
+lib/screens/canvas/widgets/layer_panel.dart-2065-                    Navigator.pop(ctx);
+lib/screens/canvas/widgets/layer_panel.dart-2066-                    _showConvertToCommonDialog(context, layer);
+lib/screens/canvas/widgets/layer_panel.dart-2067-                  },
+lib/screens/canvas/widgets/layer_panel.dart-2068-                ),
+lib/screens/canvas/widgets/layer_panel.dart:2069:              // 明度で透過：下描きレイヤーに誤って線画を描いてしまった時などに、
+lib/screens/canvas/widgets/layer_panel.dart-2070-              // 白い部分ほど透明になるようレイヤーの不透明度を作り直す
+lib/screens/canvas/widgets/layer_panel.dart-2071-              // 色を保つ「カラー」と、輝度だけで単純に
+lib/screens/canvas/widgets/layer_panel.dart-2072-              // 透過させる「グレー」の2種類。元に戻せない操作のため、
+lib/screens/canvas/widgets/layer_panel.dart-2073-              // Undoには対応していない（このメニューの他の破壊的操作＝
+lib/screens/canvas/widgets/layer_panel.dart-2074-              // 結合と同様の扱い）。
+lib/screens/canvas/widgets/layer_panel.dart-2075-              if (layer.type == model.LayerType.normal)
+lib/screens/canvas/widgets/layer_panel.dart-2076-                ListTile(
+lib/screens/canvas/widgets/layer_panel.dart-2077-                  leading: const Icon(Icons.opacity),
+--
+lib/screens/canvas/widgets/layer_panel.dart-2112-                ),
+lib/screens/canvas/widgets/layer_panel.dart-2113-            ],
+lib/screens/canvas/widgets/layer_panel.dart-2114-          ),
+lib/screens/canvas/widgets/layer_panel.dart-2115-        ),
+lib/screens/canvas/widgets/layer_panel.dart-2116-      ),
+lib/screens/canvas/widgets/layer_panel.dart-2117-    );
+lib/screens/canvas/widgets/layer_panel.dart-2118-  }
+lib/screens/canvas/widgets/layer_panel.dart-2119-
+lib/screens/canvas/widgets/layer_panel.dart:2120:  /// 「明度で透過」を実行し、サムネイル・プレビューを更新する。
+lib/screens/canvas/widgets/layer_panel.dart-2121-  Future<void> _applyBrightnessToAlpha(
+lib/screens/canvas/widgets/layer_panel.dart-2122-    BuildContext context,
+lib/screens/canvas/widgets/layer_panel.dart-2123-    model.Layer layer, {
+lib/screens/canvas/widgets/layer_panel.dart-2124-    required bool grayMode,
+lib/screens/canvas/widgets/layer_panel.dart-2125-  }) async {
+lib/screens/canvas/widgets/layer_panel.dart-2126-    final projectService = context.read<ProjectService>();
+lib/screens/canvas/widgets/layer_panel.dart-2127-    final tileManager = projectService.tileManagerOf(widget.projectId);
+lib/screens/canvas/widgets/layer_panel.dart-2128-    await tileManager.applyBrightnessToAlpha(
+--
+lib/l10n/app_localizations_ja.dart-5156-  @override
+lib/l10n/app_localizations_ja.dart-5157-  String get helpMeshTransformTitle => '自由変形・メッシュ変形';
+lib/l10n/app_localizations_ja.dart-5158-
+lib/l10n/app_localizations_ja.dart-5159-  @override
+lib/l10n/app_localizations_ja.dart-5160-  String get helpMeshTransformDesc =>
+lib/l10n/app_localizations_ja.dart-5161-      'キャンバス右上の編集・設定メニューから開ける、レイヤー全体を対象にした変形ツールです。範囲選択の変形と異なり選択範囲は不要で、角や格子点を指で個別にドラッグして自由な形に変形できます。コントロールパネルの分割数スライダーでメッシュを最大10×10まで細かくでき、2本の指で別々の点を同時につまめば回転・拡大縮小のような操作も直感的に行えます。';
+lib/l10n/app_localizations_ja.dart-5162-
+lib/l10n/app_localizations_ja.dart-5163-  @override
+lib/l10n/app_localizations_ja.dart:5164:  String get layerPanelBrightnessToAlphaLabel => '明度で透過';
+lib/l10n/app_localizations_ja.dart-5165-
+lib/l10n/app_localizations_ja.dart-5166-  @override
+lib/l10n/app_localizations_ja.dart-5167-  String get layerPanelBrightnessToAlphaHint =>
+lib/l10n/app_localizations_ja.dart-5168-      '白い部分ほど透明にします。色はそのまま半透明になります（白背景が消えるのではなく、絵全体が薄くなるイメージ）。';
+lib/l10n/app_localizations_ja.dart-5169-
+lib/l10n/app_localizations_ja.dart-5170-  @override
+lib/l10n/app_localizations_ja.dart-5171-  String get layerPanelBrightnessToAlphaColorButton => 'カラー';
+lib/l10n/app_localizations_ja.dart-5172-
+lib/l10n/app_localizations_ja.dart-5173-  @override
+lib/l10n/app_localizations_ja.dart-5174-  String get layerPanelBrightnessToAlphaGrayButton => 'グレー';
+lib/l10n/app_localizations_ja.dart-5175-
+lib/l10n/app_localizations_ja.dart-5176-  @override
+lib/l10n/app_localizations_ja.dart:5177:  String get tipsRoughLayerRescueTitle => '下描きに線画を描いてしまった時は「明度で透過」で救出';
+lib/l10n/app_localizations_ja.dart-5178-
+lib/l10n/app_localizations_ja.dart-5179-  @override
+lib/l10n/app_localizations_ja.dart-5180-  String get tipsRoughLayerRescueDesc =>
+lib/l10n/app_localizations_ja.dart:5181:      '下描きレイヤーに誤って線画を重ねて描いてしまっても、レイヤーを消さずに線画だけを取り出せます。①新しいレイヤーを追加し、ブレンドモードを「除算」にする。②スポイトで下描きの色を拾い、その除算レイヤー全体を塗りつぶす（下描きが薄くなります）。③除算レイヤーを複製すると、下描きが完全に消えます。④レイヤーパネルの「表示中の全レイヤーを結合」で1枚にまとめる。⑤結合したレイヤーの三点メニューから「明度で透過（グレー）」を選べば、白い部分が透明になり線画だけが残ります。';
+lib/l10n/app_localizations_ja.dart-5182-
+lib/l10n/app_localizations_ja.dart-5183-  @override
+lib/l10n/app_localizations_ja.dart-5184-  String get filterNameMonochrome => '単色化フィルター';
+lib/l10n/app_localizations_ja.dart-5185-
+lib/l10n/app_localizations_ja.dart-5186-  @override
+lib/l10n/app_localizations_ja.dart-5187-  String get timelineEffectTypeMonochrome => '単色化フィルター';
+lib/l10n/app_localizations_ja.dart-5188-
+lib/l10n/app_localizations_ja.dart-5189-  @override
+--
+lib/l10n/app_localizations_ja.dart-5437-  @override
+lib/l10n/app_localizations_ja.dart-5438-  String get tipsLensDistortionTitle => '選択レイヤー＋眼鏡断層フィルターで、度入りレンズの歪みを再現';
+lib/l10n/app_localizations_ja.dart-5439-
+lib/l10n/app_localizations_ja.dart-5440-  @override
+lib/l10n/app_localizations_ja.dart-5441-  String get tipsLensDistortionDesc =>
+lib/l10n/app_localizations_ja.dart-5442-      'レイヤー一覧に「選択レイヤー」を追加し、眼鏡のレンズ部分を通常の描画ツールで塗ると、その範囲だけに眼鏡断層フィルターの局所的な歪みをかけられます。度数スライダーは負の値で凹レンズ（近視）風に縮小、正の値で凸レンズ（遠視）風に拡大し、中心位置も微調整できます。両目分のレンズを同時に塗って一括で適用することも可能です。選択レイヤー自体は書き出し・最終的な絵には写り込みません。眼鏡以外にも、カメラのレンズ越しに景色を見ているような歪みを再現したいときにも使えます。背景など広い範囲を選択レイヤーで塗り、弱めの度数をかけるのがおすすめです。';
+lib/l10n/app_localizations_ja.dart-5443-
+lib/l10n/app_localizations_ja.dart-5444-  @override
+lib/l10n/app_localizations_ja.dart:5445:  String get tipsLineArtExtractionTitle => '色調補正・二値化・明度で透過を組み合わせて線画を抽出する';
+lib/l10n/app_localizations_ja.dart-5446-
+lib/l10n/app_localizations_ja.dart-5447-  @override
+lib/l10n/app_localizations_ja.dart-5448-  String get tipsLineArtExtractionDesc =>
+lib/l10n/app_localizations_ja.dart:5449:      '色調補正でコントラストを強めて線を際立たせたあと、二値化フィルターで画像を白黒2色に分けると、線とそれ以外がはっきり分離します。二値化の閾値はスライダーで自由に調整でき、線の太さ・かすれ具合を好みに合わせられます。仕上げにレイヤーの三点メニューにある「明度で透過（グレー）」を使うと、白い部分（線以外）だけが透過し、線画だけを抽出できます。写真や下描きから線画だけを取り出したいときに便利です。';
+lib/l10n/app_localizations_ja.dart-5450-
+lib/l10n/app_localizations_ja.dart-5451-  @override
+lib/l10n/app_localizations_ja.dart-5452-  String get tipsLineColorUsageTitle => '線画色は用途で使い分けると仕上がりが変わる';
+lib/l10n/app_localizations_ja.dart-5453-
+lib/l10n/app_localizations_ja.dart-5454-  @override
+lib/l10n/app_localizations_ja.dart-5455-  String get tipsLineColorUsageDesc =>
+lib/l10n/app_localizations_ja.dart-5456-      'パーツの輪郭線は色トレス・線画馴染ませを使うと、周りから浮かずに境界だけがはっきり伝わる線画になります。影やハイライトには塗り色と同じ指定色を使うと線画そのものが目立たなくなり、あえて別の指定色にすればそのアニメ特有の世界観・統一感を演出できます。';
+lib/l10n/app_localizations_ja.dart-5457-
+--
+lib/l10n/app_ja.arb-2523-  "tipsBlendModeUsageDesc": "影をつけたい時は「乗算」、光や輝きを足したい時は「スクリーン」や「加算」、陰影に質感を出したい時は「オーバーレイ」や「ソフトライト」が向いています。同じ色でもブレンドモードを変えるだけで印象が大きく変わるので、まずは候補をいくつか切り替えて見比べてみるのがおすすめです。",
+lib/l10n/app_ja.arb-2524-  "timelineSaveFailedDialogTitle": "保存に失敗しました",
+lib/l10n/app_ja.arb-2525-  "timelineSaveFailedDialogBody": "保存に失敗しました。もう一度お試しください。",
+lib/l10n/app_ja.arb-2526-  "licenseSectionIcons": "使用アイコンについて",
+lib/l10n/app_ja.arb-2527-  "layerPanelMergeAllVisibleTooltip": "表示中の全レイヤーを結合",
+lib/l10n/app_ja.arb-2528-  "canvasBrushSliderToggleLabel": "詳細",
+lib/l10n/app_ja.arb-2529-  "helpMeshTransformTitle": "自由変形・メッシュ変形",
+lib/l10n/app_ja.arb-2530-  "helpMeshTransformDesc": "キャンバス右上の編集・設定メニューから開ける、レイヤー全体を対象にした変形ツールです。範囲選択の変形と異なり選択範囲は不要で、角や格子点を指で個別にドラッグして自由な形に変形できます。コントロールパネルの分割数スライダーでメッシュを最大10×10まで細かくでき、2本の指で別々の点を同時につまめば回転・拡大縮小のような操作も直感的に行えます。",
+lib/l10n/app_ja.arb:2531:  "layerPanelBrightnessToAlphaLabel": "明度で透過",
+lib/l10n/app_ja.arb-2532-  "layerPanelBrightnessToAlphaHint": "白い部分ほど透明にします。色はそのまま半透明になります（白背景が消えるのではなく、絵全体が薄くなるイメージ）。",
+lib/l10n/app_ja.arb-2533-  "layerPanelBrightnessToAlphaColorButton": "カラー",
+lib/l10n/app_ja.arb-2534-  "layerPanelBrightnessToAlphaGrayButton": "グレー",
+lib/l10n/app_ja.arb:2535:  "tipsRoughLayerRescueTitle": "下描きに線画を描いてしまった時は「明度で透過」で救出",
+lib/l10n/app_ja.arb:2536:  "tipsRoughLayerRescueDesc": "下描きレイヤーに誤って線画を重ねて描いてしまっても、レイヤーを消さずに線画だけを取り出せます。①新しいレイヤーを追加し、ブレンドモードを「除算」にする。②スポイトで下描きの色を拾い、その除算レイヤー全体を塗りつぶす（下描きが薄くなります）。③除算レイヤーを複製すると、下描きが完全に消えます。④レイヤーパネルの「表示中の全レイヤーを結合」で1枚にまとめる。⑤結合したレイヤーの三点メニューから「明度で透過（グレー）」を選べば、白い部分が透明になり線画だけが残ります。",
+lib/l10n/app_ja.arb-2537-  "filterNameMonochrome": "単色化フィルター",
+lib/l10n/app_ja.arb-2538-  "timelineEffectTypeMonochrome": "単色化フィルター",
+lib/l10n/app_ja.arb-2539-  "filterNameColorAdjust": "色調調整",
+lib/l10n/app_ja.arb-2540-  "filterColorAdjustSaturationLabel": "彩度",
+lib/l10n/app_ja.arb-2541-  "filterColorAdjustBrightnessLabel": "明度",
+lib/l10n/app_ja.arb-2542-  "filterColorAdjustContrastLabel": "コントラスト",
+lib/l10n/app_ja.arb-2543-  "canvasColorAdjustTitle": "色調調整",
+lib/l10n/app_ja.arb-2544-  "canvasColorAdjustAddToDrawFilter": "描画フィルターに追加する",
+--
+lib/l10n/app_ja.arb-2613-  "filterLensDistortionOffsetY": "中心位置の微調整（上下）",
+lib/l10n/app_ja.arb-2614-  "filterLensDistortionNoMaskHint": "選択レイヤーで塗った範囲にのみ適用されます。先にレイヤー一覧で「選択レイヤー」を追加し、レンズにしたい範囲（眼鏡のレンズ部分等）を塗ってください。",
+lib/l10n/app_ja.arb-2615-  "tipsStockingDenierTitle": "ストッキング・タイツはデニール数でトーンの目の細かさが変わる",
+lib/l10n/app_ja.arb-2616-  "tipsStockingDenierDesc": "トーン一覧に追加されたストッキング・タイツは、デニール数が低いものほど生地が薄いという設定に合わせて格子模様の間隔を詰めてあり、10デニールなど最も薄いものはあえて細かすぎるくらいの密度にしています（表示・書き出し解像度によってはモアレが出ることがあります）。デニール数が高いタイツほど間隔が広く不透明感のある見た目になるので、キャラクターの脚に合わせて使い分けてください。",
+lib/l10n/app_ja.arb-2617-  "tipsFisheyeChromaticTitle": "魚眼レンズ・色収差フィルターでレンズらしい歪み・にじみを演出",
+lib/l10n/app_ja.arb-2618-  "tipsFisheyeChromaticDesc": "魚眼レンズフィルターは画面中心を膨らませ、周辺を圧縮することで広角・魚眼レンズで撮ったような湾曲を再現します。色収差フィルターはRGBチャンネルを少しずつずらすことで、安いレンズで撮影したときのような色のにじみを再現します。どちらも描画フィルター（レイヤーへ直接適用）・演出フィルター（タイムライン上で範囲指定して適用）の両方から使えます。",
+lib/l10n/app_ja.arb-2619-  "tipsLensDistortionTitle": "選択レイヤー＋眼鏡断層フィルターで、度入りレンズの歪みを再現",
+lib/l10n/app_ja.arb-2620-  "tipsLensDistortionDesc": "レイヤー一覧に「選択レイヤー」を追加し、眼鏡のレンズ部分を通常の描画ツールで塗ると、その範囲だけに眼鏡断層フィルターの局所的な歪みをかけられます。度数スライダーは負の値で凹レンズ（近視）風に縮小、正の値で凸レンズ（遠視）風に拡大し、中心位置も微調整できます。両目分のレンズを同時に塗って一括で適用することも可能です。選択レイヤー自体は書き出し・最終的な絵には写り込みません。眼鏡以外にも、カメラのレンズ越しに景色を見ているような歪みを再現したいときにも使えます。背景など広い範囲を選択レイヤーで塗り、弱めの度数をかけるのがおすすめです。",
+lib/l10n/app_ja.arb:2621:  "tipsLineArtExtractionTitle": "色調補正・二値化・明度で透過を組み合わせて線画を抽出する",
+lib/l10n/app_ja.arb:2622:  "tipsLineArtExtractionDesc": "色調補正でコントラストを強めて線を際立たせたあと、二値化フィルターで画像を白黒2色に分けると、線とそれ以外がはっきり分離します。二値化の閾値はスライダーで自由に調整でき、線の太さ・かすれ具合を好みに合わせられます。仕上げにレイヤーの三点メニューにある「明度で透過（グレー）」を使うと、白い部分（線以外）だけが透過し、線画だけを抽出できます。写真や下描きから線画だけを取り出したいときに便利です。",
+lib/l10n/app_ja.arb-2623-  "tipsLineColorUsageTitle": "線画色は用途で使い分けると仕上がりが変わる",
+lib/l10n/app_ja.arb-2624-  "tipsLineColorUsageDesc": "パーツの輪郭線は色トレス・線画馴染ませを使うと、周りから浮かずに境界だけがはっきり伝わる線画になります。影やハイライトには塗り色と同じ指定色を使うと線画そのものが目立たなくなり、あえて別の指定色にすればそのアニメ特有の世界観・統一感を演出できます。",
+lib/l10n/app_ja.arb-2625-  "tipsBlushAutofillTitle": "頬の赤みも自動塗りでふんわり乗せられる",
+lib/l10n/app_ja.arb-2626-  "tipsBlushAutofillDesc": "線画色を指定色にして透明色を選び、塗り色を放射：中央→外側にして頬の赤みと透明色の2色を指定すると、肌の上に頬の赤みだけをふわっと重ねられます。赤みの不透明度と色の切り替え位置を調整すると、境界がより馴染みやすくなります。",
+lib/l10n/app_ja.arb-2627-  "autofillPartResetTraceButton": "デフォルトに戻す",
+lib/l10n/app_ja.arb-2628-  "premiumScreenTitle": "プレミアム",
+lib/l10n/app_ja.arb-2629-  "premiumComparisonPremium": "プレミアム",
+lib/l10n/app_ja.arb-2630-  "premiumRegisteredDateLabel": "登録日: {date}",
+--
+lib/l10n/app_localizations.dart-9453-  ///
+lib/l10n/app_localizations.dart-9454-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart-9455-  /// **'キャンバス右上の編集・設定メニューから開ける、レイヤー全体を対象にした変形ツールです。範囲選択の変形と異なり選択範囲は不要で、角や格子点を指で個別にドラッグして自由な形に変形できます。コントロールパネルの分割数スライダーでメッシュを最大10×10まで細かくでき、2本の指で別々の点を同時につまめば回転・拡大縮小のような操作も直感的に行えます。'**
+lib/l10n/app_localizations.dart-9456-  String get helpMeshTransformDesc;
+lib/l10n/app_localizations.dart-9457-
+lib/l10n/app_localizations.dart-9458-  /// No description provided for @layerPanelBrightnessToAlphaLabel.
+lib/l10n/app_localizations.dart-9459-  ///
+lib/l10n/app_localizations.dart-9460-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart:9461:  /// **'明度で透過'**
+lib/l10n/app_localizations.dart-9462-  String get layerPanelBrightnessToAlphaLabel;
+lib/l10n/app_localizations.dart-9463-
+lib/l10n/app_localizations.dart-9464-  /// No description provided for @layerPanelBrightnessToAlphaHint.
+lib/l10n/app_localizations.dart-9465-  ///
+lib/l10n/app_localizations.dart-9466-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart-9467-  /// **'白い部分ほど透明にします。色はそのまま半透明になります（白背景が消えるのではなく、絵全体が薄くなるイメージ）。'**
+lib/l10n/app_localizations.dart-9468-  String get layerPanelBrightnessToAlphaHint;
+lib/l10n/app_localizations.dart-9469-
+--
+lib/l10n/app_localizations.dart-9477-  ///
+lib/l10n/app_localizations.dart-9478-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart-9479-  /// **'グレー'**
+lib/l10n/app_localizations.dart-9480-  String get layerPanelBrightnessToAlphaGrayButton;
+lib/l10n/app_localizations.dart-9481-
+lib/l10n/app_localizations.dart-9482-  /// No description provided for @tipsRoughLayerRescueTitle.
+lib/l10n/app_localizations.dart-9483-  ///
+lib/l10n/app_localizations.dart-9484-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart:9485:  /// **'下描きに線画を描いてしまった時は「明度で透過」で救出'**
+lib/l10n/app_localizations.dart-9486-  String get tipsRoughLayerRescueTitle;
+lib/l10n/app_localizations.dart-9487-
+lib/l10n/app_localizations.dart-9488-  /// No description provided for @tipsRoughLayerRescueDesc.
+lib/l10n/app_localizations.dart-9489-  ///
+lib/l10n/app_localizations.dart-9490-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart:9491:  /// **'下描きレイヤーに誤って線画を重ねて描いてしまっても、レイヤーを消さずに線画だけを取り出せます。①新しいレイヤーを追加し、ブレンドモードを「除算」にする。②スポイトで下描きの色を拾い、その除算レイヤー全体を塗りつぶす（下描きが薄くなります）。③除算レイヤーを複製すると、下描きが完全に消えます。④レイヤーパネルの「表示中の全レイヤーを結合」で1枚にまとめる。⑤結合したレイヤーの三点メニューから「明度で透過（グレー）」を選べば、白い部分が透明になり線画だけが残ります。'**
+lib/l10n/app_localizations.dart-9492-  String get tipsRoughLayerRescueDesc;
+lib/l10n/app_localizations.dart-9493-
+lib/l10n/app_localizations.dart-9494-  /// No description provided for @filterNameMonochrome.
+lib/l10n/app_localizations.dart-9495-  ///
+lib/l10n/app_localizations.dart-9496-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart-9497-  /// **'単色化フィルター'**
+lib/l10n/app_localizations.dart-9498-  String get filterNameMonochrome;
+lib/l10n/app_localizations.dart-9499-
+--
+lib/l10n/app_localizations.dart-9993-  ///
+lib/l10n/app_localizations.dart-9994-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart-9995-  /// **'レイヤー一覧に「選択レイヤー」を追加し、眼鏡のレンズ部分を通常の描画ツールで塗ると、その範囲だけに眼鏡断層フィルターの局所的な歪みをかけられます。度数スライダーは負の値で凹レンズ（近視）風に縮小、正の値で凸レンズ（遠視）風に拡大し、中心位置も微調整できます。両目分のレンズを同時に塗って一括で適用することも可能です。選択レイヤー自体は書き出し・最終的な絵には写り込みません。眼鏡以外にも、カメラのレンズ越しに景色を見ているような歪みを再現したいときにも使えます。背景など広い範囲を選択レイヤーで塗り、弱めの度数をかけるのがおすすめです。'**
+lib/l10n/app_localizations.dart-9996-  String get tipsLensDistortionDesc;
+lib/l10n/app_localizations.dart-9997-
+lib/l10n/app_localizations.dart-9998-  /// No description provided for @tipsLineArtExtractionTitle.
+lib/l10n/app_localizations.dart-9999-  ///
+lib/l10n/app_localizations.dart-10000-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart:10001:  /// **'色調補正・二値化・明度で透過を組み合わせて線画を抽出する'**
+lib/l10n/app_localizations.dart-10002-  String get tipsLineArtExtractionTitle;
+lib/l10n/app_localizations.dart-10003-
+lib/l10n/app_localizations.dart-10004-  /// No description provided for @tipsLineArtExtractionDesc.
+lib/l10n/app_localizations.dart-10005-  ///
+lib/l10n/app_localizations.dart-10006-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart:10007:  /// **'色調補正でコントラストを強めて線を際立たせたあと、二値化フィルターで画像を白黒2色に分けると、線とそれ以外がはっきり分離します。二値化の閾値はスライダーで自由に調整でき、線の太さ・かすれ具合を好みに合わせられます。仕上げにレイヤーの三点メニューにある「明度で透過（グレー）」を使うと、白い部分（線以外）だけが透過し、線画だけを抽出できます。写真や下描きから線画だけを取り出したいときに便利です。'**
+lib/l10n/app_localizations.dart-10008-  String get tipsLineArtExtractionDesc;
+lib/l10n/app_localizations.dart-10009-
+lib/l10n/app_localizations.dart-10010-  /// No description provided for @tipsLineColorUsageTitle.
+lib/l10n/app_localizations.dart-10011-  ///
+lib/l10n/app_localizations.dart-10012-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart-10013-  /// **'線画色は用途で使い分けると仕上がりが変わる'**
+lib/l10n/app_localizations.dart-10014-  String get tipsLineColorUsageTitle;
+lib/l10n/app_localizations.dart-10015-
+--
+lib/engine/brightness_alpha_engine.dart-1-import 'dart:typed_data';
+
+===== 明度 =====
+lib/services/autofill_preset_service.dart-12-class AutofillPresetService extends ChangeNotifier {
+lib/services/autofill_preset_service.dart-13-  static const _prefsKey = 'autofill_presets';
+lib/services/autofill_preset_service.dart-14-
+lib/services/autofill_preset_service.dart-15-  final List<AutofillPreset> _presets = [];
+lib/services/autofill_preset_service.dart-16-
+lib/services/autofill_preset_service.dart-17-  List<AutofillPreset> get presets => List.unmodifiable(_presets);
+lib/services/autofill_preset_service.dart-18-
+lib/services/autofill_preset_service.dart-19-  /// [base]のHSLを操作して陰影・ハイライト色を作る（アニメ塗りの定番手法：
+lib/services/autofill_preset_service.dart:20:  /// 影は明度を下げつつ彩度をやや上げる、ハイライトは明度を上げつつ彩度を
+lib/services/autofill_preset_service.dart-21-  /// 下げる）。サンプルプリセットの「1影・2影・ハイライト」を色相の近い
+lib/services/autofill_preset_service.dart-22-  /// 一貫した配色で機械的に生成するために使う。サンプルは使い方を学んで
+lib/services/autofill_preset_service.dart-23-  /// もらうためのものなので、すべてのパーツにきちんと陰影を用意する。
+lib/services/autofill_preset_service.dart-24-  static int _shade(
+lib/services/autofill_preset_service.dart-25-    int argb, {
+lib/services/autofill_preset_service.dart-26-    required double lightnessDelta,
+lib/services/autofill_preset_service.dart-27-    double saturationDelta = 0,
+lib/services/autofill_preset_service.dart-28-  }) {
+--
+lib/services/project_service.dart-568-  /// （プレビュー・書き出しでの合成キー解決用）。
+lib/services/project_service.dart-569-  Map<String, LayerHome> layerHomesOf(String projectId) =>
+lib/services/project_service.dart-570-      Map.unmodifiable(_layerHomes[projectId] ?? const {});
+lib/services/project_service.dart-571-
+lib/services/project_service.dart-572-  /// タイムライン共通レイヤートラックUI用：プロジェクト内の全共通レイヤーと
+lib/services/project_service.dart-573-  /// ウォーターマークレイヤーのホーム位置（実データが物理的に存在する
+lib/services/project_service.dart-574-  /// シーン・フレーム）を返す（共通レイヤーの表示範囲を
+lib/services/project_service.dart-575-  /// タイムライン上で確認・変更する。ウォーターマークも同じ表示範囲の
+lib/services/project_service.dart:576:  /// 仕組みを使うため同じトラックに乗せ、タップで角度・大きさ・不透明度・
+lib/services/project_service.dart-577-  /// 表示範囲をまとめて編集できるようにする）。
+lib/services/project_service.dart-578-  List<({Layer layer, LayerHome home})> commonLayersOf(String projectId) {
+lib/services/project_service.dart-579-    final homes = _layerHomes[projectId];
+lib/services/project_service.dart-580-    if (homes == null) return const [];
+lib/services/project_service.dart-581-    final result = <({Layer layer, LayerHome home})>[];
+lib/services/project_service.dart-582-    for (final entry in homes.entries) {
+lib/services/project_service.dart-583-      final home = entry.value;
+lib/services/project_service.dart-584-      final scene = sceneOf(projectId, home.sceneId);
+--
+lib/services/project_service.dart-2003-    LayerType.normal,
+lib/services/project_service.dart-2004-    LayerType.autoFillLineart,
+lib/services/project_service.dart-2005-    LayerType.autoFill,
+lib/services/project_service.dart-2006-  };
+lib/services/project_service.dart-2007-
+lib/services/project_service.dart-2008-  /// 選択したレイヤー群を1枚の通常レイヤーへ結合する。
+lib/services/project_service.dart-2009-  /// - 自動塗り用線画・自動塗りレイヤーが含まれる場合は結合後に通常レイヤーへ
+lib/services/project_service.dart-2010-  ///   変換される（パーツID・更新マークは破棄）。
+lib/services/project_service.dart:2011:  /// - ブレンドモード・不透明度・クリッピングは一番下（配列末尾側＝背面）の
+lib/services/project_service.dart-2012-  ///   レイヤーの設定を引き継ぐ。
+lib/services/project_service.dart-2013-  /// - タイル内容は選択レイヤーを表示順で合成した結果になる。
+lib/services/project_service.dart-2014-  /// 2枚未満、または結合不可の種別が含まれる場合は何もしない。
+lib/services/project_service.dart-2015-  Future<void> mergeLayers({
+lib/services/project_service.dart-2016-    required String projectId,
+lib/services/project_service.dart-2017-    required String sceneId,
+lib/services/project_service.dart-2018-    required int frameIndex,
+lib/services/project_service.dart-2019-    required List<String> layerIds,
+--
+lib/services/settings_service.dart-351-
+lib/services/settings_service.dart-352-  GestureAction get twoFingerTap => _twoFingerTap;
+lib/services/settings_service.dart-353-  GestureAction get threeFingerTap => _threeFingerTap;
+lib/services/settings_service.dart-354-  GestureAction get fourOrMoreFingerTap => _fourOrMoreFingerTap;
+lib/services/settings_service.dart-355-  GestureAction get twoFingerSwipe => _twoFingerSwipe;
+lib/services/settings_service.dart-356-  GestureAction get longPress => _longPress;
+lib/services/settings_service.dart-357-
+lib/services/settings_service.dart-358-  // ─── ペン入力設定（筆圧カーブ・ペンボタン） ─────────────────
+lib/services/settings_service.dart:359:  // 注：筆圧の「無効／サイズ／不透明度／両方」反映モードは
+lib/services/settings_service.dart-360-  // 「ブラシ個別設定」であるため、ブラシ設定側(Brush.pressureMode)
+lib/services/settings_service.dart-361-  // のみで管理する（グローバル設定としては持たない）。
+lib/services/settings_service.dart-362-  // 筆圧カーブのみアプリ全体に適用される設定としてここで管理する。
+lib/services/settings_service.dart-363-  bool _palmRejectionEnabled = true;
+lib/services/settings_service.dart-364-  PenPressureCurve _penPressureCurve = PenPressureCurve.normal;
+lib/services/settings_service.dart-365-  GestureAction _penButton1 = GestureAction.eraserToggle;
+lib/services/settings_service.dart-366-  GestureAction _penButton2 = GestureAction.eyedropper;
+lib/services/settings_service.dart-367-
+--
+lib/services/settings_service.dart-398-        if (b.$1 == a.$1) return a.$2;
+lib/services/settings_service.dart-399-        final t = (x - a.$1) / (b.$1 - a.$1);
+lib/services/settings_service.dart-400-        return a.$2 + (b.$2 - a.$2) * t;
+lib/services/settings_service.dart-401-      }
+lib/services/settings_service.dart-402-    }
+lib/services/settings_service.dart-403-    return pts.last.$2;
+lib/services/settings_service.dart-404-  }
+lib/services/settings_service.dart-405-
+lib/services/settings_service.dart:406:  /// カスタム筆圧カーブの制御点（x=筆圧、y=反映される太さ・不透明度の
+lib/services/settings_service.dart-407-  /// 倍率、いずれも0.0〜1.0）。x昇順に並べ、最大10点まで持てる。
+lib/services/settings_service.dart-408-  /// 先頭（x=0）・末尾（x=1）は常に存在し、xは動かせない
+lib/services/settings_service.dart-409-  /// （0〜1全域をカバーするため）。デフォルトは対角線（傾き1）の2点のみ。
+lib/services/settings_service.dart-410-  static const int maxPressurePoints = 10;
+lib/services/settings_service.dart-411-  List<(double, double)> _customPressurePoints = const [(0.0, 0.0), (1.0, 1.0)];
+lib/services/settings_service.dart-412-  List<(double, double)> get customPressurePoints =>
+lib/services/settings_service.dart-413-      List.unmodifiable(_customPressurePoints);
+lib/services/settings_service.dart-414-
+--
+lib/services/brush_service.dart-222-      fadeMode: FadeMode.off,
+lib/services/brush_service.dart-223-      strokeDecay: false,
+lib/services/brush_service.dart-224-      mixingMode: BrushMixingMode.simple,
+lib/services/brush_service.dart-225-      mixingRate: 25,
+lib/services/brush_service.dart-226-      calligraphyAngle: 90.0,
+lib/services/brush_service.dart-227-      tags: [AssetTagKeys.paint, AssetTagKeys.analog],
+lib/services/brush_service.dart-228-    ),
+lib/services/brush_service.dart-229-    // 水彩：下の色をよく拾い（混色率高め）、ふちがにじんで薄く乗る。
+lib/services/brush_service.dart:230:    // 重ねるほど濃くなるよう不透明度は低めにしてある。
+lib/services/brush_service.dart-231-    const Brush(
+lib/services/brush_service.dart-232-      id: 'Brush0010',
+lib/services/brush_service.dart-233-      name: '水彩',
+lib/services/brush_service.dart-234-      size: 24,
+lib/services/brush_service.dart-235-      opacity: 45,
+lib/services/brush_service.dart-236-      spacing: 4,
+lib/services/brush_service.dart-237-      blurRadius: 30,
+lib/services/brush_service.dart-238-      stabilization: false,
+--
+lib/services/brush_service.dart-530-        if (index != -1 && _brushes[index].spacing != 1) {
+lib/services/brush_service.dart-531-          _brushes[index] = _brushes[index].copyWith(spacing: 1);
+lib/services/brush_service.dart-532-          needsPersist = true;
+lib/services/brush_service.dart-533-        }
+lib/services/brush_service.dart-534-      }
+lib/services/brush_service.dart-535-      // 「マーカーペン」（Brush0005）は後からcalligraphyAngle（チゼル先端の
+lib/services/brush_service.dart-536-      // 横太さ変化）を追加した。既にBrush0005を持つ既存ユーザーの端末には
+lib/services/brush_service.dart-537-      // 反映されないため、calligraphyAngle未設定のままなら一度だけ補う
+lib/services/brush_service.dart:538:      // （それ以外のユーザー編集済みパラメータ〔サイズ・不透明度等〕は
+lib/services/brush_service.dart-539-      // 変更しない）。calligraphyAngleはUI上編集不可のプリセット専用項目
+lib/services/brush_service.dart-540-      // のため、上書きしてもユーザーの意図的な設定を壊すことはない。
+lib/services/brush_service.dart-541-      final markerIndex = _brushes.indexWhere((b) => b.id == 'Brush0005');
+lib/services/brush_service.dart-542-      if (markerIndex != -1) {
+lib/services/brush_service.dart-543-        var m = _brushes[markerIndex];
+lib/services/brush_service.dart-544-        // calligraphyAngle未設定の旧データを補完
+lib/services/brush_service.dart-545-        if (m.calligraphyAngle == null) {
+lib/services/brush_service.dart-546-          m = m.copyWith(calligraphyAngle: 0.0);
+--
+lib/screens/tips/tip_diagrams.dart-813-    );
+lib/screens/tips/tip_diagrams.dart-814-    canvas.drawRRect(
+lib/screens/tips/tip_diagrams.dart-815-      RRect.fromRectAndRadius(rightPanel, Radius.circular(3 * s)),
+lib/screens/tips/tip_diagrams.dart-816-      _fillPrimaryFaint,
+lib/screens/tips/tip_diagrams.dart-817-    );
+lib/screens/tips/tip_diagrams.dart-818-  }
+lib/screens/tips/tip_diagrams.dart-819-
+lib/screens/tips/tip_diagrams.dart-820-  /// 左：色つきのイラスト（グラデーション＋線）→矢印→右：市松模様（透過）の
+lib/screens/tips/tip_diagrams.dart:821:  /// 上に線だけが残った線画。色調補正・二値化・明度で透過を組み合わせて
+lib/screens/tips/tip_diagrams.dart-822-  /// 線画を抽出するTipsの図解。
+lib/screens/tips/tip_diagrams.dart-823-  void _paintLineArtExtraction(Canvas canvas, Size size) {
+lib/screens/tips/tip_diagrams.dart-824-    final s = size.height / 96;
+lib/screens/tips/tip_diagrams.dart-825-    final left = Rect.fromLTWH(
+lib/screens/tips/tip_diagrams.dart-826-      4 * s,
+lib/screens/tips/tip_diagrams.dart-827-      size.height * 0.1,
+lib/screens/tips/tip_diagrams.dart-828-      size.width * 0.36,
+lib/screens/tips/tip_diagrams.dart-829-      size.height * 0.8,
+--
+lib/screens/autofill/autofill_preset_screen.dart-1379-    LayerBlendMode.difference: l10n.blendModeDifference,
+lib/screens/autofill/autofill_preset_screen.dart-1380-    LayerBlendMode.hue: l10n.blendModeHue,
+lib/screens/autofill/autofill_preset_screen.dart-1381-    LayerBlendMode.saturation: l10n.blendModeSaturation,
+lib/screens/autofill/autofill_preset_screen.dart-1382-    LayerBlendMode.color: l10n.blendModeColor,
+lib/screens/autofill/autofill_preset_screen.dart-1383-    LayerBlendMode.luminosity: l10n.blendModeLuminosity,
+lib/screens/autofill/autofill_preset_screen.dart-1384-  };
+lib/screens/autofill/autofill_preset_screen.dart-1385-
+lib/screens/autofill/autofill_preset_screen.dart-1386-  /// 詳細設定ポップアップ（色チップタップ時。塗り色・線画色・
+lib/screens/autofill/autofill_preset_screen.dart:1387:  /// グラデーション・トーン・ブレンドモード・不透明度をすべてリアルタイム
+lib/screens/autofill/autofill_preset_screen.dart-1388-  /// プレビュー付きで設定する）。
+lib/screens/autofill/autofill_preset_screen.dart-1389-  void _showPartDetailDialog(AutofillPart part) {
+lib/screens/autofill/autofill_preset_screen.dart-1390-    final l10n = AppLocalizations.of(context)!;
+lib/screens/autofill/autofill_preset_screen.dart-1391-    var current = part;
+lib/screens/autofill/autofill_preset_screen.dart-1392-    showDialog(
+lib/screens/autofill/autofill_preset_screen.dart-1393-      context: context,
+lib/screens/autofill/autofill_preset_screen.dart-1394-      builder: (ctx) => StatefulBuilder(
+lib/screens/autofill/autofill_preset_screen.dart-1395-        builder: (ctx, setS) {
+--
+lib/screens/autofill/autofill_preset_screen.dart-1400-            title: Text(l10n.autofillPartDetailDialogTitle(part.name)),
+lib/screens/autofill/autofill_preset_screen.dart-1401-            content: SizedBox(
+lib/screens/autofill/autofill_preset_screen.dart-1402-              width: 340,
+lib/screens/autofill/autofill_preset_screen.dart-1403-              child: SingleChildScrollView(
+lib/screens/autofill/autofill_preset_screen.dart-1404-                child: Column(
+lib/screens/autofill/autofill_preset_screen.dart-1405-                  mainAxisSize: MainAxisSize.min,
+lib/screens/autofill/autofill_preset_screen.dart-1406-                  crossAxisAlignment: CrossAxisAlignment.start,
+lib/screens/autofill/autofill_preset_screen.dart-1407-                  children: [
+lib/screens/autofill/autofill_preset_screen.dart:1408:                    // 塗り色のリアルタイムプレビュー（不透明度を
+lib/screens/autofill/autofill_preset_screen.dart-1409-                    // 変更した際にプレビューでも分かりやすく変化するよう、
+lib/screens/autofill/autofill_preset_screen.dart:1410:                    // チェッカー柄の上に塗り色・グラデーションを不透明度を
+lib/screens/autofill/autofill_preset_screen.dart-1411-                    // 反映して重ねる）。塗り色設定のすぐ上に置くことで、
+lib/screens/autofill/autofill_preset_screen.dart-1412-                    // どちらの設定に対応するプレビューかが一目でわかる。
+lib/screens/autofill/autofill_preset_screen.dart-1413-                    _fillPreview(current, height: 40),
+lib/screens/autofill/autofill_preset_screen.dart-1414-                    const SizedBox(height: 12),
+lib/screens/autofill/autofill_preset_screen.dart-1415-                    Text(
+lib/screens/autofill/autofill_preset_screen.dart-1416-                      l10n.autofillPartFillColorLabel,
+lib/screens/autofill/autofill_preset_screen.dart-1417-                      style: Theme.of(ctx).textTheme.titleSmall,
+lib/screens/autofill/autofill_preset_screen.dart-1418-                    ),
+--
+lib/screens/autofill/autofill_preset_screen.dart-2389-                    Text(
+lib/screens/autofill/autofill_preset_screen.dart-2390-                      l10n.autofillPartGradientDragHint,
+lib/screens/autofill/autofill_preset_screen.dart-2391-                      style: TextStyle(
+lib/screens/autofill/autofill_preset_screen.dart-2392-                        fontSize: 10,
+lib/screens/autofill/autofill_preset_screen.dart-2393-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+lib/screens/autofill/autofill_preset_screen.dart-2394-                      ),
+lib/screens/autofill/autofill_preset_screen.dart-2395-                    ),
+lib/screens/autofill/autofill_preset_screen.dart-2396-                    const SizedBox(height: 4),
+lib/screens/autofill/autofill_preset_screen.dart:2397:                    // 色一覧：ドラッグで順番入れ替え、各色ごとにタップで色（不透明度
+lib/screens/autofill/autofill_preset_screen.dart-2398-                    // 含む）変更・画像からスポイト・切り替え位置の調整・削除ができる。
+lib/screens/autofill/autofill_preset_screen.dart-2399-                    ReorderableListView.builder(
+lib/screens/autofill/autofill_preset_screen.dart-2400-                      shrinkWrap: true,
+lib/screens/autofill/autofill_preset_screen.dart-2401-                      physics: const NeverScrollableScrollPhysics(),
+lib/screens/autofill/autofill_preset_screen.dart-2402-                      // 手動のドラッグハンドルアイコンを行末に置いているため、
+lib/screens/autofill/autofill_preset_screen.dart-2403-                      // 既定のドラッグハンドルは無効化する（有効のままだと
+lib/screens/autofill/autofill_preset_screen.dart-2404-                      // 二重に表示されるバグがあった）。
+lib/screens/autofill/autofill_preset_screen.dart-2405-                      buildDefaultDragHandles: false,
+--
+lib/screens/autofill/autofill_preset_screen.dart-2528-  }
+lib/screens/autofill/autofill_preset_screen.dart-2529-
+lib/screens/autofill/autofill_preset_screen.dart-2530-  List<double> _evenStops(int count) {
+lib/screens/autofill/autofill_preset_screen.dart-2531-    if (count <= 1) return const [0.0];
+lib/screens/autofill/autofill_preset_screen.dart-2532-    return List.generate(count, (i) => i / (count - 1));
+lib/screens/autofill/autofill_preset_screen.dart-2533-  }
+lib/screens/autofill/autofill_preset_screen.dart-2534-
+lib/screens/autofill/autofill_preset_screen.dart-2535-  /// 塗り色（単色・グラデーションいずれも）のリアルタイムプレビュー。
+lib/screens/autofill/autofill_preset_screen.dart:2536:  /// チェッカー柄の背景に、不透明度を反映した状態で重ねて表示することで、
+lib/screens/autofill/autofill_preset_screen.dart:2537:  /// 不透明度スライダーを動かした時にプレビューでも分かるようにする。
+lib/screens/autofill/autofill_preset_screen.dart-2538-  /// 線画色プレビュー用に、線画の実際の色（塗り色プレビューだけでなく
+lib/screens/autofill/autofill_preset_screen.dart-2539-  /// 線画色も）を計算する。
+lib/screens/autofill/autofill_preset_screen.dart-2540-  /// autofill_engine.dartのrecolorLineart/_traceAdjustColorと同じロジック
+lib/screens/autofill/autofill_preset_screen.dart-2541-  /// （色トレス・線画馴染ませの基準は塗り色）をHSLColorで再現している。
+lib/screens/autofill/autofill_preset_screen.dart-2542-  /// グラデーション塗りの場合、線画色プレビューは代表色として先頭の色を
+lib/screens/autofill/autofill_preset_screen.dart-2543-  /// 使う（実際の塗りは位置によって連続的に変化するが、小さなスウォッチ
+lib/screens/autofill/autofill_preset_screen.dart-2544-  /// では代表色1色で十分なため）。
+lib/screens/autofill/autofill_preset_screen.dart-2545-  Color _lineColorFor(AutofillPart p) {
+--
+lib/screens/autofill/autofill_preset_screen.dart-2834-        AutofillGradientType.linear => l10n.autofillGradientTypeLinear,
+
+===== 全統合 =====
+lib/services/project_service.dart-2112-    (_layerHomes[projectId] ??= {})[layer.id] = (
+lib/services/project_service.dart-2113-      sceneId: sceneId,
+lib/services/project_service.dart-2114-      frameIndex: frameIndex,
+lib/services/project_service.dart-2115-    );
+lib/services/project_service.dart-2116-    notifyListeners();
+lib/services/project_service.dart-2117-  }
+lib/services/project_service.dart-2118-
+lib/services/project_service.dart-2119-  /// 表示中の全レイヤーを1枚に統合し、新しい共通レイヤーとして追加する
+lib/services/project_service.dart:2120:  /// （共通レイヤー化ダイアログ「表示中レイヤーを複製して全統合して
+lib/services/project_service.dart-2121-  /// 共通化」）。元のレイヤーは変更しない。
+lib/services/project_service.dart-2122-  Future<void> addFlattenedCommonLayer({
+lib/services/project_service.dart-2123-    required String projectId,
+lib/services/project_service.dart-2124-    required String sceneId,
+lib/services/project_service.dart-2125-    required int frameIndex,
+lib/services/project_service.dart-2126-    required LayerRangeMode rangeMode,
+lib/services/project_service.dart-2127-    required int rangeStart,
+lib/services/project_service.dart-2128-    required int rangeEnd,
+--
+lib/screens/canvas/widgets/layer_panel.dart-2131-    );
+lib/screens/canvas/widgets/layer_panel.dart-2132-    if (!mounted) return;
+lib/screens/canvas/widgets/layer_panel.dart-2133-    setState(
+lib/screens/canvas/widgets/layer_panel.dart-2134-      () => _thumbRevision[layer.id] = (_thumbRevision[layer.id] ?? 0) + 1,
+lib/screens/canvas/widgets/layer_panel.dart-2135-    );
+lib/screens/canvas/widgets/layer_panel.dart-2136-  }
+lib/screens/canvas/widgets/layer_panel.dart-2137-
+lib/screens/canvas/widgets/layer_panel.dart-2138-  /// 共通レイヤー化ダイアログ。「現在レイヤーを共通化」／
+lib/screens/canvas/widgets/layer_panel.dart:2139:  /// 「表示中レイヤーを複製して全統合して共通化」の2択→表示範囲設定→変換実行。
+lib/screens/canvas/widgets/layer_panel.dart-2140-  void _showConvertToCommonDialog(BuildContext context, model.Layer layer) {
+lib/screens/canvas/widgets/layer_panel.dart-2141-    final l10n = AppLocalizations.of(context)!;
+lib/screens/canvas/widgets/layer_panel.dart-2142-    int selected = 0;
+lib/screens/canvas/widgets/layer_panel.dart-2143-    showDialog(
+lib/screens/canvas/widgets/layer_panel.dart-2144-      context: context,
+lib/screens/canvas/widgets/layer_panel.dart-2145-      builder: (ctx) => StatefulBuilder(
+lib/screens/canvas/widgets/layer_panel.dart-2146-        builder: (ctx, setS) => AlertDialog(
+lib/screens/canvas/widgets/layer_panel.dart-2147-          title: Text(l10n.layerPanelConvertToCommonLabel),
+--
+lib/l10n/app_localizations_ja.dart-4375-
+lib/l10n/app_localizations_ja.dart-4376-  @override
+lib/l10n/app_localizations_ja.dart-4377-  String get layerPanelConvertOption1Title => '現在レイヤーを共通化';
+lib/l10n/app_localizations_ja.dart-4378-
+lib/l10n/app_localizations_ja.dart-4379-  @override
+lib/l10n/app_localizations_ja.dart-4380-  String get layerPanelConvertOption1Subtitle => 'このレイヤーのみを共通レイヤーとして設定します';
+lib/l10n/app_localizations_ja.dart-4381-
+lib/l10n/app_localizations_ja.dart-4382-  @override
+lib/l10n/app_localizations_ja.dart:4383:  String get layerPanelConvertOption2Title => '表示中レイヤーを複製して全統合して共通化';
+lib/l10n/app_localizations_ja.dart-4384-
+lib/l10n/app_localizations_ja.dart-4385-  @override
+lib/l10n/app_localizations_ja.dart-4386-  String get layerPanelConvertOption2Subtitle =>
+lib/l10n/app_localizations_ja.dart-4387-      '表示中のすべてのレイヤーを統合した結果を共通レイヤーとして作成します';
+lib/l10n/app_localizations_ja.dart-4388-
+lib/l10n/app_localizations_ja.dart-4389-  @override
+lib/l10n/app_localizations_ja.dart-4390-  String get layerPanelCommonRangeTitle => '共通レイヤー範囲';
+lib/l10n/app_localizations_ja.dart-4391-
+--
+lib/l10n/app_ja.arb-2173-  "layerPanelMenuSelectionLayer": "選択レイヤー",
+lib/l10n/app_ja.arb-2174-  "layerPanelOpacityLabel": "不透明度",
+lib/l10n/app_ja.arb-2175-  "layerPanelLockLabel": "ロック",
+lib/l10n/app_ja.arb-2176-  "layerPanelOpacityLockLabel": "不透明度ロック",
+lib/l10n/app_ja.arb-2177-  "layerPanelClippingDescription": "下のレイヤーの不透明範囲内のみ描画",
+lib/l10n/app_ja.arb-2178-  "layerPanelConvertToCommonLabel": "共通レイヤーへ変更",
+lib/l10n/app_ja.arb-2179-  "layerPanelConvertOption1Title": "現在レイヤーを共通化",
+lib/l10n/app_ja.arb-2180-  "layerPanelConvertOption1Subtitle": "このレイヤーのみを共通レイヤーとして設定します",
+lib/l10n/app_ja.arb:2181:  "layerPanelConvertOption2Title": "表示中レイヤーを複製して全統合して共通化",
+lib/l10n/app_ja.arb-2182-  "layerPanelConvertOption2Subtitle": "表示中のすべてのレイヤーを統合した結果を共通レイヤーとして作成します",
+lib/l10n/app_ja.arb-2183-  "layerPanelCommonRangeTitle": "共通レイヤー範囲",
+lib/l10n/app_ja.arb-2184-  "layerPanelHelpDialogTitle": "レイヤーについて",
+lib/l10n/app_ja.arb-2185-  "layerPanelHelpBlendModeBody": "レイヤーの合成方法を変更します。乗算・スクリーン・オーバーレイなどがあります。",
+lib/l10n/app_ja.arb-2186-  "layerPanelHelpClippingBody": "下のレイヤーの不透明ピクセル範囲内のみ描画します。描画範囲を制御したい場合はこちらを使用してください。",
+lib/l10n/app_ja.arb-2187-  "layerPanelCommonLayerLabel": "共通レイヤー",
+lib/l10n/app_ja.arb-2188-  "layerPanelHelpCommonLayerBody": "複数のフレームで同じ内容を共有するレイヤーです。表示するフレーム範囲を設定できます。",
+lib/l10n/app_ja.arb-2189-  "layerPanelAutofillMethodTitle": "自動塗り方法",
+--
+lib/l10n/app_localizations.dart-8067-  ///
+lib/l10n/app_localizations.dart-8068-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart-8069-  /// **'このレイヤーのみを共通レイヤーとして設定します'**
+lib/l10n/app_localizations.dart-8070-  String get layerPanelConvertOption1Subtitle;
+lib/l10n/app_localizations.dart-8071-
+lib/l10n/app_localizations.dart-8072-  /// No description provided for @layerPanelConvertOption2Title.
+lib/l10n/app_localizations.dart-8073-  ///
+lib/l10n/app_localizations.dart-8074-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart:8075:  /// **'表示中レイヤーを複製して全統合して共通化'**
+lib/l10n/app_localizations.dart-8076-  String get layerPanelConvertOption2Title;
+lib/l10n/app_localizations.dart-8077-
+lib/l10n/app_localizations.dart-8078-  /// No description provided for @layerPanelConvertOption2Subtitle.
+lib/l10n/app_localizations.dart-8079-  ///
+lib/l10n/app_localizations.dart-8080-  /// In ja, this message translates to:
+lib/l10n/app_localizations.dart-8081-  /// **'表示中のすべてのレイヤーを統合した結果を共通レイヤーとして作成します'**
+lib/l10n/app_localizations.dart-8082-  String get layerPanelConvertOption2Subtitle;
+lib/l10n/app_localizations.dart-8083-
+--
+lib/models/custom_automation_builtin_presets.dart-96-    recordingStartFrame: 0,
+lib/models/custom_automation_builtin_presets.dart-97-    createdAt: _epoch,
+lib/models/custom_automation_builtin_presets.dart-98-    updatedAt: _epoch,
+lib/models/custom_automation_builtin_presets.dart-99-    steps: [
+lib/models/custom_automation_builtin_presets.dart-100-      const CustomAutomationStep(
+lib/models/custom_automation_builtin_presets.dart-101-        id: 'builtin_lineart_color_trace_1',
+lib/models/custom_automation_builtin_presets.dart-102-        surface: CustomAutomationSurface.canvas,
+lib/models/custom_automation_builtin_presets.dart-103-        command: 'canvas.visibleCompositeToNewTop',
+lib/models/custom_automation_builtin_presets.dart:104:        label: '表示中レイヤーを複製した全統合',
+lib/models/custom_automation_builtin_presets.dart-105-        recordedFrame: 0,
+lib/models/custom_automation_builtin_presets.dart-106-      ),
+lib/models/custom_automation_builtin_presets.dart-107-      _filterStep(
+lib/models/custom_automation_builtin_presets.dart-108-        '2',
+lib/models/custom_automation_builtin_presets.dart-109-        const FilterDef(
+lib/models/custom_automation_builtin_presets.dart-110-          id: 'Filter0001',
+lib/models/custom_automation_builtin_presets.dart-111-          name: 'ガウスぼかし',
+lib/models/custom_automation_builtin_presets.dart-112-          kind: FilterKind.gaussianBlur,
+
+===== 表示中 =====
+lib/services/project_service.dart-591-              layer.type == LayerType.watermark)) {
+lib/services/project_service.dart-592-        result.add((layer: layer, home: home));
+lib/services/project_service.dart-593-      }
+lib/services/project_service.dart-594-    }
+lib/services/project_service.dart-595-    return result;
+lib/services/project_service.dart-596-  }
+lib/services/project_service.dart-597-
+lib/services/project_service.dart-598-  /// レイヤーのTileManager合成キーを解決する。表示範囲レイヤーは、実際に
+lib/services/project_service.dart:599:  /// 表示中のフレームに関わらず常にホーム位置のタイルバッファを参照する
+lib/services/project_service.dart-600-  /// （複数フレームでの共有表示・共有編集を実現するため）。
+lib/services/project_service.dart-601-  String tileKeyFor(
+lib/services/project_service.dart-602-    String projectId,
+lib/services/project_service.dart-603-    String sceneId,
+lib/services/project_service.dart-604-    int frameIndex,
+lib/services/project_service.dart-605-    String layerId,
+lib/services/project_service.dart-606-  ) => resolveTileKey(
+lib/services/project_service.dart-607-    _layerHomes[projectId] ?? const {},
+--
+lib/services/project_service.dart-896-        removedIndex: removedIndex,
+lib/services/project_service.dart-897-        doAdd: _insertLayerById,
+lib/services/project_service.dart-898-        doRemove: _removeLayerById,
+lib/services/project_service.dart-899-      ),
+lib/services/project_service.dart-900-    );
+lib/services/project_service.dart-901-  }
+lib/services/project_service.dart-902-
+lib/services/project_service.dart-903-  /// レイヤーを更新する（表示切替・ロック等）。表示範囲レイヤーは実データの
+lib/services/project_service.dart:904:  /// あるホーム位置へ書き戻す（他フレームから合成表示中に編集した場合も
+lib/services/project_service.dart-905-  /// 正しく反映されるようにするため）。
+lib/services/project_service.dart-906-  void updateLayer({
+lib/services/project_service.dart-907-    required String projectId,
+lib/services/project_service.dart-908-    required String sceneId,
+lib/services/project_service.dart-909-    required int frameIndex,
+lib/services/project_service.dart-910-    required Layer layer,
+lib/services/project_service.dart-911-  }) {
+lib/services/project_service.dart-912-    final home =
+--
+lib/services/project_service.dart-2111-    );
+lib/services/project_service.dart-2112-    (_layerHomes[projectId] ??= {})[layer.id] = (
+lib/services/project_service.dart-2113-      sceneId: sceneId,
+lib/services/project_service.dart-2114-      frameIndex: frameIndex,
+lib/services/project_service.dart-2115-    );
+lib/services/project_service.dart-2116-    notifyListeners();
+lib/services/project_service.dart-2117-  }
+lib/services/project_service.dart-2118-
+lib/services/project_service.dart:2119:  /// 表示中の全レイヤーを1枚に統合し、新しい共通レイヤーとして追加する
+lib/services/project_service.dart:2120:  /// （共通レイヤー化ダイアログ「表示中レイヤーを複製して全統合して
+lib/services/project_service.dart-2121-  /// 共通化」）。元のレイヤーは変更しない。
+lib/services/project_service.dart-2122-  Future<void> addFlattenedCommonLayer({
+lib/services/project_service.dart-2123-    required String projectId,
+lib/services/project_service.dart-2124-    required String sceneId,
+lib/services/project_service.dart-2125-    required int frameIndex,
+lib/services/project_service.dart-2126-    required LayerRangeMode rangeMode,
+lib/services/project_service.dart-2127-    required int rangeStart,
+lib/services/project_service.dart-2128-    required int rangeEnd,
+--
+lib/services/community_preview_service.dart-1-import 'package:flutter/widgets.dart';
+lib/services/community_preview_service.dart-2-import '../models/community_work.dart';
+lib/services/community_preview_service.dart-3-
+lib/services/community_preview_service.dart-4-/// コミュニティ画面のフローティング動画プレビューウィンドウの表示状態
+lib/services/community_preview_service.dart:5:/// （どの作品を表示中か・ウィンドウの位置とサイズ）を保持するサービス。
+lib/services/community_preview_service.dart-6-///
+lib/services/community_preview_service.dart-7-/// 「動画を再生しながら他の画面を閲覧し続けられる」という要件を満たす
+lib/services/community_preview_service.dart-8-/// ため、この状態は特定の画面（`CommunityScreen`等）のStateではなく
+lib/services/community_preview_service.dart-9-/// アプリ全体で共有されるProviderとして持ち、`app.dart`の
+lib/services/community_preview_service.dart-10-/// `MaterialApp.router`の`builder`（ルーティングされる画面の外側、
+lib/services/community_preview_service.dart-11-/// 常に生き続ける層）でこの状態を監視してウィンドウを描画する。
+lib/services/community_preview_service.dart-12-/// これにより、コミュニティ画面から他の画面へ遷移してもウィンドウは
+lib/services/community_preview_service.dart-13-/// 消えない。
+--
+lib/screens/project/project_detail_screen.dart-423-            ],
+lib/screens/project/project_detail_screen.dart-424-          ),
+lib/screens/project/project_detail_screen.dart-425-        ),
+lib/screens/project/project_detail_screen.dart-426-      ),
+lib/screens/project/project_detail_screen.dart-427-    );
+lib/screens/project/project_detail_screen.dart-428-  }
+lib/screens/project/project_detail_screen.dart-429-
+lib/screens/project/project_detail_screen.dart-430-  /// プレビュー画像本体。[showOverlayButtons]がtrueの場合のみ、右上に
+lib/screens/project/project_detail_screen.dart:431:  /// 全画面化ボタンを重ねる（全画面表示中はこのメソッド自体を全画面化用に
+lib/screens/project/project_detail_screen.dart-432-  /// 別途呼び出すため不要）。
+lib/screens/project/project_detail_screen.dart-433-  Widget _buildPreviewImage(Project project, {bool showOverlayButtons = true}) {
+lib/screens/project/project_detail_screen.dart-434-    final l10n = AppLocalizations.of(context)!;
+lib/screens/project/project_detail_screen.dart-435-    final theme = context.watch<ThemeService>().current;
+lib/screens/project/project_detail_screen.dart-436-    final image = Container(
+lib/screens/project/project_detail_screen.dart-437-      decoration: BoxDecoration(
+lib/screens/project/project_detail_screen.dart-438-        color: Color(project.backgroundColor),
+lib/screens/project/project_detail_screen.dart-439-        borderRadius: BorderRadius.circular(8),
+--
+lib/screens/community/widgets/community_shorts_viewer.dart-15-
+lib/screens/community/widgets/community_shorts_viewer.dart-16-/// 「縦画面モード」。YouTubeプレーヤー領域の上にはNIARIM独自UIを重ねず、
+lib/screens/community/widgets/community_shorts_viewer.dart-17-/// 作者・タグ・制作情報・操作はすべて動画外の下部パネルへ分離する。
+lib/screens/community/widgets/community_shorts_viewer.dart-18-class CommunityShortsScreen extends StatefulWidget {
+lib/screens/community/widgets/community_shorts_viewer.dart-19-  final List<CommunityWork> works;
+lib/screens/community/widgets/community_shorts_viewer.dart-20-  final int initialIndex;
+lib/screens/community/widgets/community_shorts_viewer.dart-21-
+lib/screens/community/widgets/community_shorts_viewer.dart-22-  /// 呼び出し側との互換性のため残す初期スナップショット。
+lib/screens/community/widgets/community_shorts_viewer.dart:23:  /// 表示中のブックマーク状態はCommunityServiceをwatchして取得する。
+lib/screens/community/widgets/community_shorts_viewer.dart-24-  final Set<String> bookmarkedIds;
+lib/screens/community/widgets/community_shorts_viewer.dart-25-
+lib/screens/community/widgets/community_shorts_viewer.dart-26-  /// 呼び出し側との互換性のため残す。現在の縦画面内操作は
+lib/screens/community/widgets/community_shorts_viewer.dart-27-  /// CommunityService.toggleBookmark()を直接呼ぶ。
+lib/screens/community/widgets/community_shorts_viewer.dart-28-  final void Function(CommunityWork work) onToggleBookmark;
+lib/screens/community/widgets/community_shorts_viewer.dart-29-
+lib/screens/community/widgets/community_shorts_viewer.dart-30-  const CommunityShortsScreen({
+lib/screens/community/widgets/community_shorts_viewer.dart-31-    super.key,
+--
+lib/screens/timeline/timeline_screen.dart-226-  ui.Image? _moveThumbnail;
+lib/screens/timeline/timeline_screen.dart-227-
+lib/screens/timeline/timeline_screen.dart-228-  // シーンのコピー・切り取り・貼り付け。クリップボードに内容がある間は
+lib/screens/timeline/timeline_screen.dart-229-  // シーン一覧の三点メニューやCtrl+Vからいつでも貼り付けを開始できる。
+lib/screens/timeline/timeline_screen.dart-230-  // 貼り付けは既存の移動モードと同じカーソル固定UIを再利用するため、
+lib/screens/timeline/timeline_screen.dart-231-  // 専用のカーソル位置は持たず_moveCursorPosを共用する。
+lib/screens/timeline/timeline_screen.dart-232-  ({List<String> ids, bool isCut})? _sceneClipboard;
+lib/screens/timeline/timeline_screen.dart-233-  bool _isScenePasteMode = false;
+lib/screens/timeline/timeline_screen.dart:234:  // シーンのカーソルUI（移動または貼り付け）が表示中かどうか。
+lib/screens/timeline/timeline_screen.dart-235-  bool get _isSceneCursorActive => _isMoveMode || _isScenePasteMode;
+lib/screens/timeline/timeline_screen.dart-236-
+lib/screens/timeline/timeline_screen.dart-237-  // トラッククリップ
+lib/screens/timeline/timeline_screen.dart-238-  final List<_TrackClip> _audioClips = [];
+lib/screens/timeline/timeline_screen.dart-239-  final List<_TrackClip> _videoClips = [];
+lib/screens/timeline/timeline_screen.dart-240-  final List<_TrackClip> _imageClips = [];
+lib/screens/timeline/timeline_screen.dart-241-
+lib/screens/timeline/timeline_screen.dart-242-  // クリップの長押しドラッグ（表示開始位置の移動）・端のハンドルドラッグ
+--
+lib/screens/timeline/timeline_screen.dart-385-  int _frameMoveCursorPos = 0;
+lib/screens/timeline/timeline_screen.dart-386-
+lib/screens/timeline/timeline_screen.dart-387-  // フレームのコピー・切り取り・貼り付け。シーンをまたいだ貼り付けに
+lib/screens/timeline/timeline_screen.dart-388-  // 対応するため、貼り付け先とは別にコピー元のシーンIDを保持する。
+lib/screens/timeline/timeline_screen.dart-389-  // 貼り付けは既存の移動モードと同じカーソル固定UIを再利用するため、
+lib/screens/timeline/timeline_screen.dart-390-  // 専用のカーソル位置は持たず_frameMoveCursorPosを共用する。
+lib/screens/timeline/timeline_screen.dart-391-  ({String sceneId, List<int> indices, bool isCut})? _frameClipboard;
+lib/screens/timeline/timeline_screen.dart-392-  bool _isFramePasteMode = false;
+lib/screens/timeline/timeline_screen.dart:393:  // フレームのカーソルUI（移動または貼り付け）が表示中かどうか。
+lib/screens/timeline/timeline_screen.dart-394-  bool get _isFrameCursorActive => _isFrameMoveMode || _isFramePasteMode;
+lib/screens/timeline/timeline_screen.dart-395-
+lib/screens/timeline/timeline_screen.dart-396-  // フレーム一覧も画面中央に固定で赤枠を表示し、現在位置のフレームがそこへ
+lib/screens/timeline/timeline_screen.dart-397-  // 来るよう一覧側をスクロールさせる（キャンバスモードのフレーム一覧と
+lib/screens/timeline/timeline_screen.dart-398-  // 同じ挙動）。_frameScrollCtrlは他トラックと同期済みのため、
+lib/screens/timeline/timeline_screen.dart-399-  // ここでのスクロールは共通レイヤー・素材トラック等にも連動する。
+lib/screens/timeline/timeline_screen.dart-400-  int? _lastCenteredFrame;
+lib/screens/timeline/timeline_screen.dart-401-
+--
+lib/screens/timeline/timeline_screen.dart-1205-                      ),
+lib/screens/timeline/timeline_screen.dart-1206-                      layerHomes: ps.layerHomesOf(widget.projectId),
+lib/screens/timeline/timeline_screen.dart-1207-                      groups: ps.layerGroupsOf(widget.projectId, sceneId),
+lib/screens/timeline/timeline_screen.dart-1208-                    ),
+lib/screens/timeline/timeline_screen.dart-1209-                  ),
+lib/screens/timeline/timeline_screen.dart-1210-          ),
+lib/screens/timeline/timeline_screen.dart-1211-          // プレビュー全画面化ボタン（確認・仕上がり
+lib/screens/timeline/timeline_screen.dart-1212-          // チェックに集中できるよう、プレビューのみを拡大表示する導線）。
+lib/screens/timeline/timeline_screen.dart:1213:          // 全画面表示中は_buildPreviewContent()自体が呼ばれないため、ここには
+lib/screens/timeline/timeline_screen.dart-1214-          // 「開く」方向のボタンのみを置けばよい。
+lib/screens/timeline/timeline_screen.dart-1215-          Positioned(
+lib/screens/timeline/timeline_screen.dart-1216-            right: 4,
+lib/screens/timeline/timeline_screen.dart-1217-            top: 4,
+lib/screens/timeline/timeline_screen.dart-1218-            child: FirstUseTooltip(
+lib/screens/timeline/timeline_screen.dart-1219-              tooltipKey: 'timeline_preview_fullscreen',
+lib/screens/timeline/timeline_screen.dart-1220-              message: l10n.timelinePreviewFullscreenTip,
+lib/screens/timeline/timeline_screen.dart-1221-              child: Material(
+--
+lib/screens/timeline/timeline_screen.dart-1266-    final ps = context.watch<ProjectService>();
+lib/screens/timeline/timeline_screen.dart-1267-    final project = ps.projects
+lib/screens/timeline/timeline_screen.dart-1268-        .where((p) => p.id == widget.projectId)
+lib/screens/timeline/timeline_screen.dart-1269-        .firstOrNull;
+lib/screens/timeline/timeline_screen.dart-1270-    final aspect = (project != null && project.exportHeight > 0)
+lib/screens/timeline/timeline_screen.dart-1271-        ? project.exportWidth / project.exportHeight
+lib/screens/timeline/timeline_screen.dart-1272-        : 16 / 9;
+lib/screens/timeline/timeline_screen.dart-1273-    final maxH = maxAvailableHeight > 0 ? maxAvailableHeight : 600.0;
+lib/screens/timeline/timeline_screen.dart:1274:    // 上限は「表示中のキャンバス横幅が画面の横幅ぴったりになる高さ」と
+lib/screens/timeline/timeline_screen.dart-1275-    // レイアウト上実際に使える高さ（maxH）のうち小さい方。下限は0（ハンドルが
+lib/screens/timeline/timeline_screen.dart-1276-    // プレビュー領域の一番上に付くまで、加減なく縮小できるようにする）。
+lib/screens/timeline/timeline_screen.dart-1277-    final screenWidth = MediaQuery.sizeOf(context).width;
+lib/screens/timeline/timeline_screen.dart-1278-    final maxHeightByScreenWidth = aspect > 0 ? screenWidth / aspect : maxH;
+lib/screens/timeline/timeline_screen.dart-1279-    final maxPreviewHeight = maxHeightByScreenWidth < maxH
+lib/screens/timeline/timeline_screen.dart-1280-        ? maxHeightByScreenWidth
+lib/screens/timeline/timeline_screen.dart-1281-        : maxH;
+lib/screens/timeline/timeline_screen.dart-1282-    final baseHeight = (maxH * settings.timelinePreviewHeightFraction).clamp(
+--
+lib/screens/timeline/timeline_screen.dart-3310-      _isFrameMoveMode = false;
+lib/screens/timeline/timeline_screen.dart-3311-      _isFrameMultiSelect = false;
+lib/screens/timeline/timeline_screen.dart-3312-      _selectedFrameIndices.clear();
+lib/screens/timeline/timeline_screen.dart-3313-      _currentFrame = _currentFrame.clamp(0, _totalFrames - 1);
+lib/screens/timeline/timeline_screen.dart-3314-    });
+lib/screens/timeline/timeline_screen.dart-3315-  }
+lib/screens/timeline/timeline_screen.dart-3316-
+lib/screens/timeline/timeline_screen.dart-3317-  // フレーム貼り付けモード開始（クリップボードにフレームがある場合のみ
+lib/screens/timeline/timeline_screen.dart:3318:  // 起動）。貼り付け先は現在表示中のシーン（コピー元と異なっていてよい）。
+lib/screens/timeline/timeline_screen.dart-3319-  void _startFramePasteMode() {
+lib/screens/timeline/timeline_screen.dart-3320-    final clip = _frameClipboard;
+lib/screens/timeline/timeline_screen.dart-3321-    if (clip == null) return;
+lib/screens/timeline/timeline_screen.dart-3322-    setState(() {
+lib/screens/timeline/timeline_screen.dart-3323-      _isFramePasteMode = true;
+lib/screens/timeline/timeline_screen.dart-3324-      _frameMoveCursorPos = _totalFrames;
+lib/screens/timeline/timeline_screen.dart-3325-    });
+lib/screens/timeline/timeline_screen.dart-3326-    _loadMoveThumbnail(clip.sceneId, frameIndex: clip.indices.first);
+--
+lib/screens/timeline/timeline_screen.dart-3504-                          width: 0.5,
+lib/screens/timeline/timeline_screen.dart-3505-                        ),
+lib/screens/timeline/timeline_screen.dart-3506-                      ),
+lib/screens/timeline/timeline_screen.dart-3507-                    ),
+lib/screens/timeline/timeline_screen.dart-3508-                  ),
+lib/screens/timeline/timeline_screen.dart-3509-                ),
+lib/screens/timeline/timeline_screen.dart-3510-                // クリップ描画
+lib/screens/timeline/timeline_screen.dart-3511-                ...clips.map((clip) => _buildClipWidget(clip, scrollCtrl)),
+lib/screens/timeline/timeline_screen.dart:3512:                // 表示中の最後尾の行にのみ＋を出し、同じタイミングで重ねたい
+lib/screens/timeline/timeline_screen.dart-3513-                // 素材がある時だけ新しい行を追加できるようにする。行の削除は
+lib/screens/timeline/timeline_screen.dart-3514-                // 個々のクリップを消せば自動で畳まれるため、専用ボタンは持たない。
+lib/screens/timeline/timeline_screen.dart-3515-                if (showAddButton)
+lib/screens/timeline/timeline_screen.dart-3516-                  Positioned(
+lib/screens/timeline/timeline_screen.dart-3517-                    right: 4,
+lib/screens/timeline/timeline_screen.dart-3518-                    top: 4,
+lib/screens/timeline/timeline_screen.dart-3519-                    child: GestureDetector(
+lib/screens/timeline/timeline_screen.dart-3520-                      onTap: () => _addTrackRow(type),
+--
+lib/screens/timeline/timeline_screen.dart-6205-      // セーブツリー画面から戻ってきたタイミングで、続けてプロジェクト
+lib/screens/timeline/timeline_screen.dart-6206-      // 一覧へ遷移する。
+lib/screens/timeline/timeline_screen.dart-6207-      await context.push('/save-tree/${widget.projectId}?entry=timeline');
+lib/screens/timeline/timeline_screen.dart-6208-      if (!mounted) return;
+lib/screens/timeline/timeline_screen.dart-6209-    }
+lib/screens/timeline/timeline_screen.dart-6210-    if (mounted) context.go('/home');
+lib/screens/timeline/timeline_screen.dart-6211-  }
+
+===== 下のレイヤーと結合 =====
+lib/models/custom_automation_builtin_presets.dart-128-        command: 'canvas.layerDuplicate',
+lib/models/custom_automation_builtin_presets.dart-129-        label: 'レイヤーを複製',
+lib/models/custom_automation_builtin_presets.dart-130-        recordedFrame: 0,
+lib/models/custom_automation_builtin_presets.dart-131-      ),
+lib/models/custom_automation_builtin_presets.dart-132-      const CustomAutomationStep(
+lib/models/custom_automation_builtin_presets.dart-133-        id: 'builtin_lineart_color_trace_5',
+lib/models/custom_automation_builtin_presets.dart-134-        surface: CustomAutomationSurface.canvas,
+lib/models/custom_automation_builtin_presets.dart-135-        command: 'canvas.mergeDown',
+lib/models/custom_automation_builtin_presets.dart:136:        label: '下のレイヤーと結合',
+lib/models/custom_automation_builtin_presets.dart-137-        recordedFrame: 0,
+lib/models/custom_automation_builtin_presets.dart-138-      ),
+lib/models/custom_automation_builtin_presets.dart-139-      const CustomAutomationStep(
+lib/models/custom_automation_builtin_presets.dart-140-        id: 'builtin_lineart_color_trace_6',
+lib/models/custom_automation_builtin_presets.dart-141-        surface: CustomAutomationSurface.canvas,
+lib/models/custom_automation_builtin_presets.dart-142-        command: 'canvas.mergeDown',
+lib/models/custom_automation_builtin_presets.dart:143:        label: '下のレイヤーと結合',
+lib/models/custom_automation_builtin_presets.dart-144-        recordedFrame: 0,
+lib/models/custom_automation_builtin_presets.dart-145-      ),
+lib/models/custom_automation_builtin_presets.dart-146-      const CustomAutomationStep(
+lib/models/custom_automation_builtin_presets.dart-147-        id: 'builtin_lineart_color_trace_7',
+lib/models/custom_automation_builtin_presets.dart-148-        surface: CustomAutomationSurface.canvas,
+lib/models/custom_automation_builtin_presets.dart-149-        command: 'canvas.colorTraceAdjust',
+lib/models/custom_automation_builtin_presets.dart-150-        label: '色トレス補正',
+lib/models/custom_automation_builtin_presets.dart-151-        args: {
+
+===== 下と結合 =====
+
+===== 色トレス =====
+lib/screens/tips/tip_diagrams.dart-1383-      canvas,
+lib/screens/tips/tip_diagrams.dart-1384-      Icons.swap_horiz,
+lib/screens/tips/tip_diagrams.dart-1385-      Offset(size.width / 2, size.height / 2),
+lib/screens/tips/tip_diagrams.dart-1386-      size: 26 * s,
+lib/screens/tips/tip_diagrams.dart-1387-      color: scheme.primary,
+lib/screens/tips/tip_diagrams.dart-1388-    );
+lib/screens/tips/tip_diagrams.dart-1389-  }
+lib/screens/tips/tip_diagrams.dart-1390-
+lib/screens/tips/tip_diagrams.dart:1391:  /// 線画色の3つの使い分け（輪郭線＝色トレス／影・ハイライト＝塗り色と
+lib/screens/tips/tip_diagrams.dart-1392-  /// 同化／指定色＝あえて別色）を、3つの小さな「線」見本として横に並べる。
+lib/screens/tips/tip_diagrams.dart-1393-  void _paintLineColorModes(Canvas canvas, Size size) {
+lib/screens/tips/tip_diagrams.dart-1394-    final s = size.height / 96;
+lib/screens/tips/tip_diagrams.dart-1395-    final labels = [
+lib/screens/tips/tip_diagrams.dart:1396:      (Icons.border_color, scheme.primary), // 輪郭線：色トレス・線画馴染ませ
+lib/screens/tips/tip_diagrams.dart-1397-      (
+lib/screens/tips/tip_diagrams.dart-1398-        Icons.gradient,
+lib/screens/tips/tip_diagrams.dart-1399-        scheme.onSurfaceVariant.withValues(alpha: 0.5),
+lib/screens/tips/tip_diagrams.dart-1400-      ), // 影・ハイライト：塗り色と同化
+lib/screens/tips/tip_diagrams.dart-1401-      (Icons.palette, scheme.tertiary), // 指定色：あえて別色
+lib/screens/tips/tip_diagrams.dart-1402-    ];
+lib/screens/tips/tip_diagrams.dart-1403-    final w = (size.width - 32 * s) / 3;
+lib/screens/tips/tip_diagrams.dart-1404-    for (int i = 0; i < 3; i++) {
+--
+lib/screens/autofill/autofill_preset_screen.dart-1574-                        max: 100,
+lib/screens/autofill/autofill_preset_screen.dart-1575-                        onChanged: (v) => setS(
+lib/screens/autofill/autofill_preset_screen.dart-1576-                          () => current = current.copyWith(outlineWidth: v),
+lib/screens/autofill/autofill_preset_screen.dart-1577-                        ),
+lib/screens/autofill/autofill_preset_screen.dart-1578-                      ),
+lib/screens/autofill/autofill_preset_screen.dart-1579-                    ],
+lib/screens/autofill/autofill_preset_screen.dart-1580-                    const Divider(),
+lib/screens/autofill/autofill_preset_screen.dart-1581-                    // 線画色のリアルタイムプレビュー。塗り色プレビューと同じく、
+lib/screens/autofill/autofill_preset_screen.dart:1582:                    // 線画色設定のすぐ上に置く（色トレス・線画馴染ませ選択時は
+lib/screens/autofill/autofill_preset_screen.dart-1583-                    // 塗り色からのオフセット適用後の色をプレビューする）。
+lib/screens/autofill/autofill_preset_screen.dart-1584-                    Container(
+lib/screens/autofill/autofill_preset_screen.dart-1585-                      height: 32,
+lib/screens/autofill/autofill_preset_screen.dart-1586-                      clipBehavior: Clip.antiAlias,
+lib/screens/autofill/autofill_preset_screen.dart-1587-                      decoration: BoxDecoration(
+lib/screens/autofill/autofill_preset_screen.dart-1588-                        borderRadius: BorderRadius.circular(6),
+lib/screens/autofill/autofill_preset_screen.dart-1589-                        border: Border.all(
+lib/screens/autofill/autofill_preset_screen.dart-1590-                          color: Theme.of(context).colorScheme.outlineVariant,
+--
+lib/screens/autofill/autofill_preset_screen.dart-1665-                        label: Text(
+lib/screens/autofill/autofill_preset_screen.dart-1666-                          l10n.autofillPartSelectColorButton,
+lib/screens/autofill/autofill_preset_screen.dart-1667-                          style: const TextStyle(fontSize: 12),
+lib/screens/autofill/autofill_preset_screen.dart-1668-                        ),
+lib/screens/autofill/autofill_preset_screen.dart-1669-                      ),
+lib/screens/autofill/autofill_preset_screen.dart-1670-                      const SizedBox(height: 6),
+lib/screens/autofill/autofill_preset_screen.dart-1671-                      // 指定色は「何が既定か」という基準が無く、ユーザーが自由に
+lib/screens/autofill/autofill_preset_screen.dart-1672-                      // 選んだ色を黒へ戻すこと自体に意味がないため、デフォルトに
+lib/screens/autofill/autofill_preset_screen.dart:1673:                      // 戻すボタンは置かない（色トレス・線画馴染ませのみ、既定の
+lib/screens/autofill/autofill_preset_screen.dart-1674-                      // 補正値へ戻す意味のあるボタンとして下に用意している）。
+lib/screens/autofill/autofill_preset_screen.dart-1675-                      OutlinedButton.icon(
+lib/screens/autofill/autofill_preset_screen.dart-1676-                        onPressed: () => _pickColorFromNewImage(
+lib/screens/autofill/autofill_preset_screen.dart-1677-                          (c) => setS(
+lib/screens/autofill/autofill_preset_screen.dart-1678-                            () => current = current.copyWith(
+lib/screens/autofill/autofill_preset_screen.dart-1679-                              lineColor: c.toARGB32(),
+lib/screens/autofill/autofill_preset_screen.dart-1680-                            ),
+lib/screens/autofill/autofill_preset_screen.dart-1681-                          ),
+--
+lib/screens/autofill/autofill_preset_screen.dart-1752-                      SteppedSlider(
+lib/screens/autofill/autofill_preset_screen.dart-1753-                        value: current.traceLightness,
+lib/screens/autofill/autofill_preset_screen.dart-1754-                        min: -100,
+lib/screens/autofill/autofill_preset_screen.dart-1755-                        max: 100,
+lib/screens/autofill/autofill_preset_screen.dart-1756-                        onChanged: (v) => setS(
+lib/screens/autofill/autofill_preset_screen.dart-1757-                          () => current = current.copyWith(traceLightness: v),
+lib/screens/autofill/autofill_preset_screen.dart-1758-                        ),
+lib/screens/autofill/autofill_preset_screen.dart-1759-                      ),
+lib/screens/autofill/autofill_preset_screen.dart:1760:                      // 色トレス・線画馴染ませの3項目をまとめて既定値へ戻す。
+lib/screens/autofill/autofill_preset_screen.dart-1761-                      Align(
+lib/screens/autofill/autofill_preset_screen.dart-1762-                        alignment: Alignment.centerLeft,
+lib/screens/autofill/autofill_preset_screen.dart-1763-                        child: TextButton.icon(
+lib/screens/autofill/autofill_preset_screen.dart-1764-                          onPressed:
+lib/screens/autofill/autofill_preset_screen.dart-1765-                              (current.traceHue == -10 &&
+lib/screens/autofill/autofill_preset_screen.dart-1766-                                  current.traceSaturation == 60 &&
+lib/screens/autofill/autofill_preset_screen.dart-1767-                                  current.traceLightness == -50)
+lib/screens/autofill/autofill_preset_screen.dart-1768-                              ? null
+--
+lib/screens/autofill/autofill_preset_screen.dart-2533-  }
+lib/screens/autofill/autofill_preset_screen.dart-2534-
+lib/screens/autofill/autofill_preset_screen.dart-2535-  /// 塗り色（単色・グラデーションいずれも）のリアルタイムプレビュー。
+lib/screens/autofill/autofill_preset_screen.dart-2536-  /// チェッカー柄の背景に、不透明度を反映した状態で重ねて表示することで、
+lib/screens/autofill/autofill_preset_screen.dart-2537-  /// 不透明度スライダーを動かした時にプレビューでも分かるようにする。
+lib/screens/autofill/autofill_preset_screen.dart-2538-  /// 線画色プレビュー用に、線画の実際の色（塗り色プレビューだけでなく
+lib/screens/autofill/autofill_preset_screen.dart-2539-  /// 線画色も）を計算する。
+lib/screens/autofill/autofill_preset_screen.dart-2540-  /// autofill_engine.dartのrecolorLineart/_traceAdjustColorと同じロジック
+lib/screens/autofill/autofill_preset_screen.dart:2541:  /// （色トレス・線画馴染ませの基準は塗り色）をHSLColorで再現している。
+lib/screens/autofill/autofill_preset_screen.dart-2542-  /// グラデーション塗りの場合、線画色プレビューは代表色として先頭の色を
+lib/screens/autofill/autofill_preset_screen.dart-2543-  /// 使う（実際の塗りは位置によって連続的に変化するが、小さなスウォッチ
+lib/screens/autofill/autofill_preset_screen.dart-2544-  /// では代表色1色で十分なため）。
+lib/screens/autofill/autofill_preset_screen.dart-2545-  Color _lineColorFor(AutofillPart p) {
+lib/screens/autofill/autofill_preset_screen.dart-2546-    switch (p.lineColorMode) {
+lib/screens/autofill/autofill_preset_screen.dart-2547-      case AutofillLineColorMode.specified:
+lib/screens/autofill/autofill_preset_screen.dart-2548-        return Color(p.lineColor);
+lib/screens/autofill/autofill_preset_screen.dart-2549-      case AutofillLineColorMode.sameAsFill:
+--
+lib/l10n/app_localizations_ja.dart-1276-  String get helpCommonLayerDesc =>
+lib/l10n/app_localizations_ja.dart-1277-      '通常のレイヤーは1フレームごとに独立していますが、共通レイヤーは複数のフレーム・シーンで同じ内容を共有するレイヤーです。背景などフレームが変わっても動かさない要素を、フレームごとに描き直す手間なく一度描くだけで済ませられます。タイムライン上では専用のトラックとして表示されます。 通常レイヤーを共通レイヤー（複数フレームに同じ内容を表示し続けるレイヤー）へ変換できる機能です。表示中のレイヤーを複製して1枚に統合してから共通化することもできます。背景など毎フレーム同じ内容を使い回したい場合に、描き直す手間を省けます。';
+lib/l10n/app_localizations_ja.dart-1278-
+lib/l10n/app_localizations_ja.dart-1279-  @override
+lib/l10n/app_localizations_ja.dart-1280-  String get helpAutoFillTitle => '自動塗り';
+lib/l10n/app_localizations_ja.dart-1281-
+lib/l10n/app_localizations_ja.dart-1282-  @override
+lib/l10n/app_localizations_ja.dart-1283-  String get helpAutoFillDesc =>
+lib/l10n/app_localizations_ja.dart:1284:      '自動塗り用線画レイヤーの下に自動塗りレイヤーを作り、あらかじめ作成した「自動塗り設定」（パーツごとの色・トーンの組み合わせ）に基づいて色を自動で塗る機能です。線画を描き終えた後に一括で色を塗れるため、同じキャラクターを何度も描く手描きアニメーションで色塗りの手間を大幅に減らせます。線画を描き直した場合はタイムライン・レイヤーパネルに更新マークが表示され、自動塗りの再実行が必要なことを知らせます。 タイムライン画面の三点メニューから「自動塗り実行」を選ぶと、更新マークが付いた自動塗りレイヤーをまとめて再計算できます。線画を描き直した後に1枚ずつレイヤーパネルで実行する手間を省けます。 自動塗り設定の各パーツには、線画の色をどう扱うかの設定（指定色・塗り色と同じ・色トレス）があります。色トレス（線画馴染ませ）を選ぶと、線画の色を塗り色に合わせてHSLシフトし、線が浮かずに馴染んだ仕上がりになります。 設定が増えてくると、パーツ割り当て時の一覧が長くなって選びにくくなります。プロジェクト設定（またはレイヤーパネルのパーツ割り当てダイアログ）から、このプロジェクトで使う設定だけに絞り込んでおくと、一覧がすっきりして選びやすくなります。';
+lib/l10n/app_localizations_ja.dart-1285-
+lib/l10n/app_localizations_ja.dart-1286-  @override
+lib/l10n/app_localizations_ja.dart-1287-  String get helpOnionSkinTitle => 'オニオンスキン';
+lib/l10n/app_localizations_ja.dart-1288-
+lib/l10n/app_localizations_ja.dart-1289-  @override
+lib/l10n/app_localizations_ja.dart-1290-  String get helpOnionSkinDesc =>
+lib/l10n/app_localizations_ja.dart-1291-      '現在編集中のフレームの前後のフレームを半透明で重ねて表示し、動きの繋がりを確認しながら描けるようにする機能です。パフォーマンス設定で表示する枚数（前後何枚まで）や色・透明度を調整できます。';
+lib/l10n/app_localizations_ja.dart-1292-
+--
+lib/l10n/app_localizations_ja.dart-1800-  @override
+lib/l10n/app_localizations_ja.dart-1801-  String get tipsRulerOnionTitle => 'パース定規×オニオンスキンで背景を使い回す';
+lib/l10n/app_localizations_ja.dart-1802-
+lib/l10n/app_localizations_ja.dart-1803-  @override
+lib/l10n/app_localizations_ja.dart-1804-  String get tipsRulerOnionDesc =>
+lib/l10n/app_localizations_ja.dart-1805-      'パース定規で背景の奥行きを決めておき、オニオンスキンで前後フレームを透かして見ながらキャラクターだけを動かすと、背景を毎フレーム描き直さずに済みます。';
+lib/l10n/app_localizations_ja.dart-1806-
+lib/l10n/app_localizations_ja.dart-1807-  @override
+lib/l10n/app_localizations_ja.dart:1808:  String get tipsGradientTraceTitle => 'グラデーション自動塗り×色トレスで馴染ませる';
+lib/l10n/app_localizations_ja.dart-1809-
+lib/l10n/app_localizations_ja.dart-1810-  @override
+lib/l10n/app_localizations_ja.dart-1811-  String get tipsGradientTraceDesc =>
+lib/l10n/app_localizations_ja.dart:1812:      '自動塗り設定でグラデーションを使う際、線画色設定を色トレス（線画馴染ませ）にしておくと、グラデーションの微妙な色の変化に合わせて線画の色も馴染み、境界が浮きにくくなります。';
+lib/l10n/app_localizations_ja.dart-1813-
+lib/l10n/app_localizations_ja.dart-1814-  @override
+lib/l10n/app_localizations_ja.dart-1815-  String get tipsGradientOutlineHairTitle => 'グラデーション×指定色縁取りで前髪に透明感を出す';
+lib/l10n/app_localizations_ja.dart-1816-
+lib/l10n/app_localizations_ja.dart-1817-  @override
+lib/l10n/app_localizations_ja.dart-1818-  String get tipsGradientOutlineHairDesc =>
+lib/l10n/app_localizations_ja.dart-1819-      '自動塗り設定で前髪パーツを作り、塗り色をグラデーションにして髪色と透明色の2色を選びます。角度を90度に変更し、ぼかしの強さと色の切り替え位置をお好みに調整したら、「指定色で縁取り」をチェックして縁取り色を「最近使った色」から先ほどの前髪の色と同じものを選びます。前髪の下塗りパーツだけでなく影色パーツにも同じ手順を繰り返すと、毛先が透けるような透明感のある髪の毛になります。';
+lib/l10n/app_localizations_ja.dart-1820-
+--
+lib/l10n/app_localizations_ja.dart-3503-
+lib/l10n/app_localizations_ja.dart-3504-  @override
+lib/l10n/app_localizations_ja.dart-3505-  String get autofillLineColorModeSpecified => '指定色';
+lib/l10n/app_localizations_ja.dart-3506-
+lib/l10n/app_localizations_ja.dart-3507-  @override
+lib/l10n/app_localizations_ja.dart-3508-  String get autofillLineColorModeSameAsFill => '塗り色と同じ';
+lib/l10n/app_localizations_ja.dart-3509-
+lib/l10n/app_localizations_ja.dart-3510-  @override
+lib/l10n/app_localizations_ja.dart:3511:  String get autofillLineColorModeTraceAdjust => '色トレス・線画馴染ませ';
+lib/l10n/app_localizations_ja.dart-3512-
+lib/l10n/app_localizations_ja.dart-3513-  @override
+lib/l10n/app_localizations_ja.dart-3514-  String get autofillGradientTypeLinear => '直線';
+lib/l10n/app_localizations_ja.dart-3515-
+lib/l10n/app_localizations_ja.dart-3516-  @override
+lib/l10n/app_localizations_ja.dart-3517-  String get autofillGradientTypeRadialCenterOut => '放射：中央→外側';
+lib/l10n/app_localizations_ja.dart-3518-
+lib/l10n/app_localizations_ja.dart-3519-  @override
+--
+lib/l10n/app_localizations_ja.dart-5448-  String get tipsLineArtExtractionDesc =>
+lib/l10n/app_localizations_ja.dart-5449-      '色調補正でコントラストを強めて線を際立たせたあと、二値化フィルターで画像を白黒2色に分けると、線とそれ以外がはっきり分離します。二値化の閾値はスライダーで自由に調整でき、線の太さ・かすれ具合を好みに合わせられます。仕上げにレイヤーの三点メニューにある「明度で透過（グレー）」を使うと、白い部分（線以外）だけが透過し、線画だけを抽出できます。写真や下描きから線画だけを取り出したいときに便利です。';
+lib/l10n/app_localizations_ja.dart-5450-
+lib/l10n/app_localizations_ja.dart-5451-  @override
+lib/l10n/app_localizations_ja.dart-5452-  String get tipsLineColorUsageTitle => '線画色は用途で使い分けると仕上がりが変わる';
+lib/l10n/app_localizations_ja.dart-5453-
+lib/l10n/app_localizations_ja.dart-5454-  @override
+lib/l10n/app_localizations_ja.dart-5455-  String get tipsLineColorUsageDesc =>
+lib/l10n/app_localizations_ja.dart:5456:      'パーツの輪郭線は色トレス・線画馴染ませを使うと、周りから浮かずに境界だけがはっきり伝わる線画になります。影やハイライトには塗り色と同じ指定色を使うと線画そのものが目立たなくなり、あえて別の指定色にすればそのアニメ特有の世界観・統一感を演出できます。';
+lib/l10n/app_localizations_ja.dart-5457-
+lib/l10n/app_localizations_ja.dart-5458-  @override
+lib/l10n/app_localizations_ja.dart-5459-  String get tipsBlushAutofillTitle => '頬の赤みも自動塗りでふんわり乗せられる';
+lib/l10n/app_localizations_ja.dart-5460-
+lib/l10n/app_localizations_ja.dart-5461-  @override
+lib/l10n/app_localizations_ja.dart-5462-  String get tipsBlushAutofillDesc =>
+lib/l10n/app_localizations_ja.dart-5463-      '線画色を指定色にして透明色を選び、塗り色を放射：中央→外側にして頬の赤みと透明色の2色を指定すると、肌の上に頬の赤みだけをふわっと重ねられます。赤みの不透明度と色の切り替え位置を調整すると、境界がより馴染みやすくなります。';
+lib/l10n/app_localizations_ja.dart-5464-
+--
+lib/l10n/app_ja.arb-553-  "helpLayerDesc": "1枚のキャンバスを複数の透明な「層」に分けて描画できる仕組みです。線画・色塗り・背景などを別々のレイヤーに分けて描くことで、後から色だけをやり直したり、線画を消さずに背景を差し替えたりできます。画面上では上に重なっているレイヤーほど手前に表示されます。各レイヤー行のアイコンからワンタップで削除・下のレイヤーとの結合ができ、レイヤーパネル上部のアイコンから表示中の全レイヤーを一括結合することもできます。",
+lib/l10n/app_ja.arb-554-  "helpBlendModeTitle": "ブレンドモード",
+lib/l10n/app_ja.arb-555-  "helpBlendModeDesc": "レイヤーの合成方法を変更する機能です。トーンやカラー効果をレイヤーとして重ねる時によく使われます。\n通常：そのまま重ねます。\n乗算：下のレイヤーと掛け合わせて暗くします。影・陰影づけの定番です。\nスクリーン：明るさを足し合わせて明るくします。光の表現に向きます。\nオーバーレイ：暗い部分はより暗く、明るい部分はより明るくしてコントラストを強めます。\n加算：色を単純に足し合わせます。光の効果線などに向きます。\n減算：色を差し引き、暗く沈んだ効果になります。\n比較（暗）：上下のレイヤーで暗い方の色を採用します。\n比較（明）：上下のレイヤーで明るい方の色を採用します。\n焼き込みカラー：下の色を暗く沈めながら濃く発色させます。\n覆い焼きカラー：下の色を明るく飛ばしながら発色させます。\nハードライト：オーバーレイより強くコントラストが付きます。\nソフトライト：オーバーレイより穏やかにコントラストが付きます。柔らかい陰影に向きます。\n差の絶対値：上下の色の差を表示します。色のズレ確認などに使えます。\n色相・彩度・カラー・輝度：それぞれ色相・彩度・色味・明るさだけを下のレイヤーへ反映します。",
+lib/l10n/app_ja.arb-556-  "helpClippingTitle": "クリッピング",
+lib/l10n/app_ja.arb-557-  "helpClippingDesc": "自分のすぐ下にあるレイヤーの、不透明なピクセルの範囲内にのみ描画されるようにする機能です。線画からはみ出さずに色を塗りたい時、線画レイヤーの上に色塗り用レイヤーを作ってクリッピングを有効にすると、線画の外側にうっかりはみ出して描いてしまう心配がなくなります。",
+lib/l10n/app_ja.arb-558-  "helpCommonLayerTitle": "共通レイヤー",
+lib/l10n/app_ja.arb-559-  "helpCommonLayerDesc": "通常のレイヤーは1フレームごとに独立していますが、共通レイヤーは複数のフレーム・シーンで同じ内容を共有するレイヤーです。背景などフレームが変わっても動かさない要素を、フレームごとに描き直す手間なく一度描くだけで済ませられます。タイムライン上では専用のトラックとして表示されます。 通常レイヤーを共通レイヤー（複数フレームに同じ内容を表示し続けるレイヤー）へ変換できる機能です。表示中のレイヤーを複製して1枚に統合してから共通化することもできます。背景など毎フレーム同じ内容を使い回したい場合に、描き直す手間を省けます。",
+lib/l10n/app_ja.arb-560-  "helpAutoFillTitle": "自動塗り",
+lib/l10n/app_ja.arb:561:  "helpAutoFillDesc": "自動塗り用線画レイヤーの下に自動塗りレイヤーを作り、あらかじめ作成した「自動塗り設定」（パーツごとの色・トーンの組み合わせ）に基づいて色を自動で塗る機能です。線画を描き終えた後に一括で色を塗れるため、同じキャラクターを何度も描く手描きアニメーションで色塗りの手間を大幅に減らせます。線画を描き直した場合はタイムライン・レイヤーパネルに更新マークが表示され、自動塗りの再実行が必要なことを知らせます。 タイムライン画面の三点メニューから「自動塗り実行」を選ぶと、更新マークが付いた自動塗りレイヤーをまとめて再計算できます。線画を描き直した後に1枚ずつレイヤーパネルで実行する手間を省けます。 自動塗り設定の各パーツには、線画の色をどう扱うかの設定（指定色・塗り色と同じ・色トレス）があります。色トレス（線画馴染ませ）を選ぶと、線画の色を塗り色に合わせてHSLシフトし、線が浮かずに馴染んだ仕上がりになります。 設定が増えてくると、パーツ割り当て時の一覧が長くなって選びにくくなります。プロジェクト設定（またはレイヤーパネルのパーツ割り当てダイアログ）から、このプロジェクトで使う設定だけに絞り込んでおくと、一覧がすっきりして選びやすくなります。",
+lib/l10n/app_ja.arb-562-  "helpOnionSkinTitle": "オニオンスキン",
+lib/l10n/app_ja.arb-563-  "helpOnionSkinDesc": "現在編集中のフレームの前後のフレームを半透明で重ねて表示し、動きの繋がりを確認しながら描けるようにする機能です。パフォーマンス設定で表示する枚数（前後何枚まで）や色・透明度を調整できます。",
+lib/l10n/app_ja.arb-564-  "helpRulerTitle": "定規",
+lib/l10n/app_ja.arb-565-  "helpRulerDesc": "直線・円・楕円・パース定規（消失点を使った透視図法用の定規）など、フリーハンドでは描きにくい正確な線を補助するための機能です。配置した定規に沿ってペン先が自動でスナップするため、定規なしでは難しい奥行きのある構図も描きやすくなります。定規はハンドルを操作して移動・回転・サイズ変更ができます。",
+lib/l10n/app_ja.arb-566-  "helpFadeTitle": "フェード",
+lib/l10n/app_ja.arb-567-  "helpFadeDesc": "ブラシ設定の一つで、ストロークを描き進めるにつれて不透明度や太さが徐々に減少していく効果です。線の端をかすれさせたい時や、余韻を残すような描き味を作りたい時に使います。",
+lib/l10n/app_ja.arb-568-  "helpStrokeDecayTitle": "ストローク減衰",
+lib/l10n/app_ja.arb-569-  "helpStrokeDecayDesc": "フェードと似ていますが、こちらは「インクが減っていく」ような表現に近く、描き続けるほど色が薄くなったりかすれたりする効果です。筆やマーカーで描き続けた時のインク切れのような質感を再現します。",
+--
+lib/l10n/app_ja.arb-704-  "tipsVerticalRubyTitle": "縦書き×ルビでタイトルロゴ風の演出",
+lib/l10n/app_ja.arb-705-  "tipsVerticalRubyDesc": "テキストツールの縦書きにルビを組み合わせると、和風のタイトルロゴやこだわりの見出し演出が作れます。半角英数字は自動で横向きに回転して並ぶので、記号や数字が混ざっても読みやすく仕上がります。",
+lib/l10n/app_ja.arb-706-  "tipsBrushTrySaveTreeTitle": "新しいブラシ設定はセーブツリーで試す",
+lib/l10n/app_ja.arb-707-  "tipsBrushTrySaveTreeDesc": "ブラシの太さや安定化などを大きく変えて試したいときは、変更前にセーブツリーへ保存しておくと安心です。気に入らなければすぐに元の状態へ戻せるので、思い切った調整を試しやすくなります。",
+lib/l10n/app_ja.arb-708-  "tipsEyedropperGestureTitle": "2本指タップにスポイトを割り当てて配色を崩さない",
+lib/l10n/app_ja.arb-709-  "tipsEyedropperGestureDesc": "ジェスチャー設定で2本指タップにスポイトを割り当てておくと、ツールを切り替えずに近くの色をすぐ拾えます。キャラクターの配色を保ったまま塗り進めたいときに便利です。",
+lib/l10n/app_ja.arb-710-  "tipsRulerOnionTitle": "パース定規×オニオンスキンで背景を使い回す",
+lib/l10n/app_ja.arb-711-  "tipsRulerOnionDesc": "パース定規で背景の奥行きを決めておき、オニオンスキンで前後フレームを透かして見ながらキャラクターだけを動かすと、背景を毎フレーム描き直さずに済みます。",
+lib/l10n/app_ja.arb:712:  "tipsGradientTraceTitle": "グラデーション自動塗り×色トレスで馴染ませる",
+lib/l10n/app_ja.arb:713:  "tipsGradientTraceDesc": "自動塗り設定でグラデーションを使う際、線画色設定を色トレス（線画馴染ませ）にしておくと、グラデーションの微妙な色の変化に合わせて線画の色も馴染み、境界が浮きにくくなります。",
+lib/l10n/app_ja.arb-714-  "tipsGradientOutlineHairTitle": "グラデーション×指定色縁取りで前髪に透明感を出す",
+lib/l10n/app_ja.arb-715-  "tipsGradientOutlineHairDesc": "自動塗り設定で前髪パーツを作り、塗り色をグラデーションにして髪色と透明色の2色を選びます。角度を90度に変更し、ぼかしの強さと色の切り替え位置をお好みに調整したら、「指定色で縁取り」をチェックして縁取り色を「最近使った色」から先ほどの前髪の色と同じものを選びます。前髪の下塗りパーツだけでなく影色パーツにも同じ手順を繰り返すと、毛先が透けるような透明感のある髪の毛になります。",
+lib/l10n/app_ja.arb-716-  "tipsRainNoiseTitle": "雨フィルター×動くノイズでしっとりした空気感",
+lib/l10n/app_ja.arb-717-  "tipsRainNoiseDesc": "雨フィルターに弱めの動くノイズフィルターを重ねると、雨粒だけでなく空気中の粒子感も加わり、しっとりとした雨の日らしい質感を演出できます。",
+lib/l10n/app_ja.arb-718-  "tipsPartKeyframeGroupTitle": "パーツキーフレーム×グループ化でキャラを弾ませる",
+lib/l10n/app_ja.arb-719-  "tipsPartKeyframeGroupDesc": "自動塗りの各パーツにレイヤーキーフレームを付けて動かし、さらに関連パーツをグループ化してまとめて弾ませると、音楽に合わせて揺れるようなミニアニメーションを描き直しなしで作れます。",
+lib/l10n/app_ja.arb-720-  "tipsLowSpecSettingsTitle": "低スペック端末はパフォーマンス設定とUndo回数を見直す",
+lib/l10n/app_ja.arb-721-  "tipsLowSpecSettingsDesc": "動作が重いと感じたら、パフォーマンス設定を「低品質」プリセットに切り替え、Undo回数も減らしてみましょう。メモリ使用量が減り、動作が軽くなることがあります。",
+--
+lib/l10n/app_ja.arb-1603-  "blendModeSoftLight": "ソフトライト",
+lib/l10n/app_ja.arb-1604-  "blendModeDifference": "差の絶対値",
+lib/l10n/app_ja.arb-1605-  "blendModeHue": "色相",
+lib/l10n/app_ja.arb-1606-  "blendModeSaturation": "彩度",
+lib/l10n/app_ja.arb-1607-  "blendModeColor": "カラー",
+lib/l10n/app_ja.arb-1608-  "blendModeLuminosity": "輝度",
+lib/l10n/app_ja.arb-1609-  "autofillLineColorModeSpecified": "指定色",
+lib/l10n/app_ja.arb-1610-  "autofillLineColorModeSameAsFill": "塗り色と同じ",
+lib/l10n/app_ja.arb:1611:  "autofillLineColorModeTraceAdjust": "色トレス・線画馴染ませ",
+lib/l10n/app_ja.arb-1612-  "autofillGradientTypeLinear": "直線",
+lib/l10n/app_ja.arb-1613-  "autofillGradientTypeRadialCenterOut": "放射：中央→外側",
+lib/l10n/app_ja.arb-1614-  "autofillGradientTypeRadialOutCenter": "放射：外側→中央",
+
+===== color trace =====
+
+===== mergeDown =====
+lib/models/custom_automation_builtin_presets.dart-127-        surface: CustomAutomationSurface.canvas,
+lib/models/custom_automation_builtin_presets.dart-128-        command: 'canvas.layerDuplicate',
+lib/models/custom_automation_builtin_presets.dart-129-        label: 'レイヤーを複製',
+lib/models/custom_automation_builtin_presets.dart-130-        recordedFrame: 0,
+lib/models/custom_automation_builtin_presets.dart-131-      ),
+lib/models/custom_automation_builtin_presets.dart-132-      const CustomAutomationStep(
+lib/models/custom_automation_builtin_presets.dart-133-        id: 'builtin_lineart_color_trace_5',
+lib/models/custom_automation_builtin_presets.dart-134-        surface: CustomAutomationSurface.canvas,
+lib/models/custom_automation_builtin_presets.dart:135:        command: 'canvas.mergeDown',
+lib/models/custom_automation_builtin_presets.dart-136-        label: '下のレイヤーと結合',
+lib/models/custom_automation_builtin_presets.dart-137-        recordedFrame: 0,
+lib/models/custom_automation_builtin_presets.dart-138-      ),
+lib/models/custom_automation_builtin_presets.dart-139-      const CustomAutomationStep(
+lib/models/custom_automation_builtin_presets.dart-140-        id: 'builtin_lineart_color_trace_6',
+lib/models/custom_automation_builtin_presets.dart-141-        surface: CustomAutomationSurface.canvas,
+lib/models/custom_automation_builtin_presets.dart:142:        command: 'canvas.mergeDown',
+lib/models/custom_automation_builtin_presets.dart-143-        label: '下のレイヤーと結合',
+lib/models/custom_automation_builtin_presets.dart-144-        recordedFrame: 0,
+lib/models/custom_automation_builtin_presets.dart-145-      ),
+lib/models/custom_automation_builtin_presets.dart-146-      const CustomAutomationStep(
+lib/models/custom_automation_builtin_presets.dart-147-        id: 'builtin_lineart_color_trace_7',
+lib/models/custom_automation_builtin_presets.dart-148-        surface: CustomAutomationSurface.canvas,
+lib/models/custom_automation_builtin_presets.dart-149-        command: 'canvas.colorTraceAdjust',
+lib/models/custom_automation_builtin_presets.dart-150-        label: '色トレス補正',
+
+===== duplicateLayer =====
+lib/services/project_service.dart-826-    );
+lib/services/project_service.dart-827-    return copy;
+lib/services/project_service.dart-828-  }
+lib/services/project_service.dart-829-
+lib/services/project_service.dart-830-  /// レイヤーを複製する（メタデータ・キーフレーム等の設定に加えて
+lib/services/project_service.dart-831-  /// ピクセル内容もTileManager.copyLayerでコピーオンライト複製する）。
+lib/services/project_service.dart-832-  /// 複製先は元レイヤーのすぐ上に挿入する。レイヤーのコピー＆ペースト
+lib/services/project_service.dart-833-  /// （Ctrl+C/Ctrl+V）から使う。対象レイヤーが見つからない場合はnull。
+lib/services/project_service.dart:834:  Layer? duplicateLayer({
+lib/services/project_service.dart-835-    required String projectId,
+lib/services/project_service.dart-836-    required String sceneId,
+lib/services/project_service.dart-837-    required int frameIndex,
+lib/services/project_service.dart-838-    required String layerId,
+lib/services/project_service.dart-839-    String? nameOverride,
+lib/services/project_service.dart-840-  }) {
+lib/services/project_service.dart-841-    final layers = layersOf(projectId, sceneId, frameIndex);
+lib/services/project_service.dart-842-    final index = layers.indexWhere((l) => l.id == layerId);
+--
+test/functional_audit_batch18_test.dart-170-      base.id,
+test/functional_audit_batch18_test.dart-171-    ], reason: '中央レイヤー削除のUndoは元indexへ復元すること');
+test/functional_audit_batch18_test.dart-172-    undo.redo();
+test/functional_audit_batch18_test.dart-173-    expect(_layerIds(service, project.id, scene.id), [b.id, base.id]);
+test/functional_audit_batch18_test.dart-174-    undo.undo();
+test/functional_audit_batch18_test.dart-175-    expect(_layerIds(service, project.id, scene.id), [b.id, a.id, base.id]);
+test/functional_audit_batch18_test.dart-176-
+test/functional_audit_batch18_test.dart-177-    undo.clear();
+test/functional_audit_batch18_test.dart:178:    final copy = service.duplicateLayer(
+test/functional_audit_batch18_test.dart-179-      projectId: project.id,
+test/functional_audit_batch18_test.dart-180-      sceneId: scene.id,
+test/functional_audit_batch18_test.dart-181-      frameIndex: 0,
+test/functional_audit_batch18_test.dart-182-      layerId: a.id,
+test/functional_audit_batch18_test.dart-183-    )!;
+test/functional_audit_batch18_test.dart-184-    expect(_layerIds(service, project.id, scene.id), [
+test/functional_audit_batch18_test.dart-185-      b.id,
+test/functional_audit_batch18_test.dart-186-      copy.id,
+--
+test/duplicate_layer_test.dart-1-import 'dart:ui' as ui;
+test/duplicate_layer_test.dart-2-import 'package:flutter_test/flutter_test.dart';
+test/duplicate_layer_test.dart-3-import 'package:shared_preferences/shared_preferences.dart';
+test/duplicate_layer_test.dart-4-import 'package:niarim/services/project_service.dart';
+test/duplicate_layer_test.dart-5-
+test/duplicate_layer_test.dart:6:/// ProjectService.duplicateLayer（キャンバスモードのレイヤーコピー＆
+test/duplicate_layer_test.dart-7-/// ペースト・タイムラインの素材クリップ複製の両方が使う共通処理）が、
+test/duplicate_layer_test.dart-8-/// ピクセル内容も正しく複製することを検証する。
+test/duplicate_layer_test.dart-9-///
+test/duplicate_layer_test.dart-10-/// TileManagerの実キーは「シーンID#フレーム番号#レイヤーID」の合成キー
+test/duplicate_layer_test.dart-11-/// であり、レイヤーIDをそのままキーとして渡すと複製元が見つからず
+test/duplicate_layer_test.dart-12-/// 空の複製になってしまう不具合が過去にあったため、その再発を防ぐための
+test/duplicate_layer_test.dart-13-/// 回帰テスト。
+test/duplicate_layer_test.dart-14-void main() {
+--
+test/duplicate_layer_test.dart-25-    return ui.Color.fromARGB(
+test/duplicate_layer_test.dart-26-      bytes[idx + 3],
+test/duplicate_layer_test.dart-27-      bytes[idx],
+test/duplicate_layer_test.dart-28-      bytes[idx + 1],
+test/duplicate_layer_test.dart-29-      bytes[idx + 2],
+test/duplicate_layer_test.dart-30-    );
+test/duplicate_layer_test.dart-31-  }
+test/duplicate_layer_test.dart-32-
+test/duplicate_layer_test.dart:33:  test('duplicateLayerは複製元のピクセル内容を正しく引き継ぐ', () async {
+test/duplicate_layer_test.dart-34-    final service = ProjectService();
+test/duplicate_layer_test.dart-35-    await service.init();
+test/duplicate_layer_test.dart-36-    final project = await service.createProject(
+test/duplicate_layer_test.dart-37-      name: 'テスト',
+test/duplicate_layer_test.dart-38-      fps: 24,
+test/duplicate_layer_test.dart-39-      durationSeconds: 1,
+test/duplicate_layer_test.dart-40-      backgroundColor: 0xFFFFFFFF,
+test/duplicate_layer_test.dart-41-    );
+test/duplicate_layer_test.dart-42-    final scene = service.scenesOf(project.id).first;
+test/duplicate_layer_test.dart-43-    final layer = service.layersOf(project.id, scene.id, 0).first;
+test/duplicate_layer_test.dart-44-
+test/duplicate_layer_test.dart-45-    final tm = service.tileManagerOf(project.id);
+test/duplicate_layer_test.dart-46-    final key = service.tileKeyFor(project.id, scene.id, 0, layer.id);
+test/duplicate_layer_test.dart-47-    final tile = tm.getOrCreateTile(key, 0, 0);
+test/duplicate_layer_test.dart-48-    tm.blendPixel(tile, 0, 0, 255, 0, 0, 255); // 赤・不透明
+test/duplicate_layer_test.dart-49-
+test/duplicate_layer_test.dart:50:    final copy = service.duplicateLayer(
+test/duplicate_layer_test.dart-51-      projectId: project.id,
+test/duplicate_layer_test.dart-52-      sceneId: scene.id,
+test/duplicate_layer_test.dart-53-      frameIndex: 0,
+test/duplicate_layer_test.dart-54-      layerId: layer.id,
+test/duplicate_layer_test.dart-55-    );
+test/duplicate_layer_test.dart-56-    expect(copy, isNotNull);
+test/duplicate_layer_test.dart-57-    expect(copy!.id, isNot(layer.id));
+test/duplicate_layer_test.dart-58-
+
+===== flatten =====
+lib/services/project_service.dart-2127-    required int rangeStart,
+lib/services/project_service.dart-2128-    required int rangeEnd,
+lib/services/project_service.dart-2129-    String? rangeSceneId,
+lib/services/project_service.dart-2130-  }) async {
+lib/services/project_service.dart-2131-    final tm = _tileManagers[projectId];
+lib/services/project_service.dart-2132-    if (tm == null) return;
+lib/services/project_service.dart-2133-    final layers = layersOf(projectId, sceneId, frameIndex);
+lib/services/project_service.dart-2134-    if (layers.isEmpty) return;
+lib/services/project_service.dart:2135:    final flattened = await LayerCompositor.composite(
+lib/services/project_service.dart-2136-      tm,
+lib/services/project_service.dart-2137-      layers,
+lib/services/project_service.dart-2138-      (l) => tileKeyFor(projectId, sceneId, frameIndex, l.id),
+lib/services/project_service.dart-2139-      tm.canvasWidth,
+lib/services/project_service.dart-2140-      tm.canvasHeight,
+lib/services/project_service.dart-2141-    );
+lib/services/project_service.dart:2142:    final byteData = await flattened.toByteData(
+lib/services/project_service.dart-2143-      format: ui.ImageByteFormat.rawRgba,
+lib/services/project_service.dart-2144-    );
+lib/services/project_service.dart:2145:    flattened.dispose();
+lib/services/project_service.dart-2146-    if (byteData == null) return;
+lib/services/project_service.dart-2147-
+lib/services/project_service.dart-2148-    final visible = layers.where((l) => l.parentFolderId == null).length;
+lib/services/project_service.dart-2149-    final created = addLayer(
+lib/services/project_service.dart-2150-      projectId: projectId,
+lib/services/project_service.dart-2151-      sceneId: sceneId,
+lib/services/project_service.dart-2152-      frameIndex: frameIndex,
+lib/services/project_service.dart-2153-      type: LayerType.common,
+--
+lib/screens/save_tree/save_tree_screen.dart-801-    // 添える（一般的なツリーコマンドの罫線と同じアルゴリズム）。
+lib/screens/save_tree/save_tree_screen.dart-802-    // 行そのもの（ListTile・サムネイル・三点メニュー・接続線）はここでは
+lib/screens/save_tree/save_tree_screen.dart-803-    // 作らず、位置情報だけの軽い一覧に畳んでからListView.builderへ渡す。
+lib/screens/save_tree/save_tree_screen.dart-804-    // ListView(children:)だと、実際に描画されるのは画面内の行だけでも、
+lib/screens/save_tree/save_tree_screen.dart-805-    // 行のウィジェットオブジェクト自体は毎回のbuildで全ノードぶん作られて
+lib/screens/save_tree/save_tree_screen.dart-806-    // 捨てられる。
+lib/screens/save_tree/save_tree_screen.dart-807-    final rows = <_TreeRowSpec>[];
+lib/screens/save_tree/save_tree_screen.dart-808-    for (int i = 0; i < roots.length; i++) {
+lib/screens/save_tree/save_tree_screen.dart:809:      _flattenTreeRows(childrenIndex, roots, i, 0, const [], rows);
+lib/screens/save_tree/save_tree_screen.dart-810-    }
+lib/screens/save_tree/save_tree_screen.dart-811-    return ListView.builder(
+lib/screens/save_tree/save_tree_screen.dart-812-      reverse: true,
+lib/screens/save_tree/save_tree_screen.dart-813-      itemCount: rows.length,
+lib/screens/save_tree/save_tree_screen.dart-814-      itemBuilder: (context, i) => _buildTreeRow(context, l10n, rows[i]),
+lib/screens/save_tree/save_tree_screen.dart-815-    );
+lib/screens/save_tree/save_tree_screen.dart-816-  }
+lib/screens/save_tree/save_tree_screen.dart-817-
+lib/screens/save_tree/save_tree_screen.dart:818:  void _flattenTreeRows(
+lib/screens/save_tree/save_tree_screen.dart-819-    Map<String?, List<SaveNode>> childrenIndex,
+lib/screens/save_tree/save_tree_screen.dart-820-    List<SaveNode> siblings,
+lib/screens/save_tree/save_tree_screen.dart-821-    int index,
+lib/screens/save_tree/save_tree_screen.dart-822-    int depth,
+lib/screens/save_tree/save_tree_screen.dart-823-    List<bool> ancestorContinues,
+lib/screens/save_tree/save_tree_screen.dart-824-    List<_TreeRowSpec> out,
+lib/screens/save_tree/save_tree_screen.dart-825-  ) {
+lib/screens/save_tree/save_tree_screen.dart-826-    final node = siblings[index];
+lib/screens/save_tree/save_tree_screen.dart-827-    final hasNext = index < siblings.length - 1;
+lib/screens/save_tree/save_tree_screen.dart-828-    final continues = [...ancestorContinues, hasNext];
+lib/screens/save_tree/save_tree_screen.dart-829-    out.add((node: node, depth: depth, continues: continues));
+lib/screens/save_tree/save_tree_screen.dart-830-    final children = childrenIndex[node.id] ?? const <SaveNode>[];
+lib/screens/save_tree/save_tree_screen.dart-831-    for (int i = 0; i < children.length; i++) {
+lib/screens/save_tree/save_tree_screen.dart:832:      _flattenTreeRows(childrenIndex, children, i, depth + 1, continues, out);
+lib/screens/save_tree/save_tree_screen.dart-833-    }
+lib/screens/save_tree/save_tree_screen.dart-834-  }
+lib/screens/save_tree/save_tree_screen.dart-835-
+lib/screens/save_tree/save_tree_screen.dart-836-  Widget _buildTreeRow(
+lib/screens/save_tree/save_tree_screen.dart-837-    BuildContext context,
+lib/screens/save_tree/save_tree_screen.dart-838-    AppLocalizations l10n,
+lib/screens/save_tree/save_tree_screen.dart-839-    _TreeRowSpec spec,
+lib/screens/save_tree/save_tree_screen.dart-840-  ) {
+--
+lib/screens/save_tree/save_tree_screen.dart-1363-    final roots = childrenIndex[null] ?? const <SaveNode>[];
+lib/screens/save_tree/save_tree_screen.dart-1364-    if (roots.isEmpty) {
+lib/screens/save_tree/save_tree_screen.dart-1365-      return Center(child: Text(l10n.saveTreeEmptyTitle));
+lib/screens/save_tree/save_tree_screen.dart-1366-    }
+lib/screens/save_tree/save_tree_screen.dart-1367-    // 親子関係を1回の走査で平坦化してからListView.builderへ渡す。
+lib/screens/save_tree/save_tree_screen.dart-1368-    // 再帰でColumnを入れ子にしていた頃は、全ノードのListTileとCheckboxを
+lib/screens/save_tree/save_tree_screen.dart-1369-    // 毎回のbuild（＝チェックを1つ付け外しするたび）で作り直していた。
+lib/screens/save_tree/save_tree_screen.dart-1370-    final rows = <({SaveNode node, int depth})>[];
+lib/screens/save_tree/save_tree_screen.dart:1371:    void flatten(SaveNode node, int depth) {
+lib/screens/save_tree/save_tree_screen.dart-1372-      rows.add((node: node, depth: depth));
+lib/screens/save_tree/save_tree_screen.dart-1373-      for (final child in childrenIndex[node.id] ?? const <SaveNode>[]) {
+lib/screens/save_tree/save_tree_screen.dart:1374:        flatten(child, depth + 1);
+lib/screens/save_tree/save_tree_screen.dart-1375-      }
+lib/screens/save_tree/save_tree_screen.dart-1376-    }
+lib/screens/save_tree/save_tree_screen.dart-1377-
+lib/screens/save_tree/save_tree_screen.dart-1378-    for (final root in roots) {
+lib/screens/save_tree/save_tree_screen.dart:1379:      flatten(root, 0);
+lib/screens/save_tree/save_tree_screen.dart-1380-    }
+lib/screens/save_tree/save_tree_screen.dart-1381-    return ListView.builder(
+lib/screens/save_tree/save_tree_screen.dart-1382-      itemCount: rows.length,
+lib/screens/save_tree/save_tree_screen.dart-1383-      itemBuilder: (context, i) =>
+lib/screens/save_tree/save_tree_screen.dart-1384-          _buildNode(context, l10n, rows[i].node, rows[i].depth),
+lib/screens/save_tree/save_tree_screen.dart-1385-    );
+lib/screens/save_tree/save_tree_screen.dart-1386-  }
+lib/screens/save_tree/save_tree_screen.dart-1387-
+--
+lib/screens/project/project_detail_screen.dart-50-
+lib/screens/project/project_detail_screen.dart-51-  @override
+lib/screens/project/project_detail_screen.dart-52-  void dispose() {
+lib/screens/project/project_detail_screen.dart-53-    _timer?.cancel();
+lib/screens/project/project_detail_screen.dart-54-    _previewImage?.dispose();
+lib/screens/project/project_detail_screen.dart-55-    super.dispose();
+lib/screens/project/project_detail_screen.dart-56-  }
+lib/screens/project/project_detail_screen.dart-57-
+lib/screens/project/project_detail_screen.dart:58:  List<_FlatFrame> _flatten(ProjectService ps) {
+lib/screens/project/project_detail_screen.dart-59-    final result = <_FlatFrame>[];
+lib/screens/project/project_detail_screen.dart-60-    for (final scene in ps.scenesOf(widget.projectId)) {
+lib/screens/project/project_detail_screen.dart-61-      for (int i = 0; i < scene.frames.length; i++) {
+lib/screens/project/project_detail_screen.dart-62-        result.add((sceneId: scene.id, frameIndex: i));
+lib/screens/project/project_detail_screen.dart-63-      }
+lib/screens/project/project_detail_screen.dart-64-    }
+lib/screens/project/project_detail_screen.dart-65-    return result;
+lib/screens/project/project_detail_screen.dart-66-  }
+--
+lib/screens/project/project_detail_screen.dart-131-
+lib/screens/project/project_detail_screen.dart-132-    if (project == null) {
+lib/screens/project/project_detail_screen.dart-133-      return Scaffold(
+lib/screens/project/project_detail_screen.dart-134-        appBar: AppBar(title: Text(l10n.projectDetailNotFoundTitle)),
+lib/screens/project/project_detail_screen.dart-135-        body: Center(child: Text(l10n.projectDetailNotFoundBody)),
+lib/screens/project/project_detail_screen.dart-136-      );
+lib/screens/project/project_detail_screen.dart-137-    }
+lib/screens/project/project_detail_screen.dart-138-
+lib/screens/project/project_detail_screen.dart:139:    final flat = _flatten(projectService);
+lib/screens/project/project_detail_screen.dart-140-    if (_previewImage == null && !_rendering) {
+lib/screens/project/project_detail_screen.dart-141-      WidgetsBinding.instance.addPostFrameCallback(
+lib/screens/project/project_detail_screen.dart-142-        (_) => _renderFrame(projectService, flat),
+lib/screens/project/project_detail_screen.dart-143-      );
+lib/screens/project/project_detail_screen.dart-144-    }
+lib/screens/project/project_detail_screen.dart-145-
+lib/screens/project/project_detail_screen.dart-146-    // プレビュー全画面化中：プレビューと再生コントロールのみを全画面表示する
+lib/screens/project/project_detail_screen.dart-147-    // （タイムラインモードのプレビュー全画面化と同等）。
+--
+lib/screens/canvas/widgets/canvas_area.dart-852-  /// 自動選択（マジックワンド）：タップ位置から表示中の全レイヤー合成色を基準に
+lib/screens/canvas/widgets/canvas_area.dart-853-  /// フラッドフィルし、選択範囲マスクを生成する。
+lib/screens/canvas/widgets/canvas_area.dart-854-  Future<void> _magicWandSelectAt(Offset canvasPos) async {
+lib/screens/canvas/widgets/canvas_area.dart-855-    final w = _tileManager.canvasWidth;
+lib/screens/canvas/widgets/canvas_area.dart-856-    final h = _tileManager.canvasHeight;
+lib/screens/canvas/widgets/canvas_area.dart-857-    final x = canvasPos.dx.round();
+lib/screens/canvas/widgets/canvas_area.dart-858-    final y = canvasPos.dy.round();
+lib/screens/canvas/widgets/canvas_area.dart-859-    if (x < 0 || x >= w || y < 0 || y >= h) return;
+lib/screens/canvas/widgets/canvas_area.dart:860:    final buffer = await _flattenVisibleLayers();
+lib/screens/canvas/widgets/canvas_area.dart-861-    if (!mounted) return;
+lib/screens/canvas/widgets/canvas_area.dart-862-    final mask = _bucketEngine.selectionMask(
+lib/screens/canvas/widgets/canvas_area.dart-863-      canvasData: buffer,
+lib/screens/canvas/widgets/canvas_area.dart-864-      width: w,
+lib/screens/canvas/widgets/canvas_area.dart-865-      height: h,
+lib/screens/canvas/widgets/canvas_area.dart-866-      startX: x,
+lib/screens/canvas/widgets/canvas_area.dart-867-      startY: y,
+lib/screens/canvas/widgets/canvas_area.dart-868-    );
+--
+lib/screens/canvas/widgets/canvas_area.dart-1731-  /// スポイトは表示中の全レイヤーを不透明度・ブレンドモード・クリッピングを
+lib/screens/canvas/widgets/canvas_area.dart-1732-  /// 反映して合成した色をサンプリングする（表示されている見た目の色を拾う）。
+lib/screens/canvas/widgets/canvas_area.dart-1733-  Future<void> _pickColor(Offset canvasPos) async {
+lib/screens/canvas/widgets/canvas_area.dart-1734-    final w = _tileManager.canvasWidth;
+lib/screens/canvas/widgets/canvas_area.dart-1735-    final h = _tileManager.canvasHeight;
+lib/screens/canvas/widgets/canvas_area.dart-1736-    final px = canvasPos.dx.round();
+lib/screens/canvas/widgets/canvas_area.dart-1737-    final py = canvasPos.dy.round();
+lib/screens/canvas/widgets/canvas_area.dart-1738-    if (px < 0 || py < 0 || px >= w || py >= h) return;
+lib/screens/canvas/widgets/canvas_area.dart:1739:    final buffer = await _flattenVisibleLayers();
+lib/screens/canvas/widgets/canvas_area.dart-1740-    if (!mounted) return;
+lib/screens/canvas/widgets/canvas_area.dart-1741-    final idx = (py * w + px) * 4;
+lib/screens/canvas/widgets/canvas_area.dart-1742-    if (idx + 3 >= buffer.length) return;
+lib/screens/canvas/widgets/canvas_area.dart-1743-    widget.onEyedropper?.call(
+lib/screens/canvas/widgets/canvas_area.dart-1744-      Color.fromARGB(
+lib/screens/canvas/widgets/canvas_area.dart-1745-        buffer[idx + 3],
+lib/screens/canvas/widgets/canvas_area.dart-1746-        buffer[idx],
+lib/screens/canvas/widgets/canvas_area.dart-1747-        buffer[idx + 1],
+--
+lib/screens/canvas/widgets/canvas_area.dart-2530-      _setSelectionMask(newMask, w, h);
+lib/screens/canvas/widgets/canvas_area.dart-2531-    });
+lib/screens/canvas/widgets/canvas_area.dart-2532-  }
+lib/screens/canvas/widgets/canvas_area.dart-2533-
+lib/screens/canvas/widgets/canvas_area.dart-2534-  // ─── バケツ連続塗り ───────────────────────────────────────────────────
+lib/screens/canvas/widgets/canvas_area.dart-2535-
+lib/screens/canvas/widgets/canvas_area.dart-2536-  /// バケツ塗りの参照用に、表示中の全レイヤーを不透明度・ブレンドモード・
+lib/screens/canvas/widgets/canvas_area.dart-2537-  /// クリッピングを反映して合成する（バケツは表示中の全レイヤーの線を参照）。
+lib/screens/canvas/widgets/canvas_area.dart:2538:  Future<Uint8List> _flattenVisibleLayers() async {
+lib/screens/canvas/widgets/canvas_area.dart-2539-    final w = _tileManager.canvasWidth;
+lib/screens/canvas/widgets/canvas_area.dart-2540-    final h = _tileManager.canvasHeight;
+lib/screens/canvas/widgets/canvas_area.dart-2541-    final project = widget.project;
+lib/screens/canvas/widgets/canvas_area.dart-2542-    if (project == null) return Uint8List(w * h * 4);
+lib/screens/canvas/widgets/canvas_area.dart-2543-    final layers = context.read<ProjectService>().layersOf(
+lib/screens/canvas/widgets/canvas_area.dart-2544-      project.id,
+lib/screens/canvas/widgets/canvas_area.dart-2545-      widget.sceneId,
+lib/screens/canvas/widgets/canvas_area.dart-2546-      widget.currentFrame,
+--
+lib/screens/canvas/widgets/canvas_area.dart-2555-    final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+lib/screens/canvas/widgets/canvas_area.dart-2556-    image.dispose();
+lib/screens/canvas/widgets/canvas_area.dart-2557-    return byteData?.buffer.asUint8List() ?? Uint8List(w * h * 4);
+lib/screens/canvas/widgets/canvas_area.dart-2558-  }
+lib/screens/canvas/widgets/canvas_area.dart-2559-
+lib/screens/canvas/widgets/canvas_area.dart-2560-  Future<void> _handleBucketDown(Offset canvasPos) async {
+lib/screens/canvas/widgets/canvas_area.dart-2561-    final w = _tileManager.canvasWidth;
+lib/screens/canvas/widgets/canvas_area.dart-2562-    final h = _tileManager.canvasHeight;
+lib/screens/canvas/widgets/canvas_area.dart:2563:    final buffer = await _flattenVisibleLayers();
+lib/screens/canvas/widgets/canvas_area.dart-2564-    if (!mounted) return;
+lib/screens/canvas/widgets/canvas_area.dart-2565-    // バケツ塗り中（_bucketFillAt）はポインタ移動のたびに同期呼び出しされる
+lib/screens/canvas/widgets/canvas_area.dart-2566-    // ため、トーン画像は開始時点で事前読み込みしてキャッシュへ入れておく。
+lib/screens/canvas/widgets/canvas_area.dart-2567-    final toneService = context.read<ToneService>();
+lib/screens/canvas/widgets/canvas_area.dart-2568-    final tone = toneService.bucketUseTone
+lib/screens/canvas/widgets/canvas_area.dart-2569-        ? (toneService.lastBucketTone ?? toneService.currentTone)
+lib/screens/canvas/widgets/canvas_area.dart-2570-        : null;
+lib/screens/canvas/widgets/canvas_area.dart-2571-    if (tone != null) {
+--
+lib/l10n/app_localizations_en.dart-5354-  String get layerPanelBrightnessToAlphaGrayButton => 'Gray';
+lib/l10n/app_localizations_en.dart-5355-
+lib/l10n/app_localizations_en.dart-5356-  @override
+lib/l10n/app_localizations_en.dart-5357-  String get tipsRoughLayerRescueTitle =>
+lib/l10n/app_localizations_en.dart-5358-      'Drew line art on your rough sketch layer? Rescue it with \"Transparency from Brightness\"';
+lib/l10n/app_localizations_en.dart-5359-
+lib/l10n/app_localizations_en.dart-5360-  @override
+lib/l10n/app_localizations_en.dart-5361-  String get tipsRoughLayerRescueDesc =>
+lib/l10n/app_localizations_en.dart:5362:      'Even if you accidentally drew your line art on top of your rough sketch layer, you can pull the line art back out without deleting anything. 1) Add a new layer and set its blend mode to Divide. 2) Pick up the sketch\'s color with the eyedropper and fill that whole Divide layer with it (this fades the sketch). 3) Duplicate the Divide layer and the sketch disappears completely. 4) Use \"Merge all visible layers\" in the layer panel to flatten everything into one layer. 5) From that merged layer\'s three-dot menu, choose \"Transparency from Brightness (Gray)\" — the white areas become transparent, leaving just the line art.';
+lib/l10n/app_localizations_en.dart-5363-
+lib/l10n/app_localizations_en.dart-5364-  @override
+lib/l10n/app_localizations_en.dart-5365-  String get filterNameMonochrome => 'Monochrome Filter';
+lib/l10n/app_localizations_en.dart-5366-
+lib/l10n/app_localizations_en.dart-5367-  @override
+lib/l10n/app_localizations_en.dart-5368-  String get timelineEffectTypeMonochrome => 'Monochrome Filter';
+lib/l10n/app_localizations_en.dart-5369-
+lib/l10n/app_localizations_en.dart-5370-  @override
+
+===== luminance =====
+lib/engine/background_acclimation_engine.dart-36-    required this.score,
+lib/engine/background_acclimation_engine.dart-37-  });
+lib/engine/background_acclimation_engine.dart-38-}
+lib/engine/background_acclimation_engine.dart-39-
+lib/engine/background_acclimation_engine.dart-40-class _SectorAccumulator {
+lib/engine/background_acclimation_engine.dart-41-  double r = 0;
+lib/engine/background_acclimation_engine.dart-42-  double g = 0;
+lib/engine/background_acclimation_engine.dart-43-  double b = 0;
+lib/engine/background_acclimation_engine.dart:44:  double luminance = 0;
+lib/engine/background_acclimation_engine.dart:45:  double luminanceSq = 0;
+lib/engine/background_acclimation_engine.dart-46-  double weight = 0;
+lib/engine/background_acclimation_engine.dart-47-  int samples = 0;
+lib/engine/background_acclimation_engine.dart-48-
+lib/engine/background_acclimation_engine.dart-49-  void add(int rr, int gg, int bb, double w) {
+lib/engine/background_acclimation_engine.dart-50-    r += rr * w;
+lib/engine/background_acclimation_engine.dart-51-    g += gg * w;
+lib/engine/background_acclimation_engine.dart-52-    b += bb * w;
+lib/engine/background_acclimation_engine.dart-53-    final l = BackgroundAcclimationEngine._luma(rr, gg, bb);
+lib/engine/background_acclimation_engine.dart:54:    luminance += l * w;
+lib/engine/background_acclimation_engine.dart:55:    luminanceSq += l * l * w;
+lib/engine/background_acclimation_engine.dart-56-    weight += w;
+lib/engine/background_acclimation_engine.dart-57-    samples++;
+lib/engine/background_acclimation_engine.dart-58-  }
+lib/engine/background_acclimation_engine.dart-59-
+lib/engine/background_acclimation_engine.dart-60-  int get color {
+lib/engine/background_acclimation_engine.dart-61-    if (weight <= 0) return 0xFF808080;
+lib/engine/background_acclimation_engine.dart-62-    return BackgroundAcclimationEngine._argb(
+lib/engine/background_acclimation_engine.dart-63-      (r / weight).round(),
+lib/engine/background_acclimation_engine.dart-64-      (g / weight).round(),
+lib/engine/background_acclimation_engine.dart-65-      (b / weight).round(),
+lib/engine/background_acclimation_engine.dart-66-    );
+lib/engine/background_acclimation_engine.dart-67-  }
+lib/engine/background_acclimation_engine.dart-68-
+lib/engine/background_acclimation_engine.dart:69:  double get meanLuminance => weight <= 0 ? 0 : luminance / weight;
+lib/engine/background_acclimation_engine.dart-70-
+lib/engine/background_acclimation_engine.dart-71-  double get consistency {
+lib/engine/background_acclimation_engine.dart-72-    if (weight <= 0) return 0;
+lib/engine/background_acclimation_engine.dart-73-    final mean = meanLuminance;
+lib/engine/background_acclimation_engine.dart:74:    final variance = math.max(0.0, luminanceSq / weight - mean * mean);
+lib/engine/background_acclimation_engine.dart-75-    // 輝度が激しく散っている方向を「巨大な白壁＝光源」と誤認しにくくする。
+lib/engine/background_acclimation_engine.dart-76-    return (1.0 - math.sqrt(variance).clamp(0.0, 0.5) * 1.5).clamp(0.0, 1.0);
+lib/engine/background_acclimation_engine.dart-77-  }
+lib/engine/background_acclimation_engine.dart-78-}
+lib/engine/background_acclimation_engine.dart-79-
+lib/engine/background_acclimation_engine.dart-80-/// 背景馴染ませ v2。
+lib/engine/background_acclimation_engine.dart-81-///
+lib/engine/background_acclimation_engine.dart-82-/// 1. 対象の周囲を16方向へ分けて環境サンプリング
+--
+lib/engine/background_acclimation_engine.dart-223-    final opposite = (best + sectorCount ~/ 2) % sectorCount;
+lib/engine/background_acclimation_engine.dart-224-    final shadowAcc = _SectorAccumulator();
+lib/engine/background_acclimation_engine.dart-225-    for (final offset in const [-1, 0, 1]) {
+lib/engine/background_acclimation_engine.dart-226-      final s = sectors[(opposite + offset + sectorCount) % sectorCount];
+lib/engine/background_acclimation_engine.dart-227-      if (s.weight <= 0) continue;
+lib/engine/background_acclimation_engine.dart-228-      shadowAcc.r += s.r;
+lib/engine/background_acclimation_engine.dart-229-      shadowAcc.g += s.g;
+lib/engine/background_acclimation_engine.dart-230-      shadowAcc.b += s.b;
+lib/engine/background_acclimation_engine.dart:231:      shadowAcc.luminance += s.luminance;
+lib/engine/background_acclimation_engine.dart:232:      shadowAcc.luminanceSq += s.luminanceSq;
+lib/engine/background_acclimation_engine.dart-233-      shadowAcc.weight += s.weight;
+lib/engine/background_acclimation_engine.dart-234-      shadowAcc.samples += s.samples;
+lib/engine/background_acclimation_engine.dart-235-    }
+lib/engine/background_acclimation_engine.dart-236-    final autoShadow = shadowAcc.weight > 0
+lib/engine/background_acclimation_engine.dart-237-        ? _darkenPreserveHue(shadowAcc.color, 0.24)
+lib/engine/background_acclimation_engine.dart-238-        : _darkenPreserveHue(ambientColor, 0.28);
+lib/engine/background_acclimation_engine.dart-239-    final shadowColor = filter.bgBlendShadowColor == -1
+lib/engine/background_acclimation_engine.dart-240-        ? autoShadow
+--
+lib/engine/brightness_alpha_engine.dart-27-    final g = out[i + 1];
+lib/engine/brightness_alpha_engine.dart-28-    final b = out[i + 2];
+lib/engine/brightness_alpha_engine.dart-29-    final a = out[i + 3];
+lib/engine/brightness_alpha_engine.dart-30-    if (a == 0) continue;
+lib/engine/brightness_alpha_engine.dart-31-
+lib/engine/brightness_alpha_engine.dart-32-    if (grayMode) {
+lib/engine/brightness_alpha_engine.dart-33-      // 輝度（人の目の感度に近い加重平均）が高いほど＝白に近いほど
+lib/engine/brightness_alpha_engine.dart-34-      // 透明にする。色そのものは変更しない。
+lib/engine/brightness_alpha_engine.dart:35:      final luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
+lib/engine/brightness_alpha_engine.dart:36:      final newAlpha = (a * (1.0 - luminance)).round().clamp(0, 255);
+lib/engine/brightness_alpha_engine.dart-37-      out[i + 3] = newAlpha;
+lib/engine/brightness_alpha_engine.dart-38-    } else {
+lib/engine/brightness_alpha_engine.dart-39-      // GIMP「色を透明に」（対象色＝白）と同じ考え方：
+lib/engine/brightness_alpha_engine.dart-40-      // 各チャンネルが白（255）からどれだけ離れているかの割合のうち
+lib/engine/brightness_alpha_engine.dart-41-      // 最大値を不透明度とし、色は白の外側へ引き伸ばして復元する。
+lib/engine/brightness_alpha_engine.dart-42-      final alphaR = (255 - r) / 255.0;
+lib/engine/brightness_alpha_engine.dart-43-      final alphaG = (255 - g) / 255.0;
+lib/engine/brightness_alpha_engine.dart-44-      final alphaB = (255 - b) / 255.0;
+--
+lib/engine/procedural_texture.dart-38-}
+lib/engine/procedural_texture.dart-39-
+lib/engine/procedural_texture.dart-40-/// トーンは自身の色を持たず、現在色×パターンの2値マスクとして扱われる
+lib/engine/procedural_texture.dart-41-/// （autofill_engine.dart等はalphaチャンネルの有無のみを見る）。読み込んだ
+lib/engine/procedural_texture.dart-42-/// 画像は輝度が低い（暗い）ほど「インクあり」とみなし、alphaへ変換する。
+lib/engine/procedural_texture.dart-43-Uint8List _toToneAlphaMask(Uint8List rgba) {
+lib/engine/procedural_texture.dart-44-  final out = Uint8List(rgba.length);
+lib/engine/procedural_texture.dart-45-  for (int i = 0; i < rgba.length; i += 4) {
+lib/engine/procedural_texture.dart:46:    final luminance =
+lib/engine/procedural_texture.dart-47-        rgba[i] * 0.299 + rgba[i + 1] * 0.587 + rgba[i + 2] * 0.114;
+lib/engine/procedural_texture.dart:48:    final ink = ((255 - luminance) * rgba[i + 3] / 255).round();
+lib/engine/procedural_texture.dart-49-    out[i + 3] = ink.clamp(0, 255);
+lib/engine/procedural_texture.dart-50-  }
+lib/engine/procedural_texture.dart-51-  return out;
+lib/engine/procedural_texture.dart-52-}
+lib/engine/procedural_texture.dart-53-
+lib/engine/procedural_texture.dart-54-/// トーン画像のデコード結果キャッシュ（`texturePath#size`をキーにする）。
+lib/engine/procedural_texture.dart-55-/// バケツ塗りのドラッグ中（_bucketFillAt）は同期処理のため、事前に
+lib/engine/procedural_texture.dart-56-/// [ensureToneTextureLoaded] で読み込みを済ませておく必要がある。
+--
+lib/engine/filter_engine.dart-1275-    if (amount <= 0) return Uint8List.fromList(data);
+lib/engine/filter_engine.dart-1276-    final tr = (targetColor >> 16) & 0xFF;
+lib/engine/filter_engine.dart-1277-    final tg = (targetColor >> 8) & 0xFF;
+lib/engine/filter_engine.dart-1278-    final tb = targetColor & 0xFF;
+lib/engine/filter_engine.dart-1279-    final result = Uint8List.fromList(data);
+lib/engine/filter_engine.dart-1280-    for (int i = 0; i < data.length; i += 4) {
+lib/engine/filter_engine.dart-1281-      if (data[i + 3] == 0) continue;
+lib/engine/filter_engine.dart-1282-      final r = data[i], g = data[i + 1], b = data[i + 2];
+lib/engine/filter_engine.dart:1283:      final luminance = (r * 0.299 + g * 0.587 + b * 0.114) / 255.0;
+lib/engine/filter_engine.dart:1284:      final mr = (tr * luminance).round().clamp(0, 255);
+lib/engine/filter_engine.dart:1285:      final mg = (tg * luminance).round().clamp(0, 255);
+lib/engine/filter_engine.dart:1286:      final mb = (tb * luminance).round().clamp(0, 255);
+lib/engine/filter_engine.dart-1287-      result[i] = (r + (mr - r) * amount).round().clamp(0, 255);
+lib/engine/filter_engine.dart-1288-      result[i + 1] = (g + (mg - g) * amount).round().clamp(0, 255);
+lib/engine/filter_engine.dart-1289-      result[i + 2] = (b + (mb - b) * amount).round().clamp(0, 255);
+lib/engine/filter_engine.dart-1290-    }
+lib/engine/filter_engine.dart-1291-    return result;
+lib/engine/filter_engine.dart-1292-  }
+lib/engine/filter_engine.dart-1293-
+lib/engine/filter_engine.dart-1294-  /// オーロラホログラムフィルター：画素の明度をもとにグラデーションマップ
+--
+lib/engine/filter_engine.dart-1313-    final result = Uint8List.fromList(data);
+lib/engine/filter_engine.dart-1314-    // 同じ明度の画素は同じ結果になるため、256階調ぶんだけ事前計算して
+lib/engine/filter_engine.dart-1315-    // キャッシュする（フルHD相当の画素数でも1画素ずつHSL変換し直すより
+lib/engine/filter_engine.dart-1316-    // 大幅に軽い）。
+lib/engine/filter_engine.dart-1317-    final cache = List<(int, int, int)?>.filled(256, null);
+lib/engine/filter_engine.dart-1318-    for (int i = 0; i < data.length; i += 4) {
+lib/engine/filter_engine.dart-1319-      if (data[i + 3] == 0) continue;
+lib/engine/filter_engine.dart-1320-      final r = data[i], g = data[i + 1], b = data[i + 2];
+lib/engine/filter_engine.dart:1321:      final luminanceIdx = ((r * 0.299 + g * 0.587 + b * 0.114)).round().clamp(
+lib/engine/filter_engine.dart-1322-        0,
+lib/engine/filter_engine.dart-1323-        255,
+lib/engine/filter_engine.dart-1324-      );
+lib/engine/filter_engine.dart:1325:      var mapped = cache[luminanceIdx];
+lib/engine/filter_engine.dart-1326-      if (mapped == null) {
+lib/engine/filter_engine.dart:1327:        final (mr, mg, mb) = _sampleGradient(stops, luminanceIdx / 255.0);
+lib/engine/filter_engine.dart-1328-        mapped = _adjustHsl(
+lib/engine/filter_engine.dart-1329-          mr,
+lib/engine/filter_engine.dart-1330-          mg,
+lib/engine/filter_engine.dart-1331-          mb,
+lib/engine/filter_engine.dart-1332-          saturationDelta: saturation / 100,
+lib/engine/filter_engine.dart-1333-          lightnessDelta: brightness / 100,
+lib/engine/filter_engine.dart-1334-        );
+lib/engine/filter_engine.dart:1335:        cache[luminanceIdx] = mapped;
+lib/engine/filter_engine.dart-1336-      }
+lib/engine/filter_engine.dart-1337-      result[i] = (r + (mapped.$1 - r) * amount).round().clamp(0, 255);
+lib/engine/filter_engine.dart-1338-      result[i + 1] = (g + (mapped.$2 - g) * amount).round().clamp(0, 255);
+lib/engine/filter_engine.dart-1339-      result[i + 2] = (b + (mapped.$3 - b) * amount).round().clamp(0, 255);
+lib/engine/filter_engine.dart-1340-    }
+lib/engine/filter_engine.dart-1341-    return result;
+lib/engine/filter_engine.dart-1342-  }
+lib/engine/filter_engine.dart-1343-
+--
+lib/engine/filter_engine.dart-1620-    int width,
+lib/engine/filter_engine.dart-1621-    int height,
+lib/engine/filter_engine.dart-1622-    double threshold,
+lib/engine/filter_engine.dart-1623-  ) {
+lib/engine/filter_engine.dart-1624-    final result = Uint8List.fromList(data);
+lib/engine/filter_engine.dart-1625-    for (int i = 0; i < data.length; i += 4) {
+lib/engine/filter_engine.dart-1626-      if (data[i + 3] == 0) continue;
+lib/engine/filter_engine.dart-1627-      final r = data[i], g = data[i + 1], b = data[i + 2];
+lib/engine/filter_engine.dart:1628:      final luminance = r * 0.299 + g * 0.587 + b * 0.114;
+lib/engine/filter_engine.dart:1629:      final v = luminance >= threshold ? 255 : 0;
+lib/engine/filter_engine.dart-1630-      result[i] = v;
+lib/engine/filter_engine.dart-1631-      result[i + 1] = v;
+lib/engine/filter_engine.dart-1632-      result[i + 2] = v;
+lib/engine/filter_engine.dart-1633-    }
+lib/engine/filter_engine.dart-1634-    return result;
+lib/engine/filter_engine.dart-1635-  }
+lib/engine/filter_engine.dart-1636-
+lib/engine/filter_engine.dart-1637-  /// 色調調整：彩度・明度・コントラストをそれぞれ独立に調整する
+--
+lib/engine/vhs_noise_engine.dart-97-        final baseIndex = (y * width + baseX) * 4;
+lib/engine/vhs_noise_engine.dart-98-        final redIndex = (y * width + redX) * 4;
+lib/engine/vhs_noise_engine.dart-99-        final blueIndex = (y * width + blueX) * 4;
+lib/engine/vhs_noise_engine.dart-100-
+lib/engine/vhs_noise_engine.dart-101-        var r = data[redIndex].toDouble();
+lib/engine/vhs_noise_engine.dart-102-        var g = data[baseIndex + 1].toDouble();
+lib/engine/vhs_noise_engine.dart-103-        var b = data[blueIndex + 2].toDouble();
+lib/engine/vhs_noise_engine.dart-104-
+lib/engine/vhs_noise_engine.dart:105:        // Deterministic luminance noise. Keeping the same noise sample for RGB
+lib/engine/vhs_noise_engine.dart-106-        // avoids turning film grain into colored confetti; channel separation
+lib/engine/vhs_noise_engine.dart-107-        // above provides the characteristic analog color bleed instead.
+lib/engine/vhs_noise_engine.dart-108-        if (noise > 0) {
+lib/engine/vhs_noise_engine.dart-109-          final pixelHash = _hash(frameSeed ^ (y * width + x));
+lib/engine/vhs_noise_engine.dart-110-          final grain = (_unit(pixelHash) * 2 - 1) * 48 * noise;
+lib/engine/vhs_noise_engine.dart-111-          r += grain;
+lib/engine/vhs_noise_engine.dart-112-          g += grain;
+lib/engine/vhs_noise_engine.dart-113-          b += grain;
+--
+lib/engine/brush_texture_cache.dart-40-    final byteData = await frame.image.toByteData(
+lib/engine/brush_texture_cache.dart-41-      format: ui.ImageByteFormat.rawRgba,
+lib/engine/brush_texture_cache.dart-42-    );
+lib/engine/brush_texture_cache.dart-43-    frame.image.dispose();
+lib/engine/brush_texture_cache.dart-44-    if (byteData == null) return;
+lib/engine/brush_texture_cache.dart-45-    final rgba = byteData.buffer.asUint8List();
+lib/engine/brush_texture_cache.dart-46-    final mask = Uint8List(rgba.length);
+lib/engine/brush_texture_cache.dart-47-    for (int i = 0; i < rgba.length; i += 4) {
+lib/engine/brush_texture_cache.dart:48:      final luminance =
+lib/engine/brush_texture_cache.dart-49-          rgba[i] * 0.299 + rgba[i + 1] * 0.587 + rgba[i + 2] * 0.114;
+lib/engine/brush_texture_cache.dart:50:      final ink = ((255 - luminance) * rgba[i + 3] / 255).round();
+lib/engine/brush_texture_cache.dart-51-      mask[i + 3] = ink.clamp(0, 255);
+lib/engine/brush_texture_cache.dart-52-    }
+lib/engine/brush_texture_cache.dart-53-    _brushTextureCache[path] = mask;
+lib/engine/brush_texture_cache.dart-54-  } catch (_) {
+lib/engine/brush_texture_cache.dart-55-    // 読み込み失敗時はキャッシュへ入れず、円形スタンプへフォールバックさせる。
+lib/engine/brush_texture_cache.dart-56-  }
+lib/engine/brush_texture_cache.dart-57-}
+--
+lib/engine/auto_lineart_engine.dart-65-
+lib/engine/auto_lineart_engine.dart-66-  /// Builds the binary rough-line mask used by the topology pass.
+lib/engine/auto_lineart_engine.dart-67-  ///
+lib/engine/auto_lineart_engine.dart-68-  /// Transparent drawing layers keep the historical alpha-based behaviour.
+lib/engine/auto_lineart_engine.dart-69-  /// Imported/scanned roughs are often flattened onto an opaque white (or dark)
+
+===== brightnessToAlpha =====
+lib/models/custom_automation_builtin_presets.dart-77-          caBrightness: 0,
+lib/models/custom_automation_builtin_presets.dart-78-          caContrast: 20,
+lib/models/custom_automation_builtin_presets.dart-79-        ),
+lib/models/custom_automation_builtin_presets.dart-80-        '色調補正',
+lib/models/custom_automation_builtin_presets.dart-81-      ),
+lib/models/custom_automation_builtin_presets.dart-82-      const CustomAutomationStep(
+lib/models/custom_automation_builtin_presets.dart-83-        id: 'builtin_analog_lineart_extract_3',
+lib/models/custom_automation_builtin_presets.dart-84-        surface: CustomAutomationSurface.canvas,
+lib/models/custom_automation_builtin_presets.dart:85:        command: 'canvas.brightnessToAlpha',
+lib/models/custom_automation_builtin_presets.dart-86-        label: '明度で透過（グレー）',
+lib/models/custom_automation_builtin_presets.dart-87-        args: {'grayMode': true},
+lib/models/custom_automation_builtin_presets.dart-88-        recordedFrame: 0,
+lib/models/custom_automation_builtin_presets.dart-89-      ),
+lib/models/custom_automation_builtin_presets.dart-90-    ],
+lib/models/custom_automation_builtin_presets.dart-91-  );
+lib/models/custom_automation_builtin_presets.dart-92-
+lib/models/custom_automation_builtin_presets.dart-93-  static CustomAutomation _lineartColorTrace() => CustomAutomation(
+
+===== alpha =====
+lib/services/theme_service.dart-477-    final scheme =
+lib/services/theme_service.dart-478-        ColorScheme.fromSeed(
+lib/services/theme_service.dart-479-          seedColor: preset.accentColor,
+lib/services/theme_service.dart-480-          brightness: brightness,
+lib/services/theme_service.dart-481-        ).copyWith(
+lib/services/theme_service.dart-482-          primary: preset.accentColor,
+lib/services/theme_service.dart-483-          secondary: preset.selectionColor,
+lib/services/theme_service.dart-484-          onSurface: preset.textColor,
+lib/services/theme_service.dart:485:          onSurfaceVariant: preset.textColor.withValues(alpha: 0.7),
+lib/services/theme_service.dart-486-        );
+lib/services/theme_service.dart-487-    // 角丸を大きめにし、Google Material標準の角丸14pxよりも柔らかい印象にする
+lib/services/theme_service.dart-488-    // （LINE・メルカリ等、日本の人気アプリに共通するポップで丸みの強い形状）。
+lib/services/theme_service.dart-489-    const radius = 18.0;
+lib/services/theme_service.dart-490-    const minTapSize = Size(48, 48);
+lib/services/theme_service.dart-491-    // Text等が明示的に色指定していない場合に使うデフォルト文字色
+lib/services/theme_service.dart-492-    // （「文字色 | UI全体の文字色」）。
+lib/services/theme_service.dart-493-    final baseTextTheme = ThemeData(
+--
+lib/services/theme_service.dart-682-      ),
+lib/services/theme_service.dart-683-      switchTheme: SwitchThemeData(
+lib/services/theme_service.dart-684-        thumbColor: WidgetStateProperty.resolveWith(
+lib/services/theme_service.dart-685-          (states) =>
+lib/services/theme_service.dart-686-              states.contains(WidgetState.selected) ? scheme.primary : null,
+lib/services/theme_service.dart-687-        ),
+lib/services/theme_service.dart-688-        trackColor: WidgetStateProperty.resolveWith(
+lib/services/theme_service.dart-689-          (states) => states.contains(WidgetState.selected)
+lib/services/theme_service.dart:690:              ? scheme.primary.withValues(alpha: 0.5)
+lib/services/theme_service.dart-691-              : null,
+lib/services/theme_service.dart-692-        ),
+lib/services/theme_service.dart-693-      ),
+lib/services/theme_service.dart-694-      floatingActionButtonTheme: FloatingActionButtonThemeData(
+lib/services/theme_service.dart-695-        backgroundColor: scheme.primary,
+lib/services/theme_service.dart-696-        foregroundColor: scheme.onPrimary,
+lib/services/theme_service.dart-697-        // 完全な円形：角丸四角より親しみやすく、LINE等の日本製アプリで
+lib/services/theme_service.dart-698-        // 定番のFAB形状。
+lib/services/theme_service.dart-699-        shape: const CircleBorder(),
+lib/services/theme_service.dart-700-      ),
+lib/services/theme_service.dart-701-      tabBarTheme: TabBarThemeData(
+lib/services/theme_service.dart-702-        indicatorColor: scheme.primary,
+lib/services/theme_service.dart-703-        labelColor: scheme.primary,
+lib/services/theme_service.dart:704:        unselectedLabelColor: preset.textColor.withValues(alpha: 0.6),
+lib/services/theme_service.dart-705-      ),
+lib/services/theme_service.dart-706-      dividerTheme: DividerThemeData(
+lib/services/theme_service.dart:707:        color: preset.textColor.withValues(alpha: 0.08),
+lib/services/theme_service.dart-708-      ),
+lib/services/theme_service.dart-709-    );
+lib/services/theme_service.dart-710-  }
+lib/services/theme_service.dart-711-
+lib/services/theme_service.dart-712-  /// [textTheme]の全スタイルへ[fallback]（フォント未対応文字の代替フォント
+lib/services/theme_service.dart-713-  /// 列）を適用したコピーを返す。TextTheme.apply()にはfontFamilyFallback
+lib/services/theme_service.dart-714-  /// を指定するオプションが無いため、各スタイルへ個別にcopyWith()する。
+lib/services/theme_service.dart-715-  TextTheme _withFontFallback(TextTheme textTheme, List<String> fallback) {
+--
+lib/services/shortcut_widget_renderer.dart-138-    const Radius.circular(ShortcutWidgetDesign.cornerRadius),
+lib/services/shortcut_widget_renderer.dart-139-  );
+lib/services/shortcut_widget_renderer.dart-140-
+lib/services/shortcut_widget_renderer.dart-141-  // Material elevation 4相当の影（`_SplashActionButton`の
+lib/services/shortcut_widget_renderer.dart-142-  // `Material(elevation: 4, shadowColor: colors.first * 0.5)`に相当）。
+lib/services/shortcut_widget_renderer.dart-143-  canvas.drawRRect(
+lib/services/shortcut_widget_renderer.dart-144-    rrect.shift(const Offset(0, 2)),
+lib/services/shortcut_widget_renderer.dart-145-    Paint()
+lib/services/shortcut_widget_renderer.dart:146:      ..color = colors.first.withValues(alpha: 0.5)
+lib/services/shortcut_widget_renderer.dart-147-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+lib/services/shortcut_widget_renderer.dart-148-  );
+lib/services/shortcut_widget_renderer.dart-149-
+lib/services/shortcut_widget_renderer.dart-150-  canvas.drawRRect(
+lib/services/shortcut_widget_renderer.dart-151-    rrect,
+lib/services/shortcut_widget_renderer.dart-152-    Paint()
+lib/services/shortcut_widget_renderer.dart-153-      ..shader = ui.Gradient.linear(tile.topLeft, tile.bottomRight, [
+lib/services/shortcut_widget_renderer.dart-154-        colors.first,
+--
+lib/screens/home/widgets/home_drawer.dart-27-            ),
+lib/screens/home/widgets/home_drawer.dart-28-            child: Column(
+lib/screens/home/widgets/home_drawer.dart-29-              crossAxisAlignment: CrossAxisAlignment.start,
+lib/screens/home/widgets/home_drawer.dart-30-              children: [
+lib/screens/home/widgets/home_drawer.dart-31-                Container(
+lib/screens/home/widgets/home_drawer.dart-32-                  width: 48,
+lib/screens/home/widgets/home_drawer.dart-33-                  height: 48,
+lib/screens/home/widgets/home_drawer.dart-34-                  decoration: BoxDecoration(
+lib/screens/home/widgets/home_drawer.dart:35:                    color: scheme.onPrimary.withValues(alpha: 0.25),
+lib/screens/home/widgets/home_drawer.dart-36-                    shape: BoxShape.circle,
+lib/screens/home/widgets/home_drawer.dart-37-                  ),
+lib/screens/home/widgets/home_drawer.dart-38-                  child: Icon(
+lib/screens/home/widgets/home_drawer.dart-39-                    Icons.movie_creation_outlined,
+lib/screens/home/widgets/home_drawer.dart-40-                    color: scheme.onPrimary,
+lib/screens/home/widgets/home_drawer.dart-41-                    size: 26,
+lib/screens/home/widgets/home_drawer.dart-42-                  ),
+lib/screens/home/widgets/home_drawer.dart-43-                ),
+--
+lib/screens/home/widgets/home_drawer.dart-57-                    letterSpacing: 1.5,
+lib/screens/home/widgets/home_drawer.dart-58-                    height: 1.5,
+lib/screens/home/widgets/home_drawer.dart-59-                  ),
+lib/screens/home/widgets/home_drawer.dart-60-                ),
+lib/screens/home/widgets/home_drawer.dart-61-                const SizedBox(height: 2),
+lib/screens/home/widgets/home_drawer.dart-62-                Text(
+lib/screens/home/widgets/home_drawer.dart-63-                  l10n.homeDrawerAppTagline,
+lib/screens/home/widgets/home_drawer.dart-64-                  style: TextStyle(
+lib/screens/home/widgets/home_drawer.dart:65:                    color: scheme.onPrimary.withValues(alpha: 0.85),
+lib/screens/home/widgets/home_drawer.dart-66-                    fontSize: 12,
+lib/screens/home/widgets/home_drawer.dart-67-                  ),
+lib/screens/home/widgets/home_drawer.dart-68-                ),
+lib/screens/home/widgets/home_drawer.dart-69-              ],
+lib/screens/home/widgets/home_drawer.dart-70-            ),
+lib/screens/home/widgets/home_drawer.dart-71-          ),
+lib/screens/home/widgets/home_drawer.dart-72-          const SizedBox(height: 4),
+lib/screens/home/widgets/home_drawer.dart-73-          // メニュー項目名はくらむぼんで統一する。
+--
+lib/screens/home/widgets/project_list_widget.dart-291-    double? displayWidth,
+lib/screens/home/widgets/project_list_widget.dart-292-  }) {
+lib/screens/home/widgets/project_list_widget.dart-293-    final placeholder = Container(
+lib/screens/home/widgets/project_list_widget.dart-294-      color: Color(project.backgroundColor),
+lib/screens/home/widgets/project_list_widget.dart-295-      child: Center(
+lib/screens/home/widgets/project_list_widget.dart-296-        child: Icon(
+lib/screens/home/widgets/project_list_widget.dart-297-          Icons.image,
+lib/screens/home/widgets/project_list_widget.dart-298-          color: ThemeService.activeColorScheme.onSurface.withValues(
+lib/screens/home/widgets/project_list_widget.dart:299:            alpha: 0.38,
+lib/screens/home/widgets/project_list_widget.dart-300-          ),
+lib/screens/home/widgets/project_list_widget.dart-301-        ),
+lib/screens/home/widgets/project_list_widget.dart-302-      ),
+lib/screens/home/widgets/project_list_widget.dart-303-    );
+lib/screens/home/widgets/project_list_widget.dart-304-    final path = project.thumbnailPath;
+lib/screens/home/widgets/project_list_widget.dart-305-    if (path == null) return placeholder;
+lib/screens/home/widgets/project_list_widget.dart-306-    return Image.file(
+lib/screens/home/widgets/project_list_widget.dart-307-      File(path),
+--
+lib/screens/home/widgets/project_list_widget.dart-415-        decoration: BoxDecoration(
+lib/screens/home/widgets/project_list_widget.dart-416-          borderRadius: BorderRadius.circular(14),
+lib/screens/home/widgets/project_list_widget.dart-417-          boxShadow: [
+lib/screens/home/widgets/project_list_widget.dart-418-            BoxShadow(
+lib/screens/home/widgets/project_list_widget.dart-419-              color:
+lib/screens/home/widgets/project_list_widget.dart-420-                  (isSelected
+lib/screens/home/widgets/project_list_widget.dart-421-                          ? primary
+lib/screens/home/widgets/project_list_widget.dart-422-                          : ThemeService.activeColorScheme.onSurface)
+lib/screens/home/widgets/project_list_widget.dart:423:                      .withValues(alpha: isSelected ? 0.28 : 0.12),
+lib/screens/home/widgets/project_list_widget.dart-424-              blurRadius: isSelected ? 14 : 8,
+lib/screens/home/widgets/project_list_widget.dart-425-              offset: const Offset(0, 3),
+lib/screens/home/widgets/project_list_widget.dart-426-            ),
+lib/screens/home/widgets/project_list_widget.dart-427-          ],
+lib/screens/home/widgets/project_list_widget.dart-428-        ),
+lib/screens/home/widgets/project_list_widget.dart-429-        child: Card(
+lib/screens/home/widgets/project_list_widget.dart-430-          clipBehavior: Clip.antiAlias,
+lib/screens/home/widgets/project_list_widget.dart-431-          elevation: 0,
+--
+lib/screens/home/widgets/project_list_widget.dart-455-                      child: DecoratedBox(
+lib/screens/home/widgets/project_list_widget.dart-456-                        decoration: BoxDecoration(
+lib/screens/home/widgets/project_list_widget.dart-457-                          gradient: LinearGradient(
+lib/screens/home/widgets/project_list_widget.dart-458-                            begin: Alignment.topCenter,
+lib/screens/home/widgets/project_list_widget.dart-459-                            end: Alignment.bottomCenter,
+lib/screens/home/widgets/project_list_widget.dart-460-                            colors: [
+lib/screens/home/widgets/project_list_widget.dart-461-                              Colors.transparent,
+lib/screens/home/widgets/project_list_widget.dart-462-                              ThemeService.activeColorScheme.onSurface
+lib/screens/home/widgets/project_list_widget.dart:463:                                  .withValues(alpha: 0.55),
+lib/screens/home/widgets/project_list_widget.dart-464-                            ],
+lib/screens/home/widgets/project_list_widget.dart-465-                          ),
+lib/screens/home/widgets/project_list_widget.dart-466-                        ),
+lib/screens/home/widgets/project_list_widget.dart-467-                      ),
+lib/screens/home/widgets/project_list_widget.dart-468-                    ),
+lib/screens/home/widgets/project_list_widget.dart-469-                    Positioned(
+lib/screens/home/widgets/project_list_widget.dart-470-                      left: 6,
+lib/screens/home/widgets/project_list_widget.dart-471-                      right: 6,
+--
+lib/screens/home/widgets/project_list_widget.dart-485-                    if (project.isFavorite)
+lib/screens/home/widgets/project_list_widget.dart-486-                      Positioned(
+lib/screens/home/widgets/project_list_widget.dart-487-                        top: 4,
+lib/screens/home/widgets/project_list_widget.dart-488-                        right: 4,
+lib/screens/home/widgets/project_list_widget.dart-489-                        child: Container(
+lib/screens/home/widgets/project_list_widget.dart-490-                          padding: EdgeInsets.all(3),
+lib/screens/home/widgets/project_list_widget.dart-491-                          decoration: BoxDecoration(
+lib/screens/home/widgets/project_list_widget.dart-492-                            color: ThemeService.activeColorScheme.onSurface
+lib/screens/home/widgets/project_list_widget.dart:493:                                .withValues(alpha: 0.4),
+lib/screens/home/widgets/project_list_widget.dart-494-                            shape: BoxShape.circle,
+lib/screens/home/widgets/project_list_widget.dart-495-                          ),
+lib/screens/home/widgets/project_list_widget.dart-496-                          child: Icon(
+lib/screens/home/widgets/project_list_widget.dart-497-                            Icons.star,
+lib/screens/home/widgets/project_list_widget.dart-498-                            color: ThemeService.activeColorScheme.tertiary,
+lib/screens/home/widgets/project_list_widget.dart-499-                            size: 14,
+lib/screens/home/widgets/project_list_widget.dart-500-                          ),
+lib/screens/home/widgets/project_list_widget.dart-501-                        ),
+--
+lib/screens/home/widgets/project_list_widget.dart-505-                        top: 4,
+lib/screens/home/widgets/project_list_widget.dart-506-                        left: 4,
+lib/screens/home/widgets/project_list_widget.dart-507-                        child: AnimatedContainer(
+lib/screens/home/widgets/project_list_widget.dart-508-                          duration: const Duration(milliseconds: 120),
+lib/screens/home/widgets/project_list_widget.dart-509-                          padding: const EdgeInsets.all(1),
+lib/screens/home/widgets/project_list_widget.dart-510-                          decoration: BoxDecoration(
+lib/screens/home/widgets/project_list_widget.dart-511-                            color: isSelected
+lib/screens/home/widgets/project_list_widget.dart-512-                                ? primary
+lib/screens/home/widgets/project_list_widget.dart:513:                                : scheme.surface.withValues(alpha: 0.9),
+lib/screens/home/widgets/project_list_widget.dart-514-                            shape: BoxShape.circle,
+lib/screens/home/widgets/project_list_widget.dart-515-                            border: Border.all(color: primary, width: 1.5),
+lib/screens/home/widgets/project_list_widget.dart-516-                            boxShadow: [
+lib/screens/home/widgets/project_list_widget.dart-517-                              BoxShadow(
+lib/screens/home/widgets/project_list_widget.dart-518-                                color: ThemeService.activeColorScheme.onSurface
+lib/screens/home/widgets/project_list_widget.dart:519:                                    .withValues(alpha: 0.2),
+lib/screens/home/widgets/project_list_widget.dart-520-                                blurRadius: 3,
+lib/screens/home/widgets/project_list_widget.dart-521-                              ),
+lib/screens/home/widgets/project_list_widget.dart-522-                            ],
+lib/screens/home/widgets/project_list_widget.dart-523-                          ),
+lib/screens/home/widgets/project_list_widget.dart-524-                          child: Icon(
+lib/screens/home/widgets/project_list_widget.dart-525-                            isSelected ? Icons.check : null,
+lib/screens/home/widgets/project_list_widget.dart-526-                            size: 16,
+lib/screens/home/widgets/project_list_widget.dart-527-                            color: scheme.onPrimary,
+--
+lib/screens/home/widgets/project_list_widget.dart-554-        decoration: BoxDecoration(
+lib/screens/home/widgets/project_list_widget.dart-555-          borderRadius: BorderRadius.circular(14),
+lib/screens/home/widgets/project_list_widget.dart-556-          boxShadow: [
+lib/screens/home/widgets/project_list_widget.dart-557-            BoxShadow(
+lib/screens/home/widgets/project_list_widget.dart-558-              color:
+lib/screens/home/widgets/project_list_widget.dart-559-                  (isSelected
+lib/screens/home/widgets/project_list_widget.dart-560-                          ? primary
+lib/screens/home/widgets/project_list_widget.dart-561-                          : ThemeService.activeColorScheme.onSurface)
+lib/screens/home/widgets/project_list_widget.dart:562:                      .withValues(alpha: isSelected ? 0.28 : 0.12),
+lib/screens/home/widgets/project_list_widget.dart-563-              blurRadius: isSelected ? 14 : 8,
+lib/screens/home/widgets/project_list_widget.dart-564-              offset: const Offset(0, 3),
+lib/screens/home/widgets/project_list_widget.dart-565-            ),
+lib/screens/home/widgets/project_list_widget.dart-566-          ],
+lib/screens/home/widgets/project_list_widget.dart-567-        ),
+lib/screens/home/widgets/project_list_widget.dart-568-        child: Card(
+lib/screens/home/widgets/project_list_widget.dart-569-          clipBehavior: Clip.antiAlias,
+lib/screens/home/widgets/project_list_widget.dart-570-          elevation: 0,
+
+===== automation recording calls =====
+lib/screens/timeline/timeline_screen.dart-2450-    String command,
+lib/screens/timeline/timeline_screen.dart-2451-    String label, {
+lib/screens/timeline/timeline_screen.dart-2452-    Map<String, Object?> args = const {},
+lib/screens/timeline/timeline_screen.dart-2453-    bool changesFrame = false,
+lib/screens/timeline/timeline_screen.dart-2454-  }) {
+lib/screens/timeline/timeline_screen.dart:2455:    context.read<CustomAutomationService>().recordStep(
+lib/screens/timeline/timeline_screen.dart-2456-      surface: CustomAutomationSurface.timeline,
+lib/screens/timeline/timeline_screen.dart-2457-      command: command,
+lib/screens/timeline/timeline_screen.dart-2458-      label: label,
+lib/screens/timeline/timeline_screen.dart-2459-      args: args,
+lib/screens/timeline/timeline_screen.dart-2460-      changesFrame: changesFrame,
+--
+lib/screens/canvas/widgets/filter_panel.dart-1680-      if (bulk != null && bulk.length > 1) {
+lib/screens/canvas/widgets/filter_panel.dart-1681-        await _applyBulk(ps, tm, layerId, filter, bulk);
+lib/screens/canvas/widgets/filter_panel.dart-1682-      } else {
+lib/screens/canvas/widgets/filter_panel.dart-1683-        await _applyToFrame(ps, tm, layerId, filter, widget.frameIndex);
+lib/screens/canvas/widgets/filter_panel.dart-1684-        if (mounted) {
+lib/screens/canvas/widgets/filter_panel.dart:1685:          context.read<CustomAutomationService>().recordStep(
+lib/screens/canvas/widgets/filter_panel.dart-1686-            surface: CustomAutomationSurface.canvas,
+lib/screens/canvas/widgets/filter_panel.dart-1687-            command: 'canvas.filter',
+lib/screens/canvas/widgets/filter_panel.dart-1688-            label: filter.name,
+lib/screens/canvas/widgets/filter_panel.dart-1689-            args: {'filter': filter.toJson()},
+lib/screens/canvas/widgets/filter_panel.dart-1690-            recordedFrame: widget.frameIndex,
+--
+lib/screens/canvas/canvas_screen.dart-342-      widget.projectId,
+lib/screens/canvas/canvas_screen.dart-343-      _currentSceneId,
+lib/screens/canvas/canvas_screen.dart-344-    );
+lib/screens/canvas/canvas_screen.dart-345-    if (_currentFrame + 1 >= total) return;
+lib/screens/canvas/canvas_screen.dart-346-    setState(() => _currentFrame += 1);
+lib/screens/canvas/canvas_screen.dart:347:    _recordCanvasAutomation(
+lib/screens/canvas/canvas_screen.dart-348-      'canvas.selectFrame',
+lib/screens/canvas/canvas_screen.dart-349-      'Frame ${_currentFrame + 1}',
+lib/screens/canvas/canvas_screen.dart-350-      args: {'frame': _currentFrame},
+lib/screens/canvas/canvas_screen.dart-351-      changesFrame: true,
+lib/screens/canvas/canvas_screen.dart-352-    );
+lib/screens/canvas/canvas_screen.dart-353-  }
+lib/screens/canvas/canvas_screen.dart-354-
+lib/screens/canvas/canvas_screen.dart-355-  void _goToPreviousFrame() {
+lib/screens/canvas/canvas_screen.dart-356-    if (_currentFrame <= 0) return;
+lib/screens/canvas/canvas_screen.dart-357-    setState(() => _currentFrame -= 1);
+lib/screens/canvas/canvas_screen.dart:358:    _recordCanvasAutomation(
+lib/screens/canvas/canvas_screen.dart-359-      'canvas.selectFrame',
+lib/screens/canvas/canvas_screen.dart-360-      'Frame ${_currentFrame + 1}',
+lib/screens/canvas/canvas_screen.dart-361-      args: {'frame': _currentFrame},
+lib/screens/canvas/canvas_screen.dart-362-      changesFrame: true,
+lib/screens/canvas/canvas_screen.dart-363-    );
+--
+lib/screens/canvas/canvas_screen.dart-418-        onResumeRecording: _showCustomAutomationRecordingOverlay,
+lib/screens/canvas/canvas_screen.dart-419-      ),
+lib/screens/canvas/canvas_screen.dart-420-    );
+lib/screens/canvas/canvas_screen.dart-421-  }
+lib/screens/canvas/canvas_screen.dart-422-
+lib/screens/canvas/canvas_screen.dart:423:  void _recordCanvasAutomation(
+lib/screens/canvas/canvas_screen.dart-424-    String command,
+lib/screens/canvas/canvas_screen.dart-425-    String label, {
+lib/screens/canvas/canvas_screen.dart-426-    Map<String, Object?> args = const {},
+lib/screens/canvas/canvas_screen.dart-427-    bool changesFrame = false,
+lib/screens/canvas/canvas_screen.dart-428-  }) {
+lib/screens/canvas/canvas_screen.dart:429:    context.read<CustomAutomationService>().recordStep(
+lib/screens/canvas/canvas_screen.dart-430-      surface: CustomAutomationSurface.canvas,
+lib/screens/canvas/canvas_screen.dart-431-      command: command,
+lib/screens/canvas/canvas_screen.dart-432-      label: label,
+lib/screens/canvas/canvas_screen.dart-433-      args: args,
+lib/screens/canvas/canvas_screen.dart-434-      changesFrame: changesFrame,
+--
+lib/screens/canvas/canvas_screen.dart-1344-                        onSizeChanged: (v) {
+lib/screens/canvas/canvas_screen.dart-1345-                          setState(() => _brushSize = v);
+lib/screens/canvas/canvas_screen.dart-1346-                          context.read<BrushService>().updateCurrentBrushSize(
+lib/screens/canvas/canvas_screen.dart-1347-                            v,
+lib/screens/canvas/canvas_screen.dart-1348-                          );
+lib/screens/canvas/canvas_screen.dart:1349:                          _recordCanvasAutomation(
+lib/screens/canvas/canvas_screen.dart-1350-                            'canvas.brushSize',
+lib/screens/canvas/canvas_screen.dart-1351-                            'Brush size',
+lib/screens/canvas/canvas_screen.dart-1352-                            args: {'value': v},
+lib/screens/canvas/canvas_screen.dart-1353-                          );
+lib/screens/canvas/canvas_screen.dart-1354-                        },
+lib/screens/canvas/canvas_screen.dart-1355-                        onOpacityChanged: (v) {
+lib/screens/canvas/canvas_screen.dart-1356-                          setState(() => _brushOpacity = v);
+lib/screens/canvas/canvas_screen.dart-1357-                          context
+lib/screens/canvas/canvas_screen.dart-1358-                              .read<BrushService>()
+lib/screens/canvas/canvas_screen.dart-1359-                              .updateCurrentBrushOpacity(v);
+lib/screens/canvas/canvas_screen.dart:1360:                          _recordCanvasAutomation(
+lib/screens/canvas/canvas_screen.dart-1361-                            'canvas.brushOpacity',
+lib/screens/canvas/canvas_screen.dart-1362-                            'Brush opacity',
+lib/screens/canvas/canvas_screen.dart-1363-                            args: {'value': v},
+lib/screens/canvas/canvas_screen.dart-1364-                          );
+lib/screens/canvas/canvas_screen.dart-1365-                        },
+--
+lib/screens/canvas/canvas_screen.dart-1438-                        currentFrame: _currentFrame,
+lib/screens/canvas/canvas_screen.dart-1439-                        projectId: widget.projectId,
+lib/screens/canvas/canvas_screen.dart-1440-                        sceneId: _currentSceneId,
+lib/screens/canvas/canvas_screen.dart-1441-                        onFrameSelected: (idx) {
+lib/screens/canvas/canvas_screen.dart-1442-                          setState(() => _currentFrame = idx);
+lib/screens/canvas/canvas_screen.dart:1443:                          _recordCanvasAutomation(
+lib/screens/canvas/canvas_screen.dart-1444-                            'canvas.selectFrame',
+lib/screens/canvas/canvas_screen.dart-1445-                            'Frame ${idx + 1}',
+lib/screens/canvas/canvas_screen.dart-1446-                            args: {'frame': idx},
+lib/screens/canvas/canvas_screen.dart-1447-                            changesFrame: true,
+lib/screens/canvas/canvas_screen.dart-1448-                          );
+--
+lib/screens/canvas/canvas_screen.dart-1659-    currentTool: _currentTool,
+lib/screens/canvas/canvas_screen.dart-1660-    currentColor: _currentColor,
+lib/screens/canvas/canvas_screen.dart-1661-    isStampSelected: _currentSubTool == PenSubTool.stamp,
+lib/screens/canvas/canvas_screen.dart-1662-    onToolSelected: (tool) {
+lib/screens/canvas/canvas_screen.dart-1663-      setState(() => _currentTool = tool);
+lib/screens/canvas/canvas_screen.dart:1664:      _recordCanvasAutomation(
+lib/screens/canvas/canvas_screen.dart-1665-        'canvas.tool',
+lib/screens/canvas/canvas_screen.dart-1666-        tool.name,
+lib/screens/canvas/canvas_screen.dart-1667-        args: {'tool': tool.name},
+lib/screens/canvas/canvas_screen.dart-1668-      );
+lib/screens/canvas/canvas_screen.dart-1669-    },
+--
+lib/screens/canvas/canvas_screen.dart-1729-            child: ColorPickerPanel(
+lib/screens/canvas/canvas_screen.dart-1730-              currentColor: _currentColor,
+lib/screens/canvas/canvas_screen.dart-1731-              onColorChanged: (color) {
+lib/screens/canvas/canvas_screen.dart-1732-                setState(() => _currentColor = color);
+lib/screens/canvas/canvas_screen.dart-1733-                context.read<BrushService>().setCurrentColor(color);
+lib/screens/canvas/canvas_screen.dart:1734:                _recordCanvasAutomation(
+lib/screens/canvas/canvas_screen.dart-1735-                  'canvas.color',
+lib/screens/canvas/canvas_screen.dart-1736-                  'Color',
+lib/screens/canvas/canvas_screen.dart-1737-                  args: {'argb': color.toARGB32()},
+lib/screens/canvas/canvas_screen.dart-1738-                );
+lib/screens/canvas/canvas_screen.dart-1739-              },
+--
+lib/screens/canvas/canvas_screen.dart-1791-  Widget _colorPickerPanel() => ColorPickerPanel(
+lib/screens/canvas/canvas_screen.dart-1792-    currentColor: _currentColor,
+lib/screens/canvas/canvas_screen.dart-1793-    onColorChanged: (color) {
+lib/screens/canvas/canvas_screen.dart-1794-      setState(() => _currentColor = color);
+lib/screens/canvas/canvas_screen.dart-1795-      context.read<BrushService>().setCurrentColor(color);
+lib/screens/canvas/canvas_screen.dart:1796:      _recordCanvasAutomation(
+lib/screens/canvas/canvas_screen.dart-1797-        'canvas.color',
+lib/screens/canvas/canvas_screen.dart-1798-        'Color',
+lib/screens/canvas/canvas_screen.dart-1799-        args: {'argb': color.toARGB32()},
+lib/screens/canvas/canvas_screen.dart-1800-      );
+lib/screens/canvas/canvas_screen.dart-1801-    },
+
+===== layer APIs =====
+lib/services/project_service.dart-829-
+lib/services/project_service.dart-830-  /// レイヤーを複製する（メタデータ・キーフレーム等の設定に加えて
+lib/services/project_service.dart-831-  /// ピクセル内容もTileManager.copyLayerでコピーオンライト複製する）。
+lib/services/project_service.dart-832-  /// 複製先は元レイヤーのすぐ上に挿入する。レイヤーのコピー＆ペースト
+lib/services/project_service.dart-833-  /// （Ctrl+C/Ctrl+V）から使う。対象レイヤーが見つからない場合はnull。
+lib/services/project_service.dart:834:  Layer? duplicateLayer({
+lib/services/project_service.dart-835-    required String projectId,
+lib/services/project_service.dart-836-    required String sceneId,
+lib/services/project_service.dart-837-    required int frameIndex,
+lib/services/project_service.dart-838-    required String layerId,
+lib/services/project_service.dart-839-    String? nameOverride,
+--
+lib/services/project_service.dart-1997-
+lib/services/project_service.dart-1998-  // ─── レイヤー結合 ─────────────────────────────────────────────────────
+lib/services/project_service.dart-1999-
+lib/services/project_service.dart-2000-  /// 結合可能なレイヤー種別。共通レイヤー・フォルダ・
+lib/services/project_service.dart-2001-  /// タイムライン素材（画像/動画/ウォーターマーク）・テキストは結合不可。
+lib/services/project_service.dart:2002:  static const _mergeableLayerTypes = {
+lib/services/project_service.dart-2003-    LayerType.normal,
+lib/services/project_service.dart-2004-    LayerType.autoFillLineart,
+lib/services/project_service.dart-2005-    LayerType.autoFill,
+lib/services/project_service.dart-2006-  };
+lib/services/project_service.dart-2007-
+--
+lib/services/project_service.dart-2010-  ///   変換される（パーツID・更新マークは破棄）。
+lib/services/project_service.dart-2011-  /// - ブレンドモード・不透明度・クリッピングは一番下（配列末尾側＝背面）の
+lib/services/project_service.dart-2012-  ///   レイヤーの設定を引き継ぐ。
+lib/services/project_service.dart-2013-  /// - タイル内容は選択レイヤーを表示順で合成した結果になる。
+lib/services/project_service.dart-2014-  /// 2枚未満、または結合不可の種別が含まれる場合は何もしない。
+lib/services/project_service.dart:2015:  Future<void> mergeLayers({
+lib/services/project_service.dart-2016-    required String projectId,
+lib/services/project_service.dart-2017-    required String sceneId,
+lib/services/project_service.dart-2018-    required int frameIndex,
+lib/services/project_service.dart-2019-    required List<String> layerIds,
+lib/services/project_service.dart-2020-  }) async {
+--
+lib/services/project_service.dart-2024-    for (final id in layerIds) {
+lib/services/project_service.dart-2025-      final idx = layers.indexWhere((l) => l.id == id);
+lib/services/project_service.dart-2026-      if (idx < 0) return;
+lib/services/project_service.dart-2027-      indices.add(idx);
+lib/services/project_service.dart-2028-    }
+lib/services/project_service.dart:2029:    if (indices.any((i) => !_mergeableLayerTypes.contains(layers[i].type))) {
+lib/services/project_service.dart-2030-      return;
+lib/services/project_service.dart-2031-    }
+lib/services/project_service.dart-2032-
+lib/services/project_service.dart-2033-    indices.sort();
+lib/services/project_service.dart-2034-    final bottomIndex = indices.last;
+lib/services/project_service.dart-2035-    final bottomLayer = layers[bottomIndex];
+lib/services/project_service.dart-2036-    final selectedLayers = indices.map((i) => layers[i]).toList();
+lib/services/project_service.dart-2037-
+lib/services/project_service.dart-2038-    final tm = _tileManagers[projectId];
+lib/services/project_service.dart-2039-    if (tm != null) {
+lib/services/project_service.dart:2040:      final mergedImage = await LayerCompositor.composite(
+lib/services/project_service.dart-2041-        tm,
+lib/services/project_service.dart-2042-        selectedLayers,
+lib/services/project_service.dart-2043-        (l) => frameLayerKey(sceneId, frameIndex, l.id),
+lib/services/project_service.dart-2044-        tm.canvasWidth,
+lib/services/project_service.dart-2045-        tm.canvasHeight,
+--
+lib/screens/canvas/widgets/canvas_area.dart-4213-    _paintRuler(canvas, size, drawingRect);
+lib/screens/canvas/widgets/canvas_area.dart-4214-  }
+lib/screens/canvas/widgets/canvas_area.dart-4215-
+lib/screens/canvas/widgets/canvas_area.dart-4216-  void _paintRuler(Canvas canvas, Size size, Rect drawingRect) {
+lib/screens/canvas/widgets/canvas_area.dart-4217-    final r = activeRuler;
+lib/screens/canvas/widgets/canvas_area.dart:4218:    if (r == null || !r.isVisible) return;
+lib/screens/canvas/widgets/canvas_area.dart-4219-    final paint = Paint()
+lib/screens/canvas/widgets/canvas_area.dart-4220-      ..color = handleColor.withValues(alpha: 0.5)
+lib/screens/canvas/widgets/canvas_area.dart-4221-      ..strokeWidth = 1.5
+lib/screens/canvas/widgets/canvas_area.dart-4222-      ..style = PaintingStyle.stroke;
+lib/screens/canvas/widgets/canvas_area.dart-4223-    final canvasPx = canvasPixelSizeOf(project);
+--
+lib/screens/canvas/widgets/layer_panel.dart-282-                const Spacer(),
+lib/screens/canvas/widgets/layer_panel.dart-283-                // 表示中の全レイヤーをワンタップで結合する（複数選択モードを
+lib/screens/canvas/widgets/layer_panel.dart-284-                // 使わずに済む一括操作の一つ）。
+lib/screens/canvas/widgets/layer_panel.dart-285-                IconButton(
+lib/screens/canvas/widgets/layer_panel.dart-286-                  icon: const Icon(Icons.merge_type, size: 18),
+lib/screens/canvas/widgets/layer_panel.dart:287:                  onPressed: () => _mergeAllVisibleLayers(context, layers),
+lib/screens/canvas/widgets/layer_panel.dart-288-                  tooltip: l10n.layerPanelMergeAllVisibleTooltip,
+lib/screens/canvas/widgets/layer_panel.dart-289-                ),
+lib/screens/canvas/widgets/layer_panel.dart-290-                IconButton(
+lib/screens/canvas/widgets/layer_panel.dart-291-                  icon: const Icon(Icons.help_outline, size: 18),
+lib/screens/canvas/widgets/layer_panel.dart-292-                  onPressed: () => _showHelp(context),
+--
+lib/screens/canvas/widgets/layer_panel.dart-501-                                context.read<ProjectService>().updateLayer(
+lib/screens/canvas/widgets/layer_panel.dart-502-                                  projectId: widget.projectId,
+lib/screens/canvas/widgets/layer_panel.dart-503-                                  sceneId: widget.sceneId,
+lib/screens/canvas/widgets/layer_panel.dart-504-                                  frameIndex: widget.frameIndex,
+lib/screens/canvas/widgets/layer_panel.dart-505-                                  layer: layer.copyWith(
+lib/screens/canvas/widgets/layer_panel.dart:506:                                    isVisible: !layer.isVisible,
+lib/screens/canvas/widgets/layer_panel.dart-507-                                  ),
+lib/screens/canvas/widgets/layer_panel.dart-508-                                ),
+lib/screens/canvas/widgets/layer_panel.dart-509-                            child: Icon(
+lib/screens/canvas/widgets/layer_panel.dart:510:                              layer.isVisible
+lib/screens/canvas/widgets/layer_panel.dart-511-                                  ? Icons.visibility
+lib/screens/canvas/widgets/layer_panel.dart-512-                                  : Icons.visibility_off,
+lib/screens/canvas/widgets/layer_panel.dart-513-                              size: 16,
+lib/screens/canvas/widgets/layer_panel.dart-514-                            ),
+lib/screens/canvas/widgets/layer_panel.dart-515-                          ),
+--
+lib/screens/canvas/widgets/layer_panel.dart-608-                        // 済む一括操作の一つ）。ゴミ箱アイコンのすぐ隣に置くことで
+lib/screens/canvas/widgets/layer_panel.dart-609-                        // 「レイヤーへの操作」としてまとまって見えるようにしている。
+lib/screens/canvas/widgets/layer_panel.dart-610-                        GestureDetector(
+lib/screens/canvas/widgets/layer_panel.dart-611-                          onTap: _layerBelow(layer, layers) != null
+lib/screens/canvas/widgets/layer_panel.dart-612-                              ? () =>
+lib/screens/canvas/widgets/layer_panel.dart:613:                                    _mergeWithLayerBelow(context, layer, layers)
+lib/screens/canvas/widgets/layer_panel.dart-614-                              : null,
+lib/screens/canvas/widgets/layer_panel.dart-615-                          child: Icon(
+lib/screens/canvas/widgets/layer_panel.dart-616-                            Icons.merge_type,
+lib/screens/canvas/widgets/layer_panel.dart-617-                            size: 16,
+lib/screens/canvas/widgets/layer_panel.dart-618-                            color: _layerBelow(layer, layers) != null
+--
+lib/screens/canvas/widgets/layer_panel.dart-829-    };
+lib/screens/canvas/widgets/layer_panel.dart-830-  }
+lib/screens/canvas/widgets/layer_panel.dart-831-
+lib/screens/canvas/widgets/layer_panel.dart-832-  // 結合可能なレイヤー種別（共通レイヤー・フォルダ・タイムライン
+lib/screens/canvas/widgets/layer_panel.dart-833-  // 素材は結合不可）。
+lib/screens/canvas/widgets/layer_panel.dart:834:  static const _mergeableLayerTypesForPanel = {
+lib/screens/canvas/widgets/layer_panel.dart-835-    model.LayerType.normal,
+lib/screens/canvas/widgets/layer_panel.dart-836-    model.LayerType.autoFillLineart,
+lib/screens/canvas/widgets/layer_panel.dart-837-    model.LayerType.autoFill,
+lib/screens/canvas/widgets/layer_panel.dart-838-  };
+lib/screens/canvas/widgets/layer_panel.dart-839-
+lib/screens/canvas/widgets/layer_panel.dart-840-  /// このレイヤーのすぐ下にある結合可能なレイヤーを探す（フラット表示上の
+lib/screens/canvas/widgets/layer_panel.dart-841-  /// 直後の要素。フォルダ・共通レイヤー等は対象外）。見つからなければnull。
+lib/screens/canvas/widgets/layer_panel.dart-842-  model.Layer? _layerBelow(model.Layer layer, List<model.Layer> layers) {
+lib/screens/canvas/widgets/layer_panel.dart:843:    if (!_mergeableLayerTypesForPanel.contains(layer.type)) return null;
+lib/screens/canvas/widgets/layer_panel.dart-844-    final idx = layers.indexWhere((l) => l.id == layer.id);
+lib/screens/canvas/widgets/layer_panel.dart-845-    if (idx < 0 || idx + 1 >= layers.length) return null;
+lib/screens/canvas/widgets/layer_panel.dart-846-    final below = layers[idx + 1];
+lib/screens/canvas/widgets/layer_panel.dart:847:    return _mergeableLayerTypesForPanel.contains(below.type) ? below : null;
+lib/screens/canvas/widgets/layer_panel.dart-848-  }
+lib/screens/canvas/widgets/layer_panel.dart-849-
+lib/screens/canvas/widgets/layer_panel.dart-850-  /// このレイヤーとすぐ下のレイヤーをワンタップで結合する。
+lib/screens/canvas/widgets/layer_panel.dart:851:  Future<void> _mergeWithLayerBelow(
+lib/screens/canvas/widgets/layer_panel.dart-852-    BuildContext context,
+lib/screens/canvas/widgets/layer_panel.dart-853-    model.Layer layer,
+lib/screens/canvas/widgets/layer_panel.dart-854-    List<model.Layer> layers,
+lib/screens/canvas/widgets/layer_panel.dart-855-  ) async {
+lib/screens/canvas/widgets/layer_panel.dart-856-    final below = _layerBelow(layer, layers);
+lib/screens/canvas/widgets/layer_panel.dart-857-    if (below == null) return;
+lib/screens/canvas/widgets/layer_panel.dart:858:    await context.read<ProjectService>().mergeLayers(
+lib/screens/canvas/widgets/layer_panel.dart-859-      projectId: widget.projectId,
+lib/screens/canvas/widgets/layer_panel.dart-860-      sceneId: widget.sceneId,
+lib/screens/canvas/widgets/layer_panel.dart-861-      frameIndex: widget.frameIndex,
+lib/screens/canvas/widgets/layer_panel.dart-862-      layerIds: [layer.id, below.id],
+lib/screens/canvas/widgets/layer_panel.dart-863-    );
+--
+lib/screens/canvas/widgets/layer_panel.dart-872-    List<model.Layer> layers,
+lib/screens/canvas/widgets/layer_panel.dart-873-    bool visible,
+lib/screens/canvas/widgets/layer_panel.dart-874-  ) {
+lib/screens/canvas/widgets/layer_panel.dart-875-    final projectService = context.read<ProjectService>();
+lib/screens/canvas/widgets/layer_panel.dart-876-    for (final layer in layers) {
+lib/screens/canvas/widgets/layer_panel.dart:877:      if (!_selectedIds.contains(layer.id) || layer.isVisible == visible) {
+lib/screens/canvas/widgets/layer_panel.dart-878-        continue;
+lib/screens/canvas/widgets/layer_panel.dart-879-      }
+lib/screens/canvas/widgets/layer_panel.dart-880-      projectService.updateLayer(
+lib/screens/canvas/widgets/layer_panel.dart-881-        projectId: widget.projectId,
+lib/screens/canvas/widgets/layer_panel.dart-882-        sceneId: widget.sceneId,
+lib/screens/canvas/widgets/layer_panel.dart-883-        frameIndex: widget.frameIndex,
+lib/screens/canvas/widgets/layer_panel.dart:884:        layer: layer.copyWith(isVisible: visible),
+lib/screens/canvas/widgets/layer_panel.dart-885-      );
+lib/screens/canvas/widgets/layer_panel.dart-886-    }
+lib/screens/canvas/widgets/layer_panel.dart-887-  }
+lib/screens/canvas/widgets/layer_panel.dart-888-
+lib/screens/canvas/widgets/layer_panel.dart:889:  /// 表示中（isVisible）の結合可能なレイヤーを全てワンタップで結合する。
+lib/screens/canvas/widgets/layer_panel.dart:890:  Future<void> _mergeAllVisibleLayers(
+lib/screens/canvas/widgets/layer_panel.dart-891-    BuildContext context,
+lib/screens/canvas/widgets/layer_panel.dart-892-    List<model.Layer> layers,
+lib/screens/canvas/widgets/layer_panel.dart-893-  ) async {
+lib/screens/canvas/widgets/layer_panel.dart-894-    final ids = layers
+lib/screens/canvas/widgets/layer_panel.dart-895-        .where(
+lib/screens/canvas/widgets/layer_panel.dart:896:          (l) => l.isVisible && _mergeableLayerTypesForPanel.contains(l.type),
+lib/screens/canvas/widgets/layer_panel.dart-897-        )
+lib/screens/canvas/widgets/layer_panel.dart-898-        .map((l) => l.id)
+lib/screens/canvas/widgets/layer_panel.dart-899-        .toList();
+lib/screens/canvas/widgets/layer_panel.dart-900-    if (ids.length < 2) return;
+lib/screens/canvas/widgets/layer_panel.dart:901:    await context.read<ProjectService>().mergeLayers(
+lib/screens/canvas/widgets/layer_panel.dart-902-      projectId: widget.projectId,
+lib/screens/canvas/widgets/layer_panel.dart-903-      sceneId: widget.sceneId,
+lib/screens/canvas/widgets/layer_panel.dart-904-      frameIndex: widget.frameIndex,
+lib/screens/canvas/widgets/layer_panel.dart-905-      layerIds: ids,
+lib/screens/canvas/widgets/layer_panel.dart-906-    );

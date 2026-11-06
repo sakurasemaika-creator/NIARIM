@@ -1,0 +1,3402 @@
+import 'dart:async';
+import 'creator_edit_session_reporter.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
+import 'package:image/image.dart' as img;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../engine/layer_compositor.dart';
+import '../engine/layer_range_resolver.dart';
+import '../engine/niapro_serializer.dart';
+import '../engine/timeline_stack.dart';
+import '../engine/tile_manager.dart';
+import '../models/audio_clip.dart';
+import '../models/camera_keyframe.dart';
+import '../models/layer_group.dart';
+import '../models/timeline_marker.dart';
+import '../models/effect_filter_instance.dart';
+import '../models/layer.dart';
+import '../models/project.dart';
+import '../models/scene.dart';
+import '../models/scene_stack.dart';
+import '../models/text_object.dart';
+import '../models/timeline_row_kind.dart';
+import '../engine/undo_manager.dart';
+import '../utils/app_error_reporter.dart';
+import '../utils/tolerant_preferences.dart';
+import '../utils/folder_persistence.dart';
+import '../utils/project_trash_guard.dart';
+
+/// Moving an active favorite to Trash requires removing its protection first.
+class FavoriteProjectDeleteException implements Exception {
+  const FavoriteProjectDeleteException();
+
+  @override
+  String toString() => 'A favorite project cannot be moved to Trash';
+}
+
+class ProjectFolder {
+  final String id;
+  final String name;
+  final int? color; // ARGB。nullの場合はデフォルトのフォルダアイコン色を使う
+  // フォルダは複数階層に対応する。nullはルート直下。
+  final String? parentFolderId;
+  // フォルダもお気に入り登録可能。
+  final bool isFavorite;
+  // 更新日時ソート時にプロジェクトと同じ基準で並べられるようにするための作成日時
+  final DateTime createdAt;
+
+  ProjectFolder({
+    required this.id,
+    required this.name,
+    this.color,
+    this.parentFolderId,
+    this.isFavorite = false,
+    DateTime? createdAt,
+  }) : createdAt = createdAt ?? DateTime.now();
+
+  ProjectFolder copyWith({
+    String? name,
+    Object? color = _folderSentinel,
+    Object? parentFolderId = _folderSentinel,
+    bool? isFavorite,
+  }) => ProjectFolder(
+    id: id,
+    name: name ?? this.name,
+    color: identical(color, _folderSentinel) ? this.color : color as int?,
+    parentFolderId: identical(parentFolderId, _folderSentinel)
+        ? this.parentFolderId
+        : parentFolderId as String?,
+    isFavorite: isFavorite ?? this.isFavorite,
+    createdAt: createdAt,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'color': color,
+    'parentFolderId': parentFolderId,
+    'isFavorite': isFavorite,
+    'createdAt': createdAt.toIso8601String(),
+  };
+
+  factory ProjectFolder.fromJson(Map<String, dynamic> json) => ProjectFolder(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    color: json['color'] as int?,
+    parentFolderId: json['parentFolderId'] as String?,
+    isFavorite: json['isFavorite'] as bool? ?? false,
+    createdAt: json['createdAt'] != null
+        ? DateTime.parse(json['createdAt'] as String)
+        : DateTime.now(),
+  );
+}
+
+const _folderSentinel = Object();
+
+class ProjectService extends ChangeNotifier {
+  final List<Project> _projects = [];
+  final List<Project> _trash = [];
+  final List<ProjectFolder> _folders = [];
+  // ID採番用カウンター。DateTime.now().millisecondsSinceEpoch単独だと、
+  // 同一ミリ秒内に連続生成した場合にIDが衝突しうるため併用する。
+  int _idCounter = 0;
+  String _nextId(String prefix) =>
+      '${prefix}_${DateTime.now().millisecondsSinceEpoch}_${_idCounter++}';
+
+  // TileManagerの合成キャッシュ上限（低スペック端末対応）。
+  // 端末性能判定（PerformanceService.qualityLevel）に応じてmain.dartから
+  // configureTileCacheBudget()で絞り込む。未設定時は既定値16（従来通り）。
+  // 見た目・機能には影響せず、低スペック端末でのメモリ使用量のみを抑える。
+  int _tileCacheBudget = 16;
+
+  /// 端末性能に応じてTileManagerの合成キャッシュ上限を設定する。
+  /// 以後新規作成されるTileManagerへ適用される（既存インスタンスは対象外）。
+  void configureTileCacheBudget(int maxEntries) {
+    _tileCacheBudget = maxEntries;
+  }
+
+  // ゴミ箱へ移動した日時（projectId -> deletedAt）。自動削除設定（設定画面の
+  // 日数）に基づく期限切れ判定に使用する。SharedPreferencesへ永続化することで
+  // アプリ再起動後もゴミ箱の状態（どのプロジェクトが削除済みか）を維持する。
+  final Map<String, DateTime> _trashDeletedAt = {};
+
+  // プロジェクトIDをキーにシーンリストを管理
+  final Map<String, List<Scene>> _scenes = {};
+  // 削除済みレイヤーの一時保持（Undo用）
+  final Map<String, Layer> _removedLayers = {};
+  // レイヤーIDカウンター（プロジェクトIDをキー）
+  final Map<String, int> _layerIdCounters = {};
+
+  // 表示範囲を持つレイヤー（共通・タイムライン素材・ウォーターマーク）の
+  // 「ホーム位置」（実際にピクセルデータ・Layerオブジェクトが物理的に存在する
+  // シーン・フレーム）を保持するインデックス。projectId -> layerId -> 位置。
+  // これらのレイヤーは他のフレームからは layersOf() で動的に合成表示される
+  // （同一データを複数フレームへ複製せず、メモリを節約するため）。
+  final Map<String, Map<String, ({String sceneId, int frameIndex})>>
+  _layerHomes = {};
+
+  // TileManager をプロジェクトIDごとに保持
+  final Map<String, TileManager> _tileManagers = {};
+
+  TileManager tileManagerOf(String projectId) {
+    return _tileManagers.putIfAbsent(projectId, () {
+      final p = _projects.where((p) => p.id == projectId).firstOrNull;
+      return TileManager(
+        canvasWidth: p?.drawingWidth ?? 1920,
+        canvasHeight: p?.drawingHeight ?? 1080,
+        compositeCacheMax: _tileCacheBudget,
+      );
+    });
+  }
+
+  UndoManager? _undoManager;
+
+  void setUndoManager(UndoManager undoManager) {
+    _undoManager = undoManager;
+  }
+
+  /// Groups a serialized automation's existing Undo actions without changing
+  /// the pixel lifetime or the behavior of standalone layer operations.
+  Future<T> runWithGroupedUndo<T>({
+    required String description,
+    required Future<T> Function() operation,
+  }) async {
+    final undo = _undoManager;
+    if (undo == null) return operation();
+    final outermost = _layersAddedInGroup == null;
+    _layersAddedInGroup ??= <String>{};
+    try {
+      return await _runGroupedUndo(undo, description, operation);
+    } finally {
+      if (outermost) _layersAddedInGroup = null;
+    }
+  }
+
+  /// Layers (as `projectId/layerId`) created while a grouped Undo is being
+  /// recorded. Their whole existence is undone and redone by their add
+  /// action, which keeps the pixels they ended with, so in-place changes to
+  /// them are not recorded separately: replaying those partial tile
+  /// snapshots on Redo would overwrite what later steps (a merge) left.
+  Set<String>? _layersAddedInGroup;
+
+  Future<T> _runGroupedUndo<T>(
+    UndoManager undo,
+    String description,
+    Future<T> Function() operation,
+  ) {
+    return undo.runGrouped(
+      description: description,
+      operation: operation,
+      shouldUndoAction: (action) {
+        if (action is! LayerAddUndoAction) return true;
+        // Merges may consume a layer added earlier in the same automation.
+        // Its add action has no remaining inverse and must not enter Redo.
+        return layersOf(
+          action.projectId,
+          action.sceneId,
+          action.frameIndex,
+        ).any((layer) => layer.id == action.layerId);
+      },
+    );
+  }
+
+  List<Project> get projects => List.unmodifiable(_projects);
+  List<Project> get trash => List.unmodifiable(_trash);
+  // 「共有」タブ：_projects内の.niashareインポート由来プロジェクトのみを
+  // 絞り込んだビュー（独立リストではなく_projectsが唯一のデータソース。
+  // こうすることでキャンバス・タイムライン・書き出し等の既存のID検索
+  // （projects.where((p) => p.id == ...)）がそのまま共有プロジェクトにも
+  // 効く）。
+  List<Project> get shared =>
+      List.unmodifiable(_projects.where((p) => p.isSharedImport));
+  List<ProjectFolder> get folders => List.unmodifiable(_folders);
+  List<Project> get favorites => _projects.where((p) => p.isFavorite).toList();
+
+  /// プロジェクトがゴミ箱へ移動された日時（ゴミ箱一覧の削除日時表示用）
+  DateTime? deletedAtOf(String projectId) => _trashDeletedAt[projectId];
+
+  Future<void> init() async {
+    try {
+      await _loadTrashState();
+      await _loadFolders();
+      await _loadSharedFolders();
+      final basePath = await NiaproSerializer.projectsBasePath();
+      final baseDir = Directory(basePath);
+      if (!baseDir.existsSync()) return;
+      final cleanup = await ProjectTrashGuard.pending(basePath);
+      for (final guard in cleanup) {
+        _trashDeletedAt.putIfAbsent(guard.project.id, () => guard.deletedAt);
+      }
+      final existingDirectories = <String>{};
+      for (final dir in baseDir.listSync().whereType<Directory>()) {
+        final projectId = dir.path.split(RegExp(r'[\\/]')).last;
+        existingDirectories.add(projectId);
+        final niaproFile = File('${dir.path}/$projectId.niapro');
+        if (!niaproFile.existsSync()) continue;
+        try {
+          final data = await NiaproSerializer.load(niaproFile.path);
+          if (data.project.id != projectId) {
+            throw const FormatException(
+              'Project archive ID does not match its directory',
+            );
+          }
+          // 容量（Manifest「容量」）は実ファイルサイズから都度算出する
+          // （保存済みの数値をそのまま信用すると、外部要因での差分等でズレうるため）。
+          final sizeBytes = niaproFile.lengthSync();
+          final project = data.project.copyWith(sizeBytes: sizeBytes);
+          if (_trashDeletedAt.containsKey(projectId)) {
+            // ゴミ箱内のプロジェクト：一覧には出さず、シーンデータもメモリに
+            // 載せない（deleteProject()直後と同じ状態を再現する）
+            _trash.add(project);
+          } else {
+            _projects.add(project);
+            _applyLoadedProjectData(data);
+          }
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+          // 破損ファイルはスキップ
+        }
+      }
+      for (final guard in cleanup) {
+        existingDirectories.add(guard.project.id);
+        if (!_trash.any((p) => p.id == guard.project.id) &&
+            !_projects.any((p) => p.id == guard.project.id)) {
+          // Even if the archive was among the files removed before a failure,
+          // keep the remaining directory identifiable and retryable in Trash.
+          _trash.add(guard.project);
+        }
+      }
+      final beforePrune = _trashDeletedAt.length;
+      _trashDeletedAt.removeWhere((id, _) => !existingDirectories.contains(id));
+      if (_trashDeletedAt.length != beforePrune) {
+        try {
+          await _persistTrashState(_trashDeletedAt);
+        } catch (error, stackTrace) {
+          // Content already gone: retry stale preference cleanup next time.
+          AppErrorReporter.record(error, stackTrace);
+        }
+      }
+      notifyListeners();
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      // ストレージアクセス失敗時は空状態で起動
+    }
+  }
+
+  // ─── ゴミ箱の状態永続化（ゴミ箱・自動削除設定） ─────────────────────────
+  // ゴミ箱移動日時をSharedPreferencesへ保存し、起動時にどのプロジェクトが
+  // ゴミ箱内かを復元する。
+
+  static const _trashPrefsKey = 'trashed_projects';
+
+  Future<void> _loadTrashState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.readStringList(_trashPrefsKey) ?? [];
+      for (final entry in raw) {
+        final sep = entry.indexOf('|');
+        if (sep < 0) continue;
+        final id = entry.substring(0, sep);
+        final dt = DateTime.tryParse(entry.substring(sep + 1));
+        if (dt != null) _trashDeletedAt[id] = dt;
+      }
+    } catch (_) {
+      // 読み込み失敗時はゴミ箱状態なしとして続行
+    }
+  }
+
+  Future<void> _persistTrashState(Map<String, DateTime> next) async {
+    final prefs = await SharedPreferences.getInstance();
+    final before = prefs.get(_trashPrefsKey);
+    Future<bool> restoreCache() => switch (before) {
+      null => prefs.remove(_trashPrefsKey),
+      String v => prefs.setString(_trashPrefsKey, v),
+      bool v => prefs.setBool(_trashPrefsKey, v),
+      int v => prefs.setInt(_trashPrefsKey, v),
+      double v => prefs.setDouble(_trashPrefsKey, v),
+      List<Object?> v when v.every((item) => item is String) =>
+        prefs.setStringList(_trashPrefsKey, v.cast<String>()),
+      _ => throw StateError('Unsupported trash preference value'),
+    };
+    try {
+      final list = next.entries
+          .map((e) => '${e.key}|${e.value.toIso8601String()}')
+          .toList();
+      // Always write, including permanent-delete preflight of the same value.
+      if (!await prefs.setStringList(_trashPrefsKey, list)) {
+        throw StateError('Trash preference write rejected');
+      }
+    } catch (_) {
+      try {
+        await restoreCache();
+      } catch (_) {
+        // SharedPreferences restores its cache before the platform write.
+      }
+      rethrow;
+    }
+  }
+
+  /// ゴミ箱の自動削除設定（設定画面で選んだ日数）に従い、保持期限を過ぎた
+  /// プロジェクトを完全削除する。days<=0（OFF）の場合は何もしない。
+  Future<void> sweepExpiredTrash(int days) async {
+    if (days <= 0) return;
+    final now = DateTime.now();
+    final expired = _trash
+        .where((p) {
+          final deletedAt = _trashDeletedAt[p.id];
+          if (deletedAt == null) return false;
+          return now.difference(deletedAt).inDays >= days;
+        })
+        .map((p) => p.id)
+        .toList();
+    for (final id in expired) {
+      try {
+        await permanentDelete(id);
+      } catch (_) {
+        // Automatic cleanup must not prevent startup. The target remains in Trash
+        // and the operation records its failure for a later/manual retry.
+      }
+    }
+  }
+
+  /// ディスクから読み込んだプロジェクトデータをメモリ上のマップへ反映する。
+  /// init()（起動時の全件読み込み）とrestoreProject()（ゴミ箱からの復元時の
+  /// 再読み込み）で共通利用する。
+  void _applyLoadedProjectData(NiaproData data) {
+    final projectId = data.project.id;
+    _scenes[projectId] = data.scenes;
+    _layerHomes[projectId] = buildLayerHomeIndex(data.scenes);
+    final tm = TileManager(
+      canvasWidth: data.project.drawingWidth,
+      canvasHeight: data.project.drawingHeight,
+      compositeCacheMax: _tileCacheBudget,
+    );
+    tm.importAll(data.tileData);
+    _tileManagers[projectId] = tm;
+    _layerIdCounters[projectId] = _maxLayerCounter(data.scenes);
+  }
+
+  int _maxLayerCounter(List<Scene> scenes) {
+    int max = 1;
+    for (final scene in scenes) {
+      for (final frame in scene.frames) {
+        for (final layer in frame.layers) {
+          final num =
+              int.tryParse(layer.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+          if (num >= max) max = num + 1;
+        }
+      }
+    }
+    return max;
+  }
+
+  /// materialIdがプロジェクト内のどこかで参照されているか判定する。
+  /// タイムライン画像・動画レイヤーのmaterialId、および各シーンの
+  /// 音声クリップのmaterialIdを対象に走査する。
+  bool isMaterialUsed(String projectId, String materialId) {
+    for (final scene in _scenes[projectId] ?? const <Scene>[]) {
+      for (final clip in scene.audioClips) {
+        if (clip.materialId == materialId) return true;
+      }
+      for (final frame in scene.frames) {
+        for (final layer in frame.layers) {
+          if (layer.materialId == materialId) return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // ─── 制作時間カウント（描画モード・タイムラインモードのみカウント、
+  // 一定時間無操作でカウント停止・操作再開でカウント再開） ────────────────
+  // 秒単位の細かい精度ではなく、一定間隔（tick）ごとに直近の操作有無を
+  // 見て加算するかどうかを決める簡易実装。低スペック端末での負荷を
+  // 抑えるためnotifyListeners()もtick間隔でのみ発生する。
+
+  Timer? _workTimer;
+  String? _trackedProjectId;
+  Stopwatch? _workStopwatch;
+  int _workLastActivityMs = 0;
+  int _workLastSettledMs = 0;
+  int _workFractionMs = 0;
+  int _workSessionSeconds = 0;
+  int _workTrackingLease = 0;
+  bool _workPaused = false;
+
+  CreatorEditSessionReporter? _creatorEditReporter;
+
+  /// The optional pilot sends only bounded counters, never image or stroke
+  /// data. Local work-time tracking works identically with no backend.
+  void attachCreatorEditReporter(CreatorEditSessionReporter? reporter) {
+    _creatorEditReporter = reporter;
+  }
+
+  static const _workTickInterval = Duration(seconds: 10);
+  static const _workInactivityThreshold = Duration(minutes: 1);
+
+  /// Each route receives a distinct lease. A canvas disposed AFTER the
+  /// timeline opened must not stop the new route's counter.
+  int beginWorkTracking(String projectId) {
+    if (_trackedProjectId != null) endWorkTracking();
+    final lease = ++_workTrackingLease;
+    _trackedProjectId = projectId;
+    _workStopwatch = Stopwatch()..start();
+    _workLastActivityMs = 0;
+    _workLastSettledMs = 0;
+    _workSessionSeconds = 0;
+    _workFractionMs = 0;
+    _workPaused = false;
+    _workTimer?.cancel();
+    _workTimer = Timer.periodic(_workTickInterval, (_) => _settleWorkTime());
+    _creatorEditReporter?.begin(
+      projectId: projectId,
+      activeSeconds: () => currentWorkSessionSeconds,
+    );
+    return lease;
+  }
+
+  /// The rewarded candidate count uses confirmed content edits, not pointer
+  /// taps or video/timeline scrubbing. Call only after a real change.
+  void recordConfirmedEdit(String projectId) {
+    if (projectId != _trackedProjectId || _workPaused) return;
+    pingWorkActivity();
+    _creatorEditReporter?.recordCommittedMutation(
+      projectId, activeSeconds: () => currentWorkSessionSeconds,
+    );
+  }
+
+  /// Ordinary UI activity keeps the existing local display counter active.
+  /// It never counts as a confirmed mutation for coin eligibility.
+  void pingWorkActivity() {
+    final clock = _workStopwatch;
+    if (clock == null || _workPaused) return;
+    final now = clock.elapsedMilliseconds;
+    if (now - _workLastActivityMs > _workInactivityThreshold.inMilliseconds) {
+      _settleWorkTime();
+      _workLastSettledMs = now; // do not count the idle gap retroactively
+    }
+    _workLastActivityMs = now;
+    final id = _trackedProjectId;
+    if (id != null) {
+      _creatorEditReporter?.noteInteraction(
+        projectId: id, activeSeconds: () => currentWorkSessionSeconds,
+      );
+    }
+  }
+
+  /// Supports sub-15-minute sessions. The 10-second timer limits UI rebuilds
+  /// only; exit and app background settle *actual elapsed milliseconds*.
+  int get currentWorkSessionSeconds {
+    _settleWorkTime();
+    return _workSessionSeconds;
+  }
+
+  void _settleWorkTime() {
+    final id = _trackedProjectId;
+    final clock = _workStopwatch;
+    if (id == null || clock == null || _workPaused) return;
+    final now = clock.elapsedMilliseconds;
+    final activeEnd = now < _workLastActivityMs +
+            _workInactivityThreshold.inMilliseconds
+        ? now
+        : _workLastActivityMs + _workInactivityThreshold.inMilliseconds;
+    final delta = activeEnd - _workLastSettledMs;
+    if (delta <= 0) return;
+    _workLastSettledMs = activeEnd;
+    final allMs = _workFractionMs + delta;
+    final seconds = allMs ~/ 1000;
+    _workFractionMs = allMs % 1000;
+    if (seconds == 0) return;
+    final idx = _projects.indexWhere((p) => p.id == id);
+    if (idx < 0) return;
+    _workSessionSeconds += seconds;
+    _projects[idx] = _projects[idx].copyWith(
+      totalWorkSeconds: _projects[idx].totalWorkSeconds + seconds,
+    );
+    notifyListeners();
+  }
+
+  /// Explicit user saves, NOT autosaves, trigger a separate lightweight
+  /// editing-time checkpoint after the project has been saved successfully.
+  /// A network failure never rolls back or blocks the local save.
+  void onManualSaveCommitted(String projectId) {
+    if (projectId != _trackedProjectId || _workPaused) return;
+    _settleWorkTime();
+    _creatorEditReporter?.manualSaveSucceeded(projectId);
+  }
+
+  /// For the desktop File > Save action. Internal saveProject() callers
+  /// (autosave, navigation, folder updates) intentionally do not report.
+  Future<void> saveProjectManually(String projectId) async {
+    _settleWorkTime();
+    await saveProject(projectId);
+    try {
+      onManualSaveCommitted(projectId);
+    } catch (error) {
+      // The file is saved. Reporting time is independent and optional.
+      debugPrint('Manual-save editing-time checkpoint skipped: $error');
+    }
+  }
+
+  /// Android background time does not count. Keep the editor's tracking
+  /// lease alive and reopen a short server session only upon resume.
+  void pauseWorkTracking() {
+    if (_trackedProjectId == null || _workPaused) return;
+    _settleWorkTime();
+    _workPaused = true;
+    _workStopwatch?.stop();
+    _workTimer?.cancel();
+    _workTimer = null;
+    _creatorEditReporter?.end();
+    final id = _trackedProjectId;
+    if (id != null) _saveAsync(id);
+  }
+
+  void resumeWorkTracking() {
+    if (_trackedProjectId == null || !_workPaused) return;
+    _workPaused = false;
+    _workStopwatch?.start();
+    _workLastSettledMs = _workStopwatch!.elapsedMilliseconds;
+    _workLastActivityMs = _workLastSettledMs;
+    _workTimer?.cancel();
+    _workTimer = Timer.periodic(_workTickInterval, (_) => _settleWorkTime());
+    _creatorEditReporter?.begin(
+      projectId: _trackedProjectId!,
+      activeSeconds: () => currentWorkSessionSeconds,
+    );
+  }
+
+  /// Exit can occur after another route has already acquired the counter.
+  void endWorkTracking({int? lease}) {
+    if (lease != null && lease != _workTrackingLease) return;
+    final id = _trackedProjectId;
+    if (id == null) return;
+    _settleWorkTime();
+    _workTimer?.cancel();
+    _workTimer = null;
+    _workStopwatch?.stop();
+    _workStopwatch = null;
+    _trackedProjectId = null;
+    _workPaused = false;
+    _creatorEditReporter?.end();
+    // Persist even a 1-9 second session; no reliance on the next 10s tick.
+    _saveAsync(id);
+  }
+
+  // ─── Scene/Frame/Layer アクセサ ───────────────────────────────────────
+
+  List<Scene> scenesOf(String projectId) =>
+      List.unmodifiable(_scenes[projectId] ?? []);
+
+  /// プロジェクト内で実際に使用されているフォントのファミリー名一覧を取得する
+  /// （プロジェクト共有時の「フォントを含める」判定・不足フォント検出に使用）。
+  /// アプリ標準フォントも含まれるが、共有・不足検出側で
+  /// ユーザー追加フォント（FontService管理分）のみへ絞り込んで扱う。
+  Set<String> usedFontFamiliesOf(String projectId) {
+    final result = <String>{};
+    for (final scene in scenesOf(projectId)) {
+      for (final frame in scene.frames) {
+        for (final layer in frame.layers) {
+          final family = layer.textObject?.fontFamily;
+          if (family != null) result.add(family);
+        }
+      }
+    }
+    return result;
+  }
+
+  Scene? sceneOf(String projectId, String sceneId) =>
+      (_scenes[projectId] ?? []).where((s) => s.id == sceneId).firstOrNull;
+
+  // ─── シーンCRUD（Scene0001形式で内部管理） ───────────────────────────
+
+  int _nextSceneIndex(String projectId) {
+    final scenes = _scenes[projectId] ?? [];
+    int max = 0;
+    for (final s in scenes) {
+      final num = int.tryParse(s.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      if (num > max) max = num;
+    }
+    return max + 1;
+  }
+
+  /// シーンを末尾に追加する。通常レイヤー1枚・1フレームで初期化する。
+  Scene addScene(String projectId) {
+    final scenes = _scenes.putIfAbsent(projectId, () => []);
+    final n = _nextSceneIndex(projectId);
+    final sceneId = 'Scene${n.toString().padLeft(4, '0')}';
+    final layer = Layer(
+      id: _nextLayerId(projectId),
+      name: 'レイヤー1',
+      type: LayerType.normal,
+    );
+    final scene = Scene(
+      id: sceneId,
+      index: scenes.length,
+      frames: [
+        Frame(index: 0, layers: [layer]),
+      ],
+    );
+    scenes.add(scene);
+    notifyListeners();
+    return scene;
+  }
+
+  /// シーンを複製し、複製元の直後へ挿入する（シーンのコピー）。
+  /// 全フレームのレイヤー構成・描画データ（タイル）を複製する。表示範囲
+  /// レイヤー（common・timelineImage・timelineVideo・watermark）はホームが
+  /// 別フレーム/シーンに存在する参照であり、シーン単位の複製対象では
+  /// ないため除外する（duplicateFrame()と同じ方針）。カメラキーフレーム・
+  /// 演出フィルター・音声クリップは実体を持たない設定値のためそのまま複製する。
+  Scene? duplicateScene(String projectId, String sceneId, {String? name}) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return null;
+    final sourceIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sourceIdx < 0) return null;
+    final source = scenes[sourceIdx];
+    final n = _nextSceneIndex(projectId);
+    final newSceneId = 'Scene${n.toString().padLeft(4, '0')}';
+    final tm = _tileManagers[projectId];
+
+    final newFrames = <Frame>[];
+    for (final frame in source.frames) {
+      final sourceLayers = frame.layers
+          .where(
+            (l) => !isRangeLayerType(l.type) && l.type != LayerType.selection,
+          )
+          .toList();
+      final newLayers = sourceLayers.map((l) {
+        final newId = _nextLayerId(projectId);
+        if (tm != null) {
+          tm.copyLayer(
+            frameLayerKey(sceneId, frame.index, l.id),
+            frameLayerKey(newSceneId, frame.index, newId),
+          );
+        }
+        return l.copyWith(id: newId);
+      }).toList();
+      newFrames.add(
+        Frame(index: frame.index, layers: newLayers, hold: frame.hold),
+      );
+    }
+
+    final newScene = Scene(
+      id: newSceneId,
+      index: sourceIdx + 1,
+      frames: newFrames,
+      name: name ?? source.name,
+      cameraKeyframes: source.cameraKeyframes,
+      effectFilters: source.effectFilters,
+      audioClips: source.audioClips,
+    );
+    scenes.insert(sourceIdx + 1, newScene);
+    final reindexed = scenes
+        .asMap()
+        .entries
+        .map((e) => e.value.copyWith(index: e.key))
+        .toList();
+    _scenes[projectId] = reindexed;
+    notifyListeners();
+    return newScene;
+  }
+
+  /// シーンを削除する（最低1シーンは残す）。描画タイルも破棄する。
+  void removeScene(String projectId, String sceneId) =>
+      removeScenes(projectId, [sceneId]);
+
+  /// 複数シーンを一括削除する（最低1シーンは残す）。
+  void removeScenes(String projectId, List<String> sceneIds) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idsToRemove = sceneIds.toSet();
+    final remaining = scenes.where((s) => !idsToRemove.contains(s.id)).toList();
+    if (remaining.isEmpty) return; // 全シーン削除は不可
+    final tm = _tileManagers[projectId];
+    for (final id in idsToRemove) {
+      tm?.removeSceneTiles(id);
+    }
+    final reindexed = remaining
+        .asMap()
+        .entries
+        .map((e) => e.value.copyWith(index: e.key))
+        .toList();
+    _scenes[projectId] = reindexed;
+    _layerHomes[projectId]?.removeWhere(
+      (_, home) => idsToRemove.contains(home.sceneId),
+    );
+    notifyListeners();
+  }
+
+  /// シーン名を変更する（シーン名変更ダイアログ）。
+  void renameScene(String projectId, String sceneId, String newName) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    scenes[idx] = scenes[idx].copyWith(name: newName);
+    notifyListeners();
+  }
+
+  /// シーンを指定した順序（IDのリスト）へ並び替える（カーソル固定方式）。
+  /// sceneIdはそのまま・indexのみ新しい並び順に合わせて振り直す。
+  void reorderScenesByIds(String projectId, List<String> orderedSceneIds) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final byId = {for (final s in scenes) s.id: s};
+    final reordered = <Scene>[];
+    for (final id in orderedSceneIds) {
+      final s = byId.remove(id);
+      if (s != null) reordered.add(s);
+    }
+    // 万一渡されなかったシーンがあれば末尾へ残す（データ消失防止）
+    reordered.addAll(byId.values);
+    final reindexed = reordered
+        .asMap()
+        .entries
+        .map((e) => e.value.copyWith(index: e.key))
+        .toList();
+    _scenes[projectId] = reindexed;
+    notifyListeners();
+  }
+
+  /// 指定フレームで実際に表示すべきレイヤー一覧を返す。このフレームに物理的に
+  /// 存在するレイヤー（先頭側）に加え、他のフレームがホーム位置となっている
+  /// 表示範囲レイヤー（共通・タイムライン素材・ウォーターマーク）のうち、
+  /// 表示範囲がこのフレームを含むものを末尾へ動的に合成する（
+  /// 表示範囲内のフレームのみレイヤーパレット・キャンバスへ表示）。
+  List<Layer> layersOf(String projectId, String sceneId, int frameIndex) {
+    final scene = sceneOf(projectId, sceneId);
+    if (scene == null || frameIndex >= scene.frames.length) return [];
+    final ownLayers = scene.frames[frameIndex].layers;
+    final homes = _layerHomes[projectId];
+    if (homes == null || homes.isEmpty) return List.unmodifiable(ownLayers);
+    return List.unmodifiable(
+      resolveFrameLayers(
+        _scenes[projectId] ?? const [],
+        homes,
+        sceneId,
+        frameIndex,
+        ownLayers,
+      ),
+    );
+  }
+
+  /// フレーム[frameIndex]のレイヤーを重ねる順（前面から）に並べたものと、
+  /// まとめてマスクするレイヤーの組。タイムラインのプレビュー・書き出しは
+  /// [applyFrameMask]をtrue、キャンバスの表示はfalse（描いている絵を隠さない）。
+  StackedFrameLayers stackedLayersOf(
+    String projectId,
+    String sceneId,
+    int frameIndex, {
+    bool applyFrameMask = true,
+  }) {
+    final scene = sceneOf(projectId, sceneId);
+    final layers = layersOf(projectId, sceneId, frameIndex);
+    if (scene == null) {
+      return (layers: layers, maskGroups: const <LayerMaskGroup>[]);
+    }
+    return stackFrameLayers(
+      scene,
+      frameIndex,
+      layers,
+      applyFrameMask: applyFrameMask,
+    );
+  }
+
+  /// キャンバスに表示する順（前面から）のレイヤー。[layersOf]はレイヤー
+  /// パレットの並び（並び替え・結合などの添字の基準）のまま。
+  List<Layer> displayLayersOf(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+  ) => stackedLayersOf(
+    projectId,
+    sceneId,
+    frameIndex,
+    applyFrameMask: false,
+  ).layers;
+
+  /// シーンの重なり順とフレーム（イラスト）のマスクを置き換える。
+  void updateSceneStack(String projectId, String sceneId, SceneStack stack) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    scenes[idx] = scenes[idx].copyWith(stack: stack);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
+  /// レイヤーIDから、表示範囲レイヤーの「ホーム位置」（実データが存在する
+  /// シーン・フレーム）を取得する。範囲レイヤーでない場合はnull。
+  LayerHome? homeOf(String projectId, String layerId) =>
+      _layerHomes[projectId]?[layerId];
+
+  /// プロジェクト全体の表示範囲レイヤーのホーム位置インデックスを返す
+  /// （プレビュー・書き出しでの合成キー解決用）。
+  Map<String, LayerHome> layerHomesOf(String projectId) =>
+      Map.unmodifiable(_layerHomes[projectId] ?? const {});
+
+  /// タイムライン共通レイヤートラックUI用：プロジェクト内の全共通レイヤーと
+  /// ウォーターマークレイヤーのホーム位置（実データが物理的に存在する
+  /// シーン・フレーム）を返す（共通レイヤーの表示範囲を
+  /// タイムライン上で確認・変更する。ウォーターマークも同じ表示範囲の
+  /// 仕組みを使うため同じトラックに乗せ、タップで角度・大きさ・不透明度・
+  /// 表示範囲をまとめて編集できるようにする）。
+  List<({Layer layer, LayerHome home})> commonLayersOf(String projectId) {
+    final homes = _layerHomes[projectId];
+    if (homes == null) return const [];
+    final result = <({Layer layer, LayerHome home})>[];
+    for (final entry in homes.entries) {
+      final home = entry.value;
+      final scene = sceneOf(projectId, home.sceneId);
+      if (scene == null || home.frameIndex >= scene.frames.length) continue;
+      final layer = scene.frames[home.frameIndex].layers
+          .where((l) => l.id == entry.key)
+          .firstOrNull;
+      if (layer != null &&
+          (layer.type == LayerType.common ||
+              layer.type == LayerType.watermark)) {
+        result.add((layer: layer, home: home));
+      }
+    }
+    return result;
+  }
+
+  /// レイヤーのTileManager合成キーを解決する。表示範囲レイヤーは、実際に
+  /// 表示中のフレームに関わらず常にホーム位置のタイルバッファを参照する
+  /// （複数フレームでの共有表示・共有編集を実現するため）。
+  String tileKeyFor(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String layerId,
+  ) => resolveTileKey(
+    _layerHomes[projectId] ?? const {},
+    sceneId,
+    frameIndex,
+    layerId,
+  );
+
+  void _registerHomeIfNeeded(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    Layer layer,
+  ) {
+    if (!isRangeLayerType(layer.type)) return;
+    (_layerHomes[projectId] ??= {})[layer.id] = (
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+    );
+  }
+
+  // ─── レイヤーID生成 ───────────────────────────────────────────────────
+
+  String _nextLayerId(String projectId) {
+    final count = (_layerIdCounters[projectId] ?? 1);
+    _layerIdCounters[projectId] = count + 1;
+    return 'Layer${count.toString().padLeft(4, '0')}';
+  }
+
+  // ─── レイヤー追加（内部・Undo/Redo から呼ばれる） ─────────────────────
+
+  void _insertLayerById(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String layerId,
+    int insertIndex,
+  ) {
+    final layer = _removedLayers[layerId];
+    if (layer == null) return;
+    _applyLayerInsert(projectId, sceneId, frameIndex, layer, insertIndex);
+    _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);
+  }
+
+  void _removeLayerById(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String layerId,
+  ) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final scene = scenes[sceneIdx];
+    if (frameIndex >= scene.frames.length) return;
+    final frame = scene.frames[frameIndex];
+    final layerIdx = frame.layers.indexWhere((l) => l.id == layerId);
+    if (layerIdx < 0) return;
+    final removed = frame.layers[layerIdx];
+    _removedLayers[layerId] = removed;
+    final newLayers = List<Layer>.from(frame.layers)..removeAt(layerIdx);
+    _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
+    _layerHomes[projectId]?.remove(layerId);
+  }
+
+  void _applyLayerInsert(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    Layer layer,
+    int insertIndex,
+  ) {
+    _layersAddedInGroup?.add('$projectId/${layer.id}');
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final scene = scenes[sceneIdx];
+    if (frameIndex >= scene.frames.length) return;
+    final frame = scene.frames[frameIndex];
+    final newLayers = List<Layer>.from(frame.layers)
+      ..insert(insertIndex, layer);
+    _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
+  }
+
+  void _applyFrameUpdate(
+    String projectId,
+    int sceneIdx,
+    int frameIndex,
+    List<Layer> newLayers,
+  ) {
+    final scenes = _scenes[projectId]!;
+    final scene = scenes[sceneIdx];
+    final newFrames = List<Frame>.from(scene.frames);
+    newFrames[frameIndex] = scene.frames[frameIndex].copyWith(
+      layers: newLayers,
+    );
+    scenes[sceneIdx] = scene.copyWith(frames: newFrames);
+    recordConfirmedEdit(projectId);
+    notifyListeners();
+  }
+
+  // ─── 公開 Layer API ───────────────────────────────────────────────────
+
+  /// テキストレイヤーを追加し、Undoスタックに積む
+  Layer addTextLayer({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String text,
+    required Offset position,
+  }) {
+    final layerId = _nextLayerId(projectId);
+    // テキストレイヤー名：テキスト1 / テキスト2 / テキスト3 …
+    final existingTextCount = layersOf(
+      projectId,
+      sceneId,
+      frameIndex,
+    ).where((l) => l.type == LayerType.text).length;
+    final textObject = TextObject(id: layerId, text: text, position: position);
+    final layer = Layer(
+      id: layerId,
+      name: 'テキスト${existingTextCount + 1}',
+      type: LayerType.text,
+      textObject: textObject,
+    );
+    _applyLayerInsert(projectId, sceneId, frameIndex, layer, 0);
+
+    _undoManager?.push(
+      LayerAddUndoAction(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layerId: layerId,
+        insertIndex: 0,
+        doAdd: _insertLayerById,
+        doRemove: _removeLayerById,
+      ),
+    );
+    return layer;
+  }
+
+  /// 通常レイヤーを追加し、Undoスタックに積む。[id]を指定した場合はそのIDを
+  /// そのまま使う（例：フィルターの複数フレーム一括適用で、各フレームに
+  /// 同一IDの新規レイヤーを挿入し、1つの連続したレイヤートラックとして
+  /// 扱えるようにする用途。省略時は従来通り自動採番する）。
+  /// [insertIndex]を指定すると、初回追加とRedoを同じ位置へ挿入する。
+  Layer addLayer({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required LayerType type,
+    required String name,
+    String? id,
+    int insertIndex = 0,
+  }) {
+    final layerId = id ?? _nextLayerId(projectId);
+    final layer = Layer(id: layerId, name: name, type: type);
+    final scene = sceneOf(projectId, sceneId);
+    final ownLayerCount =
+        scene != null && frameIndex >= 0 && frameIndex < scene.frames.length
+        ? scene.frames[frameIndex].layers.length
+        : 0;
+    final targetIndex = insertIndex.clamp(0, ownLayerCount);
+    _applyLayerInsert(projectId, sceneId, frameIndex, layer, targetIndex);
+    _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);
+
+    _undoManager?.push(
+      LayerAddUndoAction(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layerId: layerId,
+        insertIndex: targetIndex,
+        doAdd: _insertLayerById,
+        doRemove: _removeLayerById,
+      ),
+    );
+    return layer;
+  }
+
+  /// コピー時に保持したレイヤーのメタデータと画素を、既存レイヤーを
+  /// 上書きせず[insertIndex]へ新規IDで挿入する。フレームをまたぐ
+  /// コピー＆ペースト用。テキストオブジェクトも新IDへ付け替える。
+  Layer insertLayerSnapshot({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required Layer source,
+    required int insertIndex,
+    required String? parentFolderId,
+    Uint8List? pixels,
+  }) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) throw StateError('Project is unavailable');
+    final sceneIdx = scenes.indexWhere((scene) => scene.id == sceneId);
+    if (sceneIdx < 0) throw StateError('Scene is unavailable');
+    final scene = scenes[sceneIdx];
+    if (frameIndex < 0 || frameIndex >= scene.frames.length) {
+      throw StateError('Frame is unavailable');
+    }
+    final targetIndex = insertIndex.clamp(
+      0,
+      scene.frames[frameIndex].layers.length,
+    );
+    final newId = _nextLayerId(projectId);
+    final copy = source.copyWith(
+      id: newId,
+      parentFolderId: parentFolderId,
+      textObject: source.textObject?.copyWith(id: newId),
+      keyframes: List.of(source.keyframes),
+    );
+    _applyLayerInsert(projectId, sceneId, frameIndex, copy, targetIndex);
+    _registerHomeIfNeeded(projectId, sceneId, frameIndex, copy);
+    if (pixels != null) {
+      final targetKey = tileKeyFor(projectId, sceneId, frameIndex, newId);
+      tileManagerOf(
+        projectId,
+      ).replaceLayerPixels(targetKey, Uint8List.fromList(pixels));
+    }
+    _undoManager?.push(
+      LayerAddUndoAction(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layerId: newId,
+        insertIndex: targetIndex,
+        doAdd: _insertLayerById,
+        doRemove: _removeLayerById,
+      ),
+    );
+    return copy;
+  }
+
+  /// レイヤーを複製する（メタデータ・キーフレーム等の設定に加えて
+  /// ピクセル内容もTileManager.copyLayerでコピーオンライト複製する）。
+  /// 複製先は元レイヤーのすぐ上に挿入する。レイヤーのコピー＆ペースト
+  /// （Ctrl+C/Ctrl+V）から使う。対象レイヤーが見つからない場合はnull。
+  Layer? duplicateLayer({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String layerId,
+    String? nameOverride,
+  }) {
+    final layers = layersOf(projectId, sceneId, frameIndex);
+    final index = layers.indexWhere((l) => l.id == layerId);
+    if (index < 0) return null;
+    final source = layers[index];
+    // TileManagerの実際のキーは「シーンID#フレーム番号#レイヤーID」の
+    // 合成キー（表示範囲レイヤーはホーム位置基準）であり、レイヤーIDを
+    // そのままキーにすることはできない。
+    final sourceKey = tileKeyFor(projectId, sceneId, frameIndex, layerId);
+    final newId = _nextLayerId(projectId);
+    final copy = source.copyWith(id: newId, name: nameOverride ?? source.name);
+    _applyLayerInsert(projectId, sceneId, frameIndex, copy, index);
+    // 表示範囲レイヤー（common・timelineImage・timelineVideo・watermark）は
+    // ホーム位置の登録も必要（addLayer/addTextLayerと同様）。
+    _registerHomeIfNeeded(projectId, sceneId, frameIndex, copy);
+    final targetKey = tileKeyFor(projectId, sceneId, frameIndex, newId);
+    tileManagerOf(projectId).copyLayer(sourceKey, targetKey);
+
+    _undoManager?.push(
+      LayerAddUndoAction(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layerId: newId,
+        insertIndex: index,
+        doAdd: _insertLayerById,
+        doRemove: _removeLayerById,
+      ),
+    );
+    return copy;
+  }
+
+  /// レイヤーを削除し、Undoスタックに積む。表示範囲レイヤー（現在フレームに
+  /// 他フレームから合成表示されているもの）の場合は、実データのあるホーム
+  /// 位置を対象に削除する。
+  void removeLayer({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String layerId,
+  }) {
+    final home =
+        _layerHomes[projectId]?[layerId] ??
+        (sceneId: sceneId, frameIndex: frameIndex);
+    final layers = layersOf(projectId, home.sceneId, home.frameIndex);
+    final removedIndex = layers.indexWhere((l) => l.id == layerId);
+    if (removedIndex < 0) return;
+    _removedLayers[layerId] = layers[removedIndex];
+    _removeLayerById(projectId, home.sceneId, home.frameIndex, layerId);
+
+    _undoManager?.push(
+      LayerRemoveUndoAction(
+        projectId: projectId,
+        sceneId: home.sceneId,
+        frameIndex: home.frameIndex,
+        layerId: layerId,
+        removedIndex: removedIndex,
+        doAdd: _insertLayerById,
+        doRemove: _removeLayerById,
+      ),
+    );
+  }
+
+  /// レイヤーを更新する（表示切替・ロック等）。表示範囲レイヤーは実データの
+  /// あるホーム位置へ書き戻す（他フレームから合成表示中に編集した場合も
+  /// 正しく反映されるようにするため）。
+  void updateLayer({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required Layer layer,
+  }) {
+    final home =
+        _layerHomes[projectId]?[layer.id] ??
+        (sceneId: sceneId, frameIndex: frameIndex);
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == home.sceneId);
+    if (sceneIdx < 0) return;
+    final scene = scenes[sceneIdx];
+    if (home.frameIndex >= scene.frames.length) return;
+    final frame = scene.frames[home.frameIndex];
+    final layerIdx = frame.layers.indexWhere((l) => l.id == layer.id);
+    if (layerIdx < 0) return;
+    final newLayers = List<Layer>.from(frame.layers)..[layerIdx] = layer;
+    _applyFrameUpdate(projectId, sceneIdx, home.frameIndex, newLayers);
+  }
+
+  /// Replaces a layer's pixels in one go (a filter applied in place) as a
+  /// single Undo step. [updatedLayer] carries any change to the layer's own
+  /// settings made with it (Prism switches the blend mode); Undo restores
+  /// both.
+  void replaceLayerPixels({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String layerId,
+    required Uint8List pixels,
+    Layer? updatedLayer,
+  }) {
+    final tm = tileManagerOf(projectId);
+    final key = tileKeyFor(projectId, sceneId, frameIndex, layerId);
+    final layerBefore = layersOf(
+      projectId,
+      sceneId,
+      frameIndex,
+    ).where((layer) => layer.id == layerId).firstOrNull;
+    // Never take over a recording someone else (a stroke, a selection
+    // transform) has open on this tile manager.
+    final record =
+        _undoManager != null &&
+        tm.recordingTouchedTiles == null &&
+        !(_layersAddedInGroup?.contains('$projectId/$layerId') ?? false);
+    if (record) tm.beginUndoRecording(key);
+    tm.replaceLayerPixels(key, pixels);
+    final snapshot = record
+        ? tm.endUndoRecording()
+        : (
+            before: const <String, Uint8List?>{},
+            after: const <String, Uint8List?>{},
+          );
+    final layerChanged =
+        updatedLayer != null &&
+        layerBefore != null &&
+        !identical(updatedLayer, layerBefore);
+    if (updatedLayer != null) {
+      updateLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layer: updatedLayer,
+      );
+    }
+    if (!record || (snapshot.before.isEmpty && !layerChanged)) return;
+    _undoManager!.push(
+      _LayerPixelsUndoAction(
+        projects: this,
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layerKey: key,
+        before: snapshot.before,
+        after: snapshot.after,
+        layerBefore: layerChanged ? layerBefore : null,
+        layerAfter: layerChanged ? updatedLayer : null,
+      ),
+    );
+  }
+
+  /// レイヤーを並び替える。[oldIndex]が現在フレームに物理的に存在しない
+  /// レイヤー（他フレームがホームの表示範囲レイヤー）を指す場合は、この
+  /// フレームでの並び替え対象外として何もしない（表示リストの末尾に
+  /// 追加される合成レイヤーのため、フレームローカルな並び替えは対象外）。
+  void reorderLayer({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required int oldIndex,
+    required int newIndex,
+  }) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final scene = scenes[sceneIdx];
+    if (frameIndex >= scene.frames.length) return;
+    final frame = scene.frames[frameIndex];
+    if (oldIndex < 0 || oldIndex >= frame.layers.length) return;
+    final newLayers = List<Layer>.from(frame.layers);
+    final layer = newLayers.removeAt(oldIndex);
+    final target = (newIndex > oldIndex ? newIndex - 1 : newIndex).clamp(
+      0,
+      newLayers.length,
+    );
+    newLayers.insert(target, layer);
+    _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
+  }
+
+  /// .niashare を複製して通常プロジェクトとして追加する（共有フロー）。
+  /// 新規プロジェクトIDを採番し、共有元ファイル自体は変更しない。
+  ///
+  /// [isSharedImport]はホーム画面の「共有」タブへ振り分けるかどうかのフラグ。
+  /// 他人から受け取った.niashareの取り込みではtrue（デフォルト）のままだが、
+  /// .niatra（引き継ぎ）経由で自分自身の別端末プロジェクトを復元する場合は
+  /// falseを渡し、通常プロジェクト一覧へそのまま追加する
+  /// （NiatraSerializer.restoreProjects()が使用）。
+  Future<Project> importSharedProject(
+    NiaproData data, {
+    bool isSharedImport = true,
+  }) async {
+    final newId = _nextId('proj');
+    final project = data.project.copyWith(
+      id: newId,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      isSharedImport: isSharedImport,
+    );
+    _projects.add(project);
+    _scenes[newId] = data.scenes;
+    _layerHomes[newId] = buildLayerHomeIndex(data.scenes);
+    final tm = TileManager(
+      canvasWidth: project.drawingWidth,
+      canvasHeight: project.drawingHeight,
+      compositeCacheMax: _tileCacheBudget,
+    );
+    tm.importAll(data.tileData);
+    _tileManagers[newId] = tm;
+    _layerIdCounters[newId] = _maxLayerCounter(data.scenes);
+    // 同梱素材（共有時に選択した画像/動画/音声）をMaterials/へ復元する。
+    await NiaproSerializer.restoreBundledMaterials(newId, data);
+    _saveAsync(newId);
+    notifyListeners();
+    return project;
+  }
+
+  /// 自動保存データを既存プロジェクトへ復元する（クラッシュ復元専用）。
+  /// プロジェクトIDは維持したまま、シーン・タイルの内容のみ自動保存時点へ戻す。
+  void restoreFromAutosave(String projectId, NiaproData data) {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    _projects[idx] = data.project.copyWith(
+      id: projectId,
+      updatedAt: DateTime.now(),
+    );
+    _scenes[projectId] = data.scenes;
+    _layerHomes[projectId] = buildLayerHomeIndex(data.scenes);
+    final tm = _tileManagers.putIfAbsent(
+      projectId,
+      () => TileManager(
+        canvasWidth: data.project.drawingWidth,
+        canvasHeight: data.project.drawingHeight,
+        compositeCacheMax: _tileCacheBudget,
+      ),
+    );
+    tm.importAll(data.tileData);
+    _layerIdCounters[projectId] = _maxLayerCounter(data.scenes);
+    notifyListeners();
+  }
+
+  // ─── 自動塗り連携 ─────────────────────────────────────────────────────
+
+  /// 自動塗り用線画レイヤーの直下にある自動塗りレイヤーへ更新マークを立てる。
+  /// 線画レイヤーへ描画があった際に呼び出す（needsAutofillUpdate自動セット）。
+  void markLineartDirty(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String lineartLayerId,
+  ) {
+    final layers = layersOf(projectId, sceneId, frameIndex);
+    final idx = layers.indexWhere((l) => l.id == lineartLayerId);
+    if (idx < 0 || layers[idx].type != LayerType.autoFillLineart) return;
+    if (idx + 1 < layers.length && layers[idx + 1].type == LayerType.autoFill) {
+      final target = layers[idx + 1];
+      if (!target.needsAutofillUpdate) {
+        updateLayer(
+          projectId: projectId,
+          sceneId: sceneId,
+          frameIndex: frameIndex,
+          layer: target.copyWith(needsAutofillUpdate: true),
+        );
+      }
+    }
+  }
+
+  /// 自動塗りプリセットのパーツ色・名前が変更／削除された際、当該パーツIDを参照する
+  /// 全プロジェクト・全フレームの自動塗りレイヤーへ更新マークを伝播する。
+  void markAutofillUpdateForPartId(String partId) {
+    bool changed = false;
+    for (final entry in _scenes.entries) {
+      final scenes = entry.value;
+      for (int si = 0; si < scenes.length; si++) {
+        final scene = scenes[si];
+        for (int fi = 0; fi < scene.frames.length; fi++) {
+          final layers = scene.frames[fi].layers;
+          for (int li = 0; li < layers.length; li++) {
+            final lineart = layers[li];
+            if (lineart.type != LayerType.autoFillLineart ||
+                lineart.partId != partId) {
+              continue;
+            }
+            if (li + 1 >= layers.length ||
+                layers[li + 1].type != LayerType.autoFill) {
+              continue;
+            }
+            final autofillLayer = layers[li + 1];
+            if (autofillLayer.needsAutofillUpdate) continue;
+            final newLayers = List<Layer>.from(layers);
+            newLayers[li + 1] = autofillLayer.copyWith(
+              needsAutofillUpdate: true,
+            );
+            final newFrames = List<Frame>.from(scene.frames);
+            newFrames[fi] = scene.frames[fi].copyWith(layers: newLayers);
+            scenes[si] = scene.copyWith(frames: newFrames);
+            changed = true;
+          }
+        }
+      }
+    }
+    if (changed) notifyListeners();
+  }
+
+  /// 自動塗り用線画レイヤーへプリセットのパーツを割り当てる。表示名はパーツ名に連動し、
+  /// 直下に自動塗りレイヤーが存在する場合はそちらの表示名・パーツIDも一括更新する。
+  void assignAutofillPart({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String lineartLayerId,
+    required String partId,
+    required String partName,
+  }) {
+    final layers = layersOf(projectId, sceneId, frameIndex);
+    final idx = layers.indexWhere((l) => l.id == lineartLayerId);
+    if (idx < 0 || layers[idx].type != LayerType.autoFillLineart) return;
+    updateLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      layer: layers[idx].copyWith(partId: partId, name: '$partName（線画）'),
+    );
+    if (idx + 1 < layers.length && layers[idx + 1].type == LayerType.autoFill) {
+      updateLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layer: layers[idx + 1].copyWith(
+          partId: partId,
+          name: '$partName（自動塗り）',
+        ),
+      );
+    }
+  }
+
+  /// 書き出し前の未更新警告用：指定プロジェクトの全シーン・全フレームに
+  /// needsAutofillUpdate==true の自動塗りレイヤーが存在するかを判定する。
+  bool hasOutdatedAutofillLayers(String projectId) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return false;
+    for (final scene in scenes) {
+      for (final frame in scene.frames) {
+        if (frame.layers.any(
+          (l) => l.type == LayerType.autoFill && l.needsAutofillUpdate,
+        )) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /// タイムライン❗マーク表示用：指定フレームにneedsAutofillUpdate==trueの
+  /// 自動塗りレイヤーが存在するかを判定する（更新マークはレイヤー・
+  /// タイムライン両方に表示）。
+  bool frameHasOutdatedAutofillLayers(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+  ) {
+    final scene = sceneOf(projectId, sceneId);
+    if (scene == null || frameIndex < 0 || frameIndex >= scene.frames.length) {
+      return false;
+    }
+    return scene.frames[frameIndex].layers.any(
+      (l) => l.type == LayerType.autoFill && l.needsAutofillUpdate,
+    );
+  }
+
+  /// タイムライン❗マーク表示用：指定シーン内のいずれかのフレームに
+  /// needsAutofillUpdate==trueの自動塗りレイヤーが存在するかを判定する。
+  bool sceneHasOutdatedAutofillLayers(String projectId, String sceneId) {
+    final scene = sceneOf(projectId, sceneId);
+    if (scene == null) return false;
+    for (final frame in scene.frames) {
+      if (frame.layers.any(
+        (l) => l.type == LayerType.autoFill && l.needsAutofillUpdate,
+      )) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // ─── Frame API ────────────────────────────────────────────────────────
+
+  int frameCount(String projectId, String sceneId) =>
+      sceneOf(projectId, sceneId)?.frames.length ?? 0;
+
+  /// フレームの保持セル数を変更する
+  void setFrameHold(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    int hold,
+  ) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final scene = scenes[sceneIdx];
+    if (frameIndex >= scene.frames.length) return;
+    final newFrames = List<Frame>.from(scene.frames);
+    newFrames[frameIndex] = scene.frames[frameIndex].copyWith(
+      hold: hold.clamp(1, 99),
+    );
+    scenes[sceneIdx] = scene.copyWith(frames: newFrames);
+    notifyListeners();
+  }
+
+  int frameHold(String projectId, String sceneId, int frameIndex) {
+    final scene = sceneOf(projectId, sceneId);
+    if (scene == null || frameIndex >= scene.frames.length) return 1;
+    return scene.frames[frameIndex].hold;
+  }
+
+  /// プロジェクト全シーンの実フレーム数を返す。長さ指定は大体の目安で
+  /// あり、実際にタイムラインモードでフレームを追加・削除したらその分
+  /// 長さが変わるようにするための集計。
+  /// フレーム追加・複製・削除ボタンを押す前に、UI側で上限チェック
+  /// （無料会員は90秒まで）に使う想定。
+  int totalFrameCount(String projectId) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return 0;
+    return scenes.fold<int>(0, (sum, s) => sum + s.frames.length);
+  }
+
+  /// [totalFrameCount]をfpsで割った、追加・削除後に実際になる長さ（秒）を返す。
+  int projectedDurationSeconds(String projectId, {int frameDelta = 0}) {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return 0;
+    final fps = _projects[idx].fps.clamp(1, 999999);
+    final frames = totalFrameCount(projectId) + frameDelta;
+    return (frames / fps).ceil().clamp(0, 1 << 30);
+  }
+
+  /// フレームの追加・複製・削除のたびに呼び出し、プロジェクトの長さ
+  /// （durationSeconds）を全シーンの実フレーム数から再計算して同期する。
+  /// 新規プロジェクト作成画面の長さ指定はあくまで目安で、
+  /// 実際の長さはタイムラインモードでのフレーム増減に連動させる。
+  void _syncDurationToFrameCount(String projectId) {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    final newDuration = projectedDurationSeconds(projectId).clamp(1, 1 << 30);
+    if (newDuration != _projects[idx].durationSeconds) {
+      _projects[idx] = _projects[idx].copyWith(durationSeconds: newDuration);
+    }
+  }
+
+  /// フレームを末尾に追加する
+  void addFrame(String projectId, String sceneId) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final scene = scenes[sceneIdx];
+    // 直前フレームの通常レイヤー構成を引き継ぐ（描画データは空）
+    final prevLayers = scene.frames.isNotEmpty
+        ? scene.frames.last.layers
+              .where((l) => l.type == LayerType.normal)
+              .map((l) => Layer(id: l.id, name: l.name, type: l.type))
+              .toList()
+        : [
+            Layer(
+              id: _nextLayerId(projectId),
+              name: 'レイヤー1',
+              type: LayerType.normal,
+            ),
+          ];
+    final newFrame = Frame(index: scene.frames.length, layers: prevLayers);
+    final newFrames = List<Frame>.from(scene.frames)..add(newFrame);
+    scenes[sceneIdx] = scene.copyWith(frames: newFrames);
+    _syncDurationToFrameCount(projectId);
+    notifyListeners();
+  }
+
+  /// フレームを複製し、指定位置の直後へ挿入する（フレームのコピー）。
+  /// レイヤー構成・描画データ（タイル）の両方を複製する。表示範囲レイヤー
+  /// （common・timelineImage・timelineVideo・watermark）はホームが別フレームに
+  /// 存在する参照であり、フレーム単位の複製対象ではないため除外する。
+  void duplicateFrame(String projectId, String sceneId, int frameIndex) {
+    insertDuplicatedFrame(
+      projectId: projectId,
+      sourceSceneId: sceneId,
+      sourceFrameIndex: frameIndex,
+      targetSceneId: sceneId,
+      insertAt: frameIndex + 1,
+    );
+  }
+
+  /// [sourceSceneId]の[sourceFrameIndex]番目のフレームを、[targetSceneId]の
+  /// [insertAt]位置へ複製して挿入する（シーンをまたいだフレームの
+  /// コピー＆ペースト・複製に使う共通処理）。レイヤー構成・描画データ
+  /// （タイル）の両方を複製する。表示範囲レイヤー（common・
+  /// timelineImage・timelineVideo・watermark）はホームが別フレームに
+  /// 存在する参照であり、フレーム単位の複製対象ではないため除外する。
+  void insertDuplicatedFrame({
+    required String projectId,
+    required String sourceSceneId,
+    required int sourceFrameIndex,
+    required String targetSceneId,
+    required int insertAt,
+  }) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sourceSceneIdx = scenes.indexWhere((s) => s.id == sourceSceneId);
+    if (sourceSceneIdx < 0) return;
+    final sourceScene = scenes[sourceSceneIdx];
+    if (sourceFrameIndex < 0 || sourceFrameIndex >= sourceScene.frames.length) {
+      return;
+    }
+    final source = sourceScene.frames[sourceFrameIndex];
+    final targetSceneIdx = scenes.indexWhere((s) => s.id == targetSceneId);
+    if (targetSceneIdx < 0) return;
+    final targetScene = scenes[targetSceneIdx];
+    final clampedInsertAt = insertAt.clamp(0, targetScene.frames.length);
+
+    // 挿入位置以降のフレームはindexが1つずつ後ろへずれる。描画データは
+    // frameLayerKey(sceneId, frameIndex, layerId)でTileManagerに保存されている
+    // ため、後ろ側から順に付け替えることでまだ移動していない位置への
+    // 上書きを避ける。
+    final tm = _tileManagers[projectId];
+    if (tm != null) {
+      for (int i = targetScene.frames.length - 1; i >= clampedInsertAt; i--) {
+        for (final layer in targetScene.frames[i].layers) {
+          tm.renameKey(
+            frameLayerKey(targetSceneId, i, layer.id),
+            frameLayerKey(targetSceneId, i + 1, layer.id),
+          );
+        }
+      }
+    }
+
+    // 複製対象レイヤー（表示範囲レイヤー・内部専用selectionレイヤーは除外）。
+    // 新しいレイヤーIDを割り当て、Copy-on-Writeでタイルデータも複製する。
+    final sourceLayers = source.layers
+        .where(
+          (l) => !isRangeLayerType(l.type) && l.type != LayerType.selection,
+        )
+        .toList();
+    final idMap = <String, String>{};
+    final newLayers = sourceLayers.map((l) {
+      final newId = _nextLayerId(projectId);
+      idMap[l.id] = newId;
+      return l.copyWith(id: newId);
+    }).toList();
+
+    if (tm != null) {
+      for (final layer in sourceLayers) {
+        final newId = idMap[layer.id]!;
+        tm.copyLayer(
+          frameLayerKey(sourceSceneId, sourceFrameIndex, layer.id),
+          frameLayerKey(targetSceneId, clampedInsertAt, newId),
+        );
+      }
+    }
+
+    final newFrame = Frame(
+      index: clampedInsertAt,
+      layers: newLayers,
+      hold: source.hold,
+    );
+    final newFrames = List<Frame>.from(targetScene.frames)
+      ..insert(clampedInsertAt, newFrame);
+    final reindexed = newFrames
+        .asMap()
+        .entries
+        .map((e) => e.value.copyWith(index: e.key))
+        .toList();
+    scenes[targetSceneIdx] = targetScene.copyWith(frames: reindexed);
+
+    // 表示範囲レイヤーのホーム位置インデックスも合わせて更新する（挿入位置
+    // 以降がホームだったレイヤーは1つ後ろへ詰める）。
+    final homes = _layerHomes[projectId];
+    if (homes != null) {
+      final toShift = <String>[];
+      homes.forEach((layerId, home) {
+        if (home.sceneId == targetSceneId &&
+            home.frameIndex >= clampedInsertAt) {
+          toShift.add(layerId);
+        }
+      });
+      for (final id in toShift) {
+        final h = homes[id]!;
+        homes[id] = (sceneId: h.sceneId, frameIndex: h.frameIndex + 1);
+      }
+    }
+    _syncDurationToFrameCount(projectId);
+    notifyListeners();
+  }
+
+  /// フレームを削除する（最低1フレームは残す）
+  void removeFrame(String projectId, String sceneId, int frameIndex) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final scene = scenes[sceneIdx];
+    if (scene.frames.length <= 1) return;
+    if (frameIndex < 0 || frameIndex >= scene.frames.length) return;
+
+    // 削除位置より後ろのフレームはindexが1つずつ前へ詰まる。描画データは
+    // frameLayerKey(sceneId, frameIndex, layerId)でTileManagerに保存されて
+    // いるため、indexの変更に合わせてタイルデータも付け替える（先頭側から
+    // 順に処理することで、まだ移動していない位置への上書きを避ける）。
+    final tm = _tileManagers[projectId];
+    if (tm != null) {
+      for (int i = frameIndex + 1; i < scene.frames.length; i++) {
+        for (final layer in scene.frames[i].layers) {
+          tm.renameKey(
+            frameLayerKey(sceneId, i, layer.id),
+            frameLayerKey(sceneId, i - 1, layer.id),
+          );
+        }
+      }
+    }
+
+    final newFrames = List<Frame>.from(scene.frames)..removeAt(frameIndex);
+    final reindexed = newFrames
+        .asMap()
+        .entries
+        .map((e) => e.value.copyWith(index: e.key))
+        .toList();
+    scenes[sceneIdx] = scene.copyWith(frames: reindexed);
+
+    // 表示範囲レイヤーのホーム位置インデックスも合わせて更新する。
+    // 削除されたフレーム自体がホームだったレイヤーは実データごと消滅するため
+    // インデックスから除去し、それより後ろのフレームがホームだったレイヤーは
+    // インデックスを1つ前へ詰める。
+    final homes = _layerHomes[projectId];
+    if (homes != null) {
+      final toRemove = <String>[];
+      final toShift = <String>[];
+      homes.forEach((layerId, home) {
+        if (home.sceneId != sceneId) return;
+        if (home.frameIndex == frameIndex) {
+          toRemove.add(layerId);
+        } else if (home.frameIndex > frameIndex) {
+          toShift.add(layerId);
+        }
+      });
+      for (final id in toRemove) {
+        homes.remove(id);
+      }
+      for (final id in toShift) {
+        final h = homes[id]!;
+        homes[id] = (sceneId: h.sceneId, frameIndex: h.frameIndex - 1);
+      }
+    }
+    _syncDurationToFrameCount(projectId);
+    notifyListeners();
+  }
+
+  /// シーンのフレーム数を[targetCount]へ一括で揃える（タイムラインの
+  /// 「長さ変更」メニュー：秒数・フレーム数のどちらから指定しても、
+  /// 呼び出し側でフレーム数へ換算してから渡す）。現在のフレーム数より
+  /// 多ければ末尾に追加、少なければ末尾から削除する。既存の
+  /// addFrame/removeFrameを内部的に繰り返し呼ぶことで、タイルデータの
+  /// 付け替え・表示範囲レイヤーのホーム位置更新など既存の安全な処理を
+  /// そのまま再利用する。
+  /// [setSceneFrameCount]で[targetCount]へ短縮した場合に削除される末尾の
+  /// フレーム範囲に、新規追加時の初期状態（通常レイヤー1枚のみ・描画データ
+  /// なし）から変更が加えられているものが含まれるかを判定する。レイヤー
+  /// 構成が既定と異なる（枚数が1枚でない、通常レイヤー以外の種別を含む）
+  /// 場合、またはいずれかのレイヤーに実際の描画データ（タイル）が存在する
+  /// 場合を「変更あり」とみなす。[targetCount]が現在のフレーム数以上
+  /// （短縮ではない）場合は常にfalseを返す。
+  bool sceneFrameShrinkHasContent(
+    String projectId,
+    String sceneId,
+    int targetCount,
+  ) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return false;
+    final scene = scenes.where((s) => s.id == sceneId).firstOrNull;
+    if (scene == null) return false;
+    final currentCount = scene.frames.length;
+    if (targetCount >= currentCount) return false;
+    final tm = _tileManagers[projectId];
+    final tiles = tm?.exportAll();
+    for (int i = targetCount; i < currentCount; i++) {
+      final frame = scene.frames[i];
+      final normalLayers = frame.layers
+          .where((l) => l.type == LayerType.normal)
+          .toList();
+      if (frame.layers.length != normalLayers.length ||
+          normalLayers.length != 1) {
+        return true;
+      }
+      if (tiles != null) {
+        for (final layer in frame.layers) {
+          final key = frameLayerKey(sceneId, i, layer.id);
+          if (tiles[key]?.isNotEmpty ?? false) return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  void setSceneFrameCount(String projectId, String sceneId, int targetCount) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final clamped = targetCount.clamp(1, 1 << 30);
+    while (scenes[sceneIdx].frames.length < clamped) {
+      addFrame(projectId, sceneId);
+    }
+    while (scenes[sceneIdx].frames.length > clamped) {
+      removeFrame(projectId, sceneId, scenes[sceneIdx].frames.length - 1);
+    }
+  }
+
+  /// フレームをカーソル固定方式で並び替える（シーン移動と同じ操作体系を
+  /// フレームにも適用）。[oldIndicesInNewOrder]は現在のフレームindexを新しい並び順
+  /// で並べたリスト（全フレーム数と同じ長さの並び替え）。
+  void reorderFrames(
+    String projectId,
+    String sceneId,
+    List<int> oldIndicesInNewOrder,
+  ) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final scene = scenes[sceneIdx];
+    if (oldIndicesInNewOrder.length != scene.frames.length) return;
+
+    final tm = _tileManagers[projectId];
+    if (tm != null) {
+      // 入れ替えでの衝突を避けるため、いったん一時キーへ退避してから最終位置へ
+      // 付け替える。
+      final tempToFinal = <String, String>{};
+      for (int newIdx = 0; newIdx < oldIndicesInNewOrder.length; newIdx++) {
+        final oldIdx = oldIndicesInNewOrder[newIdx];
+        for (final layer in scene.frames[oldIdx].layers) {
+          final oldKey = frameLayerKey(sceneId, oldIdx, layer.id);
+          final tempKey = '__reorder_tmp__${oldIdx}_${layer.id}';
+          tm.renameKey(oldKey, tempKey);
+          tempToFinal[tempKey] = frameLayerKey(sceneId, newIdx, layer.id);
+        }
+      }
+      tempToFinal.forEach(
+        (tempKey, finalKey) => tm.renameKey(tempKey, finalKey),
+      );
+    }
+
+    final newFrames = <Frame>[
+      for (int newIdx = 0; newIdx < oldIndicesInNewOrder.length; newIdx++)
+        scene.frames[oldIndicesInNewOrder[newIdx]].copyWith(index: newIdx),
+    ];
+    scenes[sceneIdx] = scene.copyWith(frames: newFrames);
+
+    // 表示範囲レイヤーのホームインデックスも新しい並び順へ追従させる
+    final homes = _layerHomes[projectId];
+    if (homes != null) {
+      final oldToNew = <int, int>{
+        for (int newIdx = 0; newIdx < oldIndicesInNewOrder.length; newIdx++)
+          oldIndicesInNewOrder[newIdx]: newIdx,
+      };
+      final updates = <String, LayerHome>{};
+      homes.forEach((layerId, home) {
+        if (home.sceneId == sceneId && oldToNew.containsKey(home.frameIndex)) {
+          updates[layerId] = (
+            sceneId: sceneId,
+            frameIndex: oldToNew[home.frameIndex]!,
+          );
+        }
+      });
+      updates.forEach((id, home) => homes[id] = home);
+    }
+    notifyListeners();
+  }
+
+  // ─── カメラキーフレーム（XY移動・拡大・回転） ─────────────────
+
+  List<CameraKeyframe> cameraKeyframesOf(String projectId, String sceneId) =>
+      List.unmodifiable(
+        sceneOf(projectId, sceneId)?.cameraKeyframes ?? const [],
+      );
+
+  void _updateSceneCameraKeyframes(
+    String projectId,
+    String sceneId,
+    List<CameraKeyframe> keyframes,
+  ) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    final sorted = List<CameraKeyframe>.from(keyframes)
+      ..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
+    scenes[idx] = scenes[idx].copyWith(cameraKeyframes: sorted);
+    notifyListeners();
+  }
+
+  /// キーフレームを追加する。同じframeIndexが既にあれば置き換える。
+  void addCameraKeyframe(String projectId, String sceneId, CameraKeyframe kf) {
+    final current = cameraKeyframesOf(projectId, sceneId);
+    final without = current
+        .where((k) => k.frameIndex != kf.frameIndex)
+        .toList();
+    _updateSceneCameraKeyframes(projectId, sceneId, [...without, kf]);
+  }
+
+  /// 既存キーフレーム（[oldFrameIndex]で特定）を[newKf]で置き換える。
+  /// newKf.frameIndexが他のキーフレームと重複する場合はその既存分を消す。
+  void updateCameraKeyframe(
+    String projectId,
+    String sceneId,
+    int oldFrameIndex,
+    CameraKeyframe newKf,
+  ) {
+    final current = cameraKeyframesOf(projectId, sceneId);
+    final without = current
+        .where(
+          (k) =>
+              k.frameIndex != oldFrameIndex && k.frameIndex != newKf.frameIndex,
+        )
+        .toList();
+    _updateSceneCameraKeyframes(projectId, sceneId, [...without, newKf]);
+  }
+
+  void removeCameraKeyframe(String projectId, String sceneId, int frameIndex) {
+    final current = cameraKeyframesOf(projectId, sceneId);
+    _updateSceneCameraKeyframes(
+      projectId,
+      sceneId,
+      current.where((k) => k.frameIndex != frameIndex).toList(),
+    );
+  }
+
+  // ─── レイヤーグループ（複数レイヤーを1つのキーフレームでまとめて動かす） ──
+
+  List<LayerGroup> layerGroupsOf(String projectId, String sceneId) =>
+      List.unmodifiable(sceneOf(projectId, sceneId)?.groups ?? const []);
+
+  /// [layerId]が所属するグループを返す（無ければnull）。1レイヤーは
+  /// 同時に1グループにのみ所属できる想定（新規グループ作成時に他グループ
+  /// から自動的に外す）。
+  LayerGroup? groupContainingLayer(
+    String projectId,
+    String sceneId,
+    String layerId,
+  ) {
+    for (final g in layerGroupsOf(projectId, sceneId)) {
+      if (g.memberLayerIds.contains(layerId)) return g;
+    }
+    return null;
+  }
+
+  void _updateSceneGroups(
+    String projectId,
+    String sceneId,
+    List<LayerGroup> groups,
+  ) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    scenes[idx] = scenes[idx].copyWith(groups: groups);
+    notifyListeners();
+  }
+
+  /// 新規グループを作成する。[memberLayerIds]が既存の他グループに属して
+  /// いた場合はそちらから外す（1レイヤーは1グループのみに所属）。
+  LayerGroup addLayerGroup(
+    String projectId,
+    String sceneId,
+    String name,
+    List<String> memberLayerIds,
+  ) {
+    final group = LayerGroup(
+      id: 'group_${DateTime.now().microsecondsSinceEpoch}',
+      name: name,
+      memberLayerIds: memberLayerIds,
+    );
+    final cleaned = layerGroupsOf(projectId, sceneId)
+        .map(
+          (g) => g.copyWith(
+            memberLayerIds: g.memberLayerIds
+                .where((id) => !memberLayerIds.contains(id))
+                .toList(),
+          ),
+        )
+        .where((g) => g.memberLayerIds.isNotEmpty)
+        .toList();
+    _updateSceneGroups(projectId, sceneId, [...cleaned, group]);
+    return group;
+  }
+
+  void updateLayerGroup(String projectId, String sceneId, LayerGroup group) {
+    final current = layerGroupsOf(projectId, sceneId);
+    final without = current.where((g) => g.id != group.id).toList();
+    _updateSceneGroups(projectId, sceneId, [...without, group]);
+  }
+
+  void removeLayerGroup(String projectId, String sceneId, String groupId) {
+    final current = layerGroupsOf(projectId, sceneId);
+    _updateSceneGroups(
+      projectId,
+      sceneId,
+      current.where((g) => g.id != groupId).toList(),
+    );
+  }
+
+  // ─── タイムスタンプ（特定フレームへのワンタップ移動＋コメント） ──────────
+  // シーンが範囲を単位にするのに対し、こちらは「瞬間」を指すためのもの。
+
+  List<TimelineMarker> timelineMarkersOf(String projectId, String sceneId) =>
+      List.unmodifiable(sceneOf(projectId, sceneId)?.markers ?? const []);
+
+  void _updateSceneMarkers(
+    String projectId,
+    String sceneId,
+    List<TimelineMarker> markers,
+  ) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    final sorted = List<TimelineMarker>.from(markers)
+      ..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
+    scenes[idx] = scenes[idx].copyWith(markers: sorted);
+    notifyListeners();
+  }
+
+  TimelineMarker addTimelineMarker(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+    String comment,
+  ) {
+    final marker = TimelineMarker(
+      id: 'marker_${DateTime.now().microsecondsSinceEpoch}',
+      frameIndex: frameIndex,
+      comment: comment,
+    );
+    _updateSceneMarkers(projectId, sceneId, [
+      ...timelineMarkersOf(projectId, sceneId),
+      marker,
+    ]);
+    return marker;
+  }
+
+  void updateTimelineMarker(
+    String projectId,
+    String sceneId,
+    TimelineMarker marker,
+  ) {
+    final current = timelineMarkersOf(projectId, sceneId);
+    final without = current.where((m) => m.id != marker.id).toList();
+    _updateSceneMarkers(projectId, sceneId, [...without, marker]);
+  }
+
+  void removeTimelineMarker(String projectId, String sceneId, String markerId) {
+    final current = timelineMarkersOf(projectId, sceneId);
+    _updateSceneMarkers(
+      projectId,
+      sceneId,
+      current.where((m) => m.id != markerId).toList(),
+    );
+  }
+
+  // ─── 演出フィルター（タイムライン非破壊編集） ─────────────────
+
+  List<EffectFilterInstance> effectFiltersOf(
+    String projectId,
+    String sceneId,
+  ) =>
+      List.unmodifiable(sceneOf(projectId, sceneId)?.effectFilters ?? const []);
+
+  void _updateSceneEffectFilters(
+    String projectId,
+    String sceneId,
+    List<EffectFilterInstance> filters,
+  ) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    scenes[idx] = scenes[idx].copyWith(effectFilters: filters);
+    notifyListeners();
+  }
+
+  void addEffectFilter(
+    String projectId,
+    String sceneId,
+    EffectFilterInstance filter,
+  ) {
+    _updateSceneEffectFilters(projectId, sceneId, [
+      ...effectFiltersOf(projectId, sceneId),
+      filter,
+    ]);
+  }
+
+  void updateEffectFilter(
+    String projectId,
+    String sceneId,
+    EffectFilterInstance filter,
+  ) {
+    final updated = effectFiltersOf(
+      projectId,
+      sceneId,
+    ).map((f) => f.id == filter.id ? filter : f).toList();
+    _updateSceneEffectFilters(projectId, sceneId, updated);
+  }
+
+  void removeEffectFilter(String projectId, String sceneId, String filterId) {
+    _updateSceneEffectFilters(
+      projectId,
+      sceneId,
+      effectFiltersOf(
+        projectId,
+        sceneId,
+      ).where((f) => f.id != filterId).toList(),
+    );
+  }
+
+  /// 演出フィルターの並び替え（「複数フィルターの適用順」は
+  /// タイムライン上の並び順に従うため、並び替えが適用順そのものを変える）。
+  void reorderEffectFilters(
+    String projectId,
+    String sceneId,
+    int oldIndex,
+    int newIndex,
+  ) {
+    final list = effectFiltersOf(projectId, sceneId).toList();
+    if (newIndex > oldIndex) newIndex -= 1;
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex, item);
+    _updateSceneEffectFilters(projectId, sceneId, list);
+  }
+
+  // ─── 音声トラック（タイムライン音声クリップ） ─────────────────
+  // シーンに直接紐づく（音声は視覚的なピクセルを持たずレイヤーではないため）。
+
+  List<AudioClip> audioClipsOf(String projectId, String sceneId) =>
+      List.unmodifiable(sceneOf(projectId, sceneId)?.audioClips ?? const []);
+
+  void _updateSceneAudioClips(
+    String projectId,
+    String sceneId,
+    List<AudioClip> clips,
+  ) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    scenes[idx] = scenes[idx].copyWith(audioClips: clips);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
+  void addAudioClip(String projectId, String sceneId, AudioClip clip) {
+    _updateSceneAudioClips(projectId, sceneId, [
+      ...audioClipsOf(projectId, sceneId),
+      clip,
+    ]);
+  }
+
+  void updateAudioClip(String projectId, String sceneId, AudioClip clip) {
+    final updated = audioClipsOf(
+      projectId,
+      sceneId,
+    ).map((c) => c.id == clip.id ? clip : c).toList();
+    _updateSceneAudioClips(projectId, sceneId, updated);
+  }
+
+  void removeAudioClip(String projectId, String sceneId, String clipId) {
+    _updateSceneAudioClips(
+      projectId,
+      sceneId,
+      audioClipsOf(projectId, sceneId).where((c) => c.id != clipId).toList(),
+    );
+  }
+
+  // ─── 素材タイムライン行（画像・動画・音源） ────────────────────
+  // タイムライン右側の＋マークは素材の追加ではなく行の追加、二列目以降は
+  // －マークで行削除、行名はタップで変更可能。
+  // 行数・行名はScene.imageRowNames/videoRowNames/audioRowNames（リスト長＝
+  // 行数、要素は行名。nullなら既定表示）で管理する。
+
+  List<String?> rowNamesOf(
+    String projectId,
+    String sceneId,
+    TimelineRowKind type,
+  ) {
+    final scene = sceneOf(projectId, sceneId);
+    if (scene == null) return const [null];
+    final names = switch (type) {
+      TimelineRowKind.image => scene.imageRowNames,
+      TimelineRowKind.video => scene.videoRowNames,
+      TimelineRowKind.audio => scene.audioRowNames,
+      TimelineRowKind.text => scene.textRowNames,
+    };
+    return names.isEmpty ? const [null] : names;
+  }
+
+  Scene _applyRowNames(
+    Scene scene,
+    TimelineRowKind type,
+    List<String?> names,
+  ) => switch (type) {
+    TimelineRowKind.image => scene.copyWith(imageRowNames: names),
+    TimelineRowKind.video => scene.copyWith(videoRowNames: names),
+    TimelineRowKind.audio => scene.copyWith(audioRowNames: names),
+    TimelineRowKind.text => scene.copyWith(textRowNames: names),
+  };
+
+  /// scene直下のtimelineImage/timelineVideoレイヤー（ホームがこのシーンに
+  /// あるもの）を列挙する。素材タイムライン行のクリップ有無判定に使う。
+  List<Layer> _materialLayersInScene(
+    String projectId,
+    String sceneId,
+    LayerType type,
+  ) {
+    final homes = _layerHomes[projectId];
+    final scene = sceneOf(projectId, sceneId);
+    if (homes == null || scene == null) return const [];
+    final result = <Layer>[];
+    for (final entry in homes.entries) {
+      final home = entry.value;
+      if (home.sceneId != sceneId || home.frameIndex >= scene.frames.length) {
+        continue;
+      }
+      final layer = scene.frames[home.frameIndex].layers
+          .where((l) => l.id == entry.key)
+          .firstOrNull;
+      if (layer != null && layer.type == type) result.add(layer);
+    }
+    return result;
+  }
+
+  void addTrackRow(String projectId, String sceneId, TimelineRowKind type) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    final updated = [...rowNamesOf(projectId, sceneId, type), null];
+    scenes[idx] = _applyRowNames(scenes[idx], type, updated);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
+  /// [rowIndex]の行を削除する。先頭行（0）は削除不可。その行にクリップが
+  /// 存在する場合も削除できず、falseを返す（呼び出し元で案内を表示する）。
+  bool removeTrackRow(
+    String projectId,
+    String sceneId,
+    TimelineRowKind type,
+    int rowIndex,
+  ) {
+    final names = rowNamesOf(projectId, sceneId, type);
+    if (rowIndex <= 0 || rowIndex >= names.length) return false;
+    final layerType = type.layerType;
+    final hasClips = layerType == null
+        ? audioClipsOf(projectId, sceneId).any((c) => c.trackRow == rowIndex)
+        : _materialLayersInScene(
+            projectId,
+            sceneId,
+            layerType,
+          ).any((l) => l.trackRow == rowIndex);
+    if (hasClips) return false;
+
+    final scenes = _scenes[projectId];
+    if (scenes == null) return false;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return false;
+
+    final updatedNames = List<String?>.of(names)..removeAt(rowIndex);
+    var scene = _applyRowNames(scenes[idx], type, updatedNames);
+
+    // rowIndexより後ろの行の割り当てを1つずつ詰める
+    if (layerType == null) {
+      final updatedClips = scene.audioClips
+          .map(
+            (c) => c.trackRow > rowIndex
+                ? c.copyWith(trackRow: c.trackRow - 1)
+                : c,
+          )
+          .toList();
+      scene = scene.copyWith(audioClips: updatedClips);
+    } else {
+      final targetType = layerType;
+      final newFrames = scene.frames.map((f) {
+        final newLayers = f.layers.map((l) {
+          if (l.type == targetType && l.trackRow > rowIndex) {
+            return l.copyWith(trackRow: l.trackRow - 1);
+          }
+          return l;
+        }).toList();
+        return f.copyWith(layers: newLayers);
+      }).toList();
+      scene = scene.copyWith(frames: newFrames);
+    }
+    scene = scene.copyWith(
+      stack: _stackWithoutRow(scene.stack, type, rowIndex),
+    );
+
+    scenes[idx] = scene;
+    _saveAsync(projectId);
+    notifyListeners();
+    return true;
+  }
+
+  /// [stack] after row [rowIndex] of [type] was removed: the row leaves
+  /// the order, and the rows after it move up one, as their materials do.
+  SceneStack _stackWithoutRow(
+    SceneStack stack,
+    TimelineRowKind type,
+    int rowIndex,
+  ) {
+    final kind = switch (type) {
+      TimelineRowKind.text => StackTrackKind.text,
+      TimelineRowKind.image => StackTrackKind.image,
+      TimelineRowKind.video => StackTrackKind.video,
+      TimelineRowKind.audio => null,
+    };
+    if (kind == null || stack.isEmpty) return stack;
+    List<String> renumber(List<String> order) => [
+      for (final key in order)
+        if (parseStackTrackKey(key) case final t?
+            when t.kind == kind && t.row >= rowIndex) ...[
+          if (t.row > rowIndex) stackTrackKey(kind, t.row - 1),
+        ] else
+          key,
+    ];
+    return stack.copyWith(
+      order: renumber(stack.order),
+      ranges: [
+        for (final r in stack.ranges) r.copyWith(order: renumber(r.order)),
+      ],
+    );
+  }
+
+  void renameTrackRow(
+    String projectId,
+    String sceneId,
+    TimelineRowKind type,
+    int rowIndex,
+    String? name,
+  ) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    final names = List<String?>.of(rowNamesOf(projectId, sceneId, type));
+    if (rowIndex < 0 || rowIndex >= names.length) return;
+    names[rowIndex] = (name == null || name.isEmpty) ? null : name;
+    scenes[idx] = _applyRowNames(scenes[idx], type, names);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
+  // ─── レイヤー結合 ─────────────────────────────────────────────────────
+
+  /// 結合可能なレイヤー種別。共通レイヤー・フォルダ・
+  /// タイムライン素材（画像/動画/ウォーターマーク）・テキストは結合不可。
+  static const _mergeableLayerTypes = {
+    LayerType.normal,
+    LayerType.autoFillLineart,
+    LayerType.autoFill,
+  };
+
+  /// 選択したレイヤー群を1枚の通常レイヤーへ結合する。
+  /// - 自動塗り用線画・自動塗りレイヤーが含まれる場合は結合後に通常レイヤーへ
+  ///   変換される（パーツID・更新マークは破棄）。
+  /// - ブレンドモード・不透明度・クリッピングは一番下（配列末尾側＝背面）の
+  ///   レイヤーの設定を引き継ぐ。
+  /// - タイル内容は選択レイヤーを表示順で合成した結果になる。
+  /// 2枚未満、または結合不可の種別が含まれる場合は何もしない。
+  Future<void> mergeLayers({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required List<String> layerIds,
+  }) async {
+    if (layerIds.length < 2) return;
+    final layers = layersOf(projectId, sceneId, frameIndex);
+    final indices = <int>[];
+    for (final id in layerIds) {
+      final idx = layers.indexWhere((l) => l.id == id);
+      if (idx < 0) return;
+      indices.add(idx);
+    }
+    if (indices.any((i) => !_mergeableLayerTypes.contains(layers[i].type))) {
+      return;
+    }
+
+    indices.sort();
+    final bottomIndex = indices.last;
+    final bottomLayer = layers[bottomIndex];
+    final selectedLayers = indices.map((i) => layers[i]).toList();
+
+    final tm = _tileManagers[projectId];
+    if (tm != null) {
+      final mergedImage = await LayerCompositor.composite(
+        tm,
+        selectedLayers,
+        (l) => frameLayerKey(sceneId, frameIndex, l.id),
+        tm.canvasWidth,
+        tm.canvasHeight,
+      );
+      final byteData = await mergedImage.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
+      mergedImage.dispose();
+      if (byteData != null) {
+        tm.replaceLayerPixels(
+          frameLayerKey(sceneId, frameIndex, bottomLayer.id),
+          byteData.buffer.asUint8List(),
+        );
+      }
+      for (final layer in selectedLayers) {
+        if (layer.id == bottomLayer.id) continue;
+        tm.removeLayer(frameLayerKey(sceneId, frameIndex, layer.id));
+      }
+    }
+
+    // 合成が非同期で完了するまでの間に他の変更が入っている可能性があるため、
+    // 反映直前に最新のレイヤーリストを取得し直す。
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
+    if (sceneIdx < 0) return;
+    final scene = scenes[sceneIdx];
+    if (frameIndex >= scene.frames.length) return;
+    final latestLayers = List<Layer>.from(scene.frames[frameIndex].layers);
+    final removeIds = selectedLayers
+        .map((l) => l.id)
+        .where((id) => id != bottomLayer.id)
+        .toSet();
+    latestLayers.removeWhere((l) => removeIds.contains(l.id));
+    final insertAt = latestLayers.indexWhere((l) => l.id == bottomLayer.id);
+    if (insertAt < 0) return;
+    latestLayers[insertAt] = bottomLayer.copyWith(
+      type: LayerType.normal,
+      partId: null,
+      needsAutofillUpdate: false,
+    );
+    _applyFrameUpdate(projectId, sceneIdx, frameIndex, latestLayers);
+  }
+
+  /// 通常レイヤーを共通レイヤーへ変換する（共通レイヤー化ダイアログ
+  /// 「現在レイヤーを共通化」）。既存のピクセルデータ・位置はそのまま、
+  /// 変換した時点のフレームを新しいホーム位置として登録する。
+  void convertLayerToCommon({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required Layer layer,
+    required LayerRangeMode rangeMode,
+    required int rangeStart,
+    required int rangeEnd,
+    String? rangeSceneId,
+  }) {
+    updateLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      layer: layer.copyWith(
+        type: LayerType.common,
+        rangeMode: rangeMode,
+        rangeStart: rangeStart,
+        rangeEnd: rangeEnd,
+        rangeSceneId: rangeSceneId,
+      ),
+    );
+    (_layerHomes[projectId] ??= {})[layer.id] = (
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+    );
+    notifyListeners();
+  }
+
+  /// 表示中の全レイヤーを1枚に統合し、新しい共通レイヤーとして追加する
+  /// （共通レイヤー化ダイアログ「表示中レイヤーを複製して全統合して
+  /// 共通化」）。元のレイヤーは変更しない。
+  Future<void> addFlattenedCommonLayer({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required LayerRangeMode rangeMode,
+    required int rangeStart,
+    required int rangeEnd,
+    String? rangeSceneId,
+  }) async {
+    final tm = _tileManagers[projectId];
+    if (tm == null) return;
+    final layers = layersOf(projectId, sceneId, frameIndex);
+    if (layers.isEmpty) return;
+    final flattened = await LayerCompositor.composite(
+      tm,
+      layers,
+      (l) => tileKeyFor(projectId, sceneId, frameIndex, l.id),
+      tm.canvasWidth,
+      tm.canvasHeight,
+    );
+    final byteData = await flattened.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
+    flattened.dispose();
+    if (byteData == null) return;
+
+    final visible = layers.where((l) => l.parentFolderId == null).length;
+    final created = addLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      type: LayerType.common,
+      name: '共通${visible + 1}',
+    );
+    tm.replaceLayerPixels(
+      frameLayerKey(sceneId, frameIndex, created.id),
+      byteData.buffer.asUint8List(),
+    );
+    updateLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      layer: created.copyWith(
+        rangeMode: rangeMode,
+        rangeStart: rangeStart,
+        rangeEnd: rangeEnd,
+        rangeSceneId: rangeSceneId,
+      ),
+    );
+  }
+
+  // ─── Project CRUD ─────────────────────────────────────────────────────
+
+  Future<Project> createProject({
+    required String name,
+    required int fps,
+    required int durationSeconds,
+    required int backgroundColor,
+    int exportWidth = 1920,
+    int exportHeight = 1080,
+    double drawingAreaScale = 1.0,
+    List<String>? enabledAutofillPresetIds,
+  }) async {
+    final projectId = _nextId('proj');
+    final project = Project(
+      id: projectId,
+      name: name,
+      fps: fps,
+      durationSeconds: durationSeconds,
+      backgroundColor: backgroundColor,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      totalWorkSeconds: 0,
+      exportWidth: exportWidth,
+      exportHeight: exportHeight,
+      drawingAreaScale: drawingAreaScale.clamp(1.0, 10.0),
+      enabledAutofillPresetIds: enabledAutofillPresetIds,
+    );
+    // 初期シーン・フレーム・レイヤーを生成（Scene0001/Frame0/Layer0001）
+    final initialLayer = Layer(
+      id: 'Layer0001',
+      name: 'レイヤー1',
+      type: LayerType.normal,
+    );
+    final initialFrame = Frame(index: 0, layers: [initialLayer]);
+    final totalFrames = fps * durationSeconds;
+    final frames = List.generate(
+      totalFrames,
+      (i) => i == 0 ? initialFrame : Frame(index: i, layers: [initialLayer]),
+    );
+    final scenes = [Scene(id: 'Scene0001', index: 0, frames: frames)];
+
+    // TileManager 初期化
+    final tileManager = TileManager(
+      canvasWidth: project.drawingWidth,
+      canvasHeight: project.drawingHeight,
+      compositeCacheMax: _tileCacheBudget,
+    );
+
+    // 編集へ進める前に、再起動後も復元できる初回保存を完了する。
+    try {
+      await NiaproSerializer.save(
+        project: project,
+        scenes: scenes,
+        tileManager: tileManager,
+      );
+    } catch (_) {
+      tileManager.dispose();
+      rethrow;
+    }
+
+    _projects.add(project);
+    _scenes[projectId] = scenes;
+    _tileManagers[projectId] = tileManager;
+    _layerIdCounters[projectId] = 2;
+
+    notifyListeners();
+    return project;
+  }
+
+  final Map<String, Future<void>> _projectSaves = {};
+  Future<void>? _folderOperations;
+  bool _folderDisposed = false;
+
+  Future<T> _queueProjectSave<T>(String id, Future<T> Function() write) {
+    final previous = _projectSaves[id];
+    final result = previous == null
+        ? Future<T>.sync(write)
+        : previous.then((_) => write());
+    final settled = result.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
+    );
+    _projectSaves[id] = settled;
+    return result.whenComplete(() {
+      if (identical(_projectSaves[id], settled)) _projectSaves.remove(id);
+    });
+  }
+
+  Future<T> _queueFolder<T>(Future<T> Function() write) {
+    if (_folderDisposed) {
+      return Future.error(StateError('Project folders disposed'));
+    }
+    final result = _folderOperations == null
+        ? Future<T>.sync(write)
+        : _folderOperations!.then((_) => write());
+    _folderOperations = result.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
+    );
+    return result;
+  }
+
+  Future<void> _queueTrash(String id, Future<void> Function() operation) =>
+      _queueFolder(
+        () => _queueProjectSave(id, () async {
+          try {
+            await operation();
+          } catch (error, stackTrace) {
+            AppErrorReporter.record(error, stackTrace);
+            rethrow;
+          }
+        }),
+      );
+
+  void _notifyFolders() {
+    if (!_folderDisposed) notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _folderDisposed = true;
+    _workTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Read the current model when the queued save starts. A background save
+  /// requested during a folder move must not overwrite its acknowledged result.
+  void _saveAsync(String projectId) {
+    saveProject(projectId).catchError((Object _, StackTrace _) {});
+  }
+
+  Future<void> saveProject(String projectId) =>
+      _queueProjectSave(projectId, () => _writeProjectFile(projectId));
+
+  Future<void> _writeProjectFile(String projectId) async {
+    final project = _projects.where((p) => p.id == projectId).firstOrNull;
+    final scenes = _scenes[projectId];
+    final tm = _tileManagers[projectId];
+    if (project == null || scenes == null || tm == null) return;
+    await NiaproSerializer.save(
+      project: project,
+      scenes: scenes,
+      tileManager: tm,
+    );
+  }
+
+  Future<void> _saveMembership(
+    String id,
+    String? folderId, {
+    bool shared = false,
+  }) => _queueProjectSave(id, () async {
+    final project = [
+      ..._projects,
+      ..._trash,
+    ].where((p) => p.id == id).firstOrNull;
+    if (project == null) return;
+    await NiaproSerializer.saveFolderMembership(
+      projectId: id,
+      folderId: folderId,
+      shared: shared,
+    );
+    // Merge only membership into the latest model; do not discard edits that
+    // arrived while I/O was pending, or resurrect a project moved to the trash.
+    for (final list in [_projects, _trash]) {
+      final i = list.indexWhere((p) => p.id == id);
+      if (i >= 0) {
+        list[i] = shared
+            ? list[i].copyWith(sharedFolderId: folderId)
+            : list[i].copyWith(folderId: folderId);
+      }
+    }
+  });
+
+  Future<void> deleteProject(String id) => _queueTrash(id, () async {
+    final idx = _projects.indexWhere((p) => p.id == id);
+    if (idx >= 0) {
+      final project = _projects[idx];
+      // Check inside both queues: a project may become a favorite while a
+      // previous save or Trash operation is still awaiting acknowledgement.
+      if (project.isFavorite) throw const FavoriteProjectDeleteException();
+      final next = {..._trashDeletedAt, id: DateTime.now()};
+      await _persistTrashState(next);
+      _projects.removeAt(idx);
+      _trash.add(project);
+      _scenes.remove(id);
+      _layerIdCounters.remove(id);
+      _layerHomes.remove(id);
+      _tileManagers.remove(id)?.dispose();
+      _trashDeletedAt
+        ..clear()
+        ..addAll(next);
+      _notifyFolders();
+    }
+  });
+
+  Future<void> restoreProject(String id) => _queueTrash(id, () async {
+    final idx = _trash.indexWhere((p) => p.id == id);
+    if (idx >= 0) {
+      final basePath = await NiaproSerializer.projectsBasePath();
+      ProjectTrashGuard.fileFor(basePath, id);
+      final file = File('$basePath/$id/$id.niapro');
+      late final NiaproData data;
+      try {
+        data = await NiaproSerializer.load(file.path);
+        if (data.project.id != id) {
+          throw const FormatException('Restored project ID does not match');
+        }
+      } catch (_) {
+        try {
+          // Preserve a named, retryable Trash row across restart even when the
+          // unreadable archive cannot supply its own display metadata.
+          await ProjectTrashGuard.write(
+            basePath,
+            _trash[idx],
+            _trashDeletedAt[id] ?? DateTime.now(),
+          );
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+        }
+        rethrow;
+      }
+      final project = data.project.copyWith(sizeBytes: await file.length());
+      final homes = buildLayerHomeIndex(data.scenes);
+      final counter = _maxLayerCounter(data.scenes);
+      final tm = TileManager(
+        canvasWidth: project.drawingWidth,
+        canvasHeight: project.drawingHeight,
+        compositeCacheMax: _tileCacheBudget,
+      );
+      var committed = false;
+      try {
+        tm.importAll(data.tileData);
+        // A readable archive makes a previous partial-cleanup record unnecessary.
+        // Remove it before changing preferences: a rejected write still leaves
+        // the complete archive and its old Trash membership intact.
+        await ProjectTrashGuard.remove(basePath, id);
+        final next = {..._trashDeletedAt}..remove(id);
+        await _persistTrashState(next);
+        _trash.removeAt(idx);
+        _projects.add(project);
+        _trashDeletedAt
+          ..clear()
+          ..addAll(next);
+        _scenes[id] = data.scenes;
+        _layerHomes[id] = homes;
+        _layerIdCounters[id] = counter;
+        _tileManagers.remove(id)?.dispose();
+        _tileManagers[id] = tm;
+        committed = true;
+        _notifyFolders();
+      } finally {
+        if (!committed) tm.dispose();
+      }
+    }
+  });
+
+  Future<void> permanentDelete(String id) => _queueTrash(id, () async {
+    final idx = _trash.indexWhere((p) => p.id == id);
+    if (idx >= 0) {
+      final project = _trash[idx];
+      // A refused metadata write must stop before touching any content. Keep the
+      // old Trash membership until filesystem deletion succeeds, so a failed
+      // recursive delete never needs a fallible preference rollback.
+      await _persistTrashState(_trashDeletedAt);
+      final basePath = await NiaproSerializer.projectsBasePath();
+      await ProjectTrashGuard.write(
+        basePath,
+        project,
+        _trashDeletedAt[id] ?? DateTime.now(),
+      );
+      final dir = Directory('$basePath/$id');
+      final type = await FileSystemEntity.type(dir.path, followLinks: false);
+      if (type == FileSystemEntityType.directory) {
+        await dir.delete(recursive: true);
+      } else if (type != FileSystemEntityType.notFound) {
+        throw FileSystemException('Project path is not a directory', dir.path);
+      }
+      _trash.removeAt(idx);
+      _trashDeletedAt.remove(id);
+      _scenes.remove(id);
+      _layerHomes.remove(id);
+      _layerIdCounters.remove(id);
+      _tileManagers.remove(id)?.dispose();
+      try {
+        await _persistTrashState(_trashDeletedAt);
+      } catch (error, stackTrace) {
+        // The requested content is already gone. A stale ID cannot resurrect a
+        // missing directory; init() prunes and retries this metadata cleanup.
+        AppErrorReporter.record(error, stackTrace);
+      }
+      try {
+        await ProjectTrashGuard.remove(basePath, id);
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+      }
+      _notifyFolders();
+    }
+  });
+
+  Future<void> renameProject(String id, String newName) async {
+    final idx = _projects.indexWhere((p) => p.id == id);
+    if (idx >= 0) {
+      _projects[idx] = _projects[idx].copyWith(name: newName);
+      _saveAsync(id);
+      notifyListeners();
+    }
+  }
+
+  /// プロジェクトの背景色を変更する（キャンバス設定メニューから）。
+  void updateProjectBackgroundColor(String projectId, int color) {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    _projects[idx] = _projects[idx].copyWith(backgroundColor: color);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
+  /// [useTargetFolder]がtrueの場合、複製先のフォルダを[targetFolderId]
+  /// （nullはルート直下）で明示的に上書きする。falseの場合（既定）は
+  /// 複製元と同じフォルダのまま複製する。
+  Future<void> duplicateProject(
+    String id, {
+    String? targetFolderId,
+    bool useTargetFolder = false,
+  }) async {
+    final idx = _projects.indexWhere((p) => p.id == id);
+    if (idx >= 0) {
+      final original = _projects[idx];
+      final newId = _nextId('proj');
+      final copy = original.copyWith(
+        id: newId,
+        name: '${original.name} (コピー)',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        folderId: useTargetFolder ? targetFolderId : original.folderId,
+      );
+      _projects.add(copy);
+
+      // シーンリストは複製先専用の新しいListにする（Scene/Frame/Layerはimmutableなため
+      // 中身の値オブジェクト自体は共有してよいが、外側のListを共有すると片方への
+      // 変更（scenes[i] = ...）がもう片方にも波及してしまうため独立させる）。
+      if (_scenes.containsKey(id)) {
+        _scenes[newId] = List<Scene>.from(_scenes[id]!);
+        _layerHomes[newId] = buildLayerHomeIndex(_scenes[newId]!);
+      }
+
+      // レイヤーIDカウンターも引き継がないと、複製後に新規追加したレイヤーのIDが
+      // 複製元から引き継いだ既存レイヤーIDと衝突する。
+      if (_layerIdCounters.containsKey(id)) {
+        _layerIdCounters[newId] = _layerIdCounters[id]!;
+      }
+
+      // 描画データ（タイル）も複製先IDへコピーする。TileManager.importAllは
+      // ピクセルバッファをUint8List.fromListで複製するため、複製元・複製先は
+      // 完全に独立したバッファになる。
+      final sourceTm = _tileManagers[id];
+      final newTm = TileManager(
+        canvasWidth: copy.drawingWidth,
+        canvasHeight: copy.drawingHeight,
+        compositeCacheMax: _tileCacheBudget,
+      );
+      if (sourceTm != null) {
+        newTm.importAll(sourceTm.exportAll());
+      }
+      _tileManagers[newId] = newTm;
+
+      // 複製結果をディスクへ保存する（保存しないと再起動後に消えてしまう）。
+      _saveAsync(newId);
+
+      notifyListeners();
+    }
+  }
+
+  /// キャンバスサイズを変更する（タイムライン三点メニュー「キャンバス
+  /// サイズ変更」）。[cropX]・[cropY]は現在の描画キャンバス座標系における
+  /// 切り出し開始位置、[newWidth]・[newHeight]は新しい描画キャンバス
+  /// サイズ（px）。全フレーム・全レイヤーのピクセルデータを、指定範囲を
+  /// 切り出す形で新しいサイズのTileManagerへ移し替える（範囲外にはみ出す
+  /// 部分は破棄し、元画像より広い範囲を指定した部分は透明で埋める）。
+  /// exportWidth・exportHeightは、描画領域倍率（drawingAreaScale）を
+  /// 保ったまま逆算して更新する。
+  /// [angleDegrees]が0以外の場合、各レイヤーの合成画像を先に回転（外接矩形
+  /// まで自動拡張、はみ出しなし）してから、[cropX]・[cropY]・[newWidth]・
+  /// [newHeight]による切り出し／余白追加を行う。回転後の座標系では(0,0)は
+  /// 回転後の外接矩形の左上を表す。
+  Future<void> resizeCanvas(
+    String projectId, {
+    required int newWidth,
+    required int newHeight,
+    required int cropX,
+    required int cropY,
+    double angleDegrees = 0,
+  }) async {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    final project = _projects[idx];
+    final sourceTm = _tileManagers[projectId];
+    if (sourceTm == null) return;
+
+    final newTm = TileManager(
+      canvasWidth: newWidth,
+      canvasHeight: newHeight,
+      compositeCacheMax: _tileCacheBudget,
+    );
+
+    final origWidth = sourceTm.canvasWidth;
+    final origHeight = sourceTm.canvasHeight;
+    for (final key in sourceTm.exportAll().keys.toList()) {
+      final image = await sourceTm.compositeLayerToImage(key);
+      final byteData = await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
+      image.dispose();
+      if (byteData == null) continue;
+      Uint8List oldBytes = byteData.buffer.asUint8List();
+      int oldWidth = origWidth;
+      int oldHeight = origHeight;
+      if (angleDegrees != 0) {
+        final rotated = img.copyRotate(
+          img.Image.fromBytes(
+            width: origWidth,
+            height: origHeight,
+            bytes: oldBytes.buffer,
+            numChannels: 4,
+            order: img.ChannelOrder.rgba,
+          ),
+          angle: angleDegrees,
+          interpolation: img.Interpolation.cubic,
+        );
+        oldWidth = rotated.width;
+        oldHeight = rotated.height;
+        oldBytes = rotated.getBytes(order: img.ChannelOrder.rgba);
+      }
+      final newBytes = Uint8List(newWidth * newHeight * 4);
+      for (int y = 0; y < newHeight; y++) {
+        final srcY = y + cropY;
+        if (srcY < 0 || srcY >= oldHeight) continue;
+        for (int x = 0; x < newWidth; x++) {
+          final srcX = x + cropX;
+          if (srcX < 0 || srcX >= oldWidth) continue;
+          final srcIdx = (srcY * oldWidth + srcX) * 4;
+          final dstIdx = (y * newWidth + x) * 4;
+          newBytes[dstIdx] = oldBytes[srcIdx];
+          newBytes[dstIdx + 1] = oldBytes[srcIdx + 1];
+          newBytes[dstIdx + 2] = oldBytes[srcIdx + 2];
+          newBytes[dstIdx + 3] = oldBytes[srcIdx + 3];
+        }
+      }
+      newTm.replaceLayerPixels(key, newBytes);
+    }
+
+    _tileManagers[projectId] = newTm;
+    final scale = project.drawingAreaScale <= 0
+        ? 1.0
+        : project.drawingAreaScale;
+    final newExportWidth = (newWidth / scale).round().clamp(64, 1 << 30);
+    final newExportHeight = (newHeight / scale).round().clamp(64, 1 << 30);
+    _projects[idx] = project.copyWith(
+      exportWidth: newExportWidth,
+      exportHeight: newExportHeight,
+    );
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
+  Future<void> toggleFavorite(String id) => _queueProjectSave(id, () async {
+    if (_folderDisposed) return;
+    final idx = _projects.indexWhere((p) => p.id == id);
+    if (idx >= 0) {
+      _projects[idx] = _projects[idx].copyWith(
+        isFavorite: !_projects[idx].isFavorite,
+      );
+      _notifyFolders();
+      // A favorite requested during an acknowledged Trash write must wait for
+      // that write rather than display a change that its completion discards.
+      // The file write shares this queue without enqueuing itself recursively.
+      try {
+        await _writeProjectFile(id);
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+      }
+    }
+  });
+
+  /// このプロジェクトで使用する自動塗りプリセットを設定する。
+  /// プロジェクトごとに使うプリセットだけを選べるようにする。
+  /// [ids]がnullの場合は「すべて使用する」に戻す。
+  Future<void> setEnabledAutofillPresetIds(
+    String projectId,
+    List<String>? ids,
+  ) async {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx >= 0) {
+      _projects[idx] = _projects[idx].copyWith(enabledAutofillPresetIds: ids);
+      _saveAsync(projectId);
+      notifyListeners();
+    }
+  }
+
+  Future<void> moveToFolder(String projectId, String? folderId) =>
+      _queueFolder(() async {
+        if (folderId != null && !_folders.any((f) => f.id == folderId)) {
+          throw const FolderSaveException(partiallySaved: false);
+        }
+        try {
+          await _saveMembership(projectId, folderId);
+        } catch (error) {
+          throw FolderSaveException(partiallySaved: false, cause: error);
+        }
+        _notifyFolders();
+      });
+
+  /// プロジェクトのタグ一覧を置き換える（詳細情報画面のタグ機能）。
+  Future<void> setProjectTags(String projectId, List<String> tags) async {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx >= 0) {
+      _projects[idx] = _projects[idx].copyWith(tags: tags);
+      _saveAsync(projectId);
+      notifyListeners();
+    }
+  }
+
+  /// プロジェクト一覧カード表示用のサムネイルを生成し、Project.thumbnailPathへ反映する
+  /// （先頭シーン・先頭フレームを縮小合成してPNG化する。セーブノードの
+  /// サムネイル生成（save_tree_screen.dart）と同じ方式）。
+  /// 生成できない場合（シーン・フレームが存在しない等）は何もしない。
+  Future<void> generateAndSaveThumbnail(String projectId) async {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    final scenes = _scenes[projectId];
+    final tm = _tileManagers[projectId];
+    if (scenes == null || scenes.isEmpty || tm == null) return;
+    final scene = scenes.first;
+    if (scene.frames.isEmpty) return;
+    final frame = scene.frames.first;
+    final w = tm.canvasWidth;
+    final h = tm.canvasHeight;
+    if (w <= 0 || h <= 0) return;
+
+    const thumbMax = 200;
+    final scale = thumbMax / math.max(w, h);
+    final tw = (w * scale).round().clamp(1, thumbMax);
+    final th = (h * scale).round().clamp(1, thumbMax);
+
+    final fullImage = await LayerCompositor.composite(
+      tm,
+      layersOf(projectId, scene.id, frame.index),
+      (l) => tileKeyFor(projectId, scene.id, frame.index, l.id),
+      w,
+      h,
+    );
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    canvas.drawImageRect(
+      fullImage,
+      ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+      ui.Rect.fromLTWH(0, 0, tw.toDouble(), th.toDouble()),
+      ui.Paint(),
+    );
+    fullImage.dispose();
+    final picture = recorder.endRecording();
+    final thumbImage = await picture.toImage(tw, th);
+    picture.dispose();
+    final byteData = await thumbImage.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
+    thumbImage.dispose();
+    final pngBytes = byteData?.buffer.asUint8List();
+    if (pngBytes == null) return;
+
+    final path = await NiaproSerializer.saveProjectThumbnail(
+      projectId,
+      pngBytes,
+    );
+    final curIdx = _projects.indexWhere((p) => p.id == projectId);
+    if (curIdx < 0) return;
+    _projects[curIdx] = _projects[curIdx].copyWith(thumbnailPath: path);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
+  /// [parentFolderId]を指定すると、そのフォルダの子フォルダとして作成する
+  /// （「フォルダは複数階層に対応」）。nullはルート直下。
+  Future<void> _commitFolders(
+    List<ProjectFolder> next, {
+    bool shared = false,
+  }) async {
+    await saveFolderPreference(
+      shared ? _sharedFoldersPrefsKey : _foldersPrefsKey,
+      jsonEncode(next.map((f) => f.toJson()).toList()),
+    );
+    final target = shared ? _sharedFolders : _folders;
+    target
+      ..clear()
+      ..addAll(next);
+    _notifyFolders();
+  }
+
+  Future<ProjectFolder> createFolder(String name, {String? parentFolderId}) =>
+      _queueFolder(() async {
+        if (parentFolderId != null &&
+            !_folders.any((f) => f.id == parentFolderId)) {
+          throw const FolderSaveException(partiallySaved: false);
+        }
+        final folder = ProjectFolder(
+          id: _nextId('folder'),
+          name: name,
+          parentFolderId: parentFolderId,
+        );
+        await _commitFolders([..._folders, folder]);
+        return folder;
+      });
+
+  Future<void> editFolder(
+    String id, {
+    String? name,
+    Object? color = _folderSentinel,
+  }) => _queueFolder(() async {
+    final i = _folders.indexWhere((f) => f.id == id);
+    if (i < 0) return;
+    final next = [..._folders];
+    next[i] = next[i].copyWith(name: name, color: color);
+    await _commitFolders(next);
+  });
+
+  Future<void> renameFolder(String folderId, String name) =>
+      editFolder(folderId, name: name);
+  Future<void> setFolderColor(String folderId, int? color) =>
+      editFolder(folderId, color: color);
+
+  Future<void> toggleFolderFavorite(String folderId) => _queueFolder(() async {
+    final i = _folders.indexWhere((f) => f.id == folderId);
+    if (i < 0) return;
+    final next = [..._folders];
+    next[i] = next[i].copyWith(isFavorite: !next[i].isFavorite);
+    await _commitFolders(next);
+  });
+
+  Future<void> moveFolderTo(String folderId, String? newParentId) =>
+      _queueFolder(() async {
+        if (folderId == newParentId ||
+            (newParentId != null &&
+                _isDescendantFolder(newParentId, folderId))) {
+          return;
+        }
+        if (newParentId != null && !_folders.any((f) => f.id == newParentId)) {
+          throw const FolderSaveException(partiallySaved: false);
+        }
+        final i = _folders.indexWhere((f) => f.id == folderId);
+        if (i < 0) return;
+        final next = [..._folders];
+        next[i] = next[i].copyWith(parentFolderId: newParentId);
+        await _commitFolders(next);
+      });
+
+  /// [candidateId]が[ancestorId]の子孫フォルダかどうかを判定する。
+  bool isFolderDescendantOf(String candidateId, String? ancestorId) =>
+      ancestorId != null && _isDescendantFolder(candidateId, ancestorId);
+
+  bool _isDescendantFolder(String candidateId, String ancestorId) {
+    String? current = candidateId;
+    final visited = <String>{};
+    while (current != null && visited.add(current)) {
+      if (current == ancestorId) return true;
+      current = _folders
+          .where((f) => f.id == current)
+          .firstOrNull
+          ?.parentFolderId;
+    }
+    return false;
+  }
+
+  /// フォルダ削除時、直下のプロジェクト・子フォルダはルート（トップレベル）へ戻す
+  /// （「フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを
+  /// 表示する」。確認ダイアログ自体はUI側で表示し、本メソッドは確定後の処理）。
+  Future<void> deleteFolder(String folderId) =>
+      _deleteFolder(folderId, shared: false);
+
+  Future<void> _deleteFolder(
+    String folderId, {
+    required bool shared,
+  }) => _queueFolder(() async {
+    final folders = shared ? _sharedFolders : _folders;
+    if (!folders.any((f) => f.id == folderId)) return;
+    var moved = 0;
+    try {
+      final contents = [..._projects, ..._trash]
+          .where(
+            (p) => shared
+                ? p.isSharedImport && p.sharedFolderId == folderId
+                : p.folderId == folderId,
+          )
+          .toList();
+      // Keep the folder until every referenced project file acknowledges root.
+      // On partial failure the already moved projects remain safely at root;
+      // retry resumes the remaining contents, without rolling back drawings.
+      for (final p in contents) {
+        await _saveMembership(p.id, null, shared: shared);
+        moved++;
+      }
+      final next = folders
+          .where((f) => f.id != folderId)
+          .map(
+            (f) => !shared && f.parentFolderId == folderId
+                ? f.copyWith(parentFolderId: null)
+                : f,
+          )
+          .toList();
+      await _commitFolders(next, shared: shared);
+    } catch (error) {
+      if (moved > 0) _notifyFolders();
+      throw FolderSaveException(partiallySaved: moved > 0, cause: error);
+    }
+  });
+
+  // ─── 共有タブ用フォルダ（ホーム画面「共有」タブへのフォルダ新規追加機能） ──
+  // プロジェクト一覧タブのフォルダ（_folders/folderId）とは独立した、共有
+  // タブ専用の階層（sharedFolderId）。ネストはサポートしない（常にルート
+  // 直下の1階層のみ）——共有タブは一覧の分類が主目的であり、複数階層まで
+  // 必要になる想定が薄いため、UIを簡潔に保つ設計判断。
+
+  final List<ProjectFolder> _sharedFolders = [];
+  List<ProjectFolder> get sharedFolders => List.unmodifiable(_sharedFolders);
+
+  Future<ProjectFolder> createSharedFolder(String name) =>
+      _queueFolder(() async {
+        final folder = ProjectFolder(id: _nextId('shared_folder'), name: name);
+        await _commitFolders([..._sharedFolders, folder], shared: true);
+        return folder;
+      });
+
+  Future<void> renameSharedFolder(String folderId, String name) =>
+      _queueFolder(() async {
+        final i = _sharedFolders.indexWhere((f) => f.id == folderId);
+        if (i < 0) return;
+        final next = [..._sharedFolders];
+        next[i] = next[i].copyWith(name: name);
+        await _commitFolders(next, shared: true);
+      });
+
+  Future<void> deleteSharedFolder(String folderId) =>
+      _deleteFolder(folderId, shared: true);
+
+  Future<void> moveToSharedFolder(String projectId, String? folderId) =>
+      _queueFolder(() async {
+        if (!_projects.any((p) => p.id == projectId && p.isSharedImport)) {
+          return;
+        }
+        if (folderId != null && !_sharedFolders.any((f) => f.id == folderId)) {
+          throw const FolderSaveException(partiallySaved: false);
+        }
+        try {
+          await _saveMembership(projectId, folderId, shared: true);
+        } catch (error) {
+          throw FolderSaveException(partiallySaved: false, cause: error);
+        }
+        _notifyFolders();
+      });
+
+  static const _sharedFoldersPrefsKey = 'shared_folders';
+
+  Future<void> _loadSharedFolders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.readString(_sharedFoldersPrefsKey);
+      if (raw == null) return;
+      final list = jsonDecode(raw) as List<dynamic>;
+      _sharedFolders
+        ..clear()
+        ..addAll(
+          list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)),
+        );
+    } catch (_) {
+      // 読み込み失敗時はフォルダなしとして続行
+    }
+  }
+
+  // ─── フォルダの永続化 ─────────────────────────────────────────────────
+  // 従来は_foldersが純粋なメモリ上のリストのみで管理されており、アプリを
+  // 再起動するとフォルダ（名前・色）がすべて消え、フォルダに割り当てていた
+  // プロジェクトも見た目上「フォルダなし」になってしまうバグがあった。
+  // SharedPreferencesへJSON形式で保存することで解消する。
+
+  static const _foldersPrefsKey = 'project_folders';
+
+  Future<void> _loadFolders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.readString(_foldersPrefsKey);
+      if (raw == null) return;
+      final list = jsonDecode(raw) as List<dynamic>;
+      _folders
+        ..clear()
+        ..addAll(
+          list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)),
+        );
+    } catch (_) {
+      // 読み込み失敗時はフォルダなしとして続行
+    }
+  }
+}
+
+/// Undo for [ProjectService.replaceLayerPixels]: the replaced tiles and,
+/// when they changed with them, the layer's own settings.
+class _LayerPixelsUndoAction extends UndoAction {
+  _LayerPixelsUndoAction({
+    required this.projects,
+    required this.projectId,
+    required this.sceneId,
+    required this.frameIndex,
+    required this.layerKey,
+    required this.before,
+    required this.after,
+    this.layerBefore,
+    this.layerAfter,
+  });
+
+  final ProjectService projects;
+  final String projectId;
+  final String sceneId;
+  final int frameIndex;
+  final String layerKey;
+  final Map<String, Uint8List?> before;
+  final Map<String, Uint8List?> after;
+  final Layer? layerBefore;
+  final Layer? layerAfter;
+
+  void _restore(Map<String, Uint8List?> tiles, Layer? layer) {
+    if (tiles.isNotEmpty) {
+      projects.tileManagerOf(projectId).applyTileSnapshot(layerKey, tiles);
+    }
+    if (layer != null) {
+      projects.updateLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layer: layer,
+      );
+    }
+  }
+
+  @override
+  void undo() => _restore(before, layerBefore);
+
+  @override
+  void redo() => _restore(after, layerAfter);
+
+  @override
+  String get description => 'Filter on $layerKey';
+}

@@ -1,0 +1,86 @@
+# Read-only authentication preflight for NIARIM backend deployments.
+# This workflow NEVER runs cdk deploy or modifies AWS resources.
+# Push runs only when this workflow file itself is changed; subsequent checks
+# can be started manually from Actions > Backend AWS OIDC Preflight.
+name: Backend AWS OIDC Preflight
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/backend-aws-preflight.yml"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  preflight:
+    name: Verify GitHub OIDC and CDK bootstrap roles
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Assume NIARIM GitHub deploy role with OIDC
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: niarim-github-preflight
+          aws-region: ap-northeast-1
+
+      - name: Verify account, role, and bootstrap version (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          account="$(aws sts get-caller-identity --query Account --output text)"
+          test "$account" = "368601349794"
+          caller="$(aws sts get-caller-identity --query Arn --output text)"
+          case "$caller" in
+            arn:aws:sts::368601349794:assumed-role/NIARIM-GitHub-Deploy-dev/*)
+              echo "OIDC assumed the expected restricted deployment role."
+              ;;
+            *)
+              echo "::error::Unexpected AWS role; stopping preflight."
+              exit 1
+              ;;
+          esac
+          aws ssm get-parameter \
+            --name /cdk-bootstrap/hnb659fds/version \
+            --query Parameter.Value --output text >/dev/null
+          echo "CDK bootstrap version parameter is readable."
+
+      - name: Verify CDK bootstrap roles can be assumed (no deployment)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for purpose in deploy file-publishing image-publishing lookup; do
+            arn="arn:aws:iam::368601349794:role/cdk-hnb659fds-${purpose}-role-368601349794-ap-northeast-1"
+            aws sts assume-role \
+              --role-arn "$arn" \
+              --role-session-name niarim-preflight-check \
+              --query 'AssumedRoleUser.Arn' \
+              --output text >/dev/null
+            echo "CDK ${purpose} role: OK"
+          done
+          echo "AWS OIDC and all 4 CDK bootstrap role trust checks passed."
+
+      - name: Checkout for CDK template-only diff
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install locked backend dependencies
+        working-directory: backend
+        run: npm ci
+      - name: Diff against real AWS (template only; no change set or deploy)
+        working-directory: backend
+        run: |
+          npx cdk diff NiarimBackendStack \
+            --method=template \
+            -c googleClientId=ci-placeholder \
+            -c youtubeApiKey=ci-placeholder

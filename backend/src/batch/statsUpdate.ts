@@ -1,0 +1,355 @@
+import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
+import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
+import {
+  GetCommand,
+  PutCommand,
+  ScanCommand,
+  UpdateCommand,
+} from "@aws-sdk/lib-dynamodb";
+import { ddb, tableName, Keys } from "../lib/dynamo";
+import { batchGetVideoStats, type YoutubeVideoStats } from "../lib/youtube";
+import {
+  computePeriodScore,
+  computeRankingScore,
+  currentWindowId,
+  insertIntoTopList,
+  rollStatsWindows,
+  DELTA_RANKING_PERIODS,
+  RANKING_TOP_LIMIT,
+  type DeltaRankingPeriod,
+  type RankingSnapshotEntry,
+} from "../lib/ranking";
+import type { RankingSnapshotItem, WorkItem } from "../lib/types";
+import { TABLE_ITEM_TYPE } from "../lib/types";
+
+/**
+ * 統計更新バッチ（8.1節）。EventBridge Schedulerが更新サイクルの開始
+ * のみをトリガーし、Lambdaは1ページ分（DynamoDB Scanの1回のレスポンス
+ * 分）を処理したら`LastEvaluatedKey`をペイロードに載せて自分自身を
+ * 非同期呼び出し（`InvocationType=Event`）し、そのまま終了する。
+ * Step Functionsは使わず、Lambda + DynamoDB + EventBridgeのみで完結
+ * させる設計（8.1節）。
+ *
+ * 1ページの件数（PAGE_SIZE）は、DynamoDBの無料枠（25 RCU）を統計更新
+ * だけで使い切らないよう15〜20 RCU程度に抑える方針（8.1節）に基づき
+ * 小さめに設定している。作品1件あたりの読み取りコストは項目サイズ
+ * （最大2KB、5章）次第で変わるため、実運用で計測のうえ調整すること。
+ */
+const PAGE_SIZE = 25;
+
+/**
+ * 無限ループ事故を防ぐガード（8.1節）。50万作品 ÷ PAGE_SIZE(25) =
+ * 20,000ページ相当を上限の目安とし、余裕を持たせて設定している。
+ */
+const MAX_PAGES = 25_000;
+const MAX_VISIBILITY_CONFLICT_RETRIES = 2;
+
+/** 期間別ランキングの集計途中経過（ページ間で持ち回る）。 */
+type TopLists = Record<DeltaRankingPeriod, RankingSnapshotEntry[]>;
+
+interface BatchPayload {
+  lastEvaluatedKey?: Record<string, unknown>;
+  pageIndex?: number;
+  /**
+   * 8.2節：期間別ランキングの途中集計。ページごとの自己再帰呼び出しに
+   * 載せて持ち回る。4期間×50件×{workId(11文字), score}なのでJSONでも
+   * 10KB未満に収まり、Lambdaの非同期ペイロード上限（256KB）に対して
+   * 十分小さい。
+   */
+  topLists?: TopLists;
+  /** Number of public NIARIM works counted by the EXISTING batch scan. */
+  publishedWorkCount?: number;
+}
+
+function emptyTopLists(): TopLists {
+  return { yearly: [], monthly: [], weekly: [], daily: [] };
+}
+
+export async function handler(event: BatchPayload = {}): Promise<void> {
+  const pageIndex = event.pageIndex ?? 0;
+  if (pageIndex >= MAX_PAGES) {
+    console.error(
+      `統計更新バッチが最大反復回数（${MAX_PAGES}）に達したため中断します。`,
+    );
+    return;
+  }
+
+  const apiKey = requireEnv("YOUTUBE_API_KEY");
+
+  const scanResult = await ddb.send(
+    new ScanCommand({
+      TableName: tableName(),
+      FilterExpression: "itemType = :type",
+      ExpressionAttributeValues: { ":type": TABLE_ITEM_TYPE.Work },
+      Limit: PAGE_SIZE,
+      ExclusiveStartKey: event.lastEvaluatedKey as never,
+    }),
+  );
+
+  const works = (scanResult.Items ?? []) as WorkItem[];
+  const topLists = event.topLists ?? emptyTopLists();
+  await processPage(works, apiKey, topLists);
+  const publishedWorkCount = (event.publishedWorkCount ?? 0) +
+    works.filter((w) => w.isNiarimPublished &&
+      w.youtubePrivacyStatus !== "private" &&
+      w.youtubePrivacyStatus !== "deleted").length;
+
+  if (scanResult.LastEvaluatedKey) {
+    await invokeSelfAsync({
+      lastEvaluatedKey: scanResult.LastEvaluatedKey,
+      pageIndex: pageIndex + 1,
+      topLists,
+      publishedWorkCount,
+    });
+    return;
+  }
+
+  await writeRankingSnapshots(topLists);
+
+  await ddb.send(
+    new UpdateCommand({
+      TableName: tableName(),
+      Key: Keys.batchState(),
+      UpdateExpression:
+        "SET itemType = :type, lastCompletedAt = :now, inProgress = :false, publishedWorkCount = :published",
+      ExpressionAttributeValues: {
+        ":type": "BATCH_STATE",
+        ":now": new Date().toISOString(),
+        ":false": false,
+        ":published": publishedWorkCount,
+      },
+    }),
+  );
+}
+
+async function processPage(
+  works: WorkItem[],
+  apiKey: string,
+  topLists: TopLists,
+): Promise<void> {
+  if (works.length === 0) return;
+
+  const chunks = chunk(works, 50);
+  for (const workChunk of chunks) {
+    const stats = await batchGetVideoStats(
+      workChunk.map((w) => w.youtubeVideoId),
+      apiKey,
+    );
+    await Promise.all(
+      workChunk.map((work) =>
+        updateWorkStats(work, stats.get(work.youtubeVideoId), topLists),
+      ),
+    );
+  }
+}
+
+async function updateWorkStats(
+  work: WorkItem,
+  stats: YoutubeVideoStats | undefined,
+  topLists: TopLists,
+  conflictAttempt = 0,
+): Promise<void> {
+  if (!stats) return;
+  const nowDate = new Date();
+  const now = nowDate.toISOString();
+
+  const youtubePrivacyStatus = stats.privacyStatus === "unknown"
+    ? work.youtubePrivacyStatus
+    : stats.privacyStatus;
+  const viewCount = stats?.viewCount ?? work.viewCount;
+  const likeCount = stats?.likeCount ?? work.likeCount;
+  const commentCount = stats?.commentCount ?? work.commentCount;
+  const rankingScore = computeRankingScore({
+    viewCount,
+    likeCount,
+    commentCount,
+  });
+
+  const forcedHidden = youtubePrivacyStatus === "private" ||
+    youtubePrivacyStatus === "deleted";
+  const isVisible = work.isNiarimPublished && !forcedHidden;
+  const rankingVisible = isVisible && youtubePrivacyStatus === "public";
+
+  const setParts = [
+    "viewCount = :view",
+    "lastFetchedAt = :now",
+    "youtubePrivacyStatus = :status",
+  ];
+  const values: Record<string, unknown> = {
+    ":view": viewCount,
+    ":now": now,
+    ":status": youtubePrivacyStatus,
+    ":expectedType": TABLE_ITEM_TYPE.Work,
+    ":expectedPublished": work.isNiarimPublished,
+  };
+  const removes: string[] = [];
+  const conditions = [
+    "itemType = :expectedType",
+    "isNiarimPublished = :expectedPublished",
+  ];
+
+  const current = { viewCount, likeCount, commentCount };
+  // 1日1回の集計では、前回取得値を期間開始の基準として使う。
+  // 新しい日に現在値を基準にすると daily の増加分が常に0になるため。
+  const previous = {
+    viewCount: work.viewCount,
+    likeCount: work.likeCount,
+    commentCount: work.commentCount,
+  };
+  const statsWindows = rollStatsWindows(work.statsWindows, previous, nowDate);
+  setParts.push("statsWindows = :windows");
+  values[":windows"] = statsWindows;
+
+  if (isVisible) {
+    if (rankingVisible) {
+      setParts.push(
+        "rankingScore = :score",
+        "gsi1pk = :rankPk",
+        "gsi1sk = :score",
+      );
+      values[":score"] = rankingScore;
+      values[":rankPk"] = "RANKING#ALL";
+    } else {
+      // 限定公開の作品はNIARIMに残すが、YouTube再生数順位からは除く。
+      removes.push("rankingScore", "gsi1pk", "gsi1sk");
+    }
+
+    const hasPublicIndexes =
+      work.gsi2pk != null &&
+      work.gsi2sk != null &&
+      work.gsi3pk != null &&
+      work.gsi3sk != null &&
+      work.gsi4pk != null &&
+      work.gsi4sk != null;
+    if (!hasPublicIndexes) {
+      setParts.push(
+        "gsi2pk = :bmPk",
+        "gsi2sk = :bm",
+        "gsi3pk = :authorPk",
+        "gsi3sk = :postedAt",
+        "gsi4pk = :latestPk",
+        "gsi4sk = :postedAt",
+      );
+      values[":bmPk"] = "BOOKMARK_RANKING";
+      values[":bm"] = work.bookmarkCount;
+      values[":authorPk"] = `AUTHOR#${work.authorId}`;
+      values[":postedAt"] = work.postedAt;
+      values[":latestPk"] = "LATEST";
+      values[":expectedBookmarkCount"] = work.bookmarkCount;
+      conditions.push("bookmarkCount = :expectedBookmarkCount");
+    }
+  } else {
+    removes.push(
+      "rankingScore",
+      "gsi1pk",
+      "gsi1sk",
+      "gsi2pk",
+      "gsi2sk",
+      "gsi3pk",
+      "gsi3sk",
+      "gsi4pk",
+      "gsi4sk",
+    );
+  }
+
+  const updateExpression =
+    `SET ${setParts.join(", ")}` +
+    (removes.length ? ` REMOVE ${removes.join(", ")}` : "");
+
+  try {
+    await ddb.send(
+      new UpdateCommand({
+        TableName: tableName(),
+        Key: Keys.work(work.workId),
+        UpdateExpression: updateExpression,
+        ConditionExpression: conditions.join(" AND "),
+        ExpressionAttributeValues: values,
+      }),
+    );
+  } catch (error) {
+    if (
+      error instanceof ConditionalCheckFailedException &&
+      conflictAttempt < MAX_VISIBILITY_CONFLICT_RETRIES
+    ) {
+      const latestResult = await ddb.send(
+        new GetCommand({
+          TableName: tableName(),
+          Key: Keys.work(work.workId),
+          ConsistentRead: true,
+        }),
+      );
+      const latestRaw = latestResult.Item;
+      // Scan後に作品が削除され墓標へ置換された場合は、墓標をWorkItemとして
+      // 再試行しない。統計更新から完全に除外し、次サイクルのScanにも載らない。
+      if (latestRaw?.itemType === TABLE_ITEM_TYPE.Work) {
+        await updateWorkStats(
+          latestRaw as WorkItem,
+          stats,
+          topLists,
+          conflictAttempt + 1,
+        );
+      }
+      return;
+    }
+    if (error instanceof ConditionalCheckFailedException) {
+      console.warn(
+        `作品${work.workId}の統計更新を公開設定競合のためスキップしました`,
+      );
+      return;
+    }
+    throw error;
+  }
+
+  if (rankingVisible) {
+    for (const period of DELTA_RANKING_PERIODS) {
+      const score = computePeriodScore(current, statsWindows[period]);
+      topLists[period] = insertIntoTopList(
+        topLists[period],
+        { workId: work.workId, score },
+        RANKING_TOP_LIMIT,
+      );
+    }
+  }
+}
+
+async function writeRankingSnapshots(topLists: TopLists): Promise<void> {
+  const now = new Date();
+  await Promise.all(
+    DELTA_RANKING_PERIODS.map((period) => {
+      const item: RankingSnapshotItem = {
+        itemType: TABLE_ITEM_TYPE.RankingSnapshot,
+        ...Keys.rankingSnapshot(period),
+        period,
+        windowId: currentWindowId(period, now),
+        entries: topLists[period],
+        computedAt: now.toISOString(),
+      };
+      return ddb.send(new PutCommand({ TableName: tableName(), Item: item }));
+    }),
+  );
+}
+
+async function invokeSelfAsync(payload: BatchPayload): Promise<void> {
+  const functionName = requireEnv("SELF_FUNCTION_NAME");
+  const client = new LambdaClient({});
+  await client.send(
+    new InvokeCommand({
+      FunctionName: functionName,
+      InvocationType: "Event",
+      Payload: Buffer.from(JSON.stringify(payload)),
+    }),
+  );
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < items.length; i += size)
+    result.push(items.slice(i, i + size));
+  return result;
+}
+
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name}環境変数が設定されていません`);
+  return value;
+}

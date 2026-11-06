@@ -1,0 +1,289 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:niarim/engine/niatra_serializer.dart';
+import 'package:niarim/services/autofill_preset_service.dart';
+import 'package:niarim/services/brush_service.dart';
+import 'package:niarim/services/palette_service.dart';
+import 'package:niarim/services/pixel_art_palette_service.dart';
+import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/stamp_service.dart';
+import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/services/tone_service.dart';
+
+/// NiatraSerializer（引き継ぎ.niatra）の単体テスト。
+/// Task#155：パレット（PaletteService）・ドット絵専用パレット
+/// （PixelArtPaletteService）が「パレット」カテゴリとして引き継がれる
+/// ことを確認する。
+Future<
+  ({
+    SettingsService settings,
+    BrushService brush,
+    ToneService tone,
+    StampService stamp,
+    AutofillPresetService autofillPresets,
+    ThemeService theme,
+    PaletteService palette,
+    PixelArtPaletteService pixelArtPalette,
+  })
+>
+_buildServices() async {
+  final settings = SettingsService();
+  final brush = BrushService();
+  final tone = ToneService();
+  final stamp = StampService();
+  final autofillPresets = AutofillPresetService();
+  final theme = ThemeService();
+  final palette = PaletteService();
+  final pixelArtPalette = PixelArtPaletteService();
+  await settings.init();
+  await brush.init();
+  await tone.init();
+  await stamp.init();
+  await autofillPresets.init();
+  await theme.init();
+  await palette.init();
+  await pixelArtPalette.init();
+  return (
+    settings: settings,
+    brush: brush,
+    tone: tone,
+    stamp: stamp,
+    autofillPresets: autofillPresets,
+    theme: theme,
+    palette: palette,
+    pixelArtPalette: pixelArtPalette,
+  );
+}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
+  test('UIテーマの本文・ボタン・メニュー・選択文字色を.niatraで引き継ぐ', () async {
+    final source = await _buildServices();
+    const body = Color(0xFF121212);
+    const button = Color(0xFFFEFFFF);
+    const menu = Color(0xFF123477);
+    const selected = Color(0xFFEEFF11);
+
+    source.theme.previewCurrent(
+      source.theme.current.copyWith(
+        textColor: body,
+        buttonTextColor: button,
+        menuTextColor: menu,
+        selectionTextColor: selected,
+      ),
+    );
+    final bytes = await NiatraSerializer.export(
+      selectedItems: const {'UIテーマ': true},
+      settings: source.settings,
+      brush: source.brush,
+      tone: source.tone,
+      stamp: source.stamp,
+      autofillPresets: source.autofillPresets,
+      theme: source.theme,
+      palette: source.palette,
+      pixelArtPalette: source.pixelArtPalette,
+    );
+    final data = NiatraSerializer.loadFromBytes(bytes);
+    final exported = data.raw['currentTheme'] as Map<String, dynamic>;
+    expect(exported['textColor'], body.toARGB32());
+    expect(exported['buttonTextColor'], button.toARGB32());
+    expect(exported['menuTextColor'], menu.toARGB32());
+    expect(exported['selectionTextColor'], selected.toARGB32());
+    final allPresets = data.raw['themePresets'] as List<dynamic>;
+    expect(allPresets, hasLength(28));
+    for (final preset in allPresets) {
+      expect((preset as Map<String, dynamic>)['buttonTextColor'], isA<int>());
+      expect(preset['menuTextColor'], isA<int>());
+      expect(preset['selectionTextColor'], isA<int>());
+    }
+
+    SharedPreferences.setMockInitialValues({});
+    final destination = await _buildServices();
+    NiatraSerializer.applyTo(
+      data,
+      settings: destination.settings,
+      brush: destination.brush,
+      tone: destination.tone,
+      stamp: destination.stamp,
+      autofillPresets: destination.autofillPresets,
+      theme: destination.theme,
+      palette: destination.palette,
+      pixelArtPalette: destination.pixelArtPalette,
+    );
+    expect(destination.theme.current.textColor, body);
+    expect(destination.theme.current.buttonTextColor, button);
+    expect(destination.theme.current.menuTextColor, menu);
+    expect(destination.theme.current.selectionTextColor, selected);
+    expect(destination.theme.themeData.colorScheme.onPrimary, button);
+    expect(destination.theme.themeData.appBarTheme.foregroundColor, menu);
+  });
+
+  test('「パレット」カテゴリでカラーパレット・ドット絵専用パレットの両方が引き継がれる（Task#155）', () async {
+    final src = await _buildServices();
+    await src.palette.createPalette('引き継ぎ用パレット');
+    final srcPalette = src.palette.activePalette!;
+    await src.palette.addColorToPalette(srcPalette.id, 0xFF112233);
+    await src.pixelArtPalette.addPalette('引き継ぎ用ドット絵パレット', [
+      0xFF000000,
+      0xFFFFFFFF,
+    ]);
+
+    final bytes = await NiatraSerializer.export(
+      selectedItems: const {'パレット': true},
+      settings: src.settings,
+      brush: src.brush,
+      tone: src.tone,
+      stamp: src.stamp,
+      autofillPresets: src.autofillPresets,
+      theme: src.theme,
+      palette: src.palette,
+      pixelArtPalette: src.pixelArtPalette,
+    );
+    final data = NiatraSerializer.loadFromBytes(bytes);
+
+    // dstは別端末を想定するため、srcが書き込んだSharedPreferencesの内容が
+    // 混ざらないよう、ここで一度ストレージをリセットしてから作り直す
+    // （実機では別々の永続化領域だが、SharedPreferences.setMockInitialValues
+    // はテスト全体で1つのストレージを共有するため、明示的に分離する）。
+    SharedPreferences.setMockInitialValues({});
+    final dst = await _buildServices();
+    final dstPaletteCountBefore = dst.palette.palettes.length;
+
+    NiatraSerializer.applyTo(
+      data,
+      settings: dst.settings,
+      brush: dst.brush,
+      tone: dst.tone,
+      stamp: dst.stamp,
+      autofillPresets: dst.autofillPresets,
+      theme: dst.theme,
+      palette: dst.palette,
+      pixelArtPalette: dst.pixelArtPalette,
+    );
+    // importPalette()/addPalette()内部の永続化はfire-and-forgetのため、
+    // ChangeNotifierへの反映（メモリ上のリスト追加）自体は同期的に
+    // 完了している前提で直後にアサーションできる。
+    // srcのパレットは「デフォルトパレット」＋「引き継ぎ用パレット」の2件
+    // あり、選択したカテゴリの全パレットが引き継がれるため、dst側には
+    // それら2件がIDを振り直されて追加される。
+    expect(dst.palette.palettes, hasLength(dstPaletteCountBefore + 2));
+    final importedPalette = dst.palette.palettes.firstWhere(
+      (p) => p.name == '引き継ぎ用パレット',
+    );
+    expect(
+      importedPalette.id,
+      isNot(srcPalette.id),
+      reason: 'ID衝突を避けるため振り直すはず',
+    );
+    expect(importedPalette.colors, contains(0xFF112233));
+
+    expect(dst.pixelArtPalette.palettes, hasLength(1));
+    expect(dst.pixelArtPalette.palettes.first.name, '引き継ぎ用ドット絵パレット');
+    expect(dst.pixelArtPalette.palettes.first.colors, [0xFF000000, 0xFFFFFFFF]);
+  });
+
+  test('「パレット」カテゴリを選択しない場合はパレットが引き継がれない', () async {
+    final src = await _buildServices();
+    await src.pixelArtPalette.addPalette('選択外パレット', [0xFF000000]);
+
+    final bytes = await NiatraSerializer.export(
+      selectedItems: const {'パレット': false, '設定': true},
+      settings: src.settings,
+      brush: src.brush,
+      tone: src.tone,
+      stamp: src.stamp,
+      autofillPresets: src.autofillPresets,
+      theme: src.theme,
+      palette: src.palette,
+      pixelArtPalette: src.pixelArtPalette,
+    );
+    final data = NiatraSerializer.loadFromBytes(bytes);
+
+    SharedPreferences.setMockInitialValues({});
+    final dst = await _buildServices();
+    NiatraSerializer.applyTo(
+      data,
+      settings: dst.settings,
+      brush: dst.brush,
+      tone: dst.tone,
+      stamp: dst.stamp,
+      autofillPresets: dst.autofillPresets,
+      theme: dst.theme,
+      palette: dst.palette,
+      pixelArtPalette: dst.pixelArtPalette,
+    );
+
+    expect(dst.pixelArtPalette.palettes, isEmpty);
+  });
+
+  // Task#158：制作中プロジェクトを.niatraへ選択式で埋め込める機能。
+  // NiaproSerializer.saveShare()自体はpath_provider（実ファイルI/O）に
+  // 依存するため、他の単体テスト（Task#142のpalette_service_test.dart等）
+  // と同じ方針で、ここでは実際の.niashareファイルI/Oを介さず、疑似的な
+  // バイト列を「埋め込み対象」として渡すことでexport()側のZIP構造・
+  // data.json記録の正しさのみを検証する（実際の.niashare内容の妥当性は
+  // niapro_serializer側の既存テストで担保される）。
+  test(
+    'projectFilesに渡したプロジェクトがProjects/以下へ埋め込まれ、data.jsonへ記録される（Task#158）',
+    () async {
+      final src = await _buildServices();
+      final fakeNiashareBytes = Uint8List.fromList(
+        utf8.encode('dummy niashare content'),
+      );
+
+      final bytes = await NiatraSerializer.export(
+        selectedItems: const {},
+        settings: src.settings,
+        brush: src.brush,
+        tone: src.tone,
+        stamp: src.stamp,
+        autofillPresets: src.autofillPresets,
+        theme: src.theme,
+        palette: src.palette,
+        pixelArtPalette: src.pixelArtPalette,
+        projectFiles: {'proj1.niashare': fakeNiashareBytes},
+      );
+      final data = NiatraSerializer.loadFromBytes(bytes);
+
+      expect(data.raw['projectFiles'], ['proj1.niashare']);
+      final entry = data.archive.findFile('Projects/proj1.niashare');
+      expect(entry, isNotNull);
+      expect(
+        utf8.decode(entry!.content as List<int>),
+        'dummy niashare content',
+      );
+    },
+  );
+
+  test(
+    'projectFilesを渡さない場合はdata.jsonにprojectFilesキーが含まれない（Task#158）',
+    () async {
+      final src = await _buildServices();
+
+      final bytes = await NiatraSerializer.export(
+        selectedItems: const {'設定': true},
+        settings: src.settings,
+        brush: src.brush,
+        tone: src.tone,
+        stamp: src.stamp,
+        autofillPresets: src.autofillPresets,
+        theme: src.theme,
+        palette: src.palette,
+        pixelArtPalette: src.pixelArtPalette,
+      );
+      final data = NiatraSerializer.loadFromBytes(bytes);
+
+      expect(data.raw.containsKey('projectFiles'), isFalse);
+      expect(data.archive.findFile('Projects/proj1.niashare'), isNull);
+    },
+  );
+}

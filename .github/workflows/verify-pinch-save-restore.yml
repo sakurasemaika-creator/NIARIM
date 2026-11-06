@@ -1,0 +1,85 @@
+name: Verify pinch and save restore
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/verify-pinch-save-restore.yml'
+      - 'test/canvas_pinch_gesture_test.dart'
+      - 'test/*save*test.dart'
+      - 'test/*restore*test.dart'
+      - 'test/*setting*test.dart'
+      - 'test/*preference*test.dart'
+      - 'lib/screens/canvas/widgets/canvas_area.dart'
+      - 'lib/screens/settings/**'
+      - 'lib/services/settings_service.dart'
+      - 'lib/services/project_service.dart'
+
+jobs:
+  pinch:
+    name: "pinch: ${{ matrix.case }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - case: zoom-out
+            plain: '2本指を広げるとキャンバスが拡大される'
+          - case: zoom-in
+            plain: '2本指を狭めるとキャンバスが縮小される'
+          - case: min-clamp
+            plain: '下限未満の縮小要求は0.01倍へ正確にクランプされる'
+          - case: min-rotate
+            plain: '0.01倍へ到達する同一ジェスチャーでも45度回転は保持される'
+          - case: max-clamp
+            plain: '拡大率の上限を超える要求は10倍へクランプされ、暴走しない'
+          - case: single-pointer
+            plain: '1本指のドラッグでは変形しない（描画操作を奪わない）'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter test test/canvas_pinch_gesture_test.dart --plain-name "${{ matrix.plain }}"
+
+  save-restore:
+    name: save / settings restore
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Save and restore regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=$(find test -type f \( -iname '*save*test.dart' -o -iname '*restore*test.dart' -o -iname '*setting*test.dart' -o -iname '*preference*test.dart' \) -print)
+          if [ -z "$files" ]; then
+            echo 'No matching save/restore/settings tests found.'
+            exit 0
+          fi
+          while IFS= read -r file; do
+            echo "=== $file ==="
+            flutter test "$file"
+          done <<< "$files"
+
+  app-inventory:
+    name: all screens / operations inventory
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: All routed screens
+        run: flutter test test/all_routes_screenshot_audit_test.dart
+      - name: Full operation smoke inventory
+        run: flutter test test/app_smoke_test.dart

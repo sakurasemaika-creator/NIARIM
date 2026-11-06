@@ -1,0 +1,322 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/app.dart';
+import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/router.dart';
+import 'package:niarim/screens/settings/widget_artwork_picker_screen.dart';
+import 'package:niarim/services/community_service.dart';
+import 'package:niarim/services/project_service.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'helpers/load_app_fonts.dart';
+
+class _FakeFilePicker extends FilePicker {
+  @override
+  Future<FilePickerResult?> pickFiles({
+    String? dialogTitle,
+    String? initialDirectory,
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
+    Function(FilePickerStatus)? onFileLoading,
+    @Deprecated('unused') bool allowCompression = false,
+    int compressionQuality = 0,
+    bool allowMultiple = false,
+    bool withData = false,
+    bool withReadStream = false,
+    bool lockParentWindow = false,
+    bool readSequential = false,
+  }) async => null;
+}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('全主要ルートを本番Routerで巡回し実画面PNGとFlutter例外を監査する', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    FilePicker.platform = _FakeFilePicker();
+    final tempDir = Directory.systemTemp.createTempSync('niarim_all_routes_');
+    const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathChannel, (call) async => tempDir.path);
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(pathChannel, null);
+      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+    });
+
+    tester.view.physicalSize = const Size(1080, 2280);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    Future<void> loadFonts() => loadAppFonts(tester);
+
+    /// 画面がまだ非同期の準備中かどうか。
+    ///
+    /// `CircularProgressIndicator`だけを見ていると、
+    /// [ArtworkFrameThumbnail]のように「回転インジケーターを出さずに
+    /// 裏で実際のフレーム合成（`picture.toImage()`）を待っている」種類の
+    /// ウィジェットを取りこぼし、合成前のプレースホルダー
+    /// （`Icons.image_outlined`）のままスクリーンショットが撮れてしまう。
+    /// 合成が終わると`RawImage`へ差し替わるので、その有無で判定する。
+    bool stillPreparing() {
+      if (find.byType(CircularProgressIndicator).evaluate().isNotEmpty) {
+        return true;
+      }
+      final thumbnails = find.byType(ArtworkFrameThumbnail).evaluate().length;
+      if (thumbnails == 0) return false;
+      final rendered = find
+          .descendant(
+            of: find.byType(ArtworkFrameThumbnail),
+            matching: find.byType(RawImage),
+          )
+          .evaluate()
+          .length;
+      return rendered < thumbnails;
+    }
+
+    Future<void> settleRoute({int maxRounds = 12}) async {
+      for (var i = 0; i < maxRounds; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)),
+        );
+        await tester.pump();
+        if (i >= 2 && !stillPreparing()) break;
+      }
+    }
+
+    await loadFonts();
+    appRouter.go('/');
+    final providers = await tester.runAsync(buildAppProviders);
+    final boundaryKey = GlobalKey();
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: boundaryKey,
+        child: MultiProvider(providers: providers!, child: const NiarimApp()),
+      ),
+    );
+    await settleRoute();
+
+    final out = Directory('build/all-route-screenshots')
+      ..createSync(recursive: true);
+    final failures = <String>[];
+
+    Future<void> capture(String name) async {
+      await settleRoute();
+      // 読み込み中（ぐるぐる）のまま撮ってしまうと、その画面は
+      // **一度も目視監査されない**（容量削減画面が実際にそうなっていた）。
+      // スピナーが消えるまで数回だけ待ってから撮る。ディスク走査などは
+      // 本物の非同期処理なので、待ちは必ずrunAsyncの中で行うこと
+      // （FakeAsyncの下ではpumpを何回回しても完了しない）。
+      for (var i = 0; i < 12; i++) {
+        if (find.byType(CircularProgressIndicator).evaluate().isEmpty) break;
+        await settleRoute();
+      }
+      final exception = tester.takeException();
+      if (exception != null) failures.add('$name: $exception');
+      final boundary =
+          boundaryKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
+      if (boundary == null) {
+        failures.add('$name: root RepaintBoundary missing');
+        return;
+      }
+      try {
+        final bytes = await tester.runAsync(() async {
+          final image = await boundary.toImage(pixelRatio: 1);
+          final data = await image.toByteData(format: ui.ImageByteFormat.png);
+          image.dispose();
+          return data?.buffer.asUint8List();
+        });
+        if (bytes == null || bytes.isEmpty) {
+          failures.add('$name: PNG capture empty');
+        } else {
+          await tester.runAsync(
+            () => File('${out.path}/$name.png').writeAsBytes(bytes),
+          );
+        }
+      } catch (e) {
+        failures.add('$name: capture failed: $e');
+      }
+    }
+
+    await capture('00_launch');
+
+    final launchButton = find.byIcon(Icons.brush_outlined);
+    if (launchButton.evaluate().isNotEmpty) {
+      await tester.tap(launchButton.first);
+      await settleRoute();
+      final firstLaunch = find.text('はじめる');
+      if (firstLaunch.evaluate().isNotEmpty) {
+        await tester.tap(firstLaunch.first);
+        await settleRoute();
+      }
+    } else {
+      appRouter.go('/home');
+      await settleRoute();
+    }
+    await capture('01_home');
+
+    final context = tester.element(find.byType(MaterialApp).first);
+    final ps = context.read<ProjectService>();
+    final p = await tester.runAsync(
+      () => ps.createProject(
+        name: 'all-route-audit',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 320,
+        exportHeight: 180,
+      ),
+    );
+    final project = p!;
+    final community = context.read<CommunityService>();
+    final workId = community.works.isEmpty ? null : community.works.first.id;
+
+    final routes = <({String name, String route})>[
+      (name: '02_new_project', route: '/new-project'),
+      (name: '03_project_detail', route: '/project/${project.id}'),
+      (name: '04_canvas', route: '/canvas/${project.id}'),
+      (name: '05_timeline', route: '/timeline/${project.id}'),
+      (name: '06_materials', route: '/materials/${project.id}'),
+      (name: '07_export', route: '/export/${project.id}'),
+      (name: '08_save_tree', route: '/save-tree/${project.id}'),
+      (name: '09_autofill_presets', route: '/autofill-presets'),
+      (name: '10_community', route: '/community'),
+      if (workId != null)
+        (name: '11_community_work', route: '/community/work/$workId'),
+      (name: '12_premium', route: '/premium'),
+      (name: '13_settings', route: '/settings'),
+      (name: '14_settings_bucket', route: '/settings/bucket'),
+      (name: '15_settings_fonts', route: '/settings/fonts'),
+      (name: '16_settings_gestures', route: '/settings/gestures'),
+      (name: '17_settings_license', route: '/settings/license'),
+      (name: '18_settings_pen', route: '/settings/pen'),
+      (name: '19_settings_performance', route: '/settings/performance'),
+      (name: '20_settings_privacy', route: '/settings/privacy-policy'),
+      (name: '21_settings_shortcuts', route: '/settings/shortcuts'),
+      (name: '22_settings_theme', route: '/settings/theme'),
+      (name: '23_settings_transfer', route: '/settings/transfer'),
+      (name: '24_settings_watermark', route: '/settings/watermark'),
+      (name: '25_settings_widget', route: '/settings/widget'),
+      (name: '26_settings_widget_artwork', route: '/settings/widget/artwork'),
+      (
+        name: '27_settings_widget_artwork_frame',
+        route: '/settings/widget/artwork/${project.id}',
+      ),
+      (name: '28_settings_workspace', route: '/settings/workspace'),
+      (name: '29_help', route: '/help'),
+      (name: '30_tips', route: '/tips'),
+      (name: '31_shared', route: '/shared'),
+      (name: '32_storage', route: '/storage'),
+      (name: '33_trash', route: '/trash'),
+    ];
+
+    for (final entry in routes) {
+      try {
+        appRouter.go(entry.route);
+        await settleRoute();
+        if (entry.name == '03_project_detail') {
+          // 12 frames at 12fps: frame counter inside preview,
+          // loop next to Share, seven equally spaced transport cells.
+          expect(find.text('0.0s'), findsOneWidget);
+          expect(find.text('1/12'), findsOneWidget);
+          expect(find.text('1.0s'), findsOneWidget);
+          final current = tester.getRect(
+            find.byKey(const Key('projectDetailCurrentSeconds')),
+          );
+          final counter = tester.getRect(
+            find.byKey(const Key('projectDetailFrameCounter')),
+          );
+          final preview = tester.getRect(
+            find.byKey(const Key('projectDetailPreviewArea')),
+          );
+          final loop = tester.getRect(
+            find.byKey(const Key('projectDetailLoopButton')),
+          );
+          final share = tester.getRect(find.byIcon(Icons.ios_share));
+          final total = tester.getRect(
+            find.byKey(const Key('projectDetailTotalSeconds')),
+          );
+          expect(counter.left, greaterThanOrEqualTo(preview.left));
+          expect(counter.bottom, lessThanOrEqualTo(preview.bottom));
+          expect(counter.center.dy, greaterThan(preview.center.dy));
+          expect(loop.left, greaterThan(share.left));
+          expect((loop.center.dy - share.center.dy).abs(), lessThan(22));
+          final cells = [
+            current.center.dx,
+            tester.getRect(find.byIcon(Icons.skip_previous)).center.dx,
+            tester.getRect(find.byIcon(Icons.fast_rewind)).center.dx,
+            tester.getRect(find.byIcon(Icons.play_arrow)).center.dx,
+            tester.getRect(find.byIcon(Icons.fast_forward)).center.dx,
+            tester.getRect(find.byIcon(Icons.skip_next)).center.dx,
+            total.center.dx,
+          ];
+          final gaps = [
+            for (var i = 1; i < cells.length; i++) cells[i] - cells[i - 1],
+          ];
+          for (final gap in gaps) {
+            expect(gap, closeTo(gaps.first, 3));
+          }
+          final loopButton = find.byKey(const Key('projectDetailLoopButton'));
+          final activeIcon = tester.widget<Icon>(
+            find.descendant(
+              of: loopButton,
+              matching: find.byIcon(Icons.repeat),
+            ),
+          );
+          await tester.tap(loopButton);
+          await settleRoute();
+          final inactiveIcon = tester.widget<Icon>(
+            find.descendant(
+              of: loopButton,
+              matching: find.byIcon(Icons.repeat),
+            ),
+          );
+          expect(inactiveIcon.color, isNot(activeIcon.color));
+          await tester.tap(loopButton);
+          await settleRoute();
+        }
+        if (entry.name == '04_canvas') {
+          final switchButton = find.byKey(
+            const Key('canvasTimelineModeButton'),
+          );
+          expect(switchButton, findsOneWidget);
+          expect(
+            find.descendant(
+              of: switchButton,
+              matching: find.byIcon(Icons.movie_filter_outlined),
+            ),
+            findsWidgets,
+          );
+          expect(
+            find.descendant(
+              of: switchButton,
+              matching: find.byIcon(Icons.arrow_forward),
+            ),
+            findsWidgets,
+          );
+        }
+        await capture(entry.name);
+      } catch (e) {
+        failures.add('${entry.name}: navigation failed: $e');
+      }
+    }
+
+    final report = File('${out.path}/route_audit_failures.txt');
+    await tester.runAsync(
+      () => report.writeAsString(
+        failures.isEmpty ? 'PASS\n' : failures.join('\n'),
+      ),
+    );
+    expect(failures, isEmpty, reason: failures.join('\n'));
+  }, timeout: const Timeout(Duration(minutes: 10)));
+}

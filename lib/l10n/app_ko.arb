@@ -1,0 +1,3230 @@
+{
+  "brushFoldCrescentDepthThreshold": "초승달로 만들 곡선 깊이(펜 두께 대비)",
+  "@@locale": "ko",
+  "homeTabProjects": "프로젝트",
+  "homeTabShared": "공유",
+  "homeTabTrash": "휴지통",
+  "homeTabWorks": "작품 목록",
+  "homeTabBookmarked": "북마크됨",
+  "homeBookmarkedEmptyTitle": "표시할 수 있는 북마크 작품이 없습니다",
+  "homeBookmarkedEmptyBody": "작품 광장에서 마음에 드는 공개 작품을 북마크하면 여기에 표시됩니다.",
+  "homeBookmarkedHiddenTitle": "북마크는 저장되어 있습니다",
+  "homeBookmarkedHiddenBody": "표시 필터 또는 작품 공개 상태로 인해 작품이 보이지 않을 수 있습니다. 작품 광장에서 표시 필터를 확인하세요.",
+  "homeBookmarkedLoading": "북마크를 불러오는 중…",
+  "homeBookmarkedLoadFailed": "북마크를 불러오지 못했습니다",
+  "homeBookmarkedLoadPrompt": "저장된 북마크 불러오기",
+  "homeBookmarkedSignInBody": "저장된 북마크를 불러오려면 작품 광장에서 Google 계정을 연결하세요.",
+  "homeSearchHint": "프로젝트 이름으로 검색",
+  "homeBackToSplashTooltip": "시작 화면으로 돌아가기",
+  "homeFavoritesOnly": "즐겨찾기",
+  "homeAddSheetNewProject": "새 프로젝트",
+  "homeAddSheetNewFolder": "새 폴더",
+  "homeSelectionAllSelect": "전체 선택",
+  "homeSelectionAllDeselect": "전체 선택 해제",
+  "homeSelectionCount": "{count}개 선택됨",
+  "homeMoveToTrash": "휴지통으로 이동",
+  "homeMoveToTrashConfirm": "{count}개 항목을 휴지통으로 이동하시겠습니까?",
+  "commonMove": "이동",
+  "homeShareFileDialogTitle": "공유 파일",
+  "homeShareFileDialogContent": "이 공유 파일을 복제하여 일반 프로젝트로 저장하시겠습니까?",
+  "homeMissingFontsSnackbar": "누락된 폰트가 있습니다: {names}",
+  "homeSharedImportedSnackbar": "프로젝트 탭에 추가되었습니다",
+  "homeSharedImportFailedSnackbar": "공유 파일을 불러오지 못했습니다: {error}",
+  "homeViewModeLarge": "크게",
+  "homeViewModeMedium": "보통",
+  "homeViewModeSmall": "작게",
+  "homeViewModeDetail": "상세",
+  "homeSortFieldName": "이름",
+  "homeSortFieldUpdated": "수정일",
+  "homeSortDirectionAscTooltip": "오름차순（탭하면 내림차순으로 전환）",
+  "homeSortDirectionDescTooltip": "내림차순（탭하면 오름차순으로 전환）",
+  "homeSharedEmpty": "공유된 프로젝트가 없습니다",
+  "homeProjectMeta": "{fps}fps · {duration}초",
+  "homeTrashEmpty": "휴지통이 비어 있습니다",
+  "homeTrashDeletedOn": "{date} 삭제됨",
+  "homePermanentDelete": "완전 삭제",
+  "homePermanentDeleteConfirmTitle": "완전히 삭제하시겠습니까?",
+  "homePermanentDeleteConfirmBody": "이 작업은 되돌릴 수 없습니다.",
+  "homeWorksEmpty": "내보낸 작품이 없습니다",
+  "homeWorksEmptyHint": "캔버스에서 동영상이나 GIF를 내보내면\n여기에 표시됩니다",
+  "homeWorkFolderEmpty": "이 폴더에는 내보낸 작품이 없어요",
+  "homeSharedFolderEmpty": "이 폴더에는 공유된 프로젝트가 없어요",
+  "homeDeleteFolderKeepContents": "\"{name}\" 폴더를 삭제해요. 안의 항목은 목록으로 돌아가며 삭제되지 않아요.",
+  "homeShareOpenWith": "공유・사진 앱 등으로 열기",
+  "homeWorkDeleteConfirmTitle": "{name}을(를) 삭제하시겠습니까?",
+  "homeWorkDeleteConfirmBody": "기기에 저장된 내보내기 파일이 삭제됩니다. 되돌릴 수 없습니다.",
+  "homePreviewFailed": "미리보기를 재생할 수 없습니다",
+  "homeFirstLaunchMessage": "손그림 애니메이션을 제작할 수 있습니다",
+  "homeFirstLaunchStart": "시작하기",
+  "settingsScreenTitle": "설정",
+  "settingsBasicTitle": "기본",
+  "settingsBasicSubtitle": "FPS・배경색・언어",
+  "settingsBasicSheetTitle": "기본 설정",
+  "settingsDefaultFps": "기본 FPS",
+  "settingsDefaultFpsSubtitle": "새 프로젝트 만들기 화면의 초기값",
+  "settingsLanguage": "언어",
+  "settingsLanguageJapanese": "日本語",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguageChinese": "简体中文",
+  "settingsLanguageKorean": "한국어",
+  "settingsLanguageTraditionalChinese": "繁體中文",
+  "settingsLanguageFrench": "Français",
+  "settingsLanguageSpanish": "Español",
+  "settingsSearchHint": "설정 검색...",
+  "settingsPerformanceTitle": "성능",
+  "settingsPerformanceSubtitle": "품질 설정・실행 취소 횟수・휴지통・동작 속도",
+  "settingsGestureTitle": "제스처",
+  "settingsGestureSubtitle": "두 손가락 탭・길게 누르기",
+  "settingsPenTitle": "펜 입력",
+  "settingsPenSubtitle": "필압・기울기・펜 버튼",
+  "settingsWorkspaceTitle": "작업 공간",
+  "settingsWorkspaceSubtitle": "도구 모음 편집・패널 배치",
+  "settingsBucketTitle": "페인트 통 채우기",
+  "settingsBucketSubtitle": "허용 오차・확장・선 아래로 파고들기",
+  "settingsThemeTitle": "테마・외관",
+  "settingsThemeSubtitle": "테마 배색・글자색・배경색",
+  "settingsWatermarkTitle": "워터마크",
+  "settingsWatermarkSubtitle": "커스텀 워터마크",
+  "settingsTransferTitle": "데이터 이전",
+  "settingsTransferSubtitle": "설정・소재・브러시를 다른 기기로 내보내기/가져오기",
+  "settingsFontTitle": "폰트 관리",
+  "settingsFontSubtitle": "TTF/OTF 추가・검색・삭제",
+  "settingsNoResults": "해당하는 설정 항목을 찾을 수 없습니다",
+  "settingsTermsLicense": "이용약관・라이선스",
+  "settingsDrawingAreaTitle": "그리기 영역 초기값",
+  "settingsDrawingAreaHint": "새 프로젝트를 만들 때의 초기값으로 사용됩니다.",
+  "settingsDrawingAreaWiden": "그리기 영역 넓히기",
+  "settingsDrawingAreaScale": "배율",
+  "settingsScaleValue": "{scale}배",
+  "commonCancel": "취소",
+  "commonCreate": "만들기",
+  "commonChange": "변경",
+  "commonDelete": "삭제",
+  "confirmDeleteGenericBody": "정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+  "confirmDeleteNamedBody": "\"{name}\"을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+  "@confirmDeleteNamedBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonFavoriteDeleteBlocked": "즐겨찾기로 등록된 항목은 삭제할 수 없습니다. 먼저 즐겨찾기를 해제해 주세요.",
+  "commonSave": "저장",
+  "commonRestore": "복원",
+  "commonClose": "닫기",
+  "commonRename": "이름 변경",
+  "commonCopy": "복사",
+  "commonCut": "잘라내기",
+  "homePasteTooltip": "{count}건 붙여넣기",
+  "@homePasteTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSnackbar": "붙여넣었습니다",
+  "commonPaste": "붙여넣기",
+  "commonDuplicate": "복제",
+  "commonOk": "확인",
+  "gestureSettingsTitle": "제스처 설정",
+  "gestureTwoFingerTap": "두 손가락 탭",
+  "gestureThreeFingerTap": "세 손가락 탭",
+  "gestureFourOrMoreFingerTap": "네 손가락 이상 탭",
+  "gestureTwoFingerSwipe": "두 손가락 좌우 스와이프",
+  "gestureLongPress": "길게 누르기",
+  "gestureHoldEyedropperSection": "길게 눌러 색상 추출",
+  "gestureHoldEyedropperTitle": "길게 눌러 스포이트 실행",
+  "gestureHoldEyedropperHint": "펜이나 지우개로 그리는 동안 손가락을 움직이지 않고 잠시 누르고 있으면 그 위치의 색상을 현재 색상으로 가져옵니다.",
+  "gestureHoldEyedropperDurationLabel": "유지 시간",
+  "gestureHoldEyedropperSecondsValue": "{seconds}초",
+  "@gestureHoldEyedropperSecondsValue": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "gestureActionUndo": "실행 취소",
+  "gestureActionRedo": "다시 실행",
+  "gestureActionEyedropper": "스포이드",
+  "gestureActionPanTool": "손 도구",
+  "gestureActionEraserToggle": "지우개 전환",
+  "gestureActionBrushToggle": "브러시 전환",
+  "gestureActionFrameMove": "프레임 이동",
+  "gestureActionNextTool": "도구 빠른 전환",
+  "gestureActionOnionSkinToggle": "어니언 스킨 켜기/끄기",
+  "gestureActionNone": "아무 작업 안 함",
+  "homeDrawerAppTagline": "손그림 애니메이션 제작 앱",
+  "homeDrawerAutofillPreset": "자동 채색 설정",
+  "homeDrawerSettings": "설정",
+  "homeDrawerHelp": "도움말",
+  "homeDrawerTips": "활용 팁",
+  "homeDrawerPremium": "Premium",
+  "gestureActionNoneShort": "없음",
+  "pressureTryDrawHint": "이 설정으로 시험 삼아 그려볼 수 있습니다（펜의 경우 실제 필압이 반영됩니다）",
+  "pressureTryDrawClear": "지우기",
+  "penSettingsTitle": "펜 입력 설정",
+  "penSettingsPalmRejectionSection": "손바닥 터치 방지",
+  "penSettingsPalmRejectionTitle": "손바닥 터치 방지",
+  "penSettingsPalmRejectionHint": "펜을 사용하는 동안 한 손가락 터치로 인한 오작동을 방지합니다. 두 손가락 이상의 제스처는 계속 사용할 수 있습니다.",
+  "penSettingsCurveSection": "필압 곡선",
+  "penSettingsCurveHint": "약하게 설정할수록 필압의 상승이 완만해지고, 강하게 설정할수록 급격해집니다.",
+  "penSettingsCurveWeak": "약함",
+  "penSettingsCurveNormal": "보통",
+  "penSettingsCurveStrong": "강함",
+  "penSettingsCurveCustom": "사용자 지정",
+  "penSettingsCustomGraphHint": "그래프의 빈 곳을 탭하면 점을 추가하고(최대 10개), 점을 드래그하면 이동, 더블 탭하면 삭제할 수 있습니다(시작점과 끝점은 삭제할 수 없습니다).",
+  "penSettingsResetCurveButton": "기본값으로 재설정",
+  "penSettingsPerBrushNote": "※ 필압의 \"크기/불투명도에 반영\" 설정은 브러시별 개별 설정입니다（브러시 설정 패널에서 변경）.",
+  "penSettingsButtonSection": "펜 버튼 설정",
+  "penSettingsButton1": "버튼 1",
+  "penSettingsButton2": "버튼 2",
+  "bucketSettingsTitle": "페인트 통 채우기 설정",
+  "bucketSettingsToleranceSection": "허용 오차",
+  "bucketSettingsToleranceHint": "탭한 위치의 색상과 얼마나 차이가 나도 같은 영역으로 볼지 조정합니다. 값이 클수록 색 경계가 흐릿해도 채우기가 더 넓게 퍼집니다.",
+  "bucketSettingsExpandSection": "확장",
+  "bucketSettingsExpandHint": "채운 영역을 경계 바깥으로 지정한 px만큼 넓혀, 선화와의 미세한 틈(칠 누락)을 덮습니다.",
+  "bucketSettingsUnderLineTitle": "선 아래로 파고들기",
+  "bucketSettingsUnderLineHint": "확장된 부분을 선화 위에 그대로 덮지 않고, 선의 모습은 유지한 채 기존 픽셀 뒤쪽으로 채우기 색을 밀어 넣습니다. 선의 안티에일리어싱 부분에 틈이 잘 생기지 않습니다.",
+  "bucketSettingsUnderLineDisabledHint": "\"확장\"이 0px이면 효과가 없습니다.",
+  "fontCatalogSearchHint": "폰트 이름으로 검색...（총 {count}종）",
+  "fontCatalogAll": "전체",
+  "fontCatalogNoResults": "해당하는 폰트를 찾을 수 없습니다",
+  "rulerPanelTitle": "자",
+  "rulerTypeLine": "직선자",
+  "rulerTypeEllipse": "타원자",
+  "rulerTypeRadial": "집중선자",
+  "rulerTypeOnePoint": "1점 투시",
+  "rulerTypeTwoPoint": "2점 투시",
+  "rulerTypeThreePoint": "3점 투시",
+  "rulerTypeFisheye": "어안 투시",
+  "rulerSnap": "자에 스냅",
+  "rulerDivisions": "분할 수",
+  "transferScreenTitle": "데이터 이전（.niatra）",
+  "transferInstructionHint": "다른 기기로 이전할 항목을 선택하세요.",
+  "transferItemSettings": "설정",
+  "transferItemMaterials": "소재",
+  "transferItemBrush": "브러시",
+  "transferItemPresets": "자동 채색 설정",
+  "transferItemTheme": "테마",
+  "transferItemPalette": "팔레트(색상 선택기·픽셀 아트 전용)",
+  "transferProjectsSectionTitle": "제작 중인 프로젝트(선택 사항)",
+  "transferProjectsHint": "인계 내용에 포함할 프로젝트만 선택할 수 있습니다. 선택한 프로젝트는 소재·폰트를 포함해 통째로 인계됩니다.",
+  "transferProjectsEmpty": "프로젝트가 없습니다.",
+  "transferImport": "가져오기",
+  "transferExport": "내보내기",
+  "transferExportSuccessSnackbar": ".niatra 파일을 내보냈습니다",
+  "transferExportFailedSnackbar": "내보내기에 실패했습니다: {error}",
+  "transferImportSuccessSnackbar": ".niatra 파일을 가져왔습니다",
+  "transferImportFailedSnackbar": "가져오기에 실패했습니다: {error}",
+  "folderManagementTitle": "폴더 관리",
+  "folderManagementCreateNew": "새로 만들기",
+  "folderManagementEmpty": "아직 폴더가 없습니다",
+  "folderCreateFailed": "폴더를 만들지 못했어요. 다시 시도해 주세요.",
+  "folderChangesSaveFailed": "폴더 변경 사항을 저장하지 못했어요. 다시 시도해 주세요.",
+  "folderChangesPartiallySaved": "일부 변경 사항만 저장됐어요. 목록을 확인하고 다시 시도해 주세요.",
+  "folderNameLabel": "폴더 이름",
+  "folderMoveToTitle": "폴더로 이동",
+  "folderNone": "폴더 없음",
+  "creativeAssetNameLabel": "이름",
+  "commonAdd": "추가",
+  "commonSearch": "검색",
+  "autofillPresetSelectionTitle": "사용할 자동 채색 설정",
+  "autofillPresetSelectionHint": "이 프로젝트에서 사용하는 자동 채색 설정만 선택하면, 부위 할당 시 목록을 더 쉽게 볼 수 있습니다.",
+  "autofillPresetSelectionPartCount": "{count}개 부위",
+  "@autofillPresetSelectionPartCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillPresetSelectionButton": "사용할 자동 채색 설정 선택",
+  "autofillPresetSelectionCountLabel": "{count}개 선택됨",
+  "@autofillPresetSelectionCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonEdit": "편집",
+  "commonFavoriteToggle": "즐겨찾기 전환",
+  "commonIncrease": "늘리기",
+  "commonDecrease": "줄이기",
+  "commonPlay": "재생",
+  "commonPause": "일시정지",
+  "fontCatalogDownloadTooltip": "폰트 다운로드",
+  "timelineBackToCanvasTooltip": "저장하고 캔버스로 돌아가기",
+  "timelineBackToProjectListTooltip": "프로젝트 목록으로 돌아가기",
+  "timelineBackToProjectListDialogTitle": "프로젝트 목록으로 돌아가기",
+  "timelineBackToProjectListDialogBody": "변경 사항을 저장하고 돌아갈까요?",
+  "timelineBackToProjectListSaveButton": "저장하고 돌아가기",
+  "timelineBackToProjectListDiscardButton": "저장하지 않고 돌아가기",
+  "timelineSkipToStart": "첫 프레임으로 이동",
+  "timelineStepBack": "한 프레임 뒤로",
+  "timelineStepForward": "한 프레임 앞으로",
+  "timelineSkipToEnd": "마지막 프레임으로 이동",
+  "timelineLoopOnTooltip": "반복 재생: 켜짐 (탭하면 끄기)",
+  "timelineLoopOffTooltip": "반복 재생: 꺼짐 (탭하면 켜기)",
+  "quickToolPanelTitle": "빠른 도구 설정",
+  "quickToolEmpty": "등록된 도구가 없습니다",
+  "quickToolAddCurrentBrush": "현재 브러시 추가",
+  "quickToolEraser": "지우개",
+  "quickToolEyedropper": "스포이드",
+  "quickToolBucket": "페인트통",
+  "quickToolSizeDialogTitle": "{brushName} 크기",
+  "settingsShortcutTitle": "단축키 설정",
+  "settingsShortcutSubtitle": "키보드・왼손 장치에 도구와 동작을 할당",
+  "shortcutSettingsTitle": "단축키 설정",
+  "shortcutSettingsHint": "키보드나 왼손 장치의 키에 도구(브러시・굵기까지 지정 가능)나 실행 취소/다시 실행 같은 동작을 할당할 수 있습니다. 캔버스・타임라인 양쪽에서 사용할 수 있습니다.",
+  "shortcutEmpty": "등록된 단축키가 없습니다",
+  "shortcutCaptureTitle": "키를 눌러주세요",
+  "shortcutCaptureHint": "설정하고 싶은 키 조합을 눌러주세요（Ctrl・Shift・Alt 등의 보조키도 함께 누를 수 있습니다）. Esc로 취소합니다.",
+  "shortcutChooseActionTitle": "{combo}에 무엇을 할당하시겠습니까?",
+  "@shortcutChooseActionTitle": {
+    "placeholders": {
+      "combo": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutActionTypeTool": "도구 선택",
+  "shortcutActionTypeCommand": "주요 동작",
+  "shortcutCommandUndo": "실행 취소",
+  "shortcutCommandRedo": "다시 실행",
+  "shortcutCommandToggleLayerPanel": "레이어 패널 전환（캔버스）",
+  "shortcutCommandPlayPause": "재생/일시정지（타임라인）",
+  "shortcutCommandPreviousFrame": "1프레임 뒤로（타임라인）",
+  "shortcutCommandNextFrame": "1프레임 앞으로（타임라인）",
+  "shortcutCommandSelectAll": "전체 선택",
+  "shortcutCommandCopy": "복사",
+  "shortcutCommandCut": "잘라내기",
+  "shortcutCommandPaste": "붙여넣기",
+  "shortcutConflictTitle": "이미 할당되어 있습니다",
+  "shortcutConflictBody": "{combo}에는 이미 「{existingLabel}」이(가) 할당되어 있습니다. 덮어쓰시겠습니까?",
+  "@shortcutConflictBody": {
+    "placeholders": {
+      "combo": {
+        "type": "String"
+      },
+      "existingLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutConflictOverwrite": "덮어쓰기",
+  "materialListTitle": "소재 관리",
+  "materialRemoveUnused": "미사용 소재 삭제 ({count})",
+  "materialEmptyTitle": "소재가 없습니다",
+  "materialEmptyHint": "타임라인에서 이미지・동영상・오디오를 추가하면\n여기에 표시됩니다",
+  "materialUsedLabel": "사용 중",
+  "materialUnusedLabel": "미사용",
+  "materialMissingLabel": "누락",
+  "materialDeleteTooltipUsed": "사용 중이라 삭제할 수 없습니다",
+  "materialRemoveOneConfirmTitle": "소재를 삭제하시겠습니까?",
+  "materialRemoveUnusedConfirmTitle": "미사용 소재를 일괄 삭제하시겠습니까?",
+  "materialRemoveUnusedConfirmBody": "프로젝트 내 어디에서도 참조되지 않는 소재를 모두 삭제합니다. 이 작업은 되돌릴 수 없습니다.",
+  "materialRemovedSnackbar": "미사용 소재 {count}개를 삭제했습니다",
+  "watermarkEmptyTitle": "등록된 워터마크가 없습니다",
+  "watermarkEmptyHint": "오른쪽 아래의 +에서 이미지 또는 문자를 등록하세요",
+  "watermarkAddFromImage": "이미지에서 추가",
+  "watermarkAddText": "문자 입력",
+  "watermarkAddedSnackbar": "워터마크를 등록했습니다",
+  "watermarkTextDialogTitle": "문자 워터마크 추가",
+  "watermarkTextFieldLabel": "표시할 문자",
+  "watermarkTextColorLabel": "글자 색",
+  "watermarkTextColorTapHint": "탭하여 색상 선택",
+  "watermarkDropShadowLabel": "그림자",
+  "watermarkShadowColorLabel": "그림자 색상",
+  "watermarkShadowOffsetXLabel": "그림자 위치 X",
+  "watermarkShadowOffsetYLabel": "그림자 위치 Y",
+  "watermarkShadowBlurLabel": "그림자 흐림",
+  "watermarkOutlineLabel": "테두리",
+  "watermarkOutlineColorLabel": "테두리 색상",
+  "watermarkOutlineWidthLabel": "테두리 두께",
+  "premiumActiveLabel": "Premium 활성화됨",
+  "premiumVsTitle": "무료판 vs 프리미엄",
+  "premiumCampaignFreeNote": "※ 캠페인 기간 중에는 무료판에서도 위 프리미엄 기능을 모두 이용하실 수 있습니다",
+  "premiumPlanSectionTitle": "플랜",
+  "premiumStoreUnavailable": "스토어에 연결할 수 없습니다（실제 기기・스토어 심사 환경 이외에서는 구매할 수 없습니다）",
+  "premiumHeroTitle": "프리미엄으로 더 자유롭게",
+  "premiumHeroSubtitle": "길이 최대 2시간・워터마크 없음・톤 커브／레벨 보정 등 제작의 폭을 넓히는 기능이 모두 해제됩니다",
+  "premiumHeroHighlightDuration": "길이 최대 2시간",
+  "premiumHeroHighlightWatermark": "워터마크 없음",
+  "premiumHeroHighlightGrading": "톤 커브 /\n레벨 보정",
+  "premiumYearlyTitle": "연간 플랜（추천）",
+  "premiumYearlyDescription": "실질적으로 2개월 무료",
+  "premiumYearlyPrice": "¥5,500/년",
+  "premiumYearlyOriginalPrice": "¥6,600",
+  "premiumYearlyPerMonthLabel": "월 환산 ¥458",
+  "premiumMonthlyTitle": "월간 플랜",
+  "premiumRestorePurchases": "구매 복원",
+  "premiumRestoredSnackbar": "구매 정보를 복원했습니다（해당하는 구매가 있는 경우）",
+  "premiumCampaignBannerTitle": "출시 기념! 유료 회원 전용 기능 개방 캠페인",
+  "premiumCampaignBannerBody": "기간 중에는 무료판에서도 모든 프리미엄 기능（길이 최대 2시간・엔드 로고 편집・워터마크・톤 커브・레벨 보정）을 무료로 이용하실 수 있습니다.",
+  "premiumCampaignEndLabel": "{date}까지",
+  "premiumComparisonFeature": "기능",
+  "premiumComparisonFree": "무료",
+  "premiumFeatureDrawing": "애니메이션 제작・드로잉 기능",
+  "premiumFeatureTimeline": "타임라인",
+  "premiumFeatureExport": "동영상 내보내기",
+  "premiumFeatureMaxDuration": "최대 길이",
+  "premiumFeatureEndLogo": "공식 엔드 로고",
+  "premiumFeatureWatermark": "워터마크",
+  "premiumFeatureToneCurve": "톤 커브",
+  "premiumFeatureLevelCorrection": "레벨 보정",
+  "premiumFeatureAds": "광고",
+  "premiumFeatureCommunityUpload": "작품 광장 일일 게시 수",
+  "premiumValueYes": "있음",
+  "premiumValueNo": "없음",
+  "premiumValueRemovable": "삭제 가능",
+  "premiumValueDuration2Hours": "2시간",
+  "premiumValueDuration90Sec": "1.5분",
+  "premiumValueUploadFree": "1개",
+  "premiumValueUploadPremium": "3개",
+  "premiumPlanRecommendedBadge": "추천",
+  "premiumMonthlyPrice": "¥550/월",
+  "toolbarItemPen": "G펜",
+  "toolbarItemEraser": "지우개",
+  "toolbarItemBucket": "페인트통",
+  "toolbarItemEyedropper": "스포이드",
+  "toolbarItemFinger": "손가락",
+  "toolbarItemPan": "손바닥",
+  "toolbarItemSelect": "선택",
+  "toolbarItemText": "텍스트",
+  "toolbarItemShape": "도형",
+  "workspaceScreenTitle": "작업 공간 설정",
+  "workspaceToolbarEditSection": "도구 모음 편집",
+  "workspaceToolbarEditHint": "체크박스로 표시할 도구를 선택하고, 드래그하여 순서를 바꿀 수 있습니다.",
+  "workspaceToolbarPcOnlyHint": "가로 화면일 때만 도구 모음에 표시됩니다",
+  "workspaceToolbarPanDisabledHint": "스마트폰 모드에서는 사용할 수 없습니다",
+  "workspaceResetToolbarDefault": "기본값으로 되돌리기",
+  "workspacePanelLayoutSection": "패널 배치",
+  "workspaceLeftHandedMode": "왼손잡이 모드",
+  "workspaceLeftHandedSubtitlePc": "패널을 오른쪽에 배치",
+  "workspaceLeftHandedSubtitleMobile": "PC/DeX 모드에서만 설정할 수 있습니다",
+  "workspacePcModeSection": "PC 모드（DeX）",
+  "workspacePcModeHint": "화면 폭이 넓은 환경에서는 패널이 고정 배치되는 전문가용 화면 구성으로 자동 전환됩니다. 수동으로 고정하려면 여기서 지정하세요.",
+  "workspacePcModeAuto": "자동（화면 폭으로 판단・권장）",
+  "workspacePcModeAlwaysPc": "항상 PC 모드",
+  "workspacePcModeAlwaysMobile": "항상 모바일 모드",
+  "workspaceSaveSection": "작업 공간 저장",
+  "workspaceSaveHint": "왼손잡이 모드・PC 모드・도구 모음・빠른 도구 설정을 이름을 붙여 저장하고, 나중에 불러올 수 있습니다.",
+  "workspaceLoadButton": "작업 공간 불러오기",
+  "workspaceEmptyToolbar": "표시할 도구가 없습니다",
+  "workspaceSaveDialogTitle": "작업 공간 저장",
+  "workspaceSaveDialogLabel": "이름（예: 애니메이션용・선화용）",
+  "workspaceLoadRightHanded": "오른손잡이",
+  "workspaceLoadLeftHanded": "왼손잡이",
+  "helpScreenTitle": "도움말",
+  "helpSearchHint": "검색...",
+  "helpNoResults": "해당하는 항목을 찾을 수 없습니다",
+  "helpCategoryTool": "도구",
+  "helpCategoryLayer": "레이어",
+  "helpCategoryAnimation": "애니메이션",
+  "helpCategoryDrawing": "그리기",
+  "helpCategoryBrush": "브러시",
+  "helpCategoryPenInput": "펜 입력",
+  "helpCategorySave": "저장",
+  "helpCategoryProjectManagement": "프로젝트 관리",
+  "helpCategoryExport": "내보내기",
+  "helpCategoryPremium": "Premium",
+  "helpCategorySettings": "설정",
+  "helpCategoryCommunity": "커뮤니티",
+  "helpPenToolTitle": "펜 도구",
+  "helpPenToolDesc": "캔버스에 선을 그리는 기본 도구입니다. 길게 누르면 브러시 종류・굵기・색을 변경할 수 있습니다（더블탭은 간단 설명 표시）. 펜 태블릿・액정 태블릿의 필압・기울기를 지원하며, 설정 화면의 「펜 입력」에서 필압 곡선을 조정하면 필압이 반영되는 방식（약한 힘으로 굵기・불투명도가 얼마나 변하는지）을 세밀하게 커스터마이즈할 수 있습니다. 펜 서브 도구를 전환하면 같은 펜 도구로 스크린톤 붙이기・스탬프 배치도 할 수 있습니다.",
+  "helpEraserToolTitle": "지우개 도구",
+  "helpEraserToolDesc": "펜 도구와 짝을 이루는, 그린 내용을 지우기 위한 도구입니다. 브러시와 마찬가지로 굵기・불투명도를 조정할 수 있고, 페이드나 스트로크 감쇠 등의 브러시 설정도 공통으로 반영됩니다. 레이어의 투명한 부분에 「덧그리는」 것이 아니라 기존 그림을 「지우는」 처리를 하므로, 아래 레이어가 비쳐 보이게 됩니다.",
+  "helpBucketToolTitle": "페인트통 도구",
+  "helpBucketToolDesc": "둘러싸인 영역을 한 번에 채우는 도구입니다. 선화로 둘러싸인 범위 안을 탭하면 그 범위 전체가 선택 중인 색（또는 스크린톤）으로 채워집니다. 선화에 틈이 있으면 의도치 않은 범위까지 채워질 수 있으므로, 선화가 제대로 닫혀 있는지 확인한 후 사용하는 것이 요령입니다. 설정에서 단색 채우기/스크린톤 채우기를 전환할 수 있습니다. 상세 설정(허용 오차・확장 px・선 아래로 파고들기)은 설정 화면의 \"페인트 통 채우기\"에서 조정할 수 있습니다.",
+  "helpLassoFillTitle": "올가미 채우기",
+  "helpLassoFillDesc": "둘러싸고 싶은 범위를 손가락으로 따라 그려 다각형 영역을 만들고, 그 안쪽을 한꺼번에 채우는 도구입니다. 페인트통 도구와 달리 선화가 닫혀 있지 않은 부분이 있어도 직접 둘러쌀 범위를 지정할 수 있어, 복잡한 형태나 선이 끊긴 부분을 채우는 데 적합합니다. 「둘러싸서 채우기」를 켜면 둘러싼 범위 안에서 선으로 닫힌 영역을 몇 개든 페인트통처럼 한꺼번에 채웁니다(올가미와 그림 사이의 여백은 채우지 않습니다).",
+  "helpEyedropperToolTitle": "스포이드 도구",
+  "helpEyedropperToolDesc": "탭한 위치의 색을 추출하여 그리기 색으로 선택하는 도구입니다. 화면에 실제로 표시되는 모든 레이어를 합성한 색을 추출하므로, 여러 레이어가 겹쳐 있는 부분에서도 「보이는 그대로의 색」을 정확하게 가져올 수 있습니다.",
+  "helpSelectToolTitle": "선택 도구",
+  "helpSelectToolDesc": "캔버스의 일부를 범위 선택하여, 선택한 범위만 이동・회전・확대축소할 수 있는 도구입니다. 길게 누르면 「사각형 선택」「올가미 선택（자유로운 형태로 둘러싸기）」「자동 선택（매직 완드, 비슷한 색상의 범위를 자동으로 묶어 선택）」의 3가지 선택 방법 중에서 고를 수 있습니다. 선택 중에는 선택 범위를 나타내는 테두리가 캔버스 위에 표시되며, 선택을 해제할 때까지 모든 프레임・모든 레이어에서 같은 범위가 고정 표시됩니다. 올가미 선택에서 「선에 스냅」을 켜면, 페인트 통 채우기와 같은 방식으로 선화가 나누는 영역을 보고 올가미 안에 대부분이 들어 있는 영역만 선택합니다. 선택 범위의 가장자리는 선화의 바깥쪽 가장자리를 정확히 따라가며, 영역을 둘러싼 선과 안쪽의 선도 함께 선택됩니다(윤곽 밖으로 뻗어 나간 선은 윤곽에서 잘립니다). 색을 칠한 면도 페인트 통 채우기와 같이 색마다의 영역으로 다루므로, 채색과 선이 있는 레이어에서도 그림 모양대로 선택할 수 있습니다. 「선화 간격 허용」에서 지정한 폭까지의 선의 끊김은 이어진 것으로 취급합니다. 올가미 안에 선화가 없으면 둘러싼 모양 그대로 선택합니다. 선화는 선택 참조 대상（「작업 레이어만」／「표시 레이어 모두」）에서 찾습니다.",
+  "helpFingerToolTitle": "손가락 도구（왜곡 도구）",
+  "helpFingerToolDesc": "손가락으로 문지른 방향으로 픽셀을 밀어내듯 왜곡시켜, 손가락으로 젖은 물감을 문지른 듯한 효과를 만드는 도구입니다. 세밀한 수정보다는 이미 그린 선을 유기적으로 왜곡시켜 표정을 더하고 싶을 때 사용합니다.",
+  "helpShapeToolTitle": "도형 도구",
+  "helpShapeToolDesc": "직선・사각형・원 같은 정확한 도형을 한 번의 동작으로 그리는 도구입니다. 드래그로 시작점에서 끝점까지 움직이면 그 자리에서 미리보기가 표시되고, 손을 떼면 확정됩니다. 프리핸드로는 그리기 어려운 직선이나 정원이 필요할 때 편리합니다.",
+  "helpTextToolTitle": "텍스트 도구",
+  "helpTextToolDesc": "캔버스 위에 문자를 배치하는 도구입니다. 글꼴・크기・색・세로쓰기/가로쓰기를 선택할 수 있습니다. 세로쓰기에서는 반각 영숫자의 자동 회전・다테추요코（숫자를 가로 방향 그대로 나열하는 표기）・루비（후리가나）에도 대응합니다. 배치한 텍스트는 내보내기 시에도 픽셀로 구워집니다. 텍스트 도구에서 사용할 폰트를 추가・검색・삭제할 수 있는 화면입니다. 기본 내장 폰트 외의 추가 무료 폰트는, 초기 설치 용량을 줄이기 위해 이곳에서 필요할 때 다운로드하는 방식으로 되어 있습니다.",
+  "helpQuickToolTitle": "빠른 도구",
+  "helpQuickToolDesc": "자주 쓰는 브러시・도구 조합을 미리 등록해두고 버튼 하나로 순서대로 전환할 수 있는 기능입니다. 캔버스의 ↺ 버튼을 길게 누르거나 위로 스와이프하면 등록・순서 변경・삭제가 가능한 관리 팝업이 열립니다. 드래그로 순서를 바꿀 수 있습니다.",
+  "helpLayerTitle": "레이어",
+  "helpLayerDesc": "하나의 캔버스를 여러 개의 투명한 「층」으로 나누어 그릴 수 있는 구조입니다. 선화・채색・배경 등을 각각 다른 레이어에 나누어 그리면, 나중에 색만 다시 칠하거나 선화를 지우지 않고 배경만 교체할 수 있습니다. 화면상에서는 위에 겹쳐진 레이어일수록 앞쪽에 표시됩니다. 각 레이어 행의 아이콘에서 원탭으로 삭제・아래 레이어와의 결합을 할 수 있으며, 레이어 패널 상단 아이콘에서 표시 중인 모든 레이어를 한꺼번에 결합할 수도 있습니다.",
+  "helpBlendModeTitle": "블렌드 모드",
+  "helpBlendModeDesc": "레이어의 합성 방법을 바꾸는 기능입니다. 스크린톤이나 색상 효과를 레이어로 겹칠 때 자주 사용됩니다.\n표준: 그대로 겹칩니다.\n곱하기: 아래 레이어와 곱해 어둡게 합니다. 그림자, 음영 표현의 정석입니다.\n스크린: 밝기를 더해 밝게 합니다. 빛 표현에 적합합니다.\n오버레이: 어두운 부분은 더 어둡게, 밝은 부분은 더 밝게 해 대비를 강조합니다.\n더하기(발광): 색을 단순히 더합니다. 빛 효과선 등에 적합합니다.\n빼기: 색을 뺀 값으로, 어둡게 가라앉은 효과가 됩니다.\n어둡게 비교: 위아래 레이어 중 어두운 쪽 색을 채택합니다.\n밝게 비교: 위아래 레이어 중 밝은 쪽 색을 채택합니다.\n색상 번: 아래 색을 어둡게 가라앉히며 진하게 발색시킵니다.\n색상 닷지: 아래 색을 밝게 날리며 발색시킵니다.\n하드 라이트: 오버레이보다 강하게 대비가 붙습니다.\n소프트 라이트: 오버레이보다 부드럽게 대비가 붙습니다. 부드러운 음영에 적합합니다.\n차이: 위아래 색의 차이를 표시합니다. 색상 어긋남 확인 등에 씁니다.\n색조, 채도, 색상, 광도: 각각 색조, 채도, 색감, 밝기만을 아래 레이어에 반영합니다.\n선형 번: 두 색을 더한 뒤 기준값을 빼 강하게 어둡게 합니다.\n선형 닷지: 두 색을 선형으로 더해 밝게 합니다. 더하기(발광)와는 별도의 블렌드 모드로, 레이어가 반투명할 때는 더하기(발광) 쪽이 더 밝아집니다.\n비비드 라이트: 위 색에 따라 번과 닷지를 전환해 매우 강한 대비를 만듭니다.\n선형 라이트: 위 색을 기준으로 밝기를 선형으로 높이거나 낮춥니다.\n핀 라이트: 위 색에 따라 더 어두운 쪽 또는 더 밝은 쪽으로 바꿉니다.\n하드 믹스: 비비드 라이트 결과를 임계값으로 나눠 강한 원색 분리를 만듭니다.\n제외: 차이보다 부드러운 반전·차이 효과입니다.\n나누기: 아래 색을 위 색으로 나누어 밝기 보정이나 색 차이 강조에 사용합니다.\n블렌드 모드 목록에서는 각 모드 옆에 빨강·노랑·파랑·흰색·검정을 어두운 색부터 밝은 색 위에 겹친 견본이 표시됩니다(견본의 아래쪽은 반투명으로 겹친 모습입니다).",
+  "helpClippingTitle": "클리핑",
+  "helpClippingDesc": "바로 아래에 있는 레이어의 불투명한 픽셀 범위 안에만 그려지도록 하는 기능입니다. 선화를 벗어나지 않게 채색하고 싶을 때, 선화 레이어 위에 채색용 레이어를 만들고 클리핑을 활성화하면 선화 바깥으로 실수로 삐져나가 그릴 걱정이 없어집니다.",
+  "helpCommonLayerTitle": "공통 레이어",
+  "helpCommonLayerDesc": "일반 레이어는 프레임마다 독립되어 있지만, 공통 레이어는 여러 프레임・씬에서 같은 내용을 공유하는 레이어입니다. 배경처럼 프레임이 바뀌어도 움직이지 않는 요소를 프레임마다 다시 그릴 필요 없이 한 번만 그리면 됩니다. 타임라인에서는 전용 트랙으로 표시됩니다. 일반 레이어를 공통 레이어（여러 프레임에 같은 내용을 계속 표시하는 레이어）로 변환할 수 있는 기능입니다. 표시 중인 레이어를 복제해 한 장으로 통합한 뒤 공통화할 수도 있습니다. 배경처럼 매 프레임 같은 내용을 재사용하고 싶을 때 다시 그리는 수고를 줄일 수 있습니다.",
+  "helpAutoFillTitle": "자동 채색",
+  "helpAutoFillDesc": "자동 채색용 선화 레이어 아래에 자동 채색 레이어를 만들고, 미리 만들어 둔 「자동 채색 설정」（부위별 색・스크린톤 조합）을 바탕으로 색을 자동으로 채우는 기능입니다. 선화를 다 그린 후 한 번에 채색할 수 있어, 같은 캐릭터를 여러 번 그리는 손그림 애니메이션에서 채색 작업을 크게 줄일 수 있습니다. 선화를 다시 그리면 타임라인・레이어 패널에 업데이트 표시가 나타나 자동 채색을 다시 실행해야 함을 알려줍니다. 타임라인 화면의 점 3개 메뉴에서 「자동 채색 실행」을 선택하면, 업데이트 표시가 붙은 자동 채색 레이어를 한꺼번에 다시 계산할 수 있습니다. 선화를 다시 그린 뒤 레이어 패널에서 한 장씩 실행하는 수고를 덜 수 있습니다. 자동 채색 설정의 각 부위에는 선화 색을 어떻게 처리할지에 대한 설정（지정 색・채색 색과 동일・색 트레이스）이 있습니다. 색 트레이스（선화 어우러짐）를 선택하면 선화 색을 채색 색에 맞춰 HSL 이동시켜, 선이 튀지 않고 자연스럽게 어우러집니다. 설정이 늘어나면 부위 할당 시 목록이 길어져 고르기 어려워집니다. 프로젝트 설정（또는 레이어 패널의 부위 할당 대화 상자）에서 이 프로젝트에서 사용하는 설정만 필터링해두면 목록이 깔끔해져 고르기 쉬워집니다. 「선화와 채색 사이의 틈 메우기」를 높이면 선의 옅은 가장자리 아래까지 칠해져, 윤곽선이나 채색과 같은 선화 색을 쓸 때 보이는 선화와 채색 사이의 틈이 작아집니다.",
+  "helpOnionSkinTitle": "어니언 스킨",
+  "helpOnionSkinDesc": "현재 편집 중인 프레임의 앞뒤 프레임을 반투명하게 겹쳐 표시하여, 움직임의 흐름을 확인하며 그릴 수 있게 하는 기능입니다. 성능 설정에서 표시할 매수（앞뒤로 몇 장까지）나 색・투명도를 조정할 수 있습니다.",
+  "helpRulerTitle": "자",
+  "helpRulerDesc": "직선・원・타원・투시자（소실점을 이용한 투시도법용 자） 등, 프리핸드로는 그리기 어려운 정확한 선을 보조하는 기능입니다. 배치한 자를 따라 펜 끝이 자동으로 스냅되므로, 자가 없으면 어려운 원근감 있는 구도도 그리기 쉬워집니다. 자는 핸들을 조작하여 이동・회전・크기 변경을 할 수 있습니다. 어안 투시자는 렌즈 원 안에서 가로・세로 선이 호를 그리고 깊이 방향의 선이 중심으로 모이는 5점 곡선 투시입니다. 그리기 시작한 방향에 맞는 선을 따라 그려지며, 핸들로 중심 이동・반경 변경（원 오른쪽의 점）・기울기 변경（원 위쪽의 점）을 할 수 있습니다.",
+  "helpFadeTitle": "페이드",
+  "helpFadeDesc": "스트로크의 들어가기(시작점)와 빠지기(끝점)의 값과 거리를 각각 독립적으로 설정하는 브러시 기능입니다. 시작만, 끝만 또는 비대칭으로 설정하여 양 끝의 굵기와 불투명도를 따로 조절할 수 있습니다. 외곽선 펜에서는 전체 모양(굵기)만 바뀌고 불투명도는 바뀌지 않습니다.",
+  "helpStrokeDecayTitle": "스트로크 감쇠",
+  "helpStrokeDecayDesc": "페이드와 비슷하지만, 이쪽은 「잉크가 줄어드는」 듯한 표현에 가까워, 계속 그릴수록 색이 옅어지거나 흐려지는 효과입니다. 붓이나 마커로 계속 그렸을 때 잉크가 떨어지는 듯한 질감을 재현합니다.",
+  "helpColorMixingTitle": "혼색",
+  "helpColorMixingDesc": "브러시로 칠할 때, 브러시 바로 아래에 이미 있는 색과 지금 칠하려는 선택 색을 섞으면서 그리는 기능입니다. 브러시 설정의 혼색 모드에서 섞지 않고 칠하는 디지털, 물감처럼 섞이며 묻어난 색을 끌어서 늘이는 유화풍 혼색, 투명한 물감을 겹치고 마르면 가장자리에 색이 고이는 수채화풍 혼색을 고를 수 있습니다.",
+  "helpPressureCurveTitle": "필압 곡선",
+  "helpPressureCurveDesc": "펜 입력 설정에 있는 기능으로, 실제 필압의 세기와 브러시의 굵기・불투명도에 반영되는 방식의 관계를 그래프로 자유롭게 조정할 수 있습니다. 약한 필압에서도 굵게 나오길 원하는 사람, 반대로 강하게 눌러야만 굵어지길 원하는 사람 등, 필기 습관에 맞춰 그리는 느낌을 세밀하게 커스터마이즈할 수 있습니다. 설정 변경 후에는 그 자리에서 시험 삼아 그려보며 확인할 수 있습니다.",
+  "helpTimelineTitle": "타임라인",
+  "helpTimelineDesc": "애니메이션의 시간축을 관리하는 화면입니다. 프레임（정지 화면 1컷）을 나열하여 플립북처럼 재생하면 애니메이션이 됩니다. 텍스트・이미지・동영상・오디오 소재 트랙, 공통 레이어 트랙, 카메라 키프레임도 같은 타임라인에서 관리합니다. 텍스트・이미지・동영상과 프레임 일러스트의 앞뒤 관계는 「겹침 순서」에서 장면 전체 또는 지정한 프레임 범위별로 바꿀 수 있습니다. 항목을 길게 눌러 여러 개를 선택하고 한꺼번에 옮길 수도 있습니다.",
+  "helpSceneTitle": "씬",
+  "helpSceneDesc": "하나의 프로젝트（동영상 한 편） 안을 장면（컷）별로 나누어 관리하는 기능입니다. 폴더가 프로젝트 단위의 정리라면, 신은 한 편의 동영상 안에서 장면 전환을 표현하는 데 사용합니다. 타임라인의 신 탭에서는 신 추가・복제・삭제・이름 변경・순서 변경이 가능합니다. 다중 선택 모드로 전환하면 여러 신을 한 번에 이동・복제・삭제할 수도 있습니다.",
+  "helpCameraKeyframeTitle": "카메라 키프레임",
+  "helpCameraKeyframeDesc": "타임라인 상의 특정 위치에 카메라의 위치・확대율・회전을 기록해 두는 기능입니다. 키프레임 사이는 자동으로 부드럽게 보간되므로, 팬（좌우 이동）이나 줌인・줌아웃 같은 카메라 워크를 쉽게 넣을 수 있습니다.",
+  "helpEffectFilterTitle": "연출 필터",
+  "helpEffectFilterDesc": "씬이나 프레임에 적용할 수 있는 영상 효과（블러・색조 보정・글로우・픽셀 아트 등）입니다. 손그림 자체는 바꾸지 않고, 연출로서 화면 전체의 느낌을 조정하고 싶을 때 사용합니다. 그리기 필터 중 톤 커브(프리셋과 강도)・레벨 보정・선명하게・언샤프 마스크・비네트(색・범위・농도)・수채 경계도 여러 프레임에 같은 효과를 한 번에 줄 수 있도록 연출 필터에 들어 있습니다. 픽셀 아트는 배색 방식（색을 지정하지 않음・색을 지정함・색 수를 지정함・팔레트에서 선택）도 고를 수 있습니다. 색을 제한하면, 한 가지 색으로는 원래 색과 먼 곳을 사용할 수 있는 색 중 두세 가지를 규칙적으로 배치해(디더링) 원래 색에 가깝게 하며, 이 배치는 프레임이 바뀌어도 움직이지 않습니다. 윤곽 부분은 또렷하게 유지합니다. 디더링은 스위치로 켜고 끌 수 있으며, 끄면 가장 가까운 한 가지 색으로 칠합니다. 연출 필터는 여러 개를 겹쳐서 적용할 수 있으며, 그 적용 순서는 타임라인상의 배열 순서를 따릅니다. 필터 목록을 드래그로 재배열하면 실제로 화면에 반영되는 순서도 바뀝니다. 필름의 입자감 같은 노이즈를 프레임마다 변화시키며 적용하는 연출 필터입니다. 강도・양（노이즈가 올라가는 밀도）・입자 크기를 슬라이더로 조정할 수 있습니다. 같은 프레임으로 돌아오면 같은 입자 모양이 되므로 스크러빙 중에는 깜빡이지 않고, 재생하면 입자가 움직이는 것처럼 보입니다. 화면에 내리는 비를 표현하는 연출 필터입니다. 내리는 정도（빗방울 수）・속도・빗방울 크기・바람 방향 각도를 슬라이더로 조정할 수 있습니다. 각 빗방울은 프레임이 진행될수록 일정한 속도로 계속 내리므로 자연스러운 비의 움직임이 됩니다.",
+  "helpEndCardTitle": "EndCard（엔드 로고）",
+  "helpEndCardDesc": "동영상 내보내기 시, 본편이 끝난 후 자동으로 추가되는 NIARIM 로고의 짧은 영상（약 5초）입니다. 무료판에서는 숨기거나 삭제할 수 없지만, 프리미엄 회원이 되면 표시 ON/OFF・길이 변경・교체가 가능해집니다.",
+  "helpAutoSaveTitle": "자동 저장",
+  "helpAutoSaveDesc": "충돌이나 파일 손상이 발생했을 때를 위한 복원 전용 저장입니다. 그리기 등의 변경이 있을 때마다 자동으로 저장되며, 최대 3개까지 오래된 순서로 덮어씌워집니다. 수동 저장（세이브 슬롯・세이브 트리）과는 완전히 별도로 관리되며, 일반 저장을 대체하지는 않습니다. 앱이 비정상 종료된 후 재시작할 때만 복원할지 묻습니다.",
+  "helpSaveSlotTitle": "세이브 슬롯",
+  "helpSaveSlotDesc": "정해진 수의 저장 칸（슬롯）에, 직접 저장 위치를 선택하며 저장하는 방식입니다. 슬롯 수는 설정（저품질 5개・중품질 10개）으로 정해집니다. 덮어쓸 칸을 매번 직접 선택하므로, 「이 시점의 상태는 남겨두고 싶다」는 관리가 쉬운 방식입니다.",
+  "helpSaveTreeTitle": "세이브 트리",
+  "helpSaveTreeDesc": "저장할 때마다 새로운 저장 지점이 만들어지고, 과거의 저장 지점에서 분기하여 다른 히스토리를 만들 수 있는（가지가 나뉘는） 저장 방식입니다. 개수 제한이 없어, 「그때 그 버전으로 돌아가서 다른 전개를 시도해 보고 싶다」는 사용법에 적합합니다. 화면에는 저장 지점이 아래에서 위로 뻗어나가는 나무 모양 도표로 표시됩니다.",
+  "helpFolderTitle": "폴더",
+  "helpFolderDesc": "프로젝트（작품）를 그룹화하여 정리하는 기능입니다. 여러 계층을 지원하므로, 같은 작품의 여러 화차나 시리즈물을 함께 관리하는 용도로도 사용할 수 있습니다（예: 「작품명」 폴더 안에 「제1화」「제2화」…처럼 프로젝트를 나열）. 하나의 동영상 안에서 장면을 나누어 만들고 싶을 때는 폴더가 아니라 캔버스 화면의 「씬」 기능을 이용해 주세요.",
+  "helpTrashTitle": "휴지통",
+  "helpTrashDesc": "삭제한 프로젝트가 임시로 이동하는 곳입니다. 완전히 삭제되기 전까지는 여기서 복원할 수 있습니다. 설정에서 자동 삭제까지의 일수（끔/30일/60일/90일）를 지정할 수 있습니다.",
+  "helpShareTitle": "공유（.niashare）",
+  "helpShareDesc": "프로젝트를 다른 사람（또는 자신의 다른 기기）에게 전달하기 위한 공유 전용 파일 형식입니다. 받은 쪽이 이 파일을 열면 복제되어 자신의 프로젝트 목록에 추가됩니다. 공유 원본인 .niashare 파일 자체는 변경되지 않습니다.",
+  "helpTransferTitle": "데이터 이전（.niatra）",
+  "helpTransferDesc": "설정・소재・브러시・자동 채색 설정・테마・팔레트(컬러 피커・도트 그림 전용) 등 앱 전체 환경을 다른 기기로 한꺼번에 이전하는 기능입니다. 이전할 항목은 체크박스로 개별 선택할 수 있으며, 제작 중인 프로젝트도 선택해서 포함할 수 있습니다(선택한 프로젝트는 소재・글꼴까지 통째로 이전됩니다). 개별 프로젝트만 전달하고 싶을 때는 「공유（.niashare）」도 사용할 수 있습니다.",
+  "helpVideoExportTitle": "동영상 내보내기（MP4・WebM・GIF・AVI）",
+  "helpVideoExportDesc": "작품을 범용 MP4 동영상으로 내보냅니다. 무료 버전은 내보낼 수 있는 길이에 제한(90초)이 있으며, 동영상 끝에 엔드카드(앱 로고)가 자동으로 추가됩니다. 알파 채널（배경의 투명 부분）을 유지한 채 내보낼 수 있는 동영상 형식입니다. 지원하는 재생 환경에서만 투명하게 재생됩니다. 다른 앱의 소재로 겹쳐서 사용하고 싶을 때 적합합니다. 애니메이션 GIF로 내보냅니다. 자동으로 반복 재생되는 형식이라 SNS 공유 등 가볍게 공유하고 싶을 때 적합합니다. 호환성을 중시한다면 AVI（Motion JPEG）로도 내보낼 수 있습니다. 알파 채널（투명）은 지원하지 않으며, 기기에 따라 앱 내 미리보기가 되지 않을 수 있습니다（그 경우에도 「공유」에서 외부 플레이어로 재생할 수 있습니다）. 무료 회원은 프로젝트 길이에 90초까지의 상한이 있습니다（프리미엄 회원은 2시간）. 프레임 추가・복제로 상한을 넘어설 것 같으면 버튼을 탭한 순간 주의 대화상자가 표시되어, 실제로 90초를 넘지 않도록 되어 있습니다.",
+  "helpTransparentWebmTitle": "투명 WebM",
+  "helpCommunityTitle": "작품 광장",
+  "helpCommunityDesc": "애니메이션・일러스트 작품을 YouTube 동영상으로 커뮤니티에 게시하고, 다른 사용자의 작품을 둘러볼 수 있는 기능입니다. 「신작」・「랭킹」・「팔로잉」 탭을 전환할 수 있으며, 작품 제목 또는 게시자 이름으로 검색할 수 있습니다. 태그 검색 모드로 전환하면 태그로 작품을 좁혀볼 수 있으며, 태그는 게시자 외의 사용자도 자유롭게 추가・삭제할 수 있습니다（게시자가 잠근 태그는 게시자 본인만 해제할 수 있습니다）. 태그를 탭하기만 해도 같은 태그의 작품으로 좁혀집니다. 작품 카드를 탭하면 드래그・크기 조절이 가능한 플로팅 미리보기 창이 열려 다른 화면을 조작하면서도 계속 시청할 수 있습니다. 「상세보기」 버튼으로 작품의 상세 화면（게시자・게시일・태그 편집・북마크・리포스트 등）을 열 수 있습니다. 게시자 이름 옆의 「팔로우」 버튼을 누르면 팔로우가 되어, 「팔로잉」 탭에서 그 작가의 게시물만 최신순으로 모아 볼 수 있습니다. 누군가 나를 팔로우하면 화면 오른쪽 위 종 모양 아이콘의 알림 목록에 표시됩니다. 자신의 팔로잉/팔로워 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 목록도 볼 수 있습니다. 다른 사람의 작품（자신의 게시물은 제외）은 「리포스트」 버튼으로 재게시할 수 있으며, 팔로우 중인 작가가 누군가의 작품을 리포스트하면 그 작품도 「게시일」과 「리포스트한 날짜」 중 더 최근인 쪽을 기준으로 「팔로잉」 탭에 섞여 표시됩니다（카드에 「○○님이 리포스트함」이라고 표시）. 북마크한 작품은 홈 화면의 「북마크됨」 탭에 모아서 표시되며, 게시자별 작품 목록 화면의 「북마크」 탭에서도 확인할 수 있습니다. 자신의 북마크 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 북마크 목록도 볼 수 있습니다. 부적절한 작품은 사유를 첨부해 신고할 수 있으며, 신고 후에는 해당 게시자를 차단할지 선택할 수 있습니다. 세로로 긴 동영상은 「세로 화면 모드」에서 연속 재생으로 시청할 수 있습니다. 하루에 게시할 수 있는 작품 수에는 상한이 있으며, 무료 회원은 하루 1개, 프리미엄 회원은 하루 3개까지입니다. 화면 오른쪽 위의 표시 필터 버튼（사선이 그어진 눈 아이콘）으로 보고 싶지 않은 작품을 숨길 수 있습니다. 「생성형 AI 이미지·동영상 포함」 작품을 숨기는 설정 외에도, 작품 제목만을 대상으로 하는 숨길 제목 키워드과 작품 광장에서 작품에 붙은 태그만을 대상으로 하는 숨길 태그를 「새로 추가」로 하나씩 등록하고 연필 아이콘으로 수정하거나 휴지통 아이콘으로 삭제할 수 있습니다. 쉼표나 #은 필요하지 않습니다. 이 필터는 신착・랭킹・팔로잉（리포스트 포함）・세로 화면 모드・게시자 페이지・작품 상세・북마크에 적용됩니다. 「생성형 AI 이미지·동영상 포함」은 게시할 때 게시자가 직접 표시하는 항목이며, 게시한 후에도 게시자 본인만 변경할 수 있습니다（「내 게시물」 또는 작품 상세 화면에서 변경）.",
+  "helpWatermarkEntryTitle": "워터마크",
+  "helpWatermarkEntryDesc": "내보낸 동영상・이미지에 자신의 서명이나 로고를 워터마크로 넣을 수 있는 프리미엄 전용 기능입니다. 위치・크기・불투명도를 조정할 수 있습니다. 타임라인의 공통 레이어 트랙에 배치한 워터마크를 탭하면 각도・크기・불투명도・표시 범위（루프 표시）를 언제든지 다시 편집할 수 있습니다. 등록할 때뿐 아니라 실제로 프로젝트에서 사용할 때도 세세하게 조정할 수 있습니다. 워터마크를 추가하려면 타임라인의 '소재 추가' 메뉴에서 '＋워터마크'를 선택하세요.",
+  "helpPremiumEntryTitle": "프리미엄",
+  "helpPremiumEntryDesc": "프리미엄 회원이 되면 무료 버전에서 90초로 제한된 동영상 길이가 최대 2시간까지 늘어나고, 모든 동영상 끝에 자동 추가되는 엔드카드(앱 로고)를 삭제할 수 있습니다. 광고도 숨겨지며, 워터마크, 톤 커브, 레벨 보정 기능도 사용할 수 있게 됩니다.",
+  "helpPerformanceSettingsTitle": "성능 설정",
+  "helpPerformanceSettingsDesc": "기기 성능에 따라 저품질・중품질・고품질 프리셋 중에서 선택하거나, 각 항목을 개별로 설정（커스텀）할 수 있습니다. 저장 방식・동작 속도・어니언 스킨・기울기 감지 외에도, 실행 취소 횟수나 휴지통 자동 삭제 등 앱의 용량・동작 부담에 영향을 주는 설정도 여기에 모여 있습니다.",
+  "helpMaterialClipTitle": "소재 클립（텍스트・이미지・동영상・오디오）",
+  "helpMaterialClipDesc": "타임라인의 텍스트・이미지・동영상・오디오 트랙에 배치한 클립입니다. 클립 본체를 길게 눌러 드래그하면 표시 시작 위치를 옮길 수 있고, 좌우 끝의 손잡이를 드래그하면 사용 범위（길이）를 바꿀 수 있습니다. 같은 시간에 겹치는 소재는 자동으로 다른 줄에 놓입니다. 텍스트・이미지・동영상 클립을 탭하면 미리보기 아래에 편집 패널이 열립니다. 글자 내용・글꼴・색・외곽선, 위치・크기・X축／Y축／Z축 회전・불투명도（미리보기에서 드래그해도 움직일 수 있고, 키프레임을 추가하면 움직임이 됩니다）, 마스크（사각형・타원・흐림・반전）, 배치할 줄을 바꿀 수 있으며 복제・삭제도 여기서 할 수 있습니다. 오디오 클립은 상세 시트에서 음량・페이드를 조정합니다.",
+  "helpGestureSettingsTitle": "제스처 설정",
+  "helpGestureSettingsDesc": "두 손가락 탭・세 손가락 탭・두 손가락 스와이프・길게 누르기에 실행 취소/다시 실행・프레임 이동・스포이트 등의 동작을 할당할 수 있는 설정입니다. 펜 버튼（지원 스타일러스 사용 시）에도 별도로 동작을 할당할 수 있습니다. 도구를 바꾸지 않고 자주 쓰는 동작을 한 번에 불러오고 싶을 때 편리합니다.",
+  "helpBucketDetailSettingsTitle": "버킷 채우기 세부 설정",
+  "helpBucketDetailSettingsDesc": "설정 화면의 「버킷 채우기」에서 허용 오차（클릭한 위치의 색에서 어디까지의 색 차이를 같은 영역으로 볼지）・확장 px（채운 영역을 경계 바깥쪽으로 넓혀 선화와의 틈을 메우는 정도）・선 아래까지 파고들기（확장분을 선화 위에 덮어쓰지 않고, 선의 모양은 유지한 채 뒤쪽으로 채우기 색을 합성）를 조정할 수 있습니다. 선화에 작은 틈이 있거나 덜 칠해진 부분이 신경 쓰일 때 조정하면 마무리가 안정됩니다.",
+  "helpStampToolTitle": "스탬프 도구",
+  "helpStampToolDesc": "등록된 이미지를 브러시처럼 캔버스에 배치하여 집중선, 배경 패턴, 소품 등을 다시 그리지 않고 재사용하는 도구입니다. 픽셀 모드에서는 픽셀 아트 필터와 동일한 Pixel Art 처리를 사용해 투명 경계를 선명하게 유지하면서 픽셀화와 감색을 수행합니다. 모자이크는 별도의 효과이며 스탬프 픽셀 모드에는 사용하지 않습니다. 스탬프 패널에서 회전 각도와 크기도 조절할 수 있습니다.",
+  "helpToneFillTitle": "스크린톤 채색",
+  "helpToneFillDesc": "버킷 도구 설정에서 단색 채우기를 스크린톤 채우기로 바꾸면 선택한 망점・선 무늬 등의 스크린톤 패턴으로 채울 수 있습니다. 픽셀 모드 전용 체크무늬・격자무늬 스크린톤도 준비되어 있어, 도트 그림 질감을 살린 채색이 가능합니다. 프릴이나 니트, 타이츠 등 손그림으로는 손이 많이 가는 세밀한 무늬도 간단히 그릴 수 있습니다. 오리지널 스크린톤을 직접 만들어 추가하거나 다른 사용자와 공유할 수도 있습니다.",
+  "helpPixelModeTitle": "픽셀 모드",
+  "helpPixelModeDesc": "브러시・폰트・스탬프 각각에 준비된 설정으로, 켜면 안티에일리어싱을 제거해 또렷한 도트 그림풍 윤곽으로 그려집니다. 일부러 옛날 게임 같은 질감을 내고 싶을 때나 저해상도 느낌을 연출하고 싶을 때 사용합니다. 색상 모드는 「색을 지정하지 않음」「색을 지정함」「색 수를 지정함」「팔레트에서 선택」의 4가지 중에서 고를 수 있으며, 도트 그림 전용 팔레트도 사용할 수 있습니다.",
+  "helpHomeScreenTitle": "홈 화면",
+  "helpHomeScreenDesc": "앱을 실행하면 처음 표시되는 화면으로, 프로젝트・공유・작품 목록・휴지통 각 탭을 전환하며 볼 수 있습니다. 오른쪽 위 검색 아이콘으로 프로젝트 이름으로 좁혀 검색할 수도 있습니다. 프로젝트 탭에서는 화면 오른쪽 아래의 ＋ 버튼으로 새 프로젝트 만들기와 새 폴더 만들기를 선택할 수 있습니다.",
+  "helpNewProjectTitle": "새 프로젝트 만들기",
+  "helpNewProjectDesc": "캔버스 크기・fps・길이（초 단위. 이후 타임라인에서의 프레임 증감과도 연동）・그리기 영역（내보내기 범위보다 넓게 그려둘 수 있는 설정）・사용할 자동 채색 설정 등을 한꺼번에 지정한 뒤 프로젝트를 만듭니다.",
+  "helpThemeSettingsTitle": "테마 설정",
+  "helpThemeSettingsDesc": "앱 전체의 색상 배합을 테마 목록에서 고르거나, 포인트 컬러를 자유롭게 커스터마이즈할 수 있는 화면입니다. 제목・항목명용 폰트와 설명문용 폰트가 나뉘어 있어, 가독성을 유지하면서 꾸미기를 즐길 수 있습니다.",
+  "helpWorkspaceSettingsTitle": "워크스페이스 설정",
+  "helpWorkspaceSettingsDesc": "왼손잡이 모드（도킹 패널 좌우 반전）, PC/DeX 모드 수동 전환, 손바닥 도구 표시 조건 등을 한꺼번에 설정할 수 있는 화면입니다. 사용하는 기기와 주로 쓰는 손에 맞춰 작업하기 쉬운 레이아웃으로 조정할 수 있습니다.",
+  "helpPenSettingsTitle": "펜 설정",
+  "helpPenSettingsDesc": "타블렛・액정 타블렛의 필압 곡선과 더불어, 펜 옆면 버튼（지원 스타일러스 사용 시）에 지우개 전환이나 스포이트 등의 동작을 할당할 수 있는 설정 화면입니다.",
+  "helpMaterialListTitle": "소재 목록",
+  "helpMaterialListDesc": "프로젝트에서 사용 중인 이미지・동영상・오디오 소재를 한꺼번에 확인할 수 있는 화면입니다. 타임라인에 배치한 소재의 원본 파일이 여기에 모입니다.",
+  "helpFrameOperationsTitle": "프레임 조작",
+  "helpFrameOperationsDesc": "프레임 목록에서는 새로 추가・복제・삭제할 수 있고, 다중 선택 모드에서는 여러 프레임을 한꺼번에 이동・복제・삭제할 수 있습니다. 보유 셀 수를 늘리면 같은 프레임을 여러 칸에 걸쳐 계속 표시할 수 있어（이른바 「멈춤」）, 움직임이 적은 컷에서 매수를 절약할 수 있습니다.",
+  "helpSceneOperationsTitle": "장면 조작",
+  "helpSceneOperationsDesc": "타임라인의 장면 탭에서는 장면 추가・복제・삭제・이름 변경・순서 바꾸기를 할 수 있습니다. 다중 선택 모드로 하면 여러 장면을 한꺼번에 이동・복제・삭제하는 것도 가능합니다.",
+  "helpQuickToolManagementTitle": "빠른 도구 관리",
+  "helpQuickToolManagementDesc": "자주 쓰는 도구 조합을 등록해두고 탭 한 번으로 순서대로 전환할 수 있는 기능입니다. 길게 누르거나 위로 스와이프하면 관리 팝업이 열려 등록 내용과 순서를 편집할 수 있습니다.",
+  "helpTransformSelectionTitle": "선택 범위 변형",
+  "helpTransformSelectionDesc": "선택 도구로 감싼 범위는 캔버스 왼쪽 아래에 나오는 「이동」「크기 조절」「회전」 버튼으로 모드를 고른 뒤 선택 범위 안을 드래그해 변형할 수 있습니다. 실수로 그린 부분의 위치를 조정하거나, 일부만 확대해 강조하고 싶을 때 사용합니다. 같은 바의 「전체 선택」을 누르면 그리고 있는 레이어 전체가 선택 범위가 되므로, 레이어 전체의 이동・회전・크기 조절도 같은 방법으로 할 수 있습니다（예전의 독립된 「변형 도구」는 여기로 통합했습니다）. 격자점을 개별적으로 드래그해 더 자유롭게 일그러뜨리고 싶다면 같은 바의 「자유 변형」「메시 변형」을 사용하세요.",
+  "helpGradientAutofillTitle": "그라데이션 채색（자동 채색 설정）",
+  "helpGradientAutofillDesc": "자동 채색 설정의 각 부위에는 단색뿐 아니라 그라데이션도 설정할 수 있습니다. 드래그로 이동할 수 있는 대칭 핸들로 그라데이션의 범위・각도를 직관적으로 조정할 수 있습니다. 각 부위에는 「지정 색상으로 테두리」도 설정할 수 있습니다. 체크하면 채색 범위의 가장 바깥쪽（선화와 맞닿는 부분）에 지정한 색상・두께의 선이 그려집니다. 테두리 색은 컬러 피커로 자유롭게 선택할 수 있고, 두께는 슬라이더・±버튼・숫자 직접 입력 중 어느 방법으로도 조정할 수 있습니다. 설정 항목 바로 위에 미리보기가 표시되어, 실제로 자동 채색을 실행하기 전에 색상과 두께를 확인할 수 있습니다.",
+  "helpColorPickerTitle": "컬러 피커",
+  "helpColorPickerDesc": "HSV와 RGB를 한 화면에서 전환하며 색을 고를 수 있는 컬러 피커입니다. 팔레트 기능으로 사용 중인 색상 세트를 저장하고 불러올 수 있습니다. 팔레트는 파일 내보내기나 QR 코드로 다른 기기와 공유할 수도 있습니다.",
+  "helpUndoSettingsTitle": "실행 취소 횟수 설정",
+  "helpUndoSettingsDesc": "성능 설정에서 실행 취소로 되돌릴 수 있는 동작 횟수를 조정할 수 있습니다. 횟수를 늘릴수록 안심하고 시행착오를 할 수 있지만 메모리 사용량도 늘어나므로, 저사양 기기에서는 횟수를 줄이면 동작이 가벼워집니다.",
+  "helpBrushFavoriteTitle": "브러시 즐겨찾기",
+  "helpBrushFavoriteDesc": "브러시 목록에서 브러시의 별 아이콘을 탭하면 즐겨찾기 등록・해제를 할 수 있습니다（자동 채색 설정・스탬프・폰트・그리기 필터 등 앱 내 다른 즐겨찾기 기능과 같은 조작 방법입니다）. 목록 위쪽의 별 아이콘으로 즐겨찾기만 표시하도록 필터링할 수도 있습니다. 실수로 삭제되지 않도록 즐겨찾기로 등록된 브러시는 삭제할 수 없습니다.",
+  "helpCustomBrushTitle": "커스텀 브러시",
+  "helpCustomBrushDesc": "브러시 목록에서 미리 설치된 브러시를 길게 눌러 「복제」를 선택하면 이를 바탕으로 나만의 커스텀 브러시가 만들어집니다. 복제한 브러시는 굵기・불투명도・경도・회전・밀도・분산・흐림 반경 등의 파라미터를 자유롭게 편집할 수 있으며, 필요 없어지면 삭제할 수도 있습니다（미리 설치된 브러시 자체는 편집・삭제할 수 없습니다）. 폴더로 분류하거나 별 아이콘으로 즐겨찾기 등록도 할 수 있습니다.",
+  "helpLayerFolderTitle": "레이어 폴더",
+  "helpLayerFolderDesc": "여러 레이어를 폴더로 정리할 수 있는 기능입니다. 파츠 수가 많은 일러스트에서도 레이어 패널을 보기 쉽게 유지할 수 있습니다. 클리핑은 폴더를 넘어서 적용할 수 없으므로, 클리핑을 사용할 경우 같은 폴더 안에 모아두면 안전합니다.",
+  "helpLayerMultiSelectTitle": "레이어 다중 선택・일괄 조작",
+  "helpLayerMultiSelectDesc": "레이어 패널의 선택 모드를 사용하면 여러 레이어를 체크박스로 한꺼번에 선택해 병합하거나 일괄 삭제할 수 있습니다. 병합은 일반・자동 채색용 선화・자동 채색 레이어끼리만 가능합니다（공통 레이어・폴더・타임라인 소재는 병합 대상 아님）.",
+  "helpDrawingAreaTitle": "작화 영역",
+  "helpDrawingAreaDesc": "내보내기 범위보다 넓은 범위까지 그려둘 수 있는 설정입니다. 캔버스 위에는 내보내기 범위를 나타내는 빨간 테두리가 표시되며, 테두리 밖으로 삐져나온 부분은 내보내지지 않지만, 팬・줌 같은 카메라 워크로 보여줄 범위를 나중에 조정할 여지를 남길 수 있습니다. 새 프로젝트 만들기 시 배율을 설정합니다.",
+  "helpCanvasBackgroundTitle": "캔버스 배경색",
+  "helpCanvasBackgroundDesc": "프로젝트의 캔버스 배경색을 설정할 수 있습니다. 투명 내보내기（투명 WebM）를 사용할 경우 배경색은 내보내기에 영향을 주지 않지만, 작업 중 보기 편하도록 원하는 색으로 바꿀 수 있습니다.",
+  "helpProjectDetailTitle": "프로젝트 상세 화면",
+  "helpProjectDetailDesc": "프로젝트 이름・썸네일・즐겨찾기 등록・사용할 자동 채색 설정의 필터링 등 프로젝트별 설정을 한곳에서 확인・편집할 수 있는 화면입니다. 세이브 트리로 가는 입구도 여기에 있습니다.",
+  "helpWatermarkEditTitle": "워터마크 재편집",
+  "helpWatermarkEditDesc": "타임라인의 공통 레이어 트랙에 배치한 워터마크를 탭하면 각도・크기・불투명도・표시 범위（루프 표시）를 언제든지 다시 편집할 수 있습니다. 등록할 때뿐 아니라 실제로 프로젝트 안에서 사용할 때 세밀하게 조정할 수 있습니다.",
+  "helpAudioClipTitle": "음량 조절",
+  "helpAudioClipDesc": "타임라인에 배치한 오디오 클립은 상세 시트에서 음량・페이드인・페이드아웃 시간을 조정할 수 있습니다. 효과음이나 배경음악의 음량 균형을 맞추거나, 곡의 시작・끝을 부드럽게 만들 수 있습니다.",
+  "helpPenSubToolTitle": "펜 서브 도구",
+  "helpPenSubToolDesc": "펜 도구를 길게 누르면 일반 그리기 외에 스크린톤 붙이기・스탬프 배치 서브 도구로 전환할 수 있습니다. 도구를 일일이 바꾸지 않고도 같은 펜으로 여러 작업을 오갈 수 있습니다.",
+  "helpTiltDetectionTitle": "기울기 감지",
+  "helpTiltDetectionDesc": "지원 스타일러스의 기울기 정보를 사용해, 펜촉을 눕혔을 때 선을 굵게・얇게 하는 등 실제 필기구에 가까운 필기감을 재현하는 설정입니다. 성능 설정에서 켜고 끌 수 있습니다.",
+  "helpFontImportTitle": "폰트 가져오기",
+  "helpFontImportDesc": "기기 내의 폰트 파일을 직접 불러와 사용할 수 있게 하는 기능입니다. 설정 화면의 폰트 관리 「가져오기」 탭에서 추가할 수 있습니다. 배포되지 않은 자작 폰트나 구매한 상업용 폰트를 사용하고 싶을 때 이용합니다.",
+  "helpExportScreenTitle": "내보내기 화면",
+  "helpExportScreenDesc": "'프리셋'에서 '표준', '고화질', '커스텀'를 선택할 수 있습니다. '커스텀'에서는 FPS를 조정할 수 있습니다. 동영상・이미지를 내보내는 동안 진행 상황이 표시되며, 도중에 취소할 수도 있습니다. 내보내기에 걸리는 시간은 기기 성능에 따라 달라집니다.",
+  "helpDrawingFilterTitle": "그리기 필터",
+  "helpDrawingFilterDesc": "선택한 레이어에 직접 적용하는 필터입니다(연출 필터가 타임라인 전체나 장면 단위로 적용되는 것과 달리 그리기 필터는 레이어 단위로 작동합니다). 제공되는 26종은 가우시안 흐림, 렌즈 흐림, 애니메이션풍, 톤 커브, 레벨 보정, 윤곽선, 선명하게, 언샤프 마스크, 비네트, 레트로 애니메이션, 브라운관, 이진화, 어안 렌즈, 색수차, 안경 단면, 도트 그림, 질감 변경, 배경 어우러짐, 먹물 고임, 자동 선화, 프리즘, 색상 반전, 모자이크, 노이즈, 구체 음영, 수채 경계입니다. 수채 경계는 작업 레이어에 칠한 부분의 가장자리에 색을 고이게 하고 안쪽을 비치게 하여, 마른 수채화처럼 만듭니다(「색 경계에도 적용」을 켜면 이웃한 색의 경계에도 가장자리가 생깁니다). 애니메 스타일은 색 수를 줄이고, 이웃한 색의 차이가 「색 차이 임계값」 이상인 경계에 「경계선 굵기」의 선을 어두운 쪽으로 긋습니다(선화의 선은 굵어지지 않습니다). 프리즘은 레이어에 그린 모양마다 무지개 6색(빨강·초록·하늘색·파랑·보라·빨강)으로 칠해 흐리게 하고, 레이어를 선형 닷지로 바꿉니다. 어두운 색의 가늘고 작은 잎 같은 모양을 별도의 레이어에 먼저 그린 뒤 사용하면 그림 위에 은은한 무지갯빛 줄기가 들어갑니다(블러 양은 일반적인 가우스 블러와 같은 기준). 구체 음영은 타원형 빛의 안쪽에 빛 색을, 바깥쪽에 그림자 색을 그려진 곳에만 겹칩니다(빛은 캔버스 위에서도 드래그할 수 있습니다). 윤곽선은 원본 레이어를 다시 쓰지 않고 결과만 새 레이어에 그립니다. 안경 단면은 패널의「펜」「페인트통」으로 캔버스에 칠한 범위（「지우개」로 수정）에만 강한 안경 렌즈 같은 국소 왜곡을 적용합니다（선택 범위나 선택 레이어가 있으면 그 범위에서 시작합니다）. 캔버스에 선택 범위가 있으면 그리기 필터는 그 안에만 적용됩니다. 픽셀 아트는 배색 방식(제한 없음, 색 지정, 색 수 지정, 팔레트 선택)도 고를 수 있습니다. 색을 제한하면, 한 가지 색으로는 원래 색과 먼 곳을 사용할 수 있는 색 중 두세 가지를 규칙적으로 배치해(디더링) 원래 색에 가깝게 합니다. 윤곽 부분은 섞지 않고 또렷하게 유지합니다. 색 수를 지정하면 그림의 많은 부분을 차지하는 색에서 고릅니다. 디더링은 스위치로 켜고 끌 수 있으며, 끄면 가장 가까운 한 가지 색으로 칠합니다. 크기는 「블록 크기 지정」(1~100의 100단계)과 「도트 수 지정」(가로・세로 도트 수 슬라이더. 왼쪽 끝은 1, 오른쪽 끝은 캔버스 크기) 중에서 바꿀 수 있으며, 그림의 가로세로 비율을 유지한 채 가로와 세로가 함께 바뀝니다. 두 지정 방식도 서로 연동됩니다. 어느 쪽이든 도트는 정사각형 그대로이고 반투명한 테두리가 생기지 않습니다. 자동 선화에서는 필터를 적용하기 전에 임시 Vector 제어점을 직접 편집할 수 있습니다. 점을 드래그하면 해당 점만 이동합니다. 「적용」 오른쪽의 「제어점 추가」를 고르고 선을 탭하면 제어점을 추가하고, 「제어점 삭제」를 고르고 점을 탭하면 삭제할 수 있습니다(둘 다 고르지 않았을 때 점을 탭하면 확인한 뒤 삭제합니다). 편집한 형상이 그대로 적용 결과에 사용되며, 제어점의 이동・추가・삭제도 필터 편집의 실행 취소・다시 실행으로 하나씩 되돌릴 수 있습니다. 톤 커브는 곡선의 빈 곳을 탭하면 점을 추가하고, 점을 드래그하면 이동하며, 길게 누르면 삭제할 수 있습니다. R·G·B 색마다의 곡선은 RGB 곡선 다음에 적용됩니다. 레벨 보정도 R·G·B마다 따로 조정할 수 있고, 감마로 중간 밝기를 바꿀 수 있습니다. 테두리의 「안쪽으로 파고들기」로 원래 윤곽의 안쪽까지 테두리를 넓힐 수 있으며, 테두리의 새 레이어는 원래 레이어 바로 아래에 만들어집니다. 색수차는 어긋남을 X(가로)·Y(세로)·Z(중심에서 바깥쪽)에 얼마나 나눌지 지정할 수 있습니다. 어안 렌즈의 중심과 반지름은 캔버스 위의 ＋와 원의 손잡이를 드래그해서도 바꿀 수 있습니다. 비네트는 캔버스 전체의 네 모서리를 부드럽게 어둡게 합니다(그리지 않은 투명한 곳에도 그림자가 집니다). 「범위」로 네 모서리에서 중심 쪽으로 어디까지 어둡게 할지, 「농도」로 네 모서리의 어두운 정도를 조정할 수 있습니다. 안경 렌즈 왜곡은 실제 도수가 높은 안경처럼, 렌즈 너머의 풍경을 렌즈 중심 쪽으로 고르게 줄이거나(음수 값, 근시용) 넓히며(양수 값, 원시용), 렌즈 가장자리에서 윤곽이 계단처럼 어긋납니다. 먹물 고임은 선이 「최대 각도」 이하로 만나는 곳(초기값 90°에서는 예각과 직각: V자, 교차의 좁은 쪽, T자, 네모난 모서리)의 각 안쪽에만 고이며, 그보다 넓은 각에는 고이지 않습니다. 만나는 점에서 선의 가장자리로부터 「중앙 두께」, 그로부터 「범위」 끝을 향해 곧게 가늘어져 끝에서 0px이 되며 매끄럽게 뾰족해집니다. 「중앙 두께」를 크게 해도 양쪽 먹물 고임의 끝을 잇는 직선 바깥으로는 부풀지 않으며, 가장 두꺼워도 가운데는 평평합니다. 범위 도중에 선이 끊기면 그 선에서는 끊긴 곳을 끝으로 삼아 0px까지 가늘어집니다(선마다 길이가 달라집니다). 이때도 두 먹물 고임은 각의 한가운데에서 어느 선으로부터나 같은 두께로 만납니다(긴 쪽 선의 먹물 고임은 거기서부터 범위 끝까지 가늘어집니다). 자동 선화는 밑그림 선의 중심을 따라 가는 선으로 그립니다. 가까이 붙은 선도 사이가 조금이라도 비어 있으면 두 줄 그대로 그리고, 선 안의 작은 흰 점만 메웁니다. 두 선이 가까워져 붙는 곳은 가운데에 한 줄을 긋지 않고, 밑그림처럼 두 선이 서서히 가까워지며 합쳐집니다. 선이 교차하거나 겹친 곳도 밑그림 그대로 각 선이 이어집니다(교차점으로 꺾이거나, 겹친 두 선이 한 줄로 녹아들지 않습니다). 비스듬히 얕게 교차하는 선도 교차한 채 곧게 이어지며, 맞닿기만 하는 선(머리를 따라 그린 머리카락 윤곽 등)은 각자 자기 쪽을 지나는 별개의 선으로 남습니다. 눈 같은 점은 채운 점 그대로 그립니다. 「러프 선 굵기」보다 짧은 가지는 그리지 않습니다. 「선 끝 테이퍼」는 스위치로 켜고 끌 수 있으며, 끄면 선 끝까지 같은 굵기가 됩니다. 배경 어우러짐은 배경의 빛과 그림자를 블렌드 모드 「하드 라이트」로 겹칩니다(그림자 색은 검정이나 회색이 아니라 배경의 그림자 부분 색을 어둡게 한 것). 주변의 색은 「오버레이」로 전체에 겹쳐 색의 방향을 맞추고, 아래에서 올라오는 반사광과 주변의 반사는 「스크린」으로, 네온 같은 강한 색광은 「더하기(발광)」로 윤곽에 넣습니다. 「배경의 밝기·색감에 맞추기」는 배경보다 너무 밝거나 선명한 색을 배경의 범위로 가져오고, 어두운 곳·중간·밝은 곳을 각각 같은 밝기의 배경 색감 쪽으로 맞춥니다(선화의 검정은 그대로). 「흐림 정도」는 색을 가져올 배경을 흐리게 하는 양입니다.",
+  "helpLayerKeyframeTitle": "레이어 키프레임（파츠 단위 애니메이션）",
+  "helpLayerKeyframeDesc": "각 레이어의 위치・확대축소・회전을 프레임마다 지정하면 키프레임 사이가 자동으로 보간되는 기능입니다. 카메라 키프레임이 화면 전체를 움직이는 것과 달리, 이것은 개별 레이어만 움직입니다. 자동 채색의 각 파츠는 각각 독립된 레이어로 생성되므로, 파츠 단위 애니메이션（팔만 움직이기, 입만 여닫기 등）에 그대로 사용할 수 있습니다. 각 키프레임에는 「등속」「천천히 시작」「천천히 종료」「천천히 시작하고 종료」「튕김」이라는 이징（다음 키프레임으로의 연결 방식）을 개별적으로 설정할 수 있어, 단조로운 등속 이동뿐 아니라 튕기는 듯한 움직임도 표현할 수 있습니다. 레이어 패널의 점 3개 메뉴 「애니메이션（키프레임）」에서 설정합니다. 레이어의 그림 자체는 바뀌지 않고 표시 위치만 바뀌는 비파괴적인 변형입니다. 이 기능은 타임라인의 표시（미리보기・내보내기）에만 영향을 주며, 캔버스 모드에서의 실제 작화에는 영향을 주지 않습니다.",
+  "helpLayerGroupTitle": "레이어 그룹（여러 파츠를 한꺼번에 움직이기）",
+  "helpLayerGroupDesc": "여러 레이어를 하나의 키프레임 흐름으로 한꺼번에 움직이는 기능입니다. 예를 들어 「팔」이 피부・소매 2장의 자동 채색 파츠로 이루어져 있다면, 이 2장을 그룹화해두면 한 번의 키프레임 조작으로 함께 움직일 수 있습니다. 레이어 패널에서 여러 개를 선택（체크박스）한 상태로 하단 바의 「그룹화」 아이콘에서 만듭니다. 그룹의 움직임은 각 레이어 자체의 키프레임（설정되어 있다면）에 겹쳐서 적용되므로, 그룹 전체의 움직임과 개별 레이어의 미세 조정을 함께 사용할 수도 있습니다. 하나의 레이어는 동시에 하나의 그룹에만 속할 수 있습니다.",
+  "tipsScreenTitle": "활용 팁",
+  "tipsSearchHint": "팁 검색...",
+  "tipsCategoryVideo": "영상 제작 팁",
+  "tipsCategoryEfficiency": "제작을 빠르게 하는 팁",
+  "tipsCategoryDrawing": "작화를 부드럽게 하는 팁",
+  "tipsCategoryEffects": "연출·마무리 팁",
+  "tipsCategoryExport": "내보내기·조작 팁",
+  "tipsClipDuplicateTitle": "타임라인 소재도 복제·이동·삭제할 수 있어요",
+  "tipsClipDuplicateDesc": "이미지·동영상·오디오 클립을 탭하면 열리는 상세 시트의 복사 아이콘으로 복제할 수 있습니다. 같은 효과음을 반복해서 쓰거나 같은 이미지를 장면마다 다시 배치하는 작업도 길게 눌러 드래그하고 복제 버튼을 누르는 것만으로 끝납니다.",
+  "tipsTextCaptionTitle": "텍스트 도구로 자막 넣기",
+  "tipsTextCaptionDesc": "텍스트 도구를 사용하면 자막이나 코멘트를 프레임마다 배치할 수 있습니다. 폰트를 픽셀 모드로 바꾸면 레트로 게임 같은 질감을 연출할 수도 있습니다.",
+  "tipsAutofillPresetTitle": "자동 채색 설정은 부위별로 등록해두기",
+  "tipsAutofillPresetDesc": "피부・머리카락・옷 등 부위별로 음영까지 포함해 자동 채색 설정을 등록해두면, 선화만 그려도 채색 대부분을 자동화할 수 있습니다. 프로젝트마다 사용하는 설정만 필터링할 수도 있습니다.",
+  "tipsAutofillBaseCoatTitle": "자동 채색은 부위 나누지 않고 밑칠 레이어로만 써도 편리해요",
+  "tipsAutofillBaseCoatDesc": "자동 채색은 원래 부위별로 색을 나누기 위한 기능이지만, 꼼꼼히 나누지 않아도 선화 전체를 한 가지 색으로 칠하는 밑칠 레이어로만 사용해도 충분히 편리합니다. 선 안쪽을 한 번에 채울 수 있어서, 수동으로 페인트 통을 사용할 때 자주 생기는 칠 빠짐(선 틈으로 아래 색이 비치는 실수)을 막을 수 있습니다. 그 위에 손으로 색을 덧칠하면, 부위를 나누는 수고 없이 이점만 얻을 수 있습니다.",
+  "tipsAutofillManualPartColorTitle": "임시 색은 직접 나누고 실제 선화는 일반 레이어 한 장에 유지하기",
+  "tipsAutofillManualPartColorDesc": "먼저 눈에 잘 띄는 임시 색으로 부위를 나눈 뒤 실제 색으로 바꾸려면 이 방법을 사용하세요. 실제 선화는 일반 레이어 한 장에 모두 그리고 채색 레이어 위에 배치합니다.\n부위마다 ‘자동 채색용 선화 레이어’를 추가하고, 점 세 개 메뉴의 ‘파츠 설정’에서 해당 부위를 연결하세요. 이 방법에서는 이 레이어가 설정 연결용 보조 레이어이므로 비워 두면 됩니다. 실제 선화는 그리지 마세요. 같은 메뉴에서 ‘자동 채색 실행’을 한 번 실행해 연결된 ‘자동 채색 레이어’를 만듭니다.\n각 ‘자동 채색 레이어’에는 부위별로 눈에 잘 띄는 임시 색을 면으로 직접 칠합니다. 나중에 색을 바꿀 영역을 채우고, 윤곽선만 그리지 마세요.\n형태를 다듬은 뒤 해당 ‘자동 채색용 선화 레이어’ 메뉴에서 ‘자동 채색 실행’을 열고 ‘형태를 유지하고 색만 업데이트’를 선택하세요. 직접 칠한 형태는 유지하면서 ‘자동 채색 설정’의 실제 색을 적용할 수 있습니다. 선화에서 부위를 자동으로 판별해 한 번에 채색하려면 다른 방법을 사용하세요. 이때는 실제 선화를 ‘자동 채색용 선화 레이어’에 그립니다.",
+  "tipsBrushFavoriteTitle": "브러시는 즐겨찾기로 등록해두면 헤매지 않고 고를 수 있어요",
+  "tipsBrushFavoriteDesc": "자주 쓰는 브러시는 목록의 별 아이콘을 탭해 즐겨찾기로 등록해두세요. 목록 상단의 별 아이콘으로 즐겨찾기만 좁혀볼 수 있어 찾는 수고가 줄어듭니다. 실수로 지우지 않도록 즐겨찾기 중인 브러시는 삭제할 수 없게 되어 있습니다.",
+  "tipsPressureCurveTitle": "필압 곡선을 내 취향에 맞게 조정하기",
+  "tipsPressureCurveDesc": "설정 화면의 필압 곡선은 최대 10개의 제어점을 자유롭게 찍을 수 있습니다. 강약이 맞지 않는다고 느껴진다면 자신의 필압 습관에 맞춰 조정해 보세요.",
+  "tipsExportFormatTitle": "용도에 맞춰 내보내기 형식을 고르기",
+  "tipsExportFormatDesc": "SNS에 가볍게 올리고 싶을 때는 GIF 내보내기, 다른 영상에 겹치거나 배경을 투명하게 하고 싶을 때는 투명 WebM, 일반 동영상으로 쓰고 싶을 때는 MP4 내보내기가 알맞습니다. 용도별로 나눠 쓰면 파일 크기와 화질의 균형을 맞추기 쉬워집니다.",
+  "tipsGestureShortcutTitle": "제스처로 자주 쓰는 동작을 한 번에",
+  "tipsGestureShortcutDesc": "설정 화면의 「제스처」에서 두 손가락 탭・세 손가락 탭・길게 누르기 등에 실행 취소/다시 실행이나 스포이트를 할당할 수 있습니다. 도구를 바꾸지 않아도 되므로 작화의 리듬이 끊기지 않습니다.",
+  "tipsAudioRepeatTitle": "효과음은 클립 복제×페이드로 리듬감 있게",
+  "tipsAudioRepeatDesc": "같은 효과음을 반복해서 쓰고 싶을 때는 클립을 복제해 타이밍을 조금씩 어긋나게 배치하고, 각각에 페이드인・아웃을 설정하면 리듬감 있는 자연스러운 효과음 연타를 만들 수 있습니다.",
+  "tipsVerticalRubyTitle": "세로쓰기×루비로 타이틀 로고풍 연출",
+  "tipsVerticalRubyDesc": "텍스트 도구의 세로쓰기에 루비（후리가나）를 조합하면 일본풍 타이틀 로고나 개성 있는 제목 연출을 만들 수 있습니다. 반각 영숫자는 자동으로 가로 방향으로 회전해 배열되므로 기호나 숫자가 섞여도 읽기 쉽게 완성됩니다.",
+  "tipsBrushTrySaveTreeTitle": "새 브러시 설정은 세이브 트리에서 시험해보기",
+  "tipsBrushTrySaveTreeDesc": "브러시의 굵기나 안정화 등을 크게 바꿔 시험해보고 싶을 때는 변경 전에 세이브 트리에 저장해두면 안심입니다. 마음에 들지 않으면 바로 이전 상태로 되돌릴 수 있어 과감한 조정을 시도하기 쉬워집니다.",
+  "tipsEyedropperGestureTitle": "두 손가락 탭에 스포이트를 할당해 배색을 무너뜨리지 않기",
+  "tipsEyedropperGestureDesc": "제스처 설정에서 두 손가락 탭에 스포이트를 할당해두면 도구를 바꾸지 않고도 근처 색을 바로 뽑을 수 있습니다. 캐릭터의 배색을 유지한 채 채색을 이어가고 싶을 때 편리합니다.",
+  "tipsRulerOnionTitle": "투시 자×어니언 스킨으로 배경을 재사용하기",
+  "tipsRulerOnionDesc": "투시 자로 배경의 깊이를 정해두고, 어니언 스킨으로 앞뒤 프레임을 비쳐 보면서 캐릭터만 움직이면 배경을 매 프레임 다시 그리지 않아도 됩니다.",
+  "tipsGradientTraceTitle": "그라데이션 자동 채색×색 트레이싱으로 자연스럽게",
+  "tipsGradientTraceDesc": "자동 채색 설정에서 그라데이션을 사용할 때, 선화 색상 설정을 색 트레이스（선화 어우러짐）로 해두면 그라데이션의 미묘한 색 변화에 맞춰 선화 색도 자연스럽게 어우러져 경계가 도드라지지 않습니다.",
+  "tipsGradientOutlineHairTitle": "그라데이션×지정 색상 테두리로 앞머리에 투명감 주기",
+  "tipsGradientOutlineHairDesc": "자동 채색 설정에서 앞머리 부위를 만들고, 채우기 색을 그라데이션으로 설정한 뒤 머리색과 투명색 2가지를 선택합니다. 각도를 90도로 바꾸고 흐림 강도와 색 전환 위치를 취향대로 조정한 다음, 「지정 색상으로 테두리」를 체크하고 테두리 색을 「최근 사용한 색」에서 방금 사용한 앞머리 색과 같은 색으로 선택합니다. 앞머리 밑칠 부위뿐 아니라 그림자색 부위에도 같은 방법을 반복하면, 머리끝이 비쳐 보이는 듯한 투명감 있는 머리카락을 표현할 수 있습니다.",
+  "tipsRainNoiseTitle": "비×움직이는 노이즈로 촉촉한 공기감",
+  "tipsRainNoiseDesc": "비 필터에 약한 움직이는 노이즈 필터를 겹치면 빗방울뿐 아니라 공기 중의 입자감도 더해져 촉촉한 비 오는 날다운 질감을 연출할 수 있습니다.",
+  "tipsPartKeyframeGroupTitle": "파츠 키프레임×그룹화로 캐릭터를 통통 튀게",
+  "tipsPartKeyframeGroupDesc": "자동 채색의 각 파츠에 레이어 키프레임을 붙여 움직이고, 관련 파츠를 그룹화해 함께 튀어오르게 하면, 다시 그리지 않고도 음악에 맞춰 흔들리는 미니 애니메이션을 만들 수 있습니다.",
+  "tipsLowSpecSettingsTitle": "저사양 기기는 성능 설정과 실행 취소 횟수를 재점검하기",
+  "tipsLowSpecSettingsDesc": "동작이 무겁다고 느껴지면 성능 설정을 「저품질」 프리셋으로 바꾸고 실행 취소 횟수도 줄여보세요. 메모리 사용량이 줄어 동작이 가벼워질 수 있습니다.",
+  "tipsSeriesPresetFolderTitle": "시리즈물은 자동 채색 설정 필터링×폴더 정리로 관리하기",
+  "tipsSeriesPresetFolderDesc": "같은 작품의 여러 화를 만들 때는 폴더로 화별로 프로젝트를 묶고, 각 프로젝트에서 사용하는 자동 채색 설정을 필터링해두면 캐릭터별 배색을 혼동하지 않고 효율적으로 작업할 수 있습니다.",
+  "tipsPixelToneRetroTitle": "스탬프 픽셀 모드×스크린톤 채색으로 레트로 통일감",
+  "tipsPixelToneRetroDesc": "픽셀 모드 스탬프와 픽셀 모드 전용 체크무늬・격자무늬 스크린톤을 조합하면 화면 전체를 도트 그림풍 질감으로 통일할 수 있습니다. 레트로 게임풍 연출에 어울립니다.",
+  "tipsMagicWandLassoTitle": "매직완드 선택×올가미 채색으로 채색 분리 효율화",
+  "tipsMagicWandLassoDesc": "선택 도구의 자동 선택（매직완드）으로 대략적인 범위를 한꺼번에 선택하고, 삐져나온 부분만 올가미 선택으로 조정하면 복잡한 색 분리도 빠르게 할 수 있습니다.",
+  "tipsCommonLayerFolderTitle": "공통 레이어×폴더로 회차를 넘나들며 재사용하기",
+  "tipsCommonLayerFolderDesc": "시리즈물에서 매회 사용하는 로고나 크레딧 표기는 공통 레이어로 만들어 폴더에 정리해두면, 새 회차 프로젝트로 복사할 때도 헤매지 않고 다룰 수 있습니다.",
+  "tipsStrokeDecayFadeTitle": "스트로크 감쇠×페이드로 붓 표현",
+  "tipsStrokeDecayFadeDesc": "브러시 설정에서는 들어가기(시작점)와 빠지기(끝점)의 값과 거리를 각각 따로 조절할 수 있습니다. 스트로크 감쇠도 함께 사용하면 시작만 가늘게 하거나 끝만 길게 빼거나 양 끝을 비대칭으로 설정해 붓이나 잉크 브러시 같은 강약을 만들 수 있습니다.",
+  "tipsColorMixingFadeTitle": "혼색×페이드로 물감 같은 섞임",
+  "tipsColorMixingFadeDesc": "혼색을 켠 브러시에 페이드도 함께 조합하면, 아래 색과 섞이면서 서서히 옅어지는 실제 물감에 가까운 채색감을 얻을 수 있습니다.",
+  "tipsOutlineAnimeStyleTitle": "윤곽선×애니메이션풍으로 셀 애니메이션풍 마무리",
+  "tipsOutlineAnimeStyleDesc": "그리기 필터의 윤곽선으로 외곽선을 새 레이어에 그려내고, 애니메이션풍 필터로 색상 수를 줄이면 셀 애니메이션 같은 또렷한 마무리가 됩니다.",
+  "tipsLevelsToneCurveTitle": "레벨 보정×톤 커브로 그래픽풍으로",
+  "tipsLevelsToneCurveDesc": "레벨 보정으로 명암 차를 강하게 조정한 뒤 톤 커브로 계조를 다듬으면, 사진적인 계조에서 벗어난 포스터 같은 그래픽풍 연출을 할 수 있습니다.",
+  "tipsMosaicChromaticTitle": "모자이크×색수차로 브라운관풍의 거친 질감",
+  "tipsMosaicChromaticDesc": "모자이크로 해상도를 낮춘 뒤 색수차를 겹치면, 오래된 브라운관 TV로 보는 듯한 거친 질감을 연출할 수 있습니다. 브라운관 필터 단독과는 또 다른 질감을 만들 수 있습니다.",
+  "tipsEndCardWatermarkTitle": "워터마크는 나의 서명, 엔드카드는 별개",
+  "tipsEndCardWatermarkDesc": "동영상에 자신의 서명이나 마크를 넣고 싶을 때는 워터마크 기능을 사용하세요. 엔드카드는 모든 동영상 끝에 자동으로 표시되는 앱 자체 로고로, 무료 회원은 변경할 수 없습니다. 프리미엄 회원은 숨기거나 자신의 동영상・이미지로 교체할 수 있습니다. 엔드카드를 사용하지 않고 나만의 마무리를 만들고 싶다면, 이미지 레이어 추가와 페이드 인/아웃을 조합해 비슷한 연출을 직접 만들 수 있습니다.",
+  "tipsVerticalPixelFontTitle": "실사 영상×손그림으로 「실사×애니메이션」 만들기",
+  "tipsVerticalPixelFontDesc": "일러스트 앱과 영상 편집 앱을 겸하고 있기에 가능한 놀이법입니다. 실사 동영상 클립을 타임라인에 배치하고, 그 위 레이어에 어니언 스킨을 사용하면서 손으로 효과선이나 캐릭터를 그려 넣으면, 실사에 손그림 애니메이션이 겹쳐진 「실사×애니메이션」 믹스 미디어 영상을 만들 수 있습니다.",
+  "tipsTimelineMarkerTitle": "소리와 입모양 타이밍 맞추기는 타임스탬프로",
+  "tipsTimelineMarkerDesc": "장면은 「시작~끝 프레임의 범위」를 다루는 기능이지만, 타임스탬프는 「그 한순간」에 코멘트를 붙여 한 번의 탭으로 이동할 수 있는 기능입니다. 「120프레임째에 효과음」「180프레임째는 입모양 『아』」처럼, 같은 장면의 범위 안에 여러 타임스탬프를 찍어두면 소리와 영상의 타이밍 맞추기가 훨씬 쉬워집니다.",
+  "tipsCommunityYoutubeTitle": "작품 광장 게시는 YouTube를 통해 이루어집니다",
+  "tipsCommunityYoutubeDesc": "작품 광장에 게시하면 YouTube를 통해 작품이 공개됩니다. NIARIM은 동영상 파일 본체를 개발자의 서버로 전송・수집・저장하는 기능을 가지고 있지 않습니다. YouTube 측 공개 설정을 「일부 공개」로 설정하면, YouTube의 일반 공개 목록에는 표시되지 않고 작품 광장 내에만 게시된 상태로 만들 수 있습니다.",
+  "tipsToolbarCustomizeTitle": "툴바 재배열・숨기기로 손가락 이동 거리 줄이기",
+  "tipsToolbarCustomizeDesc": "설정 화면의 툴바 편집에서 사용하지 않는 도구를 숨기고, 자주 쓰는 도구를 손가락이 닿기 쉬운 위치로 재배열할 수 있습니다. 표시 항목을 줄여 깔끔하게 하는 것만으로 도구를 찾는 시간과 손가락 이동 거리가 줄어 작화 리듬이 좋아집니다.",
+  "tipsAutofillBlendModeTitle": "자동 채색 파츠의 블렌드 모드로 음영 질감 바꾸기",
+  "tipsAutofillBlendModeDesc": "자동 채색 설정의 각 부위에는 블렌드 모드를 설정할 수 있습니다. 음영 부위를 「곱하기」 대신 「오버레이」나 「소프트 라이트」로 하면 빛이 비치는 듯한 부드러운 음영이 됩니다. 같은 색이라도 질감을 바꿀 수 있는 숨겨진 자유도입니다.",
+  "tipsStampBlendModeTitle": "스탬프×블렌드 모드로 빛나는 이펙트",
+  "tipsStampBlendModeDesc": "배치한 스탬프 레이어의 블렌드 모드를 「스크린」이나 「가산」으로 하면, 빛 효과선이나 반짝이는 이펙트가 배경에 자연스럽게 어우러져 돋보입니다.",
+  "tipsQuickToolPenSubTitle": "빠른 도구×펜 서브 도구로 멈추지 않는 작업 흐름",
+  "tipsQuickToolPenSubDesc": "자주 쓰는 도구를 빠른 도구에 등록해두고, 펜을 길게 눌러 스크린톤 붙이기・스탬프로 전환할 수 있는 펜 서브 도구도 활용하면, 화면을 오가는 횟수를 줄여 작업 리듬을 유지할 수 있습니다.",
+  "tipsAutofillToneReuseTitle": "자동 채색의 스크린톤 설정으로 선화만 다시 그려도 채색을 재현",
+  "tipsAutofillToneReuseDesc": "자동 채색 설정의 각 부위를 「스크린톤 사용」으로 설정해두면, 선화를 다시 그릴 때마다 스크린톤이 포함된 채색을 자동으로 재현할 수 있습니다. 프레임마다 스크린톤을 다시 붙이는 수고를 줄일 수 있습니다.",
+  "tipsAutofillMisfillTitle": "자동 채색의 원리를 알면 칠하기 실수를 줄일 수 있습니다",
+  "tipsAutofillMisfillDesc": "자동 채색은 생성형 AI를 쓴 기능이 아니라, 레이어별 페인트통 칠하기를 응용한 것입니다. 그래서 긴 머리카락처럼 같은 부위 안에 선으로 둘러싸인 틈이 생기면 그곳까지 함께 칠해집니다. 대책으로는 우선 부위마다 채도가 높은 눈에 띄는 색을 지정해 한 번 칠해 보는 것을 권합니다. 잘못 칠해진 곳이 한눈에 보여 자동 채색 레이어를 손으로 고치기 쉽고, 고친 뒤에 원래 색으로 다시 설정해 덮어쓰는 형태로 자동 채색을 재실행하면 칠하기 실수를 크게 줄일 수 있습니다.",
+  "tipsHomeWidgetTitle": "홈 화면 위젯으로 작품을 항상 볼 수 있어요",
+  "tipsHomeWidgetDesc": "설정 → 홈 화면 위젯에서 작품을 선택하면, 고른 한 컷이 휴대폰 홈 화면에 정지 이미지로 표시됩니다. 「작품 선택」 화면은 프로젝트 목록 탭과 동일한 정렬・검색・즐겨찾기 필터를 사용할 수 있고, 프레임 선택 화면에서는 타임라인과 같은 재생・이동 컨트롤로 마음에 드는 한 컷을 찾을 수 있습니다. 「작품 만들기」・「작품 광장」 위젯도 함께 두면 홈 화면에서 바로 제작이나 게시된 작품 감상으로 이동할 수 있습니다.",
+  "tipsAutofillTransparentFixTitle": "자동 채색이 삐져나온 곳은 투명색 페인트통으로 지웁니다",
+  "tipsAutofillTransparentFixDesc": "자동 채색이 칠하지 말아야 할 곳까지 칠했을 때는, 지우개로 문지르기보다 그리기 색을 투명색으로 지정한 뒤 그 범위를 페인트통으로 칠하는 편이 간단합니다. 페인트통은 선으로 둘러싸인 영역을 한 번에 처리하므로, 한 번의 탭으로 삐져나온 부분만 깔끔하게 지울 수 있습니다.",
+  "tipsRadialVignetteTitle": "방사형 자×비네트로 집중선 연출",
+  "tipsRadialVignetteDesc": "방사형 자로 집중선을 한 번에 그리고, 그리기 필터의 비네트를 겹치면 만화의 클라이맥스 같은 박력 있는 연출이 됩니다.",
+  "tipsClippingGradientTitle": "클리핑×그라데이션으로 음영을 다시 그릴 수 있게",
+  "tipsClippingGradientDesc": "그라데이션 레이어를 캐릭터 레이어에 클리핑해두면, 브러시로 음영 형태를 그려 넣지 않아도 그라데이션의 범위・각도 변경만으로 음영을 다시 조정할 수 있습니다.",
+  "tipsToneCurveSepiaTitle": "톤 커브×세피아로 레트로 사진풍",
+  "tipsToneCurveSepiaDesc": "연출 필터의 톤 커브로 명암 대비를 정돈한 뒤 세피아를 겹치면, 색이 바랜 오래된 사진 같은 질감을 연출할 수 있습니다.",
+  "tipsCameraLensBlurTitle": "카메라 키프레임×렌즈 블러로 줌 블러 연출",
+  "tipsCameraLensBlurDesc": "카메라 키프레임이 줌인하는 순간에 맞춰 렌즈 블러 연출 필터를 일시적으로 강하게 설정하면, 실사 줌 블러 같은 박력을 연출할 수 있습니다.",
+  "tipsBlurVignetteBgTitle": "가우시안 블러×비네트로 부드러운 배경 보케",
+  "tipsBlurVignetteBgDesc": "배경 레이어에만 가우시안 블러와 비네트 그리기 필터를 겹쳐 걸면, 주인공 캐릭터가 자연스럽게 돋보이는 심도감 있는 카메라풍 마무리가 됩니다.",
+  "tipsSepiaVignetteTitle": "세피아×비네트로 앤티크 사진풍 영상으로",
+  "tipsSepiaVignetteDesc": "연출 필터의 세피아와 그리기 필터의 비네트를 조합하면, 네 귀퉁이가 어둡고 색이 바랜 앤티크 사진 같은 분위기의 영상으로 완성할 수 있습니다.",
+  "tipsVideoTrimReuseTitle": "동영상 클립의 사용 범위를 바꿔 같은 소재를 재사용하기",
+  "tipsVideoTrimReuseDesc": "같은 동영상 소재라도 클립마다 사용 시작・종료 프레임을 바꿔 배치하면 다른 컷으로 재사용할 수 있습니다. 소재를 늘리지 않고도 변화를 줄 수 있습니다.",
+  "tipsSaveSlotAutoSaveTitle": "세이브 슬롯×자동 저장을 나눠서 쓰기",
+  "tipsSaveSlotAutoSaveDesc": "자동 저장은 항상 최신 상태를 덮어쓰지만, 세이브 슬롯은 여러 상태를 남겨둘 수 있습니다. 중요한 시점에는 세이브 슬롯에 저장하고, 그 외 자잘한 변경은 자동 저장에 맡기면 필요한 시점으로 확실하게 되돌아갈 수 있습니다.",
+  "tipsQuickToolSwipeTitle": "빠른 도구는 위로 스와이프해서 재배열할 수 있어요",
+  "tipsQuickToolSwipeDesc": "빠른 도구의 등록 내용을 바꾸고 싶을 때는 길게 누르기뿐 아니라 위로 스와이프해도 관리 팝업을 열 수 있습니다. 한 손으로 조작할 때 빠르게 재배열하고 싶을 때 편리합니다.",
+  "tipsDrawingAreaCameraTitle": "작화 영역을 넓게×카메라 키프레임으로 안전하게 팬・줌",
+  "tipsDrawingAreaCameraDesc": "작화 영역을 내보내기 범위보다 넓게 설정해두면, 카메라 키프레임으로 팬・줌을 해도 화면 끝이 잘릴 걱정이 없습니다. 움직임이 큰 연출을 넣기 전에 확인해두면 안심입니다.",
+  "tipsWebmCommonLayerTitle": "투명 WebM×배경을 공통 레이어로 분리 관리",
+  "tipsWebmCommonLayerDesc": "투명 WebM으로 내보낸 캐릭터를 다른 영상 편집 소프트웨어에서 배경과 합성할 경우, 배경을 공통 레이어로 따로 관리해두면 투명 부분에 불필요한 색이 섞이지 않고 깔끔하게 빠집니다.",
+  "tipsLeftHandedWorkspaceTitle": "왼손잡이 모드×워크스페이스 설정으로 작업하기 편하게",
+  "tipsLeftHandedWorkspaceDesc": "왼손잡이라면 워크스페이스 설정의 왼손잡이 모드를 켜면 도킹 패널이 좌우 반전되어, 주로 쓰는 손 쪽 화면이 패널에 가려지기 어려워집니다.",
+  "tipsTransferDeviceTitle": "인계 파일로 다른 기기로 작업을 옮기기",
+  "tipsTransferDeviceDesc": "기기를 바꿔도 같은 환경에서 계속 그리고 싶을 때는 인계（.niatra）기능을 사용하면 설정・브러시・스크린톤・스탬프・팔레트 등의 환경을 한꺼번에 옮길 수 있습니다. 작업 중인 프로젝트 자체를 전달하고 싶을 때는 「공유（.niashare）」를 사용하세요.",
+  "fontSettingsTabDownloaded": "다운로드됨",
+  "fontSettingsTabSearch": "찾아서 다운로드",
+  "fontSettingsTabImport": "불러오기",
+  "fontDownloadedSearchHint": "폰트 이름으로 검색...",
+  "fontPixelModeTooltip": "픽셀 모드(도트 폰트용. 안티에일리어싱 없이 선명하게 표시)",
+  "fontEmptyTitle": "폰트가 없습니다",
+  "fontEmptyHint": "「찾아서 다운로드」또는「불러오기」탭에서 추가할 수 있습니다",
+  "fontRenameDialogTitle": "폰트 이름 변경",
+  "fontImportTitle": "기기에 저장된 폰트 불러오기",
+  "fontImportFormats": "지원 형식: TTF / OTF",
+  "fontSelectFileButton": "파일 선택",
+  "fontUnsupportedSnackbar": "이 폰트는 불러올 수 없습니다.",
+  "fontAddedSnackbar": "「{name}」을(를) 추가했습니다（다운로드됨 탭에 표시됩니다）",
+  "fontCorruptedSnackbar": "폰트가 손상되었습니다.",
+  "licenseScreenTitle": "이용약관・라이선스",
+  "licenseSectionTerms": "이용약관",
+  "licenseSectionFonts": "사용 폰트에 대하여",
+  "licenseSectionOss": "오픈소스 소프트웨어 라이선스",
+  "licenseOssListTitle": "사용 라이브러리 라이선스 목록",
+  "licenseOssListSubtitle": "본 앱이 사용하는 OSS 패키지의 라이선스를 표시합니다",
+  "licenseFfmpegNote": "WebM・AVI 내보내기에는 FFmpeg（LGPL 3.0, ffmpeg_kit_flutter_new_video 경유）를 사용하고 있습니다. 수정판 소스 코드 입수처: https://github.com/sk3llo/ffmpeg_kit_flutter\nMP4 내보내기는 기기 내장 하드웨어 인코더를 직접 사용하며, FFmpeg는 사용하지 않습니다.",
+  "licenseFontCreditMeta": "작성자: {author}   라이선스: {license}",
+  "toolbarPenTooltip": "펜（길게 눌러 서브 도구）",
+  "toolbarPenFirstUseTip": "펜을 길게 누르면 브러시・스크린톤・스탬프・올가미 채우기를 전환할 수 있습니다.",
+  "toolbarBucketTooltip": "페인트통（길게 눌러 단색/스크린톤 전환）",
+  "toolbarBucketFirstUseTip": "페인트통을 길게 누르면 단색 채우기와 스크린톤 채우기를 전환할 수 있습니다.",
+  "toolbarSelectTooltip": "선택（길게 눌러 종류 변경）",
+  "toolbarShapeTooltip": "도형（탭하여 종류 선택）",
+  "toolbarTextFirstUseTip": "문자를 자유롭게 배치할 수 있습니다. 글꼴・색・테두리도 변경할 수 있습니다.",
+  "toolbarQuickToolFirstUseTip": "탭하면 등록한 도구를 순서대로 전환할 수 있습니다. 길게 누르거나 위로 스와이프하면 등록 내용을 편집할 수 있습니다.",
+  "firstUseTipOperationGuideTitle": "기본 조작",
+  "firstUseTipOperationGuideBody": "도구 모음의 아이콘을 한 번 탭하면 해당 도구로 전환됩니다. 같은 아이콘을 길게 누르거나 위로 쓸어올리면 그 도구의 세부 설정(브러시 종류, 채우기 방식, 선택 방식 등)이 열립니다. 아이콘을 두 번 탭하면 그 도구의 간단한 설명이 표시됩니다. 여기서 닫은 뒤에도 각 화면 오른쪽 위의 「?」 버튼에서 도움말로 다시 읽을 수 있습니다.",
+  "helpBasicGestureTitle": "기본 조작(탭・길게 누르기・쓸어올리기)",
+  "helpBasicGestureDesc": "도구 모음의 아이콘은 한 번 탭하면 해당 도구로 전환됩니다. 같은 아이콘을 길게 누르거나 위로 쓸어올리면 세부 설정이 열립니다. 펜은 브러시・스크린톤・스탬프・올가미 채우기 전환, 페인트통은 단색과 스크린톤 채우기 전환, 선택 도구는 사각형・올가미・자동 선택 전환, 손가락 도구는 흐리기와 모자이크 전환, 빠른 전환 도구는 등록 내용 편집이 각각 길게 누르기・위로 쓸어올리기 뒤에 있습니다. 아이콘을 두 번 탭하면 그 도구의 간단한 설명이 화면 아래에 표시됩니다.\\n캔버스에서는 두 손가락으로 오므리면 확대・축소, 두 손가락으로 끌면 이동, 두 손가락 탭으로 실행 취소, 세 손가락 탭으로 다시 실행입니다. 화면 좌우 끝을 두 번 탭하면 앞뒤 프레임으로 이동합니다.\\n마우스나 펜 태블릿을 연결한 경우에는 휠로 확대・축소, 가운데 버튼 드래그로 이동할 수 있습니다.",
+  "toolbarStampColorLockedSnackbar": "스탬프는 색상 정보를 유지하고 있어 색을 변경할 수 없습니다",
+  "toolbarBrushSettingsTooltip": "브러시 설정",
+  "toolbarLayerTooltip": "레이어",
+  "toolbarQuickToolTooltip": "빠른 도구（길게 누르기/위로 스와이프로 편집）",
+  "toolbarSaveTooltip": "저장（세이브 트리）",
+  "toolbarBucketFlatFill": "단색 채우기",
+  "toolbarBucketToneListLabel": "스크린톤 목록",
+  "toolbarSelectRect": "사각형 선택",
+  "toolbarSelectLasso": "올가미 선택",
+  "toolbarSelectMagicWand": "자동 선택（매직 완드）",
+  "creativePanelFavoritesOnlyTooltip": "즐겨찾기만 표시",
+  "creativePanelSearchTooltip": "이름으로 검색",
+  "creativePanelSearchModeKeyword": "키워드 검색 중 (탭하면 태그 검색)",
+  "creativePanelSearchModeTag": "태그 검색 중 (탭하면 키워드 검색)",
+  "creativePanelTagSearchHint": "태그로 검색",
+  "creativePanelTagNoneYet": "아직 태그가 없습니다. 편집 화면에서 붙일 수 있습니다",
+  "creativePanelTagsLabel": "태그",
+  "creativePanelTagsHint": "쉼표나 공백으로 구분해 입력",
+  "creativePanelTagClearFilter": "태그 필터 해제",
+  "widgetSettingsTitle": "홈 화면 위젯",
+  "widgetSettingsDescription": "홈 화면에 좋아하는 작품의 한 프레임, 「작품 만들기」, 「작품 광장」 3종류의 위젯을 놓을 수 있습니다. 위젯 추가는 홈 화면을 길게 눌러서 하세요.",
+  "widgetSettingsSubtitle": "표시할 작품 · 위젯 색상",
+  "widgetArtworkSection": "표시할 작품",
+  "widgetArtworkPickButton": "작품 선택",
+  "widgetSectionArtwork": "시작 화면 위젯",
+  "widgetSectionArtworkDesc": "선택한 작품의 한 컷을 표시합니다. 누르면 NIARIM이 실행됩니다.",
+  "widgetSectionCreate": "작품 만들기 위젯",
+  "widgetSectionCreateDesc": "누르면 '작품 만들기' 화면이 열립니다.",
+  "widgetSectionPlaza": "작품 광장 위젯",
+  "widgetSectionPlazaDesc": "누르면 '작품 광장'이 열립니다.",
+  "widgetArtworkNone": "작품을 선택하지 않았습니다",
+  "widgetArtworkFrameNumberLabel": "{n}번째 프레임",
+  "@widgetArtworkFrameNumberLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetArtworkFramePickerHint": "표시할 프레임을 선택해 주세요.",
+  "widgetArtworkFramePickerConfirmButton": "이 프레임으로 결정",
+  "widgetArtworkNoFrames": "이 씬에는 아직 프레임이 없습니다.",
+  "widgetColorFollowTheme": "앱 테마에 맞추기",
+  "widgetColorCustom": "색 선택",
+  "widgetColorBase": "배경색",
+  "widgetColorForeground": "글자·아이콘 색",
+  "widgetNoProjects": "아직 작품이 없습니다. 작품을 만들면 여기에서 고를 수 있습니다.",
+  "widgetSettingsNote": "홈 화면 위젯은 동영상을 재생할 수 없으므로, 선택한 작품의 한 컷을 정지 화상으로 표시합니다.",
+  "assetTagLineArt": "선화",
+  "assetTagBasic": "기본",
+  "assetTagMainLine": "주선",
+  "assetTagPaint": "채색",
+  "assetTagBlur": "흐림",
+  "assetTagMixing": "혼색",
+  "assetTagAnalog": "아날로그풍",
+  "assetTagDecoration": "장식",
+  "assetTagRough": "러프",
+  "assetTagEffect": "효과",
+  "assetTagTaper": "인입출",
+  "assetTagPixelArt": "픽셀아트",
+  "assetTagHalftone": "망점",
+  "assetTagShadow": "그림자",
+  "assetTagLine": "선",
+  "assetTagGradient": "그러데이션",
+  "assetTagTexture": "질감",
+  "assetTagClothing": "의상",
+  "assetTagMesh": "그물",
+  "assetTagBackground": "배경",
+  "assetTagPattern": "무늬",
+  "assetTagShape": "도형",
+  "assetTagSymbol": "기호",
+  "assetTagManga": "만화",
+  "creativePanelFolderButton": "폴더",
+  "creativePanelCreateButton": "직접 제작",
+  "creativePanelImportButton": "불러오기",
+  "creativePanelFolderAllChip": "전체",
+  "creativePanelEditAction": "편집",
+  "toneTitle": "스크린톤",
+  "toneEmpty": "스크린톤이 없습니다",
+  "toneSearchHint": "스크린톤 이름으로 검색",
+  "toneEditTitle": "스크린톤 편집",
+  "toneChangeTextureButton": "텍스처 이미지 변경",
+  "toneCreateDialogTitle": "직접 제작한 스크린톤",
+  "toneImportFailedSnackbar": "스크린톤을 불러오지 못했습니다: {error}",
+  "toneExportFailedSnackbar": "스크린톤 내보내기에 실패했습니다: {error}",
+  "privacyPolicyScreenTitle": "개인정보처리방침",
+  "stampTitle": "스탬프",
+  "stampSearchHint": "스탬프 이름으로 검색",
+  "stampEmpty": "스탬프가 없습니다",
+  "stampCreateDialogTitle": "직접 제작한 스탬프",
+  "stampImportFailedSnackbar": "스탬프를 불러오지 못했습니다: {error}",
+  "stampExportFailedSnackbar": "스탬프 내보내기에 실패했습니다: {error}",
+  "stampEditTitle": "스탬프 편집",
+  "stampRotationLabel": "회전",
+  "stampPixelModeLabel": "픽셀 모드",
+  "stampPixelModeHint": "픽셀 아트 스타일(모자이크+색상 수 감소)로 렌더링합니다",
+  "stampDensityLabel": "밀도",
+  "stampScatterLabel": "분산",
+  "stampChangeImageButton": "스탬프 이미지 변경",
+  "themeSettingsTitle": "테마・외관",
+  "themeColorCustomizeSection": "색상 커스터마이즈",
+  "themeColorAccent": "강조 색상",
+  "themeColorText": "본문 및 일반 글자 색",
+  "themeColorButtonText": "버튼 글자·아이콘 색",
+  "themeColorMenuText": "메뉴·상단 바 글자 색",
+  "themeColorSelectionText": "선택 항목 글자·아이콘 색",
+  "themeColorPanelBg": "패널 배경색",
+  "themeColorMenuBg": "메뉴 배경색",
+  "themeColorSelection": "선택 색상",
+  "themeColorUpdateMark": "업데이트 표시 색상",
+  "themeResetConfirmTitle": "테마 색상을 초기화하시겠습니까?",
+  "themeResetConfirmAction": "초기화",
+  "themeUnreadableResetButton": "테마 되돌리기",
+  "themeUnreadableResetDone": "테마를 기본 색으로 되돌렸습니다.",
+  "themePresetSection": "테마 목록",
+  "themePresetDuplicateName": "{name}（사본）",
+  "themeDuplicateAction": "복제",
+  "themeAdoptColorsSnackbar": "「{name}」의 배색을 현재 색으로 반영했습니다. 색을 바꿔도 원래 테마는 그대로입니다",
+  "themeEditPresetSnackbar": "「{name}」을(를) 편집 대상으로 설정했습니다. 색 커스터마이즈의 변경이 이 테마에 저장됩니다",
+  "themeExportMenuItem": "내보내기 (.niatheme)",
+  "themeExportFailedSnackbar": "내보내기에 실패했습니다: {error}",
+  "themeImportSuccessSnackbar": ".niatheme 파일을 불러왔습니다",
+  "themeImportFailedSnackbar": "불러오기에 실패했습니다: {error}",
+  "themeSaveAsNewButton": "현재 설정을 새 테마로 저장",
+  "themeImportButton": ".niatheme 불러오기",
+  "themePresetNameDialogTitle": "테마 이름",
+  "themeDefaultPresetName": "내 테마",
+  "onionSkinTitle": "어니언 스킨",
+  "onionSkinPrevFrame": "이전 프레임",
+  "onionSkinNextFrame": "다음 프레임",
+  "onionSkinFrameInterval": "프레임 간격",
+  "onionSkinFadeByDistance": "가까울수록 진하게 표시",
+  "onionSkinColorPickerTitle": "색상 선택",
+  "onionSkinOnFixed": "ON（고정）",
+  "onionSkinFrameCount": "표시 매수",
+  "onionSkinFrameCountFixed": "{count}장（고정）",
+  "onionSkinColorLabel": "색상",
+  "onionSkinOpacityLabel": "불투명도",
+  "exportScreenTitle": "내보내기",
+  "exportPresetSection": "프리셋",
+  "exportPresetStandard": "표준",
+  "exportPresetHighQuality": "고화질",
+  "exportPresetCustom": "커스텀",
+  "exportAdvancedSettings": "상세 설정",
+  "exportFpsLabel": "FPS",
+  "exportFormatSection": "형식",
+  "exportFormatMp4": "MP4",
+  "exportFormatMp4Subtitle": "범용 동영상 형식",
+  "exportFormatGif": "GIF",
+  "exportFormatGifSubtitle": "애니메이션 GIF",
+  "exportFormatWebmSubtitle": "투명 배경 동영상",
+  "exportFormatAvi": "AVI",
+  "exportFormatAviSubtitle": "호환성 중심의 동영상 형식(투명도 미지원)",
+  "exportStartButton": "내보내기 시작",
+  "exportProjectNotFoundError": "프로젝트를 찾을 수 없습니다",
+  "exportFailedError": "내보내기 실패: {error}",
+  "exportInProgressTitle": "내보내는 중",
+  "exportCancelledSnackbar": "내보내기를 취소했습니다",
+  "exportCancelHint": "최종 처리 중이므로 완료 후 취소가 반영됩니다",
+  "exportOutdatedAutofillTitle": "자동 채색이 최신 상태가 아닙니다",
+  "exportOutdatedAutofillBody": "업데이트되지 않은 자동 채색 레이어가 있습니다. 이대로 내보내시겠습니까?",
+  "exportContinueButton": "계속",
+  "exportDurationExceededTitle": "동영상 길이 상한을 초과했습니다",
+  "exportDurationExceededBody": "무료판의 최대 동영상 길이는 {max}초입니다.\n현재 프로젝트는 약 {current}초입니다.\nPremium으로 업그레이드하면 길이 제한이 최대 2시간까지 늘어납니다.",
+  "exportViewPremiumButton": "Premium 보기",
+  "exportContinueAnywayButton": "그대로 계속",
+  "exportCompleteTitle": "내보내기 완료",
+  "exportCompleteFramesBody": "{count}개 프레임의 내보내기가 완료되었습니다.",
+  "exportSaveLocationLabel": "저장 위치: 앱 내부（{fileName}）",
+  "exportSaveLocationHint": "기기의 「사진」 앱이나 파일 앱에서 열려면 아래의 「공유」에서 저장할 앱을 선택하세요.",
+  "exportBackToProjectsButton": "프로젝트 목록으로 돌아가기",
+  "exportBackToCanvasButton": "캔버스로 돌아가기",
+  "newProjectScreenTitle": "새 프로젝트",
+  "newProjectDefaultName": "새 프로젝트",
+  "newProjectNameLabel": "프로젝트 이름",
+  "newProjectSizeLabel": "크기",
+  "newProjectPresetFullHd": "Full HD (16:9・유튜브 등 가로 영상용)",
+  "newProjectPresetHd": "HD (16:9・경량판)",
+  "newProjectPresetSquare": "1:1 정사각형 (트위터/인스타그램 게시물용)",
+  "newProjectPresetVertical": "9:16 세로형 (유튜브 쇼츠/릴스・스토리용)",
+  "newProjectPresetPortrait": "4:5 세로형 (인스타그램 피드 게시물용)",
+  "newProjectPresetAnalog": "4:3 (아날로그 방송 비율)",
+  "newProjectCustomSize": "사용자 지정",
+  "newProjectMaxEdgeHint": "긴 변은 최대 1920px까지 설정할 수 있습니다",
+  "newProjectWidthLabel": "너비(px)",
+  "newProjectHeightLabel": "높이(px)",
+  "newProjectWidthShort": "너비",
+  "newProjectHeightShort": "높이",
+  "newProjectSizePresetManageButton": "크기 설정",
+  "newProjectSaveCustomSizeButton": "이 크기 저장하기",
+  "newProjectSaveCustomSizeDialogTitle": "크기 이름을 입력하세요",
+  "newProjectSaveCustomSizeNameLabel": "크기 이름",
+  "newProjectSaveCustomSizeSavedSnackbar": "크기를 저장했습니다",
+  "canvasSizePresetManageScreenTitle": "크기 설정",
+  "canvasSizePresetEmpty": "저장된 크기가 없습니다",
+  "canvasSizePresetEmptyHint": "새 프로젝트 화면에서 사용자 지정 크기를 지정하고 「이 크기 저장하기」로 추가할 수 있습니다",
+  "canvasSizePresetEditDialogTitle": "크기 편집",
+  "canvasSizePresetDuplicateSuffix": "사본",
+  "newProjectDurationLabel": "길이(최대 {max})",
+  "@newProjectDurationLabel": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "newProjectDurationLabelWithPremiumHint": "길이(최대 {max}, Premium 이용 시 최대 2시간)",
+  "@newProjectDurationLabelWithPremiumHint": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "newProjectDurationSeconds": "{n}초",
+  "@newProjectDurationSeconds": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "newProjectDurationUnit": "초",
+  "newProjectDurationHms": "{h}시간 {m}분 {s}초",
+  "@newProjectDurationHms": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
+  },
+  "newProjectDurationHm": "{h}시간 {m}분",
+  "@newProjectDurationHm": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "newProjectDurationH": "{h}시간",
+  "@newProjectDurationH": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "newProjectDurationMs": "{m}분 {s}초",
+  "@newProjectDurationMs": {
+    "placeholders": {
+      "m": {
+        "type": "int"
+      },
+      "s": {
+        "type": "int"
+      }
+    }
+  },
+  "newProjectDurationM": "{m}분",
+  "@newProjectDurationM": {
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "newProjectBackgroundColorLabel": "배경색",
+  "newProjectDrawingAreaTitle": "그리기 영역 넓히기",
+  "newProjectDrawingAreaSubtitle": "내보내기 범위 밖에도 그릴 수 있는 영역을 추가합니다",
+  "newProjectScaleLabel": "배율",
+  "newProjectScaleValue": "{value}배",
+  "@newProjectScaleValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "newProjectDrawableAreaInfo": "그릴 수 있는 범위: {width}×{scale} = {result}",
+  "@newProjectDrawableAreaInfo": {
+    "placeholders": {
+      "width": {
+        "type": "String"
+      },
+      "scale": {
+        "type": "String"
+      },
+      "result": {
+        "type": "String"
+      }
+    }
+  },
+  "newProjectTotalFrames": "총 프레임 수: {count}",
+  "@newProjectTotalFrames": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "newProjectExportSizeInfo": "내보내기 크기: {size}",
+  "@newProjectExportSizeInfo": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "newProjectDrawingAreaInfo": "그리기 영역: {size}",
+  "@newProjectDrawingAreaInfo": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerTitle": "색상 선택",
+  "colorPickerOpacityLabel": "불투명도",
+  "colorPickerHexCopiedSnackbar": "HEX 값을 복사했습니다",
+  "colorPickerRecentColorsLabel": "최근 사용한 색상",
+  "colorPickerRecentColorsEmpty": "아직 없습니다",
+  "colorPickerPaletteLabel": "팔레트",
+  "colorPickerNewPaletteTooltip": "새 팔레트",
+  "colorPickerManagePaletteTooltip": "팔레트 관리",
+  "colorPickerPaletteEmptyHint": "아직 색상이 없습니다. 「＋」를 눌러 현재 색상을 추가할 수 있습니다.",
+  "colorPickerPaletteLongPressHint": "길게 눌러 삭제할 수 있습니다",
+  "colorPickerAddCurrentColorButton": "현재 색상을 팔레트에 추가",
+  "colorPickerPaletteNameLabel": "팔레트 이름",
+  "colorPickerFavoriteAdd": "즐겨찾기 등록",
+  "colorPickerFavoriteRemove": "즐겨찾기 해제",
+  "penSubToolTabBrush": "브러시",
+  "penSubToolTabTone": "스크린톤",
+  "penSubToolTabStamp": "스탬프",
+  "penSubToolTabLassoFill": "올가미 채우기",
+  "penSubToolToneTooltipMessage": "톤을 선택하면 페인트통이나 펜으로 스크린톤 무늬를 칠할 수 있습니다.",
+  "penSubToolStampTooltipMessage": "정해진 모양의 스탬프를 배치할 수 있습니다. 길게 누르면 회전・밀도 등을 설정할 수 있습니다.",
+  "penSubToolManageTooltip": "관리",
+  "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
+  "@penSubToolBrushSizeOpacity": {
+    "placeholders": {
+      "size": {
+        "type": "int"
+      },
+      "opacity": {
+        "type": "int"
+      }
+    }
+  },
+  "penSubToolStampRotationSubtitle": "획 방향에 맞춰 무작위로 회전",
+  "brushSearchHint": "브러시 이름으로 검색",
+  "brushEmpty": "브러시가 없습니다",
+  "brushCreateDialogTitle": "커스텀 브러시",
+  "brushImportFailedSnackbar": "브러시 불러오기에 실패했습니다: {error}",
+  "@brushImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "brushExportFailedSnackbar": "브러시 내보내기에 실패했습니다: {error}",
+  "@brushExportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "brushSettingsSizeLabel": "크기",
+  "brushSettingsOpacityLabel": "불투명도",
+  "brushSettingsSpacingLabel": "간격",
+  "brushSettingsBlurRadiusLabel": "흐림 반경",
+  "brushSettingsPixelModeTitle": "픽셀 모드",
+  "brushSettingsFadeModeTitle": "페이드",
+  "brushSettingsFadeOff": "OFF",
+  "brushSettingsFadeWeak": "약",
+  "brushSettingsFadeMedium": "중",
+  "brushSettingsFadeStrong": "강",
+  "brushSettingsFadeCustom": "사용자 지정",
+  "brushSettingsFadeStartValueLabel": "시작값(%)",
+  "brushSettingsFadeEndValueLabel": "종료값(%)",
+  "brushSettingsFadeDistanceLabel": "거리(px)",
+  "brushSettingsStrokeDecayTitle": "스트로크 감쇠",
+  "brushSettingsStrokeDecaySubtitle": "계속 그릴수록 불투명도가 낮아집니다",
+  "brushSettingsMixingTitle": "혼색 모드",
+  "brushSettingsMixingOff": "디지털",
+  "brushSettingsMixingOil": "유화풍 혼색",
+  "brushSettingsMixingWatercolor": "수채화풍 혼색",
+  "brushSettingsMixingBrightnessCorrection": "밝기 보정",
+  "brushSettingsMixingAmount": "혼색 정도",
+  "brushSettingsMixingStretch": "색 늘이기",
+  "brushSettingsMixingWater": "수분량",
+  "brushSettingsMixingPigment": "물감량",
+  "brushSettingsMixingBleed": "번짐",
+  "brushSettingsMixingTexture": "얼룩",
+  "brushSettingsMixingSoftEdge": "경계 흐림",
+  "brushSettingsMixingOilHint": "아래 색과 물감처럼 섞이고, 묻어난 색을 끌어서 늘입니다.",
+  "brushSettingsMixingWatercolorHint": "투명한 물감을 겹쳐 칠합니다. 펜을 떼면 마르면서 붓 바깥으로 조금 번지고 가장자리에 색이 고입니다.",
+  "projectDetailNotFoundTitle": "프로젝트",
+  "projectDetailNotFoundBody": "프로젝트를 찾을 수 없습니다",
+  "projectDetailFirstFrameTooltip": "첫 프레임",
+  "projectDetailPrevFrameTooltip": "1프레임 뒤로",
+  "projectDetailPauseTooltip": "일시정지",
+  "projectDetailPlayTooltip": "재생",
+  "projectDetailNextFrameTooltip": "1프레임 앞으로",
+  "projectDetailLastFrameTooltip": "마지막 프레임",
+  "projectDetailFullscreenTooltip": "미리보기 전체 화면으로 표시",
+  "projectDetailFullscreenCloseTooltip": "전체 화면 미리보기 닫기",
+  "projectDetailStartEditButton": "편집 시작",
+  "projectDetailTagsQuickAction": "태그",
+  "projectDetailShareQuickAction": "공유",
+  "projectDetailFavoriteRegistered": "즐겨찾기 등록됨",
+  "projectDetailFavoriteUnregistered": "즐겨찾기 미등록",
+  "projectDetailInfoSectionTitle": "프로젝트 정보",
+  "projectDetailInfoExportSize": "내보내기 크기",
+  "projectDetailInfoDrawingArea": "그리기 영역",
+  "projectDetailInfoDrawingAreaValue": "{size}  ({scale})",
+  "@projectDetailInfoDrawingAreaValue": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "scale": {
+        "type": "String"
+      }
+    }
+  },
+  "projectDetailInfoTotalFrames": "총 프레임 수",
+  "projectDetailInfoWorkTime": "제작 시간",
+  "projectDetailInfoLastSaved": "마지막 저장",
+  "projectDetailInfoSize": "용량",
+  "projectDetailAddTagHint": "태그 추가",
+  "projectDetailNiashareFailedSnackbar": ".niashare 생성에 실패했습니다: {error}",
+  "@projectDetailNiashareFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "projectDetailTrashMenuItem": "휴지통으로 이동",
+  "commonOff": "OFF",
+  "perfSettingsScreenTitle": "성능 설정",
+  "perfSettingsQualitySection": "화질 설정",
+  "perfSettingsQualityLow": "낮음",
+  "perfSettingsQualityMedium": "중간",
+  "perfSettingsQualityHigh": "높음",
+  "perfSettingsQualityCustom": "사용자 지정",
+  "perfSettingsQualityDescLow": "동작을 가볍게 하고 싶은 기기용(어니언 스킨 앞뒤 각 1장・슬롯 5개)",
+  "perfSettingsQualityDescMedium": "일반적인 기기용(어니언 스킨 앞뒤 각 3장・슬롯 10개)",
+  "perfSettingsQualityDescHigh": "성능에 여유가 있는 기기용(어니언 스킨 앞뒤 각 5장・트리 방식)",
+  "perfSettingsQualityDescCustom": "항목별로 개별 설정",
+  "perfSettingsCapacitySection": "용량・동작 관련 설정",
+  "perfSettingsUndoLimitTitle": "실행 취소 횟수",
+  "perfSettingsUndoLimitSubtitle": "많을수록 메모리를 더 사용합니다",
+  "perfSettingsUndoLimitValue": "{n}회",
+  "@perfSettingsUndoLimitValue": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "perfSettingsTrashAutoDeleteTitle": "휴지통 자동 삭제",
+  "perfSettingsTrashAutoDeleteSubtitle": "삭제된 프로젝트의 보관 기간",
+  "perfSettingsTrashAutoDeleteValue": "{n}일",
+  "@perfSettingsTrashAutoDeleteValue": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "perfSettingsCurrentSettingsSection": "현재 설정",
+  "perfSettingsTiltLabel": "기울기 감지",
+  "perfSettingsOnionPrevLabel": "어니언 스킨(앞)",
+  "perfSettingsOnionNextLabel": "어니언 스킨(뒤)",
+  "perfSettingsOnionFrameCountValue": "{n}장",
+  "@perfSettingsOnionFrameCountValue": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "perfSettingsSaveModeLabel": "저장 방식",
+  "perfSettingsSlotCountLabel": "슬롯 수",
+  "perfSettingsSlotCountValue": "{n}개",
+  "@perfSettingsSlotCountValue": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "perfSettingsResetButton": "기본값으로 되돌리기",
+  "perfSettingsCopyPresetButton": "현재 프리셋 복사",
+  "perfSettingsTiltSwitchTitle": "펜 기울기를 브러시에 반영",
+  "perfSettingsShowPrevOnionTitle": "이전 프레임 표시",
+  "perfSettingsOnionCountPrevLabel": "어니언 스킨 매수(앞)",
+  "perfSettingsShowNextOnionTitle": "다음 프레임 표시",
+  "perfSettingsOnionCountNextLabel": "어니언 스킨 매수(뒤)",
+  "perfSettingsSaveModeSlot": "슬롯 방식",
+  "perfSettingsSaveModeTree": "트리 방식",
+  "perfSettingsResetDialogTitle": "사용자 지정 화질 설정을 기본값으로 되돌리시겠습니까?",
+  "perfSettingsResetDialogBody": "기본값은 처음 실행 시 기기 성능에 따라 자동으로 판정된 「{preset}」 설정입니다.",
+  "@perfSettingsResetDialogBody": {
+    "placeholders": {
+      "preset": {
+        "type": "String"
+      }
+    }
+  },
+  "perfSettingsResetConfirmButton": "되돌리기",
+  "perfSettingsCopyPresetDialogTitle": "복사할 프리셋 선택",
+  "perfSettingsCopyPresetDialogBody": "사용자 지정 설정으로 복사할 프리셋을 선택하세요.",
+  "perfSettingsCopyDescLow": "앞뒤 1장 표시・경량 동작",
+  "perfSettingsCopyDescMedium": "앞뒤 3장 표시・표준",
+  "perfSettingsCopyDescHigh": "앞뒤 5장 표시・고화질",
+  "filterPanelTitle": "필터",
+  "filterPanelTitleBulk": "필터({count}프레임에 일괄 적용)",
+  "@filterPanelTitleBulk": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterSearchHint": "필터 검색",
+  "filterNameGaussianBlur": "가우시안 흐림",
+  "filterNameLensBlur": "렌즈 흐림",
+  "filterNameAnimeStyle": "애니메 스타일",
+  "filterNameOutline": "테두리",
+  "filterNameInvert": "색상 반전",
+  "filterNameToneCurve": "톤 커브",
+  "filterNameLevels": "레벨 보정",
+  "filterNameSharpen": "선명하게",
+  "filterNameUnsharpMask": "언샤프 마스크",
+  "filterSharpenStrength": "선명도 강도",
+  "filterUnsharpAmount": "적용 강도",
+  "filterNameVignette": "비네트",
+  "filterVignetteRange": "범위",
+  "filterVignetteDensity": "농도",
+  "filterVignetteHint": "범위: 네 모서리에서 중심 쪽으로 어디까지 어둡게 할지. 농도: 네 모서리의 어두운 정도.",
+  "filterVignetteColor": "비네트 색상",
+  "filterNameNoise": "필름 그레인",
+  "filterNoiseStrength": "입자 강도",
+  "filterNameRetroAnime": "레트로 애니메",
+  "filterNameCrt": "브라운관",
+  "filterRetroStrength": "강도",
+  "filterCrtScreenStrength": "주사선・형광체 농도",
+  "filterCrtAberration": "색 어긋남 강도",
+  "filterCrtBleed": "번짐 강도",
+  "filterOutlineLayerNameSuffix": "{name}(테두리)",
+  "@filterOutlineLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "filterStrengthBlurRadius": "강도(흐림 반경)",
+  "filterColorLevels": "색상 수",
+  "filterEdgeStrength": "선 농도",
+  "filterAnimeBorderWidth": "경계선 굵기",
+  "filterAnimeBorderThreshold": "색 차이 임계값",
+  "filterAnimeBorderHint": "색의 차이가 이 임계값 이상인 경계에 어두운 쪽으로 선을 긋습니다. 굵기 0이면 선이 없습니다.",
+  "filterOutlineColor": "테두리 색상",
+  "filterOutlineWidth": "테두리 두께",
+  "filterOutlineErosion": "안쪽으로 파고들기(0이면 원래 윤곽 바깥만)",
+  "filterToneCurveLinear": "표준",
+  "filterToneCurveBrighten": "밝게",
+  "filterToneCurveDarken": "어둡게",
+  "filterToneCurveHighContrast": "고대비",
+  "filterToneCurveLowContrast": "저대비",
+  "filterToneCurveInvert": "반전",
+  "filterToneCurveHint": "곡선의 빈 곳을 탭하면 점을 추가하고, 점을 드래그하면 움직일 수 있습니다. 양 끝을 제외한 점은 길게 눌러 삭제할 수 있습니다. R·G·B는 색마다의 곡선으로, RGB 곡선 다음에 적용됩니다.",
+  "filterLevelsInputBlack": "입력: 검정",
+  "filterLevelsInputWhite": "입력: 흰색",
+  "filterLevelsGamma": "감마",
+  "filterLevelsOutputBlack": "출력: 검정",
+  "filterLevelsOutputWhite": "출력: 흰색",
+  "filterLevelsHint": "R·G·B는 색마다의 보정으로, RGB 보정 다음에 적용됩니다. 감마는 중간 밝기를 바꿉니다(1보다 크면 밝게, 작으면 어둡게).",
+  "filterApplyButton": "적용",
+  "filterApplyBulkButton": "{count}프레임에 적용",
+  "@filterApplyBulkButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterEmpty": "필터가 없습니다",
+  "filterPickHint": "위 목록에서 사용할 필터를 고르세요",
+  "filterApplyingTitle": "필터 적용 중",
+  "filterApplyingSubtitle": "{name}　{count}프레임",
+  "@filterApplyingSubtitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "projectListNewFolderTitle": "새 폴더",
+  "projectListFolderHint": "같은 작품의 여러 화나 시리즈를 정리하는 용도로도 사용할 수 있습니다",
+  "projectListEmptyTitle": "프로젝트가 없습니다",
+  "projectListEmptyHint": "＋ 버튼으로 새로 만들기",
+  "projectListOpenAction": "열기",
+  "projectListCreateShareAction": ".niashare 만들기",
+  "projectListEditFolderAction": "이름・색상 편집",
+  "projectListDeleteFolderConfirmTitle": "이 폴더를 삭제하시겠습니까?",
+  "projectListDeleteFolderConfirmBody": "「{name}」을(를) 삭제합니다. 안에 있던 프로젝트・하위 폴더는 루트로 이동합니다.",
+  "@projectListDeleteFolderConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "projectListFolderRootOption": "폴더 없음(루트)",
+  "projectListEditFolderTooltip": "폴더 편집",
+  "projectListCreateFolderAction": "새 폴더 만들기",
+  "projectListFolderColorLabel": "폴더 색상",
+  "projectListMaterialIncludeTitle": "소재 포함",
+  "projectListMaterialIncludeHint": "포함하지 않으면 받는 쪽에서 소재 부족 경고가 표시됩니다.",
+  "projectListMaterialImage": "이미지",
+  "projectListMaterialVideo": "동영상",
+  "projectListMaterialAudio": "오디오",
+  "projectListIncludeFontsTitle": "폰트 포함",
+  "projectListIncludeFontsSubtitle": "사용 중인 사용자 추가 폰트를 포함합니다",
+  "blendModeNormal": "표준",
+  "blendModeMultiply": "곱하기",
+  "blendModeScreen": "스크린",
+  "blendModeOverlay": "오버레이",
+  "blendModeAddition": "더하기(발광)",
+  "blendModeSubtract": "빼기",
+  "blendModeDarken": "어둡게 하기",
+  "blendModeLighten": "밝게 하기",
+  "blendModeColorBurn": "색상 번",
+  "blendModeColorDodge": "색상 닷지",
+  "blendModeHardLight": "하드 라이트",
+  "blendModeSoftLight": "소프트 라이트",
+  "blendModeDifference": "차이",
+  "blendModeHue": "색조",
+  "blendModeSaturation": "채도",
+  "blendModeColor": "색상",
+  "blendModeLuminosity": "광도",
+  "blendModeLinearBurn": "선형 번",
+  "blendModeLinearDodge": "선형 닷지",
+  "blendModeVividLight": "비비드 라이트",
+  "blendModeLinearLight": "리니어 라이트",
+  "blendModePinLight": "핀 라이트",
+  "blendModeHardMix": "하드 믹스",
+  "blendModeExclusion": "제외",
+  "blendModeDivide": "나누기",
+  "autofillLineColorModeSpecified": "지정 색상",
+  "autofillLineColorModeSameAsFill": "채우기 색상과 동일",
+  "autofillLineColorModeTraceAdjust": "색 트레이스・선화와 조화",
+  "autofillLineColorModeTraceAdjustInfo": "원래 선 색상을 유지한 채 색상・채도・명도만 살짝 조정합니다. 선을 단색으로 채우지 않고 선화의 농담을 살리고 싶을 때 사용합니다.",
+  "autofillGradientTypeLinear": "직선",
+  "autofillGradientTypeRadialCenterOut": "방사형: 중앙→바깥쪽",
+  "autofillGradientTypeRadialOutCenter": "방사형: 바깥쪽→중앙",
+  "autofillPresetScreenTitle": "자동 채색 설정",
+  "autofillPresetSearchHint": "설정 검색",
+  "autofillPresetEmptyFavorites": "즐겨찾기한 설정이 없습니다",
+  "autofillPresetEmpty": "설정이 없습니다",
+  "autofillPresetEmptyHint": "오른쪽 아래의 ＋로 만들 수 있습니다",
+  "autofillPresetPartsCount": "{count}개 부위",
+  "@autofillPresetPartsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillPresetNewDialogTitle": "새로 만들기",
+  "autofillPresetNameLabel": "설정 이름",
+  "autofillPresetRenameDialogTitle": "설정 이름 변경",
+  "autofillPresetDeleteConfirmTitle": "「{name}」을(를) 삭제하시겠습니까?",
+  "autofillFabImportOption": "가져오기",
+  "autofillPresetExportMenuItem": "내보내기 (.niafill)",
+  "autofillPresetImportSuccessSnackbar": "{count}개의 설정을 가져왔습니다",
+  "autofillPresetImportFailedSnackbar": "가져오기에 실패했습니다: {error}",
+  "autofillPresetExportFailedSnackbar": "내보내기에 실패했습니다: {error}",
+  "autofillPresetDuplicateName": "{name} (사본)",
+  "@autofillPresetDeleteConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillPartSearchHint": "부위 이름으로 검색",
+  "autofillPartUnconfiguredBanner": "설정되지 않은 부위가 {count}개 있습니다: {names}(스크린톤 미선택)\n모두 설정할 때까지 이 화면을 닫을 수 없습니다.",
+  "@autofillPartUnconfiguredBanner": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillPartUnconfiguredDialogTitle": "설정되지 않은 부위가 있습니다",
+  "autofillPartUnconfiguredDialogBody": "저장하기 전에 다음 부위를 설정해 주세요.",
+  "autofillPartUnconfiguredItem": "・{name}: 스크린톤이 선택되지 않았습니다",
+  "@autofillPartUnconfiguredItem": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillPartUnconfiguredBackButton": "설정으로 돌아가기",
+  "autofillPartEmpty": "부위가 없습니다\n＋ 버튼으로 추가해 주세요",
+  "autofillPartToneUnselected": "스크린톤이 선택되지 않았습니다",
+  "autofillPartAddDialogTitle": "부위 추가",
+  "autofillPartNameLabel": "부위 이름",
+  "autofillPartAddButton": "추가",
+  "autofillPartRenameDialogTitle": "부위 이름 변경",
+  "autofillPartDetailDialogTitle": "{name} 상세 설정",
+  "@autofillPartDetailDialogTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillPartFillColorLabel": "채우기 색상",
+  "autofillPartSelectColorButton": "색상 선택",
+  "autofillPartOutlineLabel": "지정 색상으로 테두리",
+  "autofillPartOutlineWidthLabel": "테두리 두께: {value}px",
+  "autofillPartLineGapLabel": "선화와 채색 사이의 틈 메우기: {value}",
+  "autofillPartLineGapHint": "값이 클수록 선의 옅은 가장자리 아래까지 칠해져 선화와 채색 사이의 틈이 작아집니다(윤곽선이나 채색과 같은 선화 색을 쓸 때 보이는 틈을 조정합니다).",
+  "autofillEyedropperFromThumbnailButton": "이미지에서 추출",
+  "autofillEyedropperDialogTitle": "이미지에서 색상 추출",
+  "autofillEyedropperDialogHint": "이미지를 탭하여 색상을 선택하세요",
+  "autofillEyedropperPickedLabel": "선택한 색상",
+  "autofillEyedropperImageLoadFailedSnackbar": "이미지를 불러올 수 없었습니다.",
+  "autofillThumbnailMenuItem": "썸네일 이미지 설정",
+  "autofillThumbnailLoadButton": "이미지 불러오기",
+  "autofillThumbnailDeleteButton": "썸네일 이미지 삭제",
+  "autofillThumbnailDeleteConfirmTitle": "썸네일 이미지를 삭제하시겠습니까?",
+  "autofillThumbnailDeleteConfirmBody": "삭제하면 기본 파츠 색상 표시(최대 4색)로 돌아갑니다.",
+  "autofillThumbnailCropDialogTitle": "썸네일 이미지 조정",
+  "autofillThumbnailCropDialogHint": "드래그로 위치 조정, 핀치로 확대/축소, 두 손가락으로 회전할 수 있습니다",
+  "autofillThumbnailCropLoadFailed": "이미지를 불러올 수 없업니다. 다른 이미지를 샜도해 주세요.",
+  "autofillThumbnailSetSnackbar": "썸네일 이미지를 설정했습니다",
+  "autofillPartGradientSetButton": "그라데이션 설정",
+  "autofillPartGradientEditButton": "그라데이션 편집",
+  "autofillPartFillOpacityLabel": "불투명도(채우기 레이어): {value}%",
+  "@autofillPartFillOpacityLabel": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillPartLineColorLabel": "선화 색상",
+  "autofillPartTraceHueLabel": "색조: {value}",
+  "@autofillPartTraceHueLabel": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillPartTraceSaturationLabel": "채도: {value}",
+  "@autofillPartTraceSaturationLabel": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillPartTraceLightnessLabel": "명도: {value}",
+  "@autofillPartTraceLightnessLabel": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillPartLineOpacityLabel": "불투명도(선화 레이어): {value}%",
+  "@autofillPartLineOpacityLabel": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillPartToneLabel": "스크린톤",
+  "autofillPartUseToneCheckbox": "스크린톤 사용",
+  "autofillPartBlendModeLabel": "블렌드 모드",
+  "autofillPartApplyButton": "적용",
+  "autofillPartGradientDialogTitle": "{name} 그라데이션",
+  "@autofillPartGradientDialogTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "autofillPartGradientTypeLabel": "종류",
+  "autofillPartGradientTypeInfo": "직선: 지정한 각도를 따라 색이 변합니다. 방사형(중앙→외곽): 중심에서 바깥쪽으로, 방사형(외곽→중앙): 바깥쪽에서 중심으로 색이 변합니다.",
+  "autofillPartGradientFeatherInfo": "0%로 설정하면 인접한 색의 경계가 뚜렷해집니다. 100%로 설정하면 옆 색상의 끝까지 완전히 부드럽게 섞입니다.",
+  "autofillPartGradientAngleLabel": "각도: {value}°",
+  "@autofillPartGradientAngleLabel": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillPartGradientColorLabel": "색상",
+  "autofillPartGradientAddColorButton": "색상 추가",
+  "autofillPartGradientRemoveButton": "그라데이션 해제",
+  "autofillPartGradientFeatherLabel": "흐림 강도: {value}%",
+  "@autofillPartGradientFeatherLabel": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillPartGradientDragHint": "오른쪽 핸들을 드래그하여 색상 순서를 바꿀 수 있습니다",
+  "autofillPartGradientStopLabel": "전환 위치: {value}%",
+  "@autofillPartGradientStopLabel": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "autofillPartGradientStopDragHint": "▲ 표시를 좌우로 드래그하여 각 색상의 위치를 조정할 수 있습니다",
+  "saveTreeScreenTitleTree": "세이브 트리",
+  "saveTreeScreenTitleSlot": "세이브 슬롯",
+  "timelineExportMenuItem": "내보내기",
+  "timelineExportFrameMenuItem": "프레임을 이미지로 내보내기",
+  "timelineExportFrameDialogTitle": "프레임을 이미지로 내보내기",
+  "timelineExportFrameDialogMessage": "현재 표시 중인 프레임 1장을 정지 이미지로 저장합니다. 형식을 선택해 주세요.",
+  "timelineExportFramePngOption": "PNG로 저장",
+  "timelineExportFrameJpegOption": "JPEG로 저장",
+  "@timelineExportFrameSuccessSnackbar": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineExportFrameSuccessSnackbar": "{fileName}(으)로 저장했습니다（작품 목록 탭에서 확인할 수 있습니다）",
+  "timelineExportFrameErrorSnackbar": "프레임 내보내기에 실패했습니다",
+  "timelineDurationChangeMenuItem": "길이 변경",
+  "timelineCanvasSizeChangeMenuItem": "캔버스 크기 변경",
+  "timelineDurationFramesLabel": "프레임 수",
+  "timelineDurationSecondsLabel": "초수",
+  "timelineDurationShrinkConfirmTitle": "그래도 줄일까요?",
+  "timelineDurationShrinkConfirmBody": "잘려나갈 범위의 프레임에는 그림 내용이나 레이어 추가 등의 변경 사항이 있습니다. 계속 진행하면 해당 프레임은 복구할 수 없습니다. 정말로 삭제하시겠습니까?",
+  "timelineCanvasSizeDragHint": "테두리 안쪽을 드래그하면 위치를, 모서리를 드래그하면 크기를 바꿀 수 있습니다(원래 크기 근처에서 스냅됩니다)",
+  "timelineCanvasSizeAngleLabel": "각도",
+  "saveTreeSaveAsChildHint": "선택 중인 노드의 하위 항목으로 저장합니다.",
+  "saveTreeSaveAsRootHint": "루트 노드로 저장합니다.",
+  "saveTreeCommentLabel": "코멘트(선택 사항)",
+  "saveTreeCommentHint": "예: 배경 완성",
+  "saveTreeSizeWarningSnackbar": "세이브 트리의 용량이 커지고 있습니다(약 {mb}MB). 불필요한 저장 데이터를 삭제하는 것을 권장합니다.",
+  "saveTreeSaveFailedSnackbar": "저장에 실패했습니다. 남은 저장 공간을 확인한 뒤 다시 시도해 주세요 ({error})",
+  "@saveTreeSizeWarningSnackbar": {
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "saveTreeSlotWriteTooltip": "이 슬롯에 저장",
+  "saveTreeSlotLoadTooltip": "이 슬롯에서 불러오기",
+  "saveTreeSlotDeleteTooltip": "이 슬롯 삭제",
+  "saveTreeSlotSaveDialogTitle": "슬롯 {n}에 저장",
+  "@saveTreeSlotSaveDialogTitle": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "saveTreeSlotOverwriteWarning": "기존 데이터({date})를 덮어씁니다.",
+  "@saveTreeSlotOverwriteWarning": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "saveTreeRestoreAction": "복원",
+  "saveTreeTimelineActionChoiceBody": "이 세이브를 현재 내용으로 「덮어쓰기」할지, 「여기서부터 다시 시작」할지 선택하세요.",
+  "saveTreeOverwriteAction": "덮어쓰기",
+  "saveTreeOverwriteConfirmBody": "그 시점의 세이브 데이터가 사라집니다. 계속하시겠습니까?",
+  "saveTreeResumeFromHereAction": "여기서부터 다시 시작",
+  "saveTreeResumeConfirmBody": "저장하지 않은 현재 데이터가 사라집니다. 계속하시겠습니까?",
+  "saveTreeProjectDetailResumeBody": "이 세이브 데이터에서 작업을 다시 시작하시겠습니까?",
+  "saveTreeLoadFailedSnackbar": "저장 데이터를 불러오지 못했습니다",
+  "saveTreeRestoredSnackbar": "{name}을(를) 복원했습니다",
+  "@saveTreeRestoredSnackbar": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "saveTreeSlotLabel": "슬롯{n}",
+  "@saveTreeSlotLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "saveTreeSlotFallbackName": "슬롯 {n}",
+  "@saveTreeSlotFallbackName": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "saveTreeNoDataLabel": "저장 데이터 없음",
+  "saveTreeEmptyTitle": "저장 데이터가 없습니다",
+  "saveTreeEmptyHint": "상단의 「저장」 버튼으로 첫 번째 노드를 만들 수 있습니다",
+  "saveTreeNodeDefaultTitle": "저장",
+  "saveTreeNodeDefaultName": "저장 데이터",
+  "saveTreeChangeDataTitle": "저장 데이터 변경",
+  "saveTreeChangeDataTitleWithProject": "저장 데이터 변경({name})",
+  "@saveTreeChangeDataTitleWithProject": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "saveTreeChangeExceedMessage": "현재 저장 데이터 수가\n새 저장 가능 수를 초과했습니다.\n\n유지할 저장 데이터를 선택해 주세요.",
+  "saveTreeKeepableCountLabel": "유지 가능한 저장 수: {n}개",
+  "@saveTreeKeepableCountLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "saveTreeKeepLatestButton": "최신 {n}개 저장",
+  "@saveTreeKeepLatestButton": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "saveTreeSelectDataButton": "저장 데이터 선택",
+  "saveTreeSelectedCountLabel": "선택됨: {selected} / {limit}개",
+  "@saveTreeSelectedCountLabel": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "saveTreeBackButton": "뒤로",
+  "saveTreeNextButton": "다음",
+  "saveTreeDiscardDialogTitle": "선택되지 않은 저장 데이터",
+  "saveTreeArchiveOptionTitle": "보관용으로 유지(권장)",
+  "saveTreeArchiveOptionSubtitle": "세이브 트리 방식으로 되돌리면 자동으로 복원됩니다.\n저장 공간을 사용합니다.",
+  "saveTreeDeleteOptionTitle": "완전히 삭제",
+  "saveTreeDeleteOptionSubtitle": "선택되지 않은 {count}개를 완전히 삭제합니다.\n저장 공간을 절약할 수 있습니다.\n※삭제한 데이터는 되돌릴 수 없습니다.",
+  "@saveTreeDeleteOptionSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saveTreeApplyChangeButton": "변경 적용",
+  "canvasEditMenuAutofillPresets": "자동 채색 설정",
+  "canvasEditMenuAutofillPresetsSubtitle": "부위별 색・스크린톤 조합을 편집",
+  "canvasEditMenuBackgroundToggle": "배경 전환",
+  "canvasEditMenuBackgroundCurrentColor": "현재: 프로젝트 배경색(탭하면 투명으로)",
+  "canvasEditMenuBackgroundCurrentTransparent": "현재: 투명(탭하면 프로젝트 배경색으로)",
+  "canvasEditMenuOnionSkinSubtitle": "앞뒤 프레임을 흐리게 겹쳐서 표시",
+  "canvasEditMenuFilterSubtitle": "흐림, 톤 커브 등을 적용",
+  "canvasEditMenuFrameMultiSelect": "프레임 다중 선택",
+  "canvasEditMenuFrameMultiSelectSubtitle": "대량 처리(필터 일괄 적용 등)에 사용",
+  "canvasEditMenuPressureCurve": "필압 곡선",
+  "canvasEditMenuPressureCurveSubtitle": "펜 입력 설정 열기(설정 화면과 공용)",
+  "canvasEditMenuMeshTransform": "자유 변형・메시 변형",
+  "canvasEditMenuMeshTransformSubtitle": "선택 없이 레이어 전체를 변형합니다",
+  "meshTransformPanelTitle": "자유 변형・메시 변형",
+  "meshTransformPanelHint": "손가락으로 모서리나 격자점을 드래그하세요(두 손가락으로 각각 다른 점을 잡으면 회전·확대축소도 가능)",
+  "meshTransformDensityLabel": "분할 수",
+  "meshTransformRotateLabel": "회전",
+  "meshTransformScaleLabel": "확대축소",
+  "meshTransformApplyButton": "적용",
+  "canvasLassoEnclosedLabel": "둘러싸서 채우기",
+  "canvasInvertSelectionTooltip": "선택 영역 반전",
+  "canvasTapToEnterTextLabel": "캔버스를 탭하여 텍스트 입력",
+  "canvasRulerFirstUseTip": "자를 사용하면 곧은 선이나 깔끔한 도형을 그릴 수 있습니다.",
+  "canvasRulerTooltip": "자",
+  "commonUndo": "실행 취소",
+  "commonRedo": "다시 실행",
+  "canvasSettingsMenuTooltip": "설정/편집",
+  "canvasFrameSelectedCount": "{selected} / {total} 프레임 선택됨",
+  "@canvasFrameSelectedCount": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "canvasSelectAllButton": "전체 선택",
+  "canvasDeselectAllButton": "전체 해제",
+  "canvasSelectionFreeTransform": "자유 변형",
+  "canvasSelectionMeshTransform": "메시 변형",
+  "canvasSelectionRevertButton": "변형 취소",
+  "canvasSelectionRevertTooltip": "변형을 취소하고 선택 도구를 종료",
+  "canvasSelectionApplyButton": "변형 적용",
+  "canvasSelectionApplyTooltip": "변형을 확정하고 선택 도구를 종료",
+  "canvasSelectionSliderMoveX": "X 이동",
+  "canvasSelectionSliderMoveY": "Y 이동",
+  "canvasSelectionSliderScale": "크기 조절",
+  "canvasSelectionSliderRotate": "회전",
+  "canvasApplyFilterButton": "필터 적용",
+  "canvasShapeOff": "OFF(일반 브러시로 돌아가기)",
+  "canvasShapeLine": "선",
+  "canvasShapeRect": "사각형",
+  "canvasShapeCircle": "원",
+  "canvasMissingMaterialsSnackbar": "소재가 부족합니다",
+  "canvasResearchButton": "다시 검색",
+  "canvasTextInputTitle": "텍스트 입력",
+  "canvasTextEditTitle": "텍스트 편집",
+  "canvasTextInputHint": "텍스트를 입력하세요",
+  "canvasTextFontLabel": "폰트",
+  "canvasTextStandardFont": "표준 폰트",
+  "canvasTextBold": "굵게",
+  "canvasTextItalic": "기울임꼴",
+  "canvasTextVertical": "세로쓰기",
+  "canvasTextHorizontal": "가로쓰기",
+  "canvasTypesettingHelpTooltip": "조판・루비에 대하여",
+  "canvasTextLineHeight": "줄 간격",
+  "canvasTextLetterSpacing": "자간",
+  "canvasTextAlign": "정렬",
+  "canvasTextOutline": "테두리",
+  "canvasOutlineWidthLabel": "굵기",
+  "canvasHelpRotationTitle": "반각 영숫자 회전(세로쓰기 전용)",
+  "canvasHelpRotationBody": "영문자・기호는 자동으로 90° 회전하여 표시됩니다.",
+  "canvasHelpTatechuyokoTitle": "다테추요코(세로쓰기 전용)",
+  "canvasHelpTatechuyokoBody": "반각 숫자가 2자리 연속되면 한 글자 높이에 가로로 나란히 자동으로 들어갑니다(예: 12).",
+  "canvasHelpRubyTitle": "루비(후리가나)",
+  "canvasHelpRubyBody": "「{example}」와 같이 입력하면 바탕 문자 위(가로쓰기)나 오른쪽(세로쓰기)에 작은 읽는 법이 표시됩니다. 세로쓰기・가로쓰기 모두 사용할 수 있지만, 루비가 포함된 텍스트는 가로쓰기에서 자동 줄바꿈이 되지 않습니다(수동 줄바꿈만 지원).",
+  "@canvasHelpRubyBody": {
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
+  },
+  "layerPanelTitle": "레이어",
+  "layerPanelHelpTooltip": "도움말",
+  "layerPanelSearchHint": "레이어 이름으로 검색",
+  "layerPanelSelectAll": "전체 선택",
+  "layerPanelDeselectAll": "전체 해제",
+  "layerPanelNewLayerButton": "일반 레이어",
+  "layerPanelNewFolderButton": "새 폴더",
+  "layerPanelImportImageButton": "이미지 불러오기",
+  "layerPanelDefaultLayerName": "레이어{n}",
+  "@layerPanelDefaultLayerName": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "layerPanelDefaultFolderName": "폴더{n}",
+  "@layerPanelDefaultFolderName": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "layerPanelDefaultLineartName": "선화{n}",
+  "@layerPanelDefaultLineartName": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "layerPanelDefaultAutofillName": "자동 채색{n}",
+  "@layerPanelDefaultAutofillName": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "layerPanelDefaultSelectionName": "선택{n}",
+  "@layerPanelDefaultSelectionName": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "layerPanelDefaultCommonName": "공통{n}",
+  "@layerPanelDefaultCommonName": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "layerPanelClippingBadge": "클리핑",
+  "layerPanelAddTooltip": "기타 추가",
+  "layerPanelAutofillMarkTooltip": "선화가 업데이트되었습니다. 탭하면 자동 채색을 최신 상태로 업데이트할 수 있습니다.",
+  "layerPanelRangeAllFrames": "전체 프레임",
+  "layerPanelRangeCurrentScene": "현재 씬",
+  "layerPanelRangeSceneSpecified": "씬 지정",
+  "layerPanelRangeFrameSpan": "{start}〜{end}",
+  "@layerPanelRangeFrameSpan": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "layerPanelMenuFrameRangeChange": "표시 프레임 범위 변경",
+  "layerPanelMenuRangeChange": "표시 범위 변경",
+  "layerPanelMenuPartAssign": "파츠 설정",
+  "layerPanelMenuRunAutofill": "자동 채색 실행",
+  "layerPanelMenuOrphanFill": "최신 색으로 채우기",
+  "layerPanelMenuOrphanFillSubtitle": "대응하는 선화 레이어를 찾을 수 없어 색 업데이트만 실행합니다",
+  "layerPanelMenuReplaceMaterial": "소재 교체",
+  "layerPanelDeleteConfirmTitle": "{name}을(를) 삭제하시겠습니까?",
+  "@layerPanelDeleteConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "layerPanelDeleteConfirmBody": "이 소재의 표시 범위 내 모든 프레임에서 삭제됩니다.",
+  "layerPanelCommonDeleteMidDialogTitle": "{name}의 표시 범위를 변경하시겠습니까?",
+  "@layerPanelCommonDeleteMidDialogTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "layerPanelCommonDeleteMidDialogBody": "공통 레이어의 표시 범위는 연속된 1개 구간으로만 설정할 수 있어, 범위 도중의 프레임에서는 삭제할 수 없습니다. 대신 이 프레임을 기준으로 이전과 이후 중 어느 쪽을 남길지 선택해 주세요.",
+  "layerPanelCommonDeleteKeepBeforeButton": "이전을 남기기",
+  "layerPanelCommonDeleteKeepAfterButton": "이후를 남기기",
+  "layerPanelRangeDialogTitle": "표시 범위",
+  "layerPanelRangeStartFrameLabel": "시작 프레임",
+  "layerPanelRangeEndFrameLabel": "종료 프레임",
+  "layerPanelRangeTilde": "〜",
+  "layerPanelRangeUseCurrentButton": "현재 범위 사용",
+  "layerPanelRangeTargetSceneLabel": "대상 씬",
+  "layerPanelRangeFrameRangeLabel": "프레임 범위 지정",
+  "layerPanelMenuNormalLayer": "일반 레이어",
+  "layerPanelMenuCommonLayer": "공통 레이어",
+  "layerPanelMenuLineartLayer": "자동 채색용 선화 레이어",
+  "layerPanelMenuAutofillLayer": "자동 채색 레이어",
+  "layerPanelMenuSelectionLayer": "선택 레이어",
+  "layerPanelOpacityLabel": "불투명도",
+  "layerPanelLockLabel": "잠금",
+  "layerPanelOpacityLockLabel": "불투명도 잠금",
+  "brushPanelDeleteConfirmTitle": "\"{name}\"을(를) 삭제할까요?",
+  "brushPanelDeleteConfirmBody": "삭제한 브러시는 되돌릴 수 없습니다.",
+  "numberInputRangeError": "{min}~{max} 사이의 숫자를 입력하세요",
+  "layerPanelClippingDescription": "아래 레이어의 불투명 범위 내에만 그리기",
+  "layerPanelConvertToCommonLabel": "공통 레이어로 변경",
+  "layerPanelConvertOption1Title": "현재 레이어를 공통화",
+  "layerPanelConvertOption1Subtitle": "이 레이어만 공통 레이어로 설정합니다",
+  "layerPanelConvertOption2Title": "표시 중인 레이어를 병합해 공통화",
+  "layerPanelConvertOption2Subtitle": "현재 표시 중인 모든 레이어를 통합한 결과를 공통 레이어로 만듭니다",
+  "layerPanelCommonRangeTitle": "공통 레이어 범위",
+  "layerPanelHelpDialogTitle": "레이어에 대하여",
+  "layerPanelHelpBlendModeBody": "레이어의 합성 방식을 변경합니다. 곱하기・스크린・오버레이 등이 있습니다.타일을 탭하면 위의 미리보기에 이 프레임이 그 합성 방식으로 어떻게 보이는지 표시되고, 「적용」으로 확정합니다.",
+  "layerPanelHelpClippingBody": "아래 레이어의 불투명 픽셀 범위 내에만 그립니다. 그리기 범위를 제어하고 싶을 때 사용하세요.",
+  "layerPanelCommonLayerLabel": "공통 레이어",
+  "layerPanelHelpCommonLayerBody": "여러 프레임에서 같은 내용을 공유하는 레이어입니다. 표시할 프레임 범위를 설정할 수 있습니다.",
+  "layerPanelAutofillMethodTitle": "자동 채색 방법",
+  "layerPanelAutofillNoLineartSnackbar": "대응하는 자동 채색용 선화 레이어를 찾을 수 없습니다.",
+  "layerPanelAutofillNote1": "※ 자동 채색을 처음 실행할 때는 어떤 방법을 선택해도 선화에서 새로 채색됩니다.",
+  "layerPanelAutofillNote2": "※ 자동 채색 레이어가 없는 경우 어느 쪽을 선택해도 영역을 처음부터 판정해 자동 채색합니다.",
+  "layerPanelAutofillSmartUpdateTitle": "변경된 형태만 업데이트",
+  "layerPanelAutofillSmartUpdateHint": "일반적으로 권장합니다. 선화 변경을 반영하면서 기존 수동 조정을 가능한 한 유지합니다",
+  "layerPanelAutofillSmartUpdateNote": "※ 새 영역은 자동으로 채색하고, 겹치는 기존 영역의 색은 유지하며, 선화에서 빠진 영역은 삭제합니다.",
+  "layerPanelAutofillRepaintTitle": "선화에서 형태를 갱신해 채색",
+  "layerPanelAutofillRepaintHint": "현재 자동 채색용 선화의 형태에 맞추고 싶은 경우",
+  "layerPanelAutofillRepaintNote": "※ 자동 채색용 선화에서 영역을 다시 판정합니다. 현재 자동 채색 형태는 교체됩니다.",
+  "layerPanelAutofillColorUpdateTitle": "형태를 유지하고 색만 업데이트",
+  "layerPanelAutofillColorUpdateHint": "수동으로 조정한 자동 채색 형태를 유지하고 싶은 경우",
+  "layerPanelAutofillColorUpdateNote": "※ 현재 불투명 영역을 유지한 채 최신 색으로 업데이트합니다. 수동 형태 조정은 유지됩니다.",
+  "layerPanelExecuteButton": "실행",
+  "layerPanelAutofillPartMissingSnackbar": "파츠가 설정되지 않았습니다.「파츠 설정」에서 설정해 주세요.",
+  "layerPanelAutofillPresetMissingSnackbar": "자동 채색 설정에서 대응하는 부위를 찾을 수 없습니다.",
+  "layerPanelOrphanFillSuccessSnackbar": "대응하는 선화 레이어를 찾을 수 없어 최신 색으로 채웠습니다.",
+  "layerPanelOrphanFillFailSnackbar": "파츠가 설정되지 않았거나 채울 모양이 없어 처리할 수 없었습니다.",
+  "layerPanelAutofillUpdateHelpTitle": "자동 채색 업데이트 표시",
+  "layerPanelAutofillUpdateHelpBody": "현재 자동 채색이 최신 상태가 아닙니다. 탭하면 업데이트할 수 있습니다.",
+  "layerPanelReplaceMaterialSuccessSnackbar": "소재를 교체했습니다: {name}",
+  "@layerPanelReplaceMaterialSuccessSnackbar": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "layerPanelImportImageSuccessSnackbar": "이미지를 불러왔습니다: {name}",
+  "@layerPanelImportImageSuccessSnackbar": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "layerPanelCopySuffix": "{name} 사본",
+  "@layerPanelCopySuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineFullscreenPreviewCloseTooltip": "전체 화면 미리보기 닫기",
+  "timelineDefaultProjectName": "프로젝트 이름",
+  "timelinePreviewPlaceholder": "미리보기",
+  "timelinePreviewFullscreenTip": "탭하면 미리보기를 전체 화면으로 볼 수 있습니다. 완성도 확인에 편리합니다.",
+  "timelinePreviewFullscreenTooltip": "미리보기 전체 화면으로 보기",
+  "timelineAddVideoTooltip": "＋동영상",
+  "timelineAddAudioTooltip": "＋음원",
+  "timelineEffectFilterLabel": "연출 필터",
+  "timelineAddCameraKfTooltip": "카메라 키프레임 추가",
+  "timelineAddWatermarkTooltip": "＋워터마크",
+  "timelineStackScopeRange": "프레임 범위",
+  "timelineStackTargetLabel": "이 겹침 순서를 쓸 곳",
+  "timelineStackTargetScenes": "장면 여러 개 선택",
+  "timelineStackTargetAllFrames": "모든 프레임",
+  "timelineStackScenesHint": "선택한 장면의 모든 프레임에 같은 순서를 씁니다. 여기서 순서를 바꾸면 선택한 장면 모두에 적용됩니다.",
+  "timelineStackAllFramesHint": "모든 장면의 모든 프레임에 같은 순서를 씁니다. 여기서 순서를 바꾸면 모든 장면에 적용됩니다.",
+  "timelineStackRangesTakePriority": "프레임 범위를 지정한 프레임은 그 범위의 순서가 우선합니다.",
+  "timelineStackRangeLabel": "F{start}~F{end}",
+  "@timelineStackRangeLabel": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeAdd": "F{n}에 범위 추가",
+  "@timelineStackRangeAdd": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeHint": "지정한 범위의 프레임만 여기서 정한 순서가 됩니다. 범위 밖은 장면 전체의 순서입니다.",
+  "timelineStackRangeEmpty": "범위가 없습니다. 위의 버튼으로 현재 프레임에 만들 수 있습니다.",
+  "timelineStackRangeOrderHint": "{range}의 겹침 순서（위일수록 앞）. 손잡이를 드래그하거나 화살표로 순서를 바꿉니다.",
+  "@timelineStackRangeOrderHint": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineStackRangeDelete": "이 범위 삭제",
+  "timelineAddMaterialTooltip": "소재 추가",
+  "timelineMaterialRowLabel": "배치할 줄",
+  "timelineMaterialNewRow": "새 줄",
+  "timelineAddTextTooltip": "＋텍스트",
+  "timelineAddImageTooltip": "＋이미지",
+  "timelineStackOrderTitle": "겹침 순서",
+  "timelineMaterialText": "텍스트",
+  "timelineAddTextDialogTitle": "텍스트 추가",
+  "timelineEditSectionText": "글자",
+  "timelineEditSectionTransform": "배치",
+  "timelineEditSectionMask": "마스크",
+  "timelineTransformRotationX": "X축 회전",
+  "timelineTransformRotationY": "Y축 회전",
+  "timelineTransformRotationZ": "Z축 회전",
+  "timelineTransformReset": "배치 초기화",
+  "timelineKeyframeAddHere": "F{n}에 키프레임 추가",
+  "@timelineKeyframeAddHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeRemoveHere": "F{n}의 키프레임 삭제",
+  "@timelineKeyframeRemoveHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeWholeHint": "소재 전체에 같은 배치가 쓰입니다. 움직이려면 다른 프레임으로 이동해 키프레임을 추가하세요.",
+  "timelineKeyframeAnimHint": "키프레임 {count}개: F{n}의 값으로 기록하고, 사이는 자동으로 이어집니다.",
+  "@timelineKeyframeAnimHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineGizmoHint": "미리보기에서 드래그하면 이동, 모서리 점으로 크기 조절, 위쪽 점으로 회전합니다. 두 손가락으로도 조작할 수 있습니다.",
+  "timelineMaterialOutOfRange": "이 프레임에는 표시되지 않습니다 (F{start}~F{end}에 표시)",
+  "@timelineMaterialOutOfRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineMaskNone": "없음",
+  "timelineMaskRectangle": "사각형",
+  "timelineMaskEllipse": "타원",
+  "timelineMaskCenterX": "중심 X",
+  "timelineMaskCenterY": "중심 Y",
+  "timelineMaskWidth": "너비",
+  "timelineMaskHeight": "높이",
+  "timelineMaskFeather": "흐림",
+  "timelineMaskInvert": "반전 (안쪽 숨기기)",
+  "timelineMaskHint": "마스크 안쪽만 보여 줍니다. 반전하면 안쪽을 숨깁니다.",
+  "timelineStackOrderHint": "위에 있을수록 앞에 표시됩니다. 손잡이를 드래그하거나 화살표로 순서를 바꿉니다.",
+  "timelineStackScopeScene": "현재 장면 전체",
+  "timelineStackFrameUnit": "프레임 (일러스트)",
+  "timelineStackResetScene": "기본 순서로 되돌리기",
+  "timelineStackFrameMaskTitle": "프레임 (일러스트) 마스크",
+  "timelineStackFrameMaskHint": "그린 그림만 잘라 냅니다. 텍스트·이미지·동영상에는 적용되지 않습니다. 캔버스에서 그리는 동안에는 숨겨지지 않습니다.",
+  "timelineStackMoveUp": "앞으로",
+  "timelineStackMoveDown": "뒤로",
+  "timelineStackSelectedCount": "{count}개 선택됨",
+  "@timelineStackSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackBringToFront": "맨 앞으로",
+  "timelineStackSendToBack": "맨 뒤로",
+  "timelineStackDeselectAll": "전체 해제",
+  "timelineStackSelectAll": "전체 선택",
+  "timelineStackMultiSelectHint": "항목을 길게 누르면 여러 개를 선택할 수 있습니다. 선택한 항목은 화살표, 드래그, 아래 버튼으로 한꺼번에 옮길 수 있습니다.",
+  "timelineWatermarkNotRegisteredTitle": "등록된 워터마크 없음",
+  "timelineWatermarkNotRegisteredBody": "설정 화면의 「워터마크」에서 미리 이미지 또는 텍스트를 등록해 주세요.",
+  "timelineOpenSettingsButton": "설정 열기",
+  "timelineWatermarkSelectTitle": "워터마크 선택",
+  "timelineWatermarkAddedSnackbar": "워터마크를 추가했습니다（모든 프레임에 표시됩니다）: {name}",
+  "@timelineWatermarkAddedSnackbar": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineWatermarkEditTitle": "워터마크 편집",
+  "timelineWatermarkAngleLabel": "각도",
+  "timelineWatermarkSizeLabel": "크기",
+  "timelineWatermarkOpacityLabel": "불투명도",
+  "timelineWatermarkLoopLabel": "항상 표시（반복 표시）",
+  "timelineWatermarkLoopSubtitle": "끄면 현재 장면에서만 표시됩니다",
+  "timelineConfirmButton": "확정",
+  "timelineClipSelectDoneButton": "완료",
+  "timelineClipOverlapDialogTitle": "기존 클립과 겹칩니다",
+  "timelineClipOverlapDialogBody": "붙여넣을 위치가 기존 클립과 겹칩니다. 어떻게 배치할까요?",
+  "timelineClipOverlapPlaceBefore": "앞에 배치",
+  "timelineClipOverlapPlaceAfter": "뒤에 배치",
+  "timelineClipOverlapPlaceNewRow": "겹치게 배치（행 추가）",
+  "timelineSceneRenameTitle": "씬 이름 변경",
+  "timelineSceneDeleteMenuItem": "씬 삭제",
+  "timelineDurationLimitTitle": "길이 상한에 도달합니다",
+  "timelineDurationLimitBodyFree": "무료 회원은 동영상 길이가 최대 90초까지입니다. 프레임을 더 추가하거나 복제하면 90초를 초과하게 되어 실행할 수 없습니다. 프리미엄 회원이 되면 최대 2시간까지 제작할 수 있습니다.",
+  "timelineDurationLimitBodyPremium": "프리미엄 회원 상한(최대 2시간)을 초과하게 되어 더 이상 프레임을 추가하거나 복제할 수 없습니다.",
+  "timelineSceneDeleteConfirmTitle": "「{name}」을(를) 삭제하시겠습니까?",
+  "@timelineSceneDeleteConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineSceneDeleteConfirmBody": "씬 내의 모든 프레임・공통 레이어・텍스트 소재・동영상 소재・이미지 소재・워터마크를 포함한 모든 데이터가 삭제됩니다.",
+  "timelineSceneMultiDeleteConfirmTitle": "선택한 {count}개의 씬을 삭제하시겠습니까?",
+  "@timelineSceneMultiDeleteConfirmTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineAutofillUpdateHelpBody": "이 씬・프레임에는 최신이 아닌 자동 채색 레이어가 포함되어 있습니다. 레이어 패널에서 대상 레이어를 탭하면 업데이트할 수 있습니다.",
+  "timelineFrameTrackLabel": "프레임",
+  "timelineTrackRowRenameTitle": "행 이름 변경",
+  "timelineCameraTrackLabel": "카메라",
+  "timelineRangeSceneFixed": "씬 고정",
+  "timelineEndCardDefaultLogoLabel": "NIARIM 로고",
+  "timelineEndCardHiddenLabel": "숨김",
+  "timelineEndCardTrackLabel": "엔드카드 트랙",
+  "timelineMarkerTrackLabel": "타임스탬프",
+  "timelineMarkerAddDialogTitle": "F{n}에 타임스탬프 추가",
+  "@timelineMarkerAddDialogTitle": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineMarkerEditDialogTitle": "타임스탬프: F{n}",
+  "@timelineMarkerEditDialogTitle": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineMarkerCommentHint": "코멘트（예: 여기서 입모양 「아」）",
+  "timelineAddClipDialogTitle": "{trackName} 클립 추가",
+  "@timelineAddClipDialogTitle": {
+    "placeholders": {
+      "trackName": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineClipLabelFieldLabel": "라벨",
+  "timelineClipStartLabel": "시작:",
+  "timelineClipLengthLabel": "길이:",
+  "timelineAutofillNote2": "※ 자동 채색 레이어만 존재하는 경우（선화 없음）어느 쪽을 선택해도 영역을 처음부터 판정해 자동 채색합니다.",
+  "timelineAutofillTargetLabel": "실행 대상",
+  "timelineAutofillScopeCurrentFrame": "현재 프레임만",
+  "timelineAutofillScopeCurrentScene": "씬 단위（현재 씬의 전체 프레임）",
+  "timelineAutofillScopeAllScenes": "전체 프레임（프로젝트 전체）",
+  "timelineAutofillProgressTitle": "자동 채색 실행 중",
+  "timelineAutofillProgressSubtitle": "{count}프레임",
+  "@timelineAutofillProgressSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineAutofillCompleteSnackbar": "자동 채색이 완료되었습니다（{count}건 처리）",
+  "@timelineAutofillCompleteSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineEffectTypeFade": "페이드",
+  "timelineEffectTypeGaussianBlur": "가우시안 블러",
+  "timelineEffectTypeLensBlur": "렌즈 블러",
+  "timelineEffectTypeMosaic": "모자이크",
+  "timelineEffectTypeChromaticAberration": "색수차",
+  "timelineEffectTypeNoise": "노이즈",
+  "timelineEffectTypeSepia": "세피아",
+  "timelineEffectTypeAnimeStyle": "애니메 스타일",
+  "timelineEffectTypeRetroAnime": "레트로 애니메",
+  "timelineEffectTypeCrt": "브라운관",
+  "timelineEffectTypeAnimatedNoise": "움직이는 노이즈",
+  "timelineEffectTypeRain": "비",
+  "timelineEffectFilterEmptyState": "필터가 없습니다\n＋추가 버튼으로 추가해 주세요",
+  "timelineRangeStartLabel": "시작",
+  "timelineRangeEndLabel": "종료",
+  "timelineEffectSizeLabel": "크기",
+  "timelineEffectStrengthLabel": "강도",
+  "timelineEffectAmountLabel": "양",
+  "timelineEffectGrainSizeLabel": "입자 크기",
+  "timelineEffectRainIntensityLabel": "강수량",
+  "timelineEffectRainSpeedLabel": "속도",
+  "timelineEffectRainSizeLabel": "빗방울 크기",
+  "timelineEffectWindAngleLabel": "바람 방향",
+  "timelineColorLabel": "색상",
+  "timelineColorBlack": "검정",
+  "timelineColorWhite": "흰색",
+  "timelineColorCustom": "커스텀",
+  "timelineFadeColorDialogTitle": "페이드 색상",
+  "timelineAddFilterDialogTitle": "필터 추가",
+  "timelineClipVolumeLabel": "음량",
+  "timelineClipFadeInLabel": "페이드 인",
+  "timelineClipFadeOutLabel": "페이드 아웃",
+  "timelineClipUseStartLabel": "사용 시작F",
+  "timelineClipUseEndLabel": "사용 종료F",
+  "timelineCameraKfTitle": "카메라 KF: F{n}",
+  "@timelineCameraKfTitle": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineCameraMoveXLabel": "X 이동",
+  "timelineCameraMoveYLabel": "Y 이동",
+  "timelineCameraZoomLabel": "줌",
+  "timelineCameraRotationLabel": "회전",
+  "layerPanelKeyframeLabel": "애니메이션（키프레임）",
+  "layerKeyframeSheetTitle": "{name}의 키프레임",
+  "@layerKeyframeSheetTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "layerKeyframeSheetDesc": "이 레이어의 위치・확대축소・회전을 프레임마다 지정하면 키프레임 사이가 자동으로 보간됩니다. 레이어의 그림 자체는 바뀌지 않습니다.",
+  "layerKeyframeAddAtCurrentFrame": "현재 프레임（F{n}）에 추가",
+  "@layerKeyframeAddAtCurrentFrame": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "layerKeyframeEmpty": "키프레임이 없습니다. 위 버튼으로 추가하세요.",
+  "layerKeyframeScaleShort": "배율",
+  "layerKeyframeRotationShort": "회전",
+  "layerKeyframeEditTitle": "키프레임: F{n}",
+  "@layerKeyframeEditTitle": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "layerKeyframeFrameLabel": "프레임",
+  "layerKeyframeScaleLabel": "확대축소",
+  "layerKeyframeRotationLabel": "회전",
+  "layerKeyframeEasingLabel": "다음 키프레임으로 이어지는 방식",
+  "layerKeyframeEasingLinear": "등속",
+  "layerKeyframeEasingEaseIn": "천천히 시작",
+  "layerKeyframeEasingEaseOut": "천천히 종료",
+  "layerKeyframeEasingEaseInOut": "천천히 시작하고 종료",
+  "layerKeyframeEasingBounceOut": "튕김",
+  "layerPanelGroupTooltip": "그룹화",
+  "layerPanelShowSelectedTooltip": "선택한 레이어를 모두 표시",
+  "layerPanelHideSelectedTooltip": "선택한 레이어를 모두 숨기기",
+  "layerPanelGroupDefaultName": "새 그룹",
+  "layerPanelGroupMembershipLabel": "그룹: {name}",
+  "@layerPanelGroupMembershipLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "layerPanelGroupLeaveAction": "해제",
+  "frameStripHoldDialogTitle": "F{n} 유지 셀 수",
+  "@frameStripHoldDialogTitle": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "frameStripTimelineModeLabel": "타임라인",
+  "frameStripBulkAddTitle": "프레임 일괄 추가",
+  "frameStripBulkAddUnit": "장",
+  "progressDialogAdLoading": "광고 불러오는 중…",
+  "adMockPlaceholderLabel": "광고 배너(배치 검토용 목업)",
+  "adMediumRectangleMockPlaceholderLabel": "중형 직사각형 광고(300×250 배치 검토용 목업)",
+  "progressDialogTipLabel": "팁",
+  "premiumBannerRegisterButton": "Premium에 가입",
+  "licenseTermsArt1Title": "제1조（적용）",
+  "licenseTermsArt1Body": "본 이용약관（이하「본 약관」이라 합니다）은 본 앱「NIARIM」（이하「본 앱」이라 합니다）의 이용 조건을 정하는 것입니다. 사용자는 본 약관에 동의한 후 본 앱을 이용하는 것으로 합니다. 본 앱을 이용함으로써 본 약관에 동의한 것으로 간주합니다.",
+  "licenseTermsArt2Title": "제2조（이용 자격・지원 환경）",
+  "licenseTermsArt2Body": "1. 지원 OS 및 권장 운영 환경의 상세 내용은 각 배포 스토어 및 본 앱 내 표시에 따릅니다.\n2. 본 앱은 다양한 성능의 단말기에서도 쾌적하게 이용하실 수 있도록 노력하고 있으나, 단말기의 성능・OS 버전・여유 용량・설정 등 이용 환경에 따라 일부 기능이 제한되거나 정상적으로 작동하지 않을 수 있습니다.\n3. 미성년자는 본 앱 이용(유료 기능 이용을 포함합니다)에 있어 보호자 등 법정대리인의 동의를 얻어야 합니다.",
+  "licenseTermsArt3Title": "제3조（금지 사항）",
+  "licenseTermsArt3Body": "사용자는 본 앱 이용 시 다음 행위를 해서는 안 됩니다.\n・법령 또는 공서양속에 위반하는 행위\n・본 앱, 개발자 또는 제3자의 저작권・상표권 등 지적재산권, 초상권, 프라이버시 기타 권리 또는 이익을 침해하는 행위\n・본 앱의 디컴파일, 디스어셈블, 리버스 엔지니어링 기타 해석을 목적으로 하는 행위（법령상 인정되는 경우는 제외）\n・본 앱의 부정한 개조, 복제 또는 재배포\n・본 앱 또는 그 제공 기반에 대한 부정 접속, 과도한 부하 기타 정상적인 제공을 방해하는 행위\n・기타 개발자가 합리적인 이유에 근거하여 부적절하다고 판단하는 행위",
+  "licenseTermsArt4Title": "제4조（제작 콘텐츠의 권리）",
+  "licenseTermsArt4Body": "1. 사용자가 본 앱을 이용하여 제작한 일러스트・애니메이션 등의 콘텐츠（프로젝트 데이터・내보낸 이미지・동영상 등을 포함합니다. 이하「제작 콘텐츠」라 합니다）에 관한 저작권 기타 권리는, 법령상 인정되는 범위 내에서 해당 콘텐츠에 대해 권리를 가진 사용자 또는 제3자에게 귀속됩니다.\n2. 본 앱은 제작 콘텐츠를 개발자의 서버로 전송・수집・동기화하는 기능을 제공하지 않습니다. 프로젝트 데이터는 원칙적으로 사용자의 단말기 내에만 저장됩니다（사용자가 스스로의 의사로 작품 광장 기능을 이용하여 제작 콘텐츠를 게시하는 경우의 취급에 대해서는 제12조에 따릅니다）.\n3. 무료판・프리미엄판 중 어느 것을 이용하여 제작한 경우라도, 본 앱의 이용 요금이나 에디션을 이유로 개발자가 제작 콘텐츠의 상업적 이용을 제한하는 일은 없습니다（무료판・프리미엄판의 차이는 엔드카드 표시나 내보내기 시간 상한 등 기능 면에 한정됩니다）.\n4. 전항에도 불구하고, 사용자가 본 앱에 추가한 폰트・이미지・소재 등 제3자가 권리를 가진 것에 대해서는 각각의 이용 조건（제5조）에 따라야 합니다.",
+  "licenseTermsArt5Title": "제5조（내장 폰트・추가 소재에 관하여）",
+  "licenseTermsArt5Body": "1. 본 앱에 내장된 폰트 기타 소재는 본 화면「사용 폰트에 관하여」에 기재된 각 라이선스 조건에 따라 이용되고 있습니다.\n2. 사용자가 본 앱에 추가 등록・불러오기한 폰트, 이미지, 스크린톤, 스탬프 등 소재의 권리 관계에 대해서는 사용자 본인의 책임하에 필요한 권리 또는 허락을 취득한 후 적법하게 이용해 주십시오.\n3. 사용자의 제3자 소재 이용에 기인하여 제3자와의 사이에 분쟁 등이 발생한 경우, 개발자는 법령상 책임을 지는 경우를 제외하고 그 책임을 지지 않습니다.",
+  "licenseTermsArt6Title": "제6조（프리미엄 기능・결제）",
+  "licenseTermsArt6Body": "1. 본 앱에는 무료로 이용할 수 있는 기능 외에, 앱 내 결제（월간 플랜, 연간 플랜 기타 프리미엄 플랜）를 통해 이용 가능한 프리미엄 기능이 있습니다.\n2. 프리미엄 기능의 가격, 제공 내용, 구매 방법 기타 조건은 구매 시점의 본 앱 내 또는 배포 스토어의 표시에 따릅니다.\n3. 구매 후 취소・환불 기타 결제에 관한 사항에는 Google Play 기타 이용하시는 결제 플랫폼의 규정이 적용됩니다. 다만, 법령에 별도의 정함이 있는 경우에는 그 정함에 따릅니다.\n4. 개발자는 법령 개정, 기술상의 필요성, 본 앱의 개선 기타 합리적인 사유에 의해 프리미엄 기능의 내용을 변경할 수 있습니다. 중요한 변경을 하는 경우에는 가능한 한 사전에 본 앱 내 기타 적절한 방법으로 안내합니다.",
+  "licenseTermsArt7Title": "제7조（광고 표시）",
+  "licenseTermsArt7Body": "1. 무료판에서는 제3자 광고 배포 서비스를 통한 광고가 표시될 수 있습니다.\n2. 광고 배포 사업자에 의한 정보의 취득・이용 기타 취급에 대해서는 각 광고 배포 사업자의 개인정보처리방침이 적용됩니다.",
+  "licenseTermsArt8Title": "제8조（정보의 취급）",
+  "licenseTermsArt8Body": "1. 본 앱은 사용자가 제작한 일러스트・애니메이션 등의 콘텐츠 및 프로젝트 데이터를 개발자의 서버로 전송・수집하는 기능을 제공하지 않습니다. 이들은 원칙적으로 사용자의 단말기 내에만 저장되며, 개발자는 이를 스스로 저장하는 기능을 가지고 있지 않으므로 개발자 측에서의 보관 기간이라는 개념 자체가 존재하지 않습니다.\n2. 본 앱이 포함하는 제3자 서비스（광고 배포・앱 내 결제 등）에 의한 정보 취득 기타 사용자 정보의 취급에 관해서는 별도로 정하는「개인정보처리방침」의 규정에 따릅니다.\n3. 본 앱을 삭제（언인스톨）한 경우, 단말기 내에 저장된 데이터（프로젝트, 설정, 추가한 폰트 등）는 삭제됩니다.",
+  "licenseTermsArt9Title": "제9조（제공의 중지・변경・종료）",
+  "licenseTermsArt9Body": "1. 개발자는 본 앱의 유지보수・업데이트・수정을 실시하는 경우, 제공 기반에 장애가 발생한 경우 기타 부득이한 사정이 있는 경우, 본 앱의 전부 또는 일부의 제공을 일시적으로 중지할 수 있습니다.\n2. 개발자는 필요에 따라 본 앱의 내용을 변경하거나 본 앱의 제공을 종료할 수 있습니다.\n3. 전 2항의 경우, 긴급한 경우를 제외하고 가능한 한 사전에 본 앱 내 기타 적절한 방법으로 고지합니다.\n4. 본 조에 근거한 변경・중지・종료로 인해 사용자에게 발생한 손해에 대해, 개발자는 법령상 책임을 지는 경우를 제외하고 책임을 지지 않습니다.",
+  "licenseTermsArt10Title": "제10조（면책 사항）",
+  "licenseTermsArt10Body": "1. 개발자는 본 앱에 대해 사실상 또는 법률상의 하자（안전성・신뢰성・정확성・완전성・특정 목적에의 적합성・버그나 결함이 없음 등을 포함합니다）가 없음을 보증하지 않습니다.\n2. 사용자는 본 앱을 자기 책임하에 이용하는 것으로 합니다. 단말기 고장・오조작・OS 업데이트 기타 사정으로 데이터가 소실될 수 있으므로, 제작 중인 데이터에 대해서는 내보내기・공유 기능 등을 이용한 정기적인 백업을 권장합니다.\n3. 본 앱의 이용으로 인해 사용자에게 발생한 손해에 대해, 개발자는 법령상 인정되는 범위에서 책임을 지지 않습니다. 다만 개발자에게 고의 또는 중대한 과실이 있는 경우는 그러하지 아니하며, 그 경우에도 개발자가 지는 손해배상 책임은 통상 발생할 수 있는 직접 손해에 한하며, 사용자가 본 앱에 관해 직전 1년간 실제로 지불한 금액（무료로 이용한 경우는 0원）을 상한으로 합니다.",
+  "licenseTermsArt11Title": "제11조（본 약관의 변경）",
+  "licenseTermsArt11Body": "1. 개발자는 법령 개정, 본 앱 내용의 변경 기타 필요하다고 판단한 경우, 본 약관을 변경할 수 있습니다.\n2. 본 약관을 변경하는 경우, 변경 내용 및 효력 발생일을 본 앱 내 기타 적절한 방법으로 사전에 고지합니다.\n3. 변경 후의 본 약관은 법령상 인정되는 범위 내에서 전항의 효력 발생일부터 적용됩니다.",
+  "licenseTermsArt12Title": "제12조（작품 광장：커뮤니티 게시 기능）",
+  "licenseTermsArt12Body": "1. 본 앱은 사용자가 제작한 애니메이션 작품을 사용자 본인의 Google 계정을 통해 YouTube에 게시하고, 「작품 광장」에서 공개・열람할 수 있는 기능（이하「본 커뮤니티 기능」이라 합니다）을 임의로 제공합니다. 작품의 열람・제작 자체는 본 커뮤니티 기능을 이용하지 않아도 가능합니다.\n2. 게시된 동영상 파일 자체는 YouTube상에 저장되며, 개발자의 서버에는 저장되지 않습니다. 한편 게시 작품의 식별・표시에 필요한 정보（YouTube 동영상 ID, 제목, 통계 정보, 신고 정보 등）및 게시・신고・차단 기능 이용 시 발급되는 NIARIM User ID（Google 계정과는 별도로 본 앱 내부에서 발급하는 식별자）는 개발자의 서버에서 관리합니다.\n3. 본 커뮤니티 기능 중 작품 게시, 신고 및 사용자 차단에는 Google 계정을 통한 로그인이 필요합니다.\n4. 게시할 수 있는 작품 수에는 1일당 상한이 있습니다（무료 회원・프리미엄 회원에 따라 상한이 다릅니다）. 해당 상한은 운영상의 사정에 따라 변경될 수 있습니다.\n5. 사용자는 다른 사용자가 게시한 작품 중 법령 또는 공서양속에 위반하거나 제3조 각호에 해당할 우려가 있다고 판단되는 작품에 대해, 본 앱 내 신고 기능을 통해 개발자에게 신고할 수 있습니다. 개발자는 신고 내용을 확인한 후, 합리적인 이유에 근거하여 해당 작품을 목록에서 비공개 처리하는 등 필요한 조치를 취할 수 있습니다. 허위 신고 또는 신고 기능의 남용은 금지됩니다.\n6. 사용자가 게시물을 삭제하거나 본 앱에서 Google 계정 연동을 해제한 경우, 해당 게시물에 대응하는 YouTube 동영상이 삭제될 수 있습니다. 또한 YouTube 측에서 동영상이 비공개 또는 삭제된 경우, 해당 작품은 작품 광장에서도 표시되지 않게 됩니다.\n7. 본 커뮤니티 기능의 이용에는 본 약관에 더하여 YouTube의 이용약관 및 커뮤니티 가이드라인이 적용됩니다.\n8. 사용자는 다른 사용자를 팔로우할 수 있으며, 다른 사용자의 작품을 북마크 또는 리포스트할 수 있습니다. 팔로잉／팔로워 목록 및 북마크한 작품의 목록은 기본적으로 비공개이며, 공개 여부는 사용자가 본 앱 내에서 선택할 수 있습니다. 팔로잉 수・팔로워 수는 공개 설정과 관계없이 표시됩니다.\n9. 작품에 부여하는 태그는 게시자 이외의 사용자도 추가・삭제할 수 있습니다. 게시자는 자신의 작품의 태그를 잠가 다른 사용자에 의한 편집을 금지할 수 있습니다. 사용자는 타인을 비방하는 태그, 작품의 내용과 무관한 태그 기타 부적절한 태그를 부여해서는 안 됩니다. 개발자는 부적절한 태그를 삭제할 수 있습니다.\n10. 개발자는 팔로우된 경우 등에 본 앱 내의 알림 목록에 알림을 표시합니다. 사용자가 단말기의 알림을 허용한 경우에는 푸시 알림이 전송될 수 있습니다. 알림은 본 앱의 설정 또는 단말기의 설정에서 비활성화할 수 있습니다.\n11. 사용자는 본 커뮤니티 기능을 다른 사용자에 대한 괴롭힘, 광고・권유 기타 본래의 목적（작품의 공개와 열람）에서 벗어나는 목적으로 이용해서는 안 됩니다. 차단 기능을 이용한 경우, 차단한 상대방의 작품은 자신의 목록에 표시되지 않게 됩니다.",
+  "licenseTermsArt13Title": "제13조（준거법・재판관할）",
+  "licenseTermsArt13Body": "1. 본 약관의 해석에 있어서는 일본법을 준거법으로 합니다.\n2. 본 앱에 관하여 분쟁이 발생한 경우에는, 소송가액에 따라 개발자의 소재지를 관할하는 지방재판소 또는 간이재판소를 제1심의 전속적 합의관할 법원으로 합니다.",
+  "privacyPolicyArt1Title": "제1조（본 정책의 위치）",
+  "privacyPolicyArt1Body": "본 개인정보처리방침（이하「본 방침」이라 합니다）은 본 앱「NIARIM」（이하「본 앱」이라 합니다）에서의 정보 취급에 대해 정하는 것입니다. 본 앱의 전반적인 이용 조건에 대해서는 별도로「이용약관・라이선스」화면을 확인해 주십시오.",
+  "privacyPolicyArt2Title": "제2조（본 앱이 취득하지 않는 데이터）",
+  "privacyPolicyArt2Body": "본 앱은 사용자가 제작한 일러스트・애니메이션 등의 콘텐츠（프로젝트 데이터・내보낸 이미지・동영상 등을 포함합니다. 이하 동일합니다）를 개발자의 서버로 전송・수집・저장하는 기능을 제공하지 않습니다. 이들 데이터는 원칙적으로 사용자의 단말기 내에만 저장됩니다（클라우드 동기화 기능은 탑재되어 있지 않습니다）. 개발자는 이러한 콘텐츠를 스스로 저장하는 기능을 가지고 있지 않으므로, 개발자 측에서의 보관 기간이라는 개념 자체가 존재하지 않습니다. 단말기 내에 저장된 데이터는 본 앱의 삭제 기능을 통해 언제든지 삭제할 수 있으며, 앱을 삭제（언인스톨）한 경우에는 프로젝트・설정・추가한 폰트 등의 데이터도 함께 삭제됩니다（사용자가 스스로의 의사로 작품 광장 기능을 이용하여 작품을 게시하는 경우의 정보 취급에 대해서는 제7조에 따릅니다）.",
+  "privacyPolicyArt3Title": "제3조（제3자 서비스에 의한 정보 취득）",
+  "privacyPolicyArt3Body": "본 앱은 다음의 제3자 서비스를 포함하고 있으며, 각 서비스 제공자가 서비스 제공에 필요한 범위 내에서 정보를 취득할 수 있습니다. 본 앱의 개발자는 이러한 정보를 독자적으로 취득・보관하는 기능을 구현하고 있지 않습니다（각 서비스가 취득한 정보의 관리는 해당 서비스 제공자의 개인정보처리방침에 따릅니다）.\n\n【광고 배포（Google AdMob）】\n무료판에서는 Google AdMob을 통해 광고를 배포하고 있습니다. 광고 배포, 효과 측정, 부정 방지 등의 목적으로 광고 식별자（Advertising ID） 기타 단말기 정보가 Google 또는 그 관계사에 의해 취득・이용될 수 있습니다. 취득・이용의 상세 내용은 Google 개인정보처리방침（https://policies.google.com/privacy）을 확인해 주십시오. 단말기 설정（Android 설정 앱의「개인정보 보호」등）에서 광고 식별자 재설정이나 맞춤형 광고 비활성화가 가능합니다. 유럽경제지역（EEA）・영국・스위스에 거주 중이신 경우, 실행 시 등에 표시되는 동의 양식에서 광고 맞춤화에 관한 동의 설정을 선택할 수 있습니다. 설정은 언제든지 본 화면 하단의「광고 동의 설정 변경」버튼에서 변경할 수 있습니다.\n\n【앱 내 결제（Google Play Billing）】\n프리미엄 기능의 구매는 Google Play의 결제 시스템을 통해 이루어집니다. 신용카드 번호 등의 결제 정보는 개발자 측이 직접 취득・보유하는 일은 없습니다. 결제에 관한 정보의 취급은 Google Play의 규정에 따릅니다.\n\n【추가 글꼴 다운로드（GitHub）】\n설정 화면의 「글꼴 관리」에서 추가 글꼴을 다운로드하는 조작을 한 경우에 한하여, 글꼴 파일의 배포처인 GitHub（GitHub, Inc.）의 서버로 통신이 발생합니다. 이 통신은 고객이 다운로드를 선택했을 때에만 이루어지며, 앱 실행 시나 통상적인 이용 중에는 발생하지 않습니다. 전송되는 것은 통신에 필요한 정보（IP 주소, 요청하는 글꼴 파일의 지정 등）뿐이며, 작품 데이터나 고객을 특정할 수 있는 정보를 전송하는 일은 없습니다. 취득된 정보의 취급은 GitHub의 개인정보 보호 정책（https://docs.github.com/site-policy/privacy-policies/github-privacy-statement）을 따릅니다.\n\n【크래시 분석・이용 현황 분석】\n본 앱은 현시점에서 크래시 분석・이용 현황 분석을 목적으로 한 SDK를 포함하고 있지 않습니다. 향후 이러한 서비스를 도입할 경우, 본 방침을 갱신하고 본 앱 내에서 고지합니다.",
+  "privacyPolicyArt4Title": "제4조（쿠키 등 추적 기술에 관하여）",
+  "privacyPolicyArt4Body": "본 앱 자체는 쿠키를 사용하지 않지만, 제3조에 기재된 광고 배포 서비스（Google AdMob）가 광고 배포・효과 측정을 위해 이와 유사한 식별 기술（광고 식별자 등）을 사용할 수 있습니다.",
+  "privacyPolicyArt5Title": "제5조（아동의 개인정보에 관하여）",
+  "privacyPolicyArt5Body": "본 앱은 만 13세 미만의 아동을 주된 대상으로 하여 의도적으로 정보를 수집하는 것이 아닙니다. 보호자께서는 자녀가 본 앱을 이용할 때 필요에 따라 단말기 설정에서 맞춤형 광고 비활성화 등을 검토해 주시기 바랍니다.",
+  "privacyPolicyArt6Title": "제6조（정보의 국외 이전에 관하여）",
+  "privacyPolicyArt6Body": "제3조에 기재된 제3자 서비스（Google AdMob, Google Play Billing）는 Google사가 전 세계에서 운용하는 서버상에서 처리될 수 있습니다. 이러한 취급에 대해서는 각 서비스의 개인정보처리방침이 적용됩니다.",
+  "privacyPolicyArt7Title": "제7조（작품 광장：커뮤니티 게시 기능에서의 정보 취급）",
+  "privacyPolicyArt7Body": "1. 본 앱은 사용자가 스스로의 의사로「작품 광장」기능（이용약관 제12조）을 이용하는 경우에 한하여, 다음 정보를 개발자의 서버에서 관리합니다.\n・게시 작품을 식별・표시하기 위한 정보（YouTube 동영상 ID, 제목, 통계 정보, 게시 일시, 태그 등）\n・게시・신고・차단・팔로우・북마크 등의 기능 이용 시 발급되는 NIARIM User ID（Google 계정과는 별도로 본 앱 내부에서 발급하는 식별자）\n・연동한 YouTube 채널의 공개 정보（채널명, 채널 아이콘의 이미지 URL）. 이는 게시자명・아이콘 표시에 사용하기 위해 개발자의 서버에 복제하여 보관합니다\n・신고 기능을 이용한 경우의 신고 내용 및 신고자의 NIARIM User ID\n・차단한 상대방의 NIARIM User ID\n・팔로우한 상대방의 NIARIM User ID 및 팔로잉 수・팔로워 수\n・북마크한 작품의 ID 및 북마크한 일시\n・리포스트한 작품의 ID 및 리포스트한 일시\n・작품에 부여된 태그（제4항 참조）\n・푸시 알림을 활성화한 경우의 단말기 토큰（알림의 수신처를 특정하기 위해 단말기가 발급하는 식별자. 알림 전송에만 사용합니다）\n2. 게시된 동영상 파일 자체는 YouTube상에 저장되며, 개발자의 서버에는 저장되지 않습니다.\n3. 전 2항의 정보는 본 커뮤니티 기능의 제공（작품 목록 표시・랭킹・검색, 신고 대응, 게시 상한 관리, 팔로우・북마크・리포스트의 반영, 알림 전송 등）목적 범위 내에서만 이용합니다. 개발자는 이러한 정보를 광고 배포 목적으로 제3자에게 제공하지 않습니다.\n4. 태그는 게시자 이외의 사용자도 추가・삭제할 수 있습니다（게시자는 자신의 작품의 태그를 잠가 편집을 금지할 수 있습니다）. 태그는 작품 광장에서 공개되며, 누가 부여했는지는 표시되지 않습니다.\n5. 다음 정보는 기본적으로 비공개이며, 사용자가 본 앱 내에서 공개 설정으로 전환한 경우에 한하여 다른 사용자에게 표시됩니다.\n・북마크한 작품의 목록\n・팔로잉／팔로워 목록\n다만, 팔로잉 수・팔로워 수（인원수）는 공개 설정과 관계없이 항상 표시됩니다.\n6. 게시 작품을 비공개로 하거나 삭제한 경우, 해당 작품은 작품 광장의 목록・랭킹에서 표시되지 않게 됩니다. 개발자의 서버상의 기록 삭제를 원하시는 경우에는 제9조의 창구로 연락해 주십시오.\n7. 본 커뮤니티 기능을 이용하지 않는 경우, 본 조에 따른 정보 취급은 발생하지 않습니다（제2조의 원칙대로 개발자의 서버로 전송되지 않습니다）.",
+  "privacyPolicyArt8Title": "제8조（본 방침의 변경）",
+  "privacyPolicyArt8Body": "개발자는 법령 개정, 본 앱 내용의 변경 기타 필요하다고 판단한 경우, 본 방침을 변경할 수 있습니다. 본 방침을 변경하는 경우, 변경 내용 및 효력 발생일을 본 앱 내 기타 적절한 방법으로 사전에 고지합니다.",
+  "privacyPolicyArt9Title": "제9조（문의）",
+  "privacyPolicyArt9Body": "본 방침에 관한 문의는 아래 연락처로 연락해 주십시오.\n（개발자 연락처: 미설정 ― 공개 전 이메일 주소 등 연락처 정보를 기입해 주십시오）",
+  "privacyPolicyAdConsentButton": "광고 동의 설정 변경",
+  "tipsPcDexLayoutTitle": "넓은 화면에서는 PC 모드(DeX)의 본격 레이아웃으로",
+  "tipsPcDexLayoutDesc": "Chromebook이나 키보드를 연결한 태블릿, DeX 등 화면이 넓은 환경에서 사용하면 도킹 패널 방식의 전문적인 레이아웃으로 자동 전환됩니다. 워크스페이스 설정에서 항상 PC 모드・항상 모바일 모드로 수동 고정할 수도 있어, 외부 디스플레이에 연결해 작업할 때도 유용합니다.",
+  "workspaceTimelineSection": "타임라인 표시",
+  "workspaceTimelineHint": "동영상・음원 트랙의 한 줄 높이를 5단계로 조절할 수 있습니다. 두 손가락으로 핀치인・핀치아웃하면 타임라인의 프레임 폭도 일시적으로 확대・축소할 수 있습니다.",
+  "workspaceTimelineTrackHeightLabel": "트랙 높이",
+  "workspaceTimelinePreviewLabel": "미리보기",
+  "workspaceEndCardSection": "엔드카드",
+  "workspaceEndCardHint": "엔드카드는 모든 동영상 끝에 자동으로 표시되는 앱 자체 로고입니다. 무료 회원은 조작할 수 없습니다. 프리미엄 회원 전용: 이 항목을 켜면 다음에 타임라인을 열 때부터 엔드카드가 처음부터 숨김(삭제) 상태로 시작됩니다. 프리미엄 권한이 만료되면 이 설정은 자동으로 꺼집니다.",
+  "workspaceEndCardDefaultHiddenTitle": "엔드카드를 기본적으로 숨기기（프리미엄 전용）",
+  "tipsTransparentColorTitle": "투명색은 단순한 지우개가 아니라 펜처럼 쓸 수 있다",
+  "tipsTransparentColorDesc": "투명색을 선택하면 브러시, 올가미, 도형 등 원하는 도구로 그대로 지울 수 있습니다. 브러시의 필압과 매끄러움을 그대로 살려 윤곽만 둥글게 깎거나, 그라데이션 브러시로 경계를 부드럽게 투명으로 흐릴 수 있는 등 지우개 도구에는 없는 섬세한 표현이 가능합니다.",
+  "tipsQuickToolVariantTitle": "빠른 도구는 도구 종류뿐 아니라 브러시, 크기 차이도 등록할 수 있다",
+  "tipsQuickToolVariantDesc": "빠른 도구에는 펜, 지우개 같은 도구 전환뿐 아니라, 같은 펜이라도 브러시 종류가 다른 것, 같은 지우개라도 크기가 다른 것을 각각 따로 등록할 수 있습니다. 자주 쓰는 조합만 엄선해 배치해두면 세세한 설정 변경 때마다 패널을 다시 여는 수고가 줄어듭니다.",
+  "tipsCommonLayerLipSyncTitle": "공통 레이어는 배경뿐 아니라 인물의 용량 절감에도 쓸 수 있다",
+  "tipsCommonLayerLipSyncDesc": "배경뿐 아니라 인물 레이어 자체를 공통 레이어로 만드는 것도 효과적입니다. 입이나 깜빡이는 눈동자처럼 프레임마다 바뀌는 부분만 일반 레이어로 겹치고, 몸이나 머리카락처럼 움직이지 않는 부분은 공통 레이어로 해두면 입 모양 맞추기나 눈 깜빡임 애니메이션에서도 용량을 크게 줄일 수 있습니다.",
+  "tipsCommonLayerKeyframeTitle": "공통 레이어와 레이어 키프레임으로도 용량을 절감할 수 있다",
+  "tipsCommonLayerKeyframeDesc": "공통 레이어는 레이어 키프레임으로 위치, 확대, 회전을 움직일 수 있습니다. 프레임마다 다시 그리는 대신, 그림 한 장을 공통 레이어로 만들어 키프레임으로 움직이기만 해도 용량을 늘리지 않고 간단한 움직임을 줄 수 있습니다.",
+  "tipsTransferCustomizationTitle": "이관 기능으로 기기를 바꿔도 늘 쓰던 그대로",
+  "tipsTransferCustomizationDesc": "인계(.niatra) 기능은 브러시, 테마, 툴바 배치, 팔레트 등 커스터마이즈한 설정을 한꺼번에 다른 기기로 옮길 수 있습니다. 기기를 바꾸거나 여러 기기를 오가며 써도 매번 처음부터 다시 설정할 필요가 없습니다.",
+  "tipsBlendModeUsageTitle": "블렌드 모드는 목적에 따라 구분해 쓰면 효과적",
+  "tipsBlendModeUsageDesc": "그림자를 넣고 싶을 때는 곱하기, 빛이나 광채를 더하고 싶을 때는 스크린이나 더하기(발광), 음영에 질감을 내고 싶을 때는 오버레이나 소프트 라이트가 적합합니다. 같은 색이라도 블렌드 모드만 바꾸면 인상이 크게 달라지므로, 우선 몇 가지 후보를 바꿔가며 비교해 보는 것을 추천합니다.",
+  "timelineSaveFailedDialogTitle": "저장 실패",
+  "timelineSaveFailedDialogBody": "저장에 실패했습니다. 다시 시도해 주세요.",
+  "licenseSectionIcons": "사용 아이콘 안내",
+  "layerPanelMergeAllVisibleTooltip": "표시 중인 모든 레이어 결합",
+  "canvasBrushSliderToggleLabel": "상세",
+  "helpMeshTransformTitle": "자유 변형・메시 변형",
+  "helpMeshTransformDesc": "캔버스 오른쪽 위의 편집/설정 메뉴에서 열 수 있는, 레이어 전체를 대상으로 하는 변형 도구입니다. 선택 범위 변형과 달리 선택 범위가 필요 없으며, 모서리나 격자점을 손가락으로 개별적으로 드래그해 자유로운 형태로 변형할 수 있습니다. 컨트롤 패널의 분할 수 슬라이더로 메시를 최대 10×10까지 세밀하게 나눌 수 있고, 두 손가락으로 각각 다른 점을 동시에 잡으면 회전・확대축소 같은 조작도 직관적으로 할 수 있습니다.",
+  "layerPanelBrightnessToAlphaLabel": "명도로 투명화",
+  "layerPanelBrightnessToAlphaHint": "밝은 부분일수록 투명하게 만듭니다. 색은 그대로 유지된 채 반투명해집니다（흰 배경이 사라지는 것이 아니라 그림 전체가 옅어지는 이미지）.",
+  "layerPanelBrightnessToAlphaColorButton": "컬러",
+  "layerPanelBrightnessToAlphaGrayButton": "그레이",
+  "tipsRoughLayerRescueTitle": "러프 레이어에 선화를 그려버렸다면 「명도로 투명화」로 구출",
+  "tipsRoughLayerRescueDesc": "러프 스케치 레이어 위에 실수로 선화를 그려버려도, 아무것도 지우지 않고 선화만 꺼낼 수 있습니다. ①새 레이어를 추가하고 블렌드 모드를 「나누기」로 설정. ②스포이드로 러프의 색을 추출해 그 나누기 레이어 전체를 채운다（러프가 옅어집니다）. ③나누기 레이어를 복제하면 러프가 완전히 사라집니다. ④레이어 패널의 「표시 중인 모든 레이어 결합」으로 한 장으로 합친다. ⑤합친 레이어의 세 점 메뉴에서 「명도로 투명화（그레이）」를 선택하면 흰 부분이 투명해지고 선화만 남습니다.",
+  "timelineEffectTypeMonochrome": "단색화 필터",
+  "filterNameColorAdjust": "색조 조정",
+  "filterColorAdjustSaturationLabel": "채도",
+  "filterColorAdjustBrightnessLabel": "명도",
+  "filterColorAdjustContrastLabel": "대비",
+  "canvasColorAdjustTitle": "색조 조정",
+  "canvasColorAdjustAddToDrawFilter": "그리기 필터에 추가",
+  "canvasColorAdjustAddToEffectFilter": "연출 필터에 추가",
+  "canvasColorAdjustMenuTitle": "색조 조정",
+  "canvasEditMenuReferenceWindow": "참고 창",
+  "canvasEditMenuReferenceWindowSubtitle": "참고 이미지를 항상 띄워서 표시",
+  "referenceWindowTitle": "참고 창",
+  "referenceWindowSelectImageButton": "이미지 선택",
+  "workspaceDockPanelSection": "PC에서 기본으로 열릴 패널",
+  "workspaceDockPanelHint": "PC/DeX 모드에서는 체크한 여러 패널을 동시에 고정 표시할 수 있습니다(모바일은 오작동 방지를 위해 항상 모든 패널이 숨겨진 상태로 시작).",
+  "workspaceDockPanelBrush": "브러쉬",
+  "workspaceDockPanelColorPicker": "컬러 피커",
+  "workspaceDockPanelLayer": "레이어",
+  "workspaceDockPanelTone": "스크린톤",
+  "workspaceDockPanelStamp": "스탬프",
+  "workspaceDockPanelPenSubTool": "펜 보조 도구",
+  "workspaceDockPanelOnionSkin": "양파 스타일",
+  "workspaceDockPanelRuler": "자",
+  "workspaceDockPanelFilter": "필터",
+  "workspaceDockPanelQuickTool": "빠른교체 도구",
+  "workspaceDockPanelColorAdjust": "색상 조정",
+  "workspaceDockPanelCanvasPreview": "캔버스 미리보기",
+  "workspacePcLayoutButton": "PC 레이아웃 설정",
+  "pcWorkspaceLayoutScreenTitle": "PC 레이아웃 설정",
+  "pcWorkspaceLayoutIntroHint": "PC 모드(가로 화면 + 마우스·펜타블릿 연결)로 캔버스 화면을 열었을 때의 패널 순서와 너비를 조정할 수 있습니다.",
+  "pcWorkspaceLayoutToolOrderSection": "도구 패널 순서",
+  "pcWorkspaceLayoutToolOrderHint": "브러시·스크린톤·스탬프 등을 동시에 열었을 때 쌓이는 순서입니다.",
+  "pcWorkspaceLayoutRightOrderSection": "레이어 등 패널 순서",
+  "pcWorkspaceLayoutRightOrderHint": "색상 선택기·레이어·캔버스 미리보기의 쌓이는 순서입니다.",
+  "pcWorkspaceLayoutWidthSection": "패널 너비",
+  "pcWorkspaceLayoutToolWidthLabel": "도구 패널 쪽 너비",
+  "pcWorkspaceLayoutRightWidthLabel": "레이어 패널 쪽 너비",
+  "pcWorkspaceLayoutResetWidthButton": "너비를 기본값으로 되돌리기",
+  "pcWorkspaceLayoutResetOrderButton": "순서를 기본값으로 되돌리기",
+  "canvasPreviewNavigatorTitle": "캔버스 미리보기",
+  "canvasEditMenuPreviewNavigator": "캔버스 미리보기",
+  "canvasEditMenuPreviewNavigatorSubtitle": "전체를 축소 표시(내비게이터)",
+  "filterNamePrism": "프리즘",
+  "filterNameThreshold": "이진화",
+  "filterMonochromeColorLabel": "단색화 색상",
+  "filterThresholdLabel": "임계값",
+  "filterNameFisheye": "어안 렌즈",
+  "filterFisheyeStrength": "왜곡",
+  "filterNameChromaticAberration": "색수차",
+  "filterChromaticAberrationStrength": "어긋남 강도",
+  "filterNameLensDistortion": "안경 렌즈 왜곡",
+  "filterLensDistortionStrength": "렌즈 강도（음수＝오목렌즈, 양수＝볼록렌즈）",
+  "filterLensDistortionOffsetX": "중심 위치 미세 조정（좌우）",
+  "filterNamePixelate": "도트 그림",
+  "filterNameAuroraHologram": "질감 변경",
+  "filterAuroraHologramStrength": "강도",
+  "filterAuroraHologramBrightness": "명도",
+  "filterAuroraHologramSaturation": "채도",
+  "filterHologramKeepLines": "선화 유지",
+  "filterHologramKeepLinesHint": "검은색에 가까운 가는 선(같은 레이어에 그린 선화)은 원래 색 그대로 두고, 면에만 질감을 줍니다.",
+  "filterAuroraHologramPresetSilverHologram": "오로라 홀로그램",
+  "filterAuroraHologramPresetSilverFoil": "플래티넘 실버",
+  "filterAuroraHologramPresetSampledGold": "추출 골드",
+  "filterAuroraHologramPresetLuminousPearl": "빛나는 진주",
+  "filterAuroraHologramPresetAuroraPastel": "오로라 파스텔",
+  "filterAuroraHologramPresetDarkRainbow": "다크 레인보우",
+  "filterNameBackgroundBlend": "배경 어우러짐",
+  "filterBackgroundBlendDirection": "그림자·빛(연동)의 방향",
+  "filterBackgroundBlendLength": "그림자·빛(연동)의 길이",
+  "filterBackgroundBlendBlur": "흐림 정도",
+  "filterPixelateBlockSize": "블록 크기",
+  "filterPixelateDither": "디더링",
+  "filterPixelateDitherHint": "한 가지 색으로는 원래 색과 먼 곳을, 사용할 수 있는 색을 규칙적으로 배치해 가깝게 합니다",
+  "filterPixelateModeBlock": "블록 크기 지정",
+  "filterPixelateModeDots": "도트 수 지정",
+  "filterPixelateDotsWide": "가로 도트 수",
+  "filterPixelateDotsHigh": "세로 도트 수",
+  "filterPixelateDotsSummary": "가로 {wide} × 세로 {high}도트",
+  "filterLensDistortionOffsetY": "중심 위치 미세 조정（상하）",
+  "filterLensDistortionNoMaskHint": "렌즈로 만들 범위（안경 렌즈 부분 등）를「펜」이나「페인트통」으로 캔버스에 칠해 주세요. 선택 범위나 선택 레이어가 있으면 그 범위에서 시작합니다.",
+  "filterLensMaskTitle": "렌즈 범위",
+  "filterLensMaskPen": "펜",
+  "filterLensMaskEraser": "지우개",
+  "filterLensMaskBucket": "페인트통",
+  "filterLensMaskBrushSize": "펜 굵기",
+  "filterLensMaskClear": "범위 지우기",
+  "filterSelectionOnlyHint": "선택 범위 안에만 적용됩니다",
+  "tipsStockingDenierTitle": "스타킹・타이츠는 데니어 수에 따라 그물눈의 세밀함이 달라집니다",
+  "tipsStockingDenierDesc": "새로 추가된 스타킹・타이츠 스크린톤은 데니어 수가 낮을수록（천이 얇을수록）격자 간격을 좁게 설정했으며, 가장 낮은 10데니어는 표시・출력 해상도에 따라 무아레가 생길 정도로 일부러 세밀하게 만들었습니다. 데니어 수가 높은 타이츠는 간격이 넓어 더 불투명한 느낌을 주므로, 캐릭터의 다리에 맞게 구분해서 사용하세요.",
+  "tipsFisheyeChromaticTitle": "어안 렌즈・색수차 필터로 렌즈 특유의 왜곡과 번짐을 연출",
+  "tipsFisheyeChromaticDesc": "어안 렌즈 필터는 화면 중심을 부풀리고 주변을 압축하여 광각・어안 렌즈로 촬영한 듯한 만곡을 재현합니다. 색수차 필터는 RGB 채널을 조금씩 어긋나게 하여 저가 렌즈로 촬영했을 때와 같은 색번짐을 재현합니다. 두 필터 모두 그리기 필터（레이어에 직접 적용）와 연출 필터（타임라인에서 구간을 지정하여 적용） 양쪽에서 사용할 수 있습니다. 어안 렌즈의 중심은 캔버스 위의 +를 드래그해서도 옮길 수 있습니다.",
+  "tipsLensDistortionTitle": "안경 렌즈 왜곡 필터로 안경 너머의 왜곡을 재현",
+  "tipsLensDistortionDesc": "안경 렌즈 왜곡 필터를 고르고, 렌즈로 만들 범위（안경 렌즈 부분 등）를 패널의「펜」으로 캔버스에 칠하거나「페인트통」으로 선에 둘러싸인 곳을 탭하면 그 범위에만 국소적인 왜곡을 적용할 수 있습니다. 삐져나온 부분은「지우개」로 지울 수 있고, 칠한 범위는 실행 취소・다시 실행으로 한 번씩 되돌릴 수 있습니다. 선택 범위나 선택 레이어가 있으면 그 범위에서 시작합니다. 렌즈 강도 슬라이더는 음수 값에서는 오목렌즈풍으로 축소되고, 양수 값에서는 볼록렌즈풍으로 확대되며, 중심 위치도 미세 조정할 수 있습니다. 양쪽 렌즈를 칠해서 한꺼번에 적용하는 것도 가능합니다. 칠한 범위는 내보내기・최종 그림에는 나타나지 않습니다. 안경 외에도 카메라 렌즈 너머로 풍경을 보는 듯한 왜곡을 재현하고 싶을 때도 사용할 수 있습니다. 배경 등 넓은 범위를 칠하고 약한 강도를 적용하는 것을 추천합니다.",
+  "tipsSphereShadingTitle": "구체 음영 필터로 둥근 입체감을 한 번에",
+  "tipsSphereShadingDesc": "구체 음영 필터는 타원형 빛의 안쪽에는 빛 색을, 바깥쪽에는 그림자 색을 그려진 곳에만 겹칩니다. 빛의 위치와 크기는 슬라이더 외에도 캔버스 위의 +(위치)와 둥근 손잡이(크기)를 드래그해 바꿀 수 있고, 경계 흐림으로 구처럼 부드러운 음영을 만들 수 있습니다. 그림자 색과 빛 색은 각각 블렌드 모드를 고를 수 있으며(예: 그림자는 곱하기, 빛은 스크린), \"하나로 묶어서\"를 고르면 그림자 색에서 빛 색으로 이어지는 그라데이션을 블렌드 모드 하나(하드 라이트 등)로 겹칩니다. 색은 투명으로도 할 수 있고, 투명한 쪽은 아무것도 바꾸지 않습니다. 선택 범위나 칠해 둔 선택 레이어가 있으면 그 범위에만 적용됩니다.",
+  "tipsBackgroundBlendTitle": "배경과 인물을 어우러지게 하는 순서",
+  "tipsBackgroundBlendDesc": "그린 인물을 배경 사진이나 그림에 자연스럽게 어우러지게 하려면, 먼저 인물 레이어에 그리기 필터 「배경 어우러짐」을 적용합니다. 그린 색의 밝기·채도가 배경의 범위에 들어오고, 배경 색의 방향(오버레이), 배경의 그림자 색으로 된 빛과 그림자(하드 라이트), 아래에서의 반사광(스크린), 네온 같은 강한 빛(더하기(발광))이 한 번에 들어갑니다. 더 다듬으려면 큰 그림자부터 곱하기나 하드 라이트 레이어에 그려 넣고, 유리나 금속 등 소재별 반사와 윤곽의 빛을 스크린·더하기(발광) 레이어로 더합니다. 보여 주고 싶은 곳(얼굴 등)은 밝고 선명하게 남기고 비네트로 주변을 조금 어둡게 하면 주인공이 돋보입니다. 마지막으로 톤 커브나 레벨 보정으로 전체 색을 정돈합니다.",
+  "tipsLineArtExtractionTitle": "색조 보정・이진화・명도로 투과를 조합해 선화를 추출하기",
+  "tipsLineArtExtractionDesc": "색조 보정으로 대비를 높여 선을 도드라지게 한 뒤, 이진화 필터로 이미지를 흑백 2색으로 나누면 선과 그 외 부분이 뚜렷하게 분리됩니다. 이진화의 임계값은 슬라이더로 자유롭게 조정할 수 있어 선의 굵기・흐릿한 정도를 취향에 맞게 조절할 수 있습니다. 마지막으로 레이어의 점 3개 메뉴에 있는 「명도로 투과（그레이）」를 사용하면 흰 부분（선 이외）만 투과되어 선화만 추출할 수 있습니다. 사진이나 밑그림에서 선화만 뽑아내고 싶을 때 유용합니다.",
+  "tipsLineColorUsageTitle": "선화색은 용도에 따라 구분해 쓰면 완성도가 달라집니다",
+  "tipsLineColorUsageDesc": "부위의 윤곽을 분명하게 유지하면서 선이 튀지 않게 하려면 ‘선화 색상’에서 ‘색 트레이스・선화와 조화’를 선택하세요. 그림자나 하이라이트 부위는 ‘선화 색상’을 ‘채우기 색상과 동일’로 설정하면 선화도 채우기 색을 따라가 더 진한 선처럼 도드라지지 않습니다. 선화에 의도적으로 다른 색을 쓰려면 ‘지정 색상’을 선택하세요.",
+  "tipsBlushAutofillTitle": "봼기조차 자동채색으로 부드럽게 올릴 수 있습니다",
+  "tipsBlushAutofillDesc": "선화색을 지정색으로 하여 투명색을 선택하고, 채움색을 방사형: 중앙→외부로 하여 봼 봉색과 투명색 두 가지를 지정하면, 피부 위에 봼기만 부드럽게 올릴 수 있습니다. 봉색의 불투명도와 색 전환 위치를 조절하면 경계가 더 자연스럽게 어울립니다.",
+  "autofillPartResetTraceButton": "기본값으로 되돌리기",
+  "premiumScreenTitle": "Premium",
+  "premiumComparisonPremium": "Premium",
+  "premiumRegisteredDateLabel": "등록일: {date}",
+  "premiumNextRenewalDateLabel": "다음 갱신일: {date}",
+  "@premiumRegisteredDateLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@premiumNextRenewalDateLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "workspaceApplyCurrentButton": "설정한 워크스페이스 적용",
+  "workspaceAppliedSnackbar": "워크스페이스 설정을 반영했습니다.",
+  "workspaceSaveAsButton": "워크스페이스 이름을 지정해 저장・덮어쓰기",
+  "workspaceShareButton": "워크스페이스 공유",
+  "workspaceShareSelectTitle": "공유할 워크스페이스 선택",
+  "workspaceShareFailedSnackbar": "공유에 실패했습니다: {error}",
+  "workspaceImportFromFileButton": "외부 파일 불러오기",
+  "workspaceImportFailedSnackbar": "불러오기에 실패했습니다: {error}",
+  "workspaceNameRequiredError": "이름을 입력해 주세요.",
+  "workspaceNoSavedPresets": "저장된 워크스페이스가 없습니다.",
+  "workspaceOverwriteSelectTitle": "덮어쓸 워크스페이스 선택",
+  "workspaceOverwriteConfirmTitle": "덮어쓰기 확인",
+  "workspaceOverwriteConfirmBody": "「{name}」을(를) 현재 설정으로 덮어씁니다. 기존 내용은 삭제됩니다. 계속하시겠습니까？",
+  "workspaceOverwriteButton": "덮어쓰기",
+  "@workspaceShareFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@workspaceImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@workspaceOverwriteConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "splashCommunityButtonTitle": "작품 광장",
+  "splashCommunityButtonSubtitle": "게시 작품 보기",
+  "splashCreateButton": "애니메이션 만들기",
+  "communityScreenTitle": "작품 광장",
+  "communityTabNew": "신착",
+  "communityTabRanking": "랭킹",
+  "communityTabFavoriteAuthors": "팔로잉",
+  "communitySearchHint": "작품 제목・투고자 이름으로 검색",
+  "communityEmptyState": "표시할 작품이 없습니다",
+  "communitySearchNoResults": "「{query}」에 해당하는 작품을 찾을 수 없습니다",
+  "@communitySearchNoResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "communityTagSearchHint": "태그명으로 검색",
+  "communityAddTagButton": "태그 추가",
+  "communityAddTagDialogTitle": "태그 추가",
+  "communityAddTagDialogHint": "태그명을 입력하세요",
+  "communityTagLockTooltip": "태그 잠금(투고자 전용)",
+  "communityTagUnlockTooltip": "태그 잠금 해제(투고자 전용)",
+  "communityRemoveTagTooltip": "태그 삭제",
+  "communityPostButton": "게시하기",
+  "communityRankingPeriodAllTime": "누적",
+  "communityRankingPeriodYearly": "연간",
+  "communityRankingPeriodMonthly": "월간",
+  "communityRankingPeriodWeekly": "주간",
+  "communityRankingPeriodDaily": "일간",
+  "communityRankingSortViews": "조회수",
+  "communityRankingSortBookmarks": "북마크 수",
+  "communityRankingSortAscendingTooltip": "오름차순（적은 순）",
+  "communityRankingSortDescendingTooltip": "내림차순（많은 순）",
+  "communityWorkDetailPostedLabel": "{date}에 게시",
+  "@communityWorkDetailPostedLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "communityWorkDetailViewOnYoutube": "YouTube에서 보기",
+  "communityWorkDetailViewOnYoutubeComingSoonSnackbar": "YouTube 연동 기능은 준비 중입니다",
+  "communityWorkDetailBookmarkAdd": "북마크",
+  "communityWorkDetailBookmarkRemove": "북마크됨",
+  "communityWorkDetailReportButton": "신고",
+  "communityWorkDetailBlockButton": "차단",
+  "communityVisibilityCardTitle": "작품 광장에서의 공개 상태",
+  "communityVisibilityPublishedDesc": "공개 중: 신착・랭킹・이 투고자의 작품 목록에 표시됩니다.",
+  "communityVisibilityHiddenDesc": "비공개 중: 신착・랭킹・이 투고자의 작품 목록에서 숨겨집니다（YouTube 측 공개 설정과는 독립된 설정입니다）.",
+  "communityVisibilityHiddenBadge": "비공개",
+  "communityWorkDetailTitle": "작품 상세",
+  "communityWorkHiddenByFilterMessage": "표시 필터 설정에 따라 이 작품은 숨겨져 있습니다",
+  "communityEditFailed": "변경 사항을 저장하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.",
+  "communityEditSignInRequired": "변경하려면 Google 계정으로 로그인해 주세요",
+  "communityFloatingPreviewDetailButton": "상세보기",
+  "communityFloatingPreviewPlayTooltip": "재생",
+  "communityFloatingPreviewPauseTooltip": "일시정지",
+  "communityFloatingPreviewResizeTooltip": "미리보기 크기 조절",
+  "communityFloatingPreviewMoveHint": "드래그하거나 Alt + 방향키로 미리보기를 이동할 수 있습니다.",
+  "communityFloatingPreviewCompactHint": "이 작품은 상세 화면에서 볼 수 있습니다.",
+  "communityReportDialogTitle": "작품 신고",
+  "communityReportDialogBody": "신고 사유를 선택해 주세요.",
+  "communityReportReasonInappropriate": "부적절한 내용",
+  "communityReportReasonCopyright": "저작권 침해 의심",
+  "communityReportReasonSpam": "스팸・반복 게시",
+  "communityReportReasonOther": "기타",
+  "communityReportSubmitButton": "신고하기",
+  "communityReportDetailLabel": "상세 내용",
+  "communityReportDetailHint": "구체적으로 어떤 점이 문제인지 입력해 주세요",
+  "communityReportDetailRequiredError": "상세 내용을 입력해 주세요",
+  "communityReportComingSoonSnackbar": "신고 기능은 준비 중입니다. 실제로 전송되지 않습니다.",
+  "communityBlockConfirmTitle": "「{name}」님을 차단할까요?",
+  "@communityBlockConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBlockConfirmBody": "차단하면 이 작성자의 작품이 목록에 표시되지 않습니다.",
+  "communityBlockComingSoonSnackbar": "차단 기능은 준비 중입니다. 실제로 반영되지 않습니다.",
+  "communityAuthorWorksCount": "작품 {count}개",
+  "@communityAuthorWorksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityAuthorFollowerCount": "팔로워 {count}명",
+  "@communityAuthorFollowerCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityAuthorFollowingCount": "팔로잉 {count}명",
+  "@communityAuthorFollowingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityFollowNotificationsTooltip": "알림",
+  "communityFollowNotificationsEmpty": "알림이 없습니다",
+  "communityNoWorksMessage": "작품이 없습니다",
+  "communityFavoriteAuthorFollow": "팔로우",
+  "communityFavoriteAuthorFollowing": "팔로잉",
+  "communityFavoriteAuthorsEmptyTitle": "팔로우한 작가가 없습니다",
+  "communityFavoriteAuthorsEmptyBody": "마음에 드는 작가의 페이지에서 「팔로우」하면 이곳에 그 사람의 신작이 표시됩니다.",
+  "communityRepostButton": "리포스트",
+  "communityRepostedButton": "리포스트함",
+  "communityRepostedByBadge": "{name}님이 리포스트함",
+  "@communityRepostedByBadge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityAuthorTabWorks": "작품",
+  "communityAuthorTabBookmarks": "북마크",
+  "communityBookmarksEmptyMessage": "북마크한 작품이 없습니다",
+  "communityShortsBadge": "세로 화면",
+  "communityVideoTypeFilterTooltip": "동영상 종류로 좁혀보기",
+  "communityVideoTypeFilterAll": "종합",
+  "communityVideoTypeFilterShortOnly": "세로 화면만",
+  "communityVideoTypeFilterLongOnly": "가로 화면만",
+  "communityShortsModeTooltip": "세로 화면 모드로 보기",
+  "communityShortsModeEmptySnackbar": "세로 화면 동영상이 없습니다",
+  "communityShortsModeExitTooltip": "세로 화면 모드 종료",
+  "pixelColorModeLabel": "배색 방식",
+  "pixelColorModeNone": "색상 제한 없음",
+  "pixelColorModePalette": "팔레트에서 선택",
+  "pixelColorModeExplicit": "색상 지정",
+  "pixelColorModeCount": "색상 수 지정",
+  "pixelColorLevelsLabel": "색상 수: {count}",
+  "@pixelColorLevelsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pixelColorChipDeleteTooltip": "이 색상 삭제",
+  "pixelColorChipAddButton": "색상 추가",
+  "pixelArtPaletteNameRequiredError": "팔레트 이름을 입력하세요",
+  "pixelArtPaletteEditTitle": "팔레트 편집",
+  "pixelArtPaletteAddTitle": "팔레트 추가",
+  "pixelArtPaletteNameLabel": "팔레트 이름",
+  "pixelArtPalettePickerTitle": "팔레트 선택",
+  "pixelArtPalettePickerEmpty": "저장된 팔레트가 없습니다. \\\"추가\\\"를 눌러 만들어 보세요.",
+  "pixelArtPalettePickerApplyButton": "적용",
+  "storageScreenTitle": "용량 확보",
+  "storageDeviceChartTitle": "기기 저장공간",
+  "storageBreakdownChartTitle": "NIARIM 세부 내역",
+  "storageActionsTitle": "정리하기",
+  "storageCategoryNiarimTotal": "NIARIM",
+  "storageCategoryOtherApps": "기타",
+  "storageCategoryFree": "여유 공간",
+  "storageCategoryMaterials": "소재",
+  "storageCategoryProjectData": "프로젝트 데이터",
+  "storageCategoryExports": "내보낸 파일",
+  "storageCategoryCustomAssets": "커스텀 브러시/스크린톤/스탬프/폰트",
+  "storageCategoryCache": "캐시",
+  "storageCategoryTrash": "휴지통",
+  "storageClearCacheButton": "캐시 삭제",
+  "storageRemoveUnusedMaterialsButton": "미사용 소재 일괄 삭제(모든 프로젝트)",
+  "storageEmptyTrashButton": "휴지통 비우기",
+  "storageOrganizeProjectsButton": "프로젝트 정리하기",
+  "storageEraseAllButton": "모든 데이터 삭제(초기화)",
+  "storageClearCacheDoneSnackbar": "캐시 {size}를 삭제했습니다",
+  "@storageClearCacheDoneSnackbar": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "storageEraseAllConfirmTitle": "모든 데이터를 삭제할까요?",
+  "storageEraseAllConfirmBody": "프로젝트, 소재, 내보낸 파일, 커스텀 브러시/스크린톤/스탬프/폰트, 설정 등 NIARIM의 모든 데이터를 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다. 삭제 후 앱을 다시 시작해 주세요.",
+  "storageEraseAllDoneSnackbar": "모든 데이터를 삭제했습니다. 앱을 다시 시작해 주세요.",
+  "homeDrawerStorage": "용량 확보",
+  "helpStorageTitle": "용량 확보",
+  "helpStorageDesc": "기기에서 NIARIM이 사용하는 용량과, NIARIM 내부(프로젝트, 소재, 내보낸 파일, 커스텀 브러시/스크린톤/스탬프/폰트, 캐시, 휴지통)의 세부 내역을 원 그래프로 확인할 수 있습니다. 캐시 삭제, 모든 프로젝트의 미사용 소재 일괄 삭제, 휴지통 비우기, 프로젝트 정리, 모든 데이터 삭제(초기화)를 수행할 수 있습니다.",
+  "helpWidgetSettingsTitle": "홈 화면 위젯",
+  "helpWidgetSettingsDesc": "휴대폰 홈 화면에 배치할 수 있는 3종류의 위젯(작품의 한 컷 표시(시작 화면)·「작품 만들기」·「작품 광장」) 설정입니다. 위젯 자체는 앱 안이 아니라 홈 화면을 길게 눌러서 추가합니다. 「작품 선택」에서는 프로젝트 목록 탭과 동일한 정렬·보기 방식·검색·즐겨찾기 필터를 사용해 작품을 고른 뒤, 재생 컨트롤이 있는 미리보기로 표시할 프레임까지 선택할 수 있습니다. 「작품 만들기」・「작품 광장」 위젯은 배경색을 앱 테마에 맞출지 직접 지정할지 선택할 수 있습니다.",
+  "colorPickerImportPaletteTooltip": "팔레트 가져오기",
+  "colorPickerSharePaletteTooltip": "공유",
+  "colorPickerShareViaFile": "파일로 공유",
+  "colorPickerShareFailedSnackbar": "공유에 실패했습니다: {error}",
+  "@colorPickerShareFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerShareViaQr": "QR 코드로 공유",
+  "qrShareTooLargeHint": "색상이 너무 많아 QR 코드로 공유할 수 없습니다(파일 공유를 이용해 주세요)",
+  "colorPickerImportViaFile": "파일에서 선택",
+  "colorPickerImportFailedSnackbar": "가져오기에 실패했습니다: {error}",
+  "@colorPickerImportFailedSnackbar": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerImportViaQr": "QR 코드 텍스트 붙여넣기",
+  "qrImportFailedError": "가져오기에 실패했습니다. 텍스트가 올바른지 확인해 주세요.",
+  "qrImportHint": "상대방 기기에 표시된 QR 코드를 기본 카메라 앱 등으로 스캔한 후, 복사한 텍스트를 여기에 붙여넣어 주세요.",
+  "qrImportFieldHint": "스캔한 텍스트를 붙여넣기",
+  "qrImportPasteButton": "클립보드에서 붙여넣기",
+  "qrImportSubmitButton": "가져오기",
+  "qrShareHint": "기본 카메라 앱 등으로 이 QR 코드를 스캔하면 텍스트를 복사할 수 있습니다. 상대방 기기에서 \"가져오기\"로 복사한 텍스트를 붙여넣어 주세요.",
+  "qrShareCopiedSnackbar": "텍스트를 복사했습니다",
+  "qrShareCopyButton": "텍스트 복사",
+  "toolbarItemBlur": "가우시안 흐리기",
+  "toolbarItemMosaic": "모자이크",
+  "toolbarFingerSubtoolWarp": "우그리기",
+  "brushSettingsEdgeJitterTitle": "가장자리 번짐",
+  "filterCanvasEyedropperTooltip": "캔버스에서 색상 선택",
+  "filterInkPoolEyedropperHint": "캔버스를 탭하여 먹물 고임 색상을 선택하세요",
+  "filterOutlineEyedropperHint": "캔버스를 탭하여 테두리 색상을 선택하세요",
+  "filterNameAutoLineart": "자동 선화",
+  "filterAutoLineartRoughWidth": "러프 선 굵기",
+  "filterAutoLineartOutputWidth": "선화 굵기",
+  "filterAutoLineartTaperLength": "테이퍼 길이",
+  "filterAutoLineartTaper": "선 끝 테이퍼",
+  "filterAutoLineartSmoothing": "부드럽게",
+  "filterAutoLineartLayerNameSuffix": "{name} 자동 선화",
+  "@filterAutoLineartLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "customAutomationTitle": "자동 작업",
+  "customAutomationAdd": "자동 작업 새로 추가",
+  "customAutomationNewTitle": "새 자동 작업",
+  "customAutomationNameLabel": "이름",
+  "customAutomationStartRecording": "작업 기록 시작",
+  "customAutomationStopRecording": "작업 기록 중지",
+  "customAutomationRunConfirmTitle": "실행하시겠습니까?",
+  "customAutomationCurrentFrame": "현재 프레임에 실행",
+  "customAutomationAllFrames": "모든 프레임에 실행",
+  "customAutomationRenameTitle": "이름 변경",
+  "customAutomationDeleteTitle": "이 자동 작업을 삭제할까요?",
+  "customAutomationImport": "자동 작업 불러오기",
+  "customAutomationExport": "자동 작업 공유 / 내보내기",
+  "customAutomationRerecord": "다시 기록",
+  "customAutomationEmpty": "기록된 자동 작업이 없습니다",
+  "customAutomationImportInvalid": "이 자동 작업 파일을 불러올 수 없습니다",
+  "customAutomationReviewHint": "저장 전에 단계 순서를 바꾸거나 삭제할 수 있습니다",
+  "customAutomationNoRecordedSteps": "기록된 작업이 없습니다",
+  "customAutomationCanvasStep": "캔버스 작업",
+  "customAutomationTimelineStep": "타임라인 작업",
+  "customAutomationBackToRecording": "기록으로 돌아가기",
+  "customAutomationStopConfirmTitle": "자동 작업 등록을 중지할까요?",
+  "customAutomationStopConfirmStop": "중지",
+  "customAutomationStopConfirmContinue": "계속",
+  "customAutomationStepCount": "{count}단계",
+  "customAutomationYes": "예",
+  "customAutomationNo": "아니요",
+  "filterNameInkPool": "먹물 고임",
+  "filterInkPoolColor": "색상",
+  "filterInkPoolRange": "범위",
+  "filterInkPoolCenterWidth": "중앙 두께",
+  "filterInkPoolMaxAngle": "최대 각도",
+  "filterInkPoolMaxAngleHint": "선끼리 이 각도 이하로 만나는 모서리 안쪽에 먹물이 고입니다(90°는 예각과 직각, 180°는 둔각까지).",
+  "filterInkPoolLayerNameSuffix": "{name} 먹물 고임",
+  "@filterInkPoolLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "filterNameVhsNoise": "VHS 노이즈",
+  "filterNameMosaic": "모자이크",
+  "filterNameGenericNoise": "노이즈",
+  "filterVhsNoiseStrength": "노이즈",
+  "filterVhsScanlineStrength": "주사선",
+  "filterVhsColorBleed": "색 번짐",
+  "filterVhsTracking": "트래킹",
+  "timelineEffectTypeVhsNoise": "VHS 노이즈",
+  "customAutomationSpecifiedFrames": "지정한 프레임에서 실행",
+  "customAutomationFrameFrom": "시작 프레임",
+  "customAutomationFrameTo": "종료 프레임",
+  "customAutomationFrameRangeInvalid": "올바른 프레임 범위를 입력하세요.",
+  "customAutomationRunAction": "실행",
+  "customAutomationFavoriteAction": "즐겨찾기에 추가",
+  "customAutomationUnfavoriteAction": "즐겨찾기에서 제거",
+  "brushSettingsCommonSection": "공통",
+  "brushSettingsPressureOnSection": "필압 ON",
+  "brushSettingsPressureOffSection": "필압 OFF",
+  "brushSettingsWeakPressureLabel": "약",
+  "brushSettingsStrongPressureLabel": "강",
+  "helpCustomAutomationTitle": "사용자 지정 자동 작업(동작 기록)",
+  "helpCustomAutomationDesc": "캔버스나 타임라인에서 지원되는 동작을 이름이 있는 순서로 기록해 반복 실행하는 기능입니다. 자동 작업에서 새 항목을 추가해 기록을 시작하고, 중지 후 검토 화면에서 순서를 바꾸거나 단계를 삭제한 뒤 저장합니다. 저장한 자동 작업은 이름 변경, 다시 기록, 삭제, 즐겨찾기 필터링이 가능하며 JSON 파일로 내보내고 가져올 수도 있습니다. 캔버스 동작만 같은 한 프레임 안에서 기록한 자동 작업은 실행할 때 현재 프레임, 지정한 프레임 범위, 모든 프레임 중에서 선택할 수 있습니다. 타임라인 자동 작업이나 여러 프레임에 걸친 기록에는 프레임 범위 선택이 표시되지 않습니다.",
+  "tipsOfficialAutomationPresetsTitle": "공식 자동 작업 프리셋을 그림에 맞게 조정하기",
+  "tipsOfficialAutomationPresetsDesc": "공식 프리셋은 「선화 작성(디지털)」(자동 선화 → 잉크 고임), 「선화 추출(아날로그)」(색조 보정 → 이진화 → 밝기로 투명도 변환), 「선화 색 트레이스」(선화 레이어에서 실행: 아래에 칠한 색을 선화에 클리핑한 새 레이어로 가져오기 → 블러·복제·병합 → 색 트레이스 보정으로 선이 옆 채색보다 깊은 색이 됩니다)입니다. 다시 기록하면 지원되는 작업이 추가됩니다. 확인 화면에서 단계 순서를 바꾸거나 삭제할 수 있습니다. 원래 설정으로 쉽게 돌아가려면 편집 전에 내보내 두세요.",
+  "tipsTexturePrismVhsTitle": "질감·프리즘·VHS는 복제 레이어에서 시험하기",
+  "tipsTexturePrismVhsDesc": "질감 변경 필터는 오로라 홀로그램, 추출 골드, 플래티넘 실버, 빛나는 진주, 오로라 파스텔, 다크 레인보우를 바탕으로 밝기와 채도를 조정합니다. 프리즘은 블러와 무지개 방향으로 빛 띠를 만들고, VHS 노이즈는 노이즈·채도·밝기·대비를 조합해 오래된 테이프 느낌을 냅니다. 복제 레이어에서 하나씩 시험하면 비교하기 쉽고 마음에 든 설정을 즐겨찾기에 넣으면 빠르게 재사용할 수 있습니다.",
+  "customAutomationExecutionFailed": "자동 작업을 완료하지 못했습니다. 설정과 대상 레이어를 확인하세요.",
+  "brushLateralRepeat": "가로 반복",
+  "brushLateralRepeatCount": "반복 개수",
+  "brushLateralRepeatSpacing": "가로 간격",
+  "brushOutline": "외곽선",
+  "brushOutlineWidth": "외곽선 두께",
+  "brushOutlineColor": "외곽선 색상",
+  "brushOutlineColorPicker": "색상 선택기",
+  "brushOutlineEyedropper": "스포이드",
+  "brushOutlineKeepOverlap": "겹침 유지",
+  "brushOutlineKeepOverlapHelp": "켜면 획이 겹친 곳에도 외곽선을 그립니다. 끄면 겹친 곳에는 외곽선도 접힘선도 그리지 않고 전체의 바깥쪽에만 외곽선을 그립니다.",
+  "brushOutlineAccent": "강약",
+  "brushOutlineAccentWidth": "꼭짓점의 외곽선 두께",
+  "brushOutlineAccentHelp": "획의 곡선 꼭짓점으로 갈수록 외곽선을 두껍게 합니다. 곡선의 시작과 끝은 외곽선 두께 그대로이고, 꼭짓점에서 이 두께가 되도록 서서히 두꺼워집니다(필압과 인입출은 외곽선 두께를 바꾸지 않으므로 외곽선의 강약은 이것으로 줍니다). 펜을 떼면 반영됩니다.",
+  "brushFold": "접힘 모드",
+  "brushFoldCurveStart": "접힘선 커브 시작 위치",
+  "brushFoldLength": "접힘 길이",
+  "brushFoldMode": "접힘 유형",
+  "brushFoldModeWaveTopView": "웨이브 (위에서 보기)",
+  "brushFoldModeWaveLowAngle": "웨이브 (아래에서 보기)",
+  "brushFoldModeCurlRight": "오른쪽 컬",
+  "brushFoldModeCurlLeft": "왼쪽 컬",
+  "brushFoldModeCrescent": "초승달 컬",
+  "helpBrushFoldTitle": "브러시 접힘",
+  "helpBrushFoldDesc": "브러시 설정에서 「외곽선」을 켜면 「접힘 모드」를 사용할 수 있습니다. 끄면 일반 외곽선 펜과 동일하게 그립니다. 켜면 그린 스트로크의 방향과 굽은 정도에 따라 외곽선 펜의 선 자체가 접히거나 말립니다. 물결을 자동으로 만드는 기능이 아닙니다. 굽은 곳마다 안쪽 윤곽에서 갈라져 구부러지다가 사라지는 접힘선이 들어갑니다. 같은 방향으로 계속 돌면 270°마다 은은한 접힘선이 들어갑니다. 접힘 유형은 5가지입니다. 「웨이브 (위에서 보기)」는 먼저 그린 쪽을, 「웨이브 (아래에서 보기)」는 나중에 그린 쪽을 앞으로 보냅니다. 「오른쪽 컬」은 진행 방향의 오른쪽으로, 「왼쪽 컬」은 왼쪽으로 말려 들어가듯 앞뒤를 정합니다. 기준은 화면 방향이 아니라 그린 방향입니다. 「초승달 컬」은 그린 C자 곡선을 따라 초승달이 이어지는 모양으로 다듬습니다. 「접힘 길이」는 접힘선의 길이(브러시 크기에 연동), 「접힘 각도」는 스트로크 커브를 따르는 강도(50%에서 자연스럽게 연동), 「접힘선 커브 시작 위치」는 소재의 보이는 두께(0%에서는 갈라지는 위치에서 바로 구부러짐)를 조정합니다. 외곽선 펜에서 필압과 페이드(들어가기·빠지기)는 외곽선을 포함한 전체 모양만 바꾸며, 외곽선의 굵기와 색의 진하기는 변하지 않습니다. 「외곽선」의 「겹침 유지」를 끄면 겹친 획은 이음매에 외곽선을 그리지 않고 이어지며(겹친 곳에는 접힘선도 그리지 않습니다), 전체의 바깥쪽에만 외곽선을 그립니다. 「외곽선」의 「강약」을 켜면 획의 곡선 꼭짓점으로 갈수록 외곽선이 두꺼워집니다(곡선의 시작과 끝은 외곽선 두께 그대로이고 꼭짓점에서 「꼭짓점의 외곽선 두께」가 되도록 서서히 두꺼워지며, 펜을 떼면 반영됩니다).",
+  "tipsBrushFoldTitle": "머리카락이 접힐 때 앞에 보일 부분 고르기",
+  "tipsBrushFoldDesc": "외곽선과 접힘 모드를 켜고, 먼저 초기값 그대로 완만한 S자를 그려 보세요. 먼저 그린 쪽을 앞으로 하려면 「웨이브 (위에서 보기)」, 나중에 그린 쪽이면 「웨이브 (아래에서 보기)」를 고릅니다. 말려 들어가는 모습을 그릴 때는 진행 방향의 오른쪽으로 말리는 「오른쪽 컬」과 왼쪽으로 말리는 「왼쪽 컬」을 비교하면 고르기 쉽습니다. C자 곡선을 이어서 그릴 때는 「초승달 컬」로 초승달의 이어짐을 다듬습니다. 어떤 유형이든 그린 굽이를 사용하므로 직선이 자동으로 물결로 바뀌지는 않습니다. 접힘선이 짧으면 「접힘 길이」를, 구부러짐이 부족하면 「접힘 각도」를 올리고, 머리카락이나 리본을 얇게 보이려면 「접힘선 커브 시작 위치」를 올리세요. 접힘 모드를 끄면 일반 스트로크로 돌아갑니다.",
+  "tipsFourPanelBrushTitle": "4컷 만화 브러시와 직선 자로 칸을 빠르게 만들기",
+  "tipsFourPanelBrushDesc": "프리셋 ‘4컷 만화’ 브러시는 스트로크의 가로 방향 반복을 사용하지 않고 진행 방향을 따라 사각형 테두리를 일정한 간격으로 배치합니다. 직선 자를 켜고 곧게 그으면 4컷 만화의 칸을 쉽고 가지런하게 만들 수 있습니다.",
+  "canvasSelectionReferenceWorkingLayer": "작업 레이어만",
+  "canvasSelectionReferenceVisibleLayers": "표시 레이어 모두",
+  "brushTipSettingsTitle": "펜촉 및 이미지 소재",
+  "brushTipShapeLabel": "펜촉 모양",
+  "brushTipRound": "원형",
+  "brushTipSquare": "속이 빈 사각형",
+  "brushTipHexagon": "육각형",
+  "brushTipChain": "체인 고리",
+  "brushTipBallChain": "볼 체인",
+  "brushTipRelativeSpacing": "크기에 비례하는 간격",
+  "brushTipSpacingRatio": "크기 대비 간격",
+  "brushChainAspect": "고리 가로세로 비율",
+  "brushChainThickness": "고리 두께",
+  "brushNibFlat": "납작한 펜촉",
+  "brushNibAngle": "펜촉 각도",
+  "brushImagesAdd": "이미지 추가",
+  "brushImageInkLabel": "이미지의 그릴 부분",
+  "brushImageInkDark": "어두운 부분",
+  "brushImageInkLight": "밝은 부분",
+  "brushImageInkAlpha": "불투명한 부분",
+  "brushImageInkHelp": "선택한 부분을 현재 색으로 그립니다. 여러 이미지를 등록하면 획마다 소재가 바뀝니다.",
+  "brushImageOrderLabel": "소재 선택 방식",
+  "brushImageOrderRandom": "무작위",
+  "brushImageOrderSequential": "등록 순서",
+  "brushImageMoveUp": "위로 이동",
+  "brushImageMoveDown": "아래로 이동",
+  "brushImageRemove": "소재 제거",
+  "filterNoiseStyle": "노이즈 종류",
+  "filterNoiseFilmGrain": "필름 그레인",
+  "filterNoiseColor": "컬러 노이즈",
+  "filterNoiseSeed": "패턴 시드",
+  "communityContentFilterTitle": "표시 필터",
+  "communityHideGenerativeAiImageVideo": "생성형 AI 이미지·동영상이 포함된 작품 숨기기",
+  "communityMutedWords": "숨길 제목 키워드",
+  "communityMutedWordsHint": "제목에 해당 단어가 포함된 작품을 숨깁니다(작성자 이름과 태그는 제외). 단어를 하나씩 추가하고 수정하세요.",
+  "communityMutedTags": "숨길 태그",
+  "communityMutedTagsHint": "작품 광장에서 일치하는 태그가 있는 작품을 숨깁니다. 태그를 하나씩 추가하세요. #은 필요하지 않습니다.",
+  "communityMuteAddNew": "새로 추가",
+  "communityScrollToTop": "맨 위로",
+  "communityPostPeriodTitle": "게시 기간",
+  "communityDurationFilterTitle": "동영상 길이",
+  "communitySavedSearches": "저장한 검색",
+  "communitySignInPromptTitle": "Google 계정으로 로그인",
+  "communitySignInPromptBody": "작품 게시와 관리, 팔로우, 북마크, 신고 기능을 사용하려면 Google 계정 연결이 필요합니다.",
+  "communitySignInPromptConnect": "Google 계정 연결",
+  "communitySignInUnavailable": "이 개발 빌드에서는 Google 로그인이 설정되지 않았습니다.",
+  "communitySaveSearch": "현재 검색 저장",
+  "communitySavedSearchName": "검색 이름",
+  "communitySavedSearchLimit": "검색은 10개까지 저장할 수 있습니다",
+  "communitySavedSearchEmpty": "저장한 검색이 없습니다",
+  "communityDurationAny": "길이 제한 없음",
+  "communityDurationUpTo": "N분 이하 (슬라이더)",
+  "communityDurationRange": "N분 이상 N분 이하 (숫자 입력)",
+  "communityDurationMinutes": "분 이하",
+  "communityDurationMinimum": "최소 길이 (분)",
+  "communityDurationMaximum": "최대 길이 (분)",
+  "communityTagExactMatch": "검색어 완전 일치(끄면 부분 일치)",
+  "communityMinimumViews": "조회수",
+  "communityMinimumBookmarks": "북마크",
+  "communityPostPeriodAll": "전체 기간",
+  "communityPostPeriodToday": "오늘",
+  "communityPostPeriodWeek": "이번 주",
+  "communityPostPeriodMonth": "이번 달",
+  "communityPostPeriodYear": "올해",
+  "communityPostPeriodCustom": "날짜 범위 지정",
+  "communityPostPeriodChooseRange": "날짜 선택",
+  "communityMutedAuthors": "숨긴 사용자",
+  "communityMutedAuthorsEmpty": "숨긴 사용자가 없습니다",
+  "communityUnmuteAuthor": "이 사용자 다시 표시",
+  "communityMyWorksManagementHeading": "작품 관리",
+  "communityWorkTagsTitle": "작품 태그 관리",
+  "communityWorkTagsHint": "태그를 추가·수정·삭제할 수 있습니다. 잠그면 다른 사용자가 수정할 수 없습니다. 수정·삭제하려면 먼저 잠금을 해제하세요.",
+  "communityWorkEditTag": "태그 수정",
+  "communityWorkTagChangeFailed": "태그를 변경하지 못했습니다",
+  "communityContainsGenerativeAiImageVideo": "생성형 AI 이미지·동영상 포함",
+  "communityContainsGenerativeAiImageVideoHelp": "작품의 이미지 또는 동영상 생성에 생성형 AI를 사용한 경우 켜 주세요. 음성 합성 소프트웨어는 이 항목의 대상이 아닙니다.",
+  "communityAiImageVideoUpdateFailed": "‘생성형 AI 이미지·동영상 포함’을 변경하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.",
+  "communityRetry": "다시 시도",
+  "communityReloadTooltip": "새로고침",
+  "communityGoogleSignInNotConfigured": "Google 계정이 연결되어 있지 않습니다",
+  "communityGoogleAccountBusy": "다른 Google 계정 작업을 처리하는 중입니다. 완료된 후 다시 시도해 주세요.",
+  "communityMyWorksTitle": "내 게시물",
+  "communityMyWorksViewAuthorPage": "내 작품 목록 페이지 보기",
+  "communityMyWorksAccountRequired": "작품 목록을 보려면 Google 계정을 연결하세요",
+  "communityMyWorksSettingsTitle": "작품 설정",
+  "communityMyWorksPublishInNiarim": "NIARIM에 공개",
+  "communityMyWorksDeleteNiarim": "NIARIM 작품 광장에서 이 작품 삭제",
+  "communityMyWorksDeleteConfirmTitle": "이 작품을 삭제할까요?",
+  "communityMyWorksDeleteConfirmBody": "NIARIM에서 작품을 영구 삭제합니다. YouTube 동영상은 삭제되지 않습니다. 이 작업은 취소할 수 없습니다.",
+  "communityMyWorksOpenYoutubeStudio": "YouTube Studio에서 동영상 관리",
+  "communityMyWorksYoutubeStudioHelp": "YouTube 공개 상태와 설정은 YouTube Studio에서 관리합니다. NIARIM 공개 설정과 별개입니다.",
+  "communityMyWorksYoutubeOpenFailed": "YouTube Studio를 열 수 없습니다",
+  "communityMyWorksOperationFailed": "작업 실패: {reason}",
+  "communityMyWorksBulkPublish": "선택 항목 일괄 공개",
+  "communityMyWorksBulkHide": "선택 항목 일괄 비공개",
+  "communityMyWorksBulkResult": "완료: {success} / 실패: {failed}",
+  "communityMyWorksAccountNotConnected": "연결된 Google 계정 없음",
+  "communityMyWorksAddAccount": "Google 계정 추가",
+  "communityMyWorksSwitchAccount": "Google 계정 전환・추가",
+  "communityMyWorksLoading": "게시물을 불러오는 중…",
+  "communityMyWorksLoadFailed": "내 게시물을 불러오지 못했습니다. {reason}",
+  "communityAccountSwitchFailed": "Google 계정을 전환하지 못했습니다. {reason}",
+  "communitySignInFailed": "Google 계정으로 로그인하지 못했습니다. {reason}",
+  "communityMyWorksDeletedCannotPublish": "YouTube에서 삭제된 동영상은 작품 광장에 다시 공개할 수 없습니다",
+  "communityMyWorksStatusDeletedOnYoutube": "YouTube에서 삭제됨 • 다시 공개할 수 없음",
+  "communityMyWorksStatusYoutubePrivate": "작품 광장 공개 중 • YouTube 동영상이 비공개라 일시적으로 숨겨짐",
+  "communityMyWorksStatusHiddenYoutubePrivate": "작품 광장 비공개 • YouTube도 비공개",
+  "communityVisibilityPublishedBadge": "공개 중",
+  "communityYoutubeVideoIdLabel": "YouTube 동영상 ID: {videoId}",
+  "communityPostTitleLabel": "제목",
+  "communityPostPickVideo": "동영상 선택",
+  "communityPostAsShort": "세로 화면 동영상으로 게시",
+  "communityPostShowInPlaza": "작품 광장에 공개",
+  "communityPostShowInPlazaHelp": "YouTube에는 「일부 공개」로 업로드됩니다. 작품 광장에서의 공개 여부는 이와 별도로 관리됩니다.",
+  "communityPostUploadedHeading": "YouTube에 업로드됨",
+  "communityPostUploadedAccount": "Google 계정: {email}",
+  "communityPostNoReupload": "다시 시도해도 동영상은 다시 업로드되지 않습니다.",
+  "communityPostDiscardPending": "작품 광장 등록 취소",
+  "communityPostPendingDiscarded": "보류 중이던 작품 광장 등록을 취소했습니다. YouTube의 동영상은 삭제되지 않았습니다.",
+  "communityPostSubmitUpload": "YouTube에 업로드하고 게시",
+  "communityPostSubmitRetry": "작품 광장 등록 다시 시도",
+  "communityPostErrorLabel": "오류: {message}",
+  "communityPostDoneSnackbar": "게시했습니다(YouTube 동영상 ID: {videoId})",
+  "communityPostRecoveredSnackbar": "게시한 작품을 복구했습니다(YouTube 동영상 ID: {videoId})",
+  "communityPostStatusPendingRestored": "지난번에 YouTube에 업로드한 동영상이 있습니다. 작품 광장 등록만 다시 시도할 수 있습니다.",
+  "communityPostStatusPendingUnavailable": "보류 중인 YouTube 동영상이 삭제되었거나 찾을 수 없어 복구할 수 없습니다. 새 동영상을 선택해 주세요.",
+  "communityPostStatusRecovered": "게시한 작품을 복구했습니다",
+  "communityPostStatusCompleted": "게시가 완료되었습니다",
+  "communityPostStatusCheckingAccount": "Google 계정을 확인하는 중…",
+  "communityPostStatusCheckingRegistration": "작품 광장 등록 상태를 확인하는 중…",
+  "communityPostStatusSyncingAiFlag": "게시한 작품의 ‘생성형 AI 이미지·동영상 포함’ 설정을 동기화하는 중…",
+  "communityPostStatusSyncingVisibility": "게시한 작품의 공개 상태를 동기화하는 중…",
+  "communityPostStatusUploading": "YouTube에 업로드하는 중…",
+  "communityPostStatusRegistering": "YouTube 업로드가 완료되었습니다. 작품 광장에 등록하는 중…",
+  "communityPostStatusUploadFailed": "업로드에 실패했습니다",
+  "communityPostStatusRegistrationRetryable": "YouTube에 동영상이 저장되어 있습니다. 작품 광장 등록만 다시 시도할 수 있습니다.",
+  "communityPostErrorNoVideo": "게시할 동영상을 선택해 주세요",
+  "communityPostErrorNoTitle": "제목을 입력해 주세요",
+  "communityPostErrorServerNotConfigured": "작품 광장 서버가 설정되어 있지 않아 게시할 수 없습니다",
+  "communityPostErrorPendingVideoUnavailable": "YouTube 동영상을 찾을 수 없습니다. 이 동영상의 작품 광장 등록은 다시 시도할 수 없습니다.",
+  "communityPostErrorUploadedByAccount": "이 동영상은 {email} 계정으로 업로드되었습니다. 해당 Google 계정으로 전환한 후 작품 광장 등록을 다시 시도해 주세요.",
+  "communityPostErrorUploadedByAnotherAccount": "이 동영상은 다른 Google 계정으로 업로드되었습니다. 해당 계정으로 전환한 후 작품 광장 등록을 다시 시도해 주세요.",
+  "communityPostErrorAccountChanged": "처리 도중에 Google 계정이 바뀌었습니다. {email} 계정으로 돌아간 후 다시 시도해 주세요.",
+  "communityPostErrorYoutubePermission": "YouTube 게시 권한을 받지 못했습니다",
+  "communityPostErrorNoVideoId": "YouTube에서 동영상 ID를 받지 못했습니다",
+  "communityShortsEndBehaviorTooltip": "재생 종료 시 동작",
+  "communityShortsEndBehaviorLoop": "같은 동영상 반복 재생",
+  "communityShortsEndBehaviorAutoAdvance": "다음 동영상으로 자동 이동",
+  "communityErrorNetwork": "연결하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.",
+  "communityErrorSignInRequired": "Google 계정으로 로그인해야 합니다. 다시 로그인한 후 시도해 주세요.",
+  "communityErrorForbidden": "이 작업을 할 권한이 없습니다.",
+  "communityErrorNotFound": "대상을 찾을 수 없습니다. 삭제되었을 수 있습니다.",
+  "communityErrorRateLimited": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+  "communityErrorServer": "서버에 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+  "communityErrorGeneric": "문제가 발생했습니다. 다시 시도해 주세요.",
+  "communityErrorTagLimitExceeded": "태그는 작품당 최대 {max}개까지 붙일 수 있습니다.",
+  "communityErrorTagTooLong": "태그가 너무 길어서 등록할 수 없습니다. 짧게 줄인 후 다시 시도해 주세요.",
+  "communityErrorTagUpdateConflict": "다른 사람이 동시에 태그를 변경했습니다. 다시 시도해 주세요.",
+  "communityErrorWorkChanged": "작품이 다른 작업으로 업데이트되었습니다. 다시 시도해 주세요.",
+  "communityErrorVideoNotFound": "YouTube 동영상을 찾을 수 없습니다.",
+  "communityErrorVideoAlreadyRegistered": "이 동영상은 이미 다른 사용자가 작품 광장에 등록했습니다.",
+  "communityErrorWorkDeleted": "이 동영상은 작품 광장에서 삭제되어 다시 등록할 수 없습니다.",
+  "communityErrorVideoRegistrationConflict": "다른 요청이 동시에 이 동영상을 등록하고 있었습니다. 내 게시물을 새로고침한 후 다시 시도해 주세요.",
+  "communityErrorPostQuotaExceeded": "오늘의 게시 한도에 도달했습니다. 날짜가 바뀌면 다시 게시할 수 있습니다.",
+  "communityErrorSignInCanceled": "로그인이 취소되었습니다.",
+  "communityErrorGoogleSignIn": "Google 로그인을 완료하지 못했습니다. 다시 시도해 주세요.",
+  "communityErrorYoutubeUpload": "YouTube 업로드에 실패했습니다. 연결 상태를 확인하고 다시 시도해 주세요.",
+  "communityErrorVideoFile": "동영상 파일을 읽지 못했습니다. 동영상을 다시 선택해 주세요.",
+  "communityErrorUnsupported": "이 기기에서는 지원되지 않는 작업입니다.",
+  "canvasLassoSnapToLines": "선에 스냅",
+  "canvasLassoGapTolerance": "선화 간격 허용",
+  "filterBackToList": "필터 목록으로",
+  "filterPanelCollapse": "패널 접기",
+  "filterPanelExpand": "패널 펼치기",
+  "customAutomationShowAll": "모두 표시",
+  "customAutomationFavoritesOnly": "즐겨찾기만",
+  "customAutomationBuiltinDraftToLineart": "선화 작성(디지털)",
+  "customAutomationBuiltinAnalogLineart": "선화 추출(아날로그)",
+  "customAutomationBuiltinLineartColorTrace": "선화 색 트레이스",
+  "customAutomationStepFrame": "{frame}번 프레임으로 이동",
+  "customAutomationStepAddFrame": "프레임 추가",
+  "customAutomationStepBrushSize": "브러시 굵기 {size}px",
+  "customAutomationStepBrushOpacity": "브러시 불투명도 {opacity}%",
+  "customAutomationStepTool": "도구: {tool}",
+  "customAutomationStepColor": "그리기 색 {color}",
+  "customAutomationStepFilter": "필터 적용: {name}",
+  "customAutomationStepColorsBelowClipped": "아래 채색의 색을 선화에 클리핑",
+  "customAutomationStepDuplicateLayer": "레이어 복제",
+  "customAutomationStepMergeDown": "아래 레이어와 병합",
+  "customAutomationStepColorTraceAdjust": "색 트레이스 보정",
+  "customAutomationStepVisibleComposite": "보이는 레이어를 합친 새 레이어를 맨 위에 만들기",
+  "brushFoldAngle": "접힘 각도",
+  "brushFoldModeHelp": "스트로크를 따라 접히는 방식을 선택합니다.",
+  "brushFoldLengthHelp": "접힘이 뻗는 길이를 조정합니다. 브러시 크기에 연동됩니다.",
+  "brushFoldAngleHelp": "스트로크 커브에 대한 접힘의 강도를 조정합니다. 50%에서 스트로크 커브에 자연스럽게 연동됩니다.",
+  "brushFoldCurveStartHelp": "접힘선이 구부러지기 시작하는 위치를 조정해 머리카락이나 리본의 두께를 표현합니다. 0%에서는 갈라지는 위치에서 바로 구부러집니다.",
+  "filterAutoLineartAddPointTooltip": "제어점 추가",
+  "filterAutoLineartDeletePointTooltip": "제어점 삭제",
+  "filterAutoLineartDeletePointConfirm": "이 제어점을 삭제할까요?",
+  "filterPrismDescription": "참조 레이어의 불투명 영역을 6등분해 색칠 → 가우시안 블러 → 선형 닷지",
+  "filterPrismBlurAmount": "블러 양",
+  "filterPrismColorDirection": "색 방향",
+  "filterFisheyeRadius": "반경",
+  "filterNameSphereShading": "구체 음영",
+  "filterSphereModeSeparate": "그림자와 빛을 따로",
+  "filterSphereModeCombined": "하나로 묶어서",
+  "filterSphereCombinedHint": "그림자 색에서 빛 색으로 이어지는 그라데이션을 블렌드 모드 하나로 겹칩니다. 하드 라이트라면 중간 회색보다 어두운 색은 어둡게, 밝은 색은 밝게 합니다.",
+  "filterSphereShadowColor": "그림자 색",
+  "filterSphereLightColor": "빛 색",
+  "filterSphereShadowBlend": "그림자 블렌드 모드",
+  "filterSphereLightBlend": "빛 블렌드 모드",
+  "filterSphereBlend": "블렌드 모드",
+  "filterSphereLightX": "빛 위치 X",
+  "filterSphereLightY": "빛 위치 Y",
+  "filterSphereLightWidth": "빛 크기 X",
+  "filterSphereLightHeight": "빛 크기 Y",
+  "filterSphereLightBlur": "빛 쪽 흐림",
+  "filterSphereShadowBlur": "그림자 쪽 흐림",
+  "filterSphereCanvasHint": "캔버스 위의 +로 빛을 옮기고, 둥근 손잡이로 크기를 바꿀 수 있습니다. 그림자와 빛은 그려진 곳에만 들어갑니다.",
+  "filterNameWatercolorBorder": "수채 경계",
+  "filterWatercolorBorderRange": "범위",
+  "filterWatercolorBorderBlur": "흐림 폭",
+  "filterWatercolorBorderOpacity": "투명도 영향",
+  "filterWatercolorBorderDarken": "가장자리 농도",
+  "filterWatercolorBorderColorEdges": "색 경계에도 적용",
+  "filterWatercolorBorderHint": "칠한 부분의 가장자리에 색이 고이고 안쪽은 비쳐 보여, 마른 수채화처럼 됩니다(작업 레이어에 바로 그립니다). 범위: 가장자리에서 안쪽으로 어디까지 진하게 할지. 가장자리 농도: 가장자리에 고이는 색의 농도. 투명도 영향: 안쪽을 얼마나 비치게 할지. 흐림 폭: 농도가 얼마나 부드럽게 바뀔지.",
+  "filterFisheyeCanvasHint": "캔버스 위의 +로 중심을, 원 위의 둥근 손잡이로 반경을 바꿀 수 있습니다.",
+  "filterCenterX": "중심 X",
+  "filterCenterY": "중심 Y",
+  "filterAxisX": "X축",
+  "filterAxisY": "Y축",
+  "filterAxisZ": "Z축",
+  "filterBgBlendAutoLight": "광원 방향 자동 추정",
+  "filterBgBlendStrength": "어우러짐 강도",
+  "filterBgBlendLightStrength": "주광원 강도",
+  "filterBgBlendShadowStrength": "그림자 강도",
+  "filterBgBlendAmbient": "환경광",
+  "filterBgBlendBounce": "아래쪽 반사광",
+  "filterBgBlendColorSpill": "국소적인 색 번짐",
+  "filterBgBlendSoftness": "빛의 부드러움",
+  "filterBgBlendSecondary": "보조 광원",
+  "filterBgBlendMaterialProtection": "재질 보호",
+  "filterBgBlendToneMatch": "배경의 밝기·색감에 맞추기",
+  "filterBgBlendSamplingBand": "주변 샘플링 범위",
+  "canvasAutofillCheckView": "자동 채색 확인 표시",
+  "canvasAutofillCheckNormal": "일반 표시",
+  "canvasAutofillCheckParts": "파트 구분 확인",
+  "canvasAutofillCheckSilhouette": "실루엣 확인",
+  "canvasBackgroundColorChoices": "흰색 / 검정 / 투명 / 베이지",
+  "canvasTimelineModeTooltip": "타임라인 모드",
+  "startupFailedTitle": "NIARIM을 시작할 수 없습니다",
+  "startupFailedBody": "저장된 작품과 설정은 그대로 남아 있습니다. 다시 시도해 주세요. 계속 발생하면 상세 내용을 복사해 개발자에게 알려 주세요.",
+  "startupFailedRetry": "다시 시도",
+  "startupFailedRetrying": "시작하는 중…",
+  "startupFailedCopyDetails": "상세 내용 복사",
+  "startupFailedDetailsCopied": "상세 내용을 복사했습니다",
+  "startupFailedDetails": "상세 내용",
+  "errorViewTitle": "이 부분을 표시하는 중 오류가 발생했습니다",
+  "errorViewBody": "작업 중인 데이터는 보존되어 있습니다. 이전 화면으로 돌아가 다시 시도해 주세요. 아래 내용을 개발자에게 알려 주시면 원인을 찾는 데 도움이 됩니다.",
+  "homeWorksLoadFailed": "내보낸 작품 목록을 불러오지 못했습니다",
+  "newProjectCreating": "만드는 중…",
+  "newProjectCreateFailed": "프로젝트를 저장하지 못했습니다. 저장 공간과 저장 위치를 확인한 후 다시 시도해 주세요.",
+  "communityCreatorLabel": "작성자",
+  "communityThresholdAny": "조건 없음",
+  "communityMinimumViewsOption": "조회수 {count}회 이상",
+  "@communityMinimumViewsOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityMinimumBookmarksOption": "북마크 {count}개 이상",
+  "@communityMinimumBookmarksOption": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityTileSize": "작품 타일 크기",
+  "communityMutedWordsEmpty": "숨긴 키워드가 없습니다",
+  "communityMutedTagsEmpty": "숨긴 태그가 없습니다",
+  "communityMuteShort": "숨기기",
+  "communityMuteConfirmTitle": "이 사용자를 숨길까요?",
+  "communityMuteConfirmBody": "이 사용자의 작품이 표시되지 않습니다.",
+  "communityMuteConfirmAction": "숨기기",
+  "communityUnmuteConfirmTitle": "이 사용자를 다시 표시할까요?",
+  "communityUnmuteConfirmAction": "다시 표시",
+  "communityMuteNo": "아니요",
+  "communityMuteDone": "사용자를 숨겼습니다",
+  "communityUnmuteDone": "사용자를 다시 표시했습니다",
+  "communityMilestoneNotificationsTitle": "알림",
+  "communityFollowerMilestone": "팔로워가 {count}명에 도달했습니다",
+  "@communityFollowerMilestone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBookmarkMilestone": "「{title}」 작품의 북마크가 {count}개에 도달했습니다",
+  "@communityBookmarkMilestone": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "communitySearchHistory": "검색 기록",
+  "communitySearchHistoryEmpty": "검색 기록이 없습니다",
+  "communityDeleteSavedSearchConfirm": "저장된 검색 조건을 삭제할까요?",
+  "communitySortLabel": "정렬",
+  "homeTrashOperationFailed": "작업을 완료하지 못했습니다. 저장 공간을 확인하고 다시 시도해 주세요.",
+  "homeTrashWorking": "처리 중…"
+}

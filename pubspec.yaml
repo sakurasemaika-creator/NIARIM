@@ -1,0 +1,193 @@
+name: niarim
+description: Hand-drawn animation creation app for Android
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # 多言語対応（設定画面「言語」：日本語/English）。Flutter公式の
+  # ローカライズ基盤。仕様書08「言語」設定の実装（従来はタップしても
+  # 何も起きない未実装状態だった）。
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  provider: ^6.1.1
+  go_router: ^13.0.0
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.1
+  disk_space_2: ^1.0.13
+  google_mobile_ads: ^7.0.0
+  # NIARIM APIのGoogle IDトークン認証と、YouTube Data API投稿用の
+  # `youtube.upload` スコープ認可に使用。7.xでは認証と追加スコープ認可を
+  # 分離して扱うため、lib/services/google_auth_service.dartで一元管理する。
+  google_sign_in: ^7.2.0
+  in_app_purchase: ^3.1.13
+  video_player: ^2.8.2
+  # audioplayers 5.2.1が依存するaudioplayers_android 4.0.3はcompileSdk 33で
+  # ビルドされており、その一部のandroidx依存関係がcompileSdk 34以上を要求する
+  # ためAARメタデータ検証（checkReleaseAarMetadata）に失敗しビルド不能だった。
+  # 6.8.1のaudioplayers_androidはcompileSdk 36へ更新済みで解消される。使用API
+  # （AudioPlayer/play/pause/setVolume/state/PlayerState/DeviceFileSource）に
+  # 5→6系の破壊的変更は影響しないことをCHANGELOGで確認済み。
+  audioplayers: ^6.8.1
+  image: ^4.1.4
+  # v6系はAndroidネイティブ側がFlutter v1埋め込み(PluginRegistry.Registrar)に
+  # 依存しており、最新Flutterでビルド不能（v1埋め込みは削除済み）だったため
+  # 更新が必要だった。11.0.0〜11.0.3はandroid/build.gradleがKotlin Android
+  # Gradleプラグインを適用しておらず、GeneratedPluginRegistrantが
+  # FilePickerPluginクラスを解決できずビルド不能（上流の既知バグ、
+  # miguelpruivo/flutter_file_picker#1973）。10.3.10はv2埋め込み対応済みで
+  # かつこの問題が無いことを確認済みのため、バージョンを固定する。
+  file_picker: 10.3.10
+  # share_plus 7.2.2が依存するAndroidネイティブ側はcompileSdk 33のまま
+  # 固定されており、audioplayers_androidと同様のAARメタデータ不整合で
+  # ビルド不能だった。12.0.0以降のandroid/build.gradleは
+  # `compileSdk = flutter.compileSdkVersion`（Flutter SDK側の推奨値へ追従）
+  # へ変更されており解消される。13.1.0以降はwin32 ^6.0.1を要求し
+  # file_picker 10.3.10（win32 ^5.9.0要求）と競合するため、その手前の
+  # 12.0.2（win32 ^5.5.3、file_picker側と両立）を採用した。11.0.0で
+  # `Share`クラスは非推奨化され`SharePlus.instance.share(ShareParams(...))`
+  # へ置き換えられたため、全8箇所の呼び出しを新APIへ移行した。
+  share_plus: ^12.0.2
+  # 追加フリーフォントのオンデマンドダウンロード（フォント管理画面）用。
+  # Dartチーム公式のHTTPクライアントで、ネイティブ依存を持たない
+  # 純Dartパッケージのため他依存のようなAndroidビルド不整合のリスクが低い。
+  http: ^1.2.2
+  # 各投稿のYouTube Studio編集画面を外部ブラウザーで開く。
+  url_launcher: ^6.3.3
+  archive: ^3.4.9
+  # ffmpeg_kit_flutter_min_gplは配布元(arthenica/ffmpeg-kit)が2025年に
+  # アーカイブされ、Mavenリポジトリから成果物が失われビルド不能になったため、
+  # 保守が続いているフォークへ移行した（ビルド時にネイティブライブラリを
+  # 自動ダウンロードする方式で、失われたMaven依存を回避できる）。
+  #
+  # MP4書き出し（H.264）はAndroid標準のハードウェアエンコーダー
+  # （MediaCodec、android/app側のネイティブ実装）を使うため、GPLライセンス
+  # のlibx264を含む"_min_gpl"系パッケージは使用しない。WebM書き出し
+  # （VP9）のみFFmpegを使い続けるため、GPLコードを含まないLGPL版の
+  # "_video"パッケージ（libvpx等を含みx264/x265等のGPLコーデックは
+  # 含まない）へ切り替えた（仕様書13：ライセンス・特許ロイヤリティ対応）。
+  #
+  # 【重要】この切替とMP4のMediaCodec化は、実機（Android 16）で起動直後に
+  # クラッシュする不具合の疑いで一度全面revertされたが、後の調査で
+  # クラッシュの真因はリリースビルドのR8（isMinifyEnabled）が
+  # WorkManager/Room（google_mobile_ads内部で使用）とHardwareVideoEncoder
+  # の2クラスを誤って除去していたことであり、この切替自体は無関係だった
+  # ことが判明した。proguard-rules.proへのkeepルール追加でR8を有効化した
+  # まま両方修正し、修正込みの実機起動・書き出しを確認済み（このコメントが
+  # 過去に書いていた「R8を無効化した状態を保っている」は古い記述で、現状の
+  # android/app/build.gradle.ktsはR8有効（isMinifyEnabled = true）が正）。
+  # 詳細はdocs/AI設計書/12_実装チェックリスト.mdの追記を参照。
+  ffmpeg_kit_flutter_new_video: ^2.5.2
+  font_awesome_flutter: ^11.0.0
+  flutter_svg: ^2.3.0
+  # QRコード共有（設定共有画面：パレット・ドット絵専用パレット等、バイナリ
+  # 資産を持たない小さなJSON設定のみを対象とする。詳細は12章の変更履歴・
+  # settings_share_screen.dartのコメント参照）。
+  qr_flutter: ^4.1.0
+  home_widget: ^0.9.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  # テストでpath_providerのプラットフォーム実装を差し替えるために直接参照する。
+  path_provider_platform_interface: ^2.1.3
+  # Verify saved-video loading/error/playback UI through the existing backend contract.
+  video_player_platform_interface: 6.9.0
+  # Exercise rejected preference writes through the already locked store API.
+  shared_preferences_platform_interface: 2.4.2
+
+# アプリアイコン生成設定（flutter_launcher_icons）。
+# コーラルピンク（既定テーマのアクセントカラー、0xFFFF5C7A）の正方形
+# 背景にNIARIMモノグラム（ペン+フィルムコマ）を白抜きで重ねたアイコン。
+# 角丸はここでは焼き込まず各OSの自動マスキングに委ねる（iOSは自前で
+# 角丸マスクを適用する仕様のため、あらかじめ角丸を焼き込むと二重
+# マスキングで見た目が崩れる）。素材は`assets/icon/gen_icon.py`
+# （scratchpad、リポジトリ外）で`assets/logo/app_logo.svg`から生成した。
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#FF5C7A"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+  macos:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+  windows:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/
+    - assets/logo/
+    - assets/brushes/
+    - assets/font_catalog/
+    # 同梱フォント（SIL Open Font License 1.1）の著作権表示・ライセンス
+    # 本文。OFL第2条が求める「著作権表示とライセンス本文の同梱」を満たす
+    # ため、アセットとして同梱しmain.dartでLicenseRegistryへ登録する
+    # （設定 → 利用規約・ライセンス → オープンソースライセンス で閲覧できる）。
+    - assets/licenses/
+  fonts:
+    # アプリ全体の基本フォント（仕様書24。白光明朝：lavsic氏作、SIL Open
+    # Font License 1.1、Noto Serif派生）
+    - family: HakkouMincho
+      fonts:
+        - asset: assets/fonts/HakkouMincho.ttf
+    # チュートリアル・説明・演出テキスト用フォント（くらむぼん：フロップ
+    # デザイン制作、SIL Open Font License 1.1、DelaGothic派生）
+    - family: Kuramubon
+      fonts:
+        - asset: assets/fonts/Kuramubon.otf
+    # 白光明朝のフォールバック用（源ノ明朝相当。GoogleがSource Han Serifを
+    # ベースにビルドしたNoto Serif JP、SIL Open Font License 1.1）。常時
+    # 必要なため同梱し、テキストツールの選択肢としても使用する。
+    # それ以外のテキストツール用フリーフォント（旧NotoSansJP・
+    # MPLUSRounded1c・MochiyPopOne・YuseiMagic・HachiMaruPop・ReggaeOne）は
+    # 初期インストール容量を抑えるため同梱をやめ、設定画面「フォント管理」
+    # からのオンデマンドダウンロード方式へ移行した
+    # （lib/models/downloadable_font.dart参照）。
+    - family: NotoSerifJP
+      fonts:
+        - asset: assets/fonts/NotoSerifJP.ttf
+    # くらむぼんのフォールバック用（くらむぼんの改変元であるDela Gothic One。
+    # SIL Open Font License 1.1）。くらむぼんは8,262文字しか収録しておらず、
+    # 未収録の文字は豆腐（□）になってしまう。改変元のDela Gothic Oneは
+    # 9,030文字を収録しており、くらむぼんに無い1,456文字を見た目の近い
+    # 字形で補える。それでも足りない分はNotoSerifJPが受け持つ
+    # （lib/config/font_fallback.dart参照）。
+    - family: DelaGothicOne
+      fonts:
+        - asset: assets/fonts/DelaGothicOne-Regular.ttf
+    # 韓国語・簡体字の補完用（いずれもSIL Open Font License 1.1）。
+    # 同梱フォントは4つとも日本語系でハングル・簡体字を持たないため、
+    # 補わないと端末のシステムフォント任せになり見た目が揃わない
+    # （ハングルを持たない端末では豆腐になる）。
+    # 本文用は明朝（Noto Serif KR/SC、白光明朝と同じSource Han Serif系で
+    # 骨格・字幅が揃う）、見出し用はゴシックBlack(900)（Noto Sans KR/SC。
+    # くらむぼんの極太に太さを合わせる。明朝で補うと「550엔」のように
+    # 極太の数字と細い明朝のハングルが同じ単語内に並んで浮く）。
+    # 原本は4つで75MBあるため、UIに実際に出る文字だけを抜き出した
+    # サブセットを同梱している（計約3.6MB）。生成手順は
+    # tool/build_fallback_fonts.py、取りこぼし検出は
+    # test/font_coverage_test.dart。
+    - family: NotoSerifKRSubset
+      fonts:
+        - asset: assets/fonts/NotoSerifKRSubset.ttf
+    - family: NotoSerifSCSubset
+      fonts:
+        - asset: assets/fonts/NotoSerifSCSubset.ttf
+    - family: NotoSansKRBlackSubset
+      fonts:
+        - asset: assets/fonts/NotoSansKRBlackSubset.ttf
+    - family: NotoSansSCBlackSubset
+      fonts:
+        - asset: assets/fonts/NotoSansSCBlackSubset.ttf

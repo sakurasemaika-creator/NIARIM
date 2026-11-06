@@ -1,0 +1,63 @@
+import type { WorkWithProjectMetadata } from "../../lib/workProjectMetadata";
+
+/**
+ * 作品アイテムからクライアントへ公開してよいフィールドだけを抜き出す。
+ * DynamoDBの内部キー（pk/sk/gsi*）・itemTypeはレスポンスに含めない。
+ */
+export function toPublicWork(item: WorkWithProjectMetadata) {
+  return {
+    workId: item.workId,
+    authorId: item.authorId,
+    channelName: item.channelName,
+    channelAvatarUrl: item.channelAvatarUrl,
+    title: item.title,
+    postedAt: item.postedAt,
+    youtubeUrl: item.youtubeUrl,
+    thumbnailUrl: item.thumbnailUrl,
+    bookmarkCount: item.bookmarkCount,
+    repostCount: item.repostCount,
+    isShort: item.isShort,
+    containsGenerativeAiImageOrVideo:
+      item.containsGenerativeAiImageOrVideo ?? false,
+    tags: item.tags,
+    lockedTags: item.lockedTags,
+    isNiarimPublished: item.isNiarimPublished,
+    projectFps: item.projectFps ?? 0,
+    projectFrameCount: item.projectFrameCount ?? 0,
+    projectWorkSeconds: item.projectWorkSeconds ?? 0,
+    projectCreatedAt: item.projectCreatedAt ?? null,
+    projectCanvasWidth: item.projectCanvasWidth ?? 0,
+    projectCanvasHeight: item.projectCanvasHeight ?? 0,
+  };
+}
+
+/**
+ * Redacted slot used solely by historical rankings and the owner's bookmarks.
+ * Never return hidden author, title, tags, media URL or thumbnail metadata.
+ */
+export function toUnavailableWork(workId: string) {
+  return {
+    workId,
+    authorId: "",
+    channelName: "",
+    channelAvatarUrl: "",
+    title: "",
+    postedAt: "1970-01-01T00:00:00.000Z",
+    youtubeUrl: "",
+    thumbnailUrl: "",
+    bookmarkCount: 0,
+    repostCount: 0,
+    isShort: false,
+    tags: [],
+    lockedTags: [],
+    isNiarimPublished: false,
+    isUnavailable: true,
+    containsGenerativeAiImageOrVideo: false,
+    projectFps: 0,
+    projectFrameCount: 0,
+    projectWorkSeconds: 0,
+    projectCreatedAt: null,
+    projectCanvasWidth: 0,
+    projectCanvasHeight: 0,
+  };
+}

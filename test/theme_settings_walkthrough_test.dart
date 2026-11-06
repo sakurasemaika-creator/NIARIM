@@ -1,0 +1,232 @@
+// テーマ一覧を実際に操作して各段階を撮り、意図どおりかを目視監査できるようにする。
+//
+// 変更の要点は「カードのタップ＝配色の取り込みだけ（チェックは付かない）」
+// 「テーマ自体の編集は三点メニューの『編集』から（このときだけチェックが付く）」。
+// 挙動は theme_preset_adopt_test.dart が数値で見張っているが、
+// 見た目（チェックの有無・カードの強調・SnackBarの文言）はPNGで確認する。
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/screens/settings/theme_settings_screen.dart';
+import 'package:niarim/services/theme_service.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'helpers/load_app_fonts.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  final out = Directory('build/theme-walkthrough');
+  setUpAll(() => out.createSync(recursive: true));
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('テーマ一覧のタップと三点メニューの編集を実操作して撮る', (tester) async {
+    tester.view.physicalSize = const Size(1080, 1920);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await loadAppFonts(tester);
+
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    final rootKey = GlobalKey();
+
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: rootKey,
+        child: MultiProvider(
+          providers: providers,
+          child: Builder(
+            builder: (themeContext) => MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: themeContext.watch<ThemeService>().themeData,
+              locale: const Locale('ja'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const ThemeSettingsScreen(),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+
+    var shot = 0;
+    Future<void> capture(String name) async {
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.runAsync(
+        () => _capture(
+          rootKey,
+          '${out.path}/${shot.toString().padLeft(2, '0')}_$name.png',
+        ),
+      );
+      shot++;
+    }
+
+    // Capture the ENTIRE vertically scrollable theme-and-appearance page,
+    // from the inline preview/color roles through every preset and the final
+    // import button. Each screenshot overlaps the previous by 72px so an
+    // external contact sheet can be stitched without missing any control.
+    // Keep this separate from the interaction walkthrough snapshots.
+    final scrollFinder = find
+        .descendant(
+          of: find.byType(ThemeSettingsScreen),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    final scrollState = tester.state<ScrollableState>(scrollFinder);
+    final position = scrollState.position;
+    final stride = (position.viewportDimension - 72).clamp(100.0, 2000.0);
+    final allPageDir = Directory('build/theme-inline-preview')
+      ..createSync(recursive: true);
+    final l10nAtTop = AppLocalizations.of(
+      tester.element(find.byType(ThemeSettingsScreen)),
+    )!;
+    final lastButton = find.text(l10nAtTop.themeImportButton);
+    // The nested shrink-wrapped preset list can grow its scroll extent when
+    // new rows are laid out. Recompute maxScrollExtent AFTER every viewport;
+    // computing it once before scrolling silently truncates the gallery.
+    var nextOffset = 0.0;
+    var reachedBottom = false;
+    for (var i = 0; i < 36; i++) {
+      position.jumpTo(nextOffset.clamp(0.0, position.maxScrollExtent));
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.runAsync(
+        () => _capture(
+          rootKey,
+          '${allPageDir.path}/theme_settings_full_${i.toString().padLeft(2, '0')}.png',
+        ),
+      );
+      if (lastButton.evaluate().isNotEmpty) {
+        final rect = tester.getRect(lastButton);
+        if (rect.top >= 48 &&
+            rect.bottom <=
+                tester.view.physicalSize.height / tester.view.devicePixelRatio -
+                    8) {
+          reachedBottom = true;
+          break;
+        }
+      }
+      final oldOffset = position.pixels;
+      nextOffset = (oldOffset + stride).clamp(0.0, position.maxScrollExtent);
+      if (nextOffset - oldOffset < 1) {
+        // Trigger further lazy layout before concluding we are at the end.
+        await tester.drag(scrollFinder, const Offset(0, -200));
+        await tester.pump(const Duration(milliseconds: 200));
+        nextOffset = position.pixels;
+      }
+      if (nextOffset - oldOffset < 1) break;
+    }
+    expect(
+      reachedBottom,
+      isTrue,
+      reason: 'The complete theme screen must include the import button',
+    );
+    // Continue the pre-existing editing/adoption test from its usual start.
+    position.jumpTo(0);
+    await tester.pump(const Duration(milliseconds: 250));
+
+    final context = tester.element(find.byType(ThemeSettingsScreen));
+    final service = context.read<ThemeService>();
+    final l10n = AppLocalizations.of(context)!;
+
+    // 縮小プレビューが設定画面の上部にあるため、テーマ一覧のチェックは
+    // 最初のスクリーン内とは限らない。カードへスクロールしてから検証。
+    // The preset list is lazily built below the inline preview and color
+    // controls, so its first row may not even exist in the widget tree yet.
+    await tester.scrollUntilVisible(
+      find.text(service.current.name),
+      110,
+      scrollable: find.byType(Scrollable).first,
+      maxScrolls: 60,
+    );
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(service.isEditingPreset, isTrue);
+    expect(find.byKey(const Key('themePresetEditingCheck')), findsOneWidget);
+    await capture('theme_list_initial');
+
+    // 別のテーマのカードをタップする＝配色の取り込みだけ。
+    final target = service.presets.firstWhere(
+      (p) => p.id != service.current.id,
+    );
+    await tester.ensureVisible(find.text(target.name));
+    await tester.pump(const Duration(milliseconds: 120));
+    await tester.tap(find.text(target.name));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(
+      service.current.accentColor,
+      target.accentColor,
+      reason: 'タップした配色が現在の色へ入ること',
+    );
+    expect(service.isEditingPreset, isFalse, reason: 'タップではテーマの編集対象にならないこと');
+    expect(
+      find.byKey(const Key('themePresetEditingCheck')),
+      findsNothing,
+      reason: 'タップではどのテーマにもチェックが付かないこと',
+    );
+    await capture('after_tap_adopt_colors');
+
+    // 三点メニューを開く（対象テーマの行のもの）。
+    final menuButton = find
+        .descendant(
+          of: find
+              .ancestor(of: find.text(target.name), matching: find.byType(Row))
+              .first,
+          matching: find.byType(PopupMenuButton<String>),
+        )
+        .first;
+    await tester.tap(menuButton);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(
+      find.text(l10n.commonEdit),
+      findsOneWidget,
+      reason: '三点メニューに編集が並ぶこと',
+    );
+    // 既存の項目が編集の追加で押し出されていないことも確かめる。
+    for (final label in [
+      l10n.commonRename,
+      l10n.themeDuplicateAction,
+      l10n.themeExportMenuItem,
+      l10n.commonDelete,
+    ]) {
+      expect(find.text(label), findsOneWidget, reason: '$label が消えている');
+    }
+    await tester.pump(const Duration(milliseconds: 400));
+    await capture('three_dot_menu');
+
+    // 「編集」でこのテーマ自体を編集対象にする＝チェックが付く。
+    await tester.tap(find.text(l10n.commonEdit));
+    // メニューの退場アニメーションが終わるまで待たずに撮ると、閉じかけの
+    // メニューが被ったPNGになりチェックの有無を目視できない。
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(
+      find.text(l10n.commonRename),
+      findsNothing,
+      reason: 'メニューが閉じきってから撮ること',
+    );
+    expect(service.isEditingPreset, isTrue);
+    expect(service.current.id, target.id);
+    expect(
+      find.byKey(const Key('themePresetEditingCheck')),
+      findsOneWidget,
+      reason: '編集対象にしたテーマにだけチェックが付くこと',
+    );
+    await capture('after_edit_from_menu');
+  });
+}
+
+Future<void> _capture(GlobalKey key, String path) async {
+  final boundary =
+      key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final image = await boundary.toImage(pixelRatio: 1);
+  final png = await image.toByteData(format: ui.ImageByteFormat.png);
+  await File(path).writeAsBytes(png!.buffer.asUint8List());
+  image.dispose();
+}

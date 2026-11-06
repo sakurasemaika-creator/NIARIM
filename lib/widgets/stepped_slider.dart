@@ -1,0 +1,120 @@
+import 'package:flutter/material.dart';
+
+/// Slider本体の左右に「－」「＋」ボタンを添えた共通ウィジェット。指や
+/// マウスでの細かいドラッグ操作が難しい環境でも、ボタンタップだけで
+/// [step]刻みの微調整ができるようにする。既存の`Slider(...)`をそのまま
+/// `SteppedSlider(...)`へ置き換えるだけで使える（プロパティ構成は
+/// Sliderに準拠）。
+class SteppedSlider extends StatelessWidget {
+  final double value;
+  final double min;
+  final double max;
+  final int? divisions;
+  // ボタン1回あたりの増減幅。既定は1（0〜100等の一般的な整数レンジ向け）。
+  // 0〜1・-1〜1のような小数レンジのスライダーでは、呼び出し側で0.01〜0.1
+  // 程度の小さい値を指定する。
+  final double step;
+  // nullの場合はSlider同様に操作不可（無効）表示になる。
+  final ValueChanged<double>? onChanged;
+  final ValueChanged<double>? onChangeEnd;
+  final Color? activeColor;
+  final Color? inactiveColor;
+  final String? label;
+  // シークバーのように、既に再生ボタンの左右に同じ役割のコマ送りボタンが
+  // あるなど±ボタンが冗長になる場面ではfalseにして非表示にする。
+  final bool showSteppers;
+  final bool compact;
+
+  const SteppedSlider({
+    super.key,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    this.onChangeEnd,
+    this.divisions,
+    this.step = 1,
+    this.activeColor,
+    this.inactiveColor,
+    this.label,
+    this.showSteppers = true,
+    this.compact = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final clamped = value.clamp(min, max);
+    final slider = Slider(
+      value: clamped,
+      min: min,
+      max: max,
+      divisions: divisions,
+      label: label,
+      activeColor: activeColor,
+      inactiveColor: inactiveColor,
+      onChanged: onChanged,
+      onChangeEnd: onChangeEnd,
+    );
+
+    // 一部の整数コントロールは、循環（359°→0°など）を扱うために外側で
+    // remove/addボタンを持つ。そこへSteppedSlider自身の±まで出すとボタンが
+    // 二重になるので、既存の外部ステッパー構成だけを検出してSlider本体に
+    // 退避する。通常のSteppedSlider利用では従来どおり内蔵±を表示する。
+    final outerRow = context.findAncestorWidgetOfExactType<Row>();
+    final hasExternalSteppers =
+        outerRow != null &&
+        outerRow.children.length == 3 &&
+        _isIconButton(outerRow.children.first, Icons.remove_rounded) &&
+        _isIconButton(outerRow.children.last, Icons.add_rounded);
+    final sliderWidget = compact
+        ? SliderTheme(
+            data: SliderTheme.of(
+              context,
+            ).copyWith(overlayShape: SliderComponentShape.noOverlay),
+            child: slider,
+          )
+        : slider;
+    if (!showSteppers || hasExternalSteppers) return sliderWidget;
+
+    final stepperExtent = compact ? 28.0 : 40.0;
+    return Row(
+      children: [
+        IconButton(
+          icon: const Icon(Icons.remove_circle_outline, size: 22),
+          padding: EdgeInsets.zero,
+          constraints: BoxConstraints(minWidth: stepperExtent, minHeight: 40),
+          visualDensity: VisualDensity.compact,
+          tooltip: '-$step',
+          onPressed: (onChanged == null || clamped <= min)
+              ? null
+              : () {
+                  final v = (clamped - step).clamp(min, max);
+                  onChanged!(v);
+                  onChangeEnd?.call(v);
+                },
+        ),
+        Expanded(child: sliderWidget),
+        IconButton(
+          icon: const Icon(Icons.add_circle_outline, size: 22),
+          padding: EdgeInsets.zero,
+          constraints: BoxConstraints(minWidth: stepperExtent, minHeight: 40),
+          visualDensity: VisualDensity.compact,
+          tooltip: '+$step',
+          onPressed: (onChanged == null || clamped >= max)
+              ? null
+              : () {
+                  final v = (clamped + step).clamp(min, max);
+                  onChanged!(v);
+                  onChangeEnd?.call(v);
+                },
+        ),
+      ],
+    );
+  }
+
+  bool _isIconButton(Widget widget, IconData iconData) {
+    if (widget is! IconButton) return false;
+    final icon = widget.icon;
+    return icon is Icon && icon.icon == iconData;
+  }
+}

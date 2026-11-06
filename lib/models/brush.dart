@@ -1,0 +1,972 @@
+import 'asset_tags.dart';
+import 'brush_extension_defaults.dart';
+import 'pixel_color_mode.dart';
+
+enum BrushImageInkMode { dark, light, alpha }
+
+enum HairFoldMode { waveTopView, waveLowAngle, curlRight, curlLeft, crescent }
+
+/// The widest stamp spacing (canvas px) the brush settings offer. Built-in
+/// brushes stay within it so a copy of any of them can be reproduced there
+/// (the four-panel comic brush spaces its frames 125 px apart).
+const int kBrushSpacingMax = 200;
+
+class Brush {
+  final String id;
+  final String name;
+  final double size;
+  final int opacity;
+  final int spacing;
+  final bool stabilization;
+  final int stabilizationStrength;
+  final bool pixelMode;
+  final BrushPressureOnSettings pressureOn;
+  final BrushPressureOffSettings pressureOff;
+  final FadeMode fadeMode;
+  final FadeEndpointSettings fadeIn;
+  final FadeEndpointSettings fadeOut;
+  final bool strokeDecay;
+  final bool isFavorite;
+  final String? folderId;
+  final String? customImagePath;
+  final List<String> customImagePaths;
+  final BrushImageSelectionMode customImageSelectionMode;
+  final BrushImageInkMode imageInkMode;
+  final double tipSpacingFactor;
+  final double chainAspect;
+  final double chainThickness;
+  final bool rotation;
+  final double density;
+  final double scatter;
+  final double? calligraphyAngle;
+  final PixelColorMode pixelColorMode;
+  final int pixelColorLevels;
+  final List<int> pixelExplicitColors;
+  final List<String> tags;
+
+  final bool lateralRepeatEnabled;
+  final int lateralRepeatCount;
+  final double lateralRepeatSpacing;
+  final bool outlineEnabled;
+  final double outlineWidth;
+  final int outlineColor;
+
+  /// Whether overlapping outline-pen strokes keep their own outlines across
+  /// one another. Off, a stroke merges with what the layer already shows:
+  /// only the outside of the combined shape is outlined.
+  final bool outlineKeepOverlap;
+
+  /// 強弱: the outline thickens towards the apex of every curve of the
+  /// stroke, from [outlineWidth] where the curve begins and ends to
+  /// [outlineAccentWidth] (px) at its apex. Pressure and taper shape the
+  /// stroke as a whole but never the outline's width, so this is how an
+  /// outline pen's outline gets its own rhythm.
+  final bool outlineAccentEnabled;
+  final double outlineAccentWidth;
+  final bool foldEnabled;
+  final double foldTriggerAngle;
+  final double foldCurveStartRatio;
+  final double foldAngleRatio;
+  final double foldCrescentDepthThreshold;
+  final double foldLengthRatio;
+  final double foldEndTaperRatio;
+  final HairFoldMode foldMode;
+  final double yBranchAngle;
+  final double yBranchLengthRatio;
+  final double yBranchWidthRatio;
+  final double yBranchEndTaperRatio;
+  final BrushTipShape tipShape;
+
+  const Brush({
+    required this.id,
+    required this.name,
+    required this.size,
+    required this.opacity,
+    required this.spacing,
+    required this.stabilization,
+    required this.stabilizationStrength,
+    required this.pixelMode,
+    this.pressureOn = BrushPressureOnSettings.defaults,
+    this.pressureOff = BrushPressureOffSettings.defaults,
+    required this.fadeMode,
+    this.fadeIn = FadeEndpointSettings.full,
+    this.fadeOut = FadeEndpointSettings.full,
+    required this.strokeDecay,
+    this.isFavorite = false,
+    this.folderId,
+    this.customImagePath,
+    this.customImagePaths = const [],
+    this.customImageSelectionMode = BrushImageSelectionMode.random,
+    this.imageInkMode = BrushImageInkMode.dark,
+    this.tipSpacingFactor = 0,
+    this.chainAspect = .64,
+    this.chainThickness = .25,
+    this.rotation = false,
+    this.density = 1.0,
+    this.scatter = 0.0,
+    this.calligraphyAngle,
+    this.pixelColorMode = PixelColorMode.none,
+    this.pixelColorLevels = 8,
+    this.pixelExplicitColors = const [0xFF000000],
+    this.tags = const [],
+    this.lateralRepeatEnabled = false,
+    this.lateralRepeatCount = 1,
+    this.lateralRepeatSpacing = 1.0,
+    this.outlineEnabled = false,
+    this.outlineWidth = 1.5,
+    this.outlineColor = 0xFF000000,
+    this.outlineKeepOverlap = true,
+    this.outlineAccentEnabled = false,
+    this.outlineAccentWidth = 4.0,
+    this.foldEnabled = false,
+    this.foldTriggerAngle = 90.0,
+    this.foldCurveStartRatio = BrushExtensionDefaults.foldCurveStartRatio,
+    this.foldAngleRatio = BrushExtensionDefaults.foldAngleRatio,
+    this.foldCrescentDepthThreshold =
+        BrushExtensionDefaults.foldCrescentDepthThreshold,
+    this.foldLengthRatio = BrushExtensionDefaults.foldLengthRatio,
+    this.foldEndTaperRatio = 0.35,
+    this.foldMode = HairFoldMode.waveTopView,
+    this.yBranchAngle = 45.0,
+    this.yBranchLengthRatio = 0.6,
+    this.yBranchWidthRatio = 0.08,
+    this.yBranchEndTaperRatio = 0.4,
+    this.tipShape = BrushTipShape.round,
+  });
+
+  List<String> get resolvedCustomImagePaths {
+    if (customImagePaths.isNotEmpty) return List.unmodifiable(customImagePaths);
+    final legacy = customImagePath;
+    return legacy == null || legacy.isEmpty ? const [] : [legacy];
+  }
+
+  static int clampLateralRepeatCount(int value) => value.clamp(1, 10).toInt();
+  static double clampFoldRatio(double value, double fallback) =>
+      value.isFinite ? value.clamp(0.0, 1.0).toDouble() : fallback;
+  static double clampFoldCrescentDepthThreshold(double value) => value.isFinite
+      ? value
+            .clamp(0.0, BrushExtensionDefaults.maxFoldCrescentDepthThreshold)
+            .toDouble()
+      : BrushExtensionDefaults.foldCrescentDepthThreshold;
+  static double clampFoldAngle(double value, double fallback) =>
+      value.isFinite ? value.clamp(1.0, 180.0).toDouble() : fallback;
+
+  Brush copyWith({
+    String? id,
+    String? name,
+    double? size,
+    int? opacity,
+    int? spacing,
+    bool? stabilization,
+    int? stabilizationStrength,
+    bool? pixelMode,
+    BrushPressureOnSettings? pressureOn,
+    BrushPressureOffSettings? pressureOff,
+    FadeMode? fadeMode,
+    FadeEndpointSettings? fadeIn,
+    FadeEndpointSettings? fadeOut,
+    bool? strokeDecay,
+    bool? isFavorite,
+    String? folderId,
+    String? customImagePath,
+    List<String>? customImagePaths,
+    BrushImageSelectionMode? customImageSelectionMode,
+    BrushImageInkMode? imageInkMode,
+    double? tipSpacingFactor,
+    double? chainAspect,
+    double? chainThickness,
+    bool? rotation,
+    double? density,
+    double? scatter,
+    double? calligraphyAngle,
+    bool clearCalligraphyAngle = false,
+    bool clearCustomImages = false,
+    PixelColorMode? pixelColorMode,
+    int? pixelColorLevels,
+    List<int>? pixelExplicitColors,
+    List<String>? tags,
+    bool? lateralRepeatEnabled,
+    int? lateralRepeatCount,
+    double? lateralRepeatSpacing,
+    bool? outlineEnabled,
+    double? outlineWidth,
+    int? outlineColor,
+    bool? outlineKeepOverlap,
+    bool? outlineAccentEnabled,
+    double? outlineAccentWidth,
+    bool? foldEnabled,
+    double? foldTriggerAngle,
+    double? foldCurveStartRatio,
+    double? foldAngleRatio,
+    double? foldCrescentDepthThreshold,
+    double? foldLengthRatio,
+    double? foldEndTaperRatio,
+    HairFoldMode? foldMode,
+    double? yBranchAngle,
+    double? yBranchLengthRatio,
+    double? yBranchWidthRatio,
+    double? yBranchEndTaperRatio,
+    BrushTipShape? tipShape,
+  }) => Brush(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    size: size ?? this.size,
+    opacity: opacity ?? this.opacity,
+    spacing: spacing ?? this.spacing,
+    stabilization: stabilization ?? this.stabilization,
+    stabilizationStrength: stabilizationStrength ?? this.stabilizationStrength,
+    pixelMode: pixelMode ?? this.pixelMode,
+    pressureOn: pressureOn ?? this.pressureOn,
+    pressureOff: pressureOff ?? this.pressureOff,
+    fadeMode: fadeMode ?? this.fadeMode,
+    fadeIn: fadeIn ?? this.fadeIn,
+    fadeOut: fadeOut ?? this.fadeOut,
+    strokeDecay: strokeDecay ?? this.strokeDecay,
+    isFavorite: isFavorite ?? this.isFavorite,
+    folderId: folderId ?? this.folderId,
+    customImagePath: clearCustomImages
+        ? null
+        : customImagePath ?? this.customImagePath,
+    customImagePaths: clearCustomImages
+        ? const []
+        : customImagePaths ?? this.customImagePaths,
+    customImageSelectionMode:
+        customImageSelectionMode ?? this.customImageSelectionMode,
+    imageInkMode: imageInkMode ?? this.imageInkMode,
+    tipSpacingFactor: tipSpacingFactor ?? this.tipSpacingFactor,
+    chainAspect: chainAspect ?? this.chainAspect,
+    chainThickness: chainThickness ?? this.chainThickness,
+    rotation: rotation ?? this.rotation,
+    density: density ?? this.density,
+    scatter: scatter ?? this.scatter,
+    calligraphyAngle: clearCalligraphyAngle
+        ? null
+        : calligraphyAngle ?? this.calligraphyAngle,
+    pixelColorMode: pixelColorMode ?? this.pixelColorMode,
+    pixelColorLevels: pixelColorLevels ?? this.pixelColorLevels,
+    pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
+    tags: tags ?? this.tags,
+    lateralRepeatEnabled: lateralRepeatEnabled ?? this.lateralRepeatEnabled,
+    lateralRepeatCount: clampLateralRepeatCount(
+      lateralRepeatCount ?? this.lateralRepeatCount,
+    ),
+    lateralRepeatSpacing: lateralRepeatSpacing ?? this.lateralRepeatSpacing,
+    outlineEnabled: outlineEnabled ?? this.outlineEnabled,
+    outlineWidth: outlineWidth ?? this.outlineWidth,
+    outlineColor: outlineColor ?? this.outlineColor,
+    outlineKeepOverlap: outlineKeepOverlap ?? this.outlineKeepOverlap,
+    outlineAccentEnabled: outlineAccentEnabled ?? this.outlineAccentEnabled,
+    outlineAccentWidth: outlineAccentWidth ?? this.outlineAccentWidth,
+    foldEnabled: foldEnabled ?? this.foldEnabled,
+    foldTriggerAngle: foldTriggerAngle ?? this.foldTriggerAngle,
+    foldCurveStartRatio: clampFoldRatio(
+      foldCurveStartRatio ?? this.foldCurveStartRatio,
+      BrushExtensionDefaults.foldCurveStartRatio,
+    ),
+    foldAngleRatio: clampFoldRatio(
+      foldAngleRatio ?? this.foldAngleRatio,
+      BrushExtensionDefaults.foldAngleRatio,
+    ),
+    foldCrescentDepthThreshold: clampFoldCrescentDepthThreshold(
+      foldCrescentDepthThreshold ?? this.foldCrescentDepthThreshold,
+    ),
+    foldLengthRatio: clampFoldRatio(
+      foldLengthRatio ?? this.foldLengthRatio,
+      BrushExtensionDefaults.foldLengthRatio,
+    ),
+    foldEndTaperRatio: clampFoldRatio(
+      foldEndTaperRatio ?? this.foldEndTaperRatio,
+      .35,
+    ),
+    foldMode: foldMode ?? this.foldMode,
+    yBranchAngle: yBranchAngle ?? this.yBranchAngle,
+    yBranchLengthRatio: yBranchLengthRatio ?? this.yBranchLengthRatio,
+    yBranchWidthRatio: yBranchWidthRatio ?? this.yBranchWidthRatio,
+    yBranchEndTaperRatio: yBranchEndTaperRatio ?? this.yBranchEndTaperRatio,
+    tipShape: tipShape ?? this.tipShape,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'size': size,
+    'opacity': opacity,
+    'spacing': spacing,
+    'stabilization': stabilization,
+    'stabilizationStrength': stabilizationStrength,
+    'pixelMode': pixelMode,
+    'pressureOn': pressureOn.toJson(),
+    'pressureOff': pressureOff.toJson(),
+    'fadeMode': fadeMode.name,
+    'fadeIn': fadeIn.toJson(),
+    'fadeOut': fadeOut.toJson(),
+    'strokeDecay': strokeDecay,
+    'isFavorite': isFavorite,
+    'folderId': folderId,
+    'customImagePath': customImagePath,
+    'customImagePaths': customImagePaths,
+    'customImageSelectionMode': customImageSelectionMode.name,
+    'imageInkMode': imageInkMode.name,
+    'tipSpacingFactor': tipSpacingFactor,
+    'chainAspect': chainAspect,
+    'chainThickness': chainThickness,
+    'rotation': rotation,
+    'density': density,
+    'scatter': scatter,
+    'calligraphyAngle': calligraphyAngle,
+    'pixelColorMode': pixelColorMode.name,
+    'pixelColorLevels': pixelColorLevels,
+    'pixelExplicitColors': pixelExplicitColors,
+    'tags': tags,
+    'lateralRepeatEnabled': lateralRepeatEnabled,
+    'lateralRepeatCount': clampLateralRepeatCount(lateralRepeatCount),
+    'lateralRepeatSpacing': lateralRepeatSpacing,
+    'outlineEnabled': outlineEnabled,
+    'outlineWidth': outlineWidth,
+    'outlineColor': outlineColor,
+    'outlineKeepOverlap': outlineKeepOverlap,
+    'outlineAccentEnabled': outlineAccentEnabled,
+    'outlineAccentWidth': outlineAccentWidth,
+    'foldEnabled': foldEnabled,
+    'foldTriggerAngle': foldTriggerAngle,
+    'foldCurveStartRatio': clampFoldRatio(
+      foldCurveStartRatio,
+      BrushExtensionDefaults.foldCurveStartRatio,
+    ),
+    'foldAngleRatio': clampFoldRatio(
+      foldAngleRatio,
+      BrushExtensionDefaults.foldAngleRatio,
+    ),
+    'foldCrescentDepthThreshold': clampFoldCrescentDepthThreshold(
+      foldCrescentDepthThreshold,
+    ),
+    'foldLengthRatio': clampFoldRatio(
+      foldLengthRatio,
+      BrushExtensionDefaults.foldLengthRatio,
+    ),
+    'foldEndTaperRatio': clampFoldRatio(foldEndTaperRatio, .35),
+    'foldMode': foldMode.name,
+    'yBranchAngle': yBranchAngle,
+    'yBranchLengthRatio': yBranchLengthRatio,
+    'yBranchWidthRatio': yBranchWidthRatio,
+    'yBranchEndTaperRatio': yBranchEndTaperRatio,
+    'tipShape': tipShape.name,
+  };
+
+  factory Brush.fromJson(Map<String, dynamic> j) => Brush(
+    id: j['id'] as String,
+    name: j['name'] as String,
+    size: (j['size'] as num).toDouble(),
+    opacity: j['opacity'] as int,
+    spacing: j['spacing'] as int,
+    stabilization: j['stabilization'] as bool,
+    stabilizationStrength: j['stabilizationStrength'] as int,
+    pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,
+    pressureOn: BrushPressureOnSettings.fromJson(
+      j['pressureOn'] as Map<String, dynamic>,
+    ),
+    pressureOff: BrushPressureOffSettings.fromJson(
+      j['pressureOff'] as Map<String, dynamic>,
+    ),
+    fadeMode: FadeMode.values.firstWhere(
+      (e) => e.name == j['fadeMode'],
+      orElse: () => FadeMode.off,
+    ),
+    // Brushes saved before fade-in/out existed have neither.
+    fadeIn: j['fadeIn'] is Map<String, dynamic>
+        ? FadeEndpointSettings.fromJson(j['fadeIn'] as Map<String, dynamic>)
+        : FadeEndpointSettings.full,
+    fadeOut: j['fadeOut'] is Map<String, dynamic>
+        ? FadeEndpointSettings.fromJson(j['fadeOut'] as Map<String, dynamic>)
+        : FadeEndpointSettings.full,
+    strokeDecay: j['strokeDecay'] as bool,
+    isFavorite: j['isFavorite'] as bool? ?? false,
+    folderId: j['folderId'] as String?,
+    customImagePath: j['customImagePath'] as String?,
+    customImagePaths:
+        (j['customImagePaths'] as List<dynamic>?)
+            ?.whereType<String>()
+            .toList() ??
+        const [],
+    customImageSelectionMode: BrushImageSelectionMode.values.firstWhere(
+      (e) => e.name == j['customImageSelectionMode'],
+      orElse: () => BrushImageSelectionMode.random,
+    ),
+    imageInkMode: BrushImageInkMode.values.firstWhere(
+      (e) => e.name == j['imageInkMode'],
+      // Older snapshots did not store the source-ink setting. Preserve their
+      // bundled light-on-dark material once, then serialize an explicit mode.
+      orElse: () =>
+          j['imageInkMode'] == null &&
+              [
+                j['customImagePath'],
+                ...?j['customImagePaths'] as List<dynamic>?,
+              ].whereType<String>().any(
+                (path) => path.startsWith('assets/brushes/bangs_'),
+              )
+          ? BrushImageInkMode.light
+          : BrushImageInkMode.dark,
+    ),
+    tipSpacingFactor: (j['tipSpacingFactor'] as num?)?.toDouble() ?? 0,
+    chainAspect: (j['chainAspect'] as num?)?.toDouble() ?? .64,
+    chainThickness: (j['chainThickness'] as num?)?.toDouble() ?? .25,
+    rotation: j['rotation'] as bool? ?? false,
+    density: (j['density'] as num?)?.toDouble() ?? 1,
+    scatter: (j['scatter'] as num?)?.toDouble() ?? 0,
+    calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
+    pixelColorMode: PixelColorMode.values.firstWhere(
+      (e) => e.name == j['pixelColorMode'],
+      orElse: () => PixelColorMode.none,
+    ),
+    pixelColorLevels: j['pixelColorLevels'] as int? ?? 8,
+    pixelExplicitColors:
+        (j['pixelExplicitColors'] as List<dynamic>?)
+            ?.map((e) => e as int)
+            .toList() ??
+        const [0xFF000000],
+    tags: parseTags(j['tags']),
+    lateralRepeatEnabled: j['lateralRepeatEnabled'] as bool? ?? false,
+    lateralRepeatCount: clampLateralRepeatCount(
+      (j['lateralRepeatCount'] as num?)?.toInt() ?? 1,
+    ),
+    lateralRepeatSpacing: (j['lateralRepeatSpacing'] as num?)?.toDouble() ?? 1,
+    outlineEnabled: j['outlineEnabled'] as bool? ?? false,
+    outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 1.5,
+    outlineColor: (j['outlineColor'] as num?)?.toInt() ?? 0xFF000000,
+    outlineKeepOverlap: j['outlineKeepOverlap'] as bool? ?? true,
+    outlineAccentEnabled: j['outlineAccentEnabled'] as bool? ?? false,
+    outlineAccentWidth: (j['outlineAccentWidth'] as num?)?.toDouble() ?? 4,
+    foldEnabled: j['foldEnabled'] as bool? ?? false,
+    foldTriggerAngle: (j['foldTriggerAngle'] as num?)?.toDouble() ?? 90,
+    foldCurveStartRatio: clampFoldRatio(
+      (j['foldCurveStartRatio'] as num?)?.toDouble() ??
+          BrushExtensionDefaults.foldCurveStartRatio,
+      BrushExtensionDefaults.foldCurveStartRatio,
+    ),
+    foldAngleRatio: clampFoldRatio(
+      (j['foldAngleRatio'] as num?)?.toDouble() ??
+          BrushExtensionDefaults.foldAngleRatio,
+      BrushExtensionDefaults.foldAngleRatio,
+    ),
+    foldCrescentDepthThreshold: clampFoldCrescentDepthThreshold(
+      (j['foldCrescentDepthThreshold'] as num?)?.toDouble() ??
+          BrushExtensionDefaults.foldCrescentDepthThreshold,
+    ),
+    foldLengthRatio: clampFoldRatio(
+      (j['foldLengthRatio'] as num?)?.toDouble() ??
+          BrushExtensionDefaults.foldLengthRatio,
+      BrushExtensionDefaults.foldLengthRatio,
+    ),
+    foldEndTaperRatio: clampFoldRatio(
+      (j['foldEndTaperRatio'] as num?)?.toDouble() ?? .35,
+      .35,
+    ),
+    foldMode: HairFoldMode.values.firstWhere(
+      (e) => e.name == j['foldMode'],
+      orElse: () => HairFoldMode.waveTopView,
+    ),
+    yBranchAngle: (j['yBranchAngle'] as num?)?.toDouble() ?? 45,
+    yBranchLengthRatio: (j['yBranchLengthRatio'] as num?)?.toDouble() ?? .6,
+    yBranchWidthRatio: (j['yBranchWidthRatio'] as num?)?.toDouble() ?? .08,
+    yBranchEndTaperRatio: (j['yBranchEndTaperRatio'] as num?)?.toDouble() ?? .4,
+    tipShape: BrushTipShape.values.firstWhere(
+      (e) => e.name == j['tipShape'],
+      orElse: () => BrushTipShape.round,
+    ),
+  );
+}
+
+class PressureRangeSetting {
+  final bool enabled;
+  final int weak;
+  final int strong;
+  const PressureRangeSetting({
+    required this.enabled,
+    required this.weak,
+    required this.strong,
+  });
+  PressureRangeSetting copyWith({bool? enabled, int? weak, int? strong}) =>
+      PressureRangeSetting(
+        enabled: enabled ?? this.enabled,
+        weak: weak ?? this.weak,
+        strong: strong ?? this.strong,
+      );
+  Map<String, dynamic> toJson() => {
+    'enabled': enabled,
+    'weak': weak,
+    'strong': strong,
+  };
+  factory PressureRangeSetting.fromJson(Map<String, dynamic> j) =>
+      PressureRangeSetting(
+        enabled: j['enabled'] as bool,
+        weak: j['weak'] as int,
+        strong: j['strong'] as int,
+      );
+  @override
+  bool operator ==(Object other) =>
+      other is PressureRangeSetting &&
+      enabled == other.enabled &&
+      weak == other.weak &&
+      strong == other.strong;
+  @override
+  int get hashCode => Object.hash(enabled, weak, strong);
+}
+
+class FixedBrushSetting {
+  final bool enabled;
+  final int value;
+  const FixedBrushSetting({required this.enabled, required this.value});
+  FixedBrushSetting copyWith({bool? enabled, int? value}) => FixedBrushSetting(
+    enabled: enabled ?? this.enabled,
+    value: value ?? this.value,
+  );
+  Map<String, dynamic> toJson() => {'enabled': enabled, 'value': value};
+  factory FixedBrushSetting.fromJson(Map<String, dynamic> j) =>
+      FixedBrushSetting(
+        enabled: j['enabled'] as bool,
+        value: j['value'] as int,
+      );
+  @override
+  bool operator ==(Object other) =>
+      other is FixedBrushSetting &&
+      enabled == other.enabled &&
+      value == other.value;
+  @override
+  int get hashCode => Object.hash(enabled, value);
+}
+
+class PressureMixingOnSetting {
+  final bool enabled;
+  final BrushMixingMode mode;
+
+  /// 混色度合い（0〜100）：筆圧が弱い時・強い時。
+  final int weakRate;
+  final int strongRate;
+
+  /// 1 is darker, 3 is neutral, and 5 is brighter (油彩風).
+  final int brightnessCorrection;
+
+  /// 色延び（0〜100、油彩風）：拾った色をどこまで引きずるか。
+  final int stretch;
+
+  /// 水分量（0〜100、水彩風）：多いほど薄く、むらが出て、少し広がる。
+  final int water;
+
+  /// 絵具量（0〜100、水彩風）：多いほど色が濃い。
+  final int pigment;
+
+  /// にじみ（0〜100、水彩風）：乾くときに筆の外へどこまで、どれだけ
+  /// 不揃いに広がるか。
+  final int bleed;
+
+  /// むら（0〜100、水彩風）：紙の目と顔料のむらの強さ。0なら均一に
+  /// パキッと塗れる。
+  final int texture;
+
+  /// 境界のぼかし（0〜100、水彩風）：0は縁がくっきり、大きいほど縁へ
+  /// 向かってなめらかに薄れるグラデーションになる。
+  final int softEdge;
+  const PressureMixingOnSetting({
+    required this.enabled,
+    required this.mode,
+    required this.weakRate,
+    required this.strongRate,
+    this.brightnessCorrection = 3,
+    this.stretch = kDefaultMixingStretch,
+    this.water = kDefaultMixingWater,
+    this.pigment = kDefaultMixingPigment,
+    this.bleed = kDefaultMixingBleed,
+    this.texture = kDefaultMixingTexture,
+    this.softEdge = kDefaultMixingSoftEdge,
+  });
+  PressureMixingOnSetting copyWith({
+    bool? enabled,
+    BrushMixingMode? mode,
+    int? weakRate,
+    int? strongRate,
+    int? brightnessCorrection,
+    int? stretch,
+    int? water,
+    int? pigment,
+    int? bleed,
+    int? texture,
+    int? softEdge,
+  }) => PressureMixingOnSetting(
+    enabled: enabled ?? this.enabled,
+    mode: mode ?? this.mode,
+    weakRate: weakRate ?? this.weakRate,
+    strongRate: strongRate ?? this.strongRate,
+    brightnessCorrection: brightnessCorrection ?? this.brightnessCorrection,
+    stretch: stretch ?? this.stretch,
+    water: water ?? this.water,
+    pigment: pigment ?? this.pigment,
+    bleed: bleed ?? this.bleed,
+    texture: texture ?? this.texture,
+    softEdge: softEdge ?? this.softEdge,
+  );
+  Map<String, dynamic> toJson() => {
+    'enabled': enabled,
+    'mode': mode.name,
+    'weakRate': weakRate,
+    'strongRate': strongRate,
+    'brightnessCorrection': brightnessCorrection,
+    'stretch': stretch,
+    'water': water,
+    'pigment': pigment,
+    'bleed': bleed,
+    'texture': texture,
+    'softEdge': softEdge,
+  };
+  factory PressureMixingOnSetting.fromJson(Map<String, dynamic> j) =>
+      PressureMixingOnSetting(
+        enabled: j['enabled'] as bool,
+        mode: _parseBrushMixingMode(j['mode']),
+        weakRate: j['weakRate'] as int,
+        strongRate: j['strongRate'] as int,
+        brightnessCorrection:
+            ((j['brightnessCorrection'] as num?)?.toInt() ?? 3)
+                .clamp(1, 5)
+                .toInt(),
+        stretch: _percent(j['stretch'], kDefaultMixingStretch),
+        water: _percent(j['water'], kDefaultMixingWater),
+        pigment: _percent(j['pigment'], kDefaultMixingPigment),
+        bleed: _percent(j['bleed'], kDefaultMixingBleed),
+        texture: _percent(j['texture'], kDefaultMixingTexture),
+        softEdge: _percent(j['softEdge'], kDefaultMixingSoftEdge),
+      );
+  @override
+  bool operator ==(Object other) =>
+      other is PressureMixingOnSetting &&
+      enabled == other.enabled &&
+      mode == other.mode &&
+      weakRate == other.weakRate &&
+      strongRate == other.strongRate &&
+      brightnessCorrection == other.brightnessCorrection &&
+      stretch == other.stretch &&
+      water == other.water &&
+      pigment == other.pigment &&
+      bleed == other.bleed &&
+      texture == other.texture &&
+      softEdge == other.softEdge;
+  @override
+  int get hashCode => Object.hash(
+    enabled,
+    mode,
+    weakRate,
+    strongRate,
+    brightnessCorrection,
+    stretch,
+    water,
+    pigment,
+    bleed,
+    texture,
+    softEdge,
+  );
+}
+
+class PressureMixingOffSetting {
+  final bool enabled;
+  final BrushMixingMode mode;
+
+  /// 混色度合い（0〜100）。
+  final int rate;
+
+  /// See [PressureMixingOnSetting.brightnessCorrection].
+  final int brightnessCorrection;
+
+  /// See [PressureMixingOnSetting.stretch].
+  final int stretch;
+
+  /// See [PressureMixingOnSetting.water].
+  final int water;
+
+  /// See [PressureMixingOnSetting.pigment].
+  final int pigment;
+
+  /// See [PressureMixingOnSetting.bleed].
+  final int bleed;
+
+  /// See [PressureMixingOnSetting.texture].
+  final int texture;
+
+  /// See [PressureMixingOnSetting.softEdge].
+  final int softEdge;
+  const PressureMixingOffSetting({
+    required this.enabled,
+    required this.mode,
+    required this.rate,
+    this.brightnessCorrection = 3,
+    this.stretch = kDefaultMixingStretch,
+    this.water = kDefaultMixingWater,
+    this.pigment = kDefaultMixingPigment,
+    this.bleed = kDefaultMixingBleed,
+    this.texture = kDefaultMixingTexture,
+    this.softEdge = kDefaultMixingSoftEdge,
+  });
+  PressureMixingOffSetting copyWith({
+    bool? enabled,
+    BrushMixingMode? mode,
+    int? rate,
+    int? brightnessCorrection,
+    int? stretch,
+    int? water,
+    int? pigment,
+    int? bleed,
+    int? texture,
+    int? softEdge,
+  }) => PressureMixingOffSetting(
+    enabled: enabled ?? this.enabled,
+    mode: mode ?? this.mode,
+    rate: rate ?? this.rate,
+    brightnessCorrection: brightnessCorrection ?? this.brightnessCorrection,
+    stretch: stretch ?? this.stretch,
+    water: water ?? this.water,
+    pigment: pigment ?? this.pigment,
+    bleed: bleed ?? this.bleed,
+    texture: texture ?? this.texture,
+    softEdge: softEdge ?? this.softEdge,
+  );
+  Map<String, dynamic> toJson() => {
+    'enabled': enabled,
+    'mode': mode.name,
+    'rate': rate,
+    'brightnessCorrection': brightnessCorrection,
+    'stretch': stretch,
+    'water': water,
+    'pigment': pigment,
+    'bleed': bleed,
+    'texture': texture,
+    'softEdge': softEdge,
+  };
+  factory PressureMixingOffSetting.fromJson(Map<String, dynamic> j) =>
+      PressureMixingOffSetting(
+        enabled: j['enabled'] as bool,
+        mode: _parseBrushMixingMode(j['mode']),
+        rate: j['rate'] as int,
+        brightnessCorrection:
+            ((j['brightnessCorrection'] as num?)?.toInt() ?? 3)
+                .clamp(1, 5)
+                .toInt(),
+        stretch: _percent(j['stretch'], kDefaultMixingStretch),
+        water: _percent(j['water'], kDefaultMixingWater),
+        pigment: _percent(j['pigment'], kDefaultMixingPigment),
+        bleed: _percent(j['bleed'], kDefaultMixingBleed),
+        texture: _percent(j['texture'], kDefaultMixingTexture),
+        softEdge: _percent(j['softEdge'], kDefaultMixingSoftEdge),
+      );
+  @override
+  bool operator ==(Object other) =>
+      other is PressureMixingOffSetting &&
+      enabled == other.enabled &&
+      mode == other.mode &&
+      rate == other.rate &&
+      brightnessCorrection == other.brightnessCorrection &&
+      stretch == other.stretch &&
+      water == other.water &&
+      pigment == other.pigment &&
+      bleed == other.bleed &&
+      texture == other.texture &&
+      softEdge == other.softEdge;
+  @override
+  int get hashCode => Object.hash(
+    enabled,
+    mode,
+    rate,
+    brightnessCorrection,
+    stretch,
+    water,
+    pigment,
+    bleed,
+    texture,
+    softEdge,
+  );
+}
+
+class BrushPressureOnSettings {
+  final PressureRangeSetting size;
+  final PressureRangeSetting opacity;
+  final PressureRangeSetting blur;
+  final PressureRangeSetting edgeJitter;
+  final PressureMixingOnSetting mixing;
+  const BrushPressureOnSettings({
+    required this.size,
+    required this.opacity,
+    required this.blur,
+    required this.edgeJitter,
+    required this.mixing,
+  });
+  static const defaults = BrushPressureOnSettings(
+    size: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
+    opacity: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
+    blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
+    edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
+    mixing: PressureMixingOnSetting(
+      enabled: false,
+      mode: BrushMixingMode.oil,
+      weakRate: 0,
+      strongRate: 0,
+    ),
+  );
+  BrushPressureOnSettings copyWith({
+    PressureRangeSetting? size,
+    PressureRangeSetting? opacity,
+    PressureRangeSetting? blur,
+    PressureRangeSetting? edgeJitter,
+    PressureMixingOnSetting? mixing,
+  }) => BrushPressureOnSettings(
+    size: size ?? this.size,
+    opacity: opacity ?? this.opacity,
+    blur: blur ?? this.blur,
+    edgeJitter: edgeJitter ?? this.edgeJitter,
+    mixing: mixing ?? this.mixing,
+  );
+  Map<String, dynamic> toJson() => {
+    'size': size.toJson(),
+    'opacity': opacity.toJson(),
+    'blur': blur.toJson(),
+    'edgeJitter': edgeJitter.toJson(),
+    'mixing': mixing.toJson(),
+  };
+  factory BrushPressureOnSettings.fromJson(Map<String, dynamic> j) =>
+      BrushPressureOnSettings(
+        size: PressureRangeSetting.fromJson(j['size'] as Map<String, dynamic>),
+        opacity: PressureRangeSetting.fromJson(
+          j['opacity'] as Map<String, dynamic>,
+        ),
+        blur: PressureRangeSetting.fromJson(j['blur'] as Map<String, dynamic>),
+        edgeJitter: PressureRangeSetting.fromJson(
+          j['edgeJitter'] as Map<String, dynamic>,
+        ),
+        mixing: PressureMixingOnSetting.fromJson(
+          j['mixing'] as Map<String, dynamic>,
+        ),
+      );
+  @override
+  bool operator ==(Object other) =>
+      other is BrushPressureOnSettings &&
+      size == other.size &&
+      opacity == other.opacity &&
+      blur == other.blur &&
+      edgeJitter == other.edgeJitter &&
+      mixing == other.mixing;
+  @override
+  int get hashCode => Object.hash(size, opacity, blur, edgeJitter, mixing);
+}
+
+class BrushPressureOffSettings {
+  final FixedBrushSetting blur;
+  final FixedBrushSetting edgeJitter;
+  final PressureMixingOffSetting mixing;
+  const BrushPressureOffSettings({
+    required this.blur,
+    required this.edgeJitter,
+    required this.mixing,
+  });
+  static const defaults = BrushPressureOffSettings(
+    blur: FixedBrushSetting(enabled: false, value: 0),
+    edgeJitter: FixedBrushSetting(enabled: false, value: 0),
+    mixing: PressureMixingOffSetting(
+      enabled: false,
+      mode: BrushMixingMode.oil,
+      rate: 0,
+    ),
+  );
+  BrushPressureOffSettings copyWith({
+    FixedBrushSetting? blur,
+    FixedBrushSetting? edgeJitter,
+    PressureMixingOffSetting? mixing,
+  }) => BrushPressureOffSettings(
+    blur: blur ?? this.blur,
+    edgeJitter: edgeJitter ?? this.edgeJitter,
+    mixing: mixing ?? this.mixing,
+  );
+  Map<String, dynamic> toJson() => {
+    'blur': blur.toJson(),
+    'edgeJitter': edgeJitter.toJson(),
+    'mixing': mixing.toJson(),
+  };
+  factory BrushPressureOffSettings.fromJson(Map<String, dynamic> j) =>
+      BrushPressureOffSettings(
+        blur: FixedBrushSetting.fromJson(j['blur'] as Map<String, dynamic>),
+        edgeJitter: FixedBrushSetting.fromJson(
+          j['edgeJitter'] as Map<String, dynamic>,
+        ),
+        mixing: PressureMixingOffSetting.fromJson(
+          j['mixing'] as Map<String, dynamic>,
+        ),
+      );
+  @override
+  bool operator ==(Object other) =>
+      other is BrushPressureOffSettings &&
+      blur == other.blur &&
+      edgeJitter == other.edgeJitter &&
+      mixing == other.mixing;
+  @override
+  int get hashCode => Object.hash(blur, edgeJitter, mixing);
+}
+
+enum FadeMode { off, weak, medium, strong, custom }
+
+enum BrushTipShape { round, hollowSquare, hexagon, chainLink, ballChain }
+
+enum BrushImageSelectionMode { random, sequential }
+
+class FadeEndpointSettings {
+  final double value;
+  final double rangePx;
+  const FadeEndpointSettings({required this.value, required this.rangePx});
+  static const full = FadeEndpointSettings(value: 100, rangePx: 500);
+  FadeEndpointSettings copyWith({double? value, double? rangePx}) =>
+      FadeEndpointSettings(
+        value: value ?? this.value,
+        rangePx: rangePx ?? this.rangePx,
+      );
+  Map<String, dynamic> toJson() => {'value': value, 'rangePx': rangePx};
+  factory FadeEndpointSettings.fromJson(Map<String, dynamic> j) =>
+      FadeEndpointSettings(
+        value: (j['value'] as num).toDouble(),
+        rangePx: (j['rangePx'] as num).toDouble(),
+      );
+}
+
+/// How a brush mixes with the paint already on the layer.
+enum BrushMixingMode {
+  /// デジタル：混ぜずにそのまま塗る。
+  off,
+
+  /// 油彩風混色：下の色と絵の具のように混ぜ、拾った色を引きずって伸ばす。
+  oil,
+
+  /// 水彩風混色：透明な絵の具を重ね、縁に色が溜まり紙の目が出る。
+  watercolor,
+}
+
+/// Saved values from before the modes were 油彩風/水彩風: 'perceptual'
+/// (アナログ風) and the older 'simple' are oil-style, 'bleed' (にじみ, which
+/// was replaced by 水彩風) is watercolour-style.
+BrushMixingMode _parseBrushMixingMode(Object? value) => switch (value) {
+  'off' => BrushMixingMode.off,
+  'watercolor' || 'bleed' => BrushMixingMode.watercolor,
+  _ => BrushMixingMode.oil,
+};
+
+int _percent(Object? value, int fallback) =>
+    ((value as num?)?.toInt() ?? fallback).clamp(0, 100).toInt();
+
+/// 色延びの初期値（油彩風）。
+const int kDefaultMixingStretch = 30;
+
+/// 水分量の初期値（水彩風）。
+const int kDefaultMixingWater = 50;
+
+/// 絵具量の初期値（水彩風）。
+const int kDefaultMixingPigment = 60;
+
+/// にじみの初期値（水彩風）。
+const int kDefaultMixingBleed = 50;
+
+/// むらの初期値（水彩風）。
+const int kDefaultMixingTexture = 50;
+
+/// 境界のぼかしの初期値（水彩風。0＝くっきり）。
+const int kDefaultMixingSoftEdge = 0;

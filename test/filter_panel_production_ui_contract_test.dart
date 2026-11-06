@@ -1,0 +1,335 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/filter_def.dart';
+import 'package:niarim/models/layer.dart' as model;
+import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
+import 'package:niarim/services/filter_service.dart';
+import 'package:niarim/services/project_service.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'helpers/first_use_tooltips.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          pathProviderChannel,
+          (_) async =>
+              '${Directory.systemTemp.path}/niarim_filter_panel_ui_contract',
+        );
+  });
+
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathProviderChannel, null);
+  });
+
+  testWidgets(
+    'every built-in filter is reachable by a stable production UI card',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2160);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers!,
+          child: const MaterialApp(
+            locale: Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(body: _FilterPanelHarness()),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final context = tester.element(find.byType(_FilterPanelHarness));
+      final projects = context.read<ProjectService>();
+      final project = (await tester.runAsync(
+        () => projects.createProject(
+          name: 'filter-panel-ui-contract',
+          fps: 24,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          exportWidth: 96,
+          exportHeight: 96,
+        ),
+      ))!;
+      final sceneId = projects.scenesOf(project.id).first.id;
+      final layerId = projects
+          .layersOf(project.id, sceneId, 0)
+          .firstWhere((layer) => layer.type == model.LayerType.normal)
+          .id;
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers,
+          child: MaterialApp(
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: FilterPanel(
+                projectId: project.id,
+                sceneId: sceneId,
+                layerId: layerId,
+                frameIndex: 0,
+                onClose: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final panelContext = tester.element(find.byType(FilterPanel));
+      final filters = panelContext.read<FilterService>().filters;
+      expect(filters, isNotEmpty);
+      expect(filters.map((f) => f.id).toSet(), hasLength(filters.length));
+      final gallery = find.byKey(const ValueKey('filter-tile-grid'));
+      expect(gallery, findsOneWidget);
+      expect(tester.widget<GridView>(gallery).scrollDirection, Axis.vertical);
+      for (final filter in filters) {
+        final card = find.byKey(ValueKey('filter-card-${filter.id}'));
+        await tester.scrollUntilVisible(
+          card,
+          120,
+          scrollable: find.descendant(
+            of: gallery,
+            matching: find.byType(Scrollable),
+          ),
+        );
+        expect(
+          card,
+          findsOneWidget,
+          reason: '${filter.id} ${filter.name} must be reachable',
+        );
+        await tester.ensureVisible(card);
+        await tester.pump();
+        await tester.ensureVisible(card);
+        await tester.pump();
+        await tester.tap(card);
+        await tester.pump();
+        expect(
+          panelContext.read<FilterService>().currentFilter?.id,
+          filter.id,
+          reason:
+              '${filter.id} ${filter.name} must be selectable through the UI',
+        );
+        // Preview mode removes the tile gallery to give the canvas more
+        // space. The user returns to the same gallery by cancelling.
+        expect(find.byKey(const ValueKey('filter-apply-button')), findsOneWidget);
+        if (filter.kind == FilterKind.outline ||
+            filter.kind == FilterKind.inkPool) {
+          // This isolated panel does not provide a canvas-pick callback:
+          // an eyedropper button would misleadingly do nothing on tap.
+          expect(
+            find.descendant(
+              of: find.byType(FilterPanel),
+              matching: find.byIcon(Icons.colorize),
+            ),
+            findsNothing,
+          );
+        }
+        expect(find.byKey(const ValueKey('filter-cancel-button')), findsOneWidget);
+        expect(gallery, findsNothing);
+        expect(
+          find.byKey(const ValueKey('noise-style-option-color')),
+          filter.kind == FilterKind.noise ? findsOneWidget : findsNothing,
+          reason: '${filter.id}: Noise has the three radio options',
+        );
+        expect(
+          find.byKey(const ValueKey('filter-collapse-button')),
+          filter.id == 'Filter0025' ? findsNothing : findsOneWidget,
+          reason: '${filter.id}: one-step inversion must not collapse',
+        );
+        if (filter.id == 'Filter0025') {
+          // Color invert uses the tone-curve engine internally, but is a
+          // one-tap operation, not an editable RGB curve.
+          expect(find.byKey(const ValueKey('tone-curve-channel-selector')),
+              findsNothing);
+          expect(find.byKey(const ValueKey('tone-curve-editor-0')),
+              findsNothing);
+          expect(find.byKey(const ValueKey('filter-undo-button')),
+              findsNothing);
+        }
+        await tester.tap(find.byKey(const ValueKey('filter-cancel-button')));
+        await tester.pump();
+        expect(panelContext.read<FilterService>().currentFilter, isNull);
+        expect(gallery, findsOneWidget);
+      }
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'tone curve exposes RGB channels and interactive production graph',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2160);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers!,
+          child: const MaterialApp(
+            locale: Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(body: _FilterPanelHarness()),
+          ),
+        ),
+      );
+      await tester.pump();
+      final context = tester.element(find.byType(_FilterPanelHarness));
+      final projects = context.read<ProjectService>();
+      final project = (await tester.runAsync(
+        () => projects.createProject(
+          name: 'tone-curve-ui-contract',
+          fps: 24,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          exportWidth: 96,
+          exportHeight: 96,
+        ),
+      ))!;
+      final sceneId = projects.scenesOf(project.id).first.id;
+      final layerId = projects
+          .layersOf(project.id, sceneId, 0)
+          .firstWhere((layer) => layer.type == model.LayerType.normal)
+          .id;
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers,
+          child: MaterialApp(
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: FilterPanel(
+                projectId: project.id,
+                sceneId: sceneId,
+                layerId: layerId,
+                frameIndex: 0,
+                onClose: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      final panelContext = tester.element(find.byType(FilterPanel));
+      final service = panelContext.read<FilterService>();
+      final tone = service.filters.firstWhere(
+        (f) => f.kind == FilterKind.toneCurve,
+      );
+      final card = find.byKey(ValueKey('filter-card-${tone.id}'));
+      await tester.scrollUntilVisible(
+        card,
+        120,
+        scrollable: find.descendant(
+          of: find.byKey(const ValueKey('filter-tile-grid')),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.ensureVisible(card);
+      await tester.pump();
+      await tester.tap(card);
+      await tester.pump();
+      expect(
+        find.byKey(const ValueKey('tone-curve-channel-selector')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('tone-curve-editor-0')), findsOneWidget);
+      final editor = find.byKey(const ValueKey('tone-curve-editor-0'));
+      final box = tester.getRect(editor);
+      await tester.tapAt(
+        Offset(box.left + box.width * .5, box.top + box.height * .35),
+      );
+      await tester.pump();
+      var current = service.currentFilter!;
+      expect(current.toneCurvePoints.length, greaterThan(4));
+      await tester.tap(find.text('R'));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('tone-curve-editor-1')), findsOneWidget);
+      final redEditor = find.byKey(const ValueKey('tone-curve-editor-1'));
+      final redBox = tester.getRect(redEditor);
+      await tester.tapAt(
+        Offset(
+          redBox.left + redBox.width * .4,
+          redBox.top + redBox.height * .6,
+        ),
+      );
+      await tester.pump();
+      current = service.currentFilter!;
+      expect(current.toneCurveRedPoints.length, greaterThan(4));
+      expect(current.toneCurvePoints.length, greaterThan(4));
+      // A long press on a point (not an end) deletes it, as the hint says.
+      final l10n = AppLocalizations.of(panelContext)!;
+      expect(find.text(l10n.filterToneCurveHint), findsOneWidget);
+      await tester.longPressAt(
+        Offset(
+          redBox.left + redBox.width * .4,
+          redBox.top + redBox.height * .6,
+        ),
+      );
+      await tester.pump();
+      expect(service.currentFilter!.toneCurveRedPoints, const [0, 0, 1, 1]);
+
+      final levels = service.filters.firstWhere(
+        (f) => f.kind == FilterKind.levels,
+      );
+      final levelsCard = find.byKey(ValueKey('filter-card-${levels.id}'));
+      await tester.tap(find.byKey(const ValueKey('filter-back-to-list')));
+      await tester.pump();
+      await tester.scrollUntilVisible(
+        levelsCard,
+        120,
+        scrollable: find.descendant(
+          of: find.byKey(const ValueKey('filter-tile-grid')),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.ensureVisible(levelsCard);
+      await tester.pump();
+      await tester.tap(levelsCard);
+      await tester.pump();
+      expect(
+        find.byKey(const ValueKey('levels-channel-selector')),
+        findsOneWidget,
+      );
+      // The gamma is a fraction and shows its decimals (1.4 is not "1").
+      expect(find.text('${l10n.filterLevelsGamma}: 1.00'), findsOneWidget);
+      service.updateFilterParams(service.currentFilter!.id, inputGamma: 1.4);
+      await tester.pump();
+      expect(find.text('${l10n.filterLevelsGamma}: 1.40'), findsOneWidget);
+      await tester.tap(find.text('R'));
+      await tester.pump();
+      expect(find.text(l10n.filterLevelsHint), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+}
+
+class _FilterPanelHarness extends StatelessWidget {
+  const _FilterPanelHarness();
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
+}

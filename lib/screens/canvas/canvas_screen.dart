@@ -1,0 +1,4518 @@
+import 'dart:async';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:niarim/services/theme_service.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import '../../services/autosave_service.dart';
+import '../../services/project_service.dart';
+import '../../services/layer_clipboard_service.dart';
+import '../../services/brush_service.dart';
+import '../../services/font_service.dart';
+import '../../services/material_service.dart';
+import '../../services/performance_service.dart';
+import '../../services/filter_service.dart';
+import '../../services/quick_tool_service.dart';
+import '../../services/custom_automation_service.dart';
+import '../../services/recorded_filter_apply_service.dart';
+import '../../services/premium_service.dart';
+import '../../services/settings_service.dart';
+import '../../services/shortcut_service.dart';
+import '../../models/shortcut_binding.dart';
+import '../../models/custom_automation.dart';
+import '../../widgets/background_color_picker.dart';
+import '../../widgets/dispose_on_unmount.dart';
+import '../../widgets/editable_slider_value.dart';
+import '../../widgets/labeled_slider.dart';
+import '../../widgets/stepped_slider.dart';
+import '../../utils/immersive_mode.dart';
+import '../../utils/custom_automation_labels.dart';
+import '../../utils/filter_display_name.dart';
+import '../../engine/autofill_engine.dart' show AutofillCheckMode;
+import '../../engine/text_render.dart';
+import '../../engine/undo_manager.dart';
+import '../../engine/custom_automation_executor.dart';
+import '../../engine/filter_lens_mask.dart';
+import '../../l10n/app_localizations.dart';
+import '../../models/bundled_fonts.dart';
+import '../../models/filter_canvas_gizmo.dart';
+import '../../models/filter_def.dart';
+import '../../models/layer.dart' as model;
+import '../../models/onion_skin_settings.dart';
+import '../../models/project.dart';
+import '../../models/text_object.dart' as model;
+import 'widgets/canvas_area.dart';
+import 'widgets/canvas_icon_button.dart';
+import 'widgets/toolbar_widget.dart';
+import 'widgets/frame_strip_widget.dart';
+import 'widgets/selection_transform_sliders.dart';
+import 'widgets/brush_size_slider.dart';
+import 'widgets/layer_panel.dart';
+import 'widgets/color_adjust_sheet.dart';
+import 'widgets/color_picker_panel.dart';
+import 'widgets/brush_panel.dart';
+import 'widgets/tone_panel.dart';
+import 'widgets/stamp_panel.dart';
+import 'widgets/pen_sub_tool_panel.dart';
+import 'widgets/onion_skin_panel.dart';
+import 'widgets/ruler_panel.dart';
+import 'widgets/filter_panel.dart';
+import 'widgets/quick_tool_panel.dart';
+import 'widgets/mesh_transform_panel.dart';
+import 'widgets/reference_window.dart';
+import 'widgets/canvas_preview_navigator.dart';
+import 'widgets/desktop_dock_content_viewport.dart';
+import 'widgets/docked_panel_close_scope.dart';
+import '../../utils/desktop_dock_column_fit.dart';
+import '../../models/canvas_dock_panel.dart';
+import '../../models/ruler.dart';
+import '../../widgets/responsive.dart';
+import '../../config/font_fallback.dart';
+import '../../widgets/scrollable_sheet_body.dart';
+import '../../widgets/custom_automation_manager_sheet.dart';
+import '../../widgets/custom_automation_draft_sheet.dart';
+import '../../widgets/premium_lock_widget.dart';
+
+class CanvasScreen extends StatefulWidget {
+  final String projectId;
+  const CanvasScreen({super.key, required this.projectId});
+
+  @override
+  State<CanvasScreen> createState() => _CanvasScreenState();
+}
+
+class _CanvasScreenState extends State<CanvasScreen> {
+  DrawingTool _currentTool = DrawingTool.pen;
+  // ジェスチャー／ペンボタンでの消しゴム切替・ブラシ切替・手のひらツール
+  // トグル用に、切替前のツールを一時的に覚えておく。
+  DrawingTool? _toolBeforeGestureToggle;
+  PenSubTool _currentSubTool = PenSubTool.brush;
+  double _brushSize = 5;
+  int _brushOpacity = 100;
+  Color _currentColor = Colors.black;
+  int _currentFrame = 0;
+  AutofillCheckMode _autofillCheckMode = AutofillCheckMode.normal;
+  bool _showLayerPanel = false;
+  // ショートカット（Ctrl+A）からレイヤーパネルの全選択を起動するための
+  // トークン。値を増やすたびにLayerPanel側で全選択が実行される。
+  int _layerSelectAllToken = 0;
+  // 資料ウィンドウ（三面図・参考画像を常に表示）。他のツールオプション系
+  // パネルとは独立して開閉する（ツール切り替えやパネル外タップでは
+  // 閉じない）ため、_closeAllOverlayPanels/_anyToolPanelOpenの対象には
+  // あえて含めていない。
+  bool _showReferenceWindow = false;
+  // キャンバスプレビュー（ナビゲーター）：拡大表示中でも全体を縮小表示で
+  // 確認できるPC/DeXモード専用のドッキングパネル。スマホ版では扱わない。
+  bool _showCanvasPreviewPanel = false;
+  bool _showColorPicker = false;
+  bool _showBrushPanel = false;
+  // トーン・スタンプの全機能管理パネル（フォルダ・自作・検索・
+  // 読み込み書き出し）。ペンサブツールタブの「管理」ボタンから開く。
+  bool _showTonePanel = false;
+  bool _showStampPanel = false;
+  bool _showPenSubToolPanel = false;
+  bool _showOnionSkinPanel = false;
+  bool _showRulerPanel = false;
+  bool _showFilterPanel = false;
+  bool _showQuickToolPanel = false;
+  bool _showColorAdjustPanel = false;
+  FilterColorEyedropperTarget? _filterColorEyedropperTarget;
+  // The filter being adjusted, as the current layer would look with it
+  // (shown on the canvas in the layer's place).
+  ui.Image? _filterCanvasPreview;
+  // The canvas selection (drawing filters apply only inside it) and the
+  // glasses filter's lens area, painted on the canvas while it is adjusted.
+  Uint8List? _canvasSelectionMask;
+  final FilterLensMask _filterLensMask = FilterLensMask();
+  _TextColorEyedropperTarget? _textColorEyedropperTarget;
+  ValueChanged<Color>? _pendingTextColorEyedropper;
+  Completer<int?>? _pendingBrushOutlineEyedropper;
+  bool get _brushOutlineEyedropperActive =>
+      _pendingBrushOutlineEyedropper != null;
+
+  // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
+  // 実際の格子点ドラッグ・ワーププレビューはCanvasArea側で完結させ、
+  // ここでは分割数・回転・拡大縮小の現在値と、確定／キャンセルの
+  // トークン（増加するたびにCanvasArea側の対応する処理を1回起動する）
+  // だけを持つ（RulerPanel等と同様、パネルの主導権はこの画面側）。
+  bool _showMeshTransformPanel = false;
+  int _meshDensity = 1;
+  double _meshRotateDeg = 0.0;
+  double _meshScaleValue = 1.0;
+  int _meshCommitToken = 0;
+  int _meshCancelToken = 0;
+
+  // ─── 選択範囲の反転（範囲選択中にのみ使える機能） ────────────────
+  // CanvasArea側が選択範囲の有無をonSelectionActiveChangedで通知し、
+  // それに応じて上部バーの「選択範囲を反転」ボタンの表示を切り替える。
+  // 反転自体はinvertSelectionTokenを増やすことでCanvasArea側へ指示する
+  // （meshCommitToken等と同じトークン方式）。
+  bool _hasActiveSelection = false;
+  // 画面下部のスライダーで指定する変形量。いずれも「いまの状態が0」で、
+  // 右へ動かすとプラス・左へ動かすとマイナス。指を離した時点で実画素へ
+  // 確定し、ここを0（拡大縮小だけは1.0＝等倍）へ戻す。
+  double _selectionMoveX = 0;
+  double _selectionMoveY = 0;
+  double _selectionScale = 1;
+  double _selectionRotateDeg = 0;
+  int _selectionTransformCommitToken = 0;
+  // 「変更キャンセル」で戻す量。選択範囲を作った時点からこの選択範囲へ
+  // 加えた変形の回数を数えておき、その回数ぶんUndoする。
+  int _selectionTransformSteps = 0;
+  int _invertSelectionToken = 0;
+  int _selectAllSelectionToken = 0;
+  int _clearSelectionToken = 0;
+
+  bool get _isSelectionToolActive =>
+      _currentTool == DrawingTool.selectRect ||
+      _currentTool == DrawingTool.selectLasso ||
+      _currentTool == DrawingTool.selectMagicWand;
+
+  // 右側ドッキング領域（カラーピッカー・レイヤーパネル・キャンバス
+  // プレビュー）の横幅。ドラッグ中はここへローカルに反映し、指を離した
+  // 時点でSettingsServiceへ確定値を保存する。
+  final Map<CanvasDockPanel, double> _dockDragHeight = {};
+  final Map<CanvasDockPanel, int> _dockLastUsed = {};
+  int _dockUseSequence = 0;
+  CanvasDockPanel? _activeDockPanel;
+
+  void _rememberDockInteraction(CanvasDockPanel panel) {
+    _dockLastUsed[panel] = ++_dockUseSequence;
+    _activeDockPanel = panel;
+  }
+
+  void _expandDesktopDock(CanvasDockPanel panel, SettingsService settings) {
+    _rememberDockInteraction(panel);
+    if (settings.isDesktopDockCollapsed(panel)) {
+      settings.setDesktopDockCollapsed(panel, false);
+    } else {
+      // An automatically folded panel is only a temporary layout decision.
+      // Opening it promotes it above older windows without saving a fold.
+      setState(() {});
+    }
+  }
+
+  void _collapseDesktopDock(CanvasDockPanel panel, SettingsService settings) {
+    if (_activeDockPanel == panel) _activeDockPanel = null;
+    settings.setDesktopDockCollapsed(panel, true);
+  }
+
+  DesktopDockLayout _fitDesktopDock(
+    SettingsService settings,
+    List<CanvasDockPanel> visible,
+    double availableHeight, {
+    double extraFixedHeight = 0,
+  }) => DesktopDockColumnFit.layout(
+    availableHeight: availableHeight,
+    visible: visible,
+    isManuallyCollapsed: settings.isDesktopDockCollapsed,
+    preferredHeight: (panel) =>
+        _dockDragHeight[panel] ?? settings.desktopDockHeight(panel),
+    autoCollapseEnabled: settings.desktopDockAutoCollapseEnabled,
+    lastUsed: _dockLastUsed,
+    activePanel: _activeDockPanel,
+    extraFixedHeight: extraFixedHeight,
+  );
+  // A fully empty column normally disappears. During panel dragging,
+  // its temporary drop zone lets users recreate it without a menu.
+  bool _desktopDockDragActive = false;
+
+  void _setDesktopDockDragging(bool active) {
+    if (!mounted || _desktopDockDragActive == active) return;
+    setState(() => _desktopDockDragActive = active);
+  }
+
+  // SettingsService's dock orders now represent physical left/right sides.
+  // Only pristine defaults are mirrored by the service.
+  bool _physicalDockSideIsRight(bool physicalRight) => physicalRight;
+
+  bool _meshDockOnRight(SettingsService settings) =>
+      settings.rightDockOrder.contains(CanvasDockPanel.penSubTool);
+
+  List<CanvasDockPanel> _physicalDockOrder(
+    SettingsService settings, {
+    required bool right,
+  }) => _physicalDockSideIsRight(right)
+      ? settings.rightDockOrder
+      : settings.toolOptionDockOrder;
+
+  bool _hasPhysicalDockPanels(
+    SettingsService settings, {
+    required bool right,
+  }) =>
+      _physicalDockOrder(settings, right: right).any(_desktopPanelVisible) ||
+      (right == _meshDockOnRight(settings) && _showMeshTransformPanel);
+
+  void _resizePhysicalDockColumn({
+    required bool right,
+    required double deltaX,
+  }) {
+    final settings = context.read<SettingsService>();
+    final storedRight = _physicalDockSideIsRight(right);
+    final current = storedRight
+        ? (_panelWidthDragOverride ?? settings.desktopPanelWidth)
+        : (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth);
+    final next = (current + (right ? -deltaX : deltaX)).clamp(200.0, 480.0);
+    setState(() {
+      if (storedRight) {
+        _panelWidthDragOverride = next;
+      } else {
+        _toolPanelWidthDragOverride = next;
+      }
+    });
+  }
+
+  void _finishPhysicalDockResize({required bool right}) {
+    final settings = context.read<SettingsService>();
+    final storedRight = _physicalDockSideIsRight(right);
+    if (storedRight) {
+      final width = _panelWidthDragOverride;
+      if (width != null) settings.setDesktopPanelWidth(width);
+      _panelWidthDragOverride = null;
+    } else {
+      final width = _toolPanelWidthDragOverride;
+      if (width != null) settings.setDesktopToolPanelWidth(width);
+      _toolPanelWidthDragOverride = null;
+    }
+  }
+
+  double _preferredDockColumnWidth(
+    SettingsService settings, {
+    required bool right,
+    required double availableHeight,
+  }) {
+    final storedRight = _physicalDockSideIsRight(right);
+    final visible = _physicalDockOrder(
+      settings,
+      right: right,
+    ).where(_desktopPanelVisible).toList();
+    if (visible.isEmpty &&
+        (right != _meshDockOnRight(settings) || !_showMeshTransformPanel)) {
+      return _desktopDockDragActive ? 52.0 : 0.0;
+    }
+    if (visible.isNotEmpty &&
+        (right != _meshDockOnRight(settings) || !_showMeshTransformPanel)) {
+      final fitted = _fitDesktopDock(settings, visible, availableHeight);
+      if (visible.every(
+        (panel) =>
+            fitted.isCollapsed(panel, settings.isDesktopDockCollapsed(panel)),
+      )) {
+        return 52.0;
+      }
+    }
+    return storedRight
+        ? (_panelWidthDragOverride ?? settings.desktopPanelWidth)
+        : (_toolPanelWidthDragOverride ?? settings.desktopToolPanelWidth);
+  }
+
+  double _desktopDockColumnWidth({
+    required bool right,
+    required double availableHeight,
+  }) {
+    final settings = context.watch<SettingsService>();
+    final left = _preferredDockColumnWidth(
+      settings,
+      right: false,
+      availableHeight: availableHeight,
+    );
+    final rightWidth = _preferredDockColumnWidth(
+      settings,
+      right: true,
+      availableHeight: availableHeight,
+    );
+    final sizes = DesktopDockColumnFit.columnWidths(
+      availableWidth: MediaQuery.sizeOf(context).width,
+      leftDesired: left,
+      rightDesired: rightWidth,
+      leftVisible: left > 0,
+      rightVisible: rightWidth > 0,
+    );
+    return right ? sizes.right : sizes.left;
+  }
+
+  double? _panelWidthDragOverride;
+  // 左側ツールオプション系ドッキング領域の横幅（ドラッグ中のローカル反映用）。
+  double? _toolPanelWidthDragOverride;
+  OverlayEntry? _customAutomationRecordingOverlay;
+
+  /// モバイルレイアウトのオーバーレイパネル（レイヤー・色・ブラシ・トーン・
+  /// スタンプ・ペンサブツール・オニオンスキン・定規・フィルター・早替え
+  /// ツール設定・自由変形/メッシュ変形）は、右側/左側に重なって同時表示
+  /// されると片方が下敷きになり閉じるボタンを押せなくなる不具合があった
+  /// （「レイヤーパネルが一度表示すると非表示に戻せない」の原因）。
+  /// いずれかを開く前に必ずこれを呼び、常に高々1枚のみが表示された状態を保つ。
+  ///
+  /// PC/DeXモード（広い画面）は複数パネルを同時ドッキング表示できるため
+  /// 対象外にする（レイヤー・カラーピッカー・ブラシ・トーン・スタンプ等の
+  /// サブツール系すべて。ドッキング表示のため重なって閉じられなくなる
+  /// 心配がない）。自由変形/メッシュ変形パネルのみキャンバス上の格子点
+  /// 操作と直接絡むため、画面サイズによらず引き続き排他のままにする。
+  void _closeAllOverlayPanels() {
+    // イベントハンドラ（onPressed経由）から呼ばれるため、build外での
+    // watch()回避のためlisten:falseを渡す。
+    if (!isWideScreen(context, listen: false)) {
+      _showLayerPanel = false;
+      _showColorPicker = false;
+      _showBrushPanel = false;
+      _showTonePanel = false;
+      _showStampPanel = false;
+      _showPenSubToolPanel = false;
+      _showOnionSkinPanel = false;
+      _showRulerPanel = false;
+      _showFilterPanel = false;
+      _showQuickToolPanel = false;
+      _showColorAdjustPanel = false;
+    }
+    // 他のパネルを開く操作で自由変形/メッシュ変形パネルが押し出される場合は、
+    // 未確定のワーププレビューを残さないようキャンセル扱いにする。
+    if (_showMeshTransformPanel) {
+      _showMeshTransformPanel = false;
+      _meshCancelToken++;
+      if (_currentTool == DrawingTool.meshTransform) {
+        _currentTool = DrawingTool.pen;
+      }
+    }
+  }
+
+  /// 自由変形・メッシュ変形パネルを開く（キャンバス上部バーの「設定/編集」
+  /// メニューから、既存の変形ツールと異なり範囲選択なしで
+  /// レイヤー全体を対象にする）。開くたびに分割数・回転・拡大縮小の
+  /// スライダー値を初期状態へ戻す。
+  /// [density]は格子の分割数。1（既定・4隅のみ）が「自由変形」、
+  /// 2以上が「メッシュ変形」にあたる（同じ仕組みの分割数違い）。
+  void _openMeshTransformPanel({int density = 1}) => setState(() {
+    _closeAllOverlayPanels();
+    _showMeshTransformPanel = true;
+    _meshDensity = density;
+    _meshRotateDeg = 0.0;
+    _meshScaleValue = 1.0;
+    _currentTool = DrawingTool.meshTransform;
+  });
+
+  /// 自由変形・メッシュ変形の確定（コントロールパネルの「適用」ボタン）。
+  void _applyMeshTransform() => setState(() {
+    _meshCommitToken++;
+    _showMeshTransformPanel = false;
+    _currentTool = DrawingTool.pen;
+  });
+
+  /// 自由変形・メッシュ変形のキャンセル（コントロールパネルの「キャンセル」
+  /// ボタン・閉じるボタン）。ワーププレビューは破棄され、レイヤーへは
+  /// 何も反映されない。
+  void _cancelMeshTransform() => setState(() {
+    _meshCancelToken++;
+    _showMeshTransformPanel = false;
+    _currentTool = DrawingTool.pen;
+  });
+
+  /// ブラシサイズ／不透明度が描画結果に影響するツールかどうか。
+  /// ペン・消しゴム・投げ縄塗り・指（ワープ）・定規（定規ガイド沿いの
+  /// 描画にペンと同じブラシ設定を使う）が対象。
+  bool _usesBrushSize(DrawingTool tool) => switch (tool) {
+    DrawingTool.pen ||
+    DrawingTool.eraser ||
+    DrawingTool.lasso ||
+    DrawingTool.finger ||
+    DrawingTool.blur ||
+    DrawingTool.mosaic ||
+    DrawingTool.ruler => true,
+    _ => false,
+  };
+
+  /// 定規ボタン（下部ツールバーからキャンバス上部
+  /// バーの常設ボタンへ昇格）。定規パネルの開閉と定規ツールへの切替を
+  /// 同時に行う（従来の下部ツールバー版と同じ挙動）。
+  void _toggleRuler() {
+    _toggleDesktopOrMobileDockPanel(CanvasDockPanel.ruler);
+    if (_currentTool != DrawingTool.ruler) {
+      setState(() => _currentTool = DrawingTool.ruler);
+    }
+  }
+
+  /// オニオンスキンパネルの開閉（キャンバス上部
+  /// バーの「設定/編集」メニューへ集約）。
+  void _toggleOnionSkinPanel() =>
+      _toggleDesktopOrMobileDockPanel(CanvasDockPanel.onionSkin);
+
+  /// フィルターパネルの開閉（キャンバス上部バーの
+  /// 「設定/編集」メニューへ集約）。
+  void _toggleFilterPanel() =>
+      _toggleDesktopOrMobileDockPanel(CanvasDockPanel.filter);
+
+  void _toggleFilterColorEyedropper(FilterColorEyedropperTarget target) {
+    setState(() {
+      _filterColorEyedropperTarget = _filterColorEyedropperTarget == target
+          ? null
+          : target;
+    });
+  }
+
+  Future<int?> _startBrushOutlineEyedropper() {
+    final previous = _pendingBrushOutlineEyedropper;
+    if (previous != null && !previous.isCompleted) previous.complete(null);
+    final completer = Completer<int?>();
+    setState(() {
+      _pendingBrushOutlineEyedropper = completer;
+      _showBrushPanel = false;
+    });
+    return completer.future;
+  }
+
+  void _handleCanvasEyedropper(Color color) {
+    final pendingBrushOutline = _pendingBrushOutlineEyedropper;
+    if (pendingBrushOutline != null) {
+      setState(() => _pendingBrushOutlineEyedropper = null);
+      if (!pendingBrushOutline.isCompleted) {
+        pendingBrushOutline.complete(color.toARGB32());
+      }
+      return;
+    }
+    final textTarget = _textColorEyedropperTarget;
+    final pendingText = _pendingTextColorEyedropper;
+    if (textTarget != null && pendingText != null) {
+      setState(() {
+        _textColorEyedropperTarget = null;
+        _pendingTextColorEyedropper = null;
+      });
+      pendingText(color);
+      return;
+    }
+    final target = _filterColorEyedropperTarget;
+    if (target != null) {
+      final filterService = context.read<FilterService>();
+      final current = filterService.currentFilter;
+      if (current != null) {
+        switch (target) {
+          case FilterColorEyedropperTarget.inkPool:
+            filterService.updateFilterParams(
+              current.id,
+              inkPoolColor: color.toARGB32(),
+            );
+          case FilterColorEyedropperTarget.outline:
+            filterService.updateFilterParams(
+              current.id,
+              outlineColor: color.toARGB32(),
+            );
+        }
+      }
+      setState(() => _filterColorEyedropperTarget = null);
+      return;
+    }
+    setState(() => _currentColor = color);
+    context.read<BrushService>().setCurrentColor(color);
+  }
+
+  String _activeColorEyedropperHint(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (_textColorEyedropperTarget != null) {
+      return l10n.filterCanvasEyedropperTooltip;
+    }
+    return _filterColorEyedropperTarget == FilterColorEyedropperTarget.inkPool
+        ? l10n.filterInkPoolEyedropperHint
+        : l10n.filterOutlineEyedropperHint;
+  }
+
+  /// 背景切替（白/プロジェクト背景色 ⟷ 透過、
+  /// キャンバス上部バーの「設定/編集」メニューへ集約）。
+  void _toggleBackground() => setState(() {
+    _canvasBackground = _canvasBackground == CanvasBackground.white
+        ? CanvasBackground.transparent
+        : CanvasBackground.white;
+  });
+
+  /// フレーム複数選択モードの切替（キャンバス上部
+  /// バーの「設定/編集」メニューへ集約。大量処理実行時のフィルター
+  /// 一括適用などに使用）。
+  void _toggleFrameMultiSelect() => setState(() {
+    _frameMultiSelectMode = !_frameMultiSelectMode;
+    _selectedFrameIndices = {};
+  });
+
+  /// 画面端ダブルタップでのフレーム送り（フレーム一覧の開閉
+  /// 状態と無関係に常時使える操作）。範囲外へは移動しない。
+  void _goToNextFrame() {
+    final total = context.read<ProjectService>().frameCount(
+      widget.projectId,
+      _currentSceneId,
+    );
+    if (_currentFrame + 1 >= total) return;
+    setState(() => _currentFrame += 1);
+    _recordCanvasAutomation(
+      'canvas.selectFrame',
+      'Frame ${_currentFrame + 1}',
+      args: {'frame': _currentFrame},
+      changesFrame: true,
+    );
+  }
+
+  void _goToPreviousFrame() {
+    if (_currentFrame <= 0) return;
+    setState(() => _currentFrame -= 1);
+    _recordCanvasAutomation(
+      'canvas.selectFrame',
+      'Frame ${_currentFrame + 1}',
+      args: {'frame': _currentFrame},
+      changesFrame: true,
+    );
+  }
+
+  void _showCustomAutomationManager() {
+    final premium = context.read<PremiumService>();
+    if (!premium.isFeatureAvailable(PremiumFeature.customAutomation)) {
+      showPremiumBanner(context);
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => CustomAutomationManagerSheet(
+        surface: CustomAutomationSurface.canvas,
+        onExecute: _executeCustomAutomation,
+        onRecordingStarted: _showCustomAutomationRecordingOverlay,
+        recordingStartFrame: _currentFrame,
+        frameCount: context.read<ProjectService>().frameCount(
+          widget.projectId,
+          _currentSceneId,
+        ),
+      ),
+    );
+  }
+
+  void _showCustomAutomationRecordingOverlay() {
+    _customAutomationRecordingOverlay?.remove();
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => Stack(
+        children: [
+          CustomAutomationRecordingStopButton(
+            onStop: () {
+              context.read<CustomAutomationService>().stopRecording();
+              entry.remove();
+              if (identical(_customAutomationRecordingOverlay, entry)) {
+                _customAutomationRecordingOverlay = null;
+              }
+              _showCustomAutomationDraftReview();
+            },
+          ),
+        ],
+      ),
+    );
+    _customAutomationRecordingOverlay = entry;
+    Overlay.of(context).insert(entry);
+  }
+
+  void _showCustomAutomationDraftReview() {
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => CustomAutomationDraftSheet(
+        surface: CustomAutomationSurface.canvas,
+        onResumeRecording: _showCustomAutomationRecordingOverlay,
+      ),
+    );
+  }
+
+  void _recordCanvasAutomation(
+    String command,
+    String label, {
+    Map<String, Object?> args = const {},
+    bool changesFrame = false,
+  }) {
+    context.read<CustomAutomationService>().recordStep(
+      surface: CustomAutomationSurface.canvas,
+      command: command,
+      label: label,
+      args: args,
+      changesFrame: changesFrame,
+      recordedFrame: _currentFrame,
+    );
+  }
+
+  bool _customAutomationRunning = false;
+
+  Future<void> _executeCustomAutomation(
+    CustomAutomation automation,
+    CustomAutomationExecutionScope scope,
+    List<int>? targetFrames,
+  ) async {
+    if (_customAutomationRunning) return;
+    _customAutomationRunning = true;
+    final navigator = Navigator.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final progress = DialogRoute<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          key: const ValueKey('custom-automation-progress'),
+          title: Text(customAutomationDisplayName(l10n, automation.name)),
+          content: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [CircularProgressIndicator()],
+          ),
+        ),
+      ),
+    );
+    navigator.push(progress);
+    try {
+      await _executeSemanticAutomation(automation, scope, targetFrames);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.customAutomationExecutionFailed)),
+        );
+      }
+    } finally {
+      if (progress.isActive) navigator.removeRoute(progress);
+      _customAutomationRunning = false;
+    }
+  }
+
+  Future<void> _executeSemanticAutomation(
+    CustomAutomation automation,
+    CustomAutomationExecutionScope scope,
+    List<int>? targetFrames,
+  ) async {
+    final activeLayerId = await CustomAutomationExecutor.executeCanvas(
+      automation: automation,
+      scope: scope,
+      targetFrames: targetFrames,
+      projectService: context.read<ProjectService>(),
+      projectId: widget.projectId,
+      sceneId: _currentSceneId,
+      currentFrame: _currentFrame,
+      currentLayerId: _currentLayerId,
+      handleCanvasStateCommand: _executeSemanticCanvasStateCommand,
+      layerName: _generatedLayerName,
+    );
+    if (activeLayerId != null && mounted) {
+      setState(() => _currentLayerId = activeLayerId);
+    }
+  }
+
+  /// The name of a layer a filter run by an automation adds, in the app's
+  /// language (as the filter panel names it).
+  String _generatedLayerName(String sourceName, FilterDef filter) =>
+      generatedLayerName(AppLocalizations.of(context)!, sourceName, filter);
+
+  Future<void> _executeSemanticCanvasStateCommand(
+    String command,
+    Map<String, Object?> args,
+  ) {
+    return _executeCanvasAutomationStep(
+      CustomAutomationStep(
+        id: 'semantic-runtime-$command',
+        surface: CustomAutomationSurface.canvas,
+        command: command,
+        label: command,
+        args: args,
+        recordedFrame: _currentFrame,
+      ),
+      _currentFrame,
+    );
+  }
+
+  Future<void> _executeCanvasAutomationStep(
+    CustomAutomationStep step,
+    int targetFrame,
+  ) async {
+    switch (step.command) {
+      case 'canvas.tool':
+        final toolName = step.args['tool'] as String?;
+        if (toolName == null) throw StateError('Missing tool');
+        final tool = DrawingTool.values
+            .where((value) => value.name == toolName)
+            .firstOrNull;
+        if (tool == null) throw StateError('Unknown tool: $toolName');
+        setState(() => _currentTool = tool);
+      case 'canvas.brushSize':
+        final value = (step.args['value'] as num?)?.toDouble();
+        if (value == null) throw StateError('Missing brush size');
+        setState(() => _brushSize = value);
+        context.read<BrushService>().updateCurrentBrushSize(value);
+      case 'canvas.brushOpacity':
+        final value = (step.args['value'] as num?)?.round();
+        if (value == null) throw StateError('Missing brush opacity');
+        setState(() => _brushOpacity = value.clamp(0, 100));
+        context.read<BrushService>().updateCurrentBrushOpacity(_brushOpacity);
+      case 'canvas.color':
+        final argb = (step.args['argb'] as num?)?.toInt();
+        if (argb == null) throw StateError('Missing color');
+        final color = Color(argb);
+        setState(() => _currentColor = color);
+        context.read<BrushService>().setCurrentColor(color);
+      case 'canvas.filter':
+      case 'canvas.filterApply':
+        final rawSnapshot = step.args['filter'];
+        if (rawSnapshot is! Map) throw StateError('Missing filter snapshot');
+        final layerId = _currentLayerId;
+        if (layerId == null) throw StateError('No active layer');
+        final generatedLayerId = await RecordedFilterApplyService.apply(
+          projectService: context.read<ProjectService>(),
+          projectId: widget.projectId,
+          sceneId: _currentSceneId,
+          layerId: layerId,
+          frameIndex: targetFrame,
+          filterSnapshot: Map<String, Object?>.from(rawSnapshot),
+          layerName: _generatedLayerName,
+        );
+        if (generatedLayerId != null && mounted) {
+          setState(() => _currentLayerId = generatedLayerId);
+        }
+      case 'canvas.brightnessToAlpha':
+        final layerId = _currentLayerId;
+        if (layerId == null) throw StateError('No active layer');
+        final projectService = context.read<ProjectService>();
+        final layer = projectService
+            .layersOf(widget.projectId, _currentSceneId, targetFrame)
+            .where((value) => value.id == layerId)
+            .firstOrNull;
+        if (layer == null) throw StateError('No active layer');
+        await projectService
+            .tileManagerOf(widget.projectId)
+            .applyBrightnessToAlpha(
+              projectService.tileKeyFor(
+                widget.projectId,
+                _currentSceneId,
+                targetFrame,
+                layerId,
+              ),
+              grayMode: step.args['grayMode'] == true,
+            );
+        projectService.updateLayer(
+          projectId: widget.projectId,
+          sceneId: _currentSceneId,
+          frameIndex: targetFrame,
+          layer: layer,
+        );
+        if (mounted) setState(() {});
+      case 'canvas.selectFrame':
+        final frame = (step.args['frame'] as num?)?.round();
+        if (frame == null) throw StateError('Missing frame');
+        if (frame < 0 ||
+            frame >=
+                context.read<ProjectService>().frameCount(
+                  widget.projectId,
+                  _currentSceneId,
+                )) {
+          throw StateError('Frame is outside the current scene');
+        }
+        setState(() => _currentFrame = frame);
+      default:
+        throw StateError(
+          'Unsupported Canvas automation command: ${step.command}',
+        );
+    }
+  }
+
+  Future<void> _runAutomationBlockedAction(VoidCallback action) async {
+    final service = context.read<CustomAutomationService>();
+    if (!service.isRecording) {
+      action();
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    final stop = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.customAutomationStopConfirmTitle),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.customAutomationStopConfirmStop),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.customAutomationStopConfirmContinue),
+          ),
+        ],
+      ),
+    );
+    if (stop != true || !mounted) return;
+    service.cancelDraft();
+    _customAutomationRecordingOverlay?.remove();
+    _customAutomationRecordingOverlay = null;
+    action();
+  }
+
+  /// キャンバス上部バーの「設定/編集」メニュー（
+  /// 背景色・オニオンスキン・フィルター・フレーム範囲選択を集約）。
+  void _showEditMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      // 項目数が多く、画面の低い端末では収まりきらないことがあるため
+      // スクロール可能にする（以前はColumnを直置きしており、画面下端で
+      // オーバーフローすることがあった）。
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(
+                  _autofillCheckMode == AutofillCheckMode.normal
+                      ? Icons.visibility_outlined
+                      : _autofillCheckMode == AutofillCheckMode.partSeparation
+                      ? Icons.palette_outlined
+                      : Icons.contrast,
+                ),
+                title: Text(l10n.canvasAutofillCheckView),
+                trailing: DropdownButton<AutofillCheckMode>(
+                  value: _autofillCheckMode,
+                  underline: const SizedBox.shrink(),
+                  items: [
+                    DropdownMenuItem(
+                      value: AutofillCheckMode.normal,
+                      child: Text(l10n.canvasAutofillCheckNormal),
+                    ),
+                    DropdownMenuItem(
+                      value: AutofillCheckMode.partSeparation,
+                      child: Text(l10n.canvasAutofillCheckParts),
+                    ),
+                    DropdownMenuItem(
+                      value: AutofillCheckMode.silhouette,
+                      child: Text(l10n.canvasAutofillCheckSilhouette),
+                    ),
+                  ],
+                  onChanged: (mode) {
+                    if (mode != null) setState(() => _autofillCheckMode = mode);
+                  },
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.auto_fix_high_outlined),
+                title: Text(l10n.canvasEditMenuAutofillPresets),
+                subtitle: Text(l10n.canvasEditMenuAutofillPresetsSubtitle),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _runAutomationBlockedAction(
+                    () => context.push('/autofill-presets'),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  _canvasBackground == CanvasBackground.white
+                      ? Icons.check_box_outline_blank
+                      : Icons.grid_4x4,
+                ),
+                title: Text(l10n.canvasEditMenuBackgroundToggle),
+                subtitle: Text(
+                  _canvasBackground == CanvasBackground.white
+                      ? l10n.canvasEditMenuBackgroundCurrentColor
+                      : l10n.canvasEditMenuBackgroundCurrentTransparent,
+                ),
+                onTap: () {
+                  _toggleBackground();
+                  Navigator.pop(ctx);
+                },
+              ),
+              // 背景色変更（プロジェクト作成時と同じ選択肢）
+              ListTile(
+                leading: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Color(
+                      context
+                              .read<ProjectService>()
+                              .projects
+                              .where((p) => p.id == widget.projectId)
+                              .firstOrNull
+                              ?.backgroundColor ??
+                          0xFFFFFFFF,
+                    ),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
+                ),
+                title: Text(l10n.newProjectBackgroundColorLabel),
+                subtitle: Text(l10n.canvasBackgroundColorChoices),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showBackgroundColorPicker(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.layers_outlined),
+                title: Text(l10n.onionSkinTitle),
+                subtitle: Text(l10n.canvasEditMenuOnionSkinSubtitle),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _toggleOnionSkinPanel();
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.playlist_play,
+                  color:
+                      context.read<PremiumService>().isFeatureAvailable(
+                        PremiumFeature.customAutomation,
+                      )
+                      ? null
+                      : Theme.of(context).colorScheme.outline,
+                ),
+                title: Text(l10n.customAutomationTitle),
+                trailing:
+                    context.read<PremiumService>().isFeatureAvailable(
+                      PremiumFeature.customAutomation,
+                    )
+                    ? null
+                    : const Icon(Icons.lock_outline, size: 18),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showCustomAutomationManager();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.blur_on),
+                title: Text(l10n.filterPanelTitle),
+                subtitle: Text(l10n.canvasEditMenuFilterSubtitle),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _toggleFilterPanel();
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  _frameMultiSelectMode ? Icons.checklist_rtl : Icons.checklist,
+                ),
+                title: Text(l10n.canvasEditMenuFrameMultiSelect),
+                subtitle: Text(l10n.canvasEditMenuFrameMultiSelectSubtitle),
+                onTap: () {
+                  _toggleFrameMultiSelect();
+                  Navigator.pop(ctx);
+                },
+              ),
+              // 筆圧カーブ設定画面（/settings/pen）を、設定画面だけでなくここ
+              // からも開けるようにする（設定値自体はアプリ内共通の1箇所の
+              // ため、どちらから開いても同じ値を編集することになる）。
+              ListTile(
+                leading: const Icon(Icons.gesture),
+                title: Text(l10n.canvasEditMenuPressureCurve),
+                subtitle: Text(l10n.canvasEditMenuPressureCurveSubtitle),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _runAutomationBlockedAction(
+                    () => context.push('/settings/pen'),
+                  );
+                },
+              ),
+              // レイヤー全体の自由変形・メッシュ変形。
+              // 範囲選択の変形と異なり、選択範囲なしで現在レイヤー全体を
+              // 自由に動かせる。
+              ListTile(
+                leading: const Icon(Icons.crop_free),
+                title: Text(l10n.canvasEditMenuMeshTransform),
+                subtitle: Text(l10n.canvasEditMenuMeshTransformSubtitle),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _openMeshTransformPanel();
+                },
+              ),
+              // 色調調整。彩度・明度・コントラストを
+              // ライブプレビューで調整し、そのまま適用するか、描画/演出
+              // フィルターへ新規フィルターとして追加できる。
+              ListTile(
+                leading: const Icon(Icons.tune),
+                title: Text(l10n.canvasColorAdjustMenuTitle),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _toggleDesktopOrMobileDockPanel(CanvasDockPanel.colorAdjust);
+                },
+              ),
+              // 資料ウィンドウ（アニメ制作では三面図・キャラクター設定表などの
+              // 資料を見ながら作業することが多いため、任意の参考画像を常に
+              // フローティング表示できるようにした）。
+              ListTile(
+                leading: Icon(
+                  _showReferenceWindow
+                      ? Icons.dashboard_customize
+                      : Icons.dashboard_customize_outlined,
+                ),
+                title: Text(l10n.canvasEditMenuReferenceWindow),
+                subtitle: Text(l10n.canvasEditMenuReferenceWindowSubtitle),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  setState(() => _showReferenceWindow = !_showReferenceWindow);
+                },
+              ),
+              // キャンバスプレビュー（ナビゲーター）：PC/DeXモード専用。
+              // ドッキング表示のためスマホ版では意味を持たない。
+              if (isWideScreen(context))
+                ListTile(
+                  leading: Icon(
+                    _showCanvasPreviewPanel ? Icons.map : Icons.map_outlined,
+                  ),
+                  title: Text(l10n.canvasEditMenuPreviewNavigator),
+                  subtitle: Text(l10n.canvasEditMenuPreviewNavigatorSubtitle),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _setDesktopPanelVisible(
+                      CanvasDockPanel.canvasPreview,
+                      !_showCanvasPreviewPanel,
+                    );
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // フレーム複数選択モード（大量処理実行時のフィルター一括適用）
+  bool _frameMultiSelectMode = false;
+  Set<int> _selectedFrameIndices = {};
+  // nullなら現在フレームのみへ適用、非nullなら選択中の全フレームへ一括適用
+  Set<int>? _filterBulkFrames;
+  Ruler? _activeRuler;
+
+  // キャンバス背景（白 / 透過）
+  CanvasBackground _canvasBackground = CanvasBackground.white;
+
+  // 投げ縄塗り：囲って塗るモード
+  bool _lassoFillEnclosedMode = false;
+
+  // 図形ツール：現在選択中の種別（OFF/線/四角形/円）
+  ShapeKind _shapeKind = ShapeKind.off;
+
+  OnionSkinSettings _onionSkinSettings = const OnionSkinSettings();
+  QualityLevel? _lastQualityLevel;
+  PerformanceService? _perf;
+
+  String? _currentLayerId;
+  bool _autosaveAttached = false;
+  // dispose()内でcontext.read<T>()を呼ぶと、画面が他のウィジェットツリーの
+  // 一括破棄に巻き込まれた際（例：GoRouterのgo()によるスタック置き換えで
+  // 前の画面がまとめて破棄されるケース）に「破棄済みウィジェットの祖先を
+  // 参照できない」例外になることがある。didChangeDependencies内（要素が
+  // まだ確実にアクティブ）で取得して保持しておき、dispose()ではこちらを
+  // 使う。
+  AutosaveService? _autosaveService;
+  ProjectService? _projectServiceForDispose;
+  // フレーム一覧の折りたたみ状態（描画領域を広げるため
+  // 任意のタイミングで開閉できるようにする）。
+  bool _showFrameStrip = true;
+  // ツールバーの折りたたみ状態（同上。スマホの小さな画面でも描画領域を
+  // 最大限確保できるようにする）。
+  bool _showToolbar = true;
+  bool _workTrackingStarted = false;
+  int? _workTrackingLease;
+  bool _missingMaterialChecked = false;
+  // PC/DeXモードでブラシ・カラーピッカーのドッキングパネルを自動で開いた
+  // かどうか（1セッション1回のみ。ユーザーが手動で閉じた後に毎回また
+  // 開き直されると邪魔になるため）。
+  bool _autoOpenedDesktopPanels = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 描画に作業領域を広く使えるよう、既定でAndroid標準の
+    // ナビゲーションバーを最小化する。
+    ImmersiveMode.enterWorkspace();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // BrushServiceの現在ブラシ設定をローカル状態に同期（初回のみ有効）
+    final brush = context.read<BrushService>().currentBrush;
+    if (brush != null) {
+      _brushSize = brush.size;
+      _brushOpacity = brush.opacity;
+    }
+    // 現在レイヤーIDを初期化
+    if (_currentLayerId == null) {
+      final scenes = context.read<ProjectService>().scenesOf(widget.projectId);
+      if (scenes.isNotEmpty && scenes.first.frames.isNotEmpty) {
+        final layers = scenes.first.frames.first.layers;
+        if (layers.isNotEmpty) _currentLayerId = layers.first.id;
+      }
+    }
+    // PC/DeXモード（広い画面）では、初回表示時にワークスペース設定
+    // （設定＞ワークスペース＞PC版で既定で開くパネル）で選ばれている
+    // パネルをまとめて自動でドッキング表示する。1セッション1回のみで、
+    // 閉じた後にまた自動で開き直されると邪魔になるため、手動で閉じた後は
+    // 再度自動では開かない。いずれも独立して閉じられる
+    // （_closeAllOverlayPanelsもPC/DeXモードではこれらを対象外にしている）。
+    if (!_autoOpenedDesktopPanels && isWideScreen(context)) {
+      _autoOpenedDesktopPanels = true;
+      _applyDesktopDockVisibilityPreferences();
+    }
+    _projectServiceForDispose = context.read<ProjectService>();
+    // PerformanceServiceをlistenerで監視（依存差し替えに対応）
+    final newPerf = context.read<PerformanceService>();
+    if (newPerf != _perf) {
+      _perf?.removeListener(_onPerfChanged);
+      _perf = newPerf;
+      _perf!.addListener(_onPerfChanged);
+      _syncOnionFromPerf();
+    }
+    // 自動保存（クラッシュ復元専用）をこのプロジェクトへ接続する
+    if (!_autosaveAttached) {
+      _autosaveAttached = true;
+      final autosave = context.read<AutosaveService>();
+      _autosaveService = autosave;
+      autosave.attach(
+        context.read<ProjectService>(),
+        widget.projectId,
+        undoManager: context.read<UndoManager>(),
+      );
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _checkCrashRecovery(autosave),
+      );
+    }
+    // 制作時間カウント（描画モードのみカウント）
+    if (!_workTrackingStarted) {
+      _workTrackingStarted = true;
+      _workTrackingLease = context.read<ProjectService>().beginWorkTracking(
+        widget.projectId,
+      );
+    }
+    // 不足素材の検出（プロジェクトを開いた際に参照先の素材が
+    // 見つからない場合は「不足素材があります」と表示。「再検索」で再確認）
+    if (!_missingMaterialChecked) {
+      _missingMaterialChecked = true;
+      final materialService = context.read<MaterialService>();
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _checkMissingMaterials(materialService),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _filterCanvasPreview?.dispose();
+    _filterLensMask.dispose();
+    _customAutomationRecordingOverlay?.remove();
+    _customAutomationRecordingOverlay = null;
+    ImmersiveMode.exitWorkspace();
+    _perf?.removeListener(_onPerfChanged);
+    if (_autosaveAttached) _autosaveService?.detach();
+    final projectService = _projectServiceForDispose;
+    if (_workTrackingStarted) {
+      projectService?.endWorkTracking(lease: _workTrackingLease);
+    }
+    // プロジェクトカードのサムネイルを編集終了時に更新する。
+    // 非同期処理だがdispose()自体は同期のままfire-and-forgetで発火する
+    // （ProjectService内部状態のみを参照するため、Widget破棄後も安全）。
+    projectService?.generateAndSaveThumbnail(widget.projectId);
+    super.dispose();
+  }
+
+  /// クラッシュ・ファイル破損時の復元用：プロジェクトの最終保存より新しい
+  /// 自動保存があれば、確認ダイアログを出さずそのまま自動的に復元して
+  /// 再開する（プロジェクトを開いた際、
+  /// 自動保存データがあれば最後の自動保存から自動的に復元する）。
+  /// 自動保存は常に「その時点までの最新の編集内容」を表すため、これへ
+  /// 揃えることで作業を失うことはない（確認ダイアログを出して「無視」を
+  /// 選ばれると、その分の編集内容が失われてしまう）。
+  ///
+  /// CanvasScreenはタイムラインモードとの往復（context.go）のたびにWidget
+  /// ごと再生成されるため、Widget側の状態フラグだけでは「編集を再開した
+  /// だけ」「タイムラインからキャンバスへ戻っただけ」でも毎回この処理が
+  /// 走ってしまっていた（アプリセッション中に一度も明示保存していない限り
+  /// 自動保存の方が新しいままになるため）。AutosaveService側にアプリ
+  /// セッション単位で「確認済みか」を記録することで、1セッション中に
+  /// 一度だけ行うようにしている。
+  Future<void> _checkCrashRecovery(AutosaveService autosave) async {
+    if (!mounted) return;
+    if (autosave.hasPromptedThisSession(widget.projectId)) return;
+    autosave.markPrompted(widget.projectId);
+    final slot = autosave.latestSlotFor(widget.projectId);
+    if (slot == null) return;
+    final project = context
+        .read<ProjectService>()
+        .projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    if (project == null || !slot.savedAt.isAfter(project.updatedAt)) return;
+    final data = await autosave.restore(widget.projectId, slot.slotIndex);
+    if (data == null || !mounted) return;
+    context.read<ProjectService>().restoreFromAutosave(widget.projectId, data);
+  }
+
+  /// 不足素材の検出。プロジェクトを開いた際に参照先の素材ファイルが
+  /// 見つからない場合、「不足素材があります」と「再検索」ボタンを表示する。
+  Future<void> _checkMissingMaterials(MaterialService materialService) async {
+    final missing = await materialService.detectMissing(widget.projectId);
+    if (!mounted || missing.isEmpty) return;
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.canvasMissingMaterialsSnackbar),
+        action: SnackBarAction(
+          label: l10n.canvasResearchButton,
+          onPressed: () => _checkMissingMaterials(materialService),
+        ),
+        duration: const Duration(seconds: 6),
+      ),
+    );
+  }
+
+  void _onPerfChanged() => _syncOnionFromPerf();
+
+  void _syncOnionFromPerf() {
+    if (!mounted) return;
+    final perf = _perf;
+    if (perf == null) return;
+    final level = perf.qualityLevel;
+    final newPrev = perf.prevOnionSkinFrames;
+    final newNext = perf.nextOnionSkinFrames;
+    final newShowPrev = level != QualityLevel.custom
+        ? true
+        : perf.showPrevOnion;
+    final newShowNext = level != QualityLevel.custom
+        ? true
+        : perf.showNextOnion;
+    // qualityLevel・枚数・showPrev/showNextのいずれかが変化した場合のみ同期
+    if (_lastQualityLevel == level &&
+        _onionSkinSettings.prevFrames == newPrev &&
+        _onionSkinSettings.nextFrames == newNext &&
+        _onionSkinSettings.showPrev == newShowPrev &&
+        _onionSkinSettings.showNext == newShowNext) {
+      return;
+    }
+    _lastQualityLevel = level;
+    setState(() {
+      _onionSkinSettings = _onionSkinSettings.copyWith(
+        showPrev: newShowPrev,
+        showNext: newShowNext,
+        prevFrames: newPrev,
+        nextFrames: newNext,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final project = context
+        .watch<ProjectService>()
+        .projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    // PC/DeXモード（広い画面）：レイヤーパネルをフローティング表示ではなく、
+    // 常時表示のドッキングパネルとして右側に固定する（プロ向けレイアウト）。
+    // サブツール系パネル（ブラシ・トーン・スタンプ等）もPC版では互いに
+    // 排他にせず、開いているものをすべて縦に積んで同時表示する。
+    final isDesktop = isWideScreen(context);
+    final filterAdjusting = _showFilterPanel && !isDesktop;
+    final selectionEditingHidden = _selectionEditingGivesWay(isDesktop);
+    final settings = context.watch<SettingsService>();
+    final leftDockHasPanels =
+        isDesktop && _hasPhysicalDockPanels(settings, right: false);
+    final rightDockHasPanels =
+        isDesktop && _hasPhysicalDockPanels(settings, right: true);
+    // 左利きモード：フローティング／ドッキングパネルを左右反転し、
+    // 描画する手の側にパネルが重ならないようにする。
+    final leftHanded = settings.isLeftHanded;
+
+    // DeXモード・マウス/キーボード入力・左手デバイス：設定画面
+    // 「ショートカット設定」で割り当てたキーで、ツール切替やUndo/Redo
+    // などの主要操作を行えるようにする。
+    return CallbackShortcuts(
+      bindings: _buildShortcutBindings(context),
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          // キャンバスモードのバー類（上部バー・太さ/不透明度スライダー・
+          // ツールバー・折りたたみハンドル）は、いずれも自前の背景を持たず
+          // 「アイコンだけが浮かんでいる」意匠（canvas_icon_button.dart参照）。
+          // ところがこれらはキャンバスのStackの外側＝Columnの別の行に置かれて
+          // いるため、透過した先に見えるのはキャンバス外周ではなくScaffold
+          // 本来の背景色だった。結果、バーの帯だけが明るい別パネルのように
+          // 見えてしまう（Task#163で一度ツールバー側へ外周色を塗って
+          // 誤魔化したが、その後の変更で透明に戻り再発した）。
+          // Scaffoldの背景自体をキャンバス外周色に揃えることで、レイアウトも
+          // ジェスチャー処理も変えずに「バーは透過、背後は一続きの
+          // キャンバス外周」という本来の見た目にする。
+          backgroundColor: kCanvasOutsideColor,
+          body: SafeArea(
+            // ツールオプション系のフローティングパネル（ブラシ・トーン・
+            // スタンプ・ペンサブツール・オニオンスキン・定規・フィルター・
+            // 早替え設定）は、画面全体を覆うこの一番外側のStackへ配置する
+            // ことで、太さ／不透明度スライダーやツールバーなど他のUI要素の
+            // 手前に必ず表示されるようにしている。パネルの外側をタップすると
+            // 閉じられる。
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    // フィルターの調整中（スマホ）は、上部バー・ツールバー・
+                    // フレーム一覧を畳み、調整パネルを画面下部へ横幅いっぱいに
+                    // 出す（プレビューはキャンバスそのものに出る）。Undo/Redoも
+                    // 調整パネル側だけにして、同じ役割のボタンを重ねて出さない。
+                    if (!filterAdjusting) _buildTopBar(),
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, dockRowConstraints) => Row(
+                          // Stretch both dock columns to the canvas row's full
+                          // usable height. With the default center alignment a
+                          // short dock floats vertically in the middle instead
+                          // of starting directly below the top menu.
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // デスクトップでは常設ツールバーを画面下部の横並びバーではなく、
+                            // 左側（左利きモード時は右側）の縦レールとして常時表示する。
+                            if (isDesktop && !leftHanded)
+                              _buildToolbarWidget(vertical: true),
+                            // Physical left dock: show the saved right group
+                            // in left-handed mode, and the left group otherwise.
+                            if (leftDockHasPanels) ...[
+                              SizedBox(
+                                width: _desktopDockColumnWidth(
+                                  right: false,
+                                  availableHeight: dockRowConstraints.maxHeight,
+                                ),
+                                child: _dockedPanelStack(right: false),
+                              ),
+                              if (_desktopDockColumnWidth(
+                                    right: false,
+                                    availableHeight:
+                                        dockRowConstraints.maxHeight,
+                                  ) >
+                                  52)
+                                _ResizeHandle(
+                                  key: const ValueKey('dockColumnResize-left'),
+                                  onDeltaX: (dx) => _resizePhysicalDockColumn(
+                                    right: false,
+                                    deltaX: dx,
+                                  ),
+                                  onDragEnd: () =>
+                                      _finishPhysicalDockResize(right: false),
+                                ),
+                            ] else if (isDesktop && _desktopDockDragActive)
+                              _desktopEmptyDockDropTarget(right: false),
+                            Expanded(
+                              child: Stack(
+                                children: [
+                                  // 【重大バグ修正】背景は1枚だけ：CanvasArea自体は
+                                  // 「枠外」を塗らず、実際の描画内容（drawingRect）
+                                  // だけを描く透明なレイヤーになっており、この
+                                  // Containerがキャンバス全域の唯一の背景として
+                                  // 常に固定サイズ・固定色で存在する（=キャンバスは
+                                  // この背景の中央に乗っているだけ、という単純な
+                                  // 構成）。CanvasArea内部はTransformでピンチズーム・
+                                  // パンを描画時に適用しているため、ズームアウトで
+                                  // 描画内容だけが縮小されても、この背景自体は
+                                  // 動かずに全域を覆い続ける（以前はCanvasArea側にも
+                                  // 同じ色の「枠外」塗りを重ねて二重に背景を持たせて
+                                  // いたため、縮小時に背景まで一緒に縮んで見た目が
+                                  // ちぐはぐになる不具合があった）。
+                                  Container(color: kCanvasOutsideColor),
+                                  CanvasArea(
+                                    onTapForText:
+                                        _currentTool == DrawingTool.text
+                                        ? onCanvasTapForText
+                                        : null,
+                                    onEyedropper: _handleCanvasEyedropper,
+                                    autofillCheckMode: _autofillCheckMode,
+                                    filterEyedropperActive:
+                                        _filterColorEyedropperTarget != null ||
+                                        _textColorEyedropperTarget != null ||
+                                        _brushOutlineEyedropperActive,
+                                    filterGizmo: _filterCanvasGizmo(project),
+                                    currentLayerPreview:
+                                        _filterCanvasPreviewShown(),
+                                    currentLayerPreviewBlendMode:
+                                        _filterCanvasPreviewBlendMode(),
+                                    lockToolInput: selectionEditingHidden,
+                                    onFilterGizmoChanged: (gizmo) =>
+                                        _moveFilterGizmo(project, gizmo),
+                                    onFilterGizmoDragStart: () => context
+                                        .read<FilterService>()
+                                        .beginFilterEditGroup(),
+                                    onFilterGizmoDragEnd: () => context
+                                        .read<FilterService>()
+                                        .endFilterEditGroup(),
+                                    project: project,
+                                    background: _canvasBackground,
+                                    currentLayerId: _currentLayerId,
+                                    isEraser:
+                                        _currentTool == DrawingTool.eraser,
+                                    currentTool: _currentTool,
+                                    currentSubTool: _currentSubTool,
+                                    lassoFillEnclosedMode:
+                                        _lassoFillEnclosedMode,
+                                    onionSkinSettings: _onionSkinSettings,
+                                    currentFrame: _currentFrame,
+                                    sceneId: _currentSceneId,
+                                    activeRuler: _activeRuler,
+                                    onRulerChanged: _setActiveRulerLive,
+                                    shapeKind: _shapeKind,
+                                    onGestureToolChange: (tool) =>
+                                        setState(() => _currentTool = tool),
+                                    onGestureToggleTool:
+                                        _handleGestureToggleTool,
+                                    onNextQuickTool: _applyNextQuickTool,
+                                    onToggleOnionSkin: () => setState(
+                                      () => _onionSkinSettings =
+                                          _onionSkinSettings.copyWith(
+                                            enabled:
+                                                !_onionSkinSettings.enabled,
+                                          ),
+                                    ),
+                                    meshDensity: _meshDensity,
+                                    meshRotateDeg: _meshRotateDeg,
+                                    meshScaleValue: _meshScaleValue,
+                                    meshCommitToken: _meshCommitToken,
+                                    meshCancelToken: _meshCancelToken,
+                                    onNextFrame: _goToNextFrame,
+                                    onPreviousFrame: _goToPreviousFrame,
+                                    invertSelectionToken: _invertSelectionToken,
+                                    selectAllSelectionToken:
+                                        _selectAllSelectionToken,
+                                    clearSelectionToken: _clearSelectionToken,
+                                    selectionReferenceAllVisible: context
+                                        .watch<SettingsService>()
+                                        .selectionReferenceAllVisible,
+                                    lassoSnapToLines: context
+                                        .watch<SettingsService>()
+                                        .lassoSnapToLines,
+                                    lassoGapTolerancePx: context
+                                        .watch<SettingsService>()
+                                        .lassoGapTolerancePx,
+                                    onSelectionActiveChanged: (v) {
+                                      if (_hasActiveSelection == v) return;
+                                      setState(() {
+                                        _hasActiveSelection = v;
+                                        // 選択範囲を作り直した／解除したら、
+                                        // 「変更キャンセル」で戻せる範囲も
+                                        // そこで区切る。
+                                        _selectionTransformSteps = 0;
+                                        _resetSelectionSliders();
+                                      });
+                                    },
+                                    onSelectionMaskChanged: (mask) {
+                                      if (identical(
+                                        _canvasSelectionMask,
+                                        mask,
+                                      )) {
+                                        return;
+                                      }
+                                      setState(
+                                        () => _canvasSelectionMask = mask,
+                                      );
+                                    },
+                                    filterLensMask: _filterLensMaskShown(),
+                                    onUndoGesture: _undo,
+                                    onRedoGesture: _redo,
+                                    onFilterLensMaskEdited: _editFilterLensMask,
+                                    selectionMoveX: _selectionMoveX,
+                                    selectionMoveY: _selectionMoveY,
+                                    selectionScale: _selectionScale,
+                                    selectionRotateDeg: _selectionRotateDeg,
+                                    selectionTransformCommitToken:
+                                        _selectionTransformCommitToken,
+                                  ),
+                                  if (_filterColorEyedropperTarget != null ||
+                                      _textColorEyedropperTarget != null ||
+                                      _brushOutlineEyedropperActive)
+                                    Positioned(
+                                      top: 12,
+                                      left: 12,
+                                      right: 12,
+                                      child: IgnorePointer(
+                                        child: Center(
+                                          child: Material(
+                                            elevation: 4,
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.inverseSurface,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 14,
+                                                    vertical: 9,
+                                                  ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.colorize,
+                                                    size: 18,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onInverseSurface,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Flexible(
+                                                    child: Text(
+                                                      _activeColorEyedropperHint(
+                                                        context,
+                                                      ),
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .onInverseSurface,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  if (_isSelectionToolActive ||
+                                      _currentTool == DrawingTool.meshTransform)
+                                    Positioned(
+                                      left: 12,
+                                      bottom: 12,
+                                      right: 12,
+                                      // Out of the way while a filter is
+                                      // adjusted: the selection stays as it is
+                                      // (the filter keeps to it) and the
+                                      // canvas shows the preview. Hidden, not
+                                      // removed, so the Stack keeps its order.
+                                      child: Visibility(
+                                        visible: !selectionEditingHidden,
+                                        child: SafeArea(
+                                          child: Align(
+                                            alignment: Alignment.bottomLeft,
+                                            child:
+                                                _currentTool ==
+                                                    DrawingTool.meshTransform
+                                                ? _meshCancelBar(context)
+                                                : _selectionToolBar(context),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  // ツールオプション系フローティングパネル（ブラシ・トーン・
+                                  // スタンプ・ペンサブツール・オニオンスキン・定規・
+                                  // フィルター・早替え設定・レイヤー）は画面全体を覆う
+                                  // 一番外側のStackへ移した（build()末尾を参照）。
+                                ],
+                              ),
+                            ),
+                            // Physical right dock shows the opposite saved
+                            // group when left-handed mode is enabled.
+                            if (rightDockHasPanels &&
+                                _desktopDockColumnWidth(
+                                      right: true,
+                                      availableHeight:
+                                          dockRowConstraints.maxHeight,
+                                    ) >
+                                    52)
+                              _ResizeHandle(
+                                key: const ValueKey('dockColumnResize-right'),
+                                onDeltaX: (dx) => _resizePhysicalDockColumn(
+                                  right: true,
+                                  deltaX: dx,
+                                ),
+                                onDragEnd: () =>
+                                    _finishPhysicalDockResize(right: true),
+                              ),
+                            if (rightDockHasPanels)
+                              SizedBox(
+                                width: _desktopDockColumnWidth(
+                                  right: true,
+                                  availableHeight: dockRowConstraints.maxHeight,
+                                ),
+                                child: _buildRightDockColumn(),
+                              )
+                            else if (isDesktop && _desktopDockDragActive)
+                              _desktopEmptyDockDropTarget(right: true),
+                            // The outer toolbar moves to the dominant hand;
+                            // the saved dock groups are visually mirrored.
+                            if (isDesktop && leftHanded)
+                              _buildToolbarWidget(vertical: true),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // ブラシサイズ／不透明度スライダーは、サイズ・不透明度が実際に
+                    // 意味を持つツール使用中のみ表示する。バケツ・スポイト・選択系・
+                    // 変形・テキスト・図形ツールではブラシ設定が描画結果に影響しない
+                    // ため非表示にし、縦スペースをキャンバスへ還元する。
+                    // 選択範囲があるときは、変形量を数値で指定するスライダーを
+                    // 画面下部へ出す（ハンドルのドラッグと同じ操作を、
+                    // 細かく指定したいとき用）。ブラシ設定スライダーは
+                    // 選択ツール中は出ないので場所は競合しない。
+                    if (filterAdjusting)
+                      _filterPanel(bottomBar: true)
+                    else if (_isSelectionToolActive &&
+                        _hasActiveSelection &&
+                        !selectionEditingHidden)
+                      SelectionTransformSliders(
+                        moveX: _selectionMoveX,
+                        moveY: _selectionMoveY,
+                        scale: _selectionScale,
+                        rotateDeg: _selectionRotateDeg,
+                        maxMove: _selectionSliderMaxMove(context),
+                        onChanged: ({moveX, moveY, scale, rotateDeg}) =>
+                            setState(() {
+                              _selectionMoveX = moveX ?? _selectionMoveX;
+                              _selectionMoveY = moveY ?? _selectionMoveY;
+                              _selectionScale = scale ?? _selectionScale;
+                              _selectionRotateDeg =
+                                  rotateDeg ?? _selectionRotateDeg;
+                            }),
+                        onCommit: () => setState(() {
+                          _selectionTransformCommitToken++;
+                          _selectionTransformSteps++;
+                          _resetSelectionSliders();
+                        }),
+                      ),
+                    if (!filterAdjusting && _usesBrushSize(_currentTool))
+                      BrushSizeSlider(
+                        brushSize: _brushSize,
+                        opacity: _brushOpacity,
+                        onSizeChanged: (v) {
+                          setState(() => _brushSize = v);
+                          context.read<BrushService>().updateCurrentBrushSize(
+                            v,
+                          );
+                          _recordCanvasAutomation(
+                            'canvas.brushSize',
+                            'Brush size',
+                            args: {'value': v},
+                          );
+                        },
+                        onOpacityChanged: (v) {
+                          setState(() => _brushOpacity = v);
+                          context
+                              .read<BrushService>()
+                              .updateCurrentBrushOpacity(v);
+                          _recordCanvasAutomation(
+                            'canvas.brushOpacity',
+                            'Brush opacity',
+                            args: {'value': v},
+                          );
+                        },
+                      ),
+                    // メッシュ変形中は分割数のスライダーだけを画面下部へ出す
+                    // （自由変形＝分割数1のときは何も出さない）。
+                    if (!filterAdjusting &&
+                        _currentTool == DrawingTool.meshTransform &&
+                        _meshDensity > 1)
+                      _meshDensitySlider(context),
+                    // ツールバーの折りたたみ用ハンドル（フレーム一覧と
+                    // 同様に、任意のタイミングで開閉できるようにし描画領域を広げる）。
+                    // デスクトップでは常設の縦レール表示に切り替わるため対象外。
+                    //
+                    // 背景はツールバー本体と同じく持たせない（Scaffoldの
+                    // 背景をキャンバス外周色に揃えてあるため、透過した先は
+                    // キャンバス外周と地続きに見える）。
+                    //
+                    // 【タップしやすさ改善】高さ16→28pxへ拡大（アイコンも
+                    // 16→22pxへ）。フルの48px（Material推奨タップ領域）まで
+                    // 広げると常時表示のバーとして描画領域を圧迫しすぎるため、
+                    // 誤タップしにくくなる範囲での妥協値としている。
+                    if (!isDesktop &&
+                        !_isSelectionToolActive &&
+                        !filterAdjusting)
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () =>
+                            setState(() => _showToolbar = !_showToolbar),
+                        child: Container(
+                          height: 28,
+                          alignment: Alignment.center,
+                          color: Colors.transparent,
+                          child: Icon(
+                            _showToolbar
+                                ? Icons.keyboard_arrow_down
+                                : Icons.keyboard_arrow_up,
+                            size: 22,
+                            color: Theme.of(context).colorScheme.onSurface,
+                            shadows: CanvasIconButton.foregroundShadows(
+                              Theme.of(context).colorScheme.onSurface,
+                              Theme.of(context).colorScheme,
+                            ),
+                          ),
+                        ),
+                      ),
+                    // デスクトップでは左側（左利きモードでは右側）の常設縦レールとして
+                    // 表示するため、下部の横並びバーはモバイルレイアウトのみで表示する。
+                    if (_showToolbar &&
+                        !isDesktop &&
+                        !_isSelectionToolActive &&
+                        !filterAdjusting)
+                      _buildToolbarWidget(vertical: false),
+                    if (_frameMultiSelectMode && !filterAdjusting)
+                      _buildFrameMultiSelectBar(),
+                    // フレーム一覧の折りたたみ用ハンドル（描画領域を
+                    // できるだけ広げるため、任意のタイミングで開閉できるようにする）。
+                    // 高さ16→28px・アイコン16→22pxへ拡大（ツールバー折りたたみ
+                    // ハンドルと同様、タップしやすさ改善のため）。
+                    //
+                    // 選択ツール使用中は、キャンバス左下の操作バーへ集中できるよう
+                    // ツールバー・フレーム一覧ごと畳む（開閉ハンドルも隠す）。
+                    if (!_isSelectionToolActive && !filterAdjusting)
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () =>
+                            setState(() => _showFrameStrip = !_showFrameStrip),
+                        child: Container(
+                          height: 28,
+                          alignment: Alignment.center,
+                          color: Colors.transparent,
+                          child: Icon(
+                            _showFrameStrip
+                                ? Icons.keyboard_arrow_down
+                                : Icons.keyboard_arrow_up,
+                            size: 22,
+                            // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
+                            // ToolbarWidgetの色連動と同じ方針）。
+                            color: Theme.of(context).colorScheme.onSurface,
+                            shadows: CanvasIconButton.foregroundShadows(
+                              Theme.of(context).colorScheme.onSurface,
+                              Theme.of(context).colorScheme,
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (_showFrameStrip &&
+                        !_isSelectionToolActive &&
+                        !filterAdjusting)
+                      FrameStripWidget(
+                        currentFrame: _currentFrame,
+                        projectId: widget.projectId,
+                        sceneId: _currentSceneId,
+                        showTransparency:
+                            _canvasBackground == CanvasBackground.transparent,
+                        onFrameSelected: (idx) {
+                          setState(() => _currentFrame = idx);
+                          _recordCanvasAutomation(
+                            'canvas.selectFrame',
+                            'Frame ${idx + 1}',
+                            args: {'frame': idx},
+                            changesFrame: true,
+                          );
+                        },
+                        onTimelineTap: () => _runAutomationBlockedAction(
+                          () => context.go('/timeline/${widget.projectId}'),
+                        ),
+                        multiSelectMode: _frameMultiSelectMode,
+                        selectedFrames: _selectedFrameIndices,
+                        onFrameToggle: (idx) => setState(() {
+                          if (_selectedFrameIndices.contains(idx)) {
+                            _selectedFrameIndices.remove(idx);
+                          } else {
+                            _selectedFrameIndices.add(idx);
+                          }
+                        }),
+                      ),
+                  ],
+                ),
+                // パネル表示中は、パネル外をタップすると閉じられるようにする
+                // 透明バリア（パネル本体より下、Columnより上に敷く）。
+                // フィルターパネルがキャンバスを使っている間（球体陰影の光・
+                // 魚眼の中心のドラッグ、キャンバスからの色取り）は、タッチを
+                // キャンバスへ通す。バリア自体は外さずIgnorePointerで素通し
+                // にすること（外すとStackの並びがずれ、パネルが作り直されて
+                // 編集中のフィルターが一覧へ戻ってしまう）。
+                if (_anyToolPanelOpen && !isDesktop)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      ignoring: _filterPanelUsesCanvas(),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(_closeAllOverlayPanels),
+                      ),
+                    ),
+                  ),
+                if (_showLayerPanel && !isDesktop)
+                  Positioned(
+                    left: leftHanded ? 0 : null,
+                    right: leftHanded ? null : 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 250,
+                    child: LayerPanel(
+                      onClose: () => setState(() => _showLayerPanel = false),
+                      projectId: widget.projectId,
+                      sceneId: _currentSceneId,
+                      frameIndex: _currentFrame,
+                      onEditTextLayer: _onEditTextLayerTapped,
+                      currentLayerId: _currentLayerId,
+                      onLayerSelected: (id) =>
+                          setState(() => _currentLayerId = id),
+                      selectAllToken: _layerSelectAllToken,
+                    ),
+                  ),
+                if (_showColorPicker && !isDesktop)
+                  _sidedPanel(
+                    anchorLeft: true,
+                    leftHanded: leftHanded,
+                    top: null,
+                    bottom: 16,
+                    child: _colorPickerPanel(),
+                  ),
+                if (_showBrushPanel && !isDesktop)
+                  _sidedPanel(
+                    anchorLeft: true,
+                    leftHanded: leftHanded,
+                    top: 56,
+                    bottom: null,
+                    child: _brushPanel(),
+                  ),
+                // トーン・スタンプの全機能管理パネル
+                if (_showTonePanel && !isDesktop)
+                  _sidedPanel(
+                    anchorLeft: true,
+                    leftHanded: leftHanded,
+                    top: 56,
+                    bottom: null,
+                    child: _tonePanel(),
+                  ),
+                if (_showStampPanel && !isDesktop)
+                  _sidedPanel(
+                    anchorLeft: true,
+                    leftHanded: leftHanded,
+                    top: 56,
+                    bottom: null,
+                    child: _stampPanel(),
+                  ),
+                // ペンサブツールパネル（ブラシ/トーン/スタンプ）
+                if (_showPenSubToolPanel && !isDesktop)
+                  _sidedPanel(
+                    anchorLeft: true,
+                    leftHanded: leftHanded,
+                    top: 56,
+                    bottom: null,
+                    child: _penSubToolPanel(),
+                  ),
+                // オニオンスキンパネル
+                if (_showOnionSkinPanel && !isDesktop)
+                  _sidedPanel(
+                    anchorLeft: false,
+                    leftHanded: leftHanded,
+                    top: 56,
+                    bottom: null,
+                    child: _onionSkinPanel(),
+                  ),
+                // 定規パネル
+                if (_showRulerPanel && !isDesktop)
+                  _sidedPanel(
+                    anchorLeft: true,
+                    leftHanded: leftHanded,
+                    top: 56,
+                    bottom: null,
+                    child: _rulerPanel(),
+                  ),
+                // 早替えツール設定パネル
+                if (_showQuickToolPanel && !isDesktop)
+                  _sidedPanel(
+                    anchorLeft: false,
+                    leftHanded: leftHanded,
+                    top: null,
+                    bottom: 16,
+                    child: _quickToolPanel(),
+                  ),
+                // レイヤー全体の自由変形・メッシュ変形パネル。
+                // 他パネルと異なり、格子点のドラッグ操作自体はこのパネルの外＝
+                // キャンバス側で行うため、あえて_anyToolPanelOpen（パネル外タップ
+                // で閉じる透明バリア）の対象には含めない（含めると、格子点を
+                // ドラッグしようとした最初のタップでバリアがパネルをキャンセル
+                // してしまい操作不能になる）。
+                //
+                // スマホ幅では専用パネルを出さない。自由変形・メッシュ変形中は
+                // 「キャンバス左下のキャンセル／適用」と「メッシュ変形のときだけ
+                // 画面下部の分割数スライダー」だけにして、格子点のドラッグに
+                // 画面を明け渡す（パネルがキャンバスを覆って掴めなくなるため）。
+                // デスクトップは横に並ぶので従来どおりパネルを出す。
+                // 色調調整パネル
+                if (_showColorAdjustPanel && !isDesktop)
+                  _sidedPanel(
+                    anchorLeft: true,
+                    leftHanded: leftHanded,
+                    top: 56,
+                    bottom: null,
+                    child: _colorAdjustPanel(),
+                  ),
+                // 資料ウィンドウ：PC/スマホ問わず常にフローティングで表示する
+                // （PC/DeXモードで右上に固定表示する案も試したが、右上は
+                // キャンバスプレビュー・ナビゲーターパネルの定位置と重なる
+                // ため、reference_window.dart側のコメントのとおり見送った）。
+                if (_showReferenceWindow)
+                  ReferenceWindow(
+                    onClose: () => setState(() => _showReferenceWindow = false),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// いずれかのツールオプション系フローティングパネルが開いているか
+  /// （パネル外タップでの一括クローズに使う）。
+  bool get _anyToolPanelOpen =>
+      _showLayerPanel ||
+      _showColorPicker ||
+      _showBrushPanel ||
+      _showTonePanel ||
+      _showStampPanel ||
+      _showPenSubToolPanel ||
+      _showOnionSkinPanel ||
+      _showRulerPanel ||
+      _showFilterPanel ||
+      _showQuickToolPanel ||
+      _showColorAdjustPanel;
+
+  bool _desktopPanelVisible(CanvasDockPanel p) => switch (p) {
+    CanvasDockPanel.brush => _showBrushPanel,
+    CanvasDockPanel.colorPicker => _showColorPicker,
+    CanvasDockPanel.layer => _showLayerPanel,
+    CanvasDockPanel.tone => _showTonePanel,
+    CanvasDockPanel.stamp => _showStampPanel,
+    CanvasDockPanel.penSubTool => _showPenSubToolPanel,
+    CanvasDockPanel.onionSkin => _showOnionSkinPanel,
+    CanvasDockPanel.ruler => _showRulerPanel,
+    CanvasDockPanel.filter => _showFilterPanel,
+    CanvasDockPanel.quickTool => _showQuickToolPanel,
+    CanvasDockPanel.colorAdjust => _showColorAdjustPanel,
+    CanvasDockPanel.canvasPreview => _showCanvasPreviewPanel,
+  };
+  void _setDesktopPanelVisible(CanvasDockPanel p, bool visible) {
+    setState(() {
+      switch (p) {
+        case CanvasDockPanel.brush:
+          _showBrushPanel = visible;
+        case CanvasDockPanel.colorPicker:
+          _showColorPicker = visible;
+        case CanvasDockPanel.layer:
+          _showLayerPanel = visible;
+        case CanvasDockPanel.tone:
+          _showTonePanel = visible;
+        case CanvasDockPanel.stamp:
+          _showStampPanel = visible;
+        case CanvasDockPanel.penSubTool:
+          _showPenSubToolPanel = visible;
+        case CanvasDockPanel.onionSkin:
+          _showOnionSkinPanel = visible;
+        case CanvasDockPanel.ruler:
+          _showRulerPanel = visible;
+        case CanvasDockPanel.filter:
+          _showFilterPanel = visible;
+        case CanvasDockPanel.quickTool:
+          _showQuickToolPanel = visible;
+        case CanvasDockPanel.colorAdjust:
+          _showColorAdjustPanel = visible;
+        case CanvasDockPanel.canvasPreview:
+          _showCanvasPreviewPanel = visible;
+      }
+    });
+    final settings = context.read<SettingsService>();
+    if (!isWideScreen(context, listen: false)) return;
+    final next = Set<CanvasDockPanel>.of(settings.defaultDockedPanels);
+    if (visible) {
+      next.add(p);
+    } else {
+      next.remove(p);
+    }
+    settings.setDefaultDockedPanels(next);
+  }
+
+  /// Only explicit PC dock actions update the cross-project visible set.
+  /// Mobile overlay toggles cannot overwrite the desktop workspace.
+  void _persistDesktopDockVisibility() {
+    if (!mounted || !isWideScreen(context, listen: false)) return;
+    final current = <CanvasDockPanel>{
+      for (final panel in CanvasDockPanel.values)
+        if (_desktopPanelVisible(panel)) panel,
+    };
+    context.read<SettingsService>().setDefaultDockedPanels(current);
+  }
+
+  void _toggleDesktopOrMobileDockPanel(CanvasDockPanel panel) {
+    final next = !_desktopPanelVisible(panel);
+    setState(_closeAllOverlayPanels);
+    _setDesktopPanelVisible(panel, next);
+  }
+
+  String _dockTitle(CanvasDockPanel p) {
+    final l = AppLocalizations.of(context)!;
+    return switch (p) {
+      CanvasDockPanel.brush => l.workspaceDockPanelBrush,
+      CanvasDockPanel.colorPicker => l.workspaceDockPanelColorPicker,
+      CanvasDockPanel.layer => l.workspaceDockPanelLayer,
+      CanvasDockPanel.tone => l.workspaceDockPanelTone,
+      CanvasDockPanel.stamp => l.workspaceDockPanelStamp,
+      CanvasDockPanel.penSubTool => l.workspaceDockPanelPenSubTool,
+      CanvasDockPanel.onionSkin => l.workspaceDockPanelOnionSkin,
+      CanvasDockPanel.ruler => l.workspaceDockPanelRuler,
+      CanvasDockPanel.filter => l.workspaceDockPanelFilter,
+      CanvasDockPanel.quickTool => l.workspaceDockPanelQuickTool,
+      CanvasDockPanel.colorAdjust => l.workspaceDockPanelColorAdjust,
+      CanvasDockPanel.canvasPreview => l.workspaceDockPanelCanvasPreview,
+    };
+  }
+
+  IconData _dockCollapsedIcon(CanvasDockPanel panel) => switch (panel) {
+    CanvasDockPanel.brush => Icons.brush_outlined,
+    CanvasDockPanel.colorPicker => Icons.palette_outlined,
+    CanvasDockPanel.layer => Icons.layers_outlined,
+    CanvasDockPanel.tone => Icons.gradient_outlined,
+    CanvasDockPanel.stamp => Icons.auto_fix_high_outlined,
+    CanvasDockPanel.penSubTool => Icons.draw_outlined,
+    CanvasDockPanel.onionSkin => Icons.filter_none_outlined,
+    CanvasDockPanel.ruler => Icons.straighten_outlined,
+    CanvasDockPanel.filter => Icons.tune_outlined,
+    CanvasDockPanel.quickTool => Icons.flash_on_outlined,
+    CanvasDockPanel.colorAdjust => Icons.color_lens_outlined,
+    CanvasDockPanel.canvasPreview => Icons.map_outlined,
+  };
+
+  /// Full-scene tools keep their entire primary visual in view. Collection
+  /// panels scale their contents by width, but retain vertical scrolling.
+  Widget _responsiveDockBody(CanvasDockPanel panel) {
+    final isCompleteVisual =
+        panel == CanvasDockPanel.colorPicker ||
+        panel == CanvasDockPanel.canvasPreview;
+    return DesktopDockContentViewport(
+      key: ValueKey('dockViewport-${panel.name}'),
+      mode: isCompleteVisual
+          ? DesktopDockContentMode.fit
+          : DesktopDockContentMode.scroll,
+      designWidth: panel == CanvasDockPanel.brush ? 280 : 288,
+      minimumContentHeight: switch (panel) {
+        CanvasDockPanel.colorPicker => 310,
+        CanvasDockPanel.canvasPreview => 220,
+        CanvasDockPanel.brush => 460,
+        _ => 260,
+      },
+      child: DockedPanelCloseScope(child: _dockBody(panel)),
+    );
+  }
+
+  Widget _dockBody(CanvasDockPanel p) => switch (p) {
+    CanvasDockPanel.brush => _brushPanel(),
+    CanvasDockPanel.colorPicker => _colorPickerPanel(),
+    CanvasDockPanel.layer => LayerPanel(
+      projectId: widget.projectId,
+      sceneId: _currentSceneId,
+      frameIndex: _currentFrame,
+      dockedMode: true,
+      currentLayerId: _currentLayerId,
+      selectAllToken: _layerSelectAllToken,
+      onClose: () => _setDesktopPanelVisible(CanvasDockPanel.layer, false),
+      onEditTextLayer: _onEditTextLayerTapped,
+      onLayerSelected: (id) => setState(() => _currentLayerId = id),
+    ),
+    CanvasDockPanel.tone => _tonePanel(),
+    CanvasDockPanel.stamp => _stampPanel(),
+    CanvasDockPanel.penSubTool => _penSubToolPanel(),
+    CanvasDockPanel.onionSkin => _onionSkinPanel(),
+    CanvasDockPanel.ruler => _rulerPanel(),
+    CanvasDockPanel.filter => _filterPanel(),
+    CanvasDockPanel.quickTool => _quickToolPanel(),
+    CanvasDockPanel.colorAdjust => _colorAdjustPanel(),
+    CanvasDockPanel.canvasPreview => CanvasPreviewNavigator(
+      projectId: widget.projectId,
+      sceneId: _currentSceneId,
+      frameIndex: _currentFrame,
+      onClose: () =>
+          _setDesktopPanelVisible(CanvasDockPanel.canvasPreview, false),
+      showCloseButton: false,
+    ),
+  };
+
+  /// An empty dock takes zero width at rest, but becomes a temporary
+  /// 52px-wide drop target while a window is being dragged.
+  Widget _desktopEmptyDockDropTarget({required bool right}) {
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 52,
+      child: DragTarget<CanvasDockPanel>(
+        key: ValueKey(
+          right ? 'desktopEmptyRightDockDrop' : 'desktopEmptyLeftDockDrop',
+        ),
+        onWillAcceptWithDetails: (_) => true,
+        onAcceptWithDetails: (details) =>
+            context.read<SettingsService>().moveDesktopDockPanel(
+              details.data,
+              toRight: _physicalDockSideIsRight(right),
+            ),
+        builder: (context, candidates, _) => DecoratedBox(
+          decoration: BoxDecoration(
+            color: candidates.isEmpty
+                ? scheme.surfaceContainerLow
+                : scheme.primaryContainer,
+            border: Border.all(
+              color: candidates.isEmpty
+                  ? scheme.outlineVariant
+                  : scheme.primary,
+            ),
+          ),
+          child: Center(child: Icon(Icons.add, color: scheme.onSurfaceVariant)),
+        ),
+      ),
+    );
+  }
+
+  Widget _desktopDockWindow(
+    CanvasDockPanel p, {
+    required bool right,
+    double? fittedBodyHeight,
+    bool automaticallyCollapsed = false,
+  }) {
+    final settings = context.watch<SettingsService>();
+    final scheme = Theme.of(context).colorScheme;
+    final title = _dockTitle(p);
+    final height =
+        fittedBodyHeight ?? _dockDragHeight[p] ?? settings.desktopDockHeight(p);
+    final l = AppLocalizations.of(context)!;
+    final collapsed =
+        settings.isDesktopDockCollapsed(p) || automaticallyCollapsed;
+    final foldsLeft = !right;
+    return Listener(
+      onPointerDown: (_) => _rememberDockInteraction(p),
+      child: Align(
+        // Without heightFactor, a single window can occupy the full dock column
+        // and end up vertically centered. Each dock window must instead take
+        // only its own height and stack from the top of the canvas viewport.
+        alignment: foldsLeft ? Alignment.topLeft : Alignment.topRight,
+        heightFactor: 1,
+        child: SizedBox(
+          // All expanded windows have exactly the width of their dock column.
+          width: collapsed ? 52 : double.infinity,
+          child: DragTarget<CanvasDockPanel>(
+            key: ValueKey('dockTarget-${p.name}'),
+            onWillAcceptWithDetails: (d) => d.data != p,
+            onAcceptWithDetails: (d) => settings.moveDesktopDockPanel(
+              d.data,
+              toRight: _physicalDockSideIsRight(right),
+              before: p,
+            ),
+            builder: (context, candidates, _) => Container(
+              decoration: BoxDecoration(
+                color: scheme.surface,
+                border: Border.all(
+                  color: candidates.isEmpty
+                      ? scheme.outlineVariant
+                      : scheme.primary,
+                ),
+              ),
+              child: collapsed
+                  ? SizedBox(
+                      height: 48,
+                      child: Draggable<CanvasDockPanel>(
+                        key: ValueKey('dockCollapsedDrag-${p.name}'),
+                        data: p,
+                        onDragStarted: () => _setDesktopDockDragging(true),
+                        onDragEnd: (_) => _setDesktopDockDragging(false),
+                        feedback: Material(
+                          color: scheme.surfaceContainerHighest,
+                          elevation: 4,
+                          child: SizedBox(
+                            width: 52,
+                            height: 48,
+                            child: Icon(_dockCollapsedIcon(p), size: 24),
+                          ),
+                        ),
+                        childWhenDragging: const SizedBox(
+                          width: 52,
+                          height: 48,
+                        ),
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.grab,
+                          child: IconButton(
+                            key: ValueKey('dockExpand-${p.name}'),
+                            tooltip: '$title · ${l.filterPanelExpand}',
+                            onPressed: () => _expandDesktopDock(p, settings),
+                            icon: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(_dockCollapsedIcon(p), size: 18),
+                                Icon(
+                                  foldsLeft
+                                      ? Icons.chevron_right
+                                      : Icons.chevron_left,
+                                  size: 13,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          height: 34,
+                          child: Row(
+                            children: [
+                              Draggable<CanvasDockPanel>(
+                                data: p,
+                                onDragStarted: () =>
+                                    _setDesktopDockDragging(true),
+                                onDragEnd: (_) =>
+                                    _setDesktopDockDragging(false),
+                                feedback: Material(
+                                  color: scheme.surfaceContainerHighest,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Text(title),
+                                  ),
+                                ),
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.grab,
+                                  child: SizedBox(
+                                    key: ValueKey('dockDrag-${p.name}'),
+                                    width: 36,
+                                    child: Icon(
+                                      Icons.drag_indicator,
+                                      size: 20,
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              IconButton(
+                                key: ValueKey('dockCollapse-${p.name}'),
+                                tooltip: l.filterPanelCollapse,
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 36,
+                                  height: 32,
+                                ),
+                                padding: EdgeInsets.zero,
+                                onPressed: () =>
+                                    _collapseDesktopDock(p, settings),
+                                icon: Icon(
+                                  foldsLeft
+                                      ? Icons.chevron_left
+                                      : Icons.chevron_right,
+                                  size: 22,
+                                ),
+                              ),
+                              PopupMenuButton<String>(
+                                key: ValueKey('dockMenu-${p.name}'),
+                                icon: const Icon(Icons.more_vert, size: 18),
+                                onSelected: (action) {
+                                  if (action == 'hide') {
+                                    _setDesktopPanelVisible(p, false);
+                                  } else {
+                                    settings.moveDesktopDockPanel(
+                                      p,
+                                      toRight: _physicalDockSideIsRight(
+                                        action == 'right',
+                                      ),
+                                    );
+                                  }
+                                },
+                                itemBuilder: (_) => [
+                                  PopupMenuItem(
+                                    value: 'left',
+                                    child: Text(
+                                      settings.isLeftHanded
+                                          ? l.pcWorkspaceLayoutRightOrderSection
+                                          : l.pcWorkspaceLayoutToolOrderSection,
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'right',
+                                    child: Text(
+                                      settings.isLeftHanded
+                                          ? l.pcWorkspaceLayoutToolOrderSection
+                                          : l.pcWorkspaceLayoutRightOrderSection,
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'hide',
+                                    child: Text(l.commonClose),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: height, child: _responsiveDockBody(p)),
+                        MouseRegion(
+                          cursor: SystemMouseCursors.resizeUpDown,
+                          child: GestureDetector(
+                            key: ValueKey('dockResize-${p.name}'),
+                            behavior: HitTestBehavior.opaque,
+                            onVerticalDragUpdate: (d) => setState(() {
+                              _dockDragHeight[p] =
+                                  ((_dockDragHeight[p] ??
+                                              settings.desktopDockHeight(p)) +
+                                          d.delta.dy)
+                                      .clamp(140.0, 700.0);
+                            }),
+                            onVerticalDragEnd: (_) {
+                              final value = _dockDragHeight.remove(p);
+                              if (value != null)
+                                settings.setDesktopDockHeight(p, value);
+                            },
+                            child: SizedBox(
+                              height: 22,
+                              child: Center(
+                                child: Icon(
+                                  Icons.drag_handle,
+                                  size: 24,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 常設ツールバー本体。[vertical]がtrueの場合は左側（左利きモードでは
+  /// 右側）の縦レールとして、falseの場合は画面下部の横並びバーとして
+  /// 表示する。
+  Widget _buildToolbarWidget({required bool vertical}) => ToolbarWidget(
+    vertical: vertical,
+    currentTool: _currentTool,
+    currentColor: _currentColor,
+    isStampSelected: _currentSubTool == PenSubTool.stamp,
+    onToolSelected: (tool) {
+      setState(() => _currentTool = tool);
+      _recordCanvasAutomation(
+        'canvas.tool',
+        tool.name,
+        args: {'tool': tool.name},
+      );
+    },
+    onColorTap: () =>
+        _toggleDesktopOrMobileDockPanel(CanvasDockPanel.colorPicker),
+    onBrushTap: () => _toggleDesktopOrMobileDockPanel(CanvasDockPanel.brush),
+    onLayerTap: () => _toggleDesktopOrMobileDockPanel(CanvasDockPanel.layer),
+    onPenLongPress: () =>
+        _toggleDesktopOrMobileDockPanel(CanvasDockPanel.penSubTool),
+    onFingerLongPress: () => _showFingerSubMenu(context),
+    onTextTap: () => setState(() => _currentTool = DrawingTool.text),
+    onShapeTap: () => _showShapeMenu(context),
+    onQuickToolTap: _applyNextQuickTool,
+    onQuickToolLongPress: () =>
+        _toggleDesktopOrMobileDockPanel(CanvasDockPanel.quickTool),
+    // 手動保存（セーブツリー）：「キャンバス → 保存 → キャンバスへ戻る」
+    onSaveTap: () => _runAutomationBlockedAction(
+      () => context.push('/save-tree/${widget.projectId}'),
+    ),
+    // 投げ縄塗り：ペンのサブツールではなくバケツ長押しメニューから
+    // 選べるようにする（投げ縄で囲った範囲を塗る点でバケツ塗りに
+    // 近いため）。
+    onLassoFillSelected: () => setState(() {
+      _currentSubTool = PenSubTool.lassoFill;
+      _currentTool = DrawingTool.lasso;
+    }),
+    // 定規ボタン（キャンバス上部バーからツールバー内へ移設）。
+    onRulerTap: _toggleRuler,
+  );
+
+  Widget _buildRightDockColumn() => _dockedPanelStack(right: true);
+
+  /// Every column is confined to the canvas row above the frame strip.
+  /// Preferred per-window heights shrink to fit when possible; otherwise
+  /// the dock column scrolls without overlapping the frame timeline.
+  Widget _dockedPanelStack({required bool right}) => LayoutBuilder(
+    builder: (context, constraints) {
+      final settings = context.watch<SettingsService>();
+      final storedRight = _physicalDockSideIsRight(right);
+      final visible = _physicalDockOrder(
+        settings,
+        right: right,
+      ).where(_desktopPanelVisible).toList();
+      final hasMesh =
+          right == _meshDockOnRight(settings) && _showMeshTransformPanel;
+      final fitted = _fitDesktopDock(
+        settings,
+        visible,
+        constraints.maxHeight,
+        extraFixedHeight: hasMesh ? 320 : 0,
+      );
+      final heights = fitted.bodyHeights;
+      return ClipRect(
+        child: Scrollbar(
+          child: SingleChildScrollView(
+            key: ValueKey(
+              right ? 'desktopRightDockScroll' : 'desktopLeftDockScroll',
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < visible.length; i++) ...[
+                  if (i > 0) const SizedBox(height: DesktopDockColumnFit.gap),
+                  _desktopDockWindow(
+                    visible[i],
+                    right: right,
+                    fittedBodyHeight: heights[visible[i]],
+                    automaticallyCollapsed: fitted.automaticallyCollapsed
+                        .contains(visible[i]),
+                  ),
+                ],
+                if (hasMesh) ...[
+                  if (visible.isNotEmpty)
+                    const SizedBox(height: DesktopDockColumnFit.gap),
+                  _meshTransformPanel(),
+                ],
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  Widget _colorPickerPanel() => ColorPickerPanel(
+    showCloseBar: !isWideScreen(context),
+    currentColor: _currentColor,
+    onColorChanged: (color) {
+      setState(() => _currentColor = color);
+      context.read<BrushService>().setCurrentColor(color);
+      _recordCanvasAutomation(
+        'canvas.color',
+        'Color',
+        args: {'argb': color.toARGB32()},
+      );
+    },
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.colorPicker, false),
+    // カラーピッカー内のスポイトボタン：スポイトツールへ切り替えて
+    // キャンバス上の色を取得できるようにする
+    onEyedropperTap: () {
+      setState(() => _currentTool = DrawingTool.eyedropper);
+      _setDesktopPanelVisible(CanvasDockPanel.colorPicker, false);
+    },
+  );
+
+  Widget _brushPanel() => BrushPanel(
+    dockedMode: isWideScreen(context),
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.brush, false),
+    onEyedropOutlineColor: _startBrushOutlineEyedropper,
+  );
+
+  Widget _tonePanel() => TonePanel(
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.tone, false),
+  );
+
+  Widget _stampPanel() => StampPanel(
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.stamp, false),
+  );
+
+  Widget _penSubToolPanel() => PenSubToolPanel(
+    currentTool: _currentTool,
+    currentSubTool: _currentSubTool,
+    onSubToolSelected: (subTool) {
+      setState(() {
+        _currentSubTool = subTool;
+        _currentTool = subTool == PenSubTool.lassoFill
+            ? DrawingTool.lasso
+            : DrawingTool.pen;
+      });
+    },
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.penSubTool, false),
+    // フル機能管理パネル（フォルダ・自作・検索・読み込み書き出し）
+    onManage: (subTool) {
+      setState(() {
+        _showPenSubToolPanel = false;
+        switch (subTool) {
+          case PenSubTool.brush:
+            _showBrushPanel = true;
+          case PenSubTool.tone:
+            _showTonePanel = true;
+          case PenSubTool.stamp:
+            _showStampPanel = true;
+          case PenSubTool.lassoFill:
+            break;
+        }
+      });
+      _persistDesktopDockVisibility();
+    },
+  );
+
+  Widget _onionSkinPanel() => OnionSkinPanel(
+    settings: _onionSkinSettings,
+    onChanged: (s) => setState(() => _onionSkinSettings = s),
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.onionSkin, false),
+  );
+
+  Widget _rulerPanel() {
+    final tileManager = context.read<ProjectService>().tileManagerOf(
+      widget.projectId,
+    );
+    return RulerPanel(
+      activeRuler: _activeRuler,
+      onRulerChanged: _setActiveRulerWithUndo,
+      onClose: () => _setDesktopPanelVisible(CanvasDockPanel.ruler, false),
+      canvasWidth: tileManager.canvasWidth,
+      canvasHeight: tileManager.canvasHeight,
+    );
+  }
+
+  /// CanvasArea側のハンドルドラッグによるライブ更新・Undo/Redoの巻き戻し反映用。
+  /// ドラッグ確定時のUndo登録自体はcanvas_area.dart側（_handleRulerUp）が
+  /// 1回だけ行うため、ここでは単純にstateを反映するのみでUndoは登録しない
+  /// （毎フレーム登録するとUndoスタックが埋まってしまうため）。
+  void _setActiveRulerLive(Ruler? r) {
+    setState(() => _activeRuler = r);
+  }
+
+  /// 定規パネルからの選択・削除など、1回で完結する変更をUndoへ登録しつつ反映する
+  /// （Undo通常対応）。
+  void _setActiveRulerWithUndo(Ruler? newRuler) {
+    final old = _activeRuler;
+    if (identical(old, newRuler)) return;
+    setState(() => _activeRuler = newRuler);
+    context.read<UndoManager>().push(
+      RulerUndoAction(
+        before: old,
+        after: newRuler,
+        onApply: _setActiveRulerLive,
+      ),
+    );
+  }
+
+  /// Whether the filter panel is working on the canvas — always, while it is
+  /// open: the canvas shows the filter's preview, and a touch there moves
+  /// the filter's handles (sphere shading's light, the fisheye's centre) or
+  /// picks a colour. Touches must reach the canvas, so the barrier that
+  /// closes panels on a tap outside them is left out (on phones the panel
+  /// is a bar under the canvas with its own close button).
+  bool _filterPanelUsesCanvas() => _showFilterPanel;
+
+  /// Undo from the keyboard or a two-finger tap: while a filter is being
+  /// adjusted it takes back the filter's last edit (the canvas's own history
+  /// is left alone until the filter is applied or closed).
+  void _undo() {
+    final filters = context.read<FilterService>();
+    if (_showFilterPanel && filters.currentFilter != null) {
+      filters.undoFilterEdit();
+    } else {
+      context.read<UndoManager>().undo();
+    }
+  }
+
+  void _redo() {
+    final filters = context.read<FilterService>();
+    if (_showFilterPanel && filters.currentFilter != null) {
+      filters.redoFilterEdit();
+    } else {
+      context.read<UndoManager>().redo();
+    }
+  }
+
+  /// Whether the filter's UI has the screen, so the selection's own editing
+  /// UI (its tool bar, transform sliders, handles on the canvas and the
+  /// invert button) steps aside: on a phone while the filter panel is open
+  /// (it runs along the bottom), on a wide screen while a filter is being
+  /// adjusted in the docked panel. Both are never shown together; applying,
+  /// cancelling or closing the filter brings the selection's UI back, with
+  /// the selection as it was. Touches on the canvas then only reach the
+  /// filter's handles.
+  bool _selectionEditingGivesWay(bool isDesktop) =>
+      _showFilterPanel &&
+      (!isDesktop || context.watch<FilterService>().currentFilter != null);
+
+  /// The filter's preview to show on the canvas in place of the current
+  /// layer, while a filter is being adjusted.
+  ui.Image? _filterCanvasPreviewShown() {
+    final filter = context.watch<FilterService>().currentFilter;
+    if (!_showFilterPanel || filter == null) return null;
+    return _filterCanvasPreview;
+  }
+
+  /// Prism's result goes on in Linear Dodge (the layer is switched to it
+  /// when applied), so its preview is drawn that way too.
+  model.LayerBlendMode? _filterCanvasPreviewBlendMode() =>
+      context.watch<FilterService>().currentFilter?.kind == FilterKind.prism
+      ? model.LayerBlendMode.linearDodge
+      : null;
+
+  void _setFilterCanvasPreview(ui.Image? image) {
+    if (!mounted) {
+      image?.dispose();
+      return;
+    }
+    setState(() {
+      _filterCanvasPreview?.dispose();
+      _filterCanvasPreview = image;
+    });
+  }
+
+  /// What the filter being edited shows on the canvas to drag (sphere
+  /// shading's light, the fisheye's centre), while the filter panel is open.
+  FilterCanvasGizmo? _filterCanvasGizmo(Project? project) {
+    final filter = context.watch<FilterService>().currentFilter;
+    if (!_showFilterPanel || filter == null || project == null) return null;
+    return filterCanvasGizmoFor(
+      filter,
+      project.drawingWidth,
+      project.drawingHeight,
+    );
+  }
+
+  /// The glasses filter's lens area, while that filter is adjusted.
+  FilterLensMask? _filterLensMaskShown() {
+    final filter = context.watch<FilterService>().currentFilter;
+    if (!_showFilterPanel || filter?.kind != FilterKind.lensDistortion) {
+      return null;
+    }
+    return _filterLensMask;
+  }
+
+  /// A stroke or fill on the canvas finished: the new lens area, one step
+  /// of the filter's Undo.
+  void _editFilterLensMask(Uint8List coverage) {
+    final tm = context.read<ProjectService>().tileManagerOf(widget.projectId);
+    _filterLensMask.edit(
+      coverage,
+      tm.canvasWidth,
+      tm.canvasHeight,
+      context.read<FilterService>().recordFilterEdit,
+    );
+  }
+
+  void _moveFilterGizmo(Project? project, FilterCanvasGizmo gizmo) {
+    final service = context.read<FilterService>();
+    final filter = service.currentFilter;
+    if (filter == null || project == null) return;
+    service.moveCanvasGizmo(
+      filter.id,
+      gizmo,
+      project.drawingWidth,
+      project.drawingHeight,
+    );
+  }
+
+  Widget _filterPanel({bool bottomBar = false}) => FilterPanel(
+    projectId: widget.projectId,
+    sceneId: _currentSceneId,
+    layerId: _currentLayerId,
+    frameIndex: _currentFrame,
+    bulkFrameIndices: _filterBulkFrames,
+    activeCanvasEyedropperTarget: _filterColorEyedropperTarget,
+    onStartCanvasEyedropper: _toggleFilterColorEyedropper,
+    bottomBar: bottomBar,
+    onCanvasPreviewChanged: _setFilterCanvasPreview,
+    selectionMask: _canvasSelectionMask,
+    lensMask: _filterLensMask,
+    onClose: () {
+      setState(() {
+        _filterLensMask.reset();
+        _filterCanvasPreview?.dispose();
+        _filterCanvasPreview = null;
+        _showFilterPanel = false;
+        _filterBulkFrames = null;
+        if (_frameMultiSelectMode) {
+          _frameMultiSelectMode = false;
+          _selectedFrameIndices = {};
+        }
+      });
+      _persistDesktopDockVisibility();
+    },
+  );
+
+  Widget _quickToolPanel() => QuickToolPanel(
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.quickTool, false),
+    currentTool: _currentTool,
+    currentBrushId: context.read<BrushService>().currentBrush?.id,
+    currentBrushName: context.read<BrushService>().currentBrush?.name,
+    currentSize: _brushSize,
+  );
+
+  /// レイヤー全体の自由変形・メッシュ変形パネル。
+  Widget _meshTransformPanel() => MeshTransformPanel(
+    density: _meshDensity,
+    rotateDeg: _meshRotateDeg,
+    scaleValue: _meshScaleValue,
+    onDensityChanged: (v) => setState(() => _meshDensity = v),
+    onRotateChanged: (v) => setState(() => _meshRotateDeg = v),
+    onScaleChanged: (v) => setState(() => _meshScaleValue = v),
+    onApply: _applyMeshTransform,
+    onCancel: _cancelMeshTransform,
+    onClose: _cancelMeshTransform,
+  );
+
+  /// 色調調整パネル。
+  Widget _colorAdjustPanel() => ColorAdjustSheet(
+    projectId: widget.projectId,
+    sceneId: _currentSceneId,
+    layerId: _currentLayerId,
+    frameIndex: _currentFrame,
+    totalFrames: context.read<ProjectService>().frameCount(
+      widget.projectId,
+      _currentSceneId,
+    ),
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.colorAdjust, false),
+  );
+
+  /// フローティングパネルの左右配置ヘルパー。[anchorLeft]は通常（右利き）モードでの
+  /// 配置側。左利きモード時は[leftHanded]により全パネルをまとめて左右反転する
+  /// （描画する手の側にパネルが重ならないようにする）。
+  Widget _sidedPanel({
+    required bool anchorLeft,
+    required bool leftHanded,
+    required double? top,
+    required double? bottom,
+    required Widget child,
+  }) {
+    final onLeft = anchorLeft != leftHanded;
+    return Positioned(
+      left: onLeft ? 16 : null,
+      right: onLeft ? null : 16,
+      top: top,
+      bottom: bottom,
+      child: child,
+    );
+  }
+
+  /// プロジェクトの背景色（Project.backgroundColor。キャンバス表示だけで
+  /// なく書き出し結果にも反映される）を、新規プロジェクト作成画面と
+  /// まったく同じ選択肢から変更する。選択肢とスウォッチの見た目は
+  /// [BackgroundColorSwatchPicker]（新規プロジェクト作成画面と共用）に
+  /// 集約しており、片方だけ選択肢が増減する事故を防いでいる。
+  ///
+  /// なお「背景切替」（_toggleBackground）は表示専用の白⟷透過チェッカー
+  /// 切替であり、こちらとは別物。
+  void _showBackgroundColorPicker(BuildContext context) {
+    final ps = context.read<ProjectService>();
+    final project = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    if (project == null) return;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => ScrollableSheetBody(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.newProjectBackgroundColorLabel,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              const SizedBox(height: 12),
+              BackgroundColorSwatchPicker(
+                selectedColor: Color(project.backgroundColor),
+                onChanged: (color) {
+                  ps.updateProjectBackgroundColor(
+                    widget.projectId,
+                    color.toARGB32(),
+                  );
+                  Navigator.pop(ctx);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ツール早替えボタンタップ時：登録順に次のツールへ切り替える。
+  void _applyNextQuickTool() {
+    final entry = context.read<QuickToolService>().next();
+    if (entry == null) return;
+    _activateToolSelection(
+      toolKey: entry.toolKey,
+      brushId: entry.brushId,
+      sizeOverride: entry.sizeOverride,
+    );
+  }
+
+  /// ツール＋ブラシ＋太さを一括で切り替える。早替えツール・ショートカット
+  /// （キーボード・左手デバイス）のどちらから起動しても同じ挙動になるよう
+  /// 共通化している。
+  void _activateToolSelection({
+    required String toolKey,
+    String? brushId,
+    double? sizeOverride,
+  }) {
+    setState(() => _currentTool = DrawingTool.values.byName(toolKey));
+    if (brushId != null) {
+      context.read<BrushService>().selectBrush(brushId);
+    }
+    if (sizeOverride != null) {
+      context.read<BrushService>().updateCurrentBrushSize(sizeOverride);
+      setState(() => _brushSize = sizeOverride);
+    }
+  }
+
+  /// レイヤーパネルを開いた上でレイヤー全選択を起動する（Ctrl+A）。
+  /// パネルが既に開いている場合はその場で全選択される。閉じていた場合は
+  /// このタップで開くのみで、全選択はもう一度Ctrl+Aを押した時点で働く
+  /// （LayerPanel初回表示時点ではdidUpdateWidgetが発火しないため）。
+  void _selectAllLayers() {
+    setState(() => _layerSelectAllToken++);
+    _setDesktopPanelVisible(CanvasDockPanel.layer, true);
+  }
+
+  /// 現在アクティブなレイヤーをコピー（Ctrl+C）。2本指上スワイプと
+  /// 同じスナップショット式クリップボードを使うため、フレーム移動後も貼れる。
+  void _copyActiveLayer() {
+    final layerId = _currentLayerId;
+    if (layerId == null) return;
+    LayerClipboardService.instance.copy(
+      projectService: context.read<ProjectService>(),
+      projectId: widget.projectId,
+      sceneId: _currentSceneId,
+      frameIndex: _currentFrame,
+      layerId: layerId,
+    );
+  }
+
+  /// Ctrl+Vは現在アクティブなレイヤーの直前へ割り込み挿入する。
+  /// 2本指下スワイプと同じく既存レイヤーを上書きしない。
+  void _pasteCopiedLayer() {
+    final targetId = _currentLayerId;
+    if (targetId == null) return;
+    final copy = LayerClipboardService.instance.pasteBefore(
+      projectService: context.read<ProjectService>(),
+      projectId: widget.projectId,
+      targetSceneId: _currentSceneId,
+      targetFrameIndex: _currentFrame,
+      beforeLayerId: targetId,
+    );
+    if (copy == null) return;
+    setState(() => _currentLayerId = copy.id);
+  }
+
+  void _toggleLayerPanel() =>
+      _toggleDesktopOrMobileDockPanel(CanvasDockPanel.layer);
+
+  /// 設定画面「ショートカット設定」の割り当て一覧から、キャンバスモードで
+  /// 有効なキー割り当てのマップを組み立てる。ツール選択の割り当ては
+  /// [_activateToolSelection]、主要操作は対応する処理へ振り分ける
+  /// （タイムライン専用の操作はキャンバスモードでは無視する）。
+  Map<ShortcutActivator, VoidCallback> _buildShortcutBindings(
+    BuildContext context,
+  ) {
+    final bindings = context.watch<ShortcutService>().bindings;
+    final result = <ShortcutActivator, VoidCallback>{};
+    for (final b in bindings) {
+      if (b.isToolAction) {
+        result[b.activator] = () => _activateToolSelection(
+          toolKey: b.toolKey!,
+          brushId: b.brushId,
+          sizeOverride: b.sizeOverride,
+        );
+        continue;
+      }
+      switch (b.command) {
+        case ShortcutCommand.undo:
+          result[b.activator] = _undo;
+        case ShortcutCommand.redo:
+          result[b.activator] = _redo;
+        case ShortcutCommand.toggleLayerPanel:
+          result[b.activator] = _toggleLayerPanel;
+        case ShortcutCommand.selectAll:
+          result[b.activator] = _selectAllLayers;
+        case ShortcutCommand.copy:
+          result[b.activator] = _copyActiveLayer;
+        case ShortcutCommand.paste:
+          result[b.activator] = _pasteCopiedLayer;
+        case ShortcutCommand.cut:
+        case ShortcutCommand.playPause:
+        case ShortcutCommand.previousFrame:
+        case ShortcutCommand.nextFrame:
+        case null:
+          // 切り取りは対応する貼り付け先（別フレーム等）の設計が
+          // 未確定のため、キャンバスモードでは未割り当てのままにする。
+          // タイムライン専用の操作、または未割り当ても同様。
+          break;
+      }
+    }
+    return result;
+  }
+
+  /// ジェスチャー／ペンボタンからのトグル切替（消しゴム切替・ブラシ切替・
+  /// 手のひらツール）。既にそのツールならトグル前のツールへ戻す。
+  void _handleGestureToggleTool(DrawingTool tool) {
+    setState(() {
+      if (_currentTool == tool) {
+        _currentTool = _toolBeforeGestureToggle ?? DrawingTool.pen;
+        _toolBeforeGestureToggle = null;
+      } else {
+        _toolBeforeGestureToggle = _currentTool;
+        _currentTool = tool;
+      }
+    });
+  }
+
+  /// 上部バー常設ボタン共通のスタイル（toolbar_widget.dartの
+  /// _borderedIconButtonと同じ考え方）：背景なし・アイコンだけが浮かび、
+  /// アイコンの形にぴったり沿う半透明の黒い縁取りを持つ（実装は
+  /// CanvasIconButtonへ集約）。
+  static Widget _topBarIconButton(
+    BuildContext context,
+    IconData icon, {
+    required VoidCallback? onPressed,
+    required String tooltip,
+    bool selected = false,
+    double iconSize = 20,
+  }) {
+    return CanvasIconButton(
+      icon: icon,
+      onPressed: onPressed,
+      tooltip: tooltip,
+      selected: selected,
+      iconSize: iconSize,
+    );
+  }
+
+  /// 選択ツール使用中にキャンバス左下へ固定で出す操作バー。
+  ///
+  /// 1段目：自由変形／メッシュ変形／変更キャンセル
+  /// 2段目：全選択／全解除
+  ///
+  /// 移動・拡大縮小・回転はここには**入れない**。選択範囲そのものに出る
+  /// ハンドル（四隅＝拡大縮小、中央＝移動の十字矢印、右上＝回転のカーブ矢印）と、
+  /// 画面下部のスライダーで行う。ボタンでモードを選ばせる方式をやめたのは、
+  /// 「いま何のモードか」を覚えておく必要があり、掴む場所と一致しないため。
+  ///
+  /// このバーが出ている間はツールバーとフレーム一覧を畳むので、選択ツールから
+  /// 抜ける導線としてバー自身に終了ボタン（×）を持たせている
+  /// （これが無いとツールを切り替えられなくなる）。
+  Widget _selectionToolBar(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final settings = context.watch<SettingsService>();
+    final scheme = Theme.of(context).colorScheme;
+
+    // 1段目・2段目とも同じ形・同じ大きさのボタンを3つずつ並べる。
+    // 役割の違いは色で示す（既定＝地色、強調＝差し色、無効＝薄く）。
+    Widget chip({
+      required IconData icon,
+      required String label,
+      required VoidCallback? onTap,
+      String? tooltip,
+      bool emphasized = false,
+    }) {
+      final enabled = onTap != null;
+      final fg = emphasized
+          ? scheme.onPrimary
+          : scheme.onSurface.withValues(alpha: enabled ? 1.0 : 0.38);
+      return Tooltip(
+        message: tooltip ?? label,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onTap,
+          child: Container(
+            width: 72,
+            height: 44,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              color: emphasized
+                  ? scheme.primary
+                  : scheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+              border: emphasized
+                  ? null
+                  : Border.all(color: scheme.outlineVariant),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 16, color: fg),
+                const SizedBox(height: 1),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 9, color: fg),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Selection controls have no outer panel decoration. Only the individual
+    // theme-colored buttons are visible over the canvas.
+    return Material(
+      key: const ValueKey('selection-tool-action-bar'),
+      type: MaterialType.transparency,
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: [
+                // 自由変形とメッシュ変形は同じ仕組みの分割数違い
+                // （4隅だけか、格子状に細かく分けるか）。
+                chip(
+                  icon: Icons.crop_free,
+                  label: l10n.canvasSelectionFreeTransform,
+                  onTap: () => _openMeshTransformPanel(),
+                ),
+                chip(
+                  icon: Icons.grid_on,
+                  label: l10n.canvasSelectionMeshTransform,
+                  onTap: () => _openMeshTransformPanel(density: 3),
+                ),
+                // 変形を取り消して選択ツールごと抜ける。アイコンは、
+                // 隣の「適用」がチェックなのと対になるよう×にしている。
+                chip(
+                  icon: Icons.close,
+                  label: l10n.canvasSelectionRevertButton,
+                  tooltip: l10n.canvasSelectionRevertTooltip,
+                  onTap: _cancelSelectionTransformAndExit,
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: [
+                SegmentedButton<bool>(
+                  key: const ValueKey('selection-reference-source'),
+                  segments: [
+                    ButtonSegment<bool>(
+                      value: false,
+                      icon: const Icon(Icons.layers_outlined, size: 14),
+                      label: Text(
+                        l10n.canvasSelectionReferenceWorkingLayer,
+                        style: const TextStyle(fontSize: 9),
+                      ),
+                    ),
+                    ButtonSegment<bool>(
+                      value: true,
+                      icon: const Icon(Icons.layers, size: 14),
+                      label: Text(
+                        l10n.canvasSelectionReferenceVisibleLayers,
+                        style: const TextStyle(fontSize: 9),
+                      ),
+                    ),
+                  ],
+                  selected: {settings.selectionReferenceAllVisible},
+                  onSelectionChanged: (value) =>
+                      settings.setSelectionReferenceAllVisible(value.first),
+                  showSelectedIcon: false,
+                  style: const ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+                if (_currentTool == DrawingTool.selectLasso)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      InkWell(
+                        key: const ValueKey('lasso-snap-to-lines'),
+                        onTap: () => settings.setLassoSnapToLines(
+                          !settings.lassoSnapToLines,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Checkbox(
+                                value: settings.lassoSnapToLines,
+                                onChanged: (value) => settings
+                                    .setLassoSnapToLines(value ?? false),
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              Text(
+                                l10n.canvasLassoSnapToLines,
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // 1行目に項目名と値、2行目にスライダーだけを置き、
+                      // スライダーを横幅いっぱいに広げる。幅の上限は「線に
+                      // 吸着」を切っているときの2段目（参照レイヤーの切替＋
+                      // チェックボックス）と同じくらいにし、バーがキャンバスへ
+                      // 広がりすぎないようにする。
+                      if (settings.lassoSnapToLines)
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 288),
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 8, right: 2),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 10),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          l10n.canvasLassoGapTolerance,
+                                          style: const TextStyle(fontSize: 9),
+                                        ),
+                                      ),
+                                      EditableSliderValue(
+                                        text: '${settings.lassoGapTolerancePx}',
+                                        style: const TextStyle(fontSize: 9),
+                                        value: settings.lassoGapTolerancePx
+                                            .toDouble(),
+                                        min: 0,
+                                        max: 12,
+                                        title: l10n.canvasLassoGapTolerance,
+                                        onChanged: (value) =>
+                                            settings.setLassoGapTolerancePx(
+                                              value.round(),
+                                            ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      const Text(
+                                        'px',
+                                        style: TextStyle(fontSize: 9),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SteppedSlider(
+                                  key: const ValueKey('lasso-gap-tolerance'),
+                                  value: settings.lassoGapTolerancePx
+                                      .toDouble(),
+                                  min: 0,
+                                  max: 12,
+                                  divisions: 12,
+                                  showSteppers: false,
+                                  compact: true,
+                                  onChanged: (value) => settings
+                                      .setLassoGapTolerancePx(value.round()),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                const SizedBox(height: 4),
+                chip(
+                  icon: Icons.select_all,
+                  label: l10n.canvasSelectAllButton,
+                  onTap: () => setState(() => _selectAllSelectionToken++),
+                ),
+                chip(
+                  icon: Icons.deselect,
+                  label: l10n.canvasDeselectAllButton,
+                  onTap: _hasActiveSelection
+                      ? () => setState(() => _clearSelectionToken++)
+                      : null,
+                ),
+                // 変形をそのまま確定して選択ツールごと抜ける。
+                // 変形は操作のたびに実画素へ焼かれているので、ここでは
+                // 選択範囲を解除してツールを戻すだけでよい。
+                chip(
+                  icon: Icons.check,
+                  label: l10n.canvasSelectionApplyButton,
+                  tooltip: l10n.canvasSelectionApplyTooltip,
+                  emphasized: true,
+                  onTap: _exitSelectionTool,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 自由変形・メッシュ変形の実行中にキャンバス左下へ固定で出すキャンセル
+  /// ボタン。仕様上、この2モードではこれ以外の変形用メニューは出さない
+  /// （メッシュ変形のときだけ、画面下部に分割数のスライダーが付く）。
+  Widget _meshCancelBar(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    // A raised Material cast a dark, border-like halo around both buttons.
+    // Keep the buttons' own theme surfaces without an enclosing black frame.
+    return Material(
+      key: const ValueKey('mesh-transform-action-bar'),
+      type: MaterialType.transparency,
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FilledButton.tonalIcon(
+              onPressed: _cancelMeshTransform,
+              icon: const Icon(Icons.close),
+              label: Text(l10n.commonCancel),
+            ),
+            const SizedBox(width: 6),
+            // 適用の導線。この2モード中はツールバーを畳んでいるため、
+            // 確定して抜ける手段をここに置かないと戻れなくなる。
+            FilledButton.icon(
+              onPressed: _applyMeshTransform,
+              icon: const Icon(Icons.check),
+              label: Text(l10n.meshTransformApplyButton),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 「変形キャンセル（終了）」：いまの選択範囲へ加えた変形をまとめて
+  /// 元へ戻したうえで、選択ツールごと抜ける。
+  void _cancelSelectionTransformAndExit() {
+    _revertSelectionTransforms();
+    _exitSelectionTool();
+  }
+
+  /// いまの選択範囲へ加えた変形を、加えた回数ぶんまとめて元へ戻す
+  /// （変形1回＝Undo履歴1件で積まれている）。
+  void _revertSelectionTransforms() {
+    final undo = context.read<UndoManager>();
+    for (var i = 0; i < _selectionTransformSteps; i++) {
+      if (!undo.canUndo) break;
+      undo.undo();
+    }
+    setState(() {
+      _selectionTransformSteps = 0;
+      _resetSelectionSliders();
+    });
+  }
+
+  /// 移動量スライダーの端の値。キャンバスの短辺の半分まで動かせるようにする。
+  double _selectionSliderMaxMove(BuildContext context) {
+    final project = context
+        .read<ProjectService>()
+        .projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    final w = (project?.exportWidth ?? 1920).toDouble();
+    final h = (project?.exportHeight ?? 1080).toDouble();
+    return (w < h ? w : h) / 2;
+  }
+
+  /// メッシュ変形中に画面下部へ出す分割数スライダー。
+  Widget _meshDensitySlider(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    return LabeledSlider(
+      label: l10n.meshTransformDensityLabel,
+      value: _meshDensity.toDouble(),
+      min: 1,
+      max: 10,
+      divisions: 9,
+      editable: false,
+      valueText: '$_meshDensity×$_meshDensity',
+      labelStyle: TextStyle(fontSize: 11, color: scheme.onSurface),
+      valueStyle: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      onChanged: (v) => setState(() => _meshDensity = v.round()),
+    );
+  }
+
+  void _resetSelectionSliders() {
+    _selectionMoveX = 0;
+    _selectionMoveY = 0;
+    _selectionScale = 1;
+    _selectionRotateDeg = 0;
+  }
+
+  /// 選択ツールを抜けてペンへ戻す（左下バーの終了ボタン）。
+  /// 選択範囲は残したままだと他ツールの操作範囲を絞ったままになるため解除する。
+  void _exitSelectionTool() => setState(() {
+    _clearSelectionToken++;
+    _currentTool = DrawingTool.pen;
+  });
+
+  /// Apply visibility changes made in the workspace layout editor as soon as
+  /// the user returns to the still-mounted canvas route.
+  void _applyDesktopDockVisibilityPreferences() {
+    final defaults = context.read<SettingsService>().defaultDockedPanels;
+    _showBrushPanel = defaults.contains(CanvasDockPanel.brush);
+    _showColorPicker = defaults.contains(CanvasDockPanel.colorPicker);
+    _showLayerPanel = defaults.contains(CanvasDockPanel.layer);
+    _showTonePanel = defaults.contains(CanvasDockPanel.tone);
+    _showStampPanel = defaults.contains(CanvasDockPanel.stamp);
+    _showPenSubToolPanel = defaults.contains(CanvasDockPanel.penSubTool);
+    _showOnionSkinPanel = defaults.contains(CanvasDockPanel.onionSkin);
+    _showRulerPanel = defaults.contains(CanvasDockPanel.ruler);
+    _showFilterPanel = defaults.contains(CanvasDockPanel.filter);
+    _showQuickToolPanel = defaults.contains(CanvasDockPanel.quickTool);
+    _showColorAdjustPanel = defaults.contains(CanvasDockPanel.colorAdjust);
+    _showCanvasPreviewPanel = defaults.contains(CanvasDockPanel.canvasPreview);
+  }
+
+  Future<void> _openDesktopWorkspaceSettings() async {
+    await context.push('/settings/workspace');
+    if (!mounted) return;
+    setState(_applyDesktopDockVisibilityPreferences);
+  }
+
+  /// Desktop-only application menus, placed in the same top row as the
+  /// canvas action icons. Actions reuse the existing canvas handlers.
+  Widget _buildDesktopMenuBar() {
+    final l = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    final titles = switch (locale.languageCode) {
+      'ja' => const ['ファイル', 'レイヤー', '表示', '設定'],
+      'ko' => const ['파일', '레이어', '보기', '설정'],
+      'zh' when locale.scriptCode == 'Hant' => const ['檔案', '圖層', '檢視', '設定'],
+      'zh' => const ['文件', '图层', '视图', '设置'],
+      'es' => const ['Archivo', 'Capa', 'Ver', 'Ajustes'],
+      'fr' => const ['Fichier', 'Calque', 'Affichage', 'Paramètres'],
+      _ => const ['File', 'Layer', 'View', 'Settings'],
+    };
+    final scheme = Theme.of(context).colorScheme;
+    return MenuBar(
+      style: MenuStyle(
+        backgroundColor: WidgetStatePropertyAll(
+          scheme.surface.withValues(alpha: 0),
+        ),
+        elevation: const WidgetStatePropertyAll(0),
+        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+      ),
+      children: [
+        SubmenuButton(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: () => context
+                  .read<ProjectService>()
+                  .saveProjectManually(widget.projectId),
+              child: Text(l.commonSave),
+            ),
+            MenuItemButton(
+              onPressed: _confirmBackToProjectList,
+              child: Text(l.timelineBackToProjectListTooltip),
+            ),
+          ],
+          child: Text(titles[0]),
+        ),
+        SubmenuButton(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: () => _setDesktopPanelVisible(
+                CanvasDockPanel.layer,
+                !_showLayerPanel,
+              ),
+              child: Text(l.layerPanelTitle),
+            ),
+            MenuItemButton(
+              onPressed: _selectAllLayers,
+              child: Text(l.layerPanelSelectAll),
+            ),
+          ],
+          child: Text(titles[1]),
+        ),
+        SubmenuButton(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: _toggleBackground,
+              child: Text(l.canvasEditMenuBackgroundToggle),
+            ),
+            MenuItemButton(
+              onPressed: () => _setDesktopPanelVisible(
+                CanvasDockPanel.canvasPreview,
+                !_showCanvasPreviewPanel,
+              ),
+              child: Text(l.canvasEditMenuPreviewNavigator),
+            ),
+            MenuItemButton(
+              onPressed: _openDesktopWorkspaceSettings,
+              child: Text(l.pcWorkspaceLayoutScreenTitle),
+            ),
+          ],
+          child: Text(titles[2]),
+        ),
+        SubmenuButton(
+          menuChildren: [
+            MenuItemButton(
+              onPressed: () => _showEditMenu(context),
+              child: Text(l.canvasSettingsMenuTooltip),
+            ),
+            MenuItemButton(
+              onPressed: _openDesktopWorkspaceSettings,
+              child: Text(l.workspacePcLayoutButton),
+            ),
+          ],
+          child: Text(titles[3]),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTopBar() {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        children: [
+          // プロジェクト一覧へ戻るボタンはタイムラインモード側へ移した。
+          // キャンバスモードの画面左上（元は戻るボタンの
+          // 位置）にはUndo/Redoを配置する。
+          _topBarIconButton(
+            context,
+            Icons.undo,
+            onPressed: () => context.read<UndoManager>().undo(),
+            tooltip: l10n.commonUndo,
+          ),
+          _topBarIconButton(
+            context,
+            Icons.redo,
+            onPressed: () => context.read<UndoManager>().redo(),
+            tooltip: l10n.commonRedo,
+          ),
+          if (isWideScreen(context)) ...[
+            const SizedBox(width: 16),
+            _buildDesktopMenuBar(),
+          ],
+          // 投げ縄塗り選択中：囲って塗るモードスイッチ
+          if (_currentTool == DrawingTool.lasso &&
+              _currentSubTool == PenSubTool.lassoFill) ...[
+            const SizedBox(width: 8),
+            Text(
+              l10n.canvasLassoEnclosedLabel,
+              style: TextStyle(
+                fontSize: 12,
+                shadows: CanvasIconButton.foregroundShadows(
+                  Theme.of(context).colorScheme.onSurface,
+                  Theme.of(context).colorScheme,
+                ),
+              ),
+            ),
+            Switch(
+              value: _lassoFillEnclosedMode,
+              onChanged: (v) => setState(() => _lassoFillEnclosedMode = v),
+            ),
+          ],
+          // 範囲選択中にのみ使える「選択範囲を反転」ボタン。
+          if (_isSelectionToolActive &&
+              _hasActiveSelection &&
+              !_selectionEditingGivesWay(isWideScreen(context))) ...[
+            const SizedBox(width: 8),
+            _topBarIconButton(
+              context,
+              Icons.invert_colors_outlined,
+              onPressed: () => setState(() => _invertSelectionToken++),
+              tooltip: l10n.canvasInvertSelectionTooltip,
+            ),
+          ],
+          // テキストツール選択中：キャンバスタップでテキスト入力ダイアログを表示する旨を示すラベル
+          if (_currentTool == DrawingTool.text)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                l10n.canvasTapToEnterTextLabel,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.primary,
+                  shadows: CanvasIconButton.foregroundShadows(
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme,
+                  ),
+                ),
+              ),
+            ),
+          const Spacer(),
+          if (isWideScreen(context))
+            PopupMenuButton<CanvasDockPanel>(
+              key: const Key('desktopWindowVisibilityMenu'),
+              tooltip: AppLocalizations.of(
+                context,
+              )!.pcWorkspaceLayoutScreenTitle,
+              icon: const Icon(Icons.view_sidebar_outlined, size: 22),
+              onSelected: (panel) =>
+                  _setDesktopPanelVisible(panel, !_desktopPanelVisible(panel)),
+              itemBuilder: (_) => [
+                for (final p in CanvasDockPanel.values)
+                  CheckedPopupMenuItem<CanvasDockPanel>(
+                    value: p,
+                    checked: _desktopPanelVisible(p),
+                    child: Text(_dockTitle(p)),
+                  ),
+              ],
+            ),
+          // 設定/編集メニュー（背景色・オニオンスキン・
+          // フィルター・フレーム範囲選択を集約）。
+          _topBarIconButton(
+            context,
+            Icons.settings,
+            onPressed: () => _showEditMenu(context),
+            tooltip: l10n.canvasSettingsMenuTooltip,
+          ),
+          // 定規・ヘルプはツールバー内へ移設したため、この右上には
+          // プロジェクト一覧へ戻るホームボタンを設置する
+          // （タイムライン画面の同ボタンと同じ挙動：保存して戻る／
+          // 保存せず戻るを選べる確認ダイアログを経由する）。
+          _topBarIconButton(
+            context,
+            Icons.home_outlined,
+            iconSize: 21,
+            onPressed: _confirmBackToProjectList,
+            tooltip: l10n.timelineBackToProjectListTooltip,
+          ),
+          // Direction cue beside the timeline symbol, sharing one hit target.
+          // CanvasIconButton keeps both glyphs transparent and theme-colored.
+          CanvasIconButton(
+            key: const Key('canvasTimelineModeButton'),
+            iconSize: 24,
+            iconWidth: 36,
+            outlinedIconBuilder: (color, outline) => Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.movie_filter_outlined,
+                  size: 19,
+                  color: color,
+                  shadows: CanvasIconButton.outlineShadows(outline),
+                ),
+                const SizedBox(width: 2),
+                Icon(
+                  Icons.arrow_forward,
+                  size: 14,
+                  color: color,
+                  shadows: CanvasIconButton.outlineShadows(outline),
+                ),
+              ],
+            ),
+            onPressed: () => _runAutomationBlockedAction(
+              () => context.go('/timeline/${widget.projectId}'),
+            ),
+            tooltip: l10n.canvasTimelineModeTooltip,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// プロジェクト一覧へ戻るボタン：タップ時に「保存して戻る」か
+  /// 「保存せず戻る」かをポップアップで選べるようにする
+  /// （timeline_screen.dartの同名メソッドと同じ挙動）。
+  Future<void> _confirmBackToProjectList() async {
+    final l10n = AppLocalizations.of(context)!;
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.timelineBackToProjectListDialogTitle),
+        content: Text(l10n.timelineBackToProjectListDialogBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'discard'),
+            child: Text(l10n.timelineBackToProjectListDiscardButton),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, 'save'),
+            child: Text(l10n.timelineBackToProjectListSaveButton),
+          ),
+        ],
+      ),
+    );
+    if (choice == null || !mounted) return;
+    if (choice == 'save') {
+      // 「保存して戻る」は、キャンバス画面の「保存」ボタンと同じ
+      // セーブツリー画面（手動セーブ）を経由させる。
+      await context.push('/save-tree/${widget.projectId}');
+      if (!mounted) return;
+    }
+    if (mounted) context.go('/home');
+  }
+
+  /// フレーム複数選択モード時のアクションバー（大量処理実行時の
+  /// フィルター一括適用）。全選択・全解除・フィルター一括適用・キャンセルを提供する。
+  Widget _buildFrameMultiSelectBar() {
+    final l10n = AppLocalizations.of(context)!;
+    final total = context.watch<ProjectService>().frameCount(
+      widget.projectId,
+      _currentSceneId,
+    );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
+      child: Row(
+        children: [
+          Text(
+            l10n.canvasFrameSelectedCount(_selectedFrameIndices.length, total),
+            style: const TextStyle(fontSize: 12),
+          ),
+          const Spacer(),
+          TextButton(
+            onPressed: () => setState(
+              () => _selectedFrameIndices = {for (int i = 0; i < total; i++) i},
+            ),
+            child: Text(
+              l10n.canvasSelectAllButton,
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
+          TextButton(
+            onPressed: () => setState(() => _selectedFrameIndices = {}),
+            child: Text(
+              l10n.canvasDeselectAllButton,
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
+          FilledButton.icon(
+            onPressed: _selectedFrameIndices.isEmpty
+                ? null
+                : () {
+                    setState(() => _filterBulkFrames = _selectedFrameIndices);
+                    _setDesktopPanelVisible(CanvasDockPanel.filter, true);
+                  },
+            icon: const Icon(Icons.blur_on, size: 14),
+            label: Text(
+              l10n.canvasApplyFilterButton,
+              style: const TextStyle(fontSize: 12),
+            ),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: Size.zero,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 18),
+            tooltip: l10n.commonCancel,
+            onPressed: () => setState(() {
+              _frameMultiSelectMode = false;
+              _selectedFrameIndices = {};
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 指ツール長押し時のサブツールメニュー（歪み／ガウスぼかし／モザイク）
+  void _showFingerSubMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.pan_tool_alt),
+              title: Text(l10n.toolbarFingerSubtoolWarp),
+              selected: _currentTool == DrawingTool.finger,
+              onTap: () {
+                setState(() => _currentTool = DrawingTool.finger);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.blur_on),
+              title: Text(l10n.toolbarItemBlur),
+              selected: _currentTool == DrawingTool.blur,
+              onTap: () {
+                setState(() => _currentTool = DrawingTool.blur);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.grid_4x4),
+              title: Text(l10n.toolbarItemMosaic),
+              selected: _currentTool == DrawingTool.mosaic,
+              onTap: () {
+                setState(() => _currentTool = DrawingTool.mosaic);
+                Navigator.pop(ctx);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 図形ツールタップ時のポップアップ（OFF/線/四角形/円）
+  void _showShapeMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.not_interested),
+              title: Text(l10n.canvasShapeOff),
+              selected: _shapeKind == ShapeKind.off,
+              onTap: () {
+                setState(() {
+                  _shapeKind = ShapeKind.off;
+                  _currentTool = DrawingTool.pen;
+                });
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.show_chart),
+              title: Text(l10n.canvasShapeLine),
+              selected: _shapeKind == ShapeKind.line,
+              onTap: () {
+                setState(() {
+                  _shapeKind = ShapeKind.line;
+                  _currentTool = DrawingTool.shape;
+                });
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.crop_square),
+              title: Text(l10n.canvasShapeRect),
+              selected: _shapeKind == ShapeKind.rect,
+              onTap: () {
+                setState(() {
+                  _shapeKind = ShapeKind.rect;
+                  _currentTool = DrawingTool.shape;
+                });
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.circle_outlined),
+              title: Text(l10n.canvasShapeCircle),
+              selected: _shapeKind == ShapeKind.circle,
+              onTap: () {
+                setState(() {
+                  _shapeKind = ShapeKind.circle;
+                  _currentTool = DrawingTool.shape;
+                });
+                Navigator.pop(ctx);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String get _currentSceneId {
+    final scenes = context.read<ProjectService>().scenesOf(widget.projectId);
+    return scenes.isNotEmpty ? scenes.first.id : 'Scene0001';
+  }
+
+  /// テキストツール選択中にキャンバスタップで呼び出す。
+  /// テキスト入力ダイアログを表示し、OK時にテキストレイヤーを自動生成する。
+  void onCanvasTapForText(Offset position) {
+    if (_currentTool != DrawingTool.text) return;
+    _showTextInputDialog(position);
+  }
+
+  /// レイヤーパネルからテキストレイヤーをタップした時に呼び出す編集入口
+  /// （既存テキストをタップすると編集開始。本実装ではレイヤー
+  /// パネル経由とする。キャンバス上でのテキストボックス当たり判定による
+  /// 直接タップ編集は対象外）。
+  void editTextLayer(String layerId, model.TextObject text) {
+    _showTextInputDialog(
+      text.position,
+      existingLayerId: layerId,
+      existing: text,
+    );
+  }
+
+  void _onEditTextLayerTapped(model.Layer layer) {
+    final text = layer.textObject;
+    if (text == null) return;
+    editTextLayer(layer.id, text);
+  }
+
+  static const _textColorPalette = [
+    0xFF000000,
+    0xFFFFFFFF,
+    0xFFFF0000,
+    0xFF0066FF,
+    0xFFFFCC00,
+    0xFF00CC66,
+    0xFFFF66CC,
+    0xFF888888,
+  ];
+
+  void _showTextInputDialog(
+    Offset position, {
+    String? existingLayerId,
+    model.TextObject? existing,
+  }) {
+    final controller = TextEditingController(text: existing?.text ?? '');
+    double fontSize = existing?.fontSize ?? 24;
+    int color = existing?.color.toARGB32() ?? 0xFF000000;
+    bool isBold = existing?.isBold ?? false;
+    bool isItalic = existing?.isItalic ?? false;
+    String fontFamily = existing?.fontFamily ?? 'Roboto';
+    double lineHeight = existing?.lineHeight ?? 1.2;
+    double letterSpacing = existing?.letterSpacing ?? 0;
+    TextAlign textAlign = existing?.align ?? TextAlign.left;
+    bool outlineEnabled = existing?.outline?.enabled ?? false;
+    int outlineColor = existing?.outline?.color.toARGB32() ?? 0xFF000000;
+    double outlineWidth = existing?.outline?.width ?? 3;
+    model.TextWritingDirection direction =
+        existing?.direction ?? model.TextWritingDirection.horizontal;
+    final fontService = context.read<FontService>();
+    final l10n = AppLocalizations.of(context)!;
+
+    model.TextObject textDraft() {
+      final base =
+          existing ??
+          model.TextObject(
+            id: '__text_color_draft__',
+            text: controller.text,
+            position: position,
+          );
+      return base.copyWith(
+        text: controller.text,
+        fontSize: fontSize,
+        color: Color(color),
+        isBold: isBold,
+        isItalic: isItalic,
+        fontFamily: fontFamily,
+        lineHeight: lineHeight,
+        letterSpacing: letterSpacing,
+        align: textAlign,
+        direction: direction,
+        outline: model.TextOutline(
+          enabled: outlineEnabled,
+          color: Color(outlineColor),
+          width: outlineWidth,
+        ),
+      );
+    }
+
+    void startTextCanvasEyedropper(
+      _TextColorEyedropperTarget target,
+      BuildContext dialogContext,
+    ) {
+      final draft = textDraft();
+      Navigator.of(dialogContext).pop();
+      setState(() {
+        _textColorEyedropperTarget = target;
+        _pendingTextColorEyedropper = (picked) {
+          final next = target == _TextColorEyedropperTarget.body
+              ? draft.copyWith(color: picked)
+              : draft.copyWith(
+                  outline: model.TextOutline(
+                    enabled: true,
+                    color: picked,
+                    width: draft.outline?.width ?? outlineWidth,
+                  ),
+                );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            _showTextInputDialog(
+              position,
+              existingLayerId: existingLayerId,
+              existing: next,
+            );
+          });
+        };
+      });
+    }
+
+    Future<void> pickTextColor(
+      BuildContext dialogContext,
+      int current,
+      ValueChanged<int> onChanged,
+    ) async {
+      await showDialog<void>(
+        context: dialogContext,
+        builder: (pickerContext) => Dialog(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520, maxHeight: 720),
+            child: ColorPickerPanel(
+              currentColor: Color(current),
+              onColorChanged: (picked) {
+                onChanged(picked.toARGB32());
+                Navigator.of(pickerContext).pop();
+              },
+              onClose: () => Navigator.of(pickerContext).pop(),
+            ),
+          ),
+        ),
+      );
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => DisposeOnUnmount(
+        controller: controller,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setS) => AlertDialog(
+            // スライダーを画面の横幅いっぱいに使えるよう、ダイアログを
+            // 既定（左右40px空け、内容が狭ければ幅280）より広く取る。
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
+            ),
+            title: Text(
+              existingLayerId == null
+                  ? l10n.canvasTextInputTitle
+                  : l10n.canvasTextEditTitle,
+            ),
+            content: SizedBox(
+              width: 480,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      maxLines: null,
+                      decoration: InputDecoration(
+                        hintText: l10n.canvasTextInputHint,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: fontFamily,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: l10n.canvasTextFontLabel,
+                        isDense: true,
+                      ),
+                      items: [
+                        DropdownMenuItem(
+                          value: 'Roboto',
+                          child: Text(l10n.canvasTextStandardFont),
+                        ),
+                        // あらかじめ同梱しているフリーフォント（全てSIL Open Font
+                        // License、Google Fonts配布分。ライセンス表記は設定画面
+                        // 「利用規約・ライセンス」参照）
+                        for (final f in kBundledFonts)
+                          DropdownMenuItem(
+                            value: f.family,
+                            child: Text(
+                              f.displayName,
+                              style: TextStyle(fontFamily: f.family),
+                            ),
+                          ),
+                        ...fontService.fonts.map(
+                          (f) => DropdownMenuItem(
+                            value: fontService.familyNameOf(f),
+                            child: Text(
+                              f.displayName,
+                              style: TextStyle(
+                                fontFamily: fontService.familyNameOf(f),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      onChanged: (v) => setS(() => fontFamily = v ?? 'Roboto'),
+                    ),
+                    const SizedBox(height: 8),
+                    LabeledSlider(
+                      label: l10n.brushSettingsSizeLabel,
+                      value: fontSize,
+                      min: 8,
+                      max: 200,
+                      sliderLabel: fontSize.round().toString(),
+                      valueText: '${fontSize.round()}',
+                      onChanged: (v) => setS(() => fontSize = v),
+                    ),
+                    Row(
+                      children: [
+                        FilterChip(
+                          label: Text(l10n.canvasTextBold),
+                          selected: isBold,
+                          onSelected: (v) => setS(() => isBold = v),
+                        ),
+                        const SizedBox(width: 8),
+                        FilterChip(
+                          label: Text(l10n.canvasTextItalic),
+                          selected: isItalic,
+                          onSelected: (v) => setS(() => isItalic = v),
+                        ),
+                        const SizedBox(width: 8),
+                        // 縦書き・横書きのワンタップ切替
+                        ActionChip(
+                          avatar: Icon(
+                            direction == model.TextWritingDirection.vertical
+                                ? Icons.text_rotate_vertical
+                                : Icons.text_rotation_none,
+                            size: 16,
+                          ),
+                          label: Text(
+                            direction == model.TextWritingDirection.vertical
+                                ? l10n.canvasTextVertical
+                                : l10n.canvasTextHorizontal,
+                          ),
+                          onPressed: () => setS(() {
+                            direction =
+                                direction == model.TextWritingDirection.vertical
+                                ? model.TextWritingDirection.horizontal
+                                : model.TextWritingDirection.vertical;
+                          }),
+                        ),
+                        // ルビ・縦中横・半角英数字回転の説明（ルビは縦書き・
+                        // 横書きどちらでも使えるため、書字方向によらず常に表示する）
+                        IconButton(
+                          icon: const Icon(Icons.help_outline, size: 18),
+                          tooltip: l10n.canvasTypesettingHelpTooltip,
+                          onPressed: () => _showVerticalTextHelp(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => pickTextColor(
+                            ctx,
+                            color,
+                            (v) => setS(() => color = v),
+                          ),
+                          child: Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: Color(color),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(ctx).colorScheme.outline,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        IconButton(
+                          icon: const Icon(Icons.colorize),
+                          tooltip: l10n.toolbarItemEyedropper,
+                          onPressed: () => startTextCanvasEyedropper(
+                            _TextColorEyedropperTarget.body,
+                            ctx,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 6,
+                      children: _textColorPalette
+                          .map(
+                            (c) => GestureDetector(
+                              onTap: () => setS(() => color = c),
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: Color(c),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: color == c
+                                        ? Theme.of(ctx).colorScheme.primary
+                                        : ThemeService
+                                              .activeColorScheme
+                                              .onSurfaceVariant,
+                                    width: color == c ? 2 : 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    const SizedBox(height: 12),
+                    LabeledSlider(
+                      label: l10n.canvasTextLineHeight,
+                      value: lineHeight,
+                      min: 0.8,
+                      max: 3.0,
+                      step: 0.1,
+                      isInt: false,
+                      sliderLabel: lineHeight.toStringAsFixed(1),
+                      valueText: lineHeight.toStringAsFixed(1),
+                      onChanged: (v) => setS(() => lineHeight = v),
+                    ),
+                    LabeledSlider(
+                      label: l10n.canvasTextLetterSpacing,
+                      value: letterSpacing,
+                      min: -2,
+                      max: 20,
+                      sliderLabel: letterSpacing.toStringAsFixed(0),
+                      valueText: letterSpacing.toStringAsFixed(0),
+                      onChanged: (v) => setS(() => letterSpacing = v),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Text(
+                          l10n.canvasTextAlign,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        const SizedBox(width: 8),
+                        SegmentedButton<TextAlign>(
+                          segments: const [
+                            ButtonSegment(
+                              value: TextAlign.left,
+                              icon: Icon(Icons.format_align_left, size: 16),
+                            ),
+                            ButtonSegment(
+                              value: TextAlign.center,
+                              icon: Icon(Icons.format_align_center, size: 16),
+                            ),
+                            ButtonSegment(
+                              value: TextAlign.right,
+                              icon: Icon(Icons.format_align_right, size: 16),
+                            ),
+                          ],
+                          selected: {textAlign},
+                          onSelectionChanged: (v) =>
+                              setS(() => textAlign = v.first),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    FilterChip(
+                      label: Text(l10n.canvasTextOutline),
+                      selected: outlineEnabled,
+                      onSelected: (v) => setS(() => outlineEnabled = v),
+                    ),
+                    if (outlineEnabled) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => pickTextColor(
+                              ctx,
+                              outlineColor,
+                              (v) => setS(() => outlineColor = v),
+                            ),
+                            child: Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                color: Color(outlineColor),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Theme.of(ctx).colorScheme.outline,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          IconButton(
+                            icon: const Icon(Icons.colorize),
+                            tooltip: l10n.toolbarItemEyedropper,
+                            onPressed: () => startTextCanvasEyedropper(
+                              _TextColorEyedropperTarget.outline,
+                              ctx,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 6,
+                        children: _textColorPalette
+                            .map(
+                              (c) => GestureDetector(
+                                onTap: () => setS(() => outlineColor = c),
+                                child: Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: Color(c),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: outlineColor == c
+                                          ? Theme.of(ctx).colorScheme.primary
+                                          : ThemeService
+                                                .activeColorScheme
+                                                .onSurfaceVariant,
+                                      width: outlineColor == c ? 2 : 1,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      LabeledSlider(
+                        label: l10n.canvasOutlineWidthLabel,
+                        value: outlineWidth,
+                        min: 0,
+                        max: 20,
+                        sliderLabel: outlineWidth.round().toString(),
+                        valueText: '${outlineWidth.round()}',
+                        onChanged: (v) => setS(() => outlineWidth = v),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  if (controller.text.isEmpty) {
+                    Navigator.pop(ctx);
+                    return;
+                  }
+                  final ps = context.read<ProjectService>();
+                  final sceneId = _currentSceneId;
+                  model.Layer layer;
+                  model.TextObject textObject;
+                  if (existingLayerId != null && existing != null) {
+                    final current = ps
+                        .layersOf(widget.projectId, sceneId, _currentFrame)
+                        .where((l) => l.id == existingLayerId)
+                        .firstOrNull;
+                    if (current == null) {
+                      Navigator.pop(ctx);
+                      return;
+                    }
+                    layer = current;
+                    textObject = existing.copyWith(
+                      text: controller.text,
+                      fontSize: fontSize,
+                      color: Color(color),
+                      isBold: isBold,
+                      isItalic: isItalic,
+                      fontFamily: fontFamily,
+                      lineHeight: lineHeight,
+                      letterSpacing: letterSpacing,
+                      align: textAlign,
+                      direction: direction,
+                      outline: model.TextOutline(
+                        enabled: outlineEnabled,
+                        color: Color(outlineColor),
+                        width: outlineWidth,
+                      ),
+                    );
+                  } else {
+                    layer = ps.addTextLayer(
+                      projectId: widget.projectId,
+                      sceneId: sceneId,
+                      frameIndex: _currentFrame,
+                      text: controller.text,
+                      position: position,
+                    );
+                    textObject =
+                        (layer.textObject ??
+                                model.TextObject(
+                                  id: layer.id,
+                                  text: controller.text,
+                                  position: position,
+                                ))
+                            .copyWith(
+                              fontSize: fontSize,
+                              color: Color(color),
+                              isBold: isBold,
+                              isItalic: isItalic,
+                              fontFamily: fontFamily,
+                              lineHeight: lineHeight,
+                              letterSpacing: letterSpacing,
+                              align: textAlign,
+                              direction: direction,
+                              outline: model.TextOutline(
+                                enabled: outlineEnabled,
+                                color: Color(outlineColor),
+                                width: outlineWidth,
+                              ),
+                            );
+                  }
+                  final tileManager = ps.tileManagerOf(widget.projectId);
+                  final bytes = await rasterizeTextObject(
+                    textObject,
+                    tileManager.canvasWidth,
+                    tileManager.canvasHeight,
+                    pixelMode: fontService.pixelModeForFamily(fontFamily),
+                  );
+                  if (bytes != null) {
+                    tileManager.replaceLayerPixels(
+                      ps.tileKeyFor(
+                        widget.projectId,
+                        sceneId,
+                        _currentFrame,
+                        layer.id,
+                      ),
+                      bytes,
+                    );
+                  }
+                  ps.updateLayer(
+                    projectId: widget.projectId,
+                    sceneId: sceneId,
+                    frameIndex: _currentFrame,
+                    layer: layer.copyWith(textObject: textObject),
+                  );
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: Text(l10n.commonOk),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 組版・ルビに関する説明（半角英数字の回転・縦中横・ルビ）。
+  void _showVerticalTextHelp(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
+        // AlertDialogの`icon:`スロットへ入れると、Flutterが
+        // タイトルを強制的に中央寄せにするため（dialog.dartの
+        // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
+        // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
+        title: Row(
+          children: [
+            Expanded(child: Text(l10n.canvasTypesettingHelpTooltip)),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              icon: const Icon(Icons.close),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.canvasHelpRotationTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              Text(l10n.canvasHelpRotationBody),
+              const SizedBox(height: 8),
+              Text(
+                l10n.canvasHelpTatechuyokoTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              Text(l10n.canvasHelpTatechuyokoBody),
+              const SizedBox(height: 8),
+              Text(
+                l10n.canvasHelpRubyTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              Text(l10n.canvasHelpRubyBody('{漢字|かんじ}')),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// ドッキングパネルとキャンバスの境界に置く、横方向ドラッグ専用の
+/// リサイズハンドル。ドラッグ中は
+/// [onDeltaX]で移動量（デバイス非依存の論理px）を都度通知し、指を離した
+/// 時点で[onDragEnd]を呼んで確定値の永続化を行わせる。
+class _ResizeHandle extends StatelessWidget {
+  final ValueChanged<double> onDeltaX;
+  final VoidCallback onDragEnd;
+  const _ResizeHandle({
+    super.key,
+    required this.onDeltaX,
+    required this.onDragEnd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.resizeLeftRight,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onHorizontalDragUpdate: (d) => onDeltaX(d.delta.dx),
+        onHorizontalDragEnd: (_) => onDragEnd(),
+        child: Container(
+          width: 18,
+          color: Colors.transparent,
+          child: Center(
+            child: RotatedBox(
+              quarterTurns: 1,
+              child: Icon(
+                Icons.drag_handle,
+                size: 20,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum _TextColorEyedropperTarget { body, outline }
+
+enum DrawingTool {
+  pen,
+  eraser,
+  bucket,
+  lasso,
+  eyedropper,
+  finger,
+  // 指ツールのサブツール：ガウスぼかし・モザイク。
+  // 指ツールボタンの長押しメニューから切り替える。
+  blur,
+  mosaic,
+  selectRect,
+  selectLasso,
+  selectMagicWand,
+  move,
+  ruler,
+  text,
+  shape,
+  // 手のひらツール：ジェスチャー／ペンボタンからのみ到達する一時ツール。
+  // ツールバーには表示せず、描画を行わずキャンバスの平行移動のみを行う。
+  pan,
+  // レイヤー全体の自由変形・メッシュ変形：範囲選択せずに現在レイヤー全体を
+  // 変形できる（格子点を個別にドラッグする自由変形・メッシュ変形）。
+  // 選択ツールの移動・拡大縮小・回転が一体変形なのに対し、こちらは各点を
+  // 個別に動かせる点が異なる。キャンバス上部バーの「設定/編集」メニューと
+  // 選択ツールの操作バーから到達する一時ツール。
+  meshTransform,
+}
+
+/// 図形ツールの種別（タップでポップアップ表示・OFF/線/四角形/円）
+enum ShapeKind { off, line, rect, circle }

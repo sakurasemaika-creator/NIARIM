@@ -1,0 +1,177 @@
+NIARIM に同梱しているフォントの著作権表示とライセンス
+========================================================
+
+このファイルは、SIL Open Font License 1.1（OFL）で配布されている
+フォントを本アプリへ同梱・再配布するにあたり、OFL第2条が求める
+「著作権表示とライセンス本文の同梱」を満たすためのものです。
+
+各フォントの著作権表示・ライセンス表記は、同梱しているフォント
+ファイル自身の name テーブル（nameID 0＝著作権、13＝ライセンス、
+14＝ライセンスURL）から抜き出した原文をそのまま記載しています。
+
+
+--- assets/fonts/HakkouMincho.ttf（白光明朝 / アプリ全体の基本フォント）---
+Family      : HakkouMincho SemiBold
+Copyright   : (c) 2017-2024 Adobe (http://www.adobe.com/).
+License     : This Font Software is licensed under the SIL Open Font License,
+              Version 1.1. This license is available with a FAQ at:
+              https://openfontlicense.org
+License URL : https://openfontlicense.org
+
+
+--- assets/fonts/Kuramubon.otf（くらむぼん / チュートリアル・説明テキスト）---
+Copyright   : Copyright 2020 The Dela Gothic Project Authors
+              (https://github.com/syakuzen/DelaGothic),flopdesign.com
+License     : SIL Open Font License 1.1
+              ※このファイルの name テーブル nameID 13 には OFL の記載が無く、
+                フォント編集ソフトが書き込んだと思われる管理用の文字列
+                （Cr:... Mo:...）が入っている。ただし著作権表示（nameID 0）は
+                改変元である Dela Gothic One と同一であり、その Dela Gothic One
+                側には OFL 1.1 の記載が正しく入っている（下記参照）。
+                そのため OFL 1.1 として扱う。
+License URL : https://openfontlicense.org
+
+
+--- assets/fonts/DelaGothicOne-Regular.ttf（Dela Gothic One / くらむぼんの
+    未収録文字を補う代替フォント）---
+Copyright   : Copyright 2020 The Dela Gothic Project Authors
+              (https://github.com/syakuzen/DelaGothic)
+License     : This Font Software is licensed under the SIL Open Font License,
+              Version 1.1. This license is available with a FAQ at:
+              https://scripts.sil.org/OFL
+License URL : https://scripts.sil.org/OFL
+
+
+--- assets/fonts/NotoSerifJP.ttf（Noto Serif JP / テキストツール同梱フォント）---
+Family      : Noto Serif JP ExtraLight
+Copyright   : (c) 2017-2024 Adobe (http://www.adobe.com/).
+License     : This Font Software is licensed under the SIL Open Font License,
+              Version 1.1. This license is available with a FAQ at:
+              https://openfontlicense.org
+License URL : https://openfontlicense.org
+
+
+--- assets/fonts/NotoSerifKRSubset.ttf / NotoSerifSCSubset.ttf
+    （韓国語・簡体字の本文用。Noto Serif KR / Noto Serif SC のサブセット）---
+--- assets/fonts/NotoSansKRBlackSubset.ttf / NotoSansSCBlackSubset.ttf
+    （韓国語・簡体字の見出し用。Noto Sans KR / Noto Sans SC の Black(900) の
+      サブセット）---
+
+これら4つは、Google Fonts で配布されている下記の可変フォントを、
+(1) 目的の太さで固定し、(2) 本アプリのUIに実際に出る文字だけを残す、
+という加工をした**改変版**です。原本は4つで75MBあり、そのまま同梱すると
+APKが肥大化するため。加工手順は tool/build_fallback_fonts.py にあります。
+
+  Noto Serif KR : https://github.com/google/fonts/tree/main/ofl/notoserifkr
+  Noto Serif SC : https://github.com/google/fonts/tree/main/ofl/notoserifsc
+  Noto Sans KR  : https://github.com/google/fonts/tree/main/ofl/notosanskr
+  Noto Sans SC  : https://github.com/google/fonts/tree/main/ofl/notosanssc
+
+再生成元: google/fonts commit b68b528a75da7d9b73f3928899c07a23083a6633。
+Noto Serif KR / SC の同梱元OFL.txtには次の通知も記載されています:
+  Copyright 2012 Google Inc. All Rights Reserved.
+
+Copyright（Noto Serif KR / SC。フォントファイル内の記載のまま）:
+  (c) 2017-2024 Adobe (http://www.adobe.com/).
+
+Copyright（Noto Sans KR / SC。フォントファイル内の記載のまま）:
+  (c) 2014-2021 Adobe (http://www.adobe.com/),
+  with Reserved Font Name 'Source'.
+
+License     : SIL Open Font License 1.1（本文は下記）
+License URL : https://scripts.sil.org/OFL
+
+※ SIL OFL 第3条は、改変版に Reserved Font Name を使うことを禁じています。
+   上記のとおり予約名は 'Source' であり、本アプリが付けているファミリー名
+   （NotoSerifKRSubset / NotoSerifSCSubset / NotoSansKRBlackSubset /
+   NotoSansSCBlackSubset）はこれを含みません。
+
+
+以下は SIL Open Font License 1.1 の本文（全文）です。
+========================================================
+
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded,
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION & CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.

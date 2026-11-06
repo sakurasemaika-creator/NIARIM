@@ -1,0 +1,1262 @@
+import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import '../models/brush.dart';
+import '../models/brush_pressure_resolver.dart';
+import 'brush_texture_cache.dart';
+import 'brush_texture_selector.dart';
+import 'brush_render_plan.dart';
+import 'hair_fold_raster.dart';
+import 'outline_accent.dart';
+import 'perceptual_color_mixer.dart';
+import 'tile_manager.dart';
+import 'watercolor_wash.dart';
+
+final _jitterRng = math.Random();
+
+// カリグラフィーブラシのペン先の扁平度（幅:高さ）。値が大きいほど、
+// ペン先の向きに直交する方向へ動かした時の線が太く、平行な方向は細くなる。
+const double kCalligraphyNibAspect = 2.6;
+
+class DrawingEngine {
+  final TileManager tileManager;
+
+  final List<StrokePoint> _currentStroke = [];
+
+  // 1ストローク内の各画素の最大カバレッジを保持する。
+  // ブラシ不透明度50%の線をspacing=1で引いた際、同じ画素へ多数のスタンプが
+  // 重なって100%近くまで濃くなるのを防ぐ。別ストロークではリセットされるため、
+  // 線同士を交差させた箇所は通常のsource-overどおり濃くなる。
+  final Map<String, Uint8List> _strokeCoverageByTile = {};
+
+  // 「重なりを維持する」をオフにした縁取りペンで、ストローク開始前の各画素の
+  // 不透明度を保持する。縁取りはその下へ回り込み、既に描かれた所の上には
+  // 描かれない（重なった所は縁取りせず、全体の周りだけを縁取る）。
+  final Map<String, Uint8List> _strokeBaseAlpha = {};
+
+  // ブラシの密度・散布を入力moveイベント数から独立させるため、ストロークを
+  // またいで「直前のスタンプから進んだ距離」を保持する。各move区間の先頭で
+  // spacingをリセットすると、同じ直線でもOSのイベント密度によって結果が
+  // 変わるため、StampEngineと同じくパス長基準で再サンプリングする。
+  double _distanceSinceLastBrushStamp = 0.0;
+  bool _hasStampedCurrentStroke = false;
+  String? _activeLayerId;
+  math.Random _scatterRng = math.Random(0);
+  HairFoldRaster? _foldRaster;
+  final BrushTextureSelector _brushTextureSelector = BrushTextureSelector();
+  double? _finalizedStrokeLengthOverride;
+  bool _replayingFinalStroke = false;
+  // 縁取りの強弱：ストローク全体の形から決まるので、ペンを離した後の
+  // 描き直し（replayCurrentStrokeWithFinalFade）でだけ設定する。
+  OutlineAccent? _outlineAccent;
+  final List<ui.Offset> _strokeScreenPositions = [];
+  // 油彩風の混色は絵の具の色ごとに、下の色ごとの混ざり方を覚えておく
+  // （同じ色の上を塗る間は1画素1回の参照で済む）。拾った色で絵の具の色が
+  // 少しずつ変わるので、近い色（各チャンネル4段）は同じものを使う。
+  final Map<int, AnalogPaintMixer> _oilMixers = {};
+  // 油彩風：筆に含まれた絵の具の色（拾った色が混ざっていく）と、前回の
+  // スタンプの位置。ストロークごとに選択色から始まる。
+  int? _oilPaint;
+  ui.Offset? _lastOilStamp;
+  // 水彩風：このストロークの水彩の状態（ペンを離すと乾かす）。
+  WatercolorStroke? _watercolor;
+
+  String? get debugActiveBrushTexturePath => _brushTextureSelector.activePath;
+
+  Brush? currentBrush;
+  ui.Color currentColor = const ui.Color(0xFF000000);
+  bool isEraser = false;
+  bool pressureEnabled = true;
+
+  // 定規など、手ブレ補正より後に必ず満たすべき最終座標制約。
+  ui.Offset Function(ui.Offset)? pointConstraint;
+
+  // 手ブレ補正用：直近の平滑化済み座標（ON/OFF・強度調整）
+  StrokePoint? _smoothed;
+
+  DrawingEngine({required this.tileManager});
+
+  void beginStroke(
+    StrokePoint point,
+    String layerId, {
+    ui.Offset? screenPosition,
+  }) {
+    _currentStroke.clear();
+    _strokeScreenPositions.clear();
+    _strokeCoverageByTile.clear();
+    _strokeBaseAlpha.clear();
+    _foldRaster = null;
+    _oilPaint = null;
+    _lastOilStamp = null;
+    _watercolor = null;
+    _smoothed = point;
+    final effective = _applyPointConstraint(point);
+    _activeLayerId = layerId;
+    _distanceSinceLastBrushStamp = 0.0;
+    _hasStampedCurrentStroke = false;
+    _scatterRng = math.Random(0);
+    final brush = currentBrush;
+    if (brush != null && !_replayingFinalStroke) {
+      _brushTextureSelector.beginStroke(
+        brushId: brush.id,
+        paths: brush.resolvedCustomImagePaths,
+        mode: brush.customImageSelectionMode,
+      );
+    } else if (brush == null) {
+      _brushTextureSelector.endStroke();
+    }
+    _foldRaster =
+        brush != null && brush.outlineEnabled && brush.foldEnabled && !isEraser
+        ? HairFoldRaster(tileManager, layerId)
+        : null;
+    _currentStroke.add(effective);
+    _strokeScreenPositions.add(
+      screenPosition ?? ui.Offset(effective.x, effective.y),
+    );
+    final needsDirection =
+        brush != null && (brush.rotation || brush.scatter > 0.0);
+    if (!needsDirection) {
+      _stampBrush(
+        effective.x,
+        effective.y,
+        effective.pressure,
+        effective.tiltX,
+        effective.tiltY,
+        layerId,
+        strokeLengthOverride: 0.0,
+      );
+      _hasStampedCurrentStroke = true;
+    }
+  }
+
+  void continueStroke(
+    StrokePoint point,
+    String layerId, {
+    ui.Offset? screenPosition,
+  }) {
+    if (_currentStroke.isEmpty) {
+      beginStroke(point, layerId, screenPosition: screenPosition);
+      return;
+    }
+    final effective = _replayingFinalStroke
+        ? point
+        : _applyPointConstraint(_applyStabilization(point));
+    final from = _currentStroke.last;
+    // 区間を描画してから終点を履歴へ追加する。これにより
+    // _renderStrokeSegment() が取得するbaseStrokeLengthは必ず区間開始時点までの
+    // 累積距離となり、OSから届くmoveイベント数に依存しない。
+    // Until the stroke folds (and, for a crescent, its curve is deep enough
+    // for the pen width) it keeps drawing as an ordinary line.
+    if (!(_foldRaster?.replacesStroke ?? false)) {
+      _renderStrokeSegment(from, effective, layerId);
+    }
+    _currentStroke.add(effective);
+    _strokeScreenPositions.add(
+      screenPosition ?? ui.Offset(effective.x, effective.y),
+    );
+    _rebuildHairFold();
+  }
+
+  /// Whether the stroke is drawn again once it is complete: a custom fade
+  /// needs its total length, and an outline's 強弱 the whole stroke's
+  /// curves.
+  bool get needsFinalFadeReplay =>
+      _currentStroke.isNotEmpty &&
+      (currentBrush?.fadeMode == FadeMode.custom || _accentsOutline);
+
+  bool get _accentsOutline {
+    final brush = currentBrush;
+    return brush != null &&
+        brush.outlineEnabled &&
+        brush.outlineAccentEnabled &&
+        !isEraser;
+  }
+
+  OutlineAccent _accentOf(Brush brush, List<StrokePoint> points) =>
+      OutlineAccent.of(
+        [for (final p in points) ui.Offset(p.x, p.y)],
+        base: brush.outlineWidth,
+        apex: brush.outlineAccentWidth,
+        span: brush.size,
+      );
+
+  void replayCurrentStrokeWithFinalFade() {
+    if (!needsFinalFadeReplay || _activeLayerId == null) return;
+    final points = List<StrokePoint>.of(_currentStroke);
+    final screen = List<ui.Offset>.of(_strokeScreenPositions);
+    final layerId = _activeLayerId!;
+    var totalLength = 0.0;
+    for (var i = 1; i < points.length; i++) {
+      totalLength += _distance(points[i - 1], points[i]);
+    }
+    _currentStroke.clear();
+    _strokeCoverageByTile.clear();
+    _strokeBaseAlpha.clear();
+    _distanceSinceLastBrushStamp = 0.0;
+    _hasStampedCurrentStroke = false;
+    _finalizedStrokeLengthOverride = totalLength;
+    final brush = currentBrush;
+    _outlineAccent = brush != null && _accentsOutline
+        ? _accentOf(brush, points)
+        : null;
+    _replayingFinalStroke = true;
+    try {
+      beginStroke(points.first, layerId, screenPosition: screen.first);
+      for (var i = 1; i < points.length; i++) {
+        continueStroke(points[i], layerId, screenPosition: screen[i]);
+      }
+    } finally {
+      _replayingFinalStroke = false;
+    }
+    _rebuildHairFold();
+  }
+
+  void endStroke({bool cancel = false}) {
+    if (!cancel) _rebuildHairFold(finalize: true);
+    // 回転/散布ONでPointerDown→Upだけのタップだった場合は進行方向が存在しない。
+    // その場合だけ中心位置へ1回描画し、散布は行わない。
+    if (!cancel &&
+        !_hasStampedCurrentStroke &&
+        _currentStroke.isNotEmpty &&
+        _activeLayerId != null) {
+      final point = _currentStroke.first;
+      _stampBrush(
+        point.x,
+        point.y,
+        point.pressure,
+        point.tiltX,
+        point.tiltY,
+        _activeLayerId!,
+        strokeLengthOverride: 0.0,
+        applyScatter: false,
+      );
+    }
+    if (!cancel) _watercolor?.finish(tileManager);
+    _watercolor = null;
+    _oilPaint = null;
+    _lastOilStamp = null;
+    _currentStroke.clear();
+    _strokeCoverageByTile.clear();
+    _strokeBaseAlpha.clear();
+    _smoothed = null;
+    _activeLayerId = null;
+    _distanceSinceLastBrushStamp = 0.0;
+    _hasStampedCurrentStroke = false;
+    _foldRaster = null;
+    _strokeScreenPositions.clear();
+    _brushTextureSelector.endStroke();
+    _finalizedStrokeLengthOverride = null;
+    _outlineAccent = null;
+  }
+
+  void _rebuildHairFold({bool finalize = false}) {
+    // Final fade replay already knows the complete input: rasterize the fold
+    // once after replay instead of rebuilding every intermediate prefix.
+    if (_replayingFinalStroke) return;
+    final brush = currentBrush;
+    final raster = _foldRaster;
+    if (brush == null || raster == null) return;
+    final samples = <HairRibbonPoint>[];
+    // 強弱 while drawing follows the curves drawn so far; once the stroke
+    // is complete, its final curves.
+    final accent =
+        _outlineAccent ??
+        (_accentsOutline ? _accentOf(brush, _currentStroke) : null);
+    void add(ui.Offset position, double curvedPressure, double distance) {
+      final pressure = resolveBrushPressure(
+        brush: brush,
+        pressureEnabled: pressureEnabled,
+        curvedPressure: curvedPressure,
+      );
+      final fade = _calculateFade(
+        brush,
+        distance,
+        totalLength: _finalizedStrokeLengthOverride,
+      );
+      final scale = pressure.sizeScale * fade;
+      samples.add(
+        HairRibbonPoint(
+          position,
+          (brush.size * scale).clamp(0, 2000).toDouble(),
+          // Pressure and taper shape the strand, outline included
+          // (outlinedStrokeRadii); they never fade it.
+          (brush.opacity /
+                  100 *
+                  (brush.strokeDecay ? _calculateDecay(distance) : 1) *
+                  currentColor.a)
+              .clamp(0.0, 1.0)
+              .toDouble(),
+          scale,
+          accent?.at(distance),
+        ),
+      );
+    }
+
+    // Within a custom taper the width follows a curve, while the strand
+    // is drawn with widths straight between its points: a long segment
+    // there (a fast flick) gets points every 2px, so the tail has the same
+    // shape as the ordinary stamps give it.
+    final total = _finalizedStrokeLengthOverride;
+    bool inTaper(double from, double to) =>
+        brush.fadeMode == FadeMode.custom &&
+        ((brush.fadeIn.rangePx > 0 && from < brush.fadeIn.rangePx) ||
+            (total != null &&
+                brush.fadeOut.rangePx > 0 &&
+                to > total - brush.fadeOut.rangePx));
+    var distance = 0.0;
+    for (var i = 0; i < _currentStroke.length; i++) {
+      final point = _currentStroke[i];
+      if (i > 0) {
+        final previous = _currentStroke[i - 1];
+        final length = _distance(previous, point);
+        if (length > 4 && inTaper(distance, distance + length)) {
+          final steps = (length / 2).ceil();
+          for (var k = 1; k < steps; k++) {
+            final t = k / steps;
+            add(
+              ui.Offset(
+                previous.x + (point.x - previous.x) * t,
+                previous.y + (point.y - previous.y) * t,
+              ),
+              previous.pressure + (point.pressure - previous.pressure) * t,
+              distance + length * t,
+            );
+          }
+        }
+        distance += length;
+      }
+      add(ui.Offset(point.x, point.y), point.pressure, distance);
+    }
+    final texture = _brushTextureSelector.activePath;
+    raster.render(
+      points: samples,
+      taperEnd: finalize,
+      brush: brush,
+      fillColor: currentColor,
+      texture: texture == null
+          ? null
+          : getCachedBrushTexture(texture, mode: brush.imageInkMode),
+    );
+    // A waiting crescent leaves the ordinary stroke and its shared outline
+    // coverage in place; clearing it would outline every stamp separately.
+    if (raster.replacesStroke) _strokeCoverageByTile.clear();
+  }
+
+  StrokePoint _applyPointConstraint(StrokePoint point) {
+    final constraint = pointConstraint;
+    if (constraint == null) return point;
+    final constrained = constraint(ui.Offset(point.x, point.y));
+    return StrokePoint(
+      x: constrained.dx,
+      y: constrained.dy,
+      pressure: point.pressure,
+      tiltX: point.tiltX,
+      tiltY: point.tiltY,
+      inputType: point.inputType,
+    );
+  }
+
+  /// 手ブレ補正：入力座標を直近の平滑化済み座標へ指数移動平均で追従させる。
+  /// strengthが高いほど追従を遅くし、線が滑らかになる（軽量・毎ピクセル計算なし）。
+  StrokePoint _applyStabilization(StrokePoint raw) {
+    final brush = currentBrush;
+    if (brush == null || !brush.stabilization) {
+      _smoothed = raw;
+      return raw;
+    }
+    final prev = _smoothed ?? raw;
+    final strength = brush.stabilizationStrength.clamp(0, 100) / 100.0;
+    final factor = (1.0 - strength * 0.85).clamp(0.05, 1.0);
+    final smoothedPoint = StrokePoint(
+      x: prev.x + (raw.x - prev.x) * factor,
+      y: prev.y + (raw.y - prev.y) * factor,
+      pressure: raw.pressure,
+      tiltX: raw.tiltX,
+      tiltY: raw.tiltY,
+      inputType: raw.inputType,
+    );
+    _smoothed = smoothedPoint;
+    return smoothedPoint;
+  }
+
+  /// 図形ツール確定描画（線・四角形・円）のブラシ版。現在のブラシ設定
+  /// （サイズ・不透明度・フェード等を除く形状ラスタライズ）を使い、パス上を
+  /// ブラシでなぞって描画する。トーンでの図形描画は本メソッドではなく
+  /// 呼び出し側（canvas_area.dartの_commitShapeWithTone）がToneEngineへ
+  /// 直接分岐する（ブラシ・トーンどちらでも描画可能）。
+  void commitShapePath(
+    List<StrokePoint> pathPoints,
+    String layerId, {
+    bool closeLoop = false,
+  }) {
+    if (currentBrush == null || pathPoints.isEmpty) return;
+    _currentStroke.clear();
+    _strokeCoverageByTile.clear();
+    _strokeBaseAlpha.clear();
+    _activeLayerId = layerId;
+    _distanceSinceLastBrushStamp = 0.0;
+    _hasStampedCurrentStroke = false;
+    _scatterRng = math.Random(0);
+    final brush = currentBrush!;
+    _brushTextureSelector.beginStroke(
+      brushId: brush.id,
+      paths: brush.resolvedCustomImagePaths,
+      mode: brush.customImageSelectionMode,
+    );
+
+    final first = pathPoints.first;
+    _currentStroke.add(first);
+    final needsDirection = brush.rotation || brush.scatter > 0.0;
+    if (!needsDirection) {
+      _stampBrush(
+        first.x,
+        first.y,
+        first.pressure,
+        first.tiltX,
+        first.tiltY,
+        layerId,
+        strokeLengthOverride: 0.0,
+      );
+      _hasStampedCurrentStroke = true;
+    }
+    for (int i = 1; i < pathPoints.length; i++) {
+      final to = pathPoints[i];
+      _renderStrokeSegment(_currentStroke.last, to, layerId);
+      _currentStroke.add(to);
+    }
+    if (closeLoop && pathPoints.length > 1) {
+      _renderStrokeSegment(_currentStroke.last, first, layerId);
+    }
+    endStroke();
+  }
+
+  void _renderStrokeSegment(StrokePoint from, StrokePoint to, String layerId) {
+    if (currentBrush == null) return;
+    final brush = currentBrush!;
+    final distance = _distance(from, to);
+    if (distance <= 1e-9) return;
+
+    final safeDensity = brush.density.clamp(0.1, 5.0).toDouble();
+    final spacing = _brushStampSpacing(brush, safeDensity);
+    final pathAngle = math.atan2(to.y - from.y, to.x - from.x);
+    // この区間より前に実際に進んだ距離。各補間スタンプでは
+    // base + consumed を使うため、1回の大きなmoveでも多数の小さなmoveでも
+    // フェード/ストローク減衰が同じ距離位置で同じ値になる。
+    final baseStrokeLength = _currentStrokeLength();
+
+    // 回転/散布ではPointerDown時点で保留した初点を、最初の実移動から得た
+    // 接線方向を使って描く。これで先頭だけ角度0・散布方向固定にならない。
+    if (!_hasStampedCurrentStroke) {
+      _stampBrush(
+        from.x,
+        from.y,
+        from.pressure,
+        from.tiltX,
+        from.tiltY,
+        layerId,
+        strokeLengthOverride: baseStrokeLength,
+        pathAngle: pathAngle,
+        hasPathDirection: true,
+      );
+      _hasStampedCurrentStroke = true;
+      _distanceSinceLastBrushStamp = 0.0;
+    }
+
+    var consumed = 0.0;
+    while (_distanceSinceLastBrushStamp + (distance - consumed) >=
+        spacing - 1e-9) {
+      final needed = math.max(0.0, spacing - _distanceSinceLastBrushStamp);
+      consumed += needed;
+      final t = (consumed / distance).clamp(0.0, 1.0);
+      final x = _stableDouble(from.x + (to.x - from.x) * t);
+      final y = _stableDouble(from.y + (to.y - from.y) * t);
+      final pressure = from.pressure + (to.pressure - from.pressure) * t;
+      final tiltX = from.tiltX + (to.tiltX - from.tiltX) * t;
+      final tiltY = from.tiltY + (to.tiltY - from.tiltY) * t;
+      _stampBrush(
+        x,
+        y,
+        pressure,
+        tiltX,
+        tiltY,
+        layerId,
+        strokeLengthOverride: baseStrokeLength + consumed,
+        pathAngle: pathAngle,
+        hasPathDirection: true,
+      );
+      _distanceSinceLastBrushStamp = 0.0;
+    }
+    _distanceSinceLastBrushStamp += distance - consumed;
+    if (_distanceSinceLastBrushStamp.abs() < 1e-9) {
+      _distanceSinceLastBrushStamp = 0.0;
+    }
+  }
+
+  double _brushStampSpacing(Brush brush, double safeDensity) {
+    // 装飾チェーンはブラシ径を変更したときもリンク同士の比率が崩れないよう、
+    // 絶対pxのspacingではなくブラシサイズ比例で配置する。
+    final factor = brush.tipSpacingFactor;
+    if (factor > 0) {
+      return math.max(1.0, brush.size * factor / safeDensity);
+    }
+    return math.max(1.0, brush.spacing.toDouble() / safeDensity);
+  }
+
+  double _stableDouble(double value) => (value * 1000000).round() / 1000000;
+
+  void _stampBrush(
+    double x,
+    double y,
+    double pressure,
+    double tiltX,
+    double tiltY,
+    String layerId, {
+    double? strokeLengthOverride,
+    double pathAngle = 0.0,
+    bool hasPathDirection = false,
+    bool applyScatter = true,
+  }) {
+    if (currentBrush == null) return;
+    final brush = currentBrush!;
+
+    final resolvedPressure = resolveBrushPressure(
+      brush: brush,
+      pressureEnabled: pressureEnabled,
+      curvedPressure: pressure,
+    );
+    var size = brush.size * resolvedPressure.sizeScale;
+    // 縁取りペンの筆圧は全体の形だけを変え、不透明度には効かせない。
+    var opacity =
+        (brush.opacity / 100.0) *
+        (brush.outlineEnabled ? 1.0 : resolvedPressure.opacityScale);
+
+    final strokeLength = strokeLengthOverride ?? _currentStrokeLength();
+
+    // フェード仕様は「ストロークが進むにつれて不透明度・サイズが減少」。
+    // 同じ係数を両方へ適用し、終端で薄いだけの同径線にならないようにする。
+    // ただし縁取りペンでは、入り抜き・筆圧は縁取りを含む全体の形だけを変え、
+    // 縁取り線の太さと透明度は変えない（outlinedStrokeRadii）。0%では何も
+    // 描かない。
+    if (brush.fadeMode != FadeMode.off) {
+      final fade = _calculateFade(
+        brush,
+        strokeLength,
+        totalLength: _finalizedStrokeLengthOverride,
+      );
+      size *= fade;
+      if (brush.outlineEnabled) {
+        if (fade <= 0) return;
+      } else {
+        opacity *= fade;
+      }
+    }
+    // ストローク減衰はインク切れ表現なので、不透明度だけを減らして太さは維持する。
+    if (brush.strokeDecay) {
+      opacity *= _calculateDecay(strokeLength);
+    }
+
+    // Apply the selected color's alpha to brush opacity.
+    if (!isEraser) opacity *= currentColor.a;
+    opacity = opacity.clamp(0.0, 1.0);
+    final outlinedRadii = brush.outlineEnabled
+        ? outlinedStrokeRadii(
+            width: size,
+            scale: brush.size > 0 ? size / brush.size : 1.0,
+            outlineWidth:
+                _outlineAccent?.at(strokeLength) ?? brush.outlineWidth,
+          )
+        : null;
+    size = size.clamp(0.5, 2000.0);
+
+    var stampX = x;
+    var stampY = y;
+    if (applyScatter && brush.scatter > 0.0) {
+      final maxOffset = brush.scatter.clamp(0.0, 1.0) * size;
+      final offset = (_scatterRng.nextDouble() * 2.0 - 1.0) * maxOffset;
+      final normal = pathAngle + math.pi / 2.0;
+      stampX += math.cos(normal) * offset;
+      stampY += math.sin(normal) * offset;
+    }
+
+    final alphaInt = (opacity * 255).round().clamp(0, 255);
+    if (alphaInt == 0) return;
+
+    // 油彩風：このスタンプが置く前に、筆の下の絵の具を拾う。
+    final oilPaint =
+        resolvedPressure.mixingMode == BrushMixingMode.oil && !isEraser
+        ? _carryOilPaint(layerId, stampX, stampY, size, resolvedPressure)
+        : null;
+    if (resolvedPressure.mixingMode == BrushMixingMode.watercolor &&
+        !isEraser &&
+        _watercolor == null) {
+      _watercolor = WatercolorStroke(
+        layerId: layerId,
+        paint: _rgb24(currentColor),
+        brushSize: brush.size.toDouble(),
+        water: resolvedPressure.mixingWater,
+        pigment: resolvedPressure.mixingPigment,
+        bleed: resolvedPressure.mixingBleed,
+        texture: resolvedPressure.mixingTexture,
+        softEdge: resolvedPressure.mixingSoftEdge,
+        brightnessCorrection: resolvedPressure.mixingBrightnessCorrection,
+        seed: (stampX * 7919 + stampY * 104729).round(),
+      );
+    }
+
+    // グリッターペンは大きな六角形フレークとして描画する。粒ごとに向きを
+    // ランダム化し、同じ向きの六角形が機械的に並ぶ見た目を避ける。
+    // ラメペンを含む他ブラシは従来どおり円形スタンプのまま。
+    final isGlitterHexagon = brush.tipShape == BrushTipShape.hexagon;
+    final isChainLink = brush.tipShape == BrushTipShape.chainLink;
+    final isBallChain = brush.tipShape == BrushTipShape.ballChain;
+    final chainStep = isChainLink
+        ? (strokeLength / math.max(1.0, _brushStampSpacing(brush, 1.0))).round()
+        : 0;
+    final particleRotation = isGlitterHexagon
+        ? _scatterRng.nextDouble() * math.pi * 2.0
+        : isChainLink
+        // 実鎖の「交互に別平面を向く」印象を2Dで読めるよう、隣接リンクを
+        // 接線に対して左右へ交互に傾ける。完全な90度交互より連結が自然。
+        ? (chainStep.isEven ? -0.48 : 0.48)
+        : 0.0;
+    final chainAspect = brush.chainAspect.clamp(.1, 1.0);
+    final chainThickness = brush.chainThickness.clamp(.05, .9);
+
+    // 傾き変形：カリグラフィーブラシ（ペン先角度固定）の場合は、実際の
+    // スタイラス傾きに関わらず常に固定角度へ扁平化したペン先を使う。
+    var tilt = brush.calligraphyAngle != null
+        ? (
+            scaleX: kCalligraphyNibAspect,
+            scaleY: 1.0,
+            angle: brush.calligraphyAngle! * math.pi / 180,
+          )
+        : calcTiltTransform(tiltX, tiltY);
+    // 回転ONではブラシ先端をパス接線方向へ追従させる。固定角度ブラシは
+    // その角度を接線方向へのオフセットとして保持する。
+    if (brush.rotation) {
+      final angleOffset = brush.calligraphyAngle == null
+          ? 0.0
+          : brush.calligraphyAngle! * math.pi / 180.0;
+      tilt = (
+        scaleX: tilt.scaleX,
+        scaleY: tilt.scaleY,
+        angle: pathAngle + angleOffset,
+      );
+    }
+    final stylusTiltMagnitude =
+        brush.calligraphyAngle == null && !brush.rotation
+        ? math.sqrt(tiltX * tiltX + tiltY * tiltY).clamp(0.0, 1.0)
+        : 0.0;
+
+    // 自作ブラシ（ブラシ画像からのブラシ作成）が選択され、
+    // 事前読み込み済みの場合はその形状を、それ以外は円形（またはピクセル
+    // モード）でスタンプする。
+    final texturePath = _brushTextureSelector.activePath;
+    final customTexture = texturePath != null
+        ? getCachedBrushTexture(texturePath, mode: brush.imageInkMode)
+        : null;
+    final extensionPlan = buildBrushStampPlan(
+      brush: brush,
+      center: ui.Offset(stampX, stampY),
+      pathAngle: pathAngle,
+      effectiveSize: size,
+      outlinedRadii: outlinedRadii,
+    );
+    final usesExtensionRaster =
+        brush.lateralRepeatEnabled ||
+        brush.outlineEnabled ||
+        extensionPlan.hollowSquare;
+    final centers = usesExtensionRaster
+        ? extensionPlan.centers
+        : <ui.Offset>[ui.Offset(stampX, stampY)];
+    for (final center in centers) {
+      final outlineRadius = extensionPlan.outlineRadius;
+      if (usesExtensionRaster && outlineRadius != null) {
+        _renderCircleStamp(
+          center.dx,
+          center.dy,
+          outlineRadius,
+          alphaInt,
+          tilt,
+          layerId,
+          brush.pixelMode,
+          resolvedPressure.blur,
+          customTexture,
+          stylusTiltMagnitude: stylusTiltMagnitude,
+          edgeJitter: resolvedPressure.edgeJitterEnabled,
+          edgeJitterStrength: resolvedPressure.edgeJitterStrength,
+          mixingMode: resolvedPressure.mixingMode,
+          mixingRate: resolvedPressure.mixingRate,
+          mixingBrightnessCorrection:
+              resolvedPressure.mixingBrightnessCorrection,
+          hexagon: isGlitterHexagon,
+          particleRotation: particleRotation,
+          chainLink: isChainLink,
+          chainAspect: chainAspect,
+          chainThickness: chainThickness,
+          ballChain: isBallChain,
+          hollowSquare: extensionPlan.hollowSquare,
+          hollowSquareInnerRatio: extensionPlan.hollowSquareInnerRatio,
+          colorOverride: ui.Color(brush.outlineColor),
+          coverageNamespace: 'outline',
+          behindExisting: !brush.outlineKeepOverlap,
+          // A tip finer than a pixel covers only its own width of it.
+          coverageCap: brush.pixelMode ? 1.0 : math.min(1.0, outlineRadius * 2),
+        );
+      }
+      // A tapered outline-pen tip thinner than its outline has no fill left.
+      if (extensionPlan.fillRadius > 0) {
+        _renderCircleStamp(
+          center.dx,
+          center.dy,
+          extensionPlan.fillRadius,
+          alphaInt,
+          tilt,
+          layerId,
+          brush.pixelMode,
+          resolvedPressure.blur,
+          customTexture,
+          stylusTiltMagnitude: stylusTiltMagnitude,
+          edgeJitter: resolvedPressure.edgeJitterEnabled,
+          edgeJitterStrength: resolvedPressure.edgeJitterStrength,
+          mixingMode: resolvedPressure.mixingMode,
+          mixingRate: resolvedPressure.mixingRate,
+          mixingBrightnessCorrection:
+              resolvedPressure.mixingBrightnessCorrection,
+          oilPaint: oilPaint,
+          hexagon: isGlitterHexagon,
+          particleRotation: particleRotation,
+          chainLink: isChainLink,
+          chainAspect: chainAspect,
+          chainThickness: chainThickness,
+          ballChain: isBallChain,
+          hollowSquare: usesExtensionRaster && extensionPlan.hollowSquare,
+          hollowSquareInnerRatio: extensionPlan.hollowSquareInnerRatio,
+          coverageNamespace: usesExtensionRaster ? 'fill' : 'legacy',
+        );
+      }
+    }
+  }
+
+  void _renderCircleStamp(
+    double cx,
+    double cy,
+    double radius,
+    int alpha,
+    ({double scaleX, double scaleY, double angle}) tilt,
+    String layerId,
+    bool pixelMode,
+    int blurRadius,
+    Uint8List? customTexture, {
+    double stylusTiltMagnitude = 0.0,
+    bool edgeJitter = false,
+    int edgeJitterStrength = 50,
+    BrushMixingMode mixingMode = BrushMixingMode.off,
+    int mixingRate = 0,
+    int mixingBrightnessCorrection = 3,
+    int? oilPaint,
+    bool hexagon = false,
+    double particleRotation = 0.0,
+    bool chainLink = false,
+    double chainAspect = 1.0,
+    double chainThickness = 0.0,
+    bool ballChain = false,
+    bool hollowSquare = false,
+    double hollowSquareInnerRatio = 0.5,
+    ui.Color? colorOverride,
+    String coverageNamespace = 'legacy',
+    double coverageCap = 1.0,
+    bool behindExisting = false,
+  }) {
+    final paintColor = colorOverride ?? currentColor;
+    final r = paintColor.r;
+    final g = paintColor.g;
+    final b = paintColor.b;
+    final ri = (r * 255).round();
+    final gi = (g * 255).round();
+    final bi = (b * 255).round();
+
+    // 影響範囲のタイルを特定
+    final effectiveRadius = radius * math.max(tilt.scaleX, tilt.scaleY);
+    final blur = blurRadius.toDouble();
+    final totalRadius = effectiveRadius + blur;
+
+    final minTx = ((cx - totalRadius) / TileManager.tileSize).floor();
+    final maxTx = ((cx + totalRadius) / TileManager.tileSize).floor();
+    final minTy = ((cy - totalRadius) / TileManager.tileSize).floor();
+    final maxTy = ((cy + totalRadius) / TileManager.tileSize).floor();
+
+    for (int ty = minTy; ty <= maxTy; ty++) {
+      for (int tx = minTx; tx <= maxTx; tx++) {
+        if (tx < 0 || ty < 0) continue;
+        _foldRaster?.rememberTile(tx, ty);
+        final tile = tileManager.getOrCreateTile(layerId, tx, ty);
+        // 水彩風は塗る前のタイルを覚え、そこへ透明な絵の具を重ねて描く。
+        final watercolor =
+            mixingMode == BrushMixingMode.watercolor &&
+                colorOverride == null &&
+                !isEraser
+            ? _watercolor
+            : null;
+        watercolor?.touchTile(tx, ty, tile);
+        final tileOriginX = tx * TileManager.tileSize;
+        final tileOriginY = ty * TileManager.tileSize;
+        final coverageKey = '$coverageNamespace:$layerId:$tx:$ty';
+        final coverage = _strokeCoverageByTile.putIfAbsent(
+          coverageKey,
+          () => Uint8List(TileManager.tileSize * TileManager.tileSize),
+        );
+        // The outline is the first stamp of a stroke to reach a tile, so this
+        // keeps the tile as it was before the stroke.
+        final base = behindExisting
+            ? _strokeBaseAlpha.putIfAbsent('$layerId:$tx:$ty', () {
+                final alpha = Uint8List(
+                  TileManager.tileSize * TileManager.tileSize,
+                );
+                for (var i = 0; i < alpha.length; i++) {
+                  alpha[i] = tile[i * 4 + 3];
+                }
+                return alpha;
+              })
+            : null;
+
+        // タイル内の影響ピクセル範囲
+        final localMinX = math.max(0, (cx - totalRadius - tileOriginX).floor());
+        final localMaxX = math.min(
+          TileManager.tileSize - 1,
+          (cx + totalRadius - tileOriginX).ceil(),
+        );
+        final localMinY = math.max(0, (cy - totalRadius - tileOriginY).floor());
+        final localMaxY = math.min(
+          TileManager.tileSize - 1,
+          (cy + totalRadius - tileOriginY).ceil(),
+        );
+
+        for (int py = localMinY; py <= localMaxY; py++) {
+          for (int px = localMinX; px <= localMaxX; px++) {
+            final worldX = tileOriginX + px + 0.5;
+            final worldY = tileOriginY + py + 0.5;
+            final dx = worldX - cx;
+            final dy = worldY - cy;
+
+            // 傾き変形を適用した楕円距離
+            final cosA = math.cos(-tilt.angle);
+            final sinA = math.sin(-tilt.angle);
+            final rdx = dx * cosA - dy * sinA;
+            final rdy = dx * sinA + dy * cosA;
+            final ux = rdx / tilt.scaleX;
+            final uy = rdy / tilt.scaleY;
+            final dist = math.sqrt(ux * ux + uy * uy);
+
+            double pixelAlpha;
+            if (customTexture != null) {
+              // 自作ブラシ画像：楕円内をテクスチャのアルファでサンプリング
+              if (dist > radius) {
+                pixelAlpha = 0.0;
+              } else {
+                final nx = (ux / radius).clamp(-1.0, 1.0);
+                final ny = (uy / radius).clamp(-1.0, 1.0);
+                final texX = (((nx + 1) / 2) * (brushTextureSize - 1))
+                    .round()
+                    .clamp(0, brushTextureSize - 1);
+                final texY = (((ny + 1) / 2) * (brushTextureSize - 1))
+                    .round()
+                    .clamp(0, brushTextureSize - 1);
+                final texIdx = (texY * brushTextureSize + texX) * 4;
+                pixelAlpha = customTexture[texIdx + 3] / 255.0;
+              }
+            } else if (hollowSquare) {
+              final outerDistance = math.max(ux.abs(), uy.abs());
+              final innerRadius =
+                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
+              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
+              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
+                0.0,
+                1.0,
+              );
+              pixelAlpha = math.min(outerAa, innerAa);
+            } else if (hollowSquare) {
+              final outerDistance = math.max(ux.abs(), uy.abs());
+              final innerRadius =
+                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
+              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
+              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
+                0.0,
+                1.0,
+              );
+              pixelAlpha = math.min(outerAa, innerAa);
+            } else if (hollowSquare) {
+              final outerDistance = math.max(ux.abs(), uy.abs());
+              final innerRadius =
+                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
+              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
+              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
+                0.0,
+                1.0,
+              );
+              pixelAlpha = math.min(outerAa, innerAa);
+            } else if (hollowSquare) {
+              final outerDistance = math.max(ux.abs(), uy.abs());
+              final innerRadius =
+                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
+              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
+              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
+                0.0,
+                1.0,
+              );
+              pixelAlpha = math.min(outerAa, innerAa);
+            } else if (hollowSquare) {
+              final outerDistance = math.max(ux.abs(), uy.abs());
+              final innerRadius =
+                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
+              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
+              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
+                0.0,
+                1.0,
+              );
+              pixelAlpha = math.min(outerAa, innerAa);
+            } else if (chainLink) {
+              // 中抜き楕円リンク。接線座標へ揃えたあと、リンク固有の交互角度
+              // だけ回す。outer/innerの楕円距離差で肉厚を作るため、拡縮しても
+              // リングの穴が潰れずチェーンとして読める。
+              final cosL = math.cos(-particleRotation);
+              final sinL = math.sin(-particleRotation);
+              final lx = ux * cosL - uy * sinL;
+              final ly = ux * sinL + uy * cosL;
+              final outerX = radius;
+              final outerY = radius * chainAspect;
+              final wall = radius * chainThickness;
+              final innerX = math.max(0.5, outerX - wall);
+              final innerY = math.max(0.5, outerY - wall);
+              final outerD = math.sqrt(
+                (lx * lx) / (outerX * outerX) + (ly * ly) / (outerY * outerY),
+              );
+              final innerD = math.sqrt(
+                (lx * lx) / (innerX * innerX) + (ly * ly) / (innerY * innerY),
+              );
+              final outerAa = ((1.0 - outerD) * radius + 0.7).clamp(0.0, 1.0);
+              final innerAa = ((innerD - 1.0) * radius + 0.7).clamp(0.0, 1.0);
+              pixelAlpha = math.min(outerAa, innerAa);
+            } else if (hexagon) {
+              // グリッターフレーク：正六角形。傾き変形後のローカル座標を
+              // 粒固有の角度だけ回転し、六角形の符号付き近似距離でAAする。
+              final cosH = math.cos(-particleRotation);
+              final sinH = math.sin(-particleRotation);
+              final hx = ux * cosH - uy * sinH;
+              final hy = ux * sinH + uy * cosH;
+              final ax = hx.abs();
+              final ay = hy.abs();
+              const sqrt3 = 1.7320508075688772;
+              final hexDist = math.max(
+                ay / (sqrt3 / 2.0),
+                (sqrt3 * ax + ay) / sqrt3,
+              );
+              pixelAlpha = (radius + 0.5 - hexDist).clamp(0.0, 1.0);
+            } else if (pixelMode) {
+              // ピクセルモード：エッジをシャープに（アンチエイリアス無し）
+              pixelAlpha = dist <= radius ? 1.0 : 0.0;
+            } else if (blur > 0) {
+              // ソフトブラシ：ガウス的なフォールオフ
+              if (dist <= radius) {
+                pixelAlpha = 1.0;
+              } else if (dist <= radius + blur) {
+                final t = (dist - radius) / blur;
+                pixelAlpha = 1.0 - t * t;
+              } else {
+                pixelAlpha = 0.0;
+              }
+            } else {
+              // 通常ブラシ／ボールチェーン：アンチエイリアス。ボールチェーンは
+              // 円形そのものを保ち、専用spacingで粒がつながり過ぎないようにする。
+              if (edgeJitter && dist > radius - 1.5) {
+                final maxJitter = edgeJitterStrength / 100.0 * 2.5;
+                final jitter = (_jitterRng.nextDouble() - 0.5) * maxJitter * 2;
+                pixelAlpha = (radius + 0.5 - dist + jitter).clamp(0.0, 1.0);
+              } else {
+                pixelAlpha = (radius + 0.5 - dist).clamp(0.0, 1.0);
+              }
+            }
+
+            if (pixelAlpha > coverageCap) pixelAlpha = coverageCap;
+            if (pixelAlpha <= 0) continue;
+
+            // スタイラスを寝かせた場合は、傾き方向（+rdx）をペン先側として濃く、
+            // 反対側を薄くする。形状の引き伸ばしだけで一様濃度にならないよう、
+            // 元の円座標ux/radiusに沿って緩やかな線形濃度勾配を掛ける。
+            // カリグラフィー固定角度ではスタイラス傾きではないため適用しない。
+            if (stylusTiltMagnitude > 0.0001 && radius > 0) {
+              final alongTilt = (ux / radius).clamp(-1.0, 1.0);
+              final shadeStrength = 0.40 * stylusTiltMagnitude;
+              final shade = (1.0 + alongTilt * shadeStrength).clamp(0.45, 1.0);
+              pixelAlpha *= shade;
+            }
+
+            final desiredAlpha = (alpha * pixelAlpha).round().clamp(0, 255);
+            if (desiredAlpha <= 0) continue;
+
+            // 同一ストローク内では、同じ画素へのスタンプ重複を加算せず
+            // 「そのストロークがこの画素をどこまで覆ったか」の最大値だけを採用する。
+            final coveragePos = py * TileManager.tileSize + px;
+            final oldCoverage = coverage[coveragePos];
+            if (desiredAlpha <= oldCoverage) continue;
+            var incrementalAlpha = oldCoverage >= 255
+                ? 0
+                : (((desiredAlpha - oldCoverage) * 255) / (255 - oldCoverage))
+                      .round()
+                      .clamp(0, 255);
+            coverage[coveragePos] = desiredAlpha;
+            if (watercolor != null) {
+              watercolor.cover(
+                tile,
+                tx,
+                ty,
+                px,
+                py,
+                desiredAlpha,
+                mixingRate,
+                opacity: alpha,
+              );
+              continue;
+            }
+            if (base != null && !isEraser) {
+              // Behind what the layer already showed before this stroke.
+              incrementalAlpha =
+                  incrementalAlpha * (255 - base[coveragePos]) ~/ 255;
+            }
+            if (incrementalAlpha <= 0) continue;
+
+            if (isEraser) {
+              tileManager.erasePixel(tile, px, py, incrementalAlpha);
+            } else if (mixingMode == BrushMixingMode.oil) {
+              final paint = oilPaint ?? (ri << 16 | gi << 8 | bi);
+              final idx = (py * TileManager.tileSize + px) * 4;
+              final belowAlpha = tile[idx + 3];
+              // A faint edge holds less paint to pick up than a solid area.
+              final mixed = belowAlpha > 0
+                  ? _oilMixerFor(paint, mixingBrightnessCorrection).mixNear(
+                      tile[idx] << 16 | tile[idx + 1] << 8 | tile[idx + 2],
+                      mixingRate / 100.0 * belowAlpha / 255.0,
+                      paint,
+                    )
+                  : paint;
+              tileManager.blendPixel(
+                tile,
+                px,
+                py,
+                mixed >> 16 & 0xFF,
+                mixed >> 8 & 0xFF,
+                mixed & 0xFF,
+                incrementalAlpha,
+              );
+            } else {
+              tileManager.blendPixel(
+                tile,
+                px,
+                py,
+                ri,
+                gi,
+                bi,
+                incrementalAlpha,
+              );
+            }
+          }
+        }
+        tileManager.markDirty(layerId, tx, ty);
+      }
+    }
+  }
+
+  // ─── ユーティリティ ───────────────────────────────────────────────────
+
+  double _distance(StrokePoint a, StrokePoint b) {
+    final dx = a.x - b.x;
+    final dy = a.y - b.y;
+    return math.sqrt(dx * dx + dy * dy);
+  }
+
+  double _currentStrokeLength() {
+    if (_currentStroke.length < 2) return 0;
+    double total = 0;
+    for (int i = 1; i < _currentStroke.length; i++) {
+      total += _distance(_currentStroke[i - 1], _currentStroke[i]);
+    }
+    return total;
+  }
+
+  double _calculateFade(
+    Brush brush,
+    double strokeLength, {
+    double? totalLength,
+  }) {
+    return switch (brush.fadeMode) {
+      FadeMode.weak => (1.0 - strokeLength / 1000).clamp(0.3, 1.0),
+      FadeMode.medium => (1.0 - strokeLength / 500).clamp(0.1, 1.0),
+      FadeMode.strong => (1.0 - strokeLength / 200).clamp(0.0, 1.0),
+      FadeMode.custom => () {
+        final fadeInRange = brush.fadeIn.rangePx;
+        final fadeOutRange = brush.fadeOut.rangePx;
+        final fadeInProgress = fadeInRange <= 0
+            ? 1.0
+            : _taperShoulder((strokeLength / fadeInRange).clamp(0.0, 1.0));
+        final distanceFromEnd = totalLength == null
+            ? double.infinity
+            : math.max(0.0, totalLength - strokeLength);
+        final fadeOutProgress = fadeOutRange <= 0
+            ? 1.0
+            : _taperShoulder((distanceFromEnd / fadeOutRange).clamp(0.0, 1.0));
+        final fadeIn =
+            brush.fadeIn.value / 100 +
+            (1.0 - brush.fadeIn.value / 100) * fadeInProgress;
+        final fadeOutTarget = brush.fadeOut.value / 100;
+        final fadeOut = fadeOutTarget + (1.0 - fadeOutTarget) * fadeOutProgress;
+        return (fadeIn * fadeOut).clamp(0.0, 1.0);
+      }(),
+      FadeMode.off => 1.0,
+    };
+  }
+
+  /// How far a custom taper has grown at [progress] (0 at the tip, 1 where
+  /// it meets the full stroke): as steep at the tip as a straight ramp (just
+  /// as sharp a point), and level where it meets the full width, so the
+  /// outline does not turn a corner where the taper begins (a straight ramp
+  /// does). Still [rangePx] long.
+  static double _taperShoulder(double progress) =>
+      progress + progress * progress * (1 - progress);
+
+  double _calculateDecay(double strokeLength) =>
+      (1.0 - strokeLength / 2000).clamp(0.05, 1.0);
+
+  /// The cached mixer for paint near [paint] (each channel to 4 levels).
+  AnalogPaintMixer _oilMixerFor(int paint, int brightnessCorrection) {
+    final near = paint & 0xFCFCFC;
+    final correction = brightnessCorrection.clamp(1, 5).toInt();
+    final key = near << 3 | correction;
+    final cached = _oilMixers.remove(key);
+    if (cached != null) return _oilMixers[key] = cached;
+    if (_oilMixers.length >= 24) _oilMixers.remove(_oilMixers.keys.first);
+    return _oilMixers[key] = AnalogPaintMixer(
+      selected: near,
+      brightnessCorrection: correction,
+    );
+  }
+
+  /// 油彩風：the colour of the paint on the brush for the stamp at ([x],
+  /// [y]). Before the stamp is laid, the brush picks up some of the paint
+  /// under it (混色度合い) and carries it on; fresh paint keeps coming from
+  /// the brush, and 色延び sets how far the picked-up colour lasts (up to six
+  /// brush widths). At 色延び 0 the brush stays its own colour.
+  int _carryOilPaint(
+    String layerId,
+    double x,
+    double y,
+    double size,
+    ResolvedBrushPressure pressure,
+  ) {
+    final own = _rgb24(currentColor);
+    final last = _lastOilStamp;
+    _lastOilStamp = ui.Offset(x, y);
+    final stretch = pressure.mixingStretch;
+    if (stretch <= 0 || pressure.mixingRate <= 0) return _oilPaint = own;
+    var paint = _oilPaint ?? own;
+    final width = math.max(1.0, size);
+    // How much of the brush's footprint is new since the last stamp.
+    final step = last == null
+        ? 0.25
+        : (math.sqrt(
+                    (x - last.dx) * (x - last.dx) +
+                        (y - last.dy) * (y - last.dy),
+                  ) /
+                  width)
+              .clamp(0.02, 1.0);
+
+    var r = 0.0;
+    var g = 0.0;
+    var b = 0.0;
+    var alpha = 0.0;
+    final reach = width * 0.3;
+    for (var k = 0; k < 9; k++) {
+      final angle = k * math.pi / 4;
+      final sx = k == 8 ? x : x + math.cos(angle) * reach;
+      final sy = k == 8 ? y : y + math.sin(angle) * reach;
+      final c = tileManager.getPixelColorAt(layerId, sx.floor(), sy.floor());
+      if (c == null) continue;
+      final a = c.a;
+      r += linearFromSrgb8((c.r * 255).round()) * a;
+      g += linearFromSrgb8((c.g * 255).round()) * a;
+      b += linearFromSrgb8((c.b * 255).round()) * a;
+      alpha += a;
+    }
+    if (alpha > 0) {
+      final picked =
+          srgb8FromLinear(r / alpha) << 16 |
+          srgb8FromLinear(g / alpha) << 8 |
+          srgb8FromLinear(b / alpha);
+      final take =
+          (pressure.mixingRate / 100 * (alpha / 9) * math.min(1.0, step * 2))
+              .clamp(0.0, 1.0)
+              .toDouble();
+      paint = _oilMixerFor(
+        paint,
+        pressure.mixingBrightnessCorrection,
+      ).mixNear(picked, take, paint);
+    }
+    final carry = stretch / 100 * 6;
+    final refill = 1 - math.exp(-step / carry);
+    paint = _oilMixerFor(
+      own,
+      pressure.mixingBrightnessCorrection,
+    ).mixNear(paint, 1 - refill, own);
+    return _oilPaint = paint;
+  }
+
+  static int _rgb24(ui.Color color) =>
+      (color.r * 255).round() << 16 |
+      (color.g * 255).round() << 8 |
+      (color.b * 255).round();
+
+  /// 油彩風 brush mixing of [selected] into [below] like paint, keeping the
+  /// colours vivid (see [AnalogPaintMixer]). [rate] is the contribution of
+  /// the colour below.
+  ui.Color mixColor(
+    ui.Color below,
+    ui.Color selected,
+    double rate, {
+    int brightnessCorrection = 3,
+  }) => mixPerceptualColor(
+    below,
+    selected,
+    rate,
+    brightnessCorrection: brightnessCorrection,
+  );
+
+  ({double scaleX, double scaleY, double angle}) calcTiltTransform(
+    double tiltX,
+    double tiltY,
+  ) {
+    final tiltMag = math.sqrt(tiltX * tiltX + tiltY * tiltY);
+    final stretch = 1.0 + tiltMag * 2.0;
+    final angle = (tiltX != 0 || tiltY != 0) ? math.atan2(tiltY, tiltX) : 0.0;
+    return (scaleX: stretch, scaleY: 1.0, angle: angle);
+  }
+}
+
+class StrokePoint {
+  final double x;
+  final double y;
+  final double pressure;
+  final double tiltX;
+  final double tiltY;
+  final InputType inputType;
+
+  const StrokePoint({
+    required this.x,
+    required this.y,
+    this.pressure = 1.0,
+    this.tiltX = 0.0,
+    this.tiltY = 0.0,
+    this.inputType = InputType.touch,
+  });
+}
+
+enum InputType { touch, stylus, mouse }

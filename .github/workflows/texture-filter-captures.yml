@@ -1,0 +1,63 @@
+name: Texture Filter Captures
+# production UI captures for Drawing Filters > Texture Change palettes
+# curated five-material texture verification 2026-09-28 migration-complete
+# Re-run after finalized localization and palette verification.
+# 2026-09-28: rerun after mirror-gold contract alignment.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/models/filter_def.dart'
+      - 'lib/engine/filter_engine.dart'
+      - 'lib/services/filter_service.dart'
+      - 'test/filter_engine_aurora_hologram_test.dart'
+      - 'test/texture_filter_gold_palette_test.dart'
+      - 'lib/l10n/app_ja.arb'
+      - 'lib/l10n/app_en.arb'
+      - 'lib/screens/canvas/widgets/filter_panel.dart'
+      - 'lib/screens/timeline/timeline_screen.dart'
+      - 'test/visual/feature_operation_capture_test.dart'
+      - '.github/workflows/texture-filter-captures.yml'
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout dev_branch
+        uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Get dependencies
+        run: flutter pub get
+      - name: Verify texture Gradient Map contracts
+        run: |
+          flutter test test/filter_engine_aurora_hologram_test.dart test/texture_filter_gold_palette_test.dart --reporter expanded
+          flutter analyze lib/engine/filter_engine.dart lib/models/filter_def.dart lib/screens/canvas/widgets/filter_panel.dart test/filter_engine_aurora_hologram_test.dart test/texture_filter_gold_palette_test.dart
+      - name: Capture all texture filter variants through production UI
+        run: |
+          for preset in silverHologram sampledGold silverFoil luminousPearl auroraPastel darkRainbow; do
+            rm -rf build/feature-captures/filters
+            CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded \
+              --dart-define=CAPTURE_GROUP=filters \
+              --dart-define=CAPTURE_MATCH=Filter0019_${preset}
+            mkdir -p "build/texture-filter-captures/${preset}"
+            cp -a build/feature-captures/filters/. "build/texture-filter-captures/${preset}/"
+          done
+      - name: Upload texture filter captures
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: texture-filter-captures
+          path: build/texture-filter-captures/**/*.png
+          if-no-files-found: ignore
+          retention-days: 7

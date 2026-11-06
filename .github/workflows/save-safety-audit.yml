@@ -1,0 +1,374 @@
+name: Save safety regression audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - "l10n.yaml"
+      - ".github/workflows/save-safety-audit.yml"
+      - "lib/engine/niapro_serializer.dart"
+      - "lib/engine/tile_manager.dart"
+      - "lib/services/project_service.dart"
+      - "lib/services/brush_service.dart"
+      - "test/functional_audit_batch12_test.dart"
+      - "lib/services/recorded_filter_apply_service.dart"
+      - "lib/services/autosave_service.dart"
+      - "test/project_save_safety_test.dart"
+      - "lib/utils/folder_persistence.dart"
+      - "lib/screens/home/widgets/project_folder_edit_dialog.dart"
+      - "test/project_folder_persistence_test.dart"
+      - "test/project_folder_transaction_test.dart"
+      - "test/project_folder_edit_ui_test.dart"
+      - "test/shared_empty_folder_widget_test.dart"
+      - "test/home_library_sort_layout_test.dart"
+      - "test/project_trash_persistence_test.dart"
+      - "test/project_trash_recovery_test.dart"
+      - "test/project_trash_dialog_test.dart"
+      - "test/project_favorite_delete_guard_test.dart"
+      - "lib/utils/project_trash_guard.dart"
+      - "lib/widgets/project_trash_dialog.dart"
+      - "assets/fonts/**"
+      - "test/font_coverage_test.dart"
+      - "lib/widgets/sort_mode_control.dart"
+      - "test/community_milestone_account_boundary_test.dart"
+      - "lib/screens/community/community_work_settings_screen.dart"
+      - "lib/services/community_milestone_store.dart"
+      - "lib/screens/home/home_screen.dart"
+      - "lib/services/work_folder_service.dart"
+      - "lib/screens/home/widgets/project_list_widget.dart"
+      - "lib/screens/home/widgets/folder_delete_dialog.dart"
+      - "lib/screens/home/widgets/folder_save_feedback.dart"
+      - "lib/screens/home/widgets/work_folder_move_sheet.dart"
+      - "test/work_folder_service_persistence_test.dart"
+      - "test/home_work_folder_save_failure_test.dart"
+      - "test/folder_save_controls_test.dart"
+      - "test/app_smoke_test.dart"
+      - "test/theme_accent_contrast_test.dart"
+      - "test/helpers/controlled_preferences_store.dart"
+      - "test/folder_name_dialog_short_test.dart"
+      - "lib/screens/home/widgets/exported_work_card.dart"
+      - "test/exported_work_card_test.dart"
+      - "test/home_work_folder_empty_test.dart"
+      - "test/home_exported_work_identity_test.dart"
+      - "test/home_short_controls_and_video_states_test.dart"
+      - "test/helpers/exported_work_name.dart"
+      - "test/tile_manager_test.dart"
+      - "test/save_slot_*test.dart"
+      - "test/save_tree_*test.dart"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - "docs/product-audit/pending/auto-lineart-repairs.patch"
+      - "lib/screens/canvas/widgets/filter_panel.dart"
+      - "lib/screens/canvas/widgets/auto_lineart_control_overlay.dart"
+      - "test/auto_lineart_*test.dart"
+      - "test/helpers/pump_real_async.dart"
+      - "test/generated_filter_redo_test.dart"
+      - "test/community_api_test.dart"
+      - "test/community_project_metadata_api_test.dart"
+      - "test/community_service_backend_test.dart"
+      - "test/community_detail_metadata_test.dart"
+      - "test/community_search_tabs_test.dart"
+      - "test/community_tag_limit_ui_test.dart"
+      - "lib/widgets/custom_automation_draft_sheet.dart"
+      - "test/custom_automation_draft_reorder_test.dart"
+      - "test/canvas_mesh_handle_scale_contract_test.dart"
+      - "test/canvas_angle_boundary_visual_audit_test.dart"
+      - "lib/engine/drawing_engine.dart"
+      - "lib/engine/perceptual_color_mixer.dart"
+      - "test/perceptual_color_mixer_test.dart"
+      - "lib/l10n/app_*.arb"
+      - "lib/l10n/app_localizations_*.dart"
+      - "test/app_web_reference_capture_test.dart"
+      - "test/app_web_reference_export_exact_test.dart"
+      - "test/texture_filter_gold_palette_test.dart"
+      - "test/filter_engine_aurora_hologram_test.dart"
+      - "test/visual/glitter_lame_render_capture_test.dart"
+      - "tool/patch_glitter_hexagon.py"
+      - ".github/workflows/one-shot-glitter-actual-capture.yml"
+      - ".github/workflows/texture-filter-captures.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  community-contract-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      COMMUNITY_TESTS: >-
+        test/community_api_test.dart
+        test/community_project_metadata_api_test.dart
+        test/community_service_backend_test.dart
+        test/community_detail_metadata_test.dart
+        test/community_search_tabs_test.dart
+        test/community_tag_limit_ui_test.dart
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze community regression tests
+        run: flutter analyze --no-pub $COMMUNITY_TESTS
+      - name: Verify backend routes, publication metadata and community UI
+        run: flutter test --no-pub --reporter expanded $COMMUNITY_TESTS
+      - name: Export canonical formatting
+        if: always()
+        run: |
+          mkdir -p artifacts/community-contract
+          dart format $COMMUNITY_TESTS
+          git diff --binary -- $COMMUNITY_TESTS > artifacts/community-contract/canonical.patch
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: community-contract-${{ github.sha }}
+          path: artifacts/community-contract/
+          if-no-files-found: error
+
+  auto-lineart-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      AUTO_LINEART_SOURCES: >-
+        lib/services/project_service.dart
+        lib/services/recorded_filter_apply_service.dart
+        lib/screens/canvas/widgets/filter_panel.dart
+        lib/screens/canvas/widgets/auto_lineart_control_overlay.dart
+        test/auto_lineart_canvas_e2e_test.dart
+        test/auto_lineart_bulk_isolation_test.dart
+        test/auto_lineart_panel_state_test.dart
+        test/generated_filter_redo_test.dart
+        test/helpers/pump_real_async.dart
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Apply pending audit candidate when present
+        shell: bash
+        run: |
+          if [ -f docs/product-audit/pending/auto-lineart-repairs.patch ]; then
+            git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply docs/product-audit/pending/auto-lineart-repairs.patch
+          fi
+          mkdir -p artifacts/auto-lineart
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze auto line art files
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter analyze --no-pub $AUTO_LINEART_SOURCES 2>&1 | tee artifacts/auto-lineart/analyze.log
+      - name: Verify real rendering, apply, Undo/Redo and bulk isolation
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter test --no-pub --reporter expanded test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/generated_filter_redo_test.dart test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart 2>&1 | tee artifacts/auto-lineart/test.log
+      - name: Export canonical candidate formatting
+        if: always()
+        run: |
+          dart format $AUTO_LINEART_SOURCES
+          git add -N test/generated_filter_redo_test.dart
+          git diff --binary -- $AUTO_LINEART_SOURCES > artifacts/auto-lineart/canonical.patch
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auto-lineart-regressions-${{ github.sha }}
+          path: artifacts/auto-lineart/
+          if-no-files-found: error
+
+  save-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Check save file formatting
+        run: dart format --output=none --set-exit-if-changed lib/engine/niapro_serializer.dart lib/engine/tile_manager.dart test/project_save_safety_test.dart
+      - name: Analyze save files
+        run: flutter analyze --no-pub lib/engine/niapro_serializer.dart lib/engine/tile_manager.dart test/project_save_safety_test.dart
+      - name: Verify persistence and existing save regressions
+        shell: bash
+        run: |
+          mkdir -p artifacts/save-safety
+          set -o pipefail
+          flutter test --no-pub --reporter expanded test/project_save_safety_test.dart test/project_folder_persistence_test.dart test/project_folder_transaction_test.dart test/project_folder_edit_ui_test.dart test/shared_empty_folder_widget_test.dart test/home_library_sort_layout_test.dart test/project_trash_persistence_test.dart test/project_trash_recovery_test.dart test/project_trash_dialog_test.dart test/project_favorite_delete_guard_test.dart test/tile_manager_test.dart test/save_slot_overwrite_test.dart test/save_slot_confirmation_dialog_test.dart test/save_slot_action_buttons_test.dart test/save_tree_lazy_list_test.dart 2>&1 | tee artifacts/save-safety/green.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: save-safety-regressions-${{ github.sha }}
+          path: artifacts/save-safety/
+          if-no-files-found: error
+
+  full-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Restore locked dependencies
+        run: |
+          mkdir -p artifacts/save-safety
+          flutter pub get --enforce-lockfile
+      # Check committed source formatting before applying a pending, uncommitted audit candidate.
+      - name: Global format gate
+        shell: bash
+        run: |
+          set -o pipefail
+          dart format --output=none --set-exit-if-changed lib test tool 2>&1 | tee artifacts/save-safety/format.log
+      - name: Export committed-tree format differences immediately
+        if: always()
+        shell: bash
+        run: |
+          set -e
+          dart format lib test tool
+          git diff --name-only -- lib test tool > artifacts/save-safety/format-changed-files.txt
+          git diff --binary -- lib test tool > artifacts/save-safety/canonical-format.patch
+          git checkout -- lib test tool
+      - name: Upload format diagnostics immediately
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: global-format-diagnostics-${{ github.sha }}
+          path: |
+            artifacts/save-safety/format.log
+            artifacts/save-safety/format-changed-files.txt
+            artifacts/save-safety/canonical-format.patch
+          if-no-files-found: error
+          retention-days: 3
+      - name: Apply pending audit candidate when present
+        shell: bash
+        run: |
+          if [ -f docs/product-audit/pending/auto-lineart-repairs.patch ]; then
+            git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply docs/product-audit/pending/auto-lineart-repairs.patch
+          fi
+      # Normalize only the temporary candidate after proving the committed tree is formatted.
+      - name: Format pending audit candidate
+        run: dart format lib test tool
+      - name: Full analyzer gate
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter analyze --no-pub 2>&1 | tee artifacts/save-safety/analyze.log
+      - name: Upload full analyzer diagnostics immediately
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-analyzer-diagnostics-${{ github.sha }}
+          path: artifacts/save-safety/analyze.log
+          if-no-files-found: error
+          retention-days: 3
+      - name: Full Flutter test gate
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter test --no-pub --reporter expanded --file-reporter json:artifacts/save-safety/full-test.jsonl 2>&1 | tee artifacts/save-safety/full-test.log
+      - name: Export global canonical formatting for diagnosis
+        if: always()
+        run: |
+          dart format lib test tool
+          git add -N test/generated_filter_redo_test.dart
+          git diff --binary -- lib test tool > artifacts/save-safety/canonical.patch
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: save-safety-full-gates-${{ github.sha }}
+          path: artifacts/save-safety/
+          if-no-files-found: error
+
+  audit-gate-repairs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      REPAIR_SOURCES: >-
+        lib/services/api/community_api.dart
+        lib/screens/community/community_my_works_screen.dart
+        lib/widgets/custom_automation_draft_sheet.dart
+        test/canvas_mesh_handle_scale_contract_test.dart
+        test/canvas_angle_boundary_visual_audit_test.dart
+        test/custom_automation_draft_reorder_test.dart
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze repaired contracts and callbacks
+        run: flutter analyze --no-pub $REPAIR_SOURCES
+      - name: Verify scale, rotation, safe background and drag order
+        if: always()
+        run: flutter test --no-pub --reporter expanded test/canvas_mesh_handle_scale_contract_test.dart test/canvas_angle_boundary_visual_audit_test.dart test/custom_automation_draft_reorder_test.dart
+      - name: Export canonical formatting for the current sources
+        if: always()
+        run: |
+          dart format lib test tool
+          git diff --binary -- lib test tool > /tmp/audit-canonical.patch
+          echo AUDIT_CANONICAL_PATCH_BEGIN
+          base64 /tmp/audit-canonical.patch
+          echo AUDIT_CANONICAL_PATCH_END
+          python3 - <<'PY'
+          import base64
+          from pathlib import Path
+          root = Path('build/visual-reaudit/canvas-angle-boundary')
+          for name in ['normal_p30.png', 'extended_m45.png']:
+              image = root / name
+              if image.exists():
+                  print('AUDIT_IMAGE_BEGIN ' + name)
+                  data = base64.b64encode(image.read_bytes()).decode('ascii')
+                  for offset in range(0, len(data), 76):
+                      print(data[offset:offset + 76])
+                  print('AUDIT_IMAGE_END')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-gate-repairs-${{ github.sha }}
+          path: |
+            /tmp/audit-canonical.patch
+            build/visual-reaudit/canvas-angle-boundary/
+          if-no-files-found: error
+
+  checkpoint-format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Format checkpoint documents with the repository formatter
+        run: |
+          mkdir -p artifacts/save-safety-format
+          # Prettier rewrites technical underscores in audit-state Markdown as emphasis; keep those source-of-truth records out of this formatter gate.
+          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml 'docs/AI設計書/12_実装チェックリスト.md'
+          git diff --binary > artifacts/save-safety-format/format.patch
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: save-safety-format-${{ github.sha }}
+          path: artifacts/save-safety-format/
+          if-no-files-found: error

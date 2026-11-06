@@ -1,0 +1,620 @@
+import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import '../models/layer.dart';
+import '../models/layer_keyframe.dart';
+import '../models/layer_mask.dart';
+import 'layer_keyframe_engine.dart';
+import 'timeline_stack.dart';
+import 'tile_manager.dart';
+
+final _layerKeyframeEngine = LayerKeyframeEngine();
+
+/// レイヤー種別のうちTileManagerに実ピクセルデータを持つもの
+/// （通常・自動塗り用線画・自動塗り・共通・タイムライン画像/動画素材・
+/// ウォーターマーク・テキスト。いずれも frameLayerKey 経由でタイルへ
+/// ラスタライズ済みのピクセルを持つ。テキストは編集時のみtextObjectを
+/// 保持し、表示・書き出し時はラスタライズ済みピクセル（text_render.dart）
+/// を使う、ラスター専用方針に沿う）。
+/// フォルダ（表示構造のみ）・選択レイヤー（内部専用）は対象外。
+const Set<LayerType> pixelLayerTypes = {
+  LayerType.normal,
+  LayerType.autoFillLineart,
+  LayerType.autoFill,
+  LayerType.common,
+  LayerType.timelineImage,
+  LayerType.timelineVideo,
+  LayerType.watermark,
+  LayerType.text,
+  LayerType.timelineText,
+};
+
+/// dart:uiで直接表現できるLayerBlendModeをBlendModeへ変換する。
+/// 減算だけはdart:uiに対応BlendModeが存在しないため、[LayerCompositor]
+/// 内でRGBAを用いた本来の「backdrop - source（0未満は0）」を実装する。
+/// この関数単体でsubtractを要求された場合は、誤ってdifferenceを適用しない
+/// ようsrcOverを返す。
+ui.BlendMode mapLayerBlendMode(LayerBlendMode mode) {
+  switch (mode) {
+    case LayerBlendMode.normal:
+      return ui.BlendMode.srcOver;
+    case LayerBlendMode.multiply:
+      return ui.BlendMode.multiply;
+    case LayerBlendMode.screen:
+      return ui.BlendMode.screen;
+    case LayerBlendMode.overlay:
+      return ui.BlendMode.overlay;
+    case LayerBlendMode.addition:
+      return ui.BlendMode.plus;
+    case LayerBlendMode.subtract:
+      return ui.BlendMode.srcOver;
+    case LayerBlendMode.darken:
+      return ui.BlendMode.darken;
+    case LayerBlendMode.lighten:
+      return ui.BlendMode.lighten;
+    case LayerBlendMode.colorBurn:
+      return ui.BlendMode.colorBurn;
+    case LayerBlendMode.colorDodge:
+      return ui.BlendMode.colorDodge;
+    case LayerBlendMode.hardLight:
+      return ui.BlendMode.hardLight;
+    case LayerBlendMode.softLight:
+      return ui.BlendMode.softLight;
+    case LayerBlendMode.difference:
+      return ui.BlendMode.difference;
+    case LayerBlendMode.hue:
+      return ui.BlendMode.hue;
+    case LayerBlendMode.saturation:
+      return ui.BlendMode.saturation;
+    case LayerBlendMode.color:
+      return ui.BlendMode.color;
+    case LayerBlendMode.luminosity:
+      return ui.BlendMode.luminosity;
+    case LayerBlendMode.linearDodge:
+      return ui.BlendMode.srcOver;
+    case LayerBlendMode.exclusion:
+      return ui.BlendMode.exclusion;
+    case LayerBlendMode.linearBurn:
+    case LayerBlendMode.vividLight:
+    case LayerBlendMode.linearLight:
+    case LayerBlendMode.pinLight:
+    case LayerBlendMode.hardMix:
+    case LayerBlendMode.divide:
+      return ui.BlendMode.srcOver;
+  }
+}
+
+/// [layers]（先頭が最前面／末尾が最背面、レイヤーパネル表示順）の中で、
+/// index番目のレイヤーがクリッピングONの場合に参照すべき「一番下の
+/// クリッピング元レイヤー」のIDを探す。
+String? findClipSourceLayerId(List<Layer> layers, int index) {
+  final parentFolderId = layers[index].parentFolderId;
+  for (int i = index + 1; i < layers.length; i++) {
+    if (layers[i].parentFolderId != parentFolderId) return null;
+    if (!layers[i].hasClipping) return layers[i].id;
+  }
+  return null;
+}
+
+/// レイヤー群をタイル方式のピクセルデータから合成し1枚のui.Imageを生成する
+/// 共通処理。キャンバス表示・書き出し・オニオンスキン・バケツ参照などで共有する。
+class LayerCompositor {
+  /// The paper a preview needs to composite under [layers]: the opaque
+  /// [backgroundColor] when a visible layer blends with a mode other than
+  /// Normal (so it acts on the paper, as on the canvas and in the export);
+  /// null otherwise, when drawing the background behind the transparent
+  /// picture gives the same result and follows a background change at once.
+  static int? paperForBlendModes(List<Layer> layers, int? backgroundColor) {
+    if (backgroundColor == null || (backgroundColor >>> 24) != 0xFF) {
+      return null;
+    }
+    final blends = layers.any(
+      (l) =>
+          l.isVisible &&
+          pixelLayerTypes.contains(l.type) &&
+          l.blendMode != LayerBlendMode.normal,
+    );
+    return blends ? backgroundColor : null;
+  }
+
+  /// The layers composited into one image. With an opaque [paperColor] the
+  /// layers are composited onto the paper, so blend modes act on it as on
+  /// any layer below (a Linear Dodge or Screen layer brightens the paper,
+  /// as in other painting apps); without one, onto transparency.
+  static Future<ui.Image> composite(
+    TileManager tileManager,
+    List<Layer> layers,
+    String Function(Layer layer) keyOf,
+    int width,
+    int height, {
+    bool Function(Layer layer, int index)? shouldRender,
+    LayerKeyframe? Function(Layer layer)? keyframeOf,
+    LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
+    int? paperColor,
+    List<LayerMaskGroup> maskGroups = const [],
+  }) async {
+    var recorder = ui.PictureRecorder();
+    var canvas = ui.Canvas(recorder);
+    final masking = _MaskGroupDrawer(maskGroups, width, height);
+    if (paperColor != null && (paperColor >>> 24) == 0xFF) {
+      canvas.drawRect(
+        ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+        ui.Paint()..color = ui.Color(paperColor),
+      );
+    }
+
+    for (int i = layers.length - 1; i >= 0; i--) {
+      final layer = layers[i];
+      if (!layer.isVisible) continue;
+      if (!pixelLayerTypes.contains(layer.type)) continue;
+      if (shouldRender != null && !shouldRender(layer, i)) continue;
+      masking.enter(canvas, layer);
+
+      if (_requiresCpuBlend(layer.blendMode) && !masking.isOpen) {
+        // Skia/dart:uiには「減算」BlendModeが無い。difference（差の絶対値）
+        // で代用すると、backdrop < source のチャンネルが本来0になるところ
+        // 正の値へ反転してしまうため、ここだけ現在までの合成結果と対象レイヤー
+        // をRGBAへ落としてW3Cのalpha合成式で本当の減算を行う。
+        final backdropPicture = recorder.endRecording();
+        final backdrop = await backdropPicture.toImage(width, height);
+        backdropPicture.dispose();
+
+        final source = await _renderLayerIsolated(
+          tileManager,
+          layers,
+          keyOf,
+          layer,
+          i,
+          width,
+          height,
+          keyframeOf,
+          groupKeyframeOf,
+        );
+        final subtracted = await _blendImages(
+          backdrop,
+          source,
+          width,
+          height,
+          layer.blendMode,
+        );
+        backdrop.dispose();
+        source.dispose();
+
+        recorder = ui.PictureRecorder();
+        canvas = ui.Canvas(recorder);
+        canvas.drawImage(subtracted, ui.Offset.zero, ui.Paint());
+        subtracted.dispose();
+        continue;
+      }
+
+      await _drawLayer(
+        canvas,
+        tileManager,
+        layers,
+        keyOf,
+        layer,
+        i,
+        width,
+        height,
+        keyframeOf,
+        groupKeyframeOf,
+        // Inside a masked group the layers are drawn on one GPU layer, so
+        // a mode only the CPU can blend takes its nearest GPU mode.
+        blendModeOverride: masking.isOpen && _requiresCpuBlend(layer.blendMode)
+            ? displayBlendMode(layer.blendMode)
+            : null,
+      );
+    }
+    masking.close(canvas);
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(width, height);
+    picture.dispose();
+    return image;
+  }
+
+  /// The layers as drawing commands rather than pixels: played back onto a
+  /// canvas that already holds what lies below them (the canvas screen's
+  /// lower layers and current layer), each layer blends onto it with its
+  /// own mode, as in [composite]. Modes the GPU cannot draw
+  /// ([requiresCpuBlend]) are drawn with [displayBlendMode]'s nearest one.
+  static Future<ui.Picture> compositeToPicture(
+    TileManager tileManager,
+    List<Layer> layers,
+    String Function(Layer layer) keyOf,
+    int width,
+    int height, {
+    bool Function(Layer layer, int index)? shouldRender,
+    LayerKeyframe? Function(Layer layer)? keyframeOf,
+    LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
+    List<LayerMaskGroup> maskGroups = const [],
+  }) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    final masking = _MaskGroupDrawer(maskGroups, width, height);
+    for (int i = layers.length - 1; i >= 0; i--) {
+      final layer = layers[i];
+      if (!layer.isVisible) continue;
+      if (!pixelLayerTypes.contains(layer.type)) continue;
+      if (shouldRender != null && !shouldRender(layer, i)) continue;
+      masking.enter(canvas, layer);
+      await _drawLayer(
+        canvas,
+        tileManager,
+        layers,
+        keyOf,
+        layer,
+        i,
+        width,
+        height,
+        keyframeOf,
+        groupKeyframeOf,
+        blendModeOverride: displayBlendMode(layer.blendMode),
+      );
+    }
+    masking.close(canvas);
+    return recorder.endRecording();
+  }
+
+  /// Whether [mode] has no GPU blend mode and is composited on the CPU.
+  static bool requiresCpuBlend(LayerBlendMode mode) => _requiresCpuBlend(mode);
+
+  /// The GPU blend mode that draws [mode], or for a CPU-only mode the
+  /// nearest one, for live display while the exact result is computed
+  /// ([blendOnto]). Linear Dodge draws as Plus, which matches it exactly
+  /// wherever the sum stays below white.
+  static ui.BlendMode displayBlendMode(LayerBlendMode mode) => switch (mode) {
+    LayerBlendMode.linearDodge => ui.BlendMode.plus,
+    LayerBlendMode.subtract => ui.BlendMode.difference,
+    LayerBlendMode.linearBurn => ui.BlendMode.multiply,
+    LayerBlendMode.vividLight ||
+    LayerBlendMode.linearLight ||
+    LayerBlendMode.pinLight ||
+    LayerBlendMode.hardMix => ui.BlendMode.hardLight,
+    LayerBlendMode.divide => ui.BlendMode.colorDodge,
+    _ => mapLayerBlendMode(mode),
+  };
+
+  /// [source] (a layer's own pixels, at the canvas size) blended onto
+  /// [backdrop] with [mode] at [opacityPercent], exactly as [composite]
+  /// does it, including the CPU-only modes.
+  static Future<ui.Image> blendOnto(
+    ui.Image backdrop,
+    ui.Image source,
+    LayerBlendMode mode, {
+    int opacityPercent = 100,
+  }) async {
+    final width = backdrop.width, height = backdrop.height;
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    final rect = ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
+    final opacityByte = (opacityPercent.clamp(0, 100) * 255 / 100).round();
+    if (!_requiresCpuBlend(mode)) {
+      canvas.drawImage(backdrop, ui.Offset.zero, ui.Paint());
+      canvas.drawImageRect(
+        source,
+        ui.Rect.fromLTWH(
+          0,
+          0,
+          source.width.toDouble(),
+          source.height.toDouble(),
+        ),
+        rect,
+        ui.Paint()
+          ..color = ui.Color.fromARGB(opacityByte, 255, 255, 255)
+          ..blendMode = mapLayerBlendMode(mode),
+      );
+      final picture = recorder.endRecording();
+      final image = await picture.toImage(width, height);
+      picture.dispose();
+      return image;
+    }
+    canvas.drawImageRect(
+      source,
+      ui.Rect.fromLTWH(0, 0, source.width.toDouble(), source.height.toDouble()),
+      rect,
+      ui.Paint()..color = ui.Color.fromARGB(opacityByte, 255, 255, 255),
+    );
+    final picture = recorder.endRecording();
+    final faded = await picture.toImage(width, height);
+    picture.dispose();
+    final blended = await _blendImages(backdrop, faded, width, height, mode);
+    faded.dispose();
+    return blended;
+  }
+
+  /// 減算対象レイヤーを、opacity・クリッピング・位置/回転/拡縮をすべて
+  /// 適用した「透明背景上の通常合成画像」として作る。これによりCPU減算側は
+  /// レイヤーの見た目を再実装せず、最終RGBAだけを正しく合成すればよい。
+  static Future<ui.Image> _renderLayerIsolated(
+    TileManager tileManager,
+    List<Layer> layers,
+    String Function(Layer layer) keyOf,
+    Layer layer,
+    int index,
+    int width,
+    int height,
+    LayerKeyframe? Function(Layer layer)? keyframeOf,
+    LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
+  ) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    await _drawLayer(
+      canvas,
+      tileManager,
+      layers,
+      keyOf,
+      layer,
+      index,
+      width,
+      height,
+      keyframeOf,
+      groupKeyframeOf,
+      blendModeOverride: ui.BlendMode.srcOver,
+    );
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(width, height);
+    picture.dispose();
+    return image;
+  }
+
+  static Future<void> _drawLayer(
+    ui.Canvas canvas,
+    TileManager tileManager,
+    List<Layer> layers,
+    String Function(Layer layer) keyOf,
+    Layer layer,
+    int index,
+    int width,
+    int height,
+    LayerKeyframe? Function(Layer layer)? keyframeOf,
+    LayerKeyframe? Function(Layer layer)? groupKeyframeOf, {
+    ui.BlendMode? blendModeOverride,
+  }) async {
+    final img = await tileManager.compositeLayerToImage(keyOf(layer));
+    final opacityByte = (layer.opacity.clamp(0, 100) * 255 / 100).round();
+    final layerPaint = ui.Paint()
+      ..color = ui.Color.fromARGB(opacityByte, 255, 255, 255)
+      ..blendMode = blendModeOverride ?? mapLayerBlendMode(layer.blendMode);
+
+    final groupKf = groupKeyframeOf?.call(layer);
+    final kf = keyframeOf?.call(layer);
+    final hasGroupTransform =
+        groupKf != null && !_layerKeyframeEngine.isIdentity(groupKf);
+    final hasLayerTransform =
+        kf != null && !_layerKeyframeEngine.isIdentity(kf);
+    final hasTransform = hasGroupTransform || hasLayerTransform;
+    if (hasTransform) {
+      canvas.save();
+      if (hasGroupTransform) {
+        _layerKeyframeEngine.apply(
+          canvas,
+          groupKf,
+          width.toDouble(),
+          height.toDouble(),
+        );
+      }
+      if (hasLayerTransform) {
+        _layerKeyframeEngine.apply(
+          canvas,
+          kf,
+          width.toDouble(),
+          height.toDouble(),
+        );
+      }
+    }
+
+    final rect = ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
+    if (layer.hasClipping) {
+      final clipSourceId = findClipSourceLayerId(layers, index);
+      if (clipSourceId != null) {
+        final clipSourceLayer = layers.firstWhere((l) => l.id == clipSourceId);
+        final clipImg = await tileManager.compositeLayerToImage(
+          keyOf(clipSourceLayer),
+        );
+        canvas.saveLayer(rect, layerPaint);
+        canvas.drawImage(clipImg, ui.Offset.zero, ui.Paint());
+        canvas.drawImage(
+          img,
+          ui.Offset.zero,
+          ui.Paint()..blendMode = ui.BlendMode.srcIn,
+        );
+        final mask = layer.mask;
+        if (mask != null) drawLayerMask(canvas, mask, width, height);
+        canvas.restore();
+        if (hasTransform) canvas.restore();
+        clipImg.dispose();
+        img.dispose();
+        return;
+      }
+    }
+
+    final mask = layer.mask;
+    if (mask != null) {
+      // The mask moves with the layer: it is drawn inside the layer's own
+      // transform, then the masked layer blends as one.
+      canvas.saveLayer(rect, layerPaint);
+      canvas.drawImage(img, ui.Offset.zero, ui.Paint());
+      drawLayerMask(canvas, mask, width, height);
+      canvas.restore();
+      if (hasTransform) canvas.restore();
+      img.dispose();
+      return;
+    }
+
+    canvas.drawImage(img, ui.Offset.zero, layerPaint);
+    if (hasTransform) canvas.restore();
+    img.dispose();
+  }
+
+  /// backdrop - source を各RGBチャンネルへ適用し、透明度は通常のブレンド
+  /// モードと同じsource-over規則で合成する。半透明レイヤー・半透明背景でも
+  /// 正しい結果になるよう、W3C Compositing and Blendingの一般式を使う。
+  static Uint8List _rgba8ToFloat32(Uint8List rgba) {
+    final floats = Float32List(rgba.length);
+    for (var i = 0; i < rgba.length; i++) {
+      floats[i] = rgba[i] / 255.0;
+    }
+    return floats.buffer.asUint8List();
+  }
+
+  static bool _requiresCpuBlend(LayerBlendMode mode) => switch (mode) {
+    LayerBlendMode.subtract ||
+    LayerBlendMode.linearDodge ||
+    LayerBlendMode.linearBurn ||
+    LayerBlendMode.vividLight ||
+    LayerBlendMode.linearLight ||
+    LayerBlendMode.pinLight ||
+    LayerBlendMode.hardMix ||
+    LayerBlendMode.divide => true,
+    _ => false,
+  };
+
+  static double _blendChannel(LayerBlendMode mode, double b, double s) =>
+      switch (mode) {
+        LayerBlendMode.subtract => (b - s).clamp(0.0, 1.0),
+        LayerBlendMode.linearDodge => (b + s).clamp(0.0, 1.0),
+        LayerBlendMode.linearBurn => (b + s - 1.0).clamp(0.0, 1.0),
+        LayerBlendMode.vividLight =>
+          s <= 0.5
+              ? (s <= 0 ? 0.0 : 1.0 - ((1.0 - b) / (2.0 * s)).clamp(0.0, 1.0))
+              : (s >= 1 ? 1.0 : (b / (2.0 * (1.0 - s))).clamp(0.0, 1.0)),
+        LayerBlendMode.linearLight => (b + 2.0 * s - 1.0).clamp(0.0, 1.0),
+        LayerBlendMode.pinLight =>
+          s < 0.5 ? b.clamp(0.0, 2.0 * s) : b.clamp(2.0 * s - 1.0, 1.0),
+        LayerBlendMode.hardMix =>
+          _blendChannel(LayerBlendMode.vividLight, b, s) < 0.5 ? 0.0 : 1.0,
+        LayerBlendMode.divide => s <= 0 ? 1.0 : (b / s).clamp(0.0, 1.0),
+        _ => s,
+      };
+
+  static Future<ui.Image> _blendImages(
+    ui.Image backdrop,
+    ui.Image source,
+    int width,
+    int height,
+    LayerBlendMode mode,
+  ) async {
+    // rawRgba はpremultiplied alphaなので、半透明レイヤーではRGBにもalphaが
+    // 既に掛かっている。それをstraight RGBとして扱うと、減算計算でalphaを
+    // 二重適用してしまう（例：50%不透明の減算が薄すぎる）。
+    // rawStraightRgbaを使い、ブレンド式へ渡すRGBとalphaを独立した値で取得する。
+    final backdropData = await backdrop.toByteData(
+      format: ui.ImageByteFormat.rawStraightRgba,
+    );
+    final sourceData = await source.toByteData(
+      format: ui.ImageByteFormat.rawStraightRgba,
+    );
+    if (backdropData == null || sourceData == null) {
+      // ネイティブ画像の読み出しに失敗した場合だけ、安全側として元の背景を返す。
+      return backdrop.clone();
+    }
+
+    final b = backdropData.buffer.asUint8List();
+    final s = sourceData.buffer.asUint8List();
+    final out = Uint8List(width * height * 4);
+
+    for (int i = 0; i < out.length; i += 4) {
+      final ab = b[i + 3] / 255.0;
+      final as = s[i + 3] / 255.0;
+      final ao = as + ab * (1.0 - as);
+      if (ao <= 0) continue;
+
+      for (int c = 0; c < 3; c++) {
+        final cb = b[i + c] / 255.0;
+        final cs = s[i + c] / 255.0;
+        final blended = _blendChannel(mode, cb, cs);
+        final premultiplied =
+            as * (1.0 - ab) * cs + as * ab * blended + (1.0 - as) * ab * cb;
+        out[i + c] = (premultiplied / ao * 255).round().clamp(0, 255);
+      }
+      out[i + 3] = (ao * 255).round().clamp(0, 255);
+    }
+
+    final codec = await ui.ImageDescriptor.raw(
+      await ui.ImmutableBuffer.fromUint8List(_rgba8ToFloat32(out)),
+      width: width,
+      height: height,
+      pixelFormat: ui.PixelFormat.rgbaFloat32,
+    ).instantiateCodec();
+    final frame = await codec.getNextFrame();
+    codec.dispose();
+    return frame.image;
+  }
+}
+
+/// Keeps only what lies inside [mask] (outside it, when inverted) of what
+/// was drawn since the enclosing `saveLayer`, on a [width]×[height] canvas.
+void drawLayerMask(ui.Canvas canvas, LayerMask mask, int width, int height) {
+  final rect = ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
+  canvas.saveLayer(
+    rect,
+    ui.Paint()
+      ..blendMode = mask.invert ? ui.BlendMode.dstOut : ui.BlendMode.dstIn,
+  );
+  final shortSide = width < height ? width : height;
+  final feather = mask.feather.clamp(0.0, 100.0) / 100 * shortSide;
+  final paint = ui.Paint()..color = const ui.Color(0xFFFFFFFF);
+  if (feather > 0) {
+    // A Gaussian of σ = feather / 2 fades the edge over about the feather.
+    paint.maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, feather / 2);
+  }
+  final shape = ui.Rect.fromCenter(
+    center: ui.Offset.zero,
+    width: mask.width.clamp(0.0, 400.0) / 100 * width,
+    height: mask.height.clamp(0.0, 400.0) / 100 * height,
+  );
+  canvas.save();
+  canvas.translate(mask.centerX / 100 * width, mask.centerY / 100 * height);
+  canvas.rotate(mask.rotation * math.pi / 180);
+  switch (mask.shape) {
+    case LayerMaskShape.rectangle:
+      canvas.drawRect(shape, paint);
+    case LayerMaskShape.ellipse:
+      canvas.drawOval(shape, paint);
+  }
+  canvas.restore();
+  canvas.restore();
+}
+
+/// Draws runs of layers that share a mask ([LayerMaskGroup]) onto their own
+/// GPU layer and masks them as one when the run ends.
+class _MaskGroupDrawer {
+  _MaskGroupDrawer(this.groups, this.width, this.height);
+
+  final List<LayerMaskGroup> groups;
+  final int width;
+  final int height;
+  LayerMaskGroup? _open;
+
+  bool get isOpen => _open != null;
+
+  /// Opens or closes a group as drawing reaches [layer].
+  void enter(ui.Canvas canvas, Layer layer) {
+    if (groups.isEmpty) return;
+    LayerMaskGroup? group;
+    for (final g in groups) {
+      if (g.layerIds.contains(layer.id)) {
+        group = g;
+        break;
+      }
+    }
+    if (identical(group, _open)) return;
+    close(canvas);
+    if (group != null) {
+      canvas.saveLayer(
+        ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+        ui.Paint(),
+      );
+      _open = group;
+    }
+  }
+
+  void close(ui.Canvas canvas) {
+    final open = _open;
+    if (open == null) return;
+    drawLayerMask(canvas, open.mask, width, height);
+    canvas.restore();
+    _open = null;
+  }
+}

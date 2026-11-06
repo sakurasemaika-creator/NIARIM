@@ -1,0 +1,41 @@
+name: Desktop Dock UI Verification
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/screens/canvas/canvas_screen.dart'
+      - 'lib/utils/desktop_dock_column_fit.dart'
+      - 'lib/screens/canvas/widgets/desktop_dock_content_viewport.dart'
+      - 'lib/screens/canvas/widgets/canvas_preview_navigator.dart'
+      - 'lib/screens/canvas/widgets/docked_panel_close_scope.dart'
+      - 'lib/screens/canvas/widgets/panel_close_bar.dart'
+      - 'lib/screens/canvas/widgets/brush_panel.dart'
+      - 'lib/screens/canvas/widgets/reference_window.dart'
+      - 'lib/screens/settings/pc_workspace_layout_settings_screen.dart'
+      - 'lib/screens/settings/widgets/pc_workspace_layout_preview.dart'
+      - 'lib/services/settings_service.dart'
+      - 'test/desktop_dock_interactions_test.dart'
+      - 'test/docked_panel_close_scope_test.dart'
+      - 'test/desktop_dock_content_viewport_test.dart'
+      - 'test/desktop_dock_column_fit_test.dart'
+      - '.github/workflows/desktop-dock-ui-verification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop-dock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - name: Verify collapsible docks, persistence and preview
+        run: flutter test test/desktop_dock_interactions_test.dart test/desktop_dock_content_viewport_test.dart test/desktop_dock_column_fit_test.dart test/docked_panel_close_scope_test.dart --reporter expanded
+      - name: Analyze PC layout changes
+        run: flutter analyze lib/services/settings_service.dart lib/screens/canvas/canvas_screen.dart lib/screens/settings/pc_workspace_layout_settings_screen.dart lib/screens/settings/widgets/pc_workspace_layout_preview.dart lib/screens/canvas/widgets/desktop_dock_content_viewport.dart lib/screens/canvas/widgets/canvas_preview_navigator.dart lib/screens/canvas/widgets/docked_panel_close_scope.dart lib/screens/canvas/widgets/panel_close_bar.dart lib/screens/canvas/widgets/brush_panel.dart lib/screens/canvas/widgets/reference_window.dart lib/utils/desktop_dock_column_fit.dart test/desktop_dock_interactions_test.dart test/desktop_dock_content_viewport_test.dart test/desktop_dock_column_fit_test.dart test/docked_panel_close_scope_test.dart --no-fatal-infos --no-fatal-warnings

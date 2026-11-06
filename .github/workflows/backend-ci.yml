@@ -1,0 +1,162 @@
+# NIARIM作品広場バックエンド（backend/）のCI/CD。
+#
+# ## 何をするか
+#
+# - `ci`ジョブ：backend/配下が変わったPush/PRで、型チェック・テスト・
+#   `cdk synth`（CloudFormationテンプレートの合成）まで通ることを確認する。
+#   synthまで回すのは、CDKスタックのTypeScript型が通っても
+#   `assertCapacityWithinFreeTier()`のような合成時の検証で落ちる場合が
+#   あるため（DynamoDB Always Free枠の超過を、デプロイ前のこの段階で
+#   止める狙い）。AWS認証情報は不要。
+# - `deploy`ジョブ：**手動実行のみ**（workflow_dispatch）。AWSへ実際に
+#   デプロイする。
+#
+# ## deployを使うために必要な事前準備（未実施）
+#
+# デプロイにはAWSの認証情報が要る。長期のアクセスキーをSecretsへ置くのは
+# 避け、GitHub ActionsのOIDCでIAMロールを引き受ける方式にしてある。
+# 使う前に、ユーザー側で以下を用意すること：
+#
+# 1. AWSアカウントでGitHub ActionsをOIDCプロバイダーとして登録する
+#    （IAM → ID プロバイダ → プロバイダを追加 → OpenID Connect、
+#    プロバイダのURL `https://token.actions.githubusercontent.com`、
+#    対象者 `sts.amazonaws.com`）。
+# 2. このリポジトリからのみ引き受けられるIAMロールを作り、CDKデプロイに
+#    必要な権限（CloudFormation・IAM・Lambda・DynamoDB・EventBridge・
+#    Logs等）を付ける。信頼ポリシーの`sub`は
+#    `repo:sakurasemaika-creator@308185400/NIARIM@1309376423:ref:refs/heads/dev_branch`
+#    に厳密一致させること（2026-07-23作成リポジトリのimmutable OIDC sub形式）。
+#    audienceは `sts.amazonaws.com`。他のブランチや別リポジトリに許可を広げない。
+#    IAM作成時はGitHubの実際のOIDC sub形式と一致することを再確認する。
+# 3. そのロールのARNを、リポジトリのSecretsへ `AWS_DEPLOY_ROLE_ARN`
+#    として登録する。
+# 4. 同じくSecretsへ `GOOGLE_CLIENT_ID`・`YOUTUBE_API_KEY` を登録する。
+#    未登録時はデプロイジョブが失敗するようガードしている。
+#    FCMサービスアカウントJSONはCloudFormationテンプレートへの秘密鍵の
+#    埋め込みを避けるためここから渡さない。初回はプッシュ通知を無効に保ち、
+#    別途安全な秘密情報取得方式を実装するまで有効にしない。
+# 5. 初回のみ、ローカルから `npx cdk bootstrap` を1度実行しておく。
+#
+# 上記が未設定のうちは`deploy`ジョブは失敗する。`ci`ジョブは認証情報
+# 不要なので、準備前からそのまま機能する。
+
+name: Backend CI
+
+on:
+  push:
+    branches: [dev_branch, main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "AWSへデプロイする（事前にSecrets・OIDCロールの設定が必要）"
+        type: boolean
+        default: false
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  ci:
+    name: 型チェック・テスト・cdk synth
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: 型チェック
+        run: npm run build
+      - name: テスト
+        run: npm test
+      - name: cdk synth（Always Free枠の容量検証もここで走る）
+        # 合成のみで認証情報は要らない。実在しないダミー値を渡して、
+        # コンテキスト未設定による分岐差が出ないようにする。
+        run: npx cdk synth --quiet -c googleClientId=ci-dummy -c youtubeApiKey=ci-dummy
+
+  deploy:
+    name: AWSへデプロイ
+    needs: ci
+    # 手動実行でdeploy=trueを選んだときだけ動く。Push/PRでは走らない。
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy && github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDCでIAMロールを引き受けるために必要
+      contents: read
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: AWS認証（OIDC）
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-northeast-1
+      - name: Validate exact AWS deployment target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(aws sts get-caller-identity --query Account --output text)" = "368601349794"
+          test "${AWS_REGION:-}" = "ap-northeast-1"
+          echo "Verified NIARIM development AWS account and Tokyo region."
+      - name: Validate required deployment settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$GOOGLE_CLIENT_ID" ] || [ "$GOOGLE_CLIENT_ID" = "REPLACE_ME" ]; then
+            echo "::error::GOOGLE_CLIENT_ID is not configured."
+            exit 1
+          fi
+          if [ -z "$YOUTUBE_API_KEY" ] || [ "$YOUTUBE_API_KEY" = "REPLACE_ME" ]; then
+            echo "::error::YOUTUBE_API_KEY is not configured."
+            exit 1
+          fi
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+      - name: cdk deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          # NEVER pass an FCM private-key JSON via CDK context/CloudFormation.
+          # Firebase push stays disabled until a secure runtime secret source exists.
+          npx cdk deploy NiarimBackendStack --require-approval never \
+            --outputs-file "$RUNNER_TEMP/niarim-cdk-outputs.json" \
+            -c googleClientId="$GOOGLE_CLIENT_ID" \
+            -c youtubeApiKey="$YOUTUBE_API_KEY"
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+      - name: Smoke test deployed public works API
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="$(jq -r '.NiarimBackendStack.ApiFunctionUrl // empty' "$RUNNER_TEMP/niarim-cdk-outputs.json")"
+          if [[ ! "$url" =~ ^https://[a-z0-9-]+[.]lambda-url[.]ap-northeast-1[.]on[.]aws/$ ]]; then
+            echo "::error::Unexpected or missing Lambda Function URL in CDK outputs."
+            exit 1
+          fi
+          code="$(curl --max-time 25 --silent --show-error --output "$RUNNER_TEMP/niarim-smoke-response.json" --write-out '%{http_code}' "${url}works/latest")"
+          if [ "$code" != "200" ]; then
+            echo "::error::GET /works/latest returned HTTP $code after deployment."
+            exit 1
+          fi
+          echo "Smoke test passed: GET /works/latest returned HTTP 200."

@@ -1,0 +1,53 @@
+name: One-shot Popup Suite Isolation
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-popup-suite-isolation.yml'
+
+jobs:
+  compare:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [baseline, popup]
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      CLEAN_BASE: 71bc3eeaebf18928af2a3b3683d29ba38006c396
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Restore exact pre-popup app source
+        run: git checkout "$CLEAN_BASE" -- lib
+      - name: Apply popup patch only
+        if: matrix.variant == 'popup'
+        run: python3 .github/scripts/standardize_popup_close.py
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Format and verify popup patch scope
+        if: matrix.variant == 'popup'
+        shell: bash
+        run: |
+          mapfile -t changed < <(git diff --name-only --diff-filter=AM -- 'lib/**/*.dart' 'lib/*.dart')
+          printf 'Changed popup files (%s):\n' "${#changed[@]}"
+          printf '  %s\n' "${changed[@]}"
+          test "${#changed[@]}" -ge 5
+          printf '%s\0' "${changed[@]}" | xargs -0 dart format
+          printf '%s\0' "${changed[@]}" | xargs -0 dart format --output=none --set-exit-if-changed
+          git diff --check -- "${changed[@]}"
+      - name: Analyze isolated lib without blocking test comparison
+        id: analyze
+        continue-on-error: true
+        run: flutter analyze lib
+      - name: Run full existing test suite
+        run: flutter test --reporter expanded
+      - name: Report analyzer outcome
+        if: always()
+        run: echo "${{ matrix.variant }} analyzer outcome = ${{ steps.analyze.outcome }}"

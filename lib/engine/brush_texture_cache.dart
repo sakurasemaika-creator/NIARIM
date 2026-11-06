@@ -1,0 +1,88 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:flutter/services.dart';
+
+import '../models/brush.dart';
+
+/// 自作ブラシ画像（[Brush.customImagePath]、「ブラシ画像からの
+/// ブラシ作成」）のデコード結果キャッシュ。
+///
+/// ブラシは常に「現在色」で描画する仕様のため、画像は
+/// 色情報ではなく形状（アルファマスク）としてのみ使用する。ブラシ共通の
+/// [BrushImageInkMode]で暗い部分・明るい部分・不透明部分を選択できる。
+///
+/// [DrawingEngine._stampBrush]はポインタ移動のたびに同期的に呼ばれる
+/// ホットパスのため、ここでのデコードは非同期の事前読み込み
+/// （[preloadBrushTexture] / [preloadBrushTextures]）でのみ行い、描画時は同期の
+/// [getCachedBrushTexture]でキャッシュを参照するだけにする。
+const int brushTextureSize = 128;
+
+final Map<(String, BrushImageInkMode), Uint8List> _brushTextureCache = {};
+
+/// キャッシュ済みのブラシテクスチャ（brushTextureSize×brushTextureSize、
+/// RGBA・RGB=0でalphaのみ意味を持つ）を返す。未読み込みならnull。
+Uint8List? getCachedBrushTexture(
+  String path, {
+  BrushImageInkMode mode = BrushImageInkMode.dark,
+}) => _brushTextureCache[(path, mode)];
+
+/// 複数素材をブラシ選択時にまとめて事前読み込みする。
+/// 重複pathは除外し、各pathの既存のgraceful fallbackを維持する。
+Future<void> preloadBrushTextures(
+  Iterable<String> paths, {
+  BrushImageInkMode mode = BrushImageInkMode.dark,
+}) async {
+  for (final path in paths.toSet()) {
+    await preloadBrushTexture(path, mode: mode);
+  }
+}
+
+/// [path]の画像を読み込み、アルファマスクへ変換してキャッシュする。
+/// ブラシ選択時・自作ブラシ作成時に呼び出しておくことで、実際の描画時には
+/// 同期のキャッシュ参照のみで済むようにする。
+Future<void> preloadBrushTexture(
+  String path, {
+  BrushImageInkMode mode = BrushImageInkMode.dark,
+}) async {
+  if (_brushTextureCache.containsKey((path, mode))) return;
+  try {
+    final Uint8List bytes;
+    if (path.startsWith('assets/')) {
+      final data = await rootBundle.load(path);
+      bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    } else {
+      final file = File(path);
+      if (!await file.exists()) return;
+      bytes = await file.readAsBytes();
+    }
+    final codec = await ui.instantiateImageCodec(
+      bytes,
+      targetWidth: brushTextureSize,
+      targetHeight: brushTextureSize,
+    );
+    final frame = await codec.getNextFrame();
+    codec.dispose();
+    final byteData = await frame.image.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
+    frame.image.dispose();
+    if (byteData == null) return;
+    final rgba = byteData.buffer.asUint8List();
+    final mask = Uint8List(rgba.length);
+    for (int i = 0; i < rgba.length; i += 4) {
+      final luminance =
+          rgba[i] * 0.299 + rgba[i + 1] * 0.587 + rgba[i + 2] * 0.114;
+      final sourceInk = switch (mode) {
+        BrushImageInkMode.dark => 255 - luminance,
+        BrushImageInkMode.light => luminance,
+        BrushImageInkMode.alpha => 255.0,
+      };
+      final ink = (sourceInk * rgba[i + 3] / 255).round();
+      mask[i + 3] = ink.clamp(0, 255);
+    }
+    _brushTextureCache[(path, mode)] = mask;
+  } catch (_) {
+    // 読み込み失敗時はキャッシュへ入れず、円形スタンプへフォールバックさせる。
+  }
+}

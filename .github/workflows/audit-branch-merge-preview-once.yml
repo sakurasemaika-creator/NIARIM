@@ -1,0 +1,60 @@
+name: Validate audit branch merge without publishing (one-shot)
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - .github/workflows/audit-branch-merge-preview-once.yml
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Preview real 3-way merge
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "NIARIM merge preview"
+          git config user.email "noreply@github.com"
+          git fetch origin ccr-f56ee68e-77ag7y
+          git merge --no-commit --no-ff -X ours origin/ccr-f56ee68e-77ag7y
+          if [ -n "$(git diff --name-only --diff-filter=U)" ]; then
+            echo "::error::Unresolved conflicts remain"
+            git diff --name-only --diff-filter=U
+            exit 1
+          fi
+          echo "Mergeable diff has $(git diff --cached --name-only | wc -l) files"
+      - name: Install dependencies and generate translations
+        shell: bash
+        run: |
+          flutter pub get
+          flutter gen-l10n
+      - name: Analyze merged Flutter project
+        shell: bash
+        run: |
+          set +e
+          timeout 300s flutter analyze --no-pub > /tmp/merge-analyze.log 2>&1
+          result=$?
+          echo "ANALYZE_EXIT_CODE=$result"
+          tail -n 100 /tmp/merge-analyze.log
+          exit "$result"
+      - name: Targeted regression tests on the merged tree
+        shell: bash
+        run: |
+          timeout 300s flutter test --no-pub \
+            test/eraser_transparent_colour_test.dart \
+            test/input_handler_pressure_test.dart \
+            test/brush_management_test.dart \
+            test/canvas_pc_workspace_test.dart \
+            test/perceptual_color_mixer_test.dart
+      - name: Confirm no merge changes pushed
+        run: echo "No merged tree was committed or pushed."

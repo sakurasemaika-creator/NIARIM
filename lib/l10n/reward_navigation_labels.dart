@@ -1,0 +1,54 @@
+import 'package:flutter/widgets.dart';
+
+/// Names and subscription entry copy for rewards navigation.
+class RewardNavigationLabels {
+  RewardNavigationLabels._(this._values);
+  final Map<String, String> _values;
+  static RewardNavigationLabels of(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    final code = locale.languageCode == 'zh' && locale.scriptCode == 'Hant'
+        ? 'zh_Hant' : locale.languageCode;
+    return RewardNavigationLabels._(_labels[code] ?? _labels['en']!);
+  }
+  String operator [](String key) => _values[key] ?? _labels['en']![key] ?? key;
+}
+
+const _labels = <String, Map<String, String>>{
+  'ja': {
+    'exchange': '特典交換', 'missions': 'ミッション',
+    'earn': '無料でコインを貯める', 'membership': '会員・特典',
+    'membershipDetail': 'プレミアム会員について詳しく見る',
+    'membershipFree': '無料会員', 'membershipMonthly': 'プレミアム（月額）',
+    'membershipYearly': 'プレミアム（年額）',
+    'membershipPlay': 'プレミアム会員', 'membershipCoin': 'コインで解放中',
+    'membershipCampaign': 'キャンペーン特典を利用中',
+    'membershipBenefit': '利用中の特典', 'membershipNoBenefit': '現在利用中の交換特典はありません',
+    'membershipUpsell': 'プレミアムでは機能制限を気にせず制作できます。内容や料金を確認してから登録できます。',
+    'membershipExpires': '利用期限', 'membershipUnavailable': '特典情報を確認できませんでした',
+    'membershipLogin': '特典情報の確認にはログインが必要です',
+    'premiumCompare': 'プレミアム会員について詳しく見る',
+    'premiumJoin': 'プレミアム会員になる', 'premiumPlans': '月額・年額プランを選ぶ',
+    'earnDescription': '広告を見るとコインを獲得できます',
+    'earnUnavailable': '現在リワード広告は利用できません',
+  },
+  'en': {
+    'exchange':'Redeem benefits','missions':'Missions','earn':'Earn free coins',
+    'membership':'Membership & benefits','membershipDetail':'Learn about Premium',
+    'membershipFree':'Free member','membershipMonthly':'Premium (monthly)',
+    'membershipYearly':'Premium (annual)','membershipPlay':'Premium member',
+    'membershipCoin':'Unlocked with coins','membershipCampaign':'Promotional access',
+    'membershipBenefit':'Active benefits','membershipNoBenefit':'No active redeemed benefits',
+    'membershipUpsell':'Premium removes restrictions. Review plans and prices before joining.',
+    'membershipExpires':'Expires','membershipUnavailable':'Benefits unavailable',
+    'membershipLogin':'Sign in to view benefits',
+    'premiumCompare':'Learn about Premium','premiumJoin':'Become a Premium member',
+    'premiumPlans':'Choose a monthly or annual plan',
+    'earnDescription':'Watch optional ads to earn coins',
+    'earnUnavailable':'Rewarded ads are not available yet',
+  },
+  'es': {'exchange':'Canjear ventajas','missions':'Misiones','earn':'Ganar monedas gratis','membership':'Membresía y ventajas','membershipDetail':'Conocer Premium','membershipFree':'Miembro gratis','membershipMonthly':'Premium mensual','membershipYearly':'Premium anual','membershipPlay':'Miembro Premium','membershipCoin':'Desbloqueado con monedas','membershipCampaign':'Acceso promocional','membershipBenefit':'Ventajas activas','membershipNoBenefit':'Sin ventajas activas','membershipUpsell':'Consulta los planes de Premium antes de unirte.','membershipExpires':'Caduca','membershipUnavailable':'Ventajas no disponibles','membershipLogin':'Inicia sesión para ver ventajas','premiumCompare':'Conocer Premium','premiumJoin':'Unirse a Premium','premiumPlans':'Elegir plan','earnDescription':'Mira anuncios opcionales para ganar monedas','earnUnavailable':'Anuncios aún no disponibles'},
+  'fr': {'exchange':'Échanger des avantages','missions':'Missions','earn':'Gagner des pièces','membership':'Adhésion et avantages','membershipDetail':'Découvrir Premium','membershipFree':'Membre gratuit','membershipMonthly':'Premium mensuel','membershipYearly':'Premium annuel','membershipPlay':'Membre Premium','membershipCoin':'Débloqué avec pièces','membershipCampaign':'Accès promotionnel','membershipBenefit':'Avantages actifs','membershipNoBenefit':'Aucun avantage actif','membershipUpsell':'Comparez les offres Premium avant de vous abonner.','membershipExpires':'Expire','membershipUnavailable':'Avantages indisponibles','membershipLogin':'Connectez-vous pour voir les avantages','premiumCompare':'Découvrir Premium','premiumJoin':'Devenir membre Premium','premiumPlans':'Choisir une offre','earnDescription':'Regardez des publicités facultatives pour gagner des pièces','earnUnavailable':'Publicités non disponibles'},
+  'ko': {'exchange':'특전 교환','missions':'미션','earn':'무료 코인 모으기','membership':'회원·특전','membershipDetail':'프리미엄 회원 자세히 보기','membershipFree':'무료 회원','membershipMonthly':'프리미엄(월간)','membershipYearly':'프리미엄(연간)','membershipPlay':'프리미엄 회원','membershipCoin':'코인으로 해제','membershipCampaign':'캠페인 특전 이용 중','membershipBenefit':'사용 중인 특전','membershipNoBenefit':'사용 중인 특전 없음','membershipUpsell':'프리미엄의 기능과 요금을 확인한 후 가입하세요.','membershipExpires':'만료','membershipUnavailable':'특전 정보 확인 불가','membershipLogin':'로그인이 필요합니다','premiumCompare':'프리미엄 회원 자세히 보기','premiumJoin':'프리미엄 회원 가입','premiumPlans':'요금제 선택','earnDescription':'광고 시청으로 코인 획득','earnUnavailable':'보상 광고 준비 중'},
+  'zh': {'exchange':'兑换特权','missions':'任务','earn':'免费赚金币','membership':'会员与特权','membershipDetail':'了解高级会员','membershipFree':'免费会员','membershipMonthly':'高级会员（月付）','membershipYearly':'高级会员（年付）','membershipPlay':'高级会员','membershipCoin':'金币解锁','membershipCampaign':'活动权益','membershipBenefit':'当前权益','membershipNoBenefit':'暂无特权','membershipUpsell':'了解高级会员的功能和价格后再决定。','membershipExpires':'到期','membershipUnavailable':'无法读取权益','membershipLogin':'请登录查看权益','premiumCompare':'了解高级会员','premiumJoin':'开通高级会员','premiumPlans':'选择套餐','earnDescription':'观看广告赚取金币','earnUnavailable':'激励广告尚未开放'},
+  'zh_Hant': {'exchange':'兌換特權','missions':'任務','earn':'免費賺金幣','membership':'會員與特權','membershipDetail':'了解高級會員','membershipFree':'免費會員','membershipMonthly':'高級會員（月付）','membershipYearly':'高級會員（年付）','membershipPlay':'高級會員','membershipCoin':'金幣解鎖','membershipCampaign':'活動權益','membershipBenefit':'目前權益','membershipNoBenefit':'暫無特權','membershipUpsell':'了解高級會員的功能和價格後再決定。','membershipExpires':'到期','membershipUnavailable':'無法讀取權益','membershipLogin':'請登入查看權益','premiumCompare':'了解高級會員','premiumJoin':'開通高級會員','premiumPlans':'選擇方案','earnDescription':'觀看廣告賺取金幣','earnUnavailable':'獎勵廣告尚未開放'},
+};

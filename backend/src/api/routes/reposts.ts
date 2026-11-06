@@ -1,0 +1,176 @@
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import {
+  GetCommand,
+  QueryCommand,
+  TransactWriteCommand,
+} from "@aws-sdk/lib-dynamodb";
+import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
+import { ddb, tableName, Keys } from "../../lib/dynamo";
+import { authenticate } from "../../lib/auth";
+import { toPublicWork } from "./_publicWork";
+import { notFound, ok, badRequest } from "../../lib/response";
+import { requestedPageSize } from "../../lib/pagination";
+import type { RepostItem, WorkItem } from "../../lib/types";
+import { TABLE_ITEM_TYPE } from "../../lib/types";
+
+function isWorkPublic(work: WorkItem): boolean {
+  return (
+    work.isNiarimPublished &&
+    work.youtubePrivacyStatus !== "private" &&
+    work.youtubePrivacyStatus !== "deleted"
+  );
+}
+
+/**
+ * `POST /works/{id}/repost`（8.5bis節）。ブックマークと同じ
+ * `TransactWriteItems`パターンで「リポスト記録の作成/削除」と
+ * 「作品側repostCountの±1」をアトミックに行う。
+ *
+ * 自分自身が投稿した作品もリポスト可能（Task#134継続の仕様変更。
+ * フォロワーへ改めて周知する用途を想定し、投稿者本人にも制限しない）。
+ * ただし作品が非公開になった後の新規リポストは許可しない。公開中に
+ * 作成済みだったリポストは、非公開後でも本人が解除できる。
+ */
+export async function toggleRepost(
+  event: APIGatewayProxyEventV2,
+  workId: string,
+) {
+  const auth = await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
+  const repostKey = Keys.repost(auth.niarimUserId, workId);
+  const workKey = Keys.work(workId);
+
+  const [existingRepost, existingWork] = await Promise.all([
+    ddb.send(new GetCommand({ TableName: tableName(), Key: repostKey })),
+    ddb.send(new GetCommand({ TableName: tableName(), Key: workKey })),
+  ]);
+  const work = existingWork.Item as WorkItem | undefined;
+  if (!work) notFound("作品が見つかりません");
+
+  const isReposted = Boolean(existingRepost.Item);
+  if (!isWorkPublic(work) && !isReposted) {
+    notFound("作品が見つかりません");
+  }
+  const now = new Date().toISOString();
+
+  try {
+    if (isReposted) {
+      await ddb.send(
+        new TransactWriteCommand({
+          TransactItems: [
+            {
+              Delete: {
+                TableName: tableName(),
+                Key: repostKey,
+                ConditionExpression: "attribute_exists(pk)",
+              },
+            },
+            {
+              Update: {
+                TableName: tableName(),
+                Key: workKey,
+                UpdateExpression: "ADD repostCount :minus",
+                ConditionExpression: "repostCount > :zero",
+                ExpressionAttributeValues: { ":minus": -1, ":zero": 0 },
+              },
+            },
+          ],
+        }),
+      );
+    } else {
+      const repost: RepostItem = {
+        itemType: TABLE_ITEM_TYPE.Repost,
+        ...repostKey,
+        niarimUserId: auth.niarimUserId,
+        workId,
+        repostedAt: now,
+      };
+      await ddb.send(
+        new TransactWriteCommand({
+          TransactItems: [
+            {
+              Put: {
+                TableName: tableName(),
+                Item: repost,
+                ConditionExpression: "attribute_not_exists(pk)",
+              },
+            },
+            {
+              Update: {
+                TableName: tableName(),
+                Key: workKey,
+                UpdateExpression: "ADD repostCount :plus",
+                ExpressionAttributeValues: { ":plus": 1 },
+              },
+            },
+          ],
+        }),
+      );
+    }
+  } catch (err) {
+    if (err instanceof TransactionCanceledException) {
+      return ok({ reposted: isReposted, conflict: true });
+    }
+    throw err;
+  }
+
+  return ok({ reposted: !isReposted });
+}
+
+/**
+ * `GET /users/{id}/reposts`. A user's reposts, newest first, with each
+ * reposted work as the public sees it. Reposts are public like the
+ * repost count (they exist to show the work to the reposter's followers),
+ * so no sign-in is needed; works hidden since they were reposted are left
+ * out. The records live under the user's own partition key
+ * (`USER#{id}` / `REPOST#{workId}`), so this is one Query without an index.
+ */
+export async function getUserReposts(
+  event: APIGatewayProxyEventV2,
+  userId: string,
+) {
+  const result = await ddb.send(
+    new QueryCommand({
+      TableName: tableName(),
+      KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
+      ExpressionAttributeValues: {
+        ":pk": `USER#${userId}`,
+        ":prefix": "REPOST#",
+      },
+    }),
+  );
+  const records = ((result.Items ?? []) as RepostItem[]).sort((a, b) =>
+    b.repostedAt.localeCompare(a.repostedAt),
+  );
+  const works = await Promise.all(
+    records.map((r) =>
+      ddb.send(
+        new GetCommand({ TableName: tableName(), Key: Keys.work(r.workId) }),
+      ),
+    ),
+  );
+  const reposts = records.flatMap((record, i) => {
+    const work = works[i].Item as WorkItem | undefined;
+    return work && isWorkPublic(work)
+      ? [{ repostedAt: record.repostedAt, work: toPublicWork(work) }]
+      : [];
+  });
+  const qp = event.queryStringParameters ?? {};
+  if (qp.limit === undefined && qp.cursor === undefined) {
+    // Compatibility: callers tracking their own complete repost IDs still
+    // need the full list, without changing their existing API contract.
+    return ok({ userId, reposts });
+  }
+  const limit = requestedPageSize(qp.limit);
+  const offset = qp.cursor === undefined ? 0 : Number(qp.cursor);
+  if (!Number.isInteger(offset) || offset < 0 || offset > 100000 ||
+      offset % limit !== 0) {
+    badRequest("リポストのページカーソルが不正です", "INVALID_PAGE_CURSOR");
+  }
+  return ok({
+    userId,
+    reposts: reposts.slice(offset, offset + limit),
+    nextCursor: offset + limit < reposts.length ? String(offset + limit) : null,
+  });
+}

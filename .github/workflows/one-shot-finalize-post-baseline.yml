@@ -1,0 +1,70 @@
+name: One-shot Finalize Post-baseline Features
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-finalize-post-baseline.yml'
+      - '.github/scripts/finalize_post_baseline_features.py'
+      - '.github/scripts/fix_finalize_patch_anchor.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-post-baseline-dev
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Narrow text-dialog patch anchor
+        run: python3 .github/scripts/fix_finalize_patch_anchor.py
+      - name: Apply remaining feature implementation
+        run: python3 .github/scripts/finalize_post_baseline_features.py
+      - name: Format changed Dart files
+        run: |
+          dart format \
+            lib/models/layer.dart \
+            lib/engine/niapro_serializer.dart \
+            lib/screens/timeline/timeline_screen.dart \
+            lib/screens/canvas/canvas_screen.dart \
+            test/post_baseline_remaining_contract_test.dart
+      - name: Analyze
+        run: flutter analyze
+      - name: Run remaining-feature contracts
+        run: flutter test test/post_baseline_remaining_contract_test.dart --reporter expanded
+      - name: Run text rendering regressions
+        run: |
+          flutter test test/text_render_test.dart --reporter expanded
+          flutter test test/functional_audit_batch11_test.dart --reporter expanded
+      - name: Run timeline regression subset
+        run: flutter test test/app_smoke_test.dart --reporter expanded
+      - name: Commit verified implementation to dev_branch
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add \
+            lib/models/layer.dart \
+            lib/engine/niapro_serializer.dart \
+            lib/screens/timeline/timeline_screen.dart \
+            lib/screens/canvas/canvas_screen.dart \
+            test/post_baseline_remaining_contract_test.dart
+          if git diff --cached --quiet; then
+            echo 'No implementation changes to commit.'
+            exit 0
+          fi
+          git commit -m "feat: complete text eyedropper and video clip volume"
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch

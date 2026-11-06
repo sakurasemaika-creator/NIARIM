@@ -1,0 +1,24 @@
+name: One-shot Final Remaining Audit
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-final-remaining-audit.yml'
+
+jobs:
+  finalize-manifest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - run: python .github/scripts/finalize_remaining_manifest.py
+      - name: Commit final 67/67 manifest
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add audit-dashboard/feature-audit-manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "audit: finalize all 67 non-device features"
+          git push origin HEAD:dev_branch

@@ -1,0 +1,93 @@
+name: Coin Reward Flutter Verification
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/coin-reward-flutter-verify.yml'
+      - 'lib/services/advertising_service.dart'
+      - 'lib/services/coin_redemption_attempt_store.dart'
+      - 'lib/services/premium_service.dart'
+      - 'lib/services/api/community_api.dart'
+      - 'lib/screens/rewards/reward_unlock_screen.dart'
+      - 'lib/screens/rewards/membership_benefits_screen.dart'
+      - 'lib/screens/rewards/login_bonus_panel.dart'
+      - 'lib/screens/premium/premium_screen.dart'
+      - 'lib/l10n/login_bonus_labels.dart'
+      - 'lib/l10n/reward_navigation_labels.dart'
+      - 'lib/router.dart'
+      - 'test/login_bonus_ui_policy_test.dart'
+      - 'lib/screens/rewards/creator_missions_screen.dart'
+      - 'lib/screens/community/community_follow_notifications_screen.dart'
+      - 'lib/screens/community/community_screen.dart'
+      - 'lib/screens/home/widgets/home_drawer.dart'
+      - 'lib/screens/home/home_screen.dart'
+      - 'test/creator_mission_drawer_attention_test.dart'
+      - 'test/creator_mission_sort_policy_test.dart'
+      - 'lib/l10n/creator_mission_labels.dart'
+      - 'test/creator_mission_claim_ui_policy_test.dart'
+      - 'lib/l10n/reward_unlock_labels.dart'
+      - 'lib/app_bootstrap.dart'
+      - 'test/coin_redemption_attempt_store_test.dart'
+      - 'test/reward_unlock_screen_test.dart'
+      - 'test/coin_unlock_quote_test.dart'
+      - 'test/premium_play_verification_policy_test.dart'
+      - 'test/premium_coin_account_isolation_test.dart'
+      - 'lib/config/monetization_gate.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Analyze app reward and subscription integration
+        run: |
+          flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
+            lib/services/advertising_service.dart \
+            lib/services/coin_redemption_attempt_store.dart \
+            lib/services/premium_service.dart \
+            lib/config/monetization_gate.dart \
+            lib/services/api/community_api.dart \
+            lib/screens/rewards/reward_unlock_screen.dart \
+            lib/screens/rewards/membership_benefits_screen.dart \
+            lib/screens/rewards/login_bonus_panel.dart \
+            lib/screens/premium/premium_screen.dart \
+            lib/l10n/login_bonus_labels.dart \
+            lib/l10n/reward_navigation_labels.dart \
+            lib/router.dart \
+            lib/screens/rewards/creator_missions_screen.dart \
+            lib/screens/community/community_follow_notifications_screen.dart \
+            lib/screens/community/community_screen.dart \
+            lib/screens/home/widgets/home_drawer.dart \
+            lib/screens/home/home_screen.dart \
+            lib/l10n/creator_mission_labels.dart \
+            lib/widgets/coin_history_sheet.dart \
+            lib/l10n/reward_unlock_labels.dart \
+            lib/app_bootstrap.dart \
+            test/coin_redemption_attempt_store_test.dart \
+            test/premium_coin_account_isolation_test.dart \
+            test/premium_play_verification_policy_test.dart
+      - name: Reward idempotency and pricing widget tests
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/coin_redemption_attempt_store_test.dart \
+            test/reward_unlock_screen_test.dart \
+            test/coin_unlock_quote_test.dart \
+            test/premium_play_verification_policy_test.dart \
+            test/premium_coin_account_isolation_test.dart \
+            test/coin_history_sheet_test.dart \
+            test/creator_mission_claim_ui_policy_test.dart \
+            test/creator_mission_sort_policy_test.dart \
+            test/creator_mission_drawer_attention_test.dart \
+            test/login_bonus_ui_policy_test.dart

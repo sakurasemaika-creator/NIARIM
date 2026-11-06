@@ -1,0 +1,45 @@
+name: Brush Extension UI Green
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/scripts/integrate_brush_extension_ui.py'
+      - '.github/workflows/brush-extension-ui-green.yml'
+      - 'lib/models/brush_presets_extension.dart'
+      - 'lib/services/brush_service.dart'
+      - 'lib/screens/canvas/widgets/brush_extension_settings.dart'
+      - 'lib/screens/canvas/widgets/brush_panel.dart'
+      - 'lib/engine/drawing_engine.dart'
+      - 'lib/engine/perceptual_color_mixer.dart'
+      - 'lib/models/brush.dart'
+      - 'lib/models/brush_pressure_resolver.dart'
+      - 'test/perceptual_color_mixer_test.dart'
+      - 'lib/l10n/app_*.arb'
+      - 'test/services/brush_service_extension_presets_test.dart'
+      - 'test/brush_extension_settings_test.dart'
+      - 'test/brush_panel_extension_integration_test.dart'
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get --enforce-lockfile
+      - name: Generate localizations
+        run: flutter gen-l10n
+      - name: Verify brush extension presets and UI
+        run: |
+          flutter test test/perceptual_color_mixer_test.dart --reporter expanded
+          flutter test test/services/brush_service_extension_presets_test.dart --reporter expanded
+          flutter test test/brush_extension_settings_test.dart --reporter expanded
+          flutter test test/brush_panel_extension_integration_test.dart --reporter expanded
+          flutter analyze lib/engine/drawing_engine.dart lib/engine/perceptual_color_mixer.dart lib/models/brush.dart lib/models/brush_pressure_resolver.dart lib/models/brush_presets_extension.dart lib/services/brush_service.dart lib/screens/canvas/widgets/brush_extension_settings.dart lib/screens/canvas/widgets/brush_panel.dart lib/screens/tips/tips_screen.dart test/perceptual_color_mixer_test.dart test/services/brush_service_extension_presets_test.dart test/brush_extension_settings_test.dart test/brush_panel_extension_integration_test.dart --no-fatal-infos --no-fatal-warnings

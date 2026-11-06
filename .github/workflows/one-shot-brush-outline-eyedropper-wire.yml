@@ -1,0 +1,73 @@
+name: One-shot brush outline eyedropper wire
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-brush-outline-eyedropper-wire.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: dev_branch
+      - name: Patch canvas root
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/screens/canvas/canvas_screen.dart')
+          s = p.read_text()
+          if "import 'dart:async';" not in s:
+              s = "import 'dart:async';\n\n" + s
+          old = "  ValueChanged<Color>? _pendingTextColorEyedropper;\n"
+          new = old + "  Completer<int?>? _pendingBrushOutlineEyedropper;\n  bool get _brushOutlineEyedropperActive => _pendingBrushOutlineEyedropper != null;\n"
+          if '_pendingBrushOutlineEyedropper;' not in s:
+              assert old in s
+              s = s.replace(old, new, 1)
+          marker = "  void _handleCanvasEyedropper(Color color) {\n"
+          method = """  Future<int?> _startBrushOutlineEyedropper() {\n    final previous = _pendingBrushOutlineEyedropper;\n    if (previous != null && !previous.isCompleted) previous.complete(null);\n    final completer = Completer<int?>();\n    setState(() {\n      _pendingBrushOutlineEyedropper = completer;\n      _showBrushPanel = false;\n    });\n    return completer.future;\n  }\n\n"""
+          if '_startBrushOutlineEyedropper()' not in s:
+              assert marker in s
+              s = s.replace(marker, method + marker, 1)
+          needle = "  void _handleCanvasEyedropper(Color color) {\n"
+          branch = """  void _handleCanvasEyedropper(Color color) {\n    final pendingBrushOutline = _pendingBrushOutlineEyedropper;\n    if (pendingBrushOutline != null) {\n      setState(() => _pendingBrushOutlineEyedropper = null);\n      if (!pendingBrushOutline.isCompleted) {\n        _pendingBrushOutlineEyedropper?.complete(color.toARGB32());\n        pendingBrushOutline.complete(color.toARGB32());\n      }\n      return;\n    }\n"""
+          if 'final pendingBrushOutline = _pendingBrushOutlineEyedropper;' not in s:
+              assert needle in s
+              s = s.replace(needle, branch, 1)
+          old_active = "                                      _textColorEyedropperTarget != null,\n"
+          new_active = "                                      _textColorEyedropperTarget != null ||\n                                      _brushOutlineEyedropperActive,\n"
+          if '_brushOutlineEyedropperActive,\n' not in s:
+              assert old_active in s
+              s = s.replace(old_active, new_active, 1)
+          old_banner = "                                    _textColorEyedropperTarget != null)\n"
+          new_banner = "                                    _textColorEyedropperTarget != null ||\n                                    _brushOutlineEyedropperActive)\n"
+          if '_brushOutlineEyedropperActive)\n' not in s:
+              assert old_banner in s
+              s = s.replace(old_banner, new_banner, 1)
+          old_panel = "  Widget _brushPanel() =>\n      BrushPanel(onClose: () => setState(() => _showBrushPanel = false));\n"
+          new_panel = """  Widget _brushPanel() => BrushPanel(\n    onClose: () => setState(() => _showBrushPanel = false),\n    onEyedropOutlineColor: _startBrushOutlineEyedropper,\n  );\n"""
+          if 'onEyedropOutlineColor: _startBrushOutlineEyedropper' not in s:
+              assert old_panel in s
+              s = s.replace(old_panel, new_panel, 1)
+          p.write_text(s)
+          PY
+      - name: Verify contract source before commit
+        run: |
+          grep -q '_pendingBrushOutlineEyedropper' lib/screens/canvas/canvas_screen.dart
+          grep -q 'onEyedropOutlineColor: _startBrushOutlineEyedropper' lib/screens/canvas/canvas_screen.dart
+          grep -q '_pendingBrushOutlineEyedropper?.complete(color.toARGB32())' lib/screens/canvas/canvas_screen.dart
+          grep -q '_brushOutlineEyedropperActive' lib/screens/canvas/canvas_screen.dart
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/screens/canvas/canvas_screen.dart
+          git diff --cached --quiet && exit 0
+          git commit -m 'feat: connect brush outline canvas eyedropper'
+          git push origin HEAD:dev_branch

@@ -1,0 +1,534 @@
+import 'niarim_api_client.dart';
+import 'niarim_api_models.dart';
+
+/// Visibility of a YouTube video at the moment it is opened. A missing
+/// public video cannot be identified as deleted versus private without
+/// owner credentials, so [unavailable] is intentionally separate.
+enum CommunityPlaybackStatus {
+  checking,
+  available,
+  deleted,
+  private,
+  unavailable,
+  unknown,
+}
+
+enum RankingPeriod {
+  all('all'),
+  year('yearly'),
+  month('monthly'),
+  week('weekly'),
+  day('daily'),
+  bookmarks('bookmarks');
+
+  const RankingPeriod(this.pathValue);
+  final String pathValue;
+}
+
+enum CommunityTagAction { add, remove, lock, unlock }
+
+class CommunityApi {
+  final NiarimApiClient _client;
+
+  const CommunityApi(this._client);
+
+  /// Existing list API remains available for callers needing only one page.
+  Future<List<ApiWork>> latestWorks({int? limit, String? cursor}) async =>
+      (await latestWorksPage(limit: limit, cursor: cursor)).works;
+
+  Future<ApiWorkPage> latestWorksPage({
+    int? limit,
+    String? cursor,
+    String? query,
+    bool tagMode = false,
+    bool exact = false,
+  }) async {
+    final json = await _client.getJson(
+      '/works/latest',
+      query: {
+        if (limit != null) 'limit': '$limit',
+        'cursor': ?cursor,
+        if (query != null && query.trim().isNotEmpty) 'q': query.trim(),
+        if (tagMode) 'tagMode': 'true',
+        if (exact) 'exact': 'true',
+      },
+    );
+    return ApiWorkPage.fromJson(json);
+  }
+
+  /// YouTube comments are fetched only after an explicit viewer action.
+  Future<Map<String, dynamic>> youtubeComments(
+    String workId, {String? cursor}
+  ) => _client.getJson(
+    '/works/${Uri.encodeComponent(workId)}/youtube-comments',
+    query: {'cursor': ?cursor},
+  );
+
+  /// NIARIM-authored description is stored outside the indexing GSIs.
+  Future<Map<String, dynamic>> workMetadata(String workId) =>
+      _client.getJson(
+        '/works/${Uri.encodeComponent(workId)}/metadata',
+        authenticated: true,
+      );
+
+  Future<Map<String, dynamic>> updateWorkMetadata(
+    String workId, {required String title, required String description}
+  ) => _client.patchJson(
+    '/works/${Uri.encodeComponent(workId)}/metadata',
+    body: {'title': title, 'description': description},
+    retries: 1,
+  );
+
+  Future<CommunityPlaybackStatus> playbackStatus(String workId) async {
+    final json = await _client.getJson(
+      '/works/${Uri.encodeComponent(workId)}/playback-status',
+    );
+    return switch (json['status']) {
+      'available' => CommunityPlaybackStatus.available,
+      'deleted' => CommunityPlaybackStatus.deleted,
+      'private' => CommunityPlaybackStatus.private,
+      'unavailable' => CommunityPlaybackStatus.unavailable,
+      _ => CommunityPlaybackStatus.unknown,
+    };
+  }
+
+  Future<ApiRankingPage> ranking(
+    RankingPeriod period, {
+    String? cursor,
+    bool ascending = false,
+    bool sortBookmarks = false,
+  }) async {
+    final json = await _client.getJson(
+      '/ranking/${period.pathValue}',
+      query: {
+        'cursor': ?cursor,
+        if (ascending) 'ascending': 'true',
+        if (sortBookmarks) 'sort': 'bookmarks',
+      },
+    );
+    return ApiRankingPage.fromJson(json);
+  }
+
+  /// OAuth token stays in this single authenticated request and is not saved.
+  Future<Map<String, dynamic>> refreshYoutubeChannelInfo(String youtubeAccessToken) =>
+      _client.postJson(
+        '/me/youtube-channel/refresh',
+        body: {'youtubeAccessToken': youtubeAccessToken},
+        authenticated: true,
+      );
+
+  /// The authenticated user's server-owned coin balance and entitlements.
+  /// No user-id parameter: Google ID token resolves the NIARIM ID server-side.
+  Future<Map<String, dynamic>> myRewardState() =>
+      _client.getJson('/me/rewards', authenticated: true);
+
+  /// Verify readiness before opening the Google Play Billing purchase sheet.
+  Future<bool> canVerifyPlayPurchases() async {
+    final result = await _client.getJson(
+      '/me/premium/play/availability', authenticated: true,
+    );
+    return result['enabled'] == true &&
+        result['products'] is List &&
+        (result['products'] as List).contains('niarim_premium_monthly') &&
+        (result['products'] as List).contains('niarim_premium_yearly');
+  }
+
+  /// Google Play purchase token is sent only to the authenticated backend.
+  Future<Map<String, dynamic>> verifyMyPlaySubscription({
+    required String productId,
+    required String purchaseToken,
+  }) => _client.postJson(
+    '/me/premium/play/verify', authenticated: true,
+    body: {'productId': productId, 'purchaseToken': purchaseToken},
+  );
+
+  /// Read-only server journal. Its opaque cursor remains account-scoped.
+  Future<Map<String, dynamic>> myCoinHistory({String? cursor, int limit = 20}) =>
+      _client.getJson(
+        '/me/rewards/history',
+        authenticated: true,
+        query: {
+          'limit': '$limit',
+          if (cursor != null) 'cursor': cursor,
+        },
+      );
+
+  /// The backend issues a one-time, account-bound, 30-minute AdMob session.
+  /// It returns ONLY signed-callback customData, never coins or an ad grant.
+  Future<Map<String, dynamic>> beginRewardedAdSession() =>
+      _client.postJson('/me/rewards/ad-session', authenticated: true);
+
+  /// GET never creates a grant; consumedAtMs is committed with the wallet.
+  Future<Map<String, dynamic>> rewardedAdStatus(String nonce) =>
+      _client.getJson(
+        '/me/rewards/ad-status',
+        authenticated: true, query: {'nonce': nonce},
+      );
+
+  /// Price from authenticated server catalog. Never use local reference rates.
+  Future<Map<String, dynamic>> fullPremiumCoinQuote() =>
+      _client.getJson('/me/rewards/quote',
+        authenticated: true,
+        query: {'target': 'fullPremium', 'months': '1'});
+
+  /// Exactly-once redemption; the stable request UUID MUST be reused after
+  /// network timeout, rather than creating a fresh debit attempt.
+  Future<Map<String, dynamic>> redeemFullPremiumCoins({
+    required String requestId,
+    required String priceVersion,
+  }) => _client.postJson('/me/rewards/redeem',
+      authenticated: true,
+      body: {
+        'target': 'fullPremium',
+        'months': 1,
+        'requestId': requestId,
+        'priceVersion': priceVersion,
+      });
+
+  /// Account status by default; specify an owned YouTube video ID to
+  /// inspect the once-per-work bookmark and rank claim history.
+  /// Advances only a bounded server-owned candidate scan.
+  /// This NEVER awards coins; callers may resume without storing any cursor.
+  Future<Map<String, dynamic>> scanMyQualifiedWorks({bool restart = false}) =>
+      _client.postJson(
+        '/me/missions/qualified-works/scan',
+        authenticated: true,
+        body: {'restart': restart},
+      );
+
+  /// Read-only list of achieved milestones, 25 author-owned works per page.
+  /// Read-only cross-product of 20 work-count goals and 24 bookmark levels.
+  /// Candidate matches are not permission to mint coins.
+  Future<Map<String, dynamic>> myWorkCountMissions() =>
+      _client.getJson('/me/missions/grid', authenticated: true);
+
+  /// On-demand Home drawer marker. The server owns the counts and claimed bits.
+  /// A positive response is an achievement hint, not a coin deposit.
+  Future<Map<String, dynamic>> myCreatorMissionAttention() =>
+      _client.getJson('/me/missions/attention', authenticated: true);
+
+  /// Newest-first durable milestone history. Never modifies coin balances.
+  Future<Map<String, dynamic>> myMissionActivity({
+    String? cursor, int limit = 30,
+  }) => _client.getJson('/me/missions/activity', authenticated: true,
+      query: {if (cursor != null) 'cursor': cursor, 'limit': '$limit'},
+    );
+
+  /// Owner-scoped, bounded discovery of historical achievements on bell open.
+  Future<Map<String, dynamic>> syncMyMissionActivity({String? workCursor}) =>
+      _client.postJson('/me/missions/activity/sync', authenticated: true,
+        body: {if (workCursor != null) 'cursor': workCursor},
+      );
+
+  Future<Map<String, dynamic>> myWorkMissionAchievements({String? cursor}) =>
+      _client.getJson('/me/missions/work-achievements',
+        authenticated: true,
+        query: {if (cursor != null) 'cursor': cursor},
+      );
+
+  /// Record an actual authenticated calendar-day visit. No coins granted.
+  Future<Map<String, dynamic>> visitLoginBonus() =>
+      _client.postJson('/me/login-bonus/visit',
+        authenticated: true, body: const {});
+
+  Future<Map<String, dynamic>> myLoginBonus() =>
+      _client.getJson('/me/login-bonus', authenticated: true);
+
+  /// Explicit, server-validated claim; duplicate claims cannot mint coins.
+  Future<Map<String, dynamic>> claimLoginBonus({
+    required String kind,
+    int? days,
+  }) => _client.postJson('/me/login-bonus/claim', authenticated: true,
+      body: {'kind': kind, if (days != null) 'days': days});
+
+  Future<Map<String, dynamic>> myCreatorMissions({String? workId}) =>
+      _client.getJson(
+        '/me/missions',
+        authenticated: true,
+        query: {if (workId != null) 'workId': workId},
+      );
+
+  /// The server verifies the achievement and either starts the mandatory
+  /// hold period or completes an atomic, exactly-once mission reward.
+  Future<Map<String, dynamic>> claimCreatorMission({
+    required String missionId,
+    String? workId,
+  }) => _client.postJson('/me/missions/claim',
+      authenticated: true,
+      body: {
+        'missionId': missionId,
+        if (workId != null) 'workId': workId,
+      });
+
+  /// Measurement-only pilot: DOES NOT issue coins or verify creative time.
+  /// startNonce must be a securely generated UUID. The backend is disabled
+  /// unless CREATOR_EDIT_SESSION_PILOT_ENABLED is explicitly enabled.
+  Future<Map<String, dynamic>> beginCreatorEditSession(String startNonce) =>
+      _client.postJson('/me/missions/edit-session',
+          body: {'action': 'start', 'startNonce': startNonce},
+          authenticated: true);
+
+  /// Client reports only summarized real-content edits, never strokes/images.
+  /// The server clamps to its clock and stores UNVERIFIED candidate seconds.
+  Future<Map<String, dynamic>> checkpointCreatorEditSession({
+    required String sessionId,
+    required int sequence,
+    required int activeSeconds,
+    required int meaningfulMutations,
+    bool stop = false,
+  }) => _client.postJson('/me/missions/edit-session',
+          body: {
+            'action': 'checkpoint',
+            'sessionId': sessionId,
+            'sequence': sequence,
+            'activeSeconds': activeSeconds,
+            'meaningfulMutations': meaningfulMutations,
+            'stop': stop,
+          },
+          authenticated: true);
+
+  /// The signed-in account's works, including NIARIM-hidden works.
+  /// The backend resolves the generated NIARIM user id from the Google ID token,
+  /// so changing Google accounts immediately changes the owner list without a local
+  /// author-id cache.
+  Future<ApiMyWorks> myWorks({String? cursor}) async {
+    final json = await _client.getJson(
+      '/me/works',
+      authenticated: true,
+      query: {'cursor': ?cursor},
+    );
+    return ApiMyWorks.fromJson(json);
+  }
+
+  Future<List<ApiWork>> worksByAuthor(
+    String authorId, {
+    bool asOwner = false,
+  }) async => (await worksByAuthorPage(authorId, asOwner: asOwner)).works;
+
+  Future<ApiWorkPage> worksByAuthorPage(
+    String authorId, {
+    bool asOwner = false,
+    String? cursor,
+  }) async {
+    final json = await _client.getJson(
+      '/users/${Uri.encodeComponent(authorId)}/works',
+      authenticated: asOwner,
+      query: {'limit': '25', 'cursor': ?cursor},
+    );
+    return ApiWorkPage.fromJson(json);
+  }
+
+  Future<ApiBookmarkers> bookmarkers(String workId) async {
+    final json = await _client.getJson(
+      '/works/${Uri.encodeComponent(workId)}/bookmarkers',
+    );
+    return ApiBookmarkers.fromJson(json);
+  }
+
+  Future<List<ApiWork>> bookmarksOf(
+    String userId, {
+    bool asOwner = false,
+  }) async {
+    final json = await _client.getJson(
+      '/users/${Uri.encodeComponent(userId)}/bookmarks',
+      authenticated: asOwner,
+    );
+    return (json['works'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(ApiWork.fromJson)
+        .toList();
+  }
+
+  /// Return only one 25-item repost page to the feed UI. The legacy
+  /// repostsOf() remains available for complete own-repost state.
+  Future<ApiRepostPage> repostsOfPage(String userId, {String? cursor}) async {
+    final json = await _client.getJson(
+      '/users/${Uri.encodeComponent(userId)}/reposts',
+      query: {'limit': '25', 'cursor': ?cursor},
+    );
+    return ApiRepostPage.fromJson(json);
+  }
+
+  /// Public totals only. This API does not return any follower identities.
+  Future<({int followers, int following})> socialCounts(String userId) async {
+    final json = await _client.getJson(
+      '/users/${Uri.encodeComponent(userId)}/social-counts',
+    );
+    final followers = json['followerCount'];
+    final following = json['followingCount'];
+    return (
+      followers: followers is int ? followers : 0,
+      following: following is int ? following : 0,
+    );
+  }
+
+  Future<List<ApiUserRef>> following(
+    String userId, {
+    bool asOwner = false,
+  }) async {
+    final json = await _client.getJson(
+      '/users/${Uri.encodeComponent(userId)}/following',
+      authenticated: asOwner,
+    );
+    return (json['following'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(ApiUserRef.fromJson)
+        .toList();
+  }
+
+  /// A user's reposts, newest first (public, no sign-in).
+  Future<List<ApiRepost>> repostsOf(String userId) async {
+    final json = await _client.getJson(
+      '/users/${Uri.encodeComponent(userId)}/reposts',
+    );
+    return (json['reposts'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(ApiRepost.fromJson)
+        .toList();
+  }
+
+  Future<ApiWork> createWork({
+    required String youtubeVideoId,
+    required String youtubeAccessToken,
+    String? title,
+    String description = '',
+    bool isShort = false,
+    bool isNiarimPublished = true,
+    bool containsGenerativeAiImageOrVideo = false,
+    int? projectFps,
+    int? projectFrameCount,
+    int? projectWorkSeconds,
+    DateTime? projectCreatedAt,
+    int? projectCanvasWidth,
+    int? projectCanvasHeight,
+  }) async {
+    // POST /works is intentionally special: youtubeVideoId is the backend workId and
+    // idempotency key. Retrying once on a timeout/5xx cannot create a second NIARIM
+    // work, and lets the client recover when the server committed the first request but
+    // its response was lost. Other mutating API calls keep the client's retries=0.
+    final json = await _client.postJson(
+      '/works',
+      retries: 1,
+      body: {
+        'youtubeVideoId': youtubeVideoId,
+        'youtubeAccessToken': youtubeAccessToken,
+        'title': ?title,
+        'description': description,
+        'isShort': isShort,
+        'isNiarimPublished': isNiarimPublished,
+        'containsGenerativeAiImageOrVideo': containsGenerativeAiImageOrVideo,
+        'projectFps': ?projectFps,
+        'projectFrameCount': ?projectFrameCount,
+        'projectWorkSeconds': ?projectWorkSeconds,
+        if (projectCreatedAt != null)
+          'projectCreatedAt': projectCreatedAt.toUtc().toIso8601String(),
+        'projectCanvasWidth': ?projectCanvasWidth,
+        'projectCanvasHeight': ?projectCanvasHeight,
+      },
+    );
+    return ApiWork.fromJson(_work(json));
+  }
+
+  Future<ApiWork> updateWorkVisibility(
+    String workId, {
+    required bool isNiarimPublished,
+  }) async {
+    // Setting visibility to an explicit boolean is idempotent. If the backend applies
+    // the PATCH but the response is lost, resend the exact same desired state once.
+    final json = await _client.patchJson(
+      '/works/${Uri.encodeComponent(workId)}',
+      retries: 1,
+      body: {'isNiarimPublished': isNiarimPublished},
+    );
+    return ApiWork.fromJson(_work(json));
+  }
+
+  Future<ApiWork> updateWorkAiImageVideoDisclosure(
+    String workId, {
+    required bool containsGenerativeAiImageOrVideo,
+  }) async {
+    final json = await _client.patchJson(
+      '/works/${Uri.encodeComponent(workId)}',
+      retries: 1,
+      body: {
+        'containsGenerativeAiImageOrVideo': containsGenerativeAiImageOrVideo,
+      },
+    );
+    return ApiWork.fromJson(_work(json));
+  }
+
+  Future<void> deleteWork(String workId) =>
+      _client.deleteJson('/works/${Uri.encodeComponent(workId)}');
+
+  Future<ApiWork> updateTag(
+    String workId, {
+    required CommunityTagAction action,
+    required String tag,
+  }) async {
+    final json = await _client.patchJson(
+      '/works/${Uri.encodeComponent(workId)}/tags',
+      body: {'action': action.name, 'tag': tag},
+    );
+    return ApiWork.fromJson(_work(json));
+  }
+
+  Future<bool> toggleBookmark(String workId) async {
+    final json = await _client.postJson(
+      '/works/${Uri.encodeComponent(workId)}/bookmark',
+    );
+    return json['bookmarked'] == true;
+  }
+
+  Future<bool> toggleRepost(String workId) async {
+    final json = await _client.postJson(
+      '/works/${Uri.encodeComponent(workId)}/repost',
+    );
+    return json['reposted'] == true;
+  }
+
+  Future<bool> toggleFollow(String targetUserId) async {
+    final json = await _client.postJson(
+      '/users/${Uri.encodeComponent(targetUserId)}/follow',
+    );
+    return json['following'] == true;
+  }
+
+  Future<void> reportWork({required String workId, required String reason}) =>
+      _client.postJson('/reports', body: {'workId': workId, 'reason': reason});
+
+  Future<void> blockUser(String targetUserId) =>
+      _client.postJson('/blocks', body: {'targetUserId': targetUserId});
+
+  Future<ApiNotifications> notifications(String userId) async {
+    final json = await _client.getJson(
+      '/users/${Uri.encodeComponent(userId)}/notifications',
+      authenticated: true,
+    );
+    return ApiNotifications.fromJson(json);
+  }
+
+  Future<int> markNotificationsRead(String userId) async {
+    final json = await _client.postJson(
+      '/users/${Uri.encodeComponent(userId)}/notifications/mark-read',
+    );
+    final marked = json['markedCount'];
+    return marked is int ? marked : 0;
+  }
+
+  Future<bool> putPushToken(
+    String userId, {
+    required String token,
+    required String platform,
+  }) async {
+    final json = await _client.putJson(
+      '/users/${Uri.encodeComponent(userId)}/push-token',
+      body: {'token': token, 'platform': platform},
+    );
+    return json['registered'] == true;
+  }
+
+  Map<String, dynamic> _work(Map<String, dynamic> json) {
+    final nested = json['work'];
+    return nested is Map<String, dynamic> ? nested : json;
+  }
+}

@@ -1,0 +1,65 @@
+name: Visual Smoke Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - test/app_web_reference_capture_test_v2.dart
+      - test/app_web_reference_capture_exact_test.dart
+      - test/app_web_reference_export_exact_test.dart
+      - lib/screens/save_tree/save_tree_screen.dart
+      - .github/workflows/visual-smoke.yml
+
+jobs:
+  visual-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - name: リポジトリ取得
+        uses: actions/checkout@v6
+
+      - name: Flutter セットアップ
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: 依存関係取得
+        run: flutter pub get
+
+      - name: Web比較用の実アプリ基準スクリーンショット
+        continue-on-error: true
+        run: flutter test test/app_web_reference_capture_test_v2.dart --reporter expanded
+
+      # 同一GoRouterを複数testWidgets間で再利用するとナビゲータ状態が残るため、
+      # onion/treeだけをこのプロセスで撮り、Exportは下の独立プロセスで実操作する。
+      - name: Web比較用の厳密Onion/Treeスクリーンショット
+        run: |
+          flutter test test/app_web_reference_capture_exact_test.dart --plain-name "exact onion panel through production callbacks" --reporter expanded
+          flutter test test/app_web_reference_capture_exact_test.dart --plain-name "exact tree mode screen using real SaveTreeScreen rendering" --reporter expanded
+
+      - name: Web比較用の厳密Exportスクリーンショット
+        run: flutter test test/app_web_reference_export_exact_test.dart --reporter expanded
+
+      - name: 既存スモークテスト
+        run: flutter test test/app_smoke_test.dart --reporter expanded
+
+      - name: 狭幅ビジュアルスモークテスト
+        run: flutter test test/visual_smoke_test.dart --reporter expanded
+
+      - name: 作品一覧クリーンスクリーンショット
+        run: flutter test test/visual_smoke_clean_home_test.dart --reporter expanded
+
+      - name: 操作別スクリーンショットを保存
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-smoke-screenshots
+          path: build/visual-smoke/*.png
+          if-no-files-found: warn
+          retention-days: 3

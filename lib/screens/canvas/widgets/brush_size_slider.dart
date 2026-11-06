@@ -1,0 +1,190 @@
+import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/stepped_slider.dart';
+import 'canvas_icon_button.dart';
+
+/// ブラシの太さ・不透明度スライダー。描画エリアを圧迫しないよう、
+/// デフォルトでは折りたたまれた1行の要約表示にし、ユーザーが開閉
+/// ボタンをタップした時だけ2本のスライダーを展開する（描画エリア最大化のため）。
+/// 展開時もスライダー同士の縦の間隔を詰め、省スペースにしている。
+///
+/// キャンバス上の常設UIとして、帯状の背景は持たせず完全に透過する。
+/// 文字・アイコン色は現在のテーマから取得する。
+class BrushSizeSlider extends StatefulWidget {
+  final double brushSize;
+  final int opacity;
+  final ValueChanged<double> onSizeChanged;
+  final ValueChanged<int> onOpacityChanged;
+
+  const BrushSizeSlider({
+    super.key,
+    required this.brushSize,
+    required this.opacity,
+    required this.onSizeChanged,
+    required this.onOpacityChanged,
+  });
+
+  @override
+  State<BrushSizeSlider> createState() => _BrushSizeSliderState();
+}
+
+class _BrushSizeSliderState extends State<BrushSizeSlider> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final fgColor = scheme.onSurface;
+    final fgColorVariant = scheme.onSurfaceVariant;
+    // Bars are transparent; their icons and short labels need the same
+    // theme-derived outline as the main toolbar to survive varied artwork.
+    final shadows = CanvasIconButton.foregroundShadows(fgColor, scheme);
+    final variantShadows = CanvasIconButton.foregroundShadows(
+      fgColorVariant,
+      scheme,
+    );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      color: Colors.transparent,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Icon(Icons.circle, size: 8, color: fgColor, shadows: shadows),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${widget.brushSize.round()}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: fgColor,
+                      shadows: shadows,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Icon(
+                    Icons.opacity,
+                    size: 12,
+                    color: fgColor,
+                    shadows: shadows,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${widget.opacity}%',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: fgColor,
+                      shadows: shadows,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    l10n.canvasBrushSliderToggleLabel,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: fgColorVariant,
+                      shadows: variantShadows,
+                    ),
+                  ),
+                  Icon(
+                    _expanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    size: 16,
+                    color: fgColor,
+                    shadows: shadows,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_expanded)
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: 2,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                overlayShape: SliderComponentShape.noOverlay,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    height: 28,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: SteppedSlider(
+                            min: 1,
+                            max: 500,
+                            value: widget.brushSize,
+                            onChanged: widget.onSizeChanged,
+                          ),
+                        ),
+                        SizedBox(
+                          width: 36,
+                          child: EditableSliderValue(
+                            text: '${widget.brushSize.round()}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: fgColor,
+                              shadows: shadows,
+                            ),
+                            value: widget.brushSize,
+                            min: 1,
+                            max: 500,
+                            onChanged: (v) =>
+                                widget.onSizeChanged(v.toDouble()),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 28,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: SteppedSlider(
+                            min: 1,
+                            max: 100,
+                            value: widget.opacity.toDouble(),
+                            onChanged: (v) =>
+                                widget.onOpacityChanged(v.round()),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 36,
+                          child: EditableSliderValue(
+                            text: '${widget.opacity}%',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: fgColor,
+                              shadows: shadows,
+                            ),
+                            value: widget.opacity,
+                            min: 1,
+                            max: 100,
+                            onChanged: (v) =>
+                                widget.onOpacityChanged(v.round()),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}

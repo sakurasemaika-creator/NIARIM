@@ -1,0 +1,165 @@
+name: TMP Auto Lineart Control Reduction v11
+on:
+  push:
+    branches: [dev_branch]
+    paths: ['.github/workflows/tmp-auto-lineart-control-reduction-v11.yml']
+permissions:
+  contents: write
+jobs:
+  patch-test-land:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with: {ref: dev_branch, fetch-depth: 0}
+      - uses: subosito/flutter-action@v2
+        with: {channel: stable, cache: true}
+      - name: Patch control reduction curve and tests
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('lib/engine/auto_lineart_engine.dart')
+          s=p.read_text()
+          old='''      // Retain 92% -> 20% of interior controls over the ten levels. Selecting\n      // evenly from the smoothed polygon avoids a bias toward either endpoint.\n      final target = math.max(\n        2,\n        (original.length * (1.0 - legacyLevel * 0.08)).round(),\n      );\n      final keepCount = math.min(work.length, target);'''
+          new='''      // Make levels 1..99 directly describe the approximate percentage of\n      // controls removed. Level 100 is endpoint-only per path: each extracted\n      // line keeps exactly its own start/end anchors and therefore becomes a\n      // straight segment. For small paths, levels 1..99 keep at least three\n      // controls so 99 -> 100 always remains a meaningful final step. Shared\n      // junction anchors remain shared because each path retains its endpoints.\n      final target = level == 100\n          ? 2\n          : math.max(\n              3,\n              (original.length * (1.0 - level / 100.0)).round(),\n            );\n      final keepCount = math.min(work.length, target);'''
+          if old not in s:
+            raise SystemExit('reduction block anchor not found')
+          p.write_text(s.replace(old,new,1))
+
+          p=Path('test/auto_lineart_filter_test.dart')
+          s=p.read_text()
+          anchor="""    test(\n      'dragging a shared junction keeps coincident branch endpoints joined',"""
+          tests=r'''    test('control reduction follows the 0..100 percentage scale', () {
+      final points = List<AutoLineartPoint>.generate(
+        101,
+        (i) => AutoLineartPoint(i.toDouble(), (i % 7).toDouble()),
+      );
+      final source = AutoLineartGraph(
+        width: 101,
+        height: 20,
+        paths: [
+          AutoLineartPath(
+            points: points,
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+
+      int count(int level) => AutoLineartEngine.controlPointCount(
+        AutoLineartEngine.prepareEditableGraph(source, smoothingLevel: level),
+      );
+
+      expect(count(10), inInclusiveRange(90, 92));
+      expect(count(50), inInclusiveRange(50, 52));
+      expect(count(80), inInclusiveRange(20, 21));
+      expect(count(85), inInclusiveRange(15, 16));
+      expect(count(99), 3);
+      expect(count(100), 2);
+    });
+
+    test('small paths preserve a distinct 99 to 100 endpoint-only step', () {
+      final source = AutoLineartGraph(
+        width: 20,
+        height: 20,
+        paths: [
+          AutoLineartPath(
+            points: List<AutoLineartPoint>.generate(
+              9,
+              (i) => AutoLineartPoint(i.toDouble(), (i % 3).toDouble()),
+            ),
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+      final at99 = AutoLineartEngine.prepareEditableGraph(source, smoothingLevel: 99);
+      final at100 = AutoLineartEngine.prepareEditableGraph(source, smoothingLevel: 100);
+      expect(AutoLineartEngine.controlPointCount(at99), 3);
+      expect(AutoLineartEngine.controlPointCount(at100), 2);
+    });
+
+    test('level 100 keeps exactly two endpoints for every path', () {
+      const junction = AutoLineartPoint(50, 50);
+      final source = AutoLineartGraph(
+        width: 100,
+        height: 100,
+        paths: [
+          AutoLineartPath(
+            points: [
+              AutoLineartPoint(10, 10),
+              AutoLineartPoint(25, 20),
+              AutoLineartPoint(40, 35),
+              junction,
+            ],
+            startIsJunction: false,
+            endIsJunction: true,
+            persistence: 1,
+          ),
+          AutoLineartPath(
+            points: [
+              junction,
+              AutoLineartPoint(62, 38),
+              AutoLineartPoint(76, 24),
+              AutoLineartPoint(90, 10),
+            ],
+            startIsJunction: true,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+          AutoLineartPath(
+            points: [
+              junction,
+              AutoLineartPoint(50, 62),
+              AutoLineartPoint(50, 76),
+              AutoLineartPoint(50, 90),
+            ],
+            startIsJunction: true,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+
+      final reduced = AutoLineartEngine.prepareEditableGraph(
+        source,
+        smoothingLevel: 100,
+      );
+
+      expect(reduced.paths, hasLength(3));
+      for (final path in reduced.paths) {
+        expect(path.points, hasLength(2));
+      }
+      expect(reduced.paths[0].points.last.x, 50);
+      expect(reduced.paths[0].points.last.y, 50);
+      expect(reduced.paths[1].points.first.x, 50);
+      expect(reduced.paths[1].points.first.y, 50);
+      expect(reduced.paths[2].points.first.x, 50);
+      expect(reduced.paths[2].points.first.y, 50);
+    });
+
+'''
+          if anchor not in s:
+            raise SystemExit('test insertion anchor not found')
+          p.write_text(s.replace(anchor,tests+anchor,1))
+          PY
+          dart format lib/engine/auto_lineart_engine.dart test/auto_lineart_filter_test.dart
+      - name: Validate
+        run: |
+          flutter pub get
+          flutter analyze --no-fatal-warnings lib/engine/auto_lineart_engine.dart test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart
+          flutter test test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart
+      - name: Land
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/engine/auto_lineart_engine.dart test/auto_lineart_filter_test.dart
+          git commit -m 'fix: 自動線画の補正率に合わせて制御点を削減'
+          git reset --hard HEAD
+          git clean -fd
+          git fetch origin dev_branch
+          git rebase origin/dev_branch
+          git push origin HEAD:dev_branch

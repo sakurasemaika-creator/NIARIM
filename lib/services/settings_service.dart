@@ -1,0 +1,1186 @@
+import 'dart:convert';
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../models/canvas_dock_panel.dart';
+import '../models/canvas_size_preset.dart';
+import '../models/toolbar_item.dart';
+import '../utils/tolerant_preferences.dart';
+
+class SettingsService extends ChangeNotifier {
+  int _defaultFps = 12;
+  int _undoLimit = 50;
+  int _trashAutoDeleteDays = 0;
+  String _language = 'ja';
+  // 描画領域初期値（ホーム画面設定）
+  bool _defaultDrawingAreaEnabled = false;
+  double _defaultDrawingAreaScale = 2.0;
+  // PC/DeXモードの手動切替（ワークスペース設定）。
+  // null=自動（画面幅で判定）、true/false=手動で強制ON/OFF。
+  bool? _forcePcMode;
+  // 左利きモード：ONの場合、キャンバスのドッキングパネルを
+  // 左右反転して配置する。
+  bool _isLeftHanded = false;
+  bool _lassoSnapToLines = false;
+  // Maximum consecutive line-art pixels that the lasso snap may cross as an
+  // intentional small break in the contour. Stored globally with other app
+  // settings so users can tune it to their line-art style.
+  int _lassoGapTolerancePx = 6;
+  bool _selectionReferenceAllVisible = false;
+  // ツールバー編集（表示するツールをチェックボックスで選択・ドラッグで並び替え）
+  List<ToolbarItemId> _toolbarOrder = List.of(ToolbarItemId.values);
+  Set<ToolbarItemId> _hiddenToolbarItems = {};
+  // Five persistent visual sizes; applies to the toolbar's real hit cells.
+  int _toolbarSizeLevel = 3;
+  // Last visible set of PC dock windows, shared across all projects and
+  // restored on every canvas open. Mobile overlay state stays independent.
+  Set<CanvasDockPanel> _defaultDockedPanels = {
+    CanvasDockPanel.brush,
+    CanvasDockPanel.colorPicker,
+    CanvasDockPanel.layer,
+  };
+
+  int get defaultFps => _defaultFps;
+  int get undoLimit => _undoLimit;
+  int get trashAutoDeleteDays => _trashAutoDeleteDays;
+  String get language => _language;
+  bool get defaultDrawingAreaEnabled => _defaultDrawingAreaEnabled;
+  double get defaultDrawingAreaScale => _defaultDrawingAreaScale;
+  bool? get forcePcMode => _forcePcMode;
+  bool get isLeftHanded => _isLeftHanded;
+
+  /// The lasso selection follows the line art near the drawn path.
+  bool get lassoSnapToLines => _lassoSnapToLines;
+
+  /// Maximum gap, in canvas pixels, that line-art snapping may bridge.
+  int get lassoGapTolerancePx => _lassoGapTolerancePx;
+
+  /// The selection tools look at every visible layer rather than only the
+  /// working one.
+  bool get selectionReferenceAllVisible => _selectionReferenceAllVisible;
+  List<ToolbarItemId> get toolbarOrder => List.unmodifiable(_toolbarOrder);
+  int get toolbarSizeLevel => _toolbarSizeLevel;
+
+  static double toolbarIconScaleForLevel(int level) =>
+      switch (level.clamp(1, 5)) {
+        1 => 0.75,
+        2 => 0.88,
+        3 => 1.0,
+        4 => 1.15,
+        _ => 1.3,
+      };
+
+  Future<void> setToolbarSizeLevel(int level) async {
+    final next = level.clamp(1, 5);
+    if (_toolbarSizeLevel == next) return;
+    _toolbarSizeLevel = next;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('toolbar_size_level', next);
+    notifyListeners();
+  }
+
+  Set<ToolbarItemId> get hiddenToolbarItems =>
+      Set.unmodifiable(_hiddenToolbarItems);
+  Set<CanvasDockPanel> get defaultDockedPanels =>
+      Set.unmodifiable(_defaultDockedPanels);
+
+  // ─── バケツ塗り詳細設定（設定画面「バケツ塗り」） ───────────────────────
+  // 許容誤差：クリックした位置の色からどこまで色差を許容して同一領域とみなすか
+  double _bucketTolerance = 30.0;
+  // 拡張px：フラッドフィルで検出した領域を境界の外側へ何px広げるか
+  // （線画とのわずかな隙間・塗り残しをカバーする）
+  int _bucketExpandPx = 0;
+  // 線の下まで潜る：拡張分を線画の上から上書きせず、既存ピクセルの背後へ
+  // 塗り色を合成する（線の見た目を保ったまま隙間だけを塗り色で埋める）
+  bool _bucketFillUnderLine = false;
+
+  double get bucketTolerance => _bucketTolerance;
+  int get bucketExpandPx => _bucketExpandPx;
+  bool get bucketFillUnderLine => _bucketFillUnderLine;
+
+  Future<void> setBucketTolerance(double value) async {
+    _bucketTolerance = value.clamp(0.0, 100.0);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('bucket_tolerance', _bucketTolerance);
+    notifyListeners();
+  }
+
+  Future<void> setBucketExpandPx(int value) async {
+    _bucketExpandPx = value.clamp(0, 10);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('bucket_expand_px', _bucketExpandPx);
+    notifyListeners();
+  }
+
+  Future<void> setBucketFillUnderLine(bool value) async {
+    _bucketFillUnderLine = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('bucket_fill_under_line', value);
+    notifyListeners();
+  }
+
+  // ─── 長押しスポイト（設定画面「ジェスチャー」） ─────────────────────────
+  // ペン・消しゴムでの描画中、指を動かさず一定時間押し続けるとその場の色を
+  // スポイトのように拾う機能のON/OFFと保持秒数。既定はON。
+  bool _holdEyedropperEnabled = true;
+  double _holdEyedropperSeconds = 0.5;
+
+  bool get holdEyedropperEnabled => _holdEyedropperEnabled;
+  double get holdEyedropperSeconds => _holdEyedropperSeconds;
+
+  Future<void> setHoldEyedropperEnabled(bool value) async {
+    _holdEyedropperEnabled = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hold_eyedropper_enabled', value);
+    notifyListeners();
+  }
+
+  Future<void> setHoldEyedropperSeconds(double value) async {
+    _holdEyedropperSeconds = value.clamp(0.2, 3.0);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('hold_eyedropper_seconds', _holdEyedropperSeconds);
+    notifyListeners();
+  }
+
+  // ─── タイムラインモードのプレビュー欄の高さ ───────────────────────────
+  // プレビュー下端のドラッグハンドルで変更できる、プレビュー欄が占める
+  // 縦方向の割合（0.0〜1.0）。プロジェクトごとではなくアプリ全体で共通の
+  // 設定として保存するため、作業を中断したり別のプロジェクトへ移動しても
+  // 最後に設定した位置が引き継がれる。
+  double _timelinePreviewHeightFraction = 0.42;
+
+  double get timelinePreviewHeightFraction => _timelinePreviewHeightFraction;
+
+  Future<void> setTimelinePreviewHeightFraction(double value) async {
+    _timelinePreviewHeightFraction = value.clamp(0.18, 0.7);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(
+      'timeline_preview_height_fraction',
+      _timelinePreviewHeightFraction,
+    );
+    notifyListeners();
+  }
+
+  // ─── タイムラインモードの各素材トラックの高さ ─────────────────────────
+  // 動画・音源などのタイムライントラック1行の高さを1〜5の5段階で
+  // 調整する（ワークスペース設定「タイムライン表示」）。既定は見やすさを
+  // 優先して大きめの4段階目にしている。
+  int _timelineTrackHeightLevel = 4;
+
+  int get timelineTrackHeightLevel => _timelineTrackHeightLevel;
+
+  /// レベル（1〜5）を実際のトラック高さ（px）へ変換する。
+  static double trackHeightForLevel(int level) {
+    const heights = {1: 28.0, 2: 36.0, 3: 44.0, 4: 52.0, 5: 60.0};
+    return heights[level.clamp(1, 5)]!;
+  }
+
+  Future<void> setTimelineTrackHeightLevel(int value) async {
+    _timelineTrackHeightLevel = value.clamp(1, 5);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(
+      'timeline_track_height_level',
+      _timelineTrackHeightLevel,
+    );
+    notifyListeners();
+  }
+
+  // Widths and window heights are shared physical workspace dimensions,
+  // not project state. Before any customization only, handedness can mirror
+  // which initial panel group occupies either side.
+  // Per-window heights are global workspace settings, not project state.
+  final Map<CanvasDockPanel, double> _desktopPanelHeights = {};
+ 
+  // Collapsing a dock keeps it open and preserves its width, height and order.
+  // The collapsed side tab is restored on the next launch.
+  final Set<CanvasDockPanel> _collapsedDesktopDocks = {};
+  // This preference is independent from the user-controlled/persisted folds.
+  // Automatic folds are transient and calculated from the available height.
+  bool _desktopDockAutoCollapseEnabled = true;
+  // Before the user edits the workspace, handedness selects the initial side.
+  // Once edited, the physical left/right positions are saved and no longer
+  // follow handedness changes. This state is global, never project-specific.
+  bool _desktopDockLayoutCustomized = false;
+  bool get desktopDockLayoutCustomized => _desktopDockLayoutCustomized;
+  bool get desktopDockDefaultMirrored =>
+      !_desktopDockLayoutCustomized && _isLeftHanded;
+
+  /// Convert the current (possibly mirrored) initial layout into physical
+  /// left/right lists before the first user edit. Persist the snapshot before
+  /// subsequent edits, so switching hands cannot move customized windows.
+  Future<void> _pinDesktopDockLayout() async {
+    if (_desktopDockLayoutCustomized) return;
+    if (_isLeftHanded) {
+      final previousLeft = _toolOptionDockOrder;
+      _toolOptionDockOrder = _rightDockOrder;
+      _rightDockOrder = previousLeft;
+      final previousLeftWidth = _desktopToolPanelWidth;
+      _desktopToolPanelWidth = _desktopPanelWidth;
+      _desktopPanelWidth = previousLeftWidth;
+    }
+    _desktopDockLayoutCustomized = true;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('desktop_dock_layout_customized', true);
+    await prefs.setStringList(
+      'tool_option_dock_order',
+      _toolOptionDockOrder.map((p) => p.name).toList(),
+    );
+    await prefs.setStringList(
+      'right_dock_order',
+      _rightDockOrder.map((p) => p.name).toList(),
+    );
+    await prefs.setDouble('desktop_tool_panel_width', _desktopToolPanelWidth);
+    await prefs.setDouble('desktop_panel_width', _desktopPanelWidth);
+  }
+  bool get desktopDockAutoCollapseEnabled => _desktopDockAutoCollapseEnabled;
+
+  Future<void> setDesktopDockAutoCollapseEnabled(bool enabled) async {
+    if (_desktopDockAutoCollapseEnabled == enabled) return;
+    _desktopDockAutoCollapseEnabled = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('desktop_dock_auto_collapse_enabled', enabled);
+  }
+
+  bool isDesktopDockCollapsed(CanvasDockPanel panel) =>
+      _collapsedDesktopDocks.contains(panel);
+
+  Future<void> setDesktopDockCollapsed(
+    CanvasDockPanel panel,
+    bool collapsed,
+  ) async {
+    final changed = collapsed
+        ? _collapsedDesktopDocks.add(panel)
+        : _collapsedDesktopDocks.remove(panel);
+    if (!changed) return;
+    await _pinDesktopDockLayout();
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'desktop_collapsed_docks',
+      _collapsedDesktopDocks.map((p) => p.name).toList(),
+    );
+  }
+
+  /// All expanded windows in a dock column share the same horizontal size.
+  /// Legacy per-window width calls use the panel's CURRENT column so old
+  /// workspace settings cannot re-introduce mismatched widths.
+  double desktopDockWidth(CanvasDockPanel panel, {required bool right}) =>
+      right ? desktopPanelWidth : desktopToolPanelWidth;
+
+  Future<void> setDesktopDockWidth(CanvasDockPanel panel, double width) =>
+      rightDockOrder.contains(panel)
+          ? setDesktopPanelWidth(width)
+          : setDesktopToolPanelWidth(width);
+
+
+  double desktopDockHeight(CanvasDockPanel panel) =>
+      _desktopPanelHeights[panel] ?? 260.0;
+
+  Future<void> setDesktopDockHeight(CanvasDockPanel panel, double value) async {
+    await _pinDesktopDockLayout();
+    final height = value.clamp(140.0, 700.0);
+    _desktopPanelHeights[panel] = height;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'desktop_dock_heights',
+      jsonEncode({
+        for (final entry in _desktopPanelHeights.entries)
+          entry.key.name: entry.value,
+      }),
+    );
+  }
+
+  double _desktopPanelWidth = 280.0;
+
+  double get desktopPanelWidth =>
+      desktopDockDefaultMirrored ? _desktopToolPanelWidth : _desktopPanelWidth;
+
+  Future<void> setDesktopPanelWidth(double value) async {
+    await _pinDesktopDockLayout();
+    _desktopPanelWidth = value.clamp(200.0, 480.0);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('desktop_panel_width', _desktopPanelWidth);
+    notifyListeners();
+  }
+
+  // Physical left column width, independent of handedness after editing.
+  double _desktopToolPanelWidth = 280.0;
+
+  double get desktopToolPanelWidth =>
+      desktopDockDefaultMirrored ? _desktopPanelWidth : _desktopToolPanelWidth;
+
+  Future<void> setDesktopToolPanelWidth(double value) async {
+    await _pinDesktopDockLayout();
+    _desktopToolPanelWidth = value.clamp(200.0, 480.0);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('desktop_tool_panel_width', _desktopToolPanelWidth);
+    notifyListeners();
+  }
+
+  // Initial LEFT column order (brush etc.). Once edited it is the user's
+  // saved physical left-side order, regardless of panel type or handedness.
+  static const List<CanvasDockPanel> _defaultToolOptionDockOrder = [
+    CanvasDockPanel.penSubTool,
+    CanvasDockPanel.brush,
+    CanvasDockPanel.tone,
+    CanvasDockPanel.stamp,
+    CanvasDockPanel.onionSkin,
+    CanvasDockPanel.ruler,
+    CanvasDockPanel.filter,
+    CanvasDockPanel.quickTool,
+    CanvasDockPanel.colorAdjust,
+  ];
+  List<CanvasDockPanel> _toolOptionDockOrder = List.of(
+    _defaultToolOptionDockOrder,
+  );
+
+  List<CanvasDockPanel> get toolOptionDockOrder => List.unmodifiable(
+    desktopDockDefaultMirrored ? _rightDockOrder : _toolOptionDockOrder,
+  );
+
+  Future<void> setToolOptionDockOrder(List<CanvasDockPanel> order) async {
+    await _pinDesktopDockLayout();
+    _toolOptionDockOrder = List.of(order);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'tool_option_dock_order',
+      order.map((e) => e.name).toList(),
+    );
+    notifyListeners();
+  }
+
+  Future<void> resetToolOptionDockOrder() =>
+      setToolOptionDockOrder(_defaultToolOptionDockOrder);
+
+  // Initial RIGHT column order (color, layers, navigator). Once edited it is
+  // the user's saved physical right-side order.
+  static const List<CanvasDockPanel> _defaultRightDockOrder = [
+    CanvasDockPanel.canvasPreview,
+    CanvasDockPanel.colorPicker,
+    CanvasDockPanel.layer,
+  ];
+  List<CanvasDockPanel> _rightDockOrder = List.of(_defaultRightDockOrder);
+
+  List<CanvasDockPanel> get rightDockOrder => List.unmodifiable(
+    desktopDockDefaultMirrored ? _toolOptionDockOrder : _rightDockOrder,
+  );
+
+  Future<void> setRightDockOrder(List<CanvasDockPanel> order) async {
+    await _pinDesktopDockLayout();
+    _rightDockOrder = List.of(order);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'right_dock_order',
+      order.map((e) => e.name).toList(),
+    );
+    notifyListeners();
+  }
+
+  Future<void> resetRightDockOrder() =>
+      setRightDockOrder(_defaultRightDockOrder);
+
+  /// Reset the entire shared PC workspace. The chosen handedness then decides
+  /// the initial placement again, until the user customizes it.
+  Future<void> resetDesktopWorkspaceLayout() async {
+    _desktopDockLayoutCustomized = false;
+    _toolOptionDockOrder = List.of(_defaultToolOptionDockOrder);
+    _rightDockOrder = List.of(_defaultRightDockOrder);
+    _desktopToolPanelWidth = 280.0;
+    _desktopPanelWidth = 280.0;
+    _desktopPanelHeights.clear();
+    _collapsedDesktopDocks.clear();
+    _defaultDockedPanels = {
+      CanvasDockPanel.brush,
+      CanvasDockPanel.colorPicker,
+      CanvasDockPanel.layer,
+    };
+    _desktopDockAutoCollapseEnabled = true;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('desktop_dock_layout_customized', false);
+    await prefs.setStringList(
+      'tool_option_dock_order',
+      _toolOptionDockOrder.map((p) => p.name).toList(),
+    );
+    await prefs.setStringList(
+      'right_dock_order',
+      _rightDockOrder.map((p) => p.name).toList(),
+    );
+    await prefs.setDouble('desktop_tool_panel_width', 280.0);
+    await prefs.setDouble('desktop_panel_width', 280.0);
+    await prefs.setString('desktop_dock_heights', '{}');
+    await prefs.setStringList('desktop_collapsed_docks', []);
+    await prefs.setStringList(
+      'default_docked_panels',
+      _defaultDockedPanels.map((p) => p.name).toList(),
+    );
+    await prefs.setBool('desktop_dock_auto_collapse_enabled', true);
+    notifyListeners();
+  }
+
+  /// Reset order alone to the CURRENT handedness' default physical sides.
+  /// Preserve sizes/visibility and keep the result pinned as a custom layout.
+  Future<void> resetDesktopDockOrderToHandedDefaults() async {
+    await _pinDesktopDockLayout();
+    _toolOptionDockOrder = List.of(
+      _isLeftHanded ? _defaultRightDockOrder : _defaultToolOptionDockOrder,
+    );
+    _rightDockOrder = List.of(
+      _isLeftHanded ? _defaultToolOptionDockOrder : _defaultRightDockOrder,
+    );
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'tool_option_dock_order',
+      _toolOptionDockOrder.map((p) => p.name).toList(),
+    );
+    await prefs.setStringList(
+      'right_dock_order',
+      _rightDockOrder.map((p) => p.name).toList(),
+    );
+    notifyListeners();
+  }
+
+  /// Move a dock window within or between columns, persist its position.
+  /// Settings screen and canvas use these same global order lists.
+  Future<void> moveDesktopDockPanel(
+    CanvasDockPanel panel, {
+    required bool toRight,
+    CanvasDockPanel? before,
+  }) async {
+    // [toRight] now always means the physical right edge, regardless of hand.
+    await _pinDesktopDockLayout();
+    final left = List<CanvasDockPanel>.of(_toolOptionDockOrder)
+      ..remove(panel);
+    final right = List<CanvasDockPanel>.of(_rightDockOrder)
+      ..remove(panel);
+    final target = toRight ? right : left;
+    final insertIndex = before == null ? -1 : target.indexOf(before);
+    target.insert(insertIndex < 0 ? target.length : insertIndex, panel);
+    // Notify once so an empty column is removed immediately without
+    // exposing an intermediate, half-moved layout to either UI.
+    _toolOptionDockOrder = left;
+    _rightDockOrder = right;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'tool_option_dock_order',
+      left.map((p) => p.name).toList(),
+    );
+    await prefs.setStringList(
+      'right_dock_order',
+      right.map((p) => p.name).toList(),
+    );
+  }
+
+  // マウス・スタイラス（ペンタブ等）の接続検出フラグ。ポインティング
+  // デバイスの接続を一度でも検知したら、以後アプリ終了までtrueを保持する
+  // （永続化はしない）。app.dartのListenerがポインターイベントのkindを
+  // 渡して更新する。
+  bool _hasNonTouchPointer = false;
+
+  bool get hasNonTouchPointer => _hasNonTouchPointer;
+
+  void notifyPointerDeviceSeen(PointerDeviceKind kind) {
+    final isNonTouch =
+        kind == PointerDeviceKind.mouse ||
+        kind == PointerDeviceKind.stylus ||
+        kind == PointerDeviceKind.invertedStylus;
+    if (isNonTouch && !_hasNonTouchPointer) {
+      _hasNonTouchPointer = true;
+      notifyListeners();
+    }
+  }
+
+  // ─── 新規プロジェクト画面のカスタムキャンバスサイズプリセット ─────────
+  List<CanvasSizePreset> _customSizePresets = [];
+
+  List<CanvasSizePreset> get customSizePresets =>
+      List.unmodifiable(_customSizePresets);
+
+  Future<void> _persistCustomSizePresets() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'custom_size_presets',
+      _customSizePresets.map((p) => jsonEncode(p.toJson())).toList(),
+    );
+  }
+
+  Future<void> addCustomSizePreset(String name, int width, int height) async {
+    _customSizePresets = [
+      ..._customSizePresets,
+      CanvasSizePreset(
+        id: 'size_${DateTime.now().microsecondsSinceEpoch}',
+        name: name,
+        width: width,
+        height: height,
+      ),
+    ];
+    await _persistCustomSizePresets();
+    notifyListeners();
+  }
+
+  Future<void> updateCustomSizePreset(
+    String id, {
+    String? name,
+    int? width,
+    int? height,
+  }) async {
+    _customSizePresets = _customSizePresets
+        .map(
+          (p) => p.id == id
+              ? p.copyWith(name: name, width: width, height: height)
+              : p,
+        )
+        .toList();
+    await _persistCustomSizePresets();
+    notifyListeners();
+  }
+
+  Future<void> duplicateCustomSizePreset(String id, String newName) async {
+    final source = _customSizePresets.where((p) => p.id == id).firstOrNull;
+    if (source == null) return;
+    _customSizePresets = [
+      ..._customSizePresets,
+      CanvasSizePreset(
+        id: 'size_${DateTime.now().microsecondsSinceEpoch}',
+        name: newName,
+        width: source.width,
+        height: source.height,
+      ),
+    ];
+    await _persistCustomSizePresets();
+    notifyListeners();
+  }
+
+  Future<void> removeCustomSizePreset(String id) async {
+    _customSizePresets = _customSizePresets.where((p) => p.id != id).toList();
+    await _persistCustomSizePresets();
+    notifyListeners();
+  }
+
+  Future<void> reorderCustomSizePresets(int oldIndex, int newIndex) async {
+    final list = List<CanvasSizePreset>.from(_customSizePresets);
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, item);
+    _customSizePresets = list;
+    await _persistCustomSizePresets();
+    notifyListeners();
+  }
+
+  // ─── エンドカードのプレミアム既定設定 ─────────────────────────────────
+  // プレミアム会員限定：ONにすると、以後タイムラインを開いた時点で
+  // エンドカードが最初から非表示（削除済み）の状態になる。無料会員には
+  // 一切関係がなく、プレミアム権限が切れて無料会員に戻った時点でこの設定
+  // 自体も自動でOFFへリセットする（main.dartでPremiumServiceの状態変化を
+  // 監視して呼び出す）。
+  bool _endCardDefaultHiddenForPremium = false;
+
+  bool get endCardDefaultHiddenForPremium => _endCardDefaultHiddenForPremium;
+
+  Future<void> setEndCardDefaultHiddenForPremium(bool value) async {
+    _endCardDefaultHiddenForPremium = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('endcard_default_hidden_for_premium', value);
+    notifyListeners();
+  }
+
+  GestureAction _twoFingerTap = GestureAction.undo;
+  GestureAction _threeFingerTap = GestureAction.redo;
+  GestureAction _fourOrMoreFingerTap = GestureAction.none;
+  GestureAction _twoFingerSwipe = GestureAction.frameMove;
+  GestureAction _longPress = GestureAction.eyedropper;
+
+  GestureAction get twoFingerTap => _twoFingerTap;
+  GestureAction get threeFingerTap => _threeFingerTap;
+  GestureAction get fourOrMoreFingerTap => _fourOrMoreFingerTap;
+  GestureAction get twoFingerSwipe => _twoFingerSwipe;
+  GestureAction get longPress => _longPress;
+
+  // ─── ペン入力設定（筆圧ON/OFF・筆圧カーブ・ペンボタン） ─────────────
+  // 筆圧ON/OFFはアプリ全体の入力状態。各ブラシはON/OFF両プロファイルを
+  // 常に保持し、この設定によって描画時に使用する側だけを切り替える。
+  // 筆圧カーブもアプリ全体に適用される。
+  bool _palmRejectionEnabled = true;
+  // App-wide pressure activation. Brushes always store both ON/OFF profiles;
+  // this flag selects which profile is active while drawing.
+  bool _penPressureEnabled = true;
+  PenPressureCurve _penPressureCurve = PenPressureCurve.normal;
+  GestureAction _penButton1 = GestureAction.eraserToggle;
+  GestureAction _penButton2 = GestureAction.eyedropper;
+
+  bool get palmRejectionEnabled => _palmRejectionEnabled;
+  bool get penPressureEnabled => _penPressureEnabled;
+  PenPressureCurve get penPressureCurve => _penPressureCurve;
+  GestureAction get penButton1 => _penButton1;
+  GestureAction get penButton2 => _penButton2;
+
+  /// 筆圧カーブに応じて生の筆圧値（0.0〜1.0）を補正する（
+  /// 筆圧カーブはアプリ全体に適用）。弱＝立ち上がりを緩やかに、
+  /// 強＝立ち上がりを鋭くする指数カーブ。カスタムのみ、_customPressurePoints
+  /// （最大10点の制御点）を結ぶ折れ線で補間する。
+  double applyPressureCurve(double rawPressure) {
+    final p = rawPressure.clamp(0.0, 1.0);
+    if (_penPressureCurve == PenPressureCurve.custom) {
+      return _evalCustomCurve(p);
+    }
+    final exponent = switch (_penPressureCurve) {
+      PenPressureCurve.weak => 1.6,
+      PenPressureCurve.normal => 1.0,
+      PenPressureCurve.strong => 0.6,
+      PenPressureCurve.custom => 1.0, // 到達しない（上でハンドリング済み）
+    };
+    if (exponent == 1.0) return p;
+    return math.pow(p, exponent).toDouble();
+  }
+
+  double _evalCustomCurve(double x) {
+    final pts = _customPressurePoints;
+    for (int i = 0; i < pts.length - 1; i++) {
+      final a = pts[i];
+      final b = pts[i + 1];
+      if (x >= a.$1 && x <= b.$1) {
+        if (b.$1 == a.$1) return a.$2;
+        final t = (x - a.$1) / (b.$1 - a.$1);
+        return a.$2 + (b.$2 - a.$2) * t;
+      }
+    }
+    return pts.last.$2;
+  }
+
+  /// カスタム筆圧カーブの制御点（x=筆圧、y=反映される太さ・不透明度の
+  /// 倍率、いずれも0.0〜1.0）。x昇順に並べ、最大10点まで持てる。
+  /// 先頭（x=0）・末尾（x=1）は常に存在し、xは動かせない
+  /// （0〜1全域をカバーするため）。デフォルトは対角線（傾き1）の2点のみ。
+  static const int maxPressurePoints = 10;
+  List<(double, double)> _customPressurePoints = const [(0.0, 0.0), (1.0, 1.0)];
+  List<(double, double)> get customPressurePoints =>
+      List.unmodifiable(_customPressurePoints);
+
+  Future<void> setPalmRejectionEnabled(bool value) async {
+    _palmRejectionEnabled = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('palm_rejection_enabled', value);
+    notifyListeners();
+  }
+
+  Future<void> setPenPressureEnabled(bool value) async {
+    _penPressureEnabled = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('pen_pressure_enabled', value);
+    notifyListeners();
+  }
+
+  Future<void> setPenPressureCurve(PenPressureCurve curve) async {
+    _penPressureCurve = curve;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('pen_pressure_curve', curve.name);
+    notifyListeners();
+  }
+
+  Future<void> _persistCustomPressurePoints() async {
+    final prefs = await SharedPreferences.getInstance();
+    final flat = _customPressurePoints.expand((p) => [p.$1, p.$2]).toList();
+    await prefs.setStringList(
+      'pen_pressure_custom_points',
+      flat.map((v) => v.toString()).toList(),
+    );
+  }
+
+  /// 新しい制御点を追加する（最大10点まで。x昇順を保つ）。
+  Future<void> addCustomPressurePoint(double x, double y) async {
+    if (_customPressurePoints.length >= maxPressurePoints) return;
+    final points = List<(double, double)>.from(_customPressurePoints)
+      ..add((x.clamp(0.0, 1.0), y.clamp(0.0, 1.0)));
+    points.sort((a, b) => a.$1.compareTo(b.$1));
+    _customPressurePoints = points;
+    await _persistCustomPressurePoints();
+    notifyListeners();
+  }
+
+  /// 制御点を移動する。先頭・末尾（index 0・最後）はxを固定しyのみ動かす。
+  /// 中間点は前後の制御点の間からxが出ないようクランプする。
+  Future<void> moveCustomPressurePoint(int index, double x, double y) async {
+    final points = List<(double, double)>.from(_customPressurePoints);
+    if (index < 0 || index >= points.length) return;
+    final isEndpoint = index == 0 || index == points.length - 1;
+    final clampedY = y.clamp(0.0, 1.0);
+    if (isEndpoint) {
+      points[index] = (points[index].$1, clampedY);
+    } else {
+      final minX = points[index - 1].$1 + 0.01;
+      final maxX = points[index + 1].$1 - 0.01;
+      final clampedX = x.clamp(minX, maxX);
+      points[index] = (clampedX, clampedY);
+    }
+    _customPressurePoints = points;
+    await _persistCustomPressurePoints();
+    notifyListeners();
+  }
+
+  /// 中間の制御点を削除する（先頭・末尾は削除不可）。
+  Future<void> removeCustomPressurePoint(int index) async {
+    if (index <= 0 || index >= _customPressurePoints.length - 1) return;
+    final points = List<(double, double)>.from(_customPressurePoints)
+      ..removeAt(index);
+    _customPressurePoints = points;
+    await _persistCustomPressurePoints();
+    notifyListeners();
+  }
+
+  /// 筆圧カーブをデフォルト（対角線の2点のみ）へリセットする（ユーザー
+  /// 指示：誤って点を増やしすぎた時に簡単に戻せるようにするため）。
+  Future<void> resetCustomPressureCurve() async {
+    _customPressurePoints = const [(0.0, 0.0), (1.0, 1.0)];
+    await _persistCustomPressurePoints();
+    notifyListeners();
+  }
+
+  Future<void> setPenButton(int buttonNumber, GestureAction action) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (buttonNumber == 1) {
+      _penButton1 = action;
+      await prefs.setString('pen_button_1', action.name);
+    } else {
+      _penButton2 = action;
+      await prefs.setString('pen_button_2', action.name);
+    }
+    notifyListeners();
+  }
+
+  Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    _defaultFps = prefs.readInt('default_fps') ?? 12;
+    _undoLimit = prefs.readInt('undo_limit') ?? 50;
+    _trashAutoDeleteDays = prefs.readInt('trash_auto_delete') ?? 0;
+    _language = prefs.readString('language') ?? 'ja';
+    _defaultDrawingAreaEnabled =
+        prefs.readBool('default_drawing_area_enabled') ?? false;
+    _defaultDrawingAreaScale =
+        prefs.readDouble('default_drawing_area_scale') ?? 2.0;
+    _isFirstLaunch = prefs.readBool('first_launch') ?? true;
+    // -1=自動（未設定）、0=OFF、1=ON
+    final pcModeValue = prefs.readInt('force_pc_mode') ?? -1;
+    _forcePcMode = pcModeValue == -1 ? null : pcModeValue == 1;
+    _isLeftHanded = prefs.readBool('is_left_handed') ?? false;
+    _lassoSnapToLines = prefs.readBool('lasso_snap_to_lines') ?? false;
+    _lassoGapTolerancePx = (prefs.readInt('lasso_gap_tolerance_px') ?? 6).clamp(
+      0,
+      12,
+    );
+    _selectionReferenceAllVisible =
+        prefs.readBool('selection_reference_all_visible') ?? false;
+    _bucketTolerance = prefs.readDouble('bucket_tolerance') ?? 30.0;
+    _bucketExpandPx = prefs.readInt('bucket_expand_px') ?? 0;
+    _bucketFillUnderLine = prefs.readBool('bucket_fill_under_line') ?? false;
+    _holdEyedropperEnabled = prefs.readBool('hold_eyedropper_enabled') ?? true;
+    _holdEyedropperSeconds = prefs.readDouble('hold_eyedropper_seconds') ?? 0.5;
+    _timelinePreviewHeightFraction =
+        prefs.readDouble('timeline_preview_height_fraction') ?? 0.42;
+    _timelineTrackHeightLevel =
+        prefs.readInt('timeline_track_height_level') ?? 4;
+    _desktopPanelWidth = prefs.readDouble('desktop_panel_width') ?? 280.0;
+    // A pre-release saved order without the new flag is a user customization.
+    // A newly installed app follows handedness only until its first edit.
+    _desktopDockLayoutCustomized =
+        prefs.readBool('desktop_dock_layout_customized') ??
+        (prefs.readStringList('tool_option_dock_order') != null ||
+            prefs.readStringList('right_dock_order') != null);
+    _desktopDockAutoCollapseEnabled =
+        prefs.readBool('desktop_dock_auto_collapse_enabled') ?? true;
+    _collapsedDesktopDocks.clear();
+    final savedCollapsed = prefs.readStringList('desktop_collapsed_docks');
+    if (savedCollapsed != null) {
+      final byName = CanvasDockPanel.values.asNameMap();
+      _collapsedDesktopDocks.addAll(
+        savedCollapsed.map((name) => byName[name]).whereType<CanvasDockPanel>(),
+      );
+    }
+    // Legacy per-window widths are intentionally ignored. The persisted
+    // left/right column widths below are now the only source of truth.
+    _desktopPanelHeights.clear();
+    final rawDockHeights = prefs.readString('desktop_dock_heights');
+    if (rawDockHeights != null) {
+      try {
+        final decoded = jsonDecode(rawDockHeights);
+        if (decoded is Map) {
+          for (final entry in decoded.entries) {
+            final panel = CanvasDockPanel.values.asNameMap()[entry.key];
+            final value = entry.value;
+            if (panel != null && value is num) {
+              _desktopPanelHeights[panel] = value.toDouble().clamp(140, 700);
+            }
+          }
+        }
+      } on FormatException {
+        // Ignore malformed saved workspace dimensions.
+      }
+    }
+    _desktopToolPanelWidth =
+        prefs.readDouble('desktop_tool_panel_width') ?? 280.0;
+    final toolOptionDockOrderNames = prefs.readStringList(
+      'tool_option_dock_order',
+    );
+    final rightDockOrderNames = prefs.readStringList('right_dock_order');
+    if (toolOptionDockOrderNames != null || rightDockOrderNames != null) {
+      // An empty list means all windows were moved out, not "use defaults".
+      // Resolve saved positions across both sides before appending any newly
+      // introduced dock types, so moved windows never reappear twice.
+      final byName = CanvasDockPanel.values.asNameMap();
+      final seen = <CanvasDockPanel>{};
+      final left = <CanvasDockPanel>[];
+      final right = <CanvasDockPanel>[];
+
+      void appendUnique(List<CanvasDockPanel> target, Iterable<String> values) {
+        for (final value in values) {
+          final panel = byName[value];
+          if (panel != null && seen.add(panel)) target.add(panel);
+        }
+      }
+
+      appendUnique(
+        left,
+        toolOptionDockOrderNames ??
+            _defaultToolOptionDockOrder.map((p) => p.name),
+      );
+      appendUnique(
+        right,
+        rightDockOrderNames ?? _defaultRightDockOrder.map((p) => p.name),
+      );
+      for (final panel in _defaultToolOptionDockOrder) {
+        if (seen.add(panel)) left.add(panel);
+      }
+      for (final panel in _defaultRightDockOrder) {
+        if (seen.add(panel)) right.add(panel);
+      }
+      _toolOptionDockOrder = left;
+      _rightDockOrder = right;
+    }
+        final sizePresetStrings = prefs.readStringList('custom_size_presets') ?? [];
+    _customSizePresets = [];
+    for (final encoded in sizePresetStrings) {
+      try {
+        final decoded = jsonDecode(encoded);
+        if (decoded is Map<String, dynamic>) {
+          _customSizePresets.add(CanvasSizePreset.fromJson(decoded));
+        }
+      } on FormatException {
+        // Keep the raw persisted entry untouched so recovery is non-destructive.
+      } on TypeError {
+        // A structurally invalid preset is isolated instead of aborting startup.
+      }
+    }
+    _endCardDefaultHiddenForPremium =
+        prefs.readBool('endcard_default_hidden_for_premium') ?? false;
+    _toolbarSizeLevel = (prefs.readInt('toolbar_size_level') ?? 3).clamp(1, 5);
+    final toolbarOrderNames = prefs.readStringList('toolbar_order');
+    if (toolbarOrderNames != null && toolbarOrderNames.isNotEmpty) {
+      final map = ToolbarItemId.values.asNameMap();
+      final restored = toolbarOrderNames
+          .map((n) => map[n])
+          .whereType<ToolbarItemId>()
+          .toList();
+      // バージョンアップで項目が追加された場合、欠けている項目は末尾へ補完
+      for (final id in ToolbarItemId.values) {
+        if (!restored.contains(id)) restored.add(id);
+      }
+      _toolbarOrder = restored;
+    }
+    final hiddenNames = prefs.readStringList('toolbar_hidden') ?? const [];
+    _hiddenToolbarItems = hiddenNames
+        .map((n) => ToolbarItemId.values.asNameMap()[n])
+        .whereType<ToolbarItemId>()
+        .toSet();
+    final dockedPanelNames = prefs.readStringList('default_docked_panels');
+    if (dockedPanelNames != null) {
+      final map = CanvasDockPanel.values.asNameMap();
+      _defaultDockedPanels = dockedPanelNames
+          .map((n) => map[n])
+          .whereType<CanvasDockPanel>()
+          .toSet();
+    }
+    _twoFingerTap = _gestureActionFromName(
+      prefs.readString('gesture_two_finger_tap'),
+      GestureAction.undo,
+    );
+    _threeFingerTap = _gestureActionFromName(
+      prefs.readString('gesture_three_finger_tap'),
+      GestureAction.redo,
+    );
+    _fourOrMoreFingerTap = _gestureActionFromName(
+      prefs.readString('gesture_four_or_more_finger_tap'),
+      GestureAction.none,
+    );
+    _twoFingerSwipe = _gestureActionFromName(
+      prefs.readString('gesture_two_finger_swipe'),
+      GestureAction.frameMove,
+    );
+    _longPress = _gestureActionFromName(
+      prefs.readString('gesture_long_press'),
+      GestureAction.eyedropper,
+    );
+    _palmRejectionEnabled = prefs.readBool('palm_rejection_enabled') ?? true;
+    _penPressureEnabled = prefs.readBool('pen_pressure_enabled') ?? true;
+    _penPressureCurve =
+        PenPressureCurve.values.asNameMap()[prefs.readString(
+          'pen_pressure_curve',
+        )] ??
+        PenPressureCurve.normal;
+    final rawPoints = prefs.readStringList('pen_pressure_custom_points');
+    if (rawPoints != null && rawPoints.length >= 4 && rawPoints.length.isEven) {
+      final values = rawPoints.map((s) => double.tryParse(s)).toList();
+      if (values.every((v) => v != null)) {
+        final points = <(double, double)>[];
+        for (int i = 0; i < values.length; i += 2) {
+          points.add((values[i]!, values[i + 1]!));
+        }
+        _customPressurePoints = points;
+      }
+    } else {
+      // 旧バージョン（単一exponent値）からの引き継ぎ：以前の指数カーブの
+      // 形状を、新しい制御点方式の3点（始点・中間点・終点）で近似する。
+      final legacyExponent = prefs.readDouble('pen_pressure_custom_exponent');
+      if (legacyExponent != null && legacyExponent != 1.0) {
+        final midY = math.pow(0.5, legacyExponent).toDouble().clamp(0.0, 1.0);
+        _customPressurePoints = [(0.0, 0.0), (0.5, midY), (1.0, 1.0)];
+      }
+    }
+    _penButton1 = _gestureActionFromName(
+      prefs.readString('pen_button_1'),
+      GestureAction.eraserToggle,
+    );
+    _penButton2 = _gestureActionFromName(
+      prefs.readString('pen_button_2'),
+      GestureAction.eyedropper,
+    );
+  }
+
+  GestureAction _gestureActionFromName(String? name, GestureAction fallback) {
+    if (name == null) return fallback;
+    return GestureAction.values.asNameMap()[name] ?? fallback;
+  }
+
+  bool _isFirstLaunch = true;
+  bool get isFirstLaunch => _isFirstLaunch;
+
+  Future<void> markFirstLaunchDone() async {
+    _isFirstLaunch = false;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('first_launch', false);
+    notifyListeners();
+  }
+
+  Future<void> setDefaultFps(int fps) async {
+    _defaultFps = fps;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('default_fps', fps);
+    notifyListeners();
+  }
+
+  /// UI表示言語（'ja'/'en'）。MaterialAppのlocaleに反映され、
+  /// AppLocalizationsで参照される全画面の表示言語が切り替わる。
+  Future<void> setLanguage(String languageCode) async {
+    _language = languageCode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language', languageCode);
+    notifyListeners();
+  }
+
+  Future<void> setDefaultDrawingArea({
+    required bool enabled,
+    required double scale,
+  }) async {
+    _defaultDrawingAreaEnabled = enabled;
+    _defaultDrawingAreaScale = scale.clamp(1.0, 10.0);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(
+      'default_drawing_area_enabled',
+      _defaultDrawingAreaEnabled,
+    );
+    await prefs.setDouble(
+      'default_drawing_area_scale',
+      _defaultDrawingAreaScale,
+    );
+    notifyListeners();
+  }
+
+  Future<void> setUndoLimit(int limit) async {
+    _undoLimit = limit;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('undo_limit', limit);
+    notifyListeners();
+  }
+
+  Future<void> setTrashAutoDelete(int days) async {
+    _trashAutoDeleteDays = days;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('trash_auto_delete', days);
+    notifyListeners();
+  }
+
+  /// PC/DeXモードを手動で切り替える。[value]がnullなら自動判定
+  /// （画面幅ベース）に戻す。
+  Future<void> setForcePcMode(bool? value) async {
+    _forcePcMode = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('force_pc_mode', value == null ? -1 : (value ? 1 : 0));
+    notifyListeners();
+  }
+
+  /// 利き手は未カスタマイズ時の初期配置だけに作用する。
+  /// カスタム配置がある場合は外側ツールバーのみ左右が切り替わる。
+  Future<void> setLeftHanded(bool value) async {
+    _isLeftHanded = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_left_handed', value);
+    notifyListeners();
+  }
+
+  Future<void> setLassoSnapToLines(bool value) async {
+    _lassoSnapToLines = value;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('lasso_snap_to_lines', value);
+  }
+
+  Future<void> setLassoGapTolerancePx(int value) async {
+    _lassoGapTolerancePx = value.clamp(0, 12);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('lasso_gap_tolerance_px', _lassoGapTolerancePx);
+    notifyListeners();
+  }
+
+  Future<void> setSelectionReferenceAllVisible(bool value) async {
+    _selectionReferenceAllVisible = value;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('selection_reference_all_visible', value);
+  }
+
+  /// ツールバーの表示順を変更する（ドラッグで並び替え）。
+  Future<void> setToolbarOrder(List<ToolbarItemId> order) async {
+    _toolbarOrder = List.of(order);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'toolbar_order',
+      _toolbarOrder.map((e) => e.name).toList(),
+    );
+    notifyListeners();
+  }
+
+  /// ツールバー項目の表示/非表示を切り替える（チェックボックスで選択）。
+  Future<void> setToolbarItemVisible(ToolbarItemId id, bool visible) async {
+    if (visible) {
+      _hiddenToolbarItems.remove(id);
+    } else {
+      _hiddenToolbarItems.add(id);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'toolbar_hidden',
+      _hiddenToolbarItems.map((e) => e.name).toList(),
+    );
+    notifyListeners();
+  }
+
+  /// PC/DeXモードで既定でドッキング表示するパネルの一覧を丸ごと入れ替える
+  /// （ワークスペース設定＞PC版で既定で開くパネル）。
+  Future<void> setDefaultDockedPanels(Set<CanvasDockPanel> panels) async {
+    if (setEquals(_defaultDockedPanels, panels)) return;
+    // Publish the most recent user action in memory before the first await.
+    // Rapidly opening two panels must not lose the earlier open/close change.
+    _defaultDockedPanels = Set.of(panels);
+    await _pinDesktopDockLayout();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'default_docked_panels',
+      _defaultDockedPanels.map((e) => e.name).toList(),
+    );
+    notifyListeners();
+  }
+
+  /// ツールバー編集を初期状態（全項目表示・デフォルト順）へ戻す。
+  Future<void> resetToolbarDefault() async {
+    _toolbarOrder = List.of(ToolbarItemId.values);
+    _hiddenToolbarItems = {};
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'toolbar_order',
+      _toolbarOrder.map((e) => e.name).toList(),
+    );
+    await prefs.setStringList('toolbar_hidden', const []);
+    notifyListeners();
+  }
+
+  /// ワークスペースプリセットの読込用：並び順・非表示項目をまとめて適用する
+  /// （「切り替えると表示ツール・早替えツール・パネル配置が一括で変わる」）。
+  Future<void> applyToolbarPreset(
+    List<ToolbarItemId> order,
+    Set<ToolbarItemId> hidden,
+  ) async {
+    _toolbarOrder = order.isEmpty
+        ? List.of(ToolbarItemId.values)
+        : List.of(order);
+    _hiddenToolbarItems = Set.of(hidden);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'toolbar_order',
+      _toolbarOrder.map((e) => e.name).toList(),
+    );
+    await prefs.setStringList(
+      'toolbar_hidden',
+      _hiddenToolbarItems.map((e) => e.name).toList(),
+    );
+    notifyListeners();
+  }
+
+  Future<void> setGesture(GestureType type, GestureAction action) async {
+    final prefs = await SharedPreferences.getInstance();
+    switch (type) {
+      case GestureType.twoFingerTap:
+        _twoFingerTap = action;
+        await prefs.setString('gesture_two_finger_tap', action.name);
+      case GestureType.threeFingerTap:
+        _threeFingerTap = action;
+        await prefs.setString('gesture_three_finger_tap', action.name);
+      case GestureType.fourOrMoreFingerTap:
+        _fourOrMoreFingerTap = action;
+        await prefs.setString('gesture_four_or_more_finger_tap', action.name);
+      case GestureType.twoFingerSwipe:
+        _twoFingerSwipe = action;
+        await prefs.setString('gesture_two_finger_swipe', action.name);
+      case GestureType.longPress:
+        _longPress = action;
+        await prefs.setString('gesture_long_press', action.name);
+    }
+    notifyListeners();
+  }
+}
+
+enum GestureType {
+  twoFingerTap,
+  threeFingerTap,
+  fourOrMoreFingerTap,
+  twoFingerSwipe,
+  longPress,
+}
+
+enum GestureAction {
+  undo,
+  redo,
+  eyedropper,
+  panTool,
+  eraserToggle,
+  brushToggle,
+  frameMove,
+  nextTool,
+  none,
+  // オニオンスキンON/OFF切替（ジェスチャーに割り当て可能）
+  onionSkinToggle,
+}
+
+/// 筆圧カーブ（アプリ全体に適用）。
+enum PenPressureCurve { weak, normal, strong, custom }
