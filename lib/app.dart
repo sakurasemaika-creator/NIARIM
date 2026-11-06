@@ -14,7 +14,6 @@ import 'services/project_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/community_service.dart';
 import 'services/push_notification_service.dart';
-import 'services/community_service.dart';
 import 'services/settings_service.dart';
 import 'services/theme_service.dart';
 import 'utils/app_locale.dart';

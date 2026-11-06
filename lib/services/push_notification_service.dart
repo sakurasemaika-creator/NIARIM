@@ -12,12 +12,10 @@ import 'google_auth_service.dart';
 /// Start only after Firebase.initializeApp succeeds on Android.
 class PushNotificationService {
   PushNotificationService({
-    required GoogleAuthService auth,
-    required CommunityService community,
+    required this._auth,
+    required this._community,
     FirebaseMessaging? messaging,
-  }) : _auth = auth,
-       _community = community,
-       _messaging = messaging ?? FirebaseMessaging.instance;
+  }) : _messaging = messaging ?? FirebaseMessaging.instance;
 
   static bool firebaseAvailable = false;
   static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
