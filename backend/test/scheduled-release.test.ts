@@ -38,6 +38,7 @@ const updates = () => send.mock.calls.map(([cmd]) => cmd)
 beforeEach(() => {
   send.mockReset();
   vi.unstubAllGlobals();
+  vi.stubGlobal("fetch", vi.fn());
   process.env.TABLE_NAME = "test-table";
   process.env.YOUTUBE_API_KEY = "test-key";
 });
