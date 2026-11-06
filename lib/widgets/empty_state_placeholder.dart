@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/font_fallback.dart';
+import '../config/accent_text_theme.dart';
 
 /// 一覧画面が空のときに表示する共通プレースホルダー。円形の色付き
 /// アイコンバッジ・くらむぼんの太字タイトル・淡色の補足文という構成を、
@@ -10,6 +11,9 @@ class EmptyStatePlaceholder extends StatelessWidget {
   final String title;
   final String? hint;
 
+  /// 次にできること（絞り込みを外す等）のボタン。
+  final Widget? action;
+
   /// Whether this widget supplies its own scroll viewport. A sizing sliver
   /// can own scrolling instead by setting this to false.
   final bool scrollable;
@@ -19,6 +23,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
     required this.icon,
     required this.title,
     this.hint,
+    this.action,
     this.scrollable = true,
   });
 
@@ -37,7 +42,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
               color: scheme.primaryContainer,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 40, color: scheme.primary),
+            child: Icon(icon, size: 40, color: AccentTextTheme.of(context)),
           ),
           const SizedBox(height: 16),
           Text(
@@ -59,6 +64,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
               style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
             ),
           ],
+          if (action != null) ...[const SizedBox(height: 16), action!],
         ],
       ),
     );
@@ -66,6 +72,8 @@ class EmptyStatePlaceholder extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         child: ConstrainedBox(
+          // 幅も使える分いっぱいに取る。Scaffoldのbodyは幅を「最大まで」
+          // としか渡さないので、取らないと中身の幅に縮んで左へ寄る。
           constraints: BoxConstraints(
             minHeight: constraints.hasBoundedHeight ? constraints.maxHeight : 0,
             minWidth: constraints.hasBoundedWidth ? constraints.maxWidth : 0,

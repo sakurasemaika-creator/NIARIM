@@ -257,6 +257,27 @@ void main() {
       );
     });
 
+    // 台湾の中国語は繁体字、対応していない言語は英語（アプリ本体と同じ決まり）。
+    for (final (device, expected) in const [
+      (Locale('zh', 'TW'), 'zh_Hant'),
+      (Locale('de', 'DE'), 'en'),
+    ]) {
+      testWidgets('device $device without a saved language shows $expected', (
+        tester,
+      ) async {
+        tester.platformDispatcher.localesTestValue = [device];
+        addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+        await pumpFailure(tester, onRetry: () async {});
+        final locale = expected == 'zh_Hant'
+            ? const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant')
+            : Locale(expected);
+        expect(
+          find.text(lookupAppLocalizations(locale).startupFailedTitle),
+          findsOneWidget,
+        );
+      });
+    }
+
     testWidgets('retry runs once and shows progress while it runs', (
       tester,
     ) async {
@@ -324,9 +345,9 @@ void main() {
       expect(appLocalizationsFor(const Locale('zh', 'CN')).localeName, 'zh');
     });
 
-    test('falls back to Japanese for unsupported languages', () {
-      expect(appLocalizationsFor(const Locale('de')).localeName, 'ja');
-      expect(appLocalizationsFor(null).localeName, 'ja');
+    test('falls back to English for unsupported languages', () {
+      expect(appLocalizationsFor(const Locale('de')).localeName, 'en');
+      expect(appLocalizationsFor(null).localeName, 'en');
       expect(appLocalizationsFor(const Locale('fr', 'CA')).localeName, 'fr');
     });
   });

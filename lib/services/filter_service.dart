@@ -252,7 +252,7 @@ class FilterService extends ChangeNotifier {
     final raw = prefs.readStringList(_prefsKey);
     _filters.clear();
     _colorNoiseProfile = null;
-    final savedColor = prefs.getString(_colorNoiseProfileKey);
+    final savedColor = prefs.readString(_colorNoiseProfileKey);
     if (savedColor != null) {
       try {
         final json = jsonDecode(savedColor) as Map<String, dynamic>;

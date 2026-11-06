@@ -14,6 +14,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/screens/community/community_screen.dart';
+import 'package:niarim/widgets/app_tutorial.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -110,19 +111,25 @@ void main() {
   }
 
   testWidgets(
-    'guidance requires Start and acknowledged home revisits skip it',
+    'guidance closes only from its buttons and acknowledged home revisits skip it',
     (tester) async {
-      final l10n = await open(tester, first: true);
+      await open(tester, first: true);
       await tester.tapAt(const Offset(3, 3));
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
-      expect(find.text(l10n.homeFirstLaunchStart), findsOneWidget);
+      expect(find.byType(AppTutorial), findsOneWidget);
       expect(
         (await SharedPreferences.getInstance()).getBool('first_launch'),
         isTrue,
       );
-      await tester.tap(find.text(l10n.homeFirstLaunchStart));
+      // 最後のページまでめくって「はじめる」。
+      while (find.byKey(const Key('tutorialStart')).evaluate().isEmpty) {
+        await tester.tap(find.byKey(const Key('tutorialNext')));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.byKey(const Key('tutorialStart')));
       await tester.pumpAndSettle();
+      expect(find.byType(AppTutorial), findsNothing);
       expect(
         (await SharedPreferences.getInstance()).getBool('first_launch'),
         isFalse,
@@ -131,7 +138,7 @@ void main() {
       await tester.pumpAndSettle();
       appRouter.go('/home');
       await tester.pumpAndSettle();
-      expect(find.text(l10n.homeFirstLaunchStart), findsNothing);
+      expect(find.byType(AppTutorial), findsNothing);
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
@@ -586,15 +593,15 @@ void main() {
           theme: profile.theme,
         );
         await capture(tester, 'first-guidance-$suffix');
-        final label = tester.renderObject<RenderParagraph>(
-          find.text(l10n.homeFirstLaunchStart),
-        );
-        expect(
-          label.size.width + .01,
-          greaterThanOrEqualTo(label.getMaxIntrinsicWidth(double.infinity)),
-          reason: suffix,
-        );
-        await tester.tap(find.text(l10n.homeFirstLaunchStart));
+        for (final text in [l10n.tutorialSkip, l10n.tutorialNext]) {
+          final label = tester.renderObject<RenderParagraph>(find.text(text));
+          expect(
+            label.size.width + .01,
+            greaterThanOrEqualTo(label.getMaxIntrinsicWidth(double.infinity)),
+            reason: '$suffix $text',
+          );
+        }
+        await tester.tap(find.byKey(const Key('tutorialSkip')));
         await tester.pumpAndSettle();
         await capture(tester, 'projects-empty-$suffix');
         await switchTab(tester, 1);

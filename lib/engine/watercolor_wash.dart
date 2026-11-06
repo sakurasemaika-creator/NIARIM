@@ -26,8 +26,10 @@ import 'tile_manager.dart';
 /// (the paper's blotches are fixed to the canvas, so overlapping washes
 /// share them).
 ///
-/// Tiles hold straight (not premultiplied) RGBA, as [TileManager.blendPixel]
-/// writes them.
+/// Tiles hold premultiplied RGBA (as they are drawn as images). The wash is
+/// worked out on straight colours: the tile before the stroke is kept both
+/// as it was (to put back untouched pixels exactly) and divided back by its
+/// alpha, and each result is multiplied by its alpha as it is written.
 class WatercolorStroke {
   WatercolorStroke({
     required this.layerId,
@@ -89,6 +91,7 @@ class WatercolorStroke {
   /// covered (0–255), its mixing rate (0–100) and its opacity (0–255)
   /// there.
   final Map<String, Uint8List> _before = {};
+  final Map<String, Uint8List> _beforeRaw = {};
   final Map<String, Uint8List> _coverage = {};
   final Map<String, Uint8List> _rate = {};
   final Map<String, Uint8List> _opacity = {};
@@ -110,7 +113,16 @@ class WatercolorStroke {
   void touchTile(int tx, int ty, Uint8List tile) {
     final key = '$tx:$ty';
     if (_before.containsKey(key)) return;
-    _before[key] = Uint8List.fromList(tile);
+    _beforeRaw[key] = Uint8List.fromList(tile);
+    final straight = Uint8List.fromList(tile);
+    for (var p = 0; p < straight.length; p += 4) {
+      final a = straight[p + 3];
+      if (a == 0 || a == 255) continue;
+      for (var c = 0; c < 3; c++) {
+        straight[p + c] = (straight[p + c] * 255 / a).round().clamp(0, 255);
+      }
+    }
+    _before[key] = straight;
     _coverage[key] = Uint8List(_size2);
     _rate[key] = Uint8List(_size2);
     _opacity[key] = Uint8List(_size2);
@@ -146,7 +158,15 @@ class WatercolorStroke {
     if (x > _maxX) _maxX = x;
     if (y > _maxY) _maxY = y;
     final alpha = coverage / 255 * _density * _texture(x, y);
-    _composite(tile, before, pos * 4, alpha.clamp(0.0, 1.0), rate, opacity);
+    _composite(
+      tile,
+      before,
+      _beforeRaw[key]!,
+      pos * 4,
+      alpha.clamp(0.0, 1.0),
+      rate,
+      opacity,
+    );
   }
 
   /// Dries the stroke: spreads it past the brush with a ragged edge.
@@ -256,6 +276,7 @@ class WatercolorStroke {
         final tile = tiles.getOrCreateTile(layerId, tx, ty);
         touchTile(tx, ty, tile);
         final before = _before[key]!;
+        final raw = _beforeRaw[key]!;
         final rates = _rate[key]!;
         final opacities = _opacity[key]!;
         for (var y = y0; y <= y1; y++) {
@@ -266,10 +287,10 @@ class WatercolorStroke {
             if (a <= 0.004) {
               // Untouched by the wash: as before the stroke.
               final p = pos * 4;
-              tile[p] = before[p];
-              tile[p + 1] = before[p + 1];
-              tile[p + 2] = before[p + 2];
-              tile[p + 3] = before[p + 3];
+              tile[p] = raw[p];
+              tile[p + 1] = raw[p + 1];
+              tile[p + 2] = raw[p + 2];
+              tile[p + 3] = raw[p + 3];
               continue;
             }
             final alpha = a * _density * _texture(x, y);
@@ -277,6 +298,7 @@ class WatercolorStroke {
             _composite(
               tile,
               before,
+              raw,
               pos * 4,
               alpha.clamp(0.0, 1.0),
               brushed ? rates[pos] : _lastRate,
@@ -312,11 +334,23 @@ class WatercolorStroke {
     );
   }
 
+  /// Writes the straight colour ([r], [g], [b]) at [alpha] (0–1) as the
+  /// tile's premultiplied pixel at [p].
+  static void _put(Uint8List tile, int p, int r, int g, int b, double alpha) {
+    final a = (alpha * 255).round().clamp(0, 255);
+    tile[p] = (r * a / 255).round().clamp(0, a);
+    tile[p + 1] = (g * a / 255).round().clamp(0, a);
+    tile[p + 2] = (b * a / 255).round().clamp(0, a);
+    tile[p + 3] = a;
+  }
+
   /// Lays a wash of [alpha] over the pixel at [p] as it was [before] the
-  /// stroke, at the brush's [opacity] (0–255).
+  /// stroke (straight colours; [raw] is the same tile as it was), at the
+  /// brush's [opacity] (0–255).
   void _composite(
     Uint8List tile,
     Uint8List before,
+    Uint8List raw,
     int p,
     double alpha,
     int rate,
@@ -324,19 +358,16 @@ class WatercolorStroke {
   ) {
     final b = before[p + 3] / 255;
     if (alpha <= 0) {
-      tile[p] = before[p];
-      tile[p + 1] = before[p + 1];
-      tile[p + 2] = before[p + 2];
-      tile[p + 3] = before[p + 3];
+      tile[p] = raw[p];
+      tile[p + 1] = raw[p + 1];
+      tile[p + 2] = raw[p + 2];
+      tile[p + 3] = raw[p + 3];
       return;
     }
     final paintLinear = _paintLinear;
     final outA = b + alpha - alpha * b;
     if (b <= 0) {
-      tile[p] = paint >> 16 & 0xFF;
-      tile[p + 1] = paint >> 8 & 0xFF;
-      tile[p + 2] = paint & 0xFF;
-      tile[p + 3] = (outA * 255).round().clamp(0, 255);
+      _put(tile, p, paint >> 16 & 0xFF, paint >> 8 & 0xFF, paint & 0xFF, outA);
       return;
     }
     // At full opacity a wash over paint of its own colour joins it: the
@@ -345,15 +376,19 @@ class WatercolorStroke {
     final join = opacity >= 250 ? _sameColourShare(before, p) : 0.0;
     if (join >= 1) {
       if (alpha <= b) {
-        tile[p] = before[p];
-        tile[p + 1] = before[p + 1];
-        tile[p + 2] = before[p + 2];
-        tile[p + 3] = before[p + 3];
+        tile[p] = raw[p];
+        tile[p + 1] = raw[p + 1];
+        tile[p + 2] = raw[p + 2];
+        tile[p + 3] = raw[p + 3];
       } else {
-        tile[p] = paint >> 16 & 0xFF;
-        tile[p + 1] = paint >> 8 & 0xFF;
-        tile[p + 2] = paint & 0xFF;
-        tile[p + 3] = (alpha * 255).round().clamp(0, 255);
+        _put(
+          tile,
+          p,
+          paint >> 16 & 0xFF,
+          paint >> 8 & 0xFF,
+          paint & 0xFF,
+          alpha,
+        );
       }
       return;
     }
@@ -370,6 +405,7 @@ class WatercolorStroke {
     // Nearly the same colour: part of the way to joining.
     final joinedA = math.max(alpha, b);
     final finalA = outA + (joinedA - outA) * join;
+    final colour = List<int>.filled(3, 0);
     for (var c = 0; c < 3; c++) {
       final onPaint = linearFromSrgb8(mixed >> (16 - 8 * c)) * deepen;
       final premultiplied = b * onPaint + (1 - b) * alpha * paintLinear[c];
@@ -377,9 +413,9 @@ class WatercolorStroke {
       final joined = alpha > b
           ? paintLinear[c]
           : linearFromSrgb8(before[p + c]);
-      tile[p + c] = srgb8FromLinear(glazed + (joined - glazed) * join);
+      colour[c] = srgb8FromLinear(glazed + (joined - glazed) * join);
     }
-    tile[p + 3] = (finalA * 255).round().clamp(0, 255);
+    _put(tile, p, colour[0], colour[1], colour[2], finalA);
   }
 
   /// How nearly the colour at [p] in [before] is the paint's own colour: 1

@@ -192,7 +192,6 @@
       }
     }
   },
-  "homePasteSnackbar": "貼り付けました",
   "commonOk": "OK",
   "gestureSettingsTitle": "ジェスチャー設定",
   "gestureTwoFingerTap": "2本指タップ",
@@ -1188,7 +1187,6 @@
   "canvasSizePresetEmpty": "保存されたサイズはありません",
   "canvasSizePresetEmptyHint": "新規プロジェクト画面でカスタムサイズを指定し、「このサイズを保存する」から追加できます",
   "canvasSizePresetEditDialogTitle": "サイズを編集",
-  "canvasSizePresetDuplicateSuffix": "のコピー",
   "newProjectDurationLabel": "長さ（最大{max}）",
   "@newProjectDurationLabel": {
     "placeholders": {
@@ -3717,5 +3715,285 @@
   "communityDeleteSavedSearchConfirm": "保存した検索条件を削除しますか？",
   "communitySortLabel": "並び替え",
   "homeTrashOperationFailed": "操作を完了できませんでした。保存先を確認して、もう一度お試しください。",
-  "homeTrashWorking": "処理中…"
+  "homeTrashWorking": "処理中…",
+  "homeAddTooltip": "新規作成",
+  "commonShowExplanation": "説明を表示",
+  "homeViewModeTooltip": "表示の大きさ",
+  "homeMoveToTrashNothing": "ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。",
+  "homeMovedToTrashSnackbar": "{count}件をゴミ箱へ移動しました",
+  "@homeMovedToTrashSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeUndoAction": "元に戻す",
+  "homeCutSnackbar": "{count}件を切り取りました。移動先を開いて、右上の貼り付けを押してください。",
+  "@homeCutSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeCopiedSnackbar": "{count}件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。",
+  "@homeCopiedSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePastedSnackbar": "{count}件を貼り付けました",
+  "@homePastedSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSkippedIntoSelf": "フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。",
+  "@homePasteSkippedIntoSelf": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSkippedMissing": "{count}件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。",
+  "homePasteFailed": "一部を貼り付けられませんでした。もう一度お試しください。",
+  "homeCutPendingHint": "切り取り中（貼り付けを待っています）",
+  "@homePasteSkippedMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "projectDuplicateName": "{name} (コピー)",
+  "@projectDuplicateName": {
+    "description": "Name of a duplicated work.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "projectDuplicateNameNumbered": "{name} (コピー {number})",
+  "@projectDuplicateNameNumbered": {
+    "description": "Name of a duplicated work when a copy with the plain duplicate name already exists in the same place; number starts at 2.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "homeDrawerTutorial": "使い方",
+  "themeColorAccentText": "アクセントの文字・アイコン色",
+  "@themeColorAccentText": {
+    "description": "Theme color for accent-colored text and icons drawn directly on the background (selected tab label, outlined and text buttons, empty-state icons). Defaults to the accent color."
+  },
+  "projectDetailNotFoundBackToList": "プロジェクトの一覧へ",
+  "@projectDetailNotFoundBackToList": {
+    "description": "プロジェクト詳細で作品が見つからないときに、ホームのプロジェクトの一覧へ戻るボタン"
+  },
+  "projectListNoMatchTitle": "「{query}」に一致する作品はありません",
+  "@projectListNoMatchTitle": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "projectListNoMatchNameHint": "フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。",
+  "projectListNoMatchTagHint": "フォルダの中も含めて、作品に付けたタグの一部で探しています。",
+  "projectListClearSearch": "検索をやめる",
+  "projectListNoFavoritesTitle": "お気に入りの作品はありません",
+  "projectListNoFavoritesHint": "作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。",
+  "projectListShowAll": "すべて表示",
+  "projectListEmptyFolderTitle": "このフォルダは空です",
+  "projectListUpdatedOn": "{date}更新",
+  "@projectListUpdatedOn": {
+    "description": "Detail row: the date the work was last changed.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projectListInFolder": "フォルダ：{path}",
+  "@projectListInFolder": {
+    "description": "Search results: the folder a work is in (folder names joined by \" / \").",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "homeProjectsLoadFailed": "プロジェクトを読み込めませんでした",
+  "settingsErrorLogTitle": "エラーの記録",
+  "settingsErrorLogSubtitle": "不具合を知らせるときに、アプリで起きたエラーを確認してコピーできます",
+  "errorLogHint": "このアプリを閉じるまでに起きたエラーを、新しい順に最大20件表示します。メールアドレスやログインの情報は伏せてあります。",
+  "errorLogEmpty": "エラーは記録されていません",
+  "errorLogCopyAll": "すべてコピー",
+  "errorLogCopied": "エラーの記録をコピーしました",
+  "errorLogClear": "記録を消す",
+  "tutorialSkip": "スキップ",
+  "tutorialNext": "次へ",
+  "tutorialPageIndicator": "{total}ページ中{current}ページ目",
+  "@tutorialPageIndicator": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "tutorialPage1Title": "NIARIMへようこそ",
+  "tutorialPage1Step1": "1枚の絵を「フレーム」に描きます",
+  "tutorialPage1Step2": "少しずつ動きを変えたフレームを並べます",
+  "tutorialPage1Step3": "続けて再生するとアニメーションになり、動画として書き出せます",
+  "tutorialPage2Title": "作品をつくる",
+  "tutorialPage2Step1": "ホームの右下の＋を押します",
+  "tutorialPage2Step2": "「新規プロジェクト」を選び、名前や大きさを決めて「作成」を押します",
+  "tutorialPage2Step3": "作った作品は「プロジェクト」に並びます。押して「編集開始」を選ぶと続きを描けます",
+  "tutorialPage3Title": "キャンバスで描く",
+  "tutorialPage3Step1": "下のツールバーで、ペン・消しゴム・塗りつぶしなどの道具を選びます",
+  "tutorialPage3Step2": "色の丸を押すと、描く色を変えられます",
+  "tutorialPage3Step3": "左上の矢印で、取り消し・やり直しができます",
+  "tutorialPage4Title": "フレームを足して動かす",
+  "tutorialPage4Step1": "下のフレーム一覧で、いま描いているフレームが分かります",
+  "tutorialPage4Step2": "＋で次のフレームを足し、少しずつ動かして描きます",
+  "tutorialPage4Step3": "右上の設定の「オニオンスキン」で、前のフレームを薄く重ねて見られます",
+  "tutorialPage5Title": "再生して書き出す",
+  "tutorialPage5Step1": "右上のタイムラインのボタンで、タイムラインを開きます",
+  "tutorialPage5Step2": "再生ボタンで、動きを確かめます",
+  "tutorialPage5Step3": "「書き出し」で、動画やGIFとして保存・共有できます",
+  "tutorialPage6Title": "困ったときは",
+  "tutorialPage6Step1": "画面右上の？で、その画面の説明を見られます",
+  "tutorialPage6Step2": "はじめて使う機能では、短い説明が出ます",
+  "tutorialPage6Step3": "この使い方は、ホームの左上のメニューの「使い方」からいつでも見直せます",
+  "helpTutorialSubtitle": "はじめに表示した使い方を、もう一度見ます",
+  "settingsTipsResetTitle": "機能の説明をもう一度表示",
+  "settingsTipsResetSubtitle": "はじめて使う機能に出る短い説明を、次に使うときにもう一度出します",
+  "settingsTipsResetDone": "機能の説明を、次に使うときにもう一度表示します",
+  "helpTutorialButton": "使い方を見る",
+  "projectListTrashFolderConfirmTitle": "フォルダをゴミ箱へ移動しますか？",
+  "projectListTrashFolderConfirmBody": "「{name}」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。",
+  "@projectListTrashFolderConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeFolderMovedToTrashSnackbar": "「{name}」をゴミ箱へ移動しました",
+  "@homeFolderMovedToTrashSnackbar": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeMoveToTrashFolderContents": "フォルダの中の{contents}も一緒に移動します。",
+  "@homeMoveToTrashFolderContents": {
+    "placeholders": {
+      "contents": {
+        "type": "String"
+      }
+    }
+  },
+  "homeTrashFolderPermanentDeleteBody": "「{name}」を完全に削除します。元に戻すことはできません。",
+  "@homeTrashFolderPermanentDeleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{中身なし} other{フォルダ{folders}件}}} other{プロジェクト{projects}件{folders, plural, =0{} other{・フォルダ{folders}件}}}}",
+  "@homeFolderContents": {
+    "placeholders": {
+      "projects": {
+        "type": "int"
+      },
+      "folders": {
+        "type": "int"
+      }
+    }
+  },
+  "homeTrashFolderPermanentDeleteContents": "フォルダの中の{contents}も一緒に削除します。",
+  "@homeTrashFolderPermanentDeleteContents": {
+    "placeholders": {
+      "contents": {
+        "type": "String"
+      }
+    }
+  },
+  "newProjectNumberRangeError": "{min}〜{max}の数字を入力してください",
+  "@newProjectNumberRangeError": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "pcViewZoomIn": "拡大",
+  "pcViewZoomOut": "縮小",
+  "pcViewFit": "全体を表示",
+  "pcViewActualPixels": "100%で表示",
+  "pcViewRotateLeft": "左に回転",
+  "pcViewRotateRight": "右に回転",
+  "pcViewResetRotation": "回転を戻す",
+  "pcViewHidePanels": "パネルを隠す",
+  "pcViewFrameStrip": "フレーム一覧",
+  "pcPaneToolProperty": "ツールの設定",
+  "pcToolPropertyEmpty": "このツールには設定がありません",
+  "pcStatusFrame": "フレーム {current}/{total}",
+  "@pcStatusFrame": {
+    "description": "PC/DeXモードのステータスバー：今のフレームと総数",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "pcPaneProgram": "プレビュー",
+  "pcPaneInspector": "詳細",
+  "pcTimelineZoomIn": "タイムラインを拡大",
+  "pcTimelineZoomOut": "タイムラインを縮小",
+  "pcBinEmpty": "素材はまだありません",
+  "pcBinSceneFrames": "{count}フレーム",
+  "@pcBinSceneFrames": {
+    "description": "PC/DeXモードのタイムライン：シーンの一覧のフレーム数",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pcInspectorHint": "タイムラインの素材を選ぶと、ここで位置・大きさ・不透明度などを調整できます。",
+  "pcStatusFps": "{fps} fps",
+  "@pcStatusFps": {
+    "description": "PC/DeXモードのタイムライン：ステータスバーのフレームレート",
+    "placeholders": {
+      "fps": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSnackbar": "貼り付けました",
+  "canvasSizePresetDuplicateSuffix": "のコピー"
 }

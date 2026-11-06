@@ -1,3 +1,4 @@
+import '../config/accent_text_theme.dart';
 import '../config/font_fallback.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -50,6 +51,11 @@ class ThemeService extends ChangeNotifier {
     seedColor: AppThemePreset.defaultLight.accentColor,
   );
 
+  /// [activeColorScheme]と同じく、BuildContextの無い所（描画クラス等）から
+  /// 「アクセントの文字・アイコン色」を読むための値。themeDataを作るたびに
+  /// 更新する。
+  static Color activeAccentText = const Color(0xFFFF5C7A);
+
   /// 復旧確認ダイアログ専用。現在のテーマから独立している。
   /// プリセットの色をここで複製せず、正式なレッド（ライト）を利用する。
   static ThemeData get rescueThemeData =>
@@ -66,6 +72,8 @@ class ThemeService extends ChangeNotifier {
   ThemeData get themeData {
     final data = _buildTheme(_current);
     activeColorScheme = data.colorScheme;
+    activeAccentText =
+        data.extension<AccentTextTheme>()?.color ?? data.colorScheme.primary;
     return data;
   }
 
@@ -652,6 +660,9 @@ class ThemeService extends ChangeNotifier {
     // 初回の吹き出し・説明の吹き出しはアクセント色を下地にするので同様。
     final accentColor = opaqueOver(preset.accentColor, panelColor);
     final selectionColor = opaqueOver(preset.selectionColor, panelColor);
+    // 差し色で背景の上に直接描く文字・アイコン（選択中のタブ名・枠や文字の
+    // ボタン等）の色。未指定なら差し色と同じ（AccentTextTheme参照）。
+    final accentText = opaqueOver(preset.effectiveAccentTextColor, panelColor);
     // 「本文・通常の文字色」はonSurface系にも反映し、
     // ColorScheme.fromSeedが自動算出する既定の文字色（accentColorから
     // 逆算される、ユーザーが選んだtextColorとは無関係の値）で上書きされて
@@ -669,6 +680,17 @@ class ThemeService extends ChangeNotifier {
       popupColor,
       preset.textColor,
     );
+    // 差し色を変えたら差し色だけが変わるよう、fromSeedが差し色から作る
+    // ほかの色は、それぞれ対応する設定から作り直す。選択色の淡い色と
+    // 3つ目の色は選択色から（組み込みテーマは選択色＝差し色なので同じ値）、
+    // カード・入力欄・区切り線などの面と線はパネル背景色と文字色から。
+    final selectionSeedScheme = ColorScheme.fromSeed(
+      seedColor: preset.selectionColor,
+      brightness: brightness,
+    );
+    final surfaceInk = opaqueOver(preset.textColor, panelColor);
+    Color towardText(double t) => Color.lerp(panelColor, surfaceInk, t)!;
+    final light = brightness == Brightness.light;
     final scheme = seedScheme.copyWith(
       error: readableError,
       onError: contrastingForeground(readableError, seedScheme.onError),
@@ -684,6 +706,35 @@ class ThemeService extends ChangeNotifier {
         selectionColor.withValues(alpha: 0.16),
         popupColor,
       ),
+      secondaryFixed: selectionSeedScheme.secondaryFixed,
+      secondaryFixedDim: selectionSeedScheme.secondaryFixedDim,
+      onSecondaryFixed: selectionSeedScheme.onSecondaryFixed,
+      onSecondaryFixedVariant: selectionSeedScheme.onSecondaryFixedVariant,
+      tertiary: selectionSeedScheme.tertiary,
+      onTertiary: selectionSeedScheme.onTertiary,
+      tertiaryContainer: selectionSeedScheme.tertiaryContainer,
+      onTertiaryContainer: selectionSeedScheme.onTertiaryContainer,
+      tertiaryFixed: selectionSeedScheme.tertiaryFixed,
+      tertiaryFixedDim: selectionSeedScheme.tertiaryFixedDim,
+      onTertiaryFixed: selectionSeedScheme.onTertiaryFixed,
+      onTertiaryFixedVariant: selectionSeedScheme.onTertiaryFixedVariant,
+      surface: panelColor,
+      surfaceDim: light ? towardText(0.1) : panelColor,
+      surfaceBright: light ? panelColor : towardText(0.2),
+      surfaceContainerLowest: light
+          ? Color.lerp(panelColor, Colors.white, 0.6)!
+          : Color.lerp(panelColor, Colors.black, 0.3)!,
+      surfaceContainerLow: towardText(light ? 0.025 : 0.04),
+      surfaceContainer: towardText(light ? 0.045 : 0.06),
+      surfaceContainerHigh: towardText(light ? 0.07 : 0.1),
+      surfaceContainerHighest: towardText(light ? 0.095 : 0.15),
+      outline: towardText(0.55),
+      outlineVariant: towardText(light ? 0.2 : 0.22),
+      inverseSurface: Color.lerp(surfaceInk, panelColor, 0.1),
+      onInverseSurface: panelColor,
+      // 浮いた面に差し色を薄く重ねるMaterial3の色。面が差し色で
+      // 色づかないよう使わない。
+      surfaceTint: Colors.transparent,
       // Material container shades are subtle surfaces, NOT primary
       // filled buttons. Text shown on them (e.g. creator avatar labels)
       // follows the normal text token, not the button foreground.
@@ -739,6 +790,7 @@ class ThemeService extends ChangeNotifier {
       colorScheme: scheme,
       fontFamily: 'HakkouMincho',
       textTheme: textTheme,
+      extensions: [AccentTextTheme(accentText)],
       primaryTextTheme: textTheme,
       iconTheme: IconThemeData(color: preset.textColor),
       scaffoldBackgroundColor: preset.panelBgColor,
@@ -823,6 +875,7 @@ class ThemeService extends ChangeNotifier {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          foregroundColor: accentText,
           textStyle: textTheme.labelLarge?.copyWith(
             fontFamily: 'Kuramubon',
             fontFamilyFallback: kHeadingFontFallback,
@@ -832,7 +885,7 @@ class ThemeService extends ChangeNotifier {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: scheme.primary,
+          foregroundColor: accentText,
           minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
@@ -846,7 +899,7 @@ class ThemeService extends ChangeNotifier {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: scheme.primary,
+          foregroundColor: accentText,
           minimumSize: const Size(48, 44),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
@@ -871,7 +924,8 @@ class ThemeService extends ChangeNotifier {
       // 優先されるため既存の明示指定箇所への影響はない。
       listTileTheme: ListTileThemeData(
         minVerticalPadding: 12,
-        iconColor: scheme.primary,
+        // 一覧の行の先頭アイコンは背景の上の差し色＝アクセントの文字・アイコン色。
+        iconColor: accentText,
         selectedColor: preset.selectionTextColor,
         selectedTileColor: selectionColor,
         shape: RoundedRectangleBorder(
@@ -923,11 +977,18 @@ class ThemeService extends ChangeNotifier {
         // ThemeData.fontFamily='HakkouMincho'は継承されない。その結果
         // **アプリ中のSnackBarの文字だけ**端末標準フォント（Roboto等）で
         // 描かれ、同梱フォントの周囲から明確に浮く（日本語以外の端末では
-        // 字形が別物になる）。textTheme.titleMedium（SnackBarの既定書式）を
-        // 土台にして色だけ上書きする。
-        contentTextStyle: textTheme.titleMedium?.copyWith(
+        // 字形が別物になる）。SnackBarの文は説明文なので本文の書体
+        // （textTheme.bodyMedium＝白光明朝）を土台にして色だけ上書きする。
+        // 操作ボタン（「元に戻す」等）はlabelLargeで描かれ、小さく、
+        // くらむぼんの太字だと潰れるので白光明朝のまま（ユーザー指定）。
+        contentTextStyle: textTheme.bodyMedium?.copyWith(
           color: preset.textColor,
         ),
+        // 操作ボタン（「元に戻す」等）の色。Material3の既定は暗い下地向けの
+        // inversePrimaryで、このアプリのSnackBarは下地がポップアップの色
+        // （明るいテーマでは白に近い）なので、ほとんど見えなかった。
+        // ダイアログの文字ボタンと同じ色にする。
+        actionTextColor: accentText,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
           side: BorderSide.none,
@@ -972,15 +1033,17 @@ class ThemeService extends ChangeNotifier {
         ),
         checkColor: WidgetStatePropertyAll(preset.selectionTextColor),
       ),
+      // オンのスイッチは塗りの差し色の通り道に、塗りのボタンの文字色の
+      // つまみ（塗りのボタンと同じ組み合わせで、救済判定が見張っている）。
+      // 以前は差し色と半透明の差し色で、つまみが通り道に溶けて見えた。
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
           (states) =>
-              states.contains(WidgetState.selected) ? scheme.primary : null,
+              states.contains(WidgetState.selected) ? scheme.onPrimary : null,
         ),
         trackColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? scheme.primary.withValues(alpha: 0.5)
-              : null,
+          (states) =>
+              states.contains(WidgetState.selected) ? scheme.primary : null,
         ),
       ),
       // Selected labels/icons use a separate foreground *only* when their
@@ -988,6 +1051,14 @@ class ThemeService extends ChangeNotifier {
       // continues to use the normal text token.
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
+          // 切り替えボタンのラベルも他のボタンと同じくくらむぼん。
+          textStyle: WidgetStatePropertyAll(
+            textTheme.labelLarge?.copyWith(
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           backgroundColor: WidgetStateProperty.resolveWith<Color?>(
             (states) => states.contains(WidgetState.selected)
                 ? selectionColor
@@ -1031,7 +1102,7 @@ class ThemeService extends ChangeNotifier {
       ),
       tabBarTheme: TabBarThemeData(
         indicatorColor: scheme.primary,
-        labelColor: scheme.primary,
+        labelColor: accentText,
         unselectedLabelColor: preset.textColor.withValues(alpha: 0.6),
       ),
       dividerTheme: DividerThemeData(

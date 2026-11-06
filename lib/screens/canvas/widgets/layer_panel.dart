@@ -33,6 +33,7 @@ import 'two_finger_vertical_swipe_detector.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/blend_mode_label.dart';
 import '../../../utils/reorder_index.dart';
+import '../../../config/accent_text_theme.dart';
 
 class LayerPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -95,25 +96,29 @@ class _LayerPanelState extends State<LayerPanel> {
     required String label,
     required VoidCallback onPressed,
   }) {
+    // 幅が足りないとラベルは省略されるので、全文はツールチップで出す。
     return Expanded(
-      child: TextButton(
-        style: _shortcutButtonStyle,
-        onPressed: onPressed,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 13),
-            const SizedBox(width: 3),
-            Flexible(
-              child: Text(
-                label,
-                style: const TextStyle(fontSize: 10),
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
+      child: Tooltip(
+        message: label,
+        child: TextButton(
+          style: _shortcutButtonStyle,
+          onPressed: onPressed,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 13),
+              const SizedBox(width: 3),
+              Flexible(
+                child: Text(
+                  label,
+                  style: const TextStyle(fontSize: 10),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -274,15 +279,20 @@ class _LayerPanelState extends State<LayerPanel> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
               children: [
-                Text(
-                  l10n.layerPanelTitle,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                // ドックを狭めたとき（下限200）でも右のボタンを押せるよう、
+                // 見出しの方を省略する。
+                Expanded(
+                  child: Text(
+                    l10n.layerPanelTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
                   ),
                 ),
-                const Spacer(),
                 // 表示中の全レイヤーをワンタップで結合する（複数選択モードを
                 // 使わずに済む一括操作の一つ）。
                 IconButton(
@@ -554,7 +564,7 @@ class _LayerPanelState extends State<LayerPanel> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 9,
-                              color: ThemeService.activeColorScheme.primary,
+                              color: ThemeService.activeAccentText,
                             ),
                           )
                         : layer.hasClipping
@@ -565,7 +575,7 @@ class _LayerPanelState extends State<LayerPanel> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 9,
-                              color: Theme.of(context).colorScheme.primary,
+                              color: AccentTextTheme.of(context),
                             ),
                           )
                         : null,
@@ -592,7 +602,7 @@ class _LayerPanelState extends State<LayerPanel> {
                           Icon(
                             Icons.opacity,
                             size: 14,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: AccentTextTheme.of(context),
                           ),
                         if (layer.isLocked) const Icon(Icons.lock, size: 14),
                         // 三点メニュー・ゴミ箱は各レイヤーの右側に配置する
@@ -794,7 +804,7 @@ class _LayerPanelState extends State<LayerPanel> {
       model.LayerType.common => Icon(
         Icons.link,
         size: 12,
-        color: ThemeService.activeColorScheme.primary,
+        color: ThemeService.activeAccentText,
       ),
       model.LayerType.folder => Icon(
         Icons.folder,
@@ -814,7 +824,7 @@ class _LayerPanelState extends State<LayerPanel> {
       model.LayerType.timelineVideo => Icon(
         Icons.videocam,
         size: 12,
-        color: ThemeService.activeColorScheme.primary,
+        color: ThemeService.activeAccentText,
       ),
       model.LayerType.timelineText => Icon(
         Icons.title,
@@ -1574,10 +1584,7 @@ class _LayerPanelState extends State<LayerPanel> {
               },
             ),
             ListTile(
-              leading: Icon(
-                Icons.link,
-                color: ThemeService.activeColorScheme.primary,
-              ),
+              leading: Icon(Icons.link, color: ThemeService.activeAccentText),
               title: Text(l10n.layerPanelMenuCommonLayer),
               onTap: () {
                 Navigator.pop(ctx);
@@ -1887,12 +1894,12 @@ class _LayerPanelState extends State<LayerPanel> {
                       _blendModeName(l10n, layer.blendMode),
                       style: TextStyle(
                         fontSize: 12,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: AccentTextTheme.of(context),
                       ),
                     ),
                     Icon(
                       Icons.chevron_right,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: AccentTextTheme.of(context),
                     ),
                   ],
                 ),
@@ -1937,7 +1944,7 @@ class _LayerPanelState extends State<LayerPanel> {
                     : Icon(
                         Icons.diamond,
                         size: 14,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: AccentTextTheme.of(context),
                       ),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -2034,7 +2041,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 ListTile(
                   leading: Icon(
                     Icons.link,
-                    color: ThemeService.activeColorScheme.primary,
+                    color: ThemeService.activeAccentText,
                   ),
                   title: Text(l10n.layerPanelConvertToCommonLabel),
                   onTap: () {
@@ -2487,7 +2494,7 @@ class _LayerPanelState extends State<LayerPanel> {
       lineartLayer: lineartLayer,
       mode: mode,
     );
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   /// 対応する自動塗り用線画レイヤーが存在しない自動塗りレイヤー（線画レイヤーを

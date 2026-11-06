@@ -371,9 +371,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => '붙여넣었습니다';
-
-  @override
   String get commonOk => '확인';
 
   @override
@@ -2853,9 +2850,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get canvasSizePresetEditDialogTitle => '크기 편집';
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => '사본';
 
   @override
   String newProjectDurationLabel(String max) {
@@ -5632,7 +5626,7 @@ class AppLocalizationsKo extends AppLocalizations {
       'PC/DeX 모드에서는 체크한 여러 패널을 동시에 고정 표시할 수 있습니다(모바일은 오작동 방지를 위해 항상 모든 패널이 숨겨진 상태로 시작).';
 
   @override
-  String get workspaceDockPanelBrush => '브러쉬';
+  String get workspaceDockPanelBrush => '브러시';
 
   @override
   String get workspaceDockPanelColorPicker => '컬러 피커';
@@ -5647,10 +5641,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get workspaceDockPanelStamp => '스탬프';
 
   @override
-  String get workspaceDockPanelPenSubTool => '펜 보조 도구';
+  String get workspaceDockPanelPenSubTool => '펜 서브 도구';
 
   @override
-  String get workspaceDockPanelOnionSkin => '양파 스타일';
+  String get workspaceDockPanelOnionSkin => '어니언 스킨';
 
   @override
   String get workspaceDockPanelRuler => '자';
@@ -5659,10 +5653,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get workspaceDockPanelFilter => '필터';
 
   @override
-  String get workspaceDockPanelQuickTool => '빠른교체 도구';
+  String get workspaceDockPanelQuickTool => '빠른 교체 도구';
 
   @override
-  String get workspaceDockPanelColorAdjust => '색상 조정';
+  String get workspaceDockPanelColorAdjust => '색조 조정';
 
   @override
   String get workspaceDockPanelCanvasPreview => '캔버스 미리보기';
@@ -7727,4 +7721,370 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeTrashWorking => '처리 중…';
+
+  @override
+  String get homeAddTooltip => '새로 만들기';
+
+  @override
+  String get commonShowExplanation => '설명 보기';
+
+  @override
+  String get homeViewModeTooltip => '표시 크기';
+
+  @override
+  String get homeMoveToTrashNothing =>
+      '휴지통으로 이동할 항목이 없습니다(즐겨찾기한 항목은 이동하지 않습니다).';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '$count개 항목을 휴지통으로 이동했습니다';
+  }
+
+  @override
+  String get homeUndoAction => '실행 취소';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '$count개 항목을 잘라냈습니다. 옮길 곳을 열고 오른쪽 위의 붙여넣기를 누르세요.';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '$count개 항목을 복사했습니다. 붙여넣을 곳을 열고 오른쪽 위의 붙여넣기를 누르세요.';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '$count개 항목을 붙여넣었습니다';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '폴더 $count개는 자기 자신이나 그 안으로 옮길 수 없어 잘라낸 상태로 남겨 두었습니다.';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '원본이 없어 $count개 항목을 붙여넣지 못했습니다(휴지통으로 이동했거나 삭제됨).';
+  }
+
+  @override
+  String get homePasteFailed => '일부 항목을 붙여넣지 못했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get homeCutPendingHint => '잘라냄(붙여넣기 대기 중)';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (사본)';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name (사본 $number)';
+  }
+
+  @override
+  String get homeDrawerTutorial => '사용법';
+
+  @override
+  String get themeColorAccentText => '강조 글자·아이콘 색';
+
+  @override
+  String get projectDetailNotFoundBackToList => '프로젝트 목록으로';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return '“$query”에 해당하는 작품이 없습니다';
+  }
+
+  @override
+  String get projectListNoMatchNameHint =>
+      '모든 폴더에서 이름으로 찾습니다. 대문자와 소문자, 전각과 반각은 구별하지 않습니다.';
+
+  @override
+  String get projectListNoMatchTagHint => '모든 폴더에서 작품의 태그로 찾습니다.';
+
+  @override
+  String get projectListClearSearch => '검색 지우기';
+
+  @override
+  String get projectListNoFavoritesTitle => '즐겨찾기한 작품이 없습니다';
+
+  @override
+  String get projectListNoFavoritesHint =>
+      '작품이나 폴더 메뉴에서 “즐겨찾기 등록”을 선택하면 여기에 표시됩니다.';
+
+  @override
+  String get projectListShowAll => '모두 보기';
+
+  @override
+  String get projectListEmptyFolderTitle => '이 폴더는 비어 있습니다';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return '$date 수정';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return '폴더: $path';
+  }
+
+  @override
+  String get homeProjectsLoadFailed => '프로젝트를 불러오지 못했습니다';
+
+  @override
+  String get settingsErrorLogTitle => '오류 기록';
+
+  @override
+  String get settingsErrorLogSubtitle => '문제를 알릴 때 앱에서 발생한 오류를 확인하고 복사할 수 있습니다';
+
+  @override
+  String get errorLogHint =>
+      '앱을 연 뒤 발생한 오류를 최신순으로 최대 20건 표시합니다. 이메일 주소와 로그인 정보는 가려져 있습니다.';
+
+  @override
+  String get errorLogEmpty => '기록된 오류가 없습니다';
+
+  @override
+  String get errorLogCopyAll => '모두 복사';
+
+  @override
+  String get errorLogCopied => '오류 기록을 복사했습니다';
+
+  @override
+  String get errorLogClear => '기록 지우기';
+
+  @override
+  String get tutorialSkip => '건너뛰기';
+
+  @override
+  String get tutorialNext => '다음';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return '$total쪽 중 $current쪽';
+  }
+
+  @override
+  String get tutorialPage1Title => 'NIARIM에 오신 것을 환영합니다';
+
+  @override
+  String get tutorialPage1Step1 => '그림 한 장을 \'프레임\'에 그립니다.';
+
+  @override
+  String get tutorialPage1Step2 => '조금씩 움직임을 바꾼 프레임을 이어 붙입니다.';
+
+  @override
+  String get tutorialPage1Step3 => '이어서 재생하면 애니메이션이 되고, 동영상으로 내보낼 수 있습니다.';
+
+  @override
+  String get tutorialPage2Title => '작품 만들기';
+
+  @override
+  String get tutorialPage2Step1 => '홈 화면 오른쪽 아래의 +를 누릅니다.';
+
+  @override
+  String get tutorialPage2Step2 =>
+      '\'새 프로젝트\'를 고르고 이름과 크기를 정한 뒤 \'만들기\'를 누릅니다.';
+
+  @override
+  String get tutorialPage2Step3 =>
+      '만든 작품은 \'프로젝트\'에 표시됩니다. 작품을 누르고 \'편집 시작\'을 누르면 이어서 그릴 수 있습니다.';
+
+  @override
+  String get tutorialPage3Title => '캔버스에 그리기';
+
+  @override
+  String get tutorialPage3Step1 => '아래 도구 모음에서 펜·지우개·채우기 등의 도구를 고릅니다.';
+
+  @override
+  String get tutorialPage3Step2 => '색 동그라미를 누르면 그리는 색을 바꿀 수 있습니다.';
+
+  @override
+  String get tutorialPage3Step3 => '왼쪽 위의 화살표로 실행 취소와 다시 실행을 할 수 있습니다.';
+
+  @override
+  String get tutorialPage4Title => '프레임을 추가해 움직이기';
+
+  @override
+  String get tutorialPage4Step1 => '아래 프레임 목록에서 지금 그리고 있는 프레임을 알 수 있습니다.';
+
+  @override
+  String get tutorialPage4Step2 => '+로 다음 프레임을 추가하고 조금씩 움직여 그립니다.';
+
+  @override
+  String get tutorialPage4Step3 =>
+      '오른쪽 위 설정의 \'어니언 스킨\'을 켜면 이전 프레임이 흐리게 겹쳐 보입니다.';
+
+  @override
+  String get tutorialPage5Title => '재생하고 내보내기';
+
+  @override
+  String get tutorialPage5Step1 => '오른쪽 위의 타임라인 버튼으로 타임라인을 엽니다.';
+
+  @override
+  String get tutorialPage5Step2 => '재생 버튼으로 움직임을 확인합니다.';
+
+  @override
+  String get tutorialPage5Step3 => '\'내보내기\'로 동영상이나 GIF로 저장하거나 공유할 수 있습니다.';
+
+  @override
+  String get tutorialPage6Title => '막힐 때는';
+
+  @override
+  String get tutorialPage6Step1 => '화면 오른쪽 위의 ?를 누르면 그 화면의 설명을 볼 수 있습니다.';
+
+  @override
+  String get tutorialPage6Step2 => '처음 쓰는 기능에서는 짧은 설명이 나옵니다.';
+
+  @override
+  String get tutorialPage6Step3 =>
+      '이 사용법은 홈 화면 왼쪽 위 메뉴의 \'사용법\'에서 언제든지 다시 볼 수 있습니다.';
+
+  @override
+  String get helpTutorialSubtitle => '처음에 표시된 사용법을 다시 봅니다';
+
+  @override
+  String get settingsTipsResetTitle => '기능 설명 다시 표시';
+
+  @override
+  String get settingsTipsResetSubtitle =>
+      '기능마다 처음에 나오는 짧은 설명을 다음에 쓸 때 다시 표시합니다';
+
+  @override
+  String get settingsTipsResetDone => '다음에 쓸 때 기능 설명이 다시 표시됩니다';
+
+  @override
+  String get helpTutorialButton => '사용법 보기';
+
+  @override
+  String get projectListTrashFolderConfirmTitle => '폴더를 휴지통으로 이동하시겠습니까?';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '「$name」을(를) 휴지통으로 이동합니다. 휴지통에서 폴더째 복원할 수 있습니다.';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return '「$name」을(를) 휴지통으로 이동했습니다';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return '폴더 안의 $contents도 함께 이동합니다.';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '「$name」을(를) 완전히 삭제합니다. 이 작업은 되돌릴 수 없습니다.';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: ', 폴더 $folders개',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '폴더 $folders개',
+      zero: '비어 있음',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '프로젝트 $projects개$_temp0',
+      zero: '$_temp1',
+    );
+    return '$_temp2';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return '폴더 안의 $contents도 함께 삭제합니다.';
+  }
+
+  @override
+  String newProjectNumberRangeError(int min, int max) {
+    return '$min~$max 사이의 숫자를 입력하세요';
+  }
+
+  @override
+  String get pcViewZoomIn => '확대';
+
+  @override
+  String get pcViewZoomOut => '축소';
+
+  @override
+  String get pcViewFit => '창에 맞추기';
+
+  @override
+  String get pcViewActualPixels => '실제 픽셀(100%)';
+
+  @override
+  String get pcViewRotateLeft => '왼쪽으로 회전';
+
+  @override
+  String get pcViewRotateRight => '오른쪽으로 회전';
+
+  @override
+  String get pcViewResetRotation => '회전 초기화';
+
+  @override
+  String get pcViewHidePanels => '패널 숨기기';
+
+  @override
+  String get pcViewFrameStrip => '프레임 목록';
+
+  @override
+  String get pcPaneToolProperty => '도구 설정';
+
+  @override
+  String get pcToolPropertyEmpty => '이 도구에는 설정이 없습니다';
+
+  @override
+  String pcStatusFrame(int current, int total) {
+    return '프레임 $current/$total';
+  }
+
+  @override
+  String get pcPaneProgram => '미리보기';
+
+  @override
+  String get pcPaneInspector => '상세';
+
+  @override
+  String get pcTimelineZoomIn => '타임라인 확대';
+
+  @override
+  String get pcTimelineZoomOut => '타임라인 축소';
+
+  @override
+  String get pcBinEmpty => '아직 소재가 없습니다';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count프레임';
+  }
+
+  @override
+  String get pcInspectorHint =>
+      '타임라인에서 소재를 선택하면 여기에서 위치·크기·불투명도 등을 조정할 수 있습니다.';
+
+  @override
+  String pcStatusFps(int fps) {
+    return '$fps fps';
+  }
+
+  @override
+  String get homePasteSnackbar => '붙여넣었습니다';
+
+  @override
+  String get canvasSizePresetDuplicateSuffix => '사본';
 }

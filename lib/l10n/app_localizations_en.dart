@@ -381,9 +381,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => 'Pasted';
-
-  @override
   String get commonOk => 'OK';
 
   @override
@@ -2948,9 +2945,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get canvasSizePresetEditDialogTitle => 'Edit size';
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => 'copy';
 
   @override
   String newProjectDurationLabel(String max) {
@@ -7955,4 +7949,396 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeTrashWorking => 'Working…';
+
+  @override
+  String get homeAddTooltip => 'Create new';
+
+  @override
+  String get commonShowExplanation => 'Show explanation';
+
+  @override
+  String get homeViewModeTooltip => 'Display size';
+
+  @override
+  String get homeMoveToTrashNothing =>
+      'Nothing to move to the trash (favorites are not moved).';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return 'Moved $count item(s) to the trash';
+  }
+
+  @override
+  String get homeUndoAction => 'Undo';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return 'Cut $count item(s). Open the destination and tap Paste at the top right.';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return 'Copied $count item(s). Open where you want them and tap Paste at the top right.';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return 'Pasted $count item(s)';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count folder(s) can’t move into themselves or their subfolders, so they are still cut and ready to paste elsewhere.';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '$count item(s) couldn’t be pasted because the original is gone (moved to the trash or deleted).';
+  }
+
+  @override
+  String get homePasteFailed =>
+      'Some items couldn’t be pasted. Please try again.';
+
+  @override
+  String get homeCutPendingHint => 'Cut, waiting to be pasted';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (copy)';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name (copy $number)';
+  }
+
+  @override
+  String get homeDrawerTutorial => 'How to use';
+
+  @override
+  String get themeColorAccentText => 'Accent text & icon color';
+
+  @override
+  String get projectDetailNotFoundBackToList => 'Go to projects';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return 'Nothing matches “$query”';
+  }
+
+  @override
+  String get projectListNoMatchNameHint =>
+      'Searching names in every folder. Upper and lower case, and full- and half-width letters, count as the same.';
+
+  @override
+  String get projectListNoMatchTagHint =>
+      'Searching the tags of works in every folder.';
+
+  @override
+  String get projectListClearSearch => 'Clear search';
+
+  @override
+  String get projectListNoFavoritesTitle => 'No favorites here';
+
+  @override
+  String get projectListNoFavoritesHint =>
+      'Choose “Add to favorites” in the menu of a work or folder to show it here.';
+
+  @override
+  String get projectListShowAll => 'Show all';
+
+  @override
+  String get projectListEmptyFolderTitle => 'This folder is empty';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return 'Updated $date';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return 'In $path';
+  }
+
+  @override
+  String get homeProjectsLoadFailed => 'Could not load your projects';
+
+  @override
+  String get settingsErrorLogTitle => 'Error log';
+
+  @override
+  String get settingsErrorLogSubtitle =>
+      'View and copy errors from the app to include when reporting a problem';
+
+  @override
+  String get errorLogHint =>
+      'Shows up to 20 errors since the app was opened, newest first. Email addresses and sign-in details are hidden.';
+
+  @override
+  String get errorLogEmpty => 'No errors have been recorded';
+
+  @override
+  String get errorLogCopyAll => 'Copy all';
+
+  @override
+  String get errorLogCopied => 'Error log copied';
+
+  @override
+  String get errorLogClear => 'Clear log';
+
+  @override
+  String get tutorialSkip => 'Skip';
+
+  @override
+  String get tutorialNext => 'Next';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return 'Page $current of $total';
+  }
+
+  @override
+  String get tutorialPage1Title => 'Welcome to NIARIM';
+
+  @override
+  String get tutorialPage1Step1 => 'Draw a picture on a \"frame\".';
+
+  @override
+  String get tutorialPage1Step2 =>
+      'Add more frames, moving things a little each time.';
+
+  @override
+  String get tutorialPage1Step3 =>
+      'Play them in a row to make an animation, then export it as a video.';
+
+  @override
+  String get tutorialPage2Title => 'Create a project';
+
+  @override
+  String get tutorialPage2Step1 => 'On Home, tap + in the bottom-right corner.';
+
+  @override
+  String get tutorialPage2Step2 =>
+      'Choose \"New Project\", set the name and size, then tap \"Create\".';
+
+  @override
+  String get tutorialPage2Step3 =>
+      'Your projects appear under \"Projects\". Tap one, then \"Start editing\" to keep drawing.';
+
+  @override
+  String get tutorialPage3Title => 'Draw on the canvas';
+
+  @override
+  String get tutorialPage3Step1 =>
+      'Pick a tool such as the pen, eraser or fill from the toolbar at the bottom.';
+
+  @override
+  String get tutorialPage3Step2 =>
+      'Tap the color circle to change the drawing color.';
+
+  @override
+  String get tutorialPage3Step3 =>
+      'Use the arrows at the top left to undo and redo.';
+
+  @override
+  String get tutorialPage4Title => 'Add frames to animate';
+
+  @override
+  String get tutorialPage4Step1 =>
+      'The frame list at the bottom shows which frame you are drawing on.';
+
+  @override
+  String get tutorialPage4Step2 =>
+      'Tap + to add the next frame and draw it moved a little.';
+
+  @override
+  String get tutorialPage4Step3 =>
+      'Turn on \"Onion Skin\" in the settings at the top right to see the previous frame faintly underneath.';
+
+  @override
+  String get tutorialPage5Title => 'Play and export';
+
+  @override
+  String get tutorialPage5Step1 =>
+      'Open the timeline with the timeline button at the top right.';
+
+  @override
+  String get tutorialPage5Step2 => 'Tap Play to check the motion.';
+
+  @override
+  String get tutorialPage5Step3 =>
+      'Use \"Export\" to save or share it as a video or GIF.';
+
+  @override
+  String get tutorialPage6Title => 'If you get stuck';
+
+  @override
+  String get tutorialPage6Step1 =>
+      'Tap ? at the top right of a screen to read about that screen.';
+
+  @override
+  String get tutorialPage6Step2 =>
+      'A short tip appears the first time you use a feature.';
+
+  @override
+  String get tutorialPage6Step3 =>
+      'You can view this guide again anytime from \"How to use\" in the menu at the top left of Home.';
+
+  @override
+  String get helpTutorialSubtitle => 'See the getting-started guide again';
+
+  @override
+  String get settingsTipsResetTitle => 'Show feature tips again';
+
+  @override
+  String get settingsTipsResetSubtitle =>
+      'Show the short tip for each feature again the next time you use it';
+
+  @override
+  String get settingsTipsResetDone =>
+      'Feature tips will show again the next time you use each feature';
+
+  @override
+  String get helpTutorialButton => 'View the guide';
+
+  @override
+  String get projectListTrashFolderConfirmTitle =>
+      'Move the folder to the trash?';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '\"$name\" will be moved to the trash. You can restore the whole folder from the trash.';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return 'Moved \"$name\" to the trash';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return 'The $contents inside will be moved too.';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '\"$name\" will be permanently deleted. This cannot be undone.';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: ' and $folders folders',
+      one: ' and 1 folder',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: ' and $folders folders',
+      one: ' and 1 folder',
+      zero: '',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '$folders folders',
+      one: '1 folder',
+      zero: 'Empty',
+    );
+    String _temp3 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '$projects projects$_temp0',
+      one: '1 project$_temp1',
+      zero: '$_temp2',
+    );
+    return '$_temp3';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return 'The $contents inside will be deleted too.';
+  }
+
+  @override
+  String newProjectNumberRangeError(int min, int max) {
+    return 'Enter a number from $min to $max';
+  }
+
+  @override
+  String get pcViewZoomIn => 'Zoom In';
+
+  @override
+  String get pcViewZoomOut => 'Zoom Out';
+
+  @override
+  String get pcViewFit => 'Fit to Window';
+
+  @override
+  String get pcViewActualPixels => 'Actual Pixels (100%)';
+
+  @override
+  String get pcViewRotateLeft => 'Rotate Left';
+
+  @override
+  String get pcViewRotateRight => 'Rotate Right';
+
+  @override
+  String get pcViewResetRotation => 'Reset Rotation';
+
+  @override
+  String get pcViewHidePanels => 'Hide Panels';
+
+  @override
+  String get pcViewFrameStrip => 'Frame List';
+
+  @override
+  String get pcPaneToolProperty => 'Tool Settings';
+
+  @override
+  String get pcToolPropertyEmpty => 'This tool has no settings';
+
+  @override
+  String pcStatusFrame(int current, int total) {
+    return 'Frame $current/$total';
+  }
+
+  @override
+  String get pcPaneProgram => 'Preview';
+
+  @override
+  String get pcPaneInspector => 'Details';
+
+  @override
+  String get pcTimelineZoomIn => 'Zoom In Timeline';
+
+  @override
+  String get pcTimelineZoomOut => 'Zoom Out Timeline';
+
+  @override
+  String get pcBinEmpty => 'No materials yet';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count frames';
+  }
+
+  @override
+  String get pcInspectorHint =>
+      'Select a material on the timeline to adjust its position, size, opacity and more here.';
+
+  @override
+  String pcStatusFps(int fps) {
+    return '$fps fps';
+  }
+
+  @override
+  String get homePasteSnackbar => 'Pasted';
+
+  @override
+  String get canvasSizePresetDuplicateSuffix => 'copy';
 }

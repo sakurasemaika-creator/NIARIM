@@ -9,6 +9,7 @@ import '../../widgets/labeled_slider.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 class GestureSettingsScreen extends StatelessWidget {
   const GestureSettingsScreen({super.key});
@@ -164,12 +165,9 @@ class GestureSettingsScreen extends StatelessWidget {
         children: [
           Text(
             _label(context, current),
-            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            style: TextStyle(color: AccentTextTheme.of(context)),
           ),
-          Icon(
-            Icons.chevron_right,
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          Icon(Icons.chevron_right, color: AccentTextTheme.of(context)),
         ],
       ),
       onTap: () => showModalBottomSheet(

@@ -12,6 +12,7 @@ import '../../../services/filter_service.dart';
 import '../../../services/project_service.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/frame_preview_background.dart';
+import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 
@@ -194,89 +195,86 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // 中身の高さに合わせ、画面に収まらないときだけ全体をスクロールする。
+    // 高さを420に固定していた頃は、スマホでスライダー3本が1本半ほどの
+    // 小さな枠の中でしか動かせず、下の行は横にはみ出していた。
+    final maxHeight = math.max(0.0, MediaQuery.sizeOf(context).height - 72);
     final project = context
         .read<ProjectService>()
         .projects
         .where((project) => project.id == widget.projectId)
         .firstOrNull;
     final backgroundColor = project?.backgroundColor ?? 0x00000000;
-    return Card(
-      elevation: 0,
-      child: SizedBox(
-        width: 280,
-        height: 420,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PanelCenterCloseBar(onClose: widget.onClose),
-              Text(
-                l10n.canvasColorAdjustTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
+    return PanelSurface(
+      width: 280,
+      maxHeight: maxHeight,
+      selfScrolling: true,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PanelCenterCloseBar(onClose: widget.onClose),
+            Text(
+              l10n.canvasColorAdjustTitle,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
               ),
-              Divider(),
-              Center(
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: FramePreviewBackground(
-                    backgroundColor: backgroundColor,
-                    checkerSize: 8,
-                    child: _previewImage != null
-                        ? RawImage(image: _previewImage, fit: BoxFit.contain)
-                        : const Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
+            ),
+            Divider(),
+            Center(
+              child: Container(
+                width: 120,
+                height: 120,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: FramePreviewBackground(
+                  backgroundColor: backgroundColor,
+                  checkerSize: 8,
+                  child: _previewImage != null
+                      ? RawImage(image: _previewImage, fit: BoxFit.contain)
+                      : const Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           ),
-                  ),
+                        ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _slider(
-                        l10n.filterColorAdjustSaturationLabel,
-                        _saturation,
-                        (v) {
-                          setState(() => _saturation = v);
-                          _updatePreview();
-                        },
-                      ),
-                      _slider(
-                        l10n.filterColorAdjustBrightnessLabel,
-                        _brightness,
-                        (v) {
-                          setState(() => _brightness = v);
-                          _updatePreview();
-                        },
-                      ),
-                      _slider(l10n.filterColorAdjustContrastLabel, _contrast, (
-                        v,
-                      ) {
-                        setState(() => _contrast = v);
-                        _updatePreview();
-                      }),
-                    ],
-                  ),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            ),
+            const SizedBox(height: 8),
+            Column(
+              children: [
+                _slider(l10n.filterColorAdjustSaturationLabel, _saturation, (
+                  v,
+                ) {
+                  setState(() => _saturation = v);
+                  _updatePreview();
+                }),
+                _slider(l10n.filterColorAdjustBrightnessLabel, _brightness, (
+                  v,
+                ) {
+                  setState(() => _brightness = v);
+                  _updatePreview();
+                }),
+                _slider(l10n.filterColorAdjustContrastLabel, _contrast, (v) {
+                  setState(() => _contrast = v);
+                  _updatePreview();
+                }),
+              ],
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: Wrap(
+                alignment: WrapAlignment.spaceEvenly,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   TextButton(
                     onPressed: widget.onClose,
@@ -290,7 +288,12 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                   ),
                 ],
               ),
-              Wrap(
+            ),
+            // 2つの「追加する」は、幅が足りなければ上下に並べる（横に
+            // 並べたままだとスマホの幅で56pxはみ出した）。
+            SizedBox(
+              width: double.infinity,
+              child: Wrap(
                 alignment: WrapAlignment.center,
                 spacing: 4,
                 runSpacing: 0,
@@ -311,8 +314,8 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart' show HardwareKeyboard;
 import 'package:provider/provider.dart';
 
 import '../../../engine/autofill_engine.dart'
@@ -108,6 +109,54 @@ double canvasViewScaleOf(Matrix4 viewTransform) {
   final scale = math.sqrt(x * x + y * y);
   return scale.isFinite && scale > 0 ? scale : 1.0;
 }
+
+/// PC/DeXモードのメニュー・コマンドバーから行う、キャンバスの表示の操作。
+enum CanvasViewAction {
+  zoomIn,
+  zoomOut,
+  fit,
+  actualPixels,
+  rotateLeft,
+  rotateRight,
+  resetRotation,
+}
+
+/// [CanvasArea.viewRequest]で渡す表示の操作。[serial]が変わるたびに1回行う。
+@immutable
+class CanvasViewRequest {
+  const CanvasViewRequest(this.serial, this.action);
+
+  final int serial;
+  final CanvasViewAction action;
+}
+
+/// キャンバスの今の表示（PC/DeXモードのステータスバー用）。[zoom]は、
+/// プロジェクトの1pxが画面の1論理pxになるときに1。
+@immutable
+class CanvasViewInfo {
+  const CanvasViewInfo({required this.zoom, required this.rotationDeg});
+
+  final double zoom;
+  final double rotationDeg;
+
+  @override
+  bool operator ==(Object other) =>
+      other is CanvasViewInfo &&
+      other.zoom == zoom &&
+      other.rotationDeg == rotationDeg;
+
+  @override
+  int get hashCode => Object.hash(zoom, rotationDeg);
+}
+
+/// 表示を回転させる1回分の角度（コマンドバーの左・右回転）。
+const double kCanvasRotateStepDeg = 15;
+
+/// [viewTransform]の回転（度、-180〜180）。
+double canvasViewRotationDegOf(Matrix4 viewTransform) =>
+    math.atan2(viewTransform.entry(1, 0), viewTransform.entry(0, 0)) *
+    180 /
+    math.pi;
 
 /// キャンバスの表示変換を背景（＝CanvasAreaの表示領域）内へ拘束する。
 ///
@@ -470,6 +519,15 @@ class CanvasArea extends StatefulWidget {
   /// スライダーから指を離したときに増える。増えたら実画素へ確定する。
   final int selectionTransformCommitToken;
 
+  /// 表示の操作（拡大・縮小・全体表示・回転）。serialが変わったら行う。
+  final CanvasViewRequest? viewRequest;
+
+  /// 今の表示の倍率・回転をここへ書く（nullなら書かない）。
+  final ValueNotifier<CanvasViewInfo>? viewInfo;
+
+  /// ロックしたレイヤーへ描こうとした（描かずにここを呼ぶ）。
+  final VoidCallback? onLockedLayerEdit;
+
   const CanvasArea({
     super.key,
     this.onTapForText,
@@ -524,6 +582,9 @@ class CanvasArea extends StatefulWidget {
     this.selectionScale = 1,
     this.selectionRotateDeg = 0,
     this.selectionTransformCommitToken = 0,
+    this.viewRequest,
+    this.viewInfo,
+    this.onLockedLayerEdit,
   });
 
   @override
@@ -747,6 +808,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     // 描き直すようにしてある（下のbuild()参照）。
     widget.filterLensMask?.addListener(_onLensMaskChanged);
     _onLensMaskChanged();
+    // ステータスバーへ出す倍率・回転だけを書く（画面は作り直さない）。
+    _transformController.addListener(_publishViewInfo);
   }
 
   @override
@@ -908,6 +971,68 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (old.clearSelectionToken != widget.clearSelectionToken) {
       _clearSelectionMask();
     }
+    final view = widget.viewRequest;
+    if (view != null && view.serial != old.viewRequest?.serial) {
+      // ビルド中に変換を変えると、変換を描くAnimatedBuilderとステータスバーの
+      // 作り直しがビルド中に起きるので、次のフレームで行う。
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _applyViewAction(view.action);
+      });
+    }
+  }
+
+  /// [CanvasViewAction]を表示の中央を基準に行う。
+  void _applyViewAction(CanvasViewAction action) {
+    final size = context.size;
+    if (size == null || size.isEmpty) return;
+    final center = size.center(Offset.zero);
+    final current = _transformController.value;
+    Matrix4 around(Matrix4 t) =>
+        Matrix4.translationValues(center.dx, center.dy, 0)
+          ..multiply(t)
+          ..multiply(Matrix4.translationValues(-center.dx, -center.dy, 0));
+    Matrix4 scaled(double requested) {
+      final f = boundedCanvasScaleFactor(canvasViewScaleOf(current), requested);
+      return around(Matrix4.diagonal3Values(f, f, 1))..multiply(current);
+    }
+
+    Matrix4 rotated(double deg) =>
+        around(Matrix4.rotationZ(deg * math.pi / 180))..multiply(current);
+    final next = switch (action) {
+      CanvasViewAction.zoomIn => scaled(1.25),
+      CanvasViewAction.zoomOut => scaled(0.8),
+      CanvasViewAction.fit => Matrix4.identity(),
+      CanvasViewAction.actualPixels => scaled(
+        _fitZoom(size) > 0
+            ? 1 / (_fitZoom(size) * canvasViewScaleOf(current))
+            : 1,
+      ),
+      CanvasViewAction.rotateLeft => rotated(-kCanvasRotateStepDeg),
+      CanvasViewAction.rotateRight => rotated(kCanvasRotateStepDeg),
+      CanvasViewAction.resetRotation => rotated(
+        -canvasViewRotationDegOf(current),
+      ),
+    };
+    _transformController.value = _constrainViewMatrix(next);
+  }
+
+  /// 表示倍率1（全体表示）のときの、プロジェクトの1pxあたりの画面の論理px。
+  double _fitZoom(Size size) {
+    final canvas = canvasPixelSizeOf(widget.project);
+    if (canvas.width <= 0) return 0;
+    return canvasDrawingRectFor(size, widget.project).width / canvas.width;
+  }
+
+  void _publishViewInfo() {
+    final notifier = widget.viewInfo;
+    if (notifier == null || !mounted) return;
+    final size = context.size;
+    if (size == null || size.isEmpty) return;
+    final matrix = _transformController.value;
+    notifier.value = CanvasViewInfo(
+      zoom: _fitZoom(size) * canvasViewScaleOf(matrix),
+      rotationDeg: canvasViewRotationDegOf(matrix),
+    );
   }
 
   @override
@@ -924,6 +1049,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     _holdEyedropperTimer?.cancel();
     meshSourceImage?.dispose();
+    _transformController.removeListener(_publishViewInfo);
     _transformController.dispose();
     _compositeImage?.dispose();
     _belowImage?.dispose();
@@ -1310,10 +1436,27 @@ class _CanvasAreaState extends State<CanvasArea> {
     return constrainCanvasViewTransform(size, drawingRect, candidate);
   }
 
-  /// マウスホイールでのズーム（Galaxy DeXモード・マウス入力）。
-  /// カーソル位置を中心に拡大縮小する。
+  /// マウスのホイール（Galaxy DeX・PC）：そのままなら上下、Shiftを押しながらなら左右に動かし、
+  /// Ctrl（Macの⌘）を押しながらならカーソルの位置を中心に拡大・縮小する。
+  /// タッチパッドの横方向の移動（scrollDeltaのdx）はそのまま左右に動かす。
   void _handlePointerSignal(PointerSignalEvent event) {
     if (event is! PointerScrollEvent) return;
+    final keys = HardwareKeyboard.instance;
+    if (!keys.isControlPressed && !keys.isMetaPressed) {
+      var dx = event.scrollDelta.dx;
+      var dy = event.scrollDelta.dy;
+      // 端末がShift＋ホイールを横の移動へ変えていなければ、ここで変える。
+      if (keys.isShiftPressed && dx == 0) {
+        dx = dy;
+        dy = 0;
+      }
+      if (dx == 0 && dy == 0) return;
+      _transformController.value = _constrainViewMatrix(
+        Matrix4.translationValues(-dx, -dy, 0) * _transformController.value,
+      );
+      return;
+    }
+    if (event.scrollDelta.dy == 0) return;
     final requestedFactor = event.scrollDelta.dy > 0 ? 0.9 : 1.1;
     final currentScale = canvasViewScaleOf(_transformController.value);
     final scaleFactor = boundedCanvasScaleFactor(currentScale, requestedFactor);
@@ -1439,6 +1582,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (_isSelectionTool &&
         _selectionMask != null &&
+        _selectionTransformHitAt(canvasPos) != null &&
+        _refuseLockedLayer(event.pointer)) {
+      return;
+    }
+    if (_isSelectionTool &&
+        _selectionMask != null &&
         _beginSelectionTransformIfHit(canvasPos)) {
       // 既存の選択範囲の中・またはハンドルをタップ＝新規選択ではなく
       // 移動・拡大縮小・回転操作として扱う。
@@ -1465,6 +1614,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (widget.currentTool == DrawingTool.selectMagicWand) {
       _clearSelectionMask();
       _magicWandSelectAt(canvasPos);
+      return;
+    }
+    // ここから先のツールはどれもレイヤーの絵を書き換える（定規はハンドルの
+    // 操作だけ書き換えないので、ハンドルに当たらなかったときに調べる）。
+    if (widget.currentTool != DrawingTool.ruler &&
+        _refuseLockedLayer(event.pointer)) {
       return;
     }
     if (widget.currentTool == DrawingTool.shape &&
@@ -1499,6 +1654,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       // 【重大バグ修正】以前はここで無条件にreturnしていたため、定規
       // ツールでハンドル以外の場所をタップしても何も反応しなかった）。
       if (_handleRulerDown(canvasPos)) return;
+      if (_refuseLockedLayer(event.pointer)) return;
     }
     if (widget.currentTool == DrawingTool.bucket) {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
@@ -1547,6 +1703,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     // anchorとして扱うため、この呼び出しで既存仕様も維持される。
     final point = _toCanvasPoint(_rawToStrokePoint(event));
     _beginTileUndo();
+    _strokePointer = event.pointer;
     _drawingEngine.beginStroke(
       point,
       _tileKeyFor(_layerId),
@@ -1684,6 +1841,11 @@ class _CanvasAreaState extends State<CanvasArea> {
         widget.currentTool == DrawingTool.eyedropper) {
       return;
     }
+    // Only the pointer that began the stroke draws it: continueStroke would
+    // otherwise start a new stroke (with nothing recorded for Undo) from a
+    // pointer whose press began none (a palm while the pen was down, a
+    // press while a filter is adjusted, a pen button).
+    if (event.pointer != _strokePointer) return;
     _updateHoldEyedropper(event, canvasPos);
     final point = _toCanvasPoint(_rawToStrokePoint(event));
     _drawingEngine.continueStroke(
@@ -1827,13 +1989,23 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
 
     _disarmHoldEyedropper(event.pointer);
+    if (event.pointer != _strokePointer) {
+      // No stroke of its own (a pen button, a refused press): only the
+      // pen's lift is noted (palm rejection ends with it).
+      _inputHandler.onPointerUp(event);
+      return;
+    }
+    _strokePointer = null;
     if (_drawingEngine.needsFinalFadeReplay && _undoRecordingLayerKey != null) {
       final layerKey = _undoRecordingLayerKey!;
       final previewSnapshot = _tileManager.endUndoRecording();
       if (previewSnapshot.before.isNotEmpty) {
         _tileManager.applyTileSnapshot(layerKey, previewSnapshot.before);
       }
-      _tileManager.beginUndoRecording(layerKey);
+      _tileManager.beginUndoRecording(
+        layerKey,
+        lockOpacity: _recordingLocksOpacity,
+      );
       _drawingEngine.replayCurrentStrokeWithFinalFade();
     }
     _drawingEngine.endStroke();
@@ -1863,10 +2035,25 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   /// 描画操作（ストローク・バケツ・投げ縄塗り・トーン・スタンプ・移動・
   /// 変形・図形）の直前に呼び、現在のレイヤーへのタイル変更差分の記録を開始する。
-  void _beginTileUndo() {
+  /// [paints]は絵を描き加える操作か（移動・変形は偽）。描き加える操作は、
+  /// レイヤーの不透明度ロックが入っていれば透明な所へ描かず、各画素の
+  /// 不透明度を変えない（[TileManager.opacityLocked]）。
+  void _beginTileUndo({bool paints = true}) {
     _undoRecordingLayerKey = _tileKeyFor(_layerId);
-    _tileManager.beginUndoRecording(_undoRecordingLayerKey!);
+    _recordingLocksOpacity =
+        paints &&
+        (_layers.where((l) => l.id == _layerId).firstOrNull?.opacityLocked ??
+            false);
+    _tileManager.beginUndoRecording(
+      _undoRecordingLayerKey!,
+      lockOpacity: _recordingLocksOpacity,
+    );
   }
+
+  bool _recordingLocksOpacity = false;
+
+  /// 今のペン・消しゴムのストロークを描いている指（無ければnull）。
+  int? _strokePointer;
 
   /// ブラシのピクセルモードで配色方式（[Brush.pixelColorMode]）が
   /// none以外の場合、ストローク確定直後・Undo記録終了前に今回変更された
@@ -2197,6 +2384,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       _tileManager.applyTileSnapshot(layerKey, snapshot.before);
     }
     _drawingEngine.endStroke(cancel: true);
+    if (_strokePointer == pointer) _strokePointer = null;
     _toolHandledPointers.remove(pointer);
     _scheduleComposite();
 
@@ -2392,7 +2580,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     });
     if (start == null) return;
     if (delta.dx.abs() < 0.5 && delta.dy.abs() < 0.5) return;
-    _beginTileUndo();
+    _beginTileUndo(paints: false);
     _tileManager.translateLayer(_tileKeyFor(_layerId), delta.dx, delta.dy).then(
       (_) {
         if (!mounted) return;
@@ -2554,7 +2742,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     final rows = meshRows;
     final cols = meshCols;
     _meshCommitInFlight = true;
-    _beginTileUndo();
+    _beginTileUndo(paints: false);
     try {
       await _tileManager.meshTransformLayer(
         _tileKeyFor(_layerId),
@@ -2679,6 +2867,16 @@ class _CanvasAreaState extends State<CanvasArea> {
   bool _beginSelectionTransformIfHit(Offset canvasPos) {
     final bounds = _selectionMaskBounds();
     if (bounds == null) return false;
+    final mode = _selectionTransformHitAt(canvasPos);
+    if (mode == null) return false;
+    _beginSelectionTransform(canvasPos, mode, bounds);
+    return true;
+  }
+
+  /// 選択範囲の中・ハンドルを押したら、その変形の種類（当たらなければnull）。
+  _TransformMode? _selectionTransformHitAt(Offset canvasPos) {
+    final bounds = _selectionMaskBounds();
+    if (bounds == null) return null;
     final r = _selectionHandleHitRadius;
     final rotateR = selectionRotateHandleRadiusFor(_canvasToScreenScale);
     final reachable = _reachableCanvasRect;
@@ -2701,9 +2899,78 @@ class _CanvasAreaState extends State<CanvasArea> {
         _selectionMaskContains(canvasPos)) {
       mode = _TransformMode.translate;
     } else {
-      return false;
+      return null;
     }
-    _beginSelectionTransform(canvasPos, mode, bounds);
+    return mode;
+  }
+
+  /// OSが指を取り上げた（システムのジェスチャー・手のひらと判定された等、
+  /// PointerCancel）。その指で描いていたものは丸ごと取りやめ、途中までを
+  /// 残さない（残すと次の操作の記録に混ざって取り消せなくなる）。選択範囲の
+  /// 変形・メッシュ変形は確定の操作が別にあるのでここでは触らない。
+  void _cancelToolPointer(int pointer) {
+    if (pointer == _strokePointer) {
+      _strokePointer = null;
+      _drawingEngine.endStroke(cancel: true);
+      if (_undoRecordingLayerKey != null) _cancelTileUndoAndRestore();
+      return;
+    }
+    switch (widget.currentTool) {
+      case DrawingTool.finger || DrawingTool.blur || DrawingTool.mosaic:
+        _warpBuffer = null;
+        _warpLastPos = null;
+        if (_undoRecordingLayerKey != null) _cancelTileUndoAndRestore();
+      case DrawingTool.shape:
+        setState(() {
+          _shapeStart = null;
+          _shapeEnd = null;
+        });
+      case DrawingTool.move:
+        setState(() {
+          _moveStart = null;
+          _moveDelta = Offset.zero;
+        });
+      case DrawingTool.selectRect:
+        if (!_selectionTransformActive) {
+          setState(() {
+            _selectionStart = null;
+            _selectionEnd = null;
+          });
+        }
+      case DrawingTool.selectLasso || DrawingTool.lasso:
+        if (!_selectionTransformActive) {
+          _lassoGeneration++;
+          setState(() => _lassoPoints = []);
+        }
+      case DrawingTool.pen:
+        if (_subToolStrokePoints.isNotEmpty) {
+          setState(() => _subToolStrokePoints = []);
+        }
+      default:
+        break;
+    }
+  }
+
+  /// 今のレイヤーがロック中なら、描かずに知らせて真を返す。[pointer]は
+  /// 断った指（以後の動き・離すもツールへ渡さない。渡すとペンは動きだけで
+  /// 線を描き始め、ぼかしは動いた所をぼかしてしまう）。
+  bool _refuseLockedLayer(int? pointer) {
+    final layer = _layers.where((l) => l.id == _layerId).firstOrNull;
+    if (layer == null || !layer.isLocked) return false;
+    if (pointer != null) _toolHandledPointers.remove(pointer);
+    final notify = widget.onLockedLayerEdit;
+    if (notify == null) return true;
+    // スライダーの変形はビルド中（didUpdateWidget）に来る。そこから親の
+    // SnackBarを出すと例外になるので、フレームの後へ回す。
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) notify();
+      });
+    } else {
+      notify();
+    }
     return true;
   }
 
@@ -2722,7 +2989,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       _selectionTransformBounds = bounds;
       _selectionTransformLive = Matrix4.identity();
     });
-    _beginTileUndo();
+    _beginTileUndo(paints: false);
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
     final key = _tileKeyFor(_layerId);
@@ -2784,6 +3051,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     final bounds = _selectionMaskBounds();
     if (bounds == null) return;
     if (!_selectionTransformActive) {
+      if (_refuseLockedLayer(null)) return;
       // まだ掴んでいない状態からスライダーが動いた：切り出しだけ先に始める。
       _beginSelectionTransform(bounds.center, _TransformMode.translate, bounds);
     }
@@ -3039,7 +3307,8 @@ class _CanvasAreaState extends State<CanvasArea> {
           final tile = _tileManager.getOrCreateTile(key, tx, ty);
           final lx = px % TileManager.tileSize;
           final ly = py % TileManager.tileSize;
-          _tileManager.blendPixel(
+          // The blurred picture is premultiplied (read from an image).
+          _tileManager.blendPremultipliedPixel(
             tile,
             lx,
             ly,
@@ -4180,6 +4449,10 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.viewInfo != null) {
+      // 窓の大きさが変わると、同じ表示でも実際の倍率が変わる。
+      WidgetsBinding.instance.addPostFrameCallback((_) => _publishViewInfo());
+    }
     final settings = context.watch<SettingsService>();
     final theme = context.watch<ThemeService>().current;
     final currentBrush = context.watch<BrushService>().currentBrush;
@@ -4289,7 +4562,9 @@ class _CanvasAreaState extends State<CanvasArea> {
             if (_activeTouchPositions.isEmpty) _touchTransformActive = false;
           }
           _disarmHoldEyedropper(e.pointer);
-          _toolHandledPointers.remove(e.pointer);
+          if (_toolHandledPointers.remove(e.pointer)) {
+            _cancelToolPointer(e.pointer);
+          }
           if (e.pointer == _gizmoPointer) _endFilterGizmoDrag();
           if (e.pointer == _lensPointer) _abandonLensMaskEdit();
         },

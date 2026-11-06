@@ -183,7 +183,7 @@ void main() {
     ProjectViewMode.medium,
     ProjectViewMode.small,
   ]) {
-    testWidgets('${mode.name}: selection stars stay at the top right', (
+    testWidgets('${mode.name}: selection stars stay at the bottom left', (
       tester,
     ) async {
       tester.view.devicePixelRatio = 1;
@@ -226,14 +226,19 @@ void main() {
             );
             final cardRect = tester.getRect(_card(name));
             final starRect = tester.getRect(star);
+            // お気に入りの星は絵の左下（右上のメニューと離し、名前の帯には
+            // 重ねない）。
             expect(
-              starRect.top - cardRect.top,
+              starRect.left - cardRect.left,
               lessThan(16),
               reason: '$name at $size / $scale',
             );
+            final caption = tester.getRect(
+              find.descendant(of: _card(name), matching: find.text(name)),
+            );
             expect(
-              cardRect.right - starRect.right,
-              lessThan(16),
+              starRect.bottom,
+              lessThanOrEqualTo(caption.top),
               reason: '$name at $size / $scale',
             );
             expect(
@@ -288,8 +293,13 @@ void main() {
       const Color(0xFF2867DA),
       const Color(0xFFDD00EE),
     ]) {
+      // 星は背景の上のアイコンなので「アクセントの文字・アイコン色」で描く。
+      // 既定のテーマはこの色を指定しているので、未指定（＝差し色に従う）にする。
       themeService.previewCurrent(
-        AppThemePreset.defaultLight.copyWith(accentColor: accent),
+        AppThemePreset.defaultLight.copyWith(
+          accentColor: accent,
+          accentTextColor: null,
+        ),
       );
       await tester.pumpAndSettle();
       // Check both the service's source-of-truth theme and actual widget tree.

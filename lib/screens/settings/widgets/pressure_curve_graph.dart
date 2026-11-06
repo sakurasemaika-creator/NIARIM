@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../config/accent_text_theme.dart';
 
 /// 筆圧カーブのグラフエディタ。X軸＝実際の筆圧
 /// （0〜1）、Y軸＝反映される太さ・不透明度の倍率（0〜1）として、現在の
@@ -81,7 +82,7 @@ class _PressureCurveGraphState extends State<PressureCurveGraph> {
         child: CustomPaint(
           painter: _PressureCurvePainter(
             points: widget.points,
-            color: scheme.primary,
+            color: AccentTextTheme.of(context),
             handleOutlineColor: scheme.surfaceContainerHighest,
             gridColor: scheme.outlineVariant,
           ),

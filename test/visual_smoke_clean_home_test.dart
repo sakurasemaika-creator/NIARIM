@@ -76,7 +76,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 700));
 
-    final firstLaunch = find.text('はじめる');
+    final firstLaunch = find.byKey(const Key('tutorialSkip'));
     if (firstLaunch.evaluate().isNotEmpty) {
       await tester.tap(firstLaunch);
       await tester.pump(const Duration(milliseconds: 700));

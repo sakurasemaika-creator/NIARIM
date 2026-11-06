@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../config/accent_text_theme.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/canvas_size_preset.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
@@ -9,6 +12,7 @@ import '../../services/settings_service.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/background_color_picker.dart';
 import '../../widgets/labeled_slider.dart';
+import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -40,6 +44,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   int _exportWidth = 1920;
   int _exportHeight = 1080;
   bool _customSize = false;
+  // 選んでいるサイズのチップ（組み込みは「builtin:種類」、保存したサイズは
+  // 「custom:ID」）。大きさで比べると、組み込みと同じ大きさで保存したサイズの
+  // チップも一緒に選ばれた表示になった。
+  String? _selectedPresetKey = 'builtin:fullHd';
   late final TextEditingController _customWidthController;
   late final TextEditingController _customHeightController;
   // 描画領域設定（ホーム画面設定の初期値を引き継ぎ）
@@ -51,6 +59,17 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   // 長さ（秒）の数字入力欄（スライダーだけでなく
   // 数字入力でも指定できるようにする）。
   late final TextEditingController _durationController;
+  // 数字の欄から出たら、実際に使う値（範囲に収めた値）を欄へ書き戻す。
+  // 書き戻さないと、5000と打った欄が1920で作られるのに5000のまま見えた。
+  final _widthFocus = FocusNode();
+  final _heightFocus = FocusNode();
+  final _durationFocus = FocusNode();
+
+  /// 数字の欄に打てるのは4桁までの数字だけ。
+  static final _numberInput = <TextInputFormatter>[
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(4),
+  ];
 
   // 30fpsは手描きアニメーションでは中割りの負担が大きく現実的でないため
   // 選択肢から除外している（基本設定画面のデフォルトFPS選択肢とも統一）。
@@ -88,6 +107,33 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     _customWidthController = TextEditingController(text: '$_exportWidth');
     _customHeightController = TextEditingController(text: '$_exportHeight');
     _durationController = TextEditingController(text: '$_durationSeconds');
+    for (final focus in [_widthFocus, _heightFocus, _durationFocus]) {
+      focus.addListener(() {
+        if (!focus.hasFocus) _commitNumberFields();
+      });
+    }
+  }
+
+  /// 数字の欄の表示を、実際に使う幅・高さ・長さにそろえる。
+  void _commitNumberFields() {
+    if (!mounted) return;
+    setState(() {
+      _customWidthController.text = '$_exportWidth';
+      _customHeightController.text = '$_exportHeight';
+      _durationController.text = '$_durationSeconds';
+    });
+  }
+
+  /// 欄の数字が[min]〜[max]に収まっていなければ、その旨の文。
+  String? _rangeError(
+    AppLocalizations l10n,
+    TextEditingController controller,
+    int min,
+    int max,
+  ) {
+    final value = int.tryParse(controller.text);
+    if (value != null && value >= min && value <= max) return null;
+    return l10n.newProjectNumberRangeError(min, max);
   }
 
   @override
@@ -107,6 +153,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     _customWidthController.dispose();
     _customHeightController.dispose();
     _durationController.dispose();
+    _widthFocus.dispose();
+    _heightFocus.dispose();
+    _durationFocus.dispose();
     super.dispose();
   }
 
@@ -133,9 +182,13 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     return '';
   }
 
-  void _selectPreset(int width, int height) {
+  void _selectPreset(int width, int height, String key) {
+    // 以前の版で範囲外のサイズを保存できたので、選んだときも範囲に収める。
+    width = clampCanvasEdge(width);
+    height = clampCanvasEdge(height);
     setState(() {
       _customSize = false;
+      _selectedPresetKey = key;
       _exportWidth = width;
       _exportHeight = height;
     });
@@ -164,15 +217,41 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
         : l10n.newProjectDurationM(m);
   }
 
-  // 上限はFull HD相当（長辺1920px）とする。
-  static const int _maxCustomEdge = 1920;
+  /// 選んでいる保存したサイズが「サイズ設定」で変わった・消えたときに追う。
+  /// 変わったらその大きさにし、消えたら今の大きさのままカスタムにする
+  /// （チップの表示と作る大きさを食い違わせない）。
+  void _followChosenPreset(SettingsService settings) {
+    final key = _selectedPresetKey;
+    if (_customSize || key == null || !key.startsWith('custom:')) return;
+    final chosen = settings.customSizePresets
+        .where((p) => key == 'custom:${p.id}')
+        .firstOrNull;
+    if (chosen != null &&
+        clampCanvasEdge(chosen.width) == _exportWidth &&
+        clampCanvasEdge(chosen.height) == _exportHeight) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _selectedPresetKey != key) return;
+      if (chosen != null) {
+        _selectPreset(chosen.width, chosen.height, key);
+      } else {
+        setState(() {
+          _customSize = true;
+          _selectedPresetKey = null;
+          _customWidthController.text = '$_exportWidth';
+          _customHeightController.text = '$_exportHeight';
+        });
+      }
+    });
+  }
 
   /// カスタムサイズをスライダー・テキスト欄両方から一元的に反映する。
   /// テキスト欄の表示もここで同期し、スライダー操作とテキスト直接入力の
   /// どちらでも比率プレビューへ即座に反映されるようにする。
   void _setCustomSize({int? width, int? height}) {
-    final w = (width ?? _exportWidth).clamp(64, _maxCustomEdge);
-    final h = (height ?? _exportHeight).clamp(64, _maxCustomEdge);
+    final w = (width ?? _exportWidth).clamp(kMinCanvasEdge, kMaxCanvasEdge);
+    final h = (height ?? _exportHeight).clamp(kMinCanvasEdge, kMaxCanvasEdge);
     setState(() {
       _exportWidth = w;
       _exportHeight = h;
@@ -181,71 +260,38 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     _customHeightController.text = '$h';
   }
 
+  /// 打った数字を範囲に収めて使う（数字が無ければ前の値のまま）。欄の
+  /// 表示は打ったままにして範囲の文を出し、欄から出たときにそろえる。
   void _applyCustomSize() {
     final w = int.tryParse(_customWidthController.text);
     final h = int.tryParse(_customHeightController.text);
-    if (w == null || h == null) return;
     setState(() {
-      _exportWidth = w.clamp(64, _maxCustomEdge);
-      _exportHeight = h.clamp(64, _maxCustomEdge);
+      if (w != null) _exportWidth = w.clamp(kMinCanvasEdge, kMaxCanvasEdge);
+      if (h != null) _exportHeight = h.clamp(kMinCanvasEdge, kMaxCanvasEdge);
     });
   }
 
   /// 現在のカスタムサイズに名前を付けて保存し、以降はサイズ一覧の
-  /// プリセットとして選択できるようにする。
+  /// プリセットとして選択できるようにする。空白だけの名前では保存しない。
   void _showSaveCustomSizeDialog() {
     final l10n = AppLocalizations.of(context)!;
-    final nameCtrl = TextEditingController();
+    final settings = context.read<SettingsService>();
+    final messenger = ScaffoldMessenger.of(context);
+    final width = _exportWidth;
+    final height = _exportHeight;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.newProjectSaveCustomSizeDialogTitle),
-        content: TextField(
-          controller: nameCtrl,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: l10n.newProjectSaveCustomSizeNameLabel,
-            border: const OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              l10n.commonCancel,
-              style: TextStyle(
-                shadows: CanvasIconButton.actionShadows(
-                  Theme.of(ctx).colorScheme.primary,
-                  Theme.of(ctx).dialogTheme.backgroundColor ??
-                      Theme.of(ctx).colorScheme.surface,
-                  Theme.of(ctx).colorScheme,
-                ),
-              ),
-            ),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameCtrl.text.isNotEmpty) {
-                context.read<SettingsService>().addCustomSizePreset(
-                  nameCtrl.text,
-                  _exportWidth,
-                  _exportHeight,
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.newProjectSaveCustomSizeSavedSnackbar),
-                  ),
-                );
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonSave),
-          ),
-        ],
-      ),
-    ).then(
-      (_) => WidgetsBinding.instance.addPostFrameCallback(
-        (_) => nameCtrl.dispose(),
+      builder: (ctx) => NameEntryDialog(
+        title: l10n.newProjectSaveCustomSizeDialogTitle,
+        labelText: l10n.newProjectSaveCustomSizeNameLabel,
+        confirmLabel: l10n.commonSave,
+        cancelLabel: l10n.commonCancel,
+        onSubmit: (name) async {
+          await settings.addCustomSizePreset(name, width, height);
+          messenger.showSnackBar(
+            SnackBar(content: Text(l10n.newProjectSaveCustomSizeSavedSnackbar)),
+          );
+        },
       ),
     );
   }
@@ -297,7 +343,11 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     .toList(),
               ),
               const SizedBox(height: 24),
-              Row(
+              // 見出しと「サイズ設定」が1行に入らなければ、ボタンを次の行へ
+              // （Rowに並べていた頃は、英・西・仏語の大きな文字ではみ出した）。
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
                     l10n.newProjectSizeLabel,
@@ -307,7 +357,6 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
-                  const Spacer(),
                   TextButton.icon(
                     onPressed: () => Navigator.push(
                       context,
@@ -319,7 +368,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       Icons.tune,
                       size: 18,
                       shadows: CanvasIconButton.actionShadows(
-                        Theme.of(context).colorScheme.primary,
+                        AccentTextTheme.of(context),
                         Theme.of(context).scaffoldBackgroundColor,
                         Theme.of(context).colorScheme,
                       ),
@@ -328,7 +377,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       l10n.newProjectSizePresetManageButton,
                       style: TextStyle(
                         shadows: CanvasIconButton.actionShadows(
-                          Theme.of(context).colorScheme.primary,
+                          AccentTextTheme.of(context),
                           Theme.of(context).scaffoldBackgroundColor,
                           Theme.of(context).colorScheme,
                         ),
@@ -369,40 +418,43 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       );
                     }
 
+                    _followChosenPreset(settings);
                     return Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
                         ...sizePresets.map((preset) {
-                          final (w, h, _) = preset;
+                          final (w, h, kind) = preset;
                           final label = _presetLabel(l10n, w, h);
-                          final selected =
-                              !_customSize &&
-                              _exportWidth == w &&
-                              _exportHeight == h;
+                          final key = 'builtin:$kind';
                           return sizeChip(
                             text: '$label ($w×$h)',
-                            selected: selected,
-                            onSelected: () => _selectPreset(w, h),
+                            selected: !_customSize && _selectedPresetKey == key,
+                            onSelected: () => _selectPreset(w, h, key),
                           );
                         }),
                         ...settings.customSizePresets.map((preset) {
-                          final selected =
-                              !_customSize &&
-                              _exportWidth == preset.width &&
-                              _exportHeight == preset.height;
+                          final key = 'custom:${preset.id}';
                           return sizeChip(
                             text:
                                 '${preset.name} (${preset.width}×${preset.height})',
-                            selected: selected,
+                            selected: !_customSize && _selectedPresetKey == key,
                             onSelected: () =>
-                                _selectPreset(preset.width, preset.height),
+                                _selectPreset(preset.width, preset.height, key),
                           );
                         }),
                         ChoiceChip(
                           label: Text(l10n.newProjectCustomSize),
                           selected: _customSize,
-                          onSelected: (s) => setState(() => _customSize = s),
+                          onSelected: (s) => setState(() {
+                            _customSize = s;
+                            if (s) {
+                              // 欄とスライダーは今の大きさから始める。
+                              _selectedPresetKey = null;
+                              _customWidthController.text = '$_exportWidth';
+                              _customHeightController.text = '$_exportHeight';
+                            }
+                          }),
                         ),
                       ],
                     );
@@ -420,31 +472,52 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 ),
                 const SizedBox(height: 4),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: TextField(
                         controller: _customWidthController,
+                        focusNode: _widthFocus,
                         keyboardType: TextInputType.number,
+                        inputFormatters: _numberInput,
                         decoration: InputDecoration(
                           labelText: l10n.newProjectWidthLabel,
                           border: const OutlineInputBorder(),
+                          errorText: _rangeError(
+                            l10n,
+                            _customWidthController,
+                            kMinCanvasEdge,
+                            kMaxCanvasEdge,
+                          ),
+                          errorMaxLines: 3,
                         ),
                         onChanged: (_) => _applyCustomSize(),
+                        onSubmitted: (_) => _commitNumberFields(),
                       ),
                     ),
                     const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      padding: EdgeInsets.fromLTRB(8, 16, 8, 0),
                       child: Text('×'),
                     ),
                     Expanded(
                       child: TextField(
                         controller: _customHeightController,
+                        focusNode: _heightFocus,
                         keyboardType: TextInputType.number,
+                        inputFormatters: _numberInput,
                         decoration: InputDecoration(
                           labelText: l10n.newProjectHeightLabel,
                           border: const OutlineInputBorder(),
+                          errorText: _rangeError(
+                            l10n,
+                            _customHeightController,
+                            kMinCanvasEdge,
+                            kMaxCanvasEdge,
+                          ),
+                          errorMaxLines: 3,
                         ),
                         onChanged: (_) => _applyCustomSize(),
+                        onSubmitted: (_) => _commitNumberFields(),
                       ),
                     ),
                   ],
@@ -452,18 +525,22 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 const SizedBox(height: 12),
                 LabeledSlider(
                   label: l10n.newProjectWidthShort,
-                  min: 64,
-                  max: _maxCustomEdge.toDouble(),
-                  value: _exportWidth.clamp(64, _maxCustomEdge).toDouble(),
+                  min: kMinCanvasEdge.toDouble(),
+                  max: kMaxCanvasEdge.toDouble(),
+                  value: _exportWidth
+                      .clamp(kMinCanvasEdge, kMaxCanvasEdge)
+                      .toDouble(),
                   sliderLabel: '${_exportWidth}px',
                   valueText: '${_exportWidth}px',
                   onChanged: (v) => _setCustomSize(width: v.round()),
                 ),
                 LabeledSlider(
                   label: l10n.newProjectHeightShort,
-                  min: 64,
-                  max: _maxCustomEdge.toDouble(),
-                  value: _exportHeight.clamp(64, _maxCustomEdge).toDouble(),
+                  min: kMinCanvasEdge.toDouble(),
+                  max: kMaxCanvasEdge.toDouble(),
+                  value: _exportHeight
+                      .clamp(kMinCanvasEdge, kMaxCanvasEdge)
+                      .toDouble(),
                   sliderLabel: '${_exportHeight}px',
                   valueText: '${_exportHeight}px',
                   onChanged: (v) => _setCustomSize(height: v.round()),
@@ -477,7 +554,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       Icons.save_outlined,
                       size: 18,
                       shadows: CanvasIconButton.actionShadows(
-                        Theme.of(context).colorScheme.primary,
+                        AccentTextTheme.of(context),
                         Theme.of(context).scaffoldBackgroundColor,
                         Theme.of(context).colorScheme,
                       ),
@@ -486,7 +563,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       l10n.newProjectSaveCustomSizeButton,
                       style: TextStyle(
                         shadows: CanvasIconButton.actionShadows(
-                          Theme.of(context).colorScheme.primary,
+                          AccentTextTheme.of(context),
                           Theme.of(context).scaffoldBackgroundColor,
                           Theme.of(context).colorScheme,
                         ),
@@ -542,6 +619,12 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     });
                   }
                   final maxDurationText = _formatDuration(l10n, maxDuration);
+                  final durationError = _rangeError(
+                    l10n,
+                    _durationController,
+                    1,
+                    maxDuration,
+                  );
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -576,30 +659,45 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                             width: 88,
                             child: TextField(
                               controller: _durationController,
+                              focusNode: _durationFocus,
                               keyboardType: TextInputType.number,
+                              inputFormatters: _numberInput,
                               textAlign: TextAlign.center,
                               decoration: InputDecoration(
                                 isDense: true,
                                 suffixText: l10n.newProjectDurationUnit,
+                                // 欄が狭いので、範囲の文は欄の下の行に出す。
+                                error: durationError == null
+                                    ? null
+                                    : const SizedBox.shrink(),
                               ),
                               onChanged: (v) {
                                 final parsed = int.tryParse(v);
-                                if (parsed == null) return;
-                                setState(
-                                  () => _durationSeconds = parsed.clamp(
-                                    1,
-                                    maxDuration,
-                                  ),
-                                );
+                                setState(() {
+                                  if (parsed != null) {
+                                    _durationSeconds = parsed.clamp(
+                                      1,
+                                      maxDuration,
+                                    );
+                                  }
+                                });
                               },
-                              onSubmitted: (_) => setState(
-                                () => _durationController.text =
-                                    '$_durationSeconds',
-                              ),
+                              onSubmitted: (_) => _commitNumberFields(),
                             ),
                           ),
                         ],
                       ),
+                      if (durationError != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            durationError,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: 4),
                       SteppedSlider(
                         min: 1,
@@ -714,7 +812,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 icon: Icon(
                   Icons.auto_fix_high_outlined,
                   shadows: CanvasIconButton.actionShadows(
-                    Theme.of(context).colorScheme.primary,
+                    AccentTextTheme.of(context),
                     Theme.of(context).scaffoldBackgroundColor,
                     Theme.of(context).colorScheme,
                   ),
@@ -727,7 +825,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                         ),
                   style: TextStyle(
                     shadows: CanvasIconButton.actionShadows(
-                      Theme.of(context).colorScheme.primary,
+                      AccentTextTheme.of(context),
                       Theme.of(context).scaffoldBackgroundColor,
                       Theme.of(context).colorScheme,
                     ),
@@ -795,6 +893,8 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
 
   Future<void> _createProject() async {
     if (_creating) return;
+    // 作るのは欄に見えている値（範囲に収めた値）にそろえてから。
+    _commitNumberFields();
     setState(() {
       _creating = true;
       _creationFailed = false;
@@ -815,13 +915,16 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
         drawingAreaScale: _drawingAreaEnabled ? _drawingAreaScale : 1.0,
         enabledAutofillPresetIds: _enabledPresetIds,
       );
+      // 作れたら作成中のまま（押せない）にしておく。戻すと、キャンバスを
+      // 描く前に届いたダブルクリックの2回目で、もう1つ作品ができた。
       if (mounted) context.go('/canvas/${project.id}');
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (!mounted) return;
-      setState(() => _creationFailed = true);
-    } finally {
-      if (mounted) setState(() => _creating = false);
+      setState(() {
+        _creating = false;
+        _creationFailed = true;
+      });
     }
   }
 }

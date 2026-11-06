@@ -1,5 +1,9 @@
-import 'package:niarim/services/theme_service.dart';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+
+import '../config/font_fallback.dart';
+import '../l10n/app_localizations.dart';
 
 /// 「ここだけはUIだけでは伝わりにくい」という箇所に置く、小さな「i」アイコン。
 /// タップすると、初回タップ時の吹き出し説明（[FirstUseTooltip]）と同じ見た目の
@@ -22,57 +26,70 @@ class InfoIconTooltip extends StatefulWidget {
 
 class _InfoIconTooltipState extends State<InfoIconTooltip> {
   final GlobalKey _anchorKey = GlobalKey();
-  OverlayEntry? _entry;
+  // 表示中の吹き出し。画面の上に専用の画面として積むので、戻る操作・Esc・
+  // 外側のタップで閉じ、キーボードのフォーカスも吹き出しへ移って戻る
+  // （Overlayで重ねていた頃は、戻る操作が下の画面へ届いていた）。
+  Route<void>? _route;
 
   void _toggle() {
-    if (_entry != null) {
-      _dismiss();
+    final shown = _route;
+    if (shown != null) {
+      if (shown.isActive) Navigator.of(context).removeRoute(shown);
       return;
     }
     final renderObject = _anchorKey.currentContext?.findRenderObject();
     if (renderObject is! RenderBox || !renderObject.attached) return;
-    final overlayState = Overlay.maybeOf(context);
-    if (overlayState == null) return;
+    final navigator = Navigator.maybeOf(context);
+    if (navigator == null) return;
 
     final position = renderObject.localToGlobal(Offset.zero);
     final size = renderObject.size;
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    const bubbleWidth = 240.0;
-    final left = (position.dx + size.width / 2 - bubbleWidth / 2).clamp(
-      8.0,
-      screenWidth - bubbleWidth - 8.0,
-    );
+    final screen = MediaQuery.sizeOf(context);
+    final padding = MediaQuery.paddingOf(context);
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+    // 狭いウィンドウ（DeXの小さな窓等）でも吹き出しが画面に収まるよう、
+    // 幅は画面幅に合わせて縮め、clampの上限が下限を下回らないようにする
+    // （下回るとclampが例外を投げていた）。
+    final bubbleWidth = math.min(240.0, screen.width - 16);
+    final left = (position.dx + size.width / 2 - bubbleWidth / 2)
+        .clamp(8.0, math.max(8.0, screen.width - bubbleWidth - 8.0))
+        .toDouble();
+    // アイコンの上下で空いている方に出し、その高さに収める（収まらない
+    // 長い説明は吹き出しの中でスクロール）。文字を大きくした横画面では、
+    // 下に出した吹き出しが画面の下へはみ出して最後まで読めなかった。
+    final below = position.dy + size.height + 6;
+    final spaceBelow = screen.height - padding.bottom - keyboard - below - 8;
+    final spaceAbove = position.dy - 6 - padding.top - 8;
+    final showAbove = spaceAbove > spaceBelow;
+    final maxHeight = math.max(48.0, showAbove ? spaceAbove : spaceBelow);
+    final message = widget.message;
 
-    _entry = OverlayEntry(
+    final route = _BubbleRoute(
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
       builder: (ctx) => Stack(
         children: [
-          // 吹き出し自体だけでなく、画面内のどこをタップしても閉じられる
-          // ようにする全画面の透明バリア。
-          Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: _dismiss,
-            ),
-          ),
           Positioned(
             left: left,
-            top: position.dy + size.height + 6,
+            top: showAbove ? null : below,
+            bottom: showAbove ? screen.height - position.dy + 6 : null,
             width: bubbleWidth,
             child: Material(
               color: Colors.transparent,
               child: GestureDetector(
-                onTap: _dismiss,
+                onTap: () => Navigator.of(ctx).maybePop(),
                 child: Container(
+                  constraints: BoxConstraints(maxHeight: maxHeight),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Theme.of(ctx).colorScheme.primary,
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
-                        color: ThemeService.activeColorScheme.onSurface
-                            .withValues(alpha: 0.38),
+                        color: Theme.of(
+                          ctx,
+                        ).colorScheme.shadow.withValues(alpha: 0.38),
                         blurRadius: 8,
-                        offset: Offset(0, 2),
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
@@ -80,16 +97,18 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(
-                          widget.message,
-                          // 通常サイズの説明文はすべて白光明朝を使う。
-                          // くらむぼんは見出し・項目名など大きく目立たせたい文字の
-                          // みに限定する。
-                          style: TextStyle(
-                            color: Theme.of(ctx).colorScheme.onPrimary,
-                            fontSize: 12,
-                            fontFamily: 'HakkouMincho',
-                            fontFamilyFallback: const ['NotoSerifJP'],
+                        child: SingleChildScrollView(
+                          child: Text(
+                            message,
+                            // 通常サイズの説明文はすべて白光明朝を使う。
+                            // くらむぼんは見出し・項目名など大きく目立たせたい
+                            // 文字のみに限定する。
+                            style: TextStyle(
+                              color: Theme.of(ctx).colorScheme.onPrimary,
+                              fontSize: 12,
+                              fontFamily: 'HakkouMincho',
+                              fontFamilyFallback: kBodyFontFallback,
+                            ),
                           ),
                         ),
                       ),
@@ -107,38 +126,81 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
         ],
       ),
     );
-    overlayState.insert(_entry!);
-    setState(() {});
-  }
-
-  void _dismiss() {
-    _entry?.remove();
-    _entry = null;
-    if (mounted) setState(() {});
-  }
-
-  @override
-  void dispose() {
-    _entry?.remove();
-    super.dispose();
+    setState(() => _route = route);
+    navigator.push(route).whenComplete(() {
+      if (mounted && _route == route) setState(() => _route = null);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    // 見た目は小さな「i」のまま、押せる範囲は指で押しやすい40px四方にする
+    // （以前は約20px四方で押し損じやすかった）。読み上げでは説明を開く
+    // ボタンとして伝える。
     return KeyedSubtree(
       key: _anchorKey,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(widget.size),
+      child: Semantics(
+        button: true,
+        label: AppLocalizations.of(context)!.commonShowExplanation,
+        hint: widget.message,
+        // 子の読み上げを除くとInkWellのタップも除かれるので、ここで渡す
+        // （渡さないとスクリーンリーダー・スイッチ操作から開けない）。
         onTap: _toggle,
-        child: Padding(
-          padding: const EdgeInsets.all(2),
-          child: Icon(
-            Icons.info_outline,
-            size: widget.size,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+        excludeSemantics: true,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: _toggle,
+          child: SizedBox.square(
+            dimension: math.max(40, widget.size + 4),
+            child: Icon(
+              Icons.info_outline,
+              size: widget.size,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+/// 吹き出しを出す画面。外側のタップ・戻る・Escで閉じる。位置は画面全体の
+/// 座標で決めるので、折りたたみ端末のヒンジで画面を分けない
+/// （`RawDialogRoute`は分けた片側に置くため、もう片側のアイコンの吹き出しが
+/// ずれたり切れたりする）。
+class _BubbleRoute extends PopupRoute<void> {
+  _BubbleRoute({required this.builder, required this.barrierLabel});
+
+  final WidgetBuilder builder;
+
+  @override
+  final String? barrierLabel;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  bool get barrierDismissible => true;
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 120);
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) => Semantics(
+    scopesRoute: true,
+    explicitChildNodes: true,
+    child: builder(context),
+  );
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => FadeTransition(opacity: animation, child: child);
 }

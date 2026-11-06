@@ -370,9 +370,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => '貼り付けました';
-
-  @override
   String get commonOk => 'OK';
 
   @override
@@ -2842,9 +2839,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get canvasSizePresetEditDialogTitle => 'サイズを編集';
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => 'のコピー';
 
   @override
   String newProjectDurationLabel(String max) {
@@ -7689,4 +7683,363 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeTrashWorking => '処理中…';
+
+  @override
+  String get homeAddTooltip => '新規作成';
+
+  @override
+  String get commonShowExplanation => '説明を表示';
+
+  @override
+  String get homeViewModeTooltip => '表示の大きさ';
+
+  @override
+  String get homeMoveToTrashNothing => 'ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '$count件をゴミ箱へ移動しました';
+  }
+
+  @override
+  String get homeUndoAction => '元に戻す';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '$count件を切り取りました。移動先を開いて、右上の貼り付けを押してください。';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '$count件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '$count件を貼り付けました';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return 'フォルダ$count件は、自分自身やその中へは移動できないため、切り取ったまま残しました。';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '$count件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。';
+  }
+
+  @override
+  String get homePasteFailed => '一部を貼り付けられませんでした。もう一度お試しください。';
+
+  @override
+  String get homeCutPendingHint => '切り取り中（貼り付けを待っています）';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (コピー)';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name (コピー $number)';
+  }
+
+  @override
+  String get homeDrawerTutorial => '使い方';
+
+  @override
+  String get themeColorAccentText => 'アクセントの文字・アイコン色';
+
+  @override
+  String get projectDetailNotFoundBackToList => 'プロジェクトの一覧へ';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return '「$query」に一致する作品はありません';
+  }
+
+  @override
+  String get projectListNoMatchNameHint =>
+      'フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。';
+
+  @override
+  String get projectListNoMatchTagHint => 'フォルダの中も含めて、作品に付けたタグの一部で探しています。';
+
+  @override
+  String get projectListClearSearch => '検索をやめる';
+
+  @override
+  String get projectListNoFavoritesTitle => 'お気に入りの作品はありません';
+
+  @override
+  String get projectListNoFavoritesHint =>
+      '作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。';
+
+  @override
+  String get projectListShowAll => 'すべて表示';
+
+  @override
+  String get projectListEmptyFolderTitle => 'このフォルダは空です';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return '$date更新';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return 'フォルダ：$path';
+  }
+
+  @override
+  String get homeProjectsLoadFailed => 'プロジェクトを読み込めませんでした';
+
+  @override
+  String get settingsErrorLogTitle => 'エラーの記録';
+
+  @override
+  String get settingsErrorLogSubtitle => '不具合を知らせるときに、アプリで起きたエラーを確認してコピーできます';
+
+  @override
+  String get errorLogHint =>
+      'このアプリを閉じるまでに起きたエラーを、新しい順に最大20件表示します。メールアドレスやログインの情報は伏せてあります。';
+
+  @override
+  String get errorLogEmpty => 'エラーは記録されていません';
+
+  @override
+  String get errorLogCopyAll => 'すべてコピー';
+
+  @override
+  String get errorLogCopied => 'エラーの記録をコピーしました';
+
+  @override
+  String get errorLogClear => '記録を消す';
+
+  @override
+  String get tutorialSkip => 'スキップ';
+
+  @override
+  String get tutorialNext => '次へ';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return '$totalページ中$currentページ目';
+  }
+
+  @override
+  String get tutorialPage1Title => 'NIARIMへようこそ';
+
+  @override
+  String get tutorialPage1Step1 => '1枚の絵を「フレーム」に描きます';
+
+  @override
+  String get tutorialPage1Step2 => '少しずつ動きを変えたフレームを並べます';
+
+  @override
+  String get tutorialPage1Step3 => '続けて再生するとアニメーションになり、動画として書き出せます';
+
+  @override
+  String get tutorialPage2Title => '作品をつくる';
+
+  @override
+  String get tutorialPage2Step1 => 'ホームの右下の＋を押します';
+
+  @override
+  String get tutorialPage2Step2 => '「新規プロジェクト」を選び、名前や大きさを決めて「作成」を押します';
+
+  @override
+  String get tutorialPage2Step3 => '作った作品は「プロジェクト」に並びます。押して「編集開始」を選ぶと続きを描けます';
+
+  @override
+  String get tutorialPage3Title => 'キャンバスで描く';
+
+  @override
+  String get tutorialPage3Step1 => '下のツールバーで、ペン・消しゴム・塗りつぶしなどの道具を選びます';
+
+  @override
+  String get tutorialPage3Step2 => '色の丸を押すと、描く色を変えられます';
+
+  @override
+  String get tutorialPage3Step3 => '左上の矢印で、取り消し・やり直しができます';
+
+  @override
+  String get tutorialPage4Title => 'フレームを足して動かす';
+
+  @override
+  String get tutorialPage4Step1 => '下のフレーム一覧で、いま描いているフレームが分かります';
+
+  @override
+  String get tutorialPage4Step2 => '＋で次のフレームを足し、少しずつ動かして描きます';
+
+  @override
+  String get tutorialPage4Step3 => '右上の設定の「オニオンスキン」で、前のフレームを薄く重ねて見られます';
+
+  @override
+  String get tutorialPage5Title => '再生して書き出す';
+
+  @override
+  String get tutorialPage5Step1 => '右上のタイムラインのボタンで、タイムラインを開きます';
+
+  @override
+  String get tutorialPage5Step2 => '再生ボタンで、動きを確かめます';
+
+  @override
+  String get tutorialPage5Step3 => '「書き出し」で、動画やGIFとして保存・共有できます';
+
+  @override
+  String get tutorialPage6Title => '困ったときは';
+
+  @override
+  String get tutorialPage6Step1 => '画面右上の？で、その画面の説明を見られます';
+
+  @override
+  String get tutorialPage6Step2 => 'はじめて使う機能では、短い説明が出ます';
+
+  @override
+  String get tutorialPage6Step3 => 'この使い方は、ホームの左上のメニューの「使い方」からいつでも見直せます';
+
+  @override
+  String get helpTutorialSubtitle => 'はじめに表示した使い方を、もう一度見ます';
+
+  @override
+  String get settingsTipsResetTitle => '機能の説明をもう一度表示';
+
+  @override
+  String get settingsTipsResetSubtitle => 'はじめて使う機能に出る短い説明を、次に使うときにもう一度出します';
+
+  @override
+  String get settingsTipsResetDone => '機能の説明を、次に使うときにもう一度表示します';
+
+  @override
+  String get helpTutorialButton => '使い方を見る';
+
+  @override
+  String get projectListTrashFolderConfirmTitle => 'フォルダをゴミ箱へ移動しますか？';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '「$name」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return '「$name」をゴミ箱へ移動しました';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return 'フォルダの中の$contentsも一緒に移動します。';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '「$name」を完全に削除します。元に戻すことはできません。';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '・フォルダ$folders件',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: 'フォルダ$folders件',
+      zero: '中身なし',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: 'プロジェクト$projects件$_temp0',
+      zero: '$_temp1',
+    );
+    return '$_temp2';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return 'フォルダの中の$contentsも一緒に削除します。';
+  }
+
+  @override
+  String newProjectNumberRangeError(int min, int max) {
+    return '$min〜$maxの数字を入力してください';
+  }
+
+  @override
+  String get pcViewZoomIn => '拡大';
+
+  @override
+  String get pcViewZoomOut => '縮小';
+
+  @override
+  String get pcViewFit => '全体を表示';
+
+  @override
+  String get pcViewActualPixels => '100%で表示';
+
+  @override
+  String get pcViewRotateLeft => '左に回転';
+
+  @override
+  String get pcViewRotateRight => '右に回転';
+
+  @override
+  String get pcViewResetRotation => '回転を戻す';
+
+  @override
+  String get pcViewHidePanels => 'パネルを隠す';
+
+  @override
+  String get pcViewFrameStrip => 'フレーム一覧';
+
+  @override
+  String get pcPaneToolProperty => 'ツールの設定';
+
+  @override
+  String get pcToolPropertyEmpty => 'このツールには設定がありません';
+
+  @override
+  String pcStatusFrame(int current, int total) {
+    return 'フレーム $current/$total';
+  }
+
+  @override
+  String get pcPaneProgram => 'プレビュー';
+
+  @override
+  String get pcPaneInspector => '詳細';
+
+  @override
+  String get pcTimelineZoomIn => 'タイムラインを拡大';
+
+  @override
+  String get pcTimelineZoomOut => 'タイムラインを縮小';
+
+  @override
+  String get pcBinEmpty => '素材はまだありません';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$countフレーム';
+  }
+
+  @override
+  String get pcInspectorHint => 'タイムラインの素材を選ぶと、ここで位置・大きさ・不透明度などを調整できます。';
+
+  @override
+  String pcStatusFps(int fps) {
+    return '$fps fps';
+  }
+
+  @override
+  String get homePasteSnackbar => '貼り付けました';
+
+  @override
+  String get canvasSizePresetDuplicateSuffix => 'のコピー';
 }

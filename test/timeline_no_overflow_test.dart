@@ -125,6 +125,18 @@ void main() {
     expect(frameCount, findsOneWidget);
     expect(find.text('1/12'), findsOneWidget);
     expect(find.byKey(const Key('timelinePreviewLoopButton')), findsNothing);
+    final picture = tester.getRect(
+      find.byKey(const Key('timelinePreviewPicture')),
+    );
+    for (final key in const [
+      'timelinePreviewFrameCount',
+      'timelinePreviewFullscreenButton',
+    ]) {
+      final rect = tester.getRect(find.byKey(Key(key)));
+      expect(rect.overlaps(picture), isFalse, reason: '$key $rect $picture');
+      expect(rect.left, greaterThanOrEqualTo(0), reason: key);
+      expect(rect.right, lessThanOrEqualTo(320), reason: key);
+    }
     final handle = tester.getCenter(
       find.byKey(const Key('timelinePreviewResizeHandle')),
     );

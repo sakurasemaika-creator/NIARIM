@@ -37,6 +37,7 @@ import '../../../widgets/grab_pan_gesture_recognizer.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
 import '../../../widgets/premium_lock_widget.dart';
 import '../../../widgets/progress_dialog.dart';
+import '../../../widgets/docked_panel_scope.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'auto_lineart_control_overlay.dart';
 import 'canvas_icon_button.dart';
@@ -44,6 +45,7 @@ import 'color_picker_panel.dart';
 import 'panel_close_bar.dart';
 import '../../../engine/premultiplied.dart';
 import '../../../engine/tone_curve.dart';
+import '../../../config/accent_text_theme.dart';
 
 enum FilterColorEyedropperTarget { inkPool, outline }
 
@@ -751,7 +753,12 @@ class _FilterPanelState extends State<FilterPanel> {
     // While a filter is edited the panel floats over the canvas with no
     // background, and touches on its empty parts go through to the canvas
     // (a Card would take them, as would the scroll view's own area).
-    final shell = current == null
+    // PC/DeXモードのドックでは、ペインの面をそのまま使い、ペインいっぱいに
+    // 広げる（たたむのもペインの見出しで行う）。
+    final docked = DockedPanelScope.of(context);
+    final shell = docked
+        ? (Widget child) => child
+        : current == null
         ? (Widget child) => Card(
             elevation: 0, // Prevent black shadows around the floating panel.
             surfaceTintColor: Colors.transparent,
@@ -759,7 +766,7 @@ class _FilterPanelState extends State<FilterPanel> {
           )
         : (Widget child) =>
               Material(type: MaterialType.transparency, child: child);
-    final collapsed = current != null && _collapsed;
+    final collapsed = !docked && current != null && _collapsed;
     final instantInvert = current != null && _isInstantColorInvert(current);
     return shell(
       SizedBox(
@@ -775,7 +782,7 @@ class _FilterPanelState extends State<FilterPanel> {
           padding: const EdgeInsets.all(12),
           child: _outlinedOverCanvas(
             context,
-            enabled: current != null,
+            enabled: !docked && current != null,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -1053,7 +1060,7 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
           ),
         ),
-        if (!_isInstantColorInvert(current))
+        if (!DockedPanelScope.of(context) && !_isInstantColorInvert(current))
           IconButton(
             key: const ValueKey('filter-collapse-button'),
             icon: Icon(
@@ -1160,7 +1167,7 @@ class _FilterPanelState extends State<FilterPanel> {
                     Icon(
                       Icons.highlight_alt,
                       size: 14,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: AccentTextTheme.of(context),
                     ),
                     const SizedBox(width: 4),
                     Expanded(
@@ -3477,7 +3484,7 @@ class _ToneCurveEditorState extends State<_ToneCurveEditor> {
                   points: points,
                   sourceRgba: widget.sourceRgba,
                   histogramChannel: widget.histogramChannel,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: AccentTextTheme.of(context),
                   gridColor: Theme.of(context).colorScheme.outlineVariant,
                 ),
               ),

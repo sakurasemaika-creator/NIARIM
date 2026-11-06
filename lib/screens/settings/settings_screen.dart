@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
+import '../../services/first_use_tooltip_service.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -34,6 +36,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  // はじめて使う機能の説明（吹き出し）を、次に使うときにもう一度出す。
+  Future<void> _resetFeatureTips() async {
+    final l10n = AppLocalizations.of(context)!;
+    await context.read<FirstUseTooltipService>().resetAll();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.settingsTipsResetDone)));
   }
 
   @override
@@ -142,6 +154,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsFontSubtitle,
         keywords: 'フォント ttf otf font',
         onTap: () => context.push('/settings/fonts'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.lightbulb_outline,
+        title: l10n.settingsTipsResetTitle,
+        subtitle: l10n.settingsTipsResetSubtitle,
+        keywords: '説明 吹き出し ヒント もう一度 再表示 リセット tips hint reset',
+        onTap: _resetFeatureTips,
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.bug_report_outlined,
+        title: l10n.settingsErrorLogTitle,
+        subtitle: l10n.settingsErrorLogSubtitle,
+        keywords: 'エラー 不具合 報告 ログ コピー error log bug report copy',
+        onTap: () => context.push('/settings/error-log'),
         accent: Theme.of(context).colorScheme.primary,
       ),
     ];
@@ -281,7 +309,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                     ),
                   ),
-                  child: Icon(icon, color: accent, size: 22),
+                  // 淡い下地は差し色、アイコンは背景の上の差し色＝アクセントの
+                  // 文字・アイコン色（明るい差し色でも読めるように）。
+                  child: Icon(
+                    icon,
+                    color: AccentTextTheme.of(context),
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(

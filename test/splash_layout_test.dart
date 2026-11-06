@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/line_break.dart';
 import 'package:provider/provider.dart';
@@ -37,6 +39,31 @@ void main() {
         .setMockMethodCallHandler(pathChannel, null);
     if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
   });
+
+  // ロゴ（モノグラムとアプリ名）の矩形。導線のボタンより小さくあるべき。
+  Finder svgAsset(String name) => find.byWidgetPredicate(
+    (w) =>
+        w is SvgPicture &&
+        w.bytesLoader is SvgAssetLoader &&
+        (w.bytesLoader as SvgAssetLoader).assetName == name,
+  );
+  String? logoLargerThanTile(WidgetTester tester, Rect tile) {
+    final monogram = tester.getRect(
+      find
+          .ancestor(
+            of: svgAsset('assets/logo/app_logo.svg'),
+            matching: find.byType(Container),
+          )
+          .first,
+    );
+    final title = tester.getRect(svgAsset('assets/logo/title_logo.svg'));
+    for (final (name, rect) in [('icon', monogram), ('name', title)]) {
+      if (rect.width >= tile.width || rect.height >= tile.height) {
+        return 'app $name $rect not smaller than tile $tile';
+      }
+    }
+    return null;
+  }
 
   const sizes = {
     'portrait 390x844': Size(390, 844),
@@ -109,6 +136,8 @@ void main() {
               (rects[0].width - rects[1].width).abs() > 0.5) {
             failures.add('$where: tiles differ ${rects[0]} vs ${rects[1]}');
           }
+          final logoProblem = logoLargerThanTile(tester, rects[0]);
+          if (logoProblem != null) failures.add('$where: $logoProblem');
           final screen = Offset.zero & size;
           for (final rect in rects) {
             if (!screen.contains(rect.topLeft) ||
@@ -170,6 +199,19 @@ void main() {
       759, 760, 834, 900, 1024, 1180, 1280, 1366, 1440, 1600, 1920,
     ];
     const heights = {'sp': 844.0, 'pc': 900.0};
+    // PCの行はPCモード（DeX等）として描く。
+    late final SettingsService settings;
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providers,
+        child: Builder(
+          builder: (context) {
+            settings = context.read<SettingsService>();
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
     final manifest = <Map<String, Object?>>[];
     final failures = <String>[];
     for (final locale in AppLocalizations.supportedLocales) {
@@ -177,6 +219,7 @@ void main() {
           ? 'zh_Hant'
           : locale.languageCode;
       for (final h in heights.entries) {
+        await tester.runAsync(() => settings.setForcePcMode(h.key == 'pc'));
         for (final w in widths) {
           final size = Size(w.toDouble(), h.value);
           tester.view.physicalSize = size;
@@ -215,6 +258,10 @@ void main() {
           final rects = [
             for (final e in tiles) tester.getRect(find.byWidget(e.widget)),
           ];
+          if (rects.isNotEmpty) {
+            final logoProblem = logoLargerThanTile(tester, rects[0]);
+            if (logoProblem != null) problems.add(logoProblem);
+          }
           if (rects.length == 2 &&
               ((rects[0].width - rects[1].width).abs() > 0.5 ||
                   (rects[0].height - rects[1].height).abs() > 0.5)) {
@@ -282,6 +329,7 @@ void main() {
     );
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.runAsync(() => settings.setForcePcMode(null));
     expect(manifest.length, 336);
     expect(failures, isEmpty, reason: failures.join('\n'));
   });
@@ -396,5 +444,77 @@ void main() {
       'Create an Animation',
     );
     expect(keepKoreanWordsTogether(''), '');
+  });
+
+  // 画面の大きさに対する導線ボタンとロゴの釣り合い。PC・タブレットは並び全体を
+  // 画面幅の約8割まで広げ、ボタンをロゴより大きく見せる。スマホは
+  // ボタンの大きさを変えず、ボタンとロゴの間を広めに取る。
+  testWidgets('entry tiles and logo keep their balance on PC and phones', (
+    tester,
+  ) async {
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    late SettingsService settings;
+    Future<({Rect a, Rect b, Rect logo})> layout(Size size, bool pc) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers,
+          child: Builder(
+            builder: (context) {
+              settings = context.read<SettingsService>();
+              return const MaterialApp(
+                locale: Locale('ja'),
+                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                home: SplashScreen(),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.runAsync(() => settings.setForcePcMode(pc));
+      await tester.pump();
+      final tiles = [
+        for (final e in find.byType(Ink).evaluate())
+          tester.getRect(find.byWidget(e.widget)),
+      ];
+      final logo = tester.getRect(
+        find
+            .ancestor(
+              of: svgAsset('assets/logo/app_logo.svg'),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      return (a: tiles[0], b: tiles[1], logo: logo);
+    }
+
+    // PC 1280×800：ボタンは幅の約2割、ロゴはボタンより小さい。
+    final pcRow = await layout(const Size(1280, 800), true);
+    expect(pcRow.a.width, inInclusiveRange(240, 300));
+    expect(pcRow.logo.width, lessThan(pcRow.a.width * 0.6));
+    final groupWidth = pcRow.b.right - pcRow.a.left;
+    expect(groupWidth / 1280, inInclusiveRange(0.7, 0.85));
+    // スマホの縦画面：ボタンは150pxのまま、ロゴとの間は56px以上。
+    final phone = await layout(const Size(390, 844), false);
+    expect(phone.a.width, closeTo(150, 0.5));
+    expect(phone.logo.top - phone.a.bottom, greaterThanOrEqualTo(56));
+    expect(phone.b.top - phone.logo.bottom, greaterThanOrEqualTo(56));
+    // スマホの横画面：余裕があれば横の間隔も広げる。
+    final land = await layout(const Size(844, 390), false);
+    expect(land.a.width, closeTo(150, 0.5));
+    expect(land.logo.left - land.a.right, greaterThanOrEqualTo(56));
+    // タブレット（短辺600dp以上）はスマホモードでもPCと同じ釣り合い。
+    final tablet = await layout(const Size(1280, 800), false);
+    expect(tablet.a.width, inInclusiveRange(240, 300));
+    await tester.runAsync(() => settings.setForcePcMode(null));
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
   });
 }

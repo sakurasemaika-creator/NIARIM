@@ -113,10 +113,11 @@ void main() {
     final tiles = _paint(_brush());
     final c = tiles.getPixelColorAt('layer', 100, 100)!;
     expect(c.a, inExclusiveRange(0.15, 0.85));
-    // Over bare paper the wash keeps the paint's own colour.
-    expect((c.r * 255).round(), 0x2A);
-    expect((c.g * 255).round(), 0x6F);
-    expect((c.b * 255).round(), 0xD0);
+    // Over bare paper the wash keeps the paint's own colour (the tile is
+    // premultiplied, so reading it back can be a level off).
+    expect((c.r * 255).round(), closeTo(0x2A, 1));
+    expect((c.g * 255).round(), closeTo(0x6F, 1));
+    expect((c.b * 255).round(), closeTo(0xD0, 1));
   });
 
   test('drying leaves no rim of its own (水彩境界 is a filter)', () {

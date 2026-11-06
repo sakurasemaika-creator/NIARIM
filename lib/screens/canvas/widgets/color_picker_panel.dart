@@ -14,6 +14,7 @@ import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/qr_import_dialog.dart';
 import '../../../widgets/qr_share_dialog.dart';
 import 'hsv_color_wheel.dart';
+import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 
@@ -137,12 +138,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final paletteService = context.watch<PaletteService>();
-    return Card(
-      elevation: 0, // Prevent black shadows around the floating panel.
-      child: Container(
-        width: 288,
+    return PanelSurface(
+      width: 288,
+      maxHeight: 680,
+      selfScrolling: true,
+      child: Padding(
         padding: const EdgeInsets.all(12),
-        constraints: const BoxConstraints(maxHeight: 680),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -369,14 +370,17 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       children: [
         Row(
           children: [
-            Text(
-              l10n.colorPickerPaletteLabel,
-              style: TextStyle(
-                fontSize: 11,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+            Expanded(
+              child: Text(
+                l10n.colorPickerPaletteLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
-            const Spacer(),
             IconButton(
               icon: const Icon(Icons.add, size: 16),
               tooltip: l10n.colorPickerNewPaletteTooltip,

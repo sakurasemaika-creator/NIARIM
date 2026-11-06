@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api/community_api.dart';
 import 'api/niarim_api_exception.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// One tiny retryable checkpoint is stored before each network request.
 /// The queue is capped to avoid unbounded phone storage and server work.
@@ -204,7 +205,7 @@ class CreatorEditSessionReporter {
     SharedPreferences prefs,
     String accountId,
   ) async {
-    final raw = prefs.getString('$_keyPrefix$accountId');
+    final raw = prefs.readString('$_keyPrefix$accountId');
     if (raw == null) return [];
     try {
       final decoded = jsonDecode(raw);
@@ -223,7 +224,7 @@ class CreatorEditSessionReporter {
     if (seconds <= 0) return;
     final prefs = await SharedPreferences.getInstance();
     final key = '$_lostPrefix$accountId';
-    final prev = prefs.getInt(key) ?? 0;
+    final prev = prefs.readInt(key) ?? 0;
     // Keep ONE aggregate integer, never per-edit or per-15-min histories.
     await prefs.setInt(key, min(360000000, prev + seconds));
   }

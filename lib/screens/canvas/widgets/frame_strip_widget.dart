@@ -12,6 +12,7 @@ import '../../../services/theme_service.dart';
 import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/frame_preview_background.dart';
 import 'canvas_icon_button.dart';
+import '../../../config/accent_text_theme.dart';
 
 class FrameStripWidget extends StatefulWidget {
   final int currentFrame;
@@ -188,7 +189,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                 children: [
                   Icon(
                     Icons.library_add_rounded,
-                    color: Theme.of(ctx).colorScheme.primary,
+                    color: AccentTextTheme.of(ctx),
                   ),
                   const SizedBox(width: 8),
                   Expanded(child: Text(l10n.frameStripBulkAddTitle)),

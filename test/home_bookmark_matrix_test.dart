@@ -383,7 +383,13 @@ void main() {
             );
             final roles = Theme.of(home).colorScheme;
             for (final paragraph in tester.renderObjectList<RenderParagraph>(
-              find.descendant(of: buttons, matching: find.byType(RichText)),
+              find.descendant(
+                of: find.descendant(
+                  of: find.byType(HomeScreen),
+                  matching: find.byType(OutlinedButton),
+                ),
+                matching: find.byType(RichText),
+              ),
             )) {
               final color = paragraph.text.style?.color;
               if (color != null) {

@@ -72,7 +72,7 @@ void main() {
     if (createButton.evaluate().isNotEmpty) {
       await tester.tap(createButton);
       await tester.pump(const Duration(milliseconds: 400));
-      final start = find.text('はじめる');
+      final start = find.byKey(const Key('tutorialSkip'));
       if (start.evaluate().isNotEmpty) {
         await tester.tap(start);
         await tester.pump(const Duration(milliseconds: 400));
@@ -119,6 +119,7 @@ void main() {
       '/settings/fonts',
       '/settings/license',
       '/settings/privacy-policy',
+      '/settings/error-log',
       '/help',
       '/tips',
       '/premium',

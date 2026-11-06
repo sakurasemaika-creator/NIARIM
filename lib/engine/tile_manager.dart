@@ -105,7 +105,9 @@ class TileManager {
   }
 
   void _touchTileImage(String key, ui.Image image) {
-    _tileImageCache.remove(key);
+    final previous = _tileImageCache.remove(key);
+    // 同じタイルを同時に作った別の合成の画像（もう使わない）を捨てる。
+    if (previous != null && !identical(previous, image)) previous.dispose();
     _tileImageCache[key] = image;
     while (_tileImageCache.length > tileImageCacheMax) {
       final oldest = _tileImageCache.keys.first;
@@ -184,6 +186,8 @@ class TileManager {
   bool _recordingUndo = false;
   String? _recordingLayerId;
   final Map<String, Uint8List?> _undoBefore = {};
+  // 記録中の操作に不透明度ロックをかけるか（[beginUndoRecording]）。
+  bool _recordingLocksOpacity = false;
 
   TileManager({
     required this.canvasWidth,
@@ -259,11 +263,13 @@ class TileManager {
     final index = (localY * tileSize + localX) * 4;
     final alpha = tile[index + 3];
     if (alpha == 0) return null;
+    // タイルは乗算済みなので、色は不透明度で割り戻す。
+    int straight(int c) => (c * 255 / alpha).round().clamp(0, 255);
     return ui.Color.fromARGB(
       alpha,
-      tile[index],
-      tile[index + 1],
-      tile[index + 2],
+      straight(tile[index]),
+      straight(tile[index + 1]),
+      straight(tile[index + 2]),
     );
   }
 
@@ -287,38 +293,60 @@ class TileManager {
 
   // ─── ピクセル操作 ─────────────────────────────────────────────────────
 
-  /// タイル内の (px, py) に ARGB 値を alpha-composite で書き込む。
+  /// タイル内の (px, py) へ、色 (r, g, b)（乗算前）を不透明度 a で重ねる
+  /// （source-over）。
+  ///
+  /// タイルの画素は乗算済み（premultiplied）RGBA：画像にするとき
+  /// （`ImageDescriptor.raw`）もそう読まれる。以前はここで乗算前の色を
+  /// 書いていたため、半透明の所（不透明度を下げた線・線の柔らかい縁）は
+  /// RGBが不透明度より大きい不正な画素になり、暗い紙や暗い絵の上で明るく
+  /// 光って見えた（黒い紙の上の不透明度50%の赤が真っ赤に出た）。
   void blendPixel(Uint8List tile, int px, int py, int r, int g, int b, int a) {
     if (px < 0 || px >= tileSize || py < 0 || py >= tileSize) return;
+    if (a <= 0) return;
     final idx = (py * tileSize + px) * 4;
     final srcA = a / 255.0;
-    final dstA = tile[idx + 3] / 255.0;
-    final outA = srcA + dstA * (1.0 - srcA);
-    if (outA <= 0) return;
-    tile[idx] = ((r * srcA + tile[idx] * dstA * (1.0 - srcA)) / outA)
-        .round()
-        .clamp(0, 255);
-    tile[idx + 1] = ((g * srcA + tile[idx + 1] * dstA * (1.0 - srcA)) / outA)
-        .round()
-        .clamp(0, 255);
-    tile[idx + 2] = ((b * srcA + tile[idx + 2] * dstA * (1.0 - srcA)) / outA)
-        .round()
-        .clamp(0, 255);
-    tile[idx + 3] = (outA * 255).round().clamp(0, 255);
+    final keep = 1.0 - srcA;
+    final outA = (a + tile[idx + 3] * keep).round().clamp(0, 255);
+    tile[idx] = (r * srcA + tile[idx] * keep).round().clamp(0, outA);
+    tile[idx + 1] = (g * srcA + tile[idx + 1] * keep).round().clamp(0, outA);
+    tile[idx + 2] = (b * srcA + tile[idx + 2] * keep).round().clamp(0, outA);
+    tile[idx + 3] = outA;
+  }
+
+  /// [blendPixel]の、重ねる色が乗算済み（r, g, b ≤ a）のもの。
+  void blendPremultipliedPixel(
+    Uint8List tile,
+    int px,
+    int py,
+    int r,
+    int g,
+    int b,
+    int a,
+  ) {
+    if (px < 0 || px >= tileSize || py < 0 || py >= tileSize) return;
+    if (a <= 0) return;
+    final idx = (py * tileSize + px) * 4;
+    final keep = 1.0 - a / 255.0;
+    final outA = (a + tile[idx + 3] * keep).round().clamp(0, 255);
+    tile[idx] = (r + tile[idx] * keep).round().clamp(0, outA);
+    tile[idx + 1] = (g + tile[idx + 1] * keep).round().clamp(0, outA);
+    tile[idx + 2] = (b + tile[idx + 2] * keep).round().clamp(0, outA);
+    tile[idx + 3] = outA;
   }
 
   /// 消しゴム：タイル内の (px, py) を透明にする。
   void erasePixel(Uint8List tile, int px, int py, int a) {
     if (px < 0 || px >= tileSize || py < 0 || py >= tileSize) return;
     final idx = (py * tileSize + px) * 4;
-    final eraseStrength = a / 255.0;
-    final newA = (tile[idx + 3] * (1.0 - eraseStrength)).round().clamp(0, 255);
+    final keep = 1.0 - a / 255.0;
+    final newA = (tile[idx + 3] * keep).round().clamp(0, 255);
     tile[idx + 3] = newA;
-    if (newA == 0) {
-      tile[idx] = 0;
-      tile[idx + 1] = 0;
-      tile[idx + 2] = 0;
-    }
+    // 乗算済みなので色も同じ割合で薄くする（不透明度だけ下げると、色が
+    // 不透明度より大きい不正な画素になり、消した縁が光って見える）。
+    tile[idx] = (tile[idx] * keep).round().clamp(0, newA);
+    tile[idx + 1] = (tile[idx + 1] * keep).round().clamp(0, newA);
+    tile[idx + 2] = (tile[idx + 2] * keep).round().clamp(0, newA);
   }
 
   /// タイル内の (px, py) をRGBA値でそのまま上書きする（アルファブレンドしない）。
@@ -363,12 +391,15 @@ class TileManager {
         final parts = entry.key.split(',');
         final tx = int.parse(parts[0]);
         final ty = int.parse(parts[1]);
-        final img = await _tileImage(layerId, entry.key, entry.value);
+        final pixels = _viewOf(layerId, entry.key, entry.value);
+        if (pixels == null) continue;
+        final img = await _tileImage(layerId, entry.key, pixels);
         canvas.drawImage(
           img,
           ui.Offset(tx * tileSize.toDouble(), ty * tileSize.toDouble()),
           ui.Paint(),
         );
+        img.dispose();
       }
     }
     final picture = recorder.endRecording();
@@ -378,11 +409,54 @@ class TileManager {
     return image.clone();
   }
 
+  /// 合成に使うタイルの画素。不透明度ロックで記録中の操作が触れたタイルは、
+  /// ロックをかけた結果（[opacityLocked]）を返す（描いている途中も、確定後と
+  /// 同じ見え方にする。nullは何も描かない）。
+  Uint8List? _viewOf(String layerId, String tileKey, Uint8List pixels) {
+    if (!_recordingUndo ||
+        !_recordingLocksOpacity ||
+        layerId != _recordingLayerId ||
+        !_undoBefore.containsKey(tileKey)) {
+      return pixels;
+    }
+    return opacityLocked(pixels, _undoBefore[tileKey]);
+  }
+
+  /// 不透明度ロック：操作後のタイル[after]（乗算済みRGBA、nullは透明）を、
+  /// 各画素の不透明度が操作前の[before]（nullは透明）のまま変わらないように
+  /// 直した画素を返す（[before]がnullならnull＝何も無い）。
+  ///
+  /// 色は「操作後の画素を、操作前の色を不透明にしたものの上へ重ねた色」で、
+  /// 不透明度は操作前のまま。乗算済みでは `a0·P1 + (1−a1)·P0`
+  /// （P0・a0が操作前、P1・a1が操作後）になる。普通に塗った所はsource-atop
+  /// （ロックした不透明度の中にだけ色が乗る）と一致し、透明な所には何も
+  /// 描かれず、消しゴムは何も変えない。
+  static Uint8List? opacityLocked(Uint8List? after, Uint8List? before) {
+    if (before == null) return null;
+    if (after == null || identical(after, before)) {
+      return Uint8List.fromList(before);
+    }
+    final out = Uint8List(before.length);
+    for (int i = 0; i < before.length; i += 4) {
+      final a0 = before[i + 3];
+      final a1 = after[i + 3];
+      out[i + 3] = a0;
+      if (a0 == 0) continue;
+      final keep = 255 - a1;
+      out[i] = (a0 * after[i] + keep * before[i] + 127) ~/ 255;
+      out[i + 1] = (a0 * after[i + 1] + keep * before[i + 1] + 127) ~/ 255;
+      out[i + 2] = (a0 * after[i + 2] + keep * before[i + 2] + 127) ~/ 255;
+    }
+    return out;
+  }
+
   /// タイル1枚のデコード済み画像を返す（キャッシュ済みならそれを使う）。
   ///
-  /// 返す画像はキャッシュ本体なので**呼び出し側でdisposeしてはいけない**
-  /// （破棄はキャッシュの追い出し・無効化側で行う）。合成へdrawImageする
-  /// だけの用途を想定している。
+  /// 返すのはキャッシュの画像の複製（clone）で、呼び出し側が描いた後に
+  /// disposeする。キャッシュ本体を返すと、呼び出し側が受け取ってから描く
+  /// までの間（awaitの続きが動くまで）に、同時に走っている別の合成が
+  /// キャッシュから追い出して破棄し、破棄済みの画像を描いてしまう
+  /// （小さいキャンバスで油彩風のストローク中に実際に起きた）。
   Future<ui.Image> _tileImage(
     String layerId,
     String tileKey,
@@ -392,11 +466,12 @@ class TileManager {
     final cached = _tileImageCache[cacheKey];
     if (cached != null) {
       _touchTileImage(cacheKey, cached); // LRU順を更新
-      return cached;
+      return cached.clone();
     }
     final image = await _tileToImage(pixels);
+    final handle = image.clone();
     _touchTileImage(cacheKey, image);
-    return image;
+    return handle;
   }
 
   Future<ui.Image> _tileToImage(Uint8List pixels) async {
@@ -702,10 +777,17 @@ class TileManager {
 
   /// 1回の描画操作（ストローク・バケツ・投げ縄・トーン・スタンプ・移動・
   /// 変形等）の直前に呼び、以後実際に変更されたタイルのみを記録する。
-  void beginUndoRecording(String layerId) {
+  ///
+  /// [lockOpacity]が真なら、この操作に不透明度ロックをかける：記録中の
+  /// 合成（[compositeLayerToImage]）は[opacityLocked]をかけた見え方になり、
+  /// [endUndoRecording]で触れたタイルへ実際にかける。
+  void beginUndoRecording(String layerId, {bool lockOpacity = false}) {
     _recordingUndo = true;
     _recordingLayerId = layerId;
+    _recordingLocksOpacity = lockOpacity;
     _undoBefore.clear();
+    // 記録の前に作った見え方（ロックの有無が違う）を使い回さない。
+    _invalidateComposite(layerId);
   }
 
   /// 現在Undo記録中の対象レイヤーIDと、既に変更が記録された（＝今回の
@@ -735,13 +817,16 @@ class TileManager {
   /// Undo記録を終了し、変更前後のタイルスナップショットを返す（変更が無ければ空）。
   ({Map<String, Uint8List?> before, Map<String, Uint8List?> after})
   endUndoRecording() {
+    final locksOpacity = _recordingLocksOpacity;
     _recordingUndo = false;
+    _recordingLocksOpacity = false;
     final layerId = _recordingLayerId;
     _recordingLayerId = null;
     if (layerId == null || _undoBefore.isEmpty) {
       _undoBefore.clear();
       return (before: const {}, after: const {});
     }
+    if (locksOpacity) _lockTouchedTiles(layerId);
     final after = <String, Uint8List?>{};
     for (final key in _undoBefore.keys) {
       final current = _tiles[layerId]?[key];
@@ -752,6 +837,22 @@ class TileManager {
     return (before: before, after: after);
   }
 
+  /// 不透明度ロックの操作を終えるとき、触れたタイルへロックを実際にかける。
+  void _lockTouchedTiles(String layerId) {
+    final layerMap = _tiles.putIfAbsent(layerId, () => {});
+    for (final entry in _undoBefore.entries) {
+      final locked = opacityLocked(layerMap[entry.key], entry.value);
+      if (locked == null) {
+        layerMap.remove(entry.key);
+      } else {
+        layerMap[entry.key] = locked;
+      }
+      _dirtyTiles.add('$layerId:${entry.key}');
+    }
+    if (layerMap.isEmpty) _tiles.remove(layerId);
+    _invalidateCache(layerId);
+  }
+
   /// Undo記録中の操作をキャンセルし、変更済みタイルを記録開始直前へ
   /// 即座に戻す。選択変形の浮動画像生成が間に合わずpointer-upされた場合や、
   /// 変形途中でフレームを切り替えた場合など「操作自体を成立させない」用途。
@@ -760,6 +861,7 @@ class TileManager {
     final layerId = _recordingLayerId;
     final before = Map<String, Uint8List?>.from(_undoBefore);
     _recordingUndo = false;
+    _recordingLocksOpacity = false;
     _recordingLayerId = null;
     _undoBefore.clear();
     if (layerId == null || before.isEmpty) return;
@@ -788,6 +890,8 @@ class TileManager {
 
   /// シリアライズデータから復元（読み込み用）
   void importAll(Map<String, Map<String, Uint8List>> data) {
+    // 前にあったレイヤーと読み込んだレイヤーの両方が「まとめて変わった」。
+    final changed = {..._tiles.keys, ...data.keys};
     _tiles.clear();
     _dirtyTiles.clear();
     _sharedTiles.clear();
@@ -803,5 +907,12 @@ class TileManager {
       }
     }
     _invalidateCacheAll();
+    // 開いているキャンバスに描き直させる（自動保存からの復元で、絵は戻って
+    // いるのに画面は前の絵のままだった）。
+    for (final layerId in changed) {
+      for (final listener in List.of(_layerContentListeners)) {
+        listener(layerId);
+      }
+    }
   }
 }

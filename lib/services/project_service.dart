@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/painting.dart';
 import 'package:image/image.dart' as img;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -97,12 +98,55 @@ class ProjectFolder {
   );
 }
 
+/// ゴミ箱へ移したフォルダ。中のフォルダ（下の階層を含む）と作品も一緒に
+/// ゴミ箱へ移り、ゴミ箱の一覧にはこのフォルダ1件として出る。元に戻すと
+/// 中身もすべて元の階層のまま戻る。
+class TrashedFolder {
+  final ProjectFolder folder;
+
+  /// 中のフォルダ（下の階層を含む）。親子のつながりはそのまま持つ。
+  final List<ProjectFolder> subfolders;
+
+  /// フォルダと一緒にゴミ箱へ移した作品。
+  final List<String> projectIds;
+  final DateTime deletedAt;
+
+  const TrashedFolder({
+    required this.folder,
+    required this.subfolders,
+    required this.projectIds,
+    required this.deletedAt,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'folder': folder.toJson(),
+    'subfolders': [for (final f in subfolders) f.toJson()],
+    'projectIds': projectIds,
+    'deletedAt': deletedAt.toIso8601String(),
+  };
+
+  factory TrashedFolder.fromJson(Map<String, dynamic> json) => TrashedFolder(
+    folder: ProjectFolder.fromJson(json['folder'] as Map<String, dynamic>),
+    subfolders: [
+      for (final f in json['subfolders'] as List<dynamic>? ?? const [])
+        ProjectFolder.fromJson(f as Map<String, dynamic>),
+    ],
+    projectIds: [
+      for (final id in json['projectIds'] as List<dynamic>? ?? const [])
+        id as String,
+    ],
+    deletedAt:
+        DateTime.tryParse(json['deletedAt'] as String? ?? '') ?? DateTime.now(),
+  );
+}
+
 const _folderSentinel = Object();
 
 class ProjectService extends ChangeNotifier {
   final List<Project> _projects = [];
   final List<Project> _trash = [];
   final List<ProjectFolder> _folders = [];
+  final List<TrashedFolder> _trashedFolders = [];
   // ID採番用カウンター。DateTime.now().millisecondsSinceEpoch単独だと、
   // 同一ミリ秒内に連続生成した場合にIDが衝突しうるため併用する。
   int _idCounter = 0;
@@ -216,27 +260,68 @@ class ProjectService extends ChangeNotifier {
   List<Project> get shared =>
       List.unmodifiable(_projects.where((p) => p.isSharedImport));
   List<ProjectFolder> get folders => List.unmodifiable(_folders);
+
+  /// ゴミ箱へ移したフォルダ（中身ごと）。
+  List<TrashedFolder> get trashedFolders => List.unmodifiable(_trashedFolders);
+
+  /// フォルダと一緒にゴミ箱へ移した作品なら、そのフォルダ。
+  TrashedFolder? trashedFolderOf(String projectId) => _trashedFolders
+      .where((t) => t.projectIds.contains(projectId))
+      .firstOrNull;
+
+  /// ゴミ箱の作品のうち、フォルダと一緒に移したもの以外（ゴミ箱の一覧に
+  /// 1件ずつ出す作品）。
+  List<Project> get looseTrash =>
+      List.unmodifiable(_trash.where((p) => trashedFolderOf(p.id) == null));
   List<Project> get favorites => _projects.where((p) => p.isFavorite).toList();
 
   /// プロジェクトがゴミ箱へ移動された日時（ゴミ箱一覧の削除日時表示用）
   DateTime? deletedAtOf(String projectId) => _trashDeletedAt[projectId];
 
+  /// 保存先のプロジェクトを読み込めなかったか（保存先が開けない・一覧を
+  /// 読めない）。1件ずつの破損は数えない（その作品だけ飛ばす）。
+  bool get projectsLoadFailed => _projectsLoadFailed;
+  bool _projectsLoadFailed = false;
+
   Future<void> init() async {
     try {
       await _loadTrashState();
       await _loadFolders();
+      await _loadTrashedFolders();
       await _loadSharedFolders();
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+    await _loadProjectsFromDisk();
+  }
+
+  /// プロジェクトを読み込めなかったとき（[projectsLoadFailed]）に、保存先を
+  /// 読み直す。読み込み済み・ゴミ箱の作品は二重にしない。
+  Future<void> retryLoadProjects() => _loadProjectsFromDisk();
+
+  Future<void> _loadProjectsFromDisk() async {
+    try {
       final basePath = await NiaproSerializer.projectsBasePath();
       final baseDir = Directory(basePath);
-      if (!baseDir.existsSync()) return;
+      if (!baseDir.existsSync()) {
+        _projectsLoadFailed = false;
+        notifyListeners();
+        return;
+      }
       final cleanup = await ProjectTrashGuard.pending(basePath);
       for (final guard in cleanup) {
         _trashDeletedAt.putIfAbsent(guard.project.id, () => guard.deletedAt);
       }
       final existingDirectories = <String>{};
+      // 読み直し（[retryLoadProjects]）では、読み込み済み・ゴミ箱の作品を
+      // 二重にしない。
+      final known = {
+        for (final p in [..._projects, ..._trash]) p.id,
+      };
       for (final dir in baseDir.listSync().whereType<Directory>()) {
         final projectId = dir.path.split(RegExp(r'[\\/]')).last;
         existingDirectories.add(projectId);
+        if (known.contains(projectId)) continue;
         final niaproFile = File('${dir.path}/$projectId.niapro');
         if (!niaproFile.existsSync()) continue;
         try {
@@ -282,11 +367,15 @@ class ProjectService extends ChangeNotifier {
           AppErrorReporter.record(error, stackTrace);
         }
       }
-      notifyListeners();
+      _projectsLoadFailed = false;
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
-      // ストレージアクセス失敗時は空状態で起動
+      // 保存先を開けないときは読み込めた分（無ければ空）で続け、ホームで
+      // 読み込めなかったことを知らせて読み直せるようにする（黙って空に
+      // すると、作品が消えたように見えた）。
+      _projectsLoadFailed = true;
     }
+    notifyListeners();
   }
 
   // ─── ゴミ箱の状態永続化（ゴミ箱・自動削除設定） ─────────────────────────
@@ -347,6 +436,18 @@ class ProjectService extends ChangeNotifier {
   Future<void> sweepExpiredTrash(int days) async {
     if (days <= 0) return;
     final now = DateTime.now();
+    // フォルダは中の作品ごと消す。
+    final expiredFolders = [
+      for (final t in _trashedFolders)
+        if (now.difference(t.deletedAt).inDays >= days) t.folder.id,
+    ];
+    for (final id in expiredFolders) {
+      try {
+        await permanentDeleteTrashedFolder(id);
+      } catch (_) {
+        // 起動を止めない。フォルダの作品はゴミ箱に残り、後で消し直せる。
+      }
+    }
     final expired = _trash
         .where((p) {
           final deletedAt = _trashDeletedAt[p.id];
@@ -521,6 +622,26 @@ class ProjectService extends ChangeNotifier {
     _projects[idx] = _projects[idx].copyWith(
       totalWorkSeconds: _projects[idx].totalWorkSeconds + seconds,
     );
+    _notifyOutsideBuild();
+  }
+
+  /// 制作時間は画面を開く処理（initState・dispose）からも締められる
+  /// （キャンバスからタイムラインへ移ると、タイムラインのinitStateが
+  /// キャンバスの分を締める）。組み立ての最中に知らせると、聞いている
+  /// 画面の作り直しが「組み立て中のsetState」の例外になるので、その時は
+  /// フレームの後へ回す。
+  void _notifyOutsideBuild() {
+    SchedulerPhase? phase;
+    try {
+      phase = SchedulerBinding.instance.schedulerPhase;
+    } catch (_) {
+      phase = null; // バインディングの無い単体テスト
+    }
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) => notifyListeners());
+      return;
+    }
     notifyListeners();
   }
 
@@ -2601,8 +2722,9 @@ class ProjectService extends ChangeNotifier {
     );
 
     // 編集へ進める前に、再起動後も復元できる初回保存を完了する。
+    final File saved;
     try {
-      await NiaproSerializer.save(
+      saved = await NiaproSerializer.save(
         project: project,
         scenes: scenes,
         tileManager: tileManager,
@@ -2611,14 +2733,15 @@ class ProjectService extends ChangeNotifier {
       tileManager.dispose();
       rethrow;
     }
+    final created = project.copyWith(sizeBytes: saved.lengthSync());
 
-    _projects.add(project);
+    _projects.add(created);
     _scenes[projectId] = scenes;
     _tileManagers[projectId] = tileManager;
     _layerIdCounters[projectId] = 2;
 
     notifyListeners();
-    return project;
+    return created;
   }
 
   final Map<String, Future<void>> _projectSaves = {};
@@ -2693,11 +2816,30 @@ class ProjectService extends ChangeNotifier {
     final scenes = _scenes[projectId];
     final tm = _tileManagers[projectId];
     if (project == null || scenes == null || tm == null) return;
-    await NiaproSerializer.save(
+    final saved = await NiaproSerializer.save(
       project: project,
       scenes: scenes,
       tileManager: tm,
     );
+    // 容量と最終保存の時刻は、ファイルに書いたものに合わせる。保存は
+    // 描いている間にも走るので、通知はせず次に画面を作るときに使われる
+    // 値だけを更新する。
+    final size = saved.lengthSync();
+    final i = _projects.indexWhere((p) => p.id == projectId);
+    if (i >= 0) {
+      _projects[i] = _projects[i].copyWith(
+        sizeBytes: size,
+        updatedAt: DateTime.now(),
+      );
+    }
+  }
+
+  /// [saveProject]と同じ保存。保存できたかを返す（失敗しても例外にしない）。
+  Future<bool> _saveReportingSuccess(String projectId) {
+    if (!_projects.any((p) => p.id == projectId)) return Future.value(false);
+    return saveProject(
+      projectId,
+    ).then((_) => true, onError: (Object _, StackTrace _) => false);
   }
 
   Future<void> _saveMembership(
@@ -2749,9 +2891,27 @@ class ProjectService extends ChangeNotifier {
     }
   });
 
-  Future<void> restoreProject(String id) => _queueTrash(id, () async {
+  /// [index]の作品をゴミ箱へ移す（ゴミ箱の記録の保存と通知は呼び出し側）。
+  void _moveProjectToTrash(int index) {
+    final project = _projects.removeAt(index);
+    final id = project.id;
+    _trash.add(project);
+    _scenes.remove(id);
+    _layerIdCounters.remove(id);
+    _layerHomes.remove(id);
+    _tileManagers.remove(id)?.dispose();
+  }
+
+  Future<void> restoreProject(String id) =>
+      _queueTrash(id, () => _restoreProjectNow(id));
+
+  /// [restoreProject]の中身。フォルダの列に並ばないので、フォルダの処理
+  /// （[restoreTrashedFolder]）の中からは作品の保存の列だけを通して呼ぶ。
+  Future<void> _restoreProjectNow(String id) async {
     final idx = _trash.indexWhere((p) => p.id == id);
     if (idx >= 0) {
+      // ゴミ箱にある間にメモリ上で付け替えたサムネイル（複製元の完全削除）。
+      final trashedEntry = _trash[idx];
       final basePath = await NiaproSerializer.projectsBasePath();
       ProjectTrashGuard.fileFor(basePath, id);
       final file = File('$basePath/$id/$id.niapro');
@@ -2807,10 +2967,42 @@ class ProjectService extends ChangeNotifier {
       } finally {
         if (!committed) tm.dispose();
       }
+      if (committed) {
+        // ゴミ箱にある間に入っていたフォルダが削除されていれば一番上へ戻し
+        // （消えたフォルダを指したままだと一覧のどこにも出ず、検索でしか
+        // 見つからなかった）、ゴミ箱にある間のサムネイルの付け替えも
+        // 合わせて保存する。
+        final i = _projects.indexWhere((p) => p.id == id);
+        if (i >= 0) {
+          var restored = _projects[i];
+          var changed = false;
+          if (trashedEntry.thumbnailPath != null &&
+              trashedEntry.thumbnailPath != restored.thumbnailPath) {
+            restored = restored.copyWith(
+              thumbnailPath: trashedEntry.thumbnailPath,
+            );
+            changed = true;
+          }
+          if (restored.folderId != null &&
+              !_folders.any((f) => f.id == restored.folderId)) {
+            restored = restored.copyWith(folderId: null);
+            changed = true;
+          }
+          if (changed) {
+            _projects[i] = restored;
+            _saveAsync(id);
+          }
+        }
+      }
     }
-  });
+  }
 
-  Future<void> permanentDelete(String id) => _queueTrash(id, () async {
+  Future<void> permanentDelete(String id) =>
+      _queueTrash(id, () => _permanentDeleteNow(id));
+
+  /// [permanentDelete]の中身（フォルダの処理の中から呼ぶとき用。
+  /// [_restoreProjectNow]と同じ）。
+  Future<void> _permanentDeleteNow(String id) async {
     final idx = _trash.indexWhere((p) => p.id == id);
     if (idx >= 0) {
       final project = _trash[idx];
@@ -2827,6 +3019,7 @@ class ProjectService extends ChangeNotifier {
       final dir = Directory('$basePath/$id');
       final type = await FileSystemEntity.type(dir.path, followLinks: false);
       if (type == FileSystemEntityType.directory) {
+        await _keepSharedThumbnails(dir.path);
         await dir.delete(recursive: true);
       } else if (type != FileSystemEntityType.notFound) {
         throw FileSystemException('Project path is not a directory', dir.path);
@@ -2851,7 +3044,33 @@ class ProjectService extends ChangeNotifier {
       }
       _notifyFolders();
     }
-  });
+  }
+
+  /// 以前の版で複製した作品は、複製元のフォルダにあるサムネイルを指して
+  /// いる。複製元を完全に削除する前に、そのファイルを使っている作品へ
+  /// 写しておく（写さないと、複製の一覧の絵が消えた）。ゴミ箱の作品は
+  /// メモリ上だけ付け替え、戻したときに保存する。
+  Future<void> _keepSharedThumbnails(String dirPath) async {
+    final prefix = '$dirPath${Platform.pathSeparator}';
+    for (final list in [_projects, _trash]) {
+      final sharing = [
+        for (final p in list)
+          if (p.thumbnailPath?.startsWith(prefix) ?? false) p,
+      ];
+      for (final project in sharing) {
+        final copied = await NiaproSerializer.copyProjectFiles(
+          fromProjectId: project.id,
+          toProjectId: project.id,
+          thumbnailPath: project.thumbnailPath,
+          includeMaterials: false,
+        );
+        final i = list.indexWhere((p) => p.id == project.id);
+        if (i < 0) continue;
+        list[i] = list[i].copyWith(thumbnailPath: copied);
+        _saveAsync(project.id);
+      }
+    }
+  }
 
   Future<void> renameProject(String id, String newName) async {
     final idx = _projects.indexWhere((p) => p.id == id);
@@ -2874,57 +3093,82 @@ class ProjectService extends ChangeNotifier {
   /// [useTargetFolder]がtrueの場合、複製先のフォルダを[targetFolderId]
   /// （nullはルート直下）で明示的に上書きする。falseの場合（既定）は
   /// 複製元と同じフォルダのまま複製する。
-  Future<void> duplicateProject(
+  ///
+  /// [name]は複製の名前（画面の言語で「〇〇 (コピー)」を作って渡す）。
+  /// 省略すると日本語の「(コピー)」を付ける。複製したかどうかを返す
+  /// （元の作品が見つからなければfalse）。
+  Future<bool> duplicateProject(
     String id, {
     String? targetFolderId,
     bool useTargetFolder = false,
+    String? name,
   }) async {
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
       final original = _projects[idx];
       final newId = _nextId('proj');
-      final copy = original.copyWith(
-        id: newId,
-        name: '${original.name} (コピー)',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        folderId: useTargetFolder ? targetFolderId : original.folderId,
-      );
-      _projects.add(copy);
 
       // シーンリストは複製先専用の新しいListにする（Scene/Frame/Layerはimmutableなため
       // 中身の値オブジェクト自体は共有してよいが、外側のListを共有すると片方への
       // 変更（scenes[i] = ...）がもう片方にも波及してしまうため独立させる）。
-      if (_scenes.containsKey(id)) {
-        _scenes[newId] = List<Scene>.from(_scenes[id]!);
-        _layerHomes[newId] = buildLayerHomeIndex(_scenes[newId]!);
-      }
-
+      // 素材を写している間に複製元が編集・削除されても、押した時点の内容を
+      // 複製するよう、ここで写し取っておく。
+      final scenes = _scenes[id] == null
+          ? null
+          : List<Scene>.from(_scenes[id]!);
       // レイヤーIDカウンターも引き継がないと、複製後に新規追加したレイヤーのIDが
       // 複製元から引き継いだ既存レイヤーIDと衝突する。
-      if (_layerIdCounters.containsKey(id)) {
-        _layerIdCounters[newId] = _layerIdCounters[id]!;
-      }
-
+      final layerIdCounter = _layerIdCounters[id];
       // 描画データ（タイル）も複製先IDへコピーする。TileManager.importAllは
       // ピクセルバッファをUint8List.fromListで複製するため、複製元・複製先は
       // 完全に独立したバッファになる。
       final sourceTm = _tileManagers[id];
       final newTm = TileManager(
-        canvasWidth: copy.drawingWidth,
-        canvasHeight: copy.drawingHeight,
+        canvasWidth: original.drawingWidth,
+        canvasHeight: original.drawingHeight,
         compositeCacheMax: _tileCacheBudget,
       );
       if (sourceTm != null) {
         newTm.importAll(sourceTm.exportAll());
       }
+
+      // 素材（画像・動画・音声）とサムネイルのファイルを先に複製先へ写す
+      // （写さないと、素材を使った作品の複製は素材が「不足」になった）。
+      // 写し終えるまで複製を一覧に出さない：途中で開くと素材が無いと
+      // 判断され、そこで足した素材が写している素材で上書きされた。
+      // 写している途中でアプリが終わっても、保存データ（.niapro）の無い
+      // フォルダは起動時に読み飛ばされる。
+      final thumbnail = await NiaproSerializer.copyProjectFiles(
+        fromProjectId: id,
+        toProjectId: newId,
+        thumbnailPath: original.thumbnailPath,
+      );
+
+      final copy = original.copyWith(
+        id: newId,
+        name: name ?? '${original.name} (コピー)',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        folderId: useTargetFolder ? targetFolderId : original.folderId,
+        // 複製元と同じファイルを指したままだと、複製元の削除で一緒に消えた。
+        thumbnailPath: thumbnail,
+      );
+      _projects.add(copy);
+      if (scenes != null) {
+        _scenes[newId] = scenes;
+        _layerHomes[newId] = buildLayerHomeIndex(scenes);
+      }
+      if (layerIdCounter != null) {
+        _layerIdCounters[newId] = layerIdCounter;
+      }
       _tileManagers[newId] = newTm;
 
       // 複製結果をディスクへ保存する（保存しないと再起動後に消えてしまう）。
       _saveAsync(newId);
-
       notifyListeners();
+      return true;
     }
+    return false;
   }
 
   /// キャンバスサイズを変更する（タイムライン三点メニュー「キャンバス
@@ -3126,20 +3370,28 @@ class ProjectService extends ChangeNotifier {
     final tw = (w * scale).round().clamp(1, thumbMax);
     final th = (h * scale).round().clamp(1, thumbMax);
 
+    final layers = layersOf(projectId, scene.id, frame.index);
     final fullImage = await LayerCompositor.composite(
       tm,
-      layersOf(projectId, scene.id, frame.index),
+      layers,
       (l) => tileKeyFor(projectId, scene.id, frame.index, l.id),
       w,
       h,
+      // 加算・スクリーン等のレイヤーは用紙（背景色）にも効くので、そのときは
+      // 背景色を敷いてから合成する（キャンバスと同じ見え方にする）。
+      paperColor: LayerCompositor.paperForBlendModes(
+        layers,
+        _projects[idx].backgroundColor,
+      ),
     );
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
+    // 補間して縮める（補間しないと細い線が点線になった）。
     canvas.drawImageRect(
       fullImage,
       ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
       ui.Rect.fromLTWH(0, 0, tw.toDouble(), th.toDouble()),
-      ui.Paint(),
+      ui.Paint()..filterQuality = ui.FilterQuality.medium,
     );
     fullImage.dispose();
     final picture = recorder.endRecording();
@@ -3158,13 +3410,54 @@ class ProjectService extends ChangeNotifier {
     );
     final curIdx = _projects.indexWhere((p) => p.id == projectId);
     if (curIdx < 0) return;
+    final previous = _projects[curIdx].thumbnailPath;
     _projects[curIdx] = _projects[curIdx].copyWith(thumbnailPath: path);
-    _saveAsync(projectId);
+    final saved = _saveReportingSuccess(projectId);
     notifyListeners();
+    // 前のサムネイルは、新しいパスを保存し終えてから、ほかの作品（以前の
+    // 版で複製した作品はサムネイルを共有している）が使っていなければ消す（保存の前に消すと、
+    // 保存が終わる前にアプリを閉じたとき、保存済みのデータが消えたファイルを
+    // 指したままになる）。
+    if (await saved &&
+        previous != null &&
+        previous != path &&
+        ![..._projects, ..._trash].any((p) => p.thumbnailPath == previous)) {
+      try {
+        await File(previous).delete();
+      } on FileSystemException {
+        // 既に無い。
+      }
+    }
   }
 
-  /// [parentFolderId]を指定すると、そのフォルダの子フォルダとして作成する
-  /// （「フォルダは複数階層に対応」）。nullはルート直下。
+  /// 同じ階層（[parentFolderId]の直下）で使われていない名前。同じ名前の
+  /// フォルダがあれば「名前 (2)」「名前 (3)」…と番号を付ける（ユーザー指定。
+  /// 同じ名前が並ぶと、色でしか見分けられず、移動先の一覧やパンくずでも
+  /// 区別できなかった）。[exceptId]のフォルダ自身は数えない（名前の変更）。
+  String uniqueFolderName(
+    String name, {
+    required String? parentFolderId,
+    String? exceptId,
+  }) {
+    final taken = {
+      for (final f in _folders)
+        if (f.parentFolderId == parentFolderId && f.id != exceptId) f.name,
+    };
+    if (!taken.contains(name)) return name;
+    // 「名前 (3)」が使われていれば「名前 (4)」から探す（「名前 (3) (2)」に
+    // しない）。
+    final match = RegExp(r'^(.*) \((\d+)\)$').firstMatch(name);
+    final base = match?.group(1) ?? name;
+    for (
+      var number = (int.tryParse(match?.group(2) ?? '') ?? 1) + 1;
+      ;
+      number++
+    ) {
+      final numbered = '$base ($number)';
+      if (!taken.contains(numbered)) return numbered;
+    }
+  }
+
   Future<void> _commitFolders(
     List<ProjectFolder> next, {
     bool shared = false,
@@ -3180,6 +3473,9 @@ class ProjectService extends ChangeNotifier {
     _notifyFolders();
   }
 
+  /// [parentFolderId]を指定すると、そのフォルダの子フォルダとして作成する
+  /// （「フォルダは複数階層に対応」）。nullはルート直下。同じ階層に同じ名前の
+  /// フォルダがあれば番号を付ける（[uniqueFolderName]）。
   Future<ProjectFolder> createFolder(String name, {String? parentFolderId}) =>
       _queueFolder(() async {
         if (parentFolderId != null &&
@@ -3188,13 +3484,15 @@ class ProjectService extends ChangeNotifier {
         }
         final folder = ProjectFolder(
           id: _nextId('folder'),
-          name: name,
+          name: uniqueFolderName(name, parentFolderId: parentFolderId),
           parentFolderId: parentFolderId,
         );
         await _commitFolders([..._folders, folder]);
         return folder;
       });
 
+  /// 名前を変えるときは、同じ階層に同じ名前のフォルダがあれば番号を付ける
+  /// （[uniqueFolderName]）。
   Future<void> editFolder(
     String id, {
     String? name,
@@ -3203,7 +3501,16 @@ class ProjectService extends ChangeNotifier {
     final i = _folders.indexWhere((f) => f.id == id);
     if (i < 0) return;
     final next = [..._folders];
-    next[i] = next[i].copyWith(name: name, color: color);
+    next[i] = next[i].copyWith(
+      name: name == null
+          ? null
+          : uniqueFolderName(
+              name,
+              parentFolderId: next[i].parentFolderId,
+              exceptId: id,
+            ),
+      color: color,
+    );
     await _commitFolders(next);
   });
 
@@ -3253,6 +3560,240 @@ class ProjectService extends ChangeNotifier {
     }
     return false;
   }
+
+  /// [folderId]と、その中のフォルダ（下の階層を含む）のID。
+  Set<String> folderSubtreeIds(String folderId) {
+    final ids = <String>{folderId};
+    var grew = true;
+    while (grew) {
+      grew = false;
+      for (final f in _folders) {
+        final parent = f.parentFolderId;
+        if (parent != null && ids.contains(parent) && ids.add(f.id)) {
+          grew = true;
+        }
+      }
+    }
+    return ids;
+  }
+
+  /// フォルダの中の作品とフォルダの数（下の階層を含む。フォルダ自身は
+  /// 数えない）。
+  ({int projects, int folders}) folderContentCounts(String folderId) {
+    final ids = folderSubtreeIds(folderId);
+    return (
+      projects: _projects
+          .where((p) => !p.isSharedImport && ids.contains(p.folderId))
+          .length,
+      folders: ids.length - 1,
+    );
+  }
+
+  /// フォルダを中身（下の階層のフォルダ・作品）ごとゴミ箱へ移す。ゴミ箱から
+  /// [restoreTrashedFolder]でまとめて元に戻せる。先にゴミ箱の記録を、次に
+  /// フォルダの一覧を保存する。どちらかを保存できなければ何も変えずに
+  /// [FolderSaveException]を投げる。
+  Future<TrashedFolder?> moveFolderToTrash(String folderId) =>
+      _queueFolder(() async {
+        final top = _folders.where((f) => f.id == folderId).firstOrNull;
+        if (top == null) return null;
+        final ids = folderSubtreeIds(folderId);
+        final now = DateTime.now();
+        final record = TrashedFolder(
+          folder: top,
+          subfolders: [
+            for (final f in _folders)
+              if (f.id != folderId && ids.contains(f.id)) f,
+          ],
+          projectIds: [
+            for (final p in _projects)
+              if (!p.isSharedImport && ids.contains(p.folderId)) p.id,
+          ],
+          deletedAt: now,
+        );
+        // お気に入りの作品は、保護を外すまでゴミ箱へ移さない（作品の一括の
+        // 削除と同じ。フォルダごとでも迂回させない）。
+        if (_projects.any(
+          (p) => record.projectIds.contains(p.id) && p.isFavorite,
+        )) {
+          throw const FavoriteProjectDeleteException();
+        }
+        // ゴミ箱のフォルダの記録→作品のゴミ箱の記録→フォルダの一覧の順に
+        // 保存し、途中で失敗したら保存済みのものを戻して何も変えない。
+        try {
+          await saveFolderPreference(
+            _trashedFoldersPrefsKey,
+            _encodeTrashedFolders([..._trashedFolders, record]),
+          );
+        } catch (error) {
+          throw FolderSaveException(partiallySaved: false, cause: error);
+        }
+        Future<void> forgetRecord() async {
+          try {
+            await saveFolderPreference(
+              _trashedFoldersPrefsKey,
+              _encodeTrashedFolders(_trashedFolders),
+            );
+          } catch (_) {
+            // 残った記録は、起動時にフォルダがまだあれば捨てる。
+          }
+        }
+
+        final next = {
+          ..._trashDeletedAt,
+          for (final id in record.projectIds) id: now,
+        };
+        try {
+          await _persistTrashState(next);
+        } catch (error) {
+          await forgetRecord();
+          throw FolderSaveException(partiallySaved: false, cause: error);
+        }
+        try {
+          await _commitFolders([
+            for (final f in _folders)
+              if (!ids.contains(f.id)) f,
+          ]);
+        } catch (error) {
+          try {
+            await _persistTrashState(_trashDeletedAt);
+          } catch (_) {
+            // 起動時に、ゴミ箱の記録だけ残った作品はフォルダのまま読む。
+          }
+          await forgetRecord();
+          throw FolderSaveException(partiallySaved: false, cause: error);
+        }
+        _trashedFolders.add(record);
+        for (final id in record.projectIds) {
+          final i = _projects.indexWhere((p) => p.id == id);
+          if (i >= 0) _moveProjectToTrash(i);
+        }
+        _trashDeletedAt
+          ..clear()
+          ..addAll(next);
+        _notifyFolders();
+        return record;
+      });
+
+  /// ゴミ箱のフォルダを中身ごと元の場所へ戻す。元の親のフォルダが無く
+  /// なっていれば一番上へ戻す。フォルダの一覧を保存できなければ何も変えずに
+  /// [FolderSaveException]を投げる。
+  Future<void> restoreTrashedFolder(String folderId) => _queueFolder(() async {
+    final record = _trashedFolders
+        .where((t) => t.folder.id == folderId)
+        .firstOrNull;
+    if (record == null) return;
+    final parent = record.folder.parentFolderId;
+    try {
+      await _commitFolders([
+        ..._folders,
+        if (!_folders.any((f) => f.id == record.folder.id))
+          parent != null && !_folders.any((f) => f.id == parent)
+              ? record.folder.copyWith(parentFolderId: null)
+              : record.folder,
+        for (final f in record.subfolders)
+          if (!_folders.any((g) => g.id == f.id)) f,
+      ]);
+    } catch (error) {
+      throw FolderSaveException(partiallySaved: false, cause: error);
+    }
+    _trashedFolders.remove(record);
+    await _persistTrashedFolders();
+    // フォルダの列の中なので、作品の保存の列だけを通す（restoreProjectは
+    // フォルダの列に並ぶので、ここから待つと止まる）。戻せなかった作品は
+    // ゴミ箱に1件ずつ残り、そこから戻し直せる。
+    for (final id in record.projectIds) {
+      if (!_trash.any((p) => p.id == id)) continue;
+      try {
+        await _queueProjectSave(id, () => _restoreProjectNow(id));
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+      }
+    }
+    _notifyFolders();
+  });
+
+  /// ゴミ箱のフォルダを中の作品ごと完全に削除する（元に戻せない）。
+  Future<void> permanentDeleteTrashedFolder(String folderId) =>
+      _queueFolder(() async {
+        final record = _trashedFolders
+            .where((t) => t.folder.id == folderId)
+            .firstOrNull;
+        if (record == null) return;
+        _trashedFolders.remove(record);
+        await _persistTrashedFolders();
+        // 消せなかった作品はゴミ箱に1件ずつ残り、そこから消し直せる。
+        for (final id in record.projectIds) {
+          if (!_trash.any((p) => p.id == id)) continue;
+          try {
+            await _queueProjectSave(id, () => _permanentDeleteNow(id));
+          } catch (error, stackTrace) {
+            AppErrorReporter.record(error, stackTrace);
+          }
+        }
+        _notifyFolders();
+      });
+
+  /// ゴミ箱を空にする（フォルダも作品もすべて完全に削除する）。
+  Future<void> emptyTrash() async {
+    for (final t in List.of(_trashedFolders)) {
+      await permanentDeleteTrashedFolder(t.folder.id);
+    }
+    for (final project in List.of(_trash)) {
+      await permanentDelete(project.id);
+    }
+  }
+
+  /// フォルダを中身（下の階層のフォルダ・作品）ごと複製して
+  /// [targetParentId]（nullは一番上）に置く。いちばん上のフォルダだけ
+  /// [name]にし、中のフォルダ・作品は元の名前のまま。自分自身やその中へも
+  /// 複製できる（写すものを先に決めておくので、複製したものは写さない）。
+  /// フォルダが見つからなければnull。
+  Future<ProjectFolder?> duplicateFolder(
+    String folderId, {
+    String? targetParentId,
+    required String name,
+  }) => _queueFolder(() async {
+    final top = _folders.where((f) => f.id == folderId).firstOrNull;
+    if (top == null) return null;
+    // 写すものを先に決めておく（複製したフォルダ・作品を数え直さない）。
+    final ids = folderSubtreeIds(folderId);
+    final projects = [
+      for (final p in _projects)
+        if (!p.isSharedImport && ids.contains(p.folderId)) p,
+    ];
+    final ordered = <ProjectFolder>[top];
+    for (var i = 0; i < ordered.length; i++) {
+      for (final f in _folders) {
+        if (f.parentFolderId == ordered[i].id && ids.contains(f.id)) {
+          ordered.add(f);
+        }
+      }
+    }
+    final copies = <String, String>{};
+    final added = <ProjectFolder>[];
+    for (final f in ordered) {
+      final isTop = f.id == folderId;
+      final copy = ProjectFolder(
+        id: _nextId('folder'),
+        name: isTop ? name : f.name,
+        color: f.color,
+        parentFolderId: isTop ? targetParentId : copies[f.parentFolderId],
+      );
+      copies[f.id] = copy.id;
+      added.add(copy);
+    }
+    await _commitFolders([..._folders, ...added]);
+    for (final p in projects) {
+      await duplicateProject(
+        p.id,
+        targetFolderId: copies[p.folderId],
+        useTargetFolder: true,
+        name: p.name,
+      );
+    }
+    return _folders.firstWhere((f) => f.id == copies[folderId]);
+  });
 
   /// フォルダ削除時、直下のプロジェクト・子フォルダはルート（トップレベル）へ戻す
   /// （「フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを
@@ -3380,6 +3921,43 @@ class ProjectService extends ChangeNotifier {
         );
     } catch (_) {
       // 読み込み失敗時はフォルダなしとして続行
+    }
+  }
+
+  static const _trashedFoldersPrefsKey = 'trashed_project_folders';
+
+  Future<void> _loadTrashedFolders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.readString(_trashedFoldersPrefsKey);
+      if (raw == null) return;
+      _trashedFolders
+        ..clear()
+        ..addAll([
+          for (final e in jsonDecode(raw) as List<dynamic>)
+            TrashedFolder.fromJson(e as Map<String, dynamic>),
+        ])
+        // ゴミ箱へ移す途中で終わったときは、フォルダがまだ一覧にある。
+        ..removeWhere((t) => _folders.any((f) => f.id == t.folder.id));
+    } catch (error, stackTrace) {
+      // 読めなければゴミ箱のフォルダなしとして続ける（中の作品はゴミ箱に
+      // 1件ずつ出る）。
+      AppErrorReporter.record(error, stackTrace);
+    }
+  }
+
+  static String _encodeTrashedFolders(List<TrashedFolder> folders) =>
+      jsonEncode([for (final t in folders) t.toJson()]);
+
+  Future<void> _persistTrashedFolders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        _trashedFoldersPrefsKey,
+        _encodeTrashedFolders(_trashedFolders),
+      );
+    } catch (_) {
+      // 保存失敗時も続行（次回操作時に再試行される）
     }
   }
 }

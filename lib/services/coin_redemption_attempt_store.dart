@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api/community_api.dart';
 import 'api/niarim_api_exception.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// Persist a debit UUID BEFORE making the request. On app kill or response
 /// loss, the next tap retries the SAME UUID, never a second wallet debit.
@@ -42,7 +43,7 @@ class CoinRedemptionAttemptStore {
     final key = _key(accountId);
     String? requestId;
     String version = serverPriceVersion;
-    final raw = prefs.getString(key);
+    final raw = prefs.readString(key);
     if (raw != null) {
       try {
         final saved = jsonDecode(raw) as Map<String, dynamic>;

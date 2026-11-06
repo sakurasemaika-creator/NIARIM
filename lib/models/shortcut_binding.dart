@@ -54,12 +54,24 @@ class ShortcutBinding {
 
   bool get isToolAction => toolKey != null;
 
+  /// キーを押し続けたときの繰り返しで、もう一度実行してよい操作。
+  /// 取り消し・やり直しとコマ送りだけ。貼り付け・全選択・表示の切り替え・
+  /// ツール選択・自動操作は、押し続けると何十回も実行されてしまう
+  /// （ホームでCtrl+Vを押し続けると作品の複製が次々にできていた）。
+  static const repeatableCommands = {
+    ShortcutCommand.undo,
+    ShortcutCommand.redo,
+    ShortcutCommand.previousFrame,
+    ShortcutCommand.nextFrame,
+  };
+
   SingleActivator get activator => SingleActivator(
     key,
     control: control,
     shift: shift,
     alt: alt,
     meta: meta,
+    includeRepeats: repeatableCommands.contains(command),
   );
 
   /// 同じキー＋修飾キーの組み合わせかどうか（重複登録の検出に使用）。

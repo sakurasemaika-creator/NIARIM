@@ -1,3 +1,4 @@
+import '../../../widgets/docked_panel_scope.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
 import '../../../config/font_fallback.dart';
+import '../../../config/accent_text_theme.dart';
 
 /// ペンツール長押し・上スワイプで表示されるサブツールタブUI
 /// ブラシ / トーン / スタンプ
@@ -84,64 +86,61 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Card(
-      elevation: 0, // Prevent black shadows around the floating panel.
-      child: SizedBox(
-        width: 280,
-        height: 480,
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TabBar(
-                    controller: _tabController,
-                    labelStyle: const TextStyle(fontSize: 11),
-                    // 各サブツールタブの初回使用時に吹き出し説明を表示する
-                    tabs: [
-                      Tab(text: l10n.penSubToolTabBrush),
-                      FirstUseTooltip(
-                        tooltipKey: 'pen_subtool_tone',
-                        message: l10n.penSubToolToneTooltipMessage,
-                        child: Tab(text: l10n.penSubToolTabTone),
-                      ),
-                      FirstUseTooltip(
-                        tooltipKey: 'pen_subtool_stamp',
-                        message: l10n.penSubToolStampTooltipMessage,
-                        child: Tab(text: l10n.penSubToolTabStamp),
-                      ),
-                    ],
-                  ),
+    return PanelSurface(
+      width: 280,
+      height: 480,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TabBar(
+                  controller: _tabController,
+                  labelStyle: const TextStyle(fontSize: 11),
+                  // 各サブツールタブの初回使用時に吹き出し説明を表示する
+                  tabs: [
+                    Tab(text: l10n.penSubToolTabBrush),
+                    FirstUseTooltip(
+                      tooltipKey: 'pen_subtool_tone',
+                      message: l10n.penSubToolToneTooltipMessage,
+                      child: Tab(text: l10n.penSubToolTabTone),
+                    ),
+                    FirstUseTooltip(
+                      tooltipKey: 'pen_subtool_stamp',
+                      message: l10n.penSubToolStampTooltipMessage,
+                      child: Tab(text: l10n.penSubToolTabStamp),
+                    ),
+                  ],
                 ),
-                // フォルダ管理・自作・検索・読み込み書き出し等のフル機能パネルを開く。
-                if (widget.onManage != null)
-                  IconButton(
-                    icon: const Icon(Icons.tune, size: 16),
-                    tooltip: l10n.penSubToolManageTooltip,
-                    onPressed: () {
-                      final subTool = switch (_tabController.index) {
-                        0 => PenSubTool.brush,
-                        1 => PenSubTool.tone,
-                        2 => PenSubTool.stamp,
-                        _ => PenSubTool.brush,
-                      };
-                      widget.onManage!(subTool);
-                    },
-                  ),
+              ),
+              // フォルダ管理・自作・検索・読み込み書き出し等のフル機能パネルを開く。
+              if (widget.onManage != null)
+                IconButton(
+                  icon: const Icon(Icons.tune, size: 16),
+                  tooltip: l10n.penSubToolManageTooltip,
+                  onPressed: () {
+                    final subTool = switch (_tabController.index) {
+                      0 => PenSubTool.brush,
+                      1 => PenSubTool.tone,
+                      2 => PenSubTool.stamp,
+                      _ => PenSubTool.brush,
+                    };
+                    widget.onManage!(subTool);
+                  },
+                ),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _BrushTab(onClose: widget.onClose),
+                _ToneTab(onClose: widget.onClose),
+                _StampTab(onClose: widget.onClose),
               ],
             ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _BrushTab(onClose: widget.onClose),
-                  _ToneTab(onClose: widget.onClose),
-                  _StampTab(onClose: widget.onClose),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -170,7 +169,7 @@ class _BrushTab extends StatelessWidget {
           leading: Icon(
             Icons.brush,
             size: 16,
-            color: isSelected ? Theme.of(context).colorScheme.primary : null,
+            color: isSelected ? AccentTextTheme.of(context) : null,
           ),
           title: Text(
             brush.name,

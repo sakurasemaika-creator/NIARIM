@@ -128,7 +128,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeSortFieldName => 'Nom';
 
   @override
-  String get homeSortFieldUpdated => 'Mis à jour';
+  String get homeSortFieldUpdated => 'Modifié';
 
   @override
   String get homeSortDirectionAscTooltip =>
@@ -386,9 +386,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String homePasteTooltip(int count) {
     return 'Coller $count élément(s)';
   }
-
-  @override
-  String get homePasteSnackbar => 'Collé';
 
   @override
   String get commonOk => 'OK';
@@ -2987,9 +2984,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get canvasSizePresetEditDialogTitle => 'Modifier la taille';
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => 'copie';
 
   @override
   String newProjectDurationLabel(String max) {
@@ -8100,4 +8094,398 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeTrashWorking => 'Traitement…';
+
+  @override
+  String get homeAddTooltip => 'Créer';
+
+  @override
+  String get commonShowExplanation => 'Afficher l’explication';
+
+  @override
+  String get homeViewModeTooltip => 'Taille d’affichage';
+
+  @override
+  String get homeMoveToTrashNothing =>
+      'Rien à mettre à la corbeille (les favoris ne sont pas déplacés).';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '$count élément(s) mis à la corbeille';
+  }
+
+  @override
+  String get homeUndoAction => 'Annuler';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '$count élément(s) coupé(s). Ouvrez la destination et touchez Coller en haut à droite.';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '$count élément(s) copié(s). Ouvrez l’emplacement voulu et touchez Coller en haut à droite.';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '$count élément(s) collé(s)';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count dossier(s) ne peuvent pas être déplacés dans eux-mêmes ou leurs sous-dossiers ; ils restent coupés pour être collés ailleurs.';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '$count élément(s) n’ont pas pu être collés car l’original n’existe plus (corbeille ou supprimé).';
+  }
+
+  @override
+  String get homePasteFailed =>
+      'Certains éléments n’ont pas pu être collés. Réessayez.';
+
+  @override
+  String get homeCutPendingHint => 'Coupé, en attente de collage';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (copie)';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name (copie $number)';
+  }
+
+  @override
+  String get homeDrawerTutorial => 'Mode d\'emploi';
+
+  @override
+  String get themeColorAccentText => 'Couleur du texte et des icônes d\'accent';
+
+  @override
+  String get projectDetailNotFoundBackToList => 'Aller aux projets';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return 'Aucun résultat pour « $query »';
+  }
+
+  @override
+  String get projectListNoMatchNameHint =>
+      'Recherche dans les noms de tous les dossiers, sans distinguer majuscules et minuscules ni caractères pleine et demi-chasse.';
+
+  @override
+  String get projectListNoMatchTagHint =>
+      'Recherche dans les étiquettes des œuvres de tous les dossiers.';
+
+  @override
+  String get projectListClearSearch => 'Effacer la recherche';
+
+  @override
+  String get projectListNoFavoritesTitle => 'Aucun favori ici';
+
+  @override
+  String get projectListNoFavoritesHint =>
+      'Choisissez « Ajouter aux favoris » dans le menu d’une œuvre ou d’un dossier pour l’afficher ici.';
+
+  @override
+  String get projectListShowAll => 'Tout afficher';
+
+  @override
+  String get projectListEmptyFolderTitle => 'Ce dossier est vide';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return 'Modifié le $date';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return 'Dans $path';
+  }
+
+  @override
+  String get homeProjectsLoadFailed => 'Impossible de charger vos projets';
+
+  @override
+  String get settingsErrorLogTitle => 'Journal des erreurs';
+
+  @override
+  String get settingsErrorLogSubtitle =>
+      'Consultez et copiez les erreurs de l’application pour les joindre à un signalement';
+
+  @override
+  String get errorLogHint =>
+      'Affiche jusqu’à 20 erreurs depuis l’ouverture de l’application, des plus récentes aux plus anciennes. Les adresses e-mail et les informations de connexion sont masquées.';
+
+  @override
+  String get errorLogEmpty => 'Aucune erreur enregistrée';
+
+  @override
+  String get errorLogCopyAll => 'Tout copier';
+
+  @override
+  String get errorLogCopied => 'Journal des erreurs copié';
+
+  @override
+  String get errorLogClear => 'Effacer le journal';
+
+  @override
+  String get tutorialSkip => 'Passer';
+
+  @override
+  String get tutorialNext => 'Suivant';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return 'Page $current sur $total';
+  }
+
+  @override
+  String get tutorialPage1Title => 'Bienvenue dans NIARIM';
+
+  @override
+  String get tutorialPage1Step1 => 'Dessinez sur une « image ».';
+
+  @override
+  String get tutorialPage1Step2 =>
+      'Ajoutez d\'autres images en déplaçant un peu le dessin à chaque fois.';
+
+  @override
+  String get tutorialPage1Step3 =>
+      'Lues à la suite, elles forment une animation que vous pouvez exporter en vidéo.';
+
+  @override
+  String get tutorialPage2Title => 'Créez un projet';
+
+  @override
+  String get tutorialPage2Step1 =>
+      'Sur l\'écran d\'accueil, touchez + en bas à droite.';
+
+  @override
+  String get tutorialPage2Step2 =>
+      'Choisissez « Nouveau projet », réglez le nom et la taille, puis touchez « Créer ».';
+
+  @override
+  String get tutorialPage2Step3 =>
+      'Vos projets s\'affichent dans « Projets ». Touchez-en un, puis « Commencer l\'édition » pour continuer à dessiner.';
+
+  @override
+  String get tutorialPage3Title => 'Dessinez sur le canevas';
+
+  @override
+  String get tutorialPage3Step1 =>
+      'Choisissez un outil (stylo, gomme, remplissage…) dans la barre d\'outils du bas.';
+
+  @override
+  String get tutorialPage3Step2 =>
+      'Touchez le cercle de couleur pour changer la couleur du dessin.';
+
+  @override
+  String get tutorialPage3Step3 =>
+      'Les flèches en haut à gauche permettent d\'annuler et de rétablir.';
+
+  @override
+  String get tutorialPage4Title => 'Ajoutez des images pour animer';
+
+  @override
+  String get tutorialPage4Step1 =>
+      'La liste des images en bas indique l\'image sur laquelle vous dessinez.';
+
+  @override
+  String get tutorialPage4Step2 =>
+      'Touchez + pour ajouter l\'image suivante et dessinez-la un peu déplacée.';
+
+  @override
+  String get tutorialPage4Step3 =>
+      'Activez « Papier calque » dans les réglages en haut à droite pour voir l\'image précédente en transparence.';
+
+  @override
+  String get tutorialPage5Title => 'Lisez et exportez';
+
+  @override
+  String get tutorialPage5Step1 =>
+      'Ouvrez la timeline avec son bouton en haut à droite.';
+
+  @override
+  String get tutorialPage5Step2 =>
+      'Touchez Lecture pour vérifier le mouvement.';
+
+  @override
+  String get tutorialPage5Step3 =>
+      'Avec « Exporter », enregistrez-la ou partagez-la en vidéo ou en GIF.';
+
+  @override
+  String get tutorialPage6Title => 'En cas de besoin';
+
+  @override
+  String get tutorialPage6Step1 =>
+      'Touchez ? en haut à droite d\'un écran pour lire son aide.';
+
+  @override
+  String get tutorialPage6Step2 =>
+      'Une courte explication s\'affiche la première fois que vous utilisez une fonction.';
+
+  @override
+  String get tutorialPage6Step3 =>
+      'Vous pouvez revoir ce guide à tout moment depuis « Mode d\'emploi » dans le menu en haut à gauche de l\'accueil.';
+
+  @override
+  String get helpTutorialSubtitle => 'Revoir le guide de démarrage';
+
+  @override
+  String get settingsTipsResetTitle => 'Réafficher les explications';
+
+  @override
+  String get settingsTipsResetSubtitle =>
+      'Réaffiche la courte explication de chaque fonction lors de sa prochaine utilisation';
+
+  @override
+  String get settingsTipsResetDone =>
+      'Les explications réapparaîtront lors de la prochaine utilisation de chaque fonction';
+
+  @override
+  String get helpTutorialButton => 'Voir le guide';
+
+  @override
+  String get projectListTrashFolderConfirmTitle =>
+      'Mettre le dossier à la corbeille ?';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '« $name » sera mis à la corbeille. Vous pourrez restaurer tout le dossier depuis la corbeille.';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return '« $name » mis à la corbeille';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return 'Le contenu des dossiers sera aussi déplacé : $contents.';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '« $name » sera supprimé définitivement. Cette action est irréversible.';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: ' et $folders dossiers',
+      one: ' et 1 dossier',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: ' et $folders dossiers',
+      one: ' et 1 dossier',
+      zero: '',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '$folders dossiers',
+      one: '1 dossier',
+      zero: 'Vide',
+    );
+    String _temp3 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '$projects projets$_temp0',
+      one: '1 projet$_temp1',
+      zero: '$_temp2',
+    );
+    return '$_temp3';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return 'Son contenu sera aussi supprimé : $contents.';
+  }
+
+  @override
+  String newProjectNumberRangeError(int min, int max) {
+    return 'Saisissez un nombre entre $min et $max';
+  }
+
+  @override
+  String get pcViewZoomIn => 'Zoom avant';
+
+  @override
+  String get pcViewZoomOut => 'Zoom arrière';
+
+  @override
+  String get pcViewFit => 'Ajuster à la fenêtre';
+
+  @override
+  String get pcViewActualPixels => 'Pixels réels (100 %)';
+
+  @override
+  String get pcViewRotateLeft => 'Pivoter à gauche';
+
+  @override
+  String get pcViewRotateRight => 'Pivoter à droite';
+
+  @override
+  String get pcViewResetRotation => 'Réinitialiser la rotation';
+
+  @override
+  String get pcViewHidePanels => 'Masquer les panneaux';
+
+  @override
+  String get pcViewFrameStrip => 'Liste des images';
+
+  @override
+  String get pcPaneToolProperty => 'Réglages de l’outil';
+
+  @override
+  String get pcToolPropertyEmpty => 'Cet outil n’a pas de réglages';
+
+  @override
+  String pcStatusFrame(int current, int total) {
+    return 'Image $current/$total';
+  }
+
+  @override
+  String get pcPaneProgram => 'Aperçu';
+
+  @override
+  String get pcPaneInspector => 'Détails';
+
+  @override
+  String get pcTimelineZoomIn => 'Agrandir la chronologie';
+
+  @override
+  String get pcTimelineZoomOut => 'Réduire la chronologie';
+
+  @override
+  String get pcBinEmpty => 'Aucun matériau pour l’instant';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count images';
+  }
+
+  @override
+  String get pcInspectorHint =>
+      'Sélectionnez un matériau dans la chronologie pour régler ici sa position, sa taille, son opacité, etc.';
+
+  @override
+  String pcStatusFps(int fps) {
+    return '$fps i/s';
+  }
+
+  @override
+  String get homePasteSnackbar => 'Collé';
+
+  @override
+  String get canvasSizePresetDuplicateSuffix => 'copie';
 }

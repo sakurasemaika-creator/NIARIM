@@ -9,6 +9,7 @@ import '../../services/project_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 /// 素材一覧画面。
 /// サムネイル・種類アイコン・ファイル名・容量等を一覧表示し、
@@ -91,7 +92,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                       child: Icon(
                         Icons.perm_media_outlined,
                         size: 40,
-                        color: scheme.primary,
+                        color: AccentTextTheme.of(context),
                       ),
                     ),
                     const SizedBox(height: 16),

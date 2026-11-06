@@ -18,6 +18,7 @@ import '../../widgets/ad_banner_mock_widget.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
 /// 閾値。「容量が大きくなる場合はユーザーへ通知」するために使う。ツリー方式は
@@ -214,6 +215,7 @@ void _showTreeSaveDialog(
   final l10n = AppLocalizations.of(context)!;
   final commentController = TextEditingController();
   var saving = false;
+  String? failure;
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -244,6 +246,18 @@ void _showTreeSaveDialog(
                   hintText: l10n.saveTreeCommentHint,
                 ),
               ),
+              if (failure != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    failure!,
+                    key: const Key('saveTreeDialogFailure'),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(ctx).colorScheme.error,
+                    ),
+                  ),
+                ),
             ],
           ),
           actions: [
@@ -293,19 +307,13 @@ void _showTreeSaveDialog(
                         }
                       } catch (e, st) {
                         AppErrorReporter.record(e, st);
+                        // 開いたまま失敗を出す（閉じると打ったコメントが
+                        // 消え、もう一度試すには打ち直すしかなかった）。
                         if (ctx.mounted) {
-                          setDialogState(() => saving = false);
-                          Navigator.pop(ctx);
-                        }
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                l10n.saveTreeSaveFailedSnackbar('$e'),
-                              ),
-                              duration: const Duration(seconds: 6),
-                            ),
-                          );
+                          setDialogState(() {
+                            saving = false;
+                            failure = l10n.saveTreeSaveFailedSnackbar('$e');
+                          });
                         }
                       }
                     },
@@ -776,7 +784,7 @@ class _TreeView extends StatelessWidget {
               child: Icon(
                 Icons.account_tree_outlined,
                 size: 40,
-                color: scheme.primary,
+                color: AccentTextTheme.of(context),
               ),
             ),
             const SizedBox(height: 20),
@@ -875,9 +883,7 @@ class _TreeView extends StatelessWidget {
                 : Icon(
                     Icons.commit,
                     size: 20,
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : null,
+                    color: isSelected ? AccentTextTheme.of(context) : null,
                   ),
             title: Text(node.comment ?? l10n.saveTreeNodeDefaultTitle),
             subtitle: Text(_formatDate(node.savedAt)),

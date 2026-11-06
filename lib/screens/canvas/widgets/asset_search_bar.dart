@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../config/font_fallback.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/asset_tags.dart';
+import '../../../config/accent_text_theme.dart';
 
 /// ブラシ・トーン・スタンプ一覧の検索方式。
 enum AssetSearchMode {
@@ -93,7 +94,7 @@ class AssetSearchBar extends StatelessWidget {
               // 幅280pxのドッキングパネルではこれ以上ボタンを足せないため。
               prefixIcon: IconButton(
                 icon: Icon(isTag ? Icons.sell : Icons.search, size: 16),
-                color: isTag ? scheme.primary : null,
+                color: isTag ? AccentTextTheme.of(context) : null,
                 visualDensity: VisualDensity.compact,
                 onPressed: () => onModeChanged(
                   isTag ? AssetSearchMode.keyword : AssetSearchMode.tag,

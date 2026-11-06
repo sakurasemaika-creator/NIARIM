@@ -85,6 +85,9 @@ class _ProjectFolderEditDialogState extends State<ProjectFolderEditDialog> {
               autofocus: true,
               enabled: !_saving,
               onChanged: (_) => setState(() {}),
+              // Enterでも保存する（空白だけの名前では何もしない）。
+              onEditingComplete: () {},
+              onSubmitted: (_) => _save(),
               decoration: InputDecoration(
                 labelText: l10n.folderNameLabel,
                 border: const OutlineInputBorder(),

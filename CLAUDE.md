@@ -55,11 +55,16 @@
    テストでピクセル値と突き合わせるときは
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
-   `debugPrint`を使う）
-3. `flutter test`（ベースライン：2026-10-10時点で**成功1910・スキップ8・
-   失敗4**。失敗は監査担当の`test/app_web_reference_*`3件と、別セッション
-   （質感変更フィルターの名前変更）の`test/texture_filter_gold_palette_test.dart`
-   1件で、通常タスクでは直さない。スキップのうち3件は
+   `debugPrint`を使う。以前はdev_branchの
+   `lib/screens/settings/theme_preview_gallery_screen.dart`に7件あったが、
+   2026-10-30にdev_branch `4751cbe`を取り込んだ時点で無くなり、例外なしの0件）
+3. `flutter test`（ベースライン：2026-10-30、dev_branch `dc0df19`を
+   取り込んだ`ccr-f56ee68e-77ag7y`（`67f3560`）で**成功2435・スキップ23・
+   失敗26**。26件ともdev_branchだけでも落ちる（作品広場の各テスト
+   〔`community_*`の18件〕・`app_smoke_test`の作品広場4件・
+   `home_bookmark_states_test`の2件・`l10n_unused_key_test`・
+   `startup_failure_recovery_test`）ので通常タスクでは直さない。
+   スキップのうち3件は
    `test/google_auth_init_once_test.dart`で、
    `--dart-define=NIARIM_GOOGLE_CLIENT_ID=test`を付けたときだけ動く。
    全件で約15〜25分かかるので、変更に関係するテストを先に流し、最後に
@@ -137,6 +142,39 @@
   して使う。実際に`premium_lock_widget.dart`と`community_work_detail_screen.dart`
   の2箇所でこの誤用によるバグを発見・修正した。新規に`go()`を追加する際は
   「この画面から戻れなくなって困る人がいないか」を必ず自問すること。
+- **go_router 13.2.5では、戻れる画面が無いと`PopScope`は呼ばれない**：
+  `GoRouterDelegate.popRoute`は`NavigatorState.canPop()`がfalseだと
+  `maybePop`を呼ばずにfalseを返し、アプリが閉じる。キャンバスや書き出しから
+  `go('/home')`で戻ったホームがこの状態（履歴がホーム1枚）。ホームは
+  `BackButtonListener`（`_handleRootBack`）で先に受け、検索・選択・フォルダを
+  閉じてから`go('/')`している。ダイアログが上にあるときは
+  `ModalRoute.isCurrent`がfalseなので横取りしない。
+  あわせて、**`PopScope(canPop: false)`の画面では、Navigatorは引き出し
+  （ドロワー）等のLocalHistoryEntryを自分では閉じない**（`popDisposition`が
+  `doNotPop`になり、`onPopInvokedWithResult`だけが呼ばれる）。戻る処理の
+  先頭で`willHandlePopInternally`なら`Navigator.pop()`で閉じること
+  （ホームでは引き出しを開いたまま裏で選択が解除されていた）。
+- **画面全体のキーボードショートカットは`TypingAwareShortcuts`で、入力が
+  終わったらフォーカスを画面へ戻す**：`CallbackShortcuts`で画面を包むと
+  入力欄より先にキーを取る（検索欄のCtrl+Aが作品の全選択になり、検索で
+  隠れた作品まで選ばれていた）。`TypingAwareShortcuts`は入力欄にフォーカスが
+  ある間は何もしない。その代わり、入力欄からEnterや欄の外のクリックで抜けると
+  Flutterはフォーカスを画面のスコープそのもの（ショートカットより上）へ
+  落とすので、画面の`Focus`に`FocusNode`を持たせ、それを
+  `TypingAwareShortcuts(screenFocus:)`にも渡すこと（フォーカスがスコープへ
+  落ちたら画面へ戻す。キャンバスの色コード欄・レイヤーの検索欄でEnterを
+  押すと、画面を一度押すまでショートカットが効かなかった）。ホームの
+  `onEditingComplete`・`onTapOutside`とキャンバスへの押下（マイクロタスクで
+  遅らせる。入力欄自身のフォーカス解除が同じ押下の処理の後で動くため）でも
+  戻している。マウス・ペンでは**入力欄の隣のボタンも「欄の外」**になるので、
+  押した後も打ち続けるボタン（ホームの検索欄の「タグ／名前」の切り替え）は
+  押したら欄へフォーカスを戻すこと（戻さないと続けて打った文字がどこにも
+  入らず、Androidのペンでは押すたびにキーボードが閉じた）。なおホームは、検索中と「プロジェクト」以外のタブでは
+  全選択・コピー等のショートカットを一切効かせない（検索で隠れた作品や
+  見えていないタブの作品を操作しないため）。
+  キーを押し続けたときの繰り返しは`ShortcutBinding.repeatableCommands`
+  （取り消し・やり直し・コマ送り）だけ。貼り付け等を繰り返すと、Ctrl+Vを
+  押し続けただけで作品の複製が次々にできた。
 - **Material3のTheme個別スタイル未設定でフォントが化ける**：
   `ListTileThemeData.titleTextStyle`・`DialogThemeData.titleTextStyle`・
   `AppBarTheme.titleTextStyle`は、`textTheme`から自動継承されず、明示的に
@@ -164,6 +202,12 @@
   `FloatingActionButton.extended`（アイコン+ラベル）にもそのまま適用され、
   ラベルがクリップ／オーバーフローする。`extended`なFABを新設する際は
   必ず`shape: const StadiumBorder()`を個別指定すること。
+  なお`FloatingActionButton`には`shadowColor`という引数は無い（渡すと
+  コンパイルできずアプリ全体が動かない。影を消すのは`elevation`系を0に
+  するだけで足りる）。ホームは左下・右下にFABが浮くので、タブの一覧の
+  下端へ`_fabClearance`（FAB＋余白＋ナビゲーションバー）を足してある。
+  一覧を新しく足すときも同じ余白を渡すこと（8pxだけだと最後の行の名前と
+  メニューがFABに隠れたままになる）。
 - **`Navigator`/`Overlay`の外側にいるウィジェットへの`tooltip:`指定は
   クラッシュする**：`MaterialApp.router`の`builder`層（画面遷移をまたいで
   常駐する`CommunityFloatingPreview`等）は`Overlay`の外側にいるため、
@@ -181,6 +225,16 @@
   ラッパー（`State.dispose()`まで破棄を遅延させる）を必ず使うこと。24箇所で
   実際に発生した既知のバグパターンで、新しいダイアログ入力欄を追加する際は
   最初からこのパターンで書くこと。
+- **書体の決まり（ユーザー指定、2026-10-23）**：見出し・タイトル・ボタンは
+  くらむぼん、説明文・本文・エラー文・注釈は白光明朝。テーマでは
+  `theme_service.dart`の`buttonLabelStyle`（塗り・枠・文字・浮き・
+  セグメントの各ボタンのラベル）とSnackBarの本文（`bodyMedium`）に反映して
+  ある。ただしSnackBarの操作ボタン（「元に戻す」等）は小さく、くらむぼんの
+  太字だと潰れるので白光明朝のまま（ユーザー指定。`labelLarge`を
+  くらむぼんにしないのはこのため）。画面側で`fontFamily:`を直接書くときも
+  この決まりに従うこと（ボタンのラベルを白光明朝にしない、説明文を
+  くらむぼんにしない）。
+  `test/theme_button_font_test.dart`が実際に描かれた書体で見張る。
 - **フォントの代替列（fontFamilyFallback）は本文用と見出し用で別物**：
   `lib/config/font_fallback.dart`に`kBodyFontFallback`（明朝系）と
   `kHeadingFontFallback`（ゴシック系）の2本がある。**見出し用には明朝を
@@ -251,6 +305,25 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   遭遇したら、まずR8のusage.txt（GitHub ActionsのArtifactに残る）や
   ユーザーに取得してもらうAndroidの「バグレポート」機能でのログ確認を
   早い段階で検討すること。
+- **表示言語を選んでいないときは端末の言語で始まる（テストは日本語の端末）**：
+  `SettingsService.init`は保存された`language`が無ければ
+  `appLanguageCodeFor(端末の言語の並び)`（`lib/utils/app_locale.dart`）で
+  7言語のどれかに決める（優先順に最初に対応する言語、台湾・香港・マカオの
+  中国語は繁体字、どれも対応していなければ英語〔ユーザー指定〕。保存は
+  しない。起動に失敗した画面も同じ決まり）。以前は
+  端末の言語に関係なく日本語で始まっていた。flutter_testの端末は英語
+  （en_US）なので、`test/flutter_test_config.dart`が全テストを日本語の
+  端末（`SettingsService.deviceLocales`）として動かす。英語の端末を試す
+  テストはその中で`deviceLocales`を差し替え、`tearDown`で戻すこと
+  （`test/initial_language_test.dart`が実例）。
+- **アプリで起きたエラーは設定の「エラーの記録」で見てコピーできる**
+  （`/settings/error-log`、`lib/screens/settings/error_log_screen.dart`）：
+  `AppErrorReporter.recentErrors`（新しい順に最大20件、先頭に時刻）を出す。
+  アプリを閉じるまでの分だけで保存はしない（エラーの中から設定を書くと
+  失敗の連鎖が起きうるうえ、設定の引き継ぎに混ざるため）。記録する前に
+  `maskPersonalDetails`でメールアドレス・IDトークン・Bearer・URLの
+  `token=`/`key=`等を伏せる。新しく例外の文にログインの情報が入る処理を
+  書くときは、伏せ方の規則に足すこと（`test/error_log_screen_test.dart`）。
 - **保存済み設定は`prefs.getInt`等で読まず、`prefs.readInt`等で読むこと**：
   SharedPreferencesの`getInt`/`getBool`/`getDouble`/`getString`/
   `getStringList`は`as int?`でキャストするため、同じキーに別の型の値が
@@ -417,6 +490,8 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   揃えてあるので、バー側は透明のままにすること（過去に2度、バー側へ色を
   塗る／塗り直しが剥がれる形で再発している）。
   `test/canvas_bar_transparency_test.dart`が両側を見張っている。
+  （スマホの画面の話。PC/DeXモードの作業画面の上部バー・ドック・
+  ステータスバーは、面を持つ別の作り。）
 - **`shouldRepaint`を1行で無効化しないこと**：`_CanvasPainter.shouldRepaint`は
   30項目を比較しているが、`build()`側で`Map.unmodifiable(...)`のように
   **毎回新しいオブジェクト**を作って渡すと、その1項目が常に不一致になり
@@ -460,6 +535,65 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   透明部分に色を出し（反転で透明部分が白くなる等）、縁を光らせていた。
   `test/engine/filter_premultiplied_validity_test.dart`が全描画フィルターの
   出力を「どのチャンネルもα以下」で見張っている。
+  **ブラシの書き込みも乗算済み**：`TileManager.blendPixel`（色は乗算前で
+  渡す）・`erasePixel`（色も不透明度と同じ割合で薄くする）・折り畳み
+  （`HairFoldRaster`）・水彩風（`WatercolorStroke`は塗る前のタイルを
+  割り戻した色で計算し、書くときに掛ける）。以前はここだけ乗算前の色を
+  書いていて、黒い紙の上の不透明度50%の赤が真っ赤に見えた（白い紙の上
+  では計算の上限で偶然ほぼ同じ見た目になるので気づかれなかった）。
+  乗算済みの色を重ねるときは`blendPremultipliedPixel`、タイルの色を読む
+  ときは`getPixelColorAt`（割り戻した色を返す）を使う。
+  `test/stroke_premultiplied_test.dart`がデジタル・油彩風・水彩風の線と
+  柔らかい消しゴムの後のタイルを見張る。この修正より前に保存した絵の
+  半透明の所は乗算前の値のまま残る（どちらの値か区別できないので変換
+  しない）。
+- **レイヤーの「ロック」「不透明度ロック」はキャンバスの入口とタイル管理で
+  効かせている**（レイヤー仕様：ロックは移動・描画・編集を禁止、不透明度
+  ロックは透明な所へ描かない。以前はスイッチと印だけで何も止めていなかった）：
+  ロックは`CanvasArea._onPointerDown`の`_refuseLockedLayer`で、絵を書き換える
+  ツール（ペン・消しゴム・バケツ・投げ縄塗り・トーン・スタンプ・図形・指・
+  ぼかし・モザイク・移動・メッシュ・選択範囲の変形・スライダーの変形）を
+  止め、`onLockedLayerEdit`でSnackBarを出す（範囲を選ぶ・スポイト・手のひら・
+  定規のハンドルは使える）。断った指は`_toolHandledPointers`から外すこと
+  （外さないと、ペンは動きだけで線を描き始め、ぼかしは動いた所をぼかす）。
+  不透明度ロックは`TileManager.beginUndoRecording(lockOpacity: true)`で、
+  記録中の合成は`opacityLocked`をかけた見え方、記録の終わりに触れたタイルへ
+  実際にかける（`a0·P1 + (1−a1)·P0`：不透明度は前のまま、普通に塗った所は
+  source-atop、消しゴムは何も変えない。描いている途中も確定後と同じ見え方）。
+  移動・変形（`_beginTileUndo(paints: false)`）にはかけない。フィルター・
+  色調整・明度で透過はまだロックを見ていない。
+  `test/layer_lock_canvas_test.dart`。
+- **制作時間（`ProjectService.beginWorkTracking`・`endWorkTracking`）は画面の
+  initState・disposeから呼ばれる**：キャンバスからタイムラインへ移ると、
+  タイムラインのinitStateが前の画面の分を締めて`notifyListeners`する。
+  組み立ての最中に知らせると「組み立て中のsetState」の例外になったので、
+  `_notifyOutsideBuild`がそのときはフレームの後へ回す（dev_branchの
+  リースつきの制作時間、2026-11-04取り込み。`timeline_pc_workspace_test`で
+  発見）。
+- **保存した一覧（ブラシ等）は1件ずつ読むこと**：`BrushService.init`は以前、
+  保存の一覧を1度に`map(fromJson)`しており、壊れた1件で初期化全体が失敗して
+  起動できなくなった（起動失敗画面でやり直しても同じ）。読めない分は
+  `AppErrorReporter`へ記録して捨て、除いて保存し直す（`test/brush_management_test.dart`）。
+  使っているブラシを消したら隣のブラシへ移ること、複製の名前は
+  `numberedCopyName`（言語と番号）、削除は確かめてから、もここで見張る。
+- **ペンの線は、押して線を始めた指（`_strokePointer`）だけが描く**：
+  `DrawingEngine.continueStroke`は線が無ければ新しく始めるので、押した時点で
+  描かなかった指（手のひら除外・フィルターの調整中・ペンのボタン・ロック）の
+  動きを渡すと、取り消しの記録も無いまま線が描かれた。OSが指を取り上げた
+  （PointerCancel：システムのジェスチャー・手のひらの判定）ときは
+  `_cancelToolPointer`で描きかけを丸ごと戻す（以前は残り、次の線の記録に
+  混ざって取り消せなかった）。`test/stroke_pointer_lifecycle_test.dart`。
+- **ペンは選んだ色の不透明度を線に掛け、透明色のペンは消しゴム**：以前は色の
+  不透明度を無視し、透明色を選ぶと隠れた色を不透明に塗った。消しゴムかどうかは
+  `CanvasArea._erasing`（消しゴムのツール、または透明色のペン）で、線の始めと
+  画面の更新で同じ決まりを使う（片方だけ`widget.isEraser`に戻すと線の途中で
+  消しゴムでなくなる）。マウスの筆圧は`InputHandler`で常に1.0（Linuxの
+  デスクトップは0を渡し、筆圧で太さが変わるブラシが2割の太さになった）。
+  `test/eraser_transparent_colour_test.dart`・`input_handler_pressure_test.dart`。
+- **`TileManager`のタイル画像のキャッシュは複製（clone）を返す**：本体を
+  返すと、受け取ってから描くまで（awaitの続き）の間に同時に走る別の合成が
+  追い出して破棄し、破棄済みの画像を描いた（小さいキャンバスで油彩風の
+  ストローク中に実際に起きた）。受け取った側が描いた後にdisposeする。
 - **合成画像（`LayerCompositor.composite`）には背景が入っていない**：
   レイヤーだけを重ねた透明な画像なので、プレビュー・サムネイルにそのまま
   出すと、透明な所に**パネルの色**が透けて見え、キャンバスと見え方が
@@ -551,15 +685,42 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   起きない」形の失敗になる。`tester.ensureVisible()`を挟むこと。
   併せて、キャンバスのオーバーレイパネルは画面左側へ縦いっぱいに開いて
   **ツールバーを覆う**ため、次のツールバー操作の前に閉じる必要がある。
-- **`FirstUseTooltip`の吹き出しは画面全体の透明バリアを敷く**：吹き出しが
-  出ている間はどこをタップしても閉じられるよう`Positioned.fill`の
-  `GestureDetector`をOverlayへ置いている。そのため、吹き出しが出た直後の
-  操作はバリアに吸われて何も起きない。ツールバーを操作するテストでは
-  `SharedPreferences.setMockInitialValues({firstUseTooltipsSeenKey:
+- **`FirstUseTooltip`の説明カードは専用の画面（`RawDialogRoute`）として積む**：
+  カードの外側はルートのバリア（幕）で、どこをタップしても閉じる。そのため、
+  カードが出た直後の操作はバリアに吸われて何も起きない。ツールバーを操作する
+  テストでは`SharedPreferences.setMockInitialValues({firstUseTooltipsSeenKey:
 kAllFirstUseTooltipKeys})`で全キーを表示済みにしておくこと（一覧は
   `test/helpers/first_use_tooltips.dart`。lib配下の実際の`tooltipKey:`と
   一致していることを`test/first_use_tooltip_keys_test.dart`が見張っている
   ので、吹き出しを増やしたらこのファイルにも足す）。
+  以前は`OverlayEntry`で画面の上へ重ねていたが、（1）戻る操作は下の画面
+  （`PopScope`で戻る操作を受けるホーム等）や同じタップで開いたダイアログへ
+  届いてカードが残る、（2）画面側が既にフォーカスを持っているので
+  `autofocus`が効かずEscも効かない・背面の画面のCtrl+Z等が動く、
+  （3）Android 16の予測型「戻る」はNavigatorが戻れないとOSへ渡すので
+  アプリごと閉じる、の3つを同時に踏んでいた。画面の上に重ねて「読んだら
+  閉じる」ものはOverlayではなくルートにすること（戻る・Esc・フォーカス・
+  予測型「戻る」がすべて標準の仕組みで揃う）。カードは次のフレームで積む
+  （同じタップで子がダイアログを開いた場合もその上に出る）。積むのに要る
+  もの（Navigator・色・文言）は**押した時点で取っておく**こと：押すと画面ごと
+  作り変わるボタン（タイムラインの全画面表示）では、次のフレームには説明の
+  ウィジェットが無く、カードが一度も出ていなかった。位置を画面の座標で
+  決める吹き出し（`InfoIconTooltip`）は`RawDialogRoute`ではなく`PopupRoute`
+  にする（`RawDialogRoute`は折りたたみ端末のヒンジで画面を分けて片側に
+  置くため、もう片側のアイコンの吹き出しが切れる）。
+- **初回起動のホームでは使い方（`lib/widgets/app_tutorial.dart`の`AppTutorial`、
+  図つきの6ページ）が出る**：`first_launch`を保存していないテストでホームを
+  開くと、全画面のダイアログが上に積まれて後の操作を吸う。起動から通すテストは
+  `find.byKey(const Key('tutorialSkip'))`を押して閉じること（以前の一文の
+  ダイアログの「はじめる」は最後のページにしか無い）。スキップ・はじめる・
+  戻る操作のどれで閉じても`markFirstLaunchDone`する。ホームのメニューの
+  「使い方」（ヘルプ・活用Tipsの並び、ユーザー指定）・ヘルプの先頭から
+  見直せ、設定の「機能の説明をもう一度表示」が
+  `FirstUseTooltipService.resetAll`を呼ぶ。図はアプリの部品で描いた模式図で、
+  操作する場所の囲み（`_Marked`）は**相手の部品に付けて**描くこと（図の座標に
+  置くと、言語で文字の幅が変わったとき作成ボタン等から外れた）。ページや手順を
+  足したら`test/app_tutorial_test.dart`の7言語×4画面×文字2倍の巡回に通し、
+  文言を足したらサブセットフォントを作り直す。
 - **`Table`のセルは既定（`top`）だと自分の中身ぶんの高さしか持たない**：
   1つのセルが2行に折り返すと行だけが高くなり、他の列の
   `Container(color: ...)`は**行の下端まで届かず背景に白い帯が残る**
@@ -641,6 +802,188 @@ onTap: ...)`だったために
   200pxで保存しているが、一覧での表示は40〜58px。`cacheWidth:
 (size * MediaQuery.devicePixelRatioOf(context)).round()`のように
   表示画素数へ落とすこと。
+  また**画像はパスごとにキャッシュされる**ので、作り直す画像を同じファイル名へ
+  上書きすると、一覧には古い絵が出続ける（作品一覧のサムネイルが実際にそう
+  だった）。作るたびに別の名前で保存し、前のファイルは保存し終えてから、
+  ほかから参照されていなければ消すこと（`generateAndSaveThumbnail`が実例。
+  以前の版で複製した作品は複製元とサムネイルのファイルを共有している。
+  今の`duplicateProject`は素材（`Materials/`）とサムネイルを複製先のフォルダへ
+  写し終えてから一覧に出し、`permanentDelete`は消す前に、共有している作品へ
+  サムネイルを写す）。
+- **手動の保存（セーブスロット・セーブツリー）の一覧は`SaveTree/index.json`に
+  残す**：以前は一覧をメモリにしか持たず、保存のファイルは残るのに起動し直すと
+  どのスロットも「保存データなし」になった（A010の実操作で発見）。
+  `SaveTreeService`は保存・削除・方式の変更・退避からの復元のたびに一覧を書き
+  （`_persist`。同期の書き込み。非同期にするとテストの偽の時計の下で保存が
+  終わらない）、起動処理の`save_tree`の段で`init`が読む。一覧に無い保存の
+  ファイルは古い順に空きスロットへ戻し、余りは退避する。保存の一覧を変える
+  処理を足すときは`_persist`を呼ぶこと（`test/save_tree_persistence_test.dart`）。
+  「保存して戻る」は、最新の保存（`latestSaveOf`）が変わったときだけ一覧へ
+  移る（保存せずに戻ったらキャンバス・タイムラインに残る）。
+- **`TileManager.importAll`（自動保存からの復元）はレイヤーの内容の変更を
+  知らせる**：以前は知らせず、自動保存から戻した絵がデータには入っているのに
+  キャンバスには前の絵が出たままだった（強制終了→起動し直しの実操作で発見）。
+  タイルをまとめて入れ替える処理を新しく書くときも、
+  `addLayerContentListener`の聞き手へ知らせること（`layer_pixels_replace_test`）。
+  手動の保存のダイアログ（スロット・ツリー）は失敗しても閉じず、打った
+  コメントを残して失敗の文を中に出す（`save_dialog_failure_test`）。
+- **キャンバスの「設定/編集」メニューは全項目を`canvas_edit_menu_walkthrough_test`
+  が開いて撮る**（`build/canvas-edit-menu/`、仏語・文字2倍・320pxも）。
+  メニューは別のルートなので、メニューの中で値を選ぶ部品はキャンバスの
+  setStateでは作り直されない（`StatefulBuilder`で包む）。ListTileの
+  `trailing`に長い選択肢を置くと、長い言語・大きな文字で行が描けずメニュー
+  全体が出なくなるので、入らないときは項目名の下の行へ移すこと。
+- **PC/DeXモードのドックの幅は窓の幅から決める（`_fitDockWidths`）**：保存した
+  幅のまま並べると、窓を狭めたときキャンバスが細い帯になり、さらに狭めると
+  行がはみ出してキャンバスが消えた。キャンバスに240pxを残し、足りなければ
+  2つのドックを下限（左260px・右240px、`SettingsService.minDesktop*Width`）
+  まで狭める。ドックの下限を下げるとブラシの名前が縦に並ぶ・見出しが
+  はみ出すので下げないこと。左利きモードでは色・レイヤーのドックも左端へ
+  鏡映しにする（つまみの向きはこの配置を前提にしている）。向きが変わって
+  スマホ表示へ移るときはドックのパネルを閉じ、戻ったら開き直す
+  （`_panelsBeforePhoneLayout`）。`test/canvas_dock_fit_test.dart`が見張る。
+- **PC/DeXモードのキャンバス・タイムラインはPC専用の作業画面（ユーザー指定、
+  2026-10-30）。ただしボタンはNIARIMのスマホ版と同じ（ユーザー指定、
+  2026-11-04「スマホ版UIでボタンごとに機能を分けているのにファイル・編集・
+  選択範囲…に分ける必要はありますか？完全にパクリはやめてくださいね」
+  「あくまでもNIARIMのPC版UIであることを念頭に」）**：他のソフトのメニュー
+  バー（ファイル・編集・選択範囲・レイヤー・表示・ウィンドウ…）や呼び名
+  （ツールプロパティ・プログラムモニター・インスペクター等）を持ち込まない。
+  スマホの浮かぶパネルの代わりに、`lib/widgets/pc_workspace.dart`の部品
+  （`PcCommandBar`＝上部バー・`PcDockColumn`の窓・`PcStatusBar`・つまみ）で
+  画面を区切る。キャンバスは`_buildPcWorkspace`：上部バー（スマホの上部
+  バーと同じ取り消し・やり直し・設定/編集メニュー・ホーム・タイムラインへ
+  に、指の操作の代わりの拡大・縮小・全体表示・回転と、窓の一覧
+  `desktopWindowVisibilityMenu`を足したもの）・ツールバー（スマホの
+  ツールバーと同じボタンを縦に。パネルのボタンはドックの窓を開閉）・
+  ツールの列（先頭に「ツールの設定」）・キャンバス・反対側の列・フレーム
+  一覧・ステータスバー。タイムラインは`_buildPcTimelineWorkspace`：上部バー
+  （スマホの上部バーとツールバーのボタン〔キャンバスへ・作品名・素材を追加・
+  演出フィルター・カメラ・タイムスタンプ・重なり順・ホーム・取り消し・
+  やり直し・三点メニュー・ヘルプ・書き出し〕を1段に、拡大・縮小と区画の
+  表示を足す）・［シーン・素材｜プレビュー｜詳細］・全幅のタイムライン。
+  スマホの画面は別の枝で変えていない。守ること：
+  - ドックの窓はdev_branchのPCレイアウト設定と同じ設定で並べる（左右どちらの
+    列か＝`toolOptionDockOrder`/`rightDockOrder`、開く窓＝
+    `defaultDockedPanels`、高さ＝`desktopDockHeight`、幅＝列で一番広い
+    `desktopDockWidth`）。窓ごとに1つのペインで、見出しをつかんで別の窓の
+    上へ落とすと並べ替え・反対側の列へ移る（`moveDesktopDockPanel`）。
+    開閉は`_setDesktopPanelVisible`で保存する（ツールバー・設定/編集メニュー
+    から開いても同じ）。一番下の窓は列の残りの高さを使う。
+  - パネルをドックへ入れるときは`DockedPanelScope`（`lib/widgets/
+    docked_panel_scope.dart`）の中で描く。パネルの下地は`PanelSurface`
+    （スマホでは浮かぶカード〔影は付けない〕、ドックではペインいっぱい）、
+    閉じるボタンは`PanelCenterCloseBar`（ドックでは出さない。窓の見出しの×で
+    閉じる）。新しいパネルを足すときもこの2つを使うこと。
+  - 窓のたたみ（見出しの矢印）はPCレイアウト設定と同じ設定
+    （`SettingsService.isDesktopDockCollapsed`・`setDesktopDockCollapsed`、
+    保存キー`desktop_collapsed_docks`）に残す（`PcPane.collapsed`・
+    `onCollapsedChanged`）。列の窓がすべてたたまれると、列は外側の細い帯
+    （`PcDockColumn.foldedWidth`＝52px、窓ごとに広げるボタン
+    `pcPaneExpand.<id>`）になってキャンバスへ場所を返す（dev_branchの
+    「窓を横へたたむ」）。「ツールの設定」のたたみは画面の中だけで覚える。
+    `_fitDockWidths`は帯の列を下限まで広げないこと。
+  - 窓の見出しにダブルクリック（`GestureDetector(onDoubleTap)`）を付けない。
+    クリックがダブルクリックの判定時間（300ms）だけ遅れた。見出しは空いた所
+    までつかめるようにしてある（文字の所だけだと、つかみ損ねた）。
+  - ペインの中身は`PcPane.minLayoutHeight`（既定240）より低いと、その高さで
+    並べてペインの中でスクロールする（パネルの見出し・ボタンの段がはみ出さ
+    ないように）。自分で大きさを合わせる・スクロールする中身は0にする。
+  - ドックの開閉やスマホ⇔PCの切り替えでキャンバスの親が変わるので、
+    `CanvasArea`には`_canvasAreaKey`（GlobalKey）を付けてある（外すと表示の
+    倍率・描きかけが毎回失われる）。表示の操作は`CanvasViewRequest`
+    （serialが変わったら次のフレームで行う。ビルド中に変換を変えると、変換を
+    描くAnimatedBuilderとステータスバーの作り直しがビルド中に起きる）、
+    倍率・回転は`CanvasViewInfo`（ValueNotifier）で受ける。
+  - マウスのホイール（ユーザー指定）：キャンバスはホイールで上下、Shift＋
+    ホイールで左右に動かし、Ctrl（⌘）＋ホイールでカーソルの位置を中心に
+    拡大・縮小する（`CanvasArea._handlePointerSignal`）。タイムラインは
+    ホイール・Shift＋ホイールがそのままスクロール（FlutterのScrollable）、
+    Ctrl＋ホイールでフレームの幅を拡大・縮小する
+    （`_onTimelinePointerSignal`）。Ctrl＋ホイールは縦のスクロールより内側の
+    `Listener`で`pointerSignalResolver`に登録すること（ホイールは内側で
+    受けた方が使うので、外側で受けると一覧が縦にスクロールする）。
+  - タイムラインの素材の編集パネル・重なり順は、PCでは右の「詳細」に出す
+    （スマホのようにタイムラインの場所と入れ替えない）。
+  `test/canvas_pc_workspace_test.dart`・`test/timeline_pc_workspace_test.dart`が
+  配置・スマホと同じボタン・窓の移動・ホイール・各窓の大きさ・仏語・左利きを
+  見張り、`build/canvas-pc-workspace/`・`build/timeline-pc-workspace/`へ撮る。
+- **見つからない作品の画面は`ProjectNotFoundView`**
+  （`lib/widgets/project_not_found_view.dart`）：古いリンク・ゴミ箱へ移した後に
+  プロジェクト詳細・キャンバスを開くと、空の画面を出さずに一覧へ戻す道を出す。
+  作品IDを受け取る画面を新しく足すときもこれを使うこと。
+- **作品・フォルダの名前で並べる・探すときは`lib/utils/name_collation.dart`**：
+  `String.compareTo`だと「作品10」が「作品2」より前、大文字が小文字より前、
+  全角英字・半角カナが最後になる。並べるときは`NameSortKey`で名前ごとに
+  1回だけそろえてから`compareNameKeys`で比べ（比べるたびにそろえると数百件で
+  数十ミリ秒かかり、一覧の再描画のたびに走る）、探すときは`nameMatches`
+  （全角/半角・カタカナ/ひらがな・大文字/小文字を区別しない）を使う。
+- **操作ボタン（`action:`）の付いた`SnackBar`は、既定では時間で消えない**：
+  `SnackBar.persist`の既定値が`action != null`のため、`duration`を書いても
+  効かない。アプリにはScaffoldMessengerが1つしか無いので、消えないSnackBarは
+  次の画面（キャンバス等）まで付いてきて下のツールバーに重なり、後から出す
+  SnackBarもその後ろで待ち続けて表示されない（ゴミ箱の「元に戻す」で
+  踏んだ）。`persist: false`を付けること（ゴミ箱へ移した通知は
+  `lib/widgets/moved_to_trash_snack_bar.dart`）。キャンバスの「不足素材」の
+  SnackBarも同じ理由で`persist: false`にしてある。
+- **名前を1つ入力するダイアログは`lib/widgets/name_entry_dialog.dart`の
+  `NameEntryDialog`**：空白だけの名前を確定させない・前後の空白を除く・
+  Enterで確定・二度押しで2回動かない・失敗したら開いたまま・確定中は閉じない、
+  をまとめて持つ（ホームのフォルダ作成で二度押しすると2つでき、名前の変更で
+  空の名前にできた）。コントローラーもダイアログ自身が持って破棄する。
+  **Enterで確定・追加する欄には`onEditingComplete: () {}`を付けること**：
+  付けないとEnterで欄からフォーカスが外れ、空のまま押して確定できなかった
+  とき、続けて打った字がどこにも入らない（実画面で踏んだ）。タグのように
+  Enterで1つずつ足す欄も、付ければキーボードを閉じずに続けて打てる。
+- **作品の「容量」（`sizeBytes`）と「最終保存」（`updatedAt`）は保存のたびに
+  `saveProject`が合わせる**：以前は起動時にファイルから読むときだけ設定して
+  いたので、作ったばかりの作品は0B、描いても再起動まで古い値だった（ホームの
+  「更新日時」順も同じ値）。保存は描いている間にも走るので通知はせず、
+  次に画面を作るときに使われる値だけを変える。
+- **作成・保存の「処理中」フラグは、成功して画面を移るときは戻さないこと**：
+  新規プロジェクトは作成に成功した後`finally`で`_creating = false`に戻して
+  いたため、キャンバスを描く前に届いたダブルクリックの2回目（描くのが遅い
+  端末では、ボタンが押せる見た目のまま残る）で作品が2つできた。成功したら
+  処理中のまま画面を移り、失敗したときだけ戻す
+  （`test/new_project_inputs_test.dart`は、次のフレームを描かずに2回押して
+  見張る。間にpumpを挟むと再現しない）。
+- **数字を打つ欄は、範囲に収めた値を欄へ書き戻すこと**：範囲外の値を黙って
+  収めて使い、欄に打った値を残すと、見えている値と作られる値が食い違う
+  （新規プロジェクトの幅5000が1920で作られた）。範囲の文を出し、欄から出た
+  とき・Enter・確定の前に書き戻す（`new_project_screen.dart`の
+  `_commitNumberFields`）。
+- **ホームの選択中の操作バーは1行（ユーザー指定）**：全選択・全解除・件数は
+  幅が足りなければ省略して（長押し・ホバーで全文）、切り取り・コピー・
+  ゴミ箱を1行に並べる。お気に入りの一括の付け外しは置かない（各項目の
+  メニューから）。2行に分ける案は採らない。
+  全選択・全解除の文字が欄に収まらないときは、2つとも省略せずアイコン
+  （select_all／deselect）にする（ユーザー指定。仏語の「Tout
+  sélectionner」「Tout désélectionner」がどちらも「Tou…」になるなど、
+  省略すると見分けられない言語がある）。収まるかは文字のボタンと同じ書式・
+  文字の大きさの設定で測る。`home_display_matrix_test`が全幅・全言語で
+  「全選択・全解除の文字が省略されていない」ことを見張る。
+- **作品広場の上部（検索・絞り込み・タブ）と浮かぶプレビューの大きさは
+  dev_branchの作りが正**：dev_branchが2026-10-28〜30に、段に分けたヘッダー・
+  検索のタブ・保存した検索条件・ミュート等へ作り直した（見張りは
+  `test/community_header_*`ほか）。Opusのブランチの2段のツールバー
+  （2026-10-24、ユーザー指定）と、プレビューの`sizeFor`・`show(top:)`は
+  2026-10-30の取り込みでdev_branchのもの（`CommunityPreviewService.minWidth`
+  ＝YouTubeの要件の200、`playerHeightFor`。プレーヤーを置けない幅・高さでは
+  操作と「詳細へ」だけを出す）に置き換えた。作品広場を触るときはdev_branchの
+  最新を先に確かめること。
+- **ホームの表示サイズ（大・中・小）はどの幅でも列数を変えること**：
+  基準の幅（`maxCrossAxisExtent`）だけで列数を決めると、スマホの幅では
+  近い2つのサイズが同じ列数になり、選んでも何も変わらない（360pxで大と中、
+  390〜430pxで中と小が同じだった）。`ProjectListWidget.gridColumnsFor`が
+  小を基準に、中・大を少なくとも1列ずつ減らす（スマホは1・2・3列）。
+  カードにはメニュー（32px）と星が載るので、スマホで4列にはしない。
+  `test/project_grid_view_size_test.dart`が見張る。
+  表示サイズを選んだことが無ければ、画面の幅で決める（dev_branch
+  2026-11-04：幅600未満は小・1000未満は中・それ以上は大、
+  `lib/utils/responsive_tile_defaults.dart`）。選んだ表示サイズは設定
+  （`home_view_mode`、並び順と同じ所で設定の引き継ぎにも入る）と
+  dev_branchのキー（`home.projectViewMode.v1`）の両方へ保存する。
+  低スペック端末で小にする決まりはdev_branchが外した。
 - **`SliverMultiBoxAdaptorElement`の「見えている子」は描画範囲ぶんだけ**：
   `ListView.builder`はcacheExtent（既定250px）ぶん先の子も**生成・レイアウト
   する**が、`debugVisitOnstageChildren`が返すのは**実際に描画される範囲の
@@ -670,6 +1013,11 @@ onTap: ...)`だったために
   `startGesture`＋`moveBy`を自分で書く場合はスロップぶんが丸ごと捨てられ、
   **1回のmoveByだけだとスクロール量が0になる**。スロップ用と本番用の
   2回に分けること。
+- **画像を焼くマトリクステストでは影を本物にする**：`flutter test`は既定で
+  `debugDisableShadows = true`（影が黒い縁取りで描かれ、FABが黒い輪に見える）。
+  `test/home_display_matrix_test.dart`のように`false`にして撮り、**テスト本体の
+  最後で`true`へ戻す**こと（`addTearDown`では終了時の検査の後になり
+  「debug variable was changed」で落ちる）。
 - **`flutter test`環境での既知の制約**：
   - `path_provider`はデフォルトで未登録。ディスクI/Oを伴うテストは
     `test/app_smoke_test.dart`の`mockPathProvider`ヘルパーを使うこと。
@@ -743,6 +1091,49 @@ onTap: ...)`だったために
   オーバーフローし、登録できるブラシが数件に限られていた。
   `test/bottom_sheet_scrollable_test.dart`がソースを走査して再発を防ぐ。
   「今は入りきる」は保証にならない（組み込みブラシは実際に後から増えた）。
+  この走査は`for (final … in …)`（分解する形も含む）と`...list.map(`を
+  見る。以前は前者しか見ておらず、`...folders.map(`で並べていた
+  「フォルダへ移動」のシート（プロジェクト詳細・キャンバス）の包み忘れを
+  見逃していた（30件で1417pxはみ出した）。
+- **作品の複製の名前・フォルダの行き先の一覧は共通の関数で作る**：複製の名前は
+  `lib/utils/duplicate_name.dart`の`duplicateProjectName`（複製先のフォルダに
+  同じ名前の複製があれば「(コピー 2)」…と番号を付ける。固定の
+  「(コピー)」だと2回貼り付けたとき同じ名前が並んだ）。「フォルダへ移動」の
+  行き先は`lib/utils/folder_tree.dart`の`folderTree`（親の下に子を名前順・
+  字下げ、動かすフォルダとその中は出さない。平らに並べると同じ名前の
+  フォルダを見分けられず、自分の中を選ぶと何も起きずに閉じた）。
+- **フォルダのゴミ箱は中身ごと（ユーザー指定）**：フォルダをゴミ箱へ移すと
+  下の階層のフォルダ・作品も一緒に移り（`ProjectService.moveFolderToTrash`、
+  記録は`TrashedFolder`で保存キー`trashed_project_folders`）、ゴミ箱でフォルダを
+  戻すと中身もすべて元の場所へ戻る（`restoreTrashedFolder`。親のフォルダが
+  無ければ一番上へ）。`trash`はフォルダと一緒に移した作品も含むので、ゴミ箱の
+  一覧は`trashedFolders`と`looseTrash`（1件ずつ移した作品）で出し、空にするのは
+  `emptyTrash`。フォルダと一緒に移した作品を1件ずつ戻す・消すUIは作らないこと
+  （フォルダの記録と食い違う）。古い`deleteFolder`（中身を一番上へ出して
+  フォルダだけ消す）は画面からは使っていない。フォルダの複製は
+  `duplicateFolder`（中身ごと、名前は`duplicateFolderName`）。
+  フォルダの作成・名前の変更は、同じ階層に同じ名前があれば「名前 (2)」…と
+  番号を付ける（`uniqueFolderName`、ユーザー指定）。
+  フォルダの保存はdev_branchの仕組みに乗せてある：`_queueFolder`で1つずつ
+  順に、`_commitFolders`で**保存してから**一覧を変え、失敗は
+  `FolderSaveException`。画面は入力を残したまま失敗を出す
+  （`FolderDeleteDialog`・`showCreateFolderNameDialog`／
+  `showRenameFolderNameDialog`・`ProjectFolderEditDialog`・
+  `WorkFolderMoveSheet`）。ゴミ箱へ移すときは先にゴミ箱の記録、次にフォルダの
+  一覧を保存し、どちらかが失敗すれば何も変えない（途中で終わって記録だけ
+  残ったときは、起動時にフォルダがまだあれば記録を捨てる）。`_queueFolder`の
+  中から別の`_queueFolder`の処理を待つと止まる。dev_branchのゴミ箱（2026-10-30
+  取り込み）で`restoreProject`・`permanentDelete`もフォルダの列に並ぶように
+  なったので、フォルダの処理の中からは`_queueProjectSave(id, () =>
+  _restoreProjectNow(id))`のように、列に並ばない中身（`_restoreProjectNow`・
+  `_permanentDeleteNow`）を作品の保存の列だけを通して呼ぶこと。お気に入りの
+  作品は一括の削除でもフォルダごとでもゴミ箱へ移さない
+  （`FavoriteProjectDeleteException`、dev_branchの決まり）。共有タブのフォルダの
+  削除（中身は一番上へ）はdev_branchのまま。
+  ゴミ箱のカード（作品・フォルダとも`_TrashCard`）は、幅が600×文字の倍率より
+  狭いと「復元」「完全削除」を名前の下の右端の別の行、広いと名前の右の上下の
+  真ん中に置く（dev_branchの決まりを両方のカードに当てた。カードの種類で
+  置き場所が違うとずれて見える、というユーザー指摘）。
 - **アプリ内の文言に絵文字を混ぜない（アイコンで表す）**：意味を表す記号は
   すべてMaterialアイコン（`Icon(Icons.xxx)`）を使う。絵文字は端末・OS
   バージョン・フォント設定で字形も色も変わり、同梱フォント
@@ -777,6 +1168,11 @@ onTap: ...)`だったために
   なお文言もこの画像に焼き込まれるため、Androidの文字列リソースではなく
   **アプリ内の表示言語設定に追従する**（`app.dart`の`_syncHomeWidgets`が
   テーマ色と言語の両方をキーにして焼き直す）。
+  起動画面の釣り合いはユーザー指定：**どの画面比率でも導線のボタンを
+  アプリアイコン・アプリ名より大きく**（モノグラムはボタンの基準幅の0.6倍、
+  PC・タブレットは0.55倍、アプリ名は0.9倍）、PC（DeX）とタブレット（短辺
+  600dp以上）は並び全体を画面幅の約8割まで拡大、スマホはボタン150pxのまま
+  間隔を最大64px。`test/splash_layout_test.dart`が336通りの全セルで見張る。
 - **ポップアップ・トーストの下地は必ず不透明にする**：テーマの色は
   カラーピッカーで透明度まで選べるため、メニュー背景色をそのまま
   ダイアログ等の下地に使うと後ろの画面が透ける。`theme_service.dart`は
@@ -895,19 +1291,74 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   「ぼかし具合」（`bgBlendBlur`）は以前どこでも使われていない飾りのスライダー
   だった（今は色を拾う背景のぼかし）。`test/engine/background_blend_tutorial_test.dart`。
 - **テーマの文字色と背景色を同じ色にすると詰む（対策済み・壊さないこと）**：
-  テーマ・外観設定は文字色も背景色も自由に選べるため、同じ色にすると
-  設定画面の文字まで読めなくなり自力で戻せなくなる。対策は2段構え：
-  1. テーマ・外観設定がその組み合わせを保存しない
-     （`theme_settings_screen.dart`。判定は`lib/utils/color_contrast.dart`）
-  2. それでも読めないテーマになった場合（引き継ぎファイルの取り込み等）
-     に備え、起動画面の右上へ**テーマ色を一切使わない固定色**の
-     リセットボタンを条件付きで出す（`splash_screen.dart`の
-     `_ThemeRescueButton`）
-     しきい値`kMinReadableContrast`は**1.4**。組み込み28プリセットの最小値が
-     約1.75（水色のアクセント色に白抜き文字）なので、WCAGのAA基準
-     （4.5／大きい文字3.0）を使うと**既定テーマ自体が弾かれる**。
-     組み込みテーマが全て通ることは`test/theme_contrast_rescue_test.dart`が
-     検証しているので、しきい値を上げるときは必ずこのテストを見ること。
+  テーマ・外観設定は文字色・背景色・ボタン文字色・メニュー文字色・選択色等を
+  自由に選べ、**ユーザーの色選択は拒否も自動の差し替えもしない**
+  （`color_contrast.dart`の方針）。その代わり、読めない組み合わせ
+  （`readabilityCriticalPairs`の各組がAPCAで|Lc|10未満、1・2・3型色覚の
+  模擬でも判定する`isEssentialTextNearlyInvisible`）になったときだけ、
+  起動画面の右上へ**テーマ色を一切使わない固定色**のリセットボタン
+  （`lib/widgets/theme_rescue_button.dart`）を出す
+  （`ThemeService`が判定結果を覚えておく）。判定は救済ボタンを出す目安で、
+  文字が読めることの保証ではない。組み込みテーマで救済ボタンが出ないことは
+  `test/theme_contrast_rescue_test.dart`が見張っている。
+  画面側で`contrastingForeground`を使い、差し色を読みやすさのために黒・白へ
+  差し替えることもしない（ユーザー指定、2026-10-23）。ホームのタブの選択中の
+  文字とブクマ済みのボタン・読み込み中の表示が差し替えていて、ライトでは
+  黒になり、同じ画面の他の差し色（下線・アイコン・他のボタン）と揃って
+  いなかったので差し色へ戻した。作品広場のダイアログのボタンと作品カードの
+  文字（本文の文字色を差し替えていた）も外した。作品広場の色の役目は
+  dev_branchの作り（2026-10-26〜29）が正。
+  その代わり、差し色は**「塗り」と「背景の上の文字・アイコン」で別の色**に
+  なっている（ユーザー指定の案A）：テーマ・外観の「アクセントの文字・アイコン
+  色」（`AppThemePreset.accentTextColor`、未指定なら差し色と同じ）。背景の
+  上に差し色で文字・アイコンを描くときは`AccentTextTheme.of(context)`
+  （`lib/config/accent_text_theme.dart`）を使い、`colorScheme.primary`は
+  下線・FAB・塗りのボタン・進捗表示などの塗りにだけ使うこと。文字・枠・
+  浮きのボタン、タブの文字、SnackBarの操作ボタンはテーマで既にこの色。
+  画面側で`colorScheme.primary`を文字・アイコンへ直接使っていた約120か所
+  （40ファイル）もこの色へ移した（2026-10-24）。`BuildContext`の無い描画
+  クラス等では`ThemeService.activeAccentText`を読む。いま`primary`のまま
+  なのは塗り（FAB・下線・スイッチ・グラデーション・タイムラインのクリップ・
+  円グラフ・進捗表示・フォルダの既定色）と、キャンバスの上に浮かぶアイコン
+  （背景がパネルではなく絵なので、塗りと同じ差し色のままにしてある）、
+  起動画面・テーマのプレビュー一覧のアプリ名のロゴ（アプリアイコンの下地と
+  同じ色にそろえる、ユーザー指定）。オンのスイッチは差し色の通り道に塗りの
+  ボタンの文字色のつまみ（塗りのボタンと同じ組み合わせ）。
+  新しく文字・アイコンを差し色で描くときも`primary`を直接使わないこと。
+  dev_branchは、文字・枠のボタン、ホームのタブ・引き出しのアイコン、作品広場
+  などを差し色そのもの（`scheme.primary`）で描き、下地とほとんど同じ色の
+  ときだけテーマの色から作った縁取り（`CanvasIconButton.actionShadows`）を
+  付ける（2026-10-26〜28）。案Aの色は未指定なら差し色と同じなので両立する。
+  dev_branchが作り直した画面（作品広場・テーマの見本一覧・引き出し）も
+  背景の上の文字・アイコンは案Aの色にした（ユーザー指定「使われているのなら
+  作品広場など他の画面でも使う方向に」、2026-10-30）。縁取りを付けるときは
+  `actionShadows`へ渡す前景色も案Aの色にすること（文字は案Aの色なのに差し色で
+  測ると、縁取りの要る・要らないを取り違える）。テーマの見本一覧の模型は
+  `_ThemeSampleScreen.accentText`で受け取る（模型の中の塗りは`c.primary`）。
+  `test/accent_text_screens_test.dart`が、差し色と別の色を選んだテーマで
+  引き出し・見本一覧・プロジェクト詳細のループを見張る。
+  **組み込みテーマ28種は元の配色が正**（dev_branch、2026-10-28。
+  `test/built_in_theme_original_palette_test.dart`が全9色を固定で見張る）。
+  Opusのブランチで2026-10-24に見直した配色（塗りのボタンの白抜き・Lcの
+  基準・`previous_theme_presets.dart`での版の引き上げ）は、2026-10-30の
+  取り込みで取り下げた。保存済みの組み込みテーマはdev_branchの一度だけの
+  戻し（`_originalBuiltInPaletteRestoreKey`）で元の配色になる。組み込み
+  テーマ・`AppThemePreset.defaultLight`/`defaultDark`には「アクセントの
+  文字・アイコン色」を付けない（未指定＝差し色）。
+  **テーマ・外観の色は1つ変えたらその役目のところだけが変わる**（ユーザー
+  指定「差し色だけ設定変えたら差し色だけ変わるように」、2026-10-24）：
+  `ColorScheme.fromSeed`は差し色から面（`surface`・`surfaceContainer*`）・線
+  （`outline*`）・反転色・選択色の淡い色・3つ目の色（`tertiary`）まで作るので、
+  `_buildTheme`で面と線はパネル背景色と文字色、選択色の淡い色と`tertiary`は
+  選択色から作り直し、`surfaceTint`は透明にしてある。差し色から作ってよいのは
+  `primary`・`primaryContainer`・`primaryFixed*`・`inversePrimary`だけ
+  （`test/theme_accent_only_test.dart`）。`fromSeed`の別の色を新しく使うときは
+  どの設定から作るべきかを決めて、このテストの役目の一覧にも足すこと。
+  起動画面の導線ボタンのグラデーションは`splashGradientColors`
+  （`lib/utils/splash_gradient.dart`）で、ボタンの文字が読めなくなる手前
+  （Lc 45）で淡い終点を止める（白抜きの文字が右下で溶けた）。ホーム画面の
+  ショートカットウィジェットも同じ関数を通す（テーマの見本一覧は
+  dev_branchの作りで、この関数を通していない）。
 - **ホーム画面ウィジェットのPendingIntentは`requestCode`を必ず変えること**：
   `NiarimWidgetProviders.kt`の3種のウィジェット（作品／作品をつくる／
   作品広場）は同じ`MainActivity`を起動するIntentを使うため、
@@ -1247,6 +1698,19 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   `ConstrainedBox`で45%までに抑えてパネルを`Expanded`にしてある。
   プレビューは高さを使い切らない`Flexible(fit: loose)`なので、Flexの配分の
   ままだと余りが空白になりパネルが細い帯になった（実際に踏んだ）。
+- **タイムラインのプレビューの操作（フレーム数・全画面）は絵に重ねない
+  （ユーザー指定）**：`timeline_screen.dart`の`_buildPreviewBand`が、プレビュー
+  欄（`timelinePreviewArea`）の中央に絵を置き、フレーム数を左下・全画面を右上の
+  「欄そのものの隅（端から8px、dev_branchの決まり）」に置く。絵の大きさは隅の
+  操作に重ならない大きさにし、縦長の絵は左右、横長の絵は上下に操作の場所を
+  空ける（絵を大きく出せる方）。フレーム数は操作の大きさの幅に収まるよう縮める。
+  プレビュー欄の高さの上限は、横長の絵が横幅いっぱいになる高さに上下の段
+  （（`_previewControlSize`＋`_previewControlInset`）×2）を足したもの。
+  ループの切り替えは置かない（dev_branchが消した。再生はいつも先頭へ戻る）。
+  プレビューに操作を足すときも絵の上ではなくこの欄の隅へ置き、
+  `test/timeline_preview_controls_test.dart`（絵の形3×画面3×欄の高さ3と
+  全画面表示）とdev_branchの`requested_ui_all_captures_test`（欄の端から8px）に
+  通すこと。
 - **`dart format lib test tool`は他セッションの未整形ファイルまで書き換える**：
   別セッションがGitHub API経由で未整形のまま入れたファイル
   （`brush_texture_selector.dart`等）があり、全体にかけると無関係なファイルが
@@ -1272,7 +1736,11 @@ DateTime(2027, 1, 1)`により、この日時に達するまで広告SDK（AdMob
    全ユーザーへプレミアム機能が無料開放される「リリース記念キャンペーン」
    状態になっている（税務上の都合、`PremiumService`・`AdvertisingService`
    のクラスコメント参照）。**本番公開のタイミングに合わせてこの日付を
-   ユーザー自身が判断・変更**すること。恒久的に有効化する場合は、同ファイル
+   ユーザー自身が判断・変更**すること。dev_branch（2026-11-04）から、日付に
+   加えてビルド時の`--dart-define=NIARIM_MONETIZATION_APPROVED=true`が無いと
+   有効にならない（`kMonetizationExplicitlyApproved`。Play購入のサーバー検証・
+   AdMob SSV・コイン台帳・運用審査を済ませたリリースビルドだけで付ける。
+   端末の時計を進めても有効にならない）。恒久的に有効化する場合は、同ファイル
    のコメントの指示どおり`monetization_gate.dart`自体を削除し、参照箇所
    （`kMonetizationEnabledFrom`を条件式に使っている箇所。
    `grep -rn kMonetizationEnabledFrom lib/`で洗い出せる）も外す。

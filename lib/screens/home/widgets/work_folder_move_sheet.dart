@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/project_service.dart' show ProjectFolder;
 import '../../../utils/app_error_reporter.dart';
+import '../../../utils/folder_tree.dart';
 import '../../../widgets/scrollable_sheet_body.dart';
 import 'folder_save_feedback.dart';
 
@@ -15,6 +16,7 @@ class WorkFolderMoveSheet extends StatefulWidget {
     this.onCreate,
     this.onEdit,
     this.rootLabel,
+    this.depths,
   });
 
   final List<ProjectFolder> folders;
@@ -23,6 +25,10 @@ class WorkFolderMoveSheet extends StatefulWidget {
   final VoidCallback? onCreate;
   final void Function(ProjectFolder folder)? onEdit;
   final String? rootLabel;
+
+  /// フォルダごとの階層の深さ（`folderTree`の並び）。渡すと中のフォルダほど
+  /// 字下げする（平らに並べると、別の親の同じ名前のフォルダを見分けられない）。
+  final Map<String, int>? depths;
 
   @override
   State<WorkFolderMoveSheet> createState() => _WorkFolderMoveSheetState();
@@ -103,6 +109,9 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
             for (final folder in widget.folders)
               ListTile(
                 minTileHeight: 48,
+                contentPadding: widget.depths == null
+                    ? null
+                    : folderTreeTilePadding(widget.depths![folder.id] ?? 0),
                 leading: leading(folder.id, Icons.folder_outlined),
                 title: Text(folder.name),
                 trailing: widget.onEdit == null

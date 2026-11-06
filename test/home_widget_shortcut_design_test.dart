@@ -12,6 +12,7 @@ import 'package:niarim/services/home_widget_refresh.dart';
 import 'package:niarim/services/home_widget_service.dart';
 import 'package:niarim/services/shortcut_widget_renderer.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/utils/splash_gradient.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -152,8 +153,16 @@ void main() {
       expect(
         colors,
         kind == HomeWidgetKind.plaza
-            ? [scheme.secondary, scheme.secondaryContainer]
-            : [scheme.primary, scheme.primaryContainer],
+            ? splashGradientColors(
+                scheme.secondary,
+                scheme.secondaryContainer,
+                scheme.onPrimary,
+              )
+            : splashGradientColors(
+                scheme.primary,
+                scheme.primaryContainer,
+                scheme.onPrimary,
+              ),
       );
 
       final image = (await tester.runAsync(
@@ -233,8 +242,10 @@ void main() {
       if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
     });
     await loadFonts(tester);
+    // スマホ（論理360×700）の起動画面と比べる。短辺600dp以上はタブレットの
+    // 釣り合い（ボタンを拡大）になるため、論理サイズで幅720にはしない。
     tester.view.physicalSize = const Size(720, 1400);
-    tester.view.devicePixelRatio = 1;
+    tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
@@ -288,8 +299,16 @@ void main() {
             .first,
       );
       final expected = kind == HomeWidgetKind.plaza
-          ? [scheme.secondary, scheme.secondaryContainer]
-          : [scheme.primary, scheme.primaryContainer];
+          ? splashGradientColors(
+              scheme.secondary,
+              scheme.secondaryContainer,
+              scheme.onPrimary,
+            )
+          : splashGradientColors(
+              scheme.primary,
+              scheme.primaryContainer,
+              scheme.onPrimary,
+            );
       expect(tile.width, ShortcutWidgetDesign.tileSize, reason: 'ボタンの矩形');
       // 実際に描かれた起動画面のボタンが、この2色の左上→右下グラデーション
       // になっていることを、アイコン・文字を避けた複数点で確かめる。

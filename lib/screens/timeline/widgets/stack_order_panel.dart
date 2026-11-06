@@ -13,6 +13,7 @@ import '../../../models/scene_stack.dart';
 import '../../../models/timeline_row_kind.dart';
 import '../../../services/project_service.dart';
 import '../../../widgets/layer_mask_editor.dart';
+import '../../../config/accent_text_theme.dart';
 
 /// Where the order being edited is used.
 enum _StackTarget {
@@ -522,7 +523,7 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
               avatar: Icon(
                 Icons.date_range,
                 size: 16,
-                color: i == selected ? scheme.primary : null,
+                color: i == selected ? AccentTextTheme.of(context) : null,
               ),
               label: Text(label(ranges[i])),
               selected: i == selected,

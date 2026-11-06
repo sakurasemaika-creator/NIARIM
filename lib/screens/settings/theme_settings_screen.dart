@@ -15,6 +15,7 @@ import '../../config/font_fallback.dart';
 import '../../utils/reorder_index.dart';
 import '../../widgets/theme_rescue_button.dart';
 import 'theme_preview_gallery_screen.dart';
+import '../../config/accent_text_theme.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
@@ -114,9 +115,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w700,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
+                                        color: AccentTextTheme.of(context),
                                       ),
                                     ),
                                   ),
@@ -124,9 +123,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                                   Icon(
                                     Icons.open_in_full,
                                     size: 17,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
+                                    color: AccentTextTheme.of(context),
                                   ),
                                 ],
                               ),
@@ -161,6 +158,20 @@ class ThemeSettingsScreen extends StatelessWidget {
                 themeService,
                 (p, c) => p.copyWith(accentColor: c),
                 current.accentColor,
+              ),
+            ),
+            // 差し色で背景の上に直接描く文字・アイコン（選択中のタブ名・枠や
+            // 文字のボタン等）の色。未指定なら差し色と同じ。明るい差し色の
+            // ときに、読める色を自分で選べるようにする（自動では決めない）。
+            _ColorCustomizeTile(
+              key: const Key('themeAccentTextColorTile'),
+              label: l10n.themeColorAccentText,
+              color: current.effectiveAccentTextColor,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(accentTextColor: c),
+                current.effectiveAccentTextColor,
               ),
             ),
             _ColorCustomizeTile(
@@ -339,9 +350,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                                   child: Icon(
                                     Icons.check,
                                     key: const Key('themePresetEditingCheck'),
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
+                                    color: AccentTextTheme.of(context),
                                     size: 16,
                                   ),
                                 ),

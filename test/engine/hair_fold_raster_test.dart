@@ -254,8 +254,9 @@ void main() {
     addTearDown(tiles.dispose);
     for (var y = 178; y <= 182; y++) {
       for (var x = 91; x <= 99; x++) {
+        // Tiles are premultiplied: the colour is the channel over the alpha.
         expect(
-          channelAt(tiles, x, y, 0),
+          channelAt(tiles, x, y, 0) * 255 / channelAt(tiles, x, y, 3),
           greaterThan(245),
           reason: 'neck at $x,$y',
         );

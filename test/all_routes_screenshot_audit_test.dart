@@ -154,7 +154,7 @@ void main() {
     if (launchButton.evaluate().isNotEmpty) {
       await tester.tap(launchButton.first);
       await settleRoute();
-      final firstLaunch = find.text('はじめる');
+      final firstLaunch = find.byKey(const Key('tutorialSkip'));
       if (firstLaunch.evaluate().isNotEmpty) {
         await tester.tap(firstLaunch.first);
         await settleRoute();
@@ -218,6 +218,7 @@ void main() {
       (name: '31_shared', route: '/shared'),
       (name: '32_storage', route: '/storage'),
       (name: '33_trash', route: '/trash'),
+      (name: '34_settings_error_log', route: '/settings/error-log'),
     ];
 
     for (final entry in routes) {

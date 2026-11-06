@@ -7,6 +7,7 @@ import '../../services/premium_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 /// プレミアム画面。ユーザー作品そのものを除くUI色はColorSchemeへ集約する。
 class PremiumScreen extends StatefulWidget {
@@ -245,7 +246,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.celebration_rounded, color: scheme.primary),
+                Icon(
+                  Icons.celebration_rounded,
+                  color: AccentTextTheme.of(context),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -396,7 +400,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
       ),
       child: Column(
         children: [
-          Icon(icon, size: 18, color: scheme.primary),
+          Icon(icon, size: 18, color: AccentTextTheme.of(context)),
           const SizedBox(height: 6),
           Text(
             label,
@@ -671,7 +675,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                             Icon(
                               Icons.star_rounded,
                               size: 13,
-                              color: scheme.primary,
+                              color: AccentTextTheme.of(context),
                             ),
                             const SizedBox(width: 3),
                             Flexible(
@@ -709,7 +713,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: scheme.primary,
+                            color: AccentTextTheme.of(context),
                           ),
                         ),
                       ),

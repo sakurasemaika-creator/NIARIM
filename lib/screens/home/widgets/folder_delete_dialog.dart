@@ -10,10 +10,16 @@ class FolderDeleteDialog extends StatefulWidget {
     required this.folderName,
     required this.onDelete,
     this.body,
+    this.title,
+    this.confirmLabel,
   });
 
   final String folderName;
   final String? body;
+
+  /// 見出しと確定ボタンの文言（中身ごとゴミ箱へ移すときは「ゴミ箱へ移動」）。
+  final String? title;
+  final String? confirmLabel;
   final Future<void> Function() onDelete;
 
   @override
@@ -57,7 +63,7 @@ class _FolderDeleteDialogState extends State<FolderDeleteDialog> {
       child: AlertDialog(
         scrollable: true,
         insetPadding: const EdgeInsets.all(16),
-        title: Text(l10n.projectListDeleteFolderConfirmTitle),
+        title: Text(widget.title ?? l10n.projectListDeleteFolderConfirmTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +93,7 @@ class _FolderDeleteDialogState extends State<FolderDeleteDialog> {
               foregroundColor: theme.colorScheme.onError,
             ),
             onPressed: _delete,
-            label: l10n.commonDelete,
+            label: widget.confirmLabel ?? l10n.commonDelete,
             saving: _saving,
           ),
         ],

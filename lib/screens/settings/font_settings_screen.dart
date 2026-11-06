@@ -11,6 +11,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
 import 'font_catalog_tab.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 /// フォント管理画面（設定 → フォント管理）。
 /// 3つのタブで構成する。
@@ -141,7 +142,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                           child: Icon(
                             Icons.font_download_outlined,
                             size: 40,
-                            color: scheme.primary,
+                            color: AccentTextTheme.of(context),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -186,7 +187,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                               f.extension.substring(0, 1),
                               style: TextStyle(
                                 fontSize: 11,
-                                color: scheme.primary,
+                                color: AccentTextTheme.of(context),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -214,7 +215,9 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                                 icon: Icon(
                                   f.pixelMode ? Icons.grid_on : Icons.grid_off,
                                   size: 18,
-                                  color: f.pixelMode ? scheme.primary : null,
+                                  color: f.pixelMode
+                                      ? AccentTextTheme.of(context)
+                                      : null,
                                 ),
                                 tooltip: l10n.fontPixelModeTooltip,
                                 onPressed: () => service.togglePixelMode(f.id),
@@ -338,7 +341,7 @@ class _ImportFontTab extends StatelessWidget {
                 child: Icon(
                   Icons.upload_file_outlined,
                   size: 40,
-                  color: scheme.primary,
+                  color: AccentTextTheme.of(context),
                 ),
               ),
               const SizedBox(height: 16),

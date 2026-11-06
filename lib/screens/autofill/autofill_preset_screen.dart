@@ -31,6 +31,7 @@ import '../../widgets/tone_preview_thumb.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
+import '../../config/accent_text_theme.dart';
 
 class AutofillPresetScreen extends StatefulWidget {
   const AutofillPresetScreen({super.key});
@@ -196,7 +197,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                             child: Icon(
                               Icons.palette_outlined,
                               size: 40,
-                              color: Theme.of(context).colorScheme.primary,
+                              color: AccentTextTheme.of(context),
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -789,9 +790,7 @@ class _PresetCard extends StatelessWidget {
         leading: isSelectionMode
             ? Icon(
                 isSelected ? Icons.check_circle : Icons.circle_outlined,
-                color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : null,
+                color: isSelected ? AccentTextTheme.of(context) : null,
               )
             : Container(
                 width: 48,

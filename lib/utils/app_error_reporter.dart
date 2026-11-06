@@ -23,10 +23,11 @@ import 'app_locale.dart';
 class AppErrorReporter {
   AppErrorReporter._();
 
-  /// 直近に捕捉したエラー（新しい順）。エラー画面と、必要なら
-  /// 設定画面等からの参照に使う。無制限に貯めない。
+  /// 直近に捕捉したエラー（新しい順、先頭に起きた時刻）。エラー画面と、
+  /// 設定の「エラーの記録」から見る・コピーする。アプリを閉じるまでの分だけで、
+  /// 保存はしない。無制限に貯めない。
   static final List<String> recentErrors = <String>[];
-  static const int _maxRecent = 20;
+  static const int maxRecent = 20;
   static bool _installed = false;
 
   static void record(Object error, StackTrace? stack) {
@@ -38,12 +39,46 @@ class AppErrorReporter {
             .take(3)
             .join('\n') ??
         '';
-    final entry = '$error${head.isEmpty ? '' : '\n$head'}';
+    final message = maskPersonalDetails('$error');
+    final body = message.length > _maxLength
+        ? '${message.substring(0, _maxLength)}…'
+        : message;
+    final entry =
+        '[${_timestamp(DateTime.now())}] $body'
+        '${head.isEmpty ? '' : '\n$head'}';
     recentErrors.insert(0, entry);
-    if (recentErrors.length > _maxRecent) {
-      recentErrors.removeRange(_maxRecent, recentErrors.length);
+    if (recentErrors.length > maxRecent) {
+      recentErrors.removeRange(maxRecent, recentErrors.length);
     }
   }
+
+  static const int _maxLength = 2000;
+
+  static String _timestamp(DateTime t) {
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${t.year}-${two(t.month)}-${two(t.day)} '
+        '${two(t.hour)}:${two(t.minute)}:${two(t.second)}';
+  }
+
+  /// 記録・コピーされる文に、メールアドレスやログインの情報（IDトークン・
+  /// 認証の値・URLの鍵）が入らないよう伏せる。利用者が報告のために
+  /// そのまま貼り付けても困らないようにするため。
+  @visibleForTesting
+  static String maskPersonalDetails(String text) => text
+      .replaceAll(RegExp(r'[\w.+-]+@[\w-]+(\.[\w-]+)+'), '[email]')
+      .replaceAll(RegExp(r'eyJ[\w-]+\.[\w-]+\.[\w-]+'), '[token]')
+      .replaceAllMapped(
+        RegExp(r'(Bearer|Basic)\s+[\w\-.~+/=]+', caseSensitive: false),
+        (m) => '${m[1]} [token]',
+      )
+      .replaceAllMapped(
+        RegExp(
+          r'((?:access_|id_|refresh_)?token|key|code|secret|password|auth)'
+          r'=[^&\s]+',
+          caseSensitive: false,
+        ),
+        (m) => '${m[1]}=[hidden]',
+      );
 
   /// アプリ起動時に一度だけ呼ぶ。再試行経路から重複して呼ばれても、
   /// Flutter/Platformのglobal handlerを多重ラップしない。

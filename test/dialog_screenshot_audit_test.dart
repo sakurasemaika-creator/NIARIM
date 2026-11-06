@@ -334,7 +334,7 @@ void main() {
     if (launch.evaluate().isNotEmpty) {
       await tester.tap(launch.first);
       await settle();
-      final firstLaunch = find.text('はじめる');
+      final firstLaunch = find.byKey(const Key('tutorialSkip'));
       if (firstLaunch.evaluate().isNotEmpty) {
         await tester.tap(firstLaunch.first);
         await settle();

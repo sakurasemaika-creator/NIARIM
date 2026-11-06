@@ -169,7 +169,7 @@ void main() {
     expect(find.byType(Scaffold), findsWidgets);
     expectAdSlotFollowsPremium(tester, 'ホーム画面の最上部の横長広告モック');
 
-    final firstLaunchDialogButton = find.text('はじめる');
+    final firstLaunchDialogButton = find.byKey(const Key('tutorialSkip'));
     if (firstLaunchDialogButton.evaluate().isNotEmpty) {
       await tester.tap(firstLaunchDialogButton);
       await tester.pump(const Duration(milliseconds: 300));
@@ -1906,7 +1906,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'ホーム画面への遷移で例外');
 
-    final firstLaunchDialogButton = find.text('はじめる');
+    final firstLaunchDialogButton = find.byKey(const Key('tutorialSkip'));
     if (firstLaunchDialogButton.evaluate().isNotEmpty) {
       await tester.tap(firstLaunchDialogButton);
       await tester.pump(const Duration(milliseconds: 300));
@@ -2130,6 +2130,7 @@ void main() {
       '/settings/fonts',
       '/settings/license',
       '/settings/privacy-policy',
+      '/settings/error-log',
       '/storage',
     ]);
   }, timeout: const Timeout(Duration(seconds: 90)));
@@ -2145,6 +2146,11 @@ void main() {
   testWidgets('起動→ホーム→共有・ゴミ箱画面を例外なく表示できる', (WidgetTester tester) async {
     await bootToHome(tester);
     await visitRoutesAndPop(tester, const ['/shared', '/trash']);
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  testWidgets('起動→ホーム→特典・クリエイターミッション画面を例外なく表示できる', (WidgetTester tester) async {
+    await bootToHome(tester);
+    await visitRoutesAndPop(tester, const ['/rewards', '/creator-missions']);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('起動→新規プロジェクト作成→詳細・素材管理・書き出し・自動塗りプリセット・'

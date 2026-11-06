@@ -368,9 +368,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => '已粘贴';
-
-  @override
   String get commonOk => '确定';
 
   @override
@@ -2828,9 +2825,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get canvasSizePresetEditDialogTitle => '编辑尺寸';
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => '副本';
 
   @override
   String newProjectDurationLabel(String max) {
@@ -5575,13 +5569,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceDockPanelTone => '网点';
 
   @override
-  String get workspaceDockPanelStamp => '貼纸';
+  String get workspaceDockPanelStamp => '贴纸';
 
   @override
-  String get workspaceDockPanelPenSubTool => '笔子子工具';
+  String get workspaceDockPanelPenSubTool => '画笔子工具';
 
   @override
-  String get workspaceDockPanelOnionSkin => '洋葱红';
+  String get workspaceDockPanelOnionSkin => '洋葱皮';
 
   @override
   String get workspaceDockPanelRuler => '尺规';
@@ -5981,7 +5975,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityRankingSortViews => '播放量';
 
   @override
-  String get communityRankingSortBookmarks => '收藏数';
+  String get communityRankingSortBookmarks => '书签数';
 
   @override
   String get communityRankingSortAscendingTooltip => '升序（从少到多）';
@@ -6002,10 +5996,10 @@ class AppLocalizationsZh extends AppLocalizations {
       'YouTube联动功能正在开发中';
 
   @override
-  String get communityWorkDetailBookmarkAdd => '收藏';
+  String get communityWorkDetailBookmarkAdd => '加入书签';
 
   @override
-  String get communityWorkDetailBookmarkRemove => '已收藏';
+  String get communityWorkDetailBookmarkRemove => '已加书签';
 
   @override
   String get communityWorkDetailReportButton => '举报';
@@ -6152,10 +6146,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityAuthorTabWorks => '作品';
 
   @override
-  String get communityAuthorTabBookmarks => '收藏';
+  String get communityAuthorTabBookmarks => '书签';
 
   @override
-  String get communityBookmarksEmptyMessage => '暂无收藏的作品';
+  String get communityBookmarksEmptyMessage => '暂无加入书签的作品';
 
   @override
   String get communityShortsBadge => '竖屏';
@@ -7618,6 +7612,362 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeTrashWorking => '正在处理…';
+
+  @override
+  String get homeAddTooltip => '新建';
+
+  @override
+  String get commonShowExplanation => '显示说明';
+
+  @override
+  String get homeViewModeTooltip => '显示大小';
+
+  @override
+  String get homeMoveToTrashNothing => '没有可移至回收站的项目（收藏的项目不会移动）。';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '已将$count项移至回收站';
+  }
+
+  @override
+  String get homeUndoAction => '撤销';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '已剪切$count项。打开目标位置后，点按右上角的粘贴。';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '已复制$count项。打开要粘贴的位置后，点按右上角的粘贴。';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '已粘贴$count项';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count个文件夹无法移入自身或其子文件夹，已保留为剪切状态。';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '有$count项因原作品已不存在（已移至回收站或已删除）而无法粘贴。';
+  }
+
+  @override
+  String get homePasteFailed => '部分项目未能粘贴，请重试。';
+
+  @override
+  String get homeCutPendingHint => '已剪切（等待粘贴）';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name（副本）';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name（副本 $number）';
+  }
+
+  @override
+  String get homeDrawerTutorial => '使用方法';
+
+  @override
+  String get themeColorAccentText => '强调文字与图标颜色';
+
+  @override
+  String get projectDetailNotFoundBackToList => '前往项目列表';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return '没有与“$query”匹配的作品';
+  }
+
+  @override
+  String get projectListNoMatchNameHint => '正在所有文件夹中按名称搜索，不区分大小写和全角半角。';
+
+  @override
+  String get projectListNoMatchTagHint => '正在所有文件夹中按作品标签搜索。';
+
+  @override
+  String get projectListClearSearch => '清除搜索';
+
+  @override
+  String get projectListNoFavoritesTitle => '这里没有收藏的作品';
+
+  @override
+  String get projectListNoFavoritesHint => '在作品或文件夹的菜单中选择“加入收藏”，即可显示在这里。';
+
+  @override
+  String get projectListShowAll => '显示全部';
+
+  @override
+  String get projectListEmptyFolderTitle => '此文件夹为空';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return '$date更新';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return '位于：$path';
+  }
+
+  @override
+  String get homeProjectsLoadFailed => '无法加载项目';
+
+  @override
+  String get settingsErrorLogTitle => '错误记录';
+
+  @override
+  String get settingsErrorLogSubtitle => '报告问题时，可以查看并复制应用中发生的错误';
+
+  @override
+  String get errorLogHint => '按从新到旧的顺序显示打开应用后发生的最多20条错误。电子邮件地址和登录信息已隐藏。';
+
+  @override
+  String get errorLogEmpty => '没有记录到错误';
+
+  @override
+  String get errorLogCopyAll => '全部复制';
+
+  @override
+  String get errorLogCopied => '已复制错误记录';
+
+  @override
+  String get errorLogClear => '清除记录';
+
+  @override
+  String get tutorialSkip => '跳过';
+
+  @override
+  String get tutorialNext => '下一步';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return '第$current页，共$total页';
+  }
+
+  @override
+  String get tutorialPage1Title => '欢迎使用 NIARIM';
+
+  @override
+  String get tutorialPage1Step1 => '在“帧”上画一张图。';
+
+  @override
+  String get tutorialPage1Step2 => '继续添加帧，每次让画面稍微动一点。';
+
+  @override
+  String get tutorialPage1Step3 => '连续播放就成了动画，还可以导出为视频。';
+
+  @override
+  String get tutorialPage2Title => '创建项目';
+
+  @override
+  String get tutorialPage2Step1 => '在主页点击右下角的 +。';
+
+  @override
+  String get tutorialPage2Step2 => '选择“新建项目”，设置名称和尺寸后点击“创建”。';
+
+  @override
+  String get tutorialPage2Step3 => '创建的项目会显示在“项目”中。点击项目，再点击“开始编辑”即可继续绘制。';
+
+  @override
+  String get tutorialPage3Title => '在画布上绘画';
+
+  @override
+  String get tutorialPage3Step1 => '在下方的工具栏中选择画笔、橡皮擦、填充等工具。';
+
+  @override
+  String get tutorialPage3Step2 => '点击颜色圆圈即可更改绘画颜色。';
+
+  @override
+  String get tutorialPage3Step3 => '使用左上角的箭头撤销和重做。';
+
+  @override
+  String get tutorialPage4Title => '添加帧让画面动起来';
+
+  @override
+  String get tutorialPage4Step1 => '下方的帧列表会显示当前正在绘制的帧。';
+
+  @override
+  String get tutorialPage4Step2 => '点击 + 添加下一帧，稍微移动后再画。';
+
+  @override
+  String get tutorialPage4Step3 => '在右上角的设置中打开“洋葱皮”，即可看到半透明叠加的上一帧。';
+
+  @override
+  String get tutorialPage5Title => '播放并导出';
+
+  @override
+  String get tutorialPage5Step1 => '点击右上角的时间轴按钮打开时间轴。';
+
+  @override
+  String get tutorialPage5Step2 => '点击播放按钮确认动作。';
+
+  @override
+  String get tutorialPage5Step3 => '通过“导出”保存或分享为视频或 GIF。';
+
+  @override
+  String get tutorialPage6Title => '遇到问题时';
+
+  @override
+  String get tutorialPage6Step1 => '点击画面右上角的 ? 可查看该画面的说明。';
+
+  @override
+  String get tutorialPage6Step2 => '首次使用某项功能时会显示简短说明。';
+
+  @override
+  String get tutorialPage6Step3 => '随时可以在主页左上角菜单的“使用方法”中再次查看本指南。';
+
+  @override
+  String get helpTutorialSubtitle => '再次查看首次启动时的使用指南';
+
+  @override
+  String get settingsTipsResetTitle => '重新显示功能说明';
+
+  @override
+  String get settingsTipsResetSubtitle => '下次使用各功能时再次显示简短说明';
+
+  @override
+  String get settingsTipsResetDone => '下次使用各功能时将再次显示说明';
+
+  @override
+  String get helpTutorialButton => '查看使用方法';
+
+  @override
+  String get projectListTrashFolderConfirmTitle => '要将文件夹移至回收站吗？';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '「$name」将移至回收站。可以从回收站整体恢复该文件夹。';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return '已将「$name」移至回收站';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return '文件夹中的$contents也将一并移动。';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '将永久删除「$name」。此操作无法撤销。';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '和$folders个文件夹',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '$folders个文件夹',
+      zero: '空',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '$projects个项目$_temp0',
+      zero: '$_temp1',
+    );
+    return '$_temp2';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return '文件夹中的$contents也将一并删除。';
+  }
+
+  @override
+  String newProjectNumberRangeError(int min, int max) {
+    return '请输入$min到$max之间的数字';
+  }
+
+  @override
+  String get pcViewZoomIn => '放大';
+
+  @override
+  String get pcViewZoomOut => '缩小';
+
+  @override
+  String get pcViewFit => '适应窗口';
+
+  @override
+  String get pcViewActualPixels => '实际像素（100%）';
+
+  @override
+  String get pcViewRotateLeft => '向左旋转';
+
+  @override
+  String get pcViewRotateRight => '向右旋转';
+
+  @override
+  String get pcViewResetRotation => '重置旋转';
+
+  @override
+  String get pcViewHidePanels => '隐藏面板';
+
+  @override
+  String get pcViewFrameStrip => '帧列表';
+
+  @override
+  String get pcPaneToolProperty => '工具设置';
+
+  @override
+  String get pcToolPropertyEmpty => '此工具没有可调整的设置';
+
+  @override
+  String pcStatusFrame(int current, int total) {
+    return '第 $current/$total 帧';
+  }
+
+  @override
+  String get pcPaneProgram => '预览';
+
+  @override
+  String get pcPaneInspector => '详情';
+
+  @override
+  String get pcTimelineZoomIn => '放大时间轴';
+
+  @override
+  String get pcTimelineZoomOut => '缩小时间轴';
+
+  @override
+  String get pcBinEmpty => '还没有素材';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count 帧';
+  }
+
+  @override
+  String get pcInspectorHint => '在时间轴上选择素材后，可在此调整位置、大小、不透明度等。';
+
+  @override
+  String pcStatusFps(int fps) {
+    return '$fps fps';
+  }
+
+  @override
+  String get homePasteSnackbar => '已粘贴';
+
+  @override
+  String get canvasSizePresetDuplicateSuffix => '副本';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -7982,9 +8332,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String homePasteTooltip(int count) {
     return '貼上$count項';
   }
-
-  @override
-  String get homePasteSnackbar => '已貼上';
 
   @override
   String get commonOk => '確定';
@@ -10443,9 +10790,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasSizePresetEditDialogTitle => '編輯尺寸';
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => '副本';
 
   @override
   String newProjectDurationLabel(String max) {
@@ -13179,7 +13523,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '在PC/DeX模式下，選中的多個面板可以同時展開固定顯示（手機版為避免誤觸總是以全部隱藏開始）。';
 
   @override
-  String get workspaceDockPanelBrush => '畫筆';
+  String get workspaceDockPanelBrush => '筆刷';
 
   @override
   String get workspaceDockPanelColorPicker => '取色器';
@@ -13194,10 +13538,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceDockPanelStamp => '貼紙';
 
   @override
-  String get workspaceDockPanelPenSubTool => '筆子子工具';
+  String get workspaceDockPanelPenSubTool => '畫筆子工具';
 
   @override
-  String get workspaceDockPanelOnionSkin => '洋葱紅';
+  String get workspaceDockPanelOnionSkin => '洋蔥皮';
 
   @override
   String get workspaceDockPanelRuler => '尺規';
@@ -15236,4 +15580,360 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeTrashWorking => '處理中…';
+
+  @override
+  String get homeAddTooltip => '新增';
+
+  @override
+  String get commonShowExplanation => '顯示說明';
+
+  @override
+  String get homeViewModeTooltip => '顯示大小';
+
+  @override
+  String get homeMoveToTrashNothing => '沒有可移至垃圾桶的項目（我的最愛不會移動）。';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '已將$count項移至垃圾桶';
+  }
+
+  @override
+  String get homeUndoAction => '復原';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '已剪下$count項。開啟目標位置後，點按右上角的貼上。';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '已複製$count項。開啟要貼上的位置後，點按右上角的貼上。';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '已貼上$count項';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count個資料夾無法移入自身或其子資料夾，已保留為剪下狀態。';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '有$count項因原作品已不存在（已移至垃圾桶或已刪除）而無法貼上。';
+  }
+
+  @override
+  String get homePasteFailed => '部分項目未能貼上，請再試一次。';
+
+  @override
+  String get homeCutPendingHint => '已剪下（等待貼上）';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name（副本）';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name（副本 $number）';
+  }
+
+  @override
+  String get homeDrawerTutorial => '使用方法';
+
+  @override
+  String get themeColorAccentText => '強調文字與圖示顏色';
+
+  @override
+  String get projectDetailNotFoundBackToList => '前往專案列表';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return '沒有與「$query」相符的作品';
+  }
+
+  @override
+  String get projectListNoMatchNameHint => '正在所有資料夾中依名稱搜尋，不區分大小寫與全形半形。';
+
+  @override
+  String get projectListNoMatchTagHint => '正在所有資料夾中依作品標籤搜尋。';
+
+  @override
+  String get projectListClearSearch => '清除搜尋';
+
+  @override
+  String get projectListNoFavoritesTitle => '這裡沒有我的最愛';
+
+  @override
+  String get projectListNoFavoritesHint => '在作品或資料夾的選單中選擇「加入最愛」，即可顯示在這裡。';
+
+  @override
+  String get projectListShowAll => '顯示全部';
+
+  @override
+  String get projectListEmptyFolderTitle => '此資料夾是空的';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return '$date更新';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return '位於：$path';
+  }
+
+  @override
+  String get homeProjectsLoadFailed => '無法載入專案';
+
+  @override
+  String get settingsErrorLogTitle => '錯誤記錄';
+
+  @override
+  String get settingsErrorLogSubtitle => '回報問題時，可以查看並複製應用程式中發生的錯誤';
+
+  @override
+  String get errorLogHint => '依新到舊的順序顯示開啟應用程式後發生的最多20筆錯誤。電子郵件地址與登入資訊已隱藏。';
+
+  @override
+  String get errorLogEmpty => '沒有記錄到錯誤';
+
+  @override
+  String get errorLogCopyAll => '全部複製';
+
+  @override
+  String get errorLogCopied => '已複製錯誤記錄';
+
+  @override
+  String get errorLogClear => '清除記錄';
+
+  @override
+  String get tutorialSkip => '略過';
+
+  @override
+  String get tutorialNext => '下一步';
+
+  @override
+  String tutorialPageIndicator(int current, int total) {
+    return '第$current頁，共$total頁';
+  }
+
+  @override
+  String get tutorialPage1Title => '歡迎使用 NIARIM';
+
+  @override
+  String get tutorialPage1Step1 => '在「畫格」上畫一張圖。';
+
+  @override
+  String get tutorialPage1Step2 => '繼續新增畫格，每次讓畫面稍微動一點。';
+
+  @override
+  String get tutorialPage1Step3 => '連續播放就成了動畫，還可以匯出為影片。';
+
+  @override
+  String get tutorialPage2Title => '建立專案';
+
+  @override
+  String get tutorialPage2Step1 => '在首頁點選右下角的 +。';
+
+  @override
+  String get tutorialPage2Step2 => '選擇「新增專案」，設定名稱和尺寸後點選「建立」。';
+
+  @override
+  String get tutorialPage2Step3 => '建立的專案會顯示在「專案」中。點選專案，再點選「開始編輯」即可繼續繪製。';
+
+  @override
+  String get tutorialPage3Title => '在畫布上繪畫';
+
+  @override
+  String get tutorialPage3Step1 => '在下方的工具列中選擇畫筆、橡皮擦、填色等工具。';
+
+  @override
+  String get tutorialPage3Step2 => '點選顏色圓圈即可變更繪畫顏色。';
+
+  @override
+  String get tutorialPage3Step3 => '使用左上角的箭頭復原和重做。';
+
+  @override
+  String get tutorialPage4Title => '新增畫格讓畫面動起來';
+
+  @override
+  String get tutorialPage4Step1 => '下方的畫格列表會顯示目前正在繪製的畫格。';
+
+  @override
+  String get tutorialPage4Step2 => '點選 + 新增下一個畫格，稍微移動後再畫。';
+
+  @override
+  String get tutorialPage4Step3 => '在右上角的設定中開啟「洋蔥皮」，即可看到半透明疊加的上一個畫格。';
+
+  @override
+  String get tutorialPage5Title => '播放並匯出';
+
+  @override
+  String get tutorialPage5Step1 => '點選右上角的時間軸按鈕開啟時間軸。';
+
+  @override
+  String get tutorialPage5Step2 => '點選播放按鈕確認動作。';
+
+  @override
+  String get tutorialPage5Step3 => '透過「匯出」儲存或分享為影片或 GIF。';
+
+  @override
+  String get tutorialPage6Title => '遇到問題時';
+
+  @override
+  String get tutorialPage6Step1 => '點選畫面右上角的 ? 可查看該畫面的說明。';
+
+  @override
+  String get tutorialPage6Step2 => '第一次使用某項功能時會顯示簡短說明。';
+
+  @override
+  String get tutorialPage6Step3 => '隨時可以在首頁左上角選單的「使用方法」中再次查看本指南。';
+
+  @override
+  String get helpTutorialSubtitle => '再次查看初次啟動時的使用指南';
+
+  @override
+  String get settingsTipsResetTitle => '重新顯示功能說明';
+
+  @override
+  String get settingsTipsResetSubtitle => '下次使用各功能時再次顯示簡短說明';
+
+  @override
+  String get settingsTipsResetDone => '下次使用各功能時將再次顯示說明';
+
+  @override
+  String get helpTutorialButton => '查看使用方法';
+
+  @override
+  String get projectListTrashFolderConfirmTitle => '要將資料夾移至垃圾桶嗎？';
+
+  @override
+  String projectListTrashFolderConfirmBody(String name) {
+    return '「$name」將移至垃圾桶。可以從垃圾桶整個復原該資料夾。';
+  }
+
+  @override
+  String homeFolderMovedToTrashSnackbar(String name) {
+    return '已將「$name」移至垃圾桶';
+  }
+
+  @override
+  String homeMoveToTrashFolderContents(String contents) {
+    return '資料夾中的$contents也會一併移動。';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteBody(String name) {
+    return '將永久刪除「$name」。此操作無法復原。';
+  }
+
+  @override
+  String homeFolderContents(int projects, int folders) {
+    String _temp0 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '和$folders個資料夾',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      folders,
+      locale: localeName,
+      other: '$folders個資料夾',
+      zero: '空',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '$projects個專案$_temp0',
+      zero: '$_temp1',
+    );
+    return '$_temp2';
+  }
+
+  @override
+  String homeTrashFolderPermanentDeleteContents(String contents) {
+    return '資料夾中的$contents也會一併刪除。';
+  }
+
+  @override
+  String newProjectNumberRangeError(int min, int max) {
+    return '請輸入$min到$max之間的數字';
+  }
+
+  @override
+  String get pcViewZoomIn => '放大';
+
+  @override
+  String get pcViewZoomOut => '縮小';
+
+  @override
+  String get pcViewFit => '符合視窗';
+
+  @override
+  String get pcViewActualPixels => '實際像素（100%）';
+
+  @override
+  String get pcViewRotateLeft => '向左旋轉';
+
+  @override
+  String get pcViewRotateRight => '向右旋轉';
+
+  @override
+  String get pcViewResetRotation => '重設旋轉';
+
+  @override
+  String get pcViewHidePanels => '隱藏面板';
+
+  @override
+  String get pcViewFrameStrip => '影格列表';
+
+  @override
+  String get pcPaneToolProperty => '工具設定';
+
+  @override
+  String get pcToolPropertyEmpty => '此工具沒有可調整的設定';
+
+  @override
+  String pcStatusFrame(int current, int total) {
+    return '影格 $current/$total';
+  }
+
+  @override
+  String get pcPaneProgram => '預覽';
+
+  @override
+  String get pcPaneInspector => '詳情';
+
+  @override
+  String get pcTimelineZoomIn => '放大時間軸';
+
+  @override
+  String get pcTimelineZoomOut => '縮小時間軸';
+
+  @override
+  String get pcBinEmpty => '還沒有素材';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count 影格';
+  }
+
+  @override
+  String get pcInspectorHint => '在時間軸上選擇素材後，可在此調整位置、大小、不透明度等。';
+
+  @override
+  String pcStatusFps(int fps) {
+    return '$fps fps';
+  }
+
+  @override
+  String get homePasteSnackbar => '已貼上';
+
+  @override
+  String get canvasSizePresetDuplicateSuffix => '副本';
 }

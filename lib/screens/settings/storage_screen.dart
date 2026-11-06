@@ -381,7 +381,9 @@ class _StorageScreenState extends State<StorageScreen> {
     if (_emptyingTrash) return;
     final l10n = AppLocalizations.of(context)!;
     final ps = context.read<ProjectService>();
+    // ゴミ箱のフォルダ（中の作品ごと）も含めて空にする。
     final targets = ps.trash.map((p) => p.id).toSet();
+    final folderTargets = ps.trashedFolders.map((t) => t.folder.id).toSet();
     setState(() => _emptyingTrash = true);
     try {
       await showDialog<bool>(
@@ -391,13 +393,20 @@ class _StorageScreenState extends State<StorageScreen> {
           message: l10n.homePermanentDeleteConfirmBody,
           confirmLabel: l10n.commonDelete,
           itemNames: const [],
-          pendingItemNames: () => ps.trash
-              .where((p) => targets.contains(p.id))
-              .map((p) => p.name)
-              .toList(),
+          pendingItemNames: () => [
+            for (final t in ps.trashedFolders)
+              if (folderTargets.contains(t.folder.id)) t.folder.name,
+            for (final p in ps.looseTrash)
+              if (targets.contains(p.id)) p.name,
+          ],
           onApply: () async {
+            for (final id in folderTargets) {
+              await ps.permanentDeleteTrashedFolder(id);
+            }
             for (final id in targets) {
-              await ps.permanentDelete(id);
+              if (ps.trash.any((p) => p.id == id)) {
+                await ps.permanentDelete(id);
+              }
             }
           },
         ),

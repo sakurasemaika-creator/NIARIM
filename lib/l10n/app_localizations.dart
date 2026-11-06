@@ -779,12 +779,6 @@ abstract class AppLocalizations {
   /// **'{count}件を貼り付け'**
   String homePasteTooltip(int count);
 
-  /// No description provided for @homePasteSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'貼り付けました'**
-  String get homePasteSnackbar;
-
   /// No description provided for @commonOk.
   ///
   /// In ja, this message translates to:
@@ -5302,12 +5296,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'サイズを編集'**
   String get canvasSizePresetEditDialogTitle;
-
-  /// No description provided for @canvasSizePresetDuplicateSuffix.
-  ///
-  /// In ja, this message translates to:
-  /// **'のコピー'**
-  String get canvasSizePresetDuplicateSuffix;
 
   /// No description provided for @newProjectDurationLabel.
   ///
@@ -14104,6 +14092,594 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'処理中…'**
   String get homeTrashWorking;
+
+  /// No description provided for @homeAddTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規作成'**
+  String get homeAddTooltip;
+
+  /// No description provided for @commonShowExplanation.
+  ///
+  /// In ja, this message translates to:
+  /// **'説明を表示'**
+  String get commonShowExplanation;
+
+  /// No description provided for @homeViewModeTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示の大きさ'**
+  String get homeViewModeTooltip;
+
+  /// No description provided for @homeMoveToTrashNothing.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。'**
+  String get homeMoveToTrashNothing;
+
+  /// No description provided for @homeMovedToTrashSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件をゴミ箱へ移動しました'**
+  String homeMovedToTrashSnackbar(int count);
+
+  /// No description provided for @homeUndoAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'元に戻す'**
+  String get homeUndoAction;
+
+  /// No description provided for @homeCutSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件を切り取りました。移動先を開いて、右上の貼り付けを押してください。'**
+  String homeCutSnackbar(int count);
+
+  /// No description provided for @homeCopiedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。'**
+  String homeCopiedSnackbar(int count);
+
+  /// No description provided for @homePastedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件を貼り付けました'**
+  String homePastedSnackbar(int count);
+
+  /// No description provided for @homePasteSkippedIntoSelf.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。'**
+  String homePasteSkippedIntoSelf(int count);
+
+  /// No description provided for @homePasteSkippedMissing.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。'**
+  String homePasteSkippedMissing(int count);
+
+  /// No description provided for @homePasteFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'一部を貼り付けられませんでした。もう一度お試しください。'**
+  String get homePasteFailed;
+
+  /// No description provided for @homeCutPendingHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'切り取り中（貼り付けを待っています）'**
+  String get homeCutPendingHint;
+
+  /// Name of a duplicated work.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} (コピー)'**
+  String projectDuplicateName(String name);
+
+  /// Name of a duplicated work when a copy with the plain duplicate name already exists in the same place; number starts at 2.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} (コピー {number})'**
+  String projectDuplicateNameNumbered(String name, int number);
+
+  /// No description provided for @homeDrawerTutorial.
+  ///
+  /// In ja, this message translates to:
+  /// **'使い方'**
+  String get homeDrawerTutorial;
+
+  /// Theme color for accent-colored text and icons drawn directly on the background (selected tab label, outlined and text buttons, empty-state icons). Defaults to the accent color.
+  ///
+  /// In ja, this message translates to:
+  /// **'アクセントの文字・アイコン色'**
+  String get themeColorAccentText;
+
+  /// プロジェクト詳細で作品が見つからないときに、ホームのプロジェクトの一覧へ戻るボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトの一覧へ'**
+  String get projectDetailNotFoundBackToList;
+
+  /// No description provided for @projectListNoMatchTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{query}」に一致する作品はありません'**
+  String projectListNoMatchTitle(String query);
+
+  /// No description provided for @projectListNoMatchNameHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。'**
+  String get projectListNoMatchNameHint;
+
+  /// No description provided for @projectListNoMatchTagHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中も含めて、作品に付けたタグの一部で探しています。'**
+  String get projectListNoMatchTagHint;
+
+  /// No description provided for @projectListClearSearch.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索をやめる'**
+  String get projectListClearSearch;
+
+  /// No description provided for @projectListNoFavoritesTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りの作品はありません'**
+  String get projectListNoFavoritesTitle;
+
+  /// No description provided for @projectListNoFavoritesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。'**
+  String get projectListNoFavoritesHint;
+
+  /// No description provided for @projectListShowAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべて表示'**
+  String get projectListShowAll;
+
+  /// No description provided for @projectListEmptyFolderTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダは空です'**
+  String get projectListEmptyFolderTitle;
+
+  /// Detail row: the date the work was last changed.
+  ///
+  /// In ja, this message translates to:
+  /// **'{date}更新'**
+  String projectListUpdatedOn(String date);
+
+  /// Search results: the folder a work is in (folder names joined by " / ").
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ：{path}'**
+  String projectListInFolder(String path);
+
+  /// No description provided for @homeProjectsLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトを読み込めませんでした'**
+  String get homeProjectsLoadFailed;
+
+  /// No description provided for @settingsErrorLogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラーの記録'**
+  String get settingsErrorLogTitle;
+
+  /// No description provided for @settingsErrorLogSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'不具合を知らせるときに、アプリで起きたエラーを確認してコピーできます'**
+  String get settingsErrorLogSubtitle;
+
+  /// No description provided for @errorLogHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'このアプリを閉じるまでに起きたエラーを、新しい順に最大20件表示します。メールアドレスやログインの情報は伏せてあります。'**
+  String get errorLogHint;
+
+  /// No description provided for @errorLogEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラーは記録されていません'**
+  String get errorLogEmpty;
+
+  /// No description provided for @errorLogCopyAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべてコピー'**
+  String get errorLogCopyAll;
+
+  /// No description provided for @errorLogCopied.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラーの記録をコピーしました'**
+  String get errorLogCopied;
+
+  /// No description provided for @errorLogClear.
+  ///
+  /// In ja, this message translates to:
+  /// **'記録を消す'**
+  String get errorLogClear;
+
+  /// No description provided for @tutorialSkip.
+  ///
+  /// In ja, this message translates to:
+  /// **'スキップ'**
+  String get tutorialSkip;
+
+  /// No description provided for @tutorialNext.
+  ///
+  /// In ja, this message translates to:
+  /// **'次へ'**
+  String get tutorialNext;
+
+  /// No description provided for @tutorialPageIndicator.
+  ///
+  /// In ja, this message translates to:
+  /// **'{total}ページ中{current}ページ目'**
+  String tutorialPageIndicator(int current, int total);
+
+  /// No description provided for @tutorialPage1Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMへようこそ'**
+  String get tutorialPage1Title;
+
+  /// No description provided for @tutorialPage1Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'1枚の絵を「フレーム」に描きます'**
+  String get tutorialPage1Step1;
+
+  /// No description provided for @tutorialPage1Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'少しずつ動きを変えたフレームを並べます'**
+  String get tutorialPage1Step2;
+
+  /// No description provided for @tutorialPage1Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'続けて再生するとアニメーションになり、動画として書き出せます'**
+  String get tutorialPage1Step3;
+
+  /// No description provided for @tutorialPage2Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品をつくる'**
+  String get tutorialPage2Title;
+
+  /// No description provided for @tutorialPage2Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'ホームの右下の＋を押します'**
+  String get tutorialPage2Step1;
+
+  /// No description provided for @tutorialPage2Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'「新規プロジェクト」を選び、名前や大きさを決めて「作成」を押します'**
+  String get tutorialPage2Step2;
+
+  /// No description provided for @tutorialPage2Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'作った作品は「プロジェクト」に並びます。押して「編集開始」を選ぶと続きを描けます'**
+  String get tutorialPage2Step3;
+
+  /// No description provided for @tutorialPage3Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスで描く'**
+  String get tutorialPage3Title;
+
+  /// No description provided for @tutorialPage3Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'下のツールバーで、ペン・消しゴム・塗りつぶしなどの道具を選びます'**
+  String get tutorialPage3Step1;
+
+  /// No description provided for @tutorialPage3Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'色の丸を押すと、描く色を変えられます'**
+  String get tutorialPage3Step2;
+
+  /// No description provided for @tutorialPage3Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'左上の矢印で、取り消し・やり直しができます'**
+  String get tutorialPage3Step3;
+
+  /// No description provided for @tutorialPage4Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームを足して動かす'**
+  String get tutorialPage4Title;
+
+  /// No description provided for @tutorialPage4Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'下のフレーム一覧で、いま描いているフレームが分かります'**
+  String get tutorialPage4Step1;
+
+  /// No description provided for @tutorialPage4Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'＋で次のフレームを足し、少しずつ動かして描きます'**
+  String get tutorialPage4Step2;
+
+  /// No description provided for @tutorialPage4Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'右上の設定の「オニオンスキン」で、前のフレームを薄く重ねて見られます'**
+  String get tutorialPage4Step3;
+
+  /// No description provided for @tutorialPage5Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生して書き出す'**
+  String get tutorialPage5Title;
+
+  /// No description provided for @tutorialPage5Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'右上のタイムラインのボタンで、タイムラインを開きます'**
+  String get tutorialPage5Step1;
+
+  /// No description provided for @tutorialPage5Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生ボタンで、動きを確かめます'**
+  String get tutorialPage5Step2;
+
+  /// No description provided for @tutorialPage5Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'「書き出し」で、動画やGIFとして保存・共有できます'**
+  String get tutorialPage5Step3;
+
+  /// No description provided for @tutorialPage6Title.
+  ///
+  /// In ja, this message translates to:
+  /// **'困ったときは'**
+  String get tutorialPage6Title;
+
+  /// No description provided for @tutorialPage6Step1.
+  ///
+  /// In ja, this message translates to:
+  /// **'画面右上の？で、その画面の説明を見られます'**
+  String get tutorialPage6Step1;
+
+  /// No description provided for @tutorialPage6Step2.
+  ///
+  /// In ja, this message translates to:
+  /// **'はじめて使う機能では、短い説明が出ます'**
+  String get tutorialPage6Step2;
+
+  /// No description provided for @tutorialPage6Step3.
+  ///
+  /// In ja, this message translates to:
+  /// **'この使い方は、ホームの左上のメニューの「使い方」からいつでも見直せます'**
+  String get tutorialPage6Step3;
+
+  /// No description provided for @helpTutorialSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'はじめに表示した使い方を、もう一度見ます'**
+  String get helpTutorialSubtitle;
+
+  /// No description provided for @settingsTipsResetTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'機能の説明をもう一度表示'**
+  String get settingsTipsResetTitle;
+
+  /// No description provided for @settingsTipsResetSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'はじめて使う機能に出る短い説明を、次に使うときにもう一度出します'**
+  String get settingsTipsResetSubtitle;
+
+  /// No description provided for @settingsTipsResetDone.
+  ///
+  /// In ja, this message translates to:
+  /// **'機能の説明を、次に使うときにもう一度表示します'**
+  String get settingsTipsResetDone;
+
+  /// No description provided for @helpTutorialButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'使い方を見る'**
+  String get helpTutorialButton;
+
+  /// No description provided for @projectListTrashFolderConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダをゴミ箱へ移動しますか？'**
+  String get projectListTrashFolderConfirmTitle;
+
+  /// No description provided for @projectListTrashFolderConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。'**
+  String projectListTrashFolderConfirmBody(String name);
+
+  /// No description provided for @homeFolderMovedToTrashSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」をゴミ箱へ移動しました'**
+  String homeFolderMovedToTrashSnackbar(String name);
+
+  /// No description provided for @homeMoveToTrashFolderContents.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中の{contents}も一緒に移動します。'**
+  String homeMoveToTrashFolderContents(String contents);
+
+  /// No description provided for @homeTrashFolderPermanentDeleteBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を完全に削除します。元に戻すことはできません。'**
+  String homeTrashFolderPermanentDeleteBody(String name);
+
+  /// No description provided for @homeFolderContents.
+  ///
+  /// In ja, this message translates to:
+  /// **'{projects, plural, =0{{folders, plural, =0{中身なし} other{フォルダ{folders}件}}} other{プロジェクト{projects}件{folders, plural, =0{} other{・フォルダ{folders}件}}}}'**
+  String homeFolderContents(int projects, int folders);
+
+  /// No description provided for @homeTrashFolderPermanentDeleteContents.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中の{contents}も一緒に削除します。'**
+  String homeTrashFolderPermanentDeleteContents(String contents);
+
+  /// No description provided for @newProjectNumberRangeError.
+  ///
+  /// In ja, this message translates to:
+  /// **'{min}〜{max}の数字を入力してください'**
+  String newProjectNumberRangeError(int min, int max);
+
+  /// No description provided for @pcViewZoomIn.
+  ///
+  /// In ja, this message translates to:
+  /// **'拡大'**
+  String get pcViewZoomIn;
+
+  /// No description provided for @pcViewZoomOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'縮小'**
+  String get pcViewZoomOut;
+
+  /// No description provided for @pcViewFit.
+  ///
+  /// In ja, this message translates to:
+  /// **'全体を表示'**
+  String get pcViewFit;
+
+  /// No description provided for @pcViewActualPixels.
+  ///
+  /// In ja, this message translates to:
+  /// **'100%で表示'**
+  String get pcViewActualPixels;
+
+  /// No description provided for @pcViewRotateLeft.
+  ///
+  /// In ja, this message translates to:
+  /// **'左に回転'**
+  String get pcViewRotateLeft;
+
+  /// No description provided for @pcViewRotateRight.
+  ///
+  /// In ja, this message translates to:
+  /// **'右に回転'**
+  String get pcViewRotateRight;
+
+  /// No description provided for @pcViewResetRotation.
+  ///
+  /// In ja, this message translates to:
+  /// **'回転を戻す'**
+  String get pcViewResetRotation;
+
+  /// No description provided for @pcViewHidePanels.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルを隠す'**
+  String get pcViewHidePanels;
+
+  /// No description provided for @pcViewFrameStrip.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム一覧'**
+  String get pcViewFrameStrip;
+
+  /// No description provided for @pcPaneToolProperty.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールの設定'**
+  String get pcPaneToolProperty;
+
+  /// No description provided for @pcToolPropertyEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'このツールには設定がありません'**
+  String get pcToolPropertyEmpty;
+
+  /// PC/DeXモードのステータスバー：今のフレームと総数
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム {current}/{total}'**
+  String pcStatusFrame(int current, int total);
+
+  /// No description provided for @pcPaneProgram.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビュー'**
+  String get pcPaneProgram;
+
+  /// No description provided for @pcPaneInspector.
+  ///
+  /// In ja, this message translates to:
+  /// **'詳細'**
+  String get pcPaneInspector;
+
+  /// No description provided for @pcTimelineZoomIn.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインを拡大'**
+  String get pcTimelineZoomIn;
+
+  /// No description provided for @pcTimelineZoomOut.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインを縮小'**
+  String get pcTimelineZoomOut;
+
+  /// No description provided for @pcBinEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材はまだありません'**
+  String get pcBinEmpty;
+
+  /// PC/DeXモードのタイムライン：シーンの一覧のフレーム数
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}フレーム'**
+  String pcBinSceneFrames(int count);
+
+  /// No description provided for @pcInspectorHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインの素材を選ぶと、ここで位置・大きさ・不透明度などを調整できます。'**
+  String get pcInspectorHint;
+
+  /// PC/DeXモードのタイムライン：ステータスバーのフレームレート
+  ///
+  /// In ja, this message translates to:
+  /// **'{fps} fps'**
+  String pcStatusFps(int fps);
+
+  /// No description provided for @homePasteSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'貼り付けました'**
+  String get homePasteSnackbar;
+
+  /// No description provided for @canvasSizePresetDuplicateSuffix.
+  ///
+  /// In ja, this message translates to:
+  /// **'のコピー'**
+  String get canvasSizePresetDuplicateSuffix;
 }
 
 class _AppLocalizationsDelegate
