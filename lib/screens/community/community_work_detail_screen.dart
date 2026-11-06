@@ -59,7 +59,10 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final community = context.read<CommunityService>();
     final auth = context.read<GoogleAuthService>();
     final accountId = auth.account?.id;
-    if (community.byId(widget.workId) != null ||
+    // A public-feed placeholder is not proof that the owner's private work
+    // details are available. Only a real cached work can skip owner lookup.
+    final cached = community.byId(widget.workId);
+    if ((cached != null && !cached.isUnavailable) ||
         accountId == null || community.api == null) return;
     try {
       final response = await community.api!.myWork(widget.workId);
@@ -302,7 +305,12 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final currentAccount = context.watch<GoogleAuthService>().account?.id;
     final ownerFallback = currentAccount != null &&
         currentAccount == _ownerOnlyAccountId ? _ownerOnlyWork : null;
-    final work = communityService.byId(widget.workId) ?? ownerFallback;
+    final cachedWork = communityService.byId(widget.workId);
+    // Owner-authorized details take precedence over a public unavailable
+    // placeholder (e.g. a previously saved private work).
+    final work = cachedWork == null || cachedWork.isUnavailable
+        ? (ownerFallback ?? cachedWork)
+        : cachedWork;
     final isOwner = work != null &&
         (ownerFallback != null || communityService.isOwnWork(work));
     if (work == null ||
