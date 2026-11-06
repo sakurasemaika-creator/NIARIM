@@ -33,6 +33,10 @@ jobs:
             exit 1
           fi
           echo "Mergeable diff has $(git diff --cached --name-only | wc -l) files"
+          # The PC canvas changed significantly after the audit branch. Never
+          # splice an older PC workspace into this newer screen.
+          git restore --source=HEAD --staged --worktree -- lib/screens/canvas/canvas_screen.dart
+          echo "Retained latest dev_branch canvas screen in merge preview"
       - name: Install dependencies and generate translations
         shell: bash
         run: |
@@ -45,7 +49,12 @@ jobs:
           timeout 300s flutter analyze --no-pub > /tmp/merge-analyze.log 2>&1
           result=$?
           echo "ANALYZE_EXIT_CODE=$result"
-          tail -n 100 /tmp/merge-analyze.log
+          echo "===== ERROR COUNTS BY FILE ====="
+          grep -E 'error •' /tmp/merge-analyze.log | sed -E 's/.* • ([^:]+):[0-9]+:[0-9]+ • .*/\\1/' | sort | uniq -c | sort -nr | head -n 40 || true
+          echo "===== FIRST 50 ERRORS ====="
+          grep -E 'error •' /tmp/merge-analyze.log | head -n 50 || true
+          echo "===== END OF ANALYSIS ====="
+          tail -n 15 /tmp/merge-analyze.log
           exit "$result"
       - name: Targeted regression tests on the merged tree
         shell: bash
