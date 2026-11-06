@@ -44,6 +44,7 @@ class YoutubeUploadService {
     String description = '',
     List<String> tags = const <String>[],
     String privacyStatus = 'private',
+    DateTime? scheduledPublishAt,
     String? mimeType,
     YoutubeUploadProgress? onProgress,
     int chunkSize = defaultChunkSize,
@@ -66,6 +67,16 @@ class YoutubeUploadService {
         'public / unlisted / private のいずれかにしてください',
       );
     }
+    if (scheduledPublishAt != null) {
+      if (privacyStatus != 'private') {
+        throw ArgumentError('予約投稿は非公開の動画にのみ設定できます');
+      }
+      if (!scheduledPublishAt.isAfter(
+        DateTime.now().toUtc().add(const Duration(minutes: 2)),
+      )) {
+        throw ArgumentError('予約公開日時は現在から2分以上先を指定してください');
+      }
+    }
     if (chunkSize <= 0 || chunkSize % (256 * 1024) != 0) {
       throw ArgumentError.value(chunkSize, 'chunkSize', '256KiBの正の整数倍にしてください');
     }
@@ -87,6 +98,7 @@ class YoutubeUploadService {
       description: description,
       tags: tags,
       privacyStatus: privacyStatus,
+      scheduledPublishAt: scheduledPublishAt,
     );
 
     final handle = await file.open(mode: FileMode.read);
@@ -190,6 +202,7 @@ class YoutubeUploadService {
     required String description,
     required List<String> tags,
     required String privacyStatus,
+    required DateTime? scheduledPublishAt,
   }) async {
     final request = http.Request('POST', _createVideoUri)
       ..headers.addAll(<String, String>{
@@ -204,7 +217,11 @@ class YoutubeUploadService {
           if (description.isNotEmpty) 'description': description,
           if (tags.isNotEmpty) 'tags': tags,
         },
-        'status': <String, Object>{'privacyStatus': privacyStatus},
+        'status': <String, Object>{
+          'privacyStatus': privacyStatus,
+          if (scheduledPublishAt != null)
+            'publishAt': scheduledPublishAt.toUtc().toIso8601String(),
+        },
       });
 
     final response = await http.Response.fromStream(await _http.send(request));
