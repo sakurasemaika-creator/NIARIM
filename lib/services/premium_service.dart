@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../config/monetization_gate.dart';
 import 'google_auth_service.dart';
 import '../utils/runtime_platform.dart';
 import '../utils/tolerant_preferences.dart';
@@ -15,24 +14,16 @@ import '../utils/tolerant_preferences.dart';
 /// 検証できた場合に限り、購入権限を短時間保持する。端末保存値だけでは
 /// Premiumを有効にしない。
 ///
-/// `isMonetizationEnabled`がfalseの間（税務上の都合による一時停止期間）は
-/// ストアへの接続・商品情報取得・購入操作を一切行わない。この期間は
-/// 「リリース記念キャンペーン」として、全ユーザーへプレミアム機能を無料で
-/// 開放する（[isPremium]がtrueを返す）。金銭のやり取りは一切発生しない
-/// （広告非表示・購入不可のまま）ため税務上の位置づけは変わらず、
-/// ユーザー視点では前向きな施策として提示できる。実際に購入したかどうかは
-/// [hasPurchasedPremium]で区別する。
+/// 無料版とPremium版を通常どおり区別する。Premiumの権限はGoogle Playで
+/// サーバー検証された購入、またはサーバー発行の有効なコイン権限のみ。
+/// 日付やビルドフラグによる全ユーザーへの自動無料開放は行わない。
 class PremiumService extends ChangeNotifier {
   // ストアに登録するサブスクリプション商品ID
   static const String monthlyProductId = 'niarim_premium_monthly';
   static const String yearlyProductId = 'niarim_premium_yearly';
   static const Set<String> _productIds = {monthlyProductId, yearlyProductId};
 
-  // 課金一時停止期間中（isMonetizationEnabled==false）はアプリ起動時に
-  // このサービスが生成されるだけでストアへ接続してはならない。
-  // InAppPurchase.instanceは参照した時点で内部でBilling Clientへの
-  // 接続を（awaitされない形で）開始してしまうため、フィールド初期化子で
-  // 即座に取得せず、実際に購入操作を行う経路でのみ遅延生成する。
+  // Billing Clientをサポートしない環境のテストで初期化しないよう遅延生成する。
   InAppPurchase? _iapInstance;
   InAppPurchase get _iap => _iapInstance ??= InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _subscription;
@@ -290,18 +281,11 @@ class PremiumService extends ChangeNotifier {
     }
   }
 
-  /// プレミアム機能を利用できるかどうか（機能制限の判定に使用）。
-  /// 実際の購入済み、またはリリース記念キャンペーン期間中はtrue。
-  bool get isPremium =>
-      hasVerifiedPlayPremium || hasCoinPremium || isLaunchCampaignActive;
+  /// プレミアム機能は実際に確認された権限がある場合のみ利用できる。
+  bool get isPremium => hasVerifiedPlayPremium || hasCoinPremium;
 
   bool _storeAvailable = false;
   bool get storeAvailable => _storeAvailable;
-
-  /// リリース記念キャンペーン期間中（＝課金一時停止期間、税務上の都合）
-  /// かどうか。trueの間はPremiumScreenで購入導線を隠し、代わりに
-  /// 「プレミアム機能を無料開放中」の案内を表示する。
-  bool get isLaunchCampaignActive => !isMonetizationEnabled;
 
   bool _purchasePending = false;
   bool get purchasePending => _purchasePending;
@@ -325,8 +309,8 @@ class PremiumService extends ChangeNotifier {
     // in_app_purchaseのストア実装はAndroid/iOS専用。widget testや
     // デスクトップ、Flutter Webでinstanceへ触れると、isAvailable()の
     // try/catch外で開始される非同期接続がPlatformExceptionを投げる。
-    if (!isMonetizationEnabled || !supportsMobilePluginRuntime) {
-      // 課金一時停止期間・非対応OSではストアへ一切接続しない。
+    if (!supportsMobilePluginRuntime) {
+      // 非対応OSおよびwidgetテストではストアへ接続しない。
       _storeAvailable = false;
       return;
     }
@@ -356,11 +340,6 @@ class PremiumService extends ChangeNotifier {
   /// 戻り値は購入フローの開始に成功したかどうか。実際の購入完了・失敗結果は
   /// purchaseStream経由で非同期に届き、isPremiumへ反映される。
   Future<bool> buy(String productId) async {
-    if (!isMonetizationEnabled) {
-      _purchaseError = 'ただいまキャンペーン期間中につき、プレミアム機能は無料でご利用いただけます。';
-      notifyListeners();
-      return false;
-    }
     if (_boundGoogleAuth?.account == null ||
         _playVerifier == null ||
         _playPreflight == null) {
