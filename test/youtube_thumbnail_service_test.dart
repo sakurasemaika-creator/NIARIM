@@ -12,7 +12,7 @@ void main() {
   setUp(() => directory = Directory.systemTemp.createTempSync('niarim_thumb_'));
   tearDown(() => directory.deleteSync(recursive: true));
 
-  test('sets only the authenticated user's selected JPEG or PNG', () async {
+  test("sets only the authenticated user's selected JPEG or PNG", () async {
     final image = File('${directory.path}/poster.png');
     await image.writeAsBytes([137, 80, 78, 71, 1, 2, 3]);
     final client = MockClient((request) async {
