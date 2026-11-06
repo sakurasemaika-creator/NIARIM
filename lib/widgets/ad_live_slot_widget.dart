@@ -5,9 +5,14 @@ import '../services/admob_provider.dart';
 /// Each visible placement owns its own BannerAd. Sharing one ad across
 /// overlapping routes would mount the same AdWidget twice during navigation.
 class AdMobLiveSlot extends StatefulWidget {
-  const AdMobLiveSlot({super.key, required this.rectangle});
+  const AdMobLiveSlot({
+    super.key,
+    required this.rectangle,
+    this.bannerSize = const Size(320, 50),
+  });
 
   final bool rectangle;
+  final Size bannerSize;
 
   @override
   State<AdMobLiveSlot> createState() => _AdMobLiveSlotState();
@@ -24,11 +29,17 @@ class _AdMobLiveSlotState extends State<AdMobLiveSlot> {
   }
 
   void _load() {
+    final banner = widget.bannerSize;
+    final topSize = banner == const Size(728, 90)
+        ? AdSize.leaderboard
+        : banner == const Size(468, 60)
+        ? AdSize.fullBanner
+        : AdSize.banner;
     final ad = BannerAd(
       adUnitId: widget.rectangle
           ? AdMobProvider.mediumRectangleAdUnitId
           : AdMobProvider.bannerAdUnitId,
-      size: widget.rectangle ? AdSize.mediumRectangle : AdSize.banner,
+      size: widget.rectangle ? AdSize.mediumRectangle : topSize,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (_) {
@@ -50,8 +61,8 @@ class _AdMobLiveSlotState extends State<AdMobLiveSlot> {
 
   @override
   Widget build(BuildContext context) {
-    final width = widget.rectangle ? 300.0 : 320.0;
-    final height = widget.rectangle ? 250.0 : 50.0;
+    final width = widget.rectangle ? 300.0 : widget.bannerSize.width;
+    final height = widget.rectangle ? 250.0 : widget.bannerSize.height;
     final ad = _ad;
     return SizedBox(
       width: width,

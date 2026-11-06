@@ -12,6 +12,28 @@ const double kPersistentHorizontalAdMockExtent = 74;
 const double _fixedBannerWidth = 320;
 const double _minimumPageHeightWithBanner = 320;
 
+/// Supported Google fixed-size units (dp), chosen conservatively by physical
+/// form factor. Full-banner and leaderboard are tablet/DeX widths only.
+/// Never scale the Google ad: keep its container at exactly the requested size.
+Size? bannerSizeForViewport({
+  required double availableWidth,
+  required double availableHeight,
+  required bool tabletLayout,
+}) {
+  final banner = tabletLayout && availableWidth >= 728
+      ? const Size(728, 90)
+      : tabletLayout && availableWidth >= 468
+      ? const Size(468, 60)
+      : availableWidth >= _fixedBannerWidth
+      ? const Size(320, 50)
+      : null;
+  if (banner == null ||
+      availableHeight < banner.height + 24 + _minimumPageHeightWithBanner) {
+    return null;
+  }
+  return banner;
+}
+
 /// アプリ全体で上部バナーを1つ保持する共通フレーム。
 ///
 /// MaterialApp.router.builderに配置することで、GoRouterの画面遷移時や
@@ -77,22 +99,28 @@ class AdMockPageFrame extends StatelessWidget {
     // provides it, and canRequestAds gates real SDK requests.
     final ads = context.watch<AdvertisingService?>();
     final safe = MediaQuery.paddingOf(context);
+    final media = MediaQuery.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         // Keep the fixed banner at its intended size and leave enough room
         // for the page to scroll and expose its controls in short windows.
+        final bannerSize = bannerSizeForViewport(
+          availableWidth: constraints.maxWidth - safe.horizontal,
+          availableHeight: constraints.maxHeight - safe.vertical,
+          tabletLayout: media.size.shortestSide >= 600,
+        );
+        // A keyboard, accessibility IME or other system input surface can
+        // put an ad beside rapidly touched text/controls; suppress it.
         final showSlot =
             allowBanner &&
             !isPremium &&
+            media.viewInsets.bottom <= 0 &&
             (ads == null || ads.shouldShowAds) &&
-            constraints.maxWidth - safe.horizontal >= _fixedBannerWidth &&
-            constraints.maxHeight - safe.vertical >=
-                kPersistentHorizontalAdMockExtent +
-                    _minimumPageHeightWithBanner;
+            bannerSize != null;
         return Column(
           children: [
             if (showSlot)
-              _AdBannerMockSlot(live: ads != null)
+              _AdBannerMockSlot(live: ads != null, size: bannerSize!)
             else
               const SizedBox.shrink(),
             Expanded(
@@ -119,9 +147,10 @@ MaterialPageRoute<T> adMockMaterialPageRoute<T>({
 }
 
 class _AdBannerMockSlot extends StatelessWidget {
-  const _AdBannerMockSlot({required this.live});
+  const _AdBannerMockSlot({required this.live, required this.size});
 
   final bool live;
+  final Size size;
 
   @override
   Widget build(BuildContext context) {
@@ -144,11 +173,15 @@ class _AdBannerMockSlot extends StatelessWidget {
             child: SizedBox(
               key: const Key('persistent-horizontal-ad-mock'),
               width: double.infinity,
-              height: 50,
+              height: size.height,
               child: Center(
                 child: live
-                    ? const AdMobLiveSlot(rectangle: false)
-                    : const AdBannerMockWidget(),
+                    ? AdMobLiveSlot(
+                        key: ValueKey('top-${size.width}x${size.height}'),
+                        rectangle: false,
+                        bannerSize: size,
+                      )
+                    : AdBannerMockWidget(bannerSize: size),
               ),
             ),
           ),
@@ -166,15 +199,20 @@ class _AdBannerMockSlot extends StatelessWidget {
 /// 判断できるようにする。設置場所を正式決定したら、このモックは
 /// 実際のAdBannerWidget（またはネイティブ広告等）へ置き換えること。
 class AdBannerMockWidget extends StatelessWidget {
-  const AdBannerMockWidget({super.key});
+  const AdBannerMockWidget({
+    super.key,
+    this.bannerSize = const Size(320, 50),
+  });
+
+  final Size bannerSize;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
       key: Key('fixed-banner-ad-mock'),
-      width: _fixedBannerWidth,
-      height: 50,
+      width: bannerSize.width,
+      height: bannerSize.height,
       decoration: BoxDecoration(
         color: ThemeService.activeColorScheme.onSurfaceVariant,
         border: Border.all(
@@ -209,6 +247,21 @@ class AdMediumRectangleMockWidget extends StatelessWidget {
         (ads != null && !ads.shouldShowAds)) {
       return const SizedBox.shrink();
     }
+    // A 300x250 medium rectangle cannot be cropped or shrunk. On narrow
+    // windows/DeX split screen, suppress the ad rather than letting it
+    // overflow or cover the cancel/progress controls.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 300 || constraints.maxHeight < 250) {
+          return const SizedBox.shrink();
+        }
+        return _mediumRectangleForAvailableSpace(context, ads);
+      },
+    );
+  }
+
+  Widget _mediumRectangleForAvailableSpace(
+      BuildContext context, AdvertisingService? ads) {
     // A progress AlertDialog is an alert/behavior-only surface. Google's
     // publisher-content rule prohibits live ads on such surfaces. Keep the
     // 300x250 placement available in debug with official TEST IDs for layout
