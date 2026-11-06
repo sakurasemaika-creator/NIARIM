@@ -3,10 +3,21 @@
 `docs/AI設計書/29_動画投稿・ランキング機能仕様.md`（特に16章）に基づく、
 NIARIM作品広場のバックエンド実装。
 
-**このコードはまだAWSへデプロイされていません。** このセッションには
-AWSのデプロイ認証情報が接続されていないため、コード（Lambdaハンドラ・
-DynamoDBスキーマ・CDKによるIaC）を用意するところまでを行いました。
-実際のデプロイはあなた自身の環境・AWSアカウントで行ってください。
+**2026-11-06に東京リージョンへ初回デプロイ済みです。** NIARIM開発用AWSアカウント
+（`368601349794`）の`NiarimBackendStack`は`CREATE_COMPLETE`、
+Lambda `niarim-api`は`Active`、DynamoDB `niarim-table`と6つのGSIは
+`ACTIVE`を確認済みです。GitHub Actionsの初回デプロイと
+`GET /works/latest` のスモークテスト（HTTP 200）が成功しました。
+[GitHub Actions実行結果](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/42163616025)。
+
+現行のFunction URL:
+`https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/`
+
+**アプリ側は別途接続設定が必要です。** Flutterの
+`lib/services/api/niarim_api_config.dart` は
+`--dart-define=NIARIM_API_BASE_URL=<Function URL>` を渡したビルドに限り、
+作品広場の実APIを使用します。未指定のAPKはダミーデータのままです。
+機能の一般公開・認証済みE2E・全APIの実環境検証は未完了です。
 
 ## 技術スタック・採用理由
 
@@ -23,7 +34,7 @@ Cloudflare Workers（公式サイト`NIARIM-web`で既に採用）ではなくAW
 Workers無料プランのCPU時間上限（1リクエストあたり10ms）とは相性が
 悪いため。詳細はセッションのやり取り、および仕様書側の議論を参照。
 
-## デプロイ手順（あなたの環境で実行してください）
+## デプロイ手順（以後の更新用。初回デプロイは完了）
 
 ### 前提条件
 
@@ -44,13 +55,12 @@ Workers無料プランのCPU時間上限（1リクエストあたり10ms）と�
 cd backend
 npm install
 
-# 初回のみ：CDKのブートストラップ（アカウント・リージョンごとに1回）
-npx cdk bootstrap
-
-# OAuthクライアントID・YouTube APIキーをコンテキストで渡してデプロイ
-npx cdk deploy \
-  -c googleClientId=<あなたのOAuthクライアントID> \
-  -c youtubeApiKey=<あなたのYouTube APIキー>
+# 初回bootstrapは既に東京リージョンで完了済み。再実行不要。
+# 通常はGitHub Actions > Backend CI を dev_branch で手動実行し、
+# 「AWSへデプロイする」を有効にする。GitHub OIDCとSecretsを使う。
+# APIキーをコマンドライン・シェル履歴・Git履歴に直接書かないこと。
+# FCM秘密鍵JSONはCDKコンテキストに渡さず、安全な実行時取得方式が
+# 実装されるまでプッシュ通知を無効に保つ。
 ```
 
 デプロイが完了すると、`ApiFunctionUrl`（アプリから叩くLambda Function
@@ -64,8 +74,9 @@ URL）と`TableName`が出力されます。
 ### デプロイ後の確認
 
 ```bash
-# 動作確認（作品0件の状態で200が返れば疎通OK）
-curl "$(npx cdk deploy --outputs-file /tmp/out.json > /dev/null 2>&1; jq -r '.NiarimBackendStack.ApiFunctionUrl' /tmp/out.json)works/latest"
+# 読み取りのみの疎通確認（デプロイやDB変更は行わない）
+curl --fail-with-body --show-error \
+  "https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/works/latest"
 ```
 
 ## ディレクトリ構成
@@ -112,10 +123,10 @@ backend/
 
 ## 未実装・既知の制約（デプロイ前に把握しておくべきこと）
 
-1. **未デプロイ**：この`backend/`はコードのみで、実際のAWSへのデプロイと
-   動作確認はまだ行っていない（開発環境にAWSの認証情報が無いため）。
-   下記はすべて「コードとしては書けている」段階であり、実環境での挙動は
-   未検証である点に注意すること。
+1. **初回デプロイ済み・総合検証は未完了**：東京リージョンへの
+   CloudFormation作成、Lambda/DynamoDBの稼働、公開作品一覧のHTTP 200を
+   確認済み。ただしGoogleログインを伴う書き込み、動画投稿、各種通知、
+   有料機能の実機E2Eは別途検証が必要。
 2. **全文検索基盤は無し**：8.6節の検索は現状Lambda側での部分一致
    フィルタのみ（小〜中規模向け）。大規模化した場合はOpenSearch等への
    移行が必要（20章）。
@@ -140,11 +151,10 @@ backend/
    1日窓の2段構えで、いずれも固定境界（スライディングウィンドウではない）。
    窓の境目では短時間に最大2倍まで通り得るが、1回のUpdateItemで判定できる
    ぶん安価という割り切り。
-7. **CI/CDのdeployジョブは未設定のままでは動かない**：
+7. **CI/CDはGitHub OIDCで稼働中**：
    `.github/workflows/backend-ci.yml`の`ci`ジョブ（型チェック・テスト・
-   `cdk synth`）は認証情報不要でそのまま動くが、`deploy`ジョブは
-   OIDCのIAMロールとSecretsの登録が前提。手順は同ファイル冒頭のコメントに
-   書いてある。
+   `cdk synth`）と手動`deploy`ジョブが成功済み。通常のpushでAWSへの
+   デプロイは行わない。再デプロイは`dev_branch`から明示的に手動実行する。
 
 ## Google/YouTube側で別途必要な準備
 
@@ -162,7 +172,7 @@ backend/
 
 | リソース              | Always Free枠               | このスタックでの使用量                                                           |
 | --------------------- | --------------------------- | -------------------------------------------------------------------------------- |
-| DynamoDB              | 25 GB・25 RCU・25 WCU       | テーブル15+GSI6本合計10 = 25 RCU/WCU、ストレージは5章の見積もりで50万作品時約1GB |
+| DynamoDB              | 25 GB・25 RCU・25 WCU       | テーブル15+GSI6本合計8 = 23 RCU/WCU、ストレージは5章の見積もりで50万作品時約1GB |
 | Lambda                | 月100万リクエスト＋40万GB秒 | APIリクエスト数・バッチ実行頻度に依存。想定ユーザー数の初期段階では十分収まる    |
 | EventBridge Scheduler | 低頻度実行はごく低コスト    | 1日1回の定期実行のみ                                                             |
 | Lambda Function URL   | 追加費用なし                | -                                                                                |
@@ -181,4 +191,4 @@ backend/
 - 新しいクライアント `/creator-missions` 画面は7ロケール対応。制作時間は既存のローカルカウンターを表示するが、無検証の値を報酬に使用しない。実際のコイン獲得ボタンは安全確認まで非表示。
 - アカウント共通39段階の上限は **1,178,030コイン**、作品別14段階は各作品で達成可能なためアカウント全体では上限なし。制作50時間の報酬は**55,000コイン**（サブスク月額550円の参考単位に相当）。報酬用制作時間検証APIは未実装。1万作品達成ミッションの全件検証は未実装（現状500作品までの有界Query）。詳しくは `docs/AI設計書/13B_クリエイターミッション・コイン報酬仕様.md`。
 
-このコードはAWSへまだデプロイしておらず、配布中のアプリから本番コイン報酬が得られる状態ではありません。
+このコードは開発用AWSへデプロイ済みですが、コイン払い出しの機能フラグは初期状態で無効です。一般公開向けの報酬運用やアプリからの認証済みE2Eが完了した状態ではありません。
