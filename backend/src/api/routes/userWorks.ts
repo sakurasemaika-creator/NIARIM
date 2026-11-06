@@ -1,10 +1,11 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import { QueryCommand } from "@aws-sdk/lib-dynamodb";
-import { ddb, tableName } from "../../lib/dynamo";
-import { ok } from "../../lib/response";
+import { GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { ddb, tableName, Keys } from "../../lib/dynamo";
+import { ok, notFound } from "../../lib/response";
 import { decodePageCursor, encodePageCursor, requestedPageSize } from "../../lib/pagination";
 import { authenticate, tryAuthenticate } from "../../lib/auth";
 import type { WorkItem } from "../../lib/types";
+import { TABLE_ITEM_TYPE } from "../../lib/types";
 import { toPublicWork } from "./_publicWork";
 
 async function allWorksForAuthor(authorId: string, event: APIGatewayProxyEventV2) {
@@ -38,6 +39,30 @@ function toOwnerWork(work: WorkItem) {
     youtubePrivacyStatus: work.youtubePrivacyStatus,
     scheduledPublishAt: work.scheduledPublishAt,
   };
+}
+
+/** Exact owner-only lookup, including private and scheduled videos.
+ * Used when a local notification deep-links into a cold app session.
+ * Never expose the returned private thumbnail/title to other accounts.
+ */
+export async function getMyWork(
+  event: APIGatewayProxyEventV2,
+  workId: string,
+) {
+  const caller = await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
+  const item = await ddb.send(new GetCommand({
+    TableName: tableName(),
+    Key: Keys.work(workId),
+    ConsistentRead: true,
+  }));
+  const work = item.Item as WorkItem | undefined;
+  if (!work || work.itemType !== TABLE_ITEM_TYPE.Work ||
+      work.authorId !== caller.niarimUserId) {
+    notFound("作品が見つかりません");
+  }
+  return ok({ work: toOwnerWork(work) });
 }
 
 /** GET /me/works. Authentication selects the NIARIM user id server-side. */
