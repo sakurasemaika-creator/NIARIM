@@ -247,17 +247,16 @@ class AdMediumRectangleMockWidget extends StatelessWidget {
         (ads != null && !ads.shouldShowAds)) {
       return const SizedBox.shrink();
     }
-    // A 300x250 medium rectangle cannot be cropped or shrunk. On narrow
-    // windows/DeX split screen, suppress the ad rather than letting it
-    // overflow or cover the cancel/progress controls.
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < 300 || constraints.maxHeight < 250) {
-          return const SizedBox.shrink();
-        }
-        return _mediumRectangleForAvailableSpace(context, ads);
-      },
-    );
+    // AlertDialog uses intrinsic sizing, so LayoutBuilder cannot be placed
+    // within its scrolling content. Compute from the actual logical viewport
+    // instead: 4dp dialog insets + 6dp content insets on BOTH sides.
+    // Never shrink or crop a 300x250 ad on narrow SP/DeX floating windows.
+    final media = MediaQuery.of(context);
+    final safeWidth = media.size.width - media.padding.horizontal;
+    if (safeWidth < 320 || media.size.height - media.viewInsets.bottom < 360) {
+      return const SizedBox.shrink();
+    }
+    return _mediumRectangleForAvailableSpace(context, ads);
   }
 
   Widget _mediumRectangleForAvailableSpace(
