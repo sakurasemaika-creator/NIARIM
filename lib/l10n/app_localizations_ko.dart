@@ -970,10 +970,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumHeroHighlightGrading => '톤 커브 /\n레벨 보정';
 
   @override
-  String get premiumCampaignFreeNote =>
-      '※ 캠페인 기간 중에는 무료판에서도 위 프리미엄 기능을 모두 이용하실 수 있습니다';
-
-  @override
   String get premiumPlanSectionTitle => '플랜';
 
   @override
@@ -1003,18 +999,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumRestoredSnackbar => '구매 정보를 복원했습니다（해당하는 구매가 있는 경우）';
-
-  @override
-  String get premiumCampaignBannerTitle => '출시 기념! 유료 회원 전용 기능 개방 캠페인';
-
-  @override
-  String get premiumCampaignBannerBody =>
-      '기간 중에는 무료판에서도 모든 프리미엄 기능（길이 최대 2시간・엔드 로고 편집・워터마크・톤 커브・레벨 보정）을 무료로 이용하실 수 있습니다.';
-
-  @override
-  String premiumCampaignEndLabel(String date) {
-    return '$date까지';
-  }
 
   @override
   String get premiumComparisonFeature => '기능';
