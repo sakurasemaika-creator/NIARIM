@@ -78,7 +78,7 @@ void main() {
     await tester.tap(find.text('Copy to YouTube'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('communityPostCopyConfirmationDialog')), findsOneWidget);
-    expect(find.text("The destination's current contents will be overwritten. Do you want to copy?"), findsOneWidget);
+    expect(find.text("The current contents of the destination will be overwritten. Do you want to copy?"), findsOneWidget);
     expect(target.text, 'Other');
 
     await tester.tap(find.byKey(const Key('communityPostCopyCancelButton')));

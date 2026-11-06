@@ -11,6 +11,9 @@ on:
       - 'lib/services/api/community_api.dart'
       - 'lib/services/community_service.dart'
       - 'lib/screens/community/community_post_screen.dart'
+      - 'lib/screens/community/widgets/community_post_copy_button.dart'
+      - 'test/community_post_copy_button_test.dart'
+      - 'test/community_post_recovery_contract_test.dart'
       - 'lib/screens/community/community_work_settings_screen.dart'
       - 'lib/screens/community/community_work_detail_screen.dart'
       - 'lib/screens/community/widgets/community_work_description.dart'
@@ -42,7 +45,10 @@ jobs:
             lib/services/api/community_api.dart \
             lib/services/community_service.dart \
             lib/screens/community/community_post_screen.dart \
+            lib/screens/community/widgets/community_post_copy_button.dart \
             lib/screens/community/community_work_settings_screen.dart \
             lib/screens/community/community_work_detail_screen.dart \
             lib/screens/community/widgets/community_work_description.dart \
             lib/screens/community/widgets/community_youtube_comments_section.dart
+      - name: Test copy confirmation and post recovery
+        run: flutter test --no-pub test/community_post_copy_button_test.dart test/community_post_recovery_contract_test.dart

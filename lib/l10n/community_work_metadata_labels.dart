@@ -68,7 +68,7 @@ class CommunityWorkMetadataLabels {
       'Cannot copy: exceeds the destination limit of {max} characters',
       'Enter a YouTube title',
       'Overwrite the destination?',
-      'The destination's current contents will be overwritten. Do you want to copy?',
+      'The current contents of the destination will be overwritten. Do you want to copy?',
       'Cancel',
       'Copy and overwrite'],
     'es': ['Título de la obra','Descripción','Acerca de la obra (opcional)',
