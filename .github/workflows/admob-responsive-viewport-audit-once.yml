@@ -1,6 +1,6 @@
 # One-shot screen-size matrix for phone portrait/landscape and Galaxy DeX.
 name: NIARIM AdMob SP and PC width matrix (one shot)
-# Updated after nullability lint fix
+# Updated after AlertDialog intrinsic-width fix
 on:
   push:
     branches: [dev_branch]
