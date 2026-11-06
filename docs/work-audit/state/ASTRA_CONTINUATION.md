@@ -88,7 +88,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S30 — 最新dev_branchでホームの操作領域と短い作品タブの回帰・Linux実操作を確認
+current_substep: A003/S31 — DISC051の旧保存open→明示Save→再起動とDISC053の静止画PNGをLinux実操作で検証
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -108,7 +108,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: S30のApp/Web dev_branchの公開SHA/CIを確認後、DISC050の低い画面の閲覧密度、DISC007のフォルダ再訪、DISC051の半透明と保存互換性を継続。証跡と再開点はA003_S27_20261030_RESUME.md。
+next_action: S31のApp/Web dev_branchの公開SHA/CIを照合。A003/DISC007でフォルダのbreadcrumb・戻る・再訪を実操作し、DISC050/052の狭い表示と広告ラベル、DISC051/053のUndo・復元・他形式の書出しを継続。証跡と再開点はA003_S27_20261030_RESUME.mdのS31。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。

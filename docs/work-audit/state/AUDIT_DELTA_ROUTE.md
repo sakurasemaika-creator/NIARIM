@@ -290,6 +290,10 @@ status: todo。cac1c08b→a6beの180path。初回/ヘルプ・Splash/設定と�
 
 status: todo。a6be→b92の53path（`s30-latest-b92-incoming-paths.txt`）。YouTube処理後のShortsサムネイル、予約の公開/再実行/GSI cleanup、通知と詳細deep link、自分だけの非公開・公開不能状態、削除/権限、Android通知・ログイン、収益化campaign削除。成功/中断/通信失敗/再試行/非公開/公開切替・実auth/backendの経路を分け、保存・プライバシー・App/Web表示を照合。
 
+## D001.47 — 広告のroute・modal・狭幅制御とSSV検証の増分
+
+status: todo。3397a23e→a0d74dcfの45 commit/19 net path（`s31-app-incoming-paths.txt`）。root広告枠・route遷移・modal/IME・横幅と短高、コンテンツありHomeと全route debugモックの画面matrix、署名付きURL確認と報酬grant・不正/重複・診断ログの境界を確認する。mockと実表示を区別し、Samsung実機/DeX・実consent・動的route・実配信と独立した規約確認が残る。S31では配信設定やbackendを変更していない。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。

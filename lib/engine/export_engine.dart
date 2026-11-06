@@ -90,7 +90,7 @@ class ExportEngine {
     return files;
   }
 
-  /// フレームを合成してRGBA Uint8Listを返す。
+  /// フレームを合成して乗算済みRGBAのUint8Listを返す。
   ///
   /// [drawingWidth]・[drawingHeight]は描画領域全体のサイズ（描画領域倍率を
   /// 反映済み）、[width]・[height]は書き出しサイズ。描画領域が書き出し領域より
@@ -187,6 +187,26 @@ class ExportEngine {
     );
   }
 
+  // Compositing and effect filters use premultiplied channels. A PNG stores
+  // the colour independently of its alpha so reopening does not darken it.
+  static void _straightenPngPixels(Uint8List pixels) {
+    for (var i = 0; i < pixels.length; i += 4) {
+      final alpha = pixels[i + 3];
+      if (alpha == 255) continue;
+      if (alpha == 0) {
+        pixels[i] = pixels[i + 1] = pixels[i + 2] = 0;
+        continue;
+      }
+      for (var channel = 0; channel < 3; channel++) {
+        final index = i + channel;
+        pixels[index] = ((pixels[index] * 255 + alpha ~/ 2) ~/ alpha).clamp(
+          0,
+          255,
+        );
+      }
+    }
+  }
+
   /// タイムラインモードで現在選択中のフレーム1枚だけを静止画（PNG/JPEG）
   /// として書き出す。動画書き出し（exportMp4等）と異なり、対象シーンの
   /// うち指定した1フレームだけを合成し、exportsフォルダへ直接保存する
@@ -228,10 +248,12 @@ class ExportEngine {
       layerHomes: layerHomes,
       groups: scene.groups,
     );
+    if (!asJpeg) _straightenPngPixels(rgba);
     final image = img.Image.fromBytes(
       width: width,
       height: height,
       bytes: rgba.buffer,
+      bytesOffset: rgba.offsetInBytes,
       numChannels: 4,
     );
     final bytes = asJpeg

@@ -613,6 +613,23 @@ class NiaproSerializer {
 
   // ─── 読み込み ─────────────────────────────────────────────────────────
 
+  static Uint8List _readTilePixels(ArchiveFile file) {
+    final bytes = Uint8List.fromList(file.content as List<int>);
+    // Older paint writers sometimes saved straight RGB in a premultiplied
+    // tile. Only pixels that violate RGB <= alpha can be identified safely.
+    // Already-valid values are ambiguous in old files and must stay exact.
+    for (var i = 0; i + 3 < bytes.length; i += 4) {
+      final alpha = bytes[i + 3];
+      if (bytes[i] <= alpha && bytes[i + 1] <= alpha && bytes[i + 2] <= alpha) {
+        continue;
+      }
+      bytes[i] = (bytes[i] * alpha + 127) ~/ 255;
+      bytes[i + 1] = (bytes[i + 1] * alpha + 127) ~/ 255;
+      bytes[i + 2] = (bytes[i + 2] * alpha + 127) ~/ 255;
+    }
+    return bytes;
+  }
+
   static Future<NiaproData> load(String filePath) async {
     final source = File(filePath);
     ArchiveSecurity.validateFileSize(await source.length());
@@ -723,7 +740,7 @@ class NiaproSerializer {
         addTile(
           frameLayerKey(sceneId, frameIndex, layerId),
           tileKey,
-          Uint8List.fromList(file.content as List<int>),
+          _readTilePixels(file),
         );
       } else {
         final withoutExt = segments.last.replaceAll('.bin', '');
@@ -737,7 +754,7 @@ class NiaproSerializer {
           addTile(
             frameLayerKey(target.$1, target.$2, layerId),
             tileKey,
-            Uint8List.fromList(file.content as List<int>),
+            _readTilePixels(file),
           );
         }
       }
@@ -759,7 +776,7 @@ class NiaproSerializer {
           addTile(
             frameLayerKey(scene.id, frame.index, layerId),
             tileKey,
-            Uint8List.fromList(file.content as List<int>),
+            _readTilePixels(file),
           );
         }
       }
