@@ -39,8 +39,15 @@ test('real user-bound callbacks pass to original handler', async () => {
   const x = makeHandler(); const response = await x.handler(event(query({ custom: 'v1.real-user.nonce' })));
   assert.equal(response.statusCode, 403); assert.equal(x.originalCalls(), 1);
 });
-test('invalid signatures, reward, and other endpoints pass to original', async () => {
-  for (const q of [query({ tamper: true }), query({ amount: '500' }), query({ item: 'gems' }), query({ unitId: '0000000000' })]) {
+test('Google-signed URL test with a distinct ad_unit is acknowledged without coins', async () => {
+  const x = makeHandler();
+  const response = await x.handler(event(query({ unitId: '0000000000' })));
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(JSON.parse(response.body), { verified: true, credited: false });
+  assert.equal(x.originalCalls(), 0);
+});
+test('invalid signatures, missing unit, reward, and other endpoints pass to original', async () => {
+  for (const q of [query({ tamper: true }), query({ amount: '500' }), query({ item: 'gems' }), query({ unitId: '' })]) {
     const x = makeHandler(); assert.equal((await x.handler(event(q))).statusCode, 403); assert.equal(x.originalCalls(), 1);
   }
   const x = makeHandler(); assert.equal((await x.handler(event(query(), '/me/works'))).statusCode, 403);

@@ -22,9 +22,13 @@
       const values = params.getAll(name);
       return values.length === 1 && values[0] ? values[0] : null;
     }
-    const configuredUnit = process.env.ADMOB_REWARDED_AD_UNIT_ID || '';
-    const unit = configuredUnit.split('/')[1];
-    if (!/^\d{10}$/.test(unit || '') || single('ad_unit') !== unit ||
+    // AdMob's "Verify URL" tool can send a Google-signed test ad_unit
+    // different from the registered production unit. This branch never
+    // credits a reward and never processes a bound user session; therefore
+    // require only a bounded, nonempty ad_unit plus a valid Google signature.
+    // The normal reward-granting handler retains strict ad-unit matching.
+    const adUnit = single('ad_unit');
+    if (!adUnit || adUnit.length > 128 ||
         single('reward_amount') !== '10' || single('reward_item') !== 'coins' ||
         !single('transaction_id')) return false;
     const stamp = single('timestamp');
