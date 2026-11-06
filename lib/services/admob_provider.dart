@@ -26,6 +26,10 @@ class AdMobProvider implements AdProvider {
   // 本番運用時はAdMobコンソールで発行した専用AdUnitIDへ差し替える。
   static String get _squareAdUnitId => _bannerAdUnitId;
 
+  /// Google-issued test IDs until production ad review is complete.
+  static String get bannerAdUnitId => _bannerAdUnitId;
+  static String get mediumRectangleAdUnitId => _squareAdUnitId;
+
   BannerAd? _bannerAd;
   BannerAd? _squareAd;
 

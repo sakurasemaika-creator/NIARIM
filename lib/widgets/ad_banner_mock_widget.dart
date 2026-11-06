@@ -2,6 +2,8 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/premium_service.dart';
+import '../services/advertising_service.dart';
+import 'ad_live_slot_widget.dart';
 import '../l10n/app_localizations.dart';
 
 /// SafeAreaの上端を除いた、横長広告専用領域の高さ。
@@ -15,7 +17,7 @@ const double _minimumPageHeightWithBanner = 320;
 /// 操作ボタンとの近接が起きるため、ページ本体とは別の固定領域へ分離する。
 /// 画面最上部のステータスバー／切り欠き領域は[SafeArea]で避け、ページ側
 /// からは上部paddingを取り除いて二重の余白が生じないようにする。
-/// 実広告へ切り替える際は[_AdBannerMockSlot]の中身だけを差し替えればよい。
+/// 実機ではGoogleテスト広告を使い、widget testにはモックを残す。
 class AdMockPageFrame extends StatelessWidget {
   final Widget child;
 
@@ -24,6 +26,9 @@ class AdMockPageFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPremium = context.watch<PremiumService>().isPremium;
+    // Standalone widget tests omit AdvertisingService; production always
+    // provides it, and canRequestAds gates real SDK requests.
+    final ads = context.watch<AdvertisingService?>();
     final safe = MediaQuery.paddingOf(context);
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -31,6 +36,7 @@ class AdMockPageFrame extends StatelessWidget {
         // for the page to scroll and expose its controls in short windows.
         final showSlot =
             !isPremium &&
+            (ads == null || ads.shouldShowAds) &&
             constraints.maxWidth - safe.horizontal >= _fixedBannerWidth &&
             constraints.maxHeight - safe.vertical >=
                 kPersistentHorizontalAdMockExtent +
@@ -38,7 +44,7 @@ class AdMockPageFrame extends StatelessWidget {
         return Column(
           children: [
             if (showSlot)
-              const _AdBannerMockSlot()
+              _AdBannerMockSlot(live: ads != null)
             else
               const SizedBox.shrink(),
             Expanded(
@@ -65,7 +71,9 @@ MaterialPageRoute<T> adMockMaterialPageRoute<T>({
 }
 
 class _AdBannerMockSlot extends StatelessWidget {
-  const _AdBannerMockSlot();
+  const _AdBannerMockSlot({required this.live});
+
+  final bool live;
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +97,11 @@ class _AdBannerMockSlot extends StatelessWidget {
               key: const Key('persistent-horizontal-ad-mock'),
               width: double.infinity,
               height: 50,
-              child: const Center(child: AdBannerMockWidget()),
+              child: Center(
+                child: live
+                    ? const AdMobLiveSlot(rectangle: false)
+                    : const AdBannerMockWidget(),
+              ),
             ),
           ),
         ),
@@ -144,6 +156,14 @@ class AdMediumRectangleMockWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ads = context.watch<AdvertisingService?>();
+    if (context.watch<PremiumService>().isPremium ||
+        (ads != null && !ads.shouldShowAds)) {
+      return const SizedBox.shrink();
+    }
+    if (ads != null) {
+      return const Center(child: AdMobLiveSlot(rectangle: true));
+    }
     final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Container(
