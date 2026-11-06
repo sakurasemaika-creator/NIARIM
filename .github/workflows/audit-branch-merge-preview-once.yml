@@ -39,7 +39,10 @@ jobs:
             lib/screens/canvas/canvas_screen.dart \
             lib/screens/home/home_screen.dart \
             lib/screens/home/widgets/home_drawer.dart \
-            test/direct_service_coverage_batch10_test.dart
+            test/direct_service_coverage_batch10_test.dart \
+            lib/screens/home/widgets/project_list_widget.dart \
+            lib/screens/project/project_detail_screen.dart \
+            lib/screens/timeline/timeline_screen.dart
           echo "Retained latest dev_branch canvas screen in merge preview"
       - name: Install dependencies and generate translations
         shell: bash
@@ -69,7 +72,7 @@ jobs:
           echo "===== ERROR COUNTS BY FILE ====="
           grep -E 'error •' /tmp/merge-analyze.log | sed -E 's/.* • ([^:]+):[0-9]+:[0-9]+ • .*/\\1/' | sort | uniq -c | sort -nr | head -n 40 || true
           echo "===== FIRST 50 ERRORS ====="
-          grep -E 'error •' /tmp/merge-analyze.log | head -n 50 || true
+          grep -E 'error •' /tmp/merge-analyze.log | head -n 120 || true
           echo "===== END OF ANALYSIS ====="
           tail -n 15 /tmp/merge-analyze.log
           exit "$result"
