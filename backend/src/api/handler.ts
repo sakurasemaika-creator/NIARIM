@@ -14,7 +14,7 @@ import { getLatestWorks } from "./routes/worksLatest";
 import { getPlaybackStatus } from "./routes/worksPlaybackStatus";
 import { getWorkMetadata, updateWorkMetadata } from "./routes/workMetadata";
 import { getYoutubeComments } from "./routes/youtubeComments";
-import { getAuthorWorks, getMyWorks } from "./routes/userWorks";
+import { getAuthorWorks, getMyWorks, getMyWork } from "./routes/userWorks";
 import { createWork } from "./routes/worksCreate";
 import { getMyRewardState, getMyCoinHistory } from "./routes/rewardState";
 import {
@@ -109,6 +109,7 @@ const routes: Route[] = [
   // Authenticated owner read. This keeps account switching simple on clients:
   // callers do not need to know or persist the generated NIARIM user id.
   route("GET", "/me/works", (e) => getMyWorks(e)),
+  route("GET", "/me/works/{id}", (e, p) => getMyWork(e, p.id)),
   route("POST", "/me/youtube-channel/refresh", (e) => refreshMyYoutubeChannel(e)),
   route("GET", "/me/rewards", (e) => getMyRewardState(e)),
   route("POST", "/me/premium/play/verify", (e) => verifyMyPlayPremium(e)),
