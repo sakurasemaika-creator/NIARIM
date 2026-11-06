@@ -30,11 +30,11 @@
 #    IAM作成時はGitHubの実際のOIDC sub形式と一致することを再確認する。
 # 3. そのロールのARNを、リポジトリのSecretsへ `AWS_DEPLOY_ROLE_ARN`
 #    として登録する。
-# 4. 同じくSecretsへ `GOOGLE_CLIENT_ID`・`YOUTUBE_API_KEY` を登録する
-#    （未登録ならCDK側の既定値`REPLACE_ME`のままデプロイされ、認証と
-#    統計更新バッチが動かない）。プッシュ通知を使う場合は
-#    `FCM_SERVICE_ACCOUNT_JSON` も登録する（任意。未設定ならプッシュは
-#    送らずアプリ内通知だけが動く）。
+# 4. 同じくSecretsへ `GOOGLE_CLIENT_ID`・`YOUTUBE_API_KEY` を登録する。
+#    未登録時はデプロイジョブが失敗するようガードしている。
+#    FCMサービスアカウントJSONはCloudFormationテンプレートへの秘密鍵の
+#    埋め込みを避けるためここから渡さない。初回はプッシュ通知を無効に保ち、
+#    別途安全な秘密情報取得方式を実装するまで有効にしない。
 # 5. 初回のみ、ローカルから `npx cdk bootstrap` を1度実行しておく。
 #
 # 上記が未設定のうちは`deploy`ジョブは失敗する。`ci`ジョブは認証情報
@@ -110,13 +110,37 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ap-northeast-1
-      - name: cdk deploy
+      - name: Validate exact AWS deployment target
+        shell: bash
         run: |
-          npx cdk deploy --require-approval never \
-            -c googleClientId="$GOOGLE_CLIENT_ID" \
-            -c youtubeApiKey="$YOUTUBE_API_KEY" \
-            -c fcmServiceAccountJson="$FCM_SERVICE_ACCOUNT_JSON"
+          set -euo pipefail
+          test "$(aws sts get-caller-identity --query Account --output text)" = "368601349794"
+          test "${AWS_REGION:-}" = "ap-northeast-1"
+          echo "Verified NIARIM development AWS account and Tokyo region."
+      - name: Validate required deployment settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$GOOGLE_CLIENT_ID" ] || [ "$GOOGLE_CLIENT_ID" = "REPLACE_ME" ]; then
+            echo "::error::GOOGLE_CLIENT_ID is not configured."
+            exit 1
+          fi
+          if [ -z "$YOUTUBE_API_KEY" ] || [ "$YOUTUBE_API_KEY" = "REPLACE_ME" ]; then
+            echo "::error::YOUTUBE_API_KEY is not configured."
+            exit 1
+          fi
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
+      - name: cdk deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          # NEVER pass an FCM private-key JSON via CDK context/CloudFormation.
+          # Firebase push stays disabled until a secure runtime secret source exists.
+          npx cdk deploy NiarimBackendStack --require-approval never \
+            -c googleClientId="$GOOGLE_CLIENT_ID" \
+            -c youtubeApiKey="$YOUTUBE_API_KEY"
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
