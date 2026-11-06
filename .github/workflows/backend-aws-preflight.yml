@@ -1,0 +1,18 @@
+# Registration-only file for GitHub Actions UI (default branch).
+# The real read-only AWS/OIDC preflight lives on dev_branch.
+name: Backend AWS OIDC Preflight
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  main-branch-safety:
+    name: Run AWS preflight from dev_branch, not main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stop main branch preflight
+        run: |
+          echo "::error::Select dev_branch to run the AWS OIDC preflight workflow."
+          exit 1
