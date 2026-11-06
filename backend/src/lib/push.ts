@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { JWT } from "google-auth-library";
+import { GoogleAuth, type OAuth2Client } from "google-auth-library";
 import { DeleteCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "./dynamo";
 import type { DeviceTokenItem } from "./types";
@@ -20,7 +20,7 @@ import { TABLE_ITEM_TYPE } from "./types";
  * ## 認証情報
  *
  * FCM HTTP v1はサービスアカウントのOAuth2アクセストークンを要求する。
- * `FCM_SERVICE_ACCOUNT_JSON`環境変数（サービスアカウントJSONそのもの）と
+ * `FCM_WIF_AUDIENCE`環境変数（サービスアカウントJSONそのもの）と
  * `FCM_PROJECT_ID`を読む。**未設定の場合は何もしない**（ログだけ出す）。
  * これはアプリ側のmonetization_gate.dartと同じ考え方で、鍵が用意できて
  * いない段階でもデプロイ・動作するようにするため。Firebaseコンソールで
@@ -86,48 +86,43 @@ async function listDeviceTokens(
   return (result.Items ?? []) as DeviceTokenItem[];
 }
 
-interface ServiceAccount {
-  client_email: string;
-  private_key: string;
-  project_id?: string;
-}
-
-let cachedJwt: JWT | undefined;
+// External-account credentials contain only non-secret WIF metadata. AWS Lambda
+// provides short-lived AWS credentials in its execution environment. No GCP
+// private key is needed or stored in CloudFormation, GitHub or Lambda.
+let cachedClient: OAuth2Client | undefined;
 let cachedProjectId: string | undefined;
 
-/**
- * FCMの設定が揃っているかを見る。揃っていなければundefinedを返し、
- * 呼び出し元は「プッシュは送らないがアプリ内通知は残す」動作になる。
- */
-function fcmClient(): { jwt: JWT; projectId: string } | undefined {
-  const raw = process.env.FCM_SERVICE_ACCOUNT_JSON;
-  if (!raw || raw === "REPLACE_ME") return undefined;
-
-  if (!cachedJwt || !cachedProjectId) {
-    let account: ServiceAccount;
-    try {
-      account = JSON.parse(raw) as ServiceAccount;
-    } catch {
-      console.error(
-        "FCM_SERVICE_ACCOUNT_JSONがJSONとして読めません。プッシュ通知は送信しません。",
-      );
-      return undefined;
-    }
-    const projectId = process.env.FCM_PROJECT_ID || account.project_id;
-    if (!account.client_email || !account.private_key || !projectId) {
-      console.error(
-        "FCMサービスアカウントに必要な項目が足りません。プッシュ通知は送信しません。",
-      );
-      return undefined;
-    }
-    cachedJwt = new JWT({
-      email: account.client_email,
-      key: account.private_key,
-      scopes: [FCM_SCOPE],
-    });
+function fcmClient(): { client: OAuth2Client; projectId: string } | undefined {
+  const projectId = process.env.FCM_PROJECT_ID;
+  const audience = process.env.FCM_WIF_AUDIENCE;
+  const serviceAccount = process.env.FCM_SENDER_SERVICE_ACCOUNT;
+  if (!projectId || !audience || !serviceAccount) return undefined;
+  if (!cachedClient || cachedProjectId !== projectId) {
+    const auth = new GoogleAuth({ scopes: [FCM_SCOPE] });
+    // GoogleAuth.fromJSON supports credential files of type external_account;
+    // using the downloaded AWS WIF configuration in memory avoids any disk key.
+    const credential = {
+      universe_domain: "googleapis.com",
+      type: "external_account",
+      audience,
+      subject_token_type: "urn:ietf:params:aws:token-type:aws4_request",
+      token_url: "https://sts.googleapis.com/v1/token",
+      credential_source: {
+        environment_id: "aws1",
+        region_url: "http://169.254.169.254/latest/meta-data/placement/availability-zone",
+        url: "http://169.254.169.254/latest/meta-data/iam/security-credentials",
+        regional_cred_verification_url:
+          "https://sts.{region}.amazonaws.com?Action=GetCallerIdentity&Version=2011-06-15",
+      },
+      service_account_impersonation_url:
+        `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${serviceAccount}:generateAccessToken`,
+    };
+    // The upstream JSON credential union doesn't include every external-account
+    // variant although fromJSON accepts it at runtime.
+    cachedClient = auth.fromJSON(credential as any);
     cachedProjectId = projectId;
   }
-  return { jwt: cachedJwt, projectId: cachedProjectId };
+  return cachedClient ? { client: cachedClient, projectId } : undefined;
 }
 
 export interface PushMessage {
@@ -162,7 +157,7 @@ export async function sendPushToUser(
 
   let accessToken: string | null | undefined;
   try {
-    accessToken = (await client.jwt.getAccessToken()).token;
+    accessToken = (await client.client.getAccessToken()).token;
   } catch (err) {
     console.error("FCMアクセストークンの取得に失敗しました", err);
     return;

@@ -5,6 +5,7 @@ import {
   GetCommand, TransactWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { ddb, Keys, tableName } from "./dynamo";
+import { sendPushToUser } from "./push";
 
 /**
  * User-owned, chronological, durable mission notifications.
@@ -92,6 +93,16 @@ export async function recordMissionAchievement(
         }},
       ],
     }));
+    // The durable event has already been committed. Push failure must not
+    // roll back the achievement or mint any rewards.
+    await sendPushToUser(userId, {
+      title: "NIARIM",
+      body: "新しいミッション達成通知があります",
+      data: {
+        targetRoute: "/creator-missions",
+        type: "mission_achievement",
+      },
+    });
     return true;
   } catch (error) {
     if (error instanceof TransactionCanceledException) {

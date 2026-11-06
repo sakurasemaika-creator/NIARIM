@@ -192,3 +192,24 @@ backend/
 - アカウント共通39段階の上限は **1,178,030コイン**、作品別14段階は各作品で達成可能なためアカウント全体では上限なし。制作50時間の報酬は**55,000コイン**（サブスク月額550円の参考単位に相当）。報酬用制作時間検証APIは未実装。1万作品達成ミッションの全件検証は未実装（現状500作品までの有界Query）。詳しくは `docs/AI設計書/13B_クリエイターミッション・コイン報酬仕様.md`。
 
 このコードは開発用AWSへデプロイ済みですが、コイン払い出しの機能フラグは初期状態で無効です。一般公開向けの報酬運用やアプリからの認証済みE2Eが完了した状態ではありません。
+
+
+## Firebase Cloud Messaging（AWSからの鍵なし送信）
+
+FCMはFirestoreとは無関係です。Flutter端末がFCMトークンを取得し、認証済み
+`PUT /users/{id}/push-token` でDynamoDBに保存します。ミッション達成時の
+永続通知が記録された場合のみ、`sendPushToUser` がFCM HTTP v1へ送信します。
+個別フォロー・ブックマーク操作すべてが即時通知を送る仕様ではありません。
+
+AWS Lambdaでは長期秘密鍵を発行しません。Google Cloud
+`niarim-513201` の WIF `niarim-aws-fcm/niarim-aws-lambda` を使用し、
+`niarim-fcm-sender` を権限借用します。CDKの環境変数
+`FCM_PROJECT_ID` / `FCM_WIF_AUDIENCE` / `FCM_SENDER_SERVICE_ACCOUNT`
+には公開可能な識別子だけを設定します。GCPのWorkload Identity User権限と
+`roles/firebasecloudmessaging.admin` はGoogle Cloud管理画面で設定が必要です。
+AWSロール名が変更されると、WIFプロバイダの属性条件も更新が必要です。
+
+これはAWSのLambda実行環境での認証と、Android端末のバックグラウンド受信を
+含めた統合テストが必要な実装です。プッシュが送れなくてもDynamoDBの
+通知履歴は保存されます。サービスアカウントのJSON秘密鍵をGitHub Secretsや
+CDK contextへ登録しないでください。

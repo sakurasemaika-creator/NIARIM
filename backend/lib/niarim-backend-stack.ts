@@ -176,15 +176,14 @@ export class NiarimBackendStack extends Stack {
       // cdk.context.jsonまたは `-c googleClientId=...` で上書きする。
       GOOGLE_CLIENT_ID:
         this.node.tryGetContext("googleClientId") ?? "REPLACE_ME",
-      // 【要設定】22.7節のプッシュ通知（FCM HTTP v1）用。Firebaseコンソール
-      // で発行したサービスアカウントJSONをそのまま渡す。
-      // `-c fcmServiceAccountJson="$(cat service-account.json)"` の形。
-      // 未設定（REPLACE_ME）ならプッシュ送信は行わず、アプリ内通知一覧
-      // （方式A）だけが動く（src/lib/push.ts参照）。
-      FCM_SERVICE_ACCOUNT_JSON:
-        this.node.tryGetContext("fcmServiceAccountJson") ?? "REPLACE_ME",
-      // サービスアカウントJSONのproject_idと異なる場合のみ指定する。
-      FCM_PROJECT_ID: this.node.tryGetContext("fcmProjectId") ?? "",
+      // 2026-11: Keyless AWS -> Google Cloud Workload Identity Federation.
+      // All three values are identifiers, NOT service account private keys.
+      // Provider's CEL condition must restrict requests to this Lambda role.
+      FCM_PROJECT_ID: "niarim-513201",
+      FCM_WIF_AUDIENCE:
+        "//iam.googleapis.com/projects/673224289740/locations/global/workloadIdentityPools/niarim-aws-fcm/providers/niarim-aws-lambda",
+      FCM_SENDER_SERVICE_ACCOUNT:
+        "niarim-fcm-sender@niarim-513201.iam.gserviceaccount.com",
     };
 
     const apiFunction = new NodejsFunction(this, "ApiFunction", {
