@@ -74,16 +74,13 @@ void main() {
       '/settings/privacy-policy', '/settings/error-log', '/premium',
       '/rewards', '/earn-coins', '/membership', '/creator-missions',
       '/storage', '/autofill-presets', '/unknown',
-    ]) {
-      expect(isBannerEligibleRoute(path), isFalse, reason: path);
-    }
-    for (final path in [
-      '/community', '/community/work/123', '/project/123',
+      '/community', '/community/work/123',
       '/canvas/123', '/timeline/123', '/materials/123',
       '/save-tree/123', '/tips', '/help',
     ]) {
-      expect(isBannerEligibleRoute(path), isTrue, reason: path);
+      expect(isBannerEligibleRoute(path), isFalse, reason: path);
     }
+    expect(isBannerEligibleRoute('/project/123'), isTrue);
     for (final path in ['/home', '/shared', '/trash']) {
       expect(isBannerEligibleRoute(path, hasLocalContent: false),
           isFalse, reason: path);
@@ -240,6 +237,137 @@ void main() {
       }
     },
   );
+
+  testWidgets('SP portrait, landscape and DeX/PC widths reserve a correctly '
+      'sized banner with no content overlap or clipping', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    for (final (viewport, expected) in <(Size, Size?)>[
+      (const Size(280, 640), null),
+      (const Size(319, 700), null),
+      (const Size(320, 568), const Size(320, 50)),
+      (const Size(360, 780), const Size(320, 50)),
+      (const Size(393, 852), const Size(320, 50)),
+      (const Size(430, 932), const Size(320, 50)),
+      (const Size(640, 360), null),
+      (const Size(800, 440), const Size(320, 50)),
+      (const Size(480, 720), const Size(320, 50)),
+      (const Size(600, 800), const Size(468, 60)),
+      (const Size(800, 600), const Size(728, 90)),
+      (const Size(1024, 768), const Size(728, 90)),
+      (const Size(1280, 720), const Size(728, 90)),
+      (const Size(1440, 900), const Size(728, 90)),
+      (const Size(1920, 1080), const Size(728, 90)),
+    ]) {
+      tester.view.physicalSize = viewport;
+      await tester.pumpWidget(_localizedApp(
+        const AdPersistentRootFrame(
+          child: Scaffold(
+            appBar: PreferredSize(
+              preferredSize: Size.fromHeight(56),
+              child: Material(child: SizedBox(
+                key: Key('interactive-controls'),
+                height: 56, child: Text('project actions'),
+              )),
+            ),
+            body: Center(child: Text('project content')),
+          ),
+        ),
+      ));
+      await tester.pump();
+      final banner = find.byKey(const Key('fixed-banner-ad-mock'));
+      expect(banner, expected == null ? findsNothing : findsOneWidget,
+          reason: 'viewport $viewport');
+      if (expected != null) {
+        final rect = tester.getRect(banner);
+        final controls = tester.getRect(
+            find.byKey(const Key('interactive-controls')));
+        expect(rect.size, expected, reason: '$viewport');
+        expect(rect.left, greaterThanOrEqualTo(0));
+        expect(rect.right, lessThanOrEqualTo(viewport.width));
+        expect(rect.top, greaterThanOrEqualTo(8));
+        expect(rect.bottom, lessThanOrEqualTo(controls.top - 16));
+        expect(controls.bottom, lessThan(viewport.height));
+      }
+      expect(find.text('project content'), findsOneWidget);
+      expect(tester.takeException(), isNull, reason: 'viewport $viewport');
+    }
+  });
+
+  testWidgets('system insets, keyboard and too-short windows disable banner',
+      (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(360, 780);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    for (final (padding, insets, expected) in <(EdgeInsets, EdgeInsets, bool)>[
+      (const EdgeInsets.only(top: 24, bottom: 24), EdgeInsets.zero, true),
+      (const EdgeInsets.only(left: 24, right: 24), EdgeInsets.zero, false),
+      (EdgeInsets.zero, const EdgeInsets.only(bottom: 270), false),
+    ]) {
+      await tester.pumpWidget(_localizedApp(MediaQuery(
+        data: MediaQueryData(
+          size: const Size(360, 780),
+          padding: padding,
+          viewInsets: insets,
+        ),
+        child: const AdPersistentRootFrame(
+          child: Scaffold(body: Text('editor controls')),
+        ),
+      )));
+      await tester.pump();
+      expect(find.byKey(const Key('fixed-banner-ad-mock')),
+          expected ? findsOneWidget : findsNothing);
+      expect(find.text('editor controls'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets('medium rectangle never clips a narrow SP popup or DeX window',
+      (tester) async {
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    for (final (screen, shouldFit) in <(Size, bool)>[
+      (const Size(280, 640), false),
+      (const Size(319, 740), false),
+      (const Size(320, 800), true),
+      (const Size(360, 780), true),
+      (const Size(393, 852), true),
+      (const Size(800, 600), true),
+      (const Size(1024, 768), true),
+      (const Size(1440, 900), true),
+    ]) {
+      tester.view.physicalSize = screen;
+      await tester.pumpWidget(_localizedApp(
+        const Scaffold(
+          body: Center(child: ProgressDialog(
+            title: '処理中',
+            progress: 0.5,
+            onCancel: _noop,
+          )),
+        ),
+      ));
+      await tester.pump();
+      final ad = find.byKey(const Key('medium-rectangle-ad-mock'));
+      expect(ad, shouldFit ? findsOneWidget : findsNothing,
+          reason: 'screen $screen');
+      if (shouldFit) {
+        await tester.ensureVisible(ad);
+        await tester.pump();
+        final rect = tester.getRect(ad);
+        final dialog = tester.getRect(find.byType(AlertDialog));
+        expect(rect.size, const Size(300, 250));
+        expect(rect.left, greaterThanOrEqualTo(dialog.left));
+        expect(rect.right, lessThanOrEqualTo(dialog.right));
+      }
+      expect(find.text('処理中'), findsOneWidget);
+      expect(tester.takeException(), isNull, reason: '$screen');
+      await tester.pumpWidget(const SizedBox.shrink());
+    }
+  });
 
   testWidgets('処理中の中型レクタングル広告は300×250で注記より下にある', (tester) async {
     tester.view.devicePixelRatio = 1;

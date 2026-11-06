@@ -16,16 +16,18 @@ bool isBannerEligibleRoute(
     case '/shared':
     case '/trash':
       return hasLocalContent;
+    // The community list and player can be loading, filtered to zero
+    // results, unavailable, muted or covered by a video overlay. Until
+    // per-tab/per-player visible-content signals are implemented, do NOT
+    // request production ads on those dynamic routes.
     case '/community':
     case '/tips':
     case '/help':
-      return true;
+      return false;
     default:
-      return path.startsWith('/community/work/') ||
-          path.startsWith('/project/') ||
-          path.startsWith('/canvas/') ||
-          path.startsWith('/timeline/') ||
-          path.startsWith('/save-tree/') ||
-          path.startsWith('/materials/');
+      // Canvas/timeline are high-frequency pen/touch surfaces: do not place
+      // clickable banners adjacent to continuous creative interaction.
+      // Save tree and materials are control/gallery-first flows.
+      return path.startsWith('/project/');
   }
 }
