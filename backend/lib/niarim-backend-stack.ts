@@ -8,6 +8,8 @@ import {
 import { Construct } from "constructs";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as events from "aws-cdk-lib/aws-events";
+import * as targets from "aws-cdk-lib/aws-events-targets";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as path from "path";
 
@@ -48,6 +50,7 @@ const CAPACITY_PLAN = {
   gsi3AllAuthorWorksIndex: { read: 1, write: 1 },
   gsi4LatestIndex: { read: 2, write: 2 },
   gsi5WorkBookmarksIndex: { read: 1, write: 1 },
+  gsi6ScheduledReleaseIndex: { read: 1, write: 1 },
   gsi7ReportStatusIndex: { read: 1, write: 1 },
 } as const;
 
@@ -127,6 +130,18 @@ export class NiarimBackendStack extends Stack {
       projectionType: dynamodb.ProjectionType.ALL,
       readCapacity: CAPACITY_PLAN.gsi4LatestIndex.read,
       writeCapacity: CAPACITY_PLAN.gsi4LatestIndex.write,
+    });
+
+    // GSI6: private uploads waiting for a confirmed YouTube public release.
+    // Only scheduled works have these keys, so each minute tick reads a
+    // tiny due-only set instead of scanning all published works.
+    table.addGlobalSecondaryIndex({
+      indexName: "GSI6Scheduled",
+      partitionKey: { name: "gsi6pk", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "gsi6sk", type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+      readCapacity: CAPACITY_PLAN.gsi6ScheduledReleaseIndex.read,
+      writeCapacity: CAPACITY_PLAN.gsi6ScheduledReleaseIndex.write,
     });
 
     // GSI7：通報の対応状況一覧・レート制限チェック用（9章・20章）。
@@ -262,6 +277,29 @@ export class NiarimBackendStack extends Stack {
     // Lambda Function URL（AuthType: NONE、16章）。
     const functionUrl = apiFunction.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE,
+    });
+
+    // This is not the retired video-statistics batch. A low-cost minute
+    // rule queries only scheduled work IDs and confirms YouTube is PUBLIC
+    // before inserting a release into NIARIM's discovery indexes.
+    const releaseFunction = new NodejsFunction(this, "ScheduledReleaseFunction", {
+      functionName: "niarim-scheduled-release",
+      entry: path.join(__dirname, "../src/batch/scheduledRelease.ts"),
+      handler: "handler",
+      runtime: lambda.Runtime.NODEJS_22_X,
+      memorySize: 128,
+      timeout: Duration.seconds(30),
+      environment: {
+        TABLE_NAME: table.tableName,
+        YOUTUBE_API_KEY:
+          this.node.tryGetContext("youtubeApiKey") ?? "REPLACE_ME",
+      },
+      bundling: { minify: true, sourceMap: false },
+    });
+    table.grantReadWriteData(releaseFunction);
+    new events.Rule(this, "ScheduledReleaseMinuteRule", {
+      schedule: events.Schedule.rate(Duration.minutes(1)),
+      targets: [new targets.LambdaFunction(releaseFunction)],
     });
 
     // YouTube再生数の定期取得は採用しない。統計バッチと定期イベントは作成しない。

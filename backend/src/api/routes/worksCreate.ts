@@ -175,6 +175,8 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       isNiarimPublished,
       youtubePrivacyStatus: snippet.privacyStatus,
       scheduledPublishAt,
+      gsi6pk: scheduledPublishAt ? "SCHEDULED" : undefined,
+      gsi6sk: scheduledPublishAt,
       isShort: body.isShort ?? false,
       containsGenerativeAiImageOrVideo:
         body.containsGenerativeAiImageOrVideo ?? false,

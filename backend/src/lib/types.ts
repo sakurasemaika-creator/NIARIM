@@ -110,6 +110,9 @@ export interface WorkItem {
   youtubePrivacyStatus: YoutubePrivacyStatus;
   /** YouTube-confirmed reservation time (owner-only until publication). */
   scheduledPublishAt?: string;
+  // Sparse scheduled-release index. Never exposed by public APIs.
+  gsi6pk?: string; // "SCHEDULED"
+  gsi6sk?: string; // next verification time (ISO8601)
 
   // 8.9節：ショート/横動画の判定結果（投稿時にクライアントから受け取る）。
   isShort: boolean;
