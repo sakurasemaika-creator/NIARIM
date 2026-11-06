@@ -133,7 +133,10 @@ void main() {
         );
         // Preview mode removes the tile gallery to give the canvas more
         // space. The user returns to the same gallery by cancelling.
-        expect(find.byKey(const ValueKey('filter-apply-button')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('filter-apply-button')),
+          findsOneWidget,
+        );
         if (filter.kind == FilterKind.outline ||
             filter.kind == FilterKind.inkPool) {
           // This isolated panel does not provide a canvas-pick callback:
@@ -146,7 +149,10 @@ void main() {
             findsNothing,
           );
         }
-        expect(find.byKey(const ValueKey('filter-cancel-button')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('filter-cancel-button')),
+          findsOneWidget,
+        );
         expect(gallery, findsNothing);
         expect(
           find.byKey(const ValueKey('noise-style-option-color')),
@@ -161,12 +167,18 @@ void main() {
         if (filter.id == 'Filter0025') {
           // Color invert uses the tone-curve engine internally, but is a
           // one-tap operation, not an editable RGB curve.
-          expect(find.byKey(const ValueKey('tone-curve-channel-selector')),
-              findsNothing);
-          expect(find.byKey(const ValueKey('tone-curve-editor-0')),
-              findsNothing);
-          expect(find.byKey(const ValueKey('filter-undo-button')),
-              findsNothing);
+          expect(
+            find.byKey(const ValueKey('tone-curve-channel-selector')),
+            findsNothing,
+          );
+          expect(
+            find.byKey(const ValueKey('tone-curve-editor-0')),
+            findsNothing,
+          );
+          expect(
+            find.byKey(const ValueKey('filter-undo-button')),
+            findsNothing,
+          );
         }
         await tester.tap(find.byKey(const ValueKey('filter-cancel-button')));
         await tester.pump();

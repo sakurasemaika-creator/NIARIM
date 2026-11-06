@@ -73,14 +73,20 @@ class _CommunityScreenState extends State<CommunityScreen>
   String? _lastLoginVisitKey;
   void _recordCumulativeLoginVisit(String? ownerId, CommunityApi? api) {
     if (ownerId == null || api == null) return;
-    final today = DateTime.now().toUtc().add(const Duration(hours: 9)).toIso8601String().substring(0, 10);
+    final today = DateTime.now()
+        .toUtc()
+        .add(const Duration(hours: 9))
+        .toIso8601String()
+        .substring(0, 10);
     final key = '$ownerId/$today';
     if (_lastLoginVisitKey == key) return;
     _lastLoginVisitKey = key;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted ||
           context.read<GoogleAuthService>().account?.id != ownerId ||
-          !identical(context.read<CommunityService>().api,api)) return;
+          !identical(context.read<CommunityService>().api, api)) {
+        return;
+      }
       try {
         await api.visitLoginBonus();
       } catch (error) {
@@ -144,8 +150,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     if (controller.hasClients) controller.jumpTo(0);
   }
 
-  RankingPeriod get _apiRankingPeriod =>
-      _period == _RankingPeriod.allTime
+  RankingPeriod get _apiRankingPeriod => _period == _RankingPeriod.allTime
       ? RankingPeriod.bookmarks
       : switch (_period) {
           _RankingPeriod.allTime => RankingPeriod.all,
@@ -323,9 +328,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.readDouble(_tileWidthKey);
       if (saved != null && mounted) {
-        setState(
-          () => _userTileWidth = saved.clamp(120.0, 360.0).toDouble(),
-        );
+        setState(() => _userTileWidth = saved.clamp(120.0, 360.0).toDouble());
       }
     } catch (error) {
       debugPrint('Community tile width could not be restored: $error');
@@ -762,10 +765,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     final typeFiltered = _videoTypeFilter
         .apply(works)
         .where((work) => _matchesPostDate(work.postedAt))
-        .where(
-          (work) =>
-              work.bookmarkCount >= _minimumBookmarks,
-        )
+        .where((work) => work.bookmarkCount >= _minimumBookmarks)
         .where(
           (work) => switch (_durationMode) {
             _DurationFilterMode.all => true,

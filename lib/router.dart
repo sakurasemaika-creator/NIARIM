@@ -185,10 +185,9 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/earn-coins',
-      builder: (context, state) =>
-          const AdMockPageFrame(
-            child: RewardUnlockScreen(mode: RewardPageMode.earnCoins),
-          ),
+      builder: (context, state) => const AdMockPageFrame(
+        child: RewardUnlockScreen(mode: RewardPageMode.earnCoins),
+      ),
     ),
     GoRoute(
       path: '/membership',
@@ -197,10 +196,11 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/creator-missions',
-      builder: (context, state) =>
-          AdMockPageFrame(child: CreatorMissionsScreen(
-            workId: state.uri.queryParameters['workId'],
-          )),
+      builder: (context, state) => AdMockPageFrame(
+        child: CreatorMissionsScreen(
+          workId: state.uri.queryParameters['workId'],
+        ),
+      ),
     ),
     GoRoute(
       path: '/autofill-presets',

@@ -86,8 +86,10 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
   void _fit(Size viewport) {
     final widthScale = viewport.width / workspaceWidth;
     final heightScale = viewport.height / workspaceHeight;
-    final scale = (widthScale < heightScale ? widthScale : heightScale)
-        .clamp(0.25, 1.0);
+    final scale = (widthScale < heightScale ? widthScale : heightScale).clamp(
+      0.25,
+      1.0,
+    );
     _transform.value = Matrix4.diagonal3Values(scale, scale, 1);
   }
 
@@ -112,14 +114,9 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
   double _preferredWidth(SettingsService settings, {required bool right}) {
     final storedRight = _storedRightForPhysicalSide(settings, right);
     final order = _physicalDockOrder(settings, right: right);
-    final visible =
-        order.where(settings.defaultDockedPanels.contains).toList();
+    final visible = order.where(settings.defaultDockedPanels.contains).toList();
     if (visible.isEmpty) return _dockDragActive ? 52 : 0;
-    final fitted = _fitDock(
-      settings,
-      visible,
-      workspaceHeight - 44 - 58,
-    );
+    final fitted = _fitDock(settings, visible, workspaceHeight - 44 - 58);
     if (visible.every(
       (p) => fitted.isCollapsed(p, settings.isDesktopDockCollapsed(p)),
     )) {
@@ -185,8 +182,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                             Expanded(
                               child: Row(
                                 children: [
-                                  if (!settings.isLeftHanded)
-                                    _toolbar(scheme),
+                                  if (!settings.isLeftHanded) _toolbar(scheme),
                                   _column(settings, right: false),
                                   if (_columnWidth(settings, right: false) > 52)
                                     _columnResizeGrip(settings, right: false),
@@ -194,8 +190,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                                   if (_columnWidth(settings, right: true) > 52)
                                     _columnResizeGrip(settings, right: true),
                                   _column(settings, right: true),
-                                  if (settings.isLeftHanded)
-                                    _toolbar(scheme),
+                                  if (settings.isLeftHanded) _toolbar(scheme),
                                 ],
                               ),
                             ),
@@ -223,7 +218,11 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     );
   }
 
-  Widget _topBar(SettingsService settings, AppLocalizations l, ColorScheme scheme) {
+  Widget _topBar(
+    SettingsService settings,
+    AppLocalizations l,
+    ColorScheme scheme,
+  ) {
     return Container(
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -236,8 +235,10 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
           const SizedBox(width: 12),
           Icon(Icons.redo, size: 20, color: scheme.onSurface),
           const SizedBox(width: 26),
-          Text(l.pcWorkspaceLayoutScreenTitle,
-              style: TextStyle(color: scheme.onSurface, fontSize: 14)),
+          Text(
+            l.pcWorkspaceLayoutScreenTitle,
+            style: TextStyle(color: scheme.onSurface, fontSize: 14),
+          ),
           const Spacer(),
           PopupMenuButton<CanvasDockPanel>(
             key: const Key('pcWorkspacePreviewVisibilityMenu'),
@@ -306,8 +307,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     final scheme = Theme.of(context).colorScheme;
     final storedRight = _storedRightForPhysicalSide(settings, right);
     final order = _physicalDockOrder(settings, right: right);
-    final visible =
-        order.where(settings.defaultDockedPanels.contains).toList();
+    final visible = order.where(settings.defaultDockedPanels.contains).toList();
     return Padding(
       // The frame timeline is 58px tall: docks never enter its bottom strip.
       padding: const EdgeInsets.only(bottom: 58),
@@ -317,12 +317,11 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
           key: ValueKey(right ? 'pcPreviewRightColumn' : 'pcPreviewToolColumn'),
           onWillAcceptWithDetails: (_) => true,
           onAcceptWithDetails: (details) =>
-              settings.moveDesktopDockPanel(
-                details.data,
-                toRight: storedRight,
-              ),
+              settings.moveDesktopDockPanel(details.data, toRight: storedRight),
           builder: (context, candidates, _) => ColoredBox(
-            color: candidates.isEmpty ? scheme.surface : scheme.primaryContainer,
+            color: candidates.isEmpty
+                ? scheme.surface
+                : scheme.primaryContainer,
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final fitted = _fitDock(
@@ -333,14 +332,19 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                 final heights = fitted.bodyHeights;
                 return ListView(
                   key: ValueKey(
-                    right ? 'pcPreviewRightDockScroll' : 'pcPreviewLeftDockScroll',
+                    right
+                        ? 'pcPreviewRightDockScroll'
+                        : 'pcPreviewLeftDockScroll',
                   ),
                   children: [
                     if (visible.isEmpty && _dockDragActive)
                       SizedBox(
                         height: 80,
                         child: Center(
-                          child: Icon(Icons.add, color: scheme.onSurfaceVariant),
+                          child: Icon(
+                            Icons.add,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     for (var i = 0; i < visible.length; i++) ...[
@@ -355,8 +359,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                           visible[i],
                           right: right,
                           fittedBodyHeight: heights[visible[i]],
-                          automaticallyCollapsed:
-                              fitted.automaticallyCollapsed.contains(visible[i]),
+                          automaticallyCollapsed: fitted.automaticallyCollapsed
+                              .contains(visible[i]),
                         ),
                       ),
                     ],
@@ -375,7 +379,9 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     return MouseRegion(
       cursor: SystemMouseCursors.resizeLeftRight,
       child: GestureDetector(
-        key: ValueKey(right ? 'pcPreviewRightColumnResize' : 'pcPreviewToolColumnResize'),
+        key: ValueKey(
+          right ? 'pcPreviewRightColumnResize' : 'pcPreviewToolColumnResize',
+        ),
         behavior: HitTestBehavior.opaque,
         onHorizontalDragUpdate: (details) => setState(() {
           final delta = details.delta.dx * (right ? -1 : 1);
@@ -386,7 +392,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                     .clamp(200.0, 480.0);
           } else {
             _leftColumnWidthDrag =
-                ((_leftColumnWidthDrag ?? settings.desktopToolPanelWidth) + delta)
+                ((_leftColumnWidthDrag ?? settings.desktopToolPanelWidth) +
+                        delta)
                     .clamp(200.0, 480.0);
           }
         }),
@@ -427,7 +434,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     bool automaticallyCollapsed = false,
   }) {
     final scheme = Theme.of(context).colorScheme;
-    final height = fittedBodyHeight ??
+    final height =
+        fittedBodyHeight ??
         _resizingHeight[panel] ??
         settings.desktopDockHeight(panel);
     final collapsed =
@@ -436,215 +444,233 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     return Listener(
       onPointerDown: (_) => _rememberDockInteraction(panel),
       child: SizedBox(
-      // Only the whole column has an independent width.
-      width: collapsed ? 52 : double.infinity,
-      child: DragTarget<CanvasDockPanel>(
-        key: ValueKey('pcPreviewDrop-${panel.name}'),
-        onWillAcceptWithDetails: (details) => details.data != panel,
-        onAcceptWithDetails: (details) => settings.moveDesktopDockPanel(
-          details.data,
-          toRight: _storedRightForPhysicalSide(settings, right),
-          before: panel,
-        ),
-        builder: (context, candidates, _) => Container(
-          decoration: BoxDecoration(
-            color: scheme.surface,
-            border: Border.all(
-              color: candidates.isNotEmpty ? scheme.primary : scheme.outlineVariant,
-            ),
+        // Only the whole column has an independent width.
+        width: collapsed ? 52 : double.infinity,
+        child: DragTarget<CanvasDockPanel>(
+          key: ValueKey('pcPreviewDrop-${panel.name}'),
+          onWillAcceptWithDetails: (details) => details.data != panel,
+          onAcceptWithDetails: (details) => settings.moveDesktopDockPanel(
+            details.data,
+            toRight: _storedRightForPhysicalSide(settings, right),
+            before: panel,
           ),
-          child: collapsed
-              ? SizedBox(
-                  height: 48,
-                  child: Draggable<CanvasDockPanel>(
-                    key: ValueKey('pcPreviewCollapsedDrag-${panel.name}'),
-                    data: panel,
-                    onDragStarted: () => _setDockDragging(true),
-                    onDragEnd: (_) => _setDockDragging(false),
-                    feedback: Material(
-                      color: scheme.surfaceContainerHighest,
-                      elevation: 4,
-                      child: SizedBox(
-                        width: 52,
-                        height: 48,
-                        child: Icon(
-                          switch (panel) {
-                            CanvasDockPanel.brush => Icons.brush_outlined,
-                            CanvasDockPanel.colorPicker => Icons.palette_outlined,
-                            CanvasDockPanel.layer => Icons.layers_outlined,
-                            CanvasDockPanel.canvasPreview => Icons.map_outlined,
-                            _ => Icons.tune_outlined,
-                          },
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                    childWhenDragging: const SizedBox(width: 52, height: 48),
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.grab,
-                      child: IconButton(
-                        key: ValueKey('pcPreviewExpand-${panel.name}'),
-                        tooltip: '${widget.labelOf(panel)} · ${AppLocalizations.of(context)!.filterPanelExpand}',
-                        icon: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              switch (panel) {
-                                CanvasDockPanel.brush => Icons.brush_outlined,
-                                CanvasDockPanel.colorPicker =>
-                                    Icons.palette_outlined,
-                                CanvasDockPanel.layer => Icons.layers_outlined,
-                                CanvasDockPanel.canvasPreview =>
-                                    Icons.map_outlined,
-                                _ => Icons.tune_outlined,
-                              },
-                              size: 18,
-                              color: scheme.onSurface,
-                            ),
-                            Icon(
-                              foldsLeft
-                                  ? Icons.chevron_right
-                                  : Icons.chevron_left,
-                              size: 13,
-                              color: scheme.onSurface,
-                            ),
-                          ],
-                        ),
-                        onPressed: () => _expandDock(panel, settings),
-                      ),
-                    ),
-                  ),
-                )
-              : Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: 34,
-                child: Row(
-                  children: [
-                    Draggable<CanvasDockPanel>(
+          builder: (context, candidates, _) => Container(
+            decoration: BoxDecoration(
+              color: scheme.surface,
+              border: Border.all(
+                color: candidates.isNotEmpty
+                    ? scheme.primary
+                    : scheme.outlineVariant,
+              ),
+            ),
+            child: collapsed
+                ? SizedBox(
+                    height: 48,
+                    child: Draggable<CanvasDockPanel>(
+                      key: ValueKey('pcPreviewCollapsedDrag-${panel.name}'),
                       data: panel,
                       onDragStarted: () => _setDockDragging(true),
                       onDragEnd: (_) => _setDockDragging(false),
                       feedback: Material(
                         color: scheme.surfaceContainerHighest,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Text(widget.labelOf(panel)),
+                        elevation: 4,
+                        child: SizedBox(
+                          width: 52,
+                          height: 48,
+                          child: Icon(switch (panel) {
+                            CanvasDockPanel.brush => Icons.brush_outlined,
+                            CanvasDockPanel.colorPicker =>
+                              Icons.palette_outlined,
+                            CanvasDockPanel.layer => Icons.layers_outlined,
+                            CanvasDockPanel.canvasPreview => Icons.map_outlined,
+                            _ => Icons.tune_outlined,
+                          }, size: 24),
                         ),
                       ),
+                      childWhenDragging: const SizedBox(width: 52, height: 48),
                       child: MouseRegion(
                         cursor: SystemMouseCursors.grab,
-                        child: SizedBox(
-                          key: ValueKey('pcPreviewDrag-${panel.name}'),
-                          width: 36,
-                          child: Icon(
-                            Icons.drag_indicator,
-                            size: 20,
-                            color: scheme.onSurfaceVariant,
+                        child: IconButton(
+                          key: ValueKey('pcPreviewExpand-${panel.name}'),
+                          tooltip:
+                              '${widget.labelOf(panel)} · ${AppLocalizations.of(context)!.filterPanelExpand}',
+                          icon: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                switch (panel) {
+                                  CanvasDockPanel.brush => Icons.brush_outlined,
+                                  CanvasDockPanel.colorPicker =>
+                                    Icons.palette_outlined,
+                                  CanvasDockPanel.layer =>
+                                    Icons.layers_outlined,
+                                  CanvasDockPanel.canvasPreview =>
+                                    Icons.map_outlined,
+                                  _ => Icons.tune_outlined,
+                                },
+                                size: 18,
+                                color: scheme.onSurface,
+                              ),
+                              Icon(
+                                foldsLeft
+                                    ? Icons.chevron_right
+                                    : Icons.chevron_left,
+                                size: 13,
+                                color: scheme.onSurface,
+                              ),
+                            ],
                           ),
+                          onPressed: () => _expandDock(panel, settings),
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: Text(
-                        widget.labelOf(panel),
-                        style: TextStyle(color: scheme.onSurface, fontSize: 13),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    IconButton(
-                      key: ValueKey('pcPreviewCollapse-${panel.name}'),
-                      tooltip: AppLocalizations.of(context)!.filterPanelCollapse,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 36,
-                        height: 32,
-                      ),
-                      padding: EdgeInsets.zero,
-                      onPressed: () => _collapseDock(panel, settings),
-                      icon: Icon(
-                        foldsLeft ? Icons.chevron_left : Icons.chevron_right,
-                        size: 22,
-                        color: scheme.onSurface,
-                      ),
-                    ),
-                    PopupMenuButton<String>(
-                      key: ValueKey('pcPreviewMenu-${panel.name}'),
-                      icon: Icon(Icons.more_vert, size: 18, color: scheme.onSurface),
-                      onSelected: (action) {
-                        if (action == 'hide') {
-                          _toggleVisible(settings, panel);
-                        } else {
-                          settings.moveDesktopDockPanel(
-                            panel,
-                            toRight: _storedRightForPhysicalSide(
-                              settings,
-                              action == 'right',
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: 34,
+                        child: Row(
+                          children: [
+                            Draggable<CanvasDockPanel>(
+                              data: panel,
+                              onDragStarted: () => _setDockDragging(true),
+                              onDragEnd: (_) => _setDockDragging(false),
+                              feedback: Material(
+                                color: scheme.surfaceContainerHighest,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Text(widget.labelOf(panel)),
+                                ),
+                              ),
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.grab,
+                                child: SizedBox(
+                                  key: ValueKey('pcPreviewDrag-${panel.name}'),
+                                  width: 36,
+                                  child: Icon(
+                                    Icons.drag_indicator,
+                                    size: 20,
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
                             ),
-                          );
-                        }
-                      },
-                      itemBuilder: (context) {
-                        final l = AppLocalizations.of(context)!;
-                        return [
-                          PopupMenuItem(
-                            value: 'left',
-                            child: Text(l.pcWorkspaceLayoutToolOrderSection),
-                          ),
-                          PopupMenuItem(
-                            value: 'right',
-                            child: Text(l.pcWorkspaceLayoutRightOrderSection),
-                          ),
-                          PopupMenuItem(
-                            value: 'hide',
-                            child: Text(l.commonClose),
-                          ),
-                        ];
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: height,
-                child: _windowContents(panel, scheme),
-              ),
-              MouseRegion(
-                cursor: SystemMouseCursors.resizeUpDown,
-                child: GestureDetector(
-                  key: ValueKey('pcPreviewHeight-${panel.name}'),
-                  behavior: HitTestBehavior.opaque,
-                  onVerticalDragUpdate: (details) => setState(() {
-                    _resizingHeight[panel] =
-                        ((_resizingHeight[panel] ?? settings.desktopDockHeight(panel)) +
-                                details.delta.dy)
-                            .clamp(140.0, 700.0);
-                  }),
-                  onVerticalDragEnd: (_) {
-                    final newHeight = _resizingHeight[panel];
-                    if (newHeight != null) {
-                      settings.setDesktopDockHeight(panel, newHeight);
-                      setState(() => _resizingHeight.remove(panel));
-                    }
-                  },
-                  child: SizedBox(
-                    height: 22,
-                    child: Center(
-                      child: Icon(
-                        Icons.drag_handle,
-                        size: 24,
-                        color: scheme.onSurfaceVariant,
+                            Expanded(
+                              child: Text(
+                                widget.labelOf(panel),
+                                style: TextStyle(
+                                  color: scheme.onSurface,
+                                  fontSize: 13,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            IconButton(
+                              key: ValueKey('pcPreviewCollapse-${panel.name}'),
+                              tooltip: AppLocalizations.of(
+                                context,
+                              )!.filterPanelCollapse,
+                              constraints: const BoxConstraints.tightFor(
+                                width: 36,
+                                height: 32,
+                              ),
+                              padding: EdgeInsets.zero,
+                              onPressed: () => _collapseDock(panel, settings),
+                              icon: Icon(
+                                foldsLeft
+                                    ? Icons.chevron_left
+                                    : Icons.chevron_right,
+                                size: 22,
+                                color: scheme.onSurface,
+                              ),
+                            ),
+                            PopupMenuButton<String>(
+                              key: ValueKey('pcPreviewMenu-${panel.name}'),
+                              icon: Icon(
+                                Icons.more_vert,
+                                size: 18,
+                                color: scheme.onSurface,
+                              ),
+                              onSelected: (action) {
+                                if (action == 'hide') {
+                                  _toggleVisible(settings, panel);
+                                } else {
+                                  settings.moveDesktopDockPanel(
+                                    panel,
+                                    toRight: _storedRightForPhysicalSide(
+                                      settings,
+                                      action == 'right',
+                                    ),
+                                  );
+                                }
+                              },
+                              itemBuilder: (context) {
+                                final l = AppLocalizations.of(context)!;
+                                return [
+                                  PopupMenuItem(
+                                    value: 'left',
+                                    child: Text(
+                                      l.pcWorkspaceLayoutToolOrderSection,
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'right',
+                                    child: Text(
+                                      l.pcWorkspaceLayoutRightOrderSection,
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'hide',
+                                    child: Text(l.commonClose),
+                                  ),
+                                ];
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                      SizedBox(
+                        height: height,
+                        child: _windowContents(panel, scheme),
+                      ),
+                      MouseRegion(
+                        cursor: SystemMouseCursors.resizeUpDown,
+                        child: GestureDetector(
+                          key: ValueKey('pcPreviewHeight-${panel.name}'),
+                          behavior: HitTestBehavior.opaque,
+                          onVerticalDragUpdate: (details) => setState(() {
+                            _resizingHeight[panel] =
+                                ((_resizingHeight[panel] ??
+                                            settings.desktopDockHeight(panel)) +
+                                        details.delta.dy)
+                                    .clamp(140.0, 700.0);
+                          }),
+                          onVerticalDragEnd: (_) {
+                            final newHeight = _resizingHeight[panel];
+                            if (newHeight != null) {
+                              settings.setDesktopDockHeight(panel, newHeight);
+                              setState(() => _resizingHeight.remove(panel));
+                            }
+                          },
+                          child: SizedBox(
+                            height: 22,
+                            child: Center(
+                              child: Icon(
+                                Icons.drag_handle,
+                                size: 24,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-            ],
           ),
         ),
-      ),
       ),
     );
   }
@@ -670,8 +696,11 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Row(
                 children: [
-                  Icon(Icons.layers_outlined,
-                      size: 18, color: scheme.onSurface),
+                  Icon(
+                    Icons.layers_outlined,
+                    size: 18,
+                    color: scheme.onSurface,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Container(

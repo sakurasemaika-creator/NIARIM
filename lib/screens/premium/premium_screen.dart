@@ -119,13 +119,17 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   onPressed: () {
                     final target = _planKey.currentContext;
                     if (target != null) {
-                      Scrollable.ensureVisible(target,
+                      Scrollable.ensureVisible(
+                        target,
                         duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut);
+                        curve: Curves.easeInOut,
+                      );
                     }
                   },
                   icon: const Icon(Icons.workspace_premium_outlined),
-                  label: Text(RewardNavigationLabels.of(context)['premiumJoin']),
+                  label: Text(
+                    RewardNavigationLabels.of(context)['premiumJoin'],
+                  ),
                 ),
               ],
               if (premium.isLaunchCampaignActive) ...[

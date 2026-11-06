@@ -214,6 +214,74 @@ status: todo。ecc8d37c/4bc378c2。既定OFF、切替とicon/label/semantics、�
 
 status: todo。ecc8d37c。ThemeService dialog elevation0/BorderSide.noneとcolor-adjust/filterの明示shapeを確認。全modal/確認/危険操作/失敗/文字拡大/全幅/7locale/PC-SP/28themeで、境界・focus・表示階層・操作性を実画面から判定する。
 
+## D001.29 — Project favorite badge左下配置とpreview loop集約
+
+status: todo。2026-10-31 App38eb0702→2eb01ed3。ProjectListのfavorite badgeを透明格子/画像/選択中/PC-SP/全幅/theme/文字拡大で確認し、menuとの独立配置・保存/再訪を追跡する。Timeline previewの重複loop除去後も残るcontrolで同じ再生能力に到達できることを実操作する。S29保存修正と意味的に共存させる。
+
+## D001.30 — PC dock window表示・移動・列順序
+
+status: todo。a17b0bf7/b6445ec1/408802bc。Canvas/Timelineの表示menuから各windowを開閉し、常設drag handle・列内/列間移動・順序・復帰・未表示panelへの到達、mouse/keyboardとgesture競合を実操作する。全window/presetをinventoryし、SP導線/操作能力を減らさず、全幅/7locale/themeで確認する。
+
+## D001.31 — PC dock高さ・layout editor・toolbar preview永続化
+
+status: todo。同HEADのsettings_service/pc_workspace_layout_settings_screen/workspace_settings_screen。window別高さ/列順序の保存・移行/不正値/失敗/retry/cold、layout editorとの双方向同期、live-sized toolbar previewと実toolbarの一致を確認する。Sourceとcapture fixtureの存在だけではPASSにしない。
+
+2026-10-31 b8506a0e追加照合: PC panel別widthのglobal保存とedge drag（b86a3158/8cd2ecd2）はD001.30–31で各windowの高さと別値として追跡。長いcolor-adjust action折返し（293422f2）はD001.26/28、透明thumbnail FramePreviewBackground内clip（b8506a0e）はD001.23/29へ追加し、現HEADの実control・設定・保存/失敗・再訪・実画面を未確認のままPASSにしない。capture fixture追加は製品実操作の代用にしない。
+
+## D001.32 — Outline pen canvas samplingの到達経路
+
+status: todo。12d2e2f8/bc56d870。Canvasで縁取りpenのスポイト/実canvas色採取へ到達し、設定確定/取消/ツール復帰/描画/undo-redo/保存再読込を実操作する。D024と証拠を相互参照し、7locale/PC-SP/入力差とテーマのUI色・採取した固有色を区別する。
+
+2026-11-06差分登録: Appb8506a0e→5be595b9の414commit/196path。全差分pathはnov06-head-and-inventory.json。以下は独立した追加対象の登録であり、D001の全inventory消化/検証済みを意味しない。
+
+## D001.33 — Homeミッション通知・累計ログイン日
+
+status: todo。7fabd205/39755e9c/63d17cf3。ログイン/復帰/JST日境界/未受取badgeとdrawer更新、offline・同日retry・account切替・重複request・実API保存を確認。失敗後のdedupeも反例検証。
+
+## D001.34 — Home初期タイルサイズとユーザー指定の保持
+
+status: todo。6527cc9d。PC/SP・幅変更・3タブ・初回/既存指定/invalid/restart、一覧/検索/選択の到達性、画像切抜きとthemeを確認。
+
+## D001.35 — Rewarded ad報酬の検証
+
+status: todo。rewardedAd/admobSsv/rewardAdQuota/rewardEntitlement。広告再生完了/中断/失敗/同意と署名・replay・quota・account境界・永続結果を実操作/APIで確認。
+
+## D001.36 — Coin残高・履歴・交換
+
+status: todo。coinEconomyScale/coinRedemption/rewardState。単位換算/残高境界/claim・取消/同時実行/retry・履歴/互換性を検証。Free/Premium/説明・契約・法務は別判定。
+
+## D001.37 — Play Premium購入検証・復元
+
+status: todo。playPremium/playVerification。テスト購入/保留/失敗/復元/期限/失効と本人・商品・署名・replay/本番設定境界を確認。実課金や公開は行わない。
+
+## D001.38 — Creator mission作品条件と報酬受取
+
+status: todo。creatorMissions/qualifiedWorksScan/workCountGrid/claim/workAchievements。全条件・達成/未達/受取/二重請求・非公開/削除・auth/同期/7localeを確認。
+
+## D001.39 — 制作時間の活動判定・idle・明示保存
+
+status: todo。e115ecf6/168a6131/2e5d9f1f/cc519236/ee1b6055。実編集1秒断片、再開/離脱/背景/重複route・idle、明示saveとautosave差、任意送信失敗でも保存成功、backend集計を追跡。
+
+## D001.40 — NIARIMとYouTube投稿欄の独立編集・双方向コピー
+
+status: todo。40ac35e3/91970584/65cea20c/5be595b9。title/説明欄の独立保存、2,000字・空/境界・上書き確認/取消/再試行、7locale/PC-SP/投稿既存データの互換性を実操作。
+
+## D001.41 — YouTubeコメント参照の短期cache
+
+status: todo。8e0cd7c3/219672a9。読取専用cache hit/miss/期限/無効化/失敗、件数/順序とquota/プライバシー、作品切替の漏えい防止を確認。
+
+## D001.42 — GitHub OIDC・CIからのdeploy権限境界
+
+status: todo。009fe8e9/backend stack。branch/subject/環境・最小権限・誤発火・secretログ・無効認証を公式一次資料とCIで追跡。実deployは監査結果に含めない。 App08b46505のbackend-aws-preflight/backend-ci変更を追加。手動実行・アカウント/role/リージョン制約、CDK template diff、FCM key非注入、デプロイ後の公開API smokeと失敗時の扱いを検証対象へ含める。
+
+## D001.43 — Community最新ranking・公開作品・bookmark API差分
+
+status: todo。b850→5beのranking/_publicWork/bookmarks/worksUpdate/Delete。順位集合・mask/公開範囲/失敗・quota・再訪、App/Webの現表示と旧CI23失敗の期待値を別々に確認。
+
+## D001.44 — PC dock左手デフォルトとカスタム全project共有
+
+status: todo。fc0e1831/ae00c313前後。未設定左右反転、ユーザー指定の位置/幅/高さ/開閉・手切替・別作品・再起動、保存pending中の最新状態、D001.30–31との重複証拠を確認。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。

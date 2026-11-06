@@ -58,22 +58,24 @@ class CommunityApi {
 
   /// YouTube comments are fetched only after an explicit viewer action.
   Future<Map<String, dynamic>> youtubeComments(
-    String workId, {String? cursor}
-  ) => _client.getJson(
+    String workId, {
+    String? cursor,
+  }) => _client.getJson(
     '/works/${Uri.encodeComponent(workId)}/youtube-comments',
     query: {'cursor': ?cursor},
   );
 
   /// NIARIM-authored description is stored outside the indexing GSIs.
-  Future<Map<String, dynamic>> workMetadata(String workId) =>
-      _client.getJson(
-        '/works/${Uri.encodeComponent(workId)}/metadata',
-        authenticated: true,
-      );
+  Future<Map<String, dynamic>> workMetadata(String workId) => _client.getJson(
+    '/works/${Uri.encodeComponent(workId)}/metadata',
+    authenticated: true,
+  );
 
   Future<Map<String, dynamic>> updateWorkMetadata(
-    String workId, {required String title, required String description}
-  ) => _client.patchJson(
+    String workId, {
+    required String title,
+    required String description,
+  }) => _client.patchJson(
     '/works/${Uri.encodeComponent(workId)}/metadata',
     body: {'title': title, 'description': description},
     retries: 1,
@@ -110,12 +112,13 @@ class CommunityApi {
   }
 
   /// OAuth token stays in this single authenticated request and is not saved.
-  Future<Map<String, dynamic>> refreshYoutubeChannelInfo(String youtubeAccessToken) =>
-      _client.postJson(
-        '/me/youtube-channel/refresh',
-        body: {'youtubeAccessToken': youtubeAccessToken},
-        authenticated: true,
-      );
+  Future<Map<String, dynamic>> refreshYoutubeChannelInfo(
+    String youtubeAccessToken,
+  ) => _client.postJson(
+    '/me/youtube-channel/refresh',
+    body: {'youtubeAccessToken': youtubeAccessToken},
+    authenticated: true,
+  );
 
   /// The authenticated user's server-owned coin balance and entitlements.
   /// No user-id parameter: Google ID token resolves the NIARIM ID server-side.
@@ -125,7 +128,8 @@ class CommunityApi {
   /// Verify readiness before opening the Google Play Billing purchase sheet.
   Future<bool> canVerifyPlayPurchases() async {
     final result = await _client.getJson(
-      '/me/premium/play/availability', authenticated: true,
+      '/me/premium/play/availability',
+      authenticated: true,
     );
     return result['enabled'] == true &&
         result['products'] is List &&
@@ -138,20 +142,20 @@ class CommunityApi {
     required String productId,
     required String purchaseToken,
   }) => _client.postJson(
-    '/me/premium/play/verify', authenticated: true,
+    '/me/premium/play/verify',
+    authenticated: true,
     body: {'productId': productId, 'purchaseToken': purchaseToken},
   );
 
   /// Read-only server journal. Its opaque cursor remains account-scoped.
-  Future<Map<String, dynamic>> myCoinHistory({String? cursor, int limit = 20}) =>
-      _client.getJson(
-        '/me/rewards/history',
-        authenticated: true,
-        query: {
-          'limit': '$limit',
-          if (cursor != null) 'cursor': cursor,
-        },
-      );
+  Future<Map<String, dynamic>> myCoinHistory({
+    String? cursor,
+    int limit = 20,
+  }) => _client.getJson(
+    '/me/rewards/history',
+    authenticated: true,
+    query: {'limit': '$limit', 'cursor': ?cursor},
+  );
 
   /// The backend issues a one-time, account-bound, 30-minute AdMob session.
   /// It returns ONLY signed-callback customData, never coins or an ad grant.
@@ -162,28 +166,32 @@ class CommunityApi {
   Future<Map<String, dynamic>> rewardedAdStatus(String nonce) =>
       _client.getJson(
         '/me/rewards/ad-status',
-        authenticated: true, query: {'nonce': nonce},
+        authenticated: true,
+        query: {'nonce': nonce},
       );
 
   /// Price from authenticated server catalog. Never use local reference rates.
-  Future<Map<String, dynamic>> fullPremiumCoinQuote() =>
-      _client.getJson('/me/rewards/quote',
-        authenticated: true,
-        query: {'target': 'fullPremium', 'months': '1'});
+  Future<Map<String, dynamic>> fullPremiumCoinQuote() => _client.getJson(
+    '/me/rewards/quote',
+    authenticated: true,
+    query: {'target': 'fullPremium', 'months': '1'},
+  );
 
   /// Exactly-once redemption; the stable request UUID MUST be reused after
   /// network timeout, rather than creating a fresh debit attempt.
   Future<Map<String, dynamic>> redeemFullPremiumCoins({
     required String requestId,
     required String priceVersion,
-  }) => _client.postJson('/me/rewards/redeem',
-      authenticated: true,
-      body: {
-        'target': 'fullPremium',
-        'months': 1,
-        'requestId': requestId,
-        'priceVersion': priceVersion,
-      });
+  }) => _client.postJson(
+    '/me/rewards/redeem',
+    authenticated: true,
+    body: {
+      'target': 'fullPremium',
+      'months': 1,
+      'requestId': requestId,
+      'priceVersion': priceVersion,
+    },
+  );
 
   /// Account status by default; specify an owned YouTube video ID to
   /// inspect the once-per-work bookmark and rank claim history.
@@ -209,27 +217,35 @@ class CommunityApi {
 
   /// Newest-first durable milestone history. Never modifies coin balances.
   Future<Map<String, dynamic>> myMissionActivity({
-    String? cursor, int limit = 30,
-  }) => _client.getJson('/me/missions/activity', authenticated: true,
-      query: {if (cursor != null) 'cursor': cursor, 'limit': '$limit'},
-    );
+    String? cursor,
+    int limit = 30,
+  }) => _client.getJson(
+    '/me/missions/activity',
+    authenticated: true,
+    query: {'cursor': ?cursor, 'limit': '$limit'},
+  );
 
   /// Owner-scoped, bounded discovery of historical achievements on bell open.
   Future<Map<String, dynamic>> syncMyMissionActivity({String? workCursor}) =>
-      _client.postJson('/me/missions/activity/sync', authenticated: true,
-        body: {if (workCursor != null) 'cursor': workCursor},
+      _client.postJson(
+        '/me/missions/activity/sync',
+        authenticated: true,
+        body: {'cursor': ?workCursor},
       );
 
   Future<Map<String, dynamic>> myWorkMissionAchievements({String? cursor}) =>
-      _client.getJson('/me/missions/work-achievements',
+      _client.getJson(
+        '/me/missions/work-achievements',
         authenticated: true,
-        query: {if (cursor != null) 'cursor': cursor},
+        query: {'cursor': ?cursor},
       );
 
   /// Record an actual authenticated calendar-day visit. No coins granted.
-  Future<Map<String, dynamic>> visitLoginBonus() =>
-      _client.postJson('/me/login-bonus/visit',
-        authenticated: true, body: const {});
+  Future<Map<String, dynamic>> visitLoginBonus() => _client.postJson(
+    '/me/login-bonus/visit',
+    authenticated: true,
+    body: const {},
+  );
 
   Future<Map<String, dynamic>> myLoginBonus() =>
       _client.getJson('/me/login-bonus', authenticated: true);
@@ -238,35 +254,35 @@ class CommunityApi {
   Future<Map<String, dynamic>> claimLoginBonus({
     required String kind,
     int? days,
-  }) => _client.postJson('/me/login-bonus/claim', authenticated: true,
-      body: {'kind': kind, if (days != null) 'days': days});
+  }) => _client.postJson(
+    '/me/login-bonus/claim',
+    authenticated: true,
+    body: {'kind': kind, 'days': ?days},
+  );
 
-  Future<Map<String, dynamic>> myCreatorMissions({String? workId}) =>
-      _client.getJson(
-        '/me/missions',
-        authenticated: true,
-        query: {if (workId != null) 'workId': workId},
-      );
+  Future<Map<String, dynamic>> myCreatorMissions({String? workId}) => _client
+      .getJson('/me/missions', authenticated: true, query: {'workId': ?workId});
 
   /// The server verifies the achievement and either starts the mandatory
   /// hold period or completes an atomic, exactly-once mission reward.
   Future<Map<String, dynamic>> claimCreatorMission({
     required String missionId,
     String? workId,
-  }) => _client.postJson('/me/missions/claim',
-      authenticated: true,
-      body: {
-        'missionId': missionId,
-        if (workId != null) 'workId': workId,
-      });
+  }) => _client.postJson(
+    '/me/missions/claim',
+    authenticated: true,
+    body: {'missionId': missionId, 'workId': ?workId},
+  );
 
   /// Measurement-only pilot: DOES NOT issue coins or verify creative time.
   /// startNonce must be a securely generated UUID. The backend is disabled
   /// unless CREATOR_EDIT_SESSION_PILOT_ENABLED is explicitly enabled.
   Future<Map<String, dynamic>> beginCreatorEditSession(String startNonce) =>
-      _client.postJson('/me/missions/edit-session',
-          body: {'action': 'start', 'startNonce': startNonce},
-          authenticated: true);
+      _client.postJson(
+        '/me/missions/edit-session',
+        body: {'action': 'start', 'startNonce': startNonce},
+        authenticated: true,
+      );
 
   /// Client reports only summarized real-content edits, never strokes/images.
   /// The server clamps to its clock and stores UNVERIFIED candidate seconds.
@@ -276,16 +292,18 @@ class CommunityApi {
     required int activeSeconds,
     required int meaningfulMutations,
     bool stop = false,
-  }) => _client.postJson('/me/missions/edit-session',
-          body: {
-            'action': 'checkpoint',
-            'sessionId': sessionId,
-            'sequence': sequence,
-            'activeSeconds': activeSeconds,
-            'meaningfulMutations': meaningfulMutations,
-            'stop': stop,
-          },
-          authenticated: true);
+  }) => _client.postJson(
+    '/me/missions/edit-session',
+    body: {
+      'action': 'checkpoint',
+      'sessionId': sessionId,
+      'sequence': sequence,
+      'activeSeconds': activeSeconds,
+      'meaningfulMutations': meaningfulMutations,
+      'stop': stop,
+    },
+    authenticated: true,
+  );
 
   /// The signed-in account's works, including NIARIM-hidden works.
   /// The backend resolves the generated NIARIM user id from the Google ID token,

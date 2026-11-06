@@ -2360,8 +2360,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             }),
                             onVerticalDragEnd: (_) {
                               final value = _dockDragHeight.remove(p);
-                              if (value != null)
+                              if (value != null) {
                                 settings.setDesktopDockHeight(p, value);
+                              }
                             },
                             child: SizedBox(
                               height: 22,
@@ -2435,7 +2436,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Widget _dockedPanelStack({required bool right}) => LayoutBuilder(
     builder: (context, constraints) {
       final settings = context.watch<SettingsService>();
-      final storedRight = _physicalDockSideIsRight(right);
       final visible = _physicalDockOrder(
         settings,
         right: right,

@@ -18,7 +18,7 @@ class CoinHistorySheet extends StatefulWidget {
   final Listenable accountChanges;
   final String? Function() currentAccountId;
   final Future<Map<String, dynamic>> Function({String? cursor, int limit})
-      fetchPage;
+  fetchPage;
 
   @override
   State<CoinHistorySheet> createState() => _CoinHistorySheetState();
@@ -55,21 +55,29 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
   }
 
   Future<void> _loadMore() async {
-    if (_loading || !_hasMore || !_ownerActive ||
-        widget.currentAccountId() != widget.ownerId) return;
+    if (_loading ||
+        !_hasMore ||
+        !_ownerActive ||
+        widget.currentAccountId() != widget.ownerId) {
+      return;
+    }
     setState(() {
       _loading = true;
       _error = false;
     });
     try {
       final page = await widget.fetchPage(cursor: _cursor, limit: 20);
-      if (!mounted || !_ownerActive ||
-          widget.currentAccountId() != widget.ownerId) return;
+      if (!mounted ||
+          !_ownerActive ||
+          widget.currentAccountId() != widget.ownerId) {
+        return;
+      }
       final rawEntries = page['entries'];
       final rawCursor = page['nextCursor'];
       if (rawEntries is! List ||
           !(rawCursor == null || rawCursor is String) ||
-          (rawCursor is String && (rawCursor.isEmpty || rawCursor == _cursor))) {
+          (rawCursor is String &&
+              (rawCursor.isEmpty || rawCursor == _cursor))) {
         throw const FormatException('Invalid coin history response');
       }
       final parsed = <Map<String, dynamic>>[];
@@ -91,7 +99,8 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
         _loadedFirstPage = true;
       });
     } catch (_) {
-      if (mounted && _ownerActive &&
+      if (mounted &&
+          _ownerActive &&
           widget.currentAccountId() == widget.ownerId) {
         setState(() => _error = true);
       }
@@ -106,14 +115,18 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
     super.dispose();
   }
 
-  String _sourceLabel(BuildContext context, RewardUnlockLabels t,
-      Map<String, dynamic> entry) {
+  String _sourceLabel(
+    BuildContext context,
+    RewardUnlockLabels t,
+    Map<String, dynamic> entry,
+  ) {
     final source = entry['source'] as String;
     if (source == 'login-bonus') {
       final lb = LoginBonusLabels.of(context);
       final mission = entry['missionId'];
       return mission is String && mission.startsWith('login_daily_')
-          ? lb['daily'] : lb['title'];
+          ? lb['daily']
+          : lb['title'];
     }
     return switch (source) {
       'rewarded-ad' => t['historyAd'],
@@ -136,8 +149,10 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(t['coinHistory'],
-                style: Theme.of(context).textTheme.titleLarge),
+              Text(
+                t['coinHistory'],
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
               const SizedBox(height: 12),
               Expanded(
                 child: ListView(
@@ -159,13 +174,18 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
                     if (_loadedFirstPage && _entries.isEmpty && !_error)
                       Padding(
                         padding: const EdgeInsets.all(18),
-                        child: Text(t['historyEmpty'], textAlign: TextAlign.center),
+                        child: Text(
+                          t['historyEmpty'],
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     if (_error)
                       Padding(
                         padding: const EdgeInsets.all(12),
-                        child: Text(t['historyError'],
-                          textAlign: TextAlign.center),
+                        child: Text(
+                          t['historyError'],
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     if (_loading)
                       const Center(child: CircularProgressIndicator()),
@@ -173,7 +193,9 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
                       TextButton(
                         key: const Key('coinHistoryMoreButton'),
                         onPressed: _loadMore,
-                        child: Text(_error ? t['rewardRefresh'] : t['historyMore']),
+                        child: Text(
+                          _error ? t['rewardRefresh'] : t['historyMore'],
+                        ),
                       ),
                   ],
                 ),

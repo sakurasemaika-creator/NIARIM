@@ -15,20 +15,22 @@ void main() {
     temp = Directory.systemTemp.createTempSync('niarim-edit-manual-save-');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      (_) async => temp.path,
-    );
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (_) async => temp.path,
+        );
   });
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'), null,
-    );
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          null,
+        );
     if (temp.existsSync()) temp.deleteSync(recursive: true);
   });
 
-  testWidgets('only successful manual tree/slot saves trigger the hook',
-      (tester) async {
+  testWidgets('only successful manual tree/slot saves trigger the hook', (
+    tester,
+  ) async {
     await tester.runAsync(() async {
       final projects = ProjectService();
       await projects.init();

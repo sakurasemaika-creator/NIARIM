@@ -7,7 +7,8 @@ class CommunityWorkMetadataLabels {
   static CommunityWorkMetadataLabels of(BuildContext context) {
     final locale = Localizations.localeOf(context);
     final language = locale.languageCode == 'zh' && locale.scriptCode == 'Hant'
-        ? 'zh_Hant' : locale.languageCode;
+        ? 'zh_Hant'
+        : locale.languageCode;
     return CommunityWorkMetadataLabels._(labels[language] ?? labels['en']!);
   }
 
@@ -26,17 +27,20 @@ class CommunityWorkMetadataLabels {
   String get copyTitleToNiarim => values[12];
   String get copyDescriptionToYoutube => values[13];
   String get copyDescriptionToNiarim => values[14];
-  String copyTooLong(int maximum) =>
-      values[15].replaceAll('{max}', '$maximum');
+  String copyTooLong(int maximum) => values[15].replaceAll('{max}', '$maximum');
   String get youtubeTitleRequired => values[16];
   String get copyConfirmTitle => values[17];
   String get copyConfirmMessage => values[18];
   String get copyCancel => values[19];
   String get copyConfirmAction => values[20];
 
-  static const labels = <String,List<String>>{
-    'ja': ['作品タイトル','作品の概要欄','作品の説明や制作について（任意）',
-      'タイトル・概要欄を編集','タイトルと概要欄を保存しました',
+  static const labels = <String, List<String>>{
+    'ja': [
+      '作品タイトル',
+      '作品の概要欄',
+      '作品の説明や制作について（任意）',
+      'タイトル・概要欄を編集',
+      'タイトルと概要欄を保存しました',
       'NIARIM内の情報を編集します。YouTube上のタイトル・概要欄は変わりません。',
       '概要欄を読み込めませんでした',
       'YouTubeの説明欄（任意）',
@@ -52,9 +56,14 @@ class CommunityWorkMetadataLabels {
       'コピー先の内容を上書きしますか？',
       'コピー先に現在入力されている内容はすべて上書きされます。コピーを実行しますか？',
       'キャンセル',
-      'コピーする'],
-    'en': ['Work title','Work description','About the work (optional)',
-      'Edit title and description','Title and description saved',
+      'コピーする',
+    ],
+    'en': [
+      'Work title',
+      'Work description',
+      'About the work (optional)',
+      'Edit title and description',
+      'Title and description saved',
       'This changes the NIARIM listing only, not the YouTube video details.',
       'Could not load the description',
       'YouTube description (optional)',
@@ -70,9 +79,14 @@ class CommunityWorkMetadataLabels {
       'Overwrite the destination?',
       'The current contents of the destination will be overwritten. Do you want to copy?',
       'Cancel',
-      'Copy and overwrite'],
-    'es': ['Título de la obra','Descripción','Acerca de la obra (opcional)',
-      'Editar título y descripción','Título y descripción guardados',
+      'Copy and overwrite',
+    ],
+    'es': [
+      'Título de la obra',
+      'Descripción',
+      'Acerca de la obra (opcional)',
+      'Editar título y descripción',
+      'Título y descripción guardados',
       'Solo cambia los datos en NIARIM, no los de YouTube.',
       'No se pudo cargar la descripción',
       'Descripción de YouTube (opcional)',
@@ -88,9 +102,14 @@ class CommunityWorkMetadataLabels {
       '¿Sobrescribir el contenido de destino?',
       'Se sobrescribirá todo el contenido actual del destino. ¿Deseas continuar?',
       'Cancelar',
-      'Copiar y sobrescribir'],
-    'fr': ['Titre de l’œuvre','Description','À propos de l’œuvre (facultatif)',
-      'Modifier le titre et la description','Titre et description enregistrés',
+      'Copiar y sobrescribir',
+    ],
+    'fr': [
+      'Titre de l’œuvre',
+      'Description',
+      'À propos de l’œuvre (facultatif)',
+      'Modifier le titre et la description',
+      'Titre et description enregistrés',
       'Ces changements concernent NIARIM, pas YouTube.',
       'Impossible de charger la description',
       'Description YouTube (facultative)',
@@ -106,9 +125,14 @@ class CommunityWorkMetadataLabels {
       'Remplacer le contenu de destination ?',
       'Le contenu actuel de la destination sera écrasé. Voulez-vous continuer ?',
       'Annuler',
-      'Copier et remplacer'],
-    'ko': ['작품 제목','작품 설명','작품과 제작 과정에 대한 설명 (선택)',
-      '제목과 설명 수정','제목과 설명을 저장했습니다',
+      'Copier et remplacer',
+    ],
+    'ko': [
+      '작품 제목',
+      '작품 설명',
+      '작품과 제작 과정에 대한 설명 (선택)',
+      '제목과 설명 수정',
+      '제목과 설명을 저장했습니다',
       'NIARIM 표시만 변경하며 YouTube의 제목과 설명은 변경되지 않습니다.',
       '작품 설명을 불러오지 못했습니다',
       'YouTube 설명 (선택)',
@@ -124,9 +148,14 @@ class CommunityWorkMetadataLabels {
       '대상 내용을 덮어쓰시겠습니까?',
       '복사할 위치에 현재 입력된 내용이 모두 덮어써집니다. 계속하시겠습니까?',
       '취소',
-      '복사하고 덮어쓰기'],
-    'zh': ['作品标题','作品简介','关于作品（选填）',
-      '编辑标题和简介','标题和简介已保存',
+      '복사하고 덮어쓰기',
+    ],
+    'zh': [
+      '作品标题',
+      '作品简介',
+      '关于作品（选填）',
+      '编辑标题和简介',
+      '标题和简介已保存',
       '仅修改 NIARIM 中的信息，不修改 YouTube 视频信息。',
       '无法加载作品简介',
       'YouTube 描述（选填）',
@@ -142,9 +171,14 @@ class CommunityWorkMetadataLabels {
       '覆盖目标内容？',
       '目标中当前输入的内容将全部被覆盖。是否继续复制？',
       '取消',
-      '复制并覆盖'],
-    'zh_Hant': ['作品標題','作品簡介','關於作品（選填）',
-      '編輯標題與簡介','標題與簡介已儲存',
+      '复制并覆盖',
+    ],
+    'zh_Hant': [
+      '作品標題',
+      '作品簡介',
+      '關於作品（選填）',
+      '編輯標題與簡介',
+      '標題與簡介已儲存',
       '僅修改 NIARIM 的資訊，不修改 YouTube 影片資訊。',
       '無法載入作品簡介',
       'YouTube 說明（選填）',
@@ -160,6 +194,7 @@ class CommunityWorkMetadataLabels {
       '覆蓋目標內容？',
       '目標中目前輸入的內容將全部被覆蓋。是否繼續複製？',
       '取消',
-      '複製並覆蓋'],
+      '複製並覆蓋',
+    ],
   };
 }

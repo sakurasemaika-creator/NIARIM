@@ -4,10 +4,7 @@ import 'package:flutter/widgets.dart';
 /// embedded floating-window close controls must not be duplicated there.
 /// Mobile/floating panels continue to show their own close controls.
 class DockedPanelCloseScope extends InheritedWidget {
-  const DockedPanelCloseScope({
-    super.key,
-    required super.child,
-  });
+  const DockedPanelCloseScope({super.key, required super.child});
 
   static bool isDocked(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<DockedPanelCloseScope>() !=

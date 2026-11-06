@@ -77,24 +77,33 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     setState(() => _claimBusy.add(key));
     try {
       final receipt = await api.claimCreatorMission(
-        missionId: id, workId: workId,
+        missionId: id,
+        workId: workId,
       );
       if (!mounted ||
           context.read<GoogleAuthService>().account?.id != owner ||
-          !identical(_api, api)) return;
+          !identical(_api, api)) {
+        return;
+      }
       final t = CreatorMissionLabels.of(context);
-      final message = receipt['pending'] == true ? t.get('holdStarted')
-          : receipt['claimed'] == true ? t.get('claimReceived')
+      final message = receipt['pending'] == true
+          ? t.get('holdStarted')
+          : receipt['claimed'] == true
+          ? t.get('claimReceived')
           : t.get('claimFailed');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
       _refresh(api);
     } catch (_) {
       if (mounted &&
           context.read<GoogleAuthService>().account?.id == owner &&
           identical(_api, api)) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(CreatorMissionLabels.of(context).get('claimFailed'))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(CreatorMissionLabels.of(context).get('claimFailed')),
+          ),
+        );
         _refresh(api);
       }
     } finally {
@@ -111,19 +120,27 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       final data = await api.myWorkMissionAchievements(cursor: cursor);
       if (!mounted ||
           context.read<GoogleAuthService>().account?.id != owner ||
-          !identical(_api, api)) return;
+          !identical(_api, api)) {
+        return;
+      }
       setState(() {
-        _extraWorks.addAll((data['items'] as List? ?? const [])
-            .whereType<Map>()
-            .map((x) => Map<String, dynamic>.from(x)));
+        _extraWorks.addAll(
+          (data['items'] as List? ?? const []).whereType<Map>().map(
+            (x) => Map<String, dynamic>.from(x),
+          ),
+        );
         _nextWorkCursor = data['nextCursor'] as String?;
         _loadedExtraPage = true;
       });
     } catch (_) {
-      if (mounted &&
-          context.read<GoogleAuthService>().account?.id == owner) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(CreatorMissionLabels.of(context).get('workListError'))));
+      if (mounted && context.read<GoogleAuthService>().account?.id == owner) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              CreatorMissionLabels.of(context).get('workListError'),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _moreBusy = false);
@@ -136,18 +153,20 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     final workTitle = row['_workTitle'] as String?;
     final generic = row['_genericTemplate'] == true;
     return switch (row['kind']) {
-      'qualifiedWorks' => each == 0
-          ? t.format('worksPublished', required)
-          : t.format('worksGoal', required, each: each),
-      'workBookmarks' => required == 0
-          ? workTitle != null
-              ? '$workTitle${t.get('namedPublished')}'
-              : t.get('genericPublished')
-          : workTitle != null
-              ? '$workTitle${t.format('namedBookmark', required)}'
-              : generic
-                  ? t.format('genericBookmark', required)
-                  : t.format('genericBookmark', required),
+      'qualifiedWorks' =>
+        each == 0
+            ? t.format('worksPublished', required)
+            : t.format('worksGoal', required, each: each),
+      'workBookmarks' =>
+        required == 0
+            ? workTitle != null
+                  ? '$workTitle${t.get('namedPublished')}'
+                  : t.get('genericPublished')
+            : workTitle != null
+            ? '$workTitle${t.format('namedBookmark', required)}'
+            : generic
+            ? t.format('genericBookmark', required)
+            : t.format('genericBookmark', required),
       'followers' => t.format('followers', required),
       'verifiedEditSeconds' => t.format('time', required ~/ 3600),
       'niarimBookmarkRanking' => t.format('rank', required),
@@ -159,13 +178,17 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     final name = _goal(t, row);
     final claimed = row['claimed'] == true;
     final earned = row['eligible'] == true;
-    final status = claimed ? t.get('claimed')
-        : earned ? t.get('achieved')
-        : row['eligible'] == null ? t.get('reviewing')
+    final status = claimed
+        ? t.get('claimed')
+        : earned
+        ? t.get('achieved')
+        : row['eligible'] == null
+        ? t.get('reviewing')
         : t.get('notAchieved');
     final coins = (row['coins'] as num?)?.toInt() ?? 0;
     final goal = (row['required'] as num?)?.toInt() ?? 0;
-    final progress = (row['progress'] as num?)?.toInt() ??
+    final progress =
+        (row['progress'] as num?)?.toInt() ??
         (row['bookmarkCount'] as num?)?.toInt();
     final kind = row['kind'];
     final template = row['_genericTemplate'] == true;
@@ -174,8 +197,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       status,
       if (progress != null && !template && kind == 'qualifiedWorks')
         t.format('detailsWorksProgress', progress, each: goal),
-      if (progress != null && !template && kind == 'workBookmarks' &&
-          goal > 0)
+      if (progress != null && !template && kind == 'workBookmarks' && goal > 0)
         t.format('detailsWorkProgress', progress, each: goal),
       if (progress != null && kind == 'followers')
         t.format('detailsFollowersProgress', progress, each: goal),
@@ -185,20 +207,16 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         t.get('detailsPerWorkRule')
       else
         t.get('detailsAccountRule'),
-      if (row['pendingSince'] is num && !claimed)
-        t.get('detailsPending'),
-      if (row['rewardEnabled'] != true)
-        t.get('detailsOffline'),
-      coins.toString() + ' ' + t.get('coin'),
+      if (row['pendingSince'] is num && !claimed) t.get('detailsPending'),
+      if (row['rewardEnabled'] != true) t.get('detailsOffline'),
+      '$coins ${t.get('coin')}',
       t.get('detailsHint'),
     ];
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(t.get('detailsTitle')),
-        content: SingleChildScrollView(
-          child: Text(details.join('\n\n')),
-        ),
+        content: SingleChildScrollView(child: Text(details.join('\n\n'))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -209,8 +227,11 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     );
   }
 
-  Widget _tile(CreatorMissionLabels t, CommunityApi api,
-      Map<String, dynamic> row) {
+  Widget _tile(
+    CreatorMissionLabels t,
+    CommunityApi api,
+    Map<String, dynamic> row,
+  ) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final claimed = row['claimed'] == true;
@@ -222,15 +243,23 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     final workId = row['_workId'] as String?;
     final actionKey = '$id:${workId ?? "account"}';
     final coins = (row['coins'] as num?)?.toInt() ?? 0;
-    final canClaim = missionClaimActionAllowed(
-      eligible: eligible, ready: ready,
-      claimed: claimed, enabled: available,
-    ) && !_claimBusy.contains(actionKey);
-    final status = claimed ? t.get('claimed')
-        : pending ? t.get('reviewing')
-        : eligible ? t.get('achieved')
+    final canClaim =
+        missionClaimActionAllowed(
+          eligible: eligible,
+          ready: ready,
+          claimed: claimed,
+          enabled: available,
+        ) &&
+        !_claimBusy.contains(actionKey);
+    final status = claimed
+        ? t.get('claimed')
+        : pending
+        ? t.get('reviewing')
+        : eligible
+        ? t.get('achieved')
         : row['eligible'] == null && row['kind'] == 'qualifiedWorks'
-            ? t.get('reviewing') : t.get('notAchieved');
+        ? t.get('reviewing')
+        : t.get('notAchieved');
     return Card(
       key: ValueKey('mission_$id:${workId ?? "template"}'),
       child: Padding(
@@ -242,17 +271,20 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
               key: ValueKey('missionDetails_$id:${workId ?? "template"}'),
               tooltip: t.get('detailsTooltip'),
               onPressed: () => _showDetails(t, row),
-              icon: Icon(eligible || claimed
-                  ? Icons.priority_high_rounded : Icons.help_outline),
+              icon: Icon(
+                eligible || claimed
+                    ? Icons.priority_high_rounded
+                    : Icons.help_outline,
+              ),
               color: eligible && !claimed
-                  ? scheme.primary : scheme.onSurfaceVariant,
+                  ? scheme.primary
+                  : scheme.onSurfaceVariant,
             ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(_goal(t, row),
-                    style: theme.textTheme.bodyMedium),
+                  Text(_goal(t, row), style: theme.textTheme.bodyMedium),
                   Text(status, style: theme.textTheme.bodySmall),
                 ],
               ),
@@ -261,33 +293,43 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.toll_outlined,
-                    size: 16, color: scheme.primary),
-                  const SizedBox(width: 3),
-                  Text('$coins ${t.get('coin')}',
-                    style: theme.textTheme.labelSmall),
-                ]),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.toll_outlined, size: 16, color: scheme.primary),
+                    const SizedBox(width: 3),
+                    Text(
+                      '$coins ${t.get('coin')}',
+                      style: theme.textTheme.labelSmall,
+                    ),
+                  ],
+                ),
                 if (claimed)
                   Padding(
                     padding: const EdgeInsets.all(8),
-                    child: Text(t.get('claimed'),
-                      style: theme.textTheme.labelSmall),
+                    child: Text(
+                      t.get('claimed'),
+                      style: theme.textTheme.labelSmall,
+                    ),
                   )
                 else if (eligible && ready)
                   FilledButton(
                     key: ValueKey('claim_${id}_${workId ?? "account"}'),
                     onPressed: canClaim ? () => _claim(api, id, workId) : null,
                     child: _claimBusy.contains(actionKey)
-                        ? const SizedBox(width: 14, height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2))
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : Text(t.get('claim')),
                   )
                 else
                   OutlinedButton(
                     onPressed: null,
-                    child: Text(pending ? t.get('reviewing')
-                        : t.get('notAchieved')),
+                    child: Text(
+                      pending ? t.get('reviewing') : t.get('notAchieved'),
+                    ),
                   ),
               ],
             ),
@@ -312,10 +354,14 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         all.add(row);
       } else if (row['perWork'] == true) {
         // 24 perpetual gray templates, even if there are already achievements.
-        all.add({...row,
-          '_genericTemplate': true, 'eligible': false,
-          'claimed': false, 'readyForClaim': false,
-          'rewardEnabled': false, 'pendingSince': null,
+        all.add({
+          ...row,
+          '_genericTemplate': true,
+          'eligible': false,
+          'claimed': false,
+          'readyForClaim': false,
+          'rewardEnabled': false,
+          'pendingSince': null,
         });
       } else {
         all.add(row);
@@ -324,10 +370,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     for (final raw in (grid?['missions'] as List? ?? const [])) {
       if (raw is Map) all.add(Map<String, dynamic>.from(raw));
     }
-    final earned = [
-      ...(works?['items'] as List? ?? const []),
-      ..._extraWorks,
-    ];
+    final earned = [...(works?['items'] as List? ?? const []), ..._extraWorks];
     for (final raw in earned) {
       if (raw is! Map) continue;
       final row = Map<String, dynamic>.from(raw);
@@ -344,68 +387,88 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     // Dart's list sort is not stable; use the original index as the tie break.
     final indexed = all.asMap().entries.toList();
     indexed.sort((a, b) {
-      final priority = missionSortPriority(a.value)
-          .compareTo(missionSortPriority(b.value));
+      final priority = missionSortPriority(
+        a.value,
+      ).compareTo(missionSortPriority(b.value));
       return priority != 0 ? priority : a.key.compareTo(b.key);
     });
     return indexed.map((e) => e.value).toList(growable: false);
   }
 
-  Widget _body(CreatorMissionLabels t, CommunityApi api,
-      Map<String, dynamic> data) {
+  Widget _body(
+    CreatorMissionLabels t,
+    CommunityApi api,
+    Map<String, dynamic> data,
+  ) {
     final account = data['account'] as Map<String, dynamic>;
     final grid = data['grid'] as Map<String, dynamic>?;
     final works = data['works'] as Map<String, dynamic>?;
     final rows = _rows(data);
     final cursor = _loadedExtraPage
-        ? _nextWorkCursor : works?['nextCursor'] as String?;
+        ? _nextWorkCursor
+        : works?['nextCursor'] as String?;
     final candidateMinutes =
         ((account['candidateEditSeconds'] as num?)?.toInt() ?? 0) ~/ 60;
-    final localSeconds = context.watch<ProjectService>().projects
+    final localSeconds = context
+        .watch<ProjectService>()
+        .projects
         .where((project) => !project.isSharedImport)
         .fold<int>(0, (sum, project) => sum + project.totalWorkSeconds);
     final hasMore = cursor != null;
-    return desktopCentered(context, ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: 1 + rows.length + (hasMore ? 1 : 0) + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (widget.workId == null) ...[
-              const LoginBonusPanel(),
-              const SizedBox(height: 12),
-            ],
-            Text(t.get('subtitle'),
-              style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(t.get('budget')),
-            const SizedBox(height: 8),
-            Text(t.format('localTime', localSeconds ~/ 3600)),
-            Text(t.get('timeWarning'),
-              style: Theme.of(context).textTheme.bodySmall),
-            Text(t.get('rankingWarning'),
-              style: Theme.of(context).textTheme.bodySmall),
-            Text(t.format('candidateMinutes', candidateMinutes)),
-            if (account['enabled'] != true && grid?['rewardEnabled'] != true)
-              Text(t.get('upcoming')),
-            const SizedBox(height: 16),
-          ],
-        );
-        final rowIndex = index - 1;
-        if (rowIndex < rows.length) return _tile(t, api, rows[rowIndex]);
-        if (cursor != null && rowIndex == rows.length) {
-          return OutlinedButton(
-            onPressed: _moreBusy ? null : () => _more(api, cursor),
-            child: Text(t.get('loadMore')));
-        }
-        return TextButton.icon(
-          onPressed: () => _refresh(api),
-          icon: const Icon(Icons.refresh),
-          label: Text(t.get('retry')),
-        );
-      },
-    ));
+    return desktopCentered(
+      context,
+      ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: 1 + rows.length + (hasMore ? 1 : 0) + 1,
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (widget.workId == null) ...[
+                  const LoginBonusPanel(),
+                  const SizedBox(height: 12),
+                ],
+                Text(
+                  t.get('subtitle'),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(t.get('budget')),
+                const SizedBox(height: 8),
+                Text(t.format('localTime', localSeconds ~/ 3600)),
+                Text(
+                  t.get('timeWarning'),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                Text(
+                  t.get('rankingWarning'),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                Text(t.format('candidateMinutes', candidateMinutes)),
+                if (account['enabled'] != true &&
+                    grid?['rewardEnabled'] != true)
+                  Text(t.get('upcoming')),
+                const SizedBox(height: 16),
+              ],
+            );
+          }
+          final rowIndex = index - 1;
+          if (rowIndex < rows.length) return _tile(t, api, rows[rowIndex]);
+          if (cursor != null && rowIndex == rows.length) {
+            return OutlinedButton(
+              onPressed: _moreBusy ? null : () => _more(api, cursor),
+              child: Text(t.get('loadMore')),
+            );
+          }
+          return TextButton.icon(
+            onPressed: () => _refresh(api),
+            icon: const Icon(Icons.refresh),
+            label: Text(t.get('retry')),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -428,17 +491,21 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       body: owner == null
           ? Center(child: Text(t.get('login')))
           : api == null
-            ? Center(child: Text(t.get('offline')))
-            : FutureBuilder<Map<String, dynamic>>(
-                future: _future,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return Center(child: Semantics(
+          ? Center(child: Text(t.get('offline')))
+          : FutureBuilder<Map<String, dynamic>>(
+              future: _future,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return Center(
+                    child: Semantics(
                       label: t.get('loading'),
-                      child: const CircularProgressIndicator()));
-                  }
-                  if (snapshot.hasError || !snapshot.hasData) {
-                    return Center(child: Column(
+                      child: const CircularProgressIndicator(),
+                    ),
+                  );
+                }
+                if (snapshot.hasError || !snapshot.hasData) {
+                  return Center(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(t.get('loadError')),
@@ -447,11 +514,12 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                           child: Text(t.get('retry')),
                         ),
                       ],
-                    ));
-                  }
-                  return _body(t, api, snapshot.data!);
-                },
-              ),
+                    ),
+                  );
+                }
+                return _body(t, api, snapshot.data!);
+              },
+            ),
     );
   }
 }

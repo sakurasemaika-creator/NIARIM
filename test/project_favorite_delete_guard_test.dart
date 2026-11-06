@@ -12,6 +12,7 @@ import 'package:niarim/models/project.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/utils/app_error_reporter.dart';
 import 'package:niarim/widgets/project_trash_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -49,11 +50,13 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late Directory directory;
   late ProjectService service;
+  var serviceDisposed = false;
   late SharedPreferencesStorePlatform previous;
   late _Store store;
   const channel = MethodChannel('plugins.flutter.io/path_provider');
 
   setUp(() async {
+    serviceDisposed = false;
     SharedPreferences.resetStatic();
     previous = SharedPreferencesStorePlatform.instance;
     store = _Store();
@@ -65,7 +68,7 @@ void main() {
     await service.init();
   });
   tearDown(() {
-    service.dispose();
+    if (!serviceDisposed) service.dispose();
     SharedPreferences.resetStatic();
     SharedPreferencesStorePlatform.instance = previous;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -95,6 +98,150 @@ void main() {
     addTearDown(next.dispose);
     return next;
   }
+
+  for (final initiallyFavorite in [false, true]) {
+    test(
+      'favorite file write denial retains ${initiallyFavorite ? 'on' : 'off'} and retries to cold state',
+      () async {
+        final project = await create('WRITE DENIED');
+        if (initiallyFavorite) await favorite(project.id);
+        final file = await archive(project.id);
+        final bytes = file.readAsBytesSync();
+        final originalMode = (file.parent.statSync().mode & 0x1ff)
+            .toRadixString(8);
+        Object? caught;
+        late bool inMemory;
+        AppErrorReporter.recentErrors.clear();
+        final restricted = await Process.run('chmod', [
+          '0555',
+          file.parent.path,
+        ]);
+        expect(restricted.exitCode, 0);
+        try {
+          expect(
+            () => File(
+              '${file.parent.path}/.owned-write-probe',
+            ).writeAsStringSync('probe'),
+            throwsA(isA<FileSystemException>()),
+            reason:
+                'The controlled POSIX write denial must be real before testing the operation.',
+          );
+          try {
+            await service.toggleFavorite(project.id);
+          } catch (error) {
+            caught = error;
+          }
+          inMemory = service.projects.single.isFavorite;
+          expect(file.readAsBytesSync(), bytes);
+        } finally {
+          final restored = await Process.run('chmod', [
+            originalMode,
+            file.parent.path,
+          ]);
+          expect(restored.exitCode, 0);
+        }
+        final loaded = await cold();
+        debugPrint(
+          'FAVORITE WRITE DENIAL old=$initiallyFavorite error=${caught.runtimeType} '
+          'memory=$inMemory cold=${loaded.projects.single.isFavorite} '
+          'reportedFs=${AppErrorReporter.recentErrors.any((e) => e.contains('Permission denied') && e.contains(file.parent.path))}',
+        );
+        expect(caught, isA<FileSystemException>());
+        expect(inMemory, initiallyFavorite);
+        expect(loaded.projects.single.isFavorite, initiallyFavorite);
+        await service.toggleFavorite(project.id);
+        final retry = await cold();
+        expect(retry.projects.single.isFavorite, !initiallyFavorite);
+      },
+      skip: Platform.isWindows,
+    );
+  }
+
+  ({Future<void> started, Completer<void> release, List<MethodCall> calls})
+  holdNextSave() {
+    final started = Completer<void>();
+    final release = Completer<void>();
+    final calls = <MethodCall>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          if (!started.isCompleted) {
+            started.complete();
+            await release.future;
+          }
+          return directory.path;
+        });
+    return (started: started.future, release: release, calls: calls);
+  }
+
+  test(
+    'favorite completion preserves concurrent name and background edits',
+    () async {
+      final project = await create('ORIGINAL');
+      final held = holdNextSave();
+      final saving = service.setFavorite(project.id, true);
+      await held.started;
+      expect(service.isFavoriteSaving(project.id), isTrue);
+      expect(service.projects.single.isFavorite, isFalse);
+      await service.renameProject(project.id, 'RENAMED');
+      service.updateProjectBackgroundColor(project.id, 0xFF234567);
+      held.release.complete();
+      await saving;
+      await service.saveProject(project.id);
+      final loaded = await cold();
+      for (final current in [service.projects.single, loaded.projects.single]) {
+        expect(current.name, 'RENAMED');
+        expect(current.backgroundColor, 0xFF234567);
+        expect(current.isFavorite, isTrue);
+      }
+      expect(service.isFavoriteSaving(project.id), isFalse);
+    },
+  );
+
+  test(
+    'repeated explicit favorite intent saves once and never inverts it',
+    () async {
+      final project = await create('INTENT');
+      final held = holdNextSave();
+      final first = service.setFavorite(project.id, true);
+      await held.started;
+      final duplicate = service.setFavorite(project.id, true);
+      held.release.complete();
+      await Future.wait([first, duplicate]);
+      expect(held.calls, hasLength(1));
+      expect(service.projects.single.isFavorite, isTrue);
+      await service.setFavorite(project.id, true);
+      expect(held.calls, hasLength(1));
+      await service.setFavorite(project.id, false);
+      expect(held.calls, hasLength(2));
+      final loaded = await cold();
+      expect(loaded.projects.single.isFavorite, isFalse);
+      expect(service.isFavoriteSaving(project.id), isFalse);
+    },
+  );
+
+  test(
+    'accepted favorite still protects queued Trash after disposal',
+    () async {
+      final project = await create('DISPOSE');
+      final held = holdNextSave();
+      final saving = service.setFavorite(project.id, true);
+      await held.started;
+      final moving = expectLater(
+        service.deleteProject(project.id),
+        throwsA(anything),
+      );
+      service.dispose();
+      serviceDisposed = true;
+      held.release.complete();
+      await saving;
+      await moving;
+      final loaded = await cold();
+      expect(loaded.projects.single.id, project.id);
+      expect(loaded.projects.single.isFavorite, isTrue);
+      expect(loaded.trash, isEmpty);
+    },
+  );
 
   test(
     'favorite stays active on disk and can move only after unfavoriting',

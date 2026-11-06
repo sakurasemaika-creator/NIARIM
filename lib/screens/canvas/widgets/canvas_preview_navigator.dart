@@ -165,26 +165,28 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
           Expanded(
             child: Center(
               child: AspectRatio(
-                aspectRatio: _image != null ? _image!.width / _image!.height : 1,
+                aspectRatio: _image != null
+                    ? _image!.width / _image!.height
+                    : 1,
                 child: Container(
-              color: scheme.surfaceContainerHighest,
-              child: _image == null
-                  ? const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  // The project's own background, as on the canvas.
-                  : FramePreviewBackground(
-                      backgroundColor:
-                          context
-                              .watch<ProjectService>()
-                              .projects
-                              .where((p) => p.id == widget.projectId)
-                              .firstOrNull
-                              ?.backgroundColor ??
-                          0xFFFFFFFF,
-                      aspectRatio: _image!.width / _image!.height,
-                      child: RawImage(image: _image, fit: BoxFit.fill),
-                    ),
+                  color: scheme.surfaceContainerHighest,
+                  child: _image == null
+                      ? const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      // The project's own background, as on the canvas.
+                      : FramePreviewBackground(
+                          backgroundColor:
+                              context
+                                  .watch<ProjectService>()
+                                  .projects
+                                  .where((p) => p.id == widget.projectId)
+                                  .firstOrNull
+                                  ?.backgroundColor ??
+                              0xFFFFFFFF,
+                          aspectRatio: _image!.width / _image!.height,
+                          child: RawImage(image: _image, fit: BoxFit.fill),
+                        ),
                 ),
               ),
             ),

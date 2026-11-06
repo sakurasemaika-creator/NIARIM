@@ -390,10 +390,15 @@ class FilterService extends ChangeNotifier {
 
     final profile = style == NoiseStyle.color
         ? _colorNoiseProfile
-        : _filters.where(
-            (f) => f.id ==
-                (style == NoiseStyle.vhs ? vhsNoiseFilterId : filmGrainFilterId),
-          ).firstOrNull;
+        : _filters
+              .where(
+                (f) =>
+                    f.id ==
+                    (style == NoiseStyle.vhs
+                        ? vhsNoiseFilterId
+                        : filmGrainFilterId),
+              )
+              .firstOrNull;
     if (profile == null) {
       updateFilterParams(id, noiseStyle: style);
     } else {

@@ -250,17 +250,21 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   );
   // The purchase token is verified through Google Play on the NIARIM backend.
   // Client-side Billing callbacks and local preferences never mint access.
-  premiumService.bindPlayVerifier((productId, purchaseToken) async {
-    final api = communityService.api;
-    if (api == null) throw StateError('NIARIM backend unavailable');
-    return api.verifyMyPlaySubscription(
-      productId: productId, purchaseToken: purchaseToken,
-    );
-  }, canPurchase: () async {
-    final api = communityService.api;
-    if (api == null) return false;
-    return api.canVerifyPlayPurchases();
-  });
+  premiumService.bindPlayVerifier(
+    (productId, purchaseToken) async {
+      final api = communityService.api;
+      if (api == null) throw StateError('NIARIM backend unavailable');
+      return api.verifyMyPlaySubscription(
+        productId: productId,
+        purchaseToken: purchaseToken,
+      );
+    },
+    canPurchase: () async {
+      final api = communityService.api;
+      if (api == null) return false;
+      return api.canVerifyPlayPurchases();
+    },
+  );
   // Optional low-write edit-time pilot. Default builds have zero new network
   // traffic; the server must independently enable the same pilot flag.
   final editReporter = CreatorEditSessionReporter(
@@ -270,8 +274,7 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   projectService.attachCreatorEditReporter(editReporter);
   // Both save tree and save slot reuse this one explicit-success hook.
   // AutosaveService and internal saveProject() calls remain untouched.
-  saveTreeService.onManualSaveCommitted =
-      projectService.onManualSaveCommitted;
+  saveTreeService.onManualSaveCommitted = projectService.onManualSaveCommitted;
 
   await enter('community_preview');
   final communityPreviewService = own(CommunityPreviewService());
@@ -289,8 +292,10 @@ Future<List<SingleChildWidget>> _buildAppProviders(
       if (googleAuthService.account?.id != accountId) return;
       DateTime? expiresAt;
       for (final raw in (state['entitlements'] as List? ?? const [])) {
-        if (raw is Map && raw['feature'] == 'fullPremium' &&
-            raw['status'] == 'active' && raw['expiresAtEpochMs'] is num) {
+        if (raw is Map &&
+            raw['feature'] == 'fullPremium' &&
+            raw['status'] == 'active' &&
+            raw['expiresAtEpochMs'] is num) {
           final value = (raw['expiresAtEpochMs'] as num).toInt();
           if (value > DateTime.now().millisecondsSinceEpoch) {
             expiresAt = DateTime.fromMillisecondsSinceEpoch(value);
@@ -298,7 +303,8 @@ Future<List<SingleChildWidget>> _buildAppProviders(
         }
       }
       premiumService.applyServerCoinPremiumExpiry(
-        expiresAt, accountId: accountId,
+        expiresAt,
+        accountId: accountId,
       );
     } catch (error) {
       // Offline projects remain usable; never invent a successful coin grant.

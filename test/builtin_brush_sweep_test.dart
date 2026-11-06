@@ -160,7 +160,9 @@ void main() {
             }
           }
         }
-        debugPrint('BBOX ${brush.id} ${brush.name} size=${brush.size} y=$minY..$maxY');
+        debugPrint(
+          'BBOX ${brush.id} ${brush.name} size=${brush.size} y=$minY..$maxY',
+        );
       }
       if (r.inked == 0) empty.add(brush.name);
       expect(r.invalid, 0, reason: '${brush.name}：色が不透明度より大きい画素');

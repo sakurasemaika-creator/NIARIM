@@ -376,15 +376,32 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   ),
                   Expanded(
                     child: _quickAction(
-                      icon: project.isFavorite ? Icons.star : Icons.star_border,
-                      label: project.isFavorite
+                      icon: projectService.isFavoriteSaving(project.id)
+                          ? Icons.hourglass_empty
+                          : project.isFavorite
+                          ? Icons.star
+                          : Icons.star_border,
+                      label: projectService.isFavoriteSaving(project.id)
+                          ? l10n.homeTrashWorking
+                          : project.isFavorite
                           ? l10n.projectDetailFavoriteRegistered
                           : l10n.projectDetailFavoriteUnregistered,
-                      iconColor: project.isFavorite
+                      iconColor:
+                          projectService.isFavoriteSaving(project.id) ||
+                              project.isFavorite
                           ? Theme.of(context).colorScheme.primary
                           : null,
-                      onTap: () =>
-                          projectService.toggleFavorite(widget.projectId),
+                      onTap: projectService.isFavoriteSaving(project.id)
+                          ? null
+                          : () async {
+                              await runProjectAction(
+                                context,
+                                () => projectService.setFavorite(
+                                  project.id,
+                                  !project.isFavorite,
+                                ),
+                              );
+                            },
                     ),
                   ),
                   Expanded(
@@ -817,28 +834,32 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   Widget _quickAction({
     required IconData icon,
     required String label,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
     Color? iconColor,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              color:
-                  iconColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
+    return Semantics(
+      button: true,
+      enabled: onTap != null,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                color:
+                    iconColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -35,8 +35,10 @@ class RewardUnlockScreen extends StatefulWidget {
 }
 
 class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
-  CoinUnlockDuration _duration =
-      const CoinUnlockDuration(1, CoinDurationUnit.hour);
+  CoinUnlockDuration _duration = const CoinUnlockDuration(
+    1,
+    CoinDurationUnit.hour,
+  );
   final Set<CoinUnlockTarget> _selected = {};
   GoogleAuthService? _authService;
   String? _lastAccountId;
@@ -79,16 +81,20 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       setState(() => _rewardState = state);
       DateTime? activeCoinPremium;
       for (final row in (state['entitlements'] as List? ?? const [])) {
-        if (row is Map && row['feature'] == 'fullPremium' &&
-            row['status'] == 'active' && row['expiresAtEpochMs'] is num) {
+        if (row is Map &&
+            row['feature'] == 'fullPremium' &&
+            row['status'] == 'active' &&
+            row['expiresAtEpochMs'] is num) {
           final ms = (row['expiresAtEpochMs'] as num).toInt();
           if (ms > DateTime.now().millisecondsSinceEpoch) {
             activeCoinPremium = DateTime.fromMillisecondsSinceEpoch(ms);
           }
         }
       }
-      context.read<PremiumService>()
-          .applyServerCoinPremiumExpiry(activeCoinPremium, accountId: accountId);
+      context.read<PremiumService>().applyServerCoinPremiumExpiry(
+        activeCoinPremium,
+        accountId: accountId,
+      );
       if (state['redemptionEnabled'] == true) {
         try {
           final quote = await api.fullPremiumCoinQuote();
@@ -140,7 +146,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     setState(() => _rewardBusy = true);
     try {
       final invitation = await api.beginRewardedAdSession();
-      if (!mounted || context.read<GoogleAuthService>().account?.id != accountId) {
+      if (!mounted ||
+          context.read<GoogleAuthService>().account?.id != accountId) {
         return;
       }
       final adUnit = invitation['adUnitId'];
@@ -152,13 +159,16 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         adUnitId: adUnit,
         customData: customData,
       );
-      if (!mounted || context.read<GoogleAuthService>().account?.id != accountId) {
+      if (!mounted ||
+          context.read<GoogleAuthService>().account?.id != accountId) {
         return;
       }
       final t = RewardUnlockLabels.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(completed ? t['rewardPending'] : t['rewardUnavailable']),
+          content: Text(
+            completed ? t['rewardPending'] : t['rewardUnavailable'],
+          ),
         ),
       );
       // The SDK callback is NOT an award. Only a signed SSV transaction may
@@ -175,17 +185,23 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ]) {
           await Future<void>.delayed(delay);
           if (!mounted ||
-              context.read<GoogleAuthService>().account?.id != accountId) break;
+              context.read<GoogleAuthService>().account?.id != accountId) {
+            break;
+          }
           try {
             final status = await api.rewardedAdStatus(nonce);
             if (!mounted ||
-                context.read<GoogleAuthService>().account?.id != accountId) break;
+                context.read<GoogleAuthService>().account?.id != accountId) {
+              break;
+            }
             if (status['credited'] == true) {
               await _loadWallet(accountId);
               break;
             }
             if (status['status'] == 'expired' ||
-                status['status'] == 'not_found') break;
+                status['status'] == 'not_found') {
+              break;
+            }
           } catch (_) {
             // Temporary network errors never create local coin grants.
           }
@@ -194,7 +210,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(RewardUnlockLabels.of(context)['rewardUnavailable'])),
+          SnackBar(
+            content: Text(RewardUnlockLabels.of(context)['rewardUnavailable']),
+          ),
         );
       }
     } finally {
@@ -208,8 +226,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final api = context.read<CommunityService>().api;
     final priceVersion = _officialPremiumQuote?['priceVersion'];
     final price = _officialPremiumQuote?['priceCoins'];
-    if (accountId == null || api == null ||
-        priceVersion is! String || price is! int || price <= 0) return;
+    if (accountId == null ||
+        api == null ||
+        priceVersion is! String ||
+        price is! int ||
+        price <= 0) {
+      return;
+    }
     final t = RewardUnlockLabels.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
@@ -230,8 +253,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ],
       ),
     );
-    if (confirmed != true || !mounted ||
-        context.read<GoogleAuthService>().account?.id != accountId) return;
+    if (confirmed != true ||
+        !mounted ||
+        context.read<GoogleAuthService>().account?.id != accountId) {
+      return;
+    }
     setState(() => _redeemBusy = true);
     try {
       final result = await const CoinRedemptionAttemptStore().redeem(
@@ -240,19 +266,21 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         serverPriceVersion: priceVersion,
       );
       if (!mounted ||
-          context.read<GoogleAuthService>().account?.id != accountId) return;
+          context.read<GoogleAuthService>().account?.id != accountId) {
+        return;
+      }
       if (result['redeemed'] == true) {
         await _loadWallet(accountId);
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t['redemptionSuccess'])),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t['redemptionUncertain'])),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
       }
     } finally {
       if (mounted) setState(() => _redeemBusy = false);
@@ -335,14 +363,34 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
 
   Future<void> _chooseDuration(RewardUnlockLabels t) async {
     final groups = <(String, List<CoinUnlockDuration>)>[
-      (t['hour'], [for (var i = 1; i <= 24; i++)
-        CoinUnlockDuration(i, CoinDurationUnit.hour)]),
-      (t['day'], [for (var i = 2; i <= 6; i++)
-        CoinUnlockDuration(i, CoinDurationUnit.day)]),
-      (t['week'], [for (var i = 1; i <= 3; i++)
-        CoinUnlockDuration(i, CoinDurationUnit.week)]),
-      (t['month'], [for (var i = 1; i <= 120; i++)
-        CoinUnlockDuration(i, CoinDurationUnit.month)]),
+      (
+        t['hour'],
+        [
+          for (var i = 1; i <= 24; i++)
+            CoinUnlockDuration(i, CoinDurationUnit.hour),
+        ],
+      ),
+      (
+        t['day'],
+        [
+          for (var i = 2; i <= 6; i++)
+            CoinUnlockDuration(i, CoinDurationUnit.day),
+        ],
+      ),
+      (
+        t['week'],
+        [
+          for (var i = 1; i <= 3; i++)
+            CoinUnlockDuration(i, CoinDurationUnit.week),
+        ],
+      ),
+      (
+        t['month'],
+        [
+          for (var i = 1; i <= 120; i++)
+            CoinUnlockDuration(i, CoinDurationUnit.month),
+        ],
+      ),
     ];
     await showModalBottomSheet<void>(
       context: context,
@@ -355,9 +403,14 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             child: ListView(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  child: Text(t['chooseDuration'],
-                      style: Theme.of(sheetContext).textTheme.titleLarge),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    t['chooseDuration'],
+                    style: Theme.of(sheetContext).textTheme.titleLarge,
+                  ),
                 ),
                 for (final (label, options) in groups)
                   ExpansionTile(
@@ -368,12 +421,19 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                     children: [
                       for (final option in options)
                         ListTile(
-                          key: ValueKey('rewardDuration_${option.unit.name}_${option.amount}'),
+                          key: ValueKey(
+                            'rewardDuration_${option.unit.name}_${option.amount}',
+                          ),
                           title: Text(_durationText(t, option)),
-                          trailing: _duration.unit == option.unit &&
+                          trailing:
+                              _duration.unit == option.unit &&
                                   _duration.amount == option.amount
-                              ? Icon(Icons.check,
-                                  color: Theme.of(sheetContext).colorScheme.primary)
+                              ? Icon(
+                                  Icons.check,
+                                  color: Theme.of(
+                                    sheetContext,
+                                  ).colorScheme.primary,
+                                )
                               : null,
                           onTap: () {
                             setState(() => _duration = option);
@@ -415,19 +475,21 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         hasSubscription
             ? t['activePremium']
             : price == null
-                ? t['pricePending']
-                : '$price ${t['coins']}',
+            ? t['pricePending']
+            : '$price ${t['coins']}',
         style: Theme.of(context).textTheme.bodySmall,
       ),
       secondary: !enabled
           ? Tooltip(
               message: t['notReady'],
-              child: Icon(Icons.lock_clock_outlined,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              child: Icon(
+                Icons.lock_clock_outlined,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             )
           : target == CoinUnlockTarget.fullPremium && _fullBundleBadge()
-              ? Chip(label: Text(t['bestValue']))
-              : null,
+          ? Chip(label: Text(t['bestValue']))
+          : null,
     );
   }
 
@@ -451,7 +513,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final t = RewardUnlockLabels.of(context);
     final scheme = Theme.of(context).colorScheme;
     final quote = _quote();
-    final serverPrice = _selected.length == 1 &&
+    final serverPrice =
+        _selected.length == 1 &&
             _selected.contains(CoinUnlockTarget.fullPremium) &&
             _duration.unit == CoinDurationUnit.month &&
             _duration.amount == 1 &&
@@ -462,34 +525,38 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final balance = _rewardState?['balanceCoins'];
     final rewardDailyLimit = _rewardState?['rewardedDailyLimit'];
     final rewardDailyRemaining = _rewardState?['rewardedDailyRemaining'];
-    final rewardCapReached = rewardDailyLimit is int &&
-        rewardDailyRemaining is int && rewardDailyRemaining <= 0;
+    final rewardCapReached =
+        rewardDailyLimit is int &&
+        rewardDailyRemaining is int &&
+        rewardDailyRemaining <= 0;
     final rewardQuotaLabel = rewardCapReached
         ? t['rewardQuotaReached']
         : rewardDailyLimit is int && rewardDailyRemaining is int
-            ? t['rewardQuotaRemaining']
-                .replaceAll('{count}', '$rewardDailyRemaining')
-            : t['rewardQuotaUncapped'];
+        ? t['rewardQuotaRemaining'].replaceAll(
+            '{count}',
+            '$rewardDailyRemaining',
+          )
+        : t['rewardQuotaUncapped'];
     final nav = RewardNavigationLabels.of(context);
     final earn = widget.mode == RewardPageMode.earnCoins;
     return Scaffold(
-      appBar: AppBar(title: Text(
-        earn ? nav['earn'] : nav['exchange'])),
+      appBar: AppBar(title: Text(earn ? nav['earn'] : nav['exchange'])),
       body: desktopCentered(
         context,
         ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text(earn ? nav['earnDescription'] : nav['exchange'],
-              style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              earn ? nav['earnDescription'] : nav['exchange'],
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 16),
             Text(
-              _rewardState != null &&
-                  _rewardState!['balanceCoins'] is int
+              _rewardState != null && _rewardState!['balanceCoins'] is int
                   ? '${_rewardState!['balanceCoins']} ${t['coins']}'
                   : _walletLoading
-                      ? t['loading']
-                      : t['balancePending'],
+                  ? t['loading']
+                  : t['balancePending'],
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             if (earn && _rewardState?['rewardEarningEnabled'] == true) ...[
@@ -497,11 +564,14 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
               FilledButton.icon(
                 icon: _rewardBusy
                     ? const SizedBox(
-                        width: 18, height: 18,
+                        width: 18,
+                        height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.smart_display_outlined),
-                onPressed: !_rewardBusy && !rewardCapReached &&
+                onPressed:
+                    !_rewardBusy &&
+                        !rewardCapReached &&
                         context.watch<AdvertisingService>().canOfferRewardedAds
                     ? _watchRewardedAd
                     : null,
@@ -547,81 +617,92 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
               ),
             ],
             if (!earn) ...[
-            const SizedBox(height: 16),
-            // Shared duration goes BEFORE the list of checkboxes.
-            Text(t['duration'],
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              key: const Key('rewardDurationButton'),
-              icon: const Icon(Icons.schedule),
-              label: Text(_durationText(t, _duration)),
-              onPressed: () => _chooseDuration(t),
-            ),
-            const SizedBox(height: 18),
-            Text(t['chooseBenefits'],
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            for (final target in _standardTargets)
-              _targetTile(context, t, target),
-            Divider(color: scheme.outlineVariant),
-            for (final target in _placementTargets)
-              _targetTile(context, t, target),
-            Divider(color: scheme.outlineVariant),
-            for (final target in _bundles)
-              _targetTile(context, t, target),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(t['total'],
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    Text(
-                      serverPrice != null
-                          ? '$serverPrice ${t['coins']}'
-                          : quote == null
-                              ? t['unavailable']
-                              : '${quote.requiredCoins} ${t['coins']}',
-                      key: const Key('rewardTotalCoins'),
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 12),
-                    // Once the authenticated quote/goal API is connected,
-                    // these buttons become available. Never claim a saved
-                    // goal or a completed redemption without a server ack.
-                    FilledButton(
-                      key: const Key('rewardSetGoalButton'),
-                      onPressed: null,
-                      child: Text(t['goal']),
-                    ),
-                    OutlinedButton(
-                      onPressed: serverPrice != null &&
-                              _rewardState?['redemptionEnabled'] == true &&
-                              balance is int && balance >= serverPrice &&
-                              !_redeemBusy
-                          ? _redeemFullPremium
-                          : null,
-                      child: Text(t['redeem']),
-                    ),
-                  ],
+              const SizedBox(height: 16),
+              // Shared duration goes BEFORE the list of checkboxes.
+              Text(
+                t['duration'],
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                key: const Key('rewardDurationButton'),
+                icon: const Icon(Icons.schedule),
+                label: Text(_durationText(t, _duration)),
+                onPressed: () => _chooseDuration(t),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                t['chooseBenefits'],
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              for (final target in _standardTargets)
+                _targetTile(context, t, target),
+              Divider(color: scheme.outlineVariant),
+              for (final target in _placementTargets)
+                _targetTile(context, t, target),
+              Divider(color: scheme.outlineVariant),
+              for (final target in _bundles) _targetTile(context, t, target),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        t['total'],
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        serverPrice != null
+                            ? '$serverPrice ${t['coins']}'
+                            : quote == null
+                            ? t['unavailable']
+                            : '${quote.requiredCoins} ${t['coins']}',
+                        key: const Key('rewardTotalCoins'),
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 12),
+                      // Once the authenticated quote/goal API is connected,
+                      // these buttons become available. Never claim a saved
+                      // goal or a completed redemption without a server ack.
+                      FilledButton(
+                        key: const Key('rewardSetGoalButton'),
+                        onPressed: null,
+                        child: Text(t['goal']),
+                      ),
+                      OutlinedButton(
+                        onPressed:
+                            serverPrice != null &&
+                                _rewardState?['redemptionEnabled'] == true &&
+                                balance is int &&
+                                balance >= serverPrice &&
+                                !_redeemBusy
+                            ? _redeemFullPremium
+                            : null,
+                        child: Text(t['redeem']),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(t['freeOnly'],
+              const SizedBox(height: 16),
+              Text(
+                t['freeOnly'],
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall),
-            Text(t['earning'],
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              Text(
+                t['earning'],
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall),
-            TextButton(
-              onPressed: () => context.push('/membership'),
-              child: Text(nav['membership']),
-            ),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              TextButton(
+                onPressed: () => context.push('/membership'),
+                child: Text(nav['membership']),
+              ),
             ],
             if (earn)
               OutlinedButton.icon(

@@ -15,7 +15,6 @@ class DesktopDockLayout {
       manuallyCollapsed || automaticallyCollapsed.contains(panel);
 }
 
-
 /// Fits open desktop dock windows into the usable canvas height.
 ///
 /// This height comes from the same Expanded row as the canvas, so it already
@@ -68,7 +67,9 @@ class DesktopDockColumnFit {
           extraFixedHeight;
     }
 
-    if (autoCollapseEnabled && availableHeight.isFinite && availableHeight > 0) {
+    if (autoCollapseEnabled &&
+        availableHeight.isFinite &&
+        availableHeight > 0) {
       // For equally unused windows, retain the earlier/top windows longer.
       // A deliberately opened/active window is protected regardless of age.
       final candidates = <({CanvasDockPanel panel, int index})>[
@@ -114,9 +115,9 @@ class DesktopDockColumnFit {
     var right = rightVisible ? rightDesired : 0.0;
     final leftGrip = leftVisible && left > 52 ? 18.0 : 0.0;
     final rightGrip = rightVisible && right > 52 ? 18.0 : 0.0;
-    final available = (availableWidth - toolbarWidth - canvasWidth -
-            leftGrip - rightGrip)
-        .clamp(0.0, double.infinity);
+    final available =
+        (availableWidth - toolbarWidth - canvasWidth - leftGrip - rightGrip)
+            .clamp(0.0, double.infinity);
 
     if (left + right <= available) return (left: left, right: right);
 
@@ -124,8 +125,10 @@ class DesktopDockColumnFit {
     final rightFixed = rightVisible && right <= 52 ? right : 0.0;
     final variable = left + right - leftFixed - rightFixed;
     if (variable <= 0) return (left: left, right: right);
-    final fraction = ((available - leftFixed - rightFixed) / variable)
-        .clamp(0.0, 1.0);
+    final fraction = ((available - leftFixed - rightFixed) / variable).clamp(
+      0.0,
+      1.0,
+    );
     left = leftFixed > 0 ? leftFixed : left * fraction;
     right = rightFixed > 0 ? rightFixed : right * fraction;
     return (left: left, right: right);
@@ -140,20 +143,24 @@ class DesktopDockColumnFit {
   }) {
     final expanded = visible.where((p) => !isCollapsed(p)).toList();
     if (expanded.isEmpty) return const {};
-    final preferred = {
-      for (final p in expanded) p: preferredHeight(p),
-    };
+    final preferred = {for (final p in expanded) p: preferredHeight(p)};
     if (!availableHeight.isFinite || availableHeight <= 0) return preferred;
 
     final foldedCount = visible.length - expanded.length;
-    final chrome = expanded.length * (titleHeight + resizeGripHeight) +
+    final chrome =
+        expanded.length * (titleHeight + resizeGripHeight) +
         foldedCount * collapsedHeight +
         (visible.length > 1 ? (visible.length - 1) * gap : 0) +
         extraFixedHeight;
     final budget = availableHeight - chrome;
     final minHeight = minimumBodyHeight
-        .clamp(0.0, (availableHeight - titleHeight - resizeGripHeight)
-            .clamp(1.0, minimumBodyHeight))
+        .clamp(
+          0.0,
+          (availableHeight - titleHeight - resizeGripHeight).clamp(
+            1.0,
+            minimumBodyHeight,
+          ),
+        )
         .toDouble();
     if (budget < expanded.length * minHeight) {
       // If there are more windows than can physically fit, their outer column
@@ -169,9 +176,9 @@ class DesktopDockColumnFit {
     var left = budget;
     while (pending.isNotEmpty) {
       final weight = pending.fold<double>(0, (s, p) => s + preferred[p]!);
-      final undersized = pending.where(
-        (p) => preferred[p]! / weight * left < minHeight,
-      ).toList();
+      final undersized = pending
+          .where((p) => preferred[p]! / weight * left < minHeight)
+          .toList();
       if (undersized.isEmpty) {
         for (final p in pending) {
           assigned[p] = preferred[p]! / weight * left;

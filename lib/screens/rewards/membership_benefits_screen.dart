@@ -27,7 +27,9 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
 
   Future<Map<String, dynamic>> _fetch(CommunityApi api, String owner) async {
     final result = await api.myRewardState();
-    if (!mounted || _owner != owner || !identical(_api, api) ||
+    if (!mounted ||
+        _owner != owner ||
+        !identical(_api, api) ||
         context.read<GoogleAuthService>().account?.id != owner) {
       return result;
     }
@@ -35,16 +37,21 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
     // even if the user has never opened the separate exchange screen.
     DateTime? activeUntil;
     for (final row in (result['entitlements'] as List? ?? const [])) {
-      if (row is! Map || row['feature'] != 'fullPremium' ||
-          row['status'] != 'active' || row['expiresAtEpochMs'] is! num) {
+      if (row is! Map ||
+          row['feature'] != 'fullPremium' ||
+          row['status'] != 'active' ||
+          row['expiresAtEpochMs'] is! num) {
         continue;
       }
       final date = DateTime.fromMillisecondsSinceEpoch(
-        (row['expiresAtEpochMs'] as num).toInt());
+        (row['expiresAtEpochMs'] as num).toInt(),
+      );
       if (date.isAfter(DateTime.now())) activeUntil = date;
     }
-    context.read<PremiumService>()
-        .applyServerCoinPremiumExpiry(activeUntil, accountId: owner);
+    context.read<PremiumService>().applyServerCoinPremiumExpiry(
+      activeUntil,
+      accountId: owner,
+    );
     return result;
   }
 
@@ -76,94 +83,114 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
     final plan = premium.verifiedSubscriptionProductId;
     final tier = isPlayMember
         ? (plan == PremiumService.yearlyProductId
-            ? t['membershipYearly'] : plan == PremiumService.monthlyProductId
-                ? t['membershipMonthly'] : t['membershipPlay'])
-        : premium.hasCoinPremium ? t['membershipCoin']
-        : premium.isLaunchCampaignActive ? t['membershipCampaign']
+              ? t['membershipYearly']
+              : plan == PremiumService.monthlyProductId
+              ? t['membershipMonthly']
+              : t['membershipPlay'])
+        : premium.hasCoinPremium
+        ? t['membershipCoin']
+        : premium.isLaunchCampaignActive
+        ? t['membershipCampaign']
         : t['membershipFree'];
     final coinExpiry = premium.activeCoinPremiumExpiry;
     return Scaffold(
       appBar: AppBar(title: Text(t['membership'])),
-      body: desktopCentered(context, ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(tier, style: Theme.of(context).textTheme.titleLarge),
-                  if (isPlayMember && premium.verifiedExpiryDate != null)
-                    Text('${t['membershipExpires']}: '
-                        '${_fmt(premium.verifiedExpiryDate!)}'),
-                  if (coinExpiry != null)
-                    Text('${t['membershipCoin']} · '
-                        '${t['membershipExpires']}: ${_fmt(coinExpiry)}'),
-                ],
+      body: desktopCentered(
+        context,
+        ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(tier, style: Theme.of(context).textTheme.titleLarge),
+                    if (isPlayMember && premium.verifiedExpiryDate != null)
+                      Text(
+                        '${t['membershipExpires']}: '
+                        '${_fmt(premium.verifiedExpiryDate!)}',
+                      ),
+                    if (coinExpiry != null)
+                      Text(
+                        '${t['membershipCoin']} · '
+                        '${t['membershipExpires']}: ${_fmt(coinExpiry)}',
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(t['membershipBenefit'],
-              style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          if (_owner == null)
-            Text(t['membershipLogin'])
-          else if (_api == null)
-            Text(t['membershipUnavailable'])
-          else
-            FutureBuilder<Map<String, dynamic>>(
-              future: _state,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState != ConnectionState.done) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError || !snapshot.hasData) {
-                  return Text(t['membershipUnavailable']);
-                }
-                final entries = (snapshot.data!['entitlements'] as List? ?? const [])
-                    .whereType<Map>()
-                    .toList();
-                if (entries.isEmpty) {
-                  return Text(t['membershipNoBenefit']);
-                }
-                return Column(
-                  children: entries.map((item) {
-                    final feature = item['feature'] as String? ?? '';
-                    final paused = item['status'] == 'paused';
-                    final end = item['expiresAtEpochMs'];
-                    final date = end is num
-                        ? DateTime.fromMillisecondsSinceEpoch(end.toInt())
-                        : null;
-                    return ListTile(
-                      leading: Icon(Icons.verified_outlined,
-                          color: scheme.primary),
-                      title: Text(reward[feature]),
-                      subtitle: Text(paused
-                          ? reward['paused']
-                          : date != null
-                            ? '${t['membershipExpires']}: ${_fmt(date)}'
-                            : t['membershipUnavailable']),
-                    );
-                  }).toList(),
-                );
-              },
+            const SizedBox(height: 16),
+            Text(
+              t['membershipBenefit'],
+              style: Theme.of(context).textTheme.titleMedium,
             ),
-          if (!isPlayMember) ...[
-            const SizedBox(height: 28),
-            Text(t['membershipUpsell'],
-              style: Theme.of(context).textTheme.bodyMedium),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              key: const Key('membershipLearnPremiumButton'),
-              icon: const Icon(Icons.info_outline),
-              onPressed: () => context.push('/premium'),
-              label: Text(t['membershipDetail']),
-            ),
+            const SizedBox(height: 8),
+            if (_owner == null)
+              Text(t['membershipLogin'])
+            else if (_api == null)
+              Text(t['membershipUnavailable'])
+            else
+              FutureBuilder<Map<String, dynamic>>(
+                future: _state,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError || !snapshot.hasData) {
+                    return Text(t['membershipUnavailable']);
+                  }
+                  final entries =
+                      (snapshot.data!['entitlements'] as List? ?? const [])
+                          .whereType<Map>()
+                          .toList();
+                  if (entries.isEmpty) {
+                    return Text(t['membershipNoBenefit']);
+                  }
+                  return Column(
+                    children: entries.map((item) {
+                      final feature = item['feature'] as String? ?? '';
+                      final paused = item['status'] == 'paused';
+                      final end = item['expiresAtEpochMs'];
+                      final date = end is num
+                          ? DateTime.fromMillisecondsSinceEpoch(end.toInt())
+                          : null;
+                      return ListTile(
+                        leading: Icon(
+                          Icons.verified_outlined,
+                          color: scheme.primary,
+                        ),
+                        title: Text(reward[feature]),
+                        subtitle: Text(
+                          paused
+                              ? reward['paused']
+                              : date != null
+                              ? '${t['membershipExpires']}: ${_fmt(date)}'
+                              : t['membershipUnavailable'],
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+            if (!isPlayMember) ...[
+              const SizedBox(height: 28),
+              Text(
+                t['membershipUpsell'],
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                key: const Key('membershipLearnPremiumButton'),
+                icon: const Icon(Icons.info_outline),
+                onPressed: () => context.push('/premium'),
+                label: Text(t['membershipDetail']),
+              ),
+            ],
           ],
-        ],
-      )),
+        ),
+      ),
     );
   }
 }

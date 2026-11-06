@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -36,23 +35,26 @@ Future<void> _shot(WidgetTester tester, GlobalKey key, String name) async {
   await _settle(tester);
   final error = tester.takeException();
   expect(error, isNull, reason: 'Unexpected Flutter error before $name');
-  final boundary = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+  final boundary =
+      key.currentContext!.findRenderObject() as RenderRepaintBoundary;
   final bytes = await tester.runAsync(() async {
     final img = await boundary.toImage(pixelRatio: 1);
     final data = await img.toByteData(format: ui.ImageByteFormat.png);
     img.dispose();
     return data!.buffer.asUint8List();
   });
-  await tester.runAsync(() =>
-      File(_out.path + '/$name.png').writeAsBytes(bytes!));
+  await tester.runAsync(
+    () => File('${_out.path}/$name.png').writeAsBytes(bytes!),
+  );
 }
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() => _out.createSync(recursive: true));
 
-  testWidgets('capture responsive project and community tile defaults',
-      (tester) async {
+  testWidgets('capture responsive project and community tile defaults', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
@@ -73,29 +75,34 @@ void main() {
     appRouter.go('/');
     final providers = (await tester.runAsync(buildAppProviders))!;
     final root = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(
-      key: root,
-      child: MultiProvider(providers: providers, child: const NiarimApp()),
-    ));
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: root,
+        child: MultiProvider(providers: providers, child: const NiarimApp()),
+      ),
+    );
     await _settle(tester);
     final context = tester.element(find.byType(MaterialApp).first);
     final ps = context.read<ProjectService>();
     final settings = context.read<SettingsService>();
     await settings.markFirstLaunchDone();
     for (var i = 0; i < 7; i++) {
-      await tester.runAsync(() => ps.createProject(
-        name: 'タイル表示テスト ' + (i + 1).toString(),
-        fps: 12,
-        durationSeconds: 1,
-        backgroundColor: i.isEven ? 0xFFB8CEDA : 0x00000000,
-        exportWidth: 320,
-        exportHeight: 180,
-      ));
+      await tester.runAsync(
+        () => ps.createProject(
+          name: 'タイル表示テスト ${i + 1}',
+          fps: 12,
+          durationSeconds: 1,
+          backgroundColor: i.isEven ? 0xFFB8CEDA : 0x00000000,
+          exportWidth: 320,
+          exportHeight: 180,
+        ),
+      );
     }
     Future<void> goto(String route) async {
       appRouter.go(route);
       await _settle(tester);
     }
+
     await goto('/home');
     await _shot(tester, root, '01_projects_phone_default_small');
     tester.view.physicalSize = const Size(820, 1180);
@@ -107,7 +114,8 @@ void main() {
     await tester.tap(modeButton.first);
     await _settle(tester);
     final homeL10n = AppLocalizations.of(
-      tester.element(find.byType(Scaffold).last))!;
+      tester.element(find.byType(Scaffold).last),
+    )!;
     await tester.tap(find.text(homeL10n.homeViewModeSmall).last);
     await _shot(tester, root, '04_projects_pc_user_override_small');
     final prefs = await SharedPreferences.getInstance();
@@ -129,11 +137,16 @@ void main() {
     tester.widget<Slider>(slider).onChanged!(320);
     await tester.pump();
     final l10n = AppLocalizations.of(
-      tester.element(find.byType(Scaffold).last))!;
+      tester.element(find.byType(Scaffold).last),
+    )!;
     await tester.tap(find.text(l10n.commonSave).last);
     await _shot(tester, root, '08_community_pc_user_override_320');
-    expect((await SharedPreferences.getInstance())
-        .getDouble('community.tileMinWidth.v1'), 320);
+    expect(
+      (await SharedPreferences.getInstance()).getDouble(
+        'community.tileMinWidth.v1',
+      ),
+      320,
+    );
     tester.view.physicalSize = const Size(820, 1180);
     await _shot(tester, root, '09_community_tablet_preserves_user_override');
   }, timeout: const Timeout(Duration(minutes: 11)));
@@ -159,10 +172,12 @@ void main() {
     appRouter.go('/');
     final providers = (await tester.runAsync(buildAppProviders))!;
     final root = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(
-      key: root,
-      child: MultiProvider(providers: providers, child: const NiarimApp()),
-    ));
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: root,
+        child: MultiProvider(providers: providers, child: const NiarimApp()),
+      ),
+    );
     await _settle(tester);
     final context = tester.element(find.byType(MaterialApp).first);
     final ps = context.read<ProjectService>();
@@ -175,15 +190,17 @@ void main() {
       CanvasDockPanel.layer,
       CanvasDockPanel.canvasPreview,
     });
-    final project = (await tester.runAsync(() => ps.createProject(
-      name: 'PC ドック配置確認',
-      fps: 12,
-      durationSeconds: 1,
-      backgroundColor: 0xFFB8CEDA,
-      exportWidth: 320,
-      exportHeight: 180,
-    )))!;
-    appRouter.go('/canvas/' + project.id);
+    final project = (await tester.runAsync(
+      () => ps.createProject(
+        name: 'PC ドック配置確認',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFB8CEDA,
+        exportWidth: 320,
+        exportHeight: 180,
+      ),
+    ))!;
+    appRouter.go('/canvas/${project.id}');
     await _shot(tester, root, '10_pc_canvas_docks_expanded');
 
     // Dock windows must start at their column's top, rather than centering
@@ -203,13 +220,18 @@ void main() {
     final frameStrip = tester.getRect(find.byType(FrameStripWidget));
     // Capture actual bounds to distinguish a vertically centered column
     // from a child panel centered within a full-height column.
-    debugPrint('DOCK_GEOMETRY expanded: '
-        'left=$leftDock right=$rightDock '
-        'brush=$brushWindow preview=$previewWindow frame=$frameStrip');
+    debugPrint(
+      'DOCK_GEOMETRY expanded: '
+      'left=$leftDock right=$rightDock '
+      'brush=$brushWindow preview=$previewWindow frame=$frameStrip',
+    );
     expect(brushWindow.top, closeTo(leftDock.top, 2));
     expect(previewWindow.top, closeTo(rightDock.top, 2));
-    expect(leftDock.top, closeTo(rightDock.top, 2),
-        reason: 'Both side columns must start directly under the top menu');
+    expect(
+      leftDock.top,
+      closeTo(rightDock.top, 2),
+      reason: 'Both side columns must start directly under the top menu',
+    );
     expect(leftDock.bottom, lessThanOrEqualTo(frameStrip.top + 1));
     expect(rightDock.bottom, lessThanOrEqualTo(frameStrip.top + 1));
     expect(leftDock.left, greaterThanOrEqualTo(-1));
@@ -219,19 +241,25 @@ void main() {
     // overlap the frame strip, even with three open windows on the right.
     tester.view.physicalSize = const Size(800, 600);
     await _shot(tester, root, '28_pc_narrow_800x600_docks_fit');
-    final narrowLeft =
-        tester.getRect(find.byKey(const ValueKey('desktopLeftDockScroll')));
-    final narrowRight =
-        tester.getRect(find.byKey(const ValueKey('desktopRightDockScroll')));
+    final narrowLeft = tester.getRect(
+      find.byKey(const ValueKey('desktopLeftDockScroll')),
+    );
+    final narrowRight = tester.getRect(
+      find.byKey(const ValueKey('desktopRightDockScroll')),
+    );
     final narrowFrames = tester.getRect(find.byType(FrameStripWidget));
-    final narrowBrush =
-        tester.getRect(find.byKey(const ValueKey('dockTarget-brush')));
-    final narrowPreview =
-        tester.getRect(find.byKey(const ValueKey('dockTarget-canvasPreview')));
-    final narrowColor =
-        tester.getRect(find.byKey(const ValueKey('dockTarget-colorPicker')));
-    final narrowLayers =
-        tester.getRect(find.byKey(const ValueKey('dockTarget-layer')));
+    final narrowBrush = tester.getRect(
+      find.byKey(const ValueKey('dockTarget-brush')),
+    );
+    final narrowPreview = tester.getRect(
+      find.byKey(const ValueKey('dockTarget-canvasPreview')),
+    );
+    final narrowColor = tester.getRect(
+      find.byKey(const ValueKey('dockTarget-colorPicker')),
+    );
+    final narrowLayers = tester.getRect(
+      find.byKey(const ValueKey('dockTarget-layer')),
+    );
     expect(narrowLeft.left, greaterThanOrEqualTo(-1));
     expect(narrowRight.right, lessThanOrEqualTo(801));
     expect(narrowLeft.right, lessThan(narrowRight.left));
@@ -259,9 +287,7 @@ void main() {
     final collapsedBrush = find.byKey(
       const ValueKey('dockCollapsedDrag-brush'),
     );
-    final rightTarget = find.byKey(
-      const ValueKey('dockTarget-canvasPreview'),
-    );
+    final rightTarget = find.byKey(const ValueKey('dockTarget-canvasPreview'));
     expect(collapsedBrush, findsOneWidget);
     await tester.drag(
       collapsedBrush,
@@ -285,7 +311,8 @@ void main() {
     await tester.drag(width, const Offset(-55, 0));
     await _shot(tester, root, '15_pc_canvas_horizontal_resize');
     await settings.moveDesktopDockPanel(
-      CanvasDockPanel.canvasPreview, toRight: false,
+      CanvasDockPanel.canvasPreview,
+      toRight: false,
     );
     await _shot(tester, root, '16_pc_canvas_moved_between_sides');
     expect(
@@ -357,23 +384,24 @@ void main() {
       CanvasDockPanel.canvasPreview,
     });
     final root = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(
-      key: root,
-      child: ChangeNotifierProvider.value(
-        value: settings,
-        child: MaterialApp(
-          locale: const Locale('ja'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: PcWorkspaceLayoutPreview(labelOf: (panel) => panel.name),
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: root,
+        child: ChangeNotifierProvider.value(
+          value: settings,
+          child: MaterialApp(
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: PcWorkspaceLayoutPreview(labelOf: (panel) => panel.name),
+            ),
           ),
         ),
       ),
-    ));
+    );
     await _shot(tester, root, '18_pc_layout_preview_default');
-    await tester.tap(
-      find.byKey(const ValueKey('pcPreviewCollapse-brush')));
+    await tester.tap(find.byKey(const ValueKey('pcPreviewCollapse-brush')));
     await _shot(tester, root, '19_pc_layout_preview_left_folded');
     // The right column uses lazy ListView children. The layer can be outside
     // its visible viewport, so change the same persisted setting directly.
@@ -390,14 +418,17 @@ void main() {
     await tester.drag(height, const Offset(0, 70));
     await _shot(tester, root, '21_pc_layout_preview_width_height_resized');
     await settings.moveDesktopDockPanel(
-      CanvasDockPanel.canvasPreview, toRight: false,
+      CanvasDockPanel.canvasPreview,
+      toRight: false,
     );
     await _shot(tester, root, '22_pc_layout_preview_moved_between_sides');
     await settings.setLeftHanded(true);
     await _shot(tester, root, '23_pc_layout_preview_left_handed');
   }, timeout: const Timeout(Duration(minutes: 9)));
 
-  testWidgets('capture empty desktop dock left/right and recovery', (tester) async {
+  testWidgets('capture empty desktop dock left/right and recovery', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
@@ -418,10 +449,12 @@ void main() {
     appRouter.go('/');
     final providers = (await tester.runAsync(buildAppProviders))!;
     final root = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(
-      key: root,
-      child: MultiProvider(providers: providers, child: const NiarimApp()),
-    ));
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: root,
+        child: MultiProvider(providers: providers, child: const NiarimApp()),
+      ),
+    );
     await _settle(tester);
     final context = tester.element(find.byType(MaterialApp).first);
     final ps = context.read<ProjectService>();
@@ -429,44 +462,68 @@ void main() {
     await settings.markFirstLaunchDone();
     await settings.setForcePcMode(true);
     await settings.setDefaultDockedPanels({
-      CanvasDockPanel.brush, CanvasDockPanel.colorPicker, CanvasDockPanel.layer,
+      CanvasDockPanel.brush,
+      CanvasDockPanel.colorPicker,
+      CanvasDockPanel.layer,
     });
-    final project = (await tester.runAsync(() => ps.createProject(
-      name: '空ドック検証', fps: 12, durationSeconds: 1,
-      backgroundColor: 0xFFB8CEDA, exportWidth: 320, exportHeight: 180,
-    )))!;
-    appRouter.go('/canvas/' + project.id);
+    final project = (await tester.runAsync(
+      () => ps.createProject(
+        name: '空ドック検証',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFB8CEDA,
+        exportWidth: 320,
+        exportHeight: 180,
+      ),
+    ))!;
+    appRouter.go('/canvas/${project.id}');
     await _shot(tester, root, '30_canvas_before_move');
     await settings.setDesktopDockCollapsed(CanvasDockPanel.brush, true);
     await settings.moveDesktopDockPanel(CanvasDockPanel.brush, toRight: true);
     await _shot(tester, root, '31_canvas_left_empty');
     expect(find.byKey(const ValueKey('desktopLeftDockScroll')), findsNothing);
-    final toLeft = await tester.startGesture(tester.getCenter(
-      find.byKey(const ValueKey('dockCollapsedDrag-brush'))));
+    final toLeft = await tester.startGesture(
+      tester.getCenter(find.byKey(const ValueKey('dockCollapsedDrag-brush'))),
+    );
     await toLeft.moveBy(const Offset(-60, 0));
     await tester.pump();
-    expect(find.byKey(const ValueKey('desktopEmptyLeftDockDrop')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('desktopEmptyLeftDockDrop')),
+      findsOneWidget,
+    );
     await _shot(tester, root, '32_canvas_left_dropzone');
-    await toLeft.moveTo(tester.getCenter(
-      find.byKey(const ValueKey('desktopEmptyLeftDockDrop'))));
+    await toLeft.moveTo(
+      tester.getCenter(find.byKey(const ValueKey('desktopEmptyLeftDockDrop'))),
+    );
     await tester.pump();
     await _shot(tester, root, '33_canvas_left_drop_hover');
     await toLeft.up();
     await _shot(tester, root, '34_canvas_left_restored');
-    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(
+      settings.toolOptionDockOrder.contains(CanvasDockPanel.brush),
+      isTrue,
+    );
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
-    await settings.moveDesktopDockPanel(CanvasDockPanel.colorPicker, toRight: false);
+    await settings.moveDesktopDockPanel(
+      CanvasDockPanel.colorPicker,
+      toRight: false,
+    );
     await settings.moveDesktopDockPanel(CanvasDockPanel.layer, toRight: false);
     await _shot(tester, root, '35_canvas_right_empty');
     expect(find.byKey(const ValueKey('desktopRightDockScroll')), findsNothing);
-    final toRight = await tester.startGesture(tester.getCenter(
-      find.byKey(const ValueKey('dockCollapsedDrag-brush'))));
+    final toRight = await tester.startGesture(
+      tester.getCenter(find.byKey(const ValueKey('dockCollapsedDrag-brush'))),
+    );
     await toRight.moveBy(const Offset(60, 0));
     await tester.pump();
-    expect(find.byKey(const ValueKey('desktopEmptyRightDockDrop')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('desktopEmptyRightDockDrop')),
+      findsOneWidget,
+    );
     await _shot(tester, root, '36_canvas_right_dropzone');
-    await toRight.moveTo(tester.getCenter(
-      find.byKey(const ValueKey('desktopEmptyRightDockDrop'))));
+    await toRight.moveTo(
+      tester.getCenter(find.byKey(const ValueKey('desktopEmptyRightDockDrop'))),
+    );
     await tester.pump();
     await _shot(tester, root, '37_canvas_right_drop_hover');
     await toRight.up();
@@ -476,7 +533,9 @@ void main() {
     expect(tester.takeException(), isNull);
   }, timeout: const Timeout(Duration(minutes: 11)));
 
-  testWidgets('capture empty preview dock left/right and recovery', (tester) async {
+  testWidgets('capture empty preview dock left/right and recovery', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(1500, 900);
     tester.view.devicePixelRatio = 1;
@@ -486,52 +545,76 @@ void main() {
     final settings = SettingsService();
     await settings.init();
     await settings.setDefaultDockedPanels({
-      CanvasDockPanel.brush, CanvasDockPanel.colorPicker, CanvasDockPanel.layer,
+      CanvasDockPanel.brush,
+      CanvasDockPanel.colorPicker,
+      CanvasDockPanel.layer,
     });
     await settings.setDesktopDockCollapsed(CanvasDockPanel.brush, true);
     final root = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(
-      key: root,
-      child: ChangeNotifierProvider.value(
-        value: settings,
-        child: MaterialApp(
-          locale: const Locale('ja'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: PcWorkspaceLayoutPreview(labelOf: (panel) => panel.name),
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: root,
+        child: ChangeNotifierProvider.value(
+          value: settings,
+          child: MaterialApp(
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: PcWorkspaceLayoutPreview(labelOf: (panel) => panel.name),
+            ),
           ),
         ),
       ),
-    ));
+    );
     await _shot(tester, root, '39_preview_before_move');
     await settings.moveDesktopDockPanel(CanvasDockPanel.brush, toRight: true);
     await _shot(tester, root, '40_preview_left_empty');
-    expect(tester.getSize(find.byKey(const ValueKey('pcPreviewToolColumn'))).width, 0);
-    final toLeft = await tester.startGesture(tester.getCenter(
-      find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush'))));
+    expect(
+      tester.getSize(find.byKey(const ValueKey('pcPreviewToolColumn'))).width,
+      0,
+    );
+    final toLeft = await tester.startGesture(
+      tester.getCenter(
+        find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush')),
+      ),
+    );
     await toLeft.moveBy(const Offset(-60, 0));
     await tester.pump();
     await _shot(tester, root, '41_preview_left_dropzone');
-    await toLeft.moveTo(tester.getCenter(
-      find.byKey(const ValueKey('pcPreviewToolColumn'))));
+    await toLeft.moveTo(
+      tester.getCenter(find.byKey(const ValueKey('pcPreviewToolColumn'))),
+    );
     await tester.pump();
     await _shot(tester, root, '42_preview_left_drop_hover');
     await toLeft.up();
     await _shot(tester, root, '43_preview_left_restored');
-    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(
+      settings.toolOptionDockOrder.contains(CanvasDockPanel.brush),
+      isTrue,
+    );
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
-    await settings.moveDesktopDockPanel(CanvasDockPanel.colorPicker, toRight: false);
+    await settings.moveDesktopDockPanel(
+      CanvasDockPanel.colorPicker,
+      toRight: false,
+    );
     await settings.moveDesktopDockPanel(CanvasDockPanel.layer, toRight: false);
     await _shot(tester, root, '44_preview_right_empty');
-    expect(tester.getSize(find.byKey(const ValueKey('pcPreviewRightColumn'))).width, 0);
-    final toRight = await tester.startGesture(tester.getCenter(
-      find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush'))));
+    expect(
+      tester.getSize(find.byKey(const ValueKey('pcPreviewRightColumn'))).width,
+      0,
+    );
+    final toRight = await tester.startGesture(
+      tester.getCenter(
+        find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush')),
+      ),
+    );
     await toRight.moveBy(const Offset(60, 0));
     await tester.pump();
     await _shot(tester, root, '45_preview_right_dropzone');
-    await toRight.moveTo(tester.getCenter(
-      find.byKey(const ValueKey('pcPreviewRightColumn'))));
+    await toRight.moveTo(
+      tester.getCenter(find.byKey(const ValueKey('pcPreviewRightColumn'))),
+    );
     await tester.pump();
     await _shot(tester, root, '46_preview_right_drop_hover');
     await toRight.up();
@@ -541,8 +624,9 @@ void main() {
     expect(tester.takeException(), isNull);
   }, timeout: const Timeout(Duration(minutes: 9)));
 
-  testWidgets('capture left-handed desktop canvas mirrored docks',
-      (tester) async {
+  testWidgets('capture left-handed desktop canvas mirrored docks', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
@@ -563,10 +647,12 @@ void main() {
     appRouter.go('/');
     final providers = (await tester.runAsync(buildAppProviders))!;
     final root = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(
-      key: root,
-      child: MultiProvider(providers: providers, child: const NiarimApp()),
-    ));
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: root,
+        child: MultiProvider(providers: providers, child: const NiarimApp()),
+      ),
+    );
     await _settle(tester);
     final context = tester.element(find.byType(MaterialApp).first);
     final projects = context.read<ProjectService>();
@@ -575,12 +661,17 @@ void main() {
     await settings.setForcePcMode(true);
     await settings.setDesktopDockAutoCollapseEnabled(false);
     // Use untouched defaults to prove handedness selects the initial sides.
-    final project = (await tester.runAsync(() => projects.createProject(
-      name: '左手モード左右反転の実画面確認',
-      fps: 12, durationSeconds: 1, backgroundColor: 0xFFB8CEDA,
-      exportWidth: 320, exportHeight: 180,
-    )))!;
-    appRouter.go('/canvas/' + project.id);
+    final project = (await tester.runAsync(
+      () => projects.createProject(
+        name: '左手モード左右反転の実画面確認',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFB8CEDA,
+        exportWidth: 320,
+        exportHeight: 180,
+      ),
+    ))!;
+    appRouter.go('/canvas/${project.id}');
     await _shot(tester, root, '48_mirror_canvas_normal_mode');
     final brush = find.byKey(const ValueKey('dockTarget-brush'));
     final layer = find.byKey(const ValueKey('dockTarget-layer'));
@@ -591,7 +682,8 @@ void main() {
     expect(tester.getRect(layer).right, lessThan(tester.getRect(brush).left));
     final toolbar = tester.getRect(find.byType(ToolbarWidget));
     final rightDock = tester.getRect(
-      find.byKey(const ValueKey('desktopRightDockScroll')));
+      find.byKey(const ValueKey('desktopRightDockScroll')),
+    );
     expect(toolbar.left, greaterThanOrEqualTo(rightDock.right - 1));
 
     await settings.setDesktopDockCollapsed(CanvasDockPanel.brush, true);
@@ -615,14 +707,21 @@ void main() {
     await _settle(tester);
     final source = find.byKey(const ValueKey('dockCollapsedDrag-brush'));
     final target = find.byKey(const ValueKey('dockTarget-colorPicker'));
-    await tester.drag(source,
-        tester.getCenter(target) - tester.getCenter(source));
+    await tester.drag(
+      source,
+      tester.getCenter(target) - tester.getCenter(source),
+    );
     await _shot(tester, root, '53_mirror_canvas_drag_brush_to_physical_left');
-    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(
+      settings.toolOptionDockOrder.contains(CanvasDockPanel.brush),
+      isTrue,
+    );
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
 
     // Moving every left-side window to the right empties the physical left.
-    for (final panel in List<CanvasDockPanel>.of(settings.toolOptionDockOrder)) {
+    for (final panel in List<CanvasDockPanel>.of(
+      settings.toolOptionDockOrder,
+    )) {
       await settings.moveDesktopDockPanel(panel, toRight: true);
     }
     await _shot(tester, root, '54_mirror_canvas_physical_left_empty');
@@ -631,26 +730,36 @@ void main() {
     final gesture = await tester.startGesture(tester.getCenter(sourceRight));
     await gesture.moveBy(const Offset(-55, 0));
     await tester.pump();
-    expect(find.byKey(const ValueKey('desktopEmptyLeftDockDrop')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('desktopEmptyLeftDockDrop')),
+      findsOneWidget,
+    );
     await _shot(tester, root, '55_mirror_canvas_left_dropzone_during_drag');
-    await gesture.moveTo(tester.getCenter(
-      find.byKey(const ValueKey('desktopEmptyLeftDockDrop'))));
+    await gesture.moveTo(
+      tester.getCenter(find.byKey(const ValueKey('desktopEmptyLeftDockDrop'))),
+    );
     await tester.pump();
     await gesture.up();
     await _shot(tester, root, '56_mirror_canvas_left_dock_restored');
-    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(
+      settings.toolOptionDockOrder.contains(CanvasDockPanel.brush),
+      isTrue,
+    );
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.brush), isTrue);
 
     await settings.setLeftHanded(false);
     await _shot(tester, root, '57_mirror_canvas_return_normal_mode');
     // Customized physical position remains unchanged when hand changes.
-    expect(tester.getRect(brush).right,
-        lessThanOrEqualTo(tester.getRect(layer).left));
+    expect(
+      tester.getRect(brush).right,
+      lessThanOrEqualTo(tester.getRect(layer).left),
+    );
     expect(tester.takeException(), isNull);
   }, timeout: const Timeout(Duration(minutes: 11)));
 
-  testWidgets('capture left-handed PC workspace layout preview',
-      (tester) async {
+  testWidgets('capture left-handed PC workspace layout preview', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(1500, 900);
     tester.view.devicePixelRatio = 1;
@@ -662,20 +771,22 @@ void main() {
     await settings.setDesktopDockAutoCollapseEnabled(false);
     // Use untouched defaults to prove handedness selects the initial sides.
     final root = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(
-      key: root,
-      child: ChangeNotifierProvider.value(
-        value: settings,
-        child: MaterialApp(
-          locale: const Locale('ja'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: PcWorkspaceLayoutPreview(labelOf: (panel) => panel.name),
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: root,
+        child: ChangeNotifierProvider.value(
+          value: settings,
+          child: MaterialApp(
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: PcWorkspaceLayoutPreview(labelOf: (panel) => panel.name),
+            ),
           ),
         ),
       ),
-    ));
+    );
     await _shot(tester, root, '58_mirror_preview_normal_mode');
     final brush = find.byKey(const ValueKey('pcPreviewDrop-brush'));
     final layer = find.byKey(const ValueKey('pcPreviewDrop-layer'));
@@ -691,7 +802,10 @@ void main() {
     final target = find.byKey(const ValueKey('pcPreviewDrop-layer'));
     await tester.drag(drag, tester.getCenter(target) - tester.getCenter(drag));
     await _shot(tester, root, '61_mirror_preview_drag_brush_to_left');
-    expect(settings.toolOptionDockOrder.contains(CanvasDockPanel.brush), isTrue);
+    expect(
+      settings.toolOptionDockOrder.contains(CanvasDockPanel.brush),
+      isTrue,
+    );
 
     await settings.setDesktopDockCollapsed(CanvasDockPanel.layer, false);
     await _settle(tester);
@@ -707,8 +821,11 @@ void main() {
     await _shot(tester, root, '63_mirror_preview_physical_right_empty');
     final physicalRight = find.byKey(const ValueKey('pcPreviewRightColumn'));
     expect(tester.getSize(physicalRight).width, 0);
-    final toRight = await tester.startGesture(tester.getCenter(
-      find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush'))));
+    final toRight = await tester.startGesture(
+      tester.getCenter(
+        find.byKey(const ValueKey('pcPreviewCollapsedDrag-brush')),
+      ),
+    );
     await toRight.moveBy(const Offset(55, 0));
     await tester.pump();
     await _shot(tester, root, '64_mirror_preview_right_dropzone');

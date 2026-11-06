@@ -32,6 +32,7 @@ import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
 import '../../widgets/project_trash_dialog.dart';
 import 'widgets/project_list_widget.dart';
+import 'widgets/home_selection_toolbar.dart';
 import 'widgets/home_drawer.dart';
 import 'widgets/exported_work_card.dart';
 import 'widgets/exported_work_preview_layout.dart';
@@ -65,14 +66,20 @@ class _HomeScreenState extends State<HomeScreen>
     if (ownerId == null || api == null) return;
     // Local date merely suppresses redundant traffic. The server determines
     // the actual JST day and checks the visit transaction atomically.
-    final day = DateTime.now().toUtc().add(const Duration(hours: 9)).toIso8601String().substring(0, 10);
+    final day = DateTime.now()
+        .toUtc()
+        .add(const Duration(hours: 9))
+        .toIso8601String()
+        .substring(0, 10);
     final requestKey = '$ownerId/$day';
     if (_lastVisitRequest == requestKey) return;
     _lastVisitRequest = requestKey;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted ||
           context.read<GoogleAuthService>().account?.id != ownerId ||
-          !identical(context.read<CommunityService>().api, api)) return;
+          !identical(context.read<CommunityService>().api, api)) {
+        return;
+      }
       try {
         await api.visitLoginBonus();
       } catch (error) {
@@ -90,6 +97,7 @@ class _HomeScreenState extends State<HomeScreen>
       );
     }
   }
+
   final _projectScrollController = ScrollController();
   late TabController _tabController;
   static const _projectViewModeKey = 'home.projectViewMode.v1';
@@ -128,6 +136,7 @@ class _HomeScreenState extends State<HomeScreen>
       debugPrint('Project tile preference could not be saved: $error');
     }
   }
+
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
@@ -383,8 +392,9 @@ class _HomeScreenState extends State<HomeScreen>
                         tooltip: _searchByTag
                             ? l10n.homeSearchHint
                             : l10n.projectDetailTagsQuickAction,
-                        onPressed: () =>
-                            setState(() => _searchByTag = !_searchByTag),
+                        onPressed: () => _changeProjectScope(
+                          () => _searchByTag = !_searchByTag,
+                        ),
                       ),
                       Expanded(
                         child: TextField(
@@ -396,7 +406,8 @@ class _HomeScreenState extends State<HomeScreen>
                                 : l10n.homeSearchHint,
                             border: InputBorder.none,
                           ),
-                          onChanged: (v) => setState(() => _searchQuery = v),
+                          onChanged: (v) =>
+                              _changeProjectScope(() => _searchQuery = v),
                         ),
                       ),
                     ],
@@ -410,7 +421,7 @@ class _HomeScreenState extends State<HomeScreen>
                   IconButton(
                     icon: const Icon(Icons.close),
                     tooltip: l10n.commonClose,
-                    onPressed: () => setState(() {
+                    onPressed: () => _changeProjectScope(() {
                       _isSearching = false;
                       _searchByTag = false;
                       _searchQuery = '';
@@ -452,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen>
                   IconButton(
                     icon: const Icon(Icons.search),
                     tooltip: l10n.commonSearch,
-                    onPressed: () => setState(() {
+                    onPressed: () => _changeProjectScope(() {
                       _isSearching = true;
                       _searchByTag = false;
                     }),
@@ -494,109 +505,24 @@ class _HomeScreenState extends State<HomeScreen>
           body: Column(
             children: [
               if (_isSelectionMode)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 8,
-                  ),
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  child: Row(
-                    children: [
-                      // 文字領域を可変にし、狭い画面や大きな文字でも
-                      // 切り取り・コピー・削除を1行のまま表示する。
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Tooltip(
-                                message: l10n.homeSelectionAllSelect,
-                                child: TextButton(
-                                  style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                    ),
-                                    minimumSize: const Size(48, 48),
-                                  ),
-                                  onPressed: _selectAllInCurrentFolder,
-                                  child: Text(
-                                    l10n.homeSelectionAllSelect,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ),
+                HomeSelectionToolbar(
+                  selectedCount: _selectedIds.length,
+                  onSelectAll: _selectAllInCurrentFolder,
+                  onDeselectAll: () => setState(() {
+                    _selectedIds.clear();
+                    _isSelectionMode = false;
+                  }),
+                  onCut: _selectedIds.isEmpty ? null : _cutSelected,
+                  onCopy:
+                      _selectedIds.isNotEmpty &&
+                          _selectedIds.every(
+                            (id) => context.read<ProjectService>().projects.any(
+                              (p) => p.id == id,
                             ),
-                            Expanded(
-                              child: Tooltip(
-                                message: l10n.homeSelectionAllDeselect,
-                                child: TextButton(
-                                  style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                    ),
-                                    minimumSize: const Size(48, 48),
-                                  ),
-                                  onPressed: () => setState(() {
-                                    _selectedIds.clear();
-                                    _isSelectionMode = false;
-                                  }),
-                                  child: Text(
-                                    l10n.homeSelectionAllDeselect,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Tooltip(
-                                message: l10n.homeSelectionCount(
-                                  _selectedIds.length,
-                                ),
-                                child: Text(
-                                  l10n.homeSelectionCount(_selectedIds.length),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (_selectedIds.isNotEmpty) ...[
-                        IconButton(
-                          icon: const Icon(Icons.content_cut),
-                          onPressed: _cutSelected,
-                          tooltip: l10n.commonCut,
-                        ),
-                        // フォルダの複製は未対応のため、選択にフォルダが1つでも
-                        // 含まれる場合はコピー操作自体を無効化する。
-                        IconButton(
-                          icon: const Icon(Icons.content_copy),
-                          onPressed:
-                              _selectedIds.every(
-                                (id) => context
-                                    .read<ProjectService>()
-                                    .projects
-                                    .any((p) => p.id == id),
-                              )
-                              ? _copySelected
-                              : null,
-                          tooltip: l10n.commonCopy,
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.delete,
-                            color: ThemeService.activeColorScheme.error,
-                          ),
-                          onPressed: _deleteSelected,
-                          tooltip: l10n.homeMoveToTrash,
-                        ),
-                      ],
-                    ],
-                  ),
+                          )
+                      ? _copySelected
+                      : null,
+                  onTrash: _selectedIds.isEmpty ? null : _deleteSelected,
                 ),
               Expanded(
                 child: TabBarView(
@@ -633,8 +559,9 @@ class _HomeScreenState extends State<HomeScreen>
                                     context,
                                   ).colorScheme.onPrimary,
                                   selected: _showFavoritesOnly,
-                                  onSelected: (v) =>
-                                      setState(() => _showFavoritesOnly = v),
+                                  onSelected: (v) => _changeProjectScope(
+                                    () => _showFavoritesOnly = v,
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
@@ -701,7 +628,7 @@ class _HomeScreenState extends State<HomeScreen>
                       searchByTag: _searchByTag,
                       currentFolderId: _currentFolderId,
                       onOpenFolder: (id) =>
-                          setState(() => _currentFolderId = id),
+                          _changeProjectScope(() => _currentFolderId = id),
                     ),
                     const _WorksTab(key: PageStorageKey('home-works')),
                     const _BookmarkedTab(key: PageStorageKey('home-bookmarks')),
@@ -715,83 +642,100 @@ class _HomeScreenState extends State<HomeScreen>
           // 新規作成のみをワンタップ・選択肢なしで直接行えるFABにする。
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (_currentTabIndex == 0)
-                  FloatingActionButton(
-                    key: const Key('homeScrollToTopFab'),
-                    heroTag: 'home-scroll-to-top',
-                    mini: MediaQuery.sizeOf(context).height < 400,
-                    materialTapTargetSize: MaterialTapTargetSize.padded,
-                    tooltip: l10n.communityScrollToTop,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    shape: const CircleBorder(side: BorderSide.none),
-                    elevation: 0,
-                    focusElevation: 0,
-                    hoverElevation: 0,
-                    highlightElevation: 0,
-                    disabledElevation: 0,
+          // Floating navigation/creation controls can cover the second row
+          // of selection actions in a short, narrow window.
+          floatingActionButton: _isSelectionMode
+              ? null
+              : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (_currentTabIndex == 0)
+                        FloatingActionButton(
+                          key: const Key('homeScrollToTopFab'),
+                          heroTag: 'home-scroll-to-top',
+                          mini: MediaQuery.sizeOf(context).height < 400,
+                          materialTapTargetSize: MaterialTapTargetSize.padded,
+                          tooltip: l10n.communityScrollToTop,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary,
+                          shape: const CircleBorder(side: BorderSide.none),
+                          elevation: 0,
+                          focusElevation: 0,
+                          hoverElevation: 0,
+                          highlightElevation: 0,
+                          disabledElevation: 0,
 
-                    onPressed: () {
-                      if (!_projectScrollController.hasClients) return;
-                      _projectScrollController.animateTo(
-                        0,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOutCubic,
-                      );
-                    },
-                    child: const Icon(Icons.arrow_upward),
-                  )
-                else
-                  const SizedBox(width: 56),
-                if (_currentTabIndex == 0)
-                  FloatingActionButton(
-                    heroTag: 'home-add-project',
-                    mini: MediaQuery.sizeOf(context).height < 400,
-                    materialTapTargetSize: MaterialTapTargetSize.padded,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    shape: const CircleBorder(side: BorderSide.none),
-                    elevation: 0,
-                    focusElevation: 0,
-                    hoverElevation: 0,
-                    highlightElevation: 0,
-                    disabledElevation: 0,
+                          onPressed: () {
+                            if (!_projectScrollController.hasClients) return;
+                            _projectScrollController.animateTo(
+                              0,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOutCubic,
+                            );
+                          },
+                          child: const Icon(Icons.arrow_upward),
+                        )
+                      else
+                        const SizedBox(width: 56),
+                      if (_currentTabIndex == 0)
+                        FloatingActionButton(
+                          heroTag: 'home-add-project',
+                          mini: MediaQuery.sizeOf(context).height < 400,
+                          materialTapTargetSize: MaterialTapTargetSize.padded,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary,
+                          shape: const CircleBorder(side: BorderSide.none),
+                          elevation: 0,
+                          focusElevation: 0,
+                          hoverElevation: 0,
+                          highlightElevation: 0,
+                          disabledElevation: 0,
 
-                    onPressed: () => _showAddChoiceSheet(context),
-                    child: const Icon(Icons.add),
-                  )
-                else if (_currentTabIndex == 1)
-                  FloatingActionButton(
-                    heroTag: 'home-add-work-folder',
-                    mini: MediaQuery.sizeOf(context).height < 400,
-                    materialTapTargetSize: MaterialTapTargetSize.padded,
-                    tooltip: l10n.homeAddSheetNewFolder,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    shape: const CircleBorder(side: BorderSide.none),
-                    elevation: 0,
-                    focusElevation: 0,
-                    hoverElevation: 0,
-                    highlightElevation: 0,
-                    disabledElevation: 0,
+                          onPressed: () => _showAddChoiceSheet(context),
+                          child: const Icon(Icons.add),
+                        )
+                      else if (_currentTabIndex == 1)
+                        FloatingActionButton(
+                          heroTag: 'home-add-work-folder',
+                          mini: MediaQuery.sizeOf(context).height < 400,
+                          materialTapTargetSize: MaterialTapTargetSize.padded,
+                          tooltip: l10n.homeAddSheetNewFolder,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary,
+                          shape: const CircleBorder(side: BorderSide.none),
+                          elevation: 0,
+                          focusElevation: 0,
+                          hoverElevation: 0,
+                          highlightElevation: 0,
+                          disabledElevation: 0,
 
-                    onPressed: () => showCreateFolderNameDialog(
-                      context,
-                      (name) =>
-                          context.read<WorkFolderService>().createFolder(name),
-                    ),
-                    child: const Icon(Icons.create_new_folder_outlined),
-                  )
-                else
-                  const SizedBox(width: 56),
-              ],
-            ),
-          ),
+                          onPressed: () => showCreateFolderNameDialog(
+                            context,
+                            (name) => context
+                                .read<WorkFolderService>()
+                                .createFolder(name),
+                          ),
+                          child: const Icon(Icons.create_new_folder_outlined),
+                        )
+                      else
+                        const SizedBox(width: 56),
+                    ],
+                  ),
+                ),
         ),
       ),
     );
@@ -842,7 +786,10 @@ class _HomeScreenState extends State<HomeScreen>
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<ProjectService>();
     final projectIds = service.projects.map((p) => p.id).toSet();
-    final targetIds = _selectedIds.where(projectIds.contains).toList();
+    final visibleIds = _visibleProjectIds(service);
+    final targetIds = _selectedIds
+        .where((id) => projectIds.contains(id) && visibleIds.contains(id))
+        .toList();
     bool includesFavorite() => service.projects.any(
       (project) => targetIds.contains(project.id) && project.isFavorite,
     );
@@ -886,22 +833,33 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  /// 現在開いているフォルダ直下のプロジェクト・フォルダを両方選択する
-  /// （選択モードでなければ自動的に選択モードへ入る）。手動の「全選択」
-  /// ボタンとCtrl+Aショートカットの両方から使う共通処理。
-  void _selectAllInCurrentFolder() {
-    final service = context.read<ProjectService>();
-    final projectIds = service.projects
-        .where((p) => p.folderId == _currentFolderId)
-        .map((p) => p.id);
-    final folderIds = service.folders
-        .where((f) => f.parentFolderId == _currentFolderId)
-        .map((f) => f.id);
+  void _changeProjectScope(VoidCallback change) {
     setState(() {
-      _isSelectionMode = true;
+      change();
+      _selectedIds.clear();
+      _isSelectionMode = false;
+    });
+  }
+
+  Set<String> _visibleProjectIds(ProjectService service) =>
+      ProjectListWidget.visibleIds(
+        source: service.projects.where((p) => !p.isSharedImport).toList(),
+        allFolders: service.folders,
+        currentFolderId: _currentFolderId,
+        showFavoritesOnly: _showFavoritesOnly,
+        searchQuery: _searchQuery,
+        searchByTag: _searchByTag,
+      );
+
+  /// Select exactly the current list, including its query and favorite filter.
+  /// Shared imports belong to their separate list. Ctrl+A uses the same scope.
+  void _selectAllInCurrentFolder() {
+    final ids = _visibleProjectIds(context.read<ProjectService>());
+    setState(() {
+      _isSelectionMode = ids.isNotEmpty;
       _selectedIds
-        ..addAll(projectIds)
-        ..addAll(folderIds);
+        ..clear()
+        ..addAll(ids);
     });
   }
 
@@ -950,15 +908,24 @@ class _HomeScreenState extends State<HomeScreen>
   /// クリップボードは空になる。
   void _cutSelected() {
     final service = context.read<ProjectService>();
+    final visibleIds = _visibleProjectIds(service);
     final projectIds = service.projects.map((p) => p.id).toSet();
     final folderIds = service.folders.map((f) => f.id).toSet();
     setState(() {
       _clipboardProjectIds
         ..clear()
-        ..addAll(_selectedIds.where(projectIds.contains));
+        ..addAll(
+          _selectedIds.where(
+            (id) => projectIds.contains(id) && visibleIds.contains(id),
+          ),
+        );
       _clipboardFolderIds
         ..clear()
-        ..addAll(_selectedIds.where(folderIds.contains));
+        ..addAll(
+          _selectedIds.where(
+            (id) => folderIds.contains(id) && visibleIds.contains(id),
+          ),
+        );
       _clipboardIsCut = true;
       _selectedIds.clear();
       _isSelectionMode = false;
@@ -971,11 +938,16 @@ class _HomeScreenState extends State<HomeScreen>
   /// 貼り付け後も保持したままにする。
   void _copySelected() {
     final service = context.read<ProjectService>();
+    final visibleIds = _visibleProjectIds(service);
     final projectIds = service.projects.map((p) => p.id).toSet();
     setState(() {
       _clipboardProjectIds
         ..clear()
-        ..addAll(_selectedIds.where(projectIds.contains));
+        ..addAll(
+          _selectedIds.where(
+            (id) => projectIds.contains(id) && visibleIds.contains(id),
+          ),
+        );
       _clipboardFolderIds.clear();
       _clipboardIsCut = false;
       _selectedIds.clear();
@@ -1061,7 +1033,8 @@ class _HomeScreenState extends State<HomeScreen>
           children: [
             IconButton(
               tooltip: l10n.projectListFolderRootOption,
-              onPressed: () => setState(() => _currentFolderId = null),
+              onPressed: () =>
+                  _changeProjectScope(() => _currentFolderId = null),
               constraints: const BoxConstraints.tightFor(width: 48, height: 48),
               visualDensity: VisualDensity.standard,
               icon: const Icon(Icons.home, size: 18),
@@ -1069,7 +1042,8 @@ class _HomeScreenState extends State<HomeScreen>
             for (final folder in chain) ...[
               const Icon(Icons.chevron_right, size: 16),
               TextButton(
-                onPressed: () => setState(() => _currentFolderId = folder.id),
+                onPressed: () =>
+                    _changeProjectScope(() => _currentFolderId = folder.id),
                 style: TextButton.styleFrom(
                   foregroundColor: foreground,
                   minimumSize: const Size(48, 48),

@@ -124,7 +124,9 @@ class _CommunityWorkSettingsScreenState
                           border: const OutlineInputBorder(),
                         ),
                         validator: (value) =>
-                            value == null || value.trim().isEmpty ? labels.title : null,
+                            value == null || value.trim().isEmpty
+                            ? labels.title
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -139,8 +141,10 @@ class _CommunityWorkSettingsScreenState
                           border: const OutlineInputBorder(),
                         ),
                       ),
-                      Text(labels.info,
-                        style: Theme.of(dialogContext).textTheme.bodySmall),
+                      Text(
+                        labels.info,
+                        style: Theme.of(dialogContext).textTheme.bodySmall,
+                      ),
                     ],
                   ),
                 ),
@@ -172,9 +176,9 @@ class _CommunityWorkSettingsScreenState
           description: saved['description']!,
         );
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(labels.saved)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(labels.saved)));
         }
       } finally {
         titleController.dispose();
@@ -442,9 +446,13 @@ class _CommunityWorkSettingsScreenState
                       key: const Key('communityWorkSettingsEditMetadata'),
                       leading: const Icon(Icons.edit_note_outlined),
                       title: Text(CommunityWorkMetadataLabels.of(context).edit),
-                      subtitle: Text(CommunityWorkMetadataLabels.of(context).info),
+                      subtitle: Text(
+                        CommunityWorkMetadataLabels.of(context).info,
+                      ),
                       trailing: const Icon(Icons.chevron_right),
-                      onTap: ownWork && !_busy ? () => _editMetadata(work) : null,
+                      onTap: ownWork && !_busy
+                          ? () => _editMetadata(work)
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 12),

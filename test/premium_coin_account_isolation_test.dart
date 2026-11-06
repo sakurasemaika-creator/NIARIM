@@ -28,28 +28,31 @@ class _FakeAuth extends GoogleAuthService {
 }
 
 void main() {
-  test('coin Premium is revoked immediately on account switch and sign-out', () {
-    final auth = _FakeAuth();
-    final premium = PremiumService();
-    premium.bindGoogleAuth(auth);
-    final expiry = DateTime.now().add(const Duration(days: 7));
-    auth.switchAccount('account-a');
-    premium.applyServerCoinPremiumExpiry(expiry, accountId: 'account-a');
-    expect(premium.hasCoinPremium, isTrue);
+  test(
+    'coin Premium is revoked immediately on account switch and sign-out',
+    () {
+      final auth = _FakeAuth();
+      final premium = PremiumService();
+      premium.bindGoogleAuth(auth);
+      final expiry = DateTime.now().add(const Duration(days: 7));
+      auth.switchAccount('account-a');
+      premium.applyServerCoinPremiumExpiry(expiry, accountId: 'account-a');
+      expect(premium.hasCoinPremium, isTrue);
 
-    auth.switchAccount('account-b');
-    expect(premium.hasCoinPremium, isFalse);
-    premium.applyServerCoinPremiumExpiry(expiry, accountId: 'account-a');
-    expect(premium.hasCoinPremium, isFalse);
+      auth.switchAccount('account-b');
+      expect(premium.hasCoinPremium, isFalse);
+      premium.applyServerCoinPremiumExpiry(expiry, accountId: 'account-a');
+      expect(premium.hasCoinPremium, isFalse);
 
-    premium.applyServerCoinPremiumExpiry(expiry, accountId: 'account-b');
-    expect(premium.hasCoinPremium, isTrue);
-    auth.switchAccount(null);
-    expect(premium.hasCoinPremium, isFalse);
+      premium.applyServerCoinPremiumExpiry(expiry, accountId: 'account-b');
+      expect(premium.hasCoinPremium, isTrue);
+      auth.switchAccount(null);
+      expect(premium.hasCoinPremium, isFalse);
 
-    premium.dispose();
-    auth.dispose();
-  });
+      premium.dispose();
+      auth.dispose();
+    },
+  );
 
   test('unattributed entitlements cannot unlock a bound account', () {
     final auth = _FakeAuth()..switchAccount('account-a');

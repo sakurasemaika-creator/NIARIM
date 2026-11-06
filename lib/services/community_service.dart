@@ -1203,8 +1203,6 @@ class CommunityService extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
-
-
   void _upsert(CommunityWork work) {
     final index = _indexOf(work.id);
     if (index == -1) {
@@ -1308,14 +1306,17 @@ class CommunityService extends ChangeNotifier {
 
   /// Save NIARIM-owned title/description without modifying YouTube metadata.
   Future<CommunityWork> updateOwnWorkMetadata(
-    String workId, {required String title, required String description}
-  ) async {
+    String workId, {
+    required String title,
+    required String description,
+  }) async {
     final known = byId(workId);
     if (known == null || !isOwnWork(known)) {
       throw StateError('Only the poster can edit $workId');
     }
     final trimmedTitle = title.trim();
-    if (trimmedTitle.isEmpty || trimmedTitle.length > 100 ||
+    if (trimmedTitle.isEmpty ||
+        trimmedTitle.length > 100 ||
         description.length > 2000) {
       throw ArgumentError('Invalid NIARIM work metadata');
     }
@@ -1324,7 +1325,9 @@ class CommunityService extends ChangeNotifier {
     if (client != null) {
       await _awaitInAccount(
         client.updateWorkMetadata(
-          workId, title: trimmedTitle, description: description.trim(),
+          workId,
+          title: trimmedTitle,
+          description: description.trim(),
         ),
         revision,
       );

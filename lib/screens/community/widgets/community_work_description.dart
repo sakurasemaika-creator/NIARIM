@@ -10,7 +10,8 @@ class CommunityWorkDescription extends StatefulWidget {
   final String workId;
 
   @override
-  State<CommunityWorkDescription> createState() => _CommunityWorkDescriptionState();
+  State<CommunityWorkDescription> createState() =>
+      _CommunityWorkDescriptionState();
 }
 
 class _CommunityWorkDescriptionState extends State<CommunityWorkDescription> {
@@ -46,7 +47,10 @@ class _CommunityWorkDescriptionState extends State<CommunityWorkDescription> {
       setState(() => _description = result['description'] as String? ?? '');
     } catch (_) {
       if (!mounted || widget.workId != requestedId) return;
-      setState(() { _failed = true; _description = ''; });
+      setState(() {
+        _failed = true;
+        _description = '';
+      });
     }
   }
 
@@ -55,10 +59,16 @@ class _CommunityWorkDescriptionState extends State<CommunityWorkDescription> {
     final labels = CommunityWorkMetadataLabels.of(context);
     if (_description == null) return const SizedBox.shrink();
     if (_failed) {
-      return TextButton(onPressed: () {
-        setState(() { _description = null; _failed = false; });
-        _load();
-      }, child: Text(labels.loadFailed));
+      return TextButton(
+        onPressed: () {
+          setState(() {
+            _description = null;
+            _failed = false;
+          });
+          _load();
+        },
+        child: Text(labels.loadFailed),
+      );
     }
     if (_description!.isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -66,7 +76,10 @@ class _CommunityWorkDescriptionState extends State<CommunityWorkDescription> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(labels.description, style: Theme.of(context).textTheme.titleSmall),
+          Text(
+            labels.description,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
           const SizedBox(height: 5),
           SelectableText(_description!),
         ],

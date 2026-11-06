@@ -202,39 +202,64 @@ void main() {
     expect(find.text(plain.title), findsOneWidget);
   });
 
+  Widget postFixture() => MultiProvider(
+    providers: [
+      ChangeNotifierProvider<CommunityService>(
+        create: (_) => CommunityService(),
+      ),
+      ChangeNotifierProvider<GoogleAuthService>(
+        create: (_) => GoogleAuthService(),
+      ),
+      ChangeNotifierProvider<SettingsService>(create: (_) => SettingsService()),
+      ChangeNotifierProvider<PremiumService>(create: (_) => PremiumService()),
+    ],
+    child: MaterialApp(
+      locale: const Locale('ja'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const CommunityPostScreen(),
+    ),
+  );
+
+  testWidgets('YouTube privacy defaults to unlisted and changes by tap', (
+    tester,
+  ) async {
+    await tester.pumpWidget(postFixture());
+    await tester.pumpAndSettle();
+    final group = find.byType(RadioGroup<String>);
+    expect(tester.widget<RadioGroup<String>>(group).groupValue, 'unlisted');
+    for (final (key, value) in [
+      ('communityPostYouTubePublic', 'public'),
+      ('communityPostYouTubeUnlisted', 'unlisted'),
+    ]) {
+      final choice = find.byKey(Key(key));
+      await tester.ensureVisible(choice);
+      await tester.tap(choice);
+      await tester.pumpAndSettle();
+      expect(tester.widget<RadioGroup<String>>(group).groupValue, value);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'a retained upload keeps its 「AI画像・AI動画使用」 choice across restarts',
     (tester) async {
       SharedPreferences.setMockInitialValues({
         'community.pendingUpload.videoId': 'abcdefghijk',
         'community.pendingUpload.title': '保留中の作品',
+        'community.pendingUpload.youtubePrivacyStatus': 'public',
         'community.pendingUpload.containsGenerativeAiImageOrVideo': true,
       });
-      await tester.pumpWidget(
-        MultiProvider(
-          providers: [
-            ChangeNotifierProvider<CommunityService>(
-              create: (_) => CommunityService(),
-            ),
-            ChangeNotifierProvider<GoogleAuthService>(
-              create: (_) => GoogleAuthService(),
-            ),
-            ChangeNotifierProvider<SettingsService>(
-              create: (_) => SettingsService(),
-            ),
-            ChangeNotifierProvider<PremiumService>(
-              create: (_) => PremiumService(),
-            ),
-          ],
-          child: MaterialApp(
-            locale: const Locale('ja'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: const CommunityPostScreen(),
-          ),
-        ),
-      );
+      await tester.pumpWidget(postFixture());
       await tester.pumpAndSettle();
+      final privacy = find.byType(RadioGroup<String>);
+      final unlisted = find.byKey(const Key('communityPostYouTubeUnlisted'));
+      expect(tester.widget<RadioGroup<String>>(privacy).groupValue, 'public');
+      expect(tester.widget<RadioListTile<String>>(unlisted).enabled, isFalse);
+      await tester.ensureVisible(unlisted);
+      await tester.tap(unlisted);
+      await tester.pumpAndSettle();
+      expect(tester.widget<RadioGroup<String>>(privacy).groupValue, 'public');
       final l10n = AppLocalizations.of(
         tester.element(find.byType(CommunityPostScreen)),
       )!;

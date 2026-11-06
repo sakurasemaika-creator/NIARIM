@@ -321,27 +321,31 @@ class ProjectListWidget extends StatelessWidget {
     this.showEmptyCreateHint = true,
   });
 
-  List<_Entry> _sorted(List<_Entry> src) {
-    final list = List<_Entry>.from(src);
-    switch (sortMode) {
-      case ProjectSortMode.nameAsc:
-        list.sort((a, b) => a.name.compareTo(b.name));
-      case ProjectSortMode.nameDesc:
-        list.sort((a, b) => b.name.compareTo(a.name));
-      case ProjectSortMode.updatedAsc:
-        list.sort((a, b) => a.sortDate.compareTo(b.sortDate));
-      case ProjectSortMode.updatedDesc:
-        list.sort((a, b) => b.sortDate.compareTo(a.sortDate));
-    }
-    return list;
-  }
+  /// IDs come from the same filtering as the rendered list, before sorting.
+  static Set<String> visibleIds({
+    required List<Project> source,
+    required List<ProjectFolder> allFolders,
+    required String? currentFolderId,
+    required bool showFavoritesOnly,
+    required String searchQuery,
+    required bool searchByTag,
+  }) => _visibleEntries(
+    source: source,
+    allFolders: allFolders,
+    currentFolderId: currentFolderId,
+    showFavoritesOnly: showFavoritesOnly,
+    searchQuery: searchQuery,
+    searchByTag: searchByTag,
+  ).map((entry) => entry.id).toSet();
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final projectService = context.watch<ProjectService>();
-    final source = projects ?? projectService.projects;
-    final allFolders = projectService.folders;
+  static List<_Entry> _visibleEntries({
+    required List<Project> source,
+    required List<ProjectFolder> allFolders,
+    required String? currentFolderId,
+    required bool showFavoritesOnly,
+    required String searchQuery,
+    required bool searchByTag,
+  }) {
     final folderIds = allFolders.map((f) => f.id).toSet();
     final rawQuery = searchQuery.trim().toLowerCase();
     // Accept both `tag` and `#tag` input in tag mode.
@@ -395,6 +399,38 @@ class ProjectListWidget extends StatelessWidget {
     if (showFavoritesOnly) {
       entries = entries.where((e) => e.isFavorite).toList();
     }
+    return entries;
+  }
+
+  List<_Entry> _sorted(List<_Entry> src) {
+    final list = List<_Entry>.from(src);
+    switch (sortMode) {
+      case ProjectSortMode.nameAsc:
+        list.sort((a, b) => a.name.compareTo(b.name));
+      case ProjectSortMode.nameDesc:
+        list.sort((a, b) => b.name.compareTo(a.name));
+      case ProjectSortMode.updatedAsc:
+        list.sort((a, b) => a.sortDate.compareTo(b.sortDate));
+      case ProjectSortMode.updatedDesc:
+        list.sort((a, b) => b.sortDate.compareTo(a.sortDate));
+    }
+    return list;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final projectService = context.watch<ProjectService>();
+    final source = projects ?? projectService.projects;
+    final allFolders = projectService.folders;
+    final entries = _visibleEntries(
+      source: source,
+      allFolders: allFolders,
+      currentFolderId: currentFolderId,
+      showFavoritesOnly: showFavoritesOnly,
+      searchQuery: searchQuery,
+      searchByTag: searchByTag,
+    );
     final sorted = _sorted(entries);
 
     if (sorted.isEmpty) {
@@ -919,9 +955,21 @@ class ProjectListWidget extends StatelessWidget {
 
   Widget _projectMenu(BuildContext context, Project project) {
     final l10n = AppLocalizations.of(context)!;
+    final saving = context.read<ProjectService>().isFavoriteSaving(project.id);
     return PopupMenuButton<String>(
+      enabled: !saving,
+      tooltip: saving ? l10n.homeTrashWorking : null,
       padding: EdgeInsets.zero,
-      icon: const Icon(Icons.more_vert, size: 18),
+      icon: saving
+          ? SizedBox.square(
+              dimension: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Theme.of(context).colorScheme.primary,
+                semanticsLabel: l10n.homeTrashWorking,
+              ),
+            )
+          : const Icon(Icons.more_vert, size: 18),
       onSelected: (action) => _handleAction(context, action, project),
       itemBuilder: (_) => [
         PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
@@ -998,7 +1046,10 @@ class ProjectListWidget extends StatelessWidget {
       case 'share':
         _createNiashare(context, project);
       case 'favorite':
-        service.toggleFavorite(project.id);
+        runProjectAction(
+          context,
+          () => service.setFavorite(project.id, !project.isFavorite),
+        );
       case 'move':
         _showMoveProjectToFolderDialog(context, project);
       case 'delete':

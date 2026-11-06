@@ -122,8 +122,7 @@ class AdvertisingService extends ChangeNotifier {
   }) async {
     if (!canOfferRewardedAds ||
         !RegExp(r'^ca-app-pub-[0-9]{16}/[0-9]{10}$').hasMatch(adUnitId) ||
-        !RegExp(r'^v1[.]N[0-9a-f]{32}[.][0-9a-f-]{36}$')
-            .hasMatch(customData)) {
+        !RegExp(r'^v1[.]N[0-9a-f]{32}[.][0-9a-f-]{36}$').hasMatch(customData)) {
       return false;
     }
     final completed = Completer<bool>();

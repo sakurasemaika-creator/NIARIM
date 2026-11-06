@@ -153,7 +153,9 @@ void main() {
             final style = NoiseStyle.values.firstWhere(
               (e) => e.name == variant,
             );
-            await h.tap(find.byKey(ValueKey('noise-style-option-${style.name}')));
+            await h.tap(
+              find.byKey(ValueKey('noise-style-option-${style.name}')),
+            );
             expect(
               h.context.read<FilterService>().currentFilter!.noiseStyle,
               style,
@@ -225,8 +227,12 @@ void main() {
           }
           await h.tap(find.text(h.l10n.filterApplyButton));
           await h.until(
-            () => h.context.read<FilterService>().currentFilter == null &&
-                find.byKey(const ValueKey('filter-tile-grid')).evaluate().isNotEmpty,
+            () =>
+                h.context.read<FilterService>().currentFilter == null &&
+                find
+                    .byKey(const ValueKey('filter-tile-grid'))
+                    .evaluate()
+                    .isNotEmpty,
             'filter apply must finish and return to the tile catalog',
           );
           final after = await h.art('$id-after');
@@ -409,8 +415,12 @@ void main() {
           final appliedSettings = current();
           await h.tap(find.text(h.l10n.filterApplyButton));
           await h.until(
-            () => h.context.read<FilterService>().currentFilter == null &&
-                find.byKey(const ValueKey('filter-tile-grid')).evaluate().isNotEmpty,
+            () =>
+                h.context.read<FilterService>().currentFilter == null &&
+                find
+                    .byKey(const ValueKey('filter-tile-grid'))
+                    .evaluate()
+                    .isNotEmpty,
             '$id apply must finish and restore the catalog',
           );
           final after = await h.art('$id-after');
@@ -759,16 +769,22 @@ void main() {
       await h.settle();
       await h.tap(find.text(h.l10n.filterApplyButton));
       await h.until(
-        () => h.context.read<FilterService>().currentFilter == null &&
-            find.byKey(const ValueKey('filter-tile-grid')).evaluate().isNotEmpty,
+        () =>
+            h.context.read<FilterService>().currentFilter == null &&
+            find
+                .byKey(const ValueKey('filter-tile-grid'))
+                .evaluate()
+                .isNotEmpty,
         'recorded filter must finish and restore the catalog',
       );
       // The filter palette stays open by design after Apply.
       await h.tap(
-        find.descendant(
-          of: find.byType(FilterPanel),
-          matching: find.byIcon(Icons.close),
-        ).first,
+        find
+            .descendant(
+              of: find.byType(FilterPanel),
+              matching: find.byIcon(Icons.close),
+            )
+            .first,
       );
       final expectedReplay = await h.art('$replayId-original');
       await h.tap(find.text(h.l10n.customAutomationStopRecording));
@@ -1281,10 +1297,12 @@ class _Harness {
     // entering the layer panel to inspect generated output.
     if (find.byType(FilterPanel).evaluate().isNotEmpty) {
       await tap(
-        find.descendant(
-          of: find.byType(FilterPanel),
-          matching: find.byIcon(Icons.close),
-        ).first,
+        find
+            .descendant(
+              of: find.byType(FilterPanel),
+              matching: find.byIcon(Icons.close),
+            )
+            .first,
       );
     }
     final visibleInputs = layers

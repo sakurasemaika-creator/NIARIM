@@ -47,7 +47,11 @@ class PremiumService extends ChangeNotifier {
 
   /// The caller uses the NIARIM authenticated API, never a local purchase flag.
   void bindPlayVerifier(
-    Future<Map<String, dynamic>> Function(String productId, String purchaseToken) verify, {
+    Future<Map<String, dynamic>> Function(
+      String productId,
+      String purchaseToken,
+    )
+    verify, {
     required Future<bool> Function() canPurchase,
   }) {
     _playVerifier = verify;
@@ -87,20 +91,26 @@ class PremiumService extends ChangeNotifier {
 
   @visibleForTesting
   static bool isValidPlayVerification(
-    Map<String, dynamic> value, String productId, DateTime now,
+    Map<String, dynamic> value,
+    String productId,
+    DateTime now,
   ) {
     final expiry = value['expiresAtEpochMs'];
     final until = value['verifiedUntilEpochMs'];
     final nowMs = now.millisecondsSinceEpoch;
     return value['verified'] == true &&
         value['productId'] == productId &&
-        expiry is int && until is int &&
-        expiry > nowMs && until > nowMs && until <= expiry &&
+        expiry is int &&
+        until is int &&
+        expiry > nowMs &&
+        until > nowMs &&
+        until <= expiry &&
         until <= nowMs + const Duration(minutes: 16).inMilliseconds;
   }
 
   void _applyVerifiedPlayPremium(
-    Map<String, dynamic> response, String ownerId,
+    Map<String, dynamic> response,
+    String ownerId,
   ) {
     _playExpiryTimer?.cancel();
     _playRefreshTimer?.cancel();
@@ -116,14 +126,11 @@ class PremiumService extends ChangeNotifier {
     _isPremium = true;
     final remaining = until.difference(DateTime.now());
     if (remaining > const Duration(minutes: 1)) {
-      _playRefreshTimer = Timer(
-        remaining - const Duration(minutes: 1),
-        () {
-          if (_boundGoogleAuth?.account?.id == ownerId) {
-            unawaited(_restorePlayPurchasesSilently());
-          }
-        },
-      );
+      _playRefreshTimer = Timer(remaining - const Duration(minutes: 1), () {
+        if (_boundGoogleAuth?.account?.id == ownerId) {
+          unawaited(_restorePlayPurchasesSilently());
+        }
+      });
     }
     _playExpiryTimer = Timer(
       remaining > Duration.zero ? remaining : Duration.zero,
@@ -135,6 +142,7 @@ class PremiumService extends ChangeNotifier {
     );
     notifyListeners();
   }
+
   // Only the authenticated backend may provide coin-purchased Premium.
   // This is intentionally not an editable SharedPreferences entitlement.
   DateTime? _serverCoinPremiumExpiresAt;
@@ -174,14 +182,14 @@ class PremiumService extends ChangeNotifier {
     if (expiresAt == null || !expiresAt.isAfter(DateTime.now())) return false;
     final auth = _boundGoogleAuth;
     return auth == null ||
-        (auth.account != null &&
-            _serverCoinPremiumOwnerId == auth.account!.id);
+        (auth.account != null && _serverCoinPremiumOwnerId == auth.account!.id);
   }
 
   /// Only an account-matched, authenticated API response may update expiry.
   void applyServerCoinPremiumExpiry(DateTime? expiresAt, {String? accountId}) {
     final auth = _boundGoogleAuth;
-    if (expiresAt != null && auth != null &&
+    if (expiresAt != null &&
+        auth != null &&
         (accountId == null || auth.account?.id != accountId)) {
       return;
     }
@@ -209,6 +217,7 @@ class PremiumService extends ChangeNotifier {
 
   /// 実際に購入済みかどうか（課金・ストア関連の判定に使用）。
   bool get hasPurchasedPremium => hasVerifiedPlayPremium;
+
   /// A saved product ID alone is never proof of a paid subscription.
   String? get verifiedSubscriptionProductId =>
       hasVerifiedPlayPremium ? _purchasedProductId : null;
@@ -283,7 +292,8 @@ class PremiumService extends ChangeNotifier {
 
   /// プレミアム機能を利用できるかどうか（機能制限の判定に使用）。
   /// 実際の購入済み、またはリリース記念キャンペーン期間中はtrue。
-  bool get isPremium => hasVerifiedPlayPremium || hasCoinPremium || isLaunchCampaignActive;
+  bool get isPremium =>
+      hasVerifiedPlayPremium || hasCoinPremium || isLaunchCampaignActive;
 
   bool _storeAvailable = false;
   bool get storeAvailable => _storeAvailable;
@@ -351,7 +361,8 @@ class PremiumService extends ChangeNotifier {
       notifyListeners();
       return false;
     }
-    if (_boundGoogleAuth?.account == null || _playVerifier == null ||
+    if (_boundGoogleAuth?.account == null ||
+        _playVerifier == null ||
         _playPreflight == null) {
       _purchaseError = '購入にはログインとサーバー検証が必要です';
       notifyListeners();
@@ -370,7 +381,8 @@ class PremiumService extends ChangeNotifier {
     } catch (_) {
       backendReady = false;
     }
-    if (!backendReady || startingAccount == null ||
+    if (!backendReady ||
+        startingAccount == null ||
         startingAccount != _boundGoogleAuth?.account?.id) {
       _purchaseError = '購入検証サーバーが利用できないため購入を開始できません';
       notifyListeners();
@@ -408,16 +420,23 @@ class PremiumService extends ChangeNotifier {
           _purchasePending = false;
           final verifier = _playVerifier;
           final accountId = _boundGoogleAuth?.account?.id;
-          final purchaseToken = purchase.verificationData.serverVerificationData;
-          if (verifier == null || accountId == null ||
-              purchaseToken.isEmpty || !_productIds.contains(purchase.productID)) {
+          final purchaseToken =
+              purchase.verificationData.serverVerificationData;
+          if (verifier == null ||
+              accountId == null ||
+              purchaseToken.isEmpty ||
+              !_productIds.contains(purchase.productID)) {
             _purchaseError = '購入をサーバーで検証できません';
             break;
           }
           try {
             final result = await verifier(purchase.productID, purchaseToken);
             if (_boundGoogleAuth?.account?.id != accountId) break;
-            if (!isValidPlayVerification(result, purchase.productID, DateTime.now())) {
+            if (!isValidPlayVerification(
+              result,
+              purchase.productID,
+              DateTime.now(),
+            )) {
               _invalidatePlayPremium();
               _purchaseError = 'Google Playの有効な購入を確認できませんでした';
               break;
@@ -432,8 +451,11 @@ class PremiumService extends ChangeNotifier {
                 : DateTime.fromMillisecondsSinceEpoch(
                     rawDate!.length > 11 ? ms : ms * 1000,
                   );
-            await setPremium(true,
-              purchaseDate: purchaseDate, productId: purchase.productID);
+            await setPremium(
+              true,
+              purchaseDate: purchaseDate,
+              productId: purchase.productID,
+            );
           } catch (_) {
             _purchaseError = '購入検証に失敗しました。購入を復元して再確認してください';
             // Leave purchase unacknowledged for a verified retry.

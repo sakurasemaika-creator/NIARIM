@@ -226,7 +226,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   bool _isPlaying = false;
   // プレビュー再生をループさせるかどうか。既定はON（従来どおり最終フレーム
   // から先頭へ戻って再生し続ける）。OFFの場合は最終フレームで自動停止する。
-  bool _loopEnabled = true;
+  final bool _loopEnabled = true;
   // dispose()内でcontext.read<ProjectService>()を呼ぶと、画面が他の
   // ウィジェットツリーの一括破棄に巻き込まれた際（例：GoRouterの
   // go()によるスタック置き換えで前の画面がまとめて破棄されるケース）に
@@ -1575,7 +1575,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     },
                   ),
           ),
-
         ],
       ),
     );
@@ -1597,40 +1596,40 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final sceneId = _selectedSceneId;
     return Stack(
       children: [
-          // Place the live frame counter at the extreme left of the
-          // preview AREA, away from the centered canvas image.
-          Positioned(
-            left: 8,
-            bottom: 8,
-            child: IgnorePointer(
-              child: ValueListenableBuilder<int>(
-                valueListenable: _currentFrameNotifier,
-                builder: (_, frame, _) => Text(
-                  '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/$_totalFrames',
-                  key: const Key('timelinePreviewFrameCount'),
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: ThemeService.activeColorScheme.onSurface,
-                    shadows: [
-                      Shadow(
-                        color: ThemeService.activeColorScheme.surface,
-                        blurRadius: 4,
-                      ),
-                    ],
-                  ),
+        // Place the live frame counter at the extreme left of the
+        // preview AREA, away from the centered canvas image.
+        Positioned(
+          left: 8,
+          bottom: 8,
+          child: IgnorePointer(
+            child: ValueListenableBuilder<int>(
+              valueListenable: _currentFrameNotifier,
+              builder: (_, frame, _) => Text(
+                '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/$_totalFrames',
+                key: const Key('timelinePreviewFrameCount'),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: ThemeService.activeColorScheme.onSurface,
+                  shadows: [
+                    Shadow(
+                      color: ThemeService.activeColorScheme.surface,
+                      blurRadius: 4,
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-          // プレビュー全画面化ボタン（確認・仕上がり
-          // チェックに集中できるよう、プレビューのみを拡大表示する導線）。
-          // 全画面表示中は_buildPreviewContent()自体が呼ばれないため、ここには
-          // 「開く」方向のボタンのみを置けばよい。
-          if (!_isPreviewFullscreen)
-            Positioned(
-              right: 8,
-              top: 8,
+        ),
+        // プレビュー全画面化ボタン（確認・仕上がり
+        // チェックに集中できるよう、プレビューのみを拡大表示する導線）。
+        // 全画面表示中は_buildPreviewContent()自体が呼ばれないため、ここには
+        // 「開く」方向のボタンのみを置けばよい。
+        if (!_isPreviewFullscreen)
+          Positioned(
+            right: 8,
+            top: 8,
             child: FirstUseTooltip(
               tooltipKey: 'timeline_preview_fullscreen',
               message: l10n.timelinePreviewFullscreenTip,

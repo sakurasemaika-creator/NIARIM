@@ -90,7 +90,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   static const _pendingDescriptionKey = 'community.pendingUpload.description';
   static const _pendingYoutubeDescriptionKey =
       'community.pendingUpload.youtubeDescription';
-  static const _pendingYoutubePrivacyKey = 'community.pendingUpload.youtubePrivacyStatus';
+  static const _pendingYoutubePrivacyKey =
+      'community.pendingUpload.youtubePrivacyStatus';
   static const _pendingIsShortKey = 'community.pendingUpload.isShort';
   static const _pendingPublishedKey =
       'community.pendingUpload.isNiarimPublished';
@@ -141,7 +142,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
           _uploadAccountId = prefs.readString(_pendingAccountIdKey);
           _uploadAccountEmail = prefs.readString(_pendingAccountEmailKey);
           _isShort = prefs.readBool(_pendingIsShortKey) ?? false;
-          _youtubePrivacyStatus = prefs.readString(_pendingYoutubePrivacyKey) == 'public'
+          _youtubePrivacyStatus =
+              prefs.readString(_pendingYoutubePrivacyKey) == 'public'
               ? 'public'
               : 'unlisted';
           _isNiarimPublished = prefs.readBool(_pendingPublishedKey) ?? true;
@@ -149,8 +151,10 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
               prefs.readBool(_pendingAiImageVideoKey) ?? false;
           _titleController.text = prefs.readString(_pendingTitleKey) ?? '';
           _youtubeTitleController.text =
-              prefs.readString(_pendingYoutubeTitleKey) ?? _titleController.text;
-          _descriptionController.text = prefs.readString(_pendingDescriptionKey) ?? '';
+              prefs.readString(_pendingYoutubeTitleKey) ??
+              _titleController.text;
+          _descriptionController.text =
+              prefs.readString(_pendingDescriptionKey) ?? '';
           _youtubeDescriptionController.text =
               prefs.readString(_pendingYoutubeDescriptionKey) ?? '';
           _status = _PostStatus.pendingRestored;
@@ -172,10 +176,18 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     await prefs.setString(_pendingAccountIdKey, accountId);
     await prefs.setString(_pendingAccountEmailKey, accountEmail);
     await prefs.setString(_pendingTitleKey, title);
-    await prefs.setString(_pendingYoutubeTitleKey, _youtubeTitleController.text.trim());
-    await prefs.setString(_pendingDescriptionKey, _descriptionController.text.trim());
     await prefs.setString(
-        _pendingYoutubeDescriptionKey, _youtubeDescriptionController.text.trim());
+      _pendingYoutubeTitleKey,
+      _youtubeTitleController.text.trim(),
+    );
+    await prefs.setString(
+      _pendingDescriptionKey,
+      _descriptionController.text.trim(),
+    );
+    await prefs.setString(
+      _pendingYoutubeDescriptionKey,
+      _youtubeDescriptionController.text.trim(),
+    );
     await prefs.setBool(_pendingIsShortKey, _isShort);
     await prefs.setString(_pendingYoutubePrivacyKey, _youtubePrivacyStatus);
     await prefs.setBool(_pendingPublishedKey, _isNiarimPublished);
@@ -309,14 +321,19 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       return;
     }
     if (youtubeTitle.isEmpty) {
-      setState(() => _error = const _PostFailure(_PostFailureKind.noYoutubeTitle));
+      setState(
+        () => _error = const _PostFailure(_PostFailureKind.noYoutubeTitle),
+      );
       return;
     }
     if (utf8.encode(youtubeDescription).length > 5000 ||
         youtubeDescription.contains('<') ||
         youtubeDescription.contains('>')) {
-      setState(() => _error =
-          const _PostFailure(_PostFailureKind.invalidYoutubeDescription));
+      setState(
+        () => _error = const _PostFailure(
+          _PostFailureKind.invalidYoutubeDescription,
+        ),
+      );
       return;
     }
 
@@ -551,8 +568,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     return switch (error.kind) {
       _PostFailureKind.noVideo => l10n.communityPostErrorNoVideo,
       _PostFailureKind.noTitle => l10n.communityPostErrorNoTitle,
-      _PostFailureKind.noYoutubeTitle =>
-        CommunityWorkMetadataLabels.of(context).youtubeTitleRequired,
+      _PostFailureKind.noYoutubeTitle => CommunityWorkMetadataLabels.of(
+        context,
+      ).youtubeTitleRequired,
       _PostFailureKind.invalidYoutubeDescription =>
         CommunityWorkMetadataLabels.of(context).youtubeDescriptionInvalid,
       _PostFailureKind.googleNotConfigured =>
@@ -581,9 +599,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     final message = error == CommunityFieldCopyError.invalidYoutubeDescription
         ? labels.youtubeDescriptionInvalid
         : labels.copyTooLong(maxLength);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -616,9 +634,12 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   key: const Key('copyNiarimTitleToYoutube'),
                   source: _titleController,
                   destination: _youtubeTitleController,
-                  enabled: !_busy && !_restoringPending && retainedVideoId == null,
+                  enabled:
+                      !_busy && !_restoringPending && retainedVideoId == null,
                   maxLength: 100,
-                  label: CommunityWorkMetadataLabels.of(context).copyTitleToYoutube,
+                  label: CommunityWorkMetadataLabels.of(
+                    context,
+                  ).copyTitleToYoutube,
                   onError: _showCopyError,
                 ),
                 const SizedBox(height: 12),
@@ -628,7 +649,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   enabled: !_busy && retainedVideoId == null,
                   maxLength: 100,
                   decoration: InputDecoration(
-                    labelText: CommunityWorkMetadataLabels.of(context).youtubeTitle,
+                    labelText: CommunityWorkMetadataLabels.of(
+                      context,
+                    ).youtubeTitle,
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -636,9 +659,12 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   key: const Key('copyYoutubeTitleToNiarim'),
                   source: _youtubeTitleController,
                   destination: _titleController,
-                  enabled: !_busy && !_restoringPending && retainedVideoId == null,
+                  enabled:
+                      !_busy && !_restoringPending && retainedVideoId == null,
                   maxLength: 100,
-                  label: CommunityWorkMetadataLabels.of(context).copyTitleToNiarim,
+                  label: CommunityWorkMetadataLabels.of(
+                    context,
+                  ).copyTitleToNiarim,
                   onError: _showCopyError,
                 ),
                 const SizedBox(height: 12),
@@ -650,8 +676,12 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   maxLines: 5,
                   maxLength: 2000,
                   decoration: InputDecoration(
-                    labelText: CommunityWorkMetadataLabels.of(context).description,
-                    hintText: CommunityWorkMetadataLabels.of(context).descriptionHint,
+                    labelText: CommunityWorkMetadataLabels.of(
+                      context,
+                    ).description,
+                    hintText: CommunityWorkMetadataLabels.of(
+                      context,
+                    ).descriptionHint,
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -659,10 +689,13 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   key: const Key('copyNiarimDescriptionToYoutube'),
                   source: _descriptionController,
                   destination: _youtubeDescriptionController,
-                  enabled: !_busy && !_restoringPending && retainedVideoId == null,
+                  enabled:
+                      !_busy && !_restoringPending && retainedVideoId == null,
                   maxLength: 5000,
                   youtubeDescription: true,
-                  label: CommunityWorkMetadataLabels.of(context).copyDescriptionToYoutube,
+                  label: CommunityWorkMetadataLabels.of(
+                    context,
+                  ).copyDescriptionToYoutube,
                   onError: _showCopyError,
                 ),
                 const SizedBox(height: 12),
@@ -674,8 +707,12 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   maxLines: 5,
                   maxLength: 5000,
                   decoration: InputDecoration(
-                    labelText: CommunityWorkMetadataLabels.of(context).youtubeDescription,
-                    hintText: CommunityWorkMetadataLabels.of(context).youtubeDescriptionHint,
+                    labelText: CommunityWorkMetadataLabels.of(
+                      context,
+                    ).youtubeDescription,
+                    hintText: CommunityWorkMetadataLabels.of(
+                      context,
+                    ).youtubeDescriptionHint,
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -683,9 +720,12 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   key: const Key('copyYoutubeDescriptionToNiarim'),
                   source: _youtubeDescriptionController,
                   destination: _descriptionController,
-                  enabled: !_busy && !_restoringPending && retainedVideoId == null,
+                  enabled:
+                      !_busy && !_restoringPending && retainedVideoId == null,
                   maxLength: 2000,
-                  label: CommunityWorkMetadataLabels.of(context).copyDescriptionToNiarim,
+                  label: CommunityWorkMetadataLabels.of(
+                    context,
+                  ).copyDescriptionToNiarim,
                   onError: _showCopyError,
                 ),
                 const SizedBox(height: 12),
@@ -710,48 +750,54 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                       : (value) => setState(() => _isShort = value),
                   title: Text(l10n.communityPostAsShort),
                 ),
-                Builder(builder: (context) {
-                  final labels = CommunityPostVisibilityLabels.of(context);
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(labels.heading, style: Theme.of(context).textTheme.titleSmall),
-                      const SizedBox(height: 6),
-                      RadioListTile<String>(
-                        key: const Key('communityPostYouTubeUnlisted'),
-                        contentPadding: EdgeInsets.zero,
-                        value: 'unlisted',
-                        groupValue: _youtubePrivacyStatus,
-                        onChanged: _busy || retainedVideoId != null
-                            ? null
-                            : (value) => setState(
-                                () => _youtubePrivacyStatus = value ?? 'unlisted'),
-                        title: Text(labels.unlistedTitle),
-                        subtitle: Text(labels.unlistedHelp),
-                      ),
-                      RadioListTile<String>(
-                        key: const Key('communityPostYouTubePublic'),
-                        contentPadding: EdgeInsets.zero,
-                        value: 'public',
-                        groupValue: _youtubePrivacyStatus,
-                        onChanged: _busy || retainedVideoId != null
-                            ? null
-                            : (value) => setState(
-                                () => _youtubePrivacyStatus = value ?? 'public'),
-                        title: Text(labels.publicTitle),
-                        subtitle: Text(labels.publicHelp),
-                      ),
-                      if (_youtubePrivacyStatus == 'unlisted')
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Text(
-                            labels.unlistedDisclosure,
-                            style: Theme.of(context).textTheme.bodySmall,
+                Builder(
+                  builder: (context) {
+                    final labels = CommunityPostVisibilityLabels.of(context);
+                    final canChange = !_busy && retainedVideoId == null;
+                    return RadioGroup<String>(
+                      groupValue: _youtubePrivacyStatus,
+                      onChanged: (value) {
+                        if (canChange && value != null) {
+                          setState(() => _youtubePrivacyStatus = value);
+                        }
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            labels.heading,
+                            style: Theme.of(context).textTheme.titleSmall,
                           ),
-                        ),
-                    ],
-                  );
-                }),
+                          const SizedBox(height: 6),
+                          RadioListTile<String>(
+                            key: const Key('communityPostYouTubeUnlisted'),
+                            contentPadding: EdgeInsets.zero,
+                            value: 'unlisted',
+                            enabled: canChange,
+                            title: Text(labels.unlistedTitle),
+                            subtitle: Text(labels.unlistedHelp),
+                          ),
+                          RadioListTile<String>(
+                            key: const Key('communityPostYouTubePublic'),
+                            contentPadding: EdgeInsets.zero,
+                            value: 'public',
+                            enabled: canChange,
+                            title: Text(labels.publicTitle),
+                            subtitle: Text(labels.publicHelp),
+                          ),
+                          if (_youtubePrivacyStatus == 'unlisted')
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Text(
+                                labels.unlistedDisclosure,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   value: _containsGenerativeAiImageOrVideo,

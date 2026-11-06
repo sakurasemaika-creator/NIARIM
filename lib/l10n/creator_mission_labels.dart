@@ -8,16 +8,15 @@ class CreatorMissionLabels {
   factory CreatorMissionLabels.of(BuildContext context) {
     final locale = Localizations.localeOf(context);
     final code = locale.languageCode == 'zh' && locale.scriptCode == 'Hant'
-        ? 'zh_Hant' : locale.languageCode;
+        ? 'zh_Hant'
+        : locale.languageCode;
     return CreatorMissionLabels._(_translations[code] ?? _translations['en']!);
   }
 
-  String get(String key) =>
-      _items[key] ?? _translations['en']![key] ?? key;
+  String get(String key) => _items[key] ?? _translations['en']![key] ?? key;
 
-  String format(String key, int n, {int? each}) => get(key)
-      .replaceAll('{n}', '$n')
-      .replaceAll('{each}', '${each ?? 0}');
+  String format(String key, int n, {int? each}) =>
+      get(key).replaceAll('{n}', '$n').replaceAll('{each}', '${each ?? 0}');
 }
 
 const Map<String, Map<String, String>> _translations = {
@@ -54,7 +53,8 @@ const Map<String, Map<String, String>> _translations = {
     'detailsDraftCount': '複数作品の達成数は暫定集計です。正式な受取時にサーバーが再確認します。',
     'detailsPerWorkRule': '作品ごとに1回受け取れます。別の作品で同じ条件を達成すると、別途受け取れます。',
     'detailsAccountRule': 'この条件の報酬はアカウントにつき1回限りです。',
-    'detailsTemplateRule': '作品が条件を達成すると、上部に作品名入りの達成項目が追加されます。この見本の行は常に未達成のまま表示されます。',
+    'detailsTemplateRule':
+        '作品が条件を達成すると、上部に作品名入りの達成項目が追加されます。この見本の行は常に未達成のまま表示されます。',
     'detailsPending': '達成を確認中です。48時間後にもう一度「受け取る」を押してください。',
     'detailsOffline': 'この報酬は現在公開準備中のため、受取操作は無効です。',
     'drawerAttention': '未受取の達成ミッションがあります',
@@ -99,7 +99,8 @@ const Map<String, Map<String, String>> _translations = {
     'worksGoal': '{n} works each reach {each} bookmarks',
     'worksPublished': 'Publish {n} works',
     'detailsTitle': 'Achievement requirements',
-    'detailsHint': 'Claim once per account or per work after the goal is met. Previously claimed milestones cannot pay again.',
+    'detailsHint':
+        'Claim once per account or per work after the goal is met. Previously claimed milestones cannot pay again.',
     'notAchieved': 'Not achieved',
     'detailsTooltip': 'Show details',
     'reviewing': 'Verification pending',
@@ -109,7 +110,8 @@ const Map<String, Map<String, String>> _translations = {
     'activityPublished': 'Published {title}',
     'activityFollowers': 'Reached {count} followers',
     'activityWorkBookmarks': '{title} reached {count} bookmarks',
-    'activityWorksBookmarks': 'Your {works} published works each reached {count} bookmarks',
+    'activityWorksBookmarks':
+        'Your {works} published works each reached {count} bookmarks',
     'activityWorksPublished': 'You published {works} works',
     'activityObserved': 'Date first confirmed',
     'activityEmpty': 'No mission achievements yet',
@@ -120,19 +122,25 @@ const Map<String, Map<String, String>> _translations = {
     'detailsWorkProgress': 'Current bookmarks: {n} (required: {each})',
     'detailsWorksProgress': 'Qualifying works: {n} (required: {each})',
     'detailsFollowersProgress': 'Current followers: {n} (required: {each})',
-    'detailsDraftCount': 'Multiple-work progress is provisional. The server rechecks before a payout.',
-    'detailsPerWorkRule': 'One reward per work. A different work can qualify separately.',
+    'detailsDraftCount':
+        'Multiple-work progress is provisional. The server rechecks before a payout.',
+    'detailsPerWorkRule':
+        'One reward per work. A different work can qualify separately.',
     'detailsAccountRule': 'This milestone pays once per account.',
-    'detailsTemplateRule': 'When a work qualifies, a titled achievement appears above. This template always remains incomplete.',
-    'detailsPending': 'Verification in progress. Tap Claim again after 48 hours.',
+    'detailsTemplateRule':
+        'When a work qualifies, a titled achievement appears above. This template always remains incomplete.',
+    'detailsPending':
+        'Verification in progress. Tap Claim again after 48 hours.',
     'detailsOffline': 'This reward is not live yet; claiming is disabled.',
     'drawerAttention': 'Unclaimed mission achievements',
     'achieved': 'Achieved',
     'claimReceived': 'Reward claimed',
-    'holdStarted': 'Verification started. Return after 48 hours and tap Claim again.',
+    'holdStarted':
+        'Verification started. Return after 48 hours and tap Claim again.',
     'claimFailed': 'Couldn\'t verify this claim. Refresh and try again.',
     'workSection': 'Achievements by work',
-    'workWarning': 'Only achieved milestones are shown. Each work and mission can be claimed once.',
+    'workWarning':
+        'Only achieved milestones are shown. Each work and mission can be claimed once.',
     'noAchievements': 'No achieved work milestones on this page.',
     'loadMore': 'Check next 25 works',
     'workListError': 'Couldn\'t load work achievements.',
@@ -154,9 +162,12 @@ const Map<String, Map<String, String>> _translations = {
     'loading': 'Loading mission status…',
     'loadError': 'Could not load mission status.',
     'localTime': 'Editing time on this device (reference): {n} hours',
-    'candidateMinutes': 'Server-recorded candidate time: {n} min (not reward-verified)',
-    'timeWarning': 'Local editing time is for display only. Coin rewards require server verification.',
-    'rankingWarning': 'Ranking missions use NIARIM bookmark rankings, not YouTube metrics.',
+    'candidateMinutes':
+        'Server-recorded candidate time: {n} min (not reward-verified)',
+    'timeWarning':
+        'Local editing time is for display only. Coin rewards require server verification.',
+    'rankingWarning':
+        'Ranking missions use NIARIM bookmark rankings, not YouTube metrics.',
     'budget': 'Each creator mission can be claimed once.',
   },
   'es': {
@@ -178,7 +189,8 @@ const Map<String, Map<String, String>> _translations = {
     'activityPublished': 'Publicaste {title}',
     'activityFollowers': 'Alcanzaste {count} seguidores',
     'activityWorkBookmarks': '{title} alcanzó {count} marcadores',
-    'activityWorksBookmarks': 'Tus {works} obras alcanzaron {count} marcadores cada una',
+    'activityWorksBookmarks':
+        'Tus {works} obras alcanzaron {count} marcadores cada una',
     'activityWorksPublished': 'Publicaste {works} obras',
     'activityObserved': 'Fecha de confirmación',
     'activityEmpty': 'Aún no hay logros',
@@ -189,10 +201,13 @@ const Map<String, Map<String, String>> _translations = {
     'detailsWorkProgress': 'Marcadores actuales: {n} (necesarios: {each})',
     'detailsWorksProgress': 'Obras válidas: {n} (necesarias: {each})',
     'detailsFollowersProgress': 'Seguidores actuales: {n} (necesarios: {each})',
-    'detailsDraftCount': 'El progreso es provisional; el servidor lo verifica antes del premio.',
-    'detailsPerWorkRule': 'Una vez por obra. Otras obras pueden recibir su propio premio.',
+    'detailsDraftCount':
+        'El progreso es provisional; el servidor lo verifica antes del premio.',
+    'detailsPerWorkRule':
+        'Una vez por obra. Otras obras pueden recibir su propio premio.',
     'detailsAccountRule': 'Una vez por cuenta.',
-    'detailsTemplateRule': 'Cuando una obra alcance el objetivo, aparecerá arriba con su nombre. Esta plantilla permanece sin completar.',
+    'detailsTemplateRule':
+        'Cuando una obra alcance el objetivo, aparecerá arriba con su nombre. Esta plantilla permanece sin completar.',
     'detailsPending': 'Verificación en curso. Reclama de nuevo tras 48 horas.',
     'detailsOffline': 'La recompensa todavía no está disponible.',
     'drawerAttention': 'Misiones logradas sin reclamar',
@@ -201,7 +216,8 @@ const Map<String, Map<String, String>> _translations = {
     'holdStarted': 'Verificación iniciada. Vuelve en 48 horas y reclama.',
     'claimFailed': 'No se pudo reclamar. Actualiza e inténtalo de nuevo.',
     'workSection': 'Logros por obra',
-    'workWarning': 'Solo se muestran hitos alcanzados. Una vez por obra y misión.',
+    'workWarning':
+        'Solo se muestran hitos alcanzados. Una vez por obra y misión.',
     'noAchievements': 'Sin hitos en esta página.',
     'loadMore': 'Ver otras 25 obras',
     'workListError': 'Error al cargar logros de obras.',
@@ -211,15 +227,21 @@ const Map<String, Map<String, String>> _translations = {
     'works': '{n} obras con {each} marcadores cada una',
     'followers': '{n} seguidores',
     'rank': 'Entre los primeros {n} en marcadores',
-    'coin': 'monedas', 'perWork': 'Una vez por obra', 'claimed': 'Recibido', 'pending': 'En revisión',
-    'notClaimed': 'Sin reclamar', 'upcoming': 'Recompensas en preparación',
+    'coin': 'monedas',
+    'perWork': 'Una vez por obra',
+    'claimed': 'Recibido',
+    'pending': 'En revisión',
+    'notClaimed': 'Sin reclamar',
+    'upcoming': 'Recompensas en preparación',
     'login': 'Inicia sesión con Google para ver las misiones.',
     'offline': 'Servidor de misiones no disponible.',
-    'retry': 'Actualizar', 'loading': 'Cargando misiones…',
+    'retry': 'Actualizar',
+    'loading': 'Cargando misiones…',
     'loadError': 'No se pudieron cargar las misiones.',
     'localTime': 'Tiempo de edición local: {n} horas',
     'candidateMinutes': 'Tiempo candidato registrado: {n} min (sin verificar)',
-    'timeWarning': 'El tiempo local es orientativo. Las recompensas requieren verificación.',
+    'timeWarning':
+        'El tiempo local es orientativo. Las recompensas requieren verificación.',
     'rankingWarning': 'Clasificación por marcadores de NIARIM, no de YouTube.',
     'budget': 'Cada misión se reclama una sola vez.',
   },
@@ -232,7 +254,8 @@ const Map<String, Map<String, String>> _translations = {
     'worksGoal': '{n} œuvres atteignent chacune {each} favoris',
     'worksPublished': 'Publier {n} œuvres',
     'detailsTitle': 'Conditions',
-    'detailsHint': 'Chaque mission peut être réclamée une fois par compte ou par œuvre.',
+    'detailsHint':
+        'Chaque mission peut être réclamée une fois par compte ou par œuvre.',
     'notAchieved': 'Non atteint',
     'detailsTooltip': 'Voir les détails',
     'reviewing': 'En vérification',
@@ -242,7 +265,8 @@ const Map<String, Map<String, String>> _translations = {
     'activityPublished': 'Vous avez publié {title}',
     'activityFollowers': 'Vous avez atteint {count} abonnés',
     'activityWorkBookmarks': '{title} a atteint {count} favoris',
-    'activityWorksBookmarks': 'Vos {works} œuvres ont chacune atteint {count} favoris',
+    'activityWorksBookmarks':
+        'Vos {works} œuvres ont chacune atteint {count} favoris',
     'activityWorksPublished': 'Vous avez publié {works} œuvres',
     'activityObserved': 'Date de confirmation',
     'activityEmpty': 'Aucune réussite pour le moment',
@@ -253,10 +277,13 @@ const Map<String, Map<String, String>> _translations = {
     'detailsWorkProgress': 'Favoris actuels : {n} (requis : {each})',
     'detailsWorksProgress': 'Œuvres qualifiées : {n} (requises : {each})',
     'detailsFollowersProgress': 'Abonnés actuels : {n} (requis : {each})',
-    'detailsDraftCount': 'Le décompte est provisoire. Le serveur revérifie avant le paiement.',
-    'detailsPerWorkRule': 'Une fois par œuvre. Chaque nouvelle œuvre peut être récompensée.',
+    'detailsDraftCount':
+        'Le décompte est provisoire. Le serveur revérifie avant le paiement.',
+    'detailsPerWorkRule':
+        'Une fois par œuvre. Chaque nouvelle œuvre peut être récompensée.',
     'detailsAccountRule': 'Une fois par compte.',
-    'detailsTemplateRule': 'Lorsqu’une œuvre réussit, une ligne à son nom apparaît en haut. Ce modèle reste incomplet.',
+    'detailsTemplateRule':
+        'Lorsqu’une œuvre réussit, une ligne à son nom apparaît en haut. Ce modèle reste incomplet.',
     'detailsPending': 'Vérification en cours. Réclamez après 48 h.',
     'detailsOffline': 'Cette récompense n’est pas encore disponible.',
     'drawerAttention': 'Missions accomplies non réclamées',
@@ -265,7 +292,8 @@ const Map<String, Map<String, String>> _translations = {
     'holdStarted': 'Vérification lancée. Revenez dans 48 h pour réclamer.',
     'claimFailed': 'Vérification impossible. Actualisez puis réessayez.',
     'workSection': 'Réussites par œuvre',
-    'workWarning': 'Seuls les objectifs atteints apparaissent. Une fois par œuvre et mission.',
+    'workWarning':
+        'Seuls les objectifs atteints apparaissent. Une fois par œuvre et mission.',
     'noAchievements': 'Aucune réussite sur cette page.',
     'loadMore': 'Voir les 25 œuvres suivantes',
     'workListError': 'Impossible de charger les réussites.',
@@ -275,15 +303,21 @@ const Map<String, Map<String, String>> _translations = {
     'works': '{n} œuvres ayant chacune {each} favoris',
     'followers': '{n} abonnés',
     'rank': 'Top {n} du classement des favoris',
-    'coin': 'pièces', 'perWork': 'Une fois par œuvre', 'claimed': 'Obtenu', 'pending': 'En vérification',
-    'notClaimed': 'Non réclamé', 'upcoming': 'Récompenses en préparation',
+    'coin': 'pièces',
+    'perWork': 'Une fois par œuvre',
+    'claimed': 'Obtenu',
+    'pending': 'En vérification',
+    'notClaimed': 'Non réclamé',
+    'upcoming': 'Récompenses en préparation',
     'login': 'Connectez-vous avec Google pour voir vos missions.',
     'offline': 'Serveur de missions indisponible.',
-    'retry': 'Actualiser', 'loading': 'Chargement des missions…',
+    'retry': 'Actualiser',
+    'loading': 'Chargement des missions…',
     'loadError': 'Impossible de charger les missions.',
     'localTime': 'Temps de création local : {n} heures',
     'candidateMinutes': 'Temps candidat enregistré : {n} min (non vérifié)',
-    'timeWarning': 'Le temps local est indicatif. Les pièces exigent une validation serveur.',
+    'timeWarning':
+        'Le temps local est indicatif. Les pièces exigent une validation serveur.',
     'rankingWarning': 'Classement des favoris NIARIM uniquement, pas YouTube.',
     'budget': 'Chaque mission est récompensée une seule fois.',
   },
@@ -320,7 +354,8 @@ const Map<String, Map<String, String>> _translations = {
     'detailsDraftCount': '여러 작품의 달성 수는 임시 집계이며 지급 시 서버에서 다시 확인합니다.',
     'detailsPerWorkRule': '작품마다 1회 받을 수 있습니다. 다른 작품은 별도로 달성할 수 있습니다.',
     'detailsAccountRule': '계정당 한 번만 받을 수 있습니다.',
-    'detailsTemplateRule': '조건을 달성한 작품은 제목이 있는 항목으로 상단에 표시됩니다. 이 예시 항목은 항상 미달성으로 남습니다.',
+    'detailsTemplateRule':
+        '조건을 달성한 작품은 제목이 있는 항목으로 상단에 표시됩니다. 이 예시 항목은 항상 미달성으로 남습니다.',
     'detailsPending': '확인 중입니다. 48시간 후 다시 받기를 누르세요.',
     'detailsOffline': '현재 보상 지급이 비활성화되어 있습니다.',
     'drawerAttention': '받지 않은 달성 미션이 있습니다',
@@ -339,11 +374,16 @@ const Map<String, Map<String, String>> _translations = {
     'works': '북마크 {each}개 이상인 작품 {n}개',
     'followers': '팔로워 {n}명',
     'rank': '북마크 순위 {n}위 이내',
-    'coin': '코인', 'perWork': '작품마다 1회', 'claimed': '획득 완료', 'pending': '검증 중',
-    'notClaimed': '미획득', 'upcoming': '보상 준비 중',
+    'coin': '코인',
+    'perWork': '작품마다 1회',
+    'claimed': '획득 완료',
+    'pending': '검증 중',
+    'notClaimed': '미획득',
+    'upcoming': '보상 준비 중',
     'login': 'Google 계정으로 로그인하면 미션을 볼 수 있습니다.',
     'offline': '미션 서버에 연결되지 않았습니다.',
-    'retry': '새로고침', 'loading': '미션 상태 확인 중…',
+    'retry': '새로고침',
+    'loading': '미션 상태 확인 중…',
     'loadError': '미션을 불러올 수 없습니다.',
     'localTime': '이 기기 제작 시간(참고): {n}시간',
     'candidateMinutes': '서버의 검증 전 제작 시간: {n}분',
@@ -403,11 +443,16 @@ const Map<String, Map<String, String>> _translations = {
     'works': '{n} 篇作品各有至少 {each} 个收藏',
     'followers': '{n} 位关注者',
     'rank': 'NIARIM 收藏榜前 {n} 名',
-    'coin': '金币', 'perWork': '每篇作品一次', 'claimed': '已领取', 'pending': '审核中',
-    'notClaimed': '未领取', 'upcoming': '奖励筹备中',
+    'coin': '金币',
+    'perWork': '每篇作品一次',
+    'claimed': '已领取',
+    'pending': '审核中',
+    'notClaimed': '未领取',
+    'upcoming': '奖励筹备中',
     'login': '使用 Google 登录以查看任务。',
     'offline': '任务服务器未连接。',
-    'retry': '刷新', 'loading': '正在加载任务…',
+    'retry': '刷新',
+    'loading': '正在加载任务…',
     'loadError': '无法加载任务。',
     'localTime': '此设备的创作时间（参考）：{n} 小时',
     'candidateMinutes': '服务器记录的候选时间：{n} 分钟（待验证）',
@@ -467,11 +512,16 @@ const Map<String, Map<String, String>> _translations = {
     'works': '{n} 篇作品各有至少 {each} 個收藏',
     'followers': '{n} 位追蹤者',
     'rank': 'NIARIM 收藏榜前 {n} 名',
-    'coin': '金幣', 'perWork': '每篇作品一次', 'claimed': '已領取', 'pending': '審核中',
-    'notClaimed': '未領取', 'upcoming': '獎勵籌備中',
+    'coin': '金幣',
+    'perWork': '每篇作品一次',
+    'claimed': '已領取',
+    'pending': '審核中',
+    'notClaimed': '未領取',
+    'upcoming': '獎勵籌備中',
     'login': '使用 Google 登入以查看任務。',
     'offline': '任務伺服器未連線。',
-    'retry': '重新整理', 'loading': '正在載入任務…',
+    'retry': '重新整理',
+    'loading': '正在載入任務…',
     'loadError': '無法載入任務。',
     'localTime': '此裝置的創作時間（參考）：{n} 小時',
     'candidateMinutes': '伺服器記錄的候選時間：{n} 分鐘（待驗證）',

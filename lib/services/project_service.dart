@@ -467,7 +467,8 @@ class ProjectService extends ChangeNotifier {
     if (projectId != _trackedProjectId || _workPaused) return;
     pingWorkActivity();
     _creatorEditReporter?.recordCommittedMutation(
-      projectId, activeSeconds: () => currentWorkSessionSeconds,
+      projectId,
+      activeSeconds: () => currentWorkSessionSeconds,
     );
   }
 
@@ -485,7 +486,8 @@ class ProjectService extends ChangeNotifier {
     final id = _trackedProjectId;
     if (id != null) {
       _creatorEditReporter?.noteInteraction(
-        projectId: id, activeSeconds: () => currentWorkSessionSeconds,
+        projectId: id,
+        activeSeconds: () => currentWorkSessionSeconds,
       );
     }
   }
@@ -502,8 +504,8 @@ class ProjectService extends ChangeNotifier {
     final clock = _workStopwatch;
     if (id == null || clock == null || _workPaused) return;
     final now = clock.elapsedMilliseconds;
-    final activeEnd = now < _workLastActivityMs +
-            _workInactivityThreshold.inMilliseconds
+    final activeEnd =
+        now < _workLastActivityMs + _workInactivityThreshold.inMilliseconds
         ? now
         : _workLastActivityMs + _workInactivityThreshold.inMilliseconds;
     final delta = activeEnd - _workLastSettledMs;
@@ -2620,6 +2622,8 @@ class ProjectService extends ChangeNotifier {
   }
 
   final Map<String, Future<void>> _projectSaves = {};
+  final Map<String, int> _favoriteChanges = {};
+  bool isFavoriteSaving(String id) => (_favoriteChanges[id] ?? 0) > 0;
   Future<void>? _folderOperations;
   bool _folderDisposed = false;
 
@@ -3015,24 +3019,52 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> toggleFavorite(String id) => _queueProjectSave(id, () async {
-    if (_folderDisposed) return;
-    final idx = _projects.indexWhere((p) => p.id == id);
-    if (idx >= 0) {
-      _projects[idx] = _projects[idx].copyWith(
-        isFavorite: !_projects[idx].isFavorite,
-      );
-      _notifyFolders();
-      // A favorite requested during an acknowledged Trash write must wait for
-      // that write rather than display a change that its completion discards.
-      // The file write shares this queue without enqueuing itself recursively.
+  Future<void> toggleFavorite(String id) => _changeFavorite(id, null);
+
+  /// Preserve the intent of a menu that may have opened before another save.
+  Future<void> setFavorite(String id, bool value) => _changeFavorite(id, value);
+
+  Future<void> _changeFavorite(String id, bool? requestedValue) {
+    if (_folderDisposed) return Future.value();
+    _favoriteChanges[id] = (_favoriteChanges[id] ?? 0) + 1;
+    final change = _queueProjectSave(id, () async {
+      final project = _projects.where((p) => p.id == id).firstOrNull;
+      if (project == null) return;
+      final value = requestedValue ?? !project.isFavorite;
+      if (value == project.isFavorite) return;
+      final scenes = _scenes[id];
+      final tileManager = _tileManagers[id];
       try {
-        await _writeProjectFile(id);
+        if (scenes == null || tileManager == null) {
+          throw StateError('Project content is unavailable for saving');
+        }
+        await NiaproSerializer.save(
+          project: project.copyWith(isFavorite: value),
+          scenes: scenes,
+          tileManager: tileManager,
+        );
       } catch (error, stackTrace) {
         AppErrorReporter.record(error, stackTrace);
+        rethrow;
       }
-    }
-  });
+      // Keep edits made while I/O was pending. Accepted queued operations still
+      // need the committed flag after disposal; only notifications are stopped.
+      final index = _projects.indexWhere((p) => p.id == id);
+      if (index >= 0) {
+        _projects[index] = _projects[index].copyWith(isFavorite: value);
+      }
+    });
+    _notifyFolders();
+    return change.whenComplete(() {
+      final pending = _favoriteChanges[id] ?? 0;
+      if (pending <= 1) {
+        _favoriteChanges.remove(id);
+      } else {
+        _favoriteChanges[id] = pending - 1;
+      }
+      _notifyFolders();
+    });
+  }
 
   /// このプロジェクトで使用する自動塗りプリセットを設定する。
   /// プロジェクトごとに使うプリセットだけを選べるようにする。

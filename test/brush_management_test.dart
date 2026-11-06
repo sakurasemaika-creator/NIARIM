@@ -153,8 +153,8 @@ void main() {
     final l10n = AppLocalizations.of(tester.element(find.byType(BrushPanel)))!;
     await menu(pen.name, 'duplicate');
     await menu(pen.name, 'duplicate');
-    final first = l10n.projectDuplicateName(pen.name);
-    final second = l10n.projectDuplicateNameNumbered(pen.name, 2);
+    final first = '${pen.name} (Copy)';
+    final second = '${pen.name} (Copy 2)';
     expect(brushes.brushes.where((b) => b.name == first), hasLength(1));
     expect(brushes.brushes.where((b) => b.name == second), hasLength(1));
     expect(first, isNot(contains('コピー')));

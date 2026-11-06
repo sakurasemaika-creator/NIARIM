@@ -193,7 +193,7 @@ class SettingsService extends ChangeNotifier {
   // which initial panel group occupies either side.
   // Per-window heights are global workspace settings, not project state.
   final Map<CanvasDockPanel, double> _desktopPanelHeights = {};
- 
+
   // Collapsing a dock keeps it open and preserves its width, height and order.
   // The collapsed side tab is restored on the next launch.
   final Set<CanvasDockPanel> _collapsedDesktopDocks = {};
@@ -235,6 +235,7 @@ class SettingsService extends ChangeNotifier {
     await prefs.setDouble('desktop_tool_panel_width', _desktopToolPanelWidth);
     await prefs.setDouble('desktop_panel_width', _desktopPanelWidth);
   }
+
   bool get desktopDockAutoCollapseEnabled => _desktopDockAutoCollapseEnabled;
 
   Future<void> setDesktopDockAutoCollapseEnabled(bool enabled) async {
@@ -273,9 +274,8 @@ class SettingsService extends ChangeNotifier {
 
   Future<void> setDesktopDockWidth(CanvasDockPanel panel, double width) =>
       rightDockOrder.contains(panel)
-          ? setDesktopPanelWidth(width)
-          : setDesktopToolPanelWidth(width);
-
+      ? setDesktopPanelWidth(width)
+      : setDesktopToolPanelWidth(width);
 
   double desktopDockHeight(CanvasDockPanel panel) =>
       _desktopPanelHeights[panel] ?? 260.0;
@@ -453,10 +453,8 @@ class SettingsService extends ChangeNotifier {
   }) async {
     // [toRight] now always means the physical right edge, regardless of hand.
     await _pinDesktopDockLayout();
-    final left = List<CanvasDockPanel>.of(_toolOptionDockOrder)
-      ..remove(panel);
-    final right = List<CanvasDockPanel>.of(_rightDockOrder)
-      ..remove(panel);
+    final left = List<CanvasDockPanel>.of(_toolOptionDockOrder)..remove(panel);
+    final right = List<CanvasDockPanel>.of(_rightDockOrder)..remove(panel);
     final target = toRight ? right : left;
     final insertIndex = before == null ? -1 : target.indexOf(before);
     target.insert(insertIndex < 0 ? target.length : insertIndex, panel);
@@ -859,7 +857,7 @@ class SettingsService extends ChangeNotifier {
       _toolOptionDockOrder = left;
       _rightDockOrder = right;
     }
-        final sizePresetStrings = prefs.readStringList('custom_size_presets') ?? [];
+    final sizePresetStrings = prefs.readStringList('custom_size_presets') ?? [];
     _customSizePresets = [];
     for (final encoded in sizePresetStrings) {
       try {

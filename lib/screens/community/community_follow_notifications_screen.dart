@@ -53,8 +53,7 @@ class _CommunityFollowNotificationsScreenState
       _nextPage = null;
       _nextScanCursor = null;
       _scanHasMore = false;
-      _feedFuture = accountId != null && api != null
-          ? _loadFirst(api) : null;
+      _feedFuture = accountId != null && api != null ? _loadFirst(api) : null;
     }
   }
 
@@ -67,10 +66,7 @@ class _CommunityFollowNotificationsScreenState
       debugPrint('Mission activity backfill unavailable: $error');
     }
     final result = await api.myMissionActivity();
-    return {
-      ...result,
-      'sync': sync,
-    };
+    return {...result, 'sync': sync};
   }
 
   void _refresh(CommunityApi api) => setState(() {
@@ -90,16 +86,22 @@ class _CommunityFollowNotificationsScreenState
       final data = await api.myMissionActivity(cursor: cursor);
       if (!mounted || owner != _accountId || !identical(api, _api)) return;
       setState(() {
-        _extra.addAll((data['events'] as List? ?? const [])
-            .whereType<Map>()
-            .map((entry) => Map<String, dynamic>.from(entry)));
+        _extra.addAll(
+          (data['events'] as List? ?? const []).whereType<Map>().map(
+            (entry) => Map<String, dynamic>.from(entry),
+          ),
+        );
         _nextPage = data['nextCursor'] as String?;
       });
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(CreatorMissionLabels.of(context).get('activityError')),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              CreatorMissionLabels.of(context).get('activityError'),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _loadingMore = false);
@@ -111,8 +113,7 @@ class _CommunityFollowNotificationsScreenState
     final owner = _accountId;
     setState(() => _scanningMore = true);
     try {
-      final sync = await api.syncMyMissionActivity(
-        workCursor: _nextScanCursor);
+      final sync = await api.syncMyMissionActivity(workCursor: _nextScanCursor);
       final page = await api.myMissionActivity();
       if (!mounted || owner != _accountId || !identical(api, _api)) return;
       setState(() {
@@ -124,9 +125,13 @@ class _CommunityFollowNotificationsScreenState
       });
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(CreatorMissionLabels.of(context).get('activityError')),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              CreatorMissionLabels.of(context).get('activityError'),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _scanningMore = false);
@@ -136,16 +141,21 @@ class _CommunityFollowNotificationsScreenState
   String _message(CreatorMissionLabels t, Map<String, dynamic> event) {
     if (event['kind'] == 'loginMilestone') {
       final days = (event['required'] as num?)?.toInt() ?? 0;
-      return LoginBonusLabels.of(context)['activityMilestone']
-          .replaceAll('{n}', '$days');
+      return LoginBonusLabels.of(
+        context,
+      )['activityMilestone'].replaceAll('{n}', '$days');
     }
-    final name = event['workTitle'] is String &&
+    final name =
+        event['workTitle'] is String &&
             (event['workTitle'] as String).isNotEmpty
-        ? event['workTitle'] as String : t.get('genericPublished');
+        ? event['workTitle'] as String
+        : t.get('genericPublished');
     final required = event['required'] is num
-        ? (event['required'] as num).toInt() : 0;
+        ? (event['required'] as num).toInt()
+        : 0;
     final each = event['eachWorkBookmarks'] is num
-        ? (event['eachWorkBookmarks'] as num).toInt() : 0;
+        ? (event['eachWorkBookmarks'] as num).toInt()
+        : 0;
     final key = switch (event['kind']) {
       'workPublished' => 'activityPublished',
       'workBookmarks' => 'activityWorkBookmarks',
@@ -154,11 +164,14 @@ class _CommunityFollowNotificationsScreenState
       'followers' => 'activityFollowers',
       _ => 'activityTitle',
     };
-    return t.get(key)
+    return t
+        .get(key)
         .replaceAll('{title}', name)
         .replaceAll('{works}', '$required')
-        .replaceAll('{count}', event['kind'] == 'qualifiedWorks'
-            ? '$each' : '$required');
+        .replaceAll(
+          '{count}',
+          event['kind'] == 'qualifiedWorks' ? '$each' : '$required',
+        );
   }
 
   String _date(CreatorMissionLabels t, Map<String, dynamic> event) {
@@ -169,7 +182,8 @@ class _CommunityFollowNotificationsScreenState
         '${date.year}/${date.month.toString().padLeft(2, '0')}/'
         '${date.day.toString().padLeft(2, '0')}';
     return event['dateIsObserved'] == true
-        ? '$stamp · ${t.get('activityObserved')}' : stamp;
+        ? '$stamp · ${t.get('activityObserved')}'
+        : stamp;
   }
 
   void _openMissions() {
@@ -191,18 +205,24 @@ class _CommunityFollowNotificationsScreenState
       itemBuilder: (_, index) {
         final notification = local[index];
         final message = notification.isFollower
-          ? l10n.communityFollowerMilestone(notification.count.toString())
-          : l10n.communityBookmarkMilestone(
-              notification.workTitle ?? '',notification.count.toString());
+            ? l10n.communityFollowerMilestone(notification.count.toString())
+            : l10n.communityBookmarkMilestone(
+                notification.workTitle ?? '',
+                notification.count.toString(),
+              );
         final time = notification.createdAt;
         return ListTile(
-          leading: Icon(notification.isFollower
-              ? Icons.people_outline : Icons.bookmarks_outlined,
-              color: scheme.primary),
+          leading: Icon(
+            notification.isFollower
+                ? Icons.people_outline
+                : Icons.bookmarks_outlined,
+            color: scheme.primary,
+          ),
           title: Text(message),
           subtitle: Text(
             '${time.year}/${time.month.toString().padLeft(2, '0')}/'
-            '${time.day.toString().padLeft(2, '0')}'),
+            '${time.day.toString().padLeft(2, '0')}',
+          ),
           onTap: _openMissions,
         );
       },
@@ -226,93 +246,100 @@ class _CommunityFollowNotificationsScreenState
             ),
         ],
       ),
-      body: desktopCentered(context,
+      body: desktopCentered(
+        context,
         _accountId == null || api == null
-          ? _offlineFallback()
-          : FutureBuilder<Map<String, dynamic>>(
-              future: _feedFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState != ConnectionState.done) {
-                  return Center(child: Semantics(
-                    label: t.get('loading'),
-                    child: const CircularProgressIndicator(),
-                  ));
-                }
-                if (!snapshot.hasData || snapshot.hasError) {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(t.get('activityError')),
-                      OutlinedButton(
-                        onPressed: () => _refresh(api),
-                        child: Text(t.get('retry')),
+            ? _offlineFallback()
+            : FutureBuilder<Map<String, dynamic>>(
+                future: _feedFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return Center(
+                      child: Semantics(
+                        label: t.get('loading'),
+                        child: const CircularProgressIndicator(),
                       ),
-                      Expanded(child: _offlineFallback()),
-                    ],
-                  );
-                }
-                final page = snapshot.data!;
-                final sync = page['sync'] as Map<String, dynamic>?;
-                if (sync != null && !_scanHasMore &&
-                    _nextScanCursor == null) {
-                  _scanHasMore = sync['hadMore'] == true;
-                  _nextScanCursor = sync['nextWorkCursor'] as String?;
-                }
-                if (_nextPage == null && _extra.isEmpty) {
-                  _nextPage = page['nextCursor'] as String?;
-                }
-                final items = [
-                  ...(page['events'] as List? ?? const [])
-                    .whereType<Map>()
-                    .map((x) => Map<String, dynamic>.from(x)),
-                  ..._extra,
-                ];
-                if (items.isEmpty && !_scanHasMore) {
-                  return Center(child: Text(t.get('activityEmpty')));
-                }
-                return ListView.separated(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: items.length + (_nextPage != null ? 1 : 0) +
-                      (_scanHasMore ? 1 : 0),
-                  separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    if (index >= items.length) {
-                      if (_nextPage != null && index == items.length) {
-                        return TextButton.icon(
-                          onPressed: _loadingMore
-                              ? null : () => _more(api),
-                          icon: const Icon(Icons.expand_more),
-                          label: Text(t.get('activityHistoryMore')),
+                    );
+                  }
+                  if (!snapshot.hasData || snapshot.hasError) {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(t.get('activityError')),
+                        OutlinedButton(
+                          onPressed: () => _refresh(api),
+                          child: Text(t.get('retry')),
+                        ),
+                        Expanded(child: _offlineFallback()),
+                      ],
+                    );
+                  }
+                  final page = snapshot.data!;
+                  final sync = page['sync'] as Map<String, dynamic>?;
+                  if (sync != null &&
+                      !_scanHasMore &&
+                      _nextScanCursor == null) {
+                    _scanHasMore = sync['hadMore'] == true;
+                    _nextScanCursor = sync['nextWorkCursor'] as String?;
+                  }
+                  if (_nextPage == null && _extra.isEmpty) {
+                    _nextPage = page['nextCursor'] as String?;
+                  }
+                  final items = [
+                    ...(page['events'] as List? ?? const [])
+                        .whereType<Map>()
+                        .map((x) => Map<String, dynamic>.from(x)),
+                    ..._extra,
+                  ];
+                  if (items.isEmpty && !_scanHasMore) {
+                    return Center(child: Text(t.get('activityEmpty')));
+                  }
+                  return ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount:
+                        items.length +
+                        (_nextPage != null ? 1 : 0) +
+                        (_scanHasMore ? 1 : 0),
+                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      if (index >= items.length) {
+                        if (_nextPage != null && index == items.length) {
+                          return TextButton.icon(
+                            onPressed: _loadingMore ? null : () => _more(api),
+                            icon: const Icon(Icons.expand_more),
+                            label: Text(t.get('activityHistoryMore')),
+                          );
+                        }
+                        return OutlinedButton.icon(
+                          onPressed: _scanningMore
+                              ? null
+                              : () => _scanMore(api),
+                          icon: const Icon(Icons.refresh),
+                          label: Text(t.get('activitySyncMore')),
                         );
                       }
-                      return OutlinedButton.icon(
-                        onPressed: _scanningMore
-                            ? null : () => _scanMore(api),
-                        icon: const Icon(Icons.refresh),
-                        label: Text(t.get('activitySyncMore')),
+                      final event = items[index];
+                      final icon = switch (event['kind']) {
+                        'workPublished' => Icons.movie_creation_outlined,
+                        'workBookmarks' => Icons.bookmarks_outlined,
+                        'qualifiedWorks' => Icons.emoji_events_outlined,
+                        'followers' => Icons.people_outline,
+                        'loginMilestone' => Icons.calendar_month_outlined,
+                        _ => Icons.flag_outlined,
+                      };
+                      return ListTile(
+                        key: ValueKey('missionActivity_${event['eventId']}'),
+                        leading: Icon(icon, color: scheme.primary),
+                        title: Text(_message(t, event)),
+                        subtitle: Text(_date(t, event)),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: _openMissions,
                       );
-                    }
-                    final event = items[index];
-                    final icon = switch (event['kind']) {
-                      'workPublished' => Icons.movie_creation_outlined,
-                      'workBookmarks' => Icons.bookmarks_outlined,
-                      'qualifiedWorks' => Icons.emoji_events_outlined,
-                      'followers' => Icons.people_outline,
-                      'loginMilestone' => Icons.calendar_month_outlined,
-                      _ => Icons.flag_outlined,
-                    };
-                    return ListTile(
-                      key: ValueKey('missionActivity_${event['eventId']}'),
-                      leading: Icon(icon, color: scheme.primary),
-                      title: Text(_message(t, event)),
-                      subtitle: Text(_date(t, event)),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: _openMissions,
-                    );
-                  },
-                );
-              },
-            )),
+                    },
+                  );
+                },
+              ),
+      ),
     );
   }
 }

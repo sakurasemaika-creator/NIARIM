@@ -764,7 +764,13 @@ class _FilterPanelState extends State<FilterPanel> {
     return shell(
       SizedBox(
         width: 300,
-        height: current == null ? 520 : instantInvert ? 148 : collapsed ? 196 : 520,
+        height: current == null
+            ? 520
+            : instantInvert
+            ? 148
+            : collapsed
+            ? 196
+            : 520,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: _outlinedOverCanvas(
@@ -784,8 +790,13 @@ class _FilterPanelState extends State<FilterPanel> {
                   if (filters.isEmpty)
                     Text(l10n.filterEmpty, textAlign: TextAlign.center),
                 ] else ...[
-                  _editHeader(l10n, service, current, collapsed,
-                      withClose: false),
+                  _editHeader(
+                    l10n,
+                    service,
+                    current,
+                    collapsed,
+                    withClose: false,
+                  ),
                   if (!collapsed && !instantInvert)
                     Expanded(child: _editControls(l10n, service, current)),
                   const SizedBox(height: 6),
@@ -837,8 +848,13 @@ class _FilterPanelState extends State<FilterPanel> {
                     child: Text(l10n.filterEmpty, textAlign: TextAlign.center),
                   ),
               ] else ...[
-                _editHeader(l10n, service, current, collapsed,
-                    withClose: false),
+                _editHeader(
+                  l10n,
+                  service,
+                  current,
+                  collapsed,
+                  withClose: false,
+                ),
                 if (!collapsed && !_isInstantColorInvert(current))
                   ConstrainedBox(
                     constraints: BoxConstraints(maxHeight: maxControls),
@@ -930,7 +946,8 @@ class _FilterPanelState extends State<FilterPanel> {
           itemBuilder: (context, index) {
             final filter = filters[index];
             final premium = _premiumFeatureFor(filter.kind);
-            final locked = premium != null &&
+            final locked =
+                premium != null &&
                 !context.watch<PremiumService>().isFeatureAvailable(premium);
             final selected = filter.id == current?.id;
             final scheme = Theme.of(context).colorScheme;
@@ -1176,68 +1193,69 @@ class _FilterPanelState extends State<FilterPanel> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (!_isInstantColorInvert(current)) ...[
-        Row(
-          children: [
-            IconButton(
-              key: const ValueKey('filter-undo-button'),
-              constraints: compact,
-              padding: EdgeInsets.zero,
-              onPressed: service.canUndoFilterEdit
-                  ? () {
-                      service.undoFilterEdit();
-                      _updatePreview();
-                    }
-                  : null,
-              icon: const Icon(Icons.undo, size: 18),
-              tooltip: l10n.commonUndo,
-            ),
-            IconButton(
-              key: const ValueKey('filter-redo-button'),
-              constraints: compact,
-              padding: EdgeInsets.zero,
-              onPressed: service.canRedoFilterEdit
-                  ? () {
-                      service.redoFilterEdit();
-                      _updatePreview();
-                    }
-                  : null,
-              icon: const Icon(Icons.redo, size: 18),
-              tooltip: l10n.commonRedo,
-            ),
-            if (current.kind == FilterKind.autoLineart) ...[
+          Row(
+            children: [
               IconButton(
-                key: const ValueKey('auto-lineart-add-point-button'),
+                key: const ValueKey('filter-undo-button'),
                 constraints: compact,
                 padding: EdgeInsets.zero,
-                onPressed: () => setState(
-                  () => _autoLineartControlMode =
-                      _autoLineartControlMode == AutoLineartControlMode.add
-                          ? AutoLineartControlMode.move
-                          : AutoLineartControlMode.add,
-                ),
-                icon: const Icon(Icons.add_circle_outline, size: 20),
-                tooltip: l10n.filterAutoLineartAddPointTooltip,
-                isSelected: _autoLineartControlMode == AutoLineartControlMode.add,
+                onPressed: service.canUndoFilterEdit
+                    ? () {
+                        service.undoFilterEdit();
+                        _updatePreview();
+                      }
+                    : null,
+                icon: const Icon(Icons.undo, size: 18),
+                tooltip: l10n.commonUndo,
               ),
               IconButton(
-                key: const ValueKey('auto-lineart-delete-point-button'),
+                key: const ValueKey('filter-redo-button'),
                 constraints: compact,
                 padding: EdgeInsets.zero,
-                onPressed: () => setState(
-                  () => _autoLineartControlMode =
-                      _autoLineartControlMode == AutoLineartControlMode.delete
-                          ? AutoLineartControlMode.move
-                          : AutoLineartControlMode.delete,
-                ),
-                icon: const Icon(Icons.remove_circle_outline, size: 20),
-                tooltip: l10n.filterAutoLineartDeletePointTooltip,
-                isSelected:
-                    _autoLineartControlMode == AutoLineartControlMode.delete,
+                onPressed: service.canRedoFilterEdit
+                    ? () {
+                        service.redoFilterEdit();
+                        _updatePreview();
+                      }
+                    : null,
+                icon: const Icon(Icons.redo, size: 18),
+                tooltip: l10n.commonRedo,
               ),
+              if (current.kind == FilterKind.autoLineart) ...[
+                IconButton(
+                  key: const ValueKey('auto-lineart-add-point-button'),
+                  constraints: compact,
+                  padding: EdgeInsets.zero,
+                  onPressed: () => setState(
+                    () => _autoLineartControlMode =
+                        _autoLineartControlMode == AutoLineartControlMode.add
+                        ? AutoLineartControlMode.move
+                        : AutoLineartControlMode.add,
+                  ),
+                  icon: const Icon(Icons.add_circle_outline, size: 20),
+                  tooltip: l10n.filterAutoLineartAddPointTooltip,
+                  isSelected:
+                      _autoLineartControlMode == AutoLineartControlMode.add,
+                ),
+                IconButton(
+                  key: const ValueKey('auto-lineart-delete-point-button'),
+                  constraints: compact,
+                  padding: EdgeInsets.zero,
+                  onPressed: () => setState(
+                    () => _autoLineartControlMode =
+                        _autoLineartControlMode == AutoLineartControlMode.delete
+                        ? AutoLineartControlMode.move
+                        : AutoLineartControlMode.delete,
+                  ),
+                  icon: const Icon(Icons.remove_circle_outline, size: 20),
+                  tooltip: l10n.filterAutoLineartDeletePointTooltip,
+                  isSelected:
+                      _autoLineartControlMode == AutoLineartControlMode.delete,
+                ),
+              ],
             ],
-          ],
-        ),
-        const SizedBox(height: 4),
+          ),
+          const SizedBox(height: 4),
         ],
         Row(
           children: [
@@ -1255,8 +1273,9 @@ class _FilterPanelState extends State<FilterPanel> {
             Expanded(
               child: FilledButton.icon(
                 key: const ValueKey('filter-apply-button'),
-                onPressed:
-                    widget.layerId == null || _applying ? null : _applyFilter,
+                onPressed: widget.layerId == null || _applying
+                    ? null
+                    : _applyFilter,
                 icon: _applying
                     ? SizedBox(
                         width: 14,
@@ -1378,14 +1397,11 @@ class _FilterPanelState extends State<FilterPanel> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        switch (style) {
-                          NoiseStyle.filmGrain => l10n.filterNameNoise,
-                          NoiseStyle.color => l10n.filterNoiseColor,
-                          NoiseStyle.vhs => l10n.filterNameVhsNoise,
-                        },
-                        style: _overCanvasTextStyle(),
-                      ),
+                      child: Text(switch (style) {
+                        NoiseStyle.filmGrain => l10n.filterNameNoise,
+                        NoiseStyle.color => l10n.filterNoiseColor,
+                        NoiseStyle.vhs => l10n.filterNameVhsNoise,
+                      }, style: _overCanvasTextStyle()),
                     ),
                   ],
                 ),

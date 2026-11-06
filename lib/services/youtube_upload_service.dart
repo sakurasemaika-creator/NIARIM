@@ -57,9 +57,7 @@ class YoutubeUploadService {
     if (utf8.encode(description).length > 5000 ||
         description.contains('<') ||
         description.contains('>')) {
-      throw ArgumentError(
-        'YouTubeの説明欄は5,000バイト以内で入力し、< と > は使用しないでください',
-      );
+      throw ArgumentError('YouTubeの説明欄は5,000バイト以内で入力し、< と > は使用しないでください');
     }
     if (!_validPrivacyStatuses.contains(privacyStatus)) {
       throw ArgumentError.value(

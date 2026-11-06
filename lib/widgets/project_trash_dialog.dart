@@ -11,7 +11,14 @@ String _failureText(AppLocalizations l10n, Object? failure) =>
 Future<bool> runProjectTrashAction(
   BuildContext context,
   Future<void> Function() apply,
+) => runProjectAction(context, apply);
+
+/// Shared feedback for acknowledged project changes, including favorites.
+Future<bool> runProjectAction(
+  BuildContext context,
+  Future<void> Function() apply,
 ) async {
+  if (!context.mounted) return false;
   ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
   try {
     await apply();

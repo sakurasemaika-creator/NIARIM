@@ -338,7 +338,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final accountId = auth.account?.id;
     setState(() => _refreshingYouTubeChannel = true);
     try {
-      final token = await auth.youtubeUploadAccessToken(promptIfNecessary: true);
+      final token = await auth.youtubeUploadAccessToken(
+        promptIfNecessary: true,
+      );
       if (token == null || token.isEmpty) throw StateError(labels.noToken);
       if (!mounted || auth.account?.id != accountId) return;
       final profile = await api.refreshYoutubeChannelInfo(token);
@@ -664,26 +666,33 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                             label: Text(l10n.communityMyWorksViewAuthorPage),
                           ),
                           const SizedBox(height: 8),
-                          if (account != null && communityService.api != null) ...[
-                             OutlinedButton.icon(
-                               key: const Key('communityMyWorksYoutubeChannelRefresh'),
-                               onPressed: _refreshingYouTubeChannel
-                                   ? null
-                                   : _refreshYoutubeChannel,
-                               icon: _refreshingYouTubeChannel
-                                   ? const SizedBox(
-                                       width: 16,
-                                       height: 16,
-                                       child: CircularProgressIndicator(strokeWidth: 2),
-                                     )
-                                   : const Icon(Icons.refresh_outlined),
-                               label: Text(
-                                 CommunityChannelRefreshLabels.of(context).button,
-                               ),
-                             ),
-                             const SizedBox(height: 8),
-                           ],
-                           OutlinedButton.icon(
+                          if (account != null &&
+                              communityService.api != null) ...[
+                            OutlinedButton.icon(
+                              key: const Key(
+                                'communityMyWorksYoutubeChannelRefresh',
+                              ),
+                              onPressed: _refreshingYouTubeChannel
+                                  ? null
+                                  : _refreshYoutubeChannel,
+                              icon: _refreshingYouTubeChannel
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.refresh_outlined),
+                              label: Text(
+                                CommunityChannelRefreshLabels.of(
+                                  context,
+                                ).button,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                          OutlinedButton.icon(
                             key: const Key('communityMyWorksAccountButton'),
                             onPressed: _switchingAccount
                                 ? null

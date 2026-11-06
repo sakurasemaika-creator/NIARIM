@@ -15,7 +15,8 @@ class CommunityYoutubeCommentsSection extends StatefulWidget {
       _CommunityYoutubeCommentsSectionState();
 }
 
-class _CommunityYoutubeCommentsSectionState extends State<CommunityYoutubeCommentsSection> {
+class _CommunityYoutubeCommentsSectionState
+    extends State<CommunityYoutubeCommentsSection> {
   bool _loaded = false;
   bool _loading = false;
   bool _unavailable = false;
@@ -40,17 +41,25 @@ class _CommunityYoutubeCommentsSectionState extends State<CommunityYoutubeCommen
     if (_loading || (more && _nextCursor == null)) return;
     final api = context.read<CommunityService>().api;
     if (api == null) {
-      setState(() { _loaded = true; _failed = true; });
+      setState(() {
+        _loaded = true;
+        _failed = true;
+      });
       return;
     }
-    setState(() { _loading = true; _failed = false; });
+    setState(() {
+      _loading = true;
+      _failed = false;
+    });
     try {
       final payload = await api.youtubeComments(
-        widget.workId, cursor: more ? _nextCursor : null,
+        widget.workId,
+        cursor: more ? _nextCursor : null,
       );
       if (!mounted) return;
       final comments = (payload['comments'] as List? ?? const [])
-          .whereType<Map<String, dynamic>>().toList();
+          .whereType<Map<String, dynamic>>()
+          .toList();
       setState(() {
         if (!more) _comments.clear();
         _comments.addAll(comments);
@@ -59,7 +68,12 @@ class _CommunityYoutubeCommentsSectionState extends State<CommunityYoutubeCommen
         _loaded = true;
       });
     } catch (_) {
-      if (mounted) setState(() { _loaded = true; _failed = true; });
+      if (mounted) {
+        setState(() {
+          _loaded = true;
+          _failed = true;
+        });
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -72,7 +86,8 @@ class _CommunityYoutubeCommentsSectionState extends State<CommunityYoutubeCommen
     final body = data['text'] as String? ?? '';
     final publishedAt = DateTime.tryParse(data['publishedAt'] as String? ?? '');
     final stamp = publishedAt == null
-        ? '' : '${publishedAt.toLocal().year}/${publishedAt.toLocal().month}/${publishedAt.toLocal().day}';
+        ? ''
+        : '${publishedAt.toLocal().year}/${publishedAt.toLocal().month}/${publishedAt.toLocal().day}';
     return Padding(
       padding: EdgeInsets.only(left: reply ? 28 : 0, top: 10, bottom: 10),
       child: Row(
@@ -82,25 +97,39 @@ class _CommunityYoutubeCommentsSectionState extends State<CommunityYoutubeCommen
             radius: reply ? 13 : 17,
             backgroundColor: scheme.surfaceContainerHigh,
             backgroundImage: avatar.isEmpty ? null : NetworkImage(avatar),
-            child: avatar.isEmpty ? const Icon(Icons.person_outline, size: 15) : null,
+            child: avatar.isEmpty
+                ? const Icon(Icons.person_outline, size: 15)
+                : null,
           ),
           const SizedBox(width: 10),
-          Expanded(child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                Flexible(child: Text(author,
-                  maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelMedium)),
-                if (stamp.isNotEmpty) ...[
-                  const SizedBox(width: 8),
-                  Text(stamp, style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ]),
-              const SizedBox(height: 3),
-              SelectableText(body, style: Theme.of(context).textTheme.bodyMedium),
-            ],
-          )),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        author,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                    ),
+                    if (stamp.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      Text(stamp, style: Theme.of(context).textTheme.bodySmall),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 3),
+                SelectableText(
+                  body,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -121,22 +150,26 @@ class _CommunityYoutubeCommentsSectionState extends State<CommunityYoutubeCommen
         children: [
           Align(
             alignment: Alignment.centerLeft,
-            child: Text(labels.attribution,
-              style: Theme.of(context).textTheme.bodySmall),
+            child: Text(
+              labels.attribution,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ),
           if (_loading)
-            const Padding(padding: EdgeInsets.all(12),
-              child: CircularProgressIndicator())
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: CircularProgressIndicator(),
+            )
           else if (_unavailable || _failed) ...[
             Text(labels.unavailable),
-            TextButton(onPressed: () => _load(),
-              child: Text(labels.retry)),
+            TextButton(onPressed: () => _load(), child: Text(labels.retry)),
           ] else if (_loaded && _comments.isEmpty)
             Text(labels.noComments),
           for (final comment in _comments) ...[
             _comment(comment),
-            for (final reply in ((comment['replies'] as List?) ?? const [])
-                .whereType<Map<String, dynamic>>())
+            for (final reply
+                in ((comment['replies'] as List?) ?? const [])
+                    .whereType<Map<String, dynamic>>())
               _comment(reply, reply: true),
             if ((comment['totalReplyCount'] as num? ?? 0) >
                 ((comment['replies'] as List?)?.length ?? 0))

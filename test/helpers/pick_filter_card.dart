@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 
 /// The filter panel always opens on its list of filters; this scrolls the
 /// panel's vertically scrolling tile grid to the card for [filterId] and taps it, as a user

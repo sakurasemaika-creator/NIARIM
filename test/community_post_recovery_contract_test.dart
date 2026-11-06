@@ -46,7 +46,10 @@ void main() {
 
   test('keeps NIARIM and YouTube descriptions independent during posting', () {
     expect(source, contains("key: const Key('communityPostDescription')"));
-    expect(source, contains("key: const Key('communityPostYoutubeDescription')"));
+    expect(
+      source,
+      contains("key: const Key('communityPostYoutubeDescription')"),
+    );
     expect(source, contains('description: youtubeDescription,'));
     expect(source, contains('description: description,'));
     expect(source, contains('utf8.encode(youtubeDescription).length > 5000'));
@@ -58,7 +61,12 @@ void main() {
     expect(source, contains("key: const Key('communityPostYoutubeTitle')"));
     expect(source, contains('title: youtubeTitle,'));
     expect(source, contains('title: title,'));
-    expect(source, contains('prefs.readString(_pendingYoutubeTitleKey) ?? _titleController.text'));
+    expect(
+      source.replaceAll(RegExp(r'\s+'), ' '),
+      contains(
+        'prefs.readString(_pendingYoutubeTitleKey) ?? _titleController.text',
+      ),
+    );
     expect(source, contains('prefs.remove(_pendingYoutubeTitleKey)'));
   });
 

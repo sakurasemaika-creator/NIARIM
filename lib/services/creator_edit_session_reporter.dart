@@ -12,15 +12,13 @@ import 'api/niarim_api_exception.dart';
 /// The queue is capped to avoid unbounded phone storage and server work.
 /// Offline data is NEVER marked as verified or automatically made into coins.
 class CreatorEditSessionReporter {
-  CreatorEditSessionReporter({
-    required CommunityApi? api,
-    required String? Function() accountId,
-  }) : _api = api, _accountId = accountId;
+  CreatorEditSessionReporter({required this._api, required this._accountId});
 
   /// Enable only with the backend's separately guarded measurement pilot.
   /// No traffic or storage changes occur in default/offline/demo builds.
   static const bool pilotEnabled = bool.fromEnvironment(
-    'NIARIM_EDIT_SESSION_PILOT', defaultValue: false,
+    'NIARIM_EDIT_SESSION_PILOT',
+    defaultValue: false,
   );
 
   final CommunityApi? _api;
@@ -70,7 +68,8 @@ class CreatorEditSessionReporter {
     );
     _active = period;
     period.timer = Timer.periodic(
-      _checkpointPeriod, (_) => _checkpoint(period, stop: false),
+      _checkpointPeriod,
+      (_) => _checkpoint(period, stop: false),
     );
     _enqueue(() async {
       await _drain(period.accountId);
@@ -101,9 +100,12 @@ class CreatorEditSessionReporter {
       begin(projectId: projectId, activeSeconds: activeSeconds);
     }
     final period = _active;
-    if (period == null || period.closed ||
+    if (period == null ||
+        period.closed ||
         period.projectId != projectId ||
-        period.accountId != _accountId()) return;
+        period.accountId != _accountId()) {
+      return;
+    }
     // Count commits, not pointer/tap/scrub events. A single real edit suffices
     // for a 1-9 second session, capped by the backend's server clock.
     if (period.mutations < 100000) period.mutations++;
@@ -151,9 +153,12 @@ class CreatorEditSessionReporter {
   /// It is safe to call when the pilot is disabled or outside an editor.
   void manualSaveSucceeded(String projectId) {
     final period = _active;
-    if (period == null || period.closed ||
+    if (period == null ||
+        period.closed ||
         period.projectId != projectId ||
-        period.accountId != _accountId()) return;
+        period.accountId != _accountId()) {
+      return;
+    }
     _checkpoint(period, stop: false);
   }
 
@@ -196,16 +201,19 @@ class CreatorEditSessionReporter {
   }
 
   Future<List<Map<String, dynamic>>> _pending(
-    SharedPreferences prefs, String accountId,
+    SharedPreferences prefs,
+    String accountId,
   ) async {
     final raw = prefs.getString('$_keyPrefix$accountId');
     if (raw == null) return [];
     try {
       final decoded = jsonDecode(raw);
       if (decoded is! List) return [];
-      return decoded.whereType<Map>()
+      return decoded
+          .whereType<Map>()
           .map((entry) => Map<String, dynamic>.from(entry))
-          .take(_maxPending).toList();
+          .take(_maxPending)
+          .toList();
     } on Object {
       return [];
     }
@@ -221,15 +229,18 @@ class CreatorEditSessionReporter {
   }
 
   Future<void> _persistAndDrain(
-    String accountId, Map<String, dynamic> payload,
+    String accountId,
+    Map<String, dynamic> payload,
   ) async {
     final prefs = await SharedPreferences.getInstance();
     final pending = await _pending(prefs, accountId);
     if (pending.length >= _maxPending) {
       // Missing the head sequence means later entries cannot safely replay.
       // Consolidate candidate seconds for the local UI, never for rewards.
-      final lost = pending.fold<int>(0,
-          (sum, p) => sum + ((p['activeSeconds'] as num?)?.toInt() ?? 0));
+      final lost = pending.fold<int>(
+        0,
+        (sum, p) => sum + ((p['activeSeconds'] as num?)?.toInt() ?? 0),
+      );
       await _retainUnverified(accountId, lost);
       pending.clear();
     }
@@ -261,9 +272,10 @@ class CreatorEditSessionReporter {
         if (error.code == 'EDIT_SESSION_EXPIRED' ||
             error.code == 'EDIT_SESSION_MISSING' ||
             error.code == 'EDIT_SESSION_SEQUENCE') {
-          final lost = pending.fold<int>(0,
-              (sum, p) =>
-                  sum + ((p['activeSeconds'] as num?)?.toInt() ?? 0));
+          final lost = pending.fold<int>(
+            0,
+            (sum, p) => sum + ((p['activeSeconds'] as num?)?.toInt() ?? 0),
+          );
           await _retainUnverified(accountId, lost);
           pending.clear();
           await prefs.remove('$_keyPrefix$accountId');

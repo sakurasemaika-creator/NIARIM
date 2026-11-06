@@ -49,9 +49,11 @@ class CoinRedemptionAttemptStore {
         final savedId = saved['requestId'];
         final savedVersion = saved['version'];
         if (savedId is String &&
-            RegExp(r'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$')
-                .hasMatch(savedId) &&
-            savedVersion is String && savedVersion.isNotEmpty) {
+            RegExp(
+              r'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$',
+            ).hasMatch(savedId) &&
+            savedVersion is String &&
+            savedVersion.isNotEmpty) {
           requestId = savedId;
           version = savedVersion;
         }
@@ -61,10 +63,10 @@ class CoinRedemptionAttemptStore {
     }
     requestId ??= _newUuid();
     // Require a durable local write before the server can charge coins.
-    final stored = await prefs.setString(key, jsonEncode({
-      'requestId': requestId,
-      'version': version,
-    }));
+    final stored = await prefs.setString(
+      key,
+      jsonEncode({'requestId': requestId, 'version': version}),
+    );
     if (!stored) throw StateError('Cannot persist the redemption request');
 
     try {

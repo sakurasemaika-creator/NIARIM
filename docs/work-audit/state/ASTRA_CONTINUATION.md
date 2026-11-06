@@ -88,7 +88,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S28 — favorite保護修正/関連51+dialog7/最新native22原本と保存5→4/coldを確認。検証済み単位の通常pushへ
+current_substep: A003/S29 — 最新同一アプリ入力の検証完了、dev_branchへ通常反映する単位を確定
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -108,7 +108,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: S28通常push/remote319source+8font照合→DISC046 favorite file-save失敗/047選択barラベル/current Community23CI失敗の反例・修正へ。保存済み同一sourceの完了工程を復旧だけで繰り返さない。
+next_action: App/Webのdev_branch反映先SHA・treeを確認し、DISC050通常表示の短高誤入力→DISC051半透明描画・保存互換性と最新CI/Communityを継続。S29実原本/実行環境/再開点はA003_S27_20261030_RESUME.mdを参照。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
@@ -717,3 +717,75 @@ Latest parent App9f99f89/Webf9e6b58を再確認。S28 favorite guardはservice q
 公開済みS27 fresh SaveSafety41099893602の全結果を取得: 他5jobs成功、full124215193985はformat/analyze成功・2268PASS/23SKIP/23FAIL/23m37s。decoded完全log oct31-s27-published-full-ci.log（608384B/SHA50202ebc6304b28762dc51a9e6c0d3e92cc670158c55bd4a6260c212df3e817b）を保存。旧2d2の2261/23/24と混同しない。Community masked slot/filter/preview/search fixturesとtext-scale failuresは最新契約で原因を調べる。全greenではない。generic fetchのjobs metadataはReadTimeout、専用run_jobs/steps/logs toolsで結果取得できた（権限拒否ではない）。
 
 残: DISC046 favorite file-save失敗の既存optimistic挙動、DISC047 FR320/text2選択barのSelectAll/DeselectAll不可視と件数省略、DISC005既存error-role等、A003残Bookmarked/current Community23failの切分け。いずれも未確認/未修正をdoneにしない。Baseline2/628/currentA003、DISC001–047todo、Delta37todo/not_started（全宣言65）維持。次はS28単位通常push→最新refs/tree/319source/8fonts確認→新CI追跡と上記反例/修正を継続。復旧だけを理由に今回の22nativeや51tests/7tests/buildを繰り返さない。
+
+
+
+## S28公開確認 / S29開始 — 2026-10-31
+
+S28 App7cee0bc2cb285b529ff34c2079a4c9d26b9b938f（parent9f99f89/treec2843336/10paths）、Web0894c43101b96d83ebe3ea934eb84025d5ffe798（parentf9e6b58/treec9cad5c9/4paths）へexpected-parent/force:falseで通常push済み。API refs/単一親/tree、gitfetch後のexact pathsと全blob、compiled319lib/8fonts対published全SHA一致、保護Dela original4e未stageを確認。s28-published-verification.json参照。22原本と実5→4/cold4のfull core1nB0vvvU2k65SzmDjxZx7Rfxqw4RIKpOM（6555015B/SHA32d4c80f7f02a9306bbb95ded44305a02902e03c8bfd465e67e5b75ae2da58e5/434manifest）はmetadata/raw SHA/CRC/全hash確認済み。runtime111QWAmt2QOi90u7X3HQlT6zWvGzpobUFでSDK/pub/rebuild無しに再開できる。新S28 SaveSafety41106947674監視中、App/Web policyとall-routes/Web-referenceはsuccess、他は未確定。
+
+S29はDISC046のfavorite file-save失敗時のoptimistic成功表示をfresh native/unitで確認し、ack後publish/失敗説明/retry/cold一致へ修正する。次にDISC047 Home選択barのFR320/text2不可視SelectAll/DeselectAllと件数省略についてfresh layout counter→適応表示/48px/全locale/keyboard/nativeへ。現在実/tmpはS28実削除後の4archive、App停止/fault off。操作前にそのsnapshotを保持して既存5archive fixtureから隔離dataを再作成してよい（実ユーザーデータではない）。S28のnative22/51+dialog7/buildや同じhashの完了工程を復旧理由で繰り返さない。current Community CI23failは完全logを保存済み、古いmask/filter期待へ製品を戻さない。Baseline2/628/currentA003、DISC001–047todo、Delta37todo/宣言65維持。
+
+
+## S29 fresh favorite file-write failure BEFORE — 2026-10-31
+
+published7cee0bc/current downloaded c437e1b8でENPC1440/paperのBeta（favorite=false）を実操作。owned /tmp project directoryだけ0755→0555、同uidのwrite probeはerrno13で拒否。Add to favoritesで星だけ表示/通知無し、実niaproのfavorite=false/SHA36c1d240…は不変。0755へ同call finallyでexact復旧後のcoldで星が消える。4原本を全個別目視、他5archiveも全byte不変、Python/Dart一致、prefs故障注入は無効、App停止。s29-favorite-before-review.jsonとs29-owned-write-fault.jsonへ証拠。新source/再build無しにS28 verified runtimeで実証し、実ユーザーデータやpermanent deleteは扱っていない。
+
+実tempFSとPOSIX write denialのfresh unit2反例は0PASS/2FAIL。addはerrorNull/memoryTrue/coldFalse、removeはerrorNull/memoryFalse/coldTrue。before logのreportedFs=falseはFileSystemException文字列だけを見る補助分類（PathAccessExceptionを除外）なので、error記録が無い証拠にはしない。両主反例はawait結果と実cold/bytesで有効。原因はfavorite変更をI/O前にpublishし、catchで例外を握ること。DISC046に登録済みの未確認riskから実証へ更新。次は候補favoriteを保存してから最新modelのfavorite fieldだけpublish、エラーをcallerへ伝え正式localized通知、retry/cold/queue/同時metadata編集/重複操作・両UI入口を回帰する。DISC047のFR320/text2 selectionbarもfresh counter→適応表示へ。同時にS28 freshCI41106947674とcurrent Community23failを追跡。Baseline2/628/A003、47DISCtodo、37Deltatodo/65宣言は維持。
+
+S29 candidate WIP: favoriteの候補flagを実niapro保存成功後に最新modelへ反映し、同時rename等を上書きせず、例外をcallerへ伝える。明示setFavoriteは古いmenuの選択意図を保持し重複setを反転させない。pendingをserviceで追跡して一覧menuに正式色のprogress/操作待ち、詳細に処理中/再操作防止。両callerは共通await/失敗通知を使用。初回関連4files33PASS/15s（favorite7/Trash6+13/dialog7）。DISC047 fresh fullHome FR320/text2 counterは0PASS/1FAIL（paragraph.didExceedMaxLines=true、初回missing backgroundColor compile setupは除外）。新HomeSelectionToolbarは実text metricsでfull文字/compact iconsと読み上げ件数を切替、48px/tooltipを維持。bar背景/文字はappBarの正式Appearance値、delete accentは正式primaryで固定色なし。fullHome counter+favorite7は初回8PASS/3s。新source未build/未nativeAFTER/未push、必要なmetadata競合/重複set/dispose回帰と24幅×7locale×text scale/short-height/theme matrixを追加して検証する。前のc437e1b8 runtimeはS29 BEFORE用であり候補AFTERと混同しない。BEFORE core154V3B5t-LZL2gIAz_vM2A3WAZOBVwQo5（6708550B/SHAdba515ab166cc70871092160683ac9c6c7b0a620a4ab2fa48c0fa6f6943e7435/447manifest）metadata/raw SHA/CRC/allhash確認済み。S28 freshCI41106947674は他5jobs success/full124239151686 failure、完全logの取得/原因精査を継続。Baseline2/628/A003/47DISCtodo/Delta37todo維持。
+
+
+## S29 最新HEADへの復元と追加回帰 — 2026-10-31
+
+最新App2eb01ed3fc60a75591a299fc3121e40a1e6da951/Web0894c431一致。作業領域の環境メンテナンス削除後、Drive CandidateWIP1u5WHTJXdDP8OvlBrw8M0xyN8wUHbR-gw（6803024B/SHAf6150acd12ad1f718242d39aa2587b669dd7ce675dd5df056d5c56504ccbc38b）をraw取得し全CRC/464manifest一致。7ceeからのS29patchを最新へ適用し、最新のfavorite左下/PCdock等8pathを保持。正本監査資料はHEAD間で全byte同一、preflight full/route/delta成功。新対象はD001.29–32todoへ登録。
+
+最後のWIP保存後の未保存test/sourceは正本にせず、metadata編集競合・重複set意図・dispose中のqueued Trash保護、selection component1512条件/28+custom×2width=58色条件/keyboard/大件数semantics/disabledを再構成。最新sourceの関連5filesは40PASS/19s、realPOSIX拒否でadd/removeともmemory/coldが旧flagを保持してretry成功。初回保存済み33/8結果を加算しない。詳細quickactionにbutton/enabled semantics、text測定にlocale、SaveSafety trigger/commandを追加。UI色は正式menu前景/背景とprimaryを参照し固定色なし。
+
+S28公開7ceeの完全CIlogを保存: oct31-s27-s28-published-full-ci.log 606267B/SHA d855ac43703f8b687fa67b6dd9b87398ca5bfeedfe2a0f757ddb481db1b3df26、2274PASS/23SKIP/23FAIL、global analyze0、他5jobs success。これはS29/latest upstreamの全greenを意味しない。次はglobal analyze/format→normalmain/fixture build→runtime/core Drive保存→実nativeお気に入り失敗/再試行/coldとFR320選択操作→通常push。Baseline2/628/currentA003、47DISCtodo、Delta37todo/69宣言。
+
+
+## S29 native favorite確認とDISC048発見 — 2026-10-31
+
+最新2eb+候補kernel95c91ea4/320lib/8fontで一覧/詳細のfavorite add/remove四方向を実操作。各owned directory errno13で元flag/SHA保持・localized error、exact0755復旧後retry成功/cold一致。ほか4archive全byte不変、Betaは最終favorite=false、全scene/tile entryとmanifest.updatedAt以外不変（serializerの保存日時更新）。19valid原本を個別目視。s29-native-before-selection-scope-fix.jsonにreceipt4/Python-Dart一致を保存。2keyboard画像は最初のTabがBackをfocusした後SpaceでSplashへ戻った操作誤想定のため明示除外し、Deselect合格としない。共有append journalが途中で止まったため全raw操作が記録済みとはせず、次helperは毎record open/close/fsyncとimmutable JSONを使用。
+
+NativeBeforeScopeFix core1Mcspe3ZLaEmP-9GTqHga4SDnlWHWF5wl（7745122B/SHA d55b9123898e7c34e3eb17a747fccfa426a5da31c3042856537dc81f0c92c62d/521manifest）はmetadata/raw SHA/CRC/allhash確認済み。直前main/fixture/analyze0/format0は成功、runtime1YroOojcJjKA2zNMEzPLdiBZcKwI00WgV（35201599B/SHA5063ae79b68045259f2139707ee7390a7aaed7f1d13b51dc4201c329b130770e/9manifest）とReady1l5BjxKGCRXhCAtEQpyvmym4TBmFCgkw6（6996459B/SHAfb4a0bee761c71a11c62fe1534e31e7d8437abc7de9716c46034de281d6e716f/479）もmetadata/raw/CRC/allhash確認、downloaded runtimeを再適用。これらは次のscope修正前のkernelである。
+
+FR320/text2のSelectAllで可視3→count5を実証しDISC048todo登録。fresh fullHome反例も期待3/実4で0PASS/1FAIL。ProjectListとSelectAllのscope計算を共通化しshared import除外/検索・tag/favorite/孤立親を一致させ、範囲変更で選択を解除、cut/copy/Trash入口も可視scopeを再検証。fresh同test1PASS/2sでroot3/favorite1/search2を確認。範囲遷移を含む追加回帰→最新build/runtime保存→native FR320/短高/正しいkeyboard traversal→検証単位通常pushが残る。全体はBaseline2/628/A003、48DISCtodo、Delta37todo/69宣言。
+
+
+S29 scope追加検証: scope-regressionsは28PASS/2FAIL（240pxでbar16px overflow、追加fixtureがTextFieldを長押しした誤locator）。240/280も対象化して1638条件へ拡張し、狭幅では48pxを維持して操作を2行に分けた。scope-layout-finalは7PASS/1FAIL（既存testが常時full文字countを要求）。component1638・58色・keyboard・fullHome root/favorite/search/scope変更の選択解除はPASS。既存testをlocalized semantics/tooltipで実count/操作を確認する形へ更新し、narrow-finalを再実行する。新fixture誤locator/旧文字表示前提は製品の不在として記録しない。最終native選択・短高・keyboardと通常pushは未完了。
+
+
+S29 latest integration: App b8506a0ea50face5e079577ec99f5b6b565a6225へff-only後、保護Delaを除くowned WIPをapply。追加6pathsはPC panel width保存/resize・color-adjust wrap・透明thumbnail等。capture testの唯一のconflictは自分のformat-only差分なので最新upstream全体を採用して再format、製品sourceの全own変更と新upstreamを保持。stash ec4b4dcca3a60a7336e77aff0df7fc5f4be7290b を保持、s29-b850-integration.json参照。監査資料のupstream変更なし。narrow testの実save待機はFakeAsyncとreal I/Oを交互に進める既存pumpRealAsyncへ修正。先のqueue barrier待機は停止/exit130・finally receipt欠落を記録し、退避済みDela4eを明示復元して再確認。最新b850でnarrow回帰→gates/build/runtime保存→native選択/短高/keyboard→通常push。
+
+
+## S29 2026-11-06 最新HEAD再開
+
+App5be595b966427cfdba65808bd384a3695e959086/Web0894c431を再取得。b850以後414commit/196pathの差分manifestと現在HEADの正本監査資料20hashをnov06-head-and-inventory.jsonへ保存。監査資料のupstream差分なし、現Stateの3preflight成功。新対象D001.33–44をtodo登録。前回一時領域の削除後、b850Input1pqL_IQqBVf9W7w7mfnd2GP4e-GonuYd6を7833197B/SHA4746fb79de57b73461f0e70d1533c85e27686f6acd53cbc98fa0c64dbb0357c3/全543hash/CRC確認し復元。最新へS29patch適用、3pathの旧format-only差分は最新upstream優先。保護Dela4e原本と保存済みfavorite native4方向/19valid原本、選択scope反例、1638component/58色、b850 narrow4PASSを保持。
+
+今の工程: 現HEADでHome240×220の実control hit testing、5be target regression/global gates/build→verified runtime backup→FR320選択/keyboard/240短高native→通常push。以前の2eb/b850証拠はsource・範囲を識別して保持、最新の証拠と混同しない。全体Baseline2/628/A003、48DISCtodo、Delta37todo/81宣言、Visual closure未完。
+
+
+5be実Home240×220/FR/text2でCouperのhit-testが0となるfresh counter 0PASS/1FAIL。選択中だけ浮動の作成/scroll操作を退避し、同じHome回帰で全toolbar操作のhit test/overflowなしを確認。現在source関連7files45PASS/10s（favoriteの実EACCES add/remove、Trash回復、component1638/色58、breadcrumb14条件、fullHome scopeと短高を含む）。UID0だがCapEff0の実環境でowned0555 write probe errno13を確認。最新upstreamの既存書式差分はDart formatterのみで同期。native操作/最終pushはこれから。
+
+
+## S29 5be実画面検証・最新並行変更の照合 — 2026-11-06
+
+現5be候補345lib/8fonts kernel fb9023ee018d190f9291c18131c41d380788860de91a130430ceb5ac2c25d508。全体format0/analyze0/normal+fixture build成功。上流65pathの書式、39機械lint修正、廃止loop参照test/unused変数、RadioGroupへ移行。限定公開既定/切替/保留publicの変更不可は実widget2PASS。timeline/copy/契約は13PASS/1FAIL（source文字列の改行前提のみ）→当該契約file6PASS、未実施全suiteをgreenとしない。
+
+現在native17原本個別目視/4launch/63immutable操作、FR320×844/text2でSelectAll/Ctrl+A共に可視3、pointer全解除、実Tabで全解除focus→SpaceでHome内解除。FR240×220で2行と実Cut→clipboard、archive無変更。ENPC1440では実EACCES13によりBeta星なし/説明/byte不変、0755復旧後retry→星左下とarchive true→cold一致。他4archive不変、Betaの差分はmanifest.isFavorite/updatedAtのみ、Python/Dart全5一致、pref故障注入なし、App停止。追加の通常表示の短高で誤って追加sheetが開く反例はDISC049（このWIP番号）へ登録。
+
+build/runtimeはDriveへ保存済み: VerifiedBuild1iLn9P3cs5kxrVGV98ezqSyBZ-m2PAwWm 8952902B/SHA d4edcbc5b42530be13a7c3853fc50334455ad4d3c1bf200a0215f4c156458c9a/636、VerifiedDelta1V6wX5CrtDTH-k4N067fvqf_17udTeNLa 33084250B/SHA930cc282fcae3b1aa02613c87007b1320532a2d3e30617ba31d3bfdc7e04acda/8。metadata/raw CRC/allhash確認、downloaded runtimeを使用。
+
+公開直前のApp9d3efa9c（A015のengine/input/canvasと2tests）/Webc65fa6e（Opus別枝証拠とHANDS_ON比率基準）を検出。取得済みで未merge。Web先頭の正本cursorはA003/2のまま、並行A016は別枝進捗。Webの既存DISC048（初回説明）を保持し、未pushのS29 DISC048/049だけ衝突しない番号へ移す。別枝のdoneは現dev_branchへ無検証で昇格しない。最新ソースの再build/必要な差分実操作・状態の意味的統合・通常pushが残る。
+
+
+## 2026-11-06 App/Web並行監査記録の統合
+
+最新App `9d3efa9c6b00098bd1cc4a17990e286619de0402`、Web `c65fa6eeaffac3a3c5664d5467c2f8d5fd999f75`。Web側に追加されたOpus別枝（A003–A015等）の証拠・取り込み経緯を保持し、current dev_branchの完了へ無検証で転記しない。Web正本HANDS_ON_UI_STANDARDの画面比率/余白追記も現基準として確認。Baseline定義/lock/status不変、2/628・current A003・Discovery cursor DISC001・Delta not_started。Web既存DISC048（初回案内）を保持し、未公開S29 WIPのDISC048（全選択scope）→正式DISC049、WIPのDISC049（通常短高の誤入力）→正式DISC050へ移した。過去WIP ZIP/画像/ログ内の番号は当時の記録。合計50 Discovery todo、Delta37todo/81宣言。
+
+現5be候補の実操作17原本/63immutable記録/fixture5archiveは [nov06S29NativeFinal](https://drive.google.com/file/d/1ai0Z_LbDhoZeTMbJ8jj3DxYmcTrxkdbh/view?usp=drivesdk) に保存、9511363B/SHA5e49c842ced1c97bd9851a03f3ef6a4fc64bebb6dcf8b6eeabc6c3a47e4fb5a7/733manifest・metadata/raw SHA/CRC/allhash確認。9dの新5path（drawing_engine/input_handler/canvas_areaと2tests）は本監査修正と重複せず保持。全描画/実機筆圧の確認やA015の最終PASSとはしない。
+
+
+最新9d受入検証: imported A015/pressure 1PASS/2FAIL。上流9dだけの別worktreeでも同じ2FAIL＋黒背景への実画像化counterで1PASS/3FAIL。TileManagerのblend/eraseがstraight RGBを保持し、PixelFormat.rgba8888とfilter等はpremultiplied前提。A012/A015の重大な描画/保存互換課題をDISC051へ登録。S29 home差分由来ではなく、修正済み・全suite greenとはしない。既存ユーザー資産のformatへの影響を伴うため、比較/移行/実描画の独立検証対象として保持する。S29は当該engineを変更せず、現在HEADで関連Home実操作とbuildを確認して通常反映する。Baseline2/628・51DISCtodo・37Deltatodo/81宣言。

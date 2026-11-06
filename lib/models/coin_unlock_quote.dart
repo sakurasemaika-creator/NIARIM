@@ -42,11 +42,11 @@ class CoinUnlockDuration {
   final CoinDurationUnit unit;
 
   bool get isValid => switch (unit) {
-        CoinDurationUnit.hour => amount >= 1 && amount <= 24,
-        CoinDurationUnit.day => amount >= 2 && amount <= 6,
-        CoinDurationUnit.week => amount >= 1 && amount <= 3,
-        CoinDurationUnit.month => amount >= 1 && amount <= 120,
-      };
+    CoinDurationUnit.hour => amount >= 1 && amount <= 24,
+    CoinDurationUnit.day => amount >= 2 && amount <= 6,
+    CoinDurationUnit.week => amount >= 1 && amount <= 3,
+    CoinDurationUnit.month => amount >= 1 && amount <= 120,
+  };
 
   /// UIのプレビューに限定。正式な期限はサーバーのUTC時刻で確定。
   DateTime previewExpiry(DateTime activatedAt) {
@@ -69,12 +69,24 @@ class CoinUnlockDuration {
     final day = math.min(date.day, lastDay);
     return date.isUtc
         ? DateTime.utc(
-            year, month, day, date.hour, date.minute, date.second,
-            date.millisecond, date.microsecond,
+            year,
+            month,
+            day,
+            date.hour,
+            date.minute,
+            date.second,
+            date.millisecond,
+            date.microsecond,
           )
         : DateTime(
-            year, month, day, date.hour, date.minute, date.second,
-            date.millisecond, date.microsecond,
+            year,
+            month,
+            day,
+            date.hour,
+            date.minute,
+            date.second,
+            date.millisecond,
+            date.microsecond,
           );
   }
 }
@@ -170,11 +182,13 @@ class CoinUnlockQuoteCalculator {
       throw ArgumentError('Full Premium cannot overlap other unlocks');
     }
 
-    final hasIndividualAds = targets.any((target) =>
-        target == CoinUnlockTarget.projectListAds ||
-        target == CoinUnlockTarget.canvasAds ||
-        target == CoinUnlockTarget.timelineAds ||
-        target == CoinUnlockTarget.processingAds);
+    final hasIndividualAds = targets.any(
+      (target) =>
+          target == CoinUnlockTarget.projectListAds ||
+          target == CoinUnlockTarget.canvasAds ||
+          target == CoinUnlockTarget.timelineAds ||
+          target == CoinUnlockTarget.processingAds,
+    );
     if (targets.contains(CoinUnlockTarget.allAds) && hasIndividualAds) {
       throw ArgumentError('All ads cannot overlap ad placements');
     }
@@ -260,17 +274,18 @@ class CoinOverlapPlanner {
     if (subscriptionActive) {
       throw StateError('Subscription already covers these Premium rights');
     }
-    return List.unmodifiable(quote.selections.map((selection) {
-      final lastExpiry = activeThrough[selection.target];
-      final extendsExisting =
-          lastExpiry != null && lastExpiry.isAfter(now);
-      final startsAt = extendsExisting ? lastExpiry : now;
-      return CoinOverlapPreview(
-        target: selection.target,
-        startsAt: startsAt,
-        expiresAt: quote.duration.previewExpiry(startsAt),
-        extendsExisting: extendsExisting,
-      );
-    }));
+    return List.unmodifiable(
+      quote.selections.map((selection) {
+        final lastExpiry = activeThrough[selection.target];
+        final extendsExisting = lastExpiry != null && lastExpiry.isAfter(now);
+        final startsAt = extendsExisting ? lastExpiry : now;
+        return CoinOverlapPreview(
+          target: selection.target,
+          startsAt: startsAt,
+          expiresAt: quote.duration.previewExpiry(startsAt),
+          extendsExisting: extendsExisting,
+        );
+      }),
+    );
   }
 }

@@ -16,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
+import 'helpers/pump_real_async.dart';
 
 void main() {
   for (final width in [16.0, 32.0, 48.0]) {
@@ -144,8 +145,11 @@ void main() {
           }
           await tester.longPress(find.text('Layout'));
           await tester.pumpAndSettle();
-          expect(find.text(l10n.homeSelectionCount(1)), findsOneWidget);
-          await tester.tap(find.text(l10n.homeSelectionAllDeselect));
+          expect(
+            find.bySemanticsLabel(l10n.homeSelectionCount(1)),
+            findsOneWidget,
+          );
+          await tester.tap(find.byTooltip(l10n.homeSelectionAllDeselect));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull, reason: '$size / $scale');
         }
@@ -158,6 +162,15 @@ void main() {
         find.text(l10n.projectDetailFavoriteUnregistered),
       );
       await tester.tap(find.text(l10n.projectDetailFavoriteUnregistered));
+      // Interleave real filesystem I/O and the widget clock until publication.
+      for (
+        var attempt = 0;
+        attempt < 50 &&
+            !service.projects.firstWhere((p) => p.id == project.id).isFavorite;
+        attempt++
+      ) {
+        await pumpRealAsync(tester, const Duration(milliseconds: 20));
+      }
       await tester.pumpAndSettle();
       expect(find.text(l10n.projectDetailFavoriteRegistered), findsOneWidget);
       expect(tester.takeException(), isNull);

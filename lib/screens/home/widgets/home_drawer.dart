@@ -35,7 +35,8 @@ class _HomeDrawerState extends State<HomeDrawer> {
   Widget build(BuildContext context) {
     final accountId = context.watch<GoogleAuthService>().account?.id;
     final api = context.read<CommunityService>().api;
-    if (_accountId != accountId || !identical(_lastApi, api) ||
+    if (_accountId != accountId ||
+        !identical(_lastApi, api) ||
         _lastRefreshToken != widget.refreshToken) {
       _accountId = accountId;
       _lastApi = api;
@@ -43,7 +44,8 @@ class _HomeDrawerState extends State<HomeDrawer> {
       // Account isolation: the server resolves the user from the Google token.
       // Offline and signed-out states never display a stale exclamation mark.
       _attentionFuture = accountId != null && api != null
-          ? api.myCreatorMissionAttention() : null;
+          ? api.myCreatorMissionAttention()
+          : null;
     }
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -219,11 +221,13 @@ class _HomeDrawerState extends State<HomeDrawer> {
             ListTile(
               key: const Key('homeBenefitExchangeMenuItem'),
               leading: drawerIcon(Icons.redeem_outlined),
-              title: Text(RewardNavigationLabels.of(context)['exchange'],
+              title: Text(
+                RewardNavigationLabels.of(context)['exchange'],
                 style: const TextStyle(
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
-                )),
+                ),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 context.push('/rewards');
@@ -232,7 +236,8 @@ class _HomeDrawerState extends State<HomeDrawer> {
             ListTile(
               key: const Key('homeCreatorMissionsMenuItem'),
               leading: drawerIcon(Icons.flag_outlined),
-              trailing: _attentionFuture == null ? null
+              trailing: _attentionFuture == null
+                  ? null
                   : FutureBuilder<Map<String, dynamic>>(
                       future: _attentionFuture,
                       builder: (context, snapshot) {
@@ -241,12 +246,14 @@ class _HomeDrawerState extends State<HomeDrawer> {
                         // Future. Never show the old user's badge during that
                         // handoff or after a new request fails.
                         if (snapshot.connectionState != ConnectionState.done ||
-                            snapshot.hasError || !snapshot.hasData ||
+                            snapshot.hasError ||
+                            !snapshot.hasData ||
                             !missionDrawerNeedsAttention(snapshot.data)) {
                           return const SizedBox.shrink();
                         }
-                        final label =
-                            CreatorMissionLabels.of(context).get('drawerAttention');
+                        final label = CreatorMissionLabels.of(
+                          context,
+                        ).get('drawerAttention');
                         return Tooltip(
                           message: label,
                           child: Semantics(
@@ -255,7 +262,8 @@ class _HomeDrawerState extends State<HomeDrawer> {
                               key: const Key('homeCreatorMissionAttention'),
                               radius: 11,
                               backgroundColor: scheme.primary,
-                              child: Text('!',
+                              child: Text(
+                                '!',
                                 style: TextStyle(
                                   color: scheme.onPrimary,
                                   fontSize: 13,
@@ -267,11 +275,13 @@ class _HomeDrawerState extends State<HomeDrawer> {
                         );
                       },
                     ),
-              title: Text(RewardNavigationLabels.of(context)['missions'],
+              title: Text(
+                RewardNavigationLabels.of(context)['missions'],
                 style: const TextStyle(
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
-                )),
+                ),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 context.push('/creator-missions');
@@ -280,11 +290,13 @@ class _HomeDrawerState extends State<HomeDrawer> {
             ListTile(
               key: const Key('homeEarnCoinsMenuItem'),
               leading: drawerIcon(Icons.smart_display_outlined),
-              title: Text(RewardNavigationLabels.of(context)['earn'],
+              title: Text(
+                RewardNavigationLabels.of(context)['earn'],
                 style: const TextStyle(
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
-                )),
+                ),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 context.push('/earn-coins');
@@ -293,11 +305,13 @@ class _HomeDrawerState extends State<HomeDrawer> {
             ListTile(
               key: const Key('homeMembershipBenefitsMenuItem'),
               leading: drawerIcon(Icons.workspace_premium_outlined),
-              title: Text(RewardNavigationLabels.of(context)['membership'],
+              title: Text(
+                RewardNavigationLabels.of(context)['membership'],
                 style: const TextStyle(
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
-                )),
+                ),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 context.push('/membership');

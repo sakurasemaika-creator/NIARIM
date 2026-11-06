@@ -70,19 +70,13 @@ class DesktopDockContentViewport extends StatelessWidget {
             child: SingleChildScrollView(
               key: const ValueKey('desktopDockVerticalScroll'),
               primary: false,
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: scaledChild,
-              ),
+              child: Align(alignment: Alignment.topLeft, child: scaledChild),
             ),
           ),
         );
       }
       return ClipRect(
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: scaledChild,
-        ),
+        child: Align(alignment: Alignment.topCenter, child: scaledChild),
       );
     },
   );
