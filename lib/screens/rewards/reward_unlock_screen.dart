@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../config/accent_text_theme.dart';
 import '../../l10n/reward_unlock_labels.dart';
 import '../../l10n/reward_navigation_labels.dart';
 import '../../models/coin_unlock_quote.dart';
