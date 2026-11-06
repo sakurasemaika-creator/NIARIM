@@ -188,6 +188,43 @@ void main() {
     );
   });
 
+  testWidgets('アプリ全体の固定バナーはルート別フレームと重複しない', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(360, 800);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      _localizedApp(
+        const AdPersistentRootFrame(
+          child: AdMockPageFrame(
+            child: Scaffold(body: Center(child: Text('作品広場'))),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('persistent-horizontal-ad-mock')),
+        findsOneWidget);
+    expect(find.byKey(const Key('fixed-banner-ad-mock')),
+        findsOneWidget);
+    expect(find.text('作品広場'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('プレミアム会員にはルート共通広告を表示しない', (tester) async {
+    await tester.pumpWidget(
+      _localizedApp(
+        const AdPersistentRootFrame(
+          child: AdMockPageFrame(child: Scaffold(body: Text('page'))),
+        ),
+        premium: true,
+      ),
+    );
+    expect(find.byKey(const Key('persistent-horizontal-ad-mock')),
+        findsNothing);
+  });
+
   testWidgets('プレミアム会員には広告枠を出さない', (tester) async {
     await tester.pumpWidget(
       _localizedApp(

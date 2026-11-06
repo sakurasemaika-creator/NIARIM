@@ -13,6 +13,7 @@ import 'services/theme_service.dart';
 import 'utils/app_locale.dart';
 import 'widgets/app_scroll_behavior.dart';
 import 'widgets/app_chip_theme.dart';
+import 'widgets/ad_banner_mock_widget.dart';
 
 class NiarimApp extends StatefulWidget {
   const NiarimApp({super.key});
@@ -135,7 +136,11 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
           onPointerHover: (e) =>
               context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
           behavior: HitTestBehavior.translucent,
-          child: Stack(children: [child!, const CommunityFloatingPreview()]),
+          child: AdPersistentRootFrame(
+            child: Stack(
+              children: [child!, const CommunityFloatingPreview()],
+            ),
+          ),
         ),
       ),
     );

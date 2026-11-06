@@ -11,6 +11,34 @@ const double kPersistentHorizontalAdMockExtent = 74;
 const double _fixedBannerWidth = 320;
 const double _minimumPageHeightWithBanner = 320;
 
+/// アプリ全体で上部バナーを1つ保持する共通フレーム。
+///
+/// MaterialApp.router.builderに配置することで、GoRouterの画面遷移時や
+/// ダイアログ表示中にも同じ広告ウィジェットを保持する。
+/// 既存のAdMockPageFrameで個別にラップされたルートは、
+/// [_PersistentAdRootMarker]を検出すると二重の広告枠を作らない。
+/// UI単体テストでAdMockPageFrameだけを構築した場合は、
+/// 従来どおり単独のレイアウト検証ができる。
+class AdPersistentRootFrame extends StatelessWidget {
+  final Widget child;
+
+  const AdPersistentRootFrame({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return AdMockPageFrame(
+      child: _PersistentAdRootMarker(child: child),
+    );
+  }
+}
+
+class _PersistentAdRootMarker extends InheritedWidget {
+  const _PersistentAdRootMarker({required super.child});
+
+  @override
+  bool updateShouldNotify(_PersistentAdRootMarker oldWidget) => false;
+}
+
 /// 横長広告を配置できる通常画面に専用領域を確保するフレーム。
 ///
 /// 広告を各画面のAppBar・FAB・ツールバーへ直接置くと、画面ごとの実装漏れや
@@ -25,6 +53,13 @@ class AdMockPageFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The persistent root owns the only banner for the entire app.
+    // Individual GoRouter/MaterialPageRoute wrappers remain for isolated
+    // tests and legacy call sites, but must not create duplicate ads.
+    if (context.dependOnInheritedWidgetOfExactType<_PersistentAdRootMarker>() !=
+        null) {
+      return child;
+    }
     final isPremium = context.watch<PremiumService>().isPremium;
     // Standalone widget tests omit AdvertisingService; production always
     // provides it, and canRequestAds gates real SDK requests.
