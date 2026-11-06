@@ -319,7 +319,7 @@ function parseBody(raw: string | undefined): CreateWorkRequestBody {
   }
   if (body.scheduledPublishAt !== undefined) {
     if (typeof body.scheduledPublishAt !== "string" ||
-        !/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}/.test(body.scheduledPublishAt) ||
+        !/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(body.scheduledPublishAt) ||
         !Number.isFinite(Date.parse(body.scheduledPublishAt)) ||
         Date.parse(body.scheduledPublishAt) <= Date.now() + 60_000) {
       badRequest("予約公開日時は1分以上先の有効なISO日時にしてください", "INVALID_SCHEDULE");
