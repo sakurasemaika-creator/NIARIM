@@ -987,10 +987,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumHeroHighlightGrading => 'Tone curve /\nlevels';
 
   @override
-  String get premiumCampaignFreeNote =>
-      '* During the campaign, all Premium features above are free for everyone';
-
-  @override
   String get premiumPlanSectionTitle => 'Plans';
 
   @override
@@ -1021,19 +1017,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get premiumRestoredSnackbar =>
       'Restored your purchases (if any were found)';
-
-  @override
-  String get premiumCampaignBannerTitle =>
-      'Launch Campaign! Premium features unlocked for everyone';
-
-  @override
-  String get premiumCampaignBannerBody =>
-      'During the campaign, all Premium features (duration up to 2 hours, end-logo editing, watermark, tone curve, level correction) are free, even on the free plan.';
-
-  @override
-  String premiumCampaignEndLabel(String date) {
-    return 'Until $date';
-  }
 
   @override
   String get premiumComparisonFeature => 'Feature';
