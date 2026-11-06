@@ -180,6 +180,23 @@ jobs:
 
       # Actions Storageの上限とは別枠のGitHub Releaseへapkを添付する代替
       # 配布経路。ビルド種別ごとに固定タグを使い回し、毎回置き換える。
+      # Draft releases are visible only to accounts with write access.
+      # They provide a private download fallback if GitHub Actions artifact storage is full.
+      - name: 開発用デバッグAPKをドラフトReleaseへ保存（未公開）
+        if: ${{ inputs.build-type == 'debug' && inputs.connect_backend }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="dev-backend-debug-latest"
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          gh release create "$TAG" \
+            "build/app/outputs/flutter-apk/app-debug.apk" \
+            --draft \
+            --target "${{ github.sha }}" \
+            --title "NIARIM 開発用AWS接続デバッグAPK（未公開）" \
+            --notes "コミット ${{ github.sha }} から作成したテスト専用APK。Googleログインオプション: ${{ inputs.connect_google_auth }}。これは未公開ドラフトであり、一般公開しないこと。"
+
       # Public GitHub repository: NEVER publish a dev-backend test APK to Releases.
       # Testers can retrieve it from the run's short-lived Actions artifact instead.
       - name: APKをGitHub Releaseへ公開（Actions Storage逼迫時の代替配布）
