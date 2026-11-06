@@ -7,6 +7,7 @@ import 'screens/community/widgets/community_floating_preview.dart';
 import 'services/home_widget_refresh.dart';
 import 'services/home_widget_bridge.dart';
 import 'services/home_widget_service.dart';
+import 'services/ad_placement_policy.dart';
 import 'services/project_service.dart';
 import 'services/settings_service.dart';
 import 'services/theme_service.dart';
@@ -136,10 +137,34 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
           onPointerHover: (e) =>
               context.read<SettingsService>().notifyPointerDeviceSeen(e.kind),
           behavior: HitTestBehavior.translucent,
-          child: AdPersistentRootFrame(
-            child: Stack(
-              children: [child!, const CommunityFloatingPreview()],
-            ),
+          // Keep the same top banner mounted while switching between
+          // content routes. Do not request ads on menu-only, settings,
+          // registration, empty-list or other low-value screens.
+          child: ListenableBuilder(
+            listenable: appRouter.routerDelegate,
+            builder: (context, _) {
+              final route =
+                  appRouter.routerDelegate.currentConfiguration.uri.path;
+              final projects = context.watch<ProjectService>();
+              final hasLocalContent = switch (route) {
+                '/home' =>
+                  projects.projects.isNotEmpty ||
+                      projects.shared.isNotEmpty ||
+                      projects.trash.isNotEmpty,
+                '/shared' => projects.shared.isNotEmpty,
+                '/trash' => projects.trash.isNotEmpty,
+                _ => true,
+              };
+              return AdPersistentRootFrame(
+                allowBanner: isBannerEligibleRoute(
+                  route,
+                  hasLocalContent: hasLocalContent,
+                ),
+                child: Stack(
+                  children: [child!, const CommunityFloatingPreview()],
+                ),
+              );
+            },
           ),
         ),
       ),

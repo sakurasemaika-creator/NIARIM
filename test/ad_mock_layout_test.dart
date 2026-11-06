@@ -5,6 +5,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/widgets/ad_banner_mock_widget.dart';
 import 'package:niarim/widgets/progress_dialog.dart';
+import 'package:niarim/services/ad_placement_policy.dart';
 import 'package:provider/provider.dart';
 
 /// A free user who can see the mock slot when it fits.
@@ -41,6 +42,103 @@ Widget _app(Widget home) {
 }
 
 void main() {
+  test('route policy excludes navigation, account and form screens', () {
+    for (final path in [
+      '/', '/new-project', '/export/123', '/settings', '/settings/license',
+      '/settings/privacy-policy', '/settings/error-log', '/premium',
+      '/rewards', '/earn-coins', '/membership', '/creator-missions',
+      '/storage', '/autofill-presets', '/unknown',
+    ]) {
+      expect(isBannerEligibleRoute(path), isFalse, reason: path);
+    }
+    for (final path in [
+      '/community', '/community/work/123', '/project/123',
+      '/canvas/123', '/timeline/123', '/materials/123',
+      '/save-tree/123', '/tips', '/help',
+    ]) {
+      expect(isBannerEligibleRoute(path), isTrue, reason: path);
+    }
+    for (final path in ['/home', '/shared', '/trash']) {
+      expect(isBannerEligibleRoute(path, hasLocalContent: false),
+          isFalse, reason: path);
+      expect(isBannerEligibleRoute(path, hasLocalContent: true),
+          isTrue, reason: path);
+    }
+  });
+
+  testWidgets('processing popup keeps the top banner visible while both ad areas coexist', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(360, 850);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider<PremiumService>(
+        create: (_) => _FreePremiumService(),
+        child: MaterialApp(
+          locale: const Locale('ja'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          // Match NIARIM's real MaterialApp.router.builder arrangement:
+          // the persistent banner is OUTSIDE the Navigator's modal barrier.
+          builder: (context, child) =>
+              AdPersistentRootFrame(child: child!),
+          home: Scaffold(
+            body: Builder(builder: (context) => TextButton(
+              onPressed: () => showDialog<void>(
+                context: context,
+                builder: (_) => const ProgressDialog(
+                  title: '動画書き出し中',
+                  progress: 0.5,
+                  onCancel: _noop,
+                ),
+              ),
+              child: const Text('start export'),
+            )),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('start export'));
+    await tester.pump();
+
+    final top = find.byKey(const Key('fixed-banner-ad-mock'));
+    final middle = find.byKey(const Key('medium-rectangle-ad-mock'));
+    expect(top, findsOneWidget);
+    expect(middle, findsOneWidget);
+    expect(find.byType(ProgressDialog), findsOneWidget);
+    // The modal route must occupy the content area, not darken/cover the
+    // persistent ad in the separate upper region.
+    final bannerRect = tester.getRect(top);
+    final popupRect = tester.getRect(find.byType(AlertDialog));
+    expect(popupRect.top, greaterThanOrEqualTo(bannerRect.bottom));
+    await tester.ensureVisible(middle);
+    await tester.pump();
+    final midRect = tester.getRect(middle);
+    expect(midRect.top, greaterThan(bannerRect.bottom));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('ineligible routes keep the banner hidden without affecting content',
+      (tester) async {
+    await tester.pumpWidget(
+      _localizedApp(const AdPersistentRootFrame(
+        allowBanner: false,
+        child: Scaffold(body: Text('legal / privacy')),
+      )),
+    );
+    expect(find.byKey(const Key('persistent-horizontal-ad-mock')),
+        findsNothing);
+    expect(find.text('legal / privacy'), findsOneWidget);
+  });
+
   testWidgets('横長広告はSafeArea内の画面最上部に固定され操作領域と離れる', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(360, 800);

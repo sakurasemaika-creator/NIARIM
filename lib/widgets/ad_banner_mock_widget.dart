@@ -1,5 +1,6 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:provider/provider.dart';
 import '../services/premium_service.dart';
 import '../services/advertising_service.dart';
@@ -21,12 +22,18 @@ const double _minimumPageHeightWithBanner = 320;
 /// 従来どおり単独のレイアウト検証ができる。
 class AdPersistentRootFrame extends StatelessWidget {
   final Widget child;
+  final bool allowBanner;
 
-  const AdPersistentRootFrame({super.key, required this.child});
+  const AdPersistentRootFrame({
+    super.key,
+    required this.child,
+    this.allowBanner = true,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AdMockPageFrame(
+      allowBanner: allowBanner,
       child: _PersistentAdRootMarker(child: child),
     );
   }
@@ -48,8 +55,13 @@ class _PersistentAdRootMarker extends InheritedWidget {
 /// 実機ではGoogleテスト広告を使い、widget testにはモックを残す。
 class AdMockPageFrame extends StatelessWidget {
   final Widget child;
+  final bool allowBanner;
 
-  const AdMockPageFrame({super.key, required this.child});
+  const AdMockPageFrame({
+    super.key,
+    required this.child,
+    this.allowBanner = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +82,7 @@ class AdMockPageFrame extends StatelessWidget {
         // Keep the fixed banner at its intended size and leave enough room
         // for the page to scroll and expose its controls in short windows.
         final showSlot =
+            allowBanner &&
             !isPremium &&
             (ads == null || ads.shouldShowAds) &&
             constraints.maxWidth - safe.horizontal >= _fixedBannerWidth &&
@@ -196,7 +209,12 @@ class AdMediumRectangleMockWidget extends StatelessWidget {
         (ads != null && !ads.shouldShowAds)) {
       return const SizedBox.shrink();
     }
+    // A progress AlertDialog is an alert/behavior-only surface. Google's
+    // publisher-content rule prohibits live ads on such surfaces. Keep the
+    // 300x250 placement available in debug with official TEST IDs for layout
+    // review; fail closed in release even after production IDs are added.
     if (ads != null) {
+      if (kReleaseMode) return const SizedBox.shrink();
       return const Center(child: AdMobLiveSlot(rectangle: true));
     }
     final l10n = AppLocalizations.of(context)!;
