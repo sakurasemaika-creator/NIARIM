@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:niarim/config/monetization_gate.dart';
 import 'package:niarim/engine/drawing_engine.dart';
 import 'package:niarim/engine/input_handler.dart';
 import 'package:niarim/models/material_asset.dart';
@@ -126,21 +125,13 @@ void main() {
   );
 
   test(
-    'current Premium local path stays store-free and campaign-enabled before monetization date',
+    'an unverified Free user cannot start a purchase without a supported store and account',
     () async {
-      expect(kMonetizationEnabledFrom, DateTime(2027, 1, 1));
-      expect(
-        isMonetizationEnabled,
-        isFalse,
-        reason: 'This audit is for the current pre-2027 release configuration.',
-      );
-
       final service = PremiumService();
       await service.init();
       expect(service.storeAvailable, isFalse);
       expect(service.hasPurchasedPremium, isFalse);
-      expect(service.isLaunchCampaignActive, isTrue);
-      expect(service.isPremium, isTrue);
+      expect(service.isPremium, isFalse);
 
       final started = await service.buy(PremiumService.monthlyProductId);
       expect(started, isFalse);
@@ -151,7 +142,7 @@ void main() {
   );
 
   test(
-    'purchased Premium metadata restores locally without requiring store access',
+    'local purchase metadata restores without granting an unverified entitlement',
     () async {
       final purchasedAt = DateTime(2026, 6, 15, 12);
       SharedPreferences.setMockInitialValues({
@@ -161,9 +152,9 @@ void main() {
       });
       final service = PremiumService();
       await service.init();
-      expect(service.hasPurchasedPremium, isTrue);
+      expect(service.hasPurchasedPremium, isFalse);
       expect(service.purchaseDate, purchasedAt);
-      expect(service.isPremium, isTrue);
+      expect(service.isPremium, isFalse);
       expect(service.storeAvailable, isFalse);
       expect(service.nextRenewalDate, isNotNull);
       service.dispose();

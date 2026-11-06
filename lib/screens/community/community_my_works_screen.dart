@@ -568,7 +568,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final youtubePrivacy = _youtubePrivacyById[work.id];
     if (youtubePrivacy == 'deleted') return Icons.delete_forever_outlined;
     if (youtubePrivacy == 'private' &&
-        _scheduledPublishById[work.id] != null) return Icons.schedule;
+        _scheduledPublishById[work.id] != null) {
+      return Icons.schedule;
+    }
     if (youtubePrivacy == 'private') return Icons.lock_outline;
     return work.isNiarimPublished
         ? Icons.public

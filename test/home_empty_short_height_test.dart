@@ -79,6 +79,7 @@ void main() {
         for (final size in const [
           Size(640, 220),
           Size(640, 360),
+          Size(320, 320),
           Size(320, 480),
         ]) {
           tester.view.physicalSize = size;

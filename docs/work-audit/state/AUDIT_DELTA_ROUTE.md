@@ -282,6 +282,14 @@ status: todo。b850→5beのranking/_publicWork/bookmarks/worksUpdate/Delete。�
 
 status: todo。fc0e1831/ae00c313前後。未設定左右反転、ユーザー指定の位置/幅/高さ/開閉・手切替・別作品・再起動、保存pending中の最新状態、D001.30–31との重複証拠を確認。
 
+## D001.45 — 監査差分取り込み後の現dev_branch受入れ
+
+status: todo。cac1c08b→a6beの180path。初回/ヘルプ・Splash/設定とテーマ、CJK font、ホーム/新規制作/保存サイズ、キャンバス/PC dock・ショートカット・描画/消しゴム、保存ツリー・半透明raw/書出しの追加を現dev_branchで照合。DISC007・DISC051を含む。旧枝証拠だけでdoneにしない。実操作、互換性、font license/coverage、保存/再訪、境界と関連回帰を個別に追う。
+
+## D001.46 — 投稿・予約公開・通知・収益化の最新差分
+
+status: todo。a6be→b92の53path（`s30-latest-b92-incoming-paths.txt`）。YouTube処理後のShortsサムネイル、予約の公開/再実行/GSI cleanup、通知と詳細deep link、自分だけの非公開・公開不能状態、削除/権限、Android通知・ログイン、収益化campaign削除。成功/中断/通信失敗/再試行/非公開/公開切替・実auth/backendの経路を分け、保存・プライバシー・App/Web表示を照合。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。

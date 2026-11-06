@@ -7,17 +7,13 @@ import 'package:niarim/widgets/ad_banner_mock_widget.dart';
 import 'package:niarim/widgets/progress_dialog.dart';
 import 'package:provider/provider.dart';
 
-/// A free (non-premium) user outside the launch campaign: the only one who
-/// sees the ad slot.
+/// A free user who can see the mock slot when it fits.
 class _FreePremiumService extends PremiumService {
   @override
   bool get isPremium => false;
-
-  @override
-  bool get isLaunchCampaignActive => false;
 }
 
-/// A paying member (during the launch campaign, everyone).
+/// A paying member.
 class _MemberPremiumService extends PremiumService {
   @override
   bool get isPremium => true;
@@ -82,6 +78,44 @@ void main() {
     expect(appBarRect.top - bannerSlotRect.bottom, greaterThanOrEqualTo(16));
     expect(bannerRect.bottom, lessThan(appBarRect.top));
   });
+
+  testWidgets(
+    'the fixed banner only appears when it fits without losing page state',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(360, 800);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      final banner = find.byKey(const Key('fixed-banner-ad-mock'));
+      final input = find.byType(TextField);
+      await tester.pumpWidget(
+        _localizedApp(
+          const AdMockPageFrame(
+            child: Scaffold(
+              body: Align(alignment: Alignment.topCenter, child: TextField()),
+            ),
+          ),
+        ),
+      );
+      await tester.enterText(input, 'Retain this input');
+      await tester.pump();
+      for (final (size, show) in [
+        (const Size(320, 394), true),
+        (const Size(640, 393), false),
+        (const Size(319, 800), false),
+        (const Size(240, 220), false),
+        (const Size(360, 800), true),
+      ]) {
+        tester.view.physicalSize = size;
+        await tester.pump();
+        expect(banner, show ? findsOneWidget : findsNothing, reason: '$size');
+        if (show) expect(tester.getSize(banner), const Size(320, 50));
+        expect(input.hitTestable(), findsOneWidget);
+        expect(find.text('Retain this input'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
 
   testWidgets('処理中の中型レクタングル広告は300×250で注記より下にある', (tester) async {
     tester.view.devicePixelRatio = 1;
@@ -154,7 +188,7 @@ void main() {
     );
   });
 
-  testWidgets('プレミアム会員（リリース記念キャンペーン中は全員）には広告枠を出さない', (tester) async {
+  testWidgets('プレミアム会員には広告枠を出さない', (tester) async {
     await tester.pumpWidget(
       _localizedApp(
         const AdMockPageFrame(child: Scaffold(body: Text('page'))),

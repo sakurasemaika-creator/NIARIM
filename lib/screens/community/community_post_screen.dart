@@ -352,9 +352,11 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       try {
         await _storeThumbnail(File(path));
       } on Object catch (error) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('画像を選択できませんでした: $error')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('画像を選択できませんでした: $error')),
+          );
+        }
       }
     }
   }
@@ -413,13 +415,17 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       }
       await _storeThumbnail(File(path));
     } on MissingPluginException {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('この環境はフレーム抽出に非対応です。画像を選択してください。')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('この環境はフレーム抽出に非対応です。画像を選択してください。')),
+        );
+      }
     } on Object catch (error) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('フレーム取得に失敗しました: $error')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('フレーム取得に失敗しました: $error')),
+        );
+      }
     }
   }
 

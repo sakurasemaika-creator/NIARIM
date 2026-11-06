@@ -138,7 +138,7 @@ void main() {
   }
 
   testWidgets(
-    'last export delete reaches its confirmation above Home floating actions at 220px',
+    'last export delete reaches confirmation independently of Home folder creation at 220px',
     (tester) async {
       final l10n = await open(tester, short: true);
       final scroll = find
@@ -175,7 +175,9 @@ void main() {
             widget.heroTag == 'home-add-work-folder',
       );
       expect(hitRect.top, greaterThanOrEqualTo(viewport.top - 1e-9));
-      expect(hitRect.bottom, lessThanOrEqualTo(tester.getRect(folderFab).top));
+      final createFolderRect = tester.getRect(folderFab);
+      expect(hitRect.overlaps(createFolderRect), isFalse);
+      expect(viewport.overlaps(createFolderRect), isFalse);
       await tester.tap(button);
       await tester.pumpAndSettle();
       expect(

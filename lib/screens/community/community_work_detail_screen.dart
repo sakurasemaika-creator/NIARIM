@@ -63,11 +63,15 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     // details are available. Only a real cached work can skip owner lookup.
     final cached = community.byId(widget.workId);
     if ((cached != null && !cached.isUnavailable) ||
-        accountId == null || community.api == null) return;
+        accountId == null || community.api == null) {
+      return;
+    }
     try {
       final response = await community.api!.myWork(widget.workId);
       if (!mounted ||
-          context.read<GoogleAuthService>().account?.id != accountId) return;
+          context.read<GoogleAuthService>().account?.id != accountId) {
+        return;
+      }
       setState(() {
         _ownerOnlyAccountId = accountId;
         _ownerOnlyWork = response.toCommunityWork();

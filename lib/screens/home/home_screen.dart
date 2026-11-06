@@ -352,6 +352,11 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final windowHeight =
+        MediaQuery.sizeOf(context).height -
+        MediaQuery.viewPaddingOf(context).vertical;
+    // A header action keeps the saved works body tall enough for large text.
+    final workActionInHeader = _currentTabIndex == 1 && windowHeight < 320;
     _maybeRecordLogin(
       context.watch<GoogleAuthService>().account?.id,
       context.read<CommunityService>().api,
@@ -470,6 +475,15 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ],
               ],
+              if (workActionInHeader)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 8),
+                  child: _buildCreateWorkFolderAction(
+                    context,
+                    l10n,
+                    compact: true,
+                  ),
+                ),
               IconButton(
                 key: const Key('homeMenuButton'),
                 icon: const Icon(Icons.menu),
@@ -637,106 +651,101 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ],
           ),
-          // プロジェクトタブ：新規プロジェクト／新規フォルダを選べるFAB。
-          // 作品一覧タブ：新規プロジェクト作成の導線は不要なため、フォルダの
-          // 新規作成のみをワンタップ・選択肢なしで直接行えるFABにする。
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerFloat,
-          // Floating navigation/creation controls can cover the second row
-          // of selection actions in a short, narrow window.
-          floatingActionButton: _isSelectionMode
+          bottomNavigationBar: workActionInHeader
               ? null
-              : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (_currentTabIndex == 0)
-                        FloatingActionButton(
-                          key: const Key('homeScrollToTopFab'),
-                          heroTag: 'home-scroll-to-top',
-                          mini: MediaQuery.sizeOf(context).height < 400,
-                          materialTapTargetSize: MaterialTapTargetSize.padded,
-                          tooltip: l10n.communityScrollToTop,
-                          backgroundColor: Theme.of(
-                            context,
-                          ).colorScheme.primary,
-                          foregroundColor: Theme.of(
-                            context,
-                          ).colorScheme.onPrimary,
-                          shape: const CircleBorder(side: BorderSide.none),
-                          elevation: 0,
-                          focusElevation: 0,
-                          hoverElevation: 0,
-                          highlightElevation: 0,
-                          disabledElevation: 0,
-
-                          onPressed: () {
-                            if (!_projectScrollController.hasClients) return;
-                            _projectScrollController.animateTo(
-                              0,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeOutCubic,
-                            );
-                          },
-                          child: const Icon(Icons.arrow_upward),
-                        )
-                      else
-                        const SizedBox(width: 56),
-                      if (_currentTabIndex == 0)
-                        FloatingActionButton(
-                          heroTag: 'home-add-project',
-                          mini: MediaQuery.sizeOf(context).height < 400,
-                          materialTapTargetSize: MaterialTapTargetSize.padded,
-                          backgroundColor: Theme.of(
-                            context,
-                          ).colorScheme.primary,
-                          foregroundColor: Theme.of(
-                            context,
-                          ).colorScheme.onPrimary,
-                          shape: const CircleBorder(side: BorderSide.none),
-                          elevation: 0,
-                          focusElevation: 0,
-                          hoverElevation: 0,
-                          highlightElevation: 0,
-                          disabledElevation: 0,
-
-                          onPressed: () => _showAddChoiceSheet(context),
-                          child: const Icon(Icons.add),
-                        )
-                      else if (_currentTabIndex == 1)
-                        FloatingActionButton(
-                          heroTag: 'home-add-work-folder',
-                          mini: MediaQuery.sizeOf(context).height < 400,
-                          materialTapTargetSize: MaterialTapTargetSize.padded,
-                          tooltip: l10n.homeAddSheetNewFolder,
-                          backgroundColor: Theme.of(
-                            context,
-                          ).colorScheme.primary,
-                          foregroundColor: Theme.of(
-                            context,
-                          ).colorScheme.onPrimary,
-                          shape: const CircleBorder(side: BorderSide.none),
-                          elevation: 0,
-                          focusElevation: 0,
-                          hoverElevation: 0,
-                          highlightElevation: 0,
-                          disabledElevation: 0,
-
-                          onPressed: () => showCreateFolderNameDialog(
-                            context,
-                            (name) => context
-                                .read<WorkFolderService>()
-                                .createFolder(name),
-                          ),
-                          child: const Icon(Icons.create_new_folder_outlined),
-                        )
-                      else
-                        const SizedBox(width: 56),
-                    ],
-                  ),
-                ),
+              : _buildHomeActions(context, l10n),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHomeAction(
+    BuildContext context, {
+    Key? key,
+    required String heroTag,
+    required String tooltip,
+    required bool compact,
+    required VoidCallback onPressed,
+    required IconData icon,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return FloatingActionButton(
+      key: key,
+      heroTag: heroTag,
+      mini: compact,
+      materialTapTargetSize: MaterialTapTargetSize.padded,
+      tooltip: tooltip,
+      backgroundColor: scheme.primary,
+      foregroundColor: scheme.onPrimary,
+      shape: const CircleBorder(side: BorderSide.none),
+      elevation: 0,
+      focusElevation: 0,
+      hoverElevation: 0,
+      highlightElevation: 0,
+      disabledElevation: 0,
+      onPressed: onPressed,
+      child: Icon(icon),
+    );
+  }
+
+  Widget _buildCreateWorkFolderAction(
+    BuildContext context,
+    AppLocalizations l10n, {
+    required bool compact,
+  }) => _buildHomeAction(
+    context,
+    heroTag: 'home-add-work-folder',
+    tooltip: l10n.homeAddSheetNewFolder,
+    compact: compact,
+    onPressed: () => showCreateFolderNameDialog(
+      context,
+      (name) => context.read<WorkFolderService>().createFolder(name),
+    ),
+    icon: Icons.create_new_folder_outlined,
+  );
+
+  Widget? _buildHomeActions(BuildContext context, AppLocalizations l10n) {
+    if (_isSelectionMode || _currentTabIndex == 2) return null;
+    final compact = MediaQuery.sizeOf(context).height < 400;
+
+    // The footer and the scrollable tab body have separate hit regions.
+    final projects = _currentTabIndex == 0;
+    return SafeArea(
+      top: false,
+      minimum: EdgeInsets.fromLTRB(16, 0, 16, compact ? 8 : 16),
+      child: Row(
+        mainAxisAlignment: projects
+            ? MainAxisAlignment.spaceBetween
+            : MainAxisAlignment.end,
+        children: [
+          if (projects) ...[
+            _buildHomeAction(
+              context,
+              compact: compact,
+              key: const Key('homeScrollToTopFab'),
+              heroTag: 'home-scroll-to-top',
+              tooltip: l10n.communityScrollToTop,
+              onPressed: () {
+                if (!_projectScrollController.hasClients) return;
+                _projectScrollController.animateTo(
+                  0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                );
+              },
+              icon: Icons.arrow_upward,
+            ),
+            _buildHomeAction(
+              context,
+              compact: compact,
+              heroTag: 'home-add-project',
+              tooltip: l10n.commonAdd,
+              onPressed: () => _showAddChoiceSheet(context),
+              icon: Icons.add,
+            ),
+          ] else
+            _buildCreateWorkFolderAction(context, l10n, compact: compact),
+        ],
       ),
     );
   }
@@ -1475,6 +1484,7 @@ class _SharedTab extends StatelessWidget {
     shared = _sortProjects(shared, sortMode);
     final l10n = AppLocalizations.of(context)!;
     return _FolderableList<Project>(
+      reserveForFloatingActions: true,
       allItems: shared,
       folders: folders,
       emptyState: EmptyStatePlaceholder(
@@ -1619,6 +1629,7 @@ class _FolderableList<T> extends StatelessWidget {
   final Future<void> Function(String id) onDeleteFolder;
   final Widget Function(BuildContext, T) itemBuilder;
   final Widget? emptyState;
+  final bool reserveForFloatingActions;
 
   const _FolderableList({
     required this.allItems,
@@ -1629,6 +1640,7 @@ class _FolderableList<T> extends StatelessWidget {
     required this.onDeleteFolder,
     required this.itemBuilder,
     this.emptyState,
+    this.reserveForFloatingActions = false,
   });
 
   @override
@@ -1657,7 +1669,9 @@ class _FolderableList<T> extends StatelessWidget {
               ],
               SliverPadding(
                 padding: EdgeInsets.only(
-                  bottom: 88 + MediaQuery.paddingOf(context).bottom,
+                  bottom: reserveForFloatingActions
+                      ? 88 + MediaQuery.paddingOf(context).bottom
+                      : 0,
                 ),
                 sliver: SliverFillRemaining(
                   hasScrollBody: false,
@@ -1670,9 +1684,10 @@ class _FolderableList<T> extends StatelessWidget {
         return ListView.builder(
           // Leave 48px for the action, 8px inner padding and 4px card margin.
           padding: EdgeInsets.only(
-            bottom:
-                (constraints.maxHeight - 60).clamp(0.0, 88.0).toDouble() +
-                MediaQuery.paddingOf(context).bottom,
+            bottom: reserveForFloatingActions
+                ? (constraints.maxHeight - 60).clamp(0.0, 88.0).toDouble() +
+                      MediaQuery.paddingOf(context).bottom
+                : 0,
           ),
           itemCount: rootItems.length + (hasHeader ? 2 : 0),
           itemBuilder: (context, index) {

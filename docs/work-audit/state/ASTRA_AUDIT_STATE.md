@@ -1856,3 +1856,19 @@ build/runtimeはDriveへ保存済み: VerifiedBuild1iLn9P3cs5kxrVGV98ezqSyBZ-m2P
 Baseline 2/628、A003作業中、Discovery todo 51、Delta上位todo 37/宣言81。通常の `dev_branch` 反映後、DISC050（通常表示の短高誤入力）→DISC051（半透明描画・保存互換性）と最新CIを継続。各全条件、Android/DeX、実auth/backend、Visual closureは未完了。
 
 最新S29証跡ZIP [nov06S29PublishReady](https://drive.google.com/file/d/1Boii8EwnfPs0LH10E6I8p7UadC7l3lG2/view) を保存。9790752 bytes / SHA256 `99dc03ff7991c89b3d758c6fff4acd17f6e5843d76d9b1863789cebeba1226ec`、metadata・再取得・CRC・全774ファイルhash確認済み。Linux実画面原本、操作/保存・テスト/ビルドの証拠、StateとWIPを含む。
+
+## S30 — ホームの操作領域と短い画面の空表示 — 2026-11-06
+
+S29はApp `c18f58e7ad6797e10f936dfc3ae11f6eaf452267`、Web `38f387162d746a95d61080c40bcdf39267cdf863` のdev_branchに反映済み。[公開後の照合receipt](https://drive.google.com/file/d/1HbVUvU5pEmhSflTaRt46cGKi3QyRpXv1/view) で差分blob・345 Dart/8 font・mirrorを照合。S29 CIには失敗が残り、全suite/全監査の完了を意味しない。
+
+DISC050: Projectsの追加・先頭へをスクロールする一覧の外に置いた。狭い通常画面で作品メニューと追加を別々に操作できる。高さの小さいWorksは作成ボタンをAppBarに置き、空表示や保存済み作品に使える高さを確保。通常高ではfooter、選択中・Bookmarksにはfooterなし。色はテーマ・外観の既存primary/onPrimary。旧基点の反例とS30初版の10 Linux実原本/31入力・保存不変 [nov06S30PreMerge](https://drive.google.com/file/d/1z17ME6vhMJj2qemEKmKwCaTH1QPINs7s/view) は72 hash確認済み。
+
+最新基点 App `b92a253db68dff732187befaa032231a5b7dff89` / Web `38f387162d746a95d61080c40bcdf39267cdf863` を確認。a6be→b92の追加は74commit/53path。S30対象、監査正本、依存lockと同梱fontに競合なし。最新App候補で関連回帰27件（Home15件、広告mock境界/入力保持、現Free/Premium、platform）、静的解析0件、通常/fixture Linux debug build成功。実原本13件/操作36件は `s30-latest-native-review.json`。FR・paper・文字2倍の240×220でProjectメニュー/追加、640×220の空Worksとフォルダ作成/取消を実操作。隔離データの .niapro 5件・GIF3件、空データの保存物なしを照合。Linux・fixture範囲の証拠で、Android/DeX・実auth/backend・全suiteのPASSではない。
+
+DISC052: 最新Freeでは74pxのモックが常時表示され、240×220でProjects一覧の上下が同じy176、Addの開始y164。640×220のWorksの説明や選択UIでも到達不能/overflowを再現（`s30-latest-ad-frame-counter.log`、11 PASS/4 FAIL）。固定320×50がsafe幅に入り、モックを除いて320dpのページ高さが残るときだけ専用枠を確保する。サイズ往復で同じページ状態/入力を保持。実広告や課金の有効条件は変更していない。通常高FR/text2でモックの長い説明が50px枠内で欠けることも実原本で確認。ラベル/contrast・共有frame全caller/Android/DeXの検証は未完了。
+
+最新runtime [nov06S30LatestRuntime](https://drive.google.com/file/d/1mmdgqytAQ1MW0v2UkDgJwt90Lh_dSvYl/view) は34460535 bytes、SHA256 `2851177b67aa21150d311bbd49eaaa50971498d9b904fdda20f5e760ab80e00a`、metadata・raw再取得・CRC・全11 hash一致。kernel `db9d37dcdb07869f737a111835da3451272c07903459f8b476d6a4cd9394ae34`。監査基準とState/Inventory/verifierのhash・上流差分manifestは `s30-latest-head-docs.json` と `s30-latest-b92-incoming-paths.txt`。
+
+残件: 240×220の初期表示でFavorites headerが一覧領域の大半を使うため、DISC050は密度と境界の検証を継続。SP/PCの古いfolder fixtureは上流a6beでも未描画フォルダのlocatorで失敗した。DISC007でbreadcrumb・戻る・再訪の実操作を検証する。DISC051は取り込まれたpremultiplied描画を旧保存/書出し/Undoと照合する。Baselineの完了判定を変更せず、Discovery52 todo、Delta上位37 todo（D001.45/46を追加）。全面監査とVisual closureは未完了。
+
+最新の実画面13原本、36操作、回帰/静的解析/ビルド、保存不変、再開差分を含む [S30証跡ZIP](https://drive.google.com/file/d/1AY8eU5gFzK5BmY53MOKyNrk18gPi30pv/view) は 738364 bytes、SHA256 `2c6d778f7783ef4d3c705d8fbd161eaa4758b39cbf4b1c7abdc054df5b81d1f4`、metadata・再取得・CRC・全94 hash一致。

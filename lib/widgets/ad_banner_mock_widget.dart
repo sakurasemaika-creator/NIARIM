@@ -6,8 +6,10 @@ import '../l10n/app_localizations.dart';
 
 /// SafeAreaの上端を除いた、横長広告専用領域の高さ。
 const double kPersistentHorizontalAdMockExtent = 74;
+const double _fixedBannerWidth = 320;
+const double _minimumPageHeightWithBanner = 320;
 
-/// すべての通常画面に横長広告の専用領域を確保するフレーム。
+/// 横長広告を配置できる通常画面に専用領域を確保するフレーム。
 ///
 /// 広告を各画面のAppBar・FAB・ツールバーへ直接置くと、画面ごとの実装漏れや
 /// 操作ボタンとの近接が起きるため、ページ本体とは別の固定領域へ分離する。
@@ -22,18 +24,33 @@ class AdMockPageFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPremium = context.watch<PremiumService>().isPremium;
-    if (isPremium) return child;
-    return Column(
-      children: [
-        const _AdBannerMockSlot(),
-        Expanded(
-          child: MediaQuery.removePadding(
-            context: context,
-            removeTop: true,
-            child: child,
-          ),
-        ),
-      ],
+    final safe = MediaQuery.paddingOf(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Keep the fixed banner at its intended size and leave enough room
+        // for the page to scroll and expose its controls in short windows.
+        final showSlot =
+            !isPremium &&
+            constraints.maxWidth - safe.horizontal >= _fixedBannerWidth &&
+            constraints.maxHeight - safe.vertical >=
+                kPersistentHorizontalAdMockExtent +
+                    _minimumPageHeightWithBanner;
+        return Column(
+          children: [
+            if (showSlot)
+              const _AdBannerMockSlot()
+            else
+              const SizedBox.shrink(),
+            Expanded(
+              child: MediaQuery.removePadding(
+                context: context,
+                removeTop: showSlot,
+                child: child,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -96,7 +113,7 @@ class AdBannerMockWidget extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Container(
       key: Key('fixed-banner-ad-mock'),
-      width: 320,
+      width: _fixedBannerWidth,
       height: 50,
       decoration: BoxDecoration(
         color: ThemeService.activeColorScheme.onSurfaceVariant,

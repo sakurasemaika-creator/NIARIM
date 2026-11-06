@@ -18,9 +18,6 @@ class _FreePremiumService extends PremiumService {
   bool get isPremium => false;
 
   @override
-  bool get isLaunchCampaignActive => false;
-
-  @override
   bool isFeatureAvailable(PremiumFeature feature) => false;
 }
 
