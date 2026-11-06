@@ -20,6 +20,7 @@ import { recordMissionAchievement } from "../../lib/missionNotifications";
 interface CreateWorkRequestBody {
   youtubeVideoId: string;
   youtubeAccessToken: string;
+  scheduledPublishAt?: string;
   title?: string;
   description?: string;
   isShort?: boolean;
@@ -120,6 +121,20 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     const verification = verifyVideoOwnership(snippet, linkedChannelId);
     if (!verification.ok) forbidden(verification.reason);
 
+    // A private video is only scheduled if YouTube confirms publishAt.
+    // Never expose a fabricated client-supplied release date as fact.
+    const youtubeSchedule = snippet.publishAt;
+    if (body.scheduledPublishAt &&
+        (snippet.privacyStatus !== "private" ||
+         !youtubeSchedule ||
+         Math.abs(Date.parse(youtubeSchedule) -
+                  Date.parse(body.scheduledPublishAt)) > 1000)) {
+      badRequest("YouTube側の予約公開日時が一致しません", "SCHEDULE_MISMATCH");
+    }
+    const scheduledPublishAt = youtubeSchedule &&
+      snippet.privacyStatus === "private"
+      ? new Date(youtubeSchedule).toISOString() : undefined;
+
     await reservePostQuota(auth.niarimUserId, user.membershipTier);
     quotaReserved = true;
 
@@ -159,6 +174,7 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       repostCount: 0,
       isNiarimPublished,
       youtubePrivacyStatus: snippet.privacyStatus,
+      scheduledPublishAt,
       isShort: body.isShort ?? false,
       containsGenerativeAiImageOrVideo:
         body.containsGenerativeAiImageOrVideo ?? false,
@@ -301,6 +317,14 @@ function parseBody(raw: string | undefined): CreateWorkRequestBody {
   ) {
     badRequest("youtubeAccessTokenは必須です");
   }
+  if (body.scheduledPublishAt !== undefined) {
+    if (typeof body.scheduledPublishAt !== "string" ||
+        !/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}/.test(body.scheduledPublishAt) ||
+        !Number.isFinite(Date.parse(body.scheduledPublishAt)) ||
+        Date.parse(body.scheduledPublishAt) <= Date.now() + 60_000) {
+      badRequest("予約公開日時は1分以上先の有効なISO日時にしてください", "INVALID_SCHEDULE");
+    }
+  }
   if (body.isShort !== undefined && typeof body.isShort !== "boolean") {
     badRequest("isShortは真偽値である必要があります");
   }
@@ -354,6 +378,7 @@ function parseBody(raw: string | undefined): CreateWorkRequestBody {
   return {
     youtubeVideoId: body.youtubeVideoId,
     youtubeAccessToken: body.youtubeAccessToken,
+    scheduledPublishAt: body.scheduledPublishAt as string | undefined,
     title: typeof body.title === "string" ? body.title.trim() : undefined,
     description: typeof body.description === "string" ? body.description.trim() : undefined,
     isShort: body.isShort,

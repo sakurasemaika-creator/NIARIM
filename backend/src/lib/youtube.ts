@@ -22,6 +22,7 @@ export interface YoutubeVideoSnippet {
   title: string;
   thumbnailUrl: string;
   privacyStatus: "public" | "unlisted" | "private";
+  publishAt?: string;
 }
 
 export interface YoutubeVideoStats {
@@ -70,7 +71,10 @@ export async function getVideoSnippet(
         title: string;
         thumbnails: { high?: { url: string }; default: { url: string } };
       };
-      status: { privacyStatus: "public" | "unlisted" | "private" };
+      status: {
+        privacyStatus: "public" | "unlisted" | "private";
+        publishAt?: string;
+      };
     }>;
   }>("videos", { part: "snippet,status", id: videoId }, accessToken);
 
@@ -84,6 +88,7 @@ export async function getVideoSnippet(
     thumbnailUrl:
       item.snippet.thumbnails.high?.url ?? item.snippet.thumbnails.default.url,
     privacyStatus: item.status.privacyStatus,
+    publishAt: item.status.publishAt,
   };
 }
 

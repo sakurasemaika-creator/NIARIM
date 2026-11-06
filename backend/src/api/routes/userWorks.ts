@@ -36,6 +36,7 @@ function toOwnerWork(work: WorkItem) {
   return {
     ...toPublicWork(work),
     youtubePrivacyStatus: work.youtubePrivacyStatus,
+    scheduledPublishAt: work.scheduledPublishAt,
   };
 }
 

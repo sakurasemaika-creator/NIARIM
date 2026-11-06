@@ -159,6 +159,11 @@ async function updateWorkStats(
   const viewCount = stats?.viewCount ?? work.viewCount;
   const likeCount = stats?.likeCount ?? work.likeCount;
   const commentCount = stats?.commentCount ?? work.commentCount;
+  const newlyReleased = !!work.scheduledPublishAt &&
+    work.youtubePrivacyStatus === "private" &&
+    youtubePrivacyStatus === "public" &&
+    Date.parse(work.scheduledPublishAt) <= nowDate.getTime();
+  const actualPostedAt = newlyReleased ? work.scheduledPublishAt! : work.postedAt;
   const rankingScore = computeRankingScore({
     viewCount,
     likeCount,
@@ -182,11 +187,21 @@ async function updateWorkStats(
     ":expectedType": TABLE_ITEM_TYPE.Work,
     ":expectedPublished": work.isNiarimPublished,
   };
+  if (newlyReleased) {
+    // Newly discoverable works are ordered by their real release time,
+    // not the date the private video was first uploaded.
+    setParts.push("postedAt = :actualPostedAt", "gsi3AllSk = :actualPostedAt");
+    values[":actualPostedAt"] = actualPostedAt;
+  }
   const removes: string[] = [];
   const conditions = [
     "itemType = :expectedType",
     "isNiarimPublished = :expectedPublished",
   ];
+  if (newlyReleased) {
+    conditions.push("youtubePrivacyStatus = :oldPrivacy");
+    values[":oldPrivacy"] = "private";
+  }
 
   const current = { viewCount, likeCount, commentCount };
   // 1日1回の集計では、前回取得値を期間開始の基準として使う。
@@ -233,7 +248,7 @@ async function updateWorkStats(
       values[":bmPk"] = "BOOKMARK_RANKING";
       values[":bm"] = work.bookmarkCount;
       values[":authorPk"] = `AUTHOR#${work.authorId}`;
-      values[":postedAt"] = work.postedAt;
+      values[":postedAt"] = actualPostedAt;
       values[":latestPk"] = "LATEST";
       values[":expectedBookmarkCount"] = work.bookmarkCount;
       conditions.push("bookmarkCount = :expectedBookmarkCount");

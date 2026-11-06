@@ -108,6 +108,8 @@ export interface WorkItem {
   // 13章：YouTube側の状態。強制非表示の判定に使う
   // （'private'または'deleted'のとき強制非表示）。
   youtubePrivacyStatus: YoutubePrivacyStatus;
+  /** YouTube-confirmed reservation time (owner-only until publication). */
+  scheduledPublishAt?: string;
 
   // 8.9節：ショート/横動画の判定結果（投稿時にクライアントから受け取る）。
   isShort: boolean;
