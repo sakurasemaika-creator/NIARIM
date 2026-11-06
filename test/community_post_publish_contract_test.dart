@@ -32,6 +32,31 @@ void main() {
     expect(post, contains('workId: registeredVideoId'));
   });
 
+  test('successful registration notification does not depend on feed refresh',
+      () {
+    final start = post.indexOf('Future<void> _finishRegistration(');
+    final end = post.indexOf('Future<void> _submit()', start);
+    final completion = post.substring(start, end);
+    final clear = completion.indexOf('await _clearPendingUpload()');
+    final notify = completion.indexOf('PostCompletionNotificationService.notifySuccess(');
+    final refresh = completion.indexOf('await community.refreshFromBackend()');
+    expect(clear, greaterThanOrEqualTo(0));
+    expect(notify, greaterThan(clear));
+    expect(refresh, greaterThan(notify));
+    expect(completion, contains('on Object catch (error)'));
+  });
+
+  test('Shorts wait for completed YouTube processing before thumbnail setting',
+      () {
+    final start = post.indexOf('final thumbnail = YoutubeThumbnailService();');
+    final end = post.indexOf('thumbnail.close();', start);
+    final upload = post.substring(start, end);
+    expect(upload, contains('if (_isShort)'));
+    expect(upload, contains('await thumbnail.waitUntilProcessed('));
+    expect(upload.indexOf('await thumbnail.waitUntilProcessed('),
+        lessThan(upload.indexOf('await thumbnail.setThumbnail(')));
+  });
+
   test('owner-only management differentiates scheduled and private uploads', () {
     expect(work, contains('_scheduledPublishById'));
     expect(work, contains("youtubePrivacy == 'private'"));
