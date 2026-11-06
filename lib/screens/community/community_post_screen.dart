@@ -5,12 +5,16 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../services/api/niarim_api_exception.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/youtube_upload_service.dart';
+import '../../services/youtube_thumbnail_service.dart';
+import '../../services/post_completion_notification_service.dart';
 import '../../l10n/community_work_metadata_labels.dart';
 import '../../l10n/community_post_visibility_labels.dart';
 import 'widgets/community_post_copy_button.dart';
@@ -82,6 +86,10 @@ class CommunityPostScreen extends StatefulWidget {
 
 class _CommunityPostScreenState extends State<CommunityPostScreen> {
   static const _pendingVideoIdKey = 'community.pendingUpload.videoId';
+  static const _pendingThumbnailPathKey = 'community.pendingUpload.thumbnailPath';
+  static const _pendingThumbnailAppliedKey = 'community.pendingUpload.thumbnailApplied';
+  static const _pendingScheduledPublishAtKey = 'community.pendingUpload.scheduledPublishAt';
+  static const _frameChannel = MethodChannel('com.niarim.niarim/video_frame');
   static const _pendingAccountIdKey = 'community.pendingUpload.googleAccountId';
   static const _pendingAccountEmailKey =
       'community.pendingUpload.googleAccountEmail';
@@ -103,6 +111,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   final _descriptionController = TextEditingController();
   final _youtubeDescriptionController = TextEditingController();
   File? _videoFile;
+  File? _thumbnailFile;
+  bool _thumbnailApplied = false;
+  DateTime? _scheduledPublishAt;
   String? _youtubeVideoId;
   String? _uploadAccountId;
   String? _uploadAccountEmail;
@@ -143,9 +154,14 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
           _uploadAccountEmail = prefs.readString(_pendingAccountEmailKey);
           _isShort = prefs.readBool(_pendingIsShortKey) ?? false;
           _youtubePrivacyStatus =
-              prefs.readString(_pendingYoutubePrivacyKey) == 'public'
-              ? 'public'
-              : 'unlisted';
+              prefs.readString(_pendingYoutubePrivacyKey) ?? 'unlisted';
+          final thumbPath = prefs.readString(_pendingThumbnailPathKey);
+          _thumbnailFile = thumbPath == null || thumbPath.isEmpty
+              ? null : File(thumbPath);
+          _thumbnailApplied = prefs.readBool(_pendingThumbnailAppliedKey) ?? false;
+          final scheduled = prefs.readString(_pendingScheduledPublishAtKey);
+          _scheduledPublishAt =
+              scheduled == null ? null : DateTime.tryParse(scheduled);
           _isNiarimPublished = prefs.readBool(_pendingPublishedKey) ?? true;
           _containsGenerativeAiImageOrVideo =
               prefs.readBool(_pendingAiImageVideoKey) ?? false;
@@ -173,6 +189,15 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_pendingVideoIdKey, videoId);
+    await prefs.setString(_pendingThumbnailPathKey, _thumbnailFile?.path ?? '');
+    await prefs.setBool(_pendingThumbnailAppliedKey, _thumbnailApplied);
+    if (_scheduledPublishAt != null) {
+      await prefs.setString(
+        _pendingScheduledPublishAtKey, _scheduledPublishAt!.toUtc().toIso8601String(),
+      );
+    } else {
+      await prefs.remove(_pendingScheduledPublishAtKey);
+    }
     await prefs.setString(_pendingAccountIdKey, accountId);
     await prefs.setString(_pendingAccountEmailKey, accountEmail);
     await prefs.setString(_pendingTitleKey, title);
@@ -201,6 +226,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     final prefs = await SharedPreferences.getInstance();
     await Future.wait<bool>([
       prefs.remove(_pendingVideoIdKey),
+      prefs.remove(_pendingThumbnailPathKey),
+      prefs.remove(_pendingThumbnailAppliedKey),
+      prefs.remove(_pendingScheduledPublishAtKey),
       prefs.remove(_pendingAccountIdKey),
       prefs.remove(_pendingAccountEmailKey),
       prefs.remove(_pendingTitleKey),
@@ -240,6 +268,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _uploadAccountId = null;
       _uploadAccountEmail = null;
       _videoFile = null;
+      _thumbnailFile = null;
+      _thumbnailApplied = false;
+      _scheduledPublishAt = null;
       _titleController.clear();
       _youtubeTitleController.clear();
       _descriptionController.clear();
