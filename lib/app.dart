@@ -27,6 +27,21 @@ class NiarimApp extends StatefulWidget {
 
 class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
   final _homeWidgetBridge = HomeWidgetBridge();
+  final ChangeNotifier _adPlacementRefresh = ChangeNotifier();
+  bool _adRefreshQueued = false;
+
+  /// Router delegates may notify while a child widget is building.
+  /// Rebuilding the root ad frame synchronously in that phase throws a
+  /// Flutter "markNeedsBuild called during build" assertion.
+  /// Coalesce route/modal updates into the next post-frame callback.
+  void _scheduleAdPlacementRefresh() {
+    if (_adRefreshQueued || !mounted) return;
+    _adRefreshQueued = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _adRefreshQueued = false;
+      if (mounted) _adPlacementRefresh.notifyListeners();
+    });
+  }
 
   /// 直近にウィジェットへ書き出した「テーマ色＋表示言語」。ウィジェットの
   /// 意匠はテーマ配色と文言の両方を焼き込んだ画像なので、どちらが変わっても
@@ -37,6 +52,9 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    appRouter.routerDelegate.addListener(_scheduleAdPlacementRefresh);
+    adModalVisibilityObserver.isModalVisible
+        .addListener(_scheduleAdPlacementRefresh);
     // ホーム画面ウィジェットのタップで指定されたルートを開く。
     // go()ではなくpush()を使う（go()は履歴を丸ごと置き換えるため、
     // ウィジェット経由で入った画面から戻れなくなる）。
@@ -74,6 +92,10 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    appRouter.routerDelegate.removeListener(_scheduleAdPlacementRefresh);
+    adModalVisibilityObserver.isModalVisible
+        .removeListener(_scheduleAdPlacementRefresh);
+    _adPlacementRefresh.dispose();
     super.dispose();
   }
 
@@ -143,10 +165,7 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
           // content routes. Do not request ads on menu-only, settings,
           // registration, empty-list or other low-value screens.
           child: ListenableBuilder(
-            listenable: Listenable.merge([
-              appRouter.routerDelegate,
-              adModalVisibilityObserver.isModalVisible,
-            ]),
+            listenable: _adPlacementRefresh,
             builder: (context, _) {
               final route =
                   appRouter.routerDelegate.currentConfiguration.uri.path;
