@@ -461,6 +461,13 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     await _clearPendingUpload();
     await community.refreshFromBackend();
     if (!mounted) return;
+    // Never notify on a partial upload: only after NIARIM has the work ID.
+    await PostCompletionNotificationService.notifySuccess(
+      workId: registeredVideoId,
+      title: _titleController.text.trim(),
+      scheduled: _scheduledPublishAt != null,
+    );
+    if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
     setState(
       () => _status = recovered ? _PostStatus.recovered : _PostStatus.completed,
@@ -484,6 +491,15 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     final youtubeTitle = _youtubeTitleController.text.trim();
     final description = _descriptionController.text.trim();
     final youtubeDescription = _youtubeDescriptionController.text.trim();
+    if (_youtubeVideoId == null &&
+        _youtubePrivacyStatus == 'scheduled' &&
+        (_scheduledPublishAt == null ||
+         !_scheduledPublishAt!.isAfter(
+           DateTime.now().add(const Duration(minutes: 2)),
+         ))) {
+      setState(() => _error = StateError('有効な未来の公開日時を指定してください'));
+      return;
+    }
     if (_youtubeVideoId == null && file == null) {
       setState(() => _error = const _PostFailure(_PostFailureKind.noVideo));
       return;
@@ -613,7 +629,10 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             accessToken: youtubeToken,
             title: youtubeTitle,
             description: youtubeDescription,
-            privacyStatus: _youtubePrivacyStatus,
+            privacyStatus: _youtubePrivacyStatus == 'scheduled'
+                ? 'private' : _youtubePrivacyStatus,
+            scheduledPublishAt: _youtubePrivacyStatus == 'scheduled'
+                ? _scheduledPublishAt : null,
             onProgress: (sent, total) {
               if (!mounted || total <= 0) return;
               setState(() => _progress = sent / total);
@@ -649,6 +668,25 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         throw const _PostFailure(_PostFailureKind.noVideoId);
       }
 
+      // Set the custom thumbnail before registering the NIARIM metadata.
+      // The YouTube video ID is already durable: a failure here must not
+      // re-upload the original movie on the next attempt.
+      if (_thumbnailFile != null && !_thumbnailApplied) {
+        final thumbnail = YoutubeThumbnailService();
+        try {
+          await thumbnail.setThumbnail(
+            file: _thumbnailFile!,
+            videoId: registeredVideoId,
+            accessToken: youtubeToken,
+          );
+          _thumbnailApplied = true;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool(_pendingThumbnailAppliedKey, true);
+        } finally {
+          thumbnail.close();
+        }
+      }
+
       // 外部認証イベント等でアカウントが変わった場合、YouTube tokenと
       // NIARIM ID tokenを別アカウントで混在させずPOST前に止める。
       if (auth.account?.id != uploadAccountId) {
@@ -661,6 +699,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         title: title,
         description: description,
         isShort: _isShort,
+        scheduledPublishAt: _youtubePrivacyStatus == 'scheduled'
+            ? _scheduledPublishAt : null,
         isNiarimPublished: _isNiarimPublished,
         containsGenerativeAiImageOrVideo: _containsGenerativeAiImageOrVideo,
       );
