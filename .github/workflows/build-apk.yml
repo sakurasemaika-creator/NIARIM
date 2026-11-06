@@ -14,6 +14,11 @@ on:
           - debug
           - release
         default: debug
+      connect_backend:
+        description: "デバッグAPKを開発用AWSバックエンドへ接続する（実データ利用・既定オフ）"
+        required: true
+        type: boolean
+        default: false
 
 # 誤って同じブランチで複数回起動された場合は、古いビルドを継続して資源を消費しない。
 # 最新の手動実行だけを残す。
@@ -99,7 +104,27 @@ jobs:
         env:
           NIARIM_DEBUG_KEYSTORE_PATH: ${{ runner.temp }}/niarim-ci-debug.jks
           NIARIM_DEBUG_STORE_PASSWORD: ${{ secrets.NIARIM_DEBUG_STORE_PASSWORD }}
-        run: flutter build apk --debug
+          # The Lambda Function URL is a public API endpoint, NOT a secret.
+          NIARIM_DEV_API_BASE_URL: https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/
+          CONNECT_BACKEND: ${{ inputs.connect_backend }}
+        run: |
+          set -euo pipefail
+          if [[ "$CONNECT_BACKEND" == "true" ]]; then
+            if [[ "${{ github.ref }}" != "refs/heads/dev_branch" ]]; then
+              echo "::error::開発用APIへの接続は dev_branch のデバッグAPKに限定します"
+              exit 1
+            fi
+            flutter build apk --debug --dart-define="NIARIM_API_BASE_URL=$NIARIM_DEV_API_BASE_URL"
+          else
+            flutter build apk --debug
+          fi
+
+      # 本番配布APKに開発用AWS URLを誤混入させない。
+      - name: 開発用APIへのリリース接続を禁止
+        if: ${{ inputs.build-type == 'release' && inputs.connect_backend }}
+        run: |
+          echo "::error::リリースAPKではconnect_backendをオフにしてください"
+          exit 1
 
       - name: APKビルド（release）
         if: ${{ inputs.build-type == 'release' }}
