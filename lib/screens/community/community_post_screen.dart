@@ -679,6 +679,15 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       if (_thumbnailFile != null && !_thumbnailApplied) {
         final thumbnail = YoutubeThumbnailService();
         try {
+          // YouTube can acknowledge an upload before Shorts have finished
+          // processing. Wait for the owned video's processing status first;
+          // otherwise thumbnails.set may succeed without being applied.
+          if (_isShort) {
+            await thumbnail.waitUntilProcessed(
+              videoId: registeredVideoId,
+              accessToken: youtubeToken,
+            );
+          }
           await thumbnail.setThumbnail(
             file: _thumbnailFile!,
             videoId: registeredVideoId,
