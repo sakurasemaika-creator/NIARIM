@@ -151,3 +151,55 @@
   test-ad rendering remain unverified. Publisher policy compliance cannot be
   guaranteed without reviewing actual production content, overlays and
   AdMob's final policy assessment.
+
+
+## 2026-11-07 revision: restore creative-surface banners
+
+The previous audit was too conservative: it classified **all** interactive
+creative surfaces as ad-ineligible. Google AdMob's guidance does **not**
+categorically prohibit an anchored banner on a drawing/editor screen.
+It discourages placements that are immediately adjacent to interactive
+controls or lead to accidental taps; separate, fixed reserved spaces are
+recommended. ibisPaint X's official FAQ also explicitly documents
+ads along the top/bottom of the free app. This is comparative context,
+not a guarantee of approval for NIARIM.
+
+### Updated live-eligible routes
+
+- Core project content: `/project/:id`, `/canvas/:id`,
+  `/timeline/:id`, `/materials/:id`, `/save-tree/:id`.
+- Published works: `/community` only while the service holds
+  discoverable work content; `/community/work/:id` only when a work
+  with that ID is loaded.
+- Informative content: `/help`, `/tips`.
+- User content lists: `/home`, `/shared`, `/trash` when nonempty.
+
+All these screens reuse one already reserved banner area above the
+page body, with a non-clickable dividing border and a buffer from
+buttons/tools. No ad is floated over the canvas or controls, and
+phone/tablet/DeX size and height gates, keyboard suspension,
+premium/consent checks and production modal suppression remain in place.
+
+### Still deliberately excluded
+
+The logo-only launch route, project-creation and other form-only
+routes, payment and rewarded-coin claim flows, settings navigation and
+account/security settings, legal/error displays, and short alert
+dialogs remain outside the ordinary banner inventory. This avoids
+low-value/no-publisher-content screens and ad-adjacent transaction
+controls. The progress-dialog 300×250 is still debug-only.
+
+### Validation status
+
+The broad all-routes screenshot regression
+[run 42254903898](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/42254903898)
+completed successfully for the code change. This did not verify a real
+Google-served advertisement on Galaxy hardware. The earlier 410-image
+PDF represents the **old** route gating and is therefore superseded
+for ad visibility; a new visual capture should be used before release.
+
+Official guidance:
+- https://support.google.com/admob/answer/6275335?hl=ja
+- https://support.google.com/admob/answer/6275345?hl=ja
+- https://support.google.com/admob/answer/9993556?hl=ja
+- https://ssl.ibis.ne.jp/faq/11/ibisPaintforiPad/q/27/?lang=ja
