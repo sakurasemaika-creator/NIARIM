@@ -960,9 +960,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumHeroHighlightGrading => '色调曲线 /\n色阶调整';
 
   @override
-  String get premiumCampaignFreeNote => '※ 活动期间，免费版也可使用以上全部高级功能';
-
-  @override
   String get premiumPlanSectionTitle => '套餐';
 
   @override
@@ -991,18 +988,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get premiumRestoredSnackbar => '已恢复购买信息（如有对应购买记录）';
-
-  @override
-  String get premiumCampaignBannerTitle => '上线纪念！付费会员专属功能限时开放活动';
-
-  @override
-  String get premiumCampaignBannerBody =>
-      '活动期间，免费版也可免费使用全部高级功能（时长最长2小时・片尾标志编辑・水印・色调曲线・色阶校正）。';
-
-  @override
-  String premiumCampaignEndLabel(String date) {
-    return '至$date';
-  }
 
   @override
   String get premiumComparisonFeature => '功能';
@@ -8926,9 +8911,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumHeroHighlightGrading => '色調曲線 /\n階調調整';
 
   @override
-  String get premiumCampaignFreeNote => '※ 活動期間，免費版也可使用以上全部付費功能';
-
-  @override
   String get premiumPlanSectionTitle => '方案';
 
   @override
@@ -8957,18 +8939,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get premiumRestoredSnackbar => '已恢復購買資訊（如有對應的購買紀錄）';
-
-  @override
-  String get premiumCampaignBannerTitle => '上線紀念！付費會員限定功能開放活動';
-
-  @override
-  String get premiumCampaignBannerBody =>
-      '活動期間，免費版也可免費使用全部付費功能（長度最長2小時・片尾標誌編輯・浮水印・色調曲線・色階校正）。';
-
-  @override
-  String premiumCampaignEndLabel(String date) {
-    return '至$date止';
-  }
 
   @override
   String get premiumComparisonFeature => '功能';
