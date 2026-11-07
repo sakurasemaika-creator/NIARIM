@@ -70,8 +70,8 @@ void main() {
 
   test('route policy excludes navigation, account and form screens', () {
     for (final path in [
-      '/', '/new-project', '/export/123', '/settings', '/settings/license',
-      '/settings/privacy-policy', '/settings/error-log', '/premium',
+      '/', '/new-project', '/export/123', '/settings',
+      '/settings/error-log', '/premium',
       '/rewards', '/earn-coins', '/membership', '/creator-missions',
       '/storage', '/autofill-presets', '/unknown',
       '/community/work/123',
@@ -81,6 +81,7 @@ void main() {
     for (final path in [
       '/project/123', '/canvas/123', '/timeline/123',
       '/materials/123', '/save-tree/123', '/tips', '/help',
+      '/settings/license', '/settings/privacy-policy',
     ]) {
       expect(isBannerEligibleRoute(path), isTrue, reason: path);
     }

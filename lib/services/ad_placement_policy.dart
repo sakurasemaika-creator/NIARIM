@@ -33,6 +33,11 @@ bool isBannerEligibleRoute(
   switch (path) {
     case '/tips':
     case '/help':
+    case '/settings/license':
+    case '/settings/privacy-policy':
+      // These are scrollable, substantive reference documents, not merely
+      // navigation or action screens. A separate top ad is permissible
+      // in principle; still subject to Google publisher review.
       return true;
     // Forms/menus without independent content, purchase flows, legal,
     // diagnostics and action-only screens intentionally remain ad-free.
