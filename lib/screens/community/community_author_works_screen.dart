@@ -9,6 +9,7 @@ import '../../services/community_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import 'community_edit_feedback.dart';
+import 'community_following_list_screen.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_top_edge_refresh.dart';
 import 'widgets/community_work_card.dart';
@@ -348,15 +349,54 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                 color: scheme.onSurfaceVariant,
                               ),
                             ),
-                            Text(
-                              l10n.communityAuthorFollowingCount(
-                                followingCount,
+                            if (isSelf)
+                              InkWell(
+                                key: const Key('communityOwnFollowingCountButton'),
+                                borderRadius: BorderRadius.circular(6),
+                                onTap: () => Navigator.of(context).push(
+                                  adMockMaterialPageRoute<void>(
+                                    builder: (_) =>
+                                        const CommunityFollowingListScreen(),
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 6,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        l10n.communityAuthorFollowingCount(
+                                          followingCount,
+                                        ),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: scheme.primary,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      Icon(
+                                        Icons.chevron_right,
+                                        size: 16,
+                                        color: scheme.primary,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            else
+                              Text(
+                                l10n.communityAuthorFollowingCount(
+                                  followingCount,
+                                ),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: scheme.onSurfaceVariant,
+                                ),
                               ),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: scheme.onSurfaceVariant,
-                              ),
-                            ),
                             Text(
                               l10n.communityAuthorFollowerCount(followerCount),
                               style: TextStyle(
