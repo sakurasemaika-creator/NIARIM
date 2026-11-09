@@ -150,6 +150,7 @@ class CommunityService extends ChangeNotifier {
   final Set<String> _fetchingMoreAuthors = {};
   int _latestEpoch = 0;
   int _rankingEpoch = 0;
+  final Set<String> _unavailableRankingIds = <String>{};
   final Map<String, int> _periodRankingBookmarkCounts = {};
   /// Display-only period score; canonical work.bookmarkCount remains cumulative.
   Map<String, int> get periodRankingBookmarkCounts =>
@@ -345,6 +346,7 @@ class CommunityService extends ChangeNotifier {
     if (client == null) return discoverableWorks;
     final epoch = ++_rankingEpoch;
     _rankingCursor = null;
+    _unavailableRankingIds.clear();
     try {
       final page = await client.ranking(
         period,
@@ -749,10 +751,43 @@ class CommunityService extends ChangeNotifier {
   /// filters allow.
   List<CommunityWork> get rankedWorks => [
     for (final id in _rankingIds)
-      if (byId(id) case final work?
+      if (_unavailableRankingIds.contains(id))
+        CommunityWork.unavailable(id)
+      else if (byId(id) case final work?
           when work.isNiarimPublished && !work.isUnavailable)
-        work,
+        work
+      else
+        CommunityWork.unavailable(id),
   ];
+
+  /// Revalidate already displayed ranks without replacing their position.
+  /// A newly unavailable work becomes a metadata-free, non-interactive slot;
+  /// new ranking fetches may generate an entirely new eligible ordering.
+  Future<bool> refreshRankingVisibility({List<String>? onlyIds}) async {
+    final client = api;
+    if (client == null) return true;
+    final epoch = _rankingEpoch;
+    final selected = onlyIds == null
+        ? _rankingIds.toList()
+        : _rankingIds.where(onlyIds.contains).toList();
+    final ids = selected
+        .where((id) => !_unavailableRankingIds.contains(id))
+        .toSet().toList();
+    if (ids.isEmpty) return true;
+    try {
+      final hidden = await client.unavailableRankingIds(ids);
+      if (_disposed || epoch != _rankingEpoch) return false;
+      final before = _unavailableRankingIds.length;
+      _unavailableRankingIds.addAll(hidden);
+      if (_unavailableRankingIds.length != before) notifyListeners();
+      return true;
+    } catch (error) {
+      if (!_disposed && epoch == _rankingEpoch) {
+        debugPrint('Could not verify ranking visibility: $error');
+      }
+      return false; // Never open a work while visibility cannot be verified.
+    }
+  }
 
   void setCurrentUserId(String? id) {
     if (_currentUserId == id) return;

@@ -105,6 +105,9 @@ class _CommunityScreenState extends State<CommunityScreen>
         context.read<GoogleAuthService>().account?.id,
         context.read<CommunityService>().api,
       );
+      if (_tabController.index == 1) {
+        context.read<CommunityService>().refreshRankingVisibility();
+      }
     }
   }
 
@@ -642,8 +645,12 @@ class _CommunityScreenState extends State<CommunityScreen>
     if (_tabController.indexIsChanging) return;
     final service = context.read<CommunityService>();
     service.clearTemporaryUnmutes();
-    if (_tabController.index != 2) return;
-    if (service.isBackendConnected) service.refreshFollowingFeed();
+    if (_tabController.index == 1 && service.isBackendConnected) {
+      service.refreshRankingVisibility();
+    }
+    if (_tabController.index == 2 && service.isBackendConnected) {
+      service.refreshFollowingFeed();
+    }
   }
 
   /// Brings the selected ranking into the service's store; the ranking tab
@@ -904,6 +911,22 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   void _openFloatingPreview(CommunityWork work) {
     context.read<CommunityPreviewService>().show(work);
+  }
+
+  Future<void> _openRankingPreview(CommunityWork work) async {
+    if (work.isUnavailable || !work.isNiarimPublished) return;
+    final service = context.read<CommunityService>();
+    // Fail closed when the privacy check cannot be completed.
+    if (service.isBackendConnected) {
+      final checked = await service.refreshRankingVisibility(onlyIds: [work.id]);
+      if (!mounted || !checked) return;
+      final current = service.rankedWorks;
+      if (!current.any((w) =>
+          w.id == work.id && !w.isUnavailable && w.isNiarimPublished)) {
+        return;
+      }
+    }
+    if (mounted) _openFloatingPreview(work);
   }
 
   void _openAuthorWorks(CommunityWork work) {
@@ -1668,7 +1691,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                             for (final period in _RankingPeriod.values)
                               DropdownMenuItem<_RankingPeriod>(
                                 value: period,
-                                enabled: period == _RankingPeriod.allTime,
+                                enabled: true,
                                 child: Text(_periodLabel(l10n, period)),
                               ),
                           ],
@@ -1772,7 +1795,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                           works: ranked,
                           periodScores: communityService.periodRankingBookmarkCounts,
                           bookmarkedIds: bookmarkedIds,
-                          onTapWork: _openFloatingPreview,
+                          onTapWork: (work) { _openRankingPreview(work); },
                           onToggleBookmark: (w) => reportFailedCommunityEdit(
                             context,
                             communityService,

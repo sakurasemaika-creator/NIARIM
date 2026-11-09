@@ -94,6 +94,27 @@ class CommunityApi {
     };
   }
 
+  /// Visibility-only status for ranking slots already on screen.
+  /// The backend returns no private titles, author names or thumbnails.
+  Future<Set<String>> unavailableRankingIds(List<String> ids) async {
+    if (ids.isEmpty) return <String>{};
+    if (ids.length > 50) {
+      throw ArgumentError.value(ids.length, 'ids', 'At most 50 IDs');
+    }
+    final json = await _client.getJson(
+      '/ranking/visibility',
+      query: {'ids': ids.join(',')},
+    );
+    final visibility = json['visibility'];
+    if (visibility is! Map<String, dynamic>) {
+      throw const FormatException('Ranking visibility response is invalid');
+    }
+    return {
+      for (final id in ids)
+        if (visibility[id] != true) id,
+    };
+  }
+
   Future<ApiRankingPage> ranking(
     RankingPeriod period, {
     String? cursor,
