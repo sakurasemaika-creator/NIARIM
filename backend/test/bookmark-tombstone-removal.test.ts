@@ -48,7 +48,7 @@ describe("removing a bookmark after work deletion", () => {
     const deletes = send.mock.calls.map(([cmd]) => cmd)
       .filter(cmd => cmd instanceof DeleteCommand);
     expect(deletes).toHaveLength(1);
-    expect(deletes[0].input.Key.pk).toBe("USER#viewer");
+    expect(deletes[0].input.Key?.pk).toBe("USER#viewer");
     expect(deletes[0].input.ConditionExpression).toBe("attribute_exists(pk)");
     expect(send.mock.calls.some(([cmd]) => cmd instanceof TransactWriteCommand)).toBe(false);
   });
