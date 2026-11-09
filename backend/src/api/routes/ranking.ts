@@ -2,6 +2,7 @@ import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import {
   BatchGetCommand, QueryCommand,
   type BatchGetCommandInput,
+  type BatchGetCommandOutput,
 } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { ok, badRequest } from "../../lib/response";
@@ -60,7 +61,7 @@ async function publicWorksById(workIds: string[]): Promise<Map<string,WorkItem>>
   };
   const found = new Map<string,WorkItem>();
   for (let retry=0; retry<4 && requests && Object.keys(requests).length; retry++) {
-    const result = await ddb.send(new BatchGetCommand({RequestItems:requests}));
+    const result: BatchGetCommandOutput = await ddb.send(new BatchGetCommand({RequestItems:requests}));
     for (const item of result.Responses?.[table] ?? []) {
       const work=item as WorkItem;
       if (published(work)) found.set(work.workId,work);
