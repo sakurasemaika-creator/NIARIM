@@ -61,11 +61,16 @@ jobs:
             exit 1
           fi
           flutter pub get
+          # Live NIARIM AdMob App ID is required for own-unit rewarded SSV.
+          # Do not play the ad on Galaxy until registered as an AdMob test device.
+          grep -F 'ca-app-pub-4380578821900659~1455226397' \
+            android/app/src/main/AndroidManifest.xml >/dev/null
           flutter test --no-pub \
             test/community_post_publish_contract_test.dart \
             test/youtube_thumbnail_service_test.dart \
             test/community_post_recovery_contract_test.dart \
-            test/push_notification_service_test.dart
+            test/push_notification_service_test.dart \
+            test/reward_unlock_screen_test.dart
           flutter build apk --debug --no-pub \
             --dart-define="NIARIM_API_BASE_URL=$DEV_BACKEND_URL" \
             --dart-define="NIARIM_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID"
