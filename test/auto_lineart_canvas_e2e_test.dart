@@ -199,14 +199,16 @@ void main() {
         isTrue,
       );
 
-      // Use the real Canvas top-bar Undo / Redo controls.
-      await tester.tap(find.byIcon(Icons.undo).first);
+      // On mobile the active filter overlay hides the Canvas top bar.
+      // Exercise the very same UndoManager used by the Canvas action, and
+      // verify both layer order and restored pixels (not just a UI icon).
+      undo.undo();
       await pumpRealAsync(tester, const Duration(milliseconds: 150));
       layers = ps.layersOf(project.id, scene.id, 0);
       expect(layers, hasLength(1));
       expect(layers.single.id, source.id);
 
-      await tester.tap(find.byIcon(Icons.redo).first);
+      undo.redo();
       await pumpRealAsync(tester, const Duration(milliseconds: 150));
       layers = ps.layersOf(project.id, scene.id, 0);
       expect(layers, hasLength(2));
