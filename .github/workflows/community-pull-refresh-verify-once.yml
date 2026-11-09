@@ -1,0 +1,25 @@
+name: Community pull refresh verification (one-shot)
+on:
+  push:
+    branches: [dev_branch]
+    paths: [.github/workflows/community-pull-refresh-verify-once.yml]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Flutter packages
+        run: |
+          flutter pub get
+          flutter gen-l10n
+      - name: Analyze community screen and regression tests
+        run: flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings lib/screens/community/community_screen.dart test/community_pull_to_refresh_test.dart
+      - name: Pull-to-refresh widget and nearby community regression tests
+        run: flutter test --no-pub test/community_pull_to_refresh_test.dart test/community_ranking_layout_test.dart test/community_search_tabs_test.dart
