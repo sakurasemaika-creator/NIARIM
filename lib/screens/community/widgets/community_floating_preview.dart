@@ -59,6 +59,15 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
 
   Future<void> _openDetailsIfAvailable(String workId) async {
     if (_lastWorkId != workId) return;
+    final community = context.read<CommunityService>();
+    final owned = community.byId(workId);
+    // The signed-in poster may still inspect and manage their own private
+    // work. Public viewers must pass the fresh visibility preflight below.
+    if (owned != null && community.isOwnWork(owned)) {
+      context.read<CommunityPreviewService>().close();
+      appRouter.push('/community/work/$workId');
+      return;
+    }
     setState(() => _playbackStatus = CommunityPlaybackStatus.checking);
     final status = await _checkPlayback(workId);
     if (status != CommunityPlaybackStatus.available ||
