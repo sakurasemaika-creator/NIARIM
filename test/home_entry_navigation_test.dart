@@ -111,25 +111,22 @@ void main() {
   }
 
   testWidgets(
-    'guidance closes only from its buttons and acknowledged home revisits skip it',
+    'first-use guidance waits for acknowledgement and home revisits skip it',
     (tester) async {
-      await open(tester, first: true);
+      final l10n = await open(tester, first: true);
       await tester.tapAt(const Offset(3, 3));
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.byType(AppTutorial), findsOneWidget);
+      expect(find.text(l10n.homeFirstLaunchMessage), findsOneWidget);
+      expect(find.byType(AppTutorial), findsNothing);
       expect(
         (await SharedPreferences.getInstance()).getBool('first_launch'),
         isTrue,
       );
-      // 最後のページまでめくって「はじめる」。
-      while (find.byKey(const Key('tutorialStart')).evaluate().isEmpty) {
-        await tester.tap(find.byKey(const Key('tutorialNext')));
-        await tester.pumpAndSettle();
-      }
-      await tester.tap(find.byKey(const Key('tutorialStart')));
+      await tester.tap(find.text(l10n.homeFirstLaunchStart));
       await tester.pumpAndSettle();
-      expect(find.byType(AppTutorial), findsNothing);
+      expect(find.text(l10n.homeFirstLaunchMessage), findsNothing);
       expect(
         (await SharedPreferences.getInstance()).getBool('first_launch'),
         isFalse,
@@ -138,7 +135,52 @@ void main() {
       await tester.pumpAndSettle();
       appRouter.go('/home');
       await tester.pumpAndSettle();
+      expect(find.text(l10n.homeFirstLaunchMessage), findsNothing);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  testWidgets(
+    'Help tutorial can finish, skip and reopen without resetting first use',
+    (tester) async {
+      final l10n = await open(tester);
+      appRouter.push('/help');
+      await tester.pumpAndSettle();
+      final entry = find.byKey(const Key('helpTutorialButton'));
+      await tester.ensureVisible(entry);
+      await tester.tap(entry);
+      await tester.pumpAndSettle();
+      final titles = [
+        l10n.tutorialPage1Title,
+        l10n.tutorialPage2Title,
+        l10n.tutorialPage3Title,
+        l10n.tutorialPage4Title,
+        l10n.tutorialPage5Title,
+        l10n.tutorialPage6Title,
+      ];
+      for (var page = 0; page < titles.length; page++) {
+        expect(find.text(titles[page]).hitTestable(), findsOneWidget);
+        await tester.tap(
+          find.byKey(
+            Key(page == titles.length - 1 ? 'tutorialStart' : 'tutorialNext'),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
       expect(find.byType(AppTutorial), findsNothing);
+      await tester.tap(entry);
+      await tester.pumpAndSettle();
+      expect(find.text(titles.first).hitTestable(), findsOneWidget);
+      await tester.tap(find.byKey(const Key('tutorialSkip')));
+      await tester.pumpAndSettle();
+      expect(find.byType(AppTutorial), findsNothing);
+      expect(
+        (await SharedPreferences.getInstance()).getBool('first_launch'),
+        isFalse,
+      );
+      appRouter.pop();
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.homeFirstLaunchMessage), findsNothing);
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
@@ -370,15 +412,21 @@ void main() {
   ) async {
     final l10n = await open(tester);
     await switchTab(tester, 2);
-    for (final label in [
-      l10n.homeTabShared,
-      l10n.homeTabTrash,
-      l10n.homeDrawerAutofillPreset,
-      l10n.homeDrawerStorage,
-      l10n.homeDrawerSettings,
-      l10n.homeDrawerHelp,
-      l10n.homeDrawerTips,
-      l10n.homeDrawerPremium,
+    for (final (target, path) in [
+      (find.text(l10n.homeTabShared), '/shared'),
+      (find.text(l10n.homeTabTrash), '/trash'),
+      (find.text(l10n.homeDrawerAutofillPreset), '/autofill-presets'),
+      (find.text(l10n.homeDrawerStorage), '/storage'),
+      (find.text(l10n.homeDrawerSettings), '/settings'),
+      (find.text(l10n.homeDrawerHelp), '/help'),
+      (find.text(l10n.homeDrawerTips), '/tips'),
+      (find.byKey(const Key('homeBenefitExchangeMenuItem')), '/rewards'),
+      (
+        find.byKey(const Key('homeCreatorMissionsMenuItem')),
+        '/creator-missions',
+      ),
+      (find.byKey(const Key('homeEarnCoinsMenuItem')), '/earn-coins'),
+      (find.byKey(const Key('homeMembershipBenefitsMenuItem')), '/membership'),
     ]) {
       tester
           .state<ScaffoldState>(
@@ -391,10 +439,7 @@ void main() {
           )
           .openEndDrawer();
       await tester.pumpAndSettle();
-      final item = find.descendant(
-        of: find.byType(Drawer),
-        matching: find.text(label),
-      );
+      final item = find.descendant(of: find.byType(Drawer), matching: target);
       await tester.ensureVisible(item);
       await tester.tap(item);
       await tester.pump(const Duration(milliseconds: 500));
@@ -405,8 +450,12 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
         if (find.byType(CircularProgressIndicator).evaluate().isEmpty) break;
       }
-      expect(tester.takeException(), isNull, reason: label);
-      expect(appRouter.canPop(), isTrue, reason: label);
+      expect(tester.takeException(), isNull, reason: path);
+      expect(
+        appRouter.routerDelegate.currentConfiguration.last.matchedLocation,
+        path,
+      );
+      expect(appRouter.canPop(), isTrue, reason: path);
       appRouter.pop();
       await tester.pumpAndSettle();
       expect(
@@ -593,15 +642,28 @@ void main() {
           theme: profile.theme,
         );
         await capture(tester, 'first-guidance-$suffix');
-        for (final text in [l10n.tutorialSkip, l10n.tutorialNext]) {
+        for (final text in [
+          l10n.homeFirstLaunchMessage,
+          l10n.homeFirstLaunchStart,
+        ]) {
           final label = tester.renderObject<RenderParagraph>(find.text(text));
+          expect(label.didExceedMaxLines, isFalse, reason: '$suffix $text');
+          expect(find.text(text).hitTestable(), findsOneWidget, reason: suffix);
+          final bounds = tester.getRect(find.text(text));
+          expect(bounds.left, greaterThanOrEqualTo(0), reason: suffix);
           expect(
-            label.size.width + .01,
-            greaterThanOrEqualTo(label.getMaxIntrinsicWidth(double.infinity)),
-            reason: '$suffix $text',
+            bounds.right,
+            lessThanOrEqualTo(profile.size.width),
+            reason: suffix,
+          );
+          expect(bounds.top, greaterThanOrEqualTo(0), reason: suffix);
+          expect(
+            bounds.bottom,
+            lessThanOrEqualTo(profile.size.height),
+            reason: suffix,
           );
         }
-        await tester.tap(find.byKey(const Key('tutorialSkip')));
+        await tester.tap(find.text(l10n.homeFirstLaunchStart));
         await tester.pumpAndSettle();
         await capture(tester, 'projects-empty-$suffix');
         await switchTab(tester, 1);

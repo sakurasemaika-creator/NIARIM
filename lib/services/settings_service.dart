@@ -965,9 +965,11 @@ class SettingsService extends ChangeNotifier {
   bool get isFirstLaunch => _isFirstLaunch;
 
   Future<void> markFirstLaunchDone() async {
-    _isFirstLaunch = false;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('first_launch', false);
+    if (!await prefs.setBool('first_launch', false)) {
+      throw StateError('First-launch acknowledgement was not saved');
+    }
+    _isFirstLaunch = false;
     notifyListeners();
   }
 

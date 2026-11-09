@@ -306,12 +306,8 @@ class _HomeScreenState extends State<HomeScreen>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => _FirstLaunchDialog(
-        onDone: () {
-          Navigator.pop(ctx);
-          settings.markFirstLaunchDone();
-        },
-      ),
+      builder: (ctx) =>
+          _FirstLaunchDialog(onDone: settings.markFirstLaunchDone),
     );
   }
 
@@ -2670,36 +2666,87 @@ enum ProjectSortMode { nameAsc, nameDesc, updatedAsc, updatedDesc }
 // 初回起動時は「手描きアニメーションを制作できます」の
 // ポップアップのみを表示する（複数ページのチュートリアルは表示しない）。
 
-class _FirstLaunchDialog extends StatelessWidget {
-  final VoidCallback onDone;
+class _FirstLaunchDialog extends StatefulWidget {
+  final Future<void> Function() onDone;
   const _FirstLaunchDialog({required this.onDone});
+
+  @override
+  State<_FirstLaunchDialog> createState() => _FirstLaunchDialogState();
+}
+
+class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
+  bool _saving = false;
+  bool _failed = false;
+
+  Future<void> _complete() async {
+    if (_saving) return;
+    setState(() {
+      _saving = true;
+      _failed = false;
+    });
+    try {
+      await widget.onDone();
+      if (mounted) Navigator.of(context).pop();
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _failed = true;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return AlertDialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      constraints: const BoxConstraints(minWidth: 280, maxWidth: 560),
-      scrollable: true,
-      content: Text(l10n.homeFirstLaunchMessage),
-      actions: [
-        // 「はじめる」ボタンの文字はくらむぼんを明示指定する
-        // （通常のボタン文字は白光明朝のため、ここだけ差し替える）。
-        FilledButton(
-          onPressed: onDone,
-          style: FilledButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-          ),
-          child: Text(
-            l10n.homeFirstLaunchStart,
-            style: const TextStyle(
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-              fontWeight: FontWeight.bold,
+    return PopScope<Object?>(
+      canPop: false,
+      child: AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        constraints: const BoxConstraints(minWidth: 280, maxWidth: 560),
+        scrollable: true,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.homeFirstLaunchMessage),
+            if (_saving) ...[
+              const SizedBox(height: 12),
+              const LinearProgressIndicator(),
+            ],
+            if (_failed) ...[
+              const SizedBox(height: 12),
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  l10n.communityErrorGeneric,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          // 「はじめる」ボタンの文字はくらむぼんを明示指定する
+          // （通常のボタン文字は白光明朝のため、ここだけ差し替える）。
+          FilledButton(
+            onPressed: _saving ? null : _complete,
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+            child: Text(
+              l10n.homeFirstLaunchStart,
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

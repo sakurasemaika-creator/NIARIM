@@ -250,6 +250,8 @@ status: todo。rewardedAd/admobSsv/rewardAdQuota/rewardEntitlement。広告再�
 
 status: todo。coinEconomyScale/coinRedemption/rewardState。単位換算/残高境界/claim・取消/同時実行/retry・履歴/互換性を検証。Free/Premium/説明・契約・法務は別判定。
 
+S34発見/DISC057: productionのEN SP期間初期表示が`1hours`。数値と複数形unitの直接連結を確認。期間全選択肢の単複/空白/7言語、sheetとprice/expiryの意味一致をD001.36の未完了対象に追加。
+
 ## D001.37 — Play Premium購入検証・復元
 
 status: todo。playPremium/playVerification。テスト購入/保留/失敗/復元/期限/失効と本人・商品・署名・replay/本番設定境界を確認。実課金や公開は行わない。
@@ -299,6 +301,10 @@ S33追加: fc24までのroute別広告制限とcaption/比較capture差分もD00
 ## D001.48 — FCM通知の登録・配送と通知からの復帰
 
 status: todo。S32→fc24のPushNotificationService/main/app・Firebase構成・Android plugin設定、push/missionNotifications/backend stackと通知導入資料。permission/token登録・更新・sign-out/owner境界、foreground/background/終了後の通知tap→作品詳細、重複/無効data・offline/retry・起動失敗fallback・非対応desktop、secret/PIIと失効、実機/同意/Privacyの必要条件を別々に追う。S33では通常の依存/起動・Home回帰だけで、通知配送や実auth/backendの完了としない。
+
+## D001.49 — Rewarded SSV保存境界とDynamoDB Local検証の増分
+
+status: todo。S33公開cae5c893→38815daの8commit/6netpath。rewardedAd route、署名flow/API/DynamoDB Localの3test、DynamoDB Local workflowとpreapproval資料。signed callback→報酬確定の原子性・再送/idempotency・競合・署名/期限・owner/最小権限・保存false/throw/partial failure、同意/広告/実backend境界を確認する。S34では変更を登録しHome依存回帰の起動を確認するだけで、SSV署名/実Google callback/DynamoDB本番/広告実機の完了としない。詳細6pathと20正本hashはstart-heads-and-documents.json。D001.47の広告導線・SSV前提と関連付ける。
 
 ## D002 — 全フィルター inventory → 個別監査
 
@@ -797,6 +803,8 @@ Required:
 遅い操作はprofile/traceでroot causeを特定し、同じ結果・互換性・安全性を維持できる範囲でキャッシュ、差分更新、非同期化、allocation/clone削減、アルゴリズム改善、バッファ削減、widget rebuild削減、I/O batching、serialization最適化等を実施する。最適化前後を同一条件で比較し、速度だけでなく画像、state、保存、undo/redo、境界条件が一致することを再確認する。
 
 低性能端末でも実用的に動くことを優先し、単にsource codeを短くすることは目的にしない。必要なら同じ結果を得る別実装へ置換する。
+
+S34追加/DISC058: Storageは実PCで約7秒/再訪約16秒後も本文loading。計測対象へcomputeBreakdown/deviceSpaceと本文初回feedback・中断後の処理を追加。原因未確定、spinnerを品質PASSに代用しない。
 
 ## D036 — ソース衛生・不要コード・コメント品質
 
