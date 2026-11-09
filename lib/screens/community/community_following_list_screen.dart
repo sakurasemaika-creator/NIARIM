@@ -20,6 +20,8 @@ class CommunityFollowingListScreen extends StatefulWidget {
 class _CommunityFollowingListScreenState
     extends State<CommunityFollowingListScreen> {
   final ScrollController _scrollController = ScrollController();
+  final Map<String, String> _recentlyUnfollowed = {};
+  final Set<String> _togglingIds = {};
   bool _refreshing = false;
 
   @override
@@ -34,10 +36,36 @@ class _CommunityFollowingListScreenState
     if (_refreshing || !mounted) return;
     _refreshing = true;
     try {
-      await context.read<CommunityService>().refreshOwnFollowing();
+      final updated =
+          await context.read<CommunityService>().refreshOwnFollowing();
+      if (updated && mounted) {
+        setState(_recentlyUnfollowed.clear);
+      }
     } finally {
       _refreshing = false;
     }
+  }
+
+  Future<void> _toggle(String id, String name) async {
+    if (_togglingIds.contains(id)) return;
+    setState(() => _togglingIds.add(id));
+    final service = context.read<CommunityService>();
+    await reportFailedCommunityEdit(
+      context,
+      service,
+      service.toggleFavoriteAuthor(id),
+    );
+    if (!mounted) return;
+    setState(() {
+      if (service.isFavoriteAuthor(id)) {
+        _recentlyUnfollowed.remove(id);
+      } else {
+        // Keep an unfollowed author available in this session, so the viewer
+        // can follow them again without leaving the list or losing the name.
+        _recentlyUnfollowed[id] = name;
+      }
+      _togglingIds.remove(id);
+    });
   }
 
   @override
@@ -50,6 +78,37 @@ class _CommunityFollowingListScreenState
   Widget build(BuildContext context) {
     final service = context.watch<CommunityService>();
     final ids = service.favoriteAuthorIds.toList();
+    final removed = _recentlyUnfollowed.entries
+        .where((entry) => !service.isFavoriteAuthor(entry.key))
+        .toList();
+    final isEmpty = ids.isEmpty && removed.isEmpty;
+
+    Widget authorRow(String id, String name, {required bool following}) {
+      return ListTile(
+        key: Key('communityFollowingAuthor_$id'),
+        leading: const CircleAvatar(child: Icon(Icons.person_outline)),
+        title: Text(name),
+        subtitle: following ? null : const Text('フォロー解除済み'),
+        onTap: () => Navigator.of(context).push(
+          adMockMaterialPageRoute<void>(
+            builder: (_) => CommunityAuthorWorksScreen(
+              authorId: id,
+              authorName: name,
+            ),
+          ),
+        ),
+        trailing: OutlinedButton(
+          key: Key(
+            following
+                ? 'communityFollowingUnfollow_$id'
+                : 'communityFollowingFollow_$id',
+          ),
+          onPressed: _togglingIds.contains(id) ? null : () => _toggle(id, name),
+          child: Text(following ? 'フォロー解除' : 'フォロー'),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('フォロー中')),
       body: CommunityTopEdgeRefresh(
@@ -61,38 +120,26 @@ class _CommunityFollowingListScreenState
           key: const Key('communityOwnFollowingList'),
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: ids.isEmpty ? 1 : ids.length,
+          itemCount: isEmpty ? 1 : ids.length + (removed.isEmpty ? 0 : removed.length + 1),
           itemBuilder: (context, index) {
-            if (ids.isEmpty) {
+            if (isEmpty) {
               return const Padding(
                 padding: EdgeInsets.all(32),
                 child: Center(child: Text('フォロー中のユーザーはいません')),
               );
             }
-            final id = ids[index];
-            final name = service.followedAuthorName(id);
-            return ListTile(
-              key: Key('communityFollowingAuthor_$id'),
-              leading: const CircleAvatar(child: Icon(Icons.person_outline)),
-              title: Text(name),
-              onTap: () => Navigator.of(context).push(
-                adMockMaterialPageRoute<void>(
-                  builder: (_) => CommunityAuthorWorksScreen(
-                    authorId: id,
-                    authorName: name,
-                  ),
-                ),
-              ),
-              trailing: OutlinedButton(
-                key: Key('communityFollowingUnfollow_$id'),
-                onPressed: () => reportFailedCommunityEdit(
-                  context,
-                  service,
-                  service.toggleFavoriteAuthor(id),
-                ),
-                child: const Text('フォロー解除'),
-              ),
-            );
+            if (index < ids.length) {
+              final id = ids[index];
+              return authorRow(id, service.followedAuthorName(id), following: true);
+            }
+            if (index == ids.length) {
+              return const Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text('最近フォローを解除したユーザー'),
+              );
+            }
+            final user = removed[index - ids.length - 1];
+            return authorRow(user.key, user.value, following: false);
           },
         ),
       ),
