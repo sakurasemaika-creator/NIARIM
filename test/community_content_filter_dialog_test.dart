@@ -405,7 +405,7 @@ void main() {
     expect(find.byType(TabBar), findsOneWidget);
   });
 
-  testWidgets('duration and thresholds are editable without search exactness', (
+  testWidgets('duration and bookmark thresholds are editable without search exactness', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -418,11 +418,9 @@ void main() {
     await tapVisible(tester, find.text(l10n.communityDurationUpTo).last);
     expect(find.byKey(const Key('communityDurationSlider')), findsOneWidget);
     expect(find.byKey(const Key('communityTagExactMatch')), findsNothing);
-    await tapVisible(tester, find.byKey(const Key('communityMinimumViews')));
-    await tapVisible(
-      tester,
-      find.text(l10n.communityMinimumViewsOption('100')).last,
-    );
+    // View-count metrics are intentionally not offered as a filter: NIARIM's
+    // current community feed uses independently tracked bookmark counts.
+    expect(find.byKey(const Key('communityMinimumViews')), findsNothing);
     await tapVisible(
       tester,
       find.byKey(const Key('communityMinimumBookmarks')),
