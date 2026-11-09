@@ -19,6 +19,13 @@ void main() {
   Future<(CommunityService, GoogleAuthService)> setup(
     WidgetTester tester,
   ) async {
+    // Give scrolling settings and tag-edit sheets a realistic vertical
+    // viewport. Flutter test defaults to 800x600, which places the delete
+    // and add-tag controls just outside the root hit-test bounds.
+    tester.view.physicalSize = const Size(800, 1100);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     SharedPreferences.setMockInitialValues({});
     final service = CommunityService();
     final auth = GoogleAuthService();
