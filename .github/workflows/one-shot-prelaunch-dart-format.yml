@@ -1,0 +1,52 @@
+# One-shot canonical Dart formatting, dev_branch only. Never touch main.
+name: One-shot prelaunch Dart format (dev_branch only)
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-prelaunch-dart-format.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niarim-prelaunch-format-dev
+  cancel-in-progress: false
+
+jobs:
+  format:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: false
+      - name: Normalize tracked Dart sources without modifying application logic
+        shell: bash
+        run: |
+          set -euo pipefail
+          dart format lib test tool
+          git add -u -- lib test tool
+          if git diff --cached --quiet; then
+            echo "Already canonically formatted."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Fail closed if another actor has advanced dev_branch: no force push,
+          # merge, rebasing, branch creation or overwrite of concurrent edits.
+          git fetch origin dev_branch
+          if [[ "$(git rev-parse origin/dev_branch)" != "$(git rev-parse HEAD)" ]]; then
+            echo "::error::dev_branch advanced during formatting; refusing stale push."
+            exit 1
+          fi
+          git diff --cached --stat
+          git commit -m "style(prelaunch): apply canonical Dart format to existing sources"
+          git push origin HEAD:refs/heads/dev_branch
