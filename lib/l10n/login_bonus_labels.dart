@@ -48,8 +48,7 @@ const _values = <String, Map<String, String>>{
     'unknown': 'Unavailable',
     'unavailable': 'Claims are not available yet',
     'activityMilestone': 'You reached {n} total login days',
-    'utc':
-        'Days reset at midnight Japan time (JST). Breaks never reset your total.',
+    'utc': 'Days reset at midnight Japan time (JST). Breaks never reset your total.',
     'retry': 'Refresh',
     'failed': 'Could not confirm reward',
     'success': 'Coins claimed',
@@ -69,8 +68,7 @@ const _values = <String, Map<String, String>>{
     'unknown': 'No disponible',
     'unavailable': 'Recompensas en preparación',
     'activityMilestone': '¡Has alcanzado {n} días de acceso!',
-    'utc':
-        'El día cambia a medianoche de Japón (JST). Las pausas no borran el progreso.',
+    'utc': 'El día cambia a medianoche de Japón (JST). Las pausas no borran el progreso.',
     'retry': 'Actualizar',
     'failed': 'No se pudo confirmar',
     'success': 'Monedas recibidas',
@@ -90,8 +88,7 @@ const _values = <String, Map<String, String>>{
     'unknown': 'Indisponible',
     'unavailable': 'Récompenses bientôt disponibles',
     'activityMilestone': 'Vous avez atteint {n} jours de connexion',
-    'utc':
-        'La journée change à minuit heure du Japon (JST). Les pauses ne réinitialisent rien.',
+    'utc': 'La journée change à minuit heure du Japon (JST). Les pauses ne réinitialisent rien.',
     'retry': 'Actualiser',
     'failed': 'Récompense non confirmée',
     'success': 'Pièces reçues',

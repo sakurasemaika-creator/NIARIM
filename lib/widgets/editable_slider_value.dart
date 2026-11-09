@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../l10n/app_localizations.dart';
 
 /// スライダーの数値表示部分をタップすると、直接テキスト入力で値を変更
@@ -159,9 +160,9 @@ class _NumberInputDialogState extends State<_NumberInputDialog> {
   String _format(num v) =>
       widget.isInt ? v.round().toString() : _trimZeros(v.toDouble());
 
-  String _rangeText() => AppLocalizations.of(
-    context,
-  )!.numberInputRangeError(_format(widget.min), _format(widget.max));
+  String _rangeText() =>
+      AppLocalizations.of(context)!
+          .numberInputRangeError(_format(widget.min), _format(widget.max));
 
   String _trimZeros(double v) {
     var s = v.toStringAsFixed(2);

@@ -98,9 +98,8 @@ void main() {
               .toImage();
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
       final directory = Directory(captureRoot)..createSync(recursive: true);
-      File(
-        '${directory.path}/$name.png',
-      ).writeAsBytesSync(data!.buffer.asUint8List());
+      File('${directory.path}/$name.png')
+          .writeAsBytesSync(data!.buffer.asUint8List());
       image.dispose();
     });
     manifest.add({
@@ -489,9 +488,8 @@ void main() {
         ),
       ]) {
         final l10n = await open(tester, theme: theme);
-        final scheme = Theme.of(
-          tester.element(find.byType(HomeScreen)),
-        ).colorScheme;
+        final scheme = Theme.of(tester.element(find.byType(HomeScreen)))
+            .colorScheme;
         for (final index in [0, 1, 2]) {
           await switchTab(tester, index);
           final labels = tester.widgetList<Text>(
@@ -511,9 +509,9 @@ void main() {
         );
         final foreground =
             action.style?.foregroundColor?.resolve({}) ??
-            Theme.of(
-              tester.element(find.byType(HomeScreen)),
-            ).colorScheme.primary;
+            Theme.of(tester.element(find.byType(HomeScreen)))
+                .colorScheme
+                .primary;
         expect(foreground, scheme.primary, reason: 'bookmark gallery action');
         final icon = tester.widget<Icon>(find.byIcon(Icons.bookmark_border));
         expect(icon.color, scheme.primary, reason: 'bookmark empty-state icon');

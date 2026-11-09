@@ -63,7 +63,9 @@ Future<void> main() async {
   if (ranking.period != 'bookmarks' || ranking.works.length > 25) {
     throw StateError('The live bookmark ranking contract did not match.');
   }
-  stdout.writeln('PASS /ranking/bookmarks: ${ranking.works.length} work(s) parsed');
+  stdout.writeln(
+    'PASS /ranking/bookmarks: ${ranking.works.length} work(s) parsed',
+  );
 
   // A private user list must NOT become readable without an ID token.
   final guardClient = NiarimApiClient(
@@ -76,7 +78,9 @@ Future<void> main() async {
       throw StateError('SECURITY: anonymous GET /me/works was accepted.');
     } on NiarimApiException catch (e) {
       if (e.statusCode != 401) {
-        throw StateError('Expected HTTP 401 from /me/works; got ${e.statusCode}.');
+        throw StateError(
+          'Expected HTTP 401 from /me/works; got ${e.statusCode}.',
+        );
       }
       stdout.writeln('PASS /me/works: anonymous access rejected with HTTP 401');
     }

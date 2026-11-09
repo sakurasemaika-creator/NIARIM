@@ -33,9 +33,9 @@ void main() {
           for (final preset in CustomAutomationBuiltinPresets.all())
             customAutomationDisplayName(l10n, preset.name),
         };
-        final arb =
-            jsonDecode(File('lib/l10n/app_$name.arb').readAsStringSync())
-                as Map<String, dynamic>;
+        final arb = jsonDecode(
+          File('lib/l10n/app_$name.arb').readAsStringSync(),
+        ) as Map<String, dynamic>;
         final text = arb['tipsOfficialAutomationPresetsDesc'] as String;
         final named = {
           for (final match in quoted.allMatches(text))

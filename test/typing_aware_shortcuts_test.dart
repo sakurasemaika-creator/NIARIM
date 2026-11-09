@@ -154,9 +154,8 @@ void main() {
       // Ctrl+Aが作品の全選択になる等、入力欄より先にキーを取る。
       expect(source, contains('TypingAwareShortcuts(\n'), reason: path);
       expect(
-        RegExp(
-          r'CallbackShortcuts\(\s*bindings:\s*_buildShortcutBindings',
-        ).hasMatch(source),
+        RegExp(r'CallbackShortcuts\(\s*bindings:\s*_buildShortcutBindings')
+            .hasMatch(source),
         isFalse,
         reason: path,
       );

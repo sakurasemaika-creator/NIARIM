@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+
 import 'l10n/app_localizations.dart';
 import 'router.dart';
 import 'screens/community/widgets/community_floating_preview.dart';
@@ -61,8 +62,9 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     appRouter.routerDelegate.addListener(_scheduleAdPlacementRefresh);
-    adModalVisibilityObserver.isModalVisible
-        .addListener(_scheduleAdPlacementRefresh);
+    adModalVisibilityObserver.isModalVisible.addListener(
+      _scheduleAdPlacementRefresh,
+    );
     // ホーム画面ウィジェットのタップで指定されたルートを開く。
     // go()ではなくpush()を使う（go()は履歴を丸ごと置き換えるため、
     // ウィジェット経由で入った画面から戻れなくなる）。
@@ -108,8 +110,9 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     appRouter.routerDelegate.removeListener(_scheduleAdPlacementRefresh);
-    adModalVisibilityObserver.isModalVisible
-        .removeListener(_scheduleAdPlacementRefresh);
+    adModalVisibilityObserver.isModalVisible.removeListener(
+      _scheduleAdPlacementRefresh,
+    );
     _pushNotifications?.dispose();
     _adPlacementRefresh.dispose();
     super.dispose();
@@ -195,16 +198,15 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
                       projects.trash.isNotEmpty,
                 '/shared' => projects.shared.isNotEmpty,
                 '/trash' => projects.trash.isNotEmpty,
-                '/community' =>
-                  community.discoverableWorks.isNotEmpty,
+                '/community' => community.discoverableWorks.isNotEmpty,
                 _ when route.startsWith('/community/work/') =>
-                  community.byId(
-                    route.substring('/community/work/'.length),
-                  ) != null,
+                  community.byId(route.substring('/community/work/'.length)) !=
+                      null,
                 _ => true,
               };
               return AdPersistentRootFrame(
-                allowBanner: isBannerEligibleRoute(
+                allowBanner:
+                    isBannerEligibleRoute(
                       route,
                       hasLocalContent: hasLocalContent,
                     ) &&

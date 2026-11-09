@@ -432,9 +432,8 @@ class _Bar extends StatelessWidget {
     decoration: BoxDecoration(
       color:
           color ??
-          Theme.of(
-            context,
-          ).colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+          Theme.of(context).colorScheme.onSurfaceVariant
+              .withValues(alpha: 0.35),
       borderRadius: BorderRadius.circular(height / 2),
     ),
   );

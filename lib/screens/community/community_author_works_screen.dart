@@ -413,9 +413,8 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                             : _loadMoreAuthorWorks,
                                         icon: const Icon(Icons.expand_more),
                                         label: Text(
-                                          MaterialLocalizations.of(
-                                            context,
-                                          ).moreButtonTooltip,
+                                          MaterialLocalizations.of(context)
+                                              .moreButtonTooltip,
                                         ),
                                       ),
                                   ],
@@ -470,9 +469,8 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                         : _loadMoreAuthorWorks,
                                     icon: const Icon(Icons.expand_more),
                                     label: Text(
-                                      MaterialLocalizations.of(
-                                        context,
-                                      ).moreButtonTooltip,
+                                      MaterialLocalizations.of(context)
+                                          .moreButtonTooltip,
                                     ),
                                   ),
                               ],

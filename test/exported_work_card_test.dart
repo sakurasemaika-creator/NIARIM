@@ -42,9 +42,8 @@ void main() {
     supportedLocales: AppLocalizations.supportedLocales,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     builder: (context, child) => MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(scale), boldText: bold),
+      data: MediaQuery.of(context)
+          .copyWith(textScaler: TextScaler.linear(scale), boldText: bold),
       child: RepaintBoundary(key: boundary, child: child!),
     ),
     home: Scaffold(
@@ -95,9 +94,8 @@ void main() {
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     expect(
-      Focus.of(
-        tester.element(find.byIcon(Icons.drive_file_move_outline)),
-      ).hasPrimaryFocus,
+      Focus.of(tester.element(find.byIcon(Icons.drive_file_move_outline)))
+          .hasPrimaryFocus,
       isTrue,
     );
     await tester.pump();
@@ -384,9 +382,8 @@ void main() {
                     format: ui.ImageByteFormat.png,
                   );
                   final dir = Directory(capture)..createSync(recursive: true);
-                  File(
-                    '${dir.path}/$file',
-                  ).writeAsBytesSync(data!.buffer.asUint8List());
+                  File('${dir.path}/$file')
+                      .writeAsBytesSync(data!.buffer.asUint8List());
                   image.dispose();
                 });
                 manifest.add({

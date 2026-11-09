@@ -43,23 +43,26 @@ Widget _app(Widget home) {
 }
 
 void main() {
-  testWidgets('modal visibility observer tracks dialogs and their removal',
-      (tester) async {
+  testWidgets('modal visibility observer tracks dialogs and their removal', (
+    tester,
+  ) async {
     final observer = AdModalVisibilityObserver();
-    await tester.pumpWidget(MaterialApp(
-      navigatorObservers: [observer],
-      home: Scaffold(body: Builder(
-        builder: (context) => TextButton(
-          onPressed: () => showDialog<void>(
-            context: context,
-            builder: (_) => const AlertDialog(
-              content: Text('confirm'),
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorObservers: [observer],
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => showDialog<void>(
+                context: context,
+                builder: (_) => const AlertDialog(content: Text('confirm')),
+              ),
+              child: const Text('open dialog'),
             ),
           ),
-          child: const Text('open dialog'),
         ),
-      )),
-    ));
+      ),
+    );
     await tester.tap(find.text('open dialog'));
     await tester.pumpAndSettle();
     expect(observer.isModalVisible.value, isTrue);
@@ -70,107 +73,144 @@ void main() {
 
   test('route policy excludes navigation, account and form screens', () {
     for (final path in [
-      '/', '/new-project', '/export/123', '/settings',
-      '/settings/error-log', '/premium',
-      '/rewards', '/earn-coins', '/membership', '/creator-missions',
-      '/storage', '/autofill-presets', '/unknown',
+      '/',
+      '/new-project',
+      '/export/123',
+      '/settings',
+      '/settings/error-log',
+      '/premium',
+      '/rewards',
+      '/earn-coins',
+      '/membership',
+      '/creator-missions',
+      '/storage',
+      '/autofill-presets',
+      '/unknown',
       '/community/work/123',
     ]) {
       expect(isBannerEligibleRoute(path), isFalse, reason: path);
     }
     for (final path in [
-      '/project/123', '/canvas/123', '/timeline/123',
-      '/materials/123', '/save-tree/123', '/tips', '/help',
-      '/settings/license', '/settings/privacy-policy',
+      '/project/123',
+      '/canvas/123',
+      '/timeline/123',
+      '/materials/123',
+      '/save-tree/123',
+      '/tips',
+      '/help',
+      '/settings/license',
+      '/settings/privacy-policy',
     ]) {
       expect(isBannerEligibleRoute(path), isTrue, reason: path);
     }
     for (final path in ['/community', '/community/work/123']) {
-      expect(isBannerEligibleRoute(path, hasLocalContent: false),
-          isFalse, reason: path);
-      expect(isBannerEligibleRoute(path, hasLocalContent: true),
-          isTrue, reason: path);
+      expect(
+        isBannerEligibleRoute(path, hasLocalContent: false),
+        isFalse,
+        reason: path,
+      );
+      expect(
+        isBannerEligibleRoute(path, hasLocalContent: true),
+        isTrue,
+        reason: path,
+      );
     }
     for (final path in ['/home', '/shared', '/trash']) {
-      expect(isBannerEligibleRoute(path, hasLocalContent: false),
-          isFalse, reason: path);
-      expect(isBannerEligibleRoute(path, hasLocalContent: true),
-          isTrue, reason: path);
+      expect(
+        isBannerEligibleRoute(path, hasLocalContent: false),
+        isFalse,
+        reason: path,
+      );
+      expect(
+        isBannerEligibleRoute(path, hasLocalContent: true),
+        isTrue,
+        reason: path,
+      );
     }
   });
 
-  testWidgets('processing popup keeps the top banner visible while both ad areas coexist', (tester) async {
-    tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(360, 850);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    addTearDown(tester.view.resetPhysicalSize);
+  testWidgets(
+    'processing popup keeps the top banner visible while both ad areas coexist',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(360, 850);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
 
-    await tester.pumpWidget(
-      ChangeNotifierProvider<PremiumService>(
-        create: (_) => _FreePremiumService(),
-        child: MaterialApp(
-          locale: const Locale('ja'),
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          // Match NIARIM's real MaterialApp.router.builder arrangement:
-          // the persistent banner is OUTSIDE the Navigator's modal barrier.
-          builder: (context, child) =>
-              AdPersistentRootFrame(child: child!),
-          home: Scaffold(
-            body: Builder(builder: (context) => TextButton(
-              onPressed: () => showDialog<void>(
-                context: context,
-                builder: (_) => const ProgressDialog(
-                  title: '動画書き出し中',
-                  progress: 0.5,
-                  onCancel: _noop,
+      await tester.pumpWidget(
+        ChangeNotifierProvider<PremiumService>(
+          create: (_) => _FreePremiumService(),
+          child: MaterialApp(
+            locale: const Locale('ja'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            // Match NIARIM's real MaterialApp.router.builder arrangement:
+            // the persistent banner is OUTSIDE the Navigator's modal barrier.
+            builder: (context, child) => AdPersistentRootFrame(child: child!),
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => TextButton(
+                  onPressed: () => showDialog<void>(
+                    context: context,
+                    builder: (_) => const ProgressDialog(
+                      title: '動画書き出し中',
+                      progress: 0.5,
+                      onCancel: _noop,
+                    ),
+                  ),
+                  child: const Text('start export'),
                 ),
               ),
-              child: const Text('start export'),
-            )),
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.tap(find.text('start export'));
-    await tester.pump();
+      await tester.tap(find.text('start export'));
+      await tester.pump();
 
-    final top = find.byKey(const Key('fixed-banner-ad-mock'));
-    final middle = find.byKey(const Key('medium-rectangle-ad-mock'));
-    expect(top, findsOneWidget);
-    expect(middle, findsOneWidget);
-    expect(find.byType(ProgressDialog), findsOneWidget);
-    // The modal route must occupy the content area, not darken/cover the
-    // persistent ad in the separate upper region.
-    final bannerRect = tester.getRect(top);
-    final popupRect = tester.getRect(find.byType(AlertDialog));
-    expect(popupRect.top, greaterThanOrEqualTo(bannerRect.bottom));
-    await tester.ensureVisible(middle);
-    await tester.pump();
-    final midRect = tester.getRect(middle);
-    expect(midRect.top, greaterThan(bannerRect.bottom));
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
+      final top = find.byKey(const Key('fixed-banner-ad-mock'));
+      final middle = find.byKey(const Key('medium-rectangle-ad-mock'));
+      expect(top, findsOneWidget);
+      expect(middle, findsOneWidget);
+      expect(find.byType(ProgressDialog), findsOneWidget);
+      // The modal route must occupy the content area, not darken/cover the
+      // persistent ad in the separate upper region.
+      final bannerRect = tester.getRect(top);
+      final popupRect = tester.getRect(find.byType(AlertDialog));
+      expect(popupRect.top, greaterThanOrEqualTo(bannerRect.bottom));
+      await tester.ensureVisible(middle);
+      await tester.pump();
+      final midRect = tester.getRect(middle);
+      expect(midRect.top, greaterThan(bannerRect.bottom));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
-  testWidgets('ineligible routes keep the banner hidden without affecting content',
-      (tester) async {
-    await tester.pumpWidget(
-      _localizedApp(const AdPersistentRootFrame(
-        allowBanner: false,
-        child: Scaffold(body: Text('legal / privacy')),
-      )),
-    );
-    expect(find.byKey(const Key('persistent-horizontal-ad-mock')),
-        findsNothing);
-    expect(find.text('legal / privacy'), findsOneWidget);
-  });
+  testWidgets(
+    'ineligible routes keep the banner hidden without affecting content',
+    (tester) async {
+      await tester.pumpWidget(
+        _localizedApp(
+          const AdPersistentRootFrame(
+            allowBanner: false,
+            child: Scaffold(body: Text('legal / privacy')),
+          ),
+        ),
+      );
+      expect(
+        find.byKey(const Key('persistent-horizontal-ad-mock')),
+        findsNothing,
+      );
+      expect(find.text('legal / privacy'), findsOneWidget);
+    },
+  );
 
   testWidgets('横長広告はSafeArea内の画面最上部に固定され操作領域と離れる', (tester) async {
     tester.view.devicePixelRatio = 1;
@@ -272,28 +312,37 @@ void main() {
       (const Size(1920, 1080), const Size(728, 90)),
     ]) {
       tester.view.physicalSize = viewport;
-      await tester.pumpWidget(_localizedApp(
-        const AdPersistentRootFrame(
-          child: Scaffold(
-            appBar: PreferredSize(
-              preferredSize: Size.fromHeight(56),
-              child: Material(child: SizedBox(
-                key: Key('interactive-controls'),
-                height: 56, child: Text('project actions'),
-              )),
+      await tester.pumpWidget(
+        _localizedApp(
+          const AdPersistentRootFrame(
+            child: Scaffold(
+              appBar: PreferredSize(
+                preferredSize: Size.fromHeight(56),
+                child: Material(
+                  child: SizedBox(
+                    key: Key('interactive-controls'),
+                    height: 56,
+                    child: Text('project actions'),
+                  ),
+                ),
+              ),
+              body: Center(child: Text('project content')),
             ),
-            body: Center(child: Text('project content')),
           ),
         ),
-      ));
+      );
       await tester.pump();
       final banner = find.byKey(const Key('fixed-banner-ad-mock'));
-      expect(banner, expected == null ? findsNothing : findsOneWidget,
-          reason: 'viewport $viewport');
+      expect(
+        banner,
+        expected == null ? findsNothing : findsOneWidget,
+        reason: 'viewport $viewport',
+      );
       if (expected != null) {
         final rect = tester.getRect(banner);
         final controls = tester.getRect(
-            find.byKey(const Key('interactive-controls')));
+          find.byKey(const Key('interactive-controls')),
+        );
         expect(rect.size, expected, reason: '$viewport');
         expect(rect.left, greaterThanOrEqualTo(0));
         expect(rect.right, lessThanOrEqualTo(viewport.width));
@@ -306,8 +355,9 @@ void main() {
     }
   });
 
-  testWidgets('system insets, keyboard and too-short windows disable banner',
-      (tester) async {
+  testWidgets('system insets, keyboard and too-short windows disable banner', (
+    tester,
+  ) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(360, 780);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -317,26 +367,33 @@ void main() {
       (const EdgeInsets.only(left: 24, right: 24), EdgeInsets.zero, false),
       (EdgeInsets.zero, const EdgeInsets.only(bottom: 270), false),
     ]) {
-      await tester.pumpWidget(_localizedApp(MediaQuery(
-        data: MediaQueryData(
-          size: const Size(360, 780),
-          padding: padding,
-          viewInsets: insets,
+      await tester.pumpWidget(
+        _localizedApp(
+          MediaQuery(
+            data: MediaQueryData(
+              size: const Size(360, 780),
+              padding: padding,
+              viewInsets: insets,
+            ),
+            child: const AdPersistentRootFrame(
+              child: Scaffold(body: Text('editor controls')),
+            ),
+          ),
         ),
-        child: const AdPersistentRootFrame(
-          child: Scaffold(body: Text('editor controls')),
-        ),
-      )));
+      );
       await tester.pump();
-      expect(find.byKey(const Key('fixed-banner-ad-mock')),
-          expected ? findsOneWidget : findsNothing);
+      expect(
+        find.byKey(const Key('fixed-banner-ad-mock')),
+        expected ? findsOneWidget : findsNothing,
+      );
       expect(find.text('editor controls'), findsOneWidget);
       expect(tester.takeException(), isNull);
     }
   });
 
-  testWidgets('medium rectangle never clips a narrow SP popup or DeX window',
-      (tester) async {
+  testWidgets('medium rectangle never clips a narrow SP popup or DeX window', (
+    tester,
+  ) async {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
@@ -351,19 +408,26 @@ void main() {
       (const Size(1440, 900), true),
     ]) {
       tester.view.physicalSize = screen;
-      await tester.pumpWidget(_localizedApp(
-        const Scaffold(
-          body: Center(child: ProgressDialog(
-            title: '処理中',
-            progress: 0.5,
-            onCancel: _noop,
-          )),
+      await tester.pumpWidget(
+        _localizedApp(
+          const Scaffold(
+            body: Center(
+              child: ProgressDialog(
+                title: '処理中',
+                progress: 0.5,
+                onCancel: _noop,
+              ),
+            ),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       final ad = find.byKey(const Key('medium-rectangle-ad-mock'));
-      expect(ad, shouldFit ? findsOneWidget : findsNothing,
-          reason: 'screen $screen');
+      expect(
+        ad,
+        shouldFit ? findsOneWidget : findsNothing,
+        reason: 'screen $screen',
+      );
       if (shouldFit) {
         await tester.ensureVisible(ad);
         await tester.pump();
@@ -466,10 +530,11 @@ void main() {
       ),
     );
 
-    expect(find.byKey(const Key('persistent-horizontal-ad-mock')),
-        findsOneWidget);
-    expect(find.byKey(const Key('fixed-banner-ad-mock')),
-        findsOneWidget);
+    expect(
+      find.byKey(const Key('persistent-horizontal-ad-mock')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('fixed-banner-ad-mock')), findsOneWidget);
     expect(find.text('作品広場'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -483,8 +548,10 @@ void main() {
         premium: true,
       ),
     );
-    expect(find.byKey(const Key('persistent-horizontal-ad-mock')),
-        findsNothing);
+    expect(
+      find.byKey(const Key('persistent-horizontal-ad-mock')),
+      findsNothing,
+    );
   });
 
   testWidgets('プレミアム会員には広告枠を出さない', (tester) async {

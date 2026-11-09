@@ -248,21 +248,18 @@ void main() {
       expect(result.users.single.bookmarkedAt, isNotNull);
     });
 
-    test(
-      'public social totals use one request without follower identities or owner auth',
-      () async {
-        final m = mock((_) => {'followerCount': 5, 'followingCount': 3});
-        final result = await apiWith(
-          m.client,
-          token: 'ID_TOKEN',
-        ).socialCounts('u/1');
-        expect(result.followers, 5);
-        expect(result.following, 3);
-        expect(m.requests, hasLength(1));
-        expect(m.requests.single.url.path, '/api/users/u%2F1/social-counts');
-        expect(m.requests.single.headers.containsKey('authorization'), isFalse);
-      },
-    );
+    test('public social totals use one request without follower identities or owner auth', () async {
+      final m = mock((_) => {'followerCount': 5, 'followingCount': 3});
+      final result = await apiWith(
+        m.client,
+        token: 'ID_TOKEN',
+      ).socialCounts('u/1');
+      expect(result.followers, 5);
+      expect(result.following, 3);
+      expect(m.requests, hasLength(1));
+      expect(m.requests.single.url.path, '/api/users/u%2F1/social-counts');
+      expect(m.requests.single.headers.containsKey('authorization'), isFalse);
+    });
 
     test('チャンネル名が無いユーザーはIDで代用する', () {
       final user = ApiUserRef.fromJson({'niarimUserId': 'u9'});
@@ -561,6 +558,5 @@ void main() {
     // Other backend routes (coin, premium, missions, SSV) belong to separate
     // API clients and are verified by their dedicated tests. This contract
     // guarantees all calls made here resolve to actual server routes.
-
   });
 }

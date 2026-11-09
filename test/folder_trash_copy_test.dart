@@ -241,9 +241,9 @@ void main() {
 
       // 30日より前にゴミ箱へ移したことにして、自動削除を走らせる。
       final prefs = await SharedPreferences.getInstance();
-      final saved =
-          jsonDecode(prefs.getString('trashed_project_folders')!)
-              as List<dynamic>;
+      final saved = jsonDecode(
+        prefs.getString('trashed_project_folders')!,
+      ) as List<dynamic>;
       (saved.single as Map<String, dynamic>)['deletedAt'] = DateTime.now()
           .subtract(const Duration(days: 31))
           .toIso8601String();

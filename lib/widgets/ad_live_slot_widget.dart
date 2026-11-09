@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+
 import '../services/admob_provider.dart';
 
 /// Each visible placement owns its own BannerAd. Sharing one ad across

@@ -50,9 +50,8 @@ class CoinRedemptionAttemptStore {
         final savedId = saved['requestId'];
         final savedVersion = saved['version'];
         if (savedId is String &&
-            RegExp(
-              r'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$',
-            ).hasMatch(savedId) &&
+            RegExp(r'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$')
+                .hasMatch(savedId) &&
             savedVersion is String &&
             savedVersion.isNotEmpty) {
           requestId = savedId;

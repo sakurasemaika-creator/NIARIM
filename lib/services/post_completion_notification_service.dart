@@ -5,8 +5,7 @@ import 'package:flutter/services.dart';
 /// Android's PendingIntent opens the owned work-detail route. This is not
 /// a push notification: no background upload or FCM token is required.
 class PostCompletionNotificationService {
-  static const _channel =
-      MethodChannel('com.niarim.niarim/post_notification');
+  static const _channel = MethodChannel('com.niarim.niarim/post_notification');
 
   static Future<void> notifySuccess({
     required String workId,

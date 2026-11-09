@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -22,6 +23,7 @@ import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'helpers/load_app_fonts.dart';
 import 'helpers/first_use_tooltips.dart';
 
@@ -400,9 +402,10 @@ void main() {
     expect(find.byType(BrushPanel), findsOneWidget);
     expect(find.byType(ColorPickerPanel), findsOneWidget);
     for (final panel in [BrushPanel, ColorPickerPanel]) {
-      for (final card in find
-          .descendant(of: find.byType(panel), matching: find.byType(Card))
-          .evaluate()) {
+      for (final card
+          in find
+              .descendant(of: find.byType(panel), matching: find.byType(Card))
+              .evaluate()) {
         expect((card.widget as Card).elevation ?? 0, 0);
       }
     }
@@ -553,9 +556,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings).first);
     await settle();
     final referenceEntry = find.text(
-      AppLocalizations.of(
-        tester.element(find.byType(Scaffold).last),
-      )!.canvasEditMenuReferenceWindow,
+      AppLocalizations.of(tester.element(find.byType(Scaffold).last))!
+          .canvasEditMenuReferenceWindow,
     );
     await tester.ensureVisible(referenceEntry.last);
     await tester.tap(referenceEntry.last);
@@ -564,9 +566,9 @@ void main() {
     await shot('popup_fix_reference_window');
 
     await tester.runAsync(
-      () => File(
-        '${out.path}/capture_status.txt',
-      ).writeAsString(errors.isEmpty ? 'PASS' : errors.join('\n')),
+      () =>
+          File('${out.path}/capture_status.txt')
+              .writeAsString(errors.isEmpty ? 'PASS' : errors.join('\n')),
     );
     expect(errors, isEmpty, reason: errors.join('\n'));
   }, timeout: const Timeout(Duration(minutes: 12)));

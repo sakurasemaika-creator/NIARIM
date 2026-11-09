@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../config/accent_text_theme.dart';
 
 /// 筆圧カーブのグラフエディタ。X軸＝実際の筆圧

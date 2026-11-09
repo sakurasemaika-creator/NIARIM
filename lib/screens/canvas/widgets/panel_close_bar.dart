@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../l10n/app_localizations.dart';
 import 'docked_panel_close_scope.dart';
 

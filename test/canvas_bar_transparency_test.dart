@@ -164,9 +164,8 @@ void main() {
           .first,
     );
     final swatchDecoration = colorSwatchContainer.decoration! as BoxDecoration;
-    final swatchScheme = Theme.of(
-      tester.element(find.byType(ToolbarWidget)),
-    ).colorScheme;
+    final swatchScheme = Theme.of(tester.element(find.byType(ToolbarWidget)))
+        .colorScheme;
     expect(
       (swatchDecoration.border! as Border).top.color,
       CanvasIconButton.outlineColor(swatchDecoration.color!, swatchScheme),

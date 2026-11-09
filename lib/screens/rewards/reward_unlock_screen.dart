@@ -272,15 +272,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       if (result['redeemed'] == true) {
         await _loadWallet(accountId);
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
       }
     } finally {
       if (mounted) setState(() => _redeemBusy = false);
@@ -430,9 +428,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                                   _duration.amount == option.amount
                               ? Icon(
                                   Icons.check,
-                                  color: Theme.of(
-                                    sheetContext,
-                                  ).colorScheme.primary,
+                                  color: Theme.of(sheetContext)
+                                      .colorScheme
+                                      .primary,
                                 )
                               : null,
                           onTap: () {

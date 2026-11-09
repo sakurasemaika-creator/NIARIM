@@ -78,9 +78,9 @@ void main() {
     FlutterError.onError = (details) {
       final text = details.exceptionAsString();
       final what =
-          RegExp(
-            r'(overflowed by [\d.]+ pixels on the \w+)',
-          ).firstMatch(text)?.group(1) ??
+          RegExp(r'(overflowed by [\d.]+ pixels on the \w+)')
+              .firstMatch(text)
+              ?.group(1) ??
           text.split('\n').first;
       // オーバーフローは毎フレーム飛ぶので、同じ内容は1件に畳む。
       // 畳まないと数万件溜まってテストが極端に遅くなる。

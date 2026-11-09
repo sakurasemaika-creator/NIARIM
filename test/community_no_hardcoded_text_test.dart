@@ -193,9 +193,9 @@ final d = """三重""";
           .listSync(recursive: true)
           .whereType<File>()
           .firstWhere((f) => f.uri.pathSegments.last == name);
-      final literals = stringLiterals(
-        file.readAsStringSync(),
-      ).map((e) => e.$2).toSet();
+      final literals = stringLiterals(file.readAsStringSync())
+          .map((e) => e.$2)
+          .toSet();
       for (final text in allowed.keys) {
         expect(
           literals,

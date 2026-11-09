@@ -302,9 +302,8 @@ void main() {
       test('${mode.name} $name: fold line continues the inner outline '
           'with no offset', () async {
         final pixels = await render(
-          pen(
-            mode: mode,
-          ).copyWith(pressureOn: pressure == null ? null : hair.pressureOn),
+          pen(mode: mode)
+              .copyWith(pressureOn: pressure == null ? null : hair.pressureOn),
           corner,
           samples: samples,
           pressure: pressure,

@@ -343,9 +343,9 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
 /// 実際に重なる操作に不可欠な文字・アイコンが、少なくとも1つの
 /// 視覚条件でほぼ識別不能になりそうな場合にだけ復旧ボタンを表示。
 /// 選んだテーマの保存、色の変更、その他のUI配色には一切影響させない。
-bool isThemeAtLockoutRisk(AppThemePreset preset) => readabilityCriticalPairs(
-  preset,
-).any((pair) => isEssentialTextNearlyInvisible(pair.a, pair.b));
+bool isThemeAtLockoutRisk(AppThemePreset preset) =>
+    readabilityCriticalPairs(preset)
+        .any((pair) => isEssentialTextNearlyInvisible(pair.a, pair.b));
 
 /// 既存テスト/呼び出しとの互換用の反転判定。
 /// 文字を人間が必ず読めるという保証ではなく、リセットボタンを表示する目安の否定形にすぎない。

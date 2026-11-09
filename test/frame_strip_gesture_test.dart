@@ -37,9 +37,8 @@ void main() {
   final itemExtent = double.parse(
     RegExp(r'static const double _itemExtent = ([0-9.]+)')
         .firstMatch(
-          File(
-            'lib/screens/canvas/widgets/frame_strip_widget.dart',
-          ).readAsStringSync(),
+          File('lib/screens/canvas/widgets/frame_strip_widget.dart')
+              .readAsStringSync(),
         )!
         .group(1)!,
   );

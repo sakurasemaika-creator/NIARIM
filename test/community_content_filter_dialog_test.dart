@@ -405,43 +405,47 @@ void main() {
     expect(find.byType(TabBar), findsOneWidget);
   });
 
-  testWidgets('duration and bookmark thresholds are editable without search exactness', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({});
-    final service = CommunityService();
-    await tester.pumpWidget(host(service));
-    await tester.pumpAndSettle();
-    await openDialog(tester, mute: false);
-    final l10n = l10nOf(tester);
-    await tapVisible(tester, find.byKey(const Key('communityDurationMode')));
-    await tapVisible(tester, find.text(l10n.communityDurationUpTo).last);
-    expect(find.byKey(const Key('communityDurationSlider')), findsOneWidget);
-    expect(find.byKey(const Key('communityTagExactMatch')), findsNothing);
-    // View-count metrics are intentionally not offered as a filter: NIARIM's
-    // current community feed uses independently tracked bookmark counts.
-    expect(find.byKey(const Key('communityMinimumViews')), findsNothing);
-    await tapVisible(
-      tester,
-      find.byKey(const Key('communityMinimumBookmarks')),
-    );
-    await tapVisible(
-      tester,
-      find.text(l10n.communityMinimumBookmarksOption('50')).last,
-    );
-    expect(find.byKey(const Key('communityTileSizeSlider')), findsNothing);
-    expect(find.byKey(const Key('communityMutedWordsAccordion')), findsNothing);
-    await tapVisible(
-      tester,
-      find.byKey(const Key('communityContentFilterSaveButton')),
-    );
-    await openDialog(tester, mute: false);
-    expect(find.byKey(const Key('communityTagExactMatch')), findsNothing);
-    await tapVisible(tester, find.byKey(const Key('communityDurationMode')));
-    await tapVisible(tester, find.text(l10n.communityDurationRange).last);
-    expect(find.byKey(const Key('communityDurationMinimum')), findsOneWidget);
-    expect(find.byKey(const Key('communityDurationMaximum')), findsOneWidget);
-  });
+  testWidgets(
+    'duration and bookmark thresholds are editable without search exactness',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final service = CommunityService();
+      await tester.pumpWidget(host(service));
+      await tester.pumpAndSettle();
+      await openDialog(tester, mute: false);
+      final l10n = l10nOf(tester);
+      await tapVisible(tester, find.byKey(const Key('communityDurationMode')));
+      await tapVisible(tester, find.text(l10n.communityDurationUpTo).last);
+      expect(find.byKey(const Key('communityDurationSlider')), findsOneWidget);
+      expect(find.byKey(const Key('communityTagExactMatch')), findsNothing);
+      // View-count metrics are intentionally not offered as a filter: NIARIM's
+      // current community feed uses independently tracked bookmark counts.
+      expect(find.byKey(const Key('communityMinimumViews')), findsNothing);
+      await tapVisible(
+        tester,
+        find.byKey(const Key('communityMinimumBookmarks')),
+      );
+      await tapVisible(
+        tester,
+        find.text(l10n.communityMinimumBookmarksOption('50')).last,
+      );
+      expect(find.byKey(const Key('communityTileSizeSlider')), findsNothing);
+      expect(
+        find.byKey(const Key('communityMutedWordsAccordion')),
+        findsNothing,
+      );
+      await tapVisible(
+        tester,
+        find.byKey(const Key('communityContentFilterSaveButton')),
+      );
+      await openDialog(tester, mute: false);
+      expect(find.byKey(const Key('communityTagExactMatch')), findsNothing);
+      await tapVisible(tester, find.byKey(const Key('communityDurationMode')));
+      await tapVisible(tester, find.text(l10n.communityDurationRange).last);
+      expect(find.byKey(const Key('communityDurationMinimum')), findsOneWidget);
+      expect(find.byKey(const Key('communityDurationMaximum')), findsOneWidget);
+    },
+  );
 
   testWidgets('saved searches can be named, recalled and kept on device', (
     tester,

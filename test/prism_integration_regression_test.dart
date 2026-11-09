@@ -33,9 +33,8 @@ void main() {
   });
 
   test('production prism apply selects Linear Dodge, never Addition', () {
-    final source = File(
-      'lib/screens/canvas/widgets/filter_panel.dart',
-    ).readAsStringSync();
+    final source = File('lib/screens/canvas/widgets/filter_panel.dart')
+        .readAsStringSync();
     expect(
       source,
       contains('layer.copyWith(blendMode: model.LayerBlendMode.linearDodge)'),
@@ -50,9 +49,8 @@ void main() {
   });
 
   test('prism directly repaints the selected source layer', () {
-    final source = File(
-      'lib/screens/canvas/widgets/filter_panel.dart',
-    ).readAsStringSync();
+    final source = File('lib/screens/canvas/widgets/filter_panel.dart')
+        .readAsStringSync();
     expect(source, contains('else if (_isPrism(filter))'));
     // Through ProjectService so the repaint is one Undo step, the canvas
     // redraws at once, and the source layer switches to Linear Dodge with it.

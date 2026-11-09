@@ -102,9 +102,8 @@ class _AlwaysShownScrollIndicatorState
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(
-      context,
-    ).colorScheme.onSurface.withValues(alpha: 0.45);
+    final color = Theme.of(context).colorScheme.onSurface
+        .withValues(alpha: 0.45);
     return NotificationListener<ScrollMetricsNotification>(
       onNotification: _onMetrics,
       child: NotificationListener<ScrollNotification>(

@@ -2,6 +2,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:provider/provider.dart';
+
 import '../services/premium_service.dart';
 import '../services/advertising_service.dart';
 import 'ad_live_slot_widget.dart';
@@ -209,10 +210,7 @@ class _AdBannerMockSlot extends StatelessWidget {
 /// 判断できるようにする。設置場所を正式決定したら、このモックは
 /// 実際のAdBannerWidget（またはネイティブ広告等）へ置き換えること。
 class AdBannerMockWidget extends StatelessWidget {
-  const AdBannerMockWidget({
-    super.key,
-    this.bannerSize = const Size(320, 50),
-  });
+  const AdBannerMockWidget({super.key, this.bannerSize = const Size(320, 50)});
 
   final Size bannerSize;
 
@@ -270,7 +268,9 @@ class AdMediumRectangleMockWidget extends StatelessWidget {
   }
 
   Widget _mediumRectangleForAvailableSpace(
-      BuildContext context, AdvertisingService? ads) {
+    BuildContext context,
+    AdvertisingService? ads,
+  ) {
     // A progress AlertDialog is an alert/behavior-only surface. Google's
     // publisher-content rule prohibits live ads on such surfaces. Keep the
     // 300x250 placement available in debug with official TEST IDs for layout

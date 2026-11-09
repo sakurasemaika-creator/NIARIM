@@ -149,8 +149,7 @@ void main() {
       expect(
         autoVisible,
         greaterThan(20),
-        reason:
-            'Auto Lineart must produce visible pixels from a transparent rough-line layer',
+        reason: 'Auto Lineart must produce visible pixels from a transparent rough-line layer',
       );
 
       final inkLayerId = (await tester.runAsync(
@@ -176,8 +175,7 @@ void main() {
       expect(
         inkVisible,
         greaterThan(20),
-        reason:
-            'Ink Pool must preserve visible output when fed the generated Auto Lineart layer',
+        reason: 'Ink Pool must preserve visible output when fed the generated Auto Lineart layer',
       );
     },
   );

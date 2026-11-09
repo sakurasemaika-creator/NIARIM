@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,6 +15,7 @@ import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'community_header_quality_test.dart' as quality;
 import 'helpers/load_app_fonts.dart';
 
@@ -366,9 +368,8 @@ void main() {
                 image.dispose();
                 final dir = Directory('$output/failures')
                   ..createSync(recursive: true);
-                File(
-                  '${dir.path}/$file',
-                ).writeAsBytesSync(bytes!.buffer.asUint8List());
+                File('${dir.path}/$file')
+                    .writeAsBytesSync(bytes!.buffer.asUint8List());
                 File('${dir.path}/$file.json').writeAsStringSync(
                   jsonEncode({'case': caseId, 'failures': failures}),
                 );
@@ -386,9 +387,8 @@ void main() {
               image.dispose();
               final directory = Directory('$output/$state')
                 ..createSync(recursive: true);
-              File(
-                '${directory.path}/$file',
-              ).writeAsBytesSync(data!.buffer.asUint8List());
+              File('${directory.path}/$file')
+                  .writeAsBytesSync(data!.buffer.asUint8List());
               manifest.add({
                 'file': file,
                 'locale': locale.toLanguageTag(),
@@ -401,12 +401,10 @@ void main() {
                 'scope': 'header only; hidden synthetic data',
                 'color_policy':
                     'configured roles; no automatic contrast correction',
-                'readability_assessment':
-                    'separate original-image review; user-chosen low contrast permitted',
+                'readability_assessment': 'separate original-image review; user-chosen low contrast permitted',
               });
-              File(
-                '${directory.path}/manifest.json',
-              ).writeAsStringSync(jsonEncode(manifest));
+              File('${directory.path}/manifest.json')
+                  .writeAsStringSync(jsonEncode(manifest));
             });
           }
         }

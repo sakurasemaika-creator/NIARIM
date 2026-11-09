@@ -2891,9 +2891,8 @@ class _CanvasAreaState extends State<CanvasArea> {
             .distance <
         rotateR) {
       mode = _TransformMode.rotate;
-    } else if (selectionScaleHandlesOf(
-      bounds,
-    ).any((c) => (canvasPos - c).distance < r)) {
+    } else if (selectionScaleHandlesOf(bounds)
+        .any((c) => (canvasPos - c).distance < r)) {
       mode = _TransformMode.scale;
     } else if ((canvasPos - bounds.center).distance < r ||
         _selectionMaskContains(canvasPos)) {

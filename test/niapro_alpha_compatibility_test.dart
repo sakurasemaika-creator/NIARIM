@@ -127,9 +127,8 @@ void main() {
       final data = updated.findFile(_currentTile)!.content as List<int>;
       expect(data.take(16), _expected);
       expect(
-        (await NiaproSerializer.load(
-          file.path,
-        )).tileData[_key0]!['0,0']!.take(16),
+        (await NiaproSerializer.load(file.path)).tileData[_key0]!['0,0']!
+            .take(16),
         _expected,
       );
       final share = await NiaproSerializer.saveShare(
@@ -139,9 +138,8 @@ void main() {
         outputDir: root.path,
       );
       expect(
-        (await NiaproSerializer.load(
-          share.path,
-        )).tileData[_key0]!['0,0']!.take(16),
+        (await NiaproSerializer.load(share.path)).tileData[_key0]!['0,0']!
+            .take(16),
         _expected,
       );
     });

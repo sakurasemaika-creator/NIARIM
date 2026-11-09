@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 /// The user-provided OAuth youtube.upload token never reaches the NIARIM API.
 class YoutubeThumbnailService {
   YoutubeThumbnailService({http.Client? client})
-      : _client = client ?? http.Client();
+    : _client = client ?? http.Client();
 
   final http.Client _client;
 
@@ -36,7 +36,8 @@ class YoutubeThumbnailService {
     for (var check = 0; check < maxChecks; check++) {
       if (check > 0) await Future<void>.delayed(pollInterval);
       final response = await _client.get(
-        uri, headers: {'Authorization': 'Bearer $accessToken'},
+        uri,
+        headers: {'Authorization': 'Bearer $accessToken'},
       );
       if (response.statusCode != 200) {
         throw YoutubeThumbnailException(
@@ -74,8 +75,11 @@ class YoutubeThumbnailService {
       throw ArgumentError('動画IDが不正です');
     }
     final path = file.path.toLowerCase();
-    final type = path.endsWith('.png') ? 'image/png'
-        : path.endsWith('.jpg') || path.endsWith('.jpeg') ? 'image/jpeg' : null;
+    final type = path.endsWith('.png')
+        ? 'image/png'
+        : path.endsWith('.jpg') || path.endsWith('.jpeg')
+        ? 'image/jpeg'
+        : null;
     if (type == null) {
       throw ArgumentError('サムネイルはPNGまたはJPEGを選択してください');
     }

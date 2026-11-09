@@ -358,9 +358,9 @@ void main() {
       colorMode: PixelColorMode.none,
     );
     expect(alphas(out), {0, 255});
-    final kept = [
-      for (var i = 3; i < out.length; i += 4) out[i],
-    ].where((a) => a != 0).length;
+    final kept = [for (var i = 3; i < out.length; i += 4) out[i]]
+        .where((a) => a != 0)
+        .length;
     expect(kept, closeTo(math.pi * 20 * 20, 2 * math.pi * 20 * 0.5));
   });
 

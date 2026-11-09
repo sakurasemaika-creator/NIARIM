@@ -94,9 +94,8 @@ void main() {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(scale)),
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(scale)),
           child: child!,
         ),
         home: Scaffold(

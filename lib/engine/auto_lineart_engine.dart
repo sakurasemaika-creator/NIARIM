@@ -2431,9 +2431,8 @@ class AutoLineartEngine {
           turn += _wrapAngle(next - heading).abs();
           heading = next;
         }
-        turn += _wrapAngle(
-          math.atan2(-eb.heading.y, -eb.heading.x) - heading,
-        ).abs();
+        turn += _wrapAngle(math.atan2(-eb.heading.y, -eb.heading.x) - heading)
+            .abs();
         if (turn <= 110 * math.pi / 180) {
           final aSide = sideClusters.containsKey(ea.path);
           final bSide = sideClusters.containsKey(eb.path);

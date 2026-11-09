@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../config/font_fallback.dart';
 import '../l10n/app_localizations.dart';
 import '../services/first_use_tooltip_service.dart';
@@ -87,12 +88,10 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
     // ボタン等）このウィジェットは無くなるが、説明はそれでも出す
     // （以前は出せずに終わり、表示済みにもならなかった）。
     final message = widget.message;
-    final barrierColor = Theme.of(
-      context,
-    ).colorScheme.scrim.withValues(alpha: 0.45);
-    final barrierLabel = MaterialLocalizations.of(
-      context,
-    ).modalBarrierDismissLabel;
+    final barrierColor = Theme.of(context).colorScheme.scrim
+        .withValues(alpha: 0.45);
+    final barrierLabel = MaterialLocalizations.of(context)
+        .modalBarrierDismissLabel;
     _showing[key] = (navigator: navigator, route: null);
     // 同じタップで子がダイアログ等を開いた場合も、その上にカードを出す
     // （次のフレームまで待つ）。カードは専用の画面として積むので、戻る操作・

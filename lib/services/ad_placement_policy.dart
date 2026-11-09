@@ -8,10 +8,7 @@
 /// Deny empty/list-loading screens and menu/consent/paywall/legal-only
 /// surfaces. Other content routes use the common top slot, not a floating
 /// banner. This policy is a layout risk reduction, not AdMob approval.
-bool isBannerEligibleRoute(
-  String path, {
-  bool hasLocalContent = true,
-}) {
+bool isBannerEligibleRoute(String path, {bool hasLocalContent = true}) {
   if (path == '/home' ||
       path == '/shared' ||
       path == '/trash' ||

@@ -28,7 +28,9 @@ void main() {
     });
     final uploader = YoutubeThumbnailService(client: client);
     await uploader.setThumbnail(
-      file: image, videoId: 'abcdefghijk', accessToken: 'accessToken',
+      file: image,
+      videoId: 'abcdefghijk',
+      accessToken: 'accessToken',
     );
     uploader.close();
   });
@@ -36,12 +38,14 @@ void main() {
   test('rejects an unsupported thumbnail without contacting YouTube', () async {
     final image = File('${directory.path}/image.gif');
     await image.writeAsBytes([1, 2, 3]);
-    final uploader = YoutubeThumbnailService(client: MockClient(
-      (_) async => throw StateError('must never be sent'),
-    ));
+    final uploader = YoutubeThumbnailService(
+      client: MockClient((_) async => throw StateError('must never be sent')),
+    );
     await expectLater(
       uploader.setThumbnail(
-        file: image, videoId: 'abcdefghijk', accessToken: 'token',
+        file: image,
+        videoId: 'abcdefghijk',
+        accessToken: 'token',
       ),
       throwsArgumentError,
     );
@@ -51,25 +55,34 @@ void main() {
   test('surfaces YouTube channel thumbnail permission errors', () async {
     final image = File('${directory.path}/poster.jpg');
     await image.writeAsBytes([1, 2, 3]);
-    final uploader = YoutubeThumbnailService(client: MockClient(
-      (_) async => http.Response(
-        '{"error":{"message":"thumbnail permission denied"}}', 403,
+    final uploader = YoutubeThumbnailService(
+      client: MockClient(
+        (_) async => http.Response(
+          '{"error":{"message":"thumbnail permission denied"}}',
+          403,
+        ),
       ),
-    ));
+    );
     await expectLater(
       uploader.setThumbnail(
-        file: image, videoId: 'abcdefghijk', accessToken: 'token',
+        file: image,
+        videoId: 'abcdefghijk',
+        accessToken: 'token',
       ),
-      throwsA(isA<YoutubeThumbnailException>()
-          .having((e) => e.statusCode, 'statusCode', 403)),
+      throwsA(
+        isA<YoutubeThumbnailException>().having(
+          (e) => e.statusCode,
+          'statusCode',
+          403,
+        ),
+      ),
     );
     uploader.close();
   });
-  test('Shorts processing is confirmed before custom thumbnail upload',
-      () async {
+  test('Shorts processing is confirmed before custom thumbnail upload', () async {
     var checks = 0;
-    final uploader = YoutubeThumbnailService(client: MockClient(
-      (request) async {
+    final uploader = YoutubeThumbnailService(
+      client: MockClient((request) async {
         expect(request.method, 'GET');
         expect(request.url.path, '/youtube/v3/videos');
         expect(request.url.queryParameters['part'], 'processingDetails');
@@ -81,8 +94,8 @@ void main() {
           '{"processingStatus":"${checks < 3 ? 'processing' : 'succeeded'}"}}]}',
           200,
         );
-      },
-    ));
+      }),
+    );
     await uploader.waitUntilProcessed(
       videoId: 'abcdefghijk',
       accessToken: 'owner-token',
@@ -93,18 +106,17 @@ void main() {
     uploader.close();
   });
 
-  test('Shorts never set a thumbnail while YouTube still processes the video',
-      () async {
+  test('Shorts never set a thumbnail while YouTube still processes the video', () async {
     var checks = 0;
-    final uploader = YoutubeThumbnailService(client: MockClient(
-      (_) async {
+    final uploader = YoutubeThumbnailService(
+      client: MockClient((_) async {
         checks++;
         return http.Response(
           '{"items":[{"processingDetails":{"processingStatus":"processing"}}]}',
           200,
         );
-      },
-    ));
+      }),
+    );
     await expectLater(
       uploader.waitUntilProcessed(
         videoId: 'abcdefghijk',
@@ -119,12 +131,14 @@ void main() {
   });
 
   test('Shorts reject terminal video processing failures', () async {
-    final uploader = YoutubeThumbnailService(client: MockClient(
-      (_) async => http.Response(
-        '{"items":[{"processingDetails":{"processingStatus":"failed"}}]}',
-        200,
+    final uploader = YoutubeThumbnailService(
+      client: MockClient(
+        (_) async => http.Response(
+          '{"items":[{"processingDetails":{"processingStatus":"failed"}}]}',
+          200,
+        ),
       ),
-    ));
+    );
     await expectLater(
       uploader.waitUntilProcessed(
         videoId: 'abcdefghijk',
@@ -135,5 +149,4 @@ void main() {
     );
     uploader.close();
   });
-
 }

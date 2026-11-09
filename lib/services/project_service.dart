@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'creator_edit_session_reporter.dart';
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
@@ -1216,9 +1218,8 @@ class ProjectService extends ChangeNotifier {
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, copy);
     if (pixels != null) {
       final targetKey = tileKeyFor(projectId, sceneId, frameIndex, newId);
-      tileManagerOf(
-        projectId,
-      ).replaceLayerPixels(targetKey, Uint8List.fromList(pixels));
+      tileManagerOf(projectId)
+          .replaceLayerPixels(targetKey, Uint8List.fromList(pixels));
     }
     _undoManager?.push(
       LayerAddUndoAction(
@@ -2837,9 +2838,8 @@ class ProjectService extends ChangeNotifier {
   /// [saveProject]と同じ保存。保存できたかを返す（失敗しても例外にしない）。
   Future<bool> _saveReportingSuccess(String projectId) {
     if (!_projects.any((p) => p.id == projectId)) return Future.value(false);
-    return saveProject(
-      projectId,
-    ).then((_) => true, onError: (Object _, StackTrace _) => false);
+    return saveProject(projectId)
+        .then((_) => true, onError: (Object _, StackTrace _) => false);
   }
 
   Future<void> _saveMembership(

@@ -57,9 +57,8 @@ void main() {
         try {
           final data = await image.toByteData(format: ui.ImageByteFormat.png);
           if (data == null) throw StateError('PNG encoding returned null');
-          await File(
-            '${out.path}/$name.png',
-          ).writeAsBytes(data.buffer.asUint8List(), flush: true);
+          await File('${out.path}/$name.png')
+              .writeAsBytes(data.buffer.asUint8List(), flush: true);
         } finally {
           image.dispose();
         }

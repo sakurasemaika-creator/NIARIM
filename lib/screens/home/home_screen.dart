@@ -544,18 +544,18 @@ class _HomeScreenState extends State<HomeScreen>
                                       fontFamily: 'Kuramubon',
                                       fontFamilyFallback: kHeadingFontFallback,
                                       color: _showFavoritesOnly
-                                          ? Theme.of(
-                                              context,
-                                            ).colorScheme.onPrimary
+                                          ? Theme.of(context)
+                                                .colorScheme
+                                                .onPrimary
                                           : null,
                                     ),
                                   ),
-                                  selectedColor: Theme.of(
-                                    context,
-                                  ).colorScheme.primary,
-                                  checkmarkColor: Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimary,
+                                  selectedColor: Theme.of(context)
+                                      .colorScheme
+                                      .primary,
+                                  checkmarkColor: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimary,
                                   selected: _showFavoritesOnly,
                                   onSelected: (v) => _changeProjectScope(
                                     () => _showFavoritesOnly = v,
@@ -1804,9 +1804,9 @@ class _FolderableList<T> extends StatelessWidget {
                           '($count)',
                           style: TextStyle(
                             fontSize: 11,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
                           ),
                         ),
                       ],

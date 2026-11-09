@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../services/api/community_api.dart';
 
 /// Standalone, themed, localized alternative to a raw YouTube playback error.
@@ -78,9 +79,8 @@ class CommunityPlaybackStatusView extends StatelessWidget {
                 description,
                 maxLines: 4,
                 textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: scheme.onSurfaceVariant),
               ),
               if (onRetry != null &&
                   status != CommunityPlaybackStatus.checking) ...[

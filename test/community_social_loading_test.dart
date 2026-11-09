@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -66,41 +67,38 @@ void main() {
       expect(service.socialError, isNull);
     },
   );
-  test(
-    'failed refresh keeps cached bookmarks and successful retry clears its error',
-    () async {
-      var fail = false;
-      final service = serviceFor(
-        MockClient((r) async {
-          if (r.url.path.endsWith('/bookmarks')) {
-            return fail
-                ? reply({'error': 'unavailable'}, status: 503)
-                : reply({
-                    'works': [work],
-                  });
-          }
-          if (r.url.path.endsWith('/following')) {
-            return reply({'following': []});
-          }
-          return reply({'reposts': []});
-        }),
-      );
-      addTearDown(service.dispose);
-      await service.contentFiltersReady;
-      service.setCurrentUserId('owner');
-      expect(await service.loadSocial(), isTrue);
-      fail = true;
-      expect(await service.loadSocial(), isFalse);
-      expect(service.bookmarkedIds, {'saved'});
-      expect(service.bookmarkedWorksForViewer.single.id, 'saved');
-      expect(service.socialError, isNotNull);
-      expect(service.isSocialLoading, isFalse);
-      fail = false;
-      expect(await service.loadSocial(), isTrue);
-      expect(service.socialError, isNull);
-      expect(service.bookmarkedIds, {'saved'});
-    },
-  );
+  test('failed refresh keeps cached bookmarks and successful retry clears its error', () async {
+    var fail = false;
+    final service = serviceFor(
+      MockClient((r) async {
+        if (r.url.path.endsWith('/bookmarks')) {
+          return fail
+              ? reply({'error': 'unavailable'}, status: 503)
+              : reply({
+                  'works': [work],
+                });
+        }
+        if (r.url.path.endsWith('/following')) {
+          return reply({'following': []});
+        }
+        return reply({'reposts': []});
+      }),
+    );
+    addTearDown(service.dispose);
+    await service.contentFiltersReady;
+    service.setCurrentUserId('owner');
+    expect(await service.loadSocial(), isTrue);
+    fail = true;
+    expect(await service.loadSocial(), isFalse);
+    expect(service.bookmarkedIds, {'saved'});
+    expect(service.bookmarkedWorksForViewer.single.id, 'saved');
+    expect(service.socialError, isNotNull);
+    expect(service.isSocialLoading, isFalse);
+    fail = false;
+    expect(await service.loadSocial(), isTrue);
+    expect(service.socialError, isNull);
+    expect(service.bookmarkedIds, {'saved'});
+  });
   test(
     'old account failure cannot end the new account loading state',
     () async {

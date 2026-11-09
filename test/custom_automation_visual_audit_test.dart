@@ -147,9 +147,8 @@ void main() {
         await tester.runAsync(() async {
           final image = await boundary.toImage(pixelRatio: 1);
           final data = await image.toByteData(format: ui.ImageByteFormat.png);
-          File(
-            '${out.path}/$name.png',
-          ).writeAsBytesSync(data!.buffer.asUint8List());
+          File('${out.path}/$name.png')
+              .writeAsBytesSync(data!.buffer.asUint8List());
           image.dispose();
         });
         stage('capture:$name:done');
@@ -328,8 +327,7 @@ void main() {
       expect(
         draft?.steps.map((step) => step.command),
         ['canvas.filterApply'],
-        reason:
-            'Draft must contain the replayable filter operation recorded by FilterPanel',
+        reason: 'Draft must contain the replayable filter operation recorded by FilterPanel',
       );
       // The draft sheet lists the step by what it does (applying the
       // filter, by its name).

@@ -161,61 +161,59 @@ void main() {
     },
   );
 
-  test(
-    'color trace Undo removes its output without empty history entries and Redo preserves pixels',
-    () async {
-      final fill = await addFillBelow();
-      final undo = UndoManager();
-      service.setUndoManager(undo);
-      addTearDown(undo.dispose);
-      final earlier = service.addLayer(
-        projectId: projectId,
-        sceneId: sceneId,
-        frameIndex: 0,
-        type: LayerType.normal,
-        name: 'earlier edit',
-      );
-      final sourceBefore = await pixels(sourceId);
-      final result = await execute(
-        CustomAutomationBuiltinPresets.all().singleWhere(
-          (item) => item.id == 'builtin_lineart_color_trace',
-        ),
-      );
-      final output = await pixels(result!);
-      expect(output.where((byte) => byte != 0), isNotEmpty);
+  test('color trace Undo removes its output without empty history entries and Redo preserves pixels', () async {
+    final fill = await addFillBelow();
+    final undo = UndoManager();
+    service.setUndoManager(undo);
+    addTearDown(undo.dispose);
+    final earlier = service.addLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: 0,
+      type: LayerType.normal,
+      name: 'earlier edit',
+    );
+    final sourceBefore = await pixels(sourceId);
+    final result = await execute(
+      CustomAutomationBuiltinPresets.all().singleWhere(
+        (item) => item.id == 'builtin_lineart_color_trace',
+      ),
+    );
+    final output = await pixels(result!);
+    expect(output.where((byte) => byte != 0), isNotEmpty);
 
-      for (var cycle = 0; cycle < 2; cycle++) {
-        undo.undo();
-        expect(
-          service.layersOf(projectId, sceneId, 0).map((layer) => layer.id),
-          [earlier.id, sourceId, fill],
-          reason:
-              'One Undo must remove the recipe output, not a merged-away duplicate',
-        );
-        expect(undo.undoCount, 1);
-        expect(await pixels(sourceId), sourceBefore);
-        undo.redo();
-        expect(
-          service.layersOf(projectId, sceneId, 0).map((layer) => layer.id),
-          [earlier.id, result, sourceId, fill],
-        );
-        expect(
-          service.layersOf(projectId, sceneId, 0)[1].hasClipping,
-          isTrue,
-          reason: 'still clipped after Redo',
-        );
-        expect(await pixels(result), output);
-        expect(undo.redoCount, 0);
-      }
-
+    for (var cycle = 0; cycle < 2; cycle++) {
       undo.undo();
-      undo.undo();
+      expect(
+        service.layersOf(projectId, sceneId, 0).map((layer) => layer.id),
+        [earlier.id, sourceId, fill],
+        reason: 'One Undo must remove the recipe output, not a merged-away duplicate',
+      );
+      expect(undo.undoCount, 1);
+      expect(await pixels(sourceId), sourceBefore);
+      undo.redo();
       expect(service.layersOf(projectId, sceneId, 0).map((layer) => layer.id), [
+        earlier.id,
+        result,
         sourceId,
         fill,
-      ], reason: 'The edit preceding the recipe must remain undoable');
-    },
-  );
+      ]);
+      expect(
+        service.layersOf(projectId, sceneId, 0)[1].hasClipping,
+        isTrue,
+        reason: 'still clipped after Redo',
+      );
+      expect(await pixels(result), output);
+      expect(undo.redoCount, 0);
+    }
+
+    undo.undo();
+    undo.undo();
+    expect(service.layersOf(projectId, sceneId, 0).map((layer) => layer.id), [
+      sourceId,
+      fill,
+    ], reason: 'The edit preceding the recipe must remain undoable');
+  });
 
   test(
     'color trace Redo never restores merged duplicates from another project',
@@ -403,71 +401,68 @@ void main() {
       expect(await pixels(sourceId), before);
     },
   );
-  test(
-    'specified frames retain the selected source anchor across generated layers',
-    () async {
-      final chosen = service.addLayer(
-        projectId: projectId,
-        sceneId: sceneId,
-        frameIndex: 0,
-        type: LayerType.normal,
-        name: 'chosen',
-      );
-      final corresponding = service.addLayer(
-        projectId: projectId,
-        sceneId: sceneId,
-        frameIndex: 1,
-        type: LayerType.normal,
-        name: 'chosen',
-      );
-      for (final pair in [(0, chosen.id), (1, corresponding.id)]) {
-        service
-            .tileManagerOf(projectId)
-            .replaceLayerPixels(
-              service.tileKeyFor(projectId, sceneId, pair.$1, pair.$2),
-              original,
-            );
-      }
-      final base = CustomAutomationBuiltinPresets.all().first;
-      final item = base.copyWith(
-        steps: [
-          CustomAutomationStep(
-            id: 'outline',
-            surface: CustomAutomationSurface.canvas,
-            command: 'canvas.filterApply',
-            label: 'outline',
-            recordedFrame: 0,
-            args: {
-              'filter': const FilterDef(
-                id: 'outline',
-                name: 'outline',
-                kind: FilterKind.outline,
-              ).toJson(),
-            },
-          ),
-        ],
-      );
-      final selected = await CustomAutomationExecutor.executeCanvas(
-        automation: item,
-        scope: CustomAutomationExecutionScope.specifiedFrames,
-        targetFrames: [0, 1],
-        projectService: service,
-        projectId: projectId,
-        sceneId: sceneId,
-        currentFrame: 0,
-        currentLayerId: chosen.id,
-        handleCanvasStateCommand: (_, _) async =>
-            fail('Unexpected UI-only command'),
-      );
-      final current = service.layersOf(projectId, sceneId, 0);
-      final other = service.layersOf(projectId, sceneId, 1);
-      expect(current, hasLength(3));
-      expect(other, hasLength(3));
-      expect(current[1].id, selected);
-      expect(other[1].name, contains('chosen'));
-      expect(await pixels(corresponding.id, 1), await pixels(chosen.id));
-    },
-  );
+  test('specified frames retain the selected source anchor across generated layers', () async {
+    final chosen = service.addLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: 0,
+      type: LayerType.normal,
+      name: 'chosen',
+    );
+    final corresponding = service.addLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: 1,
+      type: LayerType.normal,
+      name: 'chosen',
+    );
+    for (final pair in [(0, chosen.id), (1, corresponding.id)]) {
+      service
+          .tileManagerOf(projectId)
+          .replaceLayerPixels(
+            service.tileKeyFor(projectId, sceneId, pair.$1, pair.$2),
+            original,
+          );
+    }
+    final base = CustomAutomationBuiltinPresets.all().first;
+    final item = base.copyWith(
+      steps: [
+        CustomAutomationStep(
+          id: 'outline',
+          surface: CustomAutomationSurface.canvas,
+          command: 'canvas.filterApply',
+          label: 'outline',
+          recordedFrame: 0,
+          args: {
+            'filter': const FilterDef(
+              id: 'outline',
+              name: 'outline',
+              kind: FilterKind.outline,
+            ).toJson(),
+          },
+        ),
+      ],
+    );
+    final selected = await CustomAutomationExecutor.executeCanvas(
+      automation: item,
+      scope: CustomAutomationExecutionScope.specifiedFrames,
+      targetFrames: [0, 1],
+      projectService: service,
+      projectId: projectId,
+      sceneId: sceneId,
+      currentFrame: 0,
+      currentLayerId: chosen.id,
+      handleCanvasStateCommand: (_, _) async =>
+          fail('Unexpected UI-only command'),
+    );
+    final current = service.layersOf(projectId, sceneId, 0);
+    final other = service.layersOf(projectId, sceneId, 1);
+    expect(current, hasLength(3));
+    expect(other, hasLength(3));
+    expect(current[1].id, selected);
+    expect(other[1].name, contains('chosen'));
+    expect(await pixels(corresponding.id, 1), await pixels(chosen.id));
+  });
 
   for (final type in [
     LayerType.autoFill,
@@ -537,46 +532,43 @@ void main() {
       ]);
     },
   );
-  test(
-    'color trace with frame navigation executes the subsequent filter on the new frame',
-    () async {
-      final secondBefore = await pixels(sourceId, 1);
-      final recipe = CustomAutomationBuiltinPresets.all().singleWhere(
-        (p) => p.id == 'builtin_lineart_color_trace',
-      );
-      final item = recipe.copyWith(
-        steps: [
-          ...recipe.steps,
-          const CustomAutomationStep(
-            id: 'next',
-            surface: CustomAutomationSurface.canvas,
-            command: 'canvas.selectFrame',
-            label: 'next',
-            changesFrame: true,
-            args: {'frame': 1},
-            recordedFrame: 1,
-          ),
-          ..._inPlaceBlur.steps,
-        ],
-      );
-      var selectedFrame = 0;
-      final result = await CustomAutomationExecutor.executeCanvas(
-        automation: item,
-        scope: CustomAutomationExecutionScope.currentFrame,
-        projectService: service,
-        projectId: projectId,
-        sceneId: sceneId,
-        currentFrame: 0,
-        currentLayerId: sourceId,
-        handleCanvasStateCommand: (command, args) async {
-          expect(command, 'canvas.selectFrame');
-          selectedFrame = args['frame'] as int;
-        },
-      );
-      expect(selectedFrame, 1);
-      expect(result, sourceId);
-      expect(await pixels(sourceId, 1), isNot(secondBefore));
-      expect(service.layersOf(projectId, sceneId, 0), hasLength(2));
-    },
-  );
+  test('color trace with frame navigation executes the subsequent filter on the new frame', () async {
+    final secondBefore = await pixels(sourceId, 1);
+    final recipe = CustomAutomationBuiltinPresets.all().singleWhere(
+      (p) => p.id == 'builtin_lineart_color_trace',
+    );
+    final item = recipe.copyWith(
+      steps: [
+        ...recipe.steps,
+        const CustomAutomationStep(
+          id: 'next',
+          surface: CustomAutomationSurface.canvas,
+          command: 'canvas.selectFrame',
+          label: 'next',
+          changesFrame: true,
+          args: {'frame': 1},
+          recordedFrame: 1,
+        ),
+        ..._inPlaceBlur.steps,
+      ],
+    );
+    var selectedFrame = 0;
+    final result = await CustomAutomationExecutor.executeCanvas(
+      automation: item,
+      scope: CustomAutomationExecutionScope.currentFrame,
+      projectService: service,
+      projectId: projectId,
+      sceneId: sceneId,
+      currentFrame: 0,
+      currentLayerId: sourceId,
+      handleCanvasStateCommand: (command, args) async {
+        expect(command, 'canvas.selectFrame');
+        selectedFrame = args['frame'] as int;
+      },
+    );
+    expect(selectedFrame, 1);
+    expect(result, sourceId);
+    expect(await pixels(sourceId, 1), isNot(secondBefore));
+    expect(service.layersOf(projectId, sceneId, 0), hasLength(2));
+  });
 }

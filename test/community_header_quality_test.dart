@@ -14,6 +14,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/color_contrast.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'helpers/load_app_fonts.dart';
 
 Widget host(
@@ -37,9 +38,8 @@ Widget host(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     builder: (context, child) => MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(scale)),
+      data: MediaQuery.of(context)
+          .copyWith(textScaler: TextScaler.linear(scale)),
       child: Stack(children: [child!, const CommunityFloatingPreview()]),
     ),
     home: const CommunityScreen(),

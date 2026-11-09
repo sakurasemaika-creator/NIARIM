@@ -1,9 +1,12 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
+
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/community_plaza_labels.dart';
 import '../../../services/community_service.dart';
+
 import 'package:provider/provider.dart';
+
 import '../../../models/community_work.dart';
 import '../../../config/font_fallback.dart';
 
@@ -287,13 +290,11 @@ class CommunityWorkCard extends StatelessWidget {
                               children: [
                                 Text(
                                   isUnavailable
-                                      ? CommunityPlazaLabels.of(
-                                          context,
-                                        ).unavailablePlaceholder
+                                      ? CommunityPlazaLabels.of(context)
+                                            .unavailablePlaceholder
                                       : isMuted
-                                      ? CommunityPlazaLabels.of(
-                                          context,
-                                        ).mutedPlaceholder
+                                      ? CommunityPlazaLabels.of(context)
+                                            .mutedPlaceholder
                                       : work.title,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
@@ -380,12 +381,10 @@ class CommunityWorkCard extends StatelessWidget {
                                         padding: EdgeInsets.zero,
                                         iconSize: 22,
                                         tooltip: isMuted
-                                            ? CommunityPlazaLabels.of(
-                                                context,
-                                              ).unmuteWork
-                                            : CommunityPlazaLabels.of(
-                                                context,
-                                              ).muteWork,
+                                            ? CommunityPlazaLabels.of(context)
+                                                  .unmuteWork
+                                            : CommunityPlazaLabels.of(context)
+                                                  .muteWork,
                                         icon: Icon(
                                           Icons.more_vert,
                                           color: textColor,

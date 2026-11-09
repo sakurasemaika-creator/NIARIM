@@ -60,50 +60,47 @@ void main() {
     },
   );
 
-  test(
-    'saved hair preset receives minimum exit while bangs and custom copies keep their settings',
-    () async {
-      final first = BrushService();
-      await first.init();
-      final hair = first.brushes.singleWhere((b) => b.id == 'Brush0023');
-      final bangs = first.brushes.singleWhere((b) => b.id == 'Brush0024');
-      final oldHair = hair.copyWith(
-        fadeMode: FadeMode.weak,
-        isFavorite: true,
-        folderId: 'my-folder',
-        tags: ['my-hair-tag'],
-      );
-      final custom = oldHair.copyWith(id: 'CustomHair');
-      SharedPreferences.setMockInitialValues({
-        'brushes': [
-          jsonEncode(oldHair.toJson()),
-          jsonEncode(bangs.copyWith(fadeMode: FadeMode.weak).toJson()),
-          jsonEncode(custom.toJson()),
-        ],
-      });
-      final restored = BrushService();
-      await restored.init();
-      final updated = restored.brushes.singleWhere((b) => b.id == hair.id);
-      expect(updated.fadeMode, FadeMode.custom);
-      expect(updated.fadeOut.value, 0);
-      expect(updated.folderId, 'my-folder');
-      expect(updated.tags, ['my-hair-tag']);
-      expect(
-        restored.brushes.singleWhere((b) => b.id == bangs.id).fadeMode,
-        FadeMode.weak,
-      );
-      expect(
-        restored.brushes.singleWhere((b) => b.id == hair.id).isFavorite,
-        isTrue,
-      );
-      expect(
-        restored.brushes.singleWhere((b) => b.id == custom.id).fadeMode,
-        FadeMode.weak,
-      );
-      first.dispose();
-      restored.dispose();
-    },
-  );
+  test('saved hair preset receives minimum exit while bangs and custom copies keep their settings', () async {
+    final first = BrushService();
+    await first.init();
+    final hair = first.brushes.singleWhere((b) => b.id == 'Brush0023');
+    final bangs = first.brushes.singleWhere((b) => b.id == 'Brush0024');
+    final oldHair = hair.copyWith(
+      fadeMode: FadeMode.weak,
+      isFavorite: true,
+      folderId: 'my-folder',
+      tags: ['my-hair-tag'],
+    );
+    final custom = oldHair.copyWith(id: 'CustomHair');
+    SharedPreferences.setMockInitialValues({
+      'brushes': [
+        jsonEncode(oldHair.toJson()),
+        jsonEncode(bangs.copyWith(fadeMode: FadeMode.weak).toJson()),
+        jsonEncode(custom.toJson()),
+      ],
+    });
+    final restored = BrushService();
+    await restored.init();
+    final updated = restored.brushes.singleWhere((b) => b.id == hair.id);
+    expect(updated.fadeMode, FadeMode.custom);
+    expect(updated.fadeOut.value, 0);
+    expect(updated.folderId, 'my-folder');
+    expect(updated.tags, ['my-hair-tag']);
+    expect(
+      restored.brushes.singleWhere((b) => b.id == bangs.id).fadeMode,
+      FadeMode.weak,
+    );
+    expect(
+      restored.brushes.singleWhere((b) => b.id == hair.id).isFavorite,
+      isTrue,
+    );
+    expect(
+      restored.brushes.singleWhere((b) => b.id == custom.id).fadeMode,
+      FadeMode.weak,
+    );
+    first.dispose();
+    restored.dispose();
+  });
 
   test(
     'duplicate and persistence preserve multiple texture settings',

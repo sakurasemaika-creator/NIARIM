@@ -12,6 +12,7 @@ import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'community_header_quality_test.dart' as quality;
 import 'helpers/load_app_fonts.dart';
 
@@ -209,9 +210,8 @@ void main() {
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         image.dispose();
         Directory(captureDir).createSync(recursive: true);
-        File(
-          '$captureDir/$name.png',
-        ).writeAsBytesSync(bytes!.buffer.asUint8List());
+        File('$captureDir/$name.png')
+            .writeAsBytesSync(bytes!.buffer.asUint8List());
       });
     }
 

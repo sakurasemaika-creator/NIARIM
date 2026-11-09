@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -148,9 +149,8 @@ void main() {
         await service.contentFiltersReady;
         service.setCurrentUserId('old-owner');
         service.applyServerWork(
-          ApiWork.fromJson(
-            work('private', 'old-owner', hidden: true),
-          ).toCommunityWork(),
+          ApiWork.fromJson(work('private', 'old-owner', hidden: true))
+              .toCommunityWork(),
         );
         final pending = ai
             ? service.setAiImageVideoDisclosure('private', true)

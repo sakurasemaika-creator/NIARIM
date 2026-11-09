@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../utils/tolerant_preferences.dart';
 
 /// 初回使用時の吹き出し説明の表示済み管理。

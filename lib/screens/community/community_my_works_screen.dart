@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../config/accent_text_theme.dart';
+
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -543,7 +545,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final schedule = _scheduledPublishById[work.id];
     if (youtubePrivacy == 'private' && schedule != null) {
       final date = schedule.toLocal();
-      final stamp = '${date.year}/'
+      final stamp =
+          '${date.year}/'
           '${date.month.toString().padLeft(2, '0')}/'
           '${date.day.toString().padLeft(2, '0')} '
           '${date.hour.toString().padLeft(2, '0')}:'
@@ -567,8 +570,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   IconData _visibilityIcon(CommunityWork work) {
     final youtubePrivacy = _youtubePrivacyById[work.id];
     if (youtubePrivacy == 'deleted') return Icons.delete_forever_outlined;
-    if (youtubePrivacy == 'private' &&
-        _scheduledPublishById[work.id] != null) {
+    if (youtubePrivacy == 'private' && _scheduledPublishById[work.id] != null) {
       return Icons.schedule;
     }
     if (youtubePrivacy == 'private') return Icons.lock_outline;
@@ -720,9 +722,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                     )
                                   : const Icon(Icons.refresh_outlined),
                               label: Text(
-                                CommunityChannelRefreshLabels.of(
-                                  context,
-                                ).button,
+                                CommunityChannelRefreshLabels.of(context)
+                                    .button,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -838,9 +839,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                             Icon(
                               Icons.video_library_outlined,
                               size: 56,
-                              color: AccentTextTheme.of(
-                                context,
-                              ).withValues(alpha: 0.55),
+                              color: AccentTextTheme.of(context)
+                                  .withValues(alpha: 0.55),
                             ),
                             const SizedBox(height: 12),
                             Text(

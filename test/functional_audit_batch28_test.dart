@@ -73,9 +73,9 @@ void main() {
       engine.endStroke();
 
       final image = await tm.compositeLayerToImage('paint');
-      final rgba = (await image.toByteData(
-        format: ui.ImageByteFormat.rawRgba,
-      ))!.buffer.asUint8List();
+      final rgba = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!
+          .buffer
+          .asUint8List();
       final png = await image.toByteData(format: ui.ImageByteFormat.png);
       await File(
         '${out.path}/builtin_brush_${brush.id}_${_safe(brush.name)}.png',

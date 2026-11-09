@@ -1,6 +1,7 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
 import '../../router.dart';
@@ -63,7 +64,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     // details are available. Only a real cached work can skip owner lookup.
     final cached = community.byId(widget.workId);
     if ((cached != null && !cached.isUnavailable) ||
-        accountId == null || community.api == null) {
+        accountId == null ||
+        community.api == null) {
       return;
     }
     try {
@@ -104,9 +106,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   ) async {
     if (_aiDisclosureBusy) return;
     final messenger = ScaffoldMessenger.of(context);
-    final failed = AppLocalizations.of(
-      context,
-    )!.communityAiImageVideoUpdateFailed;
+    final failed = AppLocalizations.of(context)!
+        .communityAiImageVideoUpdateFailed;
     setState(() => _aiDisclosureBusy = true);
     try {
       await service.setAiImageVideoDisclosure(workId, value);
@@ -132,9 +133,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   }
 
   void _showComingSoonSnackbar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _showAddTagDialog(CommunityService communityService, String workId) {
@@ -307,15 +307,18 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final l10n = AppLocalizations.of(context)!;
     final communityService = context.watch<CommunityService>();
     final currentAccount = context.watch<GoogleAuthService>().account?.id;
-    final ownerFallback = currentAccount != null &&
-        currentAccount == _ownerOnlyAccountId ? _ownerOnlyWork : null;
+    final ownerFallback =
+        currentAccount != null && currentAccount == _ownerOnlyAccountId
+        ? _ownerOnlyWork
+        : null;
     final cachedWork = communityService.byId(widget.workId);
     // Owner-authorized details take precedence over a public unavailable
     // placeholder (e.g. a previously saved private work).
     final work = cachedWork == null || cachedWork.isUnavailable
         ? (ownerFallback ?? cachedWork)
         : cachedWork;
-    final isOwner = work != null &&
+    final isOwner =
+        work != null &&
         (ownerFallback != null || communityService.isOwnWork(work));
     if (work == null ||
         (!isOwner && !communityService.isDiscoverableForViewer(work))) {

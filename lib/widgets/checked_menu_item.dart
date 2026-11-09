@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../config/accent_text_theme.dart';
 
 /// 今の選択にチェックが付くメニュー項目（読み上げでも選択中と伝える）。

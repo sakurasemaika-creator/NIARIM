@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
@@ -11,6 +12,7 @@ import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/screens/export/widgets/export_preset_selector.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'helpers/load_app_fonts.dart';
 
 Widget _host(
@@ -26,9 +28,8 @@ Widget _host(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
   builder: (context, child) => MediaQuery(
-    data: MediaQuery.of(
-      context,
-    ).copyWith(textScaler: TextScaler.linear(scale), boldText: bold),
+    data: MediaQuery.of(context)
+        .copyWith(textScaler: TextScaler.linear(scale), boldText: bold),
     child: child!,
   ),
   home: Scaffold(

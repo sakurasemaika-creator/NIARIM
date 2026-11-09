@@ -1919,9 +1919,9 @@ class _FilterPanelState extends State<FilterPanel> {
                 };
                 if (stored.isEmpty) {
                   return _toneCurveChannel == 0
-                      ? toneCurvePoints(
-                          current.toneCurvePreset,
-                        ).map((p) => Offset(p.dx, p.dy)).toList()
+                      ? toneCurvePoints(current.toneCurvePreset)
+                            .map((p) => Offset(p.dx, p.dy))
+                            .toList()
                       : const [Offset(0, 0), Offset(1, 1)];
                 }
                 return [

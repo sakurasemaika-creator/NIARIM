@@ -26,9 +26,8 @@ void main() {
   });
 
   test('キャンバス外周背景はCanvasAreaの変換外に固定された兄弟レイヤー', () {
-    final source = File(
-      'lib/screens/canvas/canvas_screen.dart',
-    ).readAsStringSync();
+    final source = File('lib/screens/canvas/canvas_screen.dart')
+        .readAsStringSync();
     const backdrop = 'Container(color: kCanvasOutsideColor),';
     const canvasArea = 'CanvasArea(';
     final backdropIndex = source.indexOf(backdrop);

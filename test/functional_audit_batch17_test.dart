@@ -67,8 +67,7 @@ void main() {
     expect(
       _opaquePositions(tenTimes, w, h),
       orderedEquals(_opaquePositions(once, w, h)),
-      reason:
-          'same fixed tone must never fill its own transparent gaps on repeated strokes',
+      reason: 'same fixed tone must never fill its own transparent gaps on repeated strokes',
     );
   });
 
@@ -152,8 +151,7 @@ void main() {
     expect(
       _nonTransparentCount(aPlusB),
       greaterThan(_nonTransparentCount(aOnly)),
-      reason:
-          'a different tone may reveal positions that were gaps in the first tone',
+      reason: 'a different tone may reveal positions that were gaps in the first tone',
     );
   });
 }

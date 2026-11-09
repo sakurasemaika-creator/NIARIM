@@ -77,27 +77,24 @@ void main() {
     return next;
   }
 
-  test(
-    'queued create/edit/reparent wait for acknowledgement and retain earlier results',
-    () async {
-      final gate = Completer<void>();
-      store.gate = gate;
-      final first = service.createFolder('FIRST');
-      final second = service.createFolder('SECOND');
-      expect(service.folders, isEmpty);
-      gate.complete();
-      final folder = await first;
-      final parent = await second;
-      await Future.wait([
-        service.editFolder(folder.id, name: 'RENAMED', color: 0xFF123456),
-        service.moveFolderTo(folder.id, parent.id),
-      ]);
-      final saved = (await cold()).folders.firstWhere((f) => f.id == folder.id);
-      expect(saved.name, 'RENAMED');
-      expect(saved.color, 0xFF123456);
-      expect(saved.parentFolderId, parent.id);
-    },
-  );
+  test('queued create/edit/reparent wait for acknowledgement and retain earlier results', () async {
+    final gate = Completer<void>();
+    store.gate = gate;
+    final first = service.createFolder('FIRST');
+    final second = service.createFolder('SECOND');
+    expect(service.folders, isEmpty);
+    gate.complete();
+    final folder = await first;
+    final parent = await second;
+    await Future.wait([
+      service.editFolder(folder.id, name: 'RENAMED', color: 0xFF123456),
+      service.moveFolderTo(folder.id, parent.id),
+    ]);
+    final saved = (await cold()).folders.firstWhere((f) => f.id == folder.id);
+    expect(saved.name, 'RENAMED');
+    expect(saved.color, 0xFF123456);
+    expect(saved.parentFolderId, parent.id);
+  });
 
   test(
     'rejected queue remains usable and preserves name/color until retry',
@@ -124,13 +121,9 @@ void main() {
       final p = await project('KEEP');
       final source = await file(p.id);
       final archive = ZipDecoder().decodeBytes(source.readAsBytesSync());
-      final manifest =
-          jsonDecode(
-                utf8.decode(
-                  archive.findFile('manifest.json')!.content as List<int>,
-                ),
-              )
-              as Map<String, dynamic>;
+      final manifest = jsonDecode(
+        utf8.decode(archive.findFile('manifest.json')!.content as List<int>),
+      ) as Map<String, dynamic>;
       manifest['futureField'] = {
         'nested': [1, 'KEEP'],
       };
@@ -156,13 +149,9 @@ void main() {
           reason: entry.name,
         );
       }
-      final next =
-          jsonDecode(
-                utf8.decode(
-                  after.findFile('manifest.json')!.content as List<int>,
-                ),
-              )
-              as Map<String, dynamic>;
+      final next = jsonDecode(
+        utf8.decode(after.findFile('manifest.json')!.content as List<int>),
+      ) as Map<String, dynamic>;
       expect(next, {...manifest, 'folderId': folder.id});
     },
   );
@@ -249,66 +238,57 @@ void main() {
     );
   }
 
-  test(
-    'preference failure after contents moved retains folder, exposes partial result, and retries',
-    () async {
-      final p = await project('KEEP');
-      final folder = await service.createFolder('FOLDER');
-      await service.moveToFolder(p.id, folder.id);
-      store.reject = true;
-      await expectLater(
-        service.deleteFolder(folder.id),
-        throwsA(
-          isA<FolderSaveException>().having(
-            (e) => e.partiallySaved,
-            'partial',
-            true,
-          ),
+  test('preference failure after contents moved retains folder, exposes partial result, and retries', () async {
+    final p = await project('KEEP');
+    final folder = await service.createFolder('FOLDER');
+    await service.moveToFolder(p.id, folder.id);
+    store.reject = true;
+    await expectLater(
+      service.deleteFolder(folder.id),
+      throwsA(
+        isA<FolderSaveException>().having(
+          (e) => e.partiallySaved,
+          'partial',
+          true,
         ),
-      );
-      expect(service.folders.single.id, folder.id);
-      expect(service.projects.single.folderId, isNull);
-      final partial = await cold();
-      expect(partial.folders.single.id, folder.id);
-      expect(partial.projects.single.folderId, isNull);
-      store.reject = false;
-      await service.deleteFolder(folder.id);
-      expect((await cold()).folders, isEmpty);
-    },
-  );
+      ),
+    );
+    expect(service.folders.single.id, folder.id);
+    expect(service.projects.single.folderId, isNull);
+    final partial = await cold();
+    expect(partial.folders.single.id, folder.id);
+    expect(partial.projects.single.folderId, isNull);
+    store.reject = false;
+    await service.deleteFolder(folder.id);
+    expect((await cold()).folders, isEmpty);
+  });
 
-  test(
-    'folder deletion updates trashed projects without discarding their archive data',
-    () async {
-      final p = await project('TRASH KEEP');
-      final folder = await service.createFolder('FOLDER');
-      await service.moveToFolder(p.id, folder.id);
-      await service.deleteProject(p.id);
-      await service.deleteFolder(folder.id);
-      final restored = await cold();
-      expect(restored.trash.single.folderId, isNull);
-      await restored.restoreProject(p.id);
-      expect(restored.projects.single.folderId, isNull);
-      expect(restored.projects.single.name, p.name);
-      expect(restored.scenesOf(p.id), isNotEmpty);
-    },
-  );
+  test('folder deletion updates trashed projects without discarding their archive data', () async {
+    final p = await project('TRASH KEEP');
+    final folder = await service.createFolder('FOLDER');
+    await service.moveToFolder(p.id, folder.id);
+    await service.deleteProject(p.id);
+    await service.deleteFolder(folder.id);
+    final restored = await cold();
+    expect(restored.trash.single.folderId, isNull);
+    await restored.restoreProject(p.id);
+    expect(restored.projects.single.folderId, isNull);
+    expect(restored.projects.single.name, p.name);
+    expect(restored.scenesOf(p.id), isNotEmpty);
+  });
 
-  test(
-    'missing project file rejects a move without publishing; restored file can retry',
-    () async {
-      final p = await project('KEEP');
-      final folder = await service.createFolder('FOLDER');
-      final source = await file(p.id);
-      final backup = source.renameSync('${source.path}.backup');
-      await expectLater(
-        service.moveToFolder(p.id, folder.id),
-        throwsA(isA<FolderSaveException>()),
-      );
-      expect(service.projects.single.folderId, isNull);
-      backup.renameSync(source.path);
-      await service.moveToFolder(p.id, folder.id);
-      expect((await cold()).projects.single.folderId, folder.id);
-    },
-  );
+  test('missing project file rejects a move without publishing; restored file can retry', () async {
+    final p = await project('KEEP');
+    final folder = await service.createFolder('FOLDER');
+    final source = await file(p.id);
+    final backup = source.renameSync('${source.path}.backup');
+    await expectLater(
+      service.moveToFolder(p.id, folder.id),
+      throwsA(isA<FolderSaveException>()),
+    );
+    expect(service.projects.single.folderId, isNull);
+    backup.renameSync(source.path);
+    await service.moveToFolder(p.id, folder.id);
+    expect((await cold()).projects.single.folderId, folder.id);
+  });
 }

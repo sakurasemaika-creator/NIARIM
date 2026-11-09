@@ -15,9 +15,9 @@ void main() {
 
   for (final locale in locales) {
     test('$locale names every texture preset, in the Tips too', () {
-      final arb =
-          jsonDecode(File('lib/l10n/app_$locale.arb').readAsStringSync())
-              as Map<String, dynamic>;
+      final arb = jsonDecode(
+        File('lib/l10n/app_$locale.arb').readAsStringSync(),
+      ) as Map<String, dynamic>;
       final tip = arb['tipsTexturePrismVhsDesc'] as String;
       for (final preset in AuroraHologramPreset.values) {
         final name = arb[keyOf(preset)] as String?;

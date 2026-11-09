@@ -10,7 +10,9 @@ import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/widgets/ad_banner_mock_widget.dart';
+
 import 'helpers/load_app_fonts.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -89,9 +91,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(preview.work, isNull);
     expect(
-      GoRouterState.of(
-        tester.element(find.byType(CommunityWorkDetailScreen)),
-      ).uri.path,
+      GoRouterState.of(tester.element(find.byType(CommunityWorkDetailScreen)))
+          .uri
+          .path,
       '/community/work/${work.id}',
     );
     expect(
@@ -120,9 +122,9 @@ void main() {
     await tester.tap(find.byIcon(Icons.info_outline_rounded));
     await tester.pumpAndSettle();
     expect(
-      GoRouterState.of(
-        tester.element(find.byType(CommunityWorkDetailScreen)),
-      ).uri.path,
+      GoRouterState.of(tester.element(find.byType(CommunityWorkDetailScreen)))
+          .uri
+          .path,
       '/community/work/${work.id}',
     );
     expect(

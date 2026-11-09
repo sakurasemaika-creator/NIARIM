@@ -118,11 +118,10 @@ void main() {
         };
         final evidence = Directory('build/audit-s27/counters')
           ..createSync(recursive: true);
-        File(
-          '${evidence.path}/$operation-${throws ? 'throw' : 'false'}.json',
-        ).writeAsStringSync(
-          '${const JsonEncoder.withIndent('  ').convert(report)}\n',
-        );
+        File('${evidence.path}/$operation-${throws ? 'throw' : 'false'}.json')
+            .writeAsStringSync(
+              '${const JsonEncoder.withIndent('  ').convert(report)}\n',
+            );
         expect(
           error,
           isNotNull,

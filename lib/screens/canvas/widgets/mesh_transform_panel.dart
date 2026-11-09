@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/docked_panel_scope.dart';

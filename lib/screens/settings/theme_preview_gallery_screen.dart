@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../services/theme_service.dart';
 import '../../config/accent_text_theme.dart';
 import '../../config/font_fallback.dart';

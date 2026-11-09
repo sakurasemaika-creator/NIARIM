@@ -172,9 +172,8 @@ void main() {
                 format: ui.ImageByteFormat.png,
               );
               image.dispose();
-              File(
-                '${out.path}/$name',
-              ).writeAsBytesSync(png!.buffer.asUint8List());
+              File('${out.path}/$name')
+                  .writeAsBytesSync(png!.buffer.asUint8List());
             });
           }
         }
@@ -292,9 +291,8 @@ void main() {
             final image = await render.toImage(pixelRatio: 0.5);
             final png = await image.toByteData(format: ui.ImageByteFormat.png);
             image.dispose();
-            File(
-              '${out.path}/$cell.png',
-            ).writeAsBytesSync(png!.buffer.asUint8List());
+            File('${out.path}/$cell.png')
+                .writeAsBytesSync(png!.buffer.asUint8List());
           });
           manifest.add({
             'cell': cell,

@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'community_milestone_store.dart';
 import '../models/community_repost.dart';
 import '../models/community_work.dart';

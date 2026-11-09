@@ -119,12 +119,11 @@ void main() {
         expect(restricted.exitCode, 0);
         try {
           expect(
-            () => File(
-              '${file.parent.path}/.owned-write-probe',
-            ).writeAsStringSync('probe'),
+            () =>
+                File('${file.parent.path}/.owned-write-probe')
+                    .writeAsStringSync('probe'),
             throwsA(isA<FileSystemException>()),
-            reason:
-                'The controlled POSIX write denial must be real before testing the operation.',
+            reason: 'The controlled POSIX write denial must be real before testing the operation.',
           );
           try {
             await service.toggleFavorite(project.id);

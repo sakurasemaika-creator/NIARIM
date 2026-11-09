@@ -197,9 +197,8 @@ void main() {
       }
     }
     final dir = Directory('build/ink-pool')..createSync(recursive: true);
-    File(
-      '${dir.path}/slant_crossings.png',
-    ).writeAsBytesSync(img.encodePng(sheet));
+    File('${dir.path}/slant_crossings.png')
+        .writeAsBytesSync(img.encodePng(sheet));
   });
 
   test('a straight diagonal line on its own does not pool', () {

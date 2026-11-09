@@ -11,6 +11,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/color_contrast.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'helpers/load_app_fonts.dart';
 
 void main() {
@@ -56,9 +57,8 @@ void main() {
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
               builder: (context, child) => MediaQuery(
-                data: MediaQuery.of(
-                  context,
-                ).copyWith(textScaler: TextScaler.linear(1.3)),
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(1.3)),
                 child: child!,
               ),
               home: const CommunityScreen(),
@@ -171,8 +171,7 @@ void main() {
       expect(
         failures,
         isEmpty,
-        reason:
-            'Thumb and control boundary must remain perceptible on the actual popup; selected and unselected are distinct saved states.',
+        reason: 'Thumb and control boundary must remain perceptible on the actual popup; selected and unselected are distinct saved states.',
       );
       await tester.pumpWidget(const SizedBox.shrink());
     },

@@ -66,9 +66,8 @@ void main() {
           final image = await boundary.toImage(pixelRatio: 1);
           try {
             final data = await image.toByteData(format: ui.ImageByteFormat.png);
-            File(
-              '${out.path}/$name.png',
-            ).writeAsBytesSync(data!.buffer.asUint8List());
+            File('${out.path}/$name.png')
+                .writeAsBytesSync(data!.buffer.asUint8List());
           } finally {
             image.dispose();
           }

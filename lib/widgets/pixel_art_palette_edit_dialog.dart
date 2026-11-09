@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../l10n/app_localizations.dart';
 import '../models/color_palette.dart';
 import '../services/pixel_art_palette_service.dart';

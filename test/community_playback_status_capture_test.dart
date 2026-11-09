@@ -18,6 +18,7 @@ import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/theme_service.dart';
+
 import 'helpers/load_app_fonts.dart';
 
 void main() {
@@ -38,9 +39,8 @@ void main() {
       final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
       Directory(directory).createSync(recursive: true);
-      File(
-        '$directory/$filename.png',
-      ).writeAsBytesSync(bytes!.buffer.asUint8List());
+      File('$directory/$filename.png')
+          .writeAsBytesSync(bytes!.buffer.asUint8List());
     });
   }
 

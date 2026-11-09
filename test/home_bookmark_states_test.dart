@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,6 +17,7 @@ import 'package:niarim/services/api/niarim_api_models.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
@@ -239,13 +241,11 @@ void main() {
           expect(service.bookmarkedWorksForViewer, isEmpty);
           expect(
             find.text(
-              AppLocalizations.of(
-                tester.element(find.byType(HomeScreen)),
-              )!.homeBookmarkedEmptyTitle,
+              AppLocalizations.of(tester.element(find.byType(HomeScreen)))!
+                  .homeBookmarkedEmptyTitle,
             ),
             findsNothing,
-            reason:
-                'A saved bookmark must not be presented as absent because its work is filtered or unavailable.',
+            reason: 'A saved bookmark must not be presented as absent because its work is filtered or unavailable.',
           );
           if (unresolved) {
             service.applyServerWork(

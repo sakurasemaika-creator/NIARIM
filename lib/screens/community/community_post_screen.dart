@@ -86,9 +86,12 @@ class CommunityPostScreen extends StatefulWidget {
 
 class _CommunityPostScreenState extends State<CommunityPostScreen> {
   static const _pendingVideoIdKey = 'community.pendingUpload.videoId';
-  static const _pendingThumbnailPathKey = 'community.pendingUpload.thumbnailPath';
-  static const _pendingThumbnailAppliedKey = 'community.pendingUpload.thumbnailApplied';
-  static const _pendingScheduledPublishAtKey = 'community.pendingUpload.scheduledPublishAt';
+  static const _pendingThumbnailPathKey =
+      'community.pendingUpload.thumbnailPath';
+  static const _pendingThumbnailAppliedKey =
+      'community.pendingUpload.thumbnailApplied';
+  static const _pendingScheduledPublishAtKey =
+      'community.pendingUpload.scheduledPublishAt';
   static const _frameChannel = MethodChannel('com.niarim.niarim/video_frame');
   static const _pendingAccountIdKey = 'community.pendingUpload.googleAccountId';
   static const _pendingAccountEmailKey =
@@ -157,11 +160,14 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
               prefs.readString(_pendingYoutubePrivacyKey) ?? 'unlisted';
           final thumbPath = prefs.readString(_pendingThumbnailPathKey);
           _thumbnailFile = thumbPath == null || thumbPath.isEmpty
-              ? null : File(thumbPath);
-          _thumbnailApplied = prefs.readBool(_pendingThumbnailAppliedKey) ?? false;
+              ? null
+              : File(thumbPath);
+          _thumbnailApplied =
+              prefs.readBool(_pendingThumbnailAppliedKey) ?? false;
           final scheduled = prefs.readString(_pendingScheduledPublishAtKey);
-          _scheduledPublishAt =
-              scheduled == null ? null : DateTime.tryParse(scheduled);
+          _scheduledPublishAt = scheduled == null
+              ? null
+              : DateTime.tryParse(scheduled);
           _isNiarimPublished = prefs.readBool(_pendingPublishedKey) ?? true;
           _containsGenerativeAiImageOrVideo =
               prefs.readBool(_pendingAiImageVideoKey) ?? false;
@@ -193,7 +199,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     await prefs.setBool(_pendingThumbnailAppliedKey, _thumbnailApplied);
     if (_scheduledPublishAt != null) {
       await prefs.setString(
-        _pendingScheduledPublishAtKey, _scheduledPublishAt!.toUtc().toIso8601String(),
+        _pendingScheduledPublishAtKey,
+        _scheduledPublishAt!.toUtc().toIso8601String(),
       );
     } else {
       await prefs.remove(_pendingScheduledPublishAtKey);
@@ -312,11 +319,11 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     });
   }
 
-
   Future<void> _storeThumbnail(File source) async {
     if (_busy || _thumbnailApplied) return;
     final lower = source.path.toLowerCase();
-    if (!lower.endsWith('.png') && !lower.endsWith('.jpg') &&
+    if (!lower.endsWith('.png') &&
+        !lower.endsWith('.jpg') &&
         !lower.endsWith('.jpeg')) {
       throw ArgumentError('PNGまたはJPEGの画像を指定してください');
     }
@@ -346,16 +353,16 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   Future<void> _pickThumbnail() async {
     if (_busy || _thumbnailApplied) return;
     final choice = await FilePicker.platform.pickFiles(
-      type: FileType.custom, allowedExtensions: ['jpg', 'jpeg', 'png'],
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png'],
     );
     if (choice?.files.single.path case final String path) {
       try {
         await _storeThumbnail(File(path));
       } on Object catch (error) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('画像を選択できませんでした: $error')),
-          );
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('画像を選択できませんでした: $error')));
         }
       }
     }
@@ -366,7 +373,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     if (video == null || _busy || _thumbnailApplied) return;
     try {
       final lengthMs = await _frameChannel.invokeMethod<int>(
-        'getVideoDuration', {'path': video.path},
+        'getVideoDuration',
+        {'path': video.path},
       );
       if (!mounted) return;
       if (lengthMs == null || lengthMs < 1) {
@@ -382,11 +390,14 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('${selectedSeconds.toStringAsFixed(1)} / '
-                    '${duration.toStringAsFixed(1)} 秒'),
+                Text(
+                  '${selectedSeconds.toStringAsFixed(1)} / '
+                  '${duration.toStringAsFixed(1)} 秒',
+                ),
                 Slider(
                   key: const Key('communityPostFrameSlider'),
-                  min: 0, max: duration,
+                  min: 0,
+                  max: duration,
                   value: selectedSeconds.clamp(0.0, duration),
                   onChanged: (v) => update(() => selectedSeconds = v),
                 ),
@@ -406,10 +417,10 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         ),
       );
       if (result == null) return;
-      final path = await _frameChannel.invokeMethod<String>(
-        'extractFrame',
-        {'path': video.path, 'timeMs': (result * 1000).round()},
-      );
+      final path = await _frameChannel.invokeMethod<String>('extractFrame', {
+        'path': video.path,
+        'timeMs': (result * 1000).round(),
+      });
       if (path == null || path.isEmpty) {
         throw StateError('動画フレームを取得できません');
       }
@@ -422,9 +433,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       }
     } on Object catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('フレーム取得に失敗しました: $error')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('フレーム取得に失敗しました: $error')));
       }
     }
   }
@@ -432,8 +442,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   Future<void> _pickSchedule() async {
     if (_busy || _youtubeVideoId != null) return;
     final now = DateTime.now();
-    final initial = _scheduledPublishAt?.toLocal() ??
-        now.add(const Duration(hours: 1));
+    final initial =
+        _scheduledPublishAt?.toLocal() ?? now.add(const Duration(hours: 1));
     final day = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -446,11 +456,17 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       initialTime: TimeOfDay.fromDateTime(initial),
     );
     if (!mounted || time == null) return;
-    final chosen = DateTime(day.year, day.month, day.day, time.hour, time.minute);
+    final chosen = DateTime(
+      day.year,
+      day.month,
+      day.day,
+      time.hour,
+      time.minute,
+    );
     if (!chosen.isAfter(DateTime.now().add(const Duration(minutes: 2)))) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('現在時刻から2分以上先の日時を指定してください')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('現在時刻から2分以上先の日時を指定してください')));
       return;
     }
     setState(() {
@@ -505,9 +521,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     if (_youtubeVideoId == null &&
         _youtubePrivacyStatus == 'scheduled' &&
         (_scheduledPublishAt == null ||
-         !_scheduledPublishAt!.isAfter(
-           DateTime.now().add(const Duration(minutes: 2)),
-         ))) {
+            !_scheduledPublishAt!.isAfter(
+              DateTime.now().add(const Duration(minutes: 2)),
+            ))) {
       setState(() => _error = StateError('有効な未来の公開日時を指定してください'));
       return;
     }
@@ -641,9 +657,11 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             title: youtubeTitle,
             description: youtubeDescription,
             privacyStatus: _youtubePrivacyStatus == 'scheduled'
-                ? 'private' : _youtubePrivacyStatus,
+                ? 'private'
+                : _youtubePrivacyStatus,
             scheduledPublishAt: _youtubePrivacyStatus == 'scheduled'
-                ? _scheduledPublishAt : null,
+                ? _scheduledPublishAt
+                : null,
             onProgress: (sent, total) {
               if (!mounted || total <= 0) return;
               setState(() => _progress = sent / total);
@@ -720,7 +738,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         description: description,
         isShort: _isShort,
         scheduledPublishAt: _youtubePrivacyStatus == 'scheduled'
-            ? _scheduledPublishAt : null,
+            ? _scheduledPublishAt
+            : null,
         isNiarimPublished: _isNiarimPublished,
         containsGenerativeAiImageOrVideo: _containsGenerativeAiImageOrVideo,
       );
@@ -831,9 +850,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     final message = error == CommunityFieldCopyError.invalidYoutubeDescription
         ? labels.youtubeDescriptionInvalid
         : labels.copyTooLong(maxLength);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -869,9 +887,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   enabled:
                       !_busy && !_restoringPending && retainedVideoId == null,
                   maxLength: 100,
-                  label: CommunityWorkMetadataLabels.of(
-                    context,
-                  ).copyTitleToYoutube,
+                  label: CommunityWorkMetadataLabels.of(context)
+                      .copyTitleToYoutube,
                   onError: _showCopyError,
                 ),
                 const SizedBox(height: 12),
@@ -881,9 +898,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   enabled: !_busy && retainedVideoId == null,
                   maxLength: 100,
                   decoration: InputDecoration(
-                    labelText: CommunityWorkMetadataLabels.of(
-                      context,
-                    ).youtubeTitle,
+                    labelText: CommunityWorkMetadataLabels.of(context)
+                        .youtubeTitle,
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -894,9 +910,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   enabled:
                       !_busy && !_restoringPending && retainedVideoId == null,
                   maxLength: 100,
-                  label: CommunityWorkMetadataLabels.of(
-                    context,
-                  ).copyTitleToNiarim,
+                  label: CommunityWorkMetadataLabels.of(context)
+                      .copyTitleToNiarim,
                   onError: _showCopyError,
                 ),
                 const SizedBox(height: 12),
@@ -908,12 +923,10 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   maxLines: 5,
                   maxLength: 2000,
                   decoration: InputDecoration(
-                    labelText: CommunityWorkMetadataLabels.of(
-                      context,
-                    ).description,
-                    hintText: CommunityWorkMetadataLabels.of(
-                      context,
-                    ).descriptionHint,
+                    labelText: CommunityWorkMetadataLabels.of(context)
+                        .description,
+                    hintText: CommunityWorkMetadataLabels.of(context)
+                        .descriptionHint,
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -925,9 +938,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                       !_busy && !_restoringPending && retainedVideoId == null,
                   maxLength: 5000,
                   youtubeDescription: true,
-                  label: CommunityWorkMetadataLabels.of(
-                    context,
-                  ).copyDescriptionToYoutube,
+                  label: CommunityWorkMetadataLabels.of(context)
+                      .copyDescriptionToYoutube,
                   onError: _showCopyError,
                 ),
                 const SizedBox(height: 12),
@@ -939,12 +951,10 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   maxLines: 5,
                   maxLength: 5000,
                   decoration: InputDecoration(
-                    labelText: CommunityWorkMetadataLabels.of(
-                      context,
-                    ).youtubeDescription,
-                    hintText: CommunityWorkMetadataLabels.of(
-                      context,
-                    ).youtubeDescriptionHint,
+                    labelText: CommunityWorkMetadataLabels.of(context)
+                        .youtubeDescription,
+                    hintText: CommunityWorkMetadataLabels.of(context)
+                        .youtubeDescriptionHint,
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -955,9 +965,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   enabled:
                       !_busy && !_restoringPending && retainedVideoId == null,
                   maxLength: 2000,
-                  label: CommunityWorkMetadataLabels.of(
-                    context,
-                  ).copyDescriptionToNiarim,
+                  label: CommunityWorkMetadataLabels.of(context)
+                      .copyDescriptionToNiarim,
                   onError: _showCopyError,
                 ),
                 const SizedBox(height: 12),
@@ -984,14 +993,12 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                       key: const Key('communityPostThumbnailPreview'),
                       height: 155,
                       fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const Text(
-                        '画像を読み込めません。画像を選び直してください。',
-                      ),
+                      errorBuilder: (_, _, _) =>
+                          const Text('画像を読み込めません。画像を選び直してください。'),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  if (_thumbnailApplied)
-                    const Text('YouTubeへサムネイルを設定済み'),
+                  if (_thumbnailApplied) const Text('YouTubeへサムネイルを設定済み'),
                 ] else
                   const Text('未指定の場合はYouTubeの自動サムネイルを使用します。'),
                 const SizedBox(height: 6),
@@ -1001,21 +1008,26 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   children: [
                     OutlinedButton.icon(
                       key: const Key('communityPostChooseThumbnail'),
-                      onPressed: _busy || _thumbnailApplied ? null : _pickThumbnail,
+                      onPressed: _busy || _thumbnailApplied
+                          ? null
+                          : _pickThumbnail,
                       icon: const Icon(Icons.image_outlined),
                       label: const Text('画像を指定'),
                     ),
                     OutlinedButton.icon(
                       key: const Key('communityPostChooseVideoFrame'),
-                      onPressed: _busy || _videoFile == null || _thumbnailApplied
-                          ? null : _pickVideoFrame,
+                      onPressed:
+                          _busy || _videoFile == null || _thumbnailApplied
+                          ? null
+                          : _pickVideoFrame,
                       icon: const Icon(Icons.movie_filter_outlined),
                       label: const Text('動画のフレームを指定'),
                     ),
                     if (_thumbnailFile != null && !_thumbnailApplied)
                       TextButton(
                         onPressed: _busy
-                            ? null : () => setState(() => _thumbnailFile = null),
+                            ? null
+                            : () => setState(() => _thumbnailFile = null),
                         child: const Text('自動サムネイルに戻す'),
                       ),
                   ],
@@ -1092,19 +1104,26 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                                     _scheduledPublishAt == null
                                         ? '公開日時が未設定です'
                                         : '公開予定: ${_scheduledPublishAt!.toLocal().year}/'
-                                          '${_scheduledPublishAt!.toLocal().month.toString().padLeft(2, '0')}/'
-                                          '${_scheduledPublishAt!.toLocal().day.toString().padLeft(2, '0')} '
-                                          '${_scheduledPublishAt!.toLocal().hour.toString().padLeft(2, '0')}:'
-                                          '${_scheduledPublishAt!.toLocal().minute.toString().padLeft(2, '0')}',
-                                    key: const Key('communityPostScheduleLabel'),
+                                              '${_scheduledPublishAt!.toLocal().month.toString().padLeft(2, '0')}/'
+                                              '${_scheduledPublishAt!.toLocal().day.toString().padLeft(2, '0')} '
+                                              '${_scheduledPublishAt!.toLocal().hour.toString().padLeft(2, '0')}:'
+                                              '${_scheduledPublishAt!.toLocal().minute.toString().padLeft(2, '0')}',
+                                    key: const Key(
+                                      'communityPostScheduleLabel',
+                                    ),
                                   ),
                                   const SizedBox(height: 6),
                                   OutlinedButton.icon(
-                                    key: const Key('communityPostChooseSchedule'),
+                                    key: const Key(
+                                      'communityPostChooseSchedule',
+                                    ),
                                     onPressed: canChange ? _pickSchedule : null,
                                     icon: const Icon(Icons.schedule),
-                                    label: Text(_scheduledPublishAt == null
-                                        ? '予約日時を選択' : '予約日時を変更'),
+                                    label: Text(
+                                      _scheduledPublishAt == null
+                                          ? '予約日時を選択'
+                                          : '予約日時を変更',
+                                    ),
                                   ),
                                 ],
                               ),

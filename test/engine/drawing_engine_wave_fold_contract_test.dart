@@ -295,8 +295,7 @@ void main() {
       expect(
         changed,
         lessThan(10),
-        reason:
-            'folding must not turn the already drawn lead into a pointed crescent',
+        reason: 'folding must not turn the already drawn lead into a pointed crescent',
       );
       expect(changedPixels(plain, folded), greaterThan(100));
     },

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import '../../config/accent_text_theme.dart';
 
 /// Tipsページの図解。実際の画面のスクリーンショット（ラスタ画像）を

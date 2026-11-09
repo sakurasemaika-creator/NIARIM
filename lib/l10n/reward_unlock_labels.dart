@@ -92,8 +92,7 @@ const Map<String, Map<String, String>> _translations = {
     'loading': 'Loading balance…',
     'paused': 'Saved remaining seconds',
     'activeUntil': 'Active until',
-    'subscriptionBenefit':
-        'Earn coins for free by watching optional ads, or save time with Premium monthly / yearly.',
+    'subscriptionBenefit': 'Earn coins for free by watching optional ads, or save time with Premium monthly / yearly.',
     'active': 'Currently active benefits',
     'activePremium': 'All benefits active through Premium membership',
     'activeCampaign': 'Launch campaign: Premium benefits unlocked',
@@ -111,8 +110,7 @@ const Map<String, Map<String, String>> _translations = {
     'goal': 'Set this coin amount as my goal',
     'redeem': 'Redeem coins',
     'watchRewardedAd': 'Watch a rewarded ad to earn coins',
-    'rewardPending':
-        'Pending verification. Coins appear after Google\'s signed confirmation.',
+    'rewardPending': 'Pending verification. Coins appear after Google\'s signed confirmation.',
     'rewardUnavailable': 'Could not show the ad. Please try again later.',
     'rewardRefresh': 'Refresh balance',
     'coinHistory': 'Coin history',
@@ -163,8 +161,7 @@ const Map<String, Map<String, String>> _translations = {
     'loading': 'Consultando saldo…',
     'paused': 'Tiempo guardado (segundos)',
     'activeUntil': 'Válido hasta',
-    'subscriptionBenefit':
-        'Consigue monedas gratis viendo anuncios opcionales. Ahorra tiempo con Premium mensual o anual.',
+    'subscriptionBenefit': 'Consigue monedas gratis viendo anuncios opcionales. Ahorra tiempo con Premium mensual o anual.',
     'active': 'Ventajas activas',
     'duration': 'Período de uso',
     'chooseBenefits': 'Selecciona ventajas',
@@ -174,8 +171,7 @@ const Map<String, Map<String, String>> _translations = {
     'goal': 'Establecer como objetivo',
     'redeem': 'Canjear monedas',
     'watchRewardedAd': 'Ver un anuncio para ganar monedas',
-    'rewardPending':
-        'Verificación pendiente. Las monedas se añadirán después de la confirmación.',
+    'rewardPending': 'Verificación pendiente. Las monedas se añadirán después de la confirmación.',
     'rewardUnavailable': 'No se pudo mostrar el anuncio. Inténtalo más tarde.',
     'rewardRefresh': 'Actualizar saldo',
     'coinHistory': 'Historial de monedas',
@@ -193,8 +189,7 @@ const Map<String, Map<String, String>> _translations = {
         'La disponibilidad y los límites de AdMob pueden reducir los anuncios.',
     'redemptionSuccess':
         'Canje completado. La vigencia Premium se actualizó desde el servidor.',
-    'redemptionUncertain':
-        'No se pudo confirmar el canje. El reintento comprobará la misma transacción.',
+    'redemptionUncertain': 'No se pudo confirmar el canje. El reintento comprobará la misma transacción.',
     'hour': 'horas',
     'day': 'días',
     'week': 'semanas',
@@ -234,8 +229,7 @@ const Map<String, Map<String, String>> _translations = {
     'loading': 'Chargement du solde…',
     'paused': 'Temps conservé (secondes)',
     'activeUntil': "Valable jusqu'au",
-    'subscriptionBenefit':
-        'Gagnez gratuitement des pièces via des publicités facultatives, ou gagnez du temps avec Premium.',
+    'subscriptionBenefit': 'Gagnez gratuitement des pièces via des publicités facultatives, ou gagnez du temps avec Premium.',
     'active': 'Avantages actifs',
     'duration': "Durée d'utilisation",
     'chooseBenefits': 'Choisir des avantages',
@@ -245,8 +239,7 @@ const Map<String, Map<String, String>> _translations = {
     'goal': 'Définir comme objectif',
     'redeem': 'Échanger les pièces',
     'watchRewardedAd': 'Voir une publicité pour gagner des pièces',
-    'rewardPending':
-        'Vérification en attente. Les pièces seront ajoutées après confirmation.',
+    'rewardPending': 'Vérification en attente. Les pièces seront ajoutées après confirmation.',
     'rewardUnavailable':
         'Impossible d\'afficher la publicité. Réessayez plus tard.',
     'rewardRefresh': 'Actualiser le solde',

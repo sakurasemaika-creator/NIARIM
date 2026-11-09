@@ -44,11 +44,16 @@ class PushNotificationService {
     _refreshSub = _messaging.onTokenRefresh.listen((_) => _scheduleSync());
     _foregroundSub = FirebaseMessaging.onMessage.listen(_showForeground);
     _tapSub = FirebaseMessaging.onMessageOpenedApp.listen(_handleTap);
-    unawaited(_messaging.getInitialMessage().then((message) {
-      if (message != null) _handleTap(message);
-    }).catchError((Object error) {
-      debugPrint('FCM initial message unavailable: $error');
-    }));
+    unawaited(
+      _messaging
+          .getInitialMessage()
+          .then((message) {
+            if (message != null) _handleTap(message);
+          })
+          .catchError((Object error) {
+            debugPrint('FCM initial message unavailable: $error');
+          }),
+    );
     _scheduleSync();
   }
 
@@ -83,14 +88,18 @@ class PushNotificationService {
     final route = routeForData(message.data);
     final messenger = scaffoldMessengerKey.currentState;
     if (messenger == null) return;
-    messenger.showSnackBar(SnackBar(
-      content: Text(body),
-      duration: const Duration(seconds: 5),
-      action: route == null ? null : SnackBarAction(
-        label: '開く',
-        onPressed: () => appRouter.push(route),
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(body),
+        duration: const Duration(seconds: 5),
+        action: route == null
+            ? null
+            : SnackBarAction(
+                label: '開く',
+                onPressed: () => appRouter.push(route),
+              ),
       ),
-    ));
+    );
   }
 
   void _scheduleSync() {
@@ -138,8 +147,8 @@ class PushNotificationService {
       _registeredToken = null;
     }
     final permission = await _messaging.getNotificationSettings();
-    final permitted = permission.authorizationStatus ==
-            AuthorizationStatus.authorized ||
+    final permitted =
+        permission.authorizationStatus == AuthorizationStatus.authorized ||
         permission.authorizationStatus == AuthorizationStatus.provisional;
     if (!permitted) {
       // Android 13+ permission: only prompt once after actual sign-in, never

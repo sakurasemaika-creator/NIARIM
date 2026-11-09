@@ -99,8 +99,7 @@ const Map<String, Map<String, String>> _translations = {
     'worksGoal': '{n} works each reach {each} bookmarks',
     'worksPublished': 'Publish {n} works',
     'detailsTitle': 'Achievement requirements',
-    'detailsHint':
-        'Claim once per account or per work after the goal is met. Previously claimed milestones cannot pay again.',
+    'detailsHint': 'Claim once per account or per work after the goal is met. Previously claimed milestones cannot pay again.',
     'notAchieved': 'Not achieved',
     'detailsTooltip': 'Show details',
     'reviewing': 'Verification pending',
@@ -122,13 +121,11 @@ const Map<String, Map<String, String>> _translations = {
     'detailsWorkProgress': 'Current bookmarks: {n} (required: {each})',
     'detailsWorksProgress': 'Qualifying works: {n} (required: {each})',
     'detailsFollowersProgress': 'Current followers: {n} (required: {each})',
-    'detailsDraftCount':
-        'Multiple-work progress is provisional. The server rechecks before a payout.',
+    'detailsDraftCount': 'Multiple-work progress is provisional. The server rechecks before a payout.',
     'detailsPerWorkRule':
         'One reward per work. A different work can qualify separately.',
     'detailsAccountRule': 'This milestone pays once per account.',
-    'detailsTemplateRule':
-        'When a work qualifies, a titled achievement appears above. This template always remains incomplete.',
+    'detailsTemplateRule': 'When a work qualifies, a titled achievement appears above. This template always remains incomplete.',
     'detailsPending':
         'Verification in progress. Tap Claim again after 48 hours.',
     'detailsOffline': 'This reward is not live yet; claiming is disabled.',
@@ -139,8 +136,7 @@ const Map<String, Map<String, String>> _translations = {
         'Verification started. Return after 48 hours and tap Claim again.',
     'claimFailed': 'Couldn\'t verify this claim. Refresh and try again.',
     'workSection': 'Achievements by work',
-    'workWarning':
-        'Only achieved milestones are shown. Each work and mission can be claimed once.',
+    'workWarning': 'Only achieved milestones are shown. Each work and mission can be claimed once.',
     'noAchievements': 'No achieved work milestones on this page.',
     'loadMore': 'Check next 25 works',
     'workListError': 'Couldn\'t load work achievements.',
@@ -164,8 +160,7 @@ const Map<String, Map<String, String>> _translations = {
     'localTime': 'Editing time on this device (reference): {n} hours',
     'candidateMinutes':
         'Server-recorded candidate time: {n} min (not reward-verified)',
-    'timeWarning':
-        'Local editing time is for display only. Coin rewards require server verification.',
+    'timeWarning': 'Local editing time is for display only. Coin rewards require server verification.',
     'rankingWarning':
         'Ranking missions use NIARIM bookmark rankings, not YouTube metrics.',
     'budget': 'Each creator mission can be claimed once.',
@@ -206,8 +201,7 @@ const Map<String, Map<String, String>> _translations = {
     'detailsPerWorkRule':
         'Una vez por obra. Otras obras pueden recibir su propio premio.',
     'detailsAccountRule': 'Una vez por cuenta.',
-    'detailsTemplateRule':
-        'Cuando una obra alcance el objetivo, aparecerá arriba con su nombre. Esta plantilla permanece sin completar.',
+    'detailsTemplateRule': 'Cuando una obra alcance el objetivo, aparecerá arriba con su nombre. Esta plantilla permanece sin completar.',
     'detailsPending': 'Verificación en curso. Reclama de nuevo tras 48 horas.',
     'detailsOffline': 'La recompensa todavía no está disponible.',
     'drawerAttention': 'Misiones logradas sin reclamar',
@@ -240,8 +234,7 @@ const Map<String, Map<String, String>> _translations = {
     'loadError': 'No se pudieron cargar las misiones.',
     'localTime': 'Tiempo de edición local: {n} horas',
     'candidateMinutes': 'Tiempo candidato registrado: {n} min (sin verificar)',
-    'timeWarning':
-        'El tiempo local es orientativo. Las recompensas requieren verificación.',
+    'timeWarning': 'El tiempo local es orientativo. Las recompensas requieren verificación.',
     'rankingWarning': 'Clasificación por marcadores de NIARIM, no de YouTube.',
     'budget': 'Cada misión se reclama una sola vez.',
   },
@@ -282,8 +275,7 @@ const Map<String, Map<String, String>> _translations = {
     'detailsPerWorkRule':
         'Une fois par œuvre. Chaque nouvelle œuvre peut être récompensée.',
     'detailsAccountRule': 'Une fois par compte.',
-    'detailsTemplateRule':
-        'Lorsqu’une œuvre réussit, une ligne à son nom apparaît en haut. Ce modèle reste incomplet.',
+    'detailsTemplateRule': 'Lorsqu’une œuvre réussit, une ligne à son nom apparaît en haut. Ce modèle reste incomplet.',
     'detailsPending': 'Vérification en cours. Réclamez après 48 h.',
     'detailsOffline': 'Cette récompense n’est pas encore disponible.',
     'drawerAttention': 'Missions accomplies non réclamées',
@@ -292,8 +284,7 @@ const Map<String, Map<String, String>> _translations = {
     'holdStarted': 'Vérification lancée. Revenez dans 48 h pour réclamer.',
     'claimFailed': 'Vérification impossible. Actualisez puis réessayez.',
     'workSection': 'Réussites par œuvre',
-    'workWarning':
-        'Seuls les objectifs atteints apparaissent. Une fois par œuvre et mission.',
+    'workWarning': 'Seuls les objectifs atteints apparaissent. Une fois par œuvre et mission.',
     'noAchievements': 'Aucune réussite sur cette page.',
     'loadMore': 'Voir les 25 œuvres suivantes',
     'workListError': 'Impossible de charger les réussites.',
@@ -316,8 +307,7 @@ const Map<String, Map<String, String>> _translations = {
     'loadError': 'Impossible de charger les missions.',
     'localTime': 'Temps de création local : {n} heures',
     'candidateMinutes': 'Temps candidat enregistré : {n} min (non vérifié)',
-    'timeWarning':
-        'Le temps local est indicatif. Les pièces exigent une validation serveur.',
+    'timeWarning': 'Le temps local est indicatif. Les pièces exigent une validation serveur.',
     'rankingWarning': 'Classement des favoris NIARIM uniquement, pas YouTube.',
     'budget': 'Chaque mission est récompensée une seule fois.',
   },

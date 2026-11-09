@@ -61,9 +61,8 @@ void main() {
                   localizationsDelegates:
                       AppLocalizations.localizationsDelegates,
                   builder: (context, child) => MediaQuery(
-                    data: MediaQuery.of(
-                      context,
-                    ).copyWith(textScaler: TextScaler.linear(scale)),
+                    data: MediaQuery.of(context)
+                        .copyWith(textScaler: TextScaler.linear(scale)),
                     child: RepaintBoundary(key: boundary, child: child!),
                   ),
                   home: Scaffold(
@@ -132,9 +131,8 @@ void main() {
                     format: ui.ImageByteFormat.png,
                   );
                   Directory(root).createSync(recursive: true);
-                  File(
-                    '$root/$file',
-                  ).writeAsBytesSync(bytes!.buffer.asUint8List());
+                  File('$root/$file')
+                      .writeAsBytesSync(bytes!.buffer.asUint8List());
                   image.dispose();
                 });
                 manifest.add({

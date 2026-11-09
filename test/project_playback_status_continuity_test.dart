@@ -4,6 +4,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/project/widgets/project_playback_status.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'helpers/load_app_fonts.dart';
 
 void main() {
@@ -29,9 +30,8 @@ void main() {
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
               builder: (context, child) => MediaQuery(
-                data: MediaQuery.of(
-                  context,
-                ).copyWith(textScaler: TextScaler.linear(2), boldText: bold),
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(2), boldText: bold),
                 child: child!,
               ),
               home: Scaffold(

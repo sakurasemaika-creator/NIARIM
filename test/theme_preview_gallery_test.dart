@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -14,6 +15,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/theme_preview_gallery_screen.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
 import 'package:niarim/screens/settings/theme_settings_screen.dart';
+
 import 'helpers/load_app_fonts.dart';
 
 void main() {

@@ -8,87 +8,78 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('CommunityService direct coverage', () {
-    test(
-      'bookmark ordering tags locks visibility follow counts and notifications work',
-      () async {
-        SharedPreferences.setMockInitialValues({});
-        final service = CommunityService();
-        final first = service.works.first;
-        final second = service.works[1];
+    test('bookmark ordering tags locks visibility follow counts and notifications work', () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = CommunityService();
+      final first = service.works.first;
+      final second = service.works[1];
 
-        service.toggleBookmark(first.id);
-        service.toggleBookmark(second.id);
-        expect(service.bookmarkedIdsNewestFirst.take(2), [second.id, first.id]);
-        service.toggleBookmark(first.id);
-        service.toggleBookmark(first.id);
+      service.toggleBookmark(first.id);
+      service.toggleBookmark(second.id);
+      expect(service.bookmarkedIdsNewestFirst.take(2), [second.id, first.id]);
+      service.toggleBookmark(first.id);
+      service.toggleBookmark(first.id);
+      expect(
+        service.bookmarkedIdsNewestFirst.first,
+        first.id,
+        reason: 're-bookmark moves a work to newest position',
+      );
+
+      const tag = 'direct-audit-tag';
+      service.addTag(first.id, tag);
+      expect(service.byId(first.id)!.tags, contains(tag));
+      service.toggleTagLock(first.id, tag);
+      expect(service.byId(first.id)!.lockedTags, contains(tag));
+      service.removeTag(first.id, tag);
+      expect(
+        service.byId(first.id)!.tags,
+        contains(tag),
+        reason: 'locked tags cannot be removed',
+      );
+      service.toggleTagLock(first.id, tag);
+      service.removeTag(first.id, tag);
+      expect(service.byId(first.id)!.tags, isNot(contains(tag)));
+
+      final beforePublished = service.byId(first.id)!.isNiarimPublished;
+      service.toggleNiarimVisibility(first.id);
+      expect(service.byId(first.id)!.isNiarimPublished, !beforePublished);
+      service.toggleNiarimVisibility(first.id);
+      expect(service.byId(first.id)!.isNiarimPublished, beforePublished);
+
+      final otherAuthor = service.works
+          .map((w) => w.authorId)
+          .firstWhere((id) => id != kDummySelfAuthorId);
+      final beforeFollowerCount = service.followerCountOf(otherAuthor);
+      service.toggleFavoriteAuthor(otherAuthor);
+      expect(service.isFavoriteAuthor(otherAuthor), isTrue);
+      expect(service.followingIdsOf(kDummySelfAuthorId), contains(otherAuthor));
+      expect(
+        service.followingNamesOf(kDummySelfAuthorId),
+        contains(service.authorNameOf(otherAuthor)),
+      );
+      expect(service.followerIdsOf(otherAuthor), contains(kDummySelfAuthorId));
+      expect(service.followerCountOf(otherAuthor), beforeFollowerCount + 1);
+      service.toggleFavoriteAuthor(otherAuthor);
+      expect(service.isFavoriteAuthor(otherAuthor), isFalse);
+
+      final followerIds = service.followerIdsOf(otherAuthor);
+      final followerNames = service.followerNamesOf(otherAuthor);
+      expect(service.followerCountOf(otherAuthor), beforeFollowerCount);
+      expect(followerNames.length, followerIds.length);
+      for (var i = 0; i < followerIds.length; i++) {
         expect(
-          service.bookmarkedIdsNewestFirst.first,
-          first.id,
-          reason: 're-bookmark moves a work to newest position',
+          followerNames[i],
+          service.authorNameOf(followerIds[i]) ?? followerIds[i],
         );
+      }
 
-        const tag = 'direct-audit-tag';
-        service.addTag(first.id, tag);
-        expect(service.byId(first.id)!.tags, contains(tag));
-        service.toggleTagLock(first.id, tag);
-        expect(service.byId(first.id)!.lockedTags, contains(tag));
-        service.removeTag(first.id, tag);
-        expect(
-          service.byId(first.id)!.tags,
-          contains(tag),
-          reason: 'locked tags cannot be removed',
-        );
-        service.toggleTagLock(first.id, tag);
-        service.removeTag(first.id, tag);
-        expect(service.byId(first.id)!.tags, isNot(contains(tag)));
-
-        final beforePublished = service.byId(first.id)!.isNiarimPublished;
-        service.toggleNiarimVisibility(first.id);
-        expect(service.byId(first.id)!.isNiarimPublished, !beforePublished);
-        service.toggleNiarimVisibility(first.id);
-        expect(service.byId(first.id)!.isNiarimPublished, beforePublished);
-
-        final otherAuthor = service.works
-            .map((w) => w.authorId)
-            .firstWhere((id) => id != kDummySelfAuthorId);
-        final beforeFollowerCount = service.followerCountOf(otherAuthor);
-        service.toggleFavoriteAuthor(otherAuthor);
-        expect(service.isFavoriteAuthor(otherAuthor), isTrue);
-        expect(
-          service.followingIdsOf(kDummySelfAuthorId),
-          contains(otherAuthor),
-        );
-        expect(
-          service.followingNamesOf(kDummySelfAuthorId),
-          contains(service.authorNameOf(otherAuthor)),
-        );
-        expect(
-          service.followerIdsOf(otherAuthor),
-          contains(kDummySelfAuthorId),
-        );
-        expect(service.followerCountOf(otherAuthor), beforeFollowerCount + 1);
-        service.toggleFavoriteAuthor(otherAuthor);
-        expect(service.isFavoriteAuthor(otherAuthor), isFalse);
-
-        final followerIds = service.followerIdsOf(otherAuthor);
-        final followerNames = service.followerNamesOf(otherAuthor);
-        expect(service.followerCountOf(otherAuthor), beforeFollowerCount);
-        expect(followerNames.length, followerIds.length);
-        for (var i = 0; i < followerIds.length; i++) {
-          expect(
-            followerNames[i],
-            service.authorNameOf(followerIds[i]) ?? followerIds[i],
-          );
-        }
-
-        final unread = service.unreadMilestoneCount;
-        if (unread > 0) {
-          await service.markMilestonesRead();
-          expect(service.unreadMilestoneCount, 0);
-          expect(service.milestoneNotifications.every((n) => n.read), isTrue);
-        }
-      },
-    );
+      final unread = service.unreadMilestoneCount;
+      if (unread > 0) {
+        await service.markMilestonesRead();
+        expect(service.unreadMilestoneCount, 0);
+        expect(service.milestoneNotifications.every((n) => n.read), isTrue);
+      }
+    });
   });
 
   group('PerformanceService direct coverage', () {

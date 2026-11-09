@@ -178,8 +178,7 @@ void main() {
       expect(
         find.text('AUDIT'),
         findsOneWidget,
-        reason:
-            'Successful folder creation must show the folder even before the first export',
+        reason: 'Successful folder creation must show the folder even before the first export',
       );
       expect(tester.takeException(), isNull);
     },

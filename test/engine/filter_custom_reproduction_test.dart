@@ -16,9 +16,8 @@ void main() {
     });
     expect(old.kind, FilterKind.prism);
     expect(
-      FilterDef.fromJson(
-        old.copyWith(kind: FilterKind.gaussianBlur).toJson(),
-      ).kind,
+      FilterDef.fromJson(old.copyWith(kind: FilterKind.gaussianBlur).toJson())
+          .kind,
       FilterKind.gaussianBlur,
     );
   });

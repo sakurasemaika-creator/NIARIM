@@ -153,9 +153,8 @@ void main() {
         final image = await render.toImage(pixelRatio: 1);
         final png = await image.toByteData(format: ui.ImageByteFormat.png);
         image.dispose();
-        File(
-          '${out.path}/$name.png',
-        ).writeAsBytesSync(png!.buffer.asUint8List());
+        File('${out.path}/$name.png')
+            .writeAsBytesSync(png!.buffer.asUint8List());
       });
     }
 

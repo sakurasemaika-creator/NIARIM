@@ -27,6 +27,7 @@ class ApiWork {
   /// can distinguish a NIARIM-hidden work from a work forced hidden by YouTube.
   /// Public list responses intentionally omit it.
   final String? youtubePrivacyStatus;
+
   /// Owner-only scheduled YouTube public release (UTC).
   final DateTime? scheduledPublishAt;
 

@@ -114,67 +114,63 @@ void main() {
     },
   );
 
-  test(
-    'init repairs duplicate preset and part ids and upgrades untouched old samples',
-    () async {
-      const oldP1 = AutofillPreset(
-        id: 'p1',
-        name: '主人公',
-        parts: [
-          AutofillPart(id: 'dup_part', name: '髪', color: 0xFF111111),
-          AutofillPart(id: 'dup_part', name: '肌', color: 0xFF222222),
-        ],
-      );
-      const duplicateP1 = AutofillPreset(
-        id: 'p1',
-        name: 'duplicate',
-        parts: [AutofillPart(id: 'x', name: 'X', color: 0xFF333333)],
-      );
-      SharedPreferences.setMockInitialValues({
-        'autofill_presets': [
-          jsonEncode(oldP1.toJson()),
-          jsonEncode(duplicateP1.toJson()),
-        ],
-      });
+  test('init repairs duplicate preset and part ids and upgrades untouched old samples', () async {
+    const oldP1 = AutofillPreset(
+      id: 'p1',
+      name: '主人公',
+      parts: [
+        AutofillPart(id: 'dup_part', name: '髪', color: 0xFF111111),
+        AutofillPart(id: 'dup_part', name: '肌', color: 0xFF222222),
+      ],
+    );
+    const duplicateP1 = AutofillPreset(
+      id: 'p1',
+      name: 'duplicate',
+      parts: [AutofillPart(id: 'x', name: 'X', color: 0xFF333333)],
+    );
+    SharedPreferences.setMockInitialValues({
+      'autofill_presets': [
+        jsonEncode(oldP1.toJson()),
+        jsonEncode(duplicateP1.toJson()),
+      ],
+    });
 
-      final service = AutofillPresetService();
-      await service.init();
-      final presetIds = service.presets.map((p) => p.id).toList();
-      expect(
-        presetIds.toSet().length,
-        presetIds.length,
-        reason: 'duplicate preset IDs must self-repair',
-      );
-      expect(
-        presetIds,
-        contains('builtin_gray_underpaint'),
-        reason: 'required built-in underpaint preset must survive migration',
-      );
-      final upgraded = service.presets.firstWhere((p) => p.id == 'p1');
-      expect(
-        upgraded.parts.length,
-        greaterThan(20),
-        reason: 'untouched legacy p1 sample should be upgraded',
-      );
-      final partIds = upgraded.parts.map((p) => p.id).toList();
-      expect(
-        partIds.toSet().length,
-        partIds.length,
-        reason: 'parts must have unique IDs after initialization',
-      );
+    final service = AutofillPresetService();
+    await service.init();
+    final presetIds = service.presets.map((p) => p.id).toList();
+    expect(
+      presetIds.toSet().length,
+      presetIds.length,
+      reason: 'duplicate preset IDs must self-repair',
+    );
+    expect(
+      presetIds,
+      contains('builtin_gray_underpaint'),
+      reason: 'required built-in underpaint preset must survive migration',
+    );
+    final upgraded = service.presets.firstWhere((p) => p.id == 'p1');
+    expect(
+      upgraded.parts.length,
+      greaterThan(20),
+      reason: 'untouched legacy p1 sample should be upgraded',
+    );
+    final partIds = upgraded.parts.map((p) => p.id).toList();
+    expect(
+      partIds.toSet().length,
+      partIds.length,
+      reason: 'parts must have unique IDs after initialization',
+    );
 
-      final persisted = SharedPreferences.getInstance();
-      final prefs = await persisted;
-      final raw = prefs.getStringList('autofill_presets')!;
-      expect(raw, hasLength(service.presets.length));
-      final decodedIds = raw
-          .map(
-            (s) => AutofillPreset.fromJson(
-              jsonDecode(s) as Map<String, dynamic>,
-            ).id,
-          )
-          .toList();
-      expect(decodedIds.toSet().length, decodedIds.length);
-    },
-  );
+    final persisted = SharedPreferences.getInstance();
+    final prefs = await persisted;
+    final raw = prefs.getStringList('autofill_presets')!;
+    expect(raw, hasLength(service.presets.length));
+    final decodedIds = raw
+        .map(
+          (s) =>
+              AutofillPreset.fromJson(jsonDecode(s) as Map<String, dynamic>).id,
+        )
+        .toList();
+    expect(decodedIds.toSet().length, decodedIds.length);
+  });
 }

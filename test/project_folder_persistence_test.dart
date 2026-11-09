@@ -197,14 +197,12 @@ void main() {
       );
       final originalSize = file.lengthSync();
       final originalBytes = file.readAsBytesSync();
-      File(
-        '${evidence.path}/project-before-delete.niapro',
-      ).writeAsBytesSync(originalBytes);
+      File('${evidence.path}/project-before-delete.niapro')
+          .writeAsBytesSync(originalBytes);
       await env.service.deleteFolder(audit.id);
       final memoryFolder = env.service.projects.single.folderId;
-      File(
-        '${evidence.path}/project-after-delete.niapro',
-      ).writeAsBytesSync(file.readAsBytesSync());
+      File('${evidence.path}/project-after-delete.niapro')
+          .writeAsBytesSync(file.readAsBytesSync());
       final savedAfter = await NiaproSerializer.load(file.path);
       SharedPreferences.resetStatic();
       final cold = ProjectService();
@@ -223,9 +221,8 @@ void main() {
             base64Encode(originalBytes) == base64Encode(file.readAsBytesSync()),
       };
       cold.dispose();
-      File(
-        '${evidence.path}/delete-cold-reload-after.json',
-      ).writeAsStringSync(const JsonEncoder.withIndent('  ').convert(row));
+      File('${evidence.path}/delete-cold-reload-after.json')
+          .writeAsStringSync(const JsonEncoder.withIndent('  ').convert(row));
       expect(savedAfter.project.folderId, isNull, reason: jsonEncode(row));
       expect(row['coldFolder'], isNull);
     },

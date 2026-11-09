@@ -158,7 +158,8 @@ void main() {
         community.byId(route.substring('/community/work/'.length)) != null,
       _ => true,
     };
-    final eligible = !isPremium &&
+    final eligible =
+        !isPremium &&
         (advertising.shouldShowAds || kNiarimAdSnapshotPreview) &&
         isBannerEligibleRoute(route, hasLocalContent: hasLocalContent);
     expect(
@@ -2359,9 +2360,9 @@ void main() {
     // 捕捉される想定（アプリ側の設計）。
     final exportsDir = await tester.runAsync(ExportEngine.exportsDir);
     await tester.runAsync(
-      () => File(
-        '${exportsDir!.path}/smoke_test_dummy.mp4',
-      ).writeAsBytes(const [0]),
+      () =>
+          File('${exportsDir!.path}/smoke_test_dummy.mp4')
+              .writeAsBytes(const [0]),
     );
     // ExportEngine.listExportedFilesは結果を静的にキャッシュしており、
     // 起動画面のプリフェッチ（他のテストケースも含め、アプリを起動する

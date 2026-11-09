@@ -65,9 +65,9 @@ void main() {
             body.contains('DraggableScrollableSheet') ||
             body.contains('isScrollControlled: true') ||
             (body.contains('WorkFolderMoveSheet') &&
-                File(
-                  'lib/screens/home/widgets/work_folder_move_sheet.dart',
-                ).readAsStringSync().contains('ScrollableSheetBody'));
+                File('lib/screens/home/widgets/work_folder_move_sheet.dart')
+                    .readAsStringSync()
+                    .contains('ScrollableSheetBody'));
         if (scrollable) continue;
 
         final line = '\n'.allMatches(source.substring(0, start)).length + 1;

@@ -1,5 +1,6 @@
 import '../../utils/tolerant_preferences.dart';
 import '../../config/accent_text_theme.dart';
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../l10n/app_localizations.dart';
 import '../../l10n/community_plaza_labels.dart';
 import '../../models/community_work.dart';
@@ -781,9 +783,10 @@ class _CommunityScreenState extends State<CommunityScreen>
     final query = _searchQuery.trim().toLowerCase();
     if (!includeQuery || query.isEmpty) return typeFiltered;
     // Positive terms must all match; -term excludes; quoted phrases supported.
-    final terms = RegExp(
-      r'-?"[^"]+"|-?\S+',
-    ).allMatches(query).map((m) => m.group(0)!).toList();
+    final terms = RegExp(r'-?"[^"]+"|-?\S+')
+        .allMatches(query)
+        .map((m) => m.group(0)!)
+        .toList();
     bool matches(CommunityWork work, String raw) {
       final term = raw.replaceAll('"', '').replaceFirst(RegExp(r'^#'), '');
       if (term.isEmpty) return false;
@@ -1685,9 +1688,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                           ),
                           PopupMenuButton<CommunityRankingLayout>(
                             key: const Key('communityRankingLayoutButton'),
-                            tooltip: CommunityRankingLayoutLabels.of(
-                              context,
-                            ).title,
+                            tooltip: CommunityRankingLayoutLabels.of(context)
+                                .title,
                             icon: Icon(
                               _rankingLayout ==
                                       CommunityRankingLayout.horizontal

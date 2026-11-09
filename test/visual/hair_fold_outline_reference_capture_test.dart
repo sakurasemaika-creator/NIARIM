@@ -177,8 +177,7 @@ void main() {
       ),
       greaterThan(80),
     );
-    await File(
-      'build/hair_fold_visual/outline_timings.json',
-    ).writeAsString(const JsonEncoder.withIndent('  ').convert(timings));
+    await File('build/hair_fold_visual/outline_timings.json')
+        .writeAsString(const JsonEncoder.withIndent('  ').convert(timings));
   }, timeout: const Timeout(Duration(minutes: 3)));
 }

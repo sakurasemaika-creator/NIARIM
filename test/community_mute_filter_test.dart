@@ -115,32 +115,26 @@ void main() {
     expect(service.discoverableWorks.where(service.isWorkMuted), hasLength(2));
   });
 
-  test(
-    'author lists apply viewer filters but owner list can still manage hidden works',
-    () async {
-      final service = CommunityService();
-      await service.setMutedWords(['mute']);
-      service.replaceWorksForTest([
-        makeWork(title: 'visible'),
-        makeWork(title: 'mute this'),
-      ]);
+  test('author lists apply viewer filters but owner list can still manage hidden works', () async {
+    final service = CommunityService();
+    await service.setMutedWords(['mute']);
+    service.replaceWorksForTest([
+      makeWork(title: 'visible'),
+      makeWork(title: 'mute this'),
+    ]);
 
-      expect(
-        service.worksByAuthor('author_x').map((w) => w.title),
-        containsAll(['visible', 'mute this']),
-      );
-      expect(
-        service.isWorkMuted(service.worksByAuthor('author_x').last),
-        isTrue,
-      );
-      expect(
-        service
-            .worksByAuthor('author_x', includeHidden: true)
-            .map((w) => w.title),
-        containsAll(['visible', 'mute this']),
-      );
-    },
-  );
+    expect(
+      service.worksByAuthor('author_x').map((w) => w.title),
+      containsAll(['visible', 'mute this']),
+    );
+    expect(service.isWorkMuted(service.worksByAuthor('author_x').last), isTrue);
+    expect(
+      service
+          .worksByAuthor('author_x', includeHidden: true)
+          .map((w) => w.title),
+      containsAll(['visible', 'mute this']),
+    );
+  });
 
   test('viewer predicate follows AI, title, and tag filters', () async {
     final service = CommunityService();

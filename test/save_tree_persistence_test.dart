@@ -170,9 +170,8 @@ void main() {
     final (ps, p) = await project();
     final service = SaveTreeService()..setSlotMax(5);
     final saved = await slot(service, ps, p, 1);
-    File(
-      '${tempDir.path}/niarim/projects/${p.id}/SaveTree/${saved.id}.niapro',
-    ).deleteSync();
+    File('${tempDir.path}/niarim/projects/${p.id}/SaveTree/${saved.id}.niapro')
+        .deleteSync();
 
     final again = await restart();
     expect(again.getNodes(p.id), isEmpty);

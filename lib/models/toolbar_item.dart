@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import '../l10n/app_localizations.dart';
 
 /// ツールバーに表示するツール項目。

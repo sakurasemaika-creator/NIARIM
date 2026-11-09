@@ -6,9 +6,8 @@ void main() {
   test(
     'niapro serializer persists audio sourceStartFrame with legacy fallback',
     () {
-      final source = File(
-        'lib/engine/niapro_serializer.dart',
-      ).readAsStringSync();
+      final source = File('lib/engine/niapro_serializer.dart')
+          .readAsStringSync();
       expect(source, contains("'sourceStartFrame': a.sourceStartFrame"));
       expect(
         source,

@@ -39,10 +39,7 @@ class AdModalVisibilityObserver extends NavigatorObserver {
   }
 
   @override
-  void didReplace({
-    Route<dynamic>? newRoute,
-    Route<dynamic>? oldRoute,
-  }) {
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     final had = oldRoute != null && _modals.remove(oldRoute);
     final added = newRoute != null && newRoute is PopupRoute<dynamic>
         ? _modals.add(newRoute)

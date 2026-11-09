@@ -57,9 +57,8 @@ void main() {
           rootKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 1);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
-      await File(
-        '${out.path}/$name.png',
-      ).writeAsBytes(data!.buffer.asUint8List(), flush: true);
+      await File('${out.path}/$name.png')
+          .writeAsBytes(data!.buffer.asUint8List(), flush: true);
       image.dispose();
     });
   }

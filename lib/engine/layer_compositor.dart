@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import '../models/layer.dart';
 import '../models/layer_keyframe.dart';
 import '../models/layer_mask.dart';

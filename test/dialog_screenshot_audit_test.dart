@@ -686,9 +686,9 @@ void main() {
       ),
     );
     await tester.runAsync(
-      () => File(
-        '${out.path}/_failures.txt',
-      ).writeAsString(failures.isEmpty ? 'PASS\n' : failures.join('\n')),
+      () =>
+          File('${out.path}/_failures.txt')
+              .writeAsString(failures.isEmpty ? 'PASS\n' : failures.join('\n')),
     );
 
     expect(failures, isEmpty, reason: failures.join('\n'));

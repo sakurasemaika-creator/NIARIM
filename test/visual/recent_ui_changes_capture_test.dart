@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +18,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../helpers/load_app_fonts.dart';
 import '../helpers/first_use_tooltips.dart';
 
