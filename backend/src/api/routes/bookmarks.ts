@@ -12,6 +12,7 @@ import type { BookmarkItem, WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 import { toPublicWork, toUnavailableWork } from "./_publicWork";
 import { PER_WORK_MISSIONS } from "../../lib/missionCatalog";
+import { BOOKMARK_PERIODS, periodBookmarkWrites, periodsStillInWindow, PERIOD_SCORE_VERSION } from "../../lib/periodBookmarkRanking";
 import { recordMissionAchievement } from "../../lib/missionNotifications";
 
 function isWorkPublic(work: WorkItem): boolean {
@@ -57,7 +58,13 @@ export async function toggleBookmark(
   }
   const isVisible = isPublic && Boolean(work.gsi2pk);
 
-  const now = new Date().toISOString();
+  const actionAt = new Date();
+  const now = actionAt.toISOString();
+  const periodRemovals = existingBookmark.Item &&
+      (existingBookmark.Item as BookmarkItem).periodScoreVersion === PERIOD_SCORE_VERSION
+    ? periodsStillInWindow((existingBookmark.Item as BookmarkItem).periodScoreRecordedAt, actionAt)
+    : [];
+  const periodAdds = isPublic ? BOOKMARK_PERIODS : [];
 
   try {
     if (isBookmarked) {
@@ -82,6 +89,7 @@ export async function toggleBookmark(
                 ExpressionAttributeValues: { ":minus": -1, ":zero": 0 },
               },
             },
+            ...periodBookmarkWrites(workId, periodRemovals, -1, actionAt),
           ],
         }),
       );
@@ -94,6 +102,10 @@ export async function toggleBookmark(
         bookmarkedAt: now,
         gsi5pk: `WORKBOOKMARKS#${workId}`,
         gsi5sk: now,
+        ...(isPublic ? {
+          periodScoreVersion: PERIOD_SCORE_VERSION,
+          periodScoreRecordedAt: now,
+        } : {}),
       };
       await ddb.send(
         new TransactWriteCommand({
@@ -115,6 +127,7 @@ export async function toggleBookmark(
                 ExpressionAttributeValues: { ":plus": 1 },
               },
             },
+            ...periodBookmarkWrites(workId, periodAdds, 1, actionAt),
           ],
         }),
       );

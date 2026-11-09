@@ -88,6 +88,10 @@ export const Keys = {
     pk: `USER#${niarimUserId}`, sk: `REWARDED_AD_DAY#${dayUtc}`,
   }),
 
+  periodBookmarkScore: (workId: string, period: string, windowId: string) => ({
+    pk: "BOOKMARK_PERIOD#" + period.toUpperCase() + "#" + windowId + "#" + workId,
+    sk: "META",
+  }),
   bookmark: (niarimUserId: string, workId: string) => ({
     pk: `USER#${niarimUserId}`,
     sk: `BOOKMARK#${workId}`,

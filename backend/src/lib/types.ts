@@ -42,6 +42,7 @@ export const TABLE_ITEM_TYPE = {
   ReportCounter: "REPORT_COUNTER",
   DeviceToken: "DEVICE_TOKEN",
   RankingSnapshot: "RANKING_SNAPSHOT",
+  BookmarkPeriodScore: "BOOKMARK_PERIOD_SCORE",
   BatchState: "BATCH_STATE",
 } as const;
 
@@ -211,6 +212,9 @@ export interface BookmarkItem {
   bookmarkedAt: string;
   gsi5pk: string; // `WORKBOOKMARKS#{workId}`
   gsi5sk: string; // bookmarkedAt
+  /** Only newly recorded visible bookmarks participate in period ranking. */
+  periodScoreVersion?: number;
+  periodScoreRecordedAt?: string;
 }
 
 /**
