@@ -232,7 +232,7 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider.value(value: service),
+          ChangeNotifierProvider<CommunityService>.value(value: service),
           ChangeNotifierProvider(create: (_) => CommunityPreviewService()),
           ChangeNotifierProvider(create: (_) => SettingsService()),
           ChangeNotifierProvider(create: (_) => GoogleAuthService()),
