@@ -7,6 +7,10 @@ on:
     branches: [dev_branch]
     paths:
       - ".github/workflows/google-android-oauth-preflight.yml"
+      - "lib/services/google_auth_service.dart"
+      - "lib/screens/community/community_post_screen.dart"
+      - "android/app/build.gradle.kts"
+      - "android/app/src/main/AndroidManifest.xml"
   workflow_dispatch:
 
 permissions:
