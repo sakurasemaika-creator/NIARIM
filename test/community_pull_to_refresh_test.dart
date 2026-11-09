@@ -189,7 +189,8 @@ void main() {
       1000,
     );
     await tester.pumpAndSettle();
-    expect(rankingFetches, initialRankingFetches + 1);
+    // Entering ranking refetches its current order; pull refreshes it once more.
+    expect(rankingFetches, initialRankingFetches + 2);
     expect(latestFetches, 3); // Ranking refresh must not refetch arrivals.
     expect(find.text('Pulled work'), findsNothing);
     expect(tester.takeException(), isNull);
