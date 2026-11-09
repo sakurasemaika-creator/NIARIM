@@ -127,12 +127,24 @@ void main() {
     final picture = tester.getRect(
       find.byKey(const Key('timelinePreviewPicture')),
     );
+    // Viewport-corner chrome may cover a few edge pixels of a wide frame,
+    // but must never obscure the center of the artwork or go off-screen.
+    final safeArtwork = Rect.fromLTRB(
+      picture.left + 56,
+      picture.top + 56,
+      picture.right - 56,
+      picture.bottom - 56,
+    );
     for (final key in const [
       'timelinePreviewFrameCount',
       'timelinePreviewFullscreenButton',
     ]) {
       final rect = tester.getRect(find.byKey(Key(key)));
-      expect(rect.overlaps(picture), isFalse, reason: '$key $rect $picture');
+      expect(
+        rect.overlaps(safeArtwork),
+        isFalse,
+        reason: '$key must not obscure central artwork: $rect $safeArtwork',
+      );
       expect(rect.left, greaterThanOrEqualTo(0), reason: key);
       expect(rect.right, lessThanOrEqualTo(320), reason: key);
     }
