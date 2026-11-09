@@ -17,6 +17,7 @@ import 'community_error_text.dart';
 import 'community_author_works_screen.dart';
 import 'community_post_screen.dart';
 import 'community_work_settings_screen.dart';
+import 'widgets/community_top_edge_refresh.dart';
 
 /// Owner hub opened from the community square.
 ///
@@ -829,8 +830,22 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                 ),
               ),
             Expanded(
-              child: works.isEmpty
-                  ? Center(
+              child: CommunityTopEdgeRefresh(
+                key: const Key('communityMyWorksPullRefresh'),
+                controller: _worksScrollController,
+                enabled: usingBackendOwnerList,
+                onRefresh: () async {
+                  if (_loadingWorks || _bulkBusy || _loadingMoreOwnWorks) return;
+                  await _reloadOwnerWorks();
+                },
+                child: works.isEmpty
+                  ? CustomScrollView(
+                      controller: _worksScrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24),
                         child: Column(
@@ -853,9 +868,13 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                           ],
                         ),
                       ),
+                          ),
+                        ),
+                      ],
                     )
                   : ListView.separated(
                       controller: _worksScrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.fromLTRB(
                         16,
                         8,
@@ -942,6 +961,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                         );
                       },
                     ),
+              ),
             ),
           ],
         ),
