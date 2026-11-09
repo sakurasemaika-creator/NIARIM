@@ -270,6 +270,11 @@ void main() {
 
     scrollController.jumpTo(0);
     await tester.pumpAndSettle();
+    expect(
+      latestFetches, 1,
+      reason: 'Programmatic scroll-to-top must not issue refresh; '
+          'refreshCalls=${service.refreshCalls}',
+    );
     await tester.fling(
       find.byKey(const Key('communityPullToRefresh')),
       const Offset(0, 400),
