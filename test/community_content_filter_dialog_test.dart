@@ -8,6 +8,7 @@ import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/google_auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,6 +24,7 @@ void main() {
       ChangeNotifierProvider<CommunityService>.value(value: service),
       ChangeNotifierProvider<SettingsService>(create: (_) => SettingsService()),
       ChangeNotifierProvider<PremiumService>(create: (_) => PremiumService()),
+      ChangeNotifierProvider(create: (_) => GoogleAuthService()),
       ChangeNotifierProvider<CommunityPreviewService>(
         create: (_) => CommunityPreviewService(),
       ),
