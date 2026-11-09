@@ -1,10 +1,11 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import {
   GetCommand,
+  DeleteCommand,
   QueryCommand,
   TransactWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
+import { ConditionalCheckFailedException, TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate, tryAuthenticate, getUser } from "../../lib/auth";
 import { forbidden, notFound, ok } from "../../lib/response";
@@ -44,10 +45,29 @@ export async function toggleBookmark(
     ddb.send(new GetCommand({ TableName: tableName(), Key: bookmarkKey })),
     ddb.send(new GetCommand({ TableName: tableName(), Key: workKey })),
   ]);
-  const work = existingWork.Item as WorkItem | undefined;
-  if (!work) notFound("作品が見つかりません");
-
+  const rawWork = existingWork.Item;
   const isBookmarked = Boolean(existingBookmark.Item);
+  // A deleted work remains as a WORK_TOMBSTONE, but contains no
+  // bookmarkCount. Delete only this viewer's stale bookmark record: trying
+  // to decrement the tombstone always fails and traps the redacted entry.
+  // Never create a new bookmark for a deleted or missing work.
+  if (rawWork?.itemType !== TABLE_ITEM_TYPE.Work) {
+    if (!isBookmarked) notFound("作品が見つかりません");
+    try {
+      await ddb.send(new DeleteCommand({
+        TableName: tableName(),
+        Key: bookmarkKey,
+        ConditionExpression: "attribute_exists(pk)",
+      }));
+    } catch (err) {
+      if (err instanceof ConditionalCheckFailedException) {
+        return ok({ bookmarked: false, conflict: true });
+      }
+      throw err;
+    }
+    return ok({ bookmarked: false });
+  }
+  const work = rawWork as WorkItem;
   const isPublic = isWorkPublic(work);
   // 非公開作品はIDを知っていても新規ブックマークできない。既に公開中に
   // ブックマークしていた作品が後から非公開になった場合は、利用者が自分の
