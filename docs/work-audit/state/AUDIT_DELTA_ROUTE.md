@@ -332,6 +332,8 @@ status: todo。同上の実App9画面×4版のAVIF/WebP、source.txtとrefresh-2
 
 S36でWeb9bdbeb39の1commitを保持。refresh-2026-smoke.ymlに日本語PC/SPの全ページfull-height captureと14日artifactを追加。出力画像の個別目視、実操作/全7localeの完了とはしない。
 
+S36公開CI記録の反映直前にWeb c510745a→6dec82f9の2commit/4pathを検出して保持。b75d7f5のCJK見出しfallback/スクリーンショットと外枠の色/bitmap表示のCSS103行とshowcase/user-requestのcache ref更新はD001.53、6dec82fの36capture source.txt更新はD001.54の継続対象。実差分はsource.txt/CSS/JS2のみでimage byte差分なし。個別目視/実操作は未実施で、S36のStorage実操作をこれらWeb品質のPASSへ代用しない。詳細ci-state-incoming-web-paths.txt/patch。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。
