@@ -1808,10 +1808,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                       Column(
                         children: [
                           searchRowFor(2),
-                              icon: const Icon(Icons.people_outline),
-                              label: const Text('自分のフォロー中一覧'),
-                            ),
-                          ),
                           _buildNoFavoriteAuthorsState(l10n),
                         ],
                       ),
@@ -1827,10 +1823,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                       Column(
                         children: [
                           searchRowFor(2),
-                              icon: const Icon(Icons.people_outline),
-                              label: const Text('自分のフォロー中一覧'),
-                            ),
-                          ),
                           _buildSearchEmptyState(l10n),
                           _pageFooter(2, communityService),
                         ],
@@ -1846,10 +1838,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                     Column(
                       children: [
                         searchRowFor(2),
-                              icon: const Icon(Icons.people_outline),
-                              label: const Text('自分のフォロー中一覧'),
-                            ),
-                          ),
                         CommunityWorkGrid(
                           minTileWidth: _effectiveTileWidth(context),
                           works: works,
