@@ -1,0 +1,54 @@
+# Isolated ECDSA + DynamoDB transaction integration checks.
+# NEVER connects to AWS production, grants live coins or uses live AdMob.
+name: Reward SSV DynamoDB Local integration
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/rewarded-ssv-dynamodb-local.yml"
+      - "backend/src/api/routes/rewardedAd.ts"
+      - "backend/src/lib/admobSsv.ts"
+      - "backend/src/lib/rewardAdQuota.ts"
+      - "backend/src/lib/dynamo.ts"
+      - "backend/test/rewarded-ad-dynamodb-local.test.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signed-reward-transaction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      local-dynamodb:
+        image: amazon/dynamodb-local:2.6.1
+        ports:
+          - 8000:8000
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Typecheck real SSV and DynamoDB local suite
+        run: npm run build
+      - name: Verify +10 coin grant, replay and quota against disposable DynamoDB
+        env:
+          NIARIM_DYNAMODB_LOCAL_TESTS: "1"
+          AWS_EC2_METADATA_DISABLED: "true"
+          AWS_ACCESS_KEY_ID: "LOCAL_ONLY"
+          AWS_SECRET_ACCESS_KEY: "LOCAL_ONLY"
+          AWS_DEFAULT_REGION: "ap-northeast-1"
+        run: |
+          set -euo pipefail
+          # Docker service needs a moment to expose its local-only port.
+          sleep 5
+          npx vitest run test/rewarded-ad-dynamodb-local.test.ts --reporter verbose
