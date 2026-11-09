@@ -25,8 +25,7 @@ enum StorageCategory {
   /// Stamps・Fonts/）。
   customAssets,
 
-  /// 一時ファイル（波形キャッシュ・書き出し中間フレーム等、OSの
-  /// キャッシュ領域＝getTemporaryDirectory()配下）。
+  /// アプリ専用キャッシュ。OS共用の一時ディレクトリは含めない。
   cache,
 }
 
@@ -108,8 +107,8 @@ class StorageInfoService {
       if (dir.existsSync()) customAssets += await _dirSize(dir);
     }
 
-    final tempDir = await getTemporaryDirectory();
-    final cacheBytes = tempDir.existsSync() ? await _dirSize(tempDir) : 0;
+    final cacheDir = await getApplicationCacheDirectory();
+    final cacheBytes = cacheDir.existsSync() ? await _dirSize(cacheDir) : 0;
 
     return StorageBreakdown({
       StorageCategory.materials: materials,
@@ -139,13 +138,13 @@ class StorageInfoService {
     }
   }
 
-  /// 一時ディレクトリ（getTemporaryDirectory()）の中身を全て削除する
-  /// （フォルダ自体は残す）。削除したバイト数を返す。
+  /// アプリ専用キャッシュの中身を削除する（フォルダ自体は残す）。
+  /// OS共用の一時領域には触れない。削除対象のバイト数を返す。
   Future<int> clearCache() async {
-    final tempDir = await getTemporaryDirectory();
-    if (!tempDir.existsSync()) return 0;
-    final freed = await _dirSize(tempDir);
-    for (final entry in tempDir.listSync()) {
+    final cacheDir = await getApplicationCacheDirectory();
+    if (!cacheDir.existsSync()) return 0;
+    final freed = await _dirSize(cacheDir);
+    for (final entry in cacheDir.listSync()) {
       try {
         await entry.delete(recursive: true);
       } catch (_) {
@@ -181,9 +180,9 @@ class StorageInfoService {
         }
       }
     }
-    final tempDir = await getTemporaryDirectory();
-    if (tempDir.existsSync()) {
-      for (final entry in tempDir.listSync()) {
+    final cacheDir = await getApplicationCacheDirectory();
+    if (cacheDir.existsSync()) {
+      for (final entry in cacheDir.listSync()) {
         try {
           await entry.delete(recursive: true);
         } catch (_) {}

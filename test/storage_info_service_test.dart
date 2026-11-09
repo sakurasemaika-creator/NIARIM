@@ -3,10 +3,8 @@ import 'package:niarim/services/storage_info_service.dart';
 
 /// StorageInfoService（Task#138：容量削減画面）のうち、ファイルI/O・
 /// path_providerに依存しない純粋な部分（バイト数の整形・集計値の
-/// 派生プロパティ）の単体テスト。実際のディレクトリ走査
-/// （computeBreakdown・clearCache・eraseAllData）はpath_providerの
-/// プラットフォームチャンネルに依存するため単体テスト環境では検証できず、
-/// 実機での確認が必要。
+/// 派生プロパティ）の単体テスト。ディレクトリ境界と実ファイルI/Oは
+/// storage_cache_isolation_test.dartで検証し、製品の操作は実画面でも確認する。
 void main() {
   group('formatStorageBytes', () {
     test('1024未満はB単位で整数表示', () {

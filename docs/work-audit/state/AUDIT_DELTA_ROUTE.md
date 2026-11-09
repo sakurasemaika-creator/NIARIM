@@ -306,6 +306,26 @@ status: todo。S32→fc24のPushNotificationService/main/app・Firebase構成・
 
 status: todo。S33公開cae5c893→38815daの8commit/6netpath。rewardedAd route、署名flow/API/DynamoDB Localの3test、DynamoDB Local workflowとpreapproval資料。signed callback→報酬確定の原子性・再送/idempotency・競合・署名/期限・owner/最小権限・保存false/throw/partial failure、同意/広告/実backend境界を確認する。S34では変更を登録しHome依存回帰の起動を確認するだけで、SSV署名/実Google callback/DynamoDB本番/広告実機の完了としない。詳細6pathと20正本hashはstart-heads-and-documents.json。D001.47の広告導線・SSV前提と関連付ける。
 
+## D001.50 — 現SDKと正規format・Community/Premium試験hostの増分
+
+status: todo。S35中断後のb6a6db14→0bed53b9は21commit/367path。Flutter 3.47.2のDart format、保存gateのSDK固定、Communityのauth provider/viewport/request期待とpaid-preview host、広告のno-content/consent条件、Markdown技術ID保護等。旧失敗ログと最新CIを分け、単にassertを弱めず実UI/本番auth境界を保持する。全変更pathはincoming-latest-paths.txt。S34の33PASSや旧capture結果を最新の全greenへ転記しない。
+
+## D001.51 — 接続済みGoogle OAuth debug APKと自動preflight
+
+status: todo。prelaunch-connected-debug-apk/google-android-oauth-preflightのworkflow導入。既存の接続済みclient/signing設定の利用、artifactの非公開性/期限/署名、設定変更時の検査、secret非出力、debug/releaseと端末の実callback境界を確認。S35ではbranch増分登録のみで、実機Googleログイン/Play公開/実credentialの完了としない。
+
+## D001.52 — Timelineの実描画矩形と狭幅corner overlay
+
+status: todo。52f3a977/0bed53b9のfitted pictureを実preview画像と一致させる変更と320dp corner重なりの許容条件。中央の作画を覆わない実hit/見た目、frame更新・zoom/resize・全幅/拡大/7locale、旧predicateの過剰/不足、source/engine/alpha/export回帰を確認。S35のStorage起動回帰だけでTimeline全体を閉じない。
+
+## D001.53 — Webプレローンチ導線とcreation中心の公開ページ再設計
+
+status: todo。S35のWeb9fdb7e46→3de5c4e9の4commitでhome/features/community/premium、hero showcase/CSS/各script/i18nを更新。全visible control・到達性・App実仕様との対応、7locale/PC-SP/短高/keyboard/読上げ・公開前表示/価格/会員/広告説明/リンク/保存設定/性能を実サイトで確認。S35では差分を保持・登録し、HTMLやsmokeの存在だけで品質PASSにしない。
+
+## D001.54 — Webの実Premiumキャプチャ36点と検証workflow
+
+status: todo。同上の実App9画面×4版のAVIF/WebP、source.txtとrefresh-2026/real-app-screensのCI・7locale smoke。source App SHA/paid-preview/広告なしの条件、画像内容/比率/各mode/alt/導線/読込・cache/レスポンシブを個別目視し、最新Appのproduction UIと照合。incoming-web-latest.jsonの全変更pathを正本とし、画像があるだけでApp機能や公開ページを監査済みにしない。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。
@@ -805,6 +825,8 @@ Required:
 低性能端末でも実用的に動くことを優先し、単にsource codeを短くすることは目的にしない。必要なら同じ結果を得る別実装へ置換する。
 
 S34追加/DISC058: Storageは実PCで約7秒/再訪約16秒後も本文loading。計測対象へcomputeBreakdown/deviceSpaceと本文初回feedback・中断後の処理を追加。原因未確定、spinnerを品質PASSに代用しない。
+
+S35追加/DISC059: Linuxの共有/tmpをNIARIM cacheとして集計/削除する経路を隔離実FSで実証（4反例FAIL）。app専用cacheへの境界修正をD034の保存/初期化安全性と関連付ける。getTemporaryDirectoryを使う既存producer（export/serializer/waveform/thumbnail/widget/autofill/theme/Home）の所有dir・一時出力の個別cleanup/legacy扱いはD035/D036で全件確認し、未実操作を完了にしない。
 
 ## D036 — ソース衛生・不要コード・コメント品質
 
