@@ -108,7 +108,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: S35のdev_branch公開SHA/CIを照合後、DISC058の性能/GL表示、DISC048導線とDISC057期間、cache部分失敗/legacy producer/reset所有境界、typing契約と最新WebのDeltaを進める。完了済みの同一入力回帰は復元だけのために繰り返さない。
+next_action: S35の独立storage-cache-regressionsで現固定SDKのcache9件を確認。保存済み公開receiptのSHA/ビルド入力一致を継承し、D001.50の全体format/Functional capture失敗、DISC058の性能/GL、DISC048導線とDISC057期間、cache部分失敗/legacy producer/reset所有境界、typing契約と最新WebのDeltaを継続する。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。

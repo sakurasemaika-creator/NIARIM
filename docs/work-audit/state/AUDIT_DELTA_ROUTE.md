@@ -310,6 +310,8 @@ status: todo。S33公開cae5c893→38815daの8commit/6netpath。rewardedAd route
 
 status: todo。S35中断後のb6a6db14→0bed53b9は21commit/367path。Flutter 3.47.2のDart format、保存gateのSDK固定、Communityのauth provider/viewport/request期待とpaid-preview host、広告のno-content/consent条件、Markdown技術ID保護等。旧失敗ログと最新CIを分け、単にassertを弱めず実UI/本番auth境界を保持する。全変更pathはincoming-latest-paths.txt。S34の33PASSや旧capture結果を最新の全greenへ転記しない。
 
+S35公開後の51b7ac93 CI: Save safety save-regressionsが既存niapro_serializer.dartの書式差分でcache9件の前に停止。SDK3.47.2のlocal formatはlib/test 900中230差分、今回storage3fileは0差分。全体gateは保持し、cache隔離のformat/analyze/9testsを独立storage-cache-regressionsで実行する。Functional Visual Auditのfeature_operation_capture_test.dart:139 null failureも現HEADの未解決として保持し、旧S34の失敗や成功に置き換えない。公開receipt ZIP 1DrtZFIT5Rc_BNgpTWj0mVthQsAMzv95l（43740B/SHA2d00249a…/18hash）を検証済み。
+
 ## D001.51 — 接続済みGoogle OAuth debug APKと自動preflight
 
 status: todo。prelaunch-connected-debug-apk/google-android-oauth-preflightのworkflow導入。既存の接続済みclient/signing設定の利用、artifactの非公開性/期限/署名、設定変更時の検査、secret非出力、debug/releaseと端末の実callback境界を確認。S35ではbranch増分登録のみで、実機Googleログイン/Play公開/実credentialの完了としない。
