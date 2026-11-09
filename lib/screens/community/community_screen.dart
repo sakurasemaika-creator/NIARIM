@@ -145,6 +145,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   final _pagingTabs = List<bool>.filled(4, false);
   final _refreshingTabs = List<bool>.filled(4, false);
   final _refreshedInPullGesture = List<bool>.filled(4, false);
+  final _pullBeganAtTop = List<bool>.filled(4, false);
 
   List<CommunityWork> _visible(List<CommunityWork> works, int tab) =>
       works.take(_visiblePageCounts[tab]).toList();
@@ -702,19 +703,28 @@ class _CommunityScreenState extends State<CommunityScreen>
           notification.depth == 0 &&
           notification.metrics.axis == Axis.vertical &&
           notification.metrics.extentBefore == 0 &&
+          _pullBeganAtTop[tab] &&
           !_refreshedInPullGesture[tab],
       onRefresh: () {
-        if (_refreshedInPullGesture[tab]) {
+        if (!_pullBeganAtTop[tab] || _refreshedInPullGesture[tab]) {
           return Future<void>.value();
         }
         _refreshedInPullGesture[tab] = true;
+        _pullBeganAtTop[tab] = false;
         return _refreshTab(tab);
       },
-      // A fresh pointer-down, not a new scroll notification, re-arms this
-      // tab. A single fling can emit multiple scroll-start notifications;
-      // those must never issue a second request for the same gesture.
+      // Check the scroll position at the very start of the touch. A swipe
+      // originating below the top must never turn into refresh, even if
+      // an ensuing jumpTo(0) emits scroll notifications.
       child: Listener(
-        onPointerDown: (_) => _refreshedInPullGesture[tab] = false,
+        onPointerDown: (_) {
+          final controller = _tabScrollControllers[tab];
+          _pullBeganAtTop[tab] = !controller.hasClients ||
+              controller.position.pixels <=
+                  controller.position.minScrollExtent + 0.5;
+          _refreshedInPullGesture[tab] = false;
+        },
+        onPointerCancel: (_) => _pullBeganAtTop[tab] = false,
         child: child,
       ),
     );
