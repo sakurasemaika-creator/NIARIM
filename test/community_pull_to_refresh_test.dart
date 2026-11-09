@@ -11,6 +11,7 @@ import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/google_auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -87,6 +88,7 @@ void main() {
           ChangeNotifierProvider.value(value: service),
           ChangeNotifierProvider(create: (_) => CommunityPreviewService()),
           ChangeNotifierProvider(create: (_) => SettingsService()),
+          ChangeNotifierProvider(create: (_) => GoogleAuthService()),
         ],
         child: MaterialApp(
           locale: const Locale('ja'),
@@ -198,6 +200,7 @@ void main() {
           ChangeNotifierProvider.value(value: service),
           ChangeNotifierProvider(create: (_) => CommunityPreviewService()),
           ChangeNotifierProvider(create: (_) => SettingsService()),
+          ChangeNotifierProvider(create: (_) => GoogleAuthService()),
         ],
         child: MaterialApp(
           locale: const Locale('ja'),
@@ -248,6 +251,7 @@ void main() {
           ChangeNotifierProvider(create: (_) => CommunityService()),
           ChangeNotifierProvider(create: (_) => CommunityPreviewService()),
           ChangeNotifierProvider(create: (_) => SettingsService()),
+          ChangeNotifierProvider(create: (_) => GoogleAuthService()),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
