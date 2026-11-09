@@ -346,7 +346,7 @@ class CommunityService extends ChangeNotifier {
     if (client == null) return discoverableWorks;
     final epoch = ++_rankingEpoch;
     _rankingCursor = null;
-    _unavailableRankingIds.clear();
+    // Keep existing redacted slots hidden while the replacement snapshot loads.
     try {
       final page = await client.ranking(
         period,
@@ -354,6 +354,9 @@ class CommunityService extends ChangeNotifier {
         sortBookmarks: sortBookmarks,
       );
       if (_disposed || epoch != _rankingEpoch) return const [];
+      // Atomically replace visibility/redaction only after a new safe snapshot
+      // has arrived; never expose old private metadata during loading.
+      _unavailableRankingIds.clear();
       _rankingCursor = page.nextCursor;
       _lastError = null;
       _periodRankingBookmarkCounts
@@ -378,6 +381,7 @@ class CommunityService extends ChangeNotifier {
       _lastError = e;
       // The previous period's order must not stand in for this one.
       _rankingIds = const [];
+      _unavailableRankingIds.clear();
       _periodRankingBookmarkCounts.clear();
       _pruneUnconfirmed();
       notifyListeners();
