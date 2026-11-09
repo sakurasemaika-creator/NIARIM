@@ -106,7 +106,7 @@ void main() {
     expect(find.text('Original title $b'),findsNothing);
     expect(find.text('Creator $b'),findsNothing);
     expect(find.byKey(const ValueKey('community-ranking-card-ccccccccccc')),findsOneWidget);
-    expect(find.byKey(const ValueKey('communityRankBadge-2')),findsNothing);
+    expect(find.byKey(const ValueKey('communityRankMedal-2')), findsOneWidget);
     expect(taps,0);
 
     // A fresh ranking returns the same compact order, without extra polling.
