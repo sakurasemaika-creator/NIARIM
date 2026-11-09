@@ -15,6 +15,8 @@ class ApiWork {
   final int likeCount;
   final int commentCount;
   final int bookmarkCount;
+  /// Bookmarks added during the selected calendar ranking window; absent elsewhere.
+  final int? periodBookmarkCount;
   final int repostCount;
   final bool isShort;
   final List<String> tags;
@@ -51,6 +53,7 @@ class ApiWork {
     required this.likeCount,
     required this.commentCount,
     required this.bookmarkCount,
+    this.periodBookmarkCount,
     required this.repostCount,
     required this.isShort,
     required this.tags,
@@ -81,6 +84,9 @@ class ApiWork {
     likeCount: _int(json['likeCount']),
     commentCount: _int(json['commentCount']),
     bookmarkCount: _int(json['bookmarkCount']),
+    periodBookmarkCount: json['periodBookmarkCount'] is num
+        ? (json['periodBookmarkCount'] as num).toInt()
+        : null,
     repostCount: _int(json['repostCount']),
     isShort: json['isShort'] == true,
     tags: _stringList(json['tags']),

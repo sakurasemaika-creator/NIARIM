@@ -150,6 +150,10 @@ class CommunityService extends ChangeNotifier {
   final Set<String> _fetchingMoreAuthors = {};
   int _latestEpoch = 0;
   int _rankingEpoch = 0;
+  final Map<String, int> _periodRankingBookmarkCounts = {};
+  /// Display-only period score; canonical work.bookmarkCount remains cumulative.
+  Map<String, int> get periodRankingBookmarkCounts =>
+      Map<String, int>.unmodifiable(_periodRankingBookmarkCounts);
   int _searchEpoch = 0;
   String _searchQuery = '';
   bool _searchTagMode = false;
@@ -350,6 +354,13 @@ class CommunityService extends ChangeNotifier {
       if (_disposed || epoch != _rankingEpoch) return const [];
       _rankingCursor = page.nextCursor;
       _lastError = null;
+      _periodRankingBookmarkCounts
+        ..clear()
+        ..addEntries([
+          for (final work in page.works)
+            if (work.periodBookmarkCount != null)
+              MapEntry(work.workId, work.periodBookmarkCount!),
+        ]);
       final ranked = [for (final w in page.works) _plazaCopy(w)];
       // Ranked works join the one store, so their detail, tags and the
       // viewer's filters work on the same copy as every other surface.
@@ -365,6 +376,7 @@ class CommunityService extends ChangeNotifier {
       _lastError = e;
       // The previous period's order must not stand in for this one.
       _rankingIds = const [];
+      _periodRankingBookmarkCounts.clear();
       _pruneUnconfirmed();
       notifyListeners();
       return const [];
@@ -391,6 +403,11 @@ class CommunityService extends ChangeNotifier {
       );
       if (_disposed || epoch != _rankingEpoch) return false;
       _rankingCursor = page.nextCursor;
+      for (final w in page.works) {
+        if (w.periodBookmarkCount != null) {
+          _periodRankingBookmarkCounts[w.workId] = w.periodBookmarkCount!;
+        }
+      }
       for (final w in page.works) {
         _rankingIds.add(w.workId);
         _upsert(_plazaCopy(w));

@@ -872,8 +872,8 @@ class _CommunityScreenState extends State<CommunityScreen>
     final service = context.read<CommunityService>();
     if (service.isBackendConnected) {
       // The server's ranking for the period, in its order, as the viewer's
-      // filters allow. It ranks by views; the bookmark order is its own
-      // all-time ranking, or the period's works re-sorted by bookmarks.
+      // filters allow. Both all-time and period ranking use the NIARIM
+      // bookmark counts returned by the backend, never local view estimates.
       // The server pages the *global* Top 50 in the requested order.
       // Re-sorting just the first 25 locally would misrepresent the ranking.
       return [...service.rankedWorks];
@@ -1770,6 +1770,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                         return CommunityRankingWorkList(
                           layout: _rankingLayout,
                           works: ranked,
+                          periodScores: communityService.periodRankingBookmarkCounts,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
                           onToggleBookmark: (w) => reportFailedCommunityEdit(

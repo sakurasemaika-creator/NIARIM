@@ -21,6 +21,7 @@ class CommunityRankingWorkList extends StatelessWidget {
     super.key,
     required this.works,
     required this.layout,
+    this.periodScores = const {},
     required this.bookmarkedIds,
     required this.onTapWork,
     required this.onToggleBookmark,
@@ -29,6 +30,8 @@ class CommunityRankingWorkList extends StatelessWidget {
   });
 
   final List<CommunityWork> works;
+  /// Selected JST period scores; cumulative bookmarkCount stays unchanged.
+  final Map<String, int> periodScores;
   final CommunityRankingLayout layout;
   final Set<String> bookmarkedIds;
   final void Function(CommunityWork) onTapWork;
@@ -50,6 +53,7 @@ class CommunityRankingWorkList extends StatelessWidget {
               key: ValueKey('community-ranking-work-${works[i].id}'),
               work: works[i],
               rank: i + 1,
+              periodBookmarkCount: periodScores[works[i].id],
               layout: layout,
               isBookmarked: bookmarkedIds.contains(works[i].id),
               isMuted: !works[i].isUnavailable && service.isWorkMuted(works[i]),
@@ -140,6 +144,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
     required this.work,
     required this.rank,
     required this.layout,
+    this.periodBookmarkCount,
     required this.isBookmarked,
     required this.onTap,
     required this.onBookmarkToggle,
@@ -152,6 +157,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
   final CommunityWork work;
   final int rank;
   final CommunityRankingLayout layout;
+  final int? periodBookmarkCount;
   final bool isBookmarked;
   final VoidCallback onTap;
   final VoidCallback onBookmarkToggle;
@@ -327,14 +333,19 @@ class CommunityRankingWorkCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final language = Localizations.localeOf(context).languageCode;
-    final bookmarks = formatCompactCount(work.bookmarkCount, language);
+    final bookmarks = formatCompactCount(
+      periodBookmarkCount ?? work.bookmarkCount, language,
+    );
+    final rankLabel = periodBookmarkCount == null
+        ? l10n.communityRankingSortBookmarks
+        : CommunityRankingLayoutLabels.of(context).periodBookmarks;
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 10,
       runSpacing: 2,
       children: [
         Semantics(
-          label: '${l10n.communityRankingSortBookmarks}: $bookmarks',
+          label: '$rankLabel: $bookmarks',
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
