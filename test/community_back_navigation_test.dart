@@ -7,6 +7,7 @@ import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/google_auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,6 +34,7 @@ void main() {
           ChangeNotifierProvider.value(value: community),
           ChangeNotifierProvider(create: (_) => SettingsService()),
           ChangeNotifierProvider(create: (_) => PremiumService()),
+          ChangeNotifierProvider(create: (_) => GoogleAuthService()),
           ChangeNotifierProvider(create: (_) => CommunityPreviewService()),
         ],
         child: MaterialApp.router(
