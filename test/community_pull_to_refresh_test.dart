@@ -48,6 +48,7 @@ void main() {
   ) async {
     var posterDeclaredAi = false;
     var latestFetches = 0;
+    var rankingFetches = 0;
     final client = MockClient((request) async {
       final path = request.url.path;
       Object body;
@@ -57,6 +58,7 @@ void main() {
           'works': [workJson(ai: posterDeclaredAi)],
         };
       } else if (path.startsWith('/ranking/')) {
+        rankingFetches++;
         body = {
           'period': path.split('/').last,
           'works': [workJson(ai: posterDeclaredAi)],
@@ -96,6 +98,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(latestFetches, 1);
+    final initialRankingFetches = rankingFetches;
+    expect(initialRankingFetches, 1);
     expect(find.text('Pulled work'), findsOneWidget);
 
     // The poster declares it afterwards; nothing changes until the viewer
@@ -111,6 +115,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(latestFetches, 2);
+    expect(rankingFetches, initialRankingFetches);
     expect(service.byId('vid00000001')!.containsGenerativeAiImageOrVideo, true);
     expect(find.text('Pulled work'), findsNothing);
     final l10n = AppLocalizations.of(tester.element(find.byType(Scaffold)))!;
@@ -126,6 +131,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(latestFetches, 3);
+    expect(rankingFetches, initialRankingFetches);
     expect(find.text('Pulled work'), findsOneWidget);
 
     // The ranking tab refreshes the same way.
@@ -139,8 +145,100 @@ void main() {
       1000,
     );
     await tester.pumpAndSettle();
+    expect(rankingFetches, initialRankingFetches + 1);
+    expect(latestFetches, 3); // Ranking refresh must not refetch arrivals.
     expect(find.text('Pulled work'), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+
+  testWidgets('pull-to-refresh works only at the list top', (tester) async {
+    var latestFetches = 0;
+    final client = MockClient((request) async {
+      if (request.url.path == '/works/latest') {
+        latestFetches++;
+        return http.Response(
+          jsonEncode({
+            'works': [
+              for (var i = 0; i < 30; i++)
+                {
+                  ...workJson(ai: false),
+                  'workId': 'vid${i.toString().padLeft(8, '0')}',
+                  'title': 'Work $i',
+                  'youtubeUrl':
+                      'https://www.youtube.com/watch?v=vid${i.toString().padLeft(8, '0')}',
+                },
+            ],
+          }),
+          200,
+          headers: headers,
+        );
+      }
+      return http.Response(
+        jsonEncode({'works': <Object>[]}),
+        200,
+        headers: headers,
+      );
+    });
+    final service = CommunityService(
+      api: CommunityApi(
+        NiarimApiClient(
+          baseUrl: 'https://example.invalid',
+          httpClient: client,
+          tokenProvider: () async => null,
+          maxGetRetries: 0,
+          retryBackoff: Duration.zero,
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: service),
+          ChangeNotifierProvider(create: (_) => CommunityPreviewService()),
+          ChangeNotifierProvider(create: (_) => SettingsService()),
+        ],
+        child: MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const CommunityScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(latestFetches, 1);
+
+    final scrollable = tester.widget<SingleChildScrollView>(
+      find.byType(SingleChildScrollView).first,
+    );
+    final scrollController = scrollable.controller!;
+    await tester.drag(
+      find.byKey(const Key('communityPullToRefresh')),
+      const Offset(0, -800),
+    );
+    await tester.pumpAndSettle();
+    expect(scrollController.offset, greaterThan(400));
+
+    // Pulling downward in the middle only scrolls, never reloads.
+    await tester.drag(
+      find.byKey(const Key('communityPullToRefresh')),
+      const Offset(0, 240),
+    );
+    await tester.pumpAndSettle();
+    expect(scrollController.offset, greaterThan(0));
+    expect(latestFetches, 1);
+
+    scrollController.jumpTo(0);
+    await tester.pumpAndSettle();
+    await tester.fling(
+      find.byKey(const Key('communityPullToRefresh')),
+      const Offset(0, 400),
+      1000,
+    );
+    await tester.pumpAndSettle();
+    expect(latestFetches, 2);
   });
 
   testWidgets('without a backend there is nothing to pull', (tester) async {
