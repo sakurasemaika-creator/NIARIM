@@ -32,7 +32,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('existing ranking retains an inaccessible slot and disables taps',
+  testWidgets('hidden ranking entry is removed and remaining ranks compact',
       (tester) async {
     var bIsPrivate = false;
     var rankingReads = 0;
@@ -75,16 +75,12 @@ void main() {
     expect(service.rankedWorks.map((w) => w.id).toList(), [a,b,c]);
     expect(rankingReads,1);
     bIsPrivate = true;
-    expect(await service.refreshRankingVisibility(), isTrue);
+    expect(await service.validateRankingWorkForOpen(b), isFalse);
     expect(visibilityReads,1);
     final after = service.rankedWorks;
-    expect(after.map((w) => w.id).toList(), [a,b,c]);
-    expect(after[1].isUnavailable, isTrue);
-    expect(after[1].title, isEmpty);
-    expect(after[1].authorId, isEmpty);
-    expect(after[1].thumbnailUrl, isEmpty);
-    expect(after[2].isUnavailable, isFalse);
-    expect(rankingReads,1); // A status check MUST NOT re-rank the snapshot.
+    expect(after.map((w) => w.id).toList(), [a,c]);
+    expect(after[1].isUnavailable, isFalse);
+    expect(rankingReads,1); // The click guard does not do a second ranking query.
 
     var taps=0;
     await tester.pumpWidget(ChangeNotifierProvider.value(
@@ -106,15 +102,14 @@ void main() {
       ),
     ));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('community-ranking-card-bbbbbbbbbbb')),findsOneWidget);
+    expect(find.byKey(const ValueKey('community-ranking-card-bbbbbbbbbbb')),findsNothing);
     expect(find.text('Original title $b'),findsNothing);
     expect(find.text('Creator $b'),findsNothing);
-    await tester.ensureVisible(find.byKey(const ValueKey('community-ranking-card-bbbbbbbbbbb')));
-    await tester.tap(find.byKey(const ValueKey('community-ranking-card-bbbbbbbbbbb')));
-    await tester.pump();
+    expect(find.byKey(const ValueKey('community-ranking-card-ccccccccccc')),findsOneWidget);
+    expect(find.byKey(const ValueKey('communityRankBadge-2')),findsNothing);
     expect(taps,0);
 
-    // A fresh ranking is a NEW snapshot and excludes now-hidden B entirely.
+    // A fresh ranking returns the same compact order, without extra polling.
     await service.fetchRanking(RankingPeriod.bookmarks);
     expect(service.rankedWorks.map((w)=>w.id).toList(),[a,c]);
     expect(rankingReads,2);
