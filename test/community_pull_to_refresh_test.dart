@@ -92,6 +92,13 @@ void main() {
         body = {
           'works': [workJson(ai: posterDeclaredAi)],
         };
+      } else if (path == '/ranking/visibility') {
+        body = {
+          'visibility': {
+            for (final id in (request.url.queryParameters['ids'] ?? '').split(','))
+              if (id.isNotEmpty) id: true,
+          },
+        };
       } else if (path.startsWith('/ranking/')) {
         rankingFetches++;
         body = {
