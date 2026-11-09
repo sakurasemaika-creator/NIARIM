@@ -21,6 +21,14 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/ad_banner_widget.dart';
 import 'package:niarim/widgets/ad_banner_mock_widget.dart';
 
+// Reference screenshots intentionally show a paid-member layout. Production
+// PremiumService rightly rejects editable local flags, so this test supplies
+// an explicit in-memory preview fixture rather than bypassing Play checks.
+class _ScreenshotPremiumService extends PremiumService {
+  @override
+  bool get isPremium => true;
+}
+
 class _FakeFilePicker extends FilePicker {
   @override
   Future<FilePickerResult?> pickFiles({
@@ -374,10 +382,23 @@ void main() {
     useReferencePhone(tester);
     await loadFonts(tester);
     final providers = await tester.runAsync(buildAppProviders);
+    final premiumPreview = _ScreenshotPremiumService();
+    addTearDown(premiumPreview.dispose);
+    final screenshotProviders = providers!.map((provider) {
+      if (provider is ChangeNotifierProvider<PremiumService>) {
+        return ChangeNotifierProvider<PremiumService>.value(
+          value: premiumPreview,
+        );
+      }
+      return provider;
+    }).toList();
     await tester.pumpWidget(
       RepaintBoundary(
         key: screenshotKey,
-        child: MultiProvider(providers: providers!, child: const NiarimApp()),
+        child: MultiProvider(
+          providers: screenshotProviders,
+          child: const NiarimApp(),
+        ),
       ),
     );
     await tester.pump(const Duration(milliseconds: 500));
