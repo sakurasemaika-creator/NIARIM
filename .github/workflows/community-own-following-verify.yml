@@ -1,0 +1,45 @@
+name: Community own following and pull-refresh regression
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - .github/workflows/community-own-following-verify.yml
+      - lib/screens/community/community_following_list_screen.dart
+      - lib/screens/community/community_screen.dart
+      - lib/services/community_service.dart
+      - test/community_own_following_pull_to_refresh_test.dart
+      - test/community_secondary_pull_to_refresh_test.dart
+      - test/community_pull_to_refresh_test.dart
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install Flutter dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze private directory and existing refresh implementation
+        run: |
+          flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
+            lib/screens/community/community_following_list_screen.dart \
+            lib/screens/community/community_screen.dart \
+            lib/screens/community/community_author_works_screen.dart \
+            lib/screens/community/widgets/community_top_edge_refresh.dart \
+            lib/services/community_service.dart \
+            test/community_own_following_pull_to_refresh_test.dart
+      - name: Verify owner-only followed authors and prior plaza refresh gestures
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/community_own_following_pull_to_refresh_test.dart \
+            test/community_secondary_pull_to_refresh_test.dart \
+            test/community_pull_to_refresh_test.dart
