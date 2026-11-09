@@ -5,6 +5,10 @@ on:
     branches: [dev_branch]
     paths:
       - .github/workflows/community-secondary-refresh-once.yml
+      - lib/screens/community/community_screen.dart
+      - lib/screens/community/widgets/community_ranking_work_list.dart
+      - lib/services/community_service.dart
+      - test/community_ranking_privacy_visibility_test.dart
 
 permissions:
   contents: read
@@ -28,6 +32,9 @@ jobs:
             lib/screens/community/community_author_works_screen.dart \
             lib/screens/community/community_my_works_screen.dart \
             lib/services/community_service.dart \
+            lib/screens/community/community_screen.dart \
+            lib/screens/community/widgets/community_ranking_work_list.dart \
+            test/community_ranking_privacy_visibility_test.dart \
             test/community_secondary_pull_to_refresh_test.dart
       - name: Verify secondary refresh gestures and previous plaza refresh
-        run: flutter test --no-pub test/community_secondary_pull_to_refresh_test.dart test/community_pull_to_refresh_test.dart
+        run: flutter test --no-pub test/community_secondary_pull_to_refresh_test.dart test/community_pull_to_refresh_test.dart test/community_ranking_privacy_visibility_test.dart
