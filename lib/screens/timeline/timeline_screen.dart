@@ -8026,7 +8026,11 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       backgroundColor: widget.backgroundColor,
       aspectRatio: img.width / img.height,
       checkerSize: 10,
-      child: RawImage(image: img, fit: BoxFit.fill),
+      child: RawImage(
+        key: const Key('timelinePreviewPicture'),
+        image: img,
+        fit: BoxFit.fill,
+      ),
     );
   }
 }
