@@ -294,6 +294,12 @@ status: todo。a6be→b92の53path（`s30-latest-b92-incoming-paths.txt`）。Yo
 
 status: todo。3397a23e→a0d74dcfの45 commit/19 net path（`s31-app-incoming-paths.txt`）。root広告枠・route遷移・modal/IME・横幅と短高、コンテンツありHomeと全route debugモックの画面matrix、署名付きURL確認と報酬grant・不正/重複・診断ログの境界を確認する。mockと実表示を区別し、Samsung実機/DeX・実consent・動的route・実配信と独立した規約確認が残る。S31では配信設定やbackendを変更していない。
 
+S33追加: fc24までのroute別広告制限とcaption/比較capture差分もD001.47へ保持。最新all-route capture successとWeb比較4FAILを区別。
+
+## D001.48 — FCM通知の登録・配送と通知からの復帰
+
+status: todo。S32→fc24のPushNotificationService/main/app・Firebase構成・Android plugin設定、push/missionNotifications/backend stackと通知導入資料。permission/token登録・更新・sign-out/owner境界、foreground/background/終了後の通知tap→作品詳細、重複/無効data・offline/retry・起動失敗fallback・非対応desktop、secret/PIIと失効、実機/同意/Privacyの必要条件を別々に追う。S33では通常の依存/起動・Home回帰だけで、通知配送や実auth/backendの完了としない。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。

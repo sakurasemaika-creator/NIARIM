@@ -364,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen>
     // マウス/キーボード入力・左手デバイス：設定画面「ショートカット設定」
     // で割り当てたキーで、全選択・コピー・切り取り・貼り付けを
     // 行えるようにする。
-    return CallbackShortcuts(
+    final content = CallbackShortcuts(
       bindings: _buildShortcutBindings(context),
       child: Focus(
         autofocus: true,
@@ -513,10 +513,7 @@ class _HomeScreenState extends State<HomeScreen>
                 HomeSelectionToolbar(
                   selectedCount: _selectedIds.length,
                   onSelectAll: _selectAllInCurrentFolder,
-                  onDeselectAll: () => setState(() {
-                    _selectedIds.clear();
-                    _isSelectionMode = false;
-                  }),
+                  onDeselectAll: _endProjectSelection,
                   onCut: _selectedIds.isEmpty ? null : _cutSelected,
                   onCopy:
                       _selectedIds.isNotEmpty &&
@@ -647,7 +644,51 @@ class _HomeScreenState extends State<HomeScreen>
         ),
       ),
     );
+    return BackButtonListener(
+      onBackButtonPressed: () async => _handleLocalBack(),
+      child: PopScope<Object?>(
+        canPop: !_hasLocalBackScope,
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop) _handleLocalBack();
+        },
+        child: content,
+      ),
+    );
   }
+
+  bool get _hasLocalBackScope =>
+      _currentTabIndex == 0 &&
+      (_isSelectionMode || _isSearching || _currentFolderId != null);
+
+  bool _handleLocalBack() {
+    // A dialog or pushed page owns Back until it closes.
+    if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? false)) return false;
+    final scaffold = _scaffoldKey.currentState;
+    if (scaffold?.isEndDrawerOpen ?? false) {
+      scaffold!.closeEndDrawer();
+      return true;
+    }
+    if (!_hasLocalBackScope) return false;
+    if (_isSelectionMode) {
+      _endProjectSelection();
+    } else if (_isSearching) {
+      _closeProjectSearch();
+    } else {
+      final parent = context
+          .read<ProjectService>()
+          .folders
+          .where((folder) => folder.id == _currentFolderId)
+          .firstOrNull
+          ?.parentFolderId;
+      _changeProjectScope(() => _currentFolderId = parent);
+    }
+    return true;
+  }
+
+  void _endProjectSelection() => setState(() {
+    _selectedIds.clear();
+    _isSelectionMode = false;
+  });
 
   Widget _buildHomeAction(
     BuildContext context, {

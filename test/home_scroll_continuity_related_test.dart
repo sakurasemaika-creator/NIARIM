@@ -44,7 +44,7 @@ void main() {
       'first_launch': false,
       'language': 'ja',
       'force_pc_mode': pc ? 1 : 0,
-      'home_view_mode': ?viewMode,
+      'home.projectViewMode.v1': ?viewMode,
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     final directory = Directory.systemTemp.createTempSync('home-related-');
@@ -175,8 +175,7 @@ void main() {
             .read<ProjectService>();
         late final String folderName;
         await tester.runAsync(() async {
-          final folder = await service.createFolder('A003 フォルダ');
-          folderName = folder.name;
+          final projectIds = <String>[];
           for (var i = 0; i < 90; i++) {
             final project = await service.createProject(
               name: 'A003 ${i.toString().padLeft(3, '0')}',
@@ -186,8 +185,13 @@ void main() {
               exportWidth: 32,
               exportHeight: 32,
             );
-            if (i.isOdd) await service.moveToFolder(project.id, folder.id);
+            projectIds.add(project.id);
             if (i % 30 == 0) await service.toggleFavorite(project.id);
+          }
+          final folder = await service.createFolder('A003 フォルダ');
+          folderName = folder.name;
+          for (var i = 1; i < projectIds.length; i += 2) {
+            await service.moveToFolder(projectIds[i], folder.id);
           }
         });
         await tester.pumpAndSettle();
