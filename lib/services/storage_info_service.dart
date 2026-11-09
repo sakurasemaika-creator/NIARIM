@@ -139,17 +139,29 @@ class StorageInfoService {
   }
 
   /// アプリ専用キャッシュの中身を削除する（フォルダ自体は残す）。
-  /// OS共用の一時領域には触れない。削除対象のバイト数を返す。
+  /// OS共用の一時領域には触れない。削除できた項目のバイト数を返す。
+  /// 一部でも削除できない場合は例外を返し、全量削除の成功とはしない。
   Future<int> clearCache() async {
     final cacheDir = await getApplicationCacheDirectory();
     if (!cacheDir.existsSync()) return 0;
-    final freed = await _dirSize(cacheDir);
-    for (final entry in cacheDir.listSync()) {
+    var freed = 0;
+    var failed = false;
+    await for (final entry in cacheDir.list(followLinks: false)) {
       try {
+        final bytes = entry is File
+            ? await entry.length()
+            : entry is Directory
+            ? await _dirSize(entry)
+            : 0;
         await entry.delete(recursive: true);
-      } catch (_) {
-        // OSが使用中のファイル等、削除できないものはスキップして続行する。
+        freed += bytes;
+      } on FileSystemException {
+        // 他の項目は削除を続け、残った分はUIから再試行できるようにする。
+        failed = true;
       }
+    }
+    if (failed) {
+      throw const FileSystemException('Could not clear all application cache');
     }
     return freed;
   }

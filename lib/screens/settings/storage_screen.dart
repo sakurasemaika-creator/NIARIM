@@ -344,15 +344,27 @@ class _StorageScreenState extends State<StorageScreen> {
       itemName: l10n.storageCategoryCache,
     );
     if (!ok || !mounted) return;
-    final freed = await _service.clearCache();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          l10n.storageClearCacheDoneSnackbar(formatStorageBytes(freed)),
+    try {
+      final freed = await _service.clearCache();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.storageClearCacheDoneSnackbar(formatStorageBytes(freed)),
+          ),
         ),
-      ),
-    );
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Semantics(
+            liveRegion: true,
+            child: Text(l10n.communityErrorGeneric),
+          ),
+        ),
+      );
+    }
     await _reload();
   }
 

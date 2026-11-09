@@ -312,6 +312,8 @@ status: todo。S35中断後のb6a6db14→0bed53b9は21commit/367path。Flutter 3
 
 S35公開後の51b7ac93 CI: Save safety save-regressionsが既存niapro_serializer.dartの書式差分でcache9件の前に停止。SDK3.47.2のlocal formatはlib/test 900中230差分、今回storage3fileは0差分。全体gateは保持し、cache隔離のformat/analyze/9testsを独立storage-cache-regressionsで実行する。Functional Visual Auditのfeature_operation_capture_test.dart:139 null failureも現HEADの未解決として保持し、旧S34の失敗や成功に置き換えない。公開receipt ZIP 1DrtZFIT5Rc_BNgpTWj0mVthQsAMzv95l（43740B/SHA2d00249a…/18hash）を検証済み。
 
+S36追跡: 独立storage-cache-regressions job129035511757でS35 cache9件/format3file/analyzeがPASS。全体の230 format差分とFunctional filter capture nullは未解決のまま。S36のcache部分削除修正と実EACCES試験を同jobへ追加し、画面sourceもformat/analyze対象へ登録。全体gateは維持。
+
 ## D001.51 — 接続済みGoogle OAuth debug APKと自動preflight
 
 status: todo。prelaunch-connected-debug-apk/google-android-oauth-preflightのworkflow導入。既存の接続済みclient/signing設定の利用、artifactの非公開性/期限/署名、設定変更時の検査、secret非出力、debug/releaseと端末の実callback境界を確認。S35ではbranch増分登録のみで、実機Googleログイン/Play公開/実credentialの完了としない。
@@ -327,6 +329,8 @@ status: todo。S35のWeb9fdb7e46→3de5c4e9の4commitでhome/features/community/
 ## D001.54 — Webの実Premiumキャプチャ36点と検証workflow
 
 status: todo。同上の実App9画面×4版のAVIF/WebP、source.txtとrefresh-2026/real-app-screensのCI・7locale smoke。source App SHA/paid-preview/広告なしの条件、画像内容/比率/各mode/alt/導線/読込・cache/レスポンシブを個別目視し、最新Appのproduction UIと照合。incoming-web-latest.jsonの全変更pathを正本とし、画像があるだけでApp機能や公開ページを監査済みにしない。
+
+S36でWeb9bdbeb39の1commitを保持。refresh-2026-smoke.ymlに日本語PC/SPの全ページfull-height captureと14日artifactを追加。出力画像の個別目視、実操作/全7localeの完了とはしない。
 
 ## D002 — 全フィルター inventory → 個別監査
 

@@ -84,6 +84,41 @@ void main() {
   );
 
   test(
+    'partial cache deletion reports failure and supports a later retry',
+    () async {
+      final locked = await Directory('${cache.path}/locked').create();
+      final retained = await File(
+        '${locked.path}/retained.bin',
+      ).writeAsBytes(List.filled(111, 29));
+      final chmod = await Process.run('chmod', ['0555', locked.path]);
+      expect(chmod.exitCode, 0);
+      try {
+        await expectLater(
+          File('${locked.path}/probe').writeAsString('must be denied'),
+          throwsA(isA<FileSystemException>()),
+          reason:
+              'This regression requires a real filesystem permission denial',
+        );
+        await expectLater(
+          StorageInfoService().clearCache(),
+          throwsA(isA<FileSystemException>()),
+        );
+        expect(await cached.exists(), isFalse);
+        expect(await retained.readAsBytes(), List.filled(111, 29));
+        final remaining = await StorageInfoService().computeBreakdown({});
+        expect(remaining.bytesOf(StorageCategory.cache), 111);
+        await Process.run('chmod', ['0755', locked.path]);
+        expect(await StorageInfoService().clearCache(), 111);
+        expect(await retained.exists(), isFalse);
+        expect(await unrelated.readAsBytes(), List.filled(257, 83));
+      } finally {
+        await Process.run('chmod', ['0755', locked.path]);
+      }
+    },
+    skip: !Platform.isLinux ? 'Exercises Linux filesystem permissions' : false,
+  );
+
+  test(
     'cache cleanup does not follow links into another application',
     () async {
       final link = await Link(

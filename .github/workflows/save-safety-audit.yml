@@ -11,6 +11,7 @@ on:
       - "lib/engine/tile_manager.dart"
       - "lib/services/project_service.dart"
       - "lib/services/storage_info_service.dart"
+      - "lib/screens/settings/storage_screen.dart"
       - "test/storage_cache_isolation_test.dart"
       - "test/storage_info_service_test.dart"
       - "lib/services/brush_service.dart"
@@ -204,9 +205,9 @@ jobs:
       - name: Restore locked dependencies
         run: flutter pub get --enforce-lockfile
       - name: Check storage formatting
-        run: dart format --output=none --set-exit-if-changed lib/services/storage_info_service.dart test/storage_cache_isolation_test.dart test/storage_info_service_test.dart
+        run: dart format --output=none --set-exit-if-changed lib/services/storage_info_service.dart lib/screens/settings/storage_screen.dart test/storage_cache_isolation_test.dart test/storage_info_service_test.dart
       - name: Analyze storage boundaries
-        run: flutter analyze --no-pub lib/services/storage_info_service.dart test/storage_cache_isolation_test.dart test/storage_info_service_test.dart
+        run: flutter analyze --no-pub lib/services/storage_info_service.dart lib/screens/settings/storage_screen.dart test/storage_cache_isolation_test.dart test/storage_info_service_test.dart
       - name: Verify application cache ownership
         shell: bash
         run: |
