@@ -106,7 +106,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         context.read<CommunityService>().api,
       );
       if (_tabController.index == 1) {
-        context.read<CommunityService>().refreshRankingVisibility();
+        _fetchRanking();
       }
     }
   }
@@ -646,7 +646,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     final service = context.read<CommunityService>();
     service.clearTemporaryUnmutes();
     if (_tabController.index == 1 && service.isBackendConnected) {
-      service.refreshRankingVisibility();
+      _fetchRanking();
     }
     if (_tabController.index == 2 && service.isBackendConnected) {
       service.refreshFollowingFeed();
@@ -918,8 +918,13 @@ class _CommunityScreenState extends State<CommunityScreen>
     final service = context.read<CommunityService>();
     // Fail closed when the privacy check cannot be completed.
     if (service.isBackendConnected) {
-      final checked = await service.refreshRankingVisibility(onlyIds: [work.id]);
-      if (!mounted || !checked) return;
+      final checked = await service.validateRankingWorkForOpen(work.id);
+      if (!mounted) return;
+      if (!checked) {
+        // An old row may have been withdrawn; load compact, current ranks.
+        _fetchRanking();
+        return;
+      }
       final current = service.rankedWorks;
       if (!current.any((w) =>
           w.id == work.id && !w.isUnavailable && w.isNiarimPublished)) {
