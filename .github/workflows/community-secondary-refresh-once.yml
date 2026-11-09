@@ -10,6 +10,9 @@ on:
       - lib/services/community_service.dart
       - test/community_ranking_privacy_visibility_test.dart
       - test/community_pull_to_refresh_test.dart
+      - lib/screens/community/widgets/community_floating_preview.dart
+      - lib/screens/community/community_work_detail_screen.dart
+      - test/community_playback_privacy_actions_test.dart
 
 permissions:
   contents: read
@@ -35,7 +38,10 @@ jobs:
             lib/services/community_service.dart \
             lib/screens/community/community_screen.dart \
             lib/screens/community/widgets/community_ranking_work_list.dart \
+            lib/screens/community/widgets/community_floating_preview.dart \
+            lib/screens/community/community_work_detail_screen.dart \
             test/community_ranking_privacy_visibility_test.dart \
+            test/community_playback_privacy_actions_test.dart \
             test/community_secondary_pull_to_refresh_test.dart
       - name: Verify secondary refresh gestures and previous plaza refresh
-        run: flutter test --no-pub test/community_secondary_pull_to_refresh_test.dart test/community_pull_to_refresh_test.dart test/community_ranking_privacy_visibility_test.dart
+        run: flutter test --no-pub test/community_secondary_pull_to_refresh_test.dart test/community_pull_to_refresh_test.dart test/community_ranking_privacy_visibility_test.dart test/community_playback_privacy_actions_test.dart
