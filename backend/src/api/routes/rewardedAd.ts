@@ -160,8 +160,12 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
     reward = await verifyAdmobSsv(event.rawQueryString ?? "", admobPublicKeys);
     if (!reward.customData) {
       const now = Date.now();
-      const suffix = config.adUnitId.split("/").at(-1);
-      if (!suffix || reward.adUnit !== suffix ||
+      // Google's AdMob "Verify URL" tool signs a test callback using
+      // an ad_unit that may differ from the production unit. Accept only
+      // signed, unbound connectivity checks, which NEVER reach DynamoDB.
+      // User-bound rewards still require the exact production ad unit in
+      // validateAdmobOffer and the server-issued session transaction.
+      if (!reward.adUnit || reward.adUnit.length > 128 ||
           reward.rewardItem !== "coins" ||
           reward.rewardAmount !== config.amount ||
           reward.timestampMs > now + 5 * 60_000 ||

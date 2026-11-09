@@ -103,11 +103,30 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     expect(rewardedAdConfiguration().enabled).toBe(false);
   });
 
+  it("accepts a signed unbound AdMob URL test using a different ad unit, with zero writes", async () => {
+    process.env.ADMOB_REWARDED_AD_UNIT_ID =
+      "ca-app-pub-1111111111111111/2222222222";
+    verifySignedCallback.mockImplementationOnce(async () => ({
+      adUnit: "0000000000",
+      rewardAmount: 10,
+      rewardItem: "coins",
+      transactionId: "18fa792de1bca816048293fc71035638",
+      timestampMs: Date.now(),
+      customData: null,
+    }));
+    const response = await receiveRewardedAdSsv(request);
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body ?? "{}")).toEqual({
+      verified: true, credited: false,
+    });
+    expect(send).not.toHaveBeenCalled();
+  });
+
   it("rejects mismatching or unsigned verification callbacks", async () => {
     process.env.ADMOB_REWARDED_AD_UNIT_ID =
       "ca-app-pub-1111111111111111/2222222222";
     verifySignedCallback.mockImplementationOnce(async () => ({
-      adUnit: "0000000000", rewardAmount: 10, rewardItem: "coins",
+      adUnit: "", rewardAmount: 10, rewardItem: "coins",
       transactionId: "18fa792de1bca816048293fc71035638",
       timestampMs: Date.now(), customData: null,
     }));
