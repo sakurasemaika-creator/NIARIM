@@ -686,6 +686,10 @@ class _CommunityScreenState extends State<CommunityScreen>
         setState(() => _resetPage(tab));
       }
     } finally {
+      // Keep the refresh gesture claimed until its pull animation settles.
+      // Immediate mock/fast server responses can otherwise start a second
+      // fetch from the same overscroll movement.
+      await Future<void>.delayed(const Duration(milliseconds: 350));
       _refreshingTabs[tab] = false;
     }
   }
