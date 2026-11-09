@@ -89,7 +89,8 @@ async function getPeriodBookmarkRanking(
       TableName:tableName(),IndexName:"GSI2",
       KeyConditionExpression:"gsi2pk = :pk AND gsi2sk > :zero",
       ExpressionAttributeValues:{":pk":partition,":zero":0},
-      ScanIndexForward:ascending,
+      // Rank the highest-scoring 50 first, also for the ascending UI mode.
+      ScanIndexForward:false,
       Limit:TOP_LIMIT,
       ...(nextKey?{ExclusiveStartKey:nextKey}:{}),
     }));
@@ -108,10 +109,11 @@ async function getPeriodBookmarkRanking(
     nextKey=reply.LastEvaluatedKey as Record<string,string|number>|undefined;
     if(!nextKey)break;
   }
+  const ordered = ascending ? [...collected].reverse() : collected;
   return ok({
     period,metric:"periodBookmarks",windowId,
-    works:collected.slice(offset,offset+limit),
-    nextCursor:offset+limit<collected.length?String(offset+limit):null,
+    works:ordered.slice(offset,offset+limit),
+    nextCursor:offset+limit<ordered.length?String(offset+limit):null,
   });
 }
 
