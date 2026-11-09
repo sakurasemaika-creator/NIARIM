@@ -219,8 +219,10 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     expect(rows[2].Update?.Key?.sk).toMatch(/^REWARDED_AD_DAY#/);
     expect(rows[2].Update?.ExpressionAttributeValues?.[":limit"]).toBe(10);
     expect(rows[2].Update?.UpdateExpression).toContain("#ttl = :ttl");
+    expect(rows[2].Update?.UpdateExpression).toContain("#consumed :one");
+    expect(rows[2].Update?.ConditionExpression).toContain("#consumed < :limit");
     expect(rows[2].Update?.ExpressionAttributeNames).toEqual({
-      "#ttl": "ttl",
+      "#ttl": "ttl", "#consumed": "consumed",
     });
     expect(rows[3].Put?.Item?.sk).toMatch(/^COIN_HISTORY#/);
     expect(rows[3].Put?.Item?.deltaCoins).toBe(10);

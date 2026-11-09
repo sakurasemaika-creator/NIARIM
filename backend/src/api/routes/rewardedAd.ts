@@ -247,12 +247,13 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
             TableName: tableName(),
             Key: Keys.rewardAdDailyCount(userId, watchedDayUtc),
             UpdateExpression:
-              "SET itemType = :type, #ttl = :ttl ADD consumed :one",
+              "SET itemType = :type, #ttl = :ttl ADD #consumed :one",
             ExpressionAttributeNames: {
               "#ttl": "ttl",
+              "#consumed": "consumed",
             },
             ConditionExpression:
-              "attribute_not_exists(consumed) OR consumed < :limit",
+              "attribute_not_exists(#consumed) OR #consumed < :limit",
             ExpressionAttributeValues: {
               ":type": "REWARDED_AD_DAY",
               ":ttl": Math.floor(now / 1000) + RECEIPT_LIFETIME_SECONDS,
