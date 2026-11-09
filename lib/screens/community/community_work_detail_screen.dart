@@ -342,6 +342,21 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
               ),
       );
     }
+    // The cached public work may have been privatized or deleted after it
+    // entered a feed/ranking. Non-owners must never see its title, author,
+    // description or thumbnail until a fresh server + YouTube check succeeds.
+    // Owners can still manage their own private uploads.
+    if (!isOwner && _playbackStatus != CommunityPlaybackStatus.available) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.communityWorkDetailTitle)),
+        body: Center(
+          child: CommunityPlaybackStatusView(
+            status: _playbackStatus,
+            onRetry: _checkPlaybackStatus,
+          ),
+        ),
+      );
+    }
     final scheme = Theme.of(context).colorScheme;
     final languageCode = Localizations.localeOf(context).languageCode;
     final isBookmarked = communityService.isBookmarked(work.id);
