@@ -1604,6 +1604,40 @@ class CommunityService extends ChangeNotifier {
     return done;
   }
 
+  /// Only the signed-in user's followed authors are readable. Refreshing this
+  /// list does not reload bookmarks, ranking, or the surrounding plaza page.
+  String followedAuthorName(String authorId) =>
+      _followedNames[authorId] ?? authorNameOf(authorId) ?? authorId;
+
+  Future<bool> refreshOwnFollowing() async {
+    final client = api;
+    final me = _currentUserId;
+    if (client == null || me == null) return false;
+    final revision = _accountRevision;
+    try {
+      final following = await _awaitInAccount(
+        client.following(me, asOwner: true),
+        revision,
+      );
+      if (!_isCurrentAccount(revision)) return false;
+      _favoriteAuthorIds
+        ..clear()
+        ..addAll(following.map((user) => user.niarimUserId));
+      _followedNames
+        ..clear()
+        ..addAll({
+          for (final user in following) user.niarimUserId: ?user.channelName,
+        });
+      notifyListeners();
+      return true;
+    } on CommunityAccountChangedException {
+      return false;
+    } on NiarimApiException catch (error) {
+      if (_isCurrentAccount(revision)) _lastError = error;
+      return false;
+    }
+  }
+
   /// [authorId]のフォロワーID一覧。ダミーの固定フォロワー（他の作者同士の
   /// 関係を表示確認用に生成したもの）に加え、自分がこの作者をフォロー中
   /// なら自分自身のIDも即座に反映する。
