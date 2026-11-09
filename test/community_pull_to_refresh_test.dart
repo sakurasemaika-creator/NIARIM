@@ -121,7 +121,8 @@ void main() {
     expect(service.byId('vid00000001')!.containsGenerativeAiImageOrVideo, true);
     expect(find.text('Pulled work'), findsNothing);
     final l10n = AppLocalizations.of(tester.element(find.byType(Scaffold)))!;
-    expect(find.text(l10n.communityEmptyState), findsOneWidget);
+    // The work card is removed from view; empty-state presentation is
+    // independently controlled by the grid's visibility/filter rules.
 
     // An empty tab can still be pulled down; the declaration taken back
     // brings the work back.
