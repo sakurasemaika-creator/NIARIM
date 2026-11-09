@@ -698,20 +698,11 @@ class _CommunityScreenState extends State<CommunityScreen>
     return RefreshIndicator(
       key: const Key('communityPullToRefresh'),
       triggerMode: RefreshIndicatorTriggerMode.onEdge,
-      notificationPredicate: (notification) {
-        if (notification.depth != 0 ||
-            notification.metrics.axis != Axis.vertical) {
-          return false;
-        }
-        // Only a fresh finger drag may arm another refresh. Inertial scroll
-        // and rebuild notifications must not repeat the same request.
-        if (notification is ScrollStartNotification &&
-            notification.dragDetails != null) {
-          _refreshedInPullGesture[tab] = false;
-        }
-        return notification.metrics.extentBefore == 0 &&
-            !_refreshedInPullGesture[tab];
-      },
+      notificationPredicate: (notification) =>
+          notification.depth == 0 &&
+          notification.metrics.axis == Axis.vertical &&
+          notification.metrics.extentBefore == 0 &&
+          !_refreshedInPullGesture[tab],
       onRefresh: () {
         if (_refreshedInPullGesture[tab]) {
           return Future<void>.value();
@@ -719,7 +710,13 @@ class _CommunityScreenState extends State<CommunityScreen>
         _refreshedInPullGesture[tab] = true;
         return _refreshTab(tab);
       },
-      child: child,
+      // A fresh pointer-down, not a new scroll notification, re-arms this
+      // tab. A single fling can emit multiple scroll-start notifications;
+      // those must never issue a second request for the same gesture.
+      child: Listener(
+        onPointerDown: (_) => _refreshedInPullGesture[tab] = false,
+        child: child,
+      ),
     );
   }
 
