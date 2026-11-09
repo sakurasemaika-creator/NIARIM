@@ -16,13 +16,14 @@ const work=(id:string,privacy:"public"|"unlisted"|"private"|"deleted",published=
   youtubePrivacyStatus:privacy,isNiarimPublished:published,
   bookmarkCount:12,postedAt:"2026-11-09T12:00:00Z",tags:[],lockedTags:[],
 });
-const ev=(period?:string,ids?:string)=>({
-  queryStringParameters: ids===undefined?{limit:"25"}:{ids},
+const ev=(period?:string,ids?:string,ascending=false)=>({
+  queryStringParameters: ids===undefined?{limit:"25",...(ascending?{ascending:"true"}:{})}:{ids},
   headers:{},
 }) as unknown as APIGatewayProxyEventV2;
 const body=(reply:any)=>JSON.parse(reply.body??"{}");
-const works=[work(a,"public"),work(b,"private"),work(c,"unlisted"),work(d,"deleted")];
+let works: ReturnType<typeof work>[];
 beforeEach(()=>{
+ works=[work(a,"public"),work(b,"private"),work(c,"unlisted"),work(d,"deleted")];
  process.env.TABLE_NAME="test";
  send.mockReset();
  send.mockImplementation(async(command:any)=>{
@@ -43,7 +44,7 @@ beforeEach(()=>{
    throw Error("unexpected command "+command.constructor.name);
  });
 });
-describe("ranking visibility & rank stability contract",()=>{
+describe("ranking visibility & compact rank contract",()=>{
  it("all-time fresh retrieval excludes private and deleted, includes public/unlisted",async()=>{
    const reply=body(await getRanking(ev(),"bookmarks"));
    expect(reply.works.map((w:any)=>w.workId)).toEqual([a,c]);
@@ -57,16 +58,22 @@ describe("ranking visibility & rank stability contract",()=>{
    expect(reply.works.map((w:any)=>w.workId)).toEqual([a,c]);
    expect(reply.works.map((w:any)=>w.periodBookmarkCount)).toEqual([40,38]);
  });
- it("visibility refresh redacts previously ranked slots without leaking metadata",async()=>{
+ it("hidden works are omitted on the next read, without exposing metadata",async()=>{
    const prior=body(await getRanking(ev(),"daily")).works.map((w:any)=>w.workId);
-   // One of the two initially eligible works is privatized after ranking fetch.
+   expect(prior).toEqual([a,c]);
    works[2]=work(c,"private");
    const now=body(await getRankingVisibility(ev(undefined,prior.join(","))));
    expect(now.visibility).toEqual({[a]:true,[c]:false});
    expect(JSON.stringify(now)).not.toContain("title:");
-   // Client keeps slot indices 0,1 and replaces only slot 1 with a tombstone.
-   const snapshot=prior.map((id:string)=>now.visibility[id]?id:"REDACTED");
-   expect(snapshot).toEqual([a,"REDACTED"]);
+   const refreshed=body(await getRanking(ev(),"daily"));
+   expect(refreshed.works.map((w:any)=>w.workId)).toEqual([a]);
+   expect(JSON.stringify(refreshed)).not.toContain("private-thumbnail:"+c);
+ });
+ it("ascending daily order reverses eligible Top 50 instead of querying bottom 50",async()=>{
+   const result=body(await getRanking(ev(undefined,undefined,true),"daily"));
+   expect(result.works.map((w:any)=>w.workId)).toEqual([c,a]);
+   const query=send.mock.calls.find(([cmd])=>cmd instanceof QueryCommand)?.[0];
+   expect(query?.input.ScanIndexForward).toBe(false);
  });
  it("nonexistent identifiers are indistinguishable from hidden works",async()=>{
    const result=body(await getRankingVisibility(ev(undefined,[a,"zzzzzzzzzzz"].join(","))));
