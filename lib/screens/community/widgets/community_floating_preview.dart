@@ -29,6 +29,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
   CommunityPlaybackStatus _playbackStatus = CommunityPlaybackStatus.checking;
   String? _lastWorkId;
   bool? _showingPlayer;
+  int _playbackCheckEpoch = 0;
   final _resizeFocusKey = GlobalKey();
   final _closeFocusKey = GlobalKey();
   final _playFocusKey = GlobalKey();
@@ -38,12 +39,46 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
   final _detailsFocus = FocusNode(debugLabel: 'Community preview details');
   final _closeFocus = FocusNode(debugLabel: 'Community preview close');
 
-  Future<void> _checkPlayback(String workId) async {
-    final status = await context.read<CommunityService>().playbackStatus(
-      workId,
-    );
-    if (!mounted || _lastWorkId != workId) return;
-    setState(() => _playbackStatus = status);
+  /// Recheck at each action boundary: privacy can change after a preview opens.
+  /// Discard stale replies from previous checks or another preview.
+  Future<CommunityPlaybackStatus?> _checkPlayback(String workId) async {
+    final epoch = ++_playbackCheckEpoch;
+    final status = await context.read<CommunityService>().playbackStatus(workId);
+    if (!mounted ||
+        _lastWorkId != workId ||
+        epoch != _playbackCheckEpoch ||
+        context.read<CommunityPreviewService>().work?.id != workId) {
+      return null;
+    }
+    setState(() {
+      _playbackStatus = status;
+      if (status != CommunityPlaybackStatus.available) _isPlaying = false;
+    });
+    return status;
+  }
+
+  Future<void> _openDetailsIfAvailable(String workId) async {
+    if (_lastWorkId != workId) return;
+    setState(() => _playbackStatus = CommunityPlaybackStatus.checking);
+    final status = await _checkPlayback(workId);
+    if (status != CommunityPlaybackStatus.available ||
+        !mounted ||
+        context.read<CommunityPreviewService>().work?.id != workId) {
+      return;
+    }
+    context.read<CommunityPreviewService>().close();
+    appRouter.push('/community/work/$workId');
+  }
+
+  Future<void> _resumeIfAvailable(String workId) async {
+    if (_lastWorkId != workId || _isPlaying) return;
+    setState(() => _playbackStatus = CommunityPlaybackStatus.checking);
+    final status = await _checkPlayback(workId);
+    if (status == CommunityPlaybackStatus.available &&
+        mounted &&
+        _lastWorkId == workId) {
+      setState(() => _isPlaying = true);
+    }
   }
 
   void _retryPlayback() {
@@ -197,10 +232,6 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
           ? CommunityPreviewService.minWidth
           : currentWidth() + 80,
     );
-    void details() {
-      service.close();
-      appRouter.push('/community/work/${work.id}');
-    }
 
     final resizeControl = Focus(
       key: _resizeFocusKey,
@@ -291,7 +322,11 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
         ),
         onPressed: () {
           _playFocus.requestFocus();
-          setState(() => _isPlaying = !_isPlaying);
+          if (_isPlaying) {
+            setState(() => _isPlaying = false);
+          } else {
+            _resumeIfAvailable(work.id);
+          }
         },
       ),
     );
@@ -308,7 +343,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           visualDensity: VisualDensity.standard,
         ),
-        onPressed: details,
+        onPressed: () => _openDetailsIfAvailable(work.id),
         child: Text(l10n.communityFloatingPreviewDetailButton),
       ),
     );
