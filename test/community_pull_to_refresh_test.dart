@@ -18,6 +18,40 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// With a backend, pulling down on the plaza takes the works from the server
 /// again, so a viewer sees a change the poster made after posting: here the
 /// 「AI画像・AI動画使用」 declaration turned on, which the viewer hides.
+class _TrackingCommunityService extends CommunityService {
+  _TrackingCommunityService({required CommunityApi api}) : super(api: api);
+
+  int refreshCalls = 0;
+  int moreCalls = 0;
+  int searchCalls = 0;
+
+  @override
+  Future<bool> refreshFromBackend() {
+    refreshCalls++;
+    return super.refreshFromBackend();
+  }
+
+  @override
+  Future<bool> loadMoreLatest() {
+    moreCalls++;
+    return super.loadMoreLatest();
+  }
+
+  @override
+  Future<bool> refreshSearch({
+    required String query,
+    required bool tagMode,
+    required bool exact,
+  }) {
+    searchCalls++;
+    return super.refreshSearch(
+      query: query,
+      tagMode: tagMode,
+      exact: exact,
+    );
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -183,7 +217,7 @@ void main() {
         headers: headers,
       );
     });
-    final service = CommunityService(
+    final service = _TrackingCommunityService(
       api: CommunityApi(
         NiarimApiClient(
           baseUrl: 'https://example.invalid',
@@ -242,7 +276,9 @@ void main() {
       1000,
     );
     await tester.pumpAndSettle();
-    expect(latestFetches, 2);
+    expect(latestFetches, 2,
+      reason: 'refreshCalls=${service.refreshCalls}, moreCalls=${service.moreCalls}, searchCalls=${service.searchCalls}',
+    );
   });
 
   testWidgets('without a backend there is nothing to pull', (tester) async {
