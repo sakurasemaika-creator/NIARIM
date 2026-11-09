@@ -73,6 +73,7 @@ void main() {
     expect(jsonDecode(captured.body), {
       'youtubeVideoId': 'abcdefghijk',
       'youtubeAccessToken': 'YT_TOKEN',
+      'description': '',
       'isShort': true,
       'isNiarimPublished': true,
       'containsGenerativeAiImageOrVideo': false,
@@ -103,6 +104,7 @@ void main() {
     expect(jsonDecode(captured.body), {
       'youtubeVideoId': 'abcdefghijk',
       'youtubeAccessToken': 'YT_TOKEN',
+      'description': '',
       'isShort': false,
       'isNiarimPublished': true,
       // The AI usage declaration is always sent; it is not project metadata.
