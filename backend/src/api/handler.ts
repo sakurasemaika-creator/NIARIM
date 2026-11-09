@@ -8,7 +8,7 @@ import {
   json,
   payloadTooLarge,
 } from "../lib/response";
-import { getRanking } from "./routes/ranking";
+import { getRanking, getRankingVisibility } from "./routes/ranking";
 import { refreshMyYoutubeChannel } from "./routes/youtubeChannelRefresh";
 import { getLatestWorks } from "./routes/worksLatest";
 import { getPlaybackStatus } from "./routes/worksPlaybackStatus";
@@ -91,6 +91,7 @@ function route(method: string, path: string, handler: Handler): Route {
 
 const routes: Route[] = [
   // Public/optionally authenticated reads.
+  route("GET", "/ranking/visibility", (e) => getRankingVisibility(e)),
   route("GET", "/ranking/{period}", (e, p) => getRanking(e, p.period)),
   route("GET", "/works/latest", (e) => getLatestWorks(e)),
   route("GET", "/works/{id}/playback-status", (_e, p) => getPlaybackStatus(p.id)),

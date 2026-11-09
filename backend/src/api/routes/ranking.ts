@@ -115,16 +115,61 @@ async function getPeriodBookmarkRanking(
   });
 }
 
+
+/** Visibility-only bulk check for an ALREADY displayed ranking snapshot.
+ * Missing/private/deleted all return false. No hidden title or existence leak.
+ * The browser/app keeps the original slot number, but redacts it immediately.
+ */
+export async function getRankingVisibility(event: APIGatewayProxyEventV2) {
+  const input = event.queryStringParameters?.ids;
+  if (typeof input !== "string" || input.length > 600) {
+    badRequest("作品ID一覧が不正です", "INVALID_RANKING_VISIBILITY_IDS");
+  }
+  const ids = input.split(",");
+  if (ids.length < 1 || ids.length > 50 ||
+      ids.some(id => !/^[A-Za-z0-9_-]{11}$/.test(id)) ||
+      new Set(ids).size !== ids.length) {
+    badRequest("作品ID一覧が不正です", "INVALID_RANKING_VISIBILITY_IDS");
+  }
+  const works = await publicWorksById(ids);
+  return ok({visibility: Object.fromEntries(ids.map(id => [id, works.has(id)]))});
+}
+
+async function getAllTimePublicWorks(): Promise<WorkItem[]> {
+  const collected: WorkItem[] = [];
+  let nextKey: Record<string,string|number>|undefined;
+  // GSI2 can lag publication changes. NEVER expose cached GSI metadata
+  // without a strongly consistent Work META read. Fill hidden gaps only
+  // when building a NEW ranking response; never mutate a client's snapshot.
+  for (let page=0; page<20 && collected.length<TOP_LIMIT; page++) {
+    const result=await ddb.send(new QueryCommand({
+      TableName:tableName(),
+      IndexName:"GSI2",
+      KeyConditionExpression:"gsi2pk = :pk",
+      ExpressionAttributeValues:{":pk":"BOOKMARK_RANKING"},
+      ScanIndexForward:false,
+      Limit:TOP_LIMIT,
+      ...(nextKey?{ExclusiveStartKey:nextKey}:{}),
+    }));
+    const candidates=(result.Items??[]) as WorkItem[];
+    const byId=await publicWorksById([...new Set(candidates.map(x=>x.workId)
+      .filter((id):id is string => typeof id==="string" &&
+          /^[A-Za-z0-9_-]{11}$/.test(id)))]);
+    for(const candidate of candidates) {
+      const actual=byId.get(candidate.workId);
+      if(actual)collected.push(actual);
+      if(collected.length>=TOP_LIMIT)break;
+    }
+    nextKey=result.LastEvaluatedKey as Record<string,string|number>|undefined;
+    if(!nextKey)break;
+  }
+  return collected;
+}
+
 async function getBookmarkRanking(offset:number,limit:number,ascending:boolean) {
-  const result=await ddb.send(new QueryCommand({
-    TableName:tableName(),IndexName:"GSI2",
-    KeyConditionExpression:"gsi2pk = :pk",
-    ExpressionAttributeValues:{":pk":"BOOKMARK_RANKING"},
-    ScanIndexForward:false,Limit:TOP_LIMIT,
-  }));
-  const ordered=(result.Items??[]) as WorkItem[];
-  const sorted=ascending?[...ordered].reverse():ordered;
-  const page=sorted.slice(offset,offset+limit);
+  const ordered = await getAllTimePublicWorks();
+  const sorted = ascending ? [...ordered].reverse() : ordered;
+  const page = sorted.slice(offset, offset+limit);
   return ok({
     period:"bookmarks",metric:"bookmarks",
     works:page.map(toPublicWork),
