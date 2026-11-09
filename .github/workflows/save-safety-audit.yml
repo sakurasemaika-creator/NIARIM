@@ -366,8 +366,11 @@ jobs:
       - name: Format checkpoint documents with the repository formatter
         run: |
           mkdir -p artifacts/save-safety-format
-          # Prettier rewrites technical underscores in audit-state Markdown as emphasis; keep those source-of-truth records out of this formatter gate.
-          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml 'docs/AI設計書/12_実装チェックリスト.md'
+          # The implementation checklist is also an audit trail containing literal
+          # underscores (e.g. branch names and test identifiers). Prettier 3.8
+          # rewrites these into Markdown emphasis, damaging technical references.
+          # Keep the YAML formatter gate while preserving the checklist verbatim.
+          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml
           git diff --binary > artifacts/save-safety-format/format.patch
           git diff --exit-code
       - uses: actions/upload-artifact@v4
