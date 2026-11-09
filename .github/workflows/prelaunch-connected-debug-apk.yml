@@ -1,0 +1,85 @@
+# Build an actual AWS-connected, OAuth-enabled debug APK without Play Console.
+# Only dev_branch; the draft release is not public, and no live upload occurs.
+name: NIARIM prelaunch connected debug APK
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/prelaunch-connected-debug-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niarim-prelaunch-connected-debug
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: OAuth-enabled Android debug APK (draft only)
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: false
+      - name: Restore persistent debug signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.NIARIM_DEBUG_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.NIARIM_DEBUG_STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "::error::Fixed debug signing secrets are not configured."
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/niarim-ci-debug.jks"
+          chmod 600 "$RUNNER_TEMP/niarim-ci-debug.jks"
+          keytool -list -keystore "$RUNNER_TEMP/niarim-ci-debug.jks" \
+            -storepass:env KEYSTORE_PASSWORD -alias niarim_ci_debug >/dev/null
+      - name: Build a real-backend and Google-enabled APK
+        env:
+          NIARIM_DEBUG_KEYSTORE_PATH: ${{ runner.temp }}/niarim-ci-debug.jks
+          NIARIM_DEBUG_STORE_PASSWORD: ${{ secrets.NIARIM_DEBUG_STORE_PASSWORD }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          DEV_BACKEND_URL: https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/
+        run: |
+          set -euo pipefail
+          if [[ ! "$GOOGLE_CLIENT_ID" =~ ^[A-Za-z0-9-]+[.]apps[.]googleusercontent[.]com$ ]]; then
+            echo "::error::GOOGLE_CLIENT_ID is missing or invalid."
+            exit 1
+          fi
+          flutter pub get
+          flutter test --no-pub \
+            test/community_post_publish_contract_test.dart \
+            test/youtube_thumbnail_service_test.dart \
+            test/community_post_recovery_contract_test.dart \
+            test/push_notification_service_test.dart
+          flutter build apk --debug --no-pub \
+            --dart-define="NIARIM_API_BASE_URL=$DEV_BACKEND_URL" \
+            --dart-define="NIARIM_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID"
+          test -s build/app/outputs/flutter-apk/app-debug.apk
+      - name: Save connected APK in an unpublished draft Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="dev-connected-${GITHUB_SHA}"
+          gh release create "$TAG" \
+            build/app/outputs/flutter-apk/app-debug.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "NIARIM connected debug APK (${GITHUB_SHA:0:8})" \
+            --draft \
+            --notes "PRIVATE DRAFT. Debug-only: development AWS backend and Google OAuth enabled. Not for Google Play. Never publish this draft release."
