@@ -11,6 +11,9 @@ on:
       - test/community_own_following_pull_to_refresh_test.dart
       - test/community_secondary_pull_to_refresh_test.dart
       - test/community_pull_to_refresh_test.dart
+      - test/community_ranking_privacy_visibility_test.dart
+      - lib/services/api/community_api.dart
+      - lib/screens/community/widgets/community_ranking_work_list.dart
   workflow_dispatch:
 
 permissions:
@@ -42,4 +45,5 @@ jobs:
           flutter test --no-pub --reporter expanded \
             test/community_own_following_pull_to_refresh_test.dart \
             test/community_secondary_pull_to_refresh_test.dart \
-            test/community_pull_to_refresh_test.dart
+            test/community_pull_to_refresh_test.dart \
+            test/community_ranking_privacy_visibility_test.dart
