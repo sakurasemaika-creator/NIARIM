@@ -47,8 +47,8 @@ function published(work: WorkItem | undefined): work is WorkItem {
   return Boolean(work &&
     work.itemType === TABLE_ITEM_TYPE.Work &&
     work.isNiarimPublished &&
-    work.youtubePrivacyStatus !== "private" &&
-    work.youtubePrivacyStatus !== "deleted");
+    (work.youtubePrivacyStatus === "public" ||
+     work.youtubePrivacyStatus === "unlisted"));
 }
 
 /** Strongly consistent primary-key reads are required to avoid leaking titles
