@@ -95,7 +95,10 @@ void main() {
     addTearDown(service.dispose);
     await tester.pumpWidget(
       MultiProvider(
-        providers: [ChangeNotifierProvider.value(value: service)],
+        providers: [
+          ChangeNotifierProvider.value(value: service),
+          ChangeNotifierProvider(create: (_) => SettingsService()),
+        ],
         child: MaterialApp(
           locale: const Locale('ja'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -152,7 +155,10 @@ void main() {
 
     await tester.pumpWidget(
       MultiProvider(
-        providers: [ChangeNotifierProvider.value(value: service)],
+        providers: [
+          ChangeNotifierProvider.value(value: service),
+          ChangeNotifierProvider(create: (_) => SettingsService()),
+        ],
         child: MaterialApp(
           locale: const Locale('ja'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
