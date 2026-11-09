@@ -188,6 +188,7 @@ class CommunityService extends ChangeNotifier {
 
   bool _isSocialLoading = false;
   bool _hasLoadedSocial = false;
+  bool _hasRefreshedOwnFollowing = false;
   NiarimApiException? _socialError;
   Future<bool>? _socialRequest;
 
@@ -1175,6 +1176,7 @@ class CommunityService extends ChangeNotifier {
     _lastError = null;
     _isSocialLoading = false;
     _hasLoadedSocial = false;
+    _hasRefreshedOwnFollowing = false;
     _socialError = null;
     _socialRequest = null;
     _ownIds.clear();
@@ -1628,6 +1630,7 @@ class CommunityService extends ChangeNotifier {
         ..addAll({
           for (final user in following) user.niarimUserId: ?user.channelName,
         });
+      _hasRefreshedOwnFollowing = true;
       notifyListeners();
       return true;
     } on CommunityAccountChangedException {
@@ -1674,9 +1677,14 @@ class CommunityService extends ChangeNotifier {
 
   /// [authorId]のフォロー中人数（数字のみ）。フォロワー数と同様、常に
   /// 公開情報として扱う（29_動画投稿・ランキング機能仕様.md 22.5節）。
-  int followingCountOf(String authorId) =>
-      _followingCounts[authorId] ??
-      (api == null ? followingIdsOf(authorId).length : 0);
+  int followingCountOf(String authorId) {
+    if (isOwnAuthor(authorId) &&
+        (_hasLoadedSocial || _hasRefreshedOwnFollowing)) {
+      return _favoriteAuthorIds.length;
+    }
+    return _followingCounts[authorId] ??
+        (api == null ? followingIdsOf(authorId).length : 0);
+  }
 
   /// 作者IDから表示名を引く（見つからなければnull）。
   String? authorNameOf(String authorId) => _works
