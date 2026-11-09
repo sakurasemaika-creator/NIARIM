@@ -25,6 +25,10 @@ CommunityWork _work() => CommunityWork(
   title: _secretTitle,
   authorId: 'different-author',
   authorName: 'Hidden author',
+  viewCount: 0,
+  likeCount: 0,
+  bookmarkCount: 1,
+  durationSeconds: 40,
   postedAt: DateTime.utc(2026, 11, 9),
   thumbnailColorIndex: 3,
 );
