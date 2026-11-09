@@ -143,6 +143,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   final _tabScrollControllers = List.generate(4, (_) => ScrollController());
   final _visiblePageCounts = List<int>.filled(4, CommunityService.pageSize);
   final _pagingTabs = List<bool>.filled(4, false);
+  final _refreshingTabs = List<bool>.filled(4, false);
 
   List<CommunityWork> _visible(List<CommunityWork> works, int tab) =>
       works.take(_visiblePageCounts[tab]).toList();
@@ -655,39 +656,52 @@ class _CommunityScreenState extends State<CommunityScreen>
     );
   }
 
-  /// Pulling down on any tab takes the latest works, the selected ranking
-  /// and the following feed from the server again, so an edit made since
-  /// (a poster's AI image/video declaration, tags, a work hidden) shows.
-  Future<void> _refreshAll() async {
+  /// Refresh the selected tab only; other tab requests, scroll positions and
+  /// displayed page counts remain untouched.
+  Future<void> _refreshTab(int tab) async {
+    if (!mounted || _refreshingTabs[tab]) return;
     final service = context.read<CommunityService>();
-    service.clearTemporaryUnmutes();
-    for (var tab = 0; tab < 4; tab++) {
-      _resetPage(tab);
+    if (!service.isBackendConnected) return;
+    _refreshingTabs[tab] = true;
+    try {
+      switch (tab) {
+        case 0:
+          await service.refreshFromBackend();
+        case 1:
+          await _fetchRanking();
+        case 2:
+          await service.refreshFollowingFeed();
+        case 3:
+          if (service.searchReady) {
+            await service.refreshSearch(
+              query: _searchQuery,
+              tagMode: _tagSearchMode,
+              exact: _tagExactMatch,
+            );
+          } else {
+            await service.refreshFromBackend();
+          }
+      }
+      if (mounted) {
+        setState(() => _resetPage(tab));
+      }
+    } finally {
+      _refreshingTabs[tab] = false;
     }
-    if (!service.isBackendConnected) {
-      if (mounted) setState(() {});
-      return;
-    }
-    await Future.wait([
-      service.refreshFromBackend(),
-      _fetchRanking(),
-      service.refreshFollowingFeed(),
-      if (service.searchReady)
-        service.refreshSearch(
-          query: _searchQuery,
-          tagMode: _tagSearchMode,
-          exact: _tagExactMatch,
-        ),
-    ]);
   }
 
-  /// [child] scrolls even when it fits, so it can always be pulled down to
-  /// refresh; without a backend there is nothing to fetch.
-  Widget _pullToRefresh(CommunityService service, Widget child) {
+  /// The indicator only activates at the scrollable content's top edge.
+  /// Empty/short lists remain pullable, without full-screen navigation.
+  Widget _pullToRefresh(CommunityService service, int tab, Widget child) {
     if (!service.isBackendConnected) return child;
     return RefreshIndicator(
       key: const Key('communityPullToRefresh'),
-      onRefresh: _refreshAll,
+      triggerMode: RefreshIndicatorTriggerMode.onEdge,
+      notificationPredicate: (notification) =>
+          notification.depth == 0 &&
+          notification.metrics.axis == Axis.vertical &&
+          notification.metrics.extentBefore == 0,
+      onRefresh: () => _refreshTab(tab),
       child: child,
     );
   }
@@ -1571,6 +1585,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                 if (works.isEmpty) {
                   return _pullToRefresh(
                     communityService,
+                    0,
                     _scrollableContent(
                       Column(
                         children: [
@@ -1585,6 +1600,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                 }
                 return _pullToRefresh(
                   communityService,
+                  0,
                   _scrollableContent(
                     Column(
                       children: [
@@ -1612,6 +1628,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             ),
             _pullToRefresh(
               communityService,
+              1,
               _scrollableContent(
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1762,6 +1779,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                 if (communityService.favoriteAuthorIds.isEmpty) {
                   return _pullToRefresh(
                     communityService,
+                    2,
                     _scrollableContent(
                       Column(
                         children: [
@@ -1776,6 +1794,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                 if (works.isEmpty) {
                   return _pullToRefresh(
                     communityService,
+                    2,
                     _scrollableContent(
                       Column(
                         children: [
@@ -1790,6 +1809,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                 }
                 return _pullToRefresh(
                   communityService,
+                  2,
                   _scrollableContent(
                     Column(
                       children: [
@@ -1832,6 +1852,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                 );
                 return _pullToRefresh(
                   communityService,
+                  3,
                   _scrollableContent(
                     Column(
                       children: [
