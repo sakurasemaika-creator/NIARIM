@@ -10,6 +10,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import 'community_edit_feedback.dart';
 import 'widgets/community_shorts_viewer.dart';
+import 'widgets/community_top_edge_refresh.dart';
 import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
 import '../../config/font_fallback.dart';
@@ -115,6 +116,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   // 対象外とする）。
   VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
   final ScrollController _authorWorksScroll = ScrollController();
+  final ScrollController _bookmarksScroll = ScrollController();
+  bool _refreshingAuthorWorks = false;
+  bool _refreshingBookmarks = false;
   int _visibleWorks = CommunityService.pageSize;
   bool _loadingMoreWorks = false;
 
@@ -139,6 +143,36 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
       }
     } else if (service.hasMoreAuthor(widget.authorId)) {
       _loadMoreAuthorWorks();
+    }
+  }
+
+  Future<void> _refreshAuthorWorks() async {
+    if (_refreshingAuthorWorks || _loadingMoreWorks) return;
+    final service = context.read<CommunityService>();
+    if (!service.isBackendConnected) return;
+    _refreshingAuthorWorks = true;
+    try {
+      final refreshed = await service.refreshAuthorWorks(widget.authorId);
+      if (refreshed && mounted) {
+        setState(() => _visibleWorks = CommunityService.pageSize);
+      }
+    } finally {
+      _refreshingAuthorWorks = false;
+    }
+  }
+
+  Future<void> _refreshBookmarks() async {
+    if (_refreshingBookmarks) return;
+    final service = context.read<CommunityService>();
+    if (!service.isBackendConnected ||
+        !service.isOwnAuthor(widget.authorId)) {
+      return;
+    }
+    _refreshingBookmarks = true;
+    try {
+      await service.refreshViewerBookmarks();
+    } finally {
+      _refreshingBookmarks = false;
     }
   }
 
@@ -174,6 +208,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   void dispose() {
     _tabController.dispose();
     _authorWorksScroll.dispose();
+    _bookmarksScroll.dispose();
     super.dispose();
   }
 
@@ -385,8 +420,14 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                       controller: _tabController,
                       children: [
                         // ─── 作品タブ ───────────────────────────────────
-                        SingleChildScrollView(
+                        CommunityTopEdgeRefresh(
+                          key: const Key('communityAuthorWorksPullRefresh'),
                           controller: _authorWorksScroll,
+                          enabled: communityService.isBackendConnected,
+                          onRefresh: _refreshAuthorWorks,
+                          child: SingleChildScrollView(
+                            controller: _authorWorksScroll,
+                            physics: const AlwaysScrollableScrollPhysics(),
                           child: filteredWorks.isEmpty
                               ? Column(
                                   children: [
@@ -425,10 +466,18 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                   onTapWork: openWork,
                                   onToggleBookmark: toggleBookmark,
                                 ),
+                          ),
                         ),
                         // Private bookmarks are visible to their owner only.
-                        SingleChildScrollView(
-                          child: bookmarkedWorks.isEmpty
+                        CommunityTopEdgeRefresh(
+                          key: const Key('communityAuthorBookmarksPullRefresh'),
+                          controller: _bookmarksScroll,
+                          enabled: communityService.isBackendConnected,
+                          onRefresh: _refreshBookmarks,
+                          child: SingleChildScrollView(
+                            controller: _bookmarksScroll,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: bookmarkedWorks.isEmpty
                               ? Padding(
                                   padding: const EdgeInsets.all(32),
                                   child: Center(
@@ -443,12 +492,19 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                   onTapWork: openWork,
                                   onToggleBookmark: toggleBookmark,
                                 ),
+                          ),
                         ),
                       ],
                     )
-                  : SingleChildScrollView(
+                  : CommunityTopEdgeRefresh(
+                      key: const Key('communityAuthorWorksPullRefresh'),
                       controller: _authorWorksScroll,
-                      child: filteredWorks.isEmpty
+                      enabled: communityService.isBackendConnected,
+                      onRefresh: _refreshAuthorWorks,
+                      child: SingleChildScrollView(
+                        controller: _authorWorksScroll,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: filteredWorks.isEmpty
                           ? Column(
                               children: [
                                 Padding(
@@ -481,6 +537,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                               onTapWork: openWork,
                               onToggleBookmark: toggleBookmark,
                             ),
+                      ),
                     ),
             ),
           ],
