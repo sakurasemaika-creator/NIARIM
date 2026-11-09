@@ -2,7 +2,9 @@ name: Community pull refresh verification (one-shot)
 on:
   push:
     branches: [dev_branch]
-    paths: [.github/workflows/community-pull-refresh-verify-once.yml]
+    paths:
+      - .github/workflows/community-pull-refresh-verify-once.yml
+      - test/community_pull_to_refresh_test.dart
 permissions:
   contents: read
 jobs:
