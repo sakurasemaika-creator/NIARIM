@@ -9,6 +9,7 @@ import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/color_contrast.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +28,7 @@ Widget host(
     ChangeNotifierProvider.value(value: preview),
     ChangeNotifierProvider(create: (_) => SettingsService()),
     ChangeNotifierProvider(create: (_) => PremiumService()),
+    ChangeNotifierProvider(create: (_) => GoogleAuthService()),
   ],
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
