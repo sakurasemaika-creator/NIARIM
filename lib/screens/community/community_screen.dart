@@ -144,6 +144,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   final _visiblePageCounts = List<int>.filled(4, CommunityService.pageSize);
   final _pagingTabs = List<bool>.filled(4, false);
   final _refreshingTabs = List<bool>.filled(4, false);
+  final _refreshedInPullGesture = List<bool>.filled(4, false);
 
   List<CommunityWork> _visible(List<CommunityWork> works, int tab) =>
       works.take(_visiblePageCounts[tab]).toList();
@@ -686,10 +687,6 @@ class _CommunityScreenState extends State<CommunityScreen>
         setState(() => _resetPage(tab));
       }
     } finally {
-      // Keep the refresh gesture claimed until its pull animation settles.
-      // Immediate mock/fast server responses can otherwise start a second
-      // fetch from the same overscroll movement.
-      await Future<void>.delayed(const Duration(milliseconds: 350));
       _refreshingTabs[tab] = false;
     }
   }
@@ -701,11 +698,27 @@ class _CommunityScreenState extends State<CommunityScreen>
     return RefreshIndicator(
       key: const Key('communityPullToRefresh'),
       triggerMode: RefreshIndicatorTriggerMode.onEdge,
-      notificationPredicate: (notification) =>
-          notification.depth == 0 &&
-          notification.metrics.axis == Axis.vertical &&
-          notification.metrics.extentBefore == 0,
-      onRefresh: () => _refreshTab(tab),
+      notificationPredicate: (notification) {
+        if (notification.depth != 0 ||
+            notification.metrics.axis != Axis.vertical) {
+          return false;
+        }
+        // Only a fresh finger drag may arm another refresh. Inertial scroll
+        // and rebuild notifications must not repeat the same request.
+        if (notification is ScrollStartNotification &&
+            notification.dragDetails != null) {
+          _refreshedInPullGesture[tab] = false;
+        }
+        return notification.metrics.extentBefore == 0 &&
+            !_refreshedInPullGesture[tab];
+      },
+      onRefresh: () {
+        if (_refreshedInPullGesture[tab]) {
+          return Future<void>.value();
+        }
+        _refreshedInPullGesture[tab] = true;
+        return _refreshTab(tab);
+      },
       child: child,
     );
   }
