@@ -33,6 +33,9 @@ import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/community_milestone_store.dart';
 import 'package:niarim/services/performance_service.dart';
 import 'package:niarim/services/premium_service.dart';
+import 'package:niarim/services/advertising_service.dart';
+import 'package:niarim/services/ad_placement_policy.dart';
+import 'package:niarim/widgets/ad_banner_mock_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
 import 'package:niarim/services/settings_service.dart';
@@ -133,16 +136,34 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
   }
 
-  /// 横長広告の専用領域は無料会員の画面にだけ出る（プレミアム会員と、
-  /// 全員へプレミアム機能を開放しているリリース記念キャンペーン中は出ない）。
+  /// The production ad policy suppresses low-content routes and any ad
+  /// request before UMP consent. A missing ad on the empty first-use home
+  /// is intentional, not a navigation failure.
   void expectAdSlotFollowsPremium(WidgetTester tester, String reason) {
-    final isPremium = tester
-        .element(find.byType(Scaffold).first)
-        .read<PremiumService>()
-        .isPremium;
+    final context = tester.element(find.byType(Scaffold).first);
+    final isPremium = context.read<PremiumService>().isPremium;
+    final advertising = context.read<AdvertisingService>();
+    final projects = context.read<ProjectService>();
+    final community = context.read<CommunityService>();
+    final route = appRouter.routerDelegate.currentConfiguration.uri.path;
+    final hasLocalContent = switch (route) {
+      '/home' =>
+        projects.projects.isNotEmpty ||
+            projects.shared.isNotEmpty ||
+            projects.trash.isNotEmpty,
+      '/shared' => projects.shared.isNotEmpty,
+      '/trash' => projects.trash.isNotEmpty,
+      '/community' => community.discoverableWorks.isNotEmpty,
+      _ when route.startsWith('/community/work/') =>
+        community.byId(route.substring('/community/work/'.length)) != null,
+      _ => true,
+    };
+    final eligible = !isPremium &&
+        (advertising.shouldShowAds || kNiarimAdSnapshotPreview) &&
+        isBannerEligibleRoute(route, hasLocalContent: hasLocalContent);
     expect(
       find.byKey(const Key('persistent-horizontal-ad-mock')),
-      isPremium ? findsNothing : findsWidgets,
+      eligible ? findsWidgets : findsNothing,
       reason: reason,
     );
   }
