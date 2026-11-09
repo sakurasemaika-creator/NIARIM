@@ -43,7 +43,7 @@ const user = `N${"a".repeat(32)}`;
 const signedTransactionId = "18fa792de1bca816048293fc71035638";
 const req = {
   headers: { authorization: "Bearer fixture-authentication" },
-} as APIGatewayProxyEventV2;
+} as unknown as APIGatewayProxyEventV2;
 
 function signCallback({
   customData, unit = "2222222222", item = "coins", amount = 10,
