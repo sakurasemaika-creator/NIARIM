@@ -44,8 +44,8 @@ jobs:
         env:
           NIARIM_DYNAMODB_LOCAL_TESTS: "1"
           AWS_EC2_METADATA_DISABLED: "true"
-          AWS_ACCESS_KEY_ID: "LOCAL_ONLY"
-          AWS_SECRET_ACCESS_KEY: "LOCAL_ONLY"
+          AWS_ACCESS_KEY_ID: "localonly"
+          AWS_SECRET_ACCESS_KEY: "localonly"
           AWS_DEFAULT_REGION: "ap-northeast-1"
         run: |
           set -euo pipefail

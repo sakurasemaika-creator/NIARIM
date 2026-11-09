@@ -35,7 +35,7 @@ vi.mock("../src/lib/dynamo", async (importOriginal) => {
   const client = new Client({
     endpoint: "http://127.0.0.1:8000",
     region: "ap-northeast-1",
-    credentials: { accessKeyId: "LOCAL_ONLY", secretAccessKey: "LOCAL_ONLY" },
+    credentials: { accessKeyId: "localonly", secretAccessKey: "localonly" },
   });
   return {
     ...original,
@@ -53,7 +53,7 @@ import { Keys } from "../src/lib/dynamo";
 const localOptions = {
   endpoint: "http://127.0.0.1:8000",
   region: "ap-northeast-1",
-  credentials: { accessKeyId: "LOCAL_ONLY", secretAccessKey: "LOCAL_ONLY" },
+  credentials: { accessKeyId: "localonly", secretAccessKey: "localonly" },
 };
 const client = new DynamoDBClient(localOptions);
 const ddb = DynamoDBDocumentClient.from(client);
