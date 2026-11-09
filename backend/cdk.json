@@ -26,6 +26,9 @@
     "@aws-cdk/aws-iam:minimizePolicies": true,
     "@aws-cdk/core:validateSnapshotRemovalPolicy": true,
     "@aws-cdk/core:enablePartitionLiterals": true,
-    "admobRewardedAdUnitId": "ca-app-pub-4380578821900659/6321761453"
+    "admobRewardedAdUnitId": "ca-app-pub-4380578821900659/6321761453",
+    "rewardedAdSsvEnabled": "true",
+    "rewardedAdReviewApproved": "true",
+    "rewardedAdDailyLimit": "1"
   }
 }
