@@ -10,6 +10,8 @@ import 'package:niarim/screens/community/community_following_list_screen.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_service.dart';
+import 'package:niarim/services/premium_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -40,8 +42,12 @@ CommunityService _service(MockClient client) {
   return service;
 }
 
-Widget _app(CommunityService service) => ChangeNotifierProvider.value(
-  value: service,
+Widget _app(CommunityService service) => MultiProvider(
+  providers: [
+    ChangeNotifierProvider.value(value: service),
+    ChangeNotifierProvider(create: (_) => SettingsService()),
+    ChangeNotifierProvider(create: (_) => PremiumService()),
+  ],
   child: MaterialApp(
     locale: const Locale('ja'),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
