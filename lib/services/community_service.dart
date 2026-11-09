@@ -918,6 +918,36 @@ class CommunityService extends ChangeNotifier {
     }
   }
 
+  /// Refresh the signed-in viewer's private bookmark list only. Do not
+  /// refetch follows, rankings, or other tabs when refreshing this surface.
+  Future<bool> refreshViewerBookmarks() async {
+    final client = api;
+    final me = _currentUserId;
+    if (client == null || me == null) return false;
+    final revision = _accountRevision;
+    try {
+      final bookmarks = await client.bookmarksOf(me, asOwner: true);
+      if (!_isCurrentAccount(revision)) return false;
+      final works = [for (final w in bookmarks) _plazaCopy(w)];
+      for (final work in works) {
+        _upsert(work);
+      }
+      _bookmarkWorkIds = {for (final w in works) w.id};
+      _bookmarkedIds
+        ..clear()
+        ..addAll(works.reversed.map((w) => w.id));
+      _lastError = null;
+      _pruneUnconfirmed();
+      notifyListeners();
+      return true;
+    } on NiarimApiException catch (error) {
+      if (!_isCurrentAccount(revision)) return false;
+      _lastError = error;
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// The following feed from the server: the followed authors' works and
   /// reposts, and the viewer's own reposts (so 「リポスト済み」 shows). They
   /// join the one store, so the viewer's filters apply to them like to
