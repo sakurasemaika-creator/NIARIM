@@ -23,5 +23,5 @@ jobs:
           flutter gen-l10n
       - name: Analyze community screen and regression tests
         run: flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings lib/screens/community/community_screen.dart test/community_pull_to_refresh_test.dart
-      - name: Pointer-gesture-guarded community refresh regression tests
+      - name: Top-origin-only swipe refresh regression tests
         run: flutter test --no-pub test/community_pull_to_refresh_test.dart test/community_ranking_layout_test.dart test/community_search_tabs_test.dart
