@@ -24,7 +24,6 @@ import '../../widgets/responsive.dart';
 import 'community_edit_feedback.dart';
 import 'community_author_works_screen.dart';
 import 'community_follow_notifications_screen.dart';
-import 'community_following_list_screen.dart';
 import 'community_my_works_screen.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
@@ -1809,15 +1808,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                       Column(
                         children: [
                           searchRowFor(2),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton.icon(
-                              key: const Key('communityOwnFollowingListButton'),
-                              onPressed: () => Navigator.of(context).push(
-                                adMockMaterialPageRoute<void>(
-                                  builder: (_) => const CommunityFollowingListScreen(),
-                                ),
-                              ),
                               icon: const Icon(Icons.people_outline),
                               label: const Text('自分のフォロー中一覧'),
                             ),
@@ -1837,15 +1827,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                       Column(
                         children: [
                           searchRowFor(2),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton.icon(
-                              key: const Key('communityOwnFollowingListButton'),
-                              onPressed: () => Navigator.of(context).push(
-                                adMockMaterialPageRoute<void>(
-                                  builder: (_) => const CommunityFollowingListScreen(),
-                                ),
-                              ),
                               icon: const Icon(Icons.people_outline),
                               label: const Text('自分のフォロー中一覧'),
                             ),
@@ -1865,15 +1846,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                     Column(
                       children: [
                         searchRowFor(2),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton.icon(
-                              key: const Key('communityOwnFollowingListButton'),
-                              onPressed: () => Navigator.of(context).push(
-                                adMockMaterialPageRoute<void>(
-                                  builder: (_) => const CommunityFollowingListScreen(),
-                                ),
-                              ),
                               icon: const Icon(Icons.people_outline),
                               label: const Text('自分のフォロー中一覧'),
                             ),
