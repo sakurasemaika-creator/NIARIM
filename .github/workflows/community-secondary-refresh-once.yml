@@ -1,0 +1,33 @@
+name: Community secondary pull refresh verification (one-shot)
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - .github/workflows/community-secondary-refresh-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Analyze changed files
+        run: |
+          flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
+            lib/screens/community/widgets/community_top_edge_refresh.dart \
+            lib/screens/community/community_author_works_screen.dart \
+            lib/screens/community/community_my_works_screen.dart \
+            lib/services/community_service.dart \
+            test/community_secondary_pull_to_refresh_test.dart
+      - name: Verify secondary refresh gestures and previous plaza refresh
+        run: flutter test --no-pub test/community_secondary_pull_to_refresh_test.dart test/community_pull_to_refresh_test.dart
