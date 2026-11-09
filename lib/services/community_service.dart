@@ -150,7 +150,6 @@ class CommunityService extends ChangeNotifier {
   final Set<String> _fetchingMoreAuthors = {};
   int _latestEpoch = 0;
   int _rankingEpoch = 0;
-  final Set<String> _unavailableRankingIds = <String>{};
   final Map<String, int> _periodRankingBookmarkCounts = {};
   /// Display-only period score; canonical work.bookmarkCount remains cumulative.
   Map<String, int> get periodRankingBookmarkCounts =>
@@ -346,7 +345,7 @@ class CommunityService extends ChangeNotifier {
     if (client == null) return discoverableWorks;
     final epoch = ++_rankingEpoch;
     _rankingCursor = null;
-    // Keep existing redacted slots hidden while the replacement snapshot loads.
+    // A newly fetched ranking replaces the prior ordering atomically.
     try {
       final page = await client.ranking(
         period,
@@ -354,9 +353,6 @@ class CommunityService extends ChangeNotifier {
         sortBookmarks: sortBookmarks,
       );
       if (_disposed || epoch != _rankingEpoch) return const [];
-      // Atomically replace visibility/redaction only after a new safe snapshot
-      // has arrived; never expose old private metadata during loading.
-      _unavailableRankingIds.clear();
       _rankingCursor = page.nextCursor;
       _lastError = null;
       _periodRankingBookmarkCounts
@@ -381,7 +377,6 @@ class CommunityService extends ChangeNotifier {
       _lastError = e;
       // The previous period's order must not stand in for this one.
       _rankingIds = const [];
-      _unavailableRankingIds.clear();
       _periodRankingBookmarkCounts.clear();
       _pruneUnconfirmed();
       notifyListeners();
@@ -751,39 +746,33 @@ class CommunityService extends ChangeNotifier {
   Set<String> _bookmarkWorkIds = {};
   final Map<String, Set<String>> _authorPageIds = {};
 
-  /// The last fetched ranking in the server's order, as the viewer's
-  /// filters allow.
+  /// Use the latest server order. A work removed or hidden since that fetch
+  /// simply disappears; displayed positions are compacted, never reserved.
   List<CommunityWork> get rankedWorks => [
     for (final id in _rankingIds)
-      if (_unavailableRankingIds.contains(id))
-        CommunityWork.unavailable(id)
-      else if (byId(id) case final work?
+      if (byId(id) case final work?
           when work.isNiarimPublished && !work.isUnavailable)
-        work
-      else
-        CommunityWork.unavailable(id),
+        work,
   ];
 
-  /// Revalidate already displayed ranks without replacing their position.
-  /// A newly unavailable work becomes a metadata-free, non-interactive slot;
-  /// new ranking fetches may generate an entirely new eligible ordering.
-  Future<bool> refreshRankingVisibility({List<String>? onlyIds}) async {
+  /// Check one card immediately before opening it. The inexpensive, strongly
+  /// consistent metadata-free endpoint protects against a privacy change
+  /// between the last ranking fetch and the tap. No per-list polling is needed.
+  Future<bool> validateRankingWorkForOpen(String workId) async {
     final client = api;
     if (client == null) return true;
     final epoch = _rankingEpoch;
-    final selected = onlyIds == null
-        ? _rankingIds.toList()
-        : _rankingIds.where(onlyIds.contains).toList();
-    final ids = selected
-        .where((id) => !_unavailableRankingIds.contains(id))
-        .toSet().toList();
-    if (ids.isEmpty) return true;
+    if (!_rankingIds.contains(workId)) return false;
     try {
-      final hidden = await client.unavailableRankingIds(ids);
+      final hidden = await client.unavailableRankingIds([workId]);
       if (_disposed || epoch != _rankingEpoch) return false;
-      final before = _unavailableRankingIds.length;
-      _unavailableRankingIds.addAll(hidden);
-      if (_unavailableRankingIds.length != before) notifyListeners();
+      if (hidden.contains(workId)) {
+        _rankingIds.remove(workId);
+        _periodRankingBookmarkCounts.remove(workId);
+        _pruneUnconfirmed();
+        notifyListeners();
+        return false;
+      }
       return true;
     } catch (error) {
       if (!_disposed && epoch == _rankingEpoch) {
