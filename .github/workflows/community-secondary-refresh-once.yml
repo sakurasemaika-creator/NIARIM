@@ -9,6 +9,7 @@ on:
       - lib/screens/community/widgets/community_ranking_work_list.dart
       - lib/services/community_service.dart
       - test/community_ranking_privacy_visibility_test.dart
+      - test/community_pull_to_refresh_test.dart
 
 permissions:
   contents: read
