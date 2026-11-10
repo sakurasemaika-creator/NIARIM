@@ -481,6 +481,17 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                       key: ValueKey('communityPreviewYoutube-${work.id}'),
                                       videoId: work.id,
                                       playing: _isPlaying,
+                                      validatePlayback: () async =>
+                                          await _checkPlayback(work.id) ==
+                                          CommunityPlaybackStatus.available,
+                                      onPlayingChanged: (playing) {
+                                        if (mounted &&
+                                            _lastWorkId == work.id &&
+                                            _playbackStatus == CommunityPlaybackStatus.available &&
+                                            _isPlaying != playing) {
+                                          setState(() => _isPlaying = playing);
+                                        }
+                                      },
                                     ),
                             ),
                           )
