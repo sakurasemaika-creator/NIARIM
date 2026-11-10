@@ -282,24 +282,24 @@ class _ShortsVerifiedPageState extends State<_ShortsVerifiedPage> {
   }
 
   Future<void> _verify() async {
-    if (!mounted || !widget.isCurrentPage) return;
+    if (!mounted || !widget.isCurrentPage) { return; }
     final id = widget.work.id;
     final epoch = ++_checkEpoch;
     setState(() => _status = CommunityPlaybackStatus.checking);
     final status = await context.read<CommunityService>().playbackStatus(id);
     if (!mounted || !widget.isCurrentPage ||
-        widget.work.id != id || epoch != _checkEpoch) return;
+        widget.work.id != id || epoch != _checkEpoch) { return; }
     setState(() => _status = status);
   }
 
   /// IFrame control resume and replay are fresh action boundaries.
   Future<bool> _validateNativePlay() async {
-    if (!mounted || !widget.isCurrentPage) return false;
+    if (!mounted || !widget.isCurrentPage) { return false; }
     final id = widget.work.id;
     final epoch = ++_checkEpoch;
     final status = await context.read<CommunityService>().playbackStatus(id);
     if (!mounted || !widget.isCurrentPage ||
-        widget.work.id != id || epoch != _checkEpoch) return false;
+        widget.work.id != id || epoch != _checkEpoch) { return false; }
     if (status != CommunityPlaybackStatus.available) {
       setState(() => _status = status);
     }
