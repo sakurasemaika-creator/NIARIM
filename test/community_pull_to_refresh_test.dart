@@ -179,7 +179,7 @@ void main() {
     expect(find.text('Pulled work'), findsOneWidget);
 
     // The ranking tab refreshes the same way.
-    await tester.tap(find.text(l10n.communityTabRanking));
+    await tester.tap(find.byKey(const Key('communityTab1')));
     await tester.pumpAndSettle();
     expect(find.text('Pulled work'), findsOneWidget);
     posterDeclaredAi = true;
