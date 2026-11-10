@@ -236,9 +236,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         api == null ||
         priceVersion is! String ||
         price is! int ||
-        price != CoinBenefitPriceCatalog.unitCoins(
-          CoinUnlockTarget.fullPremium, CoinDurationUnit.month,
-        ) ||
+        price !=
+            CoinBenefitPriceCatalog.unitCoins(
+              CoinUnlockTarget.fullPremium,
+              CoinDurationUnit.month,
+            ) ||
         priceVersion != CoinBenefitPriceCatalog.version) {
       return;
     }
@@ -360,8 +362,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       );
       // The existing per-month quote model cannot express the annual
       // Premium discount. Never show its 12×month cost as a finalized total.
-      final finalTotal = _selected.fold<int>(0, (sum, target) =>
-          sum + CoinBenefitPriceCatalog.cost(target, _duration));
+      final finalTotal = _selected.fold<int>(
+        0,
+        (sum, target) => sum + CoinBenefitPriceCatalog.cost(target, _duration),
+      );
       if (quote.requiredCoins != finalTotal) return null;
       return quote;
     } on StateError {
@@ -487,10 +491,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       (sum, target) => sum + CoinBenefitPriceCatalog.cost(target, _duration),
     );
     lines.add(
-      '確定単価による合計：$referenceTotal コイン。'
-      '単品特典・重複交換のコイン消費はまだサーバー未対応です。'
-      '金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。'
-      '正式な有効期限は交換直前のサーバー確認で決まります。',
+      l10n.rewardUnlockReviewFixedTotal(l10n.coinAmount(referenceTotal)),
     );
     if (!mounted) return;
     await showDialog<void>(
@@ -631,7 +632,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         _officialPremiumQuote?['enabled'] == true &&
         _officialPremiumQuote?['priceCoins'] ==
             CoinBenefitPriceCatalog.unitCoins(
-              CoinUnlockTarget.fullPremium, CoinDurationUnit.month,
+              CoinUnlockTarget.fullPremium,
+              CoinDurationUnit.month,
             ) &&
         _officialPremiumQuote?['priceVersion'] ==
             CoinBenefitPriceCatalog.version) {
@@ -641,7 +643,6 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ? CoinBenefitPriceCatalog.cost(target, _duration)
         : null;
     final hasSubscription = context.read<PremiumService>().hasPurchasedPremium;
-    final japanese = Localizations.localeOf(context).languageCode == 'ja';
     final l10n = AppLocalizations.of(context)!;
     return CheckboxListTile(
       key: ValueKey('rewardFeature_${target.name}'),
@@ -654,7 +655,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             ? t['notReady']
             : officialPrice != null
             ? l10n.coinAmount(officialPrice)
-            : '${japanese ? '確定価格（交換準備中）' : 'Fixed price (redemption not yet available)'}'
+            : '${l10n.rewardUnlockFixedPrice}'
                   ' · ${l10n.coinAmount(referencePrice!)}'
                   '${hasSubscription ? ' · ${t['activePremium']}' : ''}',
         style: Theme.of(context).textTheme.bodySmall,
@@ -709,7 +710,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             _officialPremiumQuote?['enabled'] == true &&
             _officialPremiumQuote?['priceCoins'] ==
                 CoinBenefitPriceCatalog.unitCoins(
-                  CoinUnlockTarget.fullPremium, CoinDurationUnit.month,
+                  CoinUnlockTarget.fullPremium,
+                  CoinDurationUnit.month,
                 ) &&
             _officialPremiumQuote?['priceVersion'] ==
                 CoinBenefitPriceCatalog.version
@@ -868,14 +870,14 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         key: const Key('rewardTotalCoins'),
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
-                      // 参考価格の注記は注釈なので、見出しの大きな字に混ぜず
-                      // 本文の書体の別の行に出す（見出しにつなぐと、長い言語・
-                      // 大きな文字で単語の途中で切れた）。
+                      // 確定価格（交換準備中）の注記は注釈なので、見出しの
+                      // 大きな字に混ぜず本文の書体の別の行に出す（見出しに
+                      // つなぐと、長い言語・大きな文字で単語の途中で切れた）。
                       if (serverPrice == null &&
                           quote == null &&
                           _selected.isNotEmpty)
                         Text(
-                          '（確定価格・交換準備中）',
+                          l10n.rewardUnlockFixedPrice,
                           key: const Key('rewardTotalReferenceNote'),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),

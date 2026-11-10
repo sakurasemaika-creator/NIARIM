@@ -6,7 +6,7 @@
 // 滞在ミッション・ウィークリー／マンスリーミッション・ミッション達成の知らせは
 // 日本語と英語しか持たず、スペイン語・フランス語でも英語が出ていた。特典交換の
 // 「重複・有効期限を確認」と交換の確認の文は、どの言語でも日本語のまま
-// （日付も「年月日時分」）で、参考合計は「数＋' コイン'」をつないでいた。
+// （日付も「年月日時分」）で、合計は「数＋' コイン'」をつないでいた。
 //
 // フランス語は0も単数（CLDRの`one`）なので、数の無い`one`の文は0のときに
 // 「あなたの作品が」のような1つの作品の文になる。0も確かめる。
@@ -491,7 +491,8 @@ CommunityService _rewardServer({
           '/me/rewards/quote' => {
             'enabled': true,
             'priceCoins': price,
-            'priceVersion': 'v1-test',
+            // 画面は確定価格の版と同じ見積もりのときだけ交換できる。
+            'priceVersion': CoinBenefitPriceCatalog.version,
           },
           _ => <String, Object>{},
         });
@@ -729,29 +730,50 @@ void main() {
           tester,
           locale,
           _rewardServer(balance: n),
+          // 画面は確定価格と同じサーバーの価格だけを使う（違う価格は
+          // 「交換準備中」として確定価格を出す）。
           priceCatalog: {
             CoinUnlockTarget.toneCurve: CoinUnlockUnitPrices(
-              perHour: n,
-              perDay: 20,
-              perWeek: 110,
-              perMonth: 450,
+              perHour: CoinBenefitPriceCatalog.unitCoins(
+                CoinUnlockTarget.toneCurve,
+                CoinDurationUnit.hour,
+              ),
+              perDay: CoinBenefitPriceCatalog.unitCoins(
+                CoinUnlockTarget.toneCurve,
+                CoinDurationUnit.day,
+              ),
+              perWeek: CoinBenefitPriceCatalog.unitCoins(
+                CoinUnlockTarget.toneCurve,
+                CoinDurationUnit.week,
+              ),
+              perMonth: CoinBenefitPriceCatalog.unitCoins(
+                CoinUnlockTarget.toneCurve,
+                CoinDurationUnit.month,
+              ),
             ),
           },
         );
-        final coin = _coinWords(n)[locale]!;
-        // 残高と、価格の決まったトーンカーブの行の2つ。
-        expect(find.text(coin), findsNWidgets(2));
+        final l10n = lookupAppLocalizations(Locale(locale));
+        const hour = CoinUnlockDuration(1, CoinDurationUnit.hour);
+        final toneCurveCoins = CoinBenefitPriceCatalog.cost(
+          CoinUnlockTarget.toneCurve,
+          hour,
+        );
+        // 残高（[n]コイン）はその言語の単数・複数。
+        expect(find.text(_coinWords(n)[locale]!), findsOneWidget);
+        // 価格の決まったトーンカーブの行は、その必要コインだけ。
         final row = find.byKey(const ValueKey('rewardFeature_toneCurve'));
+        final coin = l10n.coinAmount(toneCurveCoins);
         expect(
           find.descendant(of: row, matching: find.text(coin)),
           findsOneWidget,
         );
-        final reference = {
-          'en': 'Reference only (not for sale)',
-          'es': 'Precio de referencia (aún no canjeable)',
-          'fr': 'Prix indicatif (échange pas encore disponible)',
+        final fixedPrice = {
+          'en': 'Fixed price (redemption not yet available)',
+          'es': 'Precio definitivo (canje aún no disponible)',
+          'fr': 'Prix définitif (échange pas encore disponible)',
         }[locale]!;
-        expect(find.textContaining(reference), findsWidgets);
+        expect(find.textContaining(fixedPrice), findsWidgets);
 
         // 価格の決まった特典だけを選ぶと、合計はその必要コイン。
         await tester.tap(row);
@@ -761,15 +783,13 @@ void main() {
 
         expect(find.byKey(const Key('rewardTotalReferenceNote')), findsNothing);
 
-        // 価格の決まっていない特典も選ぶと、参考価格の合計になる。参考価格の
-        // 注記は合計の見出しにつながず、下の別の行に出る。
+        // 交換の準備ができていない特典も選ぶと、確定価格の合計になる。
+        // 「交換準備中」の注記は合計の見出しにつながず、下の別の行に出る。
         await tester.tap(find.byKey(const ValueKey('rewardFeature_watermark')));
         await tester.pumpAndSettle();
-        const hour = CoinUnlockDuration(1, CoinDurationUnit.hour);
         final referenceTotal =
-            CoinBenefitPriceProposal.cost(CoinUnlockTarget.toneCurve, hour) +
-            CoinBenefitPriceProposal.cost(CoinUnlockTarget.watermark, hour);
-        final l10n = lookupAppLocalizations(Locale(locale));
+            toneCurveCoins +
+            CoinBenefitPriceCatalog.cost(CoinUnlockTarget.watermark, hour);
         expect(
           tester.widget<Text>(total).data,
           l10n.coinAmount(referenceTotal),
@@ -778,7 +798,7 @@ void main() {
           tester
               .widget<Text>(find.byKey(const Key('rewardTotalReferenceNote')))
               .data,
-          reference,
+          fixedPrice,
         );
         _expectNoBrokenUnits(_shownTexts(tester));
         await tester.pumpWidget(const SizedBox.shrink());
@@ -845,7 +865,7 @@ void main() {
         CoinUnlockTarget.toneCurve,
         CoinUnlockTarget.allAds,
         CoinUnlockTarget.canvasAds,
-      ].fold<int>(0, (s, t) => s + CoinBenefitPriceProposal.cost(t, hour));
+      ].fold<int>(0, (s, t) => s + CoinBenefitPriceCatalog.cost(t, hour));
       final body = reviewTexts.join('\n');
       expect(body, contains(l10n.coinAmount(referenceTotal)));
       expect(body, isNot(contains('$referenceTotal コイン')));

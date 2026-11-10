@@ -213,7 +213,7 @@ void main() {
           await tester.pump(const Duration(milliseconds: 200));
         }
 
-        // 価格の決まっていない特典を選ぶと、合計は参考価格で、確認のボタンが
+        // 交換の準備ができていない特典を選ぶと、合計は確定価格で、確認のボタンが
         // 押せるようになる。
         for (final target in ['allAds', 'canvasAds']) {
           await tester.tap(find.byKey(ValueKey('rewardFeature_$target')));
@@ -221,9 +221,9 @@ void main() {
         await tester.pumpAndSettle();
         final l10n = lookupAppLocalizations(locale);
         expect(
-          find.text(l10n.rewardUnlockReferencePrice),
+          find.text(l10n.rewardUnlockFixedPrice),
           findsOneWidget,
-          reason: '$name: 参考価格の合計',
+          reason: '$name: 確定価格の合計',
         );
 
         final problems = <String>[];

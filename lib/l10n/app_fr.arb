@@ -3585,7 +3585,7 @@
   "loginBonusMilestone": "{days, plural, one{{days} jour} other{{days} jours}} de connexion",
   "loginBonusActivityMilestone": "Vous avez atteint {days, plural, one{{days} jour} other{{days} jours}} de connexion",
   "rewardUnlockRewardQuotaRemaining": "Récompenses restantes : {count} (UTC)",
-  "rewardUnlockReferencePrice": "Prix indicatif (échange pas encore disponible)",
+  "rewardUnlockFixedPrice": "Prix définitif (échange pas encore disponible)",
   "missionCoinsReceived": "Pièces reçues",
   "missionClaimFailed": "Réclamation impossible",
   "missionClaimUnconfirmed": "Réclamation non confirmée",
@@ -3648,5 +3648,5 @@
   "rewardUnlockReviewAdsOverlap": "Les avantages sans publicité sélectionnés font double emploi avec « {bundle} ».",
   "rewardUnlockReviewItem": "{benefit} : nouvelle expiration estimée au {expiry}",
   "rewardUnlockReviewItemOverlap": "{benefit} : fait double emploi avec un avantage actif ou groupé. Nouvelle expiration estimée au {expiry}",
-  "rewardUnlockReviewReferenceTotal": "Total indicatif : {coins}. Le serveur ne permet pas encore de dépenser des pièces pour des avantages individuels ou des échanges en double. Le prix et l’expiration officiels doivent être confirmés par le serveur juste avant l’échange."
+  "rewardUnlockReviewFixedTotal": "Total selon les prix unitaires définitifs : {coins}. Le serveur ne permet pas encore de dépenser des pièces pour des avantages individuels ou des échanges en double. Le montant est définitif, mais l’échange n’est possible que si le serveur renvoie un devis officiel. L’expiration officielle est fixée par la vérification du serveur juste avant l’échange."
 }

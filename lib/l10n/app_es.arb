@@ -3585,7 +3585,7 @@
   "loginBonusMilestone": "{days, plural, one{{days} día} other{{days} días}} de acceso",
   "loginBonusActivityMilestone": "¡Has alcanzado {days, plural, one{{days} día} other{{days} días}} de acceso!",
   "rewardUnlockRewardQuotaRemaining": "Recompensas restantes hoy: {count} (UTC)",
-  "rewardUnlockReferencePrice": "Precio de referencia (aún no canjeable)",
+  "rewardUnlockFixedPrice": "Precio definitivo (canje aún no disponible)",
   "missionCoinsReceived": "Monedas recibidas",
   "missionClaimFailed": "No se pudo reclamar",
   "missionClaimUnconfirmed": "No se pudo confirmar",
@@ -3648,5 +3648,5 @@
   "rewardUnlockReviewAdsOverlap": "Las ventajas sin anuncios seleccionadas se solapan con «{bundle}».",
   "rewardUnlockReviewItem": "{benefit}: nueva vigencia estimada hasta el {expiry}",
   "rewardUnlockReviewItemOverlap": "{benefit}: se solapa con una ventaja activa o incluida en un paquete. Nueva vigencia estimada hasta el {expiry}",
-  "rewardUnlockReviewReferenceTotal": "Total de referencia: {coins}. El servidor aún no admite gastar monedas en ventajas sueltas ni en canjes que se solapan. El precio y la vigencia oficiales los confirma el servidor justo antes del canje."
+  "rewardUnlockReviewFixedTotal": "Total según los precios unitarios definitivos: {coins}. El servidor aún no admite gastar monedas en ventajas sueltas ni en canjes que se solapan. El importe ya es definitivo, pero solo se puede canjear cuando el servidor devuelve una cotización oficial. La vigencia oficial la determina el servidor justo antes del canje."
 }

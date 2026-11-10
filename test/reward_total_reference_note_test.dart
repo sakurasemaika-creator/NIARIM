@@ -1,6 +1,6 @@
-// 特典交換の「合計」で、参考価格の注記が見出しの大きな字に混ざらず、注釈の
-// 書体（白光明朝）の別の行に出ることを、本物のフォント・テーマ・スマホの幅で
-// 確かめる。
+// 特典交換の「合計」で、確定価格（交換準備中）の注記が見出しの大きな字に
+// 混ざらず、注釈の書体（白光明朝）の別の行に出ることを、本物のフォント・
+// テーマ・スマホの幅で確かめる。
 //
 // 以前は合計の見出し（headlineSmall・くらむぼん）へ「110 pièces · Prix
 // indicatif (échange pas encore disponible)」と注記までつないでいたため、
@@ -136,7 +136,7 @@ void main() {
 
   for (final MapEntry(key: name, value: locale) in locales.entries) {
     for (final scale in [1.0, 1.75, 2.0]) {
-      testWidgets('合計の参考価格の注記は見出しと別の行・注釈の書体（$name, 文字$scale倍, 360dp）', (
+      testWidgets('合計の確定価格の注記は見出しと別の行・注釈の書体（$name, 文字$scale倍, 360dp）', (
         tester,
       ) async {
         await loadAppFonts(tester);
@@ -178,12 +178,12 @@ void main() {
           await tester.pump(const Duration(milliseconds: 200));
         }
 
-        // サーバーの価格が無い特典（トーンカーブ）を選ぶと、合計は参考価格。
+        // サーバーの価格が無い特典（トーンカーブ）を選ぶと、合計は確定価格。
         await tester.tap(find.byKey(const ValueKey('rewardFeature_toneCurve')));
         await tester.pumpAndSettle();
         final l10n = lookupAppLocalizations(locale);
         const hour = CoinUnlockDuration(1, CoinDurationUnit.hour);
-        final referenceTotal = CoinBenefitPriceProposal.cost(
+        final referenceTotal = CoinBenefitPriceCatalog.cost(
           CoinUnlockTarget.toneCurve,
           hour,
         );
@@ -198,7 +198,7 @@ void main() {
         final card = find.ancestor(of: total, matching: find.byType(Card));
         final note = find.descendant(
           of: card,
-          matching: find.text(l10n.rewardUnlockReferencePrice),
+          matching: find.text(l10n.rewardUnlockFixedPrice),
         );
         expect(note, findsOneWidget, reason: '$name: 合計の下の注記');
         expect(

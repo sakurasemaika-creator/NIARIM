@@ -16253,11 +16253,11 @@ abstract class AppLocalizations {
   /// **'本日のコイン獲得：残り{count}回（UTC）'**
   String rewardUnlockRewardQuotaRemaining(int count);
 
-  /// 特典交換：まだ交換できない特典の参考価格の前に付ける言葉
+  /// 特典交換：価格は確定しているが、まだ交換できない特典の価格の前に付ける言葉（合計の下の注記にも使う）
   ///
   /// In ja, this message translates to:
-  /// **'参考価格（交換準備中）'**
-  String get rewardUnlockReferencePrice;
+  /// **'確定価格（交換準備中）'**
+  String get rewardUnlockFixedPrice;
 
   /// ミッション：コインを受け取れたときの知らせ
   ///
@@ -16631,11 +16631,11 @@ abstract class AppLocalizations {
   /// **'{benefit}：既存・セット特典と重複。参考の延長後期限 {expiry}'**
   String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry);
 
-  /// 重複・有効期限の確認：参考の合計（coinsはcoinAmountで作ったコインの枚数）
+  /// 重複・有効期限の確認：確定単価による合計（coinsはcoinAmountで作ったコインの枚数）
   ///
   /// In ja, this message translates to:
-  /// **'参考合計：{coins}。単品特典・重複交換のコイン消費はまだサーバー未対応です。正式な交換価格・有効期限は交換直前のサーバー確認が必要です。'**
-  String rewardUnlockReviewReferenceTotal(String coins);
+  /// **'確定単価による合計：{coins}。単品特典・重複交換のコイン消費はまだサーバー未対応です。金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。正式な有効期限は交換直前のサーバー確認で決まります。'**
+  String rewardUnlockReviewFixedTotal(String coins);
 }
 
 class _AppLocalizationsDelegate

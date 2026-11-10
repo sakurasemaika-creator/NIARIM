@@ -8998,7 +8998,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get rewardUnlockReferencePrice => '참고 가격(교환 준비 중)';
+  String get rewardUnlockFixedPrice => '확정 가격(교환 준비 중)';
 
   @override
   String get missionCoinsReceived => '코인을 받았습니다';
@@ -9311,7 +9311,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String rewardUnlockReviewReferenceTotal(String coins) {
-    return '참고 합계: $coins. 개별 혜택·중복 교환의 코인 사용은 아직 서버에서 지원하지 않습니다. 정식 교환 가격과 만료일은 교환 직전에 서버에서 확인해야 합니다.';
+  String rewardUnlockReviewFixedTotal(String coins) {
+    return '확정 단가 기준 합계: $coins. 개별 혜택·중복 교환의 코인 사용은 아직 서버에서 지원하지 않습니다. 금액은 확정되었지만, 서버가 정식 견적을 제공하는 경우에만 교환할 수 있습니다. 정식 만료일은 교환 직전에 서버에서 확인하여 정해집니다.';
   }
 }

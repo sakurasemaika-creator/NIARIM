@@ -8952,7 +8952,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get rewardUnlockReferencePrice => '参考価格（交換準備中）';
+  String get rewardUnlockFixedPrice => '確定価格（交換準備中）';
 
   @override
   String get missionCoinsReceived => 'コインを受け取りました';
@@ -9264,7 +9264,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String rewardUnlockReviewReferenceTotal(String coins) {
-    return '参考合計：$coins。単品特典・重複交換のコイン消費はまだサーバー未対応です。正式な交換価格・有効期限は交換直前のサーバー確認が必要です。';
+  String rewardUnlockReviewFixedTotal(String coins) {
+    return '確定単価による合計：$coins。単品特典・重複交換のコイン消費はまだサーバー未対応です。金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。正式な有効期限は交換直前のサーバー確認で決まります。';
   }
 }

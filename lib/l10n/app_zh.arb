@@ -3585,7 +3585,7 @@
   "loginBonusMilestone": "累计登录{days}天",
   "loginBonusActivityMilestone": "累计登录达到{days}天",
   "rewardUnlockRewardQuotaRemaining": "今日剩余金币奖励：{count}次（UTC）",
-  "rewardUnlockReferencePrice": "参考价格（兑换准备中）",
+  "rewardUnlockFixedPrice": "确定价格（兑换准备中）",
   "missionCoinsReceived": "已领取金币",
   "missionClaimFailed": "领取失败",
   "missionClaimUnconfirmed": "无法确认领取",
@@ -3648,5 +3648,5 @@
   "rewardUnlockReviewAdsOverlap": "所选的去广告权益与「{bundle}」重复。",
   "rewardUnlockReviewItem": "{benefit}：延长后的参考有效期 {expiry}",
   "rewardUnlockReviewItemOverlap": "{benefit}：与现有或套餐权益重复。延长后的参考有效期 {expiry}",
-  "rewardUnlockReviewReferenceTotal": "参考合计：{coins}。服务器尚不支持用金币兑换单项权益或重复兑换。正式的兑换价格和有效期需在兑换前由服务器确认。"
+  "rewardUnlockReviewFixedTotal": "按确定单价计算的合计：{coins}。服务器尚不支持用金币兑换单项权益或重复兑换。金额已确定，但只有服务器返回正式报价时才能兑换。正式的有效期在兑换前由服务器确认后决定。"
 }

@@ -9596,8 +9596,8 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get rewardUnlockReferencePrice =>
-      'Prix indicatif (échange pas encore disponible)';
+  String get rewardUnlockFixedPrice =>
+      'Prix définitif (échange pas encore disponible)';
 
   @override
   String get missionCoinsReceived => 'Pièces reçues';
@@ -9999,7 +9999,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String rewardUnlockReviewReferenceTotal(String coins) {
-    return 'Total indicatif : $coins. Le serveur ne permet pas encore de dépenser des pièces pour des avantages individuels ou des échanges en double. Le prix et l’expiration officiels doivent être confirmés par le serveur juste avant l’échange.';
+  String rewardUnlockReviewFixedTotal(String coins) {
+    return 'Total selon les prix unitaires définitifs : $coins. Le serveur ne permet pas encore de dépenser des pièces pour des avantages individuels ou des échanges en double. Le montant est définitif, mais l’échange n’est possible que si le serveur renvoie un devis officiel. L’expiration officielle est fixée par la vérification du serveur juste avant l’échange.';
   }
 }

@@ -9586,8 +9586,8 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get rewardUnlockReferencePrice =>
-      'Precio de referencia (aún no canjeable)';
+  String get rewardUnlockFixedPrice =>
+      'Precio definitivo (canje aún no disponible)';
 
   @override
   String get missionCoinsReceived => 'Monedas recibidas';
@@ -9991,7 +9991,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String rewardUnlockReviewReferenceTotal(String coins) {
-    return 'Total de referencia: $coins. El servidor aún no admite gastar monedas en ventajas sueltas ni en canjes que se solapan. El precio y la vigencia oficiales los confirma el servidor justo antes del canje.';
+  String rewardUnlockReviewFixedTotal(String coins) {
+    return 'Total según los precios unitarios definitivos: $coins. El servidor aún no admite gastar monedas en ventajas sueltas ni en canjes que se solapan. El importe ya es definitivo, pero solo se puede canjear cuando el servidor devuelve una cotización oficial. La vigencia oficial la determina el servidor justo antes del canje.';
   }
 }

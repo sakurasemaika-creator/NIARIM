@@ -9443,7 +9443,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get rewardUnlockReferencePrice => 'Reference only (not for sale)';
+  String get rewardUnlockFixedPrice =>
+      'Fixed price (redemption not yet available)';
 
   @override
   String get missionCoinsReceived => 'Coins received';
@@ -9842,7 +9843,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String rewardUnlockReviewReferenceTotal(String coins) {
-    return 'Reference total: $coins. The server does not yet support spending coins on individual benefits or overlapping exchanges. The official price and expiry must be confirmed by the server right before exchanging.';
+  String rewardUnlockReviewFixedTotal(String coins) {
+    return 'Total at fixed unit prices: $coins. The server does not yet support spending coins on individual benefits or overlapping exchanges. The price is final, but you can exchange only when the server returns an official quote. The official expiry is set by the server check right before exchanging.';
   }
 }

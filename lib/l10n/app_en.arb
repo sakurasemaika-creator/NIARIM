@@ -3592,7 +3592,7 @@
   "loginBonusMilestone": "Logged in {days, plural, one{{days} day} other{{days} days}}",
   "loginBonusActivityMilestone": "You reached {days, plural, one{{days} total login day} other{{days} total login days}}",
   "rewardUnlockRewardQuotaRemaining": "Coin rewards left today: {count} (UTC)",
-  "rewardUnlockReferencePrice": "Reference only (not for sale)",
+  "rewardUnlockFixedPrice": "Fixed price (redemption not yet available)",
   "missionCoinsReceived": "Coins received",
   "missionClaimFailed": "Could not claim",
   "missionClaimUnconfirmed": "Could not confirm reward",
@@ -3655,5 +3655,5 @@
   "rewardUnlockReviewAdsOverlap": "The selected ad-removal benefits overlap with “{bundle}”.",
   "rewardUnlockReviewItem": "{benefit}: estimated new expiry {expiry}",
   "rewardUnlockReviewItemOverlap": "{benefit}: overlaps with a current or bundled benefit. Estimated new expiry {expiry}",
-  "rewardUnlockReviewReferenceTotal": "Reference total: {coins}. The server does not yet support spending coins on individual benefits or overlapping exchanges. The official price and expiry must be confirmed by the server right before exchanging."
+  "rewardUnlockReviewFixedTotal": "Total at fixed unit prices: {coins}. The server does not yet support spending coins on individual benefits or overlapping exchanges. The price is final, but you can exchange only when the server returns an official quote. The official expiry is set by the server check right before exchanging."
 }

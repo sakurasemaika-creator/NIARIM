@@ -8861,7 +8861,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get rewardUnlockReferencePrice => '参考价格（兑换准备中）';
+  String get rewardUnlockFixedPrice => '确定价格（兑换准备中）';
 
   @override
   String get missionCoinsReceived => '已领取金币';
@@ -9173,8 +9173,8 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String rewardUnlockReviewReferenceTotal(String coins) {
-    return '参考合计：$coins。服务器尚不支持用金币兑换单项权益或重复兑换。正式的兑换价格和有效期需在兑换前由服务器确认。';
+  String rewardUnlockReviewFixedTotal(String coins) {
+    return '按确定单价计算的合计：$coins。服务器尚不支持用金币兑换单项权益或重复兑换。金额已确定，但只有服务器返回正式报价时才能兑换。正式的有效期在兑换前由服务器确认后决定。';
   }
 }
 
@@ -18037,7 +18037,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get rewardUnlockReferencePrice => '參考價格（兌換準備中）';
+  String get rewardUnlockFixedPrice => '確定價格（兌換準備中）';
 
   @override
   String get missionCoinsReceived => '已領取金幣';
@@ -18349,7 +18349,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String rewardUnlockReviewReferenceTotal(String coins) {
-    return '參考合計：$coins。伺服器尚不支援以金幣兌換單項權益或重複兌換。正式的兌換價格和有效期限需在兌換前由伺服器確認。';
+  String rewardUnlockReviewFixedTotal(String coins) {
+    return '按確定單價計算的合計：$coins。伺服器尚不支援以金幣兌換單項權益或重複兌換。金額已確定，但只有伺服器回傳正式報價時才能兌換。正式的有效期限在兌換前由伺服器確認後決定。';
   }
 }

@@ -3585,7 +3585,7 @@
   "loginBonusMilestone": "누적 {days}일 달성",
   "loginBonusActivityMilestone": "누적 로그인 {days}일을 달성했습니다",
   "rewardUnlockRewardQuotaRemaining": "오늘 코인 보상 잔여: {count}회 (UTC)",
-  "rewardUnlockReferencePrice": "참고 가격(교환 준비 중)",
+  "rewardUnlockFixedPrice": "확정 가격(교환 준비 중)",
   "missionCoinsReceived": "코인을 받았습니다",
   "missionClaimFailed": "받지 못했습니다",
   "missionClaimUnconfirmed": "수령을 확인하지 못했습니다",
@@ -3648,5 +3648,5 @@
   "rewardUnlockReviewAdsOverlap": "선택한 광고 제거 혜택은 「{bundle}」 혜택과 중복됩니다.",
   "rewardUnlockReviewItem": "{benefit}: 연장 후 만료일(참고) {expiry}",
   "rewardUnlockReviewItemOverlap": "{benefit}: 기존·묶음 혜택과 중복. 연장 후 만료일(참고) {expiry}",
-  "rewardUnlockReviewReferenceTotal": "참고 합계: {coins}. 개별 혜택·중복 교환의 코인 사용은 아직 서버에서 지원하지 않습니다. 정식 교환 가격과 만료일은 교환 직전에 서버에서 확인해야 합니다."
+  "rewardUnlockReviewFixedTotal": "확정 단가 기준 합계: {coins}. 개별 혜택·중복 교환의 코인 사용은 아직 서버에서 지원하지 않습니다. 금액은 확정되었지만, 서버가 정식 견적을 제공하는 경우에만 교환할 수 있습니다. 정식 만료일은 교환 직전에 서버에서 확인하여 정해집니다."
 }
