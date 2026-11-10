@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:ui' show Locale, PlatformDispatcher;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
@@ -8,9 +9,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/canvas_dock_panel.dart';
 import '../models/canvas_size_preset.dart';
 import '../models/toolbar_item.dart';
+import '../utils/app_locale.dart';
 import '../utils/tolerant_preferences.dart';
 
 class SettingsService extends ChangeNotifier {
+  /// 端末の言語の並び。表示言語を一度も選んでいないときは、ここから決める
+  /// （テストでは日本語の端末に差し替える。`test/flutter_test_config.dart`）。
+  @visibleForTesting
+  static List<Locale> Function() deviceLocales = () =>
+      PlatformDispatcher.instance.locales;
+
   int _defaultFps = 12;
   int _undoLimit = 50;
   int _trashAutoDeleteDays = 0;
@@ -507,14 +515,17 @@ class SettingsService extends ChangeNotifier {
     );
   }
 
+  /// 幅・高さはキャンバスの範囲（[kMinCanvasEdge]〜[kMaxCanvasEdge]）に
+  /// 収めて保存する（範囲外のサイズを保存すると、そのサイズで上限を超えた
+  /// 作品を作れた）。
   Future<void> addCustomSizePreset(String name, int width, int height) async {
     _customSizePresets = [
       ..._customSizePresets,
       CanvasSizePreset(
         id: 'size_${DateTime.now().microsecondsSinceEpoch}',
         name: name,
-        width: width,
-        height: height,
+        width: clampCanvasEdge(width),
+        height: clampCanvasEdge(height),
       ),
     ];
     await _persistCustomSizePresets();
@@ -530,7 +541,11 @@ class SettingsService extends ChangeNotifier {
     _customSizePresets = _customSizePresets
         .map(
           (p) => p.id == id
-              ? p.copyWith(name: name, width: width, height: height)
+              ? p.copyWith(
+                  name: name,
+                  width: width == null ? null : clampCanvasEdge(width),
+                  height: height == null ? null : clampCanvasEdge(height),
+                )
               : p,
         )
         .toList();
@@ -759,7 +774,11 @@ class SettingsService extends ChangeNotifier {
         ? savedUndoLimit
         : 50;
     _trashAutoDeleteDays = prefs.readInt('trash_auto_delete') ?? 0;
-    _language = prefs.readString('language') ?? 'ja';
+    // 選んだことが無ければ端末の言語に合わせる（保存はしない。選ぶまでは
+    // 端末の言語を変えるとそれに従う）。以前は端末の言語に関係なく日本語で
+    // 始まっていた。
+    _language =
+        prefs.readString('language') ?? appLanguageCodeFor(deviceLocales());
     _defaultDrawingAreaEnabled =
         prefs.readBool('default_drawing_area_enabled') ?? false;
     _defaultDrawingAreaScale =
@@ -868,7 +887,14 @@ class SettingsService extends ChangeNotifier {
       try {
         final decoded = jsonDecode(encoded);
         if (decoded is Map<String, dynamic>) {
-          _customSizePresets.add(CanvasSizePreset.fromJson(decoded));
+          // 以前の版で範囲外のサイズを保存できたので、読むときに収める。
+          final preset = CanvasSizePreset.fromJson(decoded);
+          _customSizePresets.add(
+            preset.copyWith(
+              width: clampCanvasEdge(preset.width),
+              height: clampCanvasEdge(preset.height),
+            ),
+          );
         }
       } on FormatException {
         // Keep the raw persisted entry untouched so recovery is non-destructive.

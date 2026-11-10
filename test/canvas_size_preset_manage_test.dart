@@ -183,4 +183,30 @@ void main() {
     expect(find.text('書き出しサイズ: 1920×1920'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  test('sizes added or edited out of range are saved in range', () async {
+    SharedPreferences.setMockInitialValues({'language': 'ja'});
+    final settings = SettingsService();
+    addTearDown(settings.dispose);
+    await settings.init();
+    await settings.addCustomSizePreset('大きすぎ', 5000, 10);
+    final id = settings.customSizePresets.single.id;
+    expect(settings.customSizePresets.single.width, 1920);
+    expect(settings.customSizePresets.single.height, 64);
+
+    await settings.updateCustomSizePreset(id, width: 0, height: 9999);
+    expect(settings.customSizePresets.single.width, 64);
+    expect(settings.customSizePresets.single.height, 1920);
+    // 片方だけ変えたときは、もう片方を変えない。
+    await settings.updateCustomSizePreset(id, width: 640);
+    expect(settings.customSizePresets.single.width, 640);
+    expect(settings.customSizePresets.single.height, 1920);
+
+    final prefs = await SharedPreferences.getInstance();
+    final saved =
+        jsonDecode(prefs.getStringList('custom_size_presets')!.single)
+            as Map<String, dynamic>;
+    expect(saved['width'], 640);
+    expect(saved['height'], 1920);
+  });
 }
