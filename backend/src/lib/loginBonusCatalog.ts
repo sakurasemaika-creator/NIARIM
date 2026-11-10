@@ -8,7 +8,7 @@
  * These coin prices are launch proposals and payout is OFF by default.
  */
 export const DAILY_LOGIN_COINS = 1;
-export const LOGIN_BONUS_CATALOG_VERSION = "cumulative-login-v1";
+export const LOGIN_BONUS_CATALOG_VERSION = "cumulative-login-v2";
 export const LOGIN_BONUS_MAX_MILESTONE = 3600;
 
 export type LoginMilestone = {
@@ -27,8 +27,8 @@ export const LOGIN_BONUS_MILESTONES: readonly LoginMilestone[] =
   Object.freeze(tiers.flatMap(tier => {
     const rows:LoginMilestone[]=[];
     for (let days: number = tier.from;days<=tier.to;days+=tier.step) {
-      const roundBonus = days === 50 ? 50 : days === 100 ? 100
-        : days === 500 ? 250 : days === 1000 ? 500 : tier.coins;
+      const roundBonus = Math.min(40, days === 50 ? 10 : days === 100 ? 15
+        : days === 500 ? 25 : days === 1000 ? 40 : tier.coins);
       rows.push({days,coins:roundBonus});
     }
     return rows;
