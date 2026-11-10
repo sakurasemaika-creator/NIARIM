@@ -10,10 +10,11 @@
 library;
 
 abstract final class CoinEconomyScale {
+  static const String finalEconomyVersion = 'economy-v1-final-20261110';
   /// Product design reference: 1 yen of displayed plan price maps to 100 coins.
   static const int referenceCoinsPerYen = 100;
 
-  /// Launch configuration to use when AdMob SSV and server offer are ready.
+  /// Owner-approved fixed launch ad reward, subject to signed AdMob SSV.
   /// This does NOT create coins and must not override server-signed offers.
   static const int initialRewardedCoinsPerCompletion = 10;
   static const String initialRewardOfferVersion = 'launch-v1-10-coins';

@@ -230,8 +230,9 @@ export class NiarimBackendStack extends Stack {
         CREATOR_EDIT_SESSION_PILOT_ENABLED:
           this.node.tryGetContext("creatorEditSessionPilotEnabled")==="true"
             ? "true":"false",
-        // New 480-stage matrix has independent, default-OFF review gates.
-        // Draft coin amounts may NEVER pay until pricing is approved.
+        // All 480-stage grid rewards are owner-approved FINAL amounts.
+        // Independent anti-abuse / cross-work consistency review gates
+        // still default OFF; economic approval is NOT operational approval.
         // Cumulative login visit tracking is available without payouts.
         // New daily/milestone coin grants require independent human review.
         LOGIN_BONUS_CLAIMS_ENABLED:
@@ -266,8 +267,9 @@ export class NiarimBackendStack extends Stack {
         // no NIARIM-specific count cap; Google may independently no-fill.
         REWARDED_AD_DAILY_LIMIT:
           String(this.node.tryGetContext("rewardedAdDailyLimit") ?? ""),
-        // Exchange price must be explicitly approved; no placeholder price
-        // can accidentally spend user coins or mint Premium.
+        // Final full Premium monthly tariff is exactly 60,000 coins.
+        // This context provides price and version only, NEVER activates
+        // wallet deductions: redemption and safety approval stay default-OFF.
         COIN_REDEMPTION_ENABLED:
           this.node.tryGetContext("coinRedemptionEnabled") === "true"
             ? "true" : "false",

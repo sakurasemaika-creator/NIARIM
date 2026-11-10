@@ -1,12 +1,11 @@
 
 /**
- * Publication/bookmark achievement matrix (planning catalog, v3).
- * Every requested count x bookmark target exists as a stable mission ID.
- * Claims require their own versioned account-scoped shard; never overload
- * the old MAX_SAFE_INTEGER claimedMask.
+ * OWNER-FINALIZED coin rewards for the 20 x 24 = 480 mission grid.
+ * Every reward is fixed in the approved 5-coin progression. Achievement
+ * IDs, bit positions and per-user claim shards must stay stable.
  *
- * Coin amounts are DRAFT launch offers until the operator explicitly reviews
- * budget, pricing and the newly introduced claims feature flags.
+ * Approval of the AMOUNT does not enable payment: the existing independent
+ * cross-work consistency / wallet integrity gates remain fail-closed.
  */
 export const WORK_COUNT_GOALS = Object.freeze([
   3, 5, ...Array.from({length:9},(_,i)=>(i+1)*10),
@@ -27,7 +26,7 @@ export interface GridMission {
   bit: number;
   shard: number;
   coins: number;
-  provisionalPrice: true;
+  priceFinal: true;
 }
 /** Each strictly harder goal in either dimension increases the reward.
  * 20 work tiers x 24 bookmark tiers: 5 through 215 coins in steps of five.
@@ -48,7 +47,7 @@ export const WORK_COUNT_MISSIONS: readonly GridMission[] =
       kind:"qualifiedWorks" as const,required:works,
       eachWorkBookmarks:bookmarks,perWork:false as const,
       bit,shard,coins:gridCoins(works,bookmarks),
-      provisionalPrice:true as const,
+      priceFinal:true as const,
     }))
   ));
 export function gridClaimsEnabled():boolean{

@@ -141,5 +141,10 @@ describe("owner-finalized coin exchange rates round the ones digit upwards",()=>
     expect(finalBenefitCoins("endCardEdit","month")).toBe(8000);
     expect(finalBenefitCoins("fullPremium","month")).toBe(60000);
     expect(isBundledPremiumCheaperForAllDurations()).toBe(true);
+    // Freeze the complete 12 × 4 launch rate card, not just 4 examples.
+    const fixed: readonly (readonly [typeof targets[number],readonly number[]])[] = [["endCardEdit",[70,290,2170,8000]],["watermark",[120,500,3790,14000]],["toneCurve",[110,470,3520,13000]],["levelAdjustment",[90,360,2710,10000]],["unlimitedDuration",[150,650,4870,18000]],["customAutomation",[170,720,5410,20000]],["projectListAds",[80,330,2440,9000]],["canvasAds",[130,540,4060,15000]],["timelineAds",[100,430,3250,12000]],["processingAds",[50,220,1630,6000]],["allAds",[300,1290,9730,36000]],["fullPremium",[500,2500,18000,60000]]];
+    for(const [target,amounts] of fixed){
+      expect(durations.map(d=>finalBenefitCoins(target,d))).toEqual(amounts);
+    }
   });
 });

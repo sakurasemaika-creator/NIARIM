@@ -1,11 +1,10 @@
 /**
- * Initial cumulative login reward proposal. Distinct calendar days, never
- * a streak. A missed day does not reset progress. The server's JST day
- * prevents device clock/timezone edits from double-claiming.
+ * Owner-approved FINAL cumulative login rewards (1 coin per JST visit;
+ * 54 progressive milestone coin amounts). Distinct calendar days, not
+ * consecutive streaks; missed days never reset accumulated progress.
  *
- * The server day boundary is midnight JST (UTC+09:00).
- * 1 coin per checked-in day, with progressively higher milestone prizes.
- * These are proposals and payout is OFF unless separately approved.
+ * Pricing is final; server-side issuance remains independently gated
+ * pending integrity/operational approval. Server day changes at JST 00:00.
  */
 export const DAILY_LOGIN_COINS = 1;
 export const LOGIN_BONUS_CATALOG_VERSION = "cumulative-login-v3-progressive";

@@ -11,6 +11,7 @@ describe("creator mission achievement matrix",()=>{
     expect(BOOKMARK_GOALS).toEqual([0,10,20,30,40,50,60,70,80,90,
       100,150,200,250,300,350,400,450,500,600,700,800,900,1000]);
     expect(WORK_COUNT_MISSIONS).toHaveLength(480);
+    expect(WORK_COUNT_MISSIONS.every(m=>m.priceFinal===true)).toBe(true);
     expect(ACCOUNT_GRID_MAX_COINS).toBeGreaterThan(0);
   });
   it("has stable, non-overlapping shard bits and all 24 per-work milestones",()=>{

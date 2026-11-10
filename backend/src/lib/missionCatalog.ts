@@ -1,5 +1,6 @@
 /**
- * Creator missions v2. Award rules are versioned, sourced in code, and NEVER
+ * Owner-approved FINAL creator-mission coin amounts. Rules are versioned
+ * and sourced in code. They are NEVER
  * triggered by locally reported work time or YouTube engagement metrics.
  *
  * Account-lifetime missions and per-published-work missions use separate,

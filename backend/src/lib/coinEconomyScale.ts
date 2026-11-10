@@ -10,11 +10,12 @@
  * before granting coins. No issuance is enabled by this module.
  */
 /**
- * Launch default: one verified voluntary rewarded-ad completion = 10 coins.
- * This is the initial RECOMMENDED AdMob ad-unit configuration, NOT a wallet
- * credit instruction. Never credit coins without signed SSV + replay defense.
- * Keep AdMob reward_amount, backend offer version and displayed UI consistent.
+ * Owner-approved fixed launch reward: one VERIFIED voluntary rewarded
+ * ad completion = 10 coins. Actual issuer must still validate AdMob's
+ * signed SSV callback, account binding, quota and non-replay.
+ * Keep AdMob reward_amount and server offer version aligned.
  */
+export const FINAL_COIN_ECONOMY_VERSION = "economy-v1-final-20261110" as const;
 export const INITIAL_REWARDED_COINS_PER_COMPLETION = 10 as const;
 export const INITIAL_REWARD_OFFER_VERSION = "launch-v1-10-coins" as const;
 export const REFERENCE_COINS_PER_YEN = 100 as const;

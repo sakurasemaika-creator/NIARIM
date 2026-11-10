@@ -29,6 +29,31 @@ void main() {
       CoinUnlockTarget.fullPremium, CoinDurationUnit.month), 60000);
   });
 
+  test('all 48 final benefit rates match the approved launch tariff', () {
+    const rates = <CoinUnlockTarget, List<int>>{
+      CoinUnlockTarget.endCardEdit: [70, 290, 2170, 8000],
+      CoinUnlockTarget.watermark: [120, 500, 3790, 14000],
+      CoinUnlockTarget.toneCurve: [110, 470, 3520, 13000],
+      CoinUnlockTarget.levelAdjustment: [90, 360, 2710, 10000],
+      CoinUnlockTarget.unlimitedDuration: [150, 650, 4870, 18000],
+      CoinUnlockTarget.customAutomation: [170, 720, 5410, 20000],
+      CoinUnlockTarget.projectListAds: [80, 330, 2440, 9000],
+      CoinUnlockTarget.canvasAds: [130, 540, 4060, 15000],
+      CoinUnlockTarget.timelineAds: [100, 430, 3250, 12000],
+      CoinUnlockTarget.processingAds: [50, 220, 1630, 6000],
+      CoinUnlockTarget.allAds: [300, 1290, 9730, 36000],
+      CoinUnlockTarget.fullPremium: [500, 2500, 18000, 60000],
+    };
+    for (final row in rates.entries) {
+      expect(
+        CoinDurationUnit.values.map((unit) =>
+          CoinBenefitPriceCatalog.unitCoins(row.key, unit)).toList(),
+        row.value,
+        reason: 'Final catalog drift: ${row.key}',
+      );
+    }
+  });
+
   test('full Premium is strictly cheaper than all individual features', () {
     final periods = <CoinUnlockDuration>[
       const CoinUnlockDuration(1, CoinDurationUnit.hour),
