@@ -216,7 +216,10 @@ class _StorageScreenState extends State<StorageScreen> {
       (max, slice) => math.max(max, slice.value),
     );
     final scheme = Theme.of(context).colorScheme;
-    final pieOutline = CanvasIconButton.outlineColor(scheme.primary, scheme);
+    // Toolbar's theme-derived outline algorithm, measured against the
+    // actual panel surface so dark swatches never acquire invisible white
+    // borders on a light page (and vice versa in dark appearance).
+    final pieOutline = CanvasIconButton.outlineColor(scheme.surface, scheme);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -258,10 +261,7 @@ class _StorageScreenState extends State<StorageScreen> {
                                 color: s.color,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: CanvasIconButton.outlineColor(
-                                    s.color,
-                                    scheme,
-                                  ),
+                                  color: pieOutline,
                                   width: 1,
                                 ),
                               ),
@@ -315,7 +315,7 @@ class _StorageScreenState extends State<StorageScreen> {
     required double ratio,
     required ColorScheme scheme,
   }) {
-    final outline = CanvasIconButton.outlineColor(color, scheme);
+    final outline = CanvasIconButton.outlineColor(scheme.surface, scheme);
     final amount = ratio.clamp(0.0, 1.0);
     return SizedBox(
       key: key,
