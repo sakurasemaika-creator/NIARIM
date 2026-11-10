@@ -62,7 +62,14 @@ describe("cumulative login bonus and non-streak earning",()=>{
   expect(c.input.Key?.pk).toBe("USER#Nowner");
   expect(c.input.Key?.sk).toBe("LOGIN_BONUS_STATE");
   expect(c.input.ConditionExpression).toContain("lastVisitedDay < :day");
-  expect(send).toHaveBeenCalledTimes(1);
+  // Daily login is still one conditional write. The new weekly/monthly
+  // counter adds one account-state read and at most one conditional write.
+  expect(send).toHaveBeenCalledTimes(3);
+  expect(send.mock.calls[1][0]).toBeInstanceOf(GetCommand);
+  const recurring = send.mock.calls[2][0] as UpdateCommand;
+  expect(recurring).toBeInstanceOf(UpdateCommand);
+  expect(recurring.input.Key?.sk).toBe("RECURRING_MISSIONS_STATE_V1");
+  expect(recurring.input.ConditionExpression).toContain("lastVisitedDay < :day");
  });
  it("repeat same-day visit is read-only, never increments twice",async()=>{
   send.mockRejectedValueOnce(new ConditionalCheckFailedException({
