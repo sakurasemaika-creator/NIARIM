@@ -31,7 +31,10 @@ void main() {
       find.textContaining('10位以内・ブックマーク15件以上'),
       findsOneWidget,
     );
-    expect(find.textContaining('上位5％以内'), findsOneWidget);
+    expect(
+      find.textContaining('※NIARIM全体の公開作品100件以上、かつ上位5％以内'),
+      findsOneWidget,
+    );
     expect(find.textContaining('小数点以下切り捨て'), findsOneWidget);
     expect(find.textContaining('48時間経過後'), findsOneWidget);
     expect(find.textContaining('同じ作品の同じ順位報酬は1回限り'), findsOneWidget);
