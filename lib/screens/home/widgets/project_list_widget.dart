@@ -470,6 +470,7 @@ class ProjectListWidget extends StatelessWidget {
               itemBuilder: (context, index) =>
                   _detailTile(context, l10n, sorted[index]),
             ),
+            const SliverToBoxAdapter(child: SizedBox(height: 104)),
           ],
         );
       }
@@ -524,6 +525,7 @@ class ProjectListWidget extends StatelessWidget {
                   _gridCard(context, sorted[index]),
             ),
           ),
+          const SliverToBoxAdapter(child: SizedBox(height: 104)),
         ],
       );
     }
