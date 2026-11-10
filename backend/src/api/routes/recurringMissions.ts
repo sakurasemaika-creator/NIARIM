@@ -36,34 +36,47 @@ async function loadState(userId: string) {
  */
 export async function recordRecurringLoginVisit(userId: string): Promise<void> {
   const period = recurringPeriodKeys();
-  const state = await loadState(userId);
-  if (state.lastVisitedDay >= period.day) return;
-  const sameWeek = state.weekKey === period.week;
-  const sameMonth = state.monthKey === period.month;
-  try {
-    await ddb.send(new UpdateCommand({
-      TableName: tableName(),
-      Key: Keys.recurringMissionState(userId),
-      UpdateExpression:
-        "SET itemType = :type, lastVisitedDay = :day, " +
-        "weekKey = :week, weekDays = :weekDays, weekClaimedMask = :weekMask, " +
-        "monthKey = :month, monthDays = :monthDays, monthClaimedMask = :monthMask",
-      ConditionExpression: "attribute_not_exists(lastVisitedDay) OR lastVisitedDay < :day",
-      ExpressionAttributeValues: {
-        ":type": RECURRING_MISSION_STATE_TYPE,
-        ":day": period.day,
-        ":week": period.week,
-        ":weekDays": sameWeek ? Math.min(state.weekDays + 1, 7) : 1,
-        ":weekMask": sameWeek ? state.weekClaimedMask : 0,
-        ":month": period.month,
-        ":monthDays": sameMonth ? Math.min(state.monthDays + 1, 31) : 1,
-        ":monthMask": sameMonth ? state.monthClaimedMask : 0,
-      },
-    }));
-  } catch (error) {
-    if (error instanceof ConditionalCheckFailedException) return;
-    throw error;
+  // A coin claim can modify either claimed mask while today's visit is being
+  // read. Compare both masks and retry rather than overwriting a paid claim.
+  for (let attempt=0; attempt<3; attempt++) {
+    const state = await loadState(userId);
+    if (state.lastVisitedDay >= period.day) return;
+    const sameWeek = state.weekKey === period.week;
+    const sameMonth = state.monthKey === period.month;
+    try {
+      await ddb.send(new UpdateCommand({
+        TableName: tableName(),
+        Key: Keys.recurringMissionState(userId),
+        UpdateExpression:
+          "SET itemType = :type, lastVisitedDay = :day, " +
+          "weekKey = :week, weekDays = :weekDays, weekClaimedMask = :weekMask, " +
+          "monthKey = :month, monthDays = :monthDays, monthClaimedMask = :monthMask",
+        ConditionExpression:
+          "(attribute_not_exists(lastVisitedDay) OR lastVisitedDay < :day) " +
+          "AND (attribute_not_exists(weekClaimedMask) OR " +
+          "weekClaimedMask = :oldWeekMask) " +
+          "AND (attribute_not_exists(monthClaimedMask) OR " +
+          "monthClaimedMask = :oldMonthMask)",
+        ExpressionAttributeValues: {
+          ":type": RECURRING_MISSION_STATE_TYPE,
+          ":day": period.day,
+          ":week": period.week,
+          ":weekDays": sameWeek ? Math.min(state.weekDays + 1, 7) : 1,
+          ":weekMask": sameWeek ? state.weekClaimedMask : 0,
+          ":oldWeekMask": state.weekClaimedMask,
+          ":month": period.month,
+          ":monthDays": sameMonth ? Math.min(state.monthDays + 1, 31) : 1,
+          ":monthMask": sameMonth ? state.monthClaimedMask : 0,
+          ":oldMonthMask": state.monthClaimedMask,
+        },
+      }));
+      return;
+    } catch (error) {
+      if (error instanceof ConditionalCheckFailedException) continue;
+      throw error;
+    }
   }
+  throw new Error("Concurrent recurring visit state change; retry later");
 }
 
 /** Read-only current JST week/month goals. All rewards are feature-gated. */
