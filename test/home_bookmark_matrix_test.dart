@@ -14,7 +14,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
-import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/api/niarim_api_models.dart';
@@ -145,7 +145,7 @@ void main() {
         if (state != 'guest' && service.isBackendConnected) {
           service.setCurrentUserId('fixture-owner');
         }
-        appRouter.go('/home');
+        appRouter.go('/community');
         final providers = await tester.runAsync(buildAppProviders);
         await tester.pumpWidget(
           RepaintBoundary(
@@ -160,7 +160,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        final context = tester.element(find.byType(HomeScreen));
+        final context = tester.element(find.byType(CommunityScreen));
         final settings = context.read<SettingsService>();
         final theme = context.read<ThemeService>();
         if (state == 'filtered' || state == 'unresolved') {
@@ -182,7 +182,7 @@ void main() {
             await tester.runAsync(() => service.loadSocial());
           }
         }
-        final tab = find.byKey(const ValueKey('home_tab_2'));
+        final tab = find.byKey(const ValueKey('communityTab4'));
         await tester.ensureVisible(tab);
         await tester.tap(tab);
         await tester.pumpAndSettle();
@@ -314,7 +314,7 @@ void main() {
               reason: suffix,
             );
             expect(settings.forcePcMode, p.pc, reason: suffix);
-            final home = tester.element(find.byType(HomeScreen));
+            final home = tester.element(find.byType(CommunityScreen));
             final l10n = AppLocalizations.of(home)!;
             expect(
               l10n.localeName.replaceAll('-', '_'),
@@ -351,7 +351,7 @@ void main() {
             }
             for (final scroll in tester.stateList<ScrollableState>(
               find.descendant(
-                of: find.byType(HomeScreen),
+                of: find.byType(CommunityScreen),
                 matching: find.byType(Scrollable),
               ),
             )) {
@@ -374,7 +374,7 @@ void main() {
             };
             await capture(suffix, cell);
             final buttons = find.descendant(
-              of: find.byType(HomeScreen),
+              of: find.byType(CommunityScreen),
               matching: find.byWidgetPredicate(
                 (w) =>
                     w is OutlinedButton ||
@@ -387,7 +387,7 @@ void main() {
             for (final paragraph in tester.renderObjectList<RenderParagraph>(
               find.descendant(
                 of: find.descendant(
-                  of: find.byType(HomeScreen),
+                  of: find.byType(CommunityScreen),
                   matching: find.byType(OutlinedButton),
                 ),
                 matching: find.byType(RichText),
