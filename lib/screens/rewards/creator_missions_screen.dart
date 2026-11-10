@@ -650,10 +650,6 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                       : t.get('editTimeUnverified'),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                Text(
-                  t.get('rankingWarning'),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
                 Text(t.format('candidateMinutes', candidateMinutes)),
                 Text(t.format('verifiedMinutes', verifiedMinutes)),
                 if (account['enabled'] != true &&
