@@ -1,0 +1,66 @@
+name: One-shot requested UI and coin integration verification
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-recent-ui-and-coin-verification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  flutter-verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Regenerate localizations for independent verification
+        run: flutter gen-l10n
+      - name: Analyze changed UI, models and file trash service
+        run: |
+          flutter analyze --no-fatal-infos --no-fatal-warnings \
+            lib/screens/home/home_screen.dart \
+            lib/screens/home/widgets/project_list_widget.dart \
+            lib/screens/home/widgets/home_drawer.dart \
+            lib/screens/rewards/reward_unlock_screen.dart \
+            lib/screens/rewards/coin_benefits_screen.dart \
+            lib/screens/rewards/membership_benefits_screen.dart \
+            lib/screens/rewards/creator_missions_screen.dart \
+            lib/screens/rewards/recurring_missions_panel.dart \
+            lib/screens/help/guide_hub_screen.dart \
+            lib/screens/community/community_screen.dart \
+            lib/services/local_file_trash_service.dart \
+            lib/models/coin_benefit_price_proposal.dart \
+            lib/services/api/community_api.dart \
+            lib/router.dart
+      - name: Run Home navigation and recoverable file-trash tests
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/home_navigation_contract_test.dart \
+            test/local_file_trash_service_test.dart
+      - name: Run coin pricing, account safety and UI contract tests
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/coin_unlock_quote_test.dart \
+            test/reward_unlock_screen_test.dart \
+            test/premium_coin_account_isolation_test.dart \
+            test/premium_play_verification_policy_test.dart \
+            test/login_bonus_ui_policy_test.dart \
+            test/creator_mission_claim_ui_policy_test.dart
+      - name: Capture all revised home tabs at eight screen widths
+        run: flutter test --no-pub --reporter expanded test/home_drawer_multiwidth_capture_test.dart
+      - name: Upload latest UI evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: user-request-responsive-ui-captures
+          path: build/home-drawer-multiwidth
+          retention-days: 14
+          if-no-files-found: ignore
