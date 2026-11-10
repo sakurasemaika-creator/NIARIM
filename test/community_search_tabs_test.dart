@@ -194,75 +194,56 @@ void main() {
     );
   });
 
-  testWidgets('plaza tabs use project-list-style proportional widths', (
+  testWidgets('five icon tabs divide the width equally on SP and PC', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
-
-    for (final width in [320.0, 390.0, 720.0]) {
+    for (final width in [320.0, 360.0, 375.0, 390.0, 430.0, 720.0, 1440.0]) {
       tester.view.physicalSize = Size(width, 844);
-      for (final locale in [const Locale('ja'), const Locale('en')]) {
+      for (final locale in [const Locale('ja'), const Locale('en'), const Locale('fr')]) {
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pumpWidget(app(locale: locale));
         await tester.pumpAndSettle();
-
         final barFinder = find.byType(TabBar);
         final bar = tester.widget<TabBar>(barFinder);
-        expect(bar.isScrollable, isTrue);
-        expect(bar.tabAlignment, TabAlignment.start);
-        expect(bar.labelPadding, EdgeInsets.zero);
-
-        final context = tester.element(barFinder);
-        final theme = Theme.of(context);
-        final textStyle =
-            theme.tabBarTheme.labelStyle ?? theme.textTheme.titleSmall!;
-        final labels = <String>[];
-        final actualWidths = <double>[];
-        for (var i = 0; i < 4; i++) {
+        expect(bar.tabs.length, 5);
+        final expected = tester.getSize(barFinder).width / 5;
+        for (var i = 0; i < 5; i++) {
           final tab = find.byKey(Key('communityTabWidth$i'));
-          labels.add(
-            tester
-                .widget<Text>(
-                  find.descendant(of: tab, matching: find.byType(Text)),
-                )
-                .data!,
-          );
-          actualWidths.add(tester.getSize(tab).width);
-        }
-        final naturalWidths = <double>[];
-        for (final label in labels) {
-          final painter = TextPainter(
-            text: TextSpan(text: label, style: textStyle),
-            textDirection: Directionality.of(context),
-            textScaler: MediaQuery.textScalerOf(context),
-            locale: Localizations.localeOf(context),
-            maxLines: 1,
-          )..layout();
-          naturalWidths.add(painter.width + 32);
-          painter.dispose();
-        }
-        final totalNatural = naturalWidths.reduce((a, b) => a + b);
-        final available = tester.getSize(barFinder).width;
-        final scrollTabs = totalNatural > available;
-        for (var i = 0; i < labels.length; i++) {
-          final expected = scrollTabs
-              ? naturalWidths[i]
-              : available * naturalWidths[i] / totalNatural;
-          expect(
-            actualWidths[i],
-            closeTo(expected, 0.5),
-            reason: '$locale at width $width, tab $i',
-          );
-        }
-        if (!scrollTabs) {
-          expect(actualWidths.reduce((a, b) => a + b), closeTo(available, 0.5));
+          expect(tester.getSize(tab).width, closeTo(expected, 0.5),
+              reason: '$locale at width $width tab $i');
+          final rect = tester.getRect(tab);
+          expect(rect.left, greaterThanOrEqualTo(-0.5));
+          expect(rect.right, lessThanOrEqualTo(width + 0.5));
+          expect(find.descendant(of: tab, matching: find.byType(Icon)), findsOneWidget);
+          expect(find.descendant(of: tab, matching: find.byType(Text)), findsNothing);
         }
         expect(tester.takeException(), isNull);
       }
     }
+  });
+
+  testWidgets('long press reveals the localized bookmark tab name', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.physicalSize = const Size(320, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    final l10n = AppLocalizations.of(tester.element(find.byType(CommunityScreen)))!;
+    await tester.longPress(find.byKey(const Key('communityTab4')));
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(find.text(l10n.homeTabBookmarked), findsOneWidget);
+    expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 0,
+        reason: 'long-press should reveal the name without changing tabs');
+    await tester.tap(find.byKey(const Key('communityTab4')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 4);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('long localized plaza tabs align to the leading edge', (
@@ -282,9 +263,6 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpWidget(app(locale: locale));
       await tester.pumpAndSettle();
-      final localizations = AppLocalizations.of(
-        tester.element(find.byType(CommunityScreen)),
-      )!;
       final bar = tester.widget<TabBar>(find.byType(TabBar));
       if (bar.isScrollable) {
         expect(
@@ -293,10 +271,7 @@ void main() {
           reason: '$locale: scrolling tabs must start at the leading edge',
         );
       }
-      final first = find.descendant(
-        of: find.byType(TabBar),
-        matching: find.text(localizations.communityTabNew),
-      );
+      final first = find.byKey(const Key('communityTab0'));
       final rect = tester.getRect(first);
       expect(
         rect.left,
@@ -374,13 +349,13 @@ void main() {
   });
 
   testWidgets(
-    'four tabs isolate Search and prevent ranking filter/reordering',
+    'five tabs isolate Search and prevent ranking filter/reordering',
     (tester) async {
       SharedPreferences.setMockInitialValues({});
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
       final bar = tester.widget<TabBar>(find.byType(TabBar));
-      expect(bar.tabs.length, 4);
+      expect(bar.tabs.length, 5);
       // New arrivals retain content filter, but never render search controls.
       expect(
         find.byKey(const Key('communityContentFilterButton')),
