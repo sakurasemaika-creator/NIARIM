@@ -105,7 +105,7 @@ void main() {
           await service.contentFiltersReady;
           service.setCurrentUserId('bookmarker');
 
-          appRouter.go('/home');
+          appRouter.go('/community');
           final providers = await tester.runAsync(buildAppProviders);
           await tester.pumpWidget(MultiProvider(
             providers: [
@@ -116,7 +116,7 @@ void main() {
           ));
           await tester.pumpAndSettle();
           await tester.runAsync(() => service.loadSocial());
-          final bookmarkedTab = find.byKey(const ValueKey('home_tab_2'));
+          final bookmarkedTab = find.byKey(const ValueKey('communityTab4'));
           await tester.ensureVisible(bookmarkedTab);
           await tester.tap(bookmarkedTab);
           await tester.pumpAndSettle();
