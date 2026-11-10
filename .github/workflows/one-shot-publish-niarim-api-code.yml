@@ -1,0 +1,64 @@
+name: One-shot Publish Verified NIARIM API Code Artifact
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-publish-niarim-api-code.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Verify backend type checks and all atomic wallet tests
+        run: |
+          npm run build
+          npm test
+      - name: Produce immutable Lambda code-only ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx esbuild src/api/handler.ts --bundle --platform=node --target=node22 \
+            --format=cjs --minify --outfile=dist/index.js
+          cd dist
+          zip -q -j niarim-api-verified.zip index.js
+          sha256sum niarim-api-verified.zip
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::368601349794:role/NIARIM-GitHub-Deploy-dev
+          aws-region: ap-northeast-1
+      - name: Upload verified ZIP to private CDK assets bucket (do not deploy)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(aws sts get-caller-identity --query Account --output text)" = "368601349794"
+          credentials="$(aws sts assume-role \
+            --role-arn arn:aws:iam::368601349794:role/cdk-hnb659fds-file-publishing-role-368601349794-ap-northeast-1 \
+            --role-session-name niarim-verified-code-upload)"
+          export AWS_ACCESS_KEY_ID="$(jq -r '.Credentials.AccessKeyId' <<<"$credentials")"
+          export AWS_SECRET_ACCESS_KEY="$(jq -r '.Credentials.SecretAccessKey' <<<"$credentials")"
+          export AWS_SESSION_TOKEN="$(jq -r '.Credentials.SessionToken' <<<"$credentials")"
+          bucket="cdk-hnb659fds-assets-368601349794-ap-northeast-1"
+          object="niarim-code-only/${GITHUB_SHA}/niarim-api-verified.zip"
+          aws s3 cp dist/niarim-api-verified.zip "s3://$bucket/$object" \
+            --no-progress
+          aws s3api head-object --bucket "$bucket" --key "$object" \
+            --query '{size:ContentLength,etag:ETag}' --output json
+          echo "Code-only artifact published: $object"
+          echo "No Lambda configuration or deployment was modified."
