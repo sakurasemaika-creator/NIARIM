@@ -366,6 +366,11 @@ status: `todo`。現行App dev_branchの `backend/src/api/handler.ts` は登録�
 
 既存 `D001.8–14`、`D001.35–43`、`D001.46–60`、`D021` と重複する機能はID間で実証拠を共用してよいが、**追加登録のみでPASS・監査完了・backend本番稼働済みとはしない**。実操作、隔離backend/実SDK環境の適否、未検証のhuman-action-pending/implementation-pending、残存不具合を明示する。監査進捗とBaseline lock/Stateは今回変更しない。
 
+
+## D001.62 — ブラシごとの太さ・不透明度の記憶と共有失敗の知らせ（2026-11-10追加）
+
+status: `todo`。S38の製品変更を登録する。App `dd1974d7`・`308c019`：キャンバスで変えた太さ・不透明度をブラシごとに覚える（保存キー`brush_builtin_working_values`、操作の終わりに保存、ペンのブラシだけ、早替えツール・自動操作は一時的な値、一覧のメニュー「既定の太さ・不透明度に戻す」、Help「カスタムブラシ」の説明、数値欄の押下範囲、一覧で選んだ行のアイコン色）。App `07323398`：書き出した作品の行・プレビュー・書き出し完了の共有失敗の知らせ（`ExportShareService`、`export_share_feedback.dart`、正式なメニュー文字色と印）。全ブラシ（組み込み25＋自作）×切り替え/再起動/早替え/ショートカット/自動操作/複製/書き出し/設定の引き継ぎ、スライダー・±・数値入力・PC/SP・7locale・文字拡大、Android/touch/筆圧、共有はAndroid/iPadの実共有・取消・失敗・二重操作を実機で確認する。S38の限定的な検証をこのIDのPASSへ代用しない。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。

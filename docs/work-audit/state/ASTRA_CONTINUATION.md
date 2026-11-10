@@ -1,5 +1,17 @@
 # NIARIM Audit Progress
 
+## S38 公開済み — 次はDISC057/DISC058の取り込み（2026-11-10、別の実行環境で継続）
+
+前の実行環境がunavailableのため、ユーザー指示で別の環境（Claude Code）がdev_branchだけを使って継続した。下の「S38 最優先の色契約修正」「S38 checkpoint」は前の環境の記録として残す。そこにある「環境復帰後の次の1手」は、この節で置き換える（WIPの復元・色の修正・再検証・公開は完了）。Baseline2done/628todo/A003、Discovery cursor DISC001、Delta not_startedを変更しない。
+
+- 公開済み（App dev_branch、非force）：`dd1974d7` ブラシごとの太さ・不透明度の記憶、`07323398` DISC061 共有失敗の知らせ（前の環境のWIPを復元＋色を正式なメニュー文字色へ＋書き出し完了の共有）、`308c019` ブラシの記憶の追加修正（レビュー指摘）。Webは製品変更なし。
+- 検証の要点と留保はASTRA_AUDIT_STATE.mdの先頭節。DISC061はtodoのまま（Android/iPadの実共有、残り11か所＝DISC064、全preset/全matrix、CI33が未完）。
+- 進行中：DISC057（交換期間の単複・空白、ARBのICU plural）とDISC058（容量画面を節ごとに読み込み・失敗・再試行）は、独立したworktreeで反例→修正→回帰まで作成し、レビュー中。取り込み前。未公開の変更を公開済みとして扱わない。
+- 前の環境の未回収物：raw45PASS・PC原本9点・S38 standalone2parts・CI workflow全文（A003_S38_20261110_CHECKPOINT.md）。この環境では取得・使用していない。前の環境が復帰しても、S38の製品sourceは公開済みのものが正。
+- ユーザーの判断待ち：DISC066（PC専用の作業画面が画面へつながっていない・メニューバーが出ている）、DISC067（消しゴム等にも自分の太さを覚えさせるか）。
+
+次の1手：DISC057のcommit（worktree `02dc7411`）のレビュー結果を確認→指摘を直す→dev_branchへcherry-pick→gen-l10n/analyze/対象test→実Linux EN/FR/JAで期間の表示→公開。続けてDISC058も同じ手順。その後DISC059の残り（reset部分失敗/prefs ack/古いmemory）、DISC064（残り11か所の共有）へ。
+
 ## S38 最優先の色契約修正（2026-11-10、未適用・未検証）
 
 ユーザーの「固有色が必要な領域を除き、UI色はテーマ・外観の正式設定から取る」という指示に対し、S38候補のerror textに使った `Theme.colorScheme.error` は適合しない。最新dev_branchの `lib/services/theme_service.dart` をGitHub連携で直接読んだところ、`ColorScheme.fromSeed` のMaterial error色を `readableThemeError` で調整しており、error labelは独立した設定色ではないことがコメントと実装に明記されていた。画面にHEXを書いていなくても、設定から直接選ぶ文字色へ対応していない。DISC014の9色/役割対応とDISC061へ追記し、未push候補の見た目の色契約はFAILとして扱う。
@@ -145,7 +157,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S38 — 機能45回帰/PC実操作は色修正前。設定色契約FAILを先に是正・再検証。実行環境unavailable、SP/製品push保留
+current_substep: A003/S38 — DISC061の共有失敗の知らせを公開（色を正式なメニュー文字色へ、20tests・実Linux PC/SP）。DISC057/058はworktreeで作成・レビュー中
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -165,7 +177,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: 実行環境復帰→原本/raw45PASSを確保→custom menuTextColorのfresh色反例→Card/previewのforeground正式色へ2source修正/再検証・fresh build→SP/native/download/evidence→検証後dev_branchだけpush/CI33。A003_S38_20261110_CHECKPOINT.md冒頭を優先。
+next_action: DISC057（worktree 02dc7411）のレビュー指摘を直してdev_branchへ取り込み→実Linuxで期間の表示→公開。DISC058も同じ手順。次にDISC059残り、DISC064。冒頭の「S38 公開済み」節を優先。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。

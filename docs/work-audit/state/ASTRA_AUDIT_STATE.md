@@ -1,5 +1,26 @@
 # NIARIM Audit Evidence
 
+## S38 公開 — 共有失敗の通知（DISC061）とブラシの太さ・不透明度の記憶（2026-11-10、別の実行環境で継続）
+
+この単位の実行入力はApp `6decdfa96c5e57c22d31f12142a577e5877401e0`から始め、途中で他のセッションの公開（YouTube再生まわり等）を3回取り込んで最終App `308c019`、Web `d7f8b40`。両dev_branchだけ（ユーザー指示「dev_branchのみを見て、修正・プッシュするのもdev_branchのみ」）。下の「S38 最優先の色契約修正」「S38 checkpoint」は前の実行環境の記録としてそのまま残す。そこで「未適用・未検証」とされた色の修正は、この節で適用・検証・公開した。Baseline2done/628todo/currentA003、Discovery cursor DISC001、Delta not_startedを変更しない。DISC061をdoneへ昇格しない。全面監査・Visual closureは未完了。
+
+- 引き継ぎ：前の環境のWIP ZIP（Drive `1zUcjfxE-aIqn358KfooIYCFXcw5NeOl_`、121937B）を取得し、SHA256 `fa5841f016bb4758f4e7b9fd52634453276ed4e70f894b21932651463effc203`・unzip -t・44fileを照合。NIARIM-WIP.patch（基準6decdfa）は現在のdev_branchへ3wayで競合なく適用でき、付属の8testsは適用直後に8PASS。前の環境のraw45PASS・PC原本9点・standalone実行物2partsは取得していない（この節の検証は下の新しい実行だけを根拠にする）。
+- 色契約：メニュー文字色を本文色ともMaterial error色とも違う色（0xFF0B6E4F）にしたfresh反例を行・プレビューの2件追加し、既存1件の期待値もメニュー文字色へ直した。修正前7PASS/3FAIL（文の色がerror色 0.73/0.10/0.10）。行Card・プレビューの知らせを各部品の`foreground`（`popupMenuTheme.textStyle.color`＝テーマ・外観のメニュー文字色）へ変え、色に頼らないよう先頭にerror_outlineの印を足した。修正後10PASS。固定色・presetの値・9色契約は変更なし。
+- 追加：書き出し完了ダイアログの共有も結果を待たず未処理例外になる同じ欠陥だったので、`lib/widgets/export_share_feedback.dart`（文の決まり・共有元の矩形・画面の通知）へそろえた。新規`test/export_share_notice_test.dart` 10PASS（7locale・それ以外の失敗・成功は無通知・画面が無くなった後の失敗・sourceの見張り）。
+- 回帰：global analyze0、Linux debug build成功。書き出した作品・Home・書き出し画面の関係で77PASS/1FAIL。1FAIL（`app_web_reference_export_exact_test`、「ウォーターマーク未登録」が見つからない）は手を入れる前のe35615c6でも同じ。card10080/preview1260等の内部条件数は固有test数へ加算しない。全suite/全CI greenとはしない。
+- 実Linux（Xvfb、software GL）：SP EN390x844で行の共有→行の中に「This isn't supported on this device.」と印、プレビューの共有→プレビュー内に同じ知らせ・絵を保持・Close。SP320x220でプレビューをscrollして共有→知らせ→Closeまで到達。PC FR1440x900で行とプレビューに「Cette action n'est pas prise en charge sur cet appareil.」、Escで閉じる。app logに未処理例外0件。管理領域PNG（SHA256 c3d8e38b…1419）と旧共有PNG（6371107a…e864）は操作の前後で同一。原本12点を直接表示して確認（s38-sp-*、s38-short-*、s38-pc-*）。
+- 5軸の限定判定：機能/挙動は合成native境界の20testsと実Linuxの非対応の知らせ・再操作・Closeまで。見た目は色契約を正式色へ是正し実画面の既定テーマで確認（custom色の実画面は未実施、testで確認）。継続性はClose/再訪とfile保持。製品品質・Android/iPadの実共有・全preset・Visual closureは未完了。書き出し完了ダイアログからの共有は実画面で未操作（この環境では動画を書き出せない）。
+- 公開：App `07323398`（DISC061）。非force・fast-forwardのgit push、公開後のremote HEAD一致を確認。CI33・storage CIは未実行/未照合。
+
+### ブラシごとの太さ・不透明度の記憶（ユーザー依頼、A014の確認事項への回答）
+
+- 依頼：「ブラシを覚える作りにしてください」。fresh反例3件が修正前0PASS/3FAIL（別のブラシから戻ると既定値、再起動で消える）。
+- 修正（App `dd1974d7`）：変えた値を一覧のブラシへ書き、操作の終わりに保存。組み込みブラシは利用者が変えた値だけを別キー`brush_builtin_working_values`に持ち、定義の更新と両立。早替えツール・自動操作の再生は一時的な値。キャンバス画面はBrushServiceの変化で欄を合わせる。実画面で見つけた3点（一覧で選んだ行のアイコンが選択色と同色で不可視、数値欄の押下範囲が数字の字の上だけ、Homeの表示サイズの読み込みが型に寛容でない＝dev_branchで落ちていたstartup_failure_recovery_testの1件）も修正。
+- 独立レビュー（3観点、指摘ごとに反証を試行、13agent）で確かめられた指摘を追加修正（App `308c019`）：サブツールの一覧・早替えツールでは欄が前のブラシの値のまま残る（providerのselectは同じフレームでsetState済みの画面にdidChangeDependenciesを呼ばない。反例は修正前FAIL 期待5/実際42）、消しゴム等で変えた太さがペンのブラシの値として残る→ペンのブラシだけ覚える、組み込みを既定へ戻す操作（一覧のメニュー、7locale）、スポイト待ちの間の上書き、Helpの説明。
+- 検証：analyze0。`brush_size_memory_test` 12PASS、`brush_size_memory_canvas_test` 3PASS、`editable_slider_value_input_test` 3PASS。ブラシ・パネル・スライダーの関係で177PASS/5FAIL。5FAIL（`canvas_dock_fit_test`4・`requested_ui_all_captures_test`1）は手を入れる前の6decdfaでも同じ（PC専用の作業画面の部品を探すtest、DISC066）。font_coverage（韓国語1字の欠落を言い換えで解消）・no_emoji PASS。
+- 実Linux：SP390x844/PC1280x720 JAで、数値入力42px・35%→prefs確認→再起動→一覧「42px・35%」→選ぶと欄が即42・35%→その太さ・濃さで線。消しゴムで77へ変えても覚えは42・35%のまま。PCのメニューから既定へ戻すと5px・100%で覚えが消える。Android・touch・筆圧は未確認。
+- 登録：製品変更をD001.62へtodo登録（宣言99）。読みで見つけた別の欠陥をDISC062–067へtodo登録（設定の引き継ぎのブラシ、'brushes'の読み込み、残り11か所の共有、報酬画面の字抜け・単位、PC専用の作業画面の配線、消しゴム等の太さ）。DISC066・067はユーザーの判断待ち。
+
 ## S38 最優先の色契約修正（2026-11-10、未適用・未検証）
 
 ユーザーの「固有色が必要な領域を除き、UI色はテーマ・外観の正式設定から取る」という指示に対し、S38候補のerror textに使った `Theme.colorScheme.error` は適合しない。最新dev_branchの `lib/services/theme_service.dart` をGitHub連携で直接読んだところ、`ColorScheme.fromSeed` のMaterial error色を `readableThemeError` で調整しており、error labelは独立した設定色ではないことがコメントと実装に明記されていた。画面にHEXを書いていなくても、設定から直接選ぶ文字色へ対応していない。DISC014の9色/役割対応とDISC061へ追記し、未push候補の見た目の色契約はFAILとして扱う。
