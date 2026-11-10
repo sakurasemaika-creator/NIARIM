@@ -262,11 +262,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
             : t.format('genericBookmark', required),
       'followers' => t.format('followers', required),
       'verifiedEditSeconds' => t.format('time', required ~/ 3600),
-      'niarimBookmarkRanking' => t.format(
-        required == 1 ? 'rankFirstGoal' : 'rankGoal',
-        required,
-        each: (row['rankingMinBookmarks'] as num?)?.toInt() ?? 0,
-      ),
+      'niarimBookmarkRanking' =>
+        required == 1 ? t.get('rankOne') : t.format('rank', required),
       _ => row['id'] as String? ?? '?',
     };
   }
@@ -372,7 +369,17 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
             (row['rankingTopPercent'] as num).toInt(), each: goal),
       if (kind == 'niarimBookmarkRanking')
         t.get('rankDetailsHold'),
-      if (kind == 'qualifiedWorks') t.get('detailsDraftCount'),
+      if (kind == 'workBookmarks')
+        t.get('detailsCreatorBookmarkRule'),
+      if (kind == 'qualifiedWorks') ...[
+        t.get('detailsCreatorWorksRule'),
+        t.get('detailsDraftCount'),
+      ],
+      if (kind == 'followers') t.get('detailsCreatorFollowerRule'),
+      if (kind == 'verifiedEditSeconds') t.get('detailsCreatorTimeRule'),
+      if (kind != 'niarimBookmarkRanking' &&
+          kind != 'verifiedEditSeconds')
+        t.get('detailsCreatorClaimRule'),
       if (template) t.get('detailsTemplateRule'),
       if (row['perWork'] == true)
         t.get('detailsPerWorkRule')
@@ -459,24 +466,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                 children: [
                   Text(_goal(t, row), style: theme.textTheme.bodyMedium),
                   Text(status, style: theme.textTheme.bodySmall),
-                  if (row['kind'] == 'niarimBookmarkRanking') ...[
-                    if (row['rankingTopPercent'] is num)
-                      Text(
-                        t.format('rankPercentNote',
-                            (row['rankingTopPercent'] as num).toInt()),
-                        style: theme.textTheme.bodySmall,
-                      ),
-                    if (!claimed)
-                      for (final reason in _rankingMissingReasons(t, row))
-                        Text(reason, style: theme.textTheme.bodySmall),
-                    if (eligible && !claimed &&
-                        _rankingMissingReasons(t, row).isEmpty)
-                      Text(t.get('rankQualified'),
-                          style: theme.textTheme.bodySmall),
-                    if (!available)
-                      Text(t.get('rankNotLive'),
-                          style: theme.textTheme.bodySmall),
-                  ],
+
                 ],
               ),
             ),

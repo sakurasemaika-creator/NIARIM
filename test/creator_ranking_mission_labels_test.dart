@@ -17,9 +17,13 @@ void main() {
       home: Builder(builder: (context) {
         final labels = CreatorMissionLabels.of(context);
         return SingleChildScrollView(child: Column(children: [
-          Text(labels.format('rankGoal', 10, each: 15)),
-          Text(labels.format('rankFirstGoal', 1, each: 50)),
-          Text(labels.format('rankPercentNote', 5)),
+          Text(labels.format('rank', 10)),
+          Text(labels.get('rankOne')),
+          Text(labels.get('detailsCreatorBookmarkRule')),
+          Text(labels.get('detailsCreatorWorksRule')),
+          Text(labels.get('detailsCreatorFollowerRule')),
+          Text(labels.get('detailsCreatorTimeRule')),
+          Text(labels.get('detailsCreatorClaimRule')),
           Text(labels.format('rankDetailsRules', 5, each: 10)),
           Text(labels.get('rankDetailsHold')),
           Text(labels.format('rankCommunityWait', 80, each: 100)),
@@ -29,18 +33,18 @@ void main() {
       }),
     ));
     expect(
-      find.textContaining('10位以内・ブックマーク15件以上'),
+      find.text('ブックマークランキング10位以内'),
       findsOneWidget,
     );
+
     expect(
-      find.textContaining('※NIARIM全体の公開作品100件以上、かつ上位5％以内'),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining('ブックマークランキング1位・ブックマーク50件以上'),
+      find.text('ブックマークランキング1位'),
       findsOneWidget,
     );
     expect(find.textContaining('小数点以下切り捨て'), findsOneWidget);
+    expect(find.textContaining('作品ごとに別途'), findsNothing);
+    expect(find.textContaining('作品ごとに判定'), findsOneWidget);
+    expect(find.textContaining('現在コイン報酬'), findsNothing);
     expect(find.textContaining('48時間経過後'), findsOneWidget);
     expect(find.textContaining('同じ作品の同じ順位報酬は1回限り'), findsOneWidget);
     expect(find.textContaining('現在80件／必要100件'), findsOneWidget);
