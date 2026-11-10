@@ -1286,24 +1286,47 @@ class _SharedScreenState extends State<SharedScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: [
-                ChoiceChip(
-                  key: const Key('sharedReceivedFilter'),
-                  label: Text(_shareCollectionText(context, outgoing: false)),
-                  selected: !_showOutgoing,
-                  onSelected: (_) => setState(() => _showOutgoing = false),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: SegmentedButton<bool>(
+                  key: const Key('sharedDirectionSegmentedControl'),
+                  showSelectedIcon: false,
+                  multiSelectionEnabled: false,
+                  emptySelectionAllowed: false,
+                  style: ButtonStyle(
+                    visualDensity: VisualDensity.standard,
+                    shape: const WidgetStatePropertyAll(StadiumBorder()),
+                    side: WidgetStatePropertyAll(
+                      BorderSide(color: Theme.of(context).colorScheme.outline),
+                    ),
+                    padding: const WidgetStatePropertyAll(
+                      EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    ),
+                  ),
+                  segments: [
+                    ButtonSegment<bool>(
+                      value: false,
+                      label: Text(
+                        _shareCollectionText(context, outgoing: false),
+                        key: const Key('sharedReceivedFilter'),
+                      ),
+                    ),
+                    ButtonSegment<bool>(
+                      value: true,
+                      label: Text(
+                        _shareCollectionText(context, outgoing: true),
+                        key: const Key('sharedOutgoingFilter'),
+                      ),
+                    ),
+                  ],
+                  selected: {_showOutgoing},
+                  onSelectionChanged: (selection) {
+                    setState(() => _showOutgoing = selection.single);
+                  },
                 ),
-                ChoiceChip(
-                  key: const Key('sharedOutgoingFilter'),
-                  label: Text(_shareCollectionText(context, outgoing: true)),
-                  selected: _showOutgoing,
-                  onSelected: (_) => setState(() => _showOutgoing = true),
-                ),
-              ],
+              ),
             ),
           ),
           if (!_showOutgoing)
