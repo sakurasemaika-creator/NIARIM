@@ -18,7 +18,7 @@ String guideHubTitle(BuildContext context) {
 }
 
 class GuideHubScreen extends StatelessWidget {
-  const GuideHubScreen({super.key, this.initialTab = 0, this.initialTopic});
+  const GuideHubScreen({super.key, this.initialTab = 1, this.initialTopic});
 
   final int initialTab;
   final String? initialTopic;
@@ -33,13 +33,13 @@ class GuideHubScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text(guideHubTitle(context)),
           bottom: TabBar(tabs: [
-            Tab(text: l10n.helpScreenTitle),
             Tab(text: l10n.tipsScreenTitle),
+            Tab(text: l10n.helpScreenTitle),
           ]),
         ),
         body: TabBarView(children: [
-          HelpScreen(embedded: true, initialTopic: initialTopic),
           const TipsScreen(embedded: true),
+          HelpScreen(embedded: true, initialTopic: initialTopic),
         ]),
       ),
     );
