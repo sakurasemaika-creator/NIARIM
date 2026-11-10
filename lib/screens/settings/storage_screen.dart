@@ -59,6 +59,27 @@ List<Color> sliceColorsOf(ColorScheme scheme) {
 /// 円グラフの一辺。集計中の欄も同じ高さを取る。
 const double _chartSize = 120;
 
+/// 内訳のグラフの並び方（`_chartWithLegend`・`_storageAmountBar`と同じ値）。
+/// 中身のある分類ごとに棒が1本（高さ30＋上下の余白5ずつ）並び、欄の幅が
+/// [_stackedChartBelowWidth]より狭いと、円グラフの下（間[_stackedChartGap]）に
+/// 並ぶ。集計中の欄がグラフと同じ高さを取るために使う。
+const double _barRowExtent = 40;
+const double _stackedChartBelowWidth = 520;
+const double _stackedChartGap = 10;
+
+/// まだ一度も集計できていないとき、集計中の欄が見込んでおく棒の本数。
+/// 何本になるかは分からないので、分類の半分にしておく（外れたときに
+/// 操作の行が動く幅が、どちら向きにも一番小さくなる）。
+const int _unknownBarCount = 3;
+
+/// 棒が[bars]本の内訳のグラフが、幅[width]の欄で取る高さ。
+double _breakdownChartHeight(int bars, double width) {
+  final legend = bars * _barRowExtent;
+  return width < _stackedChartBelowWidth
+      ? _chartSize + _stackedChartGap + legend
+      : math.max(_chartSize, legend);
+}
+
 /// 端末の容量の問い合わせを待つ長さ。過ぎても答えが無ければ、その欄だけ
 /// 「取得できませんでした」にして、やり直せるようにする（内訳と操作は
 /// 待たせない）。
@@ -330,9 +351,9 @@ class _StorageScreenState extends State<StorageScreen> {
 
   /// まだ出せる値が無い欄の中身。グラフと同じ高さを取っておく（グラフに
   /// 変わったとき、下の操作の行が指の下で動かないように）。
-  Widget _calculating(AppLocalizations l10n) {
+  Widget _calculating(AppLocalizations l10n, {double minHeight = _chartSize}) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: _chartSize),
+      constraints: BoxConstraints(minHeight: minHeight),
       child: Align(
         alignment: AlignmentDirectional.topStart,
         child: Padding(
@@ -349,6 +370,21 @@ class _StorageScreenState extends State<StorageScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// 集計中の内訳の欄。直近に出していた内訳のグラフと同じ高さを取る
+  /// （大きさを変える操作の後、グラフが集計中へ替わっても操作の行が動かない）。
+  Widget _calculatingBreakdown(AppLocalizations l10n) {
+    final last = _breakdown;
+    final bars = last == null
+        ? _unknownBarCount
+        : StorageCategory.values.where((c) => last.bytesOf(c) > 0).length;
+    return LayoutBuilder(
+      builder: (context, constraints) => _calculating(
+        l10n,
+        minHeight: _breakdownChartHeight(bars, constraints.maxWidth),
       ),
     );
   }
@@ -425,7 +461,7 @@ class _StorageScreenState extends State<StorageScreen> {
         if (breakdown != null)
           _buildBreakdownChart(l10n, breakdown)
         else if (_scanning && !_breakdownFailed)
-          _calculating(l10n),
+          _calculatingBreakdown(l10n),
         if (noticed)
           _StorageNotice(
             key: const ValueKey('storageBreakdownNotice'),

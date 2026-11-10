@@ -53,11 +53,13 @@ void main() {
   testWidgets('操作の後は、集計し直すまでグラフも前の値を出さず、操作の欄とスクロール位置はそのまま', (tester) async {
     final providers = await bootstrapStorageScreen(tester);
     final service = ScriptedStorage();
+    // スクロールはするが、上の端末の容量の欄も作られたままの高さ
+    // （一覧は見えている範囲の少し外までしか子を作らない）。
     final l10n = await showStorageScreen(
       tester,
       providers,
       service,
-      size: const Size(390, 500),
+      size: const Size(390, 700),
     );
     service.deviceQueries.single.complete(_device);
     service.scans.single.complete(storageBreakdownOf());
@@ -103,13 +105,16 @@ void main() {
     await tester.pump();
     expect(anywhere(l10n.storageCategoryFree), findsNothing);
 
-    service.scans.last.complete(storageBreakdownOf(cache: 0));
+    // 棒の本数が変わらなければ（キャッシュが少し残った）、集計が終わっても
+    // 操作の行は動かない。
+    service.scans.last.complete(storageBreakdownOf(cache: 64));
     await tester.pump();
     await tester.pump();
     expect(anywhere(l10n.storageCalculating), findsNothing);
     expect(anywhere(l10n.storageCategoryMaterials), findsOneWidget);
     expect(anywhere(l10n.storageCategoryFree), findsOneWidget);
     expect(anywhere('123B'), findsNothing);
+    expect(anywhere('64B'), findsNWidgets(2));
     expect(position.pixels, scrolledTo);
     expect(tester.getTopLeft(tile).dy, tileTop);
     expect(tester.takeException(), isNull);
@@ -196,6 +201,69 @@ void main() {
     expect(tops(), whileCalculating);
     expect(tester.takeException(), isNull);
   });
+
+  for (final (label, size) in [
+    ('スマホの幅：円グラフの下に棒', const Size(390, 844)),
+    ('広い幅：円グラフの横に棒', const Size(900, 900)),
+  ]) {
+    testWidgets('内訳の棒が6本あるときも、操作の後の集計中の欄はグラフと同じ高さを取る（$label）', (tester) async {
+      final providers = await bootstrapStorageScreen(tester);
+      final service = ScriptedStorage();
+      final l10n = await showStorageScreen(
+        tester,
+        providers,
+        service,
+        size: size,
+      );
+      // どの分類にも中身がある：棒が6本並び、内訳の欄は円グラフより高くなる。
+      StorageBreakdown sixCategories({int cache = 2000}) => StorageBreakdown({
+        StorageCategory.materials: 6000,
+        StorageCategory.projectData: 5000,
+        StorageCategory.exports: 4000,
+        StorageCategory.customAssets: 3000,
+        StorageCategory.cache: cache,
+        StorageCategory.trash: 1000,
+      });
+      final bars = find.byWidgetPredicate((w) {
+        final key = w.key;
+        return key is ValueKey<String> &&
+            key.value.startsWith('storageBreakdownBar_');
+      }, skipOffstage: false);
+      final tile = storageTile(l10n.storageClearCacheButton);
+      final position = tester
+          .state<ScrollableState>(find.byType(Scrollable))
+          .position;
+
+      service.deviceQueries.single.complete(null);
+      service.scans.single.complete(sixCategories());
+      await tester.pump();
+      await tester.pump();
+      expect(bars, findsNWidgets(6));
+      await tester.ensureVisible(tile);
+      await tester.pump();
+      final scrolledTo = position.pixels;
+      final withChart = tester.getTopLeft(tile).dy;
+
+      await clearCacheByTap(
+        tester,
+        l10n.storageClearCacheButton,
+        l10n.commonDelete,
+      );
+      // グラフは集計中の表示に替わっているが、操作の行は同じ所にある。
+      expect(bars, findsNothing);
+      expect(anywhere(l10n.storageCalculating), findsWidgets);
+      expect(position.pixels, scrolledTo);
+      expect(tester.getTopLeft(tile).dy, withChart);
+
+      service.scans.last.complete(sixCategories(cache: 500));
+      await tester.pump();
+      await tester.pump();
+      expect(bars, findsNWidgets(6));
+      expect(position.pixels, scrolledTo);
+      expect(tester.getTopLeft(tile).dy, withChart);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('消している途中で画面を閉じても、覚えている結果は捨てる', (tester) async {
     final providers = await bootstrapStorageScreen(tester);
