@@ -174,7 +174,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/tips',
       builder: (context, state) =>
-          const AdMockPageFrame(child: GuideHubScreen(initialTab: 1)),
+          const AdMockPageFrame(child: GuideHubScreen(initialTab: 0)),
     ),
     GoRoute(
       path: '/premium',
@@ -189,7 +189,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/earn-coins',
       builder: (context, state) =>
-          const AdMockPageFrame(child: CoinBenefitsScreen(initialTab: 2)),
+          const AdMockPageFrame(child: CoinBenefitsScreen(initialTab: 1)),
     ),
     GoRoute(
       path: '/membership',
@@ -200,7 +200,7 @@ final appRouter = GoRouter(
       path: '/creator-missions',
       builder: (context, state) => AdMockPageFrame(
         child: CoinBenefitsScreen(
-          initialTab: 1,
+          initialTab: 0,
           workId: state.uri.queryParameters['workId'],
         ),
       ),
