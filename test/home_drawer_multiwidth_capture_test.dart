@@ -12,6 +12,7 @@ import 'package:niarim/screens/help/guide_hub_screen.dart';
 import 'package:niarim/screens/rewards/coin_benefits_screen.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -169,6 +170,27 @@ void main() {
         isTrue,
       );
       await shot('06-works');
+
+      // A real Trash screenshot must prove all four categories exist and are
+      // labeled. Seed recoverable files and both kinds of soft-deleted projects.
+      await tester.runAsync(() async {
+        final outgoing = service.outgoingShares.first;
+        await LocalFileTrashService.move(
+          File(outgoing.path), LocalTrashKind.outgoingShare,
+        );
+        final exported = File('$workingDirectory/trash-sample-export.mp4');
+        await exported.writeAsBytes([0, 1, 2, 3, 4]);
+        await LocalFileTrashService.move(
+          exported, LocalTrashKind.exportedWork,
+        );
+        final received = service.shared.single;
+        await service.deleteProject(received.id);
+        final created = service.projects.firstWhere(
+          (p) => p.name == 'サンプルアニメーション',
+        );
+        await service.deleteProject(created.id);
+      });
+      await tester.pump(const Duration(milliseconds: 250));
       await tester.ensureVisible(find.byKey(const ValueKey('home_tab_3')));
       await tester.tap(find.byKey(const ValueKey('home_tab_3')));
       await settleTabAnimation();
@@ -182,7 +204,32 @@ void main() {
         findsOneWidget, reason: 'Trash content must replace Shared at width $width',
       );
       expect(find.byKey(const Key('sharedReceivedFilter')), findsNothing);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await settleTabAnimation();
+      expect(
+        find.byType(CircularProgressIndicator),
+        findsNothing,
+        reason: 'Trash must finish reading recoverable files before capture',
+      );
+      final deleted = service.trash;
+      expect(deleted.where((p) => p.isSharedImport), hasLength(1));
+      expect(deleted.where((p) => !p.isSharedImport), hasLength(1));
+      final archived = await tester.runAsync(LocalFileTrashService.list);
+      expect(archived, hasLength(2));
+      expect(archived!.map((e) => e.kind).toSet(), {
+        LocalTrashKind.outgoingShare,
+        LocalTrashKind.exportedWork,
+      });
       await shot('07-trash');
+      // Capture lower rows too; the narrow phone needs scrolling.
+      final trashList = find.byType(ListView).last;
+      if (tester.getSize(trashList).height > 170) {
+        await tester.drag(trashList, const Offset(0, -420));
+        await settleTabAnimation();
+        await shot('07b-trash-bottom');
+      }
       await tester.ensureVisible(find.byKey(const ValueKey('home_tab_0')));
       await tester.tap(find.byKey(const ValueKey('home_tab_0')));
       await tester.pump(const Duration(milliseconds: 500));
