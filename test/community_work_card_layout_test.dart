@@ -314,4 +314,63 @@ void main() {
     expect(hidden, 1);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('compact 320dp cards abbreviate only the visible total', (
+    tester,
+  ) async {
+    final work = CommunityWork(
+      id: 'compact-count',
+      title: 'A small animation',
+      authorId: 'artist',
+      authorName: 'Artist',
+      viewCount: 0,
+      likeCount: 0,
+      bookmarkCount: 2684,
+      postedAt: DateTime.utc(2026, 11, 10),
+      durationSeconds: 45,
+      thumbnailColorIndex: 0,
+    );
+    for (final width in <double>[134, 143, 158, 170]) {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: width,
+                child: CommunityWorkCard(
+                  work: work,
+                  isBookmarked: false,
+                  onTap: () {},
+                  onBookmarkToggle: () {},
+                  onMuteToggle: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text(width < 160 ? '2.6K' : '2,684'),
+        findsOneWidget,
+        reason: 'card width $width',
+      );
+      final total = find.byKey(const ValueKey('community-bookmark-count-compact-count'));
+      final semantics = tester.widget<Semantics>(total);
+      expect(semantics.properties.label, contains('2,684'),
+          reason: 'full value remains accessible at width $width');
+      final bookmark = find.byKey(const ValueKey('community-bookmark-compact-count'));
+      final menu = find.byKey(const ValueKey('communityMuteMenu-compact-count'));
+      expect(tester.getRect(total).right,
+          lessThanOrEqualTo(tester.getRect(bookmark).left + 1));
+      expect(tester.getRect(bookmark).right,
+          lessThanOrEqualTo(tester.getRect(menu).left + 1));
+      expect(tester.takeException(), isNull, reason: 'card width $width');
+      await tester.pumpWidget(const SizedBox.shrink());
+    }
+  });
+
 }
