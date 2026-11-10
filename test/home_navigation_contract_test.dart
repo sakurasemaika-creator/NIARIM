@@ -171,7 +171,7 @@ void main() {
     await tester.tap(receivedMenu);
     await tester.pumpAndSettle();
     expect(find.text('共有'), findsWidgets);
-    await tester.tapAt(const Offset(5, 250));
+    await tester.pageBack();
     await settleHomeTab(tester);
 
     await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
