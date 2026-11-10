@@ -21,6 +21,7 @@ import '../../services/font_service.dart';
 import '../../services/export_share_service.dart';
 import '../../services/project_service.dart';
 import '../../services/local_file_trash_service.dart';
+import '../../services/outgoing_share_library.dart';
 import '../../services/settings_service.dart';
 import '../../services/share_intent_service.dart';
 import '../../services/shortcut_service.dart';
@@ -1239,9 +1240,20 @@ class _SharedScreenState extends State<SharedScreen> {
   @override
   void initState() {
     super.initState();
+    LocalFileTrashService.changes.addListener(_refreshSavedShares);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<ProjectService>().refreshOutgoingShares();
+      _refreshSavedShares();
     });
+  }
+
+  @override
+  void dispose() {
+    LocalFileTrashService.changes.removeListener(_refreshSavedShares);
+    super.dispose();
+  }
+
+  void _refreshSavedShares() {
+    if (mounted) context.read<ProjectService>().refreshOutgoingShares();
   }
 
   // プロジェクトタブと同じ並び替え基準・お気に入り絞り込みを、共有一覧にも
@@ -1784,6 +1796,89 @@ Widget _receivedShareMenu(BuildContext context, Project project) {
   );
 }
 
+/// A saved .niashare is a frozen file, so its file-specific menu
+/// intentionally omits canvas editing and folder operations.
+Future<void> _outgoingShareAction(
+  BuildContext context, SavedOutgoingShare entry, String action,
+) async {
+  final l10n = AppLocalizations.of(context)!;
+  final service = context.read<ProjectService>();
+  final file = File(entry.path);
+  try {
+    switch (action) {
+      case 'share':
+        await shareSavedNiashare(context, entry.path);
+      case 'rename':
+        final controller = TextEditingController(text: entry.name);
+        String? value;
+        try {
+          value = await showDialog<String>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: Text(l10n.commonRename),
+              content: TextField(
+                autofocus: true,
+                controller: controller,
+                onSubmitted: (v) => Navigator.pop(ctx, v),
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(ctx),
+                    child: Text(l10n.commonCancel)),
+                FilledButton(onPressed: () => Navigator.pop(ctx, controller.text),
+                    child: Text(l10n.commonSave)),
+              ],
+            ),
+          );
+        } finally {
+          WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
+        }
+        if (value == null) return;
+        final name = value.trim().replaceAll(RegExp(r'[\\/]'), '_');
+        if (name.isEmpty || name == '.' || name == '..') return;
+        final target = File('${file.parent.path}/$name.niashare');
+        if (await target.exists()) {
+          throw FileSystemException('Share filename already exists', target.path);
+        }
+        await file.rename(target.path);
+        await service.refreshOutgoingShares();
+      case 'duplicate':
+        var index = 1;
+        File target;
+        do {
+          target = File('${file.parent.path}/${entry.name} ($index).niashare');
+          index++;
+        } while (await target.exists());
+        await file.copy(target.path);
+        await service.refreshOutgoingShares();
+      case 'delete':
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(l10n.homeMoveToTrash),
+            content: Text(l10n.homeMoveToTrashConfirm(1)),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false),
+                  child: Text(l10n.commonCancel)),
+              FilledButton(onPressed: () => Navigator.pop(ctx, true),
+                  child: Text(l10n.commonMove)),
+            ],
+          ),
+        );
+        if (confirmed != true) return;
+        await LocalFileTrashService.move(file, LocalTrashKind.outgoingShare);
+        await service.refreshOutgoingShares();
+        StorageInfoService().invalidate();
+    }
+  } catch (error, stackTrace) {
+    AppErrorReporter.record(error, stackTrace);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.homeTrashOperationFailed)),
+      );
+    }
+  }
+}
+
 class _OutgoingSharesList extends StatelessWidget {
   const _OutgoingSharesList();
 
@@ -1799,7 +1894,7 @@ class _OutgoingSharesList extends StatelessWidget {
     }
     return ListView.builder(
       key: const PageStorageKey('outgoing-niashares'),
-      padding: const EdgeInsets.only(bottom: 80),
+      padding: const EdgeInsets.only(bottom: 100),
       itemCount: saved.length,
       itemBuilder: (context, index) {
         final entry = saved[index];
@@ -1807,35 +1902,31 @@ class _OutgoingSharesList extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: ListTile(
             leading: const Icon(Icons.insert_drive_file_outlined, size: 36),
-            title: Text(
-              entry.name,
-              style: const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
+            title: Text(entry.name, style: const TextStyle(
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            )),
             subtitle: Text(
-              '${entry.updatedAt.year}/${entry.updatedAt.month.toString().padLeft(2, '0')}/${entry.updatedAt.day.toString().padLeft(2, '0')}  ·  ${(entry.sizeBytes / 1024).toStringAsFixed(1)} KB',
+              '${entry.updatedAt.year}/${entry.updatedAt.month.toString().padLeft(2, '0')}/'
+              '${entry.updatedAt.day.toString().padLeft(2, '0')}  ·  '
+              '${(entry.sizeBytes / 1024).toStringAsFixed(1)} KB',
             ),
             onTap: () => shareSavedNiashare(context, entry.path),
             trailing: PopupMenuButton<String>(
               key: ValueKey('outgoingShareMenu_${entry.path}'),
-              onSelected: (action) {
-                if (action == 'share') {
-                  shareSavedNiashare(context, entry.path);
-                }
-              },
+              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.more_vert, size: 18),
+              onSelected: (action) => _outgoingShareAction(context, entry, action),
               itemBuilder: (_) => [
-                PopupMenuItem<String>(
-                  value: 'share',
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.ios_share_outlined),
-                      const SizedBox(width: 8),
-                      Text(l10n.projectDetailShareQuickAction),
-                    ],
-                  ),
+                PopupMenuItem(value: 'share',
+                    child: Text(l10n.projectDetailShareQuickAction)),
+                PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+                PopupMenuItem(value: 'duplicate',
+                    child: Text(l10n.themeDuplicateAction)),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(l10n.projectDetailTrashMenuItem,
+                      style: TextStyle(color: Theme.of(context).colorScheme.error)),
                 ),
               ],
             ),
@@ -2183,6 +2274,9 @@ class _TrashTabState extends State<_TrashTab> {
       await LocalFileTrashService.restore(entry);
       // The exported-work list maintains a cached storage listing.
       StorageInfoService().invalidate();
+      if (entry.kind == LocalTrashKind.outgoingShare && mounted) {
+        await context.read<ProjectService>().refreshOutgoingShares();
+      }
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (mounted) {
@@ -2452,6 +2546,17 @@ class _WorksTabState extends State<_WorksTab> {
   void initState() {
     super.initState();
     _future = ExportEngine.listExportedFiles();
+    LocalFileTrashService.changes.addListener(_onLocalFilesChanged);
+  }
+
+  @override
+  void dispose() {
+    LocalFileTrashService.changes.removeListener(_onLocalFilesChanged);
+    super.dispose();
+  }
+
+  void _onLocalFilesChanged() {
+    if (mounted) _reload();
   }
 
   Future<void> _reload() async {
