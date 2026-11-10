@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'creator_edit_session_reporter.dart';
+import 'outgoing_share_library.dart';
 
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -261,6 +263,45 @@ class ProjectService extends ChangeNotifier {
   // 効く）。
   List<Project> get shared =>
       List.unmodifiable(_projects.where((p) => p.isSharedImport));
+
+  final List<SavedOutgoingShare> _outgoingShares = [];
+  List<SavedOutgoingShare> get outgoingShares =>
+      List.unmodifiable(_outgoingShares);
+
+  Future<void> refreshOutgoingShares() async {
+    try {
+      final current = await OutgoingShareLibrary.list();
+      _outgoingShares
+        ..clear()
+        ..addAll(current);
+      notifyListeners();
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+  }
+
+  /// Make a reusable, immutable outgoing archive, rather than recreating a
+  /// .niashare each time the OS share sheet is opened.
+  Future<File> createOutgoingShare({
+    required Project project,
+    Map<String, Uint8List>? materialFiles,
+    String? materialsManifest,
+    Map<String, Uint8List>? fontFiles,
+    String? fontsManifest,
+  }) async {
+    final archive = await OutgoingShareLibrary.save(
+      project: project,
+      scenes: scenesOf(project.id),
+      tileManager: tileManagerOf(project.id),
+      materialFiles: materialFiles,
+      materialsManifest: materialsManifest,
+      fontFiles: fontFiles,
+      fontsManifest: fontsManifest,
+    );
+    await refreshOutgoingShares();
+    return archive;
+  }
+
   List<ProjectFolder> get folders => List.unmodifiable(_folders);
 
   /// ゴミ箱へ移したフォルダ（中身ごと）。
@@ -295,6 +336,7 @@ class ProjectService extends ChangeNotifier {
       AppErrorReporter.record(error, stackTrace);
     }
     await _loadProjectsFromDisk();
+    await refreshOutgoingShares();
   }
 
   /// プロジェクトを読み込めなかったとき（[projectsLoadFailed]）に、保存先を
