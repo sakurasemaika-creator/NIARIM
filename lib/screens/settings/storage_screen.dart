@@ -1,5 +1,4 @@
 import 'package:niarim/services/theme_service.dart';
-import '../canvas/widgets/canvas_icon_button.dart';
 
 import 'dart:math' as math;
 
@@ -216,10 +215,9 @@ class _StorageScreenState extends State<StorageScreen> {
       (max, slice) => math.max(max, slice.value),
     );
     final scheme = Theme.of(context).colorScheme;
-    // Toolbar's theme-derived outline algorithm, measured against the
-    // actual panel surface so dark swatches never acquire invisible white
-    // borders on a light page (and vice versa in dark appearance).
-    final pieOutline = CanvasIconButton.outlineColor(scheme.surface, scheme);
+    // Match the toolbar's ordinary (unselected) icon fill, not its separate
+    // contrast outline. ThemeService builds onSurface from the appearance.
+    final chartOutline = scheme.onSurface;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -235,7 +233,7 @@ class _StorageScreenState extends State<StorageScreen> {
                   ),
                 )
               : CustomPaint(
-                  painter: _PieChartPainter(slices, outlineColor: pieOutline),
+                  painter: _PieChartPainter(slices, outlineColor: chartOutline),
                 ),
         ),
         const SizedBox(width: 16),
@@ -261,7 +259,7 @@ class _StorageScreenState extends State<StorageScreen> {
                                 color: s.color,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: pieOutline,
+                                  color: chartOutline,
                                   width: 1,
                                 ),
                               ),
@@ -315,7 +313,7 @@ class _StorageScreenState extends State<StorageScreen> {
     required double ratio,
     required ColorScheme scheme,
   }) {
-    final outline = CanvasIconButton.outlineColor(scheme.surface, scheme);
+    final outline = scheme.onSurface;
     final amount = ratio.clamp(0.0, 1.0);
     return SizedBox(
       key: key,
