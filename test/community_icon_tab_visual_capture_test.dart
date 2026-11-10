@@ -10,6 +10,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/community/community_screen.dart';
+import 'package:niarim/screens/community/widgets/community_work_card.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -104,6 +105,38 @@ void main() {
         );
       }
       expect(find.byKey(const Key('communityTab4')), findsOneWidget);
+      final visibleCard = find.byType(CommunityWorkCard).first;
+      final workId = tester.widget<CommunityWorkCard>(visibleCard).work.id;
+      final title = tester.widget<CommunityWorkCard>(visibleCard).work.title;
+      final author = tester.widget<CommunityWorkCard>(visibleCard).work.authorName;
+      final titleRect = tester.getRect(
+        find.descendant(of: visibleCard, matching: find.text(title)),
+      );
+      final authorRect = tester.getRect(
+        find.byKey(ValueKey('community-author-$workId')),
+      );
+      final countRect = tester.getRect(
+        find.byKey(ValueKey('community-bookmark-count-$workId')),
+      );
+      final saveRect = tester.getRect(
+        find.byKey(ValueKey('community-bookmark-$workId')),
+      );
+      final menuRect = tester.getRect(
+        find.byKey(ValueKey('communityMuteMenu-$workId')),
+      );
+      expect(titleRect.bottom, lessThanOrEqualTo(authorRect.top + 1),
+          reason: '$width title / author order');
+      expect(authorRect.bottom, lessThanOrEqualTo(countRect.top + 1),
+          reason: '$width author / action row order');
+      expect(countRect.right, lessThanOrEqualTo(saveRect.left + 1),
+          reason: '$width count must precede bookmark button');
+      expect(saveRect.right, lessThanOrEqualTo(menuRect.left + 1),
+          reason: '$width bookmark button must precede menu');
+      expect((saveRect.center.dy - menuRect.center.dy).abs(), lessThan(3),
+          reason: '$width bookmark and menu must share a horizontal row');
+      expect(tester.getSize(find.byKey(ValueKey('community-bookmark-$workId'))),
+          const Size(48, 48));
+      expect(tester.takeException(), isNull);
       await capture('new-arrivals');
       await tester.tap(find.byKey(const Key('communityTab4')));
       await tester.pumpAndSettle();
