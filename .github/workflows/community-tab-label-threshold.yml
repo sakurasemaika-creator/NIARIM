@@ -1,0 +1,39 @@
+name: Community icon-label threshold captures
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/community_tab_label_threshold_capture_test.dart'
+      - '.github/workflows/community-tab-label-threshold.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  threshold:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Resolve locked Flutter dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze capture test
+        run: flutter analyze --no-pub test/community_tab_label_threshold_capture_test.dart
+      - name: Measure exact breakpoint and capture both sides
+        run: flutter test test/community_tab_label_threshold_capture_test.dart --reporter expanded
+      - name: Publish threshold into job summary
+        if: success()
+        run: cat build/community-tab-label-threshold/threshold.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload the two actual Flutter captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: community-adaptive-tab-exact-threshold
+          path: build/community-tab-label-threshold
+          if-no-files-found: warn
+          retention-days: 14
