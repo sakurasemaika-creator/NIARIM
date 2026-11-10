@@ -6,6 +6,14 @@
 ## 1. 全面監査
 全面監査はテスト実行だけではない。最新dev_branchを取得し、実装inventory→Baseline→Discovery→Delta→横断品質→最終Visual closureまで行う。全画面・全route・全UI surface・全visible control、全機能・全preset・全workflow・全分岐を対象に、実操作→判定→修正→再操作→regressionを行う。
 
+### 1.1 同時並行エージェントによる所要時間短縮（2026-11-10追加）
+
+- Routeの番号・定義・完了条件はそのまま。主担当が最初の未完了IDを最後まで検証する一方、**独立したエージェントは別IDの監査・修正・実操作・実画面目視・証跡を同時進行できる**。これは待ち時間を減らすための許可であり、全担当を番号順に逐次待機させる意味ではない。
+- 各エージェントは対象ID、開始HEAD、担当ファイル、依存ID、進捗、未確認、証拠、テスト結果、次の一手を残す。条件を満たすまで修正と再検証を繰り返す。新しい不具合・改善点はDISC/Dへ登録し、現在IDの修正中に捨てない。
+- 独立でない同じファイル・fixture・実機・DB・監査Stateは無理に並列編集しない。最新dev_branch上で差分と回帰を突き合わせ、統合担当がStateを単一窓口で更新する。競合するときは別IDのread-only検証などへ仕事を割り振る。
+- 正式doneは既存の証拠条件とVerifierの整合を満たすときのみ。先行IDを偽って閉じず、後続IDの作業が先に終われば証拠付き完了候補を保全して整合する時点で昇格する。current_idは先頭未完了IDのまま保持する。
+- 実機/外部依存で一部がblockedでも独立した他IDを継続し、最終的な未完了条件は必ず戻って解決する。**形式的な分業による重複作業より、品質を維持した総完了時間の短縮を優先する。**
+
 ## 2. 全通り
 ユーザーが到達・操作できる固有の画面、control、状態、分岐、入力方式、離散preset/選択肢は全件実操作する。数値はdefault、min/max、boundary、代表中間、empty/large/invalid、相互作用を確認する。success/error/loading/offline、apply/cancel/back/close、double execution、rapid input、interruption、revisit、undo/redo、save/load/import/export、permission、Free/Premium等も該当する場合は確認する。
 
