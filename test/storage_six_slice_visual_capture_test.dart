@@ -196,11 +196,7 @@ void main() {
     // The category dots remain, but they must not have an outline.
     final legendDots = tester.widgetList<Container>(
       find.byType(Container),
-    ).where((widget) => widget.constraints == null &&
-        widget.child == null &&
-        widget.alignment == null &&
-        widget.margin == null &&
-        widget.padding == null &&
+    ).where((widget) =>
         widget.decoration is BoxDecoration &&
         (widget.decoration! as BoxDecoration).shape == BoxShape.circle &&
         (widget.decoration! as BoxDecoration).border == null).toList();
