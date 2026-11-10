@@ -7,6 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/screens/help/guide_hub_screen.dart';
+import 'package:niarim/screens/rewards/coin_benefits_screen.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/project_service.dart';
@@ -67,16 +70,21 @@ void main() {
       // Keep a realistic project tile visible instead of presenting only an
       // empty-state mockup. These sample projects never leave the CI runner.
       final service = tester.element(find.byType(HomeScreen)).read<ProjectService>();
-      await tester.runAsync(
-        () => service.createProject(
+      // Create actual .niashare bytes and re-import them to photograph
+      // populated Received/Created collections, not just empty states.
+      await tester.runAsync(() async {
+        final project = await service.createProject(
           name: 'サンプルアニメーション',
           fps: 12,
           durationSeconds: 3,
           backgroundColor: 0xFFFFFFFF,
           exportWidth: 1920,
           exportHeight: 1080,
-        ),
-      );
+        );
+        final saved = await service.createOutgoingShare(project: project!);
+        final received = await NiaproSerializer.loadShare(saved!.path);
+        await service.importSharedProject(received!);
+      });
       await tester.pump(const Duration(milliseconds: 300));
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 80)),
@@ -120,11 +128,37 @@ void main() {
       expect(find.byKey(const Key('sharedReceivedFilter')), findsOneWidget);
       expect(find.byKey(const Key('sharedOutgoingFilter')), findsOneWidget);
       await shot('04-shared-received');
+      final receivedMenu =
+          find.byKey(ValueKey('receivedShareMenu_${service.shared.single.id}'));
+      expect(receivedMenu, findsOneWidget, reason: 'width $width');
+      await tester.tap(receivedMenu);
+      await tester.pumpAndSettle();
+      await shot('08-shared-received-menu');
+      await tester.pageBack();
+      await tester.pump(const Duration(milliseconds: 350));
       await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
       await tester.pump(const Duration(milliseconds: 500));
       await shot('05-shared-created');
+      expect(service.outgoingShares, isNotEmpty, reason: 'width $width');
+      final outgoingMenu = find.byKey(
+        ValueKey('outgoingShareMenu_${service.outgoingShares.first.path}'),
+      );
+      expect(outgoingMenu, findsOneWidget, reason: 'width $width');
+      await tester.tap(outgoingMenu);
+      await tester.pumpAndSettle();
+      await shot('09-shared-created-menu');
+      await tester.pageBack();
+      await tester.pump(const Duration(milliseconds: 350));
       await tester.tap(find.byKey(const Key('sharedReceivedFilter')));
       await tester.pump(const Duration(milliseconds: 250));
+      await tester.ensureVisible(find.byKey(const ValueKey('home_tab_1')));
+      await tester.tap(find.byKey(const ValueKey('home_tab_1')));
+      await tester.pump(const Duration(milliseconds: 850));
+      await shot('06-works');
+      await tester.ensureVisible(find.byKey(const ValueKey('home_tab_3')));
+      await tester.tap(find.byKey(const ValueKey('home_tab_3')));
+      await tester.pump(const Duration(milliseconds: 850));
+      await shot('07-trash');
       await tester.ensureVisible(find.byKey(const ValueKey('home_tab_0')));
       await tester.tap(find.byKey(const ValueKey('home_tab_0')));
       await tester.pump(const Duration(milliseconds: 500));
@@ -142,6 +176,31 @@ void main() {
       await tester.drag(drawer, const Offset(0, -540));
       await tester.pump(const Duration(milliseconds: 300));
       await shot('03-drawer-bottom');
+
+      // Hub pages changed in the same UI consolidation: two Guide tabs
+      // and three Coin/Benefits tabs. Capture both mobile and desktop.
+      if (width == 390 || width == 1024) {
+        appRouter.go('/help');
+        await tester.pump(const Duration(milliseconds: 900));
+        expect(find.byType(GuideHubScreen), findsOneWidget);
+        await shot('10-guide-help');
+        DefaultTabController.of(
+          tester.element(find.byType(GuideHubScreen)),
+        ).animateTo(1);
+        await tester.pump(const Duration(milliseconds: 900));
+        await shot('11-guide-tips');
+
+        appRouter.go('/rewards');
+        await tester.pump(const Duration(milliseconds: 900));
+        expect(find.byType(CoinBenefitsScreen), findsOneWidget);
+        for (var i = 0; i < 3; i++) {
+          DefaultTabController.of(
+            tester.element(find.byType(CoinBenefitsScreen)),
+          ).animateTo(i);
+          await tester.pump(const Duration(milliseconds: 900));
+          await shot('12-coin-benefits-tab-${i + 1}');
+        }
+      }
 
       rows.add('$width x $height dp; mode=${pc ? 'PC' : 'SP'}; home-tabs=4; drawer=5; shared=received+created');
       await tester.pumpWidget(const SizedBox.shrink());
