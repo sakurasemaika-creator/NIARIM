@@ -15,6 +15,7 @@ import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/widgets/mission_completion_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -123,6 +124,7 @@ void main() {
       final community = _exampleMissionService();
       await community.contentFiltersReady;
       final projects = ProjectService();
+      final settings = SettingsService();
       final root = GlobalKey();
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = Size(width.toDouble(),width==390?844:900);
@@ -133,6 +135,7 @@ void main() {
             ChangeNotifierProvider<GoogleAuthService>.value(value:auth),
             ChangeNotifierProvider<CommunityService>.value(value:community),
             ChangeNotifierProvider<ProjectService>.value(value:projects),
+            ChangeNotifierProvider<SettingsService>.value(value:settings),
           ],
           child:const MaterialApp(
             locale:Locale('ja'),
@@ -181,6 +184,7 @@ void main() {
       auth.dispose();
       community.dispose();
       projects.dispose();
+      settings.dispose();
     }
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
