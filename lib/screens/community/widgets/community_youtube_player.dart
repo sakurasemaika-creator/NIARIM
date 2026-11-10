@@ -13,6 +13,8 @@ class CommunityYoutubePlayer extends StatefulWidget {
     required this.playing,
     this.active = true,
     this.onEnded,
+    this.validatePlayback,
+    this.onPlayingChanged,
   });
 
   final String videoId;
@@ -20,6 +22,11 @@ class CommunityYoutubePlayer extends StatefulWidget {
   final bool active;
   /// Allows Shorts to either replay the current video or advance a page.
   final void Function(VoidCallback replay)? onEnded;
+  /// On each native IFrame play/resume, recheck the server-side visibility.
+  /// Rejecting pauses the player and allows the parent to unmount it.
+  final Future<bool> Function()? validatePlayback;
+  /// Syncs the host play/pause button with YouTube's native controls.
+  final ValueChanged<bool>? onPlayingChanged;
 
   static final RegExp videoIdPattern = RegExp(r'^[A-Za-z0-9_-]{11}$');
   static bool isValidVideoId(String id) => videoIdPattern.hasMatch(id);
@@ -38,6 +45,8 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
   StreamSubscription<YoutubePlayerValue>? _events;
   bool _endedReported = false;
   bool _playerFailed = false;
+  bool _verifyingPlayback = false;
+  PlayerState _lastNativeState = PlayerState.unknown;
 
   @override
   void initState() {
@@ -61,12 +70,25 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
     _controller = controller;
     _playerFailed = false;
     _endedReported = false;
+    _lastNativeState = PlayerState.unknown;
     _events = controller.listen((value) {
       if (!mounted) return;
       if (value.hasError && !_playerFailed) {
         setState(() => _playerFailed = true);
       }
-      if (value.playerState == PlayerState.playing) _endedReported = false;
+      if (value.playerState != _lastNativeState) {
+        if (value.playerState == PlayerState.playing) {
+          _endedReported = false;
+          widget.onPlayingChanged?.call(true);
+          if (widget.validatePlayback != null && !_verifyingPlayback) {
+            unawaited(_recheckNativePlay(controller));
+          }
+        } else if (value.playerState == PlayerState.paused ||
+                   value.playerState == PlayerState.ended) {
+          widget.onPlayingChanged?.call(false);
+        }
+        _lastNativeState = value.playerState;
+      }
       if (value.playerState == PlayerState.ended && !_endedReported) {
         _endedReported = true;
         widget.onEnded?.call(() {
@@ -76,6 +98,26 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
         });
       }
     });
+  }
+
+  Future<void> _recheckNativePlay(YoutubePlayerController controller) async {
+    if (_verifyingPlayback) return;
+    _verifyingPlayback = true;
+    bool allowed = false;
+    try {
+      allowed = await widget.validatePlayback?.call() ?? true;
+    } catch (_) {
+      allowed = false;
+    } finally {
+      _verifyingPlayback = false;
+    }
+    if (!allowed && mounted && identical(_controller, controller)) {
+      try {
+        await controller.pauseVideo();
+      } catch (_) {
+        // The owning view will fail closed and unmount the player.
+      }
+    }
   }
 
   void _disposeController() {
