@@ -90,7 +90,9 @@ void main() {
     ));
     expect(active, isNotNull);
     expect(deleted, isNotNull);
-    await tester.runAsync(() => ps.deleteProject(deleted!.id));
+    final activeId = active!.id;
+    final deletedId = deleted!.id;
+    await tester.runAsync(() => ps.deleteProject(deletedId));
 
     // About 200 KiB per category makes all six sectors visible, including
     // the active project archive and the trashed project archive.
@@ -101,11 +103,11 @@ void main() {
     const bytes = 200 * 1024;
     final base = '${docs.path}/niarim';
     fileWithSize(
-      '$base/projects/${active!.id}/Materials/test-material.png',
+      '$base/projects/${activeId}/Materials/test-material.png',
       bytes,
     );
-    fileWithSize('$base/projects/${active.id}/project-fixture.bin', bytes);
-    fileWithSize('$base/projects/${deleted!.id}/trash-fixture.bin', bytes);
+    fileWithSize('$base/projects/${activeId}/project-fixture.bin', bytes);
+    fileWithSize('$base/projects/${deletedId}/trash-fixture.bin', bytes);
     fileWithSize('$base/exports/fixture.png', bytes);
     fileWithSize('$base/Brushes/fixture-brush.bin', bytes);
     fileWithSize('${cache.path}/cache-fixture.bin', bytes);
