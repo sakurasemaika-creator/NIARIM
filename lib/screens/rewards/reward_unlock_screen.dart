@@ -236,7 +236,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         api == null ||
         priceVersion is! String ||
         price is! int ||
-        price <= 0) {
+        price != CoinBenefitPriceCatalog.unitCoins(
+          CoinUnlockTarget.fullPremium, CoinDurationUnit.month,
+        ) ||
+        priceVersion != CoinBenefitPriceCatalog.version) {
       return;
     }
     final t = RewardUnlockLabels.of(context);
@@ -607,7 +610,14 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final rate = widget.priceCatalog[target];
     int? officialPrice;
     try {
-      if (enabled && rate != null) officialPrice = rate.cost(_duration);
+      if (enabled && rate != null) {
+        final quoted = rate.cost(_duration);
+        // A stale server price must not silently replace the owner-final
+        // tariff. A mismatch is presented as "redemption not yet available".
+        if (quoted == CoinBenefitPriceCatalog.cost(target, _duration)) {
+          officialPrice = quoted;
+        }
+      }
     } on StateError {
       officialPrice = null;
     }
@@ -615,7 +625,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         _duration.unit == CoinDurationUnit.month &&
         _duration.amount == 1 &&
         _officialPremiumQuote?['enabled'] == true &&
-        _officialPremiumQuote?['priceCoins'] is int) {
+        _officialPremiumQuote?['priceCoins'] ==
+            CoinBenefitPriceCatalog.unitCoins(
+              CoinUnlockTarget.fullPremium, CoinDurationUnit.month,
+            ) &&
+        _officialPremiumQuote?['priceVersion'] ==
+            CoinBenefitPriceCatalog.version) {
       officialPrice = _officialPremiumQuote!['priceCoins'] as int;
     }
     final referencePrice = enabled
@@ -683,7 +698,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             _duration.unit == CoinDurationUnit.month &&
             _duration.amount == 1 &&
             _officialPremiumQuote?['enabled'] == true &&
-            _officialPremiumQuote?['priceCoins'] is int
+            _officialPremiumQuote?['priceCoins'] ==
+                CoinBenefitPriceCatalog.unitCoins(
+                  CoinUnlockTarget.fullPremium, CoinDurationUnit.month,
+                ) &&
+            _officialPremiumQuote?['priceVersion'] ==
+                CoinBenefitPriceCatalog.version
         ? _officialPremiumQuote!['priceCoins'] as int
         : null;
     final balance = _rewardState?['balanceCoins'];

@@ -17,10 +17,10 @@ void main() {
       final auth = GoogleAuthService();
 
       const cost = CoinUnlockUnitPrices(
-        perHour: 4,
-        perDay: 20,
-        perWeek: 110,
-        perMonth: 450,
+        perHour: 110,
+        perDay: 470,
+        perWeek: 3520,
+        perMonth: 13000,
       );
       await tester.pumpWidget(
         MultiProvider(
@@ -51,7 +51,7 @@ void main() {
       );
       expect(before.dy, lessThan(after.dy));
 
-      expect(find.text('4 coins'), findsOneWidget);
+      expect(find.text('110 coins'), findsOneWidget);
       await tester.tap(find.byKey(const Key('rewardDurationButton')));
       await tester.pumpAndSettle();
       // Categories start collapsed so days remains reachable on small screens.
@@ -62,7 +62,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(day2);
       await tester.pumpAndSettle();
-      expect(find.text('40 coins'), findsOneWidget);
+      expect(find.text('940 coins'), findsOneWidget);
 
       // No wallet/SSV/price quote is connected: neither action can spend coins.
       final goalButton = find.byKey(const Key('rewardSetGoalButton'));
