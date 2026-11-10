@@ -20,9 +20,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/config/font_fallback.dart';
+
+import 'helpers/load_app_fonts.dart';
 
 /// フォントのcmapから収録文字（コードポイント）を取り出す。
 /// Unicodeサブテーブル（platformID=0、またはplatformID=3かつ
@@ -189,6 +192,125 @@ List<File> handWrittenL10nFiles() =>
         .toList()
       ..sort((a, b) => a.path.compareTo(b.path));
 
+/// lib配下の手書きのDartファイル（lib/l10nの生成物を除く）すべて。
+List<File> handWrittenLibFiles() =>
+    Directory('lib')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where(
+          (f) =>
+              f.path.endsWith('.dart') &&
+              !f.uri.pathSegments.last.startsWith('app_localizations'),
+        )
+        .toList()
+      ..sort((a, b) => a.path.compareTo(b.path));
+
+/// 画面に何も描かれない字（空白・書式の制御文字・結合記号）。インクが
+/// 無くて当然なので、インクの検査から除く。
+final _invisible = RegExp(r'[\s\p{Cf}\p{Mn}\p{Me}]', unicode: true);
+
+/// [runes]を1字ずつ[family]（代替は[fallback]）で描き、インクが1画素も
+/// 出ない字を返す。
+///
+/// cmapに載っていても字形が空のことがある（くらむぼんの「＋」は空の字形で、
+/// cmapに載っているので代替フォントにも回らず、見出しの「全機能＋全広告なし」
+/// の「＋」が空白になっていた）。cmapだけでは見つからないので実際に描く。
+Future<Set<int>> inklessRunes(
+  List<int> runes, {
+  required String family,
+  required List<String> fallback,
+}) async {
+  const columns = 64;
+  const cell = 40;
+  final rows = (runes.length + columns - 1) ~/ columns;
+  final recorder = ui.PictureRecorder();
+  final canvas = ui.Canvas(recorder);
+  for (var i = 0; i < runes.length; i++) {
+    final builder =
+        ui.ParagraphBuilder(ui.ParagraphStyle(fontFamily: family, fontSize: 20))
+          ..pushStyle(
+            ui.TextStyle(
+              color: const ui.Color(0xFF000000),
+              fontFamily: family,
+              fontFamilyFallback: fallback,
+              fontSize: 20,
+            ),
+          )
+          ..addText(String.fromCharCode(runes[i]));
+    final paragraph = builder.build()
+      ..layout(const ui.ParagraphConstraints(width: cell * 1.0));
+    canvas.drawParagraph(
+      paragraph,
+      ui.Offset((i % columns) * cell + 8.0, (i ~/ columns) * cell + 6.0),
+    );
+    paragraph.dispose();
+  }
+  final picture = recorder.endRecording();
+  final image = await picture.toImage(columns * cell, rows * cell);
+  picture.dispose();
+  final pixels = (await image.toByteData())!;
+  final width = image.width;
+  image.dispose();
+  final inkless = <int>{};
+  for (var i = 0; i < runes.length; i++) {
+    final x0 = (i % columns) * cell;
+    final y0 = (i ~/ columns) * cell;
+    var ink = false;
+    for (var y = y0; y < y0 + cell && !ink; y++) {
+      for (var x = x0; x < x0 + cell; x++) {
+        if (pixels.getUint8((y * width + x) * 4 + 3) > 0) {
+          ink = true;
+          break;
+        }
+      }
+    }
+    if (!ink) inkless.add(runes[i]);
+  }
+  return inkless;
+}
+
+/// くらむぼん（見出し用）がcmapに載せていながら空の字形で描く字。
+/// 見出し・題・ボタン・メニューでは使わず、ASCIIの「+」等にすること。
+const _kuramubonEmptyGlyphs = <int>{
+  0xFF0B, // ＋
+  0x2460, 0x2461, 0x2462, 0x2463, 0x2464, // ①〜⑤
+  0x9760, // 靠
+};
+
+/// [_kuramubonEmptyGlyphs]の字を含むが、本文の書体（白光明朝）でだけ出す
+/// 文言（説明・ヒント・空の一覧の案内・チュートリアルの手順・規約の本文）。
+/// 見出しの書体で出す文言をここへ足してはいけない（その字が空白になる）。
+const _bodyOnlyKeysWithEmptyHeadingGlyphs = <String>{
+  'autofillPartEmpty',
+  'autofillPresetEmptyHint',
+  'colorPickerPaletteEmptyHint',
+  'communityFloatingPreviewMoveHint',
+  'filterFisheyeCanvasHint',
+  'filterSphereCanvasHint',
+  'helpDrawingFilterDesc',
+  'helpHomeScreenDesc',
+  'helpLayerDesc',
+  'helpLayerGroupDesc',
+  'helpWatermarkEntryDesc',
+  'helpWorkspaceSettingsDesc',
+  'licenseTermsArt10Body',
+  'pcWorkspaceLayoutIntroHint',
+  'projectListEmptyHint',
+  'stampPixelModeHint',
+  'timelineEffectFilterEmptyState',
+  'timelineStackOrderHint',
+  'timelineStackRangeOrderHint',
+  'tipsFisheyeChromaticDesc',
+  'tipsLeftHandedWorkspaceDesc',
+  'tipsPcDexLayoutDesc',
+  'tipsRoughLayerRescueDesc',
+  'tipsSaveSlotAutoSaveDesc',
+  'tipsSphereShadingDesc',
+  'tutorialPage2Step1',
+  'tutorialPage4Step2',
+  'watermarkEmptyHint',
+};
+
 void main() {
   // 記号・絵文字は本文用フォントの担当範囲ではなく、端末の絵文字フォントが
   // 受け持つ（元のNotoフォントにも入っていない）。判定から除く。
@@ -307,6 +429,92 @@ void main() {
       );
     });
   }
+
+  test('lib配下の手書きのDartファイルの文字列を、両方のスタックで表示できる', () {
+    // lib/l10nの外にも、7言語の文を手で書いた表があった（プライバシー
+    // ポリシーの「学習データとして利用しない」条項。ハングルの「델」「학」、
+    // 簡体字の「训」「练」がどの同梱フォントにも無かった）。
+    // 文言はARBへ移すこと（tool/build_fallback_fonts.py はARBとlib/l10nだけを
+    // 読むので、ほかの場所の字はサブセットに入らない）。
+    final missing = <String>[];
+    for (final file in handWrittenLibFiles()) {
+      final chars = handWrittenL10nCharsOf(file)
+        ..removeAll(symbolsHandledBySystem);
+      final notBody = chars.difference(bodyCoverage);
+      final notHeading = chars.difference(headingCoverage);
+      if (notBody.isEmpty && notHeading.isEmpty) continue;
+      missing.add(
+        '${file.path}: 本文用に無い ${String.fromCharCodes(notBody)} / '
+        '見出し用に無い ${String.fromCharCodes(notHeading)}',
+      );
+    }
+    expect(
+      missing,
+      isEmpty,
+      reason:
+          '${missing.join('\n')}\n'
+          '文言はARB（lib/l10n/app_*.arb）へ移し、'
+          'tool/build_fallback_fonts.py でフォントを再生成してください',
+    );
+  });
+
+  testWidgets('UIの字は、本文用・見出し用のどちらで描いてもインクが出る', (tester) async {
+    await loadAppFonts(tester);
+    final runes = <int>{
+      for (final arb in arbs) ...uiCharsOf(arb),
+      for (final dart in handWritten) ...handWrittenL10nCharsOf(dart),
+    }..removeAll(symbolsHandledBySystem);
+    runes.removeWhere((r) => _invisible.hasMatch(String.fromCharCode(r)));
+    final sorted = runes.toList()..sort();
+    expect(sorted.length, greaterThan(1000), reason: '字を集められていない');
+
+    final body = (await tester.runAsync(
+      () => inklessRunes(
+        sorted,
+        family: 'HakkouMincho',
+        fallback: kBodyFontFallback,
+      ),
+    ))!;
+    expect(body, isEmpty, reason: '本文用で空白になる字: ${String.fromCharCodes(body)}');
+
+    final heading = (await tester.runAsync(
+      () => inklessRunes(
+        sorted,
+        family: 'Kuramubon',
+        fallback: kHeadingFontFallback,
+      ),
+    ))!;
+    expect(
+      heading.difference(_kuramubonEmptyGlyphs),
+      isEmpty,
+      reason:
+          '見出し用で空白になる字（新しく見つかった）: '
+          '${String.fromCharCodes(heading.difference(_kuramubonEmptyGlyphs))}',
+    );
+
+    // 見出し用で空白になる字は、本文の書体でだけ出す文言にしか使わない。
+    final headingUses = <String>[];
+    for (final arb in arbs) {
+      final data = json.decode(arb.readAsStringSync()) as Map<String, dynamic>;
+      data.forEach((key, value) {
+        if (key.startsWith('@') || value is! String) return;
+        if (_bodyOnlyKeysWithEmptyHeadingGlyphs.contains(key)) return;
+        final empty = value.runes.where(heading.contains).toSet();
+        if (empty.isEmpty) return;
+        headingUses.add(
+          '${arb.uri.pathSegments.last} $key: ${String.fromCharCodes(empty)}',
+        );
+      });
+    }
+    expect(
+      headingUses,
+      isEmpty,
+      reason:
+          'くらむぼんで空白になる字を使っている（見出し・ボタン・メニューなら'
+          'ASCIIの「+」等にする。本文の書体でだけ出すなら一覧に足す）:\n'
+          '${headingUses.join('\n')}',
+    );
+  });
 
   test('見出し用の代替フォントに明朝が混ざっていない', () {
     // 極太ゴシックの中に細い明朝が混ざると、同じ単語の中で浮いてしまう

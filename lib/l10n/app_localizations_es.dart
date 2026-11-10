@@ -5642,6 +5642,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'La Aplicación no ofrece ninguna función para transmitir, recopilar o almacenar en los servidores del desarrollador las ilustraciones, animaciones y demás contenidos creados por el usuario (incluidos los datos de proyecto, las imágenes y vídeos exportados, etc.; en lo sucesivo, lo mismo). Estos datos se almacenan, en principio, únicamente en el dispositivo del usuario (la Aplicación no incorpora una función de sincronización en la nube). Dado que el desarrollador no dispone de ninguna función para almacenar estos contenidos por su cuenta, no existe el concepto de un plazo de conservación por parte del desarrollador. Los datos almacenados en su dispositivo pueden eliminarse en cualquier momento mediante las funciones de eliminación de la Aplicación y, si desinstala la Aplicación, también se eliminarán los datos almacenados en su dispositivo, incluidos proyectos, ajustes y fuentes añadidas (en cuanto al tratamiento de la información cuando el usuario, por decisión propia, publica una obra mediante la función de la Plaza de Obras, véase el artículo 7).';
 
   @override
+  String get privacyPolicyArt2AiTrainingClause =>
+      'El desarrollador no utiliza el contenido creado o publicado por los usuarios, los datos de proyectos ni otros datos de creación como datos de entrenamiento para modelos de IA generativa u otros modelos de aprendizaje automático.';
+
+  @override
   String get privacyPolicyArt3Title =>
       'Artículo 3 (Información recopilada por servicios de terceros)';
 
@@ -8576,7 +8580,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityRankingLayoutLargeThumbnail => 'Miniaturas grandes';
 
   @override
-  String get communityRankingLayoutRankedPlace => 'Puesto';
+  String communityRankingLayoutRankedPlace(int rank) {
+    return 'Puesto $rank';
+  }
 
   @override
   String get communityRankingLayoutPeriodBookmarks => 'Marcadores del período';
@@ -9620,5 +9626,91 @@ class AppLocalizationsEs extends AppLocalizations {
       one: '$count mes',
     );
     return '$_temp0';
+  }
+
+  @override
+  String get rewardUnlockReviewButton => 'Revisar solapamientos y vigencia';
+
+  @override
+  String get rewardUnlockReviewTitle =>
+      'Solapamientos y vigencia de las ventajas';
+
+  @override
+  String rewardUnlockRedeemExtendNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Ya usas las ventajas Premium. Al canjear, se prevé ampliarlas hasta el $expiryString. ¿Continuar?';
+  }
+
+  @override
+  String rewardUnlockRedeemExpiryNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Vigencia tras el canje (estimada): $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewPlayPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Eres miembro Premium (hasta el $expiryString).';
+  }
+
+  @override
+  String get rewardUnlockReviewPlayPremiumUnknown =>
+      'Eres miembro Premium. Aún no se ha confirmado cuándo termina la suscripción.';
+
+  @override
+  String rewardUnlockReviewCoinPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Estás usando las ventajas Premium (hasta el $expiryString).';
+  }
+
+  @override
+  String rewardUnlockReviewFullIncludes(String bundle) {
+    return '«$bundle», que has seleccionado, ya incluye las demás ventajas sueltas. Las que se solapan no se activan dos veces; se prevé ampliarlas.';
+  }
+
+  @override
+  String rewardUnlockReviewAdsOverlap(String bundle) {
+    return 'Las ventajas sin anuncios seleccionadas se solapan con «$bundle».';
+  }
+
+  @override
+  String rewardUnlockReviewItem(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit: nueva vigencia estimada hasta el $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit: se solapa con una ventaja activa o incluida en un paquete. Nueva vigencia estimada hasta el $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewReferenceTotal(String coins) {
+    return 'Total de referencia: $coins. El servidor aún no admite gastar monedas en ventajas sueltas ni en canjes que se solapan. El precio y la vigencia oficiales los confirma el servidor justo antes del canje.';
   }
 }

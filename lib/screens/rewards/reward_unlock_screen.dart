@@ -254,12 +254,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final now = DateTime.now();
     final from = _later(now, activeCoin);
     final projectedEnd = _redeemablePeriod.previewExpiry(from);
-    final overlapMessage = activeCoin != null && activeCoin.isAfter(now)
-        ? '現在プレミアム特典を利用中です。交換すると有効期限が'
-              '${_formatBenefitExpiry(projectedEnd)}まで延長される見込みです。'
-              'よろしいですか？'
-        : '交換後の有効期限（参考）：${_formatBenefitExpiry(projectedEnd)}';
     final l10n = AppLocalizations.of(context)!;
+    final overlapMessage = activeCoin != null && activeCoin.isAfter(now)
+        ? l10n.rewardUnlockRedeemExtendNotice(projectedEnd.toLocal())
+        : l10n.rewardUnlockRedeemExpiryNotice(projectedEnd.toLocal());
     final period = coinUnlockDurationLabel(l10n, _redeemablePeriod);
     final confirmed = await showDialog<bool>(
       context: context,
@@ -385,13 +383,6 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     });
   }
 
-  String _formatBenefitExpiry(DateTime date) {
-    final local = date.toLocal();
-    return '${local.year}年${local.month}月${local.day}日'
-        '${local.hour.toString().padLeft(2, '0')}時'
-        '${local.minute.toString().padLeft(2, '0')}分';
-  }
-
   DateTime _later(DateTime left, DateTime? right) =>
       right != null && right.isAfter(left) ? right : left;
 
@@ -422,6 +413,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   Future<void> _reviewSelections() async {
     if (_selected.isEmpty) return;
     final t = RewardUnlockLabels.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final premium = context.read<PremiumService>();
     final now = DateTime.now();
     final active = _activeBenefitExpiries(now);
@@ -439,24 +431,18 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     if (hasPlay) {
       lines.add(
         paidUntil != null
-            ? '現在プレミアム会員を利用中です（${_formatBenefitExpiry(paidUntil)}まで）。'
-            : '現在プレミアム会員を利用中です。契約終了日時は確認できていません。',
+            ? l10n.rewardUnlockReviewPlayPremiumUntil(paidUntil.toLocal())
+            : l10n.rewardUnlockReviewPlayPremiumUnknown,
       );
     } else if (coinUntil != null && coinUntil.isAfter(now)) {
-      lines.add(
-        '現在プレミアム特典を利用中です'
-        '（${_formatBenefitExpiry(coinUntil)}まで）。',
-      );
+      lines.add(l10n.rewardUnlockReviewCoinPremiumUntil(coinUntil.toLocal()));
     }
     if (hasFull) {
-      lines.add(
-        '選択中の「${t['fullPremium']}」はほかの単品特典を含みます。'
-        '重複分は二重に有効にせず、延長される想定です。',
-      );
+      lines.add(l10n.rewardUnlockReviewFullIncludes(t['fullPremium']));
     }
     if (hasAllAds &&
         _placementTargets.any((target) => _selected.contains(target))) {
-      lines.add('選択中の広告非表示特典は「${t['allAds']}」と重複します。');
+      lines.add(l10n.rewardUnlockReviewAdsOverlap(t['allAds']));
     }
 
     for (final target in CoinUnlockTarget.values) {
@@ -485,8 +471,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           (hasFull && target != CoinUnlockTarget.fullPremium) ||
           (hasAllAds && _placementTargets.contains(target));
       lines.add(
-        '${t[target.name]}：${coversNow ? '既存・セット特典と重複。' : ''}'
-        '参考の延長後期限 ${_formatBenefitExpiry(calculatedExpiry)}',
+        coversNow
+            ? l10n.rewardUnlockReviewItemOverlap(
+                t[target.name],
+                calculatedExpiry.toLocal(),
+              )
+            : l10n.rewardUnlockReviewItem(
+                t[target.name],
+                calculatedExpiry.toLocal(),
+              ),
       );
     }
     final referenceTotal = _selected.fold<int>(
@@ -504,7 +497,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         scrollable: true,
-        title: Text('特典の重複・有効期限の確認'),
+        title: Text(l10n.rewardUnlockReviewTitle),
         content: Text(lines.join('\n\n')),
         actions: [
           FilledButton(
@@ -875,7 +868,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         onPressed: _selected.isNotEmpty
                             ? _reviewSelections
                             : null,
-                        label: const Text('重複・有効期限を確認'),
+                        label: Text(l10n.rewardUnlockReviewButton),
                       ),
                       const SizedBox(height: 8),
                       // Once the authenticated quote/goal API is connected,

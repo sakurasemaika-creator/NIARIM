@@ -5653,6 +5653,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'L\'Application ne fournit aucune fonction permettant de transmettre, collecter ou stocker sur les serveurs du développeur les illustrations, animations et autres contenus créés par l\'utilisateur (y compris les données de projet, les images et vidéos exportées, etc. ; il en va de même ci-après). Ces données sont, en principe, stockées uniquement sur l\'appareil de l\'utilisateur (l\'Application n\'intègre pas de fonction de synchronisation en nuage). Le développeur ne disposant d\'aucune fonction lui permettant de stocker ce contenu par lui-même, la notion de durée de conservation du côté du développeur n\'existe pas. Les données stockées sur votre appareil peuvent être supprimées à tout moment via les fonctions de suppression de l\'Application ; si vous désinstallez l\'Application, les données stockées sur votre appareil — projets, paramètres, polices ajoutées, etc. — seront également supprimées (pour le traitement de l\'information lorsque l\'utilisateur choisit de publier une œuvre au moyen de la fonction Place des œuvres, voir l\'article 7).';
 
   @override
+  String get privacyPolicyArt2AiTrainingClause =>
+      'Le développeur n’utilise pas les contenus créés ou publiés par les utilisateurs, les données de projet ni les autres données de création comme données d’entraînement pour des modèles d’IA générative ou d’autres modèles d’apprentissage automatique.';
+
+  @override
   String get privacyPolicyArt3Title =>
       'Article 3 (Informations collectées par des services tiers)';
 
@@ -8598,7 +8602,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityRankingLayoutLargeThumbnail => 'Grandes miniatures';
 
   @override
-  String get communityRankingLayoutRankedPlace => 'Rang';
+  String communityRankingLayoutRankedPlace(int rank) {
+    return 'Rang $rank';
+  }
 
   @override
   String get communityRankingLayoutPeriodBookmarks => 'Favoris de la période';
@@ -9299,7 +9305,7 @@ class AppLocalizationsFr extends AppLocalizations {
       works,
       locale: localeName,
       other: 'Vos $works œuvres ont chacune atteint $_temp0',
-      one: 'Votre œuvre a atteint $_temp1',
+      one: '$works œuvre publiée a atteint $_temp1',
     );
     return '$_temp2';
   }
@@ -9648,5 +9654,91 @@ class AppLocalizationsFr extends AppLocalizations {
       other: '$count mois',
     );
     return '$_temp0';
+  }
+
+  @override
+  String get rewardUnlockReviewButton =>
+      'Vérifier les doublons et l’expiration';
+
+  @override
+  String get rewardUnlockReviewTitle => 'Doublons et expiration des avantages';
+
+  @override
+  String rewardUnlockRedeemExtendNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Vous profitez déjà des avantages Premium. L’échange devrait les prolonger jusqu’au $expiryString. Continuer ?';
+  }
+
+  @override
+  String rewardUnlockRedeemExpiryNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Expiration après l’échange (estimation) : $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewPlayPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Vous êtes abonné Premium (jusqu’au $expiryString).';
+  }
+
+  @override
+  String get rewardUnlockReviewPlayPremiumUnknown =>
+      'Vous êtes abonné Premium. La date de fin de l’abonnement n’a pas pu être confirmée.';
+
+  @override
+  String rewardUnlockReviewCoinPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Vous profitez des avantages Premium (jusqu’au $expiryString).';
+  }
+
+  @override
+  String rewardUnlockReviewFullIncludes(String bundle) {
+    return '« $bundle », sélectionné, comprend déjà les autres avantages individuels. Les avantages en double ne sont pas activés deux fois : ils devraient être prolongés.';
+  }
+
+  @override
+  String rewardUnlockReviewAdsOverlap(String bundle) {
+    return 'Les avantages sans publicité sélectionnés font double emploi avec « $bundle ».';
+  }
+
+  @override
+  String rewardUnlockReviewItem(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit : nouvelle expiration estimée au $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit : fait double emploi avec un avantage actif ou groupé. Nouvelle expiration estimée au $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewReferenceTotal(String coins) {
+    return 'Total indicatif : $coins. Le serveur ne permet pas encore de dépenser des pièces pour des avantages individuels ou des échanges en double. Le prix et l’expiration officiels doivent être confirmés par le serveur juste avant l’échange.';
   }
 }

@@ -5560,6 +5560,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The App does not provide any function to transmit, collect, or store on the developer\'s servers the illustrations, animations, and other content created by users (including project data, exported images, videos, etc.; the same applies hereinafter). This data is, in principle, stored only on the user\'s device (the App does not include a cloud sync feature). Because the developer has no function to store this content on its own, there is no concept of a retention period on the developer\'s side. Data stored on your device can be deleted at any time using the App\'s deletion features, and if you uninstall the App, data stored on your device — including projects, settings, and added fonts — will also be deleted (for the handling of information when a user chooses to post a work using the Work Plaza feature, see Article 7).';
 
   @override
+  String get privacyPolicyArt2AiTrainingClause =>
+      'The developer does not use content created or published by users, project data, or other creation data as training data for generative AI models or other machine-learning models.';
+
+  @override
   String get privacyPolicyArt3Title =>
       'Article 3 (Information Collected by Third-Party Services)';
 
@@ -8446,7 +8450,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityRankingLayoutLargeThumbnail => 'Large thumbnails';
 
   @override
-  String get communityRankingLayoutRankedPlace => 'Rank';
+  String communityRankingLayoutRankedPlace(int rank) {
+    return 'Rank $rank';
+  }
 
   @override
   String get communityRankingLayoutPeriodBookmarks => 'Bookmarks this period';
@@ -9298,7 +9304,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get missionClaimFailed => 'Could not claim';
 
   @override
-  String get missionClaimUnconfirmed => 'Claim failed';
+  String get missionClaimUnconfirmed => 'Could not confirm reward';
 
   @override
   String get missionClaimed => 'Claimed';
@@ -9310,7 +9316,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get missionClaim => 'Claim';
 
   @override
-  String get missionNotYet => 'Not yet';
+  String get missionNotYet => 'Not achieved';
 
   @override
   String get missionPeriodDaily => 'Daily';
@@ -9361,7 +9367,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String plazaMissionGoal(String duration) {
-    return 'Keep Work Plaza open for $duration';
+    return 'Keep Work Plaza open for $duration in total';
   }
 
   @override
@@ -9486,5 +9492,90 @@ class AppLocalizationsEn extends AppLocalizations {
       one: '$count month',
     );
     return '$_temp0';
+  }
+
+  @override
+  String get rewardUnlockReviewButton => 'Check overlaps and expiry';
+
+  @override
+  String get rewardUnlockReviewTitle => 'Benefit overlaps and expiry';
+
+  @override
+  String rewardUnlockRedeemExtendNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'You are already using Premium benefits. Redeeming is expected to extend them until $expiryString. Continue?';
+  }
+
+  @override
+  String rewardUnlockRedeemExpiryNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Expiry after redeeming (estimate): $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewPlayPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'You are a Premium member (until $expiryString).';
+  }
+
+  @override
+  String get rewardUnlockReviewPlayPremiumUnknown =>
+      'You are a Premium member. The end of your subscription has not been confirmed.';
+
+  @override
+  String rewardUnlockReviewCoinPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'You are using Premium benefits (until $expiryString).';
+  }
+
+  @override
+  String rewardUnlockReviewFullIncludes(String bundle) {
+    return 'The selected “$bundle” already includes the individual benefits. Overlapping benefits are not activated twice; they are expected to be extended instead.';
+  }
+
+  @override
+  String rewardUnlockReviewAdsOverlap(String bundle) {
+    return 'The selected ad-removal benefits overlap with “$bundle”.';
+  }
+
+  @override
+  String rewardUnlockReviewItem(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit: estimated new expiry $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit: overlaps with a current or bundled benefit. Estimated new expiry $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewReferenceTotal(String coins) {
+    return 'Reference total: $coins. The server does not yet support spending coins on individual benefits or overlapping exchanges. The official price and expiry must be confirmed by the server right before exchanging.';
   }
 }

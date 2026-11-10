@@ -4663,10 +4663,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelinePreviewFullscreenTooltip => 'プレビューを全画面表示';
 
   @override
-  String get timelineAddVideoTooltip => '＋動画';
+  String get timelineAddVideoTooltip => '+ 動画';
 
   @override
-  String get timelineAddAudioTooltip => '＋音源';
+  String get timelineAddAudioTooltip => '+ 音源';
 
   @override
   String get timelineEffectFilterLabel => '演出フィルター';
@@ -4675,7 +4675,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineAddCameraKfTooltip => 'カメラキーフレーム追加';
 
   @override
-  String get timelineAddWatermarkTooltip => '＋ウォーターマーク';
+  String get timelineAddWatermarkTooltip => '+ ウォーターマーク';
 
   @override
   String get timelineStackScopeRange => 'フレーム範囲';
@@ -4736,10 +4736,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineMaterialNewRow => '新しい列';
 
   @override
-  String get timelineAddTextTooltip => '＋テキスト';
+  String get timelineAddTextTooltip => '+ テキスト';
 
   @override
-  String get timelineAddImageTooltip => '＋画像';
+  String get timelineAddImageTooltip => '+ 画像';
 
   @override
   String get timelineStackOrderTitle => '重なり順';
@@ -5379,6 +5379,10 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get privacyPolicyArt2Body =>
       '本アプリは、ユーザーが作成したイラスト・アニメーション等のコンテンツ（プロジェクトデータ・書き出し画像・動画等を含みます。以下同じです。）を、開発者のサーバーへ送信・収集・保存する機能を提供していません。これらのデータは、原則としてユーザーの端末内にのみ保存されます。（クラウド同期機能は搭載していません。）開発者はこれらのコンテンツを自ら保存する機能を持たないため、開発者側での保存期間という概念自体がありません。端末内に保存されたデータは、本アプリの削除機能により随時削除できるほか、アプリをアンインストールした場合はプロジェクト・設定・追加したフォント等のデータも併せて削除されます。（ただし、ユーザーが自らの意思で作品広場機能を利用して作品を投稿する場合の情報の取扱いについては、第7条によります。）';
+
+  @override
+  String get privacyPolicyArt2AiTrainingClause =>
+      '開発者は、ユーザーが作成または投稿したコンテンツ、プロジェクトデータその他の制作データを、生成AIモデルその他の機械学習モデルの学習データとして利用しません。';
 
   @override
   String get privacyPolicyArt3Title => '第3条（第三者サービスによる情報の取得）';
@@ -8140,7 +8144,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityRankingLayoutLargeThumbnail => '大きいサムネイル';
 
   @override
-  String get communityRankingLayoutRankedPlace => '位';
+  String communityRankingLayoutRankedPlace(int rank) {
+    return '$rank位';
+  }
 
   @override
   String get communityRankingLayoutPeriodBookmarks => '期間内ブックマーク';
@@ -8667,7 +8673,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockAllAds => 'すべての広告なし';
 
   @override
-  String get rewardUnlockFullPremium => '全機能＋全広告なし';
+  String get rewardUnlockFullPremium => '全機能 + 全広告なし';
 
   @override
   String get rewardUnlockChoose => '選択';
@@ -8686,7 +8692,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String coinAmount(int count) {
-    return '$count コイン';
+    return '$countコイン';
   }
 
   @override
@@ -8970,5 +8976,90 @@ class AppLocalizationsJa extends AppLocalizations {
       other: '$countか月',
     );
     return '$_temp0';
+  }
+
+  @override
+  String get rewardUnlockReviewButton => '重複・有効期限を確認';
+
+  @override
+  String get rewardUnlockReviewTitle => '特典の重複・有効期限の確認';
+
+  @override
+  String rewardUnlockRedeemExtendNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '現在プレミアム特典を利用中です。交換すると有効期限が$expiryStringまで延長される見込みです。よろしいですか？';
+  }
+
+  @override
+  String rewardUnlockRedeemExpiryNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '交換後の有効期限（参考）：$expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewPlayPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '現在プレミアム会員を利用中です（$expiryStringまで）。';
+  }
+
+  @override
+  String get rewardUnlockReviewPlayPremiumUnknown =>
+      '現在プレミアム会員を利用中です。契約終了日時は確認できていません。';
+
+  @override
+  String rewardUnlockReviewCoinPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '現在プレミアム特典を利用中です（$expiryStringまで）。';
+  }
+
+  @override
+  String rewardUnlockReviewFullIncludes(String bundle) {
+    return '選択中の「$bundle」はほかの単品特典を含みます。重複分は二重に有効にせず、延長される想定です。';
+  }
+
+  @override
+  String rewardUnlockReviewAdsOverlap(String bundle) {
+    return '選択中の広告非表示特典は「$bundle」と重複します。';
+  }
+
+  @override
+  String rewardUnlockReviewItem(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit：参考の延長後期限 $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit：既存・セット特典と重複。参考の延長後期限 $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewReferenceTotal(String coins) {
+    return '参考合計：$coins。単品特典・重複交換のコイン消費はまだサーバー未対応です。正式な交換価格・有効期限は交換直前のサーバー確認が必要です。';
   }
 }

@@ -5,6 +5,7 @@ import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
+import '../../widgets/action_beside_or_below.dart';
 
 /// Server counts visits by JST day; only a confirmed POST claim can credit coins.
 class RecurringMissionsPanel extends StatefulWidget {
@@ -183,25 +184,28 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
               : 'Sign in on $requiredDays days this month',
         ),
       ),
-      subtitle: Text(
-        '${l10n.recurringMissionProgress(days, requiredDays)}'
-        ' · ${l10n.coinAmount(coins)}',
-      ),
-      trailing: claimed
-          ? Text(l10n.missionClaimed)
-          : OutlinedButton(
-              key: Key('claimRecurring_$id'),
-              onPressed: enabled && achieved && !_busy.contains(id)
-                  ? () => _claim(id)
-                  : null,
-              child: Text(
-                !enabled && achieved
-                    ? l10n.missionComingSoon
-                    : achieved
-                    ? l10n.missionClaim
-                    : l10n.missionNotYet,
+      // 受け取るボタンは説明の横か下に置き、題には行の幅をすべて使わせる。
+      subtitle: ActionBesideOrBelow(
+        text: Text(
+          '${l10n.recurringMissionProgress(days, requiredDays)}'
+          ' · ${l10n.coinAmount(coins)}',
+        ),
+        action: claimed
+            ? Text(l10n.missionClaimed)
+            : OutlinedButton(
+                key: Key('claimRecurring_$id'),
+                onPressed: enabled && achieved && !_busy.contains(id)
+                    ? () => _claim(id)
+                    : null,
+                child: Text(
+                  !enabled && achieved
+                      ? l10n.missionComingSoon
+                      : achieved
+                      ? l10n.missionClaim
+                      : l10n.missionNotYet,
+                ),
               ),
-            ),
+      ),
     );
   }
 

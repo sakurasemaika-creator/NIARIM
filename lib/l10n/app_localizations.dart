@@ -8570,13 +8570,13 @@ abstract class AppLocalizations {
   /// No description provided for @timelineAddVideoTooltip.
   ///
   /// In ja, this message translates to:
-  /// **'＋動画'**
+  /// **'+ 動画'**
   String get timelineAddVideoTooltip;
 
   /// No description provided for @timelineAddAudioTooltip.
   ///
   /// In ja, this message translates to:
-  /// **'＋音源'**
+  /// **'+ 音源'**
   String get timelineAddAudioTooltip;
 
   /// No description provided for @timelineEffectFilterLabel.
@@ -8594,7 +8594,7 @@ abstract class AppLocalizations {
   /// No description provided for @timelineAddWatermarkTooltip.
   ///
   /// In ja, this message translates to:
-  /// **'＋ウォーターマーク'**
+  /// **'+ ウォーターマーク'**
   String get timelineAddWatermarkTooltip;
 
   /// No description provided for @timelineStackScopeRange.
@@ -8696,13 +8696,13 @@ abstract class AppLocalizations {
   /// No description provided for @timelineAddTextTooltip.
   ///
   /// In ja, this message translates to:
-  /// **'＋テキスト'**
+  /// **'+ テキスト'**
   String get timelineAddTextTooltip;
 
   /// No description provided for @timelineAddImageTooltip.
   ///
   /// In ja, this message translates to:
-  /// **'＋画像'**
+  /// **'+ 画像'**
   String get timelineAddImageTooltip;
 
   /// No description provided for @timelineStackOrderTitle.
@@ -9850,6 +9850,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'本アプリは、ユーザーが作成したイラスト・アニメーション等のコンテンツ（プロジェクトデータ・書き出し画像・動画等を含みます。以下同じです。）を、開発者のサーバーへ送信・収集・保存する機能を提供していません。これらのデータは、原則としてユーザーの端末内にのみ保存されます。（クラウド同期機能は搭載していません。）開発者はこれらのコンテンツを自ら保存する機能を持たないため、開発者側での保存期間という概念自体がありません。端末内に保存されたデータは、本アプリの削除機能により随時削除できるほか、アプリをアンインストールした場合はプロジェクト・設定・追加したフォント等のデータも併せて削除されます。（ただし、ユーザーが自らの意思で作品広場機能を利用して作品を投稿する場合の情報の取扱いについては、第7条によります。）'**
   String get privacyPolicyArt2Body;
+
+  /// プライバシーポリシー第2条の追記（Web版の正本と同じ。生成AI・機械学習の学習データとして利用しない）
+  ///
+  /// In ja, this message translates to:
+  /// **'開発者は、ユーザーが作成または投稿したコンテンツ、プロジェクトデータその他の制作データを、生成AIモデルその他の機械学習モデルの学習データとして利用しません。'**
+  String get privacyPolicyArt2AiTrainingClause;
 
   /// No description provided for @privacyPolicyArt3Title.
   ///
@@ -14867,11 +14873,11 @@ abstract class AppLocalizations {
   /// **'大きいサムネイル'**
   String get communityRankingLayoutLargeThumbnail;
 
-  /// No description provided for @communityRankingLayoutRankedPlace.
+  /// 作品広場のランキングの順位（読み上げ用）。数と単位をまとめた1つの文言
   ///
   /// In ja, this message translates to:
-  /// **'位'**
-  String get communityRankingLayoutRankedPlace;
+  /// **'{rank}位'**
+  String communityRankingLayoutRankedPlace(int rank);
 
   /// No description provided for @communityRankingLayoutPeriodBookmarks.
   ///
@@ -15890,7 +15896,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockFullPremium.
   ///
   /// In ja, this message translates to:
-  /// **'全機能＋全広告なし'**
+  /// **'全機能 + 全広告なし'**
   String get rewardUnlockFullPremium;
 
   /// No description provided for @rewardUnlockChoose.
@@ -15926,7 +15932,7 @@ abstract class AppLocalizations {
   /// コインの枚数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言
   ///
   /// In ja, this message translates to:
-  /// **'{count} コイン'**
+  /// **'{count}コイン'**
   String coinAmount(int count);
 
   /// ミッション：投稿した作品のブックマーク数の目標（作品名なし）
@@ -16294,6 +16300,78 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{count, plural, other{{count}か月}}'**
   String rewardDurationMonths(int count);
+
+  /// 特典交換：選んだ特典の重複・有効期限を確認するボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'重複・有効期限を確認'**
+  String get rewardUnlockReviewButton;
+
+  /// 特典交換：重複・有効期限の確認ダイアログの題
+  ///
+  /// In ja, this message translates to:
+  /// **'特典の重複・有効期限の確認'**
+  String get rewardUnlockReviewTitle;
+
+  /// 特典交換の確認：コインの全機能を利用中に交換すると延長される見込みの期限
+  ///
+  /// In ja, this message translates to:
+  /// **'現在プレミアム特典を利用中です。交換すると有効期限が{expiry}まで延長される見込みです。よろしいですか？'**
+  String rewardUnlockRedeemExtendNotice(DateTime expiry);
+
+  /// 特典交換の確認：交換した後の有効期限（参考）
+  ///
+  /// In ja, this message translates to:
+  /// **'交換後の有効期限（参考）：{expiry}'**
+  String rewardUnlockRedeemExpiryNotice(DateTime expiry);
+
+  /// 重複・有効期限の確認：Google Playのプレミアム会員の期限
+  ///
+  /// In ja, this message translates to:
+  /// **'現在プレミアム会員を利用中です（{expiry}まで）。'**
+  String rewardUnlockReviewPlayPremiumUntil(DateTime expiry);
+
+  /// 重複・有効期限の確認：プレミアム会員だが期限が分からない
+  ///
+  /// In ja, this message translates to:
+  /// **'現在プレミアム会員を利用中です。契約終了日時は確認できていません。'**
+  String get rewardUnlockReviewPlayPremiumUnknown;
+
+  /// 重複・有効期限の確認：コインで交換した全機能の期限
+  ///
+  /// In ja, this message translates to:
+  /// **'現在プレミアム特典を利用中です（{expiry}まで）。'**
+  String rewardUnlockReviewCoinPremiumUntil(DateTime expiry);
+
+  /// 重複・有効期限の確認：全機能のまとめ交換がほかの特典を含むこと（bundleは特典の名前）
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中の「{bundle}」はほかの単品特典を含みます。重複分は二重に有効にせず、延長される想定です。'**
+  String rewardUnlockReviewFullIncludes(String bundle);
+
+  /// 重複・有効期限の確認：広告非表示の特典がまとめの特典と重複すること（bundleは特典の名前）
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中の広告非表示特典は「{bundle}」と重複します。'**
+  String rewardUnlockReviewAdsOverlap(String bundle);
+
+  /// 重複・有効期限の確認：選んだ特典1つの延長後の期限（参考）
+  ///
+  /// In ja, this message translates to:
+  /// **'{benefit}：参考の延長後期限 {expiry}'**
+  String rewardUnlockReviewItem(String benefit, DateTime expiry);
+
+  /// 重複・有効期限の確認：既存・まとめの特典と重なる特典1つの延長後の期限（参考）
+  ///
+  /// In ja, this message translates to:
+  /// **'{benefit}：既存・セット特典と重複。参考の延長後期限 {expiry}'**
+  String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry);
+
+  /// 重複・有効期限の確認：参考の合計（coinsはcoinAmountで作ったコインの枚数）
+  ///
+  /// In ja, this message translates to:
+  /// **'参考合計：{coins}。単品特典・重複交換のコイン消費はまだサーバー未対応です。正式な交換価格・有効期限は交換直前のサーバー確認が必要です。'**
+  String rewardUnlockReviewReferenceTotal(String coins);
 }
 
 class _AppLocalizationsDelegate

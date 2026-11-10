@@ -17,6 +17,9 @@ class CommunityRankingLayoutLabels {
   String get title => _l10n.communityRankingLayoutTitle;
   String get horizontal => _l10n.communityRankingLayoutHorizontal;
   String get largeThumbnail => _l10n.communityRankingLayoutLargeThumbnail;
-  String get rankedPlace => _l10n.communityRankingLayoutRankedPlace;
+
+  /// 順位の読み上げ（「3位」「Rank 3」）。数と単位の順は言語で違うので、
+  /// 単位の語だけを返してコードで数とつながない。
+  String rankedPlace(int rank) => _l10n.communityRankingLayoutRankedPlace(rank);
   String get periodBookmarks => _l10n.communityRankingLayoutPeriodBookmarks;
 }

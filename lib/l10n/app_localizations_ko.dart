@@ -4688,10 +4688,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelinePreviewFullscreenTooltip => '미리보기 전체 화면으로 보기';
 
   @override
-  String get timelineAddVideoTooltip => '＋동영상';
+  String get timelineAddVideoTooltip => '+ 동영상';
 
   @override
-  String get timelineAddAudioTooltip => '＋음원';
+  String get timelineAddAudioTooltip => '+ 음원';
 
   @override
   String get timelineEffectFilterLabel => '연출 필터';
@@ -4700,7 +4700,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineAddCameraKfTooltip => '카메라 키프레임 추가';
 
   @override
-  String get timelineAddWatermarkTooltip => '＋워터마크';
+  String get timelineAddWatermarkTooltip => '+ 워터마크';
 
   @override
   String get timelineStackScopeRange => '프레임 범위';
@@ -4761,10 +4761,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineMaterialNewRow => '새 줄';
 
   @override
-  String get timelineAddTextTooltip => '＋텍스트';
+  String get timelineAddTextTooltip => '+ 텍스트';
 
   @override
-  String get timelineAddImageTooltip => '＋이미지';
+  String get timelineAddImageTooltip => '+ 이미지';
 
   @override
   String get timelineStackOrderTitle => '겹침 순서';
@@ -5405,6 +5405,10 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get privacyPolicyArt2Body =>
       '본 앱은 사용자가 제작한 일러스트・애니메이션 등의 콘텐츠（프로젝트 데이터・내보낸 이미지・동영상 등을 포함합니다. 이하 동일합니다）를 개발자의 서버로 전송・수집・저장하는 기능을 제공하지 않습니다. 이들 데이터는 원칙적으로 사용자의 단말기 내에만 저장됩니다（클라우드 동기화 기능은 탑재되어 있지 않습니다）. 개발자는 이러한 콘텐츠를 스스로 저장하는 기능을 가지고 있지 않으므로, 개발자 측에서의 보관 기간이라는 개념 자체가 존재하지 않습니다. 단말기 내에 저장된 데이터는 본 앱의 삭제 기능을 통해 언제든지 삭제할 수 있으며, 앱을 삭제（언인스톨）한 경우에는 프로젝트・설정・추가한 폰트 등의 데이터도 함께 삭제됩니다（사용자가 스스로의 의사로 작품 광장 기능을 이용하여 작품을 게시하는 경우의 정보 취급에 대해서는 제7조에 따릅니다）.';
+
+  @override
+  String get privacyPolicyArt2AiTrainingClause =>
+      '개발자는 사용자가 제작하거나 게시한 콘텐츠, 프로젝트 데이터 및 기타 제작 데이터를 생성형 AI 모델 또는 기타 머신러닝 모델의 학습 데이터로 사용하지 않습니다.';
 
   @override
   String get privacyPolicyArt3Title => '제3조（제3자 서비스에 의한 정보 취득）';
@@ -8184,7 +8188,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityRankingLayoutLargeThumbnail => '큰 썸네일';
 
   @override
-  String get communityRankingLayoutRankedPlace => '순위';
+  String communityRankingLayoutRankedPlace(int rank) {
+    return '$rank위';
+  }
 
   @override
   String get communityRankingLayoutPeriodBookmarks => '기간 내 북마크';
@@ -8730,7 +8736,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String coinAmount(int count) {
-    return '$count 코인';
+    return '$count코인';
   }
 
   @override
@@ -9016,5 +9022,90 @@ class AppLocalizationsKo extends AppLocalizations {
       other: '$count개월',
     );
     return '$_temp0';
+  }
+
+  @override
+  String get rewardUnlockReviewButton => '중복·만료 확인';
+
+  @override
+  String get rewardUnlockReviewTitle => '혜택 중복·만료 확인';
+
+  @override
+  String rewardUnlockRedeemExtendNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '현재 Premium 혜택을 이용 중입니다. 교환하면 만료일이 $expiryString까지 연장될 예정입니다. 계속하시겠습니까?';
+  }
+
+  @override
+  String rewardUnlockRedeemExpiryNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '교환 후 만료일(참고): $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewPlayPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '현재 Premium 회원입니다($expiryString까지).';
+  }
+
+  @override
+  String get rewardUnlockReviewPlayPremiumUnknown =>
+      '현재 Premium 회원입니다. 구독 종료 일시는 확인하지 못했습니다.';
+
+  @override
+  String rewardUnlockReviewCoinPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '현재 Premium 혜택을 이용 중입니다($expiryString까지).';
+  }
+
+  @override
+  String rewardUnlockReviewFullIncludes(String bundle) {
+    return '선택한 「$bundle」에는 다른 개별 혜택이 포함되어 있습니다. 중복된 혜택은 두 번 적용되지 않고 연장될 예정입니다.';
+  }
+
+  @override
+  String rewardUnlockReviewAdsOverlap(String bundle) {
+    return '선택한 광고 제거 혜택은 「$bundle」 혜택과 중복됩니다.';
+  }
+
+  @override
+  String rewardUnlockReviewItem(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit: 연장 후 만료일(참고) $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit: 기존·묶음 혜택과 중복. 연장 후 만료일(참고) $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewReferenceTotal(String coins) {
+    return '참고 합계: $coins. 개별 혜택·중복 교환의 코인 사용은 아직 서버에서 지원하지 않습니다. 정식 교환 가격과 만료일은 교환 직전에 서버에서 확인해야 합니다.';
   }
 }

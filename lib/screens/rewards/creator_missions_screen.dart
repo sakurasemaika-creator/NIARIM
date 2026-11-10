@@ -7,6 +7,7 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/project_service.dart';
 import '../../utils/app_locale.dart';
+import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/responsive.dart';
 import 'login_bonus_panel.dart';
 import 'recurring_missions_panel.dart';
@@ -500,62 +501,73 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                   ? scheme.primary
                   : scheme.onSurfaceVariant,
             ),
+            // コインと受け取るボタンは文の横か下に置く（右端に固定すると、
+            // 大きな文字や長い言語で文が単語の途中で折り返した）。
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(_goal(t, row), style: theme.textTheme.bodyMedium),
-                  Text(status, style: theme.textTheme.bodySmall),
-                ],
-              ),
-            ),
-            const SizedBox(width: 6),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+              child: ActionBesideOrBelow(
+                text: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.toll_outlined, size: 16, color: scheme.primary),
-                    const SizedBox(width: 3),
-                    Text(
-                      appLocalizationsOf(context).coinAmount(coins),
-                      style: theme.textTheme.labelSmall,
-                    ),
+                    Text(_goal(t, row), style: theme.textTheme.bodyMedium),
+                    Text(status, style: theme.textTheme.bodySmall),
                   ],
                 ),
-                if (claimed)
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      t.get('claimed'),
-                      style: theme.textTheme.labelSmall,
+                action: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.toll_outlined,
+                          size: 16,
+                          color: scheme.primary,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          appLocalizationsOf(context).coinAmount(coins),
+                          style: theme.textTheme.labelSmall,
+                        ),
+                      ],
                     ),
-                  )
-                else if (eligible && ready)
-                  FilledButton(
-                    key: ValueKey('claim_${id}_${workId ?? "account"}'),
-                    onPressed: canClaim ? () => _claim(api, id, workId) : null,
-                    child: _claimBusy.contains(actionKey)
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(t.get('claim')),
-                  )
-                else
-                  OutlinedButton(
-                    onPressed: null,
-                    child: Text(
-                      !available
-                          ? t.get('upcoming')
-                          : pending
-                          ? t.get('reviewing')
-                          : t.get('notAchieved'),
-                    ),
-                  ),
-              ],
+                    if (claimed)
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          t.get('claimed'),
+                          style: theme.textTheme.labelSmall,
+                        ),
+                      )
+                    else if (eligible && ready)
+                      FilledButton(
+                        key: ValueKey('claim_${id}_${workId ?? "account"}'),
+                        onPressed: canClaim
+                            ? () => _claim(api, id, workId)
+                            : null,
+                        child: _claimBusy.contains(actionKey)
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(t.get('claim')),
+                      )
+                    else
+                      OutlinedButton(
+                        onPressed: null,
+                        child: Text(
+                          !available
+                              ? t.get('upcoming')
+                              : pending
+                              ? t.get('reviewing')
+                              : t.get('notAchieved'),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),

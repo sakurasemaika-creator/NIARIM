@@ -99,7 +99,9 @@ class CommunityRankBadge extends StatelessWidget {
     };
     final size = small ? 32.0 : 38.0;
     return Semantics(
-      label: '${words.rankedPlace} $rank',
+      label: words.rankedPlace(rank),
+      // 中の数字は絵の一部。「3位」のあとに「3」を続けて読まない。
+      excludeSemantics: true,
       child: top
           ? Container(
               key: ValueKey('communityRankMedal-$rank'),

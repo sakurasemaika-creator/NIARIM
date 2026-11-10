@@ -307,14 +307,15 @@ void main() {
         expect(find.byIcon(Icons.check), findsOneWidget);
         await _closeSheet(tester);
 
-        // 文言を変えても、その期間の必要コインは単価×数のまま。
+        // 文言を変えても、その期間の必要コインは単価×数のまま（日本語・
+        // 韓国語は数と「コイン」「코인」の間に空白を入れない）。
         final toneCurve = find.byKey(const ValueKey('rewardFeature_toneCurve'));
         await _reveal(tester, toneCurve);
         expect(
           find.descendant(
             of: toneCurve,
             matching: find.textContaining(
-              RegExp('^${_expectedToneCurveCoins(duration)} '),
+              RegExp('^${_expectedToneCurveCoins(duration)}(?![0-9])'),
             ),
           ),
           findsOneWidget,

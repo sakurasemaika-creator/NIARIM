@@ -2312,11 +2312,11 @@
   "timelinePreviewPlaceholder": "プレビュー",
   "timelinePreviewFullscreenTip": "タップするとプレビューを全画面表示できます。仕上がりの確認に便利です。",
   "timelinePreviewFullscreenTooltip": "プレビューを全画面表示",
-  "timelineAddVideoTooltip": "＋動画",
-  "timelineAddAudioTooltip": "＋音源",
+  "timelineAddVideoTooltip": "+ 動画",
+  "timelineAddAudioTooltip": "+ 音源",
   "timelineEffectFilterLabel": "演出フィルター",
   "timelineAddCameraKfTooltip": "カメラキーフレーム追加",
-  "timelineAddWatermarkTooltip": "＋ウォーターマーク",
+  "timelineAddWatermarkTooltip": "+ ウォーターマーク",
   "timelineStackScopeRange": "フレーム範囲",
   "timelineStackTargetLabel": "この重なり順を使う所",
   "timelineStackTargetScenes": "シーン複数選択",
@@ -2357,8 +2357,8 @@
   "timelineAddMaterialTooltip": "素材を追加",
   "timelineMaterialRowLabel": "置く列",
   "timelineMaterialNewRow": "新しい列",
-  "timelineAddTextTooltip": "＋テキスト",
-  "timelineAddImageTooltip": "＋画像",
+  "timelineAddTextTooltip": "+ テキスト",
+  "timelineAddImageTooltip": "+ 画像",
   "timelineStackOrderTitle": "重なり順",
   "timelineMaterialText": "テキスト",
   "timelineAddTextDialogTitle": "テキストを追加",
@@ -2695,6 +2695,10 @@
   "privacyPolicyArt1Body": "このプライバシーポリシー（以下「本ポリシー」といいます。）は、本アプリ「NIARIM」（以下「本アプリ」といいます。）における情報の取扱いについて定めるものです。本アプリの利用条件全般については別途「利用規約・ライセンス」画面をご確認ください。",
   "privacyPolicyArt2Title": "第2条（本アプリが取得しないデータ）",
   "privacyPolicyArt2Body": "本アプリは、ユーザーが作成したイラスト・アニメーション等のコンテンツ（プロジェクトデータ・書き出し画像・動画等を含みます。以下同じです。）を、開発者のサーバーへ送信・収集・保存する機能を提供していません。これらのデータは、原則としてユーザーの端末内にのみ保存されます。（クラウド同期機能は搭載していません。）開発者はこれらのコンテンツを自ら保存する機能を持たないため、開発者側での保存期間という概念自体がありません。端末内に保存されたデータは、本アプリの削除機能により随時削除できるほか、アプリをアンインストールした場合はプロジェクト・設定・追加したフォント等のデータも併せて削除されます。（ただし、ユーザーが自らの意思で作品広場機能を利用して作品を投稿する場合の情報の取扱いについては、第7条によります。）",
+  "privacyPolicyArt2AiTrainingClause": "開発者は、ユーザーが作成または投稿したコンテンツ、プロジェクトデータその他の制作データを、生成AIモデルその他の機械学習モデルの学習データとして利用しません。",
+  "@privacyPolicyArt2AiTrainingClause": {
+    "description": "プライバシーポリシー第2条の追記（Web版の正本と同じ。生成AI・機械学習の学習データとして利用しない）"
+  },
   "privacyPolicyArt3Title": "第3条（第三者サービスによる情報の取得）",
   "privacyPolicyArt3Body": "本アプリは、以下の第三者サービスを組み込んでおり、それぞれのサービス提供者が、サービス提供に必要な範囲で情報を取得する場合があります。本アプリの開発者は、これらの情報を独自に取得・保存する機能を実装していません。（各サービスが取得した情報の管理は、それぞれのサービス提供者のプライバシーポリシーに従います。）\n\n【広告配信（Google AdMob）】\n無料版では、Google AdMobを通じて広告を配信しています。広告の配信、効果測定、不正防止等の目的で、広告識別子（Advertising ID）その他の端末情報が、Googleまたはその関連事業者によって取得・利用される場合があります。取得・利用の詳細は、Googleのプライバシーポリシー（https://policies.google.com/privacy）をご確認ください。端末の設定（Android設定アプリの「プライバシー」等）から、広告識別子のリセットや、パーソナライズ広告の無効化が可能です。欧州経済領域（EEA）・英国・スイスにお住まいの場合は、起動時等に表示される同意フォームで、広告のパーソナライズに関する同意設定を選択できます。設定はいつでも本画面下部の「広告の同意設定を変更」ボタンから変更できます。\n\n【アプリ内課金（Google Play Billing）】\nプレミアム機能の購入は、Google Playの決済システムを通じて行われます。クレジットカード番号等の決済情報は、開発者側が直接取得・保持することはありません。決済に関する情報の取扱いは、Google Playの規定に従います。\n\n【追加フォントのダウンロード（GitHub）】\n設定画面の「フォント管理」から追加フォントをダウンロードする操作を行った場合に限り、フォントの配布元であるGitHub（GitHub, Inc.）のサーバーへ通信が発生します。この通信はお客様がダウンロードを選択したときにのみ行われ、アプリの起動時や通常の利用では発生しません。送信されるのは通信に必要な情報（IPアドレス、取得するフォントファイルの指定等）のみで、作品データやお客様を特定する情報を送信することはありません。取得された情報の取扱いは、GitHubのプライバシーポリシー（https://docs.github.com/site-policy/privacy-policies/github-privacy-statement）に従います。\n\n【クラッシュ解析・利用状況分析】\n本アプリは、現時点でクラッシュ解析・利用状況分析を目的としたSDKを組み込んでいません。将来これらのサービスを導入する場合は、本ポリシーを更新し、本アプリ内で告知します。",
   "privacyPolicyArt4Title": "第4条（Cookie等のトラッキング技術について）",
@@ -4023,7 +4027,15 @@
   "communityRankingLayoutTitle": "ランキングの表示形式",
   "communityRankingLayoutHorizontal": "横長リスト",
   "communityRankingLayoutLargeThumbnail": "大きいサムネイル",
-  "communityRankingLayoutRankedPlace": "位",
+  "communityRankingLayoutRankedPlace": "{rank}位",
+  "@communityRankingLayoutRankedPlace": {
+    "description": "作品広場のランキングの順位（読み上げ用）。数と単位をまとめた1つの文言",
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
   "communityRankingLayoutPeriodBookmarks": "期間内ブックマーク",
   "communityWorkMetadataTitle": "作品タイトル",
   "communityWorkMetadataDescription": "作品の概要欄",
@@ -4193,13 +4205,13 @@
   "rewardUnlockTimelineAds": "タイムラインの広告なし",
   "rewardUnlockProcessingAds": "処理中の広告なし",
   "rewardUnlockAllAds": "すべての広告なし",
-  "rewardUnlockFullPremium": "全機能＋全広告なし",
+  "rewardUnlockFullPremium": "全機能 + 全広告なし",
   "rewardUnlockChoose": "選択",
   "sharedArchiveReceived": "受け取った",
   "sharedArchiveCreated": "作成した",
   "sharedArchiveShare": "共有する",
   "sharedArchiveEmpty": "作成した共有ファイルはまだありません",
-  "coinAmount": "{count} コイン",
+  "coinAmount": "{count}コイン",
   "@coinAmount": {
     "description": "コインの枚数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言",
     "placeholders": {
@@ -4661,6 +4673,111 @@
     "placeholders": {
       "count": {
         "type": "int"
+      }
+    }
+  },
+  "rewardUnlockReviewButton": "重複・有効期限を確認",
+  "@rewardUnlockReviewButton": {
+    "description": "特典交換：選んだ特典の重複・有効期限を確認するボタン"
+  },
+  "rewardUnlockReviewTitle": "特典の重複・有効期限の確認",
+  "@rewardUnlockReviewTitle": {
+    "description": "特典交換：重複・有効期限の確認ダイアログの題"
+  },
+  "rewardUnlockRedeemExtendNotice": "現在プレミアム特典を利用中です。交換すると有効期限が{expiry}まで延長される見込みです。よろしいですか？",
+  "@rewardUnlockRedeemExtendNotice": {
+    "description": "特典交換の確認：コインの全機能を利用中に交換すると延長される見込みの期限",
+    "placeholders": {
+      "expiry": {
+        "type": "DateTime",
+        "format": "yMMMd+jm"
+      }
+    }
+  },
+  "rewardUnlockRedeemExpiryNotice": "交換後の有効期限（参考）：{expiry}",
+  "@rewardUnlockRedeemExpiryNotice": {
+    "description": "特典交換の確認：交換した後の有効期限（参考）",
+    "placeholders": {
+      "expiry": {
+        "type": "DateTime",
+        "format": "yMMMd+jm"
+      }
+    }
+  },
+  "rewardUnlockReviewPlayPremiumUntil": "現在プレミアム会員を利用中です（{expiry}まで）。",
+  "@rewardUnlockReviewPlayPremiumUntil": {
+    "description": "重複・有効期限の確認：Google Playのプレミアム会員の期限",
+    "placeholders": {
+      "expiry": {
+        "type": "DateTime",
+        "format": "yMMMd+jm"
+      }
+    }
+  },
+  "rewardUnlockReviewPlayPremiumUnknown": "現在プレミアム会員を利用中です。契約終了日時は確認できていません。",
+  "@rewardUnlockReviewPlayPremiumUnknown": {
+    "description": "重複・有効期限の確認：プレミアム会員だが期限が分からない"
+  },
+  "rewardUnlockReviewCoinPremiumUntil": "現在プレミアム特典を利用中です（{expiry}まで）。",
+  "@rewardUnlockReviewCoinPremiumUntil": {
+    "description": "重複・有効期限の確認：コインで交換した全機能の期限",
+    "placeholders": {
+      "expiry": {
+        "type": "DateTime",
+        "format": "yMMMd+jm"
+      }
+    }
+  },
+  "rewardUnlockReviewFullIncludes": "選択中の「{bundle}」はほかの単品特典を含みます。重複分は二重に有効にせず、延長される想定です。",
+  "@rewardUnlockReviewFullIncludes": {
+    "description": "重複・有効期限の確認：全機能のまとめ交換がほかの特典を含むこと（bundleは特典の名前）",
+    "placeholders": {
+      "bundle": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardUnlockReviewAdsOverlap": "選択中の広告非表示特典は「{bundle}」と重複します。",
+  "@rewardUnlockReviewAdsOverlap": {
+    "description": "重複・有効期限の確認：広告非表示の特典がまとめの特典と重複すること（bundleは特典の名前）",
+    "placeholders": {
+      "bundle": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardUnlockReviewItem": "{benefit}：参考の延長後期限 {expiry}",
+  "@rewardUnlockReviewItem": {
+    "description": "重複・有効期限の確認：選んだ特典1つの延長後の期限（参考）",
+    "placeholders": {
+      "benefit": {
+        "type": "String"
+      },
+      "expiry": {
+        "type": "DateTime",
+        "format": "yMMMd+jm"
+      }
+    }
+  },
+  "rewardUnlockReviewItemOverlap": "{benefit}：既存・セット特典と重複。参考の延長後期限 {expiry}",
+  "@rewardUnlockReviewItemOverlap": {
+    "description": "重複・有効期限の確認：既存・まとめの特典と重なる特典1つの延長後の期限（参考）",
+    "placeholders": {
+      "benefit": {
+        "type": "String"
+      },
+      "expiry": {
+        "type": "DateTime",
+        "format": "yMMMd+jm"
+      }
+    }
+  },
+  "rewardUnlockReviewReferenceTotal": "参考合計：{coins}。単品特典・重複交換のコイン消費はまだサーバー未対応です。正式な交換価格・有効期限は交換直前のサーバー確認が必要です。",
+  "@rewardUnlockReviewReferenceTotal": {
+    "description": "重複・有効期限の確認：参考の合計（coinsはcoinAmountで作ったコインの枚数）",
+    "placeholders": {
+      "coins": {
+        "type": "String"
       }
     }
   }

@@ -6,6 +6,7 @@ import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
+import '../../widgets/action_beside_or_below.dart';
 
 /// Authenticated, read-only view until the server explicitly enables payouts.
 /// A permanently open Plaza page counts: video playback is not a requirement.
@@ -181,24 +182,27 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
         ),
       ),
       title: Text(_l10n.plazaMissionGoal(_goal(goal))),
-      subtitle: Text(
-        '${_goal(progress)} / ${_goal(goal)} · ${_l10n.coinAmount(coins)}',
-      ),
-      trailing: claimed
-          ? Text(_l10n.missionClaimed)
-          : OutlinedButton(
-              key: ValueKey('claimPlaza_$id'),
-              onPressed: enabled && eligible && !_claiming.contains(id)
-                  ? () => _claim(id)
-                  : null,
-              child: Text(
-                !enabled && eligible
-                    ? _l10n.missionComingSoon
-                    : eligible
-                    ? _l10n.missionClaim
-                    : _l10n.missionNotYet,
+      // 受け取るボタンは説明の横か下に置き、題には行の幅をすべて使わせる。
+      subtitle: ActionBesideOrBelow(
+        text: Text(
+          '${_goal(progress)} / ${_goal(goal)} · ${_l10n.coinAmount(coins)}',
+        ),
+        action: claimed
+            ? Text(_l10n.missionClaimed)
+            : OutlinedButton(
+                key: ValueKey('claimPlaza_$id'),
+                onPressed: enabled && eligible && !_claiming.contains(id)
+                    ? () => _claim(id)
+                    : null,
+                child: Text(
+                  !enabled && eligible
+                      ? _l10n.missionComingSoon
+                      : eligible
+                      ? _l10n.missionClaim
+                      : _l10n.missionNotYet,
+                ),
               ),
-            ),
+      ),
     );
   }
 

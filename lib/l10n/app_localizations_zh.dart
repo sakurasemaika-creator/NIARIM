@@ -4629,10 +4629,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelinePreviewFullscreenTooltip => '全屏显示预览';
 
   @override
-  String get timelineAddVideoTooltip => '＋视频';
+  String get timelineAddVideoTooltip => '+ 视频';
 
   @override
-  String get timelineAddAudioTooltip => '＋音源';
+  String get timelineAddAudioTooltip => '+ 音源';
 
   @override
   String get timelineEffectFilterLabel => '演出滤镜';
@@ -4641,7 +4641,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineAddCameraKfTooltip => '添加相机关键帧';
 
   @override
-  String get timelineAddWatermarkTooltip => '＋水印';
+  String get timelineAddWatermarkTooltip => '+ 水印';
 
   @override
   String get timelineStackScopeRange => '帧范围';
@@ -4700,10 +4700,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineMaterialNewRow => '新行';
 
   @override
-  String get timelineAddTextTooltip => '＋文字';
+  String get timelineAddTextTooltip => '+ 文字';
 
   @override
-  String get timelineAddImageTooltip => '＋图片';
+  String get timelineAddImageTooltip => '+ 图片';
 
   @override
   String get timelineStackOrderTitle => '叠放顺序';
@@ -5337,6 +5337,10 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get privacyPolicyArt2Body =>
       '本应用未提供将用户制作的插画、动画等内容（包括项目数据、导出的图片、视频等，以下同）发送、收集或保存至开发者服务器的功能。这些数据原则上仅保存在用户设备内（本应用未搭载云同步功能）。由于开发者自身不具备保存此类内容的功能，因此开发者一方不存在所谓的保存期限概念。设备内保存的数据可随时通过本应用的删除功能予以删除；卸载本应用后，保存在设备内的项目、设置、已添加字体等数据也将一并删除（用户自行选择使用作品广场功能发布作品时的信息处理方式，参见第7条）。';
+
+  @override
+  String get privacyPolicyArt2AiTrainingClause =>
+      '开发者不会将用户创作或发布的内容、项目数据及其他创作数据，用作生成式 AI 模型或其他机器学习模型的训练数据。';
 
   @override
   String get privacyPolicyArt3Title => '第3条（第三方服务获取的信息）';
@@ -8063,7 +8067,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityRankingLayoutLargeThumbnail => '大缩略图';
 
   @override
-  String get communityRankingLayoutRankedPlace => '排名';
+  String communityRankingLayoutRankedPlace(int rank) {
+    return '第$rank名';
+  }
 
   @override
   String get communityRankingLayoutPeriodBookmarks => '本期收藏';
@@ -8577,7 +8583,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockAllAds => '移除所有广告';
 
   @override
-  String get rewardUnlockFullPremium => '全部功能＋无广告';
+  String get rewardUnlockFullPremium => '全部功能 + 无广告';
 
   @override
   String get rewardUnlockChoose => '选择';
@@ -8880,6 +8886,91 @@ class AppLocalizationsZh extends AppLocalizations {
       other: '$count个月',
     );
     return '$_temp0';
+  }
+
+  @override
+  String get rewardUnlockReviewButton => '查看重复与有效期';
+
+  @override
+  String get rewardUnlockReviewTitle => '权益重复与有效期确认';
+
+  @override
+  String rewardUnlockRedeemExtendNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '你正在使用 Premium 权益。兑换后有效期预计延长至$expiryString。要继续吗？';
+  }
+
+  @override
+  String rewardUnlockRedeemExpiryNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '兑换后的有效期（参考）：$expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewPlayPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '你目前是 Premium 会员（至$expiryString）。';
+  }
+
+  @override
+  String get rewardUnlockReviewPlayPremiumUnknown =>
+      '你目前是 Premium 会员。尚未确认订阅的结束时间。';
+
+  @override
+  String rewardUnlockReviewCoinPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '你正在使用 Premium 权益（至$expiryString）。';
+  }
+
+  @override
+  String rewardUnlockReviewFullIncludes(String bundle) {
+    return '所选的「$bundle」已包含其他单项权益。重复的部分不会重复生效，预计会顺延。';
+  }
+
+  @override
+  String rewardUnlockReviewAdsOverlap(String bundle) {
+    return '所选的去广告权益与「$bundle」重复。';
+  }
+
+  @override
+  String rewardUnlockReviewItem(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit：延长后的参考有效期 $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit：与现有或套餐权益重复。延长后的参考有效期 $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewReferenceTotal(String coins) {
+    return '参考合计：$coins。服务器尚不支持用金币兑换单项权益或重复兑换。正式的兑换价格和有效期需在兑换前由服务器确认。';
   }
 }
 
@@ -13508,10 +13599,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelinePreviewFullscreenTooltip => '全螢幕顯示預覽';
 
   @override
-  String get timelineAddVideoTooltip => '＋影片';
+  String get timelineAddVideoTooltip => '+ 影片';
 
   @override
-  String get timelineAddAudioTooltip => '＋音源';
+  String get timelineAddAudioTooltip => '+ 音源';
 
   @override
   String get timelineEffectFilterLabel => '演出濾鏡';
@@ -13520,7 +13611,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineAddCameraKfTooltip => '新增相機關鍵影格';
 
   @override
-  String get timelineAddWatermarkTooltip => '＋浮水印';
+  String get timelineAddWatermarkTooltip => '+ 浮水印';
 
   @override
   String get timelineStackScopeRange => '影格範圍';
@@ -13579,10 +13670,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineMaterialNewRow => '新列';
 
   @override
-  String get timelineAddTextTooltip => '＋文字';
+  String get timelineAddTextTooltip => '+ 文字';
 
   @override
-  String get timelineAddImageTooltip => '＋圖片';
+  String get timelineAddImageTooltip => '+ 圖片';
 
   @override
   String get timelineStackOrderTitle => '疊放順序';
@@ -14216,6 +14307,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get privacyPolicyArt2Body =>
       '本應用程式未提供將使用者製作之插畫、動畫等內容（包括專案資料、匯出之圖片、影片等，以下同）傳送、蒐集或保存至開發者伺服器之功能。此等資料原則上僅保存於使用者裝置內（本應用程式未搭載雲端同步功能）。由於開發者本身不具備保存此類內容之功能，因此開發者端不存在所謂之保存期間概念。裝置內保存之資料，可隨時透過本應用程式之刪除功能予以刪除；解除安裝本應用程式後，保存於裝置內之專案、設定、已新增字型等資料亦將一併刪除（使用者自行選擇利用作品廣場功能發布作品時之資訊處理方式，請參見第7條）。';
+
+  @override
+  String get privacyPolicyArt2AiTrainingClause =>
+      '開發者不會將使用者創作或發布的內容、專案資料及其他創作資料，用作生成式 AI 模型或其他機器學習模型的訓練資料。';
 
   @override
   String get privacyPolicyArt3Title => '第3條（第三方服務所取得之資訊）';
@@ -16944,7 +17039,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityRankingLayoutLargeThumbnail => '大縮圖';
 
   @override
-  String get communityRankingLayoutRankedPlace => '排名';
+  String communityRankingLayoutRankedPlace(int rank) {
+    return '第$rank名';
+  }
 
   @override
   String get communityRankingLayoutPeriodBookmarks => '本期書籤';
@@ -17458,7 +17555,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockAllAds => '移除所有廣告';
 
   @override
-  String get rewardUnlockFullPremium => '全部功能＋無廣告';
+  String get rewardUnlockFullPremium => '全部功能 + 無廣告';
 
   @override
   String get rewardUnlockChoose => '選擇';
@@ -17761,5 +17858,90 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       other: '$count個月',
     );
     return '$_temp0';
+  }
+
+  @override
+  String get rewardUnlockReviewButton => '查看重複與有效期限';
+
+  @override
+  String get rewardUnlockReviewTitle => '權益重複與有效期限確認';
+
+  @override
+  String rewardUnlockRedeemExtendNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '你正在使用 Premium 權益。兌換後有效期限預計延長至$expiryString。要繼續嗎？';
+  }
+
+  @override
+  String rewardUnlockRedeemExpiryNotice(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '兌換後的有效期限（參考）：$expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewPlayPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '你目前是 Premium 會員（至$expiryString）。';
+  }
+
+  @override
+  String get rewardUnlockReviewPlayPremiumUnknown =>
+      '你目前是 Premium 會員。尚未確認訂閱的結束時間。';
+
+  @override
+  String rewardUnlockReviewCoinPremiumUntil(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '你正在使用 Premium 權益（至$expiryString）。';
+  }
+
+  @override
+  String rewardUnlockReviewFullIncludes(String bundle) {
+    return '所選的「$bundle」已包含其他單項權益。重複的部分不會重複生效，預計會順延。';
+  }
+
+  @override
+  String rewardUnlockReviewAdsOverlap(String bundle) {
+    return '所選的去廣告權益與「$bundle」重複。';
+  }
+
+  @override
+  String rewardUnlockReviewItem(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit：延長後的參考有效期限 $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '$benefit：與現有或套餐權益重複。延長後的參考有效期限 $expiryString';
+  }
+
+  @override
+  String rewardUnlockReviewReferenceTotal(String coins) {
+    return '參考合計：$coins。伺服器尚不支援以金幣兌換單項權益或重複兌換。正式的兌換價格和有效期限需在兌換前由伺服器確認。';
   }
 }

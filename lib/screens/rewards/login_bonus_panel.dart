@@ -6,6 +6,7 @@ import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
+import '../../widgets/action_beside_or_below.dart';
 
 bool canClaimLoginBonus({
   required bool enabled,
@@ -218,21 +219,27 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                             : scheme.onSurfaceVariant,
                       ),
                       title: Text(l10n.loginBonusMilestone(goal)),
-                      subtitle: Text(l10n.coinAmount(coins)),
-                      trailing: claimed
-                          ? Text(t['claimed'])
-                          : OutlinedButton(
-                              onPressed:
-                                  canClaimLoginBonus(
-                                        enabled: enabled,
-                                        achieved: eligible,
-                                        claimed: claimed,
-                                      ) &&
-                                      !_busy.contains('milestone$goal')
-                                  ? () => _claim('milestone', goal)
-                                  : null,
-                              child: Text(eligible ? t['claim'] : t['notYet']),
-                            ),
+                      // 受け取るボタンはコインの横か下に置き、題には行の幅を
+                      // すべて使わせる。
+                      subtitle: ActionBesideOrBelow(
+                        text: Text(l10n.coinAmount(coins)),
+                        action: claimed
+                            ? Text(t['claimed'])
+                            : OutlinedButton(
+                                onPressed:
+                                    canClaimLoginBonus(
+                                          enabled: enabled,
+                                          achieved: eligible,
+                                          claimed: claimed,
+                                        ) &&
+                                        !_busy.contains('milestone$goal')
+                                    ? () => _claim('milestone', goal)
+                                    : null,
+                                child: Text(
+                                  eligible ? t['claim'] : t['notYet'],
+                                ),
+                              ),
+                      ),
                     );
                   }).toList(),
                 ),

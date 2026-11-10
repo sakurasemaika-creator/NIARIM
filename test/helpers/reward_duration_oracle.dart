@@ -63,7 +63,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12か月',
       'hour_1': '1時間',
     },
-    redeemConfirmation: '全機能＋全広告なし · 1か月 · 55000 コイン',
+    redeemConfirmation: '全機能 + 全広告なし · 1か月 · 55000コイン',
   ),
   RewardDurationLanguage(
     code: 'en',
@@ -145,7 +145,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12개월',
       'hour_1': '1시간',
     },
-    redeemConfirmation: '전체 기능 + 광고 없음 · 1개월 · 55000 코인',
+    redeemConfirmation: '전체 기능 + 광고 없음 · 1개월 · 55000코인',
   ),
   RewardDurationLanguage(
     code: 'zh',
@@ -165,7 +165,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12个月',
       'hour_1': '1小时',
     },
-    redeemConfirmation: '全部功能＋无广告 · 1个月 · 55000 金币',
+    redeemConfirmation: '全部功能 + 无广告 · 1个月 · 55000 金币',
   ),
   RewardDurationLanguage(
     code: 'zh_Hant',
@@ -185,7 +185,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12個月',
       'hour_1': '1小時',
     },
-    redeemConfirmation: '全部功能＋無廣告 · 1個月 · 55000 金幣',
+    redeemConfirmation: '全部功能 + 無廣告 · 1個月 · 55000 金幣',
   ),
 ];
 

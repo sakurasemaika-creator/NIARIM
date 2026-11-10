@@ -157,6 +157,40 @@ void main() {
     expect(find.byKey(const ValueKey('communityRankMedal-4')), findsNothing);
   });
 
+  testWidgets('順位の読み上げは数と単位をその言語の順で1度だけ読む', (tester) async {
+    // 以前は「単位の語＋' '＋順位」をコードでつないでいて、日本語で
+    // 「位 3」と読み上げ、さらに中の数字「3」も続けて読んでいた。
+    SharedPreferences.setMockInitialValues({});
+    final semantics = tester.ensureSemantics();
+    for (final (locale, expected) in [
+      (const Locale('ja'), '3位'),
+      (const Locale('en'), 'Rank 3'),
+      (const Locale('es'), 'Puesto 3'),
+      (const Locale('fr'), 'Rang 3'),
+      (const Locale('ko'), '3위'),
+      (const Locale('zh'), '第3名'),
+      (const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'), '第3名'),
+    ]) {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(
+            body: Center(child: CommunityRankBadge(rank: 3)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(find.byType(CommunityRankBadge)).label,
+        expected,
+        reason: '$locale',
+      );
+    }
+    semantics.dispose();
+  });
+
   testWidgets('ranking mode switch is exclusive to ranking and remembered', (
     tester,
   ) async {
@@ -210,8 +244,9 @@ void main() {
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         image.dispose();
         Directory(captureDir).createSync(recursive: true);
-        File('$captureDir/$name.png')
-            .writeAsBytesSync(bytes!.buffer.asUint8List());
+        File(
+          '$captureDir/$name.png',
+        ).writeAsBytesSync(bytes!.buffer.asUint8List());
       });
     }
 
