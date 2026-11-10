@@ -20,6 +20,7 @@ import '../../services/api/community_api.dart';
 import '../../services/font_service.dart';
 import '../../services/export_share_service.dart';
 import '../../services/project_service.dart';
+import '../../services/local_file_trash_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/share_intent_service.dart';
 import '../../services/shortcut_service.dart';
@@ -1387,6 +1388,39 @@ class _SharedScreenState extends State<SharedScreen> {
   }
 }
 
+/// Trash supports four independent multi-select type filters.
+enum TrashEntryKind { createdProject, receivedShare, createdShare, exportedWork }
+
+String _trashKindLabel(BuildContext context, TrashEntryKind kind) {
+  final lang = Localizations.localeOf(context).languageCode;
+  return switch (lang) {
+    'ja' => switch (kind) {
+      TrashEntryKind.createdProject => '作成したプロジェクト',
+      TrashEntryKind.receivedShare => '受け取った共有ファイル',
+      TrashEntryKind.createdShare => '自分が作成した共有ファイル',
+      TrashEntryKind.exportedWork => '書き出した作品',
+    },
+    'ko' => switch (kind) {
+      TrashEntryKind.createdProject => '내 프로젝트',
+      TrashEntryKind.receivedShare => '받은 공유 파일',
+      TrashEntryKind.createdShare => '내 공유 파일',
+      TrashEntryKind.exportedWork => '내보낸 작품',
+    },
+    'zh' => switch (kind) {
+      TrashEntryKind.createdProject => '创建的项目',
+      TrashEntryKind.receivedShare => '收到的共享文件',
+      TrashEntryKind.createdShare => '创建的共享文件',
+      TrashEntryKind.exportedWork => '导出的作品',
+    },
+    _ => switch (kind) {
+      TrashEntryKind.createdProject => 'Created project',
+      TrashEntryKind.receivedShare => 'Received share',
+      TrashEntryKind.createdShare => 'Created share',
+      TrashEntryKind.exportedWork => 'Exported work',
+    },
+  };
+}
+
 /// ゴミ箱一覧。ホームタブと'/trash'直リンクで共用する。
 class TrashScreen extends StatefulWidget {
   const TrashScreen({super.key, this.embedded = false});
@@ -1401,6 +1435,7 @@ class _TrashScreenState extends State<TrashScreen> {
   // 共有一覧・プロジェクトタブと同じ並び替え基準を、同じ見た目・操作性で
   // 提供する（ゴミ箱にお気に入りの概念はないため絞り込みは対象外）。
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
+  final Set<TrashEntryKind> _selectedKinds = {...TrashEntryKind.values};
 
   bool get _sortByName =>
       _sortMode == ProjectSortMode.nameAsc ||
@@ -1439,6 +1474,31 @@ class _TrashScreenState extends State<TrashScreen> {
       appBar: widget.embedded ? null : AppBar(title: Text(l10n.homeTabTrash)),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 2),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 0,
+                children: [
+                  for (final kind in TrashEntryKind.values)
+                    FilterChip(
+                      key: ValueKey('trashKind_${kind.name}'),
+                      label: Text(_trashKindLabel(context, kind)),
+                      selected: _selectedKinds.contains(kind),
+                      onSelected: (selected) => setState(() {
+                        if (selected) {
+                          _selectedKinds.add(kind);
+                        } else {
+                          _selectedKinds.remove(kind);
+                        }
+                      }),
+                    ),
+                ],
+              ),
+            ),
+          ),
           _LibraryListControls(
             sort: SortModeControl(
               sortByName: _sortByName,
@@ -1447,7 +1507,7 @@ class _TrashScreenState extends State<TrashScreen> {
               onToggleDirection: _toggleSortDirection,
             ),
           ),
-          Expanded(child: _TrashTab(sortMode: _sortMode)),
+          Expanded(child: _TrashTab(sortMode: _sortMode, selectedKinds: _selectedKinds)),
         ],
       ),
     );
@@ -2540,12 +2600,23 @@ class _WorkListItemState extends State<_WorkListItem> {
             style: FilledButton.styleFrom(
               backgroundColor: ThemeService.activeColorScheme.error,
             ),
-            onPressed: () {
-              if (file.existsSync()) file.deleteSync();
-              // 容量削減の画面が覚えている集計結果は、消す前のもの。
-              StorageInfoService().invalidate();
-              Navigator.pop(ctx);
-              widget.onDeleted();
+            onPressed: () async {
+              try {
+                await LocalFileTrashService.move(
+                  file, LocalTrashKind.exportedWork,
+                );
+                StorageInfoService().invalidate();
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                widget.onDeleted();
+              } catch (error, stackTrace) {
+                AppErrorReporter.record(error, stackTrace);
+                if (ctx.mounted) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    SnackBar(content: Text(l10n.homeTrashOperationFailed)),
+                  );
+                }
+              }
             },
             child: Text(l10n.commonDelete),
           ),
