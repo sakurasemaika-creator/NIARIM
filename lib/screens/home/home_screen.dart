@@ -20,6 +20,7 @@ import '../../services/api/community_api.dart';
 import '../../services/font_service.dart';
 import '../../services/export_share_service.dart';
 import '../../services/project_service.dart';
+import '../../services/outgoing_share_library.dart';
 import '../../services/settings_service.dart';
 import '../../services/share_intent_service.dart';
 import '../../services/shortcut_service.dart';
@@ -30,6 +31,7 @@ import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
 import '../../widgets/project_trash_dialog.dart';
+import '../../widgets/share_project_file_action.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_selection_toolbar.dart';
 import 'widgets/home_drawer.dart';
@@ -1323,6 +1325,17 @@ class SharedScreen extends StatefulWidget {
 }
 
 class _SharedScreenState extends State<SharedScreen> {
+  // Keep the received and locally exported snapshot collections distinct.
+  bool _showOutgoing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<ProjectService>().refreshOutgoingShares();
+    });
+  }
+
   // プロジェクトタブと同じ並び替え基準・お気に入り絞り込みを、共有一覧にも
   // 同じ見た目・操作性で提供する。
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
@@ -1365,7 +1378,29 @@ class _SharedScreenState extends State<SharedScreen> {
       appBar: widget.embedded ? null : AppBar(title: Text(l10n.homeTabShared)),
       body: Column(
         children: [
-          _LibraryListControls(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                ChoiceChip(
+                  key: const Key('sharedReceivedFilter'),
+                  label: Text(_shareCollectionText(context, outgoing: false)),
+                  selected: !_showOutgoing,
+                  onSelected: (_) => setState(() => _showOutgoing = false),
+                ),
+                ChoiceChip(
+                  key: const Key('sharedOutgoingFilter'),
+                  label: Text(_shareCollectionText(context, outgoing: true)),
+                  selected: _showOutgoing,
+                  onSelected: (_) => setState(() => _showOutgoing = true),
+                ),
+              ],
+            ),
+          ),
+          if (!_showOutgoing)
+            _LibraryListControls(
             sort: SortModeControl(
               sortByName: _sortByName,
               sortAscending: _sortAscending,
@@ -1390,14 +1425,18 @@ class _SharedScreenState extends State<SharedScreen> {
             ),
           ),
           Expanded(
-            child: _SharedTab(
-              sortMode: _sortMode,
-              showFavoritesOnly: _showFavoritesOnly,
-            ),
+            child: _showOutgoing
+                ? const _OutgoingSharesList()
+                : _SharedTab(
+                    sortMode: _sortMode,
+                    showFavoritesOnly: _showFavoritesOnly,
+                  ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: _showOutgoing
+          ? null
+          : FloatingActionButton(
         tooltip: l10n.homeAddSheetNewFolder,
         onPressed: () => showCreateFolderNameDialog(
           context,
@@ -1593,6 +1632,7 @@ class _SharedTab extends StatelessWidget {
             l10n.homeProjectMeta(project.fps, project.durationSeconds),
           ),
           onTap: () => context.push('/project/${project.id}'),
+          trailing: _receivedShareMenu(context, project),
           onLongPress: () => _showMoveToSharedFolderSheet(context, project),
         ),
       ),
@@ -1610,6 +1650,125 @@ class _SharedTab extends StatelessWidget {
       ),
     );
   }
+}
+
+
+String _shareCollectionText(BuildContext context, {required bool outgoing}) {
+  final locale = Localizations.localeOf(context).languageCode;
+  final names = switch (locale) {
+    'ja' => ('受け取ったもの', '自分が作成したもの'),
+    'ko' => ('받은 파일', '내가 만든 파일'),
+    'zh' => ('收到的文件', '我创建的文件'),
+    'fr' => ('Reçus', 'Créés par moi'),
+    'es' => ('Recibidos', 'Creados por mí'),
+    _ => ('Received', 'Created by me'),
+  };
+  return outgoing ? names.$2 : names.$1;
+}
+
+/// Received projects remain editable. Sharing one explicitly creates a new
+/// saved .niashare snapshot, whereas outbound snapshots reuse existing bytes.
+Widget _receivedShareMenu(BuildContext context, Project project) {
+  final l10n = AppLocalizations.of(context)!;
+  return PopupMenuButton<String>(
+    key: ValueKey('receivedShareMenu_${project.id}'),
+    tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+    onSelected: (action) {
+      if (action == 'share') {
+        createAndShareProjectNiashare(
+          context,
+          context.read<ProjectService>(),
+          project,
+        );
+      }
+    },
+    itemBuilder: (_) => [
+      PopupMenuItem<String>(
+        value: 'share',
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.ios_share_outlined),
+            const SizedBox(width: 8),
+            Text(l10n.projectDetailShareQuickAction),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+class _OutgoingSharesList extends StatelessWidget {
+  const _OutgoingSharesList();
+
+  @override
+  Widget build(BuildContext context) {
+    final saved = context.watch<ProjectService>().outgoingShares;
+    final l10n = AppLocalizations.of(context)!;
+    if (saved.isEmpty) {
+      return EmptyStatePlaceholder(
+        icon: Icons.file_present_outlined,
+        title: _shareCollectionEmptyText(context),
+      );
+    }
+    return ListView.builder(
+      key: const PageStorageKey('outgoing-niashares'),
+      padding: const EdgeInsets.only(bottom: 80),
+      itemCount: saved.length,
+      itemBuilder: (context, index) {
+        final entry = saved[index];
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: ListTile(
+            leading: const Icon(Icons.insert_drive_file_outlined, size: 36),
+            title: Text(
+              entry.name,
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
+            subtitle: Text(
+              '${entry.updatedAt.year}/${entry.updatedAt.month.toString().padLeft(2, '0')}/${entry.updatedAt.day.toString().padLeft(2, '0')}  ·  ${(entry.sizeBytes / 1024).toStringAsFixed(1)} KB',
+            ),
+            onTap: () => shareSavedNiashare(context, entry.path),
+            trailing: PopupMenuButton<String>(
+              key: ValueKey('outgoingShareMenu_${entry.path}'),
+              onSelected: (action) {
+                if (action == 'share') {
+                  shareSavedNiashare(context, entry.path);
+                }
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem<String>(
+                  value: 'share',
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.ios_share_outlined),
+                      const SizedBox(width: 8),
+                      Text(l10n.projectDetailShareQuickAction),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+String _shareCollectionEmptyText(BuildContext context) {
+  return switch (Localizations.localeOf(context).languageCode) {
+    'ja' => '作成した共有ファイルはまだありません',
+    'ko' => '생성한 공유 파일이 없습니다',
+    'zh' => '还没有创建的共享文件',
+    'fr' => 'Aucun fichier partagé créé',
+    'es' => 'Todavía no hay archivos compartidos creados',
+    _ => 'No created share files yet',
+  };
 }
 
 /// 共有タブのフォルダ内表示（共有タブへのフォルダ新規追加機能）。
@@ -1667,6 +1826,7 @@ class _SharedFolderScreen extends StatelessWidget {
                       ),
                     ),
                     onTap: () => context.push('/project/${project.id}'),
+                    trailing: _receivedShareMenu(context, project),
                   ),
                 );
               },
