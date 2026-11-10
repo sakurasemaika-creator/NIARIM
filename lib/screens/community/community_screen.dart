@@ -1,7 +1,9 @@
 import '../../utils/tolerant_preferences.dart';
 import '../../config/accent_text_theme.dart';
 
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -74,6 +76,79 @@ class CommunityScreen extends StatefulWidget {
 
 class _CommunityScreenState extends State<CommunityScreen>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+  // A Works Plaza page kept open counts toward time missions even without
+  // video playback or user gestures. Only authenticated server time counts.
+  Timer? _plazaPulseTimer;
+  bool _plazaInForeground = true;
+  bool _plazaPulseBusy = false;
+  String _plazaSession = _newPlazaSession();
+
+  static String _newPlazaSession() {
+    final random = Random.secure();
+    return base64Url.encode(
+      List<int>.generate(24, (_) => random.nextInt(256)),
+    ).replaceAll('=', '');
+  }
+
+  Future<void> _pulsePlazaTime() async {
+    if (_plazaPulseBusy || !mounted || !_plazaInForeground ||
+        !(ModalRoute.of(context)?.isCurrent ?? false)) return;
+    final owner = context.read<GoogleAuthService>().account?.id;
+    final api = context.read<CommunityService>().api;
+    if (owner == null || api == null) return;
+    _plazaPulseBusy = true;
+    try {
+      final result = await api.pulsePlazaMissions(_plazaSession);
+      if (!mounted || !_plazaInForeground ||
+          !(ModalRoute.of(context)?.isCurrent ?? false) ||
+          context.read<GoogleAuthService>().account?.id != owner ||
+          !identical(context.read<CommunityService>().api, api)) return;
+      final achieved = (result['newlyAchieved'] as List? ?? const [])
+          .whereType<Map>().toList();
+      if (achieved.isNotEmpty) {
+        final label = achieved.map((entry) {
+          final seconds = (entry['requiredSeconds'] as num?)?.toInt() ?? 0;
+          final amount = seconds >= 3600
+              ? '${seconds ~/ 3600}時間'
+              : '${seconds ~/ 60}分';
+          final period = switch (entry['period']) {
+            'day' => 'デイリー',
+            'week' => 'ウィークリー',
+            _ => 'マンスリー',
+          };
+          return '・$period：作品広場を合計$amount 開く';
+        }).join('\n');
+        if (!mounted) return;
+        await showDialog<void>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            key: const Key('plazaMissionCompletedDialog'),
+            title: const Text('ミッションをクリアしました！'),
+            content: Text('$label\n\nミッションページで報酬を受け取れます。'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('閉じる'),
+              ),
+              FilledButton(
+                key: const Key('goToCompletedMissions'),
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  if (mounted) context.push('/rewards');
+                },
+                child: const Text('ミッションページへ'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (error) {
+      debugPrint('Plaza mission timer temporarily unavailable: $error');
+    } finally {
+      _plazaPulseBusy = false;
+    }
+  }
+
   String? _lastLoginVisitKey;
   void _recordCumulativeLoginVisit(String? ownerId, CommunityApi? api) {
     if (ownerId == null || api == null) return;
@@ -102,6 +177,9 @@ class _CommunityScreenState extends State<CommunityScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && mounted) {
+      _plazaInForeground = true;
+      _plazaSession = _newPlazaSession();
+      _pulsePlazaTime();
       _recordCumulativeLoginVisit(
         context.read<GoogleAuthService>().account?.id,
         context.read<CommunityService>().api,
@@ -109,6 +187,10 @@ class _CommunityScreenState extends State<CommunityScreen>
       if (_tabController.index == 1) {
         _fetchRanking();
       }
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      _plazaInForeground = false;
     }
   }
 
@@ -298,6 +380,12 @@ class _CommunityScreenState extends State<CommunityScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _plazaPulseTimer = Timer.periodic(
+      const Duration(seconds: 60), (_) => _pulsePlazaTime(),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _pulsePlazaTime();
+    });
     _loadSavedSearches();
     _loadTileWidth();
     _loadRankingLayout();
@@ -786,6 +874,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   @override
   void dispose() {
+    _plazaPulseTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     _searchController.dispose();
