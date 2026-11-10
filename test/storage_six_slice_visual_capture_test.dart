@@ -22,7 +22,7 @@ import 'helpers/pump_real_async.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('real Japanese StorageScreen shows all six pie slices', (
+  testWidgets('real Japanese StorageScreen shows six bright bars and device bars without pies', (
     tester,
   ) async {
     // Entirely isolated synthetic filesystem; do not touch user projects.
@@ -139,16 +139,13 @@ void main() {
     final scheme = Theme.of(storageContext).colorScheme;
     // Non-selected canvas toolbar icons are painted with onSurface.
     final expectedOutline = scheme.onSurface;
-    // Device and NIARIM breakdown both keep their own real CustomPaint pie.
+    // No pie paintings or circle legends are allowed in either section.
     final pie = find.byWidgetPredicate(
       (widget) =>
           widget is CustomPaint &&
           widget.painter?.runtimeType.toString() == '_PieChartPainter',
     );
-    expect(pie, findsNWidgets(2));
-    for (final pieWidget in tester.widgetList<CustomPaint>(pie)) {
-      expect((pieWidget.painter! as dynamic).outlineColor, expectedOutline);
-    }
+    expect(pie, findsNothing);
 
     final deviceLabels = [
       l10n.storageCategoryNiarimTotal,
@@ -173,8 +170,8 @@ void main() {
           as BoxDecoration;
       expect(fillDecoration.color, deviceColors[i]);
       final barRect = tester.getRect(bar);
-      final devicePie = find.descendant(of: deviceSections, matching: pie);
-      expect(barRect.left, greaterThan(tester.getRect(devicePie).right));
+      expect(barRect.width, greaterThan(300));
+      expect(barRect.left, lessThan(20));
     }
 
     final entries = [
@@ -188,18 +185,14 @@ void main() {
     final largest = entries
         .map((entry) => values!.bytesOf(entry.$1))
         .reduce((a, b) => a > b ? a : b);
-    // Even at 390px the six bars must remain to the RIGHT of their pie.
+    // In the same 390px phone all six bars occupy the section width.
     final breakdownSection =
         find.byKey(const ValueKey('storageBreakdownSection'));
-    final breakdownPie = find.descendant(of: breakdownSection, matching: pie);
-    expect(breakdownPie, findsOneWidget);
     final firstBar = find.byKey(
       Key('storageBreakdownBar_${l10n.storageCategoryMaterials}'),
     );
-    expect(
-      tester.getRect(firstBar).left,
-      greaterThan(tester.getRect(breakdownPie).right),
-    );
+    expect(tester.getRect(firstBar).width, greaterThan(300));
+    expect(tester.getRect(firstBar).left, lessThan(20));
     for (final (category, label) in entries) {
       expect(find.text(label), findsOneWidget, reason: label);
       final bar = find.byKey(Key('storageBreakdownBar_$label'));
