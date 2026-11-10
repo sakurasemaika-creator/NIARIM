@@ -267,7 +267,7 @@ export class NiarimBackendStack extends Stack {
         // no NIARIM-specific count cap; Google may independently no-fill.
         REWARDED_AD_DAILY_LIMIT:
           String(this.node.tryGetContext("rewardedAdDailyLimit") ?? ""),
-        // Final full Premium monthly tariff is exactly 60,000 coins.
+        // Final full Premium monthly tariff is exactly 55,000 coins (550 yen).
         // This context provides price and version only, NEVER activates
         // wallet deductions: redemption and safety approval stay default-OFF.
         COIN_REDEMPTION_ENABLED:
