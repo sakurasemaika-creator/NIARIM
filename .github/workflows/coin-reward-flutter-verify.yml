@@ -37,6 +37,8 @@ on:
       - 'test/coin_duration_label_test.dart'
       - 'lib/utils/coin_duration_label.dart'
       - 'test/coin_unlock_quote_test.dart'
+      - 'lib/models/coin_benefit_price_proposal.dart'
+      - 'test/coin_benefit_price_proposal_test.dart'
       - 'test/premium_play_verification_policy_test.dart'
       - 'test/premium_coin_account_isolation_test.dart'
       - 'test/monetization_campaign_removed_test.dart'
@@ -81,6 +83,7 @@ jobs:
             lib/services/premium_service.dart \
             test/monetization_campaign_removed_test.dart \
             lib/services/api/community_api.dart \
+            lib/models/coin_benefit_price_proposal.dart \
             lib/screens/rewards/reward_unlock_screen.dart \
             lib/screens/rewards/membership_benefits_screen.dart \
             lib/screens/rewards/login_bonus_panel.dart \
@@ -111,6 +114,7 @@ jobs:
             test/reward_duration_plural_test.dart \
             test/coin_duration_label_test.dart \
             test/coin_unlock_quote_test.dart \
+            test/coin_benefit_price_proposal_test.dart \
             test/premium_play_verification_policy_test.dart \
             test/premium_coin_account_isolation_test.dart \
             test/monetization_campaign_removed_test.dart \
