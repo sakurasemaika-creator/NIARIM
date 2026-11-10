@@ -8029,4 +8029,44 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get canvasSizePresetDuplicateSuffix => 'のコピー';
+
+  @override
+  String rewardDurationHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count時間',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rewardDurationDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count日間',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rewardDurationWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count週間',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rewardDurationMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countか月',
+    );
+    return '$_temp0';
+  }
 }

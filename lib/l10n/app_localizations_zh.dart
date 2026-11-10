@@ -7956,6 +7956,46 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get canvasSizePresetDuplicateSuffix => '副本';
+
+  @override
+  String rewardDurationHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count小时',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rewardDurationDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count天',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rewardDurationWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count周',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rewardDurationMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count个月',
+    );
+    return '$_temp0';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -15912,4 +15952,44 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasSizePresetDuplicateSuffix => '副本';
+
+  @override
+  String rewardDurationHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count小時',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rewardDurationDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count天',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rewardDurationWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count週',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rewardDurationMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count個月',
+    );
+    return '$_temp0';
+  }
 }

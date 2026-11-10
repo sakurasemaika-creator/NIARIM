@@ -3319,5 +3319,9 @@
   "pcInspectorHint": "Selecciona un material en la línea de tiempo para ajustar aquí su posición, tamaño, opacidad y más.",
   "pcStatusFps": "{fps} fps",
   "homePasteSnackbar": "Pegado",
-  "canvasSizePresetDuplicateSuffix": "copia"
+  "canvasSizePresetDuplicateSuffix": "copia",
+  "rewardDurationHours": "{count, plural, one{{count} hora} other{{count} horas}}",
+  "rewardDurationDays": "{count, plural, one{{count} día} other{{count} días}}",
+  "rewardDurationWeeks": "{count, plural, one{{count} semana} other{{count} semanas}}",
+  "rewardDurationMonths": "{count, plural, one{{count} mes} other{{count} meses}}"
 }

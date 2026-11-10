@@ -3319,5 +3319,9 @@
   "pcInspectorHint": "在時間軸上選擇素材後，可在此調整位置、大小、不透明度等。",
   "pcStatusFps": "{fps} fps",
   "homePasteSnackbar": "已貼上",
-  "canvasSizePresetDuplicateSuffix": "副本"
+  "canvasSizePresetDuplicateSuffix": "副本",
+  "rewardDurationHours": "{count, plural, other{{count}小時}}",
+  "rewardDurationDays": "{count, plural, other{{count}天}}",
+  "rewardDurationWeeks": "{count, plural, other{{count}週}}",
+  "rewardDurationMonths": "{count, plural, other{{count}個月}}"
 }

@@ -14662,6 +14662,30 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'のコピー'**
   String get canvasSizePresetDuplicateSuffix;
+
+  /// 特典交換：交換期間（時間単位、1〜24）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}時間}}'**
+  String rewardDurationHours(int count);
+
+  /// 特典交換：交換期間（日単位、2〜6）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}日間}}'**
+  String rewardDurationDays(int count);
+
+  /// 特典交換：交換期間（週単位、1〜3）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}週間}}'**
+  String rewardDurationWeeks(int count);
+
+  /// 特典交換：交換期間（月単位、1〜120）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}か月}}'**
+  String rewardDurationMonths(int count);
 }
 
 class _AppLocalizationsDelegate

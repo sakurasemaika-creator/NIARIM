@@ -3326,5 +3326,9 @@
   "pcInspectorHint": "Select a material on the timeline to adjust its position, size, opacity and more here.",
   "pcStatusFps": "{fps} fps",
   "homePasteSnackbar": "Pasted",
-  "canvasSizePresetDuplicateSuffix": "copy"
+  "canvasSizePresetDuplicateSuffix": "copy",
+  "rewardDurationHours": "{count, plural, one{{count} hour} other{{count} hours}}",
+  "rewardDurationDays": "{count, plural, one{{count} day} other{{count} days}}",
+  "rewardDurationWeeks": "{count, plural, one{{count} week} other{{count} weeks}}",
+  "rewardDurationMonths": "{count, plural, one{{count} month} other{{count} months}}"
 }

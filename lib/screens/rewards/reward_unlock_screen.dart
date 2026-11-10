@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../l10n/reward_unlock_labels.dart';
 import '../../l10n/reward_navigation_labels.dart';
 import '../../models/coin_unlock_quote.dart';
@@ -10,6 +11,7 @@ import '../../services/advertising_service.dart';
 import '../../services/coin_redemption_attempt_store.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
+import '../../utils/coin_duration_label.dart';
 import '../../widgets/coin_history_sheet.dart';
 import '../../widgets/responsive.dart';
 
@@ -234,13 +236,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       return;
     }
     final t = RewardUnlockLabels.of(context);
+    final period = coinUnlockDurationLabel(
+      AppLocalizations.of(context)!,
+      _redeemablePeriod,
+    );
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(t['redeem']),
-        content: Text(
-          '${t['fullPremium']} · 1 ${t['month']} · $price ${t['coins']}',
-        ),
+        content: Text('${t['fullPremium']} · $period · $price ${t['coins']}'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -272,13 +276,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       if (result['redeemed'] == true) {
         await _loadWallet(accountId);
         if (!mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
       }
     } finally {
       if (mounted) setState(() => _redeemBusy = false);
@@ -310,6 +316,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     CoinUnlockTarget.allAds,
     CoinUnlockTarget.fullPremium,
   ];
+
+  /// The only period the server sells for coins (the redeem request is
+  /// always one month of the full bundle).
+  static const _redeemablePeriod = CoinUnlockDuration(
+    1,
+    CoinDurationUnit.month,
+  );
 
   CoinUnlockQuote? _quote() {
     if (_selected.isEmpty) return null;
@@ -349,17 +362,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     });
   }
 
-  String _durationText(RewardUnlockLabels t, CoinUnlockDuration value) {
-    final unit = switch (value.unit) {
-      CoinDurationUnit.hour => t['hour'],
-      CoinDurationUnit.day => t['day'],
-      CoinDurationUnit.week => t['week'],
-      CoinDurationUnit.month => t['month'],
-    };
-    return '${value.amount}$unit';
-  }
-
   Future<void> _chooseDuration(RewardUnlockLabels t) async {
+    final l10n = AppLocalizations.of(context)!;
     final groups = <(String, List<CoinUnlockDuration>)>[
       (
         t['hour'],
@@ -422,15 +426,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                           key: ValueKey(
                             'rewardDuration_${option.unit.name}_${option.amount}',
                           ),
-                          title: Text(_durationText(t, option)),
+                          title: Text(coinUnlockDurationLabel(l10n, option)),
                           trailing:
                               _duration.unit == option.unit &&
                                   _duration.amount == option.amount
                               ? Icon(
                                   Icons.check,
-                                  color: Theme.of(sheetContext)
-                                      .colorScheme
-                                      .primary,
+                                  color: Theme.of(
+                                    sheetContext,
+                                  ).colorScheme.primary,
                                 )
                               : null,
                           onTap: () {
@@ -509,6 +513,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   @override
   Widget build(BuildContext context) {
     final t = RewardUnlockLabels.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final quote = _quote();
     final serverPrice =
@@ -625,7 +630,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
               OutlinedButton.icon(
                 key: const Key('rewardDurationButton'),
                 icon: const Icon(Icons.schedule),
-                label: Text(_durationText(t, _duration)),
+                label: Text(coinUnlockDurationLabel(l10n, _duration)),
                 onPressed: () => _chooseDuration(t),
               ),
               const SizedBox(height: 18),

@@ -3319,5 +3319,9 @@
   "pcInspectorHint": "Sélectionnez un matériau dans la chronologie pour régler ici sa position, sa taille, son opacité, etc.",
   "pcStatusFps": "{fps} i/s",
   "homePasteSnackbar": "Collé",
-  "canvasSizePresetDuplicateSuffix": "copie"
+  "canvasSizePresetDuplicateSuffix": "copie",
+  "rewardDurationHours": "{count, plural, one{{count} heure} other{{count} heures}}",
+  "rewardDurationDays": "{count, plural, one{{count} jour} other{{count} jours}}",
+  "rewardDurationWeeks": "{count, plural, one{{count} semaine} other{{count} semaines}}",
+  "rewardDurationMonths": "{count, plural, other{{count} mois}}"
 }

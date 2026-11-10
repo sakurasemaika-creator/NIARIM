@@ -8455,4 +8455,48 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get canvasSizePresetDuplicateSuffix => 'copia';
+
+  @override
+  String rewardDurationHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count horas',
+      one: '$count hora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rewardDurationDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días',
+      one: '$count día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rewardDurationWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count semanas',
+      one: '$count semana',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rewardDurationMonths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count meses',
+      one: '$count mes',
+    );
+    return '$_temp0';
+  }
 }

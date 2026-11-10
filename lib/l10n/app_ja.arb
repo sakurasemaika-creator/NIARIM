@@ -3985,5 +3985,41 @@
     }
   },
   "homePasteSnackbar": "貼り付けました",
-  "canvasSizePresetDuplicateSuffix": "のコピー"
+  "canvasSizePresetDuplicateSuffix": "のコピー",
+  "rewardDurationHours": "{count, plural, other{{count}時間}}",
+  "@rewardDurationHours": {
+    "description": "特典交換：交換期間（時間単位、1〜24）。数と単位をまとめた1つの文言",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardDurationDays": "{count, plural, other{{count}日間}}",
+  "@rewardDurationDays": {
+    "description": "特典交換：交換期間（日単位、2〜6）。数と単位をまとめた1つの文言",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardDurationWeeks": "{count, plural, other{{count}週間}}",
+  "@rewardDurationWeeks": {
+    "description": "特典交換：交換期間（週単位、1〜3）。数と単位をまとめた1つの文言",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardDurationMonths": "{count, plural, other{{count}か月}}",
+  "@rewardDurationMonths": {
+    "description": "特典交換：交換期間（月単位、1〜120）。数と単位をまとめた1つの文言",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

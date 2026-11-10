@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/coin_unlock_quote.dart';
 import 'package:niarim/screens/rewards/reward_unlock_screen.dart';
 import 'package:niarim/services/google_auth_service.dart';
@@ -30,6 +31,8 @@ void main() {
           ],
           child: const MaterialApp(
             locale: Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: RewardUnlockScreen(
               priceCatalog: {CoinUnlockTarget.toneCurve: cost},
             ),

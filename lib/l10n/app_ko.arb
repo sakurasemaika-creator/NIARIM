@@ -3319,5 +3319,9 @@
   "pcInspectorHint": "타임라인에서 소재를 선택하면 여기에서 위치·크기·불투명도 등을 조정할 수 있습니다.",
   "pcStatusFps": "{fps} fps",
   "homePasteSnackbar": "붙여넣었습니다",
-  "canvasSizePresetDuplicateSuffix": "사본"
+  "canvasSizePresetDuplicateSuffix": "사본",
+  "rewardDurationHours": "{count, plural, other{{count}시간}}",
+  "rewardDurationDays": "{count, plural, other{{count}일}}",
+  "rewardDurationWeeks": "{count, plural, other{{count}주}}",
+  "rewardDurationMonths": "{count, plural, other{{count}개월}}"
 }
