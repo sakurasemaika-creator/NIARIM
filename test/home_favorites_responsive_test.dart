@@ -125,7 +125,6 @@ void main() {
           final labels = [
             l10n.homeTabProjects,
             l10n.homeTabWorks,
-            l10n.homeTabBookmarked,
           ];
           for (var index = 0; index < labels.length; index++) {
             final label = labels[index];
