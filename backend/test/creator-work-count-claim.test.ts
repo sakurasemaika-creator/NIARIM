@@ -8,7 +8,6 @@ vi.mock("../src/lib/dynamo",async(original)=>({
 import {claimWorkCountMission} from "../src/api/routes/creatorWorkCountClaim";
 import {workCountMissionById} from "../src/lib/workCountMissionGrid";
 const mission=workCountMissionById("works_3_x_0")!;
-const legacy=workCountMissionById("works_3_x_10")!;
 const work=(n:number)=>({
   pk:`WORK#video00000${n}`,sk:"META",itemType:"WORK",
   authorId:"Nowner",isNiarimPublished:true,
@@ -38,7 +37,7 @@ function eligibleSend(state?:Record<string,unknown>){
     return {};
   });
 }
-describe("manual grid coin claims remain independent of legacy reward toggles",()=>{
+describe("manual grid coin claims require new reward approval",()=>{
  it("denies any payout until two independent new approvals are enabled",async()=>{
    process.env.CREATOR_MISSION_CLAIMS_ENABLED="true";
    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED="true";
@@ -85,18 +84,16 @@ describe("manual grid coin claims remain independent of legacy reward toggles",(
    });
    expect(send.mock.calls.every(([c])=>c instanceof GetCommand)).toBe(true);
  });
- it("blocks a previously claimed legacy cross-goal from being paid twice",async()=>{
-   enable();
-   send.mockImplementation(async(cmd:unknown)=>{
-     if(cmd instanceof GetCommand && cmd.input.Key?.sk==="MISSION_STATE_V1")
-       return {Item:{itemType:"CREATOR_MISSIONS_V1",claimedMask:2**8}};
-     return {};
-   });
-   const result=await claimWorkCountMission("Nowner",legacy);
+ it("reads only the current grid claim shard, without legacy lookups",async()=>{
+   enable();eligibleSend();
+   const result=await claimWorkCountMission("Nowner",mission);
    expect(JSON.parse(result.body??"{}")).toMatchObject({
-     claimed:true,awardedCoins:0,
+     pending:true,offeredCoins:mission.coins,awardedCoins:0,
    });
-   expect(send.mock.calls.every(([c])=>c instanceof GetCommand)).toBe(true);
+   const reads=send.mock.calls.map(([cmd])=>cmd)
+     .filter(cmd=>cmd instanceof GetCommand) as GetCommand[];
+   expect(reads).toHaveLength(1);
+   expect(reads[0].input.Key?.sk).toBe("MISSION_GRID#3");
  });
  it("cannot pay if strong work reads invalidate the GSI's candidate works",async()=>{
    enable();
