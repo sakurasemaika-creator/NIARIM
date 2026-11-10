@@ -34,7 +34,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('plaza cards align small menu and bookmark in one right rail', (
+  testWidgets('plaza cards place bookmark and context menu side by side below author', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -49,8 +49,12 @@ void main() {
     expect(bookmark, findsOneWidget);
     final menuRect = tester.getRect(menu);
     final bookmarkRect = tester.getRect(bookmark);
-    expect((menuRect.center.dx - bookmarkRect.center.dx).abs(), lessThan(3));
-    expect(bookmarkRect.top, greaterThanOrEqualTo(menuRect.bottom - 1));
+    expect(bookmarkRect.right, lessThanOrEqualTo(menuRect.left + 1));
+    expect((menuRect.center.dy - bookmarkRect.center.dy).abs(), lessThan(3));
+    final titleRect = tester.getRect(find.text(card.work.title).first);
+    final authorRect = tester.getRect(find.text(card.work.authorName).first);
+    expect(titleRect.bottom, lessThanOrEqualTo(authorRect.top + 1));
+    expect(authorRect.bottom, lessThanOrEqualTo(bookmarkRect.top + 1));
     expect(tester.widget<IconButton>(bookmark).iconSize, 22);
     expect(tester.takeException(), isNull);
   });
