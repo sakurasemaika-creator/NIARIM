@@ -115,6 +115,7 @@ class CommunityWorkCard extends StatelessWidget {
       ),
     );
     Widget count(String label, String value) => Semantics(
+      key: ValueKey('community-bookmark-count-${work.id}'),
       label: '$label: $value',
       child: ExcludeSemantics(
         child: Text(
