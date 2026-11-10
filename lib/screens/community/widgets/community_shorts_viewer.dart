@@ -146,85 +146,99 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
 
     return Scaffold(
       backgroundColor: scheme.surface,
-      body: Stack(
+      body: Column(
         children: [
-          PageView.builder(
-            controller: _controller,
-            scrollDirection: Axis.vertical,
-            itemCount: visibleWorks.length,
-            onPageChanged: (index) => setState(() => _currentIndex = index),
-            itemBuilder: (context, index) {
-              final work = visibleWorks[index];
-              return _ShortsVerifiedPage(
-                key: ValueKey('shorts-verified-${work.id}'),
-                work: work,
-                isCurrentPage: index == _currentIndex,
-                isBookmarked: communityService.isBookmarked(work.id),
-                onToggleBookmark: () => reportFailedCommunityEdit(
-                  context,
-                  communityService,
-                  communityService.toggleBookmark(work.id),
-                ),
-                onPlaybackEnded: (onLoopCurrent) => _handlePlaybackEnded(
-                  index,
-                  visibleWorks,
-                  onLoopCurrent: onLoopCurrent,
-                ),
-              );
-            },
-          ),
-          Positioned(
-            top: MediaQuery.paddingOf(context).top + 8,
-            left: 8,
-            child: _TopControlButton(
-              tooltip: l10n.communityShortsModeExitTooltip,
-              icon: Icons.close,
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ),
-          Positioned(
-            top: MediaQuery.paddingOf(context).top + 8,
-            right: 8,
-            child: PopupMenuButton<CommunityShortsEndBehavior>(
-              tooltip: l10n.communityShortsEndBehaviorTooltip,
-              initialValue: _endBehavior,
-              onSelected: _setEndBehavior,
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: CommunityShortsEndBehavior.loopCurrent,
-                  child: _EndBehaviorMenuItem(
-                    selected:
-                        _endBehavior == CommunityShortsEndBehavior.loopCurrent,
-                    icon: Icons.repeat_one_rounded,
-                    label: l10n.communityShortsEndBehaviorLoop,
+          // YouTube IFrame controls must never be covered by NIARIM's own
+          // buttons. Keep exit / end behavior in a dedicated header.
+          SafeArea(
+            bottom: false,
+            child: SizedBox(
+              height: 56,
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: 4,
+                    left: 8,
+                    child: _TopControlButton(
+                      tooltip: l10n.communityShortsModeExitTooltip,
+                      icon: Icons.close,
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
                   ),
-                ),
-                PopupMenuItem(
-                  value: CommunityShortsEndBehavior.autoAdvance,
-                  child: _EndBehaviorMenuItem(
-                    selected:
-                        _endBehavior == CommunityShortsEndBehavior.autoAdvance,
-                    icon: Icons.vertical_align_bottom_rounded,
-                    label: l10n.communityShortsEndBehaviorAutoAdvance,
+                  Positioned(
+                    top: 4,
+                    right: 8,
+                    child: PopupMenuButton<CommunityShortsEndBehavior>(
+                      tooltip: l10n.communityShortsEndBehaviorTooltip,
+                      initialValue: _endBehavior,
+                      onSelected: _setEndBehavior,
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: CommunityShortsEndBehavior.loopCurrent,
+                          child: _EndBehaviorMenuItem(
+                            selected:
+                                _endBehavior == CommunityShortsEndBehavior.loopCurrent,
+                            icon: Icons.repeat_one_rounded,
+                            label: l10n.communityShortsEndBehaviorLoop,
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: CommunityShortsEndBehavior.autoAdvance,
+                          child: _EndBehaviorMenuItem(
+                            selected:
+                                _endBehavior == CommunityShortsEndBehavior.autoAdvance,
+                            icon: Icons.vertical_align_bottom_rounded,
+                            label: l10n.communityShortsEndBehaviorAutoAdvance,
+                          ),
+                        ),
+                      ],
+                      child: Material(
+                        color: scheme.surface.withValues(alpha: 0.88),
+                        shape: const CircleBorder(),
+                        elevation: 1,
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Icon(
+                            _endBehavior == CommunityShortsEndBehavior.loopCurrent
+                                ? Icons.repeat_one_rounded
+                                : Icons.vertical_align_bottom_rounded,
+                            color: scheme.onSurface,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ],
-              child: Material(
-                color: scheme.surface.withValues(alpha: 0.88),
-                shape: const CircleBorder(),
-                elevation: 1,
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Icon(
-                    _endBehavior == CommunityShortsEndBehavior.loopCurrent
-                        ? Icons.repeat_one_rounded
-                        : Icons.vertical_align_bottom_rounded,
-                    color: scheme.onSurface,
-                    size: 24,
-                  ),
-                ),
+                ],
               ),
             ),
+          ),
+          Expanded(
+            child: PageView.builder(
+                    controller: _controller,
+                    scrollDirection: Axis.vertical,
+                    itemCount: visibleWorks.length,
+                    onPageChanged: (index) => setState(() => _currentIndex = index),
+                    itemBuilder: (context, index) {
+                      final work = visibleWorks[index];
+                      return _ShortsVerifiedPage(
+                        key: ValueKey('shorts-verified-${work.id}'),
+                        work: work,
+                        isCurrentPage: index == _currentIndex,
+                        isBookmarked: communityService.isBookmarked(work.id),
+                        onToggleBookmark: () => reportFailedCommunityEdit(
+                          context,
+                          communityService,
+                          communityService.toggleBookmark(work.id),
+                        ),
+                        onPlaybackEnded: (onLoopCurrent) => _handlePlaybackEnded(
+                          index,
+                          visibleWorks,
+                          onLoopCurrent: onLoopCurrent,
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
