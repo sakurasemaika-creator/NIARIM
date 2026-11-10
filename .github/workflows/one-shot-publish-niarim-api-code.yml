@@ -1,3 +1,4 @@
+# Includes post-review, DynamoDB-safe first-pulse fixes.
 name: One-shot Publish Verified NIARIM API Code Artifact
 on:
   push:
