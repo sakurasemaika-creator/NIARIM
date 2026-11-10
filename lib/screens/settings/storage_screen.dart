@@ -1,4 +1,5 @@
 import 'package:niarim/services/theme_service.dart';
+import '../canvas/widgets/canvas_icon_button.dart';
 
 import 'dart:math' as math;
 
@@ -35,12 +36,22 @@ import '../../config/font_fallback.dart';
 /// アクセント色の**色相と彩度を固定**し、明度だけを均等に上げて
 /// 統一感のある濃淡6色を作る。テーマを変えた際も同じ色系統を保つ。
 /// `test/storage_chart_colors_test.dart`が組み込み28テーマ全てで検証する。
+/// 各カテゴリの明度はテーマの明度から独立した固定値（HSLのL）。
+/// 色相と彩度だけを現在のアクセントから取得する。
+const storageChartLightnessLevels = <double>[
+  0.36,
+  0.445,
+  0.53,
+  0.615,
+  0.70,
+  0.785,
+];
+
 List<Color> sliceColorsOf(ColorScheme scheme) {
-  final base = HSLColor.fromColor(scheme.primary);
+  final accent = HSLColor.fromColor(scheme.primary);
   return [
-    for (var i = 0; i < 6; i++)
-      // 色相・彩度はアクセントのまま。暗い色から明るい色へ段階的にする。
-      base.withLightness(0.36 + 0.085 * i).toColor(),
+    for (final lightness in storageChartLightnessLevels)
+      accent.withLightness(lightness).toColor(),
   ];
 }
 
@@ -192,11 +203,20 @@ class _StorageScreenState extends State<StorageScreen> {
           entries[i].$2,
         ),
     ];
-    return _chartWithLegend(slices);
+    return _chartWithLegend(slices, showBars: true);
   }
 
-  Widget _chartWithLegend(List<_PieSlice> slices) {
+  Widget _chartWithLegend(
+    List<_PieSlice> slices, {
+    bool showBars = false,
+  }) {
     final total = slices.fold<double>(0, (a, s) => a + s.value);
+    final largest = slices.fold<double>(
+      0,
+      (max, slice) => math.max(max, slice.value),
+    );
+    final scheme = Theme.of(context).colorScheme;
+    final pieOutline = CanvasIconButton.outlineColor(scheme.primary, scheme);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -211,7 +231,9 @@ class _StorageScreenState extends State<StorageScreen> {
                     color: Theme.of(context).colorScheme.outlineVariant,
                   ),
                 )
-              : CustomPaint(painter: _PieChartPainter(slices)),
+              : CustomPaint(
+                  painter: _PieChartPainter(slices, outlineColor: pieOutline),
+                ),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -221,31 +243,59 @@ class _StorageScreenState extends State<StorageScreen> {
               for (final s in slices)
                 if (s.value > 0)
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Row(
+                    padding: EdgeInsets.symmetric(
+                      vertical: showBars ? 5 : 2,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: s.color,
-                            shape: BoxShape.circle,
-                          ),
+                        Row(
+                          children: [
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: s.color,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: CanvasIconButton.outlineColor(
+                                    s.color,
+                                    scheme,
+                                  ),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                s.label,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              formatStorageBytes(s.value),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            s.label,
-                            style: const TextStyle(fontSize: 12),
+                        if (showBars) ...[
+                          const SizedBox(height: 5),
+                          Padding(
+                            // Text starts after the colored legend marker.
+                            padding: const EdgeInsets.only(left: 16),
+                            child: _storageAmountBar(
+                              key: Key('storageBreakdownBar_${s.label}'),
+                              color: s.color,
+                              ratio: largest > 0 ? s.value / largest : 0,
+                              scheme: scheme,
+                            ),
                           ),
-                        ),
-                        Text(
-                          formatStorageBytes(s.value),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -253,6 +303,55 @@ class _StorageScreenState extends State<StorageScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Each bar belongs to its own legend row, not to a separate chart.
+  /// The largest currently nonzero category fills the width; others scale
+  /// proportionally so their relative storage use remains easy to compare.
+  Widget _storageAmountBar({
+    required Key key,
+    required Color color,
+    required double ratio,
+    required ColorScheme scheme,
+  }) {
+    final outline = CanvasIconButton.outlineColor(color, scheme);
+    final amount = ratio.clamp(0.0, 1.0);
+    return SizedBox(
+      key: key,
+      height: 9,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FractionallySizedBox(
+              widthFactor: amount,
+              heightFactor: 1,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+          ),
+          IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(color: outline, width: 1),
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -465,14 +564,22 @@ class _PieSlice {
 
 class _PieChartPainter extends CustomPainter {
   final List<_PieSlice> slices;
+  final Color outlineColor;
 
-  _PieChartPainter(this.slices);
+  _PieChartPainter(this.slices, {required this.outlineColor});
 
   @override
   void paint(Canvas canvas, Size size) {
     final total = slices.fold<double>(0, (a, s) => a + s.value);
     if (total <= 0) return;
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    // Keep the theme-derived 1.5px outline inside the paint bounds.
+    const borderWidth = 1.5;
+    final rect = Rect.fromLTWH(
+      borderWidth / 2,
+      borderWidth / 2,
+      size.width - borderWidth,
+      size.height - borderWidth,
+    );
     double startAngle = -math.pi / 2;
     for (final slice in slices) {
       if (slice.value <= 0) continue;
@@ -481,9 +588,17 @@ class _PieChartPainter extends CustomPainter {
       canvas.drawArc(rect, startAngle, sweep, true, paint);
       startAngle += sweep;
     }
+    canvas.drawOval(
+      rect,
+      Paint()
+        ..color = outlineColor
+        ..strokeWidth = borderWidth
+        ..style = PaintingStyle.stroke,
+    );
   }
 
   @override
   bool shouldRepaint(covariant _PieChartPainter oldDelegate) =>
-      oldDelegate.slices != slices;
+      oldDelegate.slices != slices ||
+      oldDelegate.outlineColor != outlineColor;
 }
