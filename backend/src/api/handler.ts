@@ -31,6 +31,8 @@ import { syncMyMissionActivity } from "./routes/creatorMissionActivitySync";
 import { visitMyLoginBonus, getMyLoginBonus, claimMyLoginBonus } from "./routes/loginBonus";
 import { getMyRecurringMissions, claimMyRecurringMission } from "./routes/recurringMissions";
 import { editSessionAction } from "./routes/creatorEditSession";
+import { getMyPlazaMissions, pulseMyPlazaMissions, claimMyPlazaMission }
+  from "./routes/plazaMissions";
 import { verifyMyPlayPremium, getPlayPurchaseAvailability } from "./routes/playPremium";
 import { updateWork } from "./routes/worksUpdate";
 import { deleteWork } from "./routes/worksDelete";
@@ -127,6 +129,9 @@ const routes: Route[] = [
   route("GET", "/me/login-bonus", (e) => getMyLoginBonus(e)),
   route("POST", "/me/login-bonus/claim", (e) => claimMyLoginBonus(e)),
   route("GET", "/me/missions/recurring", (e) => getMyRecurringMissions(e)),
+  route("GET", "/me/missions/plaza", (e) => getMyPlazaMissions(e)),
+  route("POST", "/me/missions/plaza/pulse", (e) => pulseMyPlazaMissions(e)),
+  route("POST", "/me/missions/plaza/claim", (e) => claimMyPlazaMission(e)),
   route("POST", "/me/missions/recurring/claim", (e) => claimMyRecurringMission(e)),
   route("GET", "/me/missions", (e) => getMyCreatorMissions(e)),
   route("GET", "/me/missions/grid", (e) => getMyWorkCountMissionGrid(e)),
