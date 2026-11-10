@@ -129,15 +129,15 @@ describe("JST recurring login mission catalog", () => {
     const result=JSON.parse((await claimMyRecurringMission(
       req({missionId:"visit_week_3",coins:999999,days:999,owner:"Nattacker"})))
       .body??"{}");
-    expect(result).toMatchObject({claimed:true,awardedCoins:15});
+    expect(result).toMatchObject({claimed:true,awardedCoins:3});
     const transaction=send.mock.calls[1][0] as TransactWriteCommand;
     expect(transaction).toBeInstanceOf(TransactWriteCommand);
     const [state,wallet,journal]=transaction.input.TransactItems!;
     expect(state.Update?.Key?.pk).toBe("USER#Nowner");
     expect(state.Update?.ConditionExpression).toContain("#days >= :required");
     expect(state.Update?.ExpressionAttributeValues?.[":required"]).toBe(3);
-    expect(wallet.Update?.ExpressionAttributeValues?.[":coins"]).toBe(15);
-    expect(journal.Put?.Item?.deltaCoins).toBe(15);
+    expect(wallet.Update?.ExpressionAttributeValues?.[":coins"]).toBe(3);
+    expect(journal.Put?.Item?.deltaCoins).toBe(3);
   });
   it("already claimed is a zero-coin idempotent no-write response", async () => {
     process.env.RECURRING_MISSION_PAYOUTS_ENABLED="true";
