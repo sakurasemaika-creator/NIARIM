@@ -3,29 +3,29 @@ import 'package:niarim/models/coin_benefit_price_proposal.dart';
 import 'package:niarim/models/coin_unlock_quote.dart';
 
 void main() {
-  test('reference price model never implies a live redemption', () {
-    expect(CoinBenefitPriceProposal.version, 'proposal-v2-rounded10');
-    expect(CoinBenefitPriceProposal.cost(
+  test('final owner-approved price model never implies a live redemption', () {
+    expect(CoinBenefitPriceCatalog.version, 'v1-final-20261110');
+    expect(CoinBenefitPriceCatalog.cost(
       CoinUnlockTarget.fullPremium,
       const CoinUnlockDuration(1, CoinDurationUnit.month),
     ), 60000);
   });
 
-  test('all reference unit prices round up to whole tens', () {
+  test('all final unit prices round up to whole tens', () {
     for (final target in CoinUnlockTarget.values) {
       if (target == CoinUnlockTarget.communityPostQuota) continue;
       for (final unit in CoinDurationUnit.values) {
-        final cost = CoinBenefitPriceProposal.unitCoins(target, unit);
+        final cost = CoinBenefitPriceCatalog.unitCoins(target, unit);
         expect(cost % 10, 0, reason: '$target / $unit');
       }
     }
-    expect(CoinBenefitPriceProposal.unitCoins(
+    expect(CoinBenefitPriceCatalog.unitCoins(
       CoinUnlockTarget.endCardEdit, CoinDurationUnit.hour), 70);
-    expect(CoinBenefitPriceProposal.unitCoins(
+    expect(CoinBenefitPriceCatalog.unitCoins(
       CoinUnlockTarget.endCardEdit, CoinDurationUnit.day), 290);
-    expect(CoinBenefitPriceProposal.unitCoins(
+    expect(CoinBenefitPriceCatalog.unitCoins(
       CoinUnlockTarget.endCardEdit, CoinDurationUnit.week), 2170);
-    expect(CoinBenefitPriceProposal.unitCoins(
+    expect(CoinBenefitPriceCatalog.unitCoins(
       CoinUnlockTarget.fullPremium, CoinDurationUnit.month), 60000);
   });
 
@@ -41,7 +41,7 @@ void main() {
       const CoinUnlockDuration(12, CoinDurationUnit.month),
     ];
     for (final period in periods) {
-      expect(CoinBenefitPriceProposal.bundleIsCheaper(period), isTrue);
+      expect(CoinBenefitPriceCatalog.bundleIsCheaper(period), isTrue);
     }
   });
 
@@ -56,8 +56,8 @@ void main() {
         CoinUnlockTarget.processingAds,
       ];
       final pieces = adPieces.fold(0, (n,target) =>
-        n+CoinBenefitPriceProposal.cost(target,duration));
-      expect(CoinBenefitPriceProposal.cost(
+        n+CoinBenefitPriceCatalog.cost(target,duration));
+      expect(CoinBenefitPriceCatalog.cost(
         CoinUnlockTarget.allAds,duration), lessThan(pieces));
     }
   });

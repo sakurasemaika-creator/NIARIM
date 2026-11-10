@@ -1,13 +1,15 @@
 /**
- * Reference-only price proposal, NOT an enabled coin offer.
- * Backend redemption remains gated by a separately approved server quote.
+ * Owner-approved, FIXED launch coin exchange unit-price catalog.
+ * Economics is final, NOT an automatic offer or entitlement grant.
+ * Each currently unsupported redemption remains disabled until its
+ * authenticated, atomic server redemption path has been implemented.
+ * This table does not bypass independent safety and release gates.
  *
- * Every target has a monotone time discount: 24 hours cost more than one day,
- * seven days cost more than one week, and 4 weeks cost more than one month.
- * Full Premium is strictly cheaper than buying each equivalent standalone
- * right for the same period.
+ * Multi-unit exchange pricing is the unit price multiplied by quantity;
+ * the unit price is rounded upwards to a multiple of 10 coins.
+ * Discounted bundles remain cheaper than equivalent individual rights.
  */
-export const COIN_BENEFIT_PRICE_PROPOSAL_VERSION = "proposal-v2-rounded10" as const;
+export const COIN_BENEFIT_PRICE_VERSION = "v1-final-20261110" as const;
 
 const month = {
   endCardEdit: 8_000,
@@ -33,13 +35,13 @@ export const INDIVIDUAL_BENEFITS: readonly BenefitPriceTarget[] = [
   "projectListAds","canvasAds","timelineAds","processingAds",
 ];
 
-export function proposedBenefitCoins(
+export function finalBenefitCoins(
   target: BenefitPriceTarget, duration: BenefitDuration,
 ): number {
   const perMonth = month[target];
   if (duration === "month") return perMonth;
-  // Full bundle is quoted at independently-approved rates and cannot be
-  // activated from this proposed calculator.
+  // Full bundle is fixed by the owner; redemption activation remains
+  // separately gated by a server-signed, revisioned quote.
   if (target === "fullPremium") {
     return {hour:500,day:2_500,week:18_000}[duration];
   }
@@ -52,18 +54,18 @@ export function proposedBenefitCoins(
   return Math.ceil(raw / 10) * 10;
 }
 
-export const PROPOSED_PREMIUM_MONTHLY_COINS = month.fullPremium;
-export const PROPOSED_ALL_INDIVIDUAL_MONTHLY_COINS = INDIVIDUAL_BENEFITS
+export const FINAL_PREMIUM_MONTHLY_COINS = month.fullPremium;
+export const FINAL_ALL_INDIVIDUAL_MONTHLY_COINS = INDIVIDUAL_BENEFITS
   .reduce((sum,target)=>sum + month[target],0);
 
 export function isBundledPremiumCheaperForAllDurations(): boolean {
   return (["hour","day","week","month"] as const).every(duration => {
     const standalone = INDIVIDUAL_BENEFITS.reduce(
-      (sum,target)=>sum + proposedBenefitCoins(target,duration),0);
+      (sum,target)=>sum + finalBenefitCoins(target,duration),0);
     const allAdSingles = (["projectListAds","canvasAds",
       "timelineAds","processingAds"] as const).reduce(
-      (sum,target)=>sum + proposedBenefitCoins(target,duration),0);
-    return proposedBenefitCoins("fullPremium",duration) < standalone &&
-      proposedBenefitCoins("allAds",duration) < allAdSingles;
+      (sum,target)=>sum + finalBenefitCoins(target,duration),0);
+    return finalBenefitCoins("fullPremium",duration) < standalone &&
+      finalBenefitCoins("allAds",duration) < allAdSingles;
   });
 }

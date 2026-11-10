@@ -8,7 +8,7 @@ import {PLAZA_MISSIONS} from "../src/lib/plazaMissionCatalog";
 import {RECURRING_MISSIONS} from "../src/lib/recurringMissionCatalog";
 import {INITIAL_REWARDED_COINS_PER_COMPLETION}
   from "../src/lib/coinEconomyScale";
-import {proposedBenefitCoins,isBundledPremiumCheaperForAllDurations}
+import {finalBenefitCoins,isBundledPremiumCheaperForAllDurations}
   from "../src/lib/coinBenefitProposal";
 
 describe("mission rewards strictly rise with difficulty",()=>{
@@ -115,12 +115,12 @@ describe("all 551 mission coins use strict five-coin steps",()=>{
   it("keeps daily login, rewarded ads and exchange costs unchanged",()=>{
     expect(DAILY_LOGIN_COINS).toBe(1);
     expect(INITIAL_REWARDED_COINS_PER_COMPLETION).toBe(10);
-    expect(proposedBenefitCoins("endCardEdit","hour")).toBe(70);
-    expect(proposedBenefitCoins("fullPremium","month")).toBe(60000);
+    expect(finalBenefitCoins("endCardEdit","hour")).toBe(70);
+    expect(finalBenefitCoins("fullPremium","month")).toBe(60000);
   });
 });
 
-describe("coin exchange proposals round the ones digit upwards",()=>{
+describe("owner-finalized coin exchange rates round the ones digit upwards",()=>{
   const targets=[
     "endCardEdit","watermark","toneCurve","levelAdjustment",
     "unlimitedDuration","customAutomation","projectListAds",
@@ -130,16 +130,16 @@ describe("coin exchange proposals round the ones digit upwards",()=>{
   it("produces only nonzero ten-coin multiples and never rounds downward",()=>{
     for(const target of targets){
       for(const unit of durations){
-        const cost=proposedBenefitCoins(target,unit);
+        const cost=finalBenefitCoins(target,unit);
         expect(cost).toBeGreaterThan(0);
         expect(cost%10).toBe(0);
       }
     }
-    expect(proposedBenefitCoins("endCardEdit","hour")).toBe(70);
-    expect(proposedBenefitCoins("endCardEdit","day")).toBe(290);
-    expect(proposedBenefitCoins("endCardEdit","week")).toBe(2170);
-    expect(proposedBenefitCoins("endCardEdit","month")).toBe(8000);
-    expect(proposedBenefitCoins("fullPremium","month")).toBe(60000);
+    expect(finalBenefitCoins("endCardEdit","hour")).toBe(70);
+    expect(finalBenefitCoins("endCardEdit","day")).toBe(290);
+    expect(finalBenefitCoins("endCardEdit","week")).toBe(2170);
+    expect(finalBenefitCoins("endCardEdit","month")).toBe(8000);
+    expect(finalBenefitCoins("fullPremium","month")).toBe(60000);
     expect(isBundledPremiumCheaperForAllDurations()).toBe(true);
   });
 });

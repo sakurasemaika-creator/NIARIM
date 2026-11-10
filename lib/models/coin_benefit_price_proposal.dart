@@ -1,9 +1,11 @@
 import 'coin_unlock_quote.dart';
 
-/// Informational only: these are NOT server-approved, spendable prices.
-/// The real exchange button still requires an authenticated backend quote.
-abstract final class CoinBenefitPriceProposal {
-  static const version = 'proposal-v2-rounded10';
+/// Owner-approved final launch unit-price table.
+/// Pricing is fixed, but this client calculator cannot debit a wallet or
+/// activate unsupported benefits. A live purchase still requires an
+/// authenticated, approved, server-versioned quote and atomic redemption.
+abstract final class CoinBenefitPriceCatalog {
+  static const version = 'v1-final-20261110';
 
   static const _monthlyCoins = <CoinUnlockTarget, int>{
     CoinUnlockTarget.endCardEdit: 8000,

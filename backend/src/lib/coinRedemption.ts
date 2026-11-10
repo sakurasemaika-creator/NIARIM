@@ -1,10 +1,12 @@
 import { PREMIUM_MONTHLY_REFERENCE_COINS } from "./coinEconomyScale";
-import { PROPOSED_ALL_INDIVIDUAL_MONTHLY_COINS } from "./coinBenefitProposal";
+import { FINAL_ALL_INDIVIDUAL_MONTHLY_COINS,
+  FINAL_PREMIUM_MONTHLY_COINS, COIN_BENEFIT_PRICE_VERSION } from "./coinBenefitProposal";
 
 /**
- * Deliberately narrow first version: full Premium for ONE calendar month.
- * The 55,000-coin reference is a FLOOR, not an automatically activated price.
- * Operators must separately configure, version and approve the actual offer.
+ * Initial implemented redemption route: full Premium for ONE calendar month.
+ * The final tariff is precisely 60,000 coins (NOT the non-cash 55,000-coin
+ * comparison floor). Incorrect operator configuration must FAIL CLOSED.
+ * Pricing finalization does not itself authorize balance deductions.
  */
 export interface PremiumRedemptionOffer {
   enabled: boolean;
@@ -24,9 +26,10 @@ export function premiumRedemptionOffer(): PremiumRedemptionOffer {
     /^[1-9][0-9]{0,8}$/.test(raw) &&
     Number.isSafeInteger(amount) &&
     amount % 10 === 0 &&
+    amount === FINAL_PREMIUM_MONTHLY_COINS &&
     amount >= PREMIUM_MONTHLY_REFERENCE_COINS &&
-    amount < PROPOSED_ALL_INDIVIDUAL_MONTHLY_COINS &&
-    /^v[1-9][0-9]*-[a-z0-9-]{2,40}$/.test(version);
+    amount < FINAL_ALL_INDIVIDUAL_MONTHLY_COINS &&
+    version === COIN_BENEFIT_PRICE_VERSION;
   return {
     enabled,
     target: "fullPremium",

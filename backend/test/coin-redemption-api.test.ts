@@ -36,8 +36,8 @@ const requestId = "123e4567-e89b-12d3-a456-426614174000";
 function enable() {
   process.env.COIN_REDEMPTION_ENABLED = "true";
   process.env.COIN_REDEMPTION_REVIEW_APPROVED = "true";
-  process.env.COIN_FULL_PREMIUM_MONTH_COINS = "55000";
-  process.env.COIN_PRICE_VERSION = "v1-premium-month";
+  process.env.COIN_FULL_PREMIUM_MONTH_COINS = "60000";
+  process.env.COIN_PRICE_VERSION = "v1-final-20261110";
 }
 beforeEach(() => {
   send.mockReset();
@@ -71,14 +71,23 @@ describe("fail-closed one-month full Premium coin redemption", () => {
 
   it("requires formally approved Premium quotes to end in zero", () => {
     enable();
-    process.env.COIN_FULL_PREMIUM_MONTH_COINS = "55001";
+    process.env.COIN_FULL_PREMIUM_MONTH_COINS = "60001";
     expect(premiumRedemptionOffer()).toMatchObject({
       enabled: false, priceCoins: null,
     });
-    process.env.COIN_FULL_PREMIUM_MONTH_COINS = "55010";
+    process.env.COIN_FULL_PREMIUM_MONTH_COINS = "60010";
     expect(premiumRedemptionOffer()).toMatchObject({
-      enabled: true, priceCoins: 55010,
+      enabled: false, priceCoins: null,
     });
+    process.env.COIN_FULL_PREMIUM_MONTH_COINS = "55000";
+    expect(premiumRedemptionOffer().enabled).toBe(false);
+    process.env.COIN_FULL_PREMIUM_MONTH_COINS = "60000";
+    expect(premiumRedemptionOffer()).toMatchObject({
+      enabled: true, priceCoins: 60000,
+      priceVersion: "v1-final-20261110",
+    });
+    process.env.COIN_PRICE_VERSION = "v1-premium-month";
+    expect(premiumRedemptionOffer().enabled).toBe(false);
   });
 
   it("extends exact calendar months, including the 31st and leap days", () => {
@@ -94,11 +103,11 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     enable();
     const result = await redeemCoins(req({
       target: "fullPremium", months: 1,
-      priceVersion: "v1-premium-month", requestId,
+      priceVersion: "v1-final-20261110", requestId,
       priceCoins: 0, niarimUserId: "attacker",
     }));
     expect(JSON.parse(result.body ?? "{}")).toMatchObject({
-      redeemed: true, costCoins: 55000,
+      redeemed: true, costCoins: 60000,
     });
     const tx = send.mock.calls.find(([x]) => x instanceof TransactWriteCommand)?.[0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
@@ -107,7 +116,7 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     expect(rows[0].Put?.Item?.pk).toBe("USER#Nverified-account");
     expect(rows[1].Update?.Key?.sk).toBe("COIN_WALLET");
     expect(rows[1].Update?.ConditionExpression).toContain("balanceCoins >= :price");
-    expect(rows[1].Update?.ExpressionAttributeValues?.[":minus"]).toBe(-55000);
+    expect(rows[1].Update?.ExpressionAttributeValues?.[":minus"]).toBe(-60000);
     expect(rows[2].Update?.Key?.sk).toBe("ENTITLEMENT#fullPremium");
     expect(rows[2].Update?.ConditionExpression)
       .toContain("attribute_not_exists(expiresAtEpochMs)");
@@ -118,7 +127,7 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     expect(rows[3].Update?.ConditionExpression)
       .not.toContain("playPremiumVerifiedUntilEpochMs");
     expect(rows[4].Put?.Item?.source).toBe("coin-redemption");
-    expect(rows[4].Put?.Item?.deltaCoins).toBe(-55000);
+    expect(rows[4].Put?.Item?.deltaCoins).toBe(-60000);
   });
 
   it("extends an existing coin-funded Premium without mixing an active Play purchase", async () => {
@@ -140,7 +149,7 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     });
     const result = await redeemCoins(req({
       target: "fullPremium", months: 1,
-      priceVersion: "v1-premium-month", requestId,
+      priceVersion: "v1-final-20261110", requestId,
     }));
     const response = JSON.parse(result.body ?? "{}");
     expect(response.redeemed).toBe(true);
@@ -164,7 +173,7 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     } as Awaited<ReturnType<typeof getUser>>);
     await expect(redeemCoins(req({
       target: "fullPremium", months: 1,
-      priceVersion: "v1-premium-month", requestId,
+      priceVersion: "v1-final-20261110", requestId,
     }))).rejects.toMatchObject({code: "REDEMPTION_SUBSCRIPTION_CONFLICT"});
     expect(send.mock.calls.some(([x]) => x instanceof TransactWriteCommand))
       .toBe(false);
@@ -180,7 +189,7 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     } as Awaited<ReturnType<typeof getUser>>);
     await expect(redeemCoins(req({
       target: "fullPremium", months: 1,
-      priceVersion: "v1-premium-month", requestId,
+      priceVersion: "v1-final-20261110", requestId,
     }))).rejects.toMatchObject({code:"REDEMPTION_SUBSCRIPTION_CONFLICT"});
     expect(send.mock.calls.some(([x]) => x instanceof TransactWriteCommand)).toBe(false);
   });
@@ -200,18 +209,18 @@ describe("fail-closed one-month full Premium coin redemption", () => {
         return { Item: {
           itemType: "COIN_REDEMPTION",
           target: "fullPremium", months: 1,
-          priceVersion: "v1-premium-month",
-          costCoins: 55000, expiresAtEpochMs: 12345,
+          priceVersion: "v1-final-20261110",
+          costCoins: 60000, expiresAtEpochMs: 12345,
         }};
       }
       return {};
     });
     const result = await redeemCoins(req({
       target: "fullPremium", months: 1,
-      priceVersion: "v1-premium-month", requestId,
+      priceVersion: "v1-final-20261110", requestId,
     }));
     expect(JSON.parse(result.body ?? "{}")).toMatchObject({
-      redeemed: true, duplicate: true, costCoins: 55000,
+      redeemed: true, duplicate: true, costCoins: 60000,
     });
     expect(send.mock.calls.filter(([x]) => x instanceof TransactWriteCommand))
       .toHaveLength(1);
@@ -225,7 +234,7 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     }))).rejects.toMatchObject({ code: "REDEMPTION_PRICE_CHANGED" });
     await expect(redeemCoins(req({
       target: "fullPremium", months: 1,
-      priceVersion: "v1-premium-month", requestId: "not-a-uuid",
+      priceVersion: "v1-final-20261110", requestId: "not-a-uuid",
     }))).rejects.toMatchObject({ code: "REDEMPTION_REQUEST_ID_INVALID" });
     expect(send.mock.calls.some(([x]) => x instanceof TransactWriteCommand))
       .toBe(false);

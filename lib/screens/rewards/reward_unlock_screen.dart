@@ -478,11 +478,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       );
     }
     final referenceTotal = _selected.fold<int>(0, (sum, target) =>
-      sum + CoinBenefitPriceProposal.cost(target, _duration));
+      sum + CoinBenefitPriceCatalog.cost(target, _duration));
     lines.add(
-      '参考合計：$referenceTotal コイン。'
+      '確定単価による合計：$referenceTotal コイン。'
       '単品特典・重複交換のコイン消費はまだサーバー未対応です。'
-      '正式な交換価格・有効期限は交換直前のサーバー確認が必要です。',
+      '金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。'
+      '正式な有効期限は交換直前のサーバー確認で決まります。',
     );
     if (!mounted) return;
     await showDialog<void>(
@@ -618,7 +619,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       officialPrice = _officialPremiumQuote!['priceCoins'] as int;
     }
     final referencePrice = enabled
-        ? CoinBenefitPriceProposal.cost(target, _duration) : null;
+        ? CoinBenefitPriceCatalog.cost(target, _duration) : null;
     final hasSubscription = context.read<PremiumService>().hasPurchasedPremium;
     final japanese = Localizations.localeOf(context).languageCode == 'ja';
     return CheckboxListTile(
@@ -632,7 +633,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             ? t['notReady']
             : officialPrice != null
             ? '$officialPrice ${t['coins']}'
-            : '${japanese ? '参考価格（交換準備中）' : 'Reference only (not for sale)'}'
+            : '${japanese ? '確定価格（交換準備中）' : 'Fixed price (redemption not yet available)'}'
               ' · $referencePrice ${t['coins']}'
               '${hasSubscription ? ' · ${t['activePremium']}' : ''}',
         style: Theme.of(context).textTheme.bodySmall,
@@ -673,7 +674,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final scheme = Theme.of(context).colorScheme;
     final quote = _quote();
     final referenceTotal = _selected.fold<int>(0, (sum, target) =>
-        sum + CoinBenefitPriceProposal.cost(target, _duration));
+        sum + CoinBenefitPriceCatalog.cost(target, _duration));
     final premiumActiveFromPlay =
         context.watch<PremiumService>().hasVerifiedPlayPremium;
     final serverPrice =
