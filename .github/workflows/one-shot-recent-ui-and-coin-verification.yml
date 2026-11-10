@@ -49,6 +49,7 @@ jobs:
         run: |
           flutter test --no-pub --reporter expanded \
             test/coin_unlock_quote_test.dart \
+            test/coin_benefit_price_proposal_test.dart \
             test/reward_unlock_screen_test.dart \
             test/premium_coin_account_isolation_test.dart \
             test/premium_play_verification_policy_test.dart \
