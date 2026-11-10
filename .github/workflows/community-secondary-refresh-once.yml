@@ -12,7 +12,12 @@ on:
       - test/community_pull_to_refresh_test.dart
       - lib/screens/community/widgets/community_floating_preview.dart
       - lib/screens/community/community_work_detail_screen.dart
-      - test/community_playback_privacy_actions_test.dart
+      - test/community_playback_privacy_actions_test.dart test/community_shorts_youtube_playback_test.dart test/community_shorts_live_state_test.dart
+      - test/community_shorts_youtube_playback_test.dart
+      - test/community_shorts_live_state_test.dart
+      - lib/screens/community/widgets/community_shorts_viewer.dart
+      - lib/screens/community/widgets/community_youtube_player.dart
+      - pubspec.yaml
 
 permissions:
   contents: read
@@ -39,9 +44,13 @@ jobs:
             lib/screens/community/community_screen.dart \
             lib/screens/community/widgets/community_ranking_work_list.dart \
             lib/screens/community/widgets/community_floating_preview.dart \
+            lib/screens/community/widgets/community_shorts_viewer.dart \
+            lib/screens/community/widgets/community_youtube_player.dart \
             lib/screens/community/community_work_detail_screen.dart \
             test/community_ranking_privacy_visibility_test.dart \
             test/community_playback_privacy_actions_test.dart \
+            test/community_shorts_youtube_playback_test.dart \
+            test/community_shorts_live_state_test.dart \
             test/community_secondary_pull_to_refresh_test.dart
       - name: Verify secondary refresh gestures and previous plaza refresh
         run: flutter test --no-pub test/community_secondary_pull_to_refresh_test.dart test/community_pull_to_refresh_test.dart test/community_ranking_privacy_visibility_test.dart test/community_playback_privacy_actions_test.dart
