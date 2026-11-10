@@ -25,7 +25,7 @@ void main() {
     await tester.pumpWidget(MaterialApp.router(
       locale: const Locale('ja'),
       supportedLocales: const [Locale('ja'), Locale('en')],
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      localizationsDelegates: const [GlobalMaterialLocalizations.delegate, GlobalWidgetsLocalizations.delegate, GlobalCupertinoLocalizations.delegate],
       routerConfig: router,
     ));
     final shown = showMissionCompletionDialog(pageContext,
