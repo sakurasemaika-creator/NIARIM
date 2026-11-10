@@ -334,6 +334,30 @@ S36でWeb9bdbeb39の1commitを保持。refresh-2026-smoke.ymlに日本語PC/SP�
 
 S36公開CI記録の反映直前にWeb c510745a→6dec82f9の2commit/4pathを検出して保持。b75d7f5のCJK見出しfallback/スクリーンショットと外枠の色/bitmap表示のCSS103行とshowcase/user-requestのcache ref更新はD001.53、6dec82fの36capture source.txt更新はD001.54の継続対象。実差分はsource.txt/CSS/JS2のみでimage byte差分なし。個別目視/実操作は未実施で、S36のStorage実操作をこれらWeb品質のPASSへ代用しない。詳細ci-state-incoming-web-paths.txt/patch。
 
+## D001.55 — Webの実読み取り専用ランキングfeedとPC/SP captureの増分
+
+status: todo。S37開始Web8bb3cd58→56ca2444の3commit/85pathを保持。f327515/471e0d3の対応PC版36画像（AVIF/WebPの72files）とcapture workflow/metadataはD001.54へ追加。56ca2444のCommunity模擬ランキング撤去・NIARIM Lambdaのread-only feed、worker src/community-feed.js/API取次、Community loading/empty/error/ranking/7locale、画像/リンク/公開前導線・CORS/入力/limit/cache/個人情報/可用性・モックでない実契約を検証する。S37では増分登録のみで、実feed/全新画像/PC-SP対称性・法務/性能のPASSへ代用しない。incoming-web-paths.txtと現在HEADの20正本hashを証跡へ保存。
+
+## D001.56 — App作品広場の先頭gesture更新と自分だけのフォロー一覧
+
+status: todo。S37再開App a12c9fa4→6e8ce38aの60commit/26path内。community_top_edge_refreshとランキング/新着/私的bookmark/作者/自分の管理一覧への先頭gesture単位の再取得、自分のprofileフォロー数から開くowner-only following directory・follow/unfollow/re-followを登録。非先頭開始/途中jump・連続pointer/refresh中のdedupe、表示中feedだけ取得、header/scroll/input保持、owner境界/ログアウト/非公開作者・実auth/backend/PC-SP/7locale/keyboard/読上げを実操作する。S37の保存/プレビュー結果をこれらのPASSへ代用しない。
+
+## D001.57 — 実期間bookmarkランキングと取得後の公開状態の再確認
+
+status: todo。同上のbackend bookmark/ranking/latest/periodBookmarkRanking/Dynamo型とApp ranking list/API/model、可視性回帰。日/週/月/年の実増加数と原子的記録・期間境界/時刻/重複、公開/限定公開の初期eligible集合・Top50/ascending、取得後private/deletedと再取得/クリック直前照合、伏字slotとcompact動作の最新仕様との対応、title/thumb/owner等の漏洩・stale GSIとconsistent read・bookmark解除のtombstone、再表示/失敗/復旧を確認。途中commitの異なる仕様を混ぜず現在HEADの実装/正本から再確認する。単なるtest追加/CI成功を実UI/実backendの完了にしない。
+
+## D001.58 — Webの全page整備・実PC captureとliveランキング更新
+
+status: todo。Web56ca2444→4972a3e6の39commit/84path。7locale CJK字形/見出し/コピー/404・legal含む全page、native PC/DeX captureとSP対応/palette/provenance、配布前store link状態、旧mock/runtime撤去・script重複/lateDOM bootstrap/8幅監査、real period ranking/visibility proxy・no-store/cache bust/非公開metadata/compact再取得/click時再照合を既存D001.53–55と対応して追加登録。全controls/実link/幅連続変化/短高/文字拡大/読上げ/画像pixel/軽量性/法務を現在HEADの製品で確認する。incoming paths/commit logはnov10-latest-heads-and-delta.json。S37で登録のみ、全Web合格とはしない。
+
+## D001.59 — App/Webの詳細・再生前privacy再照合
+
+status: todo。S37追加App6e8ce38a→7a9162fbの13commit/10path、Web4972a3e6→578904b5の5commit/4pathを保持。App Community preview/detail/playbackの取得後private/削除/不明状態、ownerだけのprivate作品閲覧、非ownerのcacheからの到達をfail closedにする変更とbackend YouTube unknown除外、Web click時live playback preflight/no-cache/invalid IDを登録。本人/他人/未ログイン・公開変更・通信失敗/遅延/再試行・再訪/戻る・PC/SP/7localeで実backendを含めて確認する。追加testやCI実行だけでPASSにしない。入力差分nov10-second-incoming.json。
+
+## D001.60 — 広告App ID・一日一回SSV報酬と接続debug APK
+
+status: todo。同上のAndroidManifest、backend/cdk設定、admob activation記録とAWS-connected debug APK workflowを登録。現在HEADの正式仕様に基づき、実広告/テスト広告の区別、rewarded表示/完了/中断/重複callback・日付境界・SSV署名/ユーザー照合・残高反映・Free/Premium・実Galaxy設定を確認する。S37では登録のみ。本番deploy・課金・実広告による報酬付与を実行したとはせず、保存/PNG検証や設定の存在を実広告/SSVのPASSへ代用しない。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。

@@ -65,8 +65,8 @@ void main() {
       final project = File('${documents.path}/niarim/projects/p/data.niapro');
       await project.parent.create(recursive: true);
       await project.writeAsString('synthetic application project');
-      final export = File('${documents.path}/exports/animation.gif');
-      await export.parent.create();
+      final export = File('${documents.path}/niarim/exports/animation.gif');
+      await export.parent.create(recursive: true);
       await export.writeAsString('synthetic application export');
       final otherDocument = await File(
         '${documents.path}/another-app.txt',

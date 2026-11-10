@@ -4,6 +4,8 @@ import 'package:disk_space_2/disk_space_2.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'export_storage.dart';
+
 /// 容量削減画面（ホーム画面ハンバーガーメニュー）で表示するNIARIMの
 /// 内部データ内訳カテゴリ。
 enum StorageCategory {
@@ -18,7 +20,7 @@ enum StorageCategory {
   /// フォルダ丸ごとのサイズ）。
   trash,
 
-  /// 書き出し済みの動画・GIF・画像ファイル（exports/）。
+  /// アプリ管理の書き出し済み動画・GIF・画像（niarim/exports/）。
   exports,
 
   /// 自作ブラシ・トーン・スタンプ・フォント（niarim/Brushes・Tones・
@@ -96,7 +98,7 @@ class StorageInfoService {
       }
     }
 
-    final exportsDir = Directory('${docs.path}/exports');
+    final exportsDir = ExportStorage.managedDirectoryIn(docs);
     final exportsBytes = exportsDir.existsSync()
         ? await _dirSize(exportsDir)
         : 0;
@@ -167,9 +169,9 @@ class StorageInfoService {
   }
 
   /// NIARIMの全データを削除する（初期化・工場出荷状態に戻す）。
-  /// ディスク上のniarim/・exports/フォルダ・一時キャッシュに加え、
+  /// ディスク上のniarim/（アプリ管理のexports/を含む）・キャッシュに加え、
   /// SharedPreferences（全Serviceの設定・素材メタデータ・プロジェクト
-  /// 一覧索引等が保存されている）も全消去する。
+  /// 一覧索引等が保存されている）も全消去する。以前の共有exports/は保持する。
   ///
   /// 【重要】この呼び出しの時点で既にメモリ上に初期化済みの各Service
   /// （ProjectService・MaterialService等、main()で一度だけ生成される）
@@ -180,10 +182,7 @@ class StorageInfoService {
   /// ため、Flutterの画面遷移だけでは完全にはリセットできない）。
   Future<void> eraseAllData() async {
     final docs = await getApplicationDocumentsDirectory();
-    for (final dir in [
-      Directory('${docs.path}/niarim'),
-      Directory('${docs.path}/exports'),
-    ]) {
+    for (final dir in [Directory('${docs.path}/niarim')]) {
       if (dir.existsSync()) {
         try {
           await dir.delete(recursive: true);
@@ -192,6 +191,7 @@ class StorageInfoService {
         }
       }
     }
+    ExportStorage.invalidate();
     final cacheDir = await getApplicationCacheDirectory();
     if (cacheDir.existsSync()) {
       for (final entry in cacheDir.listSync()) {

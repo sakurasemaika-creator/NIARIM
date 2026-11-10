@@ -22,11 +22,10 @@ import '../models/layer_group.dart';
 import '../models/layer_keyframe.dart';
 import '../models/scene.dart';
 import '../services/hw_video_encoder.dart';
+import '../services/export_storage.dart';
 
-typedef ExportProgressCallback = void Function(
-  int currentFrame,
-  int totalFrames,
-);
+typedef ExportProgressCallback =
+    void Function(int currentFrame, int totalFrames);
 
 /// 書き出し中のキャンセル要求を伝えるためのトークン（誤タップ対応の
 /// キャンセルボタン）。フレーム生成ループの各反復で
@@ -56,7 +55,8 @@ class ExportEngine {
   /// 書き出し結果（MP4/GIF/WebM）の保存先。`getTemporaryDirectory()`
   /// （OSがいつ削除してもよいキャッシュ領域）ではなく、他の保存データと
   /// 同じ永続領域（`getApplicationDocumentsDirectory()`配下）に固定の
-  /// `exports`フォルダを作り、そこへ保存する。
+  /// アプリ専用の`niarim/exports`フォルダを作り、そこへ保存する。
+  /// 以前の共有`exports`フォルダは一覧で引き続き読み取るが初期化で削除しない。
   /// フレーム生成用の中間PNGファイルは一時領域（`export_frames`等）を使い、
   /// 書き出し完了後に削除する（最終出力ファイルのみ永続化する）。
   ///
@@ -64,16 +64,14 @@ class ExportEngine {
   /// 画面）から過去の書き出し結果を一覧表示するために、ExportEngineの
   /// インスタンスを作らずアクセスできるようにするため。
   static Future<Directory> exportsDir() async {
-    final docs = await getApplicationDocumentsDirectory();
-    final dir = Directory('${docs.path}/exports');
-    if (!dir.existsSync()) dir.createSync(recursive: true);
-    return dir;
+    return ExportStorage.createManagedDirectory();
   }
 
   // 直近の一覧結果のキャッシュ。スプラッシュ表示中に先読みしておいた結果を
   // 「作品一覧」タブが再利用することで、タブ表示時のディスクアクセス待ちを
   // 省略できる。
   static List<File>? _cachedExportedFiles;
+  static int _cachedStorageGeneration = -1;
 
   /// 作品一覧タブ用：exportsフォルダ内の書き出し済みファイル一覧を
   /// 更新日時の新しい順で返す。[forceRefresh]がfalse（既定）かつキャッシュが
@@ -82,15 +80,20 @@ class ExportEngine {
   static Future<List<File>> listExportedFiles({
     bool forceRefresh = false,
   }) async {
-    if (!forceRefresh && _cachedExportedFiles != null) {
+    final generation = ExportStorage.generation;
+    if (!forceRefresh &&
+        _cachedExportedFiles != null &&
+        _cachedStorageGeneration == generation) {
       return _cachedExportedFiles!;
     }
-    final dir = await exportsDir();
-    final files = dir.listSync().whereType<File>().toList();
+    final files = await ExportStorage.listFiles();
     files.sort(
       (a, b) => b.statSync().modified.compareTo(a.statSync().modified),
     );
-    _cachedExportedFiles = files;
+    if (generation == ExportStorage.generation) {
+      _cachedExportedFiles = files;
+      _cachedStorageGeneration = generation;
+    }
     return files;
   }
 

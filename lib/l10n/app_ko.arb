@@ -2748,7 +2748,7 @@
     }
   },
   "storageEraseAllConfirmTitle": "모든 데이터를 삭제할까요?",
-  "storageEraseAllConfirmBody": "프로젝트, 소재, 내보낸 파일, 커스텀 브러시/스크린톤/스탬프/폰트, 설정 등 NIARIM의 모든 데이터를 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다. 삭제 후 앱을 다시 시작해 주세요.",
+  "storageEraseAllConfirmBody": "NIARIM 프로젝트, 소재, 앱에서 관리하는 내보낸 파일, 커스텀 브러시/스크린톤/스탬프/폰트, 설정을 영구적으로 삭제합니다. 이전에 공유 폴더로 내보낸 파일은 유지됩니다. 이 작업은 되돌릴 수 없습니다. 삭제 후 앱을 다시 시작해 주세요.",
   "storageEraseAllDoneSnackbar": "모든 데이터를 삭제했습니다. 앱을 다시 시작해 주세요.",
   "homeDrawerStorage": "용량 확보",
   "helpStorageTitle": "용량 확보",

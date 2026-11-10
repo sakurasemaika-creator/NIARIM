@@ -335,8 +335,10 @@ void main() {
     final l10n = await open(tester);
     final context = tester.element(find.byType(ExportedWorkCard).first);
     await tester.runAsync(() async {
-      final dir = await ExportEngine.exportsDir();
-      final file = File('${dir.path}/AUDIT_0_animation.gif');
+      final files = await ExportEngine.listExportedFiles();
+      final file = files.singleWhere(
+        (file) => file.path.endsWith('/AUDIT_0_animation.gif'),
+      );
       final image = img.Image(width: 90, height: 160);
       img.fill(image, color: img.ColorRgb8(35, 107, 69));
       await file.writeAsBytes(img.encodeGif(image));

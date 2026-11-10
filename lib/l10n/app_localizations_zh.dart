@@ -6271,7 +6271,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get storageEraseAllConfirmBody =>
-      '这将永久删除NIARIM的全部数据——项目、素材、已导出文件、自制画笔/网点/图章/字体及设置。此操作无法撤销。删除后请重启应用。';
+      '这将永久删除NIARIM的项目、素材、由应用管理的导出文件、自制画笔/网点/图章/字体及设置。以前导出到共享文件夹的文件会保留。此操作无法撤销。删除后请重启应用。';
 
   @override
   String get storageEraseAllDoneSnackbar => '已删除全部数据，请重启应用。';
@@ -14222,7 +14222,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get storageEraseAllConfirmBody =>
-      '這將永久刪除NIARIM的全部資料——專案、素材、已匯出檔案、自製筆刷/網點/圖章/字型及設定。此操作無法復原。刪除後請重新啟動應用程式。';
+      '這將永久刪除NIARIM的專案、素材、由應用程式管理的匯出檔案、自製筆刷/網點/圖章/字型及設定。先前匯出到共用資料夾的檔案會保留。此操作無法復原。刪除後請重新啟動應用程式。';
 
   @override
   String get storageEraseAllDoneSnackbar => '已刪除全部資料，請重新啟動應用程式。';

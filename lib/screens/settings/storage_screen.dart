@@ -438,6 +438,7 @@ class _StorageScreenState extends State<StorageScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(l10n.storageEraseAllConfirmTitle),
         content: Text(l10n.storageEraseAllConfirmBody),
         actions: [

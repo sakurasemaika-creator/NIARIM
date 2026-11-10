@@ -2748,7 +2748,7 @@
     }
   },
   "storageEraseAllConfirmTitle": "要删除全部数据吗？",
-  "storageEraseAllConfirmBody": "这将永久删除NIARIM的全部数据——项目、素材、已导出文件、自制画笔/网点/图章/字体及设置。此操作无法撤销。删除后请重启应用。",
+  "storageEraseAllConfirmBody": "这将永久删除NIARIM的项目、素材、由应用管理的导出文件、自制画笔/网点/图章/字体及设置。以前导出到共享文件夹的文件会保留。此操作无法撤销。删除后请重启应用。",
   "storageEraseAllDoneSnackbar": "已删除全部数据，请重启应用。",
   "homeDrawerStorage": "释放空间",
   "helpStorageTitle": "释放空间",

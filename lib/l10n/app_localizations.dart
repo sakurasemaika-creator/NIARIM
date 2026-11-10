@@ -11588,7 +11588,7 @@ abstract class AppLocalizations {
   /// No description provided for @storageEraseAllConfirmBody.
   ///
   /// In ja, this message translates to:
-  /// **'プロジェクト・素材・書き出し済みファイル・自作ブラシ/トーン/スタンプ/フォント・設定など、NIARIMの全データを完全に削除します。この操作は元に戻せません。削除後はアプリを再起動してください。'**
+  /// **'プロジェクト・素材・アプリ管理の書き出し済みファイル・自作ブラシ/トーン/スタンプ/フォント・設定など、NIARIMのデータを完全に削除します。以前の共有フォルダにある書き出しは残ります。この操作は元に戻せません。削除後はアプリを再起動してください。'**
   String get storageEraseAllConfirmBody;
 
   /// No description provided for @storageEraseAllDoneSnackbar.

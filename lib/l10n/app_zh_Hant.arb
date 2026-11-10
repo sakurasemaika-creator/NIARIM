@@ -2747,7 +2747,7 @@
     }
   },
   "storageEraseAllConfirmTitle": "要刪除全部資料嗎？",
-  "storageEraseAllConfirmBody": "這將永久刪除NIARIM的全部資料——專案、素材、已匯出檔案、自製筆刷/網點/圖章/字型及設定。此操作無法復原。刪除後請重新啟動應用程式。",
+  "storageEraseAllConfirmBody": "這將永久刪除NIARIM的專案、素材、由應用程式管理的匯出檔案、自製筆刷/網點/圖章/字型及設定。先前匯出到共用資料夾的檔案會保留。此操作無法復原。刪除後請重新啟動應用程式。",
   "storageEraseAllDoneSnackbar": "已刪除全部資料，請重新啟動應用程式。",
   "homeDrawerStorage": "釋放空間",
   "helpStorageTitle": "釋放空間",

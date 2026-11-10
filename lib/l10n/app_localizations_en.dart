@@ -6534,7 +6534,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get storageEraseAllConfirmBody =>
-      'This permanently deletes all NIARIM data — projects, materials, exported files, custom brushes/screentones/stamps/fonts, and settings. This cannot be undone. Restart the app afterward.';
+      'This permanently deletes NIARIM projects, materials, app-managed exports, custom brushes/screentones/stamps/fonts, and settings. Older exports in shared folders are kept. This cannot be undone. Restart the app afterward.';
 
   @override
   String get storageEraseAllDoneSnackbar =>

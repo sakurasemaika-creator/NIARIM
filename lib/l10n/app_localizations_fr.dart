@@ -6654,7 +6654,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get storageEraseAllConfirmBody =>
-      'Ceci supprime définitivement toutes les données de NIARIM : projets, matériaux, fichiers exportés, brosses/trames/tampons/polices personnalisés et paramètres. Action irréversible. Redémarrez l\'application ensuite.';
+      'Ceci supprime définitivement les projets NIARIM, matériaux, fichiers exportés gérés par l\'application, brosses/trames/tampons/polices personnalisés et paramètres. Les anciens fichiers exportés dans les dossiers partagés sont conservés. Action irréversible. Redémarrez l\'application ensuite.';
 
   @override
   String get storageEraseAllDoneSnackbar =>

@@ -2748,7 +2748,7 @@
     }
   },
   "storageEraseAllConfirmTitle": "Erase all data?",
-  "storageEraseAllConfirmBody": "This permanently deletes all NIARIM data — projects, materials, exported files, custom brushes/screentones/stamps/fonts, and settings. This cannot be undone. Restart the app afterward.",
+  "storageEraseAllConfirmBody": "This permanently deletes NIARIM projects, materials, app-managed exports, custom brushes/screentones/stamps/fonts, and settings. Older exports in shared folders are kept. This cannot be undone. Restart the app afterward.",
   "storageEraseAllDoneSnackbar": "All data erased. Please restart the app.",
   "homeDrawerStorage": "Free up space",
   "helpStorageTitle": "Free up space",

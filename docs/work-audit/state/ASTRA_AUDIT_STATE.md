@@ -1,5 +1,23 @@
 # NIARIM Audit Evidence
 
+## S37 — 書き出しの所有境界・静止画プレビュー（2026-11-10）
+
+この単位の実行入力はApp `7a9162fb55e00045f123ca3702fbfc33aeade8eb`＋S37修正 / Web `578904b5ff8c550eee5a5a2fd282c97af005d232`。両dev_branchだけ。保存済みS37初期WIP以後App60+13/Web39+5commitを保持してWIPを3way統合。現在HEADの20監査資料をrepoごとにhash照合して変更なし。増分はD001.56–60へtodo登録（Delta37topTodo/宣言97）。Baseline2done/628todo/currentA003、Discovery61todo/cursor001を維持し、全面監査・Visual closureは未完了。
+
+- 実FSの旧共有exports反例5FAILを受け、新規保存をDocuments/niarim/exportsへ限定。旧Documents/exportsは移動/削除せず読取り、reset/容量集計から除外。管理領域と旧共有を両方表示し、同名でも実pathを保ち、reset時に一覧cache世代を失効。非対応の別アプリ.binを一覧から除外しdiskには残す。実path所有境界6PASS、旧cache10PASS、PNG alpha2PASS。
+- PNGを動画として開くfresh反例1FAILを修正し、GIF/PNG/JPG/JPEGはFileImageで実寸比率を取得。PNG/JPG/JPEG実decode3PASS、既存Homeの保存動画loading/error/縦動画/GIF再訪等6PASS。reset説明は7localeで「アプリ管理の書出しを削除、旧共有の書出しを保持」と区別し、scrollable dialogへ。42profile回帰1PASS。UI固定色・保護Dela4ff87a…の変更なし。
+- current global analyze0、通常/fixtureのLinux debug build成功。compiled367Dart/8fontをbuild前後・実downloaded kernel `bf25129dfa73317b3dbc9eda5380179df58f96e326ca54ea0bc675b28720ac24`と全hash照合。targeted22＋directStorage3＋Homepreview6＋folder/scroll19の計50PASS。42reset条件/350Home幅×言語等は内部profile数で固有testへ加算しない。既存testの「exportsDirが旧共有と同じ」仮定を実一覧のFileへ修正し、削除は実在確認→同じFileの消失と一覧除外までassert。初回まとめ実行1fixtureFAILと時間上限停止を保存し、最終19PASS/3分1秒まで350条件を省略せず完了。全suite/全CI greenとはしない。
+- historical S36実行物は現在HEAD修正前の関係6sourceとbyte一致する範囲だけ再利用。owned synthetic95archiveでPNGのpreview error、共有3file/497B（他アプリ257B含む）の誤集計・resetでの削除を再現。古いfixtureはcoldで再seedするためreset後coldを実行していない。
+- AFTER実PC FR1440x900/SP EN390x844で新旧PNG/GIF、壊れた画像のerror/Close/戻る、tab再訪、reset確認/取消/実行/cold。各2archive＋109B managedPNG＋1MiB cacheは削除、旧共有4files（他アプリ相当257B・PNG/GIF/壊れたPNG）はcancel/reset/coldを通じ全hash不変。直後prefs空、coldは既定JA・初回案内を自然に再作成し、project/managed export再seed無し。短高390x220の確認本文scrollとCancel、320x220のpreviewをscrollしてCloseへ到達・実click後一覧を確認。44原本中41fileを直接開き、3点は直接確認済み原本と全pixel/hash同一のため再利用。初期loading・誤った.bin clickのPNG命名・Shareを誤clickしたclosed命名の3点は各目的のPASSから除外。wait込みcapture時間を性能p95にしない。
+- 短高previewの実ShareはLinuxでSharing files not supported on Linuxの未処理例外。DISC061へtodo登録し、共有成功や閉じる合格として扱わない。GL frame-size/ATK/ffmpeg dlopen警告も留保し、実codec/Android/touch/読上げ/実auth/backend/全テーマのPASSへ代用しない。
+
+証跡native checkpoint: https://drive.google.com/file/d/1fx3eQfk4PWWgrmIusa5tvhU_rbubMIjg/view （3,138,706B / SHA256 `80e9bf7208d5941dda8ffbff2cb57c76a6e9727d3d683c4fd3c66aa060330af5` /307hash）。metadataとraw SHA/CRC/全manifestを照合。最終visual review manifest/State/公開receiptは後続のpublication証跡へ含める。
+
+Standalone実行物は3partをmetadata/raw SHA/CRC/計64file照合して復元し、実download版でPC/SPを操作済み。part1 https://drive.google.com/file/d/1_umGUy8oWrh1MQfO1AwwodgeeiZuiK_C/view （82,066,072B /SHA2687351f4a01bc68ad5ab807f4a80c54c3a5c3c23910900722bb0199d776af76）、part2 https://drive.google.com/file/d/1ynO0nCrMV4YL3pa_lv1TPPVehfk2Nqjc/view （69,773,351B /SHA0c6b2f4cebdbe87c6f742a1d892fdf71990f69194bec2be4446be859c3f0f6da）、part3 https://drive.google.com/file/d/1mW5d1vL6m1_8dCBLD0s91uLWhC_8DN1M/view （16,225,162B /SHAfc49047cda87a823067539befbb1fba29af07aaf1e61bc3308751968bfe9a6c8）。tools/restore_s37_bundle.pyでSDK/古いruntime chain無しに新規owned outputへ復元する。同一入力の完了済み検証を環境復旧だけのために繰り返さない。
+
+残作業: この検証単位の通常dev_branch公開/remote tree・blob・CI25照合/公開receipt。その後DISC061の共有エラー反例→修正/回帰/実操作。DISC059のreset部分失敗/prefs clear ack/古いmemory・legacy名衝突/全OS、DISC060全format/全theme/共有/全matrix、DISC058取得失敗と性能、DISC048 Help導線、DISC057期間、typing契約/実backend/最新Web Delta等も未完。修正済みの限定範囲を各Discovery doneや全面完了に昇格しない。
+
+
 今回の新規Routeの実検証だけを記録する。旧監査からの完了引継ぎなし。
 
 ## Bootstrap

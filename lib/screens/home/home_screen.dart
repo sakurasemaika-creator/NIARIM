@@ -544,18 +544,18 @@ class _HomeScreenState extends State<HomeScreen>
                                       fontFamily: 'Kuramubon',
                                       fontFamilyFallback: kHeadingFontFallback,
                                       color: _showFavoritesOnly
-                                          ? Theme.of(context)
-                                                .colorScheme
-                                                .onPrimary
+                                          ? Theme.of(
+                                              context,
+                                            ).colorScheme.onPrimary
                                           : null,
                                     ),
                                   ),
-                                  selectedColor: Theme.of(context)
-                                      .colorScheme
-                                      .primary,
-                                  checkmarkColor: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimary,
+                                  selectedColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                  checkmarkColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
                                   selected: _showFavoritesOnly,
                                   onSelected: (v) => _changeProjectScope(
                                     () => _showFavoritesOnly = v,
@@ -1804,9 +1804,9 @@ class _FolderableList<T> extends StatelessWidget {
                           '($count)',
                           style: TextStyle(
                             fontSize: 11,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -2418,6 +2418,10 @@ class _WorkListItem extends StatelessWidget {
     switch (_extension) {
       case 'gif':
         return Icons.gif_box_outlined;
+      case 'png':
+      case 'jpg':
+      case 'jpeg':
+        return Icons.image_outlined;
       case 'webm':
         return Icons.movie_filter_outlined;
       default:
@@ -2511,7 +2515,7 @@ class _WorkListItem extends StatelessWidget {
 }
 
 /// アプリ内プレビュー：MP4/WebMはVideoPlayerController（timeline_screen.dart
-/// で既に実績のある仕組み）、GIFはFlutter標準のImage/FileImage（アニメーション
+/// で既に実績のある仕組み）、GIF/PNG/JPEGはFlutter標準のImage/FileImage（アニメーション
 /// GIFを自動再生する）を用いる。いずれも新規ネイティブ依存なし。
 class _WorkPreview extends StatefulWidget {
   final File file;
@@ -2523,20 +2527,21 @@ class _WorkPreview extends StatefulWidget {
 
 class _WorkPreviewState extends State<_WorkPreview> {
   VideoPlayerController? _controller;
-  bool _isGif = false;
+  bool _isImage = false;
   bool _failed = false;
-  FileImage? _gifProvider;
-  ImageStream? _gifStream;
-  ImageStreamListener? _gifListener;
-  double? _gifAspectRatio;
-  bool _gifDimensionsResolved = false;
+  FileImage? _imageProvider;
+  ImageStream? _imageStream;
+  ImageStreamListener? _imageListener;
+  double? _imageAspectRatio;
+  bool _imageDimensionsResolved = false;
 
   @override
   void initState() {
     super.initState();
-    _isGif = widget.file.path.toLowerCase().endsWith('.gif');
-    if (_isGif) {
-      _gifProvider = FileImage(widget.file);
+    final path = widget.file.path.toLowerCase();
+    _isImage = ['.gif', '.png', '.jpg', '.jpeg'].any(path.endsWith);
+    if (_isImage) {
+      _imageProvider = FileImage(widget.file);
     } else {
       _controller = VideoPlayerController.file(widget.file)
         ..initialize()
@@ -2555,41 +2560,43 @@ class _WorkPreviewState extends State<_WorkPreview> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_isGif || _gifDimensionsResolved || _gifListener != null) return;
+    if (!_isImage || _imageDimensionsResolved || _imageListener != null) return;
     // Share the Image widget's cached stream and release our first-frame clone.
-    _gifStream = _gifProvider!.resolve(createLocalImageConfiguration(context));
-    _gifListener = ImageStreamListener(
+    _imageStream = _imageProvider!.resolve(
+      createLocalImageConfiguration(context),
+    );
+    _imageListener = ImageStreamListener(
       (info, synchronousCall) {
         final ratio = info.image.width / info.image.height;
         info.dispose();
-        _gifDimensionsResolved = true;
-        _stopGifSizeListener();
+        _imageDimensionsResolved = true;
+        _stopImageSizeListener();
         if (!mounted) return;
         if (synchronousCall) {
-          _gifAspectRatio = ratio;
+          _imageAspectRatio = ratio;
         } else {
-          setState(() => _gifAspectRatio = ratio);
+          setState(() => _imageAspectRatio = ratio);
         }
       },
       onError: (error, stackTrace) {
-        _gifDimensionsResolved = true;
-        _stopGifSizeListener();
+        _imageDimensionsResolved = true;
+        _stopImageSizeListener();
       },
     );
-    _gifStream!.addListener(_gifListener!);
+    _imageStream!.addListener(_imageListener!);
   }
 
-  void _stopGifSizeListener() {
-    final stream = _gifStream;
-    final listener = _gifListener;
-    _gifStream = null;
-    _gifListener = null;
+  void _stopImageSizeListener() {
+    final stream = _imageStream;
+    final listener = _imageListener;
+    _imageStream = null;
+    _imageListener = null;
     if (stream != null && listener != null) stream.removeListener(listener);
   }
 
   @override
   void dispose() {
-    _stopGifSizeListener();
+    _stopImageSizeListener();
     _controller?.dispose();
     super.dispose();
   }
@@ -2598,9 +2605,9 @@ class _WorkPreviewState extends State<_WorkPreview> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     Widget content;
-    if (_isGif) {
+    if (_isImage) {
       content = Image(
-        image: _gifProvider!,
+        image: _imageProvider!,
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.contain,
@@ -2643,8 +2650,8 @@ class _WorkPreviewState extends State<_WorkPreview> {
     }
     return ExportedWorkPreviewLayout(
       content: content,
-      contentAspectRatio: _isGif
-          ? _gifAspectRatio ?? 16 / 9
+      contentAspectRatio: _isImage
+          ? _imageAspectRatio ?? 16 / 9
           : _controller?.value.isInitialized == true
           ? _controller!.value.aspectRatio
           : 16 / 9,

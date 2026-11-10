@@ -20,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/exported_work_name.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
+import 'helpers/pump_real_async.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -117,8 +118,12 @@ void main() {
       for (final language in ['ja', 'en', 'fr', 'es', 'zh', 'zh_Hant', 'ko']) {
         for (final pc in [false, true]) {
           final env = await open(tester, language: language, pc: pc);
-          final exports = await tester.runAsync(ExportEngine.exportsDir);
-          final file = File('${exports!.path}/AUDIT_root.gif');
+          final files = await tester.runAsync(
+            () => ExportEngine.listExportedFiles(forceRefresh: true),
+          );
+          final file = files!.singleWhere(
+            (file) => file.path.endsWith('/AUDIT_root.gif'),
+          );
           final original = file.readAsBytesSync();
           final move = find.byTooltip(
             '${env.l10n.folderMoveToTitle}: AUDIT_root.gif',
@@ -178,7 +183,8 @@ void main() {
       expect(
         find.text('AUDIT'),
         findsOneWidget,
-        reason: 'Successful folder creation must show the folder even before the first export',
+        reason:
+            'Successful folder creation must show the folder even before the first export',
       );
       expect(tester.takeException(), isNull);
     },
@@ -259,6 +265,9 @@ void main() {
               reason: '$language/$pc/$width/$height',
             );
             profiles++;
+            if (profiles % 50 == 0) {
+              debugPrint('Home empty-folder profiles verified: $profiles/350');
+            }
           }
         }
       }
@@ -270,6 +279,13 @@ void main() {
     'moving a real export into a folder then deleting it preserves the empty folder',
     (tester) async {
       final env = await open(tester);
+      final files = await tester.runAsync(
+        () => ExportEngine.listExportedFiles(forceRefresh: true),
+      );
+      final file = files!.singleWhere(
+        (file) => file.path.endsWith('/AUDIT_root.gif'),
+      );
+      expect(file.existsSync(), isTrue);
       await tester.tap(find.text('AUDIT'));
       await tester.pumpAndSettle();
       expect(find.text(env.l10n.homeWorkFolderEmpty), findsOneWidget);
@@ -282,12 +298,13 @@ void main() {
       final confirm = find.widgetWithText(FilledButton, env.l10n.commonDelete);
       await tester.ensureVisible(confirm);
       await tester.tap(confirm);
-      await tester.runAsync(
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      final remaining = await tester.runAsync(
         () => ExportEngine.listExportedFiles(forceRefresh: true),
       );
       await tester.pumpAndSettle();
-      final exports = await tester.runAsync(ExportEngine.exportsDir);
-      expect(File('${exports!.path}/AUDIT_root.gif').existsSync(), isFalse);
+      expect(file.existsSync(), isFalse);
+      expect(remaining!.any((entry) => entry.path == file.path), isFalse);
       expect(find.text(env.l10n.homeWorkFolderEmpty), findsOneWidget);
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
@@ -379,8 +396,12 @@ void main() {
       final env = await open(tester);
       await env.folders.moveFileToFolder('AUDIT_root.gif', 'audit-folder');
       await tester.pumpAndSettle();
-      final exports = await tester.runAsync(ExportEngine.exportsDir);
-      final file = File('${exports!.path}/AUDIT_root.gif');
+      final files = await tester.runAsync(
+        () => ExportEngine.listExportedFiles(forceRefresh: true),
+      );
+      final file = files!.singleWhere(
+        (file) => file.path.endsWith('/AUDIT_root.gif'),
+      );
       final originalBytes = file.readAsBytesSync();
       await tester.longPress(find.text('AUDIT'));
       await tester.pumpAndSettle();

@@ -2748,7 +2748,7 @@
     }
   },
   "storageEraseAllConfirmTitle": "¿Borrar todos los datos?",
-  "storageEraseAllConfirmBody": "Esto elimina permanentemente todos los datos de NIARIM: proyectos, materiales, archivos exportados, pinceles/tramas/sellos/fuentes personalizados y ajustes. No se puede deshacer. Reinicia la app después.",
+  "storageEraseAllConfirmBody": "Esto elimina permanentemente los proyectos de NIARIM, materiales, archivos exportados que gestiona la app, pinceles/tramas/sellos/fuentes personalizados y ajustes. Se conservan las exportaciones anteriores en carpetas compartidas. No se puede deshacer. Reinicia la app después.",
   "storageEraseAllDoneSnackbar": "Se borraron todos los datos. Reinicia la app.",
   "homeDrawerStorage": "Liberar espacio",
   "helpStorageTitle": "Liberar espacio",

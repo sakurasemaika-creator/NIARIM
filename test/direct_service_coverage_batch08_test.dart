@@ -22,7 +22,10 @@ void main() {
     temp = Directory('${root.path}/temp')..createSync(recursive: true);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(pathChannel, (call) async {
-          if (call.method == 'getTemporaryDirectory') return temp.path;
+          if (call.method == 'getTemporaryDirectory' ||
+              call.method == 'getApplicationCacheDirectory') {
+            return temp.path;
+          }
           return docs.path;
         });
   });
@@ -134,7 +137,7 @@ void main() {
         write('${docs.path}/niarim/projects/live/Materials/image.png', 17);
         write('${docs.path}/niarim/projects/trashp/project.json', 19);
         write('${docs.path}/niarim/projects/trashp/Materials/audio.wav', 23);
-        write('${docs.path}/exports/a.mp4', 29);
+        write('${docs.path}/niarim/exports/a.mp4', 29);
         write('${docs.path}/niarim/Brushes/a.bin', 31);
         write('${docs.path}/niarim/Tones/a.bin', 37);
         write('${docs.path}/niarim/Stamps/a.bin', 41);
@@ -155,8 +158,9 @@ void main() {
         expect(freed, 47);
         expect(temp.listSync(), isEmpty);
         expect(
-          (await service.computeBreakdown({'trashp'}))
-              .bytesOf(StorageCategory.cache),
+          (await service.computeBreakdown({
+            'trashp',
+          })).bytesOf(StorageCategory.cache),
           0,
         );
 
@@ -175,7 +179,7 @@ void main() {
         File('${docs.path}/niarim/x.bin')
           ..createSync(recursive: true)
           ..writeAsBytesSync([1]);
-        File('${docs.path}/exports/x.png')
+        File('${docs.path}/niarim/exports/x.png')
           ..createSync(recursive: true)
           ..writeAsBytesSync([2]);
         File('${temp.path}/x.cache')
@@ -186,7 +190,7 @@ void main() {
 
         await StorageInfoService().eraseAllData();
         expect(Directory('${docs.path}/niarim').existsSync(), isFalse);
-        expect(Directory('${docs.path}/exports').existsSync(), isFalse);
+        expect(Directory('${docs.path}/niarim/exports').existsSync(), isFalse);
         expect(temp.listSync(), isEmpty);
         expect(
           (await SharedPreferences.getInstance()).getString('probe'),
