@@ -247,53 +247,46 @@ class _StorageScreenState extends State<StorageScreen> {
                     padding: EdgeInsets.symmetric(
                       vertical: showBars ? 5 : 2,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                color: s.color,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: chartOutline,
-                                  width: 1,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Expanded(
-                              child: Text(
-                                s.label,
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              formatStorageBytes(s.value),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (showBars) ...[
-                          const SizedBox(height: 5),
-                          Padding(
-                            // Text starts after the colored legend marker.
-                            padding: const EdgeInsets.only(left: 16),
-                            child: _storageAmountBar(
-                              key: Key('storageBreakdownBar_${s.label}'),
-                              color: s.color,
-                              ratio: largest > 0 ? s.value / largest : 0,
-                              scheme: scheme,
-                            ),
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: s.color,
+                            shape: BoxShape.circle,
                           ),
-                        ],
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: showBars
+                              ? _storageAmountBar(
+                                  key: Key('storageBreakdownBar_${s.label}'),
+                                  color: s.color,
+                                  ratio: largest > 0 ? s.value / largest : 0,
+                                  label: s.label,
+                                  bytes: s.value,
+                                  scheme: scheme,
+                                )
+                              : Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        s.label,
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      formatStorageBytes(s.value),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
                       ],
                     ),
                   ),
@@ -304,27 +297,30 @@ class _StorageScreenState extends State<StorageScreen> {
     );
   }
 
-  /// Each bar belongs to its own legend row, not to a separate chart.
-  /// The largest currently nonzero category fills the width; others scale
-  /// proportionally so their relative storage use remains easy to compare.
+  /// One labeled bar per legend row. Its remainder uses the exact same
+  /// theme text color as the surrounding border, rather than an arbitrary
+  /// gray. The foreground token matches selected (active) controls.
   Widget _storageAmountBar({
     required Key key,
     required Color color,
     required double ratio,
+    required String label,
+    required double bytes,
     required ColorScheme scheme,
   }) {
     final outline = scheme.onSurface;
+    final foreground = scheme.onSecondary;
     final amount = ratio.clamp(0.0, 1.0);
     return SizedBox(
       key: key,
-      height: 9,
+      height: 30,
       child: Stack(
         fit: StackFit.expand,
         children: [
           DecoratedBox(
             decoration: BoxDecoration(
-              color: scheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(3),
+              color: outline,
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
           Align(
@@ -335,7 +331,7 @@ class _StorageScreenState extends State<StorageScreen> {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: color,
-                  borderRadius: BorderRadius.circular(3),
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
             ),
@@ -344,8 +340,38 @@ class _StorageScreenState extends State<StorageScreen> {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 border: Border.all(color: outline, width: 1),
-                borderRadius: BorderRadius.circular(3),
+                borderRadius: BorderRadius.circular(4),
               ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 7),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    key: Key('storageBreakdownBarLabel_$label'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: foreground,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  formatStorageBytes(bytes),
+                  key: Key('storageBreakdownBarValue_$label'),
+                  style: TextStyle(
+                    color: foreground,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
