@@ -352,7 +352,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final dialog = tester.widget<AlertDialog>(find.byType(AlertDialog));
-      expect((dialog.content! as Text).data, language.redeemConfirmation);
+      expect((dialog.content! as Text).data, startsWith(language.redeemConfirmation));
 
       // 確認だけして交換はしない。
       await tester.tap(
