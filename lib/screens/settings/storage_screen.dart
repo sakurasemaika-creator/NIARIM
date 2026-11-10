@@ -34,18 +34,20 @@ import '../../config/font_fallback.dart';
 ///
 /// さらにこのアプリのテーマは**primaryとsecondaryが同じ色**で、
 /// `ColorScheme`の役割をそのまま並べても区別できる6色にはならない。
-/// アクセント色の**色相と彩度を固定**し、明度だけを均等に上げて
-/// 統一感のある濃淡6色を作る。テーマを変えた際も同じ色系統を保つ。
+/// アクセント色の**色相と彩度を固定**し、明るい固定明度6色を作る。
+/// 旧4〜6色目を先頭3色とし、さらに明るい3色を加える。
+/// 旧明度の0.085刻みをそのまま9色目まで延長するとL>1になるため、
+/// 後半3段階だけ幅を緩め、明度100%超過・真っ白への潰れを防ぐ。
 /// `test/storage_chart_colors_test.dart`が組み込み28テーマ全てで検証する。
 /// 各カテゴリの明度はテーマの明度から独立した固定値（HSLのL）。
 /// 色相と彩度だけを現在のアクセントから取得する。
 const storageChartLightnessLevels = <double>[
-  0.36,
-  0.445,
-  0.53,
-  0.615,
-  0.70,
-  0.785,
+  0.615, // former 4th tone
+  0.70,  // former 5th tone
+  0.785, // former 6th tone
+  0.85,  // new 7th tone
+  0.915, // new 8th tone
+  0.98,  // new 9th tone: below pure white
 ];
 
 List<Color> sliceColorsOf(ColorScheme scheme) {
@@ -70,20 +72,16 @@ List<Color> storageDeviceSliceColorsOf(ColorScheme scheme) {
   ];
 }
 
-/// 円グラフの一辺。集計中の欄も同じ高さを取る。
-const double _chartSize = 120;
-
-/// 内訳のグラフの並び方（`_chartWithLegend`・`_storageAmountBar`と同じ値）。
-/// 円グラフを左に固定し、右側に高さ34＋上下4ずつの棒を並べる。
-/// 集計中の欄がグラフと同じ高さを取るために使う。
+/// 端末・NIARIMとも同じ1行34px＋上下4pxの棒グラフだけを使う。
+/// 再取得中も行領域を確保し、操作の位置が不用意に跳ねないようにする。
 const double _barRowExtent = 42;
 
 /// 端末の容量のグラフに並ぶ棒の本数（NIARIM・ほかのアプリ・空き）。
 const int _deviceBarCount = 3;
 
-/// 左に円・右に棒を固定し、最大の側の高さを集計中も確保する。
+/// 棒のみ表示する領域。widthは既存のレイアウト呼び元と互換にする。
 double _breakdownChartHeight(int bars, double width) =>
-    math.max(_chartSize, bars * _barRowExtent);
+    bars * _barRowExtent;
 
 /// 端末の容量の問い合わせを待つ長さ。過ぎても答えが無ければ、その欄だけ
 /// 「取得できませんでした」にして、やり直せるようにする（内訳と操作は
@@ -483,23 +481,8 @@ class _StorageScreenState extends State<StorageScreen> {
     );
   }
 
-  /// グラフを描けないときの、グラフの場所の表示（中身の無い円グラフと同じ印）。
-  Widget _noChart() {
-    return Align(
-      alignment: AlignmentDirectional.topStart,
-      child: SizedBox(
-        width: _chartSize,
-        height: _chartSize,
-        child: Center(
-          child: Icon(
-            Icons.donut_large,
-            size: 48,
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-        ),
-      ),
-    );
-  }
+  /// 集計できない状態では前の数値を表示しない。高さは_reservedBlockで維持。
+  Widget _noChart() => const SizedBox.shrink();
 
   /// いま出してよい内訳。大きさを変える操作の後は、集計し直すまで無い。
   StorageBreakdown? get _currentBreakdown => _sizesOutdated ? null : _breakdown;
@@ -630,7 +613,7 @@ class _StorageScreenState extends State<StorageScreen> {
     );
   }
 
-  // ─── 円グラフ ─────────────────────────────────────────────────────────
+  // ─── 容量別の棒グラフ ─────────────────────────────────────────────────────────
 
   Widget _buildDeviceChart(
     AppLocalizations l10n,
@@ -646,23 +629,23 @@ class _StorageScreenState extends State<StorageScreen> {
     final scheme = Theme.of(context).colorScheme;
     final deviceColors = storageDeviceSliceColorsOf(scheme);
     final slices = [
-      _PieSlice(
+      _StorageAmount(
         niarimBytes.toDouble(),
         deviceColors[0],
         l10n.storageCategoryNiarimTotal,
       ),
-      _PieSlice(
+      _StorageAmount(
         others.toDouble(),
         deviceColors[1],
         l10n.storageCategoryOtherApps,
       ),
-      _PieSlice(
+      _StorageAmount(
         free.toDouble(),
         deviceColors[2],
         l10n.storageCategoryFree,
       ),
     ];
-    return _chartWithLegend(slices, barKeyPrefix: 'storageDeviceBar');
+    return _barsWithLabels(slices, barKeyPrefix: 'storageDeviceBar');
   }
 
   Widget _buildBreakdownChart(
@@ -682,70 +665,43 @@ class _StorageScreenState extends State<StorageScreen> {
     ];
     final slices = [
       for (int i = 0; i < entries.length; i++)
-        _PieSlice(
+        _StorageAmount(
           breakdown.bytesOf(entries[i].$1).toDouble(),
           colors[i % colors.length],
           entries[i].$2,
         ),
     ];
-    return _chartWithLegend(slices, barKeyPrefix: 'storageBreakdownBar');
+    return _barsWithLabels(slices, barKeyPrefix: 'storageBreakdownBar');
   }
 
-  Widget _chartWithLegend(
-    List<_PieSlice> slices, {
+  /// Both groups have identical bars: category and bytes inside each bar.
+  /// A full-width row gives long translated labels more space than the former
+  /// pie + narrow side column. Each value is relative to the group's largest.
+  Widget _barsWithLabels(
+    List<_StorageAmount> slices, {
     required String barKeyPrefix,
   }) {
-    final total = slices.fold<double>(0, (a, s) => a + s.value);
     final largest = slices.fold<double>(
       0,
       (max, slice) => math.max(max, slice.value),
     );
     final scheme = Theme.of(context).colorScheme;
-    final chartOutline = scheme.onSurface;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(
-          width: _chartSize,
-          height: _chartSize,
-          child: total <= 0
-              ? Center(
-                  child: Icon(
-                    Icons.donut_large,
-                    size: 48,
-                    color: scheme.outlineVariant,
-                  ),
-                )
-              : CustomPaint(
-                  painter: _PieChartPainter(
-                    slices,
-                    outlineColor: chartOutline,
-                  ),
-                ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final s in slices)
-                if (s.value > 0)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    // Category names and values are inside their bars.
-                    // No circular markers and no narrow-screen stacking.
-                    child: _storageAmountBar(
-                      key: Key('${barKeyPrefix}_${s.label}'),
-                      color: s.color,
-                      ratio: largest > 0 ? s.value / largest : 0,
-                      label: s.label,
-                      bytes: s.value,
-                      scheme: scheme,
-                    ),
-                  ),
-            ],
-          ),
-        ),
+        for (final slice in slices)
+          if (slice.value > 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: _storageAmountBar(
+                key: Key('${barKeyPrefix}_${slice.label}'),
+                color: slice.color,
+                ratio: largest > 0 ? slice.value / largest : 0,
+                label: slice.label,
+                bytes: slice.value,
+                scheme: scheme,
+              ),
+            ),
       ],
     );
   }
@@ -1174,51 +1130,10 @@ class _StorageNotice extends StatelessWidget {
   }
 }
 
-class _PieSlice {
+class _StorageAmount {
   final double value;
   final Color color;
   final String label;
 
-  const _PieSlice(this.value, this.color, this.label);
-}
-
-class _PieChartPainter extends CustomPainter {
-  final List<_PieSlice> slices;
-  final Color outlineColor;
-
-  _PieChartPainter(this.slices, {required this.outlineColor});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final total = slices.fold<double>(0, (a, s) => a + s.value);
-    if (total <= 0) return;
-    // Keep the theme-derived 1.5px outline inside the paint bounds.
-    const borderWidth = 1.5;
-    final rect = Rect.fromLTWH(
-      borderWidth / 2,
-      borderWidth / 2,
-      size.width - borderWidth,
-      size.height - borderWidth,
-    );
-    double startAngle = -math.pi / 2;
-    for (final slice in slices) {
-      if (slice.value <= 0) continue;
-      final sweep = slice.value / total * 2 * math.pi;
-      final paint = Paint()..color = slice.color;
-      canvas.drawArc(rect, startAngle, sweep, true, paint);
-      startAngle += sweep;
-    }
-    canvas.drawOval(
-      rect,
-      Paint()
-        ..color = outlineColor
-        ..strokeWidth = borderWidth
-        ..style = PaintingStyle.stroke,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _PieChartPainter oldDelegate) =>
-      oldDelegate.slices != slices ||
-      oldDelegate.outlineColor != outlineColor;
+  const _StorageAmount(this.value, this.color, this.label);
 }
