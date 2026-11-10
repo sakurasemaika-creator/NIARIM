@@ -180,8 +180,16 @@ void main() {
       // Hub pages changed in the same UI consolidation: two Guide tabs
       // and three Coin/Benefits tabs. Capture both mobile and desktop.
       if (width == 390 || width == 1024) {
+        // A still-open drawer uses a local route history entry and prevents
+        // navigation to the guide shell from taking effect.
+        Navigator.of(tester.element(drawer)).pop();
+        await tester.pumpAndSettle();
         appRouter.go('/help');
-        await tester.pump(const Duration(milliseconds: 900));
+        await tester.pumpAndSettle();
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 120)),
+        );
+        await tester.pumpAndSettle();
         expect(find.byType(GuideHubScreen), findsOneWidget);
         await shot('10-guide-help');
         DefaultTabController.of(
