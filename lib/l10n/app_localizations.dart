@@ -14474,7 +14474,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialPage6Step3.
   ///
   /// In ja, this message translates to:
-  /// **'この使い方は、ホームの左上のメニューの「使い方」からいつでも見直せます'**
+  /// **'この使い方は、ホームの右上のメニューの「使い方」にある「使い方を見る」から、いつでも見直せます'**
   String get tutorialPage6Step3;
 
   /// No description provided for @helpTutorialSubtitle.

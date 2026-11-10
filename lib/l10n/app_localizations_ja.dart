@@ -7898,7 +7898,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tutorialPage6Step2 => 'はじめて使う機能では、短い説明が出ます';
 
   @override
-  String get tutorialPage6Step3 => 'この使い方は、ホームの左上のメニューの「使い方」からいつでも見直せます';
+  String get tutorialPage6Step3 =>
+      'この使い方は、ホームの右上のメニューの「使い方」にある「使い方を見る」から、いつでも見直せます';
 
   @override
   String get helpTutorialSubtitle => 'はじめに表示した使い方を、もう一度見ます';

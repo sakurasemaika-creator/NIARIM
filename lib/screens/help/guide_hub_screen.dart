@@ -5,17 +5,13 @@ import '../tips/tips_screen.dart';
 import 'help_screen.dart';
 
 /// A common shell for the help and tips deep links.
-String guideHubTitle(BuildContext context) {
-  final locale = Localizations.localeOf(context);
-  return switch (locale.languageCode) {
-    'ja' => '使い方',
-    'es' => 'Cómo se usa',
-    'fr' => 'Mode d’emploi',
-    'ko' => '사용 방법',
-    'zh' => '使用指南',
-    _ => 'How to use',
-  };
-}
+/// 引き出しの項目と、この画面の題名。
+///
+/// 使い方の最後のページの案内（`tutorialPage6Step3`）と図もこの名前を
+/// 出すので、ARBの1つの文言を使う。手書きの言語別の表にすると、言語に
+/// よって案内と食い違い、同梱フォントの字の確かめからも外れる。
+String guideHubTitle(BuildContext context) =>
+    AppLocalizations.of(context)!.homeDrawerTutorial;
 
 class GuideHubScreen extends StatelessWidget {
   const GuideHubScreen({super.key, this.initialTab = 1, this.initialTopic});

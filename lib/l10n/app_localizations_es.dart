@@ -8311,7 +8311,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tutorialPage6Step3 =>
-      'Puedes volver a ver esta guía cuando quieras desde «Cómo se usa» en el menú de arriba a la izquierda de Inicio.';
+      'Vuelve a ver esta guía desde el menú de arriba a la derecha de Inicio: «Cómo se usa» y «Ver la guía».';
 
   @override
   String get helpTutorialSubtitle => 'Vuelve a ver la guía de inicio';

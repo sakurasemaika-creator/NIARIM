@@ -7940,7 +7940,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tutorialPage6Step3 =>
-      '이 사용법은 홈 화면 왼쪽 위 메뉴의 \'사용법\'에서 언제든지 다시 볼 수 있습니다.';
+      '이 사용법은 홈 화면 오른쪽 위 메뉴의 \'사용법\'에 있는 \'사용법 보기\'에서 언제든지 다시 볼 수 있습니다.';
 
   @override
   String get helpTutorialSubtitle => '처음에 표시된 사용법을 다시 봅니다';

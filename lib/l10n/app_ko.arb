@@ -3288,7 +3288,7 @@
   "tutorialPage6Title": "막힐 때는",
   "tutorialPage6Step1": "화면 오른쪽 위의 ?를 누르면 그 화면의 설명을 볼 수 있습니다.",
   "tutorialPage6Step2": "처음 쓰는 기능에서는 짧은 설명이 나옵니다.",
-  "tutorialPage6Step3": "이 사용법은 홈 화면 왼쪽 위 메뉴의 '사용법'에서 언제든지 다시 볼 수 있습니다.",
+  "tutorialPage6Step3": "이 사용법은 홈 화면 오른쪽 위 메뉴의 '사용법'에 있는 '사용법 보기'에서 언제든지 다시 볼 수 있습니다.",
   "helpTutorialSubtitle": "처음에 표시된 사용법을 다시 봅니다",
   "settingsTipsResetTitle": "기능 설명 다시 표시",
   "settingsTipsResetSubtitle": "기능마다 처음에 나오는 짧은 설명을 다음에 쓸 때 다시 표시합니다",

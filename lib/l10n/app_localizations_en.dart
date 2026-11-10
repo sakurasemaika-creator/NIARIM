@@ -8183,7 +8183,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutorialPage6Step3 =>
-      'You can view this guide again anytime from \"How to use\" in the menu at the top left of Home.';
+      'View this guide again from the menu at the top right of Home: \"How to use\", then \"View the guide\".';
 
   @override
   String get helpTutorialSubtitle => 'See the getting-started guide again';

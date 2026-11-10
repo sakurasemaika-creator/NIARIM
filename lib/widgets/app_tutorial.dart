@@ -1080,8 +1080,9 @@ class _HelpFigure extends StatelessWidget {
                           const SizedBox(width: 4),
                           Icon(Icons.chevron_right, size: 12, color: ink),
                           const SizedBox(width: 4),
+                          // 引き出しの「使い方」と同じ印。
                           Icon(
-                            Icons.school_outlined,
+                            Icons.menu_book_outlined,
                             size: 14,
                             color: accentText,
                           ),
