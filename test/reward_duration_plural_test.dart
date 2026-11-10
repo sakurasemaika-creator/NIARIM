@@ -341,10 +341,7 @@ void main() {
       await tester.pumpAndSettle();
       await _pick(tester, const CoinUnlockDuration(1, CoinDurationUnit.month));
 
-      final redeem = find.byWidgetPredicate((w) =>
-        w is OutlinedButton && w.onPressed != null &&
-        find.byKey(const Key('rewardDurationButton')).evaluate().isNotEmpty
-      ).last;
+      final redeem = find.byKey(const Key('rewardRedeemButton'));
       await _reveal(tester, redeem);
       expect(
         tester.widget<OutlinedButton>(redeem).onPressed,
