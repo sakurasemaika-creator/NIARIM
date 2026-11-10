@@ -48,6 +48,10 @@ class StorageBreakdown {
 
   int get totalBytes => bytesByCategory.values.fold(0, (a, b) => a + b);
 
+  /// 中身のある分類の数（内訳のグラフに並ぶ棒の本数）。
+  int get nonEmptyCategoryCount =>
+      StorageCategory.values.where((c) => bytesOf(c) > 0).length;
+
   /// どの分類も読めなかった（＝内訳として出せるものが無い）。
   bool get isUnreadable => StorageCategory.values.every(incomplete.contains);
 }
@@ -81,7 +85,14 @@ const storageScanShareLimit = Duration(seconds: 30);
 /// （容量削減の画面の外でファイルを消す所も含む）。
 class StorageInfoService {
   static StorageBreakdown? _lastBreakdown;
+
+  /// [_lastBreakdown]を集計したときに、ゴミ箱の分として数えた作品。
+  static Set<String>? _lastBreakdownTrashedIds;
   static DeviceSpaceInfo? _lastDeviceSpace;
+
+  /// 直近に集計できた内訳で、中身のあった分類の数。値ではなく画面の並びの
+  /// 見込みなので、[invalidate]でも忘れない。
+  static int? _lastNonEmptyCategoryCount;
 
   static final Stopwatch _sinceStart = Stopwatch()..start();
   static Duration _elapsedSinceStart() => _sinceStart.elapsed;
@@ -101,6 +112,22 @@ class StorageInfoService {
   /// 直近の集計結果。まだ集計していない・[invalidate]の後はnull。
   StorageBreakdown? get lastBreakdown => _lastBreakdown;
 
+  /// [trashedProjectIds]をゴミ箱として集計した、直近の結果。その後に作品を
+  /// ゴミ箱へ移した・戻したなら、どの作品をゴミ箱の分に数えたかが今と違う
+  /// （ゴミ箱の大きさも、作品データの大きさも合わない）のでnull。
+  StorageBreakdown? lastBreakdownFor(Set<String> trashedProjectIds) {
+    final countedAsTrash = _lastBreakdownTrashedIds;
+    if (countedAsTrash == null ||
+        !setEquals(countedAsTrash, trashedProjectIds)) {
+      return null;
+    }
+    return _lastBreakdown;
+  }
+
+  /// 直近に集計できた内訳で、中身のあった分類の数（まだ一度も集計できて
+  /// いなければnull）。画面が、集計中の欄にグラフと同じ高さを取るために使う。
+  int? get lastNonEmptyCategoryCount => _lastNonEmptyCategoryCount;
+
   /// 直近に取得できた端末の容量。
   DeviceSpaceInfo? get lastDeviceSpace => _lastDeviceSpace;
 
@@ -109,6 +136,7 @@ class StorageInfoService {
   void invalidate() {
     _epoch++;
     _lastBreakdown = null;
+    _lastBreakdownTrashedIds = null;
     _lastDeviceSpace = null;
   }
 
@@ -145,10 +173,12 @@ class StorageInfoService {
     Future<StorageBreakdown> run() async {
       try {
         final breakdown = await _scanBreakdown(scan.trashedProjectIds);
-        if (identical(_running, scan) &&
-            scan.epoch == _epoch &&
-            !breakdown.isUnreadable) {
-          _lastBreakdown = breakdown;
+        if (!breakdown.isUnreadable) {
+          _lastNonEmptyCategoryCount = breakdown.nonEmptyCategoryCount;
+          if (identical(_running, scan) && scan.epoch == _epoch) {
+            _lastBreakdown = breakdown;
+            _lastBreakdownTrashedIds = scan.trashedProjectIds;
+          }
         }
         return breakdown;
       } finally {
@@ -183,7 +213,14 @@ class StorageInfoService {
     }
 
     Future<int> sizeOf(Directory dir, List<StorageCategory> categories) async {
-      if (!dir.existsSync()) return 0;
+      try {
+        if (!dir.existsSync()) return 0;
+      } catch (error, stack) {
+        // あるかどうかも調べられない所は、その分類だけを「読めない所がある」に
+        // する（ここで投げると、ほかの分類まで集計できなくなる）。
+        if (!_vanished(error)) unreadable(categories, error, stack);
+        return 0;
+      }
       final size = await _measure(dir);
       if (size.error != null) unreadable(categories, size.error!, size.stack);
       return size.bytes;

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -49,12 +50,27 @@ class ScriptedStorage extends StorageInfoService {
   final freshScans = <bool>[];
   final deviceQueries = <Completer<DeviceSpaceInfo?>>[];
   StorageBreakdown? rememberedBreakdown;
+
+  /// [rememberedBreakdown]を集計したときに、ゴミ箱の分として数えた作品。
+  Set<String> rememberedTrashedIds = const {};
+
+  /// 前回の内訳で中身のあった分類の数（[invalidate]でも忘れない）。
+  int? rememberedBarCount;
   DeviceSpaceInfo? rememberedDevice;
   int invalidations = 0;
   int cacheClears = 0;
 
   @override
   StorageBreakdown? get lastBreakdown => rememberedBreakdown;
+
+  @override
+  StorageBreakdown? lastBreakdownFor(Set<String> trashedProjectIds) =>
+      setEquals(rememberedTrashedIds, trashedProjectIds)
+      ? rememberedBreakdown
+      : null;
+
+  @override
+  int? get lastNonEmptyCategoryCount => rememberedBarCount;
 
   @override
   DeviceSpaceInfo? get lastDeviceSpace => rememberedDevice;

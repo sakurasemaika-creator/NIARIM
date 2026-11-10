@@ -10,6 +10,7 @@ import '../models/project.dart';
 import '../models/save_node.dart';
 import '../models/scene.dart';
 import '../utils/app_error_reporter.dart';
+import 'storage_info_service.dart';
 
 /// セーブツリーサービス
 /// スロット方式：固定数のスロットで管理
@@ -296,7 +297,7 @@ class SaveTreeService extends ChangeNotifier {
       slotIndex: slotIndex,
     );
     for (final o in old) {
-      await NiaproSerializer.deleteSaveTreeNode(projectId, o.id);
+      await _deleteNodeFiles(projectId, o.id);
     }
     _nodesByProject[projectId]!.add(node);
     notifyListeners();
@@ -358,10 +359,21 @@ class SaveTreeService extends ChangeNotifier {
     }
   }
 
+  /// ノードの実データとサムネイルを消す。容量削減の画面が覚えている集計結果は
+  /// 消す前のものなので、捨てさせる（途中で失敗しても、消せた分だけ大きさは
+  /// 変わっている）。
+  Future<void> _deleteNodeFiles(String projectId, String nodeId) async {
+    try {
+      await NiaproSerializer.deleteSaveTreeNode(projectId, nodeId);
+    } finally {
+      StorageInfoService().invalidate();
+    }
+  }
+
   Future<void> deleteNode(String projectId, String nodeId) async {
     _nodesByProject[projectId]?.removeWhere((n) => n.id == nodeId);
     notifyListeners();
-    await NiaproSerializer.deleteSaveTreeNode(projectId, nodeId);
+    await _deleteNodeFiles(projectId, nodeId);
     await _persist(projectId);
   }
 
@@ -400,7 +412,7 @@ class SaveTreeService extends ChangeNotifier {
     } else {
       // 完全削除：実データ（SaveTree/{nodeId}.niapro）も削除する
       for (final n in discard) {
-        await NiaproSerializer.deleteSaveTreeNode(projectId, n.id);
+        await _deleteNodeFiles(projectId, n.id);
       }
     }
 

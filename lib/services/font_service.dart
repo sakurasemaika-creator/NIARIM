@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/downloadable_font.dart';
 import '../models/font_asset.dart';
 import '../utils/tolerant_preferences.dart';
+import 'storage_info_service.dart';
 
 /// フォント管理サービス（ユーザーフォント追加）。
 /// アプリ全体で共有するFonts/フォルダにTTF/OTFを保存し、FontLoaderで
@@ -304,7 +305,11 @@ class FontService extends ChangeNotifier {
     try {
       final dir = await _fontsDir();
       final file = File('${dir.path}/${font.fileName}');
-      if (file.existsSync()) await file.delete();
+      if (file.existsSync()) {
+        await file.delete();
+        // 容量削減の画面が覚えている集計結果は、消す前のもの。
+        StorageInfoService().invalidate();
+      }
     } catch (_) {
       // ファイル削除失敗時も一覧からは除去する
     }

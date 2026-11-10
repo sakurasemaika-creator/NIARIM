@@ -222,6 +222,45 @@ void main() {
       expect(AppErrorReporter.recentErrors, isEmpty);
     });
 
+    for (final (label, folder, category) in [
+      ('書き出しのフォルダ', 'exports', StorageCategory.exports),
+      ('自作フォントのフォルダ', 'Fonts', StorageCategory.customAssets),
+    ]) {
+      test('$labelがあるかどうかも調べられなくても、ほかの分類は集計される', () async {
+        write('${docs.path}/niarim/exports/a.mp4', 29);
+        write('${docs.path}/niarim/Brushes/a.bin', 37);
+        final blocked = '${docs.path}/niarim/$folder';
+        final outside = Zone.current;
+        final b = await IOOverrides.runZoned(
+          () => StorageInfoService().computeBreakdown({}),
+          createDirectory: (path) {
+            final real = outside.run(() => Directory(path));
+            return path == blocked ? _UnstatableDirectory(real) : real;
+          },
+        );
+        expect(b.incomplete, {category});
+        expect(b.isUnreadable, isFalse);
+        expect(b.bytesOf(StorageCategory.projectData), 11);
+        expect(b.bytesOf(StorageCategory.materials), 17);
+        expect(b.bytesOf(StorageCategory.cache), 123);
+        if (category == StorageCategory.exports) {
+          expect(b.bytesOf(StorageCategory.exports), 0);
+          expect(b.bytesOf(StorageCategory.customAssets), 37);
+        } else {
+          expect(b.bytesOf(StorageCategory.exports), 29);
+          // 調べられたフォルダ（Brushes）の分は数える。
+          expect(b.bytesOf(StorageCategory.customAssets), 37);
+        }
+        // 原因は1件だけ記録される。
+        expect(
+          AppErrorReporter.recentErrors.where(
+            (e) => e.contains('Exists failed'),
+          ),
+          hasLength(1),
+        );
+      });
+    }
+
     test('ゴミ箱の作品の中が読めないときは、ゴミ箱だけが「読めない所がある」になる', () async {
       write('${docs.path}/niarim/projects/t/t.niapro', 19);
       final trashed = '${docs.path}/niarim/projects/t';
@@ -410,6 +449,26 @@ class _ScriptedDirectory implements Directory {
     bool recursive = false,
     bool followLinks = true,
   }) => _entries();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// あるかどうかを聞かれると、権限が無くて失敗するフォルダ。
+class _UnstatableDirectory implements Directory {
+  _UnstatableDirectory(this._real);
+
+  final Directory _real;
+
+  @override
+  String get path => _real.path;
+
+  @override
+  bool existsSync() => throw FileSystemException(
+    'Exists failed',
+    path,
+    const OSError('Permission denied', 13),
+  );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

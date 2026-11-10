@@ -96,7 +96,11 @@ void main() {
     await tester.tap(delete);
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
-    await tester.pump();
+    // 作品はゴミ箱へ移される（本物のファイル操作なので、実時間を進めて待つ）。
+    for (var i = 0; i < 30 && file.existsSync(); i++) {
+      await pumpRealAsync(tester, const Duration(milliseconds: 100));
+    }
+    await pumpRealAsync(tester, const Duration(milliseconds: 200));
     expect(file.existsSync(), isFalse);
 
     // 消した分を含む前回の結果は、開き直した画面に出さない。

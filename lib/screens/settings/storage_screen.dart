@@ -78,10 +78,8 @@ const double _chartSize = 120;
 /// 集計中の欄がグラフと同じ高さを取るために使う。
 const double _barRowExtent = 42;
 
-/// まだ一度も集計できていないとき、集計中の欄が見込んでおく棒の本数。
-/// 何本になるかは分からないので、分類の半分にしておく（外れたときに
-/// 操作の行が動く幅が、どちら向きにも一番小さくなる）。
-const int _unknownBarCount = 3;
+/// 端末の容量のグラフに並ぶ棒の本数（NIARIM・ほかのアプリ・空き）。
+const int _deviceBarCount = 3;
 
 /// 左に円・右に棒を固定し、最大の側の高さを集計中も確保する。
 double _breakdownChartHeight(int bars, double width) =>
@@ -134,9 +132,18 @@ class _StorageScreenState extends State<StorageScreen> {
   /// 集計を始めるたびに進める。古い集計の結果は捨てる。
   int _scanGeneration = 0;
 
+  /// 走っている集計が待ち切れになり、「再試行」を出している。結果が届くまで
+  /// そのままにする（押した後も、ボタンをその場に残す）。
+  bool _scanRetryOffered = false;
+
   /// 大きさを変える操作の後、新しい集計が終わるまでtrue。その間、
   /// 持っている内訳は操作の前のものなので、グラフにも操作の行にも出さない。
   bool _sizesOutdated = false;
+
+  /// この画面を開いている間、内訳の欄に取っておく棒の本数。出した・見込んだ
+  /// うちの最大で、途中では減らさない（最初の結果が届いても、操作の後で棒が
+  /// 減っても、下の操作の行が指の下で動かないように）。
+  late int _reservedBars;
 
   // ── 端末の容量 ──
   DeviceSpaceInfo? _deviceSpace;
@@ -163,12 +170,45 @@ class _StorageScreenState extends State<StorageScreen> {
   /// 確かめた後の処理（消している最中）の間だけtrue。見出しに印を出す。
   bool _working = false;
 
+  // ── キーボードのフォーカス ──
+  /// 大きさで押せなくなる行と、結果が届くと消える「再試行」。フォーカスを
+  /// 持ったまま押せなくなる・消えると、Flutterはフォーカスを前にいた所
+  /// （アプリバーのヘルプ）へ戻し、次のEnterがヘルプを開く。そうなる前に、
+  /// その欄の見出しへ移す（[_keepFocusInItsSection]）。
+  final _cacheRowFocus = FocusNode(debugLabel: 'storageClearCacheRow');
+  final _trashRowFocus = FocusNode(debugLabel: 'storageEmptyTrashRow');
+  final _deviceRetryFocus = FocusNode(debugLabel: 'storageDeviceRetry');
+  final _breakdownRetryFocus = FocusNode(debugLabel: 'storageBreakdownRetry');
+
+  /// 欄の見出し。Tabでは止まらず、フォーカスの置き場にだけ使う（Enterでは
+  /// 何も起きず、次のTabはその欄の最初の操作へ進む）。
+  final _deviceHeadingFocus = FocusNode(
+    debugLabel: 'storageDeviceHeading',
+    skipTraversal: true,
+  );
+  final _breakdownHeadingFocus = FocusNode(
+    debugLabel: 'storageBreakdownHeading',
+    skipTraversal: true,
+  );
+  final _actionsHeadingFocus = FocusNode(
+    debugLabel: 'storageActionsHeading',
+    skipTraversal: true,
+  );
+
   @override
   void initState() {
     super.initState();
-    // 開き直したときは、新しい集計が終わるまで前回の値を出しておく。
-    _breakdown = _service.lastBreakdown;
+    // 開き直したときは、新しい集計が終わるまで前回の値を出しておく。ただし
+    // ゴミ箱の中身がそのときと違えば（作品をゴミ箱へ移した・戻した）、前回の
+    // 値はゴミ箱の大きさも作品データの大きさも合っていないので出さない。
+    _breakdown = _service.lastBreakdownFor(_trashedProjectIds());
     _deviceSpace = _service.lastDeviceSpace;
+    // 棒が何本になるか分からない間は、分類の数だけ（いちばん高い場合）を
+    // 取っておく。少なく見込むと、結果が届いたときに操作の行が下へ動く。
+    _reservedBars =
+        _breakdown?.nonEmptyCategoryCount ??
+        _service.lastNonEmptyCategoryCount ??
+        StorageCategory.values.length;
     _reload();
   }
 
@@ -176,8 +216,22 @@ class _StorageScreenState extends State<StorageScreen> {
   void dispose() {
     _deviceTimeout?.cancel();
     _scanOverdueTimer?.cancel();
+    for (final node in [
+      _cacheRowFocus,
+      _trashRowFocus,
+      _deviceRetryFocus,
+      _breakdownRetryFocus,
+      _deviceHeadingFocus,
+      _breakdownHeadingFocus,
+      _actionsHeadingFocus,
+    ]) {
+      node.dispose();
+    }
     super.dispose();
   }
+
+  Set<String> _trashedProjectIds() =>
+      context.read<ProjectService>().trash.map((p) => p.id).toSet();
 
   /// 内訳と端末の容量を取り直す。投げず、必ず終わる（引っぱって更新が
   /// これを待つ）。[restart]は大きさを変える操作の後に渡す：走っている
@@ -194,11 +248,7 @@ class _StorageScreenState extends State<StorageScreen> {
       return waiting.future;
     }
     final generation = ++_scanGeneration;
-    final trashedIds = context
-        .read<ProjectService>()
-        .trash
-        .map((p) => p.id)
-        .toSet();
+    final trashedIds = _trashedProjectIds();
     // 前の集計を待っている更新があれば放す（その結果はもう使わない）。
     _releaseScanWait();
     final done = _scanWait = Completer<void>();
@@ -206,7 +256,12 @@ class _StorageScreenState extends State<StorageScreen> {
     _scanOverdueTimer?.cancel();
     _scanOverdueTimer = Timer(storageScanShareLimit, () {
       if (!mounted || generation != _scanGeneration) return;
-      _scanOverdue = true;
+      // まだ走っているかもしれないが、待ち続けるかやり直すかを選べるように
+      // 「再試行」を出す（キーボードだけでも押せる）。
+      setState(() {
+        _scanOverdue = true;
+        _scanRetryOffered = true;
+      });
       _releaseScanWait();
     });
     setState(() {
@@ -238,16 +293,19 @@ class _StorageScreenState extends State<StorageScreen> {
     if (!mounted || generation != _scanGeneration) return;
     _scanOverdueTimer?.cancel();
     _scanOverdue = false;
-    final failed = result == null || result.isUnreadable;
+    final scanned = result;
     setState(() {
       _scanning = false;
-      _breakdownFailed = failed;
-      if (failed) {
+      _scanRetryOffered = false;
+      if (scanned == null || scanned.isUnreadable) {
+        _breakdownFailed = true;
         // 操作の前の内訳はもう合っていないので、残さない。
         if (_sizesOutdated) _breakdown = null;
       } else {
-        _breakdown = result;
+        _breakdownFailed = false;
+        _breakdown = scanned;
         _sizesOutdated = false;
+        _reservedBars = math.max(_reservedBars, scanned.nonEmptyCategoryCount);
       }
     });
     _releaseScanWait();
@@ -296,6 +354,12 @@ class _StorageScreenState extends State<StorageScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final cache = _sizedAction(l10n, StorageCategory.cache);
+    final trash = _sizedAction(l10n, StorageCategory.trash);
+    _keepFocusInItsSection(
+      cacheEnabled: cache.enabled,
+      trashEnabled: trash.enabled,
+    );
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.storageScreenTitle),
@@ -316,9 +380,10 @@ class _StorageScreenState extends State<StorageScreen> {
               _sectionTitle(
                 l10n.storageActionsTitle,
                 busyLabel: _working ? l10n.homeTrashWorking : null,
+                focusNode: _actionsHeadingFocus,
               ),
               const SizedBox(height: 8),
-              _buildActions(l10n),
+              _buildActions(l10n, cache: cache, trash: trash),
             ],
           ),
         ),
@@ -330,7 +395,13 @@ class _StorageScreenState extends State<StorageScreen> {
 
   /// 欄の見出し。[busyLabel]があれば横に小さな進行中の印を出す（値を出した
   /// まま裏で取り直している・操作の処理が進んでいる）。文は読み上げ用。
-  Widget _sectionTitle(String text, {String? busyLabel}) {
+  /// [focusNode]は、その欄の操作が消える・押せなくなるときのフォーカスの
+  /// 置き場（[_keepFocusInItsSection]）。
+  Widget _sectionTitle(
+    String text, {
+    String? busyLabel,
+    required FocusNode focusNode,
+  }) {
     final title = Text(
       text,
       style: const TextStyle(
@@ -339,59 +410,93 @@ class _StorageScreenState extends State<StorageScreen> {
         fontFamilyFallback: kHeadingFontFallback,
       ),
     );
-    if (busyLabel == null) return title;
-    return Row(
-      children: [
-        Flexible(child: title),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 14,
-          height: 14,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            semanticsLabel: busyLabel,
-          ),
-        ),
-      ],
+    return Focus(
+      focusNode: focusNode,
+      skipTraversal: true,
+      includeSemantics: false,
+      child: busyLabel == null
+          ? title
+          : Row(
+              children: [
+                Flexible(child: title),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    semanticsLabel: busyLabel,
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
-  /// まだ出せる値が無い欄の中身。グラフと同じ高さを取っておく（グラフに
-  /// 変わったとき、下の操作の行が指の下で動かないように）。
-  Widget _calculating(AppLocalizations l10n, {double minHeight = _chartSize}) {
+  /// キーボードのフォーカスを持っている行がこのビルドで押せなくなる・
+  /// 「再試行」が消えるなら、先にフォーカスをその欄の見出しへ移す。移して
+  /// おかないと、Flutterはフォーカスを前にいた所（たいていアプリバーの
+  /// ヘルプ）へ戻し、続けて押したEnterがヘルプを開く。
+  void _keepFocusInItsSection({
+    required bool cacheEnabled,
+    required bool trashEnabled,
+  }) {
+    if ((!cacheEnabled && _cacheRowFocus.hasPrimaryFocus) ||
+        (!trashEnabled && _trashRowFocus.hasPrimaryFocus)) {
+      _actionsHeadingFocus.requestFocus();
+    } else if (!_breakdownNoticed && _breakdownRetryFocus.hasPrimaryFocus) {
+      _breakdownHeadingFocus.requestFocus();
+    } else if (!_deviceTimedOut && _deviceRetryFocus.hasPrimaryFocus) {
+      // 端末の容量の欄ごと消える場合（取得できない端末）は、次の欄の見出しへ。
+      (_deviceSectionShown ? _deviceHeadingFocus : _breakdownHeadingFocus)
+          .requestFocus();
+    }
+  }
+
+  /// 欄の中身を、決めた高さ以上の場所に上から並べる。中身が集計中・グラフ・
+  /// 知らせと入れ替わっても欄の高さが変わらず、下の操作の行が動かない。
+  Widget _reservedBlock({required int bars, required List<Widget> children}) {
     return ConstrainedBox(
-      constraints: BoxConstraints(minHeight: minHeight),
-      child: Align(
-        alignment: AlignmentDirectional.topStart,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            children: [
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              const SizedBox(width: 12),
-              Expanded(child: Text(l10n.storageCalculating)),
-            ],
-          ),
-        ),
+      constraints: BoxConstraints(minHeight: _breakdownChartHeight(bars, 0)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
       ),
     );
   }
 
-  /// 集計中の内訳の欄。直近に出していた内訳のグラフと同じ高さを取る
-  /// （大きさを変える操作の後、グラフが集計中へ替わっても操作の行が動かない）。
-  Widget _calculatingBreakdown(AppLocalizations l10n) {
-    final last = _breakdown;
-    final bars = last == null
-        ? _unknownBarCount
-        : StorageCategory.values.where((c) => last.bytesOf(c) > 0).length;
-    return LayoutBuilder(
-      builder: (context, constraints) => _calculating(
-        l10n,
-        minHeight: _breakdownChartHeight(bars, constraints.maxWidth),
+  /// まだ出せる値が無い欄の中身。
+  Widget _calculating(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Text(l10n.storageCalculating)),
+        ],
+      ),
+    );
+  }
+
+  /// グラフを描けないときの、グラフの場所の表示（中身の無い円グラフと同じ印）。
+  Widget _noChart() {
+    return Align(
+      alignment: AlignmentDirectional.topStart,
+      child: SizedBox(
+        width: _chartSize,
+        height: _chartSize,
+        child: Center(
+          child: Icon(
+            Icons.donut_large,
+            size: 48,
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
       ),
     );
   }
@@ -399,60 +504,94 @@ class _StorageScreenState extends State<StorageScreen> {
   /// いま出してよい内訳。大きさを変える操作の後は、集計し直すまで無い。
   StorageBreakdown? get _currentBreakdown => _sizesOutdated ? null : _breakdown;
 
+  /// 端末の容量の欄を出すか。取得できない端末（答えがnull）では、これまで
+  /// どおり欄ごと出さない。答えを持っている間は、内訳を集計できなかった
+  /// ときも場所を取ったままにする（やり直すたびに欄が出入りして、下の欄と
+  /// 操作の行が上下に動いていた）。
+  bool get _deviceSectionShown =>
+      _deviceSpace != null ||
+      _deviceTimedOut ||
+      (_deviceWaiting && !_deviceUnavailable);
+
   Widget _deviceSection(AppLocalizations l10n) {
     final device = _deviceSpace;
     final breakdown = _currentBreakdown;
     // グラフはNIARIMの分を内訳の合計から出すので、内訳も要る。
-    final Widget? body;
-    if (device != null && breakdown != null) {
-      body = _buildDeviceChart(l10n, device, breakdown);
-    } else if (!_deviceTimedOut &&
-        ((_deviceWaiting && !_deviceUnavailable) ||
-            (device != null && _scanning))) {
-      body = _calculating(l10n);
-    } else {
-      body = null;
-    }
-    // 取得できない端末（答えがnull）では、これまでどおり欄ごと出さない。
-    final shown = body != null || _deviceTimedOut;
+    final hasChart = device != null && breakdown != null;
     return Column(
       key: const ValueKey('storageDeviceSection'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (shown) ...[
+        if (_deviceSectionShown) ...[
           _sectionTitle(
             l10n.storageDeviceChartTitle,
-            busyLabel:
-                _deviceWaiting &&
-                    !_deviceTimedOut &&
-                    device != null &&
-                    breakdown != null
+            busyLabel: _deviceWaiting && !_deviceTimedOut && hasChart
                 ? l10n.storageCalculating
                 : null,
+            focusNode: _deviceHeadingFocus,
           ),
           const SizedBox(height: 8),
-          ?body,
-          if (_deviceTimedOut)
-            _StorageNotice(
-              key: const ValueKey('storageDeviceNotice'),
-              // やり直している間も知らせとボタンはその場に残し、文だけ替える。
-              message: _deviceWaiting
-                  ? l10n.storageCalculating
-                  : l10n.storageDeviceSpaceUnavailable,
-              busy: _deviceWaiting,
-              retryKey: const ValueKey('storageDeviceRetry'),
-              onRetry: _loadDeviceSpace,
-            ),
+          _reservedBlock(
+            bars: _deviceBarCount,
+            children: [
+              if (hasChart)
+                _buildDeviceChart(l10n, device, breakdown)
+              else if (_deviceTimedOut)
+                // 知らせが状況を伝える（下）。
+                const SizedBox.shrink()
+              else if (_deviceWaiting || _scanning)
+                _calculating(l10n)
+              else
+                // 内訳を集計できなかった：端末の容量だけではグラフにできない。
+                _noChart(),
+              if (_deviceTimedOut)
+                _StorageNotice(
+                  key: const ValueKey('storageDeviceNotice'),
+                  // やり直している間も知らせとボタンはその場に残し、文だけ
+                  // 替える。
+                  message: _deviceWaiting
+                      ? l10n.storageCalculating
+                      : l10n.storageDeviceSpaceUnavailable,
+                  busy: _deviceWaiting,
+                  retryKey: const ValueKey('storageDeviceRetry'),
+                  retryFocusNode: _deviceRetryFocus,
+                  onRetry: _loadDeviceSpace,
+                ),
+            ],
+          ),
           const SizedBox(height: 24),
         ],
       ],
     );
   }
 
+  /// 出ている内訳に、読めなかった分類がある。
+  bool get _breakdownIncomplete =>
+      _currentBreakdown?.incomplete.isNotEmpty ?? false;
+
+  /// 内訳の欄に、知らせと「再試行」を出すか。
+  bool get _breakdownNoticed =>
+      _breakdownFailed || _breakdownIncomplete || _scanRetryOffered;
+
+  /// 内訳の欄に出す知らせの文。
+  /// - 集計できなかった：やり直している間は「集計中…」に替える。
+  /// - 一部を読めなかった：出ている値の話なので、やり直している間も残す。
+  /// - 集計が待ち切れになった：まだ走っているので「集計中…」のまま、
+  ///   「再試行」だけを足す（集計できなかったとは言わない）。
+  String _breakdownNoticeText(AppLocalizations l10n) {
+    if (_breakdownFailed) {
+      return _scanning
+          ? l10n.storageCalculating
+          : l10n.storageBreakdownLoadFailed;
+    }
+    return _breakdownIncomplete
+        ? l10n.storageBreakdownIncomplete
+        : l10n.storageCalculating;
+  }
+
   Widget _breakdownSection(AppLocalizations l10n) {
     final breakdown = _currentBreakdown;
-    final incomplete = breakdown != null && breakdown.incomplete.isNotEmpty;
-    final noticed = _breakdownFailed || incomplete;
+    final notice = _breakdownNoticed ? _breakdownNoticeText(l10n) : null;
     return Column(
       key: const ValueKey('storageBreakdownSection'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -460,30 +599,32 @@ class _StorageScreenState extends State<StorageScreen> {
         _sectionTitle(
           l10n.storageBreakdownChartTitle,
           // 知らせを出しているときは、進行中の印は知らせの側に出す。
-          busyLabel: _scanning && breakdown != null && !noticed
+          busyLabel: _scanning && breakdown != null && notice == null
               ? l10n.storageCalculating
               : null,
+          focusNode: _breakdownHeadingFocus,
         ),
         const SizedBox(height: 8),
-        if (breakdown != null)
-          _buildBreakdownChart(l10n, breakdown)
-        else if (_scanning && !_breakdownFailed)
-          _calculatingBreakdown(l10n),
-        if (noticed)
-          _StorageNotice(
-            key: const ValueKey('storageBreakdownNotice'),
-            // やり直している間も知らせとボタンはその場に残す（消すと、
-            // キーボードで押したボタンがフォーカスごと無くなる）。失敗の文は
-            // 集計中に替え、「一部を読めなかった」は出ている値の話なので残す。
-            message: !_breakdownFailed
-                ? l10n.storageBreakdownIncomplete
-                : _scanning
-                ? l10n.storageCalculating
-                : l10n.storageBreakdownLoadFailed,
-            busy: _scanning,
-            retryKey: const ValueKey('storageBreakdownRetry'),
-            onRetry: _reload,
-          ),
+        _reservedBlock(
+          bars: _reservedBars,
+          children: [
+            if (breakdown != null)
+              _buildBreakdownChart(l10n, breakdown)
+            else if (_scanning && notice == null)
+              _calculating(l10n),
+            if (notice != null)
+              _StorageNotice(
+                key: const ValueKey('storageBreakdownNotice'),
+                // やり直している間も知らせとボタンはその場に残す（消すと、
+                // キーボードで押したボタンがフォーカスごと無くなる）。
+                message: notice,
+                busy: _scanning,
+                retryKey: const ValueKey('storageBreakdownRetry'),
+                retryFocusNode: _breakdownRetryFocus,
+                onRetry: _reload,
+              ),
+          ],
+        ),
         const SizedBox(height: 24),
       ],
     );
@@ -695,28 +836,32 @@ class _StorageScreenState extends State<StorageScreen> {
 
   /// [category]の大きさで決まる操作の、行の下の文と押せるかどうか。
   /// 大きさが分かっていて0より大きいときだけ押せる。集計中は「集計中…」、
-  /// 読めなかった分類で0のときは数字を出さない（0Bは分かった値ではない）。
-  ({String? subtitle, bool enabled}) _sizedAction(
+  /// 大きさが分からないとき（集計できなかった・読めなかった分類で0）は
+  /// 数字を出さない（0Bは分かった値ではない）。その場合も下の行は空のまま
+  /// 残す（行の高さが変わると、その下の行が動く）。
+  ({String subtitle, bool enabled}) _sizedAction(
     AppLocalizations l10n,
     StorageCategory category,
   ) {
     final breakdown = _currentBreakdown;
     if (breakdown == null) {
       return (
-        subtitle: _scanning ? l10n.storageCalculating : null,
+        subtitle: _scanning ? l10n.storageCalculating : '',
         enabled: false,
       );
     }
     final bytes = breakdown.bytesOf(category);
     if (bytes <= 0 && breakdown.incomplete.contains(category)) {
-      return (subtitle: null, enabled: false);
+      return (subtitle: '', enabled: false);
     }
     return (subtitle: formatStorageBytes(bytes), enabled: bytes > 0);
   }
 
-  Widget _buildActions(AppLocalizations l10n) {
-    final cache = _sizedAction(l10n, StorageCategory.cache);
-    final trash = _sizedAction(l10n, StorageCategory.trash);
+  Widget _buildActions(
+    AppLocalizations l10n, {
+    required ({String subtitle, bool enabled}) cache,
+    required ({String subtitle, bool enabled}) trash,
+  }) {
     // 行を押せなくするのは、大きさで決まる分だけ。操作が進んでいる間の
     // 二度押しは[_runAction]が止める（[_actionBusy]の注意を参照）。
     return Column(
@@ -725,6 +870,7 @@ class _StorageScreenState extends State<StorageScreen> {
           icon: Icons.cleaning_services_outlined,
           title: l10n.storageClearCacheButton,
           subtitle: cache.subtitle,
+          focusNode: _cacheRowFocus,
           onTap: cache.enabled ? _confirmClearCache : null,
         ),
         _actionTile(
@@ -736,6 +882,7 @@ class _StorageScreenState extends State<StorageScreen> {
           icon: Icons.delete_sweep_outlined,
           title: l10n.storageEmptyTrashButton,
           subtitle: trash.subtitle,
+          focusNode: _trashRowFocus,
           onTap: trash.enabled ? _confirmEmptyTrash : null,
         ),
         _actionTile(
@@ -761,11 +908,13 @@ class _StorageScreenState extends State<StorageScreen> {
     String? subtitle,
     Color? iconColor,
     Color? titleColor,
+    FocusNode? focusNode,
     VoidCallback? onTap,
   }) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
+        focusNode: focusNode,
         leading: Icon(icon, color: iconColor),
         title: Text(title, style: TextStyle(color: titleColor)),
         subtitle: subtitle == null ? null : Text(subtitle),
@@ -963,12 +1112,14 @@ class _StorageNotice extends StatelessWidget {
     required this.message,
     required this.busy,
     required this.retryKey,
+    required this.retryFocusNode,
     required this.onRetry,
   });
 
   final String message;
   final bool busy;
   final Key retryKey;
+  final FocusNode retryFocusNode;
   final VoidCallback onRetry;
 
   @override
@@ -1011,6 +1162,7 @@ class _StorageNotice extends StatelessWidget {
             alignment: AlignmentDirectional.centerEnd,
             child: TextButton.icon(
               key: retryKey,
+              focusNode: retryFocusNode,
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
               label: Text(l10n.communityRetry),

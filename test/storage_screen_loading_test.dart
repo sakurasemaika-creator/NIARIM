@@ -186,7 +186,7 @@ void main() {
       find.widgetWithText(ListTile, l10n.storageClearCacheButton),
     );
     expect(clearCache.enabled, isFalse);
-    expect(clearCache.subtitle, isNull);
+    expect((clearCache.subtitle! as Text).data, isEmpty);
     // 原因はエラーの記録に残る。
     expect(
       AppErrorReporter.recentErrors.where((e) => e.contains('no cache dir')),
@@ -232,22 +232,32 @@ void main() {
   });
 
   testWidgets('開き直した最初のフレームに前回の結果が出る', (tester) async {
+    disk = (call) async => call.method == 'getFreeDiskSpace' ? 400.0 : 1000.0;
     final l10n = await open(tester);
     await waitFor(tester, find.text('123B'));
     expect(find.text('123B'), findsWidgets);
+    // 端末の容量のグラフ（空き400MB）も出ている。
+    expect(find.text(l10n.storageCategoryFree), findsOneWidget);
+    expect(find.text('400.0MB'), findsOneWidget);
 
     appRouter.go('/home');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.byType(StorageScreen), findsNothing);
 
-    // 実時間を進めない（＝新しい走査は終われない）まま開き直す。
+    // 実時間を進めない（＝新しい走査は終われない）・端末の容量の問い合わせも
+    // 返らないまま開き直す。出ているのは、覚えていた前回の値だけ。
+    disk = (_) => Completer<Object?>().future;
     appRouter.go('/storage');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byType(StorageScreen), findsOneWidget);
     expect(find.text(l10n.storageBreakdownChartTitle), findsOneWidget);
     expect(find.text('123B'), findsWidgets);
+    // 内訳だけでなく、端末の容量のグラフも前回の値で出る。
+    expect(find.text(l10n.storageDeviceChartTitle), findsOneWidget);
+    expect(find.text(l10n.storageCategoryFree), findsOneWidget);
+    expect(find.text('400.0MB'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await close(tester);
   });

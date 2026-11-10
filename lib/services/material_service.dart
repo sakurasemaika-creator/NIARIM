@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../models/material_asset.dart';
+import 'storage_info_service.dart';
 
 /// 素材管理サービス（MaterialID方式）。
 /// 画像・音声・動画をプロジェクト内`Materials/`フォルダへコピーし、
@@ -192,7 +193,11 @@ class MaterialService extends ChangeNotifier {
     if (idx < 0) return false;
     final dir = await _materialsDir(projectId);
     final file = File('${dir.path}/${list[idx].storageName}');
-    if (file.existsSync()) await file.delete();
+    if (file.existsSync()) {
+      await file.delete();
+      // 容量削減の画面が覚えている集計結果は、消す前のもの。
+      StorageInfoService().invalidate();
+    }
     list.removeAt(idx);
     await _saveManifest(projectId);
     notifyListeners();

@@ -59,6 +59,13 @@ class _ScriptedStorage extends StorageInfoService {
   StorageBreakdown? get lastBreakdown => rememberedBreakdown;
 
   @override
+  StorageBreakdown? lastBreakdownFor(Set<String> trashedProjectIds) =>
+      rememberedBreakdown;
+
+  @override
+  int? get lastNonEmptyCategoryCount => null;
+
+  @override
   DeviceSpaceInfo? get lastDeviceSpace => rememberedDevice;
 
   @override
@@ -337,12 +344,15 @@ void main() {
       hasLength(1),
     );
     expect(find.byType(CircularProgressIndicator), findsNothing);
-    // 内訳が無いと端末の容量のグラフは描けないので、欄ごと出さない。
-    expect(find.text(l10n.storageDeviceChartTitle), findsNothing);
+    // 内訳が無いと端末の容量のグラフは描けない。欄の場所は取ったまま
+    // （やり直すたびに欄が出入りして下が動かないように）、棒は出さない。
+    expect(find.text(l10n.storageDeviceChartTitle), findsOneWidget);
+    expect(find.text(l10n.storageCategoryFree), findsNothing);
+    expect(find.byIcon(Icons.donut_large), findsOneWidget);
     // 大きさが分からないので、数字も「集計中」も出さず、押せない。
     final clearCache = tile(tester, l10n.storageClearCacheButton);
     expect(clearCache.enabled, isFalse);
-    expect(clearCache.subtitle, isNull);
+    expect((clearCache.subtitle! as Text).data, isEmpty);
     expect(tile(tester, l10n.storageEraseAllButton).enabled, isTrue);
     await capture(tester, 'sp_ja_4_breakdown_failed');
 
@@ -428,7 +438,7 @@ void main() {
     // 読めなかった分類で0のものは、0Bと言い切らない。
     final clearCache = tile(tester, l10n.storageClearCacheButton);
     expect(clearCache.enabled, isFalse);
-    expect(clearCache.subtitle, isNull);
+    expect((clearCache.subtitle! as Text).data, isEmpty);
     // 読めた分があるものは、その分を出して押せる。
     final emptyTrash = tile(tester, l10n.storageEmptyTrashButton);
     expect(emptyTrash.enabled, isTrue);
