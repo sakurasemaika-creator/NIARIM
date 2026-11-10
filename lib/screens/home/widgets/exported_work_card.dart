@@ -17,6 +17,8 @@ class ExportedWorkCard extends StatelessWidget {
     required this.onMove,
     required this.onShare,
     required this.onDelete,
+    this.shareBusy = false,
+    this.shareError,
   });
 
   final String name;
@@ -25,10 +27,12 @@ class ExportedWorkCard extends StatelessWidget {
   final String moveLabel;
   final String shareLabel;
   final String deleteLabel;
-  final VoidCallback onOpen;
+  final VoidCallback? onOpen;
   final VoidCallback onMove;
-  final VoidCallback onShare;
-  final VoidCallback onDelete;
+  final VoidCallback? onShare;
+  final VoidCallback? onDelete;
+  final bool shareBusy;
+  final String? shareError;
 
   static final _filenameSeparators = RegExp(r'([_.-])');
 
@@ -55,6 +59,24 @@ class ExportedWorkCard extends StatelessWidget {
     Widget title() =>
         Text(displayName, semanticsLabel: name, style: titleStyle);
     Widget details() => Text(metadata, style: detailStyle);
+    // 共有できなかったときの知らせ。文字の色はテーマ・外観のメニュー文字色
+    // （このカードの文字と同じ役目）で、色ではなく先頭の印と文で知らせる。
+    Widget shareFeedback() => Semantics(
+      liveRegion: true,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline, size: 16, color: foreground),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              shareError!,
+              style: theme.textTheme.bodySmall?.copyWith(color: foreground),
+            ),
+          ),
+        ],
+      ),
+    );
     Widget actions() => Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -68,7 +90,16 @@ class ExportedWorkCard extends StatelessWidget {
         IconButton(
           constraints: const BoxConstraints.tightFor(width: 48, height: 48),
           color: foreground,
-          icon: const Icon(Icons.ios_share, size: 20),
+          icon: shareBusy
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: foreground,
+                  ),
+                )
+              : const Icon(Icons.ios_share, size: 20),
           tooltip: '$shareLabel: $name',
           onPressed: onShare,
         ),
@@ -129,7 +160,14 @@ class ExportedWorkCard extends StatelessWidget {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [title(), details()],
+                          children: [
+                            title(),
+                            details(),
+                            if (shareError != null) ...[
+                              const SizedBox(height: 8),
+                              shareFeedback(),
+                            ],
+                          ],
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -143,6 +181,10 @@ class ExportedWorkCard extends StatelessWidget {
                     title(),
                     const SizedBox(height: 4),
                     details(),
+                    if (shareError != null) ...[
+                      const SizedBox(height: 8),
+                      shareFeedback(),
+                    ],
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [badge, actions()],

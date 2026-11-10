@@ -5,12 +5,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
+import '../../widgets/export_share_feedback.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
@@ -423,8 +423,9 @@ class _ExportScreenState extends State<ExportScreen> {
 
   void _showCancelledSnackBar() {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l10n.exportCancelledSnackbar)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.exportCancelledSnackbar)));
   }
 
   void _closeProgressDialog() {
@@ -537,7 +538,9 @@ class _ExportScreenState extends State<ExportScreen> {
           FilledButton.icon(
             onPressed: () {
               Navigator.pop(ctx);
-              SharePlus.instance.share(ShareParams(files: [XFile(outputPath)]));
+              // 共有できない端末・失敗は、この画面の通知で知らせる
+              // （以前は結果を待たず、失敗が未処理の例外になった）。
+              shareExportedFileWithNotice(context, File(outputPath));
             },
             icon: const Icon(Icons.share),
             label: Text(l10n.homeShareOpenWith),

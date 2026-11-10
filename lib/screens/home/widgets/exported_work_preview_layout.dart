@@ -12,14 +12,18 @@ class ExportedWorkPreviewLayout extends StatelessWidget {
     required this.onShare,
     required this.onClose,
     this.contentAspectRatio = 16 / 9,
+    this.shareBusy = false,
+    this.shareError,
   });
 
   final Widget content;
   final String shareLabel;
   final String closeLabel;
-  final VoidCallback onShare;
+  final VoidCallback? onShare;
   final VoidCallback onClose;
   final double contentAspectRatio;
+  final bool shareBusy;
+  final String? shareError;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -42,6 +46,28 @@ class ExportedWorkPreviewLayout extends StatelessWidget {
             children: [
               SizedBox(width: width, height: height, child: content),
               const SizedBox(height: 8),
+              if (shareError != null) ...[
+                // 文字の色はテーマ・外観のメニュー文字色（この欄の文字と
+                // 同じ役目）。色ではなく先頭の印と文で知らせる。
+                Semantics(
+                  liveRegion: true,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.error_outline, size: 18, color: foreground),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          shareError!,
+                          style: TextStyle(color: foreground),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
               OverflowBar(
                 alignment: MainAxisAlignment.end,
                 spacing: 8,
@@ -49,7 +75,16 @@ class ExportedWorkPreviewLayout extends StatelessWidget {
                 overflowAlignment: OverflowBarAlignment.end,
                 children: [
                   TextButton.icon(
-                    icon: const Icon(Icons.ios_share, size: 18),
+                    icon: shareBusy
+                        ? SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: foreground,
+                            ),
+                          )
+                        : const Icon(Icons.ios_share, size: 18),
                     label: Text(shareLabel),
                     onPressed: onShare,
                   ),

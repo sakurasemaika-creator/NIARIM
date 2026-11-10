@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../engine/export_engine.dart';
@@ -20,6 +19,7 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/api/community_api.dart';
 import '../../services/font_service.dart';
+import '../../services/export_share_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/share_intent_service.dart';
@@ -27,6 +27,7 @@ import '../../services/shortcut_service.dart';
 import '../../services/work_folder_service.dart';
 import '../community/widgets/community_work_card.dart';
 import '../../models/shortcut_binding.dart';
+import '../../widgets/export_share_feedback.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
@@ -2289,8 +2290,11 @@ class _WorksTabState extends State<_WorksTab> {
                 ),
             onRenameFolder: (id, name) => workFolders.renameFolder(id, name),
             onDeleteFolder: (id) => workFolders.deleteFolder(id),
-            itemBuilder: (context, file) =>
-                _WorkListItem(file: file, onDeleted: _reload),
+            itemBuilder: (context, file) => _WorkListItem(
+              key: ValueKey(file.path),
+              file: file,
+              onDeleted: _reload,
+            ),
           ),
         );
       },
@@ -2393,6 +2397,7 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
           return ListView.builder(
             itemCount: items.length,
             itemBuilder: (context, index) => _WorkListItem(
+              key: ValueKey(items[index].path),
               file: items[index],
               onDeleted: () {
                 setState(() {
@@ -2408,10 +2413,35 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
   }
 }
 
-class _WorkListItem extends StatelessWidget {
+class _WorkListItem extends StatefulWidget {
   final File file;
   final VoidCallback onDeleted;
-  const _WorkListItem({required this.file, required this.onDeleted});
+  const _WorkListItem({super.key, required this.file, required this.onDeleted});
+
+  @override
+  State<_WorkListItem> createState() => _WorkListItemState();
+}
+
+class _WorkListItemState extends State<_WorkListItem> {
+  File get file => widget.file;
+  bool _sharing = false;
+  Object? _shareError;
+
+  Future<void> _share() async {
+    if (_sharing) return;
+    setState(() {
+      _sharing = true;
+      _shareError = null;
+    });
+    try {
+      await ExportShareService.share(file, origin: exportShareOrigin(context));
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (mounted) setState(() => _shareError = error);
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
 
   String get _extension => file.path.split('.').last.toLowerCase();
 
@@ -2452,11 +2482,14 @@ class _WorkListItem extends StatelessWidget {
       moveLabel: l10n.folderMoveToTitle,
       shareLabel: l10n.homeShareOpenWith,
       deleteLabel: l10n.commonDelete,
-      onOpen: () => _openPreview(context),
+      onOpen: _sharing ? null : () => _openPreview(context),
       onMove: () => _showMoveToFolderSheet(context),
-      onShare: () =>
-          SharePlus.instance.share(ShareParams(files: [XFile(file.path)])),
-      onDelete: () => _confirmDelete(context),
+      onShare: _sharing ? null : _share,
+      onDelete: _sharing ? null : () => _confirmDelete(context),
+      shareBusy: _sharing,
+      shareError: _shareError == null
+          ? null
+          : exportShareFailureText(l10n, _shareError!),
     );
   }
 
@@ -2505,7 +2538,7 @@ class _WorkListItem extends StatelessWidget {
             onPressed: () {
               if (file.existsSync()) file.deleteSync();
               Navigator.pop(ctx);
-              onDeleted();
+              widget.onDeleted();
             },
             child: Text(l10n.commonDelete),
           ),
@@ -2530,11 +2563,32 @@ class _WorkPreviewState extends State<_WorkPreview> {
   VideoPlayerController? _controller;
   bool _isImage = false;
   bool _failed = false;
+  bool _sharing = false;
+  Object? _shareError;
   FileImage? _imageProvider;
   ImageStream? _imageStream;
   ImageStreamListener? _imageListener;
   double? _imageAspectRatio;
   bool _imageDimensionsResolved = false;
+
+  Future<void> _share() async {
+    if (_sharing) return;
+    setState(() {
+      _sharing = true;
+      _shareError = null;
+    });
+    try {
+      await ExportShareService.share(
+        widget.file,
+        origin: exportShareOrigin(context),
+      );
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (mounted) setState(() => _shareError = error);
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
 
   @override
   void initState() {
@@ -2658,9 +2712,11 @@ class _WorkPreviewState extends State<_WorkPreview> {
           : 16 / 9,
       shareLabel: l10n.homeShareOpenWith,
       closeLabel: l10n.commonClose,
-      onShare: () => SharePlus.instance.share(
-        ShareParams(files: [XFile(widget.file.path)]),
-      ),
+      onShare: _sharing ? null : _share,
+      shareBusy: _sharing,
+      shareError: _shareError == null
+          ? null
+          : exportShareFailureText(l10n, _shareError!),
       onClose: () => Navigator.pop(context),
     );
   }
