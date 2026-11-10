@@ -263,7 +263,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       'followers' => t.format('followers', required),
       'verifiedEditSeconds' => t.format('time', required ~/ 3600),
       'niarimBookmarkRanking' => t.format(
-        'rankGoal',
+        required == 1 ? 'rankFirstGoal' : 'rankGoal',
         required,
         each: (row['rankingMinBookmarks'] as num?)?.toInt() ?? 0,
       ),

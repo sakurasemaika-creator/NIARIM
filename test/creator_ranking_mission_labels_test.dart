@@ -18,6 +18,7 @@ void main() {
         final labels = CreatorMissionLabels.of(context);
         return SingleChildScrollView(child: Column(children: [
           Text(labels.format('rankGoal', 10, each: 15)),
+          Text(labels.format('rankFirstGoal', 1, each: 50)),
           Text(labels.format('rankPercentNote', 5)),
           Text(labels.format('rankDetailsRules', 5, each: 10)),
           Text(labels.get('rankDetailsHold')),
@@ -33,6 +34,10 @@ void main() {
     );
     expect(
       find.textContaining('※NIARIM全体の公開作品100件以上、かつ上位5％以内'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('ブックマークランキング1位・ブックマーク50件以上'),
       findsOneWidget,
     );
     expect(find.textContaining('小数点以下切り捨て'), findsOneWidget);
