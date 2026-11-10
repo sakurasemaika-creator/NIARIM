@@ -1,0 +1,43 @@
+name: Community five-icon tabs visual matrix
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/screens/community/**'
+      - 'lib/screens/home/home_screen.dart'
+      - 'test/community_icon_tab_visual_capture_test.dart'
+      - 'test/community_search_tabs_test.dart'
+      - '.github/workflows/community-icon-tabs-visual.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - name: Resolve Flutter packages
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze icon tabs and capture test
+        run: flutter analyze --no-pub --no-fatal-infos lib/screens/community/community_screen.dart lib/screens/community/community_bookmarked_tab.dart lib/screens/home/home_screen.dart test/community_icon_tab_visual_capture_test.dart
+      - name: Verify layouts and capture 10 screen widths
+        run: flutter test test/community_icon_tab_visual_capture_test.dart --reporter expanded
+      - name: Upload real Flutter screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: community-five-icon-actual-captures
+          path: build/community-five-icon-captures
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Run icon tabs and saved-work regressions
+        run: |
+          flutter test test/community_search_tabs_test.dart test/home_bookmark_youtube_playback_test.dart test/home_navigation_contract_test.dart --reporter expanded
