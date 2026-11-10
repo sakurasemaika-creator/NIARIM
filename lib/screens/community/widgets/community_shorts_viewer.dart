@@ -292,6 +292,29 @@ class _ShortsVerifiedPageState extends State<_ShortsVerifiedPage> {
     setState(() => _status = status);
   }
 
+  /// IFrame control resume and replay are fresh action boundaries.
+  Future<bool> _validateNativePlay() async {
+    if (!mounted || !widget.isCurrentPage) return false;
+    final id = widget.work.id;
+    final epoch = ++_checkEpoch;
+    final status = await context.read<CommunityService>().playbackStatus(id);
+    if (!mounted || !widget.isCurrentPage ||
+        widget.work.id != id || epoch != _checkEpoch) return false;
+    if (status != CommunityPlaybackStatus.available) {
+      setState(() => _status = status);
+    }
+    return status == CommunityPlaybackStatus.available;
+  }
+
+  void _handlePlaybackEnded(VoidCallback? replay) {
+    // Before looping or moving to the next video, revalidate this video.
+    _validateNativePlay().then((allowed) {
+      if (mounted && widget.isCurrentPage && allowed) {
+        widget.onPlaybackEnded(replay);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!widget.isCurrentPage) return const SizedBox.expand();
@@ -310,7 +333,8 @@ class _ShortsVerifiedPageState extends State<_ShortsVerifiedPage> {
       isCurrentPage: widget.isCurrentPage,
       isBookmarked: widget.isBookmarked,
       onToggleBookmark: widget.onToggleBookmark,
-      onPlaybackEnded: widget.onPlaybackEnded,
+      onPlaybackEnded: _handlePlaybackEnded,
+      validatePlayback: _validateNativePlay,
     );
   }
 }
@@ -321,6 +345,7 @@ class _ShortsPage extends StatelessWidget {
   final bool isBookmarked;
   final VoidCallback onToggleBookmark;
   final void Function(VoidCallback? onLoopCurrent) onPlaybackEnded;
+  final Future<bool> Function() validatePlayback;
 
   const _ShortsPage({
     required this.work,
@@ -328,6 +353,7 @@ class _ShortsPage extends StatelessWidget {
     required this.isBookmarked,
     required this.onToggleBookmark,
     required this.onPlaybackEnded,
+    required this.validatePlayback,
   });
 
   String _formatDuration(int seconds) {
@@ -371,7 +397,8 @@ class _ShortsPage extends StatelessWidget {
               key: ValueKey('communityShortsYoutube-${work.id}'),
               videoId: work.id,
               playing: isCurrentPage,
-              onEnded: onPlaybackEnded,
+              onEnded: (replay) => onPlaybackEnded(replay),
+              validatePlayback: validatePlayback,
             ),
           ),
           // 作者・タグ・制作情報・詳細導線はすべて動画領域の外。
