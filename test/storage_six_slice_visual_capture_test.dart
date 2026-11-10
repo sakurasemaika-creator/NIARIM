@@ -155,6 +155,20 @@ void main() {
       expect(find.text(label), findsOneWidget, reason: label);
       final bar = find.byKey(Key('storageBreakdownBar_$label'));
       expect(bar, findsOneWidget, reason: 'Missing bar for $label');
+      final labelWidget = tester.widget<Text>(
+        find.byKey(Key('storageBreakdownBarLabel_$label')),
+      );
+      final valueWidget = tester.widget<Text>(
+        find.byKey(Key('storageBreakdownBarValue_$label')),
+      );
+      expect(labelWidget.data, label);
+      expect(valueWidget.data, formatStorageBytes(values!.bytesOf(category)));
+      expect(labelWidget.style?.color, scheme.onSecondary);
+      expect(valueWidget.style?.color, scheme.onSecondary);
+      expect(
+        find.descendant(of: bar, matching: find.text(label)),
+        findsOneWidget,
+      );
       final fill = tester.widget<FractionallySizedBox>(
         find.descendant(
           of: bar,
@@ -171,6 +185,7 @@ void main() {
         find.descendant(of: bar, matching: find.byType(DecoratedBox)),
       ).toList();
       expect(boxes.length, 3);
+      expect((boxes.first.decoration as BoxDecoration).color, expectedOutline);
       final border = (boxes.last.decoration as BoxDecoration).border as Border;
       expect(
         border.top.color,
@@ -178,6 +193,18 @@ void main() {
         reason: 'Bar border must follow the current theme for $label',
       );
     }
+    // The category dots remain, but they must not have an outline.
+    final legendDots = tester.widgetList<Container>(
+      find.byType(Container),
+    ).where((widget) => widget.constraints == null &&
+        widget.child == null &&
+        widget.alignment == null &&
+        widget.margin == null &&
+        widget.padding == null &&
+        widget.decoration is BoxDecoration &&
+        (widget.decoration! as BoxDecoration).shape == BoxShape.circle &&
+        (widget.decoration! as BoxDecoration).border == null).toList();
+    expect(legendDots.length, greaterThanOrEqualTo(6));
     expect(tester.takeException(), isNull);
 
     final boundary =
