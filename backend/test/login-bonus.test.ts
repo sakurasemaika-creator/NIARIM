@@ -43,11 +43,11 @@ describe("cumulative login bonus and non-streak earning",()=>{
   expect(DAILY_LOGIN_COINS).toBe(1);
   expect(LOGIN_BONUS_MILESTONES).toHaveLength(54);
   expect(LOGIN_BONUS_MILESTONES[0]).toMatchObject({days:5,coins:5});
-  expect(milestoneCoins(50)).toBe(50);
-  expect(milestoneCoins(100)).toBe(100);
-  expect(milestoneCoins(500)).toBe(250);
-  expect(milestoneCoins(1000)).toBe(500);
-  expect(milestoneCoins(3600)).toBe(150);
+  expect(milestoneCoins(50)).toBe(10);
+  expect(milestoneCoins(100)).toBe(15);
+  expect(milestoneCoins(500)).toBe(25);
+  expect(milestoneCoins(1000)).toBe(40);
+  expect(milestoneCoins(3600)).toBe(40);
   expect(milestoneCoins(51)).toBeUndefined();
  });
  it("visit increments only a distinct server-side day and never mints",async()=>{
@@ -120,7 +120,7 @@ describe("cumulative login bonus and non-streak earning",()=>{
   enable();
   const result=JSON.parse((await claimMyLoginBonus(
     req({kind:"milestone",days:100}))).body??"{}");
-  expect(result).toMatchObject({claimed:true,awardedCoins:100,days:100});
+  expect(result).toMatchObject({claimed:true,awardedCoins:15,days:100});
   const transaction=send.mock.calls[0][0] as TransactWriteCommand;
   expect(transaction.input.TransactItems).toHaveLength(4);
   expect(transaction.input.TransactItems?.[0].ConditionCheck?.ConditionExpression)
