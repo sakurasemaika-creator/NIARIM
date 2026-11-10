@@ -1,5 +1,26 @@
 # NIARIM Audit Progress
 
+## S38 checkpoint — 実行環境がunavailable（2026-11-10）
+
+S37の製品修正/公開/CI25/原本44/検証50件は完了済み。App source `9ff5a56f58191022ba3c0ae142692102d676c515`、State反映後App `6decdfa96c5e57c22d31f12142a577e5877401e0` / Web `d7f8b402f4835cd96548b9af6c12715a640b8714`、dev_branchのみ。今回の新しいcheckpoint commitはStateだけで、下記S38製品修正は未push。Baseline2done/628todo/A003、Discovery61todo、Delta37topTodo/97宣言を変更しない。全面監査/Visual closureは未完了。
+
+DISC061のfresh UI反例はWorks行/previewの0PASS/2FAIL（PlatformException・通知無し）。修正はper-file native share Futureの重複防止、path key付き行State、処理中のshare/open/delete無効、行とpreview内のliveRegionエラー、previewのClose維持、mounted確認、実popover origin。既存7localeのUnsupported/GenericとThemeの色だけを使い、native error文はUIへ出さない。行はinline feedbackにし、別のUndo通知を妨げない。ShareResult.unavailableを失敗と決めつけない。
+
+観測済み: 新規8tests PASS（32秒）と関連10filesの45tests PASS（3分25秒）。45には8を含む。内部条件はshare21、Home350、card10080、preview1260で、固有test数へ加算しない。全analyze0、normal/fixture Linux build成功。compiled368Dart/8font、kernel `950710eb7dce8765d7954dc7f95f6f1e6227a62872886e4ab1aed205066ae5ce`、fixture SHA `3b5190974fd0b745b34cc9dfa941093f09bc9434baf59d00c8234eaebae2c43d`。code/期待値を弱めず、Tooltip locator・mock exceptionのnative envelope・guarded callbackのfixture問題を切り分けて修復した。8testsはpending/連打/共有取消/合成status/close後late failure/再試行/同じfileの重複caller/他のUndo保持を含む。合成native境界であり実OS共有成功のPASSではない。
+
+実Linux PC FR1440で実際のUnimplementedErrorがlocalized unsupportedとして行とpreview内へ表示され、画像を保持してretry/Close/F8/再訪/reopenを操作した。PC9原本中8点を個別表示、1点は同一pixel再利用。before/after-sharing/finalの実managedPNG/旧共有4file/2archive/cacheをJSONへ記録。S37 kernel bf25129dの367Dart/8fontはS38修正前の現在HEADと全byte一致し、実Linux beforeとfresh widget2FAILを別々に使った。
+
+実行環境が突然unavailableになり、exec_commandは「No usable execution environment is available」、view_imageはexec-server transport closed。PC原本・45件のraw logはまだローカルのためbackup-pending。SPはowned fixtureを起動しhome画像/初期ファイルJSONまで生成したが未目視、共有エラーの実操作/short-height/実download版PC-SPは未完。新S38製品修正をpush済み・全面監査完了とはしない。元環境が復帰する可能性を先に確認し、ファイル消失と断定しない。
+
+保存済みWIP: https://drive.google.com/file/d/1zUcjfxE-aIqn358KfooIYCFXcw5NeOl_/view （121937B /SHA256 fa5841f016bb4758f4e7b9fd52634453276ed4e70f894b21932651463effc203 /43hash）。metadata/raw SHA/CRC/全manifest確認済み。最終inline製品source3既存files、新ExportShareService、新test、candidate-source-manifest.json（368Dart/8font）、8PASSとfresh2FAILログを含む。後に変更したCI workflowだけはこのZIP未収録のため、正確な全文を別checkpoint文書に保存する。
+
+S38単独実行物2partsもDriveへuploadしmetadataのname/MIME/parent/sizeを確認した。part1 https://drive.google.com/file/d/1cwKG-bLeICkyUD3Q4w98mxOAOQkIZO1K/view （83542342B /local SHA1d53fba400ba8256e4eec2f7769e55bf14fefab5f889a79785e9a4517abbc220）、part2 https://drive.google.com/file/d/1IVKKE3_w0st5KAwn-qxAvOpzUEXZX0ip/view （17123429B /local SHAeca842182aacfe2500ccaeed42c67e322700a89bb54889ad64ddbe77c13a24cd）。ローカルCRC/計61file hash検証済み、remote raw SHA/CRC/全hash照合は未実施。S37や旧runtime chain無しで復元できる。未公開の途中deltaは使わず、このstandalone2partsを使う。
+
+次の1手: 実行環境が使えるか確認。復帰したら所有console session3715/display91/App pid540（最後はSP）、cwd /workspace/scratch/6117b8458188 を確認し、残っているaudit-evidence/A003-S38-currentのraw45PASS/PC原本をまずZIP保存する。消えていた場合はWIP ZIPのhash照合→dev_branchだけ最新取得→検証済みsource5filesとtestを復元し、本checkpoint文書のCI全文を適用。S38runtime2partsをraw hash/CRC/全61hash照合し、新規owned outputへ復元する。同じsource/入力の既存45回帰・SDK/buildを復元だけのために繰り返さない。原本が復元できない箇所だけ、明示した新しい再操作証拠を取得する。
+
+その後、SP EN390/short320x220の実共有非対応→表示/再試行/scroll/Close/再訪、実download版PC/SPと全file/2archive hash不変、368Dart/8fontとkernel/fixture/現在HEADの対応を完了。State5と原本/ログをDrive保存/readbackし、検証済みS38をdev_branchだけ通常CAS/nonforce push、独立storage CIの22+8+3=33件と全体CI留保を照合してreceipt。S38ではまだCI33を実行していない。DISC059部分reset/prefs ack/古いmemory/legacy名衝突、DISC060全format/theme/OS、DISC058/048/057/typing、最新Web/実auth/backend/Android/DeX/法務/最終closureも未完。
+
+
 ## S37 — 書き出しの所有境界・静止画プレビュー（2026-11-10）
 
 この単位の実行入力はApp `7a9162fb55e00045f123ca3702fbfc33aeade8eb`＋S37修正 / Web `578904b5ff8c550eee5a5a2fd282c97af005d232`。両dev_branchだけ。保存済みS37初期WIP以後App60+13/Web39+5commitを保持してWIPを3way統合。現在HEADの20監査資料をrepoごとにhash照合して変更なし。増分はD001.56–60へtodo登録（Delta37topTodo/宣言97）。Baseline2done/628todo/currentA003、Discovery61todo/cursor001を維持し、全面監査・Visual closureは未完了。
@@ -108,7 +129,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S37 — export所有境界/PNG-JPEGを公開、50回帰と実PC/SP・CI25/source照合済み。DISC061共有失敗へ
+current_substep: A003/S38 — share inline修正/45回帰/PC実操作まで。実行環境unavailable、SP/native原本保存/製品pushは保留
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -128,7 +149,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: S37公開receiptを保存し、DISC061共有失敗のfresh反例→修正/回帰/実操作へ。DISC059残branch、DISC058/048/057/typing/Web Deltaへ。同一入力の復元だけのためにS37 50回帰/367Dart/8font/native44を再実行しない。
+next_action: 実行環境の復帰確認→S38ローカル原本/raw45PASSを先に保存→WIP/standalone照合→SP共有失敗の実操作/実download版→State5/証跡readback→検証済み製品をdev_branchだけ通常push/CI33。A003_S38_20261110_CHECKPOINT.mdを正本再開情報とする。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
