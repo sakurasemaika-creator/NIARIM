@@ -18,6 +18,9 @@ on:
       - 'lib/router.dart'
       - 'test/login_bonus_ui_policy_test.dart'
       - 'lib/screens/rewards/creator_missions_screen.dart'
+      - 'lib/screens/rewards/plaza_missions_panel.dart'
+      - 'lib/widgets/mission_completion_dialog.dart'
+      - 'test/mission_completion_dialog_test.dart'
       - 'lib/screens/community/community_follow_notifications_screen.dart'
       - 'lib/screens/community/community_screen.dart'
       - 'lib/screens/home/widgets/home_drawer.dart'
@@ -86,6 +89,9 @@ jobs:
             lib/l10n/reward_navigation_labels.dart \
             lib/router.dart \
             lib/screens/rewards/creator_missions_screen.dart \
+            lib/screens/rewards/plaza_missions_panel.dart \
+            lib/widgets/mission_completion_dialog.dart \
+            test/mission_completion_dialog_test.dart \
             lib/screens/community/community_follow_notifications_screen.dart \
             lib/screens/community/community_screen.dart \
             lib/screens/home/widgets/home_drawer.dart \
@@ -112,4 +118,5 @@ jobs:
             test/creator_mission_claim_ui_policy_test.dart \
             test/creator_mission_sort_policy_test.dart \
             test/creator_mission_drawer_attention_test.dart \
-            test/login_bonus_ui_policy_test.dart
+            test/login_bonus_ui_policy_test.dart \
+            test/mission_completion_dialog_test.dart
