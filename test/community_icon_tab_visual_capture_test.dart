@@ -3,24 +3,39 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/app.dart';
+import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/router.dart';
 import 'package:niarim/screens/community/community_screen.dart';
-import 'package:niarim/services/community_preview_service.dart';
-import 'package:niarim/services/community_service.dart';
-import 'package:niarim/services/google_auth_service.dart';
-import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/load_app_fonts.dart';
+import 'helpers/first_use_tooltips.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   testWidgets('five plaza icon tabs fit and capture actual Flutter rendering at device widths', (
     tester,
   ) async {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'ja',
+      'force_pc_mode': 0,
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final temp = Directory.systemTemp.createTempSync('niarim_plaza_icons_');
+    const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathChannel, (_) async => temp.path);
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(pathChannel, null);
+      if (temp.existsSync()) temp.deleteSync(recursive: true);
+    });
     await loadAppFonts(tester);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -35,26 +50,14 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
       tester.view.physicalSize = Size(width.toDouble(), pc ? 900 : 844);
       final boundary = GlobalKey();
-      final service = CommunityService();
-      final preview = CommunityPreviewService();
-      final settings = SettingsService();
-      await tester.runAsync(() => service.contentFiltersReady);
+      appRouter.go('/community');
+      final providers = await tester.runAsync(buildAppProviders);
       await tester.pumpWidget(
         RepaintBoundary(
           key: boundary,
           child: MultiProvider(
-            providers: [
-              ChangeNotifierProvider<CommunityService>.value(value: service),
-              ChangeNotifierProvider<CommunityPreviewService>.value(value: preview),
-              ChangeNotifierProvider<SettingsService>.value(value: settings),
-              ChangeNotifierProvider(create: (_) => GoogleAuthService()),
-            ],
-            child: MaterialApp(
-              locale: const Locale('ja'),
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
-              supportedLocales: AppLocalizations.supportedLocales,
-              home: const CommunityScreen(),
-            ),
+            providers: providers!,
+            child: const NiarimApp(),
           ),
         ),
       );
@@ -108,9 +111,6 @@ void main() {
       expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 4);
       await capture('ranking-tooltip');
       await tester.pumpWidget(const SizedBox.shrink());
-      service.dispose();
-      preview.dispose();
-      settings.dispose();
     }
   }, timeout: const Timeout(Duration(minutes: 8)));
 }
