@@ -94,23 +94,23 @@ void main() {
     final deletedId = deleted!.id;
     await tester.runAsync(() => ps.deleteProject(deletedId));
 
-    // About 200 KiB per category makes all six sectors visible, including
-    // the active project archive and the trashed project archive.
+    // Distinct sizes make the six per-row bar lengths visibly comparable.
+    // Both project archives also contribute a small amount of real metadata.
     void fileWithSize(String path, int size) {
       final file = File(path)..createSync(recursive: true);
       file.writeAsBytesSync(List<int>.filled(size, 0), flush: true);
     }
-    const bytes = 200 * 1024;
+    const kib = 1024;
     final base = '${docs.path}/niarim';
     fileWithSize(
       '$base/projects/${activeId}/Materials/test-material.png',
-      bytes,
+      200 * kib,
     );
-    fileWithSize('$base/projects/${activeId}/project-fixture.bin', bytes);
-    fileWithSize('$base/projects/${deletedId}/trash-fixture.bin', bytes);
-    fileWithSize('$base/exports/fixture.png', bytes);
-    fileWithSize('$base/Brushes/fixture-brush.bin', bytes);
-    fileWithSize('${cache.path}/cache-fixture.bin', bytes);
+    fileWithSize('$base/projects/${activeId}/project-fixture.bin', 150 * kib);
+    fileWithSize('$base/projects/${deletedId}/trash-fixture.bin', 25 * kib);
+    fileWithSize('$base/exports/fixture.png', 110 * kib);
+    fileWithSize('$base/Brushes/fixture-brush.bin', 75 * kib);
+    fileWithSize('${cache.path}/cache-fixture.bin', 50 * kib);
 
     final values = await tester.runAsync(
       () => StorageInfoService().computeBreakdown({deleted.id}),
