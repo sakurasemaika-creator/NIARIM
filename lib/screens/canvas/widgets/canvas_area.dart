@@ -621,6 +621,12 @@ class _CanvasAreaState extends State<CanvasArea> {
   // つぶしたポインターのUpをツール側の「描画終了」として誤処理しない）。
   final Set<int> _toolHandledPointers = {};
   final MultiTouchTapTracker _multiTouchTapTracker = MultiTouchTapTracker();
+  // ロック中のレイヤーで断った指。描けない知らせは、この指が1本のまま
+  // 動いた（線を描こうとした）・離れた（点を打とうとした）ときに出す。
+  // 押した時点では2本指の拡大・移動・タップの1本目と見分けられず、2本目の
+  // 指が来たら描く操作ではないので出さない。
+  int? _lockedNoticePointer;
+  Offset? _lockedNoticeDownPosition;
 
   // ─── 長押しスポイト（設定画面でON/OFF・保持秒数を設定可能、既定ON） ─────
   // ペン（トーン/スタンプサブツールを除く）・消しゴムで描画中、指を動かさず
@@ -1583,7 +1589,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (_isSelectionTool &&
         _selectionMask != null &&
         _selectionTransformHitAt(canvasPos) != null &&
-        _refuseLockedLayer(event.pointer)) {
+        _refuseLockedLayer(event)) {
       return;
     }
     if (_isSelectionTool &&
@@ -1618,8 +1624,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     // ここから先のツールはどれもレイヤーの絵を書き換える（定規はハンドルの
     // 操作だけ書き換えないので、ハンドルに当たらなかったときに調べる）。
-    if (widget.currentTool != DrawingTool.ruler &&
-        _refuseLockedLayer(event.pointer)) {
+    if (widget.currentTool != DrawingTool.ruler && _refuseLockedLayer(event)) {
       return;
     }
     if (widget.currentTool == DrawingTool.shape &&
@@ -1654,7 +1659,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       // 【重大バグ修正】以前はここで無条件にreturnしていたため、定規
       // ツールでハンドル以外の場所をタップしても何も反応しなかった）。
       if (_handleRulerDown(canvasPos)) return;
-      if (_refuseLockedLayer(event.pointer)) return;
+      if (_refuseLockedLayer(event)) return;
     }
     if (widget.currentTool == DrawingTool.bucket) {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
@@ -2950,15 +2955,43 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
   }
 
-  /// 今のレイヤーがロック中なら、描かずに知らせて真を返す。[pointer]は
-  /// 断った指（以後の動き・離すもツールへ渡さない。渡すとペンは動きだけで
-  /// 線を描き始め、ぼかしは動いた所をぼかしてしまう）。
-  bool _refuseLockedLayer(int? pointer) {
+  /// 今のレイヤーがロック中なら、描かずに知らせて真を返す。[event]は
+  /// 断った押下（その指の以後の動き・離すもツールへ渡さない。渡すとペンは
+  /// 動きだけで線を描き始め、ぼかしは動いた所をぼかしてしまう）。
+  bool _refuseLockedLayer(PointerEvent? event) {
     final layer = _layers.where((l) => l.id == _layerId).firstOrNull;
     if (layer == null || !layer.isLocked) return false;
-    if (pointer != null) _toolHandledPointers.remove(pointer);
+    if (event != null) {
+      _toolHandledPointers.remove(event.pointer);
+      // 右クリック等、描くボタン以外のマウスの押下は描く操作ではない。
+      if (event.kind == PointerDeviceKind.mouse &&
+          event.buttons & kPrimaryMouseButton == 0) {
+        return true;
+      }
+      // 指は、1本のまま動く・離れるまで知らせない（2本指の操作の1本目かも
+      // しれない。拡大のたびに知らせると、ほかの知らせまで閉じてしまう）。
+      if (event.kind == PointerDeviceKind.touch) {
+        if (_activeTouchPositions.length < 2) {
+          _lockedNoticePointer = event.pointer;
+          _lockedNoticeDownPosition = event.localPosition;
+        }
+        return true;
+      }
+    }
+    _notifyLockedLayer();
+    return true;
+  }
+
+  /// 断った指を1本の指の描く操作と決めて、描けない知らせを出す。
+  void _notifyLockedLayerForTouch() {
+    _lockedNoticePointer = null;
+    _lockedNoticeDownPosition = null;
+    _notifyLockedLayer();
+  }
+
+  void _notifyLockedLayer() {
     final notify = widget.onLockedLayerEdit;
-    if (notify == null) return true;
+    if (notify == null) return;
     // スライダーの変形はビルド中（didUpdateWidget）に来る。そこから親の
     // SnackBarを出すと例外になるので、フレームの後へ回す。
     final phase = SchedulerBinding.instance.schedulerPhase;
@@ -2970,7 +3003,6 @@ class _CanvasAreaState extends State<CanvasArea> {
     } else {
       notify();
     }
-    return true;
   }
 
   void _beginSelectionTransform(
@@ -4500,6 +4532,11 @@ class _CanvasAreaState extends State<CanvasArea> {
               e.localPosition,
               DateTime.now(),
             );
+            // 2本目の指：断った1本目は拡大・移動・タップの一部だった。
+            if (_activeTouchPositions.length >= 2) {
+              _lockedNoticePointer = null;
+              _lockedNoticeDownPosition = null;
+            }
             if (_activeTouchPositions.length >= 2 && _canTouchTransform) {
               _touchTransformActive = true;
               // 2本指目が触れた時点で、既存の1本指用の長押しスポイト保留は
@@ -4516,6 +4553,11 @@ class _CanvasAreaState extends State<CanvasArea> {
           _onPointerDown(e);
         },
         onPointerMove: (e) {
+          if (e.pointer == _lockedNoticePointer &&
+              (e.localPosition - _lockedNoticeDownPosition!).distance >
+                  kTouchSlop) {
+            _notifyLockedLayerForTouch();
+          }
           if (e.kind == PointerDeviceKind.touch &&
               _activeTouchPositions.containsKey(e.pointer)) {
             _multiTouchTapTracker.pointerMove(e.pointer, e.localPosition);
@@ -4532,6 +4574,7 @@ class _CanvasAreaState extends State<CanvasArea> {
           _onPointerMove(e);
         },
         onPointerUp: (e) {
+          if (e.pointer == _lockedNoticePointer) _notifyLockedLayerForTouch();
           MultiTouchTapKind? completedTap;
           if (e.kind == PointerDeviceKind.touch) {
             _touchCount = (_touchCount - 1).clamp(0, 10);
@@ -4554,6 +4597,10 @@ class _CanvasAreaState extends State<CanvasArea> {
           _onPointerUp(e);
         },
         onPointerCancel: (e) {
+          if (e.pointer == _lockedNoticePointer) {
+            _lockedNoticePointer = null;
+            _lockedNoticeDownPosition = null;
+          }
           if (e.kind == PointerDeviceKind.touch) {
             _touchCount = (_touchCount - 1).clamp(0, 10);
             _activeTouchPositions.remove(e.pointer);

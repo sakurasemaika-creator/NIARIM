@@ -18,7 +18,9 @@ import 'helpers/first_use_tooltips.dart';
 
 /// ロックしたレイヤーへキャンバスで描こうとしたら、何も描かずに
 /// 「ロック中のため描けません」と知らせる（以前は黙って何も起きず、
-/// 描けない理由が分からなかった）。
+/// 描けない理由が分からなかった）。描く操作ではないもの（2本指の拡大・
+/// 移動・2本指のタップ・右クリック）では知らせない（出すと、拡大のたびに
+/// 誤った知らせが出て、ほかの知らせを閉じてしまう）。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
@@ -55,8 +57,9 @@ void main() {
       'このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」を'
       'オフにしてください。';
 
-  testWidgets('drawing on a locked layer says why nothing is drawn', (
-    tester,
+  /// 今のレイヤーをロックした作品をキャンバスで開き、キャンバスの矩形を返す。
+  Future<({app_undo.UndoManager undo, Rect area})> openLocked(
+    WidgetTester tester,
   ) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
@@ -95,9 +98,23 @@ void main() {
     await settleIo(tester, 10);
     expect(find.byType(CanvasScreen), findsOneWidget);
     expect(find.text(notice), findsNothing);
+    return (undo: undo, area: tester.getRect(find.byType(CanvasArea)));
+  }
+
+  // 操作ボタンの無い知らせなので、時間で消える（出てから6秒のうちに）。
+  Future<void> expectNoticeTimesOut(WidgetTester tester) async {
+    for (var i = 0; i < 60; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.text(notice), findsNothing);
+  }
+
+  testWidgets('drawing on a locked layer says why nothing is drawn', (
+    tester,
+  ) async {
+    final (:undo, :area) = await openLocked(tester);
 
     // ペンで描く（マウス：画面端の前後フレーム用の帯を避けるため）。
-    final area = tester.getRect(find.byType(CanvasArea));
     final stroke = await tester.startGesture(
       area.center - const Offset(40, 0),
       kind: PointerDeviceKind.mouse,
@@ -112,10 +129,118 @@ void main() {
 
     expect(find.text(notice), findsOneWidget);
     expect(undo.canUndo, isFalse, reason: 'nothing was drawn');
-    // 操作ボタンの無い知らせなので、時間で消える。
-    await tester.pump(const Duration(seconds: 4));
-    await tester.pump(const Duration(seconds: 1));
-    expect(find.text(notice), findsNothing);
+    await expectNoticeTimesOut(tester);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a one-finger stroke on a locked layer says why', (tester) async {
+    final (:undo, :area) = await openLocked(tester);
+
+    final finger = await tester.startGesture(
+      area.center - const Offset(40, 0),
+      kind: PointerDeviceKind.touch,
+      pointer: 21,
+    );
+    for (var dx = -30.0; dx <= 40; dx += 10) {
+      await finger.moveTo(area.center + Offset(dx, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    // 指を動かして描こうとした時点で知らせる（離すまで待たない）。
+    await settleIo(tester, 2);
+    expect(find.text(notice), findsOneWidget);
+    await finger.up();
+    await settleIo(tester, 2);
+    expect(find.text(notice), findsOneWidget);
+    expect(undo.canUndo, isFalse, reason: 'nothing was drawn');
+    await expectNoticeTimesOut(tester);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a one-finger tap on a locked layer says why', (tester) async {
+    final (:undo, :area) = await openLocked(tester);
+
+    final finger = await tester.startGesture(
+      area.center,
+      kind: PointerDeviceKind.touch,
+      pointer: 31,
+    );
+    await tester.pump(const Duration(milliseconds: 60));
+    await finger.up();
+    await settleIo(tester, 3);
+    expect(find.text(notice), findsOneWidget);
+    expect(undo.canUndo, isFalse, reason: 'nothing was drawn');
+    await expectNoticeTimesOut(tester);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('pinch-zooming over a locked layer does not say it cannot draw', (
+    tester,
+  ) async {
+    final (:undo, :area) = await openLocked(tester);
+
+    // 2本指でつまんで拡大する（描く操作ではない）。
+    final a = await tester.startGesture(
+      area.center - const Offset(30, 0),
+      kind: PointerDeviceKind.touch,
+      pointer: 11,
+    );
+    final b = await tester.startGesture(
+      area.center + const Offset(30, 0),
+      kind: PointerDeviceKind.touch,
+      pointer: 12,
+    );
+    for (var i = 1; i <= 6; i++) {
+      await a.moveTo(area.center - Offset(30.0 + i * 10, 0));
+      await b.moveTo(area.center + Offset(30.0 + i * 10, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await a.up();
+    await b.up();
+    await settleIo(tester, 3);
+    expect(find.text(notice), findsNothing, reason: 'a pinch is not drawing');
+    expect(undo.canUndo, isFalse, reason: 'nothing was drawn');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a two-finger tap over a locked layer does not say it', (
+    tester,
+  ) async {
+    final (:undo, :area) = await openLocked(tester);
+
+    final a = await tester.startGesture(
+      area.center - const Offset(30, 0),
+      kind: PointerDeviceKind.touch,
+      pointer: 41,
+    );
+    final b = await tester.startGesture(
+      area.center + const Offset(30, 0),
+      kind: PointerDeviceKind.touch,
+      pointer: 42,
+    );
+    await tester.pump(const Duration(milliseconds: 60));
+    await a.up();
+    await b.up();
+    await settleIo(tester, 3);
+    expect(find.text(notice), findsNothing, reason: 'a two-finger tap');
+    expect(undo.canUndo, isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a right-click over a locked layer does not say it', (
+    tester,
+  ) async {
+    final (:undo, :area) = await openLocked(tester);
+
+    final click = await tester.startGesture(
+      area.center,
+      kind: PointerDeviceKind.mouse,
+      buttons: kSecondaryMouseButton,
+    );
+    await tester.pump(const Duration(milliseconds: 30));
+    await click.up();
+    await settleIo(tester, 3);
+    expect(find.text(notice), findsNothing, reason: 'a right-click');
+    expect(undo.canUndo, isFalse);
     expect(tester.takeException(), isNull);
   });
 }

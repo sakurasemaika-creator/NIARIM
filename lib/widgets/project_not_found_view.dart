@@ -26,8 +26,20 @@ class ProjectNotFoundView extends StatelessWidget {
               const SizedBox(height: 16),
               FilledButton(
                 key: homeButtonKey,
+                // 長い言語・大きな文字で文字が折り返すと、上下の余白の無い
+                // ボタンでは見出しの書体の下の出っ張りが外へはみ出したので、
+                // 上下にも余白を取り、各行を中央にそろえる。
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
                 onPressed: () => context.go('/home'),
-                child: Text(l10n.projectDetailNotFoundBackToList),
+                child: Text(
+                  l10n.projectDetailNotFoundBackToList,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
           ),

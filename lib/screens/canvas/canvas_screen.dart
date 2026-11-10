@@ -890,29 +890,25 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     AutofillCheckMode.silhouette:
                         l10n.canvasAutofillCheckSilhouette,
                   };
-                  Widget dropdown({required bool expanded}) =>
-                      DropdownButton<AutofillCheckMode>(
-                        value: _autofillCheckMode,
-                        isExpanded: expanded,
-                        underline: const SizedBox.shrink(),
-                        items: [
-                          for (final entry in labels.entries)
-                            DropdownMenuItem(
-                              value: entry.key,
-                              child: Text(entry.value),
-                            ),
-                        ],
-                        onChanged: (mode) {
-                          if (mode == null) return;
-                          setState(() => _autofillCheckMode = mode);
-                          setMenuState(() {});
-                        },
-                      );
+                  void choose(AutofillCheckMode? mode) {
+                    if (mode == null) return;
+                    setState(() => _autofillCheckMode = mode);
+                    setMenuState(() {});
+                  }
+
+                  final icon = Icon(
+                    _autofillCheckMode == AutofillCheckMode.normal
+                        ? Icons.visibility_outlined
+                        : _autofillCheckMode == AutofillCheckMode.partSeparation
+                        ? Icons.palette_outlined
+                        : Icons.contrast,
+                  );
+                  final title = Text(l10n.canvasAutofillCheckView);
                   return LayoutBuilder(
                     builder: (ctx, constraints) {
-                      // 選択肢は、項目名の右に入るときだけ右に置き、入らない
-                      // ときは項目名の下の行に置く（長い言語・大きな文字で
-                      // 右に置くと、行の幅をすべて使って行が描けなかった）。
+                      // 選択肢は、項目名の右に入るときだけ右のドロップダウンに
+                      // する（長い言語・大きな文字で右に置くと、行の幅をすべて
+                      // 使って行が描けなかった）。
                       final style = Theme.of(ctx).textTheme.titleMedium;
                       final scaler = MediaQuery.textScalerOf(ctx);
                       var widest = 0.0;
@@ -930,18 +926,51 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       final fitsBeside =
                           widest + 32 + 56 + 32 + scaler.scale(96) <=
                           constraints.maxWidth;
-                      return ListTile(
-                        leading: Icon(
-                          _autofillCheckMode == AutofillCheckMode.normal
-                              ? Icons.visibility_outlined
-                              : _autofillCheckMode ==
-                                    AutofillCheckMode.partSeparation
-                              ? Icons.palette_outlined
-                              : Icons.contrast,
-                        ),
-                        title: Text(l10n.canvasAutofillCheckView),
-                        subtitle: fitsBeside ? null : dropdown(expanded: true),
-                        trailing: fitsBeside ? dropdown(expanded: false) : null,
+                      if (fitsBeside) {
+                        return ListTile(
+                          leading: icon,
+                          title: title,
+                          trailing: DropdownButton<AutofillCheckMode>(
+                            value: _autofillCheckMode,
+                            underline: const SizedBox.shrink(),
+                            items: [
+                              for (final entry in labels.entries)
+                                DropdownMenuItem(
+                                  value: entry.key,
+                                  child: Text(entry.value),
+                                ),
+                            ],
+                            onChanged: choose,
+                          ),
+                        );
+                      }
+                      // 入らないときは、選択肢を項目名の下に1つずつ並べる
+                      // （ドロップダウンを下の行に置くと、選択肢も選んだ値も
+                      // 1行の高さに収められ、折り返した文字の2行目が切れた）。
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(leading: icon, title: title),
+                          RadioGroup<AutofillCheckMode>(
+                            groupValue: _autofillCheckMode,
+                            onChanged: choose,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                for (final entry in labels.entries)
+                                  RadioListTile<AutofillCheckMode>(
+                                    value: entry.key,
+                                    title: Text(entry.value),
+                                    contentPadding:
+                                        const EdgeInsetsDirectional.only(
+                                          start: 56,
+                                          end: 16,
+                                        ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
                       );
                     },
                   );

@@ -66,8 +66,9 @@ void main() {
           rootKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 1);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
-      await File('${out.path}/$name.png')
-          .writeAsBytes(data!.buffer.asUint8List(), flush: true);
+      await File(
+        '${out.path}/$name.png',
+      ).writeAsBytes(data!.buffer.asUint8List(), flush: true);
       image.dispose();
     });
   }
@@ -249,4 +250,67 @@ void main() {
     expect(tester.getRect(add).right, lessThanOrEqualTo(320));
     expect(tester.takeException(), isNull);
   });
+
+  // 文字がすべて見えている：行の高さが足りずに2行目が切れていない
+  // （固定の高さの行に折り返した文字を入れると「Vérifier la」だけが
+  // 見えた）、画面の外へ出ていない。
+  void expectFullyShown(WidgetTester tester, Finder text, double width) {
+    final paragraph = tester.renderObject<RenderParagraph>(text);
+    expect(paragraph.didExceedMaxLines, isFalse);
+    expect(
+      paragraph.size.height,
+      greaterThanOrEqualTo(
+        paragraph.getMaxIntrinsicHeight(paragraph.size.width) - 0.5,
+      ),
+    );
+    final rect = tester.getRect(text);
+    expect(rect.left, greaterThanOrEqualTo(0));
+    expect(rect.right, lessThanOrEqualTo(width));
+  }
+
+  // 一番長い仏語・英語の文言・文字2倍・320pxでも、自動塗り確認表示の
+  // 選択肢はどれも読めて選べ、選んだ値も切れずに見える。
+  for (final (language, longest) in [
+    ('fr', 'Vérifier la silhouette'),
+    ('en', 'Check silhouette'),
+  ]) {
+    testWidgets(
+      'autofill check choices read in full in $language at twice the size',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({
+          firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+          'first_launch': false,
+          'language': language,
+        });
+        tester.platformDispatcher.textScaleFactorTestValue = 2;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        await openMenu(tester, size: const Size(320, 700));
+        final sheet = find.byType(BottomSheet);
+        var choice = find.descendant(of: sheet, matching: find.text(longest));
+        if (choice.evaluate().isEmpty) {
+          // 選択肢がメニューの中に並んでいないとき（ドロップダウン）は
+          // 開いてから選ぶ。
+          await tester.tap(
+            find.descendant(of: sheet, matching: find.text('Normal')),
+          );
+          await settle(tester, 3);
+          choice = find.text(longest).last;
+        }
+        await tester.ensureVisible(choice);
+        await tester.pump();
+        expectFullyShown(tester, choice, 320);
+        await tester.tap(choice);
+        await settle(tester, 3);
+        await capture(tester, '15_autofill_check_${language}_x2');
+        final shown = find.descendant(of: sheet, matching: find.text(longest));
+        expect(shown, findsOneWidget);
+        expectFullyShown(tester, shown, 320);
+        expect(
+          find.descendant(of: sheet, matching: find.byIcon(Icons.contrast)),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }

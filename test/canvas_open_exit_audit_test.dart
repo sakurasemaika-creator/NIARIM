@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart' hide MaterialType;
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -19,6 +21,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/load_app_fonts.dart';
 
 /// キャンバス（A010）を開く・閉じるとき：存在しないIDでは空のキャンバスを
 /// 出さず一覧へ戻せること、不足素材の通知が時間で消え次の画面へ付いて
@@ -99,6 +102,75 @@ void main() {
     await tester.tap(find.byKey(const Key('canvasNotFoundHome')));
     await settleIo(tester, 4);
     expect(location(), '/home');
+    expect(tester.takeException(), isNull);
+  });
+
+  // 一番長い仏語の文言・文字2倍・320pxでも、一覧へ戻るボタンの文字は
+  // ボタンの中に収まり（折り返した見出しの書体の下の出っ張りがボタンの外へ
+  // はみ出していた）、各行がボタンの中央にそろう。
+  testWidgets('the way back fits in French at twice the text size', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      'first_launch': false,
+      'language': 'fr',
+    });
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await loadAppFonts(tester);
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    await tester.pumpWidget(
+      MultiProvider(providers: providers, child: const NiarimApp()),
+    );
+    await settleIo(tester, 4);
+    appRouter.push('/canvas/does-not-exist');
+    await settleIo(tester);
+    final button = find.byKey(const Key('canvasNotFoundHome'));
+    final label = find.descendant(
+      of: button,
+      matching: find.text('Aller aux projets'),
+    );
+    expect(label, findsOneWidget);
+    final buttonRect = tester.getRect(button);
+    final paragraph = tester.renderObject<RenderParagraph>(label);
+    final origin = paragraph.localToGlobal(Offset.zero);
+    // 字の箱（行末の空白は中央そろえで数えないので除く）。
+    const text = 'Aller aux projets';
+    final lines = [
+      for (var i = 0; i < text.length; i++)
+        if (text[i] != ' ')
+          ...paragraph.getBoxesForSelection(
+            TextSelection(baseOffset: i, extentOffset: i + 1),
+          ),
+    ];
+    // 折り返して2行になる大きさで確かめる。
+    expect(lines.map((b) => b.top).toSet().length, greaterThanOrEqualTo(2));
+    // 上下とも、書体の出っ張りが収まるだけの余白がボタンの中にある。
+    final textTop = origin.dy + lines.map((b) => b.top).reduce(math.min);
+    final textBottom = origin.dy + lines.map((b) => b.bottom).reduce(math.max);
+    expect(textTop - buttonRect.top, greaterThanOrEqualTo(8));
+    expect(buttonRect.bottom - textBottom, greaterThanOrEqualTo(8));
+    // 各行がボタンの中央にそろう（左寄せにならない）。
+    final byLine = <double, Rect>{};
+    for (final box in lines) {
+      final rect = box.toRect().shift(origin);
+      byLine.update(
+        box.top,
+        (r) => r.expandToInclude(rect),
+        ifAbsent: () => rect,
+      );
+    }
+    for (final line in byLine.values) {
+      expect(
+        (line.left - buttonRect.left) - (buttonRect.right - line.right),
+        moreOrLessEquals(0, epsilon: 2),
+      );
+    }
     expect(tester.takeException(), isNull);
   });
 
