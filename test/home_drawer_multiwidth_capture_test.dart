@@ -194,7 +194,7 @@ void main() {
         await shot('10-guide-help');
         DefaultTabController.of(
           tester.element(find.byType(TabBar).first),
-        ).animateTo(1);
+        ).animateTo(0);
         await tester.pump(const Duration(milliseconds: 900));
         await shot('11-guide-tips');
 
