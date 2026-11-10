@@ -17,6 +17,7 @@ import type { WorkItem } from "../../lib/types";
 import { workCountMissionById } from "../../lib/workCountMissionGrid";
 import { claimWorkCountMission } from "./creatorWorkCountClaim";
 import { getAllTimePublicWorks } from "./ranking";
+import { editTimeVerificationEnabled } from "../../lib/editSessionPolicy";
 import {
   CREATOR_MISSIONS,
   MAX_CREATOR_MISSION_COINS,
@@ -134,10 +135,21 @@ async function measuredProgress(
   workId?: string,
 ): Promise<{ count: number; authoritative: boolean; bookmarks?: number }> {
   switch (mission.kind) {
-    case "verifiedEditSeconds":
-      // local Project.totalWorkSeconds is NOT trusted; sender can edit it.
-      // Requires separate validated, bounded activity sessions to enable.
-      return { count: 0, authoritative: false };
+    case "verifiedEditSeconds": {
+      // No client-provided totalWorkSeconds or duration is accepted.
+      // Only authenticated, nonce/sequence checked, server-clock-bounded
+      // checkpoint receipts are eligible after separate operator approval.
+      if(!editTimeVerificationEnabled()) return {count:0,authoritative:false};
+      const recorded=await ddb.send(new GetCommand({
+        TableName:tableName(),Key:Keys.creatorMissionState(userId),
+        ConsistentRead:true,
+      }));
+      const item=recorded.Item;
+      const seconds=item?.itemType==="CREATOR_MISSIONS_V1" &&
+        Number.isSafeInteger(item?.verifiedEditSeconds) &&
+        item!.verifiedEditSeconds>=0 ? item!.verifiedEditSeconds as number : 0;
+      return {count:seconds,authoritative:true};
+    }
 
     case "followers": {
       const user = await getUser(userId);
@@ -244,7 +256,7 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
     claimedMask: state.claimedMask,
     verifiedEditSeconds: state.verifiedEditSeconds,
     candidateEditSeconds: state.candidateEditSeconds,
-    editTimeVerificationReady: false,
+    editTimeVerificationReady: editTimeVerificationEnabled(),
     editSessionPilotEnabled:
       process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED === "true",
     followerCount: user?.followerCount ?? 0,
@@ -264,7 +276,8 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
             Number.isSafeInteger(selectedWork!.bookmarkCount) &&
             selectedWork!.bookmarkCount >= mission.required
           : mission.kind === "verifiedEditSeconds"
-            ? false : null;
+            ? editTimeVerificationEnabled() &&
+              state.verifiedEditSeconds>=mission.required : null;
       const pendingAt = current?.firstQualifiedAt[key];
       return {
         ...mission,
@@ -287,7 +300,8 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
         rankingMinBookmarks: mission.kind==="niarimBookmarkRanking"
           ? RANKING_MIN_BOOKMARKS[mission.required] : null,
         rewardEnabled: enabled() &&
-          mission.kind !== "verifiedEditSeconds" &&
+          (mission.kind !== "verifiedEditSeconds" ||
+            editTimeVerificationEnabled()) &&
           !(mission.kind === "qualifiedWorks" &&
             mission.required > MAX_OWN_WORK_PAGES * QUERY_WORK_PAGE_SIZE),
       };

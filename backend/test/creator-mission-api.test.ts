@@ -32,6 +32,9 @@ beforeEach(() => {
   process.env.TABLE_NAME = "test-table";
   delete process.env.CREATOR_MISSION_CLAIMS_ENABLED;
   delete process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED;
+  delete process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED;
+  delete process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED;
+  delete process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED;
   send.mockReset();
   send.mockResolvedValue({});
 });
@@ -82,6 +85,35 @@ describe("creator mission endpoints", () => {
       code: "MISSION_VERIFICATION_PENDING",
     });
     expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand)).toBe(false);
+  });
+
+  it("uses server-recorded verified seconds and never client duration",async()=>{
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED="true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED="true";
+    process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED="true";
+    process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED="true";
+    process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED="true";
+    send.mockImplementation(async(c:unknown)=>{
+      if(c instanceof GetCommand)return {Item:{
+        itemType:"CREATOR_MISSIONS_V1",revision:1,
+        verifiedEditSeconds:3600,claimedMask:0,totalMissionCoins:0,
+      }};
+      return {};
+    });
+    const display=JSON.parse((await getMyCreatorMissions(req())).body??"{}");
+    expect(display.editTimeVerificationReady).toBe(true);
+    expect(display.missions.find((m:{id:string})=>m.id==="edit_1h"))
+      .toMatchObject({eligible:true,rewardEnabled:true,coins:5});
+    send.mockClear();
+    const started=JSON.parse((await claimCreatorMission(req({
+      missionId:"edit_1h",totalWorkSeconds:99999999999,
+    }))).body??"{}");
+    expect(started).toMatchObject({
+      claimed:false,pending:true,offeredCoins:5,awardedCoins:0,
+    });
+    expect(send.mock.calls.some(([c])=>c instanceof UpdateCommand)).toBe(true);
+    expect(send.mock.calls.some(([c])=>c instanceof TransactWriteCommand))
+      .toBe(false);
   });
 
   it("first eligible follower claim enters hold and creates no coins", async () => {

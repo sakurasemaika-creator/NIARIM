@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   boundedCandidateEditSeconds, validEditSession, utcEditDay,
+  editTimeVerificationEnabled,
   EDIT_CHECKPOINT_INTERVAL_SECONDS, EDIT_DAILY_CANDIDATE_MAX_SECONDS,
 } from "../src/lib/editSessionPolicy";
 
@@ -11,6 +12,33 @@ describe("inexpensive unverified creator editing time pilot", () => {
     meaningfulMutations: 20,
     alreadyCreditedToday: 0,
   };
+  it("requires all independent feature and review flags",()=>{
+    const old=[
+      process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED,
+      process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED,
+      process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED,
+    ];
+    try {
+      for(const key of ["CREATOR_EDIT_SESSION_PILOT_ENABLED",
+        "CREATOR_EDIT_TIME_VERIFICATION_ENABLED",
+        "CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED"]) delete process.env[key];
+      expect(editTimeVerificationEnabled()).toBe(false);
+      process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED="true";
+      process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED="true";
+      expect(editTimeVerificationEnabled()).toBe(false);
+      process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED="true";
+      expect(editTimeVerificationEnabled()).toBe(true);
+    } finally {
+      const keys=["CREATOR_EDIT_SESSION_PILOT_ENABLED",
+        "CREATOR_EDIT_TIME_VERIFICATION_ENABLED",
+        "CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED"];
+      keys.forEach((key,i)=>{
+        if(old[i]===undefined)delete process.env[key];
+        else process.env[key]=old[i];
+      });
+    }
+  });
+
   it("limits an interval to the actual server elapsed time", () => {
     expect(boundedCandidateEditSeconds({
       ...base, serverElapsedMs: 270000,

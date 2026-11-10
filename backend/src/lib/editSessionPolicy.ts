@@ -1,20 +1,31 @@
 /**
- * Low-write editing session policy.
+ * Low-write, server-clock-bounded editing session policy.
  *
- * A device can forge edit events. Every value returned here is only a
- * *candidate* for later integrity review, NEVER verified mission time.
- * The server binds time to its own clock and rate-limits accumulation.
+ * A device cannot create server elapsed time, bypass daily caps or replay
+ * a checkpoint. A modified device CAN fabricate mutation counters, however.
+ * Genuine drawing cannot be proven solely by this local editor protocol.
+ * Mission payouts require separate human anti-abuse approval.
  */
 export const EDIT_CHECKPOINT_INTERVAL_SECONDS = 15 * 60;
 export const EDIT_CHECKPOINT_MAX_GAP_SECONDS = 20 * 60;
 export const EDIT_DAILY_CANDIDATE_MAX_SECONDS = 8 * 60 * 60;
+
+/** Double approval for server-bounded, authenticated session time.
+ * Candidate-only observations gathered before activation NEVER become
+ * verified seconds retroactively.
+ */
+export function editTimeVerificationEnabled():boolean {
+  return process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED==="true" &&
+    process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED==="true" &&
+    process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED==="true";
+}
 
 /** One real committed content change is enough for short sessions. */
 export const SECONDS_PER_MEANINGFUL_MUTATION = 180;
 
 /**
  * No edit data, images or coordinates are sent. This upper-bounds how much
- * unverified candidate time one server-observed interval may produce.
+ * server-bounded active time one server-observed interval may produce.
  */
 export function boundedCandidateEditSeconds(args: {
   serverElapsedMs: number;

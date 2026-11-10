@@ -13,18 +13,19 @@ import {
   EDIT_DAILY_CANDIDATE_MAX_SECONDS,
   utcEditDay,
   validEditSession,
+  editTimeVerificationEnabled,
   type CandidateEditSession,
 } from "../../lib/editSessionPolicy";
 
 /**
- * Disabled-by-default measurement PILOT.
+ * Disabled-by-default authenticated edit-session measurement.
+ * Server-owned start/checkpoint time is used to bound all accepted seconds,
+ * with session nonce, ordered sequences, daily cap and conditional updates.
+ * Only review-approved checkpoints update verifiedEditSeconds; the wallet
+ * is NEVER changed by this endpoint. Locally reported activity can still be
+ * spoofed, so enabling coin payouts requires independent anti-abuse review.
  *
- * This endpoint NEVER increases verifiedEditSeconds or the coin wallet.
- * Even a valid Play Integrity token (not yet integrated) cannot be inferred
- * from local mutation counters. Reported events remain UNVERIFIED candidates.
- *
- * Only 1 small DynamoDB item per user; 1 read + at most 1 conditional write
- * on start or checkpoint (target every 15 min), no per-stroke uploads.
+ * One compact per-user state item; no stroke or project content uploaded.
  */
 function pilotEnabled(): boolean {
   return process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED === "true";
@@ -67,6 +68,7 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
   if (!pilotEnabled()) {
     forbidden("制作時間のサーバー計測は準備中です", "EDIT_SESSION_PILOT_DISABLED");
   }
+  const verificationEnabled = editTimeVerificationEnabled();
   const body = parseJsonObject(event.body);
   const action = body.action;
   if (action !== "start" && action !== "checkpoint") {
@@ -95,7 +97,7 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
           checkpointIntervalSeconds: EDIT_CHECKPOINT_INTERVAL_SECONDS,
           verifiedEditSeconds: nonNegativeRecordNumber(state?.verifiedEditSeconds),
           candidateEditSeconds: nonNegativeRecordNumber(state?.candidateEditSeconds),
-          verified: false,
+          verified: verificationEnabled,
           replay: true,
         });
       }
@@ -130,7 +132,7 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
       checkpointIntervalSeconds: EDIT_CHECKPOINT_INTERVAL_SECONDS,
       verifiedEditSeconds: nonNegativeRecordNumber(state?.verifiedEditSeconds),
       candidateEditSeconds: nonNegativeRecordNumber(state?.candidateEditSeconds),
-      verified: false, replay: false,
+      verified: verificationEnabled, replay: false,
     });
   }
 
@@ -154,7 +156,9 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
         replay: true, stopped: true, acceptedCandidateSeconds: 0,
         candidateEditSeconds:
           nonNegativeRecordNumber(state?.candidateEditSeconds),
-        verified: false, nextSequence: null,
+        verified: verificationEnabled,
+        verifiedEditSeconds: nonNegativeRecordNumber(state?.verifiedEditSeconds),
+        acceptedVerifiedSeconds: 0, nextSequence: null,
       });
     }
     conflict("計測セッションが無効または期限切れです", "EDIT_SESSION_MISSING");
@@ -164,7 +168,9 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
     return ok({
       replay: true, acceptedCandidateSeconds: 0,
       candidateEditSeconds: nonNegativeRecordNumber(state?.candidateEditSeconds),
-      verified: false, nextSequence: active.lastSequence + 1,
+      verified: verificationEnabled, acceptedVerifiedSeconds: 0,
+      verifiedEditSeconds: nonNegativeRecordNumber(state?.verifiedEditSeconds),
+      nextSequence: active.lastSequence + 1,
     });
   }
   if (sequence !== active.lastSequence + 1 || now < active.lastAtMs) {
@@ -186,7 +192,10 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
   });
   const candidateEditSeconds =
     nonNegativeRecordNumber(state?.candidateEditSeconds) + candidate;
-  if (!Number.isSafeInteger(candidateEditSeconds)) {
+  const verifiedEditSeconds = nonNegativeRecordNumber(state?.verifiedEditSeconds) +
+    (verificationEnabled ? candidate : 0);
+  if (!Number.isSafeInteger(candidateEditSeconds) ||
+      !Number.isSafeInteger(verifiedEditSeconds)) {
     forbidden("制作時間の累計が上限に達しました", "EDIT_SESSION_OVERFLOW");
   }
   const nextSession: CandidateEditSession = {
@@ -200,6 +209,7 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
       UpdateExpression:
         "SET candidateEditSeconds = :candidate, editDay = :day, " +
         "editDailyCandidateSeconds = :daily " +
+        (verificationEnabled ? ", verifiedEditSeconds = :verified " : "") +
         (stop
           ? ", lastEditStop = :closed REMOVE editSession, editSessionStartNonce "
           : ", editSession = :session ") +
@@ -209,6 +219,7 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
         "AND editSession.lastSequence = :prev",
       ExpressionAttributeValues: {
         ":candidate": candidateEditSeconds,
+        ...(verificationEnabled ? {":verified": verifiedEditSeconds} : {}),
         ":day": day, ":daily": yesterdayAmount + candidate,
         ":rev": revision, ":sid": sessionId,
         ":prev": active.lastSequence, ":one": 1,
@@ -222,7 +233,9 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
     acceptedCandidateSeconds: candidate,
     candidateEditSeconds,
     maxDailyCandidateSeconds: EDIT_DAILY_CANDIDATE_MAX_SECONDS,
-    verified: false,
+    verified: verificationEnabled,
+    acceptedVerifiedSeconds: verificationEnabled ? candidate : 0,
+    verifiedEditSeconds,
     stopped: stop,
     nextSequence: stop ? null : sequence + 1,
   });

@@ -29,6 +29,8 @@ beforeEach(() => {
   send.mockResolvedValue({});
   process.env.TABLE_NAME = "test";
   delete process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED;
+  delete process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED;
+  delete process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED;
 });
 
 describe("edit session pilot: no coins or verified time issued", () => {
@@ -176,6 +178,73 @@ describe("edit session pilot: no coins or verified time issued", () => {
       replay: true, stopped: true, acceptedCandidateSeconds: 0,
       candidateEditSeconds: 800,
     });
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not verify seconds from a single feature flag without approval",async()=>{
+    process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED="true";
+    process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED="true";
+    send.mockResolvedValueOnce({Item:{
+      editSession:{id,startedAtMs:Date.now()-400000,
+        lastAtMs:Date.now()-300000,lastSequence:1},
+      candidateEditSeconds:0,verifiedEditSeconds:0,revision:1,
+    }});
+    const response=JSON.parse((await editSessionAction(event({
+      action:"checkpoint",sessionId:id,sequence:2,
+      activeSeconds:900,meaningfulMutations:20,stop:false,
+    }))).body??"{}");
+    expect(response.verified).toBe(false);
+    expect(response.verifiedEditSeconds).toBe(0);
+    const update=send.mock.calls[1][0] as UpdateCommand;
+    expect(update.input.UpdateExpression).not.toContain("verifiedEditSeconds");
+  });
+
+  it("credits only server-clock-bounded time after double approval",async()=>{
+    process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED="true";
+    process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED="true";
+    process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED="true";
+    send.mockResolvedValueOnce({Item:{
+      itemType:"CREATOR_MISSIONS_V1",
+      editSession:{id,startedAtMs:Date.now()-450000,
+        lastAtMs:Date.now()-300000,lastSequence:2},
+      verifiedEditSeconds:3590,candidateEditSeconds:4000,
+      editDailyCandidateSeconds:1000,
+      editDay:Math.floor(Date.now()/86400000),
+      revision:4,
+    }});
+    const response=JSON.parse((await editSessionAction(event({
+      action:"checkpoint",sessionId:id,sequence:3,
+      activeSeconds:3600,meaningfulMutations:100000,stop:false,
+    }))).body??"{}");
+    expect(response.verified).toBe(true);
+    expect(response.acceptedVerifiedSeconds).toBeGreaterThan(0);
+    expect(response.acceptedVerifiedSeconds).toBeLessThanOrEqual(300);
+    expect(response.verifiedEditSeconds).toBe(
+      3590+response.acceptedVerifiedSeconds);
+    const update=send.mock.calls[1][0] as UpdateCommand;
+    expect(update.input.ExpressionAttributeValues?.[":verified"])
+      .toBe(response.verifiedEditSeconds);
+    expect(update.input.UpdateExpression).toContain(
+      "verifiedEditSeconds = :verified");
+    expect(JSON.stringify(update.input)).not.toContain("balanceCoins");
+  });
+
+  it("cannot double-count an already accepted verified checkpoint",async()=>{
+    process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED="true";
+    process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED="true";
+    process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED="true";
+    send.mockResolvedValueOnce({Item:{
+      editSession:{id,startedAtMs:Date.now()-900000,
+        lastAtMs:Date.now()-1000,lastSequence:3},
+      verifiedEditSeconds:900,revision:3,
+    }});
+    const response=JSON.parse((await editSessionAction(event({
+      action:"checkpoint",sessionId:id,sequence:3,
+      activeSeconds:900,meaningfulMutations:100,stop:false,
+    }))).body??"{}");
+    expect(response.replay).toBe(true);
+    expect(response.acceptedVerifiedSeconds).toBe(0);
+    expect(response.verifiedEditSeconds).toBe(900);
     expect(send).toHaveBeenCalledTimes(1);
   });
 
