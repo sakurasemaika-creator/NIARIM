@@ -9,6 +9,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
 import 'package:niarim/screens/settings/storage_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/storage_info_service.dart';
@@ -125,9 +126,11 @@ void main() {
     expect(find.byType(StorageScreen), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(StorageScreen)),
-    )!;
+    final storageContext = tester.element(find.byType(StorageScreen));
+    final l10n = AppLocalizations.of(storageContext)!;
+    final scheme = Theme.of(storageContext).colorScheme;
+    final expectedOutline =
+        CanvasIconButton.outlineColor(scheme.surface, scheme);
     final entries = [
       (StorageCategory.materials, l10n.storageCategoryMaterials),
       (StorageCategory.projectData, l10n.storageCategoryProjectData),
@@ -155,9 +158,15 @@ void main() {
         reason: 'Wrong relative size for $label',
       );
       // The outline is drawn over the colored fill, never replaced by it.
-      expect(
+      final boxes = tester.widgetList<DecoratedBox>(
         find.descendant(of: bar, matching: find.byType(DecoratedBox)),
-        findsNWidgets(3),
+      ).toList();
+      expect(boxes.length, 3);
+      final border = (boxes.last.decoration as BoxDecoration).border as Border;
+      expect(
+        border.top.color,
+        expectedOutline,
+        reason: 'Bar border must follow the current theme for $label',
       );
     }
     expect(tester.takeException(), isNull);
