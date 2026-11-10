@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niarim/widgets/mission_completion_dialog.dart';
 
@@ -24,6 +25,7 @@ void main() {
     await tester.pumpWidget(MaterialApp.router(
       locale: const Locale('ja'),
       supportedLocales: const [Locale('ja'), Locale('en')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       routerConfig: router,
     ));
     final shown = showMissionCompletionDialog(pageContext,
