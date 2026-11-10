@@ -47,7 +47,9 @@ describe("creator mission endpoints", () => {
     expect(body.enabled).toBe(false);
     expect(body.missions).toHaveLength(55);
     expect(body.missions.find((m: {id: string}) => m.id === 'edit_50h').coins).toBe(25);
-    expect(body.missions.find((m: {id: string}) => m.id === 'bookmark_rank_1').claimed).toBe(null);
+    const rank=body.missions.find((m: {id: string}) => m.id === 'bookmark_rank_1');
+    expect(rank.claimed).toBe(null);
+    expect(rank.rankingUnmetConditions).toEqual(["selectWork"]);
     expect(body.editTimeVerificationReady).toBe(false);
     expect(body.verifiedEditSeconds).toBe(0);
     const commands = send.mock.calls.map(([command]) => command);
@@ -89,7 +91,8 @@ describe("creator mission endpoints", () => {
       response.missions.find((m:{id:string})=>m.id===id);
     expect(byId("bookmark_rank_1")).toMatchObject({
       eligible:true,progress:1,rankingMinPublishedWorks:100,
-      rankingMinBookmarks:50,
+      rankingMinBookmarks:50,rankingUnmetConditions:[],
+      rankingWorkBookmarks:60,
     });
     expect(byId("bookmark_rank_10")).toMatchObject({eligible:true});
     expect(byId("bookmark_rank_50")).toMatchObject({eligible:true});

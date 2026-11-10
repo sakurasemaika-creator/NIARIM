@@ -145,6 +145,39 @@ export function rankingEffectiveRankLimit(goalRank:number,
   return Math.min(goalRank,
     Math.max(1,Math.floor(publishedWorkCount*percentile/100)));
 }
+export type RankingUnmetCondition =
+  | "selectWork"
+  | "communityTooSmall"
+  | "notEnoughBookmarks"
+  | "notRanked"
+  | "rankTooLow";
+
+/** Every missing condition is returned independently, for clear explanations
+ * on the mission tile. This is the SAME policy as the claim endpoint.
+ */
+export function rankingMissionUnmetConditions(args: {
+  goalRank: number; liveRank: number | null; publishedWorkCount: number;
+  workBookmarks: number; workSelected: boolean;
+}): RankingUnmetCondition[] {
+  if (!args.workSelected) return ["selectWork"];
+  const reasons: RankingUnmetCondition[] = [];
+  if (!Number.isSafeInteger(args.publishedWorkCount) ||
+      args.publishedWorkCount < MIN_RANK_MISSION_PUBLIC_WORKS) {
+    reasons.push("communityTooSmall");
+  }
+  const requiredBookmarks = RANKING_MIN_BOOKMARKS[args.goalRank];
+  if (requiredBookmarks===undefined ||
+      !Number.isSafeInteger(args.workBookmarks) ||
+      args.workBookmarks < requiredBookmarks) reasons.push("notEnoughBookmarks");
+  const limit=rankingEffectiveRankLimit(args.goalRank,args.publishedWorkCount);
+  if (limit>0) {
+    if (args.liveRank===null || !Number.isSafeInteger(args.liveRank) ||
+        args.liveRank < 1 || args.liveRank>50) reasons.push("notRanked");
+    else if(args.liveRank>limit) reasons.push("rankTooLow");
+  }
+  return reasons;
+}
+
 /** At launch, ranking 50th out of just 50 works is not an achievement.
  * The relative threshold prevents "top ten by merely posting". A genuine
  * NIARIM bookmark count is required in addition to the live position.

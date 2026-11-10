@@ -5,6 +5,7 @@ import {
   claimMissionInMask, missionClaimed,
   missionRewardCoins, rankingDifficultyMultiplier,
   RANKING_POPULATION_TIERS, rankingMissionEligible,
+  rankingMissionUnmetConditions,
   rankingEffectiveRankLimit,
 } from "../src/lib/missionCatalog";
 
@@ -118,6 +119,22 @@ describe("creator missions with separate account and work scopes", () => {
       expect(missionRewardCoins(rank,threshold))
         .toBeGreaterThan(missionRewardCoins(rank,threshold-1));
     }
+  });
+
+  it("explains every missing condition with the same claim eligibility rules",()=>{
+    const base={goalRank:10,publishedWorkCount:150,workSelected:true,
+      workBookmarks:15,liveRank:3};
+    expect(rankingMissionUnmetConditions(base)).toEqual([]);
+    expect(rankingMissionUnmetConditions({...base,workSelected:false}))
+      .toEqual(["selectWork"]);
+    expect(rankingMissionUnmetConditions({...base,
+      publishedWorkCount:99,workBookmarks:1}))
+      .toEqual(["communityTooSmall","notEnoughBookmarks"]);
+    expect(rankingMissionUnmetConditions({...base,
+      liveRank:51,workBookmarks:1}))
+      .toEqual(["notEnoughBookmarks","notRanked"]);
+    expect(rankingMissionUnmetConditions({...base,liveRank:9}))
+      .toEqual(["rankTooLow"]);
   });
 
   it("never makes YouTube engagement metrics eligible for ranking rewards", () => {

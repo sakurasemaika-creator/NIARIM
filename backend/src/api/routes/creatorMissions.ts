@@ -23,7 +23,8 @@ import {
   MAX_CREATOR_MISSION_COINS,
   MISSION_CATALOG_VERSION,
   missionRewardCoins,
-  rankingMissionEligible, rankingEffectiveRankLimit, RANKING_MIN_BOOKMARKS,
+  rankingMissionEligible, rankingMissionUnmetConditions,
+  rankingEffectiveRankLimit, RANKING_MIN_BOOKMARKS,
   MIN_RANK_MISSION_PUBLIC_WORKS,
   missionClaimed,
   claimMissionInMask,
@@ -316,6 +317,19 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
             ? selectedWork?.bookmarkCount ?? 0
           : mission.kind === "niarimBookmarkRanking" && selectedWorkId
             ? selectedRanking?.count??null : null,
+        rankingUnmetConditions: mission.kind==="niarimBookmarkRanking"
+          ? rankingMissionUnmetConditions({
+              goalRank:mission.required,
+              liveRank:selectedRanking?.count??null,
+              publishedWorkCount,
+              workBookmarks:Number.isSafeInteger(selectedWork?.bookmarkCount)
+                ? selectedWork!.bookmarkCount : 0,
+              workSelected:selectedWorkId!==undefined &&
+                isPublicWork(selectedWork,auth.niarimUserId),
+            })
+          : null,
+        rankingWorkBookmarks: mission.kind==="niarimBookmarkRanking" &&
+          selectedWorkId ? (selectedWork?.bookmarkCount??0) : null,
         rankingMinPublishedWorks: mission.kind==="niarimBookmarkRanking"
           ? MIN_RANK_MISSION_PUBLIC_WORKS : null,
         rankingMinBookmarks: mission.kind==="niarimBookmarkRanking"
