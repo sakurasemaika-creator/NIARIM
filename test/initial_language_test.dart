@@ -61,6 +61,26 @@ void main() {
     expect(prefs.containsKey('language'), isFalse);
   });
 
+  // 選ぶまでは起動のたびに端末の言語から決め直すので、端末の言語を変えると
+  // 次の起動からその言語になる（開いている間には変わらない）。
+  test(
+    'an unsaved language follows a device change on the next start',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      SettingsService.deviceLocales = () => const [Locale('en', 'US')];
+      final first = SettingsService();
+      await first.init();
+      expect(first.language, 'en');
+      first.dispose();
+
+      SettingsService.deviceLocales = () => const [Locale('fr', 'FR')];
+      final next = SettingsService();
+      await next.init();
+      expect(next.language, 'fr');
+      next.dispose();
+    },
+  );
+
   test('a chosen language is kept on any device', () async {
     SharedPreferences.setMockInitialValues({'language': 'ja'});
     SettingsService.deviceLocales = () => const [Locale('en', 'US')];

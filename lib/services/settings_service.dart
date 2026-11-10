@@ -775,8 +775,9 @@ class SettingsService extends ChangeNotifier {
         : 50;
     _trashAutoDeleteDays = prefs.readInt('trash_auto_delete') ?? 0;
     // 選んだことが無ければ端末の言語に合わせる（保存はしない。選ぶまでは
-    // 端末の言語を変えるとそれに従う）。以前は端末の言語に関係なく日本語で
-    // 始まっていた。
+    // 起動のたびに端末の言語から決め直すので、端末の言語を変えると次の
+    // 起動からそれに従う。アプリを開いている間は変わらない）。以前は端末の
+    // 言語に関係なく日本語で始まっていた。
     _language =
         prefs.readString('language') ?? appLanguageCodeFor(deviceLocales());
     _defaultDrawingAreaEnabled =

@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import '../l10n/app_localizations.dart';
 import '../services/theme_service.dart';
 import '../utils/app_locale.dart';
+import '../utils/line_break.dart';
 
 /// 起動処理が失敗したときに、アプリ本体の代わりに出す画面。
 ///
@@ -94,7 +95,13 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.startupFailedDetailsCopied)));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            keepKoreanWordsTogether(l10n.startupFailedDetailsCopied),
+          ),
+        ),
+      );
   }
 
   @override
@@ -119,14 +126,16 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
                     color: colors.error,
                   ),
                   const SizedBox(height: 16),
+                  // 韓国語は語の途中で折り返さない（「다시 시도／해 주세요」の
+                  // ように割れていた）。ハングルを含まない文はそのまま。
                   Text(
-                    l10n.startupFailedTitle,
+                    keepKoreanWordsTogether(l10n.startupFailedTitle),
                     textAlign: TextAlign.center,
                     style: theme.textTheme.titleLarge,
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    l10n.startupFailedBody,
+                    keepKoreanWordsTogether(l10n.startupFailedBody),
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium,
                   ),
@@ -140,20 +149,26 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
                           )
                         : const Icon(Icons.refresh_rounded),
                     label: Text(
-                      _retrying
-                          ? l10n.startupFailedRetrying
-                          : l10n.startupFailedRetry,
+                      keepKoreanWordsTogether(
+                        _retrying
+                            ? l10n.startupFailedRetrying
+                            : l10n.startupFailedRetry,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextButton.icon(
                     onPressed: () => _copyDetails(l10n),
                     icon: const Icon(Icons.copy_rounded),
-                    label: Text(l10n.startupFailedCopyDetails),
+                    label: Text(
+                      keepKoreanWordsTogether(l10n.startupFailedCopyDetails),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   ExpansionTile(
-                    title: Text(l10n.startupFailedDetails),
+                    title: Text(
+                      keepKoreanWordsTogether(l10n.startupFailedDetails),
+                    ),
                     tilePadding: EdgeInsets.zero,
                     childrenPadding: const EdgeInsets.only(bottom: 8),
                     shape: const Border(),

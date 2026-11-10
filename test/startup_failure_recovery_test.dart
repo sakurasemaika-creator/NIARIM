@@ -8,6 +8,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/utils/app_error_reporter.dart';
 import 'package:niarim/utils/app_locale.dart';
+import 'package:niarim/utils/line_break.dart';
 import 'package:niarim/utils/tolerant_preferences.dart';
 import 'package:niarim/widgets/startup_failure_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -235,10 +236,13 @@ void main() {
       testWidgets('shows the saved language ($code)', (tester) async {
         await pumpFailure(tester, onRetry: () async {}, languageCode: code);
         final l10n = lookupAppLocalizations(localeFromLanguageCode(code));
-        expect(find.text(l10n.startupFailedTitle), findsOneWidget);
-        expect(find.text(l10n.startupFailedBody), findsOneWidget);
-        expect(find.text(l10n.startupFailedRetry), findsOneWidget);
-        expect(find.text(l10n.startupFailedCopyDetails), findsOneWidget);
+        // 韓国語は語の途中で折り返さないよう、語の字の間に語結合子が入る
+        // （ほかの言語ではそのまま）。
+        Finder shown(String text) => find.text(keepKoreanWordsTogether(text));
+        expect(shown(l10n.startupFailedTitle), findsOneWidget);
+        expect(shown(l10n.startupFailedBody), findsOneWidget);
+        expect(shown(l10n.startupFailedRetry), findsOneWidget);
+        expect(shown(l10n.startupFailedCopyDetails), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
     }
@@ -251,7 +255,9 @@ void main() {
       await pumpFailure(tester, onRetry: () async {});
       expect(
         find.text(
-          lookupAppLocalizations(const Locale('ko')).startupFailedTitle,
+          keepKoreanWordsTogether(
+            lookupAppLocalizations(const Locale('ko')).startupFailedTitle,
+          ),
         ),
         findsOneWidget,
       );
