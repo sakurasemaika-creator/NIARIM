@@ -198,7 +198,7 @@ void main() {
     );
   });
 
-  testWidgets('five icon tabs divide the width equally on SP and PC', (
+  testWidgets('five adaptive tabs divide width equally on SP and PC', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -222,12 +222,59 @@ void main() {
           final rect = tester.getRect(tab);
           expect(rect.left, greaterThanOrEqualTo(-0.5));
           expect(rect.right, lessThanOrEqualTo(width + 0.5));
-          expect(find.descendant(of: tab, matching: find.byType(Icon)), findsOneWidget);
-          expect(find.descendant(of: tab, matching: find.byType(Text)), findsNothing);
+          expect(
+            find.descendant(of: tab, matching: find.byType(Icon)),
+            findsOneWidget,
+          );
+          final visibleLabel = find.descendant(
+            of: tab,
+            matching: find.byType(Text),
+          );
+          if (width <= 430) {
+            expect(visibleLabel, findsNothing,
+                reason: '$locale width $width stays icon-only');
+          } else if (width >= 1440) {
+            expect(visibleLabel, findsOneWidget,
+                reason: '$locale width $width shows full text labels');
+          }
+          // No mixed mode: all tabs are icons, or every one has a label.
+          final hasLabels = find.descendant(
+            of: find.byKey(const Key('communityTabWidth0')),
+            matching: find.byType(Text),
+          ).evaluate().isNotEmpty;
+          expect(visibleLabel.evaluate().isNotEmpty, hasLabels,
+              reason: '$locale width $width tab $i must match first tab');
         }
         expect(tester.takeException(), isNull);
       }
     }
+  });
+
+  testWidgets('wide labels disappear when accessibility text needs space', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(720, 844);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.pumpWidget(app(locale: const Locale('ja')));
+    await tester.pumpAndSettle();
+    final firstTab = find.byKey(const Key('communityTabWidth0'));
+    expect(find.descendant(of: firstTab, matching: find.byType(Text)),
+        findsOneWidget);
+    tester.platformDispatcher.textScaleFactorTestValue = 3.0;
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 5; i++) {
+      final tab = find.byKey(Key('communityTabWidth$i'));
+      expect(find.descendant(of: tab, matching: find.byType(Text)),
+          findsNothing, reason: 'at 3x text scale, icons regain the space');
+      expect(find.descendant(of: tab, matching: find.byType(Icon)),
+          findsOneWidget);
+      expect(tester.getRect(tab).width, closeTo(144, 0.5));
+    }
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('long press reveals the localized bookmark tab name', (tester) async {
