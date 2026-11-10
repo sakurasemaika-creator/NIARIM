@@ -2,7 +2,7 @@
 
 ## S38 公開 — 共有失敗の通知（DISC061）とブラシの太さ・不透明度の記憶（2026-11-10、別の実行環境で継続）
 
-この単位の実行入力はApp `6decdfa96c5e57c22d31f12142a577e5877401e0`から始め、途中で他のセッションの公開（YouTube再生まわり等）を3回取り込んで最終App `308c019`、Web `d7f8b40`。両dev_branchだけ（ユーザー指示「dev_branchのみを見て、修正・プッシュするのもdev_branchのみ」）。下の「S38 最優先の色契約修正」「S38 checkpoint」は前の実行環境の記録としてそのまま残す。そこで「未適用・未検証」とされた色の修正は、この節で適用・検証・公開した。Baseline2done/628todo/currentA003、Discovery cursor DISC001、Delta not_startedを変更しない。DISC061をdoneへ昇格しない。全面監査・Visual closureは未完了。
+この単位の実行入力はApp `6decdfa96c5e57c22d31f12142a577e5877401e0`から始め、途中で他のセッションの公開（YouTube再生まわり等）を3回取り込んで最終App `670d666e`（DISC057まで）、Webは製品変更なし。両dev_branchだけ（ユーザー指示「dev_branchのみを見て、修正・プッシュするのもdev_branchのみ」）。下の「S38 最優先の色契約修正」「S38 checkpoint」は前の実行環境の記録としてそのまま残す。そこで「未適用・未検証」とされた色の修正は、この節で適用・検証・公開した。Baseline2done/628todo/currentA003、Discovery cursor DISC001、Delta not_startedを変更しない。DISC061をdoneへ昇格しない。全面監査・Visual closureは未完了。
 
 - 引き継ぎ：前の環境のWIP ZIP（Drive `1zUcjfxE-aIqn358KfooIYCFXcw5NeOl_`、121937B）を取得し、SHA256 `fa5841f016bb4758f4e7b9fd52634453276ed4e70f894b21932651463effc203`・unzip -t・44fileを照合。NIARIM-WIP.patch（基準6decdfa）は現在のdev_branchへ3wayで競合なく適用でき、付属の8testsは適用直後に8PASS。前の環境のraw45PASS・PC原本9点・standalone実行物2partsは取得していない（この節の検証は下の新しい実行だけを根拠にする）。
 - 色契約：メニュー文字色を本文色ともMaterial error色とも違う色（0xFF0B6E4F）にしたfresh反例を行・プレビューの2件追加し、既存1件の期待値もメニュー文字色へ直した。修正前7PASS/3FAIL（文の色がerror色 0.73/0.10/0.10）。行Card・プレビューの知らせを各部品の`foreground`（`popupMenuTheme.textStyle.color`＝テーマ・外観のメニュー文字色）へ変え、色に頼らないよう先頭にerror_outlineの印を足した。修正後10PASS。固定色・presetの値・9色契約は変更なし。
@@ -11,6 +11,14 @@
 - 実Linux（Xvfb、software GL）：SP EN390x844で行の共有→行の中に「This isn't supported on this device.」と印、プレビューの共有→プレビュー内に同じ知らせ・絵を保持・Close。SP320x220でプレビューをscrollして共有→知らせ→Closeまで到達。PC FR1440x900で行とプレビューに「Cette action n'est pas prise en charge sur cet appareil.」、Escで閉じる。app logに未処理例外0件。管理領域PNG（SHA256 c3d8e38b…1419）と旧共有PNG（6371107a…e864）は操作の前後で同一。原本12点を直接表示して確認（s38-sp-*、s38-short-*、s38-pc-*）。
 - 5軸の限定判定：機能/挙動は合成native境界の20testsと実Linuxの非対応の知らせ・再操作・Closeまで。見た目は色契約を正式色へ是正し実画面の既定テーマで確認（custom色の実画面は未実施、testで確認）。継続性はClose/再訪とfile保持。製品品質・Android/iPadの実共有・全preset・Visual closureは未完了。書き出し完了ダイアログからの共有は実画面で未操作（この環境では動画を書き出せない）。
 - 公開：App `07323398`（DISC061）。非force・fast-forwardのgit push、公開後のremote HEAD一致を確認。CI33・storage CIは未実行/未照合。
+
+### DISC057 交換期間の単複・空白（公開、DISC057はtodoのまま）
+
+- 進め方：独立したworktreeで実装担当がfresh反例→修正→回帰→1commit（`02dc7411`、基準dd1974d7）を作り、別の2agentが正しさ/回帰と利用者向け品質の2観点でレビュー（accept／accept-with-fixes、blocker・major無し）。dev_branchへcherry-pick（`0a008bb4`、競合なし）し、レビュー指摘を追加修正（`670d666e`）。
+- 反例：実RewardUnlockScreenの23testsが修正前7PASS/16FAIL（EN初期「1hours」、sheet/buttonのja/en/es/fr、確認dialogの「1 months」「1 meses」「1 か月」等）。pure testは修正前は読み込めない。
+- 修正：ARBのICU plural 4件×7locale（`rewardDurationHours/Days/Weeks/Months`）と`lib/utils/coin_duration_label.dart`。3か所（期間のボタン・sheetの152行・交換の確認）を通す。jaの日は「2日間」。coin算定・有効な152期間・sheetの見出し・RewardUnlockLabelsのkeyは変更なし。追加修正：確認dialogを`scrollable: true`（320x220で本文が潰れた）、選択中の行を`Semantics(selected:)`、印を正式なアクセントの文字・アイコン色へ、source guardを「3か所以上」へ、新しい2testをcoin-reward-flutter-verify.ymlのpathsと実行へ追加。
+- 検証：取り込み後`reward_duration_plural_test`23・`coin_duration_label_test`13（152×7locale、frの0/1単数、価格=単価×量）ほか報酬・font_coverage・no_emojiで65PASS、analyze0。実装担当の回帰19fileは137PASS/15FAILで、15FAILは手を入れる前の基準でも同じ（l10n_unused_key1・community_no_hardcoded_text2・ad_mock_layout1・home_entry_navigation2・app_smoke9）。全suiteは未実行。
+- 実Linux：SP EN390x844でDrawer→Redeem benefitsの初期「1 hour」、sheetの「2 days…6 days」「1 week/2 weeks/3 weeks」、選択後「1 week」。PC FR1440x900「1 heure」。SP JA「2日間…6日間」。原本7点（r2〜r10）を直接表示。確認dialogは実画面で未操作（serverへ未接続では交換buttonが無効）。7localeの訳はnative review未実施。CIは未照合。
 
 ### ブラシごとの太さ・不透明度の記憶（ユーザー依頼、A014の確認事項への回答）
 

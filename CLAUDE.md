@@ -608,6 +608,40 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   providerは`didChangeDependencies`を呼ばず、欄が前のブラシの値のまま残った
   （そこから±を押すと別のブラシの値として覚えた。レビューで発見）。
   `test/brush_size_memory_test.dart`・`brush_size_memory_canvas_test.dart`。
+- **書き出した作品の共有は`ExportShareService`と`lib/widgets/export_share_feedback.dart`を通す**：
+  `SharePlus.instance.share`を結果を待たずに呼ぶと、共有の仕組みが無い端末
+  （Linuxは`UnimplementedError`）や失敗が未処理の例外になり、利用者には何も
+  出ない（作品一覧の行・プレビュー・書き出し完了のダイアログで起きていた）。
+  できなかったときは`exportShareFailureText`の文（この端末で使えない／それ
+  以外の失敗。OSの例外の文は出さない）で知らせる。ダイアログの中から共有
+  するときは**その中に**文を出す（SnackBarはダイアログの幕の下に隠れる）。
+  知らせる文の色は`colorScheme.error`にしない（差し色から作られる色で、
+  テーマ・外観で選ぶ色ではない）。その面の文字色（行・プレビューは
+  `popupMenuTheme.textStyle.color`＝メニュー文字色）にし、色ではなく先頭の
+  印（`Icons.error_outline`）と文で知らせる。ブラシ・テーマ・パレット等の
+  残り11か所の共有はまだ直接呼んでいて、失敗を「書き出しに失敗」と例外の
+  文つきで出す（未着手）。`test/home_export_share_failure_test.dart`・
+  `export_share_notice_test.dart`。
+- **数と単位をコードでつなげない（ARBのICU pluralにする）**：特典交換の期間は
+  `'${amount}$unit'`でつないでいて、英語「1hours」・スペイン語「1horas」・
+  フランス語「1heures」と出ていた。`rewardDurationHours`等（`{count, plural,
+  one{…} other{…}}`）と`lib/utils/coin_duration_label.dart`を通す。フランス語は
+  0と1が単数なので、`n == 1`を自分で書かずCLDRの決まりに任せる。日本語の
+  期間は「2日間」（「2日」は日付に読める）。なお`lib/l10n/*_labels.dart`の
+  手書きのラベル表はARBの外にあり、`font_coverage_test`が見ない（同梱
+  フォントに無い字が混ざっている。未着手）。
+- **この実行環境の癖（2026-11-10）**：CIが固定しているFlutterは3.47.2
+  （`.github/workflows`）。整形は`/opt/flutter-3.47.2/bin/dart format`のように
+  その版のdartで行う（ビルド・テストは3.47.7でも結果は同じだった）。実画面の
+  操作には`xdg-user-dirs`も要る（無いと保存先を取れず「プロジェクトを保存
+  できませんでした」になる）。キー入力は`xdotool windowfocus`してから送る
+  （`--window`指定だと届かない）。Xvfbでは操作の直後の画面がまだ古いことが
+  あるので、1秒ほど待って撮る。**dev_branchへは他のセッションも頻繁にpush
+  する**ので、pushの直前に`git fetch`→`git rebase origin/dev_branch`
+  （forceは使わない）。監査の途中の成果がDriveのZIPにあるときは、復元は
+  サブエージェントに任せると本体の文脈を使わずに済む。
+  `test/flutter_test_config.dart`は今のdev_branchには無い（テストは
+  `'language'`の設定か`locale:`で言語を決めること）。
 - **一覧の行（`ListTile`）の先頭のアイコンへ差し色を直接渡さない**：選んだ行は
   テーマの`selectedColor`（選択色の上の文字色）で描かれる。
   `isSelected ? AccentTextTheme.of(context) : null`と書くと、選択色と差し色が
