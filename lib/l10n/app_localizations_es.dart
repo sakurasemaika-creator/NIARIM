@@ -6604,7 +6604,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get storageDeviceSpaceUnavailable =>
-      'No se pudo obtener el almacenamiento del dispositivo';
+      'No se pudo consultar el almacenamiento del dispositivo';
 
   @override
   String get storageCategoryNiarimTotal => 'NIARIM';

@@ -69,7 +69,10 @@ class _ScriptedStorage extends StorageInfoService {
   }
 
   @override
-  Future<StorageBreakdown> computeBreakdown(Set<String> trashedProjectIds) {
+  Future<StorageBreakdown> computeBreakdown(
+    Set<String> trashedProjectIds, {
+    bool fresh = false,
+  }) {
     final scan = Completer<StorageBreakdown>();
     scans.add(scan);
     return scan.future;
@@ -373,8 +376,10 @@ void main() {
     await tester.tap(find.byKey(_retryBreakdown), warnIfMissed: false);
     await tester.pump();
     expect(service.scans, hasLength(2));
+    // やり直している間は、失敗の文の代わりに集計中と出す。ボタンは結果が
+    // 届くまで同じ所に残る。
     expect(find.text(l10n.storageBreakdownLoadFailed), findsNothing);
-    expect(find.byKey(_retryBreakdown), findsNothing);
+    expect(find.byKey(_retryBreakdown), findsOneWidget);
     expect(find.text(l10n.storageCalculating), findsWidgets);
 
     service.scans.last.complete(_breakdownOf());
@@ -430,14 +435,17 @@ void main() {
     expect((emptyTrash.subtitle! as Text).data, '2.0KB');
     await capture(tester, 'sp_ja_5_breakdown_incomplete');
 
-    // やり直している間は、やり直しを重ねて押せない。
+    // やり直している間もボタンは押せるまま残り、重ねて押しても集計は増えない。
     await tester.tap(find.byKey(_retryBreakdown));
     await tester.pump();
     expect(service.scans, hasLength(2));
     expect(
       tester.widget<TextButton>(find.byKey(_retryBreakdown)).onPressed,
-      isNull,
+      isNotNull,
     );
+    await tester.tap(find.byKey(_retryBreakdown));
+    await tester.pump();
+    expect(service.scans, hasLength(2));
     service.scans.last.complete(_breakdownOf());
     await tester.pump();
     await tester.pump();
@@ -534,11 +542,25 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byType(AlertDialog), findsOneWidget);
-    // ダイアログが開いている間は、どの操作も受け付けない。
-    expect(tile(tester, l10n.storageEraseAllButton).enabled, isFalse);
-    expect(tile(tester, l10n.storageOrganizeProjectsButton).enabled, isFalse);
+    // ダイアログが開いている間、下の行は押せる見た目のまま（押せなくすると
+    // キーボードのフォーカスがダイアログへ移らない）。ほかの操作を実行
+    // しても受け付けない。
+    expect(tile(tester, l10n.storageEraseAllButton).enabled, isTrue);
+    tile(tester, l10n.storageEraseAllButton).onTap!();
+    tile(tester, l10n.storageRemoveUnusedMaterialsButton).onTap!();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text(l10n.storageEraseAllConfirmTitle), findsNothing);
 
     // 消している間（ダイアログは閉じている）も、ほかの操作は始められない。
+    // 見出しの横に処理中の印が出る。
+    final working = find.byWidgetPredicate(
+      (w) =>
+          w is CircularProgressIndicator &&
+          w.semanticsLabel == l10n.homeTrashWorking,
+    );
+    expect(working, findsNothing);
     service.clearing = Completer<int>();
     await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
     await tester.pump();
@@ -546,12 +568,13 @@ void main() {
     expect(find.byType(AlertDialog), findsNothing);
     expect(service.cacheClears, 1);
     expect(service.scans, hasLength(2));
-    expect(tile(tester, l10n.storageEraseAllButton).enabled, isFalse);
-    expect(
-      tile(tester, l10n.storageRemoveUnusedMaterialsButton).enabled,
-      isFalse,
-    );
-    expect(tile(tester, l10n.storageClearCacheButton).enabled, isFalse);
+    expect(working, findsOneWidget);
+    tile(tester, l10n.storageEraseAllButton).onTap!();
+    tile(tester, l10n.storageClearCacheButton).onTap!();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(service.cacheClears, 1);
 
     service.clearing!.complete(123);
     await tester.pump();
@@ -559,9 +582,12 @@ void main() {
     expect(service.invalidations, 1);
     // 走っていた集計は消す前のディスクを見ているので、始め直す。
     expect(service.scans, hasLength(3));
-    // 本文は出たまま。前の値で決まる操作は、集計し直すまで止める。
+    expect(working, findsNothing);
+    // 欄は出たまま。消す前の値はグラフにも出さず、前の値で決まる操作は
+    // 集計し直すまで止める。
     expect(find.text(l10n.storageBreakdownChartTitle), findsOneWidget);
-    expect(find.text(l10n.storageCategoryMaterials), findsOneWidget);
+    expect(find.text(l10n.storageCategoryMaterials), findsNothing);
+    expect(find.text('123B'), findsNothing);
     final busyTile = tile(tester, l10n.storageClearCacheButton);
     expect(busyTile.enabled, isFalse);
     expect((busyTile.subtitle! as Text).data, l10n.storageCalculating);

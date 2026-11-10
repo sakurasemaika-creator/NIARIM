@@ -6616,7 +6616,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get storageDeviceSpaceUnavailable =>
-      'Impossible d\'obtenir le stockage de l\'appareil';
+      'Impossible de consulter le stockage de l\'appareil';
 
   @override
   String get storageCategoryNiarimTotal => 'NIARIM';

@@ -67,15 +67,29 @@ class DeviceSpaceInfo {
       (totalBytes - freeBytes).clamp(0, totalBytes).toInt();
 }
 
+/// 走っている集計を、後から来た呼び出しと分け合う長さの上限。これより前に
+/// 始まってまだ終わらない集計（返らない問い合わせ・止まったマウント）を
+/// いつまでも渡し続けると、画面を開き直しても集計中のまま戻れない。
+const storageScanShareLimit = Duration(seconds: 30);
+
 /// 容量削減画面が使う、ディスク使用量の集計・キャッシュ削除サービス。
 /// 集計は呼ぶたびにディスクを走査する（ChangeNotifierではない）。
 ///
 /// 画面を開き直したとき、新しい集計が終わるまで前回の値を出せるように、
 /// 直近の結果だけをプロセスの中で覚えている（[lastBreakdown]・
-/// [lastDeviceSpace]）。大きさを変える操作の後は[invalidate]で捨てること。
+/// [lastDeviceSpace]）。大きさを変える操作の後は[invalidate]で捨てること
+/// （容量削減の画面の外でファイルを消す所も含む）。
 class StorageInfoService {
   static StorageBreakdown? _lastBreakdown;
   static DeviceSpaceInfo? _lastDeviceSpace;
+
+  static final Stopwatch _sinceStart = Stopwatch()..start();
+  static Duration _elapsedSinceStart() => _sinceStart.elapsed;
+
+  /// 走っている集計の古さを計る時計（進むだけで、端末の時刻合わせでは
+  /// 動かない）。テストは差し替えて、実時間を待たずに進める。
+  @visibleForTesting
+  static Duration Function() scanClock = _elapsedSinceStart;
 
   /// 大きさを変える操作のたびに進む。進む前に始めた集計・問い合わせは
   /// 操作の前のディスクを見ているので、結果を覚えず、後から来た呼び出しとも
@@ -110,12 +124,23 @@ class StorageInfoService {
   ///
   /// 同じ条件の集計がまだ走っていれば、新しく走査を始めずにその結果を待つ
   /// （画面を開き直すたびに走査が重なって、互いに遅くなるのを防ぐ）。
-  Future<StorageBreakdown> computeBreakdown(Set<String> trashedProjectIds) {
+  /// ただし[storageScanShareLimit]より前に始まった集計は待たない。[fresh]を
+  /// 渡すと、走っている集計があっても新しく始める（終わらない集計を待って
+  /// いた画面が、利用者の操作で取り直すとき）。
+  Future<StorageBreakdown> computeBreakdown(
+    Set<String> trashedProjectIds, {
+    bool fresh = false,
+  }) {
     final running = _running;
-    if (running != null && running.serves(trashedProjectIds)) {
+    if (!fresh && running != null && running.serves(trashedProjectIds)) {
       return running.result;
     }
-    final scan = _RunningScan(Set.of(trashedProjectIds), _epoch, Zone.current);
+    final scan = _RunningScan(
+      Set.of(trashedProjectIds),
+      _epoch,
+      Zone.current,
+      scanClock(),
+    );
     _running = scan;
     Future<StorageBreakdown> run() async {
       try {
@@ -406,10 +431,13 @@ class _FolderSize {
 
 /// 走っている途中の集計。
 class _RunningScan {
-  _RunningScan(this.trashedProjectIds, this.epoch, this.zone);
+  _RunningScan(this.trashedProjectIds, this.epoch, this.zone, this.startedAt);
 
   final Set<String> trashedProjectIds;
   final int epoch;
+
+  /// 始めたときの[StorageInfoService.scanClock]の値。
+  final Duration startedAt;
 
   /// 始めたゾーン。Futureの続きは作ったゾーンで動くので、別のゾーン
   /// （テストごとの偽の時計）で始まった集計を待つと、そのゾーンが
@@ -420,6 +448,7 @@ class _RunningScan {
   bool serves(Set<String> trashedProjectIds) =>
       epoch == StorageInfoService._epoch &&
       identical(zone, Zone.current) &&
+      StorageInfoService.scanClock() - startedAt < storageScanShareLimit &&
       setEquals(this.trashedProjectIds, trashedProjectIds);
 }
 

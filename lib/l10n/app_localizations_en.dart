@@ -6495,8 +6495,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Some data could not be read, so the totals may be lower than the actual usage';
 
   @override
-  String get storageDeviceSpaceUnavailable =>
-      'Could not get the device storage';
+  String get storageDeviceSpaceUnavailable => 'Could not check device storage';
 
   @override
   String get storageCategoryNiarimTotal => 'NIARIM';

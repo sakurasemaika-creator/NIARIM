@@ -36,6 +36,7 @@ import '../utils/app_error_reporter.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/folder_persistence.dart';
 import '../utils/project_trash_guard.dart';
+import 'storage_info_service.dart';
 
 /// Moving an active favorite to Trash requires removing its protection first.
 class FavoriteProjectDeleteException implements Exception {
@@ -1260,8 +1261,9 @@ class ProjectService extends ChangeNotifier {
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, copy);
     if (pixels != null) {
       final targetKey = tileKeyFor(projectId, sceneId, frameIndex, newId);
-      tileManagerOf(projectId)
-          .replaceLayerPixels(targetKey, Uint8List.fromList(pixels));
+      tileManagerOf(
+        projectId,
+      ).replaceLayerPixels(targetKey, Uint8List.fromList(pixels));
     }
     _undoManager?.push(
       LayerAddUndoAction(
@@ -2880,8 +2882,9 @@ class ProjectService extends ChangeNotifier {
   /// [saveProject]と同じ保存。保存できたかを返す（失敗しても例外にしない）。
   Future<bool> _saveReportingSuccess(String projectId) {
     if (!_projects.any((p) => p.id == projectId)) return Future.value(false);
-    return saveProject(projectId)
-        .then((_) => true, onError: (Object _, StackTrace _) => false);
+    return saveProject(
+      projectId,
+    ).then((_) => true, onError: (Object _, StackTrace _) => false);
   }
 
   Future<void> _saveMembership(
@@ -3062,7 +3065,13 @@ class ProjectService extends ChangeNotifier {
       final type = await FileSystemEntity.type(dir.path, followLinks: false);
       if (type == FileSystemEntityType.directory) {
         await _keepSharedThumbnails(dir.path);
-        await dir.delete(recursive: true);
+        try {
+          await dir.delete(recursive: true);
+        } finally {
+          // 容量削減の画面が覚えている集計結果は、消す前のもの（途中で
+          // 失敗しても、消せた分だけ大きさは変わっている）。
+          StorageInfoService().invalidate();
+        }
       } else if (type != FileSystemEntityType.notFound) {
         throw FileSystemException('Project path is not a directory', dir.path);
       }

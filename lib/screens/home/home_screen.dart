@@ -23,6 +23,7 @@ import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/share_intent_service.dart';
 import '../../services/shortcut_service.dart';
+import '../../services/storage_info_service.dart';
 import '../../services/work_folder_service.dart';
 import '../../models/shortcut_binding.dart';
 import '../../widgets/export_share_feedback.dart';
@@ -2515,6 +2516,8 @@ class _WorkListItemState extends State<_WorkListItem> {
             ),
             onPressed: () {
               if (file.existsSync()) file.deleteSync();
+              // 容量削減の画面が覚えている集計結果は、消す前のもの。
+              StorageInfoService().invalidate();
               Navigator.pop(ctx);
               widget.onDeleted();
             },

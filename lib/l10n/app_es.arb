@@ -2729,7 +2729,7 @@
   "storageCalculating": "Calculando…",
   "storageBreakdownLoadFailed": "No se pudo calcular el desglose",
   "storageBreakdownIncomplete": "No se pudieron leer algunos datos; los totales pueden ser inferiores al uso real",
-  "storageDeviceSpaceUnavailable": "No se pudo obtener el almacenamiento del dispositivo",
+  "storageDeviceSpaceUnavailable": "No se pudo consultar el almacenamiento del dispositivo",
   "storageCategoryNiarimTotal": "NIARIM",
   "storageCategoryOtherApps": "Otros",
   "storageCategoryFree": "Espacio libre",
