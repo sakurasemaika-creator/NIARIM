@@ -281,6 +281,25 @@ class CommunityApi {
     body: {'kind': kind, 'days': ?days},
   );
 
+  /// Server-clock time spent on the Works Plaza, including idle viewing.
+  /// The client never reports a duration or any coin amount.
+  Future<Map<String, dynamic>> myPlazaMissions() =>
+      _client.getJson('/me/missions/plaza', authenticated: true);
+
+  Future<Map<String, dynamic>> pulsePlazaMissions(String sessionId) =>
+      _client.postJson(
+        '/me/missions/plaza/pulse',
+        authenticated: true,
+        body: {'sessionId': sessionId},
+      );
+
+  Future<Map<String, dynamic>> claimPlazaMission(String missionId) =>
+      _client.postJson(
+        '/me/missions/plaza/claim',
+        authenticated: true,
+        body: {'missionId': missionId},
+      );
+
   /// Server-counted JST weekly/monthly login milestones; GET never credits.
   Future<Map<String, dynamic>> myRecurringMissions() =>
       _client.getJson('/me/missions/recurring', authenticated: true);
