@@ -34,13 +34,15 @@ async function loadState(userId: string) {
  * repeated requests). Exactly one row updated per user/day; other visits are
  * GET-only and claims never trigger writes from a GET.
  */
-export async function recordRecurringLoginVisit(userId: string): Promise<void> {
+export async function recordRecurringLoginVisit(userId: string): Promise<
+  {id:string;period:string;requiredDays:number;coins:number}[]
+> {
   const period = recurringPeriodKeys();
   // A coin claim can modify either claimed mask while today's visit is being
   // read. Compare both masks and retry rather than overwriting a paid claim.
   for (let attempt=0; attempt<3; attempt++) {
     const state = await loadState(userId);
-    if (state.lastVisitedDay >= period.day) return;
+    if (state.lastVisitedDay >= period.day) return [];
     const sameWeek = state.weekKey === period.week;
     const sameMonth = state.monthKey === period.month;
     try {
@@ -70,7 +72,13 @@ export async function recordRecurringLoginVisit(userId: string): Promise<void> {
           ":oldMonthMask": state.monthClaimedMask,
         },
       }));
-      return;
+      const nextWeekDays = sameWeek ? Math.min(state.weekDays + 1, 7) : 1;
+      const nextMonthDays = sameMonth ? Math.min(state.monthDays + 1, 31) : 1;
+      return RECURRING_MISSIONS.filter(m =>
+        (m.period === "week" && m.requiredDays === nextWeekDays) ||
+        (m.period === "month" && m.requiredDays === nextMonthDays))
+        .map(m=>({id:m.id,period:m.period,requiredDays:m.requiredDays,
+          coins:m.coins}));
     } catch (error) {
       if (error instanceof ConditionalCheckFailedException) continue;
       throw error;
