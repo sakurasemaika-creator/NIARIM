@@ -47,6 +47,12 @@ void main() {
     return tester.element(find.byType(HomeScreen)).read<ProjectService>();
   }
 
+  Future<void> settleHomeTab(WidgetTester tester) async {
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 70)));
+    await tester.pump(const Duration(milliseconds: 350));
+  }
+
   testWidgets('leaving projects ends selection and scopes editing shortcuts', (
     tester,
   ) async {
@@ -61,12 +67,12 @@ void main() {
         exportHeight: 180,
       ),
     );
-    await tester.pumpAndSettle();
+    await settleHomeTab(tester);
     await tester.longPress(find.text('Protected project'));
-    await tester.pumpAndSettle();
+    await settleHomeTab(tester);
     expect(find.byTooltip('ゴミ箱へ移動'), findsOneWidget);
     await tester.tap(find.text('作品一覧'));
-    await tester.pumpAndSettle();
+    await settleHomeTab(tester);
     expect(
       find.byTooltip('ゴミ箱へ移動'),
       findsNothing,
@@ -75,11 +81,11 @@ void main() {
     await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
     await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
     await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
-    await tester.pumpAndSettle();
+    await settleHomeTab(tester);
     expect(find.text('全解除'), findsNothing);
     expect(service.projects.single.name, 'Protected project');
     await tester.tap(find.text('プロジェクト'));
-    await tester.pumpAndSettle();
+    await settleHomeTab(tester);
     expect(find.byTooltip('ゴミ箱へ移動'), findsNothing);
     expect(find.text('Protected project'), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());
@@ -93,7 +99,7 @@ void main() {
     try {
       for (var selected = 0; selected < 2; selected++) {
         await tester.tap(find.byKey(ValueKey('home_tab_$selected')));
-        await tester.pumpAndSettle();
+        await settleHomeTab(tester);
         for (var candidate = 0; candidate < 2; candidate++) {
           final data = tester
               .getSemantics(find.byKey(ValueKey('home_tab_$candidate')))
@@ -116,10 +122,10 @@ void main() {
   ) async {
     await openHome(tester);
     await tester.tap(find.byTooltip('検索'));
-    await tester.pumpAndSettle();
+    await settleHomeTab(tester);
     await tester.enterText(find.byType(TextField), 'project query');
     await tester.tap(find.text('作品一覧'));
-    await tester.pumpAndSettle();
+    await settleHomeTab(tester);
     expect(
       find.byType(TextField),
       findsNothing,
@@ -127,9 +133,9 @@ void main() {
     );
     expect(find.byTooltip('検索'), findsNothing);
     await tester.tap(find.text('プロジェクト'));
-    await tester.pumpAndSettle();
+    await settleHomeTab(tester);
     await tester.tap(find.byTooltip('検索'));
-    await tester.pumpAndSettle();
+    await settleHomeTab(tester);
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller!.text,
       '',
