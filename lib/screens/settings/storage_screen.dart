@@ -719,6 +719,17 @@ class _StorageScreenState extends State<StorageScreen> {
   }) {
     final outline = scheme.onSurface;
     final foreground = scheme.onSecondary;
+    // Keep the requested active button text color. A subtle outline in the
+    // theme's surface-ink color preserves readability on very light bars.
+    final foregroundShadows = [
+      for (final offset in const [
+        Offset(-0.7, -0.7),
+        Offset(0.7, -0.7),
+        Offset(-0.7, 0.7),
+        Offset(0.7, 0.7),
+      ])
+        Shadow(color: outline, offset: offset, blurRadius: 0.3),
+    ];
     final amount = ratio.clamp(0.0, 1.0);
     return SizedBox(
       key: key,
@@ -765,7 +776,8 @@ class _StorageScreenState extends State<StorageScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: foreground,
-                      fontSize: 10,
+                      fontSize: 12,
+                      shadows: foregroundShadows,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -776,7 +788,8 @@ class _StorageScreenState extends State<StorageScreen> {
                   key: Key('storageBreakdownBarValue_$label'),
                   style: TextStyle(
                     color: foreground,
-                    fontSize: 10,
+                    fontSize: 12,
+                    shadows: foregroundShadows,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
