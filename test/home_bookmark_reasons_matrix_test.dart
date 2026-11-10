@@ -10,7 +10,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
-import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_service.dart';
@@ -91,7 +91,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     await loadAppFonts(tester);
-    appRouter.go('/home');
+    appRouter.go('/community');
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
       MultiProvider(
@@ -104,11 +104,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final home = find.byType(HomeScreen);
+    final home = find.byType(CommunityScreen);
     final community = tester.element(home).read<CommunityService>();
     await prepare?.call(community);
     final savedIds = Set<String>.of(community.bookmarkedIds);
-    final tab = find.byKey(const ValueKey('home_tab_2'));
+    final tab = find.byKey(const ValueKey('communityTab4'));
     await tester.ensureVisible(tab);
     await tester.tap(tab);
     await tester.pump();
@@ -217,7 +217,7 @@ void main() {
       );
     });
 
-    testWidgets('$mode signed in but not loaded yet', (tester) async {
+    testWidgets('$mode signed in loads bookmarks when opened', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final service = backend(MockClient((r) async => social(r)));
       addTearDown(service.dispose);
@@ -225,13 +225,13 @@ void main() {
       service.setCurrentUserId('fixture-owner');
       await check(
         tester,
-        reason: 'not loaded',
+        reason: 'initial fetch',
         pc: pc,
         service: service,
         expected: (
-          title: (l) => l.homeBookmarkedLoadPrompt,
-          body: null,
-          reload: (l) => l.communityReloadTooltip,
+          title: (l) => l.homeBookmarkedEmptyTitle,
+          body: (l) => l.homeBookmarkedEmptyBody,
+          reload: null,
         ),
       );
     });
