@@ -62,6 +62,12 @@ export async function pulseMyPlazaMissions(event:APIGatewayProxyEventV2) {
     const now=Date.now();
     const periods=recurringPeriodKeys(new Date(now));
     const {raw,state}=await load(auth.niarimUserId);
+    // A second pulse inside one minute yields the existing state without
+    // another paid DynamoDB write. A new session still starts immediately.
+    if (state.sessionId === sessionId && now-state.lastPulseMs >= 0 &&
+        now-state.lastPulseMs < 60000) {
+      return ok({...view(state,new Date(now)),newlyAchieved:[]});
+    }
     const next=advancePlazaPulse(state,sessionId,now,periods);
     const achieved=PLAZA_MISSIONS.filter(m=>
       !plazaProgress(state,m,periods).eligible &&
