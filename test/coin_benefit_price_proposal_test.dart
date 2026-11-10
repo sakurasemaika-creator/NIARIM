@@ -4,11 +4,26 @@ import 'package:niarim/models/coin_unlock_quote.dart';
 
 void main() {
   test('final owner-approved price model never implies a live redemption', () {
-    expect(CoinBenefitPriceCatalog.version, 'v2-final-55000');
+    expect(CoinBenefitPriceCatalog.version, 'v3-final-annual550000');
     expect(CoinBenefitPriceCatalog.cost(
       CoinUnlockTarget.fullPremium,
       const CoinUnlockDuration(1, CoinDurationUnit.month),
     ), 55000);
+  });
+
+  test('annual Premium equals the Japanese yearly price × 100 coins', () {
+    expect(CoinBenefitPriceCatalog.yearlyPremiumCoins, 550000);
+    const month = CoinDurationUnit.month;
+    expect(CoinBenefitPriceCatalog.cost(CoinUnlockTarget.fullPremium,
+      const CoinUnlockDuration(12, month)), 550000);
+    expect(CoinBenefitPriceCatalog.cost(CoinUnlockTarget.fullPremium,
+      const CoinUnlockDuration(13, month)), 605000);
+    expect(CoinBenefitPriceCatalog.cost(CoinUnlockTarget.fullPremium,
+      const CoinUnlockDuration(24, month)), 1100000);
+    expect(CoinBenefitPriceCatalog.cost(CoinUnlockTarget.fullPremium,
+      const CoinUnlockDuration(11, month)), 605000);
+    expect(CoinBenefitPriceCatalog.cost(CoinUnlockTarget.toneCurve,
+      const CoinUnlockDuration(12, month)), 156000);
   });
 
   test('all final unit prices round up to whole tens', () {

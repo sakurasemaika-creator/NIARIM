@@ -12,7 +12,8 @@ import {DAILY_LOGIN_COINS,LOGIN_BONUS_MILESTONES}
 import {INITIAL_REWARDED_COINS_PER_COMPLETION,FINAL_COIN_ECONOMY_VERSION}
   from "../src/lib/coinEconomyScale";
 import {COIN_BENEFIT_PRICE_VERSION,FINAL_PREMIUM_MONTHLY_COINS,
-  finalBenefitCoins} from "../src/lib/coinBenefitProposal";
+  finalBenefitCoins,finalBenefitCostCoins,FINAL_PREMIUM_YEARLY_COINS}
+  from "../src/lib/coinBenefitProposal";
 
 /**
  * An explicit final-price gold contract. Do not update this file simply to
@@ -565,11 +566,13 @@ describe("final coin economy v1 is frozen across all reward categories",()=>{
     expect(LOGIN_BONUS_MILESTONES.map(m=>[m.days,m.coins])).toEqual(LOGIN);
   });
 
-  it("locks signed AdMob reward of 10 and Premium 1-month of 55000",()=>{
+  it("locks rewarded-ad, 1-month Premium and 1-year Premium tariffs",()=>{
     expect(INITIAL_REWARDED_COINS_PER_COMPLETION).toBe(10);
-    expect(COIN_BENEFIT_PRICE_VERSION).toBe("v2-final-55000");
+    expect(COIN_BENEFIT_PRICE_VERSION).toBe("v3-final-annual550000");
     expect(FINAL_PREMIUM_MONTHLY_COINS).toBe(55000);
     expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
+    expect(FINAL_PREMIUM_YEARLY_COINS).toBe(550000);
+    expect(finalBenefitCostCoins("fullPremium","month",12)).toBe(550000);
   });
 
   it("locks all 25 population tiers and rank scaling without altering claim bits",()=>{

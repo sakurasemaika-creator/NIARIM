@@ -352,7 +352,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   CoinUnlockQuote? _quote() {
     if (_selected.isEmpty) return null;
     try {
-      return const CoinUnlockQuoteCalculator().calculate(
+      final quote = const CoinUnlockQuoteCalculator().calculate(
         selections: [
           for (final target in _selected) CoinUnlockSelection(target: target),
         ],
@@ -361,6 +361,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         priceVersion: 'server-pending',
         fullPremiumMinimumCoins: widget.fullPremiumMinimumCoins,
       );
+      // The existing per-month quote model cannot express the annual
+      // Premium discount. Never show its 12×month cost as a finalized total.
+      final finalTotal = _selected.fold<int>(0, (sum, target) =>
+          sum + CoinBenefitPriceCatalog.cost(target, _duration));
+      if (quote.requiredCoins != finalTotal) return null;
+      return quote;
     } on StateError {
       return null;
     } on ArgumentError {
@@ -851,7 +857,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                             : _selected.isEmpty
                             ? t['unavailable']
                             : '$referenceTotal ${t['coins']}'
-                              '（参考価格・交換準備中）',
+                              '（確定価格・交換準備中）',
                         key: const Key('rewardTotalCoins'),
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),

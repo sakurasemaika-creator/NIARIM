@@ -4,7 +4,9 @@ import { FINAL_ALL_INDIVIDUAL_MONTHLY_COINS,
 
 /**
  * Initial implemented redemption route: full Premium for ONE calendar month.
- * The final tariff is precisely 55,000 coins (550 yen x 100 coins).
+ * The final monthly tariff is precisely 55,000 coins (550 yen x 100).
+ * Annual Premium is a separate approved 550,000-coin catalog rate but
+ * is NOT supported by this monthly-only redemption endpoint.
  * Incorrect operator configuration must FAIL CLOSED.
  * Pricing finalization does not itself authorize balance deductions.
  */

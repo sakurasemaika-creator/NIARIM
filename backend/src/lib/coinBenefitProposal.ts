@@ -5,11 +5,18 @@
  * authenticated, atomic server redemption path has been implemented.
  * This table does not bypass independent safety and release gates.
  *
- * Multi-unit exchange pricing is the unit price multiplied by quantity;
- * the unit price is rounded upwards to a multiple of 10 coins.
+ * Multi-unit exchange pricing multiplies a rounded unit price by quantity,
+ * EXCEPT full Premium: complete 12-month blocks use the Japanese annual
+ * plan price of ¥5,500 × 100 = 550,000 coins, then remaining months use
+ * the approved 55,000-coin monthly price. This does not enable annual
+ * redemption before a server implementation and independent approval.
  * Discounted bundles remain cheaper than equivalent individual rights.
  */
-export const COIN_BENEFIT_PRICE_VERSION = "v2-final-55000" as const;
+import {
+  PREMIUM_YEARLY_LIST_PRICE_YEN, REFERENCE_COINS_PER_YEN,
+} from "./coinEconomyScale";
+
+export const COIN_BENEFIT_PRICE_VERSION = "v3-final-annual550000" as const;
 
 const month = {
   endCardEdit: 8_000,
@@ -55,6 +62,23 @@ export function finalBenefitCoins(
 }
 
 export const FINAL_PREMIUM_MONTHLY_COINS = month.fullPremium;
+export const FINAL_PREMIUM_YEARLY_COINS =
+  PREMIUM_YEARLY_LIST_PRICE_YEN * REFERENCE_COINS_PER_YEN;
+
+/** Final-priced quantity, including the explicit 1-year discount.
+ * This is only a PRICE calculation, never a spendable entitlement quote.
+ */
+export function finalBenefitCostCoins(
+  target: BenefitPriceTarget, duration: BenefitDuration, quantity: number,
+): number {
+  if (!Number.isSafeInteger(quantity) || quantity < 1 ||
+      quantity > 120) throw new RangeError("Invalid benefit duration quantity");
+  if (target === "fullPremium" && duration === "month") {
+    return Math.floor(quantity / 12) * FINAL_PREMIUM_YEARLY_COINS +
+      (quantity % 12) * FINAL_PREMIUM_MONTHLY_COINS;
+  }
+  return finalBenefitCoins(target,duration) * quantity;
+}
 export const FINAL_ALL_INDIVIDUAL_MONTHLY_COINS = INDIVIDUAL_BENEFITS
   .reduce((sum,target)=>sum + month[target],0);
 
