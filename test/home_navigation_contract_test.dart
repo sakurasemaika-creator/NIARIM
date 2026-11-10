@@ -91,10 +91,10 @@ void main() {
     await openHome(tester);
     final semantics = tester.ensureSemantics();
     try {
-      for (var selected = 0; selected < 3; selected++) {
+      for (var selected = 0; selected < 2; selected++) {
         await tester.tap(find.byKey(ValueKey('home_tab_$selected')));
         await tester.pumpAndSettle();
-        for (var candidate = 0; candidate < 3; candidate++) {
+        for (var candidate = 0; candidate < 2; candidate++) {
           final data = tester
               .getSemantics(find.byKey(ValueKey('home_tab_$candidate')))
               .getSemanticsData();
@@ -125,9 +125,6 @@ void main() {
       findsNothing,
       reason: 'project search must end when its results leave the screen',
     );
-    expect(find.byTooltip('検索'), findsNothing);
-    await tester.tap(find.text('ブクマ済み'));
-    await tester.pumpAndSettle();
     expect(find.byTooltip('検索'), findsNothing);
     await tester.tap(find.text('プロジェクト'));
     await tester.pumpAndSettle();
