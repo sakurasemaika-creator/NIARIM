@@ -72,7 +72,7 @@ void main() {
     await tester.longPress(find.text('Protected project'));
     await settleHomeTab(tester);
     expect(find.byTooltip('ゴミ箱へ移動'), findsOneWidget);
-    await tester.tap(find.text('作品一覧'));
+    await tester.tap(find.byKey(const ValueKey('home_tab_1')));
     await settleHomeTab(tester);
     expect(
       find.byTooltip('ゴミ箱へ移動'),
@@ -85,7 +85,7 @@ void main() {
     await settleHomeTab(tester);
     expect(find.text('全解除'), findsNothing);
     expect(service.projects.single.name, 'Protected project');
-    await tester.tap(find.text('プロジェクト'));
+    await tester.tap(find.byKey(const ValueKey('home_tab_0')));
     await settleHomeTab(tester);
     expect(find.byTooltip('ゴミ箱へ移動'), findsNothing);
     expect(find.text('Protected project'), findsOneWidget);
