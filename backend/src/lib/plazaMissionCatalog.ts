@@ -1,5 +1,7 @@
 /**
- * Low-value, repeatable missions for keeping the Works Plaza open.
+ * Low-value, repeatable missions for genuine Works Plaza visits.
+ * A complete hour earns at most six daily coins (across all daily tiers),
+ * well below the ten coins of one opt-in rewarded advertisement.
  * A session heartbeat is authenticated; NO client-reported seconds count.
  * The server's own elapsed time is capped per heartbeat and per period.
  * Each user needs a single compact DynamoDB row, not a per-minute log.
@@ -12,19 +14,19 @@ export interface PlazaMission {
   requiredSeconds: number;
   coins: number;
 }
-export const PLAZA_MISSION_CATALOG_VERSION = "plaza-time-v1";
+export const PLAZA_MISSION_CATALOG_VERSION = "plaza-time-v2-balanced-10";
 export const PLAZA_MISSION_STATE_TYPE = "PLAZA_MISSIONS_V1";
 export const PLAZA_MISSIONS: readonly PlazaMission[] = Object.freeze([
-  {id:"plaza_day_5m",period:"day",bit:0,requiredSeconds:300,coins:2},
-  {id:"plaza_day_15m",period:"day",bit:1,requiredSeconds:900,coins:4},
-  {id:"plaza_day_30m",period:"day",bit:2,requiredSeconds:1800,coins:6},
-  {id:"plaza_day_60m",period:"day",bit:3,requiredSeconds:3600,coins:10},
-  {id:"plaza_week_1h",period:"week",bit:0,requiredSeconds:3600,coins:8},
-  {id:"plaza_week_3h",period:"week",bit:1,requiredSeconds:10800,coins:15},
-  {id:"plaza_week_6h",period:"week",bit:2,requiredSeconds:21600,coins:25},
-  {id:"plaza_month_10h",period:"month",bit:0,requiredSeconds:36000,coins:30},
-  {id:"plaza_month_20h",period:"month",bit:1,requiredSeconds:72000,coins:45},
-  {id:"plaza_month_40h",period:"month",bit:2,requiredSeconds:144000,coins:60},
+  {id:"plaza_day_5m",period:"day",bit:0,requiredSeconds:300,coins:1},
+  {id:"plaza_day_15m",period:"day",bit:1,requiredSeconds:900,coins:1},
+  {id:"plaza_day_30m",period:"day",bit:2,requiredSeconds:1800,coins:2},
+  {id:"plaza_day_60m",period:"day",bit:3,requiredSeconds:3600,coins:2},
+  {id:"plaza_week_1h",period:"week",bit:0,requiredSeconds:3600,coins:2},
+  {id:"plaza_week_3h",period:"week",bit:1,requiredSeconds:10800,coins:3},
+  {id:"plaza_week_6h",period:"week",bit:2,requiredSeconds:21600,coins:4},
+  {id:"plaza_month_10h",period:"month",bit:0,requiredSeconds:36000,coins:4},
+  {id:"plaza_month_20h",period:"month",bit:1,requiredSeconds:72000,coins:6},
+  {id:"plaza_month_40h",period:"month",bit:2,requiredSeconds:144000,coins:8},
 ]);
 export interface PlazaState {
   version: number;

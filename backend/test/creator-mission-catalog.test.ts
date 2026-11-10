@@ -44,7 +44,8 @@ describe("creator missions with separate account and work scopes", () => {
     expect(byId("work_posted").required).toBe(0);
     expect(byId("work_bookmarks_1000").required).toBe(1000);
     expect(CREATOR_MISSIONS.some((m)=>m.id==="works_10000_x_20")).toBe(false);
-    expect(byId("edit_50h").coins).toBeLessThanOrEqual(50);
+    expect(byId("edit_50h").coins).toBe(6);
+    expect(CREATOR_MISSIONS.every(m => m.coins >= 1 && m.coins <= 10)).toBe(true);
     expect(byId("edit_50h").perWork).toBe(false);
     expect(byId("work_bookmarks_100").perWork).toBe(true);
     expect(byId("bookmark_rank_1").perWork).toBe(true);
@@ -56,7 +57,8 @@ describe("creator missions with separate account and work scopes", () => {
     const ranked = CREATOR_MISSIONS.find((m) => m.id === "bookmark_rank_1")!;
     expect(missionRewardCoins(ranked, 100)).toBeLessThanOrEqual(20);
     expect(missionRewardCoins(ranked, 10000)).toBeLessThanOrEqual(60);
-    expect(missionRewardCoins(ranked, 1000000)).toBeLessThanOrEqual(100);
+    expect(missionRewardCoins(ranked, 1000000)).toBe(10);
+    expect(CREATOR_MISSIONS.every(m => missionRewardCoins(m, 1000000) <= 10)).toBe(true);
     const edited = CREATOR_MISSIONS.find((m) => m.id === "edit_50h")!;
     expect(missionRewardCoins(edited, 1000000)).toBeLessThanOrEqual(50);
   });

@@ -31,7 +31,9 @@ void main() {
     final shown = showMissionCompletionDialog(pageContext,
       titles: const ['作品広場を5分開く']);
     await tester.pumpAndSettle();
-    expect(find.text('ミッションをクリアしました！'), findsOneWidget);
+    expect(find.text('ミッション達成'), findsOneWidget);
+    final heading = tester.widget<Text>(find.text('ミッション達成'));
+    expect(heading.style?.fontFamily, 'Kuramubon');
     expect(find.textContaining('作品広場を5分開く'), findsOneWidget);
     expect(find.byKey(const Key('missionCompletedClose')), findsOneWidget);
     expect(find.byKey(const Key('missionCompletedGoToMissions')), findsOneWidget);

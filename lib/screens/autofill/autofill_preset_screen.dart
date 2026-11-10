@@ -269,6 +269,8 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+          // Explicitly remove the thick outline inherited from global FAB themes.
+          shape: const CircleBorder(side: BorderSide.none),
         onPressed: _showAddOrImportChoice,
         child: const Icon(Icons.add),
       ),
@@ -1075,6 +1077,8 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
+          // Explicitly remove the thick outline inherited from global FAB themes.
+          shape: const CircleBorder(side: BorderSide.none),
           onPressed: _showAddPartDialog,
           child: const Icon(Icons.add),
         ),

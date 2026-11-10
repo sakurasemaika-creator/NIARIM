@@ -37,7 +37,7 @@ describe("plaza open-time low-value missions",()=>{
   it("has a bounded daily weekly and monthly catalogue",()=>{
     expect(PLAZA_MISSIONS).toHaveLength(10);
     expect(PLAZA_MISSIONS.filter(m=>m.period==="day")).toHaveLength(4);
-    expect(PLAZA_MISSIONS.every(m=>m.coins>=2&&m.coins<=60)).toBe(true);
+    expect(PLAZA_MISSIONS.every(m=>m.coins>=1&&m.coins<=8)).toBe(true);
     expect(new Set(PLAZA_MISSIONS.map(m=>m.id)).size).toBe(10);
   });
   it("does not count a client-supplied duration or first heartbeat",async()=>{
@@ -89,13 +89,13 @@ describe("plaza open-time low-value missions",()=>{
     const data=JSON.parse((await claimMyPlazaMission(req({
       missionId:"plaza_day_5m",coins:123456,
     }))).body??"{}");
-    expect(data).toMatchObject({claimed:true,awardedCoins:2});
+    expect(data).toMatchObject({claimed:true,awardedCoins:1});
     const tx=send.mock.calls[1][0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
     const [mark,wallet,history]=tx.input.TransactItems!;
     expect(mark.Update?.ExpressionAttributeValues?.[":newVersion"]).toBe(5);
-    expect(wallet.Update?.ExpressionAttributeValues?.[":coins"]).toBe(2);
-    expect(history.Put?.Item?.deltaCoins).toBe(2);
+    expect(wallet.Update?.ExpressionAttributeValues?.[":coins"]).toBe(1);
+    expect(history.Put?.Item?.deltaCoins).toBe(1);
   });
   it("rejects repeat claims without a wallet write",async()=>{
     process.env.PLAZA_MISSION_PAYOUTS_ENABLED="true";

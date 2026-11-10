@@ -43,7 +43,7 @@ describe("creator mission endpoints", () => {
     const body = JSON.parse(resp.body ?? "{}");
     expect(body.enabled).toBe(false);
     expect(body.missions).toHaveLength(55);
-    expect(body.missions.find((m: {id: string}) => m.id === 'edit_50h').coins).toBe(38);
+    expect(body.missions.find((m: {id: string}) => m.id === 'edit_50h').coins).toBe(6);
     expect(body.missions.find((m: {id: string}) => m.id === 'bookmark_rank_1').claimed).toBe(null);
     expect(body.editTimeVerificationReady).toBe(false);
     expect(body.verifiedEditSeconds).toBe(0);

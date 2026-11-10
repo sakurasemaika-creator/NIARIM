@@ -15,9 +15,10 @@ Future<void> showMissionCompletionDialog(
     builder: (dialogContext) => AlertDialog(
       key: const Key('missionCompletedDialog'),
       scrollable: true,
-      title: Text(japanese
-          ? 'ミッションをクリアしました！'
-          : 'Mission completed!'),
+      title: Text(
+        japanese ? 'ミッション達成' : 'Mission completed!',
+        style: const TextStyle(fontFamily: 'Kuramubon'),
+      ),
       content: Text([
         ...titles.map((title) => '・$title'),
         japanese ? 'ミッションページで報酬を受け取れます。'
