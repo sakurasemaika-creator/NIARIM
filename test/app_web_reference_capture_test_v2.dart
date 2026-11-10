@@ -325,7 +325,20 @@ void main() {
         updateMarkColor: accent,
       );
       appContext.read<ThemeService>().restoreCurrent(theme);
-      await tester.pump(const Duration(milliseconds: 300));
+      // AnimatedTheme begins its color interpolation on the first pump.
+      // Capturing on that same frame leaked the PREVIOUS variant's accent:
+      // the first layer screenshot was green while its frame was orange.
+      // Advance a separate settled frame before encoding either SP or PC.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump();
+      final displayedTheme =
+          Theme.of(tester.element(find.byType(Scaffold).first));
+      expect(
+        displayedTheme.colorScheme.primary,
+        accent,
+        reason: 'Captured app theme must match the website frame for $name variant ${variant + 1}',
+      );
 
       expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
       expect(
