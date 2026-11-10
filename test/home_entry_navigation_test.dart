@@ -426,19 +426,10 @@ void main() {
     final l10n = await open(tester);
     await switchTab(tester, 1);
     for (final (target, path) in [
-      (find.text(l10n.homeTabShared), '/shared'),
-      (find.text(l10n.homeTabTrash), '/trash'),
-      (find.text(l10n.homeDrawerAutofillPreset), '/autofill-presets'),
       (find.text(l10n.homeDrawerStorage), '/storage'),
       (find.text(l10n.homeDrawerSettings), '/settings'),
-      (find.text(l10n.homeDrawerHelp), '/help'),
-      (find.text(l10n.homeDrawerTips), '/tips'),
-      (find.byKey(const Key('homeBenefitExchangeMenuItem')), '/rewards'),
-      (
-        find.byKey(const Key('homeCreatorMissionsMenuItem')),
-        '/creator-missions',
-      ),
-      (find.byKey(const Key('homeEarnCoinsMenuItem')), '/earn-coins'),
+      (find.byKey(const Key('homeGuideMenuItem')), '/help'),
+      (find.byKey(const Key('homeCoinBenefitsMenuItem')), '/rewards'),
       (find.byKey(const Key('homeMembershipBenefitsMenuItem')), '/membership'),
     ]) {
       tester
@@ -491,7 +482,7 @@ void main() {
   });
 
   testWidgets(
-    'the two home tabs follow the configured accent without correction',
+    'the four home tabs follow the configured accent without correction',
     (tester) async {
       for (final theme in [
         AppThemePreset.defaultLight,
@@ -503,7 +494,7 @@ void main() {
         await open(tester, theme: theme);
         final scheme = Theme.of(tester.element(find.byType(HomeScreen)))
             .colorScheme;
-        for (final index in [0, 1]) {
+        for (final index in [0, 1, 2, 3]) {
           await switchTab(tester, index);
           final labels = tester.widgetList<Text>(
             find.descendant(
@@ -517,8 +508,8 @@ void main() {
             reason: 'selected tab $index on ${theme.id}',
           );
         }
-        expect(find.byKey(const ValueKey('home_tab_2')), findsNothing,
-            reason: 'bookmarks now belong to the community plaza');
+        expect(find.byKey(const ValueKey('home_tab_2')), findsOneWidget);
+        expect(find.byKey(const ValueKey('home_tab_3')), findsOneWidget);
       }
       await tester.pumpWidget(const SizedBox.shrink());
     },
