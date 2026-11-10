@@ -8700,7 +8700,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionRankingWarning =>
-      'Ranking missions use NIARIM bookmark rankings, not YouTube metrics.';
+      'Note: only the NIARIM bookmark ranking counts. Published-work population, bookmarks on your work, rank and top-percentile requirements must ALL be met. Open mission details for the exact rules.';
 
   @override
   String get creatorMissionBudget =>
@@ -9246,6 +9246,137 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not load what can be claimed. Please try again.';
 
   @override
+  String get creatorMissionRankOne => 'NIARIM bookmark ranking #1';
+
+  @override
+  String get creatorMissionDetailsBookmarkRule =>
+      'WORK BOOKMARKS: Your own work must still be published on NIARIM and have at least the required number of NIARIM bookmarks. Each work is assessed separately. Unpublished or deleted works do not qualify.';
+
+  @override
+  String get creatorMissionDetailsWorksRule =>
+      'MULTIPLE WORKS: You need at least the required number of your currently published NIARIM works, each meeting the specified bookmark minimum. A zero-bookmark target only requires publication. The server verifies qualifying works again.';
+
+  @override
+  String get creatorMissionDetailsFollowerRule =>
+      'FOLLOWERS: Your NIARIM account must currently have at least the specified number of followers. The server record, not a client-supplied count, determines progress.';
+
+  @override
+  String get creatorMissionDetailsTimeRule =>
+      'EDITING TIME: Client-reported time and device-stored project duration cannot earn coins. A trustworthy proof of real editing activity is not yet available, so editing-time rewards cannot currently be claimed. Displayed time is informational.';
+
+  @override
+  String get creatorMissionDetailsClaimRule =>
+      'CLAIMING: The server verifies your milestone at the first request and starts a 48-hour hold. Press Claim again after 48 hours: the server rechecks the live conditions before paying. If conditions are lost, the hold restarts. Each mission pays once per account or once per work, depending on the mission.';
+
+  @override
+  String creatorMissionRankDetailsRules(int percent, int rank) {
+    return 'RANK CALCULATION: The work must be your own and currently published on NIARIM. At least 100 NIARIM works must be published; your work needs the specified bookmarks; and it must rank both within top $rank and the top $percent% of all published works. The percentile rank limit is floor(published work count × $percent%), at least 1, capped at top $rank. The server-maintained published-work count is used.';
+  }
+
+  @override
+  String get creatorMissionRankDetailsHold =>
+      'CLAIM TIMING: Rankings update continuously. The server checks all conditions when you apply and starts a 48-hour hold. After 48 hours, press Claim again; the server rechecks current conditions before paying. If they are no longer met, the hold resets. A brief past appearance in the ranking is not automatically credited. Each work can receive each rank reward once; different works qualify separately.';
+
+  @override
+  String get creatorMissionRankSelectWork =>
+      'Select a work to check its ranking reward eligibility';
+
+  @override
+  String get creatorMissionRankWorkNotPublic =>
+      'This work is not currently published';
+
+  @override
+  String get creatorMissionRankCommunityNotMeasured =>
+      'Published works are still being counted; claims are unavailable until complete';
+
+  @override
+  String creatorMissionRankCommunityWait(int count, int required) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count published works',
+      one: '$count published work',
+    );
+    return 'Community too small: $_temp0 / $required required';
+  }
+
+  @override
+  String creatorMissionRankBookmarkWait(int count, int required) {
+    return 'Not enough bookmarks: $count / $required required';
+  }
+
+  @override
+  String get creatorMissionRankNotRanked =>
+      'This work is not currently in the top 50';
+
+  @override
+  String creatorMissionRankRankWait(int rank, int limit) {
+    return 'Current rank: $rank; required: top $limit by percentile';
+  }
+
+  @override
+  String get creatorMissionRankQualified =>
+      'All conditions met. Rechecked at request and after 48 hours';
+
+  @override
+  String creatorMissionRankPoolCurrent(int count) {
+    return 'Published NIARIM works: $count';
+  }
+
+  @override
+  String get creatorMissionRankPoolUnknown =>
+      'The server has not finished counting published works';
+
+  @override
+  String get creatorMissionRankCurrentUnknown =>
+      'This work is not currently in the top 50';
+
+  @override
+  String get creatorMissionEditTimeUnverified =>
+      'Local editing activity can be spoofed, so editing-time coin rewards are unavailable. Time shown is informational.';
+
+  @override
+  String creatorMissionRankBookmarkCurrent(int count) {
+    return 'Bookmarks on this work: $count';
+  }
+
+  @override
+  String creatorMissionRankCurrentPlace(int rank) {
+    return 'Current rank for this work: $rank';
+  }
+
+  @override
+  String get creatorMissionRankNotLive =>
+      'Coin payouts are being prepared; ranking rewards cannot be claimed yet.';
+
+  @override
+  String creatorMissionVerifiedMinutes(int minutes) {
+    return 'Server-clock-validated editing time: $minutes min';
+  }
+
+  @override
+  String creatorMissionRankingRequirements(int works, int bookmarks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      works,
+      locale: localeName,
+      other: '$works published works',
+      one: '$works published work',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      bookmarks,
+      locale: localeName,
+      other: '$bookmarks bookmarks',
+      one: '$bookmarks bookmark',
+    );
+    return 'Eligibility: at least $_temp0 and $_temp1 on this work';
+  }
+
+  @override
+  String creatorMissionRankingEffective(int rank) {
+    return 'Required live rank with the current community size: top $rank';
+  }
+
+  @override
   String loginBonusDays(int days) {
     String _temp0 = intl.Intl.pluralLogic(
       days,
@@ -9382,17 +9513,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Weekly and monthly missions are unavailable';
 
   @override
-  String recurringMissionGoal(int days) {
-    String _temp0 = intl.Intl.pluralLogic(
-      days,
-      locale: localeName,
-      other: '$days days',
-      one: '$days day',
-    );
-    return 'Visit on $_temp0 this period';
-  }
-
-  @override
   String recurringMissionProgress(int days, int goal) {
     String _temp0 = intl.Intl.pluralLogic(
       goal,
@@ -9401,6 +9521,126 @@ class AppLocalizationsEn extends AppLocalizations {
       one: '$goal day',
     );
     return '$days / $_temp0';
+  }
+
+  @override
+  String get missionDetailsTooltip => 'View mission details';
+
+  @override
+  String get missionDetailsTitle => 'Mission details';
+
+  @override
+  String get missionDetailsClaimedThisPeriod =>
+      'Already claimed for this period.';
+
+  @override
+  String get missionDetailsGoalCompleted => 'Goal completed.';
+
+  @override
+  String get missionDetailsGoalNotCompleted => 'Goal not yet completed.';
+
+  @override
+  String get missionDetailsPayoutUnavailable =>
+      'Coin payouts are currently unavailable.';
+
+  @override
+  String plazaMissionDetailsConditions(String period, String duration) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'day': 'one day',
+      'week': 'one week',
+      'other': 'one month',
+    });
+    return 'CONDITIONS: Keep NIARIM Work Plaza open for at least $duration in total within $_temp0. Video playback and interaction are not required.';
+  }
+
+  @override
+  String get plazaMissionDetailsMeasurement =>
+      'Time is measured by authenticated server-time heartbeats, not client-reported seconds. Long connection gaps and time with the page closed do not count.';
+
+  @override
+  String get plazaMissionDetailsPeriods =>
+      'Periods use Japan time (JST): days reset at midnight, weeks start on Monday and months start on the first.';
+
+  @override
+  String plazaMissionDetailsProgress(String progress, String goal) {
+    return 'Current open time: $progress / $goal';
+  }
+
+  @override
+  String plazaMissionDetailsClaim(int coins) {
+    String _temp0 = intl.Intl.pluralLogic(
+      coins,
+      locale: localeName,
+      other: '$coins coins',
+      one: '$coins coin',
+    );
+    return 'CLAIM: Earn $_temp0 for this milestone. Each milestone pays once per period. You may earn it again in a new period, but cannot claim an expired period.';
+  }
+
+  @override
+  String recurringMissionGoalWeek(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '$days day',
+    );
+    return 'Sign in on $_temp0 this week';
+  }
+
+  @override
+  String recurringMissionGoalMonth(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '$days day',
+    );
+    return 'Sign in on $_temp0 this month';
+  }
+
+  @override
+  String recurringMissionDetailsConditionsWeek(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days distinct days',
+      one: '$days distinct day',
+    );
+    return 'CONDITIONS: Sign in on $_temp0 in the same Monday–Sunday week, using Japan time (JST). Consecutive days are not required; multiple sign-ins on one day count as one. The server verifies visits.';
+  }
+
+  @override
+  String recurringMissionDetailsConditionsMonth(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days distinct days',
+      one: '$days distinct day',
+    );
+    return 'CONDITIONS: Sign in on $_temp0 in the same calendar month, using Japan time (JST). Consecutive days are not required; multiple sign-ins on one day count as one. The server verifies visits.';
+  }
+
+  @override
+  String recurringMissionDetailsProgress(int progress, int goal) {
+    String _temp0 = intl.Intl.pluralLogic(
+      goal,
+      locale: localeName,
+      other: '$goal days',
+      one: '$goal day',
+    );
+    return 'Current progress: $progress / $_temp0';
+  }
+
+  @override
+  String recurringMissionDetailsClaim(int coins) {
+    String _temp0 = intl.Intl.pluralLogic(
+      coins,
+      locale: localeName,
+      other: '$coins coins',
+      one: '$coins coin',
+    );
+    return 'CLAIM: Completing the goal grants $_temp0. Each milestone can pay only once per period. Progress resets in a new week/month; rewards from the previous period cannot be claimed later.';
   }
 
   @override

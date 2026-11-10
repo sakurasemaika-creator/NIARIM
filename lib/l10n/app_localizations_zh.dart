@@ -8291,7 +8291,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creatorMissionTimeWarning => '本地创作时间仅供参考，金币需要服务器验证。';
 
   @override
-  String get creatorMissionRankingWarning => '排名奖励仅基于 NIARIM 收藏榜，不涉及 YouTube。';
+  String get creatorMissionRankingWarning =>
+      '注：排名奖励仅以 NIARIM 内的收藏榜为准。全站公开作品数、作品收藏数、名次和前百分比均有条件。详情请查看各任务的“查看详情”。';
 
   @override
   String get creatorMissionBudget => '每项任务仅可领取一次。';
@@ -8713,6 +8714,111 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creatorMissionClaimAllLoadFailed => '无法读取领取状态，请重试。';
 
   @override
+  String get creatorMissionRankOne => 'NIARIM 收藏榜第1名';
+
+  @override
+  String get creatorMissionDetailsBookmarkRule =>
+      '【作品收藏数】仅限本人目前在 NIARIM 公开的作品，收藏数必须达到目标。每件作品独立计算，隐藏或删除的作品不计入。';
+
+  @override
+  String get creatorMissionDetailsWorksRule =>
+      '【多件作品】本人当前公开的 NIARIM 作品中，至少指定数量的作品须各自达到收藏数要求。收藏目标为0时仅要求公开作品数。服务器会再次检查。';
+
+  @override
+  String get creatorMissionDetailsFollowerRule =>
+      '【关注者】NIARIM 账号当前关注者数须达到目标，以服务器数据为准，不采信设备上报人数。';
+
+  @override
+  String get creatorMissionDetailsTimeRule =>
+      '【创作时间】设备自行上报的时间不能兑换金币。目前尚无法确切证明真实的创作行为，创作时间奖励暂不可领取。';
+
+  @override
+  String get creatorMissionDetailsClaimRule =>
+      '【领取方式】首次申请时服务器验证条件并开始48小时等待。48小时后需再次点击领取并重新验证；条件未满足时重新等待。同一任务每个账号或每件作品只能领取一次。';
+
+  @override
+  String creatorMissionRankDetailsRules(int percent, int rank) {
+    return '【排名规则】仅限本人在 NIARIM 上公开的作品。全站公开作品至少100件，作品收藏数达到要求，同时排名进入前 $rank 名及全站前 $percent%。百分比排名上限按公开作品总数×$percent%向下取整（最低为第1名），再与前 $rank 名比较，采用更严格的上限。作品总数以服务器统计为准。';
+  }
+
+  @override
+  String get creatorMissionRankDetailsHold =>
+      '【领取时间】排名随时变化。申请时服务器检查条件并开始48小时等待；48小时后需再次点击领取，服务器重新检查当前条件。若条件不再满足，等待期重新开始。过去短暂上榜不自动算作达成。同一作品同一名次奖励只能领取一次，不同作品分别计算。';
+
+  @override
+  String get creatorMissionRankSelectWork => '选择作品后即可查看当前的达成情况';
+
+  @override
+  String get creatorMissionRankWorkNotPublic => '该作品目前未公开';
+
+  @override
+  String get creatorMissionRankCommunityNotMeasured => '正在统计全站公开作品数，统计完成前无法领取';
+
+  @override
+  String creatorMissionRankCommunityWait(int count, int required) {
+    return '公开作品数不足：当前 $count 件（需要 $required 件）';
+  }
+
+  @override
+  String creatorMissionRankBookmarkWait(int count, int required) {
+    return '收藏数不足：当前 $count 个（需要 $required 个）';
+  }
+
+  @override
+  String get creatorMissionRankNotRanked => '该作品目前未进入排行榜前50名';
+
+  @override
+  String creatorMissionRankRankWait(int rank, int limit) {
+    return '当前第 $rank 名／需进入前 $limit 名（同时适用全站前百分比限制）';
+  }
+
+  @override
+  String get creatorMissionRankQualified => '已满足全部条件。将在申请时和48小时后再次确认';
+
+  @override
+  String creatorMissionRankPoolCurrent(int count) {
+    return 'NIARIM 公开作品：当前 $count 件';
+  }
+
+  @override
+  String get creatorMissionRankPoolUnknown => '服务器尚未完成公开作品数的统计';
+
+  @override
+  String get creatorMissionRankCurrentUnknown => '该作品目前不在前50名内';
+
+  @override
+  String get creatorMissionEditTimeUnverified =>
+      '创作时间可能在设备端被伪造，因此目前不计入金币奖励。显示的时间仅供参考。';
+
+  @override
+  String creatorMissionRankBookmarkCurrent(int count) {
+    return '该作品的收藏：当前 $count 个';
+  }
+
+  @override
+  String creatorMissionRankCurrentPlace(int rank) {
+    return '该作品的当前排名：第 $rank 名';
+  }
+
+  @override
+  String get creatorMissionRankNotLive => '金币发放目前正在准备中。即使满足条件，现在也无法领取。';
+
+  @override
+  String creatorMissionVerifiedMinutes(int minutes) {
+    return '经服务器时间验证的创作时间：$minutes 分钟';
+  }
+
+  @override
+  String creatorMissionRankingRequirements(int works, int bookmarks) {
+    return '领取条件：NIARIM 公开作品至少 $works 件，且该作品收藏至少 $bookmarks 个';
+  }
+
+  @override
+  String creatorMissionRankingEffective(int rank) {
+    return '按当前公开作品数所需排名：前 $rank 名';
+  }
+
+  @override
   String loginBonusDays(int days) {
     return '累计 $days 天';
   }
@@ -8810,13 +8916,84 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recurringMissionsUnavailable => '无法获取周期任务';
 
   @override
-  String recurringMissionGoal(int days) {
-    return '期间内登录 $days 天';
+  String recurringMissionProgress(int days, int goal) {
+    return '$days / $goal 天';
   }
 
   @override
-  String recurringMissionProgress(int days, int goal) {
-    return '$days / $goal 天';
+  String get missionDetailsTooltip => '查看达成条件';
+
+  @override
+  String get missionDetailsTitle => '达成条件';
+
+  @override
+  String get missionDetailsClaimedThisPeriod => '本期奖励已领取。';
+
+  @override
+  String get missionDetailsGoalCompleted => '已达成条件。';
+
+  @override
+  String get missionDetailsGoalNotCompleted => '尚未满足达成条件。';
+
+  @override
+  String get missionDetailsPayoutUnavailable => '金币领取功能目前正在准备中。';
+
+  @override
+  String plazaMissionDetailsConditions(String period, String duration) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'day': '同一天',
+      'week': '同一周',
+      'other': '同一个月',
+    });
+    return '【达成条件】在$_temp0内，NIARIM 作品广场的累计打开时长达到 $duration 即可达成。无需播放视频或操作画面。';
+  }
+
+  @override
+  String get plazaMissionDetailsMeasurement =>
+      '时长通过基于服务器时间的定期通信计量，不使用设备上报的秒数。长时间断线或页面关闭期间不计入。';
+
+  @override
+  String get plazaMissionDetailsPeriods =>
+      '期间按日本时间(JST)划分：每天在午夜0点、每周在周一、每月在1日切换。';
+
+  @override
+  String plazaMissionDetailsProgress(String progress, String goal) {
+    return '当前打开时长：$progress / $goal';
+  }
+
+  @override
+  String plazaMissionDetailsClaim(int coins) {
+    return '【领取】满足条件后可领取 $coins 金币。每项任务在同一期间内只能领取一次，下个期间可再次挑战。期间结束后无法领取上一期间的奖励。';
+  }
+
+  @override
+  String recurringMissionGoalWeek(int days) {
+    return '每周登录 $days 天';
+  }
+
+  @override
+  String recurringMissionGoalMonth(int days) {
+    return '每月登录 $days 天';
+  }
+
+  @override
+  String recurringMissionDetailsConditionsWeek(int days) {
+    return '【达成条件】请在日本时间的同一周（周一至周日）内，于不同日期登录至少 $days 天。无需连续登录；同一天多次登录只算一天。登录天数由服务器确认。';
+  }
+
+  @override
+  String recurringMissionDetailsConditionsMonth(int days) {
+    return '【达成条件】请在日本时间的同一个月（1日至月末）内，于不同日期登录至少 $days 天。无需连续登录；同一天多次登录只算一天。登录天数由服务器确认。';
+  }
+
+  @override
+  String recurringMissionDetailsProgress(int progress, int goal) {
+    return '当前达成天数：$progress / $goal 天';
+  }
+
+  @override
+  String recurringMissionDetailsClaim(int coins) {
+    return '【领取】满足条件后可领取 $coins 金币。同一期间的同一阶段只能领取一次。进入新的一周或一个月后进度会重置，可再次达成。期间结束后无法领取上一期间的奖励。';
   }
 
   @override
@@ -17263,7 +17440,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get creatorMissionTimeWarning => '本機創作時間僅供參考，金幣需要伺服器驗證。';
 
   @override
-  String get creatorMissionRankingWarning => '排名獎勵僅基於 NIARIM 收藏榜，不涉及 YouTube。';
+  String get creatorMissionRankingWarning =>
+      '註：排名獎勵僅以 NIARIM 內的收藏榜為準。全站公開作品數、作品收藏數、名次和前百分比均有條件。詳情請查看各任務的「查看詳情」。';
 
   @override
   String get creatorMissionBudget => '每項任務僅可領取一次。';
@@ -17685,6 +17863,111 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get creatorMissionClaimAllLoadFailed => '無法讀取領取狀態，請再試一次。';
 
   @override
+  String get creatorMissionRankOne => 'NIARIM 收藏榜第1名';
+
+  @override
+  String get creatorMissionDetailsBookmarkRule =>
+      '【作品收藏數】僅限本人目前在 NIARIM 公開的作品，收藏數必須達到目標。每件作品獨立計算，隱藏或刪除的作品不計入。';
+
+  @override
+  String get creatorMissionDetailsWorksRule =>
+      '【多件作品】本人目前公開的 NIARIM 作品中，至少指定數量的作品須各自達到收藏數要求。收藏目標為0時僅要求公開作品數。伺服器會再次確認。';
+
+  @override
+  String get creatorMissionDetailsFollowerRule =>
+      '【追蹤者】NIARIM 帳號目前追蹤者數須達到目標，以伺服器資料為準，不採信裝置上報人數。';
+
+  @override
+  String get creatorMissionDetailsTimeRule =>
+      '【創作時間】裝置自行回報的時間無法兌換金幣。目前尚無法確切證明真實的創作行為，因此創作時間獎勵暫不可領取。';
+
+  @override
+  String get creatorMissionDetailsClaimRule =>
+      '【領取方式】首次申請時伺服器驗證條件並開始48小時等待。48小時後須再次點擊領取並重新驗證；條件未滿足時重新等待。同一任務每個帳號或每件作品只能領取一次。';
+
+  @override
+  String creatorMissionRankDetailsRules(int percent, int rank) {
+    return '【排名規則】僅限本人在 NIARIM 上公開的作品。全站公開作品至少100件，作品收藏數達到要求，同時排名進入前 $rank 名及全站前 $percent%。百分比排名上限按公開作品總數×$percent%向下取整（最低為第1名），再與前 $rank 名比較，採用更嚴格的上限。作品總數以伺服器統計為準。';
+  }
+
+  @override
+  String get creatorMissionRankDetailsHold =>
+      '【領取時間】排名隨時變化。申請時伺服器檢查條件並開始48小時等待；48小時後需再次點擊領取，伺服器重新檢查當前條件。若條件不再滿足，等待期重新開始。過去短暫上榜不自動算作達成。同一作品同一名次獎勵只能領取一次，不同作品分別計算。';
+
+  @override
+  String get creatorMissionRankSelectWork => '選擇作品後即可查看目前的達成情況';
+
+  @override
+  String get creatorMissionRankWorkNotPublic => '該作品目前未公開';
+
+  @override
+  String get creatorMissionRankCommunityNotMeasured => '正在統計全站公開作品數，統計完成前無法領取';
+
+  @override
+  String creatorMissionRankCommunityWait(int count, int required) {
+    return '公開作品數不足：目前 $count 件（需要 $required 件）';
+  }
+
+  @override
+  String creatorMissionRankBookmarkWait(int count, int required) {
+    return '收藏數不足：目前 $count 個（需要 $required 個）';
+  }
+
+  @override
+  String get creatorMissionRankNotRanked => '該作品目前未進入排行榜前50名';
+
+  @override
+  String creatorMissionRankRankWait(int rank, int limit) {
+    return '目前第 $rank 名／需進入前 $limit 名（同時適用全站前百分比限制）';
+  }
+
+  @override
+  String get creatorMissionRankQualified => '已滿足全部條件。將在申請時和48小時後再次確認';
+
+  @override
+  String creatorMissionRankPoolCurrent(int count) {
+    return 'NIARIM 公開作品：目前 $count 件';
+  }
+
+  @override
+  String get creatorMissionRankPoolUnknown => '伺服器尚未完成公開作品數的統計';
+
+  @override
+  String get creatorMissionRankCurrentUnknown => '該作品目前不在前50名內';
+
+  @override
+  String get creatorMissionEditTimeUnverified =>
+      '創作時間可能在裝置端被偽造，因此目前不計入金幣獎勵。顯示的時間僅供參考。';
+
+  @override
+  String creatorMissionRankBookmarkCurrent(int count) {
+    return '該作品的收藏：目前 $count 個';
+  }
+
+  @override
+  String creatorMissionRankCurrentPlace(int rank) {
+    return '該作品的目前排名：第 $rank 名';
+  }
+
+  @override
+  String get creatorMissionRankNotLive => '金幣發放目前正在準備中。即使滿足條件，現在也無法領取。';
+
+  @override
+  String creatorMissionVerifiedMinutes(int minutes) {
+    return '經伺服器時間驗證的創作時間：$minutes 分鐘';
+  }
+
+  @override
+  String creatorMissionRankingRequirements(int works, int bookmarks) {
+    return '領取條件：NIARIM 公開作品至少 $works 件，且該作品收藏至少 $bookmarks 個';
+  }
+
+  @override
+  String creatorMissionRankingEffective(int rank) {
+    return '按目前公開作品數所需排名：前 $rank 名';
+  }
+
+  @override
   String loginBonusDays(int days) {
     return '累計 $days 天';
   }
@@ -17782,13 +18065,84 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get recurringMissionsUnavailable => '無法取得週期任務';
 
   @override
-  String recurringMissionGoal(int days) {
-    return '期間內登入 $days 天';
+  String recurringMissionProgress(int days, int goal) {
+    return '$days / $goal 天';
   }
 
   @override
-  String recurringMissionProgress(int days, int goal) {
-    return '$days / $goal 天';
+  String get missionDetailsTooltip => '查看達成條件';
+
+  @override
+  String get missionDetailsTitle => '達成條件';
+
+  @override
+  String get missionDetailsClaimedThisPeriod => '本期獎勵已領取。';
+
+  @override
+  String get missionDetailsGoalCompleted => '已達成條件。';
+
+  @override
+  String get missionDetailsGoalNotCompleted => '尚未滿足達成條件。';
+
+  @override
+  String get missionDetailsPayoutUnavailable => '金幣領取功能目前正在準備中。';
+
+  @override
+  String plazaMissionDetailsConditions(String period, String duration) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'day': '同一天',
+      'week': '同一週',
+      'other': '同一個月',
+    });
+    return '【達成條件】在$_temp0內，NIARIM 作品廣場的累計開啟時長達到 $duration 即可達成。無需播放影片或操作畫面。';
+  }
+
+  @override
+  String get plazaMissionDetailsMeasurement =>
+      '時長透過基於伺服器時間的定期通訊計量，不使用裝置回報的秒數。長時間斷線或頁面關閉期間不計入。';
+
+  @override
+  String get plazaMissionDetailsPeriods =>
+      '期間按日本時間(JST)劃分：每天在午夜0點、每週在週一、每月在1日切換。';
+
+  @override
+  String plazaMissionDetailsProgress(String progress, String goal) {
+    return '目前開啟時長：$progress / $goal';
+  }
+
+  @override
+  String plazaMissionDetailsClaim(int coins) {
+    return '【領取】滿足條件後可領取 $coins 金幣。每項任務在同一期間內只能領取一次，下個期間可再次挑戰。期間結束後無法領取上一期間的獎勵。';
+  }
+
+  @override
+  String recurringMissionGoalWeek(int days) {
+    return '每週登入 $days 天';
+  }
+
+  @override
+  String recurringMissionGoalMonth(int days) {
+    return '每月登入 $days 天';
+  }
+
+  @override
+  String recurringMissionDetailsConditionsWeek(int days) {
+    return '【達成條件】請在日本時間的同一週（週一至週日）內，於不同日期登入至少 $days 天。無需連續登入；同一天多次登入只算一天。登入天數由伺服器確認。';
+  }
+
+  @override
+  String recurringMissionDetailsConditionsMonth(int days) {
+    return '【達成條件】請在日本時間的同一個月（1日至月底）內，於不同日期登入至少 $days 天。無需連續登入；同一天多次登入只算一天。登入天數由伺服器確認。';
+  }
+
+  @override
+  String recurringMissionDetailsProgress(int progress, int goal) {
+    return '目前達成天數：$progress / $goal 天';
+  }
+
+  @override
+  String recurringMissionDetailsClaim(int coins) {
+    return '【領取】滿足條件後可領取 $coins 金幣。同一期間的同一階段只能領取一次。進入新的一週或一個月後進度會重置，可再次達成。期間結束後無法領取上一期間的獎勵。';
   }
 
   @override

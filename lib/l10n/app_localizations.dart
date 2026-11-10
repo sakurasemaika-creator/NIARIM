@@ -15314,7 +15314,7 @@ abstract class AppLocalizations {
   /// No description provided for @creatorMissionRankingWarning.
   ///
   /// In ja, this message translates to:
-  /// **'ランキング報酬はNIARIM独自のブックマーク順位が対象です。'**
+  /// **'※順位報酬はNIARIM内のブックマークランキングが対象です。全体の公開作品数・対象作品のブックマーク数・順位・上位割合のすべてに条件があります。詳しくは各ミッションの「内容を確認」をご覧ください。'**
   String get creatorMissionRankingWarning;
 
   /// No description provided for @creatorMissionBudget.
@@ -16061,6 +16061,162 @@ abstract class AppLocalizations {
   /// **'受取状況を読み込めませんでした。再度お試しください。'**
   String get creatorMissionClaimAllLoadFailed;
 
+  /// ミッション：ブックマークランキング1位の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークランキング1位'**
+  String get creatorMissionRankOne;
+
+  /// ミッションの達成条件：作品のブックマーク数の決まり
+  ///
+  /// In ja, this message translates to:
+  /// **'【作品のブックマーク数】自分がNIARIMで公開中の作品について、NIARIM内で付けられたブックマーク数が目標以上であることが条件です。作品ごとに判定します。公開を取り消した作品や削除された作品は対象外です。'**
+  String get creatorMissionDetailsBookmarkRule;
+
+  /// ミッションの達成条件：複数作品の決まり
+  ///
+  /// In ja, this message translates to:
+  /// **'【複数作品の条件】NIARIMで公開中の自分の作品のうち、それぞれが指定のブックマーク数以上を獲得している作品が、指定作品数以上必要です。ブックマーク0件の条件は公開作品数のみで判定します。サーバーで対象作品を再確認します。'**
+  String get creatorMissionDetailsWorksRule;
+
+  /// ミッションの達成条件：フォロワーの決まり
+  ///
+  /// In ja, this message translates to:
+  /// **'【フォロワーの条件】NIARIMアカウントの現在のフォロワー数が目標以上必要です。端末から申告した人数ではなく、サーバーの記録を使用します。'**
+  String get creatorMissionDetailsFollowerRule;
+
+  /// ミッションの達成条件：制作時間の決まり
+  ///
+  /// In ja, this message translates to:
+  /// **'【制作時間の条件】端末の自己申告や端末に保存した制作時間は報酬対象ではありません。実際の制作を証明する仕組みが未完成のため、制作時間ミッションのコイン受取は現在できません。画面に表示される制作時間は参考値です。'**
+  String get creatorMissionDetailsTimeRule;
+
+  /// ミッションの達成条件：受け取り方（48時間の確認）
+  ///
+  /// In ja, this message translates to:
+  /// **'【受取方法】対象の達成状況をサーバーで確認し、初回申請から48時間保留します。48時間後にもう一度「受け取る」を押すと、その時点の達成条件を再検証し、満たしていれば支給します。条件を失った場合は保留をやり直します。報酬は同一ミッションにつきアカウントまたは作品ごとに1回限りです。'**
+  String get creatorMissionDetailsClaimRule;
+
+  /// ランキングのミッションの達成条件：順位の計算方法。percentは全体の上位の割合（％）、rankはミッションの順位
+  ///
+  /// In ja, this message translates to:
+  /// **'【順位の計算方法】NIARIMで公開中の自分の作品が対象です。全体の公開作品が100件以上で、作品のブックマーク数が指定件数以上、かつランキング{rank}位以内・全体の上位{percent}％以内を同時に満たす必要があります。上位割合による順位上限は「全体の公開作品数 × {percent}％」を小数点以下切り捨て（最低1位）で計算し、{rank}位と比較して厳しい方を適用します。公開作品数はサーバーの集計値を使用します。'**
+  String creatorMissionRankDetailsRules(int percent, int rank);
+
+  /// ランキングのミッションの達成条件：受け取りのタイミング（48時間の確認）
+  ///
+  /// In ja, this message translates to:
+  /// **'【受取のタイミング】ランキングは随時更新されます。申請時に条件をサーバーが確認し、48時間の確認期間が始まります。48時間経過後、もう一度「受け取る」を押した時点で再確認し、条件を満たしていれば報酬を付与します。再確認時に順位などの条件を失っていれば確認期間はリセットされます。過去の一瞬のランクインは自動認定されません。同じ作品の同じ順位報酬は1回限りです。異なる作品では別々に達成できます。'**
+  String get creatorMissionRankDetailsHold;
+
+  /// ランキングのミッション：作品を選んでいないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'作品を選択すると現在の達成状況を確認できます'**
+  String get creatorMissionRankSelectWork;
+
+  /// ランキングのミッション：作品が公開されていないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品は現在公開されていません'**
+  String get creatorMissionRankWorkNotPublic;
+
+  /// ランキングのミッション：全体の公開作品数をまだ集計しているとき
+  ///
+  /// In ja, this message translates to:
+  /// **'全体の公開作品数を集計中です。集計が終わるまで受取できません'**
+  String get creatorMissionRankCommunityNotMeasured;
+
+  /// ランキングのミッション：全体の公開作品数が足りないとき。countは今の数、requiredは必要な数
+  ///
+  /// In ja, this message translates to:
+  /// **'公開作品数が不足：現在{count}件／必要{required}件'**
+  String creatorMissionRankCommunityWait(int count, int required);
+
+  /// ランキングのミッション：作品のブックマークが足りないとき。countは今の数、requiredは必要な数
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマーク不足：現在{count}件／必要{required}件'**
+  String creatorMissionRankBookmarkWait(int count, int required);
+
+  /// ランキングのミッション：作品が上位50位に入っていないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'対象作品が現在のランキング50位以内に入っていません'**
+  String get creatorMissionRankNotRanked;
+
+  /// ランキングのミッション：順位が足りないとき。rankは今の順位、limitは必要な順位
+  ///
+  /// In ja, this message translates to:
+  /// **'現在{rank}位／条件は{limit}位以内（上位割合も適用）'**
+  String creatorMissionRankRankWait(int rank, int limit);
+
+  /// ランキングのミッション：すべての条件を満たしたとき
+  ///
+  /// In ja, this message translates to:
+  /// **'すべての条件を達成。申請時と48時間後に再確認します'**
+  String get creatorMissionRankQualified;
+
+  /// ランキングのミッションの達成条件：NIARIM全体の公開作品数
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM公開作品：現在{count}件'**
+  String creatorMissionRankPoolCurrent(int count);
+
+  /// ランキングのミッションの達成条件：全体の公開作品数をまだ集計しているとき
+  ///
+  /// In ja, this message translates to:
+  /// **'公開作品数のサーバー集計がまだ完了していません'**
+  String get creatorMissionRankPoolUnknown;
+
+  /// ランキングのミッション：作品が今の上位50位に入っていないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品は現在の上位50位に入っていません'**
+  String get creatorMissionRankCurrentUnknown;
+
+  /// ミッション：制作時間がコインの対象にならない理由
+  ///
+  /// In ja, this message translates to:
+  /// **'制作時間は端末側で偽装可能なため、現在コイン報酬の対象外です。計測した時間は参考値です。'**
+  String get creatorMissionEditTimeUnverified;
+
+  /// ランキングのミッションの達成条件：作品の今のブックマーク数
+  ///
+  /// In ja, this message translates to:
+  /// **'対象作品のブックマーク：現在{count}件'**
+  String creatorMissionRankBookmarkCurrent(int count);
+
+  /// ランキングのミッションの達成条件：作品の今の順位
+  ///
+  /// In ja, this message translates to:
+  /// **'対象作品の現在順位：{rank}位'**
+  String creatorMissionRankCurrentPlace(int rank);
+
+  /// ランキングのミッション：コインの支給をまだ始めていないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'コイン支給は現在準備中です。条件を満たしても今は受け取れません。'**
+  String get creatorMissionRankNotLive;
+
+  /// ミッション：サーバーの時刻で確かめた制作時間（分）
+  ///
+  /// In ja, this message translates to:
+  /// **'サーバー時刻で検証した制作時間: {minutes}分'**
+  String creatorMissionVerifiedMinutes(int minutes);
+
+  /// ランキングのミッションの達成条件：受け取りに要る公開作品数（works）と作品のブックマーク数（bookmarks）
+  ///
+  /// In ja, this message translates to:
+  /// **'受取条件: NIARIMの公開作品が{works}件以上、この作品のブックマークが{bookmarks}件以上'**
+  String creatorMissionRankingRequirements(int works, int bookmarks);
+
+  /// ランキングのミッションの達成条件：今の公開作品数で必要な順位
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の公開作品数で必要な順位: {rank}位以内'**
+  String creatorMissionRankingEffective(int rank);
+
   /// 累計ログインボーナス：累計ログイン日数
   ///
   /// In ja, this message translates to:
@@ -16223,17 +16379,113 @@ abstract class AppLocalizations {
   /// **'期間ミッションを取得できませんでした'**
   String get recurringMissionsUnavailable;
 
-  /// ウィークリー・マンスリーのログインミッション：期間内にログインする日数の目標
-  ///
-  /// In ja, this message translates to:
-  /// **'期間内に{days}日ログイン'**
-  String recurringMissionGoal(int days);
-
   /// ウィークリー・マンスリーのログインミッション：ログインした日数／目標の日数
   ///
   /// In ja, this message translates to:
   /// **'{days} / {goal}日'**
   String recurringMissionProgress(int days, int goal);
+
+  /// 期間・作品広場のミッション：達成条件を開くボタンの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'達成条件を確認'**
+  String get missionDetailsTooltip;
+
+  /// 期間・作品広場のミッション：達成条件のダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'達成条件'**
+  String get missionDetailsTitle;
+
+  /// 期間・作品広場のミッションの達成条件：この期間の報酬を受け取ったとき
+  ///
+  /// In ja, this message translates to:
+  /// **'この期間の報酬は受取済みです。'**
+  String get missionDetailsClaimedThisPeriod;
+
+  /// 期間・作品広場のミッションの達成条件：条件を満たしたとき
+  ///
+  /// In ja, this message translates to:
+  /// **'条件達成済みです。'**
+  String get missionDetailsGoalCompleted;
+
+  /// 期間・作品広場のミッションの達成条件：まだ条件を満たしていないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ達成条件を満たしていません。'**
+  String get missionDetailsGoalNotCompleted;
+
+  /// 期間・作品広場のミッションの達成条件：コインの受け取りをまだ始めていないとき
+  ///
+  /// In ja, this message translates to:
+  /// **'コインの受取機能は現在準備中です。'**
+  String get missionDetailsPayoutUnavailable;
+
+  /// 作品広場の滞在ミッションの達成条件。periodはday・week・month、durationは「5分」「1時間」などの長さ
+  ///
+  /// In ja, this message translates to:
+  /// **'【達成条件】{period, select, day{デイリー} week{ウィークリー} other{マンスリー}}の期間中、NIARIMの作品広場を開いている時間の合計が{duration}以上になると達成です。動画を再生したり、画面を操作したりする必要はありません。'**
+  String plazaMissionDetailsConditions(String period, String duration);
+
+  /// 作品広場の滞在ミッションの達成条件：時間の測り方
+  ///
+  /// In ja, this message translates to:
+  /// **'計測はサーバー時刻に基づく定期通信で行います。端末が申告した秒数は使用しません。通信が長く途切れた時間やページを閉じていた時間は加算されません。'**
+  String get plazaMissionDetailsMeasurement;
+
+  /// 作品広場の滞在ミッションの達成条件：期間の区切り方
+  ///
+  /// In ja, this message translates to:
+  /// **'期間は日本時間で区切り、1日は午前0時に、週は月曜日に、月は1日に切り替わります。'**
+  String get plazaMissionDetailsPeriods;
+
+  /// 作品広場の滞在ミッションの達成条件：今の時間／目標の時間（「5分」「1時間」などの長さ）
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の閲覧時間：{progress} / {goal}'**
+  String plazaMissionDetailsProgress(String progress, String goal);
+
+  /// 作品広場の滞在ミッションの達成条件：受け取れるコインと回数
+  ///
+  /// In ja, this message translates to:
+  /// **'【受取】条件を満たすと{coins}コインを受け取れます。各ミッションの受取は同じ期間中に1回限りです。次の期間には再度挑戦できます。前の期間の報酬は期間終了後に受け取れません。'**
+  String plazaMissionDetailsClaim(int coins);
+
+  /// ウィークリーのログインミッション：週にログインする日数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'週に{days}日ログイン'**
+  String recurringMissionGoalWeek(int days);
+
+  /// マンスリーのログインミッション：月にログインする日数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'月に{days}日ログイン'**
+  String recurringMissionGoalMonth(int days);
+
+  /// ウィークリーのログインミッションの達成条件
+  ///
+  /// In ja, this message translates to:
+  /// **'【達成条件】日本時間の同じ週（月曜日から日曜日）内に、異なる日付で{days}日以上ログインしてください。連続ログインは必要ありません。1日に複数回ログインしても1日として数えます。ログイン日数はサーバーで確認します。'**
+  String recurringMissionDetailsConditionsWeek(int days);
+
+  /// マンスリーのログインミッションの達成条件
+  ///
+  /// In ja, this message translates to:
+  /// **'【達成条件】日本時間の同じ月（1日から末日）内に、異なる日付で{days}日以上ログインしてください。連続ログインは必要ありません。1日に複数回ログインしても1日として数えます。ログイン日数はサーバーで確認します。'**
+  String recurringMissionDetailsConditionsMonth(int days);
+
+  /// ウィークリー・マンスリーのログインミッションの達成条件：ログインした日数／目標の日数
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の達成日数：{progress} / {goal}日'**
+  String recurringMissionDetailsProgress(int progress, int goal);
+
+  /// ウィークリー・マンスリーのログインミッションの達成条件：受け取れるコインと回数
+  ///
+  /// In ja, this message translates to:
+  /// **'【受取】条件を満たすと{coins}コインを受け取れます。同じ期間の同じ段階は1回限りです。新しい週・月には進捗がリセットされ、再度達成できます。期間終了後は前の期間の報酬を受け取れません。'**
+  String recurringMissionDetailsClaim(int coins);
 
   /// ミッション達成の知らせの見出し
   ///

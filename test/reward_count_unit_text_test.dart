@@ -254,7 +254,7 @@ List<String> _missionScreenTexts(String locale, int n) {
       '${c('coin', 'coins')} each day',
       'Logged in ${c('day', 'days')}',
       c('coin', 'coins'),
-      'Visit on ${c('day', 'days')} this period',
+      'Sign in on ${c('day', 'days')} this week',
       '$n / ${c('day', 'days')} · ${c('coin', 'coins')}',
       'Keep Work Plaza open for $hoursOrMinutes in total',
       '${c('minute', 'minutes')} / $hoursOrMinutes · ${c('coin', 'coins')}',
@@ -267,7 +267,9 @@ List<String> _missionScreenTexts(String locale, int n) {
           ? 'Publish a work'
           : 'A published work reaches ${c('bookmark', 'bookmarks')}',
       n == 0 ? 'Sky is published' : 'Sky reaches ${c('bookmark', 'bookmarks')}',
-      'Top $n on NIARIM bookmark ranking',
+      n == 1
+          ? 'NIARIM bookmark ranking #1'
+          : 'Top $n on NIARIM bookmark ranking',
       one ? '$n work reaches 3 bookmarks' : '$n works each reach 3 bookmarks',
       'Publish ${c('work', 'works')}',
       'Server-recorded candidate time: $n min (not reward-verified)',
@@ -278,7 +280,7 @@ List<String> _missionScreenTexts(String locale, int n) {
       '${c('moneda', 'monedas')} al día',
       '${c('día', 'días')} de acceso',
       c('moneda', 'monedas'),
-      'Entra ${c('día', 'días')} en este periodo',
+      'Inicia sesión ${c('día', 'días')} esta semana',
       '$n / ${c('día', 'días')} · ${c('moneda', 'monedas')}',
       'Mantén abierta la Plaza de Obras $hoursOrMinutes en total',
       '${c('minuto', 'minutos')} / $hoursOrMinutes · ${c('moneda', 'monedas')}',
@@ -293,7 +295,9 @@ List<String> _missionScreenTexts(String locale, int n) {
           ? 'Publicar una obra'
           : 'Una obra alcanza ${c('marcador', 'marcadores')}',
       n == 0 ? 'Sky se publica' : 'Sky alcanza ${c('marcador', 'marcadores')}',
-      'Entre los primeros $n en marcadores',
+      n == 1
+          ? 'Primer puesto en la clasificación de marcadores'
+          : 'Entre los primeros $n en marcadores',
       one
           ? '$n obra logra 3 marcadores'
           : '$n obras logran 3 marcadores cada una',
@@ -306,7 +310,7 @@ List<String> _missionScreenTexts(String locale, int n) {
       '${c('pièce', 'pièces')} par jour',
       '${c('jour', 'jours')} de connexion',
       c('pièce', 'pièces'),
-      'Se connecter ${c('jour', 'jours')} sur la période',
+      'Se connecter ${c('jour', 'jours')} cette semaine',
       '$n / ${c('jour', 'jours')} · ${c('pièce', 'pièces')}',
       'Garder la Place des œuvres ouverte $hoursOrMinutes au total',
       '${c('minute', 'minutes')} / $hoursOrMinutes · ${c('pièce', 'pièces')}',
@@ -319,7 +323,9 @@ List<String> _missionScreenTexts(String locale, int n) {
           ? 'Publier une œuvre'
           : 'Une œuvre atteint ${c('favori', 'favoris')}',
       n == 0 ? 'Sky est publiée' : 'Sky atteint ${c('favori', 'favoris')}',
-      'Top $n du classement des favoris',
+      n == 1
+          ? '1re place du classement des favoris'
+          : 'Top $n du classement des favoris',
       one
           ? '$n œuvre atteint 3 favoris'
           : '$n œuvres atteignent chacune 3 favoris',

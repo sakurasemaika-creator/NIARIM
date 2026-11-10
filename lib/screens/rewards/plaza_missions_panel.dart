@@ -26,9 +26,6 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
 
   AppLocalizations get _l10n => appLocalizationsOf(context);
 
-  String _t(String ja, String en) =>
-      Localizations.localeOf(context).languageCode == 'ja' ? ja : en;
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -108,46 +105,26 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
     final coins = (row['coins'] as num?)?.toInt() ?? 0;
     final claimed = row['claimed'] == true;
     final eligible = row['eligible'] == true;
-    final label = _t(
-      '作品広場を合計${_goal(goal)}開く',
-      'Keep Works Plaza open for ${_goal(goal)}',
-    );
-    final periodName = _period(period);
     final details = [
-      label,
-      _t(
-        '【達成条件】$periodNameの期間中、NIARIMの作品広場を開いている時間の合計が${_goal(goal)}以上になると達成です。動画を再生したり、画面を操作したりする必要はありません。',
-        'CONDITIONS: Keep NIARIM Works Plaza open for at least ${_goal(goal)} in the $periodName period. Video playback and interaction are not required.',
-      ),
-      _t(
-        '計測はサーバー時刻に基づく定期通信で行います。端末が申告した秒数は使用しません。通信が長く途切れた時間やページを閉じていた時間は加算されません。',
-        'Time is measured by authenticated server-time heartbeats, not client-reported seconds. Long connection gaps and time with the page closed do not count.',
-      ),
-      _t(
-        '期間は日本時間で区切り、1日は午前0時に、週は月曜日に、月は1日に切り替わります。',
-        'Periods use Japan time (JST): days reset at midnight, weeks start on Monday and months start on the first.',
-      ),
-      _t(
-        '現在の閲覧時間：${_goal(progress)} / ${_goal(goal)}',
-        'Current open time: ${_goal(progress)} / ${_goal(goal)}',
-      ),
-      _t(
-        '【受取】条件を満たすと$coinsコインを受け取れます。各ミッションの受取は同じ期間中に1回限りです。次の期間には再度挑戦できます。前の期間の報酬は期間終了後に受け取れません。',
-        'CLAIM: Earn $coins coins for this milestone. Each milestone pays once per period. You may earn it again in a new period, but cannot claim an expired period.',
-      ),
+      _l10n.plazaMissionGoal(_goal(goal)),
+      // 'day'・'week'以外はマンスリー（_periodと同じ決まり）。
+      _l10n.plazaMissionDetailsConditions(period, _goal(goal)),
+      _l10n.plazaMissionDetailsMeasurement,
+      _l10n.plazaMissionDetailsPeriods,
+      _l10n.plazaMissionDetailsProgress(_goal(progress), _goal(goal)),
+      _l10n.plazaMissionDetailsClaim(coins),
       claimed
-          ? _t('この期間の報酬は受取済みです。', 'Already claimed for this period.')
+          ? _l10n.missionDetailsClaimedThisPeriod
           : eligible
-          ? _t('条件達成済みです。', 'Goal completed.')
-          : _t('まだ達成条件を満たしていません。', 'Goal not yet completed.'),
-      if (!enabled)
-        _t('コインの受取機能は現在準備中です。', 'Coin payouts are currently unavailable.'),
+          ? _l10n.missionDetailsGoalCompleted
+          : _l10n.missionDetailsGoalNotCompleted,
+      if (!enabled) _l10n.missionDetailsPayoutUnavailable,
     ].join('\n\n');
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         key: ValueKey('plazaMissionDetailsDialog_$id'),
-        title: Text(_t('達成条件', 'Mission details')),
+        title: Text(_l10n.missionDetailsTitle),
         content: SingleChildScrollView(child: Text(details)),
         actions: [
           TextButton(
@@ -173,7 +150,7 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
       // Keep the help/exclamation control to the LEFT of the mission title.
       leading: IconButton(
         key: ValueKey('plazaMissionDetails_$id'),
-        tooltip: _t('達成条件を確認', 'View mission details'),
+        tooltip: _l10n.missionDetailsTooltip,
         onPressed: () => _showMissionDetails(row, enabled),
         icon: Icon(
           eligible || claimed

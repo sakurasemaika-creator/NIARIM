@@ -308,6 +308,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     Map<String, dynamic> row,
   ) {
     if (row['kind'] != 'niarimBookmarkRanking') return const [];
+    final l10n = appLocalizationsOf(context);
     final raw = row['rankingUnmetConditions'];
     final codes = raw is List ? raw.whereType<String>() : const <String>[];
     final count = (row['publishedWorkCount'] as num?)?.toInt() ?? 0;
@@ -323,18 +324,16 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           'selectWork' => t.get('rankSelectWork'),
           'workNotPublic' => t.get('rankWorkNotPublic'),
           'communityNotMeasured' => t.get('rankCommunityNotMeasured'),
-          'communityTooSmall' => t.format(
-            'rankCommunityWait',
+          'communityTooSmall' => l10n.creatorMissionRankCommunityWait(
             count,
-            each: minPublished,
+            minPublished,
           ),
-          'notEnoughBookmarks' => t.format(
-            'rankBookmarkWait',
+          'notEnoughBookmarks' => l10n.creatorMissionRankBookmarkWait(
             haveBookmarks,
-            each: neededBookmarks,
+            neededBookmarks,
           ),
           'notRanked' => t.get('rankNotRanked'),
-          'rankTooLow' => t.format('rankRankWait', rank, each: allowed),
+          'rankTooLow' => l10n.creatorMissionRankRankWait(rank, allowed),
           _ => t.get('notAchieved'),
         },
     ];
@@ -373,13 +372,11 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         t.get('rankPoolUnknown'),
       if (kind == 'niarimBookmarkRanking' &&
           row['rankingPopulationKnown'] == true)
-        t.format(
-          'rankPoolCurrent',
+        l10n.creatorMissionRankPoolCurrent(
           (row['publishedWorkCount'] as num?)?.toInt() ?? 0,
         ),
       if (kind == 'niarimBookmarkRanking' && row['rankingWorkBookmarks'] is num)
-        t.format(
-          'rankBookmarkCurrent',
+        l10n.creatorMissionRankBookmarkCurrent(
           (row['rankingWorkBookmarks'] as num).toInt(),
         ),
       if (kind == 'niarimBookmarkRanking' &&
@@ -387,29 +384,26 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           row['progress'] is num &&
           (row['progress'] as num).toInt() > 0 &&
           (row['progress'] as num).toInt() <= 50)
-        t.format('rankCurrentPlace', (row['progress'] as num).toInt()),
+        l10n.creatorMissionRankCurrentPlace((row['progress'] as num).toInt()),
       if (kind == 'niarimBookmarkRanking' && !claimed)
         ..._rankingMissingReasons(t, row),
       if (kind == 'niarimBookmarkRanking' &&
           row['rankingMinPublishedWorks'] is num &&
           row['rankingMinBookmarks'] is num)
-        t.format(
-          'rankingRequirements',
+        l10n.creatorMissionRankingRequirements(
           (row['rankingMinPublishedWorks'] as num).toInt(),
-          each: (row['rankingMinBookmarks'] as num).toInt(),
+          (row['rankingMinBookmarks'] as num).toInt(),
         ),
       if (kind == 'niarimBookmarkRanking' &&
           row['rankingEffectiveRankLimit'] is num &&
           (row['rankingEffectiveRankLimit'] as num).toInt() > 0)
-        t.format(
-          'rankingEffective',
+        l10n.creatorMissionRankingEffective(
           (row['rankingEffectiveRankLimit'] as num).toInt(),
         ),
       if (kind == 'niarimBookmarkRanking' && row['rankingTopPercent'] is num)
-        t.format(
-          'rankDetailsRules',
+        l10n.creatorMissionRankDetailsRules(
           (row['rankingTopPercent'] as num).toInt(),
-          each: goal,
+          goal,
         ),
       if (kind == 'niarimBookmarkRanking') t.get('rankDetailsHold'),
       if (kind == 'workBookmarks') t.get('detailsCreatorBookmarkRule'),
@@ -714,7 +708,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 Text(l10n.creatorMissionCandidateMinutes(candidateMinutes)),
-                Text(t.format('verifiedMinutes', verifiedMinutes)),
+                Text(l10n.creatorMissionVerifiedMinutes(verifiedMinutes)),
                 if (account['enabled'] != true &&
                     grid?['rewardEnabled'] != true)
                   Text(t.get('upcoming')),

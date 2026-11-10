@@ -8831,7 +8831,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionRankingWarning =>
-      'Clasificación por marcadores de NIARIM, no de YouTube.';
+      'Nota: solo cuenta la clasificación de marcadores de NIARIM. Deben cumplirse TODOS los requisitos: número de obras publicadas, marcadores de tu obra, puesto y porcentaje superior. Abre «Ver detalles» en cada misión para ver las reglas exactas.';
 
   @override
   String get creatorMissionBudget => 'Cada misión se reclama una sola vez.';
@@ -9376,6 +9376,150 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo cargar lo que se puede reclamar. Inténtalo de nuevo.';
 
   @override
+  String get creatorMissionRankOne =>
+      'Primer puesto en la clasificación de marcadores';
+
+  @override
+  String get creatorMissionDetailsBookmarkRule =>
+      'MARCADORES: Debe ser una obra tuya publicada actualmente en NIARIM y contar con los marcadores de NIARIM requeridos. Cada obra se evalúa por separado; las obras ocultas o eliminadas no cuentan.';
+
+  @override
+  String get creatorMissionDetailsWorksRule =>
+      'VARIAS OBRAS: Debes tener el número requerido de obras propias publicadas en NIARIM y cada una debe reunir el mínimo indicado de marcadores. Con objetivo cero solo cuenta la publicación. El servidor vuelve a verificar las obras.';
+
+  @override
+  String get creatorMissionDetailsFollowerRule =>
+      'SEGUIDORES: Tu cuenta de NIARIM debe tener ahora el número requerido de seguidores según el servidor, no según datos enviados por el dispositivo.';
+
+  @override
+  String get creatorMissionDetailsTimeRule =>
+      'TIEMPO: El tiempo declarado por el dispositivo no genera monedas. Aún no hay una prueba fiable de la edición real y estas recompensas no se pueden reclamar.';
+
+  @override
+  String get creatorMissionDetailsClaimRule =>
+      'COBRO: El servidor comprueba las condiciones al solicitar y espera 48 horas. Vuelve a pulsar Reclamar después; se comprobarán las condiciones otra vez. Si dejan de cumplirse, se reinicia la espera. Cada recompensa se concede una vez por cuenta u obra.';
+
+  @override
+  String creatorMissionRankDetailsRules(int percent, int rank) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rank,
+      locale: localeName,
+      other: 'en los primeros $rank puestos',
+      one: 'en el primer puesto',
+    );
+    return 'CÁLCULO: La obra debe ser tuya y estar publicada en NIARIM. Debe haber al menos 100 obras públicas; tu obra debe tener los marcadores requeridos y estar tanto $_temp0 como en el $percent % superior. El límite se calcula redondeando hacia abajo el número de obras públicas × $percent %, con mínimo de 1, y aplicando el límite más estricto. Se usa el recuento del servidor.';
+  }
+
+  @override
+  String get creatorMissionRankDetailsHold =>
+      'COBRO: La clasificación se actualiza continuamente. El servidor comprueba los requisitos al solicitar y vuelve a comprobarlos cuando pulsas Reclamar tras 48 horas. Si dejan de cumplirse, se reinicia la espera. No se acredita una aparición pasada breve. Cada obra puede cobrar una vez por puesto; las obras distintas se evalúan por separado.';
+
+  @override
+  String get creatorMissionRankSelectWork =>
+      'Selecciona una obra para comprobar si cumple los requisitos de la recompensa de clasificación';
+
+  @override
+  String get creatorMissionRankWorkNotPublic =>
+      'Esta obra no está publicada actualmente';
+
+  @override
+  String get creatorMissionRankCommunityNotMeasured =>
+      'Aún se están contando las obras publicadas; no se puede reclamar hasta que termine el recuento';
+
+  @override
+  String creatorMissionRankCommunityWait(int count, int required) {
+    return 'Faltan obras publicadas en NIARIM: hay $count (mínimo: $required)';
+  }
+
+  @override
+  String creatorMissionRankBookmarkWait(int count, int required) {
+    return 'Faltan marcadores: hay $count (mínimo: $required)';
+  }
+
+  @override
+  String get creatorMissionRankNotRanked =>
+      'Esta obra no está ahora entre los 50 primeros puestos de la clasificación';
+
+  @override
+  String creatorMissionRankRankWait(int rank, int limit) {
+    String _temp0 = intl.Intl.pluralLogic(
+      limit,
+      locale: localeName,
+      other: 'estar entre los $limit primeros',
+      one: 'el primer puesto',
+    );
+    return 'Puesto actual: $rank; se requiere $_temp0 (también se aplica el porcentaje superior)';
+  }
+
+  @override
+  String get creatorMissionRankQualified =>
+      'Se cumplen todos los requisitos. Se vuelven a comprobar al solicitar y tras 48 horas';
+
+  @override
+  String creatorMissionRankPoolCurrent(int count) {
+    return 'Obras publicadas en NIARIM: $count';
+  }
+
+  @override
+  String get creatorMissionRankPoolUnknown =>
+      'El servidor aún no ha terminado de contar las obras publicadas';
+
+  @override
+  String get creatorMissionRankCurrentUnknown =>
+      'Esta obra no está ahora entre los 50 primeros';
+
+  @override
+  String get creatorMissionEditTimeUnverified =>
+      'El tiempo de edición del dispositivo se puede falsificar, por lo que ahora no da monedas. El tiempo mostrado es orientativo.';
+
+  @override
+  String creatorMissionRankBookmarkCurrent(int count) {
+    return 'Marcadores de esta obra: $count';
+  }
+
+  @override
+  String creatorMissionRankCurrentPlace(int rank) {
+    return 'Puesto actual de esta obra: $rank';
+  }
+
+  @override
+  String get creatorMissionRankNotLive =>
+      'El pago de monedas está en preparación; todavía no se pueden reclamar las recompensas de clasificación.';
+
+  @override
+  String creatorMissionVerifiedMinutes(int minutes) {
+    return 'Tiempo de edición validado con el reloj del servidor: $minutes min';
+  }
+
+  @override
+  String creatorMissionRankingRequirements(int works, int bookmarks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      works,
+      locale: localeName,
+      other: '$works obras publicadas',
+      one: '$works obra publicada',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      bookmarks,
+      locale: localeName,
+      other: '$bookmarks marcadores',
+      one: '$bookmarks marcador',
+    );
+    return 'Requisitos: al menos $_temp0 en NIARIM y $_temp1 en esta obra';
+  }
+
+  @override
+  String creatorMissionRankingEffective(int rank) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rank,
+      locale: localeName,
+      other: 'entre los $rank primeros',
+      one: 'el primero',
+    );
+    return 'Puesto necesario con el número actual de obras publicadas: $_temp0';
+  }
+
+  @override
   String loginBonusDays(int days) {
     String _temp0 = intl.Intl.pluralLogic(
       days,
@@ -9515,17 +9659,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudieron cargar las misiones semanales y mensuales';
 
   @override
-  String recurringMissionGoal(int days) {
-    String _temp0 = intl.Intl.pluralLogic(
-      days,
-      locale: localeName,
-      other: '$days días',
-      one: '$days día',
-    );
-    return 'Entra $_temp0 en este periodo';
-  }
-
-  @override
   String recurringMissionProgress(int days, int goal) {
     String _temp0 = intl.Intl.pluralLogic(
       goal,
@@ -9534,6 +9667,127 @@ class AppLocalizationsEs extends AppLocalizations {
       one: '$goal día',
     );
     return '$days / $_temp0';
+  }
+
+  @override
+  String get missionDetailsTooltip => 'Ver los requisitos de la misión';
+
+  @override
+  String get missionDetailsTitle => 'Requisitos de la misión';
+
+  @override
+  String get missionDetailsClaimedThisPeriod =>
+      'Ya reclamaste la recompensa de este periodo.';
+
+  @override
+  String get missionDetailsGoalCompleted => 'Objetivo cumplido.';
+
+  @override
+  String get missionDetailsGoalNotCompleted =>
+      'Aún no has cumplido el objetivo.';
+
+  @override
+  String get missionDetailsPayoutUnavailable =>
+      'El cobro de monedas aún está en preparación.';
+
+  @override
+  String plazaMissionDetailsConditions(String period, String duration) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'day': 'en un mismo día',
+      'week': 'en una misma semana',
+      'other': 'en un mismo mes',
+    });
+    return 'REQUISITOS: mantén abierta la Plaza de Obras de NIARIM al menos $duration en total $_temp0. No hace falta reproducir vídeos ni tocar la pantalla.';
+  }
+
+  @override
+  String get plazaMissionDetailsMeasurement =>
+      'El tiempo se mide con señales periódicas autenticadas según la hora del servidor, no con los segundos que informa el dispositivo. No cuentan las interrupciones largas de conexión ni el tiempo con la página cerrada.';
+
+  @override
+  String get plazaMissionDetailsPeriods =>
+      'Los periodos usan la hora de Japón (JST): los días se reinician a medianoche, las semanas empiezan el lunes y los meses, el día 1.';
+
+  @override
+  String plazaMissionDetailsProgress(String progress, String goal) {
+    return 'Tiempo con la Plaza de Obras abierta: $progress / $goal';
+  }
+
+  @override
+  String plazaMissionDetailsClaim(int coins) {
+    String _temp0 = intl.Intl.pluralLogic(
+      coins,
+      locale: localeName,
+      other: '$coins monedas',
+      one: '$coins moneda',
+    );
+    return 'COBRO: al cumplir el objetivo recibes $_temp0. Cada misión se cobra una vez por periodo. Puedes volver a lograrla en el siguiente periodo, pero no cobrar la de un periodo ya terminado.';
+  }
+
+  @override
+  String recurringMissionGoalWeek(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días',
+      one: '$days día',
+    );
+    return 'Inicia sesión $_temp0 esta semana';
+  }
+
+  @override
+  String recurringMissionGoalMonth(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días',
+      one: '$days día',
+    );
+    return 'Inicia sesión $_temp0 este mes';
+  }
+
+  @override
+  String recurringMissionDetailsConditionsWeek(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días distintos',
+      one: '$days día distinto',
+    );
+    return 'REQUISITOS: inicia sesión $_temp0 dentro de una misma semana (de lunes a domingo), en hora de Japón (JST). No hace falta que sean seguidos; varios inicios de sesión el mismo día cuentan como uno. El servidor comprueba los días.';
+  }
+
+  @override
+  String recurringMissionDetailsConditionsMonth(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días distintos',
+      one: '$days día distinto',
+    );
+    return 'REQUISITOS: inicia sesión $_temp0 dentro de un mismo mes natural (del día 1 al último), en hora de Japón (JST). No hace falta que sean seguidos; varios inicios de sesión el mismo día cuentan como uno. El servidor comprueba los días.';
+  }
+
+  @override
+  String recurringMissionDetailsProgress(int progress, int goal) {
+    String _temp0 = intl.Intl.pluralLogic(
+      goal,
+      locale: localeName,
+      other: '$goal días',
+      one: '$goal día',
+    );
+    return 'Progreso actual: $progress / $_temp0';
+  }
+
+  @override
+  String recurringMissionDetailsClaim(int coins) {
+    String _temp0 = intl.Intl.pluralLogic(
+      coins,
+      locale: localeName,
+      other: '$coins monedas',
+      one: '$coins moneda',
+    );
+    return 'COBRO: al cumplir el objetivo recibes $_temp0. Cada nivel se cobra solo una vez por periodo. El progreso se reinicia con cada nueva semana o mes; las recompensas de un periodo anterior no se pueden cobrar después.';
   }
 
   @override

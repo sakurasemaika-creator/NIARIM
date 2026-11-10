@@ -8422,7 +8422,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get creatorMissionRankingWarning =>
-      'YouTube가 아닌 NIARIM 북마크 순위만 적용합니다.';
+      '참고: 순위 보상은 NIARIM 북마크 랭킹만 대상입니다. 전체 공개 작품 수, 작품의 북마크 수, 순위, 상위 비율 모두에 조건이 있습니다. 자세한 내용은 각 미션의 \"자세히 보기\"를 확인하세요.';
 
   @override
   String get creatorMissionBudget => '각 미션은 한 번만 보상됩니다.';
@@ -8848,6 +8848,114 @@ class AppLocalizationsKo extends AppLocalizations {
       '수령 상태를 불러오지 못했습니다. 다시 시도해 주세요.';
 
   @override
+  String get creatorMissionRankOne => '북마크 랭킹 1위';
+
+  @override
+  String get creatorMissionDetailsBookmarkRule =>
+      '【북마크 조건】본인이 NIARIM에 현재 공개 중인 작품이 NIARIM 북마크 목표 수 이상이어야 합니다. 작품마다 별도로 확인하며 비공개 또는 삭제 작품은 제외됩니다.';
+
+  @override
+  String get creatorMissionDetailsWorksRule =>
+      '【여러 작품 조건】본인이 NIARIM에 공개 중인 작품 중 각 작품이 지정된 북마크 수를 충족하는 작품이 목표 개수 이상이어야 합니다. 북마크 0개 조건은 공개 작품 수만 확인합니다. 서버에서 다시 확인합니다.';
+
+  @override
+  String get creatorMissionDetailsFollowerRule =>
+      '【팔로워 조건】NIARIM 계정의 현재 팔로워가 목표 이상이어야 합니다. 기기에서 신고한 수치가 아닌 서버 기록을 사용합니다.';
+
+  @override
+  String get creatorMissionDetailsTimeRule =>
+      '【제작 시간 조건】기기에서 신고한 제작 시간은 코인으로 인정되지 않습니다. 실제 제작을 신뢰할 수 있게 검증하는 시스템이 아직 없어 코인 수령은 불가합니다.';
+
+  @override
+  String get creatorMissionDetailsClaimRule =>
+      '【수령 조건】최초 신청 시 서버가 달성을 확인하고 48시간 보류합니다. 48시간 후 다시 수령을 누르면 조건을 재확인합니다. 미달성 시 다시 대기합니다. 계정 또는 작품별 동일 미션은 1회만 수령할 수 있습니다.';
+
+  @override
+  String creatorMissionRankDetailsRules(int percent, int rank) {
+    return '【순위 산정】NIARIM에 공개 중인 본인의 작품만 해당합니다. 전체 공개 작품이 100개 이상이며, 작품의 북마크가 기준 이상이고, 랭킹 $rank위 이내이면서 전체 상위 $percent% 이내여야 합니다. 상위 비율 순위는 전체 공개 작품 수 × $percent%를 내림 처리하고 최소 1위로 계산한 뒤, $rank위와 비교해 더 엄격한 조건을 적용합니다. 서버 집계 수치를 사용합니다.';
+  }
+
+  @override
+  String get creatorMissionRankDetailsHold =>
+      '【보상 수령】순위는 수시로 변경됩니다. 신청 시 서버가 확인하고 48시간 대기가 시작됩니다. 48시간 후 다시 수령 버튼을 누르면 조건을 재확인합니다. 미달이면 대기 기간이 초기화됩니다. 과거 잠깐 진입한 순위는 자동 인정하지 않습니다. 동일 작품의 동일 순위 보상은 1회만 지급되며, 다른 작품은 별도입니다.';
+
+  @override
+  String get creatorMissionRankSelectWork => '작품을 선택하면 현재 달성 상황을 확인할 수 있습니다';
+
+  @override
+  String get creatorMissionRankWorkNotPublic => '이 작품은 현재 공개되어 있지 않습니다';
+
+  @override
+  String get creatorMissionRankCommunityNotMeasured =>
+      '전체 공개 작품 수를 집계하고 있습니다. 집계가 끝날 때까지 받을 수 없습니다';
+
+  @override
+  String creatorMissionRankCommunityWait(int count, int required) {
+    return '공개 작품 수 부족: 현재 $count개 / 필요 $required개';
+  }
+
+  @override
+  String creatorMissionRankBookmarkWait(int count, int required) {
+    return '북마크 부족: 현재 $count개 / 필요 $required개';
+  }
+
+  @override
+  String get creatorMissionRankNotRanked => '이 작품은 현재 랭킹 50위 안에 들지 않았습니다';
+
+  @override
+  String creatorMissionRankRankWait(int rank, int limit) {
+    return '현재 $rank위 / 조건은 $limit위 이내(상위 비율도 적용)';
+  }
+
+  @override
+  String get creatorMissionRankQualified =>
+      '모든 조건을 달성했습니다. 신청 시와 48시간 후에 다시 확인합니다';
+
+  @override
+  String creatorMissionRankPoolCurrent(int count) {
+    return 'NIARIM 공개 작품: 현재 $count개';
+  }
+
+  @override
+  String get creatorMissionRankPoolUnknown => '서버에서 공개 작품 수 집계가 아직 끝나지 않았습니다';
+
+  @override
+  String get creatorMissionRankCurrentUnknown => '이 작품은 현재 상위 50위 안에 없습니다';
+
+  @override
+  String get creatorMissionEditTimeUnverified =>
+      '제작 시간은 기기에서 조작할 수 있어 현재 코인 보상 대상이 아닙니다. 측정한 시간은 참고용입니다.';
+
+  @override
+  String creatorMissionRankBookmarkCurrent(int count) {
+    return '이 작품의 북마크: 현재 $count개';
+  }
+
+  @override
+  String creatorMissionRankCurrentPlace(int rank) {
+    return '이 작품의 현재 순위: $rank위';
+  }
+
+  @override
+  String get creatorMissionRankNotLive =>
+      '코인 지급은 현재 준비 중입니다. 조건을 충족해도 아직 받을 수 없습니다.';
+
+  @override
+  String creatorMissionVerifiedMinutes(int minutes) {
+    return '서버 시각으로 검증한 제작 시간: $minutes분';
+  }
+
+  @override
+  String creatorMissionRankingRequirements(int works, int bookmarks) {
+    return '수령 조건: NIARIM 공개 작품 $works개 이상, 이 작품의 북마크 $bookmarks개 이상';
+  }
+
+  @override
+  String creatorMissionRankingEffective(int rank) {
+    return '현재 공개 작품 수 기준 필요 순위: $rank위 이내';
+  }
+
+  @override
   String loginBonusDays(int days) {
     return '누적 $days일';
   }
@@ -8946,13 +9054,84 @@ class AppLocalizationsKo extends AppLocalizations {
   String get recurringMissionsUnavailable => '기간 미션을 불러오지 못했습니다';
 
   @override
-  String recurringMissionGoal(int days) {
-    return '기간 내 $days일 로그인';
+  String recurringMissionProgress(int days, int goal) {
+    return '$days / $goal일';
   }
 
   @override
-  String recurringMissionProgress(int days, int goal) {
-    return '$days / $goal일';
+  String get missionDetailsTooltip => '달성 조건 보기';
+
+  @override
+  String get missionDetailsTitle => '달성 조건';
+
+  @override
+  String get missionDetailsClaimedThisPeriod => '이번 기간의 보상은 이미 받았습니다.';
+
+  @override
+  String get missionDetailsGoalCompleted => '조건을 달성했습니다.';
+
+  @override
+  String get missionDetailsGoalNotCompleted => '아직 달성 조건을 충족하지 않았습니다.';
+
+  @override
+  String get missionDetailsPayoutUnavailable => '코인 수령 기능은 현재 준비 중입니다.';
+
+  @override
+  String plazaMissionDetailsConditions(String period, String duration) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'day': '하루',
+      'week': '한 주',
+      'other': '한 달',
+    });
+    return '【달성 조건】$_temp0 동안 NIARIM 작품 광장을 열어 둔 시간의 합계가 $duration 이상이면 달성입니다. 동영상을 재생하거나 화면을 조작할 필요는 없습니다.';
+  }
+
+  @override
+  String get plazaMissionDetailsMeasurement =>
+      '시간은 서버 시각 기준의 정기 통신으로 측정하며, 기기가 보고한 초 수는 사용하지 않습니다. 통신이 오래 끊긴 시간이나 페이지를 닫아 둔 시간은 더하지 않습니다.';
+
+  @override
+  String get plazaMissionDetailsPeriods =>
+      '기간은 일본 시간(JST) 기준으로 나뉘며, 하루는 자정에, 주는 월요일에, 달은 1일에 바뀝니다.';
+
+  @override
+  String plazaMissionDetailsProgress(String progress, String goal) {
+    return '현재 열어 둔 시간: $progress / $goal';
+  }
+
+  @override
+  String plazaMissionDetailsClaim(int coins) {
+    return '【수령】조건을 충족하면 $coins코인을 받을 수 있습니다. 각 미션은 같은 기간에 한 번만 받을 수 있으며, 다음 기간에 다시 도전할 수 있습니다. 지난 기간의 보상은 기간이 끝난 뒤에는 받을 수 없습니다.';
+  }
+
+  @override
+  String recurringMissionGoalWeek(int days) {
+    return '한 주에 $days일 로그인';
+  }
+
+  @override
+  String recurringMissionGoalMonth(int days) {
+    return '한 달에 $days일 로그인';
+  }
+
+  @override
+  String recurringMissionDetailsConditionsWeek(int days) {
+    return '【달성 조건】일본 시간 기준 같은 주(월요일~일요일) 안에 서로 다른 날짜로 $days일 이상 로그인하세요. 연속 로그인은 필요 없습니다. 하루에 여러 번 로그인해도 1일로 셉니다. 로그인 일수는 서버에서 확인합니다.';
+  }
+
+  @override
+  String recurringMissionDetailsConditionsMonth(int days) {
+    return '【달성 조건】일본 시간 기준 같은 달(1일~말일) 안에 서로 다른 날짜로 $days일 이상 로그인하세요. 연속 로그인은 필요 없습니다. 하루에 여러 번 로그인해도 1일로 셉니다. 로그인 일수는 서버에서 확인합니다.';
+  }
+
+  @override
+  String recurringMissionDetailsProgress(int progress, int goal) {
+    return '현재 달성 일수: $progress / $goal일';
+  }
+
+  @override
+  String recurringMissionDetailsClaim(int coins) {
+    return '【수령】조건을 충족하면 $coins코인을 받을 수 있습니다. 같은 기간의 같은 단계는 한 번만 받을 수 있습니다. 새로운 주·달이 되면 진행 상황이 초기화되어 다시 달성할 수 있습니다. 기간이 끝나면 지난 기간의 보상은 받을 수 없습니다.';
   }
 
   @override
