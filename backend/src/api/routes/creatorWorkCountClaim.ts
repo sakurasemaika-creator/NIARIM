@@ -19,7 +19,7 @@ import {randomUUID} from "node:crypto";
  *
  * Concurrent work changes cannot be atomically rechecked across 500 works
  * in a DynamoDB transaction. Hence the v3 payout flags remain OFF pending
- * a production consistency review, even if legacy claims are approved.
+ * a production consistency review, even if basic claims are approved.
  */
 const PAGE_SIZE=25,MAX_PAGES=20,HOLD_SECONDS=48*3600;
 async function validatedCount(userId:string, mission:GridMission):Promise<number>{

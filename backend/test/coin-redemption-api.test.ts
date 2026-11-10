@@ -69,6 +69,18 @@ describe("fail-closed one-month full Premium coin redemption", () => {
     });
   });
 
+  it("requires formally approved Premium quotes to end in zero", () => {
+    enable();
+    process.env.COIN_FULL_PREMIUM_MONTH_COINS = "55001";
+    expect(premiumRedemptionOffer()).toMatchObject({
+      enabled: false, priceCoins: null,
+    });
+    process.env.COIN_FULL_PREMIUM_MONTH_COINS = "55010";
+    expect(premiumRedemptionOffer()).toMatchObject({
+      enabled: true, priceCoins: 55010,
+    });
+  });
+
   it("extends exact calendar months, including the 31st and leap days", () => {
     expect(new Date(addOneCalendarMonthUtc(
       Date.UTC(2027, 0, 31, 9, 21),

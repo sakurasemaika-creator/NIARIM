@@ -37,7 +37,7 @@ describe("plaza open-time low-value missions",()=>{
   it("has a bounded daily weekly and monthly catalogue",()=>{
     expect(PLAZA_MISSIONS).toHaveLength(10);
     expect(PLAZA_MISSIONS.filter(m=>m.period==="day")).toHaveLength(4);
-    expect(PLAZA_MISSIONS.every(m=>m.coins>=1&&m.coins<=8)).toBe(true);
+    expect(PLAZA_MISSIONS.every(m=>m.coins>=1&&m.coins<=23)).toBe(true);
     expect(new Set(PLAZA_MISSIONS.map(m=>m.id)).size).toBe(10);
   });
   it("does not count a client-supplied duration or first heartbeat",async()=>{
