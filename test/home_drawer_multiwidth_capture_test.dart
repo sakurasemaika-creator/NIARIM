@@ -91,6 +91,15 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 200));
 
+      Future<void> settleTabAnimation() async {
+        // TabBarView needs multiple *frames*. One large pump updates the
+        // selected title but can photograph the previous PageView content.
+        // Do not pumpAndSettle: loading indicators intentionally never settle.
+        for (var frame = 0; frame < 14; frame++) {
+          await tester.pump(const Duration(milliseconds: 80));
+        }
+      }
+
       Future<void> shot(String name) async {
         final exception = tester.takeException();
         expect(exception, isNull, reason: 'width $width, $name');
@@ -153,7 +162,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 250));
       await tester.ensureVisible(find.byKey(const ValueKey('home_tab_1')));
       await tester.tap(find.byKey(const ValueKey('home_tab_1')));
-      await tester.pumpAndSettle();
+      await settleTabAnimation();
       expect(
         tester.widget<Semantics>(find.byKey(const ValueKey('home_tab_1')))
             .properties.selected,
@@ -162,7 +171,7 @@ void main() {
       await shot('06-works');
       await tester.ensureVisible(find.byKey(const ValueKey('home_tab_3')));
       await tester.tap(find.byKey(const ValueKey('home_tab_3')));
-      await tester.pumpAndSettle();
+      await settleTabAnimation();
       expect(
         tester.widget<Semantics>(find.byKey(const ValueKey('home_tab_3')))
             .properties.selected,
@@ -210,7 +219,7 @@ void main() {
         DefaultTabController.of(
           tester.element(find.byType(TabBar).first),
         ).animateTo(0);
-        await tester.pumpAndSettle();
+        await settleTabAnimation();
         expect(
           DefaultTabController.of(tester.element(find.byType(TabBar).first)).index,
           0,
@@ -230,7 +239,7 @@ void main() {
             DefaultTabController.of(
               tester.element(find.byType(TabBar).first),
             ).animateTo(i);
-            await tester.pumpAndSettle();
+            await settleTabAnimation();
             expect(
               DefaultTabController.of(
                 tester.element(find.byType(TabBar).first),
