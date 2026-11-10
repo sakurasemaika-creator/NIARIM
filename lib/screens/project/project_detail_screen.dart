@@ -55,6 +55,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   // 編集された絵を描き直す。
   bool _wasCurrent = true;
   bool _movingToTrash = false;
+  // 最後に描いた詳細の画面。自分でゴミ箱へ移して閉じる途中は、一覧から
+  // 消えた作品を「見つかりません」と出さずにこの画面のまま閉じる。
+  Widget? _lastPage;
   Timer? _timer;
   ui.Image? _previewImage;
   // プレビュー全画面化：確認・仕上がりチェックに集中できるよう、
@@ -194,6 +197,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         .firstOrNull;
 
     if (project == null) {
+      final leaving = _movingToTrash ? _lastPage : null;
+      if (leaving != null) return leaving;
       // ゴミ箱へ移した作品・古いリンクでも、一覧へ戻る道を出す。
       return const ProjectNotFoundView(
         homeButtonKey: Key('projectDetailNotFoundHome'),
@@ -308,7 +313,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       );
     }
 
-    return Scaffold(
+    return _lastPage = Scaffold(
       appBar: AppBar(
         title: Text(project.name),
         actions: [
@@ -1081,8 +1086,8 @@ class _QuickAction {
 }
 
 /// 詳細画面のフォルダ・タグ・お気に入り・共有・ループ。ふだんは1行に並べ、
-/// 長い言葉（フランス語の「Étiquettes」等）が大きな文字で欄に収まらない
-/// ときは、語の途中で折らずに3列・2列・1列にする。
+/// 長い言葉（フランス語の「Étiquettes」、大きな文字の「ループ再生」等）が
+/// 欄に収まらないときは、語の途中で折らずに3列・2列・1列にする。
 class _QuickActionsRow extends StatelessWidget {
   const _QuickActionsRow({super.key, required this.children});
 
@@ -1090,18 +1095,20 @@ class _QuickActionsRow extends StatelessWidget {
 
   static const _labelStyle = TextStyle(fontSize: 12);
 
-  // 漢字・かなは字の間で折ってよいので、それ以外の語の幅だけを測る。
-  static final _cjk = RegExp(r'[぀-ヿ㐀-鿿豈-﫿]');
-
+  // 空白・改行で区切った1つ1つを、折らずに1行に収める語として測る。漢字・
+  // かなの語も同じ（字の間で折ると「ループ再/生」「フォル/ダ」になった）。
+  // [label]は表示する文字のまま（語結合子を入れると、その分わずかに広がる）。
   double _longestWord(BuildContext context, String label) {
+    var style = DefaultTextStyle.of(context).style.merge(_labelStyle);
+    // Textと同じく、端末の「太字」の設定を当てて測る。
+    if (MediaQuery.boldTextOf(context)) {
+      style = style.merge(const TextStyle(fontWeight: FontWeight.bold));
+    }
     var widest = 0.0;
     for (final word in label.split(RegExp(r'\s+'))) {
-      if (word.isEmpty || _cjk.hasMatch(word)) continue;
+      if (word.isEmpty) continue;
       final painter = TextPainter(
-        text: TextSpan(
-          text: word,
-          style: DefaultTextStyle.of(context).style.merge(_labelStyle),
-        ),
+        text: TextSpan(text: word, style: style),
         textDirection: Directionality.of(context),
         textScaler: MediaQuery.textScalerOf(context),
         locale: Localizations.localeOf(context),
@@ -1113,9 +1120,30 @@ class _QuickActionsRow extends StatelessWidget {
     return widest;
   }
 
+  // ハングル・漢字・かなは字の間でも折れる。空白で区切った語が同じ行に
+  // 並ぶと（韓国語の「즐겨찾기 미등록」）、次の語の頭の字だけが前の行へ
+  // 上がり「즐겨찾기 미/등록」になったので、その語の字を語結合子（U+2060）で
+  // つなぎ、折るのは空白・改行の所だけにする。1行に語が1つの言葉（日本語・
+  // 中国語）は、欄の幅を語に合わせてあるのでそのまま。
+  static final _breaksBetweenCharacters = RegExp(
+    r'[\u1100-\u11FF\u3040-\u30FF\u3130-\u318F\u3400-\u9FFF'
+    r'\uAC00-\uD7AF\uF900-\uFAFF]',
+  );
+
+  static String _keepWordsWhole(String label) {
+    if (!RegExp(r'[^\S\n]').hasMatch(label.trim())) return label;
+    return label.splitMapJoin(
+      RegExp(r'\s+'),
+      onNonMatch: (word) => _breaksBetweenCharacters.hasMatch(word)
+          ? word.characters.join('\u2060')
+          : word,
+    );
+  }
+
   Widget _item(BuildContext context, _QuickAction action, double width) {
     final color =
         action.iconColor ?? Theme.of(context).colorScheme.onSurfaceVariant;
+    final shown = _keepWordsWhole(action.label);
     return SizedBox(
       key: action.key,
       width: width,
@@ -1145,7 +1173,9 @@ class _QuickActionsRow extends StatelessWidget {
                   Icon(action.icon, color: color),
                 const SizedBox(height: 4),
                 Text(
-                  action.label,
+                  shown,
+                  // 読み上げは語結合子を入れる前の言葉で。
+                  semanticsLabel: shown == action.label ? null : action.label,
                   textAlign: TextAlign.center,
                   style: _labelStyle,
                 ),
@@ -1161,14 +1191,19 @@ class _QuickActionsRow extends StatelessWidget {
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       final widest = children
-          .map((a) => _longestWord(context, a.label))
+          .map((a) => _longestWord(context, _keepWordsWhole(a.label)))
           .fold<double>(0, (a, b) => a > b ? a : b);
-      // 1欄の中で文字に使える幅（左右の余白ぶんを引く）。
-      final columns = [children.length, 3, 2, 1].firstWhere(
-        (n) => widest <= constraints.maxWidth / n - 8,
-        orElse: () => 1,
-      );
-      final width = (constraints.maxWidth / columns).floorToDouble();
+      // 1欄の幅は切り捨てた値で並べるので、文字に使える幅もその値から
+      // 左右の余白ぶんを引いて比べる（切り捨てる前の幅と比べると、1px未満の
+      // 差で語が折れた）。
+      double columnWidth(int n) => (constraints.maxWidth / n).floorToDouble();
+      final columns = [
+        children.length,
+        3,
+        2,
+        1,
+      ].firstWhere((n) => widest <= columnWidth(n) - 8, orElse: () => 1);
+      final width = columnWidth(columns);
       return Wrap(
         children: [
           for (final action in children) _item(context, action, width),

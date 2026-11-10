@@ -81,7 +81,25 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
   }
 
   Widget _buildDialog(BuildContext context) {
+    // キーボードの分はここで遅れずに空ける。入力欄はキーボードが動くたびに
+    // その時点の大きさで見える所までスクロールするので、ダイアログ自身に
+    // 任せる（100msかけて縮む）と、縮み終える間に欄がまた見えない所へ
+    // 押し出された。
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: MediaQuery.removeViewInsets(
+        context: context,
+        removeBottom: true,
+        child: _buildAlert(context),
+      ),
+    );
+  }
+
+  Widget _buildAlert(BuildContext context) {
     return AlertDialog(
+      // 横向きでキーボードが開くと高さが足りない。スクロールしないと、入力欄が
+      // 高さ0の並びの中で描かれず、見えない名前を打つことになった。
+      scrollable: true,
       title: Text(widget.title),
       content: Column(
         mainAxisSize: MainAxisSize.min,

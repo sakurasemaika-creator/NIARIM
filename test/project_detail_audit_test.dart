@@ -7,21 +7,47 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/layer_mask.dart';
+import 'package:niarim/models/scene_stack.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/project/project_detail_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/widgets/frame_preview_background.dart';
 import 'package:niarim/widgets/name_entry_dialog.dart';
+import 'package:niarim/widgets/project_not_found_view.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
 import 'helpers/color_channels.dart';
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/load_app_fonts.dart';
+
+/// ゴミ箱の記録の書き込みを、[rejectTrash]の間だけ断る保存先。
+class _TrashRejectingStore extends InMemorySharedPreferencesStore {
+  _TrashRejectingStore()
+    : super.withData({
+        'flutter.$firstUseTooltipsSeenKey': kAllFirstUseTooltipKeys,
+        'flutter.first_launch': false,
+        'flutter.language': 'ja',
+      });
+
+  bool rejectTrash = false;
+
+  @override
+  Future<bool> setValue(String type, String key, Object value) async {
+    if (rejectTrash && key == 'flutter.trashed_projects') return false;
+    return super.setValue(type, key, value);
+  }
+}
 
 /// プロジェクト詳細（A009）：名前の変更、ゴミ箱へ移した後の取り消し、
-/// プレビューの絵の範囲と背景、早いコマ送りで最後のフレームが出ること、
-/// 長い言葉の操作の並び、見つからない作品からホームへ戻れること。
+/// プレビューの絵の範囲と背景・重なり順とマスク、早いコマ送りで最後の
+/// フレームが出ること、長い言葉の操作の並び、見つからない作品からホームへ
+/// 戻れること。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -81,6 +107,7 @@ void main() {
   }
 
   /// 作品を作って詳細を開く。[colors]を渡すと、フレームごとにその色で塗る。
+  /// [prepare]は塗った後、詳細を開く前に呼ぶ。
   Future<({ProjectService service, String id})> open(
     WidgetTester tester, {
     Size size = const Size(390, 844),
@@ -89,6 +116,7 @@ void main() {
     int exportHeight = 32,
     List<Color> colors = const [],
     String language = 'ja',
+    void Function(ProjectService service, String id)? prepare,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -128,6 +156,7 @@ void main() {
           pixels: solid(tm.canvasWidth, tm.canvasHeight, colors[i]),
         );
       }
+      prepare?.call(service, id);
     });
     appRouter.push('/project/$id');
     await settleIo(tester);
@@ -136,8 +165,12 @@ void main() {
 
   Finder artwork() => find.byKey(const Key('projectDetailPreviewArtwork'));
 
-  // プレビューに出ている絵の真ん中の色。
-  Future<Color> previewColour(WidgetTester tester) async {
+  // プレビューに出ている絵の色（既定は真ん中、[fx]・[fy]は幅・高さの割合）。
+  Future<Color> previewColour(
+    WidgetTester tester, {
+    double fx = 0.5,
+    double fy = 0.5,
+  }) async {
     final image = tester
         .widget<RawImage>(
           find.descendant(of: artwork(), matching: find.byType(RawImage)),
@@ -146,8 +179,8 @@ void main() {
     final data = (await tester.runAsync(
       () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
     ))!;
-    final x = image.width ~/ 2;
-    final y = image.height ~/ 2;
+    final x = (image.width * fx).floor().clamp(0, image.width - 1);
+    final y = (image.height * fy).floor().clamp(0, image.height - 1);
     final i = (y * image.width + x) * 4;
     return Color.fromARGB(
       data.getUint8(i + 3),
@@ -199,6 +232,32 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the rename field stays in view above a landscape keyboard', (
+    tester,
+  ) async {
+    // 横向きのスマホ（高さ360）でキーボード（170）が開いている。
+    await open(tester, size: const Size(800, 360));
+    addTearDown(tester.view.resetViewInsets);
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await settle(tester);
+    await tester.tap(find.text('名前変更').last);
+    await settle(tester);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 170);
+    await settle(tester);
+    final editable = find.descendant(
+      of: find.byType(NameEntryDialog),
+      matching: find.byType(EditableText),
+    );
+    final rect = tester.getRect(editable);
+    // キーボードより上にあり、押すと欄そのものに届く（ダイアログがスクロール
+    // しないと、欄の場所は残っても高さ0の並びの中で描かれず、押せなかった）。
+    expect(rect.bottom, lessThanOrEqualTo(360 - 170));
+    final hit = tester.hitTestOnBinding(rect.center);
+    final target = tester.renderObject(editable);
+    expect(hit.path.any((entry) => identical(entry.target, target)), isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('moving to the trash from the detail can be undone', (
     tester,
   ) async {
@@ -216,6 +275,57 @@ void main() {
     }
     expect(s.service.trash, isEmpty);
     expect(s.service.projects.map((p) => p.id), contains(s.id));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('leaving after moving to the trash never shows "not found"', (
+    tester,
+  ) async {
+    await open(tester);
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await settle(tester);
+    await tester.tap(find.text('ゴミ箱へ移動').last);
+    // 移した作品は一覧から消えるが、自分で移して閉じる途中の画面に
+    // 「見つかりません」と一覧へのボタンを出さない。
+    final seen = <int>[];
+    for (var i = 0; i < 30; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump(const Duration(milliseconds: 40));
+      if (find.byType(ProjectNotFoundView).evaluate().isNotEmpty) seen.add(i);
+    }
+    expect(seen, isEmpty);
+    expect(find.byType(ProjectDetailScreen), findsNothing);
+    expect(find.text('元に戻す'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('an Undo that cannot be saved says so', (tester) async {
+    final store = _TrashRejectingStore();
+    final previous = SharedPreferencesStorePlatform.instance;
+    SharedPreferencesStorePlatform.instance = store;
+    SharedPreferences.resetStatic();
+    addTearDown(() {
+      SharedPreferencesStorePlatform.instance = previous;
+      SharedPreferences.resetStatic();
+    });
+    final s = await open(tester);
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await settle(tester);
+    await tester.tap(find.text('ゴミ箱へ移動').last);
+    await settleIo(tester);
+    expect(s.service.trash.map((p) => p.id), [s.id]);
+    // 戻した状態を保存できない（保存先がいっぱい等）。
+    store.rejectTrash = true;
+    await tester.tap(find.text('元に戻す'));
+    for (var i = 0; i < 4; i++) {
+      await settleIo(tester);
+    }
+    expect(s.service.trash.map((p) => p.id), [s.id]);
+    // 黙って何も起きないのではなく、ホームのゴミ箱と同じ文で知らせる。
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    expect(find.text(l10n.homeTrashOperationFailed), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -253,6 +363,59 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('the preview stacks and masks like the export', (tester) async {
+    const drawing = Color(0xFFE53935);
+    const material = Color(0xFF1E88E5);
+    late String sceneId;
+    final s = await open(
+      tester,
+      colors: const [drawing],
+      prepare: (service, id) {
+        final tm = service.tileManagerOf(id);
+        sceneId = service.scenesOf(id).first.id;
+        // レイヤーの並び（layersOf）ではイラストの後ろにあるテキストの素材。
+        // 重なり順の既定では、テキストの列はイラストより前に出る。
+        final text = service.addLayer(
+          projectId: id,
+          sceneId: sceneId,
+          frameIndex: 0,
+          type: LayerType.timelineText,
+          name: 'text',
+          insertIndex: 1,
+        );
+        service.replaceLayerPixels(
+          projectId: id,
+          sceneId: sceneId,
+          frameIndex: 0,
+          layerId: text.id,
+          pixels: solid(tm.canvasWidth, tm.canvasHeight, material),
+        );
+      },
+    );
+    // 書き出しと同じく、テキストがイラストの前。
+    expect(await previewColour(tester), material);
+
+    // イラストを前にし、真ん中だけ見えるようにマスクする。
+    appRouter.push('/settings');
+    await settle(tester);
+    await tester.runAsync(() async {
+      s.service.updateSceneStack(
+        s.id,
+        sceneId,
+        SceneStack(
+          order: [kStackFrame, stackTrackKey(StackTrackKind.text, 0)],
+          frameMask: const LayerMask(width: 40, height: 40),
+        ),
+      );
+    });
+    appRouter.pop();
+    await settleIo(tester);
+    expect(await previewColour(tester), drawing);
+    // マスクの外では、後ろのテキストが見える。
+    expect(await previewColour(tester, fx: 0.05, fy: 0.05), material);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('quick seeking ends on the frame chosen last', (tester) async {
     const colours = [
@@ -530,6 +693,69 @@ void main() {
     final tags = s.service.projects.singleWhere((p) => p.id == s.id).tags;
     expect(tags, hasLength(32));
     expect(tags.last, '打ったまま');
+    expect(tester.takeException(), isNull);
+  });
+
+  // 同梱フォントは読み込むとこのファイルの残りのテストにも効くので、
+  // このテストは最後に置く。
+  testWidgets('with the app fonts, no quick action word is broken', (
+    tester,
+  ) async {
+    await loadAppFonts(tester);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await open(tester);
+    final settings = tester
+        .element(find.byType(Scaffold).first)
+        .read<SettingsService>();
+    final row = find.byKey(const Key('projectDetailQuickActions'));
+    Rect at(String key) => tester.getRect(find.byKey(Key(key)));
+    final broken = <String>[];
+    // 欄の幅を切り捨てたときの1px未満の差で語が折れていた幅（英・西・仏）と、
+    // 日本語の大きな文字（「お気に/入り」「ループ再/生」「フォル/ダ」）。
+    for (final (language, scale, width) in const [
+      ('es', 1.0, 365.0),
+      ('en', 1.3, 320.0),
+      ('en', 1.8, 411.0),
+      ('fr', 1.5, 384.0),
+      ('ja', 1.3, 320.0),
+      ('ja', 1.5, 360.0),
+      ('ja', 2.0, 360.0),
+      ('ja', 2.0, 412.0),
+      ('ja', 1.0, 360.0),
+      // 韓国語の空白で区切った語（「즐겨찾기 미/등록」「반복 재/생」）。
+      ('ko', 1.0, 390.0),
+      ('ko', 1.5, 412.0),
+    ]) {
+      await tester.runAsync(() => settings.setLanguage(language));
+      tester.platformDispatcher.textScaleFactorTestValue = scale;
+      tester.view.physicalSize = Size(width, 844);
+      await tester.pump();
+      await tester.pump();
+      for (final paragraph in tester.renderObjectList<RenderParagraph>(
+        find.descendant(of: row, matching: find.byType(RichText)),
+      )) {
+        final text = paragraph.text.toPlainText();
+        for (final word in RegExp(r'\S+').allMatches(text)) {
+          final tops = {
+            for (final box in paragraph.getBoxesForSelection(
+              TextSelection(baseOffset: word.start, extentOffset: word.end),
+              boxHeightStyle: ui.BoxHeightStyle.max,
+            ))
+              box.top.round(),
+          };
+          if (tops.length > 1) {
+            broken.add('$language x$scale ${width}px "${word.group(0)}"');
+          }
+        }
+      }
+      if (language == 'ja' && scale == 1.0) {
+        // ふだんの文字の大きさでは、5つとも1行に並んだまま。
+        final top = tester.getRect(row).top;
+        expect(at('projectDetailShareAction').top, top);
+        expect(at('projectDetailLoopButton').top, top);
+      }
+    }
+    expect(broken, isEmpty);
     expect(tester.takeException(), isNull);
   });
 }

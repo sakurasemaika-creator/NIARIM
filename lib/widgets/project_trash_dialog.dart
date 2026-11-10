@@ -8,6 +8,23 @@ String _failureText(AppLocalizations l10n, Object? failure) =>
     ? l10n.commonFavoriteDeleteBlocked
     : l10n.homeTrashOperationFailed;
 
+/// 作品の操作（ゴミ箱へ移す・戻す・お気に入り等）を保存できなかったことを
+/// [messenger]のSnackBarで知らせる。
+void showProjectActionFailure(
+  ScaffoldMessengerState messenger,
+  AppLocalizations l10n,
+  Object? failure,
+) {
+  messenger.showSnackBar(
+    SnackBar(
+      content: Semantics(
+        liveRegion: true,
+        child: Text(_failureText(l10n, failure)),
+      ),
+    ),
+  );
+}
+
 Future<bool> runProjectTrashAction(
   BuildContext context,
   Future<void> Function() apply,
@@ -25,13 +42,10 @@ Future<bool> runProjectAction(
     return true;
   } catch (error) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Semantics(
-            liveRegion: true,
-            child: Text(_failureText(AppLocalizations.of(context)!, error)),
-          ),
-        ),
+      showProjectActionFailure(
+        ScaffoldMessenger.of(context),
+        AppLocalizations.of(context)!,
+        error,
       );
     }
     return false;
