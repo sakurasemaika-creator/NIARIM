@@ -171,7 +171,7 @@ void main() {
     await tester.tap(receivedMenu);
     await tester.pumpAndSettle();
     expect(find.text('共有'), findsWidgets);
-    await tester.pageBack();
+    await tester.tapAt(const Offset(5, 700));
     await settleHomeTab(tester);
 
     await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
@@ -192,7 +192,7 @@ void main() {
     await tester.tap(find.byTooltip('検索'));
     await settleHomeTab(tester);
     await tester.enterText(find.byType(TextField), 'project query');
-    await tester.tap(find.text('作品一覧'));
+    await tester.tap(find.byKey(const ValueKey('home_tab_1')));
     await settleHomeTab(tester);
     expect(
       find.byType(TextField),
@@ -200,7 +200,7 @@ void main() {
       reason: 'project search must end when its results leave the screen',
     );
     expect(find.byTooltip('検索'), findsNothing);
-    await tester.tap(find.text('プロジェクト'));
+    await tester.tap(find.byKey(const ValueKey('home_tab_0')));
     await settleHomeTab(tester);
     await tester.tap(find.byTooltip('検索'));
     await settleHomeTab(tester);
