@@ -207,6 +207,8 @@ void main() {
       expect(valueWidget.data, formatStorageBytes(values!.bytesOf(category)));
       expect(labelWidget.style?.color, scheme.onSecondary);
       expect(valueWidget.style?.color, scheme.onSecondary);
+      expect(labelWidget.style?.shadows?.length, 4);
+      expect(valueWidget.style?.shadows?.length, 4);
       expect(
         find.descendant(of: bar, matching: find.text(label)),
         findsOneWidget,
