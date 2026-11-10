@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../l10n/reward_unlock_labels.dart';
 import '../../l10n/reward_navigation_labels.dart';
 import '../../models/coin_unlock_quote.dart';
+import '../../models/coin_benefit_price_proposal.dart';
 import '../../services/premium_service.dart';
 import '../../services/advertising_service.dart';
 import '../../services/coin_redemption_attempt_store.dart';
@@ -320,7 +321,6 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   ];
   static const _bundles = <CoinUnlockTarget>[
     CoinUnlockTarget.allAds,
-    CoinUnlockTarget.fullPremium,
   ];
 
   /// The only period the server sells for coins (the redeem request is
@@ -355,16 +355,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         _selected.remove(target);
         return;
       }
-      if (target == CoinUnlockTarget.fullPremium) {
-        _selected.removeWhere((value) => value != target);
-      } else {
-        _selected.remove(CoinUnlockTarget.fullPremium);
-      }
-      if (target == CoinUnlockTarget.allAds) {
-        _selected.removeAll(_placementTargets);
-      } else if (_placementTargets.contains(target)) {
-        _selected.remove(CoinUnlockTarget.allAds);
-      }
+      // Preserve multi-selection even when rights overlap. The review dialog
+      // explains overlap/queueing; unsupported combinations cannot debit coins.
+      // The server, not this widget, remains the sole owner of entitlements.
     });
   }
 
@@ -470,13 +463,22 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final enabled = target.isRedeemableNow;
     final selected = _selected.contains(target);
     final rate = widget.priceCatalog[target];
-    int? price;
+    int? officialPrice;
     try {
-      if (enabled && rate != null) price = rate.cost(_duration);
+      if (enabled && rate != null) officialPrice = rate.cost(_duration);
     } on StateError {
-      price = null;
+      officialPrice = null;
     }
+    if (target == CoinUnlockTarget.fullPremium &&
+        _duration.unit == CoinDurationUnit.month &&
+        _duration.amount == 1 &&
+        _officialPremiumQuote?['enabled'] == true &&
+        _officialPremiumQuote?['priceCoins'] is int) {
+      officialPrice = _officialPremiumQuote!['priceCoins'] as int;
+    }
+    final referencePrice = CoinBenefitPriceProposal.cost(target, _duration);
     final hasSubscription = context.read<PremiumService>().hasPurchasedPremium;
+    final japanese = Localizations.localeOf(context).languageCode == 'ja';
     return CheckboxListTile(
       key: ValueKey('rewardFeature_${target.name}'),
       value: selected,
@@ -484,11 +486,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       controlAffinity: ListTileControlAffinity.leading,
       title: Text(t[target.name]),
       subtitle: Text(
-        hasSubscription
-            ? t['activePremium']
-            : price == null
-            ? t['pricePending']
-            : '$price ${t['coins']}',
+        officialPrice != null
+            ? '$officialPrice ${t['coins']}'
+            : '${japanese ? '参考価格（交換準備中）' : 'Reference only (not for sale)'}'
+              ' · $referencePrice ${t['coins']}'
+              '${hasSubscription ? ' · ${t['activePremium']}' : ''}',
         style: Theme.of(context).textTheme.bodySmall,
       ),
       secondary: !enabled
@@ -651,6 +653,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
+              _targetTile(context, t, CoinUnlockTarget.fullPremium),
+              Divider(color: scheme.outlineVariant),
               for (final target in _standardTargets)
                 _targetTile(context, t, target),
               Divider(color: scheme.outlineVariant),
