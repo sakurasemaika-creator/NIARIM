@@ -1,19 +1,23 @@
 # NIARIM Audit Progress
 
-## S38 公開済み — DISC061・DISC057・DISC058・DISC063を公開、DISC064はレビュー中（2026-11-10、別の実行環境で継続）
+## S38 公開済み — A003を継続（current_id固定）。DISC061・DISC057・DISC058・DISC063を公開、DISC064は指摘の修正中（2026-11-10、別の実行環境で継続）
 
-前の実行環境がunavailableのため、ユーザー指示で別の環境（Claude Code）がdev_branchだけを使って継続した。下の「S38 最優先の色契約修正」「S38 checkpoint」は前の環境の記録として残す。そこにある「環境復帰後の次の1手」は、この節で置き換える（WIPの復元・色の修正・再検証・公開は完了）。Baseline2done/628todo/A003、Discovery cursor DISC001、Delta not_startedを変更しない。どのDiscoveryもdoneへ昇格していない。
+**決まりの更新（App `f3401c10`・`d10545e0`・`60be328e`、[audit-policy-approved]）に従う**：current_idはA003のまま固定する。A003が正式doneになるまで、原因→修正→再検証→実画面→回帰を繰り返し、次の通常監査ID（A004以降）へ進まない。途中の発見はDISC／Dへ登録し、A003の完了を妨げる問題と重大なdata-loss/security/privacyだけを即修正する。番号・順序・完了条件・done数は変更していない（Baseline2done/628todo/A003、Discovery cursor DISC001、Delta not_started）。どのDiscoveryもdoneへ昇格していない。
 
-- 公開済み（App dev_branch、非force）：`dd1974d7`・`308c0198` ブラシごとの太さ・不透明度の記憶、`07323398` DISC061 共有失敗の知らせ、`0a008bb4`・`670d666e` DISC057 交換期間、`84dd0344`・`81af3731`・`d1f809cf` DISC058 容量削減の欄ごとの読み込み、`3f0a43d3` DISC063 保存の読み込み（壊れた1件・型の違う値・範囲外の数）。Webは製品変更なし。検証の要点と留保はASTRA_AUDIT_STATE.mdの先頭節。
-- 未公開・進行中（公開済みとして扱わない）：
-  - DISC064（残りの共有10か所＋dev_branchで移された保存済み.niashareの共有）：実装担当の2commitを最新dev_branchへ載せ直してローカルに保持（/home/user/NIARIMのdev_branch、`14e53ca1`・`b4a516bd`相当。remoteが動くたびにhashは変わる）。新規・関係40tests PASS、実Linux SP JAでテーマの書き出し（修正前「書き出しに失敗しました: UnimplementedError: Sharing files not supported on Linux」→修正後「この端末では、この操作に対応していません。」）と引き継ぎ（二度押しでも知らせ1つ）を確認。3観点の独立レビュー（workflow）の結果待ち。
-  - DISC058の公開後レビューで再現した4件（ゴミ箱の集合が違う覚えた結果、初回の一覧の跳ね、keyboard focusがHelpへ、終わらない集計の再試行）の追加修正を、担当が`scratchpad/fix058b`のworktreeで作成中。
-- 登録：製品変更をD001.63へtodo登録（宣言100）。新しいDiscovery DISC068（容量のグラフの棒の中の文字が14テーマで読めない、他のセッションのグラフ）・DISC069（書き出し・作成の失敗の文が例外の文を出す等、DISC064の隣）・DISC070（読めない保存の残り）。
-- 他のセッションの状況：dev_branchは数分〜数十分おきに更新される（作品広場・ホームのタブ・容量のグラフ・コインのミッション等）。pushの直前に必ずfetch→rebase。いまのdev_branchは`flutter analyze`で他のセッションの分が12件出る。
+前の実行環境がunavailableのため、ユーザー指示で別の環境（Claude Code）がdev_branchだけを使って継続している。下の「S38 最優先の色契約修正」「S38 checkpoint」は前の環境の記録として残す（そこにある「環境復帰後の次の1手」はこの節で置き換える）。
+
+- 公開済み（App dev_branch、非force）：`dd1974d7`・`308c0198` ブラシごとの太さ・不透明度の記憶（ユーザーの個別依頼）、`07323398` DISC061、`0a008bb4`・`670d666e` DISC057、`84dd0344`・`81af3731`・`d1f809cf`・`8617e91d` DISC058（最後は公開後レビューの追加修正）、`3f0a43d3` DISC063。Webは製品変更なし。検証の要点と留保はASTRA_AUDIT_STATE.mdの先頭節。
+- 未公開（公開済みとして扱わない）：DISC064（残りの共有10か所＋dev_branchで移された保存済み.niashareの共有）。実装担当の2commitを最新dev_branchへ載せ直して/home/user/NIARIMのdev_branchにローカル保持。新規・関係40tests PASS、実Linux SP JAでテーマの書き出しと引き継ぎを確認済み。3観点の独立レビュー（9agent）で再現した指摘を担当が修正中（worktree `.claude/worktrees/wf_3dde1164-cb5-1`）：（1）パレット選択のダイアログの追加/読み込み/キャンセル/適用が固定されず、横向きのスマホ（800x360等）と360x640で適用へ届かない回帰（中）、（2）.niashareの作成中に画面を離れて戻ると共有buttonが黙って反応しない、（3）二度押し防止を外してもtestが通る・書き出しの失敗を起こすtestが無い・引き継ぎの成功の文が失敗の後ろに積まれても通る。回帰を含むため、修正が入るまでdev_branchへ出さない。
+- A003の実操作（最新HEAD、SP390/PC1280、日本語、空の一覧）：初回案内（確認するまで閉じない・保存後は出ない）、4タブ、ドロワーの5リンクの往復でタブを保持、検索→起動画面→入り直しで検索が閉じる、を確認。未確認の条件はASTRA_AUDIT_STATE.mdの「A003でまだ確認できていない条件」。
+- 登録：製品変更をD001.63へtodo登録（宣言100）。新しいDiscovery：DISC068（容量のグラフの棒の中の文字が14テーマで読めない、他のセッションのグラフ）・DISC069（書き出し・作成の失敗の文が例外の文を出す等）・DISC070（読めない保存の残り）・DISC071（ホームの検索のEscと左上の戻る）。
+- 他のセッションの状況：dev_branchは数分〜数十分おきに更新される（作品広場・ホームのタブ・容量のグラフ・ゴミ箱・コインのミッション等）。pushの直前に必ずfetch→rebase。いまのdev_branchは`flutter analyze`で他のセッションの分が12件出る。
 - 前の環境の未回収物：raw45PASS・PC原本9点・S38 standalone2parts・CI workflow全文（A003_S38_20261110_CHECKPOINT.md）。この環境では取得・使用していない。
-- ユーザーの判断待ち：DISC066（PC専用の作業画面が画面へつながっていない・メニューバーが出ている）、DISC067（消しゴム等にも自分の太さを覚えさせるか）、DISC068（グラフの棒の文字色。他のセッションの配色）。
+- ユーザーの判断待ち：DISC066（PC専用の作業画面が画面へつながっていない・メニューバーが出ている）、DISC067（消しゴム等にも自分の太さを覚えさせるか）、DISC068（グラフの棒の文字色。他のセッションの配色）、DISC071（検索中の左上の戻る・Escの意味）。
 
-次の1手：DISC064のレビュー結果（workflow `review-disc064-share-sites`）を確認→確かめられた指摘を直す→最新dev_branchへ載せ直し→関係tests→公開。DISC058の追加修正（fix058b）のcommitを確認→cherry-pick→storage tests→実Linux（ゴミ箱へ移して再訪・初回の一覧の位置・keyboard）→公開。その後、記録（12_実装チェックリスト・CLAUDE.mdの共有の節・State）を更新。次の単位はDISC059の残り（reset部分失敗/prefs ack/古いmemory）、DISC062（設定の引き継ぎのブラシ）、DISC065（手書きのラベル表）。
+次の1手（A003の中だけで進める）：
+1. DISC064の修正commit（担当のworktree）を確認→/home/user/NIARIMのdev_branch（ローカルの2commitの上）へcherry-pick→最新dev_branchへrebase→共有のtests 8files＋新規→実Linux（パレット選択のダイアログを800x360・360x640で、テーマの書き出し）→公開→State・12_実装チェックリスト・CLAUDE.mdの共有の節（「残り11か所…未着手」を直す）を更新。
+2. A003の未確認条件を埋める：作品3件・120件の一覧で4タブ×（scroll位置・選択・フォルダ内・表示サイズ）のタブ往復/ドロワー往復、検索（一致なし・名前/タグ・DISC071）、初回案内の保存の失敗の実画面、width matrixの境界（559/560・640/641・759/760）と7言語・文字拡大・短高。見つけた不足はその場で反例→修正→再操作し、A003と無関係な発見は登録だけにする。
+3. A003に属する未完のDiscovery（DISC048 案内の中身とHelpの導線、DISC056 初回案内の保存の残り、DISC059 初期化の部分失敗/prefs ack/古いmemory、DISC065 コイン・特典の手書きのラベル表）を順に閉じる。A003がdoneの条件を満たせない外部要因（Android/DeX実機・touch・読み上げ・実auth/backend）は、実装側の検証を尽くしたうえでblockedと再開条件を記録する。A004以降へは進まない。
 
 ## S38 最優先の色契約修正（2026-11-10、未適用・未検証）
 
@@ -160,7 +164,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S38 — DISC061・DISC057・DISC058・DISC063を公開。DISC064はローカルでレビュー中、DISC058の公開後レビューの追加修正を作成中
+current_substep: A003/S38 — current_id固定（決まり f3401c10/d10545e0/60be328e）。DISC061・DISC057・DISC058（追加修正込み）・DISC063を公開。DISC064はローカルでレビュー指摘の修正中。A003の実操作（SP390/PC1280、空の一覧）を実施
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -180,7 +184,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: DISC064のレビュー結果→指摘の修正→最新dev_branchへ載せ直し→公開。DISC058の追加修正（fix058b）を取り込み→実Linux→公開。記録を更新。次にDISC059残り・DISC062・DISC065。冒頭の「S38 公開済み」節を優先。
+next_action: A003の中だけで進める。DISC064の修正commitを取り込み→実Linux→公開→記録。続けてA003の未確認条件（作品3件/120件でのタブ・ドロワー往復の保持、検索とDISC071、初回案内の保存失敗の実画面、width境界・7言語・文字拡大）を反例→修正→再操作で埋め、A003に属するDISC048/056/059/065を閉じる。A004以降へは進まない。冒頭の「S38 公開済み」節を優先。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
