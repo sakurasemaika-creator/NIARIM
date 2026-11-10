@@ -7,6 +7,9 @@ on:
       - '.github/workflows/creator-ranking-mission-ui-verify.yml'
       - 'lib/l10n/creator_mission_labels.dart'
       - 'lib/screens/rewards/creator_missions_screen.dart'
+      - 'lib/screens/rewards/recurring_missions_panel.dart'
+      - 'lib/screens/rewards/plaza_missions_panel.dart'
+      - 'test/all_mission_details_ui_test.dart'
       - 'test/creator_ranking_mission_labels_test.dart'
       - 'test/creator_mission_claim_ui_policy_test.dart'
       - 'test/creator_mission_sort_policy_test.dart'
@@ -32,10 +35,14 @@ jobs:
           flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
             lib/l10n/creator_mission_labels.dart \
             lib/screens/rewards/creator_missions_screen.dart \
-            test/creator_ranking_mission_labels_test.dart
+            lib/screens/rewards/recurring_missions_panel.dart \
+            lib/screens/rewards/plaza_missions_panel.dart \
+            test/creator_ranking_mission_labels_test.dart \
+            test/all_mission_details_ui_test.dart
       - name: Verify ranking labels and mission claim UI policies
         run: |
           flutter test --no-pub --reporter expanded \
             test/creator_ranking_mission_labels_test.dart \
             test/creator_mission_claim_ui_policy_test.dart \
-            test/creator_mission_sort_policy_test.dart
+            test/creator_mission_sort_policy_test.dart \
+            test/all_mission_details_ui_test.dart
