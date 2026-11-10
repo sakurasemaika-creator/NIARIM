@@ -852,6 +852,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         child: Text(t['goal']),
                       ),
                       OutlinedButton(
+                        key: const Key('rewardRedeemButton'),
                         onPressed:
                             serverPrice != null &&
                                 _rewardState?['redemptionEnabled'] == true &&
