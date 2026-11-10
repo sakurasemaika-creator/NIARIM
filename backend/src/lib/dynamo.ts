@@ -36,6 +36,10 @@ export const Keys = {
   recurringMissionState: (userId: string) => ({
     pk: `USER#${userId}`, sk: "RECURRING_MISSIONS_STATE_V1",
   }),
+  /** One compact server-clock plaza timer/claim mask per account. */
+  plazaMissionState: (userId: string) => ({
+    pk: "USER#" + userId, sk: "PLAZA_MISSIONS_STATE_V1",
+  }),
   loginBonusState: (userId: string) => ({
     pk: `USER#${userId}`, sk: "LOGIN_BONUS_STATE",
   }),
