@@ -8,6 +8,7 @@ import '../../../services/api/community_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/reward_navigation_labels.dart';
 import '../../../l10n/creator_mission_labels.dart';
+import '../../help/guide_hub_screen.dart';
 import '../../../config/font_fallback.dart';
 import '../../canvas/widgets/canvas_icon_button.dart';
 
@@ -120,49 +121,6 @@ class _HomeDrawerState extends State<HomeDrawer> {
             const SizedBox(height: 4),
             // メニュー項目名はくらむぼんで統一する。
             ListTile(
-              leading: drawerIcon(Icons.share_outlined),
-              title: Text(
-                l10n.homeTabShared,
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/shared');
-              },
-            ),
-            ListTile(
-              leading: drawerIcon(Icons.delete_outline),
-              title: Text(
-                l10n.homeTabTrash,
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/trash');
-              },
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: drawerIcon(Icons.palette_outlined),
-              title: Text(
-                l10n.homeDrawerAutofillPreset,
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/autofill-presets');
-              },
-            ),
-            ListTile(
               leading: drawerIcon(Icons.cleaning_services_outlined),
               title: Text(
                 l10n.homeDrawerStorage,
@@ -192,9 +150,10 @@ class _HomeDrawerState extends State<HomeDrawer> {
               },
             ),
             ListTile(
-              leading: drawerIcon(Icons.help_outline),
+              key: const Key('homeGuideMenuItem'),
+              leading: drawerIcon(Icons.menu_book_outlined),
               title: Text(
-                l10n.homeDrawerHelp,
+                guideHubTitle(context),
                 style: const TextStyle(
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
@@ -206,37 +165,8 @@ class _HomeDrawerState extends State<HomeDrawer> {
               },
             ),
             ListTile(
-              leading: drawerIcon(Icons.lightbulb_outline),
-              title: Text(
-                l10n.homeDrawerTips,
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/tips');
-              },
-            ),
-            ListTile(
-              key: const Key('homeBenefitExchangeMenuItem'),
-              leading: drawerIcon(Icons.redeem_outlined),
-              title: Text(
-                RewardNavigationLabels.of(context)['exchange'],
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/rewards');
-              },
-            ),
-            ListTile(
-              key: const Key('homeCreatorMissionsMenuItem'),
-              leading: drawerIcon(Icons.flag_outlined),
+              key: const Key('homeCoinBenefitsMenuItem'),
+              leading: drawerIcon(Icons.toll_outlined),
               trailing: _attentionFuture == null
                   ? null
                   : FutureBuilder<Map<String, dynamic>>(
@@ -276,7 +206,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                       },
                     ),
               title: Text(
-                RewardNavigationLabels.of(context)['missions'],
+                RewardNavigationLabels.of(context)['hub'],
                 style: const TextStyle(
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
@@ -284,22 +214,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
               ),
               onTap: () {
                 Navigator.pop(context);
-                context.push('/creator-missions');
-              },
-            ),
-            ListTile(
-              key: const Key('homeEarnCoinsMenuItem'),
-              leading: drawerIcon(Icons.smart_display_outlined),
-              title: Text(
-                RewardNavigationLabels.of(context)['earn'],
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/earn-coins');
+                context.push('/rewards');
               },
             ),
             ListTile(
