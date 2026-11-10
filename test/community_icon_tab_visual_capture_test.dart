@@ -48,6 +48,12 @@ void main() {
     ]) {
       final pc = width >= 720;
       await tester.pumpWidget(const SizedBox.shrink());
+      SharedPreferences.setMockInitialValues({
+        'first_launch': false,
+        'language': 'ja',
+        'force_pc_mode': pc ? 1 : 0,
+        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      });
       tester.view.physicalSize = Size(width.toDouble(), pc ? 900 : 844);
       final boundary = GlobalKey();
       appRouter.go('/community');
