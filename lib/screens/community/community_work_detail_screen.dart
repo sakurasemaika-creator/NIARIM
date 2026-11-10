@@ -1,6 +1,7 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
@@ -9,6 +10,7 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/api/community_api.dart';
 import 'widgets/community_playback_status_view.dart';
+import 'widgets/community_youtube_player.dart';
 import 'widgets/community_work_description.dart';
 import 'widgets/community_youtube_comments_section.dart';
 import '../../widgets/dispose_on_unmount.dart';
@@ -35,7 +37,7 @@ class CommunityWorkDetailScreen extends StatefulWidget {
 }
 
 class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
-  static const double _minPreviewHeight = 140;
+  static const double _minPreviewHeight = 200;
   static const double _defaultPreviewHeight = 220;
   double _previewHeight = _defaultPreviewHeight;
   bool _aiDisclosureBusy = false;
@@ -83,13 +85,37 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     }
   }
 
-  Future<void> _checkPlaybackStatus() async {
-    if (!mounted) return;
+  Future<CommunityPlaybackStatus> _checkPlaybackStatus() async {
+    if (!mounted) return CommunityPlaybackStatus.unknown;
     setState(() => _playbackStatus = CommunityPlaybackStatus.checking);
     final status = await context.read<CommunityService>().playbackStatus(
       widget.workId,
     );
     if (mounted) setState(() => _playbackStatus = status);
+    return status;
+  }
+
+  /// The external YouTube button is also an action boundary: never open a
+  /// cached work without checking NIARIM and YouTube visibility again.
+  Future<void> _openYoutubeIfAvailable(String workId) async {
+    if (!CommunityYoutubePlayer.isValidVideoId(workId)) return;
+    final status = await _checkPlaybackStatus();
+    if (!mounted || widget.workId != workId ||
+        status != CommunityPlaybackStatus.available) return;
+    final url = Uri.https('www.youtube.com', '/watch', {'v': workId});
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication) && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('YouTubeの動画を開けませんでした')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('YouTubeの動画を開けませんでした')),
+        );
+      }
+    }
   }
 
   /// With a backend an edit can be refused or lost; it is undone, and the
@@ -403,11 +429,15 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                             onRetry: _checkPlaybackStatus,
                           )
                         : Center(
-                            child: Icon(
-                              Icons.play_circle_fill_rounded,
-                              color: ThemeService.activeColorScheme.onSurface
-                                  .withValues(alpha: 0.70),
-                              size: 56,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: previewHeight * (16 / 9),
+                              ),
+                              child: CommunityYoutubePlayer(
+                                key: ValueKey('communityDetailYoutube-${work.id}'),
+                                videoId: work.id,
+                                playing: false,
+                              ),
                             ),
                           ),
                   ),
@@ -607,9 +637,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 children: [
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: () => _showComingSoonSnackbar(
-                        l10n.communityWorkDetailViewOnYoutubeComingSoonSnackbar,
-                      ),
+                      onPressed: () => _openYoutubeIfAvailable(work.id),
                       icon: const Icon(Icons.smart_display_outlined),
                       label: Text(l10n.communityWorkDetailViewOnYoutube),
                     ),
