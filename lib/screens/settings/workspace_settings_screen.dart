@@ -1,17 +1,18 @@
 import 'package:niarim/services/theme_service.dart';
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/canvas_dock_panel.dart';
 import '../../models/quick_tool_entry.dart';
 import '../../models/toolbar_item.dart';
 import '../../models/workspace_preset.dart';
+import '../../services/export_share_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
@@ -21,6 +22,7 @@ import '../../widgets/help_button.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/dispose_on_unmount.dart';
+import '../../widgets/export_share_feedback.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/qr_import_dialog.dart';
 import '../../widgets/qr_share_dialog.dart';
@@ -567,10 +569,14 @@ class WorkspaceSettingsScreen extends StatelessWidget {
             ),
             for (final preset in presetService.presets)
               Builder(
-                builder: (context) {
+                // シートの中のcontextは閉じると無くなるので、共有・ダイアログは
+                // 画面のcontext（外側の`context`）から出す。
+                builder: (_) {
                   final payload = jsonEncode(preset.toJson());
                   final qrAvailable = payload.length <= kQrShareSafeCharLimit;
                   return ListTile(
+                    // 書き出しと共有が終わるまで、同じものをもう一度は出さない。
+                    enabled: !ExportShareService.isRunning(_shareKey(preset)),
                     leading: const Icon(Icons.dashboard_customize),
                     title: Text(preset.name),
                     trailing: IconButton(
@@ -591,26 +597,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                             }
                           : null,
                     ),
-                    onTap: () async {
+                    onTap: () {
                       Navigator.pop(ctx);
-                      try {
-                        final file = await presetService.exportPreset(
-                          preset.id,
-                        );
-                        if (!context.mounted) return;
-                        await SharePlus.instance.share(
-                          ShareParams(files: [XFile(file.path)]),
-                        );
-                      } catch (e) {
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              l10n.workspaceShareFailedSnackbar(e.toString()),
-                            ),
-                          ),
-                        );
-                      }
+                      _sharePresetFile(context, l10n, presetService, preset);
                     },
                   );
                 },
@@ -620,6 +609,32 @@ class WorkspaceSettingsScreen extends StatelessWidget {
       ),
     );
   }
+
+  static String _shareKey(WorkspacePreset preset) => 'workspace:${preset.id}';
+
+  /// .niaworkspaceへ書き出してから共有する。書き出しの失敗と、共有できない
+  /// 端末・共有の失敗は別のことなので、別の文で知らせる。
+  Future<void> _sharePresetFile(
+    BuildContext context,
+    AppLocalizations l10n,
+    WorkspacePresetService presetService,
+    WorkspacePreset preset,
+  ) => ExportShareService.runExclusive(_shareKey(preset), () async {
+    final File file;
+    try {
+      file = await presetService.exportPreset(preset.id);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.workspaceShareFailedSnackbar(e.toString())),
+        ),
+      );
+      return;
+    }
+    if (!context.mounted) return;
+    await shareExportedFileWithNotice(context, file);
+  });
 
   void _showLoadSheet(
     BuildContext context,
@@ -888,8 +903,9 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
   Future<void> _overwrite() async {
     final l10n = AppLocalizations.of(context)!;
     if (widget.presetService.presets.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.workspaceNoSavedPresets)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.workspaceNoSavedPresets)));
       return;
     }
     final selected = await showModalBottomSheet<WorkspacePreset>(

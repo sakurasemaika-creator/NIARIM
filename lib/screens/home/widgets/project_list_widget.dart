@@ -8,18 +8,19 @@ import 'package:flutter/material.dart' hide MaterialType;
 import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../engine/niapro_serializer.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/material_asset.dart';
 import '../../../models/project.dart';
+import '../../../services/export_share_service.dart';
 import '../../../services/font_service.dart';
 import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
 import '../../../config/font_fallback.dart';
 import '../../../widgets/empty_state_placeholder.dart';
+import '../../../widgets/export_share_feedback.dart';
 import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/project_trash_dialog.dart';
 import '../../../utils/app_error_reporter.dart';
@@ -982,6 +983,8 @@ class ProjectListWidget extends StatelessWidget {
         ),
         PopupMenuItem(
           value: 'share',
+          // 同じ作品の共有ファイルの作成・共有が終わるまで、二度目は始めない。
+          enabled: !ExportShareService.isRunning(niashareKey(project.id)),
           child: Text(l10n.projectListCreateShareAction),
         ),
         PopupMenuItem(
@@ -1134,41 +1137,51 @@ class ProjectListWidget extends StatelessWidget {
   }
 
   /// .niashare（共有用ファイル）を作成し、共有シートを表示する。
-  Future<void> _createNiashare(BuildContext context, Project project) async {
-    final includeOptions = await showMaterialIncludeDialog(context);
-    if (includeOptions == null || !context.mounted) return; // キャンセル
-    final l10n = AppLocalizations.of(context)!;
-    final service = context.read<ProjectService>();
-    final materialService = context.read<MaterialService>();
-    final fontService = context.read<FontService>();
-    final scenes = service.scenesOf(project.id);
-    final tileManager = service.tileManagerOf(project.id);
-    try {
-      final bundle = await materialService.buildShareBundle(
-        project.id,
-        includeOptions.materialTypes,
-      );
-      final fontBundle = includeOptions.includeFonts
-          ? await buildFontShareBundle(service, fontService, project.id)
-          : (files: <String, Uint8List>{}, manifest: null);
-      final file = await NiaproSerializer.saveShare(
-        project: project,
-        scenes: scenes,
-        tileManager: tileManager,
-        materialFiles: bundle.files.isEmpty ? null : bundle.files,
-        materialsManifest: bundle.manifest,
-        fontFiles: fontBundle.files.isEmpty ? null : fontBundle.files,
-        fontsManifest: fontBundle.manifest,
-      );
-      if (!context.mounted) return;
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.projectDetailNiashareFailedSnackbar('$e'))),
-      );
-    }
-  }
+  ///
+  /// 作成には時間がかかるので、同じ作品の作成・共有が終わるまで二度目は
+  /// 始めない（同じファイルを同時に書かない。プロジェクト詳細の共有とも
+  /// 同じ名前で止め合う）。作成の失敗と、共有できない端末・共有の失敗は
+  /// 別のことなので、別の文で知らせる。
+  Future<void> _createNiashare(BuildContext context, Project project) =>
+      ExportShareService.runExclusive(niashareKey(project.id), () async {
+        final includeOptions = await showMaterialIncludeDialog(context);
+        if (includeOptions == null || !context.mounted) return; // キャンセル
+        final l10n = AppLocalizations.of(context)!;
+        final service = context.read<ProjectService>();
+        final materialService = context.read<MaterialService>();
+        final fontService = context.read<FontService>();
+        final scenes = service.scenesOf(project.id);
+        final tileManager = service.tileManagerOf(project.id);
+        final File file;
+        try {
+          final bundle = await materialService.buildShareBundle(
+            project.id,
+            includeOptions.materialTypes,
+          );
+          final fontBundle = includeOptions.includeFonts
+              ? await buildFontShareBundle(service, fontService, project.id)
+              : (files: <String, Uint8List>{}, manifest: null);
+          file = await NiaproSerializer.saveShare(
+            project: project,
+            scenes: scenes,
+            tileManager: tileManager,
+            materialFiles: bundle.files.isEmpty ? null : bundle.files,
+            materialsManifest: bundle.manifest,
+            fontFiles: fontBundle.files.isEmpty ? null : fontBundle.files,
+            fontsManifest: fontBundle.manifest,
+          );
+        } catch (e) {
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.projectDetailNiashareFailedSnackbar('$e')),
+            ),
+          );
+          return;
+        }
+        if (!context.mounted) return;
+        await shareExportedFileWithNotice(context, file);
+      });
 
   void _showRenameDialog(BuildContext context, Project project) {
     final l10n = AppLocalizations.of(context)!;
@@ -1284,6 +1297,10 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 }
+
+/// 作品の.niashareの作成・共有を止め合う名前（ホームの一覧の共有と
+/// プロジェクト詳細の共有で共通。`ExportShareService.runExclusive`へ渡す）。
+String niashareKey(String projectId) => 'niashare:$projectId';
 
 /// .niashare作成時の同梱選択ダイアログ（画像/動画/音声を
 /// 種類ごとに選択できる。デフォルトは全種類ON。「フォントを含める」を

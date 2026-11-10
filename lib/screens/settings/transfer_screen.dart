@@ -6,7 +6,6 @@ import 'package:file_picker/file_picker.dart';
 // 存在するため、こちらでは使わないflutter側をhideして曖昧さを解消する。
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../engine/niapro_serializer.dart';
 import '../../engine/niatra_asset_bundle.dart';
@@ -16,6 +15,7 @@ import '../../l10n/community_plaza_labels.dart';
 import '../../models/material_asset.dart' show MaterialType;
 import '../../services/autofill_preset_service.dart';
 import '../../services/brush_service.dart';
+import '../../services/export_share_service.dart';
 import '../../services/font_service.dart';
 import '../../services/material_service.dart';
 import '../../services/palette_service.dart';
@@ -26,6 +26,7 @@ import '../../services/community_service.dart';
 import '../../services/stamp_service.dart';
 import '../../services/theme_service.dart';
 import '../../services/tone_service.dart';
+import '../../widgets/export_share_feedback.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../home/widgets/project_list_widget.dart' show buildFontShareBundle;
@@ -147,17 +148,17 @@ class _TransferScreenState extends State<TransferScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerLow,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerLow,
                           child: Padding(
                             padding: const EdgeInsets.all(16),
                             child: Text(
                               l10n.transferProjectsEmpty,
                               style: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -175,9 +176,9 @@ class _TransferScreenState extends State<TransferScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerLow,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerLow,
                         child: Column(
                           children: [
                             for (final p in projects) ...[
@@ -307,62 +308,80 @@ class _TransferScreenState extends State<TransferScreen> {
     return files;
   }
 
+  /// .niatraを作ってから共有する。作るのに失敗したことと、共有できない端末・
+  /// 共有の失敗は別のことなので、別の文で知らせる。
   Future<void> _export() async {
+    // ボタンが押せない見た目になる前（同じフレーム）の二度目は始めない。
+    if (_isBusy) return;
     setState(() => _isBusy = true);
     try {
-      final projectService = context.read<ProjectService>();
-      final brushService = context.read<BrushService>();
-      final toneService = context.read<ToneService>();
-      final stampService = context.read<StampService>();
-      final projectFiles = await _buildProjectFiles(projectService);
-      if (!mounted) return;
-      // まず既存Serializerで設定・プリセット・プロジェクト等を生成し、そのZIPへ
-      // カスタムブラシ／トーン／スタンプ画像本体と完全なモデルJSONを追加する。
-      // これにより別端末でも元端末の絶対ファイルパスに依存しない。
-      final rawBytes = await NiatraSerializer.export(
-        selectedItems: _items,
-        settings: context.read<SettingsService>(),
-        brush: brushService,
-        tone: toneService,
-        stamp: stampService,
-        autofillPresets: context.read<AutofillPresetService>(),
-        theme: context.read<ThemeService>(),
-        palette: context.read<PaletteService>(),
-        pixelArtPalette: context.read<PixelArtPaletteService>(),
-        projectFiles: projectFiles,
-      );
-      final bytes = await NiatraAssetBundle.enrichExport(
-        rawBytes,
-        selectedItems: _items,
-        brush: brushService,
-        tone: toneService,
-        stamp: stampService,
-      );
-      if (!mounted) return;
-      final fileName = 'niarim_${DateTime.now().millisecondsSinceEpoch}.niatra';
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [
-            XFile.fromData(
-              bytes,
-              name: fileName,
-              mimeType: 'application/octet-stream',
-            ),
-          ],
-        ),
-      );
+      final Uint8List bytes;
+      try {
+        final projectService = context.read<ProjectService>();
+        final brushService = context.read<BrushService>();
+        final toneService = context.read<ToneService>();
+        final stampService = context.read<StampService>();
+        final projectFiles = await _buildProjectFiles(projectService);
+        if (!mounted) return;
+        // まず既存Serializerで設定・プリセット・プロジェクト等を生成し、そのZIPへ
+        // カスタムブラシ／トーン／スタンプ画像本体と完全なモデルJSONを追加する。
+        // これにより別端末でも元端末の絶対ファイルパスに依存しない。
+        final rawBytes = await NiatraSerializer.export(
+          selectedItems: _items,
+          settings: context.read<SettingsService>(),
+          brush: brushService,
+          tone: toneService,
+          stamp: stampService,
+          autofillPresets: context.read<AutofillPresetService>(),
+          theme: context.read<ThemeService>(),
+          palette: context.read<PaletteService>(),
+          pixelArtPalette: context.read<PixelArtPaletteService>(),
+          projectFiles: projectFiles,
+        );
+        bytes = await NiatraAssetBundle.enrichExport(
+          rawBytes,
+          selectedItems: _items,
+          brush: brushService,
+          tone: toneService,
+          stamp: stampService,
+        );
+      } catch (e) {
+        if (!mounted) return;
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.transferExportFailedSnackbar(e.toString())),
+          ),
+        );
+        return;
+      }
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
+      final fileName = 'niarim_${DateTime.now().millisecondsSinceEpoch}.niatra';
+      final result = await shareFilesWithNotice(
+        context,
+        [
+          XFile.fromData(
+            bytes,
+            name: fileName,
+            mimeType: 'application/octet-stream',
+          ),
+        ],
+        key: 'niatra',
+        // バイト列から作るファイルは、Web以外では`name`が使われず
+        // 「（ランダムな名前）.bin」になる。読み込みは.niatraだけを受け付ける
+        // ので、渡すファイルの名前をここで決める。
+        fileNameOverrides: [fileName],
+      );
+      // 共有できなかったときは上の呼び出しが知らせている。共有シートを
+      // 閉じただけのときは、渡していないので「書き出しました」と言わない。
+      if (result == null ||
+          result.status == ShareResultStatus.dismissed ||
+          !mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.transferExportSuccessSnackbar)),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.transferExportFailedSnackbar(e.toString())),
-        ),
       );
     } finally {
       if (mounted) setState(() => _isBusy = false);

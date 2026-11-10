@@ -1,18 +1,20 @@
 import 'package:niarim/services/theme_service.dart';
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../models/color_palette.dart';
+import '../../../services/export_share_service.dart';
 import '../../../services/palette_service.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/dispose_on_unmount.dart';
+import '../../../widgets/export_share_feedback.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/qr_import_dialog.dart';
 import '../../../widgets/qr_share_dialog.dart';
@@ -55,6 +57,10 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   late double _alpha; // 0.0〜1.0（カラーピッカーは常に透明色も選択できる）
   late int _r, _g, _b;
   final _hexController = TextEditingController();
+  // パレットを共有できなかった理由。このパネルはダイアログの中にも出るので、
+  // SnackBar（ダイアログの幕の下に隠れる）ではなくパネルの中に出す。
+  Object? _shareError;
+  final _shareNoticeKey = GlobalKey();
 
   @override
   void initState() {
@@ -406,6 +412,14 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             ),
           ],
         ),
+        if (_shareError != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: ExportShareNotice(
+              key: _shareNoticeKey,
+              message: exportShareFailureText(l10n, _shareError!),
+            ),
+          ),
         // パレット切替（複数パレットをチップで切替）
         if (paletteService.palettes.length > 1)
           Wrap(
@@ -678,26 +692,13 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
+              // 書き出しと共有が終わるまで、同じパレットをもう一度は出さない。
+              enabled: !ExportShareService.isRunning(_shareKey(palette)),
               leading: const Icon(Icons.ios_share),
               title: Text(l10n.colorPickerShareViaFile),
-              onTap: () async {
+              onTap: () {
                 Navigator.pop(ctx);
-                try {
-                  final file = await paletteService.exportPalette(palette.id);
-                  if (!context.mounted) return;
-                  await SharePlus.instance.share(
-                    ShareParams(files: [XFile(file.path)]),
-                  );
-                } catch (e) {
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        l10n.colorPickerShareFailedSnackbar(e.toString()),
-                      ),
-                    ),
-                  );
-                }
+                _sharePaletteFile(l10n, paletteService, palette);
               },
             ),
             ListTile(
@@ -722,6 +723,37 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       ),
     );
   }
+
+  static String _shareKey(ColorPalette palette) => 'palette:${palette.id}';
+
+  /// .niapaletteへ書き出してから共有する。書き出しの失敗と、共有できない
+  /// 端末・共有の失敗は別のことなので、別の文で知らせる（共有の方は
+  /// パネルの中に出し、次に共有を始めるときに消す）。
+  Future<void> _sharePaletteFile(
+    AppLocalizations l10n,
+    PaletteService paletteService,
+    ColorPalette palette,
+  ) => ExportShareService.runExclusive(_shareKey(palette), () async {
+    if (!mounted) return;
+    setState(() => _shareError = null);
+    final File file;
+    try {
+      file = await paletteService.exportPalette(palette.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.colorPickerShareFailedSnackbar(e.toString())),
+        ),
+      );
+      return;
+    }
+    if (!mounted) return;
+    final error = await shareExportedFileCatching(context, file);
+    if (error == null || !mounted) return;
+    setState(() => _shareError = error);
+    revealExportShareNotice(_shareNoticeKey);
+  });
 
   /// パレットの取り込み方法選択（ファイルから選択／QRコードの読み取り
   /// テキストを貼り付け）。

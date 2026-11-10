@@ -1,14 +1,17 @@
+import 'dart:io';
+
 import 'package:niarim/services/theme_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../models/tone.dart';
+import '../../../services/export_share_service.dart';
 import '../../../services/tone_service.dart';
 import 'creative_folder_sheets.dart';
 import '../../../widgets/docked_panel_scope.dart';
+import '../../../widgets/export_share_feedback.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
@@ -316,6 +319,11 @@ class _TonePanelState extends State<TonePanel> {
                                   ),
                                   PopupMenuItem(
                                     value: 'export',
+                                    // 書き出しと共有が終わるまで、同じ
+                                    // トーンをもう一度は書き出さない。
+                                    enabled: !ExportShareService.isRunning(
+                                      _exportKey(tone),
+                                    ),
                                     child: Text(l10n.transferExport),
                                   ),
                                   if (!builtIn)
@@ -490,23 +498,29 @@ class _TonePanelState extends State<TonePanel> {
     }
   }
 
+  static String _exportKey(Tone tone) => 'tone:${tone.id}';
+
+  /// .niatoneへ書き出してから共有する。書き出しの失敗と、共有できない端末・
+  /// 共有の失敗は別のことなので、別の文で知らせる。
   Future<void> _exportTone(
     BuildContext context,
     ToneService service,
     Tone tone,
-  ) async {
+  ) => ExportShareService.runExclusive(_exportKey(tone), () async {
+    final File file;
     try {
-      final file = await service.exportTone(tone.id);
-      if (!context.mounted) return;
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+      file = await service.exportTone(tone.id);
     } catch (e) {
       if (!context.mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.toneExportFailedSnackbar(e.toString()))),
       );
+      return;
     }
-  }
+    if (!context.mounted) return;
+    await shareExportedFileWithNotice(context, file);
+  });
 }
 
 class _ToneSettingsSheet extends StatefulWidget {

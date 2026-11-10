@@ -1,15 +1,18 @@
+import 'dart:io';
+
 import 'package:niarim/services/theme_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../models/stamp.dart';
+import '../../../services/export_share_service.dart';
 import '../../../services/stamp_service.dart';
 import '../../../widgets/labeled_slider.dart';
 import 'creative_folder_sheets.dart';
 import '../../../widgets/docked_panel_scope.dart';
+import '../../../widgets/export_share_feedback.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
@@ -320,6 +323,11 @@ class _StampPanelState extends State<StampPanel> {
                                   ),
                                   PopupMenuItem(
                                     value: 'export',
+                                    // 書き出しと共有が終わるまで、同じ
+                                    // スタンプをもう一度は書き出さない。
+                                    enabled: !ExportShareService.isRunning(
+                                      _exportKey(stamp),
+                                    ),
                                     child: Text(l10n.transferExport),
                                   ),
                                   if (!builtIn)
@@ -495,23 +503,29 @@ class _StampPanelState extends State<StampPanel> {
     }
   }
 
+  static String _exportKey(Stamp stamp) => 'stamp:${stamp.id}';
+
+  /// .niastampへ書き出してから共有する。書き出しの失敗と、共有できない端末・
+  /// 共有の失敗は別のことなので、別の文で知らせる。
   Future<void> _exportStamp(
     BuildContext context,
     StampService service,
     Stamp stamp,
-  ) async {
+  ) => ExportShareService.runExclusive(_exportKey(stamp), () async {
+    final File file;
     try {
-      final file = await service.exportStamp(stamp.id);
-      if (!context.mounted) return;
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+      file = await service.exportStamp(stamp.id);
     } catch (e) {
       if (!context.mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.stampExportFailedSnackbar(e.toString()))),
       );
+      return;
     }
-  }
+    if (!context.mounted) return;
+    await shareExportedFileWithNotice(context, file);
+  });
 }
 
 class _StampSettingsSheet extends StatefulWidget {

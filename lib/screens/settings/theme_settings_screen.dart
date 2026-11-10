@@ -5,11 +5,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../services/export_share_service.dart';
 import '../../services/theme_service.dart';
 import '../../models/app_theme_preset.dart';
+import '../../widgets/export_share_feedback.dart';
 import '../../widgets/responsive.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/help_button.dart';
@@ -97,9 +98,9 @@ class ThemeSettingsScreen extends StatelessWidget {
                                     : 'Project list sample',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -108,8 +109,9 @@ class ThemeSettingsScreen extends StatelessWidget {
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      Localizations.localeOf(context)
-                                                  .languageCode ==
+                                      Localizations.localeOf(
+                                                context,
+                                              ).languageCode ==
                                               'ja'
                                           ? 'タップして全${themePreviewEntries.length}画面を見る'
                                           : 'Tap to view all ${themePreviewEntries.length} screens',
@@ -392,6 +394,11 @@ class ThemeSettingsScreen extends StatelessWidget {
                                   ),
                                   PopupMenuItem(
                                     value: 'export',
+                                    // 書き出しと共有が終わるまで、同じ
+                                    // テーマをもう一度は書き出さない。
+                                    enabled: !ExportShareService.isRunning(
+                                      _exportKey(entry.value),
+                                    ),
                                     child: Text(l10n.themeExportMenuItem),
                                   ),
                                   PopupMenuItem(
@@ -513,22 +520,31 @@ class ThemeSettingsScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _exportTheme(BuildContext context, AppThemePreset preset) async {
-    try {
-      final dir = await getTemporaryDirectory();
-      final safeName = preset.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
-      final file = File('${dir.path}/$safeName.niatheme');
-      await file.writeAsString(jsonEncode(preset.toJson()));
-      if (!context.mounted) return;
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
-    } catch (e) {
-      if (!context.mounted) return;
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.themeExportFailedSnackbar(e.toString()))),
-      );
-    }
-  }
+  static String _exportKey(AppThemePreset preset) => 'theme:${preset.id}';
+
+  /// .niathemeへ書き出してから共有する。書き出しの失敗と、共有できない端末・
+  /// 共有の失敗は別のことなので、別の文で知らせる。
+  Future<void> _exportTheme(BuildContext context, AppThemePreset preset) =>
+      ExportShareService.runExclusive(_exportKey(preset), () async {
+        final File file;
+        try {
+          final dir = await getTemporaryDirectory();
+          final safeName = preset.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+          file = File('${dir.path}/$safeName.niatheme');
+          await file.writeAsString(jsonEncode(preset.toJson()));
+        } catch (e) {
+          if (!context.mounted) return;
+          final l10n = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.themeExportFailedSnackbar(e.toString())),
+            ),
+          );
+          return;
+        }
+        if (!context.mounted) return;
+        await shareExportedFileWithNotice(context, file);
+      });
 
   Future<void> _importTheme(BuildContext context, ThemeService service) async {
     final result = await FilePicker.platform.pickFiles(
@@ -545,8 +561,9 @@ class ThemeSettingsScreen extends StatelessWidget {
     try {
       final content = await File(result.files.first.path!).readAsString();
       final json = jsonDecode(content) as Map<String, dynamic>;
-      final preset = AppThemePreset.fromJson(json)
-          .copyWith(id: 'theme_${DateTime.now().millisecondsSinceEpoch}');
+      final preset = AppThemePreset.fromJson(
+        json,
+      ).copyWith(id: 'theme_${DateTime.now().millisecondsSinceEpoch}');
       service.savePreset(preset);
       service.applyPreset(preset.id);
       if (!context.mounted) return;

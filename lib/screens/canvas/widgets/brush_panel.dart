@@ -1,17 +1,20 @@
+import 'dart:io';
+
 import 'package:niarim/services/theme_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
 import '../../../services/brush_service.dart';
+import '../../../services/export_share_service.dart';
 import '../../../services/settings_service.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
 import 'creative_folder_sheets.dart';
 import '../../../widgets/docked_panel_scope.dart';
+import '../../../widgets/export_share_feedback.dart';
 import 'panel_close_bar.dart';
 import 'color_picker_panel.dart';
 import 'brush_extension_settings.dart';
@@ -364,6 +367,11 @@ class _BrushPanelState extends State<BrushPanel> {
                                   ),
                                   PopupMenuItem(
                                     value: 'export',
+                                    // 書き出しと共有が終わるまで、同じ
+                                    // ブラシをもう一度は書き出さない。
+                                    enabled: !ExportShareService.isRunning(
+                                      _exportKey(brush),
+                                    ),
                                     child: Text(l10n.transferExport),
                                   ),
                                   // 組み込みブラシは、キャンバスで変えて
@@ -600,23 +608,29 @@ class _BrushPanelState extends State<BrushPanel> {
     }
   }
 
+  static String _exportKey(Brush brush) => 'brush:${brush.id}';
+
+  /// .niabrushへ書き出してから共有する。書き出しの失敗と、共有できない端末・
+  /// 共有の失敗は別のことなので、別の文で知らせる。
   Future<void> _exportBrush(
     BuildContext context,
     BrushService service,
     Brush brush,
-  ) async {
+  ) => ExportShareService.runExclusive(_exportKey(brush), () async {
     final l10n = AppLocalizations.of(context)!;
+    final File file;
     try {
-      final file = await service.exportBrush(brush.id);
-      if (!context.mounted) return;
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+      file = await service.exportBrush(brush.id);
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.brushExportFailedSnackbar('$e'))),
       );
+      return;
     }
-  }
+    if (!context.mounted) return;
+    await shareExportedFileWithNotice(context, file);
+  });
 }
 
 class _BrushSettingsSheet extends StatefulWidget {

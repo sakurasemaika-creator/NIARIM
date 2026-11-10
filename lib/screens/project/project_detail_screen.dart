@@ -41,6 +41,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   bool _loopPlayback = false;
   bool _rendering = false;
   bool _movingToTrash = false;
+  // 共有ファイルの作成・共有の途中（共有のボタンを止める）。
+  bool _creatingShare = false;
   Timer? _timer;
   ui.Image? _previewImage;
   // プレビュー全画面化：確認・仕上がりチェックに集中できるよう、
@@ -404,8 +406,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     child: _quickAction(
                       icon: Icons.ios_share,
                       label: l10n.projectDetailShareQuickAction,
-                      onTap: () =>
-                          _createNiashare(context, projectService, project),
+                      onTap: _creatingShare
+                          ? null
+                          : () => _createNiashare(
+                              context,
+                              projectService,
+                              project,
+                            ),
                     ),
                   ),
                   // Keep the loop control directly beside Share.
@@ -947,11 +954,23 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   /// Export a persistent .niashare snapshot and then open the OS share sheet.
+  ///
+  /// 作成には時間がかかるので、作成・共有が終わるまで共有のボタンを止め、
+  /// 二度目は始めない（作成中にもう一度押すと、同じ作品の共有ファイルを
+  /// 同時に作り始めた）。
   Future<void> _createNiashare(
     BuildContext context,
     ProjectService service,
     Project project,
-  ) => createAndShareProjectNiashare(context, service, project);
+  ) async {
+    if (_creatingShare) return;
+    setState(() => _creatingShare = true);
+    try {
+      await createAndShareProjectNiashare(context, service, project);
+    } finally {
+      if (mounted) setState(() => _creatingShare = false);
+    }
+  }
 
   Widget _infoRow(String label, String value) {
     return Padding(

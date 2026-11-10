@@ -9,7 +9,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/autofill_gradient.dart';
@@ -17,11 +16,13 @@ import '../../models/autofill_preset.dart';
 import '../../models/layer.dart' show LayerBlendMode;
 import '../../utils/blend_mode_label.dart';
 import '../../services/autofill_preset_service.dart';
+import '../../services/export_share_service.dart';
 import '../../services/project_service.dart';
 import '../../services/tone_service.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/editable_slider_value.dart';
+import '../../widgets/export_share_feedback.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/image_eyedropper_dialog.dart';
@@ -146,7 +147,11 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                       ),
                       IconButton(
                         icon: Icon(Icons.ios_share),
-                        onPressed: () => _bulkExport(filtered),
+                        // 前の書き出しと共有が終わるまでは押せない。
+                        onPressed:
+                            ExportShareService.isRunning(_niafillExportKey)
+                            ? null
+                            : () => _bulkExport(filtered),
                         tooltip: l10n.autofillPresetExportMenuItem,
                       ),
                       IconButton(
@@ -189,9 +194,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                             width: 88,
                             height: 88,
                             decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -217,9 +222,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                             l10n.autofillPresetEmptyHint,
                             style: TextStyle(
                               fontSize: 12,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -391,7 +396,8 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     final selected = filtered
         .where((p) => _selectedIds.contains(p.id))
         .toList();
-    await _exportPresets(selected);
+    // 前の書き出しと共有がまだ終わっていなければ、選択もそのまま残す。
+    if (!await _exportPresets(selected)) return;
     if (!mounted) return;
     setState(() {
       _selectedIds.clear();
@@ -401,28 +407,46 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
 
   /// [presets]をそれぞれ独立した.niafillファイルへ書き出し、1回の共有操作で
   /// まとめて渡す（プリセット単体の書き出しもこれを1件呼び出すだけで済む）。
-  Future<void> _exportPresets(List<AutofillPreset> presets) async {
-    if (presets.isEmpty) return;
-    try {
-      final dir = await getTemporaryDirectory();
-      final files = <XFile>[];
-      for (final preset in presets) {
-        final safeName = preset.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
-        final file = File('${dir.path}/$safeName.niafill');
-        await file.writeAsString(jsonEncode(preset.toJson()));
-        files.add(XFile(file.path));
-      }
-      if (!mounted) return;
-      await SharePlus.instance.share(ShareParams(files: files));
-    } catch (e) {
-      if (!mounted) return;
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.autofillPresetExportFailedSnackbar(e.toString())),
-        ),
-      );
-    }
+  /// 書き出しの失敗と、共有できない端末・共有の失敗は別の文で知らせる。
+  /// 書き出しと共有は一度に1つ（同じ名前の.niafillを同時に書かない）。前の
+  /// 書き出しと共有がまだ終わっていないときは何もせずfalseを返す。
+  Future<bool> _exportPresets(List<AutofillPreset> presets) async {
+    if (presets.isEmpty) return true;
+    final ran = await ExportShareService.runExclusive(
+      _niafillExportKey,
+      () async {
+        // 終わるまで、まとめて書き出すボタンを押せない見た目にする。
+        if (mounted) setState(() {});
+        final files = <XFile>[];
+        try {
+          final dir = await getTemporaryDirectory();
+          for (final preset in presets) {
+            final safeName = preset.name.replaceAll(
+              RegExp(r'[\\/:*?"<>|]'),
+              '_',
+            );
+            final file = File('${dir.path}/$safeName.niafill');
+            await file.writeAsString(jsonEncode(preset.toJson()));
+            files.add(XFile(file.path));
+          }
+        } catch (e) {
+          if (!mounted) return;
+          final l10n = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                l10n.autofillPresetExportFailedSnackbar(e.toString()),
+              ),
+            ),
+          );
+          return;
+        }
+        if (!mounted) return;
+        await shareFilesWithNotice(context, files, key: _niafillExportKey);
+      },
+    );
+    if (ran && mounted) setState(() {});
+    return ran;
   }
 
   /// .niafillファイルを複数選択して一括で読み込む。
@@ -752,6 +776,10 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   }
 }
 
+/// .niafillの書き出しと共有を止め合う名前（`ExportShareService.runExclusive`
+/// へ渡す。まとめての書き出しと、行のメニューの書き出しで共通）。
+const _niafillExportKey = 'niafill';
+
 class _PresetCard extends StatelessWidget {
   final AutofillPreset preset;
   final bool isSelectionMode;
@@ -783,8 +811,9 @@ class _PresetCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: isSelected
-          ? Theme.of(context).colorScheme.primaryContainer
-                .withValues(alpha: 0.4)
+          ? Theme.of(
+              context,
+            ).colorScheme.primaryContainer.withValues(alpha: 0.4)
           : null,
       child: ListTile(
         onLongPress: onLongPress,
@@ -876,6 +905,10 @@ class _PresetCard extends StatelessWidget {
                       ),
                       PopupMenuItem(
                         value: 'export',
+                        // 前の書き出しと共有が終わるまでは選べない。
+                        enabled: !ExportShareService.isRunning(
+                          _niafillExportKey,
+                        ),
                         child: Text(l10n.autofillPresetExportMenuItem),
                       ),
                       PopupMenuItem(
@@ -897,10 +930,8 @@ class _PresetCard extends StatelessWidget {
   }
 }
 
-typedef _PresetUpdateCallback = void Function(
-  AutofillPreset updated, {
-  String? changedPartId,
-});
+typedef _PresetUpdateCallback =
+    void Function(AutofillPreset updated, {String? changedPartId});
 
 class _PresetDetailScreen extends StatefulWidget {
   final AutofillPreset preset;
@@ -1525,9 +1556,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                             color: Color(current.outlineColor),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .outlineVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
                             ),
                           ),
                         ),
@@ -1643,9 +1674,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                             color: Color(current.lineColor),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .outlineVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
                             ),
                           ),
                         ),
@@ -1972,9 +2003,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                             child: Text(
                               l10n.toneEmpty,
                               style: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                                 fontSize: 12,
                               ),
                             ),
@@ -2002,9 +2033,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                       decoration: BoxDecoration(
                                         border: Border.all(
                                           color: isSelected
-                                              ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
                                               : Colors.transparent,
                                           width: 2,
                                         ),
@@ -2127,9 +2158,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outlineVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
                                 ),
                               ),
                               child: Stack(
@@ -2469,9 +2500,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                     color: color,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .outlineVariant,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.outlineVariant,
                                     ),
                                   ),
                                 ),

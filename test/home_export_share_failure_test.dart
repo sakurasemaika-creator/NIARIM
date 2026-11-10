@@ -12,7 +12,6 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/services/export_share_service.dart';
 import 'package:niarim/services/theme_service.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
