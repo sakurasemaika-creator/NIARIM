@@ -153,11 +153,26 @@ void main() {
       await tester.pump(const Duration(milliseconds: 250));
       await tester.ensureVisible(find.byKey(const ValueKey('home_tab_1')));
       await tester.tap(find.byKey(const ValueKey('home_tab_1')));
-      await tester.pump(const Duration(milliseconds: 850));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<Semantics>(find.byKey(const ValueKey('home_tab_1')))
+            .properties.selected,
+        isTrue,
+      );
       await shot('06-works');
       await tester.ensureVisible(find.byKey(const ValueKey('home_tab_3')));
       await tester.tap(find.byKey(const ValueKey('home_tab_3')));
-      await tester.pump(const Duration(milliseconds: 850));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<Semantics>(find.byKey(const ValueKey('home_tab_3')))
+            .properties.selected,
+        isTrue,
+      );
+      expect(
+        find.byKey(const ValueKey('trashKind_createdProject')),
+        findsOneWidget, reason: 'Trash content must replace Shared at width $width',
+      );
+      expect(find.byKey(const Key('sharedReceivedFilter')), findsNothing);
       await shot('07-trash');
       await tester.ensureVisible(find.byKey(const ValueKey('home_tab_0')));
       await tester.tap(find.byKey(const ValueKey('home_tab_0')));
@@ -195,7 +210,11 @@ void main() {
         DefaultTabController.of(
           tester.element(find.byType(TabBar).first),
         ).animateTo(0);
-        await tester.pump(const Duration(milliseconds: 900));
+        await tester.pumpAndSettle();
+        expect(
+          DefaultTabController.of(tester.element(find.byType(TabBar).first)).index,
+          0,
+        );
         await shot('11-guide-tips');
 
         appRouter.go('/rewards');
@@ -211,7 +230,12 @@ void main() {
             DefaultTabController.of(
               tester.element(find.byType(TabBar).first),
             ).animateTo(i);
-            await tester.pump(const Duration(milliseconds: 900));
+            await tester.pumpAndSettle();
+            expect(
+              DefaultTabController.of(
+                tester.element(find.byType(TabBar).first),
+              ).index, i,
+            );
             await shot('12-coin-benefits-tab-${i + 1}');
           }
         }
