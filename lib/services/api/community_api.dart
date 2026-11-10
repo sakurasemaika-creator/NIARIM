@@ -281,6 +281,19 @@ class CommunityApi {
     body: {'kind': kind, 'days': ?days},
   );
 
+  /// Server-counted JST weekly/monthly login milestones; GET never credits.
+  Future<Map<String, dynamic>> myRecurringMissions() =>
+      _client.getJson('/me/missions/recurring', authenticated: true);
+
+  /// Claim a server-verified period once, with an atomic wallet transaction.
+  Future<Map<String, dynamic>> claimRecurringMission({
+    required String missionId,
+  }) => _client.postJson(
+    '/me/missions/recurring/claim',
+    authenticated: true,
+    body: {'missionId': missionId},
+  );
+
   Future<Map<String, dynamic>> myCreatorMissions({String? workId}) => _client
       .getJson('/me/missions', authenticated: true, query: {'workId': ?workId});
 
