@@ -81,9 +81,9 @@ void main() {
           exportWidth: 1920,
           exportHeight: 1080,
         );
-        final saved = await service.createOutgoingShare(project: project!);
-        final received = await NiaproSerializer.loadShare(saved!.path);
-        await service.importSharedProject(received!);
+        final saved = await service.createOutgoingShare(project: project);
+        final received = await NiaproSerializer.loadShare(saved.path);
+        await service.importSharedProject(received);
       });
       await tester.pump(const Duration(milliseconds: 300));
       await tester.runAsync(
