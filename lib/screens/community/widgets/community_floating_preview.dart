@@ -11,11 +11,10 @@ import '../../../services/community_service.dart';
 import '../../../services/api/community_api.dart';
 import 'community_playback_status_view.dart';
 import '../../../widgets/ad_banner_mock_widget.dart';
-import 'community_work_card.dart';
+import 'community_youtube_player.dart';
 
-/// App-wide preview state survives navigation. The media area is currently a
-/// placeholder; the controls only toggle its visual state. Playback integration
-/// must separately satisfy the player, platform and IP requirements.
+/// App-wide preview state survives navigation. The YouTube IFrame player is
+/// mounted only after a fresh backend visibility check succeeds.
 class CommunityFloatingPreview extends StatefulWidget {
   const CommunityFloatingPreview({super.key});
 
@@ -356,7 +355,12 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
         child: Text(l10n.communityFloatingPreviewDetailButton),
       ),
     );
-    final controls = Container(
+    final controls = GestureDetector(
+      onPanStart: (_) => service.updatePosition(position),
+      onPanUpdate: (event) => service.updatePosition(
+        boundedPosition(service.position + event.delta),
+      ),
+      child: Container(
       key: const Key('communityPreviewControls'),
       color: barColor,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -391,6 +395,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                 ],
               ),
             ),
+      ),
     );
 
     return Positioned(
@@ -442,10 +447,15 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                 clipBehavior: Clip.antiAlias,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onPanStart: (_) => service.updatePosition(position),
-                  onPanUpdate: (event) => service.updatePosition(
-                    boundedPosition(service.position + event.delta),
-                  ),
+                  // Give real YouTube player its touch gestures; drag the toolbar.
+                  onPanStart: showPlayer
+                      ? null
+                      : (_) => service.updatePosition(position),
+                  onPanUpdate: showPlayer
+                      ? null
+                      : (event) => service.updatePosition(
+                          boundedPosition(service.position + event.delta),
+                        ),
                   child: SingleChildScrollView(
                     physics: showPlayer
                         ? const NeverScrollableScrollPhysics()
@@ -467,27 +477,10 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                       status: _playbackStatus,
                                       onRetry: _retryPlayback,
                                     )
-                                  : DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: communityThumbnailGradient(
-                                            theme.colorScheme,
-                                            work.thumbnailColorIndex,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Icon(
-                                          _isPlaying
-                                              ? Icons.play_circle_fill_rounded
-                                              : Icons
-                                                    .pause_circle_filled_rounded,
-                                          color: controlColor,
-                                          size: 40,
-                                        ),
-                                      ),
+                                  : CommunityYoutubePlayer(
+                                      key: ValueKey('communityPreviewYoutube-${work.id}'),
+                                      videoId: work.id,
+                                      playing: _isPlaying,
                                     ),
                             ),
                           )
