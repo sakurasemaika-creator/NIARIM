@@ -1571,7 +1571,7 @@ class _CommunityScreenState extends State<CommunityScreen>
               return TabBar(
                 controller: _tabController,
                 isScrollable: true,
-                tabAlignment: TabAlignment.start,
+                tabAlignment: TabAlignment.center,
                 labelPadding: EdgeInsets.zero,
                 labelStyle: labelStyle,
                 unselectedLabelStyle: labelStyle,
