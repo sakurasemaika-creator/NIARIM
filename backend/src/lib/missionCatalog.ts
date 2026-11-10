@@ -120,6 +120,9 @@ export const RANKING_POPULATION_TIERS: readonly number[] = Object.freeze([
 export const MIN_RANK_MISSION_PUBLIC_WORKS = 100;
 export const RANKING_MIN_BOOKMARKS: Readonly<Record<number,number>> =
   Object.freeze({50:5,10:15,3:30,1:50});
+/** Keep mission UI wording synchronized with rank eligibility policy. */
+export const RANKING_TOP_PERCENT: Readonly<Record<number,number>> =
+  Object.freeze({50:10,10:5,3:3,1:1});
 const rankingPopulationStep = (publishedWorkCount: number): number => {
   if (!Number.isSafeInteger(publishedWorkCount) || publishedWorkCount < 0) return 0;
   let index = 0;
@@ -140,8 +143,7 @@ export function rankingEffectiveRankLimit(goalRank:number,
   if (!Number.isSafeInteger(publishedWorkCount) ||
       publishedWorkCount<MIN_RANK_MISSION_PUBLIC_WORKS ||
       RANKING_MIN_BOOKMARKS[goalRank]===undefined) return 0;
-  const percentile=goalRank===50 ? 10 : goalRank===10 ? 5 :
-    goalRank===3 ? 3 : 1;
+  const percentile=RANKING_TOP_PERCENT[goalRank];
   return Math.min(goalRank,
     Math.max(1,Math.floor(publishedWorkCount*percentile/100)));
 }

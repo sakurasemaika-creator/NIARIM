@@ -6,7 +6,7 @@ import {
   missionRewardCoins, rankingDifficultyMultiplier,
   RANKING_POPULATION_TIERS, rankingMissionEligible,
   rankingMissionUnmetConditions,
-  rankingEffectiveRankLimit,
+  rankingEffectiveRankLimit, RANKING_TOP_PERCENT,
 } from "../src/lib/missionCatalog";
 
 describe("creator missions with separate account and work scopes", () => {
@@ -93,6 +93,7 @@ describe("creator missions with separate account and work scopes", () => {
     expect(rankingMissionEligible({
       goalRank:10,liveRank:5,publishedWorkCount:100,workBookmarks:15,
     })).toBe(true);
+    expect(RANKING_TOP_PERCENT).toEqual({50:10,10:5,3:3,1:1});
     expect(rankingEffectiveRankLimit(50,99)).toBe(0);
     expect(rankingEffectiveRankLimit(50,100)).toBe(10);
     expect(rankingEffectiveRankLimit(10,100)).toBe(5);

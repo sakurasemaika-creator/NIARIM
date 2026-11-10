@@ -25,6 +25,7 @@ import {
   missionRewardCoins,
   rankingMissionEligible, rankingMissionUnmetConditions,
   rankingEffectiveRankLimit, RANKING_MIN_BOOKMARKS,
+  RANKING_TOP_PERCENT,
   MIN_RANK_MISSION_PUBLIC_WORKS,
   missionClaimed,
   claimMissionInMask,
@@ -344,6 +345,8 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
           ? MIN_RANK_MISSION_PUBLIC_WORKS : null,
         rankingMinBookmarks: mission.kind==="niarimBookmarkRanking"
           ? RANKING_MIN_BOOKMARKS[mission.required] : null,
+        rankingTopPercent: mission.kind==="niarimBookmarkRanking"
+          ? RANKING_TOP_PERCENT[mission.required] : null,
         rankingEffectiveRankLimit: mission.kind==="niarimBookmarkRanking"
           ? rankingEffectiveRankLimit(mission.required,publishedWorkCount)
           : null,

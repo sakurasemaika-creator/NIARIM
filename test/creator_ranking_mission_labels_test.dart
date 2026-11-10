@@ -18,13 +18,23 @@ void main() {
         final labels = CreatorMissionLabels.of(context);
         return SingleChildScrollView(child: Column(children: [
           Text(labels.format('rankGoal', 10, each: 15)),
+          Text(labels.format('rankPercentNote', 5)),
+          Text(labels.format('rankDetailsRules', 5, each: 10)),
+          Text(labels.get('rankDetailsHold')),
           Text(labels.format('rankCommunityWait', 80, each: 100)),
           Text(labels.format('rankBookmarkWait', 4, each: 15)),
           Text(labels.format('rankRankWait', 8, each: 5)),
         ]));
       }),
     ));
-    expect(find.textContaining('10位以内＋ブクマ15件'), findsOneWidget);
+    expect(
+      find.textContaining('10位以内・ブックマーク15件以上'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('上位5％以内'), findsOneWidget);
+    expect(find.textContaining('小数点以下切り捨て'), findsOneWidget);
+    expect(find.textContaining('48時間経過後'), findsOneWidget);
+    expect(find.textContaining('同じ作品の同じ順位報酬は1回限り'), findsOneWidget);
     expect(find.textContaining('現在80件／必要100件'), findsOneWidget);
     expect(find.textContaining('現在4件／必要15件'), findsOneWidget);
     expect(find.textContaining('現在8位／条件は5位以内'), findsOneWidget);

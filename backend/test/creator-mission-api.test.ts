@@ -92,11 +92,18 @@ describe("creator mission endpoints", () => {
       response.missions.find((m:{id:string})=>m.id===id);
     expect(byId("bookmark_rank_1")).toMatchObject({
       eligible:true,progress:1,rankingMinPublishedWorks:100,
-      rankingMinBookmarks:50,rankingUnmetConditions:[],
+      rankingMinBookmarks:50,rankingTopPercent:1,
+      rankingUnmetConditions:[],
       rankingWorkBookmarks:60,rewardEnabled:false,
     });
-    expect(byId("bookmark_rank_10")).toMatchObject({eligible:true});
-    expect(byId("bookmark_rank_50")).toMatchObject({eligible:true});
+    expect(byId("bookmark_rank_10")).toMatchObject({
+      eligible:true,rankingMinBookmarks:15,rankingTopPercent:5,
+      rankingEffectiveRankLimit:5,
+    });
+    expect(byId("bookmark_rank_50")).toMatchObject({
+      eligible:true,rankingMinBookmarks:5,rankingTopPercent:10,
+      rankingEffectiveRankLimit:10,
+    });
     expect(send.mock.calls.filter(([c])=>c instanceof QueryCommand))
       .toHaveLength(1);
   });

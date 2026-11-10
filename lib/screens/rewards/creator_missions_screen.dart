@@ -366,6 +366,10 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           'rankingEffective',
           (row['rankingEffectiveRankLimit'] as num).toInt(),
         ),
+      if (kind == 'niarimBookmarkRanking' &&
+          row['rankingTopPercent'] is num)
+        t.format('rankDetailsRules',
+            (row['rankingTopPercent'] as num).toInt(), each: goal),
       if (kind == 'niarimBookmarkRanking')
         t.get('rankDetailsHold'),
       if (kind == 'qualifiedWorks') t.get('detailsDraftCount'),
@@ -456,6 +460,12 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                   Text(_goal(t, row), style: theme.textTheme.bodyMedium),
                   Text(status, style: theme.textTheme.bodySmall),
                   if (row['kind'] == 'niarimBookmarkRanking') ...[
+                    if (row['rankingTopPercent'] is num)
+                      Text(
+                        t.format('rankPercentNote',
+                            (row['rankingTopPercent'] as num).toInt()),
+                        style: theme.textTheme.bodySmall,
+                      ),
                     if (!claimed)
                       for (final reason in _rankingMissingReasons(t, row))
                         Text(reason, style: theme.textTheme.bodySmall),
