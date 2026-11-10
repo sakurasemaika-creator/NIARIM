@@ -262,9 +262,46 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
             : t.format('genericBookmark', required),
       'followers' => t.format('followers', required),
       'verifiedEditSeconds' => t.format('time', required ~/ 3600),
-      'niarimBookmarkRanking' => t.format('rank', required),
+      'niarimBookmarkRanking' => t.format(
+        'rankGoal',
+        required,
+        each: (row['rankingMinBookmarks'] as num?)?.toInt() ?? 0,
+      ),
       _ => row['id'] as String? ?? '?',
     };
+  }
+
+  List<String> _rankingMissingReasons(
+    CreatorMissionLabels t,
+    Map<String, dynamic> row,
+  ) {
+    if (row['kind'] != 'niarimBookmarkRanking') return const [];
+    final raw = row['rankingUnmetConditions'];
+    final codes = raw is List ? raw.whereType<String>() : const <String>[];
+    final count = (row['publishedWorkCount'] as num?)?.toInt() ?? 0;
+    final minPublished =
+        (row['rankingMinPublishedWorks'] as num?)?.toInt() ?? 100;
+    final haveBookmarks = (row['rankingWorkBookmarks'] as num?)?.toInt() ?? 0;
+    final neededBookmarks =
+        (row['rankingMinBookmarks'] as num?)?.toInt() ?? 0;
+    final rank = (row['progress'] as num?)?.toInt() ?? 51;
+    final allowed =
+        (row['rankingEffectiveRankLimit'] as num?)?.toInt() ?? 0;
+    return [
+      for (final code in codes)
+        switch (code) {
+          'selectWork' => t.get('rankSelectWork'),
+          'communityTooSmall' =>
+            t.format('rankCommunityWait', count, each: minPublished),
+          'notEnoughBookmarks' =>
+            t.format('rankBookmarkWait', haveBookmarks,
+                each: neededBookmarks),
+          'notRanked' => t.get('rankNotRanked'),
+          'rankTooLow' =>
+            t.format('rankRankWait', rank, each: allowed),
+          _ => t.get('notAchieved'),
+        },
+    ];
   }
 
   void _showDetails(CreatorMissionLabels t, Map<String, dynamic> row) {
@@ -294,6 +331,18 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         t.format('detailsWorkProgress', progress, each: goal),
       if (progress != null && kind == 'followers')
         t.format('detailsFollowersProgress', progress, each: goal),
+      if (kind == 'niarimBookmarkRanking')
+        t.format('rankPoolCurrent',
+            (row['publishedWorkCount'] as num?)?.toInt() ?? 0),
+      if (kind == 'niarimBookmarkRanking' &&
+          row['rankingWorkBookmarks'] is num)
+        t.format('rankBookmarkCurrent',
+            (row['rankingWorkBookmarks'] as num).toInt()),
+      if (kind == 'niarimBookmarkRanking' &&
+          !template && row['progress'] is num)
+        t.format('rankCurrentPlace', (row['progress'] as num).toInt()),
+      if (kind == 'niarimBookmarkRanking')
+        ..._rankingMissingReasons(t, row),
       if (kind == 'niarimBookmarkRanking' &&
           row['rankingMinPublishedWorks'] is num &&
           row['rankingMinBookmarks'] is num)
@@ -309,6 +358,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           'rankingEffective',
           (row['rankingEffectiveRankLimit'] as num).toInt(),
         ),
+      if (kind == 'niarimBookmarkRanking')
+        t.get('rankDetailsHold'),
       if (kind == 'qualifiedWorks') t.get('detailsDraftCount'),
       if (template) t.get('detailsTemplateRule'),
       if (row['perWork'] == true)
@@ -394,6 +445,17 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                 children: [
                   Text(_goal(t, row), style: theme.textTheme.bodyMedium),
                   Text(status, style: theme.textTheme.bodySmall),
+                  if (row['kind'] == 'niarimBookmarkRanking') ...[
+                    for (final reason in _rankingMissingReasons(t, row))
+                      Text(reason, style: theme.textTheme.bodySmall),
+                    if (eligible && !claimed &&
+                        _rankingMissingReasons(t, row).isEmpty)
+                      Text(t.get('rankQualified'),
+                          style: theme.textTheme.bodySmall),
+                    if (!available)
+                      Text(t.get('rankNotLive'),
+                          style: theme.textTheme.bodySmall),
+                  ],
                 ],
               ),
             ),
@@ -456,12 +518,15 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     for (final raw in (account['missions'] as List? ?? const [])) {
       if (raw is! Map) continue;
       final row = Map<String, dynamic>.from(raw);
+      if (row['kind'] == 'niarimBookmarkRanking')
+        row['publishedWorkCount'] = account['publishedWorkCount'] ?? 0;
       if (widget.workId != null) {
         row['_workId'] = row['perWork'] == true ? widget.workId : null;
         row['_workTitle'] = row['perWork'] == true ? selectedTitle : null;
         all.add(row);
       } else if (row['perWork'] == true) {
-        // 24 perpetual gray templates, even if there are already achievements.
+        // 28 per-work templates (including ranking), not claimable until a
+        // specific work is selected; never suggest that rank alone qualifies.
         all.add({
           ...row,
           '_genericTemplate': true,
@@ -470,6 +535,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           'readyForClaim': false,
           'rewardEnabled': false,
           'pendingSince': null,
+          if (row['kind'] == 'niarimBookmarkRanking')
+            'rankingUnmetConditions': const ['selectWork'],
         });
       } else {
         all.add(row);
