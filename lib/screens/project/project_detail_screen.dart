@@ -7,14 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../engine/layer_compositor.dart';
-import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/project.dart';
-import '../../services/font_service.dart';
-import '../../services/material_service.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
@@ -26,8 +22,7 @@ import '../../widgets/help_button.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
-import '../home/widgets/project_list_widget.dart'
-    show showMaterialIncludeDialog, buildFontShareBundle;
+import '../../widgets/share_project_file_action.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
   final String projectId;
@@ -951,45 +946,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  /// .niashare（共有用ファイル）を作成し、共有シートを表示する。
+  /// Export a persistent .niashare snapshot and then open the OS share sheet.
   Future<void> _createNiashare(
     BuildContext context,
     ProjectService service,
     Project project,
-  ) async {
-    final includeOptions = await showMaterialIncludeDialog(context);
-    if (includeOptions == null || !context.mounted) return; // キャンセル
-    final l10n = AppLocalizations.of(context)!;
-    final materialService = context.read<MaterialService>();
-    final fontService = context.read<FontService>();
-    final scenes = service.scenesOf(project.id);
-    final tileManager = service.tileManagerOf(project.id);
-    try {
-      final bundle = await materialService.buildShareBundle(
-        project.id,
-        includeOptions.materialTypes,
-      );
-      final fontBundle = includeOptions.includeFonts
-          ? await buildFontShareBundle(service, fontService, project.id)
-          : (files: <String, Uint8List>{}, manifest: null);
-      final file = await NiaproSerializer.saveShare(
-        project: project,
-        scenes: scenes,
-        tileManager: tileManager,
-        materialFiles: bundle.files.isEmpty ? null : bundle.files,
-        materialsManifest: bundle.manifest,
-        fontFiles: fontBundle.files.isEmpty ? null : fontBundle.files,
-        fontsManifest: fontBundle.manifest,
-      );
-      if (!context.mounted) return;
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.projectDetailNiashareFailedSnackbar('$e'))),
-      );
-    }
-  }
+  ) => createAndShareProjectNiashare(context, service, project);
 
   Widget _infoRow(String label, String value) {
     return Padding(
