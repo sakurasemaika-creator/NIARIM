@@ -79,7 +79,8 @@ abstract final class LocalFileTrashService {
 
   static Future<LocalTrashedFile> move(File source, LocalTrashKind kind) async {
     if (!await source.exists()) throw FileSystemException('File missing', source.path);
-    final root = await _root()..create(recursive: true);
+    final root = await _root();
+    await root.create(recursive: true);
     var seed = DateTime.now().microsecondsSinceEpoch;
     var directory = Directory('${root.path}/$seed');
     while (await directory.exists()) {
