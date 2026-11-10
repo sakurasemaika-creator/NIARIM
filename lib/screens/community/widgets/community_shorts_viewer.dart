@@ -4,7 +4,6 @@ import '../../../config/font_fallback.dart';
 
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:niarim/services/theme_service.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
@@ -12,7 +11,9 @@ import '../../../router.dart';
 import '../../../services/community_service.dart';
 import '../../../widgets/ad_banner_mock_widget.dart';
 import '../community_author_works_screen.dart';
-import 'community_work_card.dart' show communityThumbnailGradient;
+import 'community_playback_status_view.dart';
+import 'community_youtube_player.dart';
+import '../../../services/api/community_api.dart';
 import '../community_edit_feedback.dart';
 import '../../../utils/tolerant_preferences.dart';
 import '../../../config/accent_text_theme.dart';
@@ -85,7 +86,7 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
     await prefs.setString(_endBehaviorPreferenceKey, value.name);
   }
 
-  /// 実プレーヤー接続時に現在ページのonEndedから呼ぶ。
+  /// Called by the real IFrame player when the active video ends.
   void _handlePlaybackEnded(
     int pageIndex,
     List<CommunityWork> visibleWorks, {
@@ -154,7 +155,8 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
             onPageChanged: (index) => setState(() => _currentIndex = index),
             itemBuilder: (context, index) {
               final work = visibleWorks[index];
-              return _ShortsPage(
+              return _ShortsVerifiedPage(
+                key: ValueKey('shorts-verified-${work.id}'),
                 work: work,
                 isCurrentPage: index == _currentIndex,
                 isBookmarked: communityService.isBookmarked(work.id),
@@ -230,6 +232,89 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
   }
 }
 
+/// Revalidate each vertical-page activation (including when a queued next
+/// video becomes current). No cached title or video is shown before approval.
+class _ShortsVerifiedPage extends StatefulWidget {
+  const _ShortsVerifiedPage({
+    super.key,
+    required this.work,
+    required this.isCurrentPage,
+    required this.isBookmarked,
+    required this.onToggleBookmark,
+    required this.onPlaybackEnded,
+  });
+
+  final CommunityWork work;
+  final bool isCurrentPage;
+  final bool isBookmarked;
+  final VoidCallback onToggleBookmark;
+  final void Function(VoidCallback? onLoopCurrent) onPlaybackEnded;
+
+  @override
+  State<_ShortsVerifiedPage> createState() => _ShortsVerifiedPageState();
+}
+
+class _ShortsVerifiedPageState extends State<_ShortsVerifiedPage> {
+  CommunityPlaybackStatus _status = CommunityPlaybackStatus.checking;
+  int _checkEpoch = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isCurrentPage) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _verify());
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _ShortsVerifiedPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.work.id != widget.work.id ||
+        (!oldWidget.isCurrentPage && widget.isCurrentPage)) {
+      _status = CommunityPlaybackStatus.checking;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _verify());
+    }
+    if (oldWidget.isCurrentPage && !widget.isCurrentPage) {
+      // Invalidate an in-flight reply when the viewer swipes away.
+      _checkEpoch++;
+      _status = CommunityPlaybackStatus.checking;
+    }
+  }
+
+  Future<void> _verify() async {
+    if (!mounted || !widget.isCurrentPage) return;
+    final id = widget.work.id;
+    final epoch = ++_checkEpoch;
+    setState(() => _status = CommunityPlaybackStatus.checking);
+    final status = await context.read<CommunityService>().playbackStatus(id);
+    if (!mounted || !widget.isCurrentPage ||
+        widget.work.id != id || epoch != _checkEpoch) return;
+    setState(() => _status = status);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.isCurrentPage) return const SizedBox.expand();
+    if (_status != CommunityPlaybackStatus.available) {
+      return SafeArea(
+        child: Center(
+          child: CommunityPlaybackStatusView(
+            status: _status,
+            onRetry: _verify,
+          ),
+        ),
+      );
+    }
+    return _ShortsPage(
+      work: widget.work,
+      isCurrentPage: widget.isCurrentPage,
+      isBookmarked: widget.isBookmarked,
+      onToggleBookmark: widget.onToggleBookmark,
+      onPlaybackEnded: widget.onPlaybackEnded,
+    );
+  }
+}
+
 class _ShortsPage extends StatelessWidget {
   final CommunityWork work;
   final bool isCurrentPage;
@@ -272,10 +357,6 @@ class _ShortsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final gradient = communityThumbnailGradient(
-      scheme,
-      work.thumbnailColorIndex,
-    );
     final languageCode = Localizations.localeOf(context).languageCode;
     final workTime = formatProjectWorkTime(work.projectWorkSeconds);
 
@@ -283,39 +364,14 @@ class _ShortsPage extends StatelessWidget {
       top: false,
       child: Column(
         children: [
-          // 将来のYouTubeプレーヤーはこの矩形だけを置き換える。
+          // The whole region is the native YouTube IFrame surface. All NIARIM
+          // controls remain outside it and do not cover YouTube controls.
           Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: gradient,
-                ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.play_circle_fill_rounded,
-                      color: ThemeService.activeColorScheme.onSurface
-                          .withValues(alpha: 0.70),
-                      size: 76,
-                    ),
-                    const SizedBox(height: 10),
-                    Icon(
-                      isCurrentPage
-                          ? Icons.volume_off_rounded
-                          : Icons.pause_rounded,
-                      color: ThemeService.activeColorScheme.onSurface
-                          .withValues(alpha: 0.55),
-                      size: 20,
-                    ),
-                  ],
-                ),
-              ),
+            child: CommunityYoutubePlayer(
+              key: ValueKey('communityShortsYoutube-${work.id}'),
+              videoId: work.id,
+              playing: isCurrentPage,
+              onEnded: onPlaybackEnded,
             ),
           ),
           // 作者・タグ・制作情報・詳細導線はすべて動画領域の外。
