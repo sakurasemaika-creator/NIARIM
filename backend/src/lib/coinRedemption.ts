@@ -1,4 +1,5 @@
 import { PREMIUM_MONTHLY_REFERENCE_COINS } from "./coinEconomyScale";
+import { PROPOSED_ALL_INDIVIDUAL_MONTHLY_COINS } from "./coinBenefitProposal";
 
 /**
  * Deliberately narrow first version: full Premium for ONE calendar month.
@@ -23,6 +24,7 @@ export function premiumRedemptionOffer(): PremiumRedemptionOffer {
     /^[1-9][0-9]{0,8}$/.test(raw) &&
     Number.isSafeInteger(amount) &&
     amount >= PREMIUM_MONTHLY_REFERENCE_COINS &&
+    amount < PROPOSED_ALL_INDIVIDUAL_MONTHLY_COINS &&
     /^v[1-9][0-9]*-[a-z0-9-]{2,40}$/.test(version);
   return {
     enabled,
