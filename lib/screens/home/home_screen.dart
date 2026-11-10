@@ -1609,28 +1609,115 @@ String _shareCollectionText(BuildContext context, {required bool outgoing}) {
 /// saved .niashare snapshot, whereas outbound snapshots reuse existing bytes.
 Widget _receivedShareMenu(BuildContext context, Project project) {
   final l10n = AppLocalizations.of(context)!;
+  final service = context.read<ProjectService>();
   return PopupMenuButton<String>(
     key: ValueKey('receivedShareMenu_${project.id}'),
+    padding: EdgeInsets.zero,
+    icon: const Icon(Icons.more_vert, size: 18),
     tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-    onSelected: (action) {
-      if (action == 'share') {
-        createAndShareProjectNiashare(
-          context,
-          context.read<ProjectService>(),
-          project,
-        );
+    onSelected: (action) async {
+      switch (action) {
+        case 'open':
+          context.push('/canvas/${project.id}');
+        case 'rename':
+          final controller = TextEditingController(text: project.name);
+          try {
+            final name = await showDialog<String>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: Text(l10n.commonRename),
+                content: TextField(
+                  controller: controller,
+                  autofocus: true,
+                  onSubmitted: (name) => Navigator.pop(ctx, name),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: Text(l10n.commonCancel),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(ctx, controller.text),
+                    child: Text(l10n.commonSave),
+                  ),
+                ],
+              ),
+            );
+            if (name != null && name.trim().isNotEmpty) {
+              await service.renameProject(project.id, name.trim());
+            }
+          } finally {
+            // Dialog's exit animation may still be unwinding; the controller
+            // belongs to this action rather than a long-lived screen.
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              controller.dispose();
+            });
+          }
+        case 'duplicate':
+          await service.duplicateProject(project.id);
+        case 'share':
+          if (context.mounted) {
+            await createAndShareProjectNiashare(context, service, project);
+          }
+        case 'favorite':
+          await runProjectAction(
+            context,
+            () => service.setFavorite(project.id, !project.isFavorite),
+          );
+        case 'move':
+          if (context.mounted) {
+            await showModalBottomSheet<void>(
+              context: context,
+              builder: (_) => WorkFolderMoveSheet(
+                folders: service.sharedFolders,
+                filename: project.name,
+                onMove: (id) => service.moveToSharedFolder(project.id, id),
+              ),
+            );
+          }
+        case 'delete':
+          if (project.isFavorite) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+              );
+            }
+            return;
+          }
+          if (context.mounted) {
+            await showDialog<void>(
+              context: context,
+              builder: (_) => ProjectTrashDialog(
+                title: l10n.homeMoveToTrash,
+                message: l10n.homeMoveToTrashConfirm(1),
+                confirmLabel: l10n.commonMove,
+                itemNames: [project.name],
+                onApply: () => service.deleteProject(project.id),
+              ),
+            );
+          }
       }
     },
     itemBuilder: (_) => [
-      PopupMenuItem<String>(
+      PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
+      PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+      PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
+      PopupMenuItem(
         value: 'share',
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.ios_share_outlined),
-            const SizedBox(width: 8),
-            Text(l10n.projectDetailShareQuickAction),
-          ],
+        child: Text(l10n.projectDetailShareQuickAction),
+      ),
+      PopupMenuItem(
+        value: 'favorite',
+        child: Text(project.isFavorite
+            ? l10n.colorPickerFavoriteRemove
+            : l10n.colorPickerFavoriteAdd),
+      ),
+      PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
+      PopupMenuItem(
+        value: 'delete',
+        child: Text(
+          l10n.projectDetailTrashMenuItem,
+          style: TextStyle(color: ThemeService.activeColorScheme.error),
         ),
       ),
     ],
