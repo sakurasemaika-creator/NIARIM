@@ -151,6 +151,12 @@ void main() {
     final largest = entries
         .map((entry) => values!.bytesOf(entry.$1))
         .reduce((a, b) => a > b ? a : b);
+    // At 390px the named bars should get the full width below the pie.
+    // This avoids squashing long Japanese category names into a 200px column.
+    final firstBar = find.byKey(
+      Key('storageBreakdownBar_${l10n.storageCategoryMaterials}'),
+    );
+    expect(tester.getRect(firstBar).top, greaterThan(tester.getRect(pie).bottom));
     for (final (category, label) in entries) {
       expect(find.text(label), findsOneWidget, reason: label);
       final bar = find.byKey(Key('storageBreakdownBar_$label'));
