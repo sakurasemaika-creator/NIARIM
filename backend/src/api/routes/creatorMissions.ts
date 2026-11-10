@@ -137,19 +137,10 @@ async function measuredProgress(
 ): Promise<{ count: number; authoritative: boolean; bookmarks?: number }> {
   switch (mission.kind) {
     case "verifiedEditSeconds": {
-      // No client-provided totalWorkSeconds or duration is accepted.
-      // Only authenticated, nonce/sequence checked, server-clock-bounded
-      // checkpoint receipts are eligible after separate operator approval.
-      if(!editTimeVerificationEnabled()) return {count:0,authoritative:false};
-      const recorded=await ddb.send(new GetCommand({
-        TableName:tableName(),Key:Keys.creatorMissionState(userId),
-        ConsistentRead:true,
-      }));
-      const item=recorded.Item;
-      const seconds=item?.itemType==="CREATOR_MISSIONS_V1" &&
-        Number.isSafeInteger(item?.verifiedEditSeconds) &&
-        item!.verifiedEditSeconds>=0 ? item!.verifiedEditSeconds as number : 0;
-      return {count:seconds,authoritative:true};
+      // No client-produced duration or edit mutation count proves actual
+      // creative activity. Even if a caller forges verifiedEditSeconds or
+      // toggles deployment flags, never authorize mission coins from this.
+      return {count:0,authoritative:false};
     }
 
     case "followers": {

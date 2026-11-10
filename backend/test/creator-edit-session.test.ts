@@ -199,7 +199,7 @@ describe("edit session pilot: no coins or verified time issued", () => {
     expect(update.input.UpdateExpression).not.toContain("verifiedEditSeconds");
   });
 
-  it("credits only server-clock-bounded time after double approval",async()=>{
+  it("rejects coin-bearing time EVEN if old approval flags are enabled",async()=>{
     process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED="true";
     process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED="true";
     process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED="true";
@@ -216,15 +216,14 @@ describe("edit session pilot: no coins or verified time issued", () => {
       action:"checkpoint",sessionId:id,sequence:3,
       activeSeconds:3600,meaningfulMutations:100000,stop:false,
     }))).body??"{}");
-    expect(response.verified).toBe(true);
-    expect(response.acceptedVerifiedSeconds).toBeGreaterThan(0);
-    expect(response.acceptedVerifiedSeconds).toBeLessThanOrEqual(300);
-    expect(response.verifiedEditSeconds).toBe(
-      3590+response.acceptedVerifiedSeconds);
+    expect(response.verified).toBe(false);
+    expect(response.acceptedCandidateSeconds).toBeGreaterThan(0);
+    expect(response.acceptedVerifiedSeconds).toBe(0);
+    expect(response.verifiedEditSeconds).toBe(3590);
     const update=send.mock.calls[1][0] as UpdateCommand;
     expect(update.input.ExpressionAttributeValues?.[":verified"])
-      .toBe(response.verifiedEditSeconds);
-    expect(update.input.UpdateExpression).toContain(
+      .toBeUndefined();
+    expect(update.input.UpdateExpression).not.toContain(
       "verifiedEditSeconds = :verified");
     expect(JSON.stringify(update.input)).not.toContain("balanceCoins");
   });

@@ -129,7 +129,7 @@ describe("creator mission endpoints", () => {
     expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand)).toBe(false);
   });
 
-  it("uses server-recorded verified seconds and never client duration",async()=>{
+  it("never awards edit time without trusted server-visible proof, even with flags",async()=>{
     process.env.CREATOR_MISSION_CLAIMS_ENABLED="true";
     process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED="true";
     process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED="true";
@@ -143,17 +143,13 @@ describe("creator mission endpoints", () => {
       return {};
     });
     const display=JSON.parse((await getMyCreatorMissions(req())).body??"{}");
-    expect(display.editTimeVerificationReady).toBe(true);
+    expect(display.editTimeVerificationReady).toBe(false);
     expect(display.missions.find((m:{id:string})=>m.id==="edit_1h"))
-      .toMatchObject({eligible:true,rewardEnabled:true,coins:5});
+      .toMatchObject({eligible:false,rewardEnabled:false});
     send.mockClear();
-    const started=JSON.parse((await claimCreatorMission(req({
+    await expect(claimCreatorMission(req({
       missionId:"edit_1h",totalWorkSeconds:99999999999,
-    }))).body??"{}");
-    expect(started).toMatchObject({
-      claimed:false,pending:true,offeredCoins:5,awardedCoins:0,
-    });
-    expect(send.mock.calls.some(([c])=>c instanceof UpdateCommand)).toBe(true);
+    }))).rejects.toMatchObject({code:"MISSION_VERIFICATION_PENDING"});
     expect(send.mock.calls.some(([c])=>c instanceof TransactWriteCommand))
       .toBe(false);
   });

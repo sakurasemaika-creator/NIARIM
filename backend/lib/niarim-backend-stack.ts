@@ -220,16 +220,10 @@ export class NiarimBackendStack extends Stack {
         CREATOR_MISSION_CLAIMS_REVIEW_APPROVED:
           this.node.tryGetContext("creatorMissionClaimsReviewApproved") === "true"
             ? "true" : "false",
-        // Local-first edit evidence is NOT proof of human drawing. Keep
-        // server-bounded measurement and credit independently double-gated.
+        // Authenticated server-clock pilot is candidate-only. No env or
+        // CDK context can upgrade device-reported edits to coin-bearing time.
         CREATOR_EDIT_SESSION_PILOT_ENABLED:
           this.node.tryGetContext("creatorEditSessionPilotEnabled")==="true"
-            ? "true":"false",
-        CREATOR_EDIT_TIME_VERIFICATION_ENABLED:
-          this.node.tryGetContext("creatorEditTimeVerificationEnabled")==="true"
-            ? "true":"false",
-        CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED:
-          this.node.tryGetContext("creatorEditTimeVerificationReviewApproved")==="true"
             ? "true":"false",
         // New 480-stage matrix has independent, default-OFF review gates.
         // Draft coin amounts may NEVER pay until pricing is approved.

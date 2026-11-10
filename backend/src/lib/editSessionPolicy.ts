@@ -10,14 +10,13 @@ export const EDIT_CHECKPOINT_INTERVAL_SECONDS = 15 * 60;
 export const EDIT_CHECKPOINT_MAX_GAP_SECONDS = 20 * 60;
 export const EDIT_DAILY_CANDIDATE_MAX_SECONDS = 8 * 60 * 60;
 
-/** Double approval for server-bounded, authenticated session time.
- * Candidate-only observations gathered before activation NEVER become
- * verified seconds retroactively.
+/** A self-reported mutation counter is NOT proof of real drawing.
+ * App/device integrity checks could limit tampering but still do not prove
+ * creative labor. Until a separate server-verifiable proof protocol exists,
+ * no configuration/environment flag may convert such reports into coin time.
  */
 export function editTimeVerificationEnabled():boolean {
-  return process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED==="true" &&
-    process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED==="true" &&
-    process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED==="true";
+  return false;
 }
 
 /** One real committed content change is enough for short sessions. */

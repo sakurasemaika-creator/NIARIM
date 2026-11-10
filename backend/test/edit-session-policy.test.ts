@@ -12,7 +12,7 @@ describe("inexpensive unverified creator editing time pilot", () => {
     meaningfulMutations: 20,
     alreadyCreditedToday: 0,
   };
-  it("requires all independent feature and review flags",()=>{
+  it("never accepts locally counted time as verified, even with old flags",()=>{
     const old=[
       process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED,
       process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED,
@@ -27,7 +27,7 @@ describe("inexpensive unverified creator editing time pilot", () => {
       process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED="true";
       expect(editTimeVerificationEnabled()).toBe(false);
       process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED="true";
-      expect(editTimeVerificationEnabled()).toBe(true);
+      expect(editTimeVerificationEnabled()).toBe(false);
     } finally {
       const keys=["CREATOR_EDIT_SESSION_PILOT_ENABLED",
         "CREATOR_EDIT_TIME_VERIFICATION_ENABLED",
