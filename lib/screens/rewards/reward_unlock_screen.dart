@@ -14,10 +14,23 @@ import '../../services/coin_redemption_attempt_store.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/coin_duration_label.dart';
+import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/coin_history_sheet.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 
 enum RewardPageMode { exchange, earnCoins }
+
+/// ボタンのラベルの上下に取る余白。
+///
+/// くらむぼんのラベルは、アクセント（É）や下に伸びる字（p・j）が行の
+/// 高さの外へ出る。Material 3のボタンは縦の余白が0なので、ラベルが2行以上に
+/// なると（大きな文字のフランス語の「Échanger les pièces」等）、字がボタンの
+/// 枠を越え、塗りのボタンではÉのアクセントが白い地に出て見えなくなった。
+/// 字の大きさに合わせて上下に余白を取る（1行ならボタンの最小の高さに
+/// 収まり、見た目は変わらない）。
+EdgeInsets _labelRoom(BuildContext context) =>
+    EdgeInsets.symmetric(vertical: MediaQuery.textScalerOf(context).scale(4));
 
 /// Reward UI shell; the server wallet/pricing/ad issuance are not yet live.
 /// Never invent coin balances, price quotes or exchange success on the client.
@@ -261,6 +274,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ? l10n.rewardUnlockRedeemExtendNotice(projectedEnd.toLocal())
         : l10n.rewardUnlockRedeemExpiryNotice(projectedEnd.toLocal());
     final period = coinUnlockDurationLabel(l10n, _redeemablePeriod);
+    final amount = l10n.coinAmount(price);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -268,18 +282,22 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         // （既定だと本文が先に潰れ、題とボタンだけになった）。
         scrollable: true,
         title: Text(t['redeem']),
-        content: Text(
-          '${t['fullPremium']} · $period · ${l10n.coinAmount(price)}'
-          '\n\n$overlapMessage',
+        // 期間と数＋単位は途中で行を変えない（「55000코」「인」と切れた）。
+        content: KeepTogetherText(
+          '${t['fullPremium']} · $period · $amount\n\n$overlapMessage',
+          keep: [period, amount],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
+            child: Padding(
+              padding: _labelRoom(ctx),
+              child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t['redeem']),
+            child: Padding(padding: _labelRoom(ctx), child: Text(t['redeem'])),
           ),
         ],
       ),
@@ -490,16 +508,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       0,
       (sum, target) => sum + CoinBenefitPriceCatalog.cost(target, _duration),
     );
-    lines.add(
-      l10n.rewardUnlockReviewFixedTotal(l10n.coinAmount(referenceTotal)),
-    );
+    final total = l10n.coinAmount(referenceTotal);
+    lines.add(l10n.rewardUnlockReviewFixedTotal(total));
     if (!mounted) return;
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         scrollable: true,
         title: Text(l10n.rewardUnlockReviewTitle),
-        content: Text(lines.join('\n\n')),
+        content: KeepTogetherText(lines.join('\n\n'), keep: [total]),
         actions: [
           FilledButton(
             key: const Key('rewardOverlapReviewClose'),
@@ -644,33 +661,77 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         : null;
     final hasSubscription = context.read<PremiumService>().hasPurchasedPremium;
     final l10n = AppLocalizations.of(context)!;
-    return CheckboxListTile(
-      key: ValueKey('rewardFeature_${target.name}'),
-      value: selected,
-      onChanged: enabled ? (_) => _toggle(target) : null,
-      controlAffinity: ListTileControlAffinity.leading,
-      title: Text(t[target.name]),
-      subtitle: Text(
-        !enabled
-            ? t['notReady']
-            : officialPrice != null
-            ? l10n.coinAmount(officialPrice)
-            : '${l10n.rewardUnlockFixedPrice}'
-                  ' · ${l10n.coinAmount(referencePrice!)}'
-                  '${hasSubscription ? ' · ${t['activePremium']}' : ''}',
-        style: Theme.of(context).textTheme.bodySmall,
+    final theme = Theme.of(context);
+    final bodySmall = theme.textTheme.bodySmall;
+    final Widget price;
+    if (!enabled) {
+      price = Text(t['notReady'], style: bodySmall);
+    } else if (officialPrice != null) {
+      price = Text(l10n.coinAmount(officialPrice), style: bodySmall);
+    } else {
+      // 数＋単位は途中で行を変えない（「…・70コ」「イン」と切れた）。
+      final amount = l10n.coinAmount(referencePrice!);
+      price = KeepTogetherText(
+        '${l10n.rewardUnlockFixedPrice} · $amount'
+        '${hasSubscription ? ' · ${t['activePremium']}' : ''}',
+        keep: [amount],
+        style: bodySmall,
+      );
+    }
+    // CheckboxListTileと同じ並び（先頭のチェックボックス・題・価格・右端の
+    // 印）。ただし、題か価格の語がチェックボックスの右に収まらない大きな
+    // 文字では、チェックボックスを上の行へ回して題と価格に行の幅いっぱいを
+    // 使わせる（CheckboxListTileは題の列をチェックボックスの右に固定する
+    // ので、文字2倍のフランス語・スペイン語で「personnalisée|s」
+    // 「Publication|s」と単語の途中で切れた）。
+    final tileTheme = ListTileTheme.of(context);
+    var priceStyle =
+        tileTheme.subtitleTextStyle ??
+        theme.textTheme.bodyMedium!.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        );
+    if (!enabled) priceStyle = priceStyle.copyWith(color: theme.disabledColor);
+    return MergeSemantics(
+      child: ListTile(
+        key: ValueKey('rewardFeature_${target.name}'),
+        enabled: enabled,
+        onTap: enabled ? () => _toggle(target) : null,
+        // 題と価格の2行の行（CheckboxListTileの2行の行と同じ高さ）。
+        minTileHeight: 72,
+        title: ActionBesideOrBelow(
+          actionFirst: true,
+          gap: 16,
+          spacing: 4,
+          action: ExcludeFocus(
+            child: Checkbox(
+              value: selected,
+              onChanged: enabled ? (_) => _toggle(target) : null,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+          text: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            // ListTileの題と2行目の間と同じくらい空ける。
+            spacing: 4,
+            children: [
+              Text(t[target.name]),
+              DefaultTextStyle(style: priceStyle, child: price),
+            ],
+          ),
+        ),
+        trailing: !enabled
+            ? Tooltip(
+                message: t['notReady'],
+                child: Icon(
+                  Icons.lock_clock_outlined,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              )
+            : target == CoinUnlockTarget.fullPremium && _fullBundleBadge()
+            ? Chip(label: Text(t['bestValue']))
+            : null,
       ),
-      secondary: !enabled
-          ? Tooltip(
-              message: t['notReady'],
-              child: Icon(
-                Icons.lock_clock_outlined,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            )
-          : target == CoinUnlockTarget.fullPremium && _fullBundleBadge()
-          ? Chip(label: Text(t['bestValue']))
-          : null,
     );
   }
 
@@ -730,14 +791,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ? l10n.rewardUnlockRewardQuotaRemaining(rewardDailyRemaining)
         : t['rewardQuotaUncapped'];
     final nav = RewardNavigationLabels.of(context);
-    // くらむぼんのラベルは、アクセント（É）や下に伸びる字（p・j）が行の
-    // 高さの外へ出る。Material 3のボタンは縦の余白が0なので、合計のカードの
-    // ボタンのラベルが2行以上になると、字がボタンの枠を越えて隣のボタンに
-    // 食い込んだ。字の大きさに合わせてラベルの上下に余白を取る（1行なら
-    // ボタンの最小の高さに収まり、見た目は変わらない）。
-    final labelRoom = EdgeInsets.symmetric(
-      vertical: MediaQuery.textScalerOf(context).scale(4),
-    );
+    final labelRoom = _labelRoom(context);
     final earn = widget.mode == RewardPageMode.earnCoins;
     return Scaffold(
       appBar: widget.embedded
@@ -808,14 +862,20 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 key: const Key('coinHistoryButton'),
                 icon: const Icon(Icons.receipt_long_outlined),
                 onPressed: _lastAccountId != null ? _showCoinHistory : null,
-                label: Text(t['coinHistory']),
+                label: Padding(
+                  padding: labelRoom,
+                  child: Text(t['coinHistory']),
+                ),
               ),
               TextButton.icon(
                 icon: const Icon(Icons.refresh),
                 onPressed: !_walletLoading && _lastAccountId != null
                     ? () => _loadWallet(_lastAccountId!)
                     : null,
-                label: Text(t['rewardRefresh']),
+                label: Padding(
+                  padding: labelRoom,
+                  child: Text(t['rewardRefresh']),
+                ),
               ),
             ],
             if (!earn) ...[
@@ -859,17 +919,31 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        serverPrice != null
-                            ? l10n.coinAmount(serverPrice)
-                            : quote != null
-                            ? l10n.coinAmount(quote.requiredCoins)
-                            : _selected.isEmpty
-                            ? t['unavailable']
-                            : l10n.coinAmount(referenceTotal),
-                        key: const Key('rewardTotalCoins'),
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
+                      if (_selected.isEmpty)
+                        Text(
+                          t['unavailable'],
+                          key: const Key('rewardTotalCoins'),
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        )
+                      else
+                        // 合計の数＋単位は1行に収め、入りきらなければ字を
+                        // 縮める（大きな文字で「55000コイ」「ン」と単位の
+                        // 途中で切れた）。
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              serverPrice != null
+                                  ? l10n.coinAmount(serverPrice)
+                                  : quote != null
+                                  ? l10n.coinAmount(quote.requiredCoins)
+                                  : l10n.coinAmount(referenceTotal),
+                              key: const Key('rewardTotalCoins'),
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
+                          ),
+                        ),
                       // 確定価格（交換準備中）の注記は注釈なので、見出しの
                       // 大きな字に混ぜず本文の書体の別の行に出す（見出しに
                       // つなぐと、長い言語・大きな文字で単語の途中で切れた）。

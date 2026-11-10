@@ -13,6 +13,9 @@ enum ActionBesideOrBelowSlot { text, action }
 /// 回す。行の右端に操作を固定すると、言語や文字の大きさによってはボタンが
 /// 行の大半を取り、文が数十pxの列に押し込まれて単語の途中や1文字ずつ
 /// 折り返した（スペイン語・フランス語の「Reclamar」「Non atteint」等）。
+///
+/// [actionFirst]なら操作を文の前（左）に置き、横に並べられないときは文の
+/// 上へ回す（行の先頭のチェックボックス等。文は行の幅いっぱいを使える）。
 class ActionBesideOrBelow
     extends
         SlottedMultiChildRenderObjectWidget<
@@ -26,6 +29,7 @@ class ActionBesideOrBelow
     this.gap = 12,
     this.spacing = 6,
     this.minTextFraction = 0.55,
+    this.actionFirst = false,
   });
 
   /// 文。幅が足りなければ折り返してよいもの。
@@ -43,6 +47,9 @@ class ActionBesideOrBelow
   /// 横に並べるとき、文に残す幅の下限（全体の幅に対する割合）。
   final double minTextFraction;
 
+  /// 操作を文の前（横に並べないときは上）に置くか。
+  final bool actionFirst;
+
   @override
   Iterable<ActionBesideOrBelowSlot> get slots => ActionBesideOrBelowSlot.values;
 
@@ -58,6 +65,7 @@ class ActionBesideOrBelow
         gap: gap,
         spacing: spacing,
         minTextFraction: minTextFraction,
+        actionFirst: actionFirst,
         textDirection: Directionality.of(context),
       );
 
@@ -70,6 +78,7 @@ class ActionBesideOrBelow
       ..gap = gap
       ..spacing = spacing
       ..minTextFraction = minTextFraction
+      ..actionFirst = actionFirst
       ..textDirection = Directionality.of(context);
   }
 }
@@ -82,6 +91,7 @@ class RenderActionBesideOrBelow extends RenderBox
     required this._spacing,
     required this._minTextFraction,
     required this._textDirection,
+    this._actionFirst = false,
   });
 
   double get gap => _gap;
@@ -105,6 +115,14 @@ class RenderActionBesideOrBelow extends RenderBox
   set minTextFraction(double value) {
     if (_minTextFraction == value) return;
     _minTextFraction = value;
+    markNeedsLayout();
+  }
+
+  bool get actionFirst => _actionFirst;
+  bool _actionFirst;
+  set actionFirst(bool value) {
+    if (_actionFirst == value) return;
+    _actionFirst = value;
     markNeedsLayout();
   }
 
@@ -161,11 +179,15 @@ class RenderActionBesideOrBelow extends RenderBox
           : textSize.width + gap + actionSize.width;
       final height = math.max(textSize.height, actionSize.height);
       final textTop = (height - textSize.height) / 2;
-      place?.call(text, Offset(ltr ? 0 : fullWidth - textSize.width, textTop));
+      // 先に置く方は行の始まり（左から書く言語なら左端）、後の方は行の終わり。
+      // 文は行の始まりの側に寄せる（操作が先ならその後ろ）。
+      final before = actionFirst ? actionSize.width + gap : 0.0;
+      final textLeft = ltr ? before : fullWidth - textSize.width - before;
+      place?.call(text, Offset(textLeft, textTop));
       place?.call(
         action,
         Offset(
-          ltr ? fullWidth - actionSize.width : 0,
+          actionFirst == ltr ? 0 : fullWidth - actionSize.width,
           (height - actionSize.height) / 2,
         ),
       );
@@ -176,17 +198,22 @@ class RenderActionBesideOrBelow extends RenderBox
     }
     final textSize = measure(text, BoxConstraints(maxWidth: width));
     final actionSize = measure(action, BoxConstraints(maxWidth: width));
+    final size = constraints.constrain(
+      Size(width, textSize.height + spacing + actionSize.height),
+    );
+    if (actionFirst) {
+      // 操作を上の行の始まりに、文をその下に行の幅いっぱいで。
+      final textTop = actionSize.height + spacing;
+      place?.call(action, Offset(ltr ? 0 : width - actionSize.width, 0));
+      place?.call(text, Offset(ltr ? 0 : width - textSize.width, textTop));
+      return (size: size, textTop: textTop);
+    }
     place?.call(text, Offset(ltr ? 0 : width - textSize.width, 0));
     place?.call(
       action,
       Offset(ltr ? width - actionSize.width : 0, textSize.height + spacing),
     );
-    return (
-      size: constraints.constrain(
-        Size(width, textSize.height + spacing + actionSize.height),
-      ),
-      textTop: 0,
-    );
+    return (size: size, textTop: 0);
   }
 
   @override

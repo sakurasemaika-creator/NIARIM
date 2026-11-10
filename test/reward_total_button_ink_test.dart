@@ -10,6 +10,11 @@
 // ボタンに食い込んでいた（目標にするボタンと交換するボタンの間に隙間も
 // 無かった）。字が単語の途中で切れないかを見る検査（reward_total_reference_
 // note_test）では、字がボタンの外へ出ても気づけない。
+//
+// 同じことが交換の確認（全機能1か月）のボタンでも起きていた：フランス語の
+// 文字2倍で「Échanger les pièces」が2行になり、Éのアクセントが塗りの
+// ボタンの上の白い地に出て見えず（「Echanger」と読める）、pの下が枠の下に
+// はみ出していた。取引履歴・更新のボタンのラベルも枠の下へ5px出ていた。
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -21,6 +26,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/coin_benefit_price_proposal.dart';
+import 'package:niarim/models/coin_unlock_quote.dart';
 import 'package:niarim/screens/rewards/reward_unlock_screen.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
@@ -74,6 +81,37 @@ CommunityService _server() => CommunityService(
             'balanceCoins': 120,
             'redemptionEnabled': true,
             'entitlements': <Object>[],
+          },
+          _ => <String, Object>{},
+        });
+      }),
+    ),
+  ),
+);
+
+/// 残高60000コインで、全機能1か月を確定価格どおりの見積もりで交換できる
+/// サーバー。
+CommunityService _redeemableServer() => CommunityService(
+  api: CommunityApi(
+    NiarimApiClient(
+      baseUrl: 'https://example.invalid',
+      maxGetRetries: 0,
+      tokenProvider: () async => 'test-token',
+      httpClient: MockClient((request) async {
+        if (request.method != 'GET') return _json({'redeemed': false});
+        return _json(switch (request.url.path) {
+          '/me/rewards' => {
+            'balanceCoins': 60000,
+            'redemptionEnabled': true,
+            'entitlements': <Object>[],
+          },
+          '/me/rewards/quote' => {
+            'enabled': true,
+            'priceCoins': CoinBenefitPriceCatalog.unitCoins(
+              CoinUnlockTarget.fullPremium,
+              CoinDurationUnit.month,
+            ),
+            'priceVersion': CoinBenefitPriceCatalog.version,
           },
           _ => <String, Object>{},
         });
@@ -147,7 +185,51 @@ Rect? _alphaBounds(Uint8List rgba, int width, int height) {
   );
 }
 
+/// [button]のラベルの字（インク）のうち、ボタンの形（Material）の外へ出る
+/// もの。
+Future<List<String>> _inkOutside(
+  WidgetTester tester,
+  Finder button,
+  String tag,
+) async {
+  final problems = <String>[];
+  final shape = tester.getRect(
+    find.descendant(of: button, matching: find.byType(Material)).first,
+  );
+  for (final element
+      in find
+          .descendant(of: button, matching: find.byType(RichText))
+          .evaluate()) {
+    final paragraph = element.renderObject! as RenderParagraph;
+    final ink = await _inkOf(tester, paragraph);
+    if (ink == null) continue;
+    final global = ink.shift(paragraph.localToGlobal(Offset.zero));
+    final label = paragraph.text.toPlainText(includeSemanticsLabels: false);
+    debugPrint(
+      'INK($tag) "$label": '
+      'shape ${shape.top.toStringAsFixed(1)}..'
+      '${shape.bottom.toStringAsFixed(1)} '
+      'ink ${global.top.toStringAsFixed(1)}..'
+      '${global.bottom.toStringAsFixed(1)}',
+    );
+    if (global.top < shape.top ||
+        global.bottom > shape.bottom ||
+        global.left < shape.left ||
+        global.right > shape.right) {
+      problems.add(
+        '「$label」の字がボタンの外へ出る'
+        '（上${(shape.top - global.top).toStringAsFixed(1)}px・'
+        '下${(global.bottom - shape.bottom).toStringAsFixed(1)}px）',
+      );
+    }
+  }
+  return problems;
+}
+
 void main() {
+  // 同梱フォントはファイルで1回だけ読む（テストごとに読むと、テストの数だけ
+  // フォントが積み上がってメモリが足りなくなり、テストの途中で落ちた）。
+  var fontsLoaded = false;
   setUp(() => SharedPreferences.setMockInitialValues({'language': 'ja'}));
 
   const locales = <String, Locale>{
@@ -174,7 +256,10 @@ void main() {
     ]) {
       testWidgets('合計のボタンの字がボタンの中に収まり、ボタンどうしが重ならない'
           '（$name, 文字$scale倍, ${width.toInt()}dp）', (tester) async {
-        await loadAppFonts(tester);
+        if (!fontsLoaded) {
+          await loadAppFonts(tester);
+          fontsLoaded = true;
+        }
         final themes = ThemeService();
         await themes.init();
         addTearDown(themes.dispose);
@@ -242,37 +327,123 @@ void main() {
             );
           }
           previous = shape;
-          for (final element
-              in find
-                  .descendant(of: button, matching: find.byType(RichText))
-                  .evaluate()) {
-            final paragraph = element.renderObject! as RenderParagraph;
-            final ink = await _inkOf(tester, paragraph);
-            if (ink == null) continue;
-            final global = ink.shift(paragraph.localToGlobal(Offset.zero));
-            final label = paragraph.text.toPlainText(
-              includeSemanticsLabels: false,
-            );
-            debugPrint(
-              'INK($name ×$scale ${width.toInt()}) $key "$label": '
-              'shape ${shape.top.toStringAsFixed(1)}..'
-              '${shape.bottom.toStringAsFixed(1)} '
-              'ink ${global.top.toStringAsFixed(1)}..'
-              '${global.bottom.toStringAsFixed(1)}',
-            );
-            if (global.top < shape.top ||
-                global.bottom > shape.bottom ||
-                global.left < shape.left ||
-                global.right > shape.right) {
-              problems.add(
-                '$key「$label」の字がボタンの外へ出る'
-                '（上${(shape.top - global.top).toStringAsFixed(1)}px・'
-                '下${(global.bottom - shape.bottom).toStringAsFixed(1)}px）',
-              );
-            }
+          for (final problem in await _inkOutside(
+            tester,
+            button,
+            '$name ×$scale ${width.toInt()} $key',
+          )) {
+            problems.add('$key$problem');
           }
         }
         expect(problems, isEmpty, reason: '$name ×$scale: $problems');
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+        premium.dispose();
+      });
+
+      testWidgets('交換の確認・取引履歴・更新など画面のどのボタンも字がボタンの中に'
+          '収まる（$name, 文字$scale倍, ${width.toInt()}dp）', (tester) async {
+        if (!fontsLoaded) {
+          await loadAppFonts(tester);
+          fontsLoaded = true;
+        }
+        final themes = ThemeService();
+        await themes.init();
+        addTearDown(themes.dispose);
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = Size(width, 30000);
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        final premium = PremiumService();
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: [
+              ChangeNotifierProvider<PremiumService>.value(value: premium),
+              ChangeNotifierProvider<SettingsService>.value(
+                value: SettingsService(),
+              ),
+              ChangeNotifierProvider<GoogleAuthService>.value(
+                value: _SignedIn(),
+              ),
+              ChangeNotifierProvider<CommunityService>.value(
+                value: _redeemableServer(),
+              ),
+            ],
+            child: MaterialApp(
+              locale: locale,
+              theme: themes.themeData,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const RewardUnlockScreen(),
+            ),
+          ),
+        );
+        for (var i = 0; i < 4; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 60)),
+          );
+          await tester.pump(const Duration(milliseconds: 200));
+        }
+        final tag = '$name ×$scale ${width.toInt()}';
+        final problems = <String>[];
+        Future<void> checkAll(String where, Finder within) async {
+          final buttons = find.descendant(
+            of: within,
+            matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+          );
+          for (final element in buttons.evaluate().toList()) {
+            final button = find.byElementPredicate((e) => e == element);
+            for (final problem in await _inkOutside(tester, button, tag)) {
+              problems.add('$where: $problem');
+            }
+          }
+        }
+
+        // 交換の画面：取引履歴・更新・期間・会員のボタン。
+        expect(find.byKey(const Key('coinHistoryButton')), findsOneWidget);
+        await checkAll('交換の画面', find.byType(Scaffold));
+
+        // 全機能1か月を選んで交換の確認を開く。
+        await tester.tap(
+          find.byKey(const ValueKey('rewardFeature_fullPremium')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('rewardDurationButton')));
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find
+              .descendant(
+                of: find.byType(ExpansionTile).at(CoinDurationUnit.month.index),
+                matching: find.byType(ListTile),
+              )
+              .first,
+        );
+        await tester.pumpAndSettle();
+        final oneMonth = find.byKey(const ValueKey('rewardDuration_month_1'));
+        await tester.ensureVisible(oneMonth);
+        await tester.pumpAndSettle();
+        await tester.tap(oneMonth);
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('rewardRedeemButton')));
+        await tester.pumpAndSettle();
+        final dialog = find.byType(AlertDialog);
+        expect(dialog, findsOneWidget, reason: '$tag: 交換の確認');
+        expect(
+          find.descendant(
+            of: dialog,
+            matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+          ),
+          findsNWidgets(2),
+        );
+        await checkAll('交換の確認', dialog);
+        await tester.tap(
+          find.descendant(of: dialog, matching: find.byType(TextButton)),
+        );
+        await tester.pumpAndSettle();
+
+        expect(problems, isEmpty, reason: '$tag:\n${problems.join('\n')}');
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
         premium.dispose();

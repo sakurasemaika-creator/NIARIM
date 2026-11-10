@@ -202,9 +202,12 @@ CommunityService _serviceWithCounts(int n) => CommunityService(
   ),
 );
 
+/// [Text]とその派生（数と単位を途中で切らないKeepTogetherText等）。
+final _anyText = find.byWidgetPredicate((widget) => widget is Text);
+
 /// 画面に出ているすべての文字列。
 List<String> _shownTexts(WidgetTester tester) => [
-  for (final text in tester.widgetList<Text>(find.byType(Text)))
+  for (final text in tester.widgetList<Text>(_anyText))
     text.data ?? text.textSpan?.toPlainText() ?? '',
 ];
 
@@ -306,7 +309,7 @@ List<String> _missionScreenTexts(String locale, int n) {
     ],
     _ => [
       'Tout réclamer',
-      'Total : ${c('jour', 'jours')}',
+      'Total\u00a0: ${c('jour', 'jours')}',
       '${c('pièce', 'pièces')} par jour',
       '${c('jour', 'jours')} de connexion',
       c('pièce', 'pièces'),
@@ -330,7 +333,7 @@ List<String> _missionScreenTexts(String locale, int n) {
           ? '$n œuvre atteint 3 favoris'
           : '$n œuvres atteignent chacune 3 favoris',
       'Publier ${c('œuvre', 'œuvres')}',
-      'Temps candidat enregistré : $n min (non vérifié)',
+      'Temps candidat enregistré\u00a0: $n min (non vérifié)',
     ],
   };
 }
@@ -401,7 +404,7 @@ List<String> _completionTexts(String locale, int n) {
       'Ir a Misiones',
     ],
     _ => [
-      'Mission accomplie !',
+      'Mission accomplie\u00a0!',
       'Se connecter ${c('jour', 'jours')} cette semaine',
       'Se connecter ${c('jour', 'jours')} ce mois-ci',
       'Se connecter ${c('jour', 'jours')} au total',
@@ -547,7 +550,7 @@ Future<void> _pickOneMonth(WidgetTester tester) async {
 /// 開いているダイアログの題と本文の文字列。
 List<String> _dialogTexts(WidgetTester tester) => [
   for (final text in tester.widgetList<Text>(
-    find.descendant(of: find.byType(AlertDialog), matching: find.byType(Text)),
+    find.descendant(of: find.byType(AlertDialog), matching: _anyText),
   ))
     text.data ?? text.textSpan?.toPlainText() ?? '',
 ];

@@ -6,9 +6,16 @@
 // 英語が出ていた）、英語でも「1 published works」「1 days」「1 coins」の
 // ように、数と単位の語をコードでつないでいた。日本語の画面は、どの行を
 // どの条件で出すかを含めて元の作りのままであることも確かめる。
+//
+// フランス語では「:」「;」「?」「!」「»」の前と「«」の後に空白を入れるが、
+// 普通の空白だとそこで行が変わり、行が「: 37」「: 100)」のように句読点で
+// 始まった（フランス語の組版では許されない）。ここで足した文は改行しない
+// 空白（U+00A0。同梱のくらむぼん・白光明朝が持つ）にする。
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
@@ -21,8 +28,11 @@ import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'helpers/load_app_fonts.dart';
 
 class _Account implements GoogleSignInAccount {
   @override
@@ -187,9 +197,15 @@ Future<void> _settle(WidgetTester tester) async {
   }
 }
 
-Future<void> _pump(WidgetTester tester, String locale, int n) async {
+Future<void> _pump(
+  WidgetTester tester,
+  String locale,
+  int n, {
+  Size size = const Size(1200, 8000),
+  ThemeData? theme,
+}) async {
   tester.view.devicePixelRatio = 1;
-  tester.view.physicalSize = const Size(1200, 8000);
+  tester.view.physicalSize = size;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
   await tester.pumpWidget(
@@ -202,6 +218,7 @@ Future<void> _pump(WidgetTester tester, String locale, int n) async {
       ],
       child: MaterialApp(
         locale: Locale(locale),
+        theme: theme,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const CreatorMissionsScreen(),
@@ -313,7 +330,64 @@ final _pluralAfterOne = RegExp(
   unicode: true,
 );
 
+/// フランス語で句読点の前（「«」は後）に普通の空白がある所。
+final _breakingSpaceAroundPunctuation = RegExp(r' [:;?!»]|« ');
+
+/// ミッション・報酬・コインのARBの文（このテストの画面と、報酬・特典交換の
+/// 画面に出る文）と、作品広場・投稿の手書きの表からARBへ移した文。
+bool _missionOrRewardKey(String key) =>
+    RegExp(
+      r'^(creatorMission|plazaMission|recurringMission|loginBonus|'
+      r'missionCompleted|rewardUnlock|rewardNavigation|coinAmount|coinHistory)',
+    ).hasMatch(key) ||
+    const {
+      'communityPlazaUnmuteQuestion',
+      'communityPlazaPartialHint',
+      'communityPlazaDeleteHistory',
+      'communityPostVisibilityUnlistedDisclosure',
+      'communityWorkMetadataCopyConfirmTitle',
+      'communityWorkMetadataCopyConfirmMessage',
+      'communityWorkMetadataCopyTooLong',
+    }.contains(key);
+
+/// [paragraph]の中で、行が「:」「;」「?」「!」「»」で始まる所と「«」で
+/// 終わる所。
+List<String> _punctuationAtLineEdge(RenderParagraph paragraph) {
+  final text = paragraph.text.toPlainText(includeSemanticsLabels: false);
+  double? top(int i) {
+    final boxes = paragraph.getBoxesForSelection(
+      TextSelection(baseOffset: i, extentOffset: i + 1),
+    );
+    return boxes.isEmpty ? null : boxes.first.top;
+  }
+
+  final found = <String>[];
+  for (var i = 0; i < text.length; i++) {
+    final char = text[i];
+    final opens = char == '«';
+    if (!':;?!»'.contains(char) && !opens) continue;
+    // 「«」は次の字、それ以外は前の字と同じ行にあるべき。
+    var j = opens ? i + 1 : i - 1;
+    while (j >= 0 && j < text.length && RegExp(r'\s').hasMatch(text[j])) {
+      j += opens ? 1 : -1;
+    }
+    if (j < 0 || j >= text.length || text[j] == '\n') continue;
+    final here = top(i);
+    final there = top(j);
+    if (here == null || there == null) continue;
+    if ((here - there).abs() > 1) {
+      final from = (i - 16).clamp(0, text.length);
+      final to = (i + 8).clamp(0, text.length);
+      found.add('…${text.substring(from, to)}…');
+    }
+  }
+  return found;
+}
+
 void main() {
+  // 同梱フォントはファイルで1回だけ読む（テストごとに読むと、テストの数だけ
+  // フォントが積み上がってメモリが足りなくなり、テストの途中で落ちた）。
+  var fontsLoaded = false;
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() => SharedPreferences.setMockInitialValues({'language': 'ja'}));
@@ -443,6 +517,90 @@ void main() {
       expect(plaza, contains('【達成条件】デイリーの期間中、NIARIMの作品広場を開いている時間の合計が$n分以上'));
       expect(plaza, contains('現在の閲覧時間：$n分 / $n分'));
       expect(plaza, contains('まだ達成条件を満たしていません。'));
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  test('フランス語のミッション・報酬の文は句読点の前で改行しない空白を使う', () {
+    final arb =
+        jsonDecode(File('lib/l10n/app_fr.arb').readAsStringSync())
+            as Map<String, dynamic>;
+    final checked = <String>[];
+    final problems = <String>[];
+    for (final MapEntry(:key, :value) in arb.entries) {
+      if (key.startsWith('@') || value is! String) continue;
+      if (!_missionOrRewardKey(key)) continue;
+      checked.add(key);
+      for (final match in _breakingSpaceAroundPunctuation.allMatches(value)) {
+        final from = (match.start - 20).clamp(0, value.length);
+        final to = (match.end + 10).clamp(0, value.length);
+        problems.add('$key: …${value.substring(from, to)}…');
+      }
+    }
+    expect(checked.length, greaterThan(100), reason: '確かめた文が少なすぎる');
+    expect(problems, isEmpty, reason: problems.join('\n'));
+  });
+
+  for (final n in [1, 37]) {
+    testWidgets('フランス語の文字2倍で、ミッションの行と達成条件の行が句読点で始まらない'
+        '（$n、360dp）', (tester) async {
+      if (!fontsLoaded) {
+        await loadAppFonts(tester);
+        fontsLoaded = true;
+      }
+      final themes = ThemeService();
+      await themes.init();
+      addTearDown(themes.dispose);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await _pump(
+        tester,
+        'fr',
+        n,
+        size: const Size(360, 30000),
+        theme: themes.themeData,
+      );
+      final problems = <String>[];
+      void scan(String where, Finder within) {
+        for (final element
+            in find
+                .descendant(of: within, matching: find.byType(RichText))
+                .evaluate()) {
+          final paragraph = element.renderObject;
+          if (paragraph is! RenderParagraph || !paragraph.attached) continue;
+          for (final edge in _punctuationAtLineEdge(paragraph)) {
+            problems.add('$where: $edge');
+          }
+        }
+      }
+
+      scan('画面', find.byType(Scaffold));
+      for (final key in <Key>[
+        const ValueKey('missionDetails_rank_n:template'),
+        const ValueKey('missionDetails_rank_other_n:template'),
+        const ValueKey('missionDetails_bookmarks_n:template'),
+        const ValueKey('missionDetails_works_n:template'),
+        const ValueKey('missionDetails_followers_n:template'),
+        const ValueKey('missionDetails_time_n:template'),
+        const Key('recurringMissionDetails_visit_week_n'),
+        const Key('recurringMissionDetails_visit_month_n'),
+        const ValueKey('plazaMissionDetails_plaza_day_n'),
+      ]) {
+        final button = find.byKey(key);
+        await tester.ensureVisible(button);
+        await tester.pumpAndSettle();
+        await tester.tap(button);
+        await tester.pumpAndSettle();
+        final dialog = find.byType(AlertDialog);
+        expect(dialog, findsOneWidget, reason: '$key');
+        scan('$key', dialog);
+        await tester.tap(
+          find.descendant(of: dialog, matching: find.byType(TextButton)),
+        );
+        await tester.pumpAndSettle();
+      }
+      expect(problems, isEmpty, reason: problems.join('\n'));
+      expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }

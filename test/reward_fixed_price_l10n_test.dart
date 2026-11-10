@@ -8,6 +8,10 @@
 // 「確定単価による合計：… コイン。…」はどの言語でも日本語のまま、数と
 // 「 コイン」をコードでつないでいた。
 //
+// 中国語（簡体字・繁体字）の「确定价格」「確定價格」は、このアプリでは
+// 「确定」「確定」がOKのボタンの語なので「价格を確定する」という操作に
+// 読めた。名詞として読める「最终价格」「最終價格」にする。
+//
 // 期待する文は言語ごとにここへ書いてある（ARBの訳をそのまま写したもの）。
 // 交換の確認（全機能1か月）は確定価格と同じ見積もりのときだけ出る。
 import 'dart:convert';
@@ -102,30 +106,47 @@ const _fixedPrice = {
   'es': 'Precio definitivo (canje aún no disponible)',
   'fr': 'Prix définitif (échange pas encore disponible)',
   'ko': '확정 가격(교환 준비 중)',
+  'zh': '最终价格（兑换准备中）',
+  'zh_Hant': '最終價格（兌換準備中）',
 };
 
 /// 「重複・有効期限を確認」の最後の文の、合計のコインの前まで。
 const _fixedTotalLead = {
   'en': 'Total at fixed unit prices: ',
   'es': 'Total según los precios unitarios definitivos: ',
-  'fr': 'Total selon les prix unitaires définitifs : ',
+  'fr': 'Total selon les prix unitaires définitifs\u00a0: ',
   'ko': '확정 단가 기준 합계: ',
+  'zh': '按最终单价计算的合计：',
+  'zh_Hant': '按最終單價計算的合計：',
 };
 
 /// その言語の画面に出てはいけない文字。英語・スペイン語・フランス語は
-/// 仮名・漢字・ハングル、韓国語は仮名・漢字（日本語の文と日付も見つかる）。
-RegExp _foreign(String locale) =>
-    locale == 'ko' ? RegExp('[぀-ヿ一-鿿]') : RegExp('[぀-ヿ一-鿿가-힯]');
+/// 仮名・漢字・ハングル、韓国語は仮名・漢字（日本語の文と日付も見つかる）、
+/// 中国語は仮名・ハングル。
+RegExp _foreign(String locale) => switch (locale) {
+  'ko' => RegExp('[぀-ヿ一-鿿]'),
+  'zh' || 'zh_Hant' => RegExp('[぀-ヿ가-힯]'),
+  _ => RegExp('[぀-ヿ一-鿿가-힯]'),
+};
+
+Locale _localeOf(String code) => code == 'zh_Hant'
+    ? const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant')
+    : Locale(code);
 
 /// 数とコインの単位の語。どの言語の語でも、つながっていれば数と一緒に拾う。
 final _coinPhrase = RegExp(
-  r'(\d+)\s*(coins?|monedas?|pièces?|코인|コイン)(?![\p{L}])',
+  r'(\d+)\s*(coins?|monedas?|pièces?|코인|コイン|金币|金幣)(?![\p{L}])',
   unicode: true,
 );
 
+/// [within]の中の[Text]とその派生（数と単位を途中で切らない
+/// KeepTogetherText等）の文字列。
 List<String> _texts(WidgetTester tester, Finder within) => [
   for (final text in tester.widgetList<Text>(
-    find.descendant(of: within, matching: find.byType(Text)),
+    find.descendant(
+      of: within,
+      matching: find.byWidgetPredicate((widget) => widget is Text),
+    ),
   ))
     text.data ?? text.textSpan?.toPlainText() ?? '',
 ];
@@ -170,7 +191,7 @@ Future<PremiumService> _pump(
         ChangeNotifierProvider<CommunityService>.value(value: community),
       ],
       child: MaterialApp(
-        locale: Locale(locale),
+        locale: _localeOf(locale),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: RewardUnlockScreen(priceCatalog: priceCatalog),
@@ -214,7 +235,24 @@ Future<void> _pickDuration(
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({'language': 'ja'}));
 
-  for (final locale in ['en', 'es', 'fr', 'ko']) {
+  test('中国語の確定価格の言葉は、OKのボタンの語（确定・確定）で始まらない', () {
+    for (final code in ['zh', 'zh_Hant']) {
+      final l10n = lookupAppLocalizations(_localeOf(code));
+      expect(l10n.rewardUnlockFixedPrice, _fixedPrice[code], reason: code);
+      expect(
+        l10n.rewardUnlockFixedPrice.startsWith(l10n.commonOk),
+        isFalse,
+        reason: '$code: 「${l10n.commonOk}」（OK）で始まると操作に読める',
+      );
+      expect(
+        l10n.rewardUnlockReviewFixedTotal('X'),
+        startsWith('${_fixedTotalLead[code]}X'),
+        reason: code,
+      );
+    }
+  });
+
+  for (final locale in ['en', 'es', 'fr', 'ko', 'zh', 'zh_Hant']) {
     for (final n in [1, 2]) {
       testWidgets('価格の行・合計・重複の確認がその言語の文と数の形（$locale, $n時間・残高$n）', (
         tester,
@@ -249,7 +287,7 @@ void main() {
           },
         );
         if (n != 1) await _pickDuration(tester, duration);
-        final l10n = lookupAppLocalizations(Locale(locale));
+        final l10n = lookupAppLocalizations(_localeOf(locale));
 
         // 残高はその言語の数と単位（1は単数）。
         expect(find.text(l10n.coinAmount(n)), findsOneWidget);
@@ -318,7 +356,7 @@ void main() {
                 : DateTime.now().add(const Duration(days: 9)),
           ),
         );
-        final l10n = lookupAppLocalizations(Locale(locale));
+        final l10n = lookupAppLocalizations(_localeOf(locale));
         await tester.tap(
           find.byKey(const ValueKey('rewardFeature_fullPremium')),
         );

@@ -3585,7 +3585,7 @@
   "loginBonusMilestone": "累計登入{days}天",
   "loginBonusActivityMilestone": "累計登入達到{days}天",
   "rewardUnlockRewardQuotaRemaining": "今日剩餘金幣獎勵：{count}次（UTC）",
-  "rewardUnlockFixedPrice": "確定價格（兌換準備中）",
+  "rewardUnlockFixedPrice": "最終價格（兌換準備中）",
   "missionCoinsReceived": "已領取金幣",
   "missionClaimFailed": "領取失敗",
   "missionClaimUnconfirmed": "無法確認領取",
@@ -3648,5 +3648,5 @@
   "rewardUnlockReviewAdsOverlap": "所選的去廣告權益與「{bundle}」重複。",
   "rewardUnlockReviewItem": "{benefit}：延長後的參考有效期限 {expiry}",
   "rewardUnlockReviewItemOverlap": "{benefit}：與現有或套餐權益重複。延長後的參考有效期限 {expiry}",
-  "rewardUnlockReviewFixedTotal": "按確定單價計算的合計：{coins}。伺服器尚不支援以金幣兌換單項權益或重複兌換。金額已確定，但只有伺服器回傳正式報價時才能兌換。正式的有效期限在兌換前由伺服器確認後決定。"
+  "rewardUnlockReviewFixedTotal": "按最終單價計算的合計：{coins}。伺服器尚不支援以金幣兌換單項權益或重複兌換。金額已確定，但只有伺服器回傳正式報價時才能兌換。正式的有效期限在兌換前由伺服器確認後決定。"
 }

@@ -12,6 +12,10 @@
 // 2倍のフランス語で「Missions heb|domadaires」「hebdomada|ires」と切れていた。
 // 見出しはカードの幅いっぱい（296px）まで使えるので、それより狭い語が切れたら
 // 配置の誤り。
+//
+// 取引履歴（コインの増減の一覧）も同じで、行の右端の増減（「-55000 pièces」）が
+// 題の列を狭め、文字2倍のフランス語で「Publicité récompensé|e」、英語で
+// 「Coin redemptio|n」と単語の途中で切れていた。
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -29,6 +33,7 @@ import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/widgets/coin_history_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -242,6 +247,9 @@ List<String> _breaksInsideWords(
 }
 
 void main() {
+  // 同梱フォントはファイルで1回だけ読む（テストごとに読むと、テストの数だけ
+  // フォントが積み上がってメモリが足りなくなり、テストの途中で落ちた）。
+  var fontsLoaded = false;
   setUp(() => SharedPreferences.setMockInitialValues({'language': 'ja'}));
 
   for (final locale in ['fr', 'es', 'en', 'ja']) {
@@ -249,7 +257,10 @@ void main() {
       testWidgets('ミッションの行が単語の途中で折り返さない（$locale, 文字$scale倍, 360dp）', (
         tester,
       ) async {
-        await loadAppFonts(tester);
+        if (!fontsLoaded) {
+          await loadAppFonts(tester);
+          fontsLoaded = true;
+        }
         final themes = ThemeService();
         await themes.init();
         addTearDown(themes.dispose);
@@ -343,6 +354,87 @@ void main() {
           );
         }
         expect(headingsSeen, 3, reason: '$locale: 欄の見出しが3つとも出ていない');
+        expect(
+          broken,
+          isEmpty,
+          reason: '$locale ×$scale: 単語・数の途中の改行\n${broken.join('\n')}',
+        );
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+      });
+    }
+  }
+
+  // 取引履歴の行：題は行の幅いっぱい（一覧の余白32・行の始めと終わりの
+  // 余白16・24を除いた288px）まで使える。
+  const historyTitleWidth = 360.0 - 32 - 16 - 24;
+  for (final locale in ['fr', 'es', 'en', 'ja', 'ko', 'zh']) {
+    for (final scale in [1.0, 1.3, 1.75, 2.0]) {
+      testWidgets('取引履歴の行が単語の途中で折り返さない（$locale, 文字$scale倍, 360dp）', (
+        tester,
+      ) async {
+        if (!fontsLoaded) {
+          await loadAppFonts(tester);
+          fontsLoaded = true;
+        }
+        final themes = ThemeService();
+        await themes.init();
+        addTearDown(themes.dispose);
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(360, 4000);
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        final owner = ValueNotifier<String?>('history-owner');
+        addTearDown(owner.dispose);
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: Locale(locale),
+            theme: themes.themeData,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: CoinHistorySheet(
+                ownerId: 'history-owner',
+                accountChanges: owner,
+                currentAccountId: () => owner.value,
+                fetchPage: ({String? cursor, int limit = 20}) async => {
+                  'entries': [
+                    for (final (source, delta) in [
+                      ('rewarded-ad', 1),
+                      ('creator-mission', 30),
+                      ('coin-redemption', -55000),
+                      ('login-bonus', 2),
+                      ('other', -100000),
+                    ])
+                      {
+                        'source': source,
+                        'deltaCoins': delta,
+                        'occurredAtEpochMs': 1760000000000,
+                      },
+                  ],
+                  'nextCursor': null,
+                },
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const Key('coinHistoryAmount')),
+          findsNWidgets(5),
+          reason: '$locale: 取引の行が出ていない',
+        );
+        final broken = <String>[];
+        for (final element in find.byType(RichText).evaluate()) {
+          broken.addAll(
+            _breaksInsideWords(
+              element.renderObject! as RenderParagraph,
+              widestPlaceableWord: historyTitleWidth,
+            ),
+          );
+        }
         expect(
           broken,
           isEmpty,

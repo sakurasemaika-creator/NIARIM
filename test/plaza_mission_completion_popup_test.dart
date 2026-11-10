@@ -122,12 +122,12 @@ const _expected = <String, List<String>>{
     '미션 페이지로',
   ],
   'fr': [
-    'Mission accomplie !',
-    '・Mission quotidienne : Garder la Place des œuvres ouverte 10 minutes '
+    'Mission accomplie\u00a0!',
+    '・Mission quotidienne\u00a0: Garder la Place des œuvres ouverte 10 minutes '
         'au total',
-    '・Mission hebdomadaire : Garder la Place des œuvres ouverte 1 heure '
+    '・Mission hebdomadaire\u00a0: Garder la Place des œuvres ouverte 1 heure '
         'au total',
-    '・Mission mensuelle : Garder la Place des œuvres ouverte 2 heures '
+    '・Mission mensuelle\u00a0: Garder la Place des œuvres ouverte 2 heures '
         'au total',
     'Rendez-vous dans Missions pour réclamer votre récompense.',
     'Fermer',

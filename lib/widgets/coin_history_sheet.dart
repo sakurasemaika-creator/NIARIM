@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../l10n/reward_unlock_labels.dart';
 import '../l10n/login_bonus_labels.dart';
 import '../utils/app_locale.dart';
+import 'action_beside_or_below.dart';
 
 /// 取引のコインの増減（「+1 coin」「-55000 coins」）。単数・複数は数の
 /// 大きさで決まるので、符号は付けずに数えた文言の前へ置く。
@@ -171,15 +172,21 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
                   children: [
                     for (final row in _entries)
                       ListTile(
+                        // 題（取引の種類）は行の幅いっぱいを使い、増減は
+                        // 日時の行の終わりに置く（行の右端に置くと題の列が
+                        // 狭まり、大きな文字で「Publicité récompensé|e」
+                        // 「Coin redemptio|n」と単語の途中で切れた）。
                         title: Text(_sourceLabel(context, t, row)),
-                        subtitle: Text(
-                          DateTime.fromMillisecondsSinceEpoch(
-                            row['occurredAtEpochMs'] as int,
-                          ).toLocal().toString().substring(0, 16),
-                        ),
-                        trailing: Text(
-                          coinDeltaLabel(l10n, row['deltaCoins'] as int),
-                          key: const Key('coinHistoryAmount'),
+                        subtitle: ActionBesideOrBelow(
+                          text: Text(
+                            DateTime.fromMillisecondsSinceEpoch(
+                              row['occurredAtEpochMs'] as int,
+                            ).toLocal().toString().substring(0, 16),
+                          ),
+                          action: Text(
+                            coinDeltaLabel(l10n, row['deltaCoins'] as int),
+                            key: const Key('coinHistoryAmount'),
+                          ),
                         ),
                       ),
                     if (_loadedFirstPage && _entries.isEmpty && !_error)

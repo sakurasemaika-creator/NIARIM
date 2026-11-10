@@ -8534,7 +8534,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityPlazaUnmuteQuestion =>
-      'Toujours réafficher cette œuvre ?';
+      'Toujours réafficher cette œuvre ?';
 
   @override
   String get communityPlazaUnmuteAlways => 'Toujours';
@@ -8546,11 +8546,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityPlazaMuteSettings => 'Paramètres de masquage';
 
   @override
-  String get communityPlazaPartialHint => '※Désactivé : recherche partielle';
+  String get communityPlazaPartialHint => '※Désactivé : recherche partielle';
 
   @override
   String get communityPlazaDeleteHistory =>
-      'Supprimer cette recherche de l’historique ?';
+      'Supprimer cette recherche de l’historique ?';
 
   @override
   String get communityPlazaLocalData => 'Données locales de l’appareil';
@@ -8590,7 +8590,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityPostVisibilityUnlistedDisclosure =>
-      'Attention : non répertorié ne signifie pas privé. Toute personne ayant le lien peut regarder et partager la vidéo hors de NIARIM.';
+      'Attention : non répertorié ne signifie pas privé. Toute personne ayant le lien peut regarder et partager la vidéo hors de NIARIM.';
 
   @override
   String get communityRankingLayoutTitle => 'Affichage du classement';
@@ -8670,11 +8670,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityWorkMetadataCopyConfirmTitle =>
-      'Remplacer le contenu de destination ?';
+      'Remplacer le contenu de destination ?';
 
   @override
   String get communityWorkMetadataCopyConfirmMessage =>
-      'Le contenu actuel de la destination sera écrasé. Voulez-vous continuer ?';
+      'Le contenu actuel de la destination sera écrasé. Voulez-vous continuer ?';
 
   @override
   String get communityWorkMetadataCopyCancel => 'Annuler';
@@ -8855,7 +8855,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionRankingWarning =>
-      'Remarque : seul le classement des favoris NIARIM compte. Le nombre d’œuvres publiées, les favoris de votre œuvre, le rang et le pourcentage supérieur doivent TOUS être respectés. Ouvrez « Voir les détails » de chaque mission pour les règles exactes.';
+      'Remarque : seul le classement des favoris NIARIM compte. Le nombre d’œuvres publiées, les favoris de votre œuvre, le rang et le pourcentage supérieur doivent TOUS être respectés. Ouvrez « Voir les détails » de chaque mission pour les règles exactes.';
 
   @override
   String get creatorMissionBudget =>
@@ -9022,7 +9022,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockActiveCampaign =>
-      'Campagne de lancement : Premium actif';
+      'Campagne de lancement : Premium actif';
 
   @override
   String get rewardUnlockActiveUnavailable =>
@@ -9038,7 +9038,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockChooseBenefits => 'Choisir des avantages';
 
   @override
-  String get rewardUnlockPricePending => 'Pièces : non défini';
+  String get rewardUnlockPricePending => 'Pièces : non défini';
 
   @override
   String get rewardUnlockNotReady => 'Bientôt disponible';
@@ -9052,7 +9052,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockBalancePending =>
-      'Solde : connexion au serveur en attente';
+      'Solde : connexion au serveur en attente';
 
   @override
   String get rewardUnlockGoal => 'Définir comme objectif';
@@ -9169,7 +9169,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Actions automatiques personnalisées';
 
   @override
-  String get rewardUnlockCommunityPostQuota => 'Publications : 1 à 3 par jour';
+  String get rewardUnlockCommunityPostQuota => 'Publications : 1 à 3 par jour';
 
   @override
   String get rewardUnlockProjectListAds => 'Sans publicité dans les projets';
@@ -9340,17 +9340,17 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String creatorMissionDetailsWorkProgress(int progress, int goal) {
-    return 'Favoris actuels : $progress (requis : $goal)';
+    return 'Favoris actuels : $progress (requis : $goal)';
   }
 
   @override
   String creatorMissionDetailsWorksProgress(int progress, int goal) {
-    return 'Œuvres qualifiées : $progress (requises : $goal)';
+    return 'Œuvres qualifiées : $progress (requises : $goal)';
   }
 
   @override
   String creatorMissionDetailsFollowersProgress(int progress, int goal) {
-    return 'Abonnés actuels : $progress (requis : $goal)';
+    return 'Abonnés actuels : $progress (requis : $goal)';
   }
 
   @override
@@ -9388,12 +9388,12 @@ class AppLocalizationsFr extends AppLocalizations {
       other: '$hours heures',
       one: '$hours heure',
     );
-    return 'Temps de création local : $_temp0';
+    return 'Temps de création local : $_temp0';
   }
 
   @override
   String creatorMissionCandidateMinutes(int minutes) {
-    return 'Temps candidat enregistré : $minutes min (non vérifié)';
+    return 'Temps candidat enregistré : $minutes min (non vérifié)';
   }
 
   @override
@@ -9410,8 +9410,8 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp1 = intl.Intl.pluralLogic(
       failed,
       locale: localeName,
-      other: ' ; $failed n’ont pas pu être réclamées',
-      one: ' ; $failed n’a pas pu être réclamée',
+      other: ' ; $failed n’ont pas pu être réclamées',
+      one: ' ; $failed n’a pas pu être réclamée',
       zero: '',
     );
     return '$_temp0$_temp1';
@@ -9426,32 +9426,32 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsBookmarkRule =>
-      'FAVORIS : Votre œuvre doit être la vôtre, encore publique sur NIARIM, et avoir suffisamment de favoris NIARIM. Chaque œuvre est évaluée séparément. Les œuvres privées ou supprimées ne comptent pas.';
+      'FAVORIS : Votre œuvre doit être la vôtre, encore publique sur NIARIM, et avoir suffisamment de favoris NIARIM. Chaque œuvre est évaluée séparément. Les œuvres privées ou supprimées ne comptent pas.';
 
   @override
   String get creatorMissionDetailsWorksRule =>
-      'PLUSIEURS ŒUVRES : Vous devez publier sur NIARIM le nombre demandé d’œuvres, chacune ayant atteint le minimum de favoris. Un objectif de zéro favori concerne seulement la publication. Le serveur vérifie ces œuvres.';
+      'PLUSIEURS ŒUVRES : Vous devez publier sur NIARIM le nombre demandé d’œuvres, chacune ayant atteint le minimum de favoris. Un objectif de zéro favori concerne seulement la publication. Le serveur vérifie ces œuvres.';
 
   @override
   String get creatorMissionDetailsFollowerRule =>
-      'ABONNÉS : Votre compte NIARIM doit actuellement atteindre le nombre indiqué selon les données du serveur, non les données envoyées par le téléphone.';
+      'ABONNÉS : Votre compte NIARIM doit actuellement atteindre le nombre indiqué selon les données du serveur, non les données envoyées par le téléphone.';
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      'TEMPS DE CRÉATION : Une durée déclarée localement ne peut pas créditer de pièces. Une preuve fiable de la création réelle n’est pas encore disponible. Cette récompense est donc inaccessible.';
+      'TEMPS DE CRÉATION : Une durée déclarée localement ne peut pas créditer de pièces. Une preuve fiable de la création réelle n’est pas encore disponible. Cette récompense est donc inaccessible.';
 
   @override
   String get creatorMissionDetailsClaimRule =>
-      'RÉCLAMATION : Le serveur vérifie les conditions lors de la demande, puis attend 48 heures. Appuyez de nouveau sur Réclamer ; la condition est revérifiée. Si elle ne tient plus, le délai recommence. Une récompense par compte ou par œuvre.';
+      'RÉCLAMATION : Le serveur vérifie les conditions lors de la demande, puis attend 48 heures. Appuyez de nouveau sur Réclamer ; la condition est revérifiée. Si elle ne tient plus, le délai recommence. Une récompense par compte ou par œuvre.';
 
   @override
   String creatorMissionRankDetailsRules(int percent, int rank) {
-    return 'CALCUL : Votre œuvre doit être publiée sur NIARIM. Il faut au moins 100 œuvres publiques, assez de favoris sur votre œuvre, une place dans le top $rank et dans le top $percent %. Le seuil de rang est la partie entière de (nombre d’œuvres publiques × $percent %), au minimum 1, puis le rang le plus strict est retenu. Le comptage provient du serveur.';
+    return 'CALCUL : Votre œuvre doit être publiée sur NIARIM. Il faut au moins 100 œuvres publiques, assez de favoris sur votre œuvre, une place dans le top $rank et dans le top $percent %. Le seuil de rang est la partie entière de (nombre d’œuvres publiques × $percent %), au minimum 1, puis le rang le plus strict est retenu. Le comptage provient du serveur.';
   }
 
   @override
   String get creatorMissionRankDetailsHold =>
-      'VALIDATION : Le classement change continuellement. Le serveur vérifie les conditions lors de la demande et de nouveau après 48 heures, lorsque vous appuyez encore sur Réclamer. Si une condition manque alors, le délai recommence. Une présence momentanée passée ne suffit pas. Chaque œuvre peut recevoir une fois chaque récompense de rang.';
+      'VALIDATION : Le classement change continuellement. Le serveur vérifie les conditions lors de la demande et de nouveau après 48 heures, lorsque vous appuyez encore sur Réclamer. Si une condition manque alors, le délai recommence. Une présence momentanée passée ne suffit pas. Chaque œuvre peut recevoir une fois chaque récompense de rang.';
 
   @override
   String get creatorMissionRankSelectWork =>
@@ -9463,16 +9463,16 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionRankCommunityNotMeasured =>
-      'Le nombre d’œuvres publiées est en cours de calcul ; la réclamation sera possible une fois le calcul terminé';
+      'Le nombre d’œuvres publiées est en cours de calcul ; la réclamation sera possible une fois le calcul terminé';
 
   @override
   String creatorMissionRankCommunityWait(int count, int required) {
-    return 'Pas assez d’œuvres publiées sur NIARIM : $count actuellement (minimum : $required)';
+    return 'Pas assez d’œuvres publiées sur NIARIM : $count actuellement (minimum : $required)';
   }
 
   @override
   String creatorMissionRankBookmarkWait(int count, int required) {
-    return 'Pas assez de favoris : $count actuellement (minimum : $required)';
+    return 'Pas assez de favoris : $count actuellement (minimum : $required)';
   }
 
   @override
@@ -9481,7 +9481,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String creatorMissionRankRankWait(int rank, int limit) {
-    return 'Rang actuel : $rank ; requis : top $limit (le pourcentage supérieur s’applique aussi)';
+    return 'Rang actuel : $rank ; requis : top $limit (le pourcentage supérieur s’applique aussi)';
   }
 
   @override
@@ -9490,7 +9490,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String creatorMissionRankPoolCurrent(int count) {
-    return 'Œuvres publiées sur NIARIM : $count';
+    return 'Œuvres publiées sur NIARIM : $count';
   }
 
   @override
@@ -9503,25 +9503,25 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      'Le temps de création mesuré sur l’appareil peut être falsifié : il ne rapporte donc pas de pièces pour l’instant. Le temps affiché est indicatif.';
+      'Le temps de création mesuré sur l’appareil peut être falsifié : il ne rapporte donc pas de pièces pour l’instant. Le temps affiché est indicatif.';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
-    return 'Favoris de cette œuvre : $count';
+    return 'Favoris de cette œuvre : $count';
   }
 
   @override
   String creatorMissionRankCurrentPlace(int rank) {
-    return 'Rang actuel de cette œuvre : $rank';
+    return 'Rang actuel de cette œuvre : $rank';
   }
 
   @override
   String get creatorMissionRankNotLive =>
-      'Le versement des pièces est en préparation ; les récompenses de classement ne peuvent pas encore être réclamées.';
+      'Le versement des pièces est en préparation ; les récompenses de classement ne peuvent pas encore être réclamées.';
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
-    return 'Temps de création validé par l’horloge du serveur : $minutes min';
+    return 'Temps de création validé par l’horloge du serveur : $minutes min';
   }
 
   @override
@@ -9538,12 +9538,12 @@ class AppLocalizationsFr extends AppLocalizations {
       other: '$bookmarks favoris',
       one: '$bookmarks favori',
     );
-    return 'Conditions : au moins $_temp0 sur NIARIM et $_temp1 sur cette œuvre';
+    return 'Conditions : au moins $_temp0 sur NIARIM et $_temp1 sur cette œuvre';
   }
 
   @override
   String creatorMissionRankingEffective(int rank) {
-    return 'Rang requis avec le nombre actuel d’œuvres publiées : top $rank';
+    return 'Rang requis avec le nombre actuel d’œuvres publiées : top $rank';
   }
 
   @override
@@ -9554,7 +9554,7 @@ class AppLocalizationsFr extends AppLocalizations {
       other: '$days jours',
       one: '$days jour',
     );
-    return 'Total : $_temp0';
+    return 'Total : $_temp0';
   }
 
   @override
@@ -9592,7 +9592,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String rewardUnlockRewardQuotaRemaining(int count) {
-    return 'Récompenses restantes : $count (UTC)';
+    return 'Récompenses restantes : $count (UTC)';
   }
 
   @override
@@ -9679,7 +9679,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get recurringMissionsNote =>
-      'Compté à l’heure du Japon ; les semaines commencent le lundi';
+      'Compté à l’heure du Japon ; les semaines commencent le lundi';
 
   @override
   String get recurringMissionsUnavailable =>
@@ -9723,7 +9723,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'week': 'dans la même semaine',
       'other': 'dans le même mois',
     });
-    return 'CONDITIONS : gardez la Place des œuvres de NIARIM ouverte au moins $duration au total $_temp0. Aucune lecture de vidéo ni action n’est nécessaire.';
+    return 'CONDITIONS : gardez la Place des œuvres de NIARIM ouverte au moins $duration au total $_temp0. Aucune lecture de vidéo ni action n’est nécessaire.';
   }
 
   @override
@@ -9732,11 +9732,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get plazaMissionDetailsPeriods =>
-      'Les périodes suivent l’heure du Japon (JST) : les jours repartent à minuit, les semaines commencent le lundi et les mois le 1er.';
+      'Les périodes suivent l’heure du Japon (JST) : les jours repartent à minuit, les semaines commencent le lundi et les mois le 1er.';
 
   @override
   String plazaMissionDetailsProgress(String progress, String goal) {
-    return 'Temps d’ouverture actuel : $progress / $goal';
+    return 'Temps d’ouverture actuel : $progress / $goal';
   }
 
   @override
@@ -9747,7 +9747,7 @@ class AppLocalizationsFr extends AppLocalizations {
       other: '$coins pièces',
       one: '$coins pièce',
     );
-    return 'RÉCLAMATION : cet objectif rapporte $_temp0. Chaque mission se réclame une fois par période. Vous pourrez la réussir de nouveau à la période suivante, mais pas réclamer celle d’une période terminée.';
+    return 'RÉCLAMATION : cet objectif rapporte $_temp0. Chaque mission se réclame une fois par période. Vous pourrez la réussir de nouveau à la période suivante, mais pas réclamer celle d’une période terminée.';
   }
 
   @override
@@ -9780,7 +9780,7 @@ class AppLocalizationsFr extends AppLocalizations {
       other: '$days jours distincts',
       one: '$days jour distinct',
     );
-    return 'CONDITIONS : connectez-vous $_temp0 au cours d’une même semaine (du lundi au dimanche), à l’heure du Japon (JST). Les jours n’ont pas besoin d’être consécutifs ; plusieurs connexions le même jour comptent pour une. Le serveur vérifie les jours.';
+    return 'CONDITIONS : connectez-vous $_temp0 au cours d’une même semaine (du lundi au dimanche), à l’heure du Japon (JST). Les jours n’ont pas besoin d’être consécutifs ; plusieurs connexions le même jour comptent pour une. Le serveur vérifie les jours.';
   }
 
   @override
@@ -9791,7 +9791,7 @@ class AppLocalizationsFr extends AppLocalizations {
       other: '$days jours distincts',
       one: '$days jour distinct',
     );
-    return 'CONDITIONS : connectez-vous $_temp0 au cours d’un même mois civil (du 1er au dernier jour), à l’heure du Japon (JST). Les jours n’ont pas besoin d’être consécutifs ; plusieurs connexions le même jour comptent pour une. Le serveur vérifie les jours.';
+    return 'CONDITIONS : connectez-vous $_temp0 au cours d’un même mois civil (du 1er au dernier jour), à l’heure du Japon (JST). Les jours n’ont pas besoin d’être consécutifs ; plusieurs connexions le même jour comptent pour une. Le serveur vérifie les jours.';
   }
 
   @override
@@ -9802,7 +9802,7 @@ class AppLocalizationsFr extends AppLocalizations {
       other: '$goal jours',
       one: '$goal jour',
     );
-    return 'Progression actuelle : $progress / $_temp0';
+    return 'Progression actuelle : $progress / $_temp0';
   }
 
   @override
@@ -9813,11 +9813,11 @@ class AppLocalizationsFr extends AppLocalizations {
       other: '$coins pièces',
       one: '$coins pièce',
     );
-    return 'RÉCLAMATION : l’objectif atteint rapporte $_temp0. Chaque palier ne se réclame qu’une fois par période. La progression repart à zéro à chaque nouvelle semaine ou nouveau mois ; les récompenses d’une période passée ne peuvent plus être réclamées.';
+    return 'RÉCLAMATION : l’objectif atteint rapporte $_temp0. Chaque palier ne se réclame qu’une fois par période. La progression repart à zéro à chaque nouvelle semaine ou nouveau mois ; les récompenses d’une période passée ne peuvent plus être réclamées.';
   }
 
   @override
-  String get missionCompletedTitle => 'Mission accomplie !';
+  String get missionCompletedTitle => 'Mission accomplie !';
 
   @override
   String get missionCompletedBody =>
@@ -9833,7 +9833,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'week': 'Mission hebdomadaire',
       'other': 'Mission mensuelle',
     });
-    return '$_temp0 : $goal';
+    return '$_temp0 : $goal';
   }
 
   @override
@@ -9871,7 +9871,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String communityWorkMetadataCopyTooLong(int max) {
-    return 'Copie impossible : limite de $max caractères dépassée';
+    return 'Copie impossible : limite de $max caractères dépassée';
   }
 
   @override
@@ -9931,7 +9931,7 @@ class AppLocalizationsFr extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return 'Vous profitez déjà des avantages Premium. L’échange devrait les prolonger jusqu’au $expiryString. Continuer ?';
+    return 'Vous profitez déjà des avantages Premium. L’échange devrait les prolonger jusqu’au $expiryString. Continuer ?';
   }
 
   @override
@@ -9941,7 +9941,7 @@ class AppLocalizationsFr extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return 'Expiration après l’échange (estimation) : $expiryString';
+    return 'Expiration après l’échange (estimation) : $expiryString';
   }
 
   @override
@@ -9970,12 +9970,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String rewardUnlockReviewFullIncludes(String bundle) {
-    return '« $bundle », sélectionné, comprend déjà les autres avantages individuels. Les avantages en double ne sont pas activés deux fois : ils devraient être prolongés.';
+    return '« $bundle », sélectionné, comprend déjà les autres avantages individuels. Les avantages en double ne sont pas activés deux fois : ils devraient être prolongés.';
   }
 
   @override
   String rewardUnlockReviewAdsOverlap(String bundle) {
-    return 'Les avantages sans publicité sélectionnés font double emploi avec « $bundle ».';
+    return 'Les avantages sans publicité sélectionnés font double emploi avec « $bundle ».';
   }
 
   @override
@@ -9985,7 +9985,7 @@ class AppLocalizationsFr extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return '$benefit : nouvelle expiration estimée au $expiryString';
+    return '$benefit : nouvelle expiration estimée au $expiryString';
   }
 
   @override
@@ -9995,11 +9995,11 @@ class AppLocalizationsFr extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return '$benefit : fait double emploi avec un avantage actif ou groupé. Nouvelle expiration estimée au $expiryString';
+    return '$benefit : fait double emploi avec un avantage actif ou groupé. Nouvelle expiration estimée au $expiryString';
   }
 
   @override
   String rewardUnlockReviewFixedTotal(String coins) {
-    return 'Total selon les prix unitaires définitifs : $coins. Le serveur ne permet pas encore de dépenser des pièces pour des avantages individuels ou des échanges en double. Le montant est définitif, mais l’échange n’est possible que si le serveur renvoie un devis officiel. L’expiration officielle est fixée par la vérification du serveur juste avant l’échange.';
+    return 'Total selon les prix unitaires définitifs : $coins. Le serveur ne permet pas encore de dépenser des pièces pour des avantages individuels ou des échanges en double. Le montant est définitif, mais l’échange n’est possible que si le serveur renvoie un devis officiel. L’expiration officielle est fixée par la vérification du serveur juste avant l’échange.';
   }
 }
