@@ -69,8 +69,9 @@ export async function visitMyLoginBonus(event: APIGatewayProxyEventV2) {
       ReturnValues: "ALL_NEW",
     }));
     const state = snapshot(result.Attributes);
+    let recurringAchieved: {id:string;period:string;requiredDays:number;coins:number}[] = [];
     try {
-      await recordRecurringLoginVisit(userId);
+      recurringAchieved = await recordRecurringLoginVisit(userId);
     } catch (error) {
       // Login history is authoritative and already committed. A transient
       // recurring-progress failure can be retried on the next visit request.
@@ -89,7 +90,15 @@ export async function visitMyLoginBonus(event: APIGatewayProxyEventV2) {
         console.warn("Login milestone notice could not be saved", error);
       }
     }
-    return ok({...state,day,visitedToday:true});
+    return ok({
+      ...state,day,visitedToday:true,
+      newlyAchieved:[
+        ...(milestoneCoins(state.totalDays) !== undefined
+          ? [{id:"login_total_"+state.totalDays,kind:"login",
+              requiredDays:state.totalDays}] : []),
+        ...recurringAchieved,
+      ],
+    });
   } catch (error) {
     if (!(error instanceof ConditionalCheckFailedException)) throw error;
     const state = await getState(userId);
