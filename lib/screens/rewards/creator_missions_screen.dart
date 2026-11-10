@@ -9,6 +9,7 @@ import '../../services/project_service.dart';
 import '../../widgets/responsive.dart';
 import 'login_bonus_panel.dart';
 import 'recurring_missions_panel.dart';
+import 'plaza_missions_panel.dart';
 
 /// Display-only policy. The server must independently verify every request.
 bool missionClaimActionAllowed({
@@ -50,6 +51,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
   String? _nextWorkCursor;
   bool _loadedExtraPage = false;
   bool _moreBusy = false;
+  bool _bulkBusy = false;
+  int _bulkPanelGeneration = 0;
 
   Future<Map<String, dynamic>> _fetch(CommunityApi api) async {
     final results = await Future.wait(<Future<Map<String, dynamic>>>[
@@ -109,6 +112,95 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       }
     } finally {
       if (mounted) setState(() => _claimBusy.remove(key));
+    }
+  }
+
+  /// Collect every currently claimable server-verified mission. Individual
+  /// endpoints retain their atomic wallet/idempotency protection. Failed or
+  /// pending claims are never represented as credited coins.
+  Future<void> _bulkClaim(CommunityApi api, Map<String, dynamic> pageData) async {
+    if (_bulkBusy) return;
+    final owner = context.read<GoogleAuthService>().account?.id;
+    if (owner == null) return;
+    setState(() => _bulkBusy = true);
+    var received = 0;
+    var failed = 0;
+    try {
+      bool sameOwner() => mounted &&
+          context.read<GoogleAuthService>().account?.id == owner &&
+          identical(context.read<CommunityService>().api, api);
+
+      // Query independent sources once. Do not infer earned coins locally.
+      final statuses = await Future.wait<Map<String, dynamic>>([
+        api.myLoginBonus(),
+        api.myRecurringMissions(),
+        api.myPlazaMissions(),
+      ]);
+      if (!sameOwner()) return;
+      final login = statuses[0];
+      final recurring = statuses[1];
+      final plaza = statuses[2];
+
+      Future<void> collect(Future<Map<String, dynamic>> Function() request) async {
+        if (!sameOwner()) return;
+        try {
+          final receipt = await request();
+          if (receipt['claimed'] == true && receipt['duplicate'] != true &&
+              receipt['pending'] != true) received++;
+        } catch (_) {
+          failed++;
+        }
+      }
+
+      if (login['rewardEnabled'] == true) {
+        if (login['visitedToday'] == true && login['dailyClaimed'] != true) {
+          await collect(() => api.claimLoginBonus(kind: 'daily'));
+        }
+        for (final row in (login['milestones'] as List? ?? const [])) {
+          if (row is! Map || row['eligible'] != true || row['claimed'] == true ||
+              row['days'] is! num) continue;
+          final days = (row['days'] as num).toInt();
+          await collect(() => api.claimLoginBonus(kind: 'milestone', days: days));
+        }
+      }
+      for (final row in (recurring['missions'] as List? ?? const [])) {
+        if (row is! Map || row['ready'] != true || row['id'] is! String) continue;
+        final id = row['id'] as String;
+        await collect(() => api.claimRecurringMission(missionId: id));
+      }
+      for (final row in (plaza['missions'] as List? ?? const [])) {
+        if (row is! Map || row['ready'] != true || row['id'] is! String) continue;
+        final id = row['id'] as String;
+        await collect(() => api.claimPlazaMission(id));
+      }
+      for (final row in _rows(pageData)) {
+        if (row['readyForClaim'] != true || row['rewardEnabled'] != true ||
+            row['claimed'] == true || row['_genericTemplate'] == true) continue;
+        final id = (row['id'] ?? row['missionId']) as String?;
+        if (id == null || id.isEmpty) continue;
+        final workId = row['_workId'] as String?;
+        await collect(() => api.claimCreatorMission(missionId: id, workId: workId));
+      }
+      if (sameOwner()) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('まとめて受取：$received件完了'
+              '${failed > 0 ? " / $failed件は受取できませんでした" : ""}'),
+        ));
+      }
+    } catch (_) {
+      if (mounted && context.read<GoogleAuthService>().account?.id == owner) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('受取状況を読み込めませんでした。再度お試しください。')),
+        );
+      }
+    } finally {
+      if (mounted && context.read<GoogleAuthService>().account?.id == owner) {
+        setState(() {
+          _bulkBusy = false;
+          _bulkPanelGeneration++;
+        });
+        _refresh(api);
+      }
     }
   }
 
@@ -425,10 +517,24 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: FilledButton.icon(
+                    key: const Key('missionClaimAllButton'),
+                    onPressed: _bulkBusy ? null : () => _bulkClaim(api, data),
+                    icon: _bulkBusy
+                        ? const SizedBox(width: 16, height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.inventory_2_outlined),
+                    label: const Text('まとめて受け取る'),
+                  ),
+                ),
                 if (widget.workId == null) ...[
-                  const LoginBonusPanel(),
+                  LoginBonusPanel(key: ValueKey('login-bulk-$_bulkPanelGeneration')),
                   const SizedBox(height: 12),
-                  const RecurringMissionsPanel(),
+                  RecurringMissionsPanel(key: ValueKey('recurring-bulk-$_bulkPanelGeneration')),
+                  const SizedBox(height: 12),
+                  PlazaMissionsPanel(key: ValueKey('plaza-bulk-$_bulkPanelGeneration')),
                   const SizedBox(height: 12),
                 ],
                 Text(
