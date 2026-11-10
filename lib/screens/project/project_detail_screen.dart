@@ -41,8 +41,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   bool _loopPlayback = false;
   bool _rendering = false;
   bool _movingToTrash = false;
-  // 共有ファイルの作成・共有の途中（共有のボタンを止める）。
+  // 共有ファイルの作成・共有の途中（共有のボタンを止める）と、そのうち
+  // 同梱の確認を終えて作成・共有している間（ボタンに進行中の印を出す）。
   bool _creatingShare = false;
+  bool _buildingShare = false;
   Timer? _timer;
   ui.Image? _previewImage;
   // プレビュー全画面化：確認・仕上がりチェックに集中できるよう、
@@ -406,6 +408,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     child: _quickAction(
                       icon: Icons.ios_share,
                       label: l10n.projectDetailShareQuickAction,
+                      busy: _buildingShare,
                       onTap: _creatingShare
                           ? null
                           : () => _createNiashare(
@@ -839,7 +842,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     required String label,
     required VoidCallback? onTap,
     Color? iconColor,
+    bool busy = false,
   }) {
+    final color = iconColor ?? Theme.of(context).colorScheme.onSurfaceVariant;
     return Semantics(
       button: true,
       enabled: onTap != null,
@@ -850,11 +855,21 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Column(
             children: [
-              Icon(
-                icon,
-                color:
-                    iconColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              // 時間のかかる処理の途中は、アイコンと同じ大きさ・色の
+              // 進行中の印に替える。
+              if (busy)
+                SizedBox.square(
+                  dimension: 24,
+                  child: Padding(
+                    padding: const EdgeInsets.all(3),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: color,
+                    ),
+                  ),
+                )
+              else
+                Icon(icon, color: color),
               const SizedBox(height: 4),
               Text(
                 label,
@@ -957,7 +972,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   ///
   /// 作成には時間がかかるので、作成・共有が終わるまで共有のボタンを止め、
   /// 二度目は始めない（作成中にもう一度押すと、同じ作品の共有ファイルを
-  /// 同時に作り始めた）。
+  /// 同時に作り始めた）。同梱の確認を終えたら、ボタンに進行中の印を出す。
   Future<void> _createNiashare(
     BuildContext context,
     ProjectService service,
@@ -966,9 +981,21 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     if (_creatingShare) return;
     setState(() => _creatingShare = true);
     try {
-      await createAndShareProjectNiashare(context, service, project);
+      await createAndShareProjectNiashare(
+        context,
+        service,
+        project,
+        onBuilding: () {
+          if (mounted) setState(() => _buildingShare = true);
+        },
+      );
     } finally {
-      if (mounted) setState(() => _creatingShare = false);
+      if (mounted) {
+        setState(() {
+          _creatingShare = false;
+          _buildingShare = false;
+        });
+      }
     }
   }
 

@@ -52,4 +52,56 @@ void main() {
     // 見張りそのものが空振りしていないこと（共有の入口は今もここにある）。
     expect(File(service).readAsStringSync(), contains('SharePlus.instance'));
   });
+
+  // `ExportShareService`を通していても、自分のcatchで受けて「作成に失敗
+  // しました: $error」と出すと同じことが起きる（保存した共有ファイルの共有が
+  // そうだった）。失敗を言葉にするのは`exportShareFailureText`だけにする。
+  test('share failures are worded in one place', () {
+    const service = 'lib/services/export_share_service.dart';
+    // 入口を直接呼んでよい所：知らせの入口そのものと、知らせをその場（作品
+    // 一覧の行・プレビューのダイアログの中）に出す所。ほかは
+    // export_share_feedback.dartの入口を通す。
+    const direct = {
+      'lib/widgets/export_share_feedback.dart',
+      'lib/screens/home/home_screen.dart',
+    };
+    final call = RegExp(r'ExportShareService\s*\.\s*share(Files)?\s*\(');
+    final offenders = <String>[];
+    final callers = <String>{};
+    for (final entity in Directory('lib').listSync(recursive: true)) {
+      if (entity is! File || !entity.path.endsWith('.dart')) continue;
+      final path = entity.path.replaceAll('\\', '/');
+      if (path == service) continue;
+      final source = entity.readAsStringSync();
+      for (final match in call.allMatches(source)) {
+        final lineStart = source.lastIndexOf('\n', match.start) + 1;
+        final lineEnd = source.indexOf('\n', match.start);
+        final line = source.substring(
+          lineStart,
+          lineEnd < 0 ? source.length : lineEnd,
+        );
+        if (line.trimLeft().startsWith('//')) continue;
+        callers.add(path);
+        if (direct.contains(path)) continue;
+        final number = '\n'.allMatches(source.substring(0, lineStart)).length;
+        offenders.add('$path:${number + 1}: ${line.trim()}');
+      }
+    }
+    expect(
+      offenders,
+      isEmpty,
+      reason:
+          '共有の結果・失敗を自分で受けている所（shareExportedFileWithNotice・'
+          'shareFilesWithNotice・shareExportedFileCatchingを通す）：\n'
+          '${offenders.join('\n')}',
+    );
+    for (final path in direct) {
+      expect(callers, contains(path), reason: '$pathはもう直接呼んでいない');
+      expect(
+        File(path).readAsStringSync(),
+        contains('exportShareFailureText'),
+        reason: '$pathは共有の失敗を共有の文で知らせる',
+      );
+    }
+  });
 }
