@@ -358,6 +358,14 @@ status: todo。S37追加App6e8ce38a→7a9162fbの13commit/10path、Web4972a3e6�
 
 status: todo。同上のAndroidManifest、backend/cdk設定、admob activation記録とAWS-connected debug APK workflowを登録。現在HEADの正式仕様に基づき、実広告/テスト広告の区別、rewarded表示/完了/中断/重複callback・日付境界・SSV署名/ユーザー照合・残高反映・Free/Premium・実Galaxy設定を確認する。S37では登録のみ。本番deploy・課金・実広告による報酬付与を実行したとはせず、保存/PNG検証や設定の存在を実広告/SSVのPASSへ代用しない。
 
+## D001.61 — 直近Backend 49 HTTPルート・App/Web/外部サービス横断の不足分（2026-11-10追加）
+
+status: `todo`。現行App dev_branchの `backend/src/api/handler.ts` は登録時点で **49 HTTPルート**、`backend/src/api/routes/**` に **32 moduleファイル**を持つ。これは異なる集計単位であり、locked Baseline snapshotの `backend_routes: 22` を現在網羅済みとみなさない。最新HEADから全HTTP method/path・route実装・App/Web呼出元・DynamoDB副作用を再inventoryし、**ルート単位の認証・本人/他人・公開/非公開・入力境界・失敗/遅延/再送・冪等性・秘密保持・実画面結果まで照合する正式追加対象**とする。
+
+監査観点と49ルートの登録時棚卸しは `docs/work-audit/BACKEND_API_AUDIT_CHECKLIST.md`（BE-01～BE-08 / API-001～API-049）。とくに owner-only following/follower氏名非公開と自分の人数タップ導線、ranking公開状態の変化・再生/詳細直前check、YouTube/Google OAuth・FCM・AdMob SSV・Play購入・コイン/mission/ログイン特典の副作用、CDK/IAM/OIDC/flag/secret・DynamoDB GSI/競合・Web read-only proxyを検証する。
+
+既存 `D001.8–14`、`D001.35–43`、`D001.46–60`、`D021` と重複する機能はID間で実証拠を共用してよいが、**追加登録のみでPASS・監査完了・backend本番稼働済みとはしない**。実操作、隔離backend/実SDK環境の適否、未検証のhuman-action-pending/implementation-pending、残存不具合を明示する。監査進捗とBaseline lock/Stateは今回変更しない。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。
@@ -591,6 +599,16 @@ Test owner/non-owner/public/private/deleted/blocked states where applicable.
 - no local-only state.
 - isolated backend/stubs, no production user mutation.
 - request/response evidence with secrets/PII removed.
+
+### D021の必須追加チェック（2026-11-10 / status: todo）
+
+- **API完全棚卸し**: `backend/src/api/handler.ts` の全method/pathを起点に `routes/**` / `lib/**` / CDK / App `CommunityApi` / Web proxyへ対応付け、現時点の49ルート（最新HEADで再算定）を個別に検証。固定Baselineの旧22件を完了根拠にしない。正式な登録時一覧は `docs/work-audit/BACKEND_API_AUDIT_CHECKLIST.md`。
+- **認証/公開境界**: すべてのpublic/owner/optionally-authenticated APIで匿名・本人・他人・無効token/ID/URLを比較する。フォロー中一覧は本人のみ、フォロワーID/氏名や他人FFを公開しないこと、件数だけ公開、bookmarks・notifications・push token・作品所有権の漏れを確認。
+- **ランキング/再生/削除**: 25件page・上限Top50・期間とUTC/JST境界・bookmark transaction、GSIのstale read、公開/限定公開/非公開/削除と歴史的ランキングの伏字slot、取得後状態変更時の詳細/再生前preflightをApp/Webと突合。未知/timeoutは誤許可/誤削除判定をしない。
+- **フォロー/UI同期**: 自分のプロフィールのフォロー中人数tap→本人一覧、一覧内follow/unfollow/re-follow、人数即時更新、top-only pull-to-refreshで該当一覧のみrefetch、途中drag/jump/多重pointer・ログアウト/アカウント切替の古いresponseと非公開作者の扱い。
+- **外部サービスと不可逆変更**: YouTube OAuth/upload/comments/channel, Google OAuth、FCM配信/通知tap、AdMob SSV署名/nonce/リプレイ/日次上限、Google Play購入検証/restore、Premium/coin/missionの原子的残高・重複claim、広告の表示/同意/規約はmockとrealを分離。
+- **運用/障害/証拠**: IAM/OIDC/CDK/env gate・secret redaction・DynamoDB conditional transaction/TTL/GSI、retries/cancel/offline/部分失敗・quota/rate、実APIと隔離fixtureを区別。各ルートに期待/実際の認可、HTTP/JSON、read/write、UIの実操作・7locale/PC-SP、残課題と証拠位置を記録。CI成功や形式的なcoverageだけでD021をdoneにしない。
+
 
 ## D022 — Selection / brush / filter state cross-feature interactions
 
