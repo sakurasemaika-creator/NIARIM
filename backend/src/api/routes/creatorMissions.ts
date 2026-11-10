@@ -261,6 +261,14 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
       );
     }
   }
+  // Both the enabled badge and the "why can't I claim?" explanations must
+  // use the same bookmark snapshot, especially during live ranking changes.
+  const selectedRankingBookmarks =
+    selectedRanking && selectedRanking.count<=50 &&
+    Number.isSafeInteger(selectedRanking.bookmarks)
+      ? selectedRanking.bookmarks!
+      : Number.isSafeInteger(selectedWork?.bookmarkCount)
+        ? selectedWork!.bookmarkCount : 0;
   return ok({
     catalogVersion: MISSION_CATALOG_VERSION,
     enabled: enabled(),
@@ -295,7 +303,7 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
                 goalRank:mission.required,
                 liveRank:selectedRanking.count,
                 publishedWorkCount,
-                workBookmarks:selectedRanking.bookmarks??0,
+                workBookmarks:selectedRankingBookmarks,
               })
           : null;
       const pendingAt = current?.firstQualifiedAt[key];
@@ -324,15 +332,14 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
               goalRank:mission.required,
               liveRank:selectedRanking?.count??null,
               publishedWorkCount,
-              workBookmarks:Number.isSafeInteger(selectedWork?.bookmarkCount)
-                ? selectedWork!.bookmarkCount : 0,
+              workBookmarks:selectedRankingBookmarks,
               workSelected:selectedWorkId!==undefined,
               workPublic:isPublicWork(selectedWork,auth.niarimUserId),
               populationKnown:rankingPopulationKnown,
             })
           : null,
         rankingWorkBookmarks: mission.kind==="niarimBookmarkRanking" &&
-          selectedWorkId ? (selectedWork?.bookmarkCount??0) : null,
+          selectedWorkId ? selectedRankingBookmarks : null,
         rankingMinPublishedWorks: mission.kind==="niarimBookmarkRanking"
           ? MIN_RANK_MISSION_PUBLIC_WORKS : null,
         rankingMinBookmarks: mission.kind==="niarimBookmarkRanking"
