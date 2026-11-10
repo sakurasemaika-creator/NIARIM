@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/creator_mission_labels.dart';
 
@@ -8,6 +9,11 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       locale: const Locale('ja'),
       supportedLocales: const [Locale('ja'), Locale('en')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       home: Builder(builder: (context) {
         final labels = CreatorMissionLabels.of(context);
         return SingleChildScrollView(child: Column(children: [
