@@ -12,9 +12,10 @@ import 'widgets/community_work_card.dart';
 
 /// 閲覧フィルターとブックマーク日時順を反映する公開作品一覧。
 class CommunityBookmarkedTab extends StatelessWidget {
-  const CommunityBookmarkedTab({super.key, required this.onBrowseWorks});
+  const CommunityBookmarkedTab({super.key, required this.onBrowseWorks, required this.scrollController});
 
   final VoidCallback onBrowseWorks;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +63,7 @@ class CommunityBookmarkedTab extends StatelessWidget {
 
     final scroll = LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
+        controller: scrollController,
         physics: canReload ? const AlwaysScrollableScrollPhysics() : null,
         child: ConstrainedBox(
           constraints: BoxConstraints(
