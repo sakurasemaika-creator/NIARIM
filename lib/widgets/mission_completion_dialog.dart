@@ -41,3 +41,25 @@ Future<void> showMissionCompletionDialog(
     ),
   );
 }
+
+/** Login visit responses contain only events crossed on the newly recorded
+ * JST day. Duplicate opens return no events and cannot repeat this popup. */
+Future<void> showServerMissionCompletions(
+  BuildContext context,
+  Map<String, dynamic> response,
+) async {
+  final records = (response['newlyAchieved'] as List? ?? const [])
+      .whereType<Map>().toList();
+  if (records.isEmpty || !context.mounted) return;
+  final japanese = Localizations.localeOf(context).languageCode == 'ja';
+  final names = records.map((row) {
+    final days = (row['requiredDays'] as num?)?.toInt() ?? 0;
+    return switch (row['period']) {
+      'week' => japanese ? '週$days日ログイン' : 'Visit on $days days this week',
+      'month' => japanese ? '月$days日ログイン' : 'Visit on $days days this month',
+      _ => japanese ? '累計$days日ログイン'
+          : 'Visit on $days separate days in total',
+    };
+  }).toList(growable: false);
+  await showMissionCompletionDialog(context, titles: names);
+}
