@@ -663,10 +663,29 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   知らせる文の色は`colorScheme.error`にしない（差し色から作られる色で、
   テーマ・外観で選ぶ色ではない）。その面の文字色（行・プレビューは
   `popupMenuTheme.textStyle.color`＝メニュー文字色）にし、色ではなく先頭の
-  印（`Icons.error_outline`）と文で知らせる。ブラシ・テーマ・パレット等の
-  残り11か所の共有はまだ直接呼んでいて、失敗を「書き出しに失敗」と例外の
-  文つきで出す（未着手）。`test/home_export_share_failure_test.dart`・
-  `export_share_notice_test.dart`。
+  印（`Icons.error_outline`）と文で知らせる。lib配下で`share_plus`を
+  importするのは`export_share_service.dart`だけ（ブラシ・トーン・スタンプ・
+  テーマ・自動塗り・パレット・ワークスペース・.niashare・引き継ぎも
+  2026-11-10にこの入口へそろえた。`test/share_call_site_contract_test.dart`が
+  直接の呼び出しを見張る）。決まり：書き出し・作成の失敗と共有の問題は
+  catchを分け、前者は元の文、後者は`exportShareFailureText`。共有シートを
+  閉じただけ（dismissed）では何も出さず、「書き出しました」は結果が
+  success／unavailableのときだけ。バイト列を渡すときは`fileNameOverrides`で
+  名前を渡す（cross_fileはWeb以外で`name`を使わず、渡した先で.niatraに
+  ならなかった）。同じ項目の書き出し〜共有は`ExportShareService.runExclusive`で
+  一度に1つにし、ボタン・メニューは**自分のフラグではなく
+  `isRunning`／`ExportShareService.running`を見て**押せない・進行中にする
+  （作成は始めた画面より長く続くので、画面を離れて戻ると押せる見た目のまま
+  何も起きなかった）。作成の後で共有するときは、通知先を先に
+  `ExportShareHandles.of(context)`で取っておく（終わったときには画面が
+  無いことがある。黙って捨てない）。.niashareの作成〜共有は`runNiashareFlow`。
+  テストは`test/helpers/fake_share_channel.dart`（共有の失敗・保留・
+  `breakWrites`で書き込みの失敗）で、押せないこと・知らせが1つだけ・
+  待ち行列が空であることまで確かめる（共有の呼び出し回数だけだと、
+  守りを外しても通った）。`home_export_share_failure_test`・
+  `export_share_notice_test`・`share_sites_failure_notice_test`・
+  `saved_niashare_share_notice_test`・`pixel_palette_footer_layout_test`。
+  書き出し・作成の失敗の文はまだ例外の文を含む（DISC069）。
 - **数と単位をコードでつなげない（ARBのICU pluralにする）**：特典交換の期間は
   `'${amount}$unit'`でつないでいて、英語「1hours」・スペイン語「1horas」・
   フランス語「1heures」と出ていた。`rewardDurationHours`等（`{count, plural,
