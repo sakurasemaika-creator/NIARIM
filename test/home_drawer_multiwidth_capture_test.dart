@@ -223,13 +223,21 @@ void main() {
         LocalTrashKind.exportedWork,
       });
       await shot('07-trash');
-      // Capture lower rows too; the narrow phone needs scrolling.
-      final trashList = find.byType(ListView).last;
-      if (tester.getSize(trashList).height > 170) {
-        await tester.drag(trashList, const Offset(0, -420));
-        await settleTabAnimation();
-        await shot('07b-trash-bottom');
+      // Verify real exported-file and outbound-share cards, not merely
+      // repository storage records. Narrow layouts must scroll to them.
+      final exportedTitle = find.text('trash-sample-export.mp4');
+      if (width < 760 && exportedTitle.evaluate().isEmpty) {
+        await tester.scrollUntilVisible(
+          exportedTitle,
+          180,
+          scrollable: find.byType(Scrollable).last,
+          maxScrolls: 12,
+        );
       }
+      await settleTabAnimation();
+      expect(exportedTitle, findsOneWidget, reason: 'width $width');
+      expect(find.textContaining('.niashare'), findsWidgets, reason: 'width $width');
+      await shot('07b-trash-bottom');
       await tester.ensureVisible(find.byKey(const ValueKey('home_tab_0')));
       await tester.tap(find.byKey(const ValueKey('home_tab_0')));
       await tester.pump(const Duration(milliseconds: 500));
