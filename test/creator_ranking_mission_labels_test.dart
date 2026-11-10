@@ -7,14 +7,15 @@ void main() {
       (tester) async {
     await tester.pumpWidget(MaterialApp(
       locale: const Locale('ja'),
+      supportedLocales: const [Locale('ja'), Locale('en')],
       home: Builder(builder: (context) {
         final labels = CreatorMissionLabels.of(context);
-        return Column(children: [
+        return SingleChildScrollView(child: Column(children: [
           Text(labels.format('rankGoal', 10, each: 15)),
           Text(labels.format('rankCommunityWait', 80, each: 100)),
           Text(labels.format('rankBookmarkWait', 4, each: 15)),
           Text(labels.format('rankRankWait', 8, each: 5)),
-        ]);
+        ]));
       }),
     ));
     expect(find.textContaining('10位以内＋ブクマ15件'), findsOneWidget);
