@@ -185,7 +185,7 @@ void main() {
         expect(find.byType(GuideHubScreen), findsOneWidget);
         await shot('10-guide-help');
         DefaultTabController.of(
-          tester.element(find.byType(GuideHubScreen)),
+          tester.element(find.byType(TabBar).first),
         ).animateTo(1);
         await tester.pump(const Duration(milliseconds: 900));
         await shot('11-guide-tips');
@@ -195,7 +195,7 @@ void main() {
         expect(find.byType(CoinBenefitsScreen), findsOneWidget);
         for (var i = 0; i < 3; i++) {
           DefaultTabController.of(
-            tester.element(find.byType(CoinBenefitsScreen)),
+            tester.element(find.byType(TabBar).first),
           ).animateTo(i);
           await tester.pump(const Duration(milliseconds: 900));
           await shot('12-coin-benefits-tab-${i + 1}');
