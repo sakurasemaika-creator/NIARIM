@@ -79,12 +79,23 @@ describe("JST recurring login mission catalog", () => {
     await recordRecurringLoginVisit("Nowner");
     expect(send).toHaveBeenCalledTimes(1);
   });
-  it("concurrent visit rejected by condition never adds days twice", async () => {
-    send.mockResolvedValueOnce({Item: undefined}).mockRejectedValueOnce(
-      new ConditionalCheckFailedException({$metadata:{}, message:"race"}),
-    );
+  it("concurrent coin claim never loses its claimed bit during daily visit", async () => {
+    const period=recurringPeriodKeys();
+    const previous={itemType:RECURRING_MISSION_STATE_TYPE,
+      lastVisitedDay:"2026-01-01",weekKey:period.week,weekDays:2,
+      weekClaimedMask:0,monthKey:period.month,monthDays:4,monthClaimedMask:0};
+    send.mockResolvedValueOnce({Item:previous})
+      .mockRejectedValueOnce(new ConditionalCheckFailedException({
+        $metadata:{},message:"coin claim race",
+      }))
+      .mockResolvedValueOnce({Item:{...previous,weekClaimedMask:1}})
+      .mockResolvedValueOnce({});
     await expect(recordRecurringLoginVisit("Nowner")).resolves.toBeUndefined();
-    expect(send).toHaveBeenCalledTimes(2);
+    expect(send).toHaveBeenCalledTimes(4);
+    const retry=send.mock.calls[3][0] as UpdateCommand;
+    expect(retry.input.ExpressionAttributeValues?.[":weekMask"]).toBe(1);
+    expect(retry.input.ConditionExpression).toContain("weekClaimedMask = :oldWeekMask");
+    expect(retry.input.ConditionExpression).toContain("monthClaimedMask = :oldMonthMask");
   });
   it("GET returns account-scoped status and never credits coins", async () => {
     const period=recurringPeriodKeys();
