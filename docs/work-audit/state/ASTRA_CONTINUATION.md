@@ -15,7 +15,9 @@
 
 Standalone実行物は3partをmetadata/raw SHA/CRC/計64file照合して復元し、実download版でPC/SPを操作済み。part1 https://drive.google.com/file/d/1_umGUy8oWrh1MQfO1AwwodgeeiZuiK_C/view （82,066,072B /SHA2687351f4a01bc68ad5ab807f4a80c54c3a5c3c23910900722bb0199d776af76）、part2 https://drive.google.com/file/d/1ynO0nCrMV4YL3pa_lv1TPPVehfk2Nqjc/view （69,773,351B /SHA0c6b2f4cebdbe87c6f742a1d892fdf71990f69194bec2be4446be859c3f0f6da）、part3 https://drive.google.com/file/d/1mW5d1vL6m1_8dCBLD0s91uLWhC_8DN1M/view （16,225,162B /SHAfc49047cda87a823067539befbb1fba29af07aaf1e61bc3308751968bfe9a6c8）。tools/restore_s37_bundle.pyでSDK/古いruntime chain無しに新規owned outputへ復元する。同一入力の完了済み検証を環境復旧だけのために繰り返さない。
 
-残作業: この検証単位の通常dev_branch公開/remote tree・blob・CI25照合/公開receipt。その後DISC061の共有エラー反例→修正/回帰/実操作。DISC059のreset部分失敗/prefs clear ack/古いmemory・legacy名衝突/全OS、DISC060全format/全theme/共有/全matrix、DISC058取得失敗と性能、DISC048 Help導線、DISC057期間、typing契約/実backend/最新Web Delta等も未完。修正済みの限定範囲を各Discovery doneや全面完了に昇格しない。
+公開/CI照合: App `9ff5a56f58191022ba3c0ae142692102d676c515` / Web `4881269bce08322fac7b04b20f10952eeb2ec119`へdev_branchだけ非force/expected_shaで反映済み。単一親/tree/32+5差分blob・全367Dart/8font・State5 mirror/local cleanを照合。Save safety run42725226452/job129529020546はformat12file変更0/analyze0/22+3の25tests PASS。別save-regressions129529020559は未変更niapro_serializerのformat1fileで後続未実行、full-gatesもglobal format失敗/全suite進行中のsnapshotなので全CI greenとはしない。公開receiptへログ/visual review manifest/正確な次工程を保存する。
+
+残作業: DISC061の共有エラー反例→修正/回帰/実操作。DISC059のreset部分失敗/prefs clear ack/古いmemory・legacy名衝突/全OS、DISC060全format/全theme/共有/全matrix、DISC058取得失敗と性能、DISC048 Help導線、DISC057期間、typing契約/実backend/最新Web Delta等も未完。修正済みの限定範囲を各Discovery doneや全面完了に昇格しない。
 
 
 route_version: 2026-09-09-initial-v1
@@ -106,7 +108,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S37 — export所有境界とPNG/JPEGを修正、50回帰・PC/SP cancel/reset/cold・Drive runtime照合。公開/CI25待ち
+current_substep: A003/S37 — export所有境界/PNG-JPEGを公開、50回帰と実PC/SP・CI25/source照合済み。DISC061共有失敗へ
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -126,7 +128,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: 検証済みS37単位をdev_branchだけ通常公開・tree/blob/CI25/readbackしreceiptを保存。その後DISC061共有失敗、DISC059残branch、DISC058/048/057/typing/Web Deltaへ。同一入力の復元だけのためにS37 50回帰/367Dart/8font/native44を再実行しない。
+next_action: S37公開receiptを保存し、DISC061共有失敗のfresh反例→修正/回帰/実操作へ。DISC059残branch、DISC058/048/057/typing/Web Deltaへ。同一入力の復元だけのためにS37 50回帰/367Dart/8font/native44を再実行しない。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
