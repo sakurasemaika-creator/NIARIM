@@ -108,7 +108,6 @@ void main() {
       final visibleCard = find.byType(CommunityWorkCard).first;
       final workId = tester.widget<CommunityWorkCard>(visibleCard).work.id;
       final title = tester.widget<CommunityWorkCard>(visibleCard).work.title;
-      final author = tester.widget<CommunityWorkCard>(visibleCard).work.authorName;
       final titleRect = tester.getRect(
         find.descendant(of: visibleCard, matching: find.text(title)),
       );
