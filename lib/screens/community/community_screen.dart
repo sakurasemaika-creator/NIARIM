@@ -23,6 +23,7 @@ import 'widgets/community_ranking_work_list.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/mission_completion_dialog.dart';
 import 'community_edit_feedback.dart';
 import 'community_bookmarked_tab.dart';
 import 'community_author_works_screen.dart';
@@ -167,7 +168,11 @@ class _CommunityScreenState extends State<CommunityScreen>
         return;
       }
       try {
-        await api.visitLoginBonus();
+        final visit = await api.visitLoginBonus();
+        if (mounted && (ModalRoute.of(context)?.isCurrent ?? false) &&
+            context.read<GoogleAuthService>().account?.id == ownerId) {
+          await showServerMissionCompletions(context, visit);
+        }
       } catch (error) {
         debugPrint('Plaza cumulative visit recording unavailable: $error');
       }
