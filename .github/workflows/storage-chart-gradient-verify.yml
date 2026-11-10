@@ -1,0 +1,30 @@
+name: Storage chart lightness-only colors
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/storage-chart-gradient-verify.yml'
+      - 'lib/screens/settings/storage_screen.dart'
+      - 'test/storage_chart_colors_test.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  storage-chart:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze changed storage screen and theme test
+        run: flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings lib/screens/settings/storage_screen.dart test/storage_chart_colors_test.dart
+      - name: Verify identical hue and saturation with six ascending lightness levels
+        run: flutter test --no-pub --reporter expanded test/storage_chart_colors_test.dart
