@@ -22,8 +22,9 @@ void main() {
   testWidgets('capture current Create Works home and drawer across SP and PC widths', (tester) async {
     final temp = Directory.systemTemp.createTempSync('niarim-home-drawer-matrix-');
     const channel = MethodChannel('plugins.flutter.io/path_provider');
+    var workingDirectory = temp.path;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (_) async => temp.path);
+        .setMockMethodCallHandler(channel, (_) async => workingDirectory);
     addTearDown(() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, null);
@@ -40,6 +41,8 @@ void main() {
       final pc = width >= 760;
       final height = pc ? 900 : 844;
       await tester.pumpWidget(const SizedBox.shrink());
+      workingDirectory =
+          (Directory('${temp.path}/width_$width')..createSync(recursive: true)).path;
       SharedPreferences.setMockInitialValues({
         'first_launch': false,
         'language': 'ja',
