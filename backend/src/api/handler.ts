@@ -29,6 +29,7 @@ import { getMyCreatorMissionAttention } from "./routes/creatorMissionAttention";
 import { getMyMissionActivity } from "./routes/creatorMissionActivity";
 import { syncMyMissionActivity } from "./routes/creatorMissionActivitySync";
 import { visitMyLoginBonus, getMyLoginBonus, claimMyLoginBonus } from "./routes/loginBonus";
+import { getMyRecurringMissions, claimMyRecurringMission } from "./routes/recurringMissions";
 import { editSessionAction } from "./routes/creatorEditSession";
 import { verifyMyPlayPremium, getPlayPurchaseAvailability } from "./routes/playPremium";
 import { updateWork } from "./routes/worksUpdate";
@@ -125,6 +126,8 @@ const routes: Route[] = [
   route("POST", "/me/login-bonus/visit", (e) => visitMyLoginBonus(e)),
   route("GET", "/me/login-bonus", (e) => getMyLoginBonus(e)),
   route("POST", "/me/login-bonus/claim", (e) => claimMyLoginBonus(e)),
+  route("GET", "/me/missions/recurring", (e) => getMyRecurringMissions(e)),
+  route("POST", "/me/missions/recurring/claim", (e) => claimMyRecurringMission(e)),
   route("GET", "/me/missions", (e) => getMyCreatorMissions(e)),
   route("GET", "/me/missions/grid", (e) => getMyWorkCountMissionGrid(e)),
   route("GET", "/me/missions/attention", (e) => getMyCreatorMissionAttention(e)),
