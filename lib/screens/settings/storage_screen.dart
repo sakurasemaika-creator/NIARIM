@@ -32,24 +32,15 @@ import '../../config/font_fallback.dart';
 ///
 /// さらにこのアプリのテーマは**primaryとsecondaryが同じ色**で、
 /// `ColorScheme`の役割をそのまま並べても区別できる6色にはならない。
-/// そこでアクセント色を起点に、色相を少しずつずらしつつ明度を等間隔に
-/// 振って作る。同系色のまま必ず見分けが付き、テーマを変えても
-/// 配色から浮かない。区別できることは
+/// アクセント色の**色相と彩度を固定**し、明度だけを均等に上げて
+/// 統一感のある濃淡6色を作る。テーマを変えた際も同じ色系統を保つ。
 /// `test/storage_chart_colors_test.dart`が組み込み28テーマ全てで検証する。
 List<Color> sliceColorsOf(ColorScheme scheme) {
   final base = HSLColor.fromColor(scheme.primary);
-  const hueOffsets = <double>[0, 18, -18, 36, -36, 54];
   return [
-    for (var i = 0; i < hueOffsets.length; i++)
-      base
-          .withHue((base.hue + hueOffsets[i] + 360) % 360)
-          // 明るい段ほど彩度を落とす。明度だけ上げて彩度を残すと、
-          // 淡いテーマの中に蛍光色のような1枚が混ざって浮く。
-          .withSaturation((base.saturation * (1.0 - 0.11 * i)).clamp(0.0, 1.0))
-          // 明度は0.085刻み。1段ぶんでRGBが20以上動くので、色相・彩度が
-          // 近いテーマでも必ず区別できる。
-          .withLightness(0.36 + 0.085 * i)
-          .toColor(),
+    for (var i = 0; i < 6; i++)
+      // 色相・彩度はアクセントのまま。暗い色から明るい色へ段階的にする。
+      base.withLightness(0.36 + 0.085 * i).toColor(),
   ];
 }
 
@@ -183,15 +174,7 @@ class _StorageScreenState extends State<StorageScreen> {
     StorageBreakdown breakdown,
   ) {
     final scheme = Theme.of(context).colorScheme;
-    // 6分類ぶんの**必ず違う色**を作る。
-    // 以前は5番目・6番目に`ThemeService.activeColorScheme`の
-    // secondary/primaryを使っていたが、これは`Theme.of(context)
-    // .colorScheme`と同一のインスタンス（`themeData`が代入している）
-    // なので、2番目・1番目と**まったく同じ色**になっていた。
-    // 実際に「プロジェクトデータ」と「キャッシュ」が同じ色で描かれ、
-    // 円グラフも凡例もどちらがどちらか分からない状態だった
-    // （build/all-route-screenshots/32_storage.png）。
-    // 5番目以降は基本4色の色相を回して作る。
+    // アクセント色の色相・彩度を変えず、明度だけ6段階にした濃淡を使う。
     final colors = sliceColorsOf(scheme);
     final entries = [
       (StorageCategory.materials, l10n.storageCategoryMaterials),
