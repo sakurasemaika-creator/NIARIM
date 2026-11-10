@@ -30,6 +30,8 @@ dependencies:
   firebase_messaging: ^16.7.1
   in_app_purchase: ^3.1.13
   video_player: ^2.8.2
+  # Official YouTube IFrame API for actual community video playback (no raw stream extraction).
+  youtube_player_iframe: ^6.0.2
   # audioplayers 5.2.1が依存するaudioplayers_android 4.0.3はcompileSdk 33で
   # ビルドされており、その一部のandroidx依存関係がcompileSdk 34以上を要求する
   # ためAARメタデータ検証（checkReleaseAarMetadata）に失敗しビルド不能だった。
