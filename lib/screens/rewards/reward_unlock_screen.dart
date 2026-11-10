@@ -473,7 +473,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           (hasFull && target != CoinUnlockTarget.fullPremium) ||
           (hasAllAds && _placementTargets.contains(target));
       lines.add(
-        '${t[target]}：${coversNow ? '既存・セット特典と重複。' : ''}'
+        '${t[target.name]}：${coversNow ? '既存・セット特典と重複。' : ''}'
         '参考の延長後期限 ${_formatBenefitExpiry(calculatedExpiry)}',
       );
     }
