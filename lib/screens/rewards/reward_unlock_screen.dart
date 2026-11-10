@@ -240,6 +240,22 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       return;
     }
     final t = RewardUnlockLabels.of(context);
+    final premium = context.read<PremiumService>();
+    // The backend has not implemented pausing/extending during an active
+    // Google Play subscription. Refuse spending in that overlapping case.
+    if (premium.hasVerifiedPlayPremium) {
+      await _reviewSelections();
+      return;
+    }
+    final activeCoin = premium.activeCoinPremiumExpiry;
+    final now = DateTime.now();
+    final from = _later(now, activeCoin);
+    final projectedEnd = _redeemablePeriod.previewExpiry(from);
+    final overlapMessage = activeCoin != null && activeCoin.isAfter(now)
+        ? '現在プレミアム特典を利用中です。交換すると有効期限が'
+          '${_formatBenefitExpiry(projectedEnd)}まで延長される見込みです。'
+          'よろしいですか？'
+        : '交換後の有効期限（参考）：${_formatBenefitExpiry(projectedEnd)}';
     final period = coinUnlockDurationLabel(
       AppLocalizations.of(context)!,
       _redeemablePeriod,
@@ -251,7 +267,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         // （既定だと本文が先に潰れ、題とボタンだけになった）。
         scrollable: true,
         title: Text(t['redeem']),
-        content: Text('${t['fullPremium']} · $period · $price ${t['coins']}'),
+        content: Text('${t['fullPremium']} · $period · $price ${t['coins']}\n\n$overlapMessage'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -653,6 +669,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final quote = _quote();
+    final referenceTotal = _selected.fold<int>(0, (sum, target) =>
+        sum + CoinBenefitPriceProposal.cost(target, _duration));
+    final premiumActiveFromPlay =
+        context.watch<PremiumService>().hasVerifiedPlayPremium;
     final serverPrice =
         _selected.length == 1 &&
             _selected.contains(CoinUnlockTarget.fullPremium) &&
@@ -802,13 +822,24 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                       Text(
                         serverPrice != null
                             ? '$serverPrice ${t['coins']}'
-                            : quote == null
+                            : quote != null
+                            ? '${quote.requiredCoins} ${t['coins']}'
+                            : _selected.isEmpty
                             ? t['unavailable']
-                            : '${quote.requiredCoins} ${t['coins']}',
+                            : '$referenceTotal ${t['coins']}'
+                              '（参考価格・交換準備中）',
                         key: const Key('rewardTotalCoins'),
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        key: const Key('rewardOverlapPreviewButton'),
+                        icon: const Icon(Icons.fact_check_outlined),
+                        onPressed: _selected.isNotEmpty
+                            ? _reviewSelections : null,
+                        label: const Text('重複・有効期限を確認'),
+                      ),
+                      const SizedBox(height: 8),
                       // Once the authenticated quote/goal API is connected,
                       // these buttons become available. Never claim a saved
                       // goal or a completed redemption without a server ack.
@@ -823,6 +854,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                                 _rewardState?['redemptionEnabled'] == true &&
                                 balance is int &&
                                 balance >= serverPrice &&
+                                !premiumActiveFromPlay &&
                                 !_redeemBusy
                             ? _redeemFullPremium
                             : null,
