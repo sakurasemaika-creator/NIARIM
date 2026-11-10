@@ -33,17 +33,12 @@ export interface GridMission {
  * Previously advertised v2 amounts remain intact for the corresponding
  * tiers, preventing surprising reductions if migration is later approved.
  */
-const LEGACY_PRICES: Readonly<Record<string,number>> = {
-  "3:10":150, "5:20":400,"10:20":700,"25:20":1200,
-  "50:20":1800,"100:20":2800,"250:20":5000,"500:20":8000,
-};
+/** Small repeated milestone rewards. Earlier paid receipts retain their
+ * original frozen amounts; only new claims use this v2 catalogue. */
 function gridCoins(works: number, bookmarks: number): number {
-  const legacy = LEGACY_PRICES[`${works}:${bookmarks}`];
-  if(legacy !== undefined)return legacy;
-  // Draft-only (never live without an independent economic approval).
   const countIndex = WORK_COUNT_GOALS.indexOf(works);
   const bookmarkIndex = BOOKMARK_GOALS.indexOf(bookmarks);
-  return Math.round((50 + countIndex*105 + bookmarkIndex*80)/10)*10;
+  return Math.min(30, 2 + Math.round(countIndex * 0.9 + bookmarkIndex * 0.5));
 }
 /** 20 shards x 24 bits. Never reuse a shard/bit pair for another goal. */
 export const WORK_COUNT_MISSIONS: readonly GridMission[] =
