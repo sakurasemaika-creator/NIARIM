@@ -2121,8 +2121,9 @@ class _FolderableList<T> extends StatelessWidget {
 
 class _TrashTab extends StatefulWidget {
   final ProjectSortMode sortMode;
+  final Set<TrashEntryKind> selectedKinds;
 
-  const _TrashTab({required this.sortMode});
+  const _TrashTab({required this.sortMode, required this.selectedKinds});
 
   @override
   State<_TrashTab> createState() => _TrashTabState();
@@ -2131,8 +2132,34 @@ class _TrashTab extends StatefulWidget {
 class _TrashTabState extends State<_TrashTab> {
   final _pending = <String>{};
   final _restoring = <String>{};
+  late Future<List<LocalTrashedFile>> _localFiles;
 
-  Future<void> _restore(String id) async {
+  @override
+  void initState() {
+    super.initState();
+    _localFiles = LocalFileTrashService.list();
+    LocalFileTrashService.changes.addListener(_reloadLocal);
+  }
+
+  @override
+  void dispose() {
+    LocalFileTrashService.changes.removeListener(_reloadLocal);
+    super.dispose();
+  }
+
+  void _reloadLocal() {
+    if (mounted) setState(() => _localFiles = LocalFileTrashService.list());
+  }
+
+  String _deletedLabel(DateTime? deleted, AppLocalizations l10n) {
+    if (deleted == null) return '';
+    return l10n.homeTrashDeletedOn(
+      '${deleted.year}/${deleted.month.toString().padLeft(2, '0')}/'
+      '${deleted.day.toString().padLeft(2, '0')}',
+    );
+  }
+
+  Future<void> _restoreProject(String id) async {
     if (_pending.contains(id)) return;
     final service = context.read<ProjectService>();
     setState(() {
@@ -2142,127 +2169,64 @@ class _TrashTabState extends State<_TrashTab> {
     try {
       await runProjectTrashAction(context, () => service.restoreProject(id));
     } finally {
-      if (mounted) {
-        setState(() {
-          _pending.remove(id);
-          _restoring.remove(id);
-        });
-      }
+      if (mounted) setState(() {
+        _pending.remove(id);
+        _restoring.remove(id);
+      });
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final trash = _sortProjects(
-      context.watch<ProjectService>().trash,
-      widget.sortMode,
-    );
-    final l10n = AppLocalizations.of(context)!;
-    if (trash.isEmpty) {
-      return EmptyStatePlaceholder(
-        icon: Icons.delete_outline,
-        title: l10n.homeTrashEmpty,
-      );
+  Future<void> _restoreLocal(LocalTrashedFile entry) async {
+    if (_pending.contains(entry.id)) return;
+    setState(() => _pending.add(entry.id));
+    try {
+      await LocalFileTrashService.restore(entry);
+      // The exported-work list maintains a cached storage listing.
+      StorageInfoService().invalidate();
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.homeTrashOperationFailed)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _pending.remove(entry.id));
     }
-    return ListView.builder(
-      itemCount: trash.length,
-      itemBuilder: (context, index) {
-        final project = trash[index];
-        final deletedAt = context.read<ProjectService>().deletedAtOf(
-          project.id,
-        );
-        final deletedLabel = deletedAt == null
-            ? ''
-            : l10n.homeTrashDeletedOn(
-                '${deletedAt.year}/${deletedAt.month.toString().padLeft(2, '0')}/${deletedAt.day.toString().padLeft(2, '0')}',
-              );
-        final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
-        final actions = [
-          TextButton(
-            key: ValueKey('trash-restore-${project.id}'),
-            style: TextButton.styleFrom(
-              minimumSize: const Size(48, 48),
-              visualDensity: VisualDensity.standard,
-            ),
-            onPressed: _pending.contains(project.id)
-                ? null
-                : () => _restore(project.id),
-            child: _restoring.contains(project.id)
-                ? Text(l10n.homeTrashWorking)
-                : Text(l10n.commonRestore),
-          ),
-          TextButton(
-            key: ValueKey('trash-delete-${project.id}'),
-            style: TextButton.styleFrom(
-              minimumSize: const Size(48, 48),
-              visualDensity: VisualDensity.standard,
-              foregroundColor: Theme.of(context).colorScheme.primary,
-            ),
-            onPressed: _pending.contains(project.id)
-                ? null
-                : () => _confirmPermanentDelete(project),
-            child: Text(l10n.homePermanentDelete),
-          ),
-        ];
-        Widget details({Widget? trailing}) => ListTile(
-          leading: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Color(project.backgroundColor),
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          title: Text(
-            project.name,
-            style: const TextStyle(
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-            ),
-          ),
-          subtitle: Text(deletedLabel.isEmpty ? meta : '$deletedLabel · $meta'),
-          trailing: trailing,
-        );
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final compact =
-                constraints.maxWidth <
-                600 * MediaQuery.textScalerOf(context).scale(1);
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                alpha: 0.15,
-              ),
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: compact
-                  ? Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        details(),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                          child: OverflowBar(
-                            alignment: MainAxisAlignment.end,
-                            overflowAlignment: OverflowBarAlignment.end,
-                            spacing: 8,
-                            overflowSpacing: 4,
-                            children: actions,
-                          ),
-                        ),
-                      ],
-                    )
-                  : details(
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: actions,
-                      ),
-                    ),
-            );
-          },
-        );
-      },
+  }
+
+  Future<void> _deleteLocal(LocalTrashedFile entry) async {
+    if (_pending.contains(entry.id)) return;
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        scrollable: true,
+        title: Text(l10n.homePermanentDeleteConfirmTitle),
+        content: Text(l10n.homePermanentDeleteConfirmBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.commonDelete)),
+        ],
+      ),
     );
+    if (confirmed != true || !mounted) return;
+    setState(() => _pending.add(entry.id));
+    try {
+      await LocalFileTrashService.deleteForever(entry);
+      StorageInfoService().invalidate();
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.homeTrashOperationFailed)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _pending.remove(entry.id));
+    }
   }
 
   Future<void> _confirmPermanentDelete(Project project) async {
@@ -2285,7 +2249,194 @@ class _TrashTabState extends State<_TrashTab> {
       if (mounted) setState(() => _pending.remove(project.id));
     }
   }
+
+  Widget _projectRow(
+    Project project, TrashEntryKind kind, AppLocalizations l10n,
+  ) {
+    final deleted = context.read<ProjectService>().deletedAtOf(project.id);
+    final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
+    final deletedLabel = _deletedLabel(deleted, l10n);
+    final subtitle = [
+      _trashKindLabel(context, kind),
+      if (deletedLabel.isNotEmpty) deletedLabel,
+      meta,
+    ].join(' · ');
+    final actions = <Widget>[
+      TextButton(
+        key: ValueKey('trash-restore-${project.id}'),
+        onPressed: _pending.contains(project.id)
+            ? null : () => _restoreProject(project.id),
+        child: Text(_restoring.contains(project.id)
+            ? l10n.homeTrashWorking : l10n.commonRestore),
+      ),
+      TextButton(
+        key: ValueKey('trash-delete-${project.id}'),
+        onPressed: _pending.contains(project.id)
+            ? null : () => _confirmPermanentDelete(project),
+        child: Text(l10n.homePermanentDelete,
+            style: TextStyle(color: Theme.of(context).colorScheme.error)),
+      ),
+    ];
+    return _trashCard(
+      leading: Container(
+        width: 48, height: 48,
+        decoration: BoxDecoration(
+          color: Color(project.backgroundColor),
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      title: project.name, subtitle: subtitle, actions: actions,
+    );
+  }
+
+  Widget _fileRow(
+    LocalTrashedFile entry, TrashEntryKind kind, AppLocalizations l10n,
+  ) {
+    final actions = <Widget>[
+      TextButton(
+        key: ValueKey('trash-restore-local-${entry.id}'),
+        onPressed: _pending.contains(entry.id)
+            ? null : () => _restoreLocal(entry),
+        child: Text(l10n.commonRestore),
+      ),
+      TextButton(
+        key: ValueKey('trash-delete-local-${entry.id}'),
+        onPressed: _pending.contains(entry.id)
+            ? null : () => _deleteLocal(entry),
+        child: Text(l10n.homePermanentDelete,
+            style: TextStyle(color: Theme.of(context).colorScheme.error)),
+      ),
+    ];
+    return _trashCard(
+      leading: Icon(kind == TrashEntryKind.createdShare
+          ? Icons.file_present_outlined : Icons.video_library_outlined,
+          size: 36),
+      title: entry.fileName,
+      subtitle: [
+        _trashKindLabel(context, kind),
+        _deletedLabel(entry.deletedAt, l10n),
+      ].join(' · '),
+      actions: actions,
+    );
+  }
+
+  Widget _trashCard({
+    required Widget leading, required String title,
+    required String subtitle, required List<Widget> actions,
+  }) {
+    final details = ListTile(
+      leading: leading,
+      title: Text(title, style: const TextStyle(
+        fontFamily: 'Kuramubon',
+        fontFamilyFallback: kHeadingFontFallback,
+      )),
+      subtitle: Text(subtitle),
+    );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth <
+            600 * MediaQuery.textScalerOf(context).scale(1);
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          child: compact
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    details,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                      child: OverflowBar(
+                        alignment: MainAxisAlignment.end,
+                        spacing: 8, overflowSpacing: 4,
+                        children: actions,
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    details,
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8, bottom: 4),
+                        child: Wrap(spacing: 8, children: actions),
+                      ),
+                    ),
+                  ],
+                ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.watch<ProjectService>();
+    return FutureBuilder<List<LocalTrashedFile>>(
+      future: _localFiles,
+      builder: (context, snapshot) {
+        final rows = <({
+          TrashEntryKind kind,
+          Project? project,
+          LocalTrashedFile? local,
+          DateTime deletedAt,
+          String name,
+        })>[];
+        for (final project in service.trash) {
+          final kind = project.isSharedImport
+              ? TrashEntryKind.receivedShare
+              : TrashEntryKind.createdProject;
+          if (!widget.selectedKinds.contains(kind)) continue;
+          rows.add((
+            kind: kind, project: project, local: null,
+            deletedAt: service.deletedAtOf(project.id)
+                ?? DateTime.fromMillisecondsSinceEpoch(0),
+            name: project.name,
+          ));
+        }
+        for (final local in snapshot.data ?? <LocalTrashedFile>[]) {
+          final kind = local.kind == LocalTrashKind.outgoingShare
+              ? TrashEntryKind.createdShare : TrashEntryKind.exportedWork;
+          if (!widget.selectedKinds.contains(kind)) continue;
+          rows.add((
+            kind: kind, project: null, local: local,
+            deletedAt: local.deletedAt, name: local.fileName,
+          ));
+        }
+        rows.sort((a, b) => switch (widget.sortMode) {
+          ProjectSortMode.nameAsc => a.name.compareTo(b.name),
+          ProjectSortMode.nameDesc => b.name.compareTo(a.name),
+          ProjectSortMode.updatedAsc => a.deletedAt.compareTo(b.deletedAt),
+          ProjectSortMode.updatedDesc => b.deletedAt.compareTo(a.deletedAt),
+        });
+        if (snapshot.connectionState != ConnectionState.done && rows.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (rows.isEmpty) {
+          return EmptyStatePlaceholder(
+            icon: Icons.delete_outline, title: l10n.homeTrashEmpty,
+          );
+        }
+        return ListView.builder(
+          itemCount: rows.length,
+          padding: const EdgeInsets.only(bottom: 100),
+          itemBuilder: (context, index) {
+            final row = rows[index];
+            if (row.project != null) {
+              return _projectRow(row.project!, row.kind, l10n);
+            }
+            return _fileRow(row.local!, row.kind, l10n);
+          },
+        );
+      },
+    );
+  }
 }
+
 
 class _WorksTab extends StatefulWidget {
   const _WorksTab({super.key});
