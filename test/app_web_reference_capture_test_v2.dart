@@ -340,21 +340,44 @@ void main() {
         findsNothing,
       );
 
-      final boundary =
-          screenshotKey.currentContext!.findRenderObject()
-              as RenderRepaintBoundary;
-      final bytes = await tester.runAsync(() async {
-        final image = await boundary.toImage(pixelRatio: 1.0);
-        final data = await image.toByteData(format: ui.ImageByteFormat.png);
-        image.dispose();
-        return data!.buffer.asUint8List();
-      });
+      Future<Uint8List> renderPng(double scale) async {
+        final boundary = screenshotKey.currentContext!.findRenderObject()
+            as RenderRepaintBoundary;
+        return (await tester.runAsync(() async {
+          final image = await boundary.toImage(pixelRatio: scale);
+          final data = await image.toByteData(format: ui.ImageByteFormat.png);
+          image.dispose();
+          return data!.buffer.asUint8List();
+        }))!;
+      }
+
       final dir = Directory('build/visual-smoke')..createSync(recursive: true);
       final suffix = variant == 0 ? '' : '_v${variant + 1}';
-      File('${dir.path}/webref_$name$suffix.png').writeAsBytesSync(bytes!);
+      // SP is rendered at the actual 320x569 logical screen, but saved at
+      // retina resolution for legible website zooming.
+      final phoneBytes = await renderPng(2.0);
+      File('${dir.path}/webref_$name$suffix.png')
+          .writeAsBytesSync(phoneBytes);
+
+      // Capture the EXACT same Flutter route/palette at PC/DeX width, not an
+      // enlarged smartphone screenshot or a CSS approximation.
+      final phonePhysicalSize = tester.view.physicalSize;
+      final phoneDevicePixelRatio = tester.view.devicePixelRatio;
+      try {
+        tester.view.physicalSize = const Size(1440, 900);
+        tester.view.devicePixelRatio = 1.0;
+        await tester.pump(const Duration(milliseconds: 300));
+        final pcBytes = await renderPng(1.0);
+        File('${dir.path}/webref_pc_$name$suffix.png')
+            .writeAsBytesSync(pcBytes);
+      } finally {
+        tester.view.physicalSize = phonePhysicalSize;
+        tester.view.devicePixelRatio = phoneDevicePixelRatio;
+        await tester.pump(const Duration(milliseconds: 300));
+      }
       // ignore: avoid_print
       print(
-        'web-reference captured: $name$suffix accent=${accent.toARGB32().toRadixString(16)}',
+        'web-reference SP + PC: $name$suffix accent=${accent.toARGB32().toRadixString(16)}',
       );
     }
   }
