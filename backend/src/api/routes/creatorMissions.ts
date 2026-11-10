@@ -42,6 +42,13 @@ function enabled(): boolean {
     process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED === "true";
 }
 
+/** Ranking bonus payouts have separate release/anti-sybil approval because
+ * population and mutual bookmarks can be manipulated independently of rank.
+ */
+function rankPayoutEnabled():boolean {
+  return enabled() &&
+    process.env.CREATOR_RANKING_REWARDS_REVIEW_APPROVED==="true";
+}
 const SOCIAL_HOLD_SECONDS = 48 * 60 * 60;
 const QUERY_WORK_PAGE_SIZE = 25;
 const MAX_OWN_WORK_PAGES = 20; // Prevent unbounded DynamoDB reads.
@@ -329,6 +336,7 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
           ? rankingEffectiveRankLimit(mission.required,publishedWorkCount)
           : null,
         rewardEnabled: enabled() &&
+          (mission.kind !== "niarimBookmarkRanking" || rankPayoutEnabled()) &&
           (mission.kind !== "verifiedEditSeconds" ||
             editTimeVerificationEnabled()) &&
           !(mission.kind === "qualifiedWorks" &&
@@ -356,6 +364,9 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
     if (gridMission) return claimWorkCountMission(auth.niarimUserId,gridMission);
     badRequest("不明なミッションです", "INVALID_MISSION_ID");
   }
+  if(mission.kind==="niarimBookmarkRanking" && !rankPayoutEnabled())
+    forbidden("順位報酬は不正対策の検証完了まで停止しています",
+      "RANKING_REWARD_REVIEW_PENDING");
 
   const workId = mission.perWork ? body.workId : undefined;
   if (mission.perWork) {
@@ -519,7 +530,9 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
         "AND youtubePrivacyStatus <> :private " +
         "AND youtubePrivacyStatus <> :deleted " +
         "AND gsi2pk = :bookmarkRank" +
-        (mission.kind === "workBookmarks" ? " AND bookmarkCount >= :required" : ""),
+        (mission.kind === "workBookmarks" ? " AND bookmarkCount >= :required" : "") +
+        (mission.kind === "niarimBookmarkRanking"
+          ? " AND bookmarkCount >= :rankingMinBookmarks" : ""),
       ExpressionAttributeValues: {
         ":workType": "WORK",
         ":author": auth.niarimUserId,
@@ -528,6 +541,9 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
         ":deleted": "deleted",
         ":bookmarkRank": "BOOKMARK_RANKING",
         ...(mission.kind === "workBookmarks" ? { ":required": mission.required } : {}),
+        ...(mission.kind === "niarimBookmarkRanking"
+          ? { ":rankingMinBookmarks": RANKING_MIN_BOOKMARKS[mission.required] }
+          : {}),
       },
     },
   } : mission.kind === "followers" ? {

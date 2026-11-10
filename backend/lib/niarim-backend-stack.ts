@@ -220,6 +220,11 @@ export class NiarimBackendStack extends Stack {
         CREATOR_MISSION_CLAIMS_REVIEW_APPROVED:
           this.node.tryGetContext("creatorMissionClaimsReviewApproved") === "true"
             ? "true" : "false",
+        // Ranked placements and social bookmarks need independent
+        // anti-sybil review before they can credit coins (default OFF).
+        CREATOR_RANKING_REWARDS_REVIEW_APPROVED:
+          this.node.tryGetContext("creatorRankingRewardsReviewApproved")==="true"
+            ? "true":"false",
         // Authenticated server-clock pilot is candidate-only. No env or
         // CDK context can upgrade device-reported edits to coin-bearing time.
         CREATOR_EDIT_SESSION_PILOT_ENABLED:

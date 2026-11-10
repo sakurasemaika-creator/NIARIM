@@ -38,6 +38,7 @@ beforeEach(()=>{
   process.env.TABLE_NAME="test";
   process.env.CREATOR_MISSION_CLAIMS_ENABLED="true";
   process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED="true";
+  process.env.CREATOR_RANKING_REWARDS_REVIEW_APPROVED="true";
   current=state();
   population=100;
   rank=true;
@@ -85,6 +86,12 @@ beforeEach(()=>{
   });
 });
 describe("live rankings are per-work, per-rank, and once-only",()=>{
+  it("cannot start or pay rankings without independent anti-sybil approval",async()=>{
+    delete process.env.CREATOR_RANKING_REWARDS_REVIEW_APPROVED;
+    await expect(claimCreatorMission(ev("bookmark_rank_1")))
+      .rejects.toMatchObject({code:"RANKING_REWARD_REVIEW_PENDING"});
+    expect(send).not.toHaveBeenCalled();
+  });
   it("first observation starts a 48h hold but never credits coins",async()=>{
     const result=JSON.parse((await claimCreatorMission(ev("bookmark_rank_1"))).body??"{}");
     expect(result).toMatchObject({pending:true,claimed:false,
@@ -104,6 +111,11 @@ describe("live rankings are per-work, per-rank, and once-only",()=>{
       .toBe(2**16);
     expect(tx.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":reward"])
       .toBe(200);
+    const liveWork=tx.input.TransactItems?.[3].ConditionCheck;
+    expect(liveWork?.ConditionExpression)
+      .toContain("bookmarkCount >= :rankingMinBookmarks");
+    expect(liveWork?.ExpressionAttributeValues?.[":rankingMinBookmarks"])
+      .toBe(50);
     const second=JSON.parse((await claimCreatorMission(ev("bookmark_rank_1"))).body??"{}");
     expect(second).toMatchObject({claimed:true,awardedCoins:0});
     expect(writes.filter(w=>w instanceof TransactWriteCommand)).toHaveLength(1);

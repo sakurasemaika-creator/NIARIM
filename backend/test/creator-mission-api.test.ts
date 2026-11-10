@@ -32,6 +32,7 @@ beforeEach(() => {
   process.env.TABLE_NAME = "test-table";
   delete process.env.CREATOR_MISSION_CLAIMS_ENABLED;
   delete process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED;
+  delete process.env.CREATOR_RANKING_REWARDS_REVIEW_APPROVED;
   delete process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED;
   delete process.env.CREATOR_EDIT_TIME_VERIFICATION_ENABLED;
   delete process.env.CREATOR_EDIT_TIME_VERIFICATION_REVIEW_APPROVED;
@@ -92,7 +93,7 @@ describe("creator mission endpoints", () => {
     expect(byId("bookmark_rank_1")).toMatchObject({
       eligible:true,progress:1,rankingMinPublishedWorks:100,
       rankingMinBookmarks:50,rankingUnmetConditions:[],
-      rankingWorkBookmarks:60,
+      rankingWorkBookmarks:60,rewardEnabled:false,
     });
     expect(byId("bookmark_rank_10")).toMatchObject({eligible:true});
     expect(byId("bookmark_rank_50")).toMatchObject({eligible:true});
