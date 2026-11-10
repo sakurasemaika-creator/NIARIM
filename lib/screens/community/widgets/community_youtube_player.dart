@@ -63,6 +63,9 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
       videoId: widget.videoId,
       autoPlay: widget.playing && widget.active,
       params: const YoutubePlayerParams(
+        // YouTube requires a recognizable WebView document origin / Referer.
+        // Match android/app/build.gradle.kts applicationId to prevent Error 153.
+        origin: 'https://com.niarim.niarim',
         showControls: true,
         showFullscreenButton: true,
         playsInline: true,
