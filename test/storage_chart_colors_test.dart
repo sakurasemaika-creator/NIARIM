@@ -34,6 +34,24 @@ void main() {
       final scheme = service.themeData.colorScheme;
       final colors = sliceColorsOf(scheme);
       expect(colors.length, 6);
+      final deviceColors = storageDeviceSliceColorsOf(scheme);
+      expect(deviceColors.length, 3);
+      final primaryHsl = HSLColor.fromColor(scheme.primary);
+      final shifted = primaryHsl.withHue(
+        (primaryHsl.hue + storageDeviceHueShiftDegrees) % 360,
+      );
+      for (var i = 0; i < 3; i++) {
+        expect(
+          deviceColors[i],
+          shifted.withLightness(storageChartLightnessLevels[i]).toColor(),
+          reason: '${preset.id}: device chart must shift hue only',
+        );
+        expect(
+          deviceColors[i],
+          isNot(colors[i]),
+          reason: '${preset.id}: device chart should be a distinct hue',
+        );
+      }
 
       // 6色の色相と彩度はアクセントと完全に同じ。
       // 明度以外の成分が変更されると、色の統一感が失われる。
