@@ -116,6 +116,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         accent: Theme.of(context).colorScheme.primary,
       ),
       (
+        // 自動塗りプリセットを制作関連の設定から管理する。
+        icon: Icons.auto_fix_high_outlined,
+        title: l10n.homeDrawerAutofillPreset,
+        subtitle: l10n.tipsAutofillPresetTitle,
+        keywords: '制作 自動塗り パーツ 色セット プリセット autofill presets',
+        onTap: () => context.push('/autofill-presets'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
         icon: Icons.widgets_outlined,
         title: l10n.widgetSettingsTitle,
         subtitle: l10n.widgetSettingsSubtitle,
