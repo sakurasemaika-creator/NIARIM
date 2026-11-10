@@ -98,10 +98,14 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   /// The external YouTube button is also an action boundary: never open a
   /// cached work without checking NIARIM and YouTube visibility again.
   Future<void> _openYoutubeIfAvailable(String workId) async {
-    if (!CommunityYoutubePlayer.isValidVideoId(workId)) { return; }
+    if (!CommunityYoutubePlayer.isValidVideoId(workId)) {
+      return;
+    }
     final status = await _checkPlaybackStatus();
     if (!mounted || widget.workId != workId ||
-        status != CommunityPlaybackStatus.available) { return; }
+        status != CommunityPlaybackStatus.available) {
+      return;
+    }
     final url = Uri.https('www.youtube.com', '/watch', {'v': workId});
     try {
       if (!await launchUrl(url, mode: LaunchMode.externalApplication) && mounted) {
