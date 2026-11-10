@@ -617,7 +617,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         _officialPremiumQuote?['priceCoins'] is int) {
       officialPrice = _officialPremiumQuote!['priceCoins'] as int;
     }
-    final referencePrice = CoinBenefitPriceProposal.cost(target, _duration);
+    final referencePrice = enabled
+        ? CoinBenefitPriceProposal.cost(target, _duration) : null;
     final hasSubscription = context.read<PremiumService>().hasPurchasedPremium;
     final japanese = Localizations.localeOf(context).languageCode == 'ja';
     return CheckboxListTile(
@@ -627,7 +628,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       controlAffinity: ListTileControlAffinity.leading,
       title: Text(t[target.name]),
       subtitle: Text(
-        officialPrice != null
+        !enabled
+            ? t['notReady']
+            : officialPrice != null
             ? '$officialPrice ${t['coins']}'
             : '${japanese ? '参考価格（交換準備中）' : 'Reference only (not for sale)'}'
               ' · $referencePrice ${t['coins']}'
