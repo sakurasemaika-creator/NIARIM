@@ -32,7 +32,7 @@ describe("mission rewards strictly rise with difficulty",()=>{
   it("raises ranking rewards at each stronger ranking and work population",()=>{
     const ranks=CREATOR_MISSIONS.filter(m=>m.kind==="niarimBookmarkRanking")
       .sort((a,b)=>b.required-a.required);
-    for(const works of [0,1000,10000,100000,1000000])
+    for(const works of [0,100,150,250,400,600,800,1000,10000,100000,1000000])
       increasing(ranks.map(m=>missionRewardCoins(m,works)));
     for(const m of ranks)
       increasing([0,1000,10000,100000,1000000]

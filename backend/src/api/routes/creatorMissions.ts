@@ -16,11 +16,14 @@ import { parseJsonObject } from "../../lib/request";
 import type { WorkItem } from "../../lib/types";
 import { workCountMissionById } from "../../lib/workCountMissionGrid";
 import { claimWorkCountMission } from "./creatorWorkCountClaim";
+import { getAllTimePublicWorks } from "./ranking";
 import {
   CREATOR_MISSIONS,
   MAX_CREATOR_MISSION_COINS,
   MISSION_CATALOG_VERSION,
   missionRewardCoins,
+  rankingMissionEligible, RANKING_MIN_BOOKMARKS,
+  MIN_RANK_MISSION_PUBLIC_WORKS,
   missionClaimed,
   claimMissionInMask,
   type MissionDefinition,
@@ -129,7 +132,7 @@ async function measuredProgress(
   userId: string,
   mission: MissionDefinition,
   workId?: string,
-): Promise<{ count: number; authoritative: boolean }> {
+): Promise<{ count: number; authoritative: boolean; bookmarks?: number }> {
   switch (mission.kind) {
     case "verifiedEditSeconds":
       // local Project.totalWorkSeconds is NOT trusted; sender can edit it.
@@ -194,23 +197,14 @@ async function measuredProgress(
       if (!workId || !/^[A-Za-z0-9_-]{11}$/.test(workId)) {
         badRequest("作品IDを指定してください", "MISSION_WORK_ID_REQUIRED");
       }
-      // Rank the EXACT named work, never the author's highest-ranked work.
-      // Only the NIARIM-native bookmark index can award mission coins.
-      const ranking = await ddb.send(new QueryCommand({
-        TableName: tableName(),
-        IndexName: "GSI2",
-        KeyConditionExpression: "gsi2pk = :rank",
-        ExpressionAttributeValues: { ":rank": "BOOKMARK_RANKING" },
-        ScanIndexForward: false,
-        Limit: 50,
-      }));
-      const list = ranking.Items ?? [];
-      const index = list.findIndex((w) =>
-        w.itemType === "WORK" && w.workId === workId &&
-        w.authorId === userId && w.isNiarimPublished === true);
+      // Use exactly the same public-visible ranking order as GET /ranking.
+      // A raw GSI slot may belong to deleted/private works and is NOT a rank.
+      const ranking=await getAllTimePublicWorks();
+      const index=ranking.findIndex(w=>w.workId===workId &&
+        w.authorId===userId);
       return {
-        count: index < 0 ? 51 : index + 1,
-        authoritative: true,
+        count:index<0?51:index+1, authoritative:true,
+        bookmarks:index<0?0:ranking[index].bookmarkCount,
       };
     }
   }
@@ -288,6 +282,10 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
           : mission.kind === "verifiedEditSeconds" ? state.verifiedEditSeconds
           : mission.kind === "workBookmarks" && selectedWorkId
             ? selectedWork?.bookmarkCount ?? 0 : null,
+        rankingMinPublishedWorks: mission.kind==="niarimBookmarkRanking"
+          ? MIN_RANK_MISSION_PUBLIC_WORKS : null,
+        rankingMinBookmarks: mission.kind==="niarimBookmarkRanking"
+          ? RANKING_MIN_BOOKMARKS[mission.required] : null,
         rewardEnabled: enabled() &&
           mission.kind !== "verifiedEditSeconds" &&
           !(mission.kind === "qualifiedWorks" &&
@@ -338,14 +336,31 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
       claimed: true, awardedCoins: 0 });
   }
 
-  const progress = await measuredProgress(
-    auth.niarimUserId, mission, itemWorkId,
-  );
+  // A daily statistics snapshot may lag live ranking. Never assume a
+  // missing/invalid population count means an easy early reward.
+  let publishedWorkCount:number|null=null;
+  if (mission.kind==="niarimBookmarkRanking") {
+    const count=await ddb.send(new GetCommand({
+      TableName:tableName(),Key:Keys.batchState(),ConsistentRead:true,
+    }));
+    const n=count.Item?.publishedWorkCount;
+    if(typeof n==="number" && Number.isSafeInteger(n) && n>=0)
+      publishedWorkCount=n;
+  }
+  const progress = mission.kind==="niarimBookmarkRanking" &&
+    (publishedWorkCount===null ||
+      publishedWorkCount<MIN_RANK_MISSION_PUBLIC_WORKS)
+    ? {count:51,authoritative:true,bookmarks:0}
+    : await measuredProgress(auth.niarimUserId,mission,itemWorkId);
   if (!progress.authoritative) {
     forbidden("このミッションの安全な計測は準備中です", "MISSION_VERIFICATION_PENDING");
   }
   const eligible = mission.kind === "niarimBookmarkRanking"
-    ? progress.count <= mission.required
+    ? rankingMissionEligible({
+        goalRank:mission.required,liveRank:progress.count,
+        publishedWorkCount:publishedWorkCount ?? 0,
+        workBookmarks:progress.bookmarks ?? 0,
+      })
     : progress.count >= mission.required;
   const bitKey = String(mission.bit);
   if (!eligible) {
@@ -386,18 +401,7 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
   const first = state.firstQualifiedAt[bitKey];
   let coins = state.pendingCoins[bitKey];
   if (!first || first > nowSec) {
-    let publishedWorkCount = 0;
-    if (mission.kind === "niarimBookmarkRanking") {
-      const count = await ddb.send(new GetCommand({
-        TableName: tableName(), Key: Keys.batchState(),
-      }));
-      const candidate = count.Item?.publishedWorkCount;
-      if (typeof candidate === "number" &&
-          Number.isSafeInteger(candidate) && candidate >= 0) {
-        publishedWorkCount = candidate;
-      }
-    }
-    coins = missionRewardCoins(mission, publishedWorkCount);
+    coins = missionRewardCoins(mission,publishedWorkCount ?? 0);
     const firstQualifiedAt = { ...state.firstQualifiedAt, [bitKey]: nowSec };
     const pendingCoins = { ...state.pendingCoins, [bitKey]: coins };
     try {
@@ -459,8 +463,9 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
 
   // Revalidate the live source in the SAME transaction as the wallet.
   // A GET alone would allow a simultaneous unpublish, unfollow or bookmark
-  // removal to race with payout. Rankings and cross-work counts still require
-  // separate consistency/anti-sybil reviews before launch.
+  // removal to race with payout. Rankings are rechecked at BOTH the start
+  // and end of the 48-hour hold; a transient live rank never pays instantly.
+  // Anti-sybil/social manipulation still requires operational review.
   const sourceCondition = mission.perWork ? {
     ConditionCheck: {
       TableName: tableName(),

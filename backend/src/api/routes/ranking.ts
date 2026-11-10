@@ -137,7 +137,7 @@ export async function getRankingVisibility(event: APIGatewayProxyEventV2) {
   return ok({visibility: Object.fromEntries(ids.map(id => [id, works.has(id)]))});
 }
 
-async function getAllTimePublicWorks(): Promise<WorkItem[]> {
+export async function getAllTimePublicWorks(): Promise<WorkItem[]> {
   const collected: WorkItem[] = [];
   let nextKey: Record<string,string|number>|undefined;
   // GSI2 can lag publication changes. NEVER expose cached GSI metadata

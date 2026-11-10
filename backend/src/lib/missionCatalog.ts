@@ -25,7 +25,7 @@ export interface MissionDefinition {
   eachWorkBookmarks?: number;
 }
 
-export const MISSION_CATALOG_VERSION = "creator-v8-ranking-rebalanced" as const;
+export const MISSION_CATALOG_VERSION = "creator-v9-early-ranking-guard" as const;
 export const CREATOR_MISSIONS: readonly MissionDefinition[] = Object.freeze([
   { id: "edit_1h", bit: 0, kind: "verifiedEditSeconds", required: 3600, coins: 5, perWork: false },
   { id: "edit_5h", bit: 1, kind: "verifiedEditSeconds", required: 18000, coins: 10, perWork: false },
@@ -106,23 +106,62 @@ export const MAX_CREATOR_MISSION_COINS = ACCOUNT_MISSIONS.reduce(
  * Untrusted/unknown population uses x1; a 48h held offer must freeze the
  * quoted amount rather than retroactively changing it.
  */
-export function rankingDifficultyMultiplier(publishedWorkCount: number): number {
-  if (!Number.isSafeInteger(publishedWorkCount) || publishedWorkCount < 0) {
-    return 1;
+/** Server-owned published-work counts, with finer tiers even below 1,000.
+ * Count 100 starts at x1; 1,000=x2; 10,000=x3; 100,000=x4;
+ * 1,000,000=x5. Intermediate tiers pay progressively more.
+ */
+export const RANKING_POPULATION_TIERS: readonly number[] = Object.freeze([
+  100,150,250,400,600,800,
+  1000,1500,2500,4000,6000,8000,
+  10000,15000,25000,40000,60000,80000,
+  100000,150000,250000,400000,600000,800000,
+  1000000,
+]);
+export const MIN_RANK_MISSION_PUBLIC_WORKS = 100;
+export const RANKING_MIN_BOOKMARKS: Readonly<Record<number,number>> =
+  Object.freeze({50:5,10:15,3:30,1:50});
+const rankingPopulationStep = (publishedWorkCount: number): number => {
+  if (!Number.isSafeInteger(publishedWorkCount) || publishedWorkCount < 0) return 0;
+  let index = 0;
+  for (let i=0;i<RANKING_POPULATION_TIERS.length;i++) {
+    if (publishedWorkCount < RANKING_POPULATION_TIERS[i]) break;
+    index=i;
   }
-  if (publishedWorkCount >= 1_000_000) return 5;
-  if (publishedWorkCount >= 100_000) return 4;
-  if (publishedWorkCount >= 10_000) return 3;
-  if (publishedWorkCount >= 1_000) return 2;
-  return 1;
+  return index;
+};
+export function rankingDifficultyMultiplier(publishedWorkCount: number): number {
+  return 1 + rankingPopulationStep(publishedWorkCount) / 6;
+}
+/** At launch, ranking 50th out of just 50 works is not an achievement.
+ * The relative threshold prevents "top ten by merely posting". A genuine
+ * NIARIM bookmark count is required in addition to the live position.
+ */
+export function rankingMissionEligible(args: {
+  goalRank: number; liveRank: number; publishedWorkCount: number;
+  workBookmarks: number;
+}): boolean {
+  const {goalRank,liveRank,publishedWorkCount,workBookmarks}=args;
+  const minimum=RANKING_MIN_BOOKMARKS[goalRank];
+  if (minimum===undefined ||
+      !Number.isSafeInteger(publishedWorkCount) ||
+      publishedWorkCount < MIN_RANK_MISSION_PUBLIC_WORKS ||
+      !Number.isSafeInteger(workBookmarks) || workBookmarks<minimum ||
+      !Number.isSafeInteger(liveRank) || liveRank<1) return false;
+  const percentile=goalRank===50 ? 10 : goalRank===10 ? 5 :
+    goalRank===3 ? 3 : 1;
+  const limit=Math.min(goalRank,
+    Math.max(1,Math.floor(publishedWorkCount*percentile/100)));
+  return liveRank<=limit;
 }
 
 export function missionRewardCoins(
   mission: MissionDefinition, publishedWorkCount = 0,
 ): number {
   // The 10-coin ad reward is not a mission cap.
+  // Multiply as integer sixths then round UP to 5 coins. An early tier
+  // cannot collapse onto the same reward as the preceding tier.
   return mission.kind === "niarimBookmarkRanking"
-    ? mission.coins * rankingDifficultyMultiplier(publishedWorkCount)
+    ? 5 * Math.ceil(mission.coins * (6 + rankingPopulationStep(publishedWorkCount)) / 30)
     : mission.coins;
 }
 

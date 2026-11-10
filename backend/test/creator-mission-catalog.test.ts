@@ -4,6 +4,7 @@ import {
   MAX_CREATOR_MISSION_COINS,
   claimMissionInMask, missionClaimed,
   missionRewardCoins, rankingDifficultyMultiplier,
+  RANKING_POPULATION_TIERS, rankingMissionEligible,
 } from "../src/lib/missionCatalog";
 
 describe("creator missions with separate account and work scopes", () => {
@@ -52,8 +53,8 @@ describe("creator missions with separate account and work scopes", () => {
   });
 
   it("adjusts NIARIM bookmark ranking rewards as eligible work pool grows", () => {
-    expect([0, 999, 1000, 9999, 10000, 100000, 1000000]
-      .map(rankingDifficultyMultiplier)).toEqual([1, 1, 2, 2, 3, 4, 5]);
+    expect([0, 100, 1000, 10000, 100000, 1000000]
+      .map(rankingDifficultyMultiplier)).toEqual([1, 1, 2, 3, 4, 5]);
     const ranked = CREATOR_MISSIONS.find((m) => m.id === "bookmark_rank_1")!;
     expect(missionRewardCoins(ranked, 100)).toBe(200);
     expect(missionRewardCoins(ranked, 10000)).toBe(600);
@@ -78,6 +79,39 @@ describe("creator missions with separate account and work scopes", () => {
     }
     expect(orderedRanks.map(m => missionRewardCoins(m, 1000000)))
       .toEqual([150, 375, 625, 1000]);
+  });
+
+  it("refuses trivial ranks in a tiny pool and requires real bookmark activity",()=>{
+    expect(rankingMissionEligible({
+      goalRank:10,liveRank:1,publishedWorkCount:99,workBookmarks:500,
+    })).toBe(false);
+    expect(rankingMissionEligible({
+      goalRank:10,liveRank:6,publishedWorkCount:100,workBookmarks:100,
+    })).toBe(false);
+    expect(rankingMissionEligible({
+      goalRank:10,liveRank:5,publishedWorkCount:100,workBookmarks:15,
+    })).toBe(true);
+    expect(rankingMissionEligible({
+      goalRank:1,liveRank:1,publishedWorkCount:150,workBookmarks:49,
+    })).toBe(false);
+    expect(rankingMissionEligible({
+      goalRank:1,liveRank:1,publishedWorkCount:150,workBookmarks:50,
+    })).toBe(true);
+    expect(rankingMissionEligible({
+      goalRank:50,liveRank:50,publishedWorkCount:100,workBookmarks:100,
+    })).toBe(false);
+  });
+
+  it("increases the coin reward at EVERY early pool tier before 1,000",()=>{
+    const rank=CREATOR_MISSIONS.find(m=>m.id==="bookmark_rank_50")!;
+    const early=RANKING_POPULATION_TIERS.filter(n=>n<=1000);
+    expect(early).toEqual([100,150,250,400,600,800,1000]);
+    expect(early.map(n=>missionRewardCoins(rank,n)))
+      .toEqual([30,35,40,45,50,55,60]);
+    for(const threshold of RANKING_POPULATION_TIERS.slice(1)){
+      expect(missionRewardCoins(rank,threshold))
+        .toBeGreaterThan(missionRewardCoins(rank,threshold-1));
+    }
   });
 
   it("never makes YouTube engagement metrics eligible for ranking rewards", () => {
