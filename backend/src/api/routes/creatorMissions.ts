@@ -326,8 +326,9 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
               publishedWorkCount,
               workBookmarks:Number.isSafeInteger(selectedWork?.bookmarkCount)
                 ? selectedWork!.bookmarkCount : 0,
-              workSelected:selectedWorkId!==undefined &&
-                isPublicWork(selectedWork,auth.niarimUserId),
+              workSelected:selectedWorkId!==undefined,
+              workPublic:isPublicWork(selectedWork,auth.niarimUserId),
+              populationKnown:rankingPopulationKnown,
             })
           : null,
         rankingWorkBookmarks: mission.kind==="niarimBookmarkRanking" &&

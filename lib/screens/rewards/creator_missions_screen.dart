@@ -291,6 +291,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       for (final code in codes)
         switch (code) {
           'selectWork' => t.get('rankSelectWork'),
+          'workNotPublic' => t.get('rankWorkNotPublic'),
+          'communityNotMeasured' => t.get('rankCommunityNotMeasured'),
           'communityTooSmall' =>
             t.format('rankCommunityWait', count, each: minPublished),
           'notEnoughBookmarks' =>
@@ -347,7 +349,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           (row['progress'] as num).toInt() > 0 &&
           (row['progress'] as num).toInt() <= 50)
         t.format('rankCurrentPlace', (row['progress'] as num).toInt()),
-      if (kind == 'niarimBookmarkRanking')
+      if (kind == 'niarimBookmarkRanking' && !claimed)
         ..._rankingMissingReasons(t, row),
       if (kind == 'niarimBookmarkRanking' &&
           row['rankingMinPublishedWorks'] is num &&
@@ -454,8 +456,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                   Text(_goal(t, row), style: theme.textTheme.bodyMedium),
                   Text(status, style: theme.textTheme.bodySmall),
                   if (row['kind'] == 'niarimBookmarkRanking') ...[
-                    for (final reason in _rankingMissingReasons(t, row))
-                      Text(reason, style: theme.textTheme.bodySmall),
+                    if (!claimed)
+                      for (final reason in _rankingMissingReasons(t, row))
+                        Text(reason, style: theme.textTheme.bodySmall),
                     if (eligible && !claimed &&
                         _rankingMissingReasons(t, row).isEmpty)
                       Text(t.get('rankQualified'),
@@ -506,7 +509,11 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                   OutlinedButton(
                     onPressed: null,
                     child: Text(
-                      pending ? t.get('reviewing') : t.get('notAchieved'),
+                      !available
+                          ? t.get('upcoming')
+                          : pending
+                              ? t.get('reviewing')
+                              : t.get('notAchieved'),
                     ),
                   ),
               ],

@@ -127,6 +127,10 @@ describe("creator missions with separate account and work scopes", () => {
     expect(rankingMissionUnmetConditions(base)).toEqual([]);
     expect(rankingMissionUnmetConditions({...base,workSelected:false}))
       .toEqual(["selectWork"]);
+    expect(rankingMissionUnmetConditions({...base,workPublic:false}))
+      .toEqual(["workNotPublic"]);
+    expect(rankingMissionUnmetConditions({...base,populationKnown:false}))
+      .toEqual(["communityNotMeasured"]);
     expect(rankingMissionUnmetConditions({...base,
       publishedWorkCount:99,workBookmarks:1}))
       .toEqual(["communityTooSmall","notEnoughBookmarks"]);

@@ -147,6 +147,8 @@ export function rankingEffectiveRankLimit(goalRank:number,
 }
 export type RankingUnmetCondition =
   | "selectWork"
+  | "workNotPublic"
+  | "communityNotMeasured"
   | "communityTooSmall"
   | "notEnoughBookmarks"
   | "notRanked"
@@ -158,10 +160,13 @@ export type RankingUnmetCondition =
 export function rankingMissionUnmetConditions(args: {
   goalRank: number; liveRank: number | null; publishedWorkCount: number;
   workBookmarks: number; workSelected: boolean;
+  workPublic?: boolean; populationKnown?: boolean;
 }): RankingUnmetCondition[] {
   if (!args.workSelected) return ["selectWork"];
+  if (args.workPublic===false) return ["workNotPublic"];
   const reasons: RankingUnmetCondition[] = [];
-  if (!Number.isSafeInteger(args.publishedWorkCount) ||
+  if (args.populationKnown===false) reasons.push("communityNotMeasured");
+  else if (!Number.isSafeInteger(args.publishedWorkCount) ||
       args.publishedWorkCount < MIN_RANK_MISSION_PUBLIC_WORKS) {
     reasons.push("communityTooSmall");
   }
