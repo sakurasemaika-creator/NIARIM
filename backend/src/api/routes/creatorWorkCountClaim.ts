@@ -4,7 +4,7 @@ import {ddb,Keys,tableName} from "../../lib/dynamo";
 import {conflict,forbidden,ok} from "../../lib/response";
 import {
   ACCOUNT_GRID_CATALOG_VERSION,WORK_COUNT_MISSIONS,
-  LEGACY_GRID_BITS,gridClaimsEnabled,type GridMission,
+  gridClaimsEnabled,type GridMission,
 } from "../../lib/workCountMissionGrid";
 import {claimMissionInMask,missionClaimed} from "../../lib/missionCatalog";
 import type {WorkItem} from "../../lib/types";
@@ -122,18 +122,10 @@ export async function claimWorkCountMission(userId:string,mission:GridMission){
   }
   const table=tableName();
   const key=Keys.creatorGridShard(userId,mission.required);
-  const [stateResult,old]=await Promise.all([
-    ddb.send(new GetCommand({TableName:table,Key:key,ConsistentRead:true})),
-    ddb.send(new GetCommand({
-      TableName:table,Key:Keys.creatorMissionState(userId),ConsistentRead:true,
-    })),
-  ]);
+  const stateResult=await ddb.send(new GetCommand({
+    TableName:table,Key:key,ConsistentRead:true,
+  }));
   const state=normalize(stateResult.Item as Record<string,unknown>|undefined);
-  const oldBit=LEGACY_GRID_BITS[mission.id];
-  if(oldBit!==undefined && Number.isSafeInteger(old.Item?.claimedMask) &&
-      missionClaimed(old.Item!.claimedMask,oldBit)){
-    return ok({missionId:mission.id,claimed:true,awardedCoins:0});
-  }
   if(missionClaimed(state.claimedMask,mission.bit)){
     return ok({missionId:mission.id,claimed:true,awardedCoins:0});
   }

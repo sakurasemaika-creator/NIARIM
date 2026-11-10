@@ -23,6 +23,7 @@ export function premiumRedemptionOffer(): PremiumRedemptionOffer {
     approved &&
     /^[1-9][0-9]{0,8}$/.test(raw) &&
     Number.isSafeInteger(amount) &&
+    amount % 10 === 0 &&
     amount >= PREMIUM_MONTHLY_REFERENCE_COINS &&
     amount < PROPOSED_ALL_INDIVIDUAL_MONTHLY_COINS &&
     /^v[1-9][0-9]*-[a-z0-9-]{2,40}$/.test(version);

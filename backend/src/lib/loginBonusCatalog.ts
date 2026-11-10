@@ -1,14 +1,14 @@
 /**
  * Initial cumulative login reward proposal. Distinct calendar days, never
- * a streak. A missed day does not reset progress. A UTC calendar day is
- * chosen deliberately so device clock/timezone edits cannot double-claim.
+ * a streak. A missed day does not reset progress. The server's JST day
+ * prevents device clock/timezone edits from double-claiming.
  *
  * The server day boundary is midnight JST (UTC+09:00).
- * 1 coin per checked-in day; notable round-number milestones grant extra.
- * These coin prices are launch proposals and payout is OFF by default.
+ * 1 coin per checked-in day, with progressively higher milestone prizes.
+ * These are proposals and payout is OFF unless separately approved.
  */
 export const DAILY_LOGIN_COINS = 1;
-export const LOGIN_BONUS_CATALOG_VERSION = "cumulative-login-v2";
+export const LOGIN_BONUS_CATALOG_VERSION = "cumulative-login-v3-progressive";
 export const LOGIN_BONUS_MAX_MILESTONE = 3600;
 
 export type LoginMilestone = {
@@ -16,20 +16,19 @@ export type LoginMilestone = {
   coins: number;
 };
 const tiers = [
-  {from:5,to:50,step:5,coins:5},
-  {from:60,to:100,step:10,coins:10},
-  {from:150,to:500,step:50,coins:50},
-  {from:600,to:1000,step:100,coins:100},
-  {from:1100,to:3600,step:100,coins:150},
+  {from:5,to:50,step:5,startCoins:5,increment:1},
+  {from:60,to:100,step:10,startCoins:15,increment:1},
+  {from:150,to:500,step:50,startCoins:40,increment:2},
+  {from:600,to:1000,step:100,startCoins:60,increment:4},
+  {from:1100,to:3600,step:100,startCoins:80,increment:5},
 ] as const;
 
 export const LOGIN_BONUS_MILESTONES: readonly LoginMilestone[] =
   Object.freeze(tiers.flatMap(tier => {
-    const rows:LoginMilestone[]=[];
-    for (let days: number = tier.from;days<=tier.to;days+=tier.step) {
-      const roundBonus = Math.min(40, days === 50 ? 10 : days === 100 ? 15
-        : days === 500 ? 25 : days === 1000 ? 40 : tier.coins);
-      rows.push({days,coins:roundBonus});
+    const rows:LoginMilestone[] = [];
+    for (let days= tier.from; days <= tier.to; days += tier.step) {
+      rows.push({days,
+        coins: tier.startCoins + ((days - tier.from) / tier.step) * tier.increment});
     }
     return rows;
   }));

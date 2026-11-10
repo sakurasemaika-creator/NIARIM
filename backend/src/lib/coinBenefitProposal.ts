@@ -7,7 +7,7 @@
  * Full Premium is strictly cheaper than buying each equivalent standalone
  * right for the same period.
  */
-export const COIN_BENEFIT_PRICE_PROPOSAL_VERSION = "proposal-v1" as const;
+export const COIN_BENEFIT_PRICE_PROPOSAL_VERSION = "proposal-v2-rounded10" as const;
 
 const month = {
   endCardEdit: 8_000,
@@ -43,11 +43,13 @@ export function proposedBenefitCoins(
   if (target === "fullPremium") {
     return {hour:500,day:2_500,week:18_000}[duration];
   }
-  return {
+  // Round every unit price UP at the ones place to a multiple of 10.
+  const raw = {
     hour: Math.ceil(perMonth / 120),
     day: Math.ceil(perMonth / 28),
     week: Math.ceil(perMonth / 3.7),
   }[duration];
+  return Math.ceil(raw / 10) * 10;
 }
 
 export const PROPOSED_PREMIUM_MONTHLY_COINS = month.fullPremium;

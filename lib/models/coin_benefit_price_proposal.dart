@@ -3,7 +3,7 @@ import 'coin_unlock_quote.dart';
 /// Informational only: these are NOT server-approved, spendable prices.
 /// The real exchange button still requires an authenticated backend quote.
 abstract final class CoinBenefitPriceProposal {
-  static const version = 'proposal-v1';
+  static const version = 'proposal-v2-rounded10';
 
   static const _monthlyCoins = <CoinUnlockTarget, int>{
     CoinUnlockTarget.endCardEdit: 8000,
@@ -45,12 +45,14 @@ abstract final class CoinBenefitPriceProposal {
         CoinDurationUnit.month => month,
       };
     }
-    return switch (unit) {
+    final raw = switch (unit) {
       CoinDurationUnit.hour => (month / 120).ceil(),
       CoinDurationUnit.day => (month / 28).ceil(),
       CoinDurationUnit.week => (month / 3.7).ceil(),
       CoinDurationUnit.month => month,
     };
+    // Round the ones digit UP so each unit quote is a multiple of 10.
+    return ((raw + 9) ~/ 10) * 10;
   }
 
   static int cost(CoinUnlockTarget target, CoinUnlockDuration duration) =>

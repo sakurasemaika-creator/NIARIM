@@ -18,14 +18,14 @@ export interface MissionDefinition {
   bit: number;
   kind: MissionKind;
   required: number;
-  /** Initial non-cash coins. Ranking missions may use a difficulty multiplier. */
+  /** Progressive non-cash coins. Rankings use a difficulty multiplier. */
   coins: number;
   /** true: claimed once per WORK, false: claimed once per NIARIM User ID */
   perWork: boolean;
   eachWorkBookmarks?: number;
 }
 
-export const MISSION_CATALOG_VERSION = "creator-v5-balanced-10" as const;
+export const MISSION_CATALOG_VERSION = "creator-v6-progressive" as const;
 export const CREATOR_MISSIONS: readonly MissionDefinition[] = Object.freeze([
   { id: "edit_1h", bit: 0, kind: "verifiedEditSeconds", required: 3600, coins: 2, perWork: false },
   { id: "edit_5h", bit: 1, kind: "verifiedEditSeconds", required: 18000, coins: 3, perWork: false },
@@ -33,51 +33,51 @@ export const CREATOR_MISSIONS: readonly MissionDefinition[] = Object.freeze([
   { id: "edit_50h", bit: 3, kind: "verifiedEditSeconds", required: 180000, coins: 6, perWork: false },
   { id: "edit_100h", bit: 4, kind: "verifiedEditSeconds", required: 360000, coins: 7, perWork: false },
   { id: "edit_10h", bit: 17, kind: "verifiedEditSeconds", required: 36000, coins: 4, perWork: false },
-  { id: "edit_250h", bit: 18, kind: "verifiedEditSeconds", required: 900000, coins: 7, perWork: false },
-  { id: "edit_500h", bit: 19, kind: "verifiedEditSeconds", required: 1800000, coins: 8, perWork: false },
-  { id: "edit_1000h", bit: 20, kind: "verifiedEditSeconds", required: 3600000, coins: 8, perWork: false },
-  { id: "edit_2500h", bit: 21, kind: "verifiedEditSeconds", required: 9000000, coins: 9, perWork: false },
-  { id: "edit_5000h", bit: 22, kind: "verifiedEditSeconds", required: 18000000, coins: 9, perWork: false },
-  { id: "edit_10000h", bit: 23, kind: "verifiedEditSeconds", required: 36000000, coins: 10, perWork: false },
-  { id: "edit_25000h", bit: 24, kind: "verifiedEditSeconds", required: 90000000, coins: 10, perWork: false },
-  { id: "edit_50000h", bit: 25, kind: "verifiedEditSeconds", required: 180000000, coins: 10, perWork: false },
-  { id: "edit_100000h", bit: 26, kind: "verifiedEditSeconds", required: 360000000, coins: 10, perWork: false },
+  { id: "edit_250h", bit: 18, kind: "verifiedEditSeconds", required: 900000, coins: 9, perWork: false },
+  { id: "edit_500h", bit: 19, kind: "verifiedEditSeconds", required: 1800000, coins: 11, perWork: false },
+  { id: "edit_1000h", bit: 20, kind: "verifiedEditSeconds", required: 3600000, coins: 14, perWork: false },
+  { id: "edit_2500h", bit: 21, kind: "verifiedEditSeconds", required: 9000000, coins: 18, perWork: false },
+  { id: "edit_5000h", bit: 22, kind: "verifiedEditSeconds", required: 18000000, coins: 22, perWork: false },
+  { id: "edit_10000h", bit: 23, kind: "verifiedEditSeconds", required: 36000000, coins: 27, perWork: false },
+  { id: "edit_25000h", bit: 24, kind: "verifiedEditSeconds", required: 90000000, coins: 33, perWork: false },
+  { id: "edit_50000h", bit: 25, kind: "verifiedEditSeconds", required: 180000000, coins: 40, perWork: false },
+  { id: "edit_100000h", bit: 26, kind: "verifiedEditSeconds", required: 360000000, coins: 48, perWork: false },
   { id: "followers_10", bit: 10, kind: "followers", required: 10, coins: 2, perWork: false },
   { id: "followers_50", bit: 11, kind: "followers", required: 50, coins: 3, perWork: false },
   { id: "followers_100", bit: 12, kind: "followers", required: 100, coins: 4, perWork: false },
-  { id: "followers_500", bit: 27, kind: "followers", required: 500, coins: 5, perWork: false },
-  { id: "followers_1000", bit: 28, kind: "followers", required: 1000, coins: 5, perWork: false },
-  { id: "followers_5000", bit: 29, kind: "followers", required: 5000, coins: 6, perWork: false },
-  { id: "followers_10000", bit: 30, kind: "followers", required: 10000, coins: 7, perWork: false },
-  { id: "followers_50000", bit: 31, kind: "followers", required: 50000, coins: 7, perWork: false },
-  { id: "followers_100000", bit: 32, kind: "followers", required: 100000, coins: 8, perWork: false },
-  { id: "followers_250000", bit: 33, kind: "followers", required: 250000, coins: 8, perWork: false },
-  { id: "followers_500000", bit: 34, kind: "followers", required: 500000, coins: 9, perWork: false },
-  { id: "followers_1000000", bit: 35, kind: "followers", required: 1000000, coins: 10, perWork: false },
+  { id: "followers_500", bit: 27, kind: "followers", required: 500, coins: 6, perWork: false },
+  { id: "followers_1000", bit: 28, kind: "followers", required: 1000, coins: 7, perWork: false },
+  { id: "followers_5000", bit: 29, kind: "followers", required: 5000, coins: 9, perWork: false },
+  { id: "followers_10000", bit: 30, kind: "followers", required: 10000, coins: 11, perWork: false },
+  { id: "followers_50000", bit: 31, kind: "followers", required: 50000, coins: 14, perWork: false },
+  { id: "followers_100000", bit: 32, kind: "followers", required: 100000, coins: 17, perWork: false },
+  { id: "followers_250000", bit: 33, kind: "followers", required: 250000, coins: 21, perWork: false },
+  { id: "followers_500000", bit: 34, kind: "followers", required: 500000, coins: 26, perWork: false },
+  { id: "followers_1000000", bit: 35, kind: "followers", required: 1000000, coins: 32, perWork: false },
   { id: "work_posted", bit: 0, kind: "workBookmarks", required: 0, coins: 2, perWork: true },
-  { id: "work_bookmarks_20", bit: 1, kind: "workBookmarks", required: 20, coins: 1, perWork: true },
-  { id: "work_bookmarks_30", bit: 2, kind: "workBookmarks", required: 30, coins: 1, perWork: true },
-  { id: "work_bookmarks_40", bit: 3, kind: "workBookmarks", required: 40, coins: 1, perWork: true },
-  { id: "work_bookmarks_60", bit: 4, kind: "workBookmarks", required: 60, coins: 2, perWork: true },
-  { id: "work_bookmarks_70", bit: 8, kind: "workBookmarks", required: 70, coins: 2, perWork: true },
-  { id: "work_bookmarks_80", bit: 9, kind: "workBookmarks", required: 80, coins: 2, perWork: true },
-  { id: "work_bookmarks_90", bit: 10, kind: "workBookmarks", required: 90, coins: 2, perWork: true },
-  { id: "work_bookmarks_150", bit: 11, kind: "workBookmarks", required: 150, coins: 2, perWork: true },
-  { id: "work_bookmarks_200", bit: 12, kind: "workBookmarks", required: 200, coins: 3, perWork: true },
-  { id: "work_bookmarks_250", bit: 17, kind: "workBookmarks", required: 250, coins: 3, perWork: true },
-  { id: "work_bookmarks_300", bit: 18, kind: "workBookmarks", required: 300, coins: 3, perWork: true },
-  { id: "work_bookmarks_350", bit: 19, kind: "workBookmarks", required: 350, coins: 3, perWork: true },
-  { id: "work_bookmarks_400", bit: 20, kind: "workBookmarks", required: 400, coins: 4, perWork: true },
-  { id: "work_bookmarks_450", bit: 21, kind: "workBookmarks", required: 450, coins: 4, perWork: true },
-  { id: "work_bookmarks_600", bit: 22, kind: "workBookmarks", required: 600, coins: 4, perWork: true },
-  { id: "work_bookmarks_700", bit: 23, kind: "workBookmarks", required: 700, coins: 4, perWork: true },
-  { id: "work_bookmarks_800", bit: 24, kind: "workBookmarks", required: 800, coins: 5, perWork: true },
-  { id: "work_bookmarks_900", bit: 25, kind: "workBookmarks", required: 900, coins: 5, perWork: true },
-  { id: "work_bookmarks_10", bit: 5, kind: "workBookmarks", required: 10, coins: 1, perWork: true },
-  { id: "work_bookmarks_50", bit: 6, kind: "workBookmarks", required: 50, coins: 2, perWork: true },
-  { id: "work_bookmarks_100", bit: 7, kind: "workBookmarks", required: 100, coins: 2, perWork: true },
-  { id: "work_bookmarks_500", bit: 46, kind: "workBookmarks", required: 500, coins: 4, perWork: true },
-  { id: "work_bookmarks_1000", bit: 47, kind: "workBookmarks", required: 1000, coins: 5, perWork: true },
+  { id: "work_bookmarks_20", bit: 1, kind: "workBookmarks", required: 20, coins: 4, perWork: true },
+  { id: "work_bookmarks_30", bit: 2, kind: "workBookmarks", required: 30, coins: 5, perWork: true },
+  { id: "work_bookmarks_40", bit: 3, kind: "workBookmarks", required: 40, coins: 6, perWork: true },
+  { id: "work_bookmarks_60", bit: 4, kind: "workBookmarks", required: 60, coins: 8, perWork: true },
+  { id: "work_bookmarks_70", bit: 8, kind: "workBookmarks", required: 70, coins: 9, perWork: true },
+  { id: "work_bookmarks_80", bit: 9, kind: "workBookmarks", required: 80, coins: 10, perWork: true },
+  { id: "work_bookmarks_90", bit: 10, kind: "workBookmarks", required: 90, coins: 11, perWork: true },
+  { id: "work_bookmarks_150", bit: 11, kind: "workBookmarks", required: 150, coins: 13, perWork: true },
+  { id: "work_bookmarks_200", bit: 12, kind: "workBookmarks", required: 200, coins: 14, perWork: true },
+  { id: "work_bookmarks_250", bit: 17, kind: "workBookmarks", required: 250, coins: 15, perWork: true },
+  { id: "work_bookmarks_300", bit: 18, kind: "workBookmarks", required: 300, coins: 16, perWork: true },
+  { id: "work_bookmarks_350", bit: 19, kind: "workBookmarks", required: 350, coins: 17, perWork: true },
+  { id: "work_bookmarks_400", bit: 20, kind: "workBookmarks", required: 400, coins: 18, perWork: true },
+  { id: "work_bookmarks_450", bit: 21, kind: "workBookmarks", required: 450, coins: 19, perWork: true },
+  { id: "work_bookmarks_600", bit: 22, kind: "workBookmarks", required: 600, coins: 21, perWork: true },
+  { id: "work_bookmarks_700", bit: 23, kind: "workBookmarks", required: 700, coins: 22, perWork: true },
+  { id: "work_bookmarks_800", bit: 24, kind: "workBookmarks", required: 800, coins: 23, perWork: true },
+  { id: "work_bookmarks_900", bit: 25, kind: "workBookmarks", required: 900, coins: 24, perWork: true },
+  { id: "work_bookmarks_10", bit: 5, kind: "workBookmarks", required: 10, coins: 3, perWork: true },
+  { id: "work_bookmarks_50", bit: 6, kind: "workBookmarks", required: 50, coins: 7, perWork: true },
+  { id: "work_bookmarks_100", bit: 7, kind: "workBookmarks", required: 100, coins: 12, perWork: true },
+  { id: "work_bookmarks_500", bit: 46, kind: "workBookmarks", required: 500, coins: 20, perWork: true },
+  { id: "work_bookmarks_1000", bit: 47, kind: "workBookmarks", required: 1000, coins: 25, perWork: true },
   { id: "bookmark_rank_50", bit: 13, kind: "niarimBookmarkRanking", required: 50, coins: 2, perWork: true },
   { id: "bookmark_rank_10", bit: 14, kind: "niarimBookmarkRanking", required: 10, coins: 3, perWork: true },
   { id: "bookmark_rank_3", bit: 15, kind: "niarimBookmarkRanking", required: 3, coins: 5, perWork: true },
@@ -116,11 +116,9 @@ export function rankingDifficultyMultiplier(publishedWorkCount: number): number 
 export function missionRewardCoins(
   mission: MissionDefinition, publishedWorkCount = 0,
 ): number {
-  // Even top ranking in a large catalogue must not outpay a 10-coin
-  // voluntary rewarded-ad view per individual mission. Historic claim and
-  // pending-quote amounts remain frozen in their respective wallet records.
+  // The 10-coin ad reward is not a mission cap.
   return mission.kind === "niarimBookmarkRanking"
-    ? Math.min(10, mission.coins * rankingDifficultyMultiplier(publishedWorkCount))
+    ? mission.coins * rankingDifficultyMultiplier(publishedWorkCount)
     : mission.coins;
 }
 
