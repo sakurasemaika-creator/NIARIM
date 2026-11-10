@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/color_palette.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 
 /// カラーピッカーの「最近使った色」「パレット」を管理する。
@@ -33,16 +34,13 @@ class PaletteService extends ChangeNotifier {
     final rawRecent = prefs.readStringList(_recentKey) ?? const [];
     _recentColors
       ..clear()
-      ..addAll(rawRecent.map(int.parse));
+      // 数として読めない1件は飛ばす（1件で起動を止めない）。
+      ..addAll(rawRecent.map(int.tryParse).whereType<int>());
 
     final rawPalettes = prefs.readStringList(_palettesKey) ?? const [];
     _palettes
       ..clear()
-      ..addAll(
-        rawPalettes.map(
-          (s) => ColorPalette.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        ),
-      );
+      ..addAll(readSavedJsonList(rawPalettes, ColorPalette.fromJson));
     if (_palettes.isEmpty) {
       // 初回起動時：デフォルトパレットを1つ用意する
       _palettes.add(const ColorPalette(id: 'default', name: 'マイパレット'));

@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/color_palette.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 
 /// ドット絵専用パレット（ブラシのピクセルモード・ドット絵フィルターの
@@ -30,11 +31,7 @@ class PixelArtPaletteService extends ChangeNotifier {
     final raw = prefs.readStringList(_prefsKey) ?? const [];
     _palettes
       ..clear()
-      ..addAll(
-        raw.map(
-          (s) => ColorPalette.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        ),
-      );
+      ..addAll(readSavedJsonList(raw, ColorPalette.fromJson));
   }
 
   Future<void> _persist() async {

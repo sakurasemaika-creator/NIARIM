@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/autofill_preset.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 
 /// 自動塗りプリセットの管理サービス。
@@ -189,13 +190,18 @@ class AutofillPresetService extends ChangeNotifier {
     final raw = prefs.readStringList(_prefsKey);
     _presets.clear();
     if (raw == null) {
-      // 初回起動：サンプルプリセットを投入して即座に永続化する
+      // 初回起動：サンプルプリセットを投入して即座に永続化する。
+      // 読めない型の値が入っているときは、既定の内容で動かすだけで
+      // 保存は書き換えない。
       _presets.addAll(_defaultPresets());
-      await _persist();
+      if (!prefs.containsKey(_prefsKey)) await _persist();
     } else {
+      var intact = true;
       _presets.addAll(
-        raw.map(
-          (s) => AutofillPreset.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        readSavedJsonList(
+          raw,
+          AutofillPreset.fromJson,
+          onSkipped: () => intact = false,
         ),
       );
       var changed = _dedupeIds();
@@ -204,7 +210,10 @@ class AutofillPresetService extends ChangeNotifier {
         _presets.insert(0, _grayUnderpaintPreset);
         changed = true;
       }
-      if (changed) await _persist();
+      // 読めない項目があった保存は、起動では書き換えない（後の版でなら
+      // 読めるかもしれない自作の内容を、起動しただけで消さない。その一覧を
+      // 次に変えたときに、読めた分だけで保存し直される）。
+      if (changed && intact) await _persist();
     }
   }
 

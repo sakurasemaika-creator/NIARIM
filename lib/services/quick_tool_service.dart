@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/quick_tool_entry.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 
 /// ツール早替え機能（「↺ ツール早替えボタン」）。
@@ -21,7 +22,11 @@ class QuickToolService extends ChangeNotifier {
     if (_entries.isNotEmpty) return;
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.readStringList(_prefsKey);
-    if (raw == null || raw.isEmpty) {
+    // 1件ずつ読む（読めない1件で起動を止めない）。
+    final saved = raw == null
+        ? const <QuickToolEntry>[]
+        : readSavedJsonList(raw, QuickToolEntry.fromJson);
+    if (saved.isEmpty) {
       _entries.addAll(const [
         QuickToolEntry(
           id: 'qt1',
@@ -46,13 +51,13 @@ class QuickToolService extends ChangeNotifier {
         QuickToolEntry(id: 'qt4', label: '消しゴム', toolKey: 'eraser'),
         QuickToolEntry(id: 'qt5', label: 'スポイト', toolKey: 'eyedropper'),
       ]);
-      await _persist();
+      // 保存が無い（初回）・空のときだけ既定を保存する。読めない値・
+      // 読めない項目だけの保存は、既定の内容で動かすだけで書き換えない。
+      if (raw == null ? !prefs.containsKey(_prefsKey) : raw.isEmpty) {
+        await _persist();
+      }
     } else {
-      _entries.addAll(
-        raw.map(
-          (s) => QuickToolEntry.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        ),
-      );
+      _entries.addAll(saved);
     }
   }
 

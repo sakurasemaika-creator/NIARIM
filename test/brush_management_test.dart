@@ -46,11 +46,28 @@ void main() {
         expect(again.brushes.length, first.brushes.length);
         expect(again.brushes.where((b) => b.name == 'mine'), hasLength(1));
         expect(again.folders, isEmpty);
-        // 読めなかった分を除いて保存し直してある。
-        final cleaned = (await SharedPreferences.getInstance()).getStringList(
-          'brushes',
-        )!;
-        expect(cleaned.length, first.brushes.length);
+        // 同じIDの重複は除いて保存し直す。読めない項目は一覧に出さないが、
+        // 保存には残す（後の版でなら読めるかもしれない自作のブラシを、
+        // 起動や保存し直しで消さない）。
+        final prefsAfter = await SharedPreferences.getInstance();
+        final kept = prefsAfter.getStringList('brushes')!;
+        expect(kept.length, first.brushes.length + 2);
+        expect(kept, contains('{"id": "Brush9'));
+        expect(kept, contains(jsonEncode({'name': 'no id'})));
+        // 一覧を変えて保存し直しても残る。
+        again.toggleFavoriteBrush('Brush0001');
+        again.selectBrush('Brush0002');
+        again.updateCurrentBrushSize(41);
+        await again.commitRememberedValues();
+        await Future<void>.delayed(Duration.zero);
+        final resaved = prefsAfter.getStringList('brushes')!;
+        expect(resaved.length, first.brushes.length + 2);
+        expect(resaved, contains('{"id": "Brush9'));
+        // 起動し直しても、読めた分は同じ・読めない分は残ったまま。
+        final third = BrushService();
+        await third.init();
+        expect(third.brushes.length, first.brushes.length);
+        expect(prefsAfter.getStringList('brushes'), contains('{"id": "Brush9'));
       },
     );
 

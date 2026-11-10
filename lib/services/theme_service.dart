@@ -448,6 +448,15 @@ class ThemeService extends ChangeNotifier {
     // Startup recovery tests require the original bytes to remain available
     // for diagnostics and future recovery. Defer migration in that case.
     var storedDataIsValid = true;
+    // 型の違う値が入っている一覧・現在の色も、起動では書き換えない。
+    // （移行済みの印は利用者の内容を持たない記録なので、読めなければ
+    // 起動が書き直す。書き直さないと、組み込みテーマを元の配色へ戻す
+    // 移行が起動のたびに走り、利用者の変更を毎回戻してしまう。）
+    if (prefs.holdsUnreadableStringList(_prefsPresetsKey) ||
+        (prefs.containsKey(_prefsCurrentJsonKey) &&
+            prefs.get(_prefsCurrentJsonKey) is! String)) {
+      storedDataIsValid = false;
+    }
     if (raw == null || raw.isEmpty) {
       _presets.addAll(_builtInPresets);
     } else {

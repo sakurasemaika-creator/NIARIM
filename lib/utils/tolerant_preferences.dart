@@ -44,6 +44,35 @@ extension TolerantPreferences on SharedPreferences {
     }
     return _mismatch(key, value, 'List<String>');
   }
+
+  /// [key]に値はあるが、文字列の一覧としては読めないか（未設定は含まない）。
+  ///
+  /// 起動処理が「保存が無い＝初回起動」と「保存はあるが読めない」を
+  /// 見分けるために使う。後者で既定の内容を書き込むと、読めなかった保存
+  /// （後の版や手作業でなら読めたかもしれない自作の内容）を消してしまう。
+  bool holdsUnreadableStringList(String key) {
+    final value = get(key);
+    return value != null &&
+        !(value is List && value.every((item) => item is String));
+  }
+}
+
+/// 保存したエポックからのミリ秒を日時にする。[DateTime]が表せる範囲
+/// （±864京ミリ秒）の外の値は、例外にせずnull（＝未設定）を返して
+/// [AppErrorReporter]へ記録する。
+///
+/// 型は合っているので`readInt`はそのまま返す。範囲を見ずに
+/// `DateTime.fromMillisecondsSinceEpoch`へ渡すと、起動の初期化がそこで
+/// 毎回失敗して二度と起動できない。
+DateTime? dateTimeFromSavedMillis(String key, int millis) {
+  const limit = 8640000000000000;
+  if (millis >= -limit && millis <= limit) {
+    return DateTime.fromMillisecondsSinceEpoch(millis);
+  }
+  final message = 'Ignored preference "$key": not a representable date';
+  debugPrint(message);
+  AppErrorReporter.record(StateError(message), null);
+  return null;
 }
 
 Null _mismatch(String key, Object? value, String expected) {

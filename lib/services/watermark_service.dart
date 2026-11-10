@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/watermark_asset.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 
 /// ユーザーウォーターマーク管理サービス（プレミアム限定）。
@@ -29,11 +30,7 @@ class WatermarkService extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.readStringList(_prefsKey) ?? const [];
-    _assets.addAll(
-      raw.map(
-        (s) => WatermarkAsset.fromJson(jsonDecode(s) as Map<String, dynamic>),
-      ),
-    );
+    _assets.addAll(readSavedJsonList(raw, WatermarkAsset.fromJson));
   }
 
   Future<void> _persist() async {

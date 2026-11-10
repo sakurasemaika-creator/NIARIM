@@ -73,28 +73,30 @@ class WorkspacePreset {
     'rightDockOrder': rightDockOrder,
   };
 
-  factory WorkspacePreset.fromJson(
-    Map<String, dynamic> json,
-  ) => WorkspacePreset(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    isLeftHanded: json['isLeftHanded'] as bool? ?? false,
-    forcePcMode: json['forcePcMode'] as bool?,
-    toolbarOrder: (json['toolbarOrder'] as List?)?.cast<String>() ?? const [],
-    hiddenToolbarItems:
-        (json['hiddenToolbarItems'] as List?)?.cast<String>() ?? const [],
-    quickToolEntries:
-        (json['quickToolEntries'] as List?)
-            ?.map((e) => Map<String, dynamic>.from(e as Map))
-            .toList() ??
-        const [],
-    defaultDockedPanels:
-        (json['defaultDockedPanels'] as List?)?.cast<String>() ?? const [],
-    desktopPanelWidth: (json['desktopPanelWidth'] as num?)?.toDouble(),
-    desktopToolPanelWidth: (json['desktopToolPanelWidth'] as num?)?.toDouble(),
-    toolOptionDockOrder:
-        (json['toolOptionDockOrder'] as List?)?.cast<String>() ?? const [],
-    rightDockOrder:
-        (json['rightDockOrder'] as List?)?.cast<String>() ?? const [],
-  );
+  factory WorkspacePreset.fromJson(Map<String, dynamic> json) =>
+      WorkspacePreset(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        isLeftHanded: json['isLeftHanded'] as bool? ?? false,
+        forcePcMode: json['forcePcMode'] as bool?,
+        toolbarOrder: _texts(json['toolbarOrder']),
+        hiddenToolbarItems: _texts(json['hiddenToolbarItems']),
+        quickToolEntries:
+            (json['quickToolEntries'] as List?)
+                ?.map((e) => Map<String, dynamic>.from(e as Map))
+                .toList() ??
+            const [],
+        defaultDockedPanels: _texts(json['defaultDockedPanels']),
+        desktopPanelWidth: (json['desktopPanelWidth'] as num?)?.toDouble(),
+        desktopToolPanelWidth: (json['desktopToolPanelWidth'] as num?)
+            ?.toDouble(),
+        toolOptionDockOrder: _texts(json['toolOptionDockOrder']),
+        rightDockOrder: _texts(json['rightDockOrder']),
+      );
+
+  /// 文字列の一覧を読む。文字列でない項目があれば、ここで型の違いとして
+  /// 扱う（`cast`は使うときまで確かめないので、読み込みは通って、後で
+  /// 適用・保存するときに例外になる）。
+  static List<String> _texts(Object? value) =>
+      value == null ? const [] : List<String>.from(value as List);
 }

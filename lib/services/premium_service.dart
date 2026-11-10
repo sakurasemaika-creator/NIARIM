@@ -302,7 +302,10 @@ class PremiumService extends ChangeNotifier {
     _isPremium = false;
     final purchaseMillis = prefs.readInt('premium_purchase_date');
     if (purchaseMillis != null) {
-      _purchaseDate = DateTime.fromMillisecondsSinceEpoch(purchaseMillis);
+      _purchaseDate = dateTimeFromSavedMillis(
+        'premium_purchase_date',
+        purchaseMillis,
+      );
     }
     _purchasedProductId = prefs.readString('premium_purchase_product_id');
 

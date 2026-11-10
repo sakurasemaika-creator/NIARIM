@@ -43,20 +43,29 @@ class AutosaveService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final count = prefs.readInt('autosave_count') ?? 0;
+    // 保存する件数は[maxSlots]までなので、それより大きい値は壊れた保存。
+    // そのまま回すと、とても大きな数では起動が終わらない。
+    final count = (prefs.readInt('autosave_count') ?? 0).clamp(0, maxSlots);
     for (int i = 0; i < count; i++) {
       final projectId = prefs.readString('autosave_${i}_project');
       final savedAtMs = prefs.readInt('autosave_${i}_savedAt');
       final slotIndex = prefs.readInt('autosave_${i}_slot');
-      if (projectId != null && savedAtMs != null && slotIndex != null) {
-        _slots.add(
-          AutosaveSlot(
-            projectId: projectId,
-            savedAt: DateTime.fromMillisecondsSinceEpoch(savedAtMs),
-            slotIndex: slotIndex,
-          ),
-        );
+      if (projectId == null || savedAtMs == null || slotIndex == null) {
+        continue;
       }
+      // 日時として読めない1件は使わない（1件で起動を止めない）。
+      final savedAt = dateTimeFromSavedMillis(
+        'autosave_${i}_savedAt',
+        savedAtMs,
+      );
+      if (savedAt == null) continue;
+      _slots.add(
+        AutosaveSlot(
+          projectId: projectId,
+          savedAt: savedAt,
+          slotIndex: slotIndex,
+        ),
+      );
     }
     _nextSlotIndex = prefs.readInt('autosave_next_slot') ?? 0;
     notifyListeners();

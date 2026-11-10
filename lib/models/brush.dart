@@ -11,6 +11,20 @@ enum HairFoldMode { waveTopView, waveLowAngle, curlRight, curlLeft, crescent }
 /// (the four-panel comic brush spaces its frames 125 px apart).
 const int kBrushSpacingMax = 200;
 
+/// 保存した整数の項目を読む。同じ値の小数（80.0）で保存されていても読む
+/// （別の道具で書いたJSONは整数を小数で書くことがある）。数でない値と、
+/// 整数でない小数は型の違いとして扱う。
+int _wholeNumber(Object? value) {
+  if (value is int) return value;
+  // 小数で正確に表せる整数の範囲（2の53乗まで）だけを受ける。
+  if (value is double &&
+      value.abs() <= 9007199254740992 &&
+      value == value.roundToDouble()) {
+    return value.round();
+  }
+  throw FormatException('Expected a whole number, found ${value.runtimeType}');
+}
+
 class Brush {
   final String id;
   final String name;
@@ -357,10 +371,10 @@ class Brush {
     id: j['id'] as String,
     name: j['name'] as String,
     size: (j['size'] as num).toDouble(),
-    opacity: j['opacity'] as int,
-    spacing: j['spacing'] as int,
+    opacity: _wholeNumber(j['opacity']),
+    spacing: _wholeNumber(j['spacing']),
     stabilization: j['stabilization'] as bool,
-    stabilizationStrength: j['stabilizationStrength'] as int,
+    stabilizationStrength: _wholeNumber(j['stabilizationStrength']),
     pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,
     pressureOn: BrushPressureOnSettings.fromJson(
       j['pressureOn'] as Map<String, dynamic>,
@@ -418,10 +432,12 @@ class Brush {
       (e) => e.name == j['pixelColorMode'],
       orElse: () => PixelColorMode.none,
     ),
-    pixelColorLevels: j['pixelColorLevels'] as int? ?? 8,
+    pixelColorLevels: j['pixelColorLevels'] == null
+        ? 8
+        : _wholeNumber(j['pixelColorLevels']),
     pixelExplicitColors:
         (j['pixelExplicitColors'] as List<dynamic>?)
-            ?.map((e) => e as int)
+            ?.map(_wholeNumber)
             .toList() ??
         const [0xFF000000],
     tags: parseTags(j['tags']),
@@ -499,8 +515,8 @@ class PressureRangeSetting {
   factory PressureRangeSetting.fromJson(Map<String, dynamic> j) =>
       PressureRangeSetting(
         enabled: j['enabled'] as bool,
-        weak: j['weak'] as int,
-        strong: j['strong'] as int,
+        weak: _wholeNumber(j['weak']),
+        strong: _wholeNumber(j['strong']),
       );
   @override
   bool operator ==(Object other) =>
@@ -524,7 +540,7 @@ class FixedBrushSetting {
   factory FixedBrushSetting.fromJson(Map<String, dynamic> j) =>
       FixedBrushSetting(
         enabled: j['enabled'] as bool,
-        value: j['value'] as int,
+        value: _wholeNumber(j['value']),
       );
   @override
   bool operator ==(Object other) =>
@@ -621,8 +637,8 @@ class PressureMixingOnSetting {
       PressureMixingOnSetting(
         enabled: j['enabled'] as bool,
         mode: _parseBrushMixingMode(j['mode']),
-        weakRate: j['weakRate'] as int,
-        strongRate: j['strongRate'] as int,
+        weakRate: _wholeNumber(j['weakRate']),
+        strongRate: _wholeNumber(j['strongRate']),
         brightnessCorrection:
             ((j['brightnessCorrection'] as num?)?.toInt() ?? 3)
                 .clamp(1, 5)
@@ -742,7 +758,7 @@ class PressureMixingOffSetting {
       PressureMixingOffSetting(
         enabled: j['enabled'] as bool,
         mode: _parseBrushMixingMode(j['mode']),
-        rate: j['rate'] as int,
+        rate: _wholeNumber(j['rate']),
         brightnessCorrection:
             ((j['brightnessCorrection'] as num?)?.toInt() ?? 3)
                 .clamp(1, 5)

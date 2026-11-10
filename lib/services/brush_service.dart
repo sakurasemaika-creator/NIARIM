@@ -32,6 +32,13 @@ class BrushService extends ChangeNotifier {
   /// 組み込みブラシは後の版で既定の太さが変わればそれに従い、触った
   /// ブラシだけが利用者の値を保つ。自作・複製のブラシはブラシ自身に書く。
   static const _builtInWorkingKey = 'brush_builtin_working_values';
+
+  /// 保存の中の、この版では読めなかった項目（そのままの文字列）。
+  ///
+  /// 一覧には出さないが、保存し直すときに末尾へ残す。ブラシの一覧は
+  /// キャンバスで太さを変えるだけでも保存し直すので、読めた分だけを書くと、
+  /// 後の版でなら読めたかもしれない自作のブラシがその場で消える。
+  final List<String> _unreadableEntries = [];
   final Map<String, ({double? size, int? opacity})> _builtInWorking = {};
 
   // スライダーは動かしている間ずっと値を知らせる。そのたびに全ブラシを
@@ -863,15 +870,20 @@ class BrushService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.readStringList(_prefsKey);
     _brushes.clear();
-    final workingPruned = _readBuiltInWorking(prefs);
+    _unreadableEntries.clear();
+    _readBuiltInWorking(prefs);
     if (raw == null) {
-      // 初回起動：初期ブラシ一式を投入して即座に永続化する
+      // 初回起動：初期ブラシ一式を投入して即座に永続化する。
+      // 読めない型の値が入っているとき（保存はあるが一覧として読めない）は
+      // 既定の内容で動かすだけで、保存は書き換えない（自作のブラシが
+      // 入っているかもしれない保存を、起動しただけで消さない）。
       _brushes.addAll(_defaultBrushes().map(_withWorkingValues));
-      await _persist();
+      if (!prefs.containsKey(_prefsKey)) await _persist();
     } else {
       // 1件ずつ読む。壊れた1件（途中で切れた・項目の欠けた保存）で全体を
       // 読めなくすると、起動の初期化が毎回同じ所で失敗して二度と起動
-      // できない。読めない分は記録して捨てる。
+      // できない。読めない分は記録して一覧には出さず、保存には残す
+      // （[_unreadableEntries]）。
       var dropped = false;
       final seen = <String>{};
       for (final entry in raw) {
@@ -885,7 +897,7 @@ class BrushService extends ChangeNotifier {
           }
           _brushes.add(brush);
         } catch (error, stack) {
-          dropped = true;
+          _unreadableEntries.add(entry);
           AppErrorReporter.record(error, stack);
         }
       }
@@ -947,7 +959,6 @@ class BrushService extends ChangeNotifier {
         await _persist();
       }
     }
-    if (workingPruned) await _persistBuiltInWorking();
     final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();
     if (foldersRaw != null) {
@@ -986,10 +997,10 @@ class BrushService extends ChangeNotifier {
     _rememberWorkingDirty = false;
     if (working) await _persistBuiltInWorking();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      _prefsKey,
-      _brushes.map((b) => jsonEncode(b.toJson())).toList(),
-    );
+    await prefs.setStringList(_prefsKey, [
+      for (final brush in _brushes) jsonEncode(brush.toJson()),
+      ..._unreadableEntries,
+    ]);
   }
 
   Future<void> _persistFolders() async {
@@ -1113,23 +1124,20 @@ class BrushService extends ChangeNotifier {
   }
 
   /// 保存してある組み込みブラシの太さ・不透明度を読む。読めない保存
-  /// （壊れた文字列・数でない値・今は無いブラシ）は捨て、捨てた分が
-  /// あれば真を返す（呼び出し側が保存し直す）。起動は止めない。
-  bool _readBuiltInWorking(SharedPreferences prefs) {
+  /// （壊れた文字列・数でない値・今は無いブラシ）は使わない。起動は止めず、
+  /// 保存も書き換えない（覚えた値を次に変えたときに、読めた分だけで保存
+  /// し直される）。
+  void _readBuiltInWorking(SharedPreferences prefs) {
     _builtInWorking.clear();
     final raw = prefs.readString(_builtInWorkingKey);
-    if (raw == null) return false;
-    var pruned = false;
+    if (raw == null) return;
     try {
       final decoded = jsonDecode(raw);
       if (decoded is! Map) throw const FormatException('not a map');
       for (final entry in decoded.entries) {
         final id = entry.key;
         final value = entry.value;
-        if (id is! String || !isBuiltIn(id) || value is! Map) {
-          pruned = true;
-          continue;
-        }
+        if (id is! String || !isBuiltIn(id) || value is! Map) continue;
         final rawSize = value['size'];
         final rawOpacity = value['opacity'];
         final size = rawSize is num && rawSize.isFinite && rawSize > 0
@@ -1138,22 +1146,13 @@ class BrushService extends ChangeNotifier {
         final opacity = rawOpacity is num && rawOpacity.isFinite
             ? rawOpacity.round().clamp(0, 100)
             : null;
-        if ((rawSize != null && size == null) ||
-            (rawOpacity != null && opacity == null)) {
-          pruned = true;
-        }
-        if (size == null && opacity == null) {
-          pruned = true;
-          continue;
-        }
+        if (size == null && opacity == null) continue;
         _builtInWorking[id] = (size: size, opacity: opacity);
       }
     } catch (error, stack) {
       AppErrorReporter.record(error, stack);
       _builtInWorking.clear();
-      return true;
     }
-    return pruned;
   }
 
   Future<void> _persistBuiltInWorking() async {

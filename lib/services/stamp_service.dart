@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/asset_tags.dart';
 import '../models/stamp.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 
 class StampFolder {
@@ -152,10 +153,13 @@ class StampService extends ChangeNotifier {
     _stamps.clear();
     if (raw == null) {
       _stamps.addAll(_defaultStamps());
-      await _persist();
+      // 読めない型の値が入っているときは、既定の内容で動かすだけで
+      // 保存は書き換えない。
+      if (!prefs.containsKey(_prefsKey)) await _persist();
     } else {
+      var intact = true;
       _stamps.addAll(
-        raw.map((s) => Stamp.fromJson(jsonDecode(s) as Map<String, dynamic>)),
+        readSavedJsonList(raw, Stamp.fromJson, onSkipped: () => intact = false),
       );
       // 既存ユーザーにも、後から追加した組み込みスタンプを反映する
       // （同じIDが既にあれば追加しない）。BrushService・ToneServiceは
@@ -192,16 +196,15 @@ class StampService extends ChangeNotifier {
           changed = true;
         }
       }
-      if (changed) await _persist();
+      // 読めない項目があった保存は、起動では書き換えない（後の版でなら
+      // 読めるかもしれない自作の内容を、起動しただけで消さない。その一覧を
+      // 次に変えたときに、読めた分だけで保存し直される）。
+      if (changed && intact) await _persist();
     }
     final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();
     if (foldersRaw != null) {
-      _folders.addAll(
-        foldersRaw.map(
-          (s) => StampFolder.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        ),
-      );
+      _folders.addAll(readSavedJsonList(foldersRaw, StampFolder.fromJson));
     }
     _currentStamp = _stamps.firstOrNull;
   }
@@ -445,9 +448,9 @@ class StampService extends ChangeNotifier {
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_bundleDataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final json = jsonDecode(
-      utf8.decode(dataFile.content as List<int>),
-    ) as Map<String, dynamic>;
+    final json =
+        jsonDecode(utf8.decode(dataFile.content as List<int>))
+            as Map<String, dynamic>;
     final imported = Stamp.fromJson(json);
     final id = 'Stamp${DateTime.now().millisecondsSinceEpoch}';
     final imageFile = archive.files

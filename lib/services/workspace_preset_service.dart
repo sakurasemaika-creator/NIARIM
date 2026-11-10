@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/workspace_preset.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 
 /// ワークスペース（左利き設定・PC/DeXモード）を名前を付けて保存・読込・削除する
@@ -21,12 +22,7 @@ class WorkspacePresetService extends ChangeNotifier {
     final raw = prefs.readStringList(_prefsKey) ?? const [];
     _presets
       ..clear()
-      ..addAll(
-        raw.map(
-          (s) =>
-              WorkspacePreset.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        ),
-      );
+      ..addAll(readSavedJsonList(raw, WorkspacePreset.fromJson));
   }
 
   Future<void> _persist() async {

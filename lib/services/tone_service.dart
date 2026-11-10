@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/asset_tags.dart';
 import '../models/tone.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 
 class ToneFolder {
@@ -427,10 +428,13 @@ class ToneService extends ChangeNotifier {
     _tones.clear();
     if (raw == null) {
       _tones.addAll(_defaultTones());
-      await _persist();
+      // 読めない型の値が入っているときは、既定の内容で動かすだけで
+      // 保存は書き換えない。
+      if (!prefs.containsKey(_prefsKey)) await _persist();
     } else {
+      var intact = true;
       _tones.addAll(
-        raw.map((s) => Tone.fromJson(jsonDecode(s) as Map<String, dynamic>)),
+        readSavedJsonList(raw, Tone.fromJson, onSkipped: () => intact = false),
       );
       // 既存ユーザーにも新規追加した初期トーン（ピクセルモード2種）を
       // 反映する（既に同名IDのトーンが存在する場合は追加しない）。
@@ -478,16 +482,15 @@ class ToneService extends ChangeNotifier {
           changed = true;
         }
       }
-      if (changed) await _persist();
+      // 読めない項目があった保存は、起動では書き換えない（後の版でなら
+      // 読めるかもしれない自作の内容を、起動しただけで消さない。その一覧を
+      // 次に変えたときに、読めた分だけで保存し直される）。
+      if (changed && intact) await _persist();
     }
     final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();
     if (foldersRaw != null) {
-      _folders.addAll(
-        foldersRaw.map(
-          (s) => ToneFolder.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        ),
-      );
+      _folders.addAll(readSavedJsonList(foldersRaw, ToneFolder.fromJson));
     }
     _currentTone = _tones.firstOrNull;
   }
@@ -739,9 +742,9 @@ class ToneService extends ChangeNotifier {
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_bundleDataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final json = jsonDecode(
-      utf8.decode(dataFile.content as List<int>),
-    ) as Map<String, dynamic>;
+    final json =
+        jsonDecode(utf8.decode(dataFile.content as List<int>))
+            as Map<String, dynamic>;
     final imported = Tone.fromJson(json);
     final id = 'Tone${DateTime.now().millisecondsSinceEpoch}';
     final imageFile = archive.files

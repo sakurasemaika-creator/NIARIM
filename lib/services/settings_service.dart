@@ -752,7 +752,12 @@ class SettingsService extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _defaultFps = prefs.readInt('default_fps') ?? 12;
-    _undoLimit = prefs.readInt('undo_limit') ?? 50;
+    // 0以下は取り消しの上限として使えない（負の数は起動を止めていた）。
+    // 未設定と同じに扱い、保存は書き換えない。
+    final savedUndoLimit = prefs.readInt('undo_limit');
+    _undoLimit = savedUndoLimit != null && savedUndoLimit > 0
+        ? savedUndoLimit
+        : 50;
     _trashAutoDeleteDays = prefs.readInt('trash_auto_delete') ?? 0;
     _language = prefs.readString('language') ?? 'ja';
     _defaultDrawingAreaEnabled =
@@ -1008,6 +1013,8 @@ class SettingsService extends ChangeNotifier {
   }
 
   Future<void> setUndoLimit(int limit) async {
+    // 0以下は受け付けない（設定の引き継ぎの壊れた値を保存しない）。
+    if (limit < 1) return;
     _undoLimit = limit;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('undo_limit', limit);

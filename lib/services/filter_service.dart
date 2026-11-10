@@ -8,6 +8,7 @@ import '../models/filter_canvas_gizmo.dart';
 import '../models/filter_def.dart';
 import '../models/layer.dart';
 import '../models/pixel_color_mode.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 
 class FilterService extends ChangeNotifier {
@@ -250,6 +251,8 @@ class FilterService extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.readStringList(_prefsKey);
+    // 読めない値・読めない項目があった保存は、起動では書き換えない。
+    var intact = !prefs.holdsUnreadableStringList(_prefsKey);
     _filters.clear();
     _colorNoiseProfile = null;
     final savedColor = prefs.readString(_colorNoiseProfileKey);
@@ -269,17 +272,20 @@ class FilterService extends ChangeNotifier {
     }
     if (raw == null) {
       _filters.addAll(_defaultFilters());
-      await _persist();
+      // 読めない型の値が入っているときは、既定の内容で動かすだけで
+      // 保存は書き換えない。
+      if (!prefs.containsKey(_prefsKey)) await _persist();
     } else {
-      final stored = raw
-          .map((s) => jsonDecode(s) as Map<String, dynamic>)
-          .toList();
-      // A filter kind that has been removed from the app is dropped rather
-      // than shown as some other filter under its old name.
-      final known = stored.where(FilterDef.hasKnownKind).toList();
-      var migratedFilterState = known.length != stored.length;
+      var migratedFilterState = false;
       _filters.addAll(
-        known.map((json) {
+        // 1件ずつ読む（読めない1件で起動を止めない）。
+        readSavedJsonList<FilterDef?>(raw, (json) {
+          // A filter kind that has been removed from the app is dropped
+          // rather than shown as some other filter under its old name.
+          if (!FilterDef.hasKnownKind(json)) {
+            migratedFilterState = true;
+            return null;
+          }
           var filter = FilterDef.fromJson(json);
           if (filter.id == prismFilterId) {
             final usesLegacyDefaults =
@@ -315,14 +321,16 @@ class FilterService extends ChangeNotifier {
             migratedFilterState = true;
           }
           return filter;
-        }),
+        }, onSkipped: () => intact = false).whereType<FilterDef>(),
       );
       final existingIds = _filters.map((f) => f.id).toSet();
       final missing = _defaultFilters().where(
         (f) => !existingIds.contains(f.id),
       );
       if (missing.isNotEmpty) _filters.addAll(missing);
-      if (missing.isNotEmpty || migratedFilterState) await _persist();
+      if ((missing.isNotEmpty || migratedFilterState) && intact) {
+        await _persist();
+      }
     }
     final index = _filters.indexWhere((f) => f.id == genericNoiseFilterId);
     // Merge old stars into Noise, then clear hidden stars so unstar stays.
@@ -336,7 +344,7 @@ class FilterService extends ChangeNotifier {
           _filters[i] = _filters[i].copyWith(isFavorite: false);
         }
       }
-      await _persist();
+      if (intact) await _persist();
     }
     if (index >= 0 && _filters[index].noiseStyle == NoiseStyle.color) {
       _colorNoiseProfile = _filters[index];

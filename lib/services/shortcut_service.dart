@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/shortcut_binding.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 
 /// キーボード・左手デバイス用ショートカット。ツール選択（早替えツールと
@@ -22,7 +23,16 @@ class ShortcutService extends ChangeNotifier {
     if (_bindings.isNotEmpty) return;
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.readStringList(_prefsKey);
-    if (raw == null || raw.isEmpty) {
+    // 1件ずつ読む（読めない1件で起動を止めない）。
+    var intact = true;
+    final saved = raw == null
+        ? const <ShortcutBinding>[]
+        : readSavedJsonList(
+            raw,
+            ShortcutBinding.fromJson,
+            onSkipped: () => intact = false,
+          );
+    if (saved.isEmpty) {
       // 既定値：従来ハードコードされていたUndo/Redoのキー割り当てを
       // そのまま初期状態として引き継ぐ。
       _bindings.addAll([
@@ -50,14 +60,13 @@ class ShortcutService extends ChangeNotifier {
         ),
         ..._defaultClipboardBindings,
       ]);
-      await _persist();
+      // 保存が無い（初回）・空のときだけ既定を保存する。読めない値・
+      // 読めない項目だけの保存は、既定の内容で動かすだけで書き換えない。
+      if (raw == null ? !prefs.containsKey(_prefsKey) : raw.isEmpty) {
+        await _persist();
+      }
     } else {
-      _bindings.addAll(
-        raw.map(
-          (s) =>
-              ShortcutBinding.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        ),
-      );
+      _bindings.addAll(saved);
       // 既に保存済みの環境（Ctrl+A/C/X/Vが既定値に無かった旧バージョン）
       // でも、キーの組み合わせが未使用であれば追加の既定値として補う。
       var added = false;
@@ -68,7 +77,8 @@ class ShortcutService extends ChangeNotifier {
           added = true;
         }
       }
-      if (added) await _persist();
+      // 読めない項目があった保存は、起動では書き換えない。
+      if (added && intact) await _persist();
     }
   }
 

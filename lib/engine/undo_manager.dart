@@ -15,7 +15,8 @@ class UndoManager extends ChangeNotifier {
   bool get canRedo => _redoStack.isNotEmpty;
 
   void setMaxUndoCount(int count) {
-    _maxUndoCount = count;
+    // 負の数だと、空の履歴からさらに取り除こうとして例外になる。
+    _maxUndoCount = count < 0 ? 0 : count;
     while (_undoStack.length > _maxUndoCount) {
       _undoStack.removeAt(0);
     }

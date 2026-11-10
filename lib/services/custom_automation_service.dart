@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/custom_automation.dart';
 import '../models/custom_automation_builtin_presets.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 
 class CustomAutomationDraft {
@@ -62,32 +63,39 @@ class CustomAutomationService extends ChangeNotifier {
     final raw = prefs.readStringList(_prefsKey);
 
     _items.clear();
+    // 読めない項目があった保存は、起動では書き換えない。
+    var intact = true;
     if (raw == null) {
       _items.addAll(CustomAutomationBuiltinPresets.all());
-      await prefs.setStringList(
-        _offeredBuiltinsKey,
-        _items.map((item) => item.id).toList(),
-      );
-      await _persist();
+      // 読めない型の値が入っているときは、既定の内容で動かすだけで
+      // 保存は書き換えない。
+      if (!prefs.containsKey(_prefsKey)) {
+        await prefs.setStringList(
+          _offeredBuiltinsKey,
+          _items.map((item) => item.id).toList(),
+        );
+        await _persist();
+      }
     } else {
       _items.addAll(
-        raw.map((entry) {
-          try {
-            final decoded = jsonDecode(entry);
-            if (decoded is! Map) return null;
-            return CustomAutomation.fromJson(decoded.cast<String, Object?>());
-          } catch (_) {
-            return null;
-          }
-        }).whereType<CustomAutomation>(),
+        readSavedJsonList(
+          raw,
+          CustomAutomation.fromJson,
+          onSkipped: () => intact = false,
+        ),
       );
-      if (await _refreshBuiltins(prefs)) await _persist();
+      // 一覧を保存しない起動では、「渡した公式プリセット」の記録も進めない
+      // （記録だけ進むと、次の起動で新しい公式プリセットが足されない）。
+      final changed = await _refreshBuiltins(prefs, recordOffered: intact);
+      if (changed && intact) await _persist();
     }
     _favoriteIds
       ..clear()
       ..addAll(prefs.readStringList(_favoritesPrefsKey) ?? const <String>[]);
     _favoriteIds.removeWhere((id) => _items.every((item) => item.id != id));
-    await _persistFavorites();
+    if (intact && !prefs.holdsUnreadableStringList(_favoritesPrefsKey)) {
+      await _persistFavorites();
+    }
     notifyListeners();
   }
 
@@ -97,7 +105,10 @@ class CustomAutomationService extends ChangeNotifier {
   /// an official preset this list has never been given is added once. Edited
   /// copies and the user's own automations stay as they are. Returns whether
   /// the list changed.
-  Future<bool> _refreshBuiltins(SharedPreferences prefs) async {
+  Future<bool> _refreshBuiltins(
+    SharedPreferences prefs, {
+    bool recordOffered = true,
+  }) async {
     final shipped = {
       for (final preset in CustomAutomationBuiltinPresets.all())
         preset.id: preset,
@@ -130,10 +141,15 @@ class CustomAutomationService extends ChangeNotifier {
         changed = true;
       }
     }
-    await prefs.setStringList(
-      _offeredBuiltinsKey,
-      {...offered, ...shipped.keys}.toList(),
-    );
+    // 渡した公式プリセットの記録は利用者の内容を持たないので、読めない値が
+    // 入っていても書き直す（書き直さないと、後の版の公式プリセットが
+    // いつまでも足されない）。
+    if (recordOffered) {
+      await prefs.setStringList(
+        _offeredBuiltinsKey,
+        {...offered, ...shipped.keys}.toList(),
+      );
+    }
     return changed;
   }
 

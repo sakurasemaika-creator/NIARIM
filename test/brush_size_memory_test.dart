@@ -296,11 +296,20 @@ void main() {
           s.brushes.firstWhere((b) => b.id == 'Brush0004').size,
           defaults['Brush0004']!.size,
         );
+        // 起動は読めない項目を保存から消さない。覚えた値を次に変えたとき、
+        // 読めた分だけで保存し直す。
         final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString('brush_builtin_working_values'), stored);
+        s.selectBrush('Brush0006');
+        s.updateCurrentBrushSize(33);
+        await s.commitRememberedValues();
         final cleaned =
             jsonDecode(prefs.getString('brush_builtin_working_values')!)
                 as Map<String, dynamic>;
-        expect(cleaned.keys, unorderedEquals(['Brush0002', 'Brush0005']));
+        expect(
+          cleaned.keys,
+          unorderedEquals(['Brush0002', 'Brush0005', 'Brush0006']),
+        );
       } else {
         expect(two.opacity, defaults['Brush0002']!.opacity);
       }
