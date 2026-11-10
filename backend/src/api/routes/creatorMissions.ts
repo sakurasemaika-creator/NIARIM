@@ -23,7 +23,7 @@ import {
   MAX_CREATOR_MISSION_COINS,
   MISSION_CATALOG_VERSION,
   missionRewardCoins,
-  rankingMissionEligible, RANKING_MIN_BOOKMARKS,
+  rankingMissionEligible, rankingEffectiveRankLimit, RANKING_MIN_BOOKMARKS,
   MIN_RANK_MISSION_PUBLIC_WORKS,
   missionClaimed,
   claimMissionInMask,
@@ -320,6 +320,9 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
           ? MIN_RANK_MISSION_PUBLIC_WORKS : null,
         rankingMinBookmarks: mission.kind==="niarimBookmarkRanking"
           ? RANKING_MIN_BOOKMARKS[mission.required] : null,
+        rankingEffectiveRankLimit: mission.kind==="niarimBookmarkRanking"
+          ? rankingEffectiveRankLimit(mission.required,publishedWorkCount)
+          : null,
         rewardEnabled: enabled() &&
           (mission.kind !== "verifiedEditSeconds" ||
             editTimeVerificationEnabled()) &&

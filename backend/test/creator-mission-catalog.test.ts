@@ -5,6 +5,7 @@ import {
   claimMissionInMask, missionClaimed,
   missionRewardCoins, rankingDifficultyMultiplier,
   RANKING_POPULATION_TIERS, rankingMissionEligible,
+  rankingEffectiveRankLimit,
 } from "../src/lib/missionCatalog";
 
 describe("creator missions with separate account and work scopes", () => {
@@ -91,6 +92,11 @@ describe("creator missions with separate account and work scopes", () => {
     expect(rankingMissionEligible({
       goalRank:10,liveRank:5,publishedWorkCount:100,workBookmarks:15,
     })).toBe(true);
+    expect(rankingEffectiveRankLimit(50,99)).toBe(0);
+    expect(rankingEffectiveRankLimit(50,100)).toBe(10);
+    expect(rankingEffectiveRankLimit(10,100)).toBe(5);
+    expect(rankingEffectiveRankLimit(3,100)).toBe(3);
+    expect(rankingEffectiveRankLimit(1,100)).toBe(1);
     expect(rankingMissionEligible({
       goalRank:1,liveRank:1,publishedWorkCount:150,workBookmarks:49,
     })).toBe(false);

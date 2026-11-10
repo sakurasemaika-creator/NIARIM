@@ -294,6 +294,21 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         t.format('detailsWorkProgress', progress, each: goal),
       if (progress != null && kind == 'followers')
         t.format('detailsFollowersProgress', progress, each: goal),
+      if (kind == 'niarimBookmarkRanking' &&
+          row['rankingMinPublishedWorks'] is num &&
+          row['rankingMinBookmarks'] is num)
+        t.format(
+          'rankingRequirements',
+          (row['rankingMinPublishedWorks'] as num).toInt(),
+          each: (row['rankingMinBookmarks'] as num).toInt(),
+        ),
+      if (kind == 'niarimBookmarkRanking' &&
+          row['rankingEffectiveRankLimit'] is num &&
+          (row['rankingEffectiveRankLimit'] as num).toInt() > 0)
+        t.format(
+          'rankingEffective',
+          (row['rankingEffectiveRankLimit'] as num).toInt(),
+        ),
       if (kind == 'qualifiedWorks') t.get('detailsDraftCount'),
       if (template) t.get('detailsTemplateRule'),
       if (row['perWork'] == true)
@@ -501,6 +516,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         : works?['nextCursor'] as String?;
     final candidateMinutes =
         ((account['candidateEditSeconds'] as num?)?.toInt() ?? 0) ~/ 60;
+    final verifiedMinutes =
+        ((account['verifiedEditSeconds'] as num?)?.toInt() ?? 0) ~/ 60;
     final localSeconds = context
         .watch<ProjectService>()
         .projects
@@ -554,6 +571,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 Text(t.format('candidateMinutes', candidateMinutes)),
+                Text(t.format('verifiedMinutes', verifiedMinutes)),
                 if (account['enabled'] != true &&
                     grid?['rewardEnabled'] != true)
                   Text(t.get('upcoming')),

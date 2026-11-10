@@ -86,6 +86,9 @@ const Map<String, Map<String, String>> _translations = {
     'loadError': '達成状況を取得できませんでした。',
     'localTime': 'この端末の制作時間（参考）: {n}時間',
     'candidateMinutes': 'サーバーに届いた制作時間の候補: {n}分（報酬審査前）',
+    'verifiedMinutes': 'サーバー時刻で検証した制作時間: {n}分',
+    'rankingRequirements': '受取条件: NIARIMの公開作品が{n}件以上、この作品のブックマークが{each}件以上',
+    'rankingEffective': '現在の公開作品数で必要な順位: {n}位以内',
     'timeWarning': '制作時間は表示用の記録です。コイン対象にはサーバー側の検証が必要です。',
     'rankingWarning': 'ランキング報酬はNIARIM独自のブックマーク順位が対象です。',
     'budget': 'ミッション報酬はそれぞれ1回限りです。',
@@ -160,6 +163,9 @@ const Map<String, Map<String, String>> _translations = {
     'localTime': 'Editing time on this device (reference): {n} hours',
     'candidateMinutes':
         'Server-recorded candidate time: {n} min (not reward-verified)',
+    'verifiedMinutes': 'Server-clock-validated editing time: {n} min',
+    'rankingRequirements': 'Eligibility: at least {n} published works and {each} bookmarks on this work',
+    'rankingEffective': 'Required live rank with the current community size: top {n}',
     'timeWarning': 'Local editing time is for display only. Coin rewards require server verification.',
     'rankingWarning':
         'Ranking missions use NIARIM bookmark rankings, not YouTube metrics.',

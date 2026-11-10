@@ -132,6 +132,19 @@ const rankingPopulationStep = (publishedWorkCount: number): number => {
 export function rankingDifficultyMultiplier(publishedWorkCount: number): number {
   return 1 + rankingPopulationStep(publishedWorkCount) / 6;
 }
+/** For small communities, enforce BOTH the named rank and a top-percentile
+ * threshold. 0 means the community is too small for rank missions.
+ */
+export function rankingEffectiveRankLimit(goalRank:number,
+  publishedWorkCount:number):number {
+  if (!Number.isSafeInteger(publishedWorkCount) ||
+      publishedWorkCount<MIN_RANK_MISSION_PUBLIC_WORKS ||
+      RANKING_MIN_BOOKMARKS[goalRank]===undefined) return 0;
+  const percentile=goalRank===50 ? 10 : goalRank===10 ? 5 :
+    goalRank===3 ? 3 : 1;
+  return Math.min(goalRank,
+    Math.max(1,Math.floor(publishedWorkCount*percentile/100)));
+}
 /** At launch, ranking 50th out of just 50 works is not an achievement.
  * The relative threshold prevents "top ten by merely posting". A genuine
  * NIARIM bookmark count is required in addition to the live position.
@@ -147,11 +160,7 @@ export function rankingMissionEligible(args: {
       publishedWorkCount < MIN_RANK_MISSION_PUBLIC_WORKS ||
       !Number.isSafeInteger(workBookmarks) || workBookmarks<minimum ||
       !Number.isSafeInteger(liveRank) || liveRank<1) return false;
-  const percentile=goalRank===50 ? 10 : goalRank===10 ? 5 :
-    goalRank===3 ? 3 : 1;
-  const limit=Math.min(goalRank,
-    Math.max(1,Math.floor(publishedWorkCount*percentile/100)));
-  return liveRank<=limit;
+  return liveRank<=rankingEffectiveRankLimit(goalRank,publishedWorkCount);
 }
 
 export function missionRewardCoins(
