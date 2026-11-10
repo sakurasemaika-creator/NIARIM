@@ -97,10 +97,10 @@ void main() {
     await openHome(tester);
     final semantics = tester.ensureSemantics();
     try {
-      for (var selected = 0; selected < 2; selected++) {
+      for (var selected = 0; selected < 4; selected++) {
         await tester.tap(find.byKey(ValueKey('home_tab_$selected')));
         await settleHomeTab(tester);
-        for (var candidate = 0; candidate < 2; candidate++) {
+        for (var candidate = 0; candidate < 4; candidate++) {
           final data = tester
               .getSemantics(find.byKey(ValueKey('home_tab_$candidate')))
               .getSemanticsData();
@@ -115,6 +115,19 @@ void main() {
       semantics.dispose();
     }
     await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('drawer consolidates reward and help destinations', (tester) async {
+    await openHome(tester);
+    await tester.tap(find.byKey(const Key('homeMenuButton')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('homeGuideMenuItem')), findsOneWidget);
+    expect(find.byKey(const Key('homeCoinBenefitsMenuItem')), findsOneWidget);
+    expect(find.byKey(const Key('homeEarnCoinsMenuItem')), findsNothing);
+    expect(find.byKey(const Key('homeCreatorMissionsMenuItem')), findsNothing);
+    expect(find.text('使い方'), findsOneWidget);
+    expect(find.text('コイン・特典'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('project search controls do not imply filtering other tabs', (
