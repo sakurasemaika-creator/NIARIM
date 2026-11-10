@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
@@ -25,6 +28,35 @@ import 'scrollable_sheet_body.dart';
 /// 「追加」ボタンから[PixelArtPaletteEditDialog]で作成する。
 class PixelArtPalettePickerDialog extends StatefulWidget {
   const PixelArtPalettePickerDialog({super.key});
+
+  /// 一覧の高さの上限（パレットが多くても、ダイアログを画面いっぱいにしない）。
+  static const double maxListExtent = 360;
+
+  /// 一覧の1行分の高さの目安（名前1行・色見本・上下の余白。行の操作を名前の
+  /// 下に置くときはその段も）。下のボタンを固定するかどうかの境目に使う。
+  static double oneRowExtent({
+    required double textScale,
+    required bool actionsBeside,
+  }) => math.max(72, 16 + 24 * textScale + 14 + (actionsBeside ? 0 : 48));
+
+  /// 下のボタン（追加・読み込み・キャンセル・適用）を、送らなくても見える所に
+  /// 固定できるか。
+  ///
+  /// ダイアログに使える高さ[available]に、見出し[header]と下のボタン[footer]を
+  /// 置いて、一覧に1行分[oneRow]が残れば固定する。共有できなかった知らせ
+  /// [notice]が出ている間は、知らせを置いても半行分が残れば固定のまま（一覧と
+  /// 知らせで残りを分け合う）。残らないときは、見出しからボタンまでを1つの
+  /// スクロールで送る。
+  static bool pinsFooter({
+    required double available,
+    required double header,
+    required double footer,
+    required double notice,
+    required double oneRow,
+  }) {
+    final room = available - header - footer;
+    return room >= oneRow && (notice <= 0 || room - notice >= oneRow / 2);
+  }
 
   @override
   State<PixelArtPalettePickerDialog> createState() =>
@@ -226,117 +258,276 @@ class _PixelArtPalettePickerDialogState
     final palettes = context.watch<PixelArtPaletteService>().palettes;
     final selected = palettes.where((p) => p.id == _selectedId).firstOrNull;
     final screen = MediaQuery.sizeOf(context);
-    // 低い画面では一覧を別にスクロールさせず、ダイアログ全体を1つで送る
-    // （一覧だけが見えて、知らせや「適用」へ届かなくなる）。
-    final shortScreen = screen.height < 520;
-    // 狭い画面では周りの余白を詰めて、行の名前に幅を残す。
-    final horizontalInset = screen.width < 480 ? 16.0 : 40.0;
-    // 行の幅（ダイアログは画面の幅いっぱいに広がる）。名前に十分な幅を
-    // 残せるときだけ、行の操作を右端に並べる。スクロールするダイアログは
-    // 中身の大きさを先に測るので、LayoutBuilderでは決められない。
-    final rowWidth = screen.width - horizontalInset * 2 - 48;
-    final actionsBeside =
-        rowWidth >= 240 + 140 * MediaQuery.textScalerOf(context).scale(1);
-    final rows = [
-      for (final p in palettes)
-        _paletteRow(l10n, p, actionsBeside: actionsBeside),
-    ];
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    // 文字を大きくしているときは左右と上の余白を詰める（Materialの
+    // ダイアログの見出し・本文と同じ決まり）。
+    final side = 24 * lerpDouble(1, 1 / 3, (textScale.clamp(1, 2) - 1))!;
+    final titleStyle =
+        DialogTheme.of(context).titleTextStyle ??
+        Theme.of(context).textTheme.headlineSmall!;
 
-    // 見出しから操作のボタンまでを1つのスクロールに入れる。低い画面・大きな
-    // 文字では入りきらず、ボタンを下に固定すると一覧も知らせも出なかった。
+    // 見出し・一覧・知らせ・下のボタンを自分で並べる（[_PickerSections]）。
+    // Materialのダイアログの「下のボタン」は常に固定で、とても低い画面では
+    // 一覧も知らせも出せなくなり、中身を丸ごと送る作りにすると、今度は
+    // 「適用」が一覧の下へ流れて、パレットを選ぶたびに送ることになった。
     return AlertDialog(
-      scrollable: true,
+      // 狭い・低い画面では周りの余白を詰めて、中身に場所を残す。
       insetPadding: EdgeInsets.symmetric(
-        horizontal: horizontalInset,
-        vertical: shortScreen ? 16 : 24,
+        horizontal: screen.width < 480 ? 16 : 40,
+        vertical: screen.height < 520 ? 16 : 24,
       ),
-      title: Text(l10n.pixelArtPalettePickerTitle),
+      contentPadding: EdgeInsets.zero,
+      // 行の選択色が、ダイアログの角の丸みの外へ出ないようにする。
+      clipBehavior: Clip.antiAlias,
       content: SizedBox(
         width: double.maxFinite,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (palettes.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Text(l10n.pixelArtPalettePickerEmpty),
-              )
-            else if (shortScreen)
-              ...rows
-            else
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 360),
-                // 行の選択色はMaterialへ描かれる。一覧の中にMaterialを置いて
-                // 切り抜かないと、送って隠れた行の色が見出しの上にはみ出す。
-                child: Material(
-                  type: MaterialType.transparency,
-                  clipBehavior: Clip.hardEdge,
-                  // スクロールするダイアログは中身の大きさを先に測るので、
-                  // 見える分だけ作る一覧（ListView）は中に置けない。外側と
-                  // 同じコントローラーを取り合わないよう、primaryにもしない。
-                  child: SingleChildScrollView(
-                    primary: false,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: rows,
+        child: LayoutBuilder(
+          builder: (context, box) {
+            // 名前に十分な幅を残せるときだけ、行の操作を右端に並べる。
+            final actionsBeside =
+                box.maxWidth - side * 2 >= 240 + 140 * textScale;
+            return SingleChildScrollView(
+              // 一覧も縦に送るので、どちらも画面のコントローラーを使わない。
+              primary: false,
+              child: _PickerSections(
+                viewportExtent: box.maxHeight,
+                minListExtent: PixelArtPalettePickerDialog.oneRowExtent(
+                  textScale: textScale,
+                  actionsBeside: actionsBeside,
+                ),
+                maxListExtent: PixelArtPalettePickerDialog.maxListExtent,
+                header: Padding(
+                  key: const Key('pixelPaletteHeader'),
+                  padding: EdgeInsets.fromLTRB(side, side, side, 16),
+                  child: Semantics(
+                    container: true,
+                    header: true,
+                    child: Text(
+                      l10n.pixelArtPalettePickerTitle,
+                      style: titleStyle,
                     ),
                   ),
                 ),
-              ),
-            if (_shareError != null) ...[
-              const SizedBox(height: 12),
-              ExportShareNotice(
-                key: _shareNoticeKey,
-                message: exportShareFailureText(l10n, _shareError!),
-              ),
-            ],
-            const SizedBox(height: 24),
-            OverflowBar(
-              alignment: MainAxisAlignment.spaceBetween,
-              overflowAlignment: OverflowBarAlignment.end,
-              spacing: 8,
-              overflowSpacing: 4,
-              children: [
-                Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    TextButton.icon(
-                      onPressed: () => _openEditor(),
-                      icon: const Icon(Icons.add),
-                      label: Text(l10n.commonAdd),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.download_outlined),
-                      tooltip: l10n.colorPickerImportPaletteTooltip,
-                      onPressed: _showImportSheet,
-                    ),
-                  ],
+                list: Padding(
+                  key: const Key('pixelPaletteList'),
+                  padding: EdgeInsets.symmetric(horizontal: side),
+                  // 行の選択色はMaterialへ描かれる。一覧の中にMaterialを
+                  // 置いて切り抜かないと、送って隠れた行の色が見出しや
+                  // 下のボタンの上にはみ出す。
+                  child: Material(
+                    type: MaterialType.transparency,
+                    clipBehavior: Clip.hardEdge,
+                    child: palettes.isEmpty
+                        ? SingleChildScrollView(
+                            primary: false,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              child: Text(l10n.pixelArtPalettePickerEmpty),
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            primary: false,
+                            padding: EdgeInsets.zero,
+                            itemCount: palettes.length,
+                            itemBuilder: (context, index) => _paletteRow(
+                              l10n,
+                              palettes[index],
+                              actionsBeside: actionsBeside,
+                            ),
+                          ),
+                  ),
                 ),
-                Wrap(
-                  alignment: WrapAlignment.end,
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(l10n.commonCancel),
-                    ),
-                    FilledButton(
-                      onPressed: selected == null
-                          ? null
-                          : () => Navigator.of(context).pop(selected.colors),
-                      child: Text(l10n.pixelArtPalettePickerApplyButton),
-                    ),
-                  ],
+                notice: _shareError == null
+                    ? const SizedBox.shrink(key: Key('pixelPaletteNotice'))
+                    : Padding(
+                        key: const Key('pixelPaletteNotice'),
+                        padding: EdgeInsets.fromLTRB(side, 12, side, 0),
+                        child: ExportShareNotice(
+                          key: _shareNoticeKey,
+                          message: exportShareFailureText(l10n, _shareError!),
+                        ),
+                      ),
+                footer: Padding(
+                  key: const Key('pixelPaletteFooter'),
+                  padding: EdgeInsets.fromLTRB(side, 24, side, 24),
+                  child: OverflowBar(
+                    alignment: MainAxisAlignment.spaceBetween,
+                    overflowAlignment: OverflowBarAlignment.end,
+                    spacing: 8,
+                    overflowSpacing: 4,
+                    children: [
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          TextButton.icon(
+                            onPressed: () => _openEditor(),
+                            icon: const Icon(Icons.add),
+                            label: Text(l10n.commonAdd),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.download_outlined),
+                            tooltip: l10n.colorPickerImportPaletteTooltip,
+                            onPressed: _showImportSheet,
+                          ),
+                        ],
+                      ),
+                      Wrap(
+                        alignment: WrapAlignment.end,
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text(l10n.commonCancel),
+                          ),
+                          FilledButton(
+                            onPressed: selected == null
+                                ? null
+                                : () => Navigator.of(
+                                    context,
+                                  ).pop(selected.colors),
+                            child: Text(l10n.pixelArtPalettePickerApplyButton),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ],
+              ),
+            );
+          },
         ),
       ),
     );
   }
+}
+
+/// 見出し・一覧・知らせ・下のボタンを縦に並べる。
+///
+/// [PixelArtPalettePickerDialog.pinsFooter]が真なら、一覧だけを残りの高さ
+/// （最大[maxListExtent]）に収めて自分の中で送らせ、全体は[viewportExtent]
+/// （ダイアログに使える高さ）に収まる＝下のボタンは送らなくても見える。
+/// 偽なら、一覧を縮めずに全部を並べる（外側のスクロールが全体を送る）。
+/// 子の実際の高さで決めるので、言語・文字の大きさ・ボタンの折り返しで
+/// 高さが変わっても、はみ出さない。
+class _PickerSections extends MultiChildRenderObjectWidget {
+  _PickerSections({
+    required this.viewportExtent,
+    required this.minListExtent,
+    required this.maxListExtent,
+    required Widget header,
+    required Widget list,
+    required Widget notice,
+    required Widget footer,
+  }) : super(children: [header, list, notice, footer]);
+
+  final double viewportExtent;
+  final double minListExtent;
+  final double maxListExtent;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderPickerSections(viewportExtent, minListExtent, maxListExtent);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderPickerSections renderObject,
+  ) {
+    renderObject
+      ..viewportExtent = viewportExtent
+      ..minListExtent = minListExtent
+      ..maxListExtent = maxListExtent;
+  }
+}
+
+class _PickerSectionData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderPickerSections extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _PickerSectionData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _PickerSectionData> {
+  _RenderPickerSections(
+    this._viewportExtent,
+    this._minListExtent,
+    this._maxListExtent,
+  );
+
+  double get viewportExtent => _viewportExtent;
+  double _viewportExtent;
+  set viewportExtent(double value) {
+    if (value == _viewportExtent) return;
+    _viewportExtent = value;
+    markNeedsLayout();
+  }
+
+  double get minListExtent => _minListExtent;
+  double _minListExtent;
+  set minListExtent(double value) {
+    if (value == _minListExtent) return;
+    _minListExtent = value;
+    markNeedsLayout();
+  }
+
+  double get maxListExtent => _maxListExtent;
+  double _maxListExtent;
+  set maxListExtent(double value) {
+    if (value == _maxListExtent) return;
+    _maxListExtent = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _PickerSectionData) {
+      child.parentData = _PickerSectionData();
+    }
+  }
+
+  @override
+  void performLayout() {
+    final header = firstChild!;
+    final list = childAfter(header)!;
+    final notice = childAfter(list)!;
+    final footer = childAfter(notice)!;
+    final section = BoxConstraints.tightFor(width: constraints.maxWidth);
+    header.layout(section, parentUsesSize: true);
+    notice.layout(section, parentUsesSize: true);
+    footer.layout(section, parentUsesSize: true);
+    final pinned = PixelArtPalettePickerDialog.pinsFooter(
+      available: viewportExtent,
+      header: header.size.height,
+      footer: footer.size.height,
+      notice: notice.size.height,
+      oneRow: minListExtent,
+    );
+    final room =
+        viewportExtent -
+        header.size.height -
+        notice.size.height -
+        footer.size.height;
+    list.layout(
+      pinned
+          ? section.copyWith(maxHeight: math.min(room, maxListExtent))
+          : section,
+      parentUsesSize: true,
+    );
+    var y = 0.0;
+    for (final child in [header, list, notice, footer]) {
+      (child.parentData! as _PickerSectionData).offset = Offset(0, y);
+      y += child.size.height;
+    }
+    size = constraints.constrain(Size(constraints.maxWidth, y));
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }
 
 /// パレット1件の行。[actionsBeside]のときだけ、共有・編集・削除を右端に

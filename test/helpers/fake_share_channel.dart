@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/utils/app_error_reporter.dart';
 
 /// 共有のネイティブ側の代わり。呼ばれた回数と渡された内容を覚え、
 /// 「共有の仕組みが無い」「失敗」「閉じた」「まだ開いている」を再現する
@@ -26,11 +27,24 @@ class FakeShareChannel {
 
   final requests = <Map<dynamic, dynamic>>[];
   late Directory directory;
+  bool _writesBroken = false;
+
+  /// 書類・一時フォルダの場所を「ふつうのファイルの下」に変えて、そこへの
+  /// 書き込み（書き出し・共有ファイルの作成）を失敗させる。[fixWrites]で戻す。
+  void breakWrites() {
+    File('${directory.path}/not_a_folder').writeAsStringSync('x');
+    _writesBroken = true;
+  }
+
+  void fixWrites() => _writesBroken = false;
 
   /// 最後の共有で渡されたファイルのパス。
   List<String> get lastPaths => (requests.last['paths'] as List).cast<String>();
 
   void install() {
+    // 失敗が記録されたことを件数で確かめるので、前のテストの分を消しておく
+    // （記録は新しい20件までで、いっぱいになると件数が増えない）。
+    AppErrorReporter.recentErrors.clear();
     calls = 0;
     failure = null;
     result = 'audit.synthetic.status';
@@ -39,7 +53,13 @@ class FakeShareChannel {
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     directory = Directory.systemTemp.createTempSync('niarim_share_sites_');
-    messenger.setMockMethodCallHandler(_paths, (_) async => directory.path);
+    _writesBroken = false;
+    messenger.setMockMethodCallHandler(
+      _paths,
+      (_) async => _writesBroken
+          ? '${directory.path}/not_a_folder/inside'
+          : directory.path,
+    );
     messenger.setMockMethodCallHandler(_share, (call) async {
       if (call.method != 'share') throw StateError('Unexpected share method');
       calls++;

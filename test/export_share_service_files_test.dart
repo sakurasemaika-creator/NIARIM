@@ -134,6 +134,41 @@ void main() {
     expect(runs, 2);
   });
 
+  test(
+    'listeners hear when a flow starts and ends, also when it fails',
+    () async {
+      var changes = 0;
+      void heard() => changes++;
+      ExportShareService.running.addListener(heard);
+      addTearDown(() => ExportShareService.running.removeListener(heard));
+      final gate = Completer<void>();
+      final first = ExportShareService.runExclusive(
+        'audit-listen',
+        () => gate.future,
+      );
+      expect(changes, 1, reason: '始まりを知らせる');
+      expect(ExportShareService.isRunning('audit-listen'), isTrue);
+      // 走っている間の二度目は何も始めないので、知らせもしない。
+      expect(
+        await ExportShareService.runExclusive('audit-listen', () async {}),
+        isFalse,
+      );
+      expect(changes, 1);
+      gate.complete();
+      await first;
+      expect(changes, 2, reason: '終わりを知らせる');
+      expect(ExportShareService.isRunning('audit-listen'), isFalse);
+      await expectLater(
+        ExportShareService.runExclusive(
+          'audit-listen',
+          () async => throw StateError('write failed'),
+        ),
+        throwsStateError,
+      );
+      expect(changes, 4, reason: '失敗で終わっても知らせる');
+    },
+  );
+
   test('the notice names the kind of problem, never the exception', () {
     for (final locale in AppLocalizations.supportedLocales) {
       final l10n = lookupAppLocalizations(locale);

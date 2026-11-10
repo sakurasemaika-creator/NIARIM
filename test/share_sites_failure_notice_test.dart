@@ -17,6 +17,7 @@ import 'package:niarim/screens/settings/transfer_screen.dart';
 import 'package:niarim/screens/settings/workspace_settings_screen.dart';
 import 'package:niarim/services/autofill_preset_service.dart';
 import 'package:niarim/services/brush_service.dart';
+import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/stamp_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/services/tone_service.dart';
@@ -96,8 +97,9 @@ void main() {
       text.data ?? '',
   ];
 
-  /// 行のメニューを開いて[item]を選ぶ。押せない項目のときはメニューを閉じる。
-  Future<void> chooseFromMenu(
+  /// 行のメニューを開いて[item]を選ぶ。選べる項目だったかを返す（選べない
+  /// 項目のときはメニューを閉じる）。
+  Future<bool> chooseFromMenu(
     WidgetTester tester,
     Finder menuButton,
     String item,
@@ -107,12 +109,57 @@ void main() {
     await tester.tap(menuButton);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
+    final enabled = tester
+        .widget<PopupMenuItem<String>>(
+          find
+              .ancestor(
+                of: find.text(item).last,
+                matching: find.byWidgetPredicate(
+                  (w) => w is PopupMenuItem<String>,
+                ),
+              )
+              .first,
+        )
+        .enabled;
     await tester.tap(find.text(item).last, warnIfMissed: false);
     await pumpRealAsync(tester, const Duration(milliseconds: 500));
     if (find.text(item).evaluate().isNotEmpty) {
       await tester.tapAt(const Offset(2, 2));
       await pumpRealAsync(tester, const Duration(milliseconds: 400));
     }
+    return enabled;
+  }
+
+  /// 書き出しそのものが失敗したときの通知：その所の「書き出しに失敗」の文
+  /// （[lead]で始まる）が1つだけで、共有できないことの文ではない。
+  Future<void> expectExportFailure(
+    WidgetTester tester,
+    AppLocalizations l10n,
+    String lead,
+  ) async {
+    expect(tester.takeException(), isNull);
+    final shown = snackBarTexts(tester);
+    expect(shown, hasLength(1), reason: '書き出しの失敗を知らせる');
+    expect(shown.single, startsWith(lead));
+    expect(shown.single, isNot(contains(l10n.communityErrorUnsupported)));
+    expect(shown.single, isNot(contains(l10n.communityErrorGeneric)));
+    ScaffoldMessenger.of(
+      tester.element(find.byType(Scaffold).first),
+    ).hideCurrentSnackBar();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(SnackBar), findsNothing, reason: '知らせを2つ積まない');
+  }
+
+  /// いま出ている通知を消した後、後ろに積まれた通知が出てこないこと
+  /// （開いている共有へ2つの呼び出しが合流すると、失敗の知らせが2つ積まれる）。
+  Future<void> expectNoQueuedSnackBar(WidgetTester tester) async {
+    ScaffoldMessenger.of(
+      tester.element(find.byType(Scaffold).first),
+    ).hideCurrentSnackBar();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(SnackBar), findsNothing, reason: '知らせを2つ積まない');
   }
 
   testWidgets('theme export: a share problem is reported as a share problem, '
@@ -126,7 +173,7 @@ void main() {
     expect(exportFailed, isNotEmpty);
     final written = File('${share.directory.path}/${preset.name}.niatheme');
 
-    Future<void> export() async {
+    Future<bool> export() async {
       await tester.scrollUntilVisible(
         find.text(preset.name),
         110,
@@ -134,7 +181,7 @@ void main() {
         maxScrolls: 60,
       );
       await tester.pump(const Duration(milliseconds: 250));
-      await chooseFromMenu(
+      return chooseFromMenu(
         tester,
         find
             .descendant(
@@ -181,19 +228,37 @@ void main() {
     expect(share.calls, 3);
     expect(find.byType(SnackBar), findsNothing);
 
-    // 共有シートが開いている間にもう一度選んでも、共有は1回だけ。
+    // 共有シートが開いている間は「書き出し」を選べず、共有は1回だけ。
+    // 失敗の知らせも1つだけ。
     share.pending = Completer<String>();
-    await export();
-    await export();
+    expect(await export(), isTrue);
+    expect(await export(), isFalse, reason: '共有が終わるまで選べない');
     expect(share.calls, 4, reason: '二度押しで共有を二重に呼ばない');
-    share.pending!.complete('');
+    share.pending!.completeError(
+      PlatformException(code: 'Share failed', message: mockText),
+    );
     share.pending = null;
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull);
-    expect(find.byType(SnackBar), findsNothing);
+    expect(snackBarTexts(tester), [l10n.communityErrorGeneric]);
+    await expectNoQueuedSnackBar(tester);
     // 終わった後は、また共有できる。
-    await export();
+    share
+      ..failure = null
+      ..result = '';
+    expect(await export(), isTrue);
     expect(share.calls, 5);
+
+    // 書き出しそのものの失敗は、元の「書き出しに失敗」の文で知らせ、共有は
+    // 呼ばない。その後も書き出せる。
+    share.breakWrites();
+    expect(await export(), isTrue);
+    expect(share.calls, 5);
+    await expectExportFailure(tester, l10n, exportFailed);
+    share.fixWrites();
+    expect(await export(), isTrue, reason: '失敗の後も選べる');
+    expect(share.calls, 6);
+    expect(find.byType(SnackBar), findsNothing);
   });
 
   // ブラシ・トーン・スタンプの一覧は同じ作り（行のメニューの「書き出し」）。
@@ -225,12 +290,12 @@ void main() {
       expect(exportFailed, isNotEmpty);
       final written = File('${share.directory.path}/$name.nia$kind');
 
-      Future<void> export() async {
+      Future<bool> export() async {
         final row = find.ancestor(
           of: find.text(name).first,
           matching: find.byType(ListTile),
         );
-        await chooseFromMenu(
+        return chooseFromMenu(
           tester,
           find.descendant(
             of: row.first,
@@ -269,16 +334,36 @@ void main() {
       expect(find.byType(SnackBar), findsNothing);
       expect(share.calls, 3);
 
+      // 共有シートが開いている間は「書き出し」を選べず、失敗の知らせも
+      // 1つだけ。
       share.pending = Completer<String>();
-      await export();
-      await export();
+      expect(await export(), isTrue);
+      expect(await export(), isFalse, reason: '共有が終わるまで選べない');
       expect(share.calls, 4, reason: '二度押しで共有を二重に呼ばない');
-      share.pending!.complete('');
+      share.pending!.completeError(
+        PlatformException(code: 'Share failed', message: mockText),
+      );
       share.pending = null;
       await pumpRealAsync(tester, const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull);
-      await export();
+      expect(snackBarTexts(tester), [l10n.communityErrorGeneric]);
+      await expectNoQueuedSnackBar(tester);
+      share
+        ..failure = null
+        ..result = '';
+      expect(await export(), isTrue);
       expect(share.calls, 5);
+
+      // 書き出しそのものの失敗は、元の「書き出しに失敗」の文で知らせ、共有は
+      // 呼ばない。その後も書き出せる。
+      share.breakWrites();
+      expect(await export(), isTrue);
+      expect(share.calls, 5);
+      await expectExportFailure(tester, l10n, exportFailed);
+      share.fixWrites();
+      expect(await export(), isTrue, reason: '失敗の後も選べる');
+      expect(share.calls, 6);
+      expect(find.byType(SnackBar), findsNothing);
     });
   }
 
@@ -300,7 +385,7 @@ void main() {
     expect(exportFailed, isNotEmpty);
     final written = File('${share.directory.path}/${preset.name}.niafill');
 
-    Future<void> export() => chooseFromMenu(
+    Future<bool> export() => chooseFromMenu(
       tester,
       find.descendant(
         of: find
@@ -341,13 +426,24 @@ void main() {
     expect(share.calls, 3);
 
     share.pending = Completer<String>();
-    await export();
-    await export();
+    expect(await export(), isTrue);
+    expect(await export(), isFalse, reason: '共有が終わるまで選べない');
     expect(share.calls, 4, reason: '二度押しで共有を二重に呼ばない');
     share.pending!.complete('');
     share.pending = null;
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull);
+
+    // 書き出しそのものの失敗は、元の「書き出しに失敗」の文で知らせ、共有は
+    // 呼ばない。その後も書き出せる。
+    share.breakWrites();
+    expect(await export(), isTrue);
+    expect(share.calls, 4);
+    await expectExportFailure(tester, l10n, exportFailed);
+    share.fixWrites();
+    expect(await export(), isTrue, reason: '失敗の後も選べる');
+    expect(share.calls, 5);
+    expect(find.byType(SnackBar), findsNothing);
 
     // まとめての書き出し：共有シートが開いている間はボタンを押せず、
     // 終わったら選択を解く。
@@ -358,7 +454,7 @@ void main() {
     share.pending = Completer<String>();
     await tester.tap(bulk);
     await pumpRealAsync(tester, const Duration(milliseconds: 500));
-    expect(share.calls, 5);
+    expect(share.calls, 6);
     expect(
       tester.widget<IconButton>(bulk).onPressed,
       isNull,
@@ -366,7 +462,7 @@ void main() {
     );
     await tester.tap(bulk, warnIfMissed: false);
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
-    expect(share.calls, 5);
+    expect(share.calls, 6);
     share.pending!.completeError(
       PlatformException(code: 'Share failed', message: mockText),
     );
@@ -376,6 +472,7 @@ void main() {
     expect(snackBarTexts(tester), [l10n.communityErrorGeneric]);
     expectNoInternalText(tester, also: [mockText, exportFailed]);
     expect(bulk, findsNothing, reason: '終わったら選択を解く');
+    await expectNoQueuedSnackBar(tester);
   });
 
   testWidgets('workspace share: a share problem is reported as a share '
@@ -398,7 +495,8 @@ void main() {
       '${share.directory.path}/AUDIT workspace.niaworkspace',
     );
 
-    Future<void> shareAsFile() async {
+    /// 共有するものを選ぶ一覧から選ぶ。選べる行だったかを返す。
+    Future<bool> shareAsFile() async {
       final open = find.text(l10n.workspaceShareButton);
       await tester.scrollUntilVisible(
         open,
@@ -412,6 +510,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
       final row = find.widgetWithText(ListTile, 'AUDIT workspace');
       expect(row, findsOneWidget, reason: '共有するものを選ぶ一覧');
+      final enabled = tester.widget<ListTile>(row).enabled;
       await tester.tap(row, warnIfMissed: false);
       await pumpRealAsync(tester, const Duration(milliseconds: 500));
       // 共有中は選べないので、一覧が残る。閉じておく。
@@ -419,6 +518,7 @@ void main() {
         await tester.tapAt(const Offset(2, 2));
         await pumpRealAsync(tester, const Duration(milliseconds: 400));
       }
+      return enabled;
     }
 
     final recorded = AppErrorReporter.recentErrors.length;
@@ -447,16 +547,35 @@ void main() {
     expect(find.byType(SnackBar), findsNothing);
     expect(share.calls, 3);
 
+    // 共有シートが開いている間はその行を選べず、失敗の知らせも1つだけ。
     share.pending = Completer<String>();
-    await shareAsFile();
-    await shareAsFile();
+    expect(await shareAsFile(), isTrue);
+    expect(await shareAsFile(), isFalse, reason: '共有が終わるまで選べない');
     expect(share.calls, 4, reason: '二度押しで共有を二重に呼ばない');
-    share.pending!.complete('');
+    share.pending!.completeError(
+      PlatformException(code: 'Share failed', message: mockText),
+    );
     share.pending = null;
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull);
-    await shareAsFile();
+    expect(snackBarTexts(tester), [l10n.communityErrorGeneric]);
+    await expectNoQueuedSnackBar(tester);
+    share
+      ..failure = null
+      ..result = '';
+    expect(await shareAsFile(), isTrue);
     expect(share.calls, 5);
+
+    // 書き出しそのものの失敗は、元の文で知らせ、共有は呼ばない。その後も
+    // 共有できる。
+    share.breakWrites();
+    expect(await shareAsFile(), isTrue);
+    expect(share.calls, 5);
+    await expectExportFailure(tester, l10n, shareFailed);
+    share.fixWrites();
+    expect(await shareAsFile(), isTrue, reason: '失敗の後も選べる');
+    expect(share.calls, 6);
+    expect(find.byType(SnackBar), findsNothing);
   });
 
   /// ダイアログの中の知らせ：先頭の印＋文、その面の文字色、読み上げへ伝わる。
@@ -528,16 +647,20 @@ void main() {
     final written = File(
       '${share.directory.path}/AUDIT palette.niapixelpalette',
     );
-    final shareButton = find.byTooltip(l10n.colorPickerSharePaletteTooltip);
+    final shareButton = find.widgetWithIcon(IconButton, Icons.share_outlined);
 
-    Future<void> shareAsFile() async {
+    /// パレットの共有ボタンから、ファイルで共有する。押せるボタンだったかを
+    /// 返す（共有中は押せない）。
+    Future<bool> shareAsFile() async {
+      final enabled = tester.widget<IconButton>(shareButton).onPressed != null;
       await tester.tap(shareButton, warnIfMissed: false);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       final asFile = find.text(l10n.colorPickerShareViaFile);
-      if (asFile.evaluate().isEmpty) return; // 共有中は押せない。
+      if (asFile.evaluate().isEmpty) return enabled;
       await tester.tap(asFile);
       await pumpRealAsync(tester, const Duration(milliseconds: 500));
+      return enabled;
     }
 
     final recorded = AppErrorReporter.recentErrors.length;
@@ -569,11 +692,46 @@ void main() {
     expect(find.text(l10n.communityErrorGeneric), findsNothing);
     expect(find.byType(SnackBar), findsNothing);
 
-    // 共有シートが開いている間の二度目は、共有を呼ばない。
+    // 共有シートが開いている間は共有ボタンを押せず、失敗の知らせも
+    // ダイアログの中に1つだけ。
     share.pending = Completer<String>();
-    await shareAsFile();
-    await shareAsFile();
+    expect(await shareAsFile(), isTrue);
+    expect(await shareAsFile(), isFalse, reason: '共有が終わるまで押せない');
     expect(share.calls, 4, reason: '二度押しで共有を二重に呼ばない');
+    share.pending!.completeError(
+      PlatformException(code: 'Share failed', message: mockText),
+    );
+    share.pending = null;
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull);
+    expect(find.byType(SnackBar), findsNothing);
+    expectInlineNotice(tester, dialog, l10n.communityErrorGeneric);
+    expect(
+      tester.widget<IconButton>(shareButton).onPressed,
+      isNotNull,
+      reason: '終わったら、また押せる',
+    );
+
+    // 書き出しそのものの失敗は、元の文で知らせ（共有できないことの文は
+    // 出さない）、共有は呼ばない。その後も共有できる。
+    share
+      ..failure = null
+      ..result = '';
+    share.breakWrites();
+    expect(await shareAsFile(), isTrue);
+    expect(share.calls, 4);
+    expect(find.text(l10n.communityErrorGeneric), findsNothing);
+    await expectExportFailure(tester, l10n, shareFailed);
+    share.fixWrites();
+    expect(
+      tester.widget<IconButton>(shareButton).onPressed,
+      isNotNull,
+      reason: '失敗の後も押せる',
+    );
+
+    share.pending = Completer<String>();
+    expect(await shareAsFile(), isTrue);
+    expect(share.calls, 5);
     // 開いたままでもダイアログは閉じられ、後から来た失敗で落ちない。
     await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
     await tester.pumpAndSettle();
@@ -617,7 +775,8 @@ void main() {
     expect(dialog, findsOneWidget);
     final shareFailed = failureLead(l10n.colorPickerShareFailedSnackbar);
 
-    Future<void> shareAsFile() async {
+    /// パレットの共有方法から、ファイルで共有する。選べる項目だったかを返す。
+    Future<bool> shareAsFile() async {
       final manage = find.byTooltip(l10n.colorPickerManagePaletteTooltip);
       await tester.ensureVisible(manage);
       await tester.pump(const Duration(milliseconds: 100));
@@ -628,12 +787,18 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 800));
       final asFile = find.text(l10n.colorPickerShareViaFile);
+      final enabled = tester
+          .widget<ListTile>(
+            find.widgetWithText(ListTile, l10n.colorPickerShareViaFile),
+          )
+          .enabled;
       await tester.tap(asFile, warnIfMissed: false);
       await pumpRealAsync(tester, const Duration(milliseconds: 500));
       if (asFile.evaluate().isNotEmpty) {
         await tester.tapAt(const Offset(2, 2));
         await pumpRealAsync(tester, const Duration(milliseconds: 400));
       }
+      return enabled;
     }
 
     share.failure = MissingPluginException(mockText);
@@ -651,14 +816,38 @@ void main() {
     expect(share.calls, 2);
     expect(find.text(l10n.communityErrorUnsupported), findsNothing);
 
+    // 共有シートが開いている間は「ファイルで共有」を選べず、失敗の知らせも
+    // パネルの中に1つだけ。
     share.pending = Completer<String>();
-    await shareAsFile();
-    await shareAsFile();
+    expect(await shareAsFile(), isTrue);
+    expect(await shareAsFile(), isFalse, reason: '共有が終わるまで選べない');
     expect(share.calls, 3, reason: '二度押しで共有を二重に呼ばない');
-    share.pending!.complete('');
+    share.pending!.completeError(
+      PlatformException(code: 'Share failed', message: mockText),
+    );
     share.pending = null;
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull);
+    expect(find.byType(SnackBar), findsNothing);
+    expectInlineNotice(tester, dialog, l10n.communityErrorGeneric);
+    share
+      ..failure = null
+      ..result = '';
+    expect(await shareAsFile(), isTrue);
+    expect(share.calls, 4);
+    expect(find.text(l10n.communityErrorGeneric), findsNothing);
+
+    // 書き出しそのものの失敗は、元の文で知らせ（共有できないことの文は
+    // 出さない）、共有は呼ばない。その後も共有できる。
+    share.breakWrites();
+    expect(await shareAsFile(), isTrue);
+    expect(share.calls, 4);
+    expect(find.text(l10n.communityErrorUnsupported), findsNothing);
+    expect(find.text(l10n.communityErrorGeneric), findsNothing);
+    await expectExportFailure(tester, l10n, shareFailed);
+    share.fixWrites();
+    expect(await shareAsFile(), isTrue, reason: '失敗の後も選べる');
+    expect(share.calls, 5);
   });
 
   testWidgets('transfer export: closing the share sheet is not a success, a '
@@ -674,8 +863,15 @@ void main() {
     Future<void> export({bool wait = true}) async {
       final before = share.calls;
       await tester.tap(exportButton, warnIfMissed: false);
-      // 書き出し（設定・ブラシ等をまとめる）と一時ファイルの書き込みを待つ。
-      for (var i = 0; i < 100 && share.calls == before; i++) {
+      // 書き出し（設定・ブラシ等をまとめる）と一時ファイルの書き込みを待つ
+      // （共有が呼ばれるか、書き出しの失敗が知らされるまで）。
+      for (
+        var i = 0;
+        i < 100 &&
+            share.calls == before &&
+            find.byType(SnackBar).evaluate().isEmpty;
+        i++
+      ) {
         await pumpRealAsync(tester, const Duration(milliseconds: 100));
         if (!wait) break;
       }
@@ -705,7 +901,9 @@ void main() {
     expect(find.text(l10n.transferExportSuccessSnackbar), findsNothing);
     expect(AppErrorReporter.recentErrors.length, greaterThan(recorded));
     expect(find.byType(CircularProgressIndicator), findsNothing);
-    await clearSnackBars(tester);
+    // 失敗の知らせの後ろに「書き出しました」を積んでいない（積まれた通知まで
+    // 消してしまうと、失敗の後で成功と言う誤りを見逃す）。
+    await expectNoQueuedSnackBar(tester);
 
     // それ以外の失敗。
     share.failure = PlatformException(code: 'Share failed', message: mockText);
@@ -713,7 +911,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(snackBarTexts(tester), [l10n.communityErrorGeneric]);
     expectNoInternalText(tester, also: [mockText, exportFailed]);
-    await clearSnackBars(tester);
+    await expectNoQueuedSnackBar(tester);
 
     // 渡せた（相手を選んだ）とき、結果が分からない端末のときは知らせる。
     for (final result in [
@@ -764,5 +962,39 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     expect(find.byType(SnackBar), findsNothing, reason: '知らせを2つ積まない');
+
+    // 引き継ぎファイルそのものを作れなかったときは、元の「書き出しに失敗」の
+    // 文で知らせ、共有は呼ばない。その後も書き出せる。
+    final projects = tester
+        .element(find.byType(TransferScreen))
+        .read<ProjectService>();
+    await tester.runAsync(
+      () => projects.createProject(
+        name: 'AUDIT transfer project',
+        fps: 1,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 64,
+        exportHeight: 32,
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    final projectRow = find.text('AUDIT transfer project');
+    await tester.ensureVisible(projectRow);
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(projectRow);
+    await tester.pump(const Duration(milliseconds: 100));
+    share.breakWrites();
+    final callsBeforeFailure = share.calls;
+    await export();
+    expect(share.calls, callsBeforeFailure, reason: '作れなかったものは共有しない');
+    await expectExportFailure(tester, l10n, exportFailed);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    share.fixWrites();
+    await export();
+    expect(tester.takeException(), isNull);
+    expect(share.calls, callsBeforeFailure + 1, reason: '失敗の後も書き出せる');
+    expect(snackBarTexts(tester), [l10n.transferExportSuccessSnackbar]);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 }

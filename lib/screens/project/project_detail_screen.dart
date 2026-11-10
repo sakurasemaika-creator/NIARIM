@@ -12,6 +12,7 @@ import '../../engine/layer_compositor.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/project.dart';
 import '../../services/autofill_preset_service.dart';
+import '../../services/export_share_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/theme_service.dart';
@@ -23,6 +24,7 @@ import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/share_project_file_action.dart';
+import '../home/widgets/project_list_widget.dart' show niashareKey;
 
 class ProjectDetailScreen extends StatefulWidget {
   final String projectId;
@@ -41,10 +43,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   bool _loopPlayback = false;
   bool _rendering = false;
   bool _movingToTrash = false;
-  // 共有ファイルの作成・共有の途中（共有のボタンを止める）と、そのうち
-  // 同梱の確認を終えて作成・共有している間（ボタンに進行中の印を出す）。
-  bool _creatingShare = false;
-  bool _buildingShare = false;
   Timer? _timer;
   ui.Image? _previewImage;
   // プレビュー全画面化：確認・仕上がりチェックに集中できるよう、
@@ -54,7 +52,20 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   final _fullscreenPageScroll = ScrollController();
 
   @override
+  void initState() {
+    super.initState();
+    // 共有ファイルの作成・共有は、この画面を離れても、ホームの一覧から始めても
+    // 続く。自分の印ではなく、作品ごとの進行中の状態を見て「共有」を描く。
+    ExportShareService.running.addListener(_onShareRunningChanged);
+  }
+
+  void _onShareRunningChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
+    ExportShareService.running.removeListener(_onShareRunningChanged);
     _timer?.cancel();
     _fullscreenPageScroll.dispose();
     _previewImage?.dispose();
@@ -162,6 +173,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       );
     }
 
+    // この作品の共有ファイルを作成・共有している途中か（どの画面から始めても）。
+    final sharing = ExportShareService.isRunning(niashareKey(project.id));
     final flat = _flatten(projectService);
     if (_previewImage == null && !_rendering) {
       WidgetsBinding.instance.addPostFrameCallback(
@@ -405,17 +418,24 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     ),
                   ),
                   Expanded(
-                    child: _quickAction(
-                      icon: Icons.ios_share,
-                      label: l10n.projectDetailShareQuickAction,
-                      busy: _buildingShare,
-                      onTap: _creatingShare
-                          ? null
-                          : () => _createNiashare(
-                              context,
-                              projectService,
-                              project,
-                            ),
+                    child: KeyedSubtree(
+                      key: const Key('projectDetailShareAction'),
+                      child: _quickAction(
+                        icon: Icons.ios_share,
+                        // 作成・共有の途中は、ほかの操作の処理中と同じく
+                        // 文言でも分かるようにする。
+                        label: sharing
+                            ? l10n.homeTrashWorking
+                            : l10n.projectDetailShareQuickAction,
+                        busy: sharing,
+                        onTap: sharing
+                            ? null
+                            : () => _createNiashare(
+                                context,
+                                projectService,
+                                project,
+                              ),
+                      ),
                     ),
                   ),
                   // Keep the loop control directly beside Share.
@@ -970,34 +990,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
   /// Export a persistent .niashare snapshot and then open the OS share sheet.
   ///
-  /// 作成には時間がかかるので、作成・共有が終わるまで共有のボタンを止め、
-  /// 二度目は始めない（作成中にもう一度押すと、同じ作品の共有ファイルを
-  /// 同時に作り始めた）。同梱の確認を終えたら、ボタンに進行中の印を出す。
   Future<void> _createNiashare(
     BuildContext context,
     ProjectService service,
     Project project,
-  ) async {
-    if (_creatingShare) return;
-    setState(() => _creatingShare = true);
-    try {
-      await createAndShareProjectNiashare(
-        context,
-        service,
-        project,
-        onBuilding: () {
-          if (mounted) setState(() => _buildingShare = true);
-        },
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _creatingShare = false;
-          _buildingShare = false;
-        });
-      }
-    }
-  }
+  ) => createAndShareProjectNiashare(context, service, project);
 
   Widget _infoRow(String label, String value) {
     return Padding(

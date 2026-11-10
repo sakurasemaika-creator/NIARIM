@@ -1788,6 +1788,8 @@ Widget _receivedShareMenu(BuildContext context, Project project) {
       PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
       PopupMenuItem(
         value: 'share',
+        // この作品の共有ファイルの作成・共有が終わるまで、二度目は選べない。
+        enabled: !ExportShareService.isRunning(niashareKey(project.id)),
         child: Text(l10n.projectDetailShareQuickAction),
       ),
       PopupMenuItem(

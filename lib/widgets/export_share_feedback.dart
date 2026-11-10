@@ -44,25 +44,56 @@ Future<ShareResult?> shareFilesWithNotice(
   List<XFile> files, {
   required String key,
   List<String>? fileNameOverrides,
-}) async {
-  // 共有の後は画面が無くなっていることがあるので、先に取っておく。
-  final messenger = ScaffoldMessenger.maybeOf(context);
-  final l10n = AppLocalizations.of(context)!;
-  final origin = exportShareOrigin(context);
-  try {
-    return await ExportShareService.shareFiles(
-      files,
-      key: key,
-      fileNameOverrides: fileNameOverrides,
-      origin: origin,
-    );
-  } catch (error, stackTrace) {
-    AppErrorReporter.record(error, stackTrace);
-    messenger?.showSnackBar(
-      SnackBar(content: Text(exportShareFailureText(l10n, error))),
-    );
-    return null;
+}) => ExportShareHandles.of(
+  context,
+).shareFiles(files, key: key, fileNameOverrides: fileNameOverrides);
+
+/// 画面から先に取っておく、知らせる先・文言・共有シートの出どころ。
+///
+/// 共有の前に時間のかかる処理（共有ファイルの作成）があると、終わったときには
+/// 始めた画面が無くなっていることがある。先に取っておけば、そのときも同じ
+/// 決まりで知らせ、共有できる（黙って止めない）。
+class ExportShareHandles {
+  ExportShareHandles.of(BuildContext context)
+    : messenger = ScaffoldMessenger.maybeOf(context),
+      l10n = AppLocalizations.of(context)!,
+      origin = exportShareOrigin(context);
+
+  final ScaffoldMessengerState? messenger;
+  final AppLocalizations l10n;
+  final Rect? origin;
+
+  /// 画面下の通知で知らせる。
+  void tell(String message) {
+    final messenger = this.messenger;
+    if (messenger == null || !messenger.mounted) return;
+    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
+
+  /// [shareFilesWithNotice]と同じ（共有の結果を返し、できなかったときは
+  /// 知らせてnullを返す）。
+  Future<ShareResult?> shareFiles(
+    List<XFile> files, {
+    required String key,
+    List<String>? fileNameOverrides,
+  }) async {
+    try {
+      return await ExportShareService.shareFiles(
+        files,
+        key: key,
+        fileNameOverrides: fileNameOverrides,
+        origin: origin,
+      );
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      tell(exportShareFailureText(l10n, error));
+      return null;
+    }
+  }
+
+  /// 書き出したファイル1つを共有する（[shareExportedFileWithNotice]と同じ）。
+  Future<ShareResult?> share(File file) =>
+      shareFiles([XFile(file.path)], key: file.absolute.path);
 }
 
 /// ダイアログ・パネルの中から共有する。できなかったときは記録して、その中に

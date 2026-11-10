@@ -1137,51 +1137,33 @@ class ProjectListWidget extends StatelessWidget {
   }
 
   /// .niashare（共有用ファイル）を作成し、共有シートを表示する。
-  ///
-  /// 作成には時間がかかるので、同じ作品の作成・共有が終わるまで二度目は
-  /// 始めない（同じファイルを同時に書かない。プロジェクト詳細の共有とも
-  /// 同じ名前で止め合う）。作成の失敗と、共有できない端末・共有の失敗は
-  /// 別のことなので、別の文で知らせる。
-  Future<void> _createNiashare(BuildContext context, Project project) =>
-      ExportShareService.runExclusive(niashareKey(project.id), () async {
-        final includeOptions = await showMaterialIncludeDialog(context);
-        if (includeOptions == null || !context.mounted) return; // キャンセル
-        final l10n = AppLocalizations.of(context)!;
-        final service = context.read<ProjectService>();
-        final materialService = context.read<MaterialService>();
-        final fontService = context.read<FontService>();
-        final scenes = service.scenesOf(project.id);
-        final tileManager = service.tileManagerOf(project.id);
-        final File file;
-        try {
-          final bundle = await materialService.buildShareBundle(
-            project.id,
-            includeOptions.materialTypes,
-          );
-          final fontBundle = includeOptions.includeFonts
-              ? await buildFontShareBundle(service, fontService, project.id)
-              : (files: <String, Uint8List>{}, manifest: null);
-          file = await NiaproSerializer.saveShare(
-            project: project,
-            scenes: scenes,
-            tileManager: tileManager,
-            materialFiles: bundle.files.isEmpty ? null : bundle.files,
-            materialsManifest: bundle.manifest,
-            fontFiles: fontBundle.files.isEmpty ? null : fontBundle.files,
-            fontsManifest: fontBundle.manifest,
-          );
-        } catch (e) {
-          if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.projectDetailNiashareFailedSnackbar('$e')),
-            ),
-          );
-          return;
-        }
-        if (!context.mounted) return;
-        await shareExportedFileWithNotice(context, file);
-      });
+  Future<void> _createNiashare(BuildContext context, Project project) {
+    final service = context.read<ProjectService>();
+    final materialService = context.read<MaterialService>();
+    final fontService = context.read<FontService>();
+    return runNiashareFlow(
+      context,
+      project,
+      build: (options) async {
+        final bundle = await materialService.buildShareBundle(
+          project.id,
+          options.materialTypes,
+        );
+        final fontBundle = options.includeFonts
+            ? await buildFontShareBundle(service, fontService, project.id)
+            : (files: <String, Uint8List>{}, manifest: null);
+        return NiaproSerializer.saveShare(
+          project: project,
+          scenes: service.scenesOf(project.id),
+          tileManager: service.tileManagerOf(project.id),
+          materialFiles: bundle.files.isEmpty ? null : bundle.files,
+          materialsManifest: bundle.manifest,
+          fontFiles: fontBundle.files.isEmpty ? null : fontBundle.files,
+          fontsManifest: fontBundle.manifest,
+        );
+      },
+    );
+  }
 
   void _showRenameDialog(BuildContext context, Project project) {
     final l10n = AppLocalizations.of(context)!;
@@ -1298,15 +1280,68 @@ class ProjectListWidget extends StatelessWidget {
   }
 }
 
-/// 作品の.niashareの作成・共有を止め合う名前（ホームの一覧の共有と
-/// プロジェクト詳細の共有で共通。`ExportShareService.runExclusive`へ渡す）。
+/// 作品の.niashareの作成・共有を止め合う名前（[runNiashareFlow]が
+/// `ExportShareService.runExclusive`へ渡す）。作成・共有の間は
+/// `ExportShareService.isRunning(niashareKey(id))`が真になる。
 String niashareKey(String projectId) => 'niashare:$projectId';
+
+/// .niashare作成時の同梱の選択。
+typedef NiashareIncludeOptions = ({
+  Set<MaterialType> materialTypes,
+  bool includeFonts,
+});
+
+/// 同梱の確認→共有ファイルの作成（[build]）→共有を、作品ごとに一度に1つだけ
+/// 走らせる（ホームの一覧のメニュー・プロジェクト詳細・受け取った作品の
+/// メニューで共通）。
+///
+/// 作成・共有の間は[niashareKey]の名前が走っていて、`ExportShareService.
+/// running`が知らせる。作成は始めた画面より長く続くことがあるので、どの画面の
+/// ボタン・メニューも自分の印ではなくそれを見て、進行中の見た目（押せない・
+/// 進行中の印）にすること。始めた画面が途中で無くなっても、先に取っておいた
+/// 通知先から、作成の失敗・共有できないことを知らせ、共有シートを開く
+/// （黙って止めると、押せそうに見えて何も起きない時間ができる）。
+/// 作成の失敗と、共有できない端末・共有の失敗は別のことなので、別の文で
+/// 知らせる。
+Future<void> runNiashareFlow(
+  BuildContext context,
+  Project project, {
+  required Future<File> Function(NiashareIncludeOptions options) build,
+}) async {
+  final key = niashareKey(project.id);
+  final handles = ExportShareHandles.of(context);
+  if (ExportShareService.isRunning(key)) {
+    // 進行中は入口を止めてあるが、届いた操作を黙って捨てない。
+    handles.tell(handles.l10n.homeTrashWorking);
+    return;
+  }
+  NiashareIncludeOptions? chosen;
+  // 確認は一度に1つ（同じフレームの二度押しで2つ開かない）。
+  await ExportShareService.runExclusive('$key:confirm', () async {
+    chosen = await showMaterialIncludeDialog(context);
+  });
+  final options = chosen;
+  if (options == null) return; // 取り消した（または、確認がもう開いている）
+  final started = await ExportShareService.runExclusive(key, () async {
+    final File file;
+    try {
+      file = await build(options);
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      handles.tell(handles.l10n.projectDetailNiashareFailedSnackbar('$error'));
+      return;
+    }
+    await handles.share(file);
+  });
+  if (!started) handles.tell(handles.l10n.homeTrashWorking);
+}
 
 /// .niashare作成時の同梱選択ダイアログ（画像/動画/音声を
 /// 種類ごとに選択できる。デフォルトは全種類ON。「フォントを含める」を
 /// 選択した場合のみユーザー追加フォントも同梱する）。キャンセル時はnullを返す。
-Future<({Set<MaterialType> materialTypes, bool includeFonts})?>
-showMaterialIncludeDialog(BuildContext context) {
+Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
+  BuildContext context,
+) {
   final l10n = AppLocalizations.of(context)!;
   final selected = <MaterialType>{
     MaterialType.image,
@@ -1314,7 +1349,7 @@ showMaterialIncludeDialog(BuildContext context) {
     MaterialType.audio,
   };
   bool includeFonts = true;
-  return showDialog<({Set<MaterialType> materialTypes, bool includeFonts})>(
+  return showDialog<NiashareIncludeOptions>(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setDialogState) => AlertDialog(

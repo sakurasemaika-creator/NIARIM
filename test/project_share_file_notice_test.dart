@@ -166,5 +166,30 @@ void main() {
     await pumpRealAsync(tester, const Duration(milliseconds: 400));
     expect(share.calls, 3);
     expect(tester.takeException(), isNull);
+
+    // 共有ファイルそのものを作れなかったときは「作成に失敗」の文で知らせ、
+    // 共有は呼ばない。その後もメニューから作成・共有できる。
+    share.breakWrites();
+    await chooseShareInHomeMenu();
+    expect(includeDialog, findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonCreate));
+    for (var i = 0; i < 100 && find.byType(SnackBar).evaluate().isEmpty; i++) {
+      await pumpRealAsync(tester, const Duration(milliseconds: 100));
+    }
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(tester.takeException(), isNull);
+    expect(share.calls, 3, reason: '作れなかったものは共有しない');
+    final shown = snackBarTexts();
+    expect(shown, hasLength(1), reason: '作成の失敗を知らせる');
+    expect(shown.single, startsWith(createFailed));
+    expect(shown.single, isNot(contains(l10n.communityErrorUnsupported)));
+    expect(shown.single, isNot(contains(l10n.communityErrorGeneric)));
+    await clearSnackBars();
+    share.fixWrites();
+    share.result = '';
+    await chooseShareInHomeMenu();
+    await confirmAndWait();
+    expect(share.calls, 4, reason: '失敗の後も作成・共有できる');
+    expect(find.byType(SnackBar), findsNothing);
   });
 }

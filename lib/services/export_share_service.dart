@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:share_plus/share_plus.dart';
 
 // Screens take the share types from here instead of importing share_plus.
@@ -11,6 +12,7 @@ export 'package:share_plus/share_plus.dart'
 abstract final class ExportShareService {
   static final _pending = <String, Future<ShareResult>>{};
   static final _running = <String>{};
+  static final _runningChanged = _RunningChanged();
 
   static Future<ShareResult> share(File file, {Rect? origin}) =>
       shareFiles([XFile(file.path)], key: file.absolute.path, origin: origin);
@@ -49,6 +51,13 @@ abstract final class ExportShareService {
   /// Whether a flow started with [runExclusive] for [key] is still running.
   static bool isRunning(String key) => _running.contains(key);
 
+  /// Notifies when a [runExclusive] flow starts or ends.
+  ///
+  /// A flow can outlive the screen that started it, so every control that
+  /// starts one listens here and shows [isRunning] (disabled, busy mark)
+  /// instead of keeping its own flag.
+  static Listenable get running => _runningChanged;
+
   /// Runs one write-then-share flow for [key] at a time.
   ///
   /// A second activation while the first is still writing its file or showing
@@ -59,11 +68,17 @@ abstract final class ExportShareService {
     Future<void> Function() flow,
   ) async {
     if (!_running.add(key)) return false;
+    _runningChanged.notify();
     try {
       await flow();
       return true;
     } finally {
       _running.remove(key);
+      _runningChanged.notify();
     }
   }
+}
+
+class _RunningChanged extends ChangeNotifier {
+  void notify() => notifyListeners();
 }
