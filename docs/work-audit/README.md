@@ -39,6 +39,10 @@
 
 - `docs/work-audit/BACKEND_API_AUDIT_CHECKLIST.md` — 登録時49 HTTPルート、認証/本人境界、ランキング公開状態、フォロー、YouTube・Google、FCM、AdMob SSV、Play課金、DynamoDB・AWS/CI等の追加検証観点。正式Delta `D001.61` / `D021` に紐づく**未実施の監査対象**であり、完了証拠ではない。全面監査開始時には最新App/Web HEADと実API定義を再inventoryする。
 
+## 容量削減画面の追加監査ケース（未実施）
+
+- `docs/work-audit/STORAGE_BAR_UI_DELTA_20261110.md` — 2026-11-10の棒グラフ専用UI・固定明度・端末側+18°配色・明るい色の文字視認性・再取得/失敗・7言語/PC-SP等。正式 `D001.63` / `D001` に紐づく追加チェック。**完了判定や現在の監査IDを変更しない。**
+
 ## 補助資料
 
 `docs/AI設計書/**`、機能別verification、security audit、operation capture等は、現在の実装と照合するための仕様・過去証拠・補助資料として使用します。これらの古い記述や過去の結果だけで現在の監査完了を判定してはいけません。
