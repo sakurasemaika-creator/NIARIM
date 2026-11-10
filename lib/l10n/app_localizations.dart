@@ -3080,7 +3080,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpCustomBrushDesc.
   ///
   /// In ja, this message translates to:
-  /// **'ブラシ一覧でプリインストールのブラシを長押しして「複製」すると、それを元にした自分専用のカスタムブラシが作成されます。複製したブラシは太さ・不透明度・硬さ・回転・密度・散布・ぼかし半径などのパラメータを自由に編集でき、不要になれば削除もできます（プリインストールのブラシ自体は編集・削除できません）。フォルダで分類したり、星アイコンでお気に入り登録することもできます。'**
+  /// **'ブラシ一覧でプリインストールのブラシを長押しして「複製」すると、それを元にした自分専用のカスタムブラシが作成されます。複製したブラシは太さ・不透明度・硬さ・回転・密度・散布・ぼかし半径などのパラメータを自由に編集でき、不要になれば削除もできます（プリインストールのブラシ自体は編集・削除できません）。キャンバスのスライダーで変えた太さ・不透明度はブラシごとに覚えます。プリインストールのブラシも同じで、一覧のメニューから既定の値に戻せます。フォルダで分類したり、星アイコンでお気に入り登録することもできます。'**
   String get helpCustomBrushDesc;
 
   /// No description provided for @helpLayerFolderTitle.
@@ -8302,6 +8302,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'削除したブラシは元に戻せません。'**
   String get brushPanelDeleteConfirmBody;
+
+  /// No description provided for @brushPanelResetRememberedValues.
+  ///
+  /// In ja, this message translates to:
+  /// **'既定の太さ・不透明度に戻す'**
+  String get brushPanelResetRememberedValues;
 
   /// No description provided for @numberInputRangeError.
   ///

@@ -1607,7 +1607,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpCustomBrushDesc =>
-      '在笔刷列表中长按预装笔刷并选择「复制」，即可基于它创建专属自定义笔刷。复制后的笔刷可以自由编辑粗细、不透明度、硬度、旋转、密度、散布、模糊半径等参数，不需要时也可以删除（预装笔刷本身无法编辑或删除）。还可以用文件夹分类，或用星标图标收藏。';
+      '在笔刷列表中长按预装笔刷并选择「复制」，即可基于它创建专属自定义笔刷。复制后的笔刷可以自由编辑粗细、不透明度、硬度、旋转、密度、散布、模糊半径等参数，不需要时也可以删除（预装笔刷本身无法编辑或删除）。用画布上的滑块调整的粗细和不透明度会按笔刷分别记住，预装笔刷也一样，并可以从列表的菜单恢复为默认值。还可以用文件夹分类，或用星标图标收藏。';
 
   @override
   String get helpLayerFolderTitle => '图层文件夹';
@@ -4483,6 +4483,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get brushPanelDeleteConfirmBody => '删除的笔刷无法恢复。';
+
+  @override
+  String get brushPanelResetRememberedValues => '将粗细和不透明度恢复为默认值';
 
   @override
   String numberInputRangeError(String min, String max) {
@@ -9558,7 +9561,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpCustomBrushDesc =>
-      '在筆刷清單中長按預裝筆刷並選擇「複製」，即可基於它建立專屬自訂筆刷。複製後的筆刷可以自由編輯粗細、不透明度、硬度、旋轉、密度、散佈、模糊半徑等參數，不需要時也可以刪除（預裝筆刷本身無法編輯或刪除）。還可以用資料夾分類，或用星標圖示收藏。';
+      '在筆刷清單中長按預裝筆刷並選擇「複製」，即可基於它建立專屬自訂筆刷。複製後的筆刷可以自由編輯粗細、不透明度、硬度、旋轉、密度、散佈、模糊半徑等參數，不需要時也可以刪除（預裝筆刷本身無法編輯或刪除）。用畫布上的滑桿調整的粗細和不透明度會依筆刷分別記住，預裝筆刷也一樣，並可以從清單的選單恢復為預設值。還可以用資料夾分類，或用星標圖示收藏。';
 
   @override
   String get helpLayerFolderTitle => '圖層資料夾';
@@ -12433,6 +12436,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushPanelDeleteConfirmBody => '刪除的筆刷無法復原。';
+
+  @override
+  String get brushPanelResetRememberedValues => '將粗細和不透明度恢復為預設值';
 
   @override
   String numberInputRangeError(String min, String max) {

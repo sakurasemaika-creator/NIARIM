@@ -1674,7 +1674,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpCustomBrushDesc =>
-      'Mantén pulsado un pincel preinstalado en la lista y elige «Duplicar» para crear tu propio pincel personalizado basado en él. Los pinceles duplicados se pueden editar libremente (grosor, opacidad, dureza, rotación, densidad, dispersión, radio de desenfoque y más) y eliminar cuando ya no los necesites (los pinceles preinstalados no se pueden editar ni eliminar). También puedes organizarlos en carpetas y marcarlos como favoritos con el icono de estrella.';
+      'Mantén pulsado un pincel preinstalado en la lista y elige «Duplicar» para crear tu propio pincel personalizado basado en él. Los pinceles duplicados se pueden editar libremente (grosor, opacidad, dureza, rotación, densidad, dispersión, radio de desenfoque y más) y eliminar cuando ya no los necesites (los pinceles preinstalados no se pueden editar ni eliminar). El grosor y la opacidad que ajustas con los deslizadores del lienzo se recuerdan para cada pincel, incluidos los preinstalados, que puedes devolver a sus valores predeterminados desde el menú del pincel en la lista. También puedes organizarlos en carpetas y marcarlos como favoritos con el icono de estrella.';
 
   @override
   String get helpLayerFolderTitle => 'Carpetas de capas';
@@ -4723,6 +4723,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get brushPanelDeleteConfirmBody =>
       'Un pincel eliminado no se puede recuperar.';
+
+  @override
+  String get brushPanelResetRememberedValues =>
+      'Restablecer grosor y opacidad predeterminados';
 
   @override
   String numberInputRangeError(String min, String max) {

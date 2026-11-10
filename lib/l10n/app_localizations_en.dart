@@ -1644,7 +1644,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpCustomBrushDesc =>
-      'Long-press a pre-installed brush in the brush list and choose “Duplicate” to create your own custom brush based on it. Duplicated brushes can be freely edited — thickness, opacity, hardness, rotation, density, scatter, blur radius, and more — and deleted once you no longer need them (the pre-installed brushes themselves can’t be edited or deleted). You can also sort them into folders and mark favorites with the star icon.';
+      'Long-press a pre-installed brush in the brush list and choose “Duplicate” to create your own custom brush based on it. Duplicated brushes can be freely edited — thickness, opacity, hardness, rotation, density, scatter, blur radius, and more — and deleted once you no longer need them (the pre-installed brushes themselves can’t be edited or deleted). The thickness and opacity you set with the canvas sliders are remembered for each brush, including pre-installed ones, which you can return to their default values from the brush’s menu in the list. You can also sort them into folders and mark favorites with the star icon.';
 
   @override
   String get helpLayerFolderTitle => 'Layer folders';
@@ -4658,6 +4658,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get brushPanelDeleteConfirmBody =>
       'A deleted brush can\'t be restored.';
+
+  @override
+  String get brushPanelResetRememberedValues =>
+      'Reset thickness and opacity to default';
 
   @override
   String numberInputRangeError(String min, String max) {

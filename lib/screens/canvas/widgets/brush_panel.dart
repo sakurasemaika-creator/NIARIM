@@ -366,6 +366,17 @@ class _BrushPanelState extends State<BrushPanel> {
                                     value: 'export',
                                     child: Text(l10n.transferExport),
                                   ),
+                                  // 組み込みブラシは、キャンバスで変えて
+                                  // 覚えた太さ・不透明度を既定へ戻せる。
+                                  if (brushService.hasRememberedBuiltInValues(
+                                    brush.id,
+                                  ))
+                                    PopupMenuItem(
+                                      value: 'resetValues',
+                                      child: Text(
+                                        l10n.brushPanelResetRememberedValues,
+                                      ),
+                                    ),
                                   if (!builtIn)
                                     PopupMenuItem(
                                       value: 'delete',
@@ -440,6 +451,8 @@ class _BrushPanelState extends State<BrushPanel> {
     switch (action) {
       case 'edit':
         _showBrushSettings(context, brush);
+      case 'resetValues':
+        service.resetRememberedBuiltInValues(brush.id);
       case 'duplicate':
         // 言語に合わせた「名前 (コピー)」、同じ名前があれば番号を付ける
         // （以前は日本語の「(コピー)」固定で、2回複製すると同じ名前が並んだ）。
@@ -672,10 +685,16 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     final callback = widget.onEyedropOutlineColor;
     if (callback == null) return;
     final service = context.read<BrushService>();
-    final draft = _brush;
+    var draft = _brush;
     final reopen = widget.onReopen;
     Navigator.of(context).pop();
     final sampled = await callback();
+    // 色を取るのを待つ間にキャンバスで変えた太さ・不透明度（ブラシごとの
+    // 覚え）を、シートを開いたときの値で上書きしない。
+    final live = service.brushes.where((b) => b.id == draft.id).firstOrNull;
+    if (live != null) {
+      draft = draft.copyWith(size: live.size, opacity: live.opacity);
+    }
     if (sampled != null) {
       service.updateBrush(draft.copyWith(outlineColor: sampled));
     }

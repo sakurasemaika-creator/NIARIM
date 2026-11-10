@@ -411,6 +411,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// ブラシサイズ／不透明度が描画結果に影響するツールかどうか。
   /// ペン・消しゴム・投げ縄塗り・指（ワープ）・定規（定規ガイド沿いの
   /// 描画にペンと同じブラシ設定を使う）が対象。
+  /// 太さ・不透明度の欄で変えた値を、ブラシの覚えにするか。ブラシで描いて
+  /// いるとき（ペンのブラシ）だけ。消しゴム・ぼかし・指先・モザイク・定規・
+  /// 投げ縄や、ペンのトーン・スタンプ・投げ縄塗りも同じ欄を使うが、そこで
+  /// 変えた太さはその場だけの値にする（消すために太くしただけで、ペンの
+  /// ブラシが太いまま覚えられないように）。
+  bool get _remembersBrushValues =>
+      _currentTool == DrawingTool.pen && _currentSubTool == PenSubTool.brush;
+
   bool _usesBrushSize(DrawingTool tool) => switch (tool) {
     DrawingTool.pen ||
     DrawingTool.eraser ||
@@ -1132,8 +1140,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 使っているブラシの太さ・不透明度を欄へ写す（初回と、buildのselectで
-    // 見ているブラシの変化のたび）。
+    // 使っているブラシの太さ・不透明度を欄へ写す（初回。その後の変化は
+    // buildのselectが受け取って合わせる）。
     final brush = context.read<BrushService>().currentBrush;
     if (brush != null) {
       _brushSize = brush.size;
@@ -1310,13 +1318,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
     // 使うブラシ・その太さ・不透明度が変わったら（一覧で選ぶ・早替えツール）
-    // この画面を作り直す。作り直しの前にdidChangeDependenciesが太さ・
-    // 不透明度の欄をそのブラシの値へ合わせる（これが無いと、別のブラシを
-    // 選んでも欄は前のブラシの値のままだった）。
-    context.select<BrushService, (String?, double?, int?)>((service) {
-      final brush = service.currentBrush;
-      return (brush?.id, brush?.size, brush?.opacity);
-    });
+    // この画面を作り直し、太さ・不透明度の欄をそのブラシの値へ合わせる
+    // （これが無いと、別のブラシを選んでも欄は前のブラシの値のままだった）。
+    // 値はここで受け取って合わせる。didChangeDependenciesには頼らない：
+    // selectだけで見ている画面が同じフレームでsetState済み（一覧を閉じる・
+    // 早替えツール）だと、providerはdidChangeDependenciesを呼ばない。
+    final (_, currentBrushSize, currentBrushOpacity) = context
+        .select<BrushService, (String?, double?, int?)>((service) {
+          final brush = service.currentBrush;
+          return (brush?.id, brush?.size, brush?.opacity);
+        });
+    if (currentBrushSize != null) _brushSize = currentBrushSize;
+    if (currentBrushOpacity != null) _brushOpacity = currentBrushOpacity;
     // PC/DeXモード（広い画面）：レイヤーパネルをフローティング表示ではなく、
     // 常時表示のドッキングパネルとして右側に固定する（プロ向けレイアウト）。
     // サブツール系パネル（ブラシ・トーン・スタンプ等）もPC版では互いに
@@ -1699,6 +1712,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           setState(() => _brushSize = v);
                           context.read<BrushService>().updateCurrentBrushSize(
                             v,
+                            remember: _remembersBrushValues,
                           );
                           _recordCanvasAutomation(
                             'canvas.brushSize',
@@ -1710,7 +1724,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           setState(() => _brushOpacity = v);
                           context
                               .read<BrushService>()
-                              .updateCurrentBrushOpacity(v);
+                              .updateCurrentBrushOpacity(
+                                v,
+                                remember: _remembersBrushValues,
+                              );
                           _recordCanvasAutomation(
                             'canvas.brushOpacity',
                             'Brush opacity',

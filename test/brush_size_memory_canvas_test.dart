@@ -8,6 +8,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/brush_size_slider.dart';
 import 'package:niarim/screens/home/home_screen.dart';
@@ -130,6 +131,35 @@ void main() {
     expect(slider().opacity, 35);
     expect(tester.takeException(), isNull);
 
+    // 一覧で選ぶ・早替えツールは、同じフレームでこの画面も作り直す
+    // （一覧を閉じるsetState）。そのときも欄は選んだブラシの値になる
+    // （以前は前のブラシの値のまま残り、そこから±を押すと別のブラシの
+    // 値として覚えた）。
+    void selectWithRebuild(String id) {
+      brushes.selectBrush(id);
+      // ignore: invalid_use_of_protected_member
+      tester.state(find.byType(CanvasScreen)).setState(() {});
+    }
+
+    selectWithRebuild('Brush0001');
+    await tester.pump();
+    expect(slider().brushSize, otherSize, reason: '同じフレームの作り直しでも追従する');
+    expect(slider().opacity, isNot(35));
+    selectWithRebuild('Brush0002');
+    await tester.pump();
+    expect(slider().brushSize, 42);
+    expect(slider().opacity, 35);
+    // 早替えツールが一時的に当てる太さも欄に出る。
+    brushes.updateCurrentBrushSize(120, remember: false);
+    // ignore: invalid_use_of_protected_member
+    tester.state(find.byType(CanvasScreen)).setState(() {});
+    await tester.pump();
+    expect(slider().brushSize, 120);
+    brushes.selectBrush('Brush0001');
+    brushes.selectBrush('Brush0002');
+    await tester.pump();
+    expect(slider().brushSize, 42, reason: '一時的な太さは覚えない');
+
     // 数字を確定した時点で保存され、起動し直しても同じ。
     await settle(tester, 2);
     final prefs = await SharedPreferences.getInstance();
@@ -198,6 +228,39 @@ void main() {
     brushes.selectBrush('Brush0001');
     await tester.pump();
     expect(subtitle('Brush0002'), l10n.penSubToolBrushSizeOpacity(77, 12));
+
+    // 覚えた値のある組み込みブラシだけ、メニューから既定へ戻せる。
+    Future<void> openMenu(String brushId) async {
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(ValueKey(brushId)),
+          matching: find.byIcon(Icons.more_vert),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await openMenu('Brush0003');
+    expect(find.text(l10n.brushPanelResetRememberedValues), findsNothing);
+    await tester.tapAt(const Offset(5, 5));
+    await tester.pumpAndSettle();
+    await openMenu('Brush0002');
+    await tester.tap(find.text(l10n.brushPanelResetRememberedValues));
+    await tester.pumpAndSettle();
+    final definition = BrushService();
+    await tester.runAsync(() async {
+      SharedPreferences.setMockInitialValues({});
+      await definition.init();
+    });
+    final original = definition.brushes.firstWhere((b) => b.id == 'Brush0002');
+    expect(
+      subtitle('Brush0002'),
+      l10n.penSubToolBrushSizeOpacity(original.size.round(), original.opacity),
+    );
+    await openMenu('Brush0002');
+    expect(find.text(l10n.brushPanelResetRememberedValues), findsNothing);
+    await tester.tapAt(const Offset(5, 5));
+    await tester.pumpAndSettle();
 
     // 選んだ行の先頭のアイコンは、選択色の上の文字色（選択色と同じ色の
     // 差し色を直接渡していて、既定のテーマで見えなかった）。

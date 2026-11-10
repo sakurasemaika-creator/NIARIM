@@ -1668,7 +1668,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpCustomBrushDesc =>
-      'Appuyez longuement sur un pinceau préinstallé dans la liste et choisissez « Dupliquer » pour créer votre propre pinceau personnalisé à partir de celui-ci. Les pinceaux dupliqués peuvent être librement modifiés (épaisseur, opacité, dureté, rotation, densité, dispersion, rayon de flou, etc.) et supprimés lorsqu’ils ne sont plus utiles (les pinceaux préinstallés eux-mêmes ne peuvent être ni modifiés ni supprimés). Vous pouvez aussi les classer dans des dossiers et les marquer comme favoris avec l’icône étoile.';
+      'Appuyez longuement sur un pinceau préinstallé dans la liste et choisissez « Dupliquer » pour créer votre propre pinceau personnalisé à partir de celui-ci. Les pinceaux dupliqués peuvent être librement modifiés (épaisseur, opacité, dureté, rotation, densité, dispersion, rayon de flou, etc.) et supprimés lorsqu’ils ne sont plus utiles (les pinceaux préinstallés eux-mêmes ne peuvent être ni modifiés ni supprimés). L’épaisseur et l’opacité réglées avec les curseurs du canevas sont mémorisées pour chaque pinceau, y compris les pinceaux préinstallés, que vous pouvez rétablir à leurs valeurs par défaut depuis le menu du pinceau dans la liste. Vous pouvez aussi les classer dans des dossiers et les marquer comme favoris avec l’icône étoile.';
 
   @override
   String get helpLayerFolderTitle => 'Dossiers de calques';
@@ -4735,6 +4735,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get brushPanelDeleteConfirmBody =>
       'Un pinceau supprimé ne peut pas être restauré.';
+
+  @override
+  String get brushPanelResetRememberedValues =>
+      'Rétablir l’épaisseur et l’opacité par défaut';
 
   @override
   String numberInputRangeError(String min, String max) {

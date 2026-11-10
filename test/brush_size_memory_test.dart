@@ -209,6 +209,42 @@ void main() {
     },
   );
 
+  test('a built-in brush can be returned to its default values', () async {
+    SharedPreferences.setMockInitialValues({});
+    final s = await started();
+    s.selectBrush('Brush0002');
+    final definition = s.currentBrush!;
+    expect(s.hasRememberedBuiltInValues('Brush0002'), isFalse);
+    s.updateCurrentBrushSize(definition.size + 30);
+    s.updateCurrentBrushOpacity(definition.opacity == 20 ? 21 : 20);
+    await s.commitRememberedValues();
+    expect(s.hasRememberedBuiltInValues('Brush0002'), isTrue);
+    // 早替えツールが一時的に当てただけの値は「覚えている」に数えない。
+    s.selectBrush('Brush0003');
+    s.updateCurrentBrushSize(200, remember: false);
+    expect(s.hasRememberedBuiltInValues('Brush0003'), isFalse);
+
+    s.selectBrush('Brush0002');
+    s.resetRememberedBuiltInValues('Brush0002');
+    expect(s.currentBrush!.size, definition.size, reason: '使っているブラシもすぐ戻る');
+    expect(s.currentBrush!.opacity, definition.opacity);
+    expect(s.hasRememberedBuiltInValues('Brush0002'), isFalse);
+    await Future<void>.delayed(Duration.zero);
+    final again = await started();
+    final listed = again.brushes.firstWhere((b) => b.id == 'Brush0002');
+    expect(listed.size, definition.size);
+    expect(listed.opacity, definition.opacity);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('brush_builtin_working_values'), isNull);
+    // 自作のブラシ・無いIDでは何もしない。
+    final copy = again.duplicateBrush('Brush0001', name: 'mine')!;
+    again.selectBrush(copy);
+    again.updateCurrentBrushSize(77);
+    again.resetRememberedBuiltInValues(copy);
+    again.resetRememberedBuiltInValues('missing');
+    expect(again.currentBrush!.size, 77);
+  });
+
   test('values that are not numbers are ignored, not applied', () async {
     SharedPreferences.setMockInitialValues({});
     final s = await started();

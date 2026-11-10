@@ -1621,7 +1621,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpCustomBrushDesc =>
-      '브러시 목록에서 미리 설치된 브러시를 길게 눌러 「복제」를 선택하면 이를 바탕으로 나만의 커스텀 브러시가 만들어집니다. 복제한 브러시는 굵기・불투명도・경도・회전・밀도・분산・흐림 반경 등의 파라미터를 자유롭게 편집할 수 있으며, 필요 없어지면 삭제할 수도 있습니다（미리 설치된 브러시 자체는 편집・삭제할 수 없습니다）. 폴더로 분류하거나 별 아이콘으로 즐겨찾기 등록도 할 수 있습니다.';
+      '브러시 목록에서 미리 설치된 브러시를 길게 눌러 「복제」를 선택하면 이를 바탕으로 나만의 커스텀 브러시가 만들어집니다. 복제한 브러시는 굵기・불투명도・경도・회전・밀도・분산・흐림 반경 등의 파라미터를 자유롭게 편집할 수 있으며, 필요 없어지면 삭제할 수도 있습니다（미리 설치된 브러시 자체는 편집・삭제할 수 없습니다）. 캔버스의 슬라이더로 바꾼 굵기와 불투명도는 브러시마다 저장됩니다. 미리 설치된 브러시도 마찬가지이며, 목록의 메뉴에서 기본값으로 되돌릴 수 있습니다. 폴더로 분류하거나 별 아이콘으로 즐겨찾기 등록도 할 수 있습니다.';
 
   @override
   String get helpLayerFolderTitle => '레이어 폴더';
@@ -4526,6 +4526,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get brushPanelDeleteConfirmBody => '삭제한 브러시는 되돌릴 수 없습니다.';
+
+  @override
+  String get brushPanelResetRememberedValues => '굵기・불투명도를 기본값으로 되돌리기';
 
   @override
   String numberInputRangeError(String min, String max) {

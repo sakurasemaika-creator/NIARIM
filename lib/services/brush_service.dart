@@ -1073,6 +1073,29 @@ class BrushService extends ChangeNotifier {
     }
   }
 
+  /// 組み込みブラシに、利用者が変えて覚えている太さ・不透明度があるか。
+  bool hasRememberedBuiltInValues(String id) => _builtInWorking.containsKey(id);
+
+  /// 組み込みブラシの太さ・不透明度を定義の値（既定）へ戻し、覚えを消す。
+  void resetRememberedBuiltInValues(String id) {
+    final definition = _builtInDefinitions[id];
+    final idx = _brushes.indexWhere((b) => b.id == id);
+    if (definition == null || idx < 0) return;
+    if (_builtInWorking.remove(id) != null) _rememberWorkingDirty = true;
+    _brushes[idx] = _brushes[idx].copyWith(
+      size: definition.size,
+      opacity: definition.opacity,
+    );
+    if (_currentBrush?.id == id) {
+      _currentBrush = _currentBrush!.copyWith(
+        size: definition.size,
+        opacity: definition.opacity,
+      );
+    }
+    notifyListeners();
+    _persist();
+  }
+
   /// 覚えた太さ・不透明度のうち、まだ保存していない分を保存する。
   ///
   /// スライダーを離したとき・数字を打ったとき・±を押したときに画面が呼ぶ。

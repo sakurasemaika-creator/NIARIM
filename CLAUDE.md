@@ -583,6 +583,36 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   （PointerCancel：システムのジェスチャー・手のひらの判定）ときは
   `_cancelToolPointer`で描きかけを丸ごと戻す（以前は残り、次の線の記録に
   混ざって取り消せなかった）。`test/stroke_pointer_lifecycle_test.dart`。
+- **キャンバスで変えた太さ・不透明度はブラシごとに覚える（ユーザー指定、2026-11-10）**：
+  `BrushService.updateCurrentBrushSize/Opacity`は一覧のブラシへも書き、操作の
+  終わり（`BrushSizeSlider.onChangeEnd`→`commitRememberedValues`。スライダーを
+  離す・±・数字の確定）に保存する。動かしている間は保存しない（全ブラシの
+  保存が1秒に数十回走る）。タイマーで遅らせて保存する作りにしないこと
+  （テストの終わりに残ったタイマーが、次のテストの保存を書き換えた）。
+  ブラシの切り替え・アプリが裏へ回るとき・破棄でも保存するので、太さを変える
+  入口を足したら`commitRememberedValues`を呼ぶか、この3つに任せる。
+  組み込みブラシは起動のたびに定義で作り直すので、利用者が変えた値だけを
+  別のキー（`brush_builtin_working_values`）に持つ（触っていないブラシは後の
+  版の既定に従う。既定と同じ値へ戻した項目は覚えから外す）。早替えツール・
+  自動操作の再生のように一時的に当てる太さは`remember: false`。使っている
+  ブラシの写し（`_currentBrush`）を一覧へ丸ごと書き戻さないこと（一覧の側で
+  変えたお気に入り・タグ・フォルダを古い値で上書きする）。覚えるのは
+  **ブラシで描いているとき（ペンのブラシ）だけ**（`_remembersBrushValues`）：
+  消しゴム・ぼかし・指先・トーン・スタンプ等も同じ欄を使うが、そこで変えた
+  太さはその場だけ（消すために太くしただけでペンが太いまま覚えられない）。
+  組み込みブラシは一覧のメニュー「既定の太さ・不透明度に戻す」
+  （`resetRememberedBuiltInValues`）で戻せる。キャンバス画面は`build`の
+  `context.select<BrushService, …>`の**戻り値で**太さ・不透明度の欄を合わせる。
+  `didChangeDependencies`に頼らないこと：selectだけで見ている画面が同じ
+  フレームでsetState済み（サブツールの一覧を閉じる・早替えツール）だと、
+  providerは`didChangeDependencies`を呼ばず、欄が前のブラシの値のまま残った
+  （そこから±を押すと別のブラシの値として覚えた。レビューで発見）。
+  `test/brush_size_memory_test.dart`・`brush_size_memory_canvas_test.dart`。
+- **一覧の行（`ListTile`）の先頭のアイコンへ差し色を直接渡さない**：選んだ行は
+  テーマの`selectedColor`（選択色の上の文字色）で描かれる。
+  `isSelected ? AccentTextTheme.of(context) : null`と書くと、選択色と差し色が
+  同じテーマ（既定）で選んだ行のアイコンが見えなくなった（ブラシ・トーン・
+  スタンプの一覧）。色は渡さず`ListTile`に任せる。
 - **ペンは選んだ色の不透明度を線に掛け、透明色のペンは消しゴム**：以前は色の
   不透明度を無視し、透明色を選ぶと隠れた色を不透明に塗った。消しゴムかどうかは
   `CanvasArea._erasing`（消しゴムのツール、または透明色のペン）で、線の始めと
