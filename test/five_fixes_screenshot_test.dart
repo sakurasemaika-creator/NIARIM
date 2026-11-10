@@ -297,17 +297,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final fr = AppLocalizations.of(
-      tester.element(find.byType(CommunityScreen)),
-    )!;
     final bar = tester.widget<TabBar>(find.byType(TabBar));
     if (bar.isScrollable) {
       expect(bar.tabAlignment, TabAlignment.start);
     }
-    final first = find.descendant(
-      of: find.byType(TabBar),
-      matching: find.text(fr.communityTabNew),
-    );
+    final first = find.byKey(const Key('communityTab0'));
     final firstRect = tester.getRect(first);
     expect(firstRect.left, greaterThanOrEqualTo(0));
     expect(firstRect.right, lessThanOrEqualTo(320));
