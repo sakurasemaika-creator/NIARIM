@@ -56,29 +56,36 @@ List<Color> sliceColorsOf(ColorScheme scheme) {
   ];
 }
 
+/// Device chart uses the same accent saturation and fixed lightness levels
+/// as NIARIM's six categories. Only the hue is rotated slightly so the two
+/// charts are visually related without being identical.
+const double storageDeviceHueShiftDegrees = 18.0;
+
+List<Color> storageDeviceSliceColorsOf(ColorScheme scheme) {
+  final accent = HSLColor.fromColor(scheme.primary);
+  final deviceHue = (accent.hue + storageDeviceHueShiftDegrees) % 360;
+  return [
+    for (final lightness in storageChartLightnessLevels.take(3))
+      accent.withHue(deviceHue).withLightness(lightness).toColor(),
+  ];
+}
+
 /// 円グラフの一辺。集計中の欄も同じ高さを取る。
 const double _chartSize = 120;
 
 /// 内訳のグラフの並び方（`_chartWithLegend`・`_storageAmountBar`と同じ値）。
-/// 中身のある分類ごとに棒が1本（高さ30＋上下の余白5ずつ）並び、欄の幅が
-/// [_stackedChartBelowWidth]より狭いと、円グラフの下（間[_stackedChartGap]）に
-/// 並ぶ。集計中の欄がグラフと同じ高さを取るために使う。
-const double _barRowExtent = 40;
-const double _stackedChartBelowWidth = 520;
-const double _stackedChartGap = 10;
+/// 円グラフを左に固定し、右側に高さ34＋上下4ずつの棒を並べる。
+/// 集計中の欄がグラフと同じ高さを取るために使う。
+const double _barRowExtent = 42;
 
 /// まだ一度も集計できていないとき、集計中の欄が見込んでおく棒の本数。
 /// 何本になるかは分からないので、分類の半分にしておく（外れたときに
 /// 操作の行が動く幅が、どちら向きにも一番小さくなる）。
 const int _unknownBarCount = 3;
 
-/// 棒が[bars]本の内訳のグラフが、幅[width]の欄で取る高さ。
-double _breakdownChartHeight(int bars, double width) {
-  final legend = bars * _barRowExtent;
-  return width < _stackedChartBelowWidth
-      ? _chartSize + _stackedChartGap + legend
-      : math.max(_chartSize, legend);
-}
+/// 左に円・右に棒を固定し、最大の側の高さを集計中も確保する。
+double _breakdownChartHeight(int bars, double width) =>
+    math.max(_chartSize, bars * _barRowExtent);
 
 /// 端末の容量の問い合わせを待つ長さ。過ぎても答えが無ければ、その欄だけ
 /// 「取得できませんでした」にして、やり直せるようにする（内訳と操作は
@@ -496,24 +503,25 @@ class _StorageScreenState extends State<StorageScreen> {
     );
     final free = device.freeBytes;
     final scheme = Theme.of(context).colorScheme;
+    final deviceColors = storageDeviceSliceColorsOf(scheme);
     final slices = [
       _PieSlice(
         niarimBytes.toDouble(),
-        scheme.primary,
+        deviceColors[0],
         l10n.storageCategoryNiarimTotal,
       ),
       _PieSlice(
         others.toDouble(),
-        scheme.tertiary,
+        deviceColors[1],
         l10n.storageCategoryOtherApps,
       ),
       _PieSlice(
         free.toDouble(),
-        scheme.surfaceContainerHighest,
+        deviceColors[2],
         l10n.storageCategoryFree,
       ),
     ];
-    return _chartWithLegend(slices);
+    return _chartWithLegend(slices, barKeyPrefix: 'storageDeviceBar');
   }
 
   Widget _buildBreakdownChart(
@@ -539,12 +547,12 @@ class _StorageScreenState extends State<StorageScreen> {
           entries[i].$2,
         ),
     ];
-    return _chartWithLegend(slices, showBars: true);
+    return _chartWithLegend(slices, barKeyPrefix: 'storageBreakdownBar');
   }
 
   Widget _chartWithLegend(
     List<_PieSlice> slices, {
-    bool showBars = false,
+    required String barKeyPrefix,
   }) {
     final total = slices.fold<double>(0, (a, s) => a + s.value);
     final largest = slices.fold<double>(
@@ -552,101 +560,52 @@ class _StorageScreenState extends State<StorageScreen> {
       (max, slice) => math.max(max, slice.value),
     );
     final scheme = Theme.of(context).colorScheme;
-    // Match the toolbar's ordinary (unselected) icon fill, not its separate
-    // contrast outline. ThemeService builds onSurface from the appearance.
     final chartOutline = scheme.onSurface;
-    final pie = SizedBox(
-      width: _chartSize,
-      height: _chartSize,
-      child: total <= 0
-          ? Center(
-              child: Icon(
-                Icons.donut_large,
-                size: 48,
-                color: scheme.outlineVariant,
-              ),
-            )
-          : CustomPaint(
-              painter: _PieChartPainter(slices, outlineColor: chartOutline),
-            ),
-    );
-    final legend = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final s in slices)
-          if (s.value > 0)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: showBars ? 5 : 2),
-              child: Row(
-                children: [
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: s.color,
-                      shape: BoxShape.circle,
-                    ),
+        SizedBox(
+          width: _chartSize,
+          height: _chartSize,
+          child: total <= 0
+              ? Center(
+                  child: Icon(
+                    Icons.donut_large,
+                    size: 48,
+                    color: scheme.outlineVariant,
                   ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: showBars
-                        ? _storageAmountBar(
-                            key: Key('storageBreakdownBar_${s.label}'),
-                            color: s.color,
-                            ratio: largest > 0 ? s.value / largest : 0,
-                            label: s.label,
-                            bytes: s.value,
-                            scheme: scheme,
-                          )
-                        : Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  s.label,
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                formatStorageBytes(s.value),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
+                )
+              : CustomPaint(
+                  painter: _PieChartPainter(
+                    slices,
+                    outlineColor: chartOutline,
                   ),
-                ],
-              ),
-            ),
-      ],
-    );
-
-    // At phone widths, forcing six named values beside a 120px circle leaves
-    // too little room for localized labels. Give the in-bar text the full
-    // available width without removing the pie. Larger screens stay side-by-side.
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (showBars && constraints.maxWidth < 520) {
-          return Column(
+                ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Align(alignment: Alignment.centerLeft, child: pie),
-              const SizedBox(height: 10),
-              legend,
+              for (final s in slices)
+                if (s.value > 0)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    // Category names and values are inside their bars.
+                    // No circular markers and no narrow-screen stacking.
+                    child: _storageAmountBar(
+                      key: Key('${barKeyPrefix}_${s.label}'),
+                      color: s.color,
+                      ratio: largest > 0 ? s.value / largest : 0,
+                      label: s.label,
+                      bytes: s.value,
+                      scheme: scheme,
+                    ),
+                  ),
             ],
-          );
-        }
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            pie,
-            const SizedBox(width: 16),
-            Expanded(child: legend),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 
@@ -666,7 +625,7 @@ class _StorageScreenState extends State<StorageScreen> {
     final amount = ratio.clamp(0.0, 1.0);
     return SizedBox(
       key: key,
-      height: 30,
+      height: 34,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -705,11 +664,11 @@ class _StorageScreenState extends State<StorageScreen> {
                   child: Text(
                     label,
                     key: Key('storageBreakdownBarLabel_$label'),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: foreground,
-                      fontSize: 11,
+                      fontSize: 10,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -720,7 +679,7 @@ class _StorageScreenState extends State<StorageScreen> {
                   key: Key('storageBreakdownBarValue_$label'),
                   style: TextStyle(
                     color: foreground,
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
