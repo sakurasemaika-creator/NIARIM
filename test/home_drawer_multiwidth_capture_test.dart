@@ -101,7 +101,8 @@ void main() {
 
       expect(find.byKey(const ValueKey('home_tab_0')), findsOneWidget);
       expect(find.byKey(const ValueKey('home_tab_1')), findsOneWidget);
-      expect(find.byKey(const ValueKey('home_tab_2')), findsNothing);
+      expect(find.byKey(const ValueKey('home_tab_2')), findsOneWidget);
+      expect(find.byKey(const ValueKey('home_tab_3')), findsOneWidget);
       await shot('01-projects');
 
       final menuButton = find.byKey(const Key('homeMenuButton'));
