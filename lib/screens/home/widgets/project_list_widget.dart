@@ -1353,6 +1353,9 @@ Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setDialogState) => AlertDialog(
+        // 横向きのスマホ・低い画面・大きな文字では選択肢が入りきらないので、
+        // 題名と選択肢をスクロールさせ、ボタンは下に残す。
+        scrollable: true,
         title: Text(l10n.projectListMaterialIncludeTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
