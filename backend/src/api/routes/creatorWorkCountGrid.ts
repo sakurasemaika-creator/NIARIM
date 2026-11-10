@@ -1,12 +1,12 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import { BatchGetCommand, GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { BatchGetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { authenticate } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { ok } from "../../lib/response";
 import { missionClaimed } from "../../lib/missionCatalog";
 import {
   WORK_COUNT_GOALS,BOOKMARK_GOALS,WORK_COUNT_MISSIONS,
-  ACCOUNT_GRID_CATALOG_VERSION,LEGACY_GRID_BITS,gridClaimsEnabled,
+  ACCOUNT_GRID_CATALOG_VERSION,gridClaimsEnabled,
 } from "../../lib/workCountMissionGrid";
 import type { WorkItem } from "../../lib/types";
 
@@ -24,10 +24,6 @@ export async function getMyWorkCountMissionGrid(event: APIGatewayProxyEventV2) {
   );
   const table=tableName();
   const keys=WORK_COUNT_GOALS.map(count=>Keys.creatorGridShard(auth.niarimUserId,count));
-  const legacyPromise=ddb.send(new GetCommand({
-    TableName:table,Key:Keys.creatorMissionState(auth.niarimUserId),
-    ConsistentRead:true,
-  }));
   const statesPromise=ddb.send(new BatchGetCommand({
     RequestItems:{[table]:{Keys:keys,ConsistentRead:true}},
   }));
@@ -58,11 +54,7 @@ export async function getMyWorkCountMissionGrid(event: APIGatewayProxyEventV2) {
     cursor=page.LastEvaluatedKey;
     if(!cursor){exhausted=true;break;}
   }
-  const [stateResponse,legacyResponse]=await Promise.all([
-    statesPromise,legacyPromise,
-  ]);
-  const oldMask=Number.isSafeInteger(legacyResponse.Item?.claimedMask) &&
-    legacyResponse.Item!.claimedMask>=0 ? legacyResponse.Item!.claimedMask:0;
+  const stateResponse=await statesPromise;
   if((stateResponse.UnprocessedKeys?.[table]?.Keys?.length??0)>0){
     throw new Error("Unprocessed creator mission grid shards");
   }
@@ -86,9 +78,7 @@ export async function getMyWorkCountMissionGrid(event: APIGatewayProxyEventV2) {
       ?(dates as Record<string,unknown>)[String(m.bit)]:null;
     const pendingSince=typeof pending==="number" &&
       Number.isSafeInteger(pending)&&pending>0?pending:null;
-    const legacyBit=LEGACY_GRID_BITS[m.id];
-    const claimed=missionClaimed(mask,m.bit) ||
-      (legacyBit!==undefined&&missionClaimed(oldMask,legacyBit));
+    const claimed=missionClaimed(mask,m.bit);
     const eligible=count>=m.required?true:exhausted?false:null;
     const readyForClaim=eligible===true&&!claimed&&
       (pendingSince===null||now-pendingSince>=HOLD_SECONDS);
@@ -96,7 +86,7 @@ export async function getMyWorkCountMissionGrid(event: APIGatewayProxyEventV2) {
       ...m,claimed,progress:count,
       eligible,progressAuthoritative:false,
       pendingSince,readyForClaim,
-      // New pricing/payout approvals are independent of legacy missions.
+      // Payout approval is independent from display-only eligibility.
       rewardEnabled:gridClaimsEnabled(),
     };
   });

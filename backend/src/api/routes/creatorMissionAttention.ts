@@ -5,7 +5,7 @@ import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { ok } from "../../lib/response";
 import { ACCOUNT_MISSIONS, PER_WORK_MISSIONS, missionClaimed } from "../../lib/missionCatalog";
 import {
-  BOOKMARK_GOALS, WORK_COUNT_GOALS, WORK_COUNT_MISSIONS, LEGACY_GRID_BITS,
+  BOOKMARK_GOALS, WORK_COUNT_GOALS, WORK_COUNT_MISSIONS,
 } from "../../lib/workCountMissionGrid";
 import type { WorkItem } from "../../lib/types";
 
@@ -43,18 +43,18 @@ export async function getMyCreatorMissionAttention(event: APIGatewayProxyEventV2
     event.headers["authorization"] ?? event.headers["Authorization"],
   );
   const table = tableName();
-  const [user, legacy] = await Promise.all([
+  const [user, account] = await Promise.all([
     getUser(auth.niarimUserId),
     ddb.send(new GetCommand({
       TableName: table, Key: Keys.creatorMissionState(auth.niarimUserId),
       ConsistentRead: true,
     })),
   ]);
-  const oldMask = safeMask(legacy.Item?.claimedMask);
+  const accountMask = safeMask(account.Item?.claimedMask);
   for (const mission of ACCOUNT_MISSIONS) {
     if (mission.kind === "followers" &&
         (user?.followerCount ?? 0) >= mission.required &&
-        !missionClaimed(oldMask, mission.bit)) {
+        !missionClaimed(accountMask, mission.bit)) {
       return ok({
         hasAchievedUnclaimed: true,
         source: "followers", provisional: false, complete: true,
@@ -145,9 +145,7 @@ export async function getMyCreatorMissionAttention(event: APIGatewayProxyEventV2
     if ((totals.get(mission.eachWorkBookmarks) ?? 0) < mission.required) {
       continue;
     }
-    const legacyBit = LEGACY_GRID_BITS[mission.id];
-    if (!missionClaimed(masks.get(mission.required) ?? 0, mission.bit) &&
-        (legacyBit === undefined || !missionClaimed(oldMask, legacyBit))) {
+    if (!missionClaimed(masks.get(mission.required) ?? 0, mission.bit)) {
       return ok({
         hasAchievedUnclaimed: true, source: "works",
         provisional: true, complete,
