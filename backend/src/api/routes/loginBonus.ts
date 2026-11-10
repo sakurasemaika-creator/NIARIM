@@ -8,6 +8,7 @@ import { authenticate } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { parseJsonObject } from "../../lib/request";
 import { recordMissionAchievement } from "../../lib/missionNotifications";
+import { recordRecurringLoginVisit } from "./recurringMissions";
 import { badRequest, conflict, forbidden, ok } from "../../lib/response";
 import {
   DAILY_LOGIN_COINS, LOGIN_BONUS_CATALOG_VERSION, LOGIN_BONUS_MILESTONES,
@@ -68,6 +69,13 @@ export async function visitMyLoginBonus(event: APIGatewayProxyEventV2) {
       ReturnValues: "ALL_NEW",
     }));
     const state = snapshot(result.Attributes);
+    try {
+      await recordRecurringLoginVisit(userId);
+    } catch (error) {
+      // Login history is authoritative and already committed. A transient
+      // recurring-progress failure can be retried on the next visit request.
+      console.warn("Recurring mission visit update failed", error);
+    }
     if (milestoneCoins(state.totalDays) !== undefined) {
       try {
         await recordMissionAchievement(userId, {
@@ -87,6 +95,11 @@ export async function visitMyLoginBonus(event: APIGatewayProxyEventV2) {
     const state = await getState(userId);
     if (state.lastVisitedDay !== day) {
       conflict("ログイン記録が更新されました", "LOGIN_BONUS_RETRY");
+    }
+    try {
+      await recordRecurringLoginVisit(userId);
+    } catch (error) {
+      console.warn("Recurring mission duplicate visit update failed", error);
     }
     return ok({...state,day,visitedToday:true});
   }
