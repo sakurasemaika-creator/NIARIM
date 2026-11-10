@@ -431,6 +431,60 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('duplicating names the copy in the screen language and numbers '
+      'repeated copies', (tester) async {
+    // 英語の端末として起動する。
+    SharedPreferences.setMockInitialValues({
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      'first_launch': false,
+      'language': 'en',
+    });
+    final s = await open(tester);
+    for (var i = 1; i <= 2; i++) {
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await settle(tester);
+      await tester.tap(find.text('Duplicate').last);
+      await settleIo(tester);
+      // 複製は素材とサムネイルを写し終えてから一覧に出る。
+      for (var j = 0; j < 40 && s.service.projects.length < 1 + i; j++) {
+        await settleIo(tester);
+      }
+    }
+    final copies = [
+      for (final p in s.service.projects)
+        if (p.id != s.id) p.name,
+    ];
+    // 画面の言語で「(copy)」を付け、2つ目からは番号を付ける（以前は
+    // どの言語でも日本語の「(コピー)」で、同じ名前が並んだ）。
+    expect(copies, unorderedEquals(['詳細の作品 (copy)', '詳細の作品 (copy 2)']));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the move sheet lists folders under their parents', (
+    tester,
+  ) async {
+    final s = await open(tester);
+    await tester.runAsync(() async {
+      final parent = await s.service.createFolder('Z親');
+      await s.service.createFolder('C単独');
+      await s.service.createFolder('A子', parentFolderId: parent.id);
+    });
+    await settle(tester);
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await settle(tester);
+    await tester.tap(find.text('フォルダへ移動').last);
+    await settle(tester);
+    Rect row(String name) => tester.getRect(
+      find.descendant(of: find.byType(BottomSheet), matching: find.text(name)),
+    );
+    // 名前順の階層どおり：C単独・Z親・その下にA子（字下げ）。作った順に
+    // 平らに並べると、子のフォルダが別の親の下に見えた。
+    expect(row('C単独').top, lessThan(row('Z親').top));
+    expect(row('Z親').top, lessThan(row('A子').top));
+    expect(row('A子').left, greaterThan(row('Z親').left));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('the tags dialog scrolls, keeps typing and keeps the typed tag', (
     tester,
   ) async {
