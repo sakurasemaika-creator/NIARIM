@@ -1,0 +1,41 @@
+name: One-shot Regenerate Flutter Localizations on dev_branch
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-regenerate-l10n.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  regenerate:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+      - run: flutter pub get --enforce-lockfile
+      - name: Generate exact localization sources
+        run: flutter gen-l10n
+      - name: Commit only generated Dart on the existing dev_branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- lib/l10n/app_localizations.dart lib/l10n/app_localizations_*.dart
+          if git diff --cached --quiet; then
+            echo "Localization output is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Regenerate committed Flutter localizations from current ARB"
+          # Never force-push or update main. A concurrent head change fails
+          # safely and can be re-run after reviewing the new ARB files.
+          git push origin HEAD:dev_branch
