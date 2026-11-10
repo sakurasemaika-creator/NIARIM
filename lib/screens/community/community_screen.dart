@@ -1552,35 +1552,66 @@ class _CommunityScreenState extends State<CommunityScreen>
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: LayoutBuilder(
-            builder: (context, constraints) => TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              labelPadding: EdgeInsets.zero,
-              labelStyle: labelStyle,
-              unselectedLabelStyle: labelStyle,
-              labelColor: selected,
-              unselectedLabelColor: unselected,
-              indicatorColor: selected,
-              tabs: [
-                for (var i = 0; i < labels.length; i++)
-                  Tab(
-                    key: Key('communityTab$i'),
-                    height: 48,
-                    child: SizedBox(
-                      key: Key('communityTabWidth$i'),
-                      width: constraints.maxWidth / labels.length,
-                      child: Tooltip(
-                        message: labels[i],
-                        triggerMode: TooltipTriggerMode.longPress,
-                        child: Center(
-                          child: Icon(tabIcons[i], size: 24),
+            builder: (context, constraints) {
+              const iconSize = 24.0;
+              const labelGap = 8.0;
+              // Reserve breathing room in every cell, including at large
+              // accessibility text scales and in longer translations. All
+              // five tabs change modes together so their look stays uniform.
+              const horizontalBreathingRoom = 16.0;
+              final tabWidth = constraints.maxWidth / labels.length;
+              final showLabels = labels.every(
+                (label) =>
+                    iconSize +
+                        labelGap +
+                        measure(label, labelStyle).width +
+                        horizontalBreathingRoom <=
+                    tabWidth,
+              );
+              return TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                labelPadding: EdgeInsets.zero,
+                labelStyle: labelStyle,
+                unselectedLabelStyle: labelStyle,
+                labelColor: selected,
+                unselectedLabelColor: unselected,
+                indicatorColor: selected,
+                tabs: [
+                  for (var i = 0; i < labels.length; i++)
+                    Tab(
+                      key: Key('communityTab$i'),
+                      height: 48,
+                      child: SizedBox(
+                        key: Key('communityTabWidth$i'),
+                        width: tabWidth,
+                        child: Tooltip(
+                          message: labels[i],
+                          triggerMode: TooltipTriggerMode.longPress,
+                          child: Center(
+                            child: showLabels
+                                ? Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(tabIcons[i], size: iconSize),
+                                      const SizedBox(width: labelGap),
+                                      Text(
+                                        labels[i],
+                                        maxLines: 1,
+                                        softWrap: false,
+                                        overflow: TextOverflow.clip,
+                                      ),
+                                    ],
+                                  )
+                                : Icon(tabIcons[i], size: iconSize),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
+                ],
+              );
+            },
           ),
         ),
       ),
