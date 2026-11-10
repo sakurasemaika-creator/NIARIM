@@ -437,6 +437,17 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                                 key: ValueKey('communityDetailYoutube-${work.id}'),
                                 videoId: work.id,
                                 playing: false,
+                                validatePlayback: () async {
+                                  final status = await context.read<CommunityService>()
+                                      .playbackStatus(work.id);
+                                  if (mounted && widget.workId == work.id &&
+                                      status != CommunityPlaybackStatus.available) {
+                                    setState(() => _playbackStatus = status);
+                                  }
+                                  return mounted &&
+                                      widget.workId == work.id &&
+                                      status == CommunityPlaybackStatus.available;
+                                },
                               ),
                             ),
                           ),
