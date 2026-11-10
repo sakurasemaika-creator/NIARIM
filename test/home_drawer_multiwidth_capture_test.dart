@@ -222,10 +222,20 @@ void main() {
         LocalTrashKind.outgoingShare,
         LocalTrashKind.exportedWork,
       });
+      // The file-list future runs real filesystem IO, not Flutter's fake
+      // animation clock. Pump after real async completions before evaluating
+      // the lazy ListView rows.
+      final exportedTitle = find.text('trash-sample-export.mp4');
+      for (var attempt = 0; attempt < 12; attempt++) {
+        if (exportedTitle.evaluate().isNotEmpty) break;
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 120)),
+        );
+        await tester.pump(const Duration(milliseconds: 40));
+      }
       await shot('07-trash');
       // Verify real exported-file and outbound-share cards, not merely
       // repository storage records. Narrow layouts must scroll to them.
-      final exportedTitle = find.text('trash-sample-export.mp4');
       if (width < 760 && exportedTitle.evaluate().isEmpty) {
         await tester.scrollUntilVisible(
           exportedTitle,
