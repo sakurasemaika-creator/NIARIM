@@ -105,6 +105,22 @@ void main() {
       expect(find.byKey(const ValueKey('home_tab_3')), findsOneWidget);
       await shot('01-projects');
 
+      // Shared library now has two explicit, mutually exclusive collections.
+      await tester.ensureVisible(find.byKey(const ValueKey('home_tab_2')));
+      await tester.tap(find.byKey(const ValueKey('home_tab_2')));
+      await tester.pump(const Duration(milliseconds: 350));
+      expect(find.byKey(const Key('sharedReceivedFilter')), findsOneWidget);
+      expect(find.byKey(const Key('sharedOutgoingFilter')), findsOneWidget);
+      await shot('04-shared-received');
+      await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
+      await tester.pump(const Duration(milliseconds: 350));
+      await shot('05-shared-created');
+      await tester.tap(find.byKey(const Key('sharedReceivedFilter')));
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.ensureVisible(find.byKey(const ValueKey('home_tab_0')));
+      await tester.tap(find.byKey(const ValueKey('home_tab_0')));
+      await tester.pump(const Duration(milliseconds: 350));
+
       final menuButton = find.byKey(const Key('homeMenuButton'));
       expect(menuButton, findsOneWidget);
       await tester.tap(menuButton);
@@ -113,13 +129,12 @@ void main() {
       expect(drawer, findsOneWidget);
       await shot('02-drawer-top');
 
-      // The 11 entries extend past the viewport on mobile; capture the
-      // scrolled bottom to show the coin and membership options as well.
+      // Capture the bottom even when all five entries fit on screen.
       await tester.drag(drawer, const Offset(0, -540));
       await tester.pump(const Duration(milliseconds: 300));
       await shot('03-drawer-bottom');
 
-      rows.add('$width x $height dp; mode=${pc ? 'PC' : 'SP'}; home-tabs=2; drawer=11');
+      rows.add('$width x $height dp; mode=${pc ? 'PC' : 'SP'}; home-tabs=4; drawer=5; shared=received+created');
       await tester.pumpWidget(const SizedBox.shrink());
     }
     File('${output.path}/matrix.txt')
