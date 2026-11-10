@@ -13,7 +13,9 @@ class HelpScreen extends StatefulWidget {
   // topicKeyは表示言語に関わらず固定の日本語文字列（HelpButton(topic:)の
   // 呼び出し元と一致させるための内部識別子であり、翻訳対象外）。
   final String? initialTopic;
-  const HelpScreen({super.key, this.initialTopic});
+  const HelpScreen({super.key, this.initialTopic, this.embedded = false});
+
+  final bool embedded;
 
   @override
   State<HelpScreen> createState() => _HelpScreenState();
@@ -605,7 +607,7 @@ class _HelpScreenState extends State<HelpScreen> {
     // 開ける。
     final showTutorial = _searchQuery.isEmpty && _topic == null;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.helpScreenTitle)),
+      appBar: widget.embedded ? null : AppBar(title: Text(l10n.helpScreenTitle)),
       body: SafeArea(
         child: Column(
           children: [
