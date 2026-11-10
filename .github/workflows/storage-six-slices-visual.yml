@@ -1,0 +1,36 @@
+name: Storage six-slice Japanese visual fixture
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/storage-six-slices-visual.yml'
+      - 'test/storage_six_slice_visual_capture_test.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze fixture
+        run: flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings test/storage_six_slice_visual_capture_test.dart
+      - name: Render real Japanese storage page using six isolated synthetic categories
+        run: flutter test --no-pub --reporter expanded test/storage_six_slice_visual_capture_test.dart
+      - name: Upload screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: niarim-storage-six-slices-japanese
+          path: build/storage-six-slices/storage_ja_six_categories.png
+          if-no-files-found: error
+          retention-days: 7
