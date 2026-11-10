@@ -76,6 +76,7 @@ import '../../utils/reorder_index.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
+import '../../widgets/typing_aware_shortcuts.dart';
 import 'widgets/material_edit_panel.dart';
 import 'widgets/material_gizmo.dart';
 import 'widgets/stack_order_panel.dart';
@@ -219,6 +220,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // 作り直しても、離散的な操作なら毎フレームのコストにはならない。
   // 再生タイマーだけがsetStateを使わず、この値の更新だけで済ませる。
   final ValueNotifier<int> _currentFrameNotifier = ValueNotifier<int>(0);
+  // 画面全体のショートカット（再生・コマ送り・取り消し等）を受ける
+  // フォーカス。入力欄から抜けたら（Enter・欄の外の押下）ここへ戻す。
+  final FocusNode _screenFocus = FocusNode(debugLabel: 'Timeline');
 
   int get _currentFrame => _currentFrameNotifier.value;
   set _currentFrame(int value) => _currentFrameNotifier.value = value;
@@ -578,6 +582,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   @override
   void dispose() {
+    _screenFocus.dispose();
     ImmersiveMode.exitWorkspace();
     _playTimer?.cancel();
     for (final ctrl in _trackScrollCtrls) {
@@ -985,9 +990,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // マウス/キーボード入力・左手デバイス：設定画面「ショートカット設定」
     // で割り当てたキーで、Undo/Redo・再生/一時停止・フレーム送りなどの
     // 操作を行えるようにする。
-    return CallbackShortcuts(
+    // 入力欄にフォーカスがある間は画面のショートカットを止め、入力を
+    // 終えたら画面のフォーカスへ戻す（TypingAwareShortcuts）。
+    return TypingAwareShortcuts(
       bindings: _buildShortcutBindings(context),
+      screenFocus: _screenFocus,
       child: Focus(
+        focusNode: _screenFocus,
         autofocus: true,
         child: Scaffold(
           body: Listener(

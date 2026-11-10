@@ -359,6 +359,179 @@ void main() {
     expect(find.byType(SplashScreen), findsOneWidget);
   });
 
+  // Android 16以降の予測型「戻る」：Flutterが「戻る操作を受ける」とOSへ
+  // 伝えていないと、OSは戻る操作をアプリへ渡さずにアプリを裏へ回す
+  // （BackButtonListenerは呼ばれない）。handlePopRouteはこの判断を
+  // 通らないので、OSへ伝えた値（setFrameworkHandlesBack）を見る。
+  testWidgets('a Home reached by go() keeps Back from the system '
+      '(predictive back)', (tester) async {
+    final handlesBack = <bool>[];
+    final messenger = tester.binding.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      if (call.method == 'SystemNavigator.setFrameworkHandlesBack') {
+        handlesBack.add(call.arguments as bool);
+      }
+      return null;
+    });
+    addTearDown(
+      () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await boot(tester, projects: 1, size: selectionSize);
+    expect(handlesBack, isNotEmpty);
+    expect(handlesBack.last, isTrue, reason: 'pushed Home');
+    appRouter.go('/home');
+    await settle(tester);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(SplashScreen), findsNothing);
+    expect(handlesBack.last, isTrue, reason: 'go() Home, nothing open');
+    await tester.tap(find.byKey(const Key('homeMenuButton')));
+    await settle(tester);
+    expect(find.byType(HomeDrawer), findsOneWidget);
+    expect(handlesBack.last, isTrue, reason: 'go() Home, drawer open');
+    await tester.binding.handlePopRoute();
+    await settle(tester);
+    expect(find.byType(HomeDrawer), findsNothing);
+    expect(handlesBack.last, isTrue, reason: 'go() Home, drawer closed');
+    for (final tab in [1, 2, 3]) {
+      await tester.tap(find.byKey(ValueKey('home_tab_$tab')));
+      await settle(tester);
+      expect(handlesBack.last, isTrue, reason: 'go() Home, tab $tab');
+    }
+    // 戻る操作が届けば、アプリを閉じずに起動画面へ戻る。
+    expect(await tester.binding.handlePopRoute(), isTrue);
+    await settle(tester);
+    expect(location(), '/');
+    expect(find.byType(SplashScreen), findsOneWidget);
+  });
+
+  // 入力欄の外をマウス・ペンで押すと、入力欄はフォーカスを手放す。
+  // 画面のショートカット（Esc）は、画面のフォーカスへ戻っていれば効く。
+  for (final kind in [PointerDeviceKind.mouse, PointerDeviceKind.stylus]) {
+    testWidgets('after pressing outside the search field ($kind), Escape '
+        'closes search and clears the query', (tester) async {
+      await boot(tester, projects: 2);
+      await tester.tap(searchButton(tester));
+      await settle(tester);
+      await tester.enterText(find.byType(TextField), 'P2');
+      await settle(tester);
+      expect(listText('P1'), findsNothing);
+      // 一覧の何も無い所（見つかった1件の下）を押す。
+      await tester.tapAt(
+        tester.getCenter(find.byType(ProjectListWidget)),
+        kind: kind,
+      );
+      await settle(tester);
+      expect(fieldFocused(), isFalse, reason: 'the field let go');
+      expect(find.byType(TextField), findsOneWidget, reason: 'still searching');
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await settle(tester);
+      expect(find.byType(TextField), findsNothing, reason: 'search closed');
+      expect(listText('P1'), findsOneWidget, reason: 'filter removed');
+      expect(location(), '/home');
+    });
+  }
+
+  // 入力を終えた欄から、Flutterはフォーカスを画面のスコープそのもの
+  // （画面のショートカットより上）へ落とすことがある。画面へ戻さないと、
+  // 画面を一度押すまでEsc等が効かない。
+  testWidgets('focus that falls to the page scope comes back to Home', (
+    tester,
+  ) async {
+    await boot(tester, projects: 2);
+    await tester.tap(searchButton(tester));
+    await settle(tester);
+    await tester.enterText(find.byType(TextField), 'P2');
+    await settle(tester);
+    FocusManager.instance.primaryFocus!.unfocus();
+    await settle(tester);
+    expect(fieldFocused(), isFalse);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settle(tester);
+    expect(find.byType(TextField), findsNothing, reason: 'search closed');
+    expect(listText('P1'), findsOneWidget);
+  });
+
+  // 検索中に引き出しを開いてEscを押し続けても、閉じるのは引き出しだけ。
+  // キーを押し続けたときの繰り返しで検索まで閉じて検索語を消さない
+  // （繰り返すのは取り消し・やり直し・コマ送りだけ）。
+  for (final kind in [PointerDeviceKind.touch, PointerDeviceKind.mouse]) {
+    testWidgets('holding Escape while searching closes only the drawer '
+        '($kind)', (tester) async {
+      await boot(tester, projects: 2);
+      await tester.tap(searchButton(tester));
+      await settle(tester);
+      await tester.enterText(find.byType(TextField), 'P2');
+      await settle(tester);
+      await tester.tap(find.byKey(const Key('homeMenuButton')), kind: kind);
+      await settle(tester);
+      expect(find.byType(HomeDrawer), findsOneWidget);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.escape);
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.sendKeyRepeatEvent(LogicalKeyboardKey.escape);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.sendKeyRepeatEvent(LogicalKeyboardKey.escape);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.escape);
+      await settle(tester);
+      expect(find.byType(HomeDrawer), findsNothing, reason: 'drawer closed');
+      expect(find.byType(TextField), findsOneWidget, reason: 'still searching');
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        'P2',
+      );
+      expect(listText('P1'), findsNothing);
+    });
+  }
+
+  // 引き出しは一覧を覆う（押せない）ので、その後ろの一覧へ全選択・
+  // 切り取り・貼り付けのショートカットを効かせない。
+  testWidgets('list shortcuts do not reach the list behind the open drawer', (
+    tester,
+  ) async {
+    await boot(tester, projects: 2, size: selectionSize);
+    final service = tester
+        .element(find.byType(HomeScreen))
+        .read<ProjectService>();
+    Future<void> ctrl(LogicalKeyboardKey key) async {
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(key);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await settle(tester);
+    }
+
+    await tester.longPress(listText('P1'));
+    await settle(tester);
+    // コピーすると選択は終わる。
+    await ctrl(LogicalKeyboardKey.keyC);
+    expect(find.byTooltip(l10nOf(tester).homeMoveToTrash), findsNothing);
+    final paste = find.byIcon(Icons.content_paste);
+    expect(paste, findsOneWidget, reason: 'P1 is on the clipboard');
+
+    await tester.tap(find.byKey(const Key('homeMenuButton')));
+    await settle(tester);
+    expect(find.byType(HomeDrawer), findsOneWidget);
+    for (var i = 0; i < 3; i++) {
+      await ctrl(LogicalKeyboardKey.keyV);
+    }
+    await ctrl(LogicalKeyboardKey.keyA);
+    expect(find.byType(HomeDrawer), findsOneWidget);
+    expect(service.projects, hasLength(2), reason: 'no hidden copies');
+    expect(
+      find.byTooltip(l10nOf(tester).homeMoveToTrash),
+      findsNothing,
+      reason: 'nothing selected behind the drawer',
+    );
+    // 引き出しを閉じれば、また効く。
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await settle(tester);
+    expect(find.byType(HomeDrawer), findsNothing);
+    await ctrl(LogicalKeyboardKey.keyA);
+    expect(selectionCount(tester, 2), findsOneWidget);
+  });
+
   for (final root in [false, true]) {
     testWidgets('back with the drawer open closes only the drawer '
         '(${root ? 'root' : 'pushed'} Home)', (tester) async {

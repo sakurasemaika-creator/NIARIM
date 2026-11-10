@@ -266,6 +266,70 @@ void main() {
     }
   });
 
+  // 韓国語は語（空白で区切った単位）の途中で折り返さない。Flutterは
+  // ハングルをどの字の間でも折り返すので、押すボタンの名前「시작하기」まで
+  // 2行に割れていた。
+  testWidgets('the Korean save failure notice wraps only between words', (
+    tester,
+  ) async {
+    await loadAppFonts(tester);
+    for (final (size, scale) in [
+      (const Size(320, 568), 2.0),
+      (const Size(320, 568), 1.0),
+      (const Size(390, 844), 1.0),
+      (const Size(390, 844), 2.0),
+      (const Size(640, 360), 1.0),
+      (const Size(640, 360), 2.0),
+      (const Size(1280, 800), 1.0),
+      (const Size(1280, 800), 2.0),
+    ]) {
+      final c = await open(tester, language: 'ko', size: size, scale: scale);
+      c.store.mode = 'reject';
+      final start = find.widgetWithText(
+        FilledButton,
+        c.l10n.homeFirstLaunchStart,
+      );
+      await tester.ensureVisible(start);
+      await tester.tap(start);
+      await tester.pumpAndSettle();
+      final notice = saveFailureNotice();
+      expect(notice, findsOneWidget);
+      final paragraph = tester.renderObject<RenderParagraph>(notice);
+      final text = paragraph.text.toPlainText();
+      // 字の間の結合子を除けば、文はARBのまま。
+      expect(text.replaceAll('\u2060', ''), c.l10n.homeFirstLaunchSaveFailed);
+      // 語の中で隣り合う2字の字の箱が上下に重ならなければ、その間で
+      // 行が替わっている（括弧・句点は別の書体で箱の高さが違うので、
+      // 上端どうしではなく重なりで比べる）。
+      final breaks = <String>[];
+      TextBox? last;
+      var previous = '';
+      for (var i = 0; i < text.length; i++) {
+        final char = text[i];
+        if (char.trim().isEmpty) {
+          last = null;
+          continue;
+        }
+        if (char == '\u2060') continue;
+        final boxes = paragraph.getBoxesForSelection(
+          TextSelection(baseOffset: i, extentOffset: i + 1),
+        );
+        if (boxes.isEmpty) continue;
+        final box = boxes.first;
+        if (last != null &&
+            (box.top >= last.bottom - 1 || box.bottom <= last.top + 1)) {
+          breaks.add('$previous|$char');
+        }
+        last = box;
+        previous = char;
+      }
+      expect(breaks, isEmpty, reason: '$size x$scale');
+      expect(paragraph.didExceedMaxLines, isFalse);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    }
+  });
+
   // 知らせの色は差し色から作られるcolorScheme.errorではなく、ダイアログの
   // 文字色（テーマ・外観で選ぶ色）。何を保存できなかったか・もう一度
   // 「はじめる」を押せばよいことを文で伝える。

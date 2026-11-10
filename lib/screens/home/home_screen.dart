@@ -3,6 +3,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -46,6 +47,7 @@ import 'widgets/folder_delete_dialog.dart';
 import 'widgets/folder_save_feedback.dart';
 import 'widgets/work_folder_move_sheet.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/line_break.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/responsive_tile_defaults.dart';
@@ -418,10 +420,7 @@ class _HomeScreenState extends State<HomeScreen>
                         // 入力中のEscも検索を閉じる（画面のショートカットは
                         // 入力欄にフォーカスがある間は動かない）。
                         child: CallbackShortcuts(
-                          bindings: {
-                            const SingleActivator(LogicalKeyboardKey.escape):
-                                _closeProjectSearch,
-                          },
+                          bindings: {_escapeOnce: _closeProjectSearch},
                           child: TextField(
                             controller: _searchController,
                             focusNode: _searchFocus,
@@ -436,6 +435,15 @@ class _HomeScreenState extends State<HomeScreen>
                             // Enterで入力を終えたら画面のショートカットへ戻す
                             // （検索は開いたまま）。
                             onEditingComplete: _homeFocus.requestFocus,
+                            // マウス・ペンで欄の外を押したときも同じ。指で
+                            // 外を触っただけでは入力を続ける（Androidの
+                            // 標準の振る舞い）。
+                            onTapOutside: (event) {
+                              if (event.kind != PointerDeviceKind.touch &&
+                                  _searchFocus.hasFocus) {
+                                _homeFocus.requestFocus();
+                              }
+                            },
                           ),
                         ),
                       ),
@@ -525,6 +533,11 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
           endDrawer: HomeDrawer(refreshToken: _missionDrawerRefreshToken),
+          // 引き出しの開閉で画面のショートカットを組み替える
+          // （_buildShortcutBindings）。
+          onEndDrawerChanged: (_) {
+            if (mounted) setState(() {});
+          },
           body: Column(
             children: [
               if (_isSelectionMode)
@@ -668,12 +681,23 @@ class _HomeScreenState extends State<HomeScreen>
         ),
       ),
     );
+    // 戻る操作は常にここで受ける（canPop: false）。キャンバス・書き出しから
+    // go('/home')で来たホームは履歴が1枚だけで、受けないとAndroid 16以降の
+    // 予測型「戻る」ではOSが戻る操作をアプリへ渡さずにアプリを閉じる
+    // （BackButtonListenerも呼ばれない）。ホームは作り直されないので、
+    // canPopを組み立てたときの履歴から決めると古い値のまま残る。
     return BackButtonListener(
       onBackButtonPressed: () async => _handleLocalBack(),
       child: PopScope<Object?>(
-        canPop: !_hasLocalBackScope,
+        canPop: false,
         onPopInvokedWithResult: (didPop, result) {
-          if (!didPop) _handleLocalBack();
+          if (didPop || _handleLocalBack()) return;
+          // 何も開いていない、ほかの画面から積まれたホーム：前の画面へ戻る。
+          if (mounted &&
+              (ModalRoute.of(context)?.isCurrent ?? false) &&
+              context.canPop()) {
+            context.pop();
+          }
         },
         child: content,
       ),
@@ -960,6 +984,13 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
+  /// 検索・引き出しを閉じるEsc。押し続けたときの繰り返しには反応しない
+  /// （引き出しを閉じた後の繰り返しで、検索まで閉じて検索語を消さない）。
+  static const _escapeOnce = SingleActivator(
+    LogicalKeyboardKey.escape,
+    includeRepeats: false,
+  );
+
   /// 設定画面「ショートカット設定」の割り当て一覧から、ホーム画面で
   /// 有効なキー割り当てのマップを組み立てる。ツール選択の割り当ては
   /// キャンバスモード専用の概念のためここでは無視する。
@@ -968,21 +999,14 @@ class _HomeScreenState extends State<HomeScreen>
   ) {
     final bindings = context.watch<ShortcutService>().bindings;
     if (_currentTabIndex != 0) return {};
-    // 検索中は全選択・コピー等を効かせない（検索で隠れた作品を操作しない）。
-    // Escは引き出しが開いていれば引き出しを、なければ検索を閉じる
-    // （Enterで入力を終えた後も）。
-    if (_isSearching) {
-      return {
-        const SingleActivator(LogicalKeyboardKey.escape): () {
-          final scaffold = _scaffoldKey.currentState;
-          if (scaffold?.isEndDrawerOpen ?? false) {
-            scaffold!.closeEndDrawer();
-          } else {
-            _closeProjectSearch();
-          }
-        },
-      };
+    // 引き出しが開いている間は、その後ろの一覧（押せない）を全選択・
+    // 貼り付け等で操作しない。Escは引き出しだけを閉じる。
+    if (_scaffoldKey.currentState?.isEndDrawerOpen ?? false) {
+      return {_escapeOnce: () => _scaffoldKey.currentState?.closeEndDrawer()};
     }
+    // 検索中は全選択・コピー等を効かせない（検索で隠れた作品を操作しない）。
+    // Escは検索を閉じる（Enterで入力を終えた後も）。
+    if (_isSearching) return {_escapeOnce: _closeProjectSearch};
     final result = <ShortcutActivator, VoidCallback>{};
     for (final b in bindings) {
       if (b.isToolAction) continue;
@@ -3187,8 +3211,13 @@ class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
             if (_failed) ...[
               const SizedBox(height: 12),
               // 色ではなく先頭の印と文で知らせ、読み上げへも伝える
-              // （文字の色はダイアログの文字色）。
-              ExportShareNotice(message: l10n.homeFirstLaunchSaveFailed),
+              // （文字の色はダイアログの文字色）。韓国語は語の途中で
+              // 折り返さない（押すボタンの名前が2行に割れないように）。
+              ExportShareNotice(
+                message: keepKoreanWordsTogether(
+                  l10n.homeFirstLaunchSaveFailed,
+                ),
+              ),
             ],
           ],
         ),
