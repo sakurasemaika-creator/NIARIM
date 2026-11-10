@@ -240,6 +240,7 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
     Number.isSafeInteger(rawCount) && rawCount >= 0 ? rawCount : 0;
   let workState: MissionStateRecord | undefined;
   let selectedWork: WorkItem | undefined;
+  let selectedRanking: {count:number;bookmarks?:number}|undefined;
   if (selectedWorkId) {
     const work = await ddb.send(new GetCommand({
       TableName: tableName(), Key: Keys.work(selectedWorkId), ConsistentRead: true,
@@ -249,6 +250,16 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
       forbidden("この作品のミッションは参照できません", "MISSION_NOT_YOUR_WORK");
     }
     workState = await loadMissionState(auth.niarimUserId, selectedWorkId);
+    if(publishedWorkCount>=MIN_RANK_MISSION_PUBLIC_WORKS &&
+       isPublicWork(selectedWork,auth.niarimUserId)) {
+      // One authoritative live ranking read for ALL four milestones of
+      // the selected work. Never fabricate positions from the client UI.
+      selectedRanking=await measuredProgress(
+        auth.niarimUserId,
+        CREATOR_MISSIONS.find(m=>m.id==="bookmark_rank_1")!,
+        selectedWorkId,
+      );
+    }
   }
   return ok({
     catalogVersion: MISSION_CATALOG_VERSION,
@@ -277,7 +288,15 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
             selectedWork!.bookmarkCount >= mission.required
           : mission.kind === "verifiedEditSeconds"
             ? editTimeVerificationEnabled() &&
-              state.verifiedEditSeconds>=mission.required : null;
+              state.verifiedEditSeconds>=mission.required
+          : mission.kind === "niarimBookmarkRanking" && selectedWorkId
+            ? selectedRanking!==undefined && rankingMissionEligible({
+                goalRank:mission.required,
+                liveRank:selectedRanking.count,
+                publishedWorkCount,
+                workBookmarks:selectedRanking.bookmarks??0,
+              })
+          : null;
       const pendingAt = current?.firstQualifiedAt[key];
       return {
         ...mission,
@@ -294,7 +313,9 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
           ? user?.followerCount ?? 0
           : mission.kind === "verifiedEditSeconds" ? state.verifiedEditSeconds
           : mission.kind === "workBookmarks" && selectedWorkId
-            ? selectedWork?.bookmarkCount ?? 0 : null,
+            ? selectedWork?.bookmarkCount ?? 0
+          : mission.kind === "niarimBookmarkRanking" && selectedWorkId
+            ? selectedRanking?.count??null : null,
         rankingMinPublishedWorks: mission.kind==="niarimBookmarkRanking"
           ? MIN_RANK_MISSION_PUBLIC_WORKS : null,
         rankingMinBookmarks: mission.kind==="niarimBookmarkRanking"

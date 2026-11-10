@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
-import { GetCommand, QueryCommand, TransactWriteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { BatchGetCommand, GetCommand, QueryCommand, TransactWriteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 
 const { send } = vi.hoisted(() => ({ send: vi.fn() }));
@@ -56,6 +56,45 @@ describe("creator mission endpoints", () => {
     expect(commands[0].input.Key?.pk).toBe("USER#NverifiedByGoogle");
     expect(commands[1].input.Key?.pk).toBe("BATCHSTATE#STATS_UPDATE");
     expect(commands[0]).not.toBeInstanceOf(QueryCommand);
+  });
+
+  it("checks a selected work against the LIVE public ranking for its claim button",async()=>{
+    const workId="abcdefghijk";
+    const selected={
+      pk:"WORK#"+workId,sk:"META",itemType:"WORK",
+      workId,authorId:"NverifiedByGoogle",
+      isNiarimPublished:true,youtubePrivacyStatus:"public",
+      gsi2pk:"BOOKMARK_RANKING",bookmarkCount:60,title:"my work",
+      youtubeUrl:"https://www.youtube.com/watch?v="+workId,
+      thumbnailUrl:"https://example.com/a.png",
+    };
+    send.mockImplementation(async(c:unknown)=>{
+      if(c instanceof GetCommand){
+        const key=c.input.Key;
+        if(key?.pk==="BATCHSTATE#STATS_UPDATE")
+          return {Item:{publishedWorkCount:100}};
+        if(key?.pk==="WORK#"+workId)return {Item:selected};
+        return {};
+      }
+      if(c instanceof QueryCommand)
+        return {Items:[{...selected,gsi2sk:60}]};
+      if(c instanceof BatchGetCommand)
+        return {Responses:{"test-table":[selected]}};
+      return {};
+    });
+    const ev=req();
+    ev.queryStringParameters={workId};
+    const response=JSON.parse((await getMyCreatorMissions(ev)).body??"{}");
+    const byId=(id:string)=>
+      response.missions.find((m:{id:string})=>m.id===id);
+    expect(byId("bookmark_rank_1")).toMatchObject({
+      eligible:true,progress:1,rankingMinPublishedWorks:100,
+      rankingMinBookmarks:50,
+    });
+    expect(byId("bookmark_rank_10")).toMatchObject({eligible:true});
+    expect(byId("bookmark_rank_50")).toMatchObject({eligible:true});
+    expect(send.mock.calls.filter(([c])=>c instanceof QueryCommand))
+      .toHaveLength(1);
   });
 
   it("does not allow arbitrary user claims or award coins before launch", async () => {
