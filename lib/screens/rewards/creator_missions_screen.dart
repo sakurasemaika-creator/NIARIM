@@ -331,7 +331,11 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         t.format('detailsWorkProgress', progress, each: goal),
       if (progress != null && kind == 'followers')
         t.format('detailsFollowersProgress', progress, each: goal),
-      if (kind == 'niarimBookmarkRanking')
+      if (kind == 'niarimBookmarkRanking' &&
+          row['rankingPopulationKnown'] != true)
+        t.get('rankPoolUnknown'),
+      if (kind == 'niarimBookmarkRanking' &&
+          row['rankingPopulationKnown'] == true)
         t.format('rankPoolCurrent',
             (row['publishedWorkCount'] as num?)?.toInt() ?? 0),
       if (kind == 'niarimBookmarkRanking' &&
@@ -339,7 +343,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         t.format('rankBookmarkCurrent',
             (row['rankingWorkBookmarks'] as num).toInt()),
       if (kind == 'niarimBookmarkRanking' &&
-          !template && row['progress'] is num)
+          !template && row['progress'] is num &&
+          (row['progress'] as num).toInt() > 0 &&
+          (row['progress'] as num).toInt() <= 50)
         t.format('rankCurrentPlace', (row['progress'] as num).toInt()),
       if (kind == 'niarimBookmarkRanking')
         ..._rankingMissingReasons(t, row),
@@ -366,7 +372,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         t.get('detailsPerWorkRule')
       else
         t.get('detailsAccountRule'),
-      if (row['pendingSince'] is num && !claimed) t.get('detailsPending'),
+      if (row['pendingSince'] is num && !claimed && earned)
+        t.get('detailsPending'),
       if (row['rewardEnabled'] != true) t.get('detailsOffline'),
       '$coins ${t.get('coin')}',
       t.get('detailsHint'),
@@ -396,7 +403,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     final claimed = row['claimed'] == true;
     final eligible = row['eligible'] == true;
     final ready = row['readyForClaim'] == true;
-    final pending = row['pendingSince'] is num && !ready && !claimed;
+    final pending =
+        row['pendingSince'] is num && eligible && !ready && !claimed;
     final available = row['rewardEnabled'] == true;
     final id = (row['id'] ?? row['missionId']) as String? ?? '';
     final workId = row['_workId'] as String?;
@@ -630,7 +638,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                 const SizedBox(height: 8),
                 Text(t.format('localTime', localSeconds ~/ 3600)),
                 Text(
-                  t.get('timeWarning'),
+                  account['editTimeVerificationReady'] == true
+                      ? t.get('timeWarning')
+                      : t.get('editTimeUnverified'),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 Text(

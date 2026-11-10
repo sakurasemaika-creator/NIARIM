@@ -1,0 +1,41 @@
+name: Creator Ranking Mission UI Verification
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/creator-ranking-mission-ui-verify.yml'
+      - 'lib/l10n/creator_mission_labels.dart'
+      - 'lib/screens/rewards/creator_missions_screen.dart'
+      - 'test/creator_ranking_mission_labels_test.dart'
+      - 'test/creator_mission_claim_ui_policy_test.dart'
+      - 'test/creator_mission_sort_policy_test.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Analyze ranking reward UI and translations
+        run: |
+          flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
+            lib/l10n/creator_mission_labels.dart \
+            lib/screens/rewards/creator_missions_screen.dart \
+            test/creator_ranking_mission_labels_test.dart
+      - name: Verify ranking labels and mission claim UI policies
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/creator_ranking_mission_labels_test.dart \
+            test/creator_mission_claim_ui_policy_test.dart \
+            test/creator_mission_sort_policy_test.dart

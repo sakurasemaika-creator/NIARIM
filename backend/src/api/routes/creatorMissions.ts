@@ -235,8 +235,9 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
     ddb.send(new GetCommand({ TableName: tableName(), Key: Keys.batchState() })),
   ]);
   const rawCount = rankData.Item?.publishedWorkCount;
-  const publishedWorkCount = typeof rawCount === "number" &&
-    Number.isSafeInteger(rawCount) && rawCount >= 0 ? rawCount : 0;
+  const rankingPopulationKnown = typeof rawCount === "number" &&
+    Number.isSafeInteger(rawCount) && rawCount >= 0;
+  const publishedWorkCount = rankingPopulationKnown ? rawCount as number : 0;
   let workState: MissionStateRecord | undefined;
   let selectedWork: WorkItem | undefined;
   let selectedRanking: {count:number;bookmarks?:number}|undefined;
@@ -276,6 +277,7 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
     selectedWorkId: selectedWorkId ?? null,
     selectedWorkTitle: selectedWork?.title ?? null,
     publishedWorkCount,
+    rankingPopulationKnown,
     missions: CREATOR_MISSIONS.map((mission) => {
       const current = mission.perWork ? workState : state;
       const key = String(mission.bit);
@@ -315,6 +317,8 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
             ? selectedWork?.bookmarkCount ?? 0
           : mission.kind === "niarimBookmarkRanking" && selectedWorkId
             ? selectedRanking?.count??null : null,
+        rankingPopulationKnown: mission.kind==="niarimBookmarkRanking"
+          ? rankingPopulationKnown : null,
         rankingUnmetConditions: mission.kind==="niarimBookmarkRanking"
           ? rankingMissionUnmetConditions({
               goalRank:mission.required,
