@@ -6223,6 +6223,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get storageActionsTitle => '整理';
 
   @override
+  String get storageCalculating => '正在计算…';
+
+  @override
+  String get storageBreakdownLoadFailed => '无法计算明细';
+
+  @override
+  String get storageBreakdownIncomplete => '部分数据无法读取，显示的容量可能少于实际用量';
+
+  @override
+  String get storageDeviceSpaceUnavailable => '无法获取设备存储空间';
+
+  @override
   String get storageCategoryNiarimTotal => 'NIARIM';
 
   @override
@@ -14215,6 +14227,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get storageActionsTitle => '整理';
+
+  @override
+  String get storageCalculating => '正在計算…';
+
+  @override
+  String get storageBreakdownLoadFailed => '無法計算明細';
+
+  @override
+  String get storageBreakdownIncomplete => '部分資料無法讀取，顯示的容量可能少於實際用量';
+
+  @override
+  String get storageDeviceSpaceUnavailable => '無法取得裝置儲存空間';
 
   @override
   String get storageCategoryNiarimTotal => 'NIARIM';

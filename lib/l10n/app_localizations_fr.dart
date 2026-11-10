@@ -6604,6 +6604,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String get storageActionsTitle => 'Organiser';
 
   @override
+  String get storageCalculating => 'Calcul en cours…';
+
+  @override
+  String get storageBreakdownLoadFailed =>
+      'Impossible de calculer la répartition';
+
+  @override
+  String get storageBreakdownIncomplete =>
+      'Certaines données n\'ont pas pu être lues ; les totaux peuvent être inférieurs à l\'utilisation réelle';
+
+  @override
+  String get storageDeviceSpaceUnavailable =>
+      'Impossible d\'obtenir le stockage de l\'appareil';
+
+  @override
   String get storageCategoryNiarimTotal => 'NIARIM';
 
   @override

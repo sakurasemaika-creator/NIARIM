@@ -6485,6 +6485,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storageActionsTitle => 'Clean up';
 
   @override
+  String get storageCalculating => 'Calculating…';
+
+  @override
+  String get storageBreakdownLoadFailed => 'Could not calculate the breakdown';
+
+  @override
+  String get storageBreakdownIncomplete =>
+      'Some data could not be read, so the totals may be lower than the actual usage';
+
+  @override
+  String get storageDeviceSpaceUnavailable =>
+      'Could not get the device storage';
+
+  @override
   String get storageCategoryNiarimTotal => 'NIARIM';
 
   @override

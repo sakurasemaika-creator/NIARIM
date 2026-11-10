@@ -6268,6 +6268,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get storageActionsTitle => '整理する';
 
   @override
+  String get storageCalculating => '集計中…';
+
+  @override
+  String get storageBreakdownLoadFailed => '内訳を集計できませんでした';
+
+  @override
+  String get storageBreakdownIncomplete =>
+      '一部のデータを読み取れなかったため、実際より少なく表示されている可能性があります';
+
+  @override
+  String get storageDeviceSpaceUnavailable => '端末の容量を取得できませんでした';
+
+  @override
   String get storageCategoryNiarimTotal => 'NIARIM';
 
   @override

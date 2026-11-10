@@ -6593,6 +6593,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get storageActionsTitle => 'Organizar';
 
   @override
+  String get storageCalculating => 'Calculando…';
+
+  @override
+  String get storageBreakdownLoadFailed => 'No se pudo calcular el desglose';
+
+  @override
+  String get storageBreakdownIncomplete =>
+      'No se pudieron leer algunos datos; los totales pueden ser inferiores al uso real';
+
+  @override
+  String get storageDeviceSpaceUnavailable =>
+      'No se pudo obtener el almacenamiento del dispositivo';
+
+  @override
   String get storageCategoryNiarimTotal => 'NIARIM';
 
   @override

@@ -6301,6 +6301,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get storageActionsTitle => '정리하기';
 
   @override
+  String get storageCalculating => '계산 중…';
+
+  @override
+  String get storageBreakdownLoadFailed => '세부 내역을 계산하지 못했습니다';
+
+  @override
+  String get storageBreakdownIncomplete => '일부 데이터를 읽지 못해 실제보다 적게 표시될 수 있습니다';
+
+  @override
+  String get storageDeviceSpaceUnavailable => '기기 저장공간을 확인하지 못했습니다';
+
+  @override
   String get storageCategoryNiarimTotal => 'NIARIM';
 
   @override

@@ -11495,6 +11495,30 @@ abstract class AppLocalizations {
   /// **'整理する'**
   String get storageActionsTitle;
 
+  /// No description provided for @storageCalculating.
+  ///
+  /// In ja, this message translates to:
+  /// **'集計中…'**
+  String get storageCalculating;
+
+  /// No description provided for @storageBreakdownLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'内訳を集計できませんでした'**
+  String get storageBreakdownLoadFailed;
+
+  /// No description provided for @storageBreakdownIncomplete.
+  ///
+  /// In ja, this message translates to:
+  /// **'一部のデータを読み取れなかったため、実際より少なく表示されている可能性があります'**
+  String get storageBreakdownIncomplete;
+
+  /// No description provided for @storageDeviceSpaceUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末の容量を取得できませんでした'**
+  String get storageDeviceSpaceUnavailable;
+
   /// No description provided for @storageCategoryNiarimTotal.
   ///
   /// In ja, this message translates to:
