@@ -137,6 +137,24 @@ void main() {
       expect(find.byType(SharedScreen), findsOneWidget);
       expect(find.byKey(const Key('sharedReceivedFilter')), findsOneWidget);
       expect(find.byKey(const Key('sharedOutgoingFilter')), findsOneWidget);
+      // The shared control must look and behave as one two-way pill, not
+      // two independently selectable chips. Verify on every SP/PC width.
+      final direction = find.byKey(const Key('sharedDirectionSegmentedControl'));
+      expect(direction, findsOneWidget, reason: 'width $width');
+      final directionBefore = tester.widget<SegmentedButton<bool>>(direction);
+      expect(directionBefore.multiSelectionEnabled, isFalse);
+      expect(directionBefore.emptySelectionAllowed, isFalse);
+      expect(directionBefore.showSelectedIcon, isFalse);
+      expect(directionBefore.selected, {false});
+      final sharedAddFolderFab = find.byWidgetPredicate(
+        (widget) => widget is FloatingActionButton &&
+            widget.heroTag == 'shared-add-folder',
+      );
+      expect(sharedAddFolderFab, findsOneWidget, reason: 'width $width');
+      final fab = tester.widget<FloatingActionButton>(sharedAddFolderFab);
+      expect(fab.elevation, 0);
+      expect(fab.shape, isA<CircleBorder>());
+      expect((fab.shape! as CircleBorder).side, BorderSide.none);
       await shot('04-shared-received');
       final receivedMenu =
           find.byKey(ValueKey('receivedShareMenu_${service.shared.single.id}'));
@@ -148,6 +166,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
       await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
       await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.widget<SegmentedButton<bool>>(direction).selected, {true});
+      expect(sharedAddFolderFab, findsNothing);
       await shot('05-shared-created');
       expect(service.outgoingShares, isNotEmpty, reason: 'width $width');
       final outgoingMenu = find.byKey(
@@ -161,6 +181,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
       await tester.tap(find.byKey(const Key('sharedReceivedFilter')));
       await tester.pump(const Duration(milliseconds: 250));
+      expect(tester.widget<SegmentedButton<bool>>(direction).selected, {false});
       await tester.ensureVisible(find.byKey(const ValueKey('home_tab_1')));
       await tester.tap(find.byKey(const ValueKey('home_tab_1')));
       await settleTabAnimation();
@@ -203,6 +224,33 @@ void main() {
         find.byKey(const ValueKey('trashKind_createdProject')),
         findsOneWidget, reason: 'Trash content must replace Shared at width $width',
       );
+      for (final type in [
+        'createdProject', 'receivedShare', 'createdShare', 'exportedWork',
+      ]) {
+        expect(find.byKey(ValueKey('trashKind_$type')), findsOneWidget);
+        expect(
+          tester.widget<FilterChip>(find.byKey(ValueKey('trashKind_$type'))).selected,
+          isTrue,
+        );
+      }
+      // Unlike the two-way shared switch, the Trash type chips allow multiple
+      // independently selected categories.
+      await tester.tap(find.byKey(const ValueKey('trashKind_receivedShare')));
+      await tester.pump();
+      expect(
+        tester.widget<FilterChip>(
+          find.byKey(const ValueKey('trashKind_receivedShare')),
+        ).selected,
+        isFalse,
+      );
+      expect(
+        tester.widget<FilterChip>(
+          find.byKey(const ValueKey('trashKind_createdProject')),
+        ).selected,
+        isTrue,
+      );
+      await tester.tap(find.byKey(const ValueKey('trashKind_receivedShare')));
+      await tester.pump();
       expect(find.byKey(const Key('sharedReceivedFilter')), findsNothing);
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 100)),
