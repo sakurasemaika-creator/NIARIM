@@ -18,6 +18,8 @@ class RewardNavigationLabels {
 const _labels = <String, Map<String, String>>{
   'ja': {
     'exchange': '特典交換',
+    'hub': 'コイン・特典',
+    'earnTab': 'リワード広告',
     'missions': 'ミッション',
     'earn': '無料でコインを貯める',
     'membership': '会員・特典',
@@ -41,6 +43,8 @@ const _labels = <String, Map<String, String>>{
   },
   'en': {
     'exchange': 'Redeem benefits',
+    'hub': 'Coins & rewards',
+    'earnTab': 'Rewarded ads',
     'missions': 'Missions',
     'earn': 'Earn free coins',
     'membership': 'Membership & benefits',
@@ -65,6 +69,8 @@ const _labels = <String, Map<String, String>>{
   },
   'es': {
     'exchange': 'Canjear ventajas',
+    'hub': 'Monedas y recompensas',
+    'earnTab': 'Anuncios recompensados',
     'missions': 'Misiones',
     'earn': 'Ganar monedas gratis',
     'membership': 'Membresía y ventajas',
@@ -88,6 +94,8 @@ const _labels = <String, Map<String, String>>{
   },
   'fr': {
     'exchange': 'Échanger des avantages',
+    'hub': 'Pièces et avantages',
+    'earnTab': 'Publicités récompensées',
     'missions': 'Missions',
     'earn': 'Gagner des pièces',
     'membership': 'Adhésion et avantages',
@@ -112,6 +120,8 @@ const _labels = <String, Map<String, String>>{
   },
   'ko': {
     'exchange': '특전 교환',
+    'hub': '코인·특전',
+    'earnTab': '보상형 광고',
     'missions': '미션',
     'earn': '무료 코인 모으기',
     'membership': '회원·특전',
@@ -135,6 +145,8 @@ const _labels = <String, Map<String, String>>{
   },
   'zh': {
     'exchange': '兑换特权',
+    'hub': '金币与奖励',
+    'earnTab': '激励广告',
     'missions': '任务',
     'earn': '免费赚金币',
     'membership': '会员与特权',
@@ -158,6 +170,8 @@ const _labels = <String, Map<String, String>>{
   },
   'zh_Hant': {
     'exchange': '兌換特權',
+    'hub': '金幣與獎勵',
+    'earnTab': '獎勵廣告',
     'missions': '任務',
     'earn': '免費賺金幣',
     'membership': '會員與特權',
