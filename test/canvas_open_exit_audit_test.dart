@@ -13,6 +13,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/save_tree/save_management_screen.dart';
+import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/material_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
@@ -25,7 +26,8 @@ import 'helpers/load_app_fonts.dart';
 
 /// キャンバス（A010）を開く・閉じるとき：存在しないIDでは空のキャンバスを
 /// 出さず一覧へ戻せること、不足素材の通知が時間で消え次の画面へ付いて
-/// こないこと、「保存して戻る」で保存せずに戻ったらキャンバスに残ること。
+/// こないこと、「保存して戻る」で保存せずに戻ったらキャンバス（タイムライン
+/// も同じ）に残ること。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
@@ -245,6 +247,58 @@ void main() {
     await settleIo(tester, 6);
     expect(location(), '/home');
     expect(find.byType(CanvasScreen), findsNothing);
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // タイムラインの「保存して戻る」も同じ：保存の画面から何も保存せずに
+  // 戻ったら一覧へ移らず、タイムラインに残る（描きかけを保存したつもりで
+  // 一覧へ移ってしまわない）。
+  testWidgets('save-and-return stays on the timeline when nothing was saved', (
+    tester,
+  ) async {
+    final s = await open(tester);
+    appRouter.push('/timeline/${s.id}');
+    await settleIo(tester, 10);
+    expect(find.byType(TimelineScreen), findsOneWidget);
+
+    Future<void> chooseSaveAndReturn() async {
+      await tester.tap(find.byTooltip('プロジェクト一覧に戻る'));
+      await settleIo(tester, 3);
+      await tester.tap(find.widgetWithText(FilledButton, '保存して戻る'));
+      await settleIo(tester, 6);
+      expect(find.byType(SaveManagementScreen), findsOneWidget);
+    }
+
+    await chooseSaveAndReturn();
+    GoRouter.of(tester.element(find.byType(Scaffold).last)).pop();
+    await settleIo(tester, 6);
+    expect(find.byType(SaveManagementScreen), findsNothing);
+    expect(find.byType(TimelineScreen), findsOneWidget);
+    // タイムラインが一番上の画面のまま（一覧へ移っていない）。
+    expect(
+      ModalRoute.of(tester.element(find.byType(TimelineScreen)))!.isCurrent,
+      isTrue,
+    );
+
+    // 保存してから戻ると一覧へ移る。
+    await chooseSaveAndReturn();
+    final saves = tester
+        .element(find.byType(Scaffold).last)
+        .read<SaveTreeService>();
+    await tester.runAsync(
+      () => saves.saveToSlot(
+        projectId: s.id,
+        slotIndex: 0,
+        project: s.service.projects.singleWhere((p) => p.id == s.id),
+        scenes: s.service.scenesOf(s.id),
+        tileManager: s.service.tileManagerOf(s.id),
+      ),
+    );
+    GoRouter.of(tester.element(find.byType(Scaffold).last)).pop();
+    await settleIo(tester, 6);
+    expect(location(), '/home');
+    expect(find.byType(TimelineScreen), findsNothing);
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

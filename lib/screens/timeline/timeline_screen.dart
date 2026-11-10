@@ -1515,14 +1515,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// プレビュー本体（プレビュー画像＋全画面化ボタン）。PC/DeXモードでは
-  /// 横幅を制限して中央寄せにし、横に間延びした帯状にならないようにする。
+  /// プレビューの絵（キャンバスの縦横比の枠いっぱいに描く）。フレーム数・
+  /// 全画面の操作は[_buildPreviewBand]が絵の外に置く。
   Widget _buildPreviewContent() {
     final l10n = AppLocalizations.of(context)!;
     final ps = context.watch<ProjectService>();
     final sceneId = _selectedSceneId;
-    final preview = Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+    return Container(
       // Around the picture, the canvas's surroundings (the canvas's
       // kCanvasOutsideColor); behind it, the project's background (see
       // _TimelinePreview), as on the canvas.
@@ -1530,140 +1529,152 @@ class _TimelineScreenState extends State<TimelineScreen> {
         color: ThemeService.activeColorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: sceneId == null
-                ? Center(
-                    child: Text(
-                      l10n.timelinePreviewPlaceholder,
-                      style: TextStyle(
-                        color: ThemeService.activeColorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  )
-                // 再生位置に追従して作り直すのはこの1枚だけでよい。
-                // 再生タイマーはsetStateを呼ばないので、ここを
-                // ValueListenableBuilderで包まないとプレビューが止まる。
-                : ValueListenableBuilder<int>(
-                    valueListenable: _currentFrameNotifier,
-                    builder: (context, frameIndex, _) {
-                      final stacked = ps.stackedLayersOf(
-                        widget.projectId,
-                        sceneId,
-                        frameIndex,
-                      );
-                      final gizmo = _buildMaterialGizmo(ps, frameIndex);
-                      final picture = _TimelinePreview(
-                        backgroundColor: _projectBackgroundOf(
-                          ps,
-                          widget.projectId,
-                        ),
-                        tileManager: ps.tileManagerOf(widget.projectId),
-                        layers: stacked.layers,
-                        maskGroups: stacked.maskGroups,
-                        sceneId: sceneId,
-                        frameIndex: frameIndex,
-                        cameraKeyframes: ps.cameraKeyframesOf(
-                          widget.projectId,
-                          sceneId,
-                        ),
-                        effectFilters: ps.effectFiltersOf(
-                          widget.projectId,
-                          sceneId,
-                        ),
-                        layerHomes: ps.layerHomesOf(widget.projectId),
-                        groups: ps.layerGroupsOf(widget.projectId, sceneId),
-                      );
-                      if (gizmo == null) return picture;
-                      return Stack(
-                        fit: StackFit.expand,
-                        children: [picture, gizmo],
-                      );
-                    },
+      child: sceneId == null
+          ? Center(
+              child: Text(
+                l10n.timelinePreviewPlaceholder,
+                style: TextStyle(
+                  color: ThemeService.activeColorScheme.onSurfaceVariant,
+                ),
+              ),
+            )
+          // 再生位置に追従して作り直すのはこの1枚だけでよい。
+          // 再生タイマーはsetStateを呼ばないので、ここを
+          // ValueListenableBuilderで包まないとプレビューが止まる。
+          : ValueListenableBuilder<int>(
+              valueListenable: _currentFrameNotifier,
+              builder: (context, frameIndex, _) {
+                final stacked = ps.stackedLayersOf(
+                  widget.projectId,
+                  sceneId,
+                  frameIndex,
+                );
+                final gizmo = _buildMaterialGizmo(ps, frameIndex);
+                final picture = _TimelinePreview(
+                  backgroundColor: _projectBackgroundOf(ps, widget.projectId),
+                  tileManager: ps.tileManagerOf(widget.projectId),
+                  layers: stacked.layers,
+                  maskGroups: stacked.maskGroups,
+                  sceneId: sceneId,
+                  frameIndex: frameIndex,
+                  cameraKeyframes: ps.cameraKeyframesOf(
+                    widget.projectId,
+                    sceneId,
                   ),
-          ),
-        ],
-      ),
-    );
-    // 幅の制限は呼び出し元（_buildPreviewWithHandle）のAspectRatioが
-    // 実際のキャンバス比率に応じて行うため、ここでは横に間延びしない
-    // よう最低限の上限（PC/DeXモードのみ）だけを設けておく。
-    if (!isWideScreen(context)) return preview;
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 900),
-      child: preview,
+                  effectFilters: ps.effectFiltersOf(widget.projectId, sceneId),
+                  layerHomes: ps.layerHomesOf(widget.projectId),
+                  groups: ps.layerGroupsOf(widget.projectId, sceneId),
+                );
+                if (gizmo == null) return picture;
+                return Stack(fit: StackFit.expand, children: [picture, gizmo]);
+              },
+            ),
     );
   }
 
-  /// These controls belong to the entire preview VIEWPORT, not to the
-  /// center-fitted drawing. They stay at the edges even with letterboxing,
-  /// portrait projects, and different preview heights on PC/DeX and phone.
-  Widget _buildPreviewViewportControls() {
+  /// プレビュー欄の操作（フレーム数・全画面）の大きさと、欄の端からの距離。
+  static const double _previewControlSize = 48;
+  static const double _previewControlInset = 8;
+
+  /// プロジェクトの縦横比（書き出しの大きさ。分からなければ16:9）。
+  double _previewAspect(ProjectService ps) {
+    final project = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    return (project != null && project.exportHeight > 0)
+        ? project.exportWidth / project.exportHeight
+        : 16 / 9;
+  }
+
+  /// プレビュー欄：中央にキャンバスの絵を置き、フレーム数（左下）・全画面
+  /// （右上）はプレビュー欄そのものの隅（端から8px）に置く。絵の大きさは、
+  /// 隅の操作に重ならない大きさにする（絵に重ねると確かめたい絵が隠れる）。
+  /// 操作の場所を絵の左右に空けるか上下に空けるかは、絵を大きく出せる方に
+  /// する（縦長の絵は左右、横長の絵は上下）。ループの切り替えは置かない
+  /// （再生はいつも先頭へ戻って続く）。
+  Widget _buildPreviewBand({
+    required double aspect,
+    required bool fullscreenButton,
+  }) {
     final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    const edge = _previewControlInset;
+    const gutter = _previewControlSize + edge;
     final sceneId = _selectedSceneId;
-    return Stack(
-      children: [
-        // Place the live frame counter at the extreme left of the
-        // preview AREA, away from the centered canvas image.
-        Positioned(
-          left: 8,
-          bottom: 8,
-          child: IgnorePointer(
-            child: ValueListenableBuilder<int>(
-              valueListenable: _currentFrameNotifier,
-              builder: (_, frame, _) => Text(
-                '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/$_totalFrames',
-                key: const Key('timelinePreviewFrameCount'),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: ThemeService.activeColorScheme.onSurface,
-                  shadows: [
-                    Shadow(
-                      color: ThemeService.activeColorScheme.surface,
-                      blurRadius: 4,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final height = constraints.maxHeight;
+        final besideWidth = math.min(width - gutter * 2, height * aspect);
+        final aboveWidth = math.min(
+          width - edge * 2,
+          (height - gutter * 2) * aspect,
+        );
+        var pictureWidth = math.max(0.0, math.max(besideWidth, aboveWidth));
+        // PC/DeXでは横に間延びしないよう上限を設ける。
+        if (isWideScreen(context)) {
+          pictureWidth = math.min(pictureWidth, 900);
+        }
+        final pictureHeight = aspect > 0 ? pictureWidth / aspect : 0.0;
+        return Stack(
+          key: const Key('timelinePreviewArea'),
+          children: [
+            // 描かれた絵そのもの（timelinePreviewPicture）は、この枠の中に
+            // 絵の縦横比で収まる（_TimelinePreview）。
+            Center(
+              child: SizedBox(
+                width: pictureWidth,
+                height: pictureHeight,
+                child: _buildPreviewContent(),
+              ),
+            ),
+            // 長いフレーム数は、絵との間（操作の大きさ）に収まるよう縮める。
+            Positioned(
+              left: edge,
+              bottom: edge,
+              width: _previewControlSize,
+              child: IgnorePointer(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.bottomLeft,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: _currentFrameNotifier,
+                    builder: (_, frame, _) => Text(
+                      '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/$_totalFrames',
+                      key: const Key('timelinePreviewFrameCount'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-        // プレビュー全画面化ボタン（確認・仕上がり
-        // チェックに集中できるよう、プレビューのみを拡大表示する導線）。
-        // 全画面表示中は_buildPreviewContent()自体が呼ばれないため、ここには
-        // 「開く」方向のボタンのみを置けばよい。
-        if (!_isPreviewFullscreen)
-          Positioned(
-            right: 8,
-            top: 8,
-            child: FirstUseTooltip(
-              tooltipKey: 'timeline_preview_fullscreen',
-              message: l10n.timelinePreviewFullscreenTip,
-              child: Material(
-                color: context
-                    .watch<ThemeService>()
-                    .current
-                    .menuBgColor
-                    .withValues(alpha: 0.7),
-                shape: const CircleBorder(),
-                child: IconButton(
-                  key: const Key('timelinePreviewFullscreenButton'),
-                  icon: Icon(
-                    Icons.fullscreen,
-                    color: context.watch<ThemeService>().current.menuTextColor,
-                    size: 20,
                   ),
-                  tooltip: l10n.timelinePreviewFullscreenTooltip,
-                  onPressed: sceneId == null
-                      ? null
-                      : () => setState(() => _isPreviewFullscreen = true),
                 ),
               ),
             ),
-          ),
-      ],
+            if (fullscreenButton)
+              Positioned(
+                right: edge,
+                top: edge,
+                child: FirstUseTooltip(
+                  tooltipKey: 'timeline_preview_fullscreen',
+                  message: l10n.timelinePreviewFullscreenTip,
+                  child: IconButton(
+                    key: const Key('timelinePreviewFullscreenButton'),
+                    icon: Icon(
+                      Icons.fullscreen,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    tooltip: l10n.timelinePreviewFullscreenTooltip,
+                    onPressed: sceneId == null
+                        ? null
+                        : () => setState(() => _isPreviewFullscreen = true),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -1671,13 +1682,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 目一杯まで拡大する。
   Widget _buildPreview() => Expanded(
     flex: 3,
-    child: Stack(
-      key: const Key('timelinePreviewArea'),
-      fit: StackFit.expand,
-      children: [
-        _buildPreviewContent(),
-        Positioned.fill(child: _buildPreviewViewportControls()),
-      ],
+    child: _buildPreviewBand(
+      aspect: _previewAspect(context.watch<ProjectService>()),
+      fullscreenButton: false,
     ),
   );
 
@@ -1688,19 +1695,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 状態のみを更新し、離した瞬間に確定値を保存する。
   Widget _buildPreviewWithHandle(double maxAvailableHeight) {
     final settings = context.watch<SettingsService>();
-    final ps = context.watch<ProjectService>();
-    final project = ps.projects
-        .where((p) => p.id == widget.projectId)
-        .firstOrNull;
-    final aspect = (project != null && project.exportHeight > 0)
-        ? project.exportWidth / project.exportHeight
-        : 16 / 9;
+    final aspect = _previewAspect(context.watch<ProjectService>());
     final maxH = maxAvailableHeight > 0 ? maxAvailableHeight : 600.0;
-    // 上限は「表示中のキャンバス横幅が画面の横幅ぴったりになる高さ」と
-    // レイアウト上実際に使える高さ（maxH）のうち小さい方。下限は0（ハンドルが
+    // 上限は「表示中のキャンバス横幅が画面の横幅ぴったりになる高さ」（絵の
+    // 上下にフレーム数・全画面の段を足した高さ）とレイアウト上
+    // 実際に使える高さ（maxH）のうち小さい方。下限は0（ハンドルが
     // プレビュー領域の一番上に付くまで、加減なく縮小できるようにする）。
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final maxHeightByScreenWidth = aspect > 0 ? screenWidth / aspect : maxH;
+    final maxHeightByScreenWidth = aspect > 0
+        ? (screenWidth - _previewControlInset * 2) / aspect +
+              (_previewControlSize + _previewControlInset) * 2
+        : maxH;
     final maxPreviewHeight = maxHeightByScreenWidth < maxH
         ? maxHeightByScreenWidth
         : maxH;
@@ -1732,21 +1737,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
             // 合わせて幅も高さに追従させ、画面幅を超える場合のみ幅が頭打ちに
             // なるようにする。
             SizedBox(
-              key: const Key('timelinePreviewArea'),
               height: visiblePreviewHeight,
               width: double.infinity,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Center(
-                    child: AspectRatio(
-                      aspectRatio: aspect,
-                      child: _buildPreviewContent(),
-                    ),
-                  ),
-                  Positioned.fill(child: _buildPreviewViewportControls()),
-                ],
-              ),
+              child: _buildPreviewBand(aspect: aspect, fullscreenButton: true),
             ),
             // ヒット領域はシークバー等の他の操作と混同しないよう、見た目の
             // グリップより広めに取っている（ドラッグ開始位置が少しずれても
@@ -7019,8 +7012,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
       // 「保存」導線（三点メニュー等）と同じentry=timelineを指定し、
       // セーブツリー画面から戻ってきたタイミングで、続けてプロジェクト
       // 一覧へ遷移する。
+      final saves = context.read<SaveTreeService>();
+      final before = saves.latestSaveOf(widget.projectId);
       await context.push('/save-tree/${widget.projectId}?entry=timeline');
       if (!mounted) return;
+      // 保存せずに戻った（取り消した・保存に失敗した）ときは一覧へ移らず、
+      // タイムラインに残る。
+      if (saves.latestSaveOf(widget.projectId) == before) return;
     }
     if (mounted) context.go('/home');
   }
