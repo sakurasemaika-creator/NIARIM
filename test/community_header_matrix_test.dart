@@ -192,13 +192,7 @@ void main() {
               await tester.tapAt(const Offset(4, 4));
               await tester.pumpAndSettle();
             } else if (state != 'new') {
-              final label = state == 'ranking'
-                  ? l10n.communityTabRanking
-                  : l10n.communityTabFavoriteAuthors;
-              final tab = find.descendant(
-                of: find.byType(TabBar),
-                matching: find.text(label),
-              );
+              final tab = find.byKey(Key('communityTab${state == 'ranking' ? 1 : 2}'));
               await tester.ensureVisible(tab);
               await tester.tap(tab);
               await tester.pumpAndSettle();
@@ -273,26 +267,24 @@ void main() {
               l10n.communityTabRanking,
               l10n.communityTabFavoriteAuthors,
               CommunityPlazaLabels.of(screen).searchTab,
+              l10n.homeTabBookmarked,
             ];
-            if (state != 'search' && state != 'tag-search') {
-              labels.add(l10n.communityScreenTitle);
-            }
-            for (final label in labels) {
-              final f = find.descendant(of: bar, matching: find.text(label));
-              final paragraph = tester.renderObject<RenderParagraph>(f);
-              if (paragraph.didExceedMaxLines) failures.add('$label truncated');
-              final tabs = tester.widget<TabBar>(find.byType(TabBar));
-              final expected = label == l10n.communityScreenTitle
-                  ? theme.appBarTheme.foregroundColor
-                  : label == labels[tabs.controller!.index]
-                  ? tabs.labelColor
-                  : tabs.unselectedLabelColor;
-              expect(
-                paragraph.text.style!.color,
-                expected,
-                reason: '$label configured role',
+            for (var index = 0; index < labels.length; index++) {
+              final tab = find.byKey(Key('communityTab$index'));
+              expect(tab, findsOneWidget);
+              final tooltip = tester.widget<Tooltip>(
+                find.descendant(of: tab, matching: find.byType(Tooltip)),
               );
+              expect(tooltip.message, labels[index]);
+              expect(tester.getRect(tab).width, greaterThanOrEqualTo(48));
             }
+            final title = find.descendant(
+              of: bar,
+              matching: find.text(l10n.communityScreenTitle),
+            );
+            final paragraph = tester.renderObject<RenderParagraph>(title);
+            expect(paragraph.didExceedMaxLines, isFalse);
+            expect(paragraph.text.style?.color, theme.appBarTheme.foregroundColor);
             final tips = state == 'search' || state == 'tag-search'
                 ? [
                     l10n.commonClose,
@@ -344,10 +336,7 @@ void main() {
                 .controller!
                 .index;
             final selectedRect = tester.getRect(
-              find.descendant(
-                of: find.byType(TabBar),
-                matching: find.text(labels[selected]),
-              ),
+              find.byKey(Key('communityTab$selected')),
             );
             if (selectedRect.left < -.01 ||
                 selectedRect.right > c.width + .01) {
