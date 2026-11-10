@@ -3995,6 +3995,639 @@
   },
   "homePasteSnackbar": "貼り付けました",
   "canvasSizePresetDuplicateSuffix": "のコピー",
+  "communityChannelRefreshButton": "YouTube名・アイコンを更新（1日1回）",
+  "communityChannelRefreshSuccess": "YouTubeの名前・アイコンを更新しました",
+  "communityChannelRefreshNoToken": "YouTubeの認証が必要です",
+  "communityChannelRefreshUnavailable": "ログインとサーバー接続が必要です",
+  "communityChannelRefreshFailed": "YouTube情報を更新できませんでした",
+  "communityPlazaMuteWork": "この作品を非表示にする",
+  "communityPlazaUnmuteWork": "この作品の非表示を解除する",
+  "communityPlazaMutedPlaceholder": "この作品は非表示対象です",
+  "communityPlazaUnmuteQuestion": "この作品の非表示を常に解除しますか？",
+  "communityPlazaUnmuteAlways": "常に解除する",
+  "communityPlazaUnmuteTemporary": "一時的に解除する",
+  "communityPlazaMuteSettings": "非表示設定",
+  "communityPlazaPartialHint": "※OFFなら部分一致検索",
+  "communityPlazaDeleteHistory": "この検索履歴を削除しますか？",
+  "communityPlazaLocalData": "端末保存データ",
+  "communityPlazaExactTitle": "検索語を完全一致で検索する",
+  "communityPlazaUnavailablePlaceholder": "この作品は削除または非公開です",
+  "communityPlazaSearchTab": "検索",
+  "communityPlazaMutePrivacyNotice": "※非表示にしても相手には伝わりません。",
+  "communityPostVisibilityHeading": "YouTubeでの公開範囲",
+  "communityPostVisibilityUnlistedTitle": "作品広場にのみ投稿する",
+  "communityPostVisibilityUnlistedHelp": "※YouTube上では限定公開になります。NIARIMのブックマークランキングには参加できます。",
+  "communityPostVisibilityPublicTitle": "YouTubeにも同時投稿する",
+  "communityPostVisibilityPublicHelp": "※YouTube上では全体公開になります。NIARIMのブックマークランキングには参加できます。",
+  "communityPostVisibilityUnlistedDisclosure": "※ 限定公開は非公開ではありません。動画のURLを知る人は、NIARIM外でも視聴・共有できます。",
+  "communityRankingLayoutTitle": "ランキングの表示形式",
+  "communityRankingLayoutHorizontal": "横長リスト",
+  "communityRankingLayoutLargeThumbnail": "大きいサムネイル",
+  "communityRankingLayoutRankedPlace": "位",
+  "communityRankingLayoutPeriodBookmarks": "期間内ブックマーク",
+  "communityWorkMetadataTitle": "作品タイトル",
+  "communityWorkMetadataDescription": "作品の概要欄",
+  "communityWorkMetadataDescriptionHint": "作品の説明や制作について（任意）",
+  "communityWorkMetadataEdit": "タイトル・概要欄を編集",
+  "communityWorkMetadataSaved": "タイトルと概要欄を保存しました",
+  "communityWorkMetadataInfo": "NIARIM内の情報を編集します。YouTube上のタイトル・概要欄は変わりません。",
+  "communityWorkMetadataLoadFailed": "概要欄を読み込めませんでした",
+  "communityWorkMetadataYoutubeDescription": "YouTubeの説明欄（任意）",
+  "communityWorkMetadataYoutubeDescriptionHint": "YouTube動画の説明。NIARIMの概要欄とは別に管理されます",
+  "communityWorkMetadataYoutubeDescriptionInvalid": "YouTubeの説明欄は5,000バイト以内で入力し、< と > は使用しないでください",
+  "communityWorkMetadataYoutubeTitle": "YouTubeのタイトル",
+  "communityWorkMetadataCopyTitleToYoutube": "YouTubeのタイトルにコピー",
+  "communityWorkMetadataCopyTitleToNiarim": "NIARIMのタイトルにコピー",
+  "communityWorkMetadataCopyDescriptionToYoutube": "YouTubeの説明欄にコピー",
+  "communityWorkMetadataCopyDescriptionToNiarim": "NIARIMの概要欄にコピー",
+  "communityWorkMetadataYoutubeTitleRequired": "YouTubeのタイトルを入力してください",
+  "communityWorkMetadataCopyConfirmTitle": "コピー先の内容を上書きしますか？",
+  "communityWorkMetadataCopyConfirmMessage": "コピー先に現在入力されている内容はすべて上書きされます。コピーを実行しますか？",
+  "communityWorkMetadataCopyCancel": "キャンセル",
+  "communityWorkMetadataCopyConfirmAction": "コピーする",
+  "communityYoutubeCommentHeading": "YouTubeのコメントを見る",
+  "communityYoutubeCommentLoadMore": "さらに20件表示",
+  "communityYoutubeCommentNoComments": "コメントはまだありません",
+  "communityYoutubeCommentUnavailable": "YouTubeコメントを取得できませんでした",
+  "communityYoutubeCommentRetry": "再読み込み",
+  "communityYoutubeCommentReplies": "返信",
+  "communityYoutubeCommentAttribution": "コメントはYouTubeから取得しています。投稿・返信はできません。",
+  "creatorMissionTitle": "ミッション",
+  "creatorMissionGenericPublished": "投稿した作品を公開する",
+  "creatorMissionDetailsTitle": "達成条件",
+  "creatorMissionDetailsHint": "目標を満たしてから受け取れます。受取済みのミッションは同じアカウント・同じ作品では再受取できません。",
+  "creatorMissionNotAchieved": "未達成",
+  "creatorMissionDetailsTooltip": "内容を確認",
+  "creatorMissionReviewing": "達成確認中",
+  "creatorMissionCoinReward": "コイン報酬",
+  "creatorMissionClaim": "受け取る",
+  "creatorMissionActivityTitle": "通知",
+  "creatorMissionActivityObserved": "達成を確認した日",
+  "creatorMissionActivityEmpty": "まだミッション達成の通知はありません",
+  "creatorMissionActivitySyncMore": "達成通知をさらに確認",
+  "creatorMissionActivityHistoryMore": "過去の通知を表示",
+  "creatorMissionActivityError": "通知を取得できませんでした",
+  "creatorMissionActivitySignIn": "サインインすると達成履歴を確認できます",
+  "creatorMissionDetailsDraftCount": "複数作品の達成数は暫定集計です。正式な受取時にサーバーが再確認します。",
+  "creatorMissionDetailsPerWorkRule": "作品ごとに1回受け取れます。別の作品で同じ条件を達成すると、別途受け取れます。",
+  "creatorMissionDetailsAccountRule": "この条件の報酬はアカウントにつき1回限りです。",
+  "creatorMissionDetailsTemplateRule": "作品が条件を達成すると、上部に作品名入りの達成項目が追加されます。この見本の行は常に未達成のまま表示されます。",
+  "creatorMissionDetailsPending": "達成を確認中です。48時間後にもう一度「受け取る」を押してください。",
+  "creatorMissionDetailsOffline": "この報酬は現在公開準備中のため、受取操作は無効です。",
+  "creatorMissionDrawerAttention": "未受取の達成ミッションがあります",
+  "creatorMissionAchieved": "条件達成",
+  "creatorMissionClaimReceived": "報酬を受け取りました",
+  "creatorMissionHoldStarted": "達成確認中です。48時間後、もう一度「受け取る」を押してください。",
+  "creatorMissionClaimFailed": "受取処理に失敗しました。再読み込みしてお試しください。",
+  "creatorMissionWorkSection": "作品ごとの達成ミッション",
+  "creatorMissionWorkWarning": "達成作品だけを表示します。同じ作品・同じミッションの報酬は1回限りです。",
+  "creatorMissionNoAchievements": "このページに達成した作品ミッションはありません。",
+  "creatorMissionLoadMore": "次の25作品を確認",
+  "creatorMissionWorkListError": "作品別ミッションを読み込めませんでした。",
+  "creatorMissionSubtitle": "制作・作品広場の達成でコインを獲得",
+  "creatorMissionPerWork": "作品ごとに1回ずつ",
+  "creatorMissionClaimed": "獲得済み",
+  "creatorMissionPending": "達成確認中",
+  "creatorMissionNotClaimed": "未獲得",
+  "creatorMissionUpcoming": "報酬の提供準備中",
+  "creatorMissionLogin": "Googleアカウントでログインするとミッションを確認できます。",
+  "creatorMissionOffline": "ミッションサーバーに接続されていません。",
+  "creatorMissionRetry": "再読み込み",
+  "creatorMissionLoading": "達成状況を確認中…",
+  "creatorMissionLoadError": "達成状況を取得できませんでした。",
+  "creatorMissionTimeWarning": "制作時間は表示用の記録です。コイン対象にはサーバー側の検証が必要です。",
+  "creatorMissionRankingWarning": "ランキング報酬はNIARIM独自のブックマーク順位が対象です。",
+  "creatorMissionBudget": "ミッション報酬はそれぞれ1回限りです。",
+  "loginBonusTitle": "累計ログインボーナス",
+  "loginBonusDaily": "今日のログイン報酬",
+  "loginBonusClaim": "受け取る",
+  "loginBonusClaimed": "受取済み",
+  "loginBonusNotYet": "未達成",
+  "loginBonusMilestones": "節目の追加ボーナス",
+  "loginBonusUnknown": "確認できません",
+  "loginBonusUnavailable": "報酬の受取機能は現在準備中です",
+  "loginBonusUtc": "日付は日本時間の午前0時に切替。休んでも累計日数は減りません。",
+  "loginBonusRetry": "更新",
+  "loginBonusFailed": "受取を確認できませんでした",
+  "loginBonusSuccess": "コインの受取が確認できました",
+  "loginBonusVisitMissing": "今日のログインを確認中です",
+  "rewardNavigationExchange": "特典交換",
+  "rewardNavigationHub": "コイン・特典",
+  "rewardNavigationEarnTab": "広告を見てコインGET",
+  "rewardNavigationMissions": "ミッション",
+  "rewardNavigationEarn": "無料でコインを貯める",
+  "rewardNavigationMembership": "契約状態",
+  "rewardNavigationMembershipDetail": "プレミアム会員について詳しく見る",
+  "rewardNavigationMembershipFree": "無料会員",
+  "rewardNavigationMembershipMonthly": "プレミアム（月額）",
+  "rewardNavigationMembershipYearly": "プレミアム（年額）",
+  "rewardNavigationMembershipPlay": "プレミアム会員",
+  "rewardNavigationMembershipCoin": "コインで解放中",
+  "rewardNavigationMembershipBenefit": "利用中の特典",
+  "rewardNavigationMembershipNoBenefit": "現在利用中の交換特典はありません",
+  "rewardNavigationMembershipUpsell": "プレミアムでは機能制限を気にせず制作できます。内容や料金を確認してから登録できます。",
+  "rewardNavigationMembershipExpires": "利用期限",
+  "rewardNavigationMembershipUnavailable": "特典情報を確認できませんでした",
+  "rewardNavigationMembershipLogin": "特典情報の確認にはログインが必要です",
+  "rewardNavigationPremiumCompare": "プレミアム会員について詳しく見る",
+  "rewardNavigationPremiumJoin": "プレミアム会員になる",
+  "rewardNavigationPremiumPlans": "月額・年額プランを選ぶ",
+  "rewardNavigationEarnDescription": "広告を見るとコインを獲得できます",
+  "rewardNavigationEarnUnavailable": "現在リワード広告は利用できません",
+  "rewardUnlockTitle": "報酬",
+  "rewardUnlockMissionTitle": "ミッション",
+  "rewardUnlockMissionSubtitle": "作品の投稿やブックマーク達成でコインを獲得",
+  "rewardUnlockLoading": "残高を確認中…",
+  "rewardUnlockPaused": "保管中・残り秒数",
+  "rewardUnlockActiveUntil": "利用期限",
+  "rewardUnlockSubscriptionBenefit": "コインは広告視聴で無料で貯められます。広告視聴の時間を省きたい方には月額・年額Premiumが便利です。",
+  "rewardUnlockActive": "現在利用中の特典",
+  "rewardUnlockActivePremium": "Premium会員として全特典を利用中",
+  "rewardUnlockActiveCampaign": "リリース記念キャンペーン：Premium特典を開放中",
+  "rewardUnlockActiveUnavailable": "コイン特典の利用状況はサーバー連携後に表示します",
+  "rewardUnlockDuration": "利用期間",
+  "rewardUnlockChooseDuration": "期間を選択",
+  "rewardUnlockChooseBenefits": "特典を選択",
+  "rewardUnlockPricePending": "必要コイン：未設定",
+  "rewardUnlockNotReady": "準備中",
+  "rewardUnlockTotal": "合計必要コイン",
+  "rewardUnlockUnavailable": "正式な交換価格は準備中です",
+  "rewardUnlockBalancePending": "コイン残高：サーバー連携準備中",
+  "rewardUnlockGoal": "このコイン枚数を目標にする",
+  "rewardUnlockRedeem": "コインと引き換え",
+  "rewardUnlockWatchRewardedAd": "リワード広告を見てコインをためる",
+  "rewardUnlockRewardPending": "広告の確認待ちです。Googleの検証後にコインが反映されます。",
+  "rewardUnlockRewardUnavailable": "広告を表示できませんでした。しばらくしてから再試行してください。",
+  "rewardUnlockRewardRefresh": "残高を更新",
+  "rewardUnlockCoinHistory": "取引履歴",
+  "rewardUnlockHistoryEmpty": "まだ取引履歴はありません",
+  "rewardUnlockHistoryError": "履歴を取得できませんでした",
+  "rewardUnlockHistoryMore": "さらに読み込む",
+  "rewardUnlockHistoryAd": "広告視聴",
+  "rewardUnlockHistoryMission": "ミッション",
+  "rewardUnlockHistoryRedemption": "コイン交換",
+  "rewardUnlockHistoryOther": "その他の取引",
+  "rewardUnlockRewardQuotaReached": "本日の獲得上限に達しました（UTC）",
+  "rewardUnlockRewardQuotaUncapped": "NIARIM側の回数上限なし",
+  "rewardUnlockRewardQuotaCaution": "広告の在庫・AdMobの表示制限により、再生できる回数は異なります。",
+  "rewardUnlockRedemptionSuccess": "交換が完了しました。サーバーの利用期限を更新しました。",
+  "rewardUnlockRedemptionUncertain": "交換状況を確認できませんでした。再試行時は同じ取引を確認します。",
+  "rewardUnlockFreeOnly": "広告を見るだけでコインが貯まります（公開準備中）",
+  "rewardUnlockSubscribe": "Premium（月額・年額）を見る",
+  "rewardUnlockBestValue": "最もお得",
+  "rewardUnlockBestExplain": "コインで全特典を揃えるより、お得なまとめ交換",
+  "rewardUnlockEarning": "Premium加入中もコインを貯められる予定です",
+  "rewardUnlockHour": "時間",
+  "rewardUnlockDay": "日",
+  "rewardUnlockWeek": "週間",
+  "rewardUnlockMonth": "か月",
+  "rewardUnlockEndCardEdit": "エンドカード編集・削除",
+  "rewardUnlockWatermark": "ウォーターマーク",
+  "rewardUnlockToneCurve": "トーンカーブ",
+  "rewardUnlockLevelAdjustment": "レベル補正",
+  "rewardUnlockUnlimitedDuration": "最大尺2時間",
+  "rewardUnlockCustomAutomation": "カスタムオートアクション",
+  "rewardUnlockCommunityPostQuota": "作品広場の投稿枠（1日1作品→3作品）",
+  "rewardUnlockProjectListAds": "プロジェクト一覧の広告なし",
+  "rewardUnlockCanvasAds": "キャンバスの広告なし",
+  "rewardUnlockTimelineAds": "タイムラインの広告なし",
+  "rewardUnlockProcessingAds": "処理中の広告なし",
+  "rewardUnlockAllAds": "すべての広告なし",
+  "rewardUnlockFullPremium": "全機能＋全広告なし",
+  "rewardUnlockChoose": "選択",
+  "sharedArchiveReceived": "受け取った",
+  "sharedArchiveCreated": "作成した",
+  "sharedArchiveShare": "共有する",
+  "sharedArchiveEmpty": "作成した共有ファイルはまだありません",
+  "coinAmount": "{count} コイン",
+  "@coinAmount": {
+    "description": "コインの枚数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionGenericBookmark": "投稿した作品がブックマーク数{count}件達成する",
+  "@creatorMissionGenericBookmark": {
+    "description": "ミッション：投稿した作品のブックマーク数の目標（作品名なし）",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionNamedBookmark": "{title}がブックマーク数{count}件達成する",
+  "@creatorMissionNamedBookmark": {
+    "description": "ミッション：作品名つきのブックマーク数の目標",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionNamedPublished": "{title}を投稿する",
+  "@creatorMissionNamedPublished": {
+    "description": "ミッション：作品名つきの投稿の目標",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "creatorMissionWorksGoal": "{works}作品でブックマーク数を各{count}件達成する",
+  "@creatorMissionWorksGoal": {
+    "description": "ミッション：複数の作品がそれぞれブックマーク数を達成する目標",
+    "placeholders": {
+      "works": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionWorksPublished": "{works}作品を投稿する",
+  "@creatorMissionWorksPublished": {
+    "description": "ミッション：作品を投稿する数の目標",
+    "placeholders": {
+      "works": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionActivityPublished": "{title}を投稿しました",
+  "@creatorMissionActivityPublished": {
+    "description": "作品広場の通知：作品を投稿した",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "creatorMissionActivityFollowers": "フォロワーが{count}人になりました",
+  "@creatorMissionActivityFollowers": {
+    "description": "作品広場の通知：フォロワー数を達成した",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionActivityWorkBookmarks": "{title}がブックマーク数{count}件を達成しました",
+  "@creatorMissionActivityWorkBookmarks": {
+    "description": "作品広場の通知：作品がブックマーク数を達成した",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionActivityWorksBookmarks": "あなたが投稿した{works}作品で各{count}件のブックマークを達成しました",
+  "@creatorMissionActivityWorksBookmarks": {
+    "description": "作品広場の通知：複数の作品がそれぞれブックマーク数を達成した",
+    "placeholders": {
+      "works": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionActivityWorksPublished": "あなたが{works}作品を投稿しました",
+  "@creatorMissionActivityWorksPublished": {
+    "description": "作品広場の通知：作品を投稿した数を達成した",
+    "placeholders": {
+      "works": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionDetailsWorkProgress": "現在のブックマーク数：{progress}件（必要：{goal}件）",
+  "@creatorMissionDetailsWorkProgress": {
+    "description": "ミッションの達成条件：作品のブックマーク数の進み具合",
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      },
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionDetailsWorksProgress": "条件を満たす作品：{progress}作品（必要：{goal}作品）",
+  "@creatorMissionDetailsWorksProgress": {
+    "description": "ミッションの達成条件：条件を満たす作品数の進み具合",
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      },
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionDetailsFollowersProgress": "現在のフォロワー：{progress}人（必要：{goal}人）",
+  "@creatorMissionDetailsFollowersProgress": {
+    "description": "ミッションの達成条件：フォロワー数の進み具合",
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      },
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionTime": "検証済みの制作時間 累計{hours}時間",
+  "@creatorMissionTime": {
+    "description": "ミッション：検証済みの制作時間の目標（時間）",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionFollowers": "フォロワー{count}人",
+  "@creatorMissionFollowers": {
+    "description": "ミッション：フォロワー数の目標",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionRank": "ブックマークランキング{rank}位以内",
+  "@creatorMissionRank": {
+    "description": "ミッション：ブックマークランキングの順位の目標",
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionLocalTime": "この端末の制作時間（参考）: {hours}時間",
+  "@creatorMissionLocalTime": {
+    "description": "ミッション：この端末で記録した制作時間（参考、時間）",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionCandidateMinutes": "サーバーに届いた制作時間の候補: {minutes}分（報酬審査前）",
+  "@creatorMissionCandidateMinutes": {
+    "description": "ミッション：サーバーに届いた制作時間の候補（分）",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionClaimAll": "まとめて受け取る",
+  "@creatorMissionClaimAll": {
+    "description": "ミッション：受け取れる報酬をまとめて受け取るボタン"
+  },
+  "creatorMissionClaimAllResult": "まとめて受取：{received}件完了{failed, plural, =0{} other{ / {failed}件は受取できませんでした}}",
+  "@creatorMissionClaimAllResult": {
+    "description": "ミッション：まとめて受け取った結果（受け取れた件数・受け取れなかった件数）",
+    "placeholders": {
+      "received": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionClaimAllLoadFailed": "受取状況を読み込めませんでした。再度お試しください。",
+  "@creatorMissionClaimAllLoadFailed": {
+    "description": "ミッション：まとめて受け取る前に受取状況を読み込めなかった"
+  },
+  "loginBonusDays": "累計{days}日",
+  "@loginBonusDays": {
+    "description": "累計ログインボーナス：累計ログイン日数",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "loginBonusDailyCoins": "毎日{coins}コイン",
+  "@loginBonusDailyCoins": {
+    "description": "累計ログインボーナス：毎日受け取れるコインの枚数",
+    "placeholders": {
+      "coins": {
+        "type": "int"
+      }
+    }
+  },
+  "loginBonusMilestone": "累計{days}日達成",
+  "@loginBonusMilestone": {
+    "description": "累計ログインボーナス：節目の日数",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "loginBonusActivityMilestone": "累計ログイン{days}日を達成しました",
+  "@loginBonusActivityMilestone": {
+    "description": "作品広場の通知：累計ログインの節目を達成した",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardUnlockRewardQuotaRemaining": "本日のコイン獲得：残り{count}回（UTC）",
+  "@rewardUnlockRewardQuotaRemaining": {
+    "description": "特典交換：今日あと何回リワード広告でコインを獲得できるか",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardUnlockReferencePrice": "参考価格（交換準備中）",
+  "@rewardUnlockReferencePrice": {
+    "description": "特典交換：まだ交換できない特典の参考価格の前に付ける言葉"
+  },
+  "missionCoinsReceived": "コインを受け取りました",
+  "@missionCoinsReceived": {
+    "description": "ミッション：コインを受け取れたときの知らせ"
+  },
+  "missionClaimFailed": "受取に失敗しました",
+  "@missionClaimFailed": {
+    "description": "ミッション：受け取りに失敗したときの知らせ"
+  },
+  "missionClaimUnconfirmed": "受取を確認できませんでした",
+  "@missionClaimUnconfirmed": {
+    "description": "ミッション：受け取れたか確認できなかったときの知らせ"
+  },
+  "missionClaimed": "受取済み",
+  "@missionClaimed": {
+    "description": "ミッション：受け取り済みの印"
+  },
+  "missionComingSoon": "準備中",
+  "@missionComingSoon": {
+    "description": "ミッション：達成しているが受け取りがまだ始まっていないときのボタン"
+  },
+  "missionClaim": "受け取る",
+  "@missionClaim": {
+    "description": "ミッション：報酬を受け取るボタン"
+  },
+  "missionNotYet": "未達成",
+  "@missionNotYet": {
+    "description": "ミッション：まだ達成していないときのボタン"
+  },
+  "missionPeriodDaily": "デイリー",
+  "@missionPeriodDaily": {
+    "description": "ミッション：毎日のミッションの見出し"
+  },
+  "missionPeriodWeekly": "ウィークリー",
+  "@missionPeriodWeekly": {
+    "description": "ミッション：毎週のミッションの見出し"
+  },
+  "missionPeriodMonthly": "マンスリー",
+  "@missionPeriodMonthly": {
+    "description": "ミッション：毎月のミッションの見出し"
+  },
+  "missionRefresh": "更新",
+  "@missionRefresh": {
+    "description": "ミッション：達成状況を読み込み直すボタンの説明"
+  },
+  "missionPayoutPending": "コインの受取は準備中です",
+  "@missionPayoutPending": {
+    "description": "ミッション：コインの受け取りがまだ始まっていないことの説明"
+  },
+  "missionDurationHours": "{count}時間",
+  "@missionDurationHours": {
+    "description": "ミッション：時間の長さ（時間単位）。数と単位をまとめた1つの文言",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "missionDurationMinutes": "{count}分",
+  "@missionDurationMinutes": {
+    "description": "ミッション：時間の長さ（分単位）。数と単位をまとめた1つの文言",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "plazaMissionsTitle": "作品広場の滞在ミッション",
+  "@plazaMissionsTitle": {
+    "description": "作品広場の滞在ミッションの見出し"
+  },
+  "plazaMissionsNote": "再生・操作は不要。作品広場を開いている時間を日本時間で集計します。",
+  "@plazaMissionsNote": {
+    "description": "作品広場の滞在ミッション：数え方の説明"
+  },
+  "plazaMissionsUnavailable": "作品広場ミッションを読み込めません",
+  "@plazaMissionsUnavailable": {
+    "description": "作品広場の滞在ミッション：読み込めなかったとき"
+  },
+  "plazaMissionGoal": "作品広場を合計{duration}開く",
+  "@plazaMissionGoal": {
+    "description": "作品広場の滞在ミッション：目標。durationは「5分」「1時間」などの長さ",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "recurringMissionsTitle": "ウィークリー・マンスリーミッション",
+  "@recurringMissionsTitle": {
+    "description": "ウィークリー・マンスリーのログインミッションの見出し"
+  },
+  "recurringMissionsNote": "日本時間で集計（週は月曜日開始）",
+  "@recurringMissionsNote": {
+    "description": "ウィークリー・マンスリーのログインミッション：数え方の説明"
+  },
+  "recurringMissionsUnavailable": "期間ミッションを取得できませんでした",
+  "@recurringMissionsUnavailable": {
+    "description": "ウィークリー・マンスリーのログインミッション：読み込めなかったとき"
+  },
+  "recurringMissionGoal": "期間内に{days}日ログイン",
+  "@recurringMissionGoal": {
+    "description": "ウィークリー・マンスリーのログインミッション：期間内にログインする日数の目標",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "recurringMissionProgress": "{days} / {goal}日",
+  "@recurringMissionProgress": {
+    "description": "ウィークリー・マンスリーのログインミッション：ログインした日数／目標の日数",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "missionCompletedTitle": "ミッション達成",
+  "@missionCompletedTitle": {
+    "description": "ミッション達成の知らせの見出し"
+  },
+  "missionCompletedBody": "ミッションページで報酬を受け取れます。",
+  "@missionCompletedBody": {
+    "description": "ミッション達成の知らせ：報酬の受け取り方"
+  },
+  "missionCompletedGoToMissions": "ミッションページへ",
+  "@missionCompletedGoToMissions": {
+    "description": "ミッション達成の知らせ：ミッションページへ移るボタン"
+  },
+  "missionLoginWeek": "週{days}日ログイン",
+  "@missionLoginWeek": {
+    "description": "ミッション達成の知らせ：今週ログインした日数の目標",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "missionLoginMonth": "月{days}日ログイン",
+  "@missionLoginMonth": {
+    "description": "ミッション達成の知らせ：今月ログインした日数の目標",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "missionLoginTotal": "累計{days}日ログイン",
+  "@missionLoginTotal": {
+    "description": "ミッション達成の知らせ：累計でログインした日数の目標",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "communityWorkMetadataCopyTooLong": "コピー先の上限（{max}文字）を超えるためコピーできません",
+  "@communityWorkMetadataCopyTooLong": {
+    "description": "作品の説明：コピー先の文字数の上限を超えるときの知らせ",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
   "rewardDurationHours": "{count, plural, other{{count}時間}}",
   "@rewardDurationHours": {
     "description": "特典交換：交換期間（時間単位、1〜24）。数と単位をまとめた1つの文言",

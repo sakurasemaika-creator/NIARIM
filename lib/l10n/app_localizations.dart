@@ -14699,6 +14699,1578 @@ abstract class AppLocalizations {
   /// **'のコピー'**
   String get canvasSizePresetDuplicateSuffix;
 
+  /// No description provided for @communityChannelRefreshButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube名・アイコンを更新（1日1回）'**
+  String get communityChannelRefreshButton;
+
+  /// No description provided for @communityChannelRefreshSuccess.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの名前・アイコンを更新しました'**
+  String get communityChannelRefreshSuccess;
+
+  /// No description provided for @communityChannelRefreshNoToken.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの認証が必要です'**
+  String get communityChannelRefreshNoToken;
+
+  /// No description provided for @communityChannelRefreshUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログインとサーバー接続が必要です'**
+  String get communityChannelRefreshUnavailable;
+
+  /// No description provided for @communityChannelRefreshFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube情報を更新できませんでした'**
+  String get communityChannelRefreshFailed;
+
+  /// No description provided for @communityPlazaMuteWork.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品を非表示にする'**
+  String get communityPlazaMuteWork;
+
+  /// No description provided for @communityPlazaUnmuteWork.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品の非表示を解除する'**
+  String get communityPlazaUnmuteWork;
+
+  /// No description provided for @communityPlazaMutedPlaceholder.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品は非表示対象です'**
+  String get communityPlazaMutedPlaceholder;
+
+  /// No description provided for @communityPlazaUnmuteQuestion.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品の非表示を常に解除しますか？'**
+  String get communityPlazaUnmuteQuestion;
+
+  /// No description provided for @communityPlazaUnmuteAlways.
+  ///
+  /// In ja, this message translates to:
+  /// **'常に解除する'**
+  String get communityPlazaUnmuteAlways;
+
+  /// No description provided for @communityPlazaUnmuteTemporary.
+  ///
+  /// In ja, this message translates to:
+  /// **'一時的に解除する'**
+  String get communityPlazaUnmuteTemporary;
+
+  /// No description provided for @communityPlazaMuteSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示設定'**
+  String get communityPlazaMuteSettings;
+
+  /// No description provided for @communityPlazaPartialHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'※OFFなら部分一致検索'**
+  String get communityPlazaPartialHint;
+
+  /// No description provided for @communityPlazaDeleteHistory.
+  ///
+  /// In ja, this message translates to:
+  /// **'この検索履歴を削除しますか？'**
+  String get communityPlazaDeleteHistory;
+
+  /// No description provided for @communityPlazaLocalData.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末保存データ'**
+  String get communityPlazaLocalData;
+
+  /// No description provided for @communityPlazaExactTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索語を完全一致で検索する'**
+  String get communityPlazaExactTitle;
+
+  /// No description provided for @communityPlazaUnavailablePlaceholder.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品は削除または非公開です'**
+  String get communityPlazaUnavailablePlaceholder;
+
+  /// No description provided for @communityPlazaSearchTab.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索'**
+  String get communityPlazaSearchTab;
+
+  /// No description provided for @communityPlazaMutePrivacyNotice.
+  ///
+  /// In ja, this message translates to:
+  /// **'※非表示にしても相手には伝わりません。'**
+  String get communityPlazaMutePrivacyNotice;
+
+  /// No description provided for @communityPostVisibilityHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeでの公開範囲'**
+  String get communityPostVisibilityHeading;
+
+  /// No description provided for @communityPostVisibilityUnlistedTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場にのみ投稿する'**
+  String get communityPostVisibilityUnlistedTitle;
+
+  /// No description provided for @communityPostVisibilityUnlistedHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'※YouTube上では限定公開になります。NIARIMのブックマークランキングには参加できます。'**
+  String get communityPostVisibilityUnlistedHelp;
+
+  /// No description provided for @communityPostVisibilityPublicTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeにも同時投稿する'**
+  String get communityPostVisibilityPublicTitle;
+
+  /// No description provided for @communityPostVisibilityPublicHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'※YouTube上では全体公開になります。NIARIMのブックマークランキングには参加できます。'**
+  String get communityPostVisibilityPublicHelp;
+
+  /// No description provided for @communityPostVisibilityUnlistedDisclosure.
+  ///
+  /// In ja, this message translates to:
+  /// **'※ 限定公開は非公開ではありません。動画のURLを知る人は、NIARIM外でも視聴・共有できます。'**
+  String get communityPostVisibilityUnlistedDisclosure;
+
+  /// No description provided for @communityRankingLayoutTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ランキングの表示形式'**
+  String get communityRankingLayoutTitle;
+
+  /// No description provided for @communityRankingLayoutHorizontal.
+  ///
+  /// In ja, this message translates to:
+  /// **'横長リスト'**
+  String get communityRankingLayoutHorizontal;
+
+  /// No description provided for @communityRankingLayoutLargeThumbnail.
+  ///
+  /// In ja, this message translates to:
+  /// **'大きいサムネイル'**
+  String get communityRankingLayoutLargeThumbnail;
+
+  /// No description provided for @communityRankingLayoutRankedPlace.
+  ///
+  /// In ja, this message translates to:
+  /// **'位'**
+  String get communityRankingLayoutRankedPlace;
+
+  /// No description provided for @communityRankingLayoutPeriodBookmarks.
+  ///
+  /// In ja, this message translates to:
+  /// **'期間内ブックマーク'**
+  String get communityRankingLayoutPeriodBookmarks;
+
+  /// No description provided for @communityWorkMetadataTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品タイトル'**
+  String get communityWorkMetadataTitle;
+
+  /// No description provided for @communityWorkMetadataDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の概要欄'**
+  String get communityWorkMetadataDescription;
+
+  /// No description provided for @communityWorkMetadataDescriptionHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の説明や制作について（任意）'**
+  String get communityWorkMetadataDescriptionHint;
+
+  /// No description provided for @communityWorkMetadataEdit.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイトル・概要欄を編集'**
+  String get communityWorkMetadataEdit;
+
+  /// No description provided for @communityWorkMetadataSaved.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイトルと概要欄を保存しました'**
+  String get communityWorkMetadataSaved;
+
+  /// No description provided for @communityWorkMetadataInfo.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM内の情報を編集します。YouTube上のタイトル・概要欄は変わりません。'**
+  String get communityWorkMetadataInfo;
+
+  /// No description provided for @communityWorkMetadataLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'概要欄を読み込めませんでした'**
+  String get communityWorkMetadataLoadFailed;
+
+  /// No description provided for @communityWorkMetadataYoutubeDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの説明欄（任意）'**
+  String get communityWorkMetadataYoutubeDescription;
+
+  /// No description provided for @communityWorkMetadataYoutubeDescriptionHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube動画の説明。NIARIMの概要欄とは別に管理されます'**
+  String get communityWorkMetadataYoutubeDescriptionHint;
+
+  /// No description provided for @communityWorkMetadataYoutubeDescriptionInvalid.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの説明欄は5,000バイト以内で入力し、< と > は使用しないでください'**
+  String get communityWorkMetadataYoutubeDescriptionInvalid;
+
+  /// No description provided for @communityWorkMetadataYoutubeTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeのタイトル'**
+  String get communityWorkMetadataYoutubeTitle;
+
+  /// No description provided for @communityWorkMetadataCopyTitleToYoutube.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeのタイトルにコピー'**
+  String get communityWorkMetadataCopyTitleToYoutube;
+
+  /// No description provided for @communityWorkMetadataCopyTitleToNiarim.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMのタイトルにコピー'**
+  String get communityWorkMetadataCopyTitleToNiarim;
+
+  /// No description provided for @communityWorkMetadataCopyDescriptionToYoutube.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの説明欄にコピー'**
+  String get communityWorkMetadataCopyDescriptionToYoutube;
+
+  /// No description provided for @communityWorkMetadataCopyDescriptionToNiarim.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMの概要欄にコピー'**
+  String get communityWorkMetadataCopyDescriptionToNiarim;
+
+  /// No description provided for @communityWorkMetadataYoutubeTitleRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeのタイトルを入力してください'**
+  String get communityWorkMetadataYoutubeTitleRequired;
+
+  /// No description provided for @communityWorkMetadataCopyConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'コピー先の内容を上書きしますか？'**
+  String get communityWorkMetadataCopyConfirmTitle;
+
+  /// No description provided for @communityWorkMetadataCopyConfirmMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'コピー先に現在入力されている内容はすべて上書きされます。コピーを実行しますか？'**
+  String get communityWorkMetadataCopyConfirmMessage;
+
+  /// No description provided for @communityWorkMetadataCopyCancel.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンセル'**
+  String get communityWorkMetadataCopyCancel;
+
+  /// No description provided for @communityWorkMetadataCopyConfirmAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'コピーする'**
+  String get communityWorkMetadataCopyConfirmAction;
+
+  /// No description provided for @communityYoutubeCommentHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeのコメントを見る'**
+  String get communityYoutubeCommentHeading;
+
+  /// No description provided for @communityYoutubeCommentLoadMore.
+  ///
+  /// In ja, this message translates to:
+  /// **'さらに20件表示'**
+  String get communityYoutubeCommentLoadMore;
+
+  /// No description provided for @communityYoutubeCommentNoComments.
+  ///
+  /// In ja, this message translates to:
+  /// **'コメントはまだありません'**
+  String get communityYoutubeCommentNoComments;
+
+  /// No description provided for @communityYoutubeCommentUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeコメントを取得できませんでした'**
+  String get communityYoutubeCommentUnavailable;
+
+  /// No description provided for @communityYoutubeCommentRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'再読み込み'**
+  String get communityYoutubeCommentRetry;
+
+  /// No description provided for @communityYoutubeCommentReplies.
+  ///
+  /// In ja, this message translates to:
+  /// **'返信'**
+  String get communityYoutubeCommentReplies;
+
+  /// No description provided for @communityYoutubeCommentAttribution.
+  ///
+  /// In ja, this message translates to:
+  /// **'コメントはYouTubeから取得しています。投稿・返信はできません。'**
+  String get communityYoutubeCommentAttribution;
+
+  /// No description provided for @creatorMissionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッション'**
+  String get creatorMissionTitle;
+
+  /// No description provided for @creatorMissionGenericPublished.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿した作品を公開する'**
+  String get creatorMissionGenericPublished;
+
+  /// No description provided for @creatorMissionDetailsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成条件'**
+  String get creatorMissionDetailsTitle;
+
+  /// No description provided for @creatorMissionDetailsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'目標を満たしてから受け取れます。受取済みのミッションは同じアカウント・同じ作品では再受取できません。'**
+  String get creatorMissionDetailsHint;
+
+  /// No description provided for @creatorMissionNotAchieved.
+  ///
+  /// In ja, this message translates to:
+  /// **'未達成'**
+  String get creatorMissionNotAchieved;
+
+  /// No description provided for @creatorMissionDetailsTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'内容を確認'**
+  String get creatorMissionDetailsTooltip;
+
+  /// No description provided for @creatorMissionReviewing.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成確認中'**
+  String get creatorMissionReviewing;
+
+  /// No description provided for @creatorMissionCoinReward.
+  ///
+  /// In ja, this message translates to:
+  /// **'コイン報酬'**
+  String get creatorMissionCoinReward;
+
+  /// No description provided for @creatorMissionClaim.
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取る'**
+  String get creatorMissionClaim;
+
+  /// No description provided for @creatorMissionActivityTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知'**
+  String get creatorMissionActivityTitle;
+
+  /// No description provided for @creatorMissionActivityObserved.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成を確認した日'**
+  String get creatorMissionActivityObserved;
+
+  /// No description provided for @creatorMissionActivityEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだミッション達成の通知はありません'**
+  String get creatorMissionActivityEmpty;
+
+  /// No description provided for @creatorMissionActivitySyncMore.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成通知をさらに確認'**
+  String get creatorMissionActivitySyncMore;
+
+  /// No description provided for @creatorMissionActivityHistoryMore.
+  ///
+  /// In ja, this message translates to:
+  /// **'過去の通知を表示'**
+  String get creatorMissionActivityHistoryMore;
+
+  /// No description provided for @creatorMissionActivityError.
+  ///
+  /// In ja, this message translates to:
+  /// **'通知を取得できませんでした'**
+  String get creatorMissionActivityError;
+
+  /// No description provided for @creatorMissionActivitySignIn.
+  ///
+  /// In ja, this message translates to:
+  /// **'サインインすると達成履歴を確認できます'**
+  String get creatorMissionActivitySignIn;
+
+  /// No description provided for @creatorMissionDetailsDraftCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'複数作品の達成数は暫定集計です。正式な受取時にサーバーが再確認します。'**
+  String get creatorMissionDetailsDraftCount;
+
+  /// No description provided for @creatorMissionDetailsPerWorkRule.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品ごとに1回受け取れます。別の作品で同じ条件を達成すると、別途受け取れます。'**
+  String get creatorMissionDetailsPerWorkRule;
+
+  /// No description provided for @creatorMissionDetailsAccountRule.
+  ///
+  /// In ja, this message translates to:
+  /// **'この条件の報酬はアカウントにつき1回限りです。'**
+  String get creatorMissionDetailsAccountRule;
+
+  /// No description provided for @creatorMissionDetailsTemplateRule.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品が条件を達成すると、上部に作品名入りの達成項目が追加されます。この見本の行は常に未達成のまま表示されます。'**
+  String get creatorMissionDetailsTemplateRule;
+
+  /// No description provided for @creatorMissionDetailsPending.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成を確認中です。48時間後にもう一度「受け取る」を押してください。'**
+  String get creatorMissionDetailsPending;
+
+  /// No description provided for @creatorMissionDetailsOffline.
+  ///
+  /// In ja, this message translates to:
+  /// **'この報酬は現在公開準備中のため、受取操作は無効です。'**
+  String get creatorMissionDetailsOffline;
+
+  /// No description provided for @creatorMissionDrawerAttention.
+  ///
+  /// In ja, this message translates to:
+  /// **'未受取の達成ミッションがあります'**
+  String get creatorMissionDrawerAttention;
+
+  /// No description provided for @creatorMissionAchieved.
+  ///
+  /// In ja, this message translates to:
+  /// **'条件達成'**
+  String get creatorMissionAchieved;
+
+  /// No description provided for @creatorMissionClaimReceived.
+  ///
+  /// In ja, this message translates to:
+  /// **'報酬を受け取りました'**
+  String get creatorMissionClaimReceived;
+
+  /// No description provided for @creatorMissionHoldStarted.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成確認中です。48時間後、もう一度「受け取る」を押してください。'**
+  String get creatorMissionHoldStarted;
+
+  /// No description provided for @creatorMissionClaimFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'受取処理に失敗しました。再読み込みしてお試しください。'**
+  String get creatorMissionClaimFailed;
+
+  /// No description provided for @creatorMissionWorkSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品ごとの達成ミッション'**
+  String get creatorMissionWorkSection;
+
+  /// No description provided for @creatorMissionWorkWarning.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成作品だけを表示します。同じ作品・同じミッションの報酬は1回限りです。'**
+  String get creatorMissionWorkWarning;
+
+  /// No description provided for @creatorMissionNoAchievements.
+  ///
+  /// In ja, this message translates to:
+  /// **'このページに達成した作品ミッションはありません。'**
+  String get creatorMissionNoAchievements;
+
+  /// No description provided for @creatorMissionLoadMore.
+  ///
+  /// In ja, this message translates to:
+  /// **'次の25作品を確認'**
+  String get creatorMissionLoadMore;
+
+  /// No description provided for @creatorMissionWorkListError.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品別ミッションを読み込めませんでした。'**
+  String get creatorMissionWorkListError;
+
+  /// No description provided for @creatorMissionSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'制作・作品広場の達成でコインを獲得'**
+  String get creatorMissionSubtitle;
+
+  /// No description provided for @creatorMissionPerWork.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品ごとに1回ずつ'**
+  String get creatorMissionPerWork;
+
+  /// No description provided for @creatorMissionClaimed.
+  ///
+  /// In ja, this message translates to:
+  /// **'獲得済み'**
+  String get creatorMissionClaimed;
+
+  /// No description provided for @creatorMissionPending.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成確認中'**
+  String get creatorMissionPending;
+
+  /// No description provided for @creatorMissionNotClaimed.
+  ///
+  /// In ja, this message translates to:
+  /// **'未獲得'**
+  String get creatorMissionNotClaimed;
+
+  /// No description provided for @creatorMissionUpcoming.
+  ///
+  /// In ja, this message translates to:
+  /// **'報酬の提供準備中'**
+  String get creatorMissionUpcoming;
+
+  /// No description provided for @creatorMissionLogin.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントでログインするとミッションを確認できます。'**
+  String get creatorMissionLogin;
+
+  /// No description provided for @creatorMissionOffline.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッションサーバーに接続されていません。'**
+  String get creatorMissionOffline;
+
+  /// No description provided for @creatorMissionRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'再読み込み'**
+  String get creatorMissionRetry;
+
+  /// No description provided for @creatorMissionLoading.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成状況を確認中…'**
+  String get creatorMissionLoading;
+
+  /// No description provided for @creatorMissionLoadError.
+  ///
+  /// In ja, this message translates to:
+  /// **'達成状況を取得できませんでした。'**
+  String get creatorMissionLoadError;
+
+  /// No description provided for @creatorMissionTimeWarning.
+  ///
+  /// In ja, this message translates to:
+  /// **'制作時間は表示用の記録です。コイン対象にはサーバー側の検証が必要です。'**
+  String get creatorMissionTimeWarning;
+
+  /// No description provided for @creatorMissionRankingWarning.
+  ///
+  /// In ja, this message translates to:
+  /// **'ランキング報酬はNIARIM独自のブックマーク順位が対象です。'**
+  String get creatorMissionRankingWarning;
+
+  /// No description provided for @creatorMissionBudget.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッション報酬はそれぞれ1回限りです。'**
+  String get creatorMissionBudget;
+
+  /// No description provided for @loginBonusTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'累計ログインボーナス'**
+  String get loginBonusTitle;
+
+  /// No description provided for @loginBonusDaily.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日のログイン報酬'**
+  String get loginBonusDaily;
+
+  /// No description provided for @loginBonusClaim.
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取る'**
+  String get loginBonusClaim;
+
+  /// No description provided for @loginBonusClaimed.
+  ///
+  /// In ja, this message translates to:
+  /// **'受取済み'**
+  String get loginBonusClaimed;
+
+  /// No description provided for @loginBonusNotYet.
+  ///
+  /// In ja, this message translates to:
+  /// **'未達成'**
+  String get loginBonusNotYet;
+
+  /// No description provided for @loginBonusMilestones.
+  ///
+  /// In ja, this message translates to:
+  /// **'節目の追加ボーナス'**
+  String get loginBonusMilestones;
+
+  /// No description provided for @loginBonusUnknown.
+  ///
+  /// In ja, this message translates to:
+  /// **'確認できません'**
+  String get loginBonusUnknown;
+
+  /// No description provided for @loginBonusUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'報酬の受取機能は現在準備中です'**
+  String get loginBonusUnavailable;
+
+  /// No description provided for @loginBonusUtc.
+  ///
+  /// In ja, this message translates to:
+  /// **'日付は日本時間の午前0時に切替。休んでも累計日数は減りません。'**
+  String get loginBonusUtc;
+
+  /// No description provided for @loginBonusRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'更新'**
+  String get loginBonusRetry;
+
+  /// No description provided for @loginBonusFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'受取を確認できませんでした'**
+  String get loginBonusFailed;
+
+  /// No description provided for @loginBonusSuccess.
+  ///
+  /// In ja, this message translates to:
+  /// **'コインの受取が確認できました'**
+  String get loginBonusSuccess;
+
+  /// No description provided for @loginBonusVisitMissing.
+  ///
+  /// In ja, this message translates to:
+  /// **'今日のログインを確認中です'**
+  String get loginBonusVisitMissing;
+
+  /// No description provided for @rewardNavigationExchange.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典交換'**
+  String get rewardNavigationExchange;
+
+  /// No description provided for @rewardNavigationHub.
+  ///
+  /// In ja, this message translates to:
+  /// **'コイン・特典'**
+  String get rewardNavigationHub;
+
+  /// No description provided for @rewardNavigationEarnTab.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告を見てコインGET'**
+  String get rewardNavigationEarnTab;
+
+  /// No description provided for @rewardNavigationMissions.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッション'**
+  String get rewardNavigationMissions;
+
+  /// No description provided for @rewardNavigationEarn.
+  ///
+  /// In ja, this message translates to:
+  /// **'無料でコインを貯める'**
+  String get rewardNavigationEarn;
+
+  /// No description provided for @rewardNavigationMembership.
+  ///
+  /// In ja, this message translates to:
+  /// **'契約状態'**
+  String get rewardNavigationMembership;
+
+  /// No description provided for @rewardNavigationMembershipDetail.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム会員について詳しく見る'**
+  String get rewardNavigationMembershipDetail;
+
+  /// No description provided for @rewardNavigationMembershipFree.
+  ///
+  /// In ja, this message translates to:
+  /// **'無料会員'**
+  String get rewardNavigationMembershipFree;
+
+  /// No description provided for @rewardNavigationMembershipMonthly.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム（月額）'**
+  String get rewardNavigationMembershipMonthly;
+
+  /// No description provided for @rewardNavigationMembershipYearly.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム（年額）'**
+  String get rewardNavigationMembershipYearly;
+
+  /// No description provided for @rewardNavigationMembershipPlay.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム会員'**
+  String get rewardNavigationMembershipPlay;
+
+  /// No description provided for @rewardNavigationMembershipCoin.
+  ///
+  /// In ja, this message translates to:
+  /// **'コインで解放中'**
+  String get rewardNavigationMembershipCoin;
+
+  /// No description provided for @rewardNavigationMembershipBenefit.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用中の特典'**
+  String get rewardNavigationMembershipBenefit;
+
+  /// No description provided for @rewardNavigationMembershipNoBenefit.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在利用中の交換特典はありません'**
+  String get rewardNavigationMembershipNoBenefit;
+
+  /// No description provided for @rewardNavigationMembershipUpsell.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアムでは機能制限を気にせず制作できます。内容や料金を確認してから登録できます。'**
+  String get rewardNavigationMembershipUpsell;
+
+  /// No description provided for @rewardNavigationMembershipExpires.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用期限'**
+  String get rewardNavigationMembershipExpires;
+
+  /// No description provided for @rewardNavigationMembershipUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典情報を確認できませんでした'**
+  String get rewardNavigationMembershipUnavailable;
+
+  /// No description provided for @rewardNavigationMembershipLogin.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典情報の確認にはログインが必要です'**
+  String get rewardNavigationMembershipLogin;
+
+  /// No description provided for @rewardNavigationPremiumCompare.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム会員について詳しく見る'**
+  String get rewardNavigationPremiumCompare;
+
+  /// No description provided for @rewardNavigationPremiumJoin.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム会員になる'**
+  String get rewardNavigationPremiumJoin;
+
+  /// No description provided for @rewardNavigationPremiumPlans.
+  ///
+  /// In ja, this message translates to:
+  /// **'月額・年額プランを選ぶ'**
+  String get rewardNavigationPremiumPlans;
+
+  /// No description provided for @rewardNavigationEarnDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告を見るとコインを獲得できます'**
+  String get rewardNavigationEarnDescription;
+
+  /// No description provided for @rewardNavigationEarnUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在リワード広告は利用できません'**
+  String get rewardNavigationEarnUnavailable;
+
+  /// No description provided for @rewardUnlockTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'報酬'**
+  String get rewardUnlockTitle;
+
+  /// No description provided for @rewardUnlockMissionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッション'**
+  String get rewardUnlockMissionTitle;
+
+  /// No description provided for @rewardUnlockMissionSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品の投稿やブックマーク達成でコインを獲得'**
+  String get rewardUnlockMissionSubtitle;
+
+  /// No description provided for @rewardUnlockLoading.
+  ///
+  /// In ja, this message translates to:
+  /// **'残高を確認中…'**
+  String get rewardUnlockLoading;
+
+  /// No description provided for @rewardUnlockPaused.
+  ///
+  /// In ja, this message translates to:
+  /// **'保管中・残り秒数'**
+  String get rewardUnlockPaused;
+
+  /// No description provided for @rewardUnlockActiveUntil.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用期限'**
+  String get rewardUnlockActiveUntil;
+
+  /// No description provided for @rewardUnlockSubscriptionBenefit.
+  ///
+  /// In ja, this message translates to:
+  /// **'コインは広告視聴で無料で貯められます。広告視聴の時間を省きたい方には月額・年額Premiumが便利です。'**
+  String get rewardUnlockSubscriptionBenefit;
+
+  /// No description provided for @rewardUnlockActive.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在利用中の特典'**
+  String get rewardUnlockActive;
+
+  /// No description provided for @rewardUnlockActivePremium.
+  ///
+  /// In ja, this message translates to:
+  /// **'Premium会員として全特典を利用中'**
+  String get rewardUnlockActivePremium;
+
+  /// No description provided for @rewardUnlockActiveCampaign.
+  ///
+  /// In ja, this message translates to:
+  /// **'リリース記念キャンペーン：Premium特典を開放中'**
+  String get rewardUnlockActiveCampaign;
+
+  /// No description provided for @rewardUnlockActiveUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'コイン特典の利用状況はサーバー連携後に表示します'**
+  String get rewardUnlockActiveUnavailable;
+
+  /// No description provided for @rewardUnlockDuration.
+  ///
+  /// In ja, this message translates to:
+  /// **'利用期間'**
+  String get rewardUnlockDuration;
+
+  /// No description provided for @rewardUnlockChooseDuration.
+  ///
+  /// In ja, this message translates to:
+  /// **'期間を選択'**
+  String get rewardUnlockChooseDuration;
+
+  /// No description provided for @rewardUnlockChooseBenefits.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典を選択'**
+  String get rewardUnlockChooseBenefits;
+
+  /// No description provided for @rewardUnlockPricePending.
+  ///
+  /// In ja, this message translates to:
+  /// **'必要コイン：未設定'**
+  String get rewardUnlockPricePending;
+
+  /// No description provided for @rewardUnlockNotReady.
+  ///
+  /// In ja, this message translates to:
+  /// **'準備中'**
+  String get rewardUnlockNotReady;
+
+  /// No description provided for @rewardUnlockTotal.
+  ///
+  /// In ja, this message translates to:
+  /// **'合計必要コイン'**
+  String get rewardUnlockTotal;
+
+  /// No description provided for @rewardUnlockUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'正式な交換価格は準備中です'**
+  String get rewardUnlockUnavailable;
+
+  /// No description provided for @rewardUnlockBalancePending.
+  ///
+  /// In ja, this message translates to:
+  /// **'コイン残高：サーバー連携準備中'**
+  String get rewardUnlockBalancePending;
+
+  /// No description provided for @rewardUnlockGoal.
+  ///
+  /// In ja, this message translates to:
+  /// **'このコイン枚数を目標にする'**
+  String get rewardUnlockGoal;
+
+  /// No description provided for @rewardUnlockRedeem.
+  ///
+  /// In ja, this message translates to:
+  /// **'コインと引き換え'**
+  String get rewardUnlockRedeem;
+
+  /// No description provided for @rewardUnlockWatchRewardedAd.
+  ///
+  /// In ja, this message translates to:
+  /// **'リワード広告を見てコインをためる'**
+  String get rewardUnlockWatchRewardedAd;
+
+  /// No description provided for @rewardUnlockRewardPending.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告の確認待ちです。Googleの検証後にコインが反映されます。'**
+  String get rewardUnlockRewardPending;
+
+  /// No description provided for @rewardUnlockRewardUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告を表示できませんでした。しばらくしてから再試行してください。'**
+  String get rewardUnlockRewardUnavailable;
+
+  /// No description provided for @rewardUnlockRewardRefresh.
+  ///
+  /// In ja, this message translates to:
+  /// **'残高を更新'**
+  String get rewardUnlockRewardRefresh;
+
+  /// No description provided for @rewardUnlockCoinHistory.
+  ///
+  /// In ja, this message translates to:
+  /// **'取引履歴'**
+  String get rewardUnlockCoinHistory;
+
+  /// No description provided for @rewardUnlockHistoryEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだ取引履歴はありません'**
+  String get rewardUnlockHistoryEmpty;
+
+  /// No description provided for @rewardUnlockHistoryError.
+  ///
+  /// In ja, this message translates to:
+  /// **'履歴を取得できませんでした'**
+  String get rewardUnlockHistoryError;
+
+  /// No description provided for @rewardUnlockHistoryMore.
+  ///
+  /// In ja, this message translates to:
+  /// **'さらに読み込む'**
+  String get rewardUnlockHistoryMore;
+
+  /// No description provided for @rewardUnlockHistoryAd.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告視聴'**
+  String get rewardUnlockHistoryAd;
+
+  /// No description provided for @rewardUnlockHistoryMission.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッション'**
+  String get rewardUnlockHistoryMission;
+
+  /// No description provided for @rewardUnlockHistoryRedemption.
+  ///
+  /// In ja, this message translates to:
+  /// **'コイン交換'**
+  String get rewardUnlockHistoryRedemption;
+
+  /// No description provided for @rewardUnlockHistoryOther.
+  ///
+  /// In ja, this message translates to:
+  /// **'その他の取引'**
+  String get rewardUnlockHistoryOther;
+
+  /// No description provided for @rewardUnlockRewardQuotaReached.
+  ///
+  /// In ja, this message translates to:
+  /// **'本日の獲得上限に達しました（UTC）'**
+  String get rewardUnlockRewardQuotaReached;
+
+  /// No description provided for @rewardUnlockRewardQuotaUncapped.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIM側の回数上限なし'**
+  String get rewardUnlockRewardQuotaUncapped;
+
+  /// No description provided for @rewardUnlockRewardQuotaCaution.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告の在庫・AdMobの表示制限により、再生できる回数は異なります。'**
+  String get rewardUnlockRewardQuotaCaution;
+
+  /// No description provided for @rewardUnlockRedemptionSuccess.
+  ///
+  /// In ja, this message translates to:
+  /// **'交換が完了しました。サーバーの利用期限を更新しました。'**
+  String get rewardUnlockRedemptionSuccess;
+
+  /// No description provided for @rewardUnlockRedemptionUncertain.
+  ///
+  /// In ja, this message translates to:
+  /// **'交換状況を確認できませんでした。再試行時は同じ取引を確認します。'**
+  String get rewardUnlockRedemptionUncertain;
+
+  /// No description provided for @rewardUnlockFreeOnly.
+  ///
+  /// In ja, this message translates to:
+  /// **'広告を見るだけでコインが貯まります（公開準備中）'**
+  String get rewardUnlockFreeOnly;
+
+  /// No description provided for @rewardUnlockSubscribe.
+  ///
+  /// In ja, this message translates to:
+  /// **'Premium（月額・年額）を見る'**
+  String get rewardUnlockSubscribe;
+
+  /// No description provided for @rewardUnlockBestValue.
+  ///
+  /// In ja, this message translates to:
+  /// **'最もお得'**
+  String get rewardUnlockBestValue;
+
+  /// No description provided for @rewardUnlockBestExplain.
+  ///
+  /// In ja, this message translates to:
+  /// **'コインで全特典を揃えるより、お得なまとめ交換'**
+  String get rewardUnlockBestExplain;
+
+  /// No description provided for @rewardUnlockEarning.
+  ///
+  /// In ja, this message translates to:
+  /// **'Premium加入中もコインを貯められる予定です'**
+  String get rewardUnlockEarning;
+
+  /// No description provided for @rewardUnlockHour.
+  ///
+  /// In ja, this message translates to:
+  /// **'時間'**
+  String get rewardUnlockHour;
+
+  /// No description provided for @rewardUnlockDay.
+  ///
+  /// In ja, this message translates to:
+  /// **'日'**
+  String get rewardUnlockDay;
+
+  /// No description provided for @rewardUnlockWeek.
+  ///
+  /// In ja, this message translates to:
+  /// **'週間'**
+  String get rewardUnlockWeek;
+
+  /// No description provided for @rewardUnlockMonth.
+  ///
+  /// In ja, this message translates to:
+  /// **'か月'**
+  String get rewardUnlockMonth;
+
+  /// No description provided for @rewardUnlockEndCardEdit.
+  ///
+  /// In ja, this message translates to:
+  /// **'エンドカード編集・削除'**
+  String get rewardUnlockEndCardEdit;
+
+  /// No description provided for @rewardUnlockWatermark.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウォーターマーク'**
+  String get rewardUnlockWatermark;
+
+  /// No description provided for @rewardUnlockToneCurve.
+  ///
+  /// In ja, this message translates to:
+  /// **'トーンカーブ'**
+  String get rewardUnlockToneCurve;
+
+  /// No description provided for @rewardUnlockLevelAdjustment.
+  ///
+  /// In ja, this message translates to:
+  /// **'レベル補正'**
+  String get rewardUnlockLevelAdjustment;
+
+  /// No description provided for @rewardUnlockUnlimitedDuration.
+  ///
+  /// In ja, this message translates to:
+  /// **'最大尺2時間'**
+  String get rewardUnlockUnlimitedDuration;
+
+  /// No description provided for @rewardUnlockCustomAutomation.
+  ///
+  /// In ja, this message translates to:
+  /// **'カスタムオートアクション'**
+  String get rewardUnlockCustomAutomation;
+
+  /// No description provided for @rewardUnlockCommunityPostQuota.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場の投稿枠（1日1作品→3作品）'**
+  String get rewardUnlockCommunityPostQuota;
+
+  /// No description provided for @rewardUnlockProjectListAds.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト一覧の広告なし'**
+  String get rewardUnlockProjectListAds;
+
+  /// No description provided for @rewardUnlockCanvasAds.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスの広告なし'**
+  String get rewardUnlockCanvasAds;
+
+  /// No description provided for @rewardUnlockTimelineAds.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインの広告なし'**
+  String get rewardUnlockTimelineAds;
+
+  /// No description provided for @rewardUnlockProcessingAds.
+  ///
+  /// In ja, this message translates to:
+  /// **'処理中の広告なし'**
+  String get rewardUnlockProcessingAds;
+
+  /// No description provided for @rewardUnlockAllAds.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべての広告なし'**
+  String get rewardUnlockAllAds;
+
+  /// No description provided for @rewardUnlockFullPremium.
+  ///
+  /// In ja, this message translates to:
+  /// **'全機能＋全広告なし'**
+  String get rewardUnlockFullPremium;
+
+  /// No description provided for @rewardUnlockChoose.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択'**
+  String get rewardUnlockChoose;
+
+  /// No description provided for @sharedArchiveReceived.
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取った'**
+  String get sharedArchiveReceived;
+
+  /// No description provided for @sharedArchiveCreated.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成した'**
+  String get sharedArchiveCreated;
+
+  /// No description provided for @sharedArchiveShare.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有する'**
+  String get sharedArchiveShare;
+
+  /// No description provided for @sharedArchiveEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成した共有ファイルはまだありません'**
+  String get sharedArchiveEmpty;
+
+  /// コインの枚数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count} コイン'**
+  String coinAmount(int count);
+
+  /// ミッション：投稿した作品のブックマーク数の目標（作品名なし）
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿した作品がブックマーク数{count}件達成する'**
+  String creatorMissionGenericBookmark(int count);
+
+  /// ミッション：作品名つきのブックマーク数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'{title}がブックマーク数{count}件達成する'**
+  String creatorMissionNamedBookmark(String title, int count);
+
+  /// ミッション：作品名つきの投稿の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'{title}を投稿する'**
+  String creatorMissionNamedPublished(String title);
+
+  /// ミッション：複数の作品がそれぞれブックマーク数を達成する目標
+  ///
+  /// In ja, this message translates to:
+  /// **'{works}作品でブックマーク数を各{count}件達成する'**
+  String creatorMissionWorksGoal(int works, int count);
+
+  /// ミッション：作品を投稿する数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'{works}作品を投稿する'**
+  String creatorMissionWorksPublished(int works);
+
+  /// 作品広場の通知：作品を投稿した
+  ///
+  /// In ja, this message translates to:
+  /// **'{title}を投稿しました'**
+  String creatorMissionActivityPublished(String title);
+
+  /// 作品広場の通知：フォロワー数を達成した
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワーが{count}人になりました'**
+  String creatorMissionActivityFollowers(int count);
+
+  /// 作品広場の通知：作品がブックマーク数を達成した
+  ///
+  /// In ja, this message translates to:
+  /// **'{title}がブックマーク数{count}件を達成しました'**
+  String creatorMissionActivityWorkBookmarks(String title, int count);
+
+  /// 作品広場の通知：複数の作品がそれぞれブックマーク数を達成した
+  ///
+  /// In ja, this message translates to:
+  /// **'あなたが投稿した{works}作品で各{count}件のブックマークを達成しました'**
+  String creatorMissionActivityWorksBookmarks(int works, int count);
+
+  /// 作品広場の通知：作品を投稿した数を達成した
+  ///
+  /// In ja, this message translates to:
+  /// **'あなたが{works}作品を投稿しました'**
+  String creatorMissionActivityWorksPublished(int works);
+
+  /// ミッションの達成条件：作品のブックマーク数の進み具合
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のブックマーク数：{progress}件（必要：{goal}件）'**
+  String creatorMissionDetailsWorkProgress(int progress, int goal);
+
+  /// ミッションの達成条件：条件を満たす作品数の進み具合
+  ///
+  /// In ja, this message translates to:
+  /// **'条件を満たす作品：{progress}作品（必要：{goal}作品）'**
+  String creatorMissionDetailsWorksProgress(int progress, int goal);
+
+  /// ミッションの達成条件：フォロワー数の進み具合
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のフォロワー：{progress}人（必要：{goal}人）'**
+  String creatorMissionDetailsFollowersProgress(int progress, int goal);
+
+  /// ミッション：検証済みの制作時間の目標（時間）
+  ///
+  /// In ja, this message translates to:
+  /// **'検証済みの制作時間 累計{hours}時間'**
+  String creatorMissionTime(int hours);
+
+  /// ミッション：フォロワー数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワー{count}人'**
+  String creatorMissionFollowers(int count);
+
+  /// ミッション：ブックマークランキングの順位の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークランキング{rank}位以内'**
+  String creatorMissionRank(int rank);
+
+  /// ミッション：この端末で記録した制作時間（参考、時間）
+  ///
+  /// In ja, this message translates to:
+  /// **'この端末の制作時間（参考）: {hours}時間'**
+  String creatorMissionLocalTime(int hours);
+
+  /// ミッション：サーバーに届いた制作時間の候補（分）
+  ///
+  /// In ja, this message translates to:
+  /// **'サーバーに届いた制作時間の候補: {minutes}分（報酬審査前）'**
+  String creatorMissionCandidateMinutes(int minutes);
+
+  /// ミッション：受け取れる報酬をまとめて受け取るボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'まとめて受け取る'**
+  String get creatorMissionClaimAll;
+
+  /// ミッション：まとめて受け取った結果（受け取れた件数・受け取れなかった件数）
+  ///
+  /// In ja, this message translates to:
+  /// **'まとめて受取：{received}件完了{failed, plural, =0{} other{ / {failed}件は受取できませんでした}}'**
+  String creatorMissionClaimAllResult(int received, int failed);
+
+  /// ミッション：まとめて受け取る前に受取状況を読み込めなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'受取状況を読み込めませんでした。再度お試しください。'**
+  String get creatorMissionClaimAllLoadFailed;
+
+  /// 累計ログインボーナス：累計ログイン日数
+  ///
+  /// In ja, this message translates to:
+  /// **'累計{days}日'**
+  String loginBonusDays(int days);
+
+  /// 累計ログインボーナス：毎日受け取れるコインの枚数
+  ///
+  /// In ja, this message translates to:
+  /// **'毎日{coins}コイン'**
+  String loginBonusDailyCoins(int coins);
+
+  /// 累計ログインボーナス：節目の日数
+  ///
+  /// In ja, this message translates to:
+  /// **'累計{days}日達成'**
+  String loginBonusMilestone(int days);
+
+  /// 作品広場の通知：累計ログインの節目を達成した
+  ///
+  /// In ja, this message translates to:
+  /// **'累計ログイン{days}日を達成しました'**
+  String loginBonusActivityMilestone(int days);
+
+  /// 特典交換：今日あと何回リワード広告でコインを獲得できるか
+  ///
+  /// In ja, this message translates to:
+  /// **'本日のコイン獲得：残り{count}回（UTC）'**
+  String rewardUnlockRewardQuotaRemaining(int count);
+
+  /// 特典交換：まだ交換できない特典の参考価格の前に付ける言葉
+  ///
+  /// In ja, this message translates to:
+  /// **'参考価格（交換準備中）'**
+  String get rewardUnlockReferencePrice;
+
+  /// ミッション：コインを受け取れたときの知らせ
+  ///
+  /// In ja, this message translates to:
+  /// **'コインを受け取りました'**
+  String get missionCoinsReceived;
+
+  /// ミッション：受け取りに失敗したときの知らせ
+  ///
+  /// In ja, this message translates to:
+  /// **'受取に失敗しました'**
+  String get missionClaimFailed;
+
+  /// ミッション：受け取れたか確認できなかったときの知らせ
+  ///
+  /// In ja, this message translates to:
+  /// **'受取を確認できませんでした'**
+  String get missionClaimUnconfirmed;
+
+  /// ミッション：受け取り済みの印
+  ///
+  /// In ja, this message translates to:
+  /// **'受取済み'**
+  String get missionClaimed;
+
+  /// ミッション：達成しているが受け取りがまだ始まっていないときのボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'準備中'**
+  String get missionComingSoon;
+
+  /// ミッション：報酬を受け取るボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取る'**
+  String get missionClaim;
+
+  /// ミッション：まだ達成していないときのボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'未達成'**
+  String get missionNotYet;
+
+  /// ミッション：毎日のミッションの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'デイリー'**
+  String get missionPeriodDaily;
+
+  /// ミッション：毎週のミッションの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'ウィークリー'**
+  String get missionPeriodWeekly;
+
+  /// ミッション：毎月のミッションの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'マンスリー'**
+  String get missionPeriodMonthly;
+
+  /// ミッション：達成状況を読み込み直すボタンの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'更新'**
+  String get missionRefresh;
+
+  /// ミッション：コインの受け取りがまだ始まっていないことの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'コインの受取は準備中です'**
+  String get missionPayoutPending;
+
+  /// ミッション：時間の長さ（時間単位）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}時間'**
+  String missionDurationHours(int count);
+
+  /// ミッション：時間の長さ（分単位）。数と単位をまとめた1つの文言
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}分'**
+  String missionDurationMinutes(int count);
+
+  /// 作品広場の滞在ミッションの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場の滞在ミッション'**
+  String get plazaMissionsTitle;
+
+  /// 作品広場の滞在ミッション：数え方の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'再生・操作は不要。作品広場を開いている時間を日本時間で集計します。'**
+  String get plazaMissionsNote;
+
+  /// 作品広場の滞在ミッション：読み込めなかったとき
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場ミッションを読み込めません'**
+  String get plazaMissionsUnavailable;
+
+  /// 作品広場の滞在ミッション：目標。durationは「5分」「1時間」などの長さ
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場を合計{duration}開く'**
+  String plazaMissionGoal(String duration);
+
+  /// ウィークリー・マンスリーのログインミッションの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'ウィークリー・マンスリーミッション'**
+  String get recurringMissionsTitle;
+
+  /// ウィークリー・マンスリーのログインミッション：数え方の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'日本時間で集計（週は月曜日開始）'**
+  String get recurringMissionsNote;
+
+  /// ウィークリー・マンスリーのログインミッション：読み込めなかったとき
+  ///
+  /// In ja, this message translates to:
+  /// **'期間ミッションを取得できませんでした'**
+  String get recurringMissionsUnavailable;
+
+  /// ウィークリー・マンスリーのログインミッション：期間内にログインする日数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'期間内に{days}日ログイン'**
+  String recurringMissionGoal(int days);
+
+  /// ウィークリー・マンスリーのログインミッション：ログインした日数／目標の日数
+  ///
+  /// In ja, this message translates to:
+  /// **'{days} / {goal}日'**
+  String recurringMissionProgress(int days, int goal);
+
+  /// ミッション達成の知らせの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッション達成'**
+  String get missionCompletedTitle;
+
+  /// ミッション達成の知らせ：報酬の受け取り方
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッションページで報酬を受け取れます。'**
+  String get missionCompletedBody;
+
+  /// ミッション達成の知らせ：ミッションページへ移るボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'ミッションページへ'**
+  String get missionCompletedGoToMissions;
+
+  /// ミッション達成の知らせ：今週ログインした日数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'週{days}日ログイン'**
+  String missionLoginWeek(int days);
+
+  /// ミッション達成の知らせ：今月ログインした日数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'月{days}日ログイン'**
+  String missionLoginMonth(int days);
+
+  /// ミッション達成の知らせ：累計でログインした日数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'累計{days}日ログイン'**
+  String missionLoginTotal(int days);
+
+  /// 作品の説明：コピー先の文字数の上限を超えるときの知らせ
+  ///
+  /// In ja, this message translates to:
+  /// **'コピー先の上限（{max}文字）を超えるためコピーできません'**
+  String communityWorkMetadataCopyTooLong(int max);
+
   /// 特典交換：交換期間（時間単位、1〜24）。数と単位をまとめた1つの文言
   ///
   /// In ja, this message translates to:

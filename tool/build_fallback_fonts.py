@@ -25,8 +25,8 @@
     https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskr/NotoSansKR%5Bwght%5D.ttf
     https://raw.githubusercontent.com/google/fonts/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf
 
-UIの文言（lib/l10n/*.arb）を増やしたあとは、このスクリプトを再実行して
-フォントを作り直すこと。作り直しを忘れると、増やした文字だけシステム
+UIの文言（lib/l10n/*.arb、およびlib/l10nに手で書いたDartファイルの
+文字列）を増やしたあとは、このスクリプトを再実行してフォントを作り直すこと。作り直しを忘れると、増やした文字だけシステム
 フォントで表示されて見た目が揃わなくなる。
 test/font_coverage_test.dart がその取りこぼしを検出する。
 """
@@ -53,9 +53,12 @@ TARGETS = [
 def required_chars() -> set:
     """アプリのUIに出る文字を集める。
 
-    ARBの値（＝画面に出る文言）に加え、ASCII可読文字と一般的な約物を常に
-    含める。ユーザーが入力した文字（作品名など）は対象外で、従来どおり
-    システムフォントが受け持つ（今と同じ挙動のため後退は無い）。
+    ARBの値（＝画面に出る文言）と、lib/l10nに手で書いたDartファイル
+    （生成物のapp_localizations*.dartは除く）の文字列リテラルに加え、
+    ASCII可読文字と一般的な約物を常に含める。ユーザーが入力した文字
+    （作品名など）は対象外で、従来どおりシステムフォントが受け持つ
+    （今と同じ挙動のため後退は無い）。手書きのDartファイルの読み方は
+    test/font_coverage_test.dart の handWrittenL10nCharsOf と同じ。
     """
     chars = set()
     for path in sorted(L10N.glob("app_*.arb")):
@@ -65,6 +68,19 @@ def required_chars() -> set:
                 continue
             # {count}のようなプレースホルダーは実文字ではないので除く
             chars.update(re.sub(r"\{[^}]*\}", "", value))
+    for path in sorted(L10N.glob("*.dart")):
+        if path.name.startswith("app_localizations"):
+            continue
+        code = "\n".join(
+            line
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if not line.lstrip().startswith("//")
+        )
+        for literal in re.findall(
+            r"'(?:[^'\\\n]|\\.)*'|\"(?:[^\"\\\n]|\\.)*\"", code
+        ):
+            text = re.sub(r"\{[^}]*\}", "", literal[1:-1])
+            chars.update(re.sub(r"\\.", "", text))
     chars.update(chr(c) for c in range(0x20, 0x7F))
     chars.update("、。「」『』（）〜・…—‐±×÷％＋－／：；！？　")
     return {c for c in chars if c.strip()}

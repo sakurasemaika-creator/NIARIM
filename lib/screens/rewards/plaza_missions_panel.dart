@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
+import '../../utils/app_locale.dart';
 
 /// Authenticated, read-only view until the server explicitly enables payouts.
 /// A permanently open Plaza page counts: video playback is not a requirement.
@@ -20,6 +22,8 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
   CommunityApi? _api;
   Future<Map<String, dynamic>>? _state;
   final Set<String> _claiming = {};
+
+  AppLocalizations get _l10n => appLocalizationsOf(context);
 
   String _t(String ja, String en) =>
       Localizations.localeOf(context).languageCode == 'ja' ? ja : en;
@@ -58,17 +62,23 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
       final result = await api.claimPlazaMission(id);
       if (!mounted ||
           context.read<GoogleAuthService>().account?.id != owner ||
-          !identical(_api, api)) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(result['claimed'] == true
-            ? _t('コインを受け取りました', 'Coins received')
-            : _t('受取に失敗しました', 'Could not claim')),
-      ));
+          !identical(_api, api)) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result['claimed'] == true
+                ? _l10n.missionCoinsReceived
+                : _l10n.missionClaimFailed,
+          ),
+        ),
+      );
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(_t('受取に失敗しました', 'Could not claim')),
-        ));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.missionClaimFailed)));
       }
     } finally {
       if (mounted && identical(_api, api) && _owner == owner) {
@@ -81,13 +91,13 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
   }
 
   String _period(String value) => switch (value) {
-    'day' => _t('デイリー', 'Daily'),
-    'week' => _t('ウィークリー', 'Weekly'),
-    _ => _t('マンスリー', 'Monthly'),
+    'day' => _l10n.missionPeriodDaily,
+    'week' => _l10n.missionPeriodWeekly,
+    _ => _l10n.missionPeriodMonthly,
   };
   String _goal(int seconds) => seconds >= 3600
-      ? _t('${seconds ~/ 3600}時間', '${seconds ~/ 3600} hours')
-      : _t('${seconds ~/ 60}分', '${seconds ~/ 60} minutes');
+      ? _l10n.missionDurationHours(seconds ~/ 3600)
+      : _l10n.missionDurationMinutes(seconds ~/ 60);
 
   void _showMissionDetails(Map row, bool enabled) {
     final id = row['id'] as String? ?? '';
@@ -97,29 +107,40 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
     final coins = (row['coins'] as num?)?.toInt() ?? 0;
     final claimed = row['claimed'] == true;
     final eligible = row['eligible'] == true;
-    final label = _t('作品広場を合計${_goal(goal)}開く',
-        'Keep Works Plaza open for ${_goal(goal)}');
+    final label = _t(
+      '作品広場を合計${_goal(goal)}開く',
+      'Keep Works Plaza open for ${_goal(goal)}',
+    );
     final periodName = _period(period);
     final details = [
       label,
-      _t('【達成条件】$periodNameの期間中、NIARIMの作品広場を開いている時間の合計が${_goal(goal)}以上になると達成です。動画を再生したり、画面を操作したりする必要はありません。',
-          'CONDITIONS: Keep NIARIM Works Plaza open for at least ${_goal(goal)} in the $periodName period. Video playback and interaction are not required.'),
-      _t('計測はサーバー時刻に基づく定期通信で行います。端末が申告した秒数は使用しません。通信が長く途切れた時間やページを閉じていた時間は加算されません。',
-          'Time is measured by authenticated server-time heartbeats, not client-reported seconds. Long connection gaps and time with the page closed do not count.'),
-      _t('期間は日本時間で区切り、1日は午前0時に、週は月曜日に、月は1日に切り替わります。',
-          'Periods use Japan time (JST): days reset at midnight, weeks start on Monday and months start on the first.'),
-      _t('現在の閲覧時間：${_goal(progress)} / ${_goal(goal)}',
-          'Current open time: ${_goal(progress)} / ${_goal(goal)}'),
-      _t('【受取】条件を満たすと$coinsコインを受け取れます。各ミッションの受取は同じ期間中に1回限りです。次の期間には再度挑戦できます。前の期間の報酬は期間終了後に受け取れません。',
-          'CLAIM: Earn $coins coins for this milestone. Each milestone pays once per period. You may earn it again in a new period, but cannot claim an expired period.'),
+      _t(
+        '【達成条件】$periodNameの期間中、NIARIMの作品広場を開いている時間の合計が${_goal(goal)}以上になると達成です。動画を再生したり、画面を操作したりする必要はありません。',
+        'CONDITIONS: Keep NIARIM Works Plaza open for at least ${_goal(goal)} in the $periodName period. Video playback and interaction are not required.',
+      ),
+      _t(
+        '計測はサーバー時刻に基づく定期通信で行います。端末が申告した秒数は使用しません。通信が長く途切れた時間やページを閉じていた時間は加算されません。',
+        'Time is measured by authenticated server-time heartbeats, not client-reported seconds. Long connection gaps and time with the page closed do not count.',
+      ),
+      _t(
+        '期間は日本時間で区切り、1日は午前0時に、週は月曜日に、月は1日に切り替わります。',
+        'Periods use Japan time (JST): days reset at midnight, weeks start on Monday and months start on the first.',
+      ),
+      _t(
+        '現在の閲覧時間：${_goal(progress)} / ${_goal(goal)}',
+        'Current open time: ${_goal(progress)} / ${_goal(goal)}',
+      ),
+      _t(
+        '【受取】条件を満たすと$coinsコインを受け取れます。各ミッションの受取は同じ期間中に1回限りです。次の期間には再度挑戦できます。前の期間の報酬は期間終了後に受け取れません。',
+        'CLAIM: Earn $coins coins for this milestone. Each milestone pays once per period. You may earn it again in a new period, but cannot claim an expired period.',
+      ),
       claimed
           ? _t('この期間の報酬は受取済みです。', 'Already claimed for this period.')
           : eligible
-              ? _t('条件達成済みです。', 'Goal completed.')
-              : _t('まだ達成条件を満たしていません。',
-                  'Goal not yet completed.'),
-      if (!enabled) _t('コインの受取機能は現在準備中です。',
-          'Coin payouts are currently unavailable.'),
+          ? _t('条件達成済みです。', 'Goal completed.')
+          : _t('まだ達成条件を満たしていません。', 'Goal not yet completed.'),
+      if (!enabled)
+        _t('コインの受取機能は現在準備中です。', 'Coin payouts are currently unavailable.'),
     ].join('\n\n');
     showDialog<void>(
       context: context,
@@ -130,8 +151,9 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(MaterialLocalizations.of(dialogContext)
-                .closeButtonTooltip),
+            child: Text(
+              MaterialLocalizations.of(dialogContext).closeButtonTooltip,
+            ),
           ),
         ],
       ),
@@ -158,19 +180,24 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
               : Icons.help_outline,
         ),
       ),
-      title: Text(_t('作品広場を合計${_goal(goal)}開く',
-          'Keep Works Plaza open for ${_goal(goal)}')),
-      subtitle: Text(_t('${_goal(progress)} / ${_goal(goal)} · $coins コイン',
-          '${_goal(progress)} / ${_goal(goal)} · $coins coins')),
+      title: Text(_l10n.plazaMissionGoal(_goal(goal))),
+      subtitle: Text(
+        '${_goal(progress)} / ${_goal(goal)} · ${_l10n.coinAmount(coins)}',
+      ),
       trailing: claimed
-          ? Text(_t('受取済み', 'Claimed'))
+          ? Text(_l10n.missionClaimed)
           : OutlinedButton(
               key: ValueKey('claimPlaza_$id'),
               onPressed: enabled && eligible && !_claiming.contains(id)
-                  ? () => _claim(id) : null,
-              child: Text(!enabled && eligible ? _t('準備中', 'Coming soon')
-                  : eligible ? _t('受け取る', 'Claim')
-                  : _t('未達成', 'Not yet')),
+                  ? () => _claim(id)
+                  : null,
+              child: Text(
+                !enabled && eligible
+                    ? _l10n.missionComingSoon
+                    : eligible
+                    ? _l10n.missionClaim
+                    : _l10n.missionNotYet,
+              ),
             ),
     );
   }
@@ -187,49 +214,60 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               if (snapshot.hasError) {
-                return Row(children: [
-                  Expanded(child: Text(_t('作品広場ミッションを読み込めません',
-                      'Plaza missions unavailable'))),
-                  IconButton(
-                    onPressed: () => setState(
-                      () => _state = _api!.myPlazaMissions(),
-                    ), icon: const Icon(Icons.refresh),
-                  ),
-                ]);
+                return Row(
+                  children: [
+                    Expanded(child: Text(_l10n.plazaMissionsUnavailable)),
+                    IconButton(
+                      onPressed: () =>
+                          setState(() => _state = _api!.myPlazaMissions()),
+                      icon: const Icon(Icons.refresh),
+                    ),
+                  ],
+                );
               }
               return const LinearProgressIndicator();
             }
             final data = snapshot.data!;
             final missions = (data['missions'] as List? ?? const [])
-                .whereType<Map>().toList();
+                .whereType<Map>()
+                .toList();
             final enabled = data['enabled'] == true;
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(children: [
-                  const Icon(Icons.timer_outlined),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(_t('作品広場の滞在ミッション',
-                      'Works Plaza open-time missions'),
-                      style: Theme.of(context).textTheme.titleMedium)),
-                  IconButton(
-                    tooltip: _t('更新', 'Refresh'),
-                    onPressed: () => setState(
-                      () => _state = _api!.myPlazaMissions(),
+                Row(
+                  children: [
+                    const Icon(Icons.timer_outlined),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _l10n.plazaMissionsTitle,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
-                    icon: const Icon(Icons.refresh),
-                  ),
-                ]),
-                Text(_t('再生・操作は不要。作品広場を開いている時間を日本時間で集計します。',
-                    'No playback or interaction required. Time is counted in JST.'),
-                    style: Theme.of(context).textTheme.bodySmall),
+                    IconButton(
+                      tooltip: _l10n.missionRefresh,
+                      onPressed: () =>
+                          setState(() => _state = _api!.myPlazaMissions()),
+                      icon: const Icon(Icons.refresh),
+                    ),
+                  ],
+                ),
+                Text(
+                  _l10n.plazaMissionsNote,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 if (!enabled)
-                  Text(_t('コインの受取は準備中です', 'Coin payouts are not yet enabled'),
-                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    _l10n.missionPayoutPending,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 for (final period in ['day', 'week', 'month']) ...[
                   const SizedBox(height: 8),
-                  Text(_period(period),
-                      style: Theme.of(context).textTheme.titleSmall),
+                  Text(
+                    _period(period),
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                   for (final m in missions.where((x) => x['period'] == period))
                     _row(m, enabled),
                 ],

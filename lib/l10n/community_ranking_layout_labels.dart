@@ -1,44 +1,22 @@
 import 'package:flutter/widgets.dart';
 
+import '../utils/app_locale.dart';
+import 'app_localizations.dart';
+
 /// Ranking-only display modes. All labels are localized; no global grid sizes
 /// or other community tabs are changed by the ranking layout selector.
+/// 文言はARB（app_*.arb）にある（以前はこのファイルに7言語の表を手で
+/// 持っていて、同梱フォントの検査を通らず字の抜けが出ていた）。
 class CommunityRankingLayoutLabels {
-  const CommunityRankingLayoutLabels._(this._values);
-  final List<String> _values;
+  const CommunityRankingLayoutLabels._(this._l10n);
+  final AppLocalizations _l10n;
 
-  static CommunityRankingLayoutLabels of(BuildContext context) {
-    final locale = Localizations.localeOf(context);
-    final code = locale.languageCode == 'zh' && locale.scriptCode == 'Hant'
-        ? 'zh_Hant'
-        : locale.languageCode;
-    return CommunityRankingLayoutLabels._(_all[code] ?? _all['en']!);
-  }
+  static CommunityRankingLayoutLabels of(BuildContext context) =>
+      CommunityRankingLayoutLabels._(appLocalizationsOf(context));
 
-  String get title => _values[0];
-  String get horizontal => _values[1];
-  String get largeThumbnail => _values[2];
-  String get rankedPlace => _values[3];
-  String get periodBookmarks => _values[4];
+  String get title => _l10n.communityRankingLayoutTitle;
+  String get horizontal => _l10n.communityRankingLayoutHorizontal;
+  String get largeThumbnail => _l10n.communityRankingLayoutLargeThumbnail;
+  String get rankedPlace => _l10n.communityRankingLayoutRankedPlace;
+  String get periodBookmarks => _l10n.communityRankingLayoutPeriodBookmarks;
 }
-
-const _all = <String, List<String>>{
-  'ja': ['ランキングの表示形式', '横長リスト', '大きいサムネイル', '位', '期間内ブックマーク'],
-  'en': ['Ranking layout', 'Compact rows', 'Large thumbnails', 'Rank', 'Bookmarks this period'],
-  'es': [
-    'Vista de clasificación',
-    'Filas compactas',
-    'Miniaturas grandes',
-    'Puesto',
-    'Marcadores del período',
-  ],
-  'fr': [
-    'Affichage du classement',
-    'Lignes compactes',
-    'Grandes miniatures',
-    'Rang',
-    'Favoris de la période',
-  ],
-  'ko': ['랭킹 표시 방식', '가로 목록', '큰 썸네일', '순위', '기간 내 북마크'],
-  'zh': ['排行榜布局', '横向列表', '大缩略图', '排名', '本期收藏'],
-  'zh_Hant': ['排行榜版面', '橫向清單', '大縮圖', '排名', '本期書籤'],
-};

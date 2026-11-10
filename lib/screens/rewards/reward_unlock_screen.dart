@@ -256,13 +256,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final projectedEnd = _redeemablePeriod.previewExpiry(from);
     final overlapMessage = activeCoin != null && activeCoin.isAfter(now)
         ? '現在プレミアム特典を利用中です。交換すると有効期限が'
-          '${_formatBenefitExpiry(projectedEnd)}まで延長される見込みです。'
-          'よろしいですか？'
+              '${_formatBenefitExpiry(projectedEnd)}まで延長される見込みです。'
+              'よろしいですか？'
         : '交換後の有効期限（参考）：${_formatBenefitExpiry(projectedEnd)}';
-    final period = coinUnlockDurationLabel(
-      AppLocalizations.of(context)!,
-      _redeemablePeriod,
-    );
+    final l10n = AppLocalizations.of(context)!;
+    final period = coinUnlockDurationLabel(l10n, _redeemablePeriod);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -270,7 +268,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         // （既定だと本文が先に潰れ、題とボタンだけになった）。
         scrollable: true,
         title: Text(t['redeem']),
-        content: Text('${t['fullPremium']} · $period · $price ${t['coins']}\n\n$overlapMessage'),
+        content: Text(
+          '${t['fullPremium']} · $period · ${l10n.coinAmount(price)}'
+          '\n\n$overlapMessage',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -338,9 +339,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     CoinUnlockTarget.timelineAds,
     CoinUnlockTarget.processingAds,
   ];
-  static const _bundles = <CoinUnlockTarget>[
-    CoinUnlockTarget.allAds,
-  ];
+  static const _bundles = <CoinUnlockTarget>[CoinUnlockTarget.allAds];
 
   /// The only period the server sells for coins (the redeem request is
   /// always one month of the full bundle).
@@ -405,9 +404,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           raw['expiresAtEpochMs'] is! num) {
         continue;
       }
-      final candidate = CoinUnlockTarget.values.where(
-        (target) => target.name == raw['feature'],
-      ).firstOrNull;
+      final candidate = CoinUnlockTarget.values
+          .where((target) => target.name == raw['feature'])
+          .firstOrNull;
       if (candidate == null) continue;
       final until = DateTime.fromMillisecondsSinceEpoch(
         (raw['expiresAtEpochMs'] as num).toInt(),
@@ -427,7 +426,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final now = DateTime.now();
     final active = _activeBenefitExpiries(now);
     final paidUntil = premium.hasVerifiedPlayPremium
-        ? premium.verifiedExpiryDate : null;
+        ? premium.verifiedExpiryDate
+        : null;
     final coinUntil = premium.activeCoinPremiumExpiry;
     final hasPlay = premium.hasVerifiedPlayPremium;
     final hasFull = _selected.contains(CoinUnlockTarget.fullPremium);
@@ -437,9 +437,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final lines = <String>[];
 
     if (hasPlay) {
-      lines.add(paidUntil != null
-          ? '現在プレミアム会員を利用中です（${_formatBenefitExpiry(paidUntil)}まで）。'
-          : '現在プレミアム会員を利用中です。契約終了日時は確認できていません。');
+      lines.add(
+        paidUntil != null
+            ? '現在プレミアム会員を利用中です（${_formatBenefitExpiry(paidUntil)}まで）。'
+            : '現在プレミアム会員を利用中です。契約終了日時は確認できていません。',
+      );
     } else if (coinUntil != null && coinUntil.isAfter(now)) {
       lines.add(
         '現在プレミアム特典を利用中です'
@@ -476,7 +478,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         starts = _later(starts, coinUntil);
       }
       final calculatedExpiry = _duration.previewExpiry(starts);
-      final coversNow = existing?.isAfter(now) == true ||
+      final coversNow =
+          existing?.isAfter(now) == true ||
           (hasPlay && paidUntil?.isAfter(now) == true) ||
           (coinUntil?.isAfter(now) == true) ||
           (hasFull && target != CoinUnlockTarget.fullPremium) ||
@@ -486,8 +489,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         '参考の延長後期限 ${_formatBenefitExpiry(calculatedExpiry)}',
       );
     }
-    final referenceTotal = _selected.fold<int>(0, (sum, target) =>
-      sum + CoinBenefitPriceCatalog.cost(target, _duration));
+    final referenceTotal = _selected.fold<int>(
+      0,
+      (sum, target) => sum + CoinBenefitPriceCatalog.cost(target, _duration),
+    );
     lines.add(
       '確定単価による合計：$referenceTotal コイン。'
       '単品特典・重複交換のコイン消費はまだサーバー未対応です。'
@@ -640,9 +645,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       officialPrice = _officialPremiumQuote!['priceCoins'] as int;
     }
     final referencePrice = enabled
-        ? CoinBenefitPriceCatalog.cost(target, _duration) : null;
+        ? CoinBenefitPriceCatalog.cost(target, _duration)
+        : null;
     final hasSubscription = context.read<PremiumService>().hasPurchasedPremium;
     final japanese = Localizations.localeOf(context).languageCode == 'ja';
+    final l10n = AppLocalizations.of(context)!;
     return CheckboxListTile(
       key: ValueKey('rewardFeature_${target.name}'),
       value: selected,
@@ -653,10 +660,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         !enabled
             ? t['notReady']
             : officialPrice != null
-            ? '$officialPrice ${t['coins']}'
+            ? l10n.coinAmount(officialPrice)
             : '${japanese ? '確定価格（交換準備中）' : 'Fixed price (redemption not yet available)'}'
-              ' · $referencePrice ${t['coins']}'
-              '${hasSubscription ? ' · ${t['activePremium']}' : ''}',
+                  ' · ${l10n.coinAmount(referencePrice!)}'
+                  '${hasSubscription ? ' · ${t['activePremium']}' : ''}',
         style: Theme.of(context).textTheme.bodySmall,
       ),
       secondary: !enabled
@@ -694,10 +701,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final quote = _quote();
-    final referenceTotal = _selected.fold<int>(0, (sum, target) =>
-        sum + CoinBenefitPriceCatalog.cost(target, _duration));
-    final premiumActiveFromPlay =
-        context.watch<PremiumService>().hasVerifiedPlayPremium;
+    final referenceTotal = _selected.fold<int>(
+      0,
+      (sum, target) => sum + CoinBenefitPriceCatalog.cost(target, _duration),
+    );
+    final premiumActiveFromPlay = context
+        .watch<PremiumService>()
+        .hasVerifiedPlayPremium;
     final serverPrice =
         _selected.length == 1 &&
             _selected.contains(CoinUnlockTarget.fullPremium) &&
@@ -722,10 +732,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final rewardQuotaLabel = rewardCapReached
         ? t['rewardQuotaReached']
         : rewardDailyLimit is int && rewardDailyRemaining is int
-        ? t['rewardQuotaRemaining'].replaceAll(
-            '{count}',
-            '$rewardDailyRemaining',
-          )
+        ? l10n.rewardUnlockRewardQuotaRemaining(rewardDailyRemaining)
         : t['rewardQuotaUncapped'];
     final nav = RewardNavigationLabels.of(context);
     final earn = widget.mode == RewardPageMode.earnCoins;
@@ -745,7 +752,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             const SizedBox(height: 16),
             Text(
               _rewardState != null && _rewardState!['balanceCoins'] is int
-                  ? '${_rewardState!['balanceCoins']} ${t['coins']}'
+                  ? l10n.coinAmount(_rewardState!['balanceCoins'] as int)
                   : _walletLoading
                   ? t['loading']
                   : t['balancePending'],
@@ -851,13 +858,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                       const SizedBox(height: 8),
                       Text(
                         serverPrice != null
-                            ? '$serverPrice ${t['coins']}'
+                            ? l10n.coinAmount(serverPrice)
                             : quote != null
-                            ? '${quote.requiredCoins} ${t['coins']}'
+                            ? l10n.coinAmount(quote.requiredCoins)
                             : _selected.isEmpty
                             ? t['unavailable']
-                            : '$referenceTotal ${t['coins']}'
-                              '（確定価格・交換準備中）',
+                            : '${l10n.coinAmount(referenceTotal)}'
+                                  '（確定価格・交換準備中）',
                         key: const Key('rewardTotalCoins'),
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
@@ -866,7 +873,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         key: const Key('rewardOverlapPreviewButton'),
                         icon: const Icon(Icons.fact_check_outlined),
                         onPressed: _selected.isNotEmpty
-                            ? _reviewSelections : null,
+                            ? _reviewSelections
+                            : null,
                         label: const Text('重複・有効期限を確認'),
                       ),
                       const SizedBox(height: 8),

@@ -146,6 +146,49 @@ Set<int> uiCharsOf(File arb) {
   return buffer.toString().runes.where((r) => r > 0x20).toSet();
 }
 
+/// lib/l10nに手で書いたDartのファイル（生成物のapp_localizations*.dartは
+/// 除く）の文字列リテラルから、画面に出うる文字を集める。
+///
+/// ARBの外に訳を持つラベル表（`*_labels.dart`）はARBの検査に入らず、
+/// tool/build_fallback_fonts.py もかつては読まなかったため、簡体字の
+/// 「币」「奖」やハングルの「혜」などが同梱フォントに無いまま画面に出ていた。
+/// コメントは画面に出ないので除く。
+Set<int> handWrittenL10nCharsOf(File dart) {
+  final code = dart
+      .readAsLinesSync()
+      .where((line) => !line.trimLeft().startsWith('//'))
+      .join('\n');
+  final literals = RegExp(
+    r"'(?:[^'\\\n]|\\.)*'"
+    '|'
+    r'"(?:[^"\\\n]|\\.)*"',
+  ).allMatches(code);
+  final buffer = StringBuffer();
+  for (final literal in literals) {
+    final text = literal.group(0)!;
+    buffer.write(
+      text
+          .substring(1, text.length - 1)
+          .replaceAll(RegExp(r'\{[^}]*\}'), '')
+          .replaceAll(RegExp(r'\\.'), ''),
+    );
+  }
+  return buffer.toString().runes.where((r) => r > 0x20).toSet();
+}
+
+/// lib/l10nの手書きのDartファイル（生成物を除く）。
+List<File> handWrittenL10nFiles() =>
+    Directory('lib/l10n')
+        .listSync()
+        .whereType<File>()
+        .where(
+          (f) =>
+              f.path.endsWith('.dart') &&
+              !f.uri.pathSegments.last.startsWith('app_localizations'),
+        )
+        .toList()
+      ..sort((a, b) => a.path.compareTo(b.path));
+
 void main() {
   // 記号・絵文字は本文用フォントの担当範囲ではなく、端末の絵文字フォントが
   // 受け持つ（元のNotoフォントにも入っていない）。判定から除く。
@@ -202,6 +245,64 @@ void main() {
         reason:
             '見出し用スタックに無い文字: '
             '${String.fromCharCodes(missing.take(30))}\n'
+            'tool/build_fallback_fonts.py でフォントを再生成してください',
+      );
+    });
+  }
+
+  final handWritten = handWrittenL10nFiles();
+
+  test('手書きのDartファイルから文字列の字だけを集め、生成物は数えない', () {
+    final dir = Directory.systemTemp.createTempSync('l10n_literals');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final sample = File('${dir.path}/sample_labels.dart')
+      ..writeAsStringSync(
+        "// 註釈の字は画面に出ない\n"
+        "const a = {'zh': '金币', 'ko': \"혜택 {n}\"};\n"
+        "const b = 'it\\'s';\n",
+      );
+    final chars = String.fromCharCodes(handWrittenL10nCharsOf(sample));
+    for (final shown in ['金', '币', '혜', '택', 'i', 't', 's']) {
+      expect(chars, contains(shown));
+    }
+    for (final hidden in ['註', '釈', 'n', '{']) {
+      expect(chars, isNot(contains(hidden)));
+    }
+    expect(
+      handWritten.map((f) => f.uri.pathSegments.last),
+      everyElement(isNot(startsWith('app_localizations'))),
+    );
+  });
+
+  for (final dart in handWritten) {
+    final name = dart.uri.pathSegments.last;
+
+    test('$name の文言を本文用フォントだけで表示できる', () {
+      final missing = handWrittenL10nCharsOf(dart)
+        ..removeAll(bodyCoverage)
+        ..removeAll(symbolsHandledBySystem);
+      expect(
+        missing,
+        isEmpty,
+        reason:
+            '本文用スタックに無い文字: '
+            '${String.fromCharCodes(missing.take(30))}\n'
+            '文言はARB（lib/l10n/app_*.arb）へ移し、'
+            'tool/build_fallback_fonts.py でフォントを再生成してください',
+      );
+    });
+
+    test('$name の文言を見出し用フォントだけで表示できる', () {
+      final missing = handWrittenL10nCharsOf(dart)
+        ..removeAll(headingCoverage)
+        ..removeAll(symbolsHandledBySystem);
+      expect(
+        missing,
+        isEmpty,
+        reason:
+            '見出し用スタックに無い文字: '
+            '${String.fromCharCodes(missing.take(30))}\n'
+            '文言はARB（lib/l10n/app_*.arb）へ移し、'
             'tool/build_fallback_fonts.py でフォントを再生成してください',
       );
     });

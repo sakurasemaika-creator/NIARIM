@@ -5,6 +5,7 @@ import '../../l10n/login_bonus_labels.dart';
 import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
+import '../../utils/app_locale.dart';
 
 bool canClaimLoginBonus({
   required bool enabled,
@@ -85,12 +86,10 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
     }
   }
 
-  String _message(String template, Object value) =>
-      template.replaceAll('{n}', '$value');
-
   @override
   Widget build(BuildContext context) {
     final t = LoginBonusLabels.of(context);
+    final l10n = appLocalizationsOf(context);
     final scheme = Theme.of(context).colorScheme;
     if (_owner == null || _api == null) return const SizedBox.shrink();
     return Card(
@@ -157,7 +156,7 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                     ),
                   ],
                 ),
-                Text(_message(t['days'], days)),
+                Text(l10n.loginBonusDays(days)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -167,7 +166,7 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                         children: [
                           Text(t['daily']),
                           Text(
-                            _message(t['dailyCoins'], amount),
+                            l10n.loginBonusDailyCoins(amount),
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
@@ -218,8 +217,8 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                             ? scheme.primary
                             : scheme.onSurfaceVariant,
                       ),
-                      title: Text(_message(t['milestone'], goal)),
-                      subtitle: Text(_message(t['coins'], coins)),
+                      title: Text(l10n.loginBonusMilestone(goal)),
+                      subtitle: Text(l10n.coinAmount(coins)),
                       trailing: claimed
                           ? Text(t['claimed'])
                           : OutlinedButton(

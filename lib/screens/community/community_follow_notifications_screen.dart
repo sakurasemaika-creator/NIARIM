@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../l10n/creator_mission_labels.dart';
-import '../../l10n/login_bonus_labels.dart';
 import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
@@ -139,39 +138,36 @@ class _CommunityFollowNotificationsScreenState
   }
 
   String _message(CreatorMissionLabels t, Map<String, dynamic> event) {
+    final l10n = AppLocalizations.of(context)!;
+    final required = event['required'] is num
+        ? (event['required'] as num).toInt()
+        : 0;
     if (event['kind'] == 'loginMilestone') {
-      final days = (event['required'] as num?)?.toInt() ?? 0;
-      return LoginBonusLabels.of(
-        context,
-      )['activityMilestone'].replaceAll('{n}', '$days');
+      return l10n.loginBonusActivityMilestone(required);
     }
     final name =
         event['workTitle'] is String &&
             (event['workTitle'] as String).isNotEmpty
         ? event['workTitle'] as String
         : t.get('genericPublished');
-    final required = event['required'] is num
-        ? (event['required'] as num).toInt()
-        : 0;
     final each = event['eachWorkBookmarks'] is num
         ? (event['eachWorkBookmarks'] as num).toInt()
         : 0;
-    final key = switch (event['kind']) {
-      'workPublished' => 'activityPublished',
-      'workBookmarks' => 'activityWorkBookmarks',
-      'qualifiedWorks' when each == 0 => 'activityWorksPublished',
-      'qualifiedWorks' => 'activityWorksBookmarks',
-      'followers' => 'activityFollowers',
-      _ => 'activityTitle',
+    return switch (event['kind']) {
+      'workPublished' => l10n.creatorMissionActivityPublished(name),
+      'workBookmarks' => l10n.creatorMissionActivityWorkBookmarks(
+        name,
+        required,
+      ),
+      'qualifiedWorks' when each == 0 =>
+        l10n.creatorMissionActivityWorksPublished(required),
+      'qualifiedWorks' => l10n.creatorMissionActivityWorksBookmarks(
+        required,
+        each,
+      ),
+      'followers' => l10n.creatorMissionActivityFollowers(required),
+      _ => t.get('activityTitle'),
     };
-    return t
-        .get(key)
-        .replaceAll('{title}', name)
-        .replaceAll('{works}', '$required')
-        .replaceAll(
-          '{count}',
-          event['kind'] == 'qualifiedWorks' ? '$each' : '$required',
-        );
   }
 
   String _date(CreatorMissionLabels t, Map<String, dynamic> event) {

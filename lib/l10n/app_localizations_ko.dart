@@ -8096,6 +8096,889 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasSizePresetDuplicateSuffix => '사본';
 
   @override
+  String get communityChannelRefreshButton => 'YouTube 이름·아이콘 갱신 (하루 1회)';
+
+  @override
+  String get communityChannelRefreshSuccess => 'YouTube 이름과 아이콘을 갱신했습니다';
+
+  @override
+  String get communityChannelRefreshNoToken => 'YouTube 인증이 필요합니다';
+
+  @override
+  String get communityChannelRefreshUnavailable => '로그인 및 서버 연결이 필요합니다';
+
+  @override
+  String get communityChannelRefreshFailed => 'YouTube 채널 정보를 갱신하지 못했습니다';
+
+  @override
+  String get communityPlazaMuteWork => '이 작품 숨기기';
+
+  @override
+  String get communityPlazaUnmuteWork => '이 작품 다시 표시';
+
+  @override
+  String get communityPlazaMutedPlaceholder => '이 작품은 숨김 대상입니다';
+
+  @override
+  String get communityPlazaUnmuteQuestion => '이 작품을 항상 다시 표시할까요?';
+
+  @override
+  String get communityPlazaUnmuteAlways => '항상 표시';
+
+  @override
+  String get communityPlazaUnmuteTemporary => '일시적으로 표시';
+
+  @override
+  String get communityPlazaMuteSettings => '숨김 설정';
+
+  @override
+  String get communityPlazaPartialHint => '※OFF면 부분 일치 검색';
+
+  @override
+  String get communityPlazaDeleteHistory => '이 검색 기록을 삭제할까요?';
+
+  @override
+  String get communityPlazaLocalData => '기기에 저장된 데이터';
+
+  @override
+  String get communityPlazaExactTitle => '검색어 완전 일치';
+
+  @override
+  String get communityPlazaUnavailablePlaceholder => '이 작품은 삭제되었거나 비공개입니다';
+
+  @override
+  String get communityPlazaSearchTab => '검색';
+
+  @override
+  String get communityPlazaMutePrivacyNotice => '※숨겨도 상대방에게 알림이 가지 않습니다.';
+
+  @override
+  String get communityPostVisibilityHeading => 'YouTube 공개 범위';
+
+  @override
+  String get communityPostVisibilityUnlistedTitle =>
+      'NIARIM용 게시 (YouTube 일부 공개)';
+
+  @override
+  String get communityPostVisibilityUnlistedHelp =>
+      'NIARIM 작품 광장에 표시되며 북마크 랭킹에 참여할 수 있습니다.';
+
+  @override
+  String get communityPostVisibilityPublicTitle => 'YouTube에도 공개 (전체 공개)';
+
+  @override
+  String get communityPostVisibilityPublicHelp =>
+      'YouTube 검색 및 추천에 표시될 수 있으며 NIARIM 북마크 랭킹에 참여할 수 있습니다.';
+
+  @override
+  String get communityPostVisibilityUnlistedDisclosure =>
+      '참고: 일부 공개는 비공개가 아닙니다. 링크를 아는 사람은 NIARIM 밖에서도 시청하고 공유할 수 있습니다.';
+
+  @override
+  String get communityRankingLayoutTitle => '랭킹 표시 방식';
+
+  @override
+  String get communityRankingLayoutHorizontal => '가로 목록';
+
+  @override
+  String get communityRankingLayoutLargeThumbnail => '큰 썸네일';
+
+  @override
+  String get communityRankingLayoutRankedPlace => '순위';
+
+  @override
+  String get communityRankingLayoutPeriodBookmarks => '기간 내 북마크';
+
+  @override
+  String get communityWorkMetadataTitle => '작품 제목';
+
+  @override
+  String get communityWorkMetadataDescription => '작품 설명';
+
+  @override
+  String get communityWorkMetadataDescriptionHint => '작품과 제작 과정에 대한 설명 (선택)';
+
+  @override
+  String get communityWorkMetadataEdit => '제목과 설명 수정';
+
+  @override
+  String get communityWorkMetadataSaved => '제목과 설명을 저장했습니다';
+
+  @override
+  String get communityWorkMetadataInfo =>
+      'NIARIM 표시만 변경하며 YouTube의 제목과 설명은 변경되지 않습니다.';
+
+  @override
+  String get communityWorkMetadataLoadFailed => '작품 설명을 불러오지 못했습니다';
+
+  @override
+  String get communityWorkMetadataYoutubeDescription => 'YouTube 설명 (선택)';
+
+  @override
+  String get communityWorkMetadataYoutubeDescriptionHint =>
+      'NIARIM 작품 설명과 별도로 관리됩니다';
+
+  @override
+  String get communityWorkMetadataYoutubeDescriptionInvalid =>
+      'YouTube 설명은 5,000바이트 이하여야 하며 < 또는 >를 포함할 수 없습니다';
+
+  @override
+  String get communityWorkMetadataYoutubeTitle => 'YouTube 제목';
+
+  @override
+  String get communityWorkMetadataCopyTitleToYoutube => 'YouTube 제목으로 복사';
+
+  @override
+  String get communityWorkMetadataCopyTitleToNiarim => 'NIARIM 제목으로 복사';
+
+  @override
+  String get communityWorkMetadataCopyDescriptionToYoutube => 'YouTube 설명으로 복사';
+
+  @override
+  String get communityWorkMetadataCopyDescriptionToNiarim =>
+      'NIARIM 작품 설명으로 복사';
+
+  @override
+  String get communityWorkMetadataYoutubeTitleRequired => 'YouTube 제목을 입력해 주세요';
+
+  @override
+  String get communityWorkMetadataCopyConfirmTitle => '대상 내용을 덮어쓰시겠습니까?';
+
+  @override
+  String get communityWorkMetadataCopyConfirmMessage =>
+      '복사할 위치에 현재 입력된 내용이 모두 덮어써집니다. 계속하시겠습니까?';
+
+  @override
+  String get communityWorkMetadataCopyCancel => '취소';
+
+  @override
+  String get communityWorkMetadataCopyConfirmAction => '복사하고 덮어쓰기';
+
+  @override
+  String get communityYoutubeCommentHeading => 'YouTube 댓글 보기';
+
+  @override
+  String get communityYoutubeCommentLoadMore => '20개 더 불러오기';
+
+  @override
+  String get communityYoutubeCommentNoComments => '아직 댓글이 없습니다';
+
+  @override
+  String get communityYoutubeCommentUnavailable => 'YouTube 댓글을 불러올 수 없습니다';
+
+  @override
+  String get communityYoutubeCommentRetry => '다시 시도';
+
+  @override
+  String get communityYoutubeCommentReplies => '답글';
+
+  @override
+  String get communityYoutubeCommentAttribution =>
+      '댓글은 YouTube에서 가져옵니다. 작성 및 답글은 지원하지 않습니다.';
+
+  @override
+  String get creatorMissionTitle => '크리에이터 미션';
+
+  @override
+  String get creatorMissionGenericPublished => '작품 게시하기';
+
+  @override
+  String get creatorMissionDetailsTitle => '달성 조건';
+
+  @override
+  String get creatorMissionDetailsHint =>
+      '목표를 충족해야 보상을 받을 수 있습니다. 계정 또는 작품별로 한 번만 지급됩니다.';
+
+  @override
+  String get creatorMissionNotAchieved => '미달성';
+
+  @override
+  String get creatorMissionDetailsTooltip => '자세히 보기';
+
+  @override
+  String get creatorMissionReviewing => '확인 중';
+
+  @override
+  String get creatorMissionCoinReward => '코인 보상';
+
+  @override
+  String get creatorMissionClaim => '받기';
+
+  @override
+  String get creatorMissionActivityTitle => '알림';
+
+  @override
+  String get creatorMissionActivityObserved => '확인된 날짜';
+
+  @override
+  String get creatorMissionActivityEmpty => '아직 미션 달성 알림이 없습니다';
+
+  @override
+  String get creatorMissionActivitySyncMore => '추가 달성 알림 확인';
+
+  @override
+  String get creatorMissionActivityHistoryMore => '이전 알림';
+
+  @override
+  String get creatorMissionActivityError => '알림을 불러올 수 없습니다';
+
+  @override
+  String get creatorMissionActivitySignIn => '달성 기록을 보려면 로그인하세요';
+
+  @override
+  String get creatorMissionDetailsDraftCount =>
+      '여러 작품의 달성 수는 임시 집계이며 지급 시 서버에서 다시 확인합니다.';
+
+  @override
+  String get creatorMissionDetailsPerWorkRule =>
+      '작품마다 1회 받을 수 있습니다. 다른 작품은 별도로 달성할 수 있습니다.';
+
+  @override
+  String get creatorMissionDetailsAccountRule => '계정당 한 번만 받을 수 있습니다.';
+
+  @override
+  String get creatorMissionDetailsTemplateRule =>
+      '조건을 달성한 작품은 제목이 있는 항목으로 상단에 표시됩니다. 이 예시 항목은 항상 미달성으로 남습니다.';
+
+  @override
+  String get creatorMissionDetailsPending => '확인 중입니다. 48시간 후 다시 받기를 누르세요.';
+
+  @override
+  String get creatorMissionDetailsOffline => '현재 보상 지급이 비활성화되어 있습니다.';
+
+  @override
+  String get creatorMissionDrawerAttention => '받지 않은 달성 미션이 있습니다';
+
+  @override
+  String get creatorMissionAchieved => '달성';
+
+  @override
+  String get creatorMissionClaimReceived => '보상을 받았습니다';
+
+  @override
+  String get creatorMissionHoldStarted => '달성 확인 중입니다. 48시간 뒤 다시 받기를 누르세요.';
+
+  @override
+  String get creatorMissionClaimFailed => '보상 확인 실패. 새로고침 후 다시 시도하세요.';
+
+  @override
+  String get creatorMissionWorkSection => '작품별 달성 미션';
+
+  @override
+  String get creatorMissionWorkWarning =>
+      '달성한 작품만 표시합니다. 작품과 미션마다 1회만 받을 수 있습니다.';
+
+  @override
+  String get creatorMissionNoAchievements => '이 페이지에 달성한 작품 미션이 없습니다.';
+
+  @override
+  String get creatorMissionLoadMore => '다음 25개 작품 확인';
+
+  @override
+  String get creatorMissionWorkListError => '작품별 미션을 불러올 수 없습니다.';
+
+  @override
+  String get creatorMissionSubtitle => '작품 제작과 작품 광장 활동으로 코인 획득';
+
+  @override
+  String get creatorMissionPerWork => '작품마다 1회';
+
+  @override
+  String get creatorMissionClaimed => '획득 완료';
+
+  @override
+  String get creatorMissionPending => '검증 중';
+
+  @override
+  String get creatorMissionNotClaimed => '미획득';
+
+  @override
+  String get creatorMissionUpcoming => '보상 준비 중';
+
+  @override
+  String get creatorMissionLogin => 'Google 계정으로 로그인하면 미션을 볼 수 있습니다.';
+
+  @override
+  String get creatorMissionOffline => '미션 서버에 연결되지 않았습니다.';
+
+  @override
+  String get creatorMissionRetry => '새로고침';
+
+  @override
+  String get creatorMissionLoading => '미션 상태 확인 중…';
+
+  @override
+  String get creatorMissionLoadError => '미션을 불러올 수 없습니다.';
+
+  @override
+  String get creatorMissionTimeWarning =>
+      '기기 내 시간은 표시용이며 코인 보상에는 서버 검증이 필요합니다.';
+
+  @override
+  String get creatorMissionRankingWarning =>
+      'YouTube가 아닌 NIARIM 북마크 순위만 적용합니다.';
+
+  @override
+  String get creatorMissionBudget => '각 미션은 한 번만 보상됩니다.';
+
+  @override
+  String get loginBonusTitle => '누적 로그인 보너스';
+
+  @override
+  String get loginBonusDaily => '오늘의 로그인 보상';
+
+  @override
+  String get loginBonusClaim => '받기';
+
+  @override
+  String get loginBonusClaimed => '수령 완료';
+
+  @override
+  String get loginBonusNotYet => '미달성';
+
+  @override
+  String get loginBonusMilestones => '누적 달성 추가 보상';
+
+  @override
+  String get loginBonusUnknown => '확인할 수 없음';
+
+  @override
+  String get loginBonusUnavailable => '보상 지급 준비 중';
+
+  @override
+  String get loginBonusUtc => '일본 시간(JST) 자정에 날짜가 바뀌며 쉬어도 기록은 유지됩니다.';
+
+  @override
+  String get loginBonusRetry => '새로고침';
+
+  @override
+  String get loginBonusFailed => '수령 확인 실패';
+
+  @override
+  String get loginBonusSuccess => '코인 수령 완료';
+
+  @override
+  String get loginBonusVisitMissing => '오늘의 로그인 확인 중';
+
+  @override
+  String get rewardNavigationExchange => '특전 교환';
+
+  @override
+  String get rewardNavigationHub => '코인·특전';
+
+  @override
+  String get rewardNavigationEarnTab => '광고 보고 코인 받기';
+
+  @override
+  String get rewardNavigationMissions => '미션';
+
+  @override
+  String get rewardNavigationEarn => '무료 코인 모으기';
+
+  @override
+  String get rewardNavigationMembership => '계약 상태';
+
+  @override
+  String get rewardNavigationMembershipDetail => '프리미엄 회원 자세히 보기';
+
+  @override
+  String get rewardNavigationMembershipFree => '무료 회원';
+
+  @override
+  String get rewardNavigationMembershipMonthly => '프리미엄(월간)';
+
+  @override
+  String get rewardNavigationMembershipYearly => '프리미엄(연간)';
+
+  @override
+  String get rewardNavigationMembershipPlay => '프리미엄 회원';
+
+  @override
+  String get rewardNavigationMembershipCoin => '코인으로 해제';
+
+  @override
+  String get rewardNavigationMembershipBenefit => '사용 중인 특전';
+
+  @override
+  String get rewardNavigationMembershipNoBenefit => '사용 중인 특전 없음';
+
+  @override
+  String get rewardNavigationMembershipUpsell => '프리미엄의 기능과 요금을 확인한 후 가입하세요.';
+
+  @override
+  String get rewardNavigationMembershipExpires => '만료';
+
+  @override
+  String get rewardNavigationMembershipUnavailable => '특전 정보 확인 불가';
+
+  @override
+  String get rewardNavigationMembershipLogin => '로그인이 필요합니다';
+
+  @override
+  String get rewardNavigationPremiumCompare => '프리미엄 회원 자세히 보기';
+
+  @override
+  String get rewardNavigationPremiumJoin => '프리미엄 회원 가입';
+
+  @override
+  String get rewardNavigationPremiumPlans => '요금제 선택';
+
+  @override
+  String get rewardNavigationEarnDescription => '광고 시청으로 코인 획득';
+
+  @override
+  String get rewardNavigationEarnUnavailable => '보상 광고 준비 중';
+
+  @override
+  String get rewardUnlockTitle => '보상';
+
+  @override
+  String get rewardUnlockMissionTitle => '미션';
+
+  @override
+  String get rewardUnlockMissionSubtitle => '작품 게시와 북마크 달성으로 코인 획득';
+
+  @override
+  String get rewardUnlockLoading => '잔액 확인 중…';
+
+  @override
+  String get rewardUnlockPaused => '보관된 남은 초';
+
+  @override
+  String get rewardUnlockActiveUntil => '만료 시각';
+
+  @override
+  String get rewardUnlockSubscriptionBenefit =>
+      '선택형 광고 시청으로 무료 코인을 모으거나 월간·연간 Premium으로 시간을 아낄 수 있습니다.';
+
+  @override
+  String get rewardUnlockActive => '현재 이용 중인 혜택';
+
+  @override
+  String get rewardUnlockActivePremium => 'Premium 회원 혜택 전체 이용 중';
+
+  @override
+  String get rewardUnlockActiveCampaign => '출시 기념 캠페인: Premium 기능 이용 중';
+
+  @override
+  String get rewardUnlockActiveUnavailable => '서버 연결 후 코인 혜택 정보가 표시됩니다';
+
+  @override
+  String get rewardUnlockDuration => '이용 기간';
+
+  @override
+  String get rewardUnlockChooseDuration => '기간 선택';
+
+  @override
+  String get rewardUnlockChooseBenefits => '혜택 선택';
+
+  @override
+  String get rewardUnlockPricePending => '코인: 미설정';
+
+  @override
+  String get rewardUnlockNotReady => '준비 중';
+
+  @override
+  String get rewardUnlockTotal => '필요 코인';
+
+  @override
+  String get rewardUnlockUnavailable => '공식 교환 가격 준비 중';
+
+  @override
+  String get rewardUnlockBalancePending => '코인 잔액: 서버 연결 준비 중';
+
+  @override
+  String get rewardUnlockGoal => '이 코인을 목표로 설정';
+
+  @override
+  String get rewardUnlockRedeem => '코인 교환';
+
+  @override
+  String get rewardUnlockWatchRewardedAd => '보상형 광고를 보고 코인 적립';
+
+  @override
+  String get rewardUnlockRewardPending => '검증 대기 중입니다. Google 확인 후 코인이 반영됩니다.';
+
+  @override
+  String get rewardUnlockRewardUnavailable => '광고를 표시할 수 없습니다. 나중에 다시 시도하세요.';
+
+  @override
+  String get rewardUnlockRewardRefresh => '잔액 새로고침';
+
+  @override
+  String get rewardUnlockCoinHistory => '코인 거래 내역';
+
+  @override
+  String get rewardUnlockHistoryEmpty => '아직 거래 내역이 없습니다';
+
+  @override
+  String get rewardUnlockHistoryError => '내역을 불러오지 못했습니다';
+
+  @override
+  String get rewardUnlockHistoryMore => '더 보기';
+
+  @override
+  String get rewardUnlockHistoryAd => '보상형 광고';
+
+  @override
+  String get rewardUnlockHistoryMission => '미션';
+
+  @override
+  String get rewardUnlockHistoryRedemption => '코인 교환';
+
+  @override
+  String get rewardUnlockHistoryOther => '기타 거래';
+
+  @override
+  String get rewardUnlockRewardQuotaReached => '오늘 보상 한도 도달 (UTC)';
+
+  @override
+  String get rewardUnlockRewardQuotaUncapped => 'NIARIM 일일 횟수 제한 없음';
+
+  @override
+  String get rewardUnlockRewardQuotaCaution =>
+      '광고 재고와 AdMob 제한에 따라 실제 재생 횟수는 다릅니다.';
+
+  @override
+  String get rewardUnlockRedemptionSuccess =>
+      '교환이 완료되어 서버에서 Premium 만료일을 업데이트했습니다.';
+
+  @override
+  String get rewardUnlockRedemptionUncertain =>
+      '교환을 확인할 수 없습니다. 다시 시도하면 동일한 거래를 조회합니다.';
+
+  @override
+  String get rewardUnlockFreeOnly => '선택형 광고를 보고 무료 코인 적립 (준비 중)';
+
+  @override
+  String get rewardUnlockSubscribe => 'Premium 월간 / 연간 보기';
+
+  @override
+  String get rewardUnlockBestValue => '가장 경제적';
+
+  @override
+  String get rewardUnlockBestExplain => '모든 혜택을 따로 교환하는 것보다 경제적입니다';
+
+  @override
+  String get rewardUnlockEarning => 'Premium 회원도 코인을 미리 모을 수 있습니다';
+
+  @override
+  String get rewardUnlockHour => '시간';
+
+  @override
+  String get rewardUnlockDay => '일';
+
+  @override
+  String get rewardUnlockWeek => '주';
+
+  @override
+  String get rewardUnlockMonth => '개월';
+
+  @override
+  String get rewardUnlockEndCardEdit => '엔드 카드 편집 및 삭제';
+
+  @override
+  String get rewardUnlockWatermark => '사용자 워터마크';
+
+  @override
+  String get rewardUnlockToneCurve => '톤 커브';
+
+  @override
+  String get rewardUnlockLevelAdjustment => '레벨 보정';
+
+  @override
+  String get rewardUnlockUnlimitedDuration => '최대 2시간';
+
+  @override
+  String get rewardUnlockCustomAutomation => '사용자 지정 자동 액션';
+
+  @override
+  String get rewardUnlockCommunityPostQuota => '작품 광장 하루 1개→3개 게시';
+
+  @override
+  String get rewardUnlockProjectListAds => '프로젝트 목록 광고 제거';
+
+  @override
+  String get rewardUnlockCanvasAds => '캔버스 광고 제거';
+
+  @override
+  String get rewardUnlockTimelineAds => '타임라인 광고 제거';
+
+  @override
+  String get rewardUnlockProcessingAds => '처리 중 광고 제거';
+
+  @override
+  String get rewardUnlockAllAds => '광고 모두 제거';
+
+  @override
+  String get rewardUnlockFullPremium => '전체 기능 + 광고 없음';
+
+  @override
+  String get rewardUnlockChoose => '선택';
+
+  @override
+  String get sharedArchiveReceived => '받은 항목';
+
+  @override
+  String get sharedArchiveCreated => '만든 항목';
+
+  @override
+  String get sharedArchiveShare => '공유하기';
+
+  @override
+  String get sharedArchiveEmpty => '생성한 공유 파일이 없습니다';
+
+  @override
+  String coinAmount(int count) {
+    return '$count 코인';
+  }
+
+  @override
+  String creatorMissionGenericBookmark(int count) {
+    return '게시한 작품의 북마크 $count개 달성';
+  }
+
+  @override
+  String creatorMissionNamedBookmark(String title, int count) {
+    return '$title의 북마크 $count개 달성';
+  }
+
+  @override
+  String creatorMissionNamedPublished(String title) {
+    return '$title 게시하기';
+  }
+
+  @override
+  String creatorMissionWorksGoal(int works, int count) {
+    return '$works개 작품에서 각각 북마크 $count개 달성';
+  }
+
+  @override
+  String creatorMissionWorksPublished(int works) {
+    return '작품 $works개 게시하기';
+  }
+
+  @override
+  String creatorMissionActivityPublished(String title) {
+    return '$title을(를) 게시했습니다';
+  }
+
+  @override
+  String creatorMissionActivityFollowers(int count) {
+    return '팔로워 $count명을 달성했습니다';
+  }
+
+  @override
+  String creatorMissionActivityWorkBookmarks(String title, int count) {
+    return '$title의 북마크가 $count개에 도달했습니다';
+  }
+
+  @override
+  String creatorMissionActivityWorksBookmarks(int works, int count) {
+    return '게시한 $works개 작품이 각각 북마크 $count개를 달성했습니다';
+  }
+
+  @override
+  String creatorMissionActivityWorksPublished(int works) {
+    return '작품 $works개를 게시했습니다';
+  }
+
+  @override
+  String creatorMissionDetailsWorkProgress(int progress, int goal) {
+    return '현재 북마크: $progress개 (필요: $goal개)';
+  }
+
+  @override
+  String creatorMissionDetailsWorksProgress(int progress, int goal) {
+    return '조건을 충족한 작품: $progress개 (필요: $goal개)';
+  }
+
+  @override
+  String creatorMissionDetailsFollowersProgress(int progress, int goal) {
+    return '현재 팔로워: $progress명 (필요: $goal명)';
+  }
+
+  @override
+  String creatorMissionTime(int hours) {
+    return '검증된 제작 시간 $hours시간';
+  }
+
+  @override
+  String creatorMissionFollowers(int count) {
+    return '팔로워 $count명';
+  }
+
+  @override
+  String creatorMissionRank(int rank) {
+    return '북마크 순위 $rank위 이내';
+  }
+
+  @override
+  String creatorMissionLocalTime(int hours) {
+    return '이 기기 제작 시간(참고): $hours시간';
+  }
+
+  @override
+  String creatorMissionCandidateMinutes(int minutes) {
+    return '서버의 검증 전 제작 시간: $minutes분';
+  }
+
+  @override
+  String get creatorMissionClaimAll => '모두 받기';
+
+  @override
+  String creatorMissionClaimAllResult(int received, int failed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      failed,
+      locale: localeName,
+      other: ' / $failed건은 받지 못했습니다',
+      zero: '',
+    );
+    return '일괄 수령: $received건 완료$_temp0';
+  }
+
+  @override
+  String get creatorMissionClaimAllLoadFailed =>
+      '수령 상태를 불러오지 못했습니다. 다시 시도해 주세요.';
+
+  @override
+  String loginBonusDays(int days) {
+    return '누적 $days일';
+  }
+
+  @override
+  String loginBonusDailyCoins(int coins) {
+    return '매일 $coins코인';
+  }
+
+  @override
+  String loginBonusMilestone(int days) {
+    return '누적 $days일 달성';
+  }
+
+  @override
+  String loginBonusActivityMilestone(int days) {
+    return '누적 로그인 $days일을 달성했습니다';
+  }
+
+  @override
+  String rewardUnlockRewardQuotaRemaining(int count) {
+    return '오늘 코인 보상 잔여: $count회 (UTC)';
+  }
+
+  @override
+  String get rewardUnlockReferencePrice => '참고 가격(교환 준비 중)';
+
+  @override
+  String get missionCoinsReceived => '코인을 받았습니다';
+
+  @override
+  String get missionClaimFailed => '받지 못했습니다';
+
+  @override
+  String get missionClaimUnconfirmed => '수령을 확인하지 못했습니다';
+
+  @override
+  String get missionClaimed => '수령 완료';
+
+  @override
+  String get missionComingSoon => '준비 중';
+
+  @override
+  String get missionClaim => '받기';
+
+  @override
+  String get missionNotYet => '미달성';
+
+  @override
+  String get missionPeriodDaily => '일일';
+
+  @override
+  String get missionPeriodWeekly => '주간';
+
+  @override
+  String get missionPeriodMonthly => '월간';
+
+  @override
+  String get missionRefresh => '새로고침';
+
+  @override
+  String get missionPayoutPending => '코인 지급은 준비 중입니다';
+
+  @override
+  String missionDurationHours(int count) {
+    return '$count시간';
+  }
+
+  @override
+  String missionDurationMinutes(int count) {
+    return '$count분';
+  }
+
+  @override
+  String get plazaMissionsTitle => '작품 광장 체류 미션';
+
+  @override
+  String get plazaMissionsNote =>
+      '재생이나 조작은 필요 없습니다. 작품 광장을 열어 둔 시간을 일본 시간(JST) 기준으로 집계합니다.';
+
+  @override
+  String get plazaMissionsUnavailable => '작품 광장 미션을 불러올 수 없습니다';
+
+  @override
+  String plazaMissionGoal(String duration) {
+    return '작품 광장을 합계 $duration 열어 두기';
+  }
+
+  @override
+  String get recurringMissionsTitle => '주간·월간 미션';
+
+  @override
+  String get recurringMissionsNote => '일본 시간 기준 집계(한 주는 월요일 시작)';
+
+  @override
+  String get recurringMissionsUnavailable => '기간 미션을 불러오지 못했습니다';
+
+  @override
+  String recurringMissionGoal(int days) {
+    return '기간 내 $days일 로그인';
+  }
+
+  @override
+  String recurringMissionProgress(int days, int goal) {
+    return '$days / $goal일';
+  }
+
+  @override
+  String get missionCompletedTitle => '미션 달성';
+
+  @override
+  String get missionCompletedBody => '미션 페이지에서 보상을 받을 수 있습니다.';
+
+  @override
+  String get missionCompletedGoToMissions => '미션 페이지로';
+
+  @override
+  String missionLoginWeek(int days) {
+    return '주 $days일 로그인';
+  }
+
+  @override
+  String missionLoginMonth(int days) {
+    return '월 $days일 로그인';
+  }
+
+  @override
+  String missionLoginTotal(int days) {
+    return '누적 $days일 로그인';
+  }
+
+  @override
+  String communityWorkMetadataCopyTooLong(int max) {
+    return '복사 대상의 $max자 제한을 초과하여 복사할 수 없습니다';
+  }
+
+  @override
   String rewardDurationHours(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

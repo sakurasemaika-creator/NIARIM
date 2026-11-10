@@ -25,6 +25,17 @@ AppLocalizations appLocalizationsFor(Locale? locale) {
   );
 }
 
+/// [context]の画面の言語の文言を返す。
+///
+/// アプリの中では`AppLocalizations.of(context)`と同じもの。報酬・ミッション・
+/// 作品広場の一部の部品は、以前はARBの外の手書きの表から文言を引いていて、
+/// `AppLocalizations.delegate`を渡していないMaterialAppの下（部品だけを
+/// 載せたテスト等）でも画面の言語で出ていた。その振る舞いを保つため、
+/// 準備が無ければ画面の言語（無ければ英語）の文言を直接引く。
+AppLocalizations appLocalizationsOf(BuildContext context) =>
+    AppLocalizations.of(context) ??
+    appLocalizationsFor(Localizations.maybeLocaleOf(context));
+
 /// 端末の言語の並び（優先する順）から、対応する7言語のうち最初に当てはまる
 /// 言語のコード（`SettingsService.language`の値）を返す。どれにも当てはまら
 /// なければ英語（ユーザー指定。ドイツ語・ポルトガル語等の端末で日本語より

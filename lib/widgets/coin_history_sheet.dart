@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../l10n/reward_unlock_labels.dart';
 import '../l10n/login_bonus_labels.dart';
+import '../utils/app_locale.dart';
+
+/// 取引のコインの増減（「+1 coin」「-55000 coins」）。単数・複数は数の
+/// 大きさで決まるので、符号は付けずに数えた文言の前へ置く。
+String coinDeltaLabel(AppLocalizations l10n, int delta) =>
+    '${delta > 0
+        ? '+'
+        : delta < 0
+        ? '-'
+        : ''}${l10n.coinAmount(delta.abs())}';
 
 /// Signed-in account, server-authenticated coin ledger. No local balances,
 /// purchase callbacks or user-supplied transaction amounts are displayed.
@@ -140,6 +151,7 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
   Widget build(BuildContext context) {
     if (!_ownerActive) return const SizedBox.shrink();
     final t = RewardUnlockLabels.of(context);
+    final l10n = appLocalizationsOf(context);
     final height = MediaQuery.sizeOf(context).height * .72;
     return SafeArea(
       child: SizedBox(
@@ -166,8 +178,7 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
                           ).toLocal().toString().substring(0, 16),
                         ),
                         trailing: Text(
-                          '${(row['deltaCoins'] as int) > 0 ? '+' : ''}'
-                          '${row['deltaCoins']} ${t['coins']}',
+                          coinDeltaLabel(l10n, row['deltaCoins'] as int),
                           key: const Key('coinHistoryAmount'),
                         ),
                       ),

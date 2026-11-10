@@ -8479,6 +8479,1106 @@ class AppLocalizationsEs extends AppLocalizations {
   String get canvasSizePresetDuplicateSuffix => 'copia';
 
   @override
+  String get communityChannelRefreshButton =>
+      'Actualizar nombre e icono de YouTube (una vez al día)';
+
+  @override
+  String get communityChannelRefreshSuccess =>
+      'Nombre e icono de YouTube actualizados';
+
+  @override
+  String get communityChannelRefreshNoToken =>
+      'Se requiere autorización de YouTube';
+
+  @override
+  String get communityChannelRefreshUnavailable =>
+      'Inicia sesión y conéctate al servidor';
+
+  @override
+  String get communityChannelRefreshFailed =>
+      'No se pudo actualizar el canal de YouTube';
+
+  @override
+  String get communityPlazaMuteWork => 'Ocultar esta obra';
+
+  @override
+  String get communityPlazaUnmuteWork => 'Volver a mostrar esta obra';
+
+  @override
+  String get communityPlazaMutedPlaceholder => 'Esta obra está oculta';
+
+  @override
+  String get communityPlazaUnmuteQuestion => '¿Mostrar siempre esta obra?';
+
+  @override
+  String get communityPlazaUnmuteAlways => 'Siempre';
+
+  @override
+  String get communityPlazaUnmuteTemporary => 'Temporalmente';
+
+  @override
+  String get communityPlazaMuteSettings => 'Opciones de ocultación';
+
+  @override
+  String get communityPlazaPartialHint => '※Desactivado: coincidencia parcial';
+
+  @override
+  String get communityPlazaDeleteHistory =>
+      '¿Eliminar esta búsqueda del historial?';
+
+  @override
+  String get communityPlazaLocalData => 'Datos guardados en el dispositivo';
+
+  @override
+  String get communityPlazaExactTitle => 'Buscar coincidencias exactas';
+
+  @override
+  String get communityPlazaUnavailablePlaceholder =>
+      'Esta obra se eliminó o es privada';
+
+  @override
+  String get communityPlazaSearchTab => 'Buscar';
+
+  @override
+  String get communityPlazaMutePrivacyNotice =>
+      'La otra persona no recibirá una notificación si la ocultas.';
+
+  @override
+  String get communityPostVisibilityHeading => 'Visibilidad en YouTube';
+
+  @override
+  String get communityPostVisibilityUnlistedTitle =>
+      'Publicar para NIARIM (no listado en YouTube)';
+
+  @override
+  String get communityPostVisibilityUnlistedHelp =>
+      'Visible en NIARIM y apto para la clasificación por marcadores.';
+
+  @override
+  String get communityPostVisibilityPublicTitle =>
+      'Publicar también en YouTube (público)';
+
+  @override
+  String get communityPostVisibilityPublicHelp =>
+      'Puede aparecer en búsquedas y recomendaciones de YouTube y en la clasificación de marcadores de NIARIM.';
+
+  @override
+  String get communityPostVisibilityUnlistedDisclosure =>
+      'Nota: no listado no significa privado. Cualquiera con el enlace puede ver y compartir el video fuera de NIARIM.';
+
+  @override
+  String get communityRankingLayoutTitle => 'Vista de clasificación';
+
+  @override
+  String get communityRankingLayoutHorizontal => 'Filas compactas';
+
+  @override
+  String get communityRankingLayoutLargeThumbnail => 'Miniaturas grandes';
+
+  @override
+  String get communityRankingLayoutRankedPlace => 'Puesto';
+
+  @override
+  String get communityRankingLayoutPeriodBookmarks => 'Marcadores del período';
+
+  @override
+  String get communityWorkMetadataTitle => 'Título de la obra';
+
+  @override
+  String get communityWorkMetadataDescription => 'Descripción';
+
+  @override
+  String get communityWorkMetadataDescriptionHint =>
+      'Acerca de la obra (opcional)';
+
+  @override
+  String get communityWorkMetadataEdit => 'Editar título y descripción';
+
+  @override
+  String get communityWorkMetadataSaved => 'Título y descripción guardados';
+
+  @override
+  String get communityWorkMetadataInfo =>
+      'Solo cambia los datos en NIARIM, no los de YouTube.';
+
+  @override
+  String get communityWorkMetadataLoadFailed =>
+      'No se pudo cargar la descripción';
+
+  @override
+  String get communityWorkMetadataYoutubeDescription =>
+      'Descripción de YouTube (opcional)';
+
+  @override
+  String get communityWorkMetadataYoutubeDescriptionHint =>
+      'Se gestiona por separado de la descripción en NIARIM';
+
+  @override
+  String get communityWorkMetadataYoutubeDescriptionInvalid =>
+      'La descripción de YouTube debe tener como máximo 5.000 bytes y no puede contener < ni >';
+
+  @override
+  String get communityWorkMetadataYoutubeTitle => 'Título de YouTube';
+
+  @override
+  String get communityWorkMetadataCopyTitleToYoutube =>
+      'Copiar al título de YouTube';
+
+  @override
+  String get communityWorkMetadataCopyTitleToNiarim =>
+      'Copiar al título de NIARIM';
+
+  @override
+  String get communityWorkMetadataCopyDescriptionToYoutube =>
+      'Copiar a la descripción de YouTube';
+
+  @override
+  String get communityWorkMetadataCopyDescriptionToNiarim =>
+      'Copiar a la descripción de NIARIM';
+
+  @override
+  String get communityWorkMetadataYoutubeTitleRequired =>
+      'Introduce un título para YouTube';
+
+  @override
+  String get communityWorkMetadataCopyConfirmTitle =>
+      '¿Sobrescribir el contenido de destino?';
+
+  @override
+  String get communityWorkMetadataCopyConfirmMessage =>
+      'Se sobrescribirá todo el contenido actual del destino. ¿Deseas continuar?';
+
+  @override
+  String get communityWorkMetadataCopyCancel => 'Cancelar';
+
+  @override
+  String get communityWorkMetadataCopyConfirmAction => 'Copiar y sobrescribir';
+
+  @override
+  String get communityYoutubeCommentHeading => 'Ver comentarios de YouTube';
+
+  @override
+  String get communityYoutubeCommentLoadMore => 'Cargar 20 más';
+
+  @override
+  String get communityYoutubeCommentNoComments => 'Aún no hay comentarios';
+
+  @override
+  String get communityYoutubeCommentUnavailable =>
+      'Comentarios de YouTube no disponibles';
+
+  @override
+  String get communityYoutubeCommentRetry => 'Reintentar';
+
+  @override
+  String get communityYoutubeCommentReplies => 'Respuestas';
+
+  @override
+  String get communityYoutubeCommentAttribution =>
+      'Los comentarios vienen de YouTube. No se puede publicar ni responder.';
+
+  @override
+  String get creatorMissionTitle => 'Misiones de creación';
+
+  @override
+  String get creatorMissionGenericPublished => 'Publicar una obra';
+
+  @override
+  String get creatorMissionDetailsTitle => 'Requisitos';
+
+  @override
+  String get creatorMissionDetailsHint =>
+      'Cada recompensa se reclama una vez por cuenta u obra.';
+
+  @override
+  String get creatorMissionNotAchieved => 'Sin completar';
+
+  @override
+  String get creatorMissionDetailsTooltip => 'Ver detalles';
+
+  @override
+  String get creatorMissionReviewing => 'Verificación pendiente';
+
+  @override
+  String get creatorMissionCoinReward => 'Recompensas';
+
+  @override
+  String get creatorMissionClaim => 'Reclamar';
+
+  @override
+  String get creatorMissionActivityTitle => 'Notificaciones';
+
+  @override
+  String get creatorMissionActivityObserved => 'Fecha de confirmación';
+
+  @override
+  String get creatorMissionActivityEmpty => 'Aún no hay logros';
+
+  @override
+  String get creatorMissionActivitySyncMore => 'Buscar más logros';
+
+  @override
+  String get creatorMissionActivityHistoryMore => 'Notificaciones anteriores';
+
+  @override
+  String get creatorMissionActivityError =>
+      'No se pudieron cargar las notificaciones';
+
+  @override
+  String get creatorMissionActivitySignIn =>
+      'Inicia sesión para ver los logros';
+
+  @override
+  String get creatorMissionDetailsDraftCount =>
+      'El progreso es provisional; el servidor lo verifica antes del premio.';
+
+  @override
+  String get creatorMissionDetailsPerWorkRule =>
+      'Una vez por obra. Otras obras pueden recibir su propio premio.';
+
+  @override
+  String get creatorMissionDetailsAccountRule => 'Una vez por cuenta.';
+
+  @override
+  String get creatorMissionDetailsTemplateRule =>
+      'Cuando una obra alcance el objetivo, aparecerá arriba con su nombre. Esta plantilla permanece sin completar.';
+
+  @override
+  String get creatorMissionDetailsPending =>
+      'Verificación en curso. Reclama de nuevo tras 48 horas.';
+
+  @override
+  String get creatorMissionDetailsOffline =>
+      'La recompensa todavía no está disponible.';
+
+  @override
+  String get creatorMissionDrawerAttention => 'Misiones logradas sin reclamar';
+
+  @override
+  String get creatorMissionAchieved => 'Logrado';
+
+  @override
+  String get creatorMissionClaimReceived => 'Recompensa recibida';
+
+  @override
+  String get creatorMissionHoldStarted =>
+      'Verificación iniciada. Vuelve en 48 horas y reclama.';
+
+  @override
+  String get creatorMissionClaimFailed =>
+      'No se pudo reclamar. Actualiza e inténtalo de nuevo.';
+
+  @override
+  String get creatorMissionWorkSection => 'Logros por obra';
+
+  @override
+  String get creatorMissionWorkWarning =>
+      'Solo se muestran hitos alcanzados. Una vez por obra y misión.';
+
+  @override
+  String get creatorMissionNoAchievements => 'Sin hitos en esta página.';
+
+  @override
+  String get creatorMissionLoadMore => 'Ver otras 25 obras';
+
+  @override
+  String get creatorMissionWorkListError => 'Error al cargar logros de obras.';
+
+  @override
+  String get creatorMissionSubtitle =>
+      'Gana monedas creando obras y logrando hitos';
+
+  @override
+  String get creatorMissionPerWork => 'Una vez por obra';
+
+  @override
+  String get creatorMissionClaimed => 'Recibido';
+
+  @override
+  String get creatorMissionPending => 'En revisión';
+
+  @override
+  String get creatorMissionNotClaimed => 'Sin reclamar';
+
+  @override
+  String get creatorMissionUpcoming => 'Recompensas en preparación';
+
+  @override
+  String get creatorMissionLogin =>
+      'Inicia sesión con Google para ver las misiones.';
+
+  @override
+  String get creatorMissionOffline => 'Servidor de misiones no disponible.';
+
+  @override
+  String get creatorMissionRetry => 'Actualizar';
+
+  @override
+  String get creatorMissionLoading => 'Cargando misiones…';
+
+  @override
+  String get creatorMissionLoadError => 'No se pudieron cargar las misiones.';
+
+  @override
+  String get creatorMissionTimeWarning =>
+      'El tiempo local es orientativo. Las recompensas requieren verificación.';
+
+  @override
+  String get creatorMissionRankingWarning =>
+      'Clasificación por marcadores de NIARIM, no de YouTube.';
+
+  @override
+  String get creatorMissionBudget => 'Cada misión se reclama una sola vez.';
+
+  @override
+  String get loginBonusTitle => 'Bonos de acceso acumulado';
+
+  @override
+  String get loginBonusDaily => 'Recompensa de hoy';
+
+  @override
+  String get loginBonusClaim => 'Reclamar';
+
+  @override
+  String get loginBonusClaimed => 'Reclamado';
+
+  @override
+  String get loginBonusNotYet => 'Sin completar';
+
+  @override
+  String get loginBonusMilestones => 'Bonos por objetivos';
+
+  @override
+  String get loginBonusUnknown => 'No disponible';
+
+  @override
+  String get loginBonusUnavailable => 'Recompensas en preparación';
+
+  @override
+  String get loginBonusUtc =>
+      'El día cambia a medianoche de Japón (JST). Las pausas no borran el progreso.';
+
+  @override
+  String get loginBonusRetry => 'Actualizar';
+
+  @override
+  String get loginBonusFailed => 'No se pudo confirmar';
+
+  @override
+  String get loginBonusSuccess => 'Monedas recibidas';
+
+  @override
+  String get loginBonusVisitMissing => 'Comprobando el acceso';
+
+  @override
+  String get rewardNavigationExchange => 'Canjear ventajas';
+
+  @override
+  String get rewardNavigationHub => 'Monedas y recompensas';
+
+  @override
+  String get rewardNavigationEarnTab => 'Ver anuncios por monedas';
+
+  @override
+  String get rewardNavigationMissions => 'Misiones';
+
+  @override
+  String get rewardNavigationEarn => 'Ganar monedas gratis';
+
+  @override
+  String get rewardNavigationMembership => 'Estado de membresía';
+
+  @override
+  String get rewardNavigationMembershipDetail => 'Conocer Premium';
+
+  @override
+  String get rewardNavigationMembershipFree => 'Miembro gratis';
+
+  @override
+  String get rewardNavigationMembershipMonthly => 'Premium mensual';
+
+  @override
+  String get rewardNavigationMembershipYearly => 'Premium anual';
+
+  @override
+  String get rewardNavigationMembershipPlay => 'Miembro Premium';
+
+  @override
+  String get rewardNavigationMembershipCoin => 'Desbloqueado con monedas';
+
+  @override
+  String get rewardNavigationMembershipBenefit => 'Ventajas activas';
+
+  @override
+  String get rewardNavigationMembershipNoBenefit => 'Sin ventajas activas';
+
+  @override
+  String get rewardNavigationMembershipUpsell =>
+      'Consulta los planes de Premium antes de unirte.';
+
+  @override
+  String get rewardNavigationMembershipExpires => 'Caduca';
+
+  @override
+  String get rewardNavigationMembershipUnavailable => 'Ventajas no disponibles';
+
+  @override
+  String get rewardNavigationMembershipLogin =>
+      'Inicia sesión para ver ventajas';
+
+  @override
+  String get rewardNavigationPremiumCompare => 'Conocer Premium';
+
+  @override
+  String get rewardNavigationPremiumJoin => 'Unirse a Premium';
+
+  @override
+  String get rewardNavigationPremiumPlans => 'Elegir plan';
+
+  @override
+  String get rewardNavigationEarnDescription =>
+      'Mira anuncios opcionales para ganar monedas';
+
+  @override
+  String get rewardNavigationEarnUnavailable => 'Anuncios aún no disponibles';
+
+  @override
+  String get rewardUnlockTitle => 'Recompensas';
+
+  @override
+  String get rewardUnlockMissionTitle => 'Misiones';
+
+  @override
+  String get rewardUnlockMissionSubtitle =>
+      'Gana monedas al publicar y alcanzar objetivos';
+
+  @override
+  String get rewardUnlockLoading => 'Consultando saldo…';
+
+  @override
+  String get rewardUnlockPaused => 'Tiempo guardado (segundos)';
+
+  @override
+  String get rewardUnlockActiveUntil => 'Válido hasta';
+
+  @override
+  String get rewardUnlockSubscriptionBenefit =>
+      'Consigue monedas gratis viendo anuncios opcionales. Ahorra tiempo con Premium mensual o anual.';
+
+  @override
+  String get rewardUnlockActive => 'Ventajas activas';
+
+  @override
+  String get rewardUnlockActivePremium =>
+      'Todas las ventajas activas con Premium';
+
+  @override
+  String get rewardUnlockActiveCampaign =>
+      'Campaña de lanzamiento: Premium activo';
+
+  @override
+  String get rewardUnlockActiveUnavailable =>
+      'Los beneficios aparecerán al conectar el servidor';
+
+  @override
+  String get rewardUnlockDuration => 'Período de uso';
+
+  @override
+  String get rewardUnlockChooseDuration => 'Seleccionar duración';
+
+  @override
+  String get rewardUnlockChooseBenefits => 'Selecciona ventajas';
+
+  @override
+  String get rewardUnlockPricePending => 'Monedas: pendiente';
+
+  @override
+  String get rewardUnlockNotReady => 'Próximamente';
+
+  @override
+  String get rewardUnlockTotal => 'Total de monedas';
+
+  @override
+  String get rewardUnlockUnavailable =>
+      'Precios de canje todavía no disponibles';
+
+  @override
+  String get rewardUnlockBalancePending =>
+      'Saldo: conexión al servidor pendiente';
+
+  @override
+  String get rewardUnlockGoal => 'Establecer como objetivo';
+
+  @override
+  String get rewardUnlockRedeem => 'Canjear monedas';
+
+  @override
+  String get rewardUnlockWatchRewardedAd => 'Ver un anuncio para ganar monedas';
+
+  @override
+  String get rewardUnlockRewardPending =>
+      'Verificación pendiente. Las monedas se añadirán después de la confirmación.';
+
+  @override
+  String get rewardUnlockRewardUnavailable =>
+      'No se pudo mostrar el anuncio. Inténtalo más tarde.';
+
+  @override
+  String get rewardUnlockRewardRefresh => 'Actualizar saldo';
+
+  @override
+  String get rewardUnlockCoinHistory => 'Historial de monedas';
+
+  @override
+  String get rewardUnlockHistoryEmpty => 'Aún no hay movimientos';
+
+  @override
+  String get rewardUnlockHistoryError => 'No se pudo cargar el historial';
+
+  @override
+  String get rewardUnlockHistoryMore => 'Cargar más';
+
+  @override
+  String get rewardUnlockHistoryAd => 'Anuncio con recompensa';
+
+  @override
+  String get rewardUnlockHistoryMission => 'Misión';
+
+  @override
+  String get rewardUnlockHistoryRedemption => 'Canje de monedas';
+
+  @override
+  String get rewardUnlockHistoryOther => 'Otro movimiento';
+
+  @override
+  String get rewardUnlockRewardQuotaReached => 'Límite diario alcanzado (UTC)';
+
+  @override
+  String get rewardUnlockRewardQuotaUncapped => 'Sin límite diario en NIARIM';
+
+  @override
+  String get rewardUnlockRewardQuotaCaution =>
+      'La disponibilidad y los límites de AdMob pueden reducir los anuncios.';
+
+  @override
+  String get rewardUnlockRedemptionSuccess =>
+      'Canje completado. La vigencia Premium se actualizó desde el servidor.';
+
+  @override
+  String get rewardUnlockRedemptionUncertain =>
+      'No se pudo confirmar el canje. El reintento comprobará la misma transacción.';
+
+  @override
+  String get rewardUnlockFreeOnly =>
+      'Gana monedas con anuncios voluntarios (próximamente)';
+
+  @override
+  String get rewardUnlockSubscribe => 'Ver Premium mensual o anual';
+
+  @override
+  String get rewardUnlockBestValue => 'Mejor valor';
+
+  @override
+  String get rewardUnlockBestExplain =>
+      'Más ventajoso que canjear cada beneficio por separado';
+
+  @override
+  String get rewardUnlockEarning =>
+      'Los miembros Premium también podrán ahorrar monedas';
+
+  @override
+  String get rewardUnlockHour => 'horas';
+
+  @override
+  String get rewardUnlockDay => 'días';
+
+  @override
+  String get rewardUnlockWeek => 'semanas';
+
+  @override
+  String get rewardUnlockMonth => 'meses';
+
+  @override
+  String get rewardUnlockEndCardEdit => 'Editar o quitar la tarjeta final';
+
+  @override
+  String get rewardUnlockWatermark => 'Marca de agua personalizada';
+
+  @override
+  String get rewardUnlockToneCurve => 'Curva de tonos';
+
+  @override
+  String get rewardUnlockLevelAdjustment => 'Niveles';
+
+  @override
+  String get rewardUnlockUnlimitedDuration => 'Proyectos de hasta 2 horas';
+
+  @override
+  String get rewardUnlockCustomAutomation =>
+      'Acciones automáticas personalizadas';
+
+  @override
+  String get rewardUnlockCommunityPostQuota => 'Publicaciones: 1 a 3 por día';
+
+  @override
+  String get rewardUnlockProjectListAds => 'Sin anuncios en proyectos';
+
+  @override
+  String get rewardUnlockCanvasAds => 'Sin anuncios en el lienzo';
+
+  @override
+  String get rewardUnlockTimelineAds => 'Sin anuncios en la línea de tiempo';
+
+  @override
+  String get rewardUnlockProcessingAds => 'Sin anuncios al procesar';
+
+  @override
+  String get rewardUnlockAllAds => 'Sin anuncios';
+
+  @override
+  String get rewardUnlockFullPremium => 'Todas las funciones y sin anuncios';
+
+  @override
+  String get rewardUnlockChoose => 'Seleccionar';
+
+  @override
+  String get sharedArchiveReceived => 'Recibidos';
+
+  @override
+  String get sharedArchiveCreated => 'Creados';
+
+  @override
+  String get sharedArchiveShare => 'Compartir';
+
+  @override
+  String get sharedArchiveEmpty => 'Todavía no hay archivos compartidos';
+
+  @override
+  String coinAmount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count monedas',
+      one: '$count moneda',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String creatorMissionGenericBookmark(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count marcadores',
+      one: '$count marcador',
+    );
+    return 'Una obra alcanza $_temp0';
+  }
+
+  @override
+  String creatorMissionNamedBookmark(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count marcadores',
+      one: '$count marcador',
+    );
+    return '$title alcanza $_temp0';
+  }
+
+  @override
+  String creatorMissionNamedPublished(String title) {
+    return '$title se publica';
+  }
+
+  @override
+  String creatorMissionWorksGoal(int works, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count marcadores',
+      one: '$count marcador',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count marcadores',
+      one: '$count marcador',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      works,
+      locale: localeName,
+      other: '$works obras logran $_temp0 cada una',
+      one: '$works obra logra $_temp1',
+    );
+    return '$_temp2';
+  }
+
+  @override
+  String creatorMissionWorksPublished(int works) {
+    String _temp0 = intl.Intl.pluralLogic(
+      works,
+      locale: localeName,
+      other: '$works obras',
+      one: '$works obra',
+    );
+    return 'Publicar $_temp0';
+  }
+
+  @override
+  String creatorMissionActivityPublished(String title) {
+    return 'Publicaste $title';
+  }
+
+  @override
+  String creatorMissionActivityFollowers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count seguidores',
+      one: '$count seguidor',
+    );
+    return 'Alcanzaste $_temp0';
+  }
+
+  @override
+  String creatorMissionActivityWorkBookmarks(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count marcadores',
+      one: '$count marcador',
+    );
+    return '$title alcanzó $_temp0';
+  }
+
+  @override
+  String creatorMissionActivityWorksBookmarks(int works, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count marcadores',
+      one: '$count marcador',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count marcadores',
+      one: '$count marcador',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      works,
+      locale: localeName,
+      other: 'Tus $works obras alcanzaron $_temp0 cada una',
+      one: 'Tu obra alcanzó $_temp1',
+    );
+    return '$_temp2';
+  }
+
+  @override
+  String creatorMissionActivityWorksPublished(int works) {
+    String _temp0 = intl.Intl.pluralLogic(
+      works,
+      locale: localeName,
+      other: '$works obras',
+      one: '$works obra',
+    );
+    return 'Publicaste $_temp0';
+  }
+
+  @override
+  String creatorMissionDetailsWorkProgress(int progress, int goal) {
+    return 'Marcadores actuales: $progress (necesarios: $goal)';
+  }
+
+  @override
+  String creatorMissionDetailsWorksProgress(int progress, int goal) {
+    return 'Obras válidas: $progress (necesarias: $goal)';
+  }
+
+  @override
+  String creatorMissionDetailsFollowersProgress(int progress, int goal) {
+    return 'Seguidores actuales: $progress (necesarios: $goal)';
+  }
+
+  @override
+  String creatorMissionTime(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours horas de creación verificadas',
+      one: '$hours hora de creación verificada',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String creatorMissionFollowers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count seguidores',
+      one: '$count seguidor',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String creatorMissionRank(int rank) {
+    return 'Entre los primeros $rank en marcadores';
+  }
+
+  @override
+  String creatorMissionLocalTime(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours horas',
+      one: '$hours hora',
+    );
+    return 'Tiempo de edición local: $_temp0';
+  }
+
+  @override
+  String creatorMissionCandidateMinutes(int minutes) {
+    return 'Tiempo candidato registrado: $minutes min (sin verificar)';
+  }
+
+  @override
+  String get creatorMissionClaimAll => 'Reclamar todo';
+
+  @override
+  String creatorMissionClaimAllResult(int received, int failed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      received,
+      locale: localeName,
+      other: 'Se reclamaron $received recompensas',
+      one: 'Se reclamó $received recompensa',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      failed,
+      locale: localeName,
+      other: '; no se pudieron reclamar $failed',
+      one: '; no se pudo reclamar $failed',
+      zero: '',
+    );
+    return '$_temp0$_temp1';
+  }
+
+  @override
+  String get creatorMissionClaimAllLoadFailed =>
+      'No se pudo cargar lo que se puede reclamar. Inténtalo de nuevo.';
+
+  @override
+  String loginBonusDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días',
+      one: '$days día',
+    );
+    return 'Total $_temp0';
+  }
+
+  @override
+  String loginBonusDailyCoins(int coins) {
+    String _temp0 = intl.Intl.pluralLogic(
+      coins,
+      locale: localeName,
+      other: '$coins monedas',
+      one: '$coins moneda',
+    );
+    return '$_temp0 al día';
+  }
+
+  @override
+  String loginBonusMilestone(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días',
+      one: '$days día',
+    );
+    return '$_temp0 de acceso';
+  }
+
+  @override
+  String loginBonusActivityMilestone(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días',
+      one: '$days día',
+    );
+    return '¡Has alcanzado $_temp0 de acceso!';
+  }
+
+  @override
+  String rewardUnlockRewardQuotaRemaining(int count) {
+    return 'Recompensas restantes hoy: $count (UTC)';
+  }
+
+  @override
+  String get rewardUnlockReferencePrice =>
+      'Precio de referencia (aún no canjeable)';
+
+  @override
+  String get missionCoinsReceived => 'Monedas recibidas';
+
+  @override
+  String get missionClaimFailed => 'No se pudo reclamar';
+
+  @override
+  String get missionClaimUnconfirmed => 'No se pudo confirmar';
+
+  @override
+  String get missionClaimed => 'Reclamado';
+
+  @override
+  String get missionComingSoon => 'Próximamente';
+
+  @override
+  String get missionClaim => 'Reclamar';
+
+  @override
+  String get missionNotYet => 'Sin completar';
+
+  @override
+  String get missionPeriodDaily => 'Diarias';
+
+  @override
+  String get missionPeriodWeekly => 'Semanales';
+
+  @override
+  String get missionPeriodMonthly => 'Mensuales';
+
+  @override
+  String get missionRefresh => 'Actualizar';
+
+  @override
+  String get missionPayoutPending =>
+      'El pago de monedas aún no está disponible';
+
+  @override
+  String missionDurationHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count horas',
+      one: '$count hora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String missionDurationMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutos',
+      one: '$count minuto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get plazaMissionsTitle => 'Misiones de tiempo en la Plaza de Obras';
+
+  @override
+  String get plazaMissionsNote =>
+      'No hace falta reproducir ni tocar nada. Se cuenta el tiempo con la Plaza de Obras abierta, en hora de Japón (JST).';
+
+  @override
+  String get plazaMissionsUnavailable =>
+      'No se pudieron cargar las misiones de la Plaza de Obras';
+
+  @override
+  String plazaMissionGoal(String duration) {
+    return 'Mantén abierta la Plaza de Obras $duration en total';
+  }
+
+  @override
+  String get recurringMissionsTitle => 'Misiones semanales y mensuales';
+
+  @override
+  String get recurringMissionsNote =>
+      'Se cuenta en hora de Japón; las semanas empiezan el lunes';
+
+  @override
+  String get recurringMissionsUnavailable =>
+      'No se pudieron cargar las misiones semanales y mensuales';
+
+  @override
+  String recurringMissionGoal(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días',
+      one: '$days día',
+    );
+    return 'Entra $_temp0 en este periodo';
+  }
+
+  @override
+  String recurringMissionProgress(int days, int goal) {
+    String _temp0 = intl.Intl.pluralLogic(
+      goal,
+      locale: localeName,
+      other: '$goal días',
+      one: '$goal día',
+    );
+    return '$days / $_temp0';
+  }
+
+  @override
+  String get missionCompletedTitle => '¡Misión completada!';
+
+  @override
+  String get missionCompletedBody =>
+      'Ve a Misiones para reclamar tu recompensa.';
+
+  @override
+  String get missionCompletedGoToMissions => 'Ir a Misiones';
+
+  @override
+  String missionLoginWeek(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días',
+      one: '$days día',
+    );
+    return 'Entra $_temp0 esta semana';
+  }
+
+  @override
+  String missionLoginMonth(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días',
+      one: '$days día',
+    );
+    return 'Entra $_temp0 este mes';
+  }
+
+  @override
+  String missionLoginTotal(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days días',
+      one: '$days día',
+    );
+    return 'Entra $_temp0 en total';
+  }
+
+  @override
+  String communityWorkMetadataCopyTooLong(int max) {
+    return 'No se puede copiar: supera el límite de $max caracteres';
+  }
+
+  @override
   String rewardDurationHours(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

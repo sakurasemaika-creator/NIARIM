@@ -7976,6 +7976,873 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasSizePresetDuplicateSuffix => '副本';
 
   @override
+  String get communityChannelRefreshButton => '更新 YouTube 名称和头像（每天一次）';
+
+  @override
+  String get communityChannelRefreshSuccess => 'YouTube 名称和头像已更新';
+
+  @override
+  String get communityChannelRefreshNoToken => '需要 YouTube 授权';
+
+  @override
+  String get communityChannelRefreshUnavailable => '请先登录并连接服务器';
+
+  @override
+  String get communityChannelRefreshFailed => '无法更新 YouTube 频道信息';
+
+  @override
+  String get communityPlazaMuteWork => '隐藏此作品';
+
+  @override
+  String get communityPlazaUnmuteWork => '重新显示此作品';
+
+  @override
+  String get communityPlazaMutedPlaceholder => '此作品已隐藏';
+
+  @override
+  String get communityPlazaUnmuteQuestion => '始终重新显示此作品吗？';
+
+  @override
+  String get communityPlazaUnmuteAlways => '始终显示';
+
+  @override
+  String get communityPlazaUnmuteTemporary => '暂时显示';
+
+  @override
+  String get communityPlazaMuteSettings => '隐藏设置';
+
+  @override
+  String get communityPlazaPartialHint => '※关闭时为部分匹配搜索';
+
+  @override
+  String get communityPlazaDeleteHistory => '删除这条搜索记录吗？';
+
+  @override
+  String get communityPlazaLocalData => '设备本地数据';
+
+  @override
+  String get communityPlazaExactTitle => '搜索词完全匹配';
+
+  @override
+  String get communityPlazaUnavailablePlaceholder => '此作品已删除或设为私密';
+
+  @override
+  String get communityPlazaSearchTab => '搜索';
+
+  @override
+  String get communityPlazaMutePrivacyNotice => '※隐藏后不会通知对方。';
+
+  @override
+  String get communityPostVisibilityHeading => 'YouTube 公开范围';
+
+  @override
+  String get communityPostVisibilityUnlistedTitle =>
+      '发布到 NIARIM（YouTube 不公开列出）';
+
+  @override
+  String get communityPostVisibilityUnlistedHelp => '在 NIARIM 作品广场展示，并可参与书签排名。';
+
+  @override
+  String get communityPostVisibilityPublicTitle => '同时公开到 YouTube';
+
+  @override
+  String get communityPostVisibilityPublicHelp =>
+      '可能出现在 YouTube 搜索和推荐中，也可参与 NIARIM 书签排名。';
+
+  @override
+  String get communityPostVisibilityUnlistedDisclosure =>
+      '注意：不公开列出不等于私密。知道链接的人也能在 NIARIM 外观看和分享。';
+
+  @override
+  String get communityRankingLayoutTitle => '排行榜布局';
+
+  @override
+  String get communityRankingLayoutHorizontal => '横向列表';
+
+  @override
+  String get communityRankingLayoutLargeThumbnail => '大缩略图';
+
+  @override
+  String get communityRankingLayoutRankedPlace => '排名';
+
+  @override
+  String get communityRankingLayoutPeriodBookmarks => '本期收藏';
+
+  @override
+  String get communityWorkMetadataTitle => '作品标题';
+
+  @override
+  String get communityWorkMetadataDescription => '作品简介';
+
+  @override
+  String get communityWorkMetadataDescriptionHint => '关于作品（选填）';
+
+  @override
+  String get communityWorkMetadataEdit => '编辑标题和简介';
+
+  @override
+  String get communityWorkMetadataSaved => '标题和简介已保存';
+
+  @override
+  String get communityWorkMetadataInfo => '仅修改 NIARIM 中的信息，不修改 YouTube 视频信息。';
+
+  @override
+  String get communityWorkMetadataLoadFailed => '无法加载作品简介';
+
+  @override
+  String get communityWorkMetadataYoutubeDescription => 'YouTube 描述（选填）';
+
+  @override
+  String get communityWorkMetadataYoutubeDescriptionHint => '与 NIARIM 作品简介分别管理';
+
+  @override
+  String get communityWorkMetadataYoutubeDescriptionInvalid =>
+      'YouTube 描述不得超过 5,000 字节，也不能包含 < 或 >';
+
+  @override
+  String get communityWorkMetadataYoutubeTitle => 'YouTube 标题';
+
+  @override
+  String get communityWorkMetadataCopyTitleToYoutube => '复制到 YouTube 标题';
+
+  @override
+  String get communityWorkMetadataCopyTitleToNiarim => '复制到 NIARIM 标题';
+
+  @override
+  String get communityWorkMetadataCopyDescriptionToYoutube => '复制到 YouTube 描述';
+
+  @override
+  String get communityWorkMetadataCopyDescriptionToNiarim => '复制到 NIARIM 简介';
+
+  @override
+  String get communityWorkMetadataYoutubeTitleRequired => '请输入 YouTube 标题';
+
+  @override
+  String get communityWorkMetadataCopyConfirmTitle => '覆盖目标内容？';
+
+  @override
+  String get communityWorkMetadataCopyConfirmMessage =>
+      '目标中当前输入的内容将全部被覆盖。是否继续复制？';
+
+  @override
+  String get communityWorkMetadataCopyCancel => '取消';
+
+  @override
+  String get communityWorkMetadataCopyConfirmAction => '复制并覆盖';
+
+  @override
+  String get communityYoutubeCommentHeading => '查看 YouTube 评论';
+
+  @override
+  String get communityYoutubeCommentLoadMore => '再加载20条';
+
+  @override
+  String get communityYoutubeCommentNoComments => '暂无评论';
+
+  @override
+  String get communityYoutubeCommentUnavailable => '无法加载 YouTube 评论';
+
+  @override
+  String get communityYoutubeCommentRetry => '重试';
+
+  @override
+  String get communityYoutubeCommentReplies => '回复';
+
+  @override
+  String get communityYoutubeCommentAttribution => '评论来自 YouTube。暂不支持发布和回复。';
+
+  @override
+  String get creatorMissionTitle => '创作者任务';
+
+  @override
+  String get creatorMissionGenericPublished => '发布一件作品';
+
+  @override
+  String get creatorMissionDetailsTitle => '达成条件';
+
+  @override
+  String get creatorMissionDetailsHint => '每个账户或每件作品的每项任务只能领取一次。';
+
+  @override
+  String get creatorMissionNotAchieved => '未达成';
+
+  @override
+  String get creatorMissionDetailsTooltip => '查看详情';
+
+  @override
+  String get creatorMissionReviewing => '审核中';
+
+  @override
+  String get creatorMissionCoinReward => '金币奖励';
+
+  @override
+  String get creatorMissionClaim => '领取';
+
+  @override
+  String get creatorMissionActivityTitle => '通知';
+
+  @override
+  String get creatorMissionActivityObserved => '首次确认日期';
+
+  @override
+  String get creatorMissionActivityEmpty => '暂无任务达成通知';
+
+  @override
+  String get creatorMissionActivitySyncMore => '继续检查成就';
+
+  @override
+  String get creatorMissionActivityHistoryMore => '更早的通知';
+
+  @override
+  String get creatorMissionActivityError => '无法加载通知';
+
+  @override
+  String get creatorMissionActivitySignIn => '登录后查看成就记录';
+
+  @override
+  String get creatorMissionDetailsDraftCount => '多作品进度为暂定值，发奖时服务器会再次验证。';
+
+  @override
+  String get creatorMissionDetailsPerWorkRule => '每件作品可领取一次；其他作品达标后可另行领取。';
+
+  @override
+  String get creatorMissionDetailsAccountRule => '每个账户限领一次。';
+
+  @override
+  String get creatorMissionDetailsTemplateRule =>
+      '作品达标后会在上方出现包含作品名称的任务。此模板始终显示为未达成。';
+
+  @override
+  String get creatorMissionDetailsPending => '正在验证。48小时后请再次点击领取。';
+
+  @override
+  String get creatorMissionDetailsOffline => '奖励尚未开放，暂时无法领取。';
+
+  @override
+  String get creatorMissionDrawerAttention => '有尚未领取的已达成任务';
+
+  @override
+  String get creatorMissionAchieved => '已达成';
+
+  @override
+  String get creatorMissionClaimReceived => '已领取奖励';
+
+  @override
+  String get creatorMissionHoldStarted => '正在验证。48小时后再次点击领取。';
+
+  @override
+  String get creatorMissionClaimFailed => '领取失败。请刷新后重试。';
+
+  @override
+  String get creatorMissionWorkSection => '按作品显示的成就';
+
+  @override
+  String get creatorMissionWorkWarning => '仅显示已达成任务，每件作品的每项任务只能领取一次。';
+
+  @override
+  String get creatorMissionNoAchievements => '本页暂无已达成的作品任务。';
+
+  @override
+  String get creatorMissionLoadMore => '查看接下来的25件作品';
+
+  @override
+  String get creatorMissionWorkListError => '无法加载作品成就。';
+
+  @override
+  String get creatorMissionSubtitle => '通过创作和作品广场里程碑获取金币';
+
+  @override
+  String get creatorMissionPerWork => '每篇作品一次';
+
+  @override
+  String get creatorMissionClaimed => '已领取';
+
+  @override
+  String get creatorMissionPending => '审核中';
+
+  @override
+  String get creatorMissionNotClaimed => '未领取';
+
+  @override
+  String get creatorMissionUpcoming => '奖励筹备中';
+
+  @override
+  String get creatorMissionLogin => '使用 Google 登录以查看任务。';
+
+  @override
+  String get creatorMissionOffline => '任务服务器未连接。';
+
+  @override
+  String get creatorMissionRetry => '刷新';
+
+  @override
+  String get creatorMissionLoading => '正在加载任务…';
+
+  @override
+  String get creatorMissionLoadError => '无法加载任务。';
+
+  @override
+  String get creatorMissionTimeWarning => '本地创作时间仅供参考，金币需要服务器验证。';
+
+  @override
+  String get creatorMissionRankingWarning => '排名奖励仅基于 NIARIM 收藏榜，不涉及 YouTube。';
+
+  @override
+  String get creatorMissionBudget => '每项任务仅可领取一次。';
+
+  @override
+  String get loginBonusTitle => '累计登录奖励';
+
+  @override
+  String get loginBonusDaily => '今日登录奖励';
+
+  @override
+  String get loginBonusClaim => '领取';
+
+  @override
+  String get loginBonusClaimed => '已领取';
+
+  @override
+  String get loginBonusNotYet => '未达成';
+
+  @override
+  String get loginBonusMilestones => '里程碑额外奖励';
+
+  @override
+  String get loginBonusUnknown => '无法确认';
+
+  @override
+  String get loginBonusUnavailable => '奖励领取尚未开放';
+
+  @override
+  String get loginBonusUtc => '按日本时间(JST)午夜换日，中断不会重置累计。';
+
+  @override
+  String get loginBonusRetry => '刷新';
+
+  @override
+  String get loginBonusFailed => '无法确认领取';
+
+  @override
+  String get loginBonusSuccess => '金币已领取';
+
+  @override
+  String get loginBonusVisitMissing => '正在确认今日登录';
+
+  @override
+  String get rewardNavigationExchange => '兑换特权';
+
+  @override
+  String get rewardNavigationHub => '金币与奖励';
+
+  @override
+  String get rewardNavigationEarnTab => '看广告赚金币';
+
+  @override
+  String get rewardNavigationMissions => '任务';
+
+  @override
+  String get rewardNavigationEarn => '免费赚金币';
+
+  @override
+  String get rewardNavigationMembership => '会员状态';
+
+  @override
+  String get rewardNavigationMembershipDetail => '了解高级会员';
+
+  @override
+  String get rewardNavigationMembershipFree => '免费会员';
+
+  @override
+  String get rewardNavigationMembershipMonthly => '高级会员（月付）';
+
+  @override
+  String get rewardNavigationMembershipYearly => '高级会员（年付）';
+
+  @override
+  String get rewardNavigationMembershipPlay => '高级会员';
+
+  @override
+  String get rewardNavigationMembershipCoin => '金币解锁';
+
+  @override
+  String get rewardNavigationMembershipBenefit => '当前权益';
+
+  @override
+  String get rewardNavigationMembershipNoBenefit => '暂无特权';
+
+  @override
+  String get rewardNavigationMembershipUpsell => '了解高级会员的功能和价格后再决定。';
+
+  @override
+  String get rewardNavigationMembershipExpires => '到期';
+
+  @override
+  String get rewardNavigationMembershipUnavailable => '无法读取权益';
+
+  @override
+  String get rewardNavigationMembershipLogin => '请登录查看权益';
+
+  @override
+  String get rewardNavigationPremiumCompare => '了解高级会员';
+
+  @override
+  String get rewardNavigationPremiumJoin => '开通高级会员';
+
+  @override
+  String get rewardNavigationPremiumPlans => '选择套餐';
+
+  @override
+  String get rewardNavigationEarnDescription => '观看广告赚取金币';
+
+  @override
+  String get rewardNavigationEarnUnavailable => '激励广告尚未开放';
+
+  @override
+  String get rewardUnlockTitle => '奖励';
+
+  @override
+  String get rewardUnlockMissionTitle => '任务';
+
+  @override
+  String get rewardUnlockMissionSubtitle => '通过发布作品和达成收藏目标获得金币';
+
+  @override
+  String get rewardUnlockLoading => '正在查询余额…';
+
+  @override
+  String get rewardUnlockPaused => '保存的剩余秒数';
+
+  @override
+  String get rewardUnlockActiveUntil => '有效期至';
+
+  @override
+  String get rewardUnlockSubscriptionBenefit =>
+      '可通过自愿观看广告免费积累金币，也可选择月付或年付 Premium 节省时间。';
+
+  @override
+  String get rewardUnlockActive => '当前使用中的权益';
+
+  @override
+  String get rewardUnlockActivePremium => '已通过 Premium 会员使用全部权益';
+
+  @override
+  String get rewardUnlockActiveCampaign => '上线活动：Premium 权益已开放';
+
+  @override
+  String get rewardUnlockActiveUnavailable => '连接服务器后显示金币权益';
+
+  @override
+  String get rewardUnlockDuration => '使用期限';
+
+  @override
+  String get rewardUnlockChooseDuration => '选择期限';
+
+  @override
+  String get rewardUnlockChooseBenefits => '选择权益';
+
+  @override
+  String get rewardUnlockPricePending => '金币：未设置';
+
+  @override
+  String get rewardUnlockNotReady => '即将推出';
+
+  @override
+  String get rewardUnlockTotal => '所需金币总数';
+
+  @override
+  String get rewardUnlockUnavailable => '正式兑换价格尚未设置';
+
+  @override
+  String get rewardUnlockBalancePending => '金币余额：服务器尚未连接';
+
+  @override
+  String get rewardUnlockGoal => '将此金币数设为目标';
+
+  @override
+  String get rewardUnlockRedeem => '兑换金币';
+
+  @override
+  String get rewardUnlockWatchRewardedAd => '观看激励广告获得金币';
+
+  @override
+  String get rewardUnlockRewardPending => '正在等待验证。Google 确认后金币将到账。';
+
+  @override
+  String get rewardUnlockRewardUnavailable => '无法播放广告，请稍后重试。';
+
+  @override
+  String get rewardUnlockRewardRefresh => '刷新余额';
+
+  @override
+  String get rewardUnlockCoinHistory => '金币记录';
+
+  @override
+  String get rewardUnlockHistoryEmpty => '暂无交易记录';
+
+  @override
+  String get rewardUnlockHistoryError => '无法加载记录';
+
+  @override
+  String get rewardUnlockHistoryMore => '加载更多';
+
+  @override
+  String get rewardUnlockHistoryAd => '激励广告';
+
+  @override
+  String get rewardUnlockHistoryMission => '任务';
+
+  @override
+  String get rewardUnlockHistoryRedemption => '金币兑换';
+
+  @override
+  String get rewardUnlockHistoryOther => '其他交易';
+
+  @override
+  String get rewardUnlockRewardQuotaReached => '今日奖励已达上限（UTC）';
+
+  @override
+  String get rewardUnlockRewardQuotaUncapped => 'NIARIM 不设每日次数上限';
+
+  @override
+  String get rewardUnlockRewardQuotaCaution => '广告库存和 AdMob 频次限制可能影响实际播放次数。';
+
+  @override
+  String get rewardUnlockRedemptionSuccess => '兑换完成。已从服务器更新高级权益期限。';
+
+  @override
+  String get rewardUnlockRedemptionUncertain => '无法确认兑换结果。重试将检查同一笔交易。';
+
+  @override
+  String get rewardUnlockFreeOnly => '自愿观看广告赚取免费金币（即将推出）';
+
+  @override
+  String get rewardUnlockSubscribe => '查看 Premium 月付 / 年付';
+
+  @override
+  String get rewardUnlockBestValue => '最划算';
+
+  @override
+  String get rewardUnlockBestExplain => '比逐项兑换全部权益更划算';
+
+  @override
+  String get rewardUnlockEarning => 'Premium 会员也可以积攒金币';
+
+  @override
+  String get rewardUnlockHour => '小时';
+
+  @override
+  String get rewardUnlockDay => '天';
+
+  @override
+  String get rewardUnlockWeek => '周';
+
+  @override
+  String get rewardUnlockMonth => '个月';
+
+  @override
+  String get rewardUnlockEndCardEdit => '编辑或移除片尾卡';
+
+  @override
+  String get rewardUnlockWatermark => '自定义水印';
+
+  @override
+  String get rewardUnlockToneCurve => '色调曲线';
+
+  @override
+  String get rewardUnlockLevelAdjustment => '色阶校正';
+
+  @override
+  String get rewardUnlockUnlimitedDuration => '最长2小时';
+
+  @override
+  String get rewardUnlockCustomAutomation => '自定义自动操作';
+
+  @override
+  String get rewardUnlockCommunityPostQuota => '作品广场每日1篇→3篇';
+
+  @override
+  String get rewardUnlockProjectListAds => '项目列表无广告';
+
+  @override
+  String get rewardUnlockCanvasAds => '画布无广告';
+
+  @override
+  String get rewardUnlockTimelineAds => '时间轴无广告';
+
+  @override
+  String get rewardUnlockProcessingAds => '处理时无广告';
+
+  @override
+  String get rewardUnlockAllAds => '移除所有广告';
+
+  @override
+  String get rewardUnlockFullPremium => '全部功能＋无广告';
+
+  @override
+  String get rewardUnlockChoose => '选择';
+
+  @override
+  String get sharedArchiveReceived => '收到的';
+
+  @override
+  String get sharedArchiveCreated => '创建的';
+
+  @override
+  String get sharedArchiveShare => '分享';
+
+  @override
+  String get sharedArchiveEmpty => '尚未创建共享文件';
+
+  @override
+  String coinAmount(int count) {
+    return '$count 金币';
+  }
+
+  @override
+  String creatorMissionGenericBookmark(int count) {
+    return '已发布作品达到 $count 个收藏';
+  }
+
+  @override
+  String creatorMissionNamedBookmark(String title, int count) {
+    return '$title 达到 $count 个收藏';
+  }
+
+  @override
+  String creatorMissionNamedPublished(String title) {
+    return '$title 已发布';
+  }
+
+  @override
+  String creatorMissionWorksGoal(int works, int count) {
+    return '$works 件作品分别达到 $count 个收藏';
+  }
+
+  @override
+  String creatorMissionWorksPublished(int works) {
+    return '发布 $works 件作品';
+  }
+
+  @override
+  String creatorMissionActivityPublished(String title) {
+    return '已发布$title';
+  }
+
+  @override
+  String creatorMissionActivityFollowers(int count) {
+    return '已达到$count位关注者';
+  }
+
+  @override
+  String creatorMissionActivityWorkBookmarks(String title, int count) {
+    return '$title达到了$count个收藏';
+  }
+
+  @override
+  String creatorMissionActivityWorksBookmarks(int works, int count) {
+    return '你发布的$works件作品各获得$count个收藏';
+  }
+
+  @override
+  String creatorMissionActivityWorksPublished(int works) {
+    return '你已发布$works件作品';
+  }
+
+  @override
+  String creatorMissionDetailsWorkProgress(int progress, int goal) {
+    return '当前收藏：$progress（需要：$goal）';
+  }
+
+  @override
+  String creatorMissionDetailsWorksProgress(int progress, int goal) {
+    return '符合条件的作品：$progress（需要：$goal）';
+  }
+
+  @override
+  String creatorMissionDetailsFollowersProgress(int progress, int goal) {
+    return '当前关注者：$progress（需要：$goal）';
+  }
+
+  @override
+  String creatorMissionTime(int hours) {
+    return '已验证创作时间 $hours 小时';
+  }
+
+  @override
+  String creatorMissionFollowers(int count) {
+    return '$count 位关注者';
+  }
+
+  @override
+  String creatorMissionRank(int rank) {
+    return 'NIARIM 收藏榜前 $rank 名';
+  }
+
+  @override
+  String creatorMissionLocalTime(int hours) {
+    return '此设备的创作时间（参考）：$hours 小时';
+  }
+
+  @override
+  String creatorMissionCandidateMinutes(int minutes) {
+    return '服务器记录的候选时间：$minutes 分钟（待验证）';
+  }
+
+  @override
+  String get creatorMissionClaimAll => '全部领取';
+
+  @override
+  String creatorMissionClaimAllResult(int received, int failed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      failed,
+      locale: localeName,
+      other: '，$failed 项未能领取',
+      zero: '',
+    );
+    return '批量领取：已完成 $received 项$_temp0';
+  }
+
+  @override
+  String get creatorMissionClaimAllLoadFailed => '无法读取领取状态，请重试。';
+
+  @override
+  String loginBonusDays(int days) {
+    return '累计 $days 天';
+  }
+
+  @override
+  String loginBonusDailyCoins(int coins) {
+    return '每日 $coins 金币';
+  }
+
+  @override
+  String loginBonusMilestone(int days) {
+    return '累计登录 $days 天';
+  }
+
+  @override
+  String loginBonusActivityMilestone(int days) {
+    return '累计登录达到 $days 天';
+  }
+
+  @override
+  String rewardUnlockRewardQuotaRemaining(int count) {
+    return '今日剩余金币奖励：$count次（UTC）';
+  }
+
+  @override
+  String get rewardUnlockReferencePrice => '参考价格（兑换准备中）';
+
+  @override
+  String get missionCoinsReceived => '已领取金币';
+
+  @override
+  String get missionClaimFailed => '领取失败';
+
+  @override
+  String get missionClaimUnconfirmed => '无法确认领取';
+
+  @override
+  String get missionClaimed => '已领取';
+
+  @override
+  String get missionComingSoon => '即将开放';
+
+  @override
+  String get missionClaim => '领取';
+
+  @override
+  String get missionNotYet => '未达成';
+
+  @override
+  String get missionPeriodDaily => '每日';
+
+  @override
+  String get missionPeriodWeekly => '每周';
+
+  @override
+  String get missionPeriodMonthly => '每月';
+
+  @override
+  String get missionRefresh => '刷新';
+
+  @override
+  String get missionPayoutPending => '金币领取尚未开放';
+
+  @override
+  String missionDurationHours(int count) {
+    return '$count小时';
+  }
+
+  @override
+  String missionDurationMinutes(int count) {
+    return '$count分钟';
+  }
+
+  @override
+  String get plazaMissionsTitle => '作品广场停留任务';
+
+  @override
+  String get plazaMissionsNote => '无需播放或操作。按日本时间(JST)统计作品广场的打开时长。';
+
+  @override
+  String get plazaMissionsUnavailable => '无法读取作品广场任务';
+
+  @override
+  String plazaMissionGoal(String duration) {
+    return '累计打开作品广场 $duration';
+  }
+
+  @override
+  String get recurringMissionsTitle => '每周·每月任务';
+
+  @override
+  String get recurringMissionsNote => '按日本时间统计（每周从周一开始）';
+
+  @override
+  String get recurringMissionsUnavailable => '无法获取周期任务';
+
+  @override
+  String recurringMissionGoal(int days) {
+    return '期间内登录 $days 天';
+  }
+
+  @override
+  String recurringMissionProgress(int days, int goal) {
+    return '$days / $goal 天';
+  }
+
+  @override
+  String get missionCompletedTitle => '任务达成';
+
+  @override
+  String get missionCompletedBody => '可在任务页面领取奖励。';
+
+  @override
+  String get missionCompletedGoToMissions => '前往任务页面';
+
+  @override
+  String missionLoginWeek(int days) {
+    return '本周登录 $days 天';
+  }
+
+  @override
+  String missionLoginMonth(int days) {
+    return '本月登录 $days 天';
+  }
+
+  @override
+  String missionLoginTotal(int days) {
+    return '累计登录 $days 天';
+  }
+
+  @override
+  String communityWorkMetadataCopyTooLong(int max) {
+    return '超过目标的 $max 字符限制，无法复制';
+  }
+
+  @override
   String rewardDurationHours(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -15988,6 +16855,873 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasSizePresetDuplicateSuffix => '副本';
+
+  @override
+  String get communityChannelRefreshButton => '更新 YouTube 名稱和頭像（每日一次）';
+
+  @override
+  String get communityChannelRefreshSuccess => 'YouTube 名稱和頭像已更新';
+
+  @override
+  String get communityChannelRefreshNoToken => '需要 YouTube 授權';
+
+  @override
+  String get communityChannelRefreshUnavailable => '請先登入並連線伺服器';
+
+  @override
+  String get communityChannelRefreshFailed => '無法更新 YouTube 頻道資訊';
+
+  @override
+  String get communityPlazaMuteWork => '隱藏此作品';
+
+  @override
+  String get communityPlazaUnmuteWork => '重新顯示此作品';
+
+  @override
+  String get communityPlazaMutedPlaceholder => '此作品已隱藏';
+
+  @override
+  String get communityPlazaUnmuteQuestion => '要永久重新顯示此作品嗎？';
+
+  @override
+  String get communityPlazaUnmuteAlways => '永久顯示';
+
+  @override
+  String get communityPlazaUnmuteTemporary => '暫時顯示';
+
+  @override
+  String get communityPlazaMuteSettings => '隱藏設定';
+
+  @override
+  String get communityPlazaPartialHint => '※關閉時使用部分相符搜尋';
+
+  @override
+  String get communityPlazaDeleteHistory => '要刪除這筆搜尋紀錄嗎？';
+
+  @override
+  String get communityPlazaLocalData => '裝置本機資料';
+
+  @override
+  String get communityPlazaExactTitle => '搜尋詞完全相符';
+
+  @override
+  String get communityPlazaUnavailablePlaceholder => '此作品已刪除或設為私人';
+
+  @override
+  String get communityPlazaSearchTab => '搜尋';
+
+  @override
+  String get communityPlazaMutePrivacyNotice => '※隱藏後不會通知對方。';
+
+  @override
+  String get communityPostVisibilityHeading => 'YouTube 公開範圍';
+
+  @override
+  String get communityPostVisibilityUnlistedTitle =>
+      '發佈至 NIARIM（YouTube 不公開列出）';
+
+  @override
+  String get communityPostVisibilityUnlistedHelp => '在 NIARIM 作品廣場顯示，並可參與書籤排名。';
+
+  @override
+  String get communityPostVisibilityPublicTitle => '同時公開至 YouTube';
+
+  @override
+  String get communityPostVisibilityPublicHelp =>
+      '可能出現在 YouTube 搜尋及推薦中，也可參與 NIARIM 書籤排名。';
+
+  @override
+  String get communityPostVisibilityUnlistedDisclosure =>
+      '注意：不公開列出不等於私人。知道連結的人也能在 NIARIM 以外觀看和分享。';
+
+  @override
+  String get communityRankingLayoutTitle => '排行榜版面';
+
+  @override
+  String get communityRankingLayoutHorizontal => '橫向清單';
+
+  @override
+  String get communityRankingLayoutLargeThumbnail => '大縮圖';
+
+  @override
+  String get communityRankingLayoutRankedPlace => '排名';
+
+  @override
+  String get communityRankingLayoutPeriodBookmarks => '本期書籤';
+
+  @override
+  String get communityWorkMetadataTitle => '作品標題';
+
+  @override
+  String get communityWorkMetadataDescription => '作品簡介';
+
+  @override
+  String get communityWorkMetadataDescriptionHint => '關於作品（選填）';
+
+  @override
+  String get communityWorkMetadataEdit => '編輯標題與簡介';
+
+  @override
+  String get communityWorkMetadataSaved => '標題與簡介已儲存';
+
+  @override
+  String get communityWorkMetadataInfo => '僅修改 NIARIM 的資訊，不修改 YouTube 影片資訊。';
+
+  @override
+  String get communityWorkMetadataLoadFailed => '無法載入作品簡介';
+
+  @override
+  String get communityWorkMetadataYoutubeDescription => 'YouTube 說明（選填）';
+
+  @override
+  String get communityWorkMetadataYoutubeDescriptionHint => '與 NIARIM 作品簡介分開管理';
+
+  @override
+  String get communityWorkMetadataYoutubeDescriptionInvalid =>
+      'YouTube 說明不得超過 5,000 位元組，也不可包含 < 或 >';
+
+  @override
+  String get communityWorkMetadataYoutubeTitle => 'YouTube 標題';
+
+  @override
+  String get communityWorkMetadataCopyTitleToYoutube => '複製到 YouTube 標題';
+
+  @override
+  String get communityWorkMetadataCopyTitleToNiarim => '複製到 NIARIM 標題';
+
+  @override
+  String get communityWorkMetadataCopyDescriptionToYoutube => '複製到 YouTube 說明';
+
+  @override
+  String get communityWorkMetadataCopyDescriptionToNiarim => '複製到 NIARIM 簡介';
+
+  @override
+  String get communityWorkMetadataYoutubeTitleRequired => '請輸入 YouTube 標題';
+
+  @override
+  String get communityWorkMetadataCopyConfirmTitle => '覆蓋目標內容？';
+
+  @override
+  String get communityWorkMetadataCopyConfirmMessage =>
+      '目標中目前輸入的內容將全部被覆蓋。是否繼續複製？';
+
+  @override
+  String get communityWorkMetadataCopyCancel => '取消';
+
+  @override
+  String get communityWorkMetadataCopyConfirmAction => '複製並覆蓋';
+
+  @override
+  String get communityYoutubeCommentHeading => '查看 YouTube 留言';
+
+  @override
+  String get communityYoutubeCommentLoadMore => '再載入20則';
+
+  @override
+  String get communityYoutubeCommentNoComments => '尚無留言';
+
+  @override
+  String get communityYoutubeCommentUnavailable => '無法載入 YouTube 留言';
+
+  @override
+  String get communityYoutubeCommentRetry => '重試';
+
+  @override
+  String get communityYoutubeCommentReplies => '回覆';
+
+  @override
+  String get communityYoutubeCommentAttribution => '留言來自 YouTube。暫不支援發佈與回覆。';
+
+  @override
+  String get creatorMissionTitle => '創作者任務';
+
+  @override
+  String get creatorMissionGenericPublished => '發佈一件作品';
+
+  @override
+  String get creatorMissionDetailsTitle => '達成條件';
+
+  @override
+  String get creatorMissionDetailsHint => '每個帳戶或每件作品的每項任務只能領取一次。';
+
+  @override
+  String get creatorMissionNotAchieved => '未達成';
+
+  @override
+  String get creatorMissionDetailsTooltip => '查看詳情';
+
+  @override
+  String get creatorMissionReviewing => '審核中';
+
+  @override
+  String get creatorMissionCoinReward => '金幣獎勵';
+
+  @override
+  String get creatorMissionClaim => '領取';
+
+  @override
+  String get creatorMissionActivityTitle => '通知';
+
+  @override
+  String get creatorMissionActivityObserved => '首次確認日期';
+
+  @override
+  String get creatorMissionActivityEmpty => '暫無任務達成通知';
+
+  @override
+  String get creatorMissionActivitySyncMore => '繼續檢查成就';
+
+  @override
+  String get creatorMissionActivityHistoryMore => '更早的通知';
+
+  @override
+  String get creatorMissionActivityError => '無法載入通知';
+
+  @override
+  String get creatorMissionActivitySignIn => '登入後查看成就紀錄';
+
+  @override
+  String get creatorMissionDetailsDraftCount => '多作品進度為暫定值，發獎時伺服器會再次驗證。';
+
+  @override
+  String get creatorMissionDetailsPerWorkRule => '每件作品可領取一次，其他作品達標後可另行領取。';
+
+  @override
+  String get creatorMissionDetailsAccountRule => '每個帳戶限領一次。';
+
+  @override
+  String get creatorMissionDetailsTemplateRule =>
+      '作品達標後會在上方出現包含作品名稱的任務。此範本始終顯示為未達成。';
+
+  @override
+  String get creatorMissionDetailsPending => '正在驗證。48小時後請再次點擊領取。';
+
+  @override
+  String get creatorMissionDetailsOffline => '獎勵尚未開放，暫時無法領取。';
+
+  @override
+  String get creatorMissionDrawerAttention => '有尚未領取的已達成任務';
+
+  @override
+  String get creatorMissionAchieved => '已達成';
+
+  @override
+  String get creatorMissionClaimReceived => '獎勵已領取';
+
+  @override
+  String get creatorMissionHoldStarted => '正在驗證。48小時後再按領取。';
+
+  @override
+  String get creatorMissionClaimFailed => '領取失敗，請重新整理後再試。';
+
+  @override
+  String get creatorMissionWorkSection => '按作品顯示的成就';
+
+  @override
+  String get creatorMissionWorkWarning => '僅顯示已達成任務，每件作品的每項任務只能領取一次。';
+
+  @override
+  String get creatorMissionNoAchievements => '此頁沒有已達成的作品任務。';
+
+  @override
+  String get creatorMissionLoadMore => '查看接下來25件作品';
+
+  @override
+  String get creatorMissionWorkListError => '無法載入作品成就。';
+
+  @override
+  String get creatorMissionSubtitle => '透過創作和作品廣場里程碑獲得金幣';
+
+  @override
+  String get creatorMissionPerWork => '每篇作品一次';
+
+  @override
+  String get creatorMissionClaimed => '已領取';
+
+  @override
+  String get creatorMissionPending => '審核中';
+
+  @override
+  String get creatorMissionNotClaimed => '未領取';
+
+  @override
+  String get creatorMissionUpcoming => '獎勵籌備中';
+
+  @override
+  String get creatorMissionLogin => '使用 Google 登入以查看任務。';
+
+  @override
+  String get creatorMissionOffline => '任務伺服器未連線。';
+
+  @override
+  String get creatorMissionRetry => '重新整理';
+
+  @override
+  String get creatorMissionLoading => '正在載入任務…';
+
+  @override
+  String get creatorMissionLoadError => '無法載入任務。';
+
+  @override
+  String get creatorMissionTimeWarning => '本機創作時間僅供參考，金幣需要伺服器驗證。';
+
+  @override
+  String get creatorMissionRankingWarning => '排名獎勵僅基於 NIARIM 收藏榜，不涉及 YouTube。';
+
+  @override
+  String get creatorMissionBudget => '每項任務僅可領取一次。';
+
+  @override
+  String get loginBonusTitle => '累計登入獎勵';
+
+  @override
+  String get loginBonusDaily => '今日登入獎勵';
+
+  @override
+  String get loginBonusClaim => '領取';
+
+  @override
+  String get loginBonusClaimed => '已領取';
+
+  @override
+  String get loginBonusNotYet => '未達成';
+
+  @override
+  String get loginBonusMilestones => '里程碑額外獎勵';
+
+  @override
+  String get loginBonusUnknown => '無法確認';
+
+  @override
+  String get loginBonusUnavailable => '獎勵領取尚未開放';
+
+  @override
+  String get loginBonusUtc => '按日本時間(JST)午夜換日，中斷不會重設累計。';
+
+  @override
+  String get loginBonusRetry => '重新整理';
+
+  @override
+  String get loginBonusFailed => '無法確認領取';
+
+  @override
+  String get loginBonusSuccess => '金幣已領取';
+
+  @override
+  String get loginBonusVisitMissing => '正在確認今日登入';
+
+  @override
+  String get rewardNavigationExchange => '兌換特權';
+
+  @override
+  String get rewardNavigationHub => '金幣與獎勵';
+
+  @override
+  String get rewardNavigationEarnTab => '看廣告賺金幣';
+
+  @override
+  String get rewardNavigationMissions => '任務';
+
+  @override
+  String get rewardNavigationEarn => '免費賺金幣';
+
+  @override
+  String get rewardNavigationMembership => '會員狀態';
+
+  @override
+  String get rewardNavigationMembershipDetail => '了解高級會員';
+
+  @override
+  String get rewardNavigationMembershipFree => '免費會員';
+
+  @override
+  String get rewardNavigationMembershipMonthly => '高級會員（月付）';
+
+  @override
+  String get rewardNavigationMembershipYearly => '高級會員（年付）';
+
+  @override
+  String get rewardNavigationMembershipPlay => '高級會員';
+
+  @override
+  String get rewardNavigationMembershipCoin => '金幣解鎖';
+
+  @override
+  String get rewardNavigationMembershipBenefit => '目前權益';
+
+  @override
+  String get rewardNavigationMembershipNoBenefit => '暫無特權';
+
+  @override
+  String get rewardNavigationMembershipUpsell => '了解高級會員的功能和價格後再決定。';
+
+  @override
+  String get rewardNavigationMembershipExpires => '到期';
+
+  @override
+  String get rewardNavigationMembershipUnavailable => '無法讀取權益';
+
+  @override
+  String get rewardNavigationMembershipLogin => '請登入查看權益';
+
+  @override
+  String get rewardNavigationPremiumCompare => '了解高級會員';
+
+  @override
+  String get rewardNavigationPremiumJoin => '開通高級會員';
+
+  @override
+  String get rewardNavigationPremiumPlans => '選擇方案';
+
+  @override
+  String get rewardNavigationEarnDescription => '觀看廣告賺取金幣';
+
+  @override
+  String get rewardNavigationEarnUnavailable => '獎勵廣告尚未開放';
+
+  @override
+  String get rewardUnlockTitle => '獎勵';
+
+  @override
+  String get rewardUnlockMissionTitle => '任務';
+
+  @override
+  String get rewardUnlockMissionSubtitle => '透過發佈作品和達成收藏目標獲得金幣';
+
+  @override
+  String get rewardUnlockLoading => '正在查詢餘額…';
+
+  @override
+  String get rewardUnlockPaused => '保留的剩餘秒數';
+
+  @override
+  String get rewardUnlockActiveUntil => '有效期限';
+
+  @override
+  String get rewardUnlockSubscriptionBenefit =>
+      '可透過自願觀看廣告免費累積金幣，也可選擇月付或年付 Premium 節省時間。';
+
+  @override
+  String get rewardUnlockActive => '目前使用中的權益';
+
+  @override
+  String get rewardUnlockActivePremium => '已透過 Premium 會員使用全部權益';
+
+  @override
+  String get rewardUnlockActiveCampaign => '上線活動：Premium 權益已開放';
+
+  @override
+  String get rewardUnlockActiveUnavailable => '連線伺服器後顯示金幣權益';
+
+  @override
+  String get rewardUnlockDuration => '使用期限';
+
+  @override
+  String get rewardUnlockChooseDuration => '選擇期限';
+
+  @override
+  String get rewardUnlockChooseBenefits => '選擇權益';
+
+  @override
+  String get rewardUnlockPricePending => '金幣：尚未設定';
+
+  @override
+  String get rewardUnlockNotReady => '即將推出';
+
+  @override
+  String get rewardUnlockTotal => '所需金幣總數';
+
+  @override
+  String get rewardUnlockUnavailable => '正式兌換價格尚未設定';
+
+  @override
+  String get rewardUnlockBalancePending => '金幣餘額：伺服器尚未連線';
+
+  @override
+  String get rewardUnlockGoal => '將此金幣數設為目標';
+
+  @override
+  String get rewardUnlockRedeem => '兌換金幣';
+
+  @override
+  String get rewardUnlockWatchRewardedAd => '觀看獎勵廣告獲得金幣';
+
+  @override
+  String get rewardUnlockRewardPending => '等待驗證中。Google 確認後金幣才會入帳。';
+
+  @override
+  String get rewardUnlockRewardUnavailable => '無法播放廣告，請稍後再試。';
+
+  @override
+  String get rewardUnlockRewardRefresh => '重新整理餘額';
+
+  @override
+  String get rewardUnlockCoinHistory => '金幣紀錄';
+
+  @override
+  String get rewardUnlockHistoryEmpty => '尚無交易紀錄';
+
+  @override
+  String get rewardUnlockHistoryError => '無法載入紀錄';
+
+  @override
+  String get rewardUnlockHistoryMore => '載入更多';
+
+  @override
+  String get rewardUnlockHistoryAd => '獎勵廣告';
+
+  @override
+  String get rewardUnlockHistoryMission => '任務';
+
+  @override
+  String get rewardUnlockHistoryRedemption => '金幣兌換';
+
+  @override
+  String get rewardUnlockHistoryOther => '其他交易';
+
+  @override
+  String get rewardUnlockRewardQuotaReached => '今日獎勵已達上限（UTC）';
+
+  @override
+  String get rewardUnlockRewardQuotaUncapped => 'NIARIM 不設每日次數上限';
+
+  @override
+  String get rewardUnlockRewardQuotaCaution => '廣告庫存和 AdMob 頻率上限可能影響實際播放次數。';
+
+  @override
+  String get rewardUnlockRedemptionSuccess => '兌換完成。已從伺服器更新 Premium 到期日。';
+
+  @override
+  String get rewardUnlockRedemptionUncertain => '無法確認兌換結果。重試將檢查同一筆交易。';
+
+  @override
+  String get rewardUnlockFreeOnly => '自願觀看廣告賺取免費金幣（即將推出）';
+
+  @override
+  String get rewardUnlockSubscribe => '查看 Premium 月付 / 年付';
+
+  @override
+  String get rewardUnlockBestValue => '最划算';
+
+  @override
+  String get rewardUnlockBestExplain => '比逐項兌換全部權益更划算';
+
+  @override
+  String get rewardUnlockEarning => 'Premium 會員也可以累積金幣';
+
+  @override
+  String get rewardUnlockHour => '小時';
+
+  @override
+  String get rewardUnlockDay => '天';
+
+  @override
+  String get rewardUnlockWeek => '週';
+
+  @override
+  String get rewardUnlockMonth => '個月';
+
+  @override
+  String get rewardUnlockEndCardEdit => '編輯或移除片尾卡';
+
+  @override
+  String get rewardUnlockWatermark => '自訂浮水印';
+
+  @override
+  String get rewardUnlockToneCurve => '色調曲線';
+
+  @override
+  String get rewardUnlockLevelAdjustment => '色階校正';
+
+  @override
+  String get rewardUnlockUnlimitedDuration => '最長2小時';
+
+  @override
+  String get rewardUnlockCustomAutomation => '自訂自動操作';
+
+  @override
+  String get rewardUnlockCommunityPostQuota => '作品廣場每日1篇→3篇';
+
+  @override
+  String get rewardUnlockProjectListAds => '專案列表無廣告';
+
+  @override
+  String get rewardUnlockCanvasAds => '畫布無廣告';
+
+  @override
+  String get rewardUnlockTimelineAds => '時間軸無廣告';
+
+  @override
+  String get rewardUnlockProcessingAds => '處理時無廣告';
+
+  @override
+  String get rewardUnlockAllAds => '移除所有廣告';
+
+  @override
+  String get rewardUnlockFullPremium => '全部功能＋無廣告';
+
+  @override
+  String get rewardUnlockChoose => '選擇';
+
+  @override
+  String get sharedArchiveReceived => '收到的';
+
+  @override
+  String get sharedArchiveCreated => '建立的';
+
+  @override
+  String get sharedArchiveShare => '分享';
+
+  @override
+  String get sharedArchiveEmpty => '尚未建立分享檔案';
+
+  @override
+  String coinAmount(int count) {
+    return '$count 金幣';
+  }
+
+  @override
+  String creatorMissionGenericBookmark(int count) {
+    return '已發佈作品達到 $count 個收藏';
+  }
+
+  @override
+  String creatorMissionNamedBookmark(String title, int count) {
+    return '$title 達到 $count 個收藏';
+  }
+
+  @override
+  String creatorMissionNamedPublished(String title) {
+    return '$title 已發佈';
+  }
+
+  @override
+  String creatorMissionWorksGoal(int works, int count) {
+    return '$works 件作品各達到 $count 個收藏';
+  }
+
+  @override
+  String creatorMissionWorksPublished(int works) {
+    return '發佈 $works 件作品';
+  }
+
+  @override
+  String creatorMissionActivityPublished(String title) {
+    return '已發佈$title';
+  }
+
+  @override
+  String creatorMissionActivityFollowers(int count) {
+    return '已達到$count位追蹤者';
+  }
+
+  @override
+  String creatorMissionActivityWorkBookmarks(String title, int count) {
+    return '$title達到了$count個收藏';
+  }
+
+  @override
+  String creatorMissionActivityWorksBookmarks(int works, int count) {
+    return '你發佈的$works件作品各獲得$count個收藏';
+  }
+
+  @override
+  String creatorMissionActivityWorksPublished(int works) {
+    return '你已發佈$works件作品';
+  }
+
+  @override
+  String creatorMissionDetailsWorkProgress(int progress, int goal) {
+    return '目前收藏：$progress（需要：$goal）';
+  }
+
+  @override
+  String creatorMissionDetailsWorksProgress(int progress, int goal) {
+    return '符合條件的作品：$progress（需要：$goal）';
+  }
+
+  @override
+  String creatorMissionDetailsFollowersProgress(int progress, int goal) {
+    return '目前追蹤者：$progress（需要：$goal）';
+  }
+
+  @override
+  String creatorMissionTime(int hours) {
+    return '已驗證創作時間 $hours 小時';
+  }
+
+  @override
+  String creatorMissionFollowers(int count) {
+    return '$count 位追蹤者';
+  }
+
+  @override
+  String creatorMissionRank(int rank) {
+    return 'NIARIM 收藏榜前 $rank 名';
+  }
+
+  @override
+  String creatorMissionLocalTime(int hours) {
+    return '此裝置的創作時間（參考）：$hours 小時';
+  }
+
+  @override
+  String creatorMissionCandidateMinutes(int minutes) {
+    return '伺服器記錄的候選時間：$minutes 分鐘（待驗證）';
+  }
+
+  @override
+  String get creatorMissionClaimAll => '全部領取';
+
+  @override
+  String creatorMissionClaimAllResult(int received, int failed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      failed,
+      locale: localeName,
+      other: '，$failed 項未能領取',
+      zero: '',
+    );
+    return '批次領取：已完成 $received 項$_temp0';
+  }
+
+  @override
+  String get creatorMissionClaimAllLoadFailed => '無法讀取領取狀態，請再試一次。';
+
+  @override
+  String loginBonusDays(int days) {
+    return '累計 $days 天';
+  }
+
+  @override
+  String loginBonusDailyCoins(int coins) {
+    return '每日 $coins 金幣';
+  }
+
+  @override
+  String loginBonusMilestone(int days) {
+    return '累計登入 $days 天';
+  }
+
+  @override
+  String loginBonusActivityMilestone(int days) {
+    return '累計登入達到 $days 天';
+  }
+
+  @override
+  String rewardUnlockRewardQuotaRemaining(int count) {
+    return '今日剩餘金幣獎勵：$count次（UTC）';
+  }
+
+  @override
+  String get rewardUnlockReferencePrice => '參考價格（兌換準備中）';
+
+  @override
+  String get missionCoinsReceived => '已領取金幣';
+
+  @override
+  String get missionClaimFailed => '領取失敗';
+
+  @override
+  String get missionClaimUnconfirmed => '無法確認領取';
+
+  @override
+  String get missionClaimed => '已領取';
+
+  @override
+  String get missionComingSoon => '即將開放';
+
+  @override
+  String get missionClaim => '領取';
+
+  @override
+  String get missionNotYet => '未達成';
+
+  @override
+  String get missionPeriodDaily => '每日';
+
+  @override
+  String get missionPeriodWeekly => '每週';
+
+  @override
+  String get missionPeriodMonthly => '每月';
+
+  @override
+  String get missionRefresh => '重新整理';
+
+  @override
+  String get missionPayoutPending => '金幣領取尚未開放';
+
+  @override
+  String missionDurationHours(int count) {
+    return '$count小時';
+  }
+
+  @override
+  String missionDurationMinutes(int count) {
+    return '$count分鐘';
+  }
+
+  @override
+  String get plazaMissionsTitle => '作品廣場停留任務';
+
+  @override
+  String get plazaMissionsNote => '無需播放或操作。按日本時間(JST)統計作品廣場的開啟時長。';
+
+  @override
+  String get plazaMissionsUnavailable => '無法讀取作品廣場任務';
+
+  @override
+  String plazaMissionGoal(String duration) {
+    return '累計開啟作品廣場 $duration';
+  }
+
+  @override
+  String get recurringMissionsTitle => '每週·每月任務';
+
+  @override
+  String get recurringMissionsNote => '按日本時間統計（每週從週一開始）';
+
+  @override
+  String get recurringMissionsUnavailable => '無法取得週期任務';
+
+  @override
+  String recurringMissionGoal(int days) {
+    return '期間內登入 $days 天';
+  }
+
+  @override
+  String recurringMissionProgress(int days, int goal) {
+    return '$days / $goal 天';
+  }
+
+  @override
+  String get missionCompletedTitle => '任務達成';
+
+  @override
+  String get missionCompletedBody => '可在任務頁面領取獎勵。';
+
+  @override
+  String get missionCompletedGoToMissions => '前往任務頁面';
+
+  @override
+  String missionLoginWeek(int days) {
+    return '本週登入 $days 天';
+  }
+
+  @override
+  String missionLoginMonth(int days) {
+    return '本月登入 $days 天';
+  }
+
+  @override
+  String missionLoginTotal(int days) {
+    return '累計登入 $days 天';
+  }
+
+  @override
+  String communityWorkMetadataCopyTooLong(int max) {
+    return '超過目標的 $max 字元限制，無法複製';
+  }
 
   @override
   String rewardDurationHours(int count) {

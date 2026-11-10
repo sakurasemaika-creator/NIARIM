@@ -6,6 +6,7 @@ import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/project_service.dart';
+import '../../utils/app_locale.dart';
 import '../../widgets/responsive.dart';
 import 'login_bonus_panel.dart';
 import 'recurring_missions_panel.dart';
@@ -96,8 +97,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           : receipt['claimed'] == true
           ? t.get('claimReceived')
           : t.get('claimFailed');
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
       _refresh(api);
     } catch (_) {
       if (mounted &&
@@ -118,7 +120,10 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
   /// Collect every currently claimable server-verified mission. Individual
   /// endpoints retain their atomic wallet/idempotency protection. Failed or
   /// pending claims are never represented as credited coins.
-  Future<void> _bulkClaim(CommunityApi api, Map<String, dynamic> pageData) async {
+  Future<void> _bulkClaim(
+    CommunityApi api,
+    Map<String, dynamic> pageData,
+  ) async {
     if (_bulkBusy) return;
     final owner = context.read<GoogleAuthService>().account?.id;
     if (owner == null) return;
@@ -126,7 +131,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     var received = 0;
     var failed = 0;
     try {
-      bool sameOwner() => mounted &&
+      bool sameOwner() =>
+          mounted &&
           context.read<GoogleAuthService>().account?.id == owner &&
           identical(context.read<CommunityService>().api, api);
 
@@ -141,12 +147,17 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       final recurring = statuses[1];
       final plaza = statuses[2];
 
-      Future<void> collect(Future<Map<String, dynamic>> Function() request) async {
+      Future<void> collect(
+        Future<Map<String, dynamic>> Function() request,
+      ) async {
         if (!sameOwner()) return;
         try {
           final receipt = await request();
-          if (receipt['claimed'] == true && receipt['duplicate'] != true &&
-              receipt['pending'] != true) received++;
+          if (receipt['claimed'] == true &&
+              receipt['duplicate'] != true &&
+              receipt['pending'] != true) {
+            received++;
+          }
         } catch (_) {
           failed++;
         }
@@ -157,40 +168,65 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           await collect(() => api.claimLoginBonus(kind: 'daily'));
         }
         for (final row in (login['milestones'] as List? ?? const [])) {
-          if (row is! Map || row['eligible'] != true || row['claimed'] == true ||
-              row['days'] is! num) continue;
+          if (row is! Map ||
+              row['eligible'] != true ||
+              row['claimed'] == true ||
+              row['days'] is! num) {
+            continue;
+          }
           final days = (row['days'] as num).toInt();
-          await collect(() => api.claimLoginBonus(kind: 'milestone', days: days));
+          await collect(
+            () => api.claimLoginBonus(kind: 'milestone', days: days),
+          );
         }
       }
       for (final row in (recurring['missions'] as List? ?? const [])) {
-        if (row is! Map || row['ready'] != true || row['id'] is! String) continue;
+        if (row is! Map || row['ready'] != true || row['id'] is! String) {
+          continue;
+        }
         final id = row['id'] as String;
         await collect(() => api.claimRecurringMission(missionId: id));
       }
       for (final row in (plaza['missions'] as List? ?? const [])) {
-        if (row is! Map || row['ready'] != true || row['id'] is! String) continue;
+        if (row is! Map || row['ready'] != true || row['id'] is! String) {
+          continue;
+        }
         final id = row['id'] as String;
         await collect(() => api.claimPlazaMission(id));
       }
       for (final row in _rows(pageData)) {
-        if (row['readyForClaim'] != true || row['rewardEnabled'] != true ||
-            row['claimed'] == true || row['_genericTemplate'] == true) continue;
+        if (row['readyForClaim'] != true ||
+            row['rewardEnabled'] != true ||
+            row['claimed'] == true ||
+            row['_genericTemplate'] == true) {
+          continue;
+        }
         final id = (row['id'] ?? row['missionId']) as String?;
         if (id == null || id.isEmpty) continue;
         final workId = row['_workId'] as String?;
-        await collect(() => api.claimCreatorMission(missionId: id, workId: workId));
+        await collect(
+          () => api.claimCreatorMission(missionId: id, workId: workId),
+        );
       }
-      if (sameOwner()) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('まとめて受取：$received件完了'
-              '${failed > 0 ? " / $failed件は受取できませんでした" : ""}'),
-        ));
+      if (mounted && sameOwner()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              appLocalizationsOf(
+                context,
+              ).creatorMissionClaimAllResult(received, failed),
+            ),
+          ),
+        );
       }
     } catch (_) {
       if (mounted && context.read<GoogleAuthService>().account?.id == owner) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('受取状況を読み込めませんでした。再度お試しください。')),
+          SnackBar(
+            content: Text(
+              appLocalizationsOf(context).creatorMissionClaimAllLoadFailed,
+            ),
+          ),
         );
       }
     } finally {
@@ -241,29 +277,27 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
   }
 
   String _goal(CreatorMissionLabels t, Map<String, dynamic> row) {
+    final l10n = appLocalizationsOf(context);
     final required = (row['required'] as num?)?.toInt() ?? 0;
     final each = (row['eachWorkBookmarks'] as num?)?.toInt() ?? 0;
     final workTitle = row['_workTitle'] as String?;
-    final generic = row['_genericTemplate'] == true;
     return switch (row['kind']) {
       'qualifiedWorks' =>
         each == 0
-            ? t.format('worksPublished', required)
-            : t.format('worksGoal', required, each: each),
+            ? l10n.creatorMissionWorksPublished(required)
+            : l10n.creatorMissionWorksGoal(required, each),
       'workBookmarks' =>
         required == 0
             ? workTitle != null
-                  ? '$workTitle${t.get('namedPublished')}'
+                  ? l10n.creatorMissionNamedPublished(workTitle)
                   : t.get('genericPublished')
             : workTitle != null
-            ? '$workTitle${t.format('namedBookmark', required)}'
-            : generic
-            ? t.format('genericBookmark', required)
-            : t.format('genericBookmark', required),
-      'followers' => t.format('followers', required),
-      'verifiedEditSeconds' => t.format('time', required ~/ 3600),
+            ? l10n.creatorMissionNamedBookmark(workTitle, required)
+            : l10n.creatorMissionGenericBookmark(required),
+      'followers' => l10n.creatorMissionFollowers(required),
+      'verifiedEditSeconds' => l10n.creatorMissionTime(required ~/ 3600),
       'niarimBookmarkRanking' =>
-        required == 1 ? t.get('rankOne') : t.format('rank', required),
+        required == 1 ? t.get('rankOne') : l10n.creatorMissionRank(required),
       _ => row['id'] as String? ?? '?',
     };
   }
@@ -279,31 +313,34 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     final minPublished =
         (row['rankingMinPublishedWorks'] as num?)?.toInt() ?? 100;
     final haveBookmarks = (row['rankingWorkBookmarks'] as num?)?.toInt() ?? 0;
-    final neededBookmarks =
-        (row['rankingMinBookmarks'] as num?)?.toInt() ?? 0;
+    final neededBookmarks = (row['rankingMinBookmarks'] as num?)?.toInt() ?? 0;
     final rank = (row['progress'] as num?)?.toInt() ?? 51;
-    final allowed =
-        (row['rankingEffectiveRankLimit'] as num?)?.toInt() ?? 0;
+    final allowed = (row['rankingEffectiveRankLimit'] as num?)?.toInt() ?? 0;
     return [
       for (final code in codes)
         switch (code) {
           'selectWork' => t.get('rankSelectWork'),
           'workNotPublic' => t.get('rankWorkNotPublic'),
           'communityNotMeasured' => t.get('rankCommunityNotMeasured'),
-          'communityTooSmall' =>
-            t.format('rankCommunityWait', count, each: minPublished),
-          'notEnoughBookmarks' =>
-            t.format('rankBookmarkWait', haveBookmarks,
-                each: neededBookmarks),
+          'communityTooSmall' => t.format(
+            'rankCommunityWait',
+            count,
+            each: minPublished,
+          ),
+          'notEnoughBookmarks' => t.format(
+            'rankBookmarkWait',
+            haveBookmarks,
+            each: neededBookmarks,
+          ),
           'notRanked' => t.get('rankNotRanked'),
-          'rankTooLow' =>
-            t.format('rankRankWait', rank, each: allowed),
+          'rankTooLow' => t.format('rankRankWait', rank, each: allowed),
           _ => t.get('notAchieved'),
         },
     ];
   }
 
   void _showDetails(CreatorMissionLabels t, Map<String, dynamic> row) {
+    final l10n = appLocalizationsOf(context);
     final name = _goal(t, row);
     final claimed = row['claimed'] == true;
     final earned = row['eligible'] == true;
@@ -325,24 +362,28 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       name,
       status,
       if (progress != null && !template && kind == 'qualifiedWorks')
-        t.format('detailsWorksProgress', progress, each: goal),
+        l10n.creatorMissionDetailsWorksProgress(progress, goal),
       if (progress != null && !template && kind == 'workBookmarks' && goal > 0)
-        t.format('detailsWorkProgress', progress, each: goal),
+        l10n.creatorMissionDetailsWorkProgress(progress, goal),
       if (progress != null && kind == 'followers')
-        t.format('detailsFollowersProgress', progress, each: goal),
+        l10n.creatorMissionDetailsFollowersProgress(progress, goal),
       if (kind == 'niarimBookmarkRanking' &&
           row['rankingPopulationKnown'] != true)
         t.get('rankPoolUnknown'),
       if (kind == 'niarimBookmarkRanking' &&
           row['rankingPopulationKnown'] == true)
-        t.format('rankPoolCurrent',
-            (row['publishedWorkCount'] as num?)?.toInt() ?? 0),
+        t.format(
+          'rankPoolCurrent',
+          (row['publishedWorkCount'] as num?)?.toInt() ?? 0,
+        ),
+      if (kind == 'niarimBookmarkRanking' && row['rankingWorkBookmarks'] is num)
+        t.format(
+          'rankBookmarkCurrent',
+          (row['rankingWorkBookmarks'] as num).toInt(),
+        ),
       if (kind == 'niarimBookmarkRanking' &&
-          row['rankingWorkBookmarks'] is num)
-        t.format('rankBookmarkCurrent',
-            (row['rankingWorkBookmarks'] as num).toInt()),
-      if (kind == 'niarimBookmarkRanking' &&
-          !template && row['progress'] is num &&
+          !template &&
+          row['progress'] is num &&
           (row['progress'] as num).toInt() > 0 &&
           (row['progress'] as num).toInt() <= 50)
         t.format('rankCurrentPlace', (row['progress'] as num).toInt()),
@@ -363,22 +404,21 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           'rankingEffective',
           (row['rankingEffectiveRankLimit'] as num).toInt(),
         ),
-      if (kind == 'niarimBookmarkRanking' &&
-          row['rankingTopPercent'] is num)
-        t.format('rankDetailsRules',
-            (row['rankingTopPercent'] as num).toInt(), each: goal),
-      if (kind == 'niarimBookmarkRanking')
-        t.get('rankDetailsHold'),
-      if (kind == 'workBookmarks')
-        t.get('detailsCreatorBookmarkRule'),
+      if (kind == 'niarimBookmarkRanking' && row['rankingTopPercent'] is num)
+        t.format(
+          'rankDetailsRules',
+          (row['rankingTopPercent'] as num).toInt(),
+          each: goal,
+        ),
+      if (kind == 'niarimBookmarkRanking') t.get('rankDetailsHold'),
+      if (kind == 'workBookmarks') t.get('detailsCreatorBookmarkRule'),
       if (kind == 'qualifiedWorks') ...[
         t.get('detailsCreatorWorksRule'),
         t.get('detailsDraftCount'),
       ],
       if (kind == 'followers') t.get('detailsCreatorFollowerRule'),
       if (kind == 'verifiedEditSeconds') t.get('detailsCreatorTimeRule'),
-      if (kind != 'niarimBookmarkRanking' &&
-          kind != 'verifiedEditSeconds')
+      if (kind != 'niarimBookmarkRanking' && kind != 'verifiedEditSeconds')
         t.get('detailsCreatorClaimRule'),
       if (template) t.get('detailsTemplateRule'),
       if (row['perWork'] == true)
@@ -388,7 +428,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       if (row['pendingSince'] is num && !claimed && earned)
         t.get('detailsPending'),
       if (row['rewardEnabled'] != true) t.get('detailsOffline'),
-      '$coins ${t.get('coin')}',
+      l10n.coinAmount(coins),
       t.get('detailsHint'),
     ];
     showDialog<void>(
@@ -466,7 +506,6 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                 children: [
                   Text(_goal(t, row), style: theme.textTheme.bodyMedium),
                   Text(status, style: theme.textTheme.bodySmall),
-
                 ],
               ),
             ),
@@ -480,7 +519,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                     Icon(Icons.toll_outlined, size: 16, color: scheme.primary),
                     const SizedBox(width: 3),
                     Text(
-                      '$coins ${t.get('coin')}',
+                      appLocalizationsOf(context).coinAmount(coins),
                       style: theme.textTheme.labelSmall,
                     ),
                   ],
@@ -512,8 +551,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                       !available
                           ? t.get('upcoming')
                           : pending
-                              ? t.get('reviewing')
-                              : t.get('notAchieved'),
+                          ? t.get('reviewing')
+                          : t.get('notAchieved'),
                     ),
                   ),
               ],
@@ -533,8 +572,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     for (final raw in (account['missions'] as List? ?? const [])) {
       if (raw is! Map) continue;
       final row = Map<String, dynamic>.from(raw);
-      if (row['kind'] == 'niarimBookmarkRanking')
+      if (row['kind'] == 'niarimBookmarkRanking') {
         row['publishedWorkCount'] = account['publishedWorkCount'] ?? 0;
+      }
       if (widget.workId != null) {
         row['_workId'] = row['perWork'] == true ? widget.workId : null;
         row['_workTitle'] = row['perWork'] == true ? selectedTitle : null;
@@ -577,8 +617,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     // Dart's list sort is not stable; use the original index as the tie break.
     final indexed = all.asMap().entries.toList();
     indexed.sort((a, b) {
-      final priority = missionSortPriority(a.value)
-          .compareTo(missionSortPriority(b.value));
+      final priority = missionSortPriority(
+        a.value,
+      ).compareTo(missionSortPriority(b.value));
       return priority != 0 ? priority : a.key.compareTo(b.key);
     });
     return indexed.map((e) => e.value).toList(growable: false);
@@ -606,6 +647,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         .where((project) => !project.isSharedImport)
         .fold<int>(0, (sum, project) => sum + project.totalWorkSeconds);
     final hasMore = cursor != null;
+    final l10n = appLocalizationsOf(context);
     return desktopCentered(
       context,
       ListView.builder(
@@ -622,18 +664,27 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                     key: const Key('missionClaimAllButton'),
                     onPressed: _bulkBusy ? null : () => _bulkClaim(api, data),
                     icon: _bulkBusy
-                        ? const SizedBox(width: 16, height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2))
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : const Icon(Icons.inventory_2_outlined),
-                    label: const Text('まとめて受け取る'),
+                    label: Text(l10n.creatorMissionClaimAll),
                   ),
                 ),
                 if (widget.workId == null) ...[
-                  LoginBonusPanel(key: ValueKey('login-bulk-$_bulkPanelGeneration')),
+                  LoginBonusPanel(
+                    key: ValueKey('login-bulk-$_bulkPanelGeneration'),
+                  ),
                   const SizedBox(height: 12),
-                  RecurringMissionsPanel(key: ValueKey('recurring-bulk-$_bulkPanelGeneration')),
+                  RecurringMissionsPanel(
+                    key: ValueKey('recurring-bulk-$_bulkPanelGeneration'),
+                  ),
                   const SizedBox(height: 12),
-                  PlazaMissionsPanel(key: ValueKey('plaza-bulk-$_bulkPanelGeneration')),
+                  PlazaMissionsPanel(
+                    key: ValueKey('plaza-bulk-$_bulkPanelGeneration'),
+                  ),
                   const SizedBox(height: 12),
                 ],
                 Text(
@@ -643,14 +694,14 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                 const SizedBox(height: 8),
                 Text(t.get('budget')),
                 const SizedBox(height: 8),
-                Text(t.format('localTime', localSeconds ~/ 3600)),
+                Text(l10n.creatorMissionLocalTime(localSeconds ~/ 3600)),
                 Text(
                   account['editTimeVerificationReady'] == true
                       ? t.get('timeWarning')
                       : t.get('editTimeUnverified'),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                Text(t.format('candidateMinutes', candidateMinutes)),
+                Text(l10n.creatorMissionCandidateMinutes(candidateMinutes)),
                 Text(t.format('verifiedMinutes', verifiedMinutes)),
                 if (account['enabled'] != true &&
                     grid?['rewardEnabled'] != true)
