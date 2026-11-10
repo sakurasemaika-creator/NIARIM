@@ -103,6 +103,23 @@ void main() {
           ),
           findsOneWidget,
         );
+        final tabLabel = find.descendant(
+          of: find.byKey(Key('communityTabWidth$index')),
+          matching: find.byType(Text),
+        );
+        if (width <= 480) {
+          expect(tabLabel, findsNothing,
+              reason: '$width dp shows compact icon-only tabs');
+        } else if (width >= 1024) {
+          expect(tabLabel, findsOneWidget,
+              reason: '$width dp shows icon-and-name tabs');
+        }
+        final firstHasLabel = find.descendant(
+          of: find.byKey(const Key('communityTabWidth0')),
+          matching: find.byType(Text),
+        ).evaluate().isNotEmpty;
+        expect(tabLabel.evaluate().isNotEmpty, firstHasLabel,
+            reason: 'all five tabs must switch display modes together');
       }
       expect(find.byKey(const Key('communityTab4')), findsOneWidget);
       final visibleCard = find.byType(CommunityWorkCard).first;
@@ -144,8 +161,8 @@ void main() {
       await tester.longPress(find.byKey(const Key('communityTab1')));
       await tester.pump(const Duration(milliseconds: 250));
       final l10n = AppLocalizations.of(tester.element(find.byType(CommunityScreen)))!;
-      expect(find.text(l10n.communityTabRanking), findsOneWidget,
-          reason: '$width long press reveals a localized ranking label');
+      expect(find.text(l10n.communityTabRanking), findsWidgets,
+          reason: '$width long press keeps the localized ranking name discoverable');
       expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 4);
       await capture('ranking-tooltip');
       await tester.pumpWidget(const SizedBox.shrink());
