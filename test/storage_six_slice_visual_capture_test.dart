@@ -9,7 +9,6 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
-import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
 import 'package:niarim/screens/settings/storage_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/storage_info_service.dart';
@@ -129,8 +128,18 @@ void main() {
     final storageContext = tester.element(find.byType(StorageScreen));
     final l10n = AppLocalizations.of(storageContext)!;
     final scheme = Theme.of(storageContext).colorScheme;
-    final expectedOutline =
-        CanvasIconButton.outlineColor(scheme.surface, scheme);
+    // Non-selected canvas toolbar icons are painted with onSurface.
+    final expectedOutline = scheme.onSurface;
+    // The 120px chart remains a pie and is outlined with the icon fill.
+    final pie = find.byWidgetPredicate(
+      (widget) =>
+          widget is CustomPaint &&
+          widget.painter?.runtimeType.toString() == '_PieChartPainter',
+    );
+    expect(pie, findsOneWidget);
+    final piePaint = tester.widget<CustomPaint>(pie);
+    expect((piePaint.painter! as dynamic).outlineColor, expectedOutline);
+
     final entries = [
       (StorageCategory.materials, l10n.storageCategoryMaterials),
       (StorageCategory.projectData, l10n.storageCategoryProjectData),
