@@ -416,8 +416,12 @@ Map<String, String> _coinWords(int n) => {
   'fr': '$n ${_one('fr', n) ? 'pièce' : 'pièces'}',
 };
 
+Locale _localeOf(String code) => code == 'zh_Hant'
+    ? const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant')
+    : Locale(code);
+
 Widget _app(String locale, Widget home) => MaterialApp(
-  locale: Locale(locale),
+  locale: _localeOf(locale),
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
   home: home,
@@ -882,7 +886,9 @@ void main() {
   for (final (locale, daily, milestone, coins, spaced) in [
     ('ja', '毎日1コイン', '累計1日達成', '1コイン', RegExp(r'\d コイン')),
     ('ko', '매일 1코인', '누적 1일 달성', '1코인', RegExp(r'\d 코인')),
-    ('zh', '每日 1 金币', '累计登录 1 天', '1 金币', RegExp(r'\d金币')),
+    // 中国語は期間（「1小时」「2天」）と同じく数と単位の間を空けない。
+    ('zh', '每日1金币', '累计登录1天', '1金币', RegExp(r'\d 金币')),
+    ('zh_Hant', '每日1金幣', '累計登入1天', '1金幣', RegExp(r'\d 金幣')),
   ]) {
     testWidgets('累計ログインの毎日のコインと節目のコインが同じ書き方（$locale）', (tester) async {
       await _pumpMissions(tester, locale, _serviceWithCounts(1));
@@ -903,6 +909,101 @@ void main() {
       for (final text in texts) {
         expect(spaced.hasMatch(text), isFalse, reason: '$locale: $text');
       }
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  // 中国語（簡体字・繁体字）は、数と単位・数の前の語の間を空けない
+  // （特典交換の期間「1小时」「2天」と同じ書き方）。以前はミッションの画面で
+  // 「1分鐘 / 5分鐘 · 1 金幣」「收藏榜前 10 名」と「收藏榜第1名」が並んでいた。
+  final zhSpaced = RegExp('[0-9%] [一-鿿]|[一-鿿] [0-9]');
+  for (final (locale, n, pinned) in [
+    (
+      'zh',
+      10,
+      [
+        '10分钟 / 10小时 · 10金币',
+        '累计打开作品广场10小时',
+        'NIARIM 收藏榜前10名',
+        '服务器记录的候选时间：10分钟（待验证）',
+        '每日10金币',
+        '累计10天',
+      ],
+    ),
+    ('zh', 1, ['NIARIM 收藏榜第1名', '1分钟 / 1小时 · 1金币']),
+    (
+      'zh_Hant',
+      10,
+      [
+        '10分鐘 / 10小時 · 10金幣',
+        '累計開啟作品廣場10小時',
+        'NIARIM 收藏榜前10名',
+        '伺服器記錄的候選時間：10分鐘（待驗證）',
+        '每日10金幣',
+        '累計10天',
+      ],
+    ),
+    ('zh_Hant', 1, ['NIARIM 收藏榜第1名', '1分鐘 / 1小時 · 1金幣']),
+  ]) {
+    testWidgets('中国語のミッションの数と単位の間を空けない（$locale, $n）', (tester) async {
+      await _pumpMissions(tester, locale, _serviceWithCounts(n));
+      final texts = _shownTexts(tester);
+      for (final expected in pinned) {
+        expect(texts, contains(expected), reason: '$locale: $texts');
+      }
+      final spaced = <String>[
+        for (final text in texts)
+          if (zhSpaced.hasMatch(text)) text,
+      ];
+      // 達成条件のダイアログ（フォロワー・ランキング・作品広場・ウィークリー）。
+      for (final key in [
+        const ValueKey('missionDetails_followers_n:template'),
+        const ValueKey('missionDetails_rank_n:template'),
+        const ValueKey('plazaMissionDetails_plaza_day_n'),
+        const Key('recurringMissionDetails_visit_week_n'),
+      ]) {
+        await tester.ensureVisible(find.byKey(key));
+        await tester.tap(find.byKey(key));
+        await tester.pumpAndSettle();
+        for (final text in _dialogTexts(tester)) {
+          if (zhSpaced.hasMatch(text)) spaced.add(text);
+        }
+        await tester.tapAt(const Offset(4, 4));
+        await tester.pumpAndSettle();
+        expect(find.byType(AlertDialog), findsNothing);
+      }
+      expect(spaced, isEmpty, reason: '$locale: ${spaced.join('\n')}');
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  for (final locale in ['zh', 'zh_Hant']) {
+    testWidgets('中国語の作品広場の通知の数と単位の間を空けない（$locale）', (tester) async {
+      final community = _serviceWithCounts(10);
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<GoogleAuthService>.value(value: _SignedIn()),
+            ChangeNotifierProvider<CommunityService>.value(value: community),
+            ChangeNotifierProvider<SettingsService>.value(
+              value: SettingsService(),
+            ),
+          ],
+          child: _app(locale, const CommunityFollowNotificationsScreen()),
+        ),
+      );
+      await _settle(tester);
+      final texts = _shownTexts(tester);
+      expect(
+        texts,
+        contains(locale == 'zh' ? '已达到10位关注者' : '已達到10位追蹤者'),
+        reason: '$locale: $texts',
+      );
+      final spaced = [
+        for (final text in texts)
+          if (zhSpaced.hasMatch(text)) text,
+      ];
+      expect(spaced, isEmpty, reason: '$locale: ${spaced.join('\n')}');
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }

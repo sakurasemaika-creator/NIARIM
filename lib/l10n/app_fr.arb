@@ -3628,6 +3628,7 @@
   "missionCompletedTitle": "Mission accomplie !",
   "missionCompletedBody": "Rendez-vous dans Missions pour réclamer votre récompense.",
   "missionCompletedGoToMissions": "Aller aux missions",
+  "plazaMissionCompletedItem": "{period, select, day{Mission quotidienne} week{Mission hebdomadaire} other{Mission mensuelle}} : {goal}",
   "missionLoginWeek": "Se connecter {days, plural, one{{days} jour} other{{days} jours}} cette semaine",
   "missionLoginMonth": "Se connecter {days, plural, one{{days} jour} other{{days} jours}} ce mois-ci",
   "missionLoginTotal": "Se connecter {days, plural, one{{days} jour} other{{days} jours}} au total",

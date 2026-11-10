@@ -15,3 +15,10 @@ String coinUnlockDurationLabel(
   CoinDurationUnit.week => l10n.rewardDurationWeeks(duration.amount),
   CoinDurationUnit.month => l10n.rewardDurationMonths(duration.amount),
 };
+
+/// ミッションの目標・進み具合の時間（サーバーは秒で返す）。1時間以上は
+/// 「時間」、それより短ければ「分」で出す（「10分」「1時間」「10 minutes」）。
+String missionDurationLabel(AppLocalizations l10n, int seconds) =>
+    seconds >= 3600
+    ? l10n.missionDurationHours(seconds ~/ 3600)
+    : l10n.missionDurationMinutes(seconds ~/ 60);

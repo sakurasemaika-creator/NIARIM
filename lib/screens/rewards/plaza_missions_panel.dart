@@ -6,6 +6,7 @@ import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
+import '../../utils/coin_duration_label.dart';
 import '../../widgets/action_beside_or_below.dart';
 import 'mission_panel_heading.dart';
 
@@ -94,9 +95,7 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
     'week' => _l10n.missionPeriodWeekly,
     _ => _l10n.missionPeriodMonthly,
   };
-  String _goal(int seconds) => seconds >= 3600
-      ? _l10n.missionDurationHours(seconds ~/ 3600)
-      : _l10n.missionDurationMinutes(seconds ~/ 60);
+  String _goal(int seconds) => missionDurationLabel(_l10n, seconds);
 
   void _showMissionDetails(Map row, bool enabled) {
     final id = row['id'] as String? ?? '';

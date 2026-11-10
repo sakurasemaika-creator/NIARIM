@@ -4905,6 +4905,18 @@
   "@missionCompletedGoToMissions": {
     "description": "ミッション達成の知らせ：ミッションページへ移るボタン"
   },
+  "plazaMissionCompletedItem": "{period, select, day{デイリー} week{ウィークリー} other{マンスリー}}：{goal}",
+  "@plazaMissionCompletedItem": {
+    "description": "作品広場の滞在ミッション達成の知らせの1行。periodはday・week・month（それ以外はマンスリー）、goalはplazaMissionGoalの文（作品広場を合計10分開く）",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
   "missionLoginWeek": "週{days}日ログイン",
   "@missionLoginWeek": {
     "description": "ミッション達成の知らせ：今週ログインした日数の目標",

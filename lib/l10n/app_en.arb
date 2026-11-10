@@ -3635,6 +3635,7 @@
   "missionCompletedTitle": "Mission completed!",
   "missionCompletedBody": "Visit Missions to claim your reward.",
   "missionCompletedGoToMissions": "Go to Missions",
+  "plazaMissionCompletedItem": "{period, select, day{Daily} week{Weekly} other{Monthly}}: {goal}",
   "missionLoginWeek": "Visit on {days, plural, one{{days} day} other{{days} days}} this week",
   "missionLoginMonth": "Visit on {days, plural, one{{days} day} other{{days} days}} this month",
   "missionLoginTotal": "Visit on {days, plural, one{{days} day} other{{days} days}} in total",

@@ -165,7 +165,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12个月',
       'hour_1': '1小时',
     },
-    redeemConfirmation: '全部功能 + 无广告 · 1个月 · 55000 金币',
+    redeemConfirmation: '全部功能 + 无广告 · 1个月 · 55000金币',
   ),
   RewardDurationLanguage(
     code: 'zh_Hant',
@@ -185,7 +185,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12個月',
       'hour_1': '1小時',
     },
-    redeemConfirmation: '全部功能 + 無廣告 · 1個月 · 55000 金幣',
+    redeemConfirmation: '全部功能 + 無廣告 · 1個月 · 55000金幣',
   ),
 ];
 

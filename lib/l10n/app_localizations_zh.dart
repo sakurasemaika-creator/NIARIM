@@ -8620,17 +8620,17 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String coinAmount(int count) {
-    return '$count 金币';
+    return '$count金币';
   }
 
   @override
   String creatorMissionGenericBookmark(int count) {
-    return '已发布作品达到 $count 个收藏';
+    return '已发布作品达到$count个收藏';
   }
 
   @override
   String creatorMissionNamedBookmark(String title, int count) {
-    return '$title 达到 $count 个收藏';
+    return '$title 达到$count个收藏';
   }
 
   @override
@@ -8640,12 +8640,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String creatorMissionWorksGoal(int works, int count) {
-    return '$works 件作品分别达到 $count 个收藏';
+    return '$works件作品分别达到$count个收藏';
   }
 
   @override
   String creatorMissionWorksPublished(int works) {
-    return '发布 $works 件作品';
+    return '发布$works件作品';
   }
 
   @override
@@ -8690,27 +8690,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String creatorMissionTime(int hours) {
-    return '已验证创作时间 $hours 小时';
+    return '已验证创作时间$hours小时';
   }
 
   @override
   String creatorMissionFollowers(int count) {
-    return '$count 位关注者';
+    return '$count位关注者';
   }
 
   @override
   String creatorMissionRank(int rank) {
-    return 'NIARIM 收藏榜前 $rank 名';
+    return 'NIARIM 收藏榜前$rank名';
   }
 
   @override
   String creatorMissionLocalTime(int hours) {
-    return '此设备的创作时间（参考）：$hours 小时';
+    return '此设备的创作时间（参考）：$hours小时';
   }
 
   @override
   String creatorMissionCandidateMinutes(int minutes) {
-    return '服务器记录的候选时间：$minutes 分钟（待验证）';
+    return '服务器记录的候选时间：$minutes分钟（待验证）';
   }
 
   @override
@@ -8721,10 +8721,10 @@ class AppLocalizationsZh extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       failed,
       locale: localeName,
-      other: '，$failed 项未能领取',
+      other: '，$failed项未能领取',
       zero: '',
     );
-    return '批量领取：已完成 $received 项$_temp0';
+    return '批量领取：已完成$received项$_temp0';
   }
 
   @override
@@ -8755,7 +8755,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String creatorMissionRankDetailsRules(int percent, int rank) {
-    return '【排名规则】仅限本人在 NIARIM 上公开的作品。全站公开作品至少100件，作品收藏数达到要求，同时排名进入前 $rank 名及全站前 $percent%。百分比排名上限按公开作品总数×$percent%向下取整（最低为第1名），再与前 $rank 名比较，采用更严格的上限。作品总数以服务器统计为准。';
+    return '【排名规则】仅限本人在 NIARIM 上公开的作品。全站公开作品至少100件，作品收藏数达到要求，同时排名进入前$rank名及全站前$percent%。百分比排名上限按公开作品总数×$percent%向下取整（最低为第1名），再与前$rank名比较，采用更严格的上限。作品总数以服务器统计为准。';
   }
 
   @override
@@ -8773,12 +8773,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String creatorMissionRankCommunityWait(int count, int required) {
-    return '公开作品数不足：当前 $count 件（需要 $required 件）';
+    return '公开作品数不足：当前$count件（需要$required件）';
   }
 
   @override
   String creatorMissionRankBookmarkWait(int count, int required) {
-    return '收藏数不足：当前 $count 个（需要 $required 个）';
+    return '收藏数不足：当前$count个（需要$required个）';
   }
 
   @override
@@ -8786,7 +8786,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String creatorMissionRankRankWait(int rank, int limit) {
-    return '当前第 $rank 名／需进入前 $limit 名（同时适用全站前百分比限制）';
+    return '当前第$rank名／需进入前$limit名（同时适用全站前百分比限制）';
   }
 
   @override
@@ -8794,7 +8794,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String creatorMissionRankPoolCurrent(int count) {
-    return 'NIARIM 公开作品：当前 $count 件';
+    return 'NIARIM 公开作品：当前$count件';
   }
 
   @override
@@ -8809,12 +8809,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
-    return '该作品的收藏：当前 $count 个';
+    return '该作品的收藏：当前$count个';
   }
 
   @override
   String creatorMissionRankCurrentPlace(int rank) {
-    return '该作品的当前排名：第 $rank 名';
+    return '该作品的当前排名：第$rank名';
   }
 
   @override
@@ -8822,37 +8822,37 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
-    return '经服务器时间验证的创作时间：$minutes 分钟';
+    return '经服务器时间验证的创作时间：$minutes分钟';
   }
 
   @override
   String creatorMissionRankingRequirements(int works, int bookmarks) {
-    return '领取条件：NIARIM 公开作品至少 $works 件，且该作品收藏至少 $bookmarks 个';
+    return '领取条件：NIARIM 公开作品至少$works件，且该作品收藏至少$bookmarks个';
   }
 
   @override
   String creatorMissionRankingEffective(int rank) {
-    return '按当前公开作品数所需排名：前 $rank 名';
+    return '按当前公开作品数所需排名：前$rank名';
   }
 
   @override
   String loginBonusDays(int days) {
-    return '累计 $days 天';
+    return '累计$days天';
   }
 
   @override
   String loginBonusDailyCoins(int coins) {
-    return '每日 $coins 金币';
+    return '每日$coins金币';
   }
 
   @override
   String loginBonusMilestone(int days) {
-    return '累计登录 $days 天';
+    return '累计登录$days天';
   }
 
   @override
   String loginBonusActivityMilestone(int days) {
-    return '累计登录达到 $days 天';
+    return '累计登录达到$days天';
   }
 
   @override
@@ -8920,7 +8920,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String plazaMissionGoal(String duration) {
-    return '累计打开作品广场 $duration';
+    return '累计打开作品广场$duration';
   }
 
   @override
@@ -8934,7 +8934,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String recurringMissionProgress(int days, int goal) {
-    return '$days / $goal 天';
+    return '$days / $goal天';
   }
 
   @override
@@ -8962,7 +8962,7 @@ class AppLocalizationsZh extends AppLocalizations {
       'week': '同一周',
       'other': '同一个月',
     });
-    return '【达成条件】在$_temp0内，NIARIM 作品广场的累计打开时长达到 $duration 即可达成。无需播放视频或操作画面。';
+    return '【达成条件】在$_temp0内，NIARIM 作品广场的累计打开时长达到$duration即可达成。无需播放视频或操作画面。';
   }
 
   @override
@@ -8980,37 +8980,37 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String plazaMissionDetailsClaim(int coins) {
-    return '【领取】满足条件后可领取 $coins 金币。每项任务在同一期间内只能领取一次，下个期间可再次挑战。期间结束后无法领取上一期间的奖励。';
+    return '【领取】满足条件后可领取$coins金币。每项任务在同一期间内只能领取一次，下个期间可再次挑战。期间结束后无法领取上一期间的奖励。';
   }
 
   @override
   String recurringMissionGoalWeek(int days) {
-    return '每周登录 $days 天';
+    return '每周登录$days天';
   }
 
   @override
   String recurringMissionGoalMonth(int days) {
-    return '每月登录 $days 天';
+    return '每月登录$days天';
   }
 
   @override
   String recurringMissionDetailsConditionsWeek(int days) {
-    return '【达成条件】请在日本时间的同一周（周一至周日）内，于不同日期登录至少 $days 天。无需连续登录；同一天多次登录只算一天。登录天数由服务器确认。';
+    return '【达成条件】请在日本时间的同一周（周一至周日）内，于不同日期登录至少$days天。无需连续登录；同一天多次登录只算一天。登录天数由服务器确认。';
   }
 
   @override
   String recurringMissionDetailsConditionsMonth(int days) {
-    return '【达成条件】请在日本时间的同一个月（1日至月末）内，于不同日期登录至少 $days 天。无需连续登录；同一天多次登录只算一天。登录天数由服务器确认。';
+    return '【达成条件】请在日本时间的同一个月（1日至月末）内，于不同日期登录至少$days天。无需连续登录；同一天多次登录只算一天。登录天数由服务器确认。';
   }
 
   @override
   String recurringMissionDetailsProgress(int progress, int goal) {
-    return '当前达成天数：$progress / $goal 天';
+    return '当前达成天数：$progress / $goal天';
   }
 
   @override
   String recurringMissionDetailsClaim(int coins) {
-    return '【领取】满足条件后可领取 $coins 金币。同一期间的同一阶段只能领取一次。进入新的一周或一个月后进度会重置，可再次达成。期间结束后无法领取上一期间的奖励。';
+    return '【领取】满足条件后可领取$coins金币。同一期间的同一阶段只能领取一次。进入新的一周或一个月后进度会重置，可再次达成。期间结束后无法领取上一期间的奖励。';
   }
 
   @override
@@ -9023,18 +9023,28 @@ class AppLocalizationsZh extends AppLocalizations {
   String get missionCompletedGoToMissions => '前往任务页面';
 
   @override
+  String plazaMissionCompletedItem(String period, String goal) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'day': '每日',
+      'week': '每周',
+      'other': '每月',
+    });
+    return '$_temp0：$goal';
+  }
+
+  @override
   String missionLoginWeek(int days) {
-    return '本周登录 $days 天';
+    return '本周登录$days天';
   }
 
   @override
   String missionLoginMonth(int days) {
-    return '本月登录 $days 天';
+    return '本月登录$days天';
   }
 
   @override
   String missionLoginTotal(int days) {
-    return '累计登录 $days 天';
+    return '累计登录$days天';
   }
 
   @override
@@ -17786,17 +17796,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String coinAmount(int count) {
-    return '$count 金幣';
+    return '$count金幣';
   }
 
   @override
   String creatorMissionGenericBookmark(int count) {
-    return '已發佈作品達到 $count 個收藏';
+    return '已發佈作品達到$count個收藏';
   }
 
   @override
   String creatorMissionNamedBookmark(String title, int count) {
-    return '$title 達到 $count 個收藏';
+    return '$title 達到$count個收藏';
   }
 
   @override
@@ -17806,12 +17816,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String creatorMissionWorksGoal(int works, int count) {
-    return '$works 件作品各達到 $count 個收藏';
+    return '$works件作品各達到$count個收藏';
   }
 
   @override
   String creatorMissionWorksPublished(int works) {
-    return '發佈 $works 件作品';
+    return '發佈$works件作品';
   }
 
   @override
@@ -17856,27 +17866,27 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String creatorMissionTime(int hours) {
-    return '已驗證創作時間 $hours 小時';
+    return '已驗證創作時間$hours小時';
   }
 
   @override
   String creatorMissionFollowers(int count) {
-    return '$count 位追蹤者';
+    return '$count位追蹤者';
   }
 
   @override
   String creatorMissionRank(int rank) {
-    return 'NIARIM 收藏榜前 $rank 名';
+    return 'NIARIM 收藏榜前$rank名';
   }
 
   @override
   String creatorMissionLocalTime(int hours) {
-    return '此裝置的創作時間（參考）：$hours 小時';
+    return '此裝置的創作時間（參考）：$hours小時';
   }
 
   @override
   String creatorMissionCandidateMinutes(int minutes) {
-    return '伺服器記錄的候選時間：$minutes 分鐘（待驗證）';
+    return '伺服器記錄的候選時間：$minutes分鐘（待驗證）';
   }
 
   @override
@@ -17887,10 +17897,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
     String _temp0 = intl.Intl.pluralLogic(
       failed,
       locale: localeName,
-      other: '，$failed 項未能領取',
+      other: '，$failed項未能領取',
       zero: '',
     );
-    return '批次領取：已完成 $received 項$_temp0';
+    return '批次領取：已完成$received項$_temp0';
   }
 
   @override
@@ -17921,7 +17931,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String creatorMissionRankDetailsRules(int percent, int rank) {
-    return '【排名規則】僅限本人在 NIARIM 上公開的作品。全站公開作品至少100件，作品收藏數達到要求，同時排名進入前 $rank 名及全站前 $percent%。百分比排名上限按公開作品總數×$percent%向下取整（最低為第1名），再與前 $rank 名比較，採用更嚴格的上限。作品總數以伺服器統計為準。';
+    return '【排名規則】僅限本人在 NIARIM 上公開的作品。全站公開作品至少100件，作品收藏數達到要求，同時排名進入前$rank名及全站前$percent%。百分比排名上限按公開作品總數×$percent%向下取整（最低為第1名），再與前$rank名比較，採用更嚴格的上限。作品總數以伺服器統計為準。';
   }
 
   @override
@@ -17939,12 +17949,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String creatorMissionRankCommunityWait(int count, int required) {
-    return '公開作品數不足：目前 $count 件（需要 $required 件）';
+    return '公開作品數不足：目前$count件（需要$required件）';
   }
 
   @override
   String creatorMissionRankBookmarkWait(int count, int required) {
-    return '收藏數不足：目前 $count 個（需要 $required 個）';
+    return '收藏數不足：目前$count個（需要$required個）';
   }
 
   @override
@@ -17952,7 +17962,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String creatorMissionRankRankWait(int rank, int limit) {
-    return '目前第 $rank 名／需進入前 $limit 名（同時適用全站前百分比限制）';
+    return '目前第$rank名／需進入前$limit名（同時適用全站前百分比限制）';
   }
 
   @override
@@ -17960,7 +17970,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String creatorMissionRankPoolCurrent(int count) {
-    return 'NIARIM 公開作品：目前 $count 件';
+    return 'NIARIM 公開作品：目前$count件';
   }
 
   @override
@@ -17975,12 +17985,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
-    return '該作品的收藏：目前 $count 個';
+    return '該作品的收藏：目前$count個';
   }
 
   @override
   String creatorMissionRankCurrentPlace(int rank) {
-    return '該作品的目前排名：第 $rank 名';
+    return '該作品的目前排名：第$rank名';
   }
 
   @override
@@ -17988,37 +17998,37 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
-    return '經伺服器時間驗證的創作時間：$minutes 分鐘';
+    return '經伺服器時間驗證的創作時間：$minutes分鐘';
   }
 
   @override
   String creatorMissionRankingRequirements(int works, int bookmarks) {
-    return '領取條件：NIARIM 公開作品至少 $works 件，且該作品收藏至少 $bookmarks 個';
+    return '領取條件：NIARIM 公開作品至少$works件，且該作品收藏至少$bookmarks個';
   }
 
   @override
   String creatorMissionRankingEffective(int rank) {
-    return '按目前公開作品數所需排名：前 $rank 名';
+    return '按目前公開作品數所需排名：前$rank名';
   }
 
   @override
   String loginBonusDays(int days) {
-    return '累計 $days 天';
+    return '累計$days天';
   }
 
   @override
   String loginBonusDailyCoins(int coins) {
-    return '每日 $coins 金幣';
+    return '每日$coins金幣';
   }
 
   @override
   String loginBonusMilestone(int days) {
-    return '累計登入 $days 天';
+    return '累計登入$days天';
   }
 
   @override
   String loginBonusActivityMilestone(int days) {
-    return '累計登入達到 $days 天';
+    return '累計登入達到$days天';
   }
 
   @override
@@ -18086,7 +18096,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String plazaMissionGoal(String duration) {
-    return '累計開啟作品廣場 $duration';
+    return '累計開啟作品廣場$duration';
   }
 
   @override
@@ -18100,7 +18110,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String recurringMissionProgress(int days, int goal) {
-    return '$days / $goal 天';
+    return '$days / $goal天';
   }
 
   @override
@@ -18128,7 +18138,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       'week': '同一週',
       'other': '同一個月',
     });
-    return '【達成條件】在$_temp0內，NIARIM 作品廣場的累計開啟時長達到 $duration 即可達成。無需播放影片或操作畫面。';
+    return '【達成條件】在$_temp0內，NIARIM 作品廣場的累計開啟時長達到$duration即可達成。無需播放影片或操作畫面。';
   }
 
   @override
@@ -18146,37 +18156,37 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String plazaMissionDetailsClaim(int coins) {
-    return '【領取】滿足條件後可領取 $coins 金幣。每項任務在同一期間內只能領取一次，下個期間可再次挑戰。期間結束後無法領取上一期間的獎勵。';
+    return '【領取】滿足條件後可領取$coins金幣。每項任務在同一期間內只能領取一次，下個期間可再次挑戰。期間結束後無法領取上一期間的獎勵。';
   }
 
   @override
   String recurringMissionGoalWeek(int days) {
-    return '每週登入 $days 天';
+    return '每週登入$days天';
   }
 
   @override
   String recurringMissionGoalMonth(int days) {
-    return '每月登入 $days 天';
+    return '每月登入$days天';
   }
 
   @override
   String recurringMissionDetailsConditionsWeek(int days) {
-    return '【達成條件】請在日本時間的同一週（週一至週日）內，於不同日期登入至少 $days 天。無需連續登入；同一天多次登入只算一天。登入天數由伺服器確認。';
+    return '【達成條件】請在日本時間的同一週（週一至週日）內，於不同日期登入至少$days天。無需連續登入；同一天多次登入只算一天。登入天數由伺服器確認。';
   }
 
   @override
   String recurringMissionDetailsConditionsMonth(int days) {
-    return '【達成條件】請在日本時間的同一個月（1日至月底）內，於不同日期登入至少 $days 天。無需連續登入；同一天多次登入只算一天。登入天數由伺服器確認。';
+    return '【達成條件】請在日本時間的同一個月（1日至月底）內，於不同日期登入至少$days天。無需連續登入；同一天多次登入只算一天。登入天數由伺服器確認。';
   }
 
   @override
   String recurringMissionDetailsProgress(int progress, int goal) {
-    return '目前達成天數：$progress / $goal 天';
+    return '目前達成天數：$progress / $goal天';
   }
 
   @override
   String recurringMissionDetailsClaim(int coins) {
-    return '【領取】滿足條件後可領取 $coins 金幣。同一期間的同一階段只能領取一次。進入新的一週或一個月後進度會重置，可再次達成。期間結束後無法領取上一期間的獎勵。';
+    return '【領取】滿足條件後可領取$coins金幣。同一期間的同一階段只能領取一次。進入新的一週或一個月後進度會重置，可再次達成。期間結束後無法領取上一期間的獎勵。';
   }
 
   @override
@@ -18189,18 +18199,28 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get missionCompletedGoToMissions => '前往任務頁面';
 
   @override
+  String plazaMissionCompletedItem(String period, String goal) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'day': '每日',
+      'week': '每週',
+      'other': '每月',
+    });
+    return '$_temp0：$goal';
+  }
+
+  @override
   String missionLoginWeek(int days) {
-    return '本週登入 $days 天';
+    return '本週登入$days天';
   }
 
   @override
   String missionLoginMonth(int days) {
-    return '本月登入 $days 天';
+    return '本月登入$days天';
   }
 
   @override
   String missionLoginTotal(int days) {
-    return '累計登入 $days 天';
+    return '累計登入$days天';
   }
 
   @override

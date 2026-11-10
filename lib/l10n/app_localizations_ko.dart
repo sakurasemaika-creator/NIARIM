@@ -9161,6 +9161,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get missionCompletedGoToMissions => '미션 페이지로';
 
   @override
+  String plazaMissionCompletedItem(String period, String goal) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'day': '일일',
+      'week': '주간',
+      'other': '월간',
+    });
+    return '$_temp0: $goal';
+  }
+
+  @override
   String missionLoginWeek(int days) {
     return '주 $days일 로그인';
   }

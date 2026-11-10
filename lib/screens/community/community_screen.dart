@@ -92,57 +92,28 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   Future<void> _pulsePlazaTime() async {
-    if (_plazaPulseBusy || !mounted || !_plazaInForeground ||
-        !(ModalRoute.of(context)?.isCurrent ?? false)) return;
+    if (_plazaPulseBusy ||
+        !mounted ||
+        !_plazaInForeground ||
+        !(ModalRoute.of(context)?.isCurrent ?? false)) {
+      return;
+    }
     final owner = context.read<GoogleAuthService>().account?.id;
     final api = context.read<CommunityService>().api;
     if (owner == null || api == null) return;
     _plazaPulseBusy = true;
     try {
       final result = await api.pulsePlazaMissions(_plazaSession);
-      if (!mounted || !_plazaInForeground ||
+      if (!mounted ||
+          !_plazaInForeground ||
           !(ModalRoute.of(context)?.isCurrent ?? false) ||
           context.read<GoogleAuthService>().account?.id != owner ||
-          !identical(context.read<CommunityService>().api, api)) return;
-      final achieved = (result['newlyAchieved'] as List? ?? const [])
-          .whereType<Map>().toList();
-      if (achieved.isNotEmpty) {
-        final label = achieved.map((entry) {
-          final seconds = (entry['requiredSeconds'] as num?)?.toInt() ?? 0;
-          final amount = seconds >= 3600
-              ? '${seconds ~/ 3600}時間'
-              : '${seconds ~/ 60}分';
-          final period = switch (entry['period']) {
-            'day' => 'デイリー',
-            'week' => 'ウィークリー',
-            _ => 'マンスリー',
-          };
-          return '・$period：作品広場を合計$amount 開く';
-        }).join('\n');
-        if (!mounted) return;
-        await showDialog<void>(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            key: const Key('plazaMissionCompletedDialog'),
-            title: const Text('ミッションをクリアしました！'),
-            content: Text('$label\n\nミッションページで報酬を受け取れます。'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('閉じる'),
-              ),
-              FilledButton(
-                key: const Key('goToCompletedMissions'),
-                onPressed: () {
-                  Navigator.pop(dialogContext);
-                  if (mounted) context.push('/rewards');
-                },
-                child: const Text('ミッションページへ'),
-              ),
-            ],
-          ),
-        );
+          !identical(context.read<CommunityService>().api, api)) {
+        return;
       }
+      // 累計ログインの達成と同じ知らせ（題・本文・ボタン）で、各行は
+      // その言語の期間と目標の時間。
+      await showPlazaMissionCompletions(context, result);
     } catch (error) {
       debugPrint('Plaza mission timer temporarily unavailable: $error');
     } finally {

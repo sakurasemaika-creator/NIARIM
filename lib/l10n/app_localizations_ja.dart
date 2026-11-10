@@ -9114,6 +9114,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get missionCompletedGoToMissions => 'ミッションページへ';
 
   @override
+  String plazaMissionCompletedItem(String period, String goal) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'day': 'デイリー',
+      'week': 'ウィークリー',
+      'other': 'マンスリー',
+    });
+    return '$_temp0：$goal';
+  }
+
+  @override
   String missionLoginWeek(int days) {
     return '週$days日ログイン';
   }

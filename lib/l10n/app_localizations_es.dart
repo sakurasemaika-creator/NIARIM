@@ -9818,6 +9818,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get missionCompletedGoToMissions => 'Ir a Misiones';
 
   @override
+  String plazaMissionCompletedItem(String period, String goal) {
+    String _temp0 = intl.Intl.selectLogic(period, {
+      'day': 'Misión diaria',
+      'week': 'Misión semanal',
+      'other': 'Misión mensual',
+    });
+    return '$_temp0: $goal';
+  }
+
+  @override
   String missionLoginWeek(int days) {
     String _temp0 = intl.Intl.pluralLogic(
       days,

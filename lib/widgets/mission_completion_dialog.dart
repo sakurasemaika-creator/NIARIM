@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../config/font_fallback.dart';
 import '../utils/app_locale.dart';
+import '../utils/coin_duration_label.dart';
 
 /// The server owns achievement detection; this widget only displays
 /// newly achieved mission labels and a direct route to the claim page.
@@ -69,6 +70,35 @@ Future<void> showServerMissionCompletions(
           'month' => l10n.missionLoginMonth(days),
           _ => l10n.missionLoginTotal(days),
         };
+      })
+      .toList(growable: false);
+  await showMissionCompletionDialog(context, titles: names);
+}
+
+/// 作品広場の滞在の記録（/me/missions/plaza/pulse）の応答で、新しく達成した
+/// 滞在ミッションを知らせる。期間と目標の時間はその言語の文で出す。
+Future<void> showPlazaMissionCompletions(
+  BuildContext context,
+  Map<String, dynamic> response,
+) async {
+  final records = (response['newlyAchieved'] as List? ?? const [])
+      .whereType<Map>()
+      .toList();
+  if (records.isEmpty || !context.mounted) return;
+  final l10n = appLocalizationsOf(context);
+  final names = records
+      .map((row) {
+        final seconds = (row['requiredSeconds'] as num?)?.toInt() ?? 0;
+        // 'day'・'week'以外はマンスリー（作品広場のミッションの欄と同じ決まり）。
+        final period = switch (row['period']) {
+          'day' => 'day',
+          'week' => 'week',
+          _ => 'month',
+        };
+        return l10n.plazaMissionCompletedItem(
+          period,
+          l10n.plazaMissionGoal(missionDurationLabel(l10n, seconds)),
+        );
       })
       .toList(growable: false);
   await showMissionCompletionDialog(context, titles: names);

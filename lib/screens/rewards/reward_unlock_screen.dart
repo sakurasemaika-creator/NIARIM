@@ -728,6 +728,14 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ? l10n.rewardUnlockRewardQuotaRemaining(rewardDailyRemaining)
         : t['rewardQuotaUncapped'];
     final nav = RewardNavigationLabels.of(context);
+    // くらむぼんのラベルは、アクセント（É）や下に伸びる字（p・j）が行の
+    // 高さの外へ出る。Material 3のボタンは縦の余白が0なので、合計のカードの
+    // ボタンのラベルが2行以上になると、字がボタンの枠を越えて隣のボタンに
+    // 食い込んだ。字の大きさに合わせてラベルの上下に余白を取る（1行なら
+    // ボタンの最小の高さに収まり、見た目は変わらない）。
+    final labelRoom = EdgeInsets.symmetric(
+      vertical: MediaQuery.textScalerOf(context).scale(4),
+    );
     final earn = widget.mode == RewardPageMode.earnCoins;
     return Scaffold(
       appBar: widget.embedded
@@ -878,7 +886,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         onPressed: _selected.isNotEmpty
                             ? _reviewSelections
                             : null,
-                        label: Text(l10n.rewardUnlockReviewButton),
+                        label: Padding(
+                          padding: labelRoom,
+                          child: Text(l10n.rewardUnlockReviewButton),
+                        ),
                       ),
                       const SizedBox(height: 8),
                       // Once the authenticated quote/goal API is connected,
@@ -887,8 +898,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                       FilledButton(
                         key: const Key('rewardSetGoalButton'),
                         onPressed: null,
-                        child: Text(t['goal']),
+                        child: Padding(
+                          padding: labelRoom,
+                          child: Text(t['goal']),
+                        ),
                       ),
+                      const SizedBox(height: 8),
                       OutlinedButton(
                         key: const Key('rewardRedeemButton'),
                         onPressed:
@@ -900,7 +915,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                                 !_redeemBusy
                             ? _redeemFullPremium
                             : null,
-                        child: Text(t['redeem']),
+                        child: Padding(
+                          padding: labelRoom,
+                          child: Text(t['redeem']),
+                        ),
                       ),
                     ],
                   ),

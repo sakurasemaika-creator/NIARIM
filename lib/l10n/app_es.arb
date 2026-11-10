@@ -3628,6 +3628,7 @@
   "missionCompletedTitle": "¡Misión completada!",
   "missionCompletedBody": "Ve a Misiones para reclamar tu recompensa.",
   "missionCompletedGoToMissions": "Ir a Misiones",
+  "plazaMissionCompletedItem": "{period, select, day{Misión diaria} week{Misión semanal} other{Misión mensual}}: {goal}",
   "missionLoginWeek": "Entra {days, plural, one{{days} día} other{{days} días}} esta semana",
   "missionLoginMonth": "Entra {days, plural, one{{days} día} other{{days} días}} este mes",
   "missionLoginTotal": "Entra {days, plural, one{{days} día} other{{days} días}} en total",

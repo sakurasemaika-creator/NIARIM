@@ -16511,6 +16511,12 @@ abstract class AppLocalizations {
   /// **'ミッションページへ'**
   String get missionCompletedGoToMissions;
 
+  /// 作品広場の滞在ミッション達成の知らせの1行。periodはday・week・month（それ以外はマンスリー）、goalはplazaMissionGoalの文（作品広場を合計10分開く）
+  ///
+  /// In ja, this message translates to:
+  /// **'{period, select, day{デイリー} week{ウィークリー} other{マンスリー}}：{goal}'**
+  String plazaMissionCompletedItem(String period, String goal);
+
   /// ミッション達成の知らせ：今週ログインした日数の目標
   ///
   /// In ja, this message translates to:
