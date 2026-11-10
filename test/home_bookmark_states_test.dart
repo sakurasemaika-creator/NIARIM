@@ -10,7 +10,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
-import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/api/niarim_api_models.dart';
@@ -50,7 +50,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await loadAppFonts(tester);
-    appRouter.go('/home');
+    appRouter.go('/community');
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
       MultiProvider(
@@ -63,17 +63,17 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    return tester.element(find.byType(HomeScreen)).read<CommunityService>();
+    return tester.element(find.byType(CommunityScreen)).read<CommunityService>();
   }
 
   Future<void> bookmarks(WidgetTester tester) async {
-    final tab = find.byKey(const ValueKey('home_tab_2'));
+    final tab = find.byKey(const ValueKey('communityTab4'));
     await tester.ensureVisible(tab);
     await tester.tap(tab);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pump(const Duration(milliseconds: 400));
-    expect(tester.widget<Semantics>(tab).properties.selected, isTrue);
+    expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 4);
   }
 
   CommunityService backend(MockClient client) => CommunityService(
@@ -95,7 +95,7 @@ void main() {
           tester.view.physicalSize = const Size(640, 844);
           tester.platformDispatcher.textScaleFactorTestValue = 2;
           await tester.pumpAndSettle();
-          final tab = find.byKey(const ValueKey('home_tab_2'));
+          final tab = find.byKey(const ValueKey('communityTab4'));
           await tester.ensureVisible(tab);
           await tester.tap(tab);
           await tester.pump();
@@ -103,24 +103,24 @@ void main() {
           tester.view.physicalSize = const Size(320, 844);
           await tester.pumpAndSettle();
           final l10n = AppLocalizations.of(
-            tester.element(find.byType(HomeScreen)),
+            tester.element(find.byType(CommunityScreen)),
           )!;
           expect(
-            tester.widget<Semantics>(tab).properties.selected,
-            isTrue,
+            tester.widget<TabBar>(find.byType(TabBar)).controller!.index,
+            4,
             reason: 'delay=$delay',
           );
           final appBar = tester.widget<AppBar>(
             find
                 .descendant(
-                  of: find.byType(HomeScreen),
+                  of: find.byType(CommunityScreen),
                   matching: find.byType(AppBar),
                 )
                 .first,
           );
           expect(
             (appBar.title as Text).data,
-            l10n.homeTabBookmarked,
+            l10n.communityScreenTitle,
             reason: 'delay=$delay',
           );
           expect(
@@ -129,13 +129,12 @@ void main() {
             reason: 'delay=$delay',
           );
           expect(
-            find.byType(FloatingActionButton),
-            findsNothing,
-            reason:
-                'The project-only scroll-to-top FAB is hidden on bookmarks; delay=$delay',
+            find.byKey(const Key('communityScrollToTopButton')),
+            findsOneWidget,
+            reason: 'The plaza scroll control remains available on bookmarks; delay=$delay',
           );
           expect(
-            find.byKey(const Key('homeBackToSplashButton')),
+            find.byKey(const Key('communityBackToSplashButton')),
             findsOneWidget,
           );
           await tester.pumpWidget(const SizedBox.shrink());
@@ -171,7 +170,7 @@ void main() {
         await bookmarks(tester);
         expect(fetches, 1);
         final refresh = find.descendant(
-          of: find.byType(HomeScreen),
+          of: find.byType(CommunityScreen),
           matching: find.byType(RefreshIndicator),
         );
         await tester.drag(refresh, const Offset(0, 400));
@@ -179,13 +178,7 @@ void main() {
         expect(fetches, 2);
         expect(service.hasLoadedSocial, isTrue);
         expect(service.bookmarkedIds, isEmpty);
-        expect(
-          tester
-              .widget<Semantics>(find.byKey(const ValueKey('home_tab_2')))
-              .properties
-              .selected,
-          isTrue,
-        );
+        expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 4);
         await tester.pumpWidget(const SizedBox.shrink());
       },
     );
@@ -201,10 +194,10 @@ void main() {
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
         tester.view.physicalSize = const Size(320, 844);
         await tester.pumpAndSettle();
-        final selected = find.byKey(const ValueKey('home_tab_2'));
+        final selected = find.byKey(const ValueKey('communityTab4'));
         expect(tester.getRect(selected).left, greaterThanOrEqualTo(-.01));
         expect(tester.getRect(selected).right, lessThanOrEqualTo(320.01));
-        expect(tester.widget<Semantics>(selected).properties.selected, isTrue);
+        expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 4);
         tester.view.physicalSize = const Size(1440, 900);
         await tester.pumpAndSettle();
         tester.view.physicalSize = const Size(320, 844);
@@ -241,7 +234,7 @@ void main() {
           expect(service.bookmarkedWorksForViewer, isEmpty);
           expect(
             find.text(
-              AppLocalizations.of(tester.element(find.byType(HomeScreen)))!
+              AppLocalizations.of(tester.element(find.byType(CommunityScreen)))!
                   .homeBookmarkedEmptyTitle,
             ),
             findsNothing,
@@ -357,7 +350,7 @@ void main() {
     });
     for (final guest in [false, true]) {
       testWidgets(
-        '${pc ? 'PC' : 'SP'} ${guest ? 'guest guidance' : 'unloaded account has explicit Load action'}',
+        '${pc ? 'PC' : 'SP'} ${guest ? 'guest guidance' : 'signed-in account automatically loads bookmarks'}',
         (tester) async {
           SharedPreferences.setMockInitialValues({});
           var requests = 0;
@@ -380,14 +373,12 @@ void main() {
           await open(tester, pc, backend: service);
           await bookmarks(tester);
           final l10n = AppLocalizations.of(
-            tester.element(find.byType(HomeScreen)),
+            tester.element(find.byType(CommunityScreen)),
           )!;
           if (guest) {
             expect(find.text(l10n.homeBookmarkedSignInBody), findsOneWidget);
             expect(requests, 0);
           } else {
-            expect(find.text(l10n.homeBookmarkedLoadPrompt), findsOneWidget);
-            await tester.tap(find.text(l10n.communityReloadTooltip));
             await tester.pumpAndSettle();
             expect(service.hasLoadedSocial, isTrue);
             expect(find.text(l10n.homeBookmarkedEmptyTitle), findsOneWidget);
