@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +36,7 @@ import '../../widgets/sort_mode_control.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
+import '../../widgets/typing_aware_shortcuts.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_selection_toolbar.dart';
 import 'widgets/home_drawer.dart';
@@ -163,6 +165,9 @@ class _HomeScreenState extends State<HomeScreen>
   String _searchQuery = '';
   final _searchController = TextEditingController();
   final _searchFocus = FocusNode();
+  // 画面全体のショートカット（全選択・コピー等）を受けるフォーカス。
+  // 検索欄から抜けたら（Enter・閉じる・タブの切り替え）ここへ戻す。
+  final _homeFocus = FocusNode(debugLabel: 'Home');
   StreamSubscription<String>? _sharedFileSub;
   // 現在開いているフォルダ（フォルダは複数階層に対応・
   // パンくずリストで現在位置を表示）。nullはルート直下。
@@ -188,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen>
           }
         });
         if (wasSearching && _currentTabIndex != 0) {
-          _searchFocus.unfocus();
+          _homeFocus.requestFocus();
         }
       }
     });
@@ -205,6 +210,7 @@ class _HomeScreenState extends State<HomeScreen>
     _tabController.dispose();
     _searchController.dispose();
     _searchFocus.dispose();
+    _homeFocus.dispose();
     _projectScrollController.dispose();
     _sharedFileSub?.cancel();
     super.dispose();
@@ -360,9 +366,13 @@ class _HomeScreenState extends State<HomeScreen>
     // マウス/キーボード入力・左手デバイス：設定画面「ショートカット設定」
     // で割り当てたキーで、全選択・コピー・切り取り・貼り付けを
     // 行えるようにする。
-    final content = CallbackShortcuts(
+    // 入力欄にフォーカスがある間は画面のショートカットを止める
+    // （TypingAwareShortcuts）。入力を終えたら画面のフォーカスへ戻す。
+    final content = TypingAwareShortcuts(
       bindings: _buildShortcutBindings(context),
+      screenFocus: _homeFocus,
       child: Focus(
+        focusNode: _homeFocus,
         autofocus: true,
         child: Scaffold(
           key: _scaffoldKey,
@@ -371,8 +381,14 @@ class _HomeScreenState extends State<HomeScreen>
             leading: IconButton(
               key: const Key('homeBackToSplashButton'),
               icon: const Icon(Icons.arrow_back),
-              tooltip: l10n.homeBackToSplashTooltip,
-              onPressed: () => context.go('/'),
+              // 検索中の矢印は検索を閉じる（検索欄の左の戻るでホームから
+              // 出てしまわない）。それ以外は起動画面へ戻る。
+              tooltip: _isSearching
+                  ? MaterialLocalizations.of(context).backButtonTooltip
+                  : l10n.homeBackToSplashTooltip,
+              onPressed: _isSearching
+                  ? _closeProjectSearch
+                  : () => context.go('/'),
             ),
             title: _currentTabIndex != 0
                 ? Text(
@@ -395,22 +411,38 @@ class _HomeScreenState extends State<HomeScreen>
                         tooltip: _searchByTag
                             ? l10n.homeSearchHint
                             : l10n.projectDetailTagsQuickAction,
-                        onPressed: () => _changeProjectScope(
-                          () => _searchByTag = !_searchByTag,
-                        ),
+                        // マウス・ペンで押すと欄の外を押したことになり入力が
+                        // 外れるので、欄へ戻して打ち続けられるようにする。
+                        onPressed: () {
+                          _changeProjectScope(
+                            () => _searchByTag = !_searchByTag,
+                          );
+                          _searchFocus.requestFocus();
+                        },
                       ),
                       Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          focusNode: _searchFocus,
-                          decoration: InputDecoration(
-                            hintText: _searchByTag
-                                ? l10n.projectDetailTagsQuickAction
-                                : l10n.homeSearchHint,
-                            border: InputBorder.none,
+                        // 入力中のEscも検索を閉じる（画面のショートカットは
+                        // 入力欄にフォーカスがある間は動かない）。
+                        child: CallbackShortcuts(
+                          bindings: {
+                            const SingleActivator(LogicalKeyboardKey.escape):
+                                _closeProjectSearch,
+                          },
+                          child: TextField(
+                            controller: _searchController,
+                            focusNode: _searchFocus,
+                            decoration: InputDecoration(
+                              hintText: _searchByTag
+                                  ? l10n.projectDetailTagsQuickAction
+                                  : l10n.homeSearchHint,
+                              border: InputBorder.none,
+                            ),
+                            onChanged: (v) =>
+                                _changeProjectScope(() => _searchQuery = v),
+                            // Enterで入力を終えたら画面のショートカットへ戻す
+                            // （検索は開いたまま）。
+                            onEditingComplete: _homeFocus.requestFocus,
                           ),
-                          onChanged: (v) =>
-                              _changeProjectScope(() => _searchQuery = v),
                         ),
                       ),
                     ],
@@ -438,6 +470,7 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   PopupMenuButton<ProjectViewMode>(
                     icon: const Icon(Icons.view_module),
+                    tooltip: l10n.homeViewModeTooltip,
                     onSelected: _selectProjectViewMode,
                     itemBuilder: (_) => [
                       PopupMenuItem(
@@ -665,7 +698,14 @@ class _HomeScreenState extends State<HomeScreen>
       scaffold!.closeEndDrawer();
       return true;
     }
-    if (!_hasLocalBackScope) return false;
+    if (!_hasLocalBackScope) {
+      // go('/home')で来たホーム（キャンバス・書き出しの後など）は履歴が
+      // 1枚だけで、go_routerは戻れる画面が無いとアプリを閉じる。
+      // 起動画面へ戻す。
+      if (context.canPop()) return false;
+      context.go('/');
+      return true;
+    }
     if (_isSelectionMode) {
       _endProjectSelection();
     } else if (_isSearching) {
@@ -891,12 +931,12 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _closeProjectSearch() {
-    _searchFocus.unfocus();
+    _homeFocus.requestFocus();
     _changeProjectScope(_resetProjectSearch);
   }
 
   void _openProjectFolder(String id) {
-    if (_isSearching) _searchFocus.unfocus();
+    if (_isSearching) _homeFocus.requestFocus();
     _changeProjectScope(() {
       _currentFolderId = id;
       // A search is global; close it to display the selected folder's contents.
@@ -933,7 +973,22 @@ class _HomeScreenState extends State<HomeScreen>
     BuildContext context,
   ) {
     final bindings = context.watch<ShortcutService>().bindings;
-    if (_currentTabIndex != 0 || _isSearching) return {};
+    if (_currentTabIndex != 0) return {};
+    // 検索中は全選択・コピー等を効かせない（検索で隠れた作品を操作しない）。
+    // Escは引き出しが開いていれば引き出しを、なければ検索を閉じる
+    // （Enterで入力を終えた後も）。
+    if (_isSearching) {
+      return {
+        const SingleActivator(LogicalKeyboardKey.escape): () {
+          final scaffold = _scaffoldKey.currentState;
+          if (scaffold?.isEndDrawerOpen ?? false) {
+            scaffold!.closeEndDrawer();
+          } else {
+            _closeProjectSearch();
+          }
+        },
+      };
+    }
     final result = <ShortcutActivator, VoidCallback>{};
     for (final b in bindings) {
       if (b.isToolAction) continue;
@@ -2278,10 +2333,12 @@ class _TrashTabState extends State<_TrashTab> {
     try {
       await runProjectTrashAction(context, () => service.restoreProject(id));
     } finally {
-      if (mounted) setState(() {
-        _pending.remove(id);
-        _restoring.remove(id);
-      });
+      if (mounted) {
+        setState(() {
+          _pending.remove(id);
+          _restoring.remove(id);
+        });
+      }
     }
   }
 
@@ -3135,13 +3192,9 @@ class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
             ],
             if (_failed) ...[
               const SizedBox(height: 12),
-              Semantics(
-                liveRegion: true,
-                child: Text(
-                  l10n.communityErrorGeneric,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ),
+              // 色ではなく先頭の印と文で知らせ、読み上げへも伝える
+              // （文字の色はダイアログの文字色）。
+              ExportShareNotice(message: l10n.homeFirstLaunchSaveFailed),
             ],
           ],
         ),

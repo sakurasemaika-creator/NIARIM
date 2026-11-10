@@ -56,6 +56,7 @@
   "homePreviewFailed": "Unable to play preview",
   "homeFirstLaunchMessage": "You can create hand-drawn animations",
   "homeFirstLaunchStart": "Get Started",
+  "homeFirstLaunchSaveFailed": "Couldn’t save that you’ve seen this welcome message. Press “Get Started” to try again.",
   "settingsScreenTitle": "Settings",
   "settingsBasicTitle": "Basic",
   "settingsBasicSubtitle": "FPS, background color, language",

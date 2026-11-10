@@ -56,6 +56,7 @@
   "homePreviewFailed": "無法播放預覽",
   "homeFirstLaunchMessage": "您可以製作手繪動畫",
   "homeFirstLaunchStart": "開始使用",
+  "homeFirstLaunchSaveFailed": "無法儲存已看過此提示的記錄。請再次點擊「開始使用」。",
   "settingsScreenTitle": "設定",
   "settingsBasicTitle": "基本",
   "settingsBasicSubtitle": "FPS・背景色・語言",

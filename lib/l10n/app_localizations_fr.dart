@@ -206,6 +206,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeFirstLaunchStart => 'Commencer';
 
   @override
+  String get homeFirstLaunchSaveFailed =>
+      'Impossible d’enregistrer que vous avez vu ce message de bienvenue. Appuyez sur « Commencer » pour réessayer.';
+
+  @override
   String get settingsScreenTitle => 'Réglages';
 
   @override

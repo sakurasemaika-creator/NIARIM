@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/settings_service.dart';
@@ -50,6 +52,14 @@ class _FirstLaunchStore extends SharedPreferencesStorePlatform {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  // 保存に失敗したときの知らせ（読み上げにも伝わる1行）の文。
+  Finder saveFailureNotice() => find.descendant(
+    of: find.byWidgetPredicate(
+      (widget) => widget is Semantics && widget.properties.liveRegion == true,
+    ),
+    matching: find.byType(Text),
+  );
+
   Future<
     ({SettingsService settings, AppLocalizations l10n, _FirstLaunchStore store})
   >
@@ -59,12 +69,19 @@ void main() {
     bool pc = false,
     Size size = const Size(390, 844),
     double scale = 1,
+    AppThemePreset? theme,
   }) async {
     SharedPreferences.setMockInitialValues({
       'first_launch': true,
       'language': language,
       'force_pc_mode': pc ? 1 : 0,
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      if (theme != null) ...{
+        // 利用者が選んだテーマのまま開く（組み込みテーマを戻す初回の移行で
+        // 置き換えられないようにする）。
+        'theme_original_builtin_palette_restored_v1': true,
+        'theme_current_json': jsonEncode(theme.toJson()),
+      },
     });
     final delegate = SharedPreferencesStorePlatform.instance;
     final store = _FirstLaunchStore(delegate);
@@ -126,7 +143,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text(c.l10n.homeFirstLaunchMessage), findsOneWidget);
       expect(c.settings.isFirstLaunch, isTrue);
-      expect(find.text(c.l10n.communityErrorGeneric), findsOneWidget);
+      expect(saveFailureNotice(), findsOneWidget);
       final prefs = await SharedPreferences.getInstance();
       await prefs.reload();
       expect(prefs.getBool('first_launch'), isTrue);
@@ -167,7 +184,7 @@ void main() {
       expect(find.text(c.l10n.homeFirstLaunchMessage), findsOneWidget);
       c.store.pending!.complete(false);
       await tester.pumpAndSettle();
-      expect(find.text(c.l10n.communityErrorGeneric), findsOneWidget);
+      expect(saveFailureNotice(), findsOneWidget);
       expect(c.settings.isFirstLaunch, isTrue);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
@@ -200,7 +217,7 @@ void main() {
         await tester.ensureVisible(start);
         await tester.tap(start);
         await tester.pumpAndSettle();
-        final error = find.text(c.l10n.communityErrorGeneric);
+        final error = saveFailureNotice();
         await tester.ensureVisible(error);
         await tester.pumpAndSettle();
         expect(
@@ -223,9 +240,18 @@ void main() {
           ),
           findsOneWidget,
         );
+        // 色ではなく先頭の印と文で知らせる。文字の色はダイアログの文字色。
+        final scheme = Theme.of(tester.element(error)).colorScheme;
         expect(
-          tester.widget<Text>(error).style!.color,
-          Theme.of(tester.element(error)).colorScheme.error,
+          tester.renderObject<RenderParagraph>(error).text.style!.color,
+          scheme.onSurface,
+        );
+        expect(
+          find.descendant(
+            of: find.ancestor(of: error, matching: find.byType(Row)).first,
+            matching: find.byIcon(Icons.error_outline),
+          ),
+          findsOneWidget,
         );
         await tester.ensureVisible(start);
         expect(tester.getSize(start).height, greaterThanOrEqualTo(48));
@@ -239,4 +265,44 @@ void main() {
       }
     }
   });
+
+  // 知らせの色は差し色から作られるcolorScheme.errorではなく、ダイアログの
+  // 文字色（テーマ・外観で選ぶ色）。何を保存できなかったか・もう一度
+  // 「はじめる」を押せばよいことを文で伝える。
+  for (final language in ['ja', 'en', 'fr']) {
+    testWidgets('save failure notice uses the dialog text colour and names '
+        'the retry ($language)', (tester) async {
+      final preset = AppThemePreset.defaultLight.copyWith(
+        textColor: const Color(0xFF16593A),
+        menuTextColor: const Color(0xFF17325A),
+        accentColor: const Color(0xFFB03A6E),
+      );
+      final c = await open(tester, language: language, theme: preset);
+      c.store.mode = 'reject';
+      await tester.tap(
+        find.widgetWithText(FilledButton, c.l10n.homeFirstLaunchStart),
+      );
+      await tester.pumpAndSettle();
+      final notice = saveFailureNotice();
+      expect(notice, findsOneWidget);
+      final message = tester.widget<Text>(notice).data!;
+      expect(message, isNot(c.l10n.communityErrorGeneric));
+      expect(message, contains(c.l10n.homeFirstLaunchStart));
+      final scheme = Theme.of(tester.element(notice)).colorScheme;
+      expect(preset.textColor, isNot(scheme.error));
+      expect(
+        tester.renderObject<RenderParagraph>(notice).text.style!.color,
+        preset.textColor,
+      );
+      final icon = find.descendant(
+        of: find.ancestor(of: notice, matching: find.byType(Row)).first,
+        matching: find.byIcon(Icons.error_outline),
+      );
+      expect(icon, findsOneWidget);
+      expect(tester.widget<Icon>(icon).color, preset.textColor);
+      expect(find.text(c.l10n.homeFirstLaunchMessage), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
 }

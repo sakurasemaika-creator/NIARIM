@@ -56,6 +56,7 @@
   "homePreviewFailed": "No se puede reproducir la vista previa",
   "homeFirstLaunchMessage": "Puedes crear animaciones dibujadas a mano",
   "homeFirstLaunchStart": "Comenzar",
+  "homeFirstLaunchSaveFailed": "No se pudo guardar que ya viste este mensaje de bienvenida. Pulsa «Comenzar» para intentarlo de nuevo.",
   "settingsScreenTitle": "Ajustes",
   "settingsBasicTitle": "General",
   "settingsBasicSubtitle": "FPS, color de fondo, idioma",

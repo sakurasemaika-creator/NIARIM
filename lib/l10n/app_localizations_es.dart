@@ -206,6 +206,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeFirstLaunchStart => 'Comenzar';
 
   @override
+  String get homeFirstLaunchSaveFailed =>
+      'No se pudo guardar que ya viste este mensaje de bienvenida. Pulsa «Comenzar» para intentarlo de nuevo.';
+
+  @override
   String get settingsScreenTitle => 'Ajustes';
 
   @override

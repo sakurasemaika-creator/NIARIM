@@ -115,6 +115,7 @@
   "homePreviewFailed": "プレビューを再生できません",
   "homeFirstLaunchMessage": "手描きアニメーションを制作できます",
   "homeFirstLaunchStart": "はじめる",
+  "homeFirstLaunchSaveFailed": "この案内を見たことを保存できませんでした。もう一度「はじめる」を押してください。",
   "settingsScreenTitle": "設定",
   "settingsBasicTitle": "基本",
   "settingsBasicSubtitle": "FPS・背景色・言語",

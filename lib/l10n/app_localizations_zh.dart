@@ -194,6 +194,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeFirstLaunchStart => '开始使用';
 
   @override
+  String get homeFirstLaunchSaveFailed => '无法保存已看过此提示的记录。请再次点击“开始使用”。';
+
+  @override
   String get settingsScreenTitle => '设置';
 
   @override
@@ -8198,6 +8201,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeFirstLaunchStart => '開始使用';
+
+  @override
+  String get homeFirstLaunchSaveFailed => '無法儲存已看過此提示的記錄。請再次點擊「開始使用」。';
 
   @override
   String get settingsScreenTitle => '設定';

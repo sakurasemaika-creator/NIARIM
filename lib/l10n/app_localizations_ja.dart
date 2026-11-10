@@ -195,6 +195,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeFirstLaunchStart => 'はじめる';
 
   @override
+  String get homeFirstLaunchSaveFailed =>
+      'この案内を見たことを保存できませんでした。もう一度「はじめる」を押してください。';
+
+  @override
   String get settingsScreenTitle => '設定';
 
   @override

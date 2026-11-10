@@ -202,6 +202,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeFirstLaunchStart => 'Get Started';
 
   @override
+  String get homeFirstLaunchSaveFailed =>
+      'Couldn’t save that you’ve seen this welcome message. Press “Get Started” to try again.';
+
+  @override
   String get settingsScreenTitle => 'Settings';
 
   @override

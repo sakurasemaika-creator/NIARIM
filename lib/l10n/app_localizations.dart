@@ -443,6 +443,12 @@ abstract class AppLocalizations {
   /// **'はじめる'**
   String get homeFirstLaunchStart;
 
+  /// No description provided for @homeFirstLaunchSaveFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'この案内を見たことを保存できませんでした。もう一度「はじめる」を押してください。'**
+  String get homeFirstLaunchSaveFailed;
+
   /// No description provided for @settingsScreenTitle.
   ///
   /// In ja, this message translates to:

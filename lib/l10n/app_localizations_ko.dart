@@ -196,6 +196,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeFirstLaunchStart => '시작하기';
 
   @override
+  String get homeFirstLaunchSaveFailed =>
+      '이 안내를 확인했다는 기록을 저장하지 못했어요. 「시작하기」를 다시 눌러 주세요.';
+
+  @override
   String get settingsScreenTitle => '설정';
 
   @override
