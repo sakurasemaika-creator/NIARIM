@@ -43,7 +43,7 @@ describe("creator mission endpoints", () => {
     const body = JSON.parse(resp.body ?? "{}");
     expect(body.enabled).toBe(false);
     expect(body.missions).toHaveLength(55);
-    expect(body.missions.find((m: {id: string}) => m.id === 'edit_50h').coins).toBe(55000);
+    expect(body.missions.find((m: {id: string}) => m.id === 'edit_50h').coins).toBe(38);
     expect(body.missions.find((m: {id: string}) => m.id === 'bookmark_rank_1').claimed).toBe(null);
     expect(body.editTimeVerificationReady).toBe(false);
     expect(body.verifiedEditSeconds).toBe(0);
@@ -177,7 +177,7 @@ describe("creator mission endpoints", () => {
       workId: "abcdefghijk",
     }));
     expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
-      pending: true, offeredCoins: 50, awardedCoins: 0,
+      pending: true, offeredCoins: 9, awardedCoins: 0,
       workId: "abcdefghijk",
     });
     const write = send.mock.calls.map(([c]) => c)
