@@ -137,8 +137,9 @@ void main() {
             ChangeNotifierProvider<ProjectService>.value(value:projects),
             ChangeNotifierProvider<SettingsService>.value(value:settings),
           ],
-          child:const MaterialApp(
-            locale:Locale('ja'),
+          child:MaterialApp(
+            theme: ThemeData(fontFamily:'HakkouMincho'),
+            locale:const Locale('ja'),
             localizationsDelegates:AppLocalizations.localizationsDelegates,
             supportedLocales:AppLocalizations.supportedLocales,
             home:CreatorMissionsScreen(),
