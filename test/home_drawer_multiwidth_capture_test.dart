@@ -108,17 +108,26 @@ void main() {
       // Shared library now has two explicit, mutually exclusive collections.
       await tester.ensureVisible(find.byKey(const ValueKey('home_tab_2')));
       await tester.tap(find.byKey(const ValueKey('home_tab_2')));
+      await tester.pump(const Duration(milliseconds: 500));
       await tester.pump(const Duration(milliseconds: 350));
+      expect(
+        tester.widget<Semantics>(find.byKey(const ValueKey('home_tab_2')))
+            .properties
+            .selected,
+        isTrue,
+      );
+      expect(find.byType(SharedScreen), findsOneWidget);
       expect(find.byKey(const Key('sharedReceivedFilter')), findsOneWidget);
       expect(find.byKey(const Key('sharedOutgoingFilter')), findsOneWidget);
       await shot('04-shared-received');
       await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
-      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pump(const Duration(milliseconds: 500));
       await shot('05-shared-created');
       await tester.tap(find.byKey(const Key('sharedReceivedFilter')));
       await tester.pump(const Duration(milliseconds: 250));
       await tester.ensureVisible(find.byKey(const ValueKey('home_tab_0')));
       await tester.tap(find.byKey(const ValueKey('home_tab_0')));
+      await tester.pump(const Duration(milliseconds: 500));
       await tester.pump(const Duration(milliseconds: 350));
 
       final menuButton = find.byKey(const Key('homeMenuButton'));
