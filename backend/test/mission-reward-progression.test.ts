@@ -37,7 +37,7 @@ describe("mission rewards strictly rise with difficulty",()=>{
     for(const m of ranks)
       increasing([0,1000,10000,100000,1000000]
         .map(n=>missionRewardCoins(m,n)));
-    expect(missionRewardCoins(ranks[ranks.length-1],1000000)).toBe(100);
+    expect(missionRewardCoins(ranks[ranks.length-1],1000000)).toBe(1000);
   });
   it("raises every one of the 480 grid rewards along both dimensions",()=>{
     expect(WORK_COUNT_MISSIONS).toHaveLength(480);

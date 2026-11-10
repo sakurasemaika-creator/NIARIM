@@ -25,7 +25,7 @@ export interface MissionDefinition {
   eachWorkBookmarks?: number;
 }
 
-export const MISSION_CATALOG_VERSION = "creator-v7-progressive-step5" as const;
+export const MISSION_CATALOG_VERSION = "creator-v8-ranking-rebalanced" as const;
 export const CREATOR_MISSIONS: readonly MissionDefinition[] = Object.freeze([
   { id: "edit_1h", bit: 0, kind: "verifiedEditSeconds", required: 3600, coins: 5, perWork: false },
   { id: "edit_5h", bit: 1, kind: "verifiedEditSeconds", required: 18000, coins: 10, perWork: false },
@@ -78,10 +78,10 @@ export const CREATOR_MISSIONS: readonly MissionDefinition[] = Object.freeze([
   { id: "work_bookmarks_100", bit: 7, kind: "workBookmarks", required: 100, coins: 55, perWork: true },
   { id: "work_bookmarks_500", bit: 46, kind: "workBookmarks", required: 500, coins: 95, perWork: true },
   { id: "work_bookmarks_1000", bit: 47, kind: "workBookmarks", required: 1000, coins: 120, perWork: true },
-  { id: "bookmark_rank_50", bit: 13, kind: "niarimBookmarkRanking", required: 50, coins: 5, perWork: true },
-  { id: "bookmark_rank_10", bit: 14, kind: "niarimBookmarkRanking", required: 10, coins: 10, perWork: true },
-  { id: "bookmark_rank_3", bit: 15, kind: "niarimBookmarkRanking", required: 3, coins: 15, perWork: true },
-  { id: "bookmark_rank_1", bit: 16, kind: "niarimBookmarkRanking", required: 1, coins: 20, perWork: true },
+  { id: "bookmark_rank_50", bit: 13, kind: "niarimBookmarkRanking", required: 50, coins: 30, perWork: true },
+  { id: "bookmark_rank_10", bit: 14, kind: "niarimBookmarkRanking", required: 10, coins: 75, perWork: true },
+  { id: "bookmark_rank_3", bit: 15, kind: "niarimBookmarkRanking", required: 3, coins: 125, perWork: true },
+  { id: "bookmark_rank_1", bit: 16, kind: "niarimBookmarkRanking", required: 1, coins: 200, perWork: true },
 ]);
 
 export const ACCOUNT_MISSIONS = CREATOR_MISSIONS.filter((m) => !m.perWork);
@@ -95,6 +95,10 @@ export const MAX_CREATOR_MISSION_COINS = ACCOUNT_MISSIONS.reduce(
 );
 
 /**
+ * Ranking is a rare per-work achievement: top-three baseline rewards exceed
+ * the 120 coins for 1,000 bookmarks on a single work. Relative reward
+ * strength grows with rank and public work pool size.
+ *
  * A published-work population bracket, updated by the EXISTING statistics
  * scan, increases future NIARIM-native bookmark rank rewards. No read-heavy
  * COUNT across all works is needed during a claim.

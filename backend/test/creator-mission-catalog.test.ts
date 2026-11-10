@@ -55,11 +55,29 @@ describe("creator missions with separate account and work scopes", () => {
     expect([0, 999, 1000, 9999, 10000, 100000, 1000000]
       .map(rankingDifficultyMultiplier)).toEqual([1, 1, 2, 2, 3, 4, 5]);
     const ranked = CREATOR_MISSIONS.find((m) => m.id === "bookmark_rank_1")!;
-    expect(missionRewardCoins(ranked, 100)).toBe(20);
-    expect(missionRewardCoins(ranked, 10000)).toBe(60);
-    expect(missionRewardCoins(ranked, 1000000)).toBe(100);
+    expect(missionRewardCoins(ranked, 100)).toBe(200);
+    expect(missionRewardCoins(ranked, 10000)).toBe(600);
+    expect(missionRewardCoins(ranked, 1000000)).toBe(1000);
     const edited = CREATOR_MISSIONS.find((m) => m.id === "edit_100000h")!;
     expect(missionRewardCoins(edited, 1000000)).toBe(75);
+  });
+
+  it("makes rare top rankings more valuable than ordinary bookmark goals", () => {
+    const byId = (id: string) => CREATOR_MISSIONS.find((m) => m.id === id)!;
+    const maxBookmarkReward = byId("work_bookmarks_1000").coins;
+    expect(maxBookmarkReward).toBe(120);
+    const orderedRanks = [50, 10, 3, 1].map(rank => byId(`bookmark_rank_${rank}`));
+    expect(orderedRanks.map(m => m.coins)).toEqual([30, 75, 125, 200]);
+    expect(orderedRanks[2].coins).toBeGreaterThan(maxBookmarkReward);
+    expect(orderedRanks[3].coins).toBeGreaterThan(maxBookmarkReward);
+    const populations = [0, 1000, 10000, 100000, 1000000];
+    for (const pop of populations) {
+      const prizes = orderedRanks.map(m => missionRewardCoins(m, pop));
+      expect(prizes.every(c => c > 0 && c % 5 === 0)).toBe(true);
+      expect(prizes.every((c, i) => i === 0 || c > prizes[i - 1])).toBe(true);
+    }
+    expect(orderedRanks.map(m => missionRewardCoins(m, 1000000)))
+      .toEqual([150, 375, 625, 1000]);
   });
 
   it("never makes YouTube engagement metrics eligible for ranking rewards", () => {
