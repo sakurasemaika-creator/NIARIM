@@ -45,10 +45,8 @@ import 'widgets/work_folder_move_sheet.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../utils/app_error_reporter.dart';
-import '../../utils/color_contrast.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import '../../utils/tolerant_preferences.dart';
-import '../canvas/widgets/canvas_icon_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -1832,7 +1830,7 @@ Future<void> _outgoingShareAction(
         } finally {
           WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
         }
-        if (value == null) return;
+        if (value == null || value.trim() == entry.name) return;
         final name = value.trim().replaceAll(RegExp(r'[\\/]'), '_');
         if (name.isEmpty || name == '.' || name == '..') return;
         final target = File('${file.parent.path}/$name.niashare');
@@ -2611,6 +2609,7 @@ class _WorksTabState extends State<_WorksTab> {
                 ),
             onRenameFolder: (id, name) => workFolders.renameFolder(id, name),
             onDeleteFolder: (id) => workFolders.deleteFolder(id),
+            reserveForFloatingActions: true,
             itemBuilder: (context, file) => _WorkListItem(
               key: ValueKey(file.path),
               file: file,
