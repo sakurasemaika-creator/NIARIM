@@ -68,7 +68,7 @@ export async function pulseMyPlazaMissions(event:APIGatewayProxyEventV2) {
       plazaProgress(next,m,periods).eligible).map(m=>({
         id:m.id,period:m.period,requiredSeconds:m.requiredSeconds,coins:m.coins,
       }));
-    const attrs:Record<string,unknown>={
+    const attrs:Record<string,string|number>={
       ":type":PLAZA_MISSION_STATE_TYPE,":next":next.version,
       ":dayKey":next.dayKey,":weekKey":next.weekKey,":monthKey":next.monthKey,
       ":daySeconds":next.daySeconds,":weekSeconds":next.weekSeconds,
@@ -113,7 +113,7 @@ export async function claimMyPlazaMission(event:APIGatewayProxyEventV2) {
     claimed:true,duplicate:true,awardedCoins:0,missionId:mission.id,
   });
   if(!progress.eligible)conflict("達成条件を満たしていません","PLAZA_NOT_ELIGIBLE");
-  const maskAttr=mission.period+"Mask";
+  const maskAttr=(mission.period+"Mask") as "dayMask"|"weekMask"|"monthMask";
   const keyAttr=mission.period+"Key";
   const secAttr=mission.period+"Seconds";
   const oldMask=state[maskAttr];
