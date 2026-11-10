@@ -381,7 +381,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _plazaPulseTimer = Timer.periodic(
-      const Duration(seconds: 60), (_) => _pulsePlazaTime(),
+      const Duration(minutes: 2), (_) => _pulsePlazaTime(),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _pulsePlazaTime();
