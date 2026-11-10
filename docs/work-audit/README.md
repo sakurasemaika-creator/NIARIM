@@ -35,6 +35,10 @@
 - `docs/product-audit/HANDS_ON_UI_STANDARD.md` — 全画面・全操作・実操作・実画面目視・Visual evidence
 - `docs/product-audit/LEGAL_IP_STANDARD.md` — 著作権、OSS、商標、特許/実用新案、意匠、Privacy、Terms、Consumer law等
 
+## Backend/APIの現行ルート棚卸しと監査チェックリスト
+
+- `docs/work-audit/BACKEND_API_AUDIT_CHECKLIST.md` — 登録時49 HTTPルート、認証/本人境界、ランキング公開状態、フォロー、YouTube・Google、FCM、AdMob SSV、Play課金、DynamoDB・AWS/CI等の追加検証観点。正式Delta `D001.61` / `D021` に紐づく**未実施の監査対象**であり、完了証拠ではない。全面監査開始時には最新App/Web HEADと実API定義を再inventoryする。
+
 ## 補助資料
 
 `docs/AI設計書/**`、機能別verification、security audit、operation capture等は、現在の実装と照合するための仕様・過去証拠・補助資料として使用します。これらの古い記述や過去の結果だけで現在の監査完了を判定してはいけません。
