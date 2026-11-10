@@ -50,7 +50,7 @@ http.Response _reply(Object body) => http.Response(
   headers: {'content-type': 'application/json; charset=utf-8'},
 );
 
-/// 残高60000コイン・全機能1か月が55000コインで交換できるサーバー。
+/// 残高60000コイン・全機能1か月が60000コインで交換できるサーバー。
 /// 交換そのもの（POST）が呼ばれたら[redeemCalls]に数える。
 CommunityService _redeemableServer(List<String> redeemCalls) =>
     CommunityService(
@@ -72,8 +72,8 @@ CommunityService _redeemableServer(List<String> redeemCalls) =>
               }),
               '/me/rewards/quote' => _reply({
                 'enabled': true,
-                'priceCoins': 55000,
-                'priceVersion': 'v1-test',
+                'priceCoins': 60000,
+                'priceVersion': 'v1-final-20261110',
               }),
               _ => _reply(<String, Object>{}),
             };
@@ -83,10 +83,10 @@ CommunityService _redeemableServer(List<String> redeemCalls) =>
     );
 
 const _toneCurvePrices = CoinUnlockUnitPrices(
-  perHour: 4,
-  perDay: 20,
-  perWeek: 110,
-  perMonth: 450,
+  perHour: 110,
+  perDay: 470,
+  perWeek: 3520,
+  perMonth: 13000,
 );
 
 /// [_toneCurvePrices]で[duration]を選んだときの必要コイン（モデルを通さず、
@@ -94,10 +94,10 @@ const _toneCurvePrices = CoinUnlockUnitPrices(
 int _expectedToneCurveCoins(CoinUnlockDuration duration) =>
     duration.amount *
     switch (duration.unit) {
-      CoinDurationUnit.hour => 4,
-      CoinDurationUnit.day => 20,
-      CoinDurationUnit.week => 110,
-      CoinDurationUnit.month => 450,
+      CoinDurationUnit.hour => 110,
+      CoinDurationUnit.day => 470,
+      CoinDurationUnit.week => 3520,
+      CoinDurationUnit.month => 13000,
     };
 
 Future<void> _pumpScreen(
