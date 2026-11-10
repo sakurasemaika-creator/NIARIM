@@ -120,7 +120,11 @@ void main() {
     expect(find.textContaining('同じ週（月曜日から日曜日）'), findsOneWidget);
     expect(find.textContaining('1日に複数回ログインしても1日'), findsOneWidget);
     expect(find.textContaining('新しい週・月'), findsOneWidget);
-    await tester.pageBack();
+    await tester.tap(find.descendant(
+      of: find.byType(AlertDialog),
+      matching: find.byType(TextButton),
+    ));
+
     await tester.pumpAndSettle();
 
     final plaza = find.byKey(const Key('plazaMissionDetails_plaza_day_5m'));
@@ -136,7 +140,11 @@ void main() {
     expect(find.textContaining('動画を再生したり、画面を操作したり'), findsOneWidget);
     expect(find.textContaining('サーバー時刻に基づく定期通信'), findsOneWidget);
     expect(find.textContaining('同じ期間中に1回限り'), findsOneWidget);
-    await tester.pageBack();
+    await tester.tap(find.descendant(
+      of: find.byType(AlertDialog),
+      matching: find.byType(TextButton),
+    ));
+
     await tester.pumpAndSettle();
 
     await tester.pumpWidget(const SizedBox.shrink());
