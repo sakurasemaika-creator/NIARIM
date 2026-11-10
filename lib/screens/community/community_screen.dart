@@ -22,6 +22,7 @@ import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'community_edit_feedback.dart';
+import 'community_bookmarked_tab.dart';
 import 'community_author_works_screen.dart';
 import 'community_follow_notifications_screen.dart';
 import 'community_my_works_screen.dart';
@@ -143,12 +144,12 @@ class _CommunityScreenState extends State<CommunityScreen>
   int _maximumMinutes = 10;
   int _minimumViews = 0;
   int _minimumBookmarks = 0;
-  final _tabScrollControllers = List.generate(4, (_) => ScrollController());
-  final _visiblePageCounts = List<int>.filled(4, CommunityService.pageSize);
-  final _pagingTabs = List<bool>.filled(4, false);
-  final _refreshingTabs = List<bool>.filled(4, false);
-  final _refreshedInPullGesture = List<bool>.filled(4, false);
-  final _pullBeganAtTop = List<bool>.filled(4, false);
+  final _tabScrollControllers = List.generate(5, (_) => ScrollController());
+  final _visiblePageCounts = List<int>.filled(5, CommunityService.pageSize);
+  final _pagingTabs = List<bool>.filled(5, false);
+  final _refreshingTabs = List<bool>.filled(5, false);
+  final _refreshedInPullGesture = List<bool>.filled(5, false);
+  final _pullBeganAtTop = List<bool>.filled(5, false);
 
   List<CommunityWork> _visible(List<CommunityWork> works, int tab) =>
       works.take(_visiblePageCounts[tab]).toList();
@@ -182,7 +183,8 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   void _onPageScroll(int tab) {
-    if (!mounted || _pagingTabs[tab]) return;
+    // Saved works have their own server refresh and no public pagination.
+    if (tab == 4 || !mounted || _pagingTabs[tab]) return;
     final controller = _tabScrollControllers[tab];
     if (!controller.hasClients || controller.position.extentAfter > 220) {
       return;
@@ -299,7 +301,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     _loadSavedSearches();
     _loadTileWidth();
     _loadRankingLayout();
-    _tabController = TabController(length: 4, vsync: this)
+    _tabController = TabController(length: 5, vsync: this)
       ..addListener(_onTabChanged);
     for (var i = 0; i < _tabScrollControllers.length; i++) {
       final tab = i;
@@ -650,6 +652,13 @@ class _CommunityScreenState extends State<CommunityScreen>
     }
     if (_tabController.index == 2 && service.isBackendConnected) {
       service.refreshFollowingFeed();
+    }
+    if (_tabController.index == 4 && service.isBackendConnected &&
+        service.currentUserId != null && !service.hasLoadedSocial &&
+        !service.isSocialLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _tabController.index == 4) service.loadSocial();
+      });
     }
   }
 
@@ -1017,6 +1026,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       0 => _newArrivals(allWorks),
       1 => _rankingWorks(allWorks),
       2 => _applySearch(context.read<CommunityService>().favoriteAuthorWorks),
+      4 => context.read<CommunityService>().bookmarkedWorksForViewer,
       _ => _applySearch(allWorks, includeQuery: true),
     };
     if (base.isEmpty) {
@@ -1104,15 +1114,15 @@ class _CommunityScreenState extends State<CommunityScreen>
       l10n.communityTabRanking,
       l10n.communityTabFavoriteAuthors,
       CommunityPlazaLabels.of(context).searchTab,
+      l10n.homeTabBookmarked,
     ];
-    // Match the project-list tabs: measured label width + 32px touch padding.
-    // Short labels get proportionally less space; long translations can scroll.
-    final naturalTabWidths = labels
-        .map((label) => measure(label, labelStyle).width + 32)
-        .toList();
-    final tabHeight = labels
-        .map((label) => measure(label, labelStyle).height + 16)
-        .fold<double>(48, (a, b) => a > b ? a : b);
+    const tabIcons = <IconData>[
+      Icons.schedule_outlined,
+      Icons.emoji_events_outlined,
+      Icons.person_outlined,
+      Icons.search,
+      Icons.bookmark_border,
+    ];
     final searchFill =
         theme.inputDecorationTheme.fillColor ?? scheme.surfaceContainerLow;
     Widget searchRowFor(int tab) {
@@ -1540,45 +1550,37 @@ class _CommunityScreenState extends State<CommunityScreen>
           const HelpButton(topic: '作品広場'),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(tabHeight),
+          preferredSize: const Size.fromHeight(48),
           child: LayoutBuilder(
-            builder: (context, constraints) {
-              final totalNatural = naturalTabWidths.fold<double>(
-                0,
-                (sum, tabWidth) => sum + tabWidth,
-              );
-              final scrollTabs = totalNatural > constraints.maxWidth;
-              return TabBar(
-                controller: _tabController,
-                // Scrollable TabBar respects the explicit, proportional widths.
-                // Non-scrollable TabBar forces all tabs to equal widths.
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                labelPadding: EdgeInsets.zero,
-                labelStyle: labelStyle,
-                unselectedLabelStyle: labelStyle,
-                labelColor: selected,
-                unselectedLabelColor: unselected,
-                indicatorColor: selected,
-                tabs: [
-                  for (var i = 0; i < labels.length; i++)
-                    Tab(
-                      height: tabHeight,
-                      child: SizedBox(
-                        key: Key('communityTabWidth$i'),
-                        width: scrollTabs
-                            ? naturalTabWidths[i]
-                            : constraints.maxWidth *
-                                  naturalTabWidths[i] /
-                                  totalNatural,
+            builder: (context, constraints) => TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              labelPadding: EdgeInsets.zero,
+              labelStyle: labelStyle,
+              unselectedLabelStyle: labelStyle,
+              labelColor: selected,
+              unselectedLabelColor: unselected,
+              indicatorColor: selected,
+              tabs: [
+                for (var i = 0; i < labels.length; i++)
+                  Tab(
+                    key: Key('communityTab$i'),
+                    height: 48,
+                    child: SizedBox(
+                      key: Key('communityTabWidth$i'),
+                      width: constraints.maxWidth / labels.length,
+                      child: Tooltip(
+                        message: labels[i],
+                        triggerMode: TooltipTriggerMode.longPress,
                         child: Center(
-                          child: Text(labels[i], maxLines: 1, softWrap: false),
+                          child: Icon(tabIcons[i], size: 24),
                         ),
                       ),
                     ),
-                ],
-              );
-            },
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1933,6 +1935,11 @@ class _CommunityScreenState extends State<CommunityScreen>
                   ),
                 );
               },
+            ),
+            CommunityBookmarkedTab(
+              key: const PageStorageKey('community-bookmarks'),
+              scrollController: _tabScrollControllers[4],
+              onBrowseWorks: () => _tabController.animateTo(0),
             ),
           ],
         ),
