@@ -1918,6 +1918,7 @@
   "layerPanelOpacityLabel": "不透明度",
   "layerPanelLockLabel": "鎖定",
   "layerPanelOpacityLockLabel": "鎖定不透明度",
+  "canvasLayerLockedNotice": "此圖層已鎖定，無法繪製。請在圖層設定中關閉「鎖定」。",
   "brushPanelDeleteConfirmTitle": "要刪除「{name}」嗎？",
   "brushPanelDeleteConfirmBody": "刪除的筆刷無法復原。",
   "brushPanelResetRememberedValues": "將粗細和不透明度恢復為預設值",

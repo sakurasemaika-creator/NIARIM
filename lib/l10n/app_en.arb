@@ -1918,6 +1918,7 @@
   "layerPanelOpacityLabel": "Opacity",
   "layerPanelLockLabel": "Lock",
   "layerPanelOpacityLockLabel": "Lock opacity",
+  "canvasLayerLockedNotice": "This layer is locked, so you can't draw on it. Turn off \"Lock\" in the layer settings.",
   "brushPanelDeleteConfirmTitle": "Delete \"{name}\"?",
   "brushPanelDeleteConfirmBody": "A deleted brush can't be restored.",
   "brushPanelResetRememberedValues": "Reset thickness and opacity to default",

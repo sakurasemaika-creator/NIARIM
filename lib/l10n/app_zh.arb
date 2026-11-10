@@ -1918,6 +1918,7 @@
   "layerPanelOpacityLabel": "不透明度",
   "layerPanelLockLabel": "锁定",
   "layerPanelOpacityLockLabel": "锁定不透明度",
+  "canvasLayerLockedNotice": "此图层已锁定，无法绘制。请在图层设置中关闭“锁定”。",
   "brushPanelDeleteConfirmTitle": "要删除“{name}”吗？",
   "brushPanelDeleteConfirmBody": "删除的笔刷无法恢复。",
   "brushPanelResetRememberedValues": "将粗细和不透明度恢复为默认值",

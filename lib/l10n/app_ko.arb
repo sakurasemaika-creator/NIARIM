@@ -1918,6 +1918,7 @@
   "layerPanelOpacityLabel": "불투명도",
   "layerPanelLockLabel": "잠금",
   "layerPanelOpacityLockLabel": "불투명도 잠금",
+  "canvasLayerLockedNotice": "이 레이어는 잠겨 있어 그릴 수 없습니다. 레이어 설정에서 \"잠금\"을 끄세요.",
   "brushPanelDeleteConfirmTitle": "\"{name}\"을(를) 삭제할까요?",
   "brushPanelDeleteConfirmBody": "삭제한 브러시는 되돌릴 수 없습니다.",
   "brushPanelResetRememberedValues": "굵기・불투명도를 기본값으로 되돌리기",

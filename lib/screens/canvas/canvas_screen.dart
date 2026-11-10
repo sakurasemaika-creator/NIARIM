@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/autosave_service.dart';
+import '../../services/save_tree_service.dart';
 import '../../services/project_service.dart';
 import '../../services/layer_clipboard_service.dart';
 import '../../services/brush_service.dart';
@@ -24,6 +25,7 @@ import '../../services/shortcut_service.dart';
 import '../../models/shortcut_binding.dart';
 import '../../models/custom_automation.dart';
 import '../../widgets/background_color_picker.dart';
+import '../../widgets/project_not_found_view.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/labeled_slider.dart';
@@ -75,6 +77,7 @@ import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
 import '../../widgets/premium_lock_widget.dart';
+import '../../widgets/typing_aware_shortcuts.dart';
 
 class CanvasScreen extends StatefulWidget {
   final String projectId;
@@ -85,6 +88,11 @@ class CanvasScreen extends StatefulWidget {
 }
 
 class _CanvasScreenState extends State<CanvasScreen> {
+  // 画面全体のショートカット（取り消し・ツール切替等）を受けるフォーカス。
+  // パネルの入力欄（レイヤー検索・色のコード等）に入力したままキャンバスへ
+  // 描き始めたら、入力を終えてここへ戻す（戻さないとCtrl+Zが入力欄の
+  // 文字の取り消しになる、またはどこにも届かない）。
+  final FocusNode _screenFocus = FocusNode(debugLabel: 'Canvas');
   DrawingTool _currentTool = DrawingTool.pen;
   // ジェスチャー／ペンボタンでの消しゴム切替・ブラシ切替・手のひらツール
   // トグル用に、切替前のツールを一時的に覚えておく。
@@ -870,36 +878,74 @@ class _CanvasScreenState extends State<CanvasScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                leading: Icon(
-                  _autofillCheckMode == AutofillCheckMode.normal
-                      ? Icons.visibility_outlined
-                      : _autofillCheckMode == AutofillCheckMode.partSeparation
-                      ? Icons.palette_outlined
-                      : Icons.contrast,
-                ),
-                title: Text(l10n.canvasAutofillCheckView),
-                trailing: DropdownButton<AutofillCheckMode>(
-                  value: _autofillCheckMode,
-                  underline: const SizedBox.shrink(),
-                  items: [
-                    DropdownMenuItem(
-                      value: AutofillCheckMode.normal,
-                      child: Text(l10n.canvasAutofillCheckNormal),
-                    ),
-                    DropdownMenuItem(
-                      value: AutofillCheckMode.partSeparation,
-                      child: Text(l10n.canvasAutofillCheckParts),
-                    ),
-                    DropdownMenuItem(
-                      value: AutofillCheckMode.silhouette,
-                      child: Text(l10n.canvasAutofillCheckSilhouette),
-                    ),
-                  ],
-                  onChanged: (mode) {
-                    if (mode != null) setState(() => _autofillCheckMode = mode);
-                  },
-                ),
+              // 選んだ表示がその場で見えるよう、この行だけ作り直す（メニューは
+              // キャンバスの画面とは別のルートなので、画面のsetStateでは
+              // 作り直されず、選ぶ前の表示のままだった）。
+              StatefulBuilder(
+                builder: (ctx, setMenuState) {
+                  final labels = {
+                    AutofillCheckMode.normal: l10n.canvasAutofillCheckNormal,
+                    AutofillCheckMode.partSeparation:
+                        l10n.canvasAutofillCheckParts,
+                    AutofillCheckMode.silhouette:
+                        l10n.canvasAutofillCheckSilhouette,
+                  };
+                  Widget dropdown({required bool expanded}) =>
+                      DropdownButton<AutofillCheckMode>(
+                        value: _autofillCheckMode,
+                        isExpanded: expanded,
+                        underline: const SizedBox.shrink(),
+                        items: [
+                          for (final entry in labels.entries)
+                            DropdownMenuItem(
+                              value: entry.key,
+                              child: Text(entry.value),
+                            ),
+                        ],
+                        onChanged: (mode) {
+                          if (mode == null) return;
+                          setState(() => _autofillCheckMode = mode);
+                          setMenuState(() {});
+                        },
+                      );
+                  return LayoutBuilder(
+                    builder: (ctx, constraints) {
+                      // 選択肢は、項目名の右に入るときだけ右に置き、入らない
+                      // ときは項目名の下の行に置く（長い言語・大きな文字で
+                      // 右に置くと、行の幅をすべて使って行が描けなかった）。
+                      final style = Theme.of(ctx).textTheme.titleMedium;
+                      final scaler = MediaQuery.textScalerOf(ctx);
+                      var widest = 0.0;
+                      for (final label in labels.values) {
+                        final painter = TextPainter(
+                          text: TextSpan(text: label, style: style),
+                          textDirection: Directionality.of(ctx),
+                          textScaler: scaler,
+                        )..layout();
+                        if (painter.width > widest) widest = painter.width;
+                        painter.dispose();
+                      }
+                      // 選択肢の幅（▼を含む）＋先頭のアイコン・余白・項目名に
+                      // 残したい最小の幅。
+                      final fitsBeside =
+                          widest + 32 + 56 + 32 + scaler.scale(96) <=
+                          constraints.maxWidth;
+                      return ListTile(
+                        leading: Icon(
+                          _autofillCheckMode == AutofillCheckMode.normal
+                              ? Icons.visibility_outlined
+                              : _autofillCheckMode ==
+                                    AutofillCheckMode.partSeparation
+                              ? Icons.palette_outlined
+                              : Icons.contrast,
+                        ),
+                        title: Text(l10n.canvasAutofillCheckView),
+                        subtitle: fitsBeside ? null : dropdown(expanded: true),
+                        trailing: fitsBeside ? dropdown(expanded: false) : null,
+                      );
+                    },
+                  );
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.auto_fix_high_outlined),
@@ -1128,6 +1174,30 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // かどうか（1セッション1回のみ。ユーザーが手動で閉じた後に毎回また
   // 開き直されると邪魔になるため）。
   bool _autoOpenedDesktopPanels = false;
+  // 直前の表示がPC/DeXモードだったか（向きが変わって切り替わったかを見る）。
+  bool? _lastLayoutWasWide;
+  // スマホ表示へ移るときに閉じたドックのパネル（PC/DeXモードへ戻ったら開く）。
+  Set<CanvasDockPanel>? _panelsBeforePhoneLayout;
+
+  Set<CanvasDockPanel> _openDockPanels() => {
+    for (final panel in CanvasDockPanel.values)
+      if (_desktopPanelVisible(panel)) panel,
+  };
+
+  void _setDockPanels(Set<CanvasDockPanel> panels) {
+    _showBrushPanel = panels.contains(CanvasDockPanel.brush);
+    _showColorPicker = panels.contains(CanvasDockPanel.colorPicker);
+    _showLayerPanel = panels.contains(CanvasDockPanel.layer);
+    _showTonePanel = panels.contains(CanvasDockPanel.tone);
+    _showStampPanel = panels.contains(CanvasDockPanel.stamp);
+    _showPenSubToolPanel = panels.contains(CanvasDockPanel.penSubTool);
+    _showOnionSkinPanel = panels.contains(CanvasDockPanel.onionSkin);
+    _showRulerPanel = panels.contains(CanvasDockPanel.ruler);
+    _showFilterPanel = panels.contains(CanvasDockPanel.filter);
+    _showQuickToolPanel = panels.contains(CanvasDockPanel.quickTool);
+    _showColorAdjustPanel = panels.contains(CanvasDockPanel.colorAdjust);
+    _showCanvasPreviewPanel = panels.contains(CanvasDockPanel.canvasPreview);
+  }
 
   @override
   void initState() {
@@ -1161,9 +1231,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // 閉じた後にまた自動で開き直されると邪魔になるため、手動で閉じた後は
     // 再度自動では開かない。いずれも独立して閉じられる
     // （_closeAllOverlayPanelsもPC/DeXモードではこれらを対象外にしている）。
-    if (!_autoOpenedDesktopPanels && isWideScreen(context)) {
+    final wide = isWideScreen(context);
+    if (!_autoOpenedDesktopPanels && wide) {
       _autoOpenedDesktopPanels = true;
       _applyDesktopDockVisibilityPreferences();
+    }
+    // 自動判定で画面の向きが変わり、PC/DeXモードとスマホ表示が入れ替わった
+    // とき：スマホ表示へ移るときはドックのパネルを閉じ（スマホは全パネルを
+    // 閉じた状態が基本。開いたままだと浮かぶパネルが重なってキャンバスを
+    // 覆った）、PC/DeXモードへ戻ったら同じパネルをまた開く。
+    final wasWide = _lastLayoutWasWide;
+    _lastLayoutWasWide = wide;
+    if (wasWide == true && !wide) {
+      _panelsBeforePhoneLayout = _openDockPanels();
+      _setDockPanels(const {});
+    } else if (wasWide == false && wide && _panelsBeforePhoneLayout != null) {
+      _setDockPanels(_panelsBeforePhoneLayout!);
+      _panelsBeforePhoneLayout = null;
     }
     _projectServiceForDispose = context.read<ProjectService>();
     // PerformanceServiceをlistenerで監視（依存差し替えに対応）
@@ -1208,6 +1292,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   @override
   void dispose() {
+    _screenFocus.dispose();
     _filterCanvasPreview?.dispose();
     _filterLensMask.dispose();
     _customAutomationRecordingOverlay?.remove();
@@ -1271,7 +1356,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
           label: l10n.canvasResearchButton,
           onPressed: () => _checkMissingMaterials(materialService),
         ),
+        // 操作ボタン付きのSnackBarは既定では時間で消えず、ホーム等の次の
+        // 画面まで付いてきて、後から出す通知もその後ろで待ち続ける。
+        persist: false,
         duration: const Duration(seconds: 6),
+      ),
+    );
+  }
+
+  /// ロックしたレイヤーへ描こうとしたとき（押すたびに出し直す）。
+  void _showLockedLayerNotice() {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.canvasLayerLockedNotice),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -1317,6 +1418,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
         .projects
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
+    // 存在しないID・ゴミ箱へ移した作品：空のキャンバスを出さず、一覧へ戻す。
+    if (project == null) {
+      return const ProjectNotFoundView(
+        homeButtonKey: Key('canvasNotFoundHome'),
+      );
+    }
     // 使うブラシ・その太さ・不透明度が変わったら（一覧で選ぶ・早替えツール）
     // この画面を作り直し、太さ・不透明度の欄をそのブラシの値へ合わせる
     // （これが無いと、別のブラシを選んでも欄は前のブラシの値のままだった）。
@@ -1349,9 +1456,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // DeXモード・マウス/キーボード入力・左手デバイス：設定画面
     // 「ショートカット設定」で割り当てたキーで、ツール切替やUndo/Redo
     // などの主要操作を行えるようにする。
-    return CallbackShortcuts(
+    return TypingAwareShortcuts(
       bindings: _buildShortcutBindings(context),
+      screenFocus: _screenFocus,
       child: Focus(
+        focusNode: _screenFocus,
         autofocus: true,
         child: Scaffold(
           // キャンバスモードのバー類（上部バー・太さ/不透明度スライダー・
@@ -1439,110 +1548,125 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   // いたため、縮小時に背景まで一緒に縮んで見た目が
                                   // ちぐはぐになる不具合があった）。
                                   Container(color: kCanvasOutsideColor),
-                                  CanvasArea(
-                                    onTapForText:
-                                        _currentTool == DrawingTool.text
-                                        ? onCanvasTapForText
-                                        : null,
-                                    onEyedropper: _handleCanvasEyedropper,
-                                    autofillCheckMode: _autofillCheckMode,
-                                    filterEyedropperActive:
-                                        _filterColorEyedropperTarget != null ||
-                                        _textColorEyedropperTarget != null ||
-                                        _brushOutlineEyedropperActive,
-                                    filterGizmo: _filterCanvasGizmo(project),
-                                    currentLayerPreview:
-                                        _filterCanvasPreviewShown(),
-                                    currentLayerPreviewBlendMode:
-                                        _filterCanvasPreviewBlendMode(),
-                                    lockToolInput: selectionEditingHidden,
-                                    onFilterGizmoChanged: (gizmo) =>
-                                        _moveFilterGizmo(project, gizmo),
-                                    onFilterGizmoDragStart: () => context
-                                        .read<FilterService>()
-                                        .beginFilterEditGroup(),
-                                    onFilterGizmoDragEnd: () => context
-                                        .read<FilterService>()
-                                        .endFilterEditGroup(),
-                                    project: project,
-                                    background: _canvasBackground,
-                                    currentLayerId: _currentLayerId,
-                                    isEraser:
-                                        _currentTool == DrawingTool.eraser,
-                                    currentTool: _currentTool,
-                                    currentSubTool: _currentSubTool,
-                                    lassoFillEnclosedMode:
-                                        _lassoFillEnclosedMode,
-                                    onionSkinSettings: _onionSkinSettings,
-                                    currentFrame: _currentFrame,
-                                    sceneId: _currentSceneId,
-                                    activeRuler: _activeRuler,
-                                    onRulerChanged: _setActiveRulerLive,
-                                    shapeKind: _shapeKind,
-                                    onGestureToolChange: (tool) =>
-                                        setState(() => _currentTool = tool),
-                                    onGestureToggleTool:
-                                        _handleGestureToggleTool,
-                                    onNextQuickTool: _applyNextQuickTool,
-                                    onToggleOnionSkin: () => setState(
-                                      () => _onionSkinSettings =
-                                          _onionSkinSettings.copyWith(
-                                            enabled:
-                                                !_onionSkinSettings.enabled,
-                                          ),
-                                    ),
-                                    meshDensity: _meshDensity,
-                                    meshRotateDeg: _meshRotateDeg,
-                                    meshScaleValue: _meshScaleValue,
-                                    meshCommitToken: _meshCommitToken,
-                                    meshCancelToken: _meshCancelToken,
-                                    onNextFrame: _goToNextFrame,
-                                    onPreviousFrame: _goToPreviousFrame,
-                                    invertSelectionToken: _invertSelectionToken,
-                                    selectAllSelectionToken:
-                                        _selectAllSelectionToken,
-                                    clearSelectionToken: _clearSelectionToken,
-                                    selectionReferenceAllVisible: context
-                                        .watch<SettingsService>()
-                                        .selectionReferenceAllVisible,
-                                    lassoSnapToLines: context
-                                        .watch<SettingsService>()
-                                        .lassoSnapToLines,
-                                    lassoGapTolerancePx: context
-                                        .watch<SettingsService>()
-                                        .lassoGapTolerancePx,
-                                    onSelectionActiveChanged: (v) {
-                                      if (_hasActiveSelection == v) return;
-                                      setState(() {
-                                        _hasActiveSelection = v;
-                                        // 選択範囲を作り直した／解除したら、
-                                        // 「変更キャンセル」で戻せる範囲も
-                                        // そこで区切る。
-                                        _selectionTransformSteps = 0;
-                                        _resetSelectionSliders();
-                                      });
-                                    },
-                                    onSelectionMaskChanged: (mask) {
-                                      if (identical(
-                                        _canvasSelectionMask,
-                                        mask,
-                                      )) {
-                                        return;
+                                  Listener(
+                                    // 入力欄はマウス・ペンで外を押されると自分で
+                                    // フォーカスを手放す（同じ押下の処理の中で、
+                                    // ここより後に動く）。その後で戻す。
+                                    onPointerDown: (_) => scheduleMicrotask(() {
+                                      if (mounted &&
+                                          !_screenFocus.hasPrimaryFocus) {
+                                        _screenFocus.requestFocus();
                                       }
-                                      setState(
-                                        () => _canvasSelectionMask = mask,
-                                      );
-                                    },
-                                    filterLensMask: _filterLensMaskShown(),
-                                    onUndoGesture: _undo,
-                                    onRedoGesture: _redo,
-                                    onFilterLensMaskEdited: _editFilterLensMask,
-                                    selectionMoveX: _selectionMoveX,
-                                    selectionMoveY: _selectionMoveY,
-                                    selectionScale: _selectionScale,
-                                    selectionRotateDeg: _selectionRotateDeg,
-                                    selectionTransformCommitToken:
-                                        _selectionTransformCommitToken,
+                                    }),
+                                    child: CanvasArea(
+                                      onTapForText:
+                                          _currentTool == DrawingTool.text
+                                          ? onCanvasTapForText
+                                          : null,
+                                      onEyedropper: _handleCanvasEyedropper,
+                                      autofillCheckMode: _autofillCheckMode,
+                                      filterEyedropperActive:
+                                          _filterColorEyedropperTarget !=
+                                              null ||
+                                          _textColorEyedropperTarget != null ||
+                                          _brushOutlineEyedropperActive,
+                                      filterGizmo: _filterCanvasGizmo(project),
+                                      currentLayerPreview:
+                                          _filterCanvasPreviewShown(),
+                                      currentLayerPreviewBlendMode:
+                                          _filterCanvasPreviewBlendMode(),
+                                      lockToolInput: selectionEditingHidden,
+                                      onFilterGizmoChanged: (gizmo) =>
+                                          _moveFilterGizmo(project, gizmo),
+                                      onFilterGizmoDragStart: () => context
+                                          .read<FilterService>()
+                                          .beginFilterEditGroup(),
+                                      onFilterGizmoDragEnd: () => context
+                                          .read<FilterService>()
+                                          .endFilterEditGroup(),
+                                      project: project,
+                                      background: _canvasBackground,
+                                      currentLayerId: _currentLayerId,
+                                      isEraser:
+                                          _currentTool == DrawingTool.eraser,
+                                      currentTool: _currentTool,
+                                      currentSubTool: _currentSubTool,
+                                      lassoFillEnclosedMode:
+                                          _lassoFillEnclosedMode,
+                                      onionSkinSettings: _onionSkinSettings,
+                                      currentFrame: _currentFrame,
+                                      sceneId: _currentSceneId,
+                                      activeRuler: _activeRuler,
+                                      onRulerChanged: _setActiveRulerLive,
+                                      shapeKind: _shapeKind,
+                                      onGestureToolChange: (tool) =>
+                                          setState(() => _currentTool = tool),
+                                      onGestureToggleTool:
+                                          _handleGestureToggleTool,
+                                      onNextQuickTool: _applyNextQuickTool,
+                                      onToggleOnionSkin: () => setState(
+                                        () => _onionSkinSettings =
+                                            _onionSkinSettings.copyWith(
+                                              enabled:
+                                                  !_onionSkinSettings.enabled,
+                                            ),
+                                      ),
+                                      meshDensity: _meshDensity,
+                                      meshRotateDeg: _meshRotateDeg,
+                                      meshScaleValue: _meshScaleValue,
+                                      meshCommitToken: _meshCommitToken,
+                                      meshCancelToken: _meshCancelToken,
+                                      onNextFrame: _goToNextFrame,
+                                      onPreviousFrame: _goToPreviousFrame,
+                                      invertSelectionToken:
+                                          _invertSelectionToken,
+                                      selectAllSelectionToken:
+                                          _selectAllSelectionToken,
+                                      clearSelectionToken: _clearSelectionToken,
+                                      selectionReferenceAllVisible: context
+                                          .watch<SettingsService>()
+                                          .selectionReferenceAllVisible,
+                                      lassoSnapToLines: context
+                                          .watch<SettingsService>()
+                                          .lassoSnapToLines,
+                                      lassoGapTolerancePx: context
+                                          .watch<SettingsService>()
+                                          .lassoGapTolerancePx,
+                                      onSelectionActiveChanged: (v) {
+                                        if (_hasActiveSelection == v) return;
+                                        setState(() {
+                                          _hasActiveSelection = v;
+                                          // 選択範囲を作り直した／解除したら、
+                                          // 「変更キャンセル」で戻せる範囲も
+                                          // そこで区切る。
+                                          _selectionTransformSteps = 0;
+                                          _resetSelectionSliders();
+                                        });
+                                      },
+                                      onSelectionMaskChanged: (mask) {
+                                        if (identical(
+                                          _canvasSelectionMask,
+                                          mask,
+                                        )) {
+                                          return;
+                                        }
+                                        setState(
+                                          () => _canvasSelectionMask = mask,
+                                        );
+                                      },
+                                      filterLensMask: _filterLensMaskShown(),
+                                      onUndoGesture: _undo,
+                                      onRedoGesture: _redo,
+                                      onFilterLensMaskEdited:
+                                          _editFilterLensMask,
+                                      selectionMoveX: _selectionMoveX,
+                                      selectionMoveY: _selectionMoveY,
+                                      selectionScale: _selectionScale,
+                                      selectionRotateDeg: _selectionRotateDeg,
+                                      selectionTransformCommitToken:
+                                          _selectionTransformCommitToken,
+                                      onLockedLayerEdit: _showLockedLayerNotice,
+                                    ),
                                   ),
                                   if (_filterColorEyedropperTarget != null ||
                                       _textColorEyedropperTarget != null ||
@@ -3396,19 +3520,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// Apply visibility changes made in the workspace layout editor as soon as
   /// the user returns to the still-mounted canvas route.
   void _applyDesktopDockVisibilityPreferences() {
-    final defaults = context.read<SettingsService>().defaultDockedPanels;
-    _showBrushPanel = defaults.contains(CanvasDockPanel.brush);
-    _showColorPicker = defaults.contains(CanvasDockPanel.colorPicker);
-    _showLayerPanel = defaults.contains(CanvasDockPanel.layer);
-    _showTonePanel = defaults.contains(CanvasDockPanel.tone);
-    _showStampPanel = defaults.contains(CanvasDockPanel.stamp);
-    _showPenSubToolPanel = defaults.contains(CanvasDockPanel.penSubTool);
-    _showOnionSkinPanel = defaults.contains(CanvasDockPanel.onionSkin);
-    _showRulerPanel = defaults.contains(CanvasDockPanel.ruler);
-    _showFilterPanel = defaults.contains(CanvasDockPanel.filter);
-    _showQuickToolPanel = defaults.contains(CanvasDockPanel.quickTool);
-    _showColorAdjustPanel = defaults.contains(CanvasDockPanel.colorAdjust);
-    _showCanvasPreviewPanel = defaults.contains(CanvasDockPanel.canvasPreview);
+    _setDockPanels(context.read<SettingsService>().defaultDockedPanels);
   }
 
   Future<void> _openDesktopWorkspaceSettings() async {
@@ -3683,8 +3795,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (choice == 'save') {
       // 「保存して戻る」は、キャンバス画面の「保存」ボタンと同じ
       // セーブツリー画面（手動セーブ）を経由させる。
+      final saves = context.read<SaveTreeService>();
+      final before = saves.latestSaveOf(widget.projectId);
       await context.push('/save-tree/${widget.projectId}');
       if (!mounted) return;
+      // 保存せずに戻った（取り消した・保存に失敗した）ときは一覧へ移らず、
+      // キャンバスに残る。
+      if (saves.latestSaveOf(widget.projectId) == before) return;
     }
     if (mounted) context.go('/home');
   }

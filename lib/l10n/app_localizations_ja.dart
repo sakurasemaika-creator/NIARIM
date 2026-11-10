@@ -4502,6 +4502,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get layerPanelOpacityLockLabel => '不透明度ロック';
 
   @override
+  String get canvasLayerLockedNotice =>
+      'このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」をオフにしてください。';
+
+  @override
   String brushPanelDeleteConfirmTitle(String name) {
     return '「$name」を削除しますか？';
   }

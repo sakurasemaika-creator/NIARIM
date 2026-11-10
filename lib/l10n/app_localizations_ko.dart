@@ -4524,6 +4524,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get layerPanelOpacityLockLabel => '불투명도 잠금';
 
   @override
+  String get canvasLayerLockedNotice =>
+      '이 레이어는 잠겨 있어 그릴 수 없습니다. 레이어 설정에서 \"잠금\"을 끄세요.';
+
+  @override
   String brushPanelDeleteConfirmTitle(String name) {
     return '\"$name\"을(를) 삭제할까요?';
   }

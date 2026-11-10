@@ -4720,6 +4720,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get layerPanelOpacityLockLabel => 'Bloquear opacidad';
 
   @override
+  String get canvasLayerLockedNotice =>
+      'Esta capa está bloqueada y no se puede dibujar en ella. Desactiva «Bloquear» en los ajustes de la capa.';
+
+  @override
   String brushPanelDeleteConfirmTitle(String name) {
     return '¿Eliminar «$name»?';
   }

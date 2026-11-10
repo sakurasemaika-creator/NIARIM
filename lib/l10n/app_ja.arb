@@ -2226,6 +2226,10 @@
   "layerPanelOpacityLabel": "不透明度",
   "layerPanelLockLabel": "ロック",
   "layerPanelOpacityLockLabel": "不透明度ロック",
+  "canvasLayerLockedNotice": "このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」をオフにしてください。",
+  "@canvasLayerLockedNotice": {
+    "description": "ロックしたレイヤーへ描こうとしたときのキャンバスの通知"
+  },
   "brushPanelDeleteConfirmTitle": "「{name}」を削除しますか？",
   "@brushPanelDeleteConfirmTitle": {
     "placeholders": {

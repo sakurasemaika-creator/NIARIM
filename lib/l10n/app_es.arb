@@ -1918,6 +1918,7 @@
   "layerPanelOpacityLabel": "Opacidad",
   "layerPanelLockLabel": "Bloquear",
   "layerPanelOpacityLockLabel": "Bloquear opacidad",
+  "canvasLayerLockedNotice": "Esta capa está bloqueada y no se puede dibujar en ella. Desactiva «Bloquear» en los ajustes de la capa.",
   "brushPanelDeleteConfirmTitle": "¿Eliminar «{name}»?",
   "brushPanelDeleteConfirmBody": "Un pincel eliminado no se puede recuperar.",
   "brushPanelResetRememberedValues": "Restablecer grosor y opacidad predeterminados",

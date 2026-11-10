@@ -4732,6 +4732,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get layerPanelOpacityLockLabel => 'Verrouiller l\'opacité';
 
   @override
+  String get canvasLayerLockedNotice =>
+      'Ce calque est verrouillé : impossible d\'y dessiner. Désactivez « Verrouiller » dans les réglages du calque.';
+
+  @override
   String brushPanelDeleteConfirmTitle(String name) {
     return 'Supprimer « $name » ?';
   }

@@ -1918,6 +1918,7 @@
   "layerPanelOpacityLabel": "Opacité",
   "layerPanelLockLabel": "Verrouiller",
   "layerPanelOpacityLockLabel": "Verrouiller l'opacité",
+  "canvasLayerLockedNotice": "Ce calque est verrouillé : impossible d'y dessiner. Désactivez « Verrouiller » dans les réglages du calque.",
   "brushPanelDeleteConfirmTitle": "Supprimer « {name} » ?",
   "brushPanelDeleteConfirmBody": "Un pinceau supprimé ne peut pas être restauré.",
   "brushPanelResetRememberedValues": "Rétablir l’épaisseur et l’opacité par défaut",

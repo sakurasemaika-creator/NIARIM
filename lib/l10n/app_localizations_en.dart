@@ -4655,6 +4655,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get layerPanelOpacityLockLabel => 'Lock opacity';
 
   @override
+  String get canvasLayerLockedNotice =>
+      'This layer is locked, so you can\'t draw on it. Turn off \"Lock\" in the layer settings.';
+
+  @override
   String brushPanelDeleteConfirmTitle(String name) {
     return 'Delete \"$name\"?';
   }

@@ -4480,6 +4480,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelOpacityLockLabel => '锁定不透明度';
 
   @override
+  String get canvasLayerLockedNotice => '此图层已锁定，无法绘制。请在图层设置中关闭“锁定”。';
+
+  @override
   String brushPanelDeleteConfirmTitle(String name) {
     return '要删除“$name”吗？';
   }
@@ -12486,6 +12489,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get layerPanelOpacityLockLabel => '鎖定不透明度';
+
+  @override
+  String get canvasLayerLockedNotice => '此圖層已鎖定，無法繪製。請在圖層設定中關閉「鎖定」。';
 
   @override
   String brushPanelDeleteConfirmTitle(String name) {
