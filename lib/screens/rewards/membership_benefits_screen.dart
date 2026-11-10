@@ -69,8 +69,9 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
 
   String _fmt(DateTime date) {
     final local = date.toLocal();
-    return '${local.year}/${local.month.toString().padLeft(2, '0')}/'
-        '${local.day.toString().padLeft(2, '0')}';
+    return '${local.year}年${local.month}月${local.day}日 '
+        '${local.hour.toString().padLeft(2, '0')}時'
+        '${local.minute.toString().padLeft(2, '0')}分';
   }
 
   @override
