@@ -17,6 +17,7 @@ import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/google_auth_service.dart';
+import 'package:niarim/services/settings_service.dart';
 
 const _id = 'abcdefghijk';
 const _secretTitle = 'Private artwork must not be shown';
@@ -43,6 +44,7 @@ Widget _host({
     ChangeNotifierProvider<CommunityService>.value(value: community),
     ChangeNotifierProvider<CommunityPreviewService>.value(value: preview),
     ChangeNotifierProvider(create: (_) => GoogleAuthService()),
+    ChangeNotifierProvider(create: (_) => SettingsService()),
   ],
   child: MaterialApp(
     locale: const Locale('ja'),
