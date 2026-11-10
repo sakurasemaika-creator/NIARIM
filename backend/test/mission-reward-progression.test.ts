@@ -37,7 +37,7 @@ describe("mission rewards strictly rise with difficulty",()=>{
     for(const m of ranks)
       increasing([0,1000,10000,100000,1000000]
         .map(n=>missionRewardCoins(m,n)));
-    expect(missionRewardCoins(ranks[ranks.length-1],1000000)).toBe(35);
+    expect(missionRewardCoins(ranks[ranks.length-1],1000000)).toBe(100);
   });
   it("raises every one of the 480 grid rewards along both dimensions",()=>{
     expect(WORK_COUNT_MISSIONS).toHaveLength(480);
@@ -47,7 +47,7 @@ describe("mission rewards strictly rise with difficulty",()=>{
     for(const bookmarks of BOOKMARK_GOALS)
       increasing(WORK_COUNT_GOALS.map(works=>
         workCountMissionById(`works_${works}_x_${bookmarks}`)!.coins));
-    expect(workCountMissionById("works_500_x_1000")!.coins).toBe(44);
+    expect(workCountMissionById("works_500_x_1000")!.coins).toBe(215);
   });
   it("never stalls or decreases at any of the 54 cumulative login goals",()=>{
     expect(DAILY_LOGIN_COINS).toBe(1);
@@ -64,6 +64,59 @@ describe("mission rewards strictly rise with difficulty",()=>{
     for(const period of ["week","month"] as const)
       increasing(RECURRING_MISSIONS.filter(m=>m.period===period)
         .sort((a,b)=>a.requiredDays-b.requiredDays).map(m=>m.coins));
+  });
+});
+
+
+describe("all 551 mission coins use strict five-coin steps",()=>{
+  const denomination=(n:number)=>{expect(n).toBeGreaterThan(0);expect(n%5).toBe(0);};
+  const increasingFive=(arr:number[])=>{
+    for(let i=1;i<arr.length;i++)
+      expect(arr[i]-arr[i-1],`tier ${i} needs at least five more`).toBeGreaterThanOrEqual(5);
+  };
+  it("covers every creator goal and ranking population tier",()=>{
+    expect(CREATOR_MISSIONS).toHaveLength(55);
+    for(const m of CREATOR_MISSIONS){
+      denomination(m.coins);
+      for(const pop of [0,1000,10000,100000,1000000])
+        denomination(missionRewardCoins(m,pop));
+    }
+    for(const kind of ["verifiedEditSeconds","followers","workBookmarks"] as const)
+      increasingFive(CREATOR_MISSIONS.filter(m=>m.kind===kind)
+        .sort((a,b)=>a.required-b.required).map(m=>m.coins));
+    const ranks=CREATOR_MISSIONS.filter(m=>m.kind==="niarimBookmarkRanking")
+      .sort((a,b)=>b.required-a.required);
+    for(const pop of [0,1000,10000,100000,1000000])
+      increasingFive(ranks.map(m=>missionRewardCoins(m,pop)));
+  });
+  it("covers every grid row and both independent difficulty axes",()=>{
+    expect(WORK_COUNT_MISSIONS).toHaveLength(480);
+    for(const m of WORK_COUNT_MISSIONS)denomination(m.coins);
+    for(const works of WORK_COUNT_GOALS)
+      increasingFive(BOOKMARK_GOALS.map(bookmarks=>
+        workCountMissionById(`works_${works}_x_${bookmarks}`)!.coins));
+    for(const bookmarks of BOOKMARK_GOALS)
+      increasingFive(WORK_COUNT_GOALS.map(works=>
+        workCountMissionById(`works_${works}_x_${bookmarks}`)!.coins));
+    expect(workCountMissionById("works_3_x_0")!.coins).toBe(5);
+    expect(workCountMissionById("works_500_x_1000")!.coins).toBe(215);
+  });
+  it("covers all 16 recurring/time missions",()=>{
+    expect(PLAZA_MISSIONS).toHaveLength(10);
+    expect(RECURRING_MISSIONS).toHaveLength(6);
+    for(const m of [...PLAZA_MISSIONS,...RECURRING_MISSIONS])denomination(m.coins);
+    for(const period of ["day","week","month"] as const)
+      increasingFive(PLAZA_MISSIONS.filter(m=>m.period===period)
+        .sort((a,b)=>a.requiredSeconds-b.requiredSeconds).map(m=>m.coins));
+    for(const period of ["week","month"] as const)
+      increasingFive(RECURRING_MISSIONS.filter(m=>m.period===period)
+        .sort((a,b)=>a.requiredDays-b.requiredDays).map(m=>m.coins));
+  });
+  it("keeps daily login, rewarded ads and exchange costs unchanged",()=>{
+    expect(DAILY_LOGIN_COINS).toBe(1);
+    expect(INITIAL_REWARDED_COINS_PER_COMPLETION).toBe(10);
+    expect(proposedBenefitCoins("endCardEdit","hour")).toBe(70);
+    expect(proposedBenefitCoins("fullPremium","month")).toBe(60000);
   });
 });
 
