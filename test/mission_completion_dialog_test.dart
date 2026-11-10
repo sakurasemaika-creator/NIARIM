@@ -23,6 +23,7 @@ void main() {
     addTearDown(router.dispose);
     await tester.pumpWidget(MaterialApp.router(
       locale: const Locale('ja'),
+      supportedLocales: const [Locale('ja'), Locale('en')],
       routerConfig: router,
     ));
     final shown = showMissionCompletionDialog(pageContext,
@@ -50,7 +51,9 @@ void main() {
     ]);
     addTearDown(router.dispose);
     await tester.pumpWidget(MaterialApp.router(
-      locale: const Locale('ja'), routerConfig: router,
+      locale: const Locale('ja'),
+      supportedLocales: const [Locale('ja'), Locale('en')],
+      routerConfig: router,
     ));
     final shown = showMissionCompletionDialog(pageContext,
       titles: const ['週3日ログイン']);
