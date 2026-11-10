@@ -14,7 +14,9 @@ import '../../config/accent_text_theme.dart';
 /// に限らない）で、下部にページ位置インジケーター、右上に閉じるボタンを
 /// 常設する。ヘルプ画面と同様、タイトル・説明・カテゴリ名から検索できる。
 class TipsScreen extends StatefulWidget {
-  const TipsScreen({super.key});
+  const TipsScreen({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
   State<TipsScreen> createState() => _TipsScreenState();
@@ -65,7 +67,7 @@ class _TipsScreenState extends State<TipsScreen> {
         .where((c) => c.tips.isNotEmpty)
         .toList();
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.tipsScreenTitle)),
+      appBar: widget.embedded ? null : AppBar(title: Text(l10n.tipsScreenTitle)),
       body: SafeArea(
         child: Column(
           children: [
