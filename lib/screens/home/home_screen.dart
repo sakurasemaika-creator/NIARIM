@@ -34,6 +34,7 @@ import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/share_project_file_action.dart';
+import '../../widgets/mission_completion_dialog.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_selection_toolbar.dart';
 import 'widgets/home_drawer.dart';
@@ -81,7 +82,11 @@ class _HomeScreenState extends State<HomeScreen>
         return;
       }
       try {
-        await api.visitLoginBonus();
+        final visit = await api.visitLoginBonus();
+        if (mounted && (ModalRoute.of(context)?.isCurrent ?? false) &&
+            context.read<GoogleAuthService>().account?.id == ownerId) {
+          await showServerMissionCompletions(context, visit);
+        }
       } catch (error) {
         debugPrint('Cumulative login visit could not be saved: $error');
       }
