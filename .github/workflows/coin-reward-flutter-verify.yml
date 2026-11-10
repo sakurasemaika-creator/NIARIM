@@ -30,6 +30,9 @@ on:
       - 'lib/app_bootstrap.dart'
       - 'test/coin_redemption_attempt_store_test.dart'
       - 'test/reward_unlock_screen_test.dart'
+      - 'test/reward_duration_plural_test.dart'
+      - 'test/coin_duration_label_test.dart'
+      - 'lib/utils/coin_duration_label.dart'
       - 'test/coin_unlock_quote_test.dart'
       - 'test/premium_play_verification_policy_test.dart'
       - 'test/premium_coin_account_isolation_test.dart'
@@ -99,6 +102,8 @@ jobs:
           flutter test --no-pub --reporter expanded \
             test/coin_redemption_attempt_store_test.dart \
             test/reward_unlock_screen_test.dart \
+            test/reward_duration_plural_test.dart \
+            test/coin_duration_label_test.dart \
             test/coin_unlock_quote_test.dart \
             test/premium_play_verification_policy_test.dart \
             test/premium_coin_account_isolation_test.dart \

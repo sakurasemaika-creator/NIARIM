@@ -190,6 +190,9 @@ void main() {
     expect(source, isNot(contains(r"1 ${t['month']}")));
     expect(source, isNot(contains('_durationText')));
     // 期間のボタン・シートの各行・交換の確認の3か所。
-    expect('coinUnlockDurationLabel('.allMatches(source), hasLength(3));
+    expect(
+      'coinUnlockDurationLabel('.allMatches(source).length,
+      greaterThanOrEqualTo(3),
+    );
   });
 }

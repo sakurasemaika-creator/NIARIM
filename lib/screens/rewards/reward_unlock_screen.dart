@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config/accent_text_theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -243,6 +244,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        // 低い画面でも、何を・どの期間・何コインで交換するかの文が読める
+        // （既定だと本文が先に潰れ、題とボタンだけになった）。
+        scrollable: true,
         title: Text(t['redeem']),
         content: Text('${t['fullPremium']} · $period · $price ${t['coins']}'),
         actions: [
@@ -422,25 +426,29 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                     initiallyExpanded: false,
                     children: [
                       for (final option in options)
-                        ListTile(
-                          key: ValueKey(
-                            'rewardDuration_${option.unit.name}_${option.amount}',
-                          ),
-                          title: Text(coinUnlockDurationLabel(l10n, option)),
-                          trailing:
+                        // 選んでいる期間は、印だけでなく読み上げにも伝える。
+                        Semantics(
+                          selected:
                               _duration.unit == option.unit &&
-                                  _duration.amount == option.amount
-                              ? Icon(
-                                  Icons.check,
-                                  color: Theme.of(
-                                    sheetContext,
-                                  ).colorScheme.primary,
-                                )
-                              : null,
-                          onTap: () {
-                            setState(() => _duration = option);
-                            Navigator.of(sheetContext).pop();
-                          },
+                              _duration.amount == option.amount,
+                          child: ListTile(
+                            key: ValueKey(
+                              'rewardDuration_${option.unit.name}_${option.amount}',
+                            ),
+                            title: Text(coinUnlockDurationLabel(l10n, option)),
+                            trailing:
+                                _duration.unit == option.unit &&
+                                    _duration.amount == option.amount
+                                ? Icon(
+                                    Icons.check,
+                                    color: AccentTextTheme.of(sheetContext),
+                                  )
+                                : null,
+                            onTap: () {
+                              setState(() => _duration = option);
+                              Navigator.of(sheetContext).pop();
+                            },
+                          ),
                         ),
                     ],
                   ),
