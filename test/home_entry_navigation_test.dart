@@ -92,6 +92,14 @@ void main() {
     expect(tester.widget<Semantics>(tab).properties.selected, isTrue);
   }
 
+  Future<void> settleWithAsyncExport(WidgetTester tester) async {
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 80)),
+    );
+    await tester.pump(const Duration(milliseconds: 350));
+  }
+
   Future<void> capture(WidgetTester tester, String name) async {
     expect(tester.takeException(), isNull, reason: name);
     if (captureRoot == null) return;
@@ -406,7 +414,9 @@ void main() {
 
     await switchTab(tester, 1);
     expect(backFinder, findsOneWidget);
-    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.byKey(const Key('homeScrollToTopFab')), findsNothing);
+    expect(find.byType(FloatingActionButton), findsOneWidget,
+        reason: 'The exported works tab still has its new-folder button');
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -441,7 +451,7 @@ void main() {
                 .first,
           )
           .openEndDrawer();
-      await tester.pumpAndSettle();
+      await settleWithAsyncExport(tester);
       final item = find.descendant(of: find.byType(Drawer), matching: target);
       await tester.ensureVisible(item);
       await tester.tap(item);
@@ -460,7 +470,7 @@ void main() {
       );
       expect(appRouter.canPop(), isTrue, reason: path);
       appRouter.pop();
-      await tester.pumpAndSettle();
+      await settleWithAsyncExport(tester);
       expect(
         tester
             .widget<Semantics>(find.byKey(const ValueKey('home_tab_1')))
@@ -471,11 +481,11 @@ void main() {
     }
     // Community remains a separate route; the home library stays on Works.
     appRouter.push('/community');
-    await tester.pumpAndSettle();
+    await settleWithAsyncExport(tester);
     expect(find.byType(CommunityScreen), findsOneWidget);
     expect(appRouter.canPop(), isTrue);
     appRouter.pop();
-    await tester.pumpAndSettle();
+    await settleWithAsyncExport(tester);
     expect(tester.widget<Semantics>(find.byKey(const ValueKey('home_tab_1'))).properties.selected, isTrue);
     await tester.pumpWidget(const SizedBox.shrink());
   });
