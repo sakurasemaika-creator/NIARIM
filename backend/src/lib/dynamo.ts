@@ -32,6 +32,10 @@ export const Keys = {
     pk: `USER#${niarimUserId}`,
     sk: `ENTITLEMENT#${entitlement}`,
   }),
+  /** One compact per-account record for weekly and monthly server visits. */
+  recurringMissionState: (userId: string) => ({
+    pk: `USER#${userId}`, sk: "RECURRING_MISSIONS_STATE_V1",
+  }),
   loginBonusState: (userId: string) => ({
     pk: `USER#${userId}`, sk: "LOGIN_BONUS_STATE",
   }),
