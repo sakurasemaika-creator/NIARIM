@@ -347,11 +347,6 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final windowHeight =
-        MediaQuery.sizeOf(context).height -
-        MediaQuery.viewPaddingOf(context).vertical;
-    // A header action keeps the saved works body tall enough for large text.
-    final workActionInHeader = _currentTabIndex == 1 && windowHeight < 320;
     _maybeRecordLogin(
       context.watch<GoogleAuthService>().account?.id,
       context.read<CommunityService>().api,
@@ -465,15 +460,6 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ],
               ],
-              if (workActionInHeader)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 8),
-                  child: _buildCreateWorkFolderAction(
-                    context,
-                    l10n,
-                    compact: true,
-                  ),
-                ),
               IconButton(
                 key: const Key('homeMenuButton'),
                 icon: const Icon(Icons.menu),
@@ -493,7 +479,7 @@ class _HomeScreenState extends State<HomeScreen>
             // 差し替える（TabControllerは共通のまま、TabBarViewとの
             // スワイプ連動はそのまま維持される）。
             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(46),
+              preferredSize: const Size.fromHeight(48),
               child: _HomeTabBar(
                 controller: _tabController,
                 currentIndex: _currentTabIndex,
@@ -645,9 +631,8 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ],
           ),
-          bottomNavigationBar: workActionInHeader || _currentTabIndex >= 2
-              ? null
-              : _buildHomeActions(context, l10n),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: _buildHomeActions(context, l10n),
         ),
       ),
     );
@@ -1140,176 +1125,98 @@ class _HomeScreenState extends State<HomeScreen>
   }
 }
 
-/// ホーム画面のタブバー。標準のTabBarと異なり、各タブ名の実際の描画幅を
-/// 計測してその比率で幅を配分する（均等4分割だと「プロジェクト」のような
-/// 長い項目名が「共有」等より窮屈になり、文字が見切れてしまうため）。
-/// TabControllerを共有しているため、TabBarViewとのスワイプ連動・タップでの
-/// 切り替えはそのまま機能する。
-class _HomeTabBar extends StatefulWidget {
-  final TabController controller;
-  final int currentIndex;
-  final List<String> labels;
-
+/// Responsive four-tab navigation: icons on compact phones and centered
+/// icon/label pairs once every translated label fits (same as Works Plaza).
+class _HomeTabBar extends StatelessWidget {
   const _HomeTabBar({
     required this.controller,
     required this.currentIndex,
     required this.labels,
   });
 
-  @override
-  State<_HomeTabBar> createState() => _HomeTabBarState();
-}
+  final TabController controller;
+  final int currentIndex;
+  final List<String> labels;
 
-class _HomeTabBarState extends State<_HomeTabBar> {
-  final _scrollController = ScrollController();
-  Object? _lastLayout;
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
+  static const _icons = <IconData>[
+    Icons.movie_creation_outlined,
+    Icons.video_library_outlined,
+    Icons.share_outlined,
+    Icons.delete_outline,
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final labels = widget.labels;
-    final currentIndex = widget.currentIndex;
-    final controller = widget.controller;
     final scheme = Theme.of(context).colorScheme;
-    // Preserve the selected accent as the indicator itself (red stays red),
-    // and retain the exact configured foreground with a theme-derived outline.
-    final background = opaqueOver(
-      Theme.of(context).appBarTheme.backgroundColor ?? scheme.surface,
-      opaqueOver(Theme.of(context).scaffoldBackgroundColor, Colors.black),
-    );
-    final menuScheme = scheme.copyWith(
-      surface: background,
-      onSurface:
-          Theme.of(context).appBarTheme.foregroundColor ?? scheme.onSurface,
-    );
-    final selectedTextColor = scheme.primary;
-    final selectedIndicatorColor = scheme.primary;
-    final textStyle = const TextStyle(
+    final selected = scheme.primary;
+    final labelStyle = const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
       fontFamily: 'Kuramubon',
       fontFamilyFallback: kHeadingFontFallback,
     );
-    // 左右の余白（タップ領域確保）込みで、各タブ名の実際の描画幅を計測する。
-    final naturalWidths = labels.map((label) {
-      final tp = TextPainter(
-        text: TextSpan(text: label, style: textStyle),
-        textDirection: TextDirection.ltr,
-        textScaler: MediaQuery.textScalerOf(context),
-        locale: Localizations.localeOf(context),
-        maxLines: 1,
-      )..layout();
-      final width = tp.width + 32;
-      tp.dispose();
-      return width;
-    }).toList();
-
-    Widget tabItem(int i) => Semantics(
-      key: ValueKey('home_tab_$i'),
-      selected: currentIndex == i,
-      button: true,
-      child: InkWell(
-        onTap: () => controller.animateTo(i),
-        child: Container(
-          height: 46,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: currentIndex == i
-                    ? selectedIndicatorColor
-                    : Colors.transparent,
-                width: 2,
-              ),
-            ),
-          ),
-          child: Text(
-            labels[i],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final textScale = MediaQuery.textScalerOf(context);
+        final cellWidth = constraints.maxWidth / labels.length;
+        const iconWidth = 24.0;
+        const gap = 8.0;
+        const breathingRoom = 16.0;
+        final showLabels = labels.every((label) {
+          final painter = TextPainter(
+            text: TextSpan(text: label, style: labelStyle),
+            textDirection: Directionality.of(context),
+            textScaler: textScale,
+            locale: Localizations.localeOf(context),
             maxLines: 1,
-            softWrap: false,
-            style: textStyle.copyWith(
-              color: currentIndex == i
-                  ? selectedTextColor
-                  : scheme.onSurfaceVariant,
-              shadows: currentIndex == i
-                  ? CanvasIconButton.actionShadows(
-                      selectedTextColor,
-                      background,
-                      menuScheme,
-                    )
-                  : null,
-            ),
-          ),
-        ),
-      ),
-    );
-
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: scheme.outlineVariant.withValues(alpha: 0.4),
-          ),
-        ),
-      ),
-      // タブ名の実測幅の合計が画面幅に収まる場合は、これまで通り画面幅
-      // いっぱいに比率配分して表示する。収まらない場合（タブ数が多い・
-      // 画面が狭い場合）は、各タブを実測幅ぶんの固定幅で並べ、横スクロール
-      // で残りのタブを表示できるようにする（タブ名を省略・縮小しない）。
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final totalNatural = naturalWidths.fold<double>(0, (a, b) => a + b);
-          final layout = (
-            constraints.maxWidth,
-            currentIndex,
-            labels.join('\u0000'),
-            totalNatural,
-          );
-          if (_lastLayout != layout) {
-            _lastLayout = layout;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!mounted ||
-                  _lastLayout != layout ||
-                  !_scrollController.hasClients) {
-                return;
-              }
-              final before = naturalWidths
-                  .take(currentIndex)
-                  .fold<double>(0, (a, b) => a + b);
-              final target =
-                  (before +
-                          naturalWidths[currentIndex] / 2 -
-                          constraints.maxWidth / 2)
-                      .clamp(0.0, _scrollController.position.maxScrollExtent);
-              _scrollController.jumpTo(target);
-            });
-          }
-          if (totalNatural <= constraints.maxWidth) {
-            final weights = naturalWidths.map((w) => w.round()).toList();
-            return Row(
-              children: [
-                for (int i = 0; i < labels.length; i++)
-                  Expanded(flex: weights[i], child: tabItem(i)),
-              ],
-            );
-          }
-          return SingleChildScrollView(
-            controller: _scrollController,
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (int i = 0; i < labels.length; i++)
-                  SizedBox(width: naturalWidths[i], child: tabItem(i)),
-              ],
-            ),
-          );
-        },
-      ),
+          )..layout();
+          final fits = iconWidth + gap + painter.width + breathingRoom <= cellWidth;
+          painter.dispose();
+          return fits;
+        });
+        return TabBar(
+          controller: controller,
+          isScrollable: false,
+          labelPadding: EdgeInsets.zero,
+          labelColor: selected,
+          unselectedLabelColor: scheme.onSurfaceVariant,
+          labelStyle: labelStyle,
+          unselectedLabelStyle: labelStyle,
+          indicatorColor: selected,
+          tabs: [
+            for (var i = 0; i < labels.length; i++)
+              Tab(
+                height: 48,
+                child: Semantics(
+                  key: ValueKey('home_tab_$i'),
+                  button: true,
+                  selected: currentIndex == i,
+                  label: labels[i],
+                  child: Tooltip(
+                    message: labels[i],
+                    triggerMode: TooltipTriggerMode.longPress,
+                    child: Center(
+                      child: showLabels
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(_icons[i], size: iconWidth),
+                                const SizedBox(width: gap),
+                                Flexible(
+                                  child: Text(labels[i], maxLines: 1,
+                                      softWrap: false,
+                                      overflow: TextOverflow.clip),
+                                ),
+                              ],
+                            )
+                          : Icon(_icons[i], size: iconWidth),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -1437,6 +1344,15 @@ class _SharedScreenState extends State<SharedScreen> {
       floatingActionButton: _showOutgoing
           ? null
           : FloatingActionButton(
+        heroTag: 'shared-add-folder',
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        shape: const CircleBorder(side: BorderSide.none),
+        elevation: 0,
+        focusElevation: 0,
+        hoverElevation: 0,
+        highlightElevation: 0,
+        disabledElevation: 0,
         tooltip: l10n.homeAddSheetNewFolder,
         onPressed: () => showCreateFolderNameDialog(
           context,
