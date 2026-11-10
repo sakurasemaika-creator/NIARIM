@@ -168,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index != _currentTabIndex) {
         final wasSearching = _isSearching;
@@ -374,7 +374,12 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             title: _currentTabIndex != 0
                 ? Text(
-                    l10n.homeTabWorks,
+                    switch (_currentTabIndex) {
+                      1 => l10n.homeTabWorks,
+                      2 => l10n.homeTabShared,
+                      3 => l10n.homeTabTrash,
+                      _ => l10n.homeTabProjects,
+                    },
                   )
                 : _isSearching
                 ? Row(
@@ -493,6 +498,8 @@ class _HomeScreenState extends State<HomeScreen>
                 labels: [
                   l10n.homeTabProjects,
                   l10n.homeTabWorks,
+                  l10n.homeTabShared,
+                  l10n.homeTabTrash,
                 ],
               ),
             ),
@@ -623,12 +630,20 @@ class _HomeScreenState extends State<HomeScreen>
                       onOpenFolder: _openProjectFolder,
                     ),
                     const _WorksTab(key: PageStorageKey('home-works')),
+                    const SharedScreen(
+                      key: PageStorageKey('home-shared'),
+                      embedded: true,
+                    ),
+                    const TrashScreen(
+                      key: PageStorageKey('home-trash'),
+                      embedded: true,
+                    ),
                   ],
                 ),
               ),
             ],
           ),
-          bottomNavigationBar: workActionInHeader
+          bottomNavigationBar: workActionInHeader || _currentTabIndex >= 2
               ? null
               : _buildHomeActions(context, l10n),
         ),
@@ -726,7 +741,7 @@ class _HomeScreenState extends State<HomeScreen>
   );
 
   Widget? _buildHomeActions(BuildContext context, AppLocalizations l10n) {
-    if (_isSelectionMode || _currentTabIndex == 2) return null;
+    if (_isSelectionMode || _currentTabIndex >= 2) return null;
     final compact = MediaQuery.sizeOf(context).height < 400;
 
     // The footer and the scrollable tab body have separate hit regions.
@@ -1297,10 +1312,11 @@ class _HomeTabBarState extends State<_HomeTabBar> {
   }
 }
 
-/// 「共有」一覧画面。ホーム画面のタブからハンバーガーメニューへ移動した
-/// ため、独立した画面として起動する（'/shared'ルート）。
+/// 共有一覧。ホームタブと'/shared'直リンクで共用する。
 class SharedScreen extends StatefulWidget {
-  const SharedScreen({super.key});
+  const SharedScreen({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
   State<SharedScreen> createState() => _SharedScreenState();
@@ -1346,10 +1362,7 @@ class _SharedScreenState extends State<SharedScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(
-        // Keep the screen name independent of translated sorting controls.
-        title: Text(l10n.homeTabShared),
-      ),
+      appBar: widget.embedded ? null : AppBar(title: Text(l10n.homeTabShared)),
       body: Column(
         children: [
           _LibraryListControls(
@@ -1396,10 +1409,11 @@ class _SharedScreenState extends State<SharedScreen> {
   }
 }
 
-/// 「ゴミ箱」一覧画面。ホーム画面のタブからハンバーガーメニューへ移動した
-/// ため、独立した画面として起動する（'/trash'ルート）。
+/// ゴミ箱一覧。ホームタブと'/trash'直リンクで共用する。
 class TrashScreen extends StatefulWidget {
-  const TrashScreen({super.key});
+  const TrashScreen({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
   State<TrashScreen> createState() => _TrashScreenState();
@@ -1444,10 +1458,7 @@ class _TrashScreenState extends State<TrashScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(
-        // Keep the screen name independent of translated sorting controls.
-        title: Text(l10n.homeTabTrash),
-      ),
+      appBar: widget.embedded ? null : AppBar(title: Text(l10n.homeTabTrash)),
       body: Column(
         children: [
           _LibraryListControls(
