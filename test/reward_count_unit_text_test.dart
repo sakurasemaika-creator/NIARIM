@@ -755,7 +755,10 @@ void main() {
         final total = find.byKey(const Key('rewardTotalCoins'));
         expect(tester.widget<Text>(total).data, coin);
 
-        // 価格の決まっていない特典も選ぶと、参考価格の合計になる。
+        expect(find.byKey(const Key('rewardTotalReferenceNote')), findsNothing);
+
+        // 価格の決まっていない特典も選ぶと、参考価格の合計になる。参考価格の
+        // 注記は合計の見出しにつながず、下の別の行に出る。
         await tester.tap(find.byKey(const ValueKey('rewardFeature_watermark')));
         await tester.pumpAndSettle();
         const hour = CoinUnlockDuration(1, CoinDurationUnit.hour);
@@ -765,7 +768,13 @@ void main() {
         final l10n = lookupAppLocalizations(Locale(locale));
         expect(
           tester.widget<Text>(total).data,
-          '${l10n.coinAmount(referenceTotal)} · $reference',
+          l10n.coinAmount(referenceTotal),
+        );
+        expect(
+          tester
+              .widget<Text>(find.byKey(const Key('rewardTotalReferenceNote')))
+              .data,
+          reference,
         );
         _expectNoBrokenUnits(_shownTexts(tester));
         await tester.pumpWidget(const SizedBox.shrink());

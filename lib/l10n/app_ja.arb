@@ -4138,7 +4138,26 @@
   "rewardNavigationMembershipBenefit": "利用中の特典",
   "rewardNavigationMembershipNoBenefit": "現在利用中の交換特典はありません",
   "rewardNavigationMembershipUpsell": "プレミアムでは機能制限を気にせず制作できます。内容や料金を確認してから登録できます。",
-  "rewardNavigationMembershipExpires": "利用期限",
+  "rewardNavigationMembershipExpiresAt": "利用期限：{expiry}",
+  "@rewardNavigationMembershipExpiresAt": {
+    "description": "契約状態：会員・交換した特典の利用期限（日時）",
+    "placeholders": {
+      "expiry": {
+        "type": "DateTime",
+        "format": "yMMMd+jm"
+      }
+    }
+  },
+  "rewardNavigationMembershipCoinExpiresAt": "コインで解放中 · 利用期限：{expiry}",
+  "@rewardNavigationMembershipCoinExpiresAt": {
+    "description": "契約状態：コインで交換した全機能を利用中であることと、その利用期限（日時）",
+    "placeholders": {
+      "expiry": {
+        "type": "DateTime",
+        "format": "yMMMd+jm"
+      }
+    }
+  },
   "rewardNavigationMembershipUnavailable": "特典情報を確認できませんでした",
   "rewardNavigationMembershipLogin": "特典情報の確認にはログインが必要です",
   "rewardNavigationPremiumCompare": "プレミアム会員について詳しく見る",

@@ -7,6 +7,7 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
+import 'mission_panel_heading.dart';
 
 bool canClaimLoginBonus({
   required bool enabled,
@@ -140,22 +141,15 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.calendar_month_outlined, color: scheme.primary),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        t['title'],
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: t['retry'],
-                      onPressed: () => setState(() => _future = _load(_api!)),
-                      icon: const Icon(Icons.refresh),
-                    ),
-                  ],
+                MissionPanelHeading(
+                  icon: Icons.calendar_month_outlined,
+                  iconColor: scheme.primary,
+                  title: t['title'],
+                  action: IconButton(
+                    tooltip: t['retry'],
+                    onPressed: () => setState(() => _future = _load(_api!)),
+                    icon: const Icon(Icons.refresh),
+                  ),
                 ),
                 Text(l10n.loginBonusDays(days)),
                 const SizedBox(height: 8),

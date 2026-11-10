@@ -6,6 +6,7 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
+import 'mission_panel_heading.dart';
 
 /// Server counts visits by JST day; only a confirmed POST claim can credit coins.
 class RecurringMissionsPanel extends StatefulWidget {
@@ -212,21 +213,13 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.event_repeat_outlined),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        l10n.recurringMissionsTitle,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => setState(() => _future = _load(_api!)),
-                      icon: const Icon(Icons.refresh),
-                    ),
-                  ],
+                MissionPanelHeading(
+                  icon: Icons.event_repeat_outlined,
+                  title: l10n.recurringMissionsTitle,
+                  action: IconButton(
+                    onPressed: () => setState(() => _future = _load(_api!)),
+                    icon: const Icon(Icons.refresh),
+                  ),
                 ),
                 Text(
                   l10n.recurringMissionsNote,

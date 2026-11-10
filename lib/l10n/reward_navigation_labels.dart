@@ -6,8 +6,8 @@ import 'app_localizations.dart';
 /// Names and subscription entry copy for rewards navigation.
 /// 文言はARB（app_*.arb）にある（以前はこのファイルに7言語の表を手で
 /// 持っていて、同梱フォントの検査を通らず字の抜けが出ていた）。
-/// 数を含む文言は、単数・複数をARBで決めるAppLocalizationsのメソッドを
-/// 直接使う（数と単位の語をコードでつなげない）。
+/// 数や日時を含む文言は、単数・複数や日付の書き方をARBで決める
+/// AppLocalizationsのメソッドを直接使う（数・日付と語をコードでつなげない）。
 class RewardNavigationLabels {
   const RewardNavigationLabels._(this._l10n);
   final AppLocalizations _l10n;
@@ -31,7 +31,6 @@ class RewardNavigationLabels {
     'membershipBenefit' => _l10n.rewardNavigationMembershipBenefit,
     'membershipNoBenefit' => _l10n.rewardNavigationMembershipNoBenefit,
     'membershipUpsell' => _l10n.rewardNavigationMembershipUpsell,
-    'membershipExpires' => _l10n.rewardNavigationMembershipExpires,
     'membershipUnavailable' => _l10n.rewardNavigationMembershipUnavailable,
     'membershipLogin' => _l10n.rewardNavigationMembershipLogin,
     'premiumCompare' => _l10n.rewardNavigationPremiumCompare,

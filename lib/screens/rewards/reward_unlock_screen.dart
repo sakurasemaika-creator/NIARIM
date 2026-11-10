@@ -856,11 +856,21 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                             ? l10n.coinAmount(quote.requiredCoins)
                             : _selected.isEmpty
                             ? t['unavailable']
-                            : '${l10n.coinAmount(referenceTotal)}'
-                                  '（確定価格・交換準備中）',
+                            : l10n.coinAmount(referenceTotal),
                         key: const Key('rewardTotalCoins'),
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
+                      // 参考価格の注記は注釈なので、見出しの大きな字に混ぜず
+                      // 本文の書体の別の行に出す（見出しにつなぐと、長い言語・
+                      // 大きな文字で単語の途中で切れた）。
+                      if (serverPrice == null &&
+                          quote == null &&
+                          _selected.isNotEmpty)
+                        Text(
+                          '（確定価格・交換準備中）',
+                          key: const Key('rewardTotalReferenceNote'),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
                         key: const Key('rewardOverlapPreviewButton'),

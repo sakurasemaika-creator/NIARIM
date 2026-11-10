@@ -8923,7 +8923,24 @@ class AppLocalizationsEs extends AppLocalizations {
       'Consulta los planes de Premium antes de unirte.';
 
   @override
-  String get rewardNavigationMembershipExpires => 'Caduca';
+  String rewardNavigationMembershipExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Válido hasta el $expiryString';
+  }
+
+  @override
+  String rewardNavigationMembershipCoinExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Desbloqueado con monedas · Válido hasta el $expiryString';
+  }
 
   @override
   String get rewardNavigationMembershipUnavailable => 'Ventajas no disponibles';

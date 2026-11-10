@@ -8794,7 +8794,24 @@ class AppLocalizationsEn extends AppLocalizations {
       'Premium removes restrictions. Review plans and prices before joining.';
 
   @override
-  String get rewardNavigationMembershipExpires => 'Expires';
+  String rewardNavigationMembershipExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Expires: $expiryString';
+  }
+
+  @override
+  String rewardNavigationMembershipCoinExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Unlocked with coins · Expires: $expiryString';
+  }
 
   @override
   String get rewardNavigationMembershipUnavailable => 'Benefits unavailable';

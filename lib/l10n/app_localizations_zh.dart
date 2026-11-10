@@ -8382,7 +8382,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardNavigationMembershipUpsell => '了解高级会员的功能和价格后再决定。';
 
   @override
-  String get rewardNavigationMembershipExpires => '到期';
+  String rewardNavigationMembershipExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '有效期至：$expiryString';
+  }
+
+  @override
+  String rewardNavigationMembershipCoinExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '金币解锁 · 有效期至：$expiryString';
+  }
 
   @override
   String get rewardNavigationMembershipUnavailable => '无法读取权益';
@@ -17531,7 +17548,24 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardNavigationMembershipUpsell => '了解高級會員的功能和價格後再決定。';
 
   @override
-  String get rewardNavigationMembershipExpires => '到期';
+  String rewardNavigationMembershipExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '有效期限：$expiryString';
+  }
+
+  @override
+  String rewardNavigationMembershipCoinExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '金幣解鎖 · 有效期限：$expiryString';
+  }
 
   @override
   String get rewardNavigationMembershipUnavailable => '無法讀取權益';

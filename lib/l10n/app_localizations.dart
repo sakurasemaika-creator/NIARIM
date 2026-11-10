@@ -15491,11 +15491,17 @@ abstract class AppLocalizations {
   /// **'プレミアムでは機能制限を気にせず制作できます。内容や料金を確認してから登録できます。'**
   String get rewardNavigationMembershipUpsell;
 
-  /// No description provided for @rewardNavigationMembershipExpires.
+  /// 契約状態：会員・交換した特典の利用期限（日時）
   ///
   /// In ja, this message translates to:
-  /// **'利用期限'**
-  String get rewardNavigationMembershipExpires;
+  /// **'利用期限：{expiry}'**
+  String rewardNavigationMembershipExpiresAt(DateTime expiry);
+
+  /// 契約状態：コインで交換した全機能を利用中であることと、その利用期限（日時）
+  ///
+  /// In ja, this message translates to:
+  /// **'コインで解放中 · 利用期限：{expiry}'**
+  String rewardNavigationMembershipCoinExpiresAt(DateTime expiry);
 
   /// No description provided for @rewardNavigationMembershipUnavailable.
   ///

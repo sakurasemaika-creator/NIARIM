@@ -6,6 +6,12 @@
 // いて、スペイン語・フランス語ではボタンが行の幅の大半を取り、題が35px
 // ほどの列に押し込まれて「Man|tén abie|rta」「10|0000 heures」のように
 // 単語・数の途中で折り返していた。文字を2倍にすると1文字ずつ縦に並んだ。
+//
+// 欄の見出し（作品広場の滞在・ウィークリー／マンスリー・累計ログイン）は、
+// 先頭のアイコンと右端の更新ボタンの間の216pxに押し込まれていて、文字1.75倍・
+// 2倍のフランス語で「Missions heb|domadaires」「hebdomada|ires」と切れていた。
+// 見出しはカードの幅いっぱい（296px）まで使えるので、それより狭い語が切れたら
+// 配置の誤り。
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -185,9 +191,16 @@ bool _isWordChar(int rune) {
 /// 切れるので数えない。
 const _widestPlaceableWord = 360.0 - 144;
 
+/// 欄の見出しが使える幅（一覧の余白32・カードの外と内の余白32を除いた、
+/// カードの中身の幅）。
+const _panelContentWidth = 360.0 - 64;
+
 /// [paragraph]の中で、文字（ラテン文字・数字）どうしの間で行が変わる所を
 /// 「前の行の最後の語｜次の行の最初の語」の形で返す。
-List<String> _breaksInsideWords(RenderParagraph paragraph) {
+List<String> _breaksInsideWords(
+  RenderParagraph paragraph, {
+  double widestPlaceableWord = _widestPlaceableWord,
+}) {
   final text = paragraph.text.toPlainText(includeSemanticsLabels: false);
   final broken = <String>[];
   double? previousTop;
@@ -217,7 +230,7 @@ List<String> _breaksInsideWords(RenderParagraph paragraph) {
             TextSelection(baseOffset: start, extentOffset: end),
           )
           .fold<double>(0, (sum, box) => sum + box.right - box.left);
-      if (wordWidth <= _widestPlaceableWord) {
+      if (wordWidth <= widestPlaceableWord) {
         broken.add(
           '${text.substring(start, i)}|${text.substring(i, end)}  ($text)',
         );
@@ -232,7 +245,7 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({'language': 'ja'}));
 
   for (final locale in ['fr', 'es', 'en', 'ja']) {
-    for (final scale in [1.0, 1.3, 2.0]) {
+    for (final scale in [1.0, 1.3, 1.75, 2.0]) {
       testWidgets('ミッションの行が単語の途中で折り返さない（$locale, 文字$scale倍, 360dp）', (
         tester,
       ) async {
@@ -291,11 +304,45 @@ void main() {
           findsOneWidget,
         );
 
+        // 3つの欄の見出しと、それぞれの更新ボタン。
+        final l10n = lookupAppLocalizations(Locale(locale));
+        final headings = [
+          l10n.plazaMissionsTitle,
+          l10n.recurringMissionsTitle,
+          l10n.loginBonusTitle,
+        ];
+        for (final panel in [
+          'plazaMissionsPanel',
+          'recurringMissionsPanel',
+          'loginBonusPanel',
+        ]) {
+          expect(
+            find.descendant(
+              of: find.byKey(Key(panel)),
+              matching: find.byIcon(Icons.refresh),
+            ),
+            findsOneWidget,
+            reason: '$panel: 更新ボタン',
+          );
+        }
+
         final broken = <String>[];
+        var headingsSeen = 0;
         for (final element in find.byType(RichText).evaluate()) {
           final paragraph = element.renderObject! as RenderParagraph;
-          broken.addAll(_breaksInsideWords(paragraph));
+          final text = paragraph.text.toPlainText();
+          final heading = headings.any(text.contains);
+          if (heading) headingsSeen++;
+          broken.addAll(
+            _breaksInsideWords(
+              paragraph,
+              widestPlaceableWord: heading
+                  ? _panelContentWidth
+                  : _widestPlaceableWord,
+            ),
+          );
         }
+        expect(headingsSeen, 3, reason: '$locale: 欄の見出しが3つとも出ていない');
         expect(
           broken,
           isEmpty,

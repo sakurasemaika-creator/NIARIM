@@ -8,6 +8,7 @@ import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/premium_service.dart';
+import '../../utils/app_locale.dart';
 import '../../widgets/responsive.dart';
 
 /// Current entitlements are read from the authenticated server; plan details
@@ -67,17 +68,13 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
     }
   }
 
-  String _fmt(DateTime date) {
-    final local = date.toLocal();
-    return '${local.year}年${local.month}月${local.day}日 '
-        '${local.hour.toString().padLeft(2, '0')}時'
-        '${local.minute.toString().padLeft(2, '0')}分';
-  }
-
   @override
   Widget build(BuildContext context) {
     final t = RewardNavigationLabels.of(context);
     final reward = RewardUnlockLabels.of(context);
+    // 期限の日時はその言語の日付の書き方でARBの文に入れる（以前は「年月日
+    // 時分」を組み立てて語とつないでいて、どの言語でも日本語の日付だった）。
+    final l10n = appLocalizationsOf(context);
     final premium = context.watch<PremiumService>();
     final scheme = Theme.of(context).colorScheme;
     final isPlayMember = premium.hasVerifiedPlayPremium;
@@ -108,13 +105,15 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
                     Text(tier, style: Theme.of(context).textTheme.titleLarge),
                     if (isPlayMember && premium.verifiedExpiryDate != null)
                       Text(
-                        '${t['membershipExpires']}: '
-                        '${_fmt(premium.verifiedExpiryDate!)}',
+                        l10n.rewardNavigationMembershipExpiresAt(
+                          premium.verifiedExpiryDate!.toLocal(),
+                        ),
                       ),
                     if (coinExpiry != null)
                       Text(
-                        '${t['membershipCoin']} · '
-                        '${t['membershipExpires']}: ${_fmt(coinExpiry)}',
+                        l10n.rewardNavigationMembershipCoinExpiresAt(
+                          coinExpiry.toLocal(),
+                        ),
                       ),
                   ],
                 ),
@@ -165,7 +164,9 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
                           paused
                               ? reward['paused']
                               : date != null
-                              ? '${t['membershipExpires']}: ${_fmt(date)}'
+                              ? l10n.rewardNavigationMembershipExpiresAt(
+                                  date.toLocal(),
+                                )
                               : t['membershipUnavailable'],
                         ),
                       );

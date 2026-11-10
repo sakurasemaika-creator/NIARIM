@@ -8948,7 +8948,24 @@ class AppLocalizationsFr extends AppLocalizations {
       'Comparez les offres Premium avant de vous abonner.';
 
   @override
-  String get rewardNavigationMembershipExpires => 'Expire';
+  String rewardNavigationMembershipExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Valable jusqu’au $expiryString';
+  }
+
+  @override
+  String rewardNavigationMembershipCoinExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'Débloqué avec des pièces · Valable jusqu’au $expiryString';
+  }
 
   @override
   String get rewardNavigationMembershipUnavailable => 'Avantages indisponibles';

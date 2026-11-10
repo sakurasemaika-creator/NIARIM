@@ -8512,7 +8512,24 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardNavigationMembershipUpsell => '프리미엄의 기능과 요금을 확인한 후 가입하세요.';
 
   @override
-  String get rewardNavigationMembershipExpires => '만료';
+  String rewardNavigationMembershipExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '이용 기한: $expiryString';
+  }
+
+  @override
+  String rewardNavigationMembershipCoinExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '코인으로 해제 · 이용 기한: $expiryString';
+  }
 
   @override
   String get rewardNavigationMembershipUnavailable => '특전 정보 확인 불가';

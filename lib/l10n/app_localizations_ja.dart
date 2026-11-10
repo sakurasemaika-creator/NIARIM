@@ -8469,7 +8469,24 @@ class AppLocalizationsJa extends AppLocalizations {
       'プレミアムでは機能制限を気にせず制作できます。内容や料金を確認してから登録できます。';
 
   @override
-  String get rewardNavigationMembershipExpires => '利用期限';
+  String rewardNavigationMembershipExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return '利用期限：$expiryString';
+  }
+
+  @override
+  String rewardNavigationMembershipCoinExpiresAt(DateTime expiry) {
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
+    final String expiryString = expiryDateFormat.format(expiry);
+
+    return 'コインで解放中 · 利用期限：$expiryString';
+  }
 
   @override
   String get rewardNavigationMembershipUnavailable => '特典情報を確認できませんでした';

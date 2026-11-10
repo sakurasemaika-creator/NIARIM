@@ -7,6 +7,7 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
+import 'mission_panel_heading.dart';
 
 /// Authenticated, read-only view until the server explicitly enables payouts.
 /// A permanently open Plaza page counts: video playback is not a requirement.
@@ -216,23 +217,15 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.timer_outlined),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _l10n.plazaMissionsTitle,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: _l10n.missionRefresh,
-                      onPressed: () =>
-                          setState(() => _state = _api!.myPlazaMissions()),
-                      icon: const Icon(Icons.refresh),
-                    ),
-                  ],
+                MissionPanelHeading(
+                  icon: Icons.timer_outlined,
+                  title: _l10n.plazaMissionsTitle,
+                  action: IconButton(
+                    tooltip: _l10n.missionRefresh,
+                    onPressed: () =>
+                        setState(() => _state = _api!.myPlazaMissions()),
+                    icon: const Icon(Icons.refresh),
+                  ),
                 ),
                 Text(
                   _l10n.plazaMissionsNote,
