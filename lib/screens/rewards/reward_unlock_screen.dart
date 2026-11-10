@@ -26,12 +26,14 @@ class RewardUnlockScreen extends StatefulWidget {
     this.priceCatalog = const {},
     this.fullPremiumMinimumCoins,
     this.mode = RewardPageMode.exchange,
+    this.embedded = false,
   });
 
   /// Server-verified price catalog. Missing entries are NOT free.
   final Map<CoinUnlockTarget, CoinUnlockUnitPrices> priceCatalog;
   final int? fullPremiumMinimumCoins;
   final RewardPageMode mode;
+  final bool embedded;
 
   @override
   State<RewardUnlockScreen> createState() => _RewardUnlockScreenState();
@@ -551,7 +553,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final nav = RewardNavigationLabels.of(context);
     final earn = widget.mode == RewardPageMode.earnCoins;
     return Scaffold(
-      appBar: AppBar(title: Text(earn ? nav['earn'] : nav['exchange'])),
+      appBar: widget.embedded
+          ? null
+          : AppBar(title: Text(earn ? nav['earn'] : nav['exchange'])),
       body: desktopCentered(
         context,
         ListView(
@@ -715,7 +719,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 child: Text(nav['membership']),
               ),
             ],
-            if (earn)
+            if (earn && !widget.embedded)
               OutlinedButton.icon(
                 onPressed: () => context.push('/rewards'),
                 icon: const Icon(Icons.redeem_outlined),
