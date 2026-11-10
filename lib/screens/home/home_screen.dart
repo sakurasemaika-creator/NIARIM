@@ -1517,7 +1517,16 @@ class _TrashScreenState extends State<TrashScreen> {
               onToggleDirection: _toggleSortDirection,
             ),
           ),
-          Expanded(child: _TrashTab(sortMode: _sortMode, selectedKinds: _selectedKinds)),
+          Expanded(
+            child: ValueListenableBuilder<int>(
+              valueListenable: LocalFileTrashService.changes,
+              builder: (context, version, _) => _TrashTab(
+                key: ValueKey('trash-list-version-$version'),
+                sortMode: _sortMode,
+                selectedKinds: _selectedKinds,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -2209,10 +2218,14 @@ class _FolderableList<T> extends StatelessWidget {
 }
 
 class _TrashTab extends StatefulWidget {
+  const _TrashTab({
+    super.key,
+    required this.sortMode,
+    required this.selectedKinds,
+  });
+
   final ProjectSortMode sortMode;
   final Set<TrashEntryKind> selectedKinds;
-
-  const _TrashTab({required this.sortMode, required this.selectedKinds});
 
   @override
   State<_TrashTab> createState() => _TrashTabState();
