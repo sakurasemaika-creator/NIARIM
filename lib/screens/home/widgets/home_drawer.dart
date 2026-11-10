@@ -119,51 +119,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
               ),
             ),
             const SizedBox(height: 4),
-            // メニュー項目名はくらむぼんで統一する。
-            ListTile(
-              leading: drawerIcon(Icons.cleaning_services_outlined),
-              title: Text(
-                l10n.homeDrawerStorage,
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/storage');
-              },
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: drawerIcon(Icons.settings_outlined),
-              title: Text(
-                l10n.homeDrawerSettings,
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/settings');
-              },
-            ),
-            ListTile(
-              key: const Key('homeGuideMenuItem'),
-              leading: drawerIcon(Icons.menu_book_outlined),
-              title: Text(
-                guideHubTitle(context),
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/help');
-              },
-            ),
+            // コイン・特典 → 契約状態 → 使い方 → 設定 → 容量削減
             ListTile(
               key: const Key('homeCoinBenefitsMenuItem'),
               leading: drawerIcon(Icons.toll_outlined),
@@ -217,6 +173,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                 context.push('/rewards');
               },
             ),
+            const Divider(height: 1),
             ListTile(
               key: const Key('homeMembershipBenefitsMenuItem'),
               leading: drawerIcon(Icons.workspace_premium_outlined),
@@ -232,6 +189,53 @@ class _HomeDrawerState extends State<HomeDrawer> {
                 context.push('/membership');
               },
             ),
+            const Divider(height: 1),
+            ListTile(
+              key: const Key('homeGuideMenuItem'),
+              leading: drawerIcon(Icons.menu_book_outlined),
+              title: Text(
+                guideHubTitle(context),
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/help');
+              },
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: drawerIcon(Icons.settings_outlined),
+              title: Text(
+                l10n.homeDrawerSettings,
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/settings');
+              },
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: drawerIcon(Icons.cleaning_services_outlined),
+              title: Text(
+                l10n.homeDrawerStorage,
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/storage');
+              },
+            ),
+
           ],
         ),
       ),
