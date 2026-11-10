@@ -52,7 +52,10 @@ void main() {
     expect(price, findsOneWidget);
     expect(find.textContaining('660000 coins'), findsNothing);
     final total = find.byKey(const Key('rewardTotalCoins'));
-    await tester.ensureVisible(total);
+    // The summary card is lazily built below the benefit list.
+    await tester.scrollUntilVisible(
+      total, 260, scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(total).data, contains('550000 coins'));
     expect(tester.widget<OutlinedButton>(
