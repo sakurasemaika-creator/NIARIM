@@ -166,6 +166,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
       await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
       await tester.pump(const Duration(milliseconds: 500));
+      // Scaffold animates a departing FAB for several frames. Confirm the
+      // settled screen, not the outgoing hero transition.
+      for (var frame = 0; frame < 5; frame++) {
+        await tester.pump(const Duration(milliseconds: 80));
+      }
       expect(tester.widget<SegmentedButton<bool>>(direction).selected, {true});
       expect(sharedAddFolderFab, findsNothing);
       await shot('05-shared-created');
