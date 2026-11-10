@@ -31,8 +31,9 @@ int missionSortPriority(Map<String, dynamic> row) {
 }
 
 class CreatorMissionsScreen extends StatefulWidget {
-  const CreatorMissionsScreen({super.key, this.workId});
+  const CreatorMissionsScreen({super.key, this.workId, this.embedded = false});
   final String? workId;
+  final bool embedded;
 
   @override
   State<CreatorMissionsScreen> createState() => _CreatorMissionsScreenState();
@@ -485,7 +486,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       _future = owner != null && api != null ? _fetch(api) : null;
     }
     return Scaffold(
-      appBar: AppBar(title: Text(t.get('title'))),
+      appBar: widget.embedded ? null : AppBar(title: Text(t.get('title'))),
       body: owner == null
           ? Center(child: Text(t.get('login')))
           : api == null
