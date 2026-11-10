@@ -46,6 +46,7 @@ jobs:
             test/home_navigation_contract_test.dart \
             test/local_file_trash_service_test.dart
       - name: Run coin pricing, account safety and UI contract tests
+        if: always()
         run: |
           flutter test --no-pub --reporter expanded \
             test/coin_unlock_quote_test.dart \
@@ -56,6 +57,7 @@ jobs:
             test/login_bonus_ui_policy_test.dart \
             test/creator_mission_claim_ui_policy_test.dart
       - name: Capture all revised home tabs at eight screen widths
+        if: always()
         run: flutter test --no-pub --reporter expanded test/home_drawer_multiwidth_capture_test.dart
       - name: Upload latest UI evidence
         if: always()
