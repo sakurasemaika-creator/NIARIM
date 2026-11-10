@@ -9,7 +9,7 @@
  * the unit price is rounded upwards to a multiple of 10 coins.
  * Discounted bundles remain cheaper than equivalent individual rights.
  */
-export const COIN_BENEFIT_PRICE_VERSION = "v1-final-20261110" as const;
+export const COIN_BENEFIT_PRICE_VERSION = "v2-final-55000" as const;
 
 const month = {
   endCardEdit: 8_000,
@@ -23,7 +23,7 @@ const month = {
   timelineAds: 12_000,
   processingAds: 6_000,
   allAds: 36_000,
-  fullPremium: 60_000,
+  fullPremium: 55_000,
 } as const;
 
 export type BenefitPriceTarget = keyof typeof month;

@@ -4,8 +4,8 @@ import { FINAL_ALL_INDIVIDUAL_MONTHLY_COINS,
 
 /**
  * Initial implemented redemption route: full Premium for ONE calendar month.
- * The final tariff is precisely 60,000 coins (NOT the non-cash 55,000-coin
- * comparison floor). Incorrect operator configuration must FAIL CLOSED.
+ * The final tariff is precisely 55,000 coins (550 yen x 100 coins).
+ * Incorrect operator configuration must FAIL CLOSED.
  * Pricing finalization does not itself authorize balance deductions.
  */
 export interface PremiumRedemptionOffer {

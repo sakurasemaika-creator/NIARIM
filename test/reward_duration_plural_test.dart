@@ -50,7 +50,7 @@ http.Response _reply(Object body) => http.Response(
   headers: {'content-type': 'application/json; charset=utf-8'},
 );
 
-/// 残高60000コイン・全機能1か月が60000コインで交換できるサーバー。
+/// 残高60000コイン・全機能1か月が55000コインで交換できるサーバー。
 /// 交換そのもの（POST）が呼ばれたら[redeemCalls]に数える。
 CommunityService _redeemableServer(List<String> redeemCalls) =>
     CommunityService(
@@ -72,8 +72,8 @@ CommunityService _redeemableServer(List<String> redeemCalls) =>
               }),
               '/me/rewards/quote' => _reply({
                 'enabled': true,
-                'priceCoins': 60000,
-                'priceVersion': 'v1-final-20261110',
+                'priceCoins': 55000,
+                'priceVersion': 'v2-final-55000',
               }),
               _ => _reply(<String, Object>{}),
             };

@@ -30,7 +30,7 @@
     "rewardedAdSsvEnabled": "true",
     "rewardedAdReviewApproved": "true",
     "rewardedAdDailyLimit": "1",
-    "coinFullPremiumMonthCoins": "60000",
-    "coinPriceVersion": "v1-final-20261110"
+    "coinFullPremiumMonthCoins": "55000",
+    "coinPriceVersion": "v2-final-55000"
   }
 }

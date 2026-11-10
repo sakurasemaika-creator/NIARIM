@@ -5,7 +5,7 @@ import 'coin_unlock_quote.dart';
 /// activate unsupported benefits. A live purchase still requires an
 /// authenticated, approved, server-versioned quote and atomic redemption.
 abstract final class CoinBenefitPriceCatalog {
-  static const version = 'v1-final-20261110';
+  static const version = 'v2-final-55000';
 
   static const _monthlyCoins = <CoinUnlockTarget, int>{
     CoinUnlockTarget.endCardEdit: 8000,
@@ -19,7 +19,7 @@ abstract final class CoinBenefitPriceCatalog {
     CoinUnlockTarget.timelineAds: 12000,
     CoinUnlockTarget.processingAds: 6000,
     CoinUnlockTarget.allAds: 36000,
-    CoinUnlockTarget.fullPremium: 60000,
+    CoinUnlockTarget.fullPremium: 55000,
   };
 
   static const individualTargets = <CoinUnlockTarget>[

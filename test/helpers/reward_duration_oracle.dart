@@ -34,7 +34,7 @@ class RewardDurationLanguage {
   /// 「単位_数」ごとの、手で書いた正解の文言。
   final Map<String, String> pinned;
 
-  /// 全機能を60000コインで1か月と引き換えるときの確認の文。
+  /// 全機能を55000コインで1か月と引き換えるときの確認の文。
   final String redeemConfirmation;
 
   String label(CoinUnlockDuration duration) {
@@ -63,7 +63,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12か月',
       'hour_1': '1時間',
     },
-    redeemConfirmation: '全機能＋全広告なし · 1か月 · 60000 コイン',
+    redeemConfirmation: '全機能＋全広告なし · 1か月 · 55000 コイン',
   ),
   RewardDurationLanguage(
     code: 'en',
@@ -83,7 +83,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12 months',
       'hour_1': '1 hour',
     },
-    redeemConfirmation: 'All features + no ads · 1 month · 60000 coins',
+    redeemConfirmation: 'All features + no ads · 1 month · 55000 coins',
   ),
   RewardDurationLanguage(
     code: 'es',
@@ -104,7 +104,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'hour_1': '1 hora',
     },
     redeemConfirmation:
-        'Todas las funciones y sin anuncios · 1 mes · 60000 monedas',
+        'Todas las funciones y sin anuncios · 1 mes · 55000 monedas',
   ),
   RewardDurationLanguage(
     code: 'fr',
@@ -125,7 +125,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'hour_1': '1 heure',
     },
     redeemConfirmation:
-        'Toutes les fonctions sans publicité · 1 mois · 60000 pièces',
+        'Toutes les fonctions sans publicité · 1 mois · 55000 pièces',
   ),
   RewardDurationLanguage(
     code: 'ko',
@@ -145,7 +145,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12개월',
       'hour_1': '1시간',
     },
-    redeemConfirmation: '전체 기능 + 광고 없음 · 1개월 · 60000 코인',
+    redeemConfirmation: '전체 기능 + 광고 없음 · 1개월 · 55000 코인',
   ),
   RewardDurationLanguage(
     code: 'zh',
@@ -165,7 +165,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12个月',
       'hour_1': '1小时',
     },
-    redeemConfirmation: '全部功能＋无广告 · 1个月 · 60000 金币',
+    redeemConfirmation: '全部功能＋无广告 · 1个月 · 55000 金币',
   ),
   RewardDurationLanguage(
     code: 'zh_Hant',
@@ -185,7 +185,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12個月',
       'hour_1': '1小時',
     },
-    redeemConfirmation: '全部功能＋無廣告 · 1個月 · 60000 金幣',
+    redeemConfirmation: '全部功能＋無廣告 · 1個月 · 55000 金幣',
   ),
 ];
 

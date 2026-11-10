@@ -565,11 +565,11 @@ describe("final coin economy v1 is frozen across all reward categories",()=>{
     expect(LOGIN_BONUS_MILESTONES.map(m=>[m.days,m.coins])).toEqual(LOGIN);
   });
 
-  it("locks signed AdMob reward of 10 and Premium 1-month of 60000",()=>{
+  it("locks signed AdMob reward of 10 and Premium 1-month of 55000",()=>{
     expect(INITIAL_REWARDED_COINS_PER_COMPLETION).toBe(10);
-    expect(COIN_BENEFIT_PRICE_VERSION).toBe("v1-final-20261110");
-    expect(FINAL_PREMIUM_MONTHLY_COINS).toBe(60000);
-    expect(finalBenefitCoins("fullPremium","month")).toBe(60000);
+    expect(COIN_BENEFIT_PRICE_VERSION).toBe("v2-final-55000");
+    expect(FINAL_PREMIUM_MONTHLY_COINS).toBe(55000);
+    expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
   });
 
   it("locks all 25 population tiers and rank scaling without altering claim bits",()=>{

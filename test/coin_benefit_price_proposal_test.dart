@@ -4,11 +4,11 @@ import 'package:niarim/models/coin_unlock_quote.dart';
 
 void main() {
   test('final owner-approved price model never implies a live redemption', () {
-    expect(CoinBenefitPriceCatalog.version, 'v1-final-20261110');
+    expect(CoinBenefitPriceCatalog.version, 'v2-final-55000');
     expect(CoinBenefitPriceCatalog.cost(
       CoinUnlockTarget.fullPremium,
       const CoinUnlockDuration(1, CoinDurationUnit.month),
-    ), 60000);
+    ), 55000);
   });
 
   test('all final unit prices round up to whole tens', () {
@@ -26,7 +26,7 @@ void main() {
     expect(CoinBenefitPriceCatalog.unitCoins(
       CoinUnlockTarget.endCardEdit, CoinDurationUnit.week), 2170);
     expect(CoinBenefitPriceCatalog.unitCoins(
-      CoinUnlockTarget.fullPremium, CoinDurationUnit.month), 60000);
+      CoinUnlockTarget.fullPremium, CoinDurationUnit.month), 55000);
   });
 
   test('all 48 final benefit rates match the approved launch tariff', () {
@@ -42,7 +42,7 @@ void main() {
       CoinUnlockTarget.timelineAds: [100, 430, 3250, 12000],
       CoinUnlockTarget.processingAds: [50, 220, 1630, 6000],
       CoinUnlockTarget.allAds: [300, 1290, 9730, 36000],
-      CoinUnlockTarget.fullPremium: [500, 2500, 18000, 60000],
+      CoinUnlockTarget.fullPremium: [500, 2500, 18000, 55000],
     };
     for (final row in rates.entries) {
       expect(
