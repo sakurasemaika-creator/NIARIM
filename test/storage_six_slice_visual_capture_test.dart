@@ -128,15 +128,37 @@ void main() {
     final l10n = AppLocalizations.of(
       tester.element(find.byType(StorageScreen)),
     )!;
-    for (final label in [
-      l10n.storageCategoryMaterials,
-      l10n.storageCategoryProjectData,
-      l10n.storageCategoryExports,
-      l10n.storageCategoryCustomAssets,
-      l10n.storageCategoryCache,
-      l10n.storageCategoryTrash,
-    ]) {
+    final entries = [
+      (StorageCategory.materials, l10n.storageCategoryMaterials),
+      (StorageCategory.projectData, l10n.storageCategoryProjectData),
+      (StorageCategory.exports, l10n.storageCategoryExports),
+      (StorageCategory.customAssets, l10n.storageCategoryCustomAssets),
+      (StorageCategory.cache, l10n.storageCategoryCache),
+      (StorageCategory.trash, l10n.storageCategoryTrash),
+    ];
+    final largest = entries
+        .map((entry) => values!.bytesOf(entry.$1))
+        .reduce((a, b) => a > b ? a : b);
+    for (final (category, label) in entries) {
       expect(find.text(label), findsOneWidget, reason: label);
+      final bar = find.byKey(Key('storageBreakdownBar_$label'));
+      expect(bar, findsOneWidget, reason: 'Missing bar for $label');
+      final fill = tester.widget<FractionallySizedBox>(
+        find.descendant(
+          of: bar,
+          matching: find.byType(FractionallySizedBox),
+        ),
+      );
+      expect(
+        fill.widthFactor,
+        closeTo(values!.bytesOf(category) / largest, 0.0001),
+        reason: 'Wrong relative size for $label',
+      );
+      // The outline is drawn over the colored fill, never replaced by it.
+      expect(
+        find.descendant(of: bar, matching: find.byType(DecoratedBox)),
+        findsNWidgets(3),
+      );
     }
     expect(tester.takeException(), isNull);
 
