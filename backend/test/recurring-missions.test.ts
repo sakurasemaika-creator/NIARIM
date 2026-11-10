@@ -90,7 +90,9 @@ describe("JST recurring login mission catalog", () => {
       }))
       .mockResolvedValueOnce({Item:{...previous,weekClaimedMask:1}})
       .mockResolvedValueOnce({});
-    await expect(recordRecurringLoginVisit("Nowner")).resolves.toEqual([]);
+    await expect(recordRecurringLoginVisit("Nowner")).resolves.toEqual([
+      {id:"visit_week_3",period:"week",requiredDays:3,coins:3},
+    ]);
     expect(send).toHaveBeenCalledTimes(4);
     const retry=send.mock.calls[3][0] as UpdateCommand;
     expect(retry.input.ExpressionAttributeValues?.[":weekMask"]).toBe(1);
