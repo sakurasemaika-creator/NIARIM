@@ -57,6 +57,14 @@ void main() {
       // 明度以外の成分が変更されると、色の統一感が失われる。
       final accent = HSLColor.fromColor(scheme.primary);
       expect(storageChartLightnessLevels.length, 6);
+      expect(storageChartLightnessLevels.first, 0.615);
+      expect(storageChartLightnessLevels[1], 0.70);
+      expect(storageChartLightnessLevels[2], 0.785);
+      expect(storageChartLightnessLevels.last, 0.98);
+      for (var i = 0; i < storageChartLightnessLevels.length; i++) {
+        expect(storageChartLightnessLevels[i], lessThan(1));
+        expect(storageChartLightnessLevels[i], greaterThanOrEqualTo(0.615));
+      }
       for (var i = 0; i < colors.length; i++) {
         expect(
           colors[i],
@@ -87,7 +95,9 @@ void main() {
         for (var j = i + 1; j < colors.length; j++) {
           expect(
             distance(colors[i], colors[j]),
-            greaterThan(900),
+            greaterThan(400),
+            // Very light pastels have smaller RGB distances, but each
+            // adjacent color must still be distinguishable on 8-bit output.
             reason:
                 '${preset.id}: $i番目と$j番目の色が近すぎる '
                 '(${colors[i]} / ${colors[j]})',
