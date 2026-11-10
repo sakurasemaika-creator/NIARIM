@@ -31,6 +31,7 @@ void main() {
     final cache = Directory('${root.path}/cache')..createSync();
 
     const channel = MethodChannel('plugins.flutter.io/path_provider');
+    const diskChannel = MethodChannel('disk_space_2');
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     messenger.setMockMethodCallHandler(channel, (call) async {
@@ -38,9 +39,17 @@ void main() {
           ? cache.path
           : docs.path;
     });
+    // A deterministic, isolated 256 GiB device with 21 GiB free. No physical
+    // device state is read or changed. Both charts render on CI Linux.
+    messenger.setMockMethodCallHandler(
+      diskChannel,
+      (call) async => call.method == 'getFreeDiskSpace' ? 21000.0 : 256000.0,
+    );
+    StorageInfoService().invalidate();
 
     addTearDown(() {
       messenger.setMockMethodCallHandler(channel, null);
+      messenger.setMockMethodCallHandler(diskChannel, null);
       if (root.existsSync()) root.deleteSync(recursive: true);
     });
 
@@ -130,15 +139,43 @@ void main() {
     final scheme = Theme.of(storageContext).colorScheme;
     // Non-selected canvas toolbar icons are painted with onSurface.
     final expectedOutline = scheme.onSurface;
-    // The 120px chart remains a pie and is outlined with the icon fill.
+    // Device and NIARIM breakdown both keep their own real CustomPaint pie.
     final pie = find.byWidgetPredicate(
       (widget) =>
           widget is CustomPaint &&
           widget.painter?.runtimeType.toString() == '_PieChartPainter',
     );
-    expect(pie, findsOneWidget);
-    final piePaint = tester.widget<CustomPaint>(pie);
-    expect((piePaint.painter! as dynamic).outlineColor, expectedOutline);
+    expect(pie, findsNWidgets(2));
+    for (final pieWidget in tester.widgetList<CustomPaint>(pie)) {
+      expect((pieWidget.painter! as dynamic).outlineColor, expectedOutline);
+    }
+
+    final deviceLabels = [
+      l10n.storageCategoryNiarimTotal,
+      l10n.storageCategoryOtherApps,
+      l10n.storageCategoryFree,
+    ];
+    final deviceColors = storageDeviceSliceColorsOf(scheme);
+    final deviceSections = find.byKey(const ValueKey('storageDeviceSection'));
+    expect(deviceSections, findsOneWidget);
+    for (var i = 0; i < deviceLabels.length; i++) {
+      final label = deviceLabels[i];
+      final bar = find.byKey(Key('storageDeviceBar_$label'));
+      expect(bar, findsOneWidget);
+      expect(
+        tester.widget<Text>(find.byKey(Key('storageBreakdownBarLabel_$label'))).data,
+        label,
+      );
+      final fill = tester.widget<FractionallySizedBox>(
+        find.descendant(of: bar, matching: find.byType(FractionallySizedBox)),
+      );
+      final fillDecoration = (fill.child as DecoratedBox).decoration
+          as BoxDecoration;
+      expect(fillDecoration.color, deviceColors[i]);
+      final barRect = tester.getRect(bar);
+      final devicePie = find.descendant(of: deviceSections, matching: pie);
+      expect(barRect.left, greaterThan(tester.getRect(devicePie).right));
+    }
 
     final entries = [
       (StorageCategory.materials, l10n.storageCategoryMaterials),
@@ -151,12 +188,18 @@ void main() {
     final largest = entries
         .map((entry) => values!.bytesOf(entry.$1))
         .reduce((a, b) => a > b ? a : b);
-    // At 390px the named bars should get the full width below the pie.
-    // This avoids squashing long Japanese category names into a 200px column.
+    // Even at 390px the six bars must remain to the RIGHT of their pie.
+    final breakdownSection =
+        find.byKey(const ValueKey('storageBreakdownSection'));
+    final breakdownPie = find.descendant(of: breakdownSection, matching: pie);
+    expect(breakdownPie, findsOneWidget);
     final firstBar = find.byKey(
       Key('storageBreakdownBar_${l10n.storageCategoryMaterials}'),
     );
-    expect(tester.getRect(firstBar).top, greaterThan(tester.getRect(pie).bottom));
+    expect(
+      tester.getRect(firstBar).left,
+      greaterThan(tester.getRect(breakdownPie).right),
+    );
     for (final (category, label) in entries) {
       expect(find.text(label), findsOneWidget, reason: label);
       final bar = find.byKey(Key('storageBreakdownBar_$label'));
@@ -199,14 +242,15 @@ void main() {
         reason: 'Bar border must follow the current theme for $label',
       );
     }
-    // The category dots remain, but they must not have an outline.
-    final legendDots = tester.widgetList<Container>(
-      find.byType(Container),
-    ).where((widget) =>
-        widget.decoration is BoxDecoration &&
-        (widget.decoration! as BoxDecoration).shape == BoxShape.circle &&
-        (widget.decoration! as BoxDecoration).border == null).toList();
-    expect(legendDots.length, greaterThanOrEqualTo(6));
+    // Neither chart has separate circular legend markers anymore.
+    for (final section in [deviceSections, breakdownSection]) {
+      final legendDots = tester.widgetList<Container>(
+        find.descendant(of: section, matching: find.byType(Container)),
+      ).where((widget) =>
+          widget.decoration is BoxDecoration &&
+          (widget.decoration! as BoxDecoration).shape == BoxShape.circle);
+      expect(legendDots, isEmpty);
+    }
     expect(tester.takeException(), isNull);
 
     final boundary =
