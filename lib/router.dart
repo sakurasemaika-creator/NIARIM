@@ -20,12 +20,10 @@ import 'screens/settings/transfer_screen.dart';
 import 'screens/settings/theme_settings_screen.dart';
 import 'screens/settings/watermark_settings_screen.dart';
 import 'screens/export/export_screen.dart';
-import 'screens/help/help_screen.dart';
-import 'screens/tips/tips_screen.dart';
+import 'screens/help/guide_hub_screen.dart';
 import 'screens/premium/premium_screen.dart';
-import 'screens/rewards/reward_unlock_screen.dart';
+import 'screens/rewards/coin_benefits_screen.dart';
 import 'screens/rewards/membership_benefits_screen.dart';
-import 'screens/rewards/creator_missions_screen.dart';
 import 'screens/autofill/autofill_preset_screen.dart';
 import 'screens/save_tree/save_management_screen.dart';
 import 'screens/materials/material_list_screen.dart';
@@ -170,12 +168,13 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/help',
       builder: (context, state) => AdMockPageFrame(
-        child: HelpScreen(initialTopic: state.uri.queryParameters['topic']),
+        child: GuideHubScreen(initialTopic: state.uri.queryParameters['topic']),
       ),
     ),
     GoRoute(
       path: '/tips',
-      builder: (context, state) => const AdMockPageFrame(child: TipsScreen()),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: GuideHubScreen(initialTab: 1)),
     ),
     GoRoute(
       path: '/premium',
@@ -185,13 +184,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/rewards',
       builder: (context, state) =>
-          const AdMockPageFrame(child: RewardUnlockScreen()),
+          const AdMockPageFrame(child: CoinBenefitsScreen()),
     ),
     GoRoute(
       path: '/earn-coins',
-      builder: (context, state) => const AdMockPageFrame(
-        child: RewardUnlockScreen(mode: RewardPageMode.earnCoins),
-      ),
+      builder: (context, state) =>
+          const AdMockPageFrame(child: CoinBenefitsScreen(initialTab: 2)),
     ),
     GoRoute(
       path: '/membership',
@@ -201,7 +199,8 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/creator-missions',
       builder: (context, state) => AdMockPageFrame(
-        child: CreatorMissionsScreen(
+        child: CoinBenefitsScreen(
+          initialTab: 1,
           workId: state.uri.queryParameters['workId'],
         ),
       ),
