@@ -156,15 +156,21 @@ void main() {
                   reason: scope,
                 );
                 expect(
-                  (buttonRect.center.dx - menuRect.center.dx).abs(),
-                  lessThan(3),
-                  reason: scope,
+                  buttonRect.right,
+                  lessThanOrEqualTo(menuRect.left + 1),
+                  reason: '$scope bookmark must precede context menu',
                 );
                 expect(
-                  buttonRect.top,
-                  greaterThanOrEqualTo(menuRect.bottom - 1),
-                  reason: scope,
+                  (buttonRect.center.dy - menuRect.center.dy).abs(),
+                  lessThan(3),
+                  reason: '$scope actions must share the bottom row',
                 );
+                final titleRect = tester.getRect(find.text(work.title));
+                final authorRect = tester.getRect(find.text(work.authorName));
+                expect(titleRect.bottom, lessThanOrEqualTo(authorRect.top + 1),
+                    reason: '$scope title must be above author');
+                expect(authorRect.bottom, lessThanOrEqualTo(buttonRect.top + 1),
+                    reason: '$scope author must be above actions');
                 final l10n = AppLocalizations.of(
                   tester.element(find.byType(CommunityWorkGrid)),
                 )!;
@@ -219,7 +225,7 @@ void main() {
     timeout: const Timeout(Duration(minutes: 10)),
   );
 
-  testWidgets('thumbnail uses the right-side menu and a bookmark by counts', (
+  testWidgets('card shows title, author, then count / bookmark / menu in one row', (
     tester,
   ) async {
     final work = CommunityWork(
@@ -271,14 +277,18 @@ void main() {
       greaterThanOrEqualTo(thumbnail.bottom),
     );
     expect(
-      (tester.getRect(menu).center.dx - tester.getRect(bookmark).center.dx)
+      tester.getRect(bookmark).right,
+      lessThanOrEqualTo(tester.getRect(menu).left + 1),
+    );
+    expect(
+      (tester.getRect(bookmark).center.dy - tester.getRect(menu).center.dy)
           .abs(),
       lessThan(3),
     );
-    expect(
-      tester.getRect(bookmark).top,
-      greaterThanOrEqualTo(tester.getRect(menu).bottom - 1),
-    );
+    expect(tester.getRect(find.text(work.title)).bottom,
+        lessThanOrEqualTo(tester.getRect(find.text(work.authorName)).top + 1));
+    expect(tester.getRect(find.text(work.authorName)).bottom,
+        lessThanOrEqualTo(tester.getRect(bookmark).top + 1));
     // Smaller artwork, preserved 48dp touch target.
     final action = tester.widget<IconButton>(bookmark);
     expect(action.iconSize, 22);
