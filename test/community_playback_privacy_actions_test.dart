@@ -11,6 +11,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/community_work.dart';
 import 'package:niarim/screens/community/community_work_detail_screen.dart';
 import 'package:niarim/screens/community/widgets/community_floating_preview.dart';
+import 'package:niarim/screens/community/widgets/community_youtube_player.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_preview_service.dart';
@@ -53,7 +54,15 @@ Widget _host({
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    CommunityYoutubePlayer.debugPlayerBuilder = (context, id, playing) =>
+        Container(
+          key: Key('mockYouTube-$id-$playing'),
+          color: Colors.black,
+        );
+  });
+  tearDown(() => CommunityYoutubePlayer.debugPlayerBuilder = null);
 
   for (final blockedStatus in ['private', 'deleted', 'unavailable', 'unknown']) {
     testWidgets('preview cannot open details after video becomes $blockedStatus',
@@ -86,6 +95,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(checks, greaterThanOrEqualTo(1));
       expect(find.byKey(const Key('communityPreviewDetails')), findsOneWidget);
+      expect(find.byKey(const Key('mockYouTube-$_id-true')), findsOneWidget);
 
       // The public data was cached when the preview was opened.
       // Publication is revoked before the user presses Details.
@@ -96,6 +106,7 @@ void main() {
       expect(preview.work?.id, _id);
       expect(find.byType(CommunityWorkDetailScreen), findsNothing);
       expect(find.byKey(const Key('communityPlaybackStatusPanel')), findsOneWidget);
+      expect(find.byKey(const Key('mockYouTube-$_id-true')), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       preview.dispose();
