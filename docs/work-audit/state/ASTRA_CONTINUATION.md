@@ -1,10 +1,26 @@
 # NIARIM Audit Progress
 
+## S38 最優先の色契約修正（2026-11-10、未適用・未検証）
+
+ユーザーの「固有色が必要な領域を除き、UI色はテーマ・外観の正式設定から取る」という指示に対し、S38候補のerror textに使った `Theme.colorScheme.error` は適合しない。最新dev_branchの `lib/services/theme_service.dart` をGitHub連携で直接読んだところ、`ColorScheme.fromSeed` のMaterial error色を `readableThemeError` で調整しており、error labelは独立した設定色ではないことがコメントと実装に明記されていた。画面にHEXを書いていなくても、設定から直接選ぶ文字色へ対応していない。DISC014の9色/役割対応とDISC061へ追記し、未push候補の見た目の色契約はFAILとして扱う。
+
+環境復帰後はローカル原本/raw45PASSを先に保存したうえで、メニュー文字色を通常文字色・Material error色と明確に違う色に設定したfresh反例を追加する。現在のS38候補ではエラー表示の色がそのmenuTextColorへ追従しないことを実証し、行Cardとpreviewの両方を既に計算されている `foreground`（正式なpopup/menu text role）へそろえる。色だけへ依存せず、localized説明文とliveRegionで失敗を伝える。preset/ThemeServiceの値・9色契約自体や、他のUIへ新しい固定色を導入しない。
+
+適用候補の正確な差分指定（まだ未実行）:
+- `lib/screens/home/widgets/exported_work_card.dart`: 新しいshareFeedbackの `color: theme.colorScheme.error,` を `color: foreground,` へ。
+- `lib/screens/home/widgets/exported_work_preview_layout.dart`: 新しいshareErrorの `color: Theme.of(context).colorScheme.error,` を `color: foreground,` へ。
+- `test/home_export_share_failure_test.dart`: `Theme.of(tester.element(error)).colorScheme.error` を期待値として固定しているassertを、実際に選択したcustom presetのmenuTextColorへ照合するassertへ変更する。正式色項目のmutationを起点に変更前FAIL→変更後PASSを残す。単にassertを削除しない。
+
+8/45PASS・368Dart・kernel950710eb・PC実操作はすべて色修正前の候補の結果である。保存済み121937B WIP ZIPとS38standalone2partsも色修正前で、最終合格版とはしない。これらを復元して同一検証を再実行する必要はないが、今回の2source色修正後は入力byteが変わるため、関連share8件・custom color counter・card/preview preset regression、global analyze/format、fresh normal/fixture buildとnative PC/SPの正式色反映を再検証する。新しいkernel/source manifestと成果物を保存してから製品をpushする。
+
+5軸の限定判定: 機能/挙動は制御native境界45回帰と実Linux PCの失敗通知/再操作まで確認、継続性はlate failure/Close/PC再訪とfile保持を確認。見た目は上記色契約FAILで修正待ち。製品品質・SP実操作・全OS共有成功・全preset/全状態/Visual closureは未完了。既存ThemeServiceのMaterial意味色に関する他callerもDISC014の対応表から追跡し、このS38修正だけで全体を解決した扱いにしない。
+
+
 ## S38 checkpoint — 実行環境がunavailable（2026-11-10）
 
 S37の製品修正/公開/CI25/原本44/検証50件は完了済み。App source `9ff5a56f58191022ba3c0ae142692102d676c515`、State反映後App `6decdfa96c5e57c22d31f12142a577e5877401e0` / Web `d7f8b402f4835cd96548b9af6c12715a640b8714`、dev_branchのみ。今回の新しいcheckpoint commitはStateだけで、下記S38製品修正は未push。Baseline2done/628todo/A003、Discovery61todo、Delta37topTodo/97宣言を変更しない。全面監査/Visual closureは未完了。
 
-DISC061のfresh UI反例はWorks行/previewの0PASS/2FAIL（PlatformException・通知無し）。修正はper-file native share Futureの重複防止、path key付き行State、処理中のshare/open/delete無効、行とpreview内のliveRegionエラー、previewのClose維持、mounted確認、実popover origin。既存7localeのUnsupported/GenericとThemeの色だけを使い、native error文はUIへ出さない。行はinline feedbackにし、別のUndo通知を妨げない。ShareResult.unavailableを失敗と決めつけない。
+DISC061のfresh UI反例はWorks行/previewの0PASS/2FAIL（PlatformException・通知無し）。修正はper-file native share Futureの重複防止、path key付き行State、処理中のshare/open/delete無効、行とpreview内のliveRegionエラー、previewのClose維持、mounted確認、実popover origin。既存7localeのUnsupported/Genericを使い、native error文はUIへ出さない。error色は正式設定との対応が未達で、冒頭の修正が必須。行はinline feedbackにし、別のUndo通知を妨げない。ShareResult.unavailableを失敗と決めつけない。
 
 観測済み: 新規8tests PASS（32秒）と関連10filesの45tests PASS（3分25秒）。45には8を含む。内部条件はshare21、Home350、card10080、preview1260で、固有test数へ加算しない。全analyze0、normal/fixture Linux build成功。compiled368Dart/8font、kernel `950710eb7dce8765d7954dc7f95f6f1e6227a62872886e4ab1aed205066ae5ce`、fixture SHA `3b5190974fd0b745b34cc9dfa941093f09bc9434baf59d00c8234eaebae2c43d`。code/期待値を弱めず、Tooltip locator・mock exceptionのnative envelope・guarded callbackのfixture問題を切り分けて修復した。8testsはpending/連打/共有取消/合成status/close後late failure/再試行/同じfileの重複caller/他のUndo保持を含む。合成native境界であり実OS共有成功のPASSではない。
 
@@ -129,7 +145,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S38 — share inline修正/45回帰/PC実操作まで。実行環境unavailable、SP/native原本保存/製品pushは保留
+current_substep: A003/S38 — 機能45回帰/PC実操作は色修正前。設定色契約FAILを先に是正・再検証。実行環境unavailable、SP/製品push保留
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -149,7 +165,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: 実行環境の復帰確認→S38ローカル原本/raw45PASSを先に保存→WIP/standalone照合→SP共有失敗の実操作/実download版→State5/証跡readback→検証済み製品をdev_branchだけ通常push/CI33。A003_S38_20261110_CHECKPOINT.mdを正本再開情報とする。
+next_action: 実行環境復帰→原本/raw45PASSを確保→custom menuTextColorのfresh色反例→Card/previewのforeground正式色へ2source修正/再検証・fresh build→SP/native/download/evidence→検証後dev_branchだけpush/CI33。A003_S38_20261110_CHECKPOINT.md冒頭を優先。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
