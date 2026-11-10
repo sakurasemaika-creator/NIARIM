@@ -381,14 +381,8 @@ class _HomeScreenState extends State<HomeScreen>
             leading: IconButton(
               key: const Key('homeBackToSplashButton'),
               icon: const Icon(Icons.arrow_back),
-              // 検索中の矢印は検索を閉じる（検索欄の左の戻るでホームから
-              // 出てしまわない）。それ以外は起動画面へ戻る。
-              tooltip: _isSearching
-                  ? MaterialLocalizations.of(context).backButtonTooltip
-                  : l10n.homeBackToSplashTooltip,
-              onPressed: _isSearching
-                  ? _closeProjectSearch
-                  : () => context.go('/'),
+              tooltip: l10n.homeBackToSplashTooltip,
+              onPressed: () => context.go('/'),
             ),
             title: _currentTabIndex != 0
                 ? Text(

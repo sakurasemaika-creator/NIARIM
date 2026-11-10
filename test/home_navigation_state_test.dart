@@ -285,35 +285,39 @@ void main() {
     expect(find.byType(SplashScreen), findsOneWidget);
   });
 
-  testWidgets('the app-bar arrow closes search instead of leaving Home', (
+  // 検索中も左上の戻る矢印と右上のメニューはそのままで、検索は×で閉じる。
+  testWidgets('the close button ends search without leaving Home', (
+    tester,
+  ) async {
+    await boot(tester, projects: 1);
+    await tester.tap(find.byIcon(Icons.search));
+    await settle(tester);
+    expect(find.byKey(const Key('homeBackToSplashButton')), findsOneWidget);
+    expect(find.byKey(const Key('homeMenuButton')), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.close));
+    await settle(tester);
+    expect(find.byType(TextField), findsNothing);
+    expect(find.byType(SplashScreen), findsNothing);
+  });
+
+  // いまの決まり：左上の矢印は検索中も起動画面へ戻る（矢印は常に
+  // homeBackToSplashButtonで、検索は×・Esc・端末の戻るで閉じる）。
+  // dev_branchのfe164fc4（2026-10-29）の作りに従う。検索中の矢印を
+  // 「検索を閉じる」にするかはDISC071で所有者の判断待ちなので、決まったら
+  // このテストを書き換える。
+  testWidgets('while searching, the arrow returns to the launch screen', (
     tester,
   ) async {
     await boot(tester, projects: 1);
     final l10n = l10nOf(tester);
-    expect(
-      tester.widget<IconButton>(backArrow()).tooltip,
-      l10n.homeBackToSplashTooltip,
-    );
     await tester.tap(searchButton(tester));
     await settle(tester);
     await tester.enterText(find.byType(TextField), 'zzz');
     await settle(tester);
-    // 検索中の矢印は検索を閉じる（起動画面へ戻るとは言わない）。
-    expect(
-      tester.widget<IconButton>(backArrow()).tooltip,
-      isNot(l10n.homeBackToSplashTooltip),
-    );
-    await tester.tap(backArrow());
-    await settle(tester);
-    expect(find.byType(TextField), findsNothing);
-    expect(find.byType(SplashScreen), findsNothing);
-    expect(location(), '/home');
-    expect(listText('P1'), findsOneWidget, reason: 'query cleared');
     expect(
       tester.widget<IconButton>(backArrow()).tooltip,
       l10n.homeBackToSplashTooltip,
     );
-    // 検索を閉じた後は、矢印で起動画面へ戻る。
     await tester.tap(backArrow());
     await settle(tester);
     expect(location(), '/');
