@@ -56,7 +56,9 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
 
   void _create() {
     if (!CommunityYoutubePlayer.isValidVideoId(widget.videoId) ||
-        CommunityYoutubePlayer.debugPlayerBuilder != null) { return; }
+        CommunityYoutubePlayer.debugPlayerBuilder != null) {
+      return;
+    }
     final controller = YoutubePlayerController.fromVideoId(
       videoId: widget.videoId,
       autoPlay: widget.playing && widget.active,
