@@ -1,6 +1,6 @@
 # NIARIM Audit Evidence
 
-## S38 公開 — 共有失敗の通知（DISC061）とブラシの太さ・不透明度の記憶（2026-11-10、別の実行環境で継続）
+## S38 公開 — 共有失敗の通知（DISC061）・ブラシの記憶・交換期間（DISC057）・容量削減（DISC058）・保存の読み込み（DISC063）（2026-11-10、別の実行環境で継続）
 
 この単位の実行入力はApp `6decdfa96c5e57c22d31f12142a577e5877401e0`から始め、途中で他のセッションの公開（YouTube再生まわり等）を3回取り込んで最終App `670d666e`（DISC057まで）、Webは製品変更なし。両dev_branchだけ（ユーザー指示「dev_branchのみを見て、修正・プッシュするのもdev_branchのみ」）。下の「S38 最優先の色契約修正」「S38 checkpoint」は前の実行環境の記録としてそのまま残す。そこで「未適用・未検証」とされた色の修正は、この節で適用・検証・公開した。Baseline2done/628todo/currentA003、Discovery cursor DISC001、Delta not_startedを変更しない。DISC061をdoneへ昇格しない。全面監査・Visual closureは未完了。
 
@@ -27,7 +27,27 @@
 - 独立レビュー（3観点、指摘ごとに反証を試行、13agent）で確かめられた指摘を追加修正（App `308c019`）：サブツールの一覧・早替えツールでは欄が前のブラシの値のまま残る（providerのselectは同じフレームでsetState済みの画面にdidChangeDependenciesを呼ばない。反例は修正前FAIL 期待5/実際42）、消しゴム等で変えた太さがペンのブラシの値として残る→ペンのブラシだけ覚える、組み込みを既定へ戻す操作（一覧のメニュー、7locale）、スポイト待ちの間の上書き、Helpの説明。
 - 検証：analyze0。`brush_size_memory_test` 12PASS、`brush_size_memory_canvas_test` 3PASS、`editable_slider_value_input_test` 3PASS。ブラシ・パネル・スライダーの関係で177PASS/5FAIL。5FAIL（`canvas_dock_fit_test`4・`requested_ui_all_captures_test`1）は手を入れる前の6decdfaでも同じ（PC専用の作業画面の部品を探すtest、DISC066）。font_coverage（韓国語1字の欠落を言い換えで解消）・no_emoji PASS。
 - 実Linux：SP390x844/PC1280x720 JAで、数値入力42px・35%→prefs確認→再起動→一覧「42px・35%」→選ぶと欄が即42・35%→その太さ・濃さで線。消しゴムで77へ変えても覚えは42・35%のまま。PCのメニューから既定へ戻すと5px・100%で覚えが消える。Android・touch・筆圧は未確認。
-- 登録：製品変更をD001.62へtodo登録（宣言99）。読みで見つけた別の欠陥をDISC062–067へtodo登録（設定の引き継ぎのブラシ、'brushes'の読み込み、残り11か所の共有、報酬画面の字抜け・単位、PC専用の作業画面の配線、消しゴム等の太さ）。DISC066・067はユーザーの判断待ち。
+- 登録：製品変更をD001.62へtodo登録（宣言99。その後D001.63で宣言100）。読みで見つけた別の欠陥をDISC062–067へtodo登録（設定の引き継ぎのブラシ、'brushes'の読み込み、残り11か所の共有、報酬画面の字抜け・単位、PC専用の作業画面の配線、消しゴム等の太さ）。DISC066・067はユーザーの判断待ち。
+
+### DISC058 容量削減の画面を欄ごとに読み込む（公開、DISC058はtodoのまま）
+
+- 進め方：独立したworktreeで実装担当がfresh反例→修正→1commit、2観点のレビュー→指摘7件を反証つきで確認→追加修正。その間に他のセッションが同じ`storage_screen.dart`のグラフを作り直した（差し色からの配色・区分ごとの棒・520px未満の縦並び）ので、相手のグラフのコードを残して最新dev_branchへ載せ直した。
+- 反例：最初の7testsは修正前0PASS（本文全体が1つのloadingで隠れる・失敗で永久にloading）。レビュー指摘の反例20tests中15FAIL（確認dialogがkeyboard focusを受け取らずEnterが後ろのHelpへ届く、古い値のグラフ、他画面の削除が反映されない、再試行buttonが押した瞬間に消える、高さが変わって下の一覧が跳ねる、終わらない集計）。
+- 修正（App `84dd0344`・`81af3731`・`d1f809cf`）：内訳・端末・整理するの3欄が別々にloading/失敗/一部だけ/再試行を持つ。前の結果を覚えて再訪で即表示し裏で測り直す。値が古い間は「集計中…」。30秒より古い集計は共有しない（`storageScanShareLimit`、注入できる時計）。書き出した作品の削除・完全削除・ゴミ箱を空にするは`StorageInfoService().invalidate()`。集計は読めないfolder・途中で消えたfileで止めず「一部を集計できませんでした」。7localeの文言4件。集計中の欄は棒の並んだグラフと同じ高さ。
+- 検証：15files 105PASS/0FAIL（新規7files＋他のセッションの`storage_chart_colors`・`storage_six_slice_visual_capture`、reset dialog、export ownership、share 2files、font coverage、no emoji）。analyzeは触ったfileに0件（tree全体は他のセッションの分で10→12件）。全suiteは未実行。
+- 実Linux（Xvfb、software GL、PC FR1440x900、95project dirs）：開いて1秒で3欄と整理するの項目（修正前は約20秒の全面spinner）、約7秒でグラフ、下の一覧は不動（Organiserのyが同じ）。再訪は1秒で値＋小さな更新中の印。Tab×5→Enterで初期化の確認→Escで閉じ、閉じた後の画面はEnter前と全pixel一致。SP幅390x844で縦並び。原本r58-03/04/07/09/10を直接表示。初期化の確定は押していない。
+- 公開後の独立レビュー（3観点＋指摘ごとの検証、公開済みd1f809cfが対象）で再現した指摘4件は未修正で、追加修正を作成中：（1）ゴミ箱へ移した直後の再訪で覚えた結果を使い「ゴミ箱を空にする 0B」が無効のまま（逆に戻した後は古い大きさで有効）、（2）覚えた結果が無い初回は区分3つぶんの高さを仮定するので集計が届くと下の一覧が（区分数−3）×40px動く、（3）keyboardで確定・再試行した後にfocusがHelpへ移り次のEnterでHelpが開く（修正前のdev_branchにもある）、（4）30秒で終わらない集計に画面上の再試行が無い。未検証の指摘1件（失敗した内訳の再試行で端末の欄が差し込まれ172px動く）。
+- 別件としてDISC068へ登録：他のセッションのグラフの棒の中の文字（`onSecondary`）が、塗られていない部分（`onSurface`）の上で読めない（組み込み28テーマ中14、対比1.08〜1.25:1。修正前の34a0c19dでも同じ）。グラフの配色は他のセッションの担当のため、この単位では変更していない。
+
+### DISC063 保存の読み込み：壊れた1件・型の違う値・範囲外の数で起動を止めない（公開、DISC063はtodoのまま）
+
+- 範囲：Discoveryの記載（brushesが読めないと既定で上書き・不透明度が小数だと1件読めない）と同じ形の読み込みを、lib配下の`prefs.readXxx(`を走査して全キーで反例にした。
+- 反例（修正前のdev_branch 34a0c19dのlibのまま、新規3files 15tests 0PASS/15FAIL）：壊れた1件×6通りで13の保存（tones/stamps/各folders/autofill_presets/draw_filters/color_palettes/palette_recent_colors/pixel_art_palettes/quick_tool_entries/shortcut_bindings/watermark_assets/workspace_presets）が起動失敗。型の違う値を起動が既定で上書きするキー13。先頭・末尾の読めない1件を起動が保存から消す。範囲外の数：undo_limit負・autosave_0_savedAt/premium_purchase_dateがDateTime範囲外で起動失敗、autosave_count 300万で1.2秒（2の62乗では終わらない。最初の反例はここで停止し、止めて組み直した）。ブラシの整数が小数（80.0）で自作ブラシを捨てる。WorkspacePresetのcast<String>は読み込みが通り後で例外。
+- 修正（App `3f0a43d3`）：`lib/utils/saved_list_reader.dart`の`readSavedJsonList`（1件ずつ、読めない1件は記録して飛ばす）。保存はあるが読めないとき（`holdsUnreadableStringList`）は既定で動かすだけで書き換えない。読めない項目があった一覧は起動では保存し直さない。ブラシは読めない項目をそのまま持ち保存の末尾へ残す。利用者の内容を持たない記録（theme_original_builtin_palette_restored_v1・custom_automation_offered_builtins_v1）は起動が書き直す。ブラシの整数は同じ値の小数でも読む。undo_limitは1以上だけ、autosave_countは上限3、日時は`dateTimeFromSavedMillis`、WorkspacePresetは読むときに確かめる。
+- 独立レビュー（反証を試みる読み方、1agent）：正常な保存10通りで変更前後の最終prefsがbyte一致。指摘を反映（テーマの印が読めないと組み込みテーマの変更が毎回戻る→印は起動が書き直す、条件8か所を外してもtestが通る→先頭/末尾の1件を置き換える反例と1キーずつ×2通りの土台へ、80.5の反例、覚えた値の保存を起動が消す、範囲外の数4経路、WorkspacePreset）。mutation：条件8か所とブラシの持ち越しを外すと3tests FAIL、テーマの現在の色の条件を外すと1test FAIL。
+- 検証：新規15tests＋期待を直した`brush_management_test`・`brush_size_memory_test`で公開前49PASS。関係98filesで503PASS/22FAIL、画面つき72filesで203PASS/30FAIL。FAILは手を入れる前のdev_branch（34a0c19d）でも同じtestが同数。`app_smoke_test`の9FAILも載せ直し先a388f103で同じ9件。analyzeは触った26filesに0件。全suiteは未実行。
+- 実Linux（SP JA390x844、prefsを直接書いたprofile）：読めない1件だけのtonesの保存、undo_limit=-1（＋after側はautosave_count=2の62乗）の保存で、修正前のbuildはどちらも「NIARIMを起動できませんでした」、修正後は起動画面まで進み、保存の値は起動後もそのまま（tonesは読めない1件のまま、undo_limit -1、autosave_count 4611686018427387904）。原本d63-before/after 4点を直接表示。
+- 残り：読めない項目を戻す画面は無い（エラーの記録に残る）。ブラシ以外の一覧は次に変えたときに読めない項目が消える。Androidの実SharedPreferencesの壊れた保存、disk上の保存（project file・SaveTree/index.json・素材）の全経路、補間で組み立てるキーは未確認。
 
 ## S38 最優先の色契約修正（2026-11-10、未適用・未検証）
 

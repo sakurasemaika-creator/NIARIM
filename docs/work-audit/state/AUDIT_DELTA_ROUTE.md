@@ -371,6 +371,10 @@ status: `todo`。現行App dev_branchの `backend/src/api/handler.ts` は登録�
 
 status: `todo`。S38の製品変更を登録する。App `dd1974d7`・`308c019`：キャンバスで変えた太さ・不透明度をブラシごとに覚える（保存キー`brush_builtin_working_values`、操作の終わりに保存、ペンのブラシだけ、早替えツール・自動操作は一時的な値、一覧のメニュー「既定の太さ・不透明度に戻す」、Help「カスタムブラシ」の説明、数値欄の押下範囲、一覧で選んだ行のアイコン色）。App `07323398`：書き出した作品の行・プレビュー・書き出し完了の共有失敗の知らせ（`ExportShareService`、`export_share_feedback.dart`、正式なメニュー文字色と印）。App `0a008bb4`・`670d666e`：特典交換の期間の表記（ICU plural 4件×7locale、`coin_duration_label.dart`、確認dialogのscroll、選択行の読み上げ）。全ブラシ（組み込み25＋自作）×切り替え/再起動/早替え/ショートカット/自動操作/複製/書き出し/設定の引き継ぎ、スライダー・±・数値入力・PC/SP・7locale・文字拡大、Android/touch/筆圧、共有はAndroid/iPadの実共有・取消・失敗・二重操作を実機で確認する。S38の限定的な検証をこのIDのPASSへ代用しない。
 
+## D001.63 — 容量削減の欄ごとの読み込みと、保存の読み込みの耐性（2026-11-10追加）
+
+status: `todo`。S38の製品変更を登録する。App `84dd0344`・`81af3731`・`d1f809cf`：容量削減の画面（内訳・端末・整理するが別々に読み込み中/失敗/一部だけ/再試行、覚えた結果で再訪は即表示、古い値は集計中、30秒より古い集計は共有しない、削除で`StorageInfoService().invalidate()`、読めないfolderで止めない集計、7localeの文言4件、確認dialogのkeyboard focus、集計中の欄の高さ）。App `3f0a43d3`：保存の読み込み（`readSavedJsonList`で13の保存を1件ずつ、読めない保存を起動で書き換えない、ブラシは読めない項目を保存へ残す、ブラシの整数の小数、undo_limit・autosave_count・日時の範囲、WorkspacePreset）。容量は全theme×7locale×PC/SP/短高/文字拡大、大量の作品・遅いstorage・権限の無いfolder・集計中の操作・他画面の変更の反映・Android/読み上げ、保存は全キー×（型違い/壊れた1件/範囲外）×起動/保存し直し/設定の引き継ぎ/初期化、Androidの実保存を確認する。S38の限定的な検証をこのIDのPASSへ代用しない。
+
 ## D002 — 全フィルター inventory → 個別監査
 
 全フィルターを最新HEAD実装から確定し、**質感変更系・Gradient Map系・質感偏光フィルターを除外しない**。

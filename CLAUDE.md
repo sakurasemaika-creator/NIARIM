@@ -51,7 +51,11 @@
    マルチタッチ・筆圧はこの方法では出せない。
 2. コード変更後は必ず`flutter analyze`（ベースライン：**0 issues**。
    info１件も出ていない状態が正なので、**1件でも増えたらそれは自分が
-   足したもの**として必ず直すこと。`Color.red/green/blue`は非推奨なので、
+   足したもの**として必ず直すこと。ただし2026-11-10時点のdev_branchは、
+   他のセッションの分で12件出る〔`home_screen.dart`の使っていないimport
+   2件・`project_service.dart`の不要なimport 1件・テスト4本の9件〕。
+   手を入れる前の件数を先に取り、自分が触ったファイルに0件であることを
+   確かめること。`Color.red/green/blue`は非推奨なので、
    テストでピクセル値と突き合わせるときは
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
@@ -570,12 +574,47 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   `_notifyOutsideBuild`がそのときはフレームの後へ回す（dev_branchの
   リースつきの制作時間、2026-11-04取り込み。`timeline_pc_workspace_test`で
   発見）。
-- **保存した一覧（ブラシ等）は1件ずつ読むこと**：`BrushService.init`は以前、
-  保存の一覧を1度に`map(fromJson)`しており、壊れた1件で初期化全体が失敗して
-  起動できなくなった（起動失敗画面でやり直しても同じ）。読めない分は
-  `AppErrorReporter`へ記録して捨て、除いて保存し直す（`test/brush_management_test.dart`）。
+- **保存した一覧は`readSavedJsonList`で1件ずつ読み、読めない保存を起動で
+  書き換えない**（`lib/utils/saved_list_reader.dart`）：一覧を1度に
+  `map(fromJson)`すると、壊れた1件で初期化全体が失敗して起動できなくなる
+  （起動失敗画面でやり直しても同じ。ブラシで踏み、2026-11-10にトーン・
+  スタンプ・パレット・ショートカットなど13の保存でも同じだったのを直した）。
+  決まりは3つ：（1）読めない1件は`AppErrorReporter`へ記録して飛ばす、
+  （2）保存はあるが型が違って読めないとき（`prefs.holdsUnreadableStringList`、
+  `raw == null`でも`prefs.containsKey`が真）は既定の内容で動かすだけで
+  **既定を書き込まない**（「保存が無い＝初回起動」と同じに扱うと自作の内容を
+  消す）、（3）読めない項目があった一覧は起動では保存し直さない
+  （`onSkipped`で`intact = false`にし、足りない組み込みの足し直し・移行の
+  `_persist()`を止める。その一覧を次に変えたときに読めた分だけで保存し直す）。
+  ブラシだけは読めない項目をそのまま持って保存の末尾へ残す
+  （`_unreadableEntries`。キャンバスで太さを変えるだけでも一覧を保存し直す
+  ので、読めた分だけを書くとその場で消える）。利用者の内容を持たない記録
+  （組み込みテーマを戻した印・渡した公式プリセットの記録・端末の性能の判定）は
+  読めなければ起動が書き直してよい（書き直さないと移行が毎回走る）。
+  **型が合っていても範囲の外の数は起動を止める**：日時は
+  `dateTimeFromSavedMillis`（`tolerant_preferences.dart`）、件数で回す所は
+  上限で抑える、負の数を上限に使わない。JSONの整数を`as int`で読むと
+  同じ値の小数（80.0）で例外になる（ブラシは`_wholeNumber`）。`cast<String>()`
+  は使うときまで確かめないので、保存の読み込みには`List<String>.from`。
+  見張りは`test/startup_unreadable_saved_lists_test.dart`（壊れた1件・型違いを
+  1キーずつ・先頭と末尾の読めない1件）・`startup_saved_number_range_test.dart`
+  （数で読む全キーへ範囲外の値）・`brush_saved_number_types_test.dart`。
+  どれもlib配下の`prefs.readXxx(`を走査してキーを集めるので、保存の読み出しは
+  この形で書くこと。終わらない起動はテストの中から止められないので、
+  とても大きな数は「大きいが有限の数で時間を測る」→速いときだけ試す。
   使っているブラシを消したら隣のブラシへ移ること、複製の名前は
-  `numberedCopyName`（言語と番号）、削除は確かめてから、もここで見張る。
+  `numberedCopyName`（言語と番号）、削除は確かめてから、は
+  `test/brush_management_test.dart`が見張る。
+- **容量削減の画面は欄ごとに読み込む**（`storage_screen.dart`）：内訳・端末・
+  整理するの3つが別々に読み込み中・失敗・一部だけ・やり直しを持つ（1つの
+  読み込み中の印で全体を待つと、作品の多い端末で本文が20秒出ず、1つの失敗で
+  いつまでも出なかった）。前の結果を覚えて再訪ではすぐ出すので、大きさを
+  変える処理（削除・ゴミ箱を空にする等）を足したら
+  `StorageInfoService().invalidate()`を呼ぶこと。集計中の欄は結果と同じ高さに
+  する（下の一覧が跳ねる）。確認のダイアログを開く直前に画面をsetStateで
+  作り直さないこと（開いたダイアログがキーボードのフォーカスを受け取らず、
+  Enterが後ろのボタンへ届いた）。グラフの配色・棒は他のセッションの作り
+  （`storage_chart_colors_test`ほか）が正。
 - **ペンの線は、押して線を始めた指（`_strokePointer`）だけが描く**：
   `DrawingEngine.continueStroke`は線が無ければ新しく始めるので、押した時点で
   描かなかった指（手のひら除外・フィルターの調整中・ペンのボタン・ロック）の
