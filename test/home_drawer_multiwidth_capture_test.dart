@@ -134,7 +134,7 @@ void main() {
       await tester.tap(receivedMenu);
       await tester.pumpAndSettle();
       await shot('08-shared-received-menu');
-      await tester.pageBack();
+      await tester.tapAt(Offset(5, height - 130.0));
       await tester.pump(const Duration(milliseconds: 350));
       await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
       await tester.pump(const Duration(milliseconds: 500));
@@ -147,7 +147,7 @@ void main() {
       await tester.tap(outgoingMenu);
       await tester.pumpAndSettle();
       await shot('09-shared-created-menu');
-      await tester.pageBack();
+      await tester.tapAt(Offset(5, height - 130.0));
       await tester.pump(const Duration(milliseconds: 350));
       await tester.tap(find.byKey(const Key('sharedReceivedFilter')));
       await tester.pump(const Duration(milliseconds: 250));
