@@ -81,7 +81,7 @@ export async function pulseMyPlazaMissions(event:APIGatewayProxyEventV2) {
       ":monthSeconds":next.monthSeconds,":dayMask":next.dayMask,
       ":weekMask":next.weekMask,":monthMask":next.monthMask,
       ":session":next.sessionId,":pulse":next.lastPulseMs,
-      ":old":state.version,
+      ...(raw ? {":old":state.version} : {}),
     };
     try {
       await ddb.send(new UpdateCommand({
