@@ -278,169 +278,151 @@ class CommunityWorkCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 3),
                       ],
-                      // A narrow right-hand rail puts the context menu beside
-                      // the title and the small bookmark directly beneath it.
-                      // Neither action consumes a separate bottom row.
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  isUnavailable
-                                      ? CommunityPlazaLabels.of(context)
-                                            .unavailablePlaceholder
-                                      : isMuted
-                                      ? CommunityPlazaLabels.of(context)
-                                            .mutedPlaceholder
-                                      : work.title,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: 'Kuramubon',
-                                    fontFamilyFallback: kHeadingFontFallback,
-                                    color: textColor,
-                                  ),
-                                ),
-                                if (!obscured) ...[
-                                  const SizedBox(height: 4),
-                                  Semantics(
-                                    button: onAuthorTap != null,
-                                    label: author,
-                                    child: GestureDetector(
-                                      key: ValueKey(
-                                        'community-author-${work.id}',
-                                      ),
-                                      onTap: onAuthorTap,
-                                      behavior: HitTestBehavior.opaque,
-                                      child: ConstrainedBox(
-                                        constraints: BoxConstraints(
-                                          minHeight: onAuthorTap == null
-                                              ? 0
-                                              : 48,
-                                        ),
-                                        child: Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: ExcludeSemantics(
-                                            child: Text(
-                                              author,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color: detailColor,
-                                                fontFamily: 'Kuramubon',
-                                                fontFamilyFallback:
-                                                    kHeadingFontFallback,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
+                      // Full-width title and author. The final line keeps
+                      // count, bookmark action and menu left-to-right.
+                      Text(
+                        isUnavailable
+                            ? CommunityPlazaLabels.of(context)
+                                .unavailablePlaceholder
+                            : isMuted
+                                ? CommunityPlazaLabels.of(context)
+                                    .mutedPlaceholder
+                                : work.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                          color: textColor,
+                        ),
+                      ),
+                      if (!obscured) ...[
+                        const SizedBox(height: 4),
+                        Semantics(
+                          button: onAuthorTap != null,
+                          label: author,
+                          child: GestureDetector(
+                            key: ValueKey('community-author-${work.id}'),
+                            onTap: onAuthorTap,
+                            behavior: HitTestBehavior.opaque,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: onAuthorTap == null ? 0 : 48,
+                              ),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: ExcludeSemantics(
+                                  child: Text(
+                                    author,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: detailColor,
+                                      fontFamily: 'Kuramubon',
+                                      fontFamilyFallback: kHeadingFontFallback,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (!isUnavailable) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          key: ValueKey('community-card-actions-${work.id}'),
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (!obscured)
+                              Expanded(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (constraints.maxWidth >= 160) ...[
                                       Icon(
                                         Icons.bookmarks_outlined,
                                         size: 13,
                                         color: detailColor,
                                       ),
                                       const SizedBox(width: 2),
-                                      Flexible(
-                                        child: count(
-                                          l10n.communityRankingSortBookmarks,
-                                          bookmarks,
-                                        ),
-                                      ),
                                     ],
+                                    Flexible(
+                                      child: count(
+                                        l10n.communityRankingSortBookmarks,
+                                        bookmarks,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else
+                              const Spacer(),
+                            if (!obscured)
+                              Semantics(
+                                button: true,
+                                label: isBookmarked
+                                    ? l10n.communityWorkDetailBookmarkRemove
+                                    : l10n.communityWorkDetailBookmarkAdd,
+                                toggled: isBookmarked,
+                                child: IconButton(
+                                  key: ValueKey('community-bookmark-${work.id}'),
+                                  tooltip: isBookmarked
+                                      ? l10n.communityWorkDetailBookmarkRemove
+                                      : l10n.communityWorkDetailBookmarkAdd,
+                                  constraints: const BoxConstraints.tightFor(
+                                    width: 48,
+                                    height: 48,
                                   ),
-                                ],
-                              ],
-                            ),
-                          ),
-                          if (!isUnavailable)
-                            SizedBox(
-                              width: 48,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (onMuteToggle != null)
-                                    SizedBox(
-                                      width: 48,
-                                      height: 48,
-                                      child: PopupMenuButton<String>(
-                                        key: ValueKey(
-                                          'communityMuteMenu-${work.id}',
-                                        ),
-                                        padding: EdgeInsets.zero,
-                                        iconSize: 22,
-                                        tooltip: isMuted
-                                            ? CommunityPlazaLabels.of(context)
-                                                  .unmuteWork
-                                            : CommunityPlazaLabels.of(context)
-                                                  .muteWork,
-                                        icon: Icon(
-                                          Icons.more_vert,
-                                          color: textColor,
-                                        ),
-                                        onSelected: (_) => onMuteToggle!(),
-                                        itemBuilder: (_) => [
-                                          PopupMenuItem(
-                                            value: isMuted ? 'unmute' : 'mute',
-                                            child: Text(
-                                              isMuted
-                                                  ? CommunityPlazaLabels.of(
-                                                      context,
-                                                    ).unmuteWork
-                                                  : CommunityPlazaLabels.of(
-                                                      context,
-                                                    ).muteWork,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  if (!obscured)
-                                    Semantics(
-                                      button: true,
-                                      label: isBookmarked
-                                          ? l10n.communityWorkDetailBookmarkRemove
-                                          : l10n.communityWorkDetailBookmarkAdd,
-                                      toggled: isBookmarked,
-                                      child: IconButton(
-                                        key: ValueKey(
-                                          'community-bookmark-${work.id}',
-                                        ),
-                                        tooltip: isBookmarked
-                                            ? l10n.communityWorkDetailBookmarkRemove
-                                            : l10n.communityWorkDetailBookmarkAdd,
-                                        constraints:
-                                            const BoxConstraints.tightFor(
-                                              width: 48,
-                                              height: 48,
-                                            ),
-                                        iconSize: 22,
-                                        padding: EdgeInsets.zero,
-                                        onPressed: onBookmarkToggle,
-                                        icon: Icon(
-                                          isBookmarked
-                                              ? Icons.bookmark
-                                              : Icons.bookmark_border,
-                                          color: detailColor,
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                                  iconSize: 22,
+                                  padding: EdgeInsets.zero,
+                                  onPressed: onBookmarkToggle,
+                                  icon: Icon(
+                                    isBookmarked
+                                        ? Icons.bookmark
+                                        : Icons.bookmark_border,
+                                    color: detailColor,
+                                  ),
+                                ),
                               ),
-                            ),
-                        ],
-                      ),
+                            if (onMuteToggle != null)
+                              SizedBox(
+                                width: 48,
+                                height: 48,
+                                child: PopupMenuButton<String>(
+                                  key: ValueKey('communityMuteMenu-${work.id}'),
+                                  padding: EdgeInsets.zero,
+                                  iconSize: 22,
+                                  tooltip: isMuted
+                                      ? CommunityPlazaLabels.of(context)
+                                          .unmuteWork
+                                      : CommunityPlazaLabels.of(context)
+                                          .muteWork,
+                                  icon: Icon(
+                                    Icons.more_vert,
+                                    color: textColor,
+                                  ),
+                                  onSelected: (_) => onMuteToggle!(),
+                                  itemBuilder: (_) => [
+                                    PopupMenuItem(
+                                      value: isMuted ? 'unmute' : 'mute',
+                                      child: Text(
+                                        isMuted
+                                            ? CommunityPlazaLabels.of(context)
+                                                .unmuteWork
+                                            : CommunityPlazaLabels.of(context)
+                                                .muteWork,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
