@@ -44,6 +44,7 @@ jobs:
       - name: Check horizontal card actions and home navigation smoke
         run: |
           flutter test test/community_work_card_layout_test.dart --plain-name "card shows title, author, then count / bookmark / menu in one row" --reporter expanded
+          flutter test test/community_work_card_layout_test.dart --plain-name "compact 320dp cards abbreviate only the visible total" --reporter expanded
           flutter test test/home_entry_navigation_test.dart --plain-name "home back arrow, right drawer and scroll-to-top obey layout" --reporter expanded
       - name: Run icon tabs and saved-work regressions
         run: |
