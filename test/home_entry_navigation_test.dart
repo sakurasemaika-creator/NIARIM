@@ -84,7 +84,11 @@ void main() {
     final tab = find.byKey(ValueKey('home_tab_$index'));
     await tester.ensureVisible(tab);
     await tester.tap(tab);
-    await tester.pumpAndSettle();
+    // Exported-file scanning is genuinely asynchronous and can keep a
+    // progress indicator alive; bounded pumps avoid waiting for infinity.
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 80)));
+    await tester.pump(const Duration(milliseconds: 350));
     expect(tester.widget<Semantics>(tab).properties.selected, isTrue);
   }
 
@@ -486,7 +490,7 @@ void main() {
           selectionColor: Colors.black,
         ),
       ]) {
-        final l10n = await open(tester, theme: theme);
+        await open(tester, theme: theme);
         final scheme = Theme.of(tester.element(find.byType(HomeScreen)))
             .colorScheme;
         for (final index in [0, 1]) {
