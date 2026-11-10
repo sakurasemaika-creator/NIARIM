@@ -400,17 +400,17 @@ void main() {
     );
     expect(tester.getCenter(drawerIcon).dy, lessThan(leftCenter.dy));
 
-    await switchTab(tester, 2);
+    await switchTab(tester, 1);
     expect(backFinder, findsOneWidget);
     expect(find.byType(FloatingActionButton), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('every drawer destination returns to the same bookmarked tab', (
+  testWidgets('every drawer destination returns to the same exported works tab', (
     tester,
   ) async {
     final l10n = await open(tester);
-    await switchTab(tester, 2);
+    await switchTab(tester, 1);
     for (final (target, path) in [
       (find.text(l10n.homeTabShared), '/shared'),
       (find.text(l10n.homeTabTrash), '/trash'),
@@ -459,26 +459,25 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         tester
-            .widget<Semantics>(find.byKey(const ValueKey('home_tab_2')))
+            .widget<Semantics>(find.byKey(const ValueKey('home_tab_1')))
             .properties
             .selected,
         isTrue,
       );
     }
-    await tester.tap(
-      find.widgetWithText(OutlinedButton, l10n.communityScreenTitle),
-    );
+    // Community remains a separate route; the home library stays on Works.
+    appRouter.push('/community');
     await tester.pumpAndSettle();
     expect(find.byType(CommunityScreen), findsOneWidget);
     expect(appRouter.canPop(), isTrue);
     appRouter.pop();
     await tester.pumpAndSettle();
-    expect(find.text(l10n.homeBookmarkedEmptyTitle), findsOneWidget);
+    expect(tester.widget<Semantics>(find.byKey(const ValueKey('home_tab_1'))).properties.selected, isTrue);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets(
-    'home tabs and bookmark entry follow the configured accent without correction',
+    'the two home tabs follow the configured accent without correction',
     (tester) async {
       for (final theme in [
         AppThemePreset.defaultLight,
@@ -490,7 +489,7 @@ void main() {
         final l10n = await open(tester, theme: theme);
         final scheme = Theme.of(tester.element(find.byType(HomeScreen)))
             .colorScheme;
-        for (final index in [0, 1, 2]) {
+        for (final index in [0, 1]) {
           await switchTab(tester, index);
           final labels = tester.widgetList<Text>(
             find.descendant(
@@ -504,17 +503,8 @@ void main() {
             reason: 'selected tab $index on ${theme.id}',
           );
         }
-        final action = tester.widget<OutlinedButton>(
-          find.widgetWithText(OutlinedButton, l10n.communityScreenTitle),
-        );
-        final foreground =
-            action.style?.foregroundColor?.resolve({}) ??
-            Theme.of(tester.element(find.byType(HomeScreen)))
-                .colorScheme
-                .primary;
-        expect(foreground, scheme.primary, reason: 'bookmark gallery action');
-        final icon = tester.widget<Icon>(find.byIcon(Icons.bookmark_border));
-        expect(icon.color, scheme.primary, reason: 'bookmark empty-state icon');
+        expect(find.byKey(const ValueKey('home_tab_2')), findsNothing,
+            reason: 'bookmarks now belong to the community plaza');
       }
       await tester.pumpWidget(const SizedBox.shrink());
     },
@@ -666,8 +656,6 @@ void main() {
         await capture(tester, 'projects-empty-$suffix');
         await switchTab(tester, 1);
         await capture(tester, 'works-empty-$suffix');
-        await switchTab(tester, 2);
-        await capture(tester, 'bookmarks-empty-$suffix');
         await switchTab(tester, 0);
         await tester.tap(find.byIcon(Icons.search));
         await tester.pumpAndSettle();
