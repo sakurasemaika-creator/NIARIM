@@ -154,6 +154,35 @@ void main() {
     community.dispose();
   });
 
+  testWidgets('approved detail embeds the official YouTube player surface',
+      (tester) async {
+    final client = MockClient((request) async => http.Response(
+      jsonEncode({'status': 'available'}), 200,
+      headers: {'content-type': 'application/json'},
+    ));
+    final community = CommunityService(api: CommunityApi(NiarimApiClient(
+      baseUrl: 'https://example.invalid',
+      httpClient: client,
+      maxGetRetries: 0,
+      retryBackoff: Duration.zero,
+    )));
+    final preview = CommunityPreviewService();
+    community.applyServerWork(_work());
+    await tester.pumpWidget(_host(
+      community: community,
+      preview: preview,
+      home: const CommunityWorkDetailScreen(workId: _id),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityYoutubePlayer), findsOneWidget);
+    expect(find.byKey(const Key('mockYouTube-$_id-false')), findsOneWidget);
+    expect(find.text(_secretTitle), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    preview.dispose();
+    community.dispose();
+  });
+
   testWidgets('detail hides cached non-owner metadata until freshly approved',
       (tester) async {
     final client = MockClient((request) async => http.Response(
