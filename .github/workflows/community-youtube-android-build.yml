@@ -14,6 +14,8 @@ on:
       - lib/screens/community/community_work_detail_screen.dart
       - test/community_shorts_youtube_playback_test.dart
       - test/community_playback_privacy_actions_test.dart
+      - test/home_bookmark_youtube_playback_test.dart
+      - lib/screens/home/home_screen.dart
   workflow_dispatch:
 
 permissions:
@@ -47,7 +49,8 @@ jobs:
           flutter test --no-pub \
             test/community_playback_privacy_actions_test.dart \
             test/community_shorts_youtube_playback_test.dart \
-            test/community_shorts_live_state_test.dart
+            test/community_shorts_live_state_test.dart \
+            test/home_bookmark_youtube_playback_test.dart
       - name: Compile Android APK with the real YouTube WebView
         run: |
           flutter build apk --debug --no-pub
