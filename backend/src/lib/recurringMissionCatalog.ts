@@ -15,14 +15,14 @@ export interface RecurringMission {
   coins: number;
 }
 
-export const RECURRING_MISSION_CATALOG_VERSION = "recurring-login-v1";
+export const RECURRING_MISSION_CATALOG_VERSION = "recurring-login-v2";
 export const RECURRING_MISSIONS: readonly RecurringMission[] = Object.freeze([
-  { id: "visit_week_3", period: "week", bit: 0, requiredDays: 3, coins: 15 },
-  { id: "visit_week_5", period: "week", bit: 1, requiredDays: 5, coins: 40 },
-  { id: "visit_week_7", period: "week", bit: 2, requiredDays: 7, coins: 90 },
-  { id: "visit_month_10", period: "month", bit: 0, requiredDays: 10, coins: 100 },
-  { id: "visit_month_20", period: "month", bit: 1, requiredDays: 20, coins: 240 },
-  { id: "visit_month_25", period: "month", bit: 2, requiredDays: 25, coins: 400 },
+  { id: "visit_week_3", period: "week", bit: 0, requiredDays: 3, coins: 3 },
+  { id: "visit_week_5", period: "week", bit: 1, requiredDays: 5, coins: 6 },
+  { id: "visit_week_7", period: "week", bit: 2, requiredDays: 7, coins: 10 },
+  { id: "visit_month_10", period: "month", bit: 0, requiredDays: 10, coins: 12 },
+  { id: "visit_month_20", period: "month", bit: 1, requiredDays: 20, coins: 20 },
+  { id: "visit_month_25", period: "month", bit: 2, requiredDays: 25, coins: 30 },
 ]);
 
 export const RECURRING_MISSION_STATE_TYPE = "RECURRING_MISSIONS_V1";
