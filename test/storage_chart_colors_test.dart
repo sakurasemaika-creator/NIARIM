@@ -34,6 +34,24 @@ void main() {
       final scheme = service.themeData.colorScheme;
       final colors = sliceColorsOf(scheme);
       expect(colors.length, 6);
+
+      // 6色の色相と彩度はアクセントと完全に同じ。
+      // 明度以外の成分が変更されると、色の統一感が失われる。
+      final accent = HSLColor.fromColor(scheme.primary);
+      for (var i = 0; i < colors.length; i++) {
+        expect(
+          colors[i],
+          accent.withLightness(0.36 + 0.085 * i).toColor(),
+          reason: '${preset.id}: $i番目が明度以外も変更している',
+        );
+        if (i > 0) {
+          expect(
+            HSLColor.fromColor(colors[i]).lightness,
+            greaterThan(HSLColor.fromColor(colors[i - 1]).lightness),
+            reason: '${preset.id}: 明度が順に明るくなっていない',
+          );
+        }
+      }
       for (var i = 0; i < colors.length; i++) {
         for (var j = i + 1; j < colors.length; j++) {
           expect(
