@@ -114,9 +114,9 @@ class CommunityWorkCard extends StatelessWidget {
         ),
       ),
     );
-    Widget count(String label, String value) => Semantics(
+    Widget count(String label, String value, {String? fullValue}) => Semantics(
       key: ValueKey('community-bookmark-count-${work.id}'),
-      label: '$label: $value',
+      label: '$label: ${fullValue ?? value}',
       child: ExcludeSemantics(
         child: Text(
           value,
@@ -354,7 +354,12 @@ class CommunityWorkCard extends StatelessWidget {
                                     Flexible(
                                       child: count(
                                         l10n.communityRankingSortBookmarks,
-                                        bookmarks,
+                                        constraints.maxWidth < 160 &&
+                                                work.bookmarkCount >= 1000 &&
+                                                work.bookmarkCount < 10000
+                                            ? '${(work.bookmarkCount ~/ 100) / 10}K'
+                                            : bookmarks,
+                                        fullValue: bookmarks,
                                       ),
                                     ),
                                   ],
