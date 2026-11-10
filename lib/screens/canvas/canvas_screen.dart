@@ -3828,9 +3828,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
       final before = saves.latestSaveOf(widget.projectId);
       await context.push('/save-tree/${widget.projectId}');
       if (!mounted) return;
-      // 保存せずに戻った（取り消した・保存に失敗した）ときは一覧へ移らず、
-      // キャンバスに残る。
-      if (saves.latestSaveOf(widget.projectId) == before) return;
+      // 保存せずに戻った（取り消した・保存に失敗した・保存を消しただけ）
+      // ときは一覧へ移らず、キャンバスに残る。
+      if (!saves.savedSince(widget.projectId, before)) return;
     }
     if (mounted) context.go('/home');
   }

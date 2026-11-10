@@ -271,6 +271,14 @@ class SaveTreeService extends ChangeNotifier {
     return latest;
   }
 
+  /// [before]（保存の画面へ移る前の[latestSaveOf]）より新しい保存があるか。
+  /// 時刻が「変わった」かではなく「新しくなった」かで見る：一番新しい保存を
+  /// 消す・退避すると、保存していなくても一番新しい時刻は前の保存へ変わる。
+  bool savedSince(String projectId, DateTime? before) {
+    final latest = latestSaveOf(projectId);
+    return latest != null && (before == null || latest.isAfter(before));
+  }
+
   List<SaveNode> getArchivedNodes(String projectId) =>
       List.unmodifiable(_archivedByProject[projectId] ?? []);
 

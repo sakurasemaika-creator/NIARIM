@@ -957,29 +957,46 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (_isPreviewFullscreen) {
       final l10n = AppLocalizations.of(context)!;
       final theme = context.watch<ThemeService>().current;
-      return Scaffold(
-        // 映写モードの背景も固定の黒ではなく、テーマのパネル背景色に連動
-        // させる（それでも大抵は暗色系のためチェック目的の集中は保たれる）。
-        backgroundColor: theme.panelBgColor,
-        body: Listener(
-          onPointerDown: (_) =>
-              context.read<ProjectService>().pingWorkActivity(),
-          child: SafeArea(
-            child: Column(
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    icon: Icon(Icons.fullscreen_exit, color: theme.textColor),
-                    tooltip: l10n.timelineFullscreenPreviewCloseTooltip,
-                    onPressed: () =>
-                        setState(() => _isPreviewFullscreen = false),
-                  ),
+      // 「戻る」は全画面を閉じるだけにする（タイムラインからは出ない）。
+      // キャンバスからgo()で来たタイムラインは履歴が1枚だけで、Navigatorは
+      // PopScopeを呼ばずにアプリを閉じるので、BackButtonListenerで先に
+      // 受ける。PopScope(canPop: false)は、予測型「戻る」でOSが戻る操作を
+      // アプリへ渡すようにするため。
+      return BackButtonListener(
+        onBackButtonPressed: () async => _closePreviewFullscreenByBack(),
+        child: PopScope<Object?>(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) _closePreviewFullscreenByBack();
+          },
+          child: Scaffold(
+            // 映写モードの背景も固定の黒ではなく、テーマのパネル背景色に連動
+            // させる（それでも大抵は暗色系のためチェック目的の集中は保たれる）。
+            backgroundColor: theme.panelBgColor,
+            body: Listener(
+              onPointerDown: (_) =>
+                  context.read<ProjectService>().pingWorkActivity(),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.fullscreen_exit,
+                          color: theme.textColor,
+                        ),
+                        tooltip: l10n.timelineFullscreenPreviewCloseTooltip,
+                        onPressed: () =>
+                            setState(() => _isPreviewFullscreen = false),
+                      ),
+                    ),
+                    _buildPreview(),
+                    _buildSeekBar(),
+                    _buildPlaybackControls(),
+                  ],
                 ),
-                _buildPreview(),
-                _buildSeekBar(),
-                _buildPlaybackControls(),
-              ],
+              ),
             ),
           ),
         ),
@@ -1591,10 +1608,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 隅の操作に重ならない大きさにする（絵に重ねると確かめたい絵が隠れる）。
   /// 操作の場所を絵の左右に空けるか上下に空けるかは、絵を大きく出せる方に
   /// する（縦長の絵は左右、横長の絵は上下）。ループの切り替えは置かない
-  /// （再生はいつも先頭へ戻って続く）。
+  /// （再生はいつも先頭へ戻って続く）。全画面表示の中（[inFullscreen]）では
+  /// 全画面のボタンを出さず、PC/DeXの幅の上限も掛けずに目一杯まで拡大する。
   Widget _buildPreviewBand({
     required double aspect,
-    required bool fullscreenButton,
+    required bool inFullscreen,
   }) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
@@ -1611,8 +1629,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           (height - gutter * 2) * aspect,
         );
         var pictureWidth = math.max(0.0, math.max(besideWidth, aboveWidth));
-        // PC/DeXでは横に間延びしないよう上限を設ける。
-        if (isWideScreen(context)) {
+        // PC/DeXの通常の欄では横に間延びしないよう上限を設ける。
+        if (!inFullscreen && isWideScreen(context)) {
           pictureWidth = math.min(pictureWidth, 900);
         }
         final pictureHeight = aspect > 0 ? pictureWidth / aspect : 0.0;
@@ -1652,7 +1670,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
               ),
             ),
-            if (fullscreenButton)
+            if (!inFullscreen)
               Positioned(
                 right: edge,
                 top: edge,
@@ -1678,13 +1696,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  /// 全画面表示中の「戻る」：全画面を閉じてタイムラインへ戻る。上に
+  /// ダイアログ等が開いているときは、それが「戻る」を受ける（falseを返す）。
+  bool _closePreviewFullscreenByBack() {
+    if (!mounted || !_isPreviewFullscreen) return false;
+    if (!(ModalRoute.of(context)?.isCurrent ?? false)) return false;
+    setState(() => _isPreviewFullscreen = false);
+    return true;
+  }
+
   /// 全画面プレビュー表示（isPreviewFullscreen）専用。周囲に空きがあれば
   /// 目一杯まで拡大する。
   Widget _buildPreview() => Expanded(
     flex: 3,
     child: _buildPreviewBand(
       aspect: _previewAspect(context.watch<ProjectService>()),
-      fullscreenButton: false,
+      inFullscreen: true,
     ),
   );
 
@@ -1739,7 +1766,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             SizedBox(
               height: visiblePreviewHeight,
               width: double.infinity,
-              child: _buildPreviewBand(aspect: aspect, fullscreenButton: true),
+              child: _buildPreviewBand(aspect: aspect, inFullscreen: false),
             ),
             // ヒット領域はシークバー等の他の操作と混同しないよう、見た目の
             // グリップより広めに取っている（ドラッグ開始位置が少しずれても
@@ -7016,9 +7043,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       final before = saves.latestSaveOf(widget.projectId);
       await context.push('/save-tree/${widget.projectId}?entry=timeline');
       if (!mounted) return;
-      // 保存せずに戻った（取り消した・保存に失敗した）ときは一覧へ移らず、
-      // タイムラインに残る。
-      if (saves.latestSaveOf(widget.projectId) == before) return;
+      // 保存せずに戻った（取り消した・保存に失敗した・保存を消しただけ）
+      // ときは一覧へ移らず、タイムラインに残る。
+      if (!saves.savedSince(widget.projectId, before)) return;
     }
     if (mounted) context.go('/home');
   }

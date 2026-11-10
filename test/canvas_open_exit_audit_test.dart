@@ -302,4 +302,61 @@ void main() {
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  // 保存の画面で一番新しい保存を消しただけで戻るのも「保存した」ではない
+  // （一番新しい保存の時刻は変わるが、前より新しくはならない）。キャンバスも
+  // タイムラインも残る。
+  for (final (path, type) in const [
+    ('canvas', CanvasScreen),
+    ('timeline', TimelineScreen),
+  ]) {
+    testWidgets('deleting the newest save and going back stays on the $path', (
+      tester,
+    ) async {
+      final s = await open(tester);
+      final saves = tester
+          .element(find.byType(HomeScreen))
+          .read<SaveTreeService>();
+      Future<String> saveSlot(int slot) async {
+        final node = await tester.runAsync(
+          () => saves.saveToSlot(
+            projectId: s.id,
+            slotIndex: slot,
+            project: s.service.projects.singleWhere((p) => p.id == s.id),
+            scenes: s.service.scenesOf(s.id),
+            tileManager: s.service.tileManagerOf(s.id),
+          ),
+        );
+        return node!.id;
+      }
+
+      await saveSlot(0);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 5)),
+      );
+      final newest = await saveSlot(1);
+      appRouter.push('/$path/${s.id}');
+      await settleIo(tester, 10);
+      expect(find.byType(type), findsOneWidget);
+
+      await tester.tap(find.byTooltip('プロジェクト一覧に戻る'));
+      await settleIo(tester, 3);
+      await tester.tap(find.widgetWithText(FilledButton, '保存して戻る'));
+      await settleIo(tester, 6);
+      expect(find.byType(SaveManagementScreen), findsOneWidget);
+      final before = saves.latestSaveOf(s.id);
+      await tester.runAsync(() => saves.deleteNode(s.id, newest));
+      // 一番新しい保存の時刻は前の保存の時刻へ戻った。
+      expect(saves.latestSaveOf(s.id)!.isBefore(before!), isTrue);
+      GoRouter.of(tester.element(find.byType(Scaffold).last)).pop();
+      await settleIo(tester, 6);
+      expect(find.byType(SaveManagementScreen), findsNothing);
+      expect(find.byType(type), findsOneWidget);
+      expect(
+        ModalRoute.of(tester.element(find.byType(type)))!.isCurrent,
+        isTrue,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
