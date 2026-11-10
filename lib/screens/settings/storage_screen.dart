@@ -218,82 +218,98 @@ class _StorageScreenState extends State<StorageScreen> {
     // Match the toolbar's ordinary (unselected) icon fill, not its separate
     // contrast outline. ThemeService builds onSurface from the appearance.
     final chartOutline = scheme.onSurface;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final pie = SizedBox(
+      width: 120,
+      height: 120,
+      child: total <= 0
+          ? Center(
+              child: Icon(
+                Icons.donut_large,
+                size: 48,
+                color: scheme.outlineVariant,
+              ),
+            )
+          : CustomPaint(
+              painter: _PieChartPainter(slices, outlineColor: chartOutline),
+            ),
+    );
+    final legend = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(
-          width: 120,
-          height: 120,
-          child: total <= 0
-              ? Center(
-                  child: Icon(
-                    Icons.donut_large,
-                    size: 48,
-                    color: Theme.of(context).colorScheme.outlineVariant,
-                  ),
-                )
-              : CustomPaint(
-                  painter: _PieChartPainter(slices, outlineColor: chartOutline),
-                ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (final s in slices)
-                if (s.value > 0)
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: showBars ? 5 : 2,
+        for (final s in slices)
+          if (s.value > 0)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: showBars ? 5 : 2),
+              child: Row(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: s.color,
+                      shape: BoxShape.circle,
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: showBars
+                        ? _storageAmountBar(
+                            key: Key('storageBreakdownBar_${s.label}'),
                             color: s.color,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: showBars
-                              ? _storageAmountBar(
-                                  key: Key('storageBreakdownBar_${s.label}'),
-                                  color: s.color,
-                                  ratio: largest > 0 ? s.value / largest : 0,
-                                  label: s.label,
-                                  bytes: s.value,
-                                  scheme: scheme,
-                                )
-                              : Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        s.label,
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      formatStorageBytes(s.value),
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
+                            ratio: largest > 0 ? s.value / largest : 0,
+                            label: s.label,
+                            bytes: s.value,
+                            scheme: scheme,
+                          )
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  s.label,
+                                  style: const TextStyle(fontSize: 12),
                                 ),
-                        ),
-                      ],
-                    ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                formatStorageBytes(s.value),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
-            ],
-          ),
-        ),
+                ],
+              ),
+            ),
       ],
+    );
+
+    // At phone widths, forcing six named values beside a 120px circle leaves
+    // too little room for localized labels. Give the in-bar text the full
+    // available width without removing the pie. Larger screens stay side-by-side.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (showBars && constraints.maxWidth < 520) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(alignment: Alignment.centerLeft, child: pie),
+              const SizedBox(height: 10),
+              legend,
+            ],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            pie,
+            const SizedBox(width: 16),
+            Expanded(child: legend),
+          ],
+        );
+      },
     );
   }
 
