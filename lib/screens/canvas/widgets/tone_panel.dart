@@ -15,7 +15,6 @@ import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
-import '../../../config/accent_text_theme.dart';
 
 /// トーンの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作トーン・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -260,13 +259,10 @@ class _TonePanelState extends State<TonePanel> {
                           key: ValueKey(tone.id),
                           dense: true,
                           selected: isSelected,
-                          leading: Icon(
-                            Icons.texture,
-                            size: 16,
-                            color: isSelected
-                                ? AccentTextTheme.of(context)
-                                : null,
-                          ),
+                          // 色は一覧の行の決まりに任せる（選んだ行は選択色の
+                          // 上の文字色。差し色を直接渡すと、選択色と同じ色の
+                          // テーマでアイコンが見えなくなる）。
+                          leading: const Icon(Icons.texture, size: 16),
                           title: Text(
                             tone.name,
                             style: const TextStyle(

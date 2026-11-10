@@ -46,6 +46,7 @@ import '../community/community_error_text.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/responsive_tile_defaults.dart';
+import '../../utils/tolerant_preferences.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -114,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen>
   Future<void> _loadProjectViewMode() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getString(_projectViewModeKey);
+      final saved = prefs.readString(_projectViewModeKey);
       if (!mounted || saved == null) return;
       for (final mode in ProjectViewMode.values) {
         if (mode.name == saved) {

@@ -13,7 +13,6 @@ import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
 import '../../../config/font_fallback.dart';
-import '../../../config/accent_text_theme.dart';
 
 /// ペンツール長押し・上スワイプで表示されるサブツールタブUI
 /// ブラシ / トーン / スタンプ
@@ -165,14 +164,13 @@ class _BrushTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final brush = brushes[index];
         final isSelected = current?.id == brush.id;
+        // 使っているブラシは、いま描く太さ・不透明度を出す。
+        final shown = isSelected ? current! : brush;
         return ListTile(
           dense: true,
           selected: isSelected,
-          leading: Icon(
-            Icons.brush,
-            size: 16,
-            color: isSelected ? AccentTextTheme.of(context) : null,
-          ),
+          // 色は一覧の行の決まりに任せる（選んだ行は選択色の上の文字色）。
+          leading: const Icon(Icons.brush, size: 16),
           title: Text(
             brush.name,
             style: const TextStyle(
@@ -182,7 +180,7 @@ class _BrushTab extends StatelessWidget {
             ),
           ),
           subtitle: Text(
-            l10n.penSubToolBrushSizeOpacity(brush.size.round(), brush.opacity),
+            l10n.penSubToolBrushSizeOpacity(shown.size.round(), shown.opacity),
             style: TextStyle(fontSize: 10),
           ),
           trailing: GestureDetector(

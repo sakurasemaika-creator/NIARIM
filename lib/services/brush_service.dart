@@ -25,6 +25,21 @@ class BrushService extends ChangeNotifier {
   static const _currentIdKey = 'brushes_current_id';
   static const _foldersKey = 'brush_folders';
 
+  /// 組み込みブラシで、利用者がキャンバスから変えた太さ・不透明度。
+  ///
+  /// 組み込みブラシの定義は起動のたびに最新へそろえる（[init]）ので、
+  /// 利用者が変えた値は定義と分けて覚える。こうしておくと、触っていない
+  /// 組み込みブラシは後の版で既定の太さが変わればそれに従い、触った
+  /// ブラシだけが利用者の値を保つ。自作・複製のブラシはブラシ自身に書く。
+  static const _builtInWorkingKey = 'brush_builtin_working_values';
+  final Map<String, ({double? size, int? opacity})> _builtInWorking = {};
+
+  // スライダーは動かしている間ずっと値を知らせる。そのたびに全ブラシを
+  // 保存すると設定ファイル全体の書き込みが1秒に数十回走るので、覚えた値は
+  // 操作の終わり（[commitRememberedValues]）にまとめて保存する。
+  bool _rememberListDirty = false;
+  bool _rememberWorkingDirty = false;
+
   final List<Brush> _brushes = [];
   final List<BrushFolder> _folders = [];
   Brush? _currentBrush;
@@ -848,9 +863,10 @@ class BrushService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.readStringList(_prefsKey);
     _brushes.clear();
+    final workingPruned = _readBuiltInWorking(prefs);
     if (raw == null) {
       // 初回起動：初期ブラシ一式を投入して即座に永続化する
-      _brushes.addAll(_defaultBrushes());
+      _brushes.addAll(_defaultBrushes().map(_withWorkingValues));
       await _persist();
     } else {
       // 1件ずつ読む。壊れた1件（途中で切れた・項目の欠けた保存）で全体を
@@ -891,10 +907,12 @@ class BrushService extends ChangeNotifier {
       for (var i = 0; i < _brushes.length; i++) {
         final stored = _brushes[i], definition = defaults[_brushes[i].id];
         if (definition == null) continue;
-        final current = definition.copyWith(
-          isFavorite: stored.isFavorite,
-          folderId: stored.folderId,
-          tags: stored.tags,
+        final current = _withWorkingValues(
+          definition.copyWith(
+            isFavorite: stored.isFavorite,
+            folderId: stored.folderId,
+            tags: stored.tags,
+          ),
         );
         if (jsonEncode(current.toJson()) != jsonEncode(stored.toJson())) {
           _brushes[i] = current;
@@ -929,6 +947,7 @@ class BrushService extends ChangeNotifier {
         await _persist();
       }
     }
+    if (workingPruned) await _persistBuiltInWorking();
     final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();
     if (foldersRaw != null) {
@@ -962,6 +981,10 @@ class BrushService extends ChangeNotifier {
   }
 
   Future<void> _persist() async {
+    final working = _rememberWorkingDirty;
+    _rememberListDirty = false;
+    _rememberWorkingDirty = false;
+    if (working) await _persistBuiltInWorking();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
       _prefsKey,
@@ -990,34 +1013,160 @@ class BrushService extends ChangeNotifier {
   void selectBrush(String id) {
     final brush = _brushes.where((b) => b.id == id).firstOrNull;
     if (brush == null) return;
+    // ignore: unawaited_futures
+    commitRememberedValues();
     _currentBrush = brush;
     _preloadTextureIfNeeded(_currentBrush);
     notifyListeners();
     _persistCurrent();
   }
 
-  void updateCurrentBrushSize(double size) {
-    if (_currentBrush != null) {
-      _currentBrush = _currentBrush!.copyWith(size: size);
-      notifyListeners();
+  /// 使っているブラシの太さを変える。
+  ///
+  /// [remember]が真（キャンバスのスライダー・数値入力）なら、その値を
+  /// ブラシごとに覚える：別のブラシへ切り替えて戻っても、起動し直しても
+  /// 同じ太さで、一覧にも出る。早替えツールや自動操作の再生のように
+  /// 一時的に太さを当てるだけのときは偽にする（そのブラシで覚えている
+  /// 値は書き換えない）。
+  void updateCurrentBrushSize(double size, {bool remember = true}) {
+    final current = _currentBrush;
+    if (current == null || !size.isFinite || size <= 0) return;
+    _currentBrush = current.copyWith(size: size);
+    if (remember) _rememberWorkingValues(current.id, size: size);
+    notifyListeners();
+  }
+
+  /// 使っているブラシの不透明度を変える。[remember]は
+  /// [updateCurrentBrushSize]と同じ。
+  void updateCurrentBrushOpacity(int opacity, {bool remember = true}) {
+    final current = _currentBrush;
+    if (current == null) return;
+    final value = opacity.clamp(0, 100);
+    _currentBrush = current.copyWith(opacity: value);
+    if (remember) _rememberWorkingValues(current.id, opacity: value);
+    notifyListeners();
+  }
+
+  void _rememberWorkingValues(String id, {double? size, int? opacity}) {
+    final idx = _brushes.indexWhere((b) => b.id == id);
+    if (idx < 0) return;
+    // 太さ・不透明度だけを書く（使っているブラシの写しを丸ごと書き戻すと、
+    // 一覧の側で変えたお気に入り・タグ・フォルダを古い値で上書きする）。
+    _brushes[idx] = _brushes[idx].copyWith(size: size, opacity: opacity);
+    _rememberListDirty = true;
+    final definition = _builtInDefinitions[id];
+    if (definition == null) return;
+    // 組み込みブラシは、定義と違う値だけを覚える。定義と同じ値へ戻した
+    // 項目は覚えから外し、後の版で既定が変わればそれに従う。
+    final before = _builtInWorking[id];
+    final keptSize = size ?? before?.size;
+    final keptOpacity = opacity ?? before?.opacity;
+    final next = (
+      size: keptSize == definition.size ? null : keptSize,
+      opacity: keptOpacity == definition.opacity ? null : keptOpacity,
+    );
+    if (next.size == null && next.opacity == null) {
+      if (_builtInWorking.remove(id) != null) _rememberWorkingDirty = true;
+    } else if (next != before) {
+      _builtInWorking[id] = next;
+      _rememberWorkingDirty = true;
     }
   }
 
-  void updateCurrentBrushOpacity(int opacity) {
-    if (_currentBrush != null) {
-      _currentBrush = _currentBrush!.copyWith(opacity: opacity);
-      notifyListeners();
+  /// 覚えた太さ・不透明度のうち、まだ保存していない分を保存する。
+  ///
+  /// スライダーを離したとき・数字を打ったとき・±を押したときに画面が呼ぶ。
+  /// 呼び忘れても失わないよう、ブラシの切り替え・アプリが裏へ回るとき・
+  /// 破棄のときにも呼ぶ。
+  Future<void> commitRememberedValues() async {
+    if (!_rememberListDirty && !_rememberWorkingDirty) return;
+    await _persist();
+  }
+
+  Brush _withWorkingValues(Brush brush) {
+    final kept = _builtInWorking[brush.id];
+    if (kept == null) return brush;
+    return brush.copyWith(size: kept.size, opacity: kept.opacity);
+  }
+
+  /// 保存してある組み込みブラシの太さ・不透明度を読む。読めない保存
+  /// （壊れた文字列・数でない値・今は無いブラシ）は捨て、捨てた分が
+  /// あれば真を返す（呼び出し側が保存し直す）。起動は止めない。
+  bool _readBuiltInWorking(SharedPreferences prefs) {
+    _builtInWorking.clear();
+    final raw = prefs.readString(_builtInWorkingKey);
+    if (raw == null) return false;
+    var pruned = false;
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) throw const FormatException('not a map');
+      for (final entry in decoded.entries) {
+        final id = entry.key;
+        final value = entry.value;
+        if (id is! String || !isBuiltIn(id) || value is! Map) {
+          pruned = true;
+          continue;
+        }
+        final rawSize = value['size'];
+        final rawOpacity = value['opacity'];
+        final size = rawSize is num && rawSize.isFinite && rawSize > 0
+            ? rawSize.toDouble()
+            : null;
+        final opacity = rawOpacity is num && rawOpacity.isFinite
+            ? rawOpacity.round().clamp(0, 100)
+            : null;
+        if ((rawSize != null && size == null) ||
+            (rawOpacity != null && opacity == null)) {
+          pruned = true;
+        }
+        if (size == null && opacity == null) {
+          pruned = true;
+          continue;
+        }
+        _builtInWorking[id] = (size: size, opacity: opacity);
+      }
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      _builtInWorking.clear();
+      return true;
     }
+    return pruned;
+  }
+
+  Future<void> _persistBuiltInWorking() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_builtInWorking.isEmpty) {
+      await prefs.remove(_builtInWorkingKey);
+      return;
+    }
+    await prefs.setString(
+      _builtInWorkingKey,
+      jsonEncode({
+        for (final entry in _builtInWorking.entries)
+          entry.key: {
+            if (entry.value.size != null) 'size': entry.value.size,
+            if (entry.value.opacity != null) 'opacity': entry.value.opacity,
+          },
+      }),
+    );
+  }
+
+  @override
+  void dispose() {
+    // まだ保存していない覚えを落とさない。
+    // ignore: unawaited_futures
+    commitRememberedValues();
+    super.dispose();
   }
 
   // プリインストールされている初期実装ブラシ（_defaultBrushes()の6件）は
   // 編集・削除の対象外とする（複製したものは対象外の複製元とは別IDになる
   // ため、複製後の編集・削除は可能）。
-  static final Set<String> _builtInIds = _defaultBrushes()
-      .map((b) => b.id)
-      .toSet();
+  static final Map<String, Brush> _builtInDefinitions = {
+    for (final brush in _defaultBrushes()) brush.id: brush,
+  };
 
-  bool isBuiltIn(String id) => _builtInIds.contains(id);
+  bool isBuiltIn(String id) => _builtInDefinitions.containsKey(id);
 
   void addBrush(Brush brush) {
     _brushes.add(brush);
@@ -1308,9 +1457,9 @@ class BrushService extends ChangeNotifier {
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_bundleDataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final json = jsonDecode(
-      utf8.decode(dataFile.content as List<int>),
-    ) as Map<String, dynamic>;
+    final json =
+        jsonDecode(utf8.decode(dataFile.content as List<int>))
+            as Map<String, dynamic>;
     final imported = Brush.fromJson(json);
     final id = 'Brush${DateTime.now().millisecondsSinceEpoch}';
     final variantFiles =

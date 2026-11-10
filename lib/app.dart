@@ -11,6 +11,7 @@ import 'services/home_widget_bridge.dart';
 import 'services/home_widget_service.dart';
 import 'services/ad_placement_policy.dart';
 import 'services/ad_modal_visibility_observer.dart';
+import 'services/brush_service.dart';
 import 'services/project_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/community_service.dart';
@@ -101,6 +102,8 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.hidden) {
       projects.pauseWorkTracking();
+      // 裏へ回ったまま終わらされても、変えたブラシの太さを失わない。
+      context.read<BrushService?>()?.commitRememberedValues();
     } else if (state == AppLifecycleState.resumed) {
       projects.resumeWorkTracking();
     }

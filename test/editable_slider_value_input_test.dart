@@ -63,6 +63,38 @@ void main() {
     expect(changes, [25]);
   });
 
+  testWidgets('the whole field opens the input, not only the digits', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ja'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 36,
+              child: EditableSliderValue(
+                text: '5',
+                value: 5,
+                min: 1,
+                max: 500,
+                onChanged: (_) {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    final field = tester.getRect(find.byType(EditableSliderValue));
+    expect(field.width, 36);
+    // 1桁の数字は欄の左端の数pxだけ。欄の右寄りを押しても開く。
+    await tester.tapAt(field.centerRight - const Offset(4, 0));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsOneWidget);
+  });
+
   testWidgets('decimals: NaN and Infinity are not numbers here', (
     tester,
   ) async {

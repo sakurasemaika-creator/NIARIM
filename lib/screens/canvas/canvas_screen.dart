@@ -734,12 +734,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
         final value = (step.args['value'] as num?)?.toDouble();
         if (value == null) throw StateError('Missing brush size');
         setState(() => _brushSize = value);
-        context.read<BrushService>().updateCurrentBrushSize(value);
+        // 再生で当てる太さは、そのブラシで覚えている値を書き換えない。
+        context.read<BrushService>().updateCurrentBrushSize(
+          value,
+          remember: false,
+        );
       case 'canvas.brushOpacity':
         final value = (step.args['value'] as num?)?.round();
         if (value == null) throw StateError('Missing brush opacity');
         setState(() => _brushOpacity = value.clamp(0, 100));
-        context.read<BrushService>().updateCurrentBrushOpacity(_brushOpacity);
+        context.read<BrushService>().updateCurrentBrushOpacity(
+          _brushOpacity,
+          remember: false,
+        );
       case 'canvas.color':
         final argb = (step.args['argb'] as num?)?.toInt();
         if (argb == null) throw StateError('Missing color');
@@ -1125,7 +1132,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // BrushServiceの現在ブラシ設定をローカル状態に同期（初回のみ有効）
+    // 使っているブラシの太さ・不透明度を欄へ写す（初回と、buildのselectで
+    // 見ているブラシの変化のたび）。
     final brush = context.read<BrushService>().currentBrush;
     if (brush != null) {
       _brushSize = brush.size;
@@ -1301,6 +1309,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
         .projects
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
+    // 使うブラシ・その太さ・不透明度が変わったら（一覧で選ぶ・早替えツール）
+    // この画面を作り直す。作り直しの前にdidChangeDependenciesが太さ・
+    // 不透明度の欄をそのブラシの値へ合わせる（これが無いと、別のブラシを
+    // 選んでも欄は前のブラシの値のままだった）。
+    context.select<BrushService, (String?, double?, int?)>((service) {
+      final brush = service.currentBrush;
+      return (brush?.id, brush?.size, brush?.opacity);
+    });
     // PC/DeXモード（広い画面）：レイヤーパネルをフローティング表示ではなく、
     // 常時表示のドッキングパネルとして右側に固定する（プロ向けレイアウト）。
     // サブツール系パネル（ブラシ・トーン・スタンプ等）もPC版では互いに
@@ -1529,9 +1545,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                             borderRadius: BorderRadius.circular(
                                               10,
                                             ),
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .inverseSurface,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.inverseSurface,
                                             child: Padding(
                                               padding:
                                                   const EdgeInsets.symmetric(
@@ -1674,6 +1690,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       BrushSizeSlider(
                         brushSize: _brushSize,
                         opacity: _brushOpacity,
+                        // 変えた太さ・不透明度は、操作の終わりにブラシ
+                        // ごとの覚えとして保存する。
+                        onChangeEnd: () => context
+                            .read<BrushService>()
+                            .commitRememberedValues(),
                         onSizeChanged: (v) {
                           setState(() => _brushSize = v);
                           context.read<BrushService>().updateCurrentBrushSize(
@@ -2853,11 +2874,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
     double? sizeOverride,
   }) {
     setState(() => _currentTool = DrawingTool.values.byName(toolKey));
+    final brushes = context.read<BrushService>();
     if (brushId != null) {
-      context.read<BrushService>().selectBrush(brushId);
+      brushes.selectBrush(brushId);
+      // 登録したブラシが消されていたら、太さだけを別のブラシへ当てない。
+      if (brushes.currentBrush?.id != brushId) return;
     }
     if (sizeOverride != null) {
-      context.read<BrushService>().updateCurrentBrushSize(sizeOverride);
+      // 早替えツールの太さはそのツールの設定。ブラシが覚えている太さは
+      // 書き換えない（同じブラシを太さ違いで登録して切り替えられる）。
+      context.read<BrushService>().updateCurrentBrushSize(
+        sizeOverride,
+        remember: false,
+      );
       setState(() => _brushSize = sizeOverride);
     }
   }
@@ -3539,8 +3568,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
           if (isWideScreen(context))
             PopupMenuButton<CanvasDockPanel>(
               key: const Key('desktopWindowVisibilityMenu'),
-              tooltip: AppLocalizations.of(context)!
-                  .pcWorkspaceLayoutScreenTitle,
+              tooltip: AppLocalizations.of(
+                context,
+              )!.pcWorkspaceLayoutScreenTitle,
               icon: const Icon(Icons.view_sidebar_outlined, size: 22),
               onSelected: (panel) =>
                   _setDesktopPanelVisible(panel, !_desktopPanelVisible(panel)),

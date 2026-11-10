@@ -21,7 +21,6 @@ import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
-import '../../../config/accent_text_theme.dart';
 
 /// Name a copied brush uniquely without changing user-set names.
 String _numberedBrushCopyName(
@@ -291,6 +290,9 @@ class _BrushPanelState extends State<BrushPanel> {
                       itemBuilder: (context, index) {
                         final brush = brushList[index];
                         final isSelected = current?.id == brush.id;
+                        // 使っているブラシは、いま描く太さ・不透明度を出す
+                        // （早替えツールが一時的に当てた太さも含む）。
+                        final shown = isSelected ? current! : brush;
                         // プリインストールのブラシは編集・削除できない
                         // （複製したものは複製元とは別IDになるため編集・削除可能）。
                         final builtIn = brushService.isBuiltIn(brush.id);
@@ -298,13 +300,10 @@ class _BrushPanelState extends State<BrushPanel> {
                           key: ValueKey(brush.id),
                           dense: true,
                           selected: isSelected,
-                          leading: Icon(
-                            Icons.brush,
-                            size: 16,
-                            color: isSelected
-                                ? AccentTextTheme.of(context)
-                                : null,
-                          ),
+                          // 色は一覧の行の決まりに任せる（選んだ行は選択色の
+                          // 上の文字色。差し色を直接渡すと、選択色と同じ色の
+                          // テーマでアイコンが見えなくなる）。
+                          leading: const Icon(Icons.brush, size: 16),
                           title: Text(
                             brush.name,
                             style: const TextStyle(
@@ -315,8 +314,8 @@ class _BrushPanelState extends State<BrushPanel> {
                           ),
                           subtitle: Text(
                             l10n.penSubToolBrushSizeOpacity(
-                              brush.size.round(),
-                              brush.opacity,
+                              shown.size.round(),
+                              shown.opacity,
                             ),
                             style: const TextStyle(fontSize: 10),
                           ),

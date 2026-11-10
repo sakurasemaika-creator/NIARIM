@@ -40,6 +40,9 @@ class EditableSliderValue extends StatelessWidget {
     // （clipBehavior: none）でマークを右側へわずかにはみ出させる形にして
     // いる（呼び出し元すべての幅を広げる変更は影響範囲が大きすぎるため）。
     return GestureDetector(
+      // 割り当てられた欄のどこを押しても開く。既定だと数字の字の上だけが
+      // 押せる範囲になり、1桁の値では幅数pxしか無かった。
+      behavior: HitTestBehavior.opaque,
       onTap: () => _showInputDialog(context),
       child: Stack(
         clipBehavior: Clip.none,
@@ -160,9 +163,9 @@ class _NumberInputDialogState extends State<_NumberInputDialog> {
   String _format(num v) =>
       widget.isInt ? v.round().toString() : _trimZeros(v.toDouble());
 
-  String _rangeText() =>
-      AppLocalizations.of(context)!
-          .numberInputRangeError(_format(widget.min), _format(widget.max));
+  String _rangeText() => AppLocalizations.of(
+    context,
+  )!.numberInputRangeError(_format(widget.min), _format(widget.max));
 
   String _trimZeros(double v) {
     var s = v.toStringAsFixed(2);

@@ -18,12 +18,18 @@ class BrushSizeSlider extends StatefulWidget {
   final ValueChanged<double> onSizeChanged;
   final ValueChanged<int> onOpacityChanged;
 
+  /// 1回の操作が終わったとき（スライダーを離した・±を押した・数字を
+  /// 打って確定した）。動かしている間の値は[onSizeChanged]・
+  /// [onOpacityChanged]で届く。
+  final VoidCallback? onChangeEnd;
+
   const BrushSizeSlider({
     super.key,
     required this.brushSize,
     required this.opacity,
     required this.onSizeChanged,
     required this.onOpacityChanged,
+    this.onChangeEnd,
   });
 
   @override
@@ -126,6 +132,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                             max: 500,
                             value: widget.brushSize,
                             onChanged: widget.onSizeChanged,
+                            onChangeEnd: (_) => widget.onChangeEnd?.call(),
                           ),
                         ),
                         SizedBox(
@@ -141,8 +148,10 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                             value: widget.brushSize,
                             min: 1,
                             max: 500,
-                            onChanged: (v) =>
-                                widget.onSizeChanged(v.toDouble()),
+                            onChanged: (v) {
+                              widget.onSizeChanged(v.toDouble());
+                              widget.onChangeEnd?.call();
+                            },
                           ),
                         ),
                       ],
@@ -159,6 +168,7 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                             value: widget.opacity.toDouble(),
                             onChanged: (v) =>
                                 widget.onOpacityChanged(v.round()),
+                            onChangeEnd: (_) => widget.onChangeEnd?.call(),
                           ),
                         ),
                         SizedBox(
@@ -174,8 +184,10 @@ class _BrushSizeSliderState extends State<BrushSizeSlider> {
                             value: widget.opacity,
                             min: 1,
                             max: 100,
-                            onChanged: (v) =>
-                                widget.onOpacityChanged(v.round()),
+                            onChanged: (v) {
+                              widget.onOpacityChanged(v.round());
+                              widget.onChangeEnd?.call();
+                            },
                           ),
                         ),
                       ],
