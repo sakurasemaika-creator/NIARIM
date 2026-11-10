@@ -361,6 +361,131 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     });
   }
 
+  String _formatBenefitExpiry(DateTime date) {
+    final local = date.toLocal();
+    return '${local.year}年${local.month}月${local.day}日'
+        '${local.hour.toString().padLeft(2, '0')}時'
+        '${local.minute.toString().padLeft(2, '0')}分';
+  }
+
+  DateTime _later(DateTime left, DateTime? right) =>
+      right != null && right.isAfter(left) ? right : left;
+
+  Map<CoinUnlockTarget, DateTime> _activeBenefitExpiries(DateTime now) {
+    final active = <CoinUnlockTarget, DateTime>{};
+    for (final raw in (_rewardState?['entitlements'] as List? ?? const [])) {
+      if (raw is! Map ||
+          raw['status'] != 'active' ||
+          raw['feature'] is! String ||
+          raw['expiresAtEpochMs'] is! num) {
+        continue;
+      }
+      final candidate = CoinUnlockTarget.values.where(
+        (target) => target.name == raw['feature'],
+      ).firstOrNull;
+      if (candidate == null) continue;
+      final until = DateTime.fromMillisecondsSinceEpoch(
+        (raw['expiresAtEpochMs'] as num).toInt(),
+      );
+      if (until.isAfter(now)) active[candidate] = until;
+    }
+    return active;
+  }
+
+  /// Review *all* chosen items, including overlapping bundles and an active
+  /// paid Premium term, before any possible purchase. For choices the server
+  /// cannot redeem, this is an explicitly non-binding price/expiry preview.
+  Future<void> _reviewSelections() async {
+    if (_selected.isEmpty) return;
+    final t = RewardUnlockLabels.of(context);
+    final premium = context.read<PremiumService>();
+    final now = DateTime.now();
+    final active = _activeBenefitExpiries(now);
+    final paidUntil = premium.hasVerifiedPlayPremium
+        ? premium.verifiedExpiryDate : null;
+    final coinUntil = premium.activeCoinPremiumExpiry;
+    final hasPlay = premium.hasVerifiedPlayPremium;
+    final hasFull = _selected.contains(CoinUnlockTarget.fullPremium);
+    final hasAllAds = _selected.contains(CoinUnlockTarget.allAds);
+    final fullStarts = _later(_later(now, paidUntil), coinUntil);
+    final fullEnds = hasFull ? _duration.previewExpiry(fullStarts) : null;
+    final lines = <String>[];
+
+    if (hasPlay) {
+      lines.add(paidUntil != null
+          ? '現在プレミアム会員を利用中です（${_formatBenefitExpiry(paidUntil)}まで）。'
+          : '現在プレミアム会員を利用中です。契約終了日時は確認できていません。');
+    } else if (coinUntil != null && coinUntil.isAfter(now)) {
+      lines.add(
+        '現在プレミアム特典を利用中です'
+        '（${_formatBenefitExpiry(coinUntil)}まで）。',
+      );
+    }
+    if (hasFull) {
+      lines.add(
+        '選択中の「${t['fullPremium']}」はほかの単品特典を含みます。'
+        '重複分は二重に有効にせず、延長される想定です。',
+      );
+    }
+    if (hasAllAds &&
+        _placementTargets.any((target) => _selected.contains(target))) {
+      lines.add('選択中の広告非表示特典は「${t['allAds']}」と重複します。');
+    }
+
+    for (final target in CoinUnlockTarget.values) {
+      if (!_selected.contains(target)) continue;
+      final existing = active[target];
+      var starts = _later(now, existing);
+      if (target == CoinUnlockTarget.fullPremium) {
+        starts = fullStarts;
+      } else {
+        if (hasFull) starts = _later(starts, fullEnds);
+        if (hasAllAds && _placementTargets.contains(target)) {
+          final adsStarts = _later(
+            _later(now, active[CoinUnlockTarget.allAds]),
+            _later(now, paidUntil),
+          );
+          starts = _later(starts, _duration.previewExpiry(adsStarts));
+        }
+        starts = _later(starts, paidUntil);
+        starts = _later(starts, coinUntil);
+      }
+      final calculatedExpiry = _duration.previewExpiry(starts);
+      final coversNow = existing?.isAfter(now) == true ||
+          (hasPlay && paidUntil?.isAfter(now) == true) ||
+          (coinUntil?.isAfter(now) == true) ||
+          (hasFull && target != CoinUnlockTarget.fullPremium) ||
+          (hasAllAds && _placementTargets.contains(target));
+      lines.add(
+        '${t[target]}：${coversNow ? '既存・セット特典と重複。' : ''}'
+        '参考の延長後期限 ${_formatBenefitExpiry(calculatedExpiry)}',
+      );
+    }
+    final referenceTotal = _selected.fold<int>(0, (sum, target) =>
+      sum + CoinBenefitPriceProposal.cost(target, _duration));
+    lines.add(
+      '参考合計：$referenceTotal コイン。'
+      '単品特典・重複交換のコイン消費はまだサーバー未対応です。'
+      '正式な交換価格・有効期限は交換直前のサーバー確認が必要です。',
+    );
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        scrollable: true,
+        title: Text('特典の重複・有効期限の確認'),
+        content: Text(lines.join('\n\n')),
+        actions: [
+          FilledButton(
+            key: const Key('rewardOverlapReviewClose'),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(MaterialLocalizations.of(ctx).okButtonLabel),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _chooseDuration(RewardUnlockLabels t) async {
     final l10n = AppLocalizations.of(context)!;
     final groups = <(String, List<CoinUnlockDuration>)>[
