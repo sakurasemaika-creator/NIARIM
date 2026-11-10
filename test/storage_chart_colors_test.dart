@@ -38,11 +38,22 @@ void main() {
       // 6色の色相と彩度はアクセントと完全に同じ。
       // 明度以外の成分が変更されると、色の統一感が失われる。
       final accent = HSLColor.fromColor(scheme.primary);
+      expect(storageChartLightnessLevels.length, 6);
       for (var i = 0; i < colors.length; i++) {
         expect(
           colors[i],
-          accent.withLightness(0.36 + 0.085 * i).toColor(),
+          accent.withLightness(storageChartLightnessLevels[i]).toColor(),
           reason: '${preset.id}: $i番目が明度以外も変更している',
+        );
+        // Same H/S, but a deliberately different accent lightness, must
+        // produce exactly the same six colors: only H/S are imported.
+        final alternateScheme = scheme.copyWith(
+          primary: accent.withLightness(0.93).toColor(),
+        );
+        expect(
+          sliceColorsOf(alternateScheme)[i],
+          colors[i],
+          reason: '${preset.id}: 色の明るさが元アクセントの明度に依存',
         );
         if (i > 0) {
           expect(
