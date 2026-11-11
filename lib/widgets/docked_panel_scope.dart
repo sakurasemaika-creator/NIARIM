@@ -52,10 +52,15 @@ class PanelSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (DockedPanelScope.of(context)) {
-      if (height != null || selfScrolling) {
-        return SizedBox.expand(child: child);
-      }
-      return SingleChildScrollView(child: child);
+      // An unframed Material belongs to the PC dock content itself. It keeps
+      // ListTile ink and selected backgrounds above the outer dock decoration
+      // instead of being obscured, without introducing another card/window.
+      return Material(
+        color: Theme.of(context).colorScheme.surface,
+        child: height != null || selfScrolling
+            ? SizedBox.expand(child: child)
+            : SingleChildScrollView(child: child),
+      );
     }
     final sized = ConstrainedBox(
       constraints: BoxConstraints.tightFor(
