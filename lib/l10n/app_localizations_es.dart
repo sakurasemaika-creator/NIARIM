@@ -4169,7 +4169,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get saveTreeSaveAsRootHint => 'Se guardará como nodo raíz.';
 
   @override
-  String get saveTreeCommentLabel => 'Comentario (opcional)';
+  String get saveTreeCommentLabel => 'Nota';
 
   @override
   String get saveTreeCommentHint => 'ej.: Fondo terminado';
@@ -4221,12 +4221,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get saveTreeResumeFromHereAction => 'Reanudar desde aquí';
 
   @override
-  String get saveTreeResumeConfirmBody =>
-      'Se perderán los cambios que no hayas guardado. ¿Continuar?';
+  String get saveTreeResumeConfirmBody => '¿Quieres continuar trabajando desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Guarda el trabajo actual antes si necesitas conservarlo.';
 
   @override
-  String get saveTreeProjectDetailResumeBody =>
-      '¿Reanudar el trabajo desde esta partida guardada?';
+  String get saveTreeProjectDetailResumeBody => '¿Quieres continuar trabajando desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Guarda el trabajo actual antes si necesitas conservarlo.';
 
   @override
   String get saveTreeLoadFailedSnackbar =>
