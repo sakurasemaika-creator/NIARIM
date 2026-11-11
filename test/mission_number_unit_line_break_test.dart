@@ -10,6 +10,11 @@
 // 制作時間の行が「이 기기 제작 시간(참고): 0」「시간」、達成の知らせが
 // 「累計開啟作品廣場1小」「時」「合計10」「分開く」と単位の途中や数と単位の
 // 間で切れていた（特典交換の画面だけ直してあった）。
+//
+// 数と単位を1つのかたまりにした後は、普通のTextなら行を変えない所で行を
+// 変えないこと（閉じ括弧・読点で行が始まらない、開き括弧で行が終わらない）
+// も確かめる（かたまりを埋め込んだ部品で並べていた頃は、部品の前後の
+// どこでも行を変えてよいと見なされていた）。
 import 'dart:async';
 import 'dart:convert';
 
@@ -34,6 +39,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/load_app_fonts.dart';
+import 'helpers/paragraph_lines.dart';
 
 class _Account implements GoogleSignInAccount {
   @override
@@ -194,49 +200,37 @@ CommunityService _service() => CommunityService(
   ),
 );
 
-/// [paragraph]の中で、[phrases]（数と単位）の途中で行が変わる所と、数の
+/// [lines]の中で、[phrases]（数と単位）の途中で行が変わる所と、数の
 /// すぐ後の字（単位）の前で行が変わる所（「8|코인」「0|시간」「4|金幣」）。
-List<String> _numberUnitBreaks(
-  RenderParagraph paragraph,
-  Iterable<String> phrases,
-) {
-  final text = paragraph.text.toPlainText(includeSemanticsLabels: false);
-  double? top(int i) {
-    final boxes = paragraph.getBoxesForSelection(
-      TextSelection(baseOffset: i, extentOffset: i + 1),
-    );
-    return boxes.isEmpty ? null : boxes.first.top;
-  }
-
+List<String> _numberUnitBreaks(ParagraphLines lines, Iterable<String> phrases) {
+  final text = lines.visible;
   String show(int at) =>
       '${text.substring(0, at)}|${text.substring(at)}'.replaceAll('\n', ' / ');
 
   final broken = <String>{};
   for (final phrase in phrases) {
-    for (final match in phrase.allMatches(text)) {
+    // 空白は、普通の空白でも改行しない空白（U+00A0）でもよい。
+    final pattern = RegExp(
+      phrase
+          .replaceAll('\u00a0', ' ')
+          .split(' ')
+          .map(RegExp.escape)
+          .join('[ \u00a0]'),
+    );
+    for (final match in pattern.allMatches(text)) {
       // 数の前に別の数字が続いていれば、別の数の一部（「15分」の中の「5分」）。
       if (match.start > 0 && RegExp(r'\d').hasMatch(text[match.start - 1])) {
         continue;
       }
-      double? previous;
-      for (var i = match.start; i < match.end; i++) {
-        final here = top(i);
-        if (here == null) continue;
-        if (previous != null && here > previous + 1) {
-          broken.add('「$phrase」の途中: ${show(i)}');
-        }
-        previous = here;
+      for (final i in lines.breaksWithin(match.start, match.end)) {
+        broken.add('「$phrase」の途中: ${show(i)}');
       }
     }
   }
-  for (var i = 1; i < text.length; i++) {
-    if (!RegExp(r'\d').hasMatch(text[i - 1])) continue;
+  for (final i in lines.breaksWithin(0, text.length)) {
+    if (i == 0 || !RegExp(r'\d').hasMatch(text[i - 1])) continue;
     if (!RegExp(r'\p{L}', unicode: true).hasMatch(text[i])) continue;
-    final before = top(i - 1);
-    final here = top(i);
-    if (before != null && here != null && here > before + 1) {
-      broken.add('数と単位の間: ${show(i)}');
-    }
+    broken.add('数と単位の間: ${show(i)}');
   }
   return broken.toList();
 }
@@ -286,9 +280,8 @@ void main() {
 
   for (final MapEntry(key: name, value: locale) in locales.entries) {
     for (final scale in [1.75, 2.0]) {
-      testWidgets('ミッションの画面の数と単位が途中で切れない（$name, 文字$scale倍, 360dp）', (
-        tester,
-      ) async {
+      testWidgets('ミッションの画面の数と単位が途中で切れず、閉じ括弧・読点で行が'
+          '始まらない（$name, 文字$scale倍, 360dp）', (tester) async {
         final themes = await prepare(tester, scale);
         await tester.pumpWidget(
           MultiProvider(
@@ -348,11 +341,10 @@ void main() {
         final problems = <String>[];
         var numbersSeen = 0;
         for (final paragraph in _paragraphs(find.byType(Scaffold))) {
-          final text = paragraph.text.toPlainText(
-            includeSemanticsLabels: false,
-          );
-          if (RegExp(r'\d').hasMatch(text)) numbersSeen++;
-          problems.addAll(_numberUnitBreaks(paragraph, phrases));
+          final lines = ParagraphLines(paragraph);
+          if (RegExp(r'\d').hasMatch(lines.visible)) numbersSeen++;
+          problems.addAll(_numberUnitBreaks(lines, phrases));
+          problems.addAll(lines.lineEdgeViolations());
         }
         expect(numbersSeen, greaterThan(20), reason: '$name: 数の出る文');
         expect(
@@ -364,8 +356,8 @@ void main() {
         await tester.pumpWidget(const SizedBox.shrink());
       });
 
-      testWidgets('作品広場の滞在ミッション達成の知らせの数と単位が途中で切れない'
-          '（$name, 文字$scale倍, 360dp）', (tester) async {
+      testWidgets('作品広場の滞在ミッション達成の知らせの数と単位が途中で切れず、'
+          '閉じ括弧・読点で行が始まらない（$name, 文字$scale倍, 360dp）', (tester) async {
         final themes = await prepare(tester, scale);
         await tester.pumpWidget(
           MaterialApp(
@@ -401,8 +393,10 @@ void main() {
             missionDurationLabel(l10n, seconds),
         };
         final problems = <String>[
-          for (final paragraph in _paragraphs(dialog))
-            ..._numberUnitBreaks(paragraph, phrases),
+          for (final paragraph in _paragraphs(dialog)) ...[
+            ..._numberUnitBreaks(ParagraphLines(paragraph), phrases),
+            ...ParagraphLines(paragraph).lineEdgeViolations(),
+          ],
         ];
         expect(
           problems,

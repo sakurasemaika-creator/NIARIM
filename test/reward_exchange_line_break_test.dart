@@ -17,6 +17,12 @@
 // 「1 à 3」）も、文字2倍で「作品広場の投稿枠（1日1作|品→3作品）」
 // 「작품 광장 하루 1|개→3개 게시」「Jusqu'à 2|heures」
 // 「Publications : 1|à 3 par jour」と途中で切れていた。
+//
+// 数と単位を1つのかたまりにした後は、普通のTextなら行を変えない所で行を
+// 変えないこと（閉じ括弧・読点で行が始まらない、開き括弧で行が終わらない）
+// も確かめる。かたまりを埋め込んだ部品で並べていた頃、日本語の文字2倍で
+// 特典の名前が「作品広場の投 / 稿枠（1日 / 1作品→3作品 / ）」と閉じ括弧
+// だけの行になっていた。
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -41,6 +47,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/load_app_fonts.dart';
+import 'helpers/paragraph_lines.dart';
 
 class _Account implements GoogleSignInAccount {
   @override
@@ -136,11 +143,11 @@ RegExp _phrasePattern(String phrase) =>
 /// 日付（「2026년 11월 10일」）は見ない（確かめたいのはコインの数と単位と
 /// 期間。日付は実行した日で変わる）。
 List<String> _numberUnitBreaks(
-  RenderParagraph paragraph,
+  ParagraphLines lines,
   Set<String> units,
   Iterable<String> phrases,
 ) {
-  final text = paragraph.text.toPlainText(includeSemanticsLabels: false);
+  final text = lines.visible;
   final broken = <String>[];
   final spans = <(int, int)>[
     for (final match in _token.allMatches(text))
@@ -152,63 +159,46 @@ List<String> _numberUnitBreaks(
         (match.start, match.end),
   ];
   for (final (start, end) in spans) {
-    double? previousTop;
-    for (var i = start; i < end; i++) {
-      final boxes = paragraph.getBoxesForSelection(
-        TextSelection(baseOffset: i, extentOffset: i + 1),
+    for (final i in lines.breaksWithin(start, end)) {
+      broken.add(
+        '${text.substring(start, i)}|${text.substring(i, end)}'
+        '  «${text.replaceAll('\n', ' / ')}»',
       );
-      if (boxes.isEmpty) continue;
-      final top = boxes.first.top;
-      if (previousTop != null && top > previousTop + 1) {
-        broken.add(
-          '${text.substring(start, i)}|${text.substring(i, end)}'
-          '  «${text.replaceAll('\n', ' / ')}»',
-        );
-      }
-      previousTop = top;
     }
   }
   return broken;
 }
 
-/// [paragraph]の中で、ラテン文字・数字どうしの間で行が変わる所（語が
+/// [lines]の中で、ラテン文字・数字どうしの間で行が変わる所（語が
 /// [_widestPlaceableWord]より広いときは数えない）。
-List<String> _breaksInsideWords(RenderParagraph paragraph) {
-  final text = paragraph.text.toPlainText(includeSemanticsLabels: false);
+List<String> _breaksInsideWords(ParagraphLines lines) {
+  final paragraph = lines.paragraph;
+  final text = lines.visible;
   final broken = <String>[];
-  double? previousTop;
-  for (var i = 0; i < text.length; i++) {
-    final boxes = paragraph.getBoxesForSelection(
-      TextSelection(baseOffset: i, extentOffset: i + 1),
-    );
-    if (boxes.isEmpty) continue;
-    final top = boxes.first.top;
-    if (previousTop != null &&
-        top > previousTop + 1 &&
-        _isLatinWordChar(text.codeUnitAt(i - 1)) &&
-        _isLatinWordChar(text.codeUnitAt(i))) {
-      var start = i - 1;
-      while (start > 0 && _isLatinWordChar(text.codeUnitAt(start - 1))) {
-        start--;
-      }
-      var end = i + 1;
-      while (end < text.length && _isLatinWordChar(text.codeUnitAt(end))) {
-        end++;
-      }
-      final wordWidth = paragraph
-          .getBoxesForSelection(
-            TextSelection(baseOffset: start, extentOffset: end),
-          )
-          .fold<double>(0, (sum, box) => sum + box.right - box.left);
-      if (wordWidth <= _widestPlaceableWord) {
-        broken.add(
-          '${text.substring(start, i)}|${text.substring(i, end)} '
-          '(${wordWidth.toStringAsFixed(0)}px, '
-          '欄${paragraph.size.width.toStringAsFixed(0)}px)  «$text»',
-        );
-      }
+  for (final i in lines.breaksWithin(0, text.length)) {
+    if (i == 0 ||
+        !_isLatinWordChar(text.codeUnitAt(i - 1)) ||
+        !_isLatinWordChar(text.codeUnitAt(i))) {
+      continue;
     }
-    previousTop = top;
+    var start = i - 1;
+    while (start > 0 && _isLatinWordChar(text.codeUnitAt(start - 1))) {
+      start--;
+    }
+    var end = i + 1;
+    while (end < text.length && _isLatinWordChar(text.codeUnitAt(end))) {
+      end++;
+    }
+    final wordWidth = paragraph
+        .getBoxesForSelection(lines.sourceSelection(start, end))
+        .fold<double>(0, (sum, box) => sum + box.right - box.left);
+    if (wordWidth <= _widestPlaceableWord) {
+      broken.add(
+        '${text.substring(start, i)}|${text.substring(i, end)} '
+        '(${wordWidth.toStringAsFixed(0)}px, '
+        '欄${paragraph.size.width.toStringAsFixed(0)}px)  «$text»',
+      );
+    }
   }
   return broken;
 }
@@ -266,8 +256,8 @@ void main() {
 
   for (final MapEntry(key: name, value: locale) in locales.entries) {
     for (final scale in [1.0, 1.75, 2.0]) {
-      testWidgets('数と単位が途中で切れず、特典の名前が単語の途中で折り返さない'
-          '（$name, 文字$scale倍, 360dp）', (tester) async {
+      testWidgets('数と単位が途中で切れず、特典の名前が単語の途中で折り返さず、'
+          '閉じ括弧・読点で行が始まらない（$name, 文字$scale倍, 360dp）', (tester) async {
         if (!fontsLoaded) {
           await loadAppFonts(tester);
           fontsLoaded = true;
@@ -331,21 +321,19 @@ void main() {
 
         void scan(String where, Finder within, {bool rows = false}) {
           for (final paragraph in _paragraphs(within)) {
-            final text = paragraph.text.toPlainText(
-              includeSemanticsLabels: false,
-            );
+            final lines = ParagraphLines(paragraph);
+            final text = lines.visible;
             if (RegExp(r'\d').hasMatch(text)) amountsSeen++;
             for (final phrase in titlePhrases) {
               titlePhrasesSeen[phrase] =
                   titlePhrasesSeen[phrase]! +
                   _phrasePattern(phrase).allMatches(text).length;
             }
-            for (final broken in _numberUnitBreaks(
-              paragraph,
-              coinUnits,
-              periods,
-            )) {
+            for (final broken in _numberUnitBreaks(lines, coinUnits, periods)) {
               problems.add('$where: 数と単位の途中 $broken');
+            }
+            for (final broken in lines.lineEdgeViolations()) {
+              problems.add('$where: 禁則 $broken');
             }
           }
           if (!rows) return;
@@ -361,7 +349,9 @@ void main() {
                   .evaluate()) {
             final row = find.byElementPredicate((e) => e == element);
             for (final paragraph in _paragraphs(row)) {
-              for (final broken in _breaksInsideWords(paragraph)) {
+              for (final broken in _breaksInsideWords(
+                ParagraphLines(paragraph),
+              )) {
                 problems.add('$where: 単語の途中 $broken');
               }
             }
