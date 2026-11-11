@@ -211,7 +211,7 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
             color: scheme.surfaceContainerLow,
             child: _sample == null
                 ? const SizedBox.expand()
-                : RawImage(image: _sample, fit: BoxFit.fill),
+                : RawImage(image: _sample, fit: BoxFit.contain),
           ),
         ),
       ),
