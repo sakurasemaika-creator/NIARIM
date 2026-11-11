@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/home/widgets/folder_thumbnail.dart';
@@ -23,6 +26,7 @@ Project _project(String id, String folderId, String? thumbnail, int day) {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   test('Folder metadata keeps all four thumbnail choices after JSON roundtrip', () {
     for (final mode in ['auto', 'none', 'item', 'custom']) {
       final folder = ProjectFolder(
@@ -48,6 +52,47 @@ void main() {
       ProjectFolder.fromJson({'id': 'legacy', 'name': 'old'}).thumbnailMode,
       'auto',
     );
+  });
+
+  test('Project and received-share folder thumbnails persist after reload',
+      () async {
+    SharedPreferences.setMockInitialValues({});
+    final tempDir = Directory.systemTemp.createTempSync('folder_thumbs_');
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (_) async => tempDir.path);
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
+      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+    });
+    final first = ProjectService();
+    await first.init();
+    final local = await first.createFolder('Paintings');
+    final received = await first.createSharedFolder('Received');
+    await first.setFolderThumbnail(
+      local.id,
+      mode: 'item',
+      sourceId: 'project-1',
+    );
+    await first.setFolderThumbnail(
+      received.id,
+      mode: 'custom',
+      imagePath: '/my-shared-cover.jpg',
+      shared: true,
+    );
+    expect(first.folders.single.thumbnailSourceId, 'project-1');
+    expect(first.sharedFolders.single.thumbnailMode, 'custom');
+    first.dispose();
+
+    final reloaded = ProjectService();
+    await reloaded.init();
+    expect(reloaded.folders.single.thumbnailMode, 'item');
+    expect(reloaded.folders.single.thumbnailSourceId, 'project-1');
+    expect(reloaded.sharedFolders.single.thumbnailMode, 'custom');
+    expect(reloaded.sharedFolders.single.thumbnailImagePath,
+        '/my-shared-cover.jpg');
+    reloaded.dispose();
   });
 
   test('Exported-work thumbnail preference survives service reload', () async {
