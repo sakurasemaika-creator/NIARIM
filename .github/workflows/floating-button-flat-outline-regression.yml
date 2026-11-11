@@ -7,6 +7,7 @@ on:
       - "lib/services/theme_service.dart"
       - "lib/screens/home/home_screen.dart"
       - "lib/screens/community/community_screen.dart"
+      - "lib/screens/community/community_my_works_screen.dart"
       - "lib/screens/autofill/autofill_preset_screen.dart"
       - "lib/screens/save_tree/save_management_screen.dart"
       - "lib/screens/save_tree/save_tree_screen.dart"
@@ -33,7 +34,7 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - name: Analyze changed files
         run: |
-          flutter analyze --no-fatal-infos lib/services/theme_service.dart lib/screens/home/home_screen.dart lib/screens/community/community_screen.dart lib/screens/autofill/autofill_preset_screen.dart lib/screens/save_tree/save_management_screen.dart lib/screens/save_tree/save_tree_screen.dart test/floating_action_button_theme_regression_test.dart test/floating_action_button_visual_capture_test.dart
+          flutter analyze --no-fatal-infos lib/services/theme_service.dart lib/screens/home/home_screen.dart lib/screens/community/community_screen.dart lib/screens/community/community_my_works_screen.dart lib/screens/autofill/autofill_preset_screen.dart lib/screens/save_tree/save_management_screen.dart lib/screens/save_tree/save_tree_screen.dart test/floating_action_button_theme_regression_test.dart test/floating_action_button_visual_capture_test.dart
       - name: Verify zero elevation in all built-in themes and FAB variants
         run: flutter test test/floating_action_button_theme_regression_test.dart --reporter expanded
       - name: Verify Snackbar theme is still independent
