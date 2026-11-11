@@ -269,6 +269,38 @@ class ProjectService extends ChangeNotifier {
   List<SavedOutgoingShare> get outgoingShares =>
       List.unmodifiable(_outgoingShares);
 
+  static const _outgoingFavoritePrefsKey = 'niarim_outgoing_share_favorites';
+  final Set<String> _outgoingFavoritePaths = {};
+  bool isOutgoingShareFavorite(String path) =>
+      _outgoingFavoritePaths.contains(path);
+
+  Future<void> toggleOutgoingShareFavorite(String path) async {
+    final wasFavorite = _outgoingFavoritePaths.contains(path);
+    if (wasFavorite) {
+      _outgoingFavoritePaths.remove(path);
+    } else {
+      _outgoingFavoritePaths.add(path);
+    }
+    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final persisted = await prefs.setStringList(
+        _outgoingFavoritePrefsKey,
+        _outgoingFavoritePaths.toList()..sort(),
+      );
+      if (!persisted) throw StateError('Could not save outgoing favorite state');
+    } catch (error, stackTrace) {
+      if (wasFavorite) {
+        _outgoingFavoritePaths.add(path);
+      } else {
+        _outgoingFavoritePaths.remove(path);
+      }
+      notifyListeners();
+      AppErrorReporter.record(error, stackTrace);
+      rethrow;
+    }
+  }
+
   Future<void> refreshOutgoingShares() async {
     try {
       final current = await OutgoingShareLibrary.list();
@@ -337,6 +369,14 @@ class ProjectService extends ChangeNotifier {
       AppErrorReporter.record(error, stackTrace);
     }
     await _loadProjectsFromDisk();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _outgoingFavoritePaths
+        ..clear()
+        ..addAll(prefs.getStringList(_outgoingFavoritePrefsKey) ?? const []);
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
     await refreshOutgoingShares();
   }
 
