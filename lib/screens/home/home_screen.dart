@@ -2877,6 +2877,8 @@ class _FolderableList<T> extends StatelessWidget {
     String? imagePath,
   })? onSetFolderThumbnail;
   final Widget Function(BuildContext, T) itemBuilder;
+  final Widget Function(BuildContext, T)? gridItemBuilder;
+  final ProjectViewMode? viewMode;
   final Widget? emptyState;
   final bool reserveForFloatingActions;
 
@@ -2892,6 +2894,8 @@ class _FolderableList<T> extends StatelessWidget {
     required this.onDeleteFolder,
     this.onSetFolderThumbnail,
     required this.itemBuilder,
+    this.gridItemBuilder,
+    this.viewMode,
     this.emptyState,
     this.reserveForFloatingActions = false,
     this.onCopyFolder,
@@ -2937,6 +2941,31 @@ class _FolderableList<T> extends StatelessWidget {
                   child: emptyState!,
                 ),
               ),
+            ],
+          );
+        }
+        if (gridItemBuilder != null && viewMode != null &&
+            viewMode != ProjectViewMode.detail) {
+          return CustomScrollView(
+            slivers: [
+              if (header != null) SliverToBoxAdapter(child: header!),
+              if (hasHeader) ...[
+                SliverToBoxAdapter(child: _folderChips(context, countByFolder)),
+                const SliverToBoxAdapter(child: Divider(height: 1)),
+              ],
+              SliverPadding(
+                padding: const EdgeInsets.all(8),
+                sliver: SliverGrid.builder(
+                  gridDelegate: _worksGridDelegate(context, viewMode!),
+                  itemCount: rootItems.length,
+                  itemBuilder: (context, index) =>
+                      gridItemBuilder!(context, rootItems[index]),
+                ),
+              ),
+              if (reserveForFloatingActions)
+                SliverToBoxAdapter(child: SizedBox(
+                  height: 88 + MediaQuery.paddingOf(context).bottom,
+                )),
             ],
           );
         }
