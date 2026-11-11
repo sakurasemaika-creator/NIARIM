@@ -43,7 +43,10 @@ void main() {
   });
 
   Future<void> capture(WidgetTester tester, GlobalKey key, String name) async {
-    await pumpIo(tester);
+    for (var i = 0; i < 5; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 30)));
+      await tester.pump(const Duration(milliseconds: 75));
+    }
     expect(tester.takeException(), isNull);
     final boundary = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
     final bytes = await tester.runAsync(() async {
