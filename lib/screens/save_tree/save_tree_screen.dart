@@ -936,24 +936,24 @@ class _TreeView extends StatelessWidget {
     final depth = spec.depth;
     final continues = spec.continues;
     final isSelected = selectedNodeId == node.id;
-    return Row(
-      // ListViewの子は縦方向が非拘束なのでstretchを指定すると
-      // Rowが無限高さを要求してクラッシュする。接続線側へ有限高を与え、
-      // 行自体は中央揃えにすることでスマホ幅でも安定して描画する。
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Stack(
       children: [
-        if (depth > 0)
-          SizedBox(
-            width: depth * 20.0,
-            height: 72,
+        // The painter spans each row's actual rendered height and meets the
+        // adjacent row at the edge, including when text scale increases.
+        Positioned.fill(
+          child: IgnorePointer(
             child: CustomPaint(
               painter: _TreeConnectorPainter(
+                depth: depth,
                 continues: continues,
+                hasChildren: spec.hasChildren,
                 color: Theme.of(context).colorScheme.outline,
               ),
             ),
           ),
-        Expanded(
+        ),
+        Padding(
+          padding: EdgeInsets.only(left: (depth + 1) * 24.0),
           child: ListTile(
             selected: isSelected,
             selectedTileColor: Theme.of(context).colorScheme.primaryContainer
@@ -1075,51 +1075,74 @@ class _TreeView extends StatelessWidget {
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 }
 
-/// セーブツリーの分岐線を描画する（一般的なツリー表示コマンドと同じ
-/// アルゴリズム）。[continues]は自身を含む各祖先深さでの「まだ次の兄弟が
-/// 続くか」を表すリスト（末尾＝自分自身）。ListViewをreverse:trueで
-/// 表示しているため、「続く」方向は画面上では上向きになる（木が下から
-/// 上へ伸びる見た目）。
+/// Full-height connectors for the bottom-up (reverse:true) save tree.
+/// A node's parent is rendered directly below its descendants. Each child
+/// connects downward to its parent; each parent with children connects upward.
+/// This prevents the disconnected stubs caused by fixed-height gutter lines.
 class _TreeConnectorPainter extends CustomPainter {
+  final int depth;
   final List<bool> continues;
+  final bool hasChildren;
   final Color color;
 
-  _TreeConnectorPainter({required this.continues, required this.color});
+  _TreeConnectorPainter({
+    required this.depth,
+    required this.continues,
+    required this.hasChildren,
+    required this.color,
+  });
 
-  static const double _colW = 20.0;
+  static const double _columnWidth = 24.0;
+  static double _x(int level) => _columnWidth * level + _columnWidth / 2;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 1.5;
-    // 祖先列（自分より浅い深さ）：まだ枝分かれが続く列のみ全高の縦線を引く
-    for (int i = 0; i < continues.length - 1; i++) {
-      if (!continues[i]) continue;
-      final x = _colW * i + _colW / 2;
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-    // 自分の列：上半分は常に線（親側との接続）、下半分は自分に続く兄弟が
-    // いる場合のみ延長する。あわせて右側のタイルへ向かう横線を引く。
-    final selfX = _colW * (continues.length - 1) + _colW / 2;
-    canvas.drawLine(Offset(selfX, 0), Offset(selfX, size.height / 2), paint);
-    if (continues.last) {
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    final middle = size.height / 2;
+
+    void vertical(int column, double top, double bottom) {
       canvas.drawLine(
-        Offset(selfX, size.height / 2),
-        Offset(selfX, size.height),
+        Offset(_x(column), top),
+        Offset(_x(column), bottom),
         paint,
       );
     }
-    canvas.drawLine(
-      Offset(selfX, size.height / 2),
-      Offset(size.width, size.height / 2),
-      paint,
-    );
+
+    // Descendants of a node with later siblings must preserve the
+    // ancestor's vertical branch all the way through their own rows.
+    for (var ancestorDepth = 1; ancestorDepth < depth; ancestorDepth++) {
+      if (continues[ancestorDepth]) {
+        vertical(ancestorDepth - 1, 0, size.height);
+      }
+    }
+    if (depth > 0) {
+      // Parent sits immediately below (the reversed list).
+      vertical(depth - 1, middle, size.height);
+      if (continues[depth]) vertical(depth - 1, 0, middle);
+      canvas.drawLine(
+        Offset(_x(depth - 1), middle),
+        Offset(_columnWidth * (depth + 1), middle),
+        paint,
+      );
+    } else if (hasChildren) {
+      canvas.drawLine(
+        Offset(_x(0), middle),
+        Offset(_columnWidth, middle),
+        paint,
+      );
+    }
+    if (hasChildren) vertical(depth, 0, middle);
   }
 
   @override
   bool shouldRepaint(covariant _TreeConnectorPainter oldDelegate) =>
-      oldDelegate.continues != continues || oldDelegate.color != color;
+      oldDelegate.depth != depth ||
+      oldDelegate.hasChildren != hasChildren ||
+      oldDelegate.continues != continues ||
+      oldDelegate.color != color;
 }
 
 // ─────────────────────────────────────────────
