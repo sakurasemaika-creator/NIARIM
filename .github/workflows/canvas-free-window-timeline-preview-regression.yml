@@ -1,0 +1,43 @@
+name: PC free window snap and timeline preview controls
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - "lib/screens/canvas/canvas_screen.dart"
+      - "lib/screens/canvas/widgets/layer_panel.dart"
+      - "lib/utils/desktop_window_snap.dart"
+      - "lib/services/layer_thumbnail_renderer.dart"
+      - "lib/screens/timeline/timeline_screen.dart"
+      - "test/canvas_free_window_snap_interaction_test.dart"
+      - "test/desktop_window_snap_test.dart"
+      - "test/layer_thumbnail_renderer_test.dart"
+      - "test/timeline_preview_controls_test.dart"
+      - ".github/workflows/canvas-free-window-timeline-preview-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Static analysis of affected code
+        run: flutter analyze --no-fatal-infos lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/layer_panel.dart lib/services/layer_thumbnail_renderer.dart lib/utils/desktop_window_snap.dart lib/screens/timeline/timeline_screen.dart test/canvas_free_window_snap_interaction_test.dart test/desktop_window_snap_test.dart test/layer_thumbnail_renderer_test.dart test/timeline_preview_controls_test.dart
+      - name: Magnet geometry and floating window interactions
+        run: |
+          flutter test test/desktop_window_snap_test.dart --reporter expanded
+          flutter test test/canvas_free_window_snap_interaction_test.dart --reporter expanded
+      - name: Actual layer thumbnails over project paper
+        run: flutter test test/layer_thumbnail_renderer_test.dart --reporter expanded
+      - name: Timeline overlay anchors on different aspect ratios and widths
+        run: flutter test test/timeline_preview_controls_test.dart --reporter expanded
