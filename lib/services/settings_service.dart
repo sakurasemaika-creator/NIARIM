@@ -228,9 +228,14 @@ class SettingsService extends ChangeNotifier {
     CanvasDockPanel panel,
     Offset position,
   ) async {
-    await _pinDesktopDockLayout();
+    // A menu tap must detach the window immediately. The first workspace
+    // save performs several asynchronous preference writes; waiting for all
+    // of them before notifying the UI can leave the dock in place for a
+    // frame (or for the entire gesture test).
+    final pinLayout = _pinDesktopDockLayout();
     _desktopFloatingPositions[panel] = position;
     notifyListeners();
+    await pinLayout;
     await _saveDesktopFloatingPositions();
   }
 
