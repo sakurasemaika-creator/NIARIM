@@ -81,6 +81,8 @@ void main() {
     expect(find.text('自由配置'), findsWidgets);
     await tester.tap(find.text('自由配置').last);
     await tester.pump(const Duration(milliseconds: 300));
+    expect(settings!.desktopFloatingPosition(CanvasDockPanel.brush), isNotNull,
+        reason: 'Free positioning must be applied before persistence finishes');
     expect(find.byKey(const ValueKey('freeDockWindow-brush')), findsOneWidget);
     expect(find.byKey(const ValueKey('dockMenu-brush')), findsNothing);
 
