@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -13,16 +12,10 @@ import '../../../models/filter_def.dart';
 import '../../../services/filter_service.dart';
 import '../../../services/project_service.dart';
 import '../../../widgets/labeled_slider.dart';
-import '../../../widgets/frame_preview_background.dart';
-import '../../../widgets/docked_panel_scope.dart';
-import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 
-/// 色調調整（キャンバス上部バーの設定/編集メニューから開く）。
-/// 彩度・明度・コントラストをライブプレビューしながら調整し、
-/// 「適用」（現在のレイヤーへ直接焼き込む）・「キャンセル」に加えて、
-/// 「描画フィルターに追加する」「演出フィルターに追加する」で
-/// 調整内容を新規フィルターとして保存できる。
+/// 色調調整はスマホ・PC共通の画面下部コントロールバーを使う。
+/// 別の正方形プレビューは作らず、変更中の画像を実際のキャンバスへ渡す。
 class ColorAdjustSheet extends StatefulWidget {
   final String projectId;
   final String sceneId;
@@ -30,6 +23,9 @@ class ColorAdjustSheet extends StatefulWidget {
   final int frameIndex;
   final int totalFrames;
   final VoidCallback onClose;
+  final bool bottomBar;
+  /// Ownership of non-null preview images is transferred to the parent.
+  final ValueChanged<ui.Image?>? onCanvasPreviewChanged;
 
   const ColorAdjustSheet({
     super.key,
@@ -39,6 +35,8 @@ class ColorAdjustSheet extends StatefulWidget {
     required this.frameIndex,
     required this.totalFrames,
     required this.onClose,
+    this.bottomBar = false,
+    this.onCanvasPreviewChanged,
   });
 
   @override
@@ -50,116 +48,117 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
   double _saturation = 0;
   double _brightness = 0;
   double _contrast = 0;
-
   Uint8List? _previewBase;
   int _previewW = 0;
   int _previewH = 0;
-  ui.Image? _previewImage;
+  int _previewGeneration = 0;
   bool _applying = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPreviewBase();
+    unawaited(_loadPreviewBase());
+  }
+
+  @override
+  void didUpdateWidget(ColorAdjustSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.projectId != widget.projectId ||
+        oldWidget.sceneId != widget.sceneId ||
+        oldWidget.layerId != widget.layerId ||
+        oldWidget.frameIndex != widget.frameIndex) {
+      _previewGeneration++;
+      _previewBase = null;
+      unawaited(_loadPreviewBase());
+    }
   }
 
   @override
   void dispose() {
-    _previewImage?.dispose();
+    _previewGeneration++;
     super.dispose();
   }
 
   Future<void> _loadPreviewBase() async {
     final layerId = widget.layerId;
     if (layerId == null) return;
+    final generation = ++_previewGeneration;
     final ps = context.read<ProjectService>();
     final tm = ps.tileManagerOf(widget.projectId);
-    final w = tm.canvasWidth;
-    final h = tm.canvasHeight;
-    if (w <= 0 || h <= 0) return;
     final key = ps.tileKeyFor(
-      widget.projectId,
-      widget.sceneId,
-      widget.frameIndex,
-      layerId,
+      widget.projectId, widget.sceneId, widget.frameIndex, layerId,
     );
+    // Always use the real canvas aspect ratio and pixels. No 120x120
+    // preview box or stretching to a square.
     final img = await tm.compositeLayerToImage(key);
-
-    const maxSize = 150;
-    final scale = maxSize / math.max(w, h);
-    final pw = (w * scale).round().clamp(1, maxSize);
-    final ph = (h * scale).round().clamp(1, maxSize);
-
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-    canvas.drawImageRect(
-      img,
-      ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
-      ui.Rect.fromLTWH(0, 0, pw.toDouble(), ph.toDouble()),
-      ui.Paint(),
-    );
-    img.dispose();
-    final picture = recorder.endRecording();
-    final small = await picture.toImage(pw, ph);
-    final byteData = await small.toByteData(format: ui.ImageByteFormat.rawRgba);
-    small.dispose();
-    if (byteData == null || !mounted) return;
-    _previewBase = byteData.buffer.asUint8List();
-    _previewW = pw;
-    _previewH = ph;
-    await _updatePreview();
+    try {
+      final data = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
+      if (!mounted || generation != _previewGeneration || data == null) return;
+      _previewW = img.width;
+      _previewH = img.height;
+      _previewBase = Uint8List.fromList(data.buffer.asUint8List());
+    } finally {
+      img.dispose();
+    }
+    if (mounted && generation == _previewGeneration) {
+      unawaited(_updatePreview());
+    }
   }
 
   Future<void> _updatePreview() async {
     final base = _previewBase;
-    if (base == null || !mounted) return;
-    final filtered = _engine.applyColorAdjust(
-      base,
-      _previewW,
-      _previewH,
+    if (base == null || !mounted || widget.onCanvasPreviewChanged == null) {
+      return;
+    }
+    final generation = ++_previewGeneration;
+    final pixels = _engine.applyColorAdjust(
+      base, _previewW, _previewH,
       saturation: _saturation,
       brightness: _brightness,
       contrast: _contrast,
     );
     final completer = Completer<ui.Image>();
     ui.decodeImageFromPixels(
-      filtered,
+      pixels,
       _previewW,
       _previewH,
       ui.PixelFormat.rgba8888,
       completer.complete,
     );
-    final img = await completer.future;
-    if (!mounted) {
-      img.dispose();
+    final image = await completer.future;
+    if (!mounted || generation != _previewGeneration) {
+      image.dispose();
       return;
     }
-    setState(() {
-      _previewImage?.dispose();
-      _previewImage = img;
-    });
+    widget.onCanvasPreviewChanged?.call(image);
+  }
+
+  void _cancel() {
+    widget.onCanvasPreviewChanged?.call(null);
+    widget.onClose();
   }
 
   Future<void> _apply() async {
     final layerId = widget.layerId;
-    if (layerId == null) return;
+    if (layerId == null || _applying) return;
     setState(() => _applying = true);
     final ps = context.read<ProjectService>();
     final tm = ps.tileManagerOf(widget.projectId);
     final key = ps.tileKeyFor(
-      widget.projectId,
-      widget.sceneId,
-      widget.frameIndex,
-      layerId,
+      widget.projectId, widget.sceneId, widget.frameIndex, layerId,
     );
-    await tm.applyColorAdjustToLayer(
-      key,
-      saturation: _saturation,
-      brightness: _brightness,
-      contrast: _contrast,
-    );
-    if (!mounted) return;
-    widget.onClose();
+    try {
+      await tm.applyColorAdjustToLayer(
+        key,
+        saturation: _saturation,
+        brightness: _brightness,
+        contrast: _contrast,
+      );
+      if (!mounted) return;
+      _cancel(); // After committing, the saved pixels replace the preview.
+    } finally {
+      if (mounted) setState(() => _applying = false);
+    }
   }
 
   void _addToDrawFilter(BuildContext context) {
@@ -174,7 +173,7 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
         caContrast: _contrast,
       ),
     );
-    widget.onClose();
+    _cancel();
   }
 
   void _addToEffectFilter(BuildContext context) {
@@ -191,133 +190,94 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
         param3: _contrast,
       ),
     );
-    widget.onClose();
+    _cancel();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // 中身の高さに合わせ、画面に収まらないときだけ全体をスクロールする。
-    // 高さを420に固定していた頃は、スマホでスライダー3本が1本半ほどの
-    // 小さな枠の中でしか動かせず、下の行は横にはみ出していた。
-    final maxHeight = math.max(0.0, MediaQuery.sizeOf(context).height - 72);
-    final project = context
-        .read<ProjectService>()
-        .projects
-        .where((project) => project.id == widget.projectId)
-        .firstOrNull;
-    final backgroundColor = project?.backgroundColor ?? 0x00000000;
-    return PanelSurface(
-      width: 280,
-      maxHeight: maxHeight,
-      selfScrolling: true,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            PanelCenterCloseBar(onClose: widget.onClose),
-            Text(
-              l10n.canvasColorAdjustTitle,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            Divider(),
-            Center(
-              child: Container(
-                width: 120,
-                height: 120,
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: FramePreviewBackground(
-                  backgroundColor: backgroundColor,
-                  checkerSize: 8,
-                  child: _previewImage != null
-                      ? RawImage(image: _previewImage, fit: BoxFit.contain)
-                      : const Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Column(
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    return Material(
+      key: const ValueKey('color-adjust-bottom-bar'),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
+      elevation: 0,
+      child: SafeArea(
+        top: false,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: screenHeight * 0.38),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _slider(l10n.filterColorAdjustSaturationLabel, _saturation, (
-                  v,
-                ) {
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l10n.canvasColorAdjustTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      tooltip: l10n.commonCancel,
+                      onPressed: _cancel,
+                    ),
+                  ],
+                ),
+                _slider(l10n.filterColorAdjustSaturationLabel, _saturation, (v) {
                   setState(() => _saturation = v);
-                  _updatePreview();
+                  unawaited(_updatePreview());
                 }),
-                _slider(l10n.filterColorAdjustBrightnessLabel, _brightness, (
-                  v,
-                ) {
+                _slider(l10n.filterColorAdjustBrightnessLabel, _brightness, (v) {
                   setState(() => _brightness = v);
-                  _updatePreview();
+                  unawaited(_updatePreview());
                 }),
                 _slider(l10n.filterColorAdjustContrastLabel, _contrast, (v) {
                   setState(() => _contrast = v);
-                  _updatePreview();
+                  unawaited(_updatePreview());
                 }),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 0,
+                  children: [
+                    TextButton(
+                      onPressed: _cancel,
+                      child: Text(l10n.commonCancel),
+                    ),
+                    FilledButton(
+                      onPressed: _applying || widget.layerId == null
+                          ? null : _apply,
+                      child: Text(l10n.filterApplyButton),
+                    ),
+                    TextButton(
+                      onPressed: () => _addToDrawFilter(context),
+                      child: Text(
+                        l10n.canvasColorAdjustAddToDrawFilter,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => _addToEffectFilter(context),
+                      child: Text(
+                        l10n.canvasColorAdjustAddToEffectFilter,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
-            SizedBox(
-              width: double.infinity,
-              child: Wrap(
-                alignment: WrapAlignment.spaceEvenly,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: widget.onClose,
-                    child: Text(l10n.commonCancel),
-                  ),
-                  FilledButton(
-                    onPressed: _applying || widget.layerId == null
-                        ? null
-                        : _apply,
-                    child: Text(l10n.filterApplyButton),
-                  ),
-                ],
-              ),
-            ),
-            // 2つの「追加する」は、幅が足りなければ上下に並べる（横に
-            // 並べたままだとスマホの幅で56pxはみ出した）。
-            SizedBox(
-              width: double.infinity,
-              child: Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 4,
-                runSpacing: 0,
-                children: [
-                  TextButton(
-                    onPressed: () => _addToDrawFilter(context),
-                    child: Text(
-                      l10n.canvasColorAdjustAddToDrawFilter,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => _addToEffectFilter(context),
-                    child: Text(
-                      l10n.canvasColorAdjustAddToEffectFilter,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
