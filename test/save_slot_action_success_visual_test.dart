@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -10,6 +9,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/save_tree/widgets/save_thumbnail_capture.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
 import 'package:provider/provider.dart';
@@ -109,9 +109,7 @@ void main() {
     final saveService = context.read<SaveTreeService>();
     expect(saveService.isTreeMode, isFalse);
     final l10n = await AppLocalizations.delegate.load(const Locale('ja'));
-    final seedThumbnail = base64Decode(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-    );
+
 
     Finder buttons(String tooltip) =>
         find.byWidgetPredicate((w) => w is IconButton && w.tooltip == tooltip);
@@ -127,12 +125,15 @@ void main() {
           name: 'save-slot-e2e-$prefix',
           fps: 12,
           durationSeconds: 1,
-          backgroundColor: 0xFFFFFFFF,
+          backgroundColor: 0xFFD5E9F8,
           exportWidth: 320,
           exportHeight: 180,
         ),
       ))!;
-      const originalComment = '復元元データ';
+      const originalComment = '読み込み確認用データ';
+      final seedThumbnail = (await tester.runAsync(
+        () => captureSaveThumbnail(projectService, project.id),
+      ))!;
       final original = (await tester.runAsync(
         () => saveService.saveToSlot(
           projectId: project.id,
