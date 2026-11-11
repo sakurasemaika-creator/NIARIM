@@ -31,6 +31,7 @@ import 'folder_delete_dialog.dart';
 import 'work_folder_move_sheet.dart';
 import 'project_folder_edit_dialog.dart';
 import 'folder_thumbnail.dart';
+import 'project_thumbnail_dialog.dart';
 import '../../../utils/folder_persistence.dart';
 import '../../../utils/folder_tree.dart';
 
@@ -1061,6 +1062,11 @@ class ProjectListWidget extends StatelessWidget {
     return [
       PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
       PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+      PopupMenuItem(
+        value: 'thumbnail',
+        child: Text(Localizations.localeOf(context).languageCode == 'ja'
+            ? 'サムネイル変更' : 'Change thumbnail'),
+      ),
       PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
       PopupMenuItem(
         value: 'share',
@@ -1182,6 +1188,10 @@ class ProjectListWidget extends StatelessWidget {
         context.push('/canvas/${project.id}');
       case 'rename':
         _showRenameDialog(context, project);
+      case 'thumbnail':
+        showProjectThumbnailDialog(
+          context, project: project, service: service,
+        );
       case 'duplicate':
         service.duplicateProject(project.id);
       case 'share':
