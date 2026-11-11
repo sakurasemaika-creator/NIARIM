@@ -165,33 +165,36 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  if (!docked) Text(
-                    l10n.colorPickerTitle,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                  if (!docked) ...[
+                    Text(
+                      l10n.colorPickerTitle,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  // 現在色は見出しと同じ高さの横長チップで常時表示する。
-                  // 表示専用なのでタップ・ドラッグは受け付けない。
-                  Expanded(
-                    child: Semantics(
-                      label: '${l10n.colorPickerTitle}: #${_colorToHex(_currentColor)}',
-                      child: SizedBox(
-                        key: const ValueKey('selected-color-preview-chip'),
-                        height: 20,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(3),
-                          child: CustomPaint(
-                            painter: _CheckerboardPainter(),
-                            child: ColoredBox(color: _currentColor),
+                    const SizedBox(width: 8),
+                    // Mobile: title and selected colour share the top row.
+                    // PC: the same chip is owned by the sole dock title bar.
+                    Expanded(
+                      child: Semantics(
+                        label: '${l10n.colorPickerTitle}: #${_colorToHex(_currentColor)}',
+                        child: SizedBox(
+                          key: const ValueKey('selected-color-preview-chip'),
+                          height: 20,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(3),
+                            child: CustomPaint(
+                              painter: _CheckerboardPainter(),
+                              child: ColoredBox(color: _currentColor),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ] else
+                    const Spacer(),
                   // スポイトボタン（カラーピッカー内のスポイトボタン）
                   if (widget.onEyedropperTap != null)
                     IconButton(
