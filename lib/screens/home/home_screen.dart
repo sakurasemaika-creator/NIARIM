@@ -4531,7 +4531,19 @@ class _TrashTabState extends State<_TrashTab> {
             .where((project) => project.id == projectId)
             .map((project) => project.name),
     ];
-    final subtitle = projectNames.isNotEmpty
+    // 読めていない作品を含むフォルダは、読めるまで押せなくする（一覧の
+    // 先頭の知らせが理由を伝える。フォルダの記録だけが消えると、中の作品は
+    // 読めた後に1件ずつの行に出る）。中身は、読めた作品の名前だけや
+    // 「中身なし」ではなく、記録にある件数で出す。
+    final unread = context.read<ProjectService>().trashedFolderHasUnreadWorks(
+      record,
+    );
+    final subtitle = unread
+        ? l10n.homeFolderContents(
+            record.projectIds.length,
+            record.subfolders.length,
+          )
+        : projectNames.isNotEmpty
         ? projectNames.join('、')
         : l10n.homeFolderContents(0, record.subfolders.length);
     return _trashCard(
@@ -4544,32 +4556,40 @@ class _TrashTabState extends State<_TrashTab> {
         if (widget.onCopyEntry != null)
           TextButton(
             key: ValueKey('trashCopyFolder_$id'),
-            onPressed: () => widget.onCopyEntry!(
-              HomeClipboardEntry(
-                source: HomePasteArea.trash,
-                id: id,
-                name: record.folder.name,
-                isFolder: true,
-                originalArea: record.isShared
-                    ? HomePasteArea.received
-                    : HomePasteArea.projects,
-              ),
-            ),
+            onPressed: unread
+                ? null
+                : () => widget.onCopyEntry!(
+                    HomeClipboardEntry(
+                      source: HomePasteArea.trash,
+                      id: id,
+                      name: record.folder.name,
+                      isFolder: true,
+                      originalArea: record.isShared
+                          ? HomePasteArea.received
+                          : HomePasteArea.projects,
+                    ),
+                  ),
             child: const Text('コピー'),
           ),
         TextButton(
           key: ValueKey('trashedFolderRestore_$id'),
-          onPressed: _pending.contains(id) ? null : () => _restoreFolder(id),
+          onPressed: unread || _pending.contains(id)
+              ? null
+              : () => _restoreFolder(id),
           child: Text(l10n.commonRestore),
         ),
         TextButton(
           key: ValueKey('trashedFolderDelete_$id'),
-          onPressed: _pending.contains(id)
+          onPressed: unread || _pending.contains(id)
               ? null
               : () => _permanentDeleteFolder(id),
+          // 押せない間は、押せないボタンの色で出す（色を付けたままだと
+          // 押せるように見える）。
           child: Text(
             l10n.homePermanentDelete,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
+            style: unread
+                ? null
+                : TextStyle(color: Theme.of(context).colorScheme.error),
           ),
         ),
       ],

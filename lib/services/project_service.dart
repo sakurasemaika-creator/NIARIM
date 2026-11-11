@@ -45,6 +45,16 @@ class FavoriteProjectDeleteException implements Exception {
   String toString() => 'A favorite project cannot be moved to Trash';
 }
 
+/// ゴミ箱のフォルダに、保存先にあるのに読めていない作品が含まれるので、
+/// 戻す・完全に削除することを断った
+/// （[ProjectService.trashedFolderHasUnreadWorks]）。
+class TrashedFolderUnreadException implements Exception {
+  const TrashedFolderUnreadException();
+
+  @override
+  String toString() => 'A trashed folder holds works that could not be read';
+}
+
 class ProjectFolder {
   final String id;
   final String name;
@@ -642,7 +652,9 @@ class ProjectService extends ChangeNotifier {
   Future<void> sweepExpiredTrash(int days) async {
     if (days <= 0 || _projectsListingFailed) return;
     final now = DateTime.now();
-    final heldBack = _trashedFolders.where(_holdsUnreadWorks).toList();
+    final heldBack = _trashedFolders
+        .where(trashedFolderHasUnreadWorks)
+        .toList();
     // フォルダは中の作品ごと消す。
     final expiredFolders = [
       for (final t in _trashedFolders)
@@ -676,10 +688,19 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// ゴミ箱のフォルダの記録に、保存先にあるのに読めていない作品が
-  /// 含まれるか。含むフォルダの記録を消すと、中の作品は読めた後に
-  /// フォルダではなくゴミ箱の1件ずつの行に出る。
-  bool _holdsUnreadWorks(TrashedFolder record) =>
-      record.projectIds.any(_unreadProjectIds.contains);
+  /// 含まれるか（保存先を一覧できなかったときは、読み込んでいない作品を
+  /// すべて読めていないものとして数える）。含むフォルダの記録を消すと、
+  /// 中の作品は読めた後にフォルダではなくゴミ箱の1件ずつの行に出るので、
+  /// 読めるまで、戻す・完全に削除する・期限で片付けることをしない。
+  bool trashedFolderHasUnreadWorks(TrashedFolder record) {
+    if (!_projectsListingFailed) {
+      return record.projectIds.any(_unreadProjectIds.contains);
+    }
+    final loaded = {
+      for (final p in [..._projects, ..._trash]) p.id,
+    };
+    return record.projectIds.any((id) => !loaded.contains(id));
+  }
 
   /// ディスクから読み込んだプロジェクトデータをメモリ上のマップへ反映する。
   /// init()（起動時の全件読み込み）とrestoreProject()（ゴミ箱からの復元時の
@@ -4112,12 +4133,16 @@ class ProjectService extends ChangeNotifier {
 
   /// ゴミ箱のフォルダを中身ごと元の場所へ戻す。元の親のフォルダが無く
   /// なっていれば一番上へ戻す。フォルダの一覧を保存できなければ何も変えずに
-  /// [FolderSaveException]を投げる。
+  /// [FolderSaveException]を投げる。読めていない作品を含むフォルダは、
+  /// 何も変えずに[TrashedFolderUnreadException]を投げる。
   Future<void> restoreTrashedFolder(String folderId) => _queueFolder(() async {
     final record = _trashedFolders
         .where((t) => t.folder.id == folderId)
         .firstOrNull;
     if (record == null) return;
+    if (trashedFolderHasUnreadWorks(record)) {
+      throw const TrashedFolderUnreadException();
+    }
     final parent = record.folder.parentFolderId;
     final folders = record.isShared ? _sharedFolders : _folders;
     try {
@@ -4150,12 +4175,17 @@ class ProjectService extends ChangeNotifier {
   });
 
   /// ゴミ箱のフォルダを中の作品ごと完全に削除する（元に戻せない）。
+  /// 読めていない作品を含むフォルダは、何も変えずに
+  /// [TrashedFolderUnreadException]を投げる。
   Future<void> permanentDeleteTrashedFolder(String folderId) =>
       _queueFolder(() async {
         final record = _trashedFolders
             .where((t) => t.folder.id == folderId)
             .firstOrNull;
         if (record == null) return;
+        if (trashedFolderHasUnreadWorks(record)) {
+          throw const TrashedFolderUnreadException();
+        }
         _trashedFolders.remove(record);
         await _persistTrashedFolders();
         // 消せなかった作品はゴミ箱に1件ずつ残り、そこから消し直せる。
@@ -4171,13 +4201,21 @@ class ProjectService extends ChangeNotifier {
       });
 
   /// ゴミ箱を空にする（フォルダも作品もすべて完全に削除する）。
+  /// 読めていない作品を含むフォルダは中の読めた作品ごと残し、他を消し
+  /// 終えてから[TrashedFolderUnreadException]を投げる。
   Future<void> emptyTrash() async {
+    final heldBack = _trashedFolders
+        .where(trashedFolderHasUnreadWorks)
+        .toList();
     for (final t in List.of(_trashedFolders)) {
+      if (heldBack.contains(t)) continue;
       await permanentDeleteTrashedFolder(t.folder.id);
     }
     for (final project in List.of(_trash)) {
+      if (heldBack.any((t) => t.projectIds.contains(project.id))) continue;
       await permanentDelete(project.id);
     }
+    if (heldBack.isNotEmpty) throw const TrashedFolderUnreadException();
   }
 
   static String _nextCopyName(String original, Iterable<String> usedNames) {

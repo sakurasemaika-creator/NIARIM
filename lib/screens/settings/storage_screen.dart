@@ -1014,14 +1014,27 @@ class _StorageScreenState extends State<StorageScreen> {
         ],
         onApply: () async {
           attempted = true;
+          // 読めていない作品を含むフォルダは中の読めた作品ごと残し、他を
+          // 消し終えてから、空にし切れなかったことを知らせる（記録だけを
+          // 消すと、中の作品は読めた後に1件ずつゴミ箱へ出る）。
+          TrashedFolderUnreadException? heldBack;
           for (final id in folderTargets) {
-            await ps.permanentDeleteTrashedFolder(id);
+            try {
+              await ps.permanentDeleteTrashedFolder(id);
+            } on TrashedFolderUnreadException catch (refused) {
+              heldBack = refused;
+            }
           }
           for (final id in targets) {
+            final folder = ps.trashedFolderOf(id);
+            if (folder != null && ps.trashedFolderHasUnreadWorks(folder)) {
+              continue;
+            }
             if (ps.trash.any((p) => p.id == id)) {
               await ps.permanentDelete(id);
             }
           }
+          if (heldBack != null) throw heldBack;
         },
       ),
     );
