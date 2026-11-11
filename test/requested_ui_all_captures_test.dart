@@ -683,31 +683,22 @@ void main() {
     await settle();
     expect(fullPreview, findsNothing);
 
-    // Capture independent floating windows and their actual magnet snap.
+    // Free positioning is removed: desktop tools share the regular docks.
     await settings.setDefaultDockedPanels({
       CanvasDockPanel.brush,
       CanvasDockPanel.colorPicker,
+      CanvasDockPanel.layer,
     });
     await navigate('/home');
     await navigate('/canvas/${colored.id}');
-    await settings.floatDesktopDockPanel(
-      CanvasDockPanel.brush, const Offset(100, 160),
-    );
-    await settings.floatDesktopDockPanel(
-      CanvasDockPanel.colorPicker, const Offset(500, 160),
-    );
+    expect(find.byKey(const ValueKey('dockTarget-brush')), findsOneWidget);
+    expect(find.byKey(const ValueKey('dockTarget-colorPicker')), findsOneWidget);
+    expect(find.byKey(const ValueKey('freeDockWindow-brush')), findsNothing);
+    await shot('19_pc_dex_compact_dock_panels');
+    await tester.tap(find.byKey(const ValueKey('dockMenu-brush')));
     await settle();
-    expect(find.byKey(const ValueKey('freeDockWindow-brush')),
-        findsOneWidget);
-    expect(find.byKey(const ValueKey('freeDockWindow-colorPicker')),
-        findsOneWidget);
-    await shot('19_pc_dex_floating_tool_windows');
-    await tester.drag(
-      find.byKey(const ValueKey('freeDockDrag-brush')),
-      const Offset(91, 0),
-    );
-    await settle();
-    await shot('20_pc_dex_floating_window_magnet_snap');
+    expect(find.text('自由配置'), findsNothing);
+    await shot('20_pc_dex_dock_menu_without_free_position');
 
     await tester.runAsync(
       () =>
