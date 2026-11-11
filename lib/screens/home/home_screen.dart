@@ -2979,7 +2979,12 @@ class _TrashTabState extends State<_TrashTab> {
   }
 
   void _reloadLocal() {
-    if (mounted) setState(() => _localFiles = LocalFileTrashService.list());
+    if (!mounted) return;
+    // setState must return void: assignment of a Future in an expression body
+    // returns that Future and throws during every file-Trash notification.
+    setState(() {
+      _localFiles = LocalFileTrashService.list();
+    });
   }
 
   String _deletedLabel(DateTime? deleted, AppLocalizations l10n) {
