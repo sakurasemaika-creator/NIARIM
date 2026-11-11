@@ -903,6 +903,7 @@ class _TreeView extends StatelessWidget {
     String action,
     SaveNode node,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     switch (action) {
       case 'restore':
         await _handleSaveNodeRestore(
