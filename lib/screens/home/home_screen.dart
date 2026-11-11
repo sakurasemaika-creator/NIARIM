@@ -3915,9 +3915,15 @@ class _WorksFolderScreen extends StatefulWidget {
   final String folderName;
   final VoidCallback onDeleted;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
+  final ProjectViewMode viewMode;
+  final ProjectSortMode initialSortMode;
+  final ValueChanged<ProjectViewMode> onViewModeChanged;
   const _WorksFolderScreen({
     required this.folderId,
     required this.folderName,
+    required this.viewMode,
+    required this.initialSortMode,
+    required this.onViewModeChanged,
     required this.onDeleted,
     this.onCopyEntry,
   });
@@ -3928,11 +3934,52 @@ class _WorksFolderScreen extends StatefulWidget {
 
 class _WorksFolderScreenState extends State<_WorksFolderScreen> {
   late Future<List<File>> _future;
+  late ProjectViewMode _viewMode;
+  late ProjectSortMode _sortMode;
 
   @override
   void initState() {
     super.initState();
+    _viewMode = widget.viewMode;
+    _sortMode = widget.initialSortMode;
     _future = ExportEngine.listExportedFiles();
+  }
+
+  bool get _sortByName =>
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.nameDesc;
+  bool get _sortAscending =>
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.updatedAsc;
+  void _setSortByName(bool byName) => setState(() {
+    _sortMode = byName
+        ? (_sortAscending ? ProjectSortMode.nameAsc : ProjectSortMode.nameDesc)
+        : (_sortAscending
+            ? ProjectSortMode.updatedAsc : ProjectSortMode.updatedDesc);
+  });
+  void _toggleSortDirection() => setState(() {
+    _sortMode = switch (_sortMode) {
+      ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
+      ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
+      ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
+      ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
+    };
+  });
+
+  void _selectViewMode(ProjectViewMode mode) {
+    setState(() => _viewMode = mode);
+    widget.onViewModeChanged(mode);
+  }
+
+  Future<void> _reload() async {
+    setState(() => _future = ExportEngine.listExportedFiles(
+        forceRefresh: true));
+    try {
+      await _future;
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+    widget.onDeleted();
   }
 
   @override
@@ -3940,55 +3987,94 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
     final l10n = AppLocalizations.of(context)!;
     final workFolders = context.watch<WorkFolderService>();
     return Scaffold(
-      appBar: AppBar(title: Text(widget.folderName)),
-      body: FutureBuilder<List<File>>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return _WorksLoadFailure(
-              onRetry: () => setState(() {
-                _future = ExportEngine.listExportedFiles(forceRefresh: true);
-              }),
-            );
-          }
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final items = snapshot.data!
-              .where(
-                (f) =>
-                    workFolders.folderIdOf(
-                      f.path.split(RegExp(r'[\\/]')).last,
-                    ) ==
-                    widget.folderId,
-              )
-              .toList();
-          if (items.isEmpty) {
-            return EmptyStatePlaceholder(
-              icon: Icons.folder_open_outlined,
-              title: l10n.homeWorkFolderEmpty,
-            );
-          }
-          return ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, index) => _WorkListItem(
-              key: ValueKey(items[index].path),
-              file: items[index],
-              onCopy: widget.onCopyEntry == null ? null : () =>
-                  widget.onCopyEntry!(HomeClipboardEntry(
-                    source: HomePasteArea.works,
-                    id: items[index].path,
-                    name: items[index].uri.pathSegments.last,
-                  )),
-              onDeleted: () {
-                setState(() {
-                  _future = ExportEngine.listExportedFiles(forceRefresh: true);
-                });
-                widget.onDeleted();
+      appBar: AppBar(
+        title: Text(widget.folderName),
+        actions: [
+          PopupMenuButton<ProjectViewMode>(
+            key: const Key('worksFolderViewModeMenu'),
+            icon: const Icon(Icons.view_module),
+            tooltip: l10n.homeViewModeTooltip,
+            onSelected: _selectViewMode,
+            itemBuilder: (_) => [
+              PopupMenuItem(value: ProjectViewMode.large,
+                  child: Text(l10n.homeViewModeLarge)),
+              PopupMenuItem(value: ProjectViewMode.medium,
+                  child: Text(l10n.homeViewModeMedium)),
+              PopupMenuItem(value: ProjectViewMode.small,
+                  child: Text(l10n.homeViewModeSmall)),
+              PopupMenuItem(value: ProjectViewMode.detail,
+                  child: Text(l10n.homeViewModeDetail)),
+            ],
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          _LibraryListControls(
+            sort: SortModeControl(
+              sortByName: _sortByName,
+              sortAscending: _sortAscending,
+              onSortByNameChanged: _setSortByName,
+              onToggleDirection: _toggleSortDirection,
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<File>>(
+              future: _future,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return _WorksLoadFailure(onRetry: _reload);
+                }
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final items = _sortExportedFiles(
+                  snapshot.data!.where((f) =>
+                      workFolders.folderIdOf(
+                        f.path.split(RegExp(r'[\\/]')).last,
+                      ) == widget.folderId).toList(),
+                  _sortMode,
+                );
+                if (items.isEmpty) {
+                  return EmptyStatePlaceholder(
+                    icon: Icons.folder_open_outlined,
+                    title: l10n.homeWorkFolderEmpty,
+                  );
+                }
+                Widget item(BuildContext context, int index, bool grid) {
+                  final file = items[index];
+                  return _WorkListItem(
+                    key: ValueKey(file.path),
+                    file: file,
+                    gridTile: grid,
+                    onCopy: widget.onCopyEntry == null ? null : () =>
+                        widget.onCopyEntry!(HomeClipboardEntry(
+                          source: HomePasteArea.works,
+                          id: file.path,
+                          name: file.uri.pathSegments.last,
+                        )),
+                    onDeleted: _reload,
+                  );
+                }
+                if (_viewMode != ProjectViewMode.detail) {
+                  return GridView.builder(
+                    key: ValueKey(('works-folder-grid', _viewMode)),
+                    padding: const EdgeInsets.all(8),
+                    gridDelegate: _worksGridDelegate(context, _viewMode),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) =>
+                        item(context, index, true),
+                  );
+                }
+                return ListView.builder(
+                  key: const ValueKey('works-folder-detail'),
+                  itemCount: items.length,
+                  itemBuilder: (context, index) => item(context, index, false),
+                );
               },
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
@@ -3998,8 +4084,13 @@ class _WorkListItem extends StatefulWidget {
   final File file;
   final VoidCallback onDeleted;
   final VoidCallback? onCopy;
+  final bool gridTile;
   const _WorkListItem({
-    super.key, required this.file, required this.onDeleted, this.onCopy,
+    super.key,
+    required this.file,
+    required this.onDeleted,
+    this.onCopy,
+    this.gridTile = false,
   });
 
   @override
@@ -4090,6 +4181,7 @@ class _WorkListItemState extends State<_WorkListItem> {
         final setting = cover.data ?? const <String, dynamic>{};
         final path = setting['imagePath'];
         return ExportedWorkCard(
+      gridTile: widget.gridTile,
       thumbnailPath: path is String && path.isNotEmpty ? path : null,
       // Avoid decoding the original video twice while its compact cover
       // is generated in the queued cache service.
