@@ -646,6 +646,9 @@ class _HomeScreenState extends State<HomeScreen>
                       sortMode: _sortMode,
                       isSelectionMode: _isSelectionMode,
                       selectedIds: _selectedIds,
+                      cutIds: _clipboardIsCut ? {
+                        ..._clipboardProjectIds, ..._clipboardFolderIds,
+                      } : const {},
                       // 長押しモードへ入ると同時に、長押しした項目自体も
                       // 選択状態にする（複数選択モードに入っただけで
                       // 何も選ばれていない状態を避ける）。
@@ -1056,6 +1059,13 @@ class _HomeScreenState extends State<HomeScreen>
     return result;
   }
 
+  void _showClipboardFeedback(String message) {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.removeCurrentSnackBar();
+    messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
   /// 選択中のプロジェクト・フォルダを切り取り、内部クリップボードへ保持する。
   /// 貼り付け時は[moveToFolder]/[moveFolderTo]で移動し、1回貼り付けると
   /// クリップボードは空になる。
@@ -1087,9 +1097,7 @@ class _HomeScreenState extends State<HomeScreen>
     });
     final count = _clipboardProjectIds.length + _clipboardFolderIds.length;
     if (count > 0 && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.homeCutSnackbar(count))),
-      );
+      _showClipboardFeedback(AppLocalizations.of(context)!.homeCutSnackbar(count));
     }
   }
 
@@ -1118,9 +1126,7 @@ class _HomeScreenState extends State<HomeScreen>
     });
     final count = _clipboardProjectIds.length + _clipboardFolderIds.length;
     if (count > 0 && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.homeCopiedSnackbar(count))),
-      );
+      _showClipboardFeedback(AppLocalizations.of(context)!.homeCopiedSnackbar(count));
     }
   }
 
@@ -1137,9 +1143,7 @@ class _HomeScreenState extends State<HomeScreen>
       _otherClipboard = entry;
     });
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.homeCopiedSnackbar(1))),
-      );
+      _showClipboardFeedback(AppLocalizations.of(context)!.homeCopiedSnackbar(1));
     }
   }
 
@@ -1344,15 +1348,12 @@ class _HomeScreenState extends State<HomeScreen>
       }
       if (mounted) {
         setState(() {});
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.homePasteSnackbar)),
-        );
+        _showClipboardFeedback(AppLocalizations.of(context)!.homePasteSnackbar);
       }
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error is _ClipboardSourceMissing
+        _showClipboardFeedback(error is _ClipboardSourceMissing
               ? _clipboardMissingMessage(context)
               : error is StateError &&
                       error.message == 'Cannot move folder inside itself'
@@ -1361,8 +1362,7 @@ class _HomeScreenState extends State<HomeScreen>
                           target == HomePasteArea.projects &&
                           projectIds.isNotEmpty
                       ? AppLocalizations.of(context)!.homePasteFailed
-                      : folderSaveFailureText(AppLocalizations.of(context)!, error))),
-        );
+                      : folderSaveFailureText(AppLocalizations.of(context)!, error));
       }
     } finally {
       if (mounted) setState(() => _pasting = false);
@@ -1624,18 +1624,14 @@ class _HomeScreenState extends State<HomeScreen>
       }
       if (mounted) {
         setState(() {});
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(AppLocalizations.of(context)!.homePasteSnackbar),
-        ));
+        _showClipboardFeedback(AppLocalizations.of(context)!.homePasteSnackbar);
       }
     } catch (error,stackTrace) {
       AppErrorReporter.record(error,stackTrace);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(error is _ClipboardSourceMissing
-              ? _clipboardMissingMessage(context)
-              : AppLocalizations.of(context)!.homeTrashOperationFailed),
-        ));
+        _showClipboardFeedback(error is _ClipboardSourceMissing
+            ? _clipboardMissingMessage(context)
+            : AppLocalizations.of(context)!.homeTrashOperationFailed);
       }
     } finally {
       if (mounted) setState(() => _pasting = false);
