@@ -134,6 +134,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   ui.Image? _filterCanvasPreview;
   // Non-destructive color adjustment preview is drawn on the actual canvas.
   ui.Image? _colorAdjustCanvasPreview;
+  int _canvasContentRevision = 0;
   // The canvas selection (drawing filters apply only inside it) and the
   // glasses filter's lens area, painted on the canvas while it is adjusted.
   Uint8List? _canvasSelectionMask;
@@ -1626,6 +1627,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           : _filterCanvasPreviewShown(),
                                       currentLayerPreviewBlendMode:
                                           _filterCanvasPreviewBlendMode(),
+                                      contentRevision: _canvasContentRevision,
                                       lockToolInput:
                                           selectionEditingHidden || colorAdjusting,
                                       onFilterGizmoChanged: (gizmo) =>
@@ -3020,6 +3022,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     key: const ValueKey('color-adjust-live-panel'),
     bottomBar: bottomBar,
     onCanvasPreviewChanged: _setColorAdjustCanvasPreview,
+    onApplied: () => setState(() => _canvasContentRevision++),
     projectId: widget.projectId,
     sceneId: _currentSceneId,
     layerId: _currentLayerId,
