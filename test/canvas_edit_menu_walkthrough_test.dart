@@ -275,9 +275,15 @@ void main() {
     await capture(tester, '11d_color_adjust_apply_saved_canvas');
 
     final key = ps.tileKeyFor(project.id, scene.id, 0, layer.id);
-    final rendered = await ps.tileManagerOf(project.id).compositeLayerToImage(key);
-    final raw = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
-    rendered.dispose();
+    final raw = await tester.runAsync(() async {
+      final rendered = await ps.tileManagerOf(project.id)
+          .compositeLayerToImage(key);
+      try {
+        return await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
+      } finally {
+        rendered.dispose();
+      }
+    });
     expect(raw, isNotNull);
     expect(raw!.getUint8(0), lessThan(220),
         reason: 'Apply must persist adjusted pixels, not just a preview');
