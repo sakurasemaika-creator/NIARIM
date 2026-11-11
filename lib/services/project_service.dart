@@ -2960,7 +2960,11 @@ class ProjectService extends ChangeNotifier {
     }
   });
 
-  Future<void> deleteProject(String id) => _queueTrash(id, () async {
+  Future<void> deleteProject(String id) async {
+    // Trash cannot be restorable if a newly created project has not yet
+    // completed its queued first save. Fail before changing Trash membership.
+    await saveProject(id);
+    await _queueTrash(id, () async {
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
       final project = _projects[idx];
@@ -2980,7 +2984,8 @@ class ProjectService extends ChangeNotifier {
         ..addAll(next);
       _notifyFolders();
     }
-  });
+    });
+  }
 
   /// [index]の作品をゴミ箱へ移す（ゴミ箱の記録の保存と通知は呼び出し側）。
   void _moveProjectToTrash(int index) {
@@ -3744,6 +3749,11 @@ class ProjectService extends ChangeNotifier {
           (p) => record.projectIds.contains(p.id) && p.isFavorite,
         )) {
           throw const FavoriteProjectDeleteException();
+        }
+        // Do not archive a folder until all of its projects are readable
+        // on disk. This also waits for any queued autosaves to complete.
+        for (final projectId in record.projectIds) {
+          await saveProject(projectId);
         }
         // ゴミ箱のフォルダの記録→作品のゴミ箱の記録→フォルダの一覧の順に
         // 保存し、途中で失敗したら保存済みのものを戻して何も変えない。
