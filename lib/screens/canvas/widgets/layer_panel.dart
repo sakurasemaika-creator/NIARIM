@@ -28,6 +28,7 @@ import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/labeled_slider.dart';
 import 'layer_keyframe_sheet.dart';
+import '../../../services/layer_thumbnail_renderer.dart';
 import 'panel_close_bar.dart';
 import 'two_finger_vertical_swipe_detector.dart';
 import '../../../config/font_fallback.dart';
@@ -240,6 +241,11 @@ class _LayerPanelState extends State<LayerPanel> {
       widget.frameIndex,
     );
     final layers = _visibleLayers(allLayers);
+    final canvasBackground = projectService.projects
+            .where((project) => project.id == widget.projectId)
+            .firstOrNull
+            ?.backgroundColor ??
+        0xFFFFFFFF;
 
     // パネル初回表示時、実際にペンストロークが書き込まれる対象
     // （widget.currentLayerId）を選択行としてハイライトする（このbuild内
@@ -530,13 +536,19 @@ class _LayerPanelState extends State<LayerPanel> {
                         _layerTypeIcon(context, layer.type),
                         const SizedBox(width: 4),
                         _LayerThumbnail(
+                          // Frame/scene/background changes must invalidate
+                          // thumbnails even when the layer ID is unchanged.
                           key: ValueKey(
-                            '${layer.id}-${_thumbRevision[layer.id] ?? 0}',
+                            '${widget.sceneId}:${widget.frameIndex}:${layer.id}:'
+                            '${_thumbRevision[layer.id] ?? 0}:$canvasBackground:'
+                            '${layer.opacity}:${layer.isVisible}',
                           ),
                           projectId: widget.projectId,
                           sceneId: widget.sceneId,
                           frameIndex: widget.frameIndex,
                           layerId: layer.id,
+                          backgroundColor: canvasBackground,
+                          layerOpacity: layer.opacity,
                         ),
                       ],
                     ),
@@ -2805,6 +2817,8 @@ class _LayerThumbnail extends StatefulWidget {
   final String sceneId;
   final int frameIndex;
   final String layerId;
+  final int backgroundColor;
+  final int layerOpacity;
 
   const _LayerThumbnail({
     super.key,
@@ -2812,6 +2826,8 @@ class _LayerThumbnail extends StatefulWidget {
     required this.sceneId,
     required this.frameIndex,
     required this.layerId,
+    required this.backgroundColor,
+    required this.layerOpacity,
   });
 
   @override
@@ -2836,22 +2852,21 @@ class _LayerThumbnailState extends State<_LayerThumbnail> {
       widget.frameIndex,
       widget.layerId,
     );
+    // Render this layer's actual raster tiles over the PROJECT'S paper
+    // colour. A transparent layer alone would otherwise look like the
+    // palette's grey placeholder and fail to show the intended result.
     final full = await tileManager.compositeLayerToImage(key);
-
-    const size = 48; // 24論理px表示・高DPI考慮で2倍解像度
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-    canvas.drawImageRect(
-      full,
-      ui.Rect.fromLTWH(0, 0, full.width.toDouble(), full.height.toDouble()),
-      ui.Rect.fromLTWH(0, 0, size.toDouble(), size.toDouble()),
-      ui.Paint(),
-    );
-    full.dispose();
-    final picture = recorder.endRecording();
-    final thumb = await picture.toImage(size, size);
-    picture.dispose();
-
+    ui.Image thumb;
+    try {
+      thumb = await renderLayerThumbnail(
+        full,
+        backgroundColor: widget.backgroundColor,
+        opacity: widget.layerOpacity,
+        size: 48,
+      );
+    } finally {
+      full.dispose();
+    }
     if (!mounted) {
       thumb.dispose();
       return;
@@ -2873,8 +2888,8 @@ class _LayerThumbnailState extends State<_LayerThumbnail> {
     return Container(
       width: 24,
       height: 24,
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: image == null ? null : RawImage(image: image, fit: BoxFit.cover),
+      color: Color(widget.backgroundColor),
+      child: image == null ? null : RawImage(image: image, fit: BoxFit.contain),
     );
   }
 }
