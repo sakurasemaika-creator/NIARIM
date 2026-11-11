@@ -119,7 +119,12 @@ void main() {
     for (final text in ['開く', 'コピー', 'サムネイル変更', '削除']) {
       expect(find.text(text), findsOneWidget, reason: text);
     }
-    expect(find.byIcon(Icons.delete_outline), findsNothing);
+    // The Home tab bar includes its Trash icon; only the export card itself
+    // must omit an inline delete button.
+    expect(find.descendant(
+      of: find.byType(ExportedWorkCard).first,
+      matching: find.byIcon(Icons.delete_outline),
+    ), findsNothing);
     expect(tester.takeException(), isNull);
   }, timeout: const Timeout(Duration(minutes: 3)));
 }
