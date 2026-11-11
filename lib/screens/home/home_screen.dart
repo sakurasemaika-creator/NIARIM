@@ -1354,7 +1354,14 @@ class _HomeScreenState extends State<HomeScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(error is _ClipboardSourceMissing
               ? _clipboardMissingMessage(context)
-              : folderSaveFailureText(AppLocalizations.of(context)!, error))),
+              : error is StateError &&
+                      error.message == 'Cannot move folder inside itself'
+                  ? AppLocalizations.of(context)!.homePasteSkippedIntoSelf(1)
+                  : !_clipboardIsCut &&
+                          target == HomePasteArea.projects &&
+                          projectIds.isNotEmpty
+                      ? AppLocalizations.of(context)!.homePasteFailed
+                      : folderSaveFailureText(AppLocalizations.of(context)!, error))),
         );
       }
     } finally {
