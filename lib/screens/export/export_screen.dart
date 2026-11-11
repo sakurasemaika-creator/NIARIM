@@ -1,5 +1,6 @@
 import 'package:niarim/services/theme_service.dart';
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../home/widgets/exported_work_thumbnail_dialog.dart';
 import 'widgets/export_preset_selector.dart';
 import '../../models/export_preset.dart';
 export '../../models/export_preset.dart';
@@ -373,6 +375,10 @@ class _ExportScreenState extends State<ExportScreen> {
         _showCancelledSnackBar();
         return;
       }
+      // The completed file is unchanged. Generate only a small standalone
+      // cover in the background so the completion dialog appears immediately;
+      // the saved-work list also retries when an app is relaunched mid-cache.
+      unawaited(ExportedWorkCoverStore.ensureCached(File(outputPath)));
       _showCompleteDialog(outputPath, totalFrames);
     } on ExportCancelledException {
       _closeProgressDialog();
