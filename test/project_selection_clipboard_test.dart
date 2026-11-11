@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
@@ -27,8 +29,10 @@ void main() {
 
   const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
   late Directory tempDir;
+  late GlobalKey captureBoundaryKey;
 
   setUp(() {
+    captureBoundaryKey = GlobalKey();
     tempDir = Directory.systemTemp.createTempSync('niarim_selection_');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(pathChannel, (call) async => tempDir.path);
@@ -53,6 +57,25 @@ void main() {
   }
 
   // ファイルの読み書きを伴う操作（複製・保存）を実時間で終わらせる。
+  Future<void> captureClipboardScreen(WidgetTester tester, String name) async {
+    await settleIo(tester);
+    expect(tester.takeException(), isNull);
+    final boundary = captureBoundaryKey.currentContext!.findRenderObject()
+        as RenderRepaintBoundary;
+    final pngBytes = await tester.runAsync(() async {
+      final image = await boundary.toImage(pixelRatio: 1);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      return data!.buffer.asUint8List();
+    });
+    final dest = Directory('build/home-clipboard-captures')
+      ..createSync(recursive: true);
+    await tester.runAsync(() async {
+      await File(dest.path + '/' + name + '.png')
+          .writeAsBytes(pngBytes!, flush: true);
+    });
+  }
+
   Future<void> settleIo(WidgetTester tester) async {
     for (var i = 0; i < 6; i++) {
       await tester.runAsync(
@@ -81,9 +104,10 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final providers = (await tester.runAsync(buildAppProviders))!;
-    await tester.pumpWidget(
-      MultiProvider(providers: providers, child: const NiarimApp()),
-    );
+    await tester.pumpWidget(RepaintBoundary(
+      key: captureBoundaryKey,
+      child: MultiProvider(providers: providers, child: const NiarimApp()),
+    ));
     await tester.pump(const Duration(milliseconds: 300));
     final service = tester
         .element(find.byType(SplashScreen))
@@ -722,6 +746,7 @@ void main() {
     await settle(tester);
     expect(find.byKey(const Key('homePasteRestrictionDialog')), findsOneWidget);
     expect(find.textContaining('形式違いのペーストはできません'), findsOneWidget);
+    await captureClipboardScreen(tester, '09_project_cross_format_restriction');
     expect(service.projects.where((p) => p.name == 'apple'), hasLength(1));
     await tester.tap(find.byType(AlertDialog).evaluate().isNotEmpty
         ? find.descendant(of: find.byType(AlertDialog),
@@ -751,10 +776,24 @@ void main() {
     expect(find.byKey(const Key('homePasteToTrashDialog')), findsOneWidget);
     expect(find.textContaining('以下の作品・フォルダをゴミ箱に捨てますか'), findsOneWidget);
     expect(find.textContaining('30日後に完全削除'), findsOneWidget);
+    await captureClipboardScreen(tester, '10_project_trash_30days_confirmation');
     expect(service.trash, isEmpty);
     await tester.tap(find.byKey(const Key('homePasteTrashConfirmButton')));
     await settleIo(tester);
     expect(service.trash.map((p) => p.id), contains(appleId));
+    await captureClipboardScreen(tester, '11_project_in_trash');
+    await tester.tap(find.byKey(ValueKey('trashCopyProject_$appleId')));
+    await settle(tester);
+    await tester.tap(find.byKey(const ValueKey('home_tab_0')));
+    await settleIo(tester);
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
+    await settle(tester);
+    expect(find.byKey(const Key('homePasteRestoreDialog')), findsOneWidget);
+    await captureClipboardScreen(tester, '12_project_restore_confirmation');
+    await tester.tap(find.byKey(const Key('homePasteRestoreConfirmButton')));
+    await settleIo(tester);
+    expect(service.projects.map((p) => p.id), contains(appleId));
+    await captureClipboardScreen(tester, '13_project_restored');
   });
 
   testWidgets('Escape closes the drawer before ending selection', (
