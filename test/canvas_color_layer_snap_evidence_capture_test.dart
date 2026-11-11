@@ -127,12 +127,23 @@ void main() {
         findsOneWidget);
     await shot('01_color_header_and_wheel');
 
-    final hsv = find.text('HSV');
+    final hsv = find.byKey(const ValueKey('color-slider-mode-hsv'));
+    final rgb = find.byKey(const ValueKey('color-slider-mode-rgb'));
+    expect(hsv, findsOneWidget);
+    expect(rgb, findsOneWidget);
+    expect(find.text('H'), findsOneWidget);
+    expect(find.text('R'), findsNothing);
     await tester.ensureVisible(hsv);
     await shot('02_hsv_sliders');
-    final rgb = find.text('RGB');
-    await tester.ensureVisible(rgb);
+    await tester.tap(rgb);
+    await settle();
+    expect(find.text('R'), findsOneWidget);
+    expect(find.text('H'), findsNothing);
     await shot('03_rgb_sliders');
+    await tester.tap(hsv);
+    await settle();
+    expect(find.text('H'), findsOneWidget);
+    expect(find.text('R'), findsNothing);
 
     // The canvas hides this layer, but the separate layer thumbnail retains
     // the actual raster artwork over the project's paper colour.
