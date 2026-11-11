@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
@@ -35,10 +37,34 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final boundaryKey = GlobalKey();
+    Future<void> capture(String name) async {
+      await tester.pump(const Duration(milliseconds: 150));
+      expect(tester.takeException(), isNull);
+      final boundary = boundaryKey.currentContext!.findRenderObject()!
+          as RenderRepaintBoundary;
+      final image = (await tester.runAsync(
+          () => boundary.toImage(pixelRatio: 1)))!;
+      final data = (await tester.runAsync(
+          () => image.toByteData(format: ui.ImageByteFormat.png)))!;
+      image.dispose();
+      final output = Directory('build/save-slot-visual-audit')
+        ..createSync(recursive: true);
+      await tester.runAsync(() async =>
+          File('${output.path}/$name.png')
+              .writeAsBytes(data.buffer.asUint8List()));
+    }
+
     appRouter.go('/');
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
-      MultiProvider(providers: providers!, child: const NiarimApp()),
+      RepaintBoundary(
+        key: boundaryKey,
+        child: MultiProvider(
+          providers: providers!,
+          child: const NiarimApp(),
+        ),
+      ),
     );
     await tester.pump(const Duration(milliseconds: 500));
 
@@ -125,6 +151,7 @@ void main() {
       contains(allNodes.length),
     );
     expect(find.text('chain_0'), findsOneWidget);
+    await capture('tree_01_256_nodes_root_and_siblings');
     await tester.drag(scrolling, const Offset(-300, 0));
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull);
@@ -139,5 +166,6 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
       expect(tester.takeException(), isNull);
     }
+    await capture('tree_02_256_nodes_vertical_and_horizontal_scroll');
   });
 }
