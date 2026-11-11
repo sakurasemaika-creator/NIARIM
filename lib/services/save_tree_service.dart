@@ -53,6 +53,10 @@ class SaveTreeService extends ChangeNotifier {
   }
 
   final Map<String, List<SaveNode>> _nodesByProject = {};
+  // A slot is a named location, even if it has no snapshot yet. Keep its
+  // memo independently of SaveNode so overwriting/deleting the archive does
+  // not erase the slot's user-defined label.
+  final Map<String, Map<int, String>> _slotMemosByProject = {};
   // アーカイブ：スロット→ツリー方式復元時に自動復元する保存データ
   final Map<String, List<SaveNode>> _archivedByProject = {};
   int _idCounter = 0;
@@ -103,6 +107,16 @@ class SaveTreeService extends ChangeNotifier {
       try {
         final json = jsonDecode(index.readAsStringSync());
         if (json is Map) {
+          final rawMemos = json['slotMemos'];
+          if (rawMemos is Map) {
+            final memos = <int, String>{};
+            for (final entry in rawMemos.entries) {
+              final slot = int.tryParse(entry.key.toString());
+              if (slot == null || slot < 0 || entry.value is! String) continue;
+              memos[slot] = entry.value as String;
+            }
+            if (memos.isNotEmpty) _slotMemosByProject[projectId] = memos;
+          }
           for (final (key, into) in [
             ('nodes', nodes),
             ('archived', archived),
@@ -220,6 +234,12 @@ class SaveTreeService extends ChangeNotifier {
           for (final n in _archivedByProject[projectId] ?? const <SaveNode>[])
             n.toJson(),
         ],
+        'slotMemos': {
+          for (final entry in (_slotMemosByProject[projectId] ??
+                  const <int, String>{})
+              .entries)
+            '${entry.key}': entry.value,
+        },
       });
       // 書き込みと置き換えは同期で行い、途中で別の書き込みが割り込まない
       // ようにする（作品の保存と同じ）。
@@ -233,6 +253,39 @@ class SaveTreeService extends ChangeNotifier {
 
   List<SaveNode> getNodes(String projectId) =>
       List.unmodifiable(_nodesByProject[projectId] ?? []);
+
+  /// A slot memo may exist even before the slot has a saved archive.
+  /// null means the user has never named this slot; '' means explicitly blank.
+  String? slotMemoOf(String projectId, int slotIndex) =>
+      _slotMemosByProject[projectId]?[slotIndex];
+
+  /// Prefer the slot's independent memo, retaining legacy snapshot names
+  /// for projects that have no explicit slot memo yet.
+  String? slotDisplayMemoOf(String projectId, int slotIndex) {
+    final memo = slotMemoOf(projectId, slotIndex);
+    if (memo != null) return memo;
+    for (final node in _nodesByProject[projectId] ?? const <SaveNode>[]) {
+      if (node.slotIndex == slotIndex) return node.comment;
+    }
+    return null;
+  }
+
+  /// Edits metadata only: never changes or deletes .niapro data, thumbnail,
+  /// save time or tree relationships. Retain empty memos as explicit clears.
+  Future<bool> setSlotMemo(
+    String projectId,
+    int slotIndex,
+    String memo,
+  ) async {
+    if (slotIndex < 0) return false;
+    final normalized = memo.trim();
+    final bySlot = _slotMemosByProject.putIfAbsent(projectId, () => {});
+    if (bySlot[slotIndex] == normalized) return true;
+    bySlot[slotIndex] = normalized;
+    notifyListeners();
+    await _persist(projectId);
+    return true;
+  }
 
   /// Rename a save snapshot without rewriting the archive or changing its
   /// capture time, thumbnail, parent link or slot position.
@@ -323,6 +376,10 @@ class SaveTreeService extends ChangeNotifier {
       );
     }
     _nodesByProject[projectId]!.removeWhere((n) => n.slotIndex == slotIndex);
+    // A newly committed save updates its slot memo only after archive/thumbnail
+    // persistence succeeds. An existing empty slot memo is not lost on delete.
+    _slotMemosByProject.putIfAbsent(projectId, () => {})[slotIndex] =
+        (comment ?? slotMemoOf(projectId, slotIndex) ?? old.firstOrNull?.comment ?? '').trim();
     final node = SaveNode(
       id: nodeId,
       projectId: projectId,
