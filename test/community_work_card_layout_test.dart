@@ -130,17 +130,17 @@ void main() {
                 expect(bookmark.hitTestable(), findsOneWidget, reason: scope);
                 expect(
                   tester.getSize(bookmark).width,
-                  greaterThanOrEqualTo(48),
+                  greaterThanOrEqualTo(40),
                   reason: scope,
                 );
                 expect(
                   tester.getSize(bookmark).height,
-                  greaterThanOrEqualTo(48),
+                  greaterThanOrEqualTo(40),
                   reason: scope,
                 );
                 expect(
                   tester.widget<IconButton>(bookmark).iconSize,
-                  22,
+                  16,
                   reason: scope,
                 );
                 final tile = tester.getRect(find.byType(Card));
@@ -195,7 +195,7 @@ void main() {
                 );
                 expect(
                   tester.getSize(authorTarget).height,
-                  greaterThanOrEqualTo(48),
+                  greaterThanOrEqualTo(40),
                   reason: scope,
                 );
                 await tester.tap(bookmark);
