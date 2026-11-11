@@ -337,7 +337,7 @@ void main() {
       await tester.tap(timelineLoads.first);
       await settle();
       expectDialogContains(l10n.saveTreeRestoreAction);
-      expectDialogContains(l10n.saveTreeResumeConfirmBody);
+      expectDialogContains(l10n.saveTreeProjectDetailResumeBody);
       expectDialogContains(comment);
       expectDialogFitsViewport();
       await capture('${prefix}_08_timeline_load_confirmation');
