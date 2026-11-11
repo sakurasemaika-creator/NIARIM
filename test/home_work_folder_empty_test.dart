@@ -347,6 +347,12 @@ void main() {
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
       expect(find.text('AUDIT'), findsOneWidget);
+      for (var attempt = 0;
+          attempt < 12 &&
+              find.text(env.l10n.homeWorksEmpty).evaluate().isEmpty;
+          attempt++) {
+        await pumpRealAsync(tester, const Duration(milliseconds: 100));
+      }
       expect(find.text(env.l10n.homeWorksEmpty), findsOneWidget);
       expect(env.folders.folders, hasLength(1));
       expect(tester.takeException(), isNull);
