@@ -478,12 +478,17 @@ void main() {
       );
       await settle();
       final moved = find.byKey(const ValueKey('pcPaneDrag.canvasPreview'));
-      expect(moved, findsOneWidget);
-      expect(
-        tester.getCenter(moved).dx,
-        lessThan(tester.getCenter(find.byType(ColorPickerPanel)).dx),
-      );
-      await shot('12b_desktop_navigator_moved_to_left_dock');
+      if (moved.evaluate().isNotEmpty) {
+        expect(
+          tester.getCenter(moved).dx,
+          lessThan(tester.getCenter(find.byType(ColorPickerPanel)).dx),
+        );
+        await shot('12b_desktop_navigator_moved_to_left_dock');
+      } else {
+        // Keep collecting the independent requested captures. Preserve a
+        // failure marker instead of claiming this dock move was verified.
+        errors.add('12b_desktop_navigator_moved_to_left_dock: grip missing');
+      }
     } else {
       errors.add('12_desktop_window_visibility_menu: menu not found');
     }
