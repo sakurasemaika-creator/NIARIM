@@ -45,6 +45,7 @@ import 'widgets/project_thumbnail_dialog.dart';
 import 'widgets/home_selection_toolbar.dart';
 import 'widgets/home_drawer.dart';
 import 'widgets/exported_work_card.dart';
+import 'widgets/exported_work_thumbnail_dialog.dart';
 import 'widgets/exported_work_preview_layout.dart';
 import 'widgets/folder_delete_dialog.dart';
 import 'widgets/folder_save_feedback.dart';
@@ -3853,6 +3854,27 @@ class _WorkListItemState extends State<_WorkListItem> {
   File get file => widget.file;
   bool _sharing = false;
   Object? _shareError;
+  Future<Map<String, dynamic>>? _coverSetting;
+
+  @override
+  void initState() {
+    super.initState();
+    _coverSetting = ExportedWorkCoverStore.read(widget.file);
+  }
+
+  @override
+  void didUpdateWidget(covariant _WorkListItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.file.path != widget.file.path) {
+      _coverSetting = ExportedWorkCoverStore.read(widget.file);
+    }
+  }
+
+  void _refreshCover() {
+    if (mounted) setState(() {
+      _coverSetting = ExportedWorkCoverStore.read(widget.file);
+    });
+  }
 
   Future<void> _share() async {
     if (_sharing) return;
@@ -3869,6 +3891,10 @@ class _WorkListItemState extends State<_WorkListItem> {
       if (mounted) setState(() => _sharing = false);
     }
   }
+
+  bool isOriginalImageFile(File f) =>
+      const {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
+          .contains(f.path.split('.').last.toLowerCase());
 
   String get _extension => file.path.split('.').last.toLowerCase();
 
@@ -3902,7 +3928,21 @@ class _WorkListItemState extends State<_WorkListItem> {
   Widget build(BuildContext context) {
     final stat = file.statSync();
     final l10n = AppLocalizations.of(context)!;
-    return ExportedWorkCard(
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _coverSetting,
+      builder: (context, cover) {
+        final setting = cover.data ?? const <String, dynamic>{};
+        final path = setting['imagePath'];
+        return ExportedWorkCard(
+      thumbnailPath: path is String && path.isNotEmpty
+          ? path
+          : isOriginalImageFile(file) ? file.path : null,
+      thumbnailHidden: setting['mode'] == 'none',
+      onChangeThumbnail: () => showExportedWorkThumbnailDialog(
+        context,
+        file: file,
+        onApplied: _refreshCover,
+      ),
       name: file.path.split(RegExp(r'[\\/]')).last,
       metadata: '${_formatDate(stat.modified)} ・ ${_formatSize(stat.size)}',
       icon: _icon,
@@ -3918,6 +3958,8 @@ class _WorkListItemState extends State<_WorkListItem> {
       shareError: _shareError == null
           ? null
           : exportShareFailureText(l10n, _shareError!),
+        );
+      },
     );
   }
 
