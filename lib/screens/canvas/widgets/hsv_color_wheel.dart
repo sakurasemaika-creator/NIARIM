@@ -21,6 +21,9 @@ class HsvColorWheel extends StatelessWidget {
   // できるようにする）。円の外側・左下の空きスペースに配置する。
   final bool isTransparent;
   final VoidCallback? onToggleTransparent;
+  // 円の右下に置くHSV/RGBスライダーモード選択ピル。
+  final bool showHsvSliders;
+  final ValueChanged<bool>? onSliderModeChanged;
 
   const HsvColorWheel({
     super.key,
@@ -33,6 +36,8 @@ class HsvColorWheel extends StatelessWidget {
     this.size = 220,
     this.isTransparent = false,
     this.onToggleTransparent,
+    this.showHsvSliders = true,
+    this.onSliderModeChanged,
   });
 
   double get _ringThickness => size * 0.14;
@@ -119,6 +124,15 @@ class HsvColorWheel extends StatelessWidget {
                 onTap: onToggleTransparent!,
               ),
             ),
+            if (onSliderModeChanged != null)
+              Positioned(
+                right: size * 0.03,
+                bottom: size * 0.03,
+                child: _SliderModePill(
+                  showHsv: showHsvSliders,
+                  onChanged: onSliderModeChanged!,
+                ),
+              ),
         ],
       ),
     );
@@ -251,6 +265,67 @@ class _TransparentToggleButton extends StatelessWidget {
                   child: Icon(Icons.check, size: 14, color: Colors.black87),
                 ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 左下の透明色トグルと右下位置が対称になるように配置する。
+/// 選択中のモードだけを強調し、タップしたモードの3スライダーを表示する。
+class _SliderModePill extends StatelessWidget {
+  const _SliderModePill({
+    required this.showHsv,
+    required this.onChanged,
+  });
+
+  final bool showHsv;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      label: 'HSV / RGB',
+      child: Container(
+        height: 28,
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: scheme.outlineVariant),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _segment('HSV', true, scheme),
+            _segment('RGB', false, scheme),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _segment(String label, bool hsv, ColorScheme scheme) {
+    final selected = showHsv == hsv;
+    return InkWell(
+      key: ValueKey('color-slider-mode-${hsv ? 'hsv' : 'rgb'}'),
+      borderRadius: BorderRadius.circular(14),
+      onTap: () => onChanged(hsv),
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 38),
+        height: 26,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected ? scheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: selected ? scheme.onPrimary : scheme.onSurface,
           ),
         ),
       ),
