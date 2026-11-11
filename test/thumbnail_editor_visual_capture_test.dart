@@ -51,6 +51,7 @@ void main() {
     ));
     expect(project, isNotNull);
     final boundaryKey = GlobalKey();
+    final navKey = GlobalKey<NavigatorState>();
     tester.view.physicalSize = const Size(1170, 2532);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
@@ -59,6 +60,7 @@ void main() {
     final host = RepaintBoundary(
       key: boundaryKey,
       child: MaterialApp(
+        navigatorKey: navKey,
         locale: const Locale('ja'),
         theme: ThemeData(useMaterial3: true,
           fontFamily: 'HakkouMincho',
@@ -107,7 +109,7 @@ void main() {
               onShare: () {}, onDelete: () {},
               onChangeThumbnail: () {
                 showExportedWorkThumbnailDialog(
-                  boundaryKey.currentContext!, file: exportedImage);
+                  navKey.currentContext!, file: exportedImage);
               },
             ),
           ]),
