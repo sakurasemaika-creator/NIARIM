@@ -23,6 +23,7 @@ class ColorAdjustSheet extends StatefulWidget {
   final int frameIndex;
   final int totalFrames;
   final VoidCallback onClose;
+  final VoidCallback? onApplied;
   final bool bottomBar;
   /// Ownership of non-null preview images is transferred to the parent.
   final ValueChanged<ui.Image?>? onCanvasPreviewChanged;
@@ -35,6 +36,7 @@ class ColorAdjustSheet extends StatefulWidget {
     required this.frameIndex,
     required this.totalFrames,
     required this.onClose,
+    this.onApplied,
     this.bottomBar = false,
     this.onCanvasPreviewChanged,
   });
@@ -164,6 +166,7 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
         layerId: layerId,
         pixels: committed,
       );
+      widget.onApplied?.call();
       _cancel(); // The canvas replaces the temporary image with saved pixels.
     } finally {
       if (mounted) setState(() => _applying = false);
