@@ -7,6 +7,7 @@ import '../../../l10n/community_plaza_labels.dart';
 import '../../../l10n/community_ranking_layout_labels.dart';
 import '../../../models/community_work.dart';
 import '../../../services/community_service.dart';
+import '../../../widgets/collection_action_controls.dart';
 import 'community_work_card.dart'
     show
         communityThumbnailGradient,
@@ -234,14 +235,12 @@ class CommunityRankingWorkCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final t = CommunityPlazaLabels.of(context);
     final message = isMuted ? t.unmuteWork : t.muteWork;
-    return Material(
-      shape: const CircleBorder(),
-      color: Theme.of(context).cardTheme.color ?? scheme.surfaceContainerLow,
+    return CollectionActionFrame(
       child: PopupMenuButton<String>(
         key: ValueKey('communityRankingMenu-${work.id}'),
         tooltip: message,
         icon: Icon(Icons.more_vert, color: scheme.onSurface),
-        iconSize: 22,
+        iconSize: CollectionActionFrame.glyphSize,
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints(minWidth: 180),
         onSelected: (_) => onVisibilityToggle?.call(),
@@ -255,7 +254,8 @@ class CommunityRankingWorkCard extends StatelessWidget {
   Widget _bookmark(BuildContext context, {bool large = false}) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    return IconButton(
+    return CollectionActionFrame(
+      child: IconButton(
       key: ValueKey('community-bookmark-${work.id}'),
       tooltip: isBookmarked
           ? l10n.communityWorkDetailBookmarkRemove
@@ -264,13 +264,14 @@ class CommunityRankingWorkCard extends StatelessWidget {
         isBookmarked ? Icons.bookmark : Icons.bookmark_border,
         color: scheme.onSurfaceVariant,
       ),
-      iconSize: large ? 32 : 22,
-      constraints: BoxConstraints.tightFor(
-        width: large ? 48 : 40,
-        height: large ? 48 : 40,
+      iconSize: CollectionActionFrame.glyphSize,
+      constraints: const BoxConstraints.tightFor(
+        width: CollectionActionFrame.extent,
+        height: CollectionActionFrame.extent,
       ),
       padding: EdgeInsets.zero,
       onPressed: onBookmarkToggle,
+      ),
     );
   }
 
