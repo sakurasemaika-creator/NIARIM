@@ -280,6 +280,32 @@ abstract final class LocalFileTrashService {
     changes.value++;
   }
 
+  /// Apply the configured retention period to exported works and saved
+  /// outgoing archives, including complete exported-work folders. Native
+  /// projects are swept separately by ProjectService.
+  static Future<void> sweepExpired(int days) async {
+    if (days <= 0) return;
+    final now = DateTime.now();
+    for (final entry in await list()) {
+      if (now.difference(entry.deletedAt).inDays < days) continue;
+      try {
+        if (entry.isFolder) {
+          final metadata = File('${Directory(entry.archivedPath).parent.path}/meta.json');
+          final decoded = jsonDecode(await metadata.readAsString());
+          if (decoded is Map && decoded['restoreFolderId'] != null) {
+            // A partially restored directory may still be the only safe copy
+            // of some files. Do not expire it until restore completes.
+            continue;
+          }
+        }
+        await deleteForever(entry);
+      } catch (_) {
+        // A locked or unreadable entry stays available for retry. Cleanup
+        // must never prevent app startup or delete an incomplete recovery.
+      }
+    }
+  }
+
   static Future<void> deleteForever(LocalTrashedFile entry) async {
     if (entry.isFolder) {
       final directory = Directory(entry.archivedPath);
