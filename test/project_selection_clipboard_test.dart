@@ -12,6 +12,7 @@ import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/project/project_detail_screen.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/widgets/name_entry_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -702,6 +703,58 @@ void main() {
     await settleIo(tester);
     await settleIo(tester);
     expect(service.folders.where((f) => f.name == '箱 (コピー 2)'), hasLength(1));
+  });
+
+
+  testWidgets('incompatible tab paste explains why and leaves project intact', (
+    tester,
+  ) async {
+    final service = await boot(tester, names: ['apple']);
+    await tester.longPress(card('apple'));
+    await settle(tester);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await settle(tester);
+    await tester.tap(find.byKey(const ValueKey('home_tab_1')));
+    await settleIo(tester);
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
+    await settle(tester);
+    expect(find.byKey(const Key('homePasteRestrictionDialog')), findsOneWidget);
+    expect(find.textContaining('形式違いのペーストはできません'), findsOneWidget);
+    expect(service.projects.where((p) => p.name == 'apple'), hasLength(1));
+    await tester.tap(find.byType(AlertDialog).evaluate().isNotEmpty
+        ? find.descendant(of: find.byType(AlertDialog),
+            matching: find.byType(TextButton))
+        : find.byType(TextButton).first);
+    await settle(tester);
+    expect(service.trash, isEmpty);
+  });
+
+  testWidgets('pasting a project to Trash requires confirmation and '
+      'shows the configured retention period', (tester) async {
+    final service = await boot(tester, names: ['apple']);
+    final appleId = service.projects.single.id;
+    final context = tester.element(find.byType(ProjectListWidget));
+    await tester.runAsync(() =>
+        context.read<SettingsService>().setTrashAutoDelete(30));
+    await tester.longPress(card('apple'));
+    await settle(tester);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyC);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await settle(tester);
+    await tester.tap(find.byKey(const ValueKey('home_tab_3')));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
+    await settle(tester);
+    expect(find.byKey(const Key('homePasteToTrashDialog')), findsOneWidget);
+    expect(find.textContaining('以下の作品・フォルダをゴミ箱に捨てますか'), findsOneWidget);
+    expect(find.textContaining('30日後に完全削除'), findsOneWidget);
+    expect(service.trash, isEmpty);
+    await tester.tap(find.byKey(const Key('homePasteTrashConfirmButton')));
+    await settleIo(tester);
+    expect(service.trash.map((p) => p.id), contains(appleId));
   });
 
   testWidgets('Escape closes the drawer before ending selection', (
