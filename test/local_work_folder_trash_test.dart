@@ -114,6 +114,25 @@ void main() {
     expect(await File('${folder.archivedPath}/kept.gif').readAsBytes(), [1, 4]);
   });
 
+  test('interrupted folder deletion can restore a remaining identical file',
+      () async {
+    final folders = WorkFolderService();
+    await folders.init();
+    final movie = File('${root.path}/exports/already-there.mp4');
+    await movie.parent.create(recursive: true);
+    await movie.writeAsBytes([7, 6, 5]);
+    final entry = await LocalFileTrashService.moveWorkFolder(
+      folderName: '途中', files: [movie],
+    );
+    // Emulates an interruption after archiving before source deletion.
+    await movie.writeAsBytes([7, 6, 5]);
+    await LocalFileTrashService.restoreWorkFolder(entry, folders);
+    expect(await movie.readAsBytes(), [7, 6, 5]);
+    expect(folders.folderIdOf('already-there.mp4'), folders.folders.single.id);
+    expect(await LocalFileTrashService.list(), isEmpty);
+    folders.dispose();
+  });
+
   test('a conflicting file blocks restore without overwriting bytes', () async {
     final folders = WorkFolderService();
     await folders.init();
