@@ -368,8 +368,9 @@ class ProjectService extends ChangeNotifier {
     try {
       await _loadTrashState();
       await _loadFolders();
-      await _loadTrashedFolders();
       await _loadSharedFolders();
+      // Folder Trash pruning must see both source collections first.
+      await _loadTrashedFolders();
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
     }
