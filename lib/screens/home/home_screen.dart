@@ -2498,9 +2498,47 @@ class _TrashTabState extends State<_TrashTab> {
     );
   }
 
+  Future<bool> _confirmRestoreFromTrash(String name) async {
+    if (!mounted) return false;
+    final l10n = AppLocalizations.of(context)!;
+    final japanese = Localizations.localeOf(context).languageCode == 'ja';
+    return await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        key: const Key('homeTrashRestoreConfirmation'),
+        title: Text(japanese ? 'ゴミ箱から復元' : 'Restore from Trash'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(japanese
+                ? '以下の作品・フォルダをゴミ箱から復元しますか？'
+                : 'Restore the following files or folders from Trash?'),
+            const SizedBox(height: 8),
+            Text('・$name'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            key: const Key('homeTrashRestoreConfirmButton'),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.commonRestore),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
   Future<void> _restoreProject(String id) async {
     if (_pending.contains(id)) return;
     final service = context.read<ProjectService>();
+    final project = service.trash.where((p) => p.id == id).firstOrNull;
+    if (project == null ||
+        !await _confirmRestoreFromTrash(project.name) || !mounted) return;
     setState(() {
       _pending.add(id);
       _restoring.add(id);
@@ -2518,7 +2556,8 @@ class _TrashTabState extends State<_TrashTab> {
   }
 
   Future<void> _restoreLocal(LocalTrashedFile entry) async {
-    if (_pending.contains(entry.id)) return;
+    if (_pending.contains(entry.id) ||
+        !await _confirmRestoreFromTrash(entry.fileName) || !mounted) return;
     setState(() => _pending.add(entry.id));
     try {
       await LocalFileTrashService.restore(entry);
@@ -2537,6 +2576,76 @@ class _TrashTabState extends State<_TrashTab> {
     } finally {
       if (mounted) setState(() => _pending.remove(entry.id));
     }
+  }
+
+  Future<void> _restoreFolder(String id) async {
+    if (_pending.contains(id)) return;
+    final service = context.read<ProjectService>();
+    final folder = service.trashedFolders
+        .where((record) => record.folder.id == id).firstOrNull;
+    if (folder == null ||
+        !await _confirmRestoreFromTrash(folder.folder.name) || !mounted) return;
+    setState(() => _pending.add(id));
+    try {
+      await runProjectTrashAction(
+        context, () => service.restoreTrashedFolder(id),
+      );
+    } finally {
+      if (mounted) setState(() => _pending.remove(id));
+    }
+  }
+
+  Future<void> _permanentDeleteFolder(String id) async {
+    if (_pending.contains(id)) return;
+    final service = context.read<ProjectService>();
+    final record = service.trashedFolders
+        .where((item) => item.folder.id == id).firstOrNull;
+    if (record == null) return;
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _pending.add(id));
+    try {
+      await showDialog<bool>(
+        context: context,
+        builder: (_) => ProjectTrashDialog(
+          title: l10n.homePermanentDeleteConfirmTitle,
+          message: l10n.homePermanentDeleteConfirmBody,
+          confirmLabel: l10n.commonDelete,
+          itemNames: [record.folder.name],
+          onApply: () => service.permanentDeleteTrashedFolder(id),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _pending.remove(id));
+    }
+  }
+
+  Widget _folderRow(TrashedFolder record, AppLocalizations l10n) {
+    final id = record.folder.id;
+    final subtitle = [
+      _deletedLabel(record.deletedAt, l10n),
+      l10n.homeFolderContents(
+        record.projectIds.length, record.subfolders.length,
+      ),
+    ].join(' · ');
+    return _trashCard(
+      leading: const Icon(Icons.folder_delete_outlined, size: 36),
+      title: record.folder.name,
+      subtitle: subtitle,
+      actions: [
+        TextButton(
+          key: ValueKey('trashedFolderRestore_$id'),
+          onPressed: _pending.contains(id) ? null : () => _restoreFolder(id),
+          child: Text(l10n.commonRestore),
+        ),
+        TextButton(
+          key: ValueKey('trashedFolderDelete_$id'),
+          onPressed: _pending.contains(id)
+              ? null : () => _permanentDeleteFolder(id),
+          child: Text(l10n.homePermanentDelete,
+              style: TextStyle(color: Theme.of(context).colorScheme.error)),
+        ),
+      ],
+    );
   }
 
   Future<void> _deleteLocal(LocalTrashedFile entry) async {
@@ -2726,20 +2835,33 @@ class _TrashTabState extends State<_TrashTab> {
         final rows = <({
           TrashEntryKind kind,
           Project? project,
+          TrashedFolder? folder,
           LocalTrashedFile? local,
           DateTime deletedAt,
           String name,
         })>[];
         for (final project in service.trash) {
+          // Folder contents are represented by their parent folder row.
+          if (service.trashedFolderOf(project.id) != null) continue;
           final kind = project.isSharedImport
               ? TrashEntryKind.receivedShare
               : TrashEntryKind.createdProject;
           if (!widget.selectedKinds.contains(kind)) continue;
           rows.add((
-            kind: kind, project: project, local: null,
+            kind: kind, project: project, folder: null, local: null,
             deletedAt: service.deletedAtOf(project.id)
                 ?? DateTime.fromMillisecondsSinceEpoch(0),
             name: project.name,
+          ));
+        }
+        for (final folder in service.trashedFolders) {
+          if (!widget.selectedKinds.contains(TrashEntryKind.createdProject)) {
+            continue;
+          }
+          rows.add((
+            kind: TrashEntryKind.createdProject,
+            project: null, folder: folder, local: null,
+            deletedAt: folder.deletedAt, name: folder.folder.name,
           ));
         }
         for (final local in snapshot.data ?? <LocalTrashedFile>[]) {
@@ -2747,7 +2869,7 @@ class _TrashTabState extends State<_TrashTab> {
               ? TrashEntryKind.createdShare : TrashEntryKind.exportedWork;
           if (!widget.selectedKinds.contains(kind)) continue;
           rows.add((
-            kind: kind, project: null, local: local,
+            kind: kind, project: null, folder: null, local: local,
             deletedAt: local.deletedAt, name: local.fileName,
           ));
         }
@@ -2772,6 +2894,9 @@ class _TrashTabState extends State<_TrashTab> {
             final row = rows[index];
             if (row.project != null) {
               return _projectRow(row.project!, row.kind, l10n);
+            }
+            if (row.folder != null) {
+              return _folderRow(row.folder!, l10n);
             }
             return _fileRow(row.local!, row.kind, l10n);
           },
