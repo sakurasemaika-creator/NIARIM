@@ -121,7 +121,7 @@ class _BrushPanelState extends State<BrushPanel> {
               PanelCenterCloseBar(onClose: widget.onClose),
             Row(
               children: [
-                Text(
+                if (!DockedPanelScope.of(context) && !widget.dockedMode) Text(
                   l10n.penSubToolTabBrush,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
