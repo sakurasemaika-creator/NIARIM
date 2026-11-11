@@ -3511,7 +3511,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectListEmptyTitle => '没有项目';
 
   @override
-  String get projectListEmptyHint => '点击「＋」新建';
+  String get projectListEmptyHint => '点击“＋”新建';
 
   @override
   String get projectListOpenAction => '打开';

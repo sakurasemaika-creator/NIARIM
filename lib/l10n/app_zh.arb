@@ -1343,7 +1343,7 @@
   "projectListNewFolderTitle": "新建文件夹",
   "projectListFolderHint": "也可用于整理同一作品的多话内容或系列作品",
   "projectListEmptyTitle": "没有项目",
-  "projectListEmptyHint": "点击「＋」新建",
+  "projectListEmptyHint": "点击“＋”新建",
   "projectListOpenAction": "打开",
   "projectListCreateShareAction": "创建.niashare",
   "projectListEditFolderAction": "编辑名称与颜色",

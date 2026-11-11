@@ -472,4 +472,26 @@ void main() {
     expect(tester.takeException(), isNull);
     await _close(tester);
   });
+
+  // 簡体字の空の一覧の説明は、＋を簡体字の引用符“ ”で囲む（日本語と同じ
+  // 「 」で囲んでいた）。繁体字は「 」のまま。
+  testWidgets('the Simplified Chinese empty hint quotes the plus button with '
+      'Simplified quotation marks', (tester) async {
+    final home = await _openHome(tester, language: 'zh');
+    String hint() => tester
+        .widget<Text>(
+          find.descendant(
+            of: find.byType(EmptyStatePlaceholder),
+            matching: find.text(_l10n(tester).projectListEmptyHint),
+          ),
+        )
+        .data!;
+    expect(hint(), contains('“＋”'));
+    expect(hint(), isNot(contains('「')));
+    await tester.runAsync(() => home.settings.setLanguage('zh_Hant'));
+    await _frames(tester, 4);
+    expect(hint(), contains('「＋」'));
+    expect(tester.takeException(), isNull);
+    await _close(tester);
+  });
 }
