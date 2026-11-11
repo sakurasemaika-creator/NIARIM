@@ -44,6 +44,159 @@ class ExportedWorkCoverStore {
     return {};
   }
 
+
+  // Generate missing covers in a serial queue so large libraries do not
+  // start multiple FFmpeg decoders at the same time.
+  static final Map<String, Future<Map<String, dynamic>>> _pending = {};
+  static Future<void> _serialGeneration = Future<void>.value();
+  static final Set<String> _failedInSession = {};
+
+  static bool _isRaster(File file) => const {
+    'png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'
+  }.contains(file.path.split('.').last.toLowerCase());
+
+  static bool _isVideo(File file) => const {
+    'mp4', 'm4v', 'mov', 'webm', 'mkv', 'avi', '3gp'
+  }.contains(file.path.split('.').last.toLowerCase());
+
+  static Future<File> _newCacheFile(String prefix, String extension) async {
+    final support = await getApplicationSupportDirectory();
+    final dir = Directory('${support.path}/exported_covers');
+    await dir.create(recursive: true);
+    return File('${dir.path}/${prefix}_${DateTime.now().microsecondsSinceEpoch}.$extension');
+  }
+
+  static Future<String> storeCompressedImage(Uint8List sourceBytes) async {
+    final source = image_codec.decodeImage(sourceBytes);
+    if (source == null || source.width <= 0 || source.height <= 0) {
+      throw const FormatException('Unsupported thumbnail image');
+    }
+    const maxEdge = 420;
+    final largest = math.max(source.width, source.height);
+    final scale = largest > maxEdge ? maxEdge / largest : 1.0;
+    final result = scale < 1
+        ? image_codec.copyResize(
+            source,
+            width: math.max(1, (source.width * scale).round()),
+            height: math.max(1, (source.height * scale).round()),
+            interpolation: image_codec.Interpolation.average,
+          )
+        : source;
+    final optimized = image_codec.encodePng(result, level: 6);
+    final output = await _newCacheFile('custom', 'png');
+    await output.writeAsBytes(optimized, flush: true);
+    return output.path;
+  }
+
+  static String _quote(String path) =>
+      '"' + path.replaceAll('\\', '\\\\').replaceAll('"', '\\"') + '"';
+
+  static Future<String> extractVideoFrame(File file, int frame) async {
+    // Opaque video frames: compact JPEG. WebM/GIF: PNG retains possible alpha.
+    final suffix = file.path.split('.').last.toLowerCase();
+    final preserveAlpha = suffix == 'webm' || suffix == 'gif';
+    final output = await _newCacheFile(
+      'export', preserveAlpha ? 'png' : 'jpg');
+    final filter = 'select=eq(n\\,$frame),'
+        'scale=420:420:force_original_aspect_ratio=decrease:flags=lanczos';
+    final quality = preserveAlpha ? '-compression_level 9' : '-q:v 4';
+    final session = await FFmpegKit.execute(
+      '-hide_banner -loglevel error -y -i ${_quote(file.path)} '
+      '-vf "$filter" -vsync 0 -frames:v 1 $quality ${_quote(output.path)}',
+    );
+    final exitCode = await session.getReturnCode();
+    if (!ReturnCode.isSuccess(exitCode) ||
+        !await output.exists() || await output.length() == 0) {
+      if (await output.exists()) await output.delete();
+      throw const FileSystemException('Thumbnail extraction failed');
+    }
+    return output.path;
+  }
+
+  static Future<int> _lastVideoFrame(File file) async {
+    final session = await FFprobeKit.getMediaInformation(file.path);
+    final info = await session.getMediaInformation();
+    if (info == null) return 0;
+    var rate = 0.0;
+    for (final stream in info.getStreams()) {
+      if (stream.getType() != 'video') continue;
+      final parts = (stream.getAverageFrameRate() ??
+              stream.getRealFrameRate() ?? '0').split('/');
+      final numerator = double.tryParse(parts[0]) ?? 0;
+      final denominator = parts.length > 1
+          ? double.tryParse(parts[1]) ?? 0 : 1;
+      rate = denominator == 0 ? 0 : numerator / denominator;
+      final reported = int.tryParse(
+          stream.getStringProperty('nb_frames') ?? '');
+      if (reported != null && reported > 0) return reported - 1;
+      break;
+    }
+    final duration = double.tryParse(info.getDuration() ?? '') ?? 0;
+    if (duration <= 0 || rate <= 0 || !rate.isFinite) return 0;
+    return math.max(0, (duration * rate).round() - 1);
+  }
+
+  static Future<Map<String, dynamic>> ensureCached(File file) {
+    final existing = _pending[file.path];
+    if (existing != null) return existing;
+    final completer = Completer<Map<String, dynamic>>();
+    final task = completer.future;
+    _pending[file.path] = task;
+    _serialGeneration = _serialGeneration.then((_) async {
+      try {
+        completer.complete(await _ensureCachedNow(file));
+      } catch (_) {
+        _failedInSession.add(file.path);
+        try {
+          completer.complete(await read(file));
+        } catch (_) {
+          completer.complete(const {'mode': 'latest'});
+        }
+      } finally {
+        _pending.remove(file.path);
+      }
+    }).catchError((_) {});
+    return task;
+  }
+
+  static Future<Map<String, dynamic>> _ensureCachedNow(File file) async {
+    final current = await read(file);
+    if (current['mode'] != 'latest' ||
+        _failedInSession.contains(file.path)) return current;
+    final previous = current['imagePath'];
+    if (previous is String && previous.isNotEmpty &&
+        await File(previous).exists()) return current;
+    if (!_isRaster(file) && !_isVideo(file)) return current;
+    final original = await file.stat();
+    String? generated;
+    try {
+      var frame = 0;
+      if (_isVideo(file)) {
+        frame = await _lastVideoFrame(file);
+        generated = await extractVideoFrame(file, frame);
+      } else {
+        generated = await storeCompressedImage(await file.readAsBytes());
+      }
+      final after = await file.stat();
+      if (after.size != original.size ||
+          after.modified != original.modified) {
+        if (generated != null && await File(generated).exists()) {
+          await File(generated).delete();
+        }
+        return await read(file);
+      }
+      await write(file, mode: 'latest',
+          imagePath: generated,
+          frameIndex: _isVideo(file) ? frame : 0);
+      return await read(file);
+    } catch (_) {
+      if (generated != null && await File(generated).exists()) {
+        await File(generated).delete();
+      }
+      rethrow;
+    }
+  }
+
   static Future<void> write(
     File file, {
     required String mode,
@@ -52,6 +205,7 @@ class ExportedWorkCoverStore {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final current = _decode(prefs.getString(prefsKey));
+    final previous = current[file.path];
     final stat = await file.stat();
     current[file.path] = {
       'mode': mode,
@@ -62,6 +216,25 @@ class ExportedWorkCoverStore {
     };
     if (!await prefs.setString(prefsKey, jsonEncode(current))) {
       throw const FileSystemException('Could not persist thumbnail choice');
+    }
+    // Only managed cached images are removed, and only after persistence.
+    final oldPath = previous is Map ? previous['imagePath'] : null;
+    if (oldPath is String && oldPath != imagePath &&
+        !current.values.any((entry) =>
+            entry is Map && entry['imagePath'] == oldPath)) {
+      try {
+        final support = await getApplicationSupportDirectory();
+        final cache = Directory('${support.path}/exported_covers');
+        final candidate = File(oldPath);
+        final name = candidate.uri.pathSegments.last;
+        if (candidate.parent.path == cache.path &&
+            (name.startsWith('export_') || name.startsWith('custom_')) &&
+            await candidate.exists()) {
+          await candidate.delete();
+        }
+      } on FileSystemException {
+        // Missing cache is harmless after the new metadata is committed.
+      }
     }
   }
 
