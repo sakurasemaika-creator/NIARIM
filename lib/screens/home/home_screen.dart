@@ -765,8 +765,7 @@ class _HomeScreenState extends State<HomeScreen>
     _isSelectionMode = false;
   });
 
-  Widget _buildHomeAction(
-    BuildContext context, {
+  Widget _buildHomeAction({
     Key? key,
     required String heroTag,
     required String tooltip,
@@ -791,7 +790,6 @@ class _HomeScreenState extends State<HomeScreen>
     AppLocalizations l10n, {
     required bool compact,
   }) => _buildHomeAction(
-    context,
     heroTag: 'home-add-work-folder',
     tooltip: l10n.homeAddSheetNewFolder,
     compact: compact,
@@ -818,7 +816,6 @@ class _HomeScreenState extends State<HomeScreen>
         children: [
           if (projects) ...[
             _buildHomeAction(
-              context,
               compact: compact,
               key: const Key('homeScrollToTopFab'),
               heroTag: 'home-scroll-to-top',
@@ -834,7 +831,6 @@ class _HomeScreenState extends State<HomeScreen>
               icon: Icons.arrow_upward,
             ),
             _buildHomeAction(
-              context,
               compact: compact,
               heroTag: 'home-add-project',
               tooltip: l10n.commonAdd,
