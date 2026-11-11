@@ -172,8 +172,8 @@ class _BrushTab extends StatelessWidget {
           selected: isSelected,
           // 色は一覧の行の決まりに任せる（選んだ行は選択色の上の文字色）。
           leading: const Icon(Icons.brush, size: 16),
-          title: Tooltip(
-            message: l10n.penSubToolBrushSizeOpacity(
+          title: Semantics(
+            label: l10n.penSubToolBrushSizeOpacity(
               shown.size.round(),
               shown.opacity,
             ),
