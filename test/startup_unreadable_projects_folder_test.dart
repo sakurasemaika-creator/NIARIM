@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/models/save_node.dart';
 import 'package:niarim/router.dart';
@@ -1298,6 +1299,165 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }
+
+  // 作品を読み込めなかったとき、ホームのプロジェクトだけ、知らせのすぐ下に
+  // 「プロジェクトがありません」「＋ ボタンから新規作成」が出ていた（読め
+  // なかっただけなのに「無い」と読め、新しく作るよう促す。共有・ゴミ箱・
+  // 引き継ぎは空の文を出さない）。読み込めなかった間は知らせだけを出し、
+  // 読めて本当に作品が無いと分かったら、いつもの空の表示に戻る。
+  for (final language in ['ja', 'en', 'fr', 'ko']) {
+    testWidgets('Home does not say there are no projects, or invite creating '
+        'one, while they could not be read ($language)', (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      SharedPreferences.setMockInitialValues({
+        'first_launch': false,
+        'language': language,
+        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      });
+      final l10n = lookupAppLocalizations(Locale(language));
+      Directory(storage.projectsPath).createSync(recursive: true);
+      storage.paths.blockListing(storage.projectsPath);
+      appRouter.go('/home');
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await _settleWithFiles(tester);
+      final notice = find.byKey(const Key('homeProjectsLoadFailed'));
+      final projects = tester
+          .element(find.byType(Scaffold).first)
+          .read<ProjectService>();
+      expect(projects.projectsLoadFailed, isTrue);
+      expect(projects.folders, isEmpty);
+
+      final saidEmpty = <String>[];
+      final invitedCreating = <String>[];
+      for (final size in const [Size(320, 568), Size(1280, 800)]) {
+        for (final scale in [1.0, 2.0]) {
+          final where = '${size.width.toInt()}px x$scale';
+          tester.view.physicalSize = size;
+          tester.platformDispatcher.textScaleFactorTestValue = scale;
+          await _settleWithFiles(tester, rounds: 3);
+          expect(notice, findsOneWidget, reason: where);
+          expect(
+            find.descendant(
+              of: notice,
+              matching: find.text(l10n.homeProjectsLoadFailed),
+            ),
+            findsOneWidget,
+            reason: where,
+          );
+          if (find.text(l10n.projectListEmptyTitle).evaluate().isNotEmpty) {
+            saidEmpty.add(where);
+          }
+          if (find.text(l10n.projectListEmptyHint).evaluate().isNotEmpty) {
+            invitedCreating.add(where);
+          }
+          // 並び順などの見出しは、知らせと一緒に出たまま。
+          expect(
+            find.widgetWithText(FilterChip, l10n.homeFavoritesOnly),
+            findsOneWidget,
+            reason: where,
+          );
+          expect(tester.takeException(), isNull, reason: where);
+        }
+      }
+      expect(saidEmpty, isEmpty, reason: 'said there are no projects');
+      expect(invitedCreating, isEmpty, reason: 'invited creating a project');
+
+      // 読めるようになって「再試行」：作品が1つも無いと分かったので、
+      // いつもの空の表示と作成の案内が出る。
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.platformDispatcher.textScaleFactorTestValue = 1.0;
+      await _settleWithFiles(tester, rounds: 3);
+      storage.paths.clear();
+      await tester.tap(
+        find.descendant(of: notice, matching: find.text(l10n.communityRetry)),
+      );
+      for (var i = 0; i < 40 && notice.evaluate().isNotEmpty; i++) {
+        await _settleWithFiles(tester, rounds: 2);
+      }
+      expect(notice, findsNothing);
+      expect(find.text(l10n.projectListEmptyTitle), findsOneWidget);
+      expect(find.text(l10n.projectListEmptyHint), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  // 一部の作品だけ読めないときは、読めた作品をこれまでどおり並べる。
+  // 絞り込んで何も残らないとき（お気に入りだけ等）も、読めていない
+  // 作品があるうちは「プロジェクトがありません」とは言わない。
+  testWidgets('Home lists the works that were read beside the notice, and a '
+      'filter that leaves none does not say there are no projects', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'ja',
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final seeded = await tester.runAsync(() async {
+      final read = await _seedProjectWithSaves(
+        name: '読めた作品',
+        comments: const [],
+      );
+      final unread = await _seedProjectWithSaves(
+        name: '開けない作品',
+        comments: const [],
+      );
+      return (read.$1, unread.$1);
+    });
+    final (_, unread) = seeded!;
+    storage.paths.blockReading(
+      '${storage.projectsPath}/${unread.id}/${unread.id}.niapro',
+    );
+    appRouter.go('/home');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await _settleWithFiles(tester);
+    final notice = find.byKey(const Key('homeProjectsLoadFailed'));
+    expect(notice, findsOneWidget);
+    expect(find.text('読めた作品'), findsOneWidget);
+    expect(find.text('開けない作品'), findsNothing);
+    expect(find.text('プロジェクトがありません'), findsNothing);
+
+    // お気に入りだけに絞る（読めた作品はお気に入りではない）。
+    final favoritesOnly = find.widgetWithText(FilterChip, 'お気に入り');
+    await tester.tap(favoritesOnly);
+    await _settleWithFiles(tester, rounds: 3);
+    expect(find.text('読めた作品'), findsNothing);
+    expect(notice, findsOneWidget);
+    expect(find.text('プロジェクトがありません'), findsNothing);
+    expect(find.text('＋ ボタンから新規作成'), findsNothing);
+
+    // 読めるようになって「再試行」：知らせが消え、お気に入りが無いことを
+    // いつもの空の表示で伝える。絞り込みを外すと2作品とも並ぶ。
+    storage.paths.clear();
+    await tester.tap(find.descendant(of: notice, matching: find.text('再試行')));
+    for (var i = 0; i < 40 && notice.evaluate().isNotEmpty; i++) {
+      await _settleWithFiles(tester, rounds: 2);
+    }
+    expect(notice, findsNothing);
+    expect(find.text('プロジェクトがありません'), findsOneWidget);
+    await tester.tap(favoritesOnly);
+    await _settleWithFiles(tester, rounds: 3);
+    expect(find.text('読めた作品'), findsOneWidget);
+    expect(find.text('開けない作品'), findsOneWidget);
+    expect(find.text('プロジェクトがありません'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 
   // 狭い画面・大きな文字でも、知らせを出したゴミ箱・共有・引き継ぎが
   // はみ出さない（知らせは一覧の先頭でスクロールする）。

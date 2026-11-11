@@ -279,6 +279,12 @@ class ProjectListWidget extends StatelessWidget {
   // 存在しないボタンを指す文言を隠せるようにする。
   final bool showEmptyCreateHint;
 
+  /// 作品を読み込めなかった間（`ProjectService.projectsLoadFailed`）に渡す。
+  /// 並べるものが無くても「プロジェクトがありません」と作成の案内を出さず、
+  /// [header]（読み込めなかった知らせ）だけを出す（読めなかっただけなのに
+  /// 「無い」と読め、新しく作るよう促していた）。
+  final bool hideEmptyState;
+
   const ProjectListWidget({
     super.key,
     required this.viewMode,
@@ -298,6 +304,7 @@ class ProjectListWidget extends StatelessWidget {
     this.searchByTag = false,
     this.onPickProject,
     this.showEmptyCreateHint = true,
+    this.hideEmptyState = false,
   });
 
   /// IDs come from the same filtering as the rendered list, before sorting.
@@ -421,6 +428,12 @@ class ProjectListWidget extends StatelessWidget {
     final sorted = _sorted(entries);
 
     if (sorted.isEmpty) {
+      if (hideEmptyState) {
+        return CustomScrollView(
+          controller: scrollController,
+          slivers: [if (header != null) SliverToBoxAdapter(child: header!)],
+        );
+      }
       if (header != null) {
         return CustomScrollView(
           controller: scrollController,

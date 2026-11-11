@@ -783,6 +783,11 @@ class _HomeScreenState extends State<HomeScreen>
                             if (!_isSearching) _buildBreadcrumb(),
                           ],
                         ),
+                        // 読み込めなかった間は、上の知らせだけを出す（「プロ
+                        // ジェクトがありません」とも、作成の案内とも言わない）。
+                        hideEmptyState: context
+                            .watch<ProjectService>()
+                            .projectsLoadFailed,
                         // Keep bounded browsing scopes rather than every typed query.
                         key: PageStorageKey((
                           'home-projects',
