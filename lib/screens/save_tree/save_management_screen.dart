@@ -353,6 +353,10 @@ class _GameStyleSlotScreen extends StatelessWidget {
           ),
         ),
         elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide.none,
+        ),
       ),
     );
   }
