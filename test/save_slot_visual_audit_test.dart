@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -126,15 +125,17 @@ void main() {
         name: 'save-slot-visual-audit',
         fps: 12,
         durationSeconds: 1,
-        backgroundColor: 0xFFFFFFFF,
+        backgroundColor: 0xFFB9E6CE,
         exportWidth: 320,
         exportHeight: 180,
       ),
     ))!;
 
-    final thumbnailBytes = base64Decode(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-    );
+    // Capture real project canvas/background pixels. A synthetic black
+    // 1x1 PNG obscures whether the save UI shows the correct snapshot.
+    final thumbnailBytes = (await tester.runAsync(
+      () => captureSaveThumbnail(projectService, project.id),
+    ))!;
     const comment = '既存データ・サムネイル確認';
     final node = (await tester.runAsync(
       () => saveService.saveToSlot(
