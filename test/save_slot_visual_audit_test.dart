@@ -204,6 +204,32 @@ void main() {
       );
       await capture('${prefix}_01_project_detail_list');
 
+      // A saved name is editable independently of the timestamp, thumbnail,
+      // archive and slot selection. Capture both the pencil and dialog.
+      final rename = find.byKey(Key('saveRename_${node.id}'));
+      expect(rename, findsOneWidget);
+      await tester.tap(rename);
+      await settle();
+      expectDialogContains(l10n.commonRename);
+      await capture('${prefix}_01a_rename_dialog');
+      await tester.enterText(
+        find.descendant(of: dialog(), matching: find.byType(TextField)),
+        '名前変更済み',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, l10n.commonSave));
+      await settle();
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.text('名前変更済み'), findsOneWidget);
+      await capture('${prefix}_01b_renamed_slot');
+      final renamed = saveService.getNodes(project.id)
+          .singleWhere((n) => n.id == node.id);
+      expect(renamed.savedAt, node.savedAt);
+      expect(renamed.thumbnailPath, node.thumbnailPath);
+      await tester.runAsync(() => saveService.renameSave(
+        project.id, node.id, comment,
+      ));
+      await settle();
+
       await tester.tap(writes.at(1));
       await settle();
       expectDialogContains(l10n.saveTreeSlotSaveDialogTitle(2));
