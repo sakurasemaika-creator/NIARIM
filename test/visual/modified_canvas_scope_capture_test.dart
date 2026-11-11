@@ -14,6 +14,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
+import 'package:niarim/screens/canvas/widgets/pen_sub_tool_panel.dart';
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
@@ -124,6 +125,22 @@ void main() {
     await shot('01_pc_large_color_wheel_hsv_edge_controls');
     await tester.tap(find.byKey(const ValueKey('color-slider-mode-rgb')));
     await shot('02_pc_large_color_wheel_rgb_edge_controls');
+
+    // Capture every tab of the shared two-row subtool chooser.
+    await settings.setDefaultDockedPanels({CanvasDockPanel.penSubTool});
+    await navigate('/home');
+    await navigate('/canvas/' + demo.id);
+    expect(find.byType(PenSubToolPanel), findsOneWidget);
+    await shot('02a_pc_pen_subtool_brush_tab_waves');
+    final subtool = find.byType(PenSubToolPanel);
+    await tester.tap(
+      find.descendant(of: subtool, matching: find.text('トーン')).first,
+    );
+    await shot('02b_pc_pen_subtool_tone_tab_waves');
+    await tester.tap(
+      find.descendant(of: subtool, matching: find.text('スタンプ')).first,
+    );
+    await shot('02c_pc_pen_subtool_stamp_tab_waves');
 
     await settings.setDefaultDockedPanels({CanvasDockPanel.filter});
     await navigate('/home');
