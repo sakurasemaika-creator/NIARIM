@@ -646,7 +646,24 @@ class ProjectListWidget extends StatelessWidget {
       ),
       trailing: (isSelectionMode || onPickProject != null)
           ? null
-          : _projectMenu(context, project),
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CollectionFavoriteButton(
+                  itemId: project.id,
+                  favorite: project.isFavorite,
+                  tooltip: project.isFavorite
+                      ? l10n.colorPickerFavoriteRemove
+                      : l10n.colorPickerFavoriteAdd,
+                  onPressed: () => runProjectAction(
+                    context,
+                    () => context.read<ProjectService>().toggleFavorite(project.id),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                CollectionActionFrame(child: _projectMenu(context, project)),
+              ],
+            ),
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
           : onPickProject != null
@@ -674,21 +691,24 @@ class ProjectListWidget extends StatelessWidget {
           fontFamilyFallback: kHeadingFontFallback,
         ),
       ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (folder.isFavorite)
-            Builder(
-              builder: (themeContext) => Icon(
-                Icons.star,
-                color: Theme.of(themeContext).colorScheme.primary,
-                size: 18,
-              ),
-            ),
-          if (!isSelectionMode && onPickProject == null)
-            _folderMenu(context, folder),
-        ],
-      ),
+      trailing: (!isSelectionMode && onPickProject == null)
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CollectionFavoriteButton(
+                  itemId: folder.id,
+                  favorite: folder.isFavorite,
+                  tooltip: folder.isFavorite
+                      ? AppLocalizations.of(context)!.colorPickerFavoriteRemove
+                      : AppLocalizations.of(context)!.colorPickerFavoriteAdd,
+                  onPressed: () =>
+                      _handleFolderAction(context, 'favorite', folder),
+                ),
+                const SizedBox(width: 4),
+                CollectionActionFrame(child: _folderMenu(context, folder)),
+              ],
+            )
+          : null,
       // フォルダは選ぶ専用画面でも通常どおり潜れる（[onPickProject]は
       // 作品タップ時のみに関わる）。
       onTap: isSelectionMode
