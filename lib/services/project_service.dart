@@ -45,9 +45,11 @@ class FavoriteProjectDeleteException implements Exception {
   String toString() => 'A favorite project cannot be moved to Trash';
 }
 
-/// ゴミ箱のフォルダに、保存先にあるのに読めていない作品が含まれるので、
-/// 戻す・完全に削除することを断った
-/// （[ProjectService.trashedFolderHasUnreadWorks]）。
+/// 読めていない作品があるので、フォルダの操作を断った：ゴミ箱のフォルダに
+/// 保存先にあるのに読めていない作品が含まれるので完全に削除しなかった
+/// （[ProjectService.trashedFolderHasUnreadWorks]）、または、中の作品が
+/// 分からないのでフォルダをゴミ箱へ移さなかった
+/// （[ProjectService.moveFolderToTrash]）。
 class TrashedFolderUnreadException implements Exception {
   const TrashedFolderUnreadException();
 
@@ -691,15 +693,20 @@ class ProjectService extends ChangeNotifier {
   /// 含まれるか（保存先を一覧できなかったときは、読み込んでいない作品を
   /// すべて読めていないものとして数える）。含むフォルダの記録を消すと、
   /// 中の作品は読めた後にフォルダではなくゴミ箱の1件ずつの行に出るので、
-  /// 読めるまで、戻す・完全に削除する・期限で片付けることをしない。
-  bool trashedFolderHasUnreadWorks(TrashedFolder record) {
+  /// 読めるまで、完全に削除する・期限で片付けることをしない（戻すことは
+  /// できる。[restoreTrashedFolder]）。
+  bool trashedFolderHasUnreadWorks(TrashedFolder record) =>
+      _unreadWorksOf(record).isNotEmpty;
+
+  /// [record]の作品のうち、読めていないもの（[trashedFolderHasUnreadWorks]）。
+  List<String> _unreadWorksOf(TrashedFolder record) {
     if (!_projectsListingFailed) {
-      return record.projectIds.any(_unreadProjectIds.contains);
+      return record.projectIds.where(_unreadProjectIds.contains).toList();
     }
     final loaded = {
       for (final p in [..._projects, ..._trash]) p.id,
     };
-    return record.projectIds.any((id) => !loaded.contains(id));
+    return record.projectIds.where((id) => !loaded.contains(id)).toList();
   }
 
   /// ディスクから読み込んだプロジェクトデータをメモリ上のマップへ反映する。
@@ -4036,7 +4043,8 @@ class ProjectService extends ChangeNotifier {
   /// フォルダを中身（下の階層のフォルダ・作品）ごとゴミ箱へ移す。ゴミ箱から
   /// [restoreTrashedFolder]でまとめて元に戻せる。先にゴミ箱の記録を、次に
   /// フォルダの一覧を保存する。どちらかを保存できなければ何も変えずに
-  /// [FolderSaveException]を投げる。
+  /// [FolderSaveException]を投げる。読めていない作品があるうちは、何も
+  /// 変えずに[TrashedFolderUnreadException]を投げる。
   Future<TrashedFolder?> moveFolderToTrash(
     String folderId, {
     bool shared = false,
@@ -4044,6 +4052,12 @@ class ProjectService extends ChangeNotifier {
     final folders = shared ? _sharedFolders : _folders;
     final top = folders.where((f) => f.id == folderId).firstOrNull;
     if (top == null) return null;
+    // 読めていない作品がどのフォルダのものかは、読めるまで分からない。
+    // 読めた作品だけをフォルダと一緒に移すと、残りは読めた後にフォルダの
+    // 外へ出る（保存先を一覧できないときは「中身なし」で移った）。
+    if (_projectsListingFailed || _unreadProjectIds.isNotEmpty) {
+      throw const TrashedFolderUnreadException();
+    }
     final ids = shared ? <String>{folderId} : folderSubtreeIds(folderId);
     final now = DateTime.now();
     final record = TrashedFolder(
@@ -4133,16 +4147,16 @@ class ProjectService extends ChangeNotifier {
 
   /// ゴミ箱のフォルダを中身ごと元の場所へ戻す。元の親のフォルダが無く
   /// なっていれば一番上へ戻す。フォルダの一覧を保存できなければ何も変えずに
-  /// [FolderSaveException]を投げる。読めていない作品を含むフォルダは、
-  /// 何も変えずに[TrashedFolderUnreadException]を投げる。
+  /// [FolderSaveException]を投げる。読めていない作品を含むフォルダも戻す
+  /// （断ると、いつまでも読めない作品が1つあるだけで、同じフォルダの読めた
+  /// 作品までゴミ箱から出せない）：読めていない作品はゴミ箱の記録から外し、
+  /// 読めたときに、戻したフォルダの中の作品として読み込まれるようにする。
   Future<void> restoreTrashedFolder(String folderId) => _queueFolder(() async {
     final record = _trashedFolders
         .where((t) => t.folder.id == folderId)
         .firstOrNull;
     if (record == null) return;
-    if (trashedFolderHasUnreadWorks(record)) {
-      throw const TrashedFolderUnreadException();
-    }
+    final unread = _unreadWorksOf(record);
     final parent = record.folder.parentFolderId;
     final folders = record.isShared ? _sharedFolders : _folders;
     try {
@@ -4160,6 +4174,20 @@ class ProjectService extends ChangeNotifier {
     }
     _trashedFolders.remove(record);
     await _persistTrashedFolders();
+    // 読めていない作品（保存には、入っていたフォルダのIDが残っている）。
+    // ゴミ箱の記録に残すと、読めた後にゴミ箱の1件ずつの行に出る。
+    if (unread.isNotEmpty) {
+      final next = {..._trashDeletedAt}
+        ..removeWhere((id, _) => unread.contains(id));
+      try {
+        await _persistTrashState(next);
+        _trashDeletedAt
+          ..clear()
+          ..addAll(next);
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+      }
+    }
     // フォルダの列の中なので、作品の保存の列だけを通す（restoreProjectは
     // フォルダの列に並ぶので、ここから待つと止まる）。戻せなかった作品は
     // ゴミ箱に1件ずつ残り、そこから戻し直せる。

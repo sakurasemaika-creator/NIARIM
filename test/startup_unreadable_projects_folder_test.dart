@@ -881,13 +881,12 @@ void main() {
   });
 
   // 作品を読めていない間も、ゴミ箱のフォルダの記録（設定から読む）は
-  // 残っているので、戻す・完全に削除する・空にするが効き、フォルダの
-  // 記録だけが消えた。読めた後、中の作品はフォルダではなくゴミ箱の
-  // 1件ずつの行に出た。読めていない作品を含むフォルダには、読めるまで
-  // どれも効かせない（保存先を一覧できないときも、一部の作品だけ
-  // 読めないときも）。
+  // 残っているので、完全に削除する・空にするが効き、フォルダの記録だけが
+  // 消えた。読めた後、中の作品はフォルダではなくゴミ箱の1件ずつの行に
+  // 出た。読めていない作品を含むフォルダは、読めるまで消さない（保存先を
+  // 一覧できないときも、一部の作品だけ読めないときも）。
   for (final blocked in ['the projects folder', 'one of its works']) {
-    test('a trashed folder is not restored, deleted or emptied while '
+    test('a trashed folder is not deleted or emptied while '
         '$blocked cannot be read', () async {
       final (folder, works) = await _seedTrashedFolder('旅行', ['海', '山']);
       final (readFolder, readWorks) = await _seedTrashedFolder('読めたフォルダ', [
@@ -924,7 +923,6 @@ void main() {
       );
 
       final refused = throwsA(isA<TrashedFolderUnreadException>());
-      await expectLater(service.restoreTrashedFolder(folder.id), refused);
       await expectLater(
         service.permanentDeleteTrashedFolder(folder.id),
         refused,
@@ -974,11 +972,144 @@ void main() {
     });
   }
 
-  // ゴミ箱の画面：読めていない作品を含むフォルダの行は「復元」「完全削除」を
-  // 押せなくし（上の知らせが理由を伝える）、中身を「中身なし」とは
-  // 言わない。「再試行」で読めたら押せるようになり、中の作品ごと戻る。
-  testWidgets('the trash row of a folder whose works are unread cannot be '
-      'restored or deleted until Retry reads them', (tester) async {
+  // 読めていない作品を含むフォルダも「復元」はできる（断ると、いつまでも
+  // 読めない作品が1つあるだけで、同じフォルダの読めた作品までゴミ箱から
+  // 出せなかった）。読めた作品はすぐフォルダの中へ戻り、読めていない作品は
+  // ゴミ箱の記録から外れて、読めたときに同じフォルダの中に出る。
+  for (final blocked in ['the projects folder', 'one of its works']) {
+    test(
+      'a trashed folder can be restored while $blocked cannot be read: '
+      'the read works return at once, the others when they are read',
+      () async {
+        final (folder, works) = await _seedTrashedFolder('旅行', ['海', '山']);
+        bool onDisk(Project p) =>
+            Directory('${storage.projectsPath}/${p.id}').existsSync();
+        final listingBlocked = blocked == 'the projects folder';
+        if (listingBlocked) {
+          storage.paths.blockListing(storage.projectsPath);
+        } else {
+          storage.paths.blockReading(
+            '${storage.projectsPath}/${works[1].id}/${works[1].id}.niapro',
+          );
+        }
+
+        final service = ProjectService();
+        addTearDown(service.dispose);
+        await service.init();
+        expect(service.projectsLoadFailed, isTrue);
+        expect(service.looseTrash, isEmpty);
+
+        await service.restoreTrashedFolder(folder.id);
+        expect(service.folders.map((f) => f.id), [folder.id]);
+        expect(service.trashedFolders, isEmpty);
+        expect(
+          service.projects.map((p) => (p.name, p.folderId)),
+          listingBlocked ? isEmpty : [('海', folder.id)],
+        );
+        expect(service.trash, isEmpty);
+        // 読めていない作品も、ゴミ箱の記録には残さない。
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getStringList('trashed_projects'), isEmpty);
+        expect(
+          jsonDecode(prefs.getString('trashed_project_folders')!),
+          isEmpty,
+        );
+        // 読めないままゴミ箱を空にしても、戻した作品は消えない。
+        await service.emptyTrash();
+        expect(works.every(onDisk), isTrue);
+
+        // 読めるようになって読み直すと、残りの作品も同じフォルダの中に出る
+        // （ゴミ箱の1件ずつの行には出ない）。
+        storage.paths.clear();
+        await service.retryLoadProjects();
+        expect(service.projectsLoadFailed, isFalse);
+        void expectRestored(ProjectService projects) {
+          expect(projects.folders.map((f) => f.id), [folder.id]);
+          expect(
+            projects.projects.map((p) => (p.name, p.folderId)),
+            unorderedEquals([('海', folder.id), ('山', folder.id)]),
+          );
+          expect(projects.trash, isEmpty);
+          expect(projects.trashedFolders, isEmpty);
+        }
+
+        expectRestored(service);
+        // 次の起動でも同じ。
+        final again = ProjectService();
+        addTearDown(again.dispose);
+        await again.init();
+        expectRestored(again);
+      },
+    );
+  }
+
+  // 作品を読めていない間にフォルダをゴミ箱へ移すと、読めた作品だけが
+  // フォルダと一緒に移り（保存先を一覧できないときは「中身なし」）、読めて
+  // いない作品は読めた後にフォルダの外へ出た。読めるまでは移さない。
+  for (final blocked in ['the projects folder', 'one of its works']) {
+    test(
+      'a folder is not moved to Trash while $blocked cannot be read',
+      () async {
+        final (folder, works) = await _seed((service) async {
+          final folder = await service.createFolder('旅行');
+          final works = <Project>[];
+          for (final name in ['海', '山']) {
+            final work = await _createWork(service, name);
+            await service.moveToFolder(work.id, folder.id);
+            works.add(work);
+          }
+          return (folder, works);
+        });
+        if (blocked == 'the projects folder') {
+          storage.paths.blockListing(storage.projectsPath);
+        } else {
+          storage.paths.blockReading(
+            '${storage.projectsPath}/${works[1].id}/${works[1].id}.niapro',
+          );
+        }
+
+        final service = ProjectService();
+        addTearDown(service.dispose);
+        await service.init();
+        expect(service.projectsLoadFailed, isTrue);
+        final prefs = await SharedPreferences.getInstance();
+        final foldersBefore = prefs.getString('project_folders');
+        final recordsBefore = prefs.getString('trashed_project_folders');
+        final trashBefore = prefs.getStringList('trashed_projects');
+
+        await expectLater(
+          service.moveFolderToTrash(folder.id),
+          throwsA(isA<TrashedFolderUnreadException>()),
+        );
+        expect(service.folders.map((f) => f.id), [folder.id]);
+        expect(service.trashedFolders, isEmpty);
+        expect(service.trash, isEmpty);
+        expect(prefs.getString('project_folders'), foldersBefore);
+        expect(prefs.getString('trashed_project_folders'), recordsBefore);
+        expect(prefs.getStringList('trashed_projects'), trashBefore);
+
+        // 読めるようになれば、中の作品ごと移せる。
+        storage.paths.clear();
+        await service.retryLoadProjects();
+        final record = await service.moveFolderToTrash(folder.id);
+        expect(
+          record?.projectIds,
+          unorderedEquals([for (final w in works) w.id]),
+        );
+        expect(service.trash.map((p) => p.name), unorderedEquals(['海', '山']));
+        expect(service.folders, isEmpty);
+      },
+    );
+  }
+
+  // ゴミ箱の画面：読めていない作品を含むフォルダの行は「完全削除」だけを
+  // 押せなくし、その行の中で理由を伝える（知らせは一覧の先頭にしか無く、
+  // スクロールすると見えない）。中身を「中身なし」とは言わない。「復元」と
+  // 「コピー」（貼り付けた先へ戻す）は押せる：読めないままでもフォルダは
+  // 戻り、中の作品は読めたときにフォルダの中に出る。「再試行」で読めたら
+  // 「完全削除」も押せるようになり、中の作品ごと戻せる。
+  testWidgets('the trash row of a folder whose works are unread can be '
+      'restored but not deleted, and says why', (tester) async {
     tester.view.physicalSize = const Size(1280, 800);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -988,10 +1119,12 @@ void main() {
       'language': 'ja',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
-    final seeded = await tester.runAsync(
-      () => _seedTrashedFolder('旅行', ['海', '山']),
-    );
-    final (folder, _) = seeded!;
+    final seeded = await tester.runAsync(() async {
+      final trip = await _seedTrashedFolder('旅行', ['海', '山']);
+      final work = await _seedTrashedFolder('出張', ['駅']);
+      return (trip.$1, work.$1);
+    });
+    final (folder, early) = seeded!;
     storage.paths.blockListing(storage.projectsPath);
     appRouter.go('/home');
     final providers = await tester.runAsync(buildAppProviders);
@@ -1008,11 +1141,10 @@ void main() {
     expect(find.text('旅行'), findsOneWidget);
     final restore = find.byKey(ValueKey('trashedFolderRestore_${folder.id}'));
     final delete = find.byKey(ValueKey('trashedFolderDelete_${folder.id}'));
-    // 「コピー」（貼り付けた先へ戻す）も同じ。
     final copy = find.byKey(ValueKey('trashCopyFolder_${folder.id}'));
-    expect(tester.widget<TextButton>(restore).onPressed, isNull);
     expect(tester.widget<TextButton>(delete).onPressed, isNull);
-    expect(tester.widget<TextButton>(copy).onPressed, isNull);
+    expect(tester.widget<TextButton>(restore).onPressed, isNotNull);
+    expect(tester.widget<TextButton>(copy).onPressed, isNotNull);
     // 押せない「完全削除」は、押せるときの色（赤）のままにしない。
     Color? inkOf(Finder button) => tester
         .widget<RichText>(
@@ -1023,34 +1155,61 @@ void main() {
         ?.color;
     final scheme = Theme.of(tester.element(row)).colorScheme;
     expect(inkOf(delete), isNot(scheme.error));
-    expect(inkOf(delete), inkOf(restore));
     expect(find.text('中身なし'), findsNothing);
     expect(
-      find.descendant(of: row, matching: find.text('プロジェクト2件')),
+      find.descendant(of: row, matching: find.textContaining('プロジェクト2件')),
       findsOneWidget,
     );
-    // 押しても、確かめるダイアログは出ず、何も変わらない。
-    await tester.tap(restore, warnIfMissed: false);
+    // 押せない理由は、その行の中にも出す。
+    final reason = find.descendant(
+      of: row,
+      matching: find.textContaining('プロジェクトを読み込めませんでした'),
+    );
+    expect(reason, findsOneWidget, reason: 'the row does not say why');
+    // 「完全削除」は押しても、確かめるダイアログは出ず、何も変わらない。
     await tester.tap(delete, warnIfMissed: false);
     await _settleWithFiles(tester, rounds: 3);
     expect(find.byType(AlertDialog), findsNothing);
     final projects = tester
         .element(find.byType(Scaffold).first)
         .read<ProjectService>();
-    expect(projects.trashedFolders.map((t) => t.folder.id), [folder.id]);
+    expect(
+      projects.trashedFolders.map((t) => t.folder.id),
+      unorderedEquals([folder.id, early.id]),
+    );
     expect(projects.folders, isEmpty);
 
-    // 読めるようになってから「再試行」：中の作品の名前が出て、押せる。
+    // 読めないままでも「復元」でフォルダは戻る（中の作品は読めたときに
+    // フォルダの中に出る）。
+    await tester.tap(find.byKey(ValueKey('trashedFolderRestore_${early.id}')));
+    await _settleWithFiles(tester, rounds: 3);
+    await tester.tap(find.byKey(const Key('homeTrashRestoreConfirmButton')));
+    for (var i = 0; i < 40 && projects.trashedFolders.length > 1; i++) {
+      await _settleWithFiles(tester, rounds: 2);
+    }
+    await _settleWithFiles(tester, rounds: 3);
+    expect(find.byType(SnackBar), findsNothing, reason: 'the restore failed');
+    expect(projects.trashedFolders.map((t) => t.folder.id), [folder.id]);
+    expect(projects.folders.map((f) => f.id), [early.id]);
+    expect(find.byKey(ValueKey('trashedFolder_${early.id}')), findsNothing);
+
+    // 読めるようになってから「再試行」：戻したフォルダの作品はフォルダの
+    // 中に出て、残したフォルダは中の作品の名前が出て「完全削除」も押せる。
     storage.paths.clear();
     await tester.tap(find.descendant(of: notice, matching: find.text('再試行')));
     for (var i = 0; i < 40 && notice.evaluate().isNotEmpty; i++) {
       await _settleWithFiles(tester, rounds: 2);
     }
     expect(notice, findsNothing);
+    expect(projects.projects.map((p) => (p.name, p.folderId)), [
+      ('駅', early.id),
+    ]);
+    expect(projects.looseTrash, isEmpty);
     expect(tester.widget<TextButton>(restore).onPressed, isNotNull);
     expect(tester.widget<TextButton>(delete).onPressed, isNotNull);
     expect(tester.widget<TextButton>(copy).onPressed, isNotNull);
     expect(inkOf(delete), scheme.error);
+    expect(reason, findsNothing);
     expect(
       find.descendant(of: row, matching: find.textContaining('海')),
       findsOneWidget,
@@ -1062,12 +1221,131 @@ void main() {
       await _settleWithFiles(tester, rounds: 2);
     }
     expect(projects.trashedFolders, isEmpty);
-    expect(projects.folders.map((f) => f.id), [folder.id]);
+    expect(
+      projects.folders.map((f) => f.id),
+      unorderedEquals([folder.id, early.id]),
+    );
     expect(
       projects.projects.map((p) => (p.name, p.folderId)),
-      unorderedEquals([('海', folder.id), ('山', folder.id)]),
+      unorderedEquals([('海', folder.id), ('山', folder.id), ('駅', early.id)]),
     );
     expect(projects.trash, isEmpty);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  // 小さい画面では、知らせ（一覧の先頭）はスクロールすると見えなくなる。
+  // 押せないボタンだけが残ると理由が分からないので、行の中の理由が
+  // 大きな文字・長い言語でもはみ出さずに出ること。
+  testWidgets('a held folder row says why on a small screen with large text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1.0;
+    tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'fr',
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final l10n = lookupAppLocalizations(const Locale('fr'));
+    final seeded = await tester.runAsync(() async {
+      for (final name in ['Croquis', 'Essai']) {
+        await _seed((service) async {
+          final project = await _createWork(service, name);
+          await service.deleteProject(project.id);
+        });
+      }
+      return _seedTrashedFolder('Voyage', ['Mer', 'Montagne']);
+    });
+    final (folder, works) = seeded!;
+    storage.paths.blockReading(
+      '${storage.projectsPath}/${works[1].id}/${works[1].id}.niapro',
+    );
+    appRouter.go('/home');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await _settleWithFiles(tester);
+    final tab = find.byKey(const ValueKey('home_tab_3'));
+    await tester.ensureVisible(tab);
+    await tester.tap(tab);
+    await _settleWithFiles(tester);
+    final delete = find.byKey(
+      ValueKey('trashedFolderDelete_${folder.id}'),
+      skipOffstage: false,
+    );
+    await tester.scrollUntilVisible(
+      delete,
+      80,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await _settleWithFiles(tester, rounds: 2);
+    expect(tester.widget<TextButton>(delete).onPressed, isNull);
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey('trashedFolder_${folder.id}')),
+        matching: find.textContaining(l10n.homeProjectsLoadFailed),
+      ),
+      findsOneWidget,
+      reason: 'the row does not say why its button is disabled',
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  // ホーム：作品を読めていない間にフォルダを選んでゴミ箱へ移そうとしても
+  // 移さず、確かめるダイアログの中で、読み込めていないことを伝える。
+  testWidgets('Home does not move a folder to Trash while the works could not '
+      'be read, and the dialog says so', (tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'ja',
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final seeded = await tester.runAsync(
+      () => _seed((service) async {
+        final folder = await service.createFolder('旅行');
+        for (final name in ['海', '山']) {
+          final work = await _createWork(service, name);
+          await service.moveToFolder(work.id, folder.id);
+        }
+        return folder;
+      }),
+    );
+    final folder = seeded!;
+    storage.paths.blockListing(storage.projectsPath);
+    appRouter.go('/home');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await _settleWithFiles(tester);
+    final projects = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>();
+    expect(find.byKey(const Key('homeProjectsLoadFailed')), findsOneWidget);
+    await tester.longPress(find.text('旅行').first);
+    await _settleWithFiles(tester, rounds: 3);
+    await tester.tap(find.byTooltip('ゴミ箱へ移動').first);
+    await _settleWithFiles(tester, rounds: 4);
+    await tester.tap(find.byKey(const Key('trash-dialog-confirm')));
+    await _settleWithFiles(tester);
+    expect(projects.trashedFolders, isEmpty, reason: 'trashed without works');
+    expect(projects.folders.map((f) => f.id), [folder.id]);
+    final error = find.byKey(const Key('trash-dialog-error'));
+    expect(error, findsOneWidget);
+    expect(tester.widget<Text>(error).data, 'プロジェクトを読み込めませんでした');
+    await tester.tap(find.byKey(const Key('trash-dialog-cancel')));
+    await _settleWithFiles(tester, rounds: 3);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
@@ -1148,7 +1426,11 @@ void main() {
     expect(works.every(onDisk), isTrue);
     expect(projects.trash.map((p) => p.id), [works[0].id]);
     // ダイアログは残り、残ったフォルダの名前と失敗の文を出す。
-    expect(find.byKey(const Key('trash-dialog-error')), findsOneWidget);
+    final error = find.byKey(const Key('trash-dialog-error'));
+    expect(error, findsOneWidget);
+    // 「保存先を確認して、もう一度」ではなく、読み込めていないことを伝える
+    // （この画面からは、何度やり直しても消せない）。
+    expect(tester.widget<Text>(error).data, 'プロジェクトを読み込めませんでした');
     expect(find.text('旅行'), findsOneWidget);
     expect(find.text('読めたフォルダ'), findsNothing);
     expect(find.text('ばらの作品'), findsNothing);

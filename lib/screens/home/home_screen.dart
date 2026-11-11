@@ -4536,18 +4536,21 @@ class _TrashTabState extends State<_TrashTab> {
             .where((project) => project.id == projectId)
             .map((project) => project.name),
     ];
-    // 読めていない作品を含むフォルダは、読めるまで押せなくする（一覧の
-    // 先頭の知らせが理由を伝える。フォルダの記録だけが消えると、中の作品は
-    // 読めた後に1件ずつの行に出る）。中身は、読めた作品の名前だけや
-    // 「中身なし」ではなく、記録にある件数で出す。
+    // 読めていない作品を含むフォルダは、読めるまで「完全削除」を押せなく
+    // する（フォルダの記録だけが消えると、中の作品は読めた後に1件ずつの
+    // 行に出る）。「復元」は押せる（読めていない作品は、読めたときに
+    // フォルダの中に出る）。中身は、読めた作品の名前だけや「中身なし」では
+    // なく、記録にある件数で出し、押せない理由も行の中に出す（一覧の
+    // 先頭の知らせは、スクロールすると見えない）。
     final unread = context.read<ProjectService>().trashedFolderHasUnreadWorks(
       record,
     );
+    final recorded = l10n.homeFolderContents(
+      record.projectIds.length,
+      record.subfolders.length,
+    );
     final subtitle = unread
-        ? l10n.homeFolderContents(
-            record.projectIds.length,
-            record.subfolders.length,
-          )
+        ? '$recorded\n${l10n.homeProjectsLoadFailed}'
         : projectNames.isNotEmpty
         ? projectNames.join('、')
         : l10n.homeFolderContents(0, record.subfolders.length);
@@ -4561,26 +4564,22 @@ class _TrashTabState extends State<_TrashTab> {
         if (widget.onCopyEntry != null)
           TextButton(
             key: ValueKey('trashCopyFolder_$id'),
-            onPressed: unread
-                ? null
-                : () => widget.onCopyEntry!(
-                    HomeClipboardEntry(
-                      source: HomePasteArea.trash,
-                      id: id,
-                      name: record.folder.name,
-                      isFolder: true,
-                      originalArea: record.isShared
-                          ? HomePasteArea.received
-                          : HomePasteArea.projects,
-                    ),
-                  ),
+            onPressed: () => widget.onCopyEntry!(
+              HomeClipboardEntry(
+                source: HomePasteArea.trash,
+                id: id,
+                name: record.folder.name,
+                isFolder: true,
+                originalArea: record.isShared
+                    ? HomePasteArea.received
+                    : HomePasteArea.projects,
+              ),
+            ),
             child: const Text('コピー'),
           ),
         TextButton(
           key: ValueKey('trashedFolderRestore_$id'),
-          onPressed: unread || _pending.contains(id)
-              ? null
-              : () => _restoreFolder(id),
+          onPressed: _pending.contains(id) ? null : () => _restoreFolder(id),
           child: Text(l10n.commonRestore),
         ),
         TextButton(

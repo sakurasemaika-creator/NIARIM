@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
-import '../services/project_service.dart' show FavoriteProjectDeleteException;
+import '../services/project_service.dart'
+    show FavoriteProjectDeleteException, TrashedFolderUnreadException;
 
+// 読めていない作品があって断られたときは、読み込めていないことを伝える
+// （「保存先を確認して、もう一度」では、何度やり直しても同じ）。
 String _failureText(AppLocalizations l10n, Object? failure) =>
     failure is FavoriteProjectDeleteException
     ? l10n.commonFavoriteDeleteBlocked
+    : failure is TrashedFolderUnreadException
+    ? l10n.homeProjectsLoadFailed
     : l10n.homeTrashOperationFailed;
 
 /// 作品の操作（ゴミ箱へ移す・戻す・お気に入り等）を保存できなかったことを
