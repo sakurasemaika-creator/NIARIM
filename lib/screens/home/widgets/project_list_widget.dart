@@ -948,6 +948,18 @@ class ProjectListWidget extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
+        // Selection-mode favorite markers are visual only; tapping still
+        // selects the card, as before. Normal mode has real outlined buttons.
+        if (!showActions && isFavorite)
+          Positioned(
+            left: 4,
+            bottom: 4,
+            child: Icon(
+              Icons.star,
+              size: CollectionActionFrame.glyphSize,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
         if (showActions)
           Positioned(
             top: 4,
