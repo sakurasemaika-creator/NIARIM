@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../config/font_fallback.dart';
 import '../config/accent_text_theme.dart';
+import '../utils/line_break.dart';
 
 /// 一覧画面が空のときに表示する共通プレースホルダー。円形の色付き
 /// アイコンバッジ・くらむぼんの太字タイトル・淡色の補足文という構成を、
@@ -28,6 +29,21 @@ class EmptyStatePlaceholder extends StatelessWidget {
     this.scrollable = true,
   });
 
+  /// 中央にそろえた文。韓国語は語（空白で区切った単位）の途中で折り返さない
+  /// （「프로젝트가 없습니／다」と切れていた）。描く文にだけ語結合子を入れ、
+  /// 読み上げと文での検索には元の文を渡す。ハングルの無い文は普通の[Text]。
+  static Widget _centredText(String text, TextStyle style) {
+    final shown = keepKoreanWordsTogether(text);
+    if (shown == text) {
+      return Text(text, textAlign: TextAlign.center, style: style);
+    }
+    return Text.rich(
+      TextSpan(text: shown, semanticsLabel: text),
+      textAlign: TextAlign.center,
+      style: style,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -46,10 +62,9 @@ class EmptyStatePlaceholder extends StatelessWidget {
             child: Icon(icon, size: 40, color: AccentTextTheme.of(context)),
           ),
           const SizedBox(height: 16),
-          Text(
+          _centredText(
             title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
+            TextStyle(
               color: scheme.onSurface,
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -59,10 +74,9 @@ class EmptyStatePlaceholder extends StatelessWidget {
           ),
           if (hint != null) ...[
             const SizedBox(height: 8),
-            Text(
+            _centredText(
               hint!,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
+              TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
             ),
           ],
           if (action != null) ...[const SizedBox(height: 16), action!],
