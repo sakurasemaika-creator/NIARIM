@@ -186,7 +186,8 @@ void main() {
     // The outgoing-share pill has a distinct file format but may use Trash.
     final sharePath = service.outgoingShares.single.path;
     await tester.tap(find.byKey(ValueKey('outgoingShareMenu_$sharePath')));
-    await tester.pump(const Duration(milliseconds: 400));
+    // PopupMenuRoute blocks hit-testing until its entrance animation finishes.
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
     final copyOption = find.byWidgetPredicate((widget) =>
         widget is PopupMenuItem<String> &&
         widget.value == 'copyToClipboard');
@@ -272,7 +273,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('home_tab_3')));
     await pumpIo(tester);
     await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
-    await tester.pump(const Duration(milliseconds: 400));
+    // Export listing checks the real filesystem asynchronously before showing
+    // the dialog; one synthetic pump is not enough for the result.
+    await pumpIo(tester);
     expect(find.byKey(const Key('homePasteToTrashDialog')), findsOneWidget);
     await capture(tester, captureKey, '19_works_folder_trash_confirmation');
     await tester.tap(find.byKey(const Key('homePasteTrashConfirmButton')));
