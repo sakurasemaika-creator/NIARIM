@@ -1628,7 +1628,7 @@
       }
     }
   },
-  "saveTreeRestoreAction": "복원",
+  "saveTreeRestoreAction": "불러오기",
   "saveTreeTimelineActionChoiceBody": "이 세이브를 현재 내용으로 「덮어쓰기」할지, 「여기서부터 다시 시작」할지 선택하세요.",
   "saveTreeOverwriteAction": "덮어쓰기",
   "saveTreeOverwriteConfirmBody": "그 시점의 세이브 데이터가 사라집니다. 계속하시겠습니까?",
@@ -1636,7 +1636,7 @@
   "saveTreeResumeConfirmBody": "저장하지 않은 현재 데이터가 사라집니다. 계속하시겠습니까?",
   "saveTreeProjectDetailResumeBody": "이 세이브 데이터에서 작업을 다시 시작하시겠습니까?",
   "saveTreeLoadFailedSnackbar": "저장 데이터를 불러오지 못했습니다",
-  "saveTreeRestoredSnackbar": "{name}을(를) 복원했습니다",
+  "saveTreeRestoredSnackbar": "저장 데이터를 불러왔습니다 ({name})",
   "@saveTreeRestoredSnackbar": {
     "placeholders": {
       "name": {
