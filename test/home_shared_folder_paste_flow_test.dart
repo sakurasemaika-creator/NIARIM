@@ -14,6 +14,7 @@ import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:niarim/services/work_folder_service.dart';
+import 'package:niarim/utils/app_error_reporter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -62,6 +63,16 @@ void main() {
       await File(output.path + '/' + name + '.png')
           .writeAsBytes(bytes!, flush: true);
     });
+  }
+
+  Future<void> awaitLibraryState(
+    WidgetTester tester, bool Function() done,
+  ) async {
+    for (var i = 0; i < 50 && !done(); i++) {
+      await tester.runAsync(() =>
+          Future<void>.delayed(const Duration(milliseconds: 45)));
+      await tester.pump(const Duration(milliseconds: 80));
+    }
   }
 
   Future<void> pumpIo(WidgetTester tester) async {
@@ -200,9 +211,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byKey(const Key('homePasteToTrashDialog')), findsOneWidget);
     await capture(tester, captureKey, '15_outgoing_trash_confirmation');
+    AppErrorReporter.recentErrors.clear();
     await tester.tap(find.byKey(const Key('homePasteTrashConfirmButton')));
-    await pumpIo(tester);
-    expect(service.outgoingShares, isEmpty);
+    await awaitLibraryState(tester, () => service.outgoingShares.isEmpty);
+    expect(service.outgoingShares, isEmpty,
+        reason: 'Errors during outgoing move: ${AppErrorReporter.recentErrors}');
     final archived = (await tester.runAsync(LocalFileTrashService.list))!;
     expect(archived, hasLength(1));
     expect(archived.single.kind, LocalTrashKind.outgoingShare);
@@ -217,8 +230,9 @@ void main() {
     expect(find.byKey(const Key('homePasteRestoreDialog')), findsOneWidget);
     await capture(tester, captureKey, '17_outgoing_restore_confirmation');
     await tester.tap(find.byKey(const Key('homePasteRestoreConfirmButton')));
-    await pumpIo(tester);
-    expect(service.outgoingShares, hasLength(1));
+    await awaitLibraryState(tester, () => service.outgoingShares.length == 1);
+    expect(service.outgoingShares, hasLength(1),
+        reason: 'Errors during outgoing restore: ${AppErrorReporter.recentErrors}');
     await capture(tester, captureKey, '18_outgoing_restored');
   });
 
@@ -278,9 +292,11 @@ void main() {
     await pumpIo(tester);
     expect(find.byKey(const Key('homePasteToTrashDialog')), findsOneWidget);
     await capture(tester, captureKey, '19_works_folder_trash_confirmation');
+    AppErrorReporter.recentErrors.clear();
     await tester.tap(find.byKey(const Key('homePasteTrashConfirmButton')));
-    await pumpIo(tester);
-    expect(works.folders, isEmpty);
+    await awaitLibraryState(tester, () => works.folders.isEmpty);
+    expect(works.folders, isEmpty,
+        reason: 'Errors during Works-folder move: ${AppErrorReporter.recentErrors}');
     final archived = (await tester.runAsync(LocalFileTrashService.list))!;
     expect(archived, hasLength(1));
     expect(archived.single.kind, LocalTrashKind.exportedWorkFolder);
@@ -295,8 +311,9 @@ void main() {
     expect(find.byKey(const Key('homePasteRestoreDialog')), findsOneWidget);
     await capture(tester, captureKey, '21_works_folder_restore_confirmation');
     await tester.tap(find.byKey(const Key('homePasteRestoreConfirmButton')));
-    await pumpIo(tester);
-    expect(works.folders.single.name, '空の書き出し');
+    await awaitLibraryState(tester, () => works.folders.length == 1);
+    expect(works.folders.single.name, '空の書き出し',
+        reason: 'Errors during Works restore: ${AppErrorReporter.recentErrors}');
     expect(await tester.runAsync(LocalFileTrashService.list), isEmpty);
     await capture(tester, captureKey, '22_works_folder_restored');
   });
