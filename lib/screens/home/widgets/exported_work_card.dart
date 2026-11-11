@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../config/font_fallback.dart';
+import 'folder_thumbnail.dart';
 
 /// A saved export keeps its complete identity visible, including large text.
 class ExportedWorkCard extends StatelessWidget {
@@ -22,6 +21,7 @@ class ExportedWorkCard extends StatelessWidget {
     required this.onDelete,
     this.onChangeThumbnail,
     this.thumbnailPath,
+    this.originalMediaPath,
     this.thumbnailHidden = false,
     this.shareBusy = false,
     this.shareError,
@@ -38,6 +38,7 @@ class ExportedWorkCard extends StatelessWidget {
   final VoidCallback? onCopy;
   final VoidCallback? onChangeThumbnail;
   final String? thumbnailPath;
+  final String? originalMediaPath;
   final bool thumbnailHidden;
   final VoidCallback? onShare;
   final VoidCallback? onDelete;
@@ -168,7 +169,8 @@ class ExportedWorkCard extends StatelessWidget {
                 // Inline only when the full name fits beside the icon/actions.
                 // Otherwise give the name its own full-width, wrapping row.
                 final nameWidth = constraints.maxWidth - 40 - 12 -
-                    (onCopy == null ? 144 : 192) - 12;
+                    (onCopy == null ? 144 : 192) -
+                    (onChangeThumbnail == null ? 0 : 48) - 12;
                 final measure = TextPainter(
                   text: TextSpan(
                     text: displayName,
@@ -188,12 +190,10 @@ class ExportedWorkCard extends StatelessWidget {
                   height: 40,
                   child: thumbnailHidden
                       ? Icon(icon, color: foreground)
-                      : thumbnailPath != null
-                          ? Image.file(
-                              File(thumbnailPath!),
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) =>
-                                  Icon(icon, color: foreground),
+                      : (thumbnailPath ?? originalMediaPath) != null
+                          ? FolderCoverMedia(
+                              path: (thumbnailPath ?? originalMediaPath)!,
+                              cacheWidth: 120,
                             )
                           : Icon(icon, color: foreground),
                 );
