@@ -2935,9 +2935,10 @@ class _FolderableList<T> extends StatelessWidget {
       } else if (entry is File) {
         final file = entry;
         final extension = file.path.split('.').last.toLowerCase();
-        // Only still-image formats can be displayed with Image.file.
-        // Video files are omitted until a preview image exists.
-        if (!const {'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'}
+        // Still images display directly. Exported videos get a cached
+        // first-frame poster through FolderCoverMedia on Android.
+        if (!const {'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp',
+                    'mp4', 'mov', 'webm', 'mkv', 'avi'}
             .contains(extension)) continue;
         try {
           result.add(FolderThumbnailChoice(
