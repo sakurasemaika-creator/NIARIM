@@ -6,6 +6,7 @@ on:
       - '.github/workflows/thumbnail-editor-visual-captures.yml'
       - 'test/thumbnail_editor_visual_capture_test.dart'
       - 'test/thumbnail_editor_actual_app_capture_test.dart'
+      - 'lib/screens/home/widgets/exported_work_card.dart'
   workflow_dispatch:
 permissions:
   contents: read
