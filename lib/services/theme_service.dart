@@ -1108,6 +1108,14 @@ class ThemeService extends ChangeNotifier {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
+        // Remove the thick Material shadow for standard, mini and extended
+        // FABs, including pressed/hovered/focused/disabled states. Do not
+        // affect shadows on unrelated cards or intentional thin outlines.
+        elevation: 0,
+        focusElevation: 0,
+        hoverElevation: 0,
+        highlightElevation: 0,
+        disabledElevation: 0,
         // 完全な円形：角丸四角より親しみやすく、LINE等の日本製アプリで
         // 定番のFAB形状。
         shape: const CircleBorder(),

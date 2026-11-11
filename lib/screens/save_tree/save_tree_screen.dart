@@ -584,10 +584,10 @@ class _SlotView extends StatelessWidget {
             node.comment ?? l10n.saveTreeSlotFallbackName(node.slotIndex + 1),
           ),
         ),
-        elevation: 0,
+        // Shared SnackBarThemeData already removes the thick shadow.
+        // Keep this intentionally smaller corner radius.
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide.none,
         ),
       ),
     );
@@ -1066,10 +1066,10 @@ class _TreeView extends StatelessWidget {
             node.comment ?? l10n.saveTreeNodeDefaultName,
           ),
         ),
-        elevation: 0,
+        // Shared SnackBarThemeData already removes the thick shadow.
+        // Keep this intentionally smaller corner radius.
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide.none,
         ),
       ),
     );

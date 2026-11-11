@@ -774,21 +774,13 @@ class _HomeScreenState extends State<HomeScreen>
     required VoidCallback onPressed,
     required IconData icon,
   }) {
-    final scheme = Theme.of(context).colorScheme;
     return FloatingActionButton(
       key: key,
       heroTag: heroTag,
       mini: compact,
       materialTapTargetSize: MaterialTapTargetSize.padded,
       tooltip: tooltip,
-      backgroundColor: scheme.primary,
-      foregroundColor: scheme.onPrimary,
-      shape: const CircleBorder(side: BorderSide.none),
-      elevation: 0,
-      focusElevation: 0,
-      hoverElevation: 0,
-      highlightElevation: 0,
-      disabledElevation: 0,
+      // ThemeService provides the common shape, colors and zero shadow.
       onPressed: onPressed,
       child: Icon(icon),
     );
@@ -2030,14 +2022,6 @@ class _SharedScreenState extends State<SharedScreen> {
           ? null
           : FloatingActionButton(
         heroTag: 'shared-add-folder',
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        shape: const CircleBorder(),
-        elevation: 0,
-        focusElevation: 0,
-        hoverElevation: 0,
-        highlightElevation: 0,
-        disabledElevation: 0,
         tooltip: l10n.homeAddSheetNewFolder,
         onPressed: () => showCreateFolderNameDialog(
           context,
