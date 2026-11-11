@@ -2906,13 +2906,17 @@ class _TrashTabState extends State<_TrashTab> {
 
   Widget _folderRow(TrashedFolder record, AppLocalizations l10n) {
     final id = record.folder.id;
-    final subtitle = [
-      _deletedLabel(record.deletedAt, l10n),
-      l10n.homeFolderContents(
-        record.projectIds.length, record.subfolders.length,
-      ),
-    ].join(' · ');
+    final projectNames = [
+      for (final projectId in record.projectIds)
+        ...context.read<ProjectService>().trash
+            .where((project) => project.id == projectId)
+            .map((project) => project.name),
+    ];
+    final subtitle = projectNames.isNotEmpty
+        ? projectNames.join('、')
+        : l10n.homeFolderContents(0, record.subfolders.length);
     return _trashCard(
+      detailsKey: ValueKey('trashedFolder_$id'),
       leading: const Icon(Icons.folder_delete_outlined, size: 36),
       title: record.folder.name,
       subtitle: subtitle,
@@ -3093,8 +3097,10 @@ class _TrashTabState extends State<_TrashTab> {
   Widget _trashCard({
     required Widget leading, required String title,
     required String subtitle, required List<Widget> actions,
+    Key? detailsKey,
   }) {
     final details = ListTile(
+      key: detailsKey,
       leading: leading,
       title: Text(title, style: const TextStyle(
         fontFamily: 'Kuramubon',
