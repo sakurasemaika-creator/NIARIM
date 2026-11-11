@@ -10,6 +10,7 @@ import '../../../services/tone_service.dart';
 import '../../../services/stamp_service.dart';
 import '../../../models/stamp.dart';
 import '../../../widgets/labeled_slider.dart';
+import '../../../widgets/stroke_sample_preview.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
 import '../../../config/font_fallback.dart';
@@ -171,17 +172,25 @@ class _BrushTab extends StatelessWidget {
           selected: isSelected,
           // 色は一覧の行の決まりに任せる（選んだ行は選択色の上の文字色）。
           leading: const Icon(Icons.brush, size: 16),
-          title: Text(
-            brush.name,
-            style: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
+          title: Tooltip(
+            message: l10n.penSubToolBrushSizeOpacity(
+              shown.size.round(),
+              shown.opacity,
+            ),
+            child: Text(
+              brush.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
           ),
-          subtitle: Text(
-            l10n.penSubToolBrushSizeOpacity(shown.size.round(), shown.opacity),
-            style: TextStyle(fontSize: 10),
+          subtitle: StrokeSamplePreview(
+            brush: shown,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           trailing: GestureDetector(
             onTap: () => brushService.toggleFavoriteBrush(brush.id),
@@ -203,7 +212,7 @@ class _BrushTab extends StatelessWidget {
   }
 }
 
-/// トーンタブ
+/// トーンタブ：上段に名称、下段に実際のトーンで描いた波形を表示。
 class _ToneTab extends StatelessWidget {
   final VoidCallback onClose;
   const _ToneTab({required this.onClose});
@@ -214,58 +223,41 @@ class _ToneTab extends StatelessWidget {
     final tones = toneService.tones;
     final current = toneService.currentTone;
 
-    return GridView.builder(
-      padding: const EdgeInsets.all(8),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 4,
-        mainAxisSpacing: 4,
-      ),
+    return ListView.builder(
       itemCount: tones.length,
       itemBuilder: (context, index) {
         final tone = tones[index];
         final isSelected = current?.id == tone.id;
-        return GestureDetector(
+        return ListTile(
+          key: ValueKey('pen-subtool-tone-' + tone.id),
+          dense: true,
+          selected: isSelected,
+          leading: const Icon(Icons.texture, size: 16),
+          title: Text(
+            tone.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
+          ),
+          subtitle: StrokeSamplePreview(
+            tone: tone,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onTap: () {
             toneService.selectTone(tone.id);
             onClose();
           },
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : ThemeService.activeColorScheme.onSurfaceVariant,
-                width: isSelected ? 2 : 1,
-              ),
-              borderRadius: BorderRadius.circular(4),
-              color: ThemeService.activeColorScheme.onSurfaceVariant,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.grid_on, size: 20),
-                const SizedBox(height: 2),
-                Text(
-                  tone.name,
-                  style: const TextStyle(
-                    fontSize: 8,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                ),
-              ],
-            ),
-          ),
         );
       },
     );
   }
 }
 
-/// スタンプタブ
+/// スタンプタブ：上段に名称、下段に実際のスタンプで描いた波形を表示。
 class _StampTab extends StatelessWidget {
   final VoidCallback onClose;
   const _StampTab({required this.onClose});
@@ -276,57 +268,39 @@ class _StampTab extends StatelessWidget {
     final stamps = stampService.stamps;
     final current = stampService.currentStamp;
 
-    return GridView.builder(
-      padding: const EdgeInsets.all(8),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 4,
-        mainAxisSpacing: 4,
-      ),
+    return ListView.builder(
       itemCount: stamps.length,
       itemBuilder: (context, index) {
         final stamp = stamps[index];
         final isSelected = current?.id == stamp.id;
         final builtIn = stampService.isBuiltIn(stamp.id);
-        return GestureDetector(
+        return ListTile(
+          key: ValueKey('pen-subtool-stamp-' + stamp.id),
+          dense: true,
+          selected: isSelected,
+          leading: const Icon(Icons.star_border, size: 16),
+          title: Text(
+            stamp.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
+          ),
+          subtitle: StrokeSamplePreview(
+            stamp: stamp,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onTap: () {
             stampService.selectStamp(stamp.id);
             onClose();
           },
-          // 組み込みスタンプはStampService側で編集不可なので、
-          // 保存できたように見える偽の編集経路を出さない。複製後は編集可能。
+          // Built-in assets are read-only; a duplicate is editable.
           onLongPress: builtIn
               ? null
               : () => _showStampSettingsDialog(context, stampService, stamp),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : ThemeService.activeColorScheme.onSurfaceVariant,
-                width: isSelected ? 2 : 1,
-              ),
-              borderRadius: BorderRadius.circular(4),
-              color: ThemeService.activeColorScheme.onSurfaceVariant,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.star, size: 20),
-                const SizedBox(height: 2),
-                Text(
-                  stamp.name,
-                  style: const TextStyle(
-                    fontSize: 8,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                ),
-              ],
-            ),
-          ),
         );
       },
     );
