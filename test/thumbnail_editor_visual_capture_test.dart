@@ -34,12 +34,15 @@ void main() {
     c.drawRect(const Rect.fromLTWH(0, 195, 480, 75),
         Paint()..color = const Color(0xFF4B9A91));
     final picture = recorder.endRecording();
-    final image = await picture.toImage(480, 270);
-    final data = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-    picture.dispose();
+    // Image encoding and disk I/O must escape the widget test fake clock.
     final exportedImage = File(temp.path + '/sample_export.png');
-    await exportedImage.writeAsBytes(data!.buffer.asUint8List());
+    await tester.runAsync(() async {
+      final image = await picture.toImage(480, 270);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      picture.dispose();
+      await exportedImage.writeAsBytes(data!.buffer.asUint8List());
+    });
 
     print('CAPTURE_STAGE 01 before fonts');
     await loadAppFonts(tester);
