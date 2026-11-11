@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/tone.dart';
 import '../../../services/export_share_service.dart';
+import '../../../services/brush_service.dart';
 import '../../../services/tone_service.dart';
 import 'creative_folder_sheets.dart';
 import '../../../widgets/docked_panel_scope.dart';
@@ -279,7 +280,7 @@ class _TonePanelState extends State<TonePanel> {
                           ),
                           subtitle: StrokeSamplePreview(
                             tone: tone,
-                            color: Theme.of(context).colorScheme.onSurface,
+                            color: context.watch<BrushService>().currentColor,
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
