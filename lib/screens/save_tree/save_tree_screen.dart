@@ -1,14 +1,11 @@
+import 'dart:typed_data';
 import 'package:niarim/services/theme_service.dart';
 
 import 'dart:io';
-import 'dart:math' as math;
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../engine/layer_compositor.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
@@ -36,49 +33,7 @@ const int _saveTreeSizeWarningThresholdBytes = 300 * 1024 * 1024; // 300MB
 Future<Uint8List?> _generateSaveNodeThumbnail(
   ProjectService ps,
   String projectId,
-) async {
-  final scenes = ps.scenesOf(projectId);
-  if (scenes.isEmpty) return captureEmptySaveThumbnail(ps, projectId);
-  final scene = scenes.first;
-  if (scene.frames.isEmpty) return captureEmptySaveThumbnail(ps, projectId);
-  final frame = scene.frames.first;
-  final tileManager = ps.tileManagerOf(projectId);
-  final w = tileManager.canvasWidth;
-  final h = tileManager.canvasHeight;
-  if (w <= 0 || h <= 0) return null;
-
-  const thumbMax = 200;
-  final scale = thumbMax / math.max(w, h);
-  final tw = (w * scale).round().clamp(1, thumbMax);
-  final th = (h * scale).round().clamp(1, thumbMax);
-
-  final layers = ps.layersOf(projectId, scene.id, frame.index);
-  final fullImage = await LayerCompositor.composite(
-    tileManager,
-    layers,
-    (l) => ps.tileKeyFor(projectId, scene.id, frame.index, l.id),
-    w,
-    h,
-    paperColor: LayerCompositor.paperForBlendModes(
-      layers,
-      ps.projects.where((p) => p.id == projectId).firstOrNull?.backgroundColor,
-    ),
-  );
-  final recorder = ui.PictureRecorder();
-  final canvas = ui.Canvas(recorder);
-  canvas.drawImageRect(
-    fullImage,
-    ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
-    ui.Rect.fromLTWH(0, 0, tw.toDouble(), th.toDouble()),
-    ui.Paint(),
-  );
-  fullImage.dispose();
-  final picture = recorder.endRecording();
-  final thumbImage = await picture.toImage(tw, th);
-  final byteData = await thumbImage.toByteData(format: ui.ImageByteFormat.png);
-  thumbImage.dispose();
-  return byteData?.buffer.asUint8List();
-}
+) => captureSaveThumbnail(ps, projectId);
 
 /// スロット番号→そのスロットのノードの対応表。
 Map<int, SaveNode> _nodesBySlot(List<SaveNode> nodes) {
@@ -396,7 +351,7 @@ Future<void> _handleSaveNodeRestore(
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, _SaveNodeChoice.resume),
-            child: Text(l10n.saveTreeResumeFromHereAction),
+            child: Text(l10n.saveTreeRestoreAction),
           ),
         ],
       ),
@@ -426,7 +381,7 @@ Future<void> _handleSaveNodeRestore(
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.saveTreeResumeFromHereAction),
+        title: Text(l10n.saveTreeRestoreAction),
         content: Text(l10n.saveTreeResumeConfirmBody),
         actions: [
           TextButton(
@@ -457,7 +412,7 @@ Future<void> _handleSaveNodeRestore(
         ),
         FilledButton(
           onPressed: () => Navigator.pop(ctx, true),
-          child: Text(l10n.saveTreeResumeFromHereAction),
+          child: Text(l10n.saveTreeRestoreAction),
         ),
       ],
     ),
@@ -618,6 +573,7 @@ class _SlotView extends StatelessWidget {
             node.comment ?? l10n.saveTreeSlotFallbackName(node.slotIndex + 1),
           ),
         ),
+        elevation: 0,
       ),
     );
   }
@@ -649,7 +605,7 @@ class _SaveNodeThumbnail extends StatelessWidget {
       child: path != null
           ? Image.file(
               File(path),
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               // 保存されているサムネイルは長辺200pxだが、ここでの表示は
               // 40〜48px。指定しないと200px相当のまま画像キャッシュに載る
               // ため、実際に表示する画素数へ落としてデコードする。
@@ -707,7 +663,8 @@ class _SlotTile extends StatelessWidget {
           leading: _SaveNodeThumbnail(node: node),
           title: Row(
             children: [
-              Expanded(
+              Flexible(
+                fit: FlexFit.loose,
                 child: Text(
                   '${l10n.saveTreeSlotLabel(slotIndex + 1)}${node?.comment != null ? '　${node!.comment}' : ''}',
                   maxLines: 1,
@@ -898,7 +855,8 @@ class _TreeView extends StatelessWidget {
             leading: _SaveNodeThumbnail(node: node, size: 40),
             title: Row(
               children: [
-                Expanded(
+                Flexible(
+                  fit: FlexFit.loose,
                   child: Text(
                     node.comment ?? l10n.saveTreeNodeDefaultTitle,
                     maxLines: 1,
@@ -988,6 +946,7 @@ class _TreeView extends StatelessWidget {
             node.comment ?? l10n.saveTreeNodeDefaultName,
           ),
         ),
+        elevation: 0,
       ),
     );
   }
