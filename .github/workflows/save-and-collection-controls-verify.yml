@@ -13,6 +13,7 @@ on:
       - 'test/save_slot_visual_audit_test.dart'
       - 'test/project_grid_actions_test.dart'
       - 'test/save_slot_action_buttons_test.dart'
+      - 'test/save_slot_action_success_visual_test.dart'
   workflow_dispatch:
 
 permissions:
@@ -42,7 +43,8 @@ jobs:
           flutter test --no-pub --reporter expanded \
             test/save_slot_action_buttons_test.dart \
             test/save_slot_visual_audit_test.dart \
-            test/project_grid_actions_test.dart
+            test/project_grid_actions_test.dart \
+            test/save_slot_action_success_visual_test.dart
       - name: Upload actual Flutter screenshots
         if: always()
         uses: actions/upload-artifact@v4
