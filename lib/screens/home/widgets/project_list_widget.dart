@@ -30,6 +30,7 @@ import 'folder_save_feedback.dart';
 import 'folder_delete_dialog.dart';
 import 'work_folder_move_sheet.dart';
 import 'project_folder_edit_dialog.dart';
+import 'folder_thumbnail.dart';
 import '../../../utils/folder_persistence.dart';
 import '../../../utils/folder_tree.dart';
 
@@ -702,7 +703,14 @@ class ProjectListWidget extends StatelessWidget {
               value: isSelected,
               onChanged: (_) => onSelectionChanged(folder.id),
             )
-          : Icon(Icons.folder, color: color, size: 32),
+          : SizedBox(
+              width: 48,
+              height: 48,
+              child: FolderThumbnail(
+                folder: folder,
+                choices: _folderCoverChoices(context, folder),
+              ),
+            ),
       title: Text(
         folder.name,
         style: const TextStyle(
@@ -850,6 +858,36 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
+  List<FolderThumbnailChoice> _folderCoverChoices(
+    BuildContext context,
+    ProjectFolder folder,
+  ) {
+    final service = context.read<ProjectService>();
+    return projectFolderThumbnailChoices(
+      service.folders,
+      service.projects,
+      folder.id,
+    );
+  }
+
+  void _changeFolderThumbnail(
+    BuildContext context,
+    ProjectFolder folder,
+  ) {
+    showFolderThumbnailDialog(
+      context,
+      folder: folder,
+      choices: _folderCoverChoices(context, folder),
+      onSave: ({required mode, sourceId, imagePath}) =>
+          context.read<ProjectService>().setFolderThumbnail(
+            folder.id,
+            mode: mode,
+            sourceId: sourceId,
+            imagePath: imagePath,
+          ),
+    );
+  }
+
   Widget _folderGridCard(BuildContext context, ProjectFolder folder) {
     final isSelected = selectedIds.contains(folder.id);
     final scheme = Theme.of(context).colorScheme;
@@ -902,24 +940,10 @@ class ProjectListWidget extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                color.withValues(alpha: 0.22),
-                                color.withValues(alpha: 0.1),
-                              ],
-                            ),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.folder_rounded,
-                              color: color,
-                              size: 46,
-                            ),
-                          ),
+                        FolderThumbnail(
+                          key: ValueKey('projectFolderCover_${folder.id}'),
+                          folder: folder,
+                          choices: _folderCoverChoices(context, folder),
                         ),
                         _gridCardActions(
                           context,
@@ -1050,6 +1074,11 @@ class ProjectListWidget extends StatelessWidget {
     return [
       PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
       PopupMenuItem(value: 'edit', child: Text(l10n.projectListEditFolderAction)),
+      PopupMenuItem(
+        value: 'thumbnail',
+        child: Text(Localizations.localeOf(context).languageCode == 'ja'
+            ? 'サムネイル変更' : 'Change thumbnail'),
+      ),
       PopupMenuItem(
         value: 'favorite',
         child: Text(folder.isFavorite
@@ -1196,6 +1225,8 @@ class ProjectListWidget extends StatelessWidget {
         onOpenFolder(folder.id);
       case 'edit':
         _showEditFolderDialog(context, folder);
+      case 'thumbnail':
+        _changeFolderThumbnail(context, folder);
       case 'favorite':
         try {
           await service.toggleFolderFavorite(folder.id);
