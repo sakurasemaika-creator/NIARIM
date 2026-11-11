@@ -168,8 +168,11 @@ void main() {
     expect(worksTab, findsOneWidget);
     await tester.tap(worksTab);
     await tester.pump(const Duration(milliseconds: 750));
-    expect(find.byKey(const Key('exportedWorkMoreMenu')), findsOneWidget);
+    print('DEBUG_WORKS_FILES: ' + (await tester.runAsync(() => ExportEngine.listExportedFiles(forceRefresh: true)))!.map((e) => e.path).join(', '));
+    print('DEBUG_WORKS_MENU: ' + find.byKey(const Key('exportedWorkMoreMenu')).evaluate().length.toString());
+    print('DEBUG_WORKS_PROJECT_VISIBLE: ' + find.byType(ProjectListWidget).evaluate().length.toString());
     await capture('08_phone_real_exported_works');
+    expect(find.byKey(const Key('exportedWorkMoreMenu')), findsOneWidget);
     await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')));
     await tester.pump(const Duration(milliseconds: 350));
     await capture('09_phone_real_export_menu');
