@@ -1497,12 +1497,17 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final filterAdjusting = _showFilterPanel &&
         (!isDesktop || context.watch<FilterService>().currentFilter != null);
     final colorAdjusting = _showColorAdjustPanel;
-    final selectionEditingHidden = _selectionEditingGivesWay(isDesktop);
+    // Keep only the actual canvas and the fixed bottom adjustment controls
+    // visible while editing, on desktop as well as on phones. Do not change
+    // the saved dock/toolbar configuration; it returns when editing ends.
+    final immersiveAdjusting = filterAdjusting || colorAdjusting;
+    final selectionEditingHidden =
+        _selectionEditingGivesWay(isDesktop) || colorAdjusting;
     final settings = context.watch<SettingsService>();
     final leftDockHasPanels =
-        isDesktop && _hasPhysicalDockPanels(settings, right: false);
+        isDesktop && !immersiveAdjusting && _hasPhysicalDockPanels(settings, right: false);
     final rightDockHasPanels =
-        isDesktop && _hasPhysicalDockPanels(settings, right: true);
+        isDesktop && !immersiveAdjusting && _hasPhysicalDockPanels(settings, right: true);
     // 左利きモード：フローティング／ドッキングパネルを左右反転し、
     // 描画する手の側にパネルが重ならないようにする。
     final leftHanded = settings.isLeftHanded;
@@ -1544,7 +1549,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // フレーム一覧を畳み、調整パネルを画面下部へ横幅いっぱいに
                     // 出す（プレビューはキャンバスそのものに出る）。Undo/Redoも
                     // 調整パネル側だけにして、同じ役割のボタンを重ねて出さない。
-                    if (!filterAdjusting) _buildTopBar(),
+                    if (!immersiveAdjusting) _buildTopBar(),
                     Expanded(
                       child: LayoutBuilder(
                         builder: (context, dockRowConstraints) => Row(
@@ -1556,7 +1561,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           children: [
                             // デスクトップでは常設ツールバーを画面下部の横並びバーではなく、
                             // 左側（左利きモード時は右側）の縦レールとして常時表示する。
-                            if (isDesktop && !leftHanded)
+                            if (isDesktop && !immersiveAdjusting && !leftHanded)
                               _buildToolbarWidget(vertical: true),
                             // Physical left dock: show the saved right group
                             // in left-handed mode, and the left group otherwise.
@@ -1583,7 +1588,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   onDragEnd: () =>
                                       _finishPhysicalDockResize(right: false),
                                 ),
-                            ] else if (isDesktop && _desktopDockDragActive)
+                            ] else if (isDesktop && !immersiveAdjusting && _desktopDockDragActive)
                               _desktopEmptyDockDropTarget(right: false),
                             Expanded(
                               child: Stack(
@@ -1837,11 +1842,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 ),
                                 child: _buildRightDockColumn(),
                               )
-                            else if (isDesktop && _desktopDockDragActive)
+                            else if (isDesktop && !immersiveAdjusting && _desktopDockDragActive)
                               _desktopEmptyDockDropTarget(right: true),
                             // The outer toolbar moves to the dominant hand;
                             // the saved dock groups are visually mirrored.
-                            if (isDesktop && leftHanded)
+                            if (isDesktop && !immersiveAdjusting && leftHanded)
                               _buildToolbarWidget(vertical: true),
                           ],
                         ),
@@ -1882,7 +1887,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           _resetSelectionSliders();
                         }),
                       ),
-                    if (!filterAdjusting && !colorAdjusting &&
+                    if (!immersiveAdjusting &&
                         _usesBrushSize(_currentTool))
                       BrushSizeSlider(
                         brushSize: _brushSize,
@@ -1921,7 +1926,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     // メッシュ変形中は分割数のスライダーだけを画面下部へ出す
                     // （自由変形＝分割数1のときは何も出さない）。
-                    if (!filterAdjusting && !colorAdjusting &&
+                    if (!immersiveAdjusting &&
                         _currentTool == DrawingTool.meshTransform &&
                         _meshDensity > 1)
                       _meshDensitySlider(context),
@@ -1939,7 +1944,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // 誤タップしにくくなる範囲での妥協値としている。
                     if (!isDesktop &&
                         !_isSelectionToolActive &&
-                        !filterAdjusting)
+                        !immersiveAdjusting)
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () =>
@@ -1966,9 +1971,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     if (_showToolbar &&
                         !isDesktop &&
                         !_isSelectionToolActive &&
-                        !filterAdjusting)
+                        !immersiveAdjusting)
                       _buildToolbarWidget(vertical: false),
-                    if (_frameMultiSelectMode && !filterAdjusting)
+                    if (_frameMultiSelectMode && !immersiveAdjusting)
                       _buildFrameMultiSelectBar(),
                     // フレーム一覧の折りたたみ用ハンドル（描画領域を
                     // できるだけ広げるため、任意のタイミングで開閉できるようにする）。
@@ -1977,7 +1982,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     //
                     // 選択ツール使用中は、キャンバス左下の操作バーへ集中できるよう
                     // ツールバー・フレーム一覧ごと畳む（開閉ハンドルも隠す）。
-                    if (!_isSelectionToolActive && !filterAdjusting)
+                    if (!_isSelectionToolActive && !immersiveAdjusting)
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () =>
@@ -2003,7 +2008,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     if (_showFrameStrip &&
                         !_isSelectionToolActive &&
-                        !filterAdjusting)
+                        !immersiveAdjusting)
                       FrameStripWidget(
                         currentFrame: _currentFrame,
                         projectId: widget.projectId,
@@ -2156,7 +2161,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 // （PC/DeXモードで右上に固定表示する案も試したが、右上は
                 // キャンバスプレビュー・ナビゲーターパネルの定位置と重なる
                 // ため、reference_window.dart側のコメントのとおり見送った）。
-                if (_showReferenceWindow)
+                if (_showReferenceWindow && !immersiveAdjusting)
                   ReferenceWindow(
                     onClose: () => setState(() => _showReferenceWindow = false),
                   ),
