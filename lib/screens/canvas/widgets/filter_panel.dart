@@ -759,8 +759,8 @@ class _FilterPanelState extends State<FilterPanel> {
     final shell = docked
         ? (Widget child) => child
         : current == null
-        ? (Widget child) => PanelSurface(
-            width: 300,
+        ? (Widget child) => Card(
+            elevation: 0, // Prevent black shadows around the floating panel.
             surfaceTintColor: Colors.transparent,
             child: child,
           )

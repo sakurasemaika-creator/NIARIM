@@ -11,8 +11,6 @@ import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/help_button.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/responsive.dart';
-import '../../../widgets/pc_workspace.dart';
-import '../../../utils/color_contrast.dart';
 import '../canvas_screen.dart';
 import 'canvas_icon_button.dart';
 import '../../../config/font_fallback.dart';
@@ -177,15 +175,6 @@ class ToolbarWidget extends StatelessWidget {
       currentColor,
       colorScheme,
     );
-    // Keep the color swatch's functional thin border, but do not paint an
-    // unnecessarily thick ring on high-contrast PC/DeX palette surfaces.
-    final dockColors = PcPaletteScope.of(context)
-        ? PcWorkspaceColors.of(context)
-        : null;
-    final swatchRingWidth = dockColors != null &&
-            contrastRatio(currentColor, dockColors.pane) >= 2.5
-        ? 1.0
-        : 2.0;
     final spacer = vertical
         ? const SizedBox(height: 4)
         : const SizedBox(width: 4);
@@ -215,7 +204,7 @@ class ToolbarWidget extends StatelessWidget {
               decoration: BoxDecoration(
                 color: currentColor,
                 shape: BoxShape.circle,
-                border: Border.all(color: outlineColor, width: swatchRingWidth),
+                border: Border.all(color: outlineColor, width: 2),
               ),
             ),
             if (isStampSelected)
@@ -224,7 +213,7 @@ class ToolbarWidget extends StatelessWidget {
                 height: 28,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: outlineColor, width: swatchRingWidth),
+                  border: Border.all(color: outlineColor, width: 2),
                 ),
                 child: Icon(
                   Icons.block,

@@ -100,15 +100,12 @@ class CanvasIconButton extends StatelessWidget {
     return foregroundShadows(foreground, scheme);
   }
 
-  /// On a known palette surface, do not draw a dark outline unless needed.
-  Widget _renderIcon(Color iconColor, Color outlineColor, {required bool outlined}) {
+  /// アイコン本体＋縁取りを描く。
+  Widget _renderIcon(Color iconColor, Color outlineColor) {
     if (outlinedIconBuilder != null) {
-      return outlinedIconBuilder!(
-        iconColor, outlined ? outlineColor : Colors.transparent,
-      );
+      return outlinedIconBuilder!(iconColor, outlineColor);
     }
     if (iconBuilder != null) {
-      if (!outlined) return iconBuilder!(iconColor);
       return Stack(
         clipBehavior: Clip.none,
         children: [
@@ -126,7 +123,7 @@ class CanvasIconButton extends StatelessWidget {
       icon,
       size: iconSize,
       color: iconColor,
-      shadows: outlined ? outlineShadows(outlineColor) : null,
+      shadows: outlineShadows(outlineColor),
     );
   }
 
@@ -141,18 +138,6 @@ class CanvasIconButton extends StatelessWidget {
     final iconColor = selected
         ? (inPalette ? AccentTextTheme.of(context) : scheme.primary)
         : scheme.onSurface;
-    // The PC/DeX palette has a known opaque background. The eight dark
-    // 1px shifted strokes are unnecessary on already readable dock icons.
-    // Keep them when the chosen text/accent nearly merges with the surface;
-    // canvas-over-artwork buttons retain their original thin protection.
-    final paletteColors = inPalette ? PcWorkspaceColors.of(context) : null;
-    final paletteBackground = paletteColors == null
-        ? null
-        : selected
-            ? paletteColors.selectedOn(paletteColors.pane)
-            : paletteColors.pane;
-    final outlined = paletteBackground == null ||
-        contrastRatio(iconColor, paletteBackground) < 2.5;
     final outline = outlineColor(iconColor, scheme);
     final button = Tooltip(
       message: tooltip,
@@ -169,15 +154,16 @@ class CanvasIconButton extends StatelessWidget {
           child: SizedBox(
             width: iconWidth ?? iconSize,
             height: iconSize,
-            child: _renderIcon(iconColor, outline, outlined: outlined),
+            child: _renderIcon(iconColor, outline),
           ),
         ),
       ),
     );
     if (!inPalette || !selected) return button;
+    final colors = PcWorkspaceColors.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: paletteColors!.selectedOn(paletteColors.pane),
+        color: colors.selectedOn(colors.pane),
         borderRadius: BorderRadius.circular(6),
       ),
       child: button,
