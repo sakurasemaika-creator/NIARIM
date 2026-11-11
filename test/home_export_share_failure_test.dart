@@ -107,7 +107,39 @@ void main() {
     await tester.ensureVisible(control);
     await tester.pumpAndSettle();
     await tester.tap(control);
+    await tester.pumpAndSettle();
+    // The Works list now routes all file operations through the same three-dot
+    // menu as Projects. Preview still has its dedicated share TextButton.
+    if (control.evaluate().isNotEmpty &&
+        control.evaluate().first.widget is PopupMenuButton<String>) {
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(HomeScreen)),
+      )!;
+      final option = find.text(l10n.homeShareOpenWith).last;
+      await tester.ensureVisible(option);
+      await tester.pumpAndSettle();
+      await tester.tap(option);
+    }
     await pumpRealAsync(tester, const Duration(milliseconds: 200));
+  }
+
+  Future<void> checkWorkActionsEnabled(
+    WidgetTester tester, bool enabled) async {
+    await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')));
+    await tester.pumpAndSettle();
+    for (final value in ['open', 'share', 'delete']) {
+      final action = find.byWidgetPredicate(
+        (w) => w is PopupMenuItem<String> && w.value == value,
+      );
+      expect(action, findsOneWidget);
+      expect(
+        tester.widget<PopupMenuItem<String>>(action).enabled,
+        enabled,
+        reason: value,
+      );
+    }
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
   }
 
   for (final preview in [false, true]) {
@@ -136,7 +168,7 @@ void main() {
         } else {
           await share(
             tester,
-            find.byTooltip('${env.l10n.homeShareOpenWith}: AUDIT_share.png'),
+            find.byKey(const Key('exportedWorkMoreMenu')),
           );
         }
         final notice = find.text(env.l10n.communityErrorUnsupported);
@@ -178,7 +210,7 @@ void main() {
         }
         final control = preview
             ? find.widgetWithText(TextButton, env.l10n.homeShareOpenWith)
-            : find.byTooltip('${env.l10n.homeShareOpenWith}: AUDIT_share.png');
+            : find.byKey(const Key('exportedWorkMoreMenu'));
         await share(tester, control);
         expect(tester.takeException(), isNull);
         expect(calls, 1);
@@ -223,37 +255,10 @@ void main() {
       final before = env.file.readAsBytesSync();
       failure = null;
       pending = Completer<String>();
-      final control = find.byTooltip(
-        '${env.l10n.homeShareOpenWith}: AUDIT_share.png',
-      );
+      final control = find.byKey(const Key('exportedWorkMoreMenu'));
       await share(tester, control);
       expect(calls, 1);
-      expect(
-        tester
-            .widget<IconButton>(
-              find
-                  .ancestor(of: control, matching: find.byType(IconButton))
-                  .first,
-            )
-            .onPressed,
-        isNull,
-      );
-      expect(
-        tester
-            .widget<IconButton>(
-              find
-                  .ancestor(
-                    of: find.byTooltip(
-                      '${env.l10n.commonDelete}: AUDIT_share.png',
-                    ),
-                    matching: find.byType(IconButton),
-                  )
-                  .first,
-            )
-            .onPressed,
-        isNull,
-      );
-      await tester.tap(control);
+      await checkWorkActionsEnabled(tester, false);
       await tester.tap(findExportedWorkName('AUDIT_share.png'));
       await tester.pump();
       expect(calls, 1);
@@ -261,16 +266,7 @@ void main() {
       expect(env.file.readAsBytesSync(), before);
       pending!.complete('');
       await pumpRealAsync(tester, const Duration(milliseconds: 300));
-      expect(
-        tester
-            .widget<IconButton>(
-              find
-                  .ancestor(of: control, matching: find.byType(IconButton))
-                  .first,
-            )
-            .onPressed,
-        isNotNull,
-      );
+      await checkWorkActionsEnabled(tester, true);
       expect(find.text(env.l10n.communityErrorGeneric), findsNothing);
       expectOriginInside(requests.single, const Size(390, 844));
       expect(requests.single['paths'], [env.file.path]);
@@ -321,7 +317,7 @@ void main() {
       failure = null;
       await share(
         tester,
-        find.byTooltip('${env.l10n.homeShareOpenWith}: AUDIT_share.png'),
+        find.byKey(const Key('exportedWorkMoreMenu')),
       );
       expect(
         calls,
@@ -405,7 +401,7 @@ void main() {
           failure = MissingPluginException('Synthetic unsupported share');
           await share(
             tester,
-            find.byTooltip('${env.l10n.homeShareOpenWith}: AUDIT_share.png'),
+            find.byKey(const Key('exportedWorkMoreMenu')),
           );
           expect(find.text(env.l10n.communityErrorUnsupported), findsOneWidget);
           expect(tester.takeException(), isNull, reason: '$language/$size/row');
@@ -490,9 +486,7 @@ void main() {
     'inline share feedback cannot dismiss an unrelated Undo when retrying',
     (tester) async {
       final env = await open(tester);
-      final control = find.byTooltip(
-        '${env.l10n.homeShareOpenWith}: AUDIT_share.png',
-      );
+      final control = find.byKey(const Key('exportedWorkMoreMenu'));
       await share(tester, control);
       expect(find.text(env.l10n.communityErrorGeneric), findsOneWidget);
       var undone = false;
