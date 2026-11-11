@@ -233,15 +233,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   }
 
   void _showSnackBar(String message) {
+    // SnackBarThemeData owns the same 18px rounded, shadow-free appearance.
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: BorderSide.none,
-        ),
-        elevation: 0,
-      ),
+      SnackBar(content: Text(message)),
     );
   }
 
@@ -974,7 +968,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                 constraints: const BoxConstraints(maxWidth: 550),
                 child: Material(
                   key: const Key('communityMyWorksBulkActions'),
-                  elevation: 0,
+                  // Material already defaults to elevation 0.
                   borderRadius: BorderRadius.circular(18),
                   color: scheme.surface,
                   child: Padding(
