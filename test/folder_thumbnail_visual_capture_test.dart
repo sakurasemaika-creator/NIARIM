@@ -72,6 +72,10 @@ void main() {
     await tester.pumpWidget(RepaintBoundary(
       key: boundaryKey,
       child: MaterialApp(
+        theme: ThemeData(
+          fontFamily: 'HakkouMincho',
+          fontFamilyFallback: const ['NotoSerifJP'],
+        ),
         locale: const Locale('ja'),
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -125,6 +129,15 @@ void main() {
     await tester.pumpAndSettle();
 
     Future<void> capture(String name) async {
+      // FileImage uses real asynchronous disk and decode work. Flutter's
+      // fake clock alone is insufficient to populate a visible thumbnail.
+      for (var attempt = 0; attempt < 6; attempt++) {
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 35)),
+        );
+        await tester.pump();
+      }
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       final boundary = boundaryKey.currentContext!.findRenderObject()!
