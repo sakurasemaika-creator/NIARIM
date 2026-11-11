@@ -208,11 +208,11 @@ void main() {
 
       // A saved name is editable independently of the timestamp, thumbnail,
       // archive and slot selection. Capture both the pencil and dialog.
-      final rename = find.byKey(Key('saveRename_${node.id}'));
+      final rename = find.byKey(Key('saveSlotMemo_${project.id}_0'));
       expect(rename, findsOneWidget);
       await tester.tap(rename);
       await settle();
-      expectDialogContains(l10n.commonRename);
+      expectDialogContains(l10n.saveTreeCommentLabel);
       await capture('${prefix}_01a_rename_dialog');
       await tester.enterText(
         find.descendant(of: dialog(), matching: find.byType(TextField)),
@@ -376,7 +376,7 @@ void main() {
     await capture('sp_360x760_09_tree_nodes_with_thumbnails_and_dates');
     await tester.tap(treeRename);
     await settle();
-    expectDialogContains(l10n.commonRename);
+    expectDialogContains(l10n.saveTreeCommentLabel);
     await capture('sp_360x760_10_tree_rename_dialog');
     await tester.enterText(
       find.descendant(of: dialog(), matching: find.byType(TextField)),
