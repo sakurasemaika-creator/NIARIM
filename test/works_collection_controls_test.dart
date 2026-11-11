@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
+import 'helpers/pump_real_async.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -65,7 +66,13 @@ void main() {
     final worksTab = find.byKey(const ValueKey('home_tab_1'));
     await tester.ensureVisible(worksTab);
     await tester.tap(worksTab);
-    await tester.pump(const Duration(milliseconds: 600));
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    for (var attempt = 0;
+        attempt < 8 && find.byType(ExportedWorkCard).evaluate().isEmpty;
+        attempt++) {
+      await pumpRealAsync(tester, const Duration(milliseconds: 200));
+    }
+    expect(find.byType(ExportedWorkCard), findsNWidgets(3));
     final context = tester.element(find.byType(ExportedWorkCard).first);
     final l10n = AppLocalizations.of(context)!;
 
