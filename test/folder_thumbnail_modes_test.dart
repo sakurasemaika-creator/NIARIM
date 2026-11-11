@@ -96,6 +96,49 @@ void main() {
     reloaded.dispose();
   });
 
+  test('Empty parent inherits the most recently updated child-folder cover', () {
+    final root = ProjectFolder(
+      id: 'root', name: 'root', createdAt: DateTime.utc(2025),
+    );
+    final a = ProjectFolder(
+      id: 'a', name: 'a', parentFolderId: 'root',
+      createdAt: DateTime.utc(2026, 1, 1),
+      thumbnailMode: 'custom',
+      thumbnailImagePath: '/cover-a.png',
+    );
+    final b = ProjectFolder(
+      id: 'b', name: 'b', parentFolderId: 'root',
+      createdAt: DateTime.utc(2026, 1, 5),
+      thumbnailMode: 'custom',
+      thumbnailImagePath: '/cover-b.png',
+    );
+    expect(
+      projectFolderEffectiveCover('root', [root, a, b], []),
+      '/cover-b.png',
+    );
+    final direct = _project('direct', 'root', '/direct.png', 10);
+    expect(
+      projectFolderEffectiveCover('root', [root, a, b], [direct]),
+      '/direct.png',
+    );
+    final deeper = ProjectFolder(
+      id: 'deeper',
+      name: 'deeper',
+      parentFolderId: 'b',
+    );
+    final nested = _project('nested', 'deeper', '/deep.png', 20);
+    expect(
+      projectFolderEffectiveCover('root', [root, a, b, deeper], [nested]),
+      '/cover-b.png',
+      reason: 'Child with its own cover keeps that appearance',
+    );
+    final bAuto = b.copyWith(thumbnailMode: 'auto');
+    expect(
+      projectFolderEffectiveCover('root', [root, a, bAuto, deeper], [nested]),
+      '/deep.png',
+    );
+  });
+
   test('Exported-work thumbnail preference survives service reload', () async {
     SharedPreferences.setMockInitialValues({});
     final first = WorkFolderService();
