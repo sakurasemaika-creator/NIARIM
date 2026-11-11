@@ -223,6 +223,27 @@ abstract final class LocalFileTrashService {
     }
   }
 
+  /// Compare large files in bounded memory. A source deletion interrupted
+  /// after archiving may leave some original files already present; only
+  /// byte-identical files are safe to reuse during recovery.
+  static Future<bool> _sameFileContents(File a, File b) async {
+    if (!await a.exists() || !await b.exists() ||
+        await a.length() != await b.length()) return false;
+    final left = await a.open();
+    final right = await b.open();
+    try {
+      while (true) {
+        final one = await left.read(65536);
+        final two = await right.read(65536);
+        if (!listEquals(one, two)) return false;
+        if (one.isEmpty) return true;
+      }
+    } finally {
+      await left.close();
+      await right.close();
+    }
+  }
+
   /// Resumes an interrupted restore without overwriting unrelated files.
   /// A verified copy is checkpointed before updating its folder membership.
   static Future<void> restoreWorkFolder(
@@ -248,9 +269,10 @@ abstract final class LocalFileTrashService {
       if (entry.originalPath.isEmpty) {
         throw FileSystemException('Export directory missing', name);
       }
-      if (!restored.contains(name) &&
-          await File('${entry.originalPath}/$name').exists()) {
-        throw FileSystemException('File already exists on restore', name);
+      final destination = File('${entry.originalPath}/$name');
+      if (await destination.exists() &&
+          !await _sameFileContents(File('${archive.path}/$name'), destination)) {
+        throw FileSystemException('Different file already exists on restore', name);
       }
     }
     final folderId = known
@@ -263,14 +285,17 @@ abstract final class LocalFileTrashService {
     for (final name in entry.fileNames) {
       final source = File('${archive.path}/$name');
       final destination = File('${entry.originalPath}/$name');
-      if (!restored.contains(name) || !await destination.exists()) {
+      if (!await destination.exists()) {
         await destination.parent.create(recursive: true);
         final copy = await source.copy(destination.path);
         if (await copy.length() != await source.length()) {
           await copy.delete();
           throw FileSystemException('Incomplete restored file', name);
         }
-        restored.add(name);
+      } else if (!await _sameFileContents(source, destination)) {
+        throw FileSystemException('Restored file changed during recovery', name);
+      }
+      if (restored.add(name)) {
         meta['restoredFiles'] = restored.toList();
         await metaFile.writeAsString(jsonEncode(meta), flush: true);
       }
