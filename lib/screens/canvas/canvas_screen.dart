@@ -79,6 +79,7 @@ import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
+import '../../widgets/docked_panel_scope.dart';
 
 class CanvasScreen extends StatefulWidget {
   final String projectId;
