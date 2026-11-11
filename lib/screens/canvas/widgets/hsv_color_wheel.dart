@@ -53,12 +53,19 @@ class HsvColorWheel extends StatelessWidget {
         .watch<ThemeService>()
         .current
         .menuBgColor;
+    // Keep both controls BELOW the circular hue ring. A wide HSV/RGB pill
+    // in the wheel's bottom-right corner overlapped the ring at small sizes.
     return SizedBox(
       width: size,
-      height: size,
-      child: Stack(
-        alignment: Alignment.center,
+      height: size + 36,
+      child: Column(
         children: [
+          SizedBox(
+            width: size,
+            height: size,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onPanStart: (d) => _handleRing(d.localPosition),
@@ -115,24 +122,27 @@ class HsvColorWheel extends StatelessWidget {
               ),
             ),
           ),
-          if (onToggleTransparent != null)
-            Positioned(
-              left: size * 0.03,
-              bottom: size * 0.03,
-              child: _TransparentToggleButton(
-                isActive: isTransparent,
-                onTap: onToggleTransparent!,
-              ),
+              ],
             ),
-            if (onSliderModeChanged != null)
-              Positioned(
-                right: size * 0.03,
-                bottom: size * 0.03,
-                child: _SliderModePill(
-                  showHsv: showHsvSliders,
-                  onChanged: onSliderModeChanged!,
-                ),
-              ),
+          ),
+          SizedBox(
+            height: 36,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (onToggleTransparent != null)
+                  _TransparentToggleButton(
+                    isActive: isTransparent,
+                    onTap: onToggleTransparent!,
+                  ),
+                if (onSliderModeChanged != null)
+                  _SliderModePill(
+                    showHsv: showHsvSliders,
+                    onChanged: onSliderModeChanged!,
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
