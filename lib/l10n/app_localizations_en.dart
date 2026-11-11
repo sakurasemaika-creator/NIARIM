@@ -7146,7 +7146,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityDurationRange => 'Between N and N minutes (numbers)';
 
   @override
-  String get communityDurationMinutes => 'minutes or less';
+  String communityDurationUpToMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes or less',
+      one: '$count minute or less',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get communityDurationMinimum => 'Min. minutes';
@@ -9012,7 +9020,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockCommunityPostQuota =>
-      'Work Plaza: 1 to 3 posts per day';
+      'Work Plaza: 1 to 3 posts per day';
 
   @override
   String get rewardUnlockProjectListAds => 'No ads in projects';
@@ -9481,6 +9489,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get missionPayoutPending => 'Coin payouts are not yet enabled';
+
+  @override
+  String get recurringMissionsPayoutPending =>
+      'Coin payouts are not yet enabled';
 
   @override
   String missionDurationHours(int count) {

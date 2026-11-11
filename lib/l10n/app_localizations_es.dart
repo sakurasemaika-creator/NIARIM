@@ -7259,7 +7259,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityDurationRange => 'Entre N y N minutos (números)';
 
   @override
-  String get communityDurationMinutes => 'minutos o menos';
+  String communityDurationUpToMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutos o menos',
+      one: '$count minuto o menos',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get communityDurationMinimum => 'Mín. minutos';
@@ -9134,14 +9142,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockLevelAdjustment => 'Niveles';
 
   @override
-  String get rewardUnlockUnlimitedDuration => 'Proyectos de hasta 2 horas';
+  String get rewardUnlockUnlimitedDuration => 'Proyectos de hasta 2 horas';
 
   @override
   String get rewardUnlockCustomAutomation =>
       'Acciones automáticas personalizadas';
 
   @override
-  String get rewardUnlockCommunityPostQuota => 'Publicaciones: 1 a 3 por día';
+  String get rewardUnlockCommunityPostQuota => 'Publicaciones: 1 a 3 por día';
 
   @override
   String get rewardUnlockProjectListAds => 'Sin anuncios en proyectos';
@@ -9364,7 +9372,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String creatorMissionCandidateMinutes(int minutes) {
-    return 'Tiempo candidato registrado: $minutes min (sin verificar)';
+    return 'Tiempo candidato registrado: $minutes min (sin verificar)';
   }
 
   @override
@@ -9424,7 +9432,7 @@ class AppLocalizationsEs extends AppLocalizations {
       other: 'en los primeros $rank puestos',
       one: 'en el primer puesto',
     );
-    return 'CÁLCULO: La obra debe ser tuya y estar publicada en NIARIM. Debe haber al menos 100 obras públicas; tu obra debe tener los marcadores requeridos y estar tanto $_temp0 como en el $percent % superior. El límite se calcula redondeando hacia abajo el número de obras públicas × $percent %, con mínimo de 1, y aplicando el límite más estricto. Se usa el recuento del servidor.';
+    return 'CÁLCULO: La obra debe ser tuya y estar publicada en NIARIM. Debe haber al menos 100 obras públicas; tu obra debe tener los marcadores requeridos y estar tanto $_temp0 como en el $percent % superior. El límite se calcula redondeando hacia abajo el número de obras públicas × $percent %, con mínimo de 1, y aplicando el límite más estricto. Se usa el recuento del servidor.';
   }
 
   @override
@@ -9505,7 +9513,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
-    return 'Tiempo de edición validado con el reloj del servidor: $minutes min';
+    return 'Tiempo de edición validado con el reloj del servidor: $minutes min';
   }
 
   @override
@@ -9624,6 +9632,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get missionPayoutPending =>
+      'El pago de monedas aún no está disponible';
+
+  @override
+  String get recurringMissionsPayoutPending =>
       'El pago de monedas aún no está disponible';
 
   @override

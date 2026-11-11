@@ -6857,7 +6857,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityDurationRange => 'N至N分钟（数字输入）';
 
   @override
-  String get communityDurationMinutes => '分钟以内';
+  String communityDurationUpToMinutes(int count) {
+    return '$count分钟以内';
+  }
 
   @override
   String get communityDurationMinimum => '最短（分钟）';
@@ -8898,6 +8900,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get missionPayoutPending => '金币领取尚未开放';
+
+  @override
+  String get recurringMissionsPayoutPending => '金币发放尚未开放';
 
   @override
   String missionDurationHours(int count) {
@@ -16032,7 +16037,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityDurationRange => 'N至N分鐘（數字輸入）';
 
   @override
-  String get communityDurationMinutes => '分鐘以內';
+  String communityDurationUpToMinutes(int count) {
+    return '$count分鐘以內';
+  }
 
   @override
   String get communityDurationMinimum => '最短（分鐘）';
@@ -18074,6 +18081,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get missionPayoutPending => '金幣領取尚未開放';
+
+  @override
+  String get recurringMissionsPayoutPending => '金幣發放尚未開放';
 
   @override
   String missionDurationHours(int count) {

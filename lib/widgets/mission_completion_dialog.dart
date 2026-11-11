@@ -4,13 +4,19 @@ import 'package:go_router/go_router.dart';
 import '../config/font_fallback.dart';
 import '../utils/app_locale.dart';
 import '../utils/coin_duration_label.dart';
+import 'keep_together_text.dart';
 
 /// The server owns achievement detection; this widget only displays
 /// newly achieved mission labels and a direct route to the claim page.
 /// Never award any coins from this dialog.
+///
+/// [keep]は文の中で途中で行を変えない部分（空白を挟む言語の時間
+/// 「10 minutes」等。空白なしの数と単位は[KeepTogetherText]が自分で
+/// まとめる）。
 Future<void> showMissionCompletionDialog(
   BuildContext context, {
   required List<String> titles,
+  List<String> keep = const [],
 }) async {
   if (!context.mounted || titles.isEmpty) return;
   final l10n = appLocalizationsOf(context);
@@ -26,11 +32,12 @@ Future<void> showMissionCompletionDialog(
           fontFamilyFallback: kHeadingFontFallback,
         ),
       ),
-      content: Text(
+      content: KeepTogetherText(
         [
           ...titles.map((title) => '・$title'),
           l10n.missionCompletedBody,
         ].join('\n\n'),
+        keep: keep,
       ),
       actions: [
         TextButton(
@@ -86,9 +93,12 @@ Future<void> showPlazaMissionCompletions(
       .toList();
   if (records.isEmpty || !context.mounted) return;
   final l10n = appLocalizationsOf(context);
+  final goals = <String>[];
   final names = records
       .map((row) {
         final seconds = (row['requiredSeconds'] as num?)?.toInt() ?? 0;
+        final goal = missionDurationLabel(l10n, seconds);
+        goals.add(goal);
         // 'day'・'week'以外はマンスリー（作品広場のミッションの欄と同じ決まり）。
         final period = switch (row['period']) {
           'day' => 'day',
@@ -97,9 +107,9 @@ Future<void> showPlazaMissionCompletions(
         };
         return l10n.plazaMissionCompletedItem(
           period,
-          l10n.plazaMissionGoal(missionDurationLabel(l10n, seconds)),
+          l10n.plazaMissionGoal(goal),
         );
       })
       .toList(growable: false);
-  await showMissionCompletionDialog(context, titles: names);
+  await showMissionCompletionDialog(context, titles: names, keep: goals);
 }

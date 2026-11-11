@@ -8,6 +8,8 @@ import '../../services/google_auth_service.dart';
 import '../../services/project_service.dart';
 import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
+import '../../widgets/button_label_room.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import 'login_bonus_panel.dart';
 import 'recurring_missions_panel.dart';
@@ -303,6 +305,15 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     };
   }
 
+  /// [_goal]の文の中で途中で行を変えない部分（空白を挟む言語の時間
+  /// 「10 hours」。空白なしの数と単位は[KeepTogetherText]が自分でまとめる）。
+  List<String> _goalKeep(Map<String, dynamic> row) => [
+    if (row['kind'] == 'verifiedEditSeconds')
+      appLocalizationsOf(
+        context,
+      ).missionDurationHours(((row['required'] as num?)?.toInt() ?? 0) ~/ 3600),
+  ];
+
   List<String> _rankingMissingReasons(
     CreatorMissionLabels t,
     Map<String, dynamic> row,
@@ -502,7 +513,11 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                 text: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_goal(t, row), style: theme.textTheme.bodyMedium),
+                    KeepTogetherText(
+                      _goal(t, row),
+                      keep: _goalKeep(row),
+                      style: theme.textTheme.bodyMedium,
+                    ),
                     Text(status, style: theme.textTheme.bodySmall),
                   ],
                 ),
@@ -546,17 +561,19 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : Text(t.get('claim')),
+                            : ButtonLabelRoom(child: Text(t.get('claim'))),
                       )
                     else
                       OutlinedButton(
                         onPressed: null,
-                        child: Text(
-                          !available
-                              ? t.get('upcoming')
-                              : pending
-                              ? t.get('reviewing')
-                              : t.get('notAchieved'),
+                        child: ButtonLabelRoom(
+                          child: Text(
+                            !available
+                                ? t.get('upcoming')
+                                : pending
+                                ? t.get('reviewing')
+                                : t.get('notAchieved'),
+                          ),
                         ),
                       ),
                   ],
@@ -676,7 +693,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.inventory_2_outlined),
-                    label: Text(l10n.creatorMissionClaimAll),
+                    label: ButtonLabelRoom(
+                      child: Text(l10n.creatorMissionClaimAll),
+                    ),
                   ),
                 ),
                 if (widget.workId == null) ...[
@@ -700,15 +719,25 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                 const SizedBox(height: 8),
                 Text(t.get('budget')),
                 const SizedBox(height: 8),
-                Text(l10n.creatorMissionLocalTime(localSeconds ~/ 3600)),
+                // 時間の数と単位（「0시간」「10 hours」）は途中で行を変えない。
+                KeepTogetherText(
+                  l10n.creatorMissionLocalTime(localSeconds ~/ 3600),
+                  keep: [l10n.missionDurationHours(localSeconds ~/ 3600)],
+                ),
                 Text(
                   account['editTimeVerificationReady'] == true
                       ? t.get('timeWarning')
                       : t.get('editTimeUnverified'),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                Text(l10n.creatorMissionCandidateMinutes(candidateMinutes)),
-                Text(l10n.creatorMissionVerifiedMinutes(verifiedMinutes)),
+                KeepTogetherText(
+                  l10n.creatorMissionCandidateMinutes(candidateMinutes),
+                  keep: [l10n.missionDurationMinutes(candidateMinutes)],
+                ),
+                KeepTogetherText(
+                  l10n.creatorMissionVerifiedMinutes(verifiedMinutes),
+                  keep: [l10n.missionDurationMinutes(verifiedMinutes)],
+                ),
                 if (account['enabled'] != true &&
                     grid?['rewardEnabled'] != true)
                   Text(t.get('upcoming')),
@@ -721,13 +750,13 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           if (cursor != null && rowIndex == rows.length) {
             return OutlinedButton(
               onPressed: _moreBusy ? null : () => _more(api, cursor),
-              child: Text(t.get('loadMore')),
+              child: ButtonLabelRoom(child: Text(t.get('loadMore'))),
             );
           }
           return TextButton.icon(
             onPressed: () => _refresh(api),
             icon: const Icon(Icons.refresh),
-            label: Text(t.get('retry')),
+            label: ButtonLabelRoom(child: Text(t.get('retry'))),
           );
         },
       ),
@@ -774,7 +803,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                         Text(t.get('loadError')),
                         OutlinedButton(
                           onPressed: () => _refresh(api),
-                          child: Text(t.get('retry')),
+                          child: ButtonLabelRoom(child: Text(t.get('retry'))),
                         ),
                       ],
                     ),

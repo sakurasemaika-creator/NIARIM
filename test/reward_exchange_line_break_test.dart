@@ -12,6 +12,11 @@
 // フランス語の文字2倍で「Actions automatiques personnalisée|s」と
 // 単語の途中で切れていた（交換の準備中の行は右端の鍵のアイコンの分さらに
 // 狭く、「Publication|s : 1 à 3 par jour」）。
+//
+// 特典の名前の中の数と単位・数の範囲（「1作品」「1개」「1篇」「2 heures」
+// 「1 à 3」）も、文字2倍で「作品広場の投稿枠（1日1作|品→3作品）」
+// 「작품 광장 하루 1|개→3개 게시」「Jusqu'à 2|heures」
+// 「Publications : 1|à 3 par jour」と途中で切れていた。
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -109,6 +114,22 @@ bool _isLatinWordChar(int rune) => RegExp(
 /// 文の中の、空白や句読点で区切られたかたまり（U+FFFCは埋め込んだ部品）。
 final _token = RegExp(r'[^\s·・：:（）()、。，,.!?！？/\-+\uFFFC]+');
 
+/// 特典の名前の中の数と単位・数の範囲（言語ごと）。空白は改行しない空白
+/// （U+00A0）でもよい。
+const _titleCountPhrases = <String, List<String>>{
+  'ja': ['1作品', '3作品', '2時間'],
+  'ko': ['1개', '3개', '2시간'],
+  'zh': ['1篇', '3篇', '2小时'],
+  'zh_Hant': ['1篇', '3篇', '2小時'],
+  'fr': ['1 à 3', '2 heures'],
+  'es': ['1 a 3', '2 horas'],
+  'en': ['1 to 3', '2-hour'],
+};
+
+/// [phrase]を、空白が普通の空白でも改行しない空白でも見つける形にする。
+RegExp _phrasePattern(String phrase) =>
+    RegExp(phrase.split(' ').map(RegExp.escape).join(r'[ \u00a0]'));
+
 /// 数のあとに[units]のどれかが続くかたまり（「55000コイン」「550000코인」）と、
 /// [phrases]（期間の「1か月」等）が、途中で行を変えている所。
 ///
@@ -127,7 +148,8 @@ List<String> _numberUnitBreaks(
           when units.contains(unit.group(1)))
         (match.start, match.end),
     for (final phrase in phrases)
-      for (final match in phrase.allMatches(text)) (match.start, match.end),
+      for (final match in _phrasePattern(phrase).allMatches(text))
+        (match.start, match.end),
   ];
   for (final (start, end) in spans) {
     double? previousTop;
@@ -296,12 +318,15 @@ void main() {
           for (final n in [1, 2])
             l10n.coinAmount(n).replaceAll(RegExp(r'[\d\s]'), ''),
         };
+        final titlePhrases = _titleCountPhrases[name]!;
+        final titlePhrasesSeen = {for (final phrase in titlePhrases) phrase: 0};
         final periods = [
           for (final amount in [1, 12])
             coinUnlockDurationLabel(
               l10n,
               CoinUnlockDuration(amount, CoinDurationUnit.month),
             ),
+          ...titlePhrases,
         ];
 
         void scan(String where, Finder within, {bool rows = false}) {
@@ -310,6 +335,11 @@ void main() {
               includeSemanticsLabels: false,
             );
             if (RegExp(r'\d').hasMatch(text)) amountsSeen++;
+            for (final phrase in titlePhrases) {
+              titlePhrasesSeen[phrase] =
+                  titlePhrasesSeen[phrase]! +
+                  _phrasePattern(phrase).allMatches(text).length;
+            }
             for (final broken in _numberUnitBreaks(
               paragraph,
               coinUnits,
@@ -410,6 +440,13 @@ void main() {
 
         // 何も見ていなければ確かめたことにならない。
         expect(amountsSeen, greaterThan(20), reason: '$name: 数と単位の文');
+        for (final phrase in titlePhrases) {
+          expect(
+            titlePhrasesSeen[phrase],
+            greaterThan(0),
+            reason: '$name: 特典の名前の「$phrase」が出ていない',
+          );
+        }
         expect(
           problems,
           isEmpty,

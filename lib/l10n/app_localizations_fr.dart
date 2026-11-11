@@ -7274,7 +7274,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityDurationRange => 'Entre N et N minutes (saisie)';
 
   @override
-  String get communityDurationMinutes => 'minutes maximum';
+  String communityDurationUpToMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes maximum',
+      one: '$count minute maximum',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get communityDurationMinimum => 'Minutes min.';
@@ -8773,7 +8781,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsPending =>
-      'Vérification en cours. Réclamez après 48 h.';
+      'Vérification en cours. Réclamez après 48 h.';
 
   @override
   String get creatorMissionDetailsOffline =>
@@ -8791,7 +8799,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionHoldStarted =>
-      'Vérification lancée. Revenez dans 48 h pour réclamer.';
+      'Vérification lancée. Revenez dans 48 h pour réclamer.';
 
   @override
   String get creatorMissionClaimFailed =>
@@ -9162,14 +9170,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockLevelAdjustment => 'Niveaux';
 
   @override
-  String get rewardUnlockUnlimitedDuration => 'Jusqu\'à 2 heures';
+  String get rewardUnlockUnlimitedDuration => 'Jusqu\'à 2 heures';
 
   @override
   String get rewardUnlockCustomAutomation =>
       'Actions automatiques personnalisées';
 
   @override
-  String get rewardUnlockCommunityPostQuota => 'Publications : 1 à 3 par jour';
+  String get rewardUnlockCommunityPostQuota => 'Publications : 1 à 3 par jour';
 
   @override
   String get rewardUnlockProjectListAds => 'Sans publicité dans les projets';
@@ -9393,7 +9401,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String creatorMissionCandidateMinutes(int minutes) {
-    return 'Temps candidat enregistré : $minutes min (non vérifié)';
+    return 'Temps candidat enregistré : $minutes min (non vérifié)';
   }
 
   @override
@@ -9446,7 +9454,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String creatorMissionRankDetailsRules(int percent, int rank) {
-    return 'CALCUL : Votre œuvre doit être publiée sur NIARIM. Il faut au moins 100 œuvres publiques, assez de favoris sur votre œuvre, une place dans le top $rank et dans le top $percent %. Le seuil de rang est la partie entière de (nombre d’œuvres publiques × $percent %), au minimum 1, puis le rang le plus strict est retenu. Le comptage provient du serveur.';
+    return 'CALCUL : Votre œuvre doit être publiée sur NIARIM. Il faut au moins 100 œuvres publiques, assez de favoris sur votre œuvre, une place dans le top $rank et dans le top $percent %. Le seuil de rang est la partie entière de (nombre d’œuvres publiques × $percent %), au minimum 1, puis le rang le plus strict est retenu. Le comptage provient du serveur.';
   }
 
   @override
@@ -9521,7 +9529,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
-    return 'Temps de création validé par l’horloge du serveur : $minutes min';
+    return 'Temps de création validé par l’horloge du serveur : $minutes min';
   }
 
   @override
@@ -9634,6 +9642,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get missionPayoutPending =>
+      'Le versement des pièces n’est pas encore disponible';
+
+  @override
+  String get recurringMissionsPayoutPending =>
       'Le versement des pièces n’est pas encore disponible';
 
   @override

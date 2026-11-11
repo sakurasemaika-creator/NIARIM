@@ -6,6 +6,8 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
+import '../../widgets/button_label_room.dart';
+import '../../widgets/keep_together_text.dart';
 import 'mission_panel_heading.dart';
 
 /// Server counts visits by JST day; only a confirmed POST claim can credit coins.
@@ -134,6 +136,8 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
     final achieved = raw['eligible'] == true;
     final claimed = raw['claimed'] == true;
     final l10n = appLocalizationsOf(context);
+    final progress = l10n.recurringMissionProgress(days, requiredDays);
+    final coinAmount = l10n.coinAmount(coins);
     return ListTile(
       key: Key('recurringMission_$id'),
       // Keep the help/exclamation control to the LEFT of the mission title.
@@ -147,16 +151,18 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
               : Icons.help_outline,
         ),
       ),
-      title: Text(
+      // 日数・コインの数と単位（「3日」「4金幣」）は途中で行を変えない。
+      title: KeepTogetherText(
         raw['period'] == 'week'
             ? l10n.recurringMissionGoalWeek(requiredDays)
             : l10n.recurringMissionGoalMonth(requiredDays),
+        keep: const [],
       ),
       // 受け取るボタンは説明の横か下に置き、題には行の幅をすべて使わせる。
       subtitle: ActionBesideOrBelow(
-        text: Text(
-          '${l10n.recurringMissionProgress(days, requiredDays)}'
-          ' · ${l10n.coinAmount(coins)}',
+        text: KeepTogetherText(
+          '$progress · $coinAmount',
+          keep: [progress, coinAmount],
         ),
         action: claimed
             ? Text(l10n.missionClaimed)
@@ -165,12 +171,14 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
                 onPressed: enabled && achieved && !_busy.contains(id)
                     ? () => _claim(id)
                     : null,
-                child: Text(
-                  !enabled && achieved
-                      ? l10n.missionComingSoon
-                      : achieved
-                      ? l10n.missionClaim
-                      : l10n.missionNotYet,
+                child: ButtonLabelRoom(
+                  child: Text(
+                    !enabled && achieved
+                        ? l10n.missionComingSoon
+                        : achieved
+                        ? l10n.missionClaim
+                        : l10n.missionNotYet,
+                  ),
                 ),
               ),
       ),
@@ -227,7 +235,7 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
                 ),
                 if (!enabled)
                   Text(
-                    l10n.missionPayoutPending,
+                    l10n.recurringMissionsPayoutPending,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 for (final period in ['week', 'month']) ...[

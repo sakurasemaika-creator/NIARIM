@@ -15,6 +15,12 @@
 // 文字2倍で「Échanger les pièces」が2行になり、Éのアクセントが塗りの
 // ボタンの上の白い地に出て見えず（「Echanger」と読める）、pの下が枠の下に
 // はみ出していた。取引履歴・更新のボタンのラベルも枠の下へ5px出ていた。
+//
+// ミッションの画面のボタン（作品を選んでいないときの「Rewards are being
+// prepared」「Récompenses en préparation」、受け取る・未達成・まとめて
+// 受け取る等）も同じで、文字2倍の英語・フランス語でラベルが2〜3行になり、
+// pの下が枠の下へ5px、Éのアクセントが枠の上へ2px出ていた（特典交換の
+// 画面のボタンだけ直してあった）。
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -28,12 +34,14 @@ import 'package:http/testing.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/coin_benefit_price_proposal.dart';
 import 'package:niarim/models/coin_unlock_quote.dart';
+import 'package:niarim/screens/rewards/creator_missions_screen.dart';
 import 'package:niarim/screens/rewards/reward_unlock_screen.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/premium_service.dart';
+import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
@@ -112,6 +120,100 @@ CommunityService _redeemableServer() => CommunityService(
               CoinDurationUnit.month,
             ),
             'priceVersion': CoinBenefitPriceCatalog.version,
+          },
+          _ => <String, Object>{},
+        });
+      }),
+    ),
+  ),
+);
+
+/// ミッションの画面：作品ごとのひな形（受け取れない「準備中」）・受け取れる
+/// ミッション・未達成のミッションと、累計ログイン・ウィークリー／
+/// マンスリー・作品広場の欄（受け取る・未達成・受取済み）を返すサーバー。
+CommunityService _missionsServer() => CommunityService(
+  api: CommunityApi(
+    NiarimApiClient(
+      baseUrl: 'https://example.invalid',
+      maxGetRetries: 0,
+      tokenProvider: () async => 'test-token',
+      httpClient: MockClient((request) async {
+        if (request.method == 'POST') return _json({'visitedToday': true});
+        Map<String, Object?> mission(
+          String id,
+          String kind,
+          int required, {
+          bool perWork = false,
+          bool eligible = false,
+        }) => {
+          'id': id,
+          'kind': kind,
+          'required': required,
+          'progress': 0,
+          'coins': 10,
+          'claimed': false,
+          'eligible': eligible,
+          'readyForClaim': eligible,
+          'rewardEnabled': true,
+          'perWork': perWork,
+        };
+        return _json(switch (request.url.path) {
+          '/me/missions' => {
+            'enabled': true,
+            'publishedWorkCount': 120,
+            'missions': [
+              mission('time_10', 'verifiedEditSeconds', 36000, eligible: true),
+              mission('followers_100', 'followers', 100),
+              mission('rank_10', 'niarimBookmarkRanking', 10, perWork: true),
+              mission('bookmarks_10', 'workBookmarks', 10, perWork: true),
+            ],
+          },
+          '/me/missions/grid' => {'missions': [], 'rewardEnabled': true},
+          '/me/missions/work-achievements' => {
+            'items': [],
+            'nextCursor': 'next',
+          },
+          '/me/login-bonus' => {
+            'totalDays': 31,
+            'visitedToday': true,
+            'dailyCoins': 1,
+            'dailyClaimed': false,
+            'rewardEnabled': true,
+            'milestones': [
+              {'days': 7, 'coins': 5, 'claimed': true, 'eligible': true},
+              {'days': 30, 'coins': 20, 'claimed': false, 'eligible': true},
+              {'days': 100, 'coins': 50, 'claimed': false, 'eligible': false},
+            ],
+          },
+          '/me/missions/recurring' => {
+            'enabled': true,
+            'missions': [
+              for (final (days, progress) in [(3, 3), (7, 3)])
+                {
+                  'id': 'visit_week_$days',
+                  'period': 'week',
+                  'requiredDays': days,
+                  'progressDays': progress,
+                  'coins': 2,
+                  'claimed': false,
+                  'eligible': progress >= days,
+                },
+            ],
+          },
+          '/me/missions/plaza' => {
+            'enabled': false,
+            'missions': [
+              for (final (seconds, progress) in [(300, 600), (3600, 600)])
+                {
+                  'id': 'plaza_$seconds',
+                  'period': 'day',
+                  'requiredSeconds': seconds,
+                  'progressSeconds': progress,
+                  'coins': 1,
+                  'claimed': false,
+                  'eligible': progress >= seconds,
+                },
+            ],
           },
           _ => <String, Object>{},
         });
@@ -447,6 +549,88 @@ void main() {
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
         premium.dispose();
+      });
+
+      testWidgets('ミッションの画面のどのボタンも字がボタンの中に収まる'
+          '（$name, 文字$scale倍, ${width.toInt()}dp）', (tester) async {
+        if (!fontsLoaded) {
+          await loadAppFonts(tester);
+          fontsLoaded = true;
+        }
+        final themes = ThemeService();
+        await themes.init();
+        addTearDown(themes.dispose);
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = Size(width, 30000);
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: [
+              ChangeNotifierProvider<GoogleAuthService>.value(
+                value: _SignedIn(),
+              ),
+              ChangeNotifierProvider<CommunityService>.value(
+                value: _missionsServer(),
+              ),
+              ChangeNotifierProvider<ProjectService>.value(
+                value: ProjectService(),
+              ),
+              ChangeNotifierProvider<SettingsService>.value(
+                value: SettingsService(),
+              ),
+            ],
+            child: MaterialApp(
+              locale: locale,
+              theme: themes.themeData,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const CreatorMissionsScreen(),
+            ),
+          ),
+        );
+        for (var i = 0; i < 4; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 60)),
+          );
+          await tester.pump(const Duration(milliseconds: 200));
+        }
+        await tester.tap(find.byKey(const Key('loginMilestoneExpansion')));
+        await tester.pumpAndSettle();
+        final tag = '$name ×$scale ${width.toInt()}';
+        // ひな形の行（作品を選んでいないので受け取れない）・受け取れる行・
+        // 3つの欄が出ていること。
+        expect(
+          find.byKey(const ValueKey('mission_rank_10:template')),
+          findsOneWidget,
+          reason: tag,
+        );
+        expect(
+          find.byKey(const ValueKey('claim_time_10_account')),
+          findsOneWidget,
+          reason: tag,
+        );
+        expect(find.byKey(const Key('plazaMissionsPanel')), findsOneWidget);
+        expect(find.byKey(const Key('recurringMissionsPanel')), findsOneWidget);
+        expect(find.byKey(const Key('loginDailyClaimButton')), findsOneWidget);
+        final buttons = find.descendant(
+          of: find.byType(Scaffold),
+          matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+        );
+        final problems = <String>[];
+        var checked = 0;
+        for (final element in buttons.evaluate().toList()) {
+          checked++;
+          final button = find.byElementPredicate((e) => e == element);
+          problems.addAll(await _inkOutside(tester, button, tag));
+        }
+        // 準備中・受け取る・未達成・まとめて受け取る・続きを読み込む等。
+        expect(checked, greaterThan(10), reason: tag);
+        expect(problems, isEmpty, reason: '$tag:\n${problems.join('\n')}');
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
       });
     }
   }

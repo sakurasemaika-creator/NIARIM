@@ -15,22 +15,12 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/coin_duration_label.dart';
 import '../../widgets/action_beside_or_below.dart';
+import '../../widgets/button_label_room.dart';
 import '../../widgets/coin_history_sheet.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 
 enum RewardPageMode { exchange, earnCoins }
-
-/// ボタンのラベルの上下に取る余白。
-///
-/// くらむぼんのラベルは、アクセント（É）や下に伸びる字（p・j）が行の
-/// 高さの外へ出る。Material 3のボタンは縦の余白が0なので、ラベルが2行以上に
-/// なると（大きな文字のフランス語の「Échanger les pièces」等）、字がボタンの
-/// 枠を越え、塗りのボタンではÉのアクセントが白い地に出て見えなくなった。
-/// 字の大きさに合わせて上下に余白を取る（1行ならボタンの最小の高さに
-/// 収まり、見た目は変わらない）。
-EdgeInsets _labelRoom(BuildContext context) =>
-    EdgeInsets.symmetric(vertical: MediaQuery.textScalerOf(context).scale(4));
 
 /// Reward UI shell; the server wallet/pricing/ad issuance are not yet live.
 /// Never invent coin balances, price quotes or exchange success on the client.
@@ -291,13 +281,16 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Padding(
-              padding: _labelRoom(ctx),
+              padding: buttonLabelRoom(ctx),
               child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
             ),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Padding(padding: _labelRoom(ctx), child: Text(t['redeem'])),
+            child: Padding(
+              padding: buttonLabelRoom(ctx),
+              child: Text(t['redeem']),
+            ),
           ),
         ],
       ),
@@ -715,7 +708,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             // ListTileの題と2行目の間と同じくらい空ける。
             spacing: 4,
             children: [
-              Text(t[target.name]),
+              // 名前の中の数と単位（「1作品」「1개」「1篇」「2時間」）は
+              // 途中で行を変えない。
+              KeepTogetherText(t[target.name], keep: const []),
               DefaultTextStyle(style: priceStyle, child: price),
             ],
           ),
@@ -791,7 +786,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ? l10n.rewardUnlockRewardQuotaRemaining(rewardDailyRemaining)
         : t['rewardQuotaUncapped'];
     final nav = RewardNavigationLabels.of(context);
-    final labelRoom = _labelRoom(context);
+    final labelRoom = buttonLabelRoom(context);
     final earn = widget.mode == RewardPageMode.earnCoins;
     return Scaffold(
       appBar: widget.embedded

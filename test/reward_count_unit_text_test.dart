@@ -305,7 +305,7 @@ List<String> _missionScreenTexts(String locale, int n) {
           ? '$n obra logra 3 marcadores'
           : '$n obras logran 3 marcadores cada una',
       'Publicar ${c('obra', 'obras')}',
-      'Tiempo candidato registrado: $n min (sin verificar)',
+      'Tiempo candidato registrado: $n\u00a0min (sin verificar)',
     ],
     _ => [
       'Tout réclamer',
@@ -333,7 +333,7 @@ List<String> _missionScreenTexts(String locale, int n) {
           ? '$n œuvre atteint 3 favoris'
           : '$n œuvres atteignent chacune 3 favoris',
       'Publier ${c('œuvre', 'œuvres')}',
-      'Temps candidat enregistré\u00a0: $n min (non vérifié)',
+      'Temps candidat enregistré\u00a0: $n\u00a0min (non vérifié)',
     ],
   };
 }

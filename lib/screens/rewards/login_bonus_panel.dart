@@ -7,6 +7,8 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
+import '../../widgets/button_label_room.dart';
+import '../../widgets/keep_together_text.dart';
 import 'mission_panel_heading.dart';
 
 bool canClaimLoginBonus({
@@ -151,7 +153,9 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                     icon: const Icon(Icons.refresh),
                   ),
                 ),
-                Text(l10n.loginBonusDays(days)),
+                // 日数・コインの数と単位（「31日」「1코인」）は途中で行を
+                // 変えない。
+                KeepTogetherText(l10n.loginBonusDays(days), keep: const []),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -160,8 +164,9 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(t['daily']),
-                          Text(
+                          KeepTogetherText(
                             l10n.loginBonusDailyCoins(amount),
+                            keep: [l10n.coinAmount(amount)],
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
@@ -178,7 +183,9 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                               !_busy.contains('daily0')
                           ? () => _claim('daily', null)
                           : null,
-                      child: Text(dailyClaimed ? t['claimed'] : t['claim']),
+                      child: ButtonLabelRoom(
+                        child: Text(dailyClaimed ? t['claimed'] : t['claim']),
+                      ),
                     ),
                   ],
                 ),
@@ -212,11 +219,17 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                             ? scheme.primary
                             : scheme.onSurfaceVariant,
                       ),
-                      title: Text(l10n.loginBonusMilestone(goal)),
+                      title: KeepTogetherText(
+                        l10n.loginBonusMilestone(goal),
+                        keep: const [],
+                      ),
                       // 受け取るボタンはコインの横か下に置き、題には行の幅を
                       // すべて使わせる。
                       subtitle: ActionBesideOrBelow(
-                        text: Text(l10n.coinAmount(coins)),
+                        text: KeepTogetherText(
+                          l10n.coinAmount(coins),
+                          keep: [l10n.coinAmount(coins)],
+                        ),
                         action: claimed
                             ? Text(t['claimed'])
                             : OutlinedButton(
@@ -229,8 +242,10 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                                         !_busy.contains('milestone$goal')
                                     ? () => _claim('milestone', goal)
                                     : null,
-                                child: Text(
-                                  eligible ? t['claim'] : t['notYet'],
+                                child: ButtonLabelRoom(
+                                  child: Text(
+                                    eligible ? t['claim'] : t['notYet'],
+                                  ),
                                 ),
                               ),
                       ),

@@ -12713,11 +12713,11 @@ abstract class AppLocalizations {
   /// **'〇分以上〇分以内（数値入力）'**
   String get communityDurationRange;
 
-  /// No description provided for @communityDurationMinutes.
+  /// 作品広場の絞り込み：「〇分以内（スライダー）」で選んでいる長さ。数と単位をまとめた1つの文言
   ///
   /// In ja, this message translates to:
-  /// **'分以内'**
-  String get communityDurationMinutes;
+  /// **'{count}分以内'**
+  String communityDurationUpToMinutes(int count);
 
   /// No description provided for @communityDurationMinimum.
   ///
@@ -16325,11 +16325,17 @@ abstract class AppLocalizations {
   /// **'更新'**
   String get missionRefresh;
 
-  /// ミッション：コインの受け取りがまだ始まっていないことの説明
+  /// ミッション：作品広場の滞在ミッションの欄で、コインの受け取りがまだ始まっていないことの説明
   ///
   /// In ja, this message translates to:
   /// **'コインの受取は準備中です'**
   String get missionPayoutPending;
+
+  /// ミッション：ウィークリー・マンスリーミッションの欄で、コインの配布がまだ始まっていないことの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'コイン配布は準備中です'**
+  String get recurringMissionsPayoutPending;
 
   /// ミッション：時間の長さ（時間単位）。数と単位をまとめた1つの文言
   ///

@@ -6946,7 +6946,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityDurationRange => 'N분 이상 N분 이하 (숫자 입력)';
 
   @override
-  String get communityDurationMinutes => '분 이하';
+  String communityDurationUpToMinutes(int count) {
+    return '$count분 이하';
+  }
 
   @override
   String get communityDurationMinimum => '최소 길이 (분)';
@@ -9035,6 +9037,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get missionPayoutPending => '코인 지급은 준비 중입니다';
+
+  @override
+  String get recurringMissionsPayoutPending => '코인 지급은 준비 중입니다';
 
   @override
   String missionDurationHours(int count) {

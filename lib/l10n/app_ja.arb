@@ -3318,7 +3318,15 @@
   "communityDurationAny": "長さを指定しない",
   "communityDurationUpTo": "〇分以内（スライダー）",
   "communityDurationRange": "〇分以上〇分以内（数値入力）",
-  "communityDurationMinutes": "分以内",
+  "communityDurationUpToMinutes": "{count}分以内",
+  "@communityDurationUpToMinutes": {
+    "description": "作品広場の絞り込み：「〇分以内（スライダー）」で選んでいる長さ。数と単位をまとめた1つの文言",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityDurationMinimum": "最短（分）",
   "communityDurationMaximum": "最長（分）",
   "communityTagExactMatch": "検索語を完全一致で検索する（オフなら部分一致）",
@@ -4706,7 +4714,11 @@
   },
   "missionPayoutPending": "コインの受取は準備中です",
   "@missionPayoutPending": {
-    "description": "ミッション：コインの受け取りがまだ始まっていないことの説明"
+    "description": "ミッション：作品広場の滞在ミッションの欄で、コインの受け取りがまだ始まっていないことの説明"
+  },
+  "recurringMissionsPayoutPending": "コイン配布は準備中です",
+  "@recurringMissionsPayoutPending": {
+    "description": "ミッション：ウィークリー・マンスリーミッションの欄で、コインの配布がまだ始まっていないことの説明"
   },
   "missionDurationHours": "{count}時間",
   "@missionDurationHours": {

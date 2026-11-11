@@ -214,8 +214,12 @@ void main() {
       final dialog = find.byType(AlertDialog);
       expect(dialog, findsOneWidget, reason: '$name: 達成の知らせ');
       final texts = [
+        // Textとその派生（数と単位を途中で切らないKeepTogetherText等）。
         for (final text in tester.widgetList<Text>(
-          find.descendant(of: dialog, matching: find.byType(Text)),
+          find.descendant(
+            of: dialog,
+            matching: find.byWidgetPredicate((widget) => widget is Text),
+          ),
         ))
           text.data ?? text.textSpan?.toPlainText() ?? '',
       ];

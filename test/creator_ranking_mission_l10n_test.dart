@@ -11,6 +11,11 @@
 // 普通の空白だとそこで行が変わり、行が「: 37」「: 100)」のように句読点で
 // 始まった（フランス語の組版では許されない）。ここで足した文は改行しない
 // 空白（U+00A0。同梱のくらむぼん・白光明朝が持つ）にする。
+//
+// 数と「%」「h」「min」の間の空白も同じで、スペイン語・フランス語の順位の
+// 計算方法が「…públicas × 37」「%, con mínimo de 1…」「… publiques × 37」
+// 「%), au minimum…」と「%」で始まる行になっていた（スペイン語は文字1倍の
+// 360dpでも）。
 import 'dart:convert';
 import 'dart:io';
 
@@ -228,11 +233,12 @@ Future<void> _pump(
   await _settle(tester);
 }
 
+/// Textとその派生（数と単位を途中で切らないKeepTogetherText等）。
+final _anyText = find.byWidgetPredicate((widget) => widget is Text);
+
 List<String> _texts(WidgetTester tester, [Finder? within]) => [
   for (final text in tester.widgetList<Text>(
-    within == null
-        ? find.byType(Text)
-        : find.descendant(of: within, matching: find.byType(Text)),
+    within == null ? _anyText : find.descendant(of: within, matching: _anyText),
   ))
     text.data ?? text.textSpan?.toPlainText() ?? '',
 ];
@@ -331,7 +337,13 @@ final _pluralAfterOne = RegExp(
 );
 
 /// フランス語で句読点の前（「«」は後）に普通の空白がある所。
-final _breakingSpaceAroundPunctuation = RegExp(r' [:;?!»]|« ');
+final _breakingSpaceAroundPunctuation = RegExp(r' [:;?!»%]|« ');
+
+/// 数（または数の置き換え「{percent}」）と単位記号の間の普通の空白。
+final _breakingSpaceBeforeUnitSymbol = RegExp(
+  r'(?:\d|\}) (?:%|h|min)(?![\p{L}])',
+  unicode: true,
+);
 
 /// ミッション・報酬・コインのARBの文（このテストの画面と、報酬・特典交換の
 /// 画面に出る文）と、作品広場・投稿の手書きの表からARBへ移した文。
@@ -350,7 +362,7 @@ bool _missionOrRewardKey(String key) =>
       'communityWorkMetadataCopyTooLong',
     }.contains(key);
 
-/// [paragraph]の中で、行が「:」「;」「?」「!」「»」で始まる所と「«」で
+/// [paragraph]の中で、行が「:」「;」「?」「!」「»」「%」で始まる所と「«」で
 /// 終わる所。
 List<String> _punctuationAtLineEdge(RenderParagraph paragraph) {
   final text = paragraph.text.toPlainText(includeSemanticsLabels: false);
@@ -365,7 +377,7 @@ List<String> _punctuationAtLineEdge(RenderParagraph paragraph) {
   for (var i = 0; i < text.length; i++) {
     final char = text[i];
     final opens = char == '«';
-    if (!':;?!»'.contains(char) && !opens) continue;
+    if (!':;?!»%'.contains(char) && !opens) continue;
     // 「«」は次の字、それ以外は前の字と同じ行にあるべき。
     var j = opens ? i + 1 : i - 1;
     while (j >= 0 && j < text.length && RegExp(r'\s').hasMatch(text[j])) {
@@ -502,6 +514,20 @@ void main() {
       expect(texts, contains('制作時間は端末側で偽装可能なため、現在コイン報酬の対象外です。計測した時間は参考値です。'));
       expect(texts, contains('週に$n日ログイン'));
       expect(texts, contains('月に$n日ログイン'));
+      // コインの受取の準備中の知らせは、欄ごとに元の文のまま（ウィークリー・
+      // マンスリーは「配布」、作品広場は「受取」）。
+      final recurringTexts = _texts(
+        tester,
+        find.byKey(const Key('recurringMissionsPanel')),
+      );
+      expect(recurringTexts, contains('コイン配布は準備中です'));
+      expect(recurringTexts, isNot(contains('コインの受取は準備中です')));
+      final plazaTexts = _texts(
+        tester,
+        find.byKey(const Key('plazaMissionsPanel')),
+      );
+      expect(plazaTexts, contains('コインの受取は準備中です'));
+      expect(plazaTexts, isNot(contains('コイン配布は準備中です')));
       final week = await _details(
         tester,
         const Key('recurringMissionDetails_visit_week_n'),
@@ -541,9 +567,36 @@ void main() {
     expect(problems, isEmpty, reason: problems.join('\n'));
   });
 
-  for (final n in [1, 37]) {
-    testWidgets('フランス語の文字2倍で、ミッションの行と達成条件の行が句読点で始まらない'
-        '（$n、360dp）', (tester) async {
+  test('フランス語・スペイン語のミッション・報酬の文は数と「%」「h」「min」の'
+      '間に改行しない空白を使う', () {
+    final problems = <String>[];
+    for (final locale in ['fr', 'es']) {
+      final arb =
+          jsonDecode(File('lib/l10n/app_$locale.arb').readAsStringSync())
+              as Map<String, dynamic>;
+      var checked = 0;
+      for (final MapEntry(:key, :value) in arb.entries) {
+        if (key.startsWith('@') || value is! String) continue;
+        if (!_missionOrRewardKey(key)) continue;
+        checked++;
+        for (final match in _breakingSpaceBeforeUnitSymbol.allMatches(value)) {
+          final from = (match.start - 20).clamp(0, value.length);
+          final to = (match.end + 10).clamp(0, value.length);
+          problems.add('$locale $key: …${value.substring(from, to)}…');
+        }
+      }
+      expect(checked, greaterThan(100), reason: '$locale: 確かめた文が少なすぎる');
+    }
+    expect(problems, isEmpty, reason: problems.join('\n'));
+  });
+
+  for (final (locale, scale, n) in [
+    for (final locale in ['fr', 'es'])
+      for (final scale in [1.0, 1.75, 2.0])
+        for (final n in [1, 37]) (locale, scale, n),
+  ]) {
+    testWidgets('$locale・文字$scale倍で、ミッションの行と達成条件の行が句読点・'
+        '「%」で始まらない（$n、360dp）', (tester) async {
       if (!fontsLoaded) {
         await loadAppFonts(tester);
         fontsLoaded = true;
@@ -551,11 +604,11 @@ void main() {
       final themes = ThemeService();
       await themes.init();
       addTearDown(themes.dispose);
-      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      tester.platformDispatcher.textScaleFactorTestValue = scale;
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       await _pump(
         tester,
-        'fr',
+        locale,
         n,
         size: const Size(360, 30000),
         theme: themes.themeData,

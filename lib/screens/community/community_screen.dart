@@ -2547,9 +2547,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                 ),
               ),
               if (_durationMode == _DurationFilterMode.upTo) ...[
-                Text(
-                  '${_upToMinutes.round()} ${l10n.communityDurationMinutes}',
-                ),
+                Text(l10n.communityDurationUpToMinutes(_upToMinutes.round())),
                 Slider(
                   key: const Key('communityDurationSlider'),
                   value: _upToMinutes,

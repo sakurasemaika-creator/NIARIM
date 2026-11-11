@@ -6912,7 +6912,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityDurationRange => '〇分以上〇分以内（数値入力）';
 
   @override
-  String get communityDurationMinutes => '分以内';
+  String communityDurationUpToMinutes(int count) {
+    return '$count分以内';
+  }
 
   @override
   String get communityDurationMinimum => '最短（分）';
@@ -8989,6 +8991,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get missionPayoutPending => 'コインの受取は準備中です';
+
+  @override
+  String get recurringMissionsPayoutPending => 'コイン配布は準備中です';
 
   @override
   String missionDurationHours(int count) {

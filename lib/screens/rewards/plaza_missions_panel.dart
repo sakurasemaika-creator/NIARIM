@@ -8,6 +8,8 @@ import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
 import '../../utils/coin_duration_label.dart';
 import '../../widgets/action_beside_or_below.dart';
+import '../../widgets/button_label_room.dart';
+import '../../widgets/keep_together_text.dart';
 import 'mission_panel_heading.dart';
 
 /// Authenticated, read-only view until the server explicitly enables payouts.
@@ -158,11 +160,17 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
               : Icons.help_outline,
         ),
       ),
-      title: Text(_l10n.plazaMissionGoal(_goal(goal))),
+      // 時間・コインの数と単位（「15分」「1コイン」「40小時」）は途中で
+      // 行を変えない。
+      title: KeepTogetherText(
+        _l10n.plazaMissionGoal(_goal(goal)),
+        keep: [_goal(goal)],
+      ),
       // 受け取るボタンは説明の横か下に置き、題には行の幅をすべて使わせる。
       subtitle: ActionBesideOrBelow(
-        text: Text(
+        text: KeepTogetherText(
           '${_goal(progress)} / ${_goal(goal)} · ${_l10n.coinAmount(coins)}',
+          keep: [_goal(progress), _goal(goal), _l10n.coinAmount(coins)],
         ),
         action: claimed
             ? Text(_l10n.missionClaimed)
@@ -171,12 +179,14 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
                 onPressed: enabled && eligible && !_claiming.contains(id)
                     ? () => _claim(id)
                     : null,
-                child: Text(
-                  !enabled && eligible
-                      ? _l10n.missionComingSoon
-                      : eligible
-                      ? _l10n.missionClaim
-                      : _l10n.missionNotYet,
+                child: ButtonLabelRoom(
+                  child: Text(
+                    !enabled && eligible
+                        ? _l10n.missionComingSoon
+                        : eligible
+                        ? _l10n.missionClaim
+                        : _l10n.missionNotYet,
+                  ),
                 ),
               ),
       ),
