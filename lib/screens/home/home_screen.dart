@@ -208,6 +208,14 @@ class _HomeScreenState extends State<HomeScreen>
         TileScreenClass.desktop => ProjectViewMode.large,
       };
 
+  // 一覧のスクロール位置を覚える区分に使う表示サイズ。表示サイズを選んで
+  // いない間は、最初に決まったもののままにする：窓の幅が境（600px・1000px）を
+  // またいで表示サイズが変わるたびに区分まで変えると、一覧が先頭へ戻る。
+  ProjectViewMode? _autoViewModeAtOpen;
+
+  ProjectViewMode _scrollMemoryViewMode(BuildContext context) =>
+      _userViewMode ?? (_autoViewModeAtOpen ??= _effectiveViewMode(context));
+
   Future<void> _loadProjectViewMode() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -749,7 +757,7 @@ class _HomeScreenState extends State<HomeScreen>
                         // Keep bounded browsing scopes rather than every typed query.
                         key: PageStorageKey((
                           'home-projects',
-                          _effectiveViewMode(context),
+                          _scrollMemoryViewMode(context),
                           _currentFolderId,
                           _showFavoritesOnly,
                           _isSearching,
