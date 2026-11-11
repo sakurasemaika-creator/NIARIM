@@ -1,0 +1,30 @@
+name: Modified canvas scope actual Flutter screenshots
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/visual/modified_canvas_scope_capture_test.dart'
+      - '.github/workflows/modified-canvas-scope-captures.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-captures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - name: Render affected screens using the actual Flutter app
+        run: flutter test test/visual/modified_canvas_scope_capture_test.dart --reporter expanded
+      - name: Upload actual screen captures
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: niarim-modified-canvas-real-screens
+          path: build/modified-canvas-scope
+          if-no-files-found: warn
+          retention-days: 7
