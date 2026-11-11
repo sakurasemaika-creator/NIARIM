@@ -1339,7 +1339,12 @@ class _HomeScreenState extends State<HomeScreen>
     final exported = await ExportEngine.listExportedFiles(forceRefresh: true);
     final members = exported.where((file) =>
         workFolders.folderIdOf(file.uri.pathSegments.last) == sourceId).toList();
-    final copiedFolder = await workFolders.createFolder('$sourceName (コピー)');
+    final used = workFolders.folders.map((folder) => folder.name).toSet();
+    var copyName = '$sourceName (コピー)';
+    for (var number = 2; used.contains(copyName); number++) {
+      copyName = '$sourceName (コピー $number)';
+    }
+    final copiedFolder = await workFolders.createFolder(copyName);
     final copies = <File>[];
     try {
       for (final source in members) {
