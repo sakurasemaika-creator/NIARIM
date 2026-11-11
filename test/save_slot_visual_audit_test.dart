@@ -336,15 +336,15 @@ void main() {
       ),
     ))!;
     saveService.setTreeMode(true);
-    final root = await tester.runAsync(() => saveService.saveAsChild(
+    final root = (await tester.runAsync(() => saveService.saveAsChild(
       projectId: treeProject.id,
       project: treeProject,
       scenes: projectService.scenesOf(treeProject.id),
       tileManager: projectService.tileManagerOf(treeProject.id),
       comment: 'ツリー保存・最初の状態',
       thumbnailPngBytes: thumbnailBytes,
-    ));
-    final branch = await tester.runAsync(() => saveService.saveAsChild(
+    )))!;
+    final branch = (await tester.runAsync(() => saveService.saveAsChild(
       projectId: treeProject.id,
       project: treeProject,
       scenes: projectService.scenesOf(treeProject.id),
@@ -352,7 +352,7 @@ void main() {
       parentId: root.id,
       comment: 'ツリー保存・分岐',
       thumbnailPngBytes: thumbnailBytes,
-    ));
+    )))!;
     expect(root.thumbnailPath, isNotNull);
     expect(branch.thumbnailPath, isNotNull);
     await setViewport(const Size(1080, 2280), 3);
