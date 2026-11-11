@@ -69,6 +69,7 @@ import 'widgets/canvas_preview_navigator.dart';
 import 'widgets/desktop_dock_content_viewport.dart';
 import 'widgets/docked_panel_close_scope.dart';
 import '../../utils/desktop_dock_column_fit.dart';
+import '../../utils/desktop_window_snap.dart';
 import '../../models/canvas_dock_panel.dart';
 import '../../models/ruler.dart';
 import '../../widgets/responsive.dart';
@@ -228,6 +229,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // its temporary drop zone lets users recreate it without a menu.
   bool _desktopDockDragActive = false;
 
+  // Temporary positions stay local during a pointer drag, then persist once
+  // at release. Order is a session-only z-order (never changes dock order).
+  final Map<CanvasDockPanel, Offset> _floatingDragOffsets = {};
+  final List<CanvasDockPanel> _floatingFrontOrder = [];
+
+  bool _visibleInDock(SettingsService settings, CanvasDockPanel panel) =>
+      _desktopPanelVisible(panel) &&
+      settings.desktopFloatingPosition(panel) == null;
+
   void _setDesktopDockDragging(bool active) {
     if (!mounted || _desktopDockDragActive == active) return;
     setState(() => _desktopDockDragActive = active);
@@ -251,7 +261,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     SettingsService settings, {
     required bool right,
   }) =>
-      _physicalDockOrder(settings, right: right).any(_desktopPanelVisible) ||
+      _physicalDockOrder(settings, right: right).any(
+        (panel) => _visibleInDock(settings, panel),
+      ) ||
       (right == _meshDockOnRight(settings) && _showMeshTransformPanel);
 
   void _resizePhysicalDockColumn({
@@ -296,7 +308,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final visible = _physicalDockOrder(
       settings,
       right: right,
-    ).where(_desktopPanelVisible).toList();
+    ).where((panel) => _visibleInDock(settings, panel)).toList();
     if (visible.isEmpty &&
         (right != _meshDockOnRight(settings) || !_showMeshTransformPanel)) {
       return _desktopDockDragActive ? 52.0 : 0.0;
@@ -2003,6 +2015,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                   ],
                 ),
+                // Free-position PC/DeX tool windows sit above canvas and
+                // chrome, not inside either dock column. Their hit regions
+                // are limited to their own rectangles, so overlapped and
+                // separated layouts both remain usable.
+                if (isDesktop) _buildDesktopFloatingWindows(settings),
                 // パネル表示中は、パネル外をタップすると閉じられるようにする
                 // 透明バリア（パネル本体より下、Columnより上に敷く）。
                 // フィルターパネルがキャンバスを使っている間（球体陰影の光・
@@ -2501,6 +2518,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 onSelected: (action) {
                                   if (action == 'hide') {
                                     _setDesktopPanelVisible(p, false);
+                                  } else if (action == 'float') {
+                                    // Offset is relative to the full safe
+                                    // canvas screen, not to the painted image.
+                                    final count = settings
+                                        .desktopFloatingPositions.length;
+                                    settings.floatDesktopDockPanel(
+                                      p, Offset(96.0 + count * 24, 64.0 + count * 24),
+                                    );
                                   } else {
                                     settings.moveDesktopDockPanel(
                                       p,
@@ -2511,6 +2536,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   }
                                 },
                                 itemBuilder: (_) => [
+                                  const PopupMenuItem(
+                                    value: 'float',
+                                    child: Text('自由配置'),
+                                  ),
                                   PopupMenuItem(
                                     value: 'left',
                                     child: Text(
@@ -2576,6 +2605,163 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
+  /// Desktop windows maintain their own positions and z-order, independent
+  /// from the saved left/right docks. Snap only adjacent window edges while
+  /// preserving deliberate overlaps and gaps.
+  Widget _buildDesktopFloatingWindows(SettingsService settings) =>
+      Positioned.fill(
+        child: LayoutBuilder(
+          builder: (context, viewport) {
+            final open = settings.desktopFloatingPositions.keys
+                .where(_desktopPanelVisible)
+                .toList();
+            open.sort((a, b) {
+              final ia = _floatingFrontOrder.indexOf(a);
+              final ib = _floatingFrontOrder.indexOf(b);
+              return ia.compareTo(ib);
+            });
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                for (final panel in open)
+                  _floatingDesktopWindow(panel, settings, viewport, open),
+              ],
+            );
+          },
+        ),
+      );
+
+  Size _freeWindowSize(
+    CanvasDockPanel panel, SettingsService settings, BoxConstraints view,
+  ) {
+    const defaultWidth = 300.0;
+    final maxHeight = settings.desktopDockHeight(panel) + 56.0;
+    return Size(
+      view.maxWidth < defaultWidth ? view.maxWidth : defaultWidth,
+      view.maxHeight < maxHeight ? view.maxHeight : maxHeight,
+    );
+  }
+
+  Offset _boundFreeWindow(Offset proposed, Size size, BoxConstraints view) =>
+      Offset(
+        proposed.dx.clamp(0.0, (view.maxWidth - size.width).clamp(0.0, double.infinity)).toDouble(),
+        proposed.dy.clamp(0.0, (view.maxHeight - size.height).clamp(0.0, double.infinity)).toDouble(),
+      );
+
+  Widget _floatingDesktopWindow(
+    CanvasDockPanel panel,
+    SettingsService settings,
+    BoxConstraints viewport,
+    List<CanvasDockPanel> open,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    final windowSize = _freeWindowSize(panel, settings, viewport);
+    final saved = settings.desktopFloatingPosition(panel)!;
+    final position = _boundFreeWindow(
+      _floatingDragOffsets[panel] ?? saved, windowSize, viewport,
+    );
+    return Positioned(
+      key: ValueKey('freeDockWindow-${panel.name}'),
+      left: position.dx,
+      top: position.dy,
+      width: windowSize.width,
+      height: windowSize.height,
+      child: Listener(
+        onPointerDown: (_) => setState(() {
+          _floatingFrontOrder.remove(panel);
+          _floatingFrontOrder.add(panel);
+        }),
+        child: Material(
+          elevation: 0,
+          clipBehavior: Clip.antiAlias,
+          color: scheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: BorderSide(color: scheme.outlineVariant),
+          ),
+          child: Column(
+            children: [
+              GestureDetector(
+                key: ValueKey('freeDockDrag-${panel.name}'),
+                behavior: HitTestBehavior.opaque,
+                onPanUpdate: (details) => setState(() {
+                  final origin = _floatingDragOffsets[panel] ?? saved;
+                  _floatingDragOffsets[panel] = _boundFreeWindow(
+                    origin + details.delta, windowSize, viewport,
+                  );
+                }),
+                onPanEnd: (_) {
+                  final proposed = _floatingDragOffsets[panel] ?? saved;
+                  final neighbours = [
+                    for (final other in open)
+                      if (other != panel)
+                        _boundFreeWindow(
+                          _floatingDragOffsets[other] ??
+                              settings.desktopFloatingPosition(other)!,
+                          _freeWindowSize(other, settings, viewport),
+                          viewport,
+                        ) & _freeWindowSize(other, settings, viewport),
+                  ];
+                  final snapped = snapDesktopWindow(
+                    proposed, windowSize, neighbours,
+                  );
+                  final destination = _boundFreeWindow(
+                    snapped, windowSize, viewport,
+                  );
+                  setState(() => _floatingDragOffsets.remove(panel));
+                  settings.moveDesktopFloatingPanel(panel, destination);
+                },
+                child: Container(
+                  height: 36,
+                  padding: const EdgeInsets.only(left: 8),
+                  color: scheme.surfaceContainerHigh,
+                  child: Row(
+                    children: [
+                      Icon(Icons.drag_indicator, size: 18,
+                          color: scheme.onSurfaceVariant),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(_dockTitle(panel),
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ),
+                      PopupMenuButton<String>(
+                        key: ValueKey('freeDockMenu-${panel.name}'),
+                        icon: const Icon(Icons.more_vert, size: 18),
+                        tooltip: _dockTitle(panel),
+                        onSelected: (value) {
+                          if (value == 'hide') {
+                            _setDesktopPanelVisible(panel, false);
+                          } else {
+                            settings.redockDesktopFloatingPanel(panel);
+                            settings.moveDesktopDockPanel(
+                              panel, toRight: value == 'right',
+                            );
+                            setState(() => _floatingDragOffsets.remove(panel));
+                          }
+                        },
+                        itemBuilder: (_) => [
+                          const PopupMenuItem(value: 'left',
+                              child: Text('左ドックへ戻す')),
+                          const PopupMenuItem(value: 'right',
+                              child: Text('右ドックへ戻す')),
+                          const PopupMenuItem(value: 'hide',
+                              child: Text('閉じる')),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: DockedPanelScope(child: _responsiveDockBody(panel)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /// 常設ツールバー本体。[vertical]がtrueの場合は左側（左利きモードでは
   /// 右側）の縦レールとして、falseの場合は画面下部の横並びバーとして
   /// 表示する。
@@ -2630,7 +2816,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       final visible = _physicalDockOrder(
         settings,
         right: right,
-      ).where(_desktopPanelVisible).toList();
+      ).where((panel) => _visibleInDock(settings, panel)).toList();
       final hasMesh =
           right == _meshDockOnRight(settings) && _showMeshTransformPanel;
       final fitted = _fitDesktopDock(

@@ -548,7 +548,7 @@ class _LayerPanelState extends State<LayerPanel> {
                           frameIndex: widget.frameIndex,
                           layerId: layer.id,
                           backgroundColor: canvasBackground,
-                          layerOpacity: layer.opacity,
+                          layerOpacity: layer.isVisible ? layer.opacity : 0,
                         ),
                       ],
                     ),
