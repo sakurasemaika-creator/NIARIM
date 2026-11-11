@@ -2963,6 +2963,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     activeCanvasEyedropperTarget: _filterColorEyedropperTarget,
     onStartCanvasEyedropper: _toggleFilterColorEyedropper,
     bottomBar: bottomBar,
+    preserveCurrentFilterOnMount:
+        bottomBar && isWideScreen(context, listen: false),
     onCanvasPreviewChanged: _setFilterCanvasPreview,
     selectionMask: _canvasSelectionMask,
     lensMask: _filterLensMask,
