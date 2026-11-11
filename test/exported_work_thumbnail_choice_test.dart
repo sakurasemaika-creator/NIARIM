@@ -92,6 +92,9 @@ void main() {
     await tester.tap(menu);
     await tester.pumpAndSettle();
     expect(find.text('サムネイル変更'), findsOneWidget);
+    expect(find.text('移動'), findsOneWidget);
+    expect(find.text('共有'), findsOneWidget);
+    expect(find.text('削除'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets(
@@ -150,7 +153,6 @@ void main() {
           expect(title.left, greaterThan(thumb.right), reason: scope);
           expect(metadata.left, greaterThan(thumb.right), reason: scope);
           for (final key in [
-            'exportedWorkCopyButton',
             'exportedWorkMoreMenu',
           ]) {
             final rect = tester.getRect(find.byKey(Key(key)));
@@ -167,5 +169,42 @@ void main() {
       }
     },
   );
+
+  testWidgets('exported work grid exposes only the unified three-dot menu',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('ja'),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      home: Scaffold(body: SizedBox(
+        width: 240, height: 230,
+        child: ExportedWorkCard(
+          gridTile: true,
+          name: 'long_movie_name.mp4',
+          metadata: '2026/11/11 ・ 2.0 MB',
+          icon: Icons.movie,
+          moveLabel: '移動',
+          shareLabel: '共有',
+          deleteLabel: '削除',
+          onOpen: () {},
+          onMove: () {},
+          onCopy: () {},
+          onShare: () {},
+          onDelete: () {},
+          onChangeThumbnail: () {},
+        ),
+      )),
+    ));
+    expect(find.byKey(const Key('exportedWorkMoreMenu')), findsOneWidget);
+    expect(find.byIcon(Icons.delete_outline), findsNothing);
+    expect(find.byIcon(Icons.ios_share), findsNothing);
+    await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')));
+    await tester.pumpAndSettle();
+    for (final name in ['開く', 'コピー', '移動', '共有',
+                        'サムネイル変更', '削除']) {
+      expect(find.text(name), findsOneWidget, reason: name);
+    }
+    expect(tester.takeException(), isNull);
+  });
 
 }
