@@ -35,3 +35,12 @@ String keepKoreanWordsTogether(String text) {
 }
 
 bool _isBreakable(String char) => char.trim().isEmpty;
+
+/// 語結合子を入れた表示の文[shown]を出す`Text`の`semanticsLabel`。
+///
+/// 語結合子は字形を持たないが、読み上げ（TalkBack）・点字には字として渡り、
+/// 音節ごとに区切りが入る。語結合子を除いた元の文を返し、語結合子が無ければ
+/// null（`Text`の既定どおり表示の文を読む）を返す。
+/// [keepKoreanWordsTogether]を通した文を出すときは必ず添えること。
+String? plainSemanticsLabel(String shown) =>
+    shown.contains(_wordJoiner) ? shown.replaceAll(_wordJoiner, '') : null;

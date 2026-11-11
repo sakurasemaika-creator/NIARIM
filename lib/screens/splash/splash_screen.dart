@@ -528,8 +528,11 @@ class _SplashActionButtonState extends State<_SplashActionButton> {
                       size: _SplashActionButton._iconSize,
                     ),
                     const SizedBox(height: _SplashActionButton._iconGap),
+                    // 韓国語の語結合子は表示の折り返しのためだけのもの。
+                    // 読み上げ・点字には入れる前の文を渡す。
                     Text(
                       widget.label,
+                      semanticsLabel: plainSemanticsLabel(widget.label),
                       textAlign: TextAlign.center,
                       style: _SplashActionButton._labelStyle(foreground),
                       maxLines: _SplashActionButton._maxLines,
@@ -538,6 +541,7 @@ class _SplashActionButtonState extends State<_SplashActionButton> {
                     if (widget.subLabel != null)
                       Text(
                         widget.subLabel!,
+                        semanticsLabel: plainSemanticsLabel(widget.subLabel!),
                         textAlign: TextAlign.center,
                         style: _SplashActionButton._subLabelStyle(foreground),
                         maxLines: _SplashActionButton._maxLines,

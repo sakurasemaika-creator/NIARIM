@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
 import '../services/export_share_service.dart';
 import '../utils/app_error_reporter.dart';
+import '../utils/line_break.dart';
 
 /// 共有できなかった理由を、利用者へ見せる文にする（OSの例外の文は出さない）。
 /// この端末・OSに共有の仕組みが無いときと、それ以外の失敗を分ける。
@@ -128,7 +129,8 @@ void revealExportShareNotice(GlobalKey noticeKey) {
 /// 共有できなかったときの知らせを、その場（ダイアログ・パネルの中）に出す1行。
 ///
 /// 文字の色はその面の文字色。色ではなく先頭の印と文で知らせ、読み上げへも
-/// 伝える。次の共有を始めるときに消すこと。
+/// 伝える。次の共有を始めるときに消すこと。[message]に韓国語の語結合子
+/// （[keepKoreanWordsTogether]）を入れたときは、読み上げには入れる前の文を渡す。
 class ExportShareNotice extends StatelessWidget {
   const ExportShareNotice({super.key, required this.message});
 
@@ -145,7 +147,11 @@ class ExportShareNotice extends StatelessWidget {
           Icon(Icons.error_outline, size: 18, color: foreground),
           const SizedBox(width: 6),
           Flexible(
-            child: Text(message, style: TextStyle(color: foreground)),
+            child: Text(
+              message,
+              semanticsLabel: plainSemanticsLabel(message),
+              style: TextStyle(color: foreground),
+            ),
           ),
         ],
       ),

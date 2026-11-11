@@ -52,12 +52,18 @@ class _FirstLaunchStore extends SharedPreferencesStorePlatform {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // 保存に失敗したときの知らせ（読み上げにも伝わる1行）の文。
+  // 保存に失敗したときの知らせ（読み上げにも伝わる1行）の文の段落。
+  // 韓国語では読み上げの文を別に渡すのでTextの下に読み上げの層が入る。
+  // 段落（RichText）そのものを探す（先頭の印もRichTextで描かれるので、
+  // Textの中のものに限る）。
   Finder saveFailureNotice() => find.descendant(
-    of: find.byWidgetPredicate(
-      (widget) => widget is Semantics && widget.properties.liveRegion == true,
+    of: find.descendant(
+      of: find.byWidgetPredicate(
+        (widget) => widget is Semantics && widget.properties.liveRegion == true,
+      ),
+      matching: find.byType(Text),
     ),
-    matching: find.byType(Text),
+    matching: find.byType(RichText),
   );
 
   Future<
@@ -330,6 +336,45 @@ void main() {
     }
   });
 
+  // 語結合子は表示の折り返しのためだけのもの。読み上げ・点字には元の文を
+  // 渡す（語結合子ごと渡すと、音節ごとに区切りが入る）。
+  testWidgets('screen readers get the Korean save failure notice without '
+      'word joiners', (tester) async {
+    final handle = tester.ensureSemantics();
+    final c = await open(tester, language: 'ko');
+    c.store.mode = 'reject';
+    final start = find.widgetWithText(
+      FilledButton,
+      c.l10n.homeFirstLaunchStart,
+    );
+    await tester.ensureVisible(start);
+    await tester.tap(start);
+    await tester.pumpAndSettle();
+    final notice = saveFailureNotice();
+    expect(notice, findsOneWidget);
+    // 表示は語の途中で折り返さないよう語結合子を入れたまま。
+    expect(
+      tester.renderObject<RenderParagraph>(notice).text.toPlainText(),
+      contains('\u2060'),
+    );
+    final labels = [
+      for (final node in find.semantics.byPredicate((_) => true).evaluate())
+        if (node.label.isNotEmpty) node.label,
+    ];
+    expect(
+      labels.where((label) => label.contains('\u2060')).toList(),
+      isEmpty,
+      reason: '$labels',
+    );
+    expect(
+      labels.any((label) => label.contains(c.l10n.homeFirstLaunchSaveFailed)),
+      isTrue,
+      reason: '$labels',
+    );
+    handle.dispose();
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   // 知らせの色は差し色から作られるcolorScheme.errorではなく、ダイアログの
   // 文字色（テーマ・外観で選ぶ色）。何を保存できなかったか・もう一度
   // 「はじめる」を押せばよいことを文で伝える。
@@ -349,7 +394,7 @@ void main() {
       await tester.pumpAndSettle();
       final notice = saveFailureNotice();
       expect(notice, findsOneWidget);
-      final message = tester.widget<Text>(notice).data!;
+      final message = tester.widget<RichText>(notice).text.toPlainText();
       expect(message, isNot(c.l10n.communityErrorGeneric));
       expect(message, contains(c.l10n.homeFirstLaunchStart));
       final scheme = Theme.of(tester.element(notice)).colorScheme;

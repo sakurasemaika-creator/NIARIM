@@ -96,11 +96,7 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(
-          content: Text(
-            keepKoreanWordsTogether(l10n.startupFailedDetailsCopied),
-          ),
-        ),
+        SnackBar(content: _KeptKoreanText(l10n.startupFailedDetailsCopied)),
       );
   }
 
@@ -128,14 +124,14 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
                   const SizedBox(height: 16),
                   // 韓国語は語の途中で折り返さない（「다시 시도／해 주세요」の
                   // ように割れていた）。ハングルを含まない文はそのまま。
-                  Text(
-                    keepKoreanWordsTogether(l10n.startupFailedTitle),
+                  _KeptKoreanText(
+                    l10n.startupFailedTitle,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.titleLarge,
                   ),
                   const SizedBox(height: 12),
-                  Text(
-                    keepKoreanWordsTogether(l10n.startupFailedBody),
+                  _KeptKoreanText(
+                    l10n.startupFailedBody,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium,
                   ),
@@ -148,27 +144,21 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.refresh_rounded),
-                    label: Text(
-                      keepKoreanWordsTogether(
-                        _retrying
-                            ? l10n.startupFailedRetrying
-                            : l10n.startupFailedRetry,
-                      ),
+                    label: _KeptKoreanText(
+                      _retrying
+                          ? l10n.startupFailedRetrying
+                          : l10n.startupFailedRetry,
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextButton.icon(
                     onPressed: () => _copyDetails(l10n),
                     icon: const Icon(Icons.copy_rounded),
-                    label: Text(
-                      keepKoreanWordsTogether(l10n.startupFailedCopyDetails),
-                    ),
+                    label: _KeptKoreanText(l10n.startupFailedCopyDetails),
                   ),
                   const SizedBox(height: 8),
                   ExpansionTile(
-                    title: Text(
-                      keepKoreanWordsTogether(l10n.startupFailedDetails),
-                    ),
+                    title: _KeptKoreanText(l10n.startupFailedDetails),
                     tilePadding: EdgeInsets.zero,
                     childrenPadding: const EdgeInsets.only(bottom: 8),
                     shape: const Border(),
@@ -197,6 +187,27 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// 韓国語を語の途中で折り返さずに出し、読み上げ・点字には語結合子を入れる
+/// 前の文を渡す`Text`。
+class _KeptKoreanText extends StatelessWidget {
+  const _KeptKoreanText(this.text, {this.style, this.textAlign});
+
+  final String text;
+  final TextStyle? style;
+  final TextAlign? textAlign;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = keepKoreanWordsTogether(text);
+    return Text(
+      shown,
+      semanticsLabel: plainSemanticsLabel(shown),
+      style: style,
+      textAlign: textAlign,
     );
   }
 }
