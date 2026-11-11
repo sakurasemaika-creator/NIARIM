@@ -159,15 +159,11 @@ void main() {
       );
       final button = find.descendant(
         of: card,
-        matching: find.byIcon(Icons.delete_outline),
+        matching: find.byKey(const Key('exportedWorkMoreMenu')),
       );
       await tester.drag(scroll, const Offset(0, -2000));
       await tester.pumpAndSettle();
-      final hitTarget = find.ancestor(
-        of: button,
-        matching: find.byType(IconButton),
-      );
-      final hitRect = tester.getRect(hitTarget);
+      final hitRect = tester.getRect(button);
       final viewport = tester.getRect(scroll);
       final folderFab = find.byWidgetPredicate(
         (widget) =>
@@ -179,6 +175,11 @@ void main() {
       expect(hitRect.overlaps(createFolderRect), isFalse);
       expect(viewport.overlaps(createFolderRect), isFalse);
       await tester.tap(button);
+      await tester.pumpAndSettle();
+      final delete = find.text(l10n.commonDelete).last;
+      await tester.ensureVisible(delete);
+      await tester.pumpAndSettle();
+      await tester.tap(delete);
       await tester.pumpAndSettle();
       expect(
         find.text(l10n.homeWorkDeleteConfirmTitle('AUDIT_0_animation.gif')),
