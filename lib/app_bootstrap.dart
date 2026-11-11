@@ -8,6 +8,7 @@ import 'engine/undo_manager.dart' as app_undo;
 import 'services/advertising_service.dart';
 import 'services/premium_service.dart';
 import 'services/project_service.dart';
+import 'services/local_file_trash_service.dart';
 import 'services/creator_edit_session_reporter.dart';
 import 'services/settings_service.dart';
 import 'services/performance_service.dart';
@@ -161,6 +162,7 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   );
   await projectService.init();
   await projectService.sweepExpiredTrash(settingsService.trashAutoDeleteDays);
+  await LocalFileTrashService.sweepExpired(settingsService.trashAutoDeleteDays);
 
   await enter('brush');
   final brushService = own(BrushService());
