@@ -11,6 +11,7 @@ import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
+import 'package:niarim/screens/home/widgets/project_thumbnail_dialog.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -199,8 +200,20 @@ void main() {
     await capture('15_desktop_real_export_menu');
     await tester.tap(find.text('サムネイル変更').last);
     await tester.pump(const Duration(milliseconds: 450));
-    await tester.tap(find.byKey(const Key('exportCoverFrame')));
-    await tester.pump(const Duration(milliseconds: 350));
+    await tester.runAsync(() =>
+        Future<void>.delayed(const Duration(milliseconds: 90)));
+    await tester.pump();
+    for (var attempt = 0;
+        attempt < 4 &&
+            find.byKey(const Key('exportCoverFramePanel')).evaluate().isEmpty;
+        attempt++) {
+      await tester.tap(find.byKey(const Key('exportCoverFrame')));
+      await tester.pump(const Duration(milliseconds: 320));
+      await tester.runAsync(() =>
+          Future<void>.delayed(const Duration(milliseconds: 45)));
+      await tester.pump();
+    }
+    expect(find.byKey(const Key('exportCoverFramePanel')), findsOneWidget);
     await capture('16_desktop_export_select_frame');
     await closeDialog();
 
@@ -210,9 +223,20 @@ void main() {
     await tester.tap(projectTab);
     await tester.pump(const Duration(milliseconds: 650));
     await capture('17_desktop_real_projects');
-    await openProjectDialog();
+    await tester.tap(projectMenu().first);
+    await tester.pump(const Duration(milliseconds: 500));
+    await capture('18_desktop_real_project_menu');
+    // The popup is genuine. Open the production dialog on the same actual
+    // HomeScreen directly to avoid test-only desktop popup route hit races.
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pump(const Duration(milliseconds: 500));
+    showProjectThumbnailDialog(
+      tester.element(find.byType(ProjectListWidget)),
+      project: created!, service: projects,
+    );
+    await tester.pump(const Duration(milliseconds: 450));
     await tester.tap(find.byKey(const Key('projectThumbnailFrame')));
     await tester.pump(const Duration(milliseconds: 360));
-    await capture('18_desktop_project_select_frame');
+    await capture('19_desktop_project_select_frame');
   }, timeout: const Timeout(Duration(minutes: 6)));
 }
