@@ -461,13 +461,13 @@ void main() {
     await settle();
     expect(hueSlider, findsOneWidget);
 
-    final resize = find.byKey(const ValueKey('pcPaneResize.canvasPreview'));
+    final resize = find.byKey(const ValueKey('dockResize-canvasPreview'));
     if (resize.evaluate().isNotEmpty) {
       await tester.drag(resize.first, const Offset(0, 80));
       await settle();
       await shot('11_desktop_window_resized');
       final widthHandle = find.byKey(
-        const ValueKey('dockWidthResize-canvasPreview'),
+        const ValueKey('dockColumnResize-right'),
       );
       expect(widthHandle, findsOneWidget);
       await tester.drag(widthHandle.first, const Offset(-35, 0));
@@ -490,7 +490,7 @@ void main() {
         toRight: false,
       );
       await settle();
-      final moved = find.byKey(const ValueKey('pcPaneDrag.canvasPreview'));
+      final moved = find.byKey(const ValueKey('dockDrag-canvasPreview'));
       if (moved.evaluate().isNotEmpty) {
         expect(
           tester.getCenter(moved).dx,
@@ -533,7 +533,7 @@ void main() {
         CanvasDockPanel.brush,
         right: false,
       );
-      final brushWidthGrip = find.byKey(const ValueKey('pcPreviewWidth-brush'));
+      final brushWidthGrip = find.byKey(const ValueKey('pcPreviewToolColumnResize'));
       if (brushWidthGrip.evaluate().isNotEmpty) {
         await tester.drag(brushWidthGrip, const Offset(32, 0));
         await settle();
