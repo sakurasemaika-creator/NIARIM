@@ -3705,7 +3705,7 @@ SliverGridDelegate _worksGridDelegate(
     ProjectViewMode.detail => 240.0,
   };
   final scaledFontExtra =
-      (MediaQuery.textScalerOf(context).scale(16) - 16).clamp(0.0, 48.0);
+      (MediaQuery.textScalerOf(context).scale(16) - 16).clamp(0.0, 48.0).toDouble();
   return SliverGridDelegateWithMaxCrossAxisExtent(
     maxCrossAxisExtent: extent,
     crossAxisSpacing: 8,
