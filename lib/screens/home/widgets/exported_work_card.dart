@@ -15,6 +15,7 @@ class ExportedWorkCard extends StatelessWidget {
     required this.deleteLabel,
     required this.onOpen,
     required this.onMove,
+    this.onCopy,
     required this.onShare,
     required this.onDelete,
     this.shareBusy = false,
@@ -29,6 +30,7 @@ class ExportedWorkCard extends StatelessWidget {
   final String deleteLabel;
   final VoidCallback? onOpen;
   final VoidCallback onMove;
+  final VoidCallback? onCopy;
   final VoidCallback? onShare;
   final VoidCallback? onDelete;
   final bool shareBusy;
@@ -80,6 +82,15 @@ class ExportedWorkCard extends StatelessWidget {
     Widget actions() => Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (onCopy != null)
+          IconButton(
+            key: const Key('exportedWorkCopyButton'),
+            constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+            color: foreground,
+            icon: const Icon(Icons.content_copy_outlined, size: 20),
+            tooltip: '${MaterialLocalizations.of(context).copyButtonLabel}: $name',
+            onPressed: onCopy,
+          ),
         IconButton(
           constraints: const BoxConstraints.tightFor(width: 48, height: 48),
           color: foreground,
@@ -132,7 +143,8 @@ class ExportedWorkCard extends StatelessWidget {
               builder: (context, constraints) {
                 // Inline only when the full name fits beside the icon/actions.
                 // Otherwise give the name its own full-width, wrapping row.
-                final nameWidth = constraints.maxWidth - 40 - 12 - 144 - 12;
+                final nameWidth = constraints.maxWidth - 40 - 12 -
+                    (onCopy == null ? 144 : 192) - 12;
                 final measure = TextPainter(
                   text: TextSpan(
                     text: displayName,
