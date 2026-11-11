@@ -1056,14 +1056,36 @@ class _HomeScreenState extends State<HomeScreen>
           break;
       }
     }
+    if (_isSelectionMode) {
+      result[_escapeOnce] = _endProjectSelection;
+    } else if (_clipboardIsCut) {
+      result[_escapeOnce] = _cancelCutClipboard;
+    }
     return result;
   }
 
-  void _showClipboardFeedback(String message) {
+  void _cancelCutClipboard() {
+    if (!mounted || !_clipboardIsCut) return;
+    setState(() {
+      _clipboardProjectIds.clear();
+      _clipboardFolderIds.clear();
+      _clipboardIsCut = false;
+    });
+  }
+
+  void _showClipboardFeedback(String message, {bool allowUndoCut = false}) {
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     messenger.removeCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    messenger.showSnackBar(SnackBar(
+      content: Text(message),
+      action: allowUndoCut
+          ? SnackBarAction(
+              label: AppLocalizations.of(context)!.homeUndoAction,
+              onPressed: _cancelCutClipboard,
+            )
+          : null,
+    ));
   }
 
   /// 選択中のプロジェクト・フォルダを切り取り、内部クリップボードへ保持する。
@@ -1097,7 +1119,10 @@ class _HomeScreenState extends State<HomeScreen>
     });
     final count = _clipboardProjectIds.length + _clipboardFolderIds.length;
     if (count > 0 && mounted) {
-      _showClipboardFeedback(AppLocalizations.of(context)!.homeCutSnackbar(count));
+      _showClipboardFeedback(
+        AppLocalizations.of(context)!.homeCutSnackbar(count),
+        allowUndoCut: true,
+      );
     }
   }
 
