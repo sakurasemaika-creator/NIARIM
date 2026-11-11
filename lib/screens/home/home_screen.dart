@@ -2354,7 +2354,13 @@ class _HomeTabBar extends StatelessWidget {
           isScrollable: false,
           labelPadding: EdgeInsets.zero,
           labelColor: selected,
-          unselectedLabelColor: scheme.onSurfaceVariant,
+          // タブはアプリバー（メニュー背景色）の上に描くので、選んでいない
+          // タブはメニュー文字色から作る（本文の文字色から作ると、メニューが
+          // 暗く本文の文字も暗いテーマで見えなくなる）。
+          unselectedLabelColor:
+              (Theme.of(context).appBarTheme.foregroundColor ??
+                      scheme.onSurface)
+                  .withValues(alpha: 0.7),
           labelStyle: labelStyle,
           unselectedLabelStyle: labelStyle,
           indicatorColor: selected,

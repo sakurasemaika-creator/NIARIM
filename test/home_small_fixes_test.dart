@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -8,6 +9,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/export_storage.dart';
@@ -137,6 +139,17 @@ List<String> _midWordBreaks(ParagraphLines lines) {
   return breaks;
 }
 
+/// WCAGのコントラスト比（1〜21）。
+double _contrast(Color a, Color b) {
+  double channel(double v) =>
+      v <= 0.03928 ? v / 12.92 : math.pow((v + 0.055) / 1.055, 2.4).toDouble();
+  double luminance(Color c) =>
+      0.2126 * channel(c.r) + 0.7152 * channel(c.g) + 0.0722 * channel(c.b);
+  final la = luminance(a);
+  final lb = luminance(b);
+  return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -249,5 +262,87 @@ void main() {
       }
       expect(find.byType(Text), findsNWidgets(2));
     }
+  });
+
+  // タブはアプリバー（メニュー背景色）の上に描く。選んでいないタブの色は
+  // メニュー文字色から作る。本文の文字色から作っていたので、メニューが暗く
+  // 本文の文字も暗いテーマでは、選んでいないタブがほとんど見えなかった。
+  testWidgets('unselected Home tabs take their colour from the app bar '
+      'foreground', (tester) async {
+    const preset = AppThemePreset(
+      id: ThemeService.customCurrentId,
+      name: 'dark menu, dark body text',
+      accentColor: Color(0xFF2E7D6B),
+      textColor: Color(0xFF1F2328),
+      buttonTextColor: Color(0xFFFFFFFF),
+      menuTextColor: Color(0xFFEDEFF2),
+      selectionTextColor: Color(0xFFFFFFFF),
+      panelBgColor: Color(0xFFF7F4EC),
+      menuBgColor: Color(0xFF1E2430),
+      selectionColor: Color(0xFF2E7D6B),
+      updateMarkColor: Color(0xFFE0A100),
+    );
+    final home = await _openHome(tester, size: const Size(390, 844));
+    home.themes.previewCurrent(preset);
+    await _frames(tester, 10);
+    // 幅390pxはアイコンだけ、幅1280pxはアイコンと名前。
+    for (final width in [390.0, 1280.0]) {
+      tester.view.physicalSize = Size(width, 844);
+      await _frames(tester, 10);
+      final background = tester
+          .widget<Material>(
+            find
+                .descendant(
+                  of: find.byType(AppBar),
+                  matching: find.byType(Material),
+                )
+                .first,
+          )
+          .color!;
+      expect(background, preset.menuBgColor);
+      final scheme = Theme.of(
+        tester.element(find.byType(HomeScreen)),
+      ).colorScheme;
+      for (var i = 0; i < 4; i++) {
+        final tab = find.byKey(ValueKey('home_tab_$i'));
+        final colours = <Color>[
+          for (final icon
+              in find
+                  .descendant(of: tab, matching: find.byType(Icon))
+                  .evaluate())
+            (icon.widget as Icon).color ?? IconTheme.of(icon).color!,
+          for (final label
+              in find
+                  .descendant(of: tab, matching: find.byType(RichText))
+                  .evaluate())
+            if ((label.renderObject! as RenderParagraph).text
+                    .toPlainText()
+                    .length >
+                1)
+              (label.renderObject! as RenderParagraph).text.style!.color!,
+        ];
+        expect(colours, hasLength(width > 1000 ? 2 : 1), reason: 'tab $i');
+        for (final colour in colours) {
+          final where = 'tab $i at ${width.round()}px: $colour on $background';
+          if (i == 0) {
+            // 選んでいるタブは差し色のまま。
+            expect(colour, scheme.primary, reason: where);
+            continue;
+          }
+          expect(
+            colour,
+            preset.menuTextColor.withValues(alpha: 0.7),
+            reason: where,
+          );
+          expect(
+            _contrast(Color.alphaBlend(colour, background), background),
+            greaterThan(3),
+            reason: where,
+          );
+        }
+      }
+    }
+    expect(tester.takeException(), isNull);
+    await _close(tester);
   });
 }
