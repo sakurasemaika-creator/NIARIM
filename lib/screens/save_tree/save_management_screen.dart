@@ -514,7 +514,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                           ),
                           if (hasData)
                             SaveRenameButton(
-                              node: node,
+                              node: node!,
                               fallbackName:
                                   l10n.saveTreeSlotFallbackName(slotIndex + 1),
                             ),
