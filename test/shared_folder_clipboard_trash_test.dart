@@ -117,6 +117,27 @@ void main() {
     reopened.dispose();
   });
 
+  test('immediately trashed new project restores from a durable file',
+      () async {
+    final service = ProjectService();
+    await service.init();
+    final created = await service.createProject(
+      name: 'すぐにゴミ箱へ移した新規作品',
+      fps: 12, durationSeconds: 1, backgroundColor: 0xFFFFFFFF,
+    );
+    // No explicit save: moving to Trash must await the first autosave.
+    await service.deleteProject(created.id);
+    expect(service.trash.single.id, created.id);
+    await service.restoreProject(created.id);
+    expect(service.projects.single.id, created.id);
+    expect(service.scenesOf(created.id), isNotEmpty);
+    final reopened = ProjectService();
+    await reopened.init();
+    expect(reopened.projects.single.id, created.id);
+    service.dispose();
+    reopened.dispose();
+  });
+
   test('favorite received project prevents trashing its entire folder',
       () async {
     final service = ProjectService();
