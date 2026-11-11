@@ -233,6 +233,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // Temporary positions stay local during a pointer drag, then persist once
   // at release. Order is a session-only z-order (never changes dock order).
   final Map<CanvasDockPanel, Offset> _floatingDragOffsets = {};
+  // Unsnapped pointer positions prevent the magnetic preview from sticking
+  // when the user deliberately moves a tool window away again.
+  final Map<CanvasDockPanel, Offset> _floatingRawOffsets = {};
   final List<CanvasDockPanel> _floatingFrontOrder = [];
 
   bool _visibleInDock(SettingsService settings, CanvasDockPanel panel) =>
@@ -2686,9 +2689,27 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 key: ValueKey('freeDockDrag-${panel.name}'),
                 behavior: HitTestBehavior.opaque,
                 onPanUpdate: (details) => setState(() {
-                  final origin = _floatingDragOffsets[panel] ?? saved;
+                  final raw = _boundFreeWindow(
+                    (_floatingRawOffsets[panel] ?? saved) + details.delta,
+                    windowSize,
+                    viewport,
+                  );
+                  _floatingRawOffsets[panel] = raw;
+                  final neighbours = [
+                    for (final other in open)
+                      if (other != panel)
+                        _boundFreeWindow(
+                          _floatingDragOffsets[other] ??
+                              settings.desktopFloatingPosition(other)!,
+                          _freeWindowSize(other, settings, viewport),
+                          viewport,
+                        ) & _freeWindowSize(other, settings, viewport),
+                  ];
+                  // Snap during the drag, not only after mouse release.
                   _floatingDragOffsets[panel] = _boundFreeWindow(
-                    origin + details.delta, windowSize, viewport,
+                    snapDesktopWindow(raw, windowSize, neighbours),
+                    windowSize,
+                    viewport,
                   );
                 }),
                 onPanEnd: (_) {
@@ -2709,9 +2730,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   final destination = _boundFreeWindow(
                     snapped, windowSize, viewport,
                   );
-                  setState(() => _floatingDragOffsets.remove(panel));
+                  setState(() {
+                    _floatingDragOffsets.remove(panel);
+                    _floatingRawOffsets.remove(panel);
+                  });
                   settings.moveDesktopFloatingPanel(panel, destination);
                 },
+                onPanCancel: () => setState(() {
+                  _floatingDragOffsets.remove(panel);
+                  _floatingRawOffsets.remove(panel);
+                }),
                 child: Container(
                   height: 36,
                   padding: const EdgeInsets.only(left: 8),
