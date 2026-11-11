@@ -32,8 +32,10 @@ jobs:
         run: flutter analyze --no-fatal-infos test/canvas_color_layer_snap_evidence_capture_test.dart lib/screens/canvas/widgets/color_picker_panel.dart lib/screens/canvas/widgets/layer_panel.dart lib/screens/canvas/widgets/color_adjust_sheet.dart lib/screens/canvas/canvas_screen.dart lib/widgets/docked_panel_scope.dart
       - name: Capture real Flutter widgets at desktop resolution
         run: flutter test test/canvas_color_layer_snap_evidence_capture_test.dart --reporter expanded
-      - name: Capture actual bottom color-adjust controls
-        run: flutter test test/canvas_edit_menu_walkthrough_test.dart --plain-name "色調調整 opens without errors" --reporter expanded
+      - name: Capture actual bottom color-adjust controls and live pixel apply
+        run: |
+          flutter test test/canvas_edit_menu_walkthrough_test.dart --plain-name "色調調整 opens without errors" --reporter expanded
+          flutter test test/canvas_edit_menu_walkthrough_test.dart --plain-name "color adjustment previews live on canvas; cancel restores, apply saves" --reporter expanded
       - name: Upload screenshot PNGs even if test fails
         if: always()
         uses: actions/upload-artifact@v4
