@@ -133,6 +133,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // The filter being adjusted, as the current layer would look with it
   // (shown on the canvas in the layer's place).
   ui.Image? _filterCanvasPreview;
+  // Non-destructive color adjustment preview is drawn on the actual canvas.
+  ui.Image? _colorAdjustCanvasPreview;
   // The canvas selection (drawing filters apply only inside it) and the
   // glasses filter's lens area, painted on the canvas while it is adjusted.
   Uint8List? _canvasSelectionMask;
@@ -240,7 +242,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   bool _visibleInDock(SettingsService settings, CanvasDockPanel panel) =>
       _desktopPanelVisible(panel) &&
-      settings.desktopFloatingPosition(panel) == null;
+      // No free-positioned windows: every tool belongs to the left/right dock.
+      panel != CanvasDockPanel.colorAdjust &&
+      !(panel == CanvasDockPanel.filter &&
+        context.read<FilterService>().currentFilter != null);
 
   void _setDesktopDockDragging(bool active) {
     if (!mounted || _desktopDockDragActive == active) return;
@@ -1339,6 +1344,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   void dispose() {
     _screenFocus.dispose();
     _filterCanvasPreview?.dispose();
+    _colorAdjustCanvasPreview?.dispose();
     _filterLensMask.dispose();
     _customAutomationRecordingOverlay?.remove();
     _customAutomationRecordingOverlay = null;
@@ -1493,7 +1499,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // サブツール系パネル（ブラシ・トーン・スタンプ等）もPC版では互いに
     // 排他にせず、開いているものをすべて縦に積んで同時表示する。
     final isDesktop = isWideScreen(context);
-    final filterAdjusting = _showFilterPanel && !isDesktop;
+    final filterAdjusting = _showFilterPanel &&
+        (!isDesktop || context.watch<FilterService>().currentFilter != null);
+    final colorAdjusting = _showColorAdjustPanel;
     final selectionEditingHidden = _selectionEditingGivesWay(isDesktop);
     final settings = context.watch<SettingsService>();
     final leftDockHasPanels =
@@ -1622,11 +1630,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           _textColorEyedropperTarget != null ||
                                           _brushOutlineEyedropperActive,
                                       filterGizmo: _filterCanvasGizmo(project),
-                                      currentLayerPreview:
-                                          _filterCanvasPreviewShown(),
+                                      currentLayerPreview: _showColorAdjustPanel
+                                          ? _colorAdjustCanvasPreview
+                                          : _filterCanvasPreviewShown(),
                                       currentLayerPreviewBlendMode:
                                           _filterCanvasPreviewBlendMode(),
-                                      lockToolInput: selectionEditingHidden,
+                                      lockToolInput:
+                                          selectionEditingHidden || colorAdjusting,
                                       onFilterGizmoChanged: (gizmo) =>
                                           _moveFilterGizmo(project, gizmo),
                                       onFilterGizmoDragStart: () => context
@@ -1849,7 +1859,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // 画面下部へ出す（ハンドルのドラッグと同じ操作を、
                     // 細かく指定したいとき用）。ブラシ設定スライダーは
                     // 選択ツール中は出ないので場所は競合しない。
-                    if (filterAdjusting)
+                    if (colorAdjusting)
+                      _colorAdjustPanel(bottomBar: true)
+                    else if (filterAdjusting)
                       _filterPanel(bottomBar: true)
                     else if (_isSelectionToolActive &&
                         _hasActiveSelection &&
@@ -1874,7 +1886,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           _resetSelectionSliders();
                         }),
                       ),
-                    if (!filterAdjusting && _usesBrushSize(_currentTool))
+                    if (!filterAdjusting && !colorAdjusting &&
+                        _usesBrushSize(_currentTool))
                       BrushSizeSlider(
                         brushSize: _brushSize,
                         opacity: _brushOpacity,
@@ -1912,7 +1925,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     // メッシュ変形中は分割数のスライダーだけを画面下部へ出す
                     // （自由変形＝分割数1のときは何も出さない）。
-                    if (!filterAdjusting &&
+                    if (!filterAdjusting && !colorAdjusting &&
                         _currentTool == DrawingTool.meshTransform &&
                         _meshDensity > 1)
                       _meshDensitySlider(context),
@@ -2025,11 +2038,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                   ],
                 ),
-                // Free-position PC/DeX tool windows sit above canvas and
-                // chrome, not inside either dock column. Their hit regions
-                // are limited to their own rectangles, so overlapped and
-                // separated layouts both remain usable.
-                if (isDesktop) _buildDesktopFloatingWindows(settings),
                 // パネル表示中は、パネル外をタップすると閉じられるようにする
                 // 透明バリア（パネル本体より下、Columnより上に敷く）。
                 // フィルターパネルがキャンバスを使っている間（球体陰影の光・
@@ -2037,7 +2045,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 // キャンバスへ通す。バリア自体は外さずIgnorePointerで素通し
                 // にすること（外すとStackの並びがずれ、パネルが作り直されて
                 // 編集中のフィルターが一覧へ戻ってしまう）。
-                if (_anyToolPanelOpen && !isDesktop)
+                if (_anyToolPanelOpen && !isDesktop &&
+                    !colorAdjusting)
                   Positioned.fill(
                     child: IgnorePointer(
                       ignoring: _filterPanelUsesCanvas(),
@@ -2147,15 +2156,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 // 画面下部の分割数スライダー」だけにして、格子点のドラッグに
                 // 画面を明け渡す（パネルがキャンバスを覆って掴めなくなるため）。
                 // デスクトップは横に並ぶので従来どおりパネルを出す。
-                // 色調調整パネル
-                if (_showColorAdjustPanel && !isDesktop)
-                  _sidedPanel(
-                    anchorLeft: true,
-                    leftHanded: leftHanded,
-                    top: 56,
-                    bottom: null,
-                    child: _colorAdjustPanel(),
-                  ),
                 // 資料ウィンドウ：PC/スマホ問わず常にフローティングで表示する
                 // （PC/DeXモードで右上に固定表示する案も試したが、右上は
                 // キャンバスプレビュー・ナビゲーターパネルの定位置と重なる
@@ -2528,14 +2528,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 onSelected: (action) {
                                   if (action == 'hide') {
                                     _setDesktopPanelVisible(p, false);
-                                  } else if (action == 'float') {
-                                    // Offset is relative to the full safe
-                                    // canvas screen, not to the painted image.
-                                    final count = settings
-                                        .desktopFloatingPositions.length;
-                                    settings.floatDesktopDockPanel(
-                                      p, Offset(96.0 + count * 24, 64.0 + count * 24),
-                                    );
                                   } else {
                                     settings.moveDesktopDockPanel(
                                       p,
@@ -2546,10 +2538,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   }
                                 },
                                 itemBuilder: (_) => [
-                                  const PopupMenuItem(
-                                    value: 'float',
-                                    child: Text('自由配置'),
-                                  ),
                                   PopupMenuItem(
                                     value: 'left',
                                     child: Text(
@@ -2575,7 +2563,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             ],
                           ),
                         ),
-                        SizedBox(height: height, child: _responsiveDockBody(p)),
+                        SizedBox(
+                          height: height,
+                          child: DockedPanelScope(child: _responsiveDockBody(p)),
+                        ),
                         MouseRegion(
                           cursor: SystemMouseCursors.resizeUpDown,
                           child: GestureDetector(
@@ -3163,8 +3154,33 @@ class _CanvasScreenState extends State<CanvasScreen> {
     onClose: _cancelMeshTransform,
   );
 
-  /// 色調調整パネル。
-  Widget _colorAdjustPanel() => ColorAdjustSheet(
+  void _setColorAdjustCanvasPreview(ui.Image? image) {
+    if (!mounted) {
+      image?.dispose();
+      return;
+    }
+    setState(() {
+      _colorAdjustCanvasPreview?.dispose();
+      _colorAdjustCanvasPreview = image;
+    });
+  }
+
+  void _closeColorAdjustPanel() {
+    if (!mounted) return;
+    setState(() {
+      _colorAdjustCanvasPreview?.dispose();
+      _colorAdjustCanvasPreview = null;
+      _showColorAdjustPanel = false;
+    });
+    _persistDesktopDockVisibility();
+  }
+
+  /// Color adjustment lives in a fixed bottom control bar and previews on
+  /// the full canvas, independent of smartphone/PC dock widths.
+  Widget _colorAdjustPanel({bool bottomBar = false}) => ColorAdjustSheet(
+    key: const ValueKey('color-adjust-live-panel'),
+    bottomBar: bottomBar,
+    onCanvasPreviewChanged: _setColorAdjustCanvasPreview,
     projectId: widget.projectId,
     sceneId: _currentSceneId,
     layerId: _currentLayerId,
@@ -3173,7 +3189,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       widget.projectId,
       _currentSceneId,
     ),
-    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.colorAdjust, false),
+    onClose: _closeColorAdjustPanel,
   );
 
   /// フローティングパネルの左右配置ヘルパー。[anchorLeft]は通常（右利き）モードでの
