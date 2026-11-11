@@ -667,6 +667,7 @@ class _HomeScreenState extends State<HomeScreen>
                       embedded: true,
                       onDirectionChanged: (outgoing) =>
                           setState(() => _sharedOutgoing = outgoing),
+                      onCopyEntry: _copyLibraryEntry,
                     ),
                     const TrashScreen(
                       key: PageStorageKey('home-trash'),
@@ -1639,10 +1640,12 @@ class _HomeTabBar extends StatelessWidget {
 class SharedScreen extends StatefulWidget {
   const SharedScreen({
     super.key, this.embedded = false, this.onDirectionChanged,
+    this.onCopyEntry,
   });
 
   final bool embedded;
   final ValueChanged<bool>? onDirectionChanged;
+  final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
   @override
   State<SharedScreen> createState() => _SharedScreenState();
@@ -1785,10 +1788,11 @@ class _SharedScreenState extends State<SharedScreen> {
           ),
           Expanded(
             child: _showOutgoing
-                ? const _OutgoingSharesList()
+                ? _OutgoingSharesList(onCopyEntry: widget.onCopyEntry)
                 : _SharedTab(
                     sortMode: _sortMode,
                     showFavoritesOnly: _showFavoritesOnly,
+                    onCopyEntry: widget.onCopyEntry,
                   ),
           ),
         ],
@@ -2003,8 +2007,13 @@ List<Project> _sortProjects(List<Project> projects, ProjectSortMode mode) {
 class _SharedTab extends StatelessWidget {
   final ProjectSortMode sortMode;
   final bool showFavoritesOnly;
+  final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
-  const _SharedTab({required this.sortMode, required this.showFavoritesOnly});
+  const _SharedTab({
+    required this.sortMode,
+    required this.showFavoritesOnly,
+    this.onCopyEntry,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -2034,6 +2043,7 @@ class _SharedTab extends StatelessWidget {
               builder: (_) => _SharedFolderScreen(
                 folderId: folderId,
                 folderName: folderName,
+                onCopyEntry: onCopyEntry,
               ),
             ),
           ),
@@ -2041,6 +2051,11 @@ class _SharedTab extends StatelessWidget {
           context.read<ProjectService>().renameSharedFolder(id, name),
       onDeleteFolder: (id) =>
           context.read<ProjectService>().deleteSharedFolder(id),
+      onCopyFolder: onCopyEntry == null ? null : (folder) =>
+          onCopyEntry!(HomeClipboardEntry(
+            source: HomePasteArea.received, id: folder.id,
+            name: folder.name, isFolder: true,
+          )),
       itemBuilder: (context, project) => Card(
         margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         elevation: 1,
@@ -2068,7 +2083,9 @@ class _SharedTab extends StatelessWidget {
             l10n.homeProjectMeta(project.fps, project.durationSeconds),
           ),
           onTap: () => context.push('/project/${project.id}'),
-          trailing: _sharedProjectActions(context, project),
+          trailing: _sharedProjectActions(
+            context, project, onCopyEntry: onCopyEntry,
+          ),
           onLongPress: () => _showMoveToSharedFolderSheet(context, project),
         ),
       ),
@@ -2104,7 +2121,10 @@ String _shareCollectionText(BuildContext context, {required bool outgoing}) {
 
 /// Received projects remain editable. Sharing one explicitly creates a new
 /// saved .niashare snapshot, whereas outbound snapshots reuse existing bytes.
-Widget _sharedProjectActions(BuildContext context, Project project) {
+Widget _sharedProjectActions(
+  BuildContext context, Project project, {
+  ValueChanged<HomeClipboardEntry>? onCopyEntry,
+}) {
   final l10n = AppLocalizations.of(context)!;
   return Row(
     mainAxisSize: MainAxisSize.min,
@@ -2123,13 +2143,18 @@ Widget _sharedProjectActions(BuildContext context, Project project) {
       const SizedBox(width: 4),
       CollectionActionFrame(
         key: Key('collectionMenu_${project.id}'),
-        child: _receivedShareMenu(context, project),
+        child: _receivedShareMenu(
+          context, project, onCopyEntry: onCopyEntry,
+        ),
       ),
     ],
   );
 }
 
-Widget _receivedShareMenu(BuildContext context, Project project) {
+Widget _receivedShareMenu(
+  BuildContext context, Project project, {
+  ValueChanged<HomeClipboardEntry>? onCopyEntry,
+}) {
   final l10n = AppLocalizations.of(context)!;
   final service = context.read<ProjectService>();
   return PopupMenuButton<String>(
@@ -2141,6 +2166,11 @@ Widget _receivedShareMenu(BuildContext context, Project project) {
       switch (action) {
         case 'open':
           context.push('/canvas/${project.id}');
+        case 'copyToClipboard':
+          onCopyEntry?.call(HomeClipboardEntry(
+            source: HomePasteArea.received,
+            id: project.id, name: project.name,
+          ));
         case 'rename':
           final controller = TextEditingController(text: project.name);
           try {
@@ -2236,6 +2266,10 @@ Widget _receivedShareMenu(BuildContext context, Project project) {
             ? l10n.colorPickerFavoriteRemove
             : l10n.colorPickerFavoriteAdd),
       ),
+      if (onCopyEntry != null)
+        PopupMenuItem(
+          value: 'copyToClipboard', child: Text(l10n.themeDuplicateAction),
+        ),
       PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
       PopupMenuItem(
         value: 'delete',
@@ -2332,7 +2366,8 @@ Future<void> _outgoingShareAction(
 }
 
 class _OutgoingSharesList extends StatelessWidget {
-  const _OutgoingSharesList();
+  const _OutgoingSharesList({this.onCopyEntry});
+  final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
   @override
   Widget build(BuildContext context) {
@@ -2369,11 +2404,25 @@ class _OutgoingSharesList extends StatelessWidget {
               key: ValueKey('outgoingShareMenu_${entry.path}'),
               padding: EdgeInsets.zero,
               icon: const Icon(Icons.more_vert, size: CollectionActionFrame.glyphSize),
-              onSelected: (action) => _outgoingShareAction(context, entry, action),
+              onSelected: (action) {
+                if (action == 'copyToClipboard') {
+                  onCopyEntry?.call(HomeClipboardEntry(
+                    source: HomePasteArea.outgoing,
+                    id: entry.path, name: entry.name,
+                  ));
+                } else {
+                  _outgoingShareAction(context, entry, action);
+                }
+              },
               itemBuilder: (_) => [
                 PopupMenuItem(value: 'share',
                     child: Text(l10n.projectDetailShareQuickAction)),
                 PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+                if (onCopyEntry != null)
+                  PopupMenuItem(
+                    value: 'copyToClipboard',
+                    child: Text(l10n.themeDuplicateAction),
+                  ),
                 PopupMenuItem(value: 'duplicate',
                     child: Text(l10n.themeDuplicateAction)),
                 PopupMenuItem(
@@ -2406,7 +2455,10 @@ String _shareCollectionEmptyText(BuildContext context) {
 class _SharedFolderScreen extends StatelessWidget {
   final String folderId;
   final String folderName;
-  const _SharedFolderScreen({required this.folderId, required this.folderName});
+  final ValueChanged<HomeClipboardEntry>? onCopyEntry;
+  const _SharedFolderScreen({
+    required this.folderId, required this.folderName, this.onCopyEntry,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -2457,7 +2509,9 @@ class _SharedFolderScreen extends StatelessWidget {
                       ),
                     ),
                     onTap: () => context.push('/project/${project.id}'),
-                    trailing: _sharedProjectActions(context, project),
+                    trailing: _sharedProjectActions(
+                      context, project, onCopyEntry: onCopyEntry,
+                    ),
                   ),
                 );
               },
@@ -2469,6 +2523,7 @@ class _SharedFolderScreen extends StatelessWidget {
 /// フォルダ一覧＋直下アイテム一覧を表示する共通ウィジェット（共有タブ・
 /// 作品一覧タブで共用）。フォルダは常にルート直下の1階層のみ（ネスト非対応）。
 class _FolderableList<T> extends StatelessWidget {
+  final ValueChanged<ProjectFolder>? onCopyFolder;
   final List<T> allItems;
   final List<ProjectFolder> folders;
   final String? Function(T) folderIdOf;
@@ -2490,6 +2545,7 @@ class _FolderableList<T> extends StatelessWidget {
     required this.itemBuilder,
     this.emptyState,
     this.reserveForFloatingActions = false,
+    this.onCopyFolder,
   });
 
   @override
@@ -2625,6 +2681,15 @@ class _FolderableList<T> extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (onCopyFolder != null)
+              ListTile(
+                leading: const Icon(Icons.content_copy),
+                title: Text(l10n.themeDuplicateAction),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  onCopyFolder!(folder);
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.edit_outlined),
               title: Text(l10n.commonRename),
