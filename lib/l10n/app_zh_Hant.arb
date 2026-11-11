@@ -1628,7 +1628,7 @@
       }
     }
   },
-  "saveTreeRestoreAction": "還原",
+  "saveTreeRestoreAction": "讀取",
   "saveTreeTimelineActionChoiceBody": "請選擇是用目前內容「覆蓋儲存」這個存檔，還是「從此處繼續作業」。",
   "saveTreeOverwriteAction": "覆蓋儲存",
   "saveTreeOverwriteConfirmBody": "該時間點的存檔資料將會消失，確定嗎？",
@@ -1636,7 +1636,7 @@
   "saveTreeResumeConfirmBody": "尚未儲存的目前資料將會消失，確定嗎？",
   "saveTreeProjectDetailResumeBody": "要從這個存檔繼續作業嗎？",
   "saveTreeLoadFailedSnackbar": "存檔資料讀取失敗",
-  "saveTreeRestoredSnackbar": "已還原{name}",
+  "saveTreeRestoredSnackbar": "已讀取存檔資料（{name}）",
   "@saveTreeRestoredSnackbar": {
     "placeholders": {
       "name": {
