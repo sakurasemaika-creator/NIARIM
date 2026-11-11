@@ -1,4 +1,4 @@
-name: PC free window snap and timeline preview controls
+name: PC compact dock and timeline preview controls
 
 on:
   push:
@@ -6,11 +6,11 @@ on:
     paths:
       - "lib/screens/canvas/canvas_screen.dart"
       - "lib/screens/canvas/widgets/layer_panel.dart"
-      - "lib/utils/desktop_window_snap.dart"
+      - "lib/utils/desktop_dock_column_fit.dart"
       - "lib/services/layer_thumbnail_renderer.dart"
       - "lib/screens/timeline/timeline_screen.dart"
-      - "test/canvas_free_window_snap_interaction_test.dart"
-      - "test/desktop_window_snap_test.dart"
+      - "test/canvas_dock_compact_interaction_test.dart"
+      - "test/desktop_dock_gap_test.dart"
       - "test/layer_thumbnail_renderer_test.dart"
       - "test/timeline_preview_controls_test.dart"
       - ".github/workflows/canvas-free-window-timeline-preview-regression.yml"
@@ -32,11 +32,11 @@ jobs:
           cache: true
       - run: flutter pub get --enforce-lockfile
       - name: Static analysis of affected code
-        run: flutter analyze --no-fatal-infos lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/layer_panel.dart lib/services/layer_thumbnail_renderer.dart lib/utils/desktop_window_snap.dart lib/screens/timeline/timeline_screen.dart test/canvas_free_window_snap_interaction_test.dart test/desktop_window_snap_test.dart test/layer_thumbnail_renderer_test.dart test/timeline_preview_controls_test.dart
-      - name: Magnet geometry and floating window interactions
+        run: flutter analyze --no-fatal-infos lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/layer_panel.dart lib/services/layer_thumbnail_renderer.dart lib/utils/desktop_dock_column_fit.dart lib/screens/timeline/timeline_screen.dart test/canvas_dock_compact_interaction_test.dart test/desktop_dock_gap_test.dart test/layer_thumbnail_renderer_test.dart test/timeline_preview_controls_test.dart
+      - name: Dock geometry and compact panel interactions
         run: |
-          flutter test test/desktop_window_snap_test.dart --reporter expanded
-          flutter test test/canvas_free_window_snap_interaction_test.dart --reporter expanded
+          flutter test test/desktop_dock_gap_test.dart --reporter expanded
+          flutter test test/canvas_dock_compact_interaction_test.dart --reporter expanded
       - name: Actual layer thumbnails over project paper
         run: flutter test test/layer_thumbnail_renderer_test.dart --reporter expanded
       - name: Timeline overlay anchors on different aspect ratios and widths
