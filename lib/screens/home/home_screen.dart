@@ -1383,9 +1383,28 @@ class _HomeScreenState extends State<HomeScreen>
     final ps = context.read<ProjectService>();
     final ws = context.read<WorkFolderService>();
     final dest = _pasteDestination;
+    // Persisted folder memberships can outlive an exported file that was
+    // removed. The empty-folder exception is based on files that actually
+    // exist in the Works list, not stale preference records.
+    var workFolderHasFiles = false;
+    if (entry.isFolder && entry.source == HomePasteArea.works) {
+      try {
+        final exports = await ExportEngine.listExportedFiles(forceRefresh: true);
+        workFolderHasFiles = exports.any((file) =>
+            ws.folderIdOf(file.uri.pathSegments.last) == entry.id);
+      } catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
+        await _explainPasteRestriction(
+          'フォルダの中身を確認できませんでした。データを保護するため、'
+          'ペーストを中止しました。',
+          'Could not inspect folder contents safely. Paste was cancelled.',
+        );
+        return;
+      }
+      if (!mounted) return;
+    }
     final containsFiles = !entry.isFolder ||
-        (entry.source == HomePasteArea.works &&
-            ws.folderHasFiles(entry.id)) ||
+        (entry.source == HomePasteArea.works && workFolderHasFiles) ||
         (entry.source == HomePasteArea.received &&
             ps.shared.any((p) => p.sharedFolderId == entry.id));
     final decision = HomePastePolicy.check(
