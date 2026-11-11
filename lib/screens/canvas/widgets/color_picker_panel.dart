@@ -150,6 +150,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     final l10n = AppLocalizations.of(context)!;
     final paletteService = context.watch<PaletteService>();
     final docked = DockedPanelScope.of(context);
+    final docked = DockedPanelScope.of(context);
     return PanelSurface(
       width: 288,
       maxHeight: 680,
@@ -208,7 +209,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               // 方式。円の
               // 外側・左下の空きスペースには透明色切り替えボタンを配置する。
               Center(
-                child: HsvColorWheel(
+                child: LayoutBuilder(
+                  builder: (context, constraints) => HsvColorWheel(
+                    size: math.min(220.0, constraints.maxWidth),
                   hue: _hue,
                   saturation: _saturation,
                   value: _value,
@@ -225,8 +228,8 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   isTransparent: _alpha == 0,
                   onToggleTransparent: _toggleTransparent,
                   showHsvSliders: _showHsvSliders,
-                  onSliderModeChanged: (hsv) =>
-                      setState(() => _showHsvSliders = hsv),
+                  onSliderModeChanged: (hsv) => setState(() => _showHsvSliders = hsv),
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
