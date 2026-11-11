@@ -58,7 +58,7 @@ void main() {
     addTearDown(ps.dispose);
     addTearDown(saves.dispose);
 
-    final project = await tester.runAsync(() => ps.createProject(
+    final created = await tester.runAsync(() => ps.createProject(
       name: 'Snapshot background accuracy',
       fps: 12,
       durationSeconds: 1,
@@ -66,8 +66,9 @@ void main() {
       exportHeight: 10,
       backgroundColor: 0xFF1B8D4A,
     ));
-    expect(project, isNotNull);
-    final id = project!.id;
+    expect(created, isNotNull);
+    final project = created!;
+    final id = project.id;
     final scene = ps.scenesOf(id).first;
     final layer = scene.frames.first.layers.first;
     final tm = ps.tileManagerOf(id);
