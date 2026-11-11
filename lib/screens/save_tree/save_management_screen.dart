@@ -20,6 +20,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'save_tree_screen.dart';
+import 'widgets/save_rename_button.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 
@@ -493,18 +494,30 @@ class _GameSaveSlotTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        hasData
-                            ? (node!.comment ??
-                                  l10n.saveTreeSlotFallbackName(slotIndex + 1))
-                            : l10n.saveTreeNoDataLabel,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: hasData
-                              ? scheme.onSurface
-                              : scheme.onSurfaceVariant,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              hasData
+                                  ? (node!.comment ??
+                                        l10n.saveTreeSlotFallbackName(slotIndex + 1))
+                                  : l10n.saveTreeNoDataLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: hasData
+                                    ? scheme.onSurface
+                                    : scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                          if (hasData)
+                            SaveRenameButton(
+                              node: node,
+                              fallbackName:
+                                  l10n.saveTreeSlotFallbackName(slotIndex + 1),
+                            ),
+                        ],
                       ),
                       if (hasData) ...[
                         const SizedBox(height: 3),
