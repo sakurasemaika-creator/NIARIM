@@ -126,7 +126,11 @@ class SaveTreeService extends ChangeNotifier {
     final index = File('${dir.path}/$indexFileName');
     String? text;
     try {
-      text = index.readAsStringSync();
+      // 文字として読めない一覧（UTF-8の途中で切れた等）は、開けない一覧と
+      // 違い、待っても読めるようにならない。readAsStringSyncはどちらも
+      // FileSystemExceptionにするので、開いて読めたものは緩く文字にし、
+      // 下で壊れた一覧として保存のファイルから拾い直す。
+      text = utf8.decode(index.readAsBytesSync(), allowMalformed: true);
     } on PathNotFoundException {
       // 一覧が無い（保存のフォルダごと無い場合も）。
     } catch (error, stack) {

@@ -366,6 +366,51 @@ void main() {
     ]);
   });
 
+  // 一覧（index.json）が壊れて文字として読めない（コメントの日本語の途中で
+  // 切れた等、UTF-8として正しくない）のは、入れない・開けないのとは違い、
+  // 待っても読めるようにならない。「まだ読んでいない」扱いにすると一覧を
+  // 書き直さず、起動のたびにその作品の保存が1つも出ず、新しい保存も次の
+  // 起動で一覧から消えて、保存のファイルだけが見えないまま増えた。
+  test('a list cut inside a character is rebuilt from the save files, and '
+      'later saves stay listed', () async {
+    final (project, saves) = await _seedProjectWithSaves(
+      comments: ['線画まで', '色まで'],
+    );
+    final indexPath =
+        '${storage.projectsPath}/${project.id}/SaveTree/'
+        '${SaveTreeService.indexFileName}';
+    final bytes = File(indexPath).readAsBytesSync();
+    final firstWide = bytes.indexWhere((byte) => byte >= 0x80);
+    expect(firstWide, greaterThan(0), reason: 'the comments are Japanese');
+    File(indexPath).writeAsBytesSync(bytes.sublist(0, firstWide + 1));
+    expect(
+      () => File(indexPath).readAsStringSync(),
+      throwsA(isA<FileSystemException>()),
+      reason: 'the list must no longer be valid UTF-8',
+    );
+
+    // 起動1回目：保存のファイルから拾い直し、一覧を書き直す。
+    final first = SaveTreeService()..setSlotMax(5);
+    addTearDown(first.dispose);
+    await first.init();
+    expect(first.getNodes(project.id).map((n) => n.id), [
+      saves[0].id,
+      saves[1].id,
+    ]);
+    expect(first.getNodes(project.id).map((n) => n.slotIndex), [0, 1]);
+    expect(jsonDecode(File(indexPath).readAsStringSync()), isA<Map>());
+
+    // その起動中の保存は、次の起動でも一覧に出る。
+    final added = await _saveToSlot(first, project, 2, '新しい保存');
+    final second = SaveTreeService()..setSlotMax(5);
+    addTearDown(second.dispose);
+    await second.init();
+    final nodes = {for (final n in second.getNodes(project.id)) n.id: n};
+    expect(nodes.keys, unorderedEquals([saves[0].id, saves[1].id, added.id]));
+    expect(nodes[added.id]?.comment, '新しい保存');
+    expect(nodes[added.id]?.slotIndex, 2);
+  });
+
   // 作品のフォルダごと入れない（保存のフォルダも「無い」ように見える）
   // ときも同じ。入れるようになってから読み直せば（ホームの「再試行」）
   // 前の保存が戻り、その後の保存も前の保存を残す。
@@ -613,6 +658,108 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  // 画面のフォーカスを渡していない所（引き継ぎ・単独で開いたゴミ箱と共有）
+  // では、キーボードの「再試行」で読み直せて知らせが消えると、フォーカスが
+  // 前に通った部品へ移り、続けて押したEnterでそれが動いた（引き継ぎでは
+  // 最後のチェックが外れる・狭い画面では書き出しが始まる、ゴミ箱と共有では
+  // 並びの向きが変わる）。
+  for (final (route, noticeKey, size) in const [
+    ('/settings/transfer', 'transferProjectsLoadFailed', Size(1280, 800)),
+    ('/settings/transfer', 'transferProjectsLoadFailed', Size(320, 568)),
+    ('/trash', 'trashProjectsLoadFailed', Size(1280, 800)),
+    ('/shared', 'sharedProjectsLoadFailed', Size(1280, 800)),
+  ]) {
+    testWidgets('after a keyboard Retry on $route (${size.width.toInt()}px) '
+        'the next Enter does nothing', (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final shareCalls = <String>[];
+      const shareChannel = MethodChannel('dev.fluttercommunity.plus/share');
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(shareChannel, (call) async {
+        shareCalls.add(call.method);
+        return 'dev.fluttercommunity.plus/share/unavailable';
+      });
+      addTearDown(() => messenger.setMockMethodCallHandler(shareChannel, null));
+      final seeded = await tester.runAsync(
+        () => _seedProjectWithSaves(name: '読み直す作品', comments: const []),
+      );
+      final (project, _) = seeded!;
+      SharedPreferences.setMockInitialValues({
+        'first_launch': false,
+        'language': 'ja',
+        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+        if (route == '/trash')
+          'trashed_projects': [
+            '${project.id}|${DateTime.now().toIso8601String()}',
+          ],
+      });
+      storage.paths.blockListing(storage.projectsPath);
+      appRouter.go('/home');
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await _settleWithFiles(tester);
+      appRouter.push(route);
+      await _settleWithFiles(tester);
+
+      // Tabで知らせの「再試行」まで進む。
+      final key = Key(noticeKey);
+      for (var i = 0; i < 60 && !_focusInsideKey(key); i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+      }
+      expect(_focusInsideKey(key), isTrue, reason: 'Tab never reached Retry');
+
+      // 読めるようになってから、Enterで読み直す。
+      storage.paths.clear();
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      final notice = find.byKey(key, skipOffstage: false);
+      for (var i = 0; i < 40 && notice.evaluate().isNotEmpty; i++) {
+        await _settleWithFiles(tester, rounds: 2);
+      }
+      await _settleWithFiles(tester);
+      expect(notice, findsNothing);
+      expect(
+        _focusedControl(),
+        isNull,
+        reason: 'the focus fell back to a control the user had passed',
+      );
+
+      // 続けて押したEnterで、何も動かない。
+      final before = _controlStates(tester);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await _settleWithFiles(tester, rounds: 20);
+      expect(_controlStates(tester), before);
+      expect(shareCalls, isEmpty);
+      expect(find.byType(SnackBar), findsNothing);
+      expect(
+        storage.directory
+            .listSync(recursive: true)
+            .where((file) => file.path.endsWith('.niatra')),
+        isEmpty,
+        reason: 'the second Enter started an export',
+      );
+      expect(
+        appRouter
+            .routerDelegate
+            .currentConfiguration
+            .matches
+            .last
+            .matchedLocation,
+        route,
+        reason: 'the second Enter left the screen',
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
   // 狭い画面・大きな文字でも、知らせを出したゴミ箱・共有・引き継ぎが
   // はみ出さない（知らせは一覧の先頭でスクロールする）。
   testWidgets('the notices fit a narrow screen with large text', (
@@ -671,6 +818,48 @@ Future<void> _settleWithFiles(WidgetTester tester, {int rounds = 10}) async {
     await tester.pump(const Duration(milliseconds: 100));
   }
 }
+
+/// キーボードのフォーカスが、[key]の部品の中にあるか（一覧の描画範囲の
+/// 外にある部品も数えるため、フォーカスの側からたどる）。
+bool _focusInsideKey(Key key) {
+  final focused = FocusManager.instance.primaryFocus?.context;
+  if (focused == null) return false;
+  var inside = focused.widget.key == key;
+  focused.visitAncestorElements((element) {
+    inside = inside || element.widget.key == key;
+    return !inside;
+  });
+  return inside;
+}
+
+bool _isControl(Widget widget) =>
+    widget is ButtonStyleButton ||
+    widget is IconButton ||
+    widget is CheckboxListTile ||
+    widget is ListTile ||
+    widget is InkResponse;
+
+/// キーボードのフォーカスがある、Enterで動く部品（ボタン・チェックの行）。
+/// フォーカスがどの部品にも無ければnull。
+Widget? _focusedControl() {
+  final focused = FocusManager.instance.primaryFocus?.context;
+  if (focused == null) return null;
+  Widget? control = _isControl(focused.widget) ? focused.widget : null;
+  focused.visitAncestorElements((element) {
+    if (control == null && _isControl(element.widget)) control = element.widget;
+    return control == null;
+  });
+  return control;
+}
+
+/// 画面のチェックの入り切りと、出ているアイコン（並びの向き等）。
+List<String> _controlStates(WidgetTester tester) => [
+  for (final element
+      in find.byType(CheckboxListTile, skipOffstage: false).evaluate())
+    'check=${(element.widget as CheckboxListTile).value}',
+  for (final element in find.byType(Icon, skipOffstage: false).evaluate())
+    'icon=${(element.widget as Icon).icon?.codePoint.toRadixString(16)}',
+];
 
 /// 作品を1つ作り、[comments]の数だけスロット0から順に手動で保存する。
 Future<(Project, List<SaveNode>)> _seedProjectWithSaves({

@@ -22,7 +22,8 @@ class ProjectsLoadFailureNotice extends StatefulWidget {
 
   /// 読み直せて知らせが消えるとき、フォーカスが知らせの中にあれば
   /// ここ（画面のフォーカス。ホームでは画面のショートカットを受ける
-  /// フォーカス）へ戻す。戻す先の要らない画面ではnull。
+  /// フォーカス）へ戻す。nullなら、その画面（ルート）のフォーカスの範囲へ
+  /// 戻す（設定の引き継ぎ・単独で開いたゴミ箱と共有）。
   final FocusNode? screenFocus;
 
   @override
@@ -39,8 +40,17 @@ class _ProjectsLoadFailureNoticeState extends State<ProjectsLoadFailureNotice> {
   void deactivate() {
     // 知らせが消えると、Flutterはフォーカスを前にフォーカスのあった部品
     // （ゴミ箱のタブ等）へ移し、次のEnterでそのタブが開いた。中の部品が
-    // 外れる前に（親から先に呼ばれる）画面のフォーカスへ戻す。
-    if (_noticeFocus.hasFocus) widget.screenFocus?.requestFocus();
+    // 外れる前に（親から先に呼ばれる）画面のフォーカスへ戻す。戻す先を
+    // 受け取っていない画面でも前の部品へは移さない（引き継ぎでは最後の
+    // チェックが外れ、狭い画面では書き出しが始まった）。
+    if (_noticeFocus.hasFocus) {
+      final screen = widget.screenFocus;
+      if (screen != null) {
+        screen.requestFocus();
+      } else {
+        _noticeFocus.unfocus();
+      }
+    }
     super.deactivate();
   }
 
