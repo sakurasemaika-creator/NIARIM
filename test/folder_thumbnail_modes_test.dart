@@ -184,7 +184,8 @@ void main() {
     final choices = projectFolderThumbnailChoices(
       folders, projects, 'root');
     expect(choices.map((c) => c.id), containsAll(['old', 'newest']));
-    expect(choices.length, 2);
+    expect(choices.length, 3);
+    expect(choices.map((c) => c.id), contains('empty-thumb'));
     expect(folderThumbnailPath(parent, choices), '/newer.png');
     expect(
       folderThumbnailPath(parent.copyWith(
@@ -266,6 +267,11 @@ void main() {
       expect(find.byKey(const Key('folderCoverNone')), findsOneWidget);
       expect(find.byKey(const Key('folderCoverItem')), findsOneWidget);
       expect(find.byKey(const Key('folderCoverCustom')), findsOneWidget);
+      final topOf = (String key) =>
+          tester.getTopLeft(find.byKey(Key(key))).dy;
+      expect(topOf('folderCoverAuto'), lessThan(topOf('folderCoverItem')));
+      expect(topOf('folderCoverItem'), lessThan(topOf('folderCoverCustom')));
+      expect(topOf('folderCoverCustom'), lessThan(topOf('folderCoverNone')));
       expect(find.text('キャンセル'), findsOneWidget);
       expect(find.text('適用'), findsOneWidget);
       expect(find.byKey(const Key('folderCoverItemPanel')), findsNothing);
@@ -274,6 +280,10 @@ void main() {
       await tester.tap(find.byKey(const Key('folderCoverItem')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('folderCoverItemPanel')), findsOneWidget);
+      expect(find.byKey(const Key('folderCoverWorkGrid')), findsOneWidget);
+      expect(find.byKey(const Key('folderCoverItemChoice')), findsNothing,
+        reason: 'The old dropdown must not return');
+      expect(find.byKey(const Key('folderCoverSelect_p1')), findsOneWidget);
       expect(find.byKey(const Key('folderCoverCustomPanel')), findsNothing);
       expect(
         tester.widget<FilledButton>(
@@ -281,6 +291,15 @@ void main() {
         ).onPressed,
         isNull,
         reason: 'A work must be chosen before Apply',
+      );
+      expect(selected, isEmpty);
+      await tester.tap(find.byKey(const Key('folderCoverSelect_p1')));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<FilledButton>(
+          find.byKey(const Key('folderCoverApply')),
+        ).onPressed,
+        isNotNull,
       );
       expect(selected, isEmpty);
       await tester.tap(find.text('キャンセル'));
@@ -309,4 +328,56 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+  testWidgets('Hundreds of in-folder works are lazy-loaded as thumbnail tiles',
+      (tester) async {
+    tester.view.physicalSize = const Size(1080, 2280);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final works = List.generate(480, (i) => FolderThumbnailChoice(
+      id: 'work_$i',
+      name: '作品 $i',
+      imagePath: null,
+      updatedAt: DateTime.utc(2026, 11, 11).subtract(Duration(minutes: i)),
+    ));
+    final applied = <String>[];
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('ja'),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      home: Scaffold(body: Builder(builder: (context) => TextButton(
+        onPressed: () => showFolderThumbnailDialog(
+          context,
+          folder: ProjectFolder(id: 'target', name: '大量作品'),
+          choices: works,
+          onSave: ({required mode, sourceId, imagePath}) async {
+            applied.add('$mode:$sourceId');
+          },
+        ),
+        child: const Text('Open picker'),
+      ))),
+    ));
+    await tester.tap(find.text('Open picker'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('folderCoverItem')));
+    await tester.pumpAndSettle();
+    final grid = find.byKey(const Key('folderCoverWorkGrid'));
+    expect(grid, findsOneWidget);
+    final widget = tester.widget<GridView>(grid);
+    expect(widget.childrenDelegate, isA<SliverChildBuilderDelegate>());
+    expect(widget.childrenDelegate.estimatedChildCount, works.length);
+    final built = find.byKey(const Key('folderCoverWorkTile_work_0'),
+        skipOffstage: false);
+    expect(built, findsOneWidget);
+    expect(find.byKey(const Key('folderCoverWorkTile_work_479'),
+        skipOffstage: false), findsNothing);
+    expect(find.byKey(const Key('folderCoverSelect_work_0')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('folderCoverSelect_work_0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('folderCoverApply')));
+    await tester.pumpAndSettle();
+    expect(applied, ['item:work_0']);
+    expect(tester.takeException(), isNull);
+  });
+
 }
