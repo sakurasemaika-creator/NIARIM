@@ -134,7 +134,16 @@ void main() {
     await tester.pump();
     expect(find.byKey(const Key('homePasteToTrashDialog')), findsOneWidget);
     await capture(tester, captureKey, '03_received_folder_trash_confirmation');
+    // Cancel must leave all files and folder membership unchanged.
+    await tester.tap(find.descendant(
+      of: find.byKey(const Key('homePasteToTrashDialog')),
+      matching: find.byType(TextButton),
+    ).first);
+    await pumpIo(tester);
     expect(service.sharedFolders.single.id, folderId);
+    expect(service.shared.single.sharedFolderId, folderId);
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('homePasteTrashConfirmButton')));
     await pumpIo(tester);
     expect(service.sharedFolders, isEmpty);
@@ -150,7 +159,16 @@ void main() {
     await tester.pump();
     expect(find.byKey(const Key('homePasteRestoreDialog')), findsOneWidget);
     await capture(tester, captureKey, '05_received_folder_restore_confirmation');
+    // Cancelling restore must keep the archived folder and its children safe.
+    await tester.tap(find.descendant(
+      of: find.byKey(const Key('homePasteRestoreDialog')),
+      matching: find.byType(TextButton),
+    ).first);
+    await pumpIo(tester);
+    expect(service.trashedFolders.single.folder.id, folderId);
     expect(service.shared, isEmpty);
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('homePasteRestoreConfirmButton')));
     await pumpIo(tester);
     expect(service.trashedFolders, isEmpty);
