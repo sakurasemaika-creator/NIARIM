@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/home/widgets/folder_thumbnail.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/work_folder_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Project _project(String id, String folderId, String? thumbnail, int day) {
   final date = DateTime.utc(2026, 1, day);
@@ -46,6 +48,32 @@ void main() {
       ProjectFolder.fromJson({'id': 'legacy', 'name': 'old'}).thumbnailMode,
       'auto',
     );
+  });
+
+  test('Exported-work thumbnail preference survives service reload', () async {
+    SharedPreferences.setMockInitialValues({});
+    final first = WorkFolderService();
+    await first.init();
+    final folder = await first.createFolder('Export previews');
+    await first.setFolderThumbnail(
+      folder.id, mode: 'custom', imagePath: '/my-cover.png');
+    expect(first.folders.single.thumbnailMode, 'custom');
+    first.dispose();
+
+    final restored = WorkFolderService();
+    await restored.init();
+    expect(restored.folders.single.thumbnailMode, 'custom');
+    expect(restored.folders.single.thumbnailImagePath, '/my-cover.png');
+    await restored.setFolderThumbnail(
+      folder.id, mode: 'item', sourceId: '/exports/clip.mp4');
+    expect(restored.folders.single.thumbnailSourceId, '/exports/clip.mp4');
+    restored.dispose();
+
+    final again = WorkFolderService();
+    await again.init();
+    expect(again.folders.single.thumbnailMode, 'item');
+    expect(again.folders.single.thumbnailSourceId, '/exports/clip.mp4');
+    again.dispose();
   });
 
   test('Auto cover traverses child and grandchild folders without cycles', () {
