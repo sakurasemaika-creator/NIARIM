@@ -13,11 +13,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 
-/// タイムラインのプレビュー欄：フレーム数（左下）・全画面（右上）は、
-/// キャンバスの絵に重ねず、プレビュー欄の隅の絵の外に置く（ユーザー指定。
-/// ループの切り替えは置かない）。縦長・横長・正方形の作品、スマホ・PCの画面、
-/// プレビュー欄の高さのどの組み合わせでも、絵と重ならず画面からはみ出さない。
-/// 全画面表示はPCでも画面いっぱいまで大きくし、「戻る」で全画面だけを閉じる。
+/// Controls use the header/preview-band and resize-handle edges as anchors.
+/// They need not avoid artwork and must never reserve space around the image.
 void main() {
   const projects = {
     'portrait': Size(1080, 1920),
@@ -85,43 +82,38 @@ void main() {
     return created.id;
   }
 
-  void expectOutsidePicture(
-    WidgetTester tester,
-    String label,
-    Size screen,
-    List<String> keys,
+  void expectBandAnchors(
+    WidgetTester tester, String label, Size screen, List<String> keys,
   ) {
     expect(tester.takeException(), isNull, reason: label);
     final picture = tester.getRect(
       find.byKey(const Key('timelinePreviewPicture')),
     );
+    final band = tester.getRect(
+      find.byKey(const Key('timelinePreviewArea')),
+    );
     expect(picture.width, greaterThan(0), reason: label);
     for (final key in keys) {
-      final finder = find.byKey(Key(key));
-      expect(finder, findsOneWidget, reason: '$label $key');
-      final rect = tester.getRect(finder);
-      expect(
-        rect.overlaps(picture),
-        isFalse,
-        reason: '$label $key $rect picture $picture',
-      );
-      expect(
-        rect.left >= 0 && rect.right <= screen.width,
-        isTrue,
-        reason: '$label $key $rect',
-      );
+      final rect = tester.getRect(find.byKey(Key(key)));
+      expect(rect.left >= 0 && rect.right <= screen.width + 1, isTrue,
+          reason: '$label $key $rect');
+      if (key == 'timelinePreviewFullscreenButton') {
+        expect((rect.top - band.top).abs(), lessThanOrEqualTo(12),
+            reason: '$label header edge');
+        expect((rect.right - band.right).abs(), lessThanOrEqualTo(12),
+            reason: '$label right edge');
+      } else {
+        expect((rect.left - band.left).abs(), lessThanOrEqualTo(12),
+            reason: '$label frame count left');
+        expect((rect.bottom - band.bottom).abs(), lessThanOrEqualTo(12),
+            reason: '$label resize handle edge');
+      }
     }
-    final count = tester.getRect(
-      find.byKey(const Key('timelinePreviewFrameCount')),
-    );
-    // フレーム数は左下。ループの切り替えはプレビューに置かない（再生の
-    // 操作と重複する）。
-    expect(count.center.dx, lessThan(picture.center.dx), reason: label);
     expect(find.byKey(const Key('timelinePreviewLoopButton')), findsNothing);
   }
 
   testWidgets(
-    'the controls sit in the corners of the preview, off the picture',
+    'preview controls anchor to the band, not the canvas image',
     (tester) async {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -138,25 +130,18 @@ void main() {
               pc: screen.pc,
               fraction: fraction,
             );
-            expectOutsidePicture(tester, label, screen.size, controls);
-            final picture = tester.getRect(
-              find.byKey(const Key('timelinePreviewPicture')),
-            );
+            expectBandAnchors(tester, label, screen.size, controls);
             final fullscreen = tester.getRect(
               find.byKey(const Key('timelinePreviewFullscreenButton')),
             );
             final count = tester.getRect(
               find.byKey(const Key('timelinePreviewFrameCount')),
             );
-            // 全画面は右上（低い欄ではフレーム数と同じ下の段の右端）。
-            if (count.bottom - fullscreen.bottom > 1) {
-              expect(
-                fullscreen.top,
-                lessThan(picture.center.dy),
-                reason: label,
-              );
-            }
-            expect(fullscreen.center.dx, greaterThan(picture.center.dx));
+            final band = tester.getRect(
+              find.byKey(const Key('timelinePreviewArea')),
+            );
+            expect(fullscreen.top, closeTo(band.top + 8, 12), reason: label);
+            expect(count.left, closeTo(band.left + 8, 12), reason: label);
           }
         }
       }
@@ -164,7 +149,7 @@ void main() {
     },
   );
 
-  testWidgets('the full-screen preview keeps them off the picture too', (
+  testWidgets('fullscreen frame count anchors to the band; entry button disappears', (
     tester,
   ) async {
     addTearDown(tester.view.resetPhysicalSize);
@@ -189,7 +174,7 @@ void main() {
         find.byKey(const Key('timelinePreviewFullscreenButton')),
         findsNothing,
       );
-      expectOutsidePicture(tester, 'fullscreen $shape', screen, const [
+      expectBandAnchors(tester, 'fullscreen $shape', screen, const [
         'timelinePreviewFrameCount',
       ]);
     }
@@ -212,13 +197,13 @@ void main() {
       pc: false,
       fraction: 1.0,
     );
-    expectOutsidePicture(tester, 'largest band', screen, controls);
+    expectBandAnchors(tester, 'largest band', screen, controls);
     final picture = tester.getRect(
       find.byKey(const Key('timelinePreviewPicture')),
     );
     expect(
       picture.width,
-      greaterThanOrEqualTo(screen.width - 8 * 2 - 1),
+      greaterThanOrEqualTo(screen.width - 1),
       reason: '$picture',
     );
     await tester.pumpWidget(const SizedBox.shrink());
@@ -246,7 +231,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byIcon(Icons.fullscreen_exit), findsOneWidget);
       final label = 'pc fullscreen ${screen.width.toInt()}';
-      expectOutsidePicture(tester, label, screen, const [
+      expectBandAnchors(tester, label, screen, const [
         'timelinePreviewFrameCount',
       ]);
       final picture = tester.getRect(
@@ -257,7 +242,7 @@ void main() {
       // 欄の高さか幅のどちらかいっぱいまで使う。
       expect(
         picture.height >= area.height - 1 ||
-            picture.width >= area.width - (48 + 8) * 2 - 1,
+            picture.width >= area.width - 1,
         isTrue,
         reason: '$label $picture in $area',
       );

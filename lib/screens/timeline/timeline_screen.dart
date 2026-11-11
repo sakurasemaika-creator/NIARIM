@@ -1532,8 +1532,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// プレビューの絵（キャンバスの縦横比の枠いっぱいに描く）。フレーム数・
-  /// 全画面の操作は[_buildPreviewBand]が絵の外に置く。
+  /// プレビューの絵。フレーム数と全画面操作は画像外ではなく
+  /// _buildPreviewBandの端に固定し、絵との重なりを許容する。
   Widget _buildPreviewContent() {
     final l10n = AppLocalizations.of(context)!;
     final ps = context.watch<ProjectService>();
@@ -1603,13 +1603,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
         : 16 / 9;
   }
 
-  /// プレビュー欄：中央にキャンバスの絵を置き、フレーム数（左下）・全画面
-  /// （右上）はプレビュー欄そのものの隅（端から8px）に置く。絵の大きさは、
-  /// 隅の操作に重ならない大きさにする（絵に重ねると確かめたい絵が隠れる）。
-  /// 操作の場所を絵の左右に空けるか上下に空けるかは、絵を大きく出せる方に
-  /// する（縦長の絵は左右、横長の絵は上下）。ループの切り替えは置かない
-  /// （再生はいつも先頭へ戻って続く）。全画面表示の中（[inFullscreen]）では
-  /// 全画面のボタンを出さず、PC/DeXの幅の上限も掛けずに目一杯まで拡大する。
+  /// 全画面ボタンはヘッダー直下の右端、フレーム数はサイズ変更
+  /// ハンドル直上の左端へ固定する。両者の位置にキャンバスの画像矩形を
+  /// 使用しないので、キャンバスが大きければ重なってよい。
+  /// 全画面プレビューでは入口の全画面ボタンを隠す。
   Widget _buildPreviewBand({
     required double aspect,
     required bool inFullscreen,
@@ -1617,18 +1614,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     const edge = _previewControlInset;
-    const gutter = _previewControlSize + edge;
     final sceneId = _selectedSceneId;
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
         final height = constraints.maxHeight;
-        final besideWidth = math.min(width - gutter * 2, height * aspect);
-        final aboveWidth = math.min(
-          width - edge * 2,
-          (height - gutter * 2) * aspect,
-        );
-        var pictureWidth = math.max(0.0, math.max(besideWidth, aboveWidth));
+        // Only the available band and project aspect determine picture size.
+        // Controls are not safe zones: they can overlap the artwork.
+        var pictureWidth = aspect > 0
+            ? math.max(0.0, math.min(width, height * aspect))
+            : 0.0;
         // PC/DeXの通常の欄では横に間延びしないよう上限を設ける。
         if (!inFullscreen && isWideScreen(context)) {
           pictureWidth = math.min(pictureWidth, 900);
@@ -1724,18 +1719,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final settings = context.watch<SettingsService>();
     final aspect = _previewAspect(context.watch<ProjectService>());
     final maxH = maxAvailableHeight > 0 ? maxAvailableHeight : 600.0;
-    // 上限は「表示中のキャンバス横幅が画面の横幅ぴったりになる高さ」（絵の
-    // 上下にフレーム数・全画面の段を足した高さ）とレイアウト上
-    // 実際に使える高さ（maxH）のうち小さい方。下限は0（ハンドルが
-    // プレビュー領域の一番上に付くまで、加減なく縮小できるようにする）。
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final maxHeightByScreenWidth = aspect > 0
-        ? (screenWidth - _previewControlInset * 2) / aspect +
-              (_previewControlSize + _previewControlInset) * 2
-        : maxH;
-    final maxPreviewHeight = maxHeightByScreenWidth < maxH
-        ? maxHeightByScreenWidth
-        : maxH;
+    // The drag handle determines the preview band height. The canvas ratio
+    // must never force extra control gutters or limit this drag range.
+    final maxPreviewHeight = maxH;
     final baseHeight = (maxH * settings.timelinePreviewHeightFraction).clamp(
       0.0,
       maxPreviewHeight,
