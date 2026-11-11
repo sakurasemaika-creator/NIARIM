@@ -13,6 +13,7 @@ import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/utils/line_break.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
@@ -396,7 +397,11 @@ void main() {
       expect(notice, findsOneWidget);
       final message = tester.widget<RichText>(notice).text.toPlainText();
       expect(message, isNot(c.l10n.communityErrorGeneric));
-      expect(message, contains(c.l10n.homeFirstLaunchStart));
+      // 押すボタンの名前は字の間に語結合子を入れて1行に保つ（日本語）。
+      expect(
+        plainSemanticsLabel(message) ?? message,
+        contains(c.l10n.homeFirstLaunchStart),
+      );
       final scheme = Theme.of(tester.element(notice)).colorScheme;
       expect(preset.textColor, isNot(scheme.error));
       expect(

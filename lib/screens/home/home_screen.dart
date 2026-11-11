@@ -5875,6 +5875,14 @@ class _FirstLaunchDialog extends StatefulWidget {
 class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
   bool _saving = false;
   bool _failed = false;
+  // 開いたらキーボードのEnterで「はじめる」を押せるようにする。
+  final _startFocus = FocusNode(debugLabel: 'firstLaunchStart');
+
+  @override
+  void dispose() {
+    _startFocus.dispose();
+    super.dispose();
+  }
 
   Future<void> _complete() async {
     if (_saving) return;
@@ -5891,6 +5899,11 @@ class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
         setState(() {
           _saving = false;
           _failed = true;
+        });
+        // 保存を待つ間は押せないボタンからフォーカスが外れている。押せる
+        // ように戻ってから、Enterでやり直せるようフォーカスを戻す。
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _startFocus.requestFocus();
         });
       }
     }
@@ -5909,7 +5922,14 @@ class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.homeFirstLaunchMessage),
+            // 韓国語は語の途中で折り返さない。描く文にだけ語結合子を入れ、
+            // 読み上げには元の文を渡す。
+            Text.rich(
+              TextSpan(
+                text: keepKoreanWordsTogether(l10n.homeFirstLaunchMessage),
+                semanticsLabel: l10n.homeFirstLaunchMessage,
+              ),
+            ),
             if (_saving) ...[
               const SizedBox(height: 12),
               const LinearProgressIndicator(),
@@ -5919,9 +5939,13 @@ class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
               // 色ではなく先頭の印と文で知らせ、読み上げへも伝える
               // （文字の色はダイアログの文字色）。韓国語は語の途中で
               // 折り返さない（押すボタンの名前が2行に割れないように）。
+              // 日本語・中国語も、押すボタンの名前は引用符ごと1行に保つ。
               ExportShareNotice(
                 message: keepKoreanWordsTogether(
-                  l10n.homeFirstLaunchSaveFailed,
+                  keepPhraseTogether(
+                    l10n.homeFirstLaunchSaveFailed,
+                    l10n.homeFirstLaunchStart,
+                  ),
                 ),
               ),
             ],
@@ -5931,6 +5955,8 @@ class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
           // 「はじめる」ボタンの文字はくらむぼんを明示指定する
           // （通常のボタン文字は白光明朝のため、ここだけ差し替える）。
           FilledButton(
+            focusNode: _startFocus,
+            autofocus: true,
             onPressed: _saving ? null : _complete,
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 16),

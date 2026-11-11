@@ -36,6 +36,49 @@ String keepKoreanWordsTogether(String text) {
 
 bool _isBreakable(String char) => char.trim().isEmpty;
 
+/// 字の間のどこでも折り返せる字（漢字・ひらがな・カタカナ）。
+final RegExp _cjkLetter = RegExp(r'[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF]');
+
+/// 名前を囲む引用符。
+const String _quotationMarks = '「」『』“”‘’«»"\'';
+
+/// 文[text]の中の名前[phrase]（押すボタンの名前など）を、すぐ外の引用符ごと
+/// 行の途中で折り返さないようにする。
+///
+/// 日本語・中国語は字の間のどこでも折り返せるので、「もう一度「はじめる」を
+/// 押してください」が「「はじ／める」」のように、押すボタンの名前の途中で
+/// 切れる。名前とそのすぐ外の引用符の字の間に単語結合子を挟む。
+///
+/// 名前に漢字・かなが無いとき（英語・フランス語など、語を空白で区切る言語）は
+/// そのまま返す。語の途中では折り返されず、空白の所の折り返しは単語結合子
+/// では止められない。韓国語は文全体を[keepKoreanWordsTogether]に通すこと。
+/// 表示する`Text`には[plainSemanticsLabel]を添える。
+String keepPhraseTogether(String text, String phrase) {
+  if (phrase.isEmpty || !_cjkLetter.hasMatch(phrase)) return text;
+  final out = StringBuffer();
+  var from = 0;
+  while (true) {
+    final at = text.indexOf(phrase, from);
+    if (at < 0) break;
+    var start = at;
+    var end = at + phrase.length;
+    if (start > from && _quotationMarks.contains(text[start - 1])) start--;
+    if (end < text.length && _quotationMarks.contains(text[end])) end++;
+    out
+      ..write(text.substring(from, start))
+      ..write(
+        text
+            .substring(start, end)
+            .runes
+            .map(String.fromCharCode)
+            .join(_wordJoiner),
+      );
+    from = end;
+  }
+  out.write(text.substring(from));
+  return out.toString();
+}
+
 /// 語結合子を入れた表示の文[shown]を出す`Text`の`semanticsLabel`。
 ///
 /// 語結合子は字形を持たないが、読み上げ（TalkBack）・点字には字として渡り、
