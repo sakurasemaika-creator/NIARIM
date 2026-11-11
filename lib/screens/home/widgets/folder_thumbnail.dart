@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -83,6 +85,104 @@ String? folderThumbnailPath(
   }
 }
 
+/// Creates a small preview for exported video files only when the UI
+/// actually needs one. This is Android-only; desktop widget tests do not
+/// invoke native codecs and simply retain the folder icon fallback.
+class FolderCoverMedia extends StatelessWidget {
+  const FolderCoverMedia({
+    super.key,
+    required this.path,
+    this.fit = BoxFit.cover,
+    this.cacheWidth = 320,
+  });
+
+  final String path;
+  final BoxFit fit;
+  final int cacheWidth;
+
+  static final Map<String, Future<String?>> _videoPreviews = {};
+
+  static bool _isVideo(String path) {
+    final suffix = path.split('.').last.toLowerCase();
+    return const {'mp4', 'webm', 'mov', 'mkv', 'avi'}.contains(suffix);
+  }
+
+  static String _ffmpegQuote(String path) =>
+      '"${path.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"';
+
+  static Future<String?> _resolveVideo(String path) async {
+    if (!Platform.isAndroid) return null;
+    try {
+      final source = File(path);
+      if (!source.existsSync()) return null;
+      final modified = source.lastModifiedSync().millisecondsSinceEpoch;
+      var hash = 0x811c9dc5;
+      for (final code in path.codeUnits) {
+        hash = ((hash ^ code) * 0x01000193) & 0xffffffff;
+      }
+      final directory = Directory(
+        '${(await getTemporaryDirectory()).path}/folder_cover_previews',
+      );
+      await directory.create(recursive: true);
+      final poster = File(
+        '${directory.path}/${hash.toRadixString(16)}_$modified.jpg',
+      );
+      if (await poster.exists() && await poster.length() > 0) {
+        return poster.path;
+      }
+      final session = await FFmpegKit.execute(
+        '-hide_banner -loglevel error -y -ss 0.2 '
+        '-i ${_ffmpegQuote(path)} -frames:v 1 -vf scale=320:-2 '
+        '${_ffmpegQuote(poster.path)}',
+      );
+      final code = await session.getReturnCode();
+      return ReturnCode.isSuccess(code) &&
+              await poster.exists() &&
+              await poster.length() > 0
+          ? poster.path
+          : null;
+    } catch (_) {
+      // A corrupt or unsupported export should not break folder browsing.
+      return null;
+    }
+  }
+
+  static Future<String?> _videoFuture(String path) {
+    // The last modified timestamp forms part of the key so regenerated video
+    // content gets a new preview instead of reusing an outdated cached one.
+    int modified;
+    try {
+      modified = File(path).lastModifiedSync().millisecondsSinceEpoch;
+    } on FileSystemException {
+      return Future<String?>.value(null);
+    }
+    return _videoPreviews.putIfAbsent(
+      '$path:$modified',
+      () => _resolveVideo(path),
+    );
+  }
+
+  Widget _image(String filePath) => Image.file(
+    File(filePath),
+    key: ValueKey('folderCoverMedia_$filePath'),
+    fit: fit,
+    cacheWidth: cacheWidth,
+    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isVideo(path)) return _image(path);
+    return FutureBuilder<String?>(
+      future: _videoFuture(path),
+      builder: (context, snapshot) =>
+          snapshot.data == null
+              ? const SizedBox.shrink()
+              : _image(snapshot.data!),
+    );
+  }
+}
+
 /// Same sized preview surface as a work card. The actual image is clipped
 /// to the BODY of the folder symbol rather than covering the folder outline.
 class FolderThumbnail extends StatelessWidget {
@@ -130,11 +230,10 @@ class FolderThumbnail extends StatelessWidget {
                 height: size * 0.43,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(size * 0.05),
-                  child: Image.file(
-                    File(imagePath),
+                  child: FolderCoverMedia(
                     key: ValueKey('folderCover_${folder.id}_$imagePath'),
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    path: imagePath,
+                    cacheWidth: 320,
                   ),
                 ),
               ),
@@ -276,17 +375,16 @@ Future<void> showFolderThumbnailDialog(
                           const SizedBox(height: 8),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.file(
-                              File(choices.firstWhere(
-                                (c) => c.id == selectedId,
-                              ).imagePath),
-                              key: const Key('folderCoverWorkPreview'),
+                            child: SizedBox(
                               width: 112,
                               height: 72,
-                              fit: BoxFit.cover,
-                              cacheWidth: 224,
-                              errorBuilder: (_, _, _) =>
-                                  const SizedBox.shrink(),
+                              child: FolderCoverMedia(
+                                key: const Key('folderCoverWorkPreview'),
+                                path: choices.firstWhere(
+                                  (c) => c.id == selectedId,
+                                ).imagePath,
+                                cacheWidth: 224,
+                              ),
                             ),
                           ),
                         ],
