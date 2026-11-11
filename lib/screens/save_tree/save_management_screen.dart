@@ -276,6 +276,11 @@ class _GameStyleSlotScreen extends StatelessWidget {
                                 : commentController.text,
                             thumbnailPngBytes: thumbnail,
                           );
+                          await saveService.setSlotMemo(
+                            projectId,
+                            slotIndex,
+                            commentController.text,
+                          );
                           if (ctx.mounted) Navigator.pop(ctx);
                         } catch (e, st) {
                           AppErrorReporter.record(e, st);
