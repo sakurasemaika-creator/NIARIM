@@ -19,6 +19,10 @@ on:
       - "scripts/generate_home_clipboard_pdf.py"
   workflow_dispatch:
 
+concurrency:
+  group: home-clipboard-trash-dev-branch
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
