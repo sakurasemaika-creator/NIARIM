@@ -3973,10 +3973,16 @@ class ProjectService extends ChangeNotifier {
         p.isSharedImport && p.sharedFolderId == folderId).toList();
     final target = await createSharedFolder('${source.name} (コピー)');
     for (final project in projects) {
+      final oldIds = _projects.map((p) => p.id).toSet();
       if (!await duplicateProject(project.id,
           targetSharedFolderId: target.id, useTargetSharedFolder: true)) {
         throw StateError('Shared project missing: ${project.id}');
       }
+      final created = _projects.where((p) =>
+          !oldIds.contains(p.id) && p.sharedFolderId == target.id).single;
+      // duplicateProject queues an async save; acknowledge its completion
+      // before reporting the entire folder copy as complete.
+      await saveProject(created.id);
     }
     return target;
   }
