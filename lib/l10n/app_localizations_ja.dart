@@ -4030,7 +4030,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get saveTreeResumeConfirmBody => 'このセーブデータから作業を再開しますか？\n\n現在のデータは上書きされます。保存する必要がある場合は先にセーブしてください。';
 
   @override
-  String get saveTreeProjectDetailResumeBody => 'このセーブデータから作業を再開しますか？\n\n現在のデータは上書きされます。保存する必要がある場合は先にセーブしてください。';
+  String get saveTreeProjectDetailResumeBody => 'このセーブデータから作業を再開しますか？\n\n現在のデータは上書きされます。残したい場合は、一旦キャンセルして先に別のセーブスロット（ツリー方式では別の分岐）へセーブしてください。';
 
   @override
   String get saveTreeLoadFailedSnackbar => '保存データの読み込みに失敗しました';
