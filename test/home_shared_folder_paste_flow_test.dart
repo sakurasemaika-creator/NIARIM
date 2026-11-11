@@ -266,5 +266,35 @@ void main() {
         contains('空の書き出し'));
     expect(works.folders.single.name, '空の書き出し');
     await capture(tester, captureKey, '08_empty_folder_cross_tab_paste');
+
+    // The same exported-work folder can also be archived and restored,
+    // including when its stale membership references no existing file.
+    await tester.tap(find.byKey(const ValueKey('home_tab_3')));
+    await pumpIo(tester);
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byKey(const Key('homePasteToTrashDialog')), findsOneWidget);
+    await capture(tester, captureKey, '19_works_folder_trash_confirmation');
+    await tester.tap(find.byKey(const Key('homePasteTrashConfirmButton')));
+    await pumpIo(tester);
+    expect(works.folders, isEmpty);
+    final archived = (await tester.runAsync(LocalFileTrashService.list))!;
+    expect(archived, hasLength(1));
+    expect(archived.single.kind, LocalTrashKind.exportedWorkFolder);
+    await capture(tester, captureKey, '20_works_folder_in_trash');
+
+    await tester.tap(find.byKey(ValueKey('trashCopyLocal_${archived.single.id}')));
+    await pumpIo(tester);
+    await tester.tap(find.byKey(const ValueKey('home_tab_1')));
+    await pumpIo(tester);
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byKey(const Key('homePasteRestoreDialog')), findsOneWidget);
+    await capture(tester, captureKey, '21_works_folder_restore_confirmation');
+    await tester.tap(find.byKey(const Key('homePasteRestoreConfirmButton')));
+    await pumpIo(tester);
+    expect(works.folders.single.name, '空の書き出し');
+    expect(await tester.runAsync(LocalFileTrashService.list), isEmpty);
+    await capture(tester, captureKey, '22_works_folder_restored');
   });
 }
