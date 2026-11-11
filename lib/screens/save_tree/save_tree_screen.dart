@@ -51,7 +51,12 @@ Map<int, SaveNode> _nodesBySlot(List<SaveNode> nodes) {
 /// ノード数の2乗の走査になる。木の構築前にこの表を1つ作って使い回す。
 /// ツリー表示1行分の位置情報（[continues]は自身を含む各深さで
 /// 「まだ次の兄弟が続くか」）。実際のウィジェットは表示される行だけ作る。
-typedef _TreeRowSpec = ({SaveNode node, int depth, List<bool> continues});
+typedef _TreeRowSpec = ({
+  SaveNode node,
+  int depth,
+  List<bool> continues,
+  bool hasChildren,
+});
 
 Map<String?, List<SaveNode>> _childrenIndex(List<SaveNode> nodes) {
   final index = <String?, List<SaveNode>>{};
@@ -382,7 +387,7 @@ Future<void> _handleSaveNodeRestore(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.saveTreeRestoreAction),
-        content: Text(l10n.saveTreeResumeConfirmBody),
+        content: Text(l10n.saveTreeProjectDetailResumeBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -403,7 +408,7 @@ Future<void> _handleSaveNodeRestore(
   final ok = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: Text(nodeTitle),
+      title: Text(l10n.saveTreeRestoreAction),
       content: Text(l10n.saveTreeProjectDetailResumeBody),
       actions: [
         TextButton(
@@ -445,6 +450,7 @@ class _SlotView extends StatelessWidget {
       itemBuilder: (context, slotIndex) {
         final node = bySlot[slotIndex];
         return _SlotTile(
+          projectId: projectId,
           slotIndex: slotIndex,
           node: node,
           onSave: () => _showSlotSaveDialog(context, slotIndex, node),
@@ -471,7 +477,7 @@ class _SlotView extends StatelessWidget {
   ) {
     final l10n = AppLocalizations.of(context)!;
     final commentController = TextEditingController(
-      text: existing?.comment ?? '',
+      text: saveService.slotDisplayMemoOf(projectId, slotIndex) ?? '',
     );
     showDialog(
       context: context,
@@ -632,6 +638,7 @@ class _SaveNodeThumbnail extends StatelessWidget {
 }
 
 class _SlotTile extends StatelessWidget {
+  final String projectId;
   final int slotIndex;
   final SaveNode? node;
   final VoidCallback onSave;
@@ -639,6 +646,7 @@ class _SlotTile extends StatelessWidget {
   final VoidCallback? onDelete;
 
   const _SlotTile({
+    required this.projectId,
     required this.slotIndex,
     required this.node,
     required this.onSave,
@@ -650,6 +658,10 @@ class _SlotTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    final memo = context.watch<SaveTreeService>().slotDisplayMemoOf(
+      projectId,
+      slotIndex,
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       child: Material(
@@ -687,32 +699,38 @@ class _SlotTile extends StatelessWidget {
                             Flexible(
                               fit: FlexFit.loose,
                               child: Text(
-                                node?.comment ??
-                                    (node == null
-                                        ? l10n.saveTreeNoDataLabel
-                                        : l10n.saveTreeSlotFallbackName(
-                                            slotIndex + 1,
-                                          )),
+                                memo?.isNotEmpty == true
+                                    ? memo!
+                                    : (node == null
+                                          ? l10n.saveTreeNoDataLabel
+                                          : l10n.saveTreeSlotFallbackName(
+                                              slotIndex + 1,
+                                            )),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (node != null)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 2),
-                                child: SaveRenameButton(
-                                  node: node!,
-                                  fallbackName:
-                                      l10n.saveTreeSlotFallbackName(
-                                        slotIndex + 1,
-                                      ),
-                                ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 2),
+                              child: SaveSlotMemoButton(
+                                projectId: projectId,
+                                slotIndex: slotIndex,
+                                initialMemo: memo ?? '',
                               ),
+                            ),
                           ],
                         ),
                         if (node != null)
                           Text(
                             _formatDate(node!.savedAt),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          )
+                        else if (memo?.isNotEmpty == true)
+                          Text(
+                            l10n.saveTreeNoDataLabel,
                             style: TextStyle(
                               fontSize: 12,
                               color: scheme.onSurfaceVariant,
@@ -897,8 +915,13 @@ class _TreeView extends StatelessWidget {
     final node = siblings[index];
     final hasNext = index < siblings.length - 1;
     final continues = [...ancestorContinues, hasNext];
-    out.add((node: node, depth: depth, continues: continues));
     final children = childrenIndex[node.id] ?? const <SaveNode>[];
+    out.add((
+      node: node,
+      depth: depth,
+      continues: continues,
+      hasChildren: children.isNotEmpty,
+    ));
     for (int i = 0; i < children.length; i++) {
       _flattenTreeRows(childrenIndex, children, i, depth + 1, continues, out);
     }
