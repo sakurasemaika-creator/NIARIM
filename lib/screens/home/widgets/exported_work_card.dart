@@ -191,7 +191,7 @@ class ExportedWorkCard extends StatelessWidget {
               // unreasonably large on desktop. The Table fills this cover to
               // the *actual* content height, including wrapped action rows.
               final coverWidth = constraints.maxWidth.isFinite
-                  ? (constraints.maxWidth * 0.24).clamp(72.0, 96.0)
+                  ? (constraints.maxWidth * 0.24).clamp(72.0, 96.0).toDouble()
                   : 88.0;
               return Table(
                 columnWidths: {
