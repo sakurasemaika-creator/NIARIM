@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -12,6 +13,7 @@ import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/labeled_slider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -213,6 +215,73 @@ void main() {
       }
     });
   }
+
+  testWidgets('color adjustment previews live on canvas; cancel restores, apply saves',
+      (tester) async {
+    await openMenu(tester);
+    final ps = tester.element(find.byType(CanvasScreen)).read<ProjectService>();
+    final project = ps.projects.firstWhere((p) => p.name == '編集メニュー');
+    final scene = ps.scenesOf(project.id).first;
+    final layer = scene.frames.first.layers.first;
+    final pixels = Uint8List(160 * 90 * 4);
+    for (var i = 0; i < pixels.length; i += 4) {
+      pixels[i] = 220;
+      pixels[i + 1] = 110;
+      pixels[i + 2] = 80;
+      pixels[i + 3] = 255;
+    }
+    ps.replaceLayerPixels(
+      projectId: project.id,
+      sceneId: scene.id,
+      frameIndex: 0,
+      layerId: layer.id,
+      pixels: pixels,
+    );
+    await tapEntry(tester, '色調調整');
+    expect(find.byKey(const ValueKey('color-adjust-bottom-bar')),
+        findsOneWidget);
+
+    final slider = find.descendant(
+      of: find.byType(ColorAdjustSheet),
+      matching: find.byType(LabeledSlider),
+    );
+    expect(slider, findsNWidgets(3));
+    await settle(tester, 7);
+
+    // Brightness is the second slider. It must send an actual canvas preview,
+    // not change a dedicated 120x120 image in a popup.
+    tester.widget<LabeledSlider>(slider.at(1)).onChanged(-70);
+    await settle(tester, 12);
+    await capture(tester, '11b_color_adjust_live_canvas_darkened');
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.widgetWithText(TextButton, 'キャンセル'));
+    await settle(tester, 5);
+    expect(find.byType(ColorAdjustSheet), findsNothing);
+    await capture(tester, '11c_color_adjust_cancel_restores_canvas');
+
+    await tester.tap(find.byIcon(Icons.settings));
+    await settle(tester, 3);
+    await tapEntry(tester, '色調調整');
+    await settle(tester, 6);
+    final second = find.descendant(
+      of: find.byType(ColorAdjustSheet),
+      matching: find.byType(LabeledSlider),
+    );
+    tester.widget<LabeledSlider>(second.at(1)).onChanged(-70);
+    await settle(tester, 10);
+    await tester.tap(find.widgetWithText(FilledButton, '適用'));
+    await settle(tester, 6);
+    expect(find.byType(ColorAdjustSheet), findsNothing);
+    await capture(tester, '11d_color_adjust_apply_saved_canvas');
+
+    final key = ps.tileKeyFor(project.id, scene.id, 0, layer.id);
+    final rendered = await ps.tileManagerOf(project.id).compositeLayerToImage(key);
+    final raw = await rendered.toByteData(format: ui.ImageByteFormat.rawRgba);
+    rendered.dispose();
+    expect(raw, isNotNull);
+    expect(raw!.getUint8(0), lessThan(220),
+        reason: 'Apply must persist adjusted pixels, not just a preview');
+  });
 
   // 一番長い仏語の文言・文字2倍・320pxでも、色調調整のパネルははみ出さない。
   testWidgets('color adjust fits in French at twice the text size', (
