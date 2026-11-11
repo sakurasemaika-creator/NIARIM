@@ -157,6 +157,25 @@ void main() {
     final thumbnail = find.byKey(ValueKey('layer-preview-tap-${layer.id}'));
     expect(thumbnail, findsOneWidget);
     await shot('04_hidden_layer_thumbnail');
+    // The selected hidden layer must not leak through the actual canvas.
+    // This sample is inside the painted area in the 1500x900 capture.
+    final backgroundPixel = await tester.runAsync(() async {
+      final boundary = captureKey.currentContext!
+          .findRenderObject() as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 1);
+      final rgba = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final offset = (350 * image.width + 500) * 4;
+      final color = Color.fromARGB(
+        rgba!.getUint8(offset + 3),
+        rgba.getUint8(offset),
+        rgba.getUint8(offset + 1),
+        rgba.getUint8(offset + 2),
+      );
+      image.dispose();
+      return color;
+    });
+    expect(backgroundPixel, const Color(0xFFB8CEDA),
+        reason: 'Hidden drawing must not appear on the main canvas');
     await tester.tap(thumbnail);
     await settle();
     final viewer = find.byKey(const ValueKey('layer-preview-interactive'));
