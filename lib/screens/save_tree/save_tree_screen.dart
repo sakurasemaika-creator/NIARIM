@@ -540,6 +540,11 @@ class _SlotView extends StatelessWidget {
                   comment: comment,
                   thumbnailPngBytes: thumb,
                 );
+                await saveService.setSlotMemo(
+                  projectId,
+                  slotIndex,
+                  commentController.text,
+                );
                 if (ctx.mounted) Navigator.pop(ctx);
               },
               child: Text(l10n.commonSave),
