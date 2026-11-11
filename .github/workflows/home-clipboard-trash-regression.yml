@@ -48,8 +48,7 @@ jobs:
           flutter test test/home_shared_folder_paste_flow_test.dart --reporter expanded
           flutter test test/local_work_folder_trash_test.dart --reporter expanded
           flutter test test/local_file_trash_service_test.dart --reporter expanded
-          flutter test test/project_selection_clipboard_test.dart --plain-name 'incompatible tab paste explains why and leaves project intact' --reporter expanded
-          flutter test test/project_selection_clipboard_test.dart --plain-name 'pasting a project to Trash requires confirmation and shows the configured retention period' --reporter expanded
+          flutter test test/project_selection_clipboard_test.dart --reporter expanded
       - name: Preserve partial real screenshots when UI tests fail
         if: failure()
         uses: actions/upload-artifact@v4
@@ -78,6 +77,3 @@ jobs:
             build/home-clipboard-captures/*.pdf
           if-no-files-found: error
           retention-days: 30
-      - name: Legacy project selection suite (known UI contract mismatches)
-        continue-on-error: true
-        run: flutter test test/project_selection_clipboard_test.dart --reporter expanded

@@ -35,14 +35,16 @@ CAPTIONS = {
     "20_works_folder_in_trash": "Exported-work folder in Trash",
     "21_works_folder_restore_confirmation": "Confirmation before restoring exported-work folder",
     "22_works_folder_restored": "Empty exported-work folder restored successfully",
+    "23_bulk_folder_trash_confirmation": "Bulk folder and project deletion confirmation",
+    "24_project_right_click_menu": "Project right-click context menu before renaming",
 }
 
 def main() -> None:
     src = Path(sys.argv[1] if len(sys.argv) > 1 else "build/home-clipboard-captures")
     dest = Path(sys.argv[2] if len(sys.argv) > 2 else "build/home-clipboard-captures/NIARIM_clipboard_trash_screenshots.pdf")
     files = sorted(src.glob("*.png"))
-    if len(files) < 22:
-        raise SystemExit(f"Expected at least 22 real captures; found {len(files)}: {[p.name for p in files]}")
+    if len(files) < 24:
+        raise SystemExit(f"Expected at least 24 real captures; found {len(files)}: {[p.name for p in files]}")
     missing = set(CAPTIONS) - {p.stem for p in files}
     if missing:
         raise SystemExit("Missing required real screenshots: " + ", ".join(sorted(missing)))

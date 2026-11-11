@@ -20,6 +20,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/load_app_fonts.dart';
 
 /// 作品・フォルダの選択、一括の操作、切り取り・コピー・貼り付け、
 /// 右クリックのメニュー、名前の入力。実際の起動画面から入ったホームで
@@ -177,6 +178,7 @@ void main() {
 
   testWidgets('bulk delete moves folders with their contents and can be '
       'undone; unselected favorites stay', (tester) async {
+    await loadAppFonts(tester);
     final service = await boot(
       tester,
       names: ['apple', 'banana', 'cherry'],
@@ -208,6 +210,7 @@ void main() {
       find.textContaining('フォルダの中のプロジェクト1件・フォルダ1件も一緒に移動します。'),
       findsOneWidget,
     );
+    await captureClipboardScreen(tester, '23_bulk_folder_trash_confirmation');
     await tester.tap(find.widgetWithText(FilledButton, '移動'));
     await waitFor(tester, () => snackText(tester) != null);
     expect(service.projects.map((p) => p.name), ['banana']);
@@ -498,11 +501,13 @@ void main() {
   });
 
   testWidgets('right-clicking a card opens its menu', (tester) async {
+    await loadAppFonts(tester);
     await boot(tester, names: ['apple']);
     await tester.tap(card('apple'), buttons: kSecondaryMouseButton);
     await settle(tester);
     expect(find.text('名前変更'), findsOneWidget);
     expect(find.text('ゴミ箱へ移動'), findsOneWidget);
+    await captureClipboardScreen(tester, '24_project_right_click_menu');
     await tester.tap(find.text('名前変更'));
     await settle(tester);
     expect(find.byType(NameEntryDialog), findsOneWidget);
@@ -736,6 +741,7 @@ void main() {
   testWidgets('incompatible tab paste explains why and leaves project intact', (
     tester,
   ) async {
+    await loadAppFonts(tester);
     final service = await boot(tester, names: ['apple']);
     await tester.longPress(card('apple'));
     await settle(tester);
@@ -761,6 +767,7 @@ void main() {
 
   testWidgets('pasting a project to Trash requires confirmation and '
       'shows the configured retention period', (tester) async {
+    await loadAppFonts(tester);
     final service = await boot(tester, names: ['apple']);
     final appleId = service.projects.single.id;
     final context = tester.element(find.byType(ProjectListWidget));
