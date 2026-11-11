@@ -107,6 +107,12 @@ void main() {
       ));
       await service.saveProject(work.id);
       await service.moveToSharedFolder(work.id, folderId);
+      final outgoing = await service.createProject(
+        name: '共有を書き出す作品', fps: 12, durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+      );
+      await service.saveProject(outgoing.id);
+      await service.createOutgoingShare(project: outgoing);
     });
 
     await tester.tap(find.byIcon(Icons.brush_outlined));
@@ -153,6 +159,10 @@ void main() {
     expect(service.shared.single.name, '元の作品');
     expect(service.trash, isEmpty);
     await capture(tester, captureKey, '06_received_folder_restored');
+    await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
+    await pumpIo(tester);
+    expect(service.outgoingShares, isNotEmpty);
+    await capture(tester, captureKey, '14_outgoing_share_pill');
   });
 
   testWidgets('empty Works folder with stale file membership may paste into Projects',
