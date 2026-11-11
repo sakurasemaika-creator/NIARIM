@@ -46,6 +46,7 @@ import 'widgets/exported_work_preview_layout.dart';
 import 'widgets/folder_delete_dialog.dart';
 import 'widgets/folder_save_feedback.dart';
 import 'widgets/work_folder_move_sheet.dart';
+import 'home_clipboard_policy.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/line_break.dart';
 import '../../widgets/scrollable_sheet_body.dart';
@@ -158,6 +159,8 @@ class _HomeScreenState extends State<HomeScreen>
   // コピー操作自体を無効化する）。
   final Set<String> _clipboardProjectIds = {};
   final Set<String> _clipboardFolderIds = {};
+  HomePasteArea _clipboardSourceArea = HomePasteArea.projects;
+  bool _sharedOutgoing = false;
   bool _clipboardIsCut = false;
   bool _showFavoritesOnly = false;
   bool _isSearching = false;
@@ -451,6 +454,15 @@ class _HomeScreenState extends State<HomeScreen>
                   )
                 : Text(l10n.homeTabProjects),
             actions: [
+              if (_hasClipboard)
+                IconButton(
+                  key: const Key('homeCrossTabPasteButton'),
+                  icon: const Icon(Icons.content_paste),
+                  tooltip: l10n.homePasteTooltip(
+                    _clipboardProjectIds.length + _clipboardFolderIds.length,
+                  ),
+                  onPressed: _pasting ? null : _pasteClipboard,
+                ),
               if (_currentTabIndex == 0) ...[
                 // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
                 // トップ画面右上からは重複表示を削除した。
@@ -461,15 +473,7 @@ class _HomeScreenState extends State<HomeScreen>
                     onPressed: _closeProjectSearch,
                   )
                 else ...[
-                  if (_hasClipboard)
-                    IconButton(
-                      icon: const Icon(Icons.content_paste),
-                      tooltip: l10n.homePasteTooltip(
-                        _clipboardProjectIds.length +
-                            _clipboardFolderIds.length,
-                      ),
-                      onPressed: _pasting ? null : _pasteClipboard,
-                    ),
+
                   PopupMenuButton<ProjectViewMode>(
                     icon: const Icon(Icons.view_module),
                     tooltip: l10n.homeViewModeTooltip,
@@ -546,15 +550,7 @@ class _HomeScreenState extends State<HomeScreen>
                   onSelectAll: _selectAllInCurrentFolder,
                   onDeselectAll: _endProjectSelection,
                   onCut: _selectedIds.isEmpty ? null : _cutSelected,
-                  onCopy:
-                      _selectedIds.isNotEmpty &&
-                          _selectedIds.every(
-                            (id) => context.read<ProjectService>().projects.any(
-                              (p) => p.id == id,
-                            ),
-                          )
-                      ? _copySelected
-                      : null,
+                  onCopy: _selectedIds.isNotEmpty ? _copySelected : null,
                   onTrash: _selectedIds.isEmpty ? null : _deleteSelected,
                 ),
               Expanded(
@@ -663,9 +659,11 @@ class _HomeScreenState extends State<HomeScreen>
                       onOpenFolder: _openProjectFolder,
                     ),
                     const _WorksTab(key: PageStorageKey('home-works')),
-                    const SharedScreen(
-                      key: PageStorageKey('home-shared'),
+                    SharedScreen(
+                      key: const PageStorageKey('home-shared'),
                       embedded: true,
+                      onDirectionChanged: (outgoing) =>
+                          setState(() => _sharedOutgoing = outgoing),
                     ),
                     const TrashScreen(
                       key: PageStorageKey('home-trash'),
@@ -1062,29 +1060,31 @@ class _HomeScreenState extends State<HomeScreen>
             (id) => folderIds.contains(id) && visibleIds.contains(id),
           ),
         );
+      _clipboardSourceArea = HomePasteArea.projects;
       _clipboardIsCut = true;
       _selectedIds.clear();
       _isSelectionMode = false;
     });
   }
 
-  /// 選択中のプロジェクトを内部クリップボードへコピーする。フォルダの
-  /// 複製は未対応のため、選択にフォルダが含まれる場合はプロジェクトのみを
-  /// 対象にする。貼り付けのたびに複製するため、クリップボードは
-  /// 貼り付け後も保持したままにする。
+  /// Project and folder copies preserve source references for repeated paste.
   void _copySelected() {
     final service = context.read<ProjectService>();
     final visibleIds = _visibleProjectIds(service);
     final projectIds = service.projects.map((p) => p.id).toSet();
+    final folderIds = service.folders.map((f) => f.id).toSet();
     setState(() {
       _clipboardProjectIds
         ..clear()
-        ..addAll(
-          _selectedIds.where(
-            (id) => projectIds.contains(id) && visibleIds.contains(id),
-          ),
-        );
-      _clipboardFolderIds.clear();
+        ..addAll(_selectedIds.where(
+          (id) => projectIds.contains(id) && visibleIds.contains(id),
+        ));
+      _clipboardFolderIds
+        ..clear()
+        ..addAll(_selectedIds.where(
+          (id) => folderIds.contains(id) && visibleIds.contains(id),
+        ));
+      _clipboardSourceArea = HomePasteArea.projects;
       _clipboardIsCut = false;
       _selectedIds.clear();
       _isSelectionMode = false;
@@ -1094,51 +1094,204 @@ class _HomeScreenState extends State<HomeScreen>
   bool get _hasClipboard =>
       _clipboardProjectIds.isNotEmpty || _clipboardFolderIds.isNotEmpty;
 
-  /// クリップボードの内容を現在開いているフォルダ（[_currentFolderId]、
-  /// nullはルート直下）へ貼り付ける。切り取りの場合は移動して
-  /// クリップボードを空にし、コピーの場合は複製してクリップボードは
-  /// 保持したままにする。
+
+  HomePasteArea get _pasteDestination => switch (_currentTabIndex) {
+    0 => HomePasteArea.projects,
+    1 => HomePasteArea.works,
+    2 => _sharedOutgoing ? HomePasteArea.outgoing : HomePasteArea.received,
+    _ => HomePasteArea.trash,
+  };
+
+  Future<void> _explainPasteRestriction(String ja, String en) async {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: const Key('homePasteRestrictionDialog'),
+        title: Text(Localizations.localeOf(ctx).languageCode == 'ja'
+            ? 'この場所にはペーストできません'
+            : 'Cannot paste here'),
+        content: Text(Localizations.localeOf(ctx).languageCode == 'ja'
+            ? ja : en),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonClose),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool> _confirmPasteToTrash(List<String> names) async {
+    final days = context.read<SettingsService>().trashAutoDeleteDays;
+    final l10n = AppLocalizations.of(context)!;
+    final ja = Localizations.localeOf(context).languageCode == 'ja';
+    return await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: const Key('homePasteToTrashDialog'),
+        title: Text(l10n.homeMoveToTrash),
+        content: SingleChildScrollView(child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(ja ? '以下の作品・フォルダをゴミ箱に捨てますか？'
+                : 'Move the following files and folders to Trash?'),
+            for (final name in names) Text('・$name'),
+            const SizedBox(height: 12),
+            Text(ja
+                ? days > 0
+                    ? '※ゴミ箱に移動されたファイルは$days日後に完全削除されます。'
+                    : '※ゴミ箱の自動削除はオフです。手動で削除するまで保存されます。'
+                : days > 0
+                    ? 'Files in Trash are permanently deleted after $days days.'
+                    : 'Automatic deletion is off. Items remain until deleted manually.'),
+          ],
+        )),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            key: const Key('homePasteTrashConfirmButton'),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.commonMove),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
   bool _pasting = false;
   Future<void> _pasteClipboard() async {
-    if (_pasting) return;
-    setState(() => _pasting = true);
+    if (_pasting || !_hasClipboard) return;
     final service = context.read<ProjectService>();
-    final isCut = _clipboardIsCut;
+    final folderIds = _clipboardFolderIds.toList();
+    final projectIds = _clipboardProjectIds.toList();
+    final target = _pasteDestination;
+    final emptyFolders = folderIds.every(
+      (id) => service.folderContentCounts(id).projects == 0,
+    );
+    final decision = HomePastePolicy.check(
+      source: _clipboardSourceArea,
+      destination: target,
+      containsFiles: projectIds.isNotEmpty || !emptyFolders,
+      containsFolders: folderIds.isNotEmpty,
+    );
+    if (decision != HomePasteDecision.allowed) {
+      await _explainPasteRestriction(
+        'タブやピルボタンをまたいだ形式違いのペーストはできません。'
+        '作品・ファイルはコピー元と同じタブ・区分にペーストしてください。'
+        '中にファイルのないフォルダのみ例外です。',
+        'Files and projects cannot be pasted across incompatible tab or '
+        'pill formats. Paste into the original collection. Empty folders '
+        'without files are the only exception.',
+      );
+      return;
+    }
+    if (target == HomePasteArea.outgoing) {
+      await _explainPasteRestriction(
+        '共有の「自分が作成したもの」はファイル専用で、'
+        'フォルダを保存する機能がないため、ここにはペーストできません。',
+        'The outgoing-shares collection does not support folders.',
+      );
+      return;
+    }
+    if (target != HomePasteArea.projects &&
+        target != HomePasteArea.trash &&
+        folderIds.any((id) => service.folderContentCounts(id).folders > 0)) {
+      await _explainPasteRestriction(
+        'このフォルダには子フォルダがあります。'
+        '移動先ではフォルダの入れ子に対応していないため、'
+        '中の構造を失わないようペーストを中止しました。',
+        'This folder contains nested folders. The destination does not '
+        'support nesting, so the paste was cancelled to preserve its structure.',
+      );
+      return;
+    }
+    if (target == HomePasteArea.trash) {
+      final names = [
+        for (final id in projectIds)
+          ...service.projects.where((p) => p.id == id).map((p) => p.name),
+        for (final id in folderIds)
+          ...service.folders.where((f) => f.id == id).map((f) => f.name),
+      ];
+      if (names.isEmpty || !await _confirmPasteToTrash(names) || !mounted) return;
+    }
+    setState(() => _pasting = true);
     try {
-      for (final id in _clipboardProjectIds.toList()) {
-        if (isCut) {
-          await service.moveToFolder(id, _currentFolderId);
-          _clipboardProjectIds.remove(id);
-        } else {
-          await service.duplicateProject(
-            id,
-            targetFolderId: _currentFolderId,
-            useTargetFolder: true,
-          );
-        }
-      }
-      if (isCut) {
-        for (final id in _clipboardFolderIds.toList()) {
-          await service.moveFolderTo(id, _currentFolderId);
+      if (target == HomePasteArea.trash) {
+        // Duplicate descendants can appear in the selection. Moving a
+        // parent folder takes its descendants; skip already-trashed rows.
+        for (final id in folderIds) {
+          await service.moveFolderToTrash(id);
           _clipboardFolderIds.remove(id);
+        }
+        for (final id in projectIds) {
+          if (service.projects.any((p) => p.id == id)) {
+            await service.deleteProject(id);
+          }
+          _clipboardProjectIds.remove(id);
+        }
+      } else if (target == HomePasteArea.projects) {
+        for (final id in projectIds) {
+          if (_clipboardIsCut) {
+            await service.moveToFolder(id, _currentFolderId);
+            _clipboardProjectIds.remove(id);
+          } else {
+            await service.duplicateProject(id,
+                targetFolderId: _currentFolderId, useTargetFolder: true);
+          }
+        }
+        for (final id in folderIds) {
+          if (_clipboardIsCut) {
+            if (id == _currentFolderId ||
+                service.isFolderDescendantOf(_currentFolderId ?? '', id)) {
+              throw StateError('Cannot move folder inside itself');
+            }
+            await service.moveFolderTo(id, _currentFolderId);
+            _clipboardFolderIds.remove(id);
+          } else {
+            final source = service.folders.where((f) => f.id == id).firstOrNull;
+            if (source == null) continue;
+            await service.duplicateFolder(
+              id, targetParentId: _currentFolderId,
+              name: '${source.name} (コピー)',
+            );
+          }
+        }
+      } else {
+        // A format-neutral empty folder is created in the destination
+        // collection. Removing a cut source occurs ONLY after that succeeds.
+        for (final id in folderIds) {
+          final folder = service.folders.where((f) => f.id == id).firstOrNull;
+          if (folder == null) continue;
+          if (target == HomePasteArea.works) {
+            await context.read<WorkFolderService>().createFolder(folder.name);
+          } else {
+            await service.createSharedFolder(folder.name);
+          }
+          if (_clipboardIsCut) {
+            await service.deleteFolder(id);
+            _clipboardFolderIds.remove(id);
+          }
         }
       }
       if (mounted) {
+        setState(() {});
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.homePasteSnackbar),
-          ),
+          SnackBar(content: Text(AppLocalizations.of(context)!.homePasteSnackbar)),
         );
       }
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              folderSaveFailureText(AppLocalizations.of(context)!, error),
-            ),
-          ),
+          SnackBar(content: Text(folderSaveFailureText(
+            AppLocalizations.of(context)!, error))),
         );
       }
     } finally {
@@ -1301,9 +1454,12 @@ class _HomeTabBar extends StatelessWidget {
 
 /// 共有一覧。ホームタブと'/shared'直リンクで共用する。
 class SharedScreen extends StatefulWidget {
-  const SharedScreen({super.key, this.embedded = false});
+  const SharedScreen({
+    super.key, this.embedded = false, this.onDirectionChanged,
+  });
 
   final bool embedded;
+  final ValueChanged<bool>? onDirectionChanged;
 
   @override
   State<SharedScreen> createState() => _SharedScreenState();
@@ -1413,6 +1569,7 @@ class _SharedScreenState extends State<SharedScreen> {
                   selected: {_showOutgoing},
                   onSelectionChanged: (selection) {
                     setState(() => _showOutgoing = selection.single);
+                    widget.onDirectionChanged?.call(_showOutgoing);
                   },
                 ),
               ),
