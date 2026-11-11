@@ -562,7 +562,11 @@ void main() {
     await tester.tap(card('apple'), buttons: kSecondaryMouseButton);
     await settle(tester);
     await tester.tap(find.text('ゴミ箱へ移動'));
-    await settle(tester);
+    // The menu starts an acknowledged asynchronous save; a few fake frames
+    // cannot prove the project has reached persistent Trash.
+    await waitFor(tester, () =>
+        service.projects.isEmpty &&
+        snackText(tester) == '1件をゴミ箱へ移動しました');
     expect(service.projects, isEmpty);
     expect(snackText(tester), '1件をゴミ箱へ移動しました');
     await tester.tap(find.text('元に戻す'));
@@ -577,7 +581,7 @@ void main() {
     await tester.tap(card('apple'), buttons: kSecondaryMouseButton);
     await settle(tester);
     await tester.tap(find.text('ゴミ箱へ移動'));
-    await settle(tester);
+    await waitFor(tester, () => find.text('元に戻す').evaluate().isNotEmpty);
     expect(find.text('元に戻す'), findsOneWidget);
     // 操作ボタン付きのSnackBarは既定では消えず、次の画面のツールバーに
     // 重なり続けた。
@@ -609,11 +613,13 @@ void main() {
     await tester.tap(card('apple'), buttons: kSecondaryMouseButton);
     await settle(tester);
     await tester.tap(find.text('ゴミ箱へ移動'));
-    await settle(tester);
-    // ゴミ箱へ移す保存はフォルダの列の中で進むので、偽の時計を進めながら
-    // フォルダを消す（実時間の中だけで待つと、偽の時計を待つ列で止まる）。
+    // Complete the Trash save before deleting the original folder. Deleting
+    // while the project save is still queued can deadlock this widget test.
+    await waitFor(tester, () =>
+        service.projects.isEmpty &&
+        find.text('元に戻す').evaluate().isNotEmpty);
     final deleted = service.deleteFolder(folderId);
-    await settleIo(tester);
+    await waitFor(tester, () => !service.folders.any((f) => f.id == folderId));
     await tester.runAsync(() => deleted);
     await tester.tap(find.text('元に戻す'));
     await waitFor(tester, () => service.projects.isNotEmpty);
