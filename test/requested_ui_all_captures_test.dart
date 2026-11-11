@@ -14,6 +14,8 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
+import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
+import 'package:niarim/widgets/labeled_slider.dart';
 import 'package:niarim/screens/canvas/widgets/mesh_transform_panel.dart';
 import 'package:niarim/screens/canvas/widgets/reference_window.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
@@ -411,6 +413,41 @@ void main() {
     }
     await shot('10a_desktop_docks_without_black_outlines');
     await shot('10_desktop_multiple_dock_windows');
+
+    // Shared picker: verify the exact controls rendered in PC/DeX and used
+    // by the canvas and other dialogs, not an illustration of the design.
+    expect(find.byKey(const ValueKey('selected-color-preview-chip')),
+        findsOneWidget);
+    final colorPanel = find.byType(ColorPickerPanel);
+    expect(find.descendant(of: colorPanel, matching: find.text('HSV')),
+        findsOneWidget);
+    expect(find.descendant(of: colorPanel, matching: find.text('RGB')),
+        findsOneWidget);
+    final hueSlider = find.ancestor(
+      of: find.descendant(of: colorPanel, matching: find.text('H')),
+      matching: find.byType(LabeledSlider),
+    );
+    expect(hueSlider, findsOneWidget);
+    final beforeHue = tester.widget<LabeledSlider>(hueSlider).value;
+    await tester.ensureVisible(hueSlider);
+    await settle();
+    await shot('10b_color_picker_hsv_sliders_and_current_color_chip');
+    await tester.tap(find.descendant(
+      of: hueSlider,
+      matching: find.byIcon(Icons.add_circle_outline),
+    ));
+    await settle();
+    final afterHue = tester.widget<LabeledSlider>(hueSlider).value;
+    expect(afterHue, beforeHue + 1, reason: 'HSV stepper must add 1');
+    await shot('10c_color_picker_hsv_after_plus_one');
+    final rgbSlider = find.ancestor(
+      of: find.descendant(of: colorPanel, matching: find.text('R')),
+      matching: find.byType(LabeledSlider),
+    );
+    await tester.ensureVisible(rgbSlider);
+    await settle();
+    await shot('10d_color_picker_rgb_sliders');
+
     final resize = find.byKey(const ValueKey('pcPaneResize.canvasPreview'));
     if (resize.evaluate().isNotEmpty) {
       await tester.drag(resize.first, const Offset(0, 80));
@@ -564,6 +601,93 @@ void main() {
     await settle();
     expect(find.byType(ReferenceWindow), findsOneWidget);
     await shot('popup_fix_reference_window');
+
+    // Inject real raster content. Hide the layer on the canvas while its
+    // private thumbnail and zoomable preview must still show the artwork.
+    final proofScene = ps.scenesOf(colored.id).first;
+    final proofLayer = proofScene.frames.first.layers.first;
+    final proofPixels = Uint8List(320 * 180 * 4);
+    for (var y = 25; y < 155; y++) {
+      for (var x = 35; x < 285; x++) {
+        final i = (y * 320 + x) * 4;
+        proofPixels[i] = 225;
+        proofPixels[i + 1] = x.isEven ? 40 : 90;
+        proofPixels[i + 2] = 50;
+        proofPixels[i + 3] = 255;
+      }
+    }
+    ps.replaceLayerPixels(
+      projectId: colored.id,
+      sceneId: proofScene.id,
+      frameIndex: 0,
+      layerId: proofLayer.id,
+      pixels: proofPixels,
+    );
+    ps.updateLayer(
+      projectId: colored.id,
+      sceneId: proofScene.id,
+      frameIndex: 0,
+      layer: proofLayer.copyWith(isVisible: false),
+    );
+    await settings.setDefaultDockedPanels({CanvasDockPanel.layer});
+    await navigate('/home');
+    await navigate('/canvas/${colored.id}');
+    expect(find.byType(LayerPanel), findsOneWidget);
+    final layerThumbnail = find.byKey(
+      ValueKey('layer-preview-tap-${proofLayer.id}'),
+    );
+    expect(layerThumbnail, findsOneWidget);
+    await shot('15_hidden_layer_thumbnail_keeps_artwork');
+    await tester.tap(layerThumbnail);
+    await settle();
+    final fullPreview = find.byKey(
+      const ValueKey('layer-preview-interactive'),
+    );
+    expect(fullPreview, findsOneWidget);
+    expect(tester.widget<InteractiveViewer>(fullPreview).scaleEnabled, isTrue);
+    await shot('16_hidden_layer_fullscreen_preview');
+    final center = tester.getCenter(fullPreview);
+    final left = await tester.startGesture(center + const Offset(-60, 0));
+    final right = await tester.startGesture(center + const Offset(60, 0));
+    await left.moveBy(const Offset(-40, 0));
+    await right.moveBy(const Offset(40, 0));
+    await tester.pump();
+    await left.up();
+    await right.up();
+    await settle();
+    await shot('17_hidden_layer_preview_pinch_zoom');
+    await tester.drag(fullPreview, const Offset(45, 25));
+    await settle();
+    await shot('18_hidden_layer_preview_drag_pan');
+    await tester.tap(find.byKey(const ValueKey('layer-preview-close')));
+    await settle();
+    expect(fullPreview, findsNothing);
+
+    // Capture independent floating windows and their actual magnet snap.
+    await settings.setDefaultDockedPanels({
+      CanvasDockPanel.brush,
+      CanvasDockPanel.colorPicker,
+    });
+    await navigate('/home');
+    await navigate('/canvas/${colored.id}');
+    await settings.floatDesktopDockPanel(
+      CanvasDockPanel.brush, const Offset(100, 160),
+    );
+    await settings.floatDesktopDockPanel(
+      CanvasDockPanel.colorPicker, const Offset(500, 160),
+    );
+    await settle();
+    expect(find.byKey(const ValueKey('freeDockWindow-brush')),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('freeDockWindow-colorPicker')),
+        findsOneWidget);
+    await shot('19_pc_dex_floating_tool_windows');
+    await tester.drag(
+      find.byKey(const ValueKey('freeDockDrag-brush')),
+      const Offset(91, 0),
+    );
+    await settle();
+    await shot('20_pc_dex_floating_window_magnet_snap');
 
     await tester.runAsync(
       () =>
