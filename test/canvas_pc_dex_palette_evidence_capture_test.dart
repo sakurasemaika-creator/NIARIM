@@ -63,7 +63,7 @@ void main() {
             rebuild = setState;
             return id == null
                 ? const SizedBox.expand()
-                : CanvasScreen(projectId: id!);
+                : CanvasScreen(projectId: id);
           }),
         )),
       ),
