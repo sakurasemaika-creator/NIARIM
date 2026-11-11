@@ -3647,8 +3647,10 @@ class ProjectService extends ChangeNotifier {
     // Explicitly chosen covers remain unchanged when leaving the canvas.
     _projects[curIdx] = _projects[curIdx].copyWith(
       thumbnailPath: path,
-      thumbnailLastSceneId: !force && sceneId != null ? scene.id : null,
-      thumbnailLastFrameIndex: !force && frameIndex != null ? position : null,
+      thumbnailLastSceneId: !force && sceneId != null
+          ? scene.id : _projects[curIdx].thumbnailLastSceneId,
+      thumbnailLastFrameIndex: !force && frameIndex != null
+          ? position : _projects[curIdx].thumbnailLastFrameIndex,
     );
     final saved = _saveReportingSuccess(projectId);
     notifyListeners();
