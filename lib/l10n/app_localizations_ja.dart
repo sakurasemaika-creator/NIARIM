@@ -4011,7 +4011,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get saveTreeRestoreAction => '復元';
+  String get saveTreeRestoreAction => '読み込み';
 
   @override
   String get saveTreeTimelineActionChoiceBody =>
@@ -4037,7 +4037,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String saveTreeRestoredSnackbar(String name) {
-    return '$nameを復元しました';
+    return 'セーブデータを読み込みました（$name）';
   }
 
   @override
