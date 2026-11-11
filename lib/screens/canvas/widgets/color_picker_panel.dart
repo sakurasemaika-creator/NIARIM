@@ -56,6 +56,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   late double _value;
   late double _alpha; // 0.0〜1.0（カラーピッカーは常に透明色も選択できる）
   late int _r, _g, _b;
+  bool _showHsvSliders = true;
   final _hexController = TextEditingController();
   // パレットを共有できなかった理由。このパネルはダイアログの中にも出るので、
   // SnackBar（ダイアログの幕の下に隠れる）ではなくパネルの中に出す。
@@ -199,8 +200,8 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 ],
               ),
               const SizedBox(height: 8),
-              // HSVサークルとHSV/RGBスライダーを共通パネルで常に表示し、
-              // いずれの操作でも全コントロールと現在色を即時同期する。
+              // カラーサークルは常時表示。右下のピルで数値スライダーを
+              // HSV/RGBから切り替える。現在色の値はモード変更で変えない。
               // 正方形（彩度・明度）＋外側カラーサークル（色相）でタップ選択できる
               // 方式。円の
               // 外側・左下の空きスペースには透明色切り替えボタンを配置する。
@@ -221,36 +222,39 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   onChangeEnd: _commitToRecent,
                   isTransparent: _alpha == 0,
                   onToggleTransparent: _toggleTransparent,
+                  showHsvSliders: _showHsvSliders,
+                  onSliderModeChanged: (hsv) =>
+                      setState(() => _showHsvSliders = hsv),
                 ),
               ),
               const SizedBox(height: 8),
-              const Text('HSV', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-              _slider('H', _hue.roundToDouble(), 0, 360, (v) {
-                _hue = v.roundToDouble();
-                _applyHsv();
-              }, (_) => _commitToRecent()),
-              _slider('S', (_saturation * 100).roundToDouble(), 0, 100, (v) {
-                _saturation = v.round() / 100;
-                _applyHsv();
-              }, (_) => _commitToRecent()),
-              _slider('V', (_value * 100).roundToDouble(), 0, 100, (v) {
-                _value = v.round() / 100;
-                _applyHsv();
-              }, (_) => _commitToRecent()),
-              const SizedBox(height: 8),
-              const Text('RGB', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-              _slider('R', _r.toDouble(), 0, 255, (v) {
-                _r = v.round();
-                _applyRgb();
-              }, (_) => _commitToRecent()),
-              _slider('G', _g.toDouble(), 0, 255, (v) {
-                _g = v.round();
-                _applyRgb();
-              }, (_) => _commitToRecent()),
-              _slider('B', _b.toDouble(), 0, 255, (v) {
-                _b = v.round();
-                _applyRgb();
-              }, (_) => _commitToRecent()),
+              if (_showHsvSliders) ...[
+                _slider('H', _hue.roundToDouble(), 0, 360, (v) {
+                  _hue = v.roundToDouble();
+                  _applyHsv();
+                }, (_) => _commitToRecent()),
+                _slider('S', (_saturation * 100).roundToDouble(), 0, 100, (v) {
+                  _saturation = v.round() / 100;
+                  _applyHsv();
+                }, (_) => _commitToRecent()),
+                _slider('V', (_value * 100).roundToDouble(), 0, 100, (v) {
+                  _value = v.round() / 100;
+                  _applyHsv();
+                }, (_) => _commitToRecent()),
+              ] else ...[
+                _slider('R', _r.toDouble(), 0, 255, (v) {
+                  _r = v.round();
+                  _applyRgb();
+                }, (_) => _commitToRecent()),
+                _slider('G', _g.toDouble(), 0, 255, (v) {
+                  _g = v.round();
+                  _applyRgb();
+                }, (_) => _commitToRecent()),
+                _slider('B', _b.toDouble(), 0, 255, (v) {
+                  _b = v.round();
+                  _applyRgb();
+                }, (_) => _commitToRecent()),
+              ],
               const SizedBox(height: 4),
               // 不透明度スライダー（カラーピッカーは常に透明色も選択
               // できるようにする）。チェッカー柄の上にプレビューを
