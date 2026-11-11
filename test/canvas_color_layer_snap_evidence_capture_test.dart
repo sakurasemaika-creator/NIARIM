@@ -123,7 +123,7 @@ void main() {
     await navigate('/home');
     await navigate('/canvas/${project.id}');
     expect(find.byType(ColorPickerPanel), findsOneWidget);
-    expect(find.byKey(const ValueKey('selected-color-preview-chip')),
+    expect(find.byKey(const ValueKey('pc-color-picker-current-chip')),
         findsOneWidget);
     await shot('01_color_header_and_wheel');
 
