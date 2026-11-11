@@ -4,6 +4,24 @@ enum HomePasteArea { projects, works, received, outgoing, trash }
 
 enum HomePasteDecision { allowed, incompatibleFormat, unsupportedTrashRestore }
 
+/// A selected library entry keeps its original tab or pill format.
+class HomeClipboardEntry {
+  const HomeClipboardEntry({
+    required this.source,
+    required this.id,
+    required this.name,
+    this.isFolder = false,
+    this.isCut = false,
+    this.originalArea,
+  });
+  final HomePasteArea source;
+  final String id;
+  final String name;
+  final bool isFolder;
+  final bool isCut;
+  final HomePasteArea? originalArea;
+}
+
 abstract final class HomePastePolicy {
   static HomePasteDecision check({
     required HomePasteArea source,
