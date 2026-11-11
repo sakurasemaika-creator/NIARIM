@@ -23,6 +23,7 @@ import '../../../widgets/empty_state_placeholder.dart';
 import '../../../widgets/export_share_feedback.dart';
 import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/project_trash_dialog.dart';
+import '../../../widgets/collection_action_controls.dart';
 import '../../../utils/app_error_reporter.dart';
 import 'folder_save_feedback.dart';
 import 'folder_delete_dialog.dart';
@@ -756,6 +757,11 @@ class ProjectListWidget extends StatelessWidget {
                       context,
                       menu: _projectMenu(context, project),
                       isFavorite: project.isFavorite,
+                      itemId: project.id,
+                      onFavorite: () => runProjectAction(
+                        context,
+                        () => context.read<ProjectService>().toggleFavorite(project.id),
+                      ),
                     ),
                     if (isSelectionMode)
                       Positioned(
@@ -901,6 +907,8 @@ class ProjectListWidget extends StatelessWidget {
                 context,
                 menu: _folderMenu(context, folder),
                 isFavorite: folder.isFavorite,
+                itemId: folder.id,
+                onFavorite: () => _handleFolderAction(context, 'favorite', folder),
               ),
             ],
           ),
@@ -913,43 +921,34 @@ class ProjectListWidget extends StatelessWidget {
     BuildContext context, {
     required Widget menu,
     required bool isFavorite,
+    required String itemId,
+    required VoidCallback onFavorite,
   }) {
-    final scheme = Theme.of(context).colorScheme;
-    final showMenu = !isSelectionMode && onPickProject == null;
-    // Menu remains top-right. Favorite is independently anchored to the
-    // thumbnail bottom-left, including transparent checkerboard thumbnails.
+    final showActions = !isSelectionMode && onPickProject == null;
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (showMenu)
+        if (showActions)
           Positioned(
             top: 4,
             right: 4,
-            child: Material(
-              color: Theme.of(context).cardTheme.color ?? scheme.surface,
-              shape: const CircleBorder(),
-              clipBehavior: Clip.antiAlias,
-              child: SizedBox.square(dimension: 48, child: menu),
+            child: CollectionActionFrame(
+              key: Key('collectionMenu_$itemId'),
+              child: menu,
             ),
           ),
-        if (isFavorite)
+        if (showActions)
           Positioned(
             key: const Key('projectGridFavoriteBottomLeft'),
             left: 4,
             bottom: 4,
-            child: Container(
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardTheme.color ?? scheme.surface,
-                shape: BoxShape.circle,
-              ),
-              child: Builder(
-                builder: (themeContext) => Icon(
-                  Icons.star,
-                  color: Theme.of(themeContext).colorScheme.primary,
-                  size: 14,
-                ),
-              ),
+            child: CollectionFavoriteButton(
+              favorite: isFavorite,
+              itemId: itemId,
+              tooltip: isFavorite
+                  ? AppLocalizations.of(context)!.colorPickerFavoriteRemove
+                  : AppLocalizations.of(context)!.colorPickerFavoriteAdd,
+              onPressed: onFavorite,
             ),
           ),
       ],
@@ -972,7 +971,7 @@ class ProjectListWidget extends StatelessWidget {
                 semanticsLabel: l10n.homeTrashWorking,
               ),
             )
-          : const Icon(Icons.more_vert, size: 18),
+          : const Icon(Icons.more_vert, size: CollectionActionFrame.glyphSize),
       onSelected: (action) => _handleAction(context, action, project),
       itemBuilder: (_) => [
         PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
@@ -1011,7 +1010,7 @@ class ProjectListWidget extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return PopupMenuButton<String>(
       padding: EdgeInsets.zero,
-      icon: const Icon(Icons.more_vert, size: 18),
+      icon: const Icon(Icons.more_vert, size: CollectionActionFrame.glyphSize),
       onSelected: (action) => _handleFolderAction(context, action, folder),
       itemBuilder: (_) => [
         PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
