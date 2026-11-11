@@ -574,6 +574,10 @@ class _SlotView extends StatelessWidget {
           ),
         ),
         elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide.none,
+        ),
       ),
     );
   }
@@ -956,6 +960,10 @@ class _TreeView extends StatelessWidget {
           ),
         ),
         elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide.none,
+        ),
       ),
     );
   }
