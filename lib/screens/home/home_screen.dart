@@ -3859,20 +3859,20 @@ class _WorkListItemState extends State<_WorkListItem> {
   @override
   void initState() {
     super.initState();
-    _coverSetting = ExportedWorkCoverStore.read(widget.file);
+    _coverSetting = ExportedWorkCoverStore.ensureCached(widget.file);
   }
 
   @override
   void didUpdateWidget(covariant _WorkListItem oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.file.path != widget.file.path) {
-      _coverSetting = ExportedWorkCoverStore.read(widget.file);
+      _coverSetting = ExportedWorkCoverStore.ensureCached(widget.file);
     }
   }
 
   void _refreshCover() {
     if (mounted) setState(() {
-      _coverSetting = ExportedWorkCoverStore.read(widget.file);
+      _coverSetting = ExportedWorkCoverStore.ensureCached(widget.file);
     });
   }
 
