@@ -425,6 +425,8 @@ class CanvasArea extends StatefulWidget {
   /// moves the filter's handles (two-finger zoom and pan still work).
   final ui.Image? currentLayerPreview;
   final LayerBlendMode? currentLayerPreviewBlendMode;
+  /// Increment when external controls commit new pixels to the current layer.
+  final int contentRevision;
   final bool lockToolInput;
   final AutofillCheckMode autofillCheckMode;
   final Project? project;
@@ -539,6 +541,7 @@ class CanvasArea extends StatefulWidget {
     this.onFilterGizmoDragEnd,
     this.currentLayerPreview,
     this.currentLayerPreviewBlendMode,
+    this.contentRevision = 0,
     this.lockToolInput = false,
     this.autofillCheckMode = AutofillCheckMode.normal,
     this.project,
@@ -867,6 +870,15 @@ class _CanvasAreaState extends State<CanvasArea> {
       _initEngine();
     }
     _drawingEngine.isEraser = _erasing;
+    if (old.contentRevision != widget.contentRevision) {
+      // The temporary filter/colour preview has just been committed to
+      // TileManager. Reload both the active layer and surrounding composition.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _scheduleComposite();
+        _recomposeSurroundings(force: true);
+      });
+    }
     if (old.currentLayerPreview != widget.currentLayerPreview ||
         old.currentLayerPreviewBlendMode !=
             widget.currentLayerPreviewBlendMode) {
