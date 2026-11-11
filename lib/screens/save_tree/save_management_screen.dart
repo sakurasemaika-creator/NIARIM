@@ -85,7 +85,9 @@ class _GameStyleSlotScreen extends StatelessWidget {
                 itemBuilder: (context, slotIndex) {
                   final node = bySlot[slotIndex];
                   return _GameSaveSlotTile(
+                    projectId: projectId,
                     slotIndex: slotIndex,
+                    memo: saveService.slotDisplayMemoOf(projectId, slotIndex),
                     node: node,
                     // メモ＋ペン＝書き込み、ノート＝読み込み、ゴミ箱＝削除。
                     // 3つを全スロットへ常に出し、使えない操作は無効化して
@@ -159,7 +161,12 @@ class _GameStyleSlotScreen extends StatelessWidget {
     SaveTreeService saveService,
     SaveNode node,
   ) async {
-    if (!await confirmDelete(context, itemName: node.comment)) return;
+    if (!await confirmDelete(
+      context,
+      itemName: saveService.slotDisplayMemoOf(projectId, node.slotIndex),
+    )) {
+      return;
+    }
     await saveService.deleteNode(projectId, node.id);
   }
 
@@ -171,7 +178,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
   ) {
     final l10n = AppLocalizations.of(context)!;
     final commentController = TextEditingController(
-      text: existing?.comment ?? '',
+      text: saveService.slotDisplayMemoOf(projectId, slotIndex) ?? '',
     );
     var saving = false;
     String? failure;
@@ -311,11 +318,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              entryMode == SaveTreeEntryMode.projectDetail
-                  ? l10n.saveTreeProjectDetailResumeBody
-                  : l10n.saveTreeResumeConfirmBody,
-            ),
+            Text(l10n.saveTreeProjectDetailResumeBody),
             const SizedBox(height: 14),
             _SlotConfirmationSummary(slotIndex: node.slotIndex, node: node),
           ],
@@ -349,7 +352,8 @@ class _GameStyleSlotScreen extends StatelessWidget {
       SnackBar(
         content: Text(
           l10n.saveTreeRestoredSnackbar(
-            node.comment ?? l10n.saveTreeSlotFallbackName(node.slotIndex + 1),
+            saveService.slotDisplayMemoOf(projectId, node.slotIndex) ??
+                l10n.saveTreeSlotFallbackName(node.slotIndex + 1),
           ),
         ),
         elevation: 0,
@@ -395,7 +399,11 @@ class _SlotConfirmationSummary extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  node.comment ?? l10n.saveTreeSlotFallbackName(slotIndex + 1),
+                  context.watch<SaveTreeService>().slotDisplayMemoOf(
+                        node.projectId,
+                        slotIndex,
+                      ) ??
+                      l10n.saveTreeSlotFallbackName(slotIndex + 1),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -423,14 +431,18 @@ class _SlotConfirmationSummary extends StatelessWidget {
 /// moves the controls beneath the preview, preserving readable names while
 /// providing separated, at least 56dp-wide touch targets.
 class _GameSaveSlotTile extends StatelessWidget {
+  final String projectId;
   final int slotIndex;
+  final String? memo;
   final SaveNode? node;
   final VoidCallback onWrite;
   final VoidCallback? onLoad;
   final VoidCallback? onDelete;
 
   const _GameSaveSlotTile({
+    required this.projectId,
     required this.slotIndex,
+    required this.memo,
     required this.node,
     required this.onWrite,
     required this.onLoad,
@@ -511,12 +523,13 @@ class _GameSaveSlotTile extends StatelessWidget {
                             Flexible(
                               fit: FlexFit.loose,
                               child: Text(
-                                hasData
-                                    ? (node!.comment ??
-                                          l10n.saveTreeSlotFallbackName(
-                                            slotIndex + 1,
-                                          ))
-                                    : l10n.saveTreeNoDataLabel,
+                                memo?.isNotEmpty == true
+                                    ? memo!
+                                    : (hasData
+                                          ? l10n.saveTreeSlotFallbackName(
+                                              slotIndex + 1,
+                                            )
+                                          : l10n.saveTreeNoDataLabel),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -526,23 +539,29 @@ class _GameSaveSlotTile extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            if (hasData)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 2),
-                                child: SaveRenameButton(
-                                  node: node!,
-                                  fallbackName:
-                                      l10n.saveTreeSlotFallbackName(
-                                        slotIndex + 1,
-                                      ),
-                                ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 2),
+                              child: SaveSlotMemoButton(
+                                projectId: projectId,
+                                slotIndex: slotIndex,
+                                initialMemo: memo ?? '',
                               ),
+                            ),
                           ],
                         ),
                         if (hasData) ...[
                           const SizedBox(height: 3),
                           Text(
                             _formatDate(node!.savedAt),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ] else if (memo?.isNotEmpty == true) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            l10n.saveTreeNoDataLabel,
                             style: TextStyle(
                               fontSize: 12,
                               color: scheme.onSurfaceVariant,
