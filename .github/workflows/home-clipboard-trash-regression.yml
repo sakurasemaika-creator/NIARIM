@@ -15,6 +15,8 @@ on:
       - "test/home_shared_folder_paste_flow_test.dart"
       - "test/local_work_folder_trash_test.dart"
       - "test/project_selection_clipboard_test.dart"
+      - "lib/screens/home/widgets/project_list_widget.dart"
+      - "scripts/generate_home_clipboard_pdf.py"
   workflow_dispatch:
 
 permissions:
@@ -44,6 +46,19 @@ jobs:
           flutter test test/local_file_trash_service_test.dart --reporter expanded
           flutter test test/project_selection_clipboard_test.dart --plain-name 'incompatible tab paste explains why and leaves project intact' --reporter expanded
           flutter test test/project_selection_clipboard_test.dart --plain-name 'pasting a project to Trash requires confirmation and shows the configured retention period' --reporter expanded
+      - name: Build real Flutter screenshots PDF
+        run: |
+          python3 -m pip install --quiet reportlab pillow
+          python3 scripts/generate_home_clipboard_pdf.py
+      - name: Upload real screenshots and PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-clipboard-trash-ui
+          path: |
+            build/home-clipboard-captures/*.png
+            build/home-clipboard-captures/*.pdf
+          if-no-files-found: error
+          retention-days: 30
       - name: Legacy project selection suite (known UI contract mismatches)
         continue-on-error: true
         run: flutter test test/project_selection_clipboard_test.dart --reporter expanded
