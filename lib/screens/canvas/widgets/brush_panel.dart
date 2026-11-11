@@ -326,7 +326,7 @@ class _BrushPanelState extends State<BrushPanel> {
                           ),
                           subtitle: StrokeSamplePreview(
                             brush: shown,
-                            color: Theme.of(context).colorScheme.onSurface,
+                            color: brushService.currentColor,
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
