@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
@@ -15,6 +17,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/load_app_fonts.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +42,24 @@ void main() {
     if (tempDir.existsSync()) await tempDir.delete(recursive: true);
   });
 
+  Future<void> capture(WidgetTester tester, GlobalKey key, String name) async {
+    await pumpIo(tester);
+    expect(tester.takeException(), isNull);
+    final boundary = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final bytes = await tester.runAsync(() async {
+      final image = await boundary.toImage(pixelRatio: 1);
+      final png = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      return png!.buffer.asUint8List();
+    });
+    final output = Directory('build/home-clipboard-captures')
+      ..createSync(recursive: true);
+    await tester.runAsync(() async {
+      await File(output.path + '/' + name + '.png')
+          .writeAsBytes(bytes!, flush: true);
+    });
+  }
+
   Future<void> pumpIo(WidgetTester tester) async {
     for (var i = 0; i < 12; i++) {
       await tester.runAsync(() =>
@@ -54,9 +75,14 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    await loadAppFonts(tester);
+    final captureKey = GlobalKey();
     final providers = (await tester.runAsync(buildAppProviders))!;
     await tester.pumpWidget(
-      MultiProvider(providers: providers, child: const NiarimApp()),
+      RepaintBoundary(
+        key: captureKey,
+        child: MultiProvider(providers: providers, child: const NiarimApp()),
+      ),
     );
     await tester.pump(const Duration(milliseconds: 300));
     final service = tester.element(find.byType(SplashScreen))
@@ -84,24 +110,28 @@ void main() {
     await pumpIo(tester);
     await tester.tap(find.byKey(const ValueKey('home_tab_2')));
     await pumpIo(tester);
+    await capture(tester, captureKey, '01_received_share_tab');
 
     await tester.longPress(find.text('受信箱').first);
     await tester.pump(const Duration(milliseconds: 400));
     await tester.tap(find.widgetWithIcon(ListTile, Icons.content_copy));
     await pumpIo(tester);
     expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
+    await capture(tester, captureKey, '02_received_folder_copied');
 
     await tester.tap(find.byKey(const ValueKey('home_tab_3')));
     await pumpIo(tester);
     await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
     await tester.pump();
     expect(find.byKey(const Key('homePasteToTrashDialog')), findsOneWidget);
+    await capture(tester, captureKey, '03_received_folder_trash_confirmation');
     expect(service.sharedFolders.single.id, folderId);
     await tester.tap(find.byKey(const Key('homePasteTrashConfirmButton')));
     await pumpIo(tester);
     expect(service.sharedFolders, isEmpty);
     expect(service.trashedFolders.single.isShared, isTrue);
     expect(service.trashedFolders.single.projectIds, hasLength(1));
+    await capture(tester, captureKey, '04_received_folder_in_trash');
 
     await tester.tap(find.byKey(ValueKey('trashCopyFolder_$folderId')));
     await tester.pump();
@@ -110,6 +140,7 @@ void main() {
     await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
     await tester.pump();
     expect(find.byKey(const Key('homePasteRestoreDialog')), findsOneWidget);
+    await capture(tester, captureKey, '05_received_folder_restore_confirmation');
     expect(service.shared, isEmpty);
     await tester.tap(find.byKey(const Key('homePasteRestoreConfirmButton')));
     await pumpIo(tester);
@@ -118,6 +149,7 @@ void main() {
     expect(service.shared.single.sharedFolderId, folderId);
     expect(service.shared.single.name, '元の作品');
     expect(service.trash, isEmpty);
+    await capture(tester, captureKey, '06_received_folder_restored');
   });
 
   testWidgets('empty Works folder with stale file membership may paste into Projects',
@@ -127,9 +159,14 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    await loadAppFonts(tester);
+    final captureKey = GlobalKey();
     final providers = (await tester.runAsync(buildAppProviders))!;
     await tester.pumpWidget(
-      MultiProvider(providers: providers, child: const NiarimApp()),
+      RepaintBoundary(
+        key: captureKey,
+        child: MultiProvider(providers: providers, child: const NiarimApp()),
+      ),
     );
     await tester.pump(const Duration(milliseconds: 300));
     final splash = tester.element(find.byType(SplashScreen));
@@ -144,6 +181,7 @@ void main() {
     await pumpIo(tester);
     await tester.tap(find.byKey(const ValueKey('home_tab_1')));
     await pumpIo(tester);
+    await capture(tester, captureKey, '07_works_empty_folder');
     await tester.longPress(find.text('空の書き出し').first);
     await tester.pump(const Duration(milliseconds: 400));
     await tester.tap(find.widgetWithIcon(ListTile, Icons.content_copy));
@@ -158,5 +196,6 @@ void main() {
     expect(projects.folders.map((folder) => folder.name),
         contains('空の書き出し'));
     expect(works.folders.single.name, '空の書き出し');
+    await capture(tester, captureKey, '08_empty_folder_cross_tab_paste');
   });
 }
