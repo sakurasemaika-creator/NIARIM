@@ -13,6 +13,9 @@ on:
       - 'lib/widgets/collection_action_controls.dart'
       - 'test/save_slot_visual_audit_test.dart'
       - 'test/save_thumbnail_accuracy_test.dart'
+      - 'test/save_tree_persistence_test.dart'
+      - 'test/save_tree_lazy_list_test.dart'
+      - 'test/save_slot_confirmation_dialog_test.dart'
       - 'test/project_grid_actions_test.dart'
       - 'test/save_slot_action_buttons_test.dart'
       - 'test/save_slot_action_success_visual_test.dart'
@@ -47,6 +50,9 @@ jobs:
             test/save_slot_action_buttons_test.dart \
             test/save_slot_visual_audit_test.dart \
             test/save_thumbnail_accuracy_test.dart \
+            test/save_tree_persistence_test.dart \
+            test/save_tree_lazy_list_test.dart \
+            test/save_slot_confirmation_dialog_test.dart \
             test/project_grid_actions_test.dart \
             test/save_slot_action_success_visual_test.dart \
             test/shared_collection_controls_capture_test.dart
@@ -66,6 +72,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: save-project-ui-captures
-          path: build/save-slot-visual-audit/*.png
+          path: |
+            build/save-slot-visual-audit/*.png
+            build/save-slot-visual-audit/*.pdf
           if-no-files-found: warn
           retention-days: 7
