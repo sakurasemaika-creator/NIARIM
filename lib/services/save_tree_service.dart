@@ -72,6 +72,12 @@ class SaveTreeService extends ChangeNotifier {
   /// 一覧から消える）。
   final Set<String> _readProjects = {};
 
+  /// 保存の一覧をまだ読めていない間にメモを書いたスロット（作品ごと）。
+  /// 書いたメモは[_writeIndex]が保存しないので、一覧を読めたときに
+  /// ディスクのメモへ重ねてから一覧を書く（[_loadProject]。読んだ一覧の
+  /// メモで置き換えると、書いたメモが消えた）。
+  final Map<String, Set<int>> _memosEditedUnread = {};
+
   /// 起動時に、各作品の保存の一覧（SaveTree/index.json）を読み込む。一覧に
   /// 無い保存のファイル（一覧を書けなかった・以前の版で保存した）も拾い直す。
   /// 読めないものは飛ばし、起動は止めない。
@@ -124,6 +130,13 @@ class SaveTreeService extends ChangeNotifier {
     // この作品の保存を出さず、読んだことにもしない（[_writeIndex]が
     // 書き換えず、入れるようになれば[loadUnread]で読み直す）。
     final index = File('${dir.path}/$indexFileName');
+    // 一覧を読めていない間に書いたスロットのメモ（消して空にしたものも）。
+    // 下で読んだ一覧のメモへ重ね（書いたスロットは書いた方が勝つ）、
+    // 読めたら一覧を1回書く。
+    final editedMemos = <int, String>{
+      for (final slot in _memosEditedUnread[projectId] ?? const <int>{})
+        slot: ?_slotMemosByProject[projectId]?[slot],
+    };
     String? text;
     try {
       // 文字として読めない一覧（UTF-8の途中で切れた等）は、開けない一覧と
@@ -147,6 +160,7 @@ class SaveTreeService extends ChangeNotifier {
       // 保存のフォルダが無い：保存の無い作品。
       if (text == null) {
         _readProjects.add(projectId);
+        if (editedMemos.isNotEmpty) await _persist(projectId);
         return;
       }
     } catch (error, stack) {
@@ -174,6 +188,7 @@ class SaveTreeService extends ChangeNotifier {
               if (slot == null || slot < 0 || entry.value is! String) continue;
               memos[slot] = entry.value as String;
             }
+            memos.addAll(editedMemos);
             if (memos.isNotEmpty) _slotMemosByProject[projectId] = memos;
           }
           for (final (key, into) in [
@@ -254,10 +269,13 @@ class SaveTreeService extends ChangeNotifier {
       }
     }
     _readProjects.add(projectId);
-    if (nodes.isEmpty && archived.isEmpty) return;
+    if (nodes.isEmpty && archived.isEmpty) {
+      if (editedMemos.isNotEmpty) await _persist(projectId);
+      return;
+    }
     _nodesByProject[projectId] = nodes;
     if (archived.isNotEmpty) _archivedByProject[projectId] = archived;
-    if (orphans.isNotEmpty) await _persist(projectId);
+    if (orphans.isNotEmpty || editedMemos.isNotEmpty) await _persist(projectId);
   }
 
   /// [file]が無いと確かめられるか（入れない・入出力の失敗で分からないときは
@@ -328,6 +346,7 @@ class SaveTreeService extends ChangeNotifier {
       // 一覧はこの起動の内容と同じになった（この起動中に作った作品も、
       // 次からは書き換えてよい）。
       _readProjects.add(projectId);
+      _memosEditedUnread.remove(projectId);
     } catch (error, stack) {
       AppErrorReporter.record(error, stack);
     }
@@ -354,12 +373,19 @@ class SaveTreeService extends ChangeNotifier {
 
   /// Edits metadata only: never changes or deletes .niapro data, thumbnail,
   /// save time or tree relationships. Retain empty memos as explicit clears.
+  ///
+  /// 戻り値は「メモを受け取ったか」（スロットの番号が正しくなければfalse）。
+  /// 保存の一覧をまだ読めていない作品では、メモはこの起動の間だけ持ち、
+  /// 一覧を読めたとき（[loadUnread]）にディスクのメモへ重ねて書く。
   Future<bool> setSlotMemo(String projectId, int slotIndex, String memo) async {
     if (slotIndex < 0) return false;
     final normalized = memo.trim();
     final bySlot = _slotMemosByProject.putIfAbsent(projectId, () => {});
     if (bySlot[slotIndex] == normalized) return true;
     bySlot[slotIndex] = normalized;
+    if (!_readProjects.contains(projectId)) {
+      _memosEditedUnread.putIfAbsent(projectId, () => {}).add(slotIndex);
+    }
     notifyListeners();
     await _persist(projectId);
     return true;
