@@ -1,0 +1,37 @@
+name: Canvas color layer and window snap actual screenshots
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - "test/canvas_color_layer_snap_evidence_capture_test.dart"
+      - ".github/workflows/canvas-color-layer-snap-evidence.yml"
+      - "lib/screens/canvas/widgets/color_picker_panel.dart"
+      - "lib/screens/canvas/widgets/layer_panel.dart"
+      - "lib/utils/desktop_window_snap.dart"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Analyze capture and modified UI components
+        run: flutter analyze --no-fatal-infos test/canvas_color_layer_snap_evidence_capture_test.dart lib/screens/canvas/widgets/color_picker_panel.dart lib/screens/canvas/widgets/layer_panel.dart lib/utils/desktop_window_snap.dart
+      - name: Capture real Flutter widgets at desktop resolution
+        run: flutter test test/canvas_color_layer_snap_evidence_capture_test.dart --reporter expanded
+      - name: Upload screenshot PNGs even if test fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: niarim-color-layer-snap-screenshots
+          path: build/canvas-color-layer-snap-evidence/*.png
+          if-no-files-found: warn
+          retention-days: 30
