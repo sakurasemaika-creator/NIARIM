@@ -43,12 +43,24 @@ jobs:
           flutter analyze --no-fatal-infos lib/screens/home/home_clipboard_policy.dart lib/screens/home/home_screen.dart lib/services/project_service.dart lib/services/local_file_trash_service.dart test/shared_folder_clipboard_trash_test.dart test/home_shared_folder_paste_flow_test.dart test/local_work_folder_trash_test.dart
       - name: Clipboard, Trash, folder regressions
         run: |
-          flutter test test/home_clipboard_policy_test.dart --reporter expanded
-          flutter test test/shared_folder_clipboard_trash_test.dart --reporter expanded
-          flutter test test/home_shared_folder_paste_flow_test.dart --reporter expanded
-          flutter test test/local_work_folder_trash_test.dart --reporter expanded
-          flutter test test/local_file_trash_service_test.dart --reporter expanded
-          flutter test test/project_selection_clipboard_test.dart --reporter expanded
+          echo "START suite 1 at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/home_clipboard_policy_test.dart --reporter expanded
+          echo "PASS suite 1 at $(date -u +%FT%TZ)"
+          echo "START suite 2 at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/shared_folder_clipboard_trash_test.dart --reporter expanded
+          echo "PASS suite 2 at $(date -u +%FT%TZ)"
+          echo "START suite 3 at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/home_shared_folder_paste_flow_test.dart --reporter expanded
+          echo "PASS suite 3 at $(date -u +%FT%TZ)"
+          echo "START suite 4 at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/local_work_folder_trash_test.dart --reporter expanded
+          echo "PASS suite 4 at $(date -u +%FT%TZ)"
+          echo "START suite 5 at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/local_file_trash_service_test.dart --reporter expanded
+          echo "PASS suite 5 at $(date -u +%FT%TZ)"
+          echo "START suite 6 at $(date -u +%FT%TZ)"
+          timeout --signal=TERM --kill-after=10s 300s flutter test test/project_selection_clipboard_test.dart --reporter expanded
+          echo "PASS suite 6 at $(date -u +%FT%TZ)"
       - name: Preserve partial real screenshots when UI tests fail
         if: failure()
         uses: actions/upload-artifact@v4
