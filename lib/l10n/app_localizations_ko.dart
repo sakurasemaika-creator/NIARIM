@@ -4052,7 +4052,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get saveTreeResumeConfirmBody => '이 세이브 데이터에서 작업을 다시 시작하시겠습니까?\n\n현재 데이터가 덮어쓰여집니다. 현재 작업을 보관하려면 먼저 저장하세요.';
 
   @override
-  String get saveTreeProjectDetailResumeBody => '이 세이브 데이터에서 작업을 다시 시작하시겠습니까?\n\n현재 데이터가 덮어쓰여집니다. 현재 작업을 보관하려면 먼저 저장하세요.';
+  String get saveTreeProjectDetailResumeBody => '이 저장 데이터에서 작업을 다시 시작하시겠습니까?\n\n현재 작업이 덮어쓰입니다. 현재 작업을 보관하려면 일단 취소하고 다른 저장 슬롯(트리 모드에서는 다른 분기)에 먼저 저장하세요.';
 
   @override
   String get saveTreeLoadFailedSnackbar => '저장 데이터를 불러오지 못했습니다';

@@ -1634,7 +1634,7 @@
   "saveTreeOverwriteConfirmBody": "該時間點的存檔資料將會消失，確定嗎？",
   "saveTreeResumeFromHereAction": "從此處繼續",
   "saveTreeResumeConfirmBody": "要從這份存檔繼續作業嗎？\n\n目前的資料將被覆寫。如果需要保留目前內容，請先儲存。",
-  "saveTreeProjectDetailResumeBody": "要從這份存檔繼續作業嗎？\n\n目前的資料將被覆寫。如果需要保留目前內容，請先儲存。",
+  "saveTreeProjectDetailResumeBody": "要從這份存檔繼續作業嗎？\n\n目前資料將被覆蓋。如需保留，請先取消，再儲存到其他存檔欄位（樹狀模式下儲存到其他分支）。",
   "saveTreeLoadFailedSnackbar": "存檔資料讀取失敗",
   "saveTreeRestoredSnackbar": "已讀取存檔資料（{name}）",
   "@saveTreeRestoredSnackbar": {

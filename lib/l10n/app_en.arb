@@ -1634,7 +1634,7 @@
   "saveTreeOverwriteConfirmBody": "The data saved at that point will be lost. Are you sure?",
   "saveTreeResumeFromHereAction": "Resume from here",
   "saveTreeResumeConfirmBody": "Resume work from this saved data?\n\nYour current data will be overwritten. Save your current work first if you need to keep it.",
-  "saveTreeProjectDetailResumeBody": "Resume work from this saved data?\n\nYour current data will be overwritten. Save your current work first if you need to keep it.",
+  "saveTreeProjectDetailResumeBody": "Resume work from this saved data?\n\nYour current work will be overwritten. To keep it, cancel for now and save to another slot first (or a separate branch in tree mode).",
   "saveTreeLoadFailedSnackbar": "Failed to load the save data",
   "saveTreeRestoredSnackbar": "Save data loaded ({name})",
   "@saveTreeRestoredSnackbar": {

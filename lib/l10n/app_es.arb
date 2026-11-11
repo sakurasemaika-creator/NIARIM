@@ -1634,7 +1634,7 @@
   "saveTreeOverwriteConfirmBody": "Se perderán los datos guardados en ese momento. ¿Continuar?",
   "saveTreeResumeFromHereAction": "Reanudar desde aquí",
   "saveTreeResumeConfirmBody": "¿Quieres continuar trabajando desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Guarda el trabajo actual antes si necesitas conservarlo.",
-  "saveTreeProjectDetailResumeBody": "¿Quieres continuar trabajando desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Guarda el trabajo actual antes si necesitas conservarlo.",
+  "saveTreeProjectDetailResumeBody": "¿Reanudar el trabajo desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Para conservarlos, cancela por ahora y guarda primero en otra ranura (o en otra rama del árbol).",
   "saveTreeLoadFailedSnackbar": "No se pudieron cargar los datos guardados",
   "saveTreeRestoredSnackbar": "Datos guardados cargados ({name})",
   "@saveTreeRestoredSnackbar": {

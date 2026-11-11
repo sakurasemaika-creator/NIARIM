@@ -4013,7 +4013,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get saveTreeResumeConfirmBody => '要从这份存档继续作业吗？\n\n当前数据将被覆盖。如果需要保留当前内容，请先保存。';
 
   @override
-  String get saveTreeProjectDetailResumeBody => '要从这份存档继续作业吗？\n\n当前数据将被覆盖。如果需要保留当前内容，请先保存。';
+  String get saveTreeProjectDetailResumeBody => '要从这份存档继续作业吗？\n\n当前数据将被覆盖。如需保留，请先取消，再保存到其他存档槽位（树状模式下保存到其他分支）。';
 
   @override
   String get saveTreeLoadFailedSnackbar => '存档数据读取失败';
@@ -13191,7 +13191,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get saveTreeResumeConfirmBody => '要從這份存檔繼續作業嗎？\n\n目前的資料將被覆寫。如果需要保留目前內容，請先儲存。';
 
   @override
-  String get saveTreeProjectDetailResumeBody => '要從這份存檔繼續作業嗎？\n\n目前的資料將被覆寫。如果需要保留目前內容，請先儲存。';
+  String get saveTreeProjectDetailResumeBody => '要從這份存檔繼續作業嗎？\n\n目前資料將被覆蓋。如需保留，請先取消，再儲存到其他存檔欄位（樹狀模式下儲存到其他分支）。';
 
   @override
   String get saveTreeLoadFailedSnackbar => '存檔資料讀取失敗';

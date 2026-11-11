@@ -4168,7 +4168,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveTreeResumeConfirmBody => 'Resume work from this saved data?\n\nYour current data will be overwritten. Save your current work first if you need to keep it.';
 
   @override
-  String get saveTreeProjectDetailResumeBody => 'Resume work from this saved data?\n\nYour current data will be overwritten. Save your current work first if you need to keep it.';
+  String get saveTreeProjectDetailResumeBody => 'Resume work from this saved data?\n\nYour current work will be overwritten. To keep it, cancel for now and save to another slot first (or a separate branch in tree mode).';
 
   @override
   String get saveTreeLoadFailedSnackbar => 'Failed to load the save data';

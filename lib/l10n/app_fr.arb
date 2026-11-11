@@ -1634,7 +1634,7 @@
   "saveTreeOverwriteConfirmBody": "Les données enregistrées à ce moment-là seront perdues. Voulez-vous continuer ?",
   "saveTreeResumeFromHereAction": "Reprendre à partir d'ici",
   "saveTreeResumeConfirmBody": "Reprendre le travail à partir de cette sauvegarde ?\n\nLes données actuelles seront remplacées. Enregistrez d'abord votre travail si vous souhaitez le conserver.",
-  "saveTreeProjectDetailResumeBody": "Reprendre le travail à partir de cette sauvegarde ?\n\nLes données actuelles seront remplacées. Enregistrez d'abord votre travail si vous souhaitez le conserver.",
+  "saveTreeProjectDetailResumeBody": "Reprendre le travail à partir de cette sauvegarde ?\n\nLes données actuelles seront remplacées. Pour les conserver, annulez puis enregistrez-les dans un autre emplacement (ou dans une autre branche en mode arborescent).",
   "saveTreeLoadFailedSnackbar": "Échec du chargement des données de sauvegarde",
   "saveTreeRestoredSnackbar": "Données de sauvegarde chargées ({name})",
   "@saveTreeRestoredSnackbar": {
