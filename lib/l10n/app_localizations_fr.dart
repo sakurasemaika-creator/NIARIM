@@ -4210,7 +4210,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get saveTreeRestoreAction => 'Restaurer';
+  String get saveTreeRestoreAction => 'Charger';
 
   @override
   String get saveTreeTimelineActionChoiceBody =>
@@ -4240,7 +4240,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String saveTreeRestoredSnackbar(String name) {
-    return '$name restauré';
+    return 'Données de sauvegarde chargées ($name)';
   }
 
   @override
