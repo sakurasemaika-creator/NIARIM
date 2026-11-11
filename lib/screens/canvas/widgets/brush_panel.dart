@@ -308,8 +308,8 @@ class _BrushPanelState extends State<BrushPanel> {
                           // 上の文字色。差し色を直接渡すと、選択色と同じ色の
                           // テーマでアイコンが見えなくなる）。
                           leading: const Icon(Icons.brush, size: 16),
-                          title: Tooltip(
-                            message: l10n.penSubToolBrushSizeOpacity(
+                          title: Semantics(
+                            label: l10n.penSubToolBrushSizeOpacity(
                               shown.size.round(),
                               shown.opacity,
                             ),
