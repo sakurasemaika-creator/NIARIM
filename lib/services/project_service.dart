@@ -390,6 +390,14 @@ class ProjectService extends ChangeNotifier {
   bool get projectsLoadFailed => _projectsLoadFailed;
   bool _projectsLoadFailed = false;
 
+  /// 保存先の中を一覧できなかった（どの作品があるかも分からない）か。
+  /// [projectsLoadFailed]は、一覧できて一部の作品だけ読めなかったときも真。
+  bool _projectsListingFailed = false;
+
+  /// 保存先にあるのに読めていない作品（フォルダに入れない・保存を
+  /// 開けない）。保存先を一覧できたときの分。
+  final Set<String> _unreadProjectIds = {};
+
   Future<void> init() async {
     try {
       await _loadTrashState();
@@ -454,6 +462,8 @@ class ProjectService extends ChangeNotifier {
           baseDir.listSync();
         } on PathNotFoundException {
           _projectsLoadFailed = false;
+          _projectsListingFailed = false;
+          _unreadProjectIds.clear();
           notifyListeners();
           return true;
         }
@@ -473,14 +483,14 @@ class ProjectService extends ChangeNotifier {
       // 入れない作品のフォルダ・開けない作品の保存（権限が無い・入出力の
       // 失敗）。壊れた保存と違い、読めるようになれば読み直しで戻るので、
       // 知らせと「再試行」を残す。
-      var unreadable = false;
+      final unread = <String>{};
       for (final dir in folders) {
         final projectId = dir.path.split(RegExp(r'[\\/]')).last;
         existingDirectories.add(projectId);
         if (known.contains(projectId)) continue;
         final niaproFile = File('${dir.path}/$projectId.niapro');
         if (!niaproFile.existsSync()) {
-          if (_isUnreadableArchive(niaproFile)) unreadable = true;
+          if (_isUnreadableArchive(niaproFile)) unread.add(projectId);
           continue;
         }
         try {
@@ -508,7 +518,7 @@ class ProjectService extends ChangeNotifier {
         } on FileSystemException catch (error, stackTrace) {
           // 開けない・読めない（ファイルの権限が無い・入出力の失敗）。
           AppErrorReporter.record(error, stackTrace);
-          unreadable = true;
+          unread.add(projectId);
         } catch (error, stackTrace) {
           AppErrorReporter.record(error, stackTrace);
           // 破損ファイルはスキップ
@@ -533,13 +543,18 @@ class ProjectService extends ChangeNotifier {
           AppErrorReporter.record(error, stackTrace);
         }
       }
-      _projectsLoadFailed = unreadable;
+      _projectsLoadFailed = unread.isNotEmpty;
+      _projectsListingFailed = false;
+      _unreadProjectIds
+        ..clear()
+        ..addAll(unread);
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       // 保存先を開けないときは読み込めた分（無ければ空）で続け、ホームで
       // 読み込めなかったことを知らせて読み直せるようにする（黙って空に
       // すると、作品が消えたように見えた）。
       _projectsLoadFailed = true;
+      _projectsListingFailed = true;
     }
     notifyListeners();
     return listed;
@@ -617,16 +632,22 @@ class ProjectService extends ChangeNotifier {
 
   /// ゴミ箱の自動削除設定（設定画面で選んだ日数）に従い、保持期限を過ぎた
   /// プロジェクトを完全削除する。days<=0（OFF）の場合は何もしない。
-  /// 保存先を読めなかったとき（[projectsLoadFailed]）も何もしない：ゴミ箱の
-  /// 作品を読めていないので、フォルダの記録だけを消して中の作品を残す等、
-  /// 読めていないものを書き換えてしまう（片付けは次に読めた起動で行う）。
+  /// 保存先の中を一覧できなかったときも何もしない：ゴミ箱の作品を
+  /// 読めていないので、フォルダの記録だけを消して中の作品を残す等、
+  /// 読めていないものを書き換えてしまう（片付けは次に読めたときに行う）。
+  /// 一覧できて一部の作品だけ読めなかったとき（[projectsLoadFailed]は真）は、
+  /// 読めた作品はこれまでどおり片付け、読めていない作品を含むフォルダだけを
+  /// 中の読めた作品ごと残す（開けない作品が1つあるだけで、関係のない
+  /// 期限切れの作品がいつまでも消えなかった）。
   Future<void> sweepExpiredTrash(int days) async {
-    if (days <= 0 || _projectsLoadFailed) return;
+    if (days <= 0 || _projectsListingFailed) return;
     final now = DateTime.now();
+    final heldBack = _trashedFolders.where(_holdsUnreadWorks).toList();
     // フォルダは中の作品ごと消す。
     final expiredFolders = [
       for (final t in _trashedFolders)
-        if (now.difference(t.deletedAt).inDays >= days) t.folder.id,
+        if (now.difference(t.deletedAt).inDays >= days && !heldBack.contains(t))
+          t.folder.id,
     ];
     for (final id in expiredFolders) {
       try {
@@ -637,6 +658,7 @@ class ProjectService extends ChangeNotifier {
     }
     final expired = _trash
         .where((p) {
+          if (heldBack.any((t) => t.projectIds.contains(p.id))) return false;
           final deletedAt = _trashDeletedAt[p.id];
           if (deletedAt == null) return false;
           return now.difference(deletedAt).inDays >= days;
@@ -652,6 +674,12 @@ class ProjectService extends ChangeNotifier {
       }
     }
   }
+
+  /// ゴミ箱のフォルダの記録に、保存先にあるのに読めていない作品が
+  /// 含まれるか。含むフォルダの記録を消すと、中の作品は読めた後に
+  /// フォルダではなくゴミ箱の1件ずつの行に出る。
+  bool _holdsUnreadWorks(TrashedFolder record) =>
+      record.projectIds.any(_unreadProjectIds.contains);
 
   /// ディスクから読み込んだプロジェクトデータをメモリ上のマップへ反映する。
   /// init()（起動時の全件読み込み）とrestoreProject()（ゴミ箱からの復元時の

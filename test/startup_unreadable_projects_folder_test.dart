@@ -173,6 +173,128 @@ void main() {
     },
   );
 
+  // 保存先は一覧できるが、関係のない作品1つの保存を開けないだけで、期限の
+  // 過ぎたゴミ箱の片付けが丸ごと止まっていた（読めた作品も、起動時にも
+  // 保持期間の設定を変えたときにも消えない）。片付けを丸ごと止めるのは
+  // 保存先を一覧できなかったときだけ。一部の作品だけ読めないときは、
+  // 読めていない作品を含むフォルダ（中の読めた作品ごと）だけを残す。
+  // 壊れていて読み直しても読めない作品を含むフォルダは、残さない（残すと
+  // いつまでも片付かない）。
+  test(
+    'expired trash that was read is cleaned up while an unrelated work '
+    'cannot be opened; a folder holding an unread work is kept whole',
+    () async {
+      Future<Project> seed(String name) async =>
+          (await _seedProjectWithSaves(name: name, comments: const [])).$1;
+      final unrelated = await seed('開けない作品');
+      final loose = await seed('期限切れの作品');
+      final inReadFolder = await seed('読めたフォルダの作品');
+      final readInHeld = await seed('残すフォルダの読めた作品');
+      final unreadInHeld = await seed('残すフォルダの読めない作品');
+      final damaged = await seed('壊れた作品');
+      final besideDamaged = await seed('壊れた作品と同じフォルダの作品');
+      final fresh = await seed('まだ新しい作品');
+      String folderOf(Project p) => '${storage.projectsPath}/${p.id}';
+      String archiveOf(Project p) => '${folderOf(p)}/${p.id}.niapro';
+      bool onDisk(Project p) => Directory(folderOf(p)).existsSync();
+
+      final old = DateTime.now().subtract(const Duration(days: 90));
+      final recent = DateTime.now().subtract(const Duration(days: 1));
+      TrashedFolder record(String id, List<Project> works) => TrashedFolder(
+        folder: ProjectFolder(id: id, name: id),
+        subfolders: const [],
+        projectIds: [for (final p in works) p.id],
+        deletedAt: old,
+      );
+      final held = record('folder_held', [readInHeld, unreadInHeld]);
+      SharedPreferences.setMockInitialValues({
+        'language': 'ja',
+        'trashed_projects': [
+          for (final p in [
+            loose,
+            inReadFolder,
+            readInHeld,
+            unreadInHeld,
+            damaged,
+            besideDamaged,
+          ])
+            '${p.id}|${old.toIso8601String()}',
+          '${fresh.id}|${recent.toIso8601String()}',
+        ],
+        'trashed_project_folders': jsonEncode([
+          record('folder_read', [inReadFolder]).toJson(),
+          held.toJson(),
+          record('folder_damaged', [damaged, besideDamaged]).toJson(),
+        ]),
+      });
+      File(archiveOf(damaged)).writeAsStringSync('not an archive');
+      storage.paths
+        ..blockReading(archiveOf(unrelated))
+        ..blockEntering(archiveOf(unreadInHeld));
+
+      final service = ProjectService();
+      addTearDown(service.dispose);
+      await service.init();
+      expect(service.projectsLoadFailed, isTrue);
+      expect(
+        service.trash.map((p) => p.id),
+        unorderedEquals([
+          loose.id,
+          inReadFolder.id,
+          readInHeld.id,
+          besideDamaged.id,
+          fresh.id,
+        ]),
+      );
+      await service.sweepExpiredTrash(30);
+
+      // 読めた期限切れの作品・フォルダは、これまでどおり消える。
+      expect(onDisk(loose), isFalse, reason: 'the read expired work stayed');
+      expect(onDisk(inReadFolder), isFalse, reason: 'the read folder stayed');
+      // 壊れた作品を含むフォルダも（壊れた作品は読み直しても読めない）。
+      expect(onDisk(besideDamaged), isFalse, reason: 'held for a damaged work');
+      // 読めていない作品を含むフォルダは、記録も中の作品もそのまま。
+      expect(service.trashedFolders.map((t) => t.folder.id), ['folder_held']);
+      expect(onDisk(readInHeld), isTrue);
+      expect(onDisk(unreadInHeld), isTrue);
+      expect(
+        service.trash.map((p) => p.id),
+        unorderedEquals([readInHeld.id, fresh.id]),
+      );
+      final prefs = await SharedPreferences.getInstance();
+      expect(
+        prefs.getString('trashed_project_folders'),
+        jsonEncode([held.toJson()]),
+      );
+      expect(
+        prefs.getStringList('trashed_projects')!.map((e) => e.split('|').first),
+        unorderedEquals([readInHeld.id, unreadInHeld.id, damaged.id, fresh.id]),
+      );
+      // 開けない作品・期限の来ていない作品には触らない。
+      expect(onDisk(unrelated), isTrue);
+      expect(onDisk(fresh), isTrue);
+
+      // 読めるようになれば、残したフォルダは中の作品ごとゴミ箱に戻り、
+      // 次の片付けでまとめて消える。
+      storage.paths.clear();
+      await service.retryLoadProjects();
+      expect(service.projectsLoadFailed, isFalse);
+      expect(service.projects.map((p) => p.id), [unrelated.id]);
+      expect(service.trashedFolderOf(readInHeld.id)?.folder.id, 'folder_held');
+      expect(
+        service.trashedFolderOf(unreadInHeld.id)?.folder.id,
+        'folder_held',
+      );
+      expect(service.looseTrash.map((p) => p.id), [fresh.id]);
+      await service.sweepExpiredTrash(30);
+      expect(service.trashedFolders, isEmpty);
+      expect(onDisk(readInHeld), isFalse);
+      expect(onDisk(unreadInHeld), isFalse);
+      expect(service.trash.map((p) => p.id), [fresh.id]);
+      expect(onDisk(unrelated), isTrue);
+    },
+  );
+
   // 保存の一覧（SaveTree/index.json）を読めなかった作品へ保存すると、
   // 読んでいない一覧を新しい保存1件だけの一覧で上書きし、前の保存の
   // コメント・スロット・枝分かれが失われた。
