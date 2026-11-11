@@ -202,59 +202,6 @@ class SettingsService extends ChangeNotifier {
   // Per-window heights are global workspace settings, not project state.
   final Map<CanvasDockPanel, double> _desktopPanelHeights = {};
 
-  // Optional free-positioned PC/DeX windows. Undetached panels continue to
-  // use the existing left/right dock orders, folds and height calculation.
-  // Positions belong to the shared workspace, not an individual project.
-  final Map<CanvasDockPanel, Offset> _desktopFloatingPositions = {};
-
-  Offset? desktopFloatingPosition(CanvasDockPanel panel) =>
-      _desktopFloatingPositions[panel];
-
-  Map<CanvasDockPanel, Offset> get desktopFloatingPositions =>
-      Map.unmodifiable(_desktopFloatingPositions);
-
-  Future<void> _saveDesktopFloatingPositions() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      'desktop_floating_window_positions',
-      jsonEncode({
-        for (final e in _desktopFloatingPositions.entries)
-          e.key.name: [e.value.dx, e.value.dy],
-      }),
-    );
-  }
-
-  Future<void> floatDesktopDockPanel(
-    CanvasDockPanel panel,
-    Offset position,
-  ) async {
-    // A menu tap must detach the window immediately. The first workspace
-    // save performs several asynchronous preference writes; waiting for all
-    // of them before notifying the UI can leave the dock in place for a
-    // frame (or for the entire gesture test).
-    final pinLayout = _pinDesktopDockLayout();
-    _desktopFloatingPositions[panel] = position;
-    notifyListeners();
-    await pinLayout;
-    await _saveDesktopFloatingPositions();
-  }
-
-  Future<void> moveDesktopFloatingPanel(
-    CanvasDockPanel panel,
-    Offset position,
-  ) async {
-    if (!_desktopFloatingPositions.containsKey(panel)) return;
-    _desktopFloatingPositions[panel] = position;
-    notifyListeners();
-    await _saveDesktopFloatingPositions();
-  }
-
-  Future<void> redockDesktopFloatingPanel(CanvasDockPanel panel) async {
-    if (_desktopFloatingPositions.remove(panel) == null) return;
-    notifyListeners();
-    await _saveDesktopFloatingPositions();
-  }
-
   // Collapsing a dock keeps it open and preserves its width, height and order.
   // The collapsed side tab is restored on the next launch.
   final Set<CanvasDockPanel> _collapsedDesktopDocks = {};
@@ -454,7 +401,6 @@ class SettingsService extends ChangeNotifier {
     _desktopToolPanelWidth = 280.0;
     _desktopPanelWidth = 280.0;
     _desktopPanelHeights.clear();
-    _desktopFloatingPositions.clear();
     _collapsedDesktopDocks.clear();
     _defaultDockedPanels = {
       CanvasDockPanel.brush,
@@ -475,7 +421,6 @@ class SettingsService extends ChangeNotifier {
     await prefs.setDouble('desktop_tool_panel_width', 280.0);
     await prefs.setDouble('desktop_panel_width', 280.0);
     await prefs.setString('desktop_dock_heights', '{}');
-    await prefs.setString('desktop_floating_window_positions', '{}');
     await prefs.setStringList('desktop_collapsed_docks', []);
     await prefs.setStringList(
       'default_docked_panels',
@@ -895,32 +840,6 @@ class SettingsService extends ChangeNotifier {
         }
       } on FormatException {
         // Ignore malformed saved workspace dimensions.
-      }
-    }
-    // Malformed or previous-version position data is ignored safely.
-    _desktopFloatingPositions.clear();
-    final floatingJson = prefs.readString('desktop_floating_window_positions');
-    if (floatingJson != null) {
-      try {
-        final decoded = jsonDecode(floatingJson);
-        if (decoded is Map) {
-          final byName = CanvasDockPanel.values.asNameMap();
-          for (final entry in decoded.entries) {
-            final panel = byName[entry.key];
-            final coordinates = entry.value;
-            if (panel != null && coordinates is List &&
-                coordinates.length == 2 &&
-                coordinates[0] is num && coordinates[1] is num) {
-              final x = (coordinates[0] as num).toDouble();
-              final y = (coordinates[1] as num).toDouble();
-              if (x.isFinite && y.isFinite) {
-                _desktopFloatingPositions[panel] = Offset(x, y);
-              }
-            }
-          }
-        }
-      } on FormatException {
-        // Invalid old workspace data must not break startup.
       }
     }
     _desktopToolPanelWidth =
