@@ -703,9 +703,13 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   フランス語「1heures」と出ていた。`rewardDurationHours`等（`{count, plural,
   one{…} other{…}}`）と`lib/utils/coin_duration_label.dart`を通す。フランス語は
   0と1が単数なので、`n == 1`を自分で書かずCLDRの決まりに任せる。日本語の
-  期間は「2日間」（「2日」は日付に読める）。なお`lib/l10n/*_labels.dart`の
-  手書きのラベル表はARBの外にあり、`font_coverage_test`が見ない（同梱
-  フォントに無い字が混ざっている。未着手）。
+  期間は「2日間」（「2日」は日付に読める）。報酬・ミッション・作品広場の
+  `lib/l10n/*_labels.dart`はARBへ移してあり（classは受け渡しだけ）、
+  `font_coverage_test`はlib配下の手書きの文字列も見る。画面の文は新しく
+  手書きの表へ足さずARBへ足すこと。数＋単位を行の途中で折りたくない所は
+  `KeepTogetherText`（`lib/widgets/keep_together_text.dart`）：かたまりの
+  字の間へ語結合子を入れるだけで、普通の`Text`と同じ1段落として折り返す
+  （`WidgetSpan`にすると閉じ括弧・読点だけが次の行へ落ちた）。
 - **2026-11-06の統合merge（eb92cc3c）が、監査済みの修正を画面ごと落としている
   （DISC074）**：mergeはホーム・作品一覧・引き出し・プロジェクト詳細・キャンバス・
   タイムライン・設定等15ファイルをdev_branch側の版で丸ごと採り、サービス・部品・
@@ -733,8 +737,10 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   する**ので、pushの直前に`git fetch`→`git rebase origin/dev_branch`
   （forceは使わない）。監査の途中の成果がDriveのZIPにあるときは、復元は
   サブエージェントに任せると本体の文脈を使わずに済む。
-  `test/flutter_test_config.dart`は今のdev_branchには無い（テストは
-  `'language'`の設定か`locale:`で言語を決めること）。
+  `test/flutter_test_config.dart`は2026-11-11に戻した（全テストを日本語の
+  端末として動かす）。**他のセッションが同じ画面を作り直している最中は、
+  検証を重ねて抱え込まず、済んだ単位ごとに小さくpushする**（第2陣のホーム分は
+  レビューを重ねる間にdev_branchが140commit進み、移し直しになった）。
 - **一覧の行（`ListTile`）の先頭のアイコンへ差し色を直接渡さない**：選んだ行は
   テーマの`selectedColor`（選択色の上の文字色）で描かれる。
   `isSelected ? AccentTextTheme.of(context) : null`と書くと、選択色と差し色が
