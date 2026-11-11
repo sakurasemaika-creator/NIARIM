@@ -898,38 +898,68 @@ class _TreeView extends StatelessWidget {
     // ListView(children:)だと、実際に描画されるのは画面内の行だけでも、
     // 行のウィジェットオブジェクト自体は毎回のbuildで全ノードぶん作られて
     // 捨てられる。
+    // Iterative DFS avoids recursive stack overflow on extremely deep
+    // histories and still produces the same bottom-to-top node order.
     final rows = <_TreeRowSpec>[];
-    for (int i = 0; i < roots.length; i++) {
-      _flattenTreeRows(childrenIndex, roots, i, 0, const [], rows);
+    final work = <({
+      List<SaveNode> siblings,
+      int index,
+      int depth,
+      List<bool> ancestors,
+    })>[];
+    for (int i = roots.length - 1; i >= 0; i--) {
+      work.add((siblings: roots, index: i, depth: 0, ancestors: const []));
     }
-    return ListView.builder(
-      reverse: true,
-      itemCount: rows.length,
-      itemBuilder: (context, i) => _buildTreeRow(context, l10n, rows[i]),
-    );
-  }
+    while (work.isNotEmpty) {
+      final next = work.removeLast();
+      final node = next.siblings[next.index];
+      final hasNext = next.index + 1 < next.siblings.length;
+      final continues = [...next.ancestors, hasNext];
+      final children = childrenIndex[node.id] ?? const <SaveNode>[];
+      rows.add((
+        node: node,
+        depth: next.depth,
+        continues: continues,
+        hasChildren: children.isNotEmpty,
+      ));
+      for (int i = children.length - 1; i >= 0; i--) {
+        work.add((
+          siblings: children,
+          index: i,
+          depth: next.depth + 1,
+          ancestors: continues,
+        ));
+      }
+    }
 
-  void _flattenTreeRows(
-    Map<String?, List<SaveNode>> childrenIndex,
-    List<SaveNode> siblings,
-    int index,
-    int depth,
-    List<bool> ancestorContinues,
-    List<_TreeRowSpec> out,
-  ) {
-    final node = siblings[index];
-    final hasNext = index < siblings.length - 1;
-    final continues = [...ancestorContinues, hasNext];
-    final children = childrenIndex[node.id] ?? const <SaveNode>[];
-    out.add((
-      node: node,
-      depth: depth,
-      continues: continues,
-      hasChildren: children.isNotEmpty,
-    ));
-    for (int i = 0; i < children.length; i++) {
-      _flattenTreeRows(childrenIndex, children, i, depth + 1, continues, out);
-    }
+    // Deep branches must remain accessible without forcing a narrow tile to
+    // lay out inside a negative width on small phones. Horizontal scrolling
+    // is enabled only when the deepest visible indent exceeds the viewport.
+    final deepest = rows.fold<int>(
+      0, (maxDepth, row) => row.depth > maxDepth ? row.depth : maxDepth,
+    );
+    return LayoutBuilder(
+      builder: (context, viewport) {
+        final fullWidth = (deepest + 1) * 24.0 + 280.0;
+        final contentWidth = fullWidth > viewport.maxWidth
+            ? fullWidth
+            : viewport.maxWidth;
+        return SingleChildScrollView(
+          key: const Key('saveTreeHorizontalScroll'),
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: contentWidth,
+            height: viewport.maxHeight,
+            child: ListView.builder(
+              reverse: true,
+              itemCount: rows.length,
+              itemBuilder: (context, i) =>
+                  _buildTreeRow(context, l10n, rows[i]),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildTreeRow(
