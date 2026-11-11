@@ -33,6 +33,8 @@ on:
       - 'test/exported_work_thumbnail_choice_test.dart'
       - 'test/works_collection_controls_test.dart'
       - 'test/home_short_controls_and_video_states_test.dart'
+      - 'test/home_export_share_failure_test.dart'
+      - 'test/home_work_folder_empty_test.dart'
       - 'test/project_thumbnail_choice_test.dart'
       - 'test/folder_thumbnail_visual_capture_test.dart'
       - 'test/save_memo_max_length_test.dart'
@@ -101,6 +103,14 @@ jobs:
             test/folder_thumbnail_visual_capture_test.dart \
             test/save_memo_max_length_test.dart \
             test/save_tree_large_branch_stress_test.dart
+      - name: Export sharing and folder action compatibility
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/home_export_share_failure_test.dart \
+            --plain-name 'Works row share failure stays visible and keeps the file'
+          flutter test --no-pub --reporter expanded \
+            test/home_work_folder_empty_test.dart \
+            --plain-name 'moving a real export into a folder then deleting it preserves the empty folder'
       - name: Prepare Python PDF generator
         if: always()
         uses: actions/setup-python@v5
