@@ -72,6 +72,7 @@ void main() {
       child: MaterialApp(
         navigatorKey: navKey,
         locale: const Locale('ja'),
+        supportedLocales: const [Locale('ja'), Locale('en')],
         theme: ThemeData(useMaterial3: true,
           fontFamily: 'HakkouMincho',
           fontFamilyFallback: const ['NotoSerifJP']),
