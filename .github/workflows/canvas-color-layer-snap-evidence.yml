@@ -1,4 +1,4 @@
-name: Canvas color layer and window snap actual screenshots
+name: Canvas color layer compact dock and live adjustment screenshots
 on:
   push:
     branches: [dev_branch]
@@ -7,7 +7,12 @@ on:
       - ".github/workflows/canvas-color-layer-snap-evidence.yml"
       - "lib/screens/canvas/widgets/color_picker_panel.dart"
       - "lib/screens/canvas/widgets/layer_panel.dart"
-      - "lib/utils/desktop_window_snap.dart"
+      - "lib/screens/canvas/canvas_screen.dart"
+      - "lib/screens/canvas/widgets/color_adjust_sheet.dart"
+      - "lib/screens/canvas/widgets/brush_panel.dart"
+      - "lib/screens/canvas/widgets/desktop_dock_content_viewport.dart"
+      - "lib/utils/desktop_dock_column_fit.dart"
+      - "lib/widgets/docked_panel_scope.dart"
   workflow_dispatch:
 permissions:
   contents: read
@@ -24,7 +29,7 @@ jobs:
           cache: true
       - run: flutter pub get --enforce-lockfile
       - name: Analyze capture and modified UI components
-        run: flutter analyze --no-fatal-infos test/canvas_color_layer_snap_evidence_capture_test.dart lib/screens/canvas/widgets/color_picker_panel.dart lib/screens/canvas/widgets/layer_panel.dart lib/utils/desktop_window_snap.dart
+        run: flutter analyze --no-fatal-infos test/canvas_color_layer_snap_evidence_capture_test.dart lib/screens/canvas/widgets/color_picker_panel.dart lib/screens/canvas/widgets/layer_panel.dart lib/screens/canvas/widgets/color_adjust_sheet.dart lib/screens/canvas/canvas_screen.dart lib/widgets/docked_panel_scope.dart
       - name: Capture real Flutter widgets at desktop resolution
         run: flutter test test/canvas_color_layer_snap_evidence_capture_test.dart --reporter expanded
       - name: Upload screenshot PNGs even if test fails
