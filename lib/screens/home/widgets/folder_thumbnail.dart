@@ -60,6 +60,100 @@ List<FolderThumbnailChoice> projectFolderThumbnailChoices(
   ];
 }
 
+/// Resolve a project folder's effective cover, respecting direct works first
+/// and then recursively inheriting the newest child-folder cover. Child-folder
+/// "recent" is measured by the newest descendant project's updatedAt;
+/// for completely empty custom-cover folders, createdAt is the fallback.
+String? projectFolderEffectiveCover(
+  String folderId,
+  List<ProjectFolder> folders,
+  List<Project> projects,
+) {
+  final byId = {for (final f in folders) f.id: f};
+  final byParent = <String, List<ProjectFolder>>{};
+  final projectsByFolder = <String, List<Project>>{};
+  for (final f in folders) {
+    if (f.parentFolderId != null) {
+      byParent.putIfAbsent(f.parentFolderId!, () => []).add(f);
+    }
+  }
+  for (final p in projects) {
+    if (p.folderId != null) {
+      projectsByFolder.putIfAbsent(p.folderId!, () => []).add(p);
+    }
+  }
+  final visiting = <String>{};
+
+  ({String? path, DateTime? updatedAt}) visit(String id) {
+    final folder = byId[id];
+    if (folder == null || !visiting.add(id)) {
+      return (path: null, updatedAt: null);
+    }
+    try {
+      final direct = projectsByFolder[id] ?? const <Project>[];
+      DateTime? directLatest;
+      Project? newestWithImage;
+      for (final p in direct) {
+        if (directLatest == null || p.updatedAt.isAfter(directLatest)) {
+          directLatest = p.updatedAt;
+        }
+        if (p.thumbnailPath?.isNotEmpty == true &&
+            (newestWithImage == null ||
+                p.updatedAt.isAfter(newestWithImage.updatedAt))) {
+          newestWithImage = p;
+        }
+      }
+      DateTime? latestDescendant = directLatest;
+      final subFolders = <({String path, DateTime updatedAt})>[];
+      for (final child in byParent[id] ?? const <ProjectFolder>[]) {
+        final resolved = visit(child.id);
+        if (resolved.updatedAt != null &&
+            (latestDescendant == null ||
+                resolved.updatedAt!.isAfter(latestDescendant))) {
+          latestDescendant = resolved.updatedAt;
+        }
+        if (resolved.path != null) {
+          subFolders.add((
+            path: resolved.path!,
+            updatedAt: resolved.updatedAt ?? child.createdAt,
+          ));
+        }
+      }
+      final date = latestDescendant ?? folder.createdAt;
+      switch (folder.thumbnailMode) {
+        case 'none':
+          return (path: null, updatedAt: date);
+        case 'custom':
+          return (path: folder.thumbnailImagePath, updatedAt: date);
+        case 'item':
+          for (final p in projects) {
+            if (p.id == folder.thumbnailSourceId &&
+                p.thumbnailPath?.isNotEmpty == true) {
+              return (path: p.thumbnailPath, updatedAt: date);
+            }
+          }
+          return (path: null, updatedAt: date);
+        default:
+          // Direct files take precedence when present, as requested.
+          if (newestWithImage != null) {
+            return (path: newestWithImage.thumbnailPath, updatedAt: date);
+          }
+          if (subFolders.isEmpty) {
+            return (path: null, updatedAt: date);
+          }
+          subFolders.sort(
+            (a, b) => b.updatedAt.compareTo(a.updatedAt),
+          );
+          return (path: subFolders.first.path, updatedAt: date);
+      }
+    } finally {
+      visiting.remove(id);
+    }
+  }
+
+  return visit(folderId).path;
+}
+
 String? folderThumbnailPath(
   ProjectFolder folder,
   List<FolderThumbnailChoice> choices,
@@ -190,16 +284,21 @@ class FolderThumbnail extends StatelessWidget {
     super.key,
     required this.folder,
     required this.choices,
+    this.defaultImagePath,
   });
   final ProjectFolder folder;
   final List<FolderThumbnailChoice> choices;
+  /// Pre-resolved nested-folder fallback for the project collection.
+  final String? defaultImagePath;
 
   @override
   Widget build(BuildContext context) {
     final color = folder.color == null
         ? Theme.of(context).colorScheme.primary
         : Color(folder.color!);
-    final imagePath = folderThumbnailPath(folder, choices);
+    final imagePath = folder.thumbnailMode == 'auto'
+        ? (defaultImagePath ?? folderThumbnailPath(folder, choices))
+        : folderThumbnailPath(folder, choices);
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth.isFinite ? constraints.maxWidth : 56.0;
