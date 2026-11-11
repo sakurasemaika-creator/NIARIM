@@ -215,7 +215,10 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   builder: (context, constraints) => HsvColorWheel(
                     // Leave room for the HSV/RGB pill below the hue ring even
                     // in a compact PC dock; mobile keeps the larger wheel.
-                    size: math.min(docked ? 185.0 : 220.0, constraints.maxWidth),
+                    // The mode pills use the panel's full width, not the
+                    // ring width; the wheel can therefore fill more space.
+                    size: math.min(236.0, constraints.maxWidth),
+                    controlsWidth: constraints.maxWidth,
                   hue: _hue,
                   saturation: _saturation,
                   value: _value,
