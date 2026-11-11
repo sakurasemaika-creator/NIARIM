@@ -322,11 +322,18 @@ void main() {
       await tester.ensureVisible(confirm);
       await tester.tap(confirm);
       await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      // Moving the source into trash first copies and flushes the archive.
+      // On slower test runners it may still be running after 300ms; wait
+      // for the actual source to disappear instead of racing an async IO job.
+      for (var attempt = 0; attempt < 15 && file.existsSync(); attempt++) {
+        await pumpRealAsync(tester, const Duration(milliseconds: 100));
+      }
       final remaining = await tester.runAsync(
         () => ExportEngine.listExportedFiles(forceRefresh: true),
       );
       await tester.pumpAndSettle();
-      expect(file.existsSync(), isFalse);
+      expect(file.existsSync(), isFalse,
+          reason: 'The confirmed delete must finish archiving the file');
       expect(remaining!.any((entry) => entry.path == file.path), isFalse);
       expect(find.text(env.l10n.homeWorkFolderEmpty), findsOneWidget);
       await tester.tap(find.byType(BackButton));
