@@ -162,8 +162,8 @@ String _folderCoverText(BuildContext context, String key) {
       return ja ? '作品を選択' : 'Select a work';
     case 'load':
       return ja ? '画像を選択' : 'Choose image';
-    case 'save':
-      return ja ? '保存' : 'Save';
+    case 'apply':
+      return ja ? '適用' : 'Apply';
     case 'cancel':
       return ja ? 'キャンセル' : 'Cancel';
     default:
@@ -178,7 +178,7 @@ typedef SaveFolderThumbnail = Future<void> Function({
 });
 
 /// Four mutually exclusive radio choices. The custom image is copied into
-/// app-owned storage only after Save, so Cancel does not mutate metadata.
+/// app-owned storage only after Apply, so Cancel does not mutate metadata.
 Future<void> showFolderThumbnailDialog(
   BuildContext context, {
   required ProjectFolder folder,
@@ -240,66 +240,146 @@ Future<void> showFolderThumbnailDialog(
                   ],
                 ),
               ),
-              if (mode == 'item')
-                DropdownButtonFormField<String>(
-                  key: const Key('folderCoverItemChoice'),
-                  initialValue: choices.any((c) => c.id == selectedId)
-                      ? selectedId
-                      : null,
-                  isExpanded: true,
-                  hint: Text(_folderCoverText(ctx, 'select')),
-                  items: [
-                    for (final choice in choices)
-                      DropdownMenuItem(
-                        value: choice.id,
-                        child: Text(choice.name, overflow: TextOverflow.ellipsis),
-                      ),
-                  ],
-                  onChanged: (v) => setState(() => selectedId = v),
-                ),
-              if (mode == 'custom') ...[
-                OutlinedButton.icon(
-                  key: const Key('folderCoverChooseImage'),
-                  onPressed: saving
-                      ? null
-                      : () async {
-                          try {
-                            final result = await FilePicker.platform.pickFiles(
-                              type: FileType.image,
-                              withData: true,
-                            );
-                            if (result == null || result.files.isEmpty) return;
-                            final picked = result.files.first;
-                            final bytes = picked.bytes ??
-                                (picked.path != null
-                                    ? await File(picked.path!).readAsBytes()
-                                    : null);
-                            if (bytes == null || bytes.isEmpty ||
-                                bytes.lengthInBytes > 10 * 1024 * 1024) {
-                              throw const FormatException('Invalid image size');
-                            }
-                            final ext = picked.extension?.toLowerCase() ?? 'png';
-                            if (!const {'png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp'}
-                                .contains(ext)) {
-                              throw const FormatException('Unsupported image');
-                            }
-                            setState(() {
-                              pickedBytes = bytes;
-                              pickedName = picked.name;
-                              pickedExtension = ext;
-                              failure = null;
-                            });
-                          } catch (_) {
-                            setState(() => failure = _folderCoverText(ctx, 'error'));
-                          }
-                        },
-                  icon: const Icon(Icons.photo_library_outlined),
-                  label: Text(_folderCoverText(ctx, 'load')),
-                ),
-                if (pickedName != null) Text(pickedName!),
-                if (pickedName == null && customPath != null)
-                  Text(customPath!.split(Platform.pathSeparator).last),
-              ],
+              // The panel below the four radios is the only changing part.
+              // The Cancel/Apply actions stay at the bottom of the dialog.
+              AnimatedSize(
+                duration: const Duration(milliseconds: 180),
+                alignment: Alignment.topCenter,
+                child: switch (mode) {
+                  'item' => Padding(
+                    key: const Key('folderCoverItemPanel'),
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DropdownButtonFormField<String>(
+                          key: const Key('folderCoverItemChoice'),
+                          initialValue: choices.any((c) => c.id == selectedId)
+                              ? selectedId
+                              : null,
+                          isExpanded: true,
+                          hint: Text(_folderCoverText(ctx, 'select')),
+                          items: [
+                            for (final choice in choices)
+                              DropdownMenuItem(
+                                value: choice.id,
+                                child: Text(
+                                  choice.name,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                          ],
+                          onChanged: (value) =>
+                              setState(() => selectedId = value),
+                        ),
+                        if (choices.any((c) => c.id == selectedId)) ...[
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.file(
+                              File(choices.firstWhere(
+                                (c) => c.id == selectedId,
+                              ).imagePath),
+                              key: const Key('folderCoverWorkPreview'),
+                              width: 112,
+                              height: 72,
+                              fit: BoxFit.cover,
+                              cacheWidth: 224,
+                              errorBuilder: (_, _, _) =>
+                                  const SizedBox.shrink(),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  'custom' => Padding(
+                    key: const Key('folderCoverCustomPanel'),
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        OutlinedButton.icon(
+                          key: const Key('folderCoverChooseImage'),
+                          onPressed: saving
+                              ? null
+                              : () async {
+                                  try {
+                                    final result = await FilePicker.platform.pickFiles(
+                                      type: FileType.image,
+                                      withData: true,
+                                    );
+                                    if (result == null || result.files.isEmpty) return;
+                                    final picked = result.files.first;
+                                    final bytes = picked.bytes ??
+                                        (picked.path != null
+                                            ? await File(picked.path!).readAsBytes()
+                                            : null);
+                                    if (bytes == null || bytes.isEmpty ||
+                                        bytes.lengthInBytes > 10 * 1024 * 1024) {
+                                      throw const FormatException('Invalid image size');
+                                    }
+                                    final ext = picked.extension?.toLowerCase() ?? 'png';
+                                    if (!const {'png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp'}
+                                        .contains(ext)) {
+                                      throw const FormatException('Unsupported image');
+                                    }
+                                    setState(() {
+                                      pickedBytes = bytes;
+                                      pickedName = picked.name;
+                                      pickedExtension = ext;
+                                      failure = null;
+                                    });
+                                  } catch (_) {
+                                    if (ctx.mounted) {
+                                      setState(() => failure =
+                                          _folderCoverText(ctx, 'error'));
+                                    }
+                                  }
+                                },
+                          icon: const Icon(Icons.photo_library_outlined),
+                          label: Text(_folderCoverText(ctx, 'load')),
+                        ),
+                        if (pickedName != null) ...[
+                          Text(pickedName!, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        ] else if (customPath != null) ...[
+                          Text(
+                            customPath!.split(Platform.pathSeparator).last,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        if (pickedBytes != null || customPath != null) ...[
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: pickedBytes != null
+                                ? Image.memory(
+                                    pickedBytes!,
+                                    key: const Key('folderCoverImagePreview'),
+                                    width: 112,
+                                    height: 72,
+                                    fit: BoxFit.cover,
+                                    cacheWidth: 224,
+                                  )
+                                : Image.file(
+                                    File(customPath!),
+                                    key: const Key('folderCoverImagePreview'),
+                                    width: 112,
+                                    height: 72,
+                                    fit: BoxFit.cover,
+                                    cacheWidth: 224,
+                                    errorBuilder: (_, _, _) =>
+                                        const SizedBox.shrink(),
+                                  ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  _ => const SizedBox.shrink(),
+                },
+              ),
               if (failure != null)
                 Text(failure!, style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
             ],
@@ -311,7 +391,7 @@ Future<void> showFolderThumbnailDialog(
             child: Text(_folderCoverText(ctx, 'cancel')),
           ),
           FilledButton(
-            key: const Key('folderCoverSave'),
+            key: const Key('folderCoverApply'),
             onPressed: saving ||
                     (mode == 'item' && !choices.any((c) => c.id == selectedId)) ||
                     (mode == 'custom' && pickedBytes == null && customPath == null)
@@ -347,7 +427,7 @@ Future<void> showFolderThumbnailDialog(
                       }
                     }
                   },
-            child: Text(_folderCoverText(ctx, 'save')),
+            child: Text(_folderCoverText(ctx, 'apply')),
           ),
         ],
       ),
