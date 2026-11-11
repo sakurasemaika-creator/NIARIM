@@ -592,7 +592,8 @@ void main() {
     await waitFor(tester, () => find.text('元に戻す').evaluate().isNotEmpty);
     expect(find.text('元に戻す'), findsOneWidget);
     // 操作ボタン付きのSnackBarは既定では消えず、次の画面のツールバーに
-    // 重なり続けた。
+    // 重なり続けた。出てくる動きが終わってから、消えるまでの時間を数える。
+    await settle(tester);
     await tester.pump(const Duration(seconds: 7));
     await settle(tester);
     expect(find.byType(SnackBar), findsNothing);

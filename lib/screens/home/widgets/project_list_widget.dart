@@ -23,6 +23,7 @@ import '../../../widgets/empty_state_placeholder.dart';
 import '../../../widgets/export_share_feedback.dart';
 import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/project_trash_dialog.dart';
+import '../../../widgets/moved_to_trash_snack_bar.dart';
 import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
@@ -1174,23 +1175,12 @@ class ProjectListWidget extends StatelessWidget {
       return;
     }
     if (!context.mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(l10n.homeMovedToTrashSnackbar(1)),
-        duration: const Duration(seconds: 6),
-        action: SnackBarAction(
-          label: l10n.homeUndoAction,
-          onPressed: () async {
-            await runProjectAction(
-              context,
-              () => service.restoreProject(project.id),
-            );
-          },
-        ),
-      ),
-    );
+    // 「元に戻す」はこの一覧の部品を通さない。最後の1件を移すと一覧は空の
+    // 表示に替わり、消えた部品を通す「元に戻す」は何もせずに閉じていた。
+    // 知らせは時間で消える（操作ボタン付きのSnackBarは既定では消えない）。
+    showMovedToTrashSnackBar(ScaffoldMessenger.of(context), l10n, service, [
+      project.id,
+    ]);
   }
 
   Future<void> _handleFolderAction(

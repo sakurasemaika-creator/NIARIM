@@ -1435,6 +1435,9 @@ class _HomeScreenState extends State<HomeScreen>
           messenger.showSnackBar(
             SnackBar(
               content: Text(l10n.homeMovedToTrashSnackbar(count)),
+              // 操作ボタンの付いたSnackBarは、既定では時間で消えない
+              // （次の画面まで付いてきて下のボタンに重なる）。
+              persist: false,
               duration: const Duration(seconds: 6),
               action: SnackBarAction(
                 label: l10n.homeUndoAction,
