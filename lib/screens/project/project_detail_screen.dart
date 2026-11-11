@@ -691,6 +691,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               shape: const CircleBorder(),
               child: IconButton(
                 key: const Key('projectDetailFullscreenButton'),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                visualDensity: VisualDensity.compact,
                 icon: Icon(
                   Icons.fullscreen,
                   color: theme.menuTextColor,
