@@ -335,6 +335,14 @@ void main() {
       expect(file.existsSync(), isFalse,
           reason: 'The confirmed delete must finish archiving the file');
       expect(remaining!.any((entry) => entry.path == file.path), isFalse);
+      for (var attempt = 0;
+          attempt < 12 &&
+              find.text(env.l10n.homeWorkFolderEmpty).evaluate().isEmpty;
+          attempt++) {
+        // The folder's FutureBuilder waits for a real filesystem future,
+        // which pumpAndSettle alone does not drive in widget tests.
+        await pumpRealAsync(tester, const Duration(milliseconds: 100));
+      }
       expect(find.text(env.l10n.homeWorkFolderEmpty), findsOneWidget);
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
