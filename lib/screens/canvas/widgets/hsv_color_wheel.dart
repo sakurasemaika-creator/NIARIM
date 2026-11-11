@@ -17,6 +17,9 @@ class HsvColorWheel extends StatelessWidget {
   final void Function(double saturation, double value) onSvChanged;
   final VoidCallback? onChangeEnd;
   final double size;
+  /// Width available to the controls under the ring; lets both buttons sit
+  /// at the panel edges without making the wheel itself narrow.
+  final double? controlsWidth;
   // 透明色への切り替えボタン（カラーピッカーは常に透明色も選択
   // できるようにする）。円の外側・左下の空きスペースに配置する。
   final bool isTransparent;
@@ -34,6 +37,7 @@ class HsvColorWheel extends StatelessWidget {
     required this.onSvChanged,
     this.onChangeEnd,
     this.size = 220,
+    this.controlsWidth,
     this.isTransparent = false,
     this.onToggleTransparent,
     this.showHsvSliders = true,
@@ -56,7 +60,7 @@ class HsvColorWheel extends StatelessWidget {
     // Keep both controls BELOW the circular hue ring. A wide HSV/RGB pill
     // in the wheel's bottom-right corner overlapped the ring at small sizes.
     return SizedBox(
-      width: size,
+      width: math.max(size, controlsWidth ?? size),
       height: size + 36,
       child: Column(
         children: [
