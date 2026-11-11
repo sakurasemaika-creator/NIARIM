@@ -270,6 +270,8 @@ class ProjectListWidget extends StatelessWidget {
   final ProjectSortMode sortMode;
   final bool isSelectionMode;
   final Set<String> selectedIds;
+  /// The entries cut to the clipboard remain visible, but are dimmed.
+  final Set<String> cutIds;
   // 長押しされた項目（プロジェクトまたはフォルダ）のIDを渡す。呼び出し側で
   // 複数選択モードへ入ると同時にその項目を選択状態にできるようにするため。
   final ValueChanged<String> onLongPress;
@@ -309,6 +311,7 @@ class ProjectListWidget extends StatelessWidget {
     required this.sortMode,
     required this.isSelectionMode,
     required this.selectedIds,
+    this.cutIds = const {},
     required this.onLongPress,
     required this.onSelectionChanged,
     required this.currentFolderId,
@@ -419,6 +422,14 @@ class ProjectListWidget extends StatelessWidget {
     return list;
   }
 
+  Widget _withCutFeedback(BuildContext context, _Entry entry, Widget child) {
+    if (!cutIds.contains(entry.id)) return child;
+    return Semantics(
+      hint: AppLocalizations.of(context)!.homeCutPendingHint,
+      child: Opacity(opacity: 0.45, child: child),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -469,8 +480,10 @@ class ProjectListWidget extends StatelessWidget {
             SliverToBoxAdapter(child: header!),
             SliverList.builder(
               itemCount: sorted.length,
-              itemBuilder: (context, index) =>
-                  _detailTile(context, l10n, sorted[index]),
+              itemBuilder: (context, index) => _withCutFeedback(
+                context, sorted[index],
+                _detailTile(context, l10n, sorted[index]),
+              ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 104)),
           ],
@@ -479,8 +492,10 @@ class ProjectListWidget extends StatelessWidget {
       return ListView.builder(
         controller: scrollController,
         itemCount: sorted.length,
-        itemBuilder: (context, index) =>
-            _detailTile(context, l10n, sorted[index]),
+        itemBuilder: (context, index) => _withCutFeedback(
+          context, sorted[index],
+          _detailTile(context, l10n, sorted[index]),
+        ),
       );
     }
 
@@ -523,8 +538,9 @@ class ProjectListWidget extends StatelessWidget {
                 minHeight: minimumHeight,
               ),
               itemCount: sorted.length,
-              itemBuilder: (context, index) =>
-                  _gridCard(context, sorted[index]),
+              itemBuilder: (context, index) => _withCutFeedback(
+                context, sorted[index], _gridCard(context, sorted[index]),
+              ),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 104)),
@@ -539,7 +555,9 @@ class ProjectListWidget extends StatelessWidget {
         minHeight: minimumHeight,
       ),
       itemCount: sorted.length,
-      itemBuilder: (context, index) => _gridCard(context, sorted[index]),
+      itemBuilder: (context, index) => _withCutFeedback(
+          context, sorted[index], _gridCard(context, sorted[index]),
+        ),
     );
   }
 
