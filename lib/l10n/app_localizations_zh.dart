@@ -3959,7 +3959,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get saveTreeSaveAsRootHint => '将保存为根节点。';
 
   @override
-  String get saveTreeCommentLabel => '备注（可选）';
+  String get saveTreeCommentLabel => '备注';
 
   @override
   String get saveTreeCommentHint => '例：背景完成';
@@ -4010,10 +4010,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get saveTreeResumeFromHereAction => '从此处继续';
 
   @override
-  String get saveTreeResumeConfirmBody => '尚未保存的当前数据将会消失，确定吗？';
+  String get saveTreeResumeConfirmBody => '要从这份存档继续作业吗？\n\n当前数据将被覆盖。如果需要保留当前内容，请先保存。';
 
   @override
-  String get saveTreeProjectDetailResumeBody => '要从这个存档继续作业吗？';
+  String get saveTreeProjectDetailResumeBody => '要从这份存档继续作业吗？\n\n当前数据将被覆盖。如果需要保留当前内容，请先保存。';
 
   @override
   String get saveTreeLoadFailedSnackbar => '存档数据读取失败';
@@ -13137,7 +13137,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get saveTreeSaveAsRootHint => '將儲存為根節點。';
 
   @override
-  String get saveTreeCommentLabel => '備註（選填）';
+  String get saveTreeCommentLabel => '備註';
 
   @override
   String get saveTreeCommentHint => '例：背景完成';
@@ -13188,10 +13188,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get saveTreeResumeFromHereAction => '從此處繼續';
 
   @override
-  String get saveTreeResumeConfirmBody => '尚未儲存的目前資料將會消失，確定嗎？';
+  String get saveTreeResumeConfirmBody => '要從這份存檔繼續作業嗎？\n\n目前的資料將被覆寫。如果需要保留目前內容，請先儲存。';
 
   @override
-  String get saveTreeProjectDetailResumeBody => '要從這個存檔繼續作業嗎？';
+  String get saveTreeProjectDetailResumeBody => '要從這份存檔繼續作業嗎？\n\n目前的資料將被覆寫。如果需要保留目前內容，請先儲存。';
 
   @override
   String get saveTreeLoadFailedSnackbar => '存檔資料讀取失敗';
