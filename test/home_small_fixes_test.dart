@@ -494,4 +494,49 @@ void main() {
     expect(tester.takeException(), isNull);
     await _close(tester);
   });
+
+  // 共有タブで「作成したもの」を選んで他のタブへ行き、戻っても「作成した
+  // もの」のまま。タブは離れると作り直されるので「受け取ったもの」に戻って
+  // いた（ホームは貼り付け先を「作成したもの」と覚えたままで食い違った）。
+  testWidgets('the Shared tab keeps the chosen direction after visiting '
+      'another tab', (tester) async {
+    await _openHome(tester);
+    Set<bool> selected() => tester
+        .widget<SegmentedButton<bool>>(
+          find.byKey(const Key('sharedDirectionSegmentedControl')),
+        )
+        .selected;
+    await _showTab(tester, 2);
+    expect(selected(), {false});
+    final received = _l10n(tester).homeSharedEmpty;
+    expect(find.text(received), findsOneWidget);
+    await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
+    await _settleIo(tester);
+    expect(selected(), {true});
+    expect(find.text(received), findsNothing);
+    final created = tester
+        .widget<Text>(
+          find.descendant(
+            of: find.byType(EmptyStatePlaceholder),
+            matching: find.byType(Text),
+          ),
+        )
+        .data!;
+    for (final other in [3, 0, 1]) {
+      await _showTab(tester, other);
+      await _showTab(tester, 2);
+      expect(selected(), {true}, reason: 'after tab $other');
+      expect(find.text(created), findsOneWidget, reason: 'after tab $other');
+      expect(find.text(received), findsNothing, reason: 'after tab $other');
+    }
+    // 「受け取ったもの」へ戻したら、それも覚える。
+    await tester.tap(find.byKey(const Key('sharedReceivedFilter')));
+    await _settleIo(tester);
+    await _showTab(tester, 3);
+    await _showTab(tester, 2);
+    expect(selected(), {false});
+    expect(find.text(received), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await _close(tester);
+  });
 }

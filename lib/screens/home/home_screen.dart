@@ -819,6 +819,7 @@ class _HomeScreenState extends State<HomeScreen>
                         key: const PageStorageKey('home-shared'),
                         embedded: true,
                         screenFocus: _homeFocus,
+                        initialOutgoing: _sharedOutgoing,
                         viewMode: _effectiveSharedViewMode(context),
                         onViewModeChanged: _selectSharedViewMode,
                         searchQuery: _currentTabIndex == 2 && _isSearching
@@ -2419,9 +2420,15 @@ class SharedScreen extends StatefulWidget {
     this.viewMode,
     this.onViewModeChanged,
     this.searchQuery = '',
+    this.initialOutgoing = false,
   });
 
   final bool embedded;
+
+  /// 開いたときに「作成したもの」を出すか。ホームのタブは離れると作り
+  /// 直されるので、ホームが覚えている選択を渡す（渡さないと、戻るたびに
+  /// 「受け取ったもの」になり、ホームの覚えている貼り付け先と食い違う）。
+  final bool initialOutgoing;
   final ProjectViewMode? viewMode;
   final ValueChanged<ProjectViewMode>? onViewModeChanged;
   final String searchQuery;
@@ -2438,7 +2445,7 @@ class SharedScreen extends StatefulWidget {
 
 class _SharedScreenState extends State<SharedScreen> {
   // Keep the received and locally exported snapshot collections distinct.
-  bool _showOutgoing = false;
+  late bool _showOutgoing = widget.initialOutgoing;
   ProjectViewMode? _standaloneViewMode;
 
   ProjectViewMode _effectiveViewMode(BuildContext context) =>
