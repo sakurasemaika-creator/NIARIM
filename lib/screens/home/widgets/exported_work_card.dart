@@ -67,9 +67,17 @@ class ExportedWorkCard extends StatelessWidget {
       _filenameSeparators,
       (match) => '\u200B${match[0]}',
     );
-    Widget title() =>
-        Text(displayName, semanticsLabel: name, style: titleStyle);
-    Widget details() => Text(metadata, style: detailStyle);
+    Widget title() => Text(
+      displayName,
+      key: const Key('exportedWorkTitle'),
+      semanticsLabel: name,
+      style: titleStyle,
+    );
+    Widget details() => Text(
+      metadata,
+      key: const Key('exportedWorkMetadata'),
+      style: detailStyle,
+    );
     // 共有できなかったときの知らせ。文字の色はテーマ・外観のメニュー文字色
     // （このカードの文字と同じ役目）で、色ではなく先頭の印と文で知らせる。
     Widget shareFeedback() => Semantics(
@@ -88,8 +96,9 @@ class ExportedWorkCard extends StatelessWidget {
         ],
       ),
     );
-    Widget actions() => Row(
-      mainAxisSize: MainAxisSize.min,
+    Widget actions() => Wrap(
+      spacing: 0,
+      runSpacing: 0,
       children: [
         if (onCopy != null)
           IconButton(
@@ -149,6 +158,20 @@ class ExportedWorkCard extends StatelessWidget {
       ],
     );
 
+    // The whole left edge of the card is its cover. Keeping the title and
+    // metadata in a separate column avoids moving them above the thumbnail
+    // when filenames wrap or accessibility text size increases.
+    Widget thumbnail() {
+      final path = thumbnailPath ?? originalMediaPath;
+      return ColoredBox(
+        key: const Key('exportedWorkThumbnailArea'),
+        color: theme.colorScheme.surfaceContainerHighest,
+        child: thumbnailHidden || path == null
+            ? Center(child: Icon(icon, color: foreground))
+            : FolderCoverMedia(path: path, cacheWidth: 256),
+      );
+    }
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       color: background,
@@ -162,82 +185,56 @@ class ExportedWorkCard extends StatelessWidget {
           onTap: onOpen,
           onLongPress: onMove,
           onSecondaryTap: onMove,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                // Inline only when the full name fits beside the icon/actions.
-                // Otherwise give the name its own full-width, wrapping row.
-                final nameWidth = constraints.maxWidth - 40 - 12 -
-                    (onCopy == null ? 144 : 192) -
-                    (onChangeThumbnail == null ? 0 : 48) - 12;
-                final measure = TextPainter(
-                  text: TextSpan(
-                    text: displayName,
-                    style: MediaQuery.boldTextOf(context)
-                        ? titleStyle.copyWith(fontWeight: FontWeight.bold)
-                        : titleStyle,
-                  ),
-                  textDirection: Directionality.of(context),
-                  textScaler: MediaQuery.textScalerOf(context),
-                  locale: Localizations.maybeLocaleOf(context),
-                  maxLines: 1,
-                )..layout(maxWidth: nameWidth > 0 ? nameWidth : 0);
-                final inline = nameWidth > 0 && !measure.didExceedMaxLines;
-                measure.dispose();
-                final badge = SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: thumbnailHidden
-                      ? Icon(icon, color: foreground)
-                      : (thumbnailPath ?? originalMediaPath) != null
-                          ? FolderCoverMedia(
-                              path: (thumbnailPath ?? originalMediaPath)!,
-                              cacheWidth: 120,
-                            )
-                          : Icon(icon, color: foreground),
-                );
-                if (inline) {
-                  return Row(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Use a proportionate cover on phones without letting it grow
+              // unreasonably large on desktop. The Table fills this cover to
+              // the *actual* content height, including wrapped action rows.
+              final coverWidth = constraints.maxWidth.isFinite
+                  ? (constraints.maxWidth * 0.24).clamp(72.0, 96.0)
+                  : 88.0;
+              return Table(
+                columnWidths: {
+                  0: FixedColumnWidth(coverWidth),
+                  1: const FixedColumnWidth(12),
+                  2: const FlexColumnWidth(),
+                },
+                children: [
+                  TableRow(
                     children: [
-                      badge,
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            title(),
-                            details(),
-                            if (shareError != null) ...[
-                              const SizedBox(height: 8),
-                              shareFeedback(),
+                      TableCell(
+                        verticalAlignment: TableCellVerticalAlignment.fill,
+                        child: thumbnail(),
+                      ),
+                      const SizedBox.shrink(),
+                      TableCell(
+                        verticalAlignment: TableCellVerticalAlignment.top,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              title(),
+                              const SizedBox(height: 4),
+                              details(),
+                              if (shareError != null) ...[
+                                const SizedBox(height: 8),
+                                shareFeedback(),
+                              ],
+                              const SizedBox(height: 4),
+                              // Large controls are kept; on narrow cards they
+                              // wrap rather than overflowing/clipping.
+                              actions(),
                             ],
-                          ],
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      actions(),
                     ],
-                  );
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    title(),
-                    const SizedBox(height: 4),
-                    details(),
-                    if (shareError != null) ...[
-                      const SizedBox(height: 8),
-                      shareFeedback(),
-                    ],
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [badge, actions()],
-                    ),
-                  ],
-                );
-              },
-            ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
