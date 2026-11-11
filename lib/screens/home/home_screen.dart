@@ -2886,6 +2886,7 @@ class _FolderableList<T> extends StatelessWidget {
   final Widget? header;
 
   const _FolderableList({
+    super.key,
     required this.allItems,
     required this.folders,
     required this.folderIdOf,
