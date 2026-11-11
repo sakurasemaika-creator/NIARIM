@@ -250,7 +250,7 @@ void main() {
 
     // Brightness is the second slider. It must send an actual canvas preview,
     // not change a dedicated 120x120 image in a popup.
-    tester.widget<LabeledSlider>(slider.at(1)).onChanged(-70);
+    tester.widget<LabeledSlider>(slider.at(1)).onChanged?.call(-70);
     await settle(tester, 12);
     await capture(tester, '11b_color_adjust_live_canvas_darkened');
     expect(tester.takeException(), isNull);
@@ -267,7 +267,7 @@ void main() {
       of: find.byType(ColorAdjustSheet),
       matching: find.byType(LabeledSlider),
     );
-    tester.widget<LabeledSlider>(second.at(1)).onChanged(-70);
+    tester.widget<LabeledSlider>(second.at(1)).onChanged?.call(-70);
     await settle(tester, 10);
     await tester.tap(find.widgetWithText(FilledButton, '適用'));
     await settle(tester, 6);
