@@ -10,6 +10,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/save_tree/widgets/save_thumbnail_capture.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
 import 'package:provider/provider.dart';
@@ -340,6 +341,10 @@ void main() {
         exportHeight: 180,
       ),
     ))!;
+    // Use the real pale-blue canvas, rather than a synthetic 1x1 placeholder.
+    final actualTreeThumbnail = (await tester.runAsync(
+      () => captureSaveThumbnail(projectService, treeProject.id),
+    ))!;
     saveService.setTreeMode(true);
     final root = (await tester.runAsync(() => saveService.saveAsChild(
       projectId: treeProject.id,
@@ -347,7 +352,7 @@ void main() {
       scenes: projectService.scenesOf(treeProject.id),
       tileManager: projectService.tileManagerOf(treeProject.id),
       comment: 'ツリー保存・最初の状態',
-      thumbnailPngBytes: thumbnailBytes,
+      thumbnailPngBytes: actualTreeThumbnail,
     )))!;
     final branch = (await tester.runAsync(() => saveService.saveAsChild(
       projectId: treeProject.id,
@@ -356,7 +361,7 @@ void main() {
       tileManager: projectService.tileManagerOf(treeProject.id),
       parentId: root.id,
       comment: 'ツリー保存・分岐',
-      thumbnailPngBytes: thumbnailBytes,
+      thumbnailPngBytes: actualTreeThumbnail,
     )))!;
     expect(root.thumbnailPath, isNotNull);
     expect(branch.thumbnailPath, isNotNull);
@@ -389,6 +394,34 @@ void main() {
     expect(renamedRoot.thumbnailPath, root.thumbnailPath);
     expect(renamedRoot.savedAt, root.savedAt);
     await capture('sp_360x760_11_tree_renamed');
+
+    // Capture the actual tree menu and load confirmation as well, proving
+    // that the save-tree route uses the same user-facing loading wording.
+    final renamedTile = find.ancestor(
+      of: find.text('ツリー名変更後'),
+      matching: find.byType(ListTile),
+    );
+    final treeMenu = find.descendant(
+      of: renamedTile,
+      matching: find.byType(PopupMenuButton<String>),
+    );
+    expect(treeMenu, findsOneWidget);
+    await tester.tap(treeMenu);
+    await settle();
+    await capture('sp_360x760_12_tree_actions_menu');
+    await tester.tap(find.text(l10n.saveTreeRestoreAction).last);
+    await settle();
+    expectDialogContains(l10n.saveTreeProjectDetailResumeBody);
+    await capture('sp_360x760_13_tree_load_confirmation');
+    await tester.tap(
+      find.widgetWithText(FilledButton, l10n.saveTreeRestoreAction),
+    );
+    await settle(rounds: 10);
+    expect(
+      find.text(l10n.saveTreeRestoredSnackbar('ツリー名変更後')),
+      findsOneWidget,
+    );
+    await capture('sp_360x760_14_tree_loaded_toast');
 
   }, timeout: const Timeout(Duration(seconds: 240)));
 }
