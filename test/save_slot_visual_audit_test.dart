@@ -232,10 +232,35 @@ void main() {
           .singleWhere((n) => n.id == node.id);
       expect(renamed.savedAt, node.savedAt);
       expect(renamed.thumbnailPath, node.thumbnailPath);
-      await tester.runAsync(() => saveService.renameSave(
-        project.id, node.id, comment,
+      // Restoring the visible slot memo does not alter the archive.
+      await tester.runAsync(() => saveService.setSlotMemo(
+        project.id,
+        0,
+        comment,
       ));
       await settle();
+
+      // Even a never-saved slot has its own pencil and can retain a memo.
+      final emptyMemo = find.byKey(Key('saveSlotMemo_${project.id}_1'));
+      expect(emptyMemo, findsOneWidget);
+      await tester.tap(emptyMemo);
+      await settle();
+      expectDialogContains(l10n.saveTreeCommentLabel);
+      await capture('${prefix}_01c_empty_slot_memo_dialog');
+      await tester.enterText(
+        find.descendant(of: dialog(), matching: find.byType(TextField)),
+        '下書き用',
+      );
+      await tester.tap(
+        find.descendant(
+          of: dialog(),
+          matching: find.widgetWithText(FilledButton, l10n.commonSave),
+        ),
+      );
+      await settle();
+      expect(saveService.slotMemoOf(project.id, 1), '下書き用');
+      expect(find.text('下書き用'), findsOneWidget);
+      await capture('${prefix}_01d_empty_slot_with_memo');
 
       await tester.tap(writes.at(1));
       await settle();
