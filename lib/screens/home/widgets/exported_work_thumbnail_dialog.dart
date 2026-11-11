@@ -418,7 +418,8 @@ class _ExportedWorkThumbnailDialogState
         children: [
           RadioGroup<String>(
             groupValue: mode,
-            onChanged: busy ? null : (value) {
+            onChanged: (value) {
+              if (busy) return;
               _stop();
               if (value != null) setState(() => mode = value);
             },
