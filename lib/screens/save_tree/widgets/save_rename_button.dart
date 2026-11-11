@@ -19,7 +19,9 @@ Future<String?> _showMemoEditor(BuildContext context, String initial) async {
           controller: controller,
           autofocus: true,
           maxLength: 100,
-          decoration: InputDecoration(labelText: l10n.saveTreeCommentLabel),
+          minLines: 1,
+          maxLines: 3,
+          decoration: InputDecoration(hintText: l10n.saveTreeCommentHint),
           onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
         ),
         actions: [
