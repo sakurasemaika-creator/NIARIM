@@ -3572,15 +3572,27 @@ class ProjectService extends ChangeNotifier {
   /// （先頭シーン・先頭フレームを縮小合成してPNG化する。セーブノードの
   /// サムネイル生成（save_tree_screen.dart）と同じ方式）。
   /// 生成できない場合（シーン・フレームが存在しない等）は何もしない。
-  Future<void> generateAndSaveThumbnail(String projectId) async {
+  Future<void> generateAndSaveThumbnail(
+    String projectId, {
+    String? sceneId,
+    int? frameIndex,
+    bool force = false,
+  }) async {
     final idx = _projects.indexWhere((p) => p.id == projectId);
+
     if (idx < 0) return;
+    final project = _projects[idx];
+    if (!force && project.thumbnailMode != 'latest') return;
     final scenes = _scenes[projectId];
     final tm = _tileManagers[projectId];
     if (scenes == null || scenes.isEmpty || tm == null) return;
-    final scene = scenes.first;
+    final requestedScene = sceneId ?? project.thumbnailLastSceneId;
+    final scene = scenes.where((s) => s.id == requestedScene).firstOrNull ??
+        scenes.first;
     if (scene.frames.isEmpty) return;
-    final frame = scene.frames.first;
+    final position = (frameIndex ??
+            (requestedScene == scene.id ? project.thumbnailLastFrameIndex : null) ??
+            0).clamp(0, scene.frames.length - 1);
     final w = tm.canvasWidth;
     final h = tm.canvasHeight;
     if (w <= 0 || h <= 0) return;
@@ -3590,11 +3602,11 @@ class ProjectService extends ChangeNotifier {
     final tw = (w * scale).round().clamp(1, thumbMax);
     final th = (h * scale).round().clamp(1, thumbMax);
 
-    final layers = layersOf(projectId, scene.id, frame.index);
+    final layers = layersOf(projectId, scene.id, position);
     final fullImage = await LayerCompositor.composite(
       tm,
       layers,
-      (l) => tileKeyFor(projectId, scene.id, frame.index, l.id),
+      (l) => tileKeyFor(projectId, scene.id, position, l.id),
       w,
       h,
       // 加算・スクリーン等のレイヤーは用紙（背景色）にも効くので、そのときは
@@ -3631,7 +3643,13 @@ class ProjectService extends ChangeNotifier {
     final curIdx = _projects.indexWhere((p) => p.id == projectId);
     if (curIdx < 0) return;
     final previous = _projects[curIdx].thumbnailPath;
-    _projects[curIdx] = _projects[curIdx].copyWith(thumbnailPath: path);
+    // The most recently saved editing position becomes the default cover.
+    // Explicitly chosen covers remain unchanged when leaving the canvas.
+    _projects[curIdx] = _projects[curIdx].copyWith(
+      thumbnailPath: path,
+      thumbnailLastSceneId: !force && sceneId != null ? scene.id : null,
+      thumbnailLastFrameIndex: !force && frameIndex != null ? position : null,
+    );
     final saved = _saveReportingSuccess(projectId);
     notifyListeners();
     // 前のサムネイルは、新しいパスを保存し終えてから、ほかの作品（以前の
@@ -3647,6 +3665,69 @@ class ProjectService extends ChangeNotifier {
       } on FileSystemException {
         // 既に無い。
       }
+    }
+  }
+
+  /// Changes only the list cover, not artwork or timeline contents.
+  /// A selected frame is rendered to a standalone PNG for fast home loading.
+  Future<void> setProjectThumbnail(
+    String projectId, {
+    required String mode,
+    String? sceneId,
+    int? frameIndex,
+    Uint8List? customBytes,
+  }) async {
+    if (!const {'latest', 'frame', 'custom', 'none'}.contains(mode)) {
+      throw ArgumentError.value(mode, 'mode');
+    }
+    final beforeIndex = _projects.indexWhere((p) => p.id == projectId);
+    if (beforeIndex < 0) throw StateError('Project not found');
+    final original = _projects[beforeIndex];
+    String? nextPath = original.thumbnailPath;
+    if (mode == 'frame') {
+      final scene = scenesOf(projectId).where((s) => s.id == sceneId)
+          .firstOrNull;
+      if (scene == null || frameIndex == null ||
+          frameIndex < 0 || frameIndex >= scene.frames.length) {
+        throw ArgumentError('A valid scene/frame is required');
+      }
+      await generateAndSaveThumbnail(projectId,
+          sceneId: scene.id, frameIndex: frameIndex, force: true);
+      nextPath = _projects.firstWhere((p) => p.id == projectId).thumbnailPath;
+      if (nextPath == null) throw StateError('Frame could not be rendered');
+    } else if (mode == 'latest') {
+      await generateAndSaveThumbnail(
+        projectId, sceneId: original.thumbnailLastSceneId,
+        frameIndex: original.thumbnailLastFrameIndex, force: true,
+      );
+      nextPath = _projects.firstWhere((p) => p.id == projectId).thumbnailPath;
+    } else if (mode == 'custom') {
+      if (customBytes == null || customBytes.isEmpty) {
+        throw ArgumentError('Choose an image before applying');
+      }
+      nextPath = await NiaproSerializer.saveProjectThumbnail(
+        projectId, customBytes,
+      );
+    } else {
+      nextPath = null;
+    }
+    final currentIndex = _projects.indexWhere((p) => p.id == projectId);
+    if (currentIndex < 0) throw StateError('Project was removed');
+    final previous = _projects[currentIndex].thumbnailPath;
+    _projects[currentIndex] = _projects[currentIndex].copyWith(
+      thumbnailMode: mode,
+      thumbnailPath: nextPath,
+      thumbnailFrameSceneId: mode == 'frame' ? sceneId : null,
+      thumbnailFrameIndex: mode == 'frame' ? frameIndex : null,
+    );
+    notifyListeners();
+    if (!await _saveReportingSuccess(projectId)) {
+      throw StateError('Could not persist thumbnail preference');
+    }
+    if (previous != null && previous != nextPath &&
+        ![..._projects, ..._trash].any((p) => p.thumbnailPath == previous)) {
+      try { await File(previous).delete(); }
+      on FileSystemException { /* already removed */ }
     }
   }
 
