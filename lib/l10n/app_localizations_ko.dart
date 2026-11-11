@@ -4033,7 +4033,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get saveTreeRestoreAction => '복원';
+  String get saveTreeRestoreAction => '불러오기';
 
   @override
   String get saveTreeTimelineActionChoiceBody =>
@@ -4059,7 +4059,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String saveTreeRestoredSnackbar(String name) {
-    return '$name을(를) 복원했습니다';
+    return '저장 데이터를 불러왔습니다 ($name)';
   }
 
   @override
