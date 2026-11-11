@@ -216,7 +216,12 @@ void main() {
         find.descendant(of: dialog(), matching: find.byType(TextField)),
         '名前変更済み',
       );
-      await tester.tap(find.widgetWithText(FilledButton, l10n.commonSave));
+      await tester.tap(
+        find.descendant(
+          of: dialog(),
+          matching: find.widgetWithText(FilledButton, l10n.commonSave),
+        ),
+      );
       await settle();
       expect(find.byType(AlertDialog), findsNothing);
       expect(find.text('名前変更済み'), findsOneWidget);
@@ -371,7 +376,12 @@ void main() {
       find.descendant(of: dialog(), matching: find.byType(TextField)),
       'ツリー名変更後',
     );
-    await tester.tap(find.widgetWithText(FilledButton, l10n.commonSave));
+    await tester.tap(
+        find.descendant(
+          of: dialog(),
+          matching: find.widgetWithText(FilledButton, l10n.commonSave),
+        ),
+      );
     await settle();
     expect(find.text('ツリー名変更後'), findsWidgets);
     final renamedRoot = saveService.getNodes(treeProject.id)
