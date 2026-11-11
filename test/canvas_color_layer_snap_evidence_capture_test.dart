@@ -196,17 +196,24 @@ void main() {
     await settle();
     expect(viewer, findsNothing);
 
-    await settings.floatDesktopDockPanel(
-      CanvasDockPanel.layer, const Offset(100, 160),
-    );
-    await settings.floatDesktopDockPanel(
-      CanvasDockPanel.colorPicker, const Offset(500, 160),
-    );
-    await shot('08_floating_windows');
-    final drag = find.byKey(const ValueKey('freeDockDrag-layer'));
-    expect(drag, findsOneWidget);
-    await tester.drag(drag, const Offset(91, 0));
-    await shot('09_magnet_snap');
+    // Compact dock, not an additional free-positioned window.
+    await settings.setDefaultDockedPanels({
+      CanvasDockPanel.brush,
+      CanvasDockPanel.colorPicker,
+      CanvasDockPanel.layer,
+    });
+    await navigate('/home');
+    await navigate('/canvas/${project.id}');
+    expect(find.byKey(const ValueKey('dockTarget-layer')), findsOneWidget);
+    expect(find.byKey(const ValueKey('dockTarget-colorPicker')), findsOneWidget);
+    expect(find.byKey(const ValueKey('freeDockWindow-layer')), findsNothing);
+    await shot('08_docked_tool_windows_touch_without_gaps');
+    await tester.tap(find.byKey(const ValueKey('dockMenu-colorPicker')));
+    await settle();
+    expect(find.text('自由配置'), findsNothing);
+    await shot('09_dock_menu_has_no_free_position_option');
+    await tester.tapAt(const Offset(750, 400));
+    await settle();
 
     await navigate('/timeline/${project.id}');
     await shot('10_timeline_preview_anchor');
