@@ -1,6 +1,7 @@
 import 'package:niarim/services/theme_service.dart';
 
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -148,6 +149,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final paletteService = context.watch<PaletteService>();
+    final docked = DockedPanelScope.of(context);
     return PanelSurface(
       width: 288,
       maxHeight: 680,
@@ -163,7 +165,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  Text(
+                  if (!docked) Text(
                     l10n.colorPickerTitle,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
