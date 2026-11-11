@@ -17,6 +17,16 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+      # Another in-flight feature branch update currently fails to compile.
+      # Capture the requested UI from this known-buildable dev_branch commit,
+      # while carrying only the capture test from this workflow commit.
+      - name: Select last buildable dev_branch UI revision for evidence
+        run: |
+          cp test/visual/modified_canvas_scope_capture_test.dart /tmp/modified_canvas_scope_capture_test.dart
+          git fetch --depth=1 origin 236a342b6de127a162b8df8c43b798e23088acd6
+          git checkout --detach 236a342b6de127a162b8df8c43b798e23088acd6
+          cp /tmp/modified_canvas_scope_capture_test.dart test/visual/modified_canvas_scope_capture_test.dart
+          git rev-parse HEAD
       - run: flutter pub get
       - name: Render affected screens using the actual Flutter app
         run: flutter test test/visual/modified_canvas_scope_capture_test.dart --reporter expanded
