@@ -1,0 +1,57 @@
+name: Home empty folders and black outline visual proof
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - "lib/services/theme_service.dart"
+      - "lib/screens/home/home_screen.dart"
+      - "test/snack_bar_action_contrast_test.dart"
+      - "test/home_shared_folder_paste_flow_test.dart"
+      - "test/project_selection_clipboard_test.dart"
+      - ".github/workflows/home-folder-toast-visual-proof.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Analyze UI and theme
+        run: flutter analyze --no-fatal-infos lib/services/theme_service.dart lib/screens/home/home_screen.dart test/snack_bar_action_contrast_test.dart test/home_shared_folder_paste_flow_test.dart test/project_selection_clipboard_test.dart
+      - name: Flat SnackBar without flattening other surfaces
+        run: flutter test test/snack_bar_action_contrast_test.dart --reporter expanded
+      - name: Shared and Works collection real UI screenshots
+        run: flutter test test/home_shared_folder_paste_flow_test.dart --reporter expanded
+      - name: Bulk folder Trash screenshot
+        run: flutter test test/project_selection_clipboard_test.dart --plain-name 'bulk delete moves folders with their contents' --reporter expanded
+      - name: Project right-click screenshot
+        run: flutter test test/project_selection_clipboard_test.dart --plain-name 'right-clicking a card opens its menu' --reporter expanded
+      - name: Cross-format restriction screenshot
+        run: flutter test test/project_selection_clipboard_test.dart --plain-name 'incompatible tab paste explains why' --reporter expanded
+      - name: Project trash/restore screenshots
+        run: flutter test test/project_selection_clipboard_test.dart --plain-name 'pasting a project to Trash requires confirmation' --reporter expanded
+      - name: Build PDF from 24 actual Flutter screenshot PNGs
+        run: |
+          python3 -m pip install --quiet reportlab pillow
+          python3 scripts/generate_home_clipboard_pdf.py
+      - name: Preserve screenshots and PDF
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-folder-toast-visual-proof
+          path: |
+            build/home-clipboard-captures/*.png
+            build/home-clipboard-captures/*.pdf
+          if-no-files-found: warn
+          retention-days: 30

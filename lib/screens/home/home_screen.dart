@@ -2032,7 +2032,7 @@ class _SharedScreenState extends State<SharedScreen> {
         heroTag: 'shared-add-folder',
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        shape: const CircleBorder(side: BorderSide.none),
+        shape: const CircleBorder(),
         elevation: 0,
         focusElevation: 0,
         hoverElevation: 0,

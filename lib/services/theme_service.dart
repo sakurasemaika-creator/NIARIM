@@ -800,9 +800,6 @@ class ThemeService extends ChangeNotifier {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
-      // Material's default shadows appear as thick black outlines in UI
-      // captures. Prefer flat surfaces throughout the application.
-      shadowColor: Colors.transparent,
       fontFamily: 'HakkouMincho',
       textTheme: textTheme,
       extensions: [AccentTextTheme(accentText)],
@@ -848,7 +845,6 @@ class ThemeService extends ChangeNotifier {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
-          side: BorderSide.none,
         ),
         color: popupColor,
         surfaceTintColor: popupColor,
@@ -973,15 +969,12 @@ class ThemeService extends ChangeNotifier {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(28),
-          side: BorderSide.none,
         ),
         titleTextStyle: textTheme.titleLarge?.copyWith(color: preset.textColor),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: popupColor,
         modalBackgroundColor: popupColor,
-        elevation: 0,
-        modalElevation: 0,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
@@ -989,8 +982,8 @@ class ThemeService extends ChangeNotifier {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: popupColor,
-        // Central rule for all copy/paste and action notifications: no
-        // default Material elevation (hard black outline in screenshots).
+        // Target only the heavy black SnackBar shadow without flattening
+        // unrelated raised surfaces or other dialogs.
         elevation: 0,
         // AppBarのtitleTextStyle・FilledButtonのtextStyleとまったく同じ罠。
         // 素のTextStyle()を渡すとそれが本文の書式を丸ごと決めてしまい、
@@ -1011,7 +1004,6 @@ class ThemeService extends ChangeNotifier {
         actionTextColor: accentText,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
-          side: BorderSide.none,
         ),
       ),
       // Flutter既定のツールチップは下地が90%の不透明度で、後ろの画面が

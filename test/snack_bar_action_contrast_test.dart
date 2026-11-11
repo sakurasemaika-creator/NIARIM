@@ -21,9 +21,15 @@ void main() {
       // Regressions: Flutter's default elevated SnackBar becomes an opaque
       // thick black ring in screenshot tests; flat by default in every theme.
       expect(snackBar.elevation, 0, reason: preset.name);
-      expect(theme.shadowColor, Colors.transparent, reason: preset.name);
-      expect(theme.bottomSheetTheme.elevation, 0, reason: preset.name);
-      expect(theme.bottomSheetTheme.modalElevation, 0, reason: preset.name);
+      // Preserve intended non-notification shadows; only the SnackBar is flat.
+      expect(theme.shadowColor, isNot(Colors.transparent),
+          reason: preset.name);
+      expect(theme.bottomSheetTheme.elevation, isNull, reason: preset.name);
+      expect(theme.bottomSheetTheme.modalElevation, isNull, reason: preset.name);
+      expect(theme.popupMenuTheme.elevation, 0, reason: preset.name);
+      expect(theme.dialogTheme.elevation, 0, reason: preset.name);
+      expect((snackBar.shape! as RoundedRectangleBorder).side,
+          BorderSide.none, reason: preset.name);
       final action = snackBar.actionTextColor;
       final background = snackBar.backgroundColor;
       expect(action, isNotNull, reason: preset.name);
