@@ -1,0 +1,56 @@
+name: Floating button flat-outline regression and real screenshots
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - "lib/services/theme_service.dart"
+      - "lib/screens/home/home_screen.dart"
+      - "lib/screens/community/community_screen.dart"
+      - "lib/screens/autofill/autofill_preset_screen.dart"
+      - "lib/screens/save_tree/save_management_screen.dart"
+      - "lib/screens/save_tree/save_tree_screen.dart"
+      - "test/floating_action_button_theme_regression_test.dart"
+      - "test/floating_action_button_visual_capture_test.dart"
+      - "scripts/generate_floating_button_pdf.py"
+      - ".github/workflows/floating-button-flat-outline-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Analyze changed files
+        run: |
+          flutter analyze --no-fatal-infos lib/services/theme_service.dart lib/screens/home/home_screen.dart lib/screens/community/community_screen.dart lib/screens/autofill/autofill_preset_screen.dart lib/screens/save_tree/save_management_screen.dart lib/screens/save_tree/save_tree_screen.dart test/floating_action_button_theme_regression_test.dart test/floating_action_button_visual_capture_test.dart
+      - name: Verify zero elevation in all built-in themes and FAB variants
+        run: flutter test test/floating_action_button_theme_regression_test.dart --reporter expanded
+      - name: Verify Snackbar theme is still independent
+        run: flutter test test/snack_bar_action_contrast_test.dart --reporter expanded
+      - name: Capture seven real UI surfaces, checking effective elevation
+        run: flutter test test/floating_action_button_visual_capture_test.dart --reporter expanded
+      - name: Assemble actual Flutter screenshot PDF
+        run: |
+          python3 -m pip install --quiet reportlab pillow
+          python3 scripts/generate_floating_button_pdf.py
+      - name: Save visual proof even if a later screen fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: floating-button-flat-outline-proof
+          path: |
+            build/floating-button-captures/*.png
+            build/floating-button-captures/*.pdf
+          if-no-files-found: warn
+          retention-days: 30
