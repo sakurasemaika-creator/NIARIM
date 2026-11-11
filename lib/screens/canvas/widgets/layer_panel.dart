@@ -287,7 +287,7 @@ class _LayerPanelState extends State<LayerPanel> {
               children: [
                 // ドックを狭めたとき（下限200）でも右のボタンを押せるよう、
                 // 見出しの方を省略する。
-                Expanded(
+                if (!widget.dockedMode) Expanded(
                   child: Text(
                     l10n.layerPanelTitle,
                     maxLines: 1,
