@@ -3211,6 +3211,12 @@ class ProjectService extends ChangeNotifier {
     if (idx >= 0) {
       final original = _projects[idx];
       final newId = _nextId('proj');
+      // Repeated paste must not create indistinguishable copies.
+      final copyName = name ?? _nextCopyName(
+        original.name,
+        _projects.where((p) => p.isSharedImport == original.isSharedImport)
+            .map((p) => p.name),
+      );
 
       // シーンリストは複製先専用の新しいListにする（Scene/Frame/Layerはimmutableなため
       // 中身の値オブジェクト自体は共有してよいが、外側のListを共有すると片方への
@@ -3250,7 +3256,7 @@ class ProjectService extends ChangeNotifier {
 
       final copy = original.copyWith(
         id: newId,
-        name: name ?? '${original.name} (コピー)',
+        name: copyName,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         folderId: useTargetFolder ? targetFolderId : original.folderId,
@@ -3855,6 +3861,16 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
+  static String _nextCopyName(String original, Iterable<String> usedNames) {
+    final used = usedNames.toSet();
+    final first = '$original (コピー)';
+    if (!used.contains(first)) return first;
+    for (var n = 2; ; n++) {
+      final candidate = '$original (コピー $n)';
+      if (!used.contains(candidate)) return candidate;
+    }
+  }
+
   /// フォルダを中身（下の階層のフォルダ・作品）ごと複製して
   /// [targetParentId]（nullは一番上）に置く。いちばん上のフォルダだけ
   /// [name]にし、中のフォルダ・作品は元の名前のまま。自分自身やその中へも
@@ -3867,6 +3883,14 @@ class ProjectService extends ChangeNotifier {
   }) => _queueFolder(() async {
     final top = _folders.where((f) => f.id == folderId).firstOrNull;
     if (top == null) return null;
+    final siblingNames = _folders.where((f) =>
+        f.parentFolderId == targetParentId).map((f) => f.name).toSet();
+    var copyTopName = name;
+    if (siblingNames.contains(copyTopName)) {
+      copyTopName = name == '${top.name} (コピー)'
+          ? _nextCopyName(top.name, siblingNames)
+          : uniqueFolderName(name, parentFolderId: targetParentId);
+    }
     // 写すものを先に決めておく（複製したフォルダ・作品を数え直さない）。
     final ids = folderSubtreeIds(folderId);
     final projects = [
@@ -3887,7 +3911,7 @@ class ProjectService extends ChangeNotifier {
       final isTop = f.id == folderId;
       final copy = ProjectFolder(
         id: _nextId('folder'),
-        name: isTop ? name : f.name,
+        name: isTop ? copyTopName : f.name,
         color: f.color,
         parentFolderId: isTop ? targetParentId : copies[f.parentFolderId],
       );
@@ -3971,7 +3995,10 @@ class ProjectService extends ChangeNotifier {
     if (source == null) throw StateError('Shared folder missing: $folderId');
     final projects = _projects.where((p) =>
         p.isSharedImport && p.sharedFolderId == folderId).toList();
-    final target = await createSharedFolder('${source.name} (コピー)');
+    final copyName = _nextCopyName(
+      source.name, _sharedFolders.map((folder) => folder.name),
+    );
+    final target = await createSharedFolder(copyName);
     for (final project in projects) {
       final oldIds = _projects.map((p) => p.id).toSet();
       if (!await duplicateProject(project.id,
