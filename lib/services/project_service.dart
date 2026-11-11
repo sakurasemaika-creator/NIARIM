@@ -108,6 +108,8 @@ class ProjectFolder {
 /// 中身もすべて元の階層のまま戻る。
 class TrashedFolder {
   final ProjectFolder folder;
+  /// 共有・受信タブのフォルダはプロジェクト用フォルダとは別管理。
+  final bool isShared;
 
   /// 中のフォルダ（下の階層を含む）。親子のつながりはそのまま持つ。
   final List<ProjectFolder> subfolders;
@@ -118,6 +120,7 @@ class TrashedFolder {
 
   const TrashedFolder({
     required this.folder,
+    this.isShared = false,
     required this.subfolders,
     required this.projectIds,
     required this.deletedAt,
@@ -125,6 +128,7 @@ class TrashedFolder {
 
   Map<String, dynamic> toJson() => {
     'folder': folder.toJson(),
+    'isShared': isShared,
     'subfolders': [for (final f in subfolders) f.toJson()],
     'projectIds': projectIds,
     'deletedAt': deletedAt.toIso8601String(),
@@ -132,6 +136,7 @@ class TrashedFolder {
 
   factory TrashedFolder.fromJson(Map<String, dynamic> json) => TrashedFolder(
     folder: ProjectFolder.fromJson(json['folder'] as Map<String, dynamic>),
+    isShared: json['isShared'] == true,
     subfolders: [
       for (final f in json['subfolders'] as List<dynamic>? ?? const [])
         ProjectFolder.fromJson(f as Map<String, dynamic>),
@@ -3073,6 +3078,11 @@ class ProjectService extends ChangeNotifier {
             restored = restored.copyWith(folderId: null);
             changed = true;
           }
+          if (restored.isSharedImport && restored.sharedFolderId != null &&
+              !_sharedFolders.any((f) => f.id == restored.sharedFolderId)) {
+            restored = restored.copyWith(sharedFolderId: null);
+            changed = true;
+          }
           if (changed) {
             _projects[i] = restored;
             _saveAsync(id);
@@ -3192,6 +3202,8 @@ class ProjectService extends ChangeNotifier {
     String id, {
     String? targetFolderId,
     bool useTargetFolder = false,
+    String? targetSharedFolderId,
+    bool useTargetSharedFolder = false,
     String? name,
   }) async {
     final idx = _projects.indexWhere((p) => p.id == id);
@@ -3241,6 +3253,8 @@ class ProjectService extends ChangeNotifier {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         folderId: useTargetFolder ? targetFolderId : original.folderId,
+        sharedFolderId: useTargetSharedFolder
+            ? targetSharedFolderId : original.sharedFolderId,
         // 複製元と同じファイルを指したままだと、複製元の削除で一緒に消えた。
         thumbnailPath: thumbnail,
       );
@@ -3684,21 +3698,25 @@ class ProjectService extends ChangeNotifier {
   /// [restoreTrashedFolder]でまとめて元に戻せる。先にゴミ箱の記録を、次に
   /// フォルダの一覧を保存する。どちらかを保存できなければ何も変えずに
   /// [FolderSaveException]を投げる。
-  Future<TrashedFolder?> moveFolderToTrash(String folderId) =>
+  Future<TrashedFolder?> moveFolderToTrash(String folderId, {bool shared = false}) =>
       _queueFolder(() async {
-        final top = _folders.where((f) => f.id == folderId).firstOrNull;
+        final folders = shared ? _sharedFolders : _folders;
+        final top = folders.where((f) => f.id == folderId).firstOrNull;
         if (top == null) return null;
-        final ids = folderSubtreeIds(folderId);
+        final ids = shared ? <String>{folderId} : folderSubtreeIds(folderId);
         final now = DateTime.now();
         final record = TrashedFolder(
           folder: top,
+          isShared: shared,
           subfolders: [
-            for (final f in _folders)
+            for (final f in folders)
               if (f.id != folderId && ids.contains(f.id)) f,
           ],
           projectIds: [
             for (final p in _projects)
-              if (!p.isSharedImport && ids.contains(p.folderId)) p.id,
+              if (shared
+                  ? p.isSharedImport && p.sharedFolderId == folderId
+                  : !p.isSharedImport && ids.contains(p.folderId)) p.id,
           ],
           deletedAt: now,
         );
@@ -3742,9 +3760,9 @@ class ProjectService extends ChangeNotifier {
         }
         try {
           await _commitFolders([
-            for (final f in _folders)
+            for (final f in folders)
               if (!ids.contains(f.id)) f,
-          ]);
+          ], shared: shared);
         } catch (error) {
           try {
             await _persistTrashState(_trashDeletedAt);
@@ -3775,16 +3793,17 @@ class ProjectService extends ChangeNotifier {
         .firstOrNull;
     if (record == null) return;
     final parent = record.folder.parentFolderId;
+    final folders = record.isShared ? _sharedFolders : _folders;
     try {
       await _commitFolders([
-        ..._folders,
-        if (!_folders.any((f) => f.id == record.folder.id))
-          parent != null && !_folders.any((f) => f.id == parent)
+        ...folders,
+        if (!folders.any((f) => f.id == record.folder.id))
+          parent != null && !folders.any((f) => f.id == parent)
               ? record.folder.copyWith(parentFolderId: null)
               : record.folder,
         for (final f in record.subfolders)
-          if (!_folders.any((g) => g.id == f.id)) f,
-      ]);
+          if (!folders.any((g) => g.id == f.id)) f,
+      ], shared: record.isShared);
     } catch (error) {
       throw FolderSaveException(partiallySaved: false, cause: error);
     }
@@ -3945,6 +3964,22 @@ class ProjectService extends ChangeNotifier {
         return folder;
       });
 
+  /// 共有の受信フォルダを、中の受信プロジェクトと一緒に複製する。
+  Future<ProjectFolder> duplicateSharedFolderWithContents(String folderId) async {
+    final source = _sharedFolders.where((f) => f.id == folderId).firstOrNull;
+    if (source == null) throw StateError('Shared folder missing: $folderId');
+    final projects = _projects.where((p) =>
+        p.isSharedImport && p.sharedFolderId == folderId).toList();
+    final target = await createSharedFolder('${source.name} (コピー)');
+    for (final project in projects) {
+      if (!await duplicateProject(project.id,
+          targetSharedFolderId: target.id, useTargetSharedFolder: true)) {
+        throw StateError('Shared project missing: ${project.id}');
+      }
+    }
+    return target;
+  }
+
   Future<void> renameSharedFolder(String folderId, String name) =>
       _queueFolder(() async {
         final i = _sharedFolders.indexWhere((f) => f.id == folderId);
@@ -4029,7 +4064,8 @@ class ProjectService extends ChangeNotifier {
             TrashedFolder.fromJson(e as Map<String, dynamic>),
         ])
         // ゴミ箱へ移す途中で終わったときは、フォルダがまだ一覧にある。
-        ..removeWhere((t) => _folders.any((f) => f.id == t.folder.id));
+        ..removeWhere((t) => (t.isShared ? _sharedFolders : _folders)
+            .any((f) => f.id == t.folder.id));
     } catch (error, stackTrace) {
       // 読めなければゴミ箱のフォルダなしとして続ける（中の作品はゴミ箱に
       // 1件ずつ出る）。
