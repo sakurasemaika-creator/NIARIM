@@ -16,6 +16,32 @@ class WorkFolderSaveException extends FolderSaveException {
       'WorkFolderSaveException(partiallySaved: $partiallySaved)';
 }
 
+/// Exported file cover preferences are separate from the exported video bytes.
+class WorkFileCover {
+  const WorkFileCover({
+    this.mode = 'latest',
+    this.frameIndex,
+    this.imagePath,
+  });
+  final String mode;
+  final int? frameIndex;
+  final String? imagePath;
+
+  factory WorkFileCover.fromJson(Object? raw) {
+    if (raw is! Map) return const WorkFileCover();
+    return WorkFileCover(
+      mode: raw['mode'] as String? ?? 'latest',
+      frameIndex: raw['frameIndex'] as int?,
+      imagePath: raw['imagePath'] as String?,
+    );
+  }
+  Map<String, Object?> toJson() => {
+    'mode': mode,
+    'frameIndex': frameIndex,
+    'imagePath': imagePath,
+  };
+}
+
 /// ホーム画面「作品一覧」タブ（書き出し済み動画・GIFファイル）のフォルダ
 /// 整理機能。作品一覧のファイルはプロジェクトのようなDBエントリではなく
 /// ディスク上の実ファイルのため、ファイル名（ExportEngineが生成する
@@ -26,6 +52,7 @@ class WorkFolderService extends ChangeNotifier {
   final List<ProjectFolder> _folders = [];
   // ファイル名 → フォルダID
   final Map<String, String> _fileFolder = {};
+  final Map<String, WorkFileCover> _fileCovers = {};
   Future<void>? _pending;
   bool _disposed = false;
 
@@ -36,6 +63,9 @@ class WorkFolderService extends ChangeNotifier {
 
   static const _foldersPrefsKey = 'work_folders';
   static const _fileFolderPrefsKey = 'work_file_folder_map';
+  static const _fileCoverPrefsKey = 'work_file_thumbnail_covers';
+  WorkFileCover fileCoverOf(String path) =>
+      _fileCovers[path] ?? const WorkFileCover();
 
   Future<void> init() async {
     try {
@@ -48,6 +78,16 @@ class WorkFolderService extends ChangeNotifier {
           ..addAll(
             list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)),
           );
+      }
+      final rawCovers = prefs.readString(_fileCoverPrefsKey);
+      if (rawCovers != null) {
+        final raw = jsonDecode(rawCovers);
+        if (raw is Map) {
+          _fileCovers
+            ..clear()
+            ..addAll(raw.map((key, value) =>
+                MapEntry(key.toString(), WorkFileCover.fromJson(value))));
+        }
       }
       final rawMap = prefs.readString(_fileFolderPrefsKey);
       if (rawMap != null) {
@@ -212,6 +252,33 @@ class WorkFolderService extends ChangeNotifier {
       _foldersPrefsKey: jsonEncode(next.map((f) => f.toJson()).toList()),
     });
     _folders[index] = next[index];
+    _notify();
+  });
+
+  /// Metadata-only file thumbnail edit; leaves the exported file untouched.
+  Future<void> setWorkFileCover(
+    String path, {
+    required String mode,
+    int? frameIndex,
+    String? imagePath,
+  }) => _enqueue(() async {
+    if (!const {'latest', 'frame', 'custom', 'none'}.contains(mode)) {
+      throw ArgumentError.value(mode, 'mode');
+    }
+    final next = Map<String, WorkFileCover>.from(_fileCovers);
+    next[path] = WorkFileCover(
+      mode: mode,
+      frameIndex: mode == 'frame' ? frameIndex : null,
+      imagePath: mode == 'none' || mode == 'latest' ? null : imagePath,
+    );
+    await _save({
+      _fileCoverPrefsKey: jsonEncode(
+        next.map((key, value) => MapEntry(key, value.toJson())),
+      ),
+    });
+    _fileCovers
+      ..clear()
+      ..addAll(next);
     _notify();
   });
 
