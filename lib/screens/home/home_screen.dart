@@ -1325,6 +1325,53 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
 
+
+  /// An exported-work folder owns real video/image files, not project rows.
+  /// Copy the bytes and only then write each new file's membership.
+  Future<void> _copyWorkFolderWithContents(
+    String sourceId,
+    String sourceName,
+    WorkFolderService workFolders,
+  ) async {
+    if (!workFolders.folders.any((folder) => folder.id == sourceId)) {
+      throw StateError('Export folder no longer exists');
+    }
+    final exported = await ExportEngine.listExportedFiles(forceRefresh: true);
+    final members = exported.where((file) =>
+        workFolders.folderIdOf(file.uri.pathSegments.last) == sourceId).toList();
+    final copiedFolder = await workFolders.createFolder('$sourceName (コピー)');
+    final copies = <File>[];
+    try {
+      for (final source in members) {
+        final filename = source.uri.pathSegments.last;
+        final dot = filename.lastIndexOf('.');
+        final name = dot > 0 ? filename.substring(0, dot) : filename;
+        final ext = dot > 0 ? filename.substring(dot) : '';
+        var counter = 1;
+        late File destination;
+        do {
+          destination = File('${source.parent.path}/$name (コピー $counter)$ext');
+          counter++;
+        } while (await destination.exists());
+        final saved = await source.copy(destination.path);
+        copies.add(saved);
+        if (await saved.length() != await source.length()) {
+          throw FileSystemException('Incomplete folder copy', source.path);
+        }
+        await workFolders.moveFileToFolder(
+          saved.uri.pathSegments.last, copiedFolder.id,
+        );
+      }
+      LocalFileTrashService.changes.value++;
+      StorageInfoService().invalidate();
+    } catch (_) {
+      // If copying fails, preserve any completed files and folder so no
+      // persistent metadata points at deleted data.
+      LocalFileTrashService.changes.value++;
+      rethrow;
+    }
+  }
+
   Future<void> _pasteLibraryEntry() async {
     final entry = _otherClipboard;
     if (entry == null || _pasting) return;
@@ -1359,11 +1406,11 @@ class _HomeScreenState extends State<HomeScreen>
       return;
     }
     if (dest == HomePasteArea.trash) {
-      if (entry.isFolder) {
+      if (entry.isFolder && entry.source != HomePasteArea.works &&
+          entry.source != HomePasteArea.received) {
         await _explainPasteRestriction(
-          'この区分のフォルダは、現在中身ごとゴミ箱に保管できません。'
-          'フォルダと内容を保護するためペーストを中止しました。',
-          'This collection cannot yet safely archive folders. No changes were made.',
+          'この形式のフォルダはゴミ箱に保管できません。',
+          'This folder format cannot be archived in Trash.',
         );
         return;
       }
@@ -1397,7 +1444,18 @@ class _HomeScreenState extends State<HomeScreen>
     try {
       if (entry.source == HomePasteArea.trash) {
         if (entry.isFolder) {
-          await ps.restoreTrashedFolder(entry.id);
+          if (entry.originalArea == HomePasteArea.works) {
+            final files = await LocalFileTrashService.list();
+            final folder = files.where((f) => f.id == entry.id &&
+                f.isFolder).firstOrNull;
+            if (folder == null) {
+              throw FileSystemException('Missing trashed work folder', entry.id);
+            }
+            await LocalFileTrashService.restoreWorkFolder(folder, ws);
+            StorageInfoService().invalidate();
+          } else {
+            await ps.restoreTrashedFolder(entry.id);
+          }
         } else if (entry.originalArea == HomePasteArea.projects ||
             entry.originalArea == HomePasteArea.received) {
           await ps.restoreProject(entry.id);
@@ -1413,7 +1471,23 @@ class _HomeScreenState extends State<HomeScreen>
         }
         _otherClipboard = null;
       } else if (dest == HomePasteArea.trash) {
-        if (entry.source == HomePasteArea.received) {
+        if (entry.isFolder && entry.source == HomePasteArea.received) {
+          final moved = await ps.moveFolderToTrash(entry.id, shared: true);
+          if (moved == null) throw StateError('Shared folder not found');
+        } else if (entry.isFolder && entry.source == HomePasteArea.works) {
+          if (!ws.folders.any((folder) => folder.id == entry.id)) {
+            throw StateError('Export folder not found');
+          }
+          final files = await ExportEngine.listExportedFiles(forceRefresh: true);
+          final members = files.where((file) =>
+              ws.folderIdOf(file.uri.pathSegments.last) == entry.id).toList();
+          await LocalFileTrashService.moveWorkFolder(
+            folderName: entry.name, files: members,
+          );
+          // Delete membership only AFTER the archive is safely stored.
+          await ws.deleteFolder(entry.id);
+          StorageInfoService().invalidate();
+        } else if (entry.source == HomePasteArea.received) {
           await ps.deleteProject(entry.id);
         } else {
           await LocalFileTrashService.move(
@@ -1431,9 +1505,17 @@ class _HomeScreenState extends State<HomeScreen>
         if (dest == HomePasteArea.projects) {
           await ps.createFolder(entry.name, parentFolderId: _currentFolderId);
         } else if (dest == HomePasteArea.works) {
-          await ws.createFolder(entry.name);
+          if (entry.source == HomePasteArea.works) {
+            await _copyWorkFolderWithContents(entry.id, entry.name, ws);
+          } else {
+            await ws.createFolder(entry.name);
+          }
         } else if (dest == HomePasteArea.received) {
-          await ps.createSharedFolder(entry.name);
+          if (entry.source == HomePasteArea.received) {
+            await ps.duplicateSharedFolderWithContents(entry.id);
+          } else {
+            await ps.createSharedFolder(entry.name);
+          }
         }
         if (entry.isCut) {
           if (entry.source == HomePasteArea.works) {
@@ -2876,7 +2958,13 @@ class _TrashTabState extends State<_TrashTab> {
         !await _confirmRestoreFromTrash(entry.fileName) || !mounted) return;
     setState(() => _pending.add(entry.id));
     try {
-      await LocalFileTrashService.restore(entry);
+      if (entry.isFolder) {
+        await LocalFileTrashService.restoreWorkFolder(
+          entry, context.read<WorkFolderService>(),
+        );
+      } else {
+        await LocalFileTrashService.restore(entry);
+      }
       // The exported-work list maintains a cached storage listing.
       StorageInfoService().invalidate();
       if (entry.kind == LocalTrashKind.outgoingShare && mounted) {
@@ -2958,7 +3046,8 @@ class _TrashTabState extends State<_TrashTab> {
             onPressed: () => widget.onCopyEntry!(HomeClipboardEntry(
               source: HomePasteArea.trash,
               id: id, name: record.folder.name,
-              isFolder: true, originalArea: HomePasteArea.projects,
+              isFolder: true, originalArea: record.isShared
+                  ? HomePasteArea.received : HomePasteArea.projects,
             )),
             child: const Text('コピー'),
           ),
@@ -3092,7 +3181,7 @@ class _TrashTabState extends State<_TrashTab> {
           key: ValueKey('trashCopyLocal_${entry.id}'),
           onPressed: () => widget.onCopyEntry!(HomeClipboardEntry(
             source: HomePasteArea.trash, id: entry.id,
-            name: entry.fileName,
+            name: entry.fileName, isFolder: entry.isFolder,
             originalArea: entry.kind == LocalTrashKind.outgoingShare
                 ? HomePasteArea.outgoing : HomePasteArea.works,
           )),
@@ -3113,8 +3202,9 @@ class _TrashTabState extends State<_TrashTab> {
       ),
     ];
     return _trashCard(
-      leading: Icon(kind == TrashEntryKind.createdShare
-          ? Icons.file_present_outlined : Icons.video_library_outlined,
+      leading: Icon(entry.isFolder ? Icons.folder_delete_outlined
+          : kind == TrashEntryKind.createdShare
+              ? Icons.file_present_outlined : Icons.video_library_outlined,
           size: 36),
       title: entry.fileName,
       subtitle: [
@@ -3209,11 +3299,11 @@ class _TrashTabState extends State<_TrashTab> {
           ));
         }
         for (final folder in service.trashedFolders) {
-          if (!widget.selectedKinds.contains(TrashEntryKind.createdProject)) {
-            continue;
-          }
+          final kind = folder.isShared
+              ? TrashEntryKind.receivedShare : TrashEntryKind.createdProject;
+          if (!widget.selectedKinds.contains(kind)) continue;
           rows.add((
-            kind: TrashEntryKind.createdProject,
+            kind: kind,
             project: null, folder: folder, local: null,
             deletedAt: folder.deletedAt, name: folder.folder.name,
           ));
