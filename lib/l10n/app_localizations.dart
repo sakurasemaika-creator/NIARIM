@@ -7412,7 +7412,7 @@ abstract class AppLocalizations {
   /// No description provided for @saveTreeRestoreAction.
   ///
   /// In ja, this message translates to:
-  /// **'復元'**
+  /// **'読み込み'**
   String get saveTreeRestoreAction;
 
   /// No description provided for @saveTreeTimelineActionChoiceBody.
@@ -7460,7 +7460,7 @@ abstract class AppLocalizations {
   /// No description provided for @saveTreeRestoredSnackbar.
   ///
   /// In ja, this message translates to:
-  /// **'{name}を復元しました'**
+  /// **'セーブデータを読み込みました（{name}）'**
   String saveTreeRestoredSnackbar(String name);
 
   /// No description provided for @saveTreeSlotLabel.
