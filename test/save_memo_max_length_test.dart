@@ -67,7 +67,13 @@ void main() {
     await tester.enterText(input, text);
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, '保存'));
-    await tester.pump(const Duration(milliseconds: 600));
+    for (var attempt = 0; attempt < 6; attempt++) {
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 35)),
+      );
+      await tester.pump();
+    }
     expect(save.slotMemoOf(p.id, 0), text);
     expect(save.getNodes(p.id), isEmpty,
         reason: 'Editing an empty slot must not create saved data');
