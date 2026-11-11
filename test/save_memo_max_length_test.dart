@@ -1,3 +1,11 @@
+import 'dart:io';
+
+import 'package:flutter/services.dart';
+import 'package:niarim/app.dart';
+import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/router.dart';
+import 'package:niarim/services/project_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
@@ -6,6 +14,76 @@ import 'package:niarim/services/save_tree_service.dart';
 import 'package:provider/provider.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('Saving 100-character memo shows one ellipsized line in the '
+      'actual empty-slot list and survives a reload', (tester) async {
+    SharedPreferences.setMockInitialValues({'quality_level': 'medium'});
+    final directory = Directory.systemTemp.createTempSync('save_memo_max_');
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (_) async => directory.path);
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
+      if (directory.existsSync()) directory.deleteSync(recursive: true);
+    });
+    tester.view.physicalSize = const Size(1080, 2280);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    appRouter.go('/');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 600));
+    final ctx = tester.element(find.byType(MaterialApp).first);
+    final ps = ctx.read<ProjectService>();
+    final save = ctx.read<SaveTreeService>();
+    save.setTreeMode(false);
+    final p = await tester.runAsync(() => ps.createProject(
+      name: '100 memo check',
+      fps: 12,
+      durationSeconds: 1,
+      backgroundColor: 0xffffffff,
+      exportWidth: 64,
+      exportHeight: 64,
+    ));
+    expect(p, isNotNull);
+    appRouter.go('/save-tree/${p!.id}');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    final pen = find.byKey(Key('saveSlotMemo_${p.id}_0'));
+    expect(pen, findsOneWidget);
+    await tester.tap(pen);
+    await tester.pumpAndSettle();
+    final input = find.descendant(
+      of: find.byType(AlertDialog), matching: find.byType(TextField),
+    );
+    expect(input, findsOneWidget);
+    final text = List.filled(100, 'あ').join();
+    await tester.enterText(input, text);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, '保存'));
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(save.slotMemoOf(p.id, 0), text);
+    expect(save.getNodes(p.id), isEmpty,
+        reason: 'Editing an empty slot must not create saved data');
+    final label = find.text(text);
+    expect(label, findsOneWidget);
+    final widget = tester.widget<Text>(label);
+    expect(widget.maxLines, 1);
+    expect(widget.overflow, TextOverflow.ellipsis);
+    expect(tester.takeException(), isNull);
+
+    final reloaded = SaveTreeService();
+    await tester.runAsync(reloaded.init);
+    expect(reloaded.slotMemoOf(p.id, 0), text);
+    reloaded.dispose();
+  });
+
   testWidgets('Memo dialog uses only one heading and handles 100 characters',
       (tester) async {
     tester.view.physicalSize = const Size(1080, 2280);
