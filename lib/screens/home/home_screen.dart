@@ -4706,6 +4706,8 @@ class _TrashTabState extends State<_TrashTab> {
                           padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
                           child: OverflowBar(
                             alignment: MainAxisAlignment.end,
+                            // 1行に入らず縦に並ぶときも右端にそろえる。
+                            overflowAlignment: OverflowBarAlignment.end,
                             spacing: 8,
                             overflowSpacing: 4,
                             children: actions,

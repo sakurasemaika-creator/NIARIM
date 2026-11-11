@@ -396,4 +396,80 @@ void main() {
     expect(tester.takeException(), isNull);
     await _close(tester);
   });
+
+  // ゴミ箱のカードの操作（コピー・復元・完全に削除）は、1行に入らず縦に
+  // 並ぶときも右端にそろえる。英語・フランス語などの狭い画面では、左端に
+  // 寄って1つずつ縦に並んでいた（日本語の1行のときは右端）。
+  testWidgets('stacked trash card actions stay at the right edge', (
+    tester,
+  ) async {
+    final home = await _openHome(
+      tester,
+      language: 'en',
+      size: const Size(320, 844),
+    );
+    late final String projectId;
+    late final String folderId;
+    await tester.runAsync(() async {
+      final draft = await home.projects.createProject(
+        name: 'Old draft',
+        fps: 8,
+        durationSeconds: 1,
+        backgroundColor: 0xFFF3EAD6,
+      );
+      projectId = draft.id;
+      await home.projects.deleteProject(draft.id);
+      final folder = await home.projects.createFolder('Old folder');
+      folderId = folder.id;
+      await home.projects.moveFolderToTrash(folder.id);
+    });
+    await _showTab(tester, 3);
+    for (final (language, width, stacked) in const [
+      ('en', 320.0, true),
+      ('en', 360.0, true),
+      ('fr', 320.0, true),
+      ('es', 360.0, true),
+      ('ja', 390.0, false),
+    ]) {
+      tester.view.physicalSize = Size(width, 844);
+      await tester.runAsync(() => home.settings.setLanguage(language));
+      await _settleIo(tester, 2);
+      for (final (card, keys) in [
+        (
+          'work',
+          [
+            'trashCopyProject_$projectId',
+            'trash-restore-$projectId',
+            'trash-delete-$projectId',
+          ],
+        ),
+        (
+          'folder',
+          [
+            'trashCopyFolder_$folderId',
+            'trashedFolderRestore_$folderId',
+            'trashedFolderDelete_$folderId',
+          ],
+        ),
+      ]) {
+        final where = '$language ${width.round()}px $card card';
+        final rects = [
+          for (final key in keys) tester.getRect(find.byKey(ValueKey(key))),
+        ];
+        final rows = {for (final rect in rects) rect.top.round()};
+        expect(rows.length > 1, stacked, reason: '$where: $rects');
+        // カードの外の余白8px＋中の余白12px。
+        final edge = width - 20;
+        if (stacked) {
+          for (final rect in rects) {
+            expect(rect.right, closeTo(edge, 0.5), reason: '$where: $rects');
+          }
+        } else {
+          expect(rects.last.right, closeTo(edge, 0.5), reason: where);
+        }
+      }
+    }
+    expect(tester.takeException(), isNull);
+    await _close(tester);
+  });
 }
