@@ -364,6 +364,27 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   デバッグビルドを`--dart-define=NIARIM_DEBUG_FAIL_STARTUP_STEP=brush`
   （処理名は`enter`の引数）で起動すると、最初の1回だけその処理の直前で
   失敗する。
+- **作品の保存先を読めないときは起動を止めず、知らせて「再試行」で読み直す（DISC082）**：
+  `SaveTreeService.init`（＝`loadUnread`）と`ProjectService`の読み込みは、
+  `projects`フォルダを一覧できなくても例外にしない（以前は`listSync()`がtryの
+  外にあり、権限・一時的な不調で起動が失敗した）。読めなかったことは
+  `ProjectService.projectsLoadFailed`で覚え、`ProjectsLoadFailureNotice`
+  （`lib/widgets/projects_load_failure_notice.dart`）がホームのプロジェクト・
+  共有の「受け取ったもの」・ゴミ箱・設定の引き継ぎに出す。「再試行」
+  （`retryLoadProjects`）は走っている読み直しに合流し、終わると
+  `onProjectsReloaded`（`app_bootstrap.dart`で`saveTreeService.loadUnread`）で
+  手動の保存も読む。決まり：（1）読めていない`SaveTree/index.json`は表示にも
+  上書きにも使わない（確かに無いときだけ新しく書く。壊れたUTF-8は「読めない」
+  ではなく壊れた一覧として保存のファイルから拾い直す）、（2）フォルダが
+  `existsSync`で偽でも、`listSync`が`PathNotFoundException`を投げたときだけ
+  「作品なし」と見なす、（3）読めていない間は「ありません」の文を出さない、
+  （4）知らせが消えるときはフォーカスを画面（`screenFocus`、無ければその
+  画面のスコープ）へ戻す（戻さないと、キーボードの次のEnterが前の部品を
+  動かす）。実画面で確かめるときは一般ユーザー（`runuser -u nobody`）で
+  動かすこと（rootは`chmod 000`を無視する）。見張りは
+  `test/startup_unreadable_projects_folder_test.dart`（`IOOverrides`）。
+  残り：DISC083〜086（ホームのプロジェクトの空の表示・ゴミ箱のフォルダの行・
+  開けない作品1つで自動削除が止まる・読めていない間のスロットのメモ）。
 - **`backend/`のDynamoDB容量はAlways Free枠25 RCU/25 WCUちょうど**：
   `lib/niarim-backend-stack.ts`の`CAPACITY_PLAN`はテーブル本体15＋GSI 7本
   合計10＝25で上限いっぱい。GSIを足すときは必ずどこかを減らすこと。
