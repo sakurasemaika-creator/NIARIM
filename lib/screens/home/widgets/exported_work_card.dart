@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -18,6 +20,9 @@ class ExportedWorkCard extends StatelessWidget {
     this.onCopy,
     required this.onShare,
     required this.onDelete,
+    this.onChangeThumbnail,
+    this.thumbnailPath,
+    this.thumbnailHidden = false,
     this.shareBusy = false,
     this.shareError,
   });
@@ -31,6 +36,9 @@ class ExportedWorkCard extends StatelessWidget {
   final VoidCallback? onOpen;
   final VoidCallback onMove;
   final VoidCallback? onCopy;
+  final VoidCallback? onChangeThumbnail;
+  final String? thumbnailPath;
+  final bool thumbnailHidden;
   final VoidCallback? onShare;
   final VoidCallback? onDelete;
   final bool shareBusy;
@@ -114,6 +122,22 @@ class ExportedWorkCard extends StatelessWidget {
           tooltip: '$shareLabel: $name',
           onPressed: onShare,
         ),
+        if (onChangeThumbnail != null)
+          PopupMenuButton<String>(
+            key: const Key('exportedWorkMoreMenu'),
+            icon: const Icon(Icons.more_vert, size: 20),
+            tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+            onSelected: (value) {
+              if (value == 'thumbnail') onChangeThumbnail?.call();
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'thumbnail',
+                child: Text(Localizations.localeOf(context).languageCode == 'ja'
+                    ? 'サムネイル変更' : 'Change thumbnail'),
+              ),
+            ],
+          ),
         IconButton(
           constraints: const BoxConstraints.tightFor(width: 48, height: 48),
           color: foreground,
@@ -162,7 +186,16 @@ class ExportedWorkCard extends StatelessWidget {
                 final badge = SizedBox(
                   width: 40,
                   height: 40,
-                  child: Icon(icon, color: foreground),
+                  child: thumbnailHidden
+                      ? Icon(icon, color: foreground)
+                      : thumbnailPath != null
+                          ? Image.file(
+                              File(thumbnailPath!),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) =>
+                                  Icon(icon, color: foreground),
+                            )
+                          : Icon(icon, color: foreground),
                 );
                 if (inline) {
                   return Row(
