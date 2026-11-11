@@ -86,7 +86,7 @@ void main() {
     await pumpIo(tester);
 
     await tester.longPress(find.text('受信箱').first);
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     await tester.tap(find.widgetWithIcon(ListTile, Icons.content_copy));
     await pumpIo(tester);
     expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
@@ -145,7 +145,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('home_tab_1')));
     await pumpIo(tester);
     await tester.longPress(find.text('空の書き出し').first);
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     await tester.tap(find.widgetWithIcon(ListTile, Icons.content_copy));
     await pumpIo(tester);
     expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
