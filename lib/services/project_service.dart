@@ -3275,8 +3275,19 @@ class ProjectService extends ChangeNotifier {
       }
       _tileManagers[newId] = newTm;
 
-      // 複製結果をディスクへ保存する（保存しないと再起動後に消えてしまう）。
-      _saveAsync(newId);
+      // A paste must not report success before its project bytes are durable.
+      // If saving fails, keep the failed copy out of the library rather than
+      // exposing a project that would disappear after relaunch.
+      try {
+        await saveProject(newId);
+      } catch (_) {
+        _projects.removeWhere((p) => p.id == newId);
+        _scenes.remove(newId);
+        _layerHomes.remove(newId);
+        _layerIdCounters.remove(newId);
+        _tileManagers.remove(newId);
+        rethrow;
+      }
       notifyListeners();
       return true;
     }
