@@ -3992,8 +3992,9 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
   }
 
   Future<void> _reload() async {
-    setState(() => _future = ExportEngine.listExportedFiles(
-        forceRefresh: true));
+    setState(() {
+      _future = ExportEngine.listExportedFiles(forceRefresh: true);
+    });
     try {
       await _future;
     } catch (error, stackTrace) {
