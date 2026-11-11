@@ -11,6 +11,7 @@ on:
       - 'lib/screens/home/widgets/project_list_widget.dart'
       - 'lib/widgets/collection_action_controls.dart'
       - 'test/save_slot_visual_audit_test.dart'
+      - 'test/save_thumbnail_accuracy_test.dart'
       - 'test/project_grid_actions_test.dart'
       - 'test/save_slot_action_buttons_test.dart'
       - 'test/save_slot_action_success_visual_test.dart'
@@ -44,6 +45,7 @@ jobs:
           flutter test --no-pub --reporter expanded \
             test/save_slot_action_buttons_test.dart \
             test/save_slot_visual_audit_test.dart \
+            test/save_thumbnail_accuracy_test.dart \
             test/project_grid_actions_test.dart \
             test/save_slot_action_success_visual_test.dart \
             test/shared_collection_controls_capture_test.dart
