@@ -326,25 +326,27 @@ class _ExportedWorkThumbnailDialogState
       existingCover = setting['imagePath'] is String
           ? setting['imagePath'] as String
           : null;
-      // Probe the media rather than assuming all exports are 30fps.
-      final session = await FFprobeKit.getMediaInformation(widget.file.path);
-      final info = await session.getMediaInformation();
-      if (info != null) {
-        final streams = info.getStreams();
-        for (final stream in streams) {
-          if (stream.getType() != 'video') continue;
-          final rate = _rate(stream.getAverageFrameRate() ??
-              stream.getRealFrameRate() ?? '0');
-          if (rate > 0 && rate.isFinite) fps = rate;
-          final number = int.tryParse(
-              stream.getStringProperty('nb_frames') ?? '');
-          if (number != null && number > 0) totalFrames = number;
-          break;
-        }
-        final duration = double.tryParse(info.getDuration() ?? '');
-        if (totalFrames <= 1 && duration != null &&
-            duration > 0 && fps > 0) {
-          totalFrames = math.max(1, (duration * fps).round());
+      if (!isImage) {
+        // Probe the media rather than assuming all exports are 30fps.
+        final session = await FFprobeKit.getMediaInformation(widget.file.path);
+        final info = await session.getMediaInformation();
+        if (info != null) {
+          final streams = info.getStreams();
+          for (final stream in streams) {
+            if (stream.getType() != 'video') continue;
+            final rate = _rate(stream.getAverageFrameRate() ??
+                stream.getRealFrameRate() ?? '0');
+            if (rate > 0 && rate.isFinite) fps = rate;
+            final number = int.tryParse(
+                stream.getStringProperty('nb_frames') ?? '');
+            if (number != null && number > 0) totalFrames = number;
+            break;
+          }
+          final duration = double.tryParse(info.getDuration() ?? '');
+          if (totalFrames <= 1 && duration != null &&
+              duration > 0 && fps > 0) {
+            totalFrames = math.max(1, (duration * fps).round());
+          }
         }
       }
       supportedFrames = totalFrames > 1;
@@ -429,60 +431,52 @@ class _ExportedWorkThumbnailDialogState
     }
   }
 
-  static String quote(String path) =>
-      '"${path.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"';
-
-  Future<String> _extract(int frame) async {
-    final dir = Directory(
-        '${(await getApplicationSupportDirectory()).path}/exported_covers');
-    await dir.create(recursive: true);
-    final output = File('${dir.path}/export_${DateTime.now().microsecondsSinceEpoch}.png');
-    // Exact frame-number selection, not an approximate time seek.
-    final filter = 'select=eq(n\\,$frame),scale=420:-2';
-    final session = await FFmpegKit.execute(
-      '-hide_banner -loglevel error -y -i ${quote(widget.file.path)} '
-      '-vf "${filter}" -vsync 0 -frames:v 1 ${quote(output.path)}',
-    );
-    final exitCode = await session.getReturnCode();
-    if (!ReturnCode.isSuccess(exitCode) ||
-        !await output.exists() || await output.length() == 0) {
-      throw const FileSystemException('Frame extraction failed');
-    }
-    return output.path;
-  }
+  Future<String> _extract(int frame) =>
+      ExportedWorkCoverStore.extractVideoFrame(widget.file, frame);
 
   Future<void> _apply() async {
     _stop();
     setState(() => busy = true);
+    String? generated;
+    var committed = false;
     try {
       String? imagePath;
       if (mode == 'custom') {
         if (customBytes == null) {
           imagePath = existingCover;
         } else {
-          final dir = Directory(
-            '${(await getApplicationSupportDirectory()).path}/exported_covers');
-          await dir.create(recursive: true);
-          final file = File(
-              '${dir.path}/custom_${DateTime.now().microsecondsSinceEpoch}.png');
-          await file.writeAsBytes(customBytes!, flush: true);
-          imagePath = file.path;
+          generated = await ExportedWorkCoverStore.storeCompressedImage(
+              customBytes!);
+          imagePath = generated;
         }
       } else if (!isImage && (mode == 'frame' || mode == 'latest')) {
-        imagePath = await _extract(
+        generated = await _extract(
             mode == 'latest' ? totalFrames - 1 : frameIndex);
+        imagePath = generated;
       } else if (isImage && mode != 'none') {
-        imagePath = widget.file.path;
+        generated = await ExportedWorkCoverStore.storeCompressedImage(
+            await widget.file.readAsBytes());
+        imagePath = generated;
       }
       await ExportedWorkCoverStore.write(
         widget.file,
         mode: mode,
         imagePath: imagePath,
-        frameIndex: mode == 'frame' ? frameIndex : null,
+        frameIndex: mode == 'frame' ? frameIndex :
+            mode == 'latest' ? (isImage ? 0 : totalFrames - 1) : null,
       );
+      committed = true;
       widget.onApplied?.call();
       if (mounted) Navigator.pop(context);
     } catch (_) {
+      if (!committed && generated != null) {
+        try {
+          final file = File(generated);
+          if (await file.exists()) await file.delete();
+        } on FileSystemException {
+          // The previous cover is still referenced by persisted settings.
+        }
+      }
       if (mounted) setState(() {
         busy = false;
         failure = tr('サムネイルを保存できませんでした',
