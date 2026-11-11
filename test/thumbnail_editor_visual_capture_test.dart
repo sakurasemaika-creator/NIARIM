@@ -15,6 +15,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
   testWidgets('real Flutter screenshots of thumbnail options', (tester) async {
+    print('CAPTURE_STAGE 00 begin');
     SharedPreferences.setMockInitialValues({});
     final temp = Directory.systemTemp.createTempSync('niarim_thumb_capture_');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -40,15 +41,21 @@ void main() {
     final exportedImage = File(temp.path + '/sample_export.png');
     await exportedImage.writeAsBytes(data!.buffer.asUint8List());
 
+    print('CAPTURE_STAGE 01 before fonts');
     await loadAppFonts(tester);
+    print('CAPTURE_STAGE 02 fonts loaded');
     final service = ProjectService();
+    print('CAPTURE_STAGE 03 before service init');
     await tester.runAsync(service.init);
+    print('CAPTURE_STAGE 04 after service init');
     addTearDown(service.dispose);
+    print('CAPTURE_STAGE 05 before project create');
     final project = await tester.runAsync(() => service.createProject(
       name: '第1話 サンプルアニメ', fps: 12, durationSeconds: 2,
       backgroundColor: 0xFFE8F2FF,
       exportWidth: 480, exportHeight: 270,
     ));
+    print('CAPTURE_STAGE 06 project created');
     expect(project, isNotNull);
     final boundaryKey = GlobalKey();
     final navKey = GlobalKey<NavigatorState>();
@@ -116,7 +123,9 @@ void main() {
         ),
       ),
     );
+    print('CAPTURE_STAGE 07 before pump host');
     await tester.pumpWidget(host);
+    print('CAPTURE_STAGE 08 after pump host');
     await tester.pump(const Duration(milliseconds: 300));
 
     Future<void> capture(String name) async {
@@ -143,7 +152,9 @@ void main() {
       });
     }
 
+    print('CAPTURE_STAGE 09 before first screenshot');
     await capture('01_phone_cards');
+    print('CAPTURE_STAGE 10 first screenshot saved');
     await tester.tap(find.byKey(const Key('projectCoverMenuFixture')));
     await tester.pump(const Duration(milliseconds: 300));
     await capture('02_phone_project_menu_fixture');
