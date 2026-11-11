@@ -1,8 +1,10 @@
 import 'dart:ui' show Offset, Rect, Size;
 
 /// Magnetically align a freely positioned PC/DeX tool window with another.
-/// Edges snap only within [threshold] *and* when the windows overlap along
-/// the perpendicular axis. Overlapping and separated layouts remain valid;
+/// Opposing edges snap only within [threshold] *and* when the windows
+/// overlap along the perpendicular axis. Parallel-edge alignment alone must
+/// not pull windows sideways while they are approaching a top/bottom edge.
+/// Overlapping and separated layouts remain valid;
 /// this does not force docking or change persistent window ordering.
 Offset snapDesktopWindow(
   Offset proposed,
@@ -32,14 +34,10 @@ Offset snapDesktopWindow(
     if (sharesVerticalSpace) {
       chooseX(other.left - current.right); // attach to left neighbour
       chooseX(other.right - current.left); // attach to right neighbour
-      chooseX(other.left - current.left); // align left edges
-      chooseX(other.right - current.right); // align right edges
     }
     if (sharesHorizontalSpace) {
       chooseY(other.top - current.bottom); // attach above
       chooseY(other.bottom - current.top); // attach below
-      chooseY(other.top - current.top);
-      chooseY(other.bottom - current.bottom);
     }
   }
   return Offset(proposed.dx + (dx ?? 0), proposed.dy + (dy ?? 0));
