@@ -58,7 +58,10 @@ void main() {
 
   // ファイルの読み書きを伴う操作（複製・保存）を実時間で終わらせる。
   Future<void> captureClipboardScreen(WidgetTester tester, String name) async {
-    await settleIo(tester);
+    for (var i = 0; i < 5; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 30)));
+      await tester.pump(const Duration(milliseconds: 75));
+    }
     expect(tester.takeException(), isNull);
     final boundary = captureBoundaryKey.currentContext!.findRenderObject()
         as RenderRepaintBoundary;
