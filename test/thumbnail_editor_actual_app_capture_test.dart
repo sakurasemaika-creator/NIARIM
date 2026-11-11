@@ -163,7 +163,8 @@ void main() {
     await capture('07_phone_project_hide');
     await closeDialog();
 
-    final worksTab = find.text('作品一覧').hitTestable();
+    final worksTab = find.byKey(const ValueKey('home_tab_1'));
+    await tester.ensureVisible(worksTab);
     expect(worksTab, findsOneWidget);
     await tester.tap(worksTab);
     await tester.pump(const Duration(milliseconds: 750));
@@ -200,7 +201,8 @@ void main() {
     await capture('16_desktop_export_select_frame');
     await closeDialog();
 
-    final projectTab = find.text('プロジェクト').hitTestable();
+    final projectTab = find.byKey(const ValueKey('home_tab_0'));
+    await tester.ensureVisible(projectTab);
     expect(projectTab, findsOneWidget);
     await tester.tap(projectTab);
     await tester.pump(const Duration(milliseconds: 650));
