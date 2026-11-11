@@ -1591,7 +1591,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// プレビュー欄の操作（フレーム数・全画面）の大きさと、欄の端からの距離。
   static const double _previewControlSize = 48;
-  static const double _previewControlInset = 8;
+  static const double _previewControlInset = 0;
 
   /// プロジェクトの縦横比（書き出しの大きさ。分からなければ16:9）。
   double _previewAspect(ProjectService ps) {
