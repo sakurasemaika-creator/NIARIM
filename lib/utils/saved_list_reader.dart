@@ -9,10 +9,13 @@ import 'app_error_reporter.dart';
 /// 例外でServiceの初期化全体が失敗し、起動をやり直しても毎回同じ所で
 /// 止まる（保存を消すまで二度と起動できない）。読めなかった項目は
 /// [AppErrorReporter]へ記録し、[onSkipped]で呼び出し側へ知らせる。
+/// [unreadable]を渡すと、読めなかった項目をそのままの文字列で足す（保存し
+/// 直すときに残すため）。
 List<T> readSavedJsonList<T>(
   Iterable<String> raw,
   T Function(Map<String, dynamic> json) fromJson, {
   void Function()? onSkipped,
+  List<String>? unreadable,
 }) {
   final items = <T>[];
   for (final entry in raw) {
@@ -25,6 +28,7 @@ List<T> readSavedJsonList<T>(
     } catch (error, stack) {
       // TypeError（項目の型違い）も含めて受ける。
       AppErrorReporter.record(error, stack);
+      unreadable?.add(entry);
       onSkipped?.call();
     }
   }

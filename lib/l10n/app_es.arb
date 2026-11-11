@@ -218,6 +218,8 @@
   "transferExportSuccessSnackbar": "Archivo .niatra exportado",
   "transferExportFailedSnackbar": "Error al exportar: {error}",
   "transferImportSuccessSnackbar": "Archivo .niatra importado",
+  "transferImportAddedCopiesSnackbar": "{count, plural, =1{Archivo .niatra importado. 1 elemento era distinto en este dispositivo: se conservó la versión de este dispositivo y la importada se añadió como «{name}»} other{Archivo .niatra importado. {count} elementos eran distintos en este dispositivo: se conservaron las versiones de este dispositivo y las importadas se añadieron con nombres como «{name}»}}",
+  "transferImportShortcutsNotAddedSnackbar": "{count, plural, =1{El atajo importado «{name}» ({combo}) no se añadió porque este dispositivo usa las mismas teclas para otra acción. Para usarlo, añádelo con otras teclas en los ajustes de Atajos} other{{count} atajos importados, como «{name}» ({combo}), no se añadieron porque este dispositivo usa las mismas teclas para otras acciones. Para usarlos, añádelos con otras teclas en los ajustes de Atajos}}",
   "transferImportFailedSnackbar": "Error al importar: {error}",
   "folderManagementTitle": "Gestión de carpetas",
   "folderManagementCreateNew": "Nueva",

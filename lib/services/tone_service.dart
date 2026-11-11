@@ -10,6 +10,7 @@ import '../models/asset_tags.dart';
 import '../models/tone.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
+import '../utils/transfer_merge.dart';
 
 class ToneFolder {
   final String id;
@@ -45,6 +46,15 @@ class ToneFolder {
 class ToneService extends ChangeNotifier {
   static const _prefsKey = 'tones';
   static const _foldersKey = 'tone_folders';
+
+  /// このサービスが持つ保存のキー。引き継ぎ（.niatra）の「端末保存データ」
+  /// では扱わない（「素材」の項目が[mergeTransferred]で一覧と突き合わせて
+  /// 取り込む。理由は[BrushService.savedPreferenceKeys]と同じ）。
+  static const Set<String> savedPreferenceKeys = {_prefsKey, _foldersKey};
+
+  /// フォルダの保存の中の、この版では読めなかった項目。一覧には出さないが、
+  /// フォルダを保存し直すときに末尾へ残す（自作のフォルダを消さない）。
+  final List<String> _unreadableFolderEntries = [];
 
   final List<Tone> _tones = [];
   final List<ToneFolder> _folders = [];
@@ -530,8 +540,15 @@ class ToneService extends ChangeNotifier {
     }
     final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();
+    _unreadableFolderEntries.clear();
     if (foldersRaw != null) {
-      _folders.addAll(readSavedJsonList(foldersRaw, ToneFolder.fromJson));
+      _folders.addAll(
+        readSavedJsonList(
+          foldersRaw,
+          ToneFolder.fromJson,
+          unreadable: _unreadableFolderEntries,
+        ),
+      );
     }
     _currentTone = _tones.firstOrNull;
   }
@@ -546,10 +563,10 @@ class ToneService extends ChangeNotifier {
 
   Future<void> _persistFolders() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      _foldersKey,
-      _folders.map((f) => jsonEncode(f.toJson())).toList(),
-    );
+    await prefs.setStringList(_foldersKey, [
+      for (final folder in _folders) jsonEncode(folder.toJson()),
+      ..._unreadableFolderEntries,
+    ]);
   }
 
   void selectTone(String id) {
@@ -624,6 +641,106 @@ class ToneService extends ChangeNotifier {
     _tones.add(tone);
     notifyListeners();
     _persist();
+  }
+
+  /// 引き継ぎ（.niatra）で受け取ったトーンとフォルダを、この端末の一覧へ
+  /// 合わせて保存する。この端末の内容は黙って失わない（決まりは
+  /// [mergeTransferredItems]）：組み込みは足さず、中身はこの版のまま、
+  /// お気に入り・タグ・フォルダだけを合わせる。自作は、同じIDで中身が違えば
+  /// この端末の方を残し、受け取った方を「名前 (コピー)」として足す。
+  /// フォルダは無いものだけ足し、行き先のフォルダが無い項目はフォルダなし。
+  /// 画像を受け取れなかった項目は、同じIDの項目がこの端末で使っている画像が
+  /// あればそれを使う。画像は置いた場所ではなく中身で比べる。同じ中身が既に
+  /// あって足さなかった項目のお気に入り・タグ・フォルダは、その項目へ
+  /// 合わせる。変えた一覧だけを保存する。受け取ったトーンのIDごとの、
+  /// 合わせた後でその中身を持つこの端末のトーンのIDを[placed]へ書く
+  /// （受け取った自動塗りのパーツが使うトーンを合わせるため）。
+  Future<void> mergeTransferred(
+    List<Tone> incoming, {
+    required TransferCopyNames copyNames,
+    List<ToneFolder> folders = const [],
+    Map<String, String>? placed,
+  }) async {
+    var foldersChanged = false;
+    for (final folder in folders) {
+      if (_folders.any((f) => f.id == folder.id)) continue;
+      _folders.add(folder);
+      foldersChanged = true;
+    }
+    final folderIds = {for (final f in _folders) f.id};
+    final resolved = <Tone>[
+      for (final item in incoming)
+        Tone.fromJson({
+          ...item.toJson(),
+          if (!folderIds.contains(item.folderId)) 'folderId': null,
+          if (!_fileExists(item.texturePath))
+            'texturePath': _workingLocalImage(item.id) ?? item.texturePath,
+        }),
+    ];
+    // 画像は置いた場所ではなく中身で比べる。
+    final images = await TransferImageDigests.read([
+      for (final e in [..._tones, ...resolved]) e.texturePath,
+    ]);
+    // 前の読み込みでもう1台の版を足した複製（名前を変えていても見つける）。
+    final copies = await TransferCopyRecord.read(TransferCopyRecord.tones);
+    final listChanged = mergeTransferredItems(
+      _tones,
+      resolved,
+      TransferMergeRules<Tone>(
+        idOf: (e) => e.id,
+        nameOf: (e) => e.name,
+        contentOf: (e) => e.toJson()
+          ..remove('id')
+          ..remove('name')
+          ..remove('isFavorite')
+          ..remove('tags')
+          ..remove('folderId')
+          ..['texturePath'] = images.of(e.texturePath),
+        organizationOf: (e) =>
+            (favorite: e.isFavorite, tags: e.tags, folderId: e.folderId),
+        withOrganization: (e, o) => Tone.fromJson({
+          ...e.toJson(),
+          'isFavorite': o.favorite,
+          'tags': o.tags,
+          'folderId': o.folderId,
+        }),
+        asCopy: (e, id, name) =>
+            Tone.fromJson({...e.toJson(), 'id': id, 'name': name}),
+        newId: (attempt) =>
+            'Tone${DateTime.now().microsecondsSinceEpoch}_$attempt',
+        copyNames: copyNames,
+        shippedOf: (id) => _defaultTones().where((e) => e.id == id).firstOrNull,
+        organizationOnly: isBuiltIn,
+      ),
+      placed: placed,
+      copies: copies,
+    );
+    await copies.save();
+    if (!listChanged && !foldersChanged) return;
+    final current = _currentTone;
+    _currentTone =
+        _tones.where((e) => e.id == current?.id).firstOrNull ??
+        _tones.firstOrNull;
+    notifyListeners();
+    if (foldersChanged) await _persistFolders();
+    if (listChanged) await _persist();
+  }
+
+  /// 同じIDの項目がこの端末で使っている画像（ファイルがあるときだけ）。
+  String? _workingLocalImage(String id) {
+    final path = _tones.where((e) => e.id == id).firstOrNull?.texturePath;
+    return _fileExists(path) ? path : null;
+  }
+
+  static bool _fileExists(String? path) {
+    if (path == null || path.isEmpty) return false;
+    try {
+      return File(path).existsSync();
+    } on UnsupportedError {
+      return false;
+    } on FileSystemException {
+      return false;
+    }
   }
 
   /// [id]のトーンを削除する。プリインストール、またはお気に入り登録中の

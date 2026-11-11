@@ -856,6 +856,51 @@ class NiaproSerializer {
 
   // ─── シリアライズ ─────────────────────────────────────────────────────
 
+  /// 2つの作品の中身（作品の設定・シーン・絵）が同じか。名前・ID・日時・
+  /// 整理（お気に入り・フォルダ・タグ・共有の印・サムネイル）・制作時間・
+  /// 同梱素材・フォントは比べない（引き継ぎで、同じ作品をもう一度足さない
+  /// ために使う）。
+  static bool sameContent(NiaproData a, NiaproData b) {
+    String settingsAndScenes(NiaproData d) => jsonEncode({
+      'fps': d.project.fps,
+      'durationSeconds': d.project.durationSeconds,
+      'backgroundColor': d.project.backgroundColor,
+      'exportWidth': d.project.exportWidth,
+      'exportHeight': d.project.exportHeight,
+      'drawingAreaScale': d.project.drawingAreaScale,
+      'enabledAutofillPresetIds': d.project.enabledAutofillPresetIds,
+      'scenes': [
+        for (final scene in [
+          ...d.scenes,
+        ]..sort((x, y) => x.index.compareTo(y.index)))
+          {'id': scene.id, ..._serializeScene(scene)},
+      ],
+    });
+    if (settingsAndScenes(a) != settingsAndScenes(b)) return false;
+    // 絵の無いレイヤー（タイルが空）は保存に書かれないので数えない。
+    Map<String, Map<String, Uint8List>> painted(
+      Map<String, Map<String, Uint8List>> tiles,
+    ) => {
+      for (final entry in tiles.entries)
+        if (entry.value.isNotEmpty) entry.key: entry.value,
+    };
+    final tilesA = painted(a.tileData);
+    final tilesB = painted(b.tileData);
+    if (tilesA.length != tilesB.length) return false;
+    for (final entry in tilesA.entries) {
+      final other = tilesB[entry.key];
+      if (other == null || other.length != entry.value.length) return false;
+      for (final tile in entry.value.entries) {
+        final bytes = other[tile.key];
+        if (bytes == null || bytes.length != tile.value.length) return false;
+        for (var i = 0; i < bytes.length; i++) {
+          if (bytes[i] != tile.value[i]) return false;
+        }
+      }
+    }
+    return true;
+  }
+
   static Map<String, dynamic> _serializeManifest(Project p) => {
     'id': p.id,
     'name': p.name,

@@ -320,7 +320,9 @@ void main() {
       final imported = destination.brushes.singleWhere(
         (brush) => brush.name == original.name,
       );
-      expect(imported.id, isNot(original.id));
+      // 自分の別の端末からの引き継ぎなのでIDは元のまま（読み直しても
+      // 増えない）。他の人へ渡す.niabrushの取り込みは上のとおり新しいID。
+      expect(imported.id, original.id);
       expect(imported.folderId, isNull);
       expect(imported.customImagePath, isNot(original.customImagePath));
       expect(imported.customImagePath, startsWith(documentsDirectory.path));

@@ -8,8 +8,10 @@ import '../models/filter_canvas_gizmo.dart';
 import '../models/filter_def.dart';
 import '../models/layer.dart';
 import '../models/pixel_color_mode.dart';
+import '../utils/filter_display_name.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
+import '../utils/transfer_merge.dart';
 
 class FilterService extends ChangeNotifier {
   static const _prefsKey = 'draw_filters';
@@ -286,40 +288,9 @@ class FilterService extends ChangeNotifier {
             migratedFilterState = true;
             return null;
           }
-          var filter = FilterDef.fromJson(json);
-          if (filter.id == prismFilterId) {
-            final usesLegacyDefaults =
-                filter.prismBlurPx == 8 && filter.prismDirectionDegrees == 45;
-            if (filter.kind != FilterKind.prism || usesLegacyDefaults) {
-              filter = filter.copyWith(
-                kind: FilterKind.prism,
-                prismBlurPx: usesLegacyDefaults ? 17 : filter.prismBlurPx,
-                prismDirectionDegrees: usesLegacyDefaults
-                    ? 90
-                    : filter.prismDirectionDegrees,
-              );
-              migratedFilterState = true;
-            }
-          }
-          if (filter.kind == FilterKind.autoLineart &&
-              filter.autoLineartSmoothing > 10) {
-            filter = filter.copyWith(
-              autoLineartSmoothing: (filter.autoLineartSmoothing / 10)
-                  .round()
-                  .clamp(0, 10)
-                  .toDouble(),
-            );
-            migratedFilterState = true;
-          }
-          final dedicatedStyle = filter.kind == FilterKind.noise
-              ? dedicatedNoiseStyleFor(filter.id)
-              : null;
-          if (dedicatedStyle != null && filter.noiseStyle != dedicatedStyle) {
-            // Older versions could save a different effect under the named
-            // film-grain or VHS tile. Preserve all other edited parameters.
-            filter = filter.copyWith(noiseStyle: dedicatedStyle);
-            migratedFilterState = true;
-          }
+          final saved = FilterDef.fromJson(json);
+          final filter = _upToDate(saved);
+          if (!identical(filter, saved)) migratedFilterState = true;
           return filter;
         }, onSkipped: () => intact = false).whereType<FilterDef>(),
       );
@@ -353,6 +324,44 @@ class FilterService extends ChangeNotifier {
       (f) => f.id == genericNoiseFilterId,
     );
     _currentFilterId = filters.firstOrNull?.id;
+  }
+
+  /// [filter] read the way this version reads a filter saved by an older
+  /// one (the same instance when nothing changes): the prism's old default
+  /// blur and direction, auto line art's old smoothing scale, and the effect
+  /// kept under the named film-grain and VHS tiles.
+  static FilterDef _upToDate(FilterDef filter) {
+    var next = filter;
+    if (next.id == prismFilterId) {
+      final usesLegacyDefaults =
+          next.prismBlurPx == 8 && next.prismDirectionDegrees == 45;
+      if (next.kind != FilterKind.prism || usesLegacyDefaults) {
+        next = next.copyWith(
+          kind: FilterKind.prism,
+          prismBlurPx: usesLegacyDefaults ? 17 : next.prismBlurPx,
+          prismDirectionDegrees: usesLegacyDefaults
+              ? 90
+              : next.prismDirectionDegrees,
+        );
+      }
+    }
+    if (next.kind == FilterKind.autoLineart && next.autoLineartSmoothing > 10) {
+      next = next.copyWith(
+        autoLineartSmoothing: (next.autoLineartSmoothing / 10)
+            .round()
+            .clamp(0, 10)
+            .toDouble(),
+      );
+    }
+    final dedicatedStyle = next.kind == FilterKind.noise
+        ? dedicatedNoiseStyleFor(next.id)
+        : null;
+    if (dedicatedStyle != null && next.noiseStyle != dedicatedStyle) {
+      // Older versions could save a different effect under the named
+      // film-grain or VHS tile. Preserve all other edited parameters.
+      next = next.copyWith(noiseStyle: dedicatedStyle);
+    }
+    return next;
   }
 
   Future<void> _persist() async {
@@ -760,6 +769,79 @@ class FilterService extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  /// 引き継ぎ（.niatra）の端末保存データで受け取った描画フィルター（保存と
+  /// 同じ1件ずつのJSON）を、この端末の一覧へ合わせる。この端末で変えた値は
+  /// 黙って失わない（決まりは[mergeTransferredItems]）：
+  /// - 組み込みのフィルターの値は、使うたびに変わる最後に使った値（ブラシの
+  ///   太さと同じ）。この端末で出荷時のままならもう1台で変えた値にし、
+  ///   この端末でも変えていればこの端末の値のまま（複製は足さない。両方で
+  ///   使っていると、行き来するたびに同じ種類のフィルターが増えた）。
+  /// - もう1台で複製したフィルターは足す。同じIDで値が違えば（後でどちらかで
+  ///   変えた）、この端末の版を残し、もう1台の版を複製として足す。
+  /// - お気に入りはどちらかで付けていれば付ける。
+  /// - ノイズの種類ごとの設定（フィルムグレイン・VHSの隠れたフィルター）は
+  ///   この端末のまま（お気に入りだけを合わせる）。
+  /// 足した複製は、フィルターの一覧に出る名前（[filterDisplayName]：種類の
+  /// 名前に「(コピー)」と番号）で[copyNames]の知らせへ書く。古い版の値は、
+  /// この端末の保存と同じく今の版の値として読む。変えたときだけ保存する。
+  Future<void> mergeTransferred(
+    List<String> saved, {
+    required TransferCopyNames copyNames,
+  }) async {
+    final incoming = readSavedJsonList<FilterDef?>(
+      saved,
+      (json) => FilterDef.hasKnownKind(json)
+          ? _upToDate(FilterDef.fromJson(json))
+          : null,
+    ).whereType<FilterDef>().toList();
+    final added = <FilterDef>[];
+    // 前の読み込みでもう1台の版を足した複製（名前を変えていても見つける）。
+    final copies = await TransferCopyRecord.read(
+      TransferCopyRecord.drawFilters,
+    );
+    final changed = mergeTransferredItems(
+      _filters,
+      incoming,
+      TransferMergeRules<FilterDef>(
+        idOf: (f) => f.id,
+        nameOf: (f) => f.name,
+        contentOf: (f) => f.toJson()
+          ..remove('id')
+          ..remove('name')
+          ..remove('isFavorite'),
+        organizationOf: (f) =>
+            (favorite: f.isFavorite, tags: const [], folderId: null),
+        withOrganization: (f, o) => f.copyWith(isFavorite: o.favorite),
+        asCopy: (f, id, name) {
+          final copy = f.copyWith(id: id, name: name);
+          added.add(copy);
+          return copy;
+        },
+        newId: (attempt) =>
+            'custom_${DateTime.now().microsecondsSinceEpoch}_$attempt',
+        // 保存する名前の複製（一覧には出ないので、知らせは下で書く）。
+        copyNames: TransferCopyNames(copyNames.l10n),
+        shippedOf: (id) => _shippedFilters[id],
+        organizationOnly: (id) =>
+            id == filmGrainFilterId || id == vhsNoiseFilterId,
+        keepsLocalOnConflict: isBuiltIn,
+      ),
+      copies: copies,
+    );
+    await copies.save();
+    final l10n = copyNames.l10n;
+    for (final copy in added) {
+      copyNames.report?.addedCopies.add(filterDisplayName(l10n, copy));
+    }
+    if (!changed) return;
+    await _persist();
+    notifyListeners();
+  }
+
+  static final Map<String, FilterDef> _shippedFilters = {
+    for (final filter in _defaultFilters()) filter.id: filter,
+  };
 
   void toggleFavorite(String id) {
     final idx = _filters.indexWhere((f) => f.id == id);

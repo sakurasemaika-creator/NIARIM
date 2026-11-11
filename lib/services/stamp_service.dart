@@ -10,6 +10,7 @@ import '../models/asset_tags.dart';
 import '../models/stamp.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
+import '../utils/transfer_merge.dart';
 
 class StampFolder {
   final String id;
@@ -45,6 +46,15 @@ class StampFolder {
 class StampService extends ChangeNotifier {
   static const _prefsKey = 'stamps';
   static const _foldersKey = 'stamp_folders';
+
+  /// このサービスが持つ保存のキー。引き継ぎ（.niatra）の「端末保存データ」
+  /// では扱わない（「素材」の項目が[mergeTransferred]で一覧と突き合わせて
+  /// 取り込む。理由は[BrushService.savedPreferenceKeys]と同じ）。
+  static const Set<String> savedPreferenceKeys = {_prefsKey, _foldersKey};
+
+  /// フォルダの保存の中の、この版では読めなかった項目。一覧には出さないが、
+  /// フォルダを保存し直すときに末尾へ残す（自作のフォルダを消さない）。
+  final List<String> _unreadableFolderEntries = [];
 
   final List<Stamp> _stamps = [];
   final List<StampFolder> _folders = [];
@@ -203,8 +213,15 @@ class StampService extends ChangeNotifier {
     }
     final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();
+    _unreadableFolderEntries.clear();
     if (foldersRaw != null) {
-      _folders.addAll(readSavedJsonList(foldersRaw, StampFolder.fromJson));
+      _folders.addAll(
+        readSavedJsonList(
+          foldersRaw,
+          StampFolder.fromJson,
+          unreadable: _unreadableFolderEntries,
+        ),
+      );
     }
     _currentStamp = _stamps.firstOrNull;
   }
@@ -219,10 +236,10 @@ class StampService extends ChangeNotifier {
 
   Future<void> _persistFolders() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      _foldersKey,
-      _folders.map((f) => jsonEncode(f.toJson())).toList(),
-    );
+    await prefs.setStringList(_foldersKey, [
+      for (final folder in _folders) jsonEncode(folder.toJson()),
+      ..._unreadableFolderEntries,
+    ]);
   }
 
   void selectStamp(String id) {
@@ -289,6 +306,103 @@ class StampService extends ChangeNotifier {
     _stamps.add(stamp);
     notifyListeners();
     _persist();
+  }
+
+  /// 引き継ぎ（.niatra）で受け取ったスタンプとフォルダを、この端末の一覧へ
+  /// 合わせて保存する。この端末の内容は黙って失わない（決まりは
+  /// [mergeTransferredItems]）：組み込みは足さず、中身はこの版のまま、
+  /// お気に入り・タグ・フォルダだけを合わせる。自作は、同じIDで中身が違えば
+  /// この端末の方を残し、受け取った方を「名前 (コピー)」として足す。
+  /// フォルダは無いものだけ足し、行き先のフォルダが無い項目はフォルダなし。
+  /// 画像を受け取れなかった項目は、同じIDの項目がこの端末で使っている画像が
+  /// あればそれを使う。画像は置いた場所ではなく中身で比べる。同じ中身が既に
+  /// あって足さなかった項目のお気に入り・タグ・フォルダは、その項目へ
+  /// 合わせる。変えた一覧だけを保存する。
+  Future<void> mergeTransferred(
+    List<Stamp> incoming, {
+    required TransferCopyNames copyNames,
+    List<StampFolder> folders = const [],
+  }) async {
+    var foldersChanged = false;
+    for (final folder in folders) {
+      if (_folders.any((f) => f.id == folder.id)) continue;
+      _folders.add(folder);
+      foldersChanged = true;
+    }
+    final folderIds = {for (final f in _folders) f.id};
+    final resolved = <Stamp>[
+      for (final item in incoming)
+        Stamp.fromJson({
+          ...item.toJson(),
+          if (!folderIds.contains(item.folderId)) 'folderId': null,
+          if (!_fileExists(item.imagePath))
+            'imagePath': _workingLocalImage(item.id) ?? item.imagePath,
+        }),
+    ];
+    // 画像は置いた場所ではなく中身で比べる。
+    final images = await TransferImageDigests.read([
+      for (final e in [..._stamps, ...resolved]) e.imagePath,
+    ]);
+    // 前の読み込みでもう1台の版を足した複製（名前を変えていても見つける）。
+    final copies = await TransferCopyRecord.read(TransferCopyRecord.stamps);
+    final listChanged = mergeTransferredItems(
+      _stamps,
+      resolved,
+      TransferMergeRules<Stamp>(
+        idOf: (e) => e.id,
+        nameOf: (e) => e.name,
+        contentOf: (e) => e.toJson()
+          ..remove('id')
+          ..remove('name')
+          ..remove('isFavorite')
+          ..remove('tags')
+          ..remove('folderId')
+          ..['imagePath'] = images.of(e.imagePath),
+        organizationOf: (e) =>
+            (favorite: e.isFavorite, tags: e.tags, folderId: e.folderId),
+        withOrganization: (e, o) => Stamp.fromJson({
+          ...e.toJson(),
+          'isFavorite': o.favorite,
+          'tags': o.tags,
+          'folderId': o.folderId,
+        }),
+        asCopy: (e, id, name) =>
+            Stamp.fromJson({...e.toJson(), 'id': id, 'name': name}),
+        newId: (attempt) =>
+            'Stamp${DateTime.now().microsecondsSinceEpoch}_$attempt',
+        copyNames: copyNames,
+        shippedOf: (id) =>
+            _defaultStamps().where((e) => e.id == id).firstOrNull,
+        organizationOnly: isBuiltIn,
+      ),
+      copies: copies,
+    );
+    await copies.save();
+    if (!listChanged && !foldersChanged) return;
+    final current = _currentStamp;
+    _currentStamp =
+        _stamps.where((e) => e.id == current?.id).firstOrNull ??
+        _stamps.firstOrNull;
+    notifyListeners();
+    if (foldersChanged) await _persistFolders();
+    if (listChanged) await _persist();
+  }
+
+  /// 同じIDの項目がこの端末で使っている画像（ファイルがあるときだけ）。
+  String? _workingLocalImage(String id) {
+    final path = _stamps.where((e) => e.id == id).firstOrNull?.imagePath;
+    return _fileExists(path) ? path : null;
+  }
+
+  static bool _fileExists(String? path) {
+    if (path == null || path.isEmpty) return false;
+    try {
+      return File(path).existsSync();
+    } on UnsupportedError {
+      return false;
+    } on FileSystemException {
+      return false;
+    }
   }
 
   /// [id]のスタンプを削除する。プリインストール、またはお気に入り登録中の

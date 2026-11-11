@@ -218,6 +218,8 @@
   "transferExportSuccessSnackbar": "已匯出.niatra檔案",
   "transferExportFailedSnackbar": "匯出失敗：{error}",
   "transferImportSuccessSnackbar": "已匯入.niatra檔案",
+  "transferImportAddedCopiesSnackbar": "{count, plural, =1{已匯入.niatra檔案。有1項與本裝置的內容不同：已保留本裝置的版本，匯入的版本已新增為「{name}」} other{已匯入.niatra檔案。有{count}項與本裝置的內容不同：已保留本裝置的版本，匯入的版本已以「{name}」等名稱新增}}",
+  "transferImportShortcutsNotAddedSnackbar": "{count, plural, =1{匯入的快捷鍵「{name}」（{combo}）未新增，因為本裝置已將相同的按鍵用於其他操作。如需使用，請在快捷鍵設定中以其他按鍵新增} other{匯入的快捷鍵「{name}」（{combo}）等{count}個未新增，因為本裝置已將相同的按鍵用於其他操作。如需使用，請在快捷鍵設定中以其他按鍵新增}}",
   "transferImportFailedSnackbar": "匯入失敗：{error}",
   "folderManagementTitle": "資料夾管理",
   "folderManagementCreateNew": "新增",

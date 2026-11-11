@@ -1,6 +1,7 @@
 import '../l10n/app_localizations.dart';
 import '../models/custom_automation.dart';
 import '../models/filter_def.dart';
+import 'duplicate_name.dart';
 import 'filter_display_name.dart';
 
 /// The official presets' names as shipped (and stored on the device), each
@@ -14,15 +15,26 @@ const _builtinNames = {
 enum _BuiltinName { draftToLineart, analogLineart, lineartColorTrace }
 
 /// An automation's (or a draft's) [name] in the app's language: the
-/// official presets' shipped names are translated; any other name is the
+/// official presets' shipped names are translated, and so are copies of them
+/// (a transfer adds "線画作成（デジタル） (copy)" when both devices edited the
+/// preset): the translated name with the copy suffix and number in the app's
+/// language, whatever language the copy was named in. Any other name is the
 /// user's own.
-String customAutomationDisplayName(AppLocalizations l10n, String name) =>
+String customAutomationDisplayName(AppLocalizations l10n, String name) {
+  final shipped = _translatedBuiltinName(l10n, name);
+  if (shipped != null) return shipped;
+  final copy = copyNameParts(name);
+  final source = copy == null ? null : _translatedBuiltinName(l10n, copy.name);
+  return source == null ? name : copyNameIn(l10n, source, copy!.number);
+}
+
+String? _translatedBuiltinName(AppLocalizations l10n, String name) =>
     switch (_builtinNames[name]) {
       _BuiltinName.draftToLineart => l10n.customAutomationBuiltinDraftToLineart,
       _BuiltinName.analogLineart => l10n.customAutomationBuiltinAnalogLineart,
       _BuiltinName.lineartColorTrace =>
         l10n.customAutomationBuiltinLineartColorTrace,
-      null => name,
+      null => null,
     };
 
 /// What a step does, in the app's language, worked out from its command and

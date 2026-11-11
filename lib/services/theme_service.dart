@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_theme_preset.dart';
 import '../utils/color_contrast.dart';
 import '../utils/tolerant_preferences.dart';
+import '../utils/transfer_merge.dart';
 
 class ThemeService extends ChangeNotifier {
   static const _prefsPresetsKey = 'theme_presets';
@@ -30,8 +31,21 @@ class ThemeService extends ChangeNotifier {
   /// チェックマークが付かず、色を編集してもどのテーマも書き換わらない。
   static const String customCurrentId = 'theme_custom_current';
 
+  /// このサービスが持つ保存のキー。引き継ぎ（.niatra）の「端末保存データ」
+  /// では扱わない（「テーマ」の項目が[mergeTransferred]で一覧と突き合わせて
+  /// 取り込む。保存を直接書き換えると、動いている一覧の次の保存で戻り、
+  /// 起動し直すとこの端末にしか無いテーマが消える。移行の印は端末ごと）。
+  static const Set<String> savedPreferenceKeys = {
+    _prefsPresetsKey,
+    _prefsCurrentJsonKey,
+    _originalBuiltInPaletteRestoreKey,
+  };
+
   final List<AppThemePreset> _presets = [];
   AppThemePreset _current = AppThemePreset.defaultLight;
+
+  /// 引き継ぎでもう1台の版を足した複製の記録（[init]で読む）。
+  TransferCopyRecord _transferCopies = TransferCopyRecord.none();
 
   List<AppThemePreset> get presets => List.unmodifiable(_presets);
   AppThemePreset get current => _current;
@@ -438,6 +452,10 @@ class ThemeService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
+    _transferCopies = TransferCopyRecord.readFrom(
+      prefs,
+      TransferCopyRecord.themes,
+    );
     final shouldRestoreBuiltIns =
         prefs.readBool(_originalBuiltInPaletteRestoreKey) != true;
     final originalBuiltIns = {
@@ -539,11 +557,20 @@ class ThemeService extends ChangeNotifier {
   }
 
   Future<void> _persist() async {
+    await _persistPresets();
+    await _persistCurrent();
+  }
+
+  Future<void> _persistPresets() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
       _prefsPresetsKey,
       _presets.map((p) => jsonEncode(p.toJson())).toList(),
     );
+  }
+
+  Future<void> _persistCurrent() async {
+    final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefsCurrentJsonKey, jsonEncode(_current.toJson()));
   }
 
@@ -622,6 +649,132 @@ class ThemeService extends ChangeNotifier {
     if (_current.id == preset.id) _current = preset;
     notifyListeners();
     _persist();
+  }
+
+  /// 引き継ぎ（.niatra）で受け取ったテーマを、この端末の一覧へ合わせて
+  /// 保存する。この端末の内容は黙って失わない（決まりは
+  /// [mergeTransferredItems]）：同じIDで色か名前が違えば、この端末のテーマを
+  /// 残し、受け取った方を「名前 (コピー)」として足す。組み込みのテーマは、
+  /// この端末で元の配色のままなら受け取った方で置き換える。
+  ///
+  /// 一覧に無い、この端末の今の色と同じ配色で名前が同じか複製どうしの
+  /// テーマ（もう1台がこの端末の今の色を一覧へ足し、戻ってきた複製）は
+  /// 足さない。
+  ///
+  /// [current]（元の端末の今の色）も同じ決まりで扱う：
+  /// - この端末の今の色が自分の色（どの組み込みのテーマの配色とも違う）なら
+  ///   そのまま。元の端末の今の色も自分の色で、合わせた後の一覧のどの
+  ///   テーマにも無ければ、一覧へ「名前 (コピー)」として足す（ブラシ・
+  ///   パレットと同じく、食い違ったらこの端末の方を使い、もう1台の方は
+  ///   一覧から選べる）。
+  /// - この端末の今の色が組み込みの配色なら、元の端末の今の色にする。元の
+  ///   端末で一覧のテーマを編集していたなら、合わせた後の一覧で同じ配色の
+  ///   そのテーマ（この端末のテーマを残して足した複製のこともある）の編集に
+  ///   し、無ければどのテーマの編集でもない色として持つ（受け取った色で
+  ///   この端末のテーマを上書き保存しない）。
+  ///
+  /// 変えた保存だけを書く（何も変わらなければ書かない。読めない項目の
+  /// 入った保存を、読めた分だけで書き直さない）。
+  Future<void> mergeTransferred(
+    List<AppThemePreset> incoming, {
+    required TransferCopyNames copyNames,
+    AppThemePreset? current,
+  }) async {
+    final shipped = {for (final p in _builtInPresets) p.id: p};
+    Object? colours(AppThemePreset p) => p.toJson()
+      ..remove('id')
+      ..remove('name')
+      ..remove('isFavorite');
+    String key(AppThemePreset p) => jsonEncode(colours(p));
+    final shippedColours = {for (final p in _builtInPresets) key(p)};
+    final mine = _current;
+    // もう1台がこの端末の今の色を一覧へ足した複製（行き来して戻ってきた
+    // この端末の色）は、一覧には無くても、この端末に既にある。
+    final known = {for (final p in _presets) p.id};
+    bool myOwnColours(AppThemePreset p) =>
+        !known.contains(p.id) &&
+        key(p) == key(mine) &&
+        TransferCopyNames.related(p.name, mine.name);
+    // 前の読み込みでもう1台の版を足した複製（名前を変えていても見つける）。
+    // 一覧と今の色は待たずに合わせる（起動のときに読んでおいた記録）。
+    final copies = _transferCopies;
+    var listChanged = mergeTransferredItems(
+      _presets,
+      [
+        for (final p in incoming)
+          if (!myOwnColours(p)) p,
+      ],
+      TransferMergeRules<AppThemePreset>(
+        idOf: (p) => p.id,
+        nameOf: (p) => p.name,
+        contentOf: colours,
+        organizationOf: (p) =>
+            (favorite: p.isFavorite, tags: const [], folderId: null),
+        withOrganization: (p, o) => p.copyWith(isFavorite: o.favorite),
+        asCopy: (p, id, name) => p.copyWith(id: id, name: name),
+        newId: (attempt) =>
+            'theme_${DateTime.now().microsecondsSinceEpoch}_$attempt',
+        copyNames: copyNames,
+        shippedOf: (id) => shipped[id],
+      ),
+      copies: copies,
+    );
+    var next = mine;
+    if (current != null && key(current) != key(mine)) {
+      final theirs = key(current);
+      bool sameColours(AppThemePreset p) => key(p) == theirs;
+      if (!shippedColours.contains(key(mine))) {
+        // この端末の今の色はそのまま。元の端末の自分の色は一覧から選べる
+        // ように足す。
+        if (!shippedColours.contains(theirs) && !_presets.any(sameColours)) {
+          _presets.add(
+            current.copyWith(
+              id: 'theme_${DateTime.now().microsecondsSinceEpoch}_current',
+              name: copyNames.next(current.name, {
+                for (final p in _presets) p.name,
+              }),
+              isFavorite: false,
+            ),
+          );
+          listChanged = true;
+        }
+      } else {
+        final editing = incoming.any(
+          (p) => p.id == current.id && sameColours(p),
+        );
+        next = editing
+            ? _presets
+                      .where((p) => p.id == current.id && sameColours(p))
+                      .firstOrNull ??
+                  _presets
+                      .where(
+                        (p) =>
+                            sameColours(p) &&
+                            TransferCopyNames.related(p.name, current.name),
+                      )
+                      .firstOrNull ??
+                  current.copyWith(id: customCurrentId)
+            // 一覧のテーマの編集ではない（配色だけ取り込んだ、または元の
+            // 端末では消したテーマの）色は、この端末の同じIDのテーマの
+            // 編集にしない。
+            : current.copyWith(id: customCurrentId);
+      }
+    }
+    // 一覧のテーマの編集なら、合わせた後の項目（お気に入り）を写す。
+    final edited = next;
+    next =
+        _presets
+            .where((p) => p.id == edited.id && key(p) == key(edited))
+            .firstOrNull ??
+        edited;
+    final currentChanged =
+        jsonEncode(next.toJson()) != jsonEncode(mine.toJson());
+    if (!listChanged && !currentChanged) return;
+    _current = next;
+    notifyListeners();
+    if (listChanged) await _persistPresets();
+    if (currentChanged) await _persistCurrent();
+    await copies.save();
   }
 
   void deletePreset(String id) {

@@ -218,6 +218,8 @@
   "transferExportSuccessSnackbar": "Exported the .niatra file",
   "transferExportFailedSnackbar": "Export failed: {error}",
   "transferImportSuccessSnackbar": "Imported the .niatra file",
+  "transferImportAddedCopiesSnackbar": "{count, plural, =1{Imported the .niatra file. 1 item was different on this device, so this device's version was kept and the imported one was added as \"{name}\"} other{Imported the .niatra file. {count} items were different on this device, so this device's versions were kept and the imported ones were added under names such as \"{name}\"}}",
+  "transferImportShortcutsNotAddedSnackbar": "{count, plural, =1{The imported shortcut \"{name}\" ({combo}) was not added because this device uses the same keys for another action. To use it, add it with other keys in the Shortcuts settings} other{{count} imported shortcuts, such as \"{name}\" ({combo}), were not added because this device uses the same keys for other actions. To use them, add them with other keys in the Shortcuts settings}}",
   "transferImportFailedSnackbar": "Import failed: {error}",
   "folderManagementTitle": "Folder Management",
   "folderManagementCreateNew": "New",

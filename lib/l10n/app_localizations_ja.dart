@@ -640,6 +640,36 @@ class AppLocalizationsJa extends AppLocalizations {
   String get transferImportSuccessSnackbar => '.niatraファイルを読み込みました';
 
   @override
+  String transferImportAddedCopiesSnackbar(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '.niatraファイルを読み込みました。この端末の内容と違った$count件は、この端末の方をそのまま残し、読み込んだ方を「$name」などの名前で足しました',
+      one:
+          '.niatraファイルを読み込みました。この端末の内容と違った1件は、この端末の方をそのまま残し、読み込んだ方を「$name」として足しました',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transferImportShortcutsNotAddedSnackbar(
+    int count,
+    String name,
+    String combo,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '読み込んだショートカット「$name」（$combo）など$count件は、この端末で同じキーを別の操作に使っているため足していません。使うときは、ショートカット設定から別のキーで追加してください',
+      one:
+          '読み込んだショートカット「$name」（$combo）は、この端末で同じキーを別の操作に使っているため足していません。使うときは、ショートカット設定から別のキーで追加してください',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String transferImportFailedSnackbar(String error) {
     return '読み込みに失敗しました: $error';
   }

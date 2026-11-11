@@ -5,7 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/custom_automation.dart';
 import '../models/custom_automation_builtin_presets.dart';
+import '../utils/custom_automation_labels.dart';
 import '../utils/saved_list_reader.dart';
+import '../utils/transfer_merge.dart';
 import '../utils/tolerant_preferences.dart';
 
 class CustomAutomationDraft {
@@ -116,10 +118,7 @@ class CustomAutomationService extends ChangeNotifier {
     var changed = false;
     for (var i = _items.length - 1; i >= 0; i--) {
       final item = _items[i];
-      final unedited =
-          item.id.startsWith('builtin_') &&
-          item.updatedAt.millisecondsSinceEpoch == 0;
-      if (!unedited) continue;
+      if (!_leftAsShipped(item)) continue;
       final latest = shipped[item.id];
       if (latest == null) {
         _items.removeAt(i);
@@ -153,6 +152,12 @@ class CustomAutomationService extends ChangeNotifier {
     return changed;
   }
 
+  /// 公式のプリセットを利用者が編集していない（配った日付のまま）。手順は
+  /// アプリの版で変わるので、中身では見分けない。
+  static bool _leftAsShipped(CustomAutomation item) =>
+      item.id.startsWith('builtin_') &&
+      item.updatedAt.millisecondsSinceEpoch == 0;
+
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
@@ -164,6 +169,91 @@ class CustomAutomationService extends ChangeNotifier {
   Future<void> _persistFavorites() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_favoritesPrefsKey, _favoriteIds.toList());
+  }
+
+  /// 引き継ぎ（.niatra）の端末保存データで受け取った自動操作（保存と同じ
+  /// 1件ずつのJSON）とお気に入りを、この端末の一覧へ足す。この端末の自動操作は
+  /// 書き換えない（同じIDで中身か名前が違えば、受け取った方を「名前 (コピー)」
+  /// として足す。決まりは[mergeTransferredItems]）。もう1台で編集していない
+  /// 公式のプリセットは、もう1台の内容を持たないので足さない（この端末で
+  /// 消したものを戻さず、古い版の手順を複製にもしない。公式のプリセットの
+  /// 手順は起動のときにこの端末の版へそろえる）。お気に入りは、もう1台の
+  /// 自動操作と同じ中身を持つこの端末の自動操作（複製として足したなら複製）に
+  /// 付ける。足した複製は、一覧に出る名前（[customAutomationDisplayName]：
+  /// 公式のプリセットの複製は画面の言語の名前）で[copyNames]の知らせへ書く。
+  ///
+  /// 受け取った自動操作のIDごとの、合わせた後でその中身を持つこの端末の
+  /// 自動操作のIDを[placed]へ書く（受け取ったショートカットが使う自動操作を
+  /// 合わせるため）。
+  Future<void> mergeTransferred(
+    List<String> saved, {
+    List<String> favoriteIds = const [],
+    required TransferCopyNames copyNames,
+    Map<String, String>? placed,
+  }) async {
+    final shipped = {
+      for (final preset in CustomAutomationBuiltinPresets.all())
+        preset.id: preset,
+    };
+    // 受け取った自動操作のIDごとに、同じ中身を持つこの端末の自動操作のID。
+    final where = placed ?? <String, String>{};
+    final added = <CustomAutomation>[];
+    // 前の読み込みでもう1台の版を足した複製（名前を変えていても見つける）。
+    final copies = await TransferCopyRecord.read(
+      TransferCopyRecord.automations,
+    );
+    final listChanged = mergeTransferredItems(
+      _items,
+      readSavedJsonList(saved, CustomAutomation.fromJson),
+      TransferMergeRules<CustomAutomation>(
+        idOf: (a) => a.id,
+        nameOf: (a) => a.name,
+        contentOf: (a) => a.toJson()
+          ..remove('id')
+          ..remove('name')
+          ..remove('createdAt')
+          ..remove('updatedAt'),
+        organizationOf: (_) =>
+            (favorite: false, tags: const [], folderId: null),
+        withOrganization: (a, _) => a,
+        asCopy: (a, id, name) {
+          final copy = CustomAutomation.fromJson({
+            ...a.toJson(),
+            'id': id,
+            'name': name,
+          });
+          added.add(copy);
+          return copy;
+        },
+        newId: (attempt) =>
+            'automation_${DateTime.now().microsecondsSinceEpoch}_$attempt',
+        // 保存する名前の複製（知らせは一覧に出る名前で下で書く）。
+        copyNames: TransferCopyNames(copyNames.l10n),
+        shippedOf: (id) => shipped[id],
+        leftAsShipped: _leftAsShipped,
+      ),
+      placed: where,
+      copies: copies,
+    );
+    await copies.save();
+    for (final copy in added) {
+      copyNames.report?.addedCopies.add(
+        customAutomationDisplayName(copyNames.l10n, copy.name),
+      );
+    }
+    var favoritesChanged = false;
+    for (final id in favoriteIds) {
+      final target = where[id];
+      if (target != null &&
+          _items.any((item) => item.id == target) &&
+          _favoriteIds.add(target)) {
+        favoritesChanged = true;
+      }
+    }
+    if (!listChanged && !favoritesChanged) return;
+    if (listChanged) await _persist();
+    if (favoritesChanged) await _persistFavorites();
+    notifyListeners();
   }
 
   Future<void> toggleFavorite(String id) async {

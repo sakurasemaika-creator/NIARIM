@@ -643,6 +643,36 @@ class AppLocalizationsKo extends AppLocalizations {
   String get transferImportSuccessSnackbar => '.niatra 파일을 가져왔습니다';
 
   @override
+  String transferImportAddedCopiesSnackbar(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '.niatra 파일을 가져왔습니다. 이 기기의 내용과 다른 $count개 항목은 이 기기의 것을 그대로 두고, 가져온 것을 「$name」 등의 이름으로 추가했습니다',
+      one:
+          '.niatra 파일을 가져왔습니다. 이 기기의 내용과 다른 1개 항목은 이 기기의 것을 그대로 두고, 가져온 것을 「$name」(으)로 추가했습니다',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transferImportShortcutsNotAddedSnackbar(
+    int count,
+    String name,
+    String combo,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '가져온 단축키 「$name」($combo) 등 $count개는 이 기기에서 같은 키를 다른 동작에 쓰고 있어서 추가하지 않았습니다. 사용하려면 단축키 설정에서 다른 키로 추가하세요',
+      one:
+          '가져온 단축키 「$name」($combo)은(는) 이 기기에서 같은 키를 다른 동작에 쓰고 있어서 추가하지 않았습니다. 사용하려면 단축키 설정에서 다른 키로 추가하세요',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String transferImportFailedSnackbar(String error) {
     return '가져오기에 실패했습니다: $error';
   }

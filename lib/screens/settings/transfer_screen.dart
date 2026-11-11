@@ -15,22 +15,31 @@ import '../../l10n/community_plaza_labels.dart';
 import '../../models/material_asset.dart' show MaterialType;
 import '../../services/autofill_preset_service.dart';
 import '../../services/brush_service.dart';
+import '../../services/custom_automation_service.dart';
 import '../../services/export_share_service.dart';
+import '../../services/filter_service.dart';
+import '../../services/first_use_tooltip_service.dart';
 import '../../services/font_service.dart';
 import '../../services/material_service.dart';
 import '../../services/palette_service.dart';
 import '../../services/pixel_art_palette_service.dart';
 import '../../services/project_service.dart';
+import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/community_service.dart';
+import '../../services/shortcut_service.dart';
 import '../../services/stamp_service.dart';
 import '../../services/theme_service.dart';
 import '../../services/tone_service.dart';
+import '../../services/watermark_service.dart';
+import '../../services/workspace_preset_service.dart';
+import '../../utils/transfer_merge.dart';
 import '../../widgets/export_share_feedback.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/projects_load_failure_notice.dart';
 import '../home/widgets/project_list_widget.dart' show buildFontShareBundle;
+import 'shortcut_settings_screen.dart' show shortcutDisplayLabel;
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -337,6 +346,7 @@ class _TransferScreenState extends State<TransferScreen> {
         final brushService = context.read<BrushService>();
         final toneService = context.read<ToneService>();
         final stampService = context.read<StampService>();
+        final watermarkService = context.read<WatermarkService>();
         final projectFiles = await _buildProjectFiles(projectService);
         if (!mounted) return;
         // まず既存Serializerで設定・プリセット・プロジェクト等を生成し、そのZIPへ
@@ -360,6 +370,7 @@ class _TransferScreenState extends State<TransferScreen> {
           brush: brushService,
           tone: toneService,
           stamp: stampService,
+          watermarks: watermarkService,
         );
       } catch (e) {
         if (!mounted) return;
@@ -426,16 +437,26 @@ class _TransferScreenState extends State<TransferScreen> {
       final brushService = context.read<BrushService>();
       final toneService = context.read<ToneService>();
       final stampService = context.read<StampService>();
+      // この端末の項目を残して足す複製の名前（「名前 (コピー)」）の言語。
+      final copyLanguage = AppLocalizations.of(context);
+      // 足した複製の名前（読み込みの後に知らせる）。
+      final report = TransferImportReport();
       // 新形式のカスタム画像を先にアプリ領域へ展開する。処理済みカテゴリは
       // data.rawから除かれるため、その後のapplyTo()で二重追加されない。
+      // どちらも一覧の項目はIDで突き合わせ、この端末の内容を残す（同じIDで
+      // 中身が違えば受け取った方を複製として足す）ので、同じファイルを
+      // 読み直しても増えない。
       await NiatraAssetBundle.restoreEmbeddedAssets(
         data,
         brush: brushService,
         tone: toneService,
         stamp: stampService,
+        autofillPresets: context.read<AutofillPresetService>(),
+        l10n: copyLanguage,
+        report: report,
       );
       if (!mounted) return;
-      NiatraSerializer.applyTo(
+      await NiatraSerializer.applyTo(
         data,
         settings: context.read<SettingsService>(),
         brush: brushService,
@@ -445,21 +466,73 @@ class _TransferScreenState extends State<TransferScreen> {
         theme: context.read<ThemeService>(),
         palette: context.read<PaletteService>(),
         pixelArtPalette: context.read<PixelArtPaletteService>(),
+        l10n: copyLanguage,
+        report: report,
       );
-      await NiatraSerializer.restoreLocalPreferences(data);
+      if (!mounted) return;
+      // 端末保存データは、上の項目が一覧と突き合わせて取り込む保存
+      // （ブラシ・テーマ等）とこの端末の作品・ゴミ箱・フォルダ等の記録を
+      // 書き換えない。利用者が作った物の一覧は、動いているサービスが
+      // この端末の一覧へ足す。
+      await NiatraSerializer.restoreLocalPreferences(
+        data,
+        lists: TransferredSavedLists(
+          workspacePresets: context.read<WorkspacePresetService>(),
+          customAutomations: context.read<CustomAutomationService>(),
+          quickTools: context.read<QuickToolService>(),
+          shortcuts: context.read<ShortcutService>(),
+          settings: context.read<SettingsService>(),
+          filters: context.read<FilterService>(),
+          firstUseTooltips: context.read<FirstUseTooltipService>(),
+          watermarks: context.read<WatermarkService>(),
+        ),
+        l10n: copyLanguage,
+        report: report,
+      );
       if (!mounted) return;
       await context.read<CommunityService>().reloadLocalContentFilters();
       if (!mounted) return;
       // プロジェクトの復元はファイルI/Oを伴う非同期処理のため、他項目の
-      // 同期的なapplyTo()とは別にawaitする。
+      // 同期的なapplyTo()とは別にawaitする。同じ中身の作品は足さず、同じ
+      // 名前の別の作品は複製の名前で足して知らせる。
       await NiatraSerializer.restoreProjects(
         data,
         context.read<ProjectService>(),
+        l10n: copyLanguage,
+        report: report,
       );
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
+      // この端末と中身の違った項目があれば、どちらも残したことと、読み込んだ
+      // 方に付けた名前を知らせる（名前の後ろの「(コピー)」だけでは、
+      // どちらがもう1台の物か分からない）。
+      final copies = report.addedCopies;
+      // 同じキーをこの端末で別の操作に使っているので足さなかった、もう1台の
+      // ショートカット（黙って捨てない）。
+      final shortcuts = report.notAddedShortcuts;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.transferImportSuccessSnackbar)),
+        SnackBar(
+          // 長い文なので、読み終えるまで出しておく。
+          duration: Duration(
+            seconds: copies.isEmpty && shortcuts.isEmpty ? 4 : 10,
+          ),
+          content: Text(
+            [
+              copies.isEmpty
+                  ? l10n.transferImportSuccessSnackbar
+                  : l10n.transferImportAddedCopiesSnackbar(
+                      copies.length,
+                      copies.first,
+                    ),
+              if (shortcuts.isNotEmpty)
+                l10n.transferImportShortcutsNotAddedSnackbar(
+                  shortcuts.length,
+                  shortcutDisplayLabel(l10n, shortcuts.first),
+                  shortcuts.first.comboLabel,
+                ),
+            ].join('\n'),
+          ),
+        ),
       );
     } catch (e) {
       if (!mounted) return;

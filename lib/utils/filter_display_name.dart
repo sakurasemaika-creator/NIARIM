@@ -1,10 +1,20 @@
 import '../l10n/app_localizations.dart';
 import '../models/filter_def.dart';
 import '../services/filter_service.dart';
+import 'duplicate_name.dart';
 
 /// A drawing filter's name in the app's language (the stored name is the
-/// built-in Japanese one).
+/// built-in Japanese one). A copy a transfer added (its stored name is a copy
+/// name, see [copyNameParts]) shows the kind's name with the copy suffix and
+/// number in the app's language, so it can be told from the filter it was
+/// copied from (and is the name the import reported).
 String filterDisplayName(AppLocalizations l10n, FilterDef filter) {
+  final kindName = _kindName(l10n, filter);
+  final copy = copyNameParts(filter.name);
+  return copy == null ? kindName : copyNameIn(l10n, kindName, copy.number);
+}
+
+String _kindName(AppLocalizations l10n, FilterDef filter) {
   if (filter.id == 'Filter0025') return l10n.filterNameInvert;
   // The unified Noise tile keeps its name across all three modes.
   if (filter.id == FilterService.genericNoiseFilterId) {

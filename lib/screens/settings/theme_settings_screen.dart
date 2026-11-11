@@ -15,6 +15,7 @@ import '../../widgets/responsive.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/duplicate_name.dart';
 import '../../utils/reorder_index.dart';
 import '../../widgets/theme_rescue_button.dart';
 import 'theme_preview_gallery_screen.dart';
@@ -501,9 +502,13 @@ class ThemeSettingsScreen extends StatelessWidget {
       case 'rename':
         _showRenameDialog(context, preset, service);
       case 'duplicate':
+        // ブラシ・作品の複製・引き継ぎで足す複製と同じ形の名前（同じ名前が
+        // あれば番号を付ける）。
         final copy = preset.copyWith(
           id: 'theme_${DateTime.now().millisecondsSinceEpoch}',
-          name: l10n.themePresetDuplicateName(preset.name),
+          name: numberedCopyName(l10n, preset.name, {
+            for (final p in service.presets) p.name,
+          }),
         );
         service.savePreset(copy);
       case 'delete':

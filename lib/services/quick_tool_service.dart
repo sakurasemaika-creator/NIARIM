@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/quick_tool_entry.dart';
 import '../utils/saved_list_reader.dart';
+import '../utils/transfer_merge.dart';
 import '../utils/tolerant_preferences.dart';
 
 /// ツール早替え機能（「↺ ツール早替えボタン」）。
@@ -14,6 +15,32 @@ class QuickToolService extends ChangeNotifier {
   static const _prefsKey = 'quick_tool_entries';
 
   final List<QuickToolEntry> _entries = [];
+
+  /// 最初から登録してある早替えツール（どの端末にも同じIDである）。
+  static const List<QuickToolEntry> _defaults = [
+    QuickToolEntry(
+      id: 'qt1',
+      label: 'Gペン 細',
+      toolKey: 'pen',
+      brushId: 'Brush0002',
+      sizeOverride: 3,
+    ),
+    QuickToolEntry(
+      id: 'qt2',
+      label: 'Gペン 太',
+      toolKey: 'pen',
+      brushId: 'Brush0002',
+      sizeOverride: 8,
+    ),
+    QuickToolEntry(
+      id: 'qt3',
+      label: 'エアブラシ',
+      toolKey: 'pen',
+      brushId: 'Brush0003',
+    ),
+    QuickToolEntry(id: 'qt4', label: '消しゴム', toolKey: 'eraser'),
+    QuickToolEntry(id: 'qt5', label: 'スポイト', toolKey: 'eyedropper'),
+  ];
   int _currentIndex = -1;
 
   List<QuickToolEntry> get entries => List.unmodifiable(_entries);
@@ -27,30 +54,7 @@ class QuickToolService extends ChangeNotifier {
         ? const <QuickToolEntry>[]
         : readSavedJsonList(raw, QuickToolEntry.fromJson);
     if (saved.isEmpty) {
-      _entries.addAll(const [
-        QuickToolEntry(
-          id: 'qt1',
-          label: 'Gペン 細',
-          toolKey: 'pen',
-          brushId: 'Brush0002',
-          sizeOverride: 3,
-        ),
-        QuickToolEntry(
-          id: 'qt2',
-          label: 'Gペン 太',
-          toolKey: 'pen',
-          brushId: 'Brush0002',
-          sizeOverride: 8,
-        ),
-        QuickToolEntry(
-          id: 'qt3',
-          label: 'エアブラシ',
-          toolKey: 'pen',
-          brushId: 'Brush0003',
-        ),
-        QuickToolEntry(id: 'qt4', label: '消しゴム', toolKey: 'eraser'),
-        QuickToolEntry(id: 'qt5', label: 'スポイト', toolKey: 'eyedropper'),
-      ]);
+      _entries.addAll(_defaults);
       // 保存が無い（初回）・空のときだけ既定を保存する。読めない値・
       // 読めない項目だけの保存は、既定の内容で動かすだけで書き換えない。
       if (raw == null ? !prefs.containsKey(_prefsKey) : raw.isEmpty) {
@@ -66,6 +70,73 @@ class QuickToolService extends ChangeNotifier {
     await prefs.setStringList(
       _prefsKey,
       _entries.map((e) => jsonEncode(e.toJson())).toList(),
+    );
+  }
+
+  /// 引き継ぎ（.niatra）の端末保存データで受け取った早替えツール（保存と
+  /// 同じ1件ずつのJSON）を、この端末の登録へ足す。この端末の登録は書き換え
+  /// ない（同じIDで中身か名前が違えば、受け取った方を「名前 (コピー)」として
+  /// 足す。最初からある登録は、この端末でそのままなら受け取った方にする。
+  /// 決まりは[mergeTransferredItems]）。使うブラシは、合わせた後でその
+  /// ブラシの中身を持つこの端末のブラシにする（[brushIds]、
+  /// [transferredBrushId]）。比べるときは、もう1台のブラシと、引き継ぎで
+  /// その版を足したこの端末の複製を同じブラシとみなす（もう1台がブラシを
+  /// この端末と同じ版にしてから送り直しても、複製を指す早替えツールを
+  /// 別の物として足さない。[TransferCopyRecord.origin]）。
+  Future<void> mergeTransferred(
+    List<String> saved, {
+    required TransferCopyNames copyNames,
+    Map<String, String> brushIds = const {},
+  }) async {
+    final shipped = {for (final entry in _defaults) entry.id: entry};
+    final brushes = await TransferCopyRecord.read(TransferCopyRecord.brushes);
+    // 前の読み込みでもう1台の版を足した複製（名前を変えていても見つける）。
+    final copies = await TransferCopyRecord.read(TransferCopyRecord.quickTools);
+    final changed = mergeTransferredItems(
+      _entries,
+      [
+        for (final entry in readSavedJsonList(saved, QuickToolEntry.fromJson))
+          _transferred(entry, brushIds),
+      ],
+      TransferMergeRules<QuickToolEntry>(
+        idOf: (e) => e.id,
+        nameOf: (e) => e.label,
+        contentOf: (e) => e.toJson()
+          ..remove('id')
+          ..remove('label')
+          ..['brushId'] = e.brushId == null ? null : brushes.origin(e.brushId!),
+        organizationOf: (_) =>
+            (favorite: false, tags: const [], folderId: null),
+        withOrganization: (e, _) => e,
+        asCopy: (e, id, name) =>
+            QuickToolEntry.fromJson({...e.toJson(), 'id': id, 'label': name}),
+        newId: (attempt) =>
+            'qt_${DateTime.now().microsecondsSinceEpoch}_$attempt',
+        copyNames: copyNames,
+        shippedOf: (id) => shipped[id],
+      ),
+      copies: copies,
+    );
+    await copies.save();
+    if (!changed) return;
+    await _persist();
+    notifyListeners();
+  }
+
+  /// 受け取った早替えツール[entry]の使うブラシを、合わせた後のこの端末の
+  /// ブラシにする（[transferredBrushId]）。
+  static QuickToolEntry _transferred(
+    QuickToolEntry entry,
+    Map<String, String> brushIds,
+  ) {
+    final brushId = transferredBrushId(entry.brushId, brushIds);
+    if (brushId == entry.brushId) return entry;
+    return QuickToolEntry(
+      id: entry.id,
+      label: entry.label,
+      toolKey: entry.toolKey,
+      brushId: brushId,
+      sizeOverride: entry.sizeOverride,
     );
   }
 

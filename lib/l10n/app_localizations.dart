@@ -1289,6 +1289,22 @@ abstract class AppLocalizations {
   /// **'.niatraファイルを読み込みました'**
   String get transferImportSuccessSnackbar;
 
+  /// Shown after importing a .niatra file when items already on this device were different: this device's items were kept and the imported ones were added under new names (count = how many, name = the first added name).
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, =1{.niatraファイルを読み込みました。この端末の内容と違った1件は、この端末の方をそのまま残し、読み込んだ方を「{name}」として足しました} other{.niatraファイルを読み込みました。この端末の内容と違った{count}件は、この端末の方をそのまま残し、読み込んだ方を「{name}」などの名前で足しました}}'**
+  String transferImportAddedCopiesSnackbar(int count, String name);
+
+  /// Shown after importing a .niatra file when shortcuts in the file were not added because this device already uses the same key combination for a different action (count = how many, name = the first shortcut's name, combo = its keys, such as Ctrl+E).
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, =1{読み込んだショートカット「{name}」（{combo}）は、この端末で同じキーを別の操作に使っているため足していません。使うときは、ショートカット設定から別のキーで追加してください} other{読み込んだショートカット「{name}」（{combo}）など{count}件は、この端末で同じキーを別の操作に使っているため足していません。使うときは、ショートカット設定から別のキーで追加してください}}'**
+  String transferImportShortcutsNotAddedSnackbar(
+    int count,
+    String name,
+    String combo,
+  );
+
   /// No description provided for @transferImportFailedSnackbar.
   ///
   /// In ja, this message translates to:

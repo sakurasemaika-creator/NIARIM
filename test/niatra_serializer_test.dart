@@ -169,20 +169,19 @@ void main() {
       palette: dst.palette,
       pixelArtPalette: dst.pixelArtPalette,
     );
-    // importPalette()/addPalette()内部の永続化はfire-and-forgetのため、
-    // ChangeNotifierへの反映（メモリ上のリスト追加）自体は同期的に
-    // 完了している前提で直後にアサーションできる。
-    // srcのパレットは「デフォルトパレット」＋「引き継ぎ用パレット」の2件
-    // あり、選択したカテゴリの全パレットが引き継がれるため、dst側には
-    // それら2件がIDを振り直されて追加される。
-    expect(dst.palette.palettes, hasLength(dstPaletteCountBefore + 2));
+    // メモリ上の一覧は保存を待たずに変わっている前提で直後に確かめる。
+    // srcのパレットは「デフォルトパレット」＋「引き継ぎ用パレット」の2件。
+    // 自分の別の端末の内容なのでIDはそのまま：最初の「マイパレット」
+    // （どの端末も同じID）は置き換わり、2つにならない。足されるのは
+    // 「引き継ぎ用パレット」の1件だけ。
+    expect(dst.palette.palettes, hasLength(dstPaletteCountBefore + 1));
     final importedPalette = dst.palette.palettes.firstWhere(
       (p) => p.name == '引き継ぎ用パレット',
     );
     expect(
       importedPalette.id,
-      isNot(srcPalette.id),
-      reason: 'ID衝突を避けるため振り直すはず',
+      srcPalette.id,
+      reason: '同じファイルを読み直しても増えないよう、元のIDのまま',
     );
     expect(importedPalette.colors, contains(0xFF112233));
 

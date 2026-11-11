@@ -218,6 +218,8 @@
   "transferExportSuccessSnackbar": "已导出.niatra文件",
   "transferExportFailedSnackbar": "导出失败：{error}",
   "transferImportSuccessSnackbar": "已导入.niatra文件",
+  "transferImportAddedCopiesSnackbar": "{count, plural, =1{已导入.niatra文件。有1项与本设备的内容不同：已保留本设备的版本，导入的版本已添加为“{name}”} other{已导入.niatra文件。有{count}项与本设备的内容不同：已保留本设备的版本，导入的版本已以“{name}”等名称添加}}",
+  "transferImportShortcutsNotAddedSnackbar": "{count, plural, =1{导入的快捷键“{name}”（{combo}）未添加，因为本设备已将相同的按键用于其他操作。如需使用，请在快捷键设置中用其他按键添加} other{导入的快捷键“{name}”（{combo}）等{count}个未添加，因为本设备已将相同的按键用于其他操作。如需使用，请在快捷键设置中用其他按键添加}}",
   "transferImportFailedSnackbar": "导入失败：{error}",
   "folderManagementTitle": "文件夹管理",
   "folderManagementCreateNew": "新建",

@@ -21,26 +21,11 @@ import 'color_picker_panel.dart';
 import 'brush_extension_settings.dart';
 import 'brush_tip_settings.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/duplicate_name.dart';
 import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
-
-/// Name a copied brush uniquely without changing user-set names.
-String _numberedBrushCopyName(
-  AppLocalizations l10n,
-  String original,
-  Set<String> existingNames,
-) {
-  final copy = l10n.themePresetDuplicateName(original);
-  if (!existingNames.contains(copy)) return copy;
-  for (var number = 2; ; number++) {
-    final numbered = copy.endsWith(')')
-        ? '${copy.substring(0, copy.length - 1)} $number)'
-        : '$copy ($number)';
-    if (!existingNames.contains(numbered)) return numbered;
-  }
-}
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -490,9 +475,10 @@ class _BrushPanelState extends State<BrushPanel> {
       case 'duplicate':
         // 言語に合わせた「名前 (コピー)」、同じ名前があれば番号を付ける
         // （以前は日本語の「(コピー)」固定で、2回複製すると同じ名前が並んだ）。
+        // 引き継ぎで足す複製と同じ形にして、番号を続けて数える。
         service.duplicateBrush(
           brush.id,
-          name: _numberedBrushCopyName(l10n, brush.name, {
+          name: numberedCopyName(l10n, brush.name, {
             for (final b in service.brushes) b.name,
           }),
         );

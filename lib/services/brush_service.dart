@@ -14,6 +14,7 @@ import '../models/asset_tags.dart';
 import '../models/brush.dart';
 import '../models/brush_presets_extension.dart';
 import '../utils/tolerant_preferences.dart';
+import '../utils/transfer_merge.dart';
 
 /// ブラシ管理サービス。
 /// SharedPreferencesへ永続化する（端末単位。プロジェクトファイルには含めない）。
@@ -33,12 +34,27 @@ class BrushService extends ChangeNotifier {
   /// ブラシだけが利用者の値を保つ。自作・複製のブラシはブラシ自身に書く。
   static const _builtInWorkingKey = 'brush_builtin_working_values';
 
+  /// このサービスが持つ保存のキー。引き継ぎ（.niatra）の「端末保存データ」
+  /// （保存をまるごと移す項目）では扱わない：ブラシは「ブラシ」の項目が
+  /// [mergeTransferred]で一覧と突き合わせて取り込む。保存を直接書き換えると、
+  /// 動いている一覧の次の保存で戻り、起動し直すとこの端末にしか無いブラシが
+  /// 消える。
+  static const Set<String> savedPreferenceKeys = {
+    _prefsKey,
+    _currentIdKey,
+    _foldersKey,
+    _builtInWorkingKey,
+  };
+
   /// 保存の中の、この版では読めなかった項目（そのままの文字列）。
   ///
   /// 一覧には出さないが、保存し直すときに末尾へ残す。ブラシの一覧は
   /// キャンバスで太さを変えるだけでも保存し直すので、読めた分だけを書くと、
   /// 後の版でなら読めたかもしれない自作のブラシがその場で消える。
   final List<String> _unreadableEntries = [];
+
+  /// フォルダの保存の中の、この版では読めなかった項目（同じく末尾へ残す）。
+  final List<String> _unreadableFolderEntries = [];
   final Map<String, ({double? size, int? opacity})> _builtInWorking = {};
 
   // スライダーは動かしている間ずっと値を知らせる。そのたびに全ブラシを
@@ -964,6 +980,7 @@ class BrushService extends ChangeNotifier {
     }
     final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();
+    _unreadableFolderEntries.clear();
     if (foldersRaw != null) {
       for (final entry in foldersRaw) {
         try {
@@ -971,6 +988,7 @@ class BrushService extends ChangeNotifier {
             BrushFolder.fromJson(jsonDecode(entry) as Map<String, dynamic>),
           );
         } catch (error, stack) {
+          _unreadableFolderEntries.add(entry);
           AppErrorReporter.record(error, stack);
         }
       }
@@ -1008,10 +1026,10 @@ class BrushService extends ChangeNotifier {
 
   Future<void> _persistFolders() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      _foldersKey,
-      _folders.map((f) => jsonEncode(f.toJson())).toList(),
-    );
+    await prefs.setStringList(_foldersKey, [
+      for (final folder in _folders) jsonEncode(folder.toJson()),
+      ..._unreadableFolderEntries,
+    ]);
   }
 
   Future<void> _persistCurrent() async {
@@ -1135,28 +1153,50 @@ class BrushService extends ChangeNotifier {
     final raw = prefs.readString(_builtInWorkingKey);
     if (raw == null) return;
     try {
-      final decoded = jsonDecode(raw);
-      if (decoded is! Map) throw const FormatException('not a map');
-      for (final entry in decoded.entries) {
-        final id = entry.key;
-        final value = entry.value;
-        if (id is! String || !isBuiltIn(id) || value is! Map) continue;
-        final rawSize = value['size'];
-        final rawOpacity = value['opacity'];
-        final size = rawSize is num && rawSize.isFinite && rawSize > 0
-            ? rawSize.toDouble()
-            : null;
-        final opacity = rawOpacity is num && rawOpacity.isFinite
-            ? rawOpacity.round().clamp(0, 100)
-            : null;
-        if (size == null && opacity == null) continue;
-        _builtInWorking[id] = (size: size, opacity: opacity);
-      }
+      _builtInWorking.addAll(_builtInWorkingFrom(jsonDecode(raw)));
     } catch (error, stack) {
       AppErrorReporter.record(error, stack);
       _builtInWorking.clear();
     }
   }
+
+  /// 覚えた太さ・不透明度の保存の形（[_builtInWorkingJson]）から読む。
+  /// 今は無いブラシ・数でない値は使わない。全体が読めなければ投げる。
+  Map<String, ({double? size, int? opacity})> _builtInWorkingFrom(
+    Object? decoded,
+  ) {
+    if (decoded is! Map) throw const FormatException('not a map');
+    final result = <String, ({double? size, int? opacity})>{};
+    for (final entry in decoded.entries) {
+      final id = entry.key;
+      final value = entry.value;
+      if (id is! String || !isBuiltIn(id) || value is! Map) continue;
+      final rawSize = value['size'];
+      final rawOpacity = value['opacity'];
+      final size = rawSize is num && rawSize.isFinite && rawSize > 0
+          ? rawSize.toDouble()
+          : null;
+      final opacity = rawOpacity is num && rawOpacity.isFinite
+          ? rawOpacity.round().clamp(0, 100)
+          : null;
+      if (size == null && opacity == null) continue;
+      result[id] = (size: size, opacity: opacity);
+    }
+    return result;
+  }
+
+  Map<String, Map<String, num>> _builtInWorkingJson() => {
+    for (final entry in _builtInWorking.entries)
+      entry.key: {
+        if (entry.value.size != null) 'size': entry.value.size!,
+        if (entry.value.opacity != null) 'opacity': entry.value.opacity!,
+      },
+  };
+
+  /// 組み込みブラシで覚えている太さ・不透明度（保存と同じ形）。引き継ぎの
+  /// 書き出しに使う。
+  Map<String, Map<String, num>> rememberedBuiltInValuesForTransfer() =>
+      _builtInWorkingJson();
 
   Future<void> _persistBuiltInWorking() async {
     final prefs = await SharedPreferences.getInstance();
@@ -1166,13 +1206,7 @@ class BrushService extends ChangeNotifier {
     }
     await prefs.setString(
       _builtInWorkingKey,
-      jsonEncode({
-        for (final entry in _builtInWorking.entries)
-          entry.key: {
-            if (entry.value.size != null) 'size': entry.value.size,
-            if (entry.value.opacity != null) 'opacity': entry.value.opacity,
-          },
-      }),
+      jsonEncode(_builtInWorkingJson()),
     );
   }
 
@@ -1198,6 +1232,210 @@ class BrushService extends ChangeNotifier {
     _preloadTextureIfNeeded(brush);
     notifyListeners();
     _persist();
+  }
+
+  /// 引き継ぎ（.niatra）で受け取ったブラシとフォルダを、この端末の一覧へ
+  /// 合わせて保存する。この端末の内容は黙って失わない（決まりは
+  /// [mergeTransferredItems]）：
+  /// - 組み込みブラシは足さず、中身はこの版の定義のまま。お気に入り・タグ・
+  ///   フォルダだけを合わせる。覚えた太さ・不透明度はこの端末で覚えている
+  ///   値を残し、覚えていない項目だけ受け取った値にする（受け取った値は
+  ///   [rememberedBuiltInValues]〔元の端末の保存と同じ形〕から、それが無い
+  ///   古いファイルでは、受け取ったブラシの値のうち定義と違うもの）。
+  /// - 自作のブラシは、同じIDで中身が違えばこの端末のブラシを残し、受け取った
+  ///   ブラシを「名前 (コピー)」として足す。太さ・不透明度（キャンバスで
+  ///   変えて覚える値）は同じIDのブラシの違いには数えず、この端末の値のまま
+  ///   （前に足した複製で変えた値も同じ）。この端末に無いIDのブラシは、
+  ///   太さ・不透明度まで同じブラシが読み込む前からあるときだけ足さない
+  ///   （もう1台で複製して太さだけを変えたブラシも届く）。
+  /// - フォルダは無いものだけ足す（同じIDはこの端末の名前のまま）。行き先の
+  ///   フォルダがこの端末に無いブラシはフォルダなし。
+  /// - 画像を受け取れなかったブラシは、同じIDのブラシがこの端末で使っている
+  ///   画像があればそれを使う。画像は置いた場所ではなく中身で比べる。
+  /// - 同じ中身が既にあって足さなかったブラシのお気に入り・タグ・フォルダは、
+  ///   そのブラシへ合わせる。
+  /// - [currentBrushId]（元の端末で使っていたブラシ）は、そのブラシの中身を
+  ///   持つことになったこの端末のブラシを、合わせた後の一覧にあるときだけ
+  ///   選ぶ。
+  /// [placed]には、受け取ったブラシのIDごとに、合わせた後でその中身を持つ
+  /// この端末のブラシのIDを書く（早替えツール・ショートカットなどが指す
+  /// ブラシを合わせるため。[transferredBrushId]）。
+  /// 変えた一覧だけを保存する。
+  Future<void> mergeTransferred(
+    List<Brush> incoming, {
+    required TransferCopyNames copyNames,
+    List<BrushFolder> folders = const [],
+    Object? rememberedBuiltInValues,
+    String? currentBrushId,
+    Map<String, String>? placed,
+  }) async {
+    var foldersChanged = false;
+    for (final folder in folders) {
+      if (_folders.any((f) => f.id == folder.id)) continue;
+      _folders.add(folder);
+      foldersChanged = true;
+    }
+    final folderIds = {for (final f in _folders) f.id};
+
+    Map<String, ({double? size, int? opacity})>? remembered;
+    if (rememberedBuiltInValues != null) {
+      try {
+        remembered = _builtInWorkingFrom(rememberedBuiltInValues);
+      } catch (error, stack) {
+        AppErrorReporter.record(error, stack);
+      }
+    }
+
+    final resolved = <Brush>[];
+    var workingChanged = false;
+    for (final brush in incoming) {
+      final definition = _builtInDefinitions[brush.id];
+      if (definition != null) {
+        final theirs = remembered != null
+            ? remembered[brush.id]
+            : _differenceFromDefinition(definition, brush);
+        final mine = _builtInWorking[brush.id];
+        final next = (
+          size: mine?.size ?? theirs?.size,
+          opacity: mine?.opacity ?? theirs?.opacity,
+        );
+        if (next != mine && (next.size != null || next.opacity != null)) {
+          _builtInWorking[brush.id] = next;
+          workingChanged = true;
+        }
+      }
+      final local = _brushes.where((b) => b.id == brush.id).firstOrNull;
+      final json = brush.toJson();
+      if (!folderIds.contains(brush.folderId)) json['folderId'] = null;
+      if (local != null &&
+          !_hasImageFile(brush) &&
+          _hasImageFile(local) &&
+          definition == null) {
+        json['customImagePath'] = local.customImagePath;
+        json['customImagePaths'] = local.customImagePaths;
+      }
+      resolved.add(Brush.fromJson(json));
+    }
+
+    final before = List<Brush>.of(_brushes);
+    // 画像は置いた場所ではなく中身で比べる。
+    final images = await TransferImageDigests.read([
+      for (final b in [..._brushes, ...resolved]) ...b.resolvedCustomImagePaths,
+    ]);
+    Map<String, dynamic> withoutOrganization(Brush b) => b.toJson()
+      ..remove('id')
+      ..remove('name')
+      ..remove('isFavorite')
+      ..remove('tags')
+      ..remove('folderId')
+      ..remove('customImagePath')
+      ..remove('customImagePaths')
+      ..['images'] = [
+        for (final path in b.resolvedCustomImagePaths) images.of(path),
+      ];
+    final where = placed ?? <String, String>{};
+    // 前の読み込みでもう1台の版を足した複製（足した後でこの端末で太さ・
+    // 不透明度・名前を変えた複製を、この端末で作った自分の複製と取り違えずに
+    // 見つける）。
+    final copies = await TransferCopyRecord.read(TransferCopyRecord.brushes);
+    final listChanged = mergeTransferredItems(
+      _brushes,
+      resolved,
+      TransferMergeRules<Brush>(
+        idOf: (b) => b.id,
+        nameOf: (b) => b.name,
+        // 太さ・不透明度はキャンバスで変えるたびに覚える値（組み込みの
+        // ブラシの覚えた値と同じ）で、同じブラシの違いには数えない
+        // （この端末の値のまま）。
+        contentOf: (b) => withoutOrganization(b)
+          ..remove('size')
+          ..remove('opacity'),
+        // 別のIDのブラシは、太さ・不透明度だけを変えた複製も別のブラシ。
+        duplicateContentOf: withoutOrganization,
+        organizationOf: (b) =>
+            (favorite: b.isFavorite, tags: b.tags, folderId: b.folderId),
+        withOrganization: (b, o) => Brush.fromJson({
+          ...b.toJson(),
+          'isFavorite': o.favorite,
+          'tags': o.tags,
+          'folderId': o.folderId,
+        }),
+        asCopy: (b, id, name) =>
+            Brush.fromJson({...b.toJson(), 'id': id, 'name': name}),
+        newId: (attempt) =>
+            'Brush${DateTime.now().microsecondsSinceEpoch}_$attempt',
+        copyNames: copyNames,
+        shippedOf: (id) => _builtInDefinitions[id],
+        organizationOnly: isBuiltIn,
+      ),
+      placed: where,
+      copies: copies,
+    );
+    await copies.save();
+    if (workingChanged) {
+      for (var i = 0; i < _brushes.length; i++) {
+        if (isBuiltIn(_brushes[i].id)) {
+          _brushes[i] = _withWorkingValues(_brushes[i]);
+        }
+      }
+    }
+
+    // 使っているブラシの一覧の項目が変わったら、写しをそろえる。
+    final current = _currentBrush;
+    var currentChanged = false;
+    if (current != null) {
+      final now = _brushes.where((b) => b.id == current.id).firstOrNull;
+      final was = before.where((b) => b.id == current.id).firstOrNull;
+      if (now != null && !identical(now, was)) {
+        _currentBrush = now;
+        _preloadTextureIfNeeded(now);
+      }
+    }
+    final chosenId = transferredBrushId(currentBrushId, where);
+    final chosen = _brushes.where((b) => b.id == chosenId).firstOrNull;
+    if (chosen != null && chosen.id != _currentBrush?.id) {
+      _currentBrush = chosen;
+      _preloadTextureIfNeeded(chosen);
+      currentChanged = true;
+    }
+
+    if (!listChanged && !workingChanged && !foldersChanged && !currentChanged) {
+      return;
+    }
+    _rememberWorkingDirty = _rememberWorkingDirty || workingChanged;
+    notifyListeners();
+    if (foldersChanged) await _persistFolders();
+    if (currentChanged) await _persistCurrent();
+    if (listChanged || workingChanged) await _persist();
+  }
+
+  /// 画像を使うブラシで、その画像のファイルがこの端末にあるか。
+  static bool _hasImageFile(Brush brush) {
+    final paths = brush.resolvedCustomImagePaths;
+    if (paths.isEmpty) return false;
+    try {
+      return paths.every((path) => File(path).existsSync());
+    } on UnsupportedError {
+      return false;
+    } on FileSystemException {
+      return false;
+    }
+  }
+
+  /// 受け取った組み込みブラシの太さ・不透明度のうち、定義と違うもの。
+  ({double? size, int? opacity})? _differenceFromDefinition(
+    Brush definition,
+    Brush brush,
+  ) {
+    final size = brush.size.isFinite && brush.size > 0
+        ? brush.size
+        : definition.size;
+    final opacity = brush.opacity.clamp(0, 100);
+    final kept = (
+      size: size == definition.size ? null : size,
+      opacity: opacity == definition.opacity ? null : opacity,
+    );
+    return kept.size == null && kept.opacity == null ? null : kept;
   }
 
   /// [id]のブラシを削除する。プリインストール、またはお気に入り登録中の

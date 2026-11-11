@@ -36,6 +36,23 @@ class FirstUseTooltipService extends ChangeNotifier {
     }
   }
 
+  /// 引き継ぎ（.niatra）の端末保存データで受け取った「表示済み」を足す
+  /// （もう1台で読んだ説明は、この端末でももう出さない。この端末で読んだ
+  /// ものはそのまま）。
+  Future<void> mergeTransferred(List<String> seen) async {
+    if (_disposed) return;
+    final before = _seen.length;
+    _seen.addAll(seen.where((key) => key.isNotEmpty));
+    if (_seen.length == before) return;
+    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_prefsKey, _seen.toList());
+    } catch (_) {
+      // 保存失敗時も続行（次回起動時にまた表示される程度の影響に留まる）
+    }
+  }
+
   @override
   void dispose() {
     _disposed = true;

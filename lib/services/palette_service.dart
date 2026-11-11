@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/color_palette.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
+import '../utils/transfer_merge.dart';
 
 /// カラーピッカーの「最近使った色」「パレット」を管理する。
 /// - 最近使った色：直近10色をタップで即座に選択できるよう保持する。
@@ -19,8 +20,24 @@ class PaletteService extends ChangeNotifier {
   static const _activeKey = 'color_palette_active_id';
   static const int _maxRecent = 10;
 
+  /// 初回起動で用意するパレット（どの端末も同じID）。
+  static const _defaultPalette = ColorPalette(id: 'default', name: 'マイパレット');
+
+  /// このサービスが持つ保存のキー。引き継ぎ（.niatra）の「端末保存データ」
+  /// では扱わない（「パレット」の項目が[mergeTransferred]で一覧と突き合わせて
+  /// 取り込む。保存を直接書き換えると、動いている一覧の次の保存で戻り、
+  /// 起動し直すとこの端末にしか無いパレットが消える）。
+  static const Set<String> savedPreferenceKeys = {
+    _recentKey,
+    _palettesKey,
+    _activeKey,
+  };
+
   final List<int> _recentColors = [];
   final List<ColorPalette> _palettes = [];
+
+  /// 引き継ぎでもう1台の版を足した複製の記録（[init]で読む）。
+  TransferCopyRecord _transferCopies = TransferCopyRecord.none();
   String? _activePaletteId;
 
   List<int> get recentColors => List.unmodifiable(_recentColors);
@@ -31,6 +48,10 @@ class PaletteService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
+    _transferCopies = TransferCopyRecord.readFrom(
+      prefs,
+      TransferCopyRecord.palettes,
+    );
     final rawRecent = prefs.readStringList(_recentKey) ?? const [];
     _recentColors
       ..clear()
@@ -43,7 +64,7 @@ class PaletteService extends ChangeNotifier {
       ..addAll(readSavedJsonList(rawPalettes, ColorPalette.fromJson));
     if (_palettes.isEmpty) {
       // 初回起動時：デフォルトパレットを1つ用意する
-      _palettes.add(const ColorPalette(id: 'default', name: 'マイパレット'));
+      _palettes.add(_defaultPalette);
     }
     _activePaletteId = prefs.readString(_activeKey) ?? _palettes.first.id;
     if (!_palettes.any((p) => p.id == _activePaletteId)) {
@@ -93,9 +114,9 @@ class PaletteService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 他ユーザーから共有された（引き継ぎファイル・QRコード等）パレットを
+  /// 他ユーザーから共有された（.niapalette・QRコード等）パレットを
   /// 新規パレットとして取り込む。IDは衝突を避けるため新規採番し直す
-  /// （niatra_serializer.dartの他アイテムのimport方式と同じ）。
+  /// （自分の別の端末からの引き継ぎ（.niatra）は[mergeTransferred]）。
   Future<ColorPalette> importPalette(ColorPalette palette) async {
     final withNewId = ColorPalette(
       id: 'palette_${DateTime.now().microsecondsSinceEpoch}',
@@ -106,6 +127,57 @@ class PaletteService extends ChangeNotifier {
     await _persistPalettes();
     notifyListeners();
     return withNewId;
+  }
+
+  /// 引き継ぎ（.niatra）で受け取ったパレットと最近使った色を、この端末へ
+  /// 合わせて保存する。他の人から受け取る[importPalette]と違い、自分の別の
+  /// 端末の内容なのでIDで突き合わせ、この端末の内容は黙って失わない（決まりは
+  /// [mergeTransferredItems]）：同じIDで色か名前が違えば、この端末の
+  /// パレットを残し、受け取った方を「名前 (コピー)」として足す。最初の
+  /// 「マイパレット」（どの端末も同じID）は、この端末で空のままなら受け取った
+  /// 方で置き換える。最近使った色は、この端末の色をそのまま先に残し、空いて
+  /// いる所にだけ受け取った色を入れる（受け取った色でこの端末の履歴を押し
+  /// 出さない。埋まっていれば、同じファイルを読み直しても変わらない）。
+  /// [activePaletteId]は合わせた後の一覧にあるときだけ選ぶ。
+  /// 変えたときだけ保存する。
+  Future<void> mergeTransferred(
+    List<ColorPalette> incoming, {
+    required TransferCopyNames copyNames,
+    List<int> recentColors = const [],
+    String? activePaletteId,
+  }) async {
+    // 前の読み込みでもう1台の版を足した複製（名前を変えていても見つける）。
+    // 一覧は待たずに合わせる（起動のときに読んでおいた記録）。
+    final copies = _transferCopies;
+    final palettesChanged = mergeTransferredItems(
+      _palettes,
+      incoming,
+      paletteMergeRules(
+        copyNames: copyNames,
+        idPrefix: 'palette_',
+        shipped: const [_defaultPalette],
+      ),
+      copies: copies,
+    );
+    final recent = <int>{
+      ..._recentColors,
+      ...recentColors,
+    }.take(_maxRecent).toList();
+    final recentChanged = jsonEncode(recent) != jsonEncode(_recentColors);
+    if (recentChanged) {
+      _recentColors
+        ..clear()
+        ..addAll(recent);
+      await _persistRecent();
+    }
+    final activeChanged =
+        activePaletteId != null &&
+        activePaletteId != _activePaletteId &&
+        _palettes.any((p) => p.id == activePaletteId);
+    if (activeChanged) _activePaletteId = activePaletteId;
+    if (palettesChanged || activeChanged) await _persistPalettes();
+    if (palettesChanged || activeChanged || recentChanged) notifyListeners();
+    await copies.save();
   }
 
   // ─── 共有（.niapalette）：ワークスペース設定（.niaworkspace）と同じく
@@ -192,3 +264,28 @@ class PaletteService extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+/// 引き継ぎ（.niatra）でパレットを合わせる決まり（カラーピッカーと
+/// ドット絵専用で共通）。[shipped]はどの端末にもあるパレット。
+TransferMergeRules<ColorPalette> paletteMergeRules({
+  required TransferCopyNames copyNames,
+  required String idPrefix,
+  List<ColorPalette> shipped = const [],
+}) => TransferMergeRules<ColorPalette>(
+  idOf: (p) => p.id,
+  nameOf: (p) => p.name,
+  contentOf: (p) => p.colors,
+  organizationOf: (p) =>
+      (favorite: p.isFavorite, tags: const [], folderId: null),
+  withOrganization: (p, o) => p.copyWith(isFavorite: o.favorite),
+  asCopy: (p, id, name) => ColorPalette(
+    id: id,
+    name: name,
+    colors: p.colors,
+    isFavorite: p.isFavorite,
+  ),
+  newId: (attempt) =>
+      '$idPrefix${DateTime.now().microsecondsSinceEpoch}_$attempt',
+  copyNames: copyNames,
+  shippedOf: (id) => shipped.where((p) => p.id == id).firstOrNull,
+);

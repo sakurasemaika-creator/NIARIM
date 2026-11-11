@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/autofill_preset.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
+import '../utils/transfer_merge.dart';
 
 /// 自動塗りプリセットの管理サービス。
 /// プロジェクト保存とは独立してプリセットを保持し、SharedPreferencesへ
@@ -15,6 +16,12 @@ import '../utils/tolerant_preferences.dart';
 /// レイヤーパネルからのパーツ割り当てUIと、プリセット編集画面の双方から参照する。
 class AutofillPresetService extends ChangeNotifier {
   static const _prefsKey = 'autofill_presets';
+
+  /// このサービスが持つ保存のキー。引き継ぎ（.niatra）の「端末保存データ」
+  /// では扱わない（「自動塗り設定」の項目が[mergeTransferred]で一覧と
+  /// 突き合わせて取り込む。保存を直接書き換えると、動いている一覧の次の
+  /// 保存で戻り、起動し直すとこの端末にしか無いプリセットが消える）。
+  static const Set<String> savedPreferenceKeys = {_prefsKey};
 
   final List<AutofillPreset> _presets = [];
 
@@ -301,6 +308,164 @@ class AutofillPresetService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 引き継ぎ（.niatra）で受け取ったプリセットを、この端末の一覧へ合わせて
+  /// 保存する。この端末の内容は黙って失わない（決まりは
+  /// [mergeTransferredItems]）：同じIDで中身が違えば、この端末のプリセットを
+  /// 残し、受け取った方を「名前 (コピー)」（新しいプリセットIDとパーツID）と
+  /// して足す。見本（「主人公」等、どの端末にもあるID）は、この端末で見本の
+  /// ままなら受け取った方で置き換える。ただし、この端末のパーツが1つでも
+  /// 無くなるとき（作品のレイヤーがパーツをIDで指している）と、この端末で
+  /// サムネイルを付けているとき（この端末の画像を替えない）は置き換えない。
+  ///
+  /// パーツが使うトーンは、合わせた後でもう1台のトーンの中身を持つこの端末の
+  /// トーンにする（[toneIds]、[transferredItemId]）。比べるときは、もう1台の
+  /// トーンと、引き継ぎでその版を足したこの端末の複製を同じトーンとみなす
+  /// （[TransferCopyRecord.origin]）。サムネイルの画像は比べない：受け取った
+  /// 画像が無ければ同じIDのプリセットのこの端末の画像を使い、同じ中身の
+  /// プリセットがこの端末で画像を持っていなければ受け取った画像を付ける
+  /// （この端末の画像は替えない）。
+  ///
+  /// 受け取ったプリセットのIDごとの、合わせた後でその中身を持つこの端末の
+  /// プリセットのIDを[placed]へ、そのパーツのIDごとの、そのプリセットの同じ
+  /// 位置のパーツのIDを[placedParts]へ書く（移した作品が使うプリセットと
+  /// パーツを合わせるため）。受け取ったプリセットの中身を持つことになった
+  /// この端末のプリセット（複製・名前に番号を付けて足したプリセット・同じ
+  /// 中身で別のIDのプリセット）とそのパーツは、受け取ったプリセット・パーツの
+  /// 版を持つ項目として書き留める（[TransferCopyRecord.autofillPresets]・
+  /// [TransferCopyRecord.autofillParts]）。
+  /// 変えたときだけ保存する。
+  Future<void> mergeTransferred(
+    List<AutofillPreset> incoming, {
+    required TransferCopyNames copyNames,
+    Map<String, String> toneIds = const {},
+    Map<String, String>? placed,
+    Map<String, String>? placedParts,
+  }) async {
+    final shipped = {for (final p in _defaultPresets()) p.id: p};
+    final resolved = [
+      for (final preset in incoming)
+        preset.copyWith(
+          thumbnailPath: _fileExists(preset.thumbnailPath)
+              ? preset.thumbnailPath
+              : _presets
+                    .where((p) => p.id == preset.id)
+                    .firstOrNull
+                    ?.thumbnailPath,
+          parts: [
+            for (final part in preset.parts)
+              part.toneId == null
+                  ? part
+                  : part.copyWith(
+                      toneId: transferredItemId(part.toneId, toneIds),
+                    ),
+          ],
+        ),
+    ];
+    final tones = await TransferCopyRecord.read(TransferCopyRecord.tones);
+    Object? contentOf(AutofillPreset p) => [
+      for (final part in p.parts)
+        part.toJson()
+          ..remove('id')
+          ..['toneId'] = part.toneId == null
+              ? null
+              : tones.origin(part.toneId!),
+    ];
+    final where = placed ?? <String, String>{};
+    final idsBefore = {for (final p in _presets) p.id};
+    // 前の読み込みでもう1台の版を足した複製（名前を変えていても見つける）。
+    final copies = await TransferCopyRecord.read(
+      TransferCopyRecord.autofillPresets,
+    );
+    var changed = mergeTransferredItems(
+      _presets,
+      resolved,
+      TransferMergeRules<AutofillPreset>(
+        idOf: (p) => p.id,
+        nameOf: (p) => p.name,
+        contentOf: contentOf,
+        organizationOf: (p) =>
+            (favorite: p.isFavorite, tags: const [], folderId: null),
+        withOrganization: (p, o) => p.copyWith(isFavorite: o.favorite),
+        asCopy: (p, id, name) => p.copyWith(
+          id: id,
+          name: name,
+          parts: [
+            for (var i = 0; i < p.parts.length; i++)
+              p.parts[i].copyWith(id: '${id}_part_$i'),
+          ],
+        ),
+        newId: (attempt) =>
+            'p_${DateTime.now().microsecondsSinceEpoch}_$attempt',
+        copyNames: copyNames,
+        shippedOf: (id) => shipped[id],
+        canReplaceShipped: (local, theirs) {
+          if (_fileExists(local.thumbnailPath)) return false;
+          final kept = {for (final part in theirs.parts) part.id};
+          return local.parts.every((part) => kept.contains(part.id));
+        },
+      ),
+      placed: where,
+      copies: copies,
+    );
+    if (changed) _dedupeIds();
+    // 受け取ったプリセットの中身を別のパーツのIDで持つこの端末のプリセット
+    // （複製として足したプリセット、名前に番号を付けて足したプリセット〔ID
+    // はそのままでもパーツのIDは新しい〕、同じ中身で別のIDのこの端末の
+    // プリセット）のパーツは、受け取ったパーツの版を持つパーツ。
+    final parts = await TransferCopyRecord.read(
+      TransferCopyRecord.autofillParts,
+    );
+    for (final preset in resolved) {
+      final heldBy = where[preset.id];
+      if (heldBy == null ||
+          (heldBy == preset.id && idsBefore.contains(heldBy))) {
+        continue;
+      }
+      final holder = _presets.where((p) => p.id == heldBy).firstOrNull;
+      if (holder == null) continue;
+      for (var i = 0; i < preset.parts.length && i < holder.parts.length; i++) {
+        if (preset.parts[i].id == holder.parts[i].id) continue;
+        parts.add(preset.parts[i].id, holder.parts[i].id);
+      }
+    }
+    await copies.save();
+    await parts.save();
+    for (final preset in resolved) {
+      final index = _presets.indexWhere((p) => p.id == where[preset.id]);
+      if (index < 0) continue;
+      final local = _presets[index];
+      // 画像の無い同じプリセットへは、受け取った画像を付ける。
+      if (_fileExists(preset.thumbnailPath) &&
+          !_fileExists(local.thumbnailPath)) {
+        _presets[index] = local.copyWith(thumbnailPath: preset.thumbnailPath);
+        changed = true;
+      }
+      // パーツは同じ中身のプリセットの同じ位置のパーツ（もう1台で同じIDの
+      // パーツを持つプリセットが2つあれば、作品が使っていた前の方）。
+      if (placedParts == null ||
+          jsonEncode(contentOf(local)) != jsonEncode(contentOf(preset))) {
+        continue;
+      }
+      for (var i = 0; i < preset.parts.length; i++) {
+        placedParts.putIfAbsent(preset.parts[i].id, () => local.parts[i].id);
+      }
+    }
+    if (!changed) return;
+    await _persist();
+    notifyListeners();
+  }
+
+  static bool _fileExists(String? path) {
+    if (path == null || path.isEmpty) return false;
+    try {
+      return File(path).existsSync();
+    } on UnsupportedError {
+      return false;
+    } on FileSystemException {
+      return false;
+    }
+  }
+
   Future<void> updatePreset(AutofillPreset updated) async {
     final idx = _presets.indexWhere((p) => p.id == updated.id);
     if (idx >= 0) {
@@ -335,17 +500,9 @@ class AutofillPresetService extends ChangeNotifier {
     final fileName = '${presetId}_${DateTime.now().microsecondsSinceEpoch}.png';
     final destPath = '${dir.path}/$fileName';
     await File(destPath).writeAsBytes(pngBytes);
-    // 旧サムネイルが存在すれば削除する
     final oldPath = _presets[idx].thumbnailPath;
-    if (oldPath != null && oldPath != destPath) {
-      final oldFile = File(oldPath);
-      if (oldFile.existsSync()) {
-        try {
-          await oldFile.delete();
-        } catch (_) {}
-      }
-    }
     _presets[idx] = _presets[idx].copyWith(thumbnailPath: destPath);
+    await _deleteUnusedThumbnail(oldPath);
     await _persist();
     notifyListeners();
   }
@@ -354,16 +511,22 @@ class AutofillPresetService extends ChangeNotifier {
     final idx = _presets.indexWhere((p) => p.id == presetId);
     if (idx < 0) return;
     final oldPath = _presets[idx].thumbnailPath;
-    if (oldPath != null) {
-      final oldFile = File(oldPath);
-      if (oldFile.existsSync()) {
-        try {
-          await oldFile.delete();
-        } catch (_) {}
-      }
-    }
     _presets[idx] = _presets[idx].copyWith(thumbnailPath: null);
+    await _deleteUnusedThumbnail(oldPath);
     await _persist();
     notifyListeners();
+  }
+
+  /// 前のサムネイルの画像を消す。ほかのプリセットが使っている画像は消さない
+  /// （複製したプリセット・引き継ぎで足した複製は、元のプリセットと同じ
+  /// 画像のファイルを使うことがある）。
+  Future<void> _deleteUnusedThumbnail(String? path) async {
+    if (path == null || _presets.any((p) => p.thumbnailPath == path)) return;
+    final file = File(path);
+    if (file.existsSync()) {
+      try {
+        await file.delete();
+      } catch (_) {}
+    }
   }
 }

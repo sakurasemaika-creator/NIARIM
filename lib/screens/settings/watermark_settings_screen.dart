@@ -11,6 +11,7 @@ import '../../models/bundled_fonts.dart';
 import '../../models/watermark_asset.dart';
 import '../../services/font_service.dart';
 import '../../services/watermark_service.dart';
+import '../../utils/duplicate_name.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
@@ -324,9 +325,10 @@ class WatermarkSettingsScreen extends StatelessWidget {
                         text: text,
                         textColor: selected.toARGB32(),
                         fontFamily: fontFamily,
-                        name: text.length > 12
-                            ? '${text.substring(0, 12)}…'
-                            : text,
+                        name: WatermarkService.renamedTextWatermark(
+                          existing,
+                          text,
+                        ),
                         shadowEnabled: shadow.shadowEnabled,
                         shadowColor: shadow.shadowColor.toARGB32(),
                         shadowOffsetX: shadow.shadowOffsetX,
@@ -666,17 +668,7 @@ class _WatermarkTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
               children: [
-                Expanded(
-                  child: Text(
-                    asset.name,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                Expanded(child: _WatermarkName(asset.name)),
                 IconButton(
                   icon: Icon(
                     Icons.delete,
@@ -691,6 +683,54 @@ class _WatermarkTile extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// タイルの下の透かしの名前（2行まで）。引き継ぎで足した複製
+/// （「名前 (コピー)」）は、名前を縮めても複製の印は縮めずに出す（タイルは
+/// 狭く、元の透かしと同じ名前の始まりしか見えないと、読み込みの知らせが
+/// 出した名前を探せず、どちらを消すかも分からない）。
+class _WatermarkName extends StatelessWidget {
+  const _WatermarkName(this.name);
+
+  final String name;
+
+  static const _style = TextStyle(
+    fontSize: 12,
+    fontFamily: 'Kuramubon',
+    fontFamilyFallback: kHeadingFontFallback,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final copy = copyNameMark(name);
+    if (copy == null) {
+      return Text(
+        name,
+        style: _style,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+    final mark = copy.mark.trimLeft();
+    // 入りきれば1行、入らなければ名前を1行に縮め、印を次の行に出す。
+    return Wrap(
+      spacing: mark.length == copy.mark.length ? 0 : 4,
+      crossAxisAlignment: WrapCrossAlignment.end,
+      children: [
+        Text(
+          copy.name,
+          style: _style,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(mark, style: _style, maxLines: 1, softWrap: false),
+        ),
+      ],
     );
   }
 }

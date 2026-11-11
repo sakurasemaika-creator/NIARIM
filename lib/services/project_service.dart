@@ -6,7 +6,6 @@ import 'outgoing_share_library.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -3805,6 +3804,37 @@ class ProjectService extends ChangeNotifier {
       ..addAll(next);
     _notifyFolders();
   }
+
+  /// 引き継ぎ（.niatra）で移した作品が入っていたフォルダを、もう1台と同じ
+  /// IDで足す（同じIDのフォルダがあれば何もせずそれを返す）。[parentFolderId]
+  /// （この端末に無ければ一番上）の下に、同じ階層で使われていない名前
+  /// （[uniqueFolderName]）で置く。この端末のフォルダは変えない。保存に
+  /// 失敗したら足さずに投げる。
+  Future<ProjectFolder> addTransferredFolder(
+    ProjectFolder folder, {
+    String? parentFolderId,
+  }) => _queueFolder(() async {
+    final existing = _folders.where((f) => f.id == folder.id).firstOrNull;
+    if (existing != null) return existing;
+    final parent = _folders.any((f) => f.id == parentFolderId)
+        ? parentFolderId
+        : null;
+    final added = ProjectFolder(
+      id: folder.id,
+      name: uniqueFolderName(folder.name, parentFolderId: parent),
+      color: folder.color,
+      parentFolderId: parent,
+      isFavorite: folder.isFavorite,
+      createdAt: folder.createdAt,
+    );
+    await _commitFolders([..._folders, added]);
+    return added;
+  });
+
+  /// [id]のフォルダが（下の階層として含めて）ゴミ箱にあるか。
+  bool isFolderInTrash(String id) => _trashedFolders.any(
+    (t) => t.folder.id == id || t.subfolders.any((f) => f.id == id),
+  );
 
   /// [parentFolderId]を指定すると、そのフォルダの子フォルダとして作成する
   /// （「フォルダは複数階層に対応」）。nullはルート直下。同じ階層に同じ名前の

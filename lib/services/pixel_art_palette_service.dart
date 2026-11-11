@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/color_palette.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
+import '../utils/transfer_merge.dart';
+import 'palette_service.dart' show paletteMergeRules;
 
 /// ドット絵専用パレット（ブラシのピクセルモード・ドット絵フィルターの
 /// 「パレットから選ぶ」で使う）を管理するサービス。
@@ -19,7 +21,14 @@ import '../utils/tolerant_preferences.dart';
 class PixelArtPaletteService extends ChangeNotifier {
   static const _prefsKey = 'pixel_art_palettes';
 
+  /// このサービスが持つ保存のキー。引き継ぎ（.niatra）の「端末保存データ」
+  /// では扱わない（「パレット」の項目が[mergeTransferred]で取り込む）。
+  static const Set<String> savedPreferenceKeys = {_prefsKey};
+
   final List<ColorPalette> _palettes = [];
+
+  /// 引き継ぎでもう1台の版を足した複製の記録（[init]で読む）。
+  TransferCopyRecord _transferCopies = TransferCopyRecord.none();
 
   List<ColorPalette> get palettes => List.unmodifiable(_palettes);
 
@@ -28,6 +37,10 @@ class PixelArtPaletteService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
+    _transferCopies = TransferCopyRecord.readFrom(
+      prefs,
+      TransferCopyRecord.pixelArtPalettes,
+    );
     final raw = prefs.readStringList(_prefsKey) ?? const [];
     _palettes
       ..clear()
@@ -54,6 +67,29 @@ class PixelArtPaletteService extends ChangeNotifier {
     notifyListeners();
     await _persist();
     return palette;
+  }
+
+  /// 引き継ぎ（.niatra）で受け取ったパレットを、この端末の一覧へ合わせて
+  /// 保存する。自分の別の端末の内容なのでIDで突き合わせ、同じIDで色か名前が
+  /// 違えば、この端末のパレットを残して受け取った方を「名前 (コピー)」として
+  /// 足す（決まりは[mergeTransferredItems]。何度読んでも増えない）。
+  Future<void> mergeTransferred(
+    List<ColorPalette> incoming, {
+    required TransferCopyNames copyNames,
+  }) async {
+    // 前の読み込みでもう1台の版を足した複製（名前を変えていても見つける）。
+    // 一覧は待たずに合わせる（起動のときに読んでおいた記録）。
+    final copies = _transferCopies;
+    final changed = mergeTransferredItems(
+      _palettes,
+      incoming,
+      paletteMergeRules(copyNames: copyNames, idPrefix: 'PixelPalette'),
+      copies: copies,
+    );
+    if (!changed) return;
+    notifyListeners();
+    await _persist();
+    await copies.save();
   }
 
   Future<void> updatePalette(

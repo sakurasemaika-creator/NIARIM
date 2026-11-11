@@ -15,6 +15,7 @@ import '../../models/autofill_gradient.dart';
 import '../../models/autofill_preset.dart';
 import '../../models/layer.dart' show LayerBlendMode;
 import '../../utils/blend_mode_label.dart';
+import '../../utils/duplicate_name.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/export_share_service.dart';
 import '../../services/project_service.dart';
@@ -33,6 +34,14 @@ import '../canvas/widgets/color_picker_panel.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../config/accent_text_theme.dart';
+
+/// [taken]と重ならない複製の名前を付け、[taken]に加える（まとめて複製する
+/// ときに、同じ名前の複製を並べない）。
+String _takeCopyName(AppLocalizations l10n, String name, Set<String> taken) {
+  final copy = numberedCopyName(l10n, name, taken);
+  taken.add(copy);
+  return copy;
+}
 
 class AutofillPresetScreen extends StatefulWidget {
   const AutofillPresetScreen({super.key});
@@ -320,15 +329,17 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     final selected = filtered
         .where((p) => _selectedIds.contains(p.id))
         .toList();
-    final copies = selected
-        .map(
-          (p) => p.copyWith(
-            id: 'p_${DateTime.now().microsecondsSinceEpoch}_${p.id}',
-            name: l10n.autofillPresetDuplicateName(p.name),
-            isFavorite: false,
-          ),
-        )
-        .toList();
+    // ブラシ・作品の複製・引き継ぎで足す複製と同じ形の名前（同じ名前が
+    // あれば番号を付ける）。
+    final taken = {for (final p in service.presets) p.name};
+    final copies = [
+      for (final p in selected)
+        p.copyWith(
+          id: 'p_${DateTime.now().microsecondsSinceEpoch}_${p.id}',
+          name: _takeCopyName(l10n, p.name, taken),
+          isFavorite: false,
+        ),
+    ];
     for (final copy in copies) {
       service.addPreset(copy);
     }
@@ -345,11 +356,12 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   void _bulkPaste() {
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<AutofillPresetService>();
+    final taken = {for (final p in service.presets) p.name};
     for (final p in _presetClipboard) {
       service.addPreset(
         p.copyWith(
           id: 'p_${DateTime.now().microsecondsSinceEpoch}_${p.id}',
-          name: l10n.autofillPresetDuplicateName(p.name),
+          name: _takeCopyName(l10n, p.name, taken),
         ),
       );
     }

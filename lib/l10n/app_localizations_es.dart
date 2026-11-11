@@ -666,6 +666,36 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transferImportSuccessSnackbar => 'Archivo .niatra importado';
 
   @override
+  String transferImportAddedCopiesSnackbar(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Archivo .niatra importado. $count elementos eran distintos en este dispositivo: se conservaron las versiones de este dispositivo y las importadas se añadieron con nombres como «$name»',
+      one:
+          'Archivo .niatra importado. 1 elemento era distinto en este dispositivo: se conservó la versión de este dispositivo y la importada se añadió como «$name»',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transferImportShortcutsNotAddedSnackbar(
+    int count,
+    String name,
+    String combo,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count atajos importados, como «$name» ($combo), no se añadieron porque este dispositivo usa las mismas teclas para otras acciones. Para usarlos, añádelos con otras teclas en los ajustes de Atajos',
+      one:
+          'El atajo importado «$name» ($combo) no se añadió porque este dispositivo usa las mismas teclas para otra acción. Para usarlo, añádelo con otras teclas en los ajustes de Atajos',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String transferImportFailedSnackbar(String error) {
     return 'Error al importar: $error';
   }

@@ -10,7 +10,9 @@ import '../models/canvas_dock_panel.dart';
 import '../models/canvas_size_preset.dart';
 import '../models/toolbar_item.dart';
 import '../utils/app_locale.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
+import '../utils/transfer_merge.dart';
 
 class SettingsService extends ChangeNotifier {
   /// 端末の言語の並び。表示言語を一度も選んでいないときは、ここから決める
@@ -512,6 +514,56 @@ class SettingsService extends ChangeNotifier {
       'custom_size_presets',
       _customSizePresets.map((p) => jsonEncode(p.toJson())).toList(),
     );
+  }
+
+  /// 引き継ぎ（.niatra）の端末保存データで受け取ったキャンバスの大きさ
+  /// （保存と同じ1件ずつのJSON）を、この端末の一覧へ足す。この端末の大きさは
+  /// 書き換えない（同じIDで大きさか名前が違えば、受け取った方を「名前
+  /// (コピー)」として足す。決まりは[mergeTransferredItems]）。受け取った
+  /// 大きさは、起動時の読み込みと同じく範囲に収めてから比べる（以前の版が
+  /// 保存した範囲外の大きさは保存に残り、ファイルにもそのまま入る。収めずに
+  /// 足すと上限を超えた作品を作れ、起動し直すと収まるので、同じファイルの
+  /// 読み直しで複製が増える）。
+  Future<void> mergeTransferredCanvasSizes(
+    List<String> saved, {
+    required TransferCopyNames copyNames,
+  }) async {
+    final presets = List<CanvasSizePreset>.of(_customSizePresets);
+    // 前の読み込みでもう1台の版を足した複製（名前を変えていても見つける）。
+    final copies = await TransferCopyRecord.read(
+      TransferCopyRecord.canvasSizes,
+    );
+    final changed = mergeTransferredItems(
+      presets,
+      [
+        for (final p in readSavedJsonList(saved, CanvasSizePreset.fromJson))
+          p.copyWith(
+            width: clampCanvasEdge(p.width),
+            height: clampCanvasEdge(p.height),
+          ),
+      ],
+      TransferMergeRules<CanvasSizePreset>(
+        idOf: (p) => p.id,
+        nameOf: (p) => p.name,
+        contentOf: (p) => p.toJson()
+          ..remove('id')
+          ..remove('name'),
+        organizationOf: (_) =>
+            (favorite: false, tags: const [], folderId: null),
+        withOrganization: (p, _) => p,
+        asCopy: (p, id, name) =>
+            CanvasSizePreset.fromJson({...p.toJson(), 'id': id, 'name': name}),
+        newId: (attempt) =>
+            'size_${DateTime.now().microsecondsSinceEpoch}_$attempt',
+        copyNames: copyNames,
+      ),
+      copies: copies,
+    );
+    await copies.save();
+    if (!changed) return;
+    _customSizePresets = presets;
+    await _persistCustomSizePresets();
+    notifyListeners();
   }
 
   /// 幅・高さはキャンバスの範囲（[kMinCanvasEdge]〜[kMaxCanvasEdge]）に

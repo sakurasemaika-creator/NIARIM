@@ -635,6 +635,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get transferImportSuccessSnackbar => '已导入.niatra文件';
 
   @override
+  String transferImportAddedCopiesSnackbar(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已导入.niatra文件。有$count项与本设备的内容不同：已保留本设备的版本，导入的版本已以“$name”等名称添加',
+      one: '已导入.niatra文件。有1项与本设备的内容不同：已保留本设备的版本，导入的版本已添加为“$name”',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transferImportShortcutsNotAddedSnackbar(
+    int count,
+    String name,
+    String combo,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '导入的快捷键“$name”（$combo）等$count个未添加，因为本设备已将相同的按键用于其他操作。如需使用，请在快捷键设置中用其他按键添加',
+      one: '导入的快捷键“$name”（$combo）未添加，因为本设备已将相同的按键用于其他操作。如需使用，请在快捷键设置中用其他按键添加',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String transferImportFailedSnackbar(String error) {
     return '导入失败：$error';
   }
@@ -9814,6 +9841,33 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get transferImportSuccessSnackbar => '已匯入.niatra檔案';
+
+  @override
+  String transferImportAddedCopiesSnackbar(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已匯入.niatra檔案。有$count項與本裝置的內容不同：已保留本裝置的版本，匯入的版本已以「$name」等名稱新增',
+      one: '已匯入.niatra檔案。有1項與本裝置的內容不同：已保留本裝置的版本，匯入的版本已新增為「$name」',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transferImportShortcutsNotAddedSnackbar(
+    int count,
+    String name,
+    String combo,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '匯入的快捷鍵「$name」（$combo）等$count個未新增，因為本裝置已將相同的按鍵用於其他操作。如需使用，請在快捷鍵設定中以其他按鍵新增',
+      one: '匯入的快捷鍵「$name」（$combo）未新增，因為本裝置已將相同的按鍵用於其他操作。如需使用，請在快捷鍵設定中以其他按鍵新增',
+    );
+    return '$_temp0';
+  }
 
   @override
   String transferImportFailedSnackbar(String error) {

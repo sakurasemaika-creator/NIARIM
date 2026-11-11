@@ -218,6 +218,8 @@
   "transferExportSuccessSnackbar": "Fichier .niatra exporté",
   "transferExportFailedSnackbar": "Échec de l'exportation : {error}",
   "transferImportSuccessSnackbar": "Fichier .niatra importé",
+  "transferImportAddedCopiesSnackbar": "{count, plural, =1{Fichier .niatra importé. 1 élément était différent sur cet appareil : la version de cet appareil a été conservée et celle importée a été ajoutée sous le nom « {name} »} other{Fichier .niatra importé. {count} éléments étaient différents sur cet appareil : les versions de cet appareil ont été conservées et celles importées ont été ajoutées sous des noms comme « {name} »}}",
+  "transferImportShortcutsNotAddedSnackbar": "{count, plural, =1{Le raccourci importé « {name} » ({combo}) n'a pas été ajouté, car cet appareil utilise les mêmes touches pour une autre action. Pour l'utiliser, ajoutez-le avec d'autres touches dans les réglages Raccourcis} other{{count} raccourcis importés, dont « {name} » ({combo}), n'ont pas été ajoutés, car cet appareil utilise les mêmes touches pour d'autres actions. Pour les utiliser, ajoutez-les avec d'autres touches dans les réglages Raccourcis}}",
   "transferImportFailedSnackbar": "Échec de l'importation : {error}",
   "folderManagementTitle": "Gestion des dossiers",
   "folderManagementCreateNew": "Nouveau",
