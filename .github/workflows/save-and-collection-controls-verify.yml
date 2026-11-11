@@ -31,6 +31,8 @@ on:
       - 'test/shared_collection_controls_capture_test.dart'
       - 'test/folder_thumbnail_modes_test.dart'
       - 'test/exported_work_thumbnail_choice_test.dart'
+      - 'test/works_collection_controls_test.dart'
+      - 'test/home_short_controls_and_video_states_test.dart'
       - 'test/project_thumbnail_choice_test.dart'
       - 'test/folder_thumbnail_visual_capture_test.dart'
       - 'test/save_memo_max_length_test.dart'
@@ -63,6 +65,8 @@ jobs:
             lib/screens/home/widgets/exported_work_thumbnail_dialog.dart \
             lib/screens/home/widgets/exported_work_card.dart \
             test/exported_work_thumbnail_choice_test.dart \
+            test/works_collection_controls_test.dart \
+            test/home_short_controls_and_video_states_test.dart \
             lib/screens/home/widgets/project_thumbnail_dialog.dart \
             test/project_thumbnail_choice_test.dart \
             lib/services/project_service.dart \
@@ -74,6 +78,11 @@ jobs:
             test/folder_thumbnail_visual_capture_test.dart \
             test/save_memo_max_length_test.dart \
             test/save_tree_large_branch_stress_test.dart
+      - name: Compact works three-dot delete regression
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/home_short_controls_and_video_states_test.dart \
+            --plain-name 'last export delete reaches confirmation independently of Home folder creation at 220px'
       - name: Save and collection UI regressions
         run: |
           flutter test --no-pub --reporter expanded \
@@ -88,6 +97,7 @@ jobs:
             test/shared_collection_controls_capture_test.dart \
             test/folder_thumbnail_modes_test.dart \
             test/exported_work_thumbnail_choice_test.dart \
+            test/works_collection_controls_test.dart \
             test/folder_thumbnail_visual_capture_test.dart \
             test/save_memo_max_length_test.dart \
             test/save_tree_large_branch_stress_test.dart
