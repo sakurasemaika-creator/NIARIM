@@ -9,6 +9,7 @@ on:
       - 'lib/screens/community/widgets/community_ranking_work_list.dart'
       - 'lib/widgets/collection_action_controls.dart'
       - 'test/community_work_card_layout_test.dart'
+      - 'test/community_action_controls_visual_capture_test.dart'
       - 'test/community_ranking_layout_test.dart'
   workflow_dispatch:
 
@@ -27,6 +28,14 @@ jobs:
           cache: true
       - run: flutter pub get --enforce-lockfile
       - name: Analyze community action controls
-        run: flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings lib/screens/community/widgets/community_work_card.dart lib/screens/community/widgets/community_ranking_work_list.dart lib/widgets/collection_action_controls.dart test/community_work_card_layout_test.dart
+        run: flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings lib/screens/community/widgets/community_work_card.dart lib/screens/community/widgets/community_ranking_work_list.dart lib/widgets/collection_action_controls.dart test/community_work_card_layout_test.dart test/community_action_controls_visual_capture_test.dart
       - name: Exercise responsive community cards and ranking views
-        run: flutter test --no-pub --reporter expanded test/community_work_card_layout_test.dart test/community_ranking_layout_test.dart
+        run: flutter test --no-pub --reporter expanded test/community_work_card_layout_test.dart test/community_ranking_layout_test.dart test/community_action_controls_visual_capture_test.dart
+      - name: Upload community list and ranking UI captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: community-action-captures
+          path: build/community-action-captures/*.png
+          if-no-files-found: warn
+          retention-days: 7
