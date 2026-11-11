@@ -4,6 +4,7 @@ on:
     branches: [dev_branch]
     paths:
       - "test/canvas_color_layer_snap_evidence_capture_test.dart"
+      - "test/canvas_edit_menu_walkthrough_test.dart"
       - ".github/workflows/canvas-color-layer-snap-evidence.yml"
       - "lib/screens/canvas/widgets/color_picker_panel.dart"
       - "lib/screens/canvas/widgets/layer_panel.dart"
