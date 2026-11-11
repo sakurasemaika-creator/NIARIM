@@ -65,6 +65,16 @@ void main() {
     });
   }
 
+  Future<void> awaitVisible(WidgetTester tester, Finder finder) async {
+    for (var i = 0; i < 50 && finder.evaluate().isEmpty; i++) {
+      await tester.runAsync(() =>
+          Future<void>.delayed(const Duration(milliseconds: 45)));
+      await tester.pump(const Duration(milliseconds: 80));
+    }
+    expect(finder, findsOneWidget,
+        reason: 'Trash entry must actually be rendered before capture/tap');
+  }
+
   Future<void> awaitLibraryState(
     WidgetTester tester, bool Function() done,
   ) async {
@@ -219,9 +229,12 @@ void main() {
     final archived = (await tester.runAsync(LocalFileTrashService.list))!;
     expect(archived, hasLength(1));
     expect(archived.single.kind, LocalTrashKind.outgoingShare);
+    final outgoingTrashCopy =
+        find.byKey(ValueKey('trashCopyLocal_${archived.single.id}'));
+    await awaitVisible(tester, outgoingTrashCopy);
     await capture(tester, captureKey, '16_outgoing_in_trash');
 
-    await tester.tap(find.byKey(ValueKey('trashCopyLocal_${archived.single.id}')));
+    await tester.tap(outgoingTrashCopy);
     await pumpIo(tester);
     await tester.tap(find.byKey(const ValueKey('home_tab_2')));
     await pumpIo(tester);
@@ -300,9 +313,12 @@ void main() {
     final archived = (await tester.runAsync(LocalFileTrashService.list))!;
     expect(archived, hasLength(1));
     expect(archived.single.kind, LocalTrashKind.exportedWorkFolder);
+    final workTrashCopy =
+        find.byKey(ValueKey('trashCopyLocal_${archived.single.id}'));
+    await awaitVisible(tester, workTrashCopy);
     await capture(tester, captureKey, '20_works_folder_in_trash');
 
-    await tester.tap(find.byKey(ValueKey('trashCopyLocal_${archived.single.id}')));
+    await tester.tap(workTrashCopy);
     await pumpIo(tester);
     await tester.tap(find.byKey(const ValueKey('home_tab_1')));
     await pumpIo(tester);
