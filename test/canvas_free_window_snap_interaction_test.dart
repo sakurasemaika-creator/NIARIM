@@ -59,7 +59,7 @@ void main() {
           settings ??= context.read<SettingsService>();
           refresh = setState;
           return projectId == null ? const SizedBox.expand()
-              : CanvasScreen(projectId: projectId!);
+              : CanvasScreen(projectId: projectId);
         }),
       )),
     ));
