@@ -12,6 +12,7 @@ on:
       - "lib/services/local_file_trash_service.dart"
       - "test/home_clipboard_policy_test.dart"
       - "test/shared_folder_clipboard_trash_test.dart"
+      - "test/home_shared_folder_paste_flow_test.dart"
       - "test/local_work_folder_trash_test.dart"
       - "test/project_selection_clipboard_test.dart"
   workflow_dispatch:
@@ -33,11 +34,12 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - name: Analyze touched sources and tests
         run: |
-          flutter analyze --no-fatal-infos lib/screens/home/home_clipboard_policy.dart lib/screens/home/home_screen.dart lib/services/project_service.dart lib/services/local_file_trash_service.dart test/shared_folder_clipboard_trash_test.dart test/local_work_folder_trash_test.dart
+          flutter analyze --no-fatal-infos lib/screens/home/home_clipboard_policy.dart lib/screens/home/home_screen.dart lib/services/project_service.dart lib/services/local_file_trash_service.dart test/shared_folder_clipboard_trash_test.dart test/home_shared_folder_paste_flow_test.dart test/local_work_folder_trash_test.dart
       - name: Clipboard, Trash, folder regressions
         run: |
           flutter test test/home_clipboard_policy_test.dart --reporter expanded
           flutter test test/shared_folder_clipboard_trash_test.dart --reporter expanded
+          flutter test test/home_shared_folder_paste_flow_test.dart --reporter expanded
           flutter test test/local_work_folder_trash_test.dart --reporter expanded
           flutter test test/local_file_trash_service_test.dart --reporter expanded
           flutter test test/project_selection_clipboard_test.dart --plain-name 'incompatible tab paste explains why and leaves project intact' --reporter expanded
