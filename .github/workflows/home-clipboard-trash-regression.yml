@@ -46,6 +46,14 @@ jobs:
           flutter test test/local_file_trash_service_test.dart --reporter expanded
           flutter test test/project_selection_clipboard_test.dart --plain-name 'incompatible tab paste explains why and leaves project intact' --reporter expanded
           flutter test test/project_selection_clipboard_test.dart --plain-name 'pasting a project to Trash requires confirmation and shows the configured retention period' --reporter expanded
+      - name: Preserve partial real screenshots when UI tests fail
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-clipboard-partial-captures
+          path: build/home-clipboard-captures/*.png
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Build real Flutter screenshots PDF
         run: |
           python3 -m pip install --quiet reportlab pillow
