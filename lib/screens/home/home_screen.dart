@@ -3640,8 +3640,60 @@ class _TrashTabState extends State<_TrashTab> {
 }
 
 
+/// Reuse the Projects collection's four sort modes for exported media.
+/// The source files are never renamed or modified by a view preference.
+List<File> _sortExportedFiles(List<File> files, ProjectSortMode mode) {
+  final sorted = List<File>.of(files);
+  int compare(File a, File b) {
+    final nameA = a.uri.pathSegments.last.toLowerCase();
+    final nameB = b.uri.pathSegments.last.toLowerCase();
+    switch (mode) {
+      case ProjectSortMode.nameAsc:
+        return nameA.compareTo(nameB);
+      case ProjectSortMode.nameDesc:
+        return nameB.compareTo(nameA);
+      case ProjectSortMode.updatedAsc:
+        return a.lastModifiedSync().compareTo(b.lastModifiedSync());
+      case ProjectSortMode.updatedDesc:
+        return b.lastModifiedSync().compareTo(a.lastModifiedSync());
+    }
+  }
+  sorted.sort((a, b) {
+    final order = compare(a, b);
+    return order == 0 ? a.path.compareTo(b.path) : order;
+  });
+  return sorted;
+}
+
+/// Same size choices as project cards. The caption retains two rows
+/// while the tile itself grows with the chosen size and text scaling.
+SliverGridDelegate _worksGridDelegate(
+    BuildContext context, ProjectViewMode mode) {
+  final extent = switch (mode) {
+    ProjectViewMode.small => 130.0,
+    ProjectViewMode.medium => 170.0,
+    ProjectViewMode.large => 240.0,
+    ProjectViewMode.detail => 240.0,
+  };
+  final scaledFontExtra =
+      (MediaQuery.textScalerOf(context).scale(16) - 16).clamp(0.0, 48.0);
+  return SliverGridDelegateWithMaxCrossAxisExtent(
+    maxCrossAxisExtent: extent,
+    crossAxisSpacing: 8,
+    mainAxisSpacing: 8,
+    mainAxisExtent: extent * 0.74 + 75 + scaledFontExtra * 3,
+  );
+}
+
 class _WorksTab extends StatefulWidget {
-  const _WorksTab({super.key, this.onCopyEntry});
+  const _WorksTab({
+    super.key,
+    required this.viewMode,
+    required this.onViewModeChanged,
+    this.onCopyEntry,
+  });
+  final ProjectViewMode viewMode;
+  final ValueChanged<ProjectViewMode> onViewModeChanged;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
   @override
@@ -3650,6 +3702,29 @@ class _WorksTab extends StatefulWidget {
 
 class _WorksTabState extends State<_WorksTab> {
   late Future<List<File>> _future;
+  ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
+
+  bool get _sortByName =>
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.nameDesc;
+  bool get _sortAscending =>
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.updatedAsc;
+
+  void _setSortByName(bool byName) => setState(() {
+    _sortMode = byName
+        ? (_sortAscending ? ProjectSortMode.nameAsc : ProjectSortMode.nameDesc)
+        : (_sortAscending
+            ? ProjectSortMode.updatedAsc : ProjectSortMode.updatedDesc);
+  });
+  void _toggleSortDirection() => setState(() {
+    _sortMode = switch (_sortMode) {
+      ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
+      ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
+      ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
+      ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
+    };
+  });
 
   @override
   void initState() {
@@ -3691,11 +3766,35 @@ class _WorksTabState extends State<_WorksTab> {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        final files = snapshot.data!;
+        final files = _sortExportedFiles(snapshot.data!, _sortMode);
         final workFolders = context.watch<WorkFolderService>();
+        Widget buildWork(BuildContext context, File file, bool grid) =>
+            _WorkListItem(
+              key: ValueKey(file.path),
+              file: file,
+              gridTile: grid,
+              onDeleted: _reload,
+              onCopy: widget.onCopyEntry == null ? null : () =>
+                  widget.onCopyEntry!(HomeClipboardEntry(
+                    source: HomePasteArea.works,
+                    id: file.path,
+                    name: file.uri.pathSegments.last,
+                  )),
+            );
         return RefreshIndicator(
           onRefresh: _reload,
           child: _FolderableList<File>(
+            key: ValueKey(('works-list', widget.viewMode)),
+            header: _LibraryListControls(
+              sort: SortModeControl(
+                sortByName: _sortByName,
+                sortAscending: _sortAscending,
+                onSortByNameChanged: _setSortByName,
+                onToggleDirection: _toggleSortDirection,
+              ),
+            ),
+            viewMode: widget.viewMode,
+            gridItemBuilder: (context, file) => buildWork(context, file, true),
             emptyState: files.isEmpty
                 ? EmptyStatePlaceholder(
                     icon: Icons.video_library_outlined,
@@ -3714,6 +3813,9 @@ class _WorksTabState extends State<_WorksTab> {
                     builder: (_) => _WorksFolderScreen(
                       folderId: folderId,
                       folderName: folderName,
+                      viewMode: widget.viewMode,
+                      initialSortMode: _sortMode,
+                      onViewModeChanged: widget.onViewModeChanged,
                       onDeleted: _reload,
                       onCopyEntry: widget.onCopyEntry,
                     ),
@@ -3730,20 +3832,13 @@ class _WorksTabState extends State<_WorksTab> {
                 ),
             onCopyFolder: widget.onCopyEntry == null ? null : (folder) =>
                 widget.onCopyEntry!(HomeClipboardEntry(
-                  source: HomePasteArea.works, id: folder.id,
-                  name: folder.name, isFolder: true,
+                  source: HomePasteArea.works,
+                  id: folder.id,
+                  name: folder.name,
+                  isFolder: true,
                 )),
             reserveForFloatingActions: true,
-            itemBuilder: (context, file) => _WorkListItem(
-              key: ValueKey(file.path),
-              file: file,
-              onDeleted: _reload,
-              onCopy: widget.onCopyEntry == null ? null : () =>
-                  widget.onCopyEntry!(HomeClipboardEntry(
-                    source: HomePasteArea.works,
-                    id: file.path, name: file.uri.pathSegments.last,
-                  )),
-            ),
+            itemBuilder: (context, file) => buildWork(context, file, false),
           ),
         );
       },
